@@ -1,0 +1,8 @@
+These scripts were used to process the source images from Davi Boch and Clay Reid.
+This code was thrown together quickly to "get the job done", but may be of use
+for others facing a similar task.
+
+All scripts were run using the Enthought Python Distribution (www.enthought.com),
+but any standard distribution with the Python Image Library (PIL) 1.1.7 or newer
+should work.
+
