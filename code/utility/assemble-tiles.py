@@ -1,16 +1,28 @@
 #!/usr/bin/python
 
 #
-# Assemble tiles into a larger image
 # Simple script to concatenate tiles into larger images.
+#
+# This script is a temporary hack until we build a better
+# interface for pulling regions out.
+#
+# TODO:
+#   * Generalize for other datasets other than Boch et al.
+#   * Allow X/Y coordinates, and arbitrary image sizes
 #
 
 #
 # Example usage:
-#   Copy images of 32x32 tiles (8192x8192 pixles) from 25 slice, starting with 3805, to /tmp/out
+#   Copy images of 32x32 tiles (8192x8192 pixles) from 25 slices, starting
+#   with 3805, to /tmp/out
 # python assemble-tiles.py --root=/data/brain --slice=3805 --slices=25 --cols=32 --rows=32 --col=220 --row=300 --outdir=/tmp/out
 #
 
+#
+# How to convert a X/Y coordinate in CATMAID to tile coordinates:
+# col = x / (256*2^scale)
+# row = y / (256*2^scale)
+#
 
 import argparse
 import errno
@@ -67,6 +79,11 @@ def main():
         args.rows = int(math.ceil(data.rows / (2.**args.scale)))
         args.cols = int(math.ceil(data.cols / (2.**args.scale)))
 
+    try:
+        os.makedirs(args.outdir)
+    except os.error, e:
+        pass
+
     if args.readme:
         # Create a README file to describe the images
         readmefile = "{0}/README.txt".format(args.outdir)
@@ -78,6 +95,7 @@ def main():
         readme.write("# Size: dx={0} dy={1}\n".format(args.rows*256, args.cols*256))
         readme.write("# Slices: {0}-{1}\n".format(args.slice, args.slice+args.slices-1))
         readme.close()
+
 
     for slice in xrange(args.slice, args.slice+args.slices, args.increment):
         if args.useclosest:
