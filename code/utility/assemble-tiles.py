@@ -3,8 +3,13 @@
 #
 # Simple script to concatenate tiles into larger images.
 #
-# This script is a temporary hack until we build a better
-# interface for pulling regions out.
+
+#
+# WARNING:
+# This script is a temporary hack until we build a better interface to
+# retrieve volumes of data.  Use at your own risk.
+#
+
 #
 # TODO:
 #   * Generalize for other datasets other than Boch et al.
@@ -12,16 +17,23 @@
 #
 
 #
-# Example usage:
-#   Copy images of 32x32 tiles (8192x8192 pixles) from 25 slices, starting
-#   with 3805, to /tmp/out
-# python assemble-tiles.py --root=/data/brain --slice=3805 --slices=25 --cols=32 --rows=32 --col=220 --row=300 --outdir=/tmp/out
-#
-
-#
+# NOTES:
 # How to convert a X/Y coordinate in CATMAID to tile coordinates:
 # col = x / (256*2^scale)
 # row = y / (256*2^scale)
+#
+# How to convert Z-index from CATMAID to slice numbering:
+# slice = z_index + 2916
+#
+# Each tile is 256x256.
+#
+
+#
+# Example usage:
+# -- Copy images of 4x4 tiles (2048x2048 px) from 25 slices, starting with 3805, to /tmp/out
+# python assemble-tiles.py --root=/data/brain --slice=3805 --slices=25 --cols=4 --rows=4 --col=220 --row=300 --scale=0 --outdir=/tmp/out
+# -- Same thing, but pulling images from the web
+# python assemble-tiles.py --root=http://openconnectomeproject.org/data/brain --slice=3805 --slices=25 --cols=4 --rows=4 --col=220 --row=300 --scale=0 --outdir=/tmp/out
 #
 
 import argparse
@@ -31,6 +43,8 @@ import os
 import re
 import sys
 import datetime
+import urllib
+import StringIO
 
 import Image
 import ImageOps
@@ -52,6 +66,34 @@ class DataInfo:
     def getFileLocation(self, scale, slice, col, row):
         return "{0}/{1}/{2}/{3}_{4}.png".format(self.root, scale, slice, row, col)
 
+    def doesSliceExist(self, slice):
+        """Check to see if a slice exists by loading the thumbnail."""
+        if self.remote:
+            url = "{0}/small/{1}.png".format(self.root, slice)
+            print url
+            code = urllib.urlopen(url).code
+            if code == 200:
+                return True
+            else:
+                return False
+        else:
+            return os.path.isfile("{0}/small/{1}.png".format(self.root, slice))
+
+    def getImage(self, scale, slice, col, row):
+        filename = self.getFileLocation(scale, slice, col, row)
+        print filename
+        image_file= None
+        if self.remote:
+            remote_image = urllib.urlopen(filename)
+            image_data = remote_image.read()
+            image_file = StringIO.StringIO()
+            image_file.write(image_data)
+            image_file.seek(0)
+        else:
+            image_file= open(filename, "rb")
+        img = Image.open(image_file)
+        return img
+
 def main():
     parser = argparse.ArgumentParser(description="Tile images into a larger image")
     parser.add_argument('--root', action="store", required=True, help="Root directory of data (do not include '/0')")
@@ -72,6 +114,11 @@ def main():
 
     data = DataInfo()
     data.root= args.root
+
+    if data.root.startswith('http://'):
+        data.remote = True
+    else:
+        data.remote = False
 
     if args.full:
         args.row = 0
@@ -99,22 +146,29 @@ def main():
 
     for slice in xrange(args.slice, args.slice+args.slices, args.increment):
         if args.useclosest:
-            while not os.path.isfile("{0}/small/{1}.png".format(data.root, args.slice)):
-                slice += 1
+            if not data.doesSliceExist(slice):
+                # Slice does not exist
+                for delta in xrange(1,args.increment):
+                    # Check neighboring slices, up to the increment level
+                    if data.doesSliceExist(slice+delta):
+                        slice = slice + delta
+                        break
+                    elif data.doesSliceExist(slice - delta):
+                        slice = slice - delta
+                        break
 
         img = Image.new("L", (256*args.cols,256*args.rows) )
         try:
             for col in xrange(args.cols):
                 for row in xrange(args.rows):
-                    filename = data.getFileLocation(args.scale, slice, args.row+row, args.col+col)
-                    print filename
-                    t = Image.open(filename)
+                    t = data.getImage(args.scale, slice, args.row+row, args.col+col)
                     img.paste(t, (256*row,256*col) )
         except:
             # Ignore I/O errors  -- the image will remain black
             # This is most likely a sign of a non-existent slice
             # TODO: Find a better way of handling this.
-            pass
+            #pass
+            raise
         outfile = "{0}/{1}.png".format(args.outdir, slice)
         print outfile
         img.save(outfile, format="PNG", optimize=1)
