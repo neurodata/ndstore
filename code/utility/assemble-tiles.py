@@ -63,7 +63,7 @@ class DataInfo:
     def __init__(self):
         pass
 
-    def getFileLocation(self, scale, slice, col, row):
+    def getFileLocation(self, scale, slice, row, col):
         return "{0}/{1}/{2}/{3}_{4}.png".format(self.root, scale, slice, row, col)
 
     def doesSliceExist(self, slice):
@@ -123,8 +123,11 @@ def main():
     if args.full:
         args.row = 0
         args.col = 0
+        # TODO: Figure out why these estimate too many rows/cols
         args.rows = int(math.ceil(data.rows / (2.**args.scale)))
         args.cols = int(math.ceil(data.cols / (2.**args.scale)))
+        #args.rows = data.rows / (2**args.scale)
+        #args.cols = data.cols / (2**args.scale)
 
     try:
         os.makedirs(args.outdir)
@@ -149,20 +152,19 @@ def main():
             if not data.doesSliceExist(slice):
                 # Slice does not exist
                 for delta in xrange(1,args.increment):
-                    # Check neighboring slices, up to the increment level
+                    # Check following slices, up to the increment level
                     if data.doesSliceExist(slice+delta):
                         slice = slice + delta
                         break
-                    elif data.doesSliceExist(slice - delta):
-                        slice = slice - delta
-                        break
+                # No slice exists within interval
+                continue
 
         img = Image.new("L", (256*args.cols,256*args.rows) )
         try:
             for col in xrange(args.cols):
                 for row in xrange(args.rows):
                     t = data.getImage(args.scale, slice, args.row+row, args.col+col)
-                    img.paste(t, (256*row,256*col) )
+                    img.paste(t, (256*col,256*row) )
         except:
             # Ignore I/O errors  -- the image will remain black
             # This is most likely a sign of a non-existent slice
