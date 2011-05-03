@@ -144,19 +144,21 @@ def main():
         readme.write("# Corner: x={0} y={1}\n".format(args.row*256, args.col*256))
         readme.write("# Size: dx={0} dy={1}\n".format(args.rows*256, args.cols*256))
         readme.write("# Slices: {0}-{1}\n".format(args.slice, args.slice+args.slices-1))
+        readme.write("# Increment: {0}\n".format(args.increment))
         readme.close()
 
 
     for slice in xrange(args.slice, args.slice+args.slices, args.increment):
         if args.useclosest:
-            if not data.doesSliceExist(slice):
-                # Slice does not exist
-                for delta in xrange(1,args.increment):
-                    # Check following slices, up to the increment level
-                    if data.doesSliceExist(slice+delta):
-                        slice = slice + delta
-                        break
-                # No slice exists within interval
+            slicefound = False
+            for delta in xrange(0,args.increment):
+                # Check following slices, up to the increment level
+                if data.doesSliceExist(slice+delta):
+                    slicefound = True
+                    slice = slice + delta
+                    break
+            if not slicefound:
+                # Go to next slice
                 continue
 
         img = Image.new("L", (256*args.cols,256*args.rows) )
