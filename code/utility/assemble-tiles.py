@@ -160,6 +160,9 @@ def main():
             if not slicefound:
                 # Go to next slice
                 continue
+        elif not data.doesSliceExist(slice):
+            # Slice does not exist, and we are not going to find a neighbor
+            continue
 
         img = Image.new("L", (256*args.cols,256*args.rows) )
         try:
