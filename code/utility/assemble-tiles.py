@@ -109,6 +109,7 @@ def main():
     parser.add_argument('--col', action="store", type=int, default=0, help="Column to start with")
     parser.add_argument('--outdir', action="store", default=".", help="Output directoy")
     parser.add_argument('--readme', action="store", type=bool, default=True, help="Output README.txt (default)")
+    parser.add_argument('--crop', action="store", nargs=4, type=int, required=False, help="Cropping box for final image")
 
     args = parser.parse_args()
 
@@ -176,6 +177,9 @@ def main():
             # TODO: Find a better way of handling this.
             #pass
             raise
+        if args.crop:
+            img = img.crop(tuple(args.crop))
+
         outfile = "{0}/{1}.png".format(args.outdir, slice)
         print outfile
         img.save(outfile, format="PNG", optimize=1)
