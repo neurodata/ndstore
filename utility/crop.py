@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+import trakxml
+
 #
 # Simple script to concatenate tiles into larger images.
 #
@@ -110,19 +112,21 @@ def main():
     parser.add_argument('--outdir', action="store", default=".", help="Output directoy")
     parser.add_argument('--readme', action="store", type=bool, default=True, help="Output README.txt (default)")
     parser.add_argument('--crop', action="store", nargs=4, type=int, required=False, help="Cropping box for final image")
-    parser.add_argument('--bbox', action="store", nargs=4, type=int, required=False, help="Bounding box, will set all other values")
+    parser.add_argument('--bbox', action="store", nargs=4, type=int, required=False, help="Bounding box, will set crop/row/rows/col/cols")
+    parser.add_argument('--trakem2', action="store", type=bool, default=True, help="Create a trakem2 project")
 
     args = parser.parse_args()
 
     data = DataInfo()
     data.root= args.root
 
+
     # While the stack info has a path, we would like to avoid using it.
-    if data.root.startswith('http://openconnectomeproject.org/view/kasthuri11/'):
-        data.root = "/data/kasthuri11/"
-    if data.root.startswith('http://openconnectomeproject.org/view/bock11/'):
+    if data.root.startswith('http://tiles.openconnectomeproject.org/view/kasthuri11/'):
+        data.root = "/mnt/data/kasthuri11/"
+    if data.root.startswith('http://tiles.openconnectomeproject.org/view/bock11/'):
         args.slice += 2917
-        data.root = "/data/bock11/"
+        data.root = "/mnt/data/bock11/"
 
     if data.root.startswith('http://'):
         data.remote = True
@@ -130,11 +134,29 @@ def main():
         data.remote = False
 
     if args.bbox:
+        # Determine range of boxes needed
         print args.bbox
-        args.col = int(math.floor(args.bbox[0] / (2.**args.scale))) / 256
-        args.row = int(math.floor(args.bbox[1] / (2.**args.scale))) / 256
-        args.cols = int(math.ceil((args.bbox[2] - args.bbox[0]) / (2.**args.scale) / 256))
-        args.rows = int(math.ceil((args.bbox[3] - args.bbox[1]) / (2.**args.scale) / 256))
+        firstcol = int(math.floor(args.bbox[0] / (2.**args.scale))) / 256
+        firstrow = int(math.floor(args.bbox[1] / (2.**args.scale))) / 256
+        lastcol = int(math.ceil(args.bbox[2] / (2.**args.scale))) / 256
+        lastrow = int(math.ceil(args.bbox[3] / (2.**args.scale))) / 256
+        #args.cols = int(math.ceil((args.bbox[2] - args.bbox[0]) / (2.**args.scale) / 256))
+        #args.rows = int(math.ceil((args.bbox[3] - args.bbox[1]) / (2.**args.scale) / 256))
+
+        args.col = firstcol
+        args.row = firstrow
+        args.cols = (lastcol - firstcol) + 1
+        args.rows = (lastrow - firstrow) + 1
+
+        # Calculate cropping region
+        args.crop = [
+            int((args.bbox[0] / (2.**args.scale)) - firstcol * 256),
+            int((args.bbox[1] / (2.**args.scale)) - firstrow * 256),
+            int((args.bbox[2] / (2.**args.scale)) - firstcol * 256),
+            int((args.bbox[3] / (2.**args.scale)) - firstrow * 256),
+            ]
+
+
 
     print args.row
     print args.col
@@ -168,6 +190,16 @@ def main():
         readme.write("# Increment: {0}\n".format(args.increment))
         readme.close()
 
+    trak = None
+    trakfd = None
+    if args.trakem2:
+        # Create a TrakEM2 project description
+        trak = trakxml.TrakXML()
+        trakfile = "{0}/trak.xml".format(args.outdir)
+        trakfd = open(trakfile, 'w')
+        trak.writeHeader(trakfd)
+        trak.writeBody(trakfd)
+        
 
     for slice in xrange(args.slice, args.slice+args.slices, args.increment):
         print "Working on slice {0}...".format(slice)
@@ -205,6 +237,10 @@ def main():
         outfile = "{0}/{1}.png".format(args.outdir, slice)
         print outfile
         img.save(outfile, format="PNG", optimize=1)
+
+    if args.trakem2:
+        trak.writeFooter(trakfd)
+        trakfd.close()
    
 if __name__ == "__main__":
     main()
