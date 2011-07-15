@@ -121,6 +121,7 @@ def main():
     data.root= args.root
 
 
+
     # While the stack info has a path, we would like to avoid using it.
     if data.root.startswith('http://tiles.openconnectomeproject.org/view/kasthuri11/'):
         data.root = "/mnt/data/kasthuri11/"
@@ -133,7 +134,20 @@ def main():
     else:
         data.remote = False
 
+    if args.full:
+        args.row = 0
+        args.col = 0
+        # TODO: Figure out why these estimate too many rows/cols
+        args.rows = int(math.ceil(data.rows / (2.**args.scale)))
+        args.cols = int(math.ceil(data.cols / (2.**args.scale)))
+        #args.rows = data.rows / (2**args.scale)
+        #args.cols = data.cols / (2**args.scale)
+
+    outHeight = 256*args.rows
+    outWidth = 256*args.cols
+
     if args.bbox:
+
         # Determine range of boxes needed
         print args.bbox
         firstcol = int(math.floor(args.bbox[0] / (2.**args.scale))) / 256
@@ -156,6 +170,8 @@ def main():
             int((args.bbox[3] / (2.**args.scale)) - firstrow * 256),
             ]
 
+        outWidth = args.crop[2] - args.crop[0]
+        outHeight = args.crop[3] - args.crop[1]
 
 
     print args.row
@@ -163,14 +179,6 @@ def main():
     print args.rows
     print args.cols
 
-    if args.full:
-        args.row = 0
-        args.col = 0
-        # TODO: Figure out why these estimate too many rows/cols
-        args.rows = int(math.ceil(data.rows / (2.**args.scale)))
-        args.cols = int(math.ceil(data.cols / (2.**args.scale)))
-        #args.rows = data.rows / (2**args.scale)
-        #args.cols = data.cols / (2**args.scale)
 
     try:
         os.makedirs(args.outdir)
@@ -198,7 +206,7 @@ def main():
         trakfile = "{0}/trak.xml".format(args.outdir)
         trakfd = open(trakfile, 'w')
         trak.writeHeader(trakfd)
-        trak.writeBody(trakfd)
+        trak.writeBody(trakfd, outHeight, outWidth)
         
 
     for slice in xrange(args.slice, args.slice+args.slices, args.increment):
@@ -237,6 +245,8 @@ def main():
         outfile = "{0}/{1}.png".format(args.outdir, slice)
         print outfile
         img.save(outfile, format="PNG", optimize=1)
+        if args.trakem2:
+            trak.writeLayer(trakfd, slice, outHeight, outWidth)
 
     if args.trakem2:
         trak.writeFooter(trakfd)

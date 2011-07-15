@@ -5,8 +5,8 @@ class TrakXML:
         self.oid = 0
 
     def getoid(self):
-        self.oid = oid + 1
-        return oid
+        self.oid = self.oid + 1
+        return self.oid
 
 
     def writeHeader(self, file):
@@ -265,13 +265,13 @@ class TrakXML:
 
 """)
 
-    def writeBody(self, file):
+    def writeBody(self, file, height, width):
         file.write("""
         <trakem2>
             <project 
                 id="0"
-                title="Bock11 Test"
-                unuid="1309978003657.1359634894.3121788"
+                title="CATMAID Clip"
+                unuid="1303262609289.1052629572.95381466"
                 storage_folder=""
                 image_resizing_mode="Gaussian"
                 look_ahead_cache="0"
@@ -285,13 +285,15 @@ class TrakXML:
                 transform="matrix(1.0,0.0,0.0,1.0,0.0,0.0)"
                 title="Top Level"
                 links=""
-                layer_width="2560.0"
-                layer_height="2560.0"
+""")
+        file.write('layer_width="{0}"\n'.format(width))
+        file.write('layer_height="{0}"\n'.format(height))
+        file.write("""
                 rot_x="0.0"
                 rot_y="0.0"
                 rot_z="0.0"
                 snapshots_quality="true"
-                snapshots_mode="Full"
+                snapshots_mode="Disabled"
                 color_cues="true"
                 area_color_cues="true"
                 avoid_color_cue_colors="false"
@@ -317,32 +319,28 @@ class TrakXML:
         """)
 
 
-    def writeLayer(self, file):
-        file.write("""
-        """)
-
-        for layer in range(2917,2930):
-            print '<t2_layer oid="{0}" thickness="1.0" z="{1}.0" title="" >'.format(getoid(), layer)
-            for x in range(50,60):
-                for y in range(50,60):
-                    print '<t2_patch oid="{0}"'.format(getoid())
-                    print 'width="{0}" height="{1}"'.format(256,256)
-                    print 'o_width="{0}" o_height="{1}"'.format(256,256)
-                    #print 'transform="matrix(1.0,0.0,0.0,1.0,{0},{1})"'.format(256*x,256*y)
-                    print 'transform="matrix(1.0,0.0,0.0,1.0,0,0)"'
-                    print 'style="fill-opacity:1.0;stroke:#ffff00;"'
-                    print 'min="0" max="255"'
-                    print 'title="{0}-{1}-{2}"'.format(x, y, layer)
-                    print 'type="0"'
-                    #print 'file_path="http://openconnectomeproject.org/data/misc/nodata.png"'
-                    print 'file_path="http://openconnectomeproject.org/~eric/trakweb/image.cgi/{0}-{1}/{0}-{1}-{2}.png"'.format(x, y, layer)
-                    #print 'file_path="{0}-{1}-{2}.png"'.format(x, y, layer)
-                    #print 'file_path="180-220-int/180-220-int-02.tif"'
-                    print '>'
-                    print '</t2_patch>'
-            print '</t2_layer>'
+    def writeLayer(self, file, layer, height, width):
+        file.write('<t2_layer oid="{0}" thickness="40.0" z="{1}.0" title="" >\n'.format(self.getoid(), layer))
+        file.write('<t2_patch oid="{0}"\n'.format(self.getoid()))
+        file.write('width="{0}" height="{1}" o_width="{0}" o_height="{1}"\n'.format(width, height, width, height))
+        #print 'width="{0}" height="{1}"'.format(256,256)
+        #print 'o_width="{0}" o_height="{1}"'.format(256,256)
+        #print 'transform="matrix(1.0,0.0,0.0,1.0,{0},{1})"'.format(256*x,256*y)
+        file.write('transform="matrix(1.0,0.0,0.0,1.0,0,0)"\n')
+        file.write('style="fill-opacity:1.0;stroke:#ffff00;"\n')
+        file.write('min="0" max="255"\n')
+        file.write('title="{0}.png"\n'.format(layer))
+        file.write('links=""\n')
+        #print 'type="0"'
+        #print 'file_path="http://openconnectomeproject.org/data/misc/nodata.png"'
+        file.write('file_path="{0}.png"\n'.format(layer))
+        #print 'file_path="http://openconnectomeproject.org/~eric/trakweb/image.cgi/{0}-{1}/{0}-{1}-{2}.png"'.format(x, y, layer)
+        #print 'file_path="{0}-{1}-{2}.png"'.format(x, y, layer)
+        #print 'file_path="180-220-int/180-220-int-02.tif"'
+        file.write('>\n')
+        file.write('</t2_patch>\n'+'</t2_layer>\n')
 
     def writeFooter(self, file):
         file.write("""
         </t2_layer_set>
-        </trakem2>""")
+        </trakem2>\n""")
