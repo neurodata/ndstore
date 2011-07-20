@@ -185,6 +185,12 @@ def main():
     except os.error, e:
         pass
 
+    if (args.slices < 0):
+        # Negative range requested
+        args.slices = 0 - args.slices
+        args.slice = args.slice - args.slices
+
+
     if args.readme:
         # Create a README file to describe the images
         readmefile = "{0}/README.txt".format(args.outdir)
