@@ -331,7 +331,7 @@ class TrakXML:
         file.write('min="0" max="255"\n')
         file.write('title="{0}.png"\n'.format(layer))
         file.write('links=""\n')
-        #print 'type="0"'
+        file.write('type="0"\n')
         #print 'file_path="http://openconnectomeproject.org/data/misc/nodata.png"'
         file.write('file_path="{0}.png"\n'.format(layer))
         #print 'file_path="http://openconnectomeproject.org/~eric/trakweb/image.cgi/{0}-{1}/{0}-{1}-{2}.png"'.format(x, y, layer)
@@ -341,6 +341,7 @@ class TrakXML:
         file.write('</t2_patch>\n'+'</t2_layer>\n')
 
     def writeFooter(self, file):
-        file.write("""
-        </t2_layer_set>
-        </trakem2>\n""")
+        file.write('</t2_layer_set>\n')
+        file.write('<t2_display id="{0}"\n'.format(self.getoid()))
+        file.write('/>\n')
+        file.write('</trakem2>\n')
