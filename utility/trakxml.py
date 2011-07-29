@@ -319,7 +319,7 @@ class TrakXML:
         """)
 
 
-    def writeLayer(self, file, layer, height, width):
+    def writeLayer(self, file, layer, filename, height, width):
         file.write('<t2_layer oid="{0}" thickness="40.0" z="{1}.0" title="" >\n'.format(self.getoid(), layer))
         file.write('<t2_patch oid="{0}"\n'.format(self.getoid()))
         file.write('width="{0}" height="{1}" o_width="{0}" o_height="{1}"\n'.format(width, height, width, height))
@@ -329,11 +329,11 @@ class TrakXML:
         file.write('transform="matrix(1.0,0.0,0.0,1.0,0,0)"\n')
         file.write('style="fill-opacity:1.0;stroke:#ffff00;"\n')
         file.write('min="0" max="255"\n')
-        file.write('title="{0}.png"\n'.format(layer))
+        file.write('title="{0}\n'.format(filename))
         file.write('links=""\n')
         file.write('type="0"\n')
         #print 'file_path="http://openconnectomeproject.org/data/misc/nodata.png"'
-        file.write('file_path="{0}.png"\n'.format(layer))
+        file.write('file_path="{0}"\n'.format(filename))
         #print 'file_path="http://openconnectomeproject.org/~eric/trakweb/image.cgi/{0}-{1}/{0}-{1}-{2}.png"'.format(x, y, layer)
         #print 'file_path="{0}-{1}-{2}.png"'.format(x, y, layer)
         #print 'file_path="180-220-int/180-220-int-02.tif"'

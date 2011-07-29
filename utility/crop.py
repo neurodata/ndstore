@@ -99,6 +99,8 @@ class DataInfo:
 def main():
     parser = argparse.ArgumentParser(description="Tile images into a larger image")
     parser.add_argument('--root', action="store", required=True, help="Root directory of data (do not include '/0')")
+    parser.add_argument('--format', action="store", required=False, default="png", help="Output file format")
+    parser.add_argument('--quality', action="store", required=False, default=75, type=int,  help="JPEG Quality")
     parser.add_argument('--slice', action="store", required=True, type=int,  help="First slice to convert (int)")
     parser.add_argument('--slices', action="store", type=int, default=1, help="Number of slices to convert")
     parser.add_argument('--increment', action="store", type=int, default=1, help="Increment between slices")
@@ -248,11 +250,21 @@ def main():
         if args.crop:
             img = img.crop(tuple(args.crop))
 
-        outfile = "{0}/{1}.png".format(args.outdir, slice)
+        outfile = None
+        fileformat = args.format.lower()
+        if (fileformat == "png"):
+            outfile = "{0}/{1}.png".format(args.outdir, slice)
+            img.save(outfile, format="PNG", optimize=1)
+        elif (fileformat == "jpg" or fileformat == "jpeg"):
+            outfile = "{0}/{1}.jpg".format(args.outdir, slice)
+            img.save(outfile, format="JPEG", quality=args.quality)
+        else:
+            print "Invalid format: {0}".format(fileformat)
+
         print outfile
-        img.save(outfile, format="PNG", optimize=1)
+
         if args.trakem2:
-            trak.writeLayer(trakfd, slice, outHeight, outWidth)
+            trak.writeLayer(trakfd, slice, outfile, outHeight, outWidth)
 
     if args.trakem2:
         trak.writeFooter(trakfd)
