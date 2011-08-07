@@ -1,8 +1,12 @@
 #!/usr/bin/python
 
+import random
+
 class TrakXML:
     def __init__(self):
+        random.seed()
         self.oid = 0
+        self.unuid = "{0}.{1}.{2}".format(random.randint(0,100000000000), random.randint(0,100000000), random.randint(0,100000000))
 
     def getoid(self):
         self.oid = self.oid + 1
@@ -270,16 +274,21 @@ class TrakXML:
         <trakem2>
             <project 
                 id="0"
-                title="CATMAID Clip"
-                unuid="1303262609289.1052629572.95381466"
+                title="CATMAID Crop (experimental)"
+""")
+        file.write('unuid="{0}"\n'.format(self.unuid))
+        file.write("""
                 storage_folder=""
                 image_resizing_mode="Gaussian"
                 look_ahead_cache="0"
                 n_undo_steps="32"
+                layer_mipmaps="true"
             >
             </project>
             <t2_layer_set
-                oid="3"
+""")
+        file.write('oid="{0}"\n'.format(self.getoid()))
+        file.write("""
                 width="20.0"
                 height="20.0"
                 transform="matrix(1.0,0.0,0.0,1.0,0.0,0.0)"
@@ -329,7 +338,7 @@ class TrakXML:
         file.write('transform="matrix(1.0,0.0,0.0,1.0,0,0)"\n')
         file.write('style="fill-opacity:1.0;stroke:#ffff00;"\n')
         file.write('min="0" max="255"\n')
-        file.write('title="{0}\n'.format(filename))
+        file.write('title="{0}"\n'.format(filename))
         file.write('links=""\n')
         file.write('type="0"\n')
         #print 'file_path="http://openconnectomeproject.org/data/misc/nodata.png"'

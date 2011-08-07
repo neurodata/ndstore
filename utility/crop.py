@@ -250,21 +250,24 @@ def main():
         if args.crop:
             img = img.crop(tuple(args.crop))
 
-        outfile = None
+        outfilename = None
+        outfilepath = None
         fileformat = args.format.lower()
         if (fileformat == "png"):
-            outfile = "{0}/{1}.png".format(args.outdir, slice)
-            img.save(outfile, format="PNG", optimize=1)
+            outfilename = "{1}.png".format(args.outdir, slice)
+            outfilepath = "{0}/{1}".format(args.outdir, outfilename)
+            img.save(outfilepath, format="PNG", optimize=1)
         elif (fileformat == "jpg" or fileformat == "jpeg"):
-            outfile = "{0}/{1}.jpg".format(args.outdir, slice)
-            img.save(outfile, format="JPEG", quality=args.quality)
+            outfilename = "{1}.jpg".format(args.outdir, slice)
+            outfilepath = "{0}/{1}".format(args.outdir, outfilename)
+            img.save(outfilepath, format="JPEG", quality=args.quality)
         else:
             print "Invalid format: {0}".format(fileformat)
 
-        print outfile
+        print outfilepath
 
         if args.trakem2:
-            trak.writeLayer(trakfd, slice, outfile, outHeight, outWidth)
+            trak.writeLayer(trakfd, slice, outfilename, outHeight, outWidth)
 
     if args.trakem2:
         trak.writeFooter(trakfd)
