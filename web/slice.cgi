@@ -1,17 +1,24 @@
 #!/usr/bin/python
-
 #
-# Serve user requested slice via REST interface
-#   x1,y1 = upper left corner
-#   x2,y2 = lower left corner
-#   coordinate system origin = upper left corner
-#   usage: http://host/root/scale/slicelevel/x1,y1/x2,y2
-#   ex: http://host/brain/0/2917/35082,25550/35682,25680
+# Serve user requested image slice via REST interface
+#	Variables
+#		root		string path to image file system on catmaid server
+#		scale	integer specifying 1/(2**scale) factor for scaling returned image
+#		slice		integer index of slice within image stack
+#		x1,y1	positive, integer coordinates of upper left corner of requested image rectangle
+#		x2,y2	positive, integer coordinates of lower right corner of requested image rectangle
+#
+#	Input user specificed uri 
+#		Format: http://host/root/scale/slicelevel/x1,y1/x2,y2
+#		Sample usage: http://host/brain/0/2917/35082,25550/35682,25680
+#
+#	Returns PNG image and/or appropriate HTTP status code
 #
 """
 todo: 
-  maybe build up API
-  beware of over- or strange-coupling with assembletiles
+    maybe build up API
+    re-do urls regex
+    beware of over- or strange-coupling with assembletiles
 """
 
 import web
@@ -19,15 +26,18 @@ import assembletiles
 from cStringIO import StringIO
 import math
 import os
-#import time
 
-urls = ('/(.*)/(.*)/(.*)/(.*)/(.*)', 'Slice') # todo: better regex
+urls = (
+    '/(.*)/(.*)/(.*)/(.*)/(.*)', 'Slice',
+    '/(.*)', 'BadURI'
+    ) 
+    
 requestLimit = 1000000000
+ext = 'png'
 
 class Slice:
     def GET(self, root='', scale=0, slice=0, startCoor=[0, 0], endCoor=[1, 1]):
         try:
-            #ctime = time.time()
             scale = int(scale)
             slice = int(slice)
             
@@ -60,19 +70,17 @@ class Slice:
                                      )
             
             # Crop img to exactly fit requested rectangle userBox
-            #   startCoor = upper left corner
-            #   endCoor = lower right corner
-            #   Image.crop also places origin at upper left corner
+            #     startCoor = upper left corner
+            #     endCoor = lower right corner
+            #     Image.crop also places origin at upper left corner
             left = startCoor[0] - startTile[0] * tileSize
             upper = startCoor[1] - startTile[1] * tileSize
             right = endCoor[0] - startTile[0] * tileSize
             lower = endCoor[1] - startTile[1] * tileSize
             userBox = left, upper, right, lower
-            #return time.time() - ctime
             img = img.crop(userBox)
             
             # Serve img (1 gig limit)
-            ext = 'png'
             temp = StringIO()
             img.save(temp, ext, optimize=1)
             web.header('Content-Type', 'image/%s' % ext)
@@ -98,6 +106,11 @@ class Slice:
         except IndexError:
             raise BadRequest() # Input not formatted correctly
 
+# Catches mal-formed URIs (esp. those specifying fewer variables than needed to run Slice)
+class BadURI:
+    def GET(self, a):
+        raise BadRequest()
+
 # Error subclasses
 class BadRequest(web.HTTPError):
     def __init__(self):
@@ -121,5 +134,5 @@ class RequestEntityTooLarge(web.HTTPError):
         web.HTTPError.__init__(self, status, headers, data)
 
 if __name__ == "__main__":
-	web.config.debug = True
-	web.application(urls, globals()).run()
+    web.config.debug = True
+    web.application(urls, globals()).run()
