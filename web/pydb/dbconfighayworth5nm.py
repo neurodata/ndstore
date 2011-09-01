@@ -11,6 +11,7 @@
 #
 
 import dbconfig
+import hayworth5nmprivate
 
 class dbConfigHayworth5nm ( dbconfig.dbConfig ):
 
@@ -49,9 +50,9 @@ class dbConfigHayworth5nm ( dbconfig.dbConfig ):
   inputprefix = "/data/hayworth5nm"
 
   #database parameters
-  tablebase = 'res'
-  dbuser = "brain"
-  dbpasswd = "88brain88"
-  dbname = "hayworth5nm"
-  dbhost = "localhost"
+  tablebase = hayworth5nmprivate.tablebase
+  dbuser = hayworth5nmprivate.dbuser
+  dbpasswd = hayworth5nmprivate.dbpasswd
+  dbname = hayworth5nmprivate.dbname
+  dbhost = hayworth5nmprivate.dbhost
 
