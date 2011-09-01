@@ -210,7 +210,6 @@ def xyImage ( imageargs, dbcfg ):
 
   try:
     cdb = cubedb.CubeDB ( dbcfg )
-    print corner, dim, resolution
     cb = cdb.getCube ( corner, dim, resolution )
     fileobj = StringIO.StringIO ( )
     cb.xySlice ( fileobj )
@@ -356,27 +355,22 @@ def selectService ( webargs, dbcfg ):
   [ service, sym, restargs ] = webargs.partition ('/')
 
   if service == 'xy':
-    print "xy"
     return xyImage ( restargs, dbcfg )
 
   elif service == 'xz':
-    print "xz"
     return xzImage ( restargs, dbcfg )
 
   elif service == 'yz':
-    print "yz"
     return yzImage ( restargs, dbcfg )
 
   elif service == 'hdf5':
-    print "hdf5"
     return HDF5 ( restargs, dbcfg )
 
   elif service == 'npz':
-    print "npz"
     return  numpyZip ( restargs, dbcfg ) 
 
   else:
-    return "Select service failed", service
+    return web.notfound()
 
 #
 #  Choose the appropriate data set.
