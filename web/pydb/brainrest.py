@@ -19,6 +19,7 @@ import re
 import cubedb
 import dbconfig
 import dbconfighayworth5nm
+import dbconfigkasthuri11
 import StringIO
 import tempfile
 import numpy as np
@@ -383,7 +384,7 @@ def selectService ( webargs, dbcfg ):
 def bock11 ( webargs ):
   """Use the bock data set"""
   print "bock11"
-  return selectService ( webargs )
+  return selectService ( webargs, dbcfg )
 
 def hayworth5nm ( webargs ):
   """Use the hayworth5nm data set"""
@@ -394,4 +395,5 @@ def hayworth5nm ( webargs ):
 def kasthuri11 ( webargs ):
   """Use the kasthuri11 data set"""
   print "kasthuri11"
-  return selectService ( webargs )
+  dbcfg = dbconfigkasthuri11.dbConfigKasthuri11()
+  return selectService ( webargs, dbcfg )
