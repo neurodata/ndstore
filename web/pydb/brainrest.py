@@ -18,6 +18,7 @@ import sys
 import re
 import cubedb
 import dbconfig
+import dbconfighayworth5nm
 import StringIO
 import tempfile
 import numpy as np
@@ -51,7 +52,7 @@ class RESTBadArgsError(Exception):
 #  Build the returned braincube.  Called by all methods 
 #   that then refine the output.
 #
-def getCube ( imageargs ):
+def getCube ( imageargs, dbcfg ):
 
   # expecting an argument of the form /resolution/x1,x2/y1,y2/z1,z2/
 
@@ -88,29 +89,29 @@ def getCube ( imageargs ):
 
   # Convert to local coordinates if global specified
   if ( globalcoords ):
-    x1i = int ( float(x1i) / float( 2**(resolution-dbconfig.baseres)))
-    x2i = int ( float(x2i) / float( 2**(resolution-dbconfig.baseres)))
-    y1i = int ( float(y1i) / float( 2**(resolution-dbconfig.baseres)))
-    y2i = int ( float(y2i) / float( 2**(resolution-dbconfig.baseres)))
+    x1i = int ( float(x1i) / float( 2**(resolution-dbcfg.baseres)))
+    x2i = int ( float(x2i) / float( 2**(resolution-dbcfg.baseres)))
+    y1i = int ( float(y1i) / float( 2**(resolution-dbcfg.baseres)))
+    y2i = int ( float(y2i) / float( 2**(resolution-dbcfg.baseres)))
 
   # Check arguments for legal values
-  if not ( dbconfig.checkCube ( resolution, x1i, x2i, y1i, y2i, z1i, z2i )):
-    raise RESTRangeError ( "Illegal range. Image size:" +  str(dbconfig.imageSize( resolution )))
+  if not ( dbcfg.checkCube ( resolution, x1i, x2i, y1i, y2i, z1i, z2i )):
+    raise RESTRangeError ( "Illegal range. Image size:" +  str(dbcfg.imageSize( resolution )))
 
-  corner=[x1i,y1i,z1i-dbconfig.slicerange[0]]
+  corner=[x1i,y1i,z1i-dbcfg.slicerange[0]]
   dim=[x2i-x1i,y2i-y1i,z2i-z1i ]
 
-  cdb = cubedb.CubeDB ()
+  cdb = cubedb.CubeDB ( dbcfg )
   return cdb.getCube ( corner, dim, resolution )
 
 #
 #  Return a Numpy Pickle zipped
 #
-def numpyZip ( imageargs ):
+def numpyZip ( imageargs, dbcfg ):
   """Return a web readable Numpy Pickle zipped"""
 
   try:
-    cube = getCube ( imageargs )
+    cube = getCube ( imageargs, dbcfg )
   except RESTRangeError:
     return web.notfound()
   except RESTBadArgsError:
@@ -134,11 +135,11 @@ def numpyZip ( imageargs ):
 #
 #  Return a HDF5 file
 #
-def HDF5 ( imageargs ):
+def HDF5 ( imageargs, dbcfg ):
   """Return a web readable HDF5 file"""
 
   try:
-    cube = getCube ( imageargs )
+    cube = getCube ( imageargs, dbcfg )
   except RESTRangeError:
     return web.notfound()
   except RESTBadArgsError:
@@ -157,7 +158,7 @@ def HDF5 ( imageargs ):
 #  **Image return a readable png object
 #    where ** is xy, xz, yz
 #
-def xyImage ( imageargs ):
+def xyImage ( imageargs, dbcfg ):
   """Return an xy plane fileobj.read()"""
 
   restargs = imageargs.split('/')
@@ -193,26 +194,23 @@ def xyImage ( imageargs ):
 
   # Convert to local coordinates if global specified
   if ( globalcoords ):
-    x1i = int ( float(x1i) / float( 2**(resolution-dbconfig.baseres)))
-    x2i = int ( float(x2i) / float( 2**(resolution-dbconfig.baseres)))
-    y1i = int ( float(y1i) / float( 2**(resolution-dbconfig.baseres)))
-    y2i = int ( float(y2i) / float( 2**(resolution-dbconfig.baseres)))
+    x1i = int ( float(x1i) / float( 2**(resolution-dbcfg.baseres)))
+    x2i = int ( float(x2i) / float( 2**(resolution-dbcfg.baseres)))
+    y1i = int ( float(y1i) / float( 2**(resolution-dbcfg.baseres)))
+    y2i = int ( float(y2i) / float( 2**(resolution-dbcfg.baseres)))
 
   # Check arguments for legal values
-  if not ( dbconfig.checkCube ( resolution, x1i, x2i, y1i, y2i, z, z )):
+  if not ( dbcfg.checkCube ( resolution, x1i, x2i, y1i, y2i, z, z )):
     return web.notfound()
 
-  corner=[x1i,y1i,z-dbconfig.slicerange[0]]
+  corner=[x1i,y1i,z-dbcfg.slicerange[0]]
   dim=[x2i-x1i,y2i-y1i,1]
 
   try:
-    cdb = cubedb.CubeDB ()
-    print "here 1"
+    cdb = cubedb.CubeDB ( dbcfg )
     print corner, dim, resolution
     cb = cdb.getCube ( corner, dim, resolution )
-    print "here 2"
     fileobj = StringIO.StringIO ( )
-    print "here 3"
     cb.xySlice ( fileobj )
   except:
     return web.notfound()
@@ -221,7 +219,7 @@ def xyImage ( imageargs ):
   fileobj.seek(0)
   return fileobj.read()
   
-def xzImage ( imageargs ):
+def xzImage ( imageargs, dbcfg ):
   """Return an xz plane fileobj.read()"""
 
   restargs = imageargs.split('/')
@@ -256,23 +254,23 @@ def xzImage ( imageargs ):
   
   # Convert to local coordinates if global specified
   if ( globalcoords ):
-    x1i = int ( float(x1i) / float( 2**(resolution-dbconfig.baseres)))
-    x2i = int ( float(x2i) / float( 2**(resolution-dbconfig.baseres)))
-    y = int ( float(y) / float( 2**(resolution-dbconfig.baseres)))
+    x1i = int ( float(x1i) / float( 2**(resolution-dbcfg.baseres)))
+    x2i = int ( float(x2i) / float( 2**(resolution-dbcfg.baseres)))
+    y = int ( float(y) / float( 2**(resolution-dbcfg.baseres)))
 
   # Check arguments for legal values
-  if not dbconfig.checkCube ( resolution, x1i, x2i, y, y, z1i, z2i )\
-     or y >= dbconfig.imagesz[resolution][1]:
+  if not dbcfg.checkCube ( resolution, x1i, x2i, y, y, z1i, z2i )\
+     or y >= dbcfg.imagesz[resolution][1]:
     return web.notfound()
 
-  corner=[x1i,y,z1i-dbconfig.slicerange[0]]
+  corner=[x1i,y,z1i-dbcfg.slicerange[0]]
   dim=[x2i-x1i,1,z2i-z1i ]
 
   try:
-    cdb = cubedb.CubeDB ()
+    cdb = cubedb.CubeDB ( dbcfg )
     cb = cdb.getCube ( corner, dim, resolution )
     fileobj = StringIO.StringIO ( )
-    cb.xzSlice ( dbconfig.zscale[resolution], fileobj )
+    cb.xzSlice ( dbcfg.zscale[resolution], fileobj )
   except:
     return web.notfound()
 
@@ -281,7 +279,7 @@ def xzImage ( imageargs ):
   return fileobj.read()
   
 
-def yzImage ( imageargs ):
+def yzImage ( imageargs, dbcfg ):
   """Return an xz plane fileobj.read()"""
 
   restargs = imageargs.split('/')
@@ -316,25 +314,25 @@ def yzImage ( imageargs ):
 
   # Convert to local coordinates if global specified
   if ( globalcoords ):
-    x = int ( float(x) / float( 2**(resolution-dbconfig.baseres)))
-    y1i = int ( float(y1i) / float( 2**(resolution-dbconfig.baseres)))
-    y2i = int ( float(y2i) / float( 2**(resolution-dbconfig.baseres)))
+    x = int ( float(x) / float( 2**(resolution-dbcfg.baseres)))
+    y1i = int ( float(y1i) / float( 2**(resolution-dbcfg.baseres)))
+    y2i = int ( float(y2i) / float( 2**(resolution-dbcfg.baseres)))
 
 
   #RBTODO need to make a dbconfig object 
   # Check arguments for legal values
-  if not dbconfig.checkCube ( resolution, x, x, y1i, y2i, z1i, z2i  )\
-     or  x >= dbconfig.imagesz[resolution][0]:
+  if not dbcfg.checkCube ( resolution, x, x, y1i, y2i, z1i, z2i  )\
+     or  x >= dbcfg.imagesz[resolution][0]:
     return web.notfound()
 
-  corner=[x,y1i,z1i-dbconfig.slicerange[0]]
+  corner=[x,y1i,z1i-dbcfg.slicerange[0]]
   dim=[1,y2i-y1i,z2i-z1i ]
 
   try:
-    cdb = cubedb.CubeDB ()
+    cdb = cubedb.CubeDB ( dbcfg )
     cb = cdb.getCube ( corner, dim, resolution )
     fileobj = StringIO.StringIO ( )
-    cb.yzSlice ( dbconfig.zscale[resolution], fileobj )
+    cb.yzSlice ( dbcfg.zscale[resolution], fileobj )
   except:
     return web.notfound()
 
@@ -350,30 +348,30 @@ def yzImage ( imageargs ):
 #  appropriate function.  At this point, we have a 
 #  data set and a service.
 #
-def selectService ( webargs ):
+def selectService ( webargs, dbcfg ):
   """Parse the first arg and call service, HDF5, mpz, etc."""
 
   [ service, sym, restargs ] = webargs.partition ('/')
 
   if service == 'xy':
     print "xy"
-    return xyImage ( restargs )
+    return xyImage ( restargs, dbcfg )
 
   elif service == 'xz':
     print "xz"
-    return xzImage ( restargs )
+    return xzImage ( restargs, dbcfg )
 
   elif service == 'yz':
     print "yz"
-    return yzImage ( restargs )
+    return yzImage ( restargs, dbcfg )
 
   elif service == 'hdf5':
     print "hdf5"
-    return HDF5 ( restargs )
+    return HDF5 ( restargs, dbcfg )
 
   elif service == 'npz':
     print "npz"
-    return  numpyZip ( restargs ) 
+    return  numpyZip ( restargs, dbcfg ) 
 
   else:
     return "Select service failed", service
@@ -390,7 +388,8 @@ def bock11 ( webargs ):
 def hayworth5nm ( webargs ):
   """Use the hayworth5nm data set"""
   print "hayworth5nm"
-  return selectService ( webargs )
+  dbcfg = dbconfighayworth5nm.dbConfigHayworth5nm()
+  return selectService ( webargs, dbcfg )
 
 def kasthuri11 ( webargs ):
   """Use the kasthuri11 data set"""

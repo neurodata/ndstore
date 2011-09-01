@@ -34,21 +34,23 @@ class CubeDB:
   #  dictionary by mortonidx
   inmemcubes = {}
 
-  def __init__ (self):
+  def __init__ (self, dbconf):
     """Connect with the brain databases"""
 
+    self.dbcfg = dbconf
+
     # Connection info in dbconfig
-    self.conn = MySQLdb.connect (host = dbconfig.dbhost,
-                            user = dbconfig.dbuser,
-                            passwd = dbconfig.dbpasswd,
-                            db = dbconfig.dbname)
+    self.conn = MySQLdb.connect (host = self.dbcfg.dbhost,
+                            user = self.dbcfg.dbuser,
+                            passwd = self.dbcfg.dbpasswd,
+                            db = self.dbcfg.dbname)
 #    cursor = self.conn.cursor ()
 #    cursor.execute ("SELECT VERSION()")
 #    row = cursor.fetchone ()
 #    print "server version:", row[0]
 #    cursor.close ()
 
-    [ self.startslice, endslice ] = dbconfig.slicerange
+    [ self.startslice, endslice ] = self.dbcfg.slicerange
     self.slices = endslice - self.startslice + 1 
 
   #
@@ -59,8 +61,8 @@ class CubeDB:
     print "Ingest for resolution %s morton index %s, xyz " % (resolution , mortonidx) , zindex.MortonXYZ ( mortonidx )
 
     [ x, y, z ] = zindex.MortonXYZ ( mortonidx )
-    [xcubedim, ycubedim, zcubedim] = dbconfig.cubedim [resolution ]
-    bc = braincube.BrainCube ( dbconfig.cubedim[resolution] )
+    [xcubedim, ycubedim, zcubedim] = self.dbcfg.cubedim [resolution ]
+    bc = braincube.BrainCube ( self.dbcfg.cubedim[resolution] )
     corner = [ x*xcubedim, y*ycubedim, z*zcubedim ]
     bc.cubeFromFiles (corner, tilestack)
     self.inmemcubes[mortonidx] = bc
@@ -72,9 +74,9 @@ class CubeDB:
   def generateDB ( self, resolution ):
     """Generate the database from a tile stack"""
 
-    [ximagesz, yimagesz] = dbconfig.imagesz [ resolution ]
-    [xcubedim, ycubedim, zcubedim] = dbconfig.cubedim [resolution ]
-    [ self.startslice, endslice ] = dbconfig.slicerange
+    [ximagesz, yimagesz] = self.dbcfg.imagesz [ resolution ]
+    [xcubedim, ycubedim, zcubedim] = self.dbcfg.cubedim [resolution ]
+    [ self.startslice, endslice ] = self.dbcfg.slicerange
     self.slices = endslice - self.startslice + 1 
 
     # round up to the next largest slice
@@ -87,7 +89,7 @@ class CubeDB:
     assert yimagesz % ycubedim == 0
     assert ximagesz % xcubedim == 0
 
-    tilestack = tiles.Tiles ( dbconfig.tilesz, dbconfig.inputprefix + '/' + str(resolution), self.startslice )
+    tilestack = tiles.Tiles ( self.dbcfg.tilesz, self.dbcfg.inputprefix + '/' + str(resolution), self.startslice )
 
     # Set the limits on the number of cubes in each dimension
     xlimit = ximagesz / xcubedim
@@ -137,7 +139,7 @@ class CubeDB:
   def saveCube ( self, cube, mortonidx, resolution ):
     """Output the cube to the database"""
 
-    dbname = dbconfig.tablebase + str(resolution)
+    dbname = self.dbcfg.tablebase + str(resolution)
 
     # create the DB BLOB
     fileobj = cStringIO.StringIO ()
@@ -161,7 +163,7 @@ class CubeDB:
     #   to go fasst for MySQL.  Maybe reinstate later.
     assert 0
 
-    dbname = dbconfig.tablebase + str(resolution)
+    dbname = self.dbcfg.tablebase + str(resolution)
 
     args=[]
     for idx in idxbatch:
@@ -187,7 +189,7 @@ class CubeDB:
   def getCube ( self, corner, dim, resolution ):
     """Extract a cube of arbitrary size.  Need not be aligned."""
 
-    [xcubedim, ycubedim, zcubedim] = dbconfig.cubedim [resolution ]
+    [xcubedim, ycubedim, zcubedim] = self.dbcfg.cubedim [resolution ]
 
     # Round to the nearest larger cube in all dimensions
     start = [ corner[0]/xcubedim,\
@@ -198,7 +200,7 @@ class CubeDB:
                 (corner[1]+dim[1]+ycubedim-1)/ycubedim - start[1],\
                 (corner[2]+dim[2]+zcubedim-1)/zcubedim - start[2] ] 
 
-    inbuf = braincube.BrainCube ( dbconfig.cubedim [resolution] )
+    inbuf = braincube.BrainCube ( self.dbcfg.cubedim [resolution] )
     outbuf = braincube.BrainCube ( [numcubes[0]*xcubedim, numcubes[1]*ycubedim, numcubes[2]*zcubedim] )
 
     # Build a list of indexes to access
@@ -213,7 +215,7 @@ class CubeDB:
     listofidxs.sort()
 
     # Batch query for all cubes
-    dbname = dbconfig.tablebase + str(resolution)
+    dbname = self.dbcfg.tablebase + str(resolution)
     cursor = self.conn.cursor()
     sql = "SELECT zindex, cube from " + dbname + " where zindex in (%s)" 
     # creats a %s for each list element
