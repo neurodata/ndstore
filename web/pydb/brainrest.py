@@ -7,8 +7,6 @@
 ################################################################################
 
 #
-# TODO comments:
-#
 #  At some point we may want to figure out tempfile versus stringio..
 #   Tempfile is the only thing that will work for hdf5.  Should we
 #   adapt it to npz?
@@ -126,7 +124,7 @@ def numpyZip ( imageargs ):
   except:
     return web.notfound()
 
-  # Packaeg the object as a Web readable file handle
+  # Package the object as a Web readable file handle
   fileobj = StringIO.StringIO ( cdz )
   fileobj.seek(0)
   web.header('Content-type', 'application/zip') 
@@ -209,8 +207,12 @@ def xyImage ( imageargs ):
 
   try:
     cdb = cubedb.CubeDB ()
+    print "here 1"
+    print corner, dim, resolution
     cb = cdb.getCube ( corner, dim, resolution )
+    print "here 2"
     fileobj = StringIO.StringIO ( )
+    print "here 3"
     cb.xySlice ( fileobj )
   except:
     return web.notfound()
@@ -340,3 +342,57 @@ def yzImage ( imageargs ):
   fileobj.seek(0)
   return fileobj.read()
   
+
+#
+#  Select the service that you want.
+#  Truncate this from the arguments and past 
+#  the rest of the RESTful arguments to the 
+#  appropriate function.  At this point, we have a 
+#  data set and a service.
+#
+def selectService ( webargs ):
+  """Parse the first arg and call service, HDF5, mpz, etc."""
+
+  [ service, sym, restargs ] = webargs.partition ('/')
+
+  if service == 'xy':
+    print "xy"
+    return xyImage ( restargs )
+
+  elif service == 'xz':
+    print "xz"
+    return xzImage ( restargs )
+
+  elif service == 'yz':
+    print "yz"
+    return yzImage ( restargs )
+
+  elif service == 'hdf5':
+    print "hdf5"
+    return HDF5 ( restargs )
+
+  elif service == 'npz':
+    print "npz"
+    return  numpyZip ( restargs ) 
+
+  else:
+    return "Select service failed", service
+
+#
+#  Choose the appropriate data set.
+#    This is the entry point from brainweb
+#
+def bock11 ( webargs ):
+  """Use the bock data set"""
+  print "bock11"
+  return selectService ( webargs )
+
+def hayworth5nm ( webargs ):
+  """Use the hayworth5nm data set"""
+  print "hayworth5nm"
+  return selectService ( webargs )
+
+def kasthuri11 ( webargs ):
+  """Use the kasthuri11 data set"""
+  print "kasthuri11"
+  return selectService ( webargs )
