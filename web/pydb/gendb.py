@@ -8,7 +8,7 @@
 
 import cubedb
 import dbconfig
-import dbconfighayworth5nm
+import dbconfigbock11
 
 #
 #  gendb: generate a database of cubes
@@ -22,7 +22,7 @@ import dbconfighayworth5nm
 #
 
 #  Specify the database to ingest
-dbcfg = dbconfighayworth5nm.dbConfigHayworth5nm()
+dbcfg = dbconfigbock11.dbConfigBock11()
 
 cdb = cubedb.CubeDB ( dbcfg )
 

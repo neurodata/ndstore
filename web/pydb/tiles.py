@@ -22,11 +22,10 @@ class Tiles:
 
   # number of files to read in during the ingest process.
   #  This needs to be tuned to memory capacity
-  batchsize = 16 
+  batchsize = 1024 
   
   # tile data dictionary
   tiledata = {}
-
 
   #
   # __init__ Constructor
@@ -190,6 +189,9 @@ class Tiles:
     # Enumerate all the tiles that are needed for these blocks
     tilelist = []
 
+    # clear the previous dictionary contents
+    self.tiledata.clear()
+
     xcubesize, ycubesize, zcubesize = cubesize
 
     for idx in idxbatch:
@@ -219,7 +221,7 @@ class Tiles:
       try:
         tileimage = Image.open ( fname, 'r' )
         self.tiledata [ str(tileidx) ] = np.asarray ( tileimage )
-        print ( "Loaded file " + fname )
+#        print ( "Loaded file " + fname )
       except IOError:
         continue
 
@@ -311,11 +313,11 @@ class Tiles:
 #            print "File not found: ", fname
 #            print "Using zeroed data instead"
 
-          # Check that the data in the array is the same as the data the in prefetch buffers
           tileidx = [ (xcorner+xcubeoffset)/self.xtilesize, (ycorner+ycubeoffset)/self.ytilesize, zcorner+z ]
           if  self.tiledata.get(str(tileidx)) == None :
-            print "Data  not found: ", tileidx
-            print "Using zeroed data instead"
+             pass
+#            print "Data  not found: ", tileidx
+#            print "Using zeroed data instead"
           else: 
             cube.data [ z, ycubeoffset:(ycubeoffset+yiters), xcubeoffset:(xcubeoffset+xiters) ]  =  \
               self.tiledata [ str(tileidx)]  [ ytileoffset:ytileoffset+yiters, xtileoffset:xtileoffset+xiters ]
