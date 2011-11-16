@@ -1,0 +1,14 @@
+
+Software to ingest data and to run the EM Open Connectom cutout interface.  Instructions for how to use the interface are at:
+
+http://hssl.cs.jhu.edu/wiki/doku.php?id=randal:hssl:research:brain:data_set_description&s[]=cutout
+
+The two entry points are:
+
+  gendb.py -- generate a cutout database from a set of tiles
+
+  brainweb.py -- the Web.py RESTful Web services interface.
+
+For either to work, MySQL and a set of DB configurations files must be created.
+  
+  Instructions:  TODO -- for now, email randal@cs.jhu.edu
