@@ -99,8 +99,27 @@ class CubeDB:
     # list of batched indexes
     idxbatch = []
 
+    # This is the restart code.  Figure out the highest index stored and 
+    #  insert the next one after that
+    dbname = self.dbcfg.tablebase + str(resolution)
+    cursor = self.conn.cursor()
+    sql = "SELECT MAX(zindex) FROM " + dbname 
+    cursor.execute(sql)
+    maxvaltpl = cursor.fetchone ()
+    print maxvaltpl
+    if maxvaltpl [0] != None:
+      maxval = int(maxvaltpl[0])
+      print "Maximum value", int(maxvaltpl[0])
+    else:
+      maxval = None
+
+
     # Ingest the slices in morton order
     for mortonidx in zindex.generator ( [xlimit, ylimit, zlimit] ):
+
+      # Skip all values until the one following maxval
+      if maxval != None and maxval >= mortonidx:
+        continue
 
       #build a batch of indexes
       idxbatch.append ( mortonidx )
