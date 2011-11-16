@@ -106,7 +106,10 @@ class CubeDB:
       idxbatch.append ( mortonidx )
 
       # execute a batch
-      if len ( idxbatch ) ==32:
+      if len ( idxbatch ) == tilestack.batchsize:
+
+        # preload the batch
+        tilestack.prefetch ( idxbatch, [xcubedim, ycubedim, zcubedim])
 
         # ingest the batch
         for idx in idxbatch:
@@ -119,6 +122,9 @@ class CubeDB:
 
         # Finished this batch.  Start anew.
         idxbatch = []
+
+    # preload the remaining
+    tilestack.prefetch ( idxbatch, [xcubedim, ycubedim, zcubedim])
 
     # Ingest the remaining once the loop is over
     for idx in idxbatch:
@@ -180,7 +186,7 @@ class CubeDB:
     in_p=', '.join(map(lambda x: '(%s,%s)', idxbatch))
     sql = sql % in_p
     cursor = self.conn.cursor()
-    cursor.execute(sql, args)
+    self.cursor.execute(sql, args)
 
 
   #

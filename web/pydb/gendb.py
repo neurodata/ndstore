@@ -8,6 +8,7 @@
 
 import cubedb
 import dbconfig
+import dbconfighayworth5nm
 
 #
 #  gendb: generate a database of cubes
@@ -20,10 +21,13 @@ import dbconfig
 #  Change these only
 #
 
-cdb = cubedb.CubeDB ()
+#  Specify the database to ingest
+dbcfg = dbconfighayworth5nm.dbConfigHayworth5nm()
+
+cdb = cubedb.CubeDB ( dbcfg )
 
 # for all specified resolutions
-for resolution in dbconfig.resolutions:
-  print "Building DB for resolution ", resolution, " imagesize ", dbconfig.imagesz[resolution]
+for resolution in dbcfg.resolutions:
+  print "Building DB for resolution ", resolution, " imagesize ", dbcfg.imagesz[resolution]
   cdb.generateDB ( resolution )
 
