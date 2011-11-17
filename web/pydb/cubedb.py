@@ -30,13 +30,6 @@ class CubeDB:
   startslice = 0
   slices = 0
 
-  # prefetch size -- how many cubes in each dimension
-  #  this should represent the same amount of data for any cube size
-  #  it needs to be compatible with tiling, power of 2, no more than
-  #  2x difference between any two value, i.e. square or 2x1 rectangle
-  #  compatible with the dimension
-  pfdim = [ 4, 4, 2 ]
-
   def __init__ (self, dbconf):
     """Connect with the brain databases"""
 
@@ -93,10 +86,7 @@ class CubeDB:
     assert yimagesz % ycubedim == 0
     assert ximagesz % xcubedim == 0
 
-    tilestack = tiles.Tiles ( self.dbcfg.tilesz,\
-                              self.dbcfg.inputprefix + '/' + str(resolution), self.startslice,\
-                              self.dbcfg.cubedim [resolution ]
-                             ) 
+    tilestack = tiles.Tiles ( self.dbcfg.tilesz, self.dbcfg.inputprefix + '/' + str(resolution), self.startslice) 
 
     # Set the limits on the number of cubes in each dimension
     xlimit = ximagesz / xcubedim
@@ -122,23 +112,14 @@ class CubeDB:
 #      maxval = None
 
 
-    # Figure out the geometry of the batch
-    #   RBTODO get from program
-    #   To prefetch a 4 x 4 x 1 cube is 2 x 2 x 16 tiles
-
-    # batchsize is 8 x 8 x 4 cubes which is 4 x 4 x 4 x 16 tiles
 
     # This parameter needs to match to the max number of slices to be taken.  
     # The maximum z slices that prefetching will take in this prefetch
     #  This is useful for higher resolutions where we run out of tiles in 
     #  the x and y dimensions
-    zmaxpf = self.pfdim[2]
-
-    # batchsize in number of cubes (converted from tiles)
-    batchsize = self.pfdim[0] * self.pfdim[1] * self.pfdim[2]
-    print "Batch size in cubes = " , batchsize 
-    print "Batch size in tiles = ", self.pfdim[0] * xcubedim / tilestack.xtiledim * self.pfdim[1] * ycubedim / tilestack.ytiledim * self.pfdim[2] * zcubedim
-    tilestack.setBatchSize ( self.pfdim[0] * xcubedim / tilestack.xtiledim * self.pfdim[1] * ycubedim / tilestack.ytiledim * self.pfdim[2] * zcubedim )
+    zmaxpf = 64
+    zstride = 64
+    batchsize = 256
 
     # Ingest the slices in morton order
     for mortonidx in zindex.generator ( [xlimit, ylimit, zlimit] ):
@@ -155,16 +136,16 @@ class CubeDB:
       if len ( idxbatch ) == batchsize or xyz[2] == zmaxpf:
 
         # preload the batch
-        tilestack.prefetch ( idxbatch )
+        tilestack.prefetch ( idxbatch, [xcubedim, ycubedim, zcubedim] )
         
         # ingest the batch
         for idx in idxbatch:
           bc = self.ingestCube ( idx, resolution, tilestack )
-#          self.saveCube ( bc, idx, resolution )
+          self.saveCube ( bc, idx, resolution )
         
         # if we've hit our area bounds set the new limit
         if xyz [2] == zmaxpf:
-           zmaxpf += self.pfdim[2]
+           zmaxpf += zstride
 
         # Finished this batch.  Start anew.
         idxbatch = []
@@ -173,12 +154,12 @@ class CubeDB:
       idxbatch.append ( mortonidx )
 
     # preload the remaining
-    tilestack.prefetch ( idxbatch )
+    tilestack.prefetch ( idxbatch, [xcubedim, ycubedim, zcubedim] )
 
     # Ingest the remaining once the loop is over
     for idx in idxbatch:
       bc = self.ingestCube ( idx, resolution, tilestack )
-#      self.saveCube ( bc, idx, resolution )
+      self.saveCube ( bc, idx, resolution )
 
   #
   # Output the cube to the database

@@ -22,39 +22,21 @@ class Tiles:
 
   # number of files to read in during the ingest process.
   #  This needs to be tuned to memory capacity
+  batchsize = 16 
   
-  # array of tile data into which we prefetch
-  tiledata = []
+  # tile data dictionary
+  tiledata = {}
+
 
   #
   # __init__ Constructor
   #
-  def __init__ ( self, tiledim, inputprefix, startslice, cubedim ):
+  def __init__ ( self, tilesize, inputprefix, startslice ):
     """Create tiles"""
-    self.xtiledim = tiledim[0]
-    self.ytiledim = tiledim[1]
+    self.xtilesize = tilesize[0]
+    self.ytilesize = tilesize[1]
     self.fileprefix = inputprefix
-    self.xcubedim, self.ycubedim, self.zcubedim = cubedim
     self.zstartfile = startslice
-
-
-  #
-  # setBatchSizej 
-  #
-  #  Maybe this should be part of a constructor.  Easier this way.
-  #
-  def setBatchSize ( self, numtiles, cubebatchsz ):
-    """Set the number of tiles to be prefetched"""
-    
-    # make sure it's an empty list
-    self.tiledata = []
-
-    # get the batch size of the cube for indexing
-
-    # initialize our prefetch buffers
-    for i in range ( numtiles ):
-      self.tiledata.append ( np.zeros ( [self.ytiledim, self.xtiledim]) )
-
 
   #
   # tileFile: Generate the file name.
@@ -68,91 +50,53 @@ class Tiles:
   #
   #  Define the boundaries of iteration
   #
-  def numXTiles ( self, offset ):
+  def numXTiles ( self, offset, cubesize ):
     """number of tiles in x dimension"""
-    if self.xcubedim % self.xtiledim == 0:
+    if cubesize % self.xtilesize == 0:
       if offset == 0:
-        return self.xcubedim/self.xtiledim
+        return cubesize/self.xtilesize
       else:
-        return self.xcubedim/self.xtiledim + 1
+        return cubesize/self.xtilesize + 1
     # cube not aligned
     else:   
-      if offset + self.xcubedim % self.xtiledim <= self.xtiledim:
-        return self.xcubedim/self.xtiledim + 1
+      if offset + cubesize % self.xtilesize <= self.xtilesize:
+        return cubesize/self.xtilesize + 1
       else:
-        return self.xclubesize/self.xtiledim + 2
+        return cubesize/self.xtilesize + 2
       
 
-  def numYTiles ( self, offset ):
+  def numYTiles ( self, offset, cubesize ):
     """number of tiles in y dimension"""
-    if self.ycubedim % self.ytiledim == 0:
+    if cubesize % self.ytilesize == 0:
       if offset == 0:
-        return self.ycubedim/self.ytiledim
+        return cubesize/self.ytilesize
       else:
-        return self.ycubedim/self.ytiledim + 1
+        return cubesize/self.ytilesize + 1
     # cube not aligned
     else:   
-      if offset + self.ycubedim % self.ytiledim <= self.ytiledim:
-        return self.ycubedim/self.ytiledim + 1
+      if offset + cubesize % self.ytilesize <= self.ytilesize:
+        return cubesize/self.ytilesize + 1
       else:
-        return self.cubedim/self.ytiledim + 2
-
-
-  #
-  # pfslotidx
-  #
-  #  Find a location in the tiledata array to put this tile
-  #
-  #
-  def pfSlotIndex ( self, tileidx, baseidx ):
-    """Find a location in the tiledata array to put this tile"""
-  
-#    print tileidx, baseidx, (tileidx[2] - baseidx[2]) +\
-#           (tileidx[1] - baseidx[1])*self.zcubedim*self.ytiledim/self.ycubedim +\
-#           (tileidx[0] - baseidx[0])*self.zcubedim*self.ycubedim/self.xtiledim*self.xtiledim/self.xcubedim
-# Not sure what the bug here is.  NEed to use this one.
-    return (tileidx[2] - baseidx[2]) +\
-           (tileidx[1] - baseidx[1]) * self.zcubedim*self.zbatchsz  * self.ytiledim/self.ycubedim  +\
-           (tileidx[0] - baseidx[0]) * self.zcubedim*self.zbatchsz  * self.ycubedim*self.ybatchsize * self.xtiledim/self.xcubedim
-
-#  Change the function for small cases
-#    print baseidx, tileidx, (tileidx[0] - baseidx[0]) + (tileidx[1] - baseidx[1]) * self.xtiledim/self.xcubedim + \
-#               (tileidx[2] - baseidx[2]) * self.xtiledim/self.xcubedim * self.ytiledim/self.ycubedim
-#
-#    return  (tileidx[0] - baseidx[0]) + (tileidx[1] - baseidx[1]) * self.xtiledim/self.xcubedim + \
-#           (tileidx[2] - baseidx[2]) * self.xtiledim/self.xcubedim * self.ytiledim/self.ycubedim  
-
+        return cubesize/self.ytilesize + 2
 
   #
   # prefetch
   #
   #  Load a  specified tiles into the buffer.
   #
-  #    This is a little weird.  You can ask for up to the prefetch batch in typical cases,
-  #    but can only ask for up to batchsize / (xcubedim/xtiledim) * (ycubedim/ytiledim)  
-  #    slices.  This only applies to coarse resolutions and makes the indexing easier.
-  #    This is all a hack to fix the fact that a dictionary leaked memory, so we place
-  #    the tiles in a dense array of numpy objects
-  #
-  def prefetch ( self, idxbatch ):
-    """Fetch an area (not number) of tiles into memory"""
+  def prefetch ( self, idxbatch, cubesize ):
 
     # Files are best read in the order they are laid out on disk and then transferred to to appropriate buffer
-    # For now let's assume they are laid out in x then y order in z directories.  This is the way that it works on xfs.
+    # For now let's assume they are laid out in x then y order in z directories.  This is the way that it works
+    #  on xfs.  Don't want to have to scan the entire directory.
 
-    # List of tiles to be prefetch
+    # Enumerate all the tiles that are needed for these blocks
     tilelist = []
 
-    
-    print len(idxbatch) 
-    print idxbatch
-    # Need to clear previous cache contents
-    for i in range ( len ( self.tiledata ) ):
-      self.tiledata[i] = np.zeros ( [self.ytiledim, self.xtiledim] )
+    # clear the previous tilelist -- empty the hash directory
+    self.tiledata.clear()
 
-    # Figure out the base index for this prefetch group
-    xyzbase =  zindex.MortonXYZ ( idxbatch[0] )
-    self.pfbaseidx = [ xyzbase[0]*self.xcubedim/self.xtiledim, xyzbase[1]*self.ycubedim/self.ytiledim, xyzbase[2]*self.zcubedim ]
+    xcubesize, ycubesize, zcubesize = cubesize
 
     for idx in idxbatch:
 
@@ -162,16 +106,14 @@ class Tiles:
       #  assume that the cubes and tiles are aligned and tiles are bigger than cubes
 
       # z is not tiled
-      # and there are multiple cubes per tile.  so tilelist has duplicates
-      for w in range(self.zcubedim):
-        tilelist.append ( str(xyz[2] * self.zcubedim + w) + ' ' +  str(xyz[1]*self.ycubedim/self.ytiledim) + ' ' + str( xyz[0]*self.xcubedim/self.xtiledim))
+      for w in range(zcubesize):
+        tilelist.append ( str(xyz[2] * zcubesize + w) + ' ' +  str(xyz[1]*ycubesize/self.ytilesize) + ' ' + str( xyz[0]*xcubesize/self.xtilesize))
 
     # get the unique indices
     tilelist = sorted ( set (tilelist) )
 
     # build the tile data dictionary
-    for j in range (len ( tilelist )):
-      tile = tilelist[j]
+    for tile in tilelist:
       [ zstr, ystr, xstr ] = tile.split()
       tileidx = [ int(xstr), int(ystr), int(zstr) ]
 
@@ -182,9 +124,8 @@ class Tiles:
       #  this means that there is no bounds checking on this routine
       try:
         tileimage = Image.open ( fname, 'r' )
-        pfslotidx = self.pfSlotIndex ( tileidx, self.pfbaseidx )
-        print tileidx, self.pfbaseidx, pfslotidx
-        self.tiledata [ pfslotidx ] = np.asarray ( tileimage )
+        self.tiledata [ str(tileidx) ] = np.asarray ( tileimage )
+        print ( "Loaded file " + fname )
       except IOError:
         continue
 
@@ -199,72 +140,74 @@ class Tiles:
 
     # local geometry of the copy
     xcorner, ycorner, zcorner = corner
-    xoffset = xcorner % self.xtiledim
-    yoffset = ycorner % self.ytiledim
+    xoffset = xcorner % self.xtilesize
+    yoffset = ycorner % self.ytilesize
     zoffset = zcorner 
 
+    # size of the cube of data
+    zcubesize, ycubesize, xcubesize = cube.cubesize
+
     # z is not tiled
-    for z in range(self.zcubedim):
+    for z in range(zcubesize):
 
       # How much data we've moved to the cube
       ycubeoffset = 0
 
-      for y in range(self.numYTiles(yoffset)):
+      for y in range(self.numYTiles(yoffset,ycubesize)):
 
         # Where the tiled data starts
-        ytilestart =  ( ycorner / self.ytiledim ) * self.ytiledim + y * self.ytiledim
+        ytilestart =  ( ycorner / self.ytilesize ) * self.ytilesize + y * self.ytilesize
 
         # Pick the x scan lines
         # partial first tile
         if ytilestart <=ycorner:
           ytileoffset = yoffset 
           # only one tile
-          if ycorner + self.ycubedim < ytilestart + self.ytiledim:
-            yiters = self.ycubedim 
+          if ycorner + ycubesize < ytilestart + self.ytilesize:
+            yiters = ycubesize 
           else:
-            yiters = self.ytiledim - yoffset  
+            yiters = self.ytilesize - yoffset  
         # partial last tile
-        elif  ycorner + self.ycubedim < ytilestart + self.ytiledim :
+        elif  ycorner + ycubesize < ytilestart + self.ytilesize :
           ytileoffset = 0
-          yiters = (self.ycubedim - (self.ytiledim - yoffset)) %  self.ytiledim
+          yiters = (ycubesize - (self.ytilesize - yoffset)) %  self.ytilesize
         # full tile line
         else:
           ytileoffset = 0  
-          yiters = self.ytiledim
+          yiters = self.ytilesize
 
         # How much data we've moved to the cube
         xcubeoffset = 0
 
-        for x in range(self.numXTiles(xoffset)):
+        for x in range(self.numXTiles(xoffset,xcubesize)):
 
           # Where the tiled data starts
-          xtilestart =  ( xcorner / self.xtiledim ) * self.xtiledim + x * self.xtiledim
+          xtilestart =  ( xcorner / self.xtilesize ) * self.xtilesize + x * self.xtilesize
 
           # Pick the x scan lines
           # partial first tile
           if xtilestart <=xcorner:
             xtileoffset = xoffset 
             # only one tile
-            if xcorner + self.xcubedim < xtilestart + self.xtiledim:
-              xiters = self.xcubedim 
+            if xcorner + xcubesize < xtilestart + self.xtilesize:
+              xiters = xcubesize 
             else:
-              xiters = self.xtiledim - xoffset  
+              xiters = self.xtilesize - xoffset  
           # partial last tile
-          elif  xcorner + self.xcubedim < xtilestart + self.xtiledim :
+          elif  xcorner + xcubesize < xtilestart + self.xtilesize :
             xtileoffset = 0
-            xiters = (self.xcubedim - (self.xtiledim - xoffset)) %  self.xtiledim
+            xiters = (xcubesize - (self.xtilesize - xoffset)) %  self.xtilesize
           # full scan line
           else:
             xtileoffset = 0  
-            xiters = self.xtiledim
+            xiters = self.xtilesize
 
-# RBDBG
 #          print  "X iteration copying ", xiters, " bytes from tileoffset ", xtileoffset, " to cube offset ", xcubeoffset
 
-# RBDBG use the prefetched data instead of the file data
-          fname =  self.tileFile ( (xcorner+xcubeoffset)/self.xtiledim,\
-                                  (ycorner+ycubeoffset)/self.ytiledim,\
-                                   zcorner+z ) 
+# RBTODO use the prefetched data instead of the file data
+          fname =  self.tileFile ( (xcorner+xcubeoffset)/self.xtilesize,\
+                                   (ycorner+ycubeoffset)/self.ytilesize,\
+                                    zcorner+z ) 
           try:
             tileimage = Image.open ( fname, 'r' )
             tiledata = np.asarray ( tileimage )
@@ -273,25 +216,23 @@ class Tiles:
           except IOError:
             print "File not found: ", fname
             print "Using zeroed data instead"
-            tiledata = np.zeros ( [ self.ytiledim, self.xtiledim ] )
 
-
-          tileidx = [ (xcorner+xcubeoffset)/self.xtiledim, (ycorner+ycubeoffset)/self.ytiledim, zcorner+z ]
-          pfslotidx = self.pfSlotIndex ( tileidx, self.pfbaseidx )
-          cube.data [ z, ycubeoffset:(ycubeoffset+yiters), xcubeoffset:(xcubeoffset+xiters) ]  =  \
-            self.tiledata [ pfslotidx ]  [ ytileoffset:ytileoffset+yiters, xtileoffset:xtileoffset+xiters ]
+          # Check that the data in the array is the same as the data the in prefetch buffers
+          tileidx = [ (xcorner+xcubeoffset)/self.xtilesize, (ycorner+ycubeoffset)/self.ytilesize, zcorner+z ]
+          if  self.tiledata.get(str(tileidx)) == None :
+            print "Data  not found: ", tileidx
+            print "Using zeroed data instead"
+          else: 
+            cube.data [ z, ycubeoffset:(ycubeoffset+yiters), xcubeoffset:(xcubeoffset+xiters) ]  =  \
+              self.tiledata [ str(tileidx)]  [ ytileoffset:ytileoffset+yiters, xtileoffset:xtileoffset+xiters ]
            
-#        RBDBG for debugging check that the data is the same
-#          Check that the data in the array is the same as the data the in prefetch buffers
-#          if ( tiledata.all() != self.tiledata [ pfslotidx ].all() ):
-#            print "Read", tiledata
-#            print "Buffered", pfslotidx, self.tiledata [ pfslotidx ]
-          assert tiledata.all() == self.tiledata [ pfslotidx ].all()
+#        RBTODO for debugging check that the data is the same
+            assert tiledata.all() == self.tiledata [ str(tileidx) ].all()
           
           #Update the amount of data we've written to cube
           xcubeoffset += xiters
         ycubeoffset += yiters
 
     # report the size of the cube we built
-    return [xcubeoffset, ycubeoffset, self.zcubedim]
+    return [xcubeoffset, ycubeoffset, zcubesize]
 
