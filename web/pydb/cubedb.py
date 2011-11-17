@@ -102,35 +102,43 @@ class CubeDB:
     # list of batched indexes
     idxbatch = []
 
-    # This is the restart code.  Figure out the highest index stored and 
-    #  insert the next one after that
-    dbname = self.dbcfg.tablebase + str(resolution)
-    cursor = self.conn.cursor()
-    sql = "SELECT MAX(zindex) FROM " + dbname 
-    cursor.execute(sql)
-    maxvaltpl = cursor.fetchone ()
-    print maxvaltpl
-    if maxvaltpl [0] != None:
-      maxval = int(maxvaltpl[0])
-      print "Maximum value", int(maxvaltpl[0])
-    else:
-      maxval = None
+#    # This is the restart code.  Figure out the highest index stored and 
+#    #  insert the next one after that
+#    dbname = self.dbcfg.tablebase + str(resolution)
+#    cursor = self.conn.cursor()
+#    sql = "SELECT MAX(zindex) FROM " + dbname 
+#    cursor.execute(sql)
+#    maxvaltpl = cursor.fetchone ()
+#    print maxvaltpl
+#    if maxvaltpl [0] != None:
+#      maxval = int(maxvaltpl[0])
+#      print "Maximum value", int(maxvaltpl[0])
+#    else:
+#      maxval = None
 
 
     # Figure out the geometry of the batch
     #   RBTODO get from program
     #   To prefetch a 4 x 4 x 1 cube is 2 x 2 x 16 tiles
-    #  right now batchsize is 4 x 4 x 16 =   tiles = , which is 2 x 2 x 16 tiles  32 tiles and 
+    #  right now batchsize is 4 x 4 x 1 = 16 cubes which is 2 x 2 x 16 = 64 tiles  
+
+    # batch size is 8 x 8 x 1 = 64 cubes which is 4 x 4 x 16 = 256 tiles                        
+
+    # zmaxpf should always be 1, representing either 16 or 64 lines.  Never get more that 1 set of slices
     zmaxpf = 1
-    batchsize = 16
+    # batchsize in number of cubes (converted from tiles)
+    otherbatchsize = 64
+    batchsize = tilestack.batchsize * (tilestack.xtilesize/xcubedim) * (tilestack.ytilesize/ycubedim) / zcubedim
+    assert ( batchsize == otherbatchsize )
+
 
     # Ingest the slices in morton order
     for mortonidx in zindex.generator ( [xlimit, ylimit, zlimit] ):
 
-      # Skip all values until the one following maxval
-      #  RBTODO do we need this
-      if maxval != None and maxval >= mortonidx:
-        continue
+#      # Skip all values until the one following maxval
+#      #  RBTODO do we need this
+#      if maxval != None and maxval >= mortonidx:
+#        continue
 
       xyz = zindex.MortonXYZ ( mortonidx )
      
