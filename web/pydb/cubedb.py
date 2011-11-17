@@ -30,9 +30,10 @@ class CubeDB:
   startslice = 0
   slices = 0
 
-  # batch of cubes in memory to be inserted as a single statement
-  #  dictionary by mortonidx
-  inmemcubes = {}
+#RBDBG think that this dictionary leaks memory
+#  # batch of cubes in memory to be inserted as a single statement
+#  #  dictionary by mortonidx
+#  inmemcubes = {}
 
   def __init__ (self, dbconf):
     """Connect with the brain databases"""
@@ -65,7 +66,8 @@ class CubeDB:
     bc = braincube.BrainCube ( self.dbcfg.cubedim[resolution] )
     corner = [ x*xcubedim, y*ycubedim, z*zcubedim ]
     bc.cubeFromFiles (corner, tilestack)
-    self.inmemcubes[mortonidx] = bc
+    return bc
+#    self.inmemcubes[mortonidx] = bc
 
 
   #
@@ -159,12 +161,14 @@ class CubeDB:
 
         # ingest the batch
         for idx in idxbatch:
-          self.ingestCube ( idx, resolution, tilestack )
+          bc = self.ingestCube ( idx, resolution, tilestack )
+          self.saveCube ( bc, idx, resolution )
         
-        #save the batch
+#RBDBG remove dictionary
+#        #save the batch
 #        self.saveBatch ( idxbatch, resolution )
-        for idx in idxbatch:
-         self.saveCube( self.inmemcubes[idx], idx, resolution )
+#        for idx in idxbatch:
+#         self.saveCube( self.inmemcubes[idx], idx, resolution )
 
         # Finished this batch.  Start anew.
         idxbatch = []
@@ -177,14 +181,16 @@ class CubeDB:
 
     # Ingest the remaining once the loop is over
     for idx in idxbatch:
-      self.ingestCube ( idx, resolution, tilestack )
+      bc = self.ingestCube ( idx, resolution, tilestack )
+      self.saveCube ( bc, idx, resolution )
 
-    #save the batch
+#RBDBG remove dictionary
+#    #save the batch
 #    if len ( idxbatch ) != 0:
 #      self.saveBatch ( idxbatch, resolution )
-
-    for idx in idxbatch:
-      self.saveCube( self.inmemcubes[idx], idx, resolution )
+#
+#    for idx in idxbatch:
+#      self.saveCube( self.inmemcubes[idx], idx, resolution )
 
 
   #
