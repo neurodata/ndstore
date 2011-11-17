@@ -89,7 +89,10 @@ class CubeDB:
     assert yimagesz % ycubedim == 0
     assert ximagesz % xcubedim == 0
 
-    tilestack = tiles.Tiles ( self.dbcfg.tilesz, self.dbcfg.inputprefix + '/' + str(resolution), self.startslice )
+    tilestack = tiles.Tiles ( self.dbcfg.tilesz,\
+                              self.dbcfg.inputprefix + '/' + str(resolution), self.startslice,\
+                              self.dbcfg.cubedim [resolution ]
+                             ) 
 
     # Set the limits on the number of cubes in each dimension
     xlimit = ximagesz / xcubedim
@@ -114,19 +117,34 @@ class CubeDB:
       maxval = None
 
 
+    # Figure out the geometry of the batch
+    #   RBTODO get from program
+    #   To prefetch a 4 x 4 x 1 cube is 2 x 2 x 16 tiles
+    #  right now batchsize is 4 x 4 x 16 =   tiles = , which is 2 x 2 x 16 tiles  32 tiles and 
+    zmaxpf = 1
+    batchsize = 16
+
     # Ingest the slices in morton order
     for mortonidx in zindex.generator ( [xlimit, ylimit, zlimit] ):
 
       # Skip all values until the one following maxval
+      #  RBTODO do we need this
       if maxval != None and maxval >= mortonidx:
         continue
 
-      #build a batch of indexes
-      idxbatch.append ( mortonidx )
+      xyz = zindex.MortonXYZ ( mortonidx )
+     
+      print "Len " , len ( idxbatch )  
+      print "Z" , xyz[2]
 
-      # execute a batch
-      if len ( idxbatch ) == tilestack.batchsize:
+      # if this exceeds the limit on the z dimension, do the ingest
+      if len ( idxbatch ) == batchsize or xyz[2] == zmaxpf:
 
+        # if we've hit our area bounds set the new limit
+        if xyz [2] == zmaxpf:
+           zmaxpf += 1
+
+        print "Number of indexes " , len ( idxbatch )
         # preload the batch
         tilestack.prefetch ( idxbatch, [xcubedim, ycubedim, zcubedim])
 
@@ -141,6 +159,9 @@ class CubeDB:
 
         # Finished this batch.  Start anew.
         idxbatch = []
+
+      #build a batch of indexes
+      idxbatch.append ( mortonidx )
 
     # preload the remaining
     tilestack.prefetch ( idxbatch, [xcubedim, ycubedim, zcubedim])

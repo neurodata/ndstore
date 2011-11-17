@@ -20,23 +20,30 @@ import zindex
 ################################################################################
 class Tiles: 
 
+
+#RBTODO maybe need to normalize out the cubesize stuff
+
   # number of files to read in during the ingest process.
   #  This needs to be tuned to memory capacity
-  batchsize = 16 
+  batchsize = 64 
   
-  # tile data dictionary
-  tiledata = {}
+  tiledata = []
 
 
   #
   # __init__ Constructor
   #
-  def __init__ ( self, tilesize, inputprefix, startslice ):
+  def __init__ ( self, tilesize, inputprefix, startslice, cubesize ):
     """Create tiles"""
     self.xtilesize = tilesize[0]
     self.ytilesize = tilesize[1]
     self.fileprefix = inputprefix
+    self.xcubesize, self.ycubesize, self.zcubesize = cubesize
     self.zstartfile = startslice
+
+    # initialize our prefetch buffers
+    for i in range ( self.batchsize ):
+      self.tiledata.append ( np.zeros ( [self.ytilesize, self.xtilesize]))
 
   #
   # tileFile: Generate the file name.
@@ -177,9 +184,28 @@ class Tiles:
 
 
   #
+  # pfslotidx
+  #
+  #  Find a location in the tiledata array to put this tile
+  #
+  #
+  def pfSlotIndex ( self, tileidx, baseidx ):
+    """Find a location in the tiledata array to put this tile"""
+  
+    return  (tileidx[0] - baseidx[0]) + (tileidx[1] - baseidx[1]) * self.xtilesize/self.xcubesize + \
+            (tileidx[2] - baseidx[2]) * self.xtilesize/self.xcubesize * self.ytilesize/self.ycubesize  
+
+
+  #
   # prefetch
   #
   #  Load a  specified tiles into the buffer.
+  #
+  #    This is a little weird.  You can ask for up to the prefetch batch in typical cases,
+  #    but can only ask for up to batchsize / (xcubesize/xtilesize) * (ycubesize/ytilesize)  
+  #    slices.  This only applies to coarse resolutions and makes the indexing easier.
+  #    This is all a hack to fix the fact that a dictionary leaked memory, so we place
+  #    the tiles in a dense array of numpy objects
   #
   def prefetch ( self, idxbatch, cubesize ):
 
@@ -188,9 +214,20 @@ class Tiles:
     #  on xfs.  Don't want to have to scan the entire directory.
 
     # Enumerate all the tiles that are needed for these blocks
+
+    # List of tiles to be prefetch
     tilelist = []
 
     xcubesize, ycubesize, zcubesize = cubesize
+
+    # Need to clear previous cache contents
+    for i in range ( self.batchsize ):
+      self.tiledata [ i ] =  np.zeros ( [self.ytilesize, self.xtilesize] )
+
+    # Figure out the base index for this prefetch group
+    xyzbase =  zindex.MortonXYZ ( idxbatch[0] )
+    self.pfbaseidx = [ xyzbase[0]*xcubesize/self.xtilesize, xyzbase[1]*ycubesize/self.ytilesize, xyzbase[2]*zcubesize ]
+    print "Updated base index to ", self.pfbaseidx
 
     for idx in idxbatch:
 
@@ -200,6 +237,7 @@ class Tiles:
       #  assume that the cubes and tiles are aligned and tiles are bigger than cubes
 
       # z is not tiled
+      # and there are multiple cubes per tile.  so tilelist has duplicates
       for w in range(zcubesize):
         tilelist.append ( str(xyz[2] * zcubesize + w) + ' ' +  str(xyz[1]*ycubesize/self.ytilesize) + ' ' + str( xyz[0]*xcubesize/self.xtilesize))
 
@@ -207,7 +245,8 @@ class Tiles:
     tilelist = sorted ( set (tilelist) )
 
     # build the tile data dictionary
-    for tile in tilelist:
+    for j in range (len ( tilelist )):
+      tile = tilelist[j]
       [ zstr, ystr, xstr ] = tile.split()
       tileidx = [ int(xstr), int(ystr), int(zstr) ]
 
@@ -218,7 +257,9 @@ class Tiles:
       #  this means that there is no bounds checking on this routine
       try:
         tileimage = Image.open ( fname, 'r' )
-        self.tiledata [ str(tileidx) ] = np.asarray ( tileimage )
+        pfslotidx = self.pfSlotIndex ( tileidx, self.pfbaseidx )
+        print pfslotidx, self.pfbaseidx, tileidx
+        self.tiledata [ pfslotidx ] = np.asarray ( tileimage )
         print ( "Loaded file " + fname )
       except IOError:
         continue
@@ -299,29 +340,27 @@ class Tiles:
 #          print  "X iteration copying ", xiters, " bytes from tileoffset ", xtileoffset, " to cube offset ", xcubeoffset
 
 # RBTODO use the prefetched data instead of the file data
-#          fname =  self.tileFile ( (xcorner+xcubeoffset)/self.xtilesize,\
-#                                   (ycorner+ycubeoffset)/self.ytilesize,\
-#                                    zcorner+z ) 
-#          try:
-#            tileimage = Image.open ( fname, 'r' )
-#            tiledata = np.asarray ( tileimage )
-#            cube.data [ z, ycubeoffset:(ycubeoffset+yiters), xcubeoffset:(xcubeoffset+xiters) ]  =  \
-#              tiledata [ ytileoffset:ytileoffset+yiters, xtileoffset:xtileoffset+xiters ]
-#          except IOError:
-#            print "File not found: ", fname
-#            print "Using zeroed data instead"
+          fname =  self.tileFile ( (xcorner+xcubeoffset)/self.xtilesize,\
+                                   (ycorner+ycubeoffset)/self.ytilesize,\
+                                    zcorner+z ) 
+          try:
+            tileimage = Image.open ( fname, 'r' )
+            tiledata = np.asarray ( tileimage )
+            cube.data [ z, ycubeoffset:(ycubeoffset+yiters), xcubeoffset:(xcubeoffset+xiters) ]  =  \
+              tiledata [ ytileoffset:ytileoffset+yiters, xtileoffset:xtileoffset+xiters ]
+          except IOError:
+            print "File not found: ", fname
+            print "Using zeroed data instead"
 
           # Check that the data in the array is the same as the data the in prefetch buffers
+
           tileidx = [ (xcorner+xcubeoffset)/self.xtilesize, (ycorner+ycubeoffset)/self.ytilesize, zcorner+z ]
-          if  self.tiledata.get(str(tileidx)) == None :
-            print "Data  not found: ", tileidx
-            print "Using zeroed data instead"
-          else: 
-            cube.data [ z, ycubeoffset:(ycubeoffset+yiters), xcubeoffset:(xcubeoffset+xiters) ]  =  \
-              self.tiledata [ str(tileidx)]  [ ytileoffset:ytileoffset+yiters, xtileoffset:xtileoffset+xiters ]
+          pfslotidx = self.pfSlotIndex ( tileidx, self.pfbaseidx )
+          cube.data [ z, ycubeoffset:(ycubeoffset+yiters), xcubeoffset:(xcubeoffset+xiters) ]  =  \
+            self.tiledata [ pfslotidx ]  [ ytileoffset:ytileoffset+yiters, xtileoffset:xtileoffset+xiters ]
            
 #        RBTODO for debugging check that the data is the same
-#            assert tiledata.all() == self.tiledata [ str(tileidx) ].all()
+          assert tiledata.all() == self.tiledata [ pfslotidx ].all()
           
           #Update the amount of data we've written to cube
           xcubeoffset += xiters
