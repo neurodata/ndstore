@@ -25,6 +25,7 @@ class Tiles:
 #  batchsize = 512
   
   batchsize = 4 * 4 * 4 * 16 
+#  batchsize = 1 * 1 * 1 * 16 
   # array of tile data into which we prefetch
   tiledata = []
 
@@ -39,11 +40,9 @@ class Tiles:
     self.xcubesize, self.ycubesize, self.zcubesize = cubesize
     self.zstartfile = startslice
 
-    print "Init prefetch buffers"
     # initialize our prefetch buffers
     for i in range ( self.batchsize ):
       self.tiledata.append ( np.zeros ( [self.ytilesize, self.xtilesize]))
-    print "Done Init prefetch buffers"
 
   #
   # tileFile: Generate the file name.
@@ -96,8 +95,12 @@ class Tiles:
   def pfSlotIndex ( self, tileidx, baseidx ):
     """Find a location in the tiledata array to put this tile"""
   
-    return  (tileidx[0] - baseidx[0]) + (tileidx[1] - baseidx[1]) * self.xtilesize/self.xcubesize + \
-            (tileidx[2] - baseidx[2]) * self.xtilesize/self.xcubesize * self.ytilesize/self.ycubesize  
+    return (tileidx[2] - baseidx[2]) + (tileidx[1] - baseidx[1])*self.zcubesize + (tileidx[0] - baseidx[0])*self.zcubesize*self.ycubesize
+
+
+#  Change the function for small cases
+#    return  (tileidx[0] - baseidx[0]) + (tileidx[1] - baseidx[1]) * self.xtilesize/self.xcubesize + \
+#           (tileidx[2] - baseidx[2]) * self.xtilesize/self.xcubesize * self.ytilesize/self.ycubesize  
 
 
   #

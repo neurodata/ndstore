@@ -127,6 +127,7 @@ class CubeDB:
 
     # batchsize is 8 x 8 x 4 cubes which is 4 x 4 x 4 x 16 tiles
     batchsize = 8 * 8 * 4
+#    batchsize = 2 * 2 * 1
 
     # zmaxpf should always be 1, representing either 16 or 64 lines.  Never get more that 1 set of slices
     zstridepf = 32 /zcubedim
@@ -152,10 +153,6 @@ class CubeDB:
       # if this exceeds the limit on the z dimension, do the ingest
       if len ( idxbatch ) == batchsize or xyz[2] == zmaxpf:
 
-        # if we've hit our area bounds set the new limit
-        if xyz [2] == zmaxpf:
-           zmaxpf += zstridepf
-
         # preload the batch
         tilestack.prefetch ( idxbatch )
 
@@ -164,6 +161,14 @@ class CubeDB:
           bc = self.ingestCube ( idx, resolution, tilestack )
           self.saveCube ( bc, idx, resolution )
         
+        # if we've hit our area bounds set the new limit
+        if xyz [2] == zmaxpf:
+           print xyz
+           print xyz[2], zmaxpf
+           zmaxpf += zstridepf
+           #RBTEST just do the first slab
+           assert zmaxpf != 4
+
 #RBDBG remove dictionary
 #        #save the batch
 #        self.saveBatch ( idxbatch, resolution )
@@ -237,7 +242,7 @@ class CubeDB:
       args.append ( zlib.compress (fileobj.getvalue()) )
 
     # insert the blob into the database
-    sql = "INSERT INTO " + dbname + " (zindex, cube) VALUES %s;"
+    sql = "INSERT DELAYED INTO " + dbname + " (zindex, cube) VALUES %s;"
     in_p=', '.join(map(lambda x: '(%s,%s)', idxbatch))
     sql = sql % in_p
     cursor = self.conn.cursor()
