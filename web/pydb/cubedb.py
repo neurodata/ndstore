@@ -26,7 +26,7 @@ import dbconfig
 
 class CubeDB: 
 
-  # Convenience variables better than ranges in code
+  # Convenience variables to manage z slices
   startslice = 0
   slices = 0
 
@@ -89,7 +89,10 @@ class CubeDB:
     assert yimagesz % ycubedim == 0
     assert ximagesz % xcubedim == 0
 
-    tilestack = tiles.Tiles ( self.dbcfg.tilesz, self.dbcfg.inputprefix + '/' + str(resolution), self.startslice )
+    tilestack = tiles.Tiles ( self.dbcfg.tilesz,\
+                              self.dbcfg.inputprefix + '/' + str(resolution), self.startslice,\
+                              self.dbcfg.cubedim [resolution ]
+                             ) 
 
     # Set the limits on the number of cubes in each dimension
     xlimit = ximagesz / xcubedim
@@ -99,36 +102,60 @@ class CubeDB:
     # list of batched indexes
     idxbatch = []
 
-    # This is the restart code.  Figure out the highest index stored and 
-    #  insert the next one after that
-    dbname = self.dbcfg.tablebase + str(resolution)
-    cursor = self.conn.cursor()
-    sql = "SELECT MAX(zindex) FROM " + dbname 
-    cursor.execute(sql)
-    maxvaltpl = cursor.fetchone ()
-    print maxvaltpl
-    if maxvaltpl [0] != None:
-      maxval = int(maxvaltpl[0])
-      print "Maximum value", int(maxvaltpl[0])
-    else:
-      maxval = None
+#RBTODO this works.  But if there's no memory leak, no need to restart
+#    # This is the restart code.  Figure out the highest index stored and 
+#    #  insert the next one after that
+#    dbname = self.dbcfg.tablebase + str(resolution)
+#    cursor = self.conn.cursor()
+#    sql = "SELECT MAX(zindex) FROM " + dbname 
+#    cursor.execute(sql)
+#    maxvaltpl = cursor.fetchone ()
+#    print maxvaltpl
+#    if maxvaltpl [0] != None:
+#      maxval = int(maxvaltpl[0])
+#      print "Maximum value", int(maxvaltpl[0])
+#    else:
+#      maxval = None
+
+
+    # Figure out the geometry of the batch
+    #   RBTODO get from program
+    #   To prefetch a 4 x 4 x 1 cube is 2 x 2 x 16 tiles
+    #  right now batchsize is 4 x 4 x 1 = 16 cubes which is 2 x 2 x 16 = 64 tiles  
+
+    # batchsize is 8 x 8 x 4 cubes which is 4 x 4 x 4 x 16 tiles
+    batchsize = 8 * 8 * 4
+
+    # zmaxpf should always be 1, representing either 16 or 64 lines.  Never get more that 1 set of slices
+    zstridepf = 32 /zcubedim
+    zmaxpf = zstridepf
+    # batchsize in number of cubes (converted from tiles)
+    batchsize = tilestack.batchsize * (tilestack.xtilesize/xcubedim) * (tilestack.ytilesize/ycubedim) / zcubedim
+#    RBDBG check to make sure the batch size is right
+    otherbatchsize = tilestack.batchsize / 4
+#    assert ( batchsize == otherbatchsize )
 
 
     # Ingest the slices in morton order
     for mortonidx in zindex.generator ( [xlimit, ylimit, zlimit] ):
 
-      # Skip all values until the one following maxval
-      if maxval != None and maxval >= mortonidx:
-        continue
+#RBTODO part of the restart code
+#      # Skip all values until the one following maxval
+#      #  RBTODO do we need this
+#      if maxval != None and maxval >= mortonidx:
+#        continue
 
-      #build a batch of indexes
-      idxbatch.append ( mortonidx )
+      xyz = zindex.MortonXYZ ( mortonidx )
+      
+      # if this exceeds the limit on the z dimension, do the ingest
+      if len ( idxbatch ) == batchsize or xyz[2] == zmaxpf:
 
-      # execute a batch
-      if len ( idxbatch ) == tilestack.batchsize:
+        # if we've hit our area bounds set the new limit
+        if xyz [2] == zmaxpf:
+           zmaxpf += zstridepf
 
         # preload the batch
-        tilestack.prefetch ( idxbatch, [xcubedim, ycubedim, zcubedim])
+        tilestack.prefetch ( idxbatch )
 
         # ingest the batch
         for idx in idxbatch:
@@ -142,8 +169,11 @@ class CubeDB:
         # Finished this batch.  Start anew.
         idxbatch = []
 
+      #build a batch of indexes
+      idxbatch.append ( mortonidx )
+
     # preload the remaining
-    tilestack.prefetch ( idxbatch, [xcubedim, ycubedim, zcubedim])
+    tilestack.prefetch ( idxbatch )
 
     # Ingest the remaining once the loop is over
     for idx in idxbatch:
