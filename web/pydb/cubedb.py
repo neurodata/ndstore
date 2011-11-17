@@ -30,9 +30,9 @@ class CubeDB:
   startslice = 0
   slices = 0
 
-  # batch of cubes in memory to be inserted as a single statement
-  #  dictionary by mortonidx
-  inmemcubes = {}
+#  # batch of cubes in memory to be inserted as a single statement
+#  #  dictionary by mortonidx
+#  inmemcubes = {}
 
   def __init__ (self, dbconf):
     """Connect with the brain databases"""
@@ -65,7 +65,8 @@ class CubeDB:
     bc = braincube.BrainCube ( self.dbcfg.cubedim[resolution] )
     corner = [ x*xcubedim, y*ycubedim, z*zcubedim ]
     bc.cubeFromFiles (corner, tilestack)
-    self.inmemcubes[mortonidx] = bc
+#    self.inmemcubes[mortonidx] = bc
+    return bc
 
 
   #
@@ -124,7 +125,7 @@ class CubeDB:
     #  right now batchsize is 4 x 4 x 1 = 16 cubes which is 2 x 2 x 16 = 64 tiles  
 
     # batchsize is 8 x 8 x 4 cubes which is 4 x 4 x 4 x 16 tiles
-    batchsize = 8 * 8 * 4
+    batchsize = 16 * 16 * 8
 
     # zmaxpf should always be 1, representing either 16 or 64 lines.  Never get more that 1 set of slices
     zstridepf = 32 /zcubedim
@@ -161,10 +162,12 @@ class CubeDB:
         for idx in idxbatch:
           self.ingestCube ( idx, resolution, tilestack )
         
-        #save the batch
+# RBDBG this was for batch testing.  It worked but wasn't fast and maybe leaked memory.
+#        #save the batch
 #        self.saveBatch ( idxbatch, resolution )
-        for idx in idxbatch:
-         self.saveCube( self.inmemcubes[idx], idx, resolution )
+#        for idx in idxbatch:
+#         self.saveCube( self.inmemcubes[idx], idx, resolution )
+#        self.inmemcubes.clear()
 
         # Finished this batch.  Start anew.
         idxbatch = []

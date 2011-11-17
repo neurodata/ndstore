@@ -24,7 +24,7 @@ class Tiles:
   #  This needs to be tuned to memory capacity
 #  batchsize = 512
   
-  batchsize = 4 * 4 * 4 * 16 
+  batchsize = 8 * 8 * 8 * 16 
   # array of tile data into which we prefetch
   tiledata = []
 
