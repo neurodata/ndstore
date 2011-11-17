@@ -35,7 +35,8 @@ class dbConfigBock11 ( dbconfig.dbConfig ):
 
   #resolution information -- lowest resolution and list of resolution
   baseres = 0
-  resolutions = [ 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 ]
+#  resolutions = [ 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 ]
+  resolutions = [ 10 ]
 
   imagesz = { 10: [ 256, 256 ],\
               9: [ 2*256, 2*256 ],\
@@ -62,7 +63,7 @@ class dbConfigBock11 ( dbconfig.dbConfig ):
              1: 10.0/2.0,\
              0: 10.0 }
 
-  inputprefix = "/mnt/data/bock11"
+  inputprefix = "/data/bock11"
 
   #database parameters
   tablebase = bock11private.tablebase

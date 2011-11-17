@@ -30,10 +30,12 @@ class CubeDB:
   startslice = 0
   slices = 0
 
-#RBDBG think that this dictionary leaks memory
-#  # batch of cubes in memory to be inserted as a single statement
-#  #  dictionary by mortonidx
-#  inmemcubes = {}
+  # prefetch size -- how many cubes in each dimension
+  #  this should represent the same amount of data for any cube size
+  #  it needs to be compatible with tiling, power of 2, no more than
+  #  2x difference between any two value, i.e. square or 2x1 rectangle
+  #  compatible with the dimension
+  pfdim = [ 4, 4, 2 ]
 
   def __init__ (self, dbconf):
     """Connect with the brain databases"""
@@ -123,21 +125,20 @@ class CubeDB:
     # Figure out the geometry of the batch
     #   RBTODO get from program
     #   To prefetch a 4 x 4 x 1 cube is 2 x 2 x 16 tiles
-    #  right now batchsize is 4 x 4 x 1 = 16 cubes which is 2 x 2 x 16 = 64 tiles  
 
     # batchsize is 8 x 8 x 4 cubes which is 4 x 4 x 4 x 16 tiles
-    batchsize = 8 * 8 * 4
-#    batchsize = 2 * 2 * 1
 
-    # zmaxpf should always be 1, representing either 16 or 64 lines.  Never get more that 1 set of slices
-    zstridepf = 32 /zcubedim
-    zmaxpf = zstridepf
+    # This parameter needs to match to the max number of slices to be taken.  
+    # The maximum z slices that prefetching will take in this prefetch
+    #  This is useful for higher resolutions where we run out of tiles in 
+    #  the x and y dimensions
+    zmaxpf = self.pfdim[2]
+
     # batchsize in number of cubes (converted from tiles)
-    batchsize = tilestack.batchsize * (tilestack.xtilesize/xcubedim) * (tilestack.ytilesize/ycubedim) / zcubedim
-#    RBDBG check to make sure the batch size is right
-    otherbatchsize = tilestack.batchsize / 4
-#    assert ( batchsize == otherbatchsize )
-
+    batchsize = self.pfdim[0] * self.pfdim[1] * self.pfdim[2]
+    print "Batch size in cubes = " , batchsize 
+    print "Batch size in tiles = ", self.pfdim[0] * xcubedim / tilestack.xtiledim * self.pfdim[1] * ycubedim / tilestack.ytiledim * self.pfdim[2] * zcubedim
+    tilestack.setBatchSize ( self.pfdim[0] * xcubedim / tilestack.xtiledim * self.pfdim[1] * ycubedim / tilestack.ytiledim * self.pfdim[2] * zcubedim )
 
     # Ingest the slices in morton order
     for mortonidx in zindex.generator ( [xlimit, ylimit, zlimit] ):
@@ -159,21 +160,13 @@ class CubeDB:
         # ingest the batch
         for idx in idxbatch:
           bc = self.ingestCube ( idx, resolution, tilestack )
-          self.saveCube ( bc, idx, resolution )
+#          self.saveCube ( bc, idx, resolution )
         
         # if we've hit our area bounds set the new limit
         if xyz [2] == zmaxpf:
            print xyz
            print xyz[2], zmaxpf
-           zmaxpf += zstridepf
-           #RBTEST just do the first slab
-           assert zmaxpf != 4
-
-#RBDBG remove dictionary
-#        #save the batch
-#        self.saveBatch ( idxbatch, resolution )
-#        for idx in idxbatch:
-#         self.saveCube( self.inmemcubes[idx], idx, resolution )
+           zmaxpf += self.pfdim[2]
 
         # Finished this batch.  Start anew.
         idxbatch = []
@@ -187,16 +180,7 @@ class CubeDB:
     # Ingest the remaining once the loop is over
     for idx in idxbatch:
       bc = self.ingestCube ( idx, resolution, tilestack )
-      self.saveCube ( bc, idx, resolution )
-
-#RBDBG remove dictionary
-#    #save the batch
-#    if len ( idxbatch ) != 0:
-#      self.saveBatch ( idxbatch, resolution )
-#
-#    for idx in idxbatch:
-#      self.saveCube( self.inmemcubes[idx], idx, resolution )
-
+#      self.saveCube ( bc, idx, resolution )
 
   #
   # Output the cube to the database
@@ -214,39 +198,9 @@ class CubeDB:
 
     # insert the blob into the database
     cursor = self.conn.cursor()
-    sql = "INSERT INTO " + dbname + " (zindex, cube) VALUES (%s, %s)"
+    sql = "INSERT DELAYED INTO " + dbname + " (zindex, cube) VALUES (%s, %s)"
 
     cursor.execute(sql, (mortonidx, cdz))
-
-
-  #
-  # Output a batch of cubes to the database
-  #
-  def saveBatch ( self, idxbatch, resolution ):
-    """Output the cube to the database"""
-
-    # This code has been tested and works, but doesn't seem
-    #   to go fasst for MySQL.  Maybe reinstate later.
-    assert 0
-
-    dbname = self.dbcfg.tablebase + str(resolution)
-
-    args=[]
-    for idx in idxbatch:
-
-      args.append ( idx ) 
-
-      # create the DB BLOB
-      fileobj = cStringIO.StringIO ()
-      np.save ( fileobj, self.inmemcubes[idx].data )
-      args.append ( zlib.compress (fileobj.getvalue()) )
-
-    # insert the blob into the database
-    sql = "INSERT DELAYED INTO " + dbname + " (zindex, cube) VALUES %s;"
-    in_p=', '.join(map(lambda x: '(%s,%s)', idxbatch))
-    sql = sql % in_p
-    cursor = self.conn.cursor()
-    self.cursor.execute(sql, args)
 
 
   #
