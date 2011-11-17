@@ -20,13 +20,8 @@ import zindex
 ################################################################################
 class Tiles: 
 
-  # number of files to read in during the ingest process.
-  #  This needs to be tuned to memory capacity
-  batchsize = 16 
-  
   # tile data dictionary
   tiledata = {}
-
 
   #
   # __init__ Constructor
