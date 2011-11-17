@@ -48,7 +48,6 @@ class RESTBadArgsError(Exception):
     self.value = value
   def __str__(self):
     return repr(self.value)
-#
 
 #
 #  Build the returned braincube.  Called by all methods 
@@ -106,6 +105,7 @@ def getCube ( imageargs, dbcfg ):
   cdb = cubedb.CubeDB ( dbcfg )
   return cdb.getCube ( corner, dim, resolution )
 
+
 #
 #  Return a Numpy Pickle zipped
 #
@@ -155,6 +155,7 @@ def HDF5 ( imageargs, dbcfg ):
   fh5out.close()
   tmpfile.seek(0)
   return tmpfile.read()
+
 
 #
 #  **Image return a readable png object

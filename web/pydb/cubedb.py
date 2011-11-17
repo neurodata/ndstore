@@ -26,7 +26,7 @@ import dbconfig
 
 class CubeDB: 
 
-  # Convenience variables better than ranges in code
+  # Convenience variables to manage z slices
   startslice = 0
   slices = 0
 
@@ -102,6 +102,7 @@ class CubeDB:
     # list of batched indexes
     idxbatch = []
 
+#RBTODO this works.  But if there's no memory leak, no need to restart
 #    # This is the restart code.  Figure out the highest index stored and 
 #    #  insert the next one after that
 #    dbname = self.dbcfg.tablebase + str(resolution)
@@ -127,14 +128,16 @@ class CubeDB:
     # zmaxpf should always be 1, representing either 16 or 64 lines.  Never get more that 1 set of slices
     zmaxpf = 1
     # batchsize in number of cubes (converted from tiles)
-    otherbatchsize = 64
     batchsize = tilestack.batchsize * (tilestack.xtilesize/xcubedim) * (tilestack.ytilesize/ycubedim) / zcubedim
-    assert ( batchsize == otherbatchsize )
+#    RBDBG check to make sure the batch size is right
+#    otherbatchsize = 64
+#    assert ( batchsize == otherbatchsize )
 
 
     # Ingest the slices in morton order
     for mortonidx in zindex.generator ( [xlimit, ylimit, zlimit] ):
 
+#RBTODO part of the restart code
 #      # Skip all values until the one following maxval
 #      #  RBTODO do we need this
 #      if maxval != None and maxval >= mortonidx:
@@ -142,9 +145,6 @@ class CubeDB:
 
       xyz = zindex.MortonXYZ ( mortonidx )
      
-      print "Len " , len ( idxbatch )  
-      print "Z" , xyz[2]
-
       # if this exceeds the limit on the z dimension, do the ingest
       if len ( idxbatch ) == batchsize or xyz[2] == zmaxpf:
 
@@ -152,9 +152,8 @@ class CubeDB:
         if xyz [2] == zmaxpf:
            zmaxpf += 1
 
-        print "Number of indexes " , len ( idxbatch )
         # preload the batch
-        tilestack.prefetch ( idxbatch, [xcubedim, ycubedim, zcubedim])
+        tilestack.prefetch ( idxbatch )
 
         # ingest the batch
         for idx in idxbatch:
@@ -172,7 +171,7 @@ class CubeDB:
       idxbatch.append ( mortonidx )
 
     # preload the remaining
-    tilestack.prefetch ( idxbatch, [xcubedim, ycubedim, zcubedim])
+    tilestack.prefetch ( idxbatch )
 
     # Ingest the remaining once the loop is over
     for idx in idxbatch:
