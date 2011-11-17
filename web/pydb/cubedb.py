@@ -117,9 +117,13 @@ class CubeDB:
     # The maximum z slices that prefetching will take in this prefetch
     #  This is useful for higher resolutions where we run out of tiles in 
     #  the x and y dimensions
-    zmaxpf = 128
-    zstride = 128
-    batchsize = 2048 
+    zmaxpf = 256
+    zstride = 256
+
+    # This batch size is chosen for braingraph1.  
+    #  It loads 16^3 cubes equivalent to 8 x 8 x 256 tiles @ 128x128x16 per tile and 512x512x1 per cube
+    #  this is 2^32 bytes of memory 2^18/cube x 2^14 tiles 
+    batchsize = 4096 
 
     # Ingest the slices in morton order
     for mortonidx in zindex.generator ( [xlimit, ylimit, zlimit] ):
