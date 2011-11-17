@@ -200,17 +200,17 @@ class Tiles:
 #          print  "X iteration copying ", xiters, " bytes from tileoffset ", xtileoffset, " to cube offset ", xcubeoffset
 
 # RBTODO use the prefetched data instead of the file data
-          fname =  self.tileFile ( (xcorner+xcubeoffset)/self.xtilesize,\
-                                   (ycorner+ycubeoffset)/self.ytilesize,\
-                                    zcorner+z ) 
-          try:
-            tileimage = Image.open ( fname, 'r' )
-            tiledata = np.asarray ( tileimage )
-            cube.data [ z, ycubeoffset:(ycubeoffset+yiters), xcubeoffset:(xcubeoffset+xiters) ]  =  \
-              tiledata [ ytileoffset:ytileoffset+yiters, xtileoffset:xtileoffset+xiters ]
-          except IOError:
-            print "File not found: ", fname
-            print "Using zeroed data instead"
+#          fname =  self.tileFile ( (xcorner+xcubeoffset)/self.xtilesize,\
+#                                   (ycorner+ycubeoffset)/self.ytilesize,\
+#                                    zcorner+z ) 
+#          try:
+#            tileimage = Image.open ( fname, 'r' )
+#            tiledata = np.asarray ( tileimage )
+#            cube.data [ z, ycubeoffset:(ycubeoffset+yiters), xcubeoffset:(xcubeoffset+xiters) ]  =  \
+#              tiledata [ ytileoffset:ytileoffset+yiters, xtileoffset:xtileoffset+xiters ]
+#          except IOError:
+#            print "File not found: ", fname
+#            print "Using zeroed data instead"
 
           # Check that the data in the array is the same as the data the in prefetch buffers
           tileidx = [ (xcorner+xcubeoffset)/self.xtilesize, (ycorner+ycubeoffset)/self.ytilesize, zcorner+z ]
@@ -222,7 +222,7 @@ class Tiles:
               self.tiledata [ str(tileidx)]  [ ytileoffset:ytileoffset+yiters, xtileoffset:xtileoffset+xiters ]
            
 #        RBTODO for debugging check that the data is the same
-            assert tiledata.all() == self.tiledata [ str(tileidx) ].all()
+#            assert tiledata.all() == self.tiledata [ str(tileidx) ].all()
           
           #Update the amount of data we've written to cube
           xcubeoffset += xiters
