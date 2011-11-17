@@ -23,8 +23,8 @@ import dbconfigbock11
 #
 
 #  Specify the database to ingest
-dbcfg = dbconfigbock11.dbConfigBock11()
-#dbcfg = dbconfighayworth5nm.dbConfigHayworth5nm()
+#dbcfg = dbconfigbock11.dbConfigBock11()
+dbcfg = dbconfighayworth5nm.dbConfigHayworth5nm()
 
 cdb = cubedb.CubeDB ( dbcfg )
 
