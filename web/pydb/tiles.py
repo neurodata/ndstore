@@ -22,8 +22,9 @@ class Tiles:
 
   # number of files to read in during the ingest process.
   #  This needs to be tuned to memory capacity
-  batchsize = 256
+#  batchsize = 512
   
+  batchsize = 4 * 4 * 4 * 16 
   # array of tile data into which we prefetch
   tiledata = []
 
@@ -38,9 +39,11 @@ class Tiles:
     self.xcubesize, self.ycubesize, self.zcubesize = cubesize
     self.zstartfile = startslice
 
+    print "Init prefetch buffers"
     # initialize our prefetch buffers
     for i in range ( self.batchsize ):
       self.tiledata.append ( np.zeros ( [self.ytilesize, self.xtilesize]))
+    print "Done Init prefetch buffers"
 
   #
   # tileFile: Generate the file name.

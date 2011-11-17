@@ -123,14 +123,16 @@ class CubeDB:
     #   To prefetch a 4 x 4 x 1 cube is 2 x 2 x 16 tiles
     #  right now batchsize is 4 x 4 x 1 = 16 cubes which is 2 x 2 x 16 = 64 tiles  
 
-    # batch size is 8 x 8 x 1 = 64 cubes which is 4 x 4 x 16 = 256 tiles                        
+    # batchsize is 8 x 8 x 4 cubes which is 4 x 4 x 4 x 16 tiles
+    batchsize = 8 * 8 * 4
 
     # zmaxpf should always be 1, representing either 16 or 64 lines.  Never get more that 1 set of slices
-    zmaxpf = 1
+    zstridepf = 32 /zcubedim
+    zmaxpf = zstridepf
     # batchsize in number of cubes (converted from tiles)
     batchsize = tilestack.batchsize * (tilestack.xtilesize/xcubedim) * (tilestack.ytilesize/ycubedim) / zcubedim
 #    RBDBG check to make sure the batch size is right
-#    otherbatchsize = 64
+    otherbatchsize = tilestack.batchsize / 4
 #    assert ( batchsize == otherbatchsize )
 
 
@@ -144,13 +146,13 @@ class CubeDB:
 #        continue
 
       xyz = zindex.MortonXYZ ( mortonidx )
-     
+      
       # if this exceeds the limit on the z dimension, do the ingest
       if len ( idxbatch ) == batchsize or xyz[2] == zmaxpf:
 
         # if we've hit our area bounds set the new limit
         if xyz [2] == zmaxpf:
-           zmaxpf += 1
+           zmaxpf += zstridepf
 
         # preload the batch
         tilestack.prefetch ( idxbatch )
