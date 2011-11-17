@@ -117,9 +117,9 @@ class CubeDB:
     # The maximum z slices that prefetching will take in this prefetch
     #  This is useful for higher resolutions where we run out of tiles in 
     #  the x and y dimensions
-    zmaxpf = 64
-    zstride = 64
-    batchsize = 256
+    zmaxpf = 128
+    zstride = 128
+    batchsize = 2048 
 
     # Ingest the slices in morton order
     for mortonidx in zindex.generator ( [xlimit, ylimit, zlimit] ):
