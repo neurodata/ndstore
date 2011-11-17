@@ -121,9 +121,9 @@ class CubeDB:
     zstride = 256
 
     # This batch size is chosen for braingraph1.  
-    #  It loads 16^3 cubes equivalent to 8 x 8 x 256 tiles @ 128x128x16 per tile and 512x512x1 per cube
-    #  this is 2^32 bytes of memory 2^18/cube x 2^14 tiles 
-    batchsize = 4096 
+    #  It loads 32x32x16cubes equivalent to 16 x 16 x 256 tiles @ 128x128x16 per tile and 512x512x1 per cube
+    #  this is 2^34 bytes of memory 
+    batchsize = 16384
 
     # Ingest the slices in morton order
     for mortonidx in zindex.generator ( [xlimit, ylimit, zlimit] ):
