@@ -156,7 +156,7 @@ class CubeDB:
 
         # preload the batch
         tilestack.prefetch ( idxbatch )
-
+        
         # ingest the batch
         for idx in idxbatch:
           bc = self.ingestCube ( idx, resolution, tilestack )
@@ -164,8 +164,6 @@ class CubeDB:
         
         # if we've hit our area bounds set the new limit
         if xyz [2] == zmaxpf:
-           print xyz
-           print xyz[2], zmaxpf
            zmaxpf += self.pfdim[2]
 
         # Finished this batch.  Start anew.

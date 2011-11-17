@@ -43,11 +43,13 @@ class Tiles:
   #
   #  Maybe this should be part of a constructor.  Easier this way.
   #
-  def setBatchSize ( self, numtiles ):
+  def setBatchSize ( self, numtiles, cubebatchsz ):
     """Set the number of tiles to be prefetched"""
     
     # make sure it's an empty list
     self.tiledata = []
+
+    # get the batch size of the cube for indexing
 
     # initialize our prefetch buffers
     for i in range ( numtiles ):
@@ -105,14 +107,20 @@ class Tiles:
   def pfSlotIndex ( self, tileidx, baseidx ):
     """Find a location in the tiledata array to put this tile"""
   
-#RBRM
-# Not sure what the bug here is was.
-#    print tileidx, baseidx, (tileidx[2] - baseidx[2]) + (tileidx[1] - baseidx[1])*self.zcubedim + (tileidx[0] - baseidx[0])*self.zcubedim*self.ycubedim
-#    return (tileidx[2] - baseidx[2]) + (tileidx[1] - baseidx[1])*self.zcubedim + (tileidx[0] - baseidx[0])*self.zcubedim*self.ytiledim/self.ycubedim
+#    print tileidx, baseidx, (tileidx[2] - baseidx[2]) +\
+#           (tileidx[1] - baseidx[1])*self.zcubedim*self.ytiledim/self.ycubedim +\
+#           (tileidx[0] - baseidx[0])*self.zcubedim*self.ycubedim/self.xtiledim*self.xtiledim/self.xcubedim
+# Not sure what the bug here is.  NEed to use this one.
+    return (tileidx[2] - baseidx[2]) +\
+           (tileidx[1] - baseidx[1]) * self.zcubedim*self.zbatchsz  * self.ytiledim/self.ycubedim  +\
+           (tileidx[0] - baseidx[0]) * self.zcubedim*self.zbatchsz  * self.ycubedim*self.ybatchsize * self.xtiledim/self.xcubedim
 
 #  Change the function for small cases
-    return  (tileidx[0] - baseidx[0]) + (tileidx[1] - baseidx[1]) * self.xtiledim/self.xcubedim + \
-           (tileidx[2] - baseidx[2]) * self.xtiledim/self.xcubedim * self.ytiledim/self.ycubedim  
+#    print baseidx, tileidx, (tileidx[0] - baseidx[0]) + (tileidx[1] - baseidx[1]) * self.xtiledim/self.xcubedim + \
+#               (tileidx[2] - baseidx[2]) * self.xtiledim/self.xcubedim * self.ytiledim/self.ycubedim
+#
+#    return  (tileidx[0] - baseidx[0]) + (tileidx[1] - baseidx[1]) * self.xtiledim/self.xcubedim + \
+#           (tileidx[2] - baseidx[2]) * self.xtiledim/self.xcubedim * self.ytiledim/self.ycubedim  
 
 
   #
@@ -135,6 +143,9 @@ class Tiles:
     # List of tiles to be prefetch
     tilelist = []
 
+    
+    print len(idxbatch) 
+    print idxbatch
     # Need to clear previous cache contents
     for i in range ( len ( self.tiledata ) ):
       self.tiledata[i] = np.zeros ( [self.ytiledim, self.xtiledim] )
@@ -172,6 +183,7 @@ class Tiles:
       try:
         tileimage = Image.open ( fname, 'r' )
         pfslotidx = self.pfSlotIndex ( tileidx, self.pfbaseidx )
+        print tileidx, self.pfbaseidx, pfslotidx
         self.tiledata [ pfslotidx ] = np.asarray ( tileimage )
       except IOError:
         continue
@@ -251,8 +263,8 @@ class Tiles:
 
 # RBDBG use the prefetched data instead of the file data
           fname =  self.tileFile ( (xcorner+xcubeoffset)/self.xtiledim,\
-                                   (ycorner+ycubeoffset)/self.ytiledim,\
-                                    zcorner+z ) 
+                                  (ycorner+ycubeoffset)/self.ytiledim,\
+                                   zcorner+z ) 
           try:
             tileimage = Image.open ( fname, 'r' )
             tiledata = np.asarray ( tileimage )
@@ -271,9 +283,9 @@ class Tiles:
            
 #        RBDBG for debugging check that the data is the same
 #          Check that the data in the array is the same as the data the in prefetch buffers
-          if ( tiledata.all() != self.tiledata [ pfslotidx ].all() ):
-            print "Read", tiledata
-            print "Buffered", pfslotidx, self.tiledata [ pfslotidx ]
+#          if ( tiledata.all() != self.tiledata [ pfslotidx ].all() ):
+#            print "Read", tiledata
+#            print "Buffered", pfslotidx, self.tiledata [ pfslotidx ]
           assert tiledata.all() == self.tiledata [ pfslotidx ].all()
           
           #Update the amount of data we've written to cube
