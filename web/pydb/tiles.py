@@ -120,7 +120,7 @@ class Tiles:
       try:
         tileimage = Image.open ( fname, 'r' )
         self.tiledata [ str(tileidx) ] = np.asarray ( tileimage )
-#        print ( "Loaded file " + fname )
+        print ( "Loaded file " + fname )
       except IOError:
         continue
 
@@ -215,8 +215,7 @@ class Tiles:
           tileidx = [ (xcorner+xcubeoffset)/self.xtilesize, (ycorner+ycubeoffset)/self.ytilesize, zcorner+z ]
           if  self.tiledata.get(str(tileidx)) == None :
             pass
-#            print "Data  not found: ", tileidx
-#            print "Using zeroed data instead"
+            print "Tile {0} not found. Using zeroed data instead.".format(tileidx)
           else: 
             cube.data [ z, ycubeoffset:(ycubeoffset+yiters), xcubeoffset:(xcubeoffset+xiters) ]  =  \
               self.tiledata [ str(tileidx)]  [ ytileoffset:ytileoffset+yiters, xtileoffset:xtileoffset+xiters ]
