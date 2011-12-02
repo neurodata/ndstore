@@ -49,6 +49,10 @@ class CubeDB:
     [ self.startslice, endslice ] = self.dbcfg.slicerange
     self.slices = endslice - self.startslice + 1 
 
+  def __del ( self ):
+    """Close the connection"""
+    conn.close()
+
   #
   #  ingestCube
   #
@@ -96,23 +100,6 @@ class CubeDB:
     # list of batched indexes
     idxbatch = []
 
-#RBTODO this works.  But if there's no memory leak, no need to restart
-#    # This is the restart code.  Figure out the highest index stored and 
-#    #  insert the next one after that
-#    dbname = self.dbcfg.tablebase + str(resolution)
-#    cursor = self.conn.cursor()
-#    sql = "SELECT MAX(zindex) FROM " + dbname 
-#    cursor.execute(sql)
-#    maxvaltpl = cursor.fetchone ()
-#    print maxvaltpl
-#    if maxvaltpl [0] != None:
-#      maxval = int(maxvaltpl[0])
-#      print "Maximum value", int(maxvaltpl[0])
-#    else:
-#      maxval = None
-
-
-
     # This parameter needs to match to the max number of slices to be taken.  
     # The maximum z slices that prefetching will take in this prefetch
     #  This is useful for higher resolutions where we run out of tiles in 
@@ -128,12 +115,6 @@ class CubeDB:
     # Ingest the slices in morton order
     for mortonidx in zindex.generator ( [xlimit, ylimit, zlimit] ):
 
-#RBTODO part of the restart code
-#      # Skip all values until the one following maxval
-#      #  RBTODO do we need this
-#      if maxval != None and maxval >= mortonidx:
-#        continue
-
       xyz = zindex.MortonXYZ ( mortonidx )
       
       # if this exceeds the limit on the z dimension, do the ingest
@@ -146,6 +127,9 @@ class CubeDB:
         for idx in idxbatch:
           bc = self.ingestCube ( idx, resolution, tilestack )
           self.saveCube ( bc, idx, resolution )
+
+        # commit the batch
+        self.conn.commit()
         
         # if we've hit our area bounds set the new limit
         if xyz [2] == zmaxpf:
@@ -165,6 +149,10 @@ class CubeDB:
       bc = self.ingestCube ( idx, resolution, tilestack )
       self.saveCube ( bc, idx, resolution )
 
+    # commit the batch
+    self.conn.commit()
+
+
   #
   # Output the cube to the database
   #   use NumPy formatting I/O routines
@@ -181,9 +169,9 @@ class CubeDB:
 
     # insert the blob into the database
     cursor = self.conn.cursor()
-    sql = "INSERT DELAYED INTO " + dbname + " (zindex, cube) VALUES (%s, %s)"
-
+    sql = "INSERT INTO " + dbname + " (zindex, cube) VALUES (%s, %s)"
     cursor.execute(sql, (mortonidx, cdz))
+    cursor.close()
 
 
   #
