@@ -1,4 +1,4 @@
-################################################################################
+#y###############################################################################
 #
 #    Randal C. Burns
 #    Department of Computer Science
@@ -211,10 +211,14 @@ def xyImage ( imageargs, dbcfg ):
 
   try:
     cdb = cubedb.CubeDB ( dbcfg )
+    print corner, dim, resolution
     cb = cdb.getCube ( corner, dim, resolution )
+    print "here"
     fileobj = StringIO.StringIO ( )
+    print "there"
     cb.xySlice ( fileobj )
   except:
+    print "Exception"
     return web.notfound()
 
   web.header('Content-type', 'image/png') 
