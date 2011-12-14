@@ -59,5 +59,6 @@ class dbConfigKasthuri11 ( dbconfig.dbConfig ):
   dbpasswd = kasthuri11private.dbpasswd
   dbname = kasthuri11private.dbname
   dbhost = kasthuri11private.dbhost
+  inputprefix = kasthuri11private.inputprefix
 
 # end dbconfigkasthuri11

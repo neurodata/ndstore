@@ -6,24 +6,36 @@
 #
 ################################################################################
 
+import argparse
+import sys
+import os
+
 import cubedb
 import dbconfig
 import dbconfighayworth5nm
-import dbconfigkasthuri11
-import dbconfigbock11
+#import dbconfigkasthuri11
+#import dbconfigbock11
 
 #
 #  gendb: generate a database of cubes
 #
 
-#  Specify the database to ingest
-dbcfg = dbconfigbock11.dbConfigBock11()
-#dbcfg = dbconfighayworth5nm.dbConfigHayworth5nm()
+def main():
 
-cdb = cubedb.CubeDB ( dbcfg )
+  #  Specify the database to ingest
+  #dbcfg = dbconfigbock11.dbConfigBock11()
 
-# for all specified resolutions
-for resolution in dbcfg.resolutions:
-  print "Building DB for resolution ", resolution, " imagesize ", dbcfg.imagesz[resolution]
-  cdb.generateDB ( resolution )
+  dbcfg = dbconfighayworth5nm.dbConfigHayworth5nm()
+
+  cdb = cubedb.CubeDB ( dbcfg )
+
+  # for all specified resolutions
+  for resolution in dbcfg.resolutions:
+    print "Building DB for resolution ", resolution, " imagesize ", dbcfg.imagesz[resolution]
+    cdb.generateDB ( resolution )
+
+  return 
+
+if __name__ == "__main__":
+  main()
 

@@ -63,7 +63,6 @@ class dbConfigBock11 ( dbconfig.dbConfig ):
              1: 10.0/2.0,\
              0: 10.0 }
 
-  inputprefix = "/mnt/data/bock11"
 
   #database parameters
   tablebase = bock11private.tablebase
@@ -71,5 +70,6 @@ class dbConfigBock11 ( dbconfig.dbConfig ):
   dbpasswd = bock11private.dbpasswd
   dbname = bock11private.dbname
   dbhost = bock11private.dbhost
+  inputprefix = bock11private.inputprefix
 
 # end dbconfigbock11
