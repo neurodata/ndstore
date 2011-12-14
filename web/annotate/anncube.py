@@ -11,6 +11,10 @@ import cStringIO
 from PIL import Image
 import zlib
 
+import empaths
+import dbconfig
+import zindex
+
 #
 #  AnnotateCube: manipulate the in-memory data representation of the 3-d cube of data
 #    that contains annotations.
@@ -21,7 +25,7 @@ import zlib
 class AnnotateCube:
 
   # Constructor 
-  def __init__(self, cubesize=[64,64,64]):
+  def __init__(self):
     """Create empty array of cubesize"""
 
     # cubesize is in z,y,x for interactions with tile/image data

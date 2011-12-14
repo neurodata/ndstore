@@ -31,6 +31,10 @@ class dbConfigHayworth5nm ( dbconfig.dbConfig ):
   #resolution information -- lowest resolution and list of resolution
   baseres = 0
   resolutions = [ 5, 4, 3, 2, 1, 0 ]
+#  resolutions = [ 1 ]
+
+  # annotation resolution
+  annotate_resolution = 1
 
   imagesz = { 5: [ 256, 256 ],\
               4: [ 2*256, 2*256 ],\
@@ -46,6 +50,7 @@ class dbConfigHayworth5nm ( dbconfig.dbConfig ):
              2: 6.0/4.0,\
              1: 6.0/2.0,\
              0: 6.0 }
+
 
   #database parameters
   tablebase = hayworth5nmprivate.tablebase

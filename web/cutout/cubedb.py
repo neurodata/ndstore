@@ -40,11 +40,11 @@ class CubeDB:
                             user = self.dbcfg.dbuser,
                             passwd = self.dbcfg.dbpasswd,
                             db = self.dbcfg.dbname)
-    cursor = self.conn.cursor ()
-    cursor.execute ("SELECT VERSION()")
-    row = cursor.fetchone ()
-    print "server version:", row[0]
-    cursor.close ()
+#    cursor = self.conn.cursor ()
+#    cursor.execute ("SELECT VERSION()")
+#    row = cursor.fetchone ()
+#    print "server version:", row[0]
+#    cursor.close ()
 
     [ self.startslice, endslice ] = self.dbcfg.slicerange
     self.slices = endslice - self.startslice + 1 
