@@ -213,9 +213,7 @@ def xyImage ( imageargs, dbcfg ):
     cdb = cubedb.CubeDB ( dbcfg )
     print corner, dim, resolution
     cb = cdb.getCube ( corner, dim, resolution )
-    print "here"
     fileobj = StringIO.StringIO ( )
-    print "there"
     cb.xySlice ( fileobj )
   except:
     print "Exception"

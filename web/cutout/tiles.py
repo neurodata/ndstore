@@ -9,6 +9,8 @@
 import numpy as np
 from PIL import Image
 import sys
+
+import empaths
 import zindex
 
 ################################################################################
