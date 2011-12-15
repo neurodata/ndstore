@@ -12,20 +12,17 @@ dbcfg = dbconfighayworth5nm.dbConfigHayworth5nm()
 
 annoDB = anndb.AnnotateDB ( dbcfg )
 
-annoDB.nextID ()
+annoDB.addEntity ( [ [ 0,0,0], [1,1,1 ] ] )
 
-annoDB.addEntity ( [ [ 0,0,0], [17,17,17 ] ] )
-
-cube = anncube.AnnotateCube ( [ 4, 4, 4 ])
-
-  
-#jfor i in range (4):
- #j for j in range (4):
-  #j  cube.addItem ( j*4+i, [ [i,j, k] for k in range(4) ] )
-
-#jcube.addCube ( cube.data, [0,0,0] )
-#jprint cube.data
-#x = cube.toNPZ ( ) 
+#cube = anncube.AnnotateCube ( [ 4, 4, 4 ])
+#
+#  
+#for i in range (4):
+#  for j in range (4):
+#    cube.addEntity ( j*4+i, [ [i,j, k] for k in range(4) ] )
+#
+#cube.addCube ( cube.data, [0,0,0] )
+#print cube.data
 
 
 #cube.fromNPZ ( x ) 

@@ -71,13 +71,29 @@ class AnnotateCube:
 
 
   # Add annotations
-
-  # Add annotation  by locations
-  def addItem ( self, annid, locations ):
+  #
+  #  We are mostly going to assume that annotations are non-overlapping.  When they are,
+  #  we are going to be less than perfectly efficient.
+  #  
+  #  Returns a list of exceptions  
+  #
+  def addEntity ( self, annid, offset, locations ):
     """Add annotation by a list of locations"""
+
+#  For now first label for a voxel wins
+
+    exceptions = []
+
+    # xyz coordinates get stored as zyx to be more
+    #  efficient when converting to images
     for voxel in locations:
-      self.data [ voxel[2], voxel[1], voxel[0] ] = annid
+  #    if ( self.data [ voxel[2], voxel[1], voxel[0] ] == 0 ):
+      if ( 1 ):
+        self.data [ voxel[2]-offset[2], voxel[1]-offset[1], voxel[0]-offset[0] ] = annid
+      else:
+        exceptions.append ( voxel )
   
+    return exceptions
 
   #
   #  addCube -- from another cube to this cube
@@ -85,7 +101,7 @@ class AnnotateCube:
   #
   def addCube ( self, nparray, corner ):
     """Add data from an nparray"""
-
+ 
     npasize = nparray.shape
 
     # Check that it is a legal assignment within bounds
@@ -100,50 +116,5 @@ class AnnotateCube:
                 corner[0]:corner[0]+npasize[0] ] = tmparray[:,:,:]
 
 
-##############################################################
-
-  # RBTODO prob. need to kill these.  Keep around for testing for now.
-  #
-  # Create the specified slice (index) at filename
-  #
-  def xySlice ( self, fileobj ):
-
-    zdim,ydim,xdim = self.data.shape
-    outimage = Image.frombuffer ( 'L', (xdim,ydim), self.data[0,:,:].flatten(), 'raw', 'L', 0, 1 ) 
-    outimage.save ( fileobj, "PNG" )
-  
-
-  #
-  # Create the specified slice (index) at filename
-  #
-  def xzSlice ( self, zscale, fileobj  ):
-
-    zdim,ydim,xdim = self.data.shape
-    outimage = Image.frombuffer ( 'L', (xdim,zdim), self.data[:,0,:].flatten(), 'raw', 'L', 0, 1 ) 
-    #TODO if the image scales to 0 pixels it don't work
-    newimage = outimage.resize ( [xdim, int(zdim*zscale)] )
-    newimage.save ( fileobj, "PNG" )
-  
-
-  #
-  # Create the specified slice (index) at filename
-  #
-  def yzSlice ( self, zscale, fileobj  ):
-
-    zdim,ydim,xdim = self.data.shape
-    outimage = Image.frombuffer ( 'L', (ydim,zdim), self.data[:,:,0].flatten(), 'raw', 'L', 0, 1 ) 
-    #TODO if the image scales to 0 pixels it don't work
-    newimage = outimage.resize ( [ydim, int(zdim*zscale)] )
-    newimage.save ( fileobj, "PNG" )
-
-
-  #
-  # Trim off the excess data
-  #  translate xyz -> zyx
-  #
-  def cutout ( self, xoffset, xsize, yoffset, ysize, zoffset, zsize ):
-    """Trim off the excess data"""
-    self.data = self.data [ zoffset:zoffset+zsize, yoffset:yoffset+ysize, xoffset:xoffset+xsize ]
-  
 # end AnnotateCube
 
