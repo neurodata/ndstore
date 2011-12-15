@@ -1,18 +1,32 @@
 
+import empaths
+import dbconfig
+import dbconfighayworth5nm
 
-from anncube import AnnotateCube
+import anncube
+import anndb
 
 
-cube = AnnotateCube ( [ 4, 4, 4 ])
+dbcfg = dbconfighayworth5nm.dbConfigHayworth5nm()
+
+
+annoDB = anndb.AnnotateDB ( dbcfg )
+
+annoDB.nextID ()
+
+annoDB.addEntity ( [ [ 0,0,0], [17,17,17 ] ] )
+
+cube = anncube.AnnotateCube ( [ 4, 4, 4 ])
+
   
-for i in range (4):
-  for j in range (4):
-    cube.addItem ( j*4+i, [ [i,j, k] for k in range(4) ] )
+#jfor i in range (4):
+ #j for j in range (4):
+  #j  cube.addItem ( j*4+i, [ [i,j, k] for k in range(4) ] )
 
-cube.addCube ( cube.data, [0,0,0] )
-print cube.data
-x = cube.toNPZ ( ) 
+#jcube.addCube ( cube.data, [0,0,0] )
+#jprint cube.data
+#x = cube.toNPZ ( ) 
 
 
-cube.fromNPZ ( x ) 
-print cube.data
+#cube.fromNPZ ( x ) 
+#print cube.data

@@ -25,20 +25,28 @@ import zindex
 class AnnotateCube:
 
   # Constructor 
-  def __init__(self):
+  #
+  #  Express cubesize in [ x,y,z ]
+  def __init__(self, cubesize):
     """Create empty array of cubesize"""
 
     # cubesize is in z,y,x for interactions with tile/image data
-    self.zdim, self.ydim, self.xdim =  self.cubesize = [ cubesize[2],cubesize[1],cubesize[0] ]
-    self.data = np.zeros ( self.cubesize, dtype=np.uint32 )
+#    self.zdim, self.ydim, self.xdim =  self.cubesize = [ cubesize[2],cubesize[1],cubesize[0] ]
+    #RBTODO for testing
+    self.zdim, self.ydim, self.xdim =  self.cubesize = [ 4,4,4 ]
 
   # Constructor 
   def __del__(self):
     """Destructor"""
     pass
 
+  # create an all zeros cube
+  def zeros ( self ):
+    """Create a cube of all 0"""
+    self.data = np.zeros ( self.cubesize, dtype=np.uint32 )
+
   # load the object from a Numpy pickle
-  def fromNPZ (self, pandz ):
+  def fromNPZ ( self, pandz ):
     """Load the cube from a pickled and zipped blob"""
     try:
       newstr = zlib.decompress ( pandz[:] )
@@ -78,9 +86,6 @@ class AnnotateCube:
   def addCube ( self, nparray, corner ):
     """Add data from an nparray"""
 
-    assert(0)
-
-    # RB not tested.  Is x,y,z -> z,y,x correct
     npasize = nparray.shape
 
     # Check that it is a legal assignment within bounds
@@ -88,12 +93,16 @@ class AnnotateCube:
     assert self.ydim >= 0 and self.ydim <= npasize[1] + corner[1]
     assert self.zdim >= 0 and self.zdim <= npasize[2] + corner[2]
 
-    temparray = nparray.transpose()
+    tmparray = nparray.transpose()
 
     self.data [ corner[2]:corner[2]+npasize[2],\
                 corner[1]:corner[1]+npasize[1],\
-                corner[0];corner[0]+npasize[0] ] = tmparray[:,:,:]
+                corner[0]:corner[0]+npasize[0] ] = tmparray[:,:,:]
 
+
+##############################################################
+
+  # RBTODO prob. need to kill these.  Keep around for testing for now.
   #
   # Create the specified slice (index) at filename
   #
