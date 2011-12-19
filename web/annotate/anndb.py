@@ -169,7 +169,7 @@ class AnnotateDB:
   #
 #  Load the cube from the DB.
 #  Uncompress it.
-#  Select and item identifier
+#  Select an item identifier
 #  Call add item on the cube.
 #  Store the cube on the DB
 #
@@ -194,23 +194,10 @@ class AnnotateDB:
     # Create a cube object
     cube = anncube.AnnotateCube ( self.cubedim )
 
-
     # iterator over the list for each cube
     for key, loclist in cubelocs.iteritems():
 
-
-        self.fetchCube ( key, cube )
-
-        # add the items
-        exceptions = cube.addEntity ( self.nextID(), zindex.MortonXYZ(key), loclist )
-
-        # update the sparse list of exceptions
-        #RBTODO
-
-
-      # this case we already have a cube stored in the annotation database
-      else:
-
+        self.getCube ( key, cube )
 
         # add the items
         exceptions = cube.addEntity ( self.nextID(), zindex.MortonXYZ(key), loclist )
@@ -218,21 +205,5 @@ class AnnotateDB:
         # update the sparse list of exceptions
         #RBTODO
 
-        # compress the cube
-        npz = cube.toNPZ ()
-
-        # perform an update query
-
-  #
-  # addEntity
-  #
-  #  Load the cube from the DB.
-  #  Uncompress it.
-  #  Select and item identifier
-  #  Call add item on the cube.
-  #  Store the cube on the DB
-  #
-  #
-  def addEntities ( self, corner, dim, cube  ):
-      """Add an entity as a list of voxels"""
+        self.putCube ( key, cube)
 
