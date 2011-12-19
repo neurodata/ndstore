@@ -13,6 +13,22 @@ dbcfg = dbconfighayworth5nm.dbConfigHayworth5nm()
 
 annoDB = anndb.AnnotateDB ( dbcfg )
 
+
+# Build a grayscale file and display
+
+#this is an xy plane of scanlines
+for j in range(16):
+  voxlist = []
+  for i in range(16):
+    voxlist.append ( [i, j, 13] )
+  annoDB.addEntity ( voxlist )
+
+#Check your work
+  
+xyplane = annoDB.cutout ( [0,0,13], [16,16,1] )
+
+print xyplane.data
+
 # Try to add a cube
 
 zyxdata = np.zeros ( [16,16,16] )
@@ -20,7 +36,7 @@ zyxdata = np.zeros ( [16,16,16] )
 for z in range(16):
   zyxdata[z,:,:] = np.identity ( 16 )
 
-annoDB.addCube ( [0,0,0], zyxdata )
+annoDB.addEntities ( [0,0,0], zyxdata )
 
 for k in range(4):
   for j in range(4):

@@ -54,7 +54,7 @@ class AnnotateDB:
 #    self.cubedim = self.dbcfg.cubedim [ self.dbcfg.annotateres ] 
 #    self.imagesize = self.dbcfg.imagesz [ self.dbcfg.annotateres ]
     [ self.xcubedim, self.ycubedim, self.zcubedim ] = self.cubedim = [4,4,4]
-    [ self.ximagesize, self.yimagesize, self.zimagesize ] = self.imagesize = [32,32,32]
+    [ self.ximagesize, self.yimagesize, self.zimagesize ] = self.imagesize = [16,16,16]
 
 
   def __del ( self ):
@@ -85,7 +85,7 @@ class AnnotateDB:
     else:
       identifier = int ( row[0] ) + 1
 
-    print "Identifier = ", identifier
+#    print "Identifier = ", identifier
 
     # increment and update query
     sql = "INSERT INTO " + str(self.ids_tbl) + " VALUES ( " + str(identifier) + " ) "
@@ -123,11 +123,9 @@ class AnnotateDB:
 
     # If we can't find a cube, assume it hasn't been written yet
     if ( row == None ):
-      print "Zeros at ", key
       cube.zeros ()
 
     else: 
-      print "Found cube ", key
       # decompress the cube
       cube.fromNPZ ( row[0] )
 
@@ -215,14 +213,16 @@ class AnnotateDB:
         self.putCube ( key, cube)
 
   #
-  # addCube
+  # addEntities
+  #
+  #  This takes a z,y,x cube of identifiers, relabels them and
+  #   puts them in the database.
   #
   #  In slice, col, row format (z,y,x) look out for the weirdness
   #   this works with image coordinates
   #
-  def addCube ( self, zyxcorner, zyxdata ):
+  def addEntities ( self, zyxcorner, zyxdata ):
     """Add an entity as a numpy array in row c"""
-
 
     print zyxcorner
     print zyxdata.shape
@@ -235,7 +235,6 @@ class AnnotateDB:
     assert zyxcorner[2]+zyxdata.shape[2] <= self.ximagesize
 
     #  Get the range of cubes
-    #   Note: cubedime 
     zstart = zyxcorner[0] / self.zcubedim
     ystart = zyxcorner[1] / self.ycubedim
     xstart = zyxcorner[2] / self.xcubedim
@@ -268,6 +267,7 @@ class AnnotateDB:
     else:
       zyxaligned = zyxdata
 
+    # RBTODO
     # rewrite the identifiers so that they are unique
 #    self.rewrite ( zyxaligned )
 
@@ -288,5 +288,91 @@ class AnnotateDB:
 
           # store the cube in the database
           self.putCube ( key, cube )
+
+
+  #
+  #  Return a cube of data from the database
+  #  Must account for zeros.
+  #
+  def cutout ( self, corner, dim ):
+    """Extract a cube of arbitrary size.  Need not be aligned."""
+
+    # Round to the nearest larger cube in all dimensions
+    zstart = corner[2]/self.zcubedim
+    ystart = corner[1]/self.ycubedim
+    xstart = corner[0]/self.xcubedim
+
+    znumcubes = (corner[2]+dim[2]+self.zcubedim-1)/self.zcubedim - zstart
+    ynumcubes = (corner[1]+dim[1]+self.ycubedim-1)/self.ycubedim - ystart
+    xnumcubes = (corner[0]+dim[0]+self.xcubedim-1)/self.xcubedim - xstart
+
+    # input cube is the database size
+    incube = anncube.AnnotateCube ( self.cubedim )
+
+    # output cube is as big as was asked for and zero it.
+    outcube = anncube.AnnotateCube ( [xnumcubes*self.xcubedim,\
+                                      ynumcubes*self.ycubedim,\
+                                      znumcubes*self.zcubedim] )
+    outcube.zeros()
+    print outcube.data.shape
+
+    # Build a list of indexes to access
+    listofidxs = []
+    for z in range ( znumcubes ):
+      for y in range ( ynumcubes ):
+        for x in range ( xnumcubes ):
+          mortonidx = zindex.XYZMorton ( [x+xstart, y+ystart, z+zstart] )
+          listofidxs.append ( mortonidx )
+
+    # Sort the indexes in Morton order
+    listofidxs.sort()
+
+    # Batch query for all cubes
+    dbname = self.ann_tbl
+    cursor = self.conn.cursor()
+    sql = "SELECT zindex, cube from " + dbname + " where zindex in (%s)" 
+    # creats a %s for each list element
+    in_p=', '.join(map(lambda x: '%s', listofidxs))
+    # replace the single %s with the in_p string
+    sql = sql % in_p
+    cursor.execute(sql, listofidxs)
+
+    # xyz offset stored for later use
+    lowxyz = zindex.MortonXYZ ( listofidxs[0] )
+
+    # Get the objects and add to the cube
+    for i in range ( len(listofidxs) ): 
+      idx, datastring = cursor.fetchone()
+
+
+      #add the query result cube to the bigger cube
+      curxyz = zindex.MortonXYZ(int(idx))
+      offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
+
+      print idx, curxyz
+
+      # get an input cube 
+      incube.fromNPZ ( datastring[:] )
+
+      # add it to the output cube
+      outcube.addData ( incube, offset ) 
+
+    # need to trim down the array to size
+    #  only if the dimensions are not the same
+    if dim[0] % self.xcubedim  == 0 and\
+       dim[1] % self.ycubedim  == 0 and\
+       dim[2] % self.zcubedim  == 0 and\
+       corner[0] % self.xcubedim  == 0 and\
+       corner[1] % self.ycubedim  == 0 and\
+       corner[2] % self.zcubedim  == 0:
+      pass
+    else:
+      outcube.trim ( corner[0]%self.xcubedim,dim[0],\
+                      corner[1]%self.ycubedim,dim[1],\
+                      corner[2]%self.zcubedim,dim[2] )
+    return outcube
+
+
+
 
 

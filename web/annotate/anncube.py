@@ -17,7 +17,7 @@ import zindex
 
 #
 #  AnnotateCube: manipulate the in-memory data representation of the 3-d cube of data
-#    that contains annotations.
+#    that contains annotations.  
 #
 
 # RBTODO testing in B and W.  Change to 24 bit.
@@ -31,9 +31,7 @@ class AnnotateCube:
     """Create empty array of cubesize"""
 
     # cubesize is in z,y,x for interactions with tile/image data
-#    self.zdim, self.ydim, self.xdim =  self.cubesize = [ cubesize[2],cubesize[1],cubesize[0] ]
-    #RBTODO for testing
-    self.zdim, self.ydim, self.xdim =  self.cubesize = [ 4,4,4 ]
+    self.zdim, self.ydim, self.xdim = self.cubesize = [ cubesize[2],cubesize[1],cubesize[0] ]
   
     # variable that describes when a cube is created from zeros
     #  rather than loaded from another source
@@ -72,6 +70,9 @@ class AnnotateCube:
     self._newcube = False
 
 
+
+
+
   # return a numpy pickle to be stored in the database
   def toNPZ ( self ):
     """Pickle and zip the object"""
@@ -99,8 +100,6 @@ class AnnotateCube:
 
     exceptions = []
 
-    print "Offset =", offset
-
     # xyz coordinates get stored as zyx to be more
     #  efficient when converting to images
     for voxel in locations:
@@ -112,31 +111,11 @@ class AnnotateCube:
   
     return exceptions
 
-  #
-  #  addCube -- from another cube to this cube
-  #    the nparray is in x,y,z and the self is in z,y,x
-  #
-  def addCube ( self, nparray, corner ):
-    """Add data from an nparray"""
- 
-    npasize = nparray.shape
-
-    # Check that it is a legal assignment within bounds
-    assert self.xdim >= 0 and self.xdim <= npasize[0] + corner[0]
-    assert self.ydim >= 0 and self.ydim <= npasize[1] + corner[1]
-    assert self.zdim >= 0 and self.zdim <= npasize[2] + corner[2]
-
-    tmparray = nparray.transpose()
-
-    self.data [ corner[2]:corner[2]+npasize[2],\
-                corner[1]:corner[1]+npasize[1],\
-                corner[0]:corner[0]+npasize[0] ] = tmparray[:,:,:]
-
 
   # arrayUpdate
   #
   #  Update the existing cube with these identifiers specified in this cube.
-
+  #
   #  Returns a list of exceptions  
   #
   def arrayUpdate ( self, npdata ):
@@ -157,6 +136,42 @@ class AnnotateCube:
 
 
 
+  #
+  #  addData -- from another cube to this cube
+  #
+  def addData ( self, other, index ):
+    """Add data to a larger cube from a smaller cube"""
+
+    
+    print other.data.shape
+    print index
+    print self.data.shape
+
+    # Check that it is a legal assignment   
+    #  aligned and within bounds
+    assert self.xdim % other.xdim == 0
+    assert self.ydim % other.ydim == 0
+    assert self.zdim % other.zdim == 0
+
+    assert (index[0]+1)*other.xdim <= self.xdim
+    assert (index[1]+1)*other.ydim <= self.ydim
+    assert (index[2]+1)*other.zdim <= self.zdim
+
+    xoffset = index[0]*other.xdim
+    yoffset = index[1]*other.ydim
+    zoffset = index[2]*other.zdim
+
+    self.data [ zoffset:zoffset+other.zdim,\
+                yoffset:yoffset+other.ydim,\
+                xoffset:xoffset+other.xdim ]\
+            = other.data [:,:,:]
+
+  #
+  # Trim off the excess data
+  #
+  def trim ( self, xoffset, xsize, yoffset, ysize, zoffset, zsize ):
+    """Trim off the excess data"""
+    self.data = self.data [ zoffset:zoffset+zsize, yoffset:yoffset+ysize, xoffset:xoffset+xsize ]
 
 
 # end AnnotateCube
