@@ -99,6 +99,8 @@ class AnnotateCube:
 
     exceptions = []
 
+    print "Offset =", offset
+
     # xyz coordinates get stored as zyx to be more
     #  efficient when converting to images
     for voxel in locations:
@@ -129,6 +131,32 @@ class AnnotateCube:
     self.data [ corner[2]:corner[2]+npasize[2],\
                 corner[1]:corner[1]+npasize[1],\
                 corner[0]:corner[0]+npasize[0] ] = tmparray[:,:,:]
+
+
+  # arrayUpdate
+  #
+  #  Update the existing cube with these identifiers specified in this cube.
+
+  #  Returns a list of exceptions  
+  #
+  def arrayUpdate ( self, npdata ):
+    """Update the cube with an array of the same size"""
+
+    assert self.data.shape == npdata.shape
+
+    for z in range ( self.data.shape[0] ):
+      for y in range ( self.data.shape[1] ):
+        for x in range ( self.data.shape[2] ):
+
+          if npdata[z,y,x] != 0:
+            if self.data[z,y,x] == 0:
+              self.data[z,y,x] = npdata[z,y,x]
+#RBTODO these are the exceptions you need to deal with
+            else:
+              self.data[z,y,x] = npdata[z,y,x]
+
+
+
 
 
 # end AnnotateCube
