@@ -53,7 +53,7 @@ class RESTBadArgsError(Exception):
 #  Build the returned braincube.  Called by all methods 
 #   that then refine the output.
 #
-def getCube ( imageargs, dbcfg ):
+def cutout ( imageargs, dbcfg ):
 
   # expecting an argument of the form /resolution/x1,x2/y1,y2/z1,z2/
 
@@ -103,7 +103,7 @@ def getCube ( imageargs, dbcfg ):
   dim=[x2i-x1i,y2i-y1i,z2i-z1i ]
 
   cdb = cubedb.CubeDB ( dbcfg )
-  return cdb.getCube ( corner, dim, resolution )
+  return cdb.cutout ( corner, dim, resolution )
 
 
 #
@@ -113,7 +113,7 @@ def numpyZip ( imageargs, dbcfg ):
   """Return a web readable Numpy Pickle zipped"""
 
   try:
-    cube = getCube ( imageargs, dbcfg )
+    cube = cutout ( imageargs, dbcfg )
   except RESTRangeError:
     return web.notfound()
   except RESTBadArgsError:
@@ -141,7 +141,7 @@ def HDF5 ( imageargs, dbcfg ):
   """Return a web readable HDF5 file"""
 
   try:
-    cube = getCube ( imageargs, dbcfg )
+    cube = cutout ( imageargs, dbcfg )
   except RESTRangeError:
     return web.notfound()
   except RESTBadArgsError:
@@ -212,7 +212,7 @@ def xyImage ( imageargs, dbcfg ):
   try:
     cdb = cubedb.CubeDB ( dbcfg )
     print corner, dim, resolution
-    cb = cdb.getCube ( corner, dim, resolution )
+    cb = cdb.cutout ( corner, dim, resolution )
     fileobj = StringIO.StringIO ( )
     cb.xySlice ( fileobj )
   except:
@@ -272,7 +272,7 @@ def xzImage ( imageargs, dbcfg ):
 
   try:
     cdb = cubedb.CubeDB ( dbcfg )
-    cb = cdb.getCube ( corner, dim, resolution )
+    cb = cdb.cutout ( corner, dim, resolution )
     fileobj = StringIO.StringIO ( )
     cb.xzSlice ( dbcfg.zscale[resolution], fileobj )
   except:
@@ -334,7 +334,7 @@ def yzImage ( imageargs, dbcfg ):
 
   try:
     cdb = cubedb.CubeDB ( dbcfg )
-    cb = cdb.getCube ( corner, dim, resolution )
+    cb = cdb.cutout ( corner, dim, resolution )
     fileobj = StringIO.StringIO ( )
     cb.yzSlice ( dbcfg.zscale[resolution], fileobj )
   except:
