@@ -99,25 +99,88 @@ class AnnotateDB:
 
     return identifier
 
+  #
+  # getCube
+  #
+  def getCube ( self, key ):
+    """Load a cube from the annotation database"""
+
+    cursor = self.conn.cursor ()
+
+    # get the block from the database
+    sql = "SELECT cube FROM " + self.ann_tbl + " WHERE zindex = " + str(key)
+    try:
+      cursor.execute ( sql )
+    except:
+      print "Unknown problem with table", self.ann_tbl
+
+    row = cursor.fetchone ()
+
+    # If we can't find a cube, assume it hasn't been written yet
+    if ( row == None ):
+      print "Zeros at ", key
+      cube.zeros ()
+
+    else: 
+      print "Found cube ", key
+      # decompress the cube
+      cube.fromNPZ ( row[0] )
+
+    print cube.data
+    cursor.close()
+  }
+
 
   #
-  # addItem
+  # putCube
   #
-  #  Load the cube from the DB.
-  #  Uncompress it.
-  #  Select and item identifier
-  #  Call add item on the cube.
-  #  Store the cube on the DB
+  def putCube ( self, key ):
+    """Store a cube from the annotation database"""
+
+    cursor = self.conn.cursor ()
+
+    # compress the cube
+    npz = cube.toNPZ ()
+
+    # we created a cube from zeros
+    if cube.fromZeros ():
+
+      sql = "INSERT INTO " + self.ann_tbl +  "(zindex, cube) VALUES (%s, %s)"
+      try:
+        cursor.execute ( sql, (key,npz))
+      except:
+        print "Error inserting into ", self.items_tbl
+
+    else:
+
+      sql = "UPDATE " + self.ann_tbl + " SET cube=(%s) WHERE zindex=" + str(key)
+      try:
+        cursor.execute ( sql, (npz))
+      except:
+        print "Error updating key={0} in table".format( key, self.items_tbl)
+        assert 0
+
+    cursor.close()
+    self.conn.commit()
+
+
   #
+  # addEntity
+  #
+#  Load the cube from the DB.
+#  Uncompress it.
+#  Select and item identifier
+#  Call add item on the cube.
+#  Store the cube on the DB
+#
   #
   def addEntity ( self, locations ):
+      """Add an entity as a list of voxels"""
 
-#  RBTODO need to deal with voxel conflicts.  later.
+    #  An item may exist across several cubes
+    #  Convert the locations into Morton order
 
-  #  An item may exist across several cubes
-  #  Convert the locations into Morton order
-
-  # dictionary of mortonkeys
+    # dictionary of mortonkeys
     cubelocs = {}
 
     #  list of locations inside each morton key
@@ -131,53 +194,24 @@ class AnnotateDB:
     # Create a cube object
     cube = anncube.AnnotateCube ( self.cubedim )
 
-    cursor = self.conn.cursor ()
 
-    # Now we have a 
+    # iterator over the list for each cube
     for key, loclist in cubelocs.iteritems():
 
-      # get the block from the database
-      sql = "SELECT cube FROM " + self.ann_tbl + " WHERE zindex = " + str(key)
-      try:
-        cursor.execute ( sql )
-      except:
-        print "Unknown problem with table", self.ann_tbl
 
-      row = cursor.fetchone ()
+        self.fetchCube ( key, cube )
 
-      # If we can't find a cube, assume it hasn't been written yet
-      if ( row == None ):
-
-        print "Zeros at ", key
-        cube.zeros ()
-
-        print cube.data
-
-        # We need to work on the conflicts.  for now, overwrite or throw an errior.
         # add the items
         exceptions = cube.addEntity ( self.nextID(), zindex.MortonXYZ(key), loclist )
 
         # update the sparse list of exceptions
         #RBTODO
 
-        # compress the cube
-        npz = cube.toNPZ ()
 
-        sql = "INSERT INTO " + self.ann_tbl +  "(zindex, cube) VALUES (%s, %s)"
-        try:
-          cursor.execute ( sql, (key,npz))
-        except:
-          print "Error inserting into ", self.items_tbl
-
+      # this case we already have a cube stored in the annotation database
       else:
 
-        print "Found cube ", key
-        # decompress the cube
-        cube.fromNPZ ( row[0] )
 
-        print cube.data
-
-        # We need to work on the conflicts.  for now, overwrite or throw an errior.
         # add the items
         exceptions = cube.addEntity ( self.nextID(), zindex.MortonXYZ(key), loclist )
 
@@ -188,13 +222,17 @@ class AnnotateDB:
         npz = cube.toNPZ ()
 
         # perform an update query
-        sql = "UPDATE " + self.ann_tbl + " SET cube=(%s) WHERE zindex=" + str(key)
-        try:
-          cursor.execute ( sql, (npz))
-        except:
-          print "Error updating key={0} in table".format( key, self.items_tbl)
-          assert 0
 
-    cursor.close()
-    self.conn.commit()
+  #
+  # addEntity
+  #
+  #  Load the cube from the DB.
+  #  Uncompress it.
+  #  Select and item identifier
+  #  Call add item on the cube.
+  #  Store the cube on the DB
+  #
+  #
+  def addEntities ( self, corner, dim, cube  ):
+      """Add an entity as a list of voxels"""
 

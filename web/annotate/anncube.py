@@ -34,6 +34,10 @@ class AnnotateCube:
 #    self.zdim, self.ydim, self.xdim =  self.cubesize = [ cubesize[2],cubesize[1],cubesize[0] ]
     #RBTODO for testing
     self.zdim, self.ydim, self.xdim =  self.cubesize = [ 4,4,4 ]
+  
+    # variable that describes when a cube is created from zeros
+    #  rather than loaded from another source
+    self._newcube = False
 
   # Constructor 
   def __del__(self):
@@ -41,8 +45,17 @@ class AnnotateCube:
     pass
 
   # create an all zeros cube
+  def fromZeros ( self ):
+    """Create a cube of all 0"""
+    if self._newcube == True:
+      return True
+    else: 
+      return False
+
+  # create an all zeros cube
   def zeros ( self ):
     """Create a cube of all 0"""
+    self._newcube = True
     self.data = np.zeros ( self.cubesize, dtype=np.uint32 )
 
   # load the object from a Numpy pickle
@@ -55,6 +68,8 @@ class AnnotateCube:
     except:
       print "Unpickle and unZip.  What did I catch?"
       assert 0
+
+    self._newcube = False
 
 
   # return a numpy pickle to be stored in the database
