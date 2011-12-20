@@ -33,7 +33,7 @@ class dbConfigHayworth5nm ( dbconfig.dbConfig ):
   resolutions = [ 5, 4, 3, 2, 1, 0 ]
 
   # annotation resolution
-  annotateres = 1
+  annotateres = 3
 
   imagesz = { 5: [ 256, 256 ],\
               4: [ 2*256, 2*256 ],\

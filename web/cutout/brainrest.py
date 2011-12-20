@@ -44,15 +44,18 @@ import dbconfigbock11
 #
 def cutout ( imageargs, dbcfg ):
 
+  # Perform argument processing
   args = restargs.BrainRestArgs ();
   args.cutoutArgs ( imageargs, dbcfg )
 
+  # Extract the relevant values
   corner = args.getCorner()
   dim = args.getDim()
   resolution = args.getResolution()
 
-
+  #Load the database
   cdb = cubedb.CubeDB ( dbcfg )
+  #perform the cutout
   return cdb.cutout ( corner, dim, resolution )
 
 
@@ -114,9 +117,11 @@ def HDF5 ( imageargs, dbcfg ):
 def xyImage ( imageargs, dbcfg ):
   """Return an xy plane fileobj.read()"""
 
+  # Perform argument processing
   args = restargs.BrainRestArgs ();
   args.xyArgs ( imageargs, dbcfg )
 
+  # Extract the relevant values
   corner = args.getCorner()
   dim = args.getDim()
   resolution = args.getResolution()
@@ -137,9 +142,11 @@ def xyImage ( imageargs, dbcfg ):
 def xzImage ( imageargs, dbcfg ):
   """Return an xz plane fileobj.read()"""
 
+  # Perform argument processing
   args = restargs.BrainRestArgs ();
   args.xzArgs ( imageargs, dbcfg )
 
+  # Extract the relevant values
   corner = args.getCorner()
   dim = args.getDim()
   resolution = args.getResolution()
@@ -160,9 +167,11 @@ def xzImage ( imageargs, dbcfg ):
 def yzImage ( imageargs, dbcfg ):
   """Return an yz plane fileobj.read()"""
 
+  # Perform argument processing
   args = restargs.BrainRestArgs ();
   args.yzArgs ( imageargs, dbcfg )
 
+  # Extract the relevant values
   corner = args.getCorner()
   dim = args.getDim()
   resolution = args.getResolution()

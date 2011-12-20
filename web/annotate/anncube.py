@@ -70,9 +70,6 @@ class AnnotateCube:
     self._newcube = False
 
 
-
-
-
   # return a numpy pickle to be stored in the database
   def toNPZ ( self ):
     """Pickle and zip the object"""
@@ -142,11 +139,6 @@ class AnnotateCube:
   def addData ( self, other, index ):
     """Add data to a larger cube from a smaller cube"""
 
-    
-    print other.data.shape
-    print index
-    print self.data.shape
-
     # Check that it is a legal assignment   
     #  aligned and within bounds
     assert self.xdim % other.xdim == 0
@@ -172,6 +164,18 @@ class AnnotateCube:
   def trim ( self, xoffset, xsize, yoffset, ysize, zoffset, zsize ):
     """Trim off the excess data"""
     self.data = self.data [ zoffset:zoffset+zsize, yoffset:yoffset+ysize, xoffset:xoffset+xsize ]
+
+  #
+  # Create the specified slice (index) at filename
+  #
+  def xySlice ( self, fileobj ):
+
+    zdim,ydim,xdim = self.data.shape
+    outimage = Image.frombuffer ( 'L', (xdim,ydim), self.data[0,:,:].flatten(), 'raw', 'L', 0, 1 )
+    outimage.save ( fileobj, "PNG" )
+
+
+
 
 
 # end AnnotateCube

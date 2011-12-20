@@ -51,10 +51,12 @@ class AnnotateDB:
     self.slices = endslice - self.startslice + 1 
 
     # get the size of the image and cube
-#    self.cubedim = self.dbcfg.cubedim [ self.dbcfg.annotateres ] 
-#    self.imagesize = self.dbcfg.imagesz [ self.dbcfg.annotateres ]
-    [ self.xcubedim, self.ycubedim, self.zcubedim ] = self.cubedim = [4,4,4]
-    [ self.ximagesize, self.yimagesize, self.zimagesize ] = self.imagesize = [16,16,16]
+    [ self.xcubedim, self.ycubedim, self.zcubedim ] = self.cubedim = self.dbcfg.cubedim [ self.dbcfg.annotateres ] 
+    [ self.ximagesize, self.yimagesize ] = self.imagesize = self.dbcfg.imagesz [ self.dbcfg.annotateres ]
+
+#RBTESTING remove
+#    [ self.xcubedim, self.ycubedim, self.zcubedim ] = self.cubedim = [4,4,4]
+#   [ self.ximagesize, self.yimagesize ] = self.imagesize = [16,16]
 
 
   def __del ( self ):
@@ -85,7 +87,7 @@ class AnnotateDB:
     else:
       identifier = int ( row[0] ) + 1
 
-#    print "Identifier = ", identifier
+    print "New identifier", identifier
 
     # increment and update query
     sql = "INSERT INTO " + str(self.ids_tbl) + " VALUES ( " + str(identifier) + " ) "
@@ -208,7 +210,6 @@ class AnnotateDB:
         exceptions = cube.addEntity ( entityid, offset, loclist )
 
         # update the sparse list of exceptions
-        #RBTODO
 
         self.putCube ( key, cube)
 
@@ -223,10 +224,6 @@ class AnnotateDB:
   #
   def addEntities ( self, zyxcorner, zyxdata ):
     """Add an entity as a numpy array in row c"""
-
-    print zyxcorner
-    print zyxdata.shape
-    print self.zimagesize
 
     # Check some bounds
     assert zyxcorner[0] >= 0 and zyxcorner[1] >= 0 and zyxcorner[2] >= 0
@@ -294,8 +291,10 @@ class AnnotateDB:
   #  Return a cube of data from the database
   #  Must account for zeros.
   #
-  def cutout ( self, corner, dim ):
+  def cutout ( self, corner, dim, resolution ):
     """Extract a cube of arbitrary size.  Need not be aligned."""
+
+    # Not doign anything with resolution yet.
 
     # Round to the nearest larger cube in all dimensions
     zstart = corner[2]/self.zcubedim
@@ -314,7 +313,6 @@ class AnnotateDB:
                                       ynumcubes*self.ycubedim,\
                                       znumcubes*self.zcubedim] )
     outcube.zeros()
-    print outcube.data.shape
 
     # Build a list of indexes to access
     listofidxs = []
@@ -344,12 +342,9 @@ class AnnotateDB:
     for i in range ( len(listofidxs) ): 
       idx, datastring = cursor.fetchone()
 
-
       #add the query result cube to the bigger cube
       curxyz = zindex.MortonXYZ(int(idx))
       offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
-
-      print idx, curxyz
 
       # get an input cube 
       incube.fromNPZ ( datastring[:] )
