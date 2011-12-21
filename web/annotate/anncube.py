@@ -7,6 +7,7 @@
 ################################################################################
 
 import numpy as np
+import array
 import cStringIO
 from PIL import Image
 import zlib
@@ -170,10 +171,37 @@ class AnnotateCube:
   #
   def xySlice ( self, fileobj ):
 
+#    zdim,ydim,xdim = self.data.shape
+#    outimage = Image.frombuffer ( 'L', (xdim,ydim), self.data[0,:,:].flatten(), 'raw', 'L', 0, 1 )
+#    outimage.save ( fileobj, "PNG" )
+
     zdim,ydim,xdim = self.data.shape
-    outimage = Image.frombuffer ( 'L', (xdim,ydim), self.data[0,:,:].flatten(), 'raw', 'L', 0, 1 )
+    imagemap = np.zeros ( [ ydim, xdim ], dtype=np.uint32 )
+
+    for y in range(ydim):
+      for x in range(xdim):
+        if self.data[0,y,x] != 0:
+          imagemap[y,x] = 0x80000000 + ( self.data[0,y,x] & 0xFF )
+    
+    outimage = Image.frombuffer ( 'RGBA', (xdim,ydim), imagemap, 'raw', 'RGBA', 0, 1 )
     outimage.save ( fileobj, "PNG" )
 
+#    return
+#
+#    zdim,ydim,xdim = self.data.shape
+#    imagemap = np.zeros ( ydim * xdim * 4, dtype=np.uint8 )
+#
+#    for y in range(ydim):
+#      for x in range(xdim):
+#        if self.data[0,y,x] != 0:
+#          imagemap[(y*xdim+x)*4:(y*xdim+x+1)*4] = array.array ('B', (255, 0, 0, 128))
+#          print y,x,imagemap[(y*xdim+x)*4:(y*xdim+x+1)*4] 
+#    
+#    outimage = Image.frombuffer ( 'RGBA', (xdim,ydim), imagemap, 'raw', 'RGBA', 0, 1 )
+#    outimage.save ( fileobj, "PNG" )
+
+# TOO slow!
+#          [ r, g, b ] = zindex.MortonXYZ ( self.data[0,y,x] )
 
 
 
