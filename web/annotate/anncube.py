@@ -21,8 +21,6 @@ import zindex
 #    that contains annotations.  
 #
 
-# RBTODO testing in B and W.  Change to 24 bit.
-
 class AnnotateCube:
 
   # Constructor 
@@ -101,12 +99,12 @@ class AnnotateCube:
     # xyz coordinates get stored as zyx to be more
     #  efficient when converting to images
     for voxel in locations:
-  #    if ( self.data [ voxel[2], voxel[1], voxel[0] ] == 0 ):
-      if ( 1 ):
+      if ( self.data [ voxel[2]-offset[2], voxel[1]-offset[1], voxel[0]-offset[0] ] == 0 ):
         self.data [ voxel[2]-offset[2], voxel[1]-offset[1], voxel[0]-offset[0] ] = annid
       else:
         exceptions.append ( voxel )
   
+    print "List of exceptions = ", exceptions
     return exceptions
 
 
