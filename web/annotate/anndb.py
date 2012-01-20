@@ -168,14 +168,14 @@ class AnnotateDB:
     cursor.close()
     self.conn.commit()
 
-
   #
-  # addEntity
+  # annotate
   #
-  #  Add a single entity as a list of voxels
+  #  Called by addEntity and extendEntity to actually number
+  #   the voxels and build the exception
   #
-  def addEntity ( self, locations ):
-    """Add an entity as a list of voxels"""
+  def annotate ( self, entityid, locations ):
+    """Label the voxel locations or add as exceptions is the are already labeled."""
 
     #  An item may exist across several cubes
     #  Convert the locations into Morton order
@@ -191,10 +191,6 @@ class AnnotateDB:
         cubelocs[key] = [];
       cubelocs[key].append(loc)
 
-
-    # get and identifier for this object
-    entityid = self.nextID()
-
     # iterator over the list for each cube
     for key, loclist in cubelocs.iteritems():
 
@@ -207,11 +203,44 @@ class AnnotateDB:
                    cubeoff[2]*self.cubedim[2] ]
 
         # add the items
-        exceptions = cube.addEntity ( entityid, offset, loclist )
+        exceptions = cube.annotate ( entityid, offset, loclist )
 
         # update the sparse list of exceptions
 
         self.putCube ( key, cube)
+
+
+  #
+  # extendEntity
+  #
+  #  Include the following locations as part of the specified entity.
+  #  entity as a list of voxels.  Returns the entity id
+  #
+  def extendEntity ( self, entityid, locations ):
+    """Extend an existing entity as a list of voxels"""
+
+    # RBTODO make sure that the entity id is defined
+
+    # label the voxels and exceptions
+    self.annotate ( entityid, locations )
+
+
+  #
+  # addEntity
+  #
+  #  Add a single entity as a list of voxels. Returns the entity id.
+  #
+  def addEntity ( self, locations ):
+    """Add an entity as a list of voxels"""
+
+    # get and identifier for this object
+    entityid = self.nextID()
+
+    self.annotate ( entityid, locations )
+
+    return entityid
+
+
 
   #
   # addEntities

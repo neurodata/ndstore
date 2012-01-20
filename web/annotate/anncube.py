@@ -21,8 +21,6 @@ import zindex
 #    that contains annotations.  
 #
 
-# RBTODO testing in B and W.  Change to 24 bit.
-
 class AnnotateCube:
 
   # Constructor 
@@ -43,9 +41,9 @@ class AnnotateCube:
     """Destructor"""
     pass
 
-  # create an all zeros cube
+  # was the cube created from zeros?
   def fromZeros ( self ):
-    """Create a cube of all 0"""
+    """Determine if the cube was created from all zeros?"""
     if self._newcube == True:
       return True
     else: 
@@ -91,22 +89,23 @@ class AnnotateCube:
   #  
   #  Returns a list of exceptions  
   #
-  def addEntity ( self, annid, offset, locations ):
+  def annotate ( self, annid, offset, locations ):
     """Add annotation by a list of locations"""
 
-#  For now first label for a voxel wins
+  #  For now first label for a voxel wins
 
     exceptions = []
 
     # xyz coordinates get stored as zyx to be more
     #  efficient when converting to images
     for voxel in locations:
-  #    if ( self.data [ voxel[2], voxel[1], voxel[0] ] == 0 ):
-      if ( 1 ):
+    if ( self.data [ voxel[2]-offset[2], voxel[1]-offset[1], voxel[0]-offset[0]] == 0 ):
         self.data [ voxel[2]-offset[2], voxel[1]-offset[1], voxel[0]-offset[0] ] = annid
       else:
         exceptions.append ( voxel )
   
+    if ( len ( exceptions != 0 )):
+      print exceptions
     return exceptions
 
 
@@ -185,26 +184,6 @@ class AnnotateCube:
     
     outimage = Image.frombuffer ( 'RGBA', (xdim,ydim), imagemap, 'raw', 'RGBA', 0, 1 )
     outimage.save ( fileobj, "PNG" )
-
-#    return
-#
-#    zdim,ydim,xdim = self.data.shape
-#    imagemap = np.zeros ( ydim * xdim * 4, dtype=np.uint8 )
-#
-#    for y in range(ydim):
-#      for x in range(xdim):
-#        if self.data[0,y,x] != 0:
-#          imagemap[(y*xdim+x)*4:(y*xdim+x+1)*4] = array.array ('B', (255, 0, 0, 128))
-#          print y,x,imagemap[(y*xdim+x)*4:(y*xdim+x+1)*4] 
-#    
-#    outimage = Image.frombuffer ( 'RGBA', (xdim,ydim), imagemap, 'raw', 'RGBA', 0, 1 )
-#    outimage.save ( fileobj, "PNG" )
-
-# TOO slow!
-#          [ r, g, b ] = zindex.MortonXYZ ( self.data[0,y,x] )
-
-
-
 
 # end AnnotateCube
 
