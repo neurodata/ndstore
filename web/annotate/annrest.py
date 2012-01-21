@@ -145,7 +145,6 @@ def xyImage ( imageargs, dbcfg ):
     cb = annodb.cutout ( corner, dim, resolution )
     fileobj = StringIO.StringIO ( )
     cb.xySlice ( fileobj )
-    print cb.data
   except:
     print "Exception"
     return web.notfound()

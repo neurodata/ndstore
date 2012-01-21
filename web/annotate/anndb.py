@@ -87,8 +87,6 @@ class AnnotateDB:
     else:
       identifier = int ( row[0] ) + 1
 
-    #print "New identifier", identifier
-
     # increment and update query
     sql = "INSERT INTO " + str(self.ids_tbl) + " VALUES ( " + str(identifier) + " ) "
     try:

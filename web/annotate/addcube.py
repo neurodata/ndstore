@@ -34,7 +34,9 @@ def main():
 
 
   # Build a grayscale file and display
-  annoDB.addEntity ( voxlist )
+  entityid = annoDB.addEntity ( voxlist )
+
+  print "Added entity with identifier = ", entityid
 
 
 if __name__ == "__main__":

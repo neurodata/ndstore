@@ -99,13 +99,22 @@ class AnnotateCube:
     # xyz coordinates get stored as zyx to be more
     #  efficient when converting to images
     for voxel in locations:
-    if ( self.data [ voxel[2]-offset[2], voxel[1]-offset[1], voxel[0]-offset[0]] == 0 ):
+      #  label unlabeled voxels
+      if ( self.data [ voxel[2]-offset[2], voxel[1]-offset[1], voxel[0]-offset[0]] == 0 ):
         self.data [ voxel[2]-offset[2], voxel[1]-offset[1], voxel[0]-offset[0] ] = annid
-      else:
+
+      # already labelled voxels are exceptions, unless they are the same value
+      elif (self.data [ voxel[2]-offset[2], voxel[1]-offset[1], voxel[0]-offset[0]] != annid ):
         exceptions.append ( voxel )
+
+      #RBTODO remove this after testing
+      else:
+        print "Not an exception"
   
-    if ( len ( exceptions != 0 )):
+#RBTODO remove
+    if len(exceptions) != 0:
       print exceptions
+
     return exceptions
 
 
