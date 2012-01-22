@@ -306,6 +306,23 @@ def selectService ( webargs, dbcfg ):
   else:
     return web.notfound()
 
+
+#
+#  Select the service that you want.
+#  Truncate this from the arguments and past 
+#  the rest of the RESTful arguments to the 
+#  appropriate function.  At this point, we have a 
+#  data set and a service.
+#
+def selectPost ( webargs, dbcfg ):
+  """Parse the first arg and call the right post service"""
+
+  # For now there is only one
+  print "Posting an object"
+  print "Received ", web.data()
+  return "Post"
+
+
 #
 #  Choose the appropriate data set.
 #    This is the entry point from brainweb
@@ -319,6 +336,11 @@ def hayworth5nm ( webargs ):
   """Use the hayworth5nm data set"""
   dbcfg = dbconfighayworth5nm.dbConfigHayworth5nm()
   return selectService ( webargs, dbcfg )
+
+def hayworth5nmPost ( webargs ):
+  """Use the hayworth5nm data set"""
+  dbcfg = dbconfighayworth5nm.dbConfigHayworth5nm()
+  return selectPost ( webargs, dbcfg )
 
 def kasthuri11 ( webargs ):
   """Use the kasthuri11 data set"""
