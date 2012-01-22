@@ -140,14 +140,15 @@ def xyImage ( imageargs, dbcfg ):
   dim = args.getDim()
   resolution = args.getResolution()
 
-  try:
-    annodb = anndb.AnnotateDB ( dbcfg )
-    cb = annodb.cutout ( corner, dim, resolution )
-    fileobj = StringIO.StringIO ( )
-    cb.xySlice ( fileobj )
-  except:
-    print "Exception"
-    return web.notfound()
+#RBRM reinstate try/catch block
+#  try:
+  annodb = anndb.AnnotateDB ( dbcfg )
+  cb = annodb.cutout ( corner, dim, resolution )
+  fileobj = StringIO.StringIO ( )
+  cb.xySlice ( fileobj )
+#  except:
+#    print "Exception"
+#    return web.notfound()
 
   web.header('Content-type', 'image/png') 
   fileobj.seek(0)

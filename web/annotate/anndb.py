@@ -40,11 +40,6 @@ class AnnotateDB:
                             user = self.dbcfg.dbuser,
                             passwd = self.dbcfg.dbpasswd,
                             db = self.dbcfg.dbname)
-#    cursor = self.conn.cursor ()
-#    cursor.execute ("SELECT VERSION()")
-#    row = cursor.fetchone ()
-#    print "server version:", row[0]
-#    cursor.close ()
 
     # How many slices?
     [ self.startslice, endslice ] = self.dbcfg.slicerange
@@ -53,10 +48,6 @@ class AnnotateDB:
     # get the size of the image and cube
     [ self.xcubedim, self.ycubedim, self.zcubedim ] = self.cubedim = self.dbcfg.cubedim [ self.dbcfg.annotateres ] 
     [ self.ximagesize, self.yimagesize ] = self.imagesize = self.dbcfg.imagesz [ self.dbcfg.annotateres ]
-
-#RBTESTING remove
-#    [ self.xcubedim, self.ycubedim, self.zcubedim ] = self.cubedim = [4,4,4]
-#   [ self.ximagesize, self.yimagesize ] = self.imagesize = [16,16]
 
 
   def __del ( self ):
@@ -121,6 +112,7 @@ class AnnotateDB:
 
     row = cursor.fetchone ()
 
+
     # If we can't find a cube, assume it hasn't been written yet
     if ( row == None ):
       cube.zeros ()
@@ -128,6 +120,11 @@ class AnnotateDB:
     else: 
       # decompress the cube
       cube.fromNPZ ( row[0] )
+
+      #RBTODO
+      print "Reading from DB"
+      print cube.data.shape
+      print cube.data[0:16,0:16,0]
 
     cursor.close()
      
@@ -205,6 +202,11 @@ class AnnotateDB:
 
         # update the sparse list of exceptions
 
+        #RBTODO
+        print "Right before put"
+        print cube.data.shape
+        print cube.data[0:16,0:16,0]
+
         self.putCube ( key, cube)
 
 
@@ -241,80 +243,6 @@ class AnnotateDB:
 
 
   #
-  # addEntities
-  #
-  #  This takes a z,y,x cube of identifiers, relabels them and
-  #   puts them in the database.
-  #
-  #  In slice, col, row format (z,y,x) look out for the weirdness
-  #   this works with image coordinates
-  #
-  def addEntities ( self, zyxcorner, zyxdata ):
-    """Add an entity as a numpy array in row c"""
-
-    # Check some bounds
-    assert zyxcorner[0] >= 0 and zyxcorner[1] >= 0 and zyxcorner[2] >= 0
-    assert zyxcorner[0]+zyxdata.shape[0] <= self.zimagesize
-    assert zyxcorner[1]+zyxdata.shape[1] <= self.yimagesize
-    assert zyxcorner[2]+zyxdata.shape[2] <= self.ximagesize
-
-    #  Get the range of cubes
-    zstart = zyxcorner[0] / self.zcubedim
-    ystart = zyxcorner[1] / self.ycubedim
-    xstart = zyxcorner[2] / self.xcubedim
-    zend = (zyxcorner[0] + zyxdata.shape[0] -1 ) / self.ycubedim
-    yend = (zyxcorner[1] + zyxdata.shape[1] -1 ) / self.ycubedim
-    xend = (zyxcorner[2] + zyxdata.shape[2] -1 ) / self.xcubedim
-
-    # Helpers to index the loop
-    zoffset = zyxcorner[0] % self.zcubedim
-    yoffset = zyxcorner[1] % self.ycubedim
-    xoffset = zyxcorner[2] % self.xcubedim
-
-    # if you gave an unaligned cube, we do a copy
-    if ( xoffset != 0 ) or ( yoffset != 0 ) or ( zoffset != 0 ) or\
-       ( zyxdata.shape[0] % self.zcubedim != 0 ) or\
-       ( zyxdata.shape[1] % self.ycubedim != 0 ) or\
-       ( zyxdata.shape[2] % self.xcubedim != 0 ) :
-
-      # OK, let's build into cubedim aligned larger array
-      zyxaligned = np.zeros ( [ (zstart - zend + 1) * self.zcubedim,\
-                                 (ystart - yend + 1) * self.ycubedim,\
-                                 (xstart - xend + 1) * self.xcubedim ] )
-
-      zyxaligned [ zoffset:zoffset+zyxdata.shape[0],\
-                    yoffset:yoffset+zyxdata.shape[1],\
-                    xoffset:xoffset+zyxdata.shape[2] ] =\
-            zyxdata [:,:,:]
-
-    # use input if aligned
-    else:
-      zyxaligned = zyxdata
-
-    # RBTODO
-    # rewrite the identifiers so that they are unique
-#    self.rewrite ( zyxaligned )
-
-    # at this point, data are cubedim aligned in ardata
-    # maybe should process this in zorder or ranges.  Maybe later.
-    for zcube in range ( zstart, zend ):
-      for ycube in range ( ystart, yend ):
-        for xcube in range ( xstart, xend ):
-
-          # load the cube from the database
-          key = zindex.XYZMorton ( [ xcube, ycube, zcube ] )
-          cube = self.getCube ( key )
-
-          # update the cube
-          cube.arrayUpdate ( zyxaligned [ (zstart*self.zcubedim):(zstart*self.zcubedim+self.zcubedim),\
-                                          (ystart*self.ycubedim):(ystart*self.ycubedim+self.ycubedim),\
-                                          (xstart*self.xcubedim):(xstart*self.xcubedim+self.xcubedim) ] )
-
-          # store the cube in the database
-          self.putCube ( key, cube )
-
-
-  #
   #  Return a cube of data from the database
   #  Must account for zeros.
   #
@@ -331,6 +259,9 @@ class AnnotateDB:
     znumcubes = (corner[2]+dim[2]+self.zcubedim-1)/self.zcubedim - zstart
     ynumcubes = (corner[1]+dim[1]+self.ycubedim-1)/self.ycubedim - ystart
     xnumcubes = (corner[0]+dim[0]+self.xcubedim-1)/self.xcubedim - xstart
+
+    print "CDR ", corner, dim, resolution
+    print "self.cubedim ", self.cubedim
 
     # input cube is the database size
     incube = anncube.AnnotateCube ( self.cubedim )
@@ -352,6 +283,8 @@ class AnnotateDB:
     # Sort the indexes in Morton order
     listofidxs.sort()
 
+    print listofidxs
+
     # Batch query for all cubes
     dbname = self.ann_tbl
     cursor = self.conn.cursor()
@@ -366,8 +299,13 @@ class AnnotateDB:
     lowxyz = zindex.MortonXYZ ( listofidxs[0] )
 
     # Get the objects and add to the cube
-    for i in range ( len(listofidxs) ): 
-      idx, datastring = cursor.fetchone()
+    while ( True ):
+
+      try: 
+        idx, datastring = cursor.fetchone()
+      except:
+        print "No more data"
+        break
 
       #add the query result cube to the bigger cube
       curxyz = zindex.MortonXYZ(int(idx))
@@ -378,6 +316,7 @@ class AnnotateDB:
 
       # add it to the output cube
       outcube.addData ( incube, offset ) 
+
 
     # need to trim down the array to size
     #  only if the dimensions are not the same

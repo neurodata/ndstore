@@ -30,11 +30,15 @@ class AnnotateCube:
     """Create empty array of cubesize"""
 
     # cubesize is in z,y,x for interactions with tile/image data
-    self.zdim, self.ydim, self.xdim = self.cubesize = [ cubesize[2],cubesize[1],cubesize[0] ]
+    #self.xdim, self.ydim, self.zdim = self.cubesize = [ cubesize[2],cubesize[1],cubesize[0] ]
+
+    # cubesize is stored in z y x but indexed in x y z by using fortran order
+    self.xdim, self.ydim, self.zdim = self.cubesize = [ cubesize[0],cubesize[1],cubesize[2] ]
   
     # variable that describes when a cube is created from zeros
     #  rather than loaded from another source
     self._newcube = False
+
 
   # Constructor 
   def __del__(self):
@@ -53,7 +57,7 @@ class AnnotateCube:
   def zeros ( self ):
     """Create a cube of all 0"""
     self._newcube = True
-    self.data = np.zeros ( self.cubesize, dtype=np.uint32 )
+    self.data = np.zeros ( self.cubesize, dtype=np.uint32, order='F' )
 
   # load the object from a Numpy pickle
   def fromNPZ ( self, pandz ):
@@ -100,11 +104,11 @@ class AnnotateCube:
     #  efficient when converting to images
     for voxel in locations:
       #  label unlabeled voxels
-      if ( self.data [ voxel[2]-offset[2], voxel[1]-offset[1], voxel[0]-offset[0]] == 0 ):
-        self.data [ voxel[2]-offset[2], voxel[1]-offset[1], voxel[0]-offset[0] ] = annid
+      if ( self.data [ voxel[0]-offset[0], voxel[1]-offset[1], voxel[2]-offset[2]] == 0 ):
+        self.data [ voxel[0]-offset[0], voxel[1]-offset[1], voxel[2]-offset[2] ] = annid
 
       # already labelled voxels are exceptions, unless they are the same value
-      elif (self.data [ voxel[2]-offset[2], voxel[1]-offset[1], voxel[0]-offset[0]] != annid ):
+      elif (self.data [ voxel[0]-offset[0], voxel[1]-offset[1], voxel[2]-offset[2]] != annid ):
         exceptions.append ( voxel )
 
       #RBTODO remove this after testing
@@ -129,16 +133,16 @@ class AnnotateCube:
 
     assert self.data.shape == npdata.shape
 
-    for z in range ( self.data.shape[0] ):
+    for z in range ( self.data.shape[2] ):
       for y in range ( self.data.shape[1] ):
-        for x in range ( self.data.shape[2] ):
+        for x in range ( self.data.shape[0] ):
 
-          if npdata[z,y,x] != 0:
-            if self.data[z,y,x] == 0:
-              self.data[z,y,x] = npdata[z,y,x]
+          if npdata[x,y,z] != 0:
+            if self.data[x,y,z] == 0:
+              self.data[x,y,z] = npdata[x,y,z]
 #RBTODO these are the exceptions you need to deal with
             else:
-              self.data[z,y,x] = npdata[z,y,x]
+              self.data[x,y,z] = npdata[x,y,z]
 
 
 
@@ -162,9 +166,9 @@ class AnnotateCube:
     yoffset = index[1]*other.ydim
     zoffset = index[2]*other.zdim
 
-    self.data [ zoffset:zoffset+other.zdim,\
+    self.data [ xoffset:xoffset+other.xdim,\
                 yoffset:yoffset+other.ydim,\
-                xoffset:xoffset+other.xdim ]\
+                zoffset:zoffset+other.zdim]\
             = other.data [:,:,:]
 
   #
@@ -172,24 +176,20 @@ class AnnotateCube:
   #
   def trim ( self, xoffset, xsize, yoffset, ysize, zoffset, zsize ):
     """Trim off the excess data"""
-    self.data = self.data [ zoffset:zoffset+zsize, yoffset:yoffset+ysize, xoffset:xoffset+xsize ]
+    self.data = self.data [ xoffset:xoffset+xsize, yoffset:yoffset+ysize, zoffset:zoffset+zsize ]
 
   #
   # Create the specified slice (index) at filename
   #
   def xySlice ( self, fileobj ):
 
-#    zdim,ydim,xdim = self.data.shape
-#    outimage = Image.frombuffer ( 'L', (xdim,ydim), self.data[0,:,:].flatten(), 'raw', 'L', 0, 1 )
-#    outimage.save ( fileobj, "PNG" )
-
-    zdim,ydim,xdim = self.data.shape
-    imagemap = np.zeros ( [ ydim, xdim ], dtype=np.uint32 )
+    xdim,ydim,zdim = self.data.shape
+    imagemap = np.zeros ( [ xdim, ydim ], dtype=np.uint32, order='F' )
 
     for y in range(ydim):
       for x in range(xdim):
-        if self.data[0,y,x] != 0:
-          imagemap[y,x] = 0x80000000 + ( self.data[0,y,x] & 0xFF )
+        if self.data[x,y,0] != 0:
+          imagemap[x,y] = 0x80000000 + ( self.data[x,y,0] & 0xFF )
     
     outimage = Image.frombuffer ( 'RGBA', (xdim,ydim), imagemap, 'raw', 'RGBA', 0, 1 )
     outimage.save ( fileobj, "PNG" )
