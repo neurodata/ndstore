@@ -40,6 +40,11 @@ class CubeDB:
                             user = self.dbcfg.dbuser,
                             passwd = self.dbcfg.dbpasswd,
                             db = self.dbcfg.dbname)
+#    cursor = self.conn.cursor ()
+#    cursor.execute ("SELECT VERSION()")
+#    row = cursor.fetchone ()
+#    print "server version:", row[0]
+#    cursor.close ()
 
     [ self.startslice, endslice ] = self.dbcfg.slicerange
     self.slices = endslice - self.startslice + 1 
@@ -61,6 +66,7 @@ class CubeDB:
     corner = [ x*xcubedim, y*ycubedim, z*zcubedim ]
     bc.cubeFromFiles (corner, tilestack)
     return bc
+#    self.inmemcubes[mortonidx] = bc
 
 
   #
@@ -169,9 +175,9 @@ class CubeDB:
 
 
   #
-  #  cutout  
+  #  getCube  
   #
-  def cutout ( self, corner, dim, resolution ):
+  def getCube ( self, corner, dim, resolution ):
     """Extract a cube of arbitrary size.  Need not be aligned."""
 
     [xcubedim, ycubedim, zcubedim] = self.dbcfg.cubedim [resolution ]
@@ -184,7 +190,6 @@ class CubeDB:
     numcubes = [ (corner[0]+dim[0]+xcubedim-1)/xcubedim - start[0],\
                 (corner[1]+dim[1]+ycubedim-1)/ycubedim - start[1],\
                 (corner[2]+dim[2]+zcubedim-1)/zcubedim - start[2] ] 
-
 
     inbuf = braincube.BrainCube ( self.dbcfg.cubedim [resolution] )
     outbuf = braincube.BrainCube ( [numcubes[0]*xcubedim, numcubes[1]*ycubedim, numcubes[2]*zcubedim] )
@@ -210,8 +215,6 @@ class CubeDB:
     sql = sql % in_p
     cursor.execute(sql, listofidxs)
 
-    print "SQL query ", sql, listofidxs
-
     # xyz offset stored for later use
     lowxyz = zindex.MortonXYZ ( listofidxs[0] )
 
@@ -224,14 +227,9 @@ class CubeDB:
       newfobj = cStringIO.StringIO ( newstr )
       inbuf.data = np.load ( newfobj )
 
-      print inbuf.data.shape
-      print inbuf.data
-      print inbuf.data.flatten()
-
       #add the query result cube to the bigger cube
       curxyz = zindex.MortonXYZ(int(idx))
       offsetxyz = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
-
       outbuf.addData ( inbuf, offsetxyz )
 
     # need to trim down the array to size
@@ -244,7 +242,7 @@ class CubeDB:
        corner[2] % zcubedim  == 0:
       pass
     else:
-      outbuf.trim ( corner[0]%xcubedim,dim[0],\
+      outbuf.cutout ( corner[0]%xcubedim,dim[0],\
                       corner[1]%ycubedim,dim[1],\
                       corner[2]%zcubedim,dim[2] )
     return outbuf
