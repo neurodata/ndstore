@@ -107,29 +107,6 @@ class AnnotateCube:
     return exceptions
 
 
-  # arrayUpdate
-  #
-  #  Update the existing cube with these identifiers specified in this cube.
-  #
-  #  Returns a list of exceptions  
-  #
-  def arrayUpdate ( self, npdata ):
-    """Update the cube with an array of the same size"""
-
-    assert self.data.shape == npdata.shape
-
-    for z in range ( self.data.shape[0] ):
-      for y in range ( self.data.shape[1] ):
-        for x in range ( self.data.shape[2] ):
-
-          if npdata[z,y,x] != 0:
-            if self.data[z,y,x] == 0:
-              self.data[z,y,x] = npdata[z,y,x]
-#RBTODO these are the exceptions you need to deal with
-            else:
-              self.data[z,y,x] = npdata[z,y,x]
-
-
 
   #
   #  addData -- from another cube to this cube
@@ -171,10 +148,12 @@ class AnnotateCube:
     zdim,ydim,xdim = self.data.shape
     imagemap = np.zeros ( [ ydim, xdim ], dtype=np.uint32 )
 
-    for y in range(ydim):
-      for x in range(xdim):
-        if self.data[0,y,x] != 0:
-          imagemap[y,x] = 0x80000000 + ( self.data[0,y,x] & 0xFF )
+    # iterate in data order via numpy
+    it = np.nditer ( self.data, flags=['multi_index'], op_flags=['readwrite'] )
+    while not it.finished:
+      if it[0] != 0:
+        imagemap[it.multi_index[1],it.multi_index[2]] = 0x80000000 + ( it[0] & 0xFF )
+      it.iternext()
     
     outimage = Image.frombuffer ( 'RGBA', (xdim,ydim), imagemap, 'raw', 'RGBA', 0, 1 )
     outimage.save ( fileobj, "PNG" )
