@@ -66,6 +66,8 @@ class BrainCube:
   def xySlice ( self, fileobj ):
 
     xdim,ydim,zdim = self.data.shape
+    print self.data
+    print self.data[:,:,0].flatten()
     outimage = Image.frombuffer ( 'L', (xdim,ydim), self.data[:,:,0].flatten(), 'raw', 'L', 0, 1 ) 
     outimage.save ( fileobj, "PNG" )
   
@@ -99,9 +101,8 @@ class BrainCube:
   #
   def trim ( self, xoffset, xsize, yoffset, ysize, zoffset, zsize ):
     """Trim off the excess data"""
-    print "Trim original size", self.data.shape
+
     self.data = self.data [ xoffset:xoffset+xsize, yoffset:yoffset+ysize, zoffset:zoffset+zsize ]
-    print "Trim after size", self.data.shape 
   
 # end BrainCube
 

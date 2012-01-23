@@ -121,7 +121,9 @@ class Tiles:
       #  this means that there is no bounds checking on this routine
       try:
         tileimage = Image.open ( fname, 'r' )
-        self.tiledata [ str(tileidx) ] = np.asarray ( tileimage, order='F' )
+# RB hope this fixes me.  Added an F for no good reason.
+#        self.tiledata [ str(tileidx) ] = np.asarray ( tileimage, order='F' )
+        self.tiledata [ str(tileidx) ] = np.asarray ( tileimage )
         print ( "Loaded file " + fname )
       except IOError:
         continue
