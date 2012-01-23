@@ -3,12 +3,14 @@ import empaths
 import web
 import restargs
 import brainrest
+import annrest
 
 web.config.debug=True
 
 urls = (
   '/bock11/(.*)', 'bock11' ,
   '/hayworth5nm/(.*)', 'hayworth5nm' ,
+  '/hayworth5nm.annotate/(.*)', 'hayworth5nmAnnotate' ,
   '/kasthuri11/(.*)', 'kasthuri11' )
 
 app = web.application(urls, globals(), True)
@@ -24,6 +26,13 @@ class hayworth5nm:
 class kasthuri11:
   def GET(self,name):
     return brainrest.kasthuri11(web.websafe(name))
+
+class hayworth5nmAnnotate:
+  def GET(self,name):
+    return annrest.hayworth5nm(web.websafe(name))
+  def POST(self,name):
+    return annrest.hayworth5nmPost(web.websafe(name))
+
 
 if __name__ == "__main__":
     app.run()

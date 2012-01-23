@@ -1,11 +1,3 @@
-##############################################################################
-#
-#    Randal C. Burns
-#    Department of Computer Science
-#    Johns Hopkins University
-#
-################################################################################
-
 import numpy as np
 import array
 import cStringIO
@@ -31,19 +23,20 @@ class AnnotateCube:
 
     # cubesize is in z,y,x for interactions with tile/image data
     self.zdim, self.ydim, self.xdim = self.cubesize = [ cubesize[2],cubesize[1],cubesize[0] ]
-  
+
     # variable that describes when a cube is created from zeros
     #  rather than loaded from another source
     self._newcube = False
+
 
   # Constructor 
   def __del__(self):
     """Destructor"""
     pass
 
-  # create an all zeros cube
+  # was the cube created from zeros?
   def fromZeros ( self ):
-    """Create a cube of all 0"""
+    """Determine if the cube was created from all zeros?"""
     if self._newcube == True:
       return True
     else: 
@@ -78,7 +71,7 @@ class AnnotateCube:
       np.save ( fileobj, self.data )
       return  zlib.compress (fileobj.getvalue())
     except:
-      print "Picle and Zip.  What did I catch?"
+      print "Pickle and Zip.  What did I catch?"
       assert 0
 
 
@@ -89,20 +82,27 @@ class AnnotateCube:
   #  
   #  Returns a list of exceptions  
   #
-  def addEntity ( self, annid, offset, locations ):
+  def annotate ( self, annid, offset, locations ):
     """Add annotation by a list of locations"""
 
-#  For now first label for a voxel wins
+  #  For now first label for a voxel wins
 
     exceptions = []
 
     # xyz coordinates get stored as zyx to be more
     #  efficient when converting to images
     for voxel in locations:
-      if ( self.data [ voxel[2]-offset[2], voxel[1]-offset[1], voxel[0]-offset[0] ] == 0 ):
+      #  label unlabeled voxels
+      if ( self.data [ voxel[2]-offset[2], voxel[1]-offset[1], voxel[0]-offset[0]] == 0 ):
         self.data [ voxel[2]-offset[2], voxel[1]-offset[1], voxel[0]-offset[0] ] = annid
-      else:
+
+      # already labelled voxels are exceptions, unless they are the same value
+      elif (self.data [ voxel[2]-offset[2], voxel[1]-offset[1], voxel[0]-offset[0]] != annid ):
         exceptions.append ( voxel )
+
+      #RBTODO remove this after testing
+      else:
+        print "Not an exception"
   
     print "List of exceptions = ", exceptions
     return exceptions
@@ -154,7 +154,7 @@ class AnnotateCube:
 
     self.data [ zoffset:zoffset+other.zdim,\
                 yoffset:yoffset+other.ydim,\
-                xoffset:xoffset+other.xdim ]\
+                xoffset:xoffset+other.xdim]\
             = other.data [:,:,:]
 
   #
@@ -169,10 +169,6 @@ class AnnotateCube:
   #
   def xySlice ( self, fileobj ):
 
-#    zdim,ydim,xdim = self.data.shape
-#    outimage = Image.frombuffer ( 'L', (xdim,ydim), self.data[0,:,:].flatten(), 'raw', 'L', 0, 1 )
-#    outimage.save ( fileobj, "PNG" )
-
     zdim,ydim,xdim = self.data.shape
     imagemap = np.zeros ( [ ydim, xdim ], dtype=np.uint32 )
 
@@ -183,26 +179,6 @@ class AnnotateCube:
     
     outimage = Image.frombuffer ( 'RGBA', (xdim,ydim), imagemap, 'raw', 'RGBA', 0, 1 )
     outimage.save ( fileobj, "PNG" )
-
-#    return
-#
-#    zdim,ydim,xdim = self.data.shape
-#    imagemap = np.zeros ( ydim * xdim * 4, dtype=np.uint8 )
-#
-#    for y in range(ydim):
-#      for x in range(xdim):
-#        if self.data[0,y,x] != 0:
-#          imagemap[(y*xdim+x)*4:(y*xdim+x+1)*4] = array.array ('B', (255, 0, 0, 128))
-#          print y,x,imagemap[(y*xdim+x)*4:(y*xdim+x+1)*4] 
-#    
-#    outimage = Image.frombuffer ( 'RGBA', (xdim,ydim), imagemap, 'raw', 'RGBA', 0, 1 )
-#    outimage.save ( fileobj, "PNG" )
-
-# TOO slow!
-#          [ r, g, b ] = zindex.MortonXYZ ( self.data[0,y,x] )
-
-
-
 
 # end AnnotateCube
 

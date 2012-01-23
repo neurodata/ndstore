@@ -20,6 +20,8 @@ class bock11:
 class hayworth5nm:
   def GET(self,name):
     return annrest.hayworth5nm(web.websafe(name))
+  def POST(self,name):
+    return annrest.hayworth5nmPost(web.websafe(name))
 
 class kasthuri11:
   def GET(self,name):
