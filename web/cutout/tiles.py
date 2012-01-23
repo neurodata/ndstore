@@ -121,7 +121,7 @@ class Tiles:
       #  this means that there is no bounds checking on this routine
       try:
         tileimage = Image.open ( fname, 'r' )
-        self.tiledata [ str(tileidx) ] = np.asarray ( tileimage )
+        self.tiledata [ str(tileidx) ] = np.asarray ( tileimage, order='F' )
         print ( "Loaded file " + fname )
       except IOError:
         continue
@@ -142,7 +142,7 @@ class Tiles:
     zoffset = zcorner 
 
     # size of the cube of data
-    zcubesize, ycubesize, xcubesize = cube.cubesize
+    xcubesize, ycubesize, zcubesize = cube.cubesize
 
     # z is not tiled
     for z in range(zcubesize):
@@ -219,8 +219,8 @@ class Tiles:
             pass
             print "Tile {0} not found. Using zeroed data instead.".format(tileidx)
           else: 
-            cube.data [ z, ycubeoffset:(ycubeoffset+yiters), xcubeoffset:(xcubeoffset+xiters) ]  =  \
-              self.tiledata [ str(tileidx)]  [ ytileoffset:ytileoffset+yiters, xtileoffset:xtileoffset+xiters ]
+            cube.data [ xcubeoffset:(xcubeoffset+xiters), ycubeoffset:(ycubeoffset+yiters), z ]  =  \
+              self.tiledata [ str(tileidx)]  [ xtileoffset:xtileoffset+xiters, ytileoffset:ytileoffset+yiters ]
            
 #        RBTODO for debugging check that the data is the same
 #            assert tiledata.all() == self.tiledata [ str(tileidx) ].all()

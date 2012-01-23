@@ -129,6 +129,7 @@ def xyImage ( imageargs, dbcfg ):
   try:
     cdb = cubedb.CubeDB ( dbcfg )
     cb = cdb.cutout ( corner, dim, resolution )
+    print cb.data.shape
     fileobj = StringIO.StringIO ( )
     cb.xySlice ( fileobj )
   except:

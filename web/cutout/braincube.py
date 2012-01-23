@@ -16,7 +16,8 @@ from PIL import Image
 #    includes loading, export, read and write routines
 #
 #  All the interfaces to this class are in x,y,z order
-#  Cube data goes in z,y,x order this is compatible with images and more efficient?
+#  Cube data goes in z,y,x order by virtue of using fortran ordered Numpy arrays
+#    this is compatible with images and more efficient?
 #
 class BrainCube:
 
@@ -24,9 +25,9 @@ class BrainCube:
   def __init__(self, cubesize=[64,64,64]):
     """Create empty array of cubesize"""
 
-    # cubesize is in z,y,x for interactions with tile/image data
-    self.zdim, self.ydim, self.xdim =  self.cubesize = [ cubesize[2],cubesize[1],cubesize[0] ]
-    self.data = np.zeros ( self.cubesize, dtype=np.uint8 )
+    # data stored in Fortran order for conversion/compatibility with images
+    self.xdim, self.ydim, self.zdim =  self.cubesize = [ cubesize[0],cubesize[1],cubesize[2] ]
+    self.data = np.zeros ( self.cubesize, dtype=np.uint8, order='F' )
 
   # CubefromFiles
   def cubeFromFiles ( self, corner, tilestack ):
@@ -53,29 +54,19 @@ class BrainCube:
     yoffset = index[1]*other.ydim
     zoffset = index[2]*other.zdim
     
-    self.data [ zoffset:zoffset+other.zdim,\
+    self.data [ xoffset:xoffset+other.xdim,\
                 yoffset:yoffset+other.ydim,\
-                xoffset:xoffset+other.xdim ]\
+                zoffset:zoffset+other.zdim ]\
             = other.data [:,:,:]
     
-  #
-  # Extract data from the cube and write out PNG files.
-  #
-  def cubeToPNGs ( self, prefix ):
-    """Move data from tiled files to array"""  
-
-    zdim,ydim,xdim = self.data.shape
-    for k in range(zdim):
-      outimage = Image.frombuffer ( 'L', (xdim,ydim), self.data[k,:,:].flatten(), 'raw', 'L', 0, 1 ) 
-      outimage.save ( prefix + str(k) + ".png", "PNG" )
 
   #
   # Create the specified slice (index) at filename
   #
   def xySlice ( self, fileobj ):
 
-    zdim,ydim,xdim = self.data.shape
-    outimage = Image.frombuffer ( 'L', (xdim,ydim), self.data[0,:,:].flatten(), 'raw', 'L', 0, 1 ) 
+    xdim,ydim,zdim = self.data.shape
+    outimage = Image.frombuffer ( 'L', (xdim,ydim), self.data[:,:,0].flatten(), 'raw', 'L', 0, 1 ) 
     outimage.save ( fileobj, "PNG" )
   
 
@@ -84,7 +75,7 @@ class BrainCube:
   #
   def xzSlice ( self, zscale, fileobj  ):
 
-    zdim,ydim,xdim = self.data.shape
+    xdim,ydim,zdim = self.data.shape
     outimage = Image.frombuffer ( 'L', (xdim,zdim), self.data[:,0,:].flatten(), 'raw', 'L', 0, 1 ) 
     #TODO if the image scales to 0 pixels it don't work
     newimage = outimage.resize ( [xdim, int(zdim*zscale)] )
@@ -96,8 +87,8 @@ class BrainCube:
   #
   def yzSlice ( self, zscale, fileobj  ):
 
-    zdim,ydim,xdim = self.data.shape
-    outimage = Image.frombuffer ( 'L', (ydim,zdim), self.data[:,:,0].flatten(), 'raw', 'L', 0, 1 ) 
+    xdim,ydim,zdim = self.data.shape
+    outimage = Image.frombuffer ( 'L', (ydim,zdim), self.data[0,:,:].flatten(), 'raw', 'L', 0, 1 ) 
     #TODO if the image scales to 0 pixels it don't work
     newimage = outimage.resize ( [ydim, int(zdim*zscale)] )
     newimage.save ( fileobj, "PNG" )
@@ -108,7 +99,9 @@ class BrainCube:
   #
   def trim ( self, xoffset, xsize, yoffset, ysize, zoffset, zsize ):
     """Trim off the excess data"""
-    self.data = self.data [ zoffset:zoffset+zsize, yoffset:yoffset+ysize, xoffset:xoffset+xsize ]
+    print "Trim original size", self.data.shape
+    self.data = self.data [ xoffset:xoffset+xsize, yoffset:yoffset+ysize, zoffset:zoffset+zsize ]
+    print "Trim after size", self.data.shape 
   
 # end BrainCube
 

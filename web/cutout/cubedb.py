@@ -66,7 +66,6 @@ class CubeDB:
     corner = [ x*xcubedim, y*ycubedim, z*zcubedim ]
     bc.cubeFromFiles (corner, tilestack)
     return bc
-#    self.inmemcubes[mortonidx] = bc
 
 
   #
@@ -191,8 +190,11 @@ class CubeDB:
                 (corner[1]+dim[1]+ycubedim-1)/ycubedim - start[1],\
                 (corner[2]+dim[2]+zcubedim-1)/zcubedim - start[2] ] 
 
+
     inbuf = braincube.BrainCube ( self.dbcfg.cubedim [resolution] )
+    print inbuf.data.shape
     outbuf = braincube.BrainCube ( [numcubes[0]*xcubedim, numcubes[1]*ycubedim, numcubes[2]*zcubedim] )
+    print outbuf.data.shape
 
     # Build a list of indexes to access
     listofidxs = []
@@ -242,6 +244,7 @@ class CubeDB:
        corner[2] % zcubedim  == 0:
       pass
     else:
+      print "Trimming data"
       outbuf.trim ( corner[0]%xcubedim,dim[0],\
                       corner[1]%ycubedim,dim[1],\
                       corner[2]%zcubedim,dim[2] )
