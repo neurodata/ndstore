@@ -116,15 +116,9 @@ class AnnotateDB:
     # If we can't find a cube, assume it hasn't been written yet
     if ( row == None ):
       cube.zeros ()
-
     else: 
       # decompress the cube
       cube.fromNPZ ( row[0] )
-
-      #RBTODO
-      print "Reading from DB"
-      print cube.data.shape
-      print cube.data[0:16,0:16,0]
 
     cursor.close()
      
@@ -202,11 +196,6 @@ class AnnotateDB:
 
         # update the sparse list of exceptions
 
-        #RBTODO
-        print "Right before put"
-        print cube.data.shape
-        print cube.data[0:16,0:16,0]
-
         self.putCube ( key, cube)
 
 
@@ -260,9 +249,6 @@ class AnnotateDB:
     ynumcubes = (corner[1]+dim[1]+self.ycubedim-1)/self.ycubedim - ystart
     xnumcubes = (corner[0]+dim[0]+self.xcubedim-1)/self.xcubedim - xstart
 
-    print "CDR ", corner, dim, resolution
-    print "self.cubedim ", self.cubedim
-
     # input cube is the database size
     incube = anncube.AnnotateCube ( self.cubedim )
 
@@ -283,8 +269,6 @@ class AnnotateDB:
     # Sort the indexes in Morton order
     listofidxs.sort()
 
-    print listofidxs
-
     # Batch query for all cubes
     dbname = self.ann_tbl
     cursor = self.conn.cursor()
@@ -304,7 +288,6 @@ class AnnotateDB:
       try: 
         idx, datastring = cursor.fetchone()
       except:
-        print "No more data"
         break
 
       #add the query result cube to the bigger cube
