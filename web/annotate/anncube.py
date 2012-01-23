@@ -104,6 +104,7 @@ class AnnotateCube:
       else:
         print "Not an exception"
   
+    print "List of exceptions = ", exceptions
     return exceptions
 
 

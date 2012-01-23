@@ -27,6 +27,7 @@ class AnnotateDB:
   # Could add these to dbconfig.  Probably remove res as tablebase instead
   ids_tbl = "ids"
   entities_tbl = "entities"
+  except_tbl = "exceptions"
   items_tbl = "items"
   ann_tbl = "annotations" 
 
@@ -143,7 +144,7 @@ class AnnotateDB:
       try:
         cursor.execute ( sql, (key,npz))
       except:
-        print "Error inserting into ", self.items_tbl
+        print "Error inserting into ", self.ann_tbl
 
     else:
 
@@ -151,11 +152,88 @@ class AnnotateDB:
       try:
         cursor.execute ( sql, (npz))
       except:
-        print "Error updating key={0} in table".format( key, self.items_tbl)
+        print "Error updating key={0} in table".format( key, self.ann_tbl)
         assert 0
 
     cursor.close()
     self.conn.commit()
+
+
+  #
+  # getExceptions
+  #
+  def getExceptions ( self, key, entityid ):
+    """Load a the list of excpetions for this cube"""
+   
+    cursor = self.conn.cursor ()
+
+    # get the block from the database
+    sql = "SELECT exlist FROM " + self.except_tbl + " WHERE zindex = " + str(key) + " AND id = " + str(entityid)
+    print sql 
+    try:
+      cursor.execute ( sql )
+    except:
+      print "Unknown problem with table", self.except_tbl
+
+    row = cursor.fetchone ()
+
+    cursor.close()
+
+    # If we can't find a list of exceptions, they don't exist
+    if ( row == None ):
+      return []
+    else: 
+      fobj = cStringIO.StringIO ( row[0] )
+      return np.load ( fobj )
+
+  #
+  # updateExceptions
+  #
+  def updateExceptions ( self, key, entityid, exceptions ):
+    """Store a list of exceptions"""
+
+    curexlist = self.getExceptions( key, entityid ) 
+
+    print ("Current exceptions", curexlist )
+
+    cursor = self.conn.cursor ()
+
+    if curexlist==[]:
+
+      print "Adding new exceptions", exceptions 
+
+      sql = "INSERT INTO " + self.except_tbl +  "(zindex, id, exlist) VALUES (%s, %s, %s)"
+      try:
+        fileobj = cStringIO.StringIO ()
+        np.save ( fileobj, exceptions )
+        print sql, key, entityid 
+        cursor.execute ( sql, (key, entityid, fileobj.getvalue()))
+      except:
+        print "Error inserting into ", self.except_tbl
+
+    # In this case we have an update query
+    else:
+
+      newexlist = np.append ( curexlist, exceptions )
+
+      print newexlist
+
+      print "Updating exceptions with ", exceptions 
+
+      sql = "UPDATE " + self.except_tbl + " SET exlist=(%s) WHERE zindex=" + str(key) + " AND id = " + str(entityid)
+      try:
+        fileobj = cStringIO.StringIO ()
+        np.save ( fileobj, newexlist )
+        cursor.execute ( sql, (fileobj.getvalue()))
+      except:
+        print "Error updating key={0} in table".format( key, self.except_tbl)
+        assert 0
+
+    cursor.close()
+    self.conn.commit()
+
+
+
 
   #
   # annotate
@@ -195,6 +273,8 @@ class AnnotateDB:
         exceptions = cube.annotate ( entityid, offset, loclist )
 
         # update the sparse list of exceptions
+        if len(exceptions) != 0:
+          self.updateExceptions ( key, entityid, exceptions )
 
         self.putCube ( key, cube)
 
@@ -277,7 +357,7 @@ class AnnotateDB:
     in_p=', '.join(map(lambda x: '%s', listofidxs))
     # replace the single %s with the in_p string
     sql = sql % in_p
-    cursor.execute(sql, listofidxs)
+    rc = cursor.execute(sql, listofidxs)
 
     # xyz offset stored for later use
     lowxyz = zindex.MortonXYZ ( listofidxs[0] )
@@ -293,6 +373,7 @@ class AnnotateDB:
       #add the query result cube to the bigger cube
       curxyz = zindex.MortonXYZ(int(idx))
       offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
+
 
       # get an input cube 
       incube.fromNPZ ( datastring[:] )
@@ -315,8 +396,4 @@ class AnnotateDB:
                       corner[1]%self.ycubedim,dim[1],\
                       corner[2]%self.zcubedim,dim[2] )
     return outcube
-
-
-
-
 

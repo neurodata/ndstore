@@ -31,6 +31,7 @@ def main():
       for i in range (result.xlow,result.xhigh):
         voxlist.append ( [ i,j,k] )
 
+  print voxlist
 
   # Build a grayscale file and display
   entityid = annoDB.addEntity ( voxlist )
