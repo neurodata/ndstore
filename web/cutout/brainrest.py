@@ -126,14 +126,15 @@ def xyImage ( imageargs, dbcfg ):
   dim = args.getDim()
   resolution = args.getResolution()
 
-  try:
-    cdb = cubedb.CubeDB ( dbcfg )
-    cb = cdb.cutout ( corner, dim, resolution )
-    fileobj = StringIO.StringIO ( )
-    cb.xySlice ( fileobj )
-  except:
-    print "Exception"
-    return web.notfound()
+#RBTODO reinstate exception
+#  try:
+  cdb = cubedb.CubeDB ( dbcfg )
+  cb = cdb.cutout ( corner, dim, resolution )
+  fileobj = StringIO.StringIO ( )
+  cb.xySlice ( fileobj )
+#  except:
+#    print "Exception"
+#    return web.notfound()
 
   web.header('Content-type', 'image/png') 
   fileobj.seek(0)

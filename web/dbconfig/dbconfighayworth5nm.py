@@ -31,7 +31,7 @@ class dbConfigHayworth5nm ( dbconfig.dbConfig ):
   #resolution information -- lowest resolution and list of resolution
   baseres = 0
 #  resolutions = [ 5, 4, 3, 2, 1, 0 ]
-  resolutions = [ 5, 4, 3 ]
+  resolutions = [ 5, 4 ]
 #  resolutions = [  2, 1 ]
 
   # annotation resolution

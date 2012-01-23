@@ -106,7 +106,7 @@ class BrainCube:
   # Trim off the excess data
   #  translate xyz -> zyx
   #
-  def cutout ( self, xoffset, xsize, yoffset, ysize, zoffset, zsize ):
+  def trim ( self, xoffset, xsize, yoffset, ysize, zoffset, zsize ):
     """Trim off the excess data"""
     self.data = self.data [ zoffset:zoffset+zsize, yoffset:yoffset+ysize, xoffset:xoffset+xsize ]
   

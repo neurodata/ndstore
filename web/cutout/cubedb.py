@@ -175,9 +175,9 @@ class CubeDB:
 
 
   #
-  #  getCube  
+  #  cutout  
   #
-  def getCube ( self, corner, dim, resolution ):
+  def cutout ( self, corner, dim, resolution ):
     """Extract a cube of arbitrary size.  Need not be aligned."""
 
     [xcubedim, ycubedim, zcubedim] = self.dbcfg.cubedim [resolution ]
@@ -242,7 +242,7 @@ class CubeDB:
        corner[2] % zcubedim  == 0:
       pass
     else:
-      outbuf.cutout ( corner[0]%xcubedim,dim[0],\
+      outbuf.trim ( corner[0]%xcubedim,dim[0],\
                       corner[1]%ycubedim,dim[1],\
                       corner[2]%zcubedim,dim[2] )
     return outbuf
