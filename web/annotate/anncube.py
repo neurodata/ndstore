@@ -159,5 +159,41 @@ class AnnotateCube:
     outimage = Image.frombuffer ( 'RGBA', (xdim,ydim), imagemap, 'raw', 'RGBA', 0, 1 )
     outimage.save ( fileobj, "PNG" )
 
+  #
+  # Create the specified slice (index) at filename
+  #
+  def xzSlice ( self, fileobj ):
+
+    zdim,ydim,xdim = self.data.shape
+    imagemap = np.zeros ( [ zdim, xdim ], dtype=np.uint32 )
+
+    # iterate in data order via numpy
+    it = np.nditer ( self.data, flags=['multi_index'], op_flags=['readwrite'] )
+    while not it.finished:
+      if it[0] != 0:
+        imagemap[it.multi_index[0],it.multi_index[2]] = 0x80000000 + ( it[0] & 0xFF )
+      it.iternext()
+    
+    outimage = Image.frombuffer ( 'RGBA', (xdim,ydim), imagemap, 'raw', 'RGBA', 0, 1 )
+    outimage.save ( fileobj, "PNG" )
+
+  #
+  # Create the specified slice (index) at filename
+  #
+  def yzSlice ( self, fileobj ):
+
+    zdim,ydim,xdim = self.data.shape
+    imagemap = np.zeros ( [ zdim, ydim ], dtype=np.uint32 )
+
+    # iterate in data order via numpy
+    it = np.nditer ( self.data, flags=['multi_index'], op_flags=['readwrite'] )
+    while not it.finished:
+      if it[0] != 0:
+        imagemap[it.multi_index[0],it.multi_index[1]] = 0x80000000 + ( it[0] & 0xFF )
+      it.iternext()
+    
+    outimage = Image.frombuffer ( 'RGBA', (xdim,ydim), imagemap, 'raw', 'RGBA', 0, 1 )
+    outimage.save ( fileobj, "PNG" )
+
 # end AnnotateCube
 

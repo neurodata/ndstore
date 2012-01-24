@@ -1,18 +1,3 @@
-#y###############################################################################
-#
-#    Randal C. Burns
-#    Department of Computer Science
-#    Johns Hopkins University
-#
-################################################################################
-
-#
-#  At some point we may want to figure out tempfile versus stringio..
-#   Tempfile is the only thing that will work for hdf5.  Should we
-#   adapt it to npz?
-#
-
-
 import sys
 import re
 import StringIO
@@ -153,123 +138,54 @@ def xyImage ( imageargs, dbcfg ):
   web.header('Content-type', 'image/png') 
   fileobj.seek(0)
   return fileobj.read()
-  
+
 def xzImage ( imageargs, dbcfg ):
   """Return an xz plane fileobj.read()"""
 
-  restargs = imageargs.split('/')
+  # Perform argument processing
+  args = restargs.BrainRestArgs ();
+  args.xzArgs ( imageargs, dbcfg )
 
-  if len ( restargs ) == 5:
-    [ resstr, xdimstr, ystr, zdimstr, rest ]  = restargs
-    globalcoords = False
-  elif len ( restargs ) == 6:
-    [ resstr, xdimstr, ystr, zdimstr, rest, other ]  = restargs
-    globalcoords = True
-  else:
-    return web.badrequest()
+  # Extract the relevant values
+  corner = args.getCorner()
+  dim = args.getDim()
+  resolution = args.getResolution()
 
-  # expecting an argument of the form /resolution/x1,x2/y1,y2/z/
-  # Check that the arguments are well formatted
-  if not re.match ('[0-9]+,[0-9]+$', xdimstr) or\
-     not re.match ('[0-9]+$', ystr) or\
-     not re.match ('[0-9]+,[0-9]+$', zdimstr) or\
-     not re.match ('[0-9]+$', resstr ):
-    return web.badrequest()
-
-  x1s,x2s = xdimstr.split(',')
-  z1s,z2s = zdimstr.split(',')
-
-  x1i = int(x1s)
-  x2i = int(x2s)
-  y = int(ystr)
-  z1i = int(z1s)
-  z2i = int(z2s)
-
-  resolution = int(resstr)
-  
-  # Convert to local coordinates if global specified
-  if ( globalcoords ):
-    x1i = int ( float(x1i) / float( 2**(resolution-dbcfg.baseres)))
-    x2i = int ( float(x2i) / float( 2**(resolution-dbcfg.baseres)))
-    y = int ( float(y) / float( 2**(resolution-dbcfg.baseres)))
-
-  # Check arguments for legal values
-  if not dbcfg.checkCube ( resolution, x1i, x2i, y, y, z1i, z2i )\
-     or y >= dbcfg.imagesz[resolution][1]:
-    return web.notfound()
-
-  corner=[x1i,y,z1i-dbcfg.slicerange[0]]
-  dim=[x2i-x1i,1,z2i-z1i ]
-
-  try:
-    annodb = anndb.AnnotateDB ( dbcfg )
-    cb = annodb.cutout ( corner, dim, resolution )
-    fileobj = StringIO.StringIO ( )
-    cb.xzSlice ( dbcfg.zscale[resolution], fileobj )
-  except:
-    return web.notfound()
+#RBRM reinstate try/catch block
+#  try:
+  annodb = anndb.AnnotateDB ( dbcfg )
+  cb = annodb.cutout ( corner, dim, resolution )
+  fileobj = StringIO.StringIO ( )
+  cb.xzSlice ( fileobj )
+#  except:
+#    print "Exception"
+#    return web.notfound()
 
   web.header('Content-type', 'image/png') 
   fileobj.seek(0)
   return fileobj.read()
-  
 
 def yzImage ( imageargs, dbcfg ):
-  """Return an xz plane fileobj.read()"""
+  """Return an yz plane fileobj.read()"""
 
-  restargs = imageargs.split('/')
+  # Perform argument processing
+  args = restargs.BrainRestArgs ();
+  args.yzArgs ( imageargs, dbcfg )
 
-  if len ( restargs ) == 5:
-    [ resstr, xstr, ydimstr, zdimstr, rest ]  = restargs
-    globalcoords = False
-  elif len ( restargs ) == 6:
-    [ resstr, xstr, ydimstr, zdimstr, rest, other ]  = restargs
-    globalcoords = True
-  else:
-    return web.badrequest()
+  # Extract the relevant values
+  corner = args.getCorner()
+  dim = args.getDim()
+  resolution = args.getResolution()
 
-  # expecting an argument of the form /resolution/x/y1,y2/z1,z2/
-  # Check that the arguments are well formatted
-  if not re.match ('[0-9]+$', xstr) or\
-     not re.match ('[0-9]+,[0-9]+$', ydimstr) or\
-     not re.match ('[0-9]+,[0-9]+$', zdimstr) or\
-     not re.match ('[0-9]+$', resstr ):
-    return web.badrequest()
-
-  y1s,y2s = ydimstr.split(',')
-  z1s,z2s = zdimstr.split(',')
-
-  x = int(xstr)
-  y1i = int(y1s)
-  y2i = int(y2s)
-  z1i = int(z1s)
-  z2i = int(z2s)
-
-  resolution = int(resstr)
-
-  # Convert to local coordinates if global specified
-  if ( globalcoords ):
-    x = int ( float(x) / float( 2**(resolution-dbcfg.baseres)))
-    y1i = int ( float(y1i) / float( 2**(resolution-dbcfg.baseres)))
-    y2i = int ( float(y2i) / float( 2**(resolution-dbcfg.baseres)))
-
-
-  #RBTODO need to make a dbconfig object 
-  # Check arguments for legal values
-  if not dbcfg.checkCube ( resolution, x, x, y1i, y2i, z1i, z2i  )\
-     or  x >= dbcfg.imagesz[resolution][0]:
-    return web.notfound()
-
-  corner=[x,y1i,z1i-dbcfg.slicerange[0]]
-  dim=[1,y2i-y1i,z2i-z1i ]
-
-  try:
-    annodb = anndb.AnnotateDB ( dbcfg )
-    cb = annodb.cutout ( corner, dim, resolution )
-    fileobj = StringIO.StringIO ( )
-    cb.yzSlice ( dbcfg.zscale[resolution], fileobj )
-  except:
-    return web.notfound()
+#RBRM reinstate try/catch block
+#  try:
+  annodb = anndb.AnnotateDB ( dbcfg )
+  cb = annodb.cutout ( corner, dim, resolution )
+  fileobj = StringIO.StringIO ( )
+  cb.yzSlice ( fileobj )
+#  except:
+#    print "Exception"
+#    return web.notfound()
 
   web.header('Content-type', 'image/png') 
   fileobj.seek(0)
