@@ -7,6 +7,7 @@ import zlib
 import web
 import h5py
 import os
+import cStringIO
 
 import empaths 
 import restargs
@@ -233,10 +234,21 @@ def selectService ( webargs, dbcfg ):
 def selectPost ( webargs, dbcfg ):
   """Parse the first arg and call the right post service"""
 
-  # For now there is only one
-  print "Posting an object"
-  print "Received ", web.data()
-  return "Post"
+  try:
+    # Grab the voxel list
+    fileobj = cStringIO.StringIO ( web.data() )
+    voxlist = np.load ( fileobj )
+
+    # RBTODO check for legal values
+
+    # Make the annotation to the database
+    annoDB = anndb.AnnotateDB ( dbcfg )
+    entityid = annoDB.addEntity ( voxlist )
+
+  except:
+    return web.BadRequest()  
+
+  return web.OK()
 
 
 #
