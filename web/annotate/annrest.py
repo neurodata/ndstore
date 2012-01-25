@@ -24,21 +24,6 @@ import dbconfigbock11
 #
 
 #
-# General rest argument processing exception
-#
-class RESTRangeError(Exception):
-  def __init__(self, value):
-    self.value = value
-  def __str__(self):
-    return repr(self.value)
-
-class RESTBadArgsError(Exception): 
-  def __init__(self, value):
-    self.value = value
-  def __str__(self):
-    return repr(self.value)
-
-#
 #  Build the returned braincube.  Called by all methods 
 #   that then refine the output.
 #
@@ -67,9 +52,9 @@ def numpyZip ( imageargs, dbcfg ):
 
   try:
     cube = cutout ( imageargs, dbcfg )
-  except RESTRangeError:
+  except restargs.RESTRangeError:
     return web.notfound()
-  except RESTBadArgsError:
+  except restargs.RESTBadArgsError:
     return web.badrequest()
 
   try:
@@ -95,9 +80,9 @@ def HDF5 ( imageargs, dbcfg ):
 
   try:
     cube = cutout ( imageargs, dbcfg )
-  except RESTRangeError:
+  except restargs.RESTRangeError:
     return web.notfound()
-  except RESTBadArgsError:
+  except restargs.RESTBadArgsError:
     return web.badrequest()
 
   # Create an in-memory HDF5 file
@@ -234,21 +219,27 @@ def selectService ( webargs, dbcfg ):
 def selectPost ( webargs, dbcfg ):
   """Parse the first arg and call the right post service"""
 
-  try:
-    # Grab the voxel list
-    fileobj = cStringIO.StringIO ( web.data() )
-    voxlist = np.load ( fileobj )
+  [ service, sym, restargs ] = webargs.partition ('/')
 
-    # RBTODO check for legal values
+  if service == 'np':
+    try:
+      # Grab the voxel list
+      fileobj = cStringIO.StringIO ( web.data() )
+      voxlist = np.load ( fileobj )
 
-    # Make the annotation to the database
-    annoDB = anndb.AnnotateDB ( dbcfg )
-    entityid = annoDB.addEntity ( voxlist )
+      # RBTODO check for legal values
 
-  except:
-    return web.BadRequest()  
+      # Make the annotation to the database
+      annoDB = anndb.AnnotateDB ( dbcfg )
+      entityid = annoDB.addEntity ( voxlist )
 
-  return web.OK()
+    except:
+      return web.BadRequest()  
+
+    return web.OK()
+
+  else:
+    return "Unknown service"
 
 
 #

@@ -47,6 +47,8 @@ def main():
     response = urllib2.urlopen(req)
     the_page = response.read()
 
+    print the_page
+
   # Insert via object
   else: 
     dbcfg = dbconfighayworth5nm.dbConfigHayworth5nm()

@@ -67,9 +67,9 @@ def numpyZip ( imageargs, dbcfg ):
 
   try:
     cube = cutout ( imageargs, dbcfg )
-  except RESTRangeError:
+  except restargs.RESTRangeError:
     return web.notfound()
-  except RESTBadArgsError:
+  except restargs.RESTBadArgsError:
     return web.badrequest()
 
   try:
@@ -95,9 +95,9 @@ def HDF5 ( imageargs, dbcfg ):
 
   try:
     cube = cutout ( imageargs, dbcfg )
-  except RESTRangeError:
+  except restargs.RESTRangeError:
     return web.notfound()
-  except RESTBadArgsError:
+  except restargs.RESTBadArgsError:
     return web.badrequest()
 
   # Create an in-memory HDF5 file
