@@ -50,7 +50,7 @@ def main():
   # Again, should the interface be all zyx
   it = np.nditer ( cube, flags=['multi_index'])
   while not it.finished:
-    if it[0] > 180:
+    if it[0] > 160:
       voxlist.append ( [ it.multi_index[2]+xoffset,\
                          it.multi_index[1]+yoffset,\
                          it.multi_index[0]+zoffset ] )

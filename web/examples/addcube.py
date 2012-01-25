@@ -36,7 +36,7 @@ def main():
   if ( WS == True ): 
 
 
-    url = 'http://0.0.0.0:8080/hayworth5nm.annotate/np/'
+    url = 'http://0.0.0.0:8080/hayworth5nm.annotate/np/overwrite/'
 
     # Encode the voxelist an pickle
     fileobj = cStringIO.StringIO ()

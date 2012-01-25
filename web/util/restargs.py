@@ -49,7 +49,7 @@ class BrainRestArgs:
    
   def getResolution (self):
    return self._resolution
-    
+
 
   #
   #  Process cutout arguments
@@ -254,5 +254,61 @@ class BrainRestArgs:
 
     self._corner=[x,y1i,z1i-dbcfg.slicerange[0]]
     self._dim=[1,y2i-y1i,z2i-z1i ]
+
+
+# Unbound functions  not part of the class object
+
+
+#
+#  Process cutout arguments
+#
+def voxel ( imageargs, dbcfg ):
+  """Process REST arguments for a single"""
+
+  print imageargs
+  restargs = imageargs.split('/')
+
+  if len ( restargs ) == 5:
+    [ resstr, xstr, ystr, zstr, rest ]  = restargs
+  else:
+    return web.badrequest()
+
+  # expecting an argument of the form /resolution/x/y1,y2/z1,z2/
+  # Check that the arguments are well formatted
+  if not re.match ('[0-9]+$', xstr) or\
+     not re.match ('[0-9]+$', ystr) or\
+     not re.match ('[0-9]+$', zstr) or\
+     not re.match ('[0-9]+$', resstr ):
+    return web.badrequest()
+
+  x = int(xstr)
+  y = int(ystr)
+  z = int(zstr)
+
+  resolution = int(resstr)
+
+  # Check arguments for legal values
+  if not ( dbcfg.checkCube ( resolution, x, x, y, y, z, z )):
+    raise RESTRangeError ( "Illegal range. Image size:" +  str(dbcfg.imageSize( resolution )))
+
+  return [ x,y,z ]
+
+
+#
+#  Process cutout arguments
+#
+def conflictOption  ( imageargs ):
+  """Parse the conflict resolution string"""
+
+  restargs = imageargs.split('/')
+  if len (restargs) > 0:
+    if restargs[0] == 'preserve':
+      return 'P'
+    elif restargs[0] == 'except':
+      return 'E'
+    else:
+      return 'O'
+
+
 
 

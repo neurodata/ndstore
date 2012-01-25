@@ -50,6 +50,7 @@ def cutout ( imageargs, dbcfg ):
 def numpyZip ( imageargs, dbcfg ):
   """Return a web readable Numpy Pickle zipped"""
 
+  print "Got here"
   try:
     cube = cutout ( imageargs, dbcfg )
   except restargs.RESTRangeError:
@@ -177,6 +178,20 @@ def yzImage ( imageargs, dbcfg ):
   fileobj.seek(0)
   return fileobj.read()
   
+#
+#  annId
+#    return the annotation identifier of a pixel
+#
+def annId ( imageargs, dbcfg ):
+  """Return the annotation identifier of a voxel"""
+
+  # Perform argument processing
+  voxel = restargs.voxel ( imageargs, dbcfg )
+
+  # Get the identifier
+  annodb = anndb.AnnotateDB ( dbcfg )
+  return annodb.getVoxel ( voxel )
+
 
 #
 #  Select the service that you want.
@@ -205,6 +220,9 @@ def selectService ( webargs, dbcfg ):
   elif service == 'npz':
     return  numpyZip ( restargs, dbcfg ) 
 
+  elif service == 'annid':
+    return annId ( restargs, dbcfg )
+
   else:
     return web.notfound()
 
@@ -219,9 +237,15 @@ def selectService ( webargs, dbcfg ):
 def selectPost ( webargs, dbcfg ):
   """Parse the first arg and call the right post service"""
 
-  [ service, sym, restargs ] = webargs.partition ('/')
+  [ service, sym, postargs ] = webargs.partition ('/')
+  
+  # choose to overwrite (default), preserve, or make exception lists
+  #  when voxels conflict
+  # Perform argument processing
+  conflictopt = restargs.conflictOption ( postargs )
 
   if service == 'np':
+
     try:
       # Grab the voxel list
       fileobj = cStringIO.StringIO ( web.data() )
@@ -231,12 +255,20 @@ def selectPost ( webargs, dbcfg ):
 
       # Make the annotation to the database
       annoDB = anndb.AnnotateDB ( dbcfg )
-      entityid = annoDB.addEntity ( voxlist )
+      entityid = annoDB.addEntity ( voxlist, conflictopt )
 
     except:
       return web.BadRequest()  
 
     return web.OK()
+
+  #RBTODO HDF5 for matlab users?
+  elif service == 'HDF5':
+    return "Not yet"
+    pass
+
+  elif service == 'test':
+    return "No text format specified yet"
 
   else:
     return "Unknown service"

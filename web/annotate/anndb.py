@@ -93,6 +93,7 @@ class AnnotateDB:
 
     return identifier
 
+
   #
   # getCube
   #
@@ -241,7 +242,7 @@ class AnnotateDB:
   #  Called by addEntity and extendEntity to actually number
   #   the voxels and build the exception
   #
-  def annotate ( self, entityid, locations ):
+  def annotate ( self, entityid, locations, conflictopt ):
     """Label the voxel locations or add as exceptions is the are already labeled."""
 
     #  An item may exist across several cubes
@@ -270,7 +271,7 @@ class AnnotateDB:
                    cubeoff[2]*self.cubedim[2] ]
 
         # add the items
-        exceptions = cube.annotate ( entityid, offset, loclist )
+        exceptions = cube.annotate ( entityid, offset, loclist, conflictopt )
 
         # update the sparse list of exceptions
         if len(exceptions) != 0:
@@ -285,7 +286,7 @@ class AnnotateDB:
   #  Include the following locations as part of the specified entity.
   #  entity as a list of voxels.  Returns the entity id
   #
-  def extendEntity ( self, entityid, locations ):
+  def extendEntity ( self, entityid, locations, conflictopt ):
     """Extend an existing entity as a list of voxels"""
 
     # RBTODO make sure that the entity id is defined
@@ -299,13 +300,13 @@ class AnnotateDB:
   #
   #  Add a single entity as a list of voxels. Returns the entity id.
   #
-  def addEntity ( self, locations ):
+  def addEntity ( self, locations, conflictopt ):
     """Add an entity as a list of voxels"""
 
     # get and identifier for this object
     entityid = self.nextID()
 
-    self.annotate ( entityid, locations )
+    self.annotate ( entityid, locations, conflictopt )
 
     return entityid
 
@@ -396,4 +397,48 @@ class AnnotateDB:
                       corner[1]%self.ycubedim,dim[1],\
                       corner[2]%self.zcubedim,dim[2] )
     return outcube
+
+
+  #
+  # getId -- return the identifier at a voxel
+  #
+  #  This will return the first annotation
+  #  RBTODO, exceptions are a mess here
+  #
+  def getVoxel ( self, voxel ):
+    """Load a cube from the annotation database"""
+
+    # convert the voxel into zindex and offsets
+    # Round to the nearest larger cube in all dimensions
+    xyzcube = [ voxel[0]/self.xcubedim, voxel[1]/self.ycubedim, voxel[2]/self.zcubedim ]
+    xyzoffset =[ voxel[0]%self.xcubedim, voxel[1]%self.ycubedim, voxel[2]%self.zcubedim ]
+
+    print xyzcube, xyzoffset
+
+    # Create a cube object
+    cube = anncube.AnnotateCube ( self.cubedim )
+
+    mortonidx = zindex.XYZMorton ( xyzcube )
+
+    cursor = self.conn.cursor ()
+
+    # get the block from the database
+    sql = "SELECT cube FROM " + self.ann_tbl + " WHERE zindex = " + str(mortonidx)
+    try:
+      cursor.execute ( sql )
+    except:
+      print "Unknown problem with table", self.ann_tbl
+
+    row = cursor.fetchone ()
+
+    # If we can't find a cube, assume it hasn't been written yet
+    if ( row == None ):
+      retval = 0
+    else: 
+      cube.fromNPZ ( row[0] )
+      retval = cube.getVoxel ( xyzoffset )
+
+    cursor.close()
+     
+    return retval
 
