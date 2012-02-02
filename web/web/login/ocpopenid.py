@@ -1,22 +1,26 @@
-"""ocpopenid.py: Reimplementation of (openid.py: an openid library for web.py)
+"""ocpopenid.py: Reimplementation of (webopenid.py: an openid library for web.py)
 
-Notes:
+The goal of this module is to create a token for identifying
+an annotator to the OCP annotation service.  Some comments:
 
- - This will create a file called .openid_secret_key in the 
-   current directory with your secret key in it. If someone 
-   has access to this file they can log in as any user. And 
-   if the app can't find this file for any reason (e.g. you 
-   moved the app somewhere else) then each currently logged 
-   in user will get logged out.
+  An annotation database is associated with an 
+    OpenID, dataset name (e.g. hayworth5nm), and resolution.
 
- - State must be maintained through the entire auth process 
-   -- this means that if you have multiple web.py processes 
-   serving one set of URLs or if you restart your app often 
-   then log ins will fail. You have to replace sessions and 
-   store for things to work.
+  This page will create a token, store it in the database, and
+    return it to the annotator.  The annotator will use this
+    token in subsequent interactions with this token.
 
- - We set cookies starting with "openid_".
+  Running this script again replaces the previous token 
+    with the new token.
 
+  TODO : 
+    (1) make OpenID stateless, 
+    (2) remove .secretfile
+    (3) interact with users databsae
+    (4) no cookies
+    (5) change logout
+    (6) make button to write 
+   
 """
 
 import os
