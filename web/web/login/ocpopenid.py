@@ -15,11 +15,10 @@ an annotator to the OCP annotation service.  Some comments:
 
   TODO : 
     (1) make OpenID stateless, 
-    (2) remove .secretfile
     (3) interact with users databsae
     (4) no cookies
-    (5) change logout
-    (6) make button to write 
+    (5) change logout to return
+    (6) make button to write ??
    
 """
 
@@ -33,6 +32,7 @@ import openid.store.memstore
 sessions = {}
 store = openid.store.memstore.MemoryStore()
 
+# RBTODO don't like the secret file.  Move to the database?
 def _secret():
     try:
         secret = file('.openid_secret_key').read()
@@ -62,24 +62,36 @@ def status():
 
 def form(openid_loc,message):
     oid = status()
+    print oid
     if oid:
         return '''
+        Your new annotation token for database <strong> %s </strong> 
+        at resolution <strong> %s </strong> is: 
+        <p>
+        <strong> %s </strong> 
+        <p>
+        Logout to leave this page.
         <form method="post" action="%s">
           <img src="http://openid.net/login-bg.gif" alt="OpenID" />
           <strong>%s</strong>
           <input type="hidden" name="action" value="logout" />
           <input type="hidden" name="return_to" value="%s" />
           <button type="submit">log out</button>
-        </form>''' % (openid_loc, oid, web.ctx.fullpath)
+        </form>''' % ("hayworth5nm","3","foo",openid_loc, oid, web.ctx.fullpath)
     else:
         return '''
+        To reset your annotation token, specify the dataset and resolution that your
+        project is annotating and put an OpenID in the OpenID box.  Login will
+        redirect you to an OpenID provider.  After authenticating, your token will be
+        reset and will be redirected to a page that shows you the new annotation token.
+        <p>
         <form method="post" action="%s">
           <input type="text" name="openid" value="" 
             style="background: url(http://openid.net/login-bg.gif) no-repeat; padding-left: 18px; background-position: 0 50%%;" />
           <input type="hidden" name="return_to" value="%s" />
           <button type="submit">log in</button>
           <p>
-          Message = %s
+          <strong> %s </strong>
           </p>
         </form>''' % (openid_loc, web.ctx.fullpath, message)
 
