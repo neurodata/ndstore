@@ -1,11 +1,3 @@
-################################################################################
-#
-#    Randal C. Burns
-#    Department of Computer Science
-#    Johns Hopkins University
-#
-################################################################################
-
 import numpy as np
 import cStringIO
 import zlib
@@ -13,6 +5,8 @@ import MySQLdb
 
 import zindex
 import anncube
+
+#TODO convert the asserts into exceptions so that not found can be returned
 
 ################################################################################
 #
@@ -67,8 +61,8 @@ class AnnotateDB:
     sql = "SELECT max(id) FROM " + str ( self.ids_tbl )
     try:
       cursor.execute ( sql )
-    except:
-      print "Unknown problem with identifier table", self.ids_tbl
+    except MySQLdb.Error, e:
+      print "Problem retrieving identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       assert 0
 
     # Here we've queried the highest id successfully    
@@ -83,8 +77,8 @@ class AnnotateDB:
     sql = "INSERT INTO " + str(self.ids_tbl) + " VALUES ( " + str(identifier) + " ) "
     try:
       cursor.execute ( sql )
-    except:
-      print "Failed to insert {0} into identifier table {1}".format( identifier, self.ids_tbl )
+    except MySQLdb.Error, e:
+      print "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       assert 0
 
     # InnoDB needs a commit
@@ -92,7 +86,6 @@ class AnnotateDB:
     self.conn.commit()
 
     return identifier
-
 
   #
   # getCube
@@ -109,8 +102,10 @@ class AnnotateDB:
     sql = "SELECT cube FROM " + self.ann_tbl + " WHERE zindex = " + str(key)
     try:
       cursor.execute ( sql )
-    except:
-      print "Unknown problem with table", self.ann_tbl
+    except MySQLdb.Error, e:
+      print "Failed to retrieve cube %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      assert 0
+
 
     row = cursor.fetchone ()
 
@@ -144,16 +139,17 @@ class AnnotateDB:
       sql = "INSERT INTO " + self.ann_tbl +  "(zindex, cube) VALUES (%s, %s)"
       try:
         cursor.execute ( sql, (key,npz))
-      except:
-        print "Error inserting into ", self.ann_tbl
+      except MySQLdb.Error, e:
+        print "Error inserting cube %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+        assert 0
 
     else:
 
       sql = "UPDATE " + self.ann_tbl + " SET cube=(%s) WHERE zindex=" + str(key)
       try:
         cursor.execute ( sql, (npz))
-      except:
-        print "Error updating key={0} in table".format( key, self.ann_tbl)
+      except MySQLdb.Error, e:
+        print "Error updating cube %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
         assert 0
 
     cursor.close()
@@ -173,8 +169,9 @@ class AnnotateDB:
     print sql 
     try:
       cursor.execute ( sql )
-    except:
-      print "Unknown problem with table", self.except_tbl
+    except MySQLdb.Error, e:
+      print "Error reading exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      assert 0
 
     row = cursor.fetchone ()
 
@@ -199,6 +196,7 @@ class AnnotateDB:
 
     cursor = self.conn.cursor ()
 
+    # RBTODO need to make exceptions a set
     if curexlist==[]:
 
       print "Adding new exceptions", exceptions 
@@ -209,8 +207,9 @@ class AnnotateDB:
         np.save ( fileobj, exceptions )
         print sql, key, entityid 
         cursor.execute ( sql, (key, entityid, fileobj.getvalue()))
-      except:
-        print "Error inserting into ", self.except_tbl
+      except MySQLdb.Error, e:
+        print "Error inserting exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+        assert 0
 
     # In this case we have an update query
     else:
@@ -226,8 +225,8 @@ class AnnotateDB:
         fileobj = cStringIO.StringIO ()
         np.save ( fileobj, newexlist )
         cursor.execute ( sql, (fileobj.getvalue()))
-      except:
-        print "Error updating key={0} in table".format( key, self.except_tbl)
+      except MySQLdb.Error, e:
+        print "Error updating exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
         assert 0
 
     cursor.close()
@@ -289,10 +288,25 @@ class AnnotateDB:
   def extendEntity ( self, entityid, locations, conflictopt ):
     """Extend an existing entity as a list of voxels"""
 
-    # RBTODO make sure that the entity id is defined
+    # Query the identifier
+    cursor = self.conn.cursor ()
+    sql = "SELECT id FROM {0} WHERE id={1}".format(str(self.ids_tbl),str(entityid))
+    print sql
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      print "Error reading identifier: %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      assert 0
+
+    # Get the query result
+    row = cursor.fetchone ()
+    print row
+    # If the annotation doesn't exist, throw an error
+    if ( row == None ):
+      assert 0
 
     # label the voxels and exceptions
-    self.annotate ( entityid, locations )
+    self.annotate ( entityid, locations, conflictopt )
 
 
   #
@@ -426,8 +440,9 @@ class AnnotateDB:
     sql = "SELECT cube FROM " + self.ann_tbl + " WHERE zindex = " + str(mortonidx)
     try:
       cursor.execute ( sql )
-    except:
-      print "Unknown problem with table", self.ann_tbl
+    except MySQLdb.Error, e:
+      print "Error reading annotation data: %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      assert 0
 
     row = cursor.fetchone ()
 
@@ -441,4 +456,3 @@ class AnnotateDB:
     cursor.close()
      
     return retval
-

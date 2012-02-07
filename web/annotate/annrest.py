@@ -260,7 +260,7 @@ def selectPost ( webargs, dbcfg ):
     except:
       return web.BadRequest()  
 
-    return web.OK()
+    return str(entityid)
 
   #RBTODO HDF5 for matlab users?
   elif service == 'HDF5':
