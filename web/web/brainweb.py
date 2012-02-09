@@ -18,21 +18,36 @@ app = web.application(urls, globals(), True)
 
 class bock11:
   def GET(self,name):
-    return brainrest.bock11(web.websafe(name))
+    try:
+      return brainrest.bock11(web.websafe(name))
+    except:
+      return web.notfound()
 
 class hayworth5nm:
   def GET(self,name):
-    return brainrest.hayworth5nm(web.websafe(name))
+    try:
+      return brainrest.hayworth5nm(web.websafe(name))
+    except:
+      return web.notfound()
 
 class hayworth5nmAnnotate:
   def GET(self,name):
-    return annrest.hayworth5nm(web.websafe(name))
+    try:
+      return annrest.hayworth5nm(web.websafe(name))
+    except:
+      return web.notfound()
   def POST(self,name):
-    return annrest.hayworth5nmPost(web.websafe(name))
+    try:
+      return annrest.hayworth5nmPost(web.websafe(name))
+    except:
+      return web.notfound()
 
 class kasthuri11:
   def GET(self,name):
-    return brainrest.kasthuri11(web.websafe(name))
+    try:
+      return brainrest.kasthuri11(web.websafe(name))
+    except:
+      return web.notfound()
 
 if __name__ == "__main__":
     app.run()

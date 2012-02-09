@@ -14,9 +14,6 @@ import restargs
 import anncube
 import anndb
 import dbconfig
-import dbconfighayworth5nm
-import dbconfigkasthuri11
-import dbconfigbock11
 
 
 #
@@ -280,20 +277,24 @@ def selectPost ( webargs, dbcfg ):
 #
 def bock11 ( webargs ):
   """Use the bock data set"""
+  import dbconfigbock11
   dbcfg = dbconfigbock11.dbConfigBock11()
   return selectService ( webargs, dbcfg )
 
 def hayworth5nm ( webargs ):
   """Use the hayworth5nm data set"""
+  import dbconfighayworth5nm
   dbcfg = dbconfighayworth5nm.dbConfigHayworth5nm()
   return selectService ( webargs, dbcfg )
 
 def hayworth5nmPost ( webargs ):
   """Use the hayworth5nm data set"""
+  import dbconfighayworth5nm
   dbcfg = dbconfighayworth5nm.dbConfigHayworth5nm()
   return selectPost ( webargs, dbcfg )
 
 def kasthuri11 ( webargs ):
   """Use the kasthuri11 data set"""
+  import dbconfigkasthuri11
   dbcfg = dbconfigkasthuri11.dbConfigKasthuri11()
   return selectService ( webargs, dbcfg )

@@ -14,8 +14,8 @@ import empaths
 
 import cubedb
 import dbconfig
-import dbconfighayworth5nm
-#import dbconfigkasthuri11
+#import dbconfighayworth5nm
+import dbconfigkasthuri11
 #import dbconfigbock11
 
 #
@@ -25,9 +25,9 @@ import dbconfighayworth5nm
 def main():
 
   #  Specify the database to ingest
-  #dbcfg = dbconfigbock11.dbConfigBock11()
-
-  dbcfg = dbconfighayworth5nm.dbConfigHayworth5nm()
+  dbcfg = dbconfigkasthuri11.dbConfigKasthuri11()
+#  dbcfg = dbconfigbock11.dbConfigBock11()
+#  dbcfg = dbconfighayworth5nm.dbConfigHayworth5nm()
 
   cdb = cubedb.CubeDB ( dbcfg )
 

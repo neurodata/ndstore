@@ -1,0 +1,8 @@
+
+Conditional inclusion of configuration files.
+
+Make exceptions sets instead of lists for database
+
+Make gendb take conditional arguments to generate the appropriate data set.
+
+Need to test with kasthuri and bock.  Get top couple of levels.

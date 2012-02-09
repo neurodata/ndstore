@@ -41,13 +41,13 @@ class BrainCube:
 
     # Check that it is a legal assignment   
     #  aligned and within bounds
-    assert self.xdim % other.xdim == 0
-    assert self.ydim % other.ydim == 0
-    assert self.zdim % other.zdim == 0
-
-    assert (index[0]+1)*other.xdim <= self.xdim
-    assert (index[1]+1)*other.ydim <= self.ydim
-    assert (index[2]+1)*other.zdim <= self.zdim
+    #assert self.xdim % other.xdim == 0
+    #assert self.ydim % other.ydim == 0
+    #assert self.zdim % other.zdim == 0
+#
+#    assert (index[0]+1)*other.xdim <= self.xdim
+#    assert (index[1]+1)*other.ydim <= self.ydim
+#    assert (index[2]+1)*other.zdim <= self.zdim
 
     xoffset = index[0]*other.xdim
     yoffset = index[1]*other.ydim
