@@ -44,6 +44,8 @@ class AnnotateDB:
     [ self.xcubedim, self.ycubedim, self.zcubedim ] = self.cubedim = self.dbcfg.cubedim [ self.dbcfg.annotateres ] 
     [ self.ximagesize, self.yimagesize ] = self.imagesize = self.dbcfg.imagesz [ self.dbcfg.annotateres ]
 
+    # PYTODO create annidx object
+
 
   def __del ( self ):
     """Close the connection"""
@@ -278,6 +280,11 @@ class AnnotateDB:
 
         self.putCube ( key, cube)
 
+    # PYTODO update index
+
+
+  # end annotate
+
 
   #
   # extendEntity
@@ -414,20 +421,18 @@ class AnnotateDB:
 
 
   #
-  # getId -- return the identifier at a voxel
+  # getVoxel -- return the identifier at a voxel
   #
-  #  This will return the first annotation
-  #  RBTODO, exceptions are a mess here
   #
   def getVoxel ( self, voxel ):
-    """Load a cube from the annotation database"""
+    """Return the identifier at a voxel"""
 
     # convert the voxel into zindex and offsets
     # Round to the nearest larger cube in all dimensions
     xyzcube = [ voxel[0]/self.xcubedim, voxel[1]/self.ycubedim, voxel[2]/self.zcubedim ]
     xyzoffset =[ voxel[0]%self.xcubedim, voxel[1]%self.ycubedim, voxel[2]%self.zcubedim ]
 
-    print xyzcube, xyzoffset
+#    print xyzcube, xyzoffset
 
     # Create a cube object
     cube = anncube.AnnotateCube ( self.cubedim )
@@ -456,3 +461,13 @@ class AnnotateDB:
     cursor.close()
      
     return retval
+
+  #
+  # getLocations -- return the list of locations associated with an identifier
+  #
+  # PYTODO
+  #
+  def getLocations ( self, locations ):
+    """Return the list of locations associated with an identifier"""
+    pass
+
