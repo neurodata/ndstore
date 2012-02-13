@@ -106,15 +106,15 @@ class AnnotateCube:
       elif (self.data [ voxel[2]-offset[2], voxel[1]-offset[1], voxel[0]-offset[0]] != annid ):
         # O is for overwrite
         if conflictopt == 'O':
-          print "O option"
+#          print "O option"
           self.data [ voxel[2]-offset[2], voxel[1]-offset[1], voxel[0]-offset[0] ] = annid
         # P preserves the existing content
         elif conflictopt == 'P':
-          print "P option"
+#          print "P option"
           pass
         # E creates exceptions
         elif conflictopt == 'E':
-          print "E option"
+#          print "E option"
           exceptions.append ( voxel )
         else:
           print ( "Improper conflict option selected.  Option = ", conflictopt  )
