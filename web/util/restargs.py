@@ -1,11 +1,3 @@
-#y###############################################################################
-#
-#    Randal C. Burns
-#    Department of Computer Science
-#    Johns Hopkins University
-#
-################################################################################
-
 #
 #  Check the formatting of RESTful arguments.
 #  Shared by cutout and annotation services.
@@ -23,12 +15,21 @@ import dbconfig
 # General rest argument processing exception
 #
 class RESTRangeError(Exception):
+  """Arguments exceed image/voxel bounds"""
   def __init__(self, value):
     self.value = value
   def __str__(self):
     return repr(self.value)
 
 class RESTBadArgsError(Exception): 
+  """Illegal arguments"""
+  def __init__(self, value):
+    self.value = value
+  def __str__(self):
+    return repr(self.value)
+
+class RESTTokenError(Exception):
+  """Invalid annotation token"""
   def __init__(self, value):
     self.value = value
   def __str__(self):

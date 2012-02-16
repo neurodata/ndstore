@@ -5,6 +5,7 @@ import MySQLdb
 
 import zindex
 import anncube
+import annproj
 
 #TODO convert the asserts into exceptions so that not found can be returned
 
@@ -18,23 +19,17 @@ import anncube
 
 class AnnotateDB: 
 
-  # Could add these to dbconfig.  Probably remove res as tablebase instead
-  ids_tbl = "ids"
-  entities_tbl = "entities"
-  except_tbl = "exceptions"
-  items_tbl = "items"
-  ann_tbl = "annotations" 
-
-  def __init__ (self, dbconf):
+  def __init__ (self, dbconf, annoproj):
     """Connect with the brain databases"""
 
     self.dbcfg = dbconf
+    self.annoproj = annoproj
 
     # Connection info in dbconfig
     self.conn = MySQLdb.connect (host = self.dbcfg.dbhost,
                             user = self.dbcfg.dbuser,
                             passwd = self.dbcfg.dbpasswd,
-                            db = self.dbcfg.dbname)
+                            db = self.annoproj.getDBName())
 
     # How many slices?
     [ self.startslice, endslice ] = self.dbcfg.slicerange
@@ -60,7 +55,7 @@ class AnnotateDB:
     
     # Query the current max identifier
     cursor = self.conn.cursor ()
-    sql = "SELECT max(id) FROM " + str ( self.ids_tbl )
+    sql = "SELECT max(id) FROM " + str ( self.annoproj.getIDsTbl() )
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
@@ -76,7 +71,7 @@ class AnnotateDB:
       identifier = int ( row[0] ) + 1
 
     # increment and update query
-    sql = "INSERT INTO " + str(self.ids_tbl) + " VALUES ( " + str(identifier) + " ) "
+    sql = "INSERT INTO " + str(self.annoproj.getIDsTbl()) + " VALUES ( " + str(identifier) + " ) "
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
@@ -101,7 +96,7 @@ class AnnotateDB:
     cursor = self.conn.cursor ()
 
     # get the block from the database
-    sql = "SELECT cube FROM " + self.ann_tbl + " WHERE zindex = " + str(key)
+    sql = "SELECT cube FROM " + self.annoproj.getAnnotationsTbl() + " WHERE zindex = " + str(key)
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
@@ -138,7 +133,7 @@ class AnnotateDB:
     # we created a cube from zeros
     if cube.fromZeros ():
 
-      sql = "INSERT INTO " + self.ann_tbl +  "(zindex, cube) VALUES (%s, %s)"
+      sql = "INSERT INTO " + self.annoproj.getAnnotationsTbl() +  "(zindex, cube) VALUES (%s, %s)"
       try:
         cursor.execute ( sql, (key,npz))
       except MySQLdb.Error, e:
@@ -147,7 +142,7 @@ class AnnotateDB:
 
     else:
 
-      sql = "UPDATE " + self.ann_tbl + " SET cube=(%s) WHERE zindex=" + str(key)
+      sql = "UPDATE " + self.annoproj.getAnnotationsTbl() + " SET cube=(%s) WHERE zindex=" + str(key)
       try:
         cursor.execute ( sql, (npz))
       except MySQLdb.Error, e:
@@ -372,7 +367,7 @@ class AnnotateDB:
     listofidxs.sort()
 
     # Batch query for all cubes
-    dbname = self.ann_tbl
+    dbname = self.annoproj.getAnnotationsTbl()
     cursor = self.conn.cursor()
     sql = "SELECT zindex, cube from " + dbname + " where zindex in (%s)" 
     # creats a %s for each list element
@@ -442,7 +437,7 @@ class AnnotateDB:
     cursor = self.conn.cursor ()
 
     # get the block from the database
-    sql = "SELECT cube FROM " + self.ann_tbl + " WHERE zindex = " + str(mortonidx)
+    sql = "SELECT cube FROM " + self.annoproj.getAnnotationsTbl() + " WHERE zindex = " + str(mortonidx)
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
