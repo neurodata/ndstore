@@ -29,6 +29,7 @@ def cutout ( imageargs, dbcfg, annoproj ):
 
   # Perform argument processing
   args = restargs.BrainRestArgs ();
+  args.setResolution ( annoproj.getResolution() )
   args.cutoutArgs ( imageargs, dbcfg )
 
   # Extract the relevant values
@@ -100,9 +101,10 @@ def HDF5 ( imageargs, dbcfg ):
 def xyImage ( imageargs, dbcfg, annoproj ):
   """Return an xy plane fileobj.read()"""
 
-  # RBTODO need to split BrainRestArgs into resolution and then args
   # Perform argument processing
   args = restargs.BrainRestArgs ();
+  # Don't love this, but must either parse or set resolution before xyArgs call
+  args.setResolution ( annoproj.getResolution() )
   args.xyArgs ( imageargs, dbcfg )
 
   # Extract the relevant values
@@ -131,6 +133,7 @@ def xzImage ( imageargs, dbcfg, annoproj ):
 
   # Perform argument processing
   args = restargs.BrainRestArgs ();
+  args.setResolution ( annoproj.getResolution() )
   args.xzArgs ( imageargs, dbcfg )
 
   # Extract the relevant values
@@ -157,6 +160,7 @@ def yzImage ( imageargs, dbcfg, annoproj ):
 
   # Perform argument processing
   args = restargs.BrainRestArgs ();
+  args.setResolution ( annoproj.getResolution() )
   args.yzArgs ( imageargs, dbcfg )
 
   # Extract the relevant values
@@ -203,25 +207,25 @@ def annId ( imageargs, dbcfg, annoproj ):
 def selectService ( webargs, dbcfg, annoproj ):
   """Parse the first arg and call service, HDF5, mpz, etc."""
 
-  [ service, sym, restargs ] = webargs.partition ('/')
+  [ service, sym, rangeargs ] = webargs.partition ('/')
 
   if service == 'xy':
-    return xyImage ( restargs, dbcfg, annoproj )
+    return xyImage ( rangeargs, dbcfg, annoproj )
 
   elif service == 'xz':
-    return xzImage ( restargs, dbcfg, annoproj)
+    return xzImage ( rangeargs, dbcfg, annoproj)
 
   elif service == 'yz':
-    return yzImage ( restargs, dbcfg, annoproj )
+    return yzImage ( rangeargs, dbcfg, annoproj )
 
   elif service == 'hdf5':
-    return HDF5 ( restargs, dbcfg, annoproj )
+    return HDF5 ( rangeargs, dbcfg, annoproj )
 
   elif service == 'npz':
-    return  numpyZip ( restargs, dbcfg, annoproj ) 
+    return  numpyZip ( rangeargs, dbcfg, annoproj ) 
 
   elif service == 'annid':
-    return annId ( restargs, dbcfg, annoproj )
+    return annId ( rangeargs, dbcfg, annoproj )
 
   else:
     return web.badrequest()
@@ -238,9 +242,9 @@ def selectPost ( webargs, dbcfg, annoproj ):
   """Parse the first arg and call the right post service"""
 
   [ service, sym, postargs ] = webargs.partition ('/')
-  
-  assert 0 # need to get annoproj data working
 
+  print service, postargs
+  
   # choose to overwrite (default), preserve, or make exception lists
   #  when voxels conflict
   # Perform argument processing
@@ -324,10 +328,10 @@ def annoget ( webargs ):
       Load the annotation project and invoke the appropriate
       dataset."""
 
-  [ token, sym, restargs ] = webargs.partition ('/')
+  [ token, sym, rangeargs ] = webargs.partition ('/')
   annoproj = getAnnoDB ( token )
   dbcfg = switchDataset ( annoproj )
-  return selectService ( restargs, dbcfg, annoproj )
+  return selectService ( rangeargs, dbcfg, annoproj )
 
 
 def annopost ( webargs ):
@@ -335,10 +339,10 @@ def annopost ( webargs ):
       Load the annotation project and invoke the appropriate
       dataset."""
 
-  [ token, sym, restargs ] = webargs.partition ('/')
+  [ token, sym, rangeargs ] = webargs.partition ('/')
   annoproj = getAnnoDB ( token )
   dbcfg = switchDataset ( annoproj )
-  return selectPost ( restargs, dbcfg, annoproj )
+  return selectPost ( rangeargs, dbcfg, annoproj )
 
 
 

@@ -39,14 +39,14 @@ class kasthuri11:
 
 class annotate:
   def GET(self,name):
-    try:
+#    try:
       return annrest.annoget(web.websafe(name))
-    except:
+#    except:
       return web.notfound()
   def POST(self,name):
-    try:
+#    try:
       return annrest.annopost(web.websafe(name))
-    except:
+#    except:
       return web.notfound()
 
 

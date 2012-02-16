@@ -38,6 +38,13 @@ class RESTTokenError(Exception):
 
 class BrainRestArgs:
 
+
+  # __init__
+  def __init__ ( self ):
+    """Set resolution to -1 to make things break if one doesn't set resolution prior to 
+       calling an args parsing function.  I don't like this, but it works."""
+    self._resolution = -1
+
   # Accessors to get corner and dimensions
   def getCorner (self):
     return self._corner
@@ -54,7 +61,7 @@ class BrainRestArgs:
   #
   def setResolution(self, resolution):
     """Set the resolution.  Used when annotating."""
-    self._resoltuion=resolution
+    self._resolution=resolution
 
   #
   # resolutionArgs: 
@@ -73,7 +80,10 @@ class BrainRestArgs:
   #  Process cutout arguments
   #
   def cutoutArgs ( self, imageargs, dbcfg ):
-    """Process REST arguments for an cutout plane request"""
+    """Process REST arguments for an cutout plane request
+       You must have set the resolution prior to calling this function."""
+
+    assert ( self._resolution != -1 )
 
     # expecting an argument of the form /resolution/x1,x2/y1,y2/z1,z2/
 
@@ -126,7 +136,11 @@ class BrainRestArgs:
   #    where ** is xy, xz, yz
   #
   def xyArgs ( self, imageargs, dbcfg ):
-    """Process REST arguments for an xy plane request"""
+    """Process REST arguments for an xy plane request.
+       You must have set the resolution prior to calling this function."""
+
+    print self._resolution
+    assert ( self._resolution != -1 )
 
     rangeargs = imageargs.split('/')
 
@@ -172,7 +186,10 @@ class BrainRestArgs:
 
     
   def xzArgs ( self, imageargs, dbcfg ):
-    """Process REST arguments for an xy plane request"""
+    """Process REST arguments for an xz plane request
+       You must have set the resolution prior to calling this function."""
+
+    assert ( self._resolution != -1 )
 
     rangeargs = imageargs.split('/')
 
@@ -217,7 +234,10 @@ class BrainRestArgs:
 
 
   def yzArgs ( self, imageargs, dbcfg ):
-    """Process REST arguments for an xy plane request"""
+    """Process REST arguments for an yz plane request
+       You must have set the resolution prior to calling this function."""
+
+    assert ( self._resolution != -1 )
 
     rangeargs = imageargs.split('/')
 
