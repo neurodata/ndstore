@@ -29,11 +29,12 @@ import dbconfighayworth5nm
 #  Build the returned braincube.  Called by all methods 
 #   that then refine the output.
 #
-def cutout ( imageargs, dbcfg ):
+def cutout ( webargs, dbcfg ):
 
   # Perform argument processing
   args = restargs.BrainRestArgs ();
-  args.cutoutArgs ( imageargs, dbcfg )
+  cutoutargs = args.resolutionArg ( webargs, dbcfg )
+  args.cutoutArgs ( cutoutargs, dbcfg )
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -49,11 +50,11 @@ def cutout ( imageargs, dbcfg ):
 #
 #  Return a Numpy Pickle zipped
 #
-def numpyZip ( imageargs, dbcfg ):
+def numpyZip ( webargs, dbcfg ):
   """Return a web readable Numpy Pickle zipped"""
 
   try:
-    cube = cutout ( imageargs, dbcfg )
+    cube = cutout ( webargs, dbcfg )
   except restargs.RESTRangeError:
     return web.notfound()
   except restargs.RESTBadArgsError:
@@ -77,11 +78,11 @@ def numpyZip ( imageargs, dbcfg ):
 #
 #  Return a HDF5 file
 #
-def HDF5 ( imageargs, dbcfg ):
+def HDF5 ( webargs, dbcfg ):
   """Return a web readable HDF5 file"""
 
   try:
-    cube = cutout ( imageargs, dbcfg )
+    cube = cutout ( webargs, dbcfg )
   except restargs.RESTRangeError:
     return web.notfound()
   except restargs.RESTBadArgsError:
@@ -101,11 +102,13 @@ def HDF5 ( imageargs, dbcfg ):
 #  **Image return a readable png object
 #    where ** is xy, xz, yz
 #
-def xyImage ( imageargs, dbcfg ):
+def xyImage ( webargs, dbcfg ):
   """Return an xy plane fileobj.read()"""
 
   # Perform argument processing
   args = restargs.BrainRestArgs ();
+  imageargs = args.resolutionArg ( webargs, dbcfg )
+  
   args.xyArgs ( imageargs, dbcfg )
 
   # Extract the relevant values
@@ -125,11 +128,12 @@ def xyImage ( imageargs, dbcfg ):
   fileobj.seek(0)
   return fileobj.read()
   
-def xzImage ( imageargs, dbcfg ):
+def xzImage ( webargs, dbcfg ):
   """Return an xz plane fileobj.read()"""
 
   # Perform argument processing
   args = restargs.BrainRestArgs ();
+  imageargs = args.resolutionArg ( webargs, dbcfg )
   args.xzArgs ( imageargs, dbcfg )
 
   # Extract the relevant values
@@ -150,11 +154,12 @@ def xzImage ( imageargs, dbcfg ):
   return fileobj.read()
   
 
-def yzImage ( imageargs, dbcfg ):
+def yzImage ( webargs, dbcfg ):
   """Return an yz plane fileobj.read()"""
 
   # Perform argument processing
   args = restargs.BrainRestArgs ();
+  imageargs = args.resolutionArg ( webargs, dbcfg )
   args.yzArgs ( imageargs, dbcfg )
 
   # Extract the relevant values
@@ -184,22 +189,22 @@ def yzImage ( imageargs, dbcfg ):
 def selectService ( webargs, dbcfg ):
   """Parse the first arg and call service, HDF5, mpz, etc."""
 
-  [ service, sym, restargs ] = webargs.partition ('/')
+  [ service, sym, cutoutargs ] = webargs.partition ('/')
 
   if service == 'xy':
-    return xyImage ( restargs, dbcfg )
+    return xyImage ( cutoutargs, dbcfg )
 
   elif service == 'xz':
-    return xzImage ( restargs, dbcfg )
+    return xzImage ( cutoutargs, dbcfg )
 
   elif service == 'yz':
-    return yzImage ( restargs, dbcfg )
+    return yzImage ( cutoutargs, dbcfg )
 
   elif service == 'hdf5':
-    return HDF5 ( restargs, dbcfg )
+    return HDF5 ( cutoutargs, dbcfg )
 
   elif service == 'npz':
-    return  numpyZip ( restargs, dbcfg )
+    return  numpyZip ( cutoutargs, dbcfg )
 
   else:
     return web.notfound()
