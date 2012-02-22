@@ -14,7 +14,7 @@ import zindex
 def main():
 
   parser = argparse.ArgumentParser(description='Cutout a portion of the database.')
-  parser.add_argument('id', action="store", type=int )
+  parser.add_argument('entity', action="store", type=int )
   parser.add_argument('xlow', action="store", type=int )
   parser.add_argument('xhigh', action="store", type=int)
   parser.add_argument('ylow', action="store", type=int)
@@ -32,12 +32,15 @@ def main():
       for i in range (result.xlow,result.xhigh):
         voxlist.append ( [ i,j,k ] )
 
-  WS = False
+  WS = True
   # Use the Web services
   if ( WS == True ): 
 
 
-    url = 'http://0.0.0.0:8080/hayworth5nm.annotate/np/overwrite/'
+    url = "http://0.0.0.0:8080/hayworth5nm.annotate/npextend/%s/overwrite/" \
+             % result.entity
+
+    print url
 
     # Encode the voxelist an pickle
     fileobj = cStringIO.StringIO ()
