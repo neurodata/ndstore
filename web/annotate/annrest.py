@@ -248,9 +248,10 @@ def selectPost ( webargs, dbcfg, annoproj ):
   # choose to overwrite (default), preserve, or make exception lists
   #  when voxels conflict
   # Perform argument processing
-  conflictopt = restargs.conflictOption ( postargs )
 
-  if service == 'np':
+  if service == 'npannotate':
+    
+    conflictopt = restargs.conflictOption ( postargs )
 
     try:
       # Grab the voxel list
@@ -262,6 +263,27 @@ def selectPost ( webargs, dbcfg, annoproj ):
       # Make the annotation to the database
       annoDB = anndb.AnnotateDB ( dbcfg, annoproj )
       entityid = annoDB.addEntity ( voxlist, conflictopt )
+
+    except:
+      return web.BadRequest()  
+
+    return str(entityid)
+
+  if service == 'npextend':
+
+    [ entity, sym, conflictargs ] = postargs.partition ('/')
+    conflictopt = restargs.conflictOption ( conflictargs )
+
+    try:
+      # Grab the voxel list
+      fileobj = cStringIO.StringIO ( web.data() )
+      voxlist = np.load ( fileobj )
+
+      # RBTODO check for legal values
+
+      # Make the annotation to the database
+      annoDB = anndb.AnnotateDB ( dbcfg )
+      entityid = annoDB.extendEntity ( int(entity), voxlist, conflictopt )
 
     except:
       return web.BadRequest()  
