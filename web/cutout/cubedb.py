@@ -232,5 +232,6 @@ class CubeDB:
       outbuf.trim ( corner[0]%xcubedim,dim[0],\
                       corner[1]%ycubedim,dim[1],\
                       corner[2]%zcubedim,dim[2] )
+
     return outbuf
 

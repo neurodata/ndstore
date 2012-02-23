@@ -33,6 +33,9 @@ def cutout ( imageargs, dbcfg ):
 
   # Perform argument processing
   args = restargs.BrainRestArgs ();
+
+#  import pdb; pdb.set_trace()
+
   args.cutoutArgs ( imageargs, dbcfg )
 
   # Extract the relevant values
