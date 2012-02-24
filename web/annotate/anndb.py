@@ -292,7 +292,7 @@ class AnnotateDB:
 
     # Query the identifier
     cursor = self.conn.cursor ()
-    sql = "SELECT id FROM {0} WHERE id={1}".format(str(self.ids_tbl),str(entityid))
+    sql = "SELECT id FROM {0} WHERE id={1}".format(str(self.annoproj.getIDsTbl()),str(entityid))
     print sql
     try:
       cursor.execute ( sql )

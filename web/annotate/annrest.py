@@ -258,8 +258,6 @@ def selectPost ( webargs, dbcfg, annoproj ):
       fileobj = cStringIO.StringIO ( web.data() )
       voxlist = np.load ( fileobj )
 
-      # RBTODO check for legal values
-
       # Make the annotation to the database
       annoDB = anndb.AnnotateDB ( dbcfg, annoproj )
       entityid = annoDB.addEntity ( voxlist, conflictopt )
@@ -279,10 +277,9 @@ def selectPost ( webargs, dbcfg, annoproj ):
       fileobj = cStringIO.StringIO ( web.data() )
       voxlist = np.load ( fileobj )
 
-      # RBTODO check for legal values
-
+      import pdb; pdb.set_trace()
       # Make the annotation to the database
-      annoDB = anndb.AnnotateDB ( dbcfg )
+      annoDB = anndb.AnnotateDB ( dbcfg, annoproj )
       entityid = annoDB.extendEntity ( int(entity), voxlist, conflictopt )
 
     except:
@@ -295,32 +292,12 @@ def selectPost ( webargs, dbcfg, annoproj ):
     return "Not yet"
     pass
 
-  elif service == 'test':
-    return "No text format specified yet"
+  elif service == 'csv':
+    return "No csv format specified yet"
 
   else:
     return "Unknown service"
 
-
-
-#
-# Load the annotation databse information based on the token
-#
-def getAnnoDB ( token ):
-  """Load the annotation database information based on the token"""
-
-  # Lookup the information for the database project based on the token
-
-  # RBTODO database query
-  try:
-    pass
-  except: # TODO sql error   
-    return web.notfound()
-
-  # RBTODO need to use the database information.  Not these strings.
-
-  # this consists of the resolution, database
-  return annproj.AnnotateProject ( 'hayworth5nm', 'hayworth5nm', 3 )
 
 
 def switchDataset ( annoproj ):
@@ -351,7 +328,8 @@ def annoget ( webargs ):
       dataset."""
 
   [ token, sym, rangeargs ] = webargs.partition ('/')
-  annoproj = getAnnoDB ( token )
+  annprojdb = annproj.AnnotateProjectsDB()
+  annoproj = annprojdb.getAnnoProj ( token )
   dbcfg = switchDataset ( annoproj )
   return selectService ( rangeargs, dbcfg, annoproj )
 
@@ -362,9 +340,9 @@ def annopost ( webargs ):
       dataset."""
 
   [ token, sym, rangeargs ] = webargs.partition ('/')
-  annoproj = getAnnoDB ( token )
+  annprojdb = annproj.AnnotateProjectsDB()
+  annoproj = annprojdb.getAnnoProj ( token )
   dbcfg = switchDataset ( annoproj )
   return selectPost ( rangeargs, dbcfg, annoproj )
-
 
 

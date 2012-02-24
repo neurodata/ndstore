@@ -36,7 +36,7 @@ def main():
   # Use the Web services
   if ( WS == True ): 
 
-    url = 'http://0.0.0.0:8080/hayworth5nm.annotate/npannotate/overwrite/'
+    url = 'http://0.0.0.0:8080/annotate/1111/npannotate/overwrite/'
 
     # Encode the voxelist an pickle
     fileobj = cStringIO.StringIO ()
