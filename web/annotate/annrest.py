@@ -1,4 +1,4 @@
-################################################################################
+#y###############################################################################
 #
 #    Randal C. Burns
 #    Department of Computer Science
@@ -12,15 +12,9 @@
 #   adapt it to npz?
 #
 
-import braincube
-import zindex
+
 import sys
 import re
-import cubedb
-import dbconfig
-import dbconfighayworth5nm
-import dbconfigkasthuri11
-import dbconfigbock11
 import StringIO
 import tempfile
 import numpy as np
@@ -29,9 +23,18 @@ import web
 import h5py
 import os
 
+import empaths 
+import restargs
+import anncube
+import anndb
+import dbconfig
+import dbconfighayworth5nm
+import dbconfigkasthuri11
+import dbconfigbock11
+
+
 #
-#  brainrest: transfer image files over python
-#    Implement ther RESTful principles for web service
+#  annrest: RESTful interface to annotations
 #
 
 #
@@ -48,63 +51,27 @@ class RESTBadArgsError(Exception):
     self.value = value
   def __str__(self):
     return repr(self.value)
-#
 
 #
 #  Build the returned braincube.  Called by all methods 
 #   that then refine the output.
 #
-def getCube ( imageargs, dbcfg ):
+def cutout ( imageargs, dbcfg ):
 
-  # expecting an argument of the form /resolution/x1,x2/y1,y2/z1,z2/
+  # Perform argument processing
+  args = restargs.BrainRestArgs ();
+  args.cutoutArgs ( imageargs, dbcfg )
 
-  restargs = imageargs.split('/')
+  # Extract the relevant values
+  corner = args.getCorner()
+  dim = args.getDim()
+  resolution = args.getResolution()
 
-  if len ( restargs ) == 5:
-    [ resstr, xdimstr, ydimstr, zdimstr, rest ]  = restargs
-    globalcoords = False
-  elif len ( restargs ) == 6:
-    [ resstr, xdimstr, ydimstr, zdimstr, rest, other ]  = restargs
-    globalcoords = True
-  else:
-    raise RESTBadArgsError ( "Incorrect command string" )
+  #Load the database
+  annodb = anndb.AnnotateDB ( dbcfg )
+  # Perform the cutout
+  return annodb.cutout ( corner, dim, resolution )
 
-  # Check that the arguments are well formatted
-  if not re.match ('[0-9]+,[0-9]+$', xdimstr) or\
-     not re.match ('[0-9]+,[0-9]+$', ydimstr) or\
-     not re.match ('[0-9]+,[0-9]+$', zdimstr) or\
-     not re.match ('[0-9]+$', resstr ):
-    raise RESTBadArgsError ( "Argument incorrectly formatted" )
-
-  z1s,z2s = zdimstr.split(',')
-  y1s,y2s = ydimstr.split(',')
-  x1s,x2s = xdimstr.split(',')
-
-  x1i = int(x1s)
-  x2i = int(x2s)
-  y1i = int(y1s)
-  y2i = int(y2s)
-  z1i = int(z1s)
-  z2i = int(z2s)
-
-  resolution = int(resstr)
-
-  # Convert to local coordinates if global specified
-  if ( globalcoords ):
-    x1i = int ( float(x1i) / float( 2**(resolution-dbcfg.baseres)))
-    x2i = int ( float(x2i) / float( 2**(resolution-dbcfg.baseres)))
-    y1i = int ( float(y1i) / float( 2**(resolution-dbcfg.baseres)))
-    y2i = int ( float(y2i) / float( 2**(resolution-dbcfg.baseres)))
-
-  # Check arguments for legal values
-  if not ( dbcfg.checkCube ( resolution, x1i, x2i, y1i, y2i, z1i, z2i )):
-    raise RESTRangeError ( "Illegal range. Image size:" +  str(dbcfg.imageSize( resolution )))
-
-  corner=[x1i,y1i,z1i-dbcfg.slicerange[0]]
-  dim=[x2i-x1i,y2i-y1i,z2i-z1i ]
-
-  cdb = cubedb.CubeDB ( dbcfg )
-  return cdb.getCube ( corner, dim, resolution )
 
 #
 #  Return a Numpy Pickle zipped
@@ -113,7 +80,7 @@ def numpyZip ( imageargs, dbcfg ):
   """Return a web readable Numpy Pickle zipped"""
 
   try:
-    cube = getCube ( imageargs, dbcfg )
+    cube = cutout ( imageargs, dbcfg )
   except RESTRangeError:
     return web.notfound()
   except RESTBadArgsError:
@@ -141,7 +108,7 @@ def HDF5 ( imageargs, dbcfg ):
   """Return a web readable HDF5 file"""
 
   try:
-    cube = getCube ( imageargs, dbcfg )
+    cube = cutout ( imageargs, dbcfg )
   except RESTRangeError:
     return web.notfound()
   except RESTBadArgsError:
@@ -156,6 +123,7 @@ def HDF5 ( imageargs, dbcfg ):
   tmpfile.seek(0)
   return tmpfile.read()
 
+
 #
 #  **Image return a readable png object
 #    where ** is xy, xz, yz
@@ -163,58 +131,24 @@ def HDF5 ( imageargs, dbcfg ):
 def xyImage ( imageargs, dbcfg ):
   """Return an xy plane fileobj.read()"""
 
-  restargs = imageargs.split('/')
+  # Perform argument processing
+  args = restargs.BrainRestArgs ();
+  args.xyArgs ( imageargs, dbcfg )
 
-  if len ( restargs ) == 5:
-    [ resstr, xdimstr, ydimstr, zstr, rest ]  = restargs
-    globalcoords = False
-  elif len ( restargs ) == 6:
-    [ resstr, xdimstr, ydimstr, zstr, rest, other ]  = restargs
-    globalcoords = True
-  else:
-    return web.badrequest()
+  # Extract the relevant values
+  corner = args.getCorner()
+  dim = args.getDim()
+  resolution = args.getResolution()
 
-
-  # expecting an argument of the form /resolution/x1,x2/y1,y2/z/
-  # Check that the arguments are well formatted
-  if not re.match ('[0-9]+,[0-9]+$', xdimstr) or\
-     not re.match ('[0-9]+,[0-9]+$', ydimstr) or\
-     not re.match ('[0-9]+$', zstr) or\
-     not re.match ('[0-9]+$', resstr ):
-    return web.badrequest()
-
-  x1s,x2s = xdimstr.split(',')
-  y1s,y2s = ydimstr.split(',')
-
-  x1i = int(x1s)
-  x2i = int(x2s)
-  y1i = int(y1s)
-  y2i = int(y2s)
-  z = int(zstr)
-
-  resolution = int(resstr)
-
-  # Convert to local coordinates if global specified
-  if ( globalcoords ):
-    x1i = int ( float(x1i) / float( 2**(resolution-dbcfg.baseres)))
-    x2i = int ( float(x2i) / float( 2**(resolution-dbcfg.baseres)))
-    y1i = int ( float(y1i) / float( 2**(resolution-dbcfg.baseres)))
-    y2i = int ( float(y2i) / float( 2**(resolution-dbcfg.baseres)))
-
-  # Check arguments for legal values
-  if not ( dbcfg.checkCube ( resolution, x1i, x2i, y1i, y2i, z, z )):
-    return web.notfound()
-
-  corner=[x1i,y1i,z-dbcfg.slicerange[0]]
-  dim=[x2i-x1i,y2i-y1i,1]
-
-  try:
-    cdb = cubedb.CubeDB ( dbcfg )
-    cb = cdb.getCube ( corner, dim, resolution )
-    fileobj = StringIO.StringIO ( )
-    cb.xySlice ( fileobj )
-  except:
-    return web.notfound()
+#RBRM reinstate try/catch block
+#  try:
+  annodb = anndb.AnnotateDB ( dbcfg )
+  cb = annodb.cutout ( corner, dim, resolution )
+  fileobj = StringIO.StringIO ( )
+  cb.xySlice ( fileobj )
+#  except:
+#    print "Exception"
+#    return web.notfound()
 
   web.header('Content-type', 'image/png') 
   fileobj.seek(0)
@@ -268,8 +202,8 @@ def xzImage ( imageargs, dbcfg ):
   dim=[x2i-x1i,1,z2i-z1i ]
 
   try:
-    cdb = cubedb.CubeDB ( dbcfg )
-    cb = cdb.getCube ( corner, dim, resolution )
+    annodb = anndb.AnnotateDB ( dbcfg )
+    cb = annodb.cutout ( corner, dim, resolution )
     fileobj = StringIO.StringIO ( )
     cb.xzSlice ( dbcfg.zscale[resolution], fileobj )
   except:
@@ -330,8 +264,8 @@ def yzImage ( imageargs, dbcfg ):
   dim=[1,y2i-y1i,z2i-z1i ]
 
   try:
-    cdb = cubedb.CubeDB ( dbcfg )
-    cb = cdb.getCube ( corner, dim, resolution )
+    annodb = anndb.AnnotateDB ( dbcfg )
+    cb = annodb.cutout ( corner, dim, resolution )
     fileobj = StringIO.StringIO ( )
     cb.yzSlice ( dbcfg.zscale[resolution], fileobj )
   except:
@@ -372,6 +306,23 @@ def selectService ( webargs, dbcfg ):
   else:
     return web.notfound()
 
+
+#
+#  Select the service that you want.
+#  Truncate this from the arguments and past 
+#  the rest of the RESTful arguments to the 
+#  appropriate function.  At this point, we have a 
+#  data set and a service.
+#
+def selectPost ( webargs, dbcfg ):
+  """Parse the first arg and call the right post service"""
+
+  # For now there is only one
+  print "Posting an object"
+  print "Received ", web.data()
+  return "Post"
+
+
 #
 #  Choose the appropriate data set.
 #    This is the entry point from brainweb
@@ -385,6 +336,11 @@ def hayworth5nm ( webargs ):
   """Use the hayworth5nm data set"""
   dbcfg = dbconfighayworth5nm.dbConfigHayworth5nm()
   return selectService ( webargs, dbcfg )
+
+def hayworth5nmPost ( webargs ):
+  """Use the hayworth5nm data set"""
+  dbcfg = dbconfighayworth5nm.dbConfigHayworth5nm()
+  return selectPost ( webargs, dbcfg )
 
 def kasthuri11 ( webargs ):
   """Use the kasthuri11 data set"""

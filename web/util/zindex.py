@@ -14,7 +14,6 @@
 #
 ################################################################################
 
-
 ################################################################################
 # Name:  XYZtoMorton3D
 # Action:  Generate morton order from XYZ coordinates
@@ -64,6 +63,7 @@ def generator ( dim ):
       return
     i = i+1
 
+
 ################################################################################
 # Name:  Morton3DtoXYZ
 # Action:  Generate XYZ coordinates from Morton index
@@ -88,4 +88,5 @@ def MortonXYZ (morton):
     morton >>= 3;
 
   return [ xp, yp, zp ]
+
 

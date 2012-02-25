@@ -26,13 +26,9 @@ import dbconfig
 
 class CubeDB: 
 
-  # Convenience variables better than ranges in code
+  # Convenience variables to manage z slices
   startslice = 0
   slices = 0
-
-  # batch of cubes in memory to be inserted as a single statement
-  #  dictionary by mortonidx
-  inmemcubes = {}
 
   def __init__ (self, dbconf):
     """Connect with the brain databases"""
@@ -53,6 +49,10 @@ class CubeDB:
     [ self.startslice, endslice ] = self.dbcfg.slicerange
     self.slices = endslice - self.startslice + 1 
 
+  def __del ( self ):
+    """Close the connection"""
+    conn.close()
+
   #
   #  ingestCube
   #
@@ -65,7 +65,8 @@ class CubeDB:
     bc = braincube.BrainCube ( self.dbcfg.cubedim[resolution] )
     corner = [ x*xcubedim, y*ycubedim, z*zcubedim ]
     bc.cubeFromFiles (corner, tilestack)
-    self.inmemcubes[mortonidx] = bc
+    return bc
+#    self.inmemcubes[mortonidx] = bc
 
 
   #
@@ -89,7 +90,7 @@ class CubeDB:
     assert yimagesz % ycubedim == 0
     assert ximagesz % xcubedim == 0
 
-    tilestack = tiles.Tiles ( self.dbcfg.tilesz, self.dbcfg.inputprefix + '/' + str(resolution), self.startslice )
+    tilestack = tiles.Tiles ( self.dbcfg.tilesz, self.dbcfg.inputprefix + '/' + str(resolution), self.startslice) 
 
     # Set the limits on the number of cubes in each dimension
     xlimit = ximagesz / xcubedim
@@ -99,37 +100,57 @@ class CubeDB:
     # list of batched indexes
     idxbatch = []
 
+    # This parameter needs to match to the max number of slices to be taken.  
+    # The maximum z slices that prefetching will take in this prefetch
+    #  This is useful for higher resolutions where we run out of tiles in 
+    #  the x and y dimensions
+    zmaxpf = 256
+    zstride = 256
+
+    # This batch size is chosen for braingraph1.  
+    #  It loads 32x32x16cubes equivalent to 16 x 16 x 256 tiles @ 128x128x16 per tile and 512x512x1 per cube
+    #  this is 2^34 bytes of memory 
+    batchsize = 16384
+
     # Ingest the slices in morton order
     for mortonidx in zindex.generator ( [xlimit, ylimit, zlimit] ):
 
-      #build a batch of indexes
-      idxbatch.append ( mortonidx )
+      xyz = zindex.MortonXYZ ( mortonidx )
+      
+      # if this exceeds the limit on the z dimension, do the ingest
+      if len ( idxbatch ) == batchsize or xyz[2] == zmaxpf:
 
-      # execute a batch
-      if len ( idxbatch ) ==32:
-
+        # preload the batch
+        tilestack.prefetch ( idxbatch, [xcubedim, ycubedim, zcubedim] )
+        
         # ingest the batch
         for idx in idxbatch:
-          self.ingestCube ( idx, resolution, tilestack )
+          bc = self.ingestCube ( idx, resolution, tilestack )
+          self.saveCube ( bc, idx, resolution )
+
+        # commit the batch
+        self.conn.commit()
         
-        #save the batch
-#        self.saveBatch ( idxbatch, resolution )
-        for idx in idxbatch:
-         self.saveCube( self.inmemcubes[idx], idx, resolution )
+        # if we've hit our area bounds set the new limit
+        if xyz [2] == zmaxpf:
+           zmaxpf += zstride
 
         # Finished this batch.  Start anew.
         idxbatch = []
 
+      #build a batch of indexes
+      idxbatch.append ( mortonidx )
+
+    # preload the remaining
+    tilestack.prefetch ( idxbatch, [xcubedim, ycubedim, zcubedim] )
+
     # Ingest the remaining once the loop is over
     for idx in idxbatch:
-      self.ingestCube ( idx, resolution, tilestack )
+      bc = self.ingestCube ( idx, resolution, tilestack )
+      self.saveCube ( bc, idx, resolution )
 
-    #save the batch
-#    if len ( idxbatch ) != 0:
-#      self.saveBatch ( idxbatch, resolution )
-
-    for idx in idxbatch:
-      self.saveCube( self.inmemcubes[idx], idx, resolution )
+    # commit the batch
+    self.conn.commit()
 
 
   #
@@ -149,44 +170,14 @@ class CubeDB:
     # insert the blob into the database
     cursor = self.conn.cursor()
     sql = "INSERT INTO " + dbname + " (zindex, cube) VALUES (%s, %s)"
-
     cursor.execute(sql, (mortonidx, cdz))
+    cursor.close()
 
 
   #
-  # Output a batch of cubes to the database
+  #  cutout  
   #
-  def saveBatch ( self, idxbatch, resolution ):
-    """Output the cube to the database"""
-
-    # This code has been tested and works, but doesn't seem
-    #   to go fasst for MySQL.  Maybe reinstate later.
-    assert 0
-
-    dbname = self.dbcfg.tablebase + str(resolution)
-
-    args=[]
-    for idx in idxbatch:
-
-      args.append ( idx ) 
-
-      # create the DB BLOB
-      fileobj = cStringIO.StringIO ()
-      np.save ( fileobj, self.inmemcubes[idx].data )
-      args.append ( zlib.compress (fileobj.getvalue()) )
-
-    # insert the blob into the database
-    sql = "INSERT INTO " + dbname + " (zindex, cube) VALUES %s;"
-    in_p=', '.join(map(lambda x: '(%s,%s)', idxbatch))
-    sql = sql % in_p
-    cursor = self.conn.cursor()
-    cursor.execute(sql, args)
-
-
-  #
-  #  getCube  
-  #
-  def getCube ( self, corner, dim, resolution ):
+  def cutout ( self, corner, dim, resolution ):
     """Extract a cube of arbitrary size.  Need not be aligned."""
 
     [xcubedim, ycubedim, zcubedim] = self.dbcfg.cubedim [resolution ]
@@ -251,7 +242,7 @@ class CubeDB:
        corner[2] % zcubedim  == 0:
       pass
     else:
-      outbuf.cutout ( corner[0]%xcubedim,dim[0],\
+      outbuf.trim ( corner[0]%xcubedim,dim[0],\
                       corner[1]%ycubedim,dim[1],\
                       corner[2]%zcubedim,dim[2] )
     return outbuf

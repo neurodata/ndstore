@@ -1,0 +1,17 @@
+Example scripts that demonstrate how to use the service.
+
+*** hdf5MakePNGs.py
+
+  Get an HDF5 file from the cutout service and write a series of PNG files that show the data
+
+*** npzMakePNGs.py
+
+  Get an NPZ (Numpy zip) file from the cutout service and write a series of PNG files that show the data
+
+*** annotatewhite.py
+
+  Read a cube of data and write annotations for the whitest pixels.  Uses both cutout and annotate service.
+
+*** addcube.py
+
+  Add annotations as a cube
