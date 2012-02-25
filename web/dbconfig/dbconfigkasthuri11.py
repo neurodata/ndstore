@@ -23,16 +23,16 @@ class dbConfigKasthuri11 ( dbconfig.dbConfig ):
               4: [128, 128, 16],\
               3: [128, 128, 16],\
               2: [128, 128, 16],\
-              1: [128, 128, 16] }
+              1: [128, 128, 16],\
+              0: [128, 128, 16] }
 
   #information about the image stack
   slicerange = [ 1,1850]
   tilesz = [ 256,256 ]
 
   #resolution information -- lowest resolution and list of resolution
-  baseres = 1
-#  resolutions = [ 7, 6, 5, 4, 3, 2, 1 ]
-  resolutions = [ 7, 6, 5 ]
+  baseres = 0
+  resolutions = [ 7, 6, 5, 4, 3, 2, 1, 0 ]
 
   imagesz = { 7: [ 256, 256 ],\
               6: [ 2*256, 2*256 ],\
@@ -40,7 +40,8 @@ class dbConfigKasthuri11 ( dbconfig.dbConfig ):
               4: [ 6*256, 7*256 ],\
               3: [ 11*256, 13*256 ],\
               2: [ 21*256, 26*256 ],\
-              1: [ 42*256, 52*256 ] }
+              1: [ 42*256, 52*256 ],\
+              0: [ 84*256, 104*256 ] }
 
   # Resize factor to eliminate distortion
   zscale = { 7: 10.0/128.0,\
