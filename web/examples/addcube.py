@@ -3,6 +3,9 @@ import empaths
 import dbconfig
 import dbconfighayworth5nm
 import numpy as np
+import urllib, urllib2
+import cStringIO
+import sys
 
 import anncube
 import anndb
@@ -20,23 +23,41 @@ def main():
 
   result = parser.parse_args()
 
-  dbcfg = dbconfighayworth5nm.dbConfigHayworth5nm()
-
-  annoDB = anndb.AnnotateDB ( dbcfg )
 
   voxlist= []
 
   for k in range (result.zlow,result.zhigh):
     for j in range (result.ylow,result.yhigh):
       for i in range (result.xlow,result.xhigh):
-        voxlist.append ( [ i,j,k] )
+        voxlist.append ( [ i,j,k ] )
 
-  print voxlist
+  WS = True
 
-  # Build a grayscale file and display
-  entityid = annoDB.addEntity ( voxlist )
+  # Use the Web services
+  if ( WS == True ): 
 
-  print "Added entity with identifier = ", entityid
+    url = 'http://0.0.0.0:8080/hayworth5nm.annotate/npannotate/overwrite/'
+
+    # Encode the voxelist an pickle
+    fileobj = cStringIO.StringIO ()
+    np.save ( fileobj, voxlist )
+
+    # Build the post request
+    req = urllib2.Request(url, fileobj.getvalue())
+    response = urllib2.urlopen(req)
+    the_page = response.read()
+
+    print the_page
+
+  # Insert via object
+  else: 
+    dbcfg = dbconfighayworth5nm.dbConfigHayworth5nm()
+
+    annoDB = anndb.AnnotateDB ( dbcfg )
+    # Build a grayscale file and display
+    entityid = annoDB.addEntity ( voxlist )
+
+    print "Added entity with identifier = ", entityid
 
 
 if __name__ == "__main__":

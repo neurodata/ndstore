@@ -1,12 +1,3 @@
-#y###############################################################################
-#
-#    Randal C. Burns
-#    Department of Computer Science
-#    Johns Hopkins University
-#
-################################################################################
-
-#
 #  At some point we may want to figure out tempfile versus stringio..
 #   Tempfile is the only thing that will work for hdf5.  Should we
 #   adapt it to npz?
@@ -29,10 +20,6 @@ import zindex
 import cubedb
 import dbconfig
 import dbconfighayworth5nm
-import dbconfigkasthuri11
-import dbconfigbock11
-
-#
 #  brainrest: transfer image files over python
 #    Implement ther RESTful principles for web service
 #
@@ -46,6 +33,9 @@ def cutout ( imageargs, dbcfg ):
 
   # Perform argument processing
   args = restargs.BrainRestArgs ();
+
+#  import pdb; pdb.set_trace()
+
   args.cutoutArgs ( imageargs, dbcfg )
 
   # Extract the relevant values
@@ -67,9 +57,9 @@ def numpyZip ( imageargs, dbcfg ):
 
   try:
     cube = cutout ( imageargs, dbcfg )
-  except RESTRangeError:
+  except restargs.RESTRangeError:
     return web.notfound()
-  except RESTBadArgsError:
+  except restargs.RESTBadArgsError:
     return web.badrequest()
 
   try:
@@ -95,9 +85,9 @@ def HDF5 ( imageargs, dbcfg ):
 
   try:
     cube = cutout ( imageargs, dbcfg )
-  except RESTRangeError:
+  except restargs.RESTRangeError:
     return web.notfound()
-  except RESTBadArgsError:
+  except restargs.RESTBadArgsError:
     return web.badrequest()
 
   # Create an in-memory HDF5 file
@@ -126,15 +116,13 @@ def xyImage ( imageargs, dbcfg ):
   dim = args.getDim()
   resolution = args.getResolution()
 
-#RBTODO reinstate exception
-#  try:
-  cdb = cubedb.CubeDB ( dbcfg )
-  cb = cdb.cutout ( corner, dim, resolution )
-  fileobj = StringIO.StringIO ( )
-  cb.xySlice ( fileobj )
-#  except:
-#    print "Exception"
-#    return web.notfound()
+  try:
+    cdb = cubedb.CubeDB ( dbcfg )
+    cb = cdb.cutout ( corner, dim, resolution )
+    fileobj = StringIO.StringIO ( )
+    cb.xySlice ( fileobj )
+  except:
+    return web.notfound()
 
   web.header('Content-type', 'image/png') 
   fileobj.seek(0)
@@ -225,15 +213,24 @@ def selectService ( webargs, dbcfg ):
 #
 def bock11 ( webargs ):
   """Use the bock data set"""
+
+  # dynamically include the bock11 configuration
+  import dbconfigbock11
   dbcfg = dbconfigbock11.dbConfigBock11()
   return selectService ( webargs, dbcfg )
 
 def hayworth5nm ( webargs ):
   """Use the hayworth5nm data set"""
+
+  # dynamically include the hayworth configuration
+  import dbconfighayworth5nm
   dbcfg = dbconfighayworth5nm.dbConfigHayworth5nm()
   return selectService ( webargs, dbcfg )
 
 def kasthuri11 ( webargs ):
   """Use the kasthuri11 data set"""
+
+  # dynamically include the kasthuri configuration
+  import dbconfigkasthuri11
   dbcfg = dbconfigkasthuri11.dbConfigKasthuri11()
   return selectService ( webargs, dbcfg )

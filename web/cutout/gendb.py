@@ -26,6 +26,8 @@ def main():
 
   #  Specify the database to ingest
   dbcfg = dbconfigkasthuri11.dbConfigKasthuri11()
+#  dbcfg = dbconfigbock11.dbConfigBock11()
+#  dbcfg = dbconfighayworth5nm.dbConfigHayworth5nm()
 
   cdb = cubedb.CubeDB ( dbcfg )
 

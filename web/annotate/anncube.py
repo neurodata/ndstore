@@ -34,6 +34,12 @@ class AnnotateCube:
     """Destructor"""
     pass
 
+  # get the value by x,y,z coordinate
+  def getVoxel ( self, voxel ):
+    """Return the value at the voxel specified as [x,y,z]"""
+    return self.data [ voxel[2], voxel[1], voxel[0] ]
+  
+
   # was the cube created from zeros?
   def fromZeros ( self ):
     """Determine if the cube was created from all zeros?"""
@@ -82,7 +88,7 @@ class AnnotateCube:
   #  
   #  Returns a list of exceptions  
   #
-  def annotate ( self, annid, offset, locations ):
+  def annotate ( self, annid, offset, locations, conflictopt ):
     """Add annotation by a list of locations"""
 
   #  For now first label for a voxel wins
@@ -98,13 +104,22 @@ class AnnotateCube:
 
       # already labelled voxels are exceptions, unless they are the same value
       elif (self.data [ voxel[2]-offset[2], voxel[1]-offset[1], voxel[0]-offset[0]] != annid ):
-        exceptions.append ( voxel )
-
-      #RBTODO remove this after testing
-      else:
-        print "Not an exception"
+        # O is for overwrite
+        if conflictopt == 'O':
+#          print "O option"
+          self.data [ voxel[2]-offset[2], voxel[1]-offset[1], voxel[0]-offset[0] ] = annid
+        # P preserves the existing content
+        elif conflictopt == 'P':
+#          print "P option"
+          pass
+        # E creates exceptions
+        elif conflictopt == 'E':
+#          print "E option"
+          exceptions.append ( voxel )
+        else:
+          print ( "Improper conflict option selected.  Option = ", conflictopt  )
+          assert 0
   
-    print "List of exceptions = ", exceptions
     return exceptions
 
 
@@ -157,6 +172,42 @@ class AnnotateCube:
       it.iternext()
     
     outimage = Image.frombuffer ( 'RGBA', (xdim,ydim), imagemap, 'raw', 'RGBA', 0, 1 )
+    outimage.save ( fileobj, "PNG" )
+
+  #
+  # Create the specified slice (index) at filename
+  #
+  def xzSlice ( self, fileobj ):
+
+    zdim,ydim,xdim = self.data.shape
+    imagemap = np.zeros ( [ zdim, xdim ], dtype=np.uint32 )
+
+    # iterate in data order via numpy
+    it = np.nditer ( self.data, flags=['multi_index'], op_flags=['readwrite'] )
+    while not it.finished:
+      if it[0] != 0:
+        imagemap[it.multi_index[0],it.multi_index[2]] = 0x80000000 + ( it[0] & 0xFF )
+      it.iternext()
+    
+    outimage = Image.frombuffer ( 'RGBA', (xdim,zdim), imagemap, 'raw', 'RGBA', 0, 1 )
+    outimage.save ( fileobj, "PNG" )
+
+  #
+  # Create the specified slice (index) at filename
+  #
+  def yzSlice ( self, fileobj ):
+
+    zdim,ydim,xdim = self.data.shape
+    imagemap = np.zeros ( [ zdim, ydim ], dtype=np.uint32 )
+
+    # iterate in data order via numpy
+    it = np.nditer ( self.data, flags=['multi_index'], op_flags=['readwrite'] )
+    while not it.finished:
+      if it[0] != 0:
+        imagemap[it.multi_index[0],it.multi_index[1]] = 0x80000000 + ( it[0] & 0xFF )
+      it.iternext()
+    
+    outimage = Image.frombuffer ( 'RGBA', (ydim,zdim), imagemap, 'raw', 'RGBA', 0, 1 )
     outimage.save ( fileobj, "PNG" )
 
 # end AnnotateCube

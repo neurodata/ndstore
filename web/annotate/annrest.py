@@ -1,18 +1,3 @@
-#y###############################################################################
-#
-#    Randal C. Burns
-#    Department of Computer Science
-#    Johns Hopkins University
-#
-################################################################################
-
-#
-#  At some point we may want to figure out tempfile versus stringio..
-#   Tempfile is the only thing that will work for hdf5.  Should we
-#   adapt it to npz?
-#
-
-
 import sys
 import re
 import StringIO
@@ -22,35 +7,18 @@ import zlib
 import web
 import h5py
 import os
+import cStringIO
 
 import empaths 
 import restargs
 import anncube
 import anndb
 import dbconfig
-import dbconfighayworth5nm
-import dbconfigkasthuri11
-import dbconfigbock11
 
 
 #
 #  annrest: RESTful interface to annotations
 #
-
-#
-# General rest argument processing exception
-#
-class RESTRangeError(Exception):
-  def __init__(self, value):
-    self.value = value
-  def __str__(self):
-    return repr(self.value)
-
-class RESTBadArgsError(Exception): 
-  def __init__(self, value):
-    self.value = value
-  def __str__(self):
-    return repr(self.value)
 
 #
 #  Build the returned braincube.  Called by all methods 
@@ -81,9 +49,9 @@ def numpyZip ( imageargs, dbcfg ):
 
   try:
     cube = cutout ( imageargs, dbcfg )
-  except RESTRangeError:
+  except restargs.RESTRangeError:
     return web.notfound()
-  except RESTBadArgsError:
+  except restargs.RESTBadArgsError:
     return web.badrequest()
 
   try:
@@ -109,9 +77,9 @@ def HDF5 ( imageargs, dbcfg ):
 
   try:
     cube = cutout ( imageargs, dbcfg )
-  except RESTRangeError:
+  except restargs.RESTRangeError:
     return web.notfound()
-  except RESTBadArgsError:
+  except restargs.RESTBadArgsError:
     return web.badrequest()
 
   # Create an in-memory HDF5 file
@@ -153,128 +121,73 @@ def xyImage ( imageargs, dbcfg ):
   web.header('Content-type', 'image/png') 
   fileobj.seek(0)
   return fileobj.read()
-  
+
 def xzImage ( imageargs, dbcfg ):
   """Return an xz plane fileobj.read()"""
 
-  restargs = imageargs.split('/')
+  # Perform argument processing
+  args = restargs.BrainRestArgs ();
+  args.xzArgs ( imageargs, dbcfg )
 
-  if len ( restargs ) == 5:
-    [ resstr, xdimstr, ystr, zdimstr, rest ]  = restargs
-    globalcoords = False
-  elif len ( restargs ) == 6:
-    [ resstr, xdimstr, ystr, zdimstr, rest, other ]  = restargs
-    globalcoords = True
-  else:
-    return web.badrequest()
+  # Extract the relevant values
+  corner = args.getCorner()
+  dim = args.getDim()
+  resolution = args.getResolution()
 
-  # expecting an argument of the form /resolution/x1,x2/y1,y2/z/
-  # Check that the arguments are well formatted
-  if not re.match ('[0-9]+,[0-9]+$', xdimstr) or\
-     not re.match ('[0-9]+$', ystr) or\
-     not re.match ('[0-9]+,[0-9]+$', zdimstr) or\
-     not re.match ('[0-9]+$', resstr ):
-    return web.badrequest()
-
-  x1s,x2s = xdimstr.split(',')
-  z1s,z2s = zdimstr.split(',')
-
-  x1i = int(x1s)
-  x2i = int(x2s)
-  y = int(ystr)
-  z1i = int(z1s)
-  z2i = int(z2s)
-
-  resolution = int(resstr)
-  
-  # Convert to local coordinates if global specified
-  if ( globalcoords ):
-    x1i = int ( float(x1i) / float( 2**(resolution-dbcfg.baseres)))
-    x2i = int ( float(x2i) / float( 2**(resolution-dbcfg.baseres)))
-    y = int ( float(y) / float( 2**(resolution-dbcfg.baseres)))
-
-  # Check arguments for legal values
-  if not dbcfg.checkCube ( resolution, x1i, x2i, y, y, z1i, z2i )\
-     or y >= dbcfg.imagesz[resolution][1]:
-    return web.notfound()
-
-  corner=[x1i,y,z1i-dbcfg.slicerange[0]]
-  dim=[x2i-x1i,1,z2i-z1i ]
-
-  try:
-    annodb = anndb.AnnotateDB ( dbcfg )
-    cb = annodb.cutout ( corner, dim, resolution )
-    fileobj = StringIO.StringIO ( )
-    cb.xzSlice ( dbcfg.zscale[resolution], fileobj )
-  except:
-    return web.notfound()
+#RBRM reinstate try/catch block
+#  try:
+  annodb = anndb.AnnotateDB ( dbcfg )
+  cb = annodb.cutout ( corner, dim, resolution )
+  fileobj = StringIO.StringIO ( )
+  cb.xzSlice ( fileobj )
+#  except:
+#    print "Exception"
+#    return web.notfound()
 
   web.header('Content-type', 'image/png') 
   fileobj.seek(0)
   return fileobj.read()
-  
 
 def yzImage ( imageargs, dbcfg ):
-  """Return an xz plane fileobj.read()"""
+  """Return an yz plane fileobj.read()"""
 
-  restargs = imageargs.split('/')
+  # Perform argument processing
+  args = restargs.BrainRestArgs ();
+  args.yzArgs ( imageargs, dbcfg )
 
-  if len ( restargs ) == 5:
-    [ resstr, xstr, ydimstr, zdimstr, rest ]  = restargs
-    globalcoords = False
-  elif len ( restargs ) == 6:
-    [ resstr, xstr, ydimstr, zdimstr, rest, other ]  = restargs
-    globalcoords = True
-  else:
-    return web.badrequest()
+  # Extract the relevant values
+  corner = args.getCorner()
+  dim = args.getDim()
+  resolution = args.getResolution()
 
-  # expecting an argument of the form /resolution/x/y1,y2/z1,z2/
-  # Check that the arguments are well formatted
-  if not re.match ('[0-9]+$', xstr) or\
-     not re.match ('[0-9]+,[0-9]+$', ydimstr) or\
-     not re.match ('[0-9]+,[0-9]+$', zdimstr) or\
-     not re.match ('[0-9]+$', resstr ):
-    return web.badrequest()
-
-  y1s,y2s = ydimstr.split(',')
-  z1s,z2s = zdimstr.split(',')
-
-  x = int(xstr)
-  y1i = int(y1s)
-  y2i = int(y2s)
-  z1i = int(z1s)
-  z2i = int(z2s)
-
-  resolution = int(resstr)
-
-  # Convert to local coordinates if global specified
-  if ( globalcoords ):
-    x = int ( float(x) / float( 2**(resolution-dbcfg.baseres)))
-    y1i = int ( float(y1i) / float( 2**(resolution-dbcfg.baseres)))
-    y2i = int ( float(y2i) / float( 2**(resolution-dbcfg.baseres)))
-
-
-  #RBTODO need to make a dbconfig object 
-  # Check arguments for legal values
-  if not dbcfg.checkCube ( resolution, x, x, y1i, y2i, z1i, z2i  )\
-     or  x >= dbcfg.imagesz[resolution][0]:
-    return web.notfound()
-
-  corner=[x,y1i,z1i-dbcfg.slicerange[0]]
-  dim=[1,y2i-y1i,z2i-z1i ]
-
-  try:
-    annodb = anndb.AnnotateDB ( dbcfg )
-    cb = annodb.cutout ( corner, dim, resolution )
-    fileobj = StringIO.StringIO ( )
-    cb.yzSlice ( dbcfg.zscale[resolution], fileobj )
-  except:
-    return web.notfound()
+#RBRM reinstate try/catch block
+#  try:
+  annodb = anndb.AnnotateDB ( dbcfg )
+  cb = annodb.cutout ( corner, dim, resolution )
+  fileobj = StringIO.StringIO ( )
+  cb.yzSlice ( fileobj )
+#  except:
+#    print "Exception"
+#    return web.notfound()
 
   web.header('Content-type', 'image/png') 
   fileobj.seek(0)
   return fileobj.read()
   
+#
+#  annId
+#    return the annotation identifier of a pixel
+#
+def annId ( imageargs, dbcfg ):
+  """Return the annotation identifier of a voxel"""
+
+  # Perform argument processing
+  voxel = restargs.voxel ( imageargs, dbcfg )
+
+  # Get the identifier
+  annodb = anndb.AnnotateDB ( dbcfg )
+  return annodb.getVoxel ( voxel )
+
 
 #
 #  Select the service that you want.
@@ -303,6 +216,9 @@ def selectService ( webargs, dbcfg ):
   elif service == 'npz':
     return  numpyZip ( restargs, dbcfg ) 
 
+  elif service == 'annid':
+    return annId ( restargs, dbcfg )
+
   else:
     return web.notfound()
 
@@ -317,10 +233,63 @@ def selectService ( webargs, dbcfg ):
 def selectPost ( webargs, dbcfg ):
   """Parse the first arg and call the right post service"""
 
-  # For now there is only one
-  print "Posting an object"
-  print "Received ", web.data()
-  return "Post"
+  [ service, sym, postargs ] = webargs.partition ('/')
+  
+  # choose to overwrite (default), preserve, or make exception lists
+  #  when voxels conflict
+  # Perform argument processing
+
+  if service == 'npannotate':
+    
+    conflictopt = restargs.conflictOption ( postargs )
+
+    try:
+      # Grab the voxel list
+      fileobj = cStringIO.StringIO ( web.data() )
+      voxlist = np.load ( fileobj )
+
+      # RBTODO check for legal values
+
+      # Make the annotation to the database
+      annoDB = anndb.AnnotateDB ( dbcfg )
+      entityid = annoDB.addEntity ( voxlist, conflictopt )
+
+    except:
+      return web.BadRequest()  
+
+    return str(entityid)
+
+  if service == 'npextend':
+
+    [ entity, sym, conflictargs ] = postargs.partition ('/')
+    conflictopt = restargs.conflictOption ( conflictargs )
+
+    try:
+      # Grab the voxel list
+      fileobj = cStringIO.StringIO ( web.data() )
+      voxlist = np.load ( fileobj )
+
+      # RBTODO check for legal values
+
+      # Make the annotation to the database
+      annoDB = anndb.AnnotateDB ( dbcfg )
+      entityid = annoDB.extendEntity ( int(entity), voxlist, conflictopt )
+
+    except:
+      return web.BadRequest()  
+
+    return str(entityid)
+
+  #RBTODO HDF5 for matlab users?
+  elif service == 'HDF5':
+    return "Not yet"
+    pass
+
+  elif service == 'test':
+    return "No text format specified yet"
+
+  else:
+    return "Unknown service"
 
 
 #
@@ -329,20 +298,24 @@ def selectPost ( webargs, dbcfg ):
 #
 def bock11 ( webargs ):
   """Use the bock data set"""
+  import dbconfigbock11
   dbcfg = dbconfigbock11.dbConfigBock11()
   return selectService ( webargs, dbcfg )
 
 def hayworth5nm ( webargs ):
   """Use the hayworth5nm data set"""
+  import dbconfighayworth5nm
   dbcfg = dbconfighayworth5nm.dbConfigHayworth5nm()
   return selectService ( webargs, dbcfg )
 
 def hayworth5nmPost ( webargs ):
   """Use the hayworth5nm data set"""
+  import dbconfighayworth5nm
   dbcfg = dbconfighayworth5nm.dbConfigHayworth5nm()
   return selectPost ( webargs, dbcfg )
 
 def kasthuri11 ( webargs ):
   """Use the kasthuri11 data set"""
+  import dbconfigkasthuri11
   dbcfg = dbconfigkasthuri11.dbConfigKasthuri11()
   return selectService ( webargs, dbcfg )

@@ -1,11 +1,3 @@
-################################################################################
-#
-#    Randal C. Burns
-#    Department of Computer Science
-#    Johns Hopkins University
-#
-################################################################################
-
 import numpy as np
 import tiles
 import cStringIO
@@ -40,11 +32,6 @@ class CubeDB:
                             user = self.dbcfg.dbuser,
                             passwd = self.dbcfg.dbpasswd,
                             db = self.dbcfg.dbname)
-#    cursor = self.conn.cursor ()
-#    cursor.execute ("SELECT VERSION()")
-#    row = cursor.fetchone ()
-#    print "server version:", row[0]
-#    cursor.close ()
 
     [ self.startslice, endslice ] = self.dbcfg.slicerange
     self.slices = endslice - self.startslice + 1 
@@ -86,9 +73,9 @@ class CubeDB:
 
     # You've made this assumption.  It's reasonable.  Make it explicit
     # process more slices than you need.  Round up.  Missing data is 0s.
-    assert self.slices % zcubedim == 0
-    assert yimagesz % ycubedim == 0
-    assert ximagesz % xcubedim == 0
+#    assert self.slices % zcubedim == 0
+#    assert yimagesz % ycubedim == 0
+#    assert ximagesz % xcubedim == 0
 
     tilestack = tiles.Tiles ( self.dbcfg.tilesz, self.dbcfg.inputprefix + '/' + str(resolution), self.startslice) 
 
@@ -245,5 +232,6 @@ class CubeDB:
       outbuf.trim ( corner[0]%xcubedim,dim[0],\
                       corner[1]%ycubedim,dim[1],\
                       corner[2]%zcubedim,dim[2] )
+
     return outbuf
 
