@@ -1,11 +1,3 @@
-################################################################################
-#
-#    Randal C. Burns
-#    Department of Computer Science
-#    Johns Hopkins University
-#
-################################################################################
-
 #
 #  Configuration for the bock11 database
 #

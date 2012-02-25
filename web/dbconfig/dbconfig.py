@@ -1,11 +1,3 @@
-################################################################################
-#
-#    Randal C. Burns
-#    Department of Computer Science
-#    Johns Hopkins University
-#
-################################################################################
-
 #
 #  dbconfig: based class for database configuration
 #
