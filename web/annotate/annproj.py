@@ -103,14 +103,12 @@ class AnnotateProjectsDB:
   def newAnnoProj ( self, token, openid, project, dataset, resolution ):
     """Create a new annotation project"""
 
-    # RBTODO some checking that the dataset and resolution are legal???
-
-    sql = "INSERT INTO {0} VALUES ( {1}, \'{2}\', \'{3}\', \'{4}\', {5} )".format (\
+    # Insert the project entry into the database
+    sql = "INSERT INTO {0} VALUES ( \'{1}\', \'{2}\', \'{3}\', \'{4}\', {5} )".format (\
         annpriv.table, token, openid, project, dataset, resolution )
 
-    print annpriv.table, sql
-
-    # RBTODO database query
+    print "Executing: ", sql
+    
     try:
       cursor = self.conn.cursor()
       cursor.execute ( sql )
@@ -118,6 +116,40 @@ class AnnotateProjectsDB:
       print "Failed to create new project", e
       raise AnnoProjException ( "Failed to create new project" )
 
+    # Make the database and associated annotation tables
+    sql = "CREATE DATABASE %s;" % project
+    print "Executing: ", sql
+   
+    try:
+      cursor = self.conn.cursor()
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      print "Failed to create database for new project", e
+      raise AnnoProjException ( "Failed to create database for new project" )
+
+    # Connect to the new database
+    newconn = MySQLdb.connect (host = annpriv.dbhost,
+                          user = annpriv.dbuser,
+                          passwd = annpriv.dbpasswd,
+                          db = project )
+
+    newcursor = newconn.cursor()
+
+    sql = "create table ids ( id BIGINT PRIMARY KEY);\
+           create table exceptions ( zindex BIGINT, id BIGINT, exlist LONGBLOB, PRIMARY KEY ( zindex, id ));\
+           create table annotations ( zindex BIGINT PRIMARY KEY, cube LONGBLOB );"
+
+    print "Executing: ", sql
+
+    try:
+      cursor = newconn.cursor()
+      newcursor.execute ( sql )
+    except MySQLdb.Error, e:
+      print "Failed to create tables for new project", e
+      raise AnnoProjException ( "Failed to create database for nww project" )
+
     self.conn.commit()
-    # RBTODO create the tables
+
+    # RBTODO Is commit commit right?  Need conditional commits?
+
 

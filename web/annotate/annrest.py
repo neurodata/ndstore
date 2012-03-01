@@ -101,6 +101,8 @@ def HDF5 ( imageargs, dbcfg ):
 def xyImage ( imageargs, dbcfg, annoproj ):
   """Return an xy plane fileobj.read()"""
 
+  import pdb; pdb.set_trace()
+
   # Perform argument processing
   args = restargs.BrainRestArgs ();
   # Don't love this, but must either parse or set resolution before xyArgs call
