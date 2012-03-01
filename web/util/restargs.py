@@ -124,7 +124,6 @@ class BrainRestArgs:
 
     # Check arguments for legal values
     if not ( dbcfg.checkCube ( self._resolution, x1i, x2i, y1i, y2i, z1i, z2i )):
-      print "Still raising an error"
       raise RESTRangeError ( "Illegal range. Image size:" +  str(dbcfg.imageSize( self._resolution )))
 
     self._corner=[x1i,y1i,z1i-dbcfg.slicerange[0]]
@@ -140,7 +139,6 @@ class BrainRestArgs:
     """Process REST arguments for an xy plane request.
        You must have set the resolution prior to calling this function."""
 
-    print self._resolution
     assert ( self._resolution != -1 )
 
     rangeargs = imageargs.split('/')

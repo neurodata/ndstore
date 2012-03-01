@@ -101,8 +101,6 @@ def HDF5 ( imageargs, dbcfg ):
 def xyImage ( imageargs, dbcfg, annoproj ):
   """Return an xy plane fileobj.read()"""
 
-  import pdb; pdb.set_trace()
-
   # Perform argument processing
   args = restargs.BrainRestArgs ();
   # Don't love this, but must either parse or set resolution before xyArgs call
@@ -113,8 +111,6 @@ def xyImage ( imageargs, dbcfg, annoproj ):
   corner = args.getCorner()
   dim = args.getDim()
   resolution = args.getResolution()
-
-  print corner, dim, resolution
 
 #RBRM reinstate try/catch block
 #  try:
@@ -245,8 +241,6 @@ def selectPost ( webargs, dbcfg, annoproj ):
 
   [ service, sym, postargs ] = webargs.partition ('/')
 
-  print service, postargs
-  
   # choose to overwrite (default), preserve, or make exception lists
   #  when voxels conflict
   # Perform argument processing
@@ -279,7 +273,6 @@ def selectPost ( webargs, dbcfg, annoproj ):
       fileobj = cStringIO.StringIO ( web.data() )
       voxlist = np.load ( fileobj )
 
-      import pdb; pdb.set_trace()
       # Make the annotation to the database
       annoDB = anndb.AnnotateDB ( dbcfg, annoproj )
       entityid = annoDB.extendEntity ( int(entity), voxlist, conflictopt )
