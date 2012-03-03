@@ -36,8 +36,8 @@ class AnnotateDB:
     self.slices = endslice - self.startslice + 1 
 
     # get the size of the image and cube
-    [ self.xcubedim, self.ycubedim, self.zcubedim ] = self.cubedim = self.dbcfg.cubedim [ self.dbcfg.annotateres ] 
-    [ self.ximagesize, self.yimagesize ] = self.imagesize = self.dbcfg.imagesz [ self.dbcfg.annotateres ]
+    [ self.xcubedim, self.ycubedim, self.zcubedim ] = self.cubedim = self.dbcfg.cubedim [ annoproj.getResolution() ] 
+    [ self.ximagesize, self.yimagesize ] = self.imagesize = self.dbcfg.imagesz [ annoproj.getResolution() ]
 
     # PYTODO create annidx object
 
@@ -235,7 +235,7 @@ class AnnotateDB:
   #
   # annotate
   #
-  #  Called by addEntity and extendEntity to actually number
+  #  Called by newEntity, addEntity and extendEntity to actually number
   #   the voxels and build the exception
   #
   def annotate ( self, entityid, locations, conflictopt ):
@@ -280,6 +280,19 @@ class AnnotateDB:
 
   # end annotate
 
+  #
+  # addEntity
+  #
+  #  Include the following locations as part of the specified entity.
+  #  entity as a list of voxels.  Returns the entity id
+  #  This is for ingesting already annotated data sets.  
+  #  Don't check to make sure that the object exists.
+  #
+  def addEntity ( self, entityid, locations, conflictopt ):
+    """Extend an existing entity as a list of voxels"""
+
+    # label the voxels and exceptions
+    self.annotate ( entityid, locations, conflictopt )
 
   #
   # extendEntity
@@ -289,6 +302,8 @@ class AnnotateDB:
   #
   def extendEntity ( self, entityid, locations, conflictopt ):
     """Extend an existing entity as a list of voxels"""
+
+# RB TODO comment out for kasthuri.  Do we want to check?
 
     # Query the identifier
     cursor = self.conn.cursor ()
@@ -312,11 +327,11 @@ class AnnotateDB:
 
 
   #
-  # addEntity
+  # newEntity
   #
   #  Add a single entity as a list of voxels. Returns the entity id.
   #
-  def addEntity ( self, locations, conflictopt ):
+  def newEntity ( self, locations, conflictopt ):
     """Add an entity as a list of voxels"""
 
     # get and identifier for this object

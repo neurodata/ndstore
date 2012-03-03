@@ -245,7 +245,7 @@ def selectPost ( webargs, dbcfg, annoproj ):
   #  when voxels conflict
   # Perform argument processing
 
-  if service == 'npannotate':
+  if service == 'npnew':
     
     conflictopt = restargs.conflictOption ( postargs )
 
@@ -256,7 +256,7 @@ def selectPost ( webargs, dbcfg, annoproj ):
 
       # Make the annotation to the database
       annoDB = anndb.AnnotateDB ( dbcfg, annoproj )
-      entityid = annoDB.addEntity ( voxlist, conflictopt )
+      entityid = annoDB.newEntity ( voxlist, conflictopt )
 
     except:
       return web.BadRequest()  
@@ -276,6 +276,25 @@ def selectPost ( webargs, dbcfg, annoproj ):
       # Make the annotation to the database
       annoDB = anndb.AnnotateDB ( dbcfg, annoproj )
       entityid = annoDB.extendEntity ( int(entity), voxlist, conflictopt )
+
+    except:
+      return web.BadRequest()  
+
+    return str(entityid)
+
+  elif service == 'npadd':
+
+    [ entity, sym, conflictargs ] = postargs.partition ('/')
+    conflictopt = restargs.conflictOption ( conflictargs )
+
+    try:
+      # Grab the voxel list
+      fileobj = cStringIO.StringIO ( web.data() )
+      voxlist = np.load ( fileobj )
+
+      # Make the annotation to the database
+      annoDB = anndb.AnnotateDB ( dbcfg, annoproj )
+      entityid = annoDB.addEntity ( int(entity), voxlist, conflictopt )
 
     except:
       return web.BadRequest()  
