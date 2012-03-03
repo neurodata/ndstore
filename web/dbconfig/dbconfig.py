@@ -19,6 +19,8 @@ class dbConfig:
   def checkCube ( self, resolution, xstart, xend, ystart, yend, zstart, zend ):
     """Return true if the specified range of values is inside the cube"""
 
+    return True
+
     [xmax, ymax] = self.imagesz [ resolution ]
 
     if (( xstart >= 0 ) and ( xstart <= xend) and ( xend <= self.imagesz[resolution][0]) and\

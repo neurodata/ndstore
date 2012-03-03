@@ -245,15 +245,18 @@ class AnnotateDB:
     #  Convert the locations into Morton order
 
     # dictionary of mortonkeys
+    # RBTODO make a defaultdict
     cubelocs = {}
+
+    import pdb; pdb.set_trace()
 
     #  list of locations inside each morton key
     for loc in locations:
-      cubeno = loc[0]/self.cubedim[0], loc[1]/self.cubedim[1], loc[2]/self.cubedim[2]
+      cubeno = loc[0]/self.cubedim[0], loc[1]/self.cubedim[1], (loc[2]-self.startslice)/self.cubedim[2]
       key = zindex.XYZMorton(cubeno)
       if cubelocs.get(key,None) == None:
         cubelocs[key] = [];
-      cubelocs[key].append(loc)
+      cubelocs[key].append([loc[0],loc[1],loc[2]-self.startslice])
 
     # iterator over the list for each cube
     for key, loclist in cubelocs.iteritems():
@@ -275,8 +278,7 @@ class AnnotateDB:
 
         self.putCube ( key, cube)
 
-    # PYTODO update index
-
+    # PMTODO update index
 
   # end annotate
 
@@ -369,6 +371,8 @@ class AnnotateDB:
                                       ynumcubes*self.ycubedim,\
                                       znumcubes*self.zcubedim] )
     outcube.zeros()
+
+    import pdb; pdb.set_trace()
 
     # Build a list of indexes to access
     listofidxs = []

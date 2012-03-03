@@ -188,7 +188,7 @@ def annId ( imageargs, dbcfg, annoproj ):
   """Return the annotation identifier of a voxel"""
 
   # Perform argument processing
-  voxel = restargs.voxel ( imageargs, dbcfg )
+  voxel = restargs.voxel ( imageargs, dbcfg, annoproj.getResolution() )
 
   # Get the identifier
   annodb = anndb.AnnotateDB ( dbcfg, annoproj )
@@ -263,7 +263,7 @@ def selectPost ( webargs, dbcfg, annoproj ):
 
     return str(entityid)
 
-  if service == 'npextend':
+  elif service == 'npextend':
 
     [ entity, sym, conflictargs ] = postargs.partition ('/')
     conflictopt = restargs.conflictOption ( conflictargs )
@@ -310,7 +310,7 @@ def selectPost ( webargs, dbcfg, annoproj ):
     return "No csv format specified yet"
 
   else:
-    return "Unknown service"
+    return web.notfound()
 
 
 

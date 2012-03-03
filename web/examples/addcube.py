@@ -31,37 +31,22 @@ def main():
       for i in range (result.xlow,result.xhigh):
         voxlist.append ( [ i,j,k ] )
 
-  WS = True
+  url = 'http://0.0.0.0:8080/annotate/1111/npannotate/overwrite/'
 
-  # Use the Web services
-  if ( WS == True ): 
+  # Encode the voxelist an pickle
+  fileobj = cStringIO.StringIO ()
+  np.save ( fileobj, voxlist )
 
-    url = 'http://0.0.0.0:8080/annotate/1111/npannotate/overwrite/'
+  # Build the post request
+  req = urllib2.Request(url, fileobj.getvalue())
+  response = urllib2.urlopen(req)
+  the_page = response.read()
 
-    # Encode the voxelist an pickle
-    fileobj = cStringIO.StringIO ()
-    np.save ( fileobj, voxlist )
-
-    # Build the post request
-    req = urllib2.Request(url, fileobj.getvalue())
-    response = urllib2.urlopen(req)
-    the_page = response.read()
-
-    print the_page
-
-  # Insert via object
-  else: 
-    dbcfg = dbconfighayworth5nm.dbConfigHayworth5nm()
-
-    annoDB = anndb.AnnotateDB ( dbcfg )
-    # Build a grayscale file and display
-    entityid = annoDB.addEntity ( voxlist )
-
-    print "Added entity with identifier = ", entityid
+  print the_page
 
 
 if __name__ == "__main__":
-      main()
+  main()
 
 
 

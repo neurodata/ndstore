@@ -164,6 +164,16 @@ class AnnotateCube:
     zdim,ydim,xdim = self.data.shape
     imagemap = np.zeros ( [ ydim, xdim ], dtype=np.uint32 )
 
+    print self.data.shape
+ 
+#    recolor = np.vectorize( lambda x:  0x80000000 + ( x & 0xFF ) )
+#    imagemap = recolor ( self.data )
+#    imagemap = imagemap.reshape( [ imagemap.shape[1],imagemap.shape[2] ] )
+#    print "New shape", imagemap.shape
+#    imagemap = map ( lambda x:  0x80000000 + ( x & 0xFF ), self.data.flatten )
+
+#    print imagemap.shape
+
     # iterate in data order via numpy
     it = np.nditer ( self.data, flags=['multi_index'], op_flags=['readwrite'] )
     while not it.finished:

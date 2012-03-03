@@ -288,13 +288,13 @@ class BrainRestArgs:
 #
 #  Process cutout arguments
 #
-def voxel ( imageargs, dbcfg ):
+def voxel ( imageargs, dbcfg, resolution ):
   """Process REST arguments for a single"""
 
   rangeargs = imageargs.split('/')
 
   if len ( rangeargs ) == 4:
-    [ xstr, ystr, zstr, rest ]  = restargs
+    [ xstr, ystr, zstr, rest ]  = rangeargs
   else:
     return web.badrequest()
 
