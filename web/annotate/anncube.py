@@ -13,6 +13,16 @@ import zindex
 #    that contains annotations.  
 #
 
+
+# Used by **slice to recolor annotations
+def _recolor ( x ):
+  """Function to vectorize recoloring"""
+  if x == 0:
+    return np.uint32(0)
+  else:
+    return np.uint32 ( 0x80000000 + ( x & 0xFF ) )
+
+
 class AnnotateCube:
 
   # Constructor 
@@ -156,31 +166,31 @@ class AnnotateCube:
     """Trim off the excess data"""
     self.data = self.data [ zoffset:zoffset+zsize, yoffset:yoffset+ysize, xoffset:xoffset+xsize ]
 
+
   #
   # Create the specified slice (index) at filename
   #
   def xySlice ( self, fileobj ):
 
     zdim,ydim,xdim = self.data.shape
+
     imagemap = np.zeros ( [ ydim, xdim ], dtype=np.uint32 )
 
-    print self.data.shape
- 
-#    recolor = np.vectorize( lambda x:  0x80000000 + ( x & 0xFF ) )
-#    imagemap = recolor ( self.data )
-#    imagemap = imagemap.reshape( [ imagemap.shape[1],imagemap.shape[2] ] )
-#    print "New shape", imagemap.shape
-#    imagemap = map ( lambda x:  0x80000000 + ( x & 0xFF ), self.data.flatten )
+    recolor = np.vectorize( _recolor )
+    imagemap = recolor ( self.data )
+    imagemap = imagemap.reshape ( ydim, xdim )
 
-#    print imagemap.shape
-
+# <RB degraded>
+# The previous recoloring code with vectorize is about 3 times as fast as the
+#  following snippet that loops in Python.
     # iterate in data order via numpy
-    it = np.nditer ( self.data, flags=['multi_index'], op_flags=['readwrite'] )
-    while not it.finished:
-      if it[0] != 0:
-        imagemap[it.multi_index[1],it.multi_index[2]] = 0x80000000 + ( it[0] & 0xFF )
-      it.iternext()
-    
+#    it = np.nditer ( self.data, flags=['multi_index'], op_flags=['readwrite'] )
+#    while not it.finished:
+#      if it[0] != 0:
+#        imagemap[it.multi_index[1],it.multi_index[2]] = 0x80000000 + ( it[0] & 0xFF )
+#      it.iternext()
+#  </RB degraded>
+
     outimage = Image.frombuffer ( 'RGBA', (xdim,ydim), imagemap, 'raw', 'RGBA', 0, 1 )
     outimage.save ( fileobj, "PNG" )
 

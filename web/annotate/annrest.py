@@ -254,6 +254,8 @@ def selectPost ( webargs, dbcfg, annoproj ):
       fileobj = cStringIO.StringIO ( web.data() )
       voxlist = np.load ( fileobj )
 
+      print voxlist
+
       # Make the annotation to the database
       annoDB = anndb.AnnotateDB ( dbcfg, annoproj )
       entityid = annoDB.newEntity ( voxlist, conflictopt )
@@ -291,6 +293,8 @@ def selectPost ( webargs, dbcfg, annoproj ):
       # Grab the voxel list
       fileobj = cStringIO.StringIO ( web.data() )
       voxlist = np.load ( fileobj )
+
+      print voxlist
 
       # Make the annotation to the database
       annoDB = anndb.AnnotateDB ( dbcfg, annoproj )

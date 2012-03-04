@@ -248,8 +248,6 @@ class AnnotateDB:
     # RBTODO make a defaultdict
     cubelocs = {}
 
-    import pdb; pdb.set_trace()
-
     #  list of locations inside each morton key
     for loc in locations:
       cubeno = loc[0]/self.cubedim[0], loc[1]/self.cubedim[1], (loc[2]-self.startslice)/self.cubedim[2]
@@ -372,8 +370,6 @@ class AnnotateDB:
                                       znumcubes*self.zcubedim] )
     outcube.zeros()
 
-    import pdb; pdb.set_trace()
-
     # Build a list of indexes to access
     listofidxs = []
     for z in range ( znumcubes ):
@@ -443,10 +439,8 @@ class AnnotateDB:
 
     # convert the voxel into zindex and offsets
     # Round to the nearest larger cube in all dimensions
-    xyzcube = [ voxel[0]/self.xcubedim, voxel[1]/self.ycubedim, voxel[2]/self.zcubedim ]
-    xyzoffset =[ voxel[0]%self.xcubedim, voxel[1]%self.ycubedim, voxel[2]%self.zcubedim ]
-
-#    print xyzcube, xyzoffset
+    xyzcube = [ voxel[0]/self.xcubedim, voxel[1]/self.ycubedim, (voxel[2]-self.startslice)/self.zcubedim ]
+    xyzoffset =[ voxel[0]%self.xcubedim, voxel[1]%self.ycubedim, (voxel[2]-self.startslice)%self.zcubedim ]
 
     # Create a cube object
     cube = anncube.AnnotateCube ( self.cubedim )
