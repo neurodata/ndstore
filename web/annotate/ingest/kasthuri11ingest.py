@@ -78,9 +78,12 @@ def main():
   voxellists = collections.defaultdict(list)
 
   # Get a list of the files in the directories
-  for sl in range (_startslice,_endslice+1):
-    for y in range ( _ytiles ):
-      for x in range ( _xtiles ):
+#  for sl in range (_startslice,_endslice+1):
+#    for y in range ( _ytiles ):
+#      for x in range ( _xtiles ):
+  for sl in range (_startslice,_startslice+1):
+    for y in range ( 1, _ytiles ):
+      for x in range ( 0, 1 ):
         filenm = result.path + '/' + _prefix + '{:0>4}'.format(sl) + '_Y' + str(y) + '_X' + str(x) + '.png'
         print filenm
         tileimage = Image.open ( filenm, 'r' )
@@ -92,7 +95,8 @@ def main():
         it = np.nditer ( imgdata, flags=['multi_index'], op_flags=['readonly'] )
         while not it.finished:
           if ( it[0] != 0 ):
-            voxellists[ str( it[0] ) ].append ( [ it.multi_index[1] + y*_ytilesz, it.multi_index[0] + x*_xtilesz, sl+1 ] )
+            print "Found annotation number %s at %s, %s, %s" % ( it[0], it.multi_index[1] + x*_xtilesz, it.multi_index[0] + y*_ytilesz, sl+1 )
+            voxellists[ str( it[0] ) ].append ( [ it.multi_index[1] + x*_xtilesz, it.multi_index[0] + y*_ytilesz, sl+1 ] )
           it.iternext()
 
 
