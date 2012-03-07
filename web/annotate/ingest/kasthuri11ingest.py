@@ -78,12 +78,12 @@ def main():
   voxellists = collections.defaultdict(list)
 
   # Get a list of the files in the directories
+  for sl in range (_startslice+1,_endslice+1):
+    for y in range ( _ytiles ):
+      for x in range ( _xtiles ):
 #  for sl in range (_startslice,_endslice+1):
 #    for y in range ( _ytiles ):
 #      for x in range ( _xtiles ):
-  for sl in range (_startslice,_startslice+1):
-    for y in range ( 1, _ytiles ):
-      for x in range ( 0, 1 ):
         filenm = result.path + '/' + _prefix + '{:0>4}'.format(sl) + '_Y' + str(y) + '_X' + str(x) + '.png'
         print filenm
         tileimage = Image.open ( filenm, 'r' )
