@@ -74,7 +74,7 @@ class AnnotateProjectsDB:
 
 
     # Lookup the information for the database project based on the token
-    sql = "SELECT * from %s where token = %s" % (annpriv.table, token)
+    sql = "SELECT * from %s where token = \'%s\'" % (annpriv.table, token)
 
     # RBTODO database query
     try:
@@ -107,8 +107,6 @@ class AnnotateProjectsDB:
     sql = "INSERT INTO {0} VALUES ( \'{1}\', \'{2}\', \'{3}\', \'{4}\', {5} )".format (\
         annpriv.table, token, openid, project, dataset, resolution )
 
-    print "Executing: ", sql
-    
     try:
       cursor = self.conn.cursor()
       cursor.execute ( sql )
@@ -138,8 +136,6 @@ class AnnotateProjectsDB:
     sql = "create table ids ( id BIGINT PRIMARY KEY);\
            create table exceptions ( zindex BIGINT, id BIGINT, exlist LONGBLOB, PRIMARY KEY ( zindex, id ));\
            create table annotations ( zindex BIGINT PRIMARY KEY, cube LONGBLOB );"
-
-    print "Executing: ", sql
 
     try:
       cursor = newconn.cursor()
