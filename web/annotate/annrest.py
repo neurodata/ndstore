@@ -287,6 +287,8 @@ def selectPost ( webargs, dbcfg, annoproj ):
     [ entity, sym, conflictargs ] = postargs.partition ('/')
     conflictopt = restargs.conflictOption ( conflictargs )
 
+    print postargs
+
     try:
       # Grab the voxel list
       fileobj = cStringIO.StringIO ( web.data() )

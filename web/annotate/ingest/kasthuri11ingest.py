@@ -29,8 +29,8 @@ _xtiles = 2
 _ytiles = 2
 _xtilesz = 8192
 _ytilesz = 8192
-_startslice = 0000
-_endslice = 1849  
+_startslice = 1021
+_endslice = 1400  
 _prefix = 'fullresseg22312_s'
 _batchsz = 2 
 
@@ -82,33 +82,26 @@ def main():
   # Get a list of the files in the directories
   for sl in range (_startslice,_endslice+1):
     for y in range ( _ytiles ):
-      for x in range ( _xtiles ):
+     for x in range ( _xtiles ):
         filenm = result.path + '/' + _prefix + '{:0>4}'.format(sl) + '_Y' + str(y) + '_X' + str(x) + '.png'
         print filenm
         tileimage = Image.open ( filenm, 'r' )
         imgdata = np.asarray ( tileimage )
 
+        # turn the triple vector 3-channel inton one int
         vecfunc_merge = np.vectorize(lambda a,b,c: (a << 16) + (b << 8) + c, otypes=[np.uint32])
+        #  merge the data 
         newdata = vecfunc_merge(imgdata[:,:,0], imgdata[:,:,1], imgdata[:,:,2])
 
+        # call a Cython accelerator to get voxels
         voxels = getAnnotations ( newdata )
 
+        # write the voxles in quetion
         for v in voxels:
-          voxellistts [ str(v[0]) ].append ( v[1], v[2] )
-
-#        vecfunc_merge = np.vectorize(lambda a,b,c: (a << 16) + (b << 8) + c, otypes=[np.uint32])
-#       newdata = vecfunc_merge(imgdata[:,:,0], imgdata[:,:,1], imgdata[:,:,2])
-
-#        it = np.nditer ( imgdata, flags=['multi_index'], op_flags=['readonly'] )
-#        while not it.finished:
-#          if ( it[0] != 0 ):
-#            print "Found annotation number %s at %s, %s, %s" % ( it[0], it.multi_index[1] + x*_xtilesz, it.multi_index[0] + y*_ytilesz, sl+1 )
-#            voxellists[ str( it[0] ) ].append ( [ it.multi_index[1] + x*_xtilesz, it.multi_index[0] + y*_ytilesz, sl+1 ] )
-#          it.iternext()
+          voxellists [ str(v[0]) ].append ( [ v[1]+x*_xtilesz, v[2]+y*_ytilesz, sl+1 ] )
 
 
     # Send the annotation lists to the database
-    print "SL = ", sl
     if sl % _batchsz == 0:
       print "Found a batch"
       for key, voxlist in voxellists.iteritems():
@@ -116,6 +109,7 @@ def main():
         url = 'http://0.0.0.0:8080/annotate/%s/npadd/%s/' % (token,key)
         print url
         fileobj = cStringIO.StringIO ()
+        print voxlist
         np.save ( fileobj, voxlist )
 
         # Build the post request
@@ -124,7 +118,7 @@ def main():
         the_page = response.read()
 
       # Clear the voxel list -- old one gets garbage collected
-      voxlist = {}
+      voxellists = collections.defaultdict(list)
 
 
 if __name__ == "__main__":
