@@ -16,6 +16,9 @@ import dbconfigkasthuri11
 import annpriv
 import annproj
 
+#from kanno import getAnnotations
+from kanno_opt import getAnnotations
+
 #
 #  ingest the PNG files into the database
 #
@@ -29,9 +32,8 @@ _ytilesz = 8192
 _startslice = 0000
 _endslice = 1849  
 _prefix = 'fullresseg22312_s'
+_batchsz = 2 
 
-# Was going to do by batches, but the PNG is so inefficient it doesn't matter
-#_batchsz = 16
 
 
 
@@ -78,12 +80,9 @@ def main():
   voxellists = collections.defaultdict(list)
 
   # Get a list of the files in the directories
-  for sl in range (_startslice+1,_endslice+1):
+  for sl in range (_startslice,_endslice+1):
     for y in range ( _ytiles ):
       for x in range ( _xtiles ):
-#  for sl in range (_startslice,_endslice+1):
-#    for y in range ( _ytiles ):
-#      for x in range ( _xtiles ):
         filenm = result.path + '/' + _prefix + '{:0>4}'.format(sl) + '_Y' + str(y) + '_X' + str(x) + '.png'
         print filenm
         tileimage = Image.open ( filenm, 'r' )
@@ -92,29 +91,40 @@ def main():
         vecfunc_merge = np.vectorize(lambda a,b,c: (a << 16) + (b << 8) + c, otypes=[np.uint32])
         newdata = vecfunc_merge(imgdata[:,:,0], imgdata[:,:,1], imgdata[:,:,2])
 
-        it = np.nditer ( imgdata, flags=['multi_index'], op_flags=['readonly'] )
-        while not it.finished:
-          if ( it[0] != 0 ):
-            print "Found annotation number %s at %s, %s, %s" % ( it[0], it.multi_index[1] + x*_xtilesz, it.multi_index[0] + y*_ytilesz, sl+1 )
-            voxellists[ str( it[0] ) ].append ( [ it.multi_index[1] + x*_xtilesz, it.multi_index[0] + y*_ytilesz, sl+1 ] )
-          it.iternext()
+        voxels = getAnnotations ( newdata )
+
+        for v in voxels:
+          voxellistts [ str(v[0]) ].append ( v[1], v[2] )
+
+#        vecfunc_merge = np.vectorize(lambda a,b,c: (a << 16) + (b << 8) + c, otypes=[np.uint32])
+#       newdata = vecfunc_merge(imgdata[:,:,0], imgdata[:,:,1], imgdata[:,:,2])
+
+#        it = np.nditer ( imgdata, flags=['multi_index'], op_flags=['readonly'] )
+#        while not it.finished:
+#          if ( it[0] != 0 ):
+#            print "Found annotation number %s at %s, %s, %s" % ( it[0], it.multi_index[1] + x*_xtilesz, it.multi_index[0] + y*_ytilesz, sl+1 )
+#            voxellists[ str( it[0] ) ].append ( [ it.multi_index[1] + x*_xtilesz, it.multi_index[0] + y*_ytilesz, sl+1 ] )
+#          it.iternext()
 
 
     # Send the annotation lists to the database
-    for key, voxlist in voxellists.iteritems():
+    print "SL = ", sl
+    if sl % _batchsz == 0:
+      print "Found a batch"
+      for key, voxlist in voxellists.iteritems():
+        
+        url = 'http://0.0.0.0:8080/annotate/%s/npadd/%s/' % (token,key)
+        print url
+        fileobj = cStringIO.StringIO ()
+        np.save ( fileobj, voxlist )
 
-      url = 'http://0.0.0.0:8080/annotate/%s/npadd/%s/' % (token,key)
-      print url
-      fileobj = cStringIO.StringIO ()
-      np.save ( fileobj, voxlist )
+        # Build the post request
+        req = urllib2.Request(url, fileobj.getvalue())
+        response = urllib2.urlopen(req)
+        the_page = response.read()
 
-      # Build the post request
-      req = urllib2.Request(url, fileobj.getvalue())
-      response = urllib2.urlopen(req)
-      the_page = response.read()
-
-    # Clear the voxel list -- old one gets garbage collected
-    voxlist = {}
+      # Clear the voxel list -- old one gets garbage collected
+      voxlist = {}
 
 
 if __name__ == "__main__":
