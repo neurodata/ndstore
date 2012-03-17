@@ -29,12 +29,10 @@ _xtiles = 2
 _ytiles = 2
 _xtilesz = 8192
 _ytilesz = 8192
-_startslice = 1021
-_endslice = 1400  
+_startslice = 0
+_endslice = 1  
 _prefix = 'fullresseg22312_s'
 _batchsz = 2 
-
-
 
 
 def main():
@@ -120,6 +118,22 @@ def main():
       # Clear the voxel list -- old one gets garbage collected
       voxellists = collections.defaultdict(list)
 
+  print "Found a batch"
+  for key, voxlist in voxellists.iteritems():
+    
+    url = 'http://0.0.0.0:8080/annotate/%s/npadd/%s/' % (token,key)
+    print url
+    fileobj = cStringIO.StringIO ()
+    print voxlist
+    np.save ( fileobj, voxlist )
+
+    # Build the post request
+    req = urllib2.Request(url, fileobj.getvalue())
+    response = urllib2.urlopen(req)
+    the_page = response.read()
+
+  # Clear the voxel list -- old one gets garbage collected
+  voxellists = collections.defaultdict(list)
 
 if __name__ == "__main__":
   main()
