@@ -57,7 +57,6 @@ def main():
   else:
     maxzidx = int ( row[0] ) 
 
-  print maxzidx
 
   # iterate over sections of the zindex space calling mysqldump for each one
   curzidx = 0

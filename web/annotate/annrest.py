@@ -287,8 +287,6 @@ def selectPost ( webargs, dbcfg, annoproj ):
     [ entity, sym, conflictargs ] = postargs.partition ('/')
     conflictopt = restargs.conflictOption ( conflictargs )
 
-    print postargs
-
     try:
       # Grab the voxel list
       fileobj = cStringIO.StringIO ( web.data() )
@@ -319,6 +317,7 @@ def selectPost ( webargs, dbcfg, annoproj ):
 def switchDataset ( annoproj ):
   """Load the appropriate dbconfig project based on the dataset name"""
 
+  print "dataset = ", annoproj.getDataset()
   # Switch on the dataset
   if annoproj.getDataset() == 'hayworth5nm':
     import dbconfighayworth5nm
@@ -330,7 +329,6 @@ def switchDataset ( annoproj ):
     import dbconfigkasthuri11
     return dbconfigkasthuri11.dbConfigKasthuri11()
   else:
-    print "Failed to find data set in switchDataSet"
     return web.badrequest()
 
 #

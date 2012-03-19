@@ -79,7 +79,7 @@ def main():
   # Get a list of the files in the directories
   for sl in range (_startslice,_endslice+1):
     for y in range ( _ytiles ):
-     for x in range ( _xtiles ):
+      for x in range ( _xtiles ):
         filenm = result.path + '/' + _prefix + '{:0>4}'.format(sl) + '_Y' + str(y) + '_X' + str(x) + '.png'
         print filenm
         tileimage = Image.open ( filenm, 'r' )
@@ -102,7 +102,7 @@ def main():
     if (sl+1) % _batchsz == 0:
       for key, voxlist in voxellists.iteritems():
         
-        url = 'http://0.0.0.0:8080/annotate/%s/npadd/%s/' % (token,key)
+        url = 'http://braingraph1.cs.jhu.edu/annotate/%s/npadd/%s/' % (token,key)
         print url
         fileobj = cStringIO.StringIO ()
         np.save ( fileobj, voxlist )
@@ -117,7 +117,7 @@ def main():
 
   for key, voxlist in voxellists.iteritems():
     
-    url = 'http://0.0.0.0:8080/annotate/%s/npadd/%s/' % (token,key)
+    url = 'http://braingraph1.cs.jhu.edu/annotate/%s/npadd/%s/' % (token,key)
     print url
     fileobj = cStringIO.StringIO ()
     np.save ( fileobj, voxlist )

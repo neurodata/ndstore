@@ -29,7 +29,7 @@ def cubeToPNGs ( nparray, prefix ):
 # Get cube in question
 try:
 #  url = "http://0.0.0.0:8080/hdf5/2/0,1000/0,1000/0,80/global/"
-  url = "http://openconnectomeproject.org/cutout/hayworth5nm/hdf5/0/2000,4000/2000,4000/50,70/global/"
+  url = "http://openconnectomeproject.org/cutout/hayworth5nm/hdf5/0/2000,3000/2000,3000/50,70/global/"
   f = urllib2.urlopen ( url )
 except URLError:
   print "Failed to get URL", url

@@ -9,6 +9,8 @@ import annpriv
 #
 
 
+# TODO need to add host to annoprojects
+
 #
 # Annotation project not found
 #
@@ -52,6 +54,14 @@ class AnnotateProject:
     return self._exceptionss_tbl
   def getAnnotationsTbl( self ):
     return self._ann_tbl
+
+  # accessors for RB to fix
+  def getDBHost( self ):
+    return annpriv.dbhost
+  def getDBUser( self ):
+    return annpriv.dbuser
+  def getDBPasswd( self ):
+    return annpriv.dbpasswd
 
 
 class AnnotateProjectsDB:
@@ -145,7 +155,5 @@ class AnnotateProjectsDB:
       raise AnnoProjException ( "Failed to create database for nww project" )
 
     self.conn.commit()
-
-    # RBTODO Is commit commit right?  Need conditional commits?
 
 
