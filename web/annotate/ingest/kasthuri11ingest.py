@@ -102,7 +102,7 @@ def main():
     if (sl+1) % _batchsz == 0:
       for key, voxlist in voxellists.iteritems():
         
-        url = 'http://braingraph1.cs.jhu.edu/annotate/%s/npadd/%s/' % (token,key)
+        url = 'http://openconnecto.me/~randal/cutout/annotate/%s/npadd/%s/' % (token,key)
         print url
         fileobj = cStringIO.StringIO ()
         np.save ( fileobj, voxlist )
@@ -117,7 +117,7 @@ def main():
 
   for key, voxlist in voxellists.iteritems():
     
-    url = 'http://braingraph1.cs.jhu.edu/annotate/%s/npadd/%s/' % (token,key)
+    url = 'http://openconnecto.me/~randal/cutout/annotate/%s/npadd/%s/' % (token,key)
     print url
     fileobj = cStringIO.StringIO ()
     np.save ( fileobj, voxlist )
