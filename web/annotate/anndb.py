@@ -7,6 +7,8 @@ import zindex
 import anncube
 import annproj
 
+import sys
+
 #TODO convert the asserts into exceptions so that not found can be returned
 
 ################################################################################
@@ -17,6 +19,12 @@ import annproj
 #
 ################################################################################
 
+class AnnError(Exception):
+  def __init__(self, value):
+    self.value = value
+  def __str__(self):
+    return repr(self.value)
+
 class AnnotateDB: 
 
   def __init__ (self, dbconf, annoproj):
@@ -25,11 +33,17 @@ class AnnotateDB:
     self.dbcfg = dbconf
     self.annoproj = annoproj
 
+    dbinfo = self.annoproj.getDBHost(), self.annoproj.getDBUser(), self.annoproj.getDBPasswd(), self.annoproj.getDBName() 
+
     # Connection info in dbconfig
-    self.conn = MySQLdb.connect (host = self.dbcfg.dbhost,
-                            user = self.dbcfg.dbuser,
-                            passwd = self.dbcfg.dbpasswd,
+    try:
+      self.conn = MySQLdb.connect (host = self.annoproj.getDBHost(),
+                            user = self.annoproj.getDBUser(),
+                            passwd = self.annoproj.getDBPasswd(),
                             db = self.annoproj.getDBName())
+    except:
+      raise AnnError ( dbinfo )
+      
 
     # How many slices?
     [ self.startslice, endslice ] = self.dbcfg.slicerange
