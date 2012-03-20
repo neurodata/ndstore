@@ -29,10 +29,10 @@ _xtiles = 2
 _ytiles = 2
 _xtilesz = 8192
 _ytilesz = 8192
-_startslice = 1021
+_startslice = 120 
 _endslice = 1200  
 _prefix = 'fullresseg22312_s'
-_batchsz = 4 
+_batchsz = 16 
 
 def main():
 
@@ -41,37 +41,6 @@ def main():
   parser.add_argument('path', action="store", help='Directory with annotation PNG files.')
   
   result = parser.parse_args()
-
-  #  Specify the database configuration 
-  dbcfg = dbconfigkasthuri11.dbConfigKasthuri11()
-
-  # get project information from the database
-  sql = "SELECT * from %s where token = \'%s\'" % (annpriv.table, result.token)
-
-  conn = MySQLdb.connect (host = annpriv.dbhost,
-                          user = annpriv.dbuser,
-                          passwd = annpriv.dbpasswd,
-                          db = annpriv.db )
-
-  try:
-    cursor = conn.cursor()
-    cursor.execute ( sql )
-  except MySQLdb.Error, e:
-    print "Could not query annotations projects database"
-    raise annproj.AnnoProjException ( "Annotation Project Database error" )
-
-  # get the project information 
-  row = cursor.fetchone()
-
-  # if the project is not found.  error
-  if ( row == None ):
-    print "No project found"
-    raise annproj.AnnoProjException ( "Project token not found" )
-
-  [token, openid, project, dataset, resolution] = row
-
-  # Create an AnnoProj object
-  annoproj = annproj.AnnotateProject ( project , dataset, resolution )
 
   # Dictionary of voxel lists by annotation
   voxellists = collections.defaultdict(list)
@@ -102,7 +71,7 @@ def main():
     if (sl+1) % _batchsz == 0:
       for key, voxlist in voxellists.iteritems():
         
-        url = 'http://openconnecto.me/~randal/cutout/annotate/%s/npadd/%s/' % (token,key)
+        url = 'http://openconnecto.me/~randal/cutout/annotate/%s/npadd/%s/' % (result.token,key)
         print url
         fileobj = cStringIO.StringIO ()
         np.save ( fileobj, voxlist )
@@ -117,7 +86,7 @@ def main():
 
   for key, voxlist in voxellists.iteritems():
     
-    url = 'http://openconnecto.me/~randal/cutout/annotate/%s/npadd/%s/' % (token,key)
+    url = 'http://openconnecto.me/~randal/cutout/annotate/%s/npadd/%s/' % (result.token,key)
     print url
     fileobj = cStringIO.StringIO ()
     np.save ( fileobj, voxlist )
