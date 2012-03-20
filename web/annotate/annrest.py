@@ -317,7 +317,6 @@ def selectPost ( webargs, dbcfg, annoproj ):
 def switchDataset ( annoproj ):
   """Load the appropriate dbconfig project based on the dataset name"""
 
-  print "dataset = ", annoproj.getDataset()
   # Switch on the dataset
   if annoproj.getDataset() == 'hayworth5nm':
     import dbconfighayworth5nm
