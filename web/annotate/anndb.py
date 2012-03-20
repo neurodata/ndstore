@@ -35,7 +35,7 @@ class AnnotateDB:
 
     dbinfo = self.annoproj.getDBHost(), self.annoproj.getDBUser(), self.annoproj.getDBPasswd(), self.annoproj.getDBName() 
 
-    # Connection info in dbconfig
+    # Connection info 
     try:
       self.conn = MySQLdb.connect (host = self.annoproj.getDBHost(),
                             user = self.annoproj.getDBUser(),

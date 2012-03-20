@@ -23,7 +23,7 @@ _ytilesz = 8192
 _startslice = 824
 _endslice = 824  
 _prefix = 'fullresseg22312_s'
-_batchsz = 16 
+_batchsz = 4 
 
 
 def main():
@@ -47,15 +47,19 @@ def main():
         imgdata = np.asarray ( tileimage )
 
         # turn the triple vector 3-channel inton one int
-        vecfunc_merge = np.vectorize(lambda a,b,c: (a << 16) + (b << 8) + c, otypes=[np.uint32])
+#        vecfunc_merge = np.vectorize(lambda a,b,c: (a << 16) + (b << 8) + c, otypes=[np.uint32])
         #  merge the data 
-        newdata = vecfunc_merge(imgdata[:,:,0], imgdata[:,:,1], imgdata[:,:,2])
+#        newdata = vecfunc_merge(imgdata[:,:,0], imgdata[:,:,1], imgdata[:,:,2])
+        print imgdata[5351,2288,:]
+        sys.exit(-1)
 
         # call a Cython accelerator to get voxels
         voxels = getAnnotations ( newdata )
 
         # write the voxles in quetion
         for v in voxels:
+          if v[0] > 300:
+             print v[0]
           voxellists [ str(v[0]) ].append ( [ v[1]+x*_xtilesz, v[2]+y*_ytilesz, sl+1 ] )
 
 
@@ -80,6 +84,12 @@ def main():
       # Clear the voxel list -- old one gets garbage collected
       voxellists = collections.defaultdict(list)
 
+<<<<<<< Updated upstream
+=======
+
+  sys.exit(-1)
+
+>>>>>>> Stashed changes
   for key, voxlist in voxellists.iteritems():
     
 <<<<<<< HEAD
