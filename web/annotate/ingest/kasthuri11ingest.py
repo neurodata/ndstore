@@ -64,7 +64,7 @@ def main():
       print "Found a batch"
       for key, voxlist in voxellists.iteritems():
         
-        url = 'http://openconnecto.me/~randal/cutout/annotate/%s/npadd/%s/' % (result.token,key)
+        url = 'http://0.0.0.0:8080/annotate/%s/npadd/%s/' % (result.token,key)
         print url
         fileobj = cStringIO.StringIO ()
         np.save ( fileobj, voxlist )
@@ -79,7 +79,7 @@ def main():
 
   for key, voxlist in voxellists.iteritems():
     
-    url = 'http://openconnecto.me/~randal/cutout/annotate/%s/npadd/%s/' % (result.token,key)
+    url = 'http://0.0.0.0:8080/annotate/%s/npadd/%s/' % (result.token,key)
     print url
     fileobj = cStringIO.StringIO ()
     np.save ( fileobj, voxlist )
