@@ -61,10 +61,13 @@ def main():
 
     # Send the annotation lists to the database
     if (sl+1) % _batchsz == 0:
-      print "Found a batch"
       for key, voxlist in voxellists.iteritems():
         
+<<<<<<< HEAD
         url = 'http://0.0.0.0:8080/annotate/%s/npadd/%s/' % (result.token,key)
+=======
+        url = 'http://openconnecto.me/~randal/cutout/annotate/%s/npadd/%s/' % (result.token,key)
+>>>>>>> cad6d1d6cce648f26679c33da41480292b367651
         print url
         fileobj = cStringIO.StringIO ()
         np.save ( fileobj, voxlist )
@@ -79,7 +82,11 @@ def main():
 
   for key, voxlist in voxellists.iteritems():
     
+<<<<<<< HEAD
     url = 'http://0.0.0.0:8080/annotate/%s/npadd/%s/' % (result.token,key)
+=======
+    url = 'http://openconnecto.me/~randal/cutout/annotate/%s/npadd/%s/' % (result.token,key)
+>>>>>>> cad6d1d6cce648f26679c33da41480292b367651
     print url
     fileobj = cStringIO.StringIO ()
     np.save ( fileobj, voxlist )
