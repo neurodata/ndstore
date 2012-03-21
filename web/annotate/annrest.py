@@ -74,7 +74,7 @@ def numpyZip ( imageargs, dbcfg, annoproj ):
 #
 #  Return a HDF5 file
 #
-def HDF5 ( imageargs, dbcfg ):
+def HDF5 ( imageargs, dbcfg, annoproj ):
   """Return a web readable HDF5 file"""
 
   try:
