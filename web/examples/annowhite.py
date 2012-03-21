@@ -56,7 +56,7 @@ def main():
                          it.multi_index[0]+zoffset ] )
     it.iternext()
 
-  url = 'http://0.0.0.0:8080/annotate/1/npnew/'
+  url = 'http://0.0.0.0:8080/annotate/hanno/npnew/'
 
   # Encode the voxelist an pickle
   fileobj = cStringIO.StringIO ()

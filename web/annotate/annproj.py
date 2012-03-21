@@ -26,9 +26,10 @@ class AnnotateProject:
   """Project specific annotation data"""
 
   # Constructor 
-  def __init__(self, dbname, dataset, resolution ):
+  def __init__(self, dbname, dbhost, dataset, resolution ):
     """Initialize the Annotation Project"""
     
+    self._dbhost = dbhost
     self._dbname = dbname
     self._dataset = dataset
     self._resolution = resolution
@@ -40,6 +41,8 @@ class AnnotateProject:
 
 
   # Accessors
+  def getDBHost ( self ):
+    return self._dbhost
   def getDBName ( self ):
     return self._dbname
   def getDataset ( self ):
@@ -56,8 +59,6 @@ class AnnotateProject:
     return self._ann_tbl
 
   # accessors for RB to fix
-  def getDBHost( self ):
-    return annpriv.dbhost
   def getDBUser( self ):
     return annpriv.dbuser
   def getDBPasswd( self ):
@@ -102,20 +103,20 @@ class AnnotateProjectsDB:
       print "No project found"
       raise AnnoProjException ( "Project token not found" )
 
-    [token, openid, project, dataset, resolution] = row
+    [token, openid, project, host, dataset, resolution] = row
 
-    return AnnotateProject ( project , dataset, resolution )
+    return AnnotateProject ( project, host, dataset, resolution )
 
 
   #
   # Load the annotation databse information based on the token
   #
-  def newAnnoProj ( self, token, openid, project, dataset, resolution ):
+  def newAnnoProj ( self, token, openid, project, dbhost, dataset, resolution ):
     """Create a new annotation project"""
 
     # Insert the project entry into the database
-    sql = "INSERT INTO {0} VALUES ( \'{1}\', \'{2}\', \'{3}\', \'{4}\', {5} )".format (\
-        annpriv.table, token, openid, project, dataset, resolution )
+    sql = "INSERT INTO {0} VALUES ( \'{1}\', \'{2}\', \'{3}\', \'{4}\', \'{5}\', {6} )".format (\
+        annpriv.table, token, openid, project, dbhost, dataset, resolution )
 
     try:
       cursor = self.conn.cursor()
@@ -136,7 +137,7 @@ class AnnotateProjectsDB:
       raise AnnoProjException ( "Failed to create database for new project" )
 
     # Connect to the new database
-    newconn = MySQLdb.connect (host = annpriv.dbhost,
+    newconn = MySQLdb.connect (host = dbhost,
                           user = annpriv.dbuser,
                           passwd = annpriv.dbpasswd,
                           db = project )
