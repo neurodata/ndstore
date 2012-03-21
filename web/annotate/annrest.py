@@ -328,7 +328,6 @@ def switchDataset ( annoproj ):
     import dbconfigkasthuri11
     return dbconfigkasthuri11.dbConfigKasthuri11()
   else:
-    print "Failed to find data set in switchDataSet"
     return web.badrequest()
 
 #

@@ -57,7 +57,7 @@ def main():
     it.iternext()
 
 
-  url = 'http://0.0.0.0:8080/annotate/2222/npannotate/'
+  url = 'http://0.0.0.0:8080/annotate/kanno/npnew/'
 
   # Encode the voxelist an pickle
   fileobj = cStringIO.StringIO ()
