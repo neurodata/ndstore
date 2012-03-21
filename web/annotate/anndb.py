@@ -308,6 +308,8 @@ class AnnotateDB:
     # label the voxels and exceptions
     self.annotate ( entityid, locations, conflictopt )
 
+    return entityid
+
   #
   # extendEntity
   #
@@ -322,7 +324,6 @@ class AnnotateDB:
     # Query the identifier
     cursor = self.conn.cursor ()
     sql = "SELECT id FROM {0} WHERE id={1}".format(str(self.annoproj.getIDsTbl()),str(entityid))
-    print sql
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
@@ -339,6 +340,8 @@ class AnnotateDB:
     # label the voxels and exceptions
     self.annotate ( entityid, locations, conflictopt )
 
+    return entityid
+
 
   #
   # newEntity
@@ -354,6 +357,28 @@ class AnnotateDB:
     self.annotate ( entityid, locations, conflictopt )
 
     return entityid
+
+
+  #
+  # annotateEntityDense
+  #
+  #  Process a cube of data that has been labelled with annotations.
+  #
+  def annotateEntityDense ( self, corner, dim, cube, conflicopt ):
+    """Process all the annotations in the dense volume"""
+    pass
+
+  def extendEntityDense ( self, corner, dim,  cube, conflicopt ):
+    """All the annotations extend existing annotations.  Check their existence and update."""
+    pass
+
+  def addEntityDense ( self, corner, dim, cube, conflicopt ):
+    """Add the annotations in this cube.  Do not interpret the values.  Put values straight into the DB."""
+    pass
+
+  def newEntityDense ( self, corner, dim, cube, conflicopt ):
+    """Add a new annotation associated with the cube of data.  Create new identifiers."""
+    pass
 
 
 

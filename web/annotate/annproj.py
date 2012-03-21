@@ -103,7 +103,7 @@ class AnnotateProjectsDB:
       print "No project found"
       raise AnnoProjException ( "Project token not found" )
 
-    [token, openid, project, host, dataset, resolution] = row
+    [token, openid, host, project, dataset, resolution] = row
 
     return AnnotateProject ( project, host, dataset, resolution )
 
@@ -111,12 +111,16 @@ class AnnotateProjectsDB:
   #
   # Load the annotation databse information based on the token
   #
-  def newAnnoProj ( self, token, openid, project, dbhost, dataset, resolution ):
+  def newAnnoProj ( self, token, openid, dbhost, project, dataset, resolution ):
     """Create a new annotation project"""
+
+    print dbhost, project
 
     # Insert the project entry into the database
     sql = "INSERT INTO {0} VALUES ( \'{1}\', \'{2}\', \'{3}\', \'{4}\', \'{5}\', {6} )".format (\
-        annpriv.table, token, openid, project, dbhost, dataset, resolution )
+        annpriv.table, token, openid, dbhost, project, dataset, resolution )
+
+    print sql
 
     try:
       cursor = self.conn.cursor()

@@ -8,6 +8,8 @@ import empaths
 import dbconfig
 import zindex
 
+#TODO cython this thing up
+
 #
 #  AnnotateCube: manipulate the in-memory data representation of the 3-d cube of data
 #    that contains annotations.  
@@ -116,15 +118,12 @@ class AnnotateCube:
       elif (self.data [ voxel[2]-offset[2], voxel[1]-offset[1], voxel[0]-offset[0]] != annid ):
         # O is for overwrite
         if conflictopt == 'O':
-#          print "O option"
           self.data [ voxel[2]-offset[2], voxel[1]-offset[1], voxel[0]-offset[0] ] = annid
         # P preserves the existing content
         elif conflictopt == 'P':
-#          print "P option"
           pass
         # E creates exceptions
         elif conflictopt == 'E':
-#          print "E option"
           exceptions.append ( voxel )
         else:
           print ( "Improper conflict option selected.  Option = ", conflictopt  )
@@ -179,17 +178,6 @@ class AnnotateCube:
     recolor = np.vectorize( _recolor )
     imagemap = recolor ( self.data )
     imagemap = imagemap.reshape ( ydim, xdim )
-
-# <RB degraded>
-# The previous recoloring code with vectorize is about 3 times as fast as the
-#  following snippet that loops in Python.
-    # iterate in data order via numpy
-#    it = np.nditer ( self.data, flags=['multi_index'], op_flags=['readwrite'] )
-#    while not it.finished:
-#      if it[0] != 0:
-#        imagemap[it.multi_index[1],it.multi_index[2]] = 0x80000000 + ( it[0] & 0xFF )
-#      it.iternext()
-#  </RB degraded>
 
     outimage = Image.frombuffer ( 'RGBA', (xdim,ydim), imagemap, 'raw', 'RGBA', 0, 1 )
     outimage.save ( fileobj, "PNG" )

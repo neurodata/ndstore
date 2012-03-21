@@ -57,7 +57,7 @@ class BrainRestArgs:
 
 
   #
-  # setReslution : used with annotation in which resolution is stored by token
+  # setResolution : used with annotation in which resolution is stored by token
   #
   def setResolution(self, resolution):
     """Set the resolution.  Used when annotating."""

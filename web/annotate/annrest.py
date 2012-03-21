@@ -9,7 +9,7 @@ import h5py
 import os
 import cStringIO
 
-import empaths 
+import empaths
 import restargs
 import anncube
 import anndb
@@ -21,11 +21,10 @@ import annproj
 #  annrest: RESTful interface to annotations
 #
 
-#
-#  Build the returned braincube.  Called by all methods 
-#   that then refine the output.
-#
 def cutout ( imageargs, dbcfg, annoproj ):
+  """Build the returned cube of data.  This method is called by all
+       of the more basic services to build the data.
+       They then format and refine the output."""
 
   # Perform argument processing
   args = restargs.BrainRestArgs ();
@@ -245,9 +244,10 @@ def selectPost ( webargs, dbcfg, annoproj ):
   #  when voxels conflict
   # Perform argument processing
 
-  if service == 'npnew':
-    
-    conflictopt = restargs.conflictOption ( postargs )
+  if service == 'npvoxels':
+
+    # which type of voxel post is it
+    [ verb, sym, serviceargs ] = postargs.partition ('/')
 
     try:
       # Grab the voxel list
@@ -256,45 +256,65 @@ def selectPost ( webargs, dbcfg, annoproj ):
 
       # Make the annotation to the database
       annoDB = anndb.AnnotateDB ( dbcfg, annoproj )
-      entityid = annoDB.newEntity ( voxlist, conflictopt )
+
+      # Choose the verb, get the entity (as needed), and annotate
+      if verb == 'add':
+
+        [ entity, sym, conflictargs ] = serviceargs.partition ('/')
+        conflictopt = restargs.conflictOption ( conflictargs )
+        entityid = annoDB.addEntity ( int(entity), voxlist, conflictopt )
+
+      elif verb == 'extend':
+
+        [ entity, sym, conflictargs ] = serviceargs.partition ('/')
+        conflictopt = restargs.conflictOption ( conflictargs )
+        entityid = annoDB.extendEntity ( int(entity), voxlist, conflictopt )
+
+      elif verb == 'new':
+        conflictopt = restargs.conflictOption ( serviceargs )
+        entityid = annoDB.newEntity ( voxlist, conflictopt )
+
+      else: 
+        print "Didn't recognize verb"
+        return web.BadRequest()
 
     except:
       return web.BadRequest()  
 
     return str(entityid)
 
-  elif service == 'npextend':
+  elif service == 'npdense':
 
-    [ entity, sym, conflictargs ] = postargs.partition ('/')
-    conflictopt = restargs.conflictOption ( conflictargs )
-
-    try:
-      # Grab the voxel list
-      fileobj = cStringIO.StringIO ( web.data() )
-      voxlist = np.load ( fileobj )
-
-      # Make the annotation to the database
-      annoDB = anndb.AnnotateDB ( dbcfg, annoproj )
-      entityid = annoDB.extendEntity ( int(entity), voxlist, conflictopt )
-
-    except:
-      return web.BadRequest()  
-
-    return str(entityid)
-
-  elif service == 'npadd':
-
-    [ entity, sym, conflictargs ] = postargs.partition ('/')
-    conflictopt = restargs.conflictOption ( conflictargs )
+    # which type of voxel post is it
+    [ verb, sym, serviceargs ] = postargs.partition ('/')
 
     try:
       # Grab the voxel list
       fileobj = cStringIO.StringIO ( web.data() )
-      voxlist = np.load ( fileobj )
+      voxarray = np.load ( fileobj )
 
-      # Make the annotation to the database
-      annoDB = anndb.AnnotateDB ( dbcfg, annoproj )
-      entityid = annoDB.addEntity ( int(entity), voxlist, conflictopt )
+      print voxarray.shape
+
+      # Choose the verb, get the entity (as needed), and annotate
+      if verb == 'add':
+
+        [ entity, sym, conflictargs ] = serviceargs.partition ('/')
+        conflictopt = restargs.conflictOption ( conflictargs )
+        entityid = annoDB.addEntityDense ( int(entity), voxarray, conflictopt )
+
+      elif verb == 'extend':
+
+        [ entity, sym, conflictargs ] = serviceargs.partition ('/')
+        conflictopt = restargs.conflictOption ( conflictargs )
+        entityid = annoDB.extendEntityDense ( int(entity), voxarray, conflictopt )
+
+      elif verb == 'new':
+        conflictopt = restargs.conflictOption ( serviceargs )
+        entityid = annoDB.newEntityDense ( voxarray, conflictopt )
+
+      else: 
+        print "Didn't recognize verb"
+        return web.BadRequest()
 
     except:
       return web.BadRequest()  
@@ -302,7 +322,35 @@ def selectPost ( webargs, dbcfg, annoproj ):
     return str(entityid)
 
   #RBTODO HDF5 for matlab users?
-  elif service == 'HDF5':
+  elif service == 'h5new':
+
+    [ entity, sym, conflictargs ] = postargs.partition ('/')
+    conflictopt = restargs.conflictOption ( conflictargs )
+
+    print "Here we go yo."
+
+  #try:
+    # Grab the cube data
+    fileobj = cStringIO.StringIO ( web.data() )
+    tmpfile = tempfile.NamedTemporaryFile ( )
+    tmpfile.write ( fileobj.read() )
+    print tmpfile.tell()
+    h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
+    print h5f.keys()
+
+    cube = h5f['annotations']
+
+    # Make the annotation to the database
+    annoDB = anndb.AnnotateDB ( dbcfg, annoproj )
+    print "Here and good", cube
+    sys.exit(-1)
+    # gotta get arguments and fix newCube
+    entityid = annoDB.newCube ( cube, conflictopt )
+
+  #except:
+  #  return web.BadRequest()  
+
+    return str(entityid)
     return "Not yet"
     pass
 
