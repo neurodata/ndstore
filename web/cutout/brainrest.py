@@ -34,7 +34,7 @@ def cutout ( webargs, dbcfg ):
   # Perform argument processing
   args = restargs.BrainRestArgs ();
   cutoutargs = args.resolutionArg ( webargs, dbcfg )
-  args.cutoutArgs ( cutoutargs, dbcfg )
+  args.cutoutArgs2 ( cutoutargs, dbcfg )
 
   # Extract the relevant values
   corner = args.getCorner()

@@ -364,21 +364,74 @@ class AnnotateDB:
   #
   #  Process a cube of data that has been labelled with annotations.
   #
-  def annotateEntityDense ( self, corner, dim, cube, conflicopt ):
+  def annotateEntityDense ( self, corner, dim, annodata, conflictopt ):
     """Process all the annotations in the dense volume"""
-    pass
 
-  def extendEntityDense ( self, corner, dim,  cube, conflicopt ):
-    """All the annotations extend existing annotations.  Check their existence and update."""
-    pass
+    # Round to the nearest larger cube in all dimensions
+    zstart = corner[2]/self.zcubedim
+    ystart = corner[1]/self.ycubedim
+    xstart = corner[0]/self.xcubedim
 
-  def addEntityDense ( self, corner, dim, cube, conflicopt ):
+    znumcubes = (corner[2]+dim[2]+self.zcubedim-1)/self.zcubedim - zstart
+    ynumcubes = (corner[1]+dim[1]+self.ycubedim-1)/self.ycubedim - ystart
+    xnumcubes = (corner[0]+dim[0]+self.xcubedim-1)/self.xcubedim - xstart
+
+    zoffset = corner[2]%self.zcubedim
+    yoffset = corner[1]%self.ycubedim
+    xoffset = corner[0]%self.xcubedim
+
+    databuffer = np.zeros ([znumcubes*self.zcubedim, ynumcubes*self.ycubedim, xnumcubes*self.xcubedim], dtype=np.uint32 )
+
+    databuffer [ zoffset:zoffset+dim[2], yoffset:yoffset+dim[1], xoffset:xoffset+dim[0] ] = annodata 
+
+    import pdb; pdb.set_trace()
+
+    for z in range(znumcubes):
+      for y in range(ynumcubes):
+        for x in range(xnumcubes):
+
+          key = zindex.XYZMorton ([x,y,z])
+          cube = self.getCube ( key )
+
+          if conflictopt == 'O':
+            print "Here"
+            cube.overwrite ( key, databuffer [ z*self.zcubedim:(z+1)*self.zcubedim, y*self.ycubedim:(y+1)*self.ycubedim, 
+x*self.xcubedim:(x+1)*self.xcubedim ] )
+
+          else:
+            print "Unsupported conflict option.  FIX ME"
+            assert 0
+
+        # get a voxel offset for the cube
+        cubeoff = zindex.MortonXYZ(key)
+        offset = [ cubeoff[0]*self.cubedim[0],\
+                   cubeoff[1]*self.cubedim[1],\
+                   cubeoff[2]*self.cubedim[2] ]
+
+        # add the items
+        exceptions = cube.annotate ( entityid, offset, loclist, conflictopt )
+
+        # update the sparse list of exceptions
+        if len(exceptions) != 0:
+          self.updateExceptions ( key, entityid, exceptions )
+
+        self.putCube ( key, cube)
+          
+          
+   
+
+
+  def addEntityDense ( self, corner, dim, annodata, conflictopt ):
     """Add the annotations in this cube.  Do not interpret the values.  Put values straight into the DB."""
-    pass
 
-  def newEntityDense ( self, corner, dim, cube, conflicopt ):
+    self.annotateEntityDense ( corner, dim, annodata, conflictopt )
+
+
+  def newEntityDense ( self, corner, dim, annodata, conflictopt ):
     """Add a new annotation associated with the cube of data.  Create new identifiers."""
-    pass
+
+    # TODO rewrite volume with identifiers
+    self.annotateEntityDense ( corner, dim, annodata, conflictopt )
 
 
 

@@ -16,15 +16,6 @@ import zindex
 #
 
 
-# Used by **slice to recolor annotations
-def _recolor ( x ):
-  """Function to vectorize recoloring"""
-  if x == 0:
-    return np.uint32(0)
-  else:
-    return np.uint32 ( 0x80000000 + ( x & 0xFF ) )
-
-
 class AnnotateCube:
 
   # Constructor 
@@ -175,8 +166,9 @@ class AnnotateCube:
 
     imagemap = np.zeros ( [ ydim, xdim ], dtype=np.uint32 )
 
-    recolor = np.vectorize( _recolor )
-    imagemap = recolor ( self.data )
+    # recolor the pixels for visualization
+    vecfunc_recolor = np.vectorize ( lambda x:  np.uint32(0) if x == 0 else np.uint32(0x80000000+(x&0xFF)))
+    imagemap = vecfunc_recolor ( self.data[:,:,:] )
     imagemap = imagemap.reshape ( ydim, xdim )
 
     outimage = Image.frombuffer ( 'RGBA', (xdim,ydim), imagemap, 'raw', 'RGBA', 0, 1 )
@@ -185,38 +177,36 @@ class AnnotateCube:
   #
   # Create the specified slice (index) at filename
   #
-  def xzSlice ( self, fileobj ):
+  def xzSlice ( self, scale, fileobj ):
 
     zdim,ydim,xdim = self.data.shape
     imagemap = np.zeros ( [ zdim, xdim ], dtype=np.uint32 )
 
-    # iterate in data order via numpy
-    it = np.nditer ( self.data, flags=['multi_index'], op_flags=['readwrite'] )
-    while not it.finished:
-      if it[0] != 0:
-        imagemap[it.multi_index[0],it.multi_index[2]] = 0x80000000 + ( it[0] & 0xFF )
-      it.iternext()
-    
+    # recolor the pixels for visualization
+    vecfunc_recolor = np.vectorize ( lambda x:  np.uint32(0) if x == 0 else np.uint32(0x80000000+(x&0xFF)))
+    imagemap = vecfunc_recolor ( self.data[:,:,:] )
+    imagemap = imagemap.reshape ( zdim, xdim )
+
     outimage = Image.frombuffer ( 'RGBA', (xdim,zdim), imagemap, 'raw', 'RGBA', 0, 1 )
-    outimage.save ( fileobj, "PNG" )
+    newimage = outimage.resize ( [xdim, int(zdim*scale)] )
+    newimage.save ( fileobj, "PNG" )
 
   #
   # Create the specified slice (index) at filename
   #
-  def yzSlice ( self, fileobj ):
+  def yzSlice ( self, scale, fileobj ):
 
     zdim,ydim,xdim = self.data.shape
     imagemap = np.zeros ( [ zdim, ydim ], dtype=np.uint32 )
 
-    # iterate in data order via numpy
-    it = np.nditer ( self.data, flags=['multi_index'], op_flags=['readwrite'] )
-    while not it.finished:
-      if it[0] != 0:
-        imagemap[it.multi_index[0],it.multi_index[1]] = 0x80000000 + ( it[0] & 0xFF )
-      it.iternext()
-    
+    # recolor the pixels for visualization
+    vecfunc_recolor = np.vectorize ( lambda x:  np.uint32(0) if x == 0 else np.uint32(0x80000000+(x&0xFF)))
+    imagemap = vecfunc_recolor ( self.data[:,:,:] )
+    imagemap = imagemap.reshape ( zdim, ydim )
+
     outimage = Image.frombuffer ( 'RGBA', (ydim,zdim), imagemap, 'raw', 'RGBA', 0, 1 )
-    outimage.save ( fileobj, "PNG" )
+    newimage = outimage.resize ( [ydim, int(zdim*scale)] )
+    newimage.save ( fileobj, "PNG" )
 
 # end AnnotateCube
 

@@ -29,7 +29,7 @@ def cutout ( imageargs, dbcfg, annoproj ):
   # Perform argument processing
   args = restargs.BrainRestArgs ();
   args.setResolution ( annoproj.getResolution() )
-  args.cutoutArgs ( imageargs, dbcfg )
+  args.cutoutArgs2 ( imageargs, dbcfg )
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -143,7 +143,7 @@ def xzImage ( imageargs, dbcfg, annoproj ):
   annodb = anndb.AnnotateDB ( dbcfg, annoproj )
   cb = annodb.cutout ( corner, dim, resolution )
   fileobj = StringIO.StringIO ( )
-  cb.xzSlice ( fileobj )
+  cb.xzSlice ( dbcfg.zscale[annoproj.getResolution()], fileobj )
 #  except:
 #    print "Exception"
 #    return web.notfound()
@@ -170,7 +170,7 @@ def yzImage ( imageargs, dbcfg, annoproj ):
   annodb = anndb.AnnotateDB ( dbcfg, annoproj )
   cb = annodb.cutout ( corner, dim, resolution )
   fileobj = StringIO.StringIO ( )
-  cb.yzSlice ( fileobj )
+  cb.yzSlice ( dbcfg.zscale[annoproj.getResolution()], fileobj )
 #  except:
 #    print "Exception"
 #    return web.notfound()
@@ -285,29 +285,33 @@ def selectPost ( webargs, dbcfg, annoproj ):
 
   elif service == 'npdense':
 
-    # which type of voxel post is it
-    [ verb, sym, serviceargs ] = postargs.partition ('/')
+    [ verb, xstr, ystr, zstr, conflictarg ] = postargs.split ('/', 4)
 
     try:
-      # Grab the voxel list
-      fileobj = cStringIO.StringIO ( web.data() )
+
+      # Process the arguments
+      args = restargs.BrainRestArgs ();
+      args.setResolution ( annoproj.getResolution() )
+      args.cutoutArgs ( xstr, ystr, zstr, dbcfg )
+
+      corner = args.getCorner()
+      dim = args.getDim()
+
+      # get the data out of the compressed blob
+      rawdata = zlib.decompress ( web.data() )
+      fileobj = StringIO.StringIO ( rawdata )
       voxarray = np.load ( fileobj )
 
-      print voxarray.shape
+      # Get the annotation database
+      annoDB = anndb.AnnotateDB ( dbcfg, annoproj )
 
       # Choose the verb, get the entity (as needed), and annotate
+      # Translates the values directly
       if verb == 'add':
+        conflictopt = restargs.conflictOption ( conflictarg )
+        entityid = annoDB.addEntityDense ( corner, dim, voxarray, conflictopt )
 
-        [ entity, sym, conflictargs ] = serviceargs.partition ('/')
-        conflictopt = restargs.conflictOption ( conflictargs )
-        entityid = annoDB.addEntityDense ( int(entity), voxarray, conflictopt )
-
-      elif verb == 'extend':
-
-        [ entity, sym, conflictargs ] = serviceargs.partition ('/')
-        conflictopt = restargs.conflictOption ( conflictargs )
-        entityid = annoDB.extendEntityDense ( int(entity), voxarray, conflictopt )
-
+      # renumbers the annotations
       elif verb == 'new':
         conflictopt = restargs.conflictOption ( serviceargs )
         entityid = annoDB.newEntityDense ( voxarray, conflictopt )
@@ -327,8 +331,6 @@ def selectPost ( webargs, dbcfg, annoproj ):
     [ entity, sym, conflictargs ] = postargs.partition ('/')
     conflictopt = restargs.conflictOption ( conflictargs )
 
-    print "Here we go yo."
-
   #try:
     # Grab the cube data
     fileobj = cStringIO.StringIO ( web.data() )
@@ -342,7 +344,6 @@ def selectPost ( webargs, dbcfg, annoproj ):
 
     # Make the annotation to the database
     annoDB = anndb.AnnotateDB ( dbcfg, annoproj )
-    print "Here and good", cube
     sys.exit(-1)
     # gotta get arguments and fix newCube
     entityid = annoDB.newCube ( cube, conflictopt )

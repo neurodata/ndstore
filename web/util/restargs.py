@@ -79,8 +79,9 @@ class BrainRestArgs:
   #
   #  Process cutout arguments
   #
-  def cutoutArgs ( self, imageargs, dbcfg ):
+  def cutoutArgs2 ( self, imageargs, dbcfg ):
     """Process REST arguments for an cutout plane request
+       Deprecated functions.  Use cutoutArgs.
        You must have set the resolution prior to calling this function."""
 
     assert ( self._resolution != -1 )
@@ -129,6 +130,44 @@ class BrainRestArgs:
     self._corner=[x1i,y1i,z1i-dbcfg.slicerange[0]]
     self._dim=[x2i-x1i,y2i-y1i,z2i-z1i ]
 
+
+  def cutoutArgs ( self, xstr, ystr, zstr, dbcfg, globalcoords=False ):
+    """Process REST arguments for a cutout request.
+       This takes the x y and z strs from a partition on '/'.
+       Each is of the form  xxx,xxx
+        Use this instead of cutoutArgs.  Eventually we want to migrate
+        all interfaces to use this."""
+
+    # Check that the arguments are well formatted
+    if not re.match ('[0-9]+,[0-9]+$', xstr) or\
+       not re.match ('[0-9]+,[0-9]+$', ystr) or\
+       not re.match ('[0-9]+,[0-9]+$', zstr):
+      raise RESTBadArgsError ( "Argument incorrectly formatted" )
+
+    z1s,z2s = zstr.split(',')
+    y1s,y2s = ystr.split(',')
+    x1s,x2s = xstr.split(',')
+
+    x1i = int(x1s)
+    x2i = int(x2s)
+    y1i = int(y1s)
+    y2i = int(y2s)
+    z1i = int(z1s)
+    z2i = int(z2s)
+
+    # Convert to local coordinates if global specified
+    if ( globalcoords ):
+      x1i = int ( float(x1i) / float( 2**(self._resolution-dbcfg.baseres)))
+      x2i = int ( float(x2i) / float( 2**(self._resolution-dbcfg.baseres)))
+      y1i = int ( float(y1i) / float( 2**(self._resolution-dbcfg.baseres)))
+      y2i = int ( float(y2i) / float( 2**(self._resolution-dbcfg.baseres)))
+
+    # Check arguments for legal values
+    if not ( dbcfg.checkCube ( self._resolution, x1i, x2i, y1i, y2i, z1i, z2i )):
+      raise RESTRangeError ( "Illegal range. Image size:" +  str(dbcfg.imageSize( self._resolution )))
+
+    self._corner=[x1i,y1i,z1i-dbcfg.slicerange[0]]
+    self._dim=[x2i-x1i,y2i-y1i,z2i-z1i ]
 
 
   #
