@@ -208,5 +208,14 @@ class AnnotateCube:
     newimage = outimage.resize ( [ydim, int(zdim*scale)] )
     newimage.save ( fileobj, "PNG" )
 
+
+  def overwrite ( self, annodata ):
+    """Get's a dense voxel region and overwrites all non-zero values"""
+
+    assert ( self.data.shape == annodata.shape )
+    # Make the first version sucky
+    self.data = annodata
+
+
 # end AnnotateCube
 

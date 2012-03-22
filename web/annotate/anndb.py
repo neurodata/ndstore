@@ -381,41 +381,30 @@ class AnnotateDB:
     xoffset = corner[0]%self.xcubedim
 
     databuffer = np.zeros ([znumcubes*self.zcubedim, ynumcubes*self.ycubedim, xnumcubes*self.xcubedim], dtype=np.uint32 )
-
     databuffer [ zoffset:zoffset+dim[2], yoffset:yoffset+dim[1], xoffset:xoffset+dim[0] ] = annodata 
 
-    import pdb; pdb.set_trace()
+    print znumcubes
 
     for z in range(znumcubes):
       for y in range(ynumcubes):
         for x in range(xnumcubes):
 
-          key = zindex.XYZMorton ([x,y,z])
+          key = zindex.XYZMorton ([x+xstart,y+ystart,z+zstart])
           cube = self.getCube ( key )
 
+          print "Iteration", x, y, z 
+          print "Key xyz", x+xstart, y+ystart, z+zstart, key
+
           if conflictopt == 'O':
-            print "Here"
-            cube.overwrite ( key, databuffer [ z*self.zcubedim:(z+1)*self.zcubedim, y*self.ycubedim:(y+1)*self.ycubedim, 
-x*self.xcubedim:(x+1)*self.xcubedim ] )
+            cube.data = np.ones ( [16,128,128], dtype=np.uint32 )
+            cube.overwrite ( databuffer [ z*self.zcubedim:(z+1)*self.zcubedim, y*self.ycubedim:(y+1)*self.ycubedim, x*self.xcubedim:(x+1)*self.xcubedim ] )
 
           else:
             print "Unsupported conflict option.  FIX ME"
             assert 0
 
-        # get a voxel offset for the cube
-        cubeoff = zindex.MortonXYZ(key)
-        offset = [ cubeoff[0]*self.cubedim[0],\
-                   cubeoff[1]*self.cubedim[1],\
-                   cubeoff[2]*self.cubedim[2] ]
-
-        # add the items
-        exceptions = cube.annotate ( entityid, offset, loclist, conflictopt )
-
-        # update the sparse list of exceptions
-        if len(exceptions) != 0:
-          self.updateExceptions ( key, entityid, exceptions )
-
-        self.putCube ( key, cube)
+          print "Putting key", key 
+          self.putCube ( key, cube)
           
           
    
