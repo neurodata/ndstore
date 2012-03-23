@@ -8,7 +8,7 @@ import urllib, urllib2
 import cStringIO
 import collections
 
-from kanno_opt import getAnnotations
+from kanno_opt2 import getAnnotations
 
 #
 #  ingest the PNG files into the database

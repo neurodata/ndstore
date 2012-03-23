@@ -392,9 +392,6 @@ class AnnotateDB:
           key = zindex.XYZMorton ([x+xstart,y+ystart,z+zstart])
           cube = self.getCube ( key )
 
-          print "Iteration", x, y, z 
-          print "Key xyz", x+xstart, y+ystart, z+zstart, key
-
           if conflictopt == 'O':
             cube.data = np.ones ( [16,128,128], dtype=np.uint32 )
             cube.overwrite ( databuffer [ z*self.zcubedim:(z+1)*self.zcubedim, y*self.ycubedim:(y+1)*self.ycubedim, x*self.xcubedim:(x+1)*self.xcubedim ] )
@@ -403,7 +400,6 @@ class AnnotateDB:
             print "Unsupported conflict option.  FIX ME"
             assert 0
 
-          print "Putting key", key 
           self.putCube ( key, cube)
           
           
