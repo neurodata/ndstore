@@ -20,10 +20,10 @@ _xtiles = 2
 _ytiles = 2
 _xtilesz = 8192
 _ytilesz = 8192
-_startslice = 824
-_endslice = 824  
+_startslice = 1101
+_endslice = 1101  
 _prefix = 'fullresseg22312_s'
-_batchsz = 4 
+_batchsz = 8 
 
 
 def main():
@@ -47,19 +47,15 @@ def main():
         imgdata = np.asarray ( tileimage )
 
         # turn the triple vector 3-channel inton one int
-#        vecfunc_merge = np.vectorize(lambda a,b,c: (a << 16) + (b << 8) + c, otypes=[np.uint32])
+        vecfunc_merge = np.vectorize(lambda a,b,c: (a << 16) + (b << 8) + c, otypes=[np.uint32])
         #  merge the data 
-#        newdata = vecfunc_merge(imgdata[:,:,0], imgdata[:,:,1], imgdata[:,:,2])
-        print imgdata[5351,2288,:]
-        sys.exit(-1)
+        newdata = vecfunc_merge(imgdata[:,:,0], imgdata[:,:,1], imgdata[:,:,2])
 
         # call a Cython accelerator to get voxels
         voxels = getAnnotations ( newdata )
 
         # write the voxles in quetion
         for v in voxels:
-          if v[0] > 300:
-             print v[0]
           voxellists [ str(v[0]) ].append ( [ v[1]+x*_xtilesz, v[2]+y*_ytilesz, sl+1 ] )
 
 
@@ -67,11 +63,7 @@ def main():
     if (sl+1) % _batchsz == 0:
       for key, voxlist in voxellists.iteritems():
         
-<<<<<<< HEAD
         url = 'http://0.0.0.0:8080/annotate/%s/npadd/%s/' % (result.token,key)
-=======
-        url = 'http://openconnecto.me/~randal/cutout/annotate/%s/npadd/%s/' % (result.token,key)
->>>>>>> cad6d1d6cce648f26679c33da41480292b367651
         print url
         fileobj = cStringIO.StringIO ()
         np.save ( fileobj, voxlist )
@@ -84,19 +76,9 @@ def main():
       # Clear the voxel list -- old one gets garbage collected
       voxellists = collections.defaultdict(list)
 
-<<<<<<< Updated upstream
-=======
-
-  sys.exit(-1)
-
->>>>>>> Stashed changes
   for key, voxlist in voxellists.iteritems():
     
-<<<<<<< HEAD
     url = 'http://0.0.0.0:8080/annotate/%s/npadd/%s/' % (result.token,key)
-=======
-    url = 'http://openconnecto.me/~randal/cutout/annotate/%s/npadd/%s/' % (result.token,key)
->>>>>>> cad6d1d6cce648f26679c33da41480292b367651
     print url
     fileobj = cStringIO.StringIO ()
     np.save ( fileobj, voxlist )

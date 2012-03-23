@@ -160,5 +160,6 @@ class AnnotateProjectsDB:
       raise AnnoProjException ( "Failed to create database for nww project" )
 
     self.conn.commit()
+    newconn.commit()
 
 
