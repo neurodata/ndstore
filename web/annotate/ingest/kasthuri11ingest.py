@@ -47,11 +47,9 @@ def main():
         imgdata = np.asarray ( tileimage )
 
         # turn the triple vector 3-channel inton one int
-#        vecfunc_merge = np.vectorize(lambda a,b,c: (a << 16) + (b << 8) + c, otypes=[np.uint32])
+        vecfunc_merge = np.vectorize(lambda a,b,c: (a << 16) + (b << 8) + c, otypes=[np.uint32])
         #  merge the data 
-#        newdata = vecfunc_merge(imgdata[:,:,0], imgdata[:,:,1], imgdata[:,:,2])
-        print imgdata[5351,2288,:]
-        sys.exit(-1)
+        newdata = vecfunc_merge(imgdata[:,:,0], imgdata[:,:,1], imgdata[:,:,2])
 
         # call a Cython accelerator to get voxels
         voxels = getAnnotations ( newdata )
