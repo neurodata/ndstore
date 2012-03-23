@@ -289,6 +289,8 @@ def selectPost ( webargs, dbcfg, annoproj ):
 
     try:
 
+#      import pdb; pdb.set_trace()
+
       # Process the arguments
       args = restargs.BrainRestArgs ();
       args.setResolution ( annoproj.getResolution() )
