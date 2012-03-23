@@ -9,8 +9,6 @@ import cStringIO
 import collections
 import zlib
 
-from kanno_opt import transferAnnotations
-
 #
 #  ingest the PNG files into the database
 #
@@ -21,8 +19,8 @@ _xtiles = 2
 _ytiles = 2
 _xtilesz = 8192
 _ytilesz = 8192
-_startslice = 13
-_endslice = 14 
+_startslice = 864
+_endslice = 865 
 _prefix = 'fullresseg22312_s'
 _batchsz = 2 
 
@@ -43,7 +41,7 @@ def main():
         for b in range ( _batchsz ):
           if ( sl + b <= _endslice ):
 
-            filenm = result.path + '/' + _prefix + '{:0>4}'.format(sl) + '_Y' + str(y) + '_X' + str(x) + '.png'
+            filenm = result.path + '/' + _prefix + '{:0>4}'.format(sl+b) + '_Y' + str(y) + '_X' + str(x) + '.png'
             print filenm
             tileimage = Image.open ( filenm, 'r' )
             imgdata = np.asarray ( tileimage )
@@ -61,7 +59,7 @@ def main():
         xlow = x*_xtilesz
         xhigh = min((x+1)*_xtilesz, 10752)
 
-        url = 'http://0.0.0.0:8080/annotate/%s/npdense/add/%s,%s/%s,%s/%s,%s/' % ( result.token, xlow, xhigh, ylow, yhigh, zlow, zhigh )
+        url = 'http://openconnecto.me/~randal/cutout/annotate/%s/npdense/add/%s,%s/%s,%s/%s,%s/' % ( result.token, xlow, xhigh, ylow, yhigh, zlow, zhigh )
 
         print url
 
