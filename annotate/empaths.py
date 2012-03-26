@@ -4,7 +4,7 @@
 
 import os, sys
 
-EM_BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "/Users/randal/Sites/EM-connectome/web" ))
+EM_BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "/home/randal/EM-connectome/web" ))
 EM_UTIL_PATH = os.path.join(EM_BASE_PATH, "util" )
 EM_CUTOUT_PATH = os.path.join(EM_BASE_PATH, "cutout" )
 EM_ANNOTATE_PATH = os.path.join(EM_BASE_PATH, "annotate" )
