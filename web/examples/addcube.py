@@ -32,7 +32,7 @@ def main():
       for i in range (result.xlow,result.xhigh):
         voxlist.append ( [ i,j,k ] )
 
-  url = 'http://0.0.0.0:8080/annotate/%s/npnew/overwrite/' % ( result.token )
+  url = 'http://127.0.0.1:8000/annotate/%s/npvoxels/new/' % ( result.token )
 
   # Encode the voxelist an pickle
   fileobj = cStringIO.StringIO ()

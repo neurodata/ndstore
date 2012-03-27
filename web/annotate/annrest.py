@@ -4,7 +4,6 @@ import StringIO
 import tempfile
 import numpy as np
 import zlib
-import web
 import h5py
 import os
 import cStringIO
@@ -48,25 +47,16 @@ def cutout ( imageargs, dbcfg, annoproj ):
 def numpyZip ( imageargs, dbcfg, annoproj ):
   """Return a web readable Numpy Pickle zipped"""
 
-  try:
-    cube = cutout ( imageargs, dbcfg, annoproj )
-  except restargs.RESTRangeError:
-    return web.notfound()
-  except restargs.RESTBadArgsError:
-    return web.badrequest()
+  cube = cutout ( imageargs, dbcfg, annoproj )
 
-  try:
-    # Create the compressed cube
-    fileobj = StringIO.StringIO ()
-    np.save ( fileobj, cube.data )
-    cdz = zlib.compress (fileobj.getvalue()) 
-  except:
-    return web.notfound()
+  # Create the compressed cube
+  fileobj = StringIO.StringIO ()
+  np.save ( fileobj, cube.data )
+  cdz = zlib.compress (fileobj.getvalue()) 
 
   # Package the object as a Web readable file handle
   fileobj = StringIO.StringIO ( cdz )
   fileobj.seek(0)
-  web.header('Content-type', 'application/zip') 
   return fileobj.read()
 
 
@@ -76,12 +66,7 @@ def numpyZip ( imageargs, dbcfg, annoproj ):
 def HDF5 ( imageargs, dbcfg, annoproj ):
   """Return a web readable HDF5 file"""
 
-  try:
-    cube = cutout ( imageargs, dbcfg, annoproj )
-  except restargs.RESTRangeError:
-    return web.notfound()
-  except restargs.RESTBadArgsError:
-    return web.badrequest()
+  cube = cutout ( imageargs, dbcfg, annoproj )
 
   # Create an in-memory HDF5 file
   tmpfile = tempfile.NamedTemporaryFile ()
@@ -111,17 +96,11 @@ def xyImage ( imageargs, dbcfg, annoproj ):
   dim = args.getDim()
   resolution = args.getResolution()
 
-#RBRM reinstate try/catch block
-#  try:
   annodb = anndb.AnnotateDB ( dbcfg, annoproj )
   cb = annodb.cutout ( corner, dim, resolution )
   fileobj = StringIO.StringIO ( )
   cb.xySlice ( fileobj )
-#  except:
-#    print "Exception"
-#    return web.notfound()
 
-  web.header('Content-type', 'image/png') 
   fileobj.seek(0)
   return fileobj.read()
 
@@ -138,17 +117,11 @@ def xzImage ( imageargs, dbcfg, annoproj ):
   dim = args.getDim()
   resolution = args.getResolution()
 
-#RBRM reinstate try/catch block
-#  try:
   annodb = anndb.AnnotateDB ( dbcfg, annoproj )
   cb = annodb.cutout ( corner, dim, resolution )
   fileobj = StringIO.StringIO ( )
   cb.xzSlice ( dbcfg.zscale[annoproj.getResolution()], fileobj )
-#  except:
-#    print "Exception"
-#    return web.notfound()
 
-  web.header('Content-type', 'image/png') 
   fileobj.seek(0)
   return fileobj.read()
 
@@ -165,17 +138,11 @@ def yzImage ( imageargs, dbcfg, annoproj ):
   dim = args.getDim()
   resolution = args.getResolution()
 
-#RBRM reinstate try/catch block
-#  try:
   annodb = anndb.AnnotateDB ( dbcfg, annoproj )
   cb = annodb.cutout ( corner, dim, resolution )
   fileobj = StringIO.StringIO ( )
   cb.yzSlice ( dbcfg.zscale[annoproj.getResolution()], fileobj )
-#  except:
-#    print "Exception"
-#    return web.notfound()
 
-  web.header('Content-type', 'image/png') 
   fileobj.seek(0)
   return fileobj.read()
   
@@ -225,7 +192,7 @@ def selectService ( webargs, dbcfg, annoproj ):
     return annId ( rangeargs, dbcfg, annoproj )
 
   else:
-    return web.badrequest()
+    raise restargs.RESTBadArgsError ("No such service: %s" % service )
 
 
 #
@@ -235,7 +202,7 @@ def selectService ( webargs, dbcfg, annoproj ):
 #  appropriate function.  At this point, we have a 
 #  data set and a service.
 #
-def selectPost ( webargs, dbcfg, annoproj ):
+def selectPost ( webargs, dbcfg, annoproj, postdata ):
   """Parse the first arg and call the right post service"""
 
   [ service, sym, postargs ] = webargs.partition ('/')
@@ -251,8 +218,10 @@ def selectPost ( webargs, dbcfg, annoproj ):
 
     try:
       # Grab the voxel list
-      fileobj = cStringIO.StringIO ( web.data() )
+      fileobj = cStringIO.StringIO ( postdata )
       voxlist = np.load ( fileobj )
+
+      raise Exception ( "voxlist length %s" % voxlist.len )
 
       # Make the annotation to the database
       annoDB = anndb.AnnotateDB ( dbcfg, annoproj )
@@ -300,7 +269,7 @@ def selectPost ( webargs, dbcfg, annoproj ):
       dim = args.getDim()
 
       # get the data out of the compressed blob
-      rawdata = zlib.decompress ( web.data() )
+      rawdata = zlib.decompress ( postdata )
       fileobj = StringIO.StringIO ( rawdata )
       voxarray = np.load ( fileobj )
 
@@ -335,7 +304,7 @@ def selectPost ( webargs, dbcfg, annoproj ):
 
   #try:
     # Grab the cube data
-    fileobj = cStringIO.StringIO ( web.data() )
+    fileobj = cStringIO.StringIO ( postdata )
     tmpfile = tempfile.NamedTemporaryFile ( )
     tmpfile.write ( fileobj.read() )
     print tmpfile.tell()
@@ -398,7 +367,7 @@ def annoget ( webargs ):
   return selectService ( rangeargs, dbcfg, annoproj )
 
 
-def annopost ( webargs ):
+def annopost ( webargs, postdata ):
   """Interface to the annotation write service 
       Load the annotation project and invoke the appropriate
       dataset."""
@@ -407,6 +376,6 @@ def annopost ( webargs ):
   annprojdb = annproj.AnnotateProjectsDB()
   annoproj = annprojdb.getAnnoProj ( token )
   dbcfg = switchDataset ( annoproj )
-  return selectPost ( rangeargs, dbcfg, annoproj )
+  return selectPost ( rangeargs, dbcfg, annoproj, postdata )
 
 
