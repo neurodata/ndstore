@@ -216,39 +216,32 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
     # which type of voxel post is it
     [ verb, sym, serviceargs ] = postargs.partition ('/')
 
-    try:
-      # Grab the voxel list
-      fileobj = cStringIO.StringIO ( postdata )
-      voxlist = np.load ( fileobj )
+    # Grab the voxel list
+    fileobj = cStringIO.StringIO ( postdata )
+    voxlist = np.load ( fileobj )
 
-      raise Exception ( "voxlist length %s" % voxlist.len )
+    # Make the annotation to the database
+    annoDB = anndb.AnnotateDB ( dbcfg, annoproj )
 
-      # Make the annotation to the database
-      annoDB = anndb.AnnotateDB ( dbcfg, annoproj )
+    # Choose the verb, get the entity (as needed), and annotate
+    if verb == 'add':
 
-      # Choose the verb, get the entity (as needed), and annotate
-      if verb == 'add':
+      [ entity, sym, conflictargs ] = serviceargs.partition ('/')
+      conflictopt = restargs.conflictOption ( conflictargs )
+      entityid = annoDB.addEntity ( int(entity), voxlist, conflictopt )
 
-        [ entity, sym, conflictargs ] = serviceargs.partition ('/')
-        conflictopt = restargs.conflictOption ( conflictargs )
-        entityid = annoDB.addEntity ( int(entity), voxlist, conflictopt )
+    elif verb == 'extend':
 
-      elif verb == 'extend':
+      [ entity, sym, conflictargs ] = serviceargs.partition ('/')
+      conflictopt = restargs.conflictOption ( conflictargs )
+      entityid = annoDB.extendEntity ( int(entity), voxlist, conflictopt )
 
-        [ entity, sym, conflictargs ] = serviceargs.partition ('/')
-        conflictopt = restargs.conflictOption ( conflictargs )
-        entityid = annoDB.extendEntity ( int(entity), voxlist, conflictopt )
+    elif verb == 'new':
+      conflictopt = restargs.conflictOption ( serviceargs )
+      entityid = annoDB.newEntity ( voxlist, conflictopt )
 
-      elif verb == 'new':
-        conflictopt = restargs.conflictOption ( serviceargs )
-        entityid = annoDB.newEntity ( voxlist, conflictopt )
-
-      else: 
-        print "Didn't recognize verb"
-        return web.BadRequest()
-
-    except:
-      return web.BadRequest()  
+    else: 
+      raise restargs.RESTBadArgsError ("No such verb: %s" % verb )
 
     return str(entityid)
 
@@ -256,43 +249,35 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
 
     [ verb, xstr, ystr, zstr, conflictarg ] = postargs.split ('/', 4)
 
-    try:
+    # Process the arguments
+    args = restargs.BrainRestArgs ();
+    args.setResolution ( annoproj.getResolution() )
+    args.cutoutArgs ( xstr, ystr, zstr, dbcfg )
 
-#      import pdb; pdb.set_trace()
+    corner = args.getCorner()
+    dim = args.getDim()
 
-      # Process the arguments
-      args = restargs.BrainRestArgs ();
-      args.setResolution ( annoproj.getResolution() )
-      args.cutoutArgs ( xstr, ystr, zstr, dbcfg )
+    # get the data out of the compressed blob
+    rawdata = zlib.decompress ( postdata )
+    fileobj = StringIO.StringIO ( rawdata )
+    voxarray = np.load ( fileobj )
 
-      corner = args.getCorner()
-      dim = args.getDim()
+    # Get the annotation database
+    annoDB = anndb.AnnotateDB ( dbcfg, annoproj )
 
-      # get the data out of the compressed blob
-      rawdata = zlib.decompress ( postdata )
-      fileobj = StringIO.StringIO ( rawdata )
-      voxarray = np.load ( fileobj )
+    # Choose the verb, get the entity (as needed), and annotate
+    # Translates the values directly
+    if verb == 'add':
+      conflictopt = restargs.conflictOption ( conflictarg )
+      entityid = annoDB.addEntityDense ( corner, dim, voxarray, conflictopt )
 
-      # Get the annotation database
-      annoDB = anndb.AnnotateDB ( dbcfg, annoproj )
+    # renumbers the annotations
+    elif verb == 'new':
+      conflictopt = restargs.conflictOption ( serviceargs )
+      entityid = annoDB.newEntityDense ( voxarray, conflictopt )
 
-      # Choose the verb, get the entity (as needed), and annotate
-      # Translates the values directly
-      if verb == 'add':
-        conflictopt = restargs.conflictOption ( conflictarg )
-        entityid = annoDB.addEntityDense ( corner, dim, voxarray, conflictopt )
-
-      # renumbers the annotations
-      elif verb == 'new':
-        conflictopt = restargs.conflictOption ( serviceargs )
-        entityid = annoDB.newEntityDense ( voxarray, conflictopt )
-
-      else: 
-        print "Didn't recognize verb"
-        return web.BadRequest()
-
-    except:
-      return web.BadRequest()  
+    else: 
+      raise restargs.RESTBadArgsError ("No such verb: %s" % verb )
 
     return str(entityid)
 
@@ -330,9 +315,8 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
     return "No csv format specified yet"
 
   else:
-    return web.notfound()
-
-
+    raise restargs.RESTBadArgsError ("No such service: %s" % service )
+    
 
 def switchDataset ( annoproj ):
   """Load the appropriate dbconfig project based on the dataset name"""
@@ -348,7 +332,7 @@ def switchDataset ( annoproj ):
     import dbconfigkasthuri11
     return dbconfigkasthuri11.dbConfigKasthuri11()
   else:
-    return web.badrequest()
+    raise restargs.RESTBadArgsError ("Could not find dataset = %s" % annoproj.getDataSet() )
 
 #
 #  Interface to annotation by project.

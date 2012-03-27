@@ -10,6 +10,7 @@ import sys
 def main():
 
   parser = argparse.ArgumentParser(description='Cutout a portion of the database.')
+  parser.add_argument('token', action="store")
   parser.add_argument('xlow', action="store", type=int )
   parser.add_argument('xhigh', action="store", type=int)
   parser.add_argument('ylow', action="store", type=int)
@@ -19,8 +20,7 @@ def main():
 
   result = parser.parse_args()
 
-  #RBTODO annotate resolution
-  url = 'http://0.0.0.0:8080/hayworth5nm/npz/3/' +\
+  url = 'http://127.0.0.1:8000/cutout/hayworth5nm/npz/3/' +\
             str(result.xlow) + "," + str(result.xhigh) + "/" +\
             str(result.ylow) + "," + str(result.yhigh) + "/" +\
             str(result.zlow) + "," + str(result.zhigh) + "/"\
@@ -33,10 +33,7 @@ def main():
   zoffset = result.zlow
 
   # Get cube in question
-  try:
-    f = urllib2.urlopen ( url )
-  except urllib2.URLError:
-    assert 0
+  f = urllib2.urlopen ( url )
 
   zdata = f.read ()
 
@@ -56,7 +53,9 @@ def main():
                          it.multi_index[0]+zoffset ] )
     it.iternext()
 
-  url = 'http://0.0.0.0:8080/annotate/hanno/npvoxels/new/'
+  url = 'http://127.0.0.1:8000/annotate/%s/npvoxels/new/' % result.token
+
+  print url
 
   # Encode the voxelist an pickle
   fileobj = cStringIO.StringIO ()
@@ -68,7 +67,6 @@ def main():
   the_page = response.read()
 
   print the_page
-
 
 if __name__ == "__main__":
       main()

@@ -33,6 +33,8 @@ def main():
         voxlist.append ( [ i,j,k ] )
 
   url = 'http://127.0.0.1:8000/annotate/%s/npvoxels/new/' % ( result.token )
+  
+  print url
 
   # Encode the voxelist an pickle
   fileobj = cStringIO.StringIO ()
@@ -44,7 +46,6 @@ def main():
   the_page = response.read()
 
   print the_page
-
 
 if __name__ == "__main__":
   main()
