@@ -10,6 +10,8 @@ def index(request):
 def annoget (request, webargs):
   """Restful URL for all read services to annotation projects"""
 
+  import pdb; pdb.set_trace()
+
 # mimetype mg/png downloads the file.  image/png inlines the file.
   [ token , sym, cutoutargs ] = webargs.partition ('/')
   [ service, sym, rest ] = cutoutargs.partition ('/')
@@ -23,4 +25,6 @@ def annoget (request, webargs):
   else:
     return HttpResponseBadRequest ("Could not find service %s" % dataset )
 
+def post_test ( request ):
+  return HttpResponse("<html> Post test </html>")
 

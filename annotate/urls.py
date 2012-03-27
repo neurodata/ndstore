@@ -7,5 +7,6 @@ admin.autodiscover()
 urlpatterns = patterns('annotate.views',
   url(r'^$', 'index'),
   url(r'(?P<webargs>^\w+/(xy|xz|yz|hdf5|npz)/[\d,/]+)$', 'annoget'),
+  url(r'^post/$', 'post_test'),
   url(r'^admin/', include(admin.site.urls)),
 )
