@@ -27,7 +27,7 @@ def main():
 
   anndata = np.ones ( [ result.zhigh-result.zlow, result.yhigh-result.ylow, result.xhigh-result.xlow ] )
 
-  url = 'http://0.0.0.0:8080/annotate/%s/npdense/add/%s,%s/%s,%s/%s,%s/' % ( result.token, result.xlow, result.xhigh, result.ylow, result.yhigh, result.zlow, result.zhigh )
+  url = 'http://127.0.0.1:8000/annotate/%s/npdense/add/%s,%s/%s,%s/%s,%s/' % ( result.token, result.xlow, result.xhigh, result.ylow, result.yhigh, result.zlow, result.zhigh )
   print url
 
   # Encode the voxelist an pickle
