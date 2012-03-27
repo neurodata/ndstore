@@ -26,9 +26,9 @@ def annoget (request, webargs):
 def annopost (request, webargs):
   """Restful URL for all write/post services to annotation projects"""
 
-  import pdb; pdb.set_trace()
-  # All handling fone in annrest
-  return HttpResponse(annrest.annopost(webargs,request.raw_post_data))
+  # All handling done by annrest
+  return HttpResponse(annrest.annopost(webargs,request.body))
 
-
+def post_test ( request ):
+  return HttpResponse("<html> Post test </html>")
 
