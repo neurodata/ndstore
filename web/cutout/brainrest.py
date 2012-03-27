@@ -9,7 +9,6 @@ import StringIO
 import tempfile
 import numpy as np
 import zlib
-import web
 import h5py
 import os
 
@@ -53,25 +52,16 @@ def cutout ( webargs, dbcfg ):
 def numpyZip ( webargs, dbcfg ):
   """Return a web readable Numpy Pickle zipped"""
 
-  try:
-    cube = cutout ( webargs, dbcfg )
-  except restargs.RESTRangeError:
-    return web.notfound()
-  except restargs.RESTBadArgsError:
-    return web.badrequest()
+  cube = cutout ( webargs, dbcfg )
 
-  try:
-    # Create the compressed cube
-    fileobj = StringIO.StringIO ()
-    np.save ( fileobj, cube.data )
-    cdz = zlib.compress (fileobj.getvalue()) 
-  except:
-    return web.notfound()
+  # Create the compressed cube
+  fileobj = StringIO.StringIO ()
+  np.save ( fileobj, cube.data )
+  cdz = zlib.compress (fileobj.getvalue()) 
 
   # Package the object as a Web readable file handle
   fileobj = StringIO.StringIO ( cdz )
   fileobj.seek(0)
-  web.header('Content-type', 'application/zip') 
   return fileobj.read()
 
 
@@ -81,12 +71,7 @@ def numpyZip ( webargs, dbcfg ):
 def HDF5 ( webargs, dbcfg ):
   """Return a web readable HDF5 file"""
 
-  try:
-    cube = cutout ( webargs, dbcfg )
-  except restargs.RESTRangeError:
-    return web.notfound()
-  except restargs.RESTBadArgsError:
-    return web.badrequest()
+  cube = cutout ( webargs, dbcfg )
 
   # Create an in-memory HDF5 file
   tmpfile = tempfile.NamedTemporaryFile ()
@@ -116,15 +101,11 @@ def xyImage ( webargs, dbcfg ):
   dim = args.getDim()
   resolution = args.getResolution()
 
-  try:
-    cdb = cubedb.CubeDB ( dbcfg )
-    cb = cdb.cutout ( corner, dim, resolution )
-    fileobj = StringIO.StringIO ( )
-    cb.xySlice ( fileobj )
-  except:
-    return web.notfound()
+  cdb = cubedb.CubeDB ( dbcfg )
+  cb = cdb.cutout ( corner, dim, resolution )
+  fileobj = StringIO.StringIO ( )
+  cb.xySlice ( fileobj )
 
-  web.header('Content-type', 'image/png') 
   fileobj.seek(0)
   return fileobj.read()
   
@@ -141,15 +122,11 @@ def xzImage ( webargs, dbcfg ):
   dim = args.getDim()
   resolution = args.getResolution()
 
-  try:
-    cdb = cubedb.CubeDB ( dbcfg )
-    cb = cdb.cutout ( corner, dim, resolution )
-    fileobj = StringIO.StringIO ( )
-    cb.xzSlice ( dbcfg.zscale[resolution], fileobj )
-  except:
-    return web.notfound()
+  cdb = cubedb.CubeDB ( dbcfg )
+  cb = cdb.cutout ( corner, dim, resolution )
+  fileobj = StringIO.StringIO ( )
+  cb.xzSlice ( dbcfg.zscale[resolution], fileobj )
 
-  web.header('Content-type', 'image/png') 
   fileobj.seek(0)
   return fileobj.read()
   
@@ -167,15 +144,11 @@ def yzImage ( webargs, dbcfg ):
   dim = args.getDim()
   resolution = args.getResolution()
 
-  try:
-    cdb = cubedb.CubeDB ( dbcfg )
-    cb = cdb.cutout ( corner, dim, resolution )
-    fileobj = StringIO.StringIO ( )
-    cb.yzSlice ( dbcfg.zscale[resolution], fileobj )
-  except:
-    return web.notfound()
+  cdb = cubedb.CubeDB ( dbcfg )
+  cb = cdb.cutout ( corner, dim, resolution )
+  fileobj = StringIO.StringIO ( )
+  cb.yzSlice ( dbcfg.zscale[resolution], fileobj )
 
-  web.header('Content-type', 'image/png') 
   fileobj.seek(0)
   return fileobj.read()
 
@@ -207,7 +180,7 @@ def selectService ( webargs, dbcfg ):
     return  numpyZip ( cutoutargs, dbcfg )
 
   else:
-    return web.notfound()
+    raise restargs.RESTBadArgsError ("No such service: %s" % service )
 
 #
 #  Choose the appropriate data set.

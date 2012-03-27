@@ -5,7 +5,6 @@
 
 import sys
 import re
-import web
 import os
 
 import dbconfig
@@ -103,7 +102,7 @@ class BrainRestArgs:
     if not re.match ('[0-9]+,[0-9]+$', xdimstr) or\
        not re.match ('[0-9]+,[0-9]+$', ydimstr) or\
        not re.match ('[0-9]+,[0-9]+$', zdimstr):
-      raise RESTBadArgsError ( "Argument incorrectly formatted" )
+      raise RESTBadArgsError ("Non-numeric range argument" % rangeargs)
 
     z1s,z2s = zdimstr.split(',')
     y1s,y2s = ydimstr.split(',')
@@ -142,7 +141,7 @@ class BrainRestArgs:
     if not re.match ('[0-9]+,[0-9]+$', xstr) or\
        not re.match ('[0-9]+,[0-9]+$', ystr) or\
        not re.match ('[0-9]+,[0-9]+$', zstr):
-      raise RESTBadArgsError ( "Argument incorrectly formatted" )
+      raise RESTBadArgsError ("Non-numeric range argument" % rangeargs)
 
     z1s,z2s = zstr.split(',')
     y1s,y2s = ystr.split(',')
@@ -189,14 +188,14 @@ class BrainRestArgs:
       [ xdimstr, ydimstr, zstr, rest, other ]  = rangeargs
       globalcoords = True
     else:
-      return web.badrequest()
+      raise RESTBadArgsError ("Wrong number of arguments for xyArgs %s" % rangeargs)
 
     # expecting an argument of the form /resolution/x1,x2/y1,y2/z/
     # Check that the arguments are well formatted
     if not re.match ('[0-9]+,[0-9]+$', xdimstr) or\
        not re.match ('[0-9]+,[0-9]+$', ydimstr) or\
        not re.match ('[0-9]+$', zstr):
-      return web.badrequest()
+      raise RESTBadArgsError ("Non-numeric range argument" % rangeargs)
 
     x1s,x2s = xdimstr.split(',')
     y1s,y2s = ydimstr.split(',')
@@ -216,7 +215,7 @@ class BrainRestArgs:
 
     # Check arguments for legal values
     if not ( dbcfg.checkCube ( self._resolution, x1i, x2i, y1i, y2i, z, z )):
-      return web.notfound()
+      raise RESTBadArgsError ("Range exceeds data boundaries" % rangeargs)
 
     self._corner=[x1i,y1i,z-dbcfg.slicerange[0]]
     self._dim=[x2i-x1i,y2i-y1i,1]
@@ -238,14 +237,14 @@ class BrainRestArgs:
       [ xdimstr, ystr, zdimstr, rest, other ]  = rangeargs
       globalcoords = True
     else:
-      return web.badrequest()
+      raise RESTBadArgsError ("Wrong number of arguments for xzArgs %s" % rangeargs)
 
     # expecting an argument of the form /resolution/x1,x2/y1,y2/z/
     # Check that the arguments are well formatted
     if not re.match ('[0-9]+,[0-9]+$', xdimstr) or\
        not re.match ('[0-9]+$', ystr) or\
        not re.match ('[0-9]+,[0-9]+$', zdimstr):
-      return web.badrequest()
+      raise RESTBadArgsError ("Non-numeric range argument" % rangeargs)
 
     x1s,x2s = xdimstr.split(',')
     z1s,z2s = zdimstr.split(',')
@@ -265,7 +264,7 @@ class BrainRestArgs:
     # Check arguments for legal values
     if not dbcfg.checkCube ( self._resolution, x1i, x2i, y, y, z1i, z2i )\
        or y >= dbcfg.imagesz[self._resolution][1]:
-      return web.notfound()
+      raise RESTBadArgsError ("Range exceeds data boundaries" % rangeargs)
 
     self._corner=[x1i,y,z1i-dbcfg.slicerange[0]]
     self._dim=[x2i-x1i,1,z2i-z1i ]
@@ -286,14 +285,14 @@ class BrainRestArgs:
       [ xstr, ydimstr, zdimstr, rest, other ]  = rangeargs
       globalcoords = True
     else:
-      return web.badrequest()
+      raise RESTBadArgsError ("Wrong number of arguments for yzArgs %s" % rangeargs)
 
     # expecting an argument of the form /resolution/x/y1,y2/z1,z2/
     # Check that the arguments are well formatted
     if not re.match ('[0-9]+$', xstr) or\
        not re.match ('[0-9]+,[0-9]+$', ydimstr) or\
        not re.match ('[0-9]+,[0-9]+$', zdimstr):
-      return web.badrequest()
+      raise RESTBadArgsError ("Non-numeric range argument" % rangeargs)
 
     y1s,y2s = ydimstr.split(',')
     z1s,z2s = zdimstr.split(',')
@@ -315,7 +314,7 @@ class BrainRestArgs:
     # Check arguments for legal values
     if not dbcfg.checkCube ( self._resolution, x, x, y1i, y2i, z1i, z2i  )\
        or  x >= dbcfg.imagesz[self._resolution][0]:
-      return web.notfound()
+      raise RESTBadArgsError ("Range exceeds data boundaries" % rangeargs)
 
     self._corner=[x,y1i,z1i-dbcfg.slicerange[0]]
     self._dim=[1,y2i-y1i,z2i-z1i ]
@@ -335,14 +334,14 @@ def voxel ( imageargs, dbcfg, resolution ):
   if len ( rangeargs ) == 4:
     [ xstr, ystr, zstr, rest ]  = rangeargs
   else:
-    return web.badrequest()
+    raise RESTBadArgsError ("Wrong number of arguments for voxel %s" % rangeargs)
 
   # expecting an argument of the form /resolution/x/y1,y2/z1,z2/
   # Check that the arguments are well formatted
   if not re.match ('[0-9]+$', xstr) or\
      not re.match ('[0-9]+$', ystr) or\
      not re.match ('[0-9]+$', zstr):
-    return web.badrequest()
+    raise RESTBadArgsError ("Non-numeric range argument" % rangeargs)
 
   x = int(xstr)
   y = int(ystr)
