@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpRequest
 
 import empaths
 import zindex
@@ -22,5 +22,13 @@ def annoget (request, webargs):
     return HttpResponse(annrest.annoget(webargs), mimetype="produc/npz" )
   else:
     return HttpResponseBadRequest ("Could not find service %s" % dataset )
+
+def annopost (request, webargs):
+  """Restful URL for all write/post services to annotation projects"""
+
+  import pdb; pdb.set_trace()
+  # All handling fone in annrest
+  return HttpResponse(annrest.annopost(webargs,request.raw_post_data))
+
 
 
