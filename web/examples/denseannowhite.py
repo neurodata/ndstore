@@ -21,7 +21,7 @@ def main():
   result = parser.parse_args()
 
   #RBTODO annotate resolution
-  url = 'http://127.0.0.1:8000/cutout/hayworth5nm/npz/3/' +\
+  url = 'http://127.0.0.1/EM/cutout/hayworth5nm/npz/3/' +\
             str(result.xlow) + "," + str(result.xhigh) + "/" +\
             str(result.ylow) + "," + str(result.yhigh) + "/" +\
             str(result.zlow) + "," + str(result.zhigh) + "/"\
@@ -50,7 +50,7 @@ def main():
   vec_func = np.vectorize ( lambda x: 0 if x < 160 else 125 ) 
   annodata = vec_func ( cube )
 
-  url = 'http://127.0.0.1:8000/annotate/%s/npdense/add/%s,%s/%s,%s/%s,%s/' % ( result.token, result.xlow, result.xhigh, result.ylow, result.yhigh, result.zlow, result.zhigh ) 
+  url = 'http://127.0.0.1/EM/annotate/%s/npdense/add/%s,%s/%s,%s/%s,%s/' % ( result.token, result.xlow, result.xhigh, result.ylow, result.yhigh, result.zlow, result.zhigh ) 
 
   # Encode the voxelist an pickle
   fileobj = cStringIO.StringIO ()
