@@ -8,6 +8,8 @@ import empaths
 import dbconfig
 import zindex
 
+#from anncube_cy import annotate_cy
+
 #TODO cython this thing up
 
 #
@@ -94,8 +96,10 @@ class AnnotateCube:
   def annotate ( self, annid, offset, locations, conflictopt ):
     """Add annotation by a list of locations"""
 
-  #  For now first label for a voxel wins
+    return annotate_cy ( self.data, annid, offset, locations, conflictopt )
 
+    raise Exception("Shouldn't have gotten here")
+    #  For now first label for a voxel wins
     exceptions = []
 
     # xyz coordinates get stored as zyx to be more

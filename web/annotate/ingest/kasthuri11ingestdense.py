@@ -19,10 +19,10 @@ _xtiles = 2
 _ytiles = 2
 _xtilesz = 8192
 _ytilesz = 8192
-_startslice = 864
-_endslice = 865 
+_startslice = 0
+_endslice = 8 
 _prefix = 'fullresseg22312_s'
-_batchsz = 2 
+_batchsz = 4 
 
 
 def main():
@@ -59,7 +59,7 @@ def main():
         xlow = x*_xtilesz
         xhigh = min((x+1)*_xtilesz, 10752)
 
-        url = 'http://openconnecto.me/~randal/cutout/annotate/%s/npdense/add/%s,%s/%s,%s/%s,%s/' % ( result.token, xlow, xhigh, ylow, yhigh, zlow, zhigh )
+        url = 'http://127.0.0.1/EM/annotate/%s/npdense/add/%s,%s/%s,%s/%s,%s/' % ( result.token, xlow, xhigh, ylow, yhigh, zlow, zhigh )
 
         print url
 
