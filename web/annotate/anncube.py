@@ -96,6 +96,7 @@ class AnnotateCube:
   def annotate ( self, annid, offset, locations, conflictopt ):
     """Add annotation by a list of locations"""
 
+# double check this code
     return annotate_cy ( self.data, annid, offset, locations, conflictopt )
 
     raise Exception("Shouldn't have gotten here")
@@ -217,9 +218,8 @@ class AnnotateCube:
     """Get's a dense voxel region and overwrites all non-zero values"""
 
     assert ( self.data.shape == annodata.shape )
-    # Make the first version sucky
-    self.data = annodata
-
+    vector_func = np.vectorize ( lambda a,b: b if b!=0 else a ) 
+    self.data = vector_func ( self.data, annodata ) 
 
 # end AnnotateCube
 

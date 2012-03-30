@@ -383,8 +383,6 @@ class AnnotateDB:
     databuffer = np.zeros ([znumcubes*self.zcubedim, ynumcubes*self.ycubedim, xnumcubes*self.xcubedim], dtype=np.uint32 )
     databuffer [ zoffset:zoffset+dim[2], yoffset:yoffset+dim[1], xoffset:xoffset+dim[0] ] = annodata 
 
-    print znumcubes
-
     for z in range(znumcubes):
       for y in range(ynumcubes):
         for x in range(xnumcubes):
@@ -393,9 +391,7 @@ class AnnotateDB:
           cube = self.getCube ( key )
 
           if conflictopt == 'O':
-            cube.data = np.ones ( [16,128,128], dtype=np.uint32 )
             cube.overwrite ( databuffer [ z*self.zcubedim:(z+1)*self.zcubedim, y*self.ycubedim:(y+1)*self.ycubedim, x*self.xcubedim:(x+1)*self.xcubedim ] )
-
           else:
             print "Unsupported conflict option.  FIX ME"
             assert 0
