@@ -25,8 +25,8 @@ _xtiles = 2
 _ytiles = 2
 _xtilesz = 8192
 _ytilesz = 8192
-_startslice = 1506
-_endslice = 1506 
+_startslice = 1472
+_endslice = 1711 
 _prefix = 'fullresseg22312_s'
 _batchsz = 16 
 
