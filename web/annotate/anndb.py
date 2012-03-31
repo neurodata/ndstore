@@ -272,7 +272,7 @@ class AnnotateDB:
       if cubelocs.get(key,None) == None:
         cubelocs[key] = [];
       cubelocs[key].append([loc[0],loc[1],loc[2]-self.startslice])
-    print "Process locations slow",  time()-t1
+    print "Process locations is slow",  time()-t1
 
     # iterator over the list for each cube
     for key, loclist in cubelocs.iteritems():

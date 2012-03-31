@@ -8,7 +8,7 @@ import empaths
 import dbconfig
 import zindex
 
-from anncube_cy import annotate_cy
+from ann_cy import annotate_cy
 
 #TODO cython this thing up
 
@@ -96,7 +96,6 @@ class AnnotateCube:
   def annotate ( self, annid, offset, locations, conflictopt ):
     """Add annotation by a list of locations"""
 
-# double check this code
     # the cython optimized version of this function.
     return annotate_cy ( self.data, annid, offset, np.array(locations, dtype=np.uint32), conflictopt )
   

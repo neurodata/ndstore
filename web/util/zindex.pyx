@@ -1,10 +1,3 @@
-################################################################################
-#
-#    Randal C. Burns
-#    Department of Computer Science
-#    Johns Hopkins University
-#
-################################################################################
 
 ################################################################################
 #
@@ -20,16 +13,17 @@
 ################################################################################
 def XYZMorton ( xyz ):
  
+  cdef int x
+  cdef int y
+  cdef int z
+
   x, y, z = xyz
 
-  morton = 0
-  mask = 0x001
-
-  assert ( x <= 0x1FFFFF )
-  assert ( y <= 0x1FFFFF )
-  assert ( z <= 0x1FFFFF )
+  cdef int morton = 0
+  cdef int mask = 0x001
 
   #21 triads of 3 bits each 
+  cdef int i
   for  i in range(21):
   
     # This logic is a little confusing. 
@@ -54,7 +48,11 @@ def XYZMorton ( xyz ):
 def generator ( dim ):
 
   # This is a little wasteful of computation
-  i=0
+  cdef int i=0
+  cdef int x
+  cdef int y
+  cdef int z
+
   while True:
     [x,y,z] = MortonXYZ ( i )
     if x < dim[0] and y < dim[1] and z < dim[2]:
@@ -69,15 +67,17 @@ def generator ( dim ):
 # Action:  Generate XYZ coordinates from Morton index
 ################################################################################
 
-def MortonXYZ (morton):
+def MortonXYZ (int morton):
 
-  xmask = 0x001
-  ymask = 0x002
-  zmask = 0x004
+  cdef int xmask = 0x001
+  cdef int ymask = 0x002
+  cdef int zmask = 0x004
 
-  xp = 0x00
-  yp = 0x00
-  zp = 0x00
+  cdef int xp = 0x00
+  cdef int yp = 0x00
+  cdef int zp = 0x00
+
+  cdef int i
 
   # 21 triads of 3 bits each 
   for i in range(21):

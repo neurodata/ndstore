@@ -5,7 +5,6 @@ DTYPE = np.uint32
 ctypedef np.uint32_t DTYPE_t
 
 
-#def annotate_cy ( np.ndarray[DTYPE_t, ndim=3] data, int annid, np.ndarray[DTYPE_t, ndim=2] locations, offset, char conflictopt ):
 def annotate_cy ( np.ndarray[DTYPE_t, ndim=3] data, int annid, offset, np.ndarray[DTYPE_t, ndim=2] locations, conflictopt ):
   """Add annotation by a list of locations"""
 
