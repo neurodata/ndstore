@@ -7,6 +7,8 @@ import zindex
 import anncube
 import annproj
 
+from time import time
+
 import sys
 
 #TODO convert the asserts into exceptions so that not found can be returned
@@ -262,6 +264,7 @@ class AnnotateDB:
     # RBTODO make a defaultdict
     cubelocs = {}
 
+    t1 = time()
     #  list of locations inside each morton key
     for loc in locations:
       cubeno = loc[0]/self.cubedim[0], loc[1]/self.cubedim[1], (loc[2]-self.startslice)/self.cubedim[2]
@@ -269,6 +272,7 @@ class AnnotateDB:
       if cubelocs.get(key,None) == None:
         cubelocs[key] = [];
       cubelocs[key].append([loc[0],loc[1],loc[2]-self.startslice])
+    print "Process locations slow",  time()-t1
 
     # iterator over the list for each cube
     for key, loclist in cubelocs.iteritems():
@@ -282,7 +286,9 @@ class AnnotateDB:
                    cubeoff[2]*self.cubedim[2] ]
 
         # add the items
+        t1 = time()
         exceptions = cube.annotate ( entityid, offset, loclist, conflictopt )
+        print "Annotate", time() -t1
 
         # update the sparse list of exceptions
         if len(exceptions) != 0:
@@ -304,6 +310,8 @@ class AnnotateDB:
   #
   def addEntity ( self, entityid, locations, conflictopt ):
     """Extend an existing entity as a list of voxels"""
+
+    print type(locations).__name__
 
     # label the voxels and exceptions
     self.annotate ( entityid, locations, conflictopt )

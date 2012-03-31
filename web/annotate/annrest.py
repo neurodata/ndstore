@@ -15,6 +15,8 @@ import anndb
 import dbconfig
 import annproj
 
+from time import time
+
 
 #
 #  annrest: RESTful interface to annotations
@@ -218,7 +220,7 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
 
     # Grab the voxel list
     fileobj = cStringIO.StringIO ( postdata )
-    voxlist = np.load ( fileobj )
+    voxlist =  np.load ( fileobj )
 
     # Make the annotation to the database
     annoDB = anndb.AnnotateDB ( dbcfg, annoproj )
@@ -229,6 +231,7 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
       [ entity, sym, conflictargs ] = serviceargs.partition ('/')
       conflictopt = restargs.conflictOption ( conflictargs )
       entityid = annoDB.addEntity ( int(entity), voxlist, conflictopt )
+      
 
     elif verb == 'extend':
 
@@ -238,7 +241,9 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
 
     elif verb == 'new':
       conflictopt = restargs.conflictOption ( serviceargs )
+      t1 = time()
       entityid = annoDB.newEntity ( voxlist, conflictopt )
+      print time() -t1
 
     else: 
       raise restargs.RESTBadArgsError ("No such verb: %s" % verb )

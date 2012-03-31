@@ -8,7 +8,7 @@ import empaths
 import dbconfig
 import zindex
 
-#from anncube_cy import annotate_cy
+from anncube_cy import annotate_cy
 
 #TODO cython this thing up
 
@@ -97,37 +97,9 @@ class AnnotateCube:
     """Add annotation by a list of locations"""
 
 # double check this code
-    return annotate_cy ( self.data, annid, offset, locations, conflictopt )
-
-    raise Exception("Shouldn't have gotten here")
-    #  For now first label for a voxel wins
-    exceptions = []
-
-    # xyz coordinates get stored as zyx to be more
-    #  efficient when converting to images
-    for voxel in locations:
-      #  label unlabeled voxels
-      if ( self.data [ voxel[2]-offset[2], voxel[1]-offset[1], voxel[0]-offset[0]] == 0 ):
-        self.data [ voxel[2]-offset[2], voxel[1]-offset[1], voxel[0]-offset[0] ] = annid
-
-      # already labelled voxels are exceptions, unless they are the same value
-      elif (self.data [ voxel[2]-offset[2], voxel[1]-offset[1], voxel[0]-offset[0]] != annid ):
-        # O is for overwrite
-        if conflictopt == 'O':
-          self.data [ voxel[2]-offset[2], voxel[1]-offset[1], voxel[0]-offset[0] ] = annid
-        # P preserves the existing content
-        elif conflictopt == 'P':
-          pass
-        # E creates exceptions
-        elif conflictopt == 'E':
-          exceptions.append ( voxel )
-        else:
-          print ( "Improper conflict option selected.  Option = ", conflictopt  )
-          assert 0
+    # the cython optimized version of this function.
+    return annotate_cy ( self.data, annid, offset, np.array(locations, dtype=np.uint32), conflictopt )
   
-    return exceptions
-
-
 
   #
   #  addData -- from another cube to this cube
