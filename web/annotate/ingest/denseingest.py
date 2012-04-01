@@ -11,6 +11,10 @@ import zlib
 
 from kanno_opt import pngMerge
 
+# RBTODO: batchsize requires alignment in the arguments. 
+#  This should be fixed so that it ingests aligned, regardless of 
+#  the arguments
+
 #
 #  ingest the PNG files into the database
 #
@@ -25,8 +29,8 @@ _xtiles = 2
 _ytiles = 2
 _xtilesz = 8192
 _ytilesz = 8192
-_startslice = 1472
-_endslice = 1711 
+_startslice = 1632
+_endslice = 1699 
 _prefix = 'fullresseg22312_s'
 _batchsz = 16 
 

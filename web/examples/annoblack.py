@@ -20,7 +20,8 @@ def main():
 
   result = parser.parse_args()
 
-  url = 'http://127.0.0.1:8000/cutout/hayworth5nm/npz/3/' +\
+#  url = 'http://127.0.0.1:8000/cutout/hayworth5nm/npz/3/' +\
+  url = 'http://127.0.0.1/EM/cutout/hayworth5nm/npz/3/' +\
             str(result.xlow) + "," + str(result.xhigh) + "/" +\
             str(result.ylow) + "," + str(result.yhigh) + "/" +\
             str(result.zlow) + "," + str(result.zhigh) + "/"\
@@ -53,7 +54,8 @@ def main():
                          it.multi_index[0]+zoffset ] )
     it.iternext()
 
-  url = 'http://127.0.0.1:8000/annotate/%s/npvoxels/new/' % result.token
+#  url = 'http://127.0.0.1:8000/annotate/%s/npvoxels/new/' % result.token
+  url = 'http://127.0.0.1/EM/annotate/%s/npvoxels/new/' % result.token
 
   # Encode the voxelist an pickle
   fileobj = cStringIO.StringIO ()
