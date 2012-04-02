@@ -5,6 +5,11 @@ import MySQLdb
 
 import zindex
 import anncube
+import annproj
+
+from time import time
+
+import sys
 
 #TODO convert the asserts into exceptions so that not found can be returned
 
@@ -16,33 +21,39 @@ import anncube
 #
 ################################################################################
 
+class AnnError(Exception):
+  def __init__(self, value):
+    self.value = value
+  def __str__(self):
+    return repr(self.value)
+
 class AnnotateDB: 
 
-  # Could add these to dbconfig.  Probably remove res as tablebase instead
-  ids_tbl = "ids"
-  entities_tbl = "entities"
-  except_tbl = "exceptions"
-  items_tbl = "items"
-  ann_tbl = "annotations" 
-
-  def __init__ (self, dbconf):
+  def __init__ (self, dbconf, annoproj):
     """Connect with the brain databases"""
 
     self.dbcfg = dbconf
+    self.annoproj = annoproj
 
-    # Connection info in dbconfig
-    self.conn = MySQLdb.connect (host = self.dbcfg.dbhost,
-                            user = self.dbcfg.dbuser,
-                            passwd = self.dbcfg.dbpasswd,
-                            db = self.dbcfg.dbname)
+    dbinfo = self.annoproj.getDBHost(), self.annoproj.getDBUser(), self.annoproj.getDBPasswd(), self.annoproj.getDBName() 
+
+    # Connection info 
+    try:
+      self.conn = MySQLdb.connect (host = self.annoproj.getDBHost(),
+                            user = self.annoproj.getDBUser(),
+                            passwd = self.annoproj.getDBPasswd(),
+                            db = self.annoproj.getDBName())
+    except:
+      raise AnnError ( dbinfo )
+      
 
     # How many slices?
     [ self.startslice, endslice ] = self.dbcfg.slicerange
     self.slices = endslice - self.startslice + 1 
 
     # get the size of the image and cube
-    [ self.xcubedim, self.ycubedim, self.zcubedim ] = self.cubedim = self.dbcfg.cubedim [ self.dbcfg.annotateres ] 
-    [ self.ximagesize, self.yimagesize ] = self.imagesize = self.dbcfg.imagesz [ self.dbcfg.annotateres ]
+    [ self.xcubedim, self.ycubedim, self.zcubedim ] = self.cubedim = self.dbcfg.cubedim [ annoproj.getResolution() ] 
+    [ self.ximagesize, self.yimagesize ] = self.imagesize = self.dbcfg.imagesz [ annoproj.getResolution() ]
 
     # PYTODO create annidx object
 
@@ -60,7 +71,7 @@ class AnnotateDB:
     
     # Query the current max identifier
     cursor = self.conn.cursor ()
-    sql = "SELECT max(id) FROM " + str ( self.ids_tbl )
+    sql = "SELECT max(id) FROM " + str ( self.annoproj.getIDsTbl() )
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
@@ -76,7 +87,7 @@ class AnnotateDB:
       identifier = int ( row[0] ) + 1
 
     # increment and update query
-    sql = "INSERT INTO " + str(self.ids_tbl) + " VALUES ( " + str(identifier) + " ) "
+    sql = "INSERT INTO " + str(self.annoproj.getIDsTbl()) + " VALUES ( " + str(identifier) + " ) "
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
@@ -101,7 +112,7 @@ class AnnotateDB:
     cursor = self.conn.cursor ()
 
     # get the block from the database
-    sql = "SELECT cube FROM " + self.ann_tbl + " WHERE zindex = " + str(key)
+    sql = "SELECT cube FROM " + self.annoproj.getAnnotationsTbl() + " WHERE zindex = " + str(key)
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
@@ -138,7 +149,7 @@ class AnnotateDB:
     # we created a cube from zeros
     if cube.fromZeros ():
 
-      sql = "INSERT INTO " + self.ann_tbl +  "(zindex, cube) VALUES (%s, %s)"
+      sql = "INSERT INTO " + self.annoproj.getAnnotationsTbl() +  "(zindex, cube) VALUES (%s, %s)"
       try:
         cursor.execute ( sql, (key,npz))
       except MySQLdb.Error, e:
@@ -147,7 +158,7 @@ class AnnotateDB:
 
     else:
 
-      sql = "UPDATE " + self.ann_tbl + " SET cube=(%s) WHERE zindex=" + str(key)
+      sql = "UPDATE " + self.annoproj.getAnnotationsTbl() + " SET cube=(%s) WHERE zindex=" + str(key)
       try:
         cursor.execute ( sql, (npz))
       except MySQLdb.Error, e:
@@ -240,7 +251,7 @@ class AnnotateDB:
   #
   # annotate
   #
-  #  Called by addEntity and extendEntity to actually number
+  #  Called by newEntity, addEntity and extendEntity to actually number
   #   the voxels and build the exception
   #
   def annotate ( self, entityid, locations, conflictopt ):
@@ -250,15 +261,18 @@ class AnnotateDB:
     #  Convert the locations into Morton order
 
     # dictionary of mortonkeys
+    # RBTODO make a defaultdict
     cubelocs = {}
 
+    t1 = time()
     #  list of locations inside each morton key
     for loc in locations:
-      cubeno = loc[0]/self.cubedim[0], loc[1]/self.cubedim[1], loc[2]/self.cubedim[2]
+      cubeno = loc[0]/self.cubedim[0], loc[1]/self.cubedim[1], (loc[2]-self.startslice)/self.cubedim[2]
       key = zindex.XYZMorton(cubeno)
       if cubelocs.get(key,None) == None:
         cubelocs[key] = [];
-      cubelocs[key].append(loc)
+      cubelocs[key].append([loc[0],loc[1],loc[2]-self.startslice])
+    print "Process locations is slow",  time()-t1
 
     # iterator over the list for each cube
     for key, loclist in cubelocs.iteritems():
@@ -272,7 +286,9 @@ class AnnotateDB:
                    cubeoff[2]*self.cubedim[2] ]
 
         # add the items
+        t1 = time()
         exceptions = cube.annotate ( entityid, offset, loclist, conflictopt )
+        print "Annotate", time() -t1
 
         # update the sparse list of exceptions
         if len(exceptions) != 0:
@@ -280,11 +296,27 @@ class AnnotateDB:
 
         self.putCube ( key, cube)
 
-    # PYTODO update index
-
+    # PMTODO update index
 
   # end annotate
 
+  #
+  # addEntity
+  #
+  #  Include the following locations as part of the specified entity.
+  #  entity as a list of voxels.  Returns the entity id
+  #  This is for ingesting already annotated data sets.  
+  #  Don't check to make sure that the object exists.
+  #
+  def addEntity ( self, entityid, locations, conflictopt ):
+    """Extend an existing entity as a list of voxels"""
+
+    print type(locations).__name__
+
+    # label the voxels and exceptions
+    self.annotate ( entityid, locations, conflictopt )
+
+    return entityid
 
   #
   # extendEntity
@@ -295,10 +327,11 @@ class AnnotateDB:
   def extendEntity ( self, entityid, locations, conflictopt ):
     """Extend an existing entity as a list of voxels"""
 
+# RB TODO comment out for kasthuri.  Do we want to check?
+
     # Query the identifier
     cursor = self.conn.cursor ()
-    sql = "SELECT id FROM {0} WHERE id={1}".format(str(self.ids_tbl),str(entityid))
-    print sql
+    sql = "SELECT id FROM {0} WHERE id={1}".format(str(self.annoproj.getIDsTbl()),str(entityid))
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
@@ -315,13 +348,15 @@ class AnnotateDB:
     # label the voxels and exceptions
     self.annotate ( entityid, locations, conflictopt )
 
+    return entityid
+
 
   #
-  # addEntity
+  # newEntity
   #
   #  Add a single entity as a list of voxels. Returns the entity id.
   #
-  def addEntity ( self, locations, conflictopt ):
+  def newEntity ( self, locations, conflictopt ):
     """Add an entity as a list of voxels"""
 
     # get and identifier for this object
@@ -330,6 +365,62 @@ class AnnotateDB:
     self.annotate ( entityid, locations, conflictopt )
 
     return entityid
+
+
+  #
+  # annotateEntityDense
+  #
+  #  Process a cube of data that has been labelled with annotations.
+  #
+  def annotateEntityDense ( self, corner, dim, annodata, conflictopt ):
+    """Process all the annotations in the dense volume"""
+
+    # Round to the nearest larger cube in all dimensions
+    zstart = corner[2]/self.zcubedim
+    ystart = corner[1]/self.ycubedim
+    xstart = corner[0]/self.xcubedim
+
+    znumcubes = (corner[2]+dim[2]+self.zcubedim-1)/self.zcubedim - zstart
+    ynumcubes = (corner[1]+dim[1]+self.ycubedim-1)/self.ycubedim - ystart
+    xnumcubes = (corner[0]+dim[0]+self.xcubedim-1)/self.xcubedim - xstart
+
+    zoffset = corner[2]%self.zcubedim
+    yoffset = corner[1]%self.ycubedim
+    xoffset = corner[0]%self.xcubedim
+
+    databuffer = np.zeros ([znumcubes*self.zcubedim, ynumcubes*self.ycubedim, xnumcubes*self.xcubedim], dtype=np.uint32 )
+    databuffer [ zoffset:zoffset+dim[2], yoffset:yoffset+dim[1], xoffset:xoffset+dim[0] ] = annodata 
+
+    for z in range(znumcubes):
+      for y in range(ynumcubes):
+        for x in range(xnumcubes):
+
+          key = zindex.XYZMorton ([x+xstart,y+ystart,z+zstart])
+          cube = self.getCube ( key )
+
+          if conflictopt == 'O':
+            cube.overwrite ( databuffer [ z*self.zcubedim:(z+1)*self.zcubedim, y*self.ycubedim:(y+1)*self.ycubedim, x*self.xcubedim:(x+1)*self.xcubedim ] )
+          else:
+            print "Unsupported conflict option.  FIX ME"
+            assert 0
+
+          self.putCube ( key, cube)
+          
+          
+   
+
+
+  def addEntityDense ( self, corner, dim, annodata, conflictopt ):
+    """Add the annotations in this cube.  Do not interpret the values.  Put values straight into the DB."""
+
+    self.annotateEntityDense ( corner, dim, annodata, conflictopt )
+
+
+  def newEntityDense ( self, corner, dim, annodata, conflictopt ):
+    """Add a new annotation associated with the cube of data.  Create new identifiers."""
+
+    # TODO rewrite volume with identifiers
+    self.annotateEntityDense ( corner, dim, annodata, conflictopt )
 
 
 
@@ -372,7 +463,7 @@ class AnnotateDB:
     listofidxs.sort()
 
     # Batch query for all cubes
-    dbname = self.ann_tbl
+    dbname = self.annoproj.getAnnotationsTbl()
     cursor = self.conn.cursor()
     sql = "SELECT zindex, cube from " + dbname + " where zindex in (%s)" 
     # creats a %s for each list element
@@ -429,10 +520,8 @@ class AnnotateDB:
 
     # convert the voxel into zindex and offsets
     # Round to the nearest larger cube in all dimensions
-    xyzcube = [ voxel[0]/self.xcubedim, voxel[1]/self.ycubedim, voxel[2]/self.zcubedim ]
-    xyzoffset =[ voxel[0]%self.xcubedim, voxel[1]%self.ycubedim, voxel[2]%self.zcubedim ]
-
-#    print xyzcube, xyzoffset
+    xyzcube = [ voxel[0]/self.xcubedim, voxel[1]/self.ycubedim, (voxel[2]-self.startslice)/self.zcubedim ]
+    xyzoffset =[ voxel[0]%self.xcubedim, voxel[1]%self.ycubedim, (voxel[2]-self.startslice)%self.zcubedim ]
 
     # Create a cube object
     cube = anncube.AnnotateCube ( self.cubedim )
@@ -442,7 +531,7 @@ class AnnotateDB:
     cursor = self.conn.cursor ()
 
     # get the block from the database
-    sql = "SELECT cube FROM " + self.ann_tbl + " WHERE zindex = " + str(mortonidx)
+    sql = "SELECT cube FROM " + self.annoproj.getAnnotationsTbl() + " WHERE zindex = " + str(mortonidx)
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:

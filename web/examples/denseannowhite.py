@@ -20,7 +20,7 @@ def main():
 
   result = parser.parse_args()
 
-#  url = 'http://127.0.0.1:8000/cutout/hayworth5nm/npz/3/' +\
+  #RBTODO annotate resolution
   url = 'http://127.0.0.1/EM/cutout/hayworth5nm/npz/3/' +\
             str(result.xlow) + "," + str(result.xhigh) + "/" +\
             str(result.ylow) + "," + str(result.yhigh) + "/" +\
@@ -33,7 +33,6 @@ def main():
   yoffset = result.ylow
   zoffset = result.zlow
 
-  # Get cube in question
   f = urllib2.urlopen ( url )
 
   zdata = f.read ()
@@ -43,26 +42,23 @@ def main():
   pagefobj = StringIO.StringIO ( pagestr )
   cube = np.load ( pagefobj )
 
-  voxlist= []
+  annodata = np.zeros( [ result.zhigh - result.zlow, result.yhigh - result.ylow, result.xhigh-result.xlow ] )
 
-  # Again, should the interface be all zyx
-  it = np.nditer ( cube, flags=['multi_index'])
-  while not it.finished:
-    if it[0] < 25:
-      voxlist.append ( [ it.multi_index[2]+xoffset,\
-                         it.multi_index[1]+yoffset,\
-                         it.multi_index[0]+zoffset ] )
-    it.iternext()
+  print annodata.shape
+  print cube.shape
+   
+  vec_func = np.vectorize ( lambda x: 0 if x < 160 else 125 ) 
+  annodata = vec_func ( cube )
 
-#  url = 'http://127.0.0.1:8000/annotate/%s/npvoxels/new/' % result.token
-  url = 'http://127.0.0.1/EM/annotate/%s/npvoxels/new/' % result.token
+  url = 'http://127.0.0.1/EM/annotate/%s/npdense/add/%s,%s/%s,%s/%s,%s/' % ( result.token, result.xlow, result.xhigh, result.ylow, result.yhigh, result.zlow, result.zhigh ) 
 
   # Encode the voxelist an pickle
   fileobj = cStringIO.StringIO ()
-  np.save ( fileobj, voxlist )
+  np.save ( fileobj, annodata )
+  cdz = zlib.compress (fileobj.getvalue())
 
   # Build the post request
-  req = urllib2.Request(url, fileobj.getvalue())
+  req = urllib2.Request(url, cdz)
   response = urllib2.urlopen(req)
   the_page = response.read()
 

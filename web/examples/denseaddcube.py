@@ -5,6 +5,7 @@ import dbconfighayworth5nm
 import numpy as np
 import urllib, urllib2
 import cStringIO
+import zlib
 import sys
 
 import anncube
@@ -24,29 +25,24 @@ def main():
 
   result = parser.parse_args()
 
+  anndata = np.ones ( [ result.zhigh-result.zlow, result.yhigh-result.ylow, result.xhigh-result.xlow ] )
 
-  voxlist= []
-
-  for k in range (result.zlow,result.zhigh):
-    for j in range (result.ylow,result.yhigh):
-      for i in range (result.xlow,result.xhigh):
-        voxlist.append ( [ i,j,k ] )
-
-  url = 'http://127.0.0.1/EM/annotate/%s/npvoxels/new/' % ( result.token )
-#  url = 'http://127.0.0.1:8000/annotate/%s/npvoxels/new/' % ( result.token )
-  
+  url = 'http://127.0.0.1/EM/annotate/%s/npdense/add/%s,%s/%s,%s/%s,%s/' % ( result.token, result.xlow, result.xhigh, result.ylow, result.yhigh, result.zlow, result.zhigh )
+#  url = 'http://127.0.0.1:8000/annotate/%s/npdense/add/%s,%s/%s,%s/%s,%s/' % ( result.token, result.xlow, result.xhigh, result.ylow, result.yhigh, result.zlow, result.zhigh )
   print url
 
   # Encode the voxelist an pickle
   fileobj = cStringIO.StringIO ()
-  np.save ( fileobj, voxlist )
+  np.save ( fileobj, anndata )
+  cdz = zlib.compress (fileobj.getvalue()) 
 
   # Build the post request
-  req = urllib2.Request(url, fileobj.getvalue())
+  req = urllib2.Request(url,cdz)
   response = urllib2.urlopen(req)
   the_page = response.read()
 
   print the_page
+
 
 if __name__ == "__main__":
   main()

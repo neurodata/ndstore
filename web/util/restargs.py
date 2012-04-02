@@ -1,11 +1,3 @@
-#y###############################################################################
-#
-#    Randal C. Burns
-#    Department of Computer Science
-#    Johns Hopkins University
-#
-################################################################################
-
 #
 #  Check the formatting of RESTful arguments.
 #  Shared by cutout and annotation services.
@@ -13,7 +5,6 @@
 
 import sys
 import re
-import web
 import os
 
 import dbconfig
@@ -23,12 +14,21 @@ import dbconfig
 # General rest argument processing exception
 #
 class RESTRangeError(Exception):
+  """Arguments exceed image/voxel bounds"""
   def __init__(self, value):
     self.value = value
   def __str__(self):
     return repr(self.value)
 
 class RESTBadArgsError(Exception): 
+  """Illegal arguments"""
+  def __init__(self, value):
+    self.value = value
+  def __str__(self):
+    return repr(self.value)
+
+class RESTTokenError(Exception):
+  """Invalid annotation token"""
   def __init__(self, value):
     self.value = value
   def __str__(self):
@@ -36,6 +36,13 @@ class RESTBadArgsError(Exception):
 
 
 class BrainRestArgs:
+
+
+  # __init__
+  def __init__ ( self ):
+    """Set resolution to -1 to make things break if one doesn't set resolution prior to 
+       calling an args parsing function.  I don't like this, but it works."""
+    self._resolution = -1
 
   # Accessors to get corner and dimensions
   def getCorner (self):
@@ -49,20 +56,44 @@ class BrainRestArgs:
 
 
   #
+  # setResolution : used with annotation in which resolution is stored by token
+  #
+  def setResolution(self, resolution):
+    """Set the resolution.  Used when annotating."""
+    self._resolution=resolution
+
+  #
+  # resolutionArgs: 
+  #
+  def resolutionArg ( self, restargs, dbcfg ):
+    """Set resolution.  Strip off resolutoin and return the rest of the args."""
+
+    [resolution, sym, cutoutargs] = restargs.partition ('/') 
+#RBTODO
+#    if resolution not in dbconfig.resolutions
+    self._resolution = int(resolution)
+    return cutoutargs
+
+
+  #
   #  Process cutout arguments
   #
-  def cutoutArgs ( self, imageargs, dbcfg ):
-    """Process REST arguments for an cutout plane request"""
+  def cutoutArgs2 ( self, imageargs, dbcfg ):
+    """Process REST arguments for an cutout plane request
+       Deprecated functions.  Use cutoutArgs.
+       You must have set the resolution prior to calling this function."""
+
+    assert ( self._resolution != -1 )
 
     # expecting an argument of the form /resolution/x1,x2/y1,y2/z1,z2/
 
     restargs = imageargs.split('/')
 
-    if len ( restargs ) == 5:
-      [ resstr, xdimstr, ydimstr, zdimstr, rest ]  = restargs
+    if len ( restargs ) == 4:
+      [ xdimstr, ydimstr, zdimstr, rest ]  = restargs
       globalcoords = False
-    elif len ( restargs ) == 6:
-      [ resstr, xdimstr, ydimstr, zdimstr, rest, other ]  = restargs
+    elif len ( restargs ) == 5:
+      [ xdimstr, ydimstr, zdimstr, rest, other ]  = restargs
       globalcoords = True
     else:
       raise RESTBadArgsError ( "Incorrect command string" )
@@ -70,9 +101,8 @@ class BrainRestArgs:
     # Check that the arguments are well formatted
     if not re.match ('[0-9]+,[0-9]+$', xdimstr) or\
        not re.match ('[0-9]+,[0-9]+$', ydimstr) or\
-       not re.match ('[0-9]+,[0-9]+$', zdimstr) or\
-       not re.match ('[0-9]+$', resstr ):
-      raise RESTBadArgsError ( "Argument incorrectly formatted" )
+       not re.match ('[0-9]+,[0-9]+$', zdimstr):
+      raise RESTBadArgsError ("Non-numeric range argument" % rangeargs)
 
     z1s,z2s = zdimstr.split(',')
     y1s,y2s = ydimstr.split(',')
@@ -84,8 +114,6 @@ class BrainRestArgs:
     y2i = int(y2s)
     z1i = int(z1s)
     z2i = int(z2s)
-
-    self._resolution = int(resstr)
 
     # Convert to local coordinates if global specified
     if ( globalcoords ):
@@ -96,12 +124,49 @@ class BrainRestArgs:
 
     # Check arguments for legal values
     if not ( dbcfg.checkCube ( self._resolution, x1i, x2i, y1i, y2i, z1i, z2i )):
-      print "Still raising an error"
       raise RESTRangeError ( "Illegal range. Image size:" +  str(dbcfg.imageSize( self._resolution )))
 
     self._corner=[x1i,y1i,z1i-dbcfg.slicerange[0]]
     self._dim=[x2i-x1i,y2i-y1i,z2i-z1i ]
 
+
+  def cutoutArgs ( self, xstr, ystr, zstr, dbcfg, globalcoords=False ):
+    """Process REST arguments for a cutout request.
+       This takes the x y and z strs from a partition on '/'.
+       Each is of the form  xxx,xxx
+        Use this instead of cutoutArgs.  Eventually we want to migrate
+        all interfaces to use this."""
+
+    # Check that the arguments are well formatted
+    if not re.match ('[0-9]+,[0-9]+$', xstr) or\
+       not re.match ('[0-9]+,[0-9]+$', ystr) or\
+       not re.match ('[0-9]+,[0-9]+$', zstr):
+      raise RESTBadArgsError ("Non-numeric range argument" % rangeargs)
+
+    z1s,z2s = zstr.split(',')
+    y1s,y2s = ystr.split(',')
+    x1s,x2s = xstr.split(',')
+
+    x1i = int(x1s)
+    x2i = int(x2s)
+    y1i = int(y1s)
+    y2i = int(y2s)
+    z1i = int(z1s)
+    z2i = int(z2s)
+
+    # Convert to local coordinates if global specified
+    if ( globalcoords ):
+      x1i = int ( float(x1i) / float( 2**(self._resolution-dbcfg.baseres)))
+      x2i = int ( float(x2i) / float( 2**(self._resolution-dbcfg.baseres)))
+      y1i = int ( float(y1i) / float( 2**(self._resolution-dbcfg.baseres)))
+      y2i = int ( float(y2i) / float( 2**(self._resolution-dbcfg.baseres)))
+
+    # Check arguments for legal values
+    if not ( dbcfg.checkCube ( self._resolution, x1i, x2i, y1i, y2i, z1i, z2i )):
+      raise RESTRangeError ( "Illegal range. Image size:" +  str(dbcfg.imageSize( self._resolution )))
+
+    self._corner=[x1i,y1i,z1i-dbcfg.slicerange[0]]
+    self._dim=[x2i-x1i,y2i-y1i,z2i-z1i ]
 
 
   #
@@ -109,26 +174,28 @@ class BrainRestArgs:
   #    where ** is xy, xz, yz
   #
   def xyArgs ( self, imageargs, dbcfg ):
-    """Process REST arguments for an xy plane request"""
+    """Process REST arguments for an xy plane request.
+       You must have set the resolution prior to calling this function."""
 
-    restargs = imageargs.split('/')
+    assert ( self._resolution != -1 )
 
-    if len ( restargs ) == 5:
-      [ resstr, xdimstr, ydimstr, zstr, rest ]  = restargs
+    rangeargs = imageargs.split('/')
+
+    if len ( rangeargs ) == 4:
+      [ xdimstr, ydimstr, zstr, rest ]  = rangeargs
       globalcoords = False
-    elif len ( restargs ) == 6:
-      [ resstr, xdimstr, ydimstr, zstr, rest, other ]  = restargs
+    elif len ( rangeargs ) == 5:
+      [ xdimstr, ydimstr, zstr, rest, other ]  = rangeargs
       globalcoords = True
     else:
-      return web.badrequest()
+      raise RESTBadArgsError ("Wrong number of arguments for xyArgs %s" % rangeargs)
 
     # expecting an argument of the form /resolution/x1,x2/y1,y2/z/
     # Check that the arguments are well formatted
     if not re.match ('[0-9]+,[0-9]+$', xdimstr) or\
        not re.match ('[0-9]+,[0-9]+$', ydimstr) or\
-       not re.match ('[0-9]+$', zstr) or\
-       not re.match ('[0-9]+$', resstr ):
-      return web.badrequest()
+       not re.match ('[0-9]+$', zstr):
+      raise RESTBadArgsError ("Non-numeric range argument" % rangeargs)
 
     x1s,x2s = xdimstr.split(',')
     y1s,y2s = ydimstr.split(',')
@@ -139,8 +206,6 @@ class BrainRestArgs:
     y2i = int(y2s)
     z = int(zstr)
 
-    self._resolution = int(resstr)
-
     # Convert to local coordinates if global specified
     if ( globalcoords ):
       x1i = int ( float(x1i) / float( 2**(self._resolution-dbcfg.baseres)))
@@ -150,33 +215,36 @@ class BrainRestArgs:
 
     # Check arguments for legal values
     if not ( dbcfg.checkCube ( self._resolution, x1i, x2i, y1i, y2i, z, z )):
-      return web.notfound()
+      raise RESTBadArgsError ("Range exceeds data boundaries" % rangeargs)
 
     self._corner=[x1i,y1i,z-dbcfg.slicerange[0]]
     self._dim=[x2i-x1i,y2i-y1i,1]
 
+
     
   def xzArgs ( self, imageargs, dbcfg ):
-    """Process REST arguments for an xy plane request"""
+    """Process REST arguments for an xz plane request
+       You must have set the resolution prior to calling this function."""
 
-    restargs = imageargs.split('/')
+    assert ( self._resolution != -1 )
 
-    if len ( restargs ) == 5:
-      [ resstr, xdimstr, ystr, zdimstr, rest ]  = restargs
+    rangeargs = imageargs.split('/')
+
+    if len ( rangeargs ) == 4:
+      [ xdimstr, ystr, zdimstr, rest ]  = rangeargs
       globalcoords = False
-    elif len ( restargs ) == 6:
-      [ resstr, xdimstr, ystr, zdimstr, rest, other ]  = restargs
+    elif len ( rangeargs ) == 5:
+      [ xdimstr, ystr, zdimstr, rest, other ]  = rangeargs
       globalcoords = True
     else:
-      return web.badrequest()
+      raise RESTBadArgsError ("Wrong number of arguments for xzArgs %s" % rangeargs)
 
     # expecting an argument of the form /resolution/x1,x2/y1,y2/z/
     # Check that the arguments are well formatted
     if not re.match ('[0-9]+,[0-9]+$', xdimstr) or\
        not re.match ('[0-9]+$', ystr) or\
-       not re.match ('[0-9]+,[0-9]+$', zdimstr) or\
-       not re.match ('[0-9]+$', resstr ):
-      return web.badrequest()
+       not re.match ('[0-9]+,[0-9]+$', zdimstr):
+      raise RESTBadArgsError ("Non-numeric range argument" % rangeargs)
 
     x1s,x2s = xdimstr.split(',')
     z1s,z2s = zdimstr.split(',')
@@ -187,8 +255,6 @@ class BrainRestArgs:
     z1i = int(z1s)
     z2i = int(z2s)
 
-    self._resolution = int(resstr)
-    
     # Convert to local coordinates if global specified
     if ( globalcoords ):
       x1i = int ( float(x1i) / float( 2**(self._resolution-dbcfg.baseres)))
@@ -198,33 +264,35 @@ class BrainRestArgs:
     # Check arguments for legal values
     if not dbcfg.checkCube ( self._resolution, x1i, x2i, y, y, z1i, z2i )\
        or y >= dbcfg.imagesz[self._resolution][1]:
-      return web.notfound()
+      raise RESTBadArgsError ("Range exceeds data boundaries" % rangeargs)
 
     self._corner=[x1i,y,z1i-dbcfg.slicerange[0]]
     self._dim=[x2i-x1i,1,z2i-z1i ]
 
 
   def yzArgs ( self, imageargs, dbcfg ):
-    """Process REST arguments for an xy plane request"""
+    """Process REST arguments for an yz plane request
+       You must have set the resolution prior to calling this function."""
 
-    restargs = imageargs.split('/')
+    assert ( self._resolution != -1 )
 
-    if len ( restargs ) == 5:
-      [ resstr, xstr, ydimstr, zdimstr, rest ]  = restargs
+    rangeargs = imageargs.split('/')
+
+    if len ( rangeargs ) == 4:
+      [ xstr, ydimstr, zdimstr, rest ]  = rangeargs
       globalcoords = False
-    elif len ( restargs ) == 6:
-      [ resstr, xstr, ydimstr, zdimstr, rest, other ]  = restargs
+    elif len ( rangeargs ) == 5:
+      [ xstr, ydimstr, zdimstr, rest, other ]  = rangeargs
       globalcoords = True
     else:
-      return web.badrequest()
+      raise RESTBadArgsError ("Wrong number of arguments for yzArgs %s" % rangeargs)
 
     # expecting an argument of the form /resolution/x/y1,y2/z1,z2/
     # Check that the arguments are well formatted
     if not re.match ('[0-9]+$', xstr) or\
        not re.match ('[0-9]+,[0-9]+$', ydimstr) or\
-       not re.match ('[0-9]+,[0-9]+$', zdimstr) or\
-       not re.match ('[0-9]+$', resstr ):
-      return web.badrequest()
+       not re.match ('[0-9]+,[0-9]+$', zdimstr):
+      raise RESTBadArgsError ("Non-numeric range argument" % rangeargs)
 
     y1s,y2s = ydimstr.split(',')
     z1s,z2s = zdimstr.split(',')
@@ -234,8 +302,6 @@ class BrainRestArgs:
     y2i = int(y2s)
     z1i = int(z1s)
     z2i = int(z2s)
-
-    self._resolution = int(resstr)
 
     # Convert to local coordinates if global specified
     if ( globalcoords ):
@@ -248,7 +314,7 @@ class BrainRestArgs:
     # Check arguments for legal values
     if not dbcfg.checkCube ( self._resolution, x, x, y1i, y2i, z1i, z2i  )\
        or  x >= dbcfg.imagesz[self._resolution][0]:
-      return web.notfound()
+      raise RESTBadArgsError ("Range exceeds data boundaries" % rangeargs)
 
     self._corner=[x,y1i,z1i-dbcfg.slicerange[0]]
     self._dim=[1,y2i-y1i,z2i-z1i ]
@@ -260,34 +326,30 @@ class BrainRestArgs:
 #
 #  Process cutout arguments
 #
-def voxel ( imageargs, dbcfg ):
+def voxel ( imageargs, dbcfg, resolution ):
   """Process REST arguments for a single"""
 
-  print imageargs
-  restargs = imageargs.split('/')
+  rangeargs = imageargs.split('/')
 
-  if len ( restargs ) == 5:
-    [ resstr, xstr, ystr, zstr, rest ]  = restargs
+  if len ( rangeargs ) == 4:
+    [ xstr, ystr, zstr, rest ]  = rangeargs
   else:
-    return web.badrequest()
+    raise RESTBadArgsError ("Wrong number of arguments for voxel %s" % rangeargs)
 
   # expecting an argument of the form /resolution/x/y1,y2/z1,z2/
   # Check that the arguments are well formatted
   if not re.match ('[0-9]+$', xstr) or\
      not re.match ('[0-9]+$', ystr) or\
-     not re.match ('[0-9]+$', zstr) or\
-     not re.match ('[0-9]+$', resstr ):
-    return web.badrequest()
+     not re.match ('[0-9]+$', zstr):
+    raise RESTBadArgsError ("Non-numeric range argument" % rangeargs)
 
   x = int(xstr)
   y = int(ystr)
   z = int(zstr)
 
-  resolution = int(resstr)
-
   # Check arguments for legal values
   if not ( dbcfg.checkCube ( resolution, x, x, y, y, z, z )):
-    raise RESTRangeError ( "Illegal range. Image size:" +  str(dbcfg.imageSize( resolution )))
+    raise RESTRangeError ( "Illegal range. Image size:" +  str(dbcfg.imageSize( self._resolution )))
 
   return [ x,y,z ]
 

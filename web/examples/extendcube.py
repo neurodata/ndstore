@@ -37,7 +37,7 @@ def main():
   if ( WS == True ): 
 
 
-    url = "http://0.0.0.0:8080/hayworth5nm.annotate/npextend/%s/overwrite/" \
+    url = "http://0.0.0.0:8080/annotate/1111/npextend/%s/overwrite/" \
              % result.entity
 
     print url

@@ -8,10 +8,15 @@ import empaths
 import dbconfig
 import zindex
 
+from ann_cy import annotate_cy
+
+#TODO cython this thing up
+
 #
 #  AnnotateCube: manipulate the in-memory data representation of the 3-d cube of data
 #    that contains annotations.  
 #
+
 
 class AnnotateCube:
 
@@ -91,38 +96,9 @@ class AnnotateCube:
   def annotate ( self, annid, offset, locations, conflictopt ):
     """Add annotation by a list of locations"""
 
-  #  For now first label for a voxel wins
-
-    exceptions = []
-
-    # xyz coordinates get stored as zyx to be more
-    #  efficient when converting to images
-    for voxel in locations:
-      #  label unlabeled voxels
-      if ( self.data [ voxel[2]-offset[2], voxel[1]-offset[1], voxel[0]-offset[0]] == 0 ):
-        self.data [ voxel[2]-offset[2], voxel[1]-offset[1], voxel[0]-offset[0] ] = annid
-
-      # already labelled voxels are exceptions, unless they are the same value
-      elif (self.data [ voxel[2]-offset[2], voxel[1]-offset[1], voxel[0]-offset[0]] != annid ):
-        # O is for overwrite
-        if conflictopt == 'O':
-#          print "O option"
-          self.data [ voxel[2]-offset[2], voxel[1]-offset[1], voxel[0]-offset[0] ] = annid
-        # P preserves the existing content
-        elif conflictopt == 'P':
-#          print "P option"
-          pass
-        # E creates exceptions
-        elif conflictopt == 'E':
-#          print "E option"
-          exceptions.append ( voxel )
-        else:
-          print ( "Improper conflict option selected.  Option = ", conflictopt  )
-          assert 0
+    # the cython optimized version of this function.
+    return annotate_cy ( self.data, annid, offset, np.array(locations, dtype=np.uint32), conflictopt )
   
-    return exceptions
-
-
 
   #
   #  addData -- from another cube to this cube
@@ -156,59 +132,65 @@ class AnnotateCube:
     """Trim off the excess data"""
     self.data = self.data [ zoffset:zoffset+zsize, yoffset:yoffset+ysize, xoffset:xoffset+xsize ]
 
+
   #
   # Create the specified slice (index) at filename
   #
   def xySlice ( self, fileobj ):
 
     zdim,ydim,xdim = self.data.shape
+
     imagemap = np.zeros ( [ ydim, xdim ], dtype=np.uint32 )
 
-    # iterate in data order via numpy
-    it = np.nditer ( self.data, flags=['multi_index'], op_flags=['readwrite'] )
-    while not it.finished:
-      if it[0] != 0:
-        imagemap[it.multi_index[1],it.multi_index[2]] = 0x80000000 + ( it[0] & 0xFF )
-      it.iternext()
-    
+    # recolor the pixels for visualization
+    vecfunc_recolor = np.vectorize ( lambda x:  np.uint32(0) if x == 0 else np.uint32(0x80000000+(x&0xFF)))
+    imagemap = vecfunc_recolor ( self.data[:,:,:] )
+    imagemap = imagemap.reshape ( ydim, xdim )
+
     outimage = Image.frombuffer ( 'RGBA', (xdim,ydim), imagemap, 'raw', 'RGBA', 0, 1 )
     outimage.save ( fileobj, "PNG" )
 
   #
   # Create the specified slice (index) at filename
   #
-  def xzSlice ( self, fileobj ):
+  def xzSlice ( self, scale, fileobj ):
 
     zdim,ydim,xdim = self.data.shape
     imagemap = np.zeros ( [ zdim, xdim ], dtype=np.uint32 )
 
-    # iterate in data order via numpy
-    it = np.nditer ( self.data, flags=['multi_index'], op_flags=['readwrite'] )
-    while not it.finished:
-      if it[0] != 0:
-        imagemap[it.multi_index[0],it.multi_index[2]] = 0x80000000 + ( it[0] & 0xFF )
-      it.iternext()
-    
+    # recolor the pixels for visualization
+    vecfunc_recolor = np.vectorize ( lambda x:  np.uint32(0) if x == 0 else np.uint32(0x80000000+(x&0xFF)))
+    imagemap = vecfunc_recolor ( self.data[:,:,:] )
+    imagemap = imagemap.reshape ( zdim, xdim )
+
     outimage = Image.frombuffer ( 'RGBA', (xdim,zdim), imagemap, 'raw', 'RGBA', 0, 1 )
-    outimage.save ( fileobj, "PNG" )
+    newimage = outimage.resize ( [xdim, int(zdim*scale)] )
+    newimage.save ( fileobj, "PNG" )
 
   #
   # Create the specified slice (index) at filename
   #
-  def yzSlice ( self, fileobj ):
+  def yzSlice ( self, scale, fileobj ):
 
     zdim,ydim,xdim = self.data.shape
     imagemap = np.zeros ( [ zdim, ydim ], dtype=np.uint32 )
 
-    # iterate in data order via numpy
-    it = np.nditer ( self.data, flags=['multi_index'], op_flags=['readwrite'] )
-    while not it.finished:
-      if it[0] != 0:
-        imagemap[it.multi_index[0],it.multi_index[1]] = 0x80000000 + ( it[0] & 0xFF )
-      it.iternext()
-    
+    # recolor the pixels for visualization
+    vecfunc_recolor = np.vectorize ( lambda x:  np.uint32(0) if x == 0 else np.uint32(0x80000000+(x&0xFF)))
+    imagemap = vecfunc_recolor ( self.data[:,:,:] )
+    imagemap = imagemap.reshape ( zdim, ydim )
+
     outimage = Image.frombuffer ( 'RGBA', (ydim,zdim), imagemap, 'raw', 'RGBA', 0, 1 )
-    outimage.save ( fileobj, "PNG" )
+    newimage = outimage.resize ( [ydim, int(zdim*scale)] )
+    newimage.save ( fileobj, "PNG" )
+
+
+  def overwrite ( self, annodata ):
+    """Get's a dense voxel region and overwrites all non-zero values"""
+
+    assert ( self.data.shape == annodata.shape )
+    vector_func = np.vectorize ( lambda a,b: b if b!=0 else a ) 
+    self.data = vector_func ( self.data, annodata ) 
 
 # end AnnotateCube
 

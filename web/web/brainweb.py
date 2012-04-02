@@ -10,8 +10,8 @@ web.config.debug=True
 urls = (
   '/bock11/(.*)', 'bock11',
   '/hayworth5nm/(.*)', 'hayworth5nm',
-  '/hayworth5nm.annotate/(.*)', 'hayworth5nmAnnotate',
   '/kasthuri11/(.*)', 'kasthuri11',
+  '/annotate/(.*)', 'annotate',
   )
 
 app = web.application(urls, globals(), True)
@@ -30,24 +30,26 @@ class hayworth5nm:
     except:
       return web.notfound()
 
-class hayworth5nmAnnotate:
-  def GET(self,name):
-    try:
-      return annrest.hayworth5nm(web.websafe(name))
-    except:
-      return web.notfound()
-  def POST(self,name):
-    try:
-      return annrest.hayworth5nmPost(web.websafe(name))
-    except:
-      return web.notfound()
-
 class kasthuri11:
   def GET(self,name):
     try:
       return brainrest.kasthuri11(web.websafe(name))
     except:
       return web.notfound()
+
+class annotate:
+  def GET(self,name):
+#    try:
+      return annrest.annoget(web.websafe(name))
+#    except:
+      return web.notfound()
+  def POST(self,name):
+#    try:
+      return annrest.annopost(web.websafe(name))
+#    except:
+      return web.notfound()
+
+
 
 if __name__ == "__main__":
     app.run()

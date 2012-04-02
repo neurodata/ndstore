@@ -9,7 +9,6 @@ import StringIO
 import tempfile
 import numpy as np
 import zlib
-import web
 import h5py
 import os
 
@@ -29,14 +28,12 @@ import dbconfighayworth5nm
 #  Build the returned braincube.  Called by all methods 
 #   that then refine the output.
 #
-def cutout ( imageargs, dbcfg ):
+def cutout ( webargs, dbcfg ):
 
   # Perform argument processing
   args = restargs.BrainRestArgs ();
-
-#  import pdb; pdb.set_trace()
-
-  args.cutoutArgs ( imageargs, dbcfg )
+  cutoutargs = args.resolutionArg ( webargs, dbcfg )
+  args.cutoutArgs2 ( cutoutargs, dbcfg )
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -52,43 +49,29 @@ def cutout ( imageargs, dbcfg ):
 #
 #  Return a Numpy Pickle zipped
 #
-def numpyZip ( imageargs, dbcfg ):
+def numpyZip ( webargs, dbcfg ):
   """Return a web readable Numpy Pickle zipped"""
 
-  try:
-    cube = cutout ( imageargs, dbcfg )
-  except restargs.RESTRangeError:
-    return web.notfound()
-  except restargs.RESTBadArgsError:
-    return web.badrequest()
+  cube = cutout ( webargs, dbcfg )
 
-  try:
-    # Create the compressed cube
-    fileobj = StringIO.StringIO ()
-    np.save ( fileobj, cube.data )
-    cdz = zlib.compress (fileobj.getvalue()) 
-  except:
-    return web.notfound()
+  # Create the compressed cube
+  fileobj = StringIO.StringIO ()
+  np.save ( fileobj, cube.data )
+  cdz = zlib.compress (fileobj.getvalue()) 
 
   # Package the object as a Web readable file handle
   fileobj = StringIO.StringIO ( cdz )
   fileobj.seek(0)
-  web.header('Content-type', 'application/zip') 
   return fileobj.read()
 
 
 #
 #  Return a HDF5 file
 #
-def HDF5 ( imageargs, dbcfg ):
+def HDF5 ( webargs, dbcfg ):
   """Return a web readable HDF5 file"""
 
-  try:
-    cube = cutout ( imageargs, dbcfg )
-  except restargs.RESTRangeError:
-    return web.notfound()
-  except restargs.RESTBadArgsError:
-    return web.badrequest()
+  cube = cutout ( webargs, dbcfg )
 
   # Create an in-memory HDF5 file
   tmpfile = tempfile.NamedTemporaryFile ()
@@ -104,11 +87,13 @@ def HDF5 ( imageargs, dbcfg ):
 #  **Image return a readable png object
 #    where ** is xy, xz, yz
 #
-def xyImage ( imageargs, dbcfg ):
+def xyImage ( webargs, dbcfg ):
   """Return an xy plane fileobj.read()"""
 
   # Perform argument processing
   args = restargs.BrainRestArgs ();
+  imageargs = args.resolutionArg ( webargs, dbcfg )
+  
   args.xyArgs ( imageargs, dbcfg )
 
   # Extract the relevant values
@@ -116,23 +101,20 @@ def xyImage ( imageargs, dbcfg ):
   dim = args.getDim()
   resolution = args.getResolution()
 
-  try:
-    cdb = cubedb.CubeDB ( dbcfg )
-    cb = cdb.cutout ( corner, dim, resolution )
-    fileobj = StringIO.StringIO ( )
-    cb.xySlice ( fileobj )
-  except:
-    return web.notfound()
+  cdb = cubedb.CubeDB ( dbcfg )
+  cb = cdb.cutout ( corner, dim, resolution )
+  fileobj = StringIO.StringIO ( )
+  cb.xySlice ( fileobj )
 
-  web.header('Content-type', 'image/png') 
   fileobj.seek(0)
   return fileobj.read()
   
-def xzImage ( imageargs, dbcfg ):
+def xzImage ( webargs, dbcfg ):
   """Return an xz plane fileobj.read()"""
 
   # Perform argument processing
   args = restargs.BrainRestArgs ();
+  imageargs = args.resolutionArg ( webargs, dbcfg )
   args.xzArgs ( imageargs, dbcfg )
 
   # Extract the relevant values
@@ -140,24 +122,21 @@ def xzImage ( imageargs, dbcfg ):
   dim = args.getDim()
   resolution = args.getResolution()
 
-  try:
-    cdb = cubedb.CubeDB ( dbcfg )
-    cb = cdb.cutout ( corner, dim, resolution )
-    fileobj = StringIO.StringIO ( )
-    cb.xzSlice ( dbcfg.zscale[resolution], fileobj )
-  except:
-    return web.notfound()
+  cdb = cubedb.CubeDB ( dbcfg )
+  cb = cdb.cutout ( corner, dim, resolution )
+  fileobj = StringIO.StringIO ( )
+  cb.xzSlice ( dbcfg.zscale[resolution], fileobj )
 
-  web.header('Content-type', 'image/png') 
   fileobj.seek(0)
   return fileobj.read()
   
 
-def yzImage ( imageargs, dbcfg ):
+def yzImage ( webargs, dbcfg ):
   """Return an yz plane fileobj.read()"""
 
   # Perform argument processing
   args = restargs.BrainRestArgs ();
+  imageargs = args.resolutionArg ( webargs, dbcfg )
   args.yzArgs ( imageargs, dbcfg )
 
   # Extract the relevant values
@@ -165,15 +144,11 @@ def yzImage ( imageargs, dbcfg ):
   dim = args.getDim()
   resolution = args.getResolution()
 
-  try:
-    cdb = cubedb.CubeDB ( dbcfg )
-    cb = cdb.cutout ( corner, dim, resolution )
-    fileobj = StringIO.StringIO ( )
-    cb.yzSlice ( dbcfg.zscale[resolution], fileobj )
-  except:
-    return web.notfound()
+  cdb = cubedb.CubeDB ( dbcfg )
+  cb = cdb.cutout ( corner, dim, resolution )
+  fileobj = StringIO.StringIO ( )
+  cb.yzSlice ( dbcfg.zscale[resolution], fileobj )
 
-  web.header('Content-type', 'image/png') 
   fileobj.seek(0)
   return fileobj.read()
 
@@ -187,25 +162,25 @@ def yzImage ( imageargs, dbcfg ):
 def selectService ( webargs, dbcfg ):
   """Parse the first arg and call service, HDF5, mpz, etc."""
 
-  [ service, sym, restargs ] = webargs.partition ('/')
+  [ service, sym, cutoutargs ] = webargs.partition ('/')
 
   if service == 'xy':
-    return xyImage ( restargs, dbcfg )
+    return xyImage ( cutoutargs, dbcfg )
 
   elif service == 'xz':
-    return xzImage ( restargs, dbcfg )
+    return xzImage ( cutoutargs, dbcfg )
 
   elif service == 'yz':
-    return yzImage ( restargs, dbcfg )
+    return yzImage ( cutoutargs, dbcfg )
 
   elif service == 'hdf5':
-    return HDF5 ( restargs, dbcfg )
+    return HDF5 ( cutoutargs, dbcfg )
 
   elif service == 'npz':
-    return  numpyZip ( restargs, dbcfg )
+    return  numpyZip ( cutoutargs, dbcfg )
 
   else:
-    return web.notfound()
+    raise restargs.RESTBadArgsError ("No such service: %s" % service )
 
 #
 #  Choose the appropriate data set.
