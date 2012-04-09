@@ -1,5 +1,7 @@
 Example scripts that demonstrate how to use the service.
 
+URLs are currently configured to work with the python manage.py runserver command.
+
 *** hdf5MakePNGs.py
 
   Get an HDF5 file from the cutout service and write a series of PNG files that show the data
