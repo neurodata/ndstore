@@ -2,6 +2,15 @@
 #  dbconfig: based class for database configuration
 #
 
+
+class DBConfigError(Exception): 
+  """Failed to load dataset"""
+  def __init__(self, value):
+    self.value = value
+  def __str__(self):
+    return repr(self.value)
+
+
 class dbConfig:
   """Base class for database configuration"""
 
@@ -27,3 +36,21 @@ class dbConfig:
     return  [ self.imagesz [resolution], self.slicerange ]
 
 # end dbconfig
+
+def switchDataset ( dataset ):
+  """Load the appropriate dbconfig project based on the dataset name"""
+
+  # Switch on the dataset
+  if dataset == 'hayworth5nm':
+    import dbconfighayworth5nm
+    return dbconfighayworth5nm.dbConfigHayworth5nm()
+  elif dataset == 'bock11':
+    import dbconfigbock11
+    return dbconfigbock11.dbConfigBock11()
+  elif dataset == 'kasthuri11':
+    import dbconfigkasthuri11
+    return dbconfigkasthuri11.dbConfigKasthuri11()
+  else:
+    # RBTODO make this a dbconfig exception
+    raise DBConfigError ("Could not find dataset = %s" % annoproj.getDataSet() )
+

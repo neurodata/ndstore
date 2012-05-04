@@ -29,8 +29,7 @@ def cutout ( imageargs, dbcfg, annoproj ):
 
   # Perform argument processing
   args = restargs.BrainRestArgs ();
-  args.setResolution ( annoproj.getResolution() )
-  args.cutoutArgs2 ( imageargs, dbcfg )
+  args.cutoutArgs ( imageargs, dbcfg )
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -89,8 +88,6 @@ def xyImage ( imageargs, dbcfg, annoproj ):
 
   # Perform argument processing
   args = restargs.BrainRestArgs ();
-  # Don't love this, but must either parse or set resolution before xyArgs call
-  args.setResolution ( annoproj.getResolution() )
   args.xyArgs ( imageargs, dbcfg )
 
   # Extract the relevant values
@@ -111,7 +108,6 @@ def xzImage ( imageargs, dbcfg, annoproj ):
 
   # Perform argument processing
   args = restargs.BrainRestArgs ();
-  args.setResolution ( annoproj.getResolution() )
   args.xzArgs ( imageargs, dbcfg )
 
   # Extract the relevant values
@@ -132,7 +128,6 @@ def yzImage ( imageargs, dbcfg, annoproj ):
 
   # Perform argument processing
   args = restargs.BrainRestArgs ();
-  args.setResolution ( annoproj.getResolution() )
   args.yzArgs ( imageargs, dbcfg )
 
   # Extract the relevant values
@@ -156,7 +151,7 @@ def annId ( imageargs, dbcfg, annoproj ):
   """Return the annotation identifier of a voxel"""
 
   # Perform argument processing
-  voxel = restargs.voxel ( imageargs, dbcfg, annoproj.getResolution() )
+  voxel = restargs.voxel ( imageargs, dbcfg )
 
   # Get the identifier
   annodb = anndb.AnnotateDB ( dbcfg, annoproj )
@@ -222,7 +217,7 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
     fileobj = cStringIO.StringIO ( postdata )
     voxlist =  np.load ( fileobj )
 
-    # Make the annotation to the database
+    # Bind the annotation database
     annoDB = anndb.AnnotateDB ( dbcfg, annoproj )
 
     # Choose the verb, get the entity (as needed), and annotate
@@ -252,15 +247,15 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
 
   elif service == 'npdense':
 
-    [ verb, xstr, ystr, zstr, conflictarg ] = postargs.split ('/', 4)
+    [ verb, sym, cutoutargs ] = postargs.partition ('/')
 
     # Process the arguments
     args = restargs.BrainRestArgs ();
-    args.setResolution ( annoproj.getResolution() )
-    args.cutoutArgs ( xstr, ystr, zstr, dbcfg )
+    args.cutoutArgs ( cutoutargs, dbcfg )
 
     corner = args.getCorner()
     dim = args.getDim()
+    resolution = args.getResolution()
 
     # get the data out of the compressed blob
     rawdata = zlib.decompress ( postdata )
@@ -274,12 +269,12 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
     # Translates the values directly
     if verb == 'add':
       conflictopt = restargs.conflictOption ( conflictarg )
-      entityid = annoDB.addEntityDense ( corner, dim, voxarray, conflictopt )
+      entityid = annoDB.addEntityDense ( corner, dim, resolution, voxarray, conflictopt )
 
     # renumbers the annotations
-    elif verb == 'new':
-      conflictopt = restargs.conflictOption ( serviceargs )
-      entityid = annoDB.newEntityDense ( voxarray, conflictopt )
+#    elif verb == 'new':
+#      conflictopt = restargs.conflictOption ( serviceargs )
+#      entityid = annoDB.newEntityDense ( corner, dime, resolution, voxarray, conflictopt )
 
     else: 
       raise restargs.RESTBadArgsError ("No such verb: %s" % verb )
@@ -316,28 +311,11 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
     return "Not yet"
     pass
 
-  elif service == 'csv':
-    return "No csv format specified yet"
 
   else:
     raise restargs.RESTBadArgsError ("No such service: %s" % service )
     
 
-def switchDataset ( annoproj ):
-  """Load the appropriate dbconfig project based on the dataset name"""
-
-  # Switch on the dataset
-  if annoproj.getDataset() == 'hayworth5nm':
-    import dbconfighayworth5nm
-    return dbconfighayworth5nm.dbConfigHayworth5nm()
-  elif annoproj.getDataset() == 'bock11':
-    import dbconfigbock11
-    return dbconfigbock11.dbConfigBock11()
-  elif annoproj.getDataset() == 'kasthuri11':
-    import dbconfigkasthuri11
-    return dbconfigkasthuri11.dbConfigKasthuri11()
-  else:
-    raise restargs.RESTBadArgsError ("Could not find dataset = %s" % annoproj.getDataSet() )
 
 #
 #  Interface to annotation by project.
@@ -352,7 +330,7 @@ def annoget ( webargs ):
   [ token, sym, rangeargs ] = webargs.partition ('/')
   annprojdb = annproj.AnnotateProjectsDB()
   annoproj = annprojdb.getAnnoProj ( token )
-  dbcfg = switchDataset ( annoproj )
+  dbcfg = dbconfig.switchDataset ( annoproj.getDataset() )
   return selectService ( rangeargs, dbcfg, annoproj )
 
 
@@ -364,7 +342,7 @@ def annopost ( webargs, postdata ):
   [ token, sym, rangeargs ] = webargs.partition ('/')
   annprojdb = annproj.AnnotateProjectsDB()
   annoproj = annprojdb.getAnnoProj ( token )
-  dbcfg = switchDataset ( annoproj )
+  dbcfg = dbconfig.switchDataset ( annoproj.getDataset() )
   return selectPost ( rangeargs, dbcfg, annoproj, postdata )
 
 
