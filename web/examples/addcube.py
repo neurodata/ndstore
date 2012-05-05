@@ -15,6 +15,7 @@ def main():
 
   parser = argparse.ArgumentParser(description='Annotate a cubic a portion of the database.')
   parser.add_argument('token', action="store" )
+  parser.add_argument('resolution', action="store", type=int )
   parser.add_argument('xlow', action="store", type=int )
   parser.add_argument('xhigh', action="store", type=int)
   parser.add_argument('ylow', action="store", type=int)
@@ -32,8 +33,7 @@ def main():
       for i in range (result.xlow,result.xhigh):
         voxlist.append ( [ i,j,k ] )
 
-#  url = 'http://127.0.0.1/EM/annotate/%s/npvoxels/new/' % ( result.token )
-  url = 'http://127.0.0.1:8000/annotate/%s/npvoxels/new/' % ( result.token )
+  url = 'http://127.0.0.1:8000/annotate/%s/npvoxels/new/%s/' % ( result.token, result.resolution )
   
   print url
 

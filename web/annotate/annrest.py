@@ -240,7 +240,6 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
 
     elif verb == 'new':
       conflictopt = restargs.conflictOption ( serviceargs )
-      # RB you are here.....debugging.
       entityid = annoDB.newEntity ( resolution, voxlist, conflictopt )
 
     else: 

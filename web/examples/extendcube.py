@@ -14,7 +14,9 @@ import zindex
 def main():
 
   parser = argparse.ArgumentParser(description='Cutout a portion of the database.')
+  parser.add_argument('token', action="store")
   parser.add_argument('entity', action="store", type=int )
+  parser.add_argument('resolution', action="store", type=int )
   parser.add_argument('xlow', action="store", type=int )
   parser.add_argument('xhigh', action="store", type=int)
   parser.add_argument('ylow', action="store", type=int)
@@ -32,37 +34,20 @@ def main():
       for i in range (result.xlow,result.xhigh):
         voxlist.append ( [ i,j,k ] )
 
-  WS = True
-  # Use the Web services
-  if ( WS == True ): 
+  url = 'http://127.0.0.1:8000/annotate/%s/npvoxels/extend/%s/%s/' % ( result.token, result.resolution, result.entity )
 
+  print url
 
-    url = "http://0.0.0.0:8080/annotate/1111/npextend/%s/overwrite/" \
-             % result.entity
+  # Encode the voxelist an pickle
+  fileobj = cStringIO.StringIO ()
+  np.save ( fileobj, voxlist )
 
-    print url
+  # Build the post request
+  req = urllib2.Request(url, fileobj.getvalue())
+  response = urllib2.urlopen(req)
+  the_page = response.read()
 
-    # Encode the voxelist an pickle
-    fileobj = cStringIO.StringIO ()
-    np.save ( fileobj, voxlist )
-
-    # Build the post request
-    req = urllib2.Request(url, fileobj.getvalue())
-    response = urllib2.urlopen(req)
-    the_page = response.read()
-
-    print the_page
-
-  # Insert via object
-  else: 
-    dbcfg = dbconfighayworth5nm.dbConfigHayworth5nm()
-
-    annoDB = anndb.AnnotateDB ( dbcfg )
-    # Build a grayscale file and display
-    annoDB.extendEntity ( result.id, voxlist, 'O'  )
-
-    print "Extended entity with identifier = ", result.id
-
+  print the_page
 
 if __name__ == "__main__":
       main()
