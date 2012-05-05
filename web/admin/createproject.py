@@ -12,14 +12,13 @@ def main():
   parser.add_argument('host', action="store")
   parser.add_argument('project', action="store")
   parser.add_argument('dataset', action="store")
-  parser.add_argument('resolution', action="store", type=int)
 
   result = parser.parse_args()
 
   # Get database info
   pd = annproj.AnnotateProjectsDB()
 
-  pd.newAnnoProj ( result.token, result.openid, result.host, result.project, result.dataset, result.resolution )
+  pd.newAnnoProj ( result.token, result.openid, result.host, result.project, result.dataset )
 
 
 if __name__ == "__main__":

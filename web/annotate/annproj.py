@@ -2,6 +2,7 @@ import empaths
 import MySQLdb
 
 import annpriv
+import dbconfig
 
 #
 #  AnnotateCube: manipulate the in-memory data representation of the 3-d cube of data
@@ -26,18 +27,16 @@ class AnnotateProject:
   """Project specific annotation data"""
 
   # Constructor 
-  def __init__(self, dbname, dbhost, dataset, resolution ):
+  def __init__(self, dbname, dbhost, dataset ):
     """Initialize the Annotation Project"""
     
     self._dbhost = dbhost
     self._dbname = dbname
     self._dataset = dataset
-    self._resolution = resolution
+
 
     # Could add these to dbconfig.  Probably remove res as tablebase instead
     self._ids_tbl = "ids"
-    self._except_tbl = "exceptions"
-    self._ann_tbl = "annotations" 
 
 
   # Accessors
@@ -47,16 +46,10 @@ class AnnotateProject:
     return self._dbname
   def getDataset ( self ):
     return self._dataset
-  def getResolution ( self ):
-    return self._resolution
   def getIDsTbl ( self ):
     return self._ids_tbl
   def getEntitiesTbl ( self ):
     return self._entities_tbl
-  def getExceptionsTbl ( self ):
-    return self._exceptionss_tbl
-  def getAnnotationsTbl( self ):
-    return self._ann_tbl
 
   # accessors for RB to fix
   def getDBUser( self ):
@@ -106,22 +99,24 @@ class AnnotateProjectsDB:
       print "No project found"
       raise AnnoProjException ( "Project token not found" )
 
-    [token, openid, host, project, dataset, resolution] = row
+    [token, openid, host, project, dataset ] = row
 
-    return AnnotateProject ( project, host, dataset, resolution )
+    return AnnotateProject ( project, host, dataset )
 
 
   #
   # Load the annotation databse information based on the token
   #
-  def newAnnoProj ( self, token, openid, dbhost, project, dataset, resolution ):
+  def newAnnoProj ( self, token, openid, dbhost, project, dataset ):
     """Create a new annotation project"""
+
+    dbcfg = dbconfig.switchDataset ( dataset )
 
     print dbhost, project
 
     # Insert the project entry into the database
-    sql = "INSERT INTO {0} VALUES ( \'{1}\', \'{2}\', \'{3}\', \'{4}\', \'{5}\', {6} )".format (\
-        annpriv.table, token, openid, dbhost, project, dataset, resolution )
+    sql = "INSERT INTO {0} VALUES ( \'{1}\', \'{2}\', \'{3}\', \'{4}\', \'{5}\' )".format (\
+        annpriv.table, token, openid, dbhost, project, dataset )
 
     print sql
 
@@ -143,6 +138,8 @@ class AnnotateProjectsDB:
       print "Failed to create database for new project", e
       raise AnnoProjException ( "Failed to create database for new project" )
 
+    self.conn.commit()
+
     # Connect to the new database
     newconn = MySQLdb.connect (host = dbhost,
                           user = annpriv.dbuser,
@@ -151,9 +148,12 @@ class AnnotateProjectsDB:
 
     newcursor = newconn.cursor()
 
-    sql = "create table ids ( id BIGINT PRIMARY KEY);\
-           create table exceptions ( zindex BIGINT, id BIGINT, exlist LONGBLOB, PRIMARY KEY ( zindex, id ));\
-           create table annotations ( zindex BIGINT PRIMARY KEY, cube LONGBLOB );"
+    sql = "create table ids ( id BIGINT PRIMARY KEY);\n"
+
+    for i in dbcfg.resolutions: 
+      sql += "create table res%s ( zindex BIGINT PRIMARY KEY, cube LONGBLOB );\n" % i
+
+    print sql
 
     try:
       cursor = newconn.cursor()
@@ -161,8 +161,3 @@ class AnnotateProjectsDB:
     except MySQLdb.Error, e:
       print "Failed to create tables for new project", e
       raise AnnoProjException ( "Failed to create database for nww project" )
-
-    self.conn.commit()
-    newconn.commit()
-
-

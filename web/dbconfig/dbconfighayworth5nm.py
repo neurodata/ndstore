@@ -21,10 +21,7 @@ class dbConfigHayworth5nm ( dbconfig.dbConfig ):
   tilesz = [ 256,256 ]
 
   #resolution information -- lowest resolution and list of resolution
-  baseres = 0
-#  resolutions = [ 5, 4, 3, 2, 1, 0 ]
-  resolutions = [ 5, 4 ]
-#  resolutions = [  2, 1 ]
+  resolutions = [ 5, 4, 3, 2, 1, 0 ]
 
   imagesz = { 5: [ 256, 256 ],\
               4: [ 2*256, 2*256 ],\

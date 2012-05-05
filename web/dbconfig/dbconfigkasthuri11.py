@@ -23,7 +23,6 @@ class dbConfigKasthuri11 ( dbconfig.dbConfig ):
   tilesz = [ 256,256 ]
 
   #resolution information -- lowest resolution and list of resolution
-  baseres = 0
   resolutions = [ 7, 6, 5, 4, 3, 2, 1, 0 ]
 
   imagesz = { 7: [ 256, 256 ],\
