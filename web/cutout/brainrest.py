@@ -1,8 +1,3 @@
-#  At some point we may want to figure out tempfile versus stringio..
-#   Tempfile is the only thing that will work for hdf5.  Should we
-#   adapt it to npz?
-#
-
 import sys
 import re
 import StringIO
@@ -32,8 +27,7 @@ def cutout ( webargs, dbcfg ):
 
   # Perform argument processing
   args = restargs.BrainRestArgs ();
-  cutoutargs = args.resolutionArg ( webargs, dbcfg )
-  args.cutoutArgs2 ( cutoutargs, dbcfg )
+  args.cutoutArgs ( webargs, dbcfg )
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -92,9 +86,7 @@ def xyImage ( webargs, dbcfg ):
 
   # Perform argument processing
   args = restargs.BrainRestArgs ();
-  imageargs = args.resolutionArg ( webargs, dbcfg )
-  
-  args.xyArgs ( imageargs, dbcfg )
+  args.xyArgs ( webargs, dbcfg )
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -114,8 +106,7 @@ def xzImage ( webargs, dbcfg ):
 
   # Perform argument processing
   args = restargs.BrainRestArgs ();
-  imageargs = args.resolutionArg ( webargs, dbcfg )
-  args.xzArgs ( imageargs, dbcfg )
+  args.xzArgs ( webargs, dbcfg )
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -136,8 +127,7 @@ def yzImage ( webargs, dbcfg ):
 
   # Perform argument processing
   args = restargs.BrainRestArgs ();
-  imageargs = args.resolutionArg ( webargs, dbcfg )
-  args.yzArgs ( imageargs, dbcfg )
+  args.yzArgs ( webargs, dbcfg )
 
   # Extract the relevant values
   corner = args.getCorner()

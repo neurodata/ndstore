@@ -64,6 +64,9 @@ class AnnotateProject:
   def getDBPasswd( self ):
     return annpriv.dbpasswd
 
+  def getTable ( self, resolution ):
+    """Return the appropriate table for the specified resolution"""
+    return "res"+str(resolution)
 
 class AnnotateProjectsDB:
   """Database for the annotation projects"""

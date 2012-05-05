@@ -10,13 +10,10 @@ import zindex
 
 from ann_cy import annotate_cy
 
-#TODO cython this thing up
-
 #
 #  AnnotateCube: manipulate the in-memory data representation of the 3-d cube of data
 #    that contains annotations.  
 #
-
 
 class AnnotateCube:
 

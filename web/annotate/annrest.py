@@ -211,7 +211,11 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
   if service == 'npvoxels':
 
     # which type of voxel post is it
-    [ verb, sym, serviceargs ] = postargs.partition ('/')
+    [ verb, sym, resargs ] = postargs.partition ('/')
+
+    #  get the resolution
+    [ resstr, sym, serviceargs ] = resargs.partition('/')
+    resolution = int(resstr)
 
     # Grab the voxel list
     fileobj = cStringIO.StringIO ( postdata )
@@ -225,20 +229,19 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
 
       [ entity, sym, conflictargs ] = serviceargs.partition ('/')
       conflictopt = restargs.conflictOption ( conflictargs )
-      entityid = annoDB.addEntity ( int(entity), voxlist, conflictopt )
+      entityid = annoDB.addEntity ( int(entity), resolution, voxlist, conflictopt )
       
 
     elif verb == 'extend':
 
       [ entity, sym, conflictargs ] = serviceargs.partition ('/')
       conflictopt = restargs.conflictOption ( conflictargs )
-      entityid = annoDB.extendEntity ( int(entity), voxlist, conflictopt )
+      entityid = annoDB.extendEntity ( int(entity), resolution, voxlist, conflictopt )
 
     elif verb == 'new':
       conflictopt = restargs.conflictOption ( serviceargs )
-      t1 = time()
-      entityid = annoDB.newEntity ( voxlist, conflictopt )
-      print time() -t1
+      # RB you are here.....debugging.
+      entityid = annoDB.newEntity ( resolution, voxlist, conflictopt )
 
     else: 
       raise restargs.RESTBadArgsError ("No such verb: %s" % verb )
@@ -246,7 +249,7 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
     return str(entityid)
 
   elif service == 'npdense':
-
+    
     [ verb, sym, cutoutargs ] = postargs.partition ('/')
 
     # Process the arguments
@@ -256,6 +259,13 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
     corner = args.getCorner()
     dim = args.getDim()
     resolution = args.getResolution()
+
+    # RBTODO conflict option with cutout args doesn't work.  Using overwrite now.
+    #  Will probably need to fix cutout
+    #  Or make conflict option a part of the annotation database configuration.
+    conflictopt = restargs.conflictOption ( "" )
+
+    # RBTODO need to add conflict argument
 
     # get the data out of the compressed blob
     rawdata = zlib.decompress ( postdata )
@@ -268,7 +278,6 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
     # Choose the verb, get the entity (as needed), and annotate
     # Translates the values directly
     if verb == 'add':
-      conflictopt = restargs.conflictOption ( conflictarg )
       entityid = annoDB.addEntityDense ( corner, dim, resolution, voxarray, conflictopt )
 
     # renumbers the annotations
@@ -283,6 +292,8 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
 
   #RBTODO HDF5 for matlab users?
   elif service == 'h5new':
+
+    assert 0  # rb test fix
 
     [ entity, sym, conflictargs ] = postargs.partition ('/')
     conflictopt = restargs.conflictOption ( conflictargs )
@@ -311,12 +322,9 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
     return "Not yet"
     pass
 
-
   else:
     raise restargs.RESTBadArgsError ("No such service: %s" % service )
     
-
-
 #
 #  Interface to annotation by project.
 #   Lookup the project token in the database and figure out the 
