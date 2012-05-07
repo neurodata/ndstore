@@ -57,8 +57,9 @@ class AnnoStack:
       #  Round up the zlimit to the next larger
       zlimit = (((slices-1)/zcubedim+1)*zcubedim)/zcubedim 
 
-      # RBTODO these constants need to go
-
+      # These constants work for all resolutions.  Bigger batches are harder.
+      #  They require logic about 
+      #  They also transfer entire blocks. 
       # Create an output buffer
       outdata = np.zeros ( [ zcubedim*4, ycubedim*2, xcubedim*2 ] )
 
