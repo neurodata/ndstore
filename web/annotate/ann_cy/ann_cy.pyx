@@ -4,7 +4,6 @@ cimport numpy as np
 DTYPE = np.uint32
 ctypedef np.uint32_t DTYPE_t
 
-
 def annotate_cy ( np.ndarray[DTYPE_t, ndim=3] data, int annid, offset, np.ndarray[DTYPE_t, ndim=2] locations, conflictopt ):
   """Add annotation by a list of locations"""
 
@@ -42,3 +41,44 @@ def annotate_cy ( np.ndarray[DTYPE_t, ndim=3] data, int annid, offset, np.ndarra
         assert 0
 
   return exceptions
+
+
+cdef int getAnnValue ( int value00, int value01, int value10, int value11 ):
+  """Determine the annotation value at the next level of the hierarchy from a 2x2"""
+
+  # The following block of code places the majority annotation into value
+  # start with 00
+  cdef int value = value00
+
+  # put 01 in if not 00
+  # if they are the same, that's fine
+  if value == 0:
+    value = value01
+
+  if value10 != 0:
+    if value == 0:
+      value = value10
+    # if this value matches a previous it is 2 out of 4
+    elif value10 == value00 or value10 == value01:
+      value = value10
+
+  if value11 != 0:
+    if value == 0:
+      value = value10
+    elif value11==value00 or value11==value01 or value11==value10:
+      value = value11
+
+  return value
+
+
+
+def addData ( cube, output, offset ):
+    """Add the contribution of the input data to the next level at the given offset in the output cube"""
+
+    for z in range (cube.data.shape[0]):
+      for y in range (cube.data.shape[1]/2):
+        for x in range (cube.data.shape[2]/2):
+           
+            value = getAnnValue (cube.data[z,y*2,x*2],cube.data[z,y*2,x*2+1],cube.data[z,y*2+1,x*2],cube.data[z,y*2+1,x*2+1])
+            output [ z+offset[2], y+offset[1], x+offset[0] ] = value
+

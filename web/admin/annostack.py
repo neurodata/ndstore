@@ -11,6 +11,8 @@ import anndb
 import dbconfig
 import zindex
 
+from ann_cy import addData
+
 """Construct an annotation hierarchy off of a completed annotation database."""
 
 class AnnoStack:
@@ -36,13 +38,14 @@ class AnnoStack:
     pass
 
 
-  # You will need to cython this
   def addData ( self, cube, output, offset ):
     """Add the contribution of the input data to the next level at the given offset in the output cube"""
 
     for z in range (cube.data.shape[0]):
       for y in range (cube.data.shape[1]/2):
         for x in range (cube.data.shape[2]/2):
+            
+# The following code was moved to cython
 
             # these are the inputs for each cell
             value00 = cube.data [ z, y*2, x*2 ] 
@@ -72,8 +75,6 @@ class AnnoStack:
               elif value11==value00 or value11==value01 or value11==value10:
                 value = value11
             
-            #We now have a winner in value
-            # RBTODO deal with exceptions
             output [ z+offset[2], y+offset[1], x+offset[0] ] = value
 
 
@@ -126,20 +127,27 @@ class AnnoStack:
           # zero the output buffer
           outdata = np.zeros ( [ zcubedim*4, ycubedim*2, xcubedim*2 ] )
 
-        # RBTODO Maybe find a way to not load the all zero regions does this in annotate
 
         cube = self.annoDB.getCube ( mortonidx, l )
 
-        xyz = zindex.MortonXYZ ( mortonidx )
+        # only process cubes with real data
+        if not cube.fromZeros():
 
-        # Compute the offset in the output data cube 
-        #  we are placing 4x4x4 input blocks into a 2x2x4 cube 
-        offset = [(xyz[0]%4)*(xcubedim/2), (xyz[1]%4)*(ycubedim/2), (xyz[2]%4)*zcubedim]
+          xyz = zindex.MortonXYZ ( mortonidx )
 
-        print "res:zindex", l, ":", mortonidx, "location", zindex.MortonXYZ(mortonidx)
+          # Compute the offset in the output data cube 
+          #  we are placing 4x4x4 input blocks into a 2x2x4 cube 
+          offset = [(xyz[0]%4)*(xcubedim/2), (xyz[1]%4)*(ycubedim/2), (xyz[2]%4)*zcubedim]
 
-        # add the contribution of the cube in the hierarchy
-        self.addData ( cube, outdata, offset )
+          print "res:zindex", l, ":", mortonidx, "location", zindex.MortonXYZ(mortonidx)
+
+          # add the contribution of the cube in the hierarchy
+          #self.addData ( cube, outdata, offset )
+          # use the cython version
+          addData ( cube, outdata, offset )
+
+        else:
+          print "Ignoring zero data at", zindex.MortonXYZ ( mortonidx )
 
       # Write out the last piece of data
       # 64 = 4*4*4 cubes 
