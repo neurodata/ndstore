@@ -66,63 +66,65 @@ class AnnoStack:
       # We've written to this offset already
       prevmortonidx = 0
 
+      # Round up to the top of the range
+      lastzindex = (zindex.XYZMorton([xlimit,ylimit,zlimit])/64+1)*64
+
       # Iterate over the cubes in morton order
-      for mortonidx in zindex.generator ( [xlimit, ylimit, zlimit] ):
+      for mortonidx in range(0, lastzindex, 64): 
 
-        # Write out the data when we cross a boundary
-        # 64 = 4*4*4 cubes 
-        # The indexes don't come sequentially
-        if mortonidx/64 > prevmortonidx/64:
+        print "Working on batch %s at %s" % (mortonidx, zindex.MortonXYZ(mortonidx))
+        
+        # call the range query
+        self.annoDB.queryRange ( mortonidx, mortonidx+64, l );
 
-          #  Get the base location of this batch
-          xyzout = zindex.MortonXYZ ( prevmortonidx )
-          prevmortonidx+=64
+        # Flag to indicate no data.  No update query
+        somedata = False
 
-          outcorner = [ xyzout[0]/2*xcubedim, xyzout[1]/2*ycubedim, xyzout[2]*zcubedim ]
-          #  Data stored in z,y,x order dims in x,y,z
-          outdim = [ outdata.shape[2], outdata.shape[1], outdata.shape[0]]
-          # Preserve annotations made at the specified level
-          # RBTODO fix me
-          self.annoDB.annotateEntityDense ( outcorner, outdim, l+1, outdata, 'O' )
-          
-          # zero the output buffer
-          outdata = np.zeros ( [ zcubedim*4, ycubedim*2, xcubedim*2 ] )
+        # get the first cube
+        [key,cube]  = self.annoDB.getNextCube ()
 
+        #  if there's a cube, there's data
+        if key != None:
+          somedata = True
 
-        cube = self.annoDB.getCube ( mortonidx, l )
+        while key != None:
 
-        # only process cubes with real data
-        if not cube.fromZeros():
-
-          xyz = zindex.MortonXYZ ( mortonidx )
+          xyz = zindex.MortonXYZ ( key )
 
           # Compute the offset in the output data cube 
           #  we are placing 4x4x4 input blocks into a 2x2x4 cube 
           offset = [(xyz[0]%4)*(xcubedim/2), (xyz[1]%4)*(ycubedim/2), (xyz[2]%4)*zcubedim]
 
-          print "res:zindex", l, ":", mortonidx, "location", zindex.MortonXYZ(mortonidx)
+          print "res : zindex = ", l, ":", key, ", location", zindex.MortonXYZ(key)
 
           # add the contribution of the cube in the hierarchy
           #self.addData ( cube, outdata, offset )
           # use the cython version
           addData ( cube, outdata, offset )
 
+          # Get the next value
+          [key,cube]  = self.annoDB.getNextCube ()
+
+        # Now store the data 
+        if somedata == True:
+
+          #  Get the base location of this batch
+          xyzout = zindex.MortonXYZ ( mortonidx )
+
+          outcorner = [ xyzout[0]/2*xcubedim, xyzout[1]/2*ycubedim, xyzout[2]*zcubedim ]
+
+          #  Data stored in z,y,x order dims in x,y,z
+          outdim = [ outdata.shape[2], outdata.shape[1], outdata.shape[0]]
+
+          # Preserve annotations made at the specified level RBTODO fix me
+          self.annoDB.annotateEntityDense ( outcorner, outdim, l+1, outdata, 'O' )
+            
+          # zero the output buffer
+          outdata = np.zeros ([zcubedim*4, ycubedim*2, xcubedim*2])
+
         else:
-          print "Ignoring zero data at", zindex.MortonXYZ ( mortonidx )
+          print "No data in this batch"
 
-      # Write out the last piece of data
-      # 64 = 4*4*4 cubes 
-
-      #  Get the base location of this batch
-      xyzout = zindex.MortonXYZ ( prevmortonidx )
-
-      outcorner = [ xyzout[0]/2*xcubedim, xyzout[1]/2*ycubedim, xyzout[2]*zcubedim ]
-      #  Data stored in z,y,x order dims in x,y,z
-      outdim = [ outdata.shape[2], outdata.shape[1], outdata.shape[0]]
-      # Preserve annotations made at the specified level
-      # RBTODO fix me
-      self.annoDB.annotateEntityDense ( outcorner, outdim, l+1, outdata, 'O' )
-        
 
 def main():
 

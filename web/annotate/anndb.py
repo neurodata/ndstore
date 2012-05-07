@@ -172,15 +172,17 @@ class AnnotateDB:
   def queryRange ( self, lowkey, highkey, resolution ):
     """Create a stateful query to a range of values not including the high value.
          To be used with getNextCube().
-         Not thread safe (context per object)"""
+         Not thread safe (context per object)
+         Also, one cursor only.  Not at multiple resolutions"""
 
-    self._qrcursor = self.conn.cursor ()
+    self._qr_cursor = self.conn.cursor ()
+    self._qr_resolution = resolution
 
     # get the block from the database
-    sql = "SELECT cube FROM " + self.annoproj.getTable(resolution) + " WHERE zindex >= " + str(lowkey) + " AND zindex < " + str(highkey)
+    sql = "SELECT zindex, cube FROM " + self.annoproj.getTable(resolution) + " WHERE zindex >= " + str(lowkey) + " AND zindex < " + str(highkey)
 
     try:
-      self._qrcursor.execute ( sql )
+      self._qr_cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Failed to retrieve cube %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       assert 0
@@ -194,22 +196,22 @@ class AnnotateDB:
          Not thread safe (context per object)"""
 
     # get the size of the image and cube
-    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.dbcfg.cubedim [ resolution ] 
+    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.dbcfg.cubedim [ self._qr_resolution ] 
 
     # Create a cube object
     cube = anncube.AnnotateCube ( cubedim )
 
-    row = self._qrcursor.fetchone ()
+    row = self._qr_cursor.fetchone()
 
     # If we can't find a cube, assume it hasn't been written yet
     if ( row == None ):
       cube.zeros ()
-      self._qrcursor.close()
+      self._qr_cursor.close()
+      return [None,None]
     else: 
       # decompress the cube
-      cube.fromNPZ ( row[0] )
-     
-    return cube
+      cube.fromNPZ ( row[1] )
+      return [row[0],cube]
 
   #
   # getExceptions
