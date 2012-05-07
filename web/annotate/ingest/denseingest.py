@@ -82,26 +82,31 @@ def main():
         for z in range ( zlow, zhigh, _zingestsz ):
           for y in range ( ylow, yhigh, _yingestsz ):
             for x in range ( xlow, xhigh, _xingestsz ):
-
-              url = 'http://127.0.0.1/EM/annotate/%s/npdense/add/%s,%s/%s,%s/%s,%s/' % ( result.token, x, min(xhigh,x+_xingestsz), y, min(yhigh,y+_yingestsz), z, min(zhigh,z+_zingestsz ))
-
-              print url
-
-              # Encode the voxelist an pickle
-              fileobj = cStringIO.StringIO ()
+              
+              # cutout the data
               data = newdata[ z-zlow:min(zhigh,z+_zingestsz)-zlow,\
                               y-ylow:min(yhigh,y+_yingestsz)-ylow,\
                               x-xlow:min(xhigh,x+_xingestsz)-xlow]
-              np.save ( fileobj, newdata[ z-zlow:min(zhigh,z+_zingestsz)-zlow,\
-                                          y-ylow:min(yhigh,y+_yingestsz)-ylow,\
-                                          x-xlow:min(xhigh,x+_xingestsz)-xlow] )
 
-              cdz = zlib.compress (fileobj.getvalue())
+              # check if there's anything to store
+              if ( np.count_nonzero(data) != 0 ):
 
-              # Build the post request
-              req = urllib2.Request(url, cdz)
-              response = urllib2.urlopen(req)
-              the_page = response.read()
+                url = 'http://127.0.0.1/EM/annotate/%s/npdense/add/%s,%s/%s,%s/%s,%s/' % ( result.token, x, min(xhigh,x+_xingestsz), y, min(yhigh,y+_yingestsz), z, min(zhigh,z+_zingestsz ))
+
+                print url
+
+                # Encode the voxelist an pickle
+                fileobj = cStringIO.StringIO ()
+                np.save ( fileobj, newdata[ z-zlow:min(zhigh,z+_zingestsz)-zlow,\
+                                            y-ylow:min(yhigh,y+_yingestsz)-ylow,\
+                                            x-xlow:min(xhigh,x+_xingestsz)-xlow] )
+
+                cdz = zlib.compress (fileobj.getvalue())
+
+                # Build the post request
+                req = urllib2.Request(url, cdz)
+                response = urllib2.urlopen(req)
+                the_page = response.read()
 
 
 if __name__ == "__main__":
