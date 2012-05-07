@@ -38,46 +38,6 @@ class AnnoStack:
     pass
 
 
-  def addData ( self, cube, output, offset ):
-    """Add the contribution of the input data to the next level at the given offset in the output cube"""
-
-    for z in range (cube.data.shape[0]):
-      for y in range (cube.data.shape[1]/2):
-        for x in range (cube.data.shape[2]/2):
-            
-# The following code was moved to cython
-
-            # these are the inputs for each cell
-            value00 = cube.data [ z, y*2, x*2 ] 
-            value01 = cube.data [ z, y*2, x*2+1 ] 
-            value10 = cube.data [ z, y*2+1, x*2 ]
-            value11 = cube.data [ z, y*2+1, x*2+1 ]
-      
-            # The following block of code places the majority annotation into value
-            # start with 00
-            value = value00
-
-            # put 01 in if not 00
-            # if they are the same, that's fine
-            if value == 0:
-              value = value01
-
-            if value10 != 0:
-              if value == 0:
-                value = value10
-              # if this value matches a previous it is 2 out of 4
-              elif value10 == value00 or value10 == value01:
-                value = value10
-
-            if value11 != 0:
-              if value == 0:
-                value = value10
-              elif value11==value00 or value11==value01 or value11==value10:
-                value = value11
-            
-            output [ z+offset[2], y+offset[1], x+offset[0] ] = value
-
-
   def buildStack ( self, startlevel ):
     """Build the hierarchy of annotations"""
 
@@ -167,7 +127,7 @@ def main():
 
   parser = argparse.ArgumentParser(description='Build a stack of annotations')
   parser.add_argument('token', action="store", help='Token for the annotation project.')
-  parser.add_argument('level', action="store", type=int, help='Start (highest) resolution')
+  parser.add_argument('resolution', action="store", type=int, help='Start (highest) resolution')
   
   result = parser.parse_args()
 
@@ -175,7 +135,7 @@ def main():
   annstack = AnnoStack ( result.token )
 
   # Iterate over the database creating the hierarchy
-  annstack.buildStack ( result.level )
+  annstack.buildStack ( result.resolution )
   
 
 
