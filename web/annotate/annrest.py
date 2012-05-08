@@ -118,7 +118,7 @@ def xzImage ( imageargs, dbcfg, annoproj ):
   annodb = anndb.AnnotateDB ( dbcfg, annoproj )
   cb = annodb.cutout ( corner, dim, resolution )
   fileobj = StringIO.StringIO ( )
-  cb.xzSlice ( dbcfg.zscale[annoproj.getResolution()], fileobj )
+  cb.xzSlice ( dbcfg.zscale[resolution], fileobj )
 
   fileobj.seek(0)
   return fileobj.read()
@@ -138,7 +138,7 @@ def yzImage ( imageargs, dbcfg, annoproj ):
   annodb = anndb.AnnotateDB ( dbcfg, annoproj )
   cb = annodb.cutout ( corner, dim, resolution )
   fileobj = StringIO.StringIO ( )
-  cb.yzSlice ( dbcfg.zscale[annoproj.getResolution()], fileobj )
+  cb.yzSlice ( dbcfg.zscale[resolution], fileobj )
 
   fileobj.seek(0)
   return fileobj.read()
