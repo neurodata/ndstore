@@ -82,3 +82,20 @@ def addData ( cube, output, offset ):
             value = getAnnValue (cube.data[z,y*2,x*2],cube.data[z,y*2,x*2+1],cube.data[z,y*2+1,x*2],cube.data[z,y*2+1,x*2+1])
             output [ z+offset[2], y+offset[1], x+offset[0] ] = value
 
+
+
+def pngto32 ( np.ndarray[np.uint8_t,ndim=3] data ):
+  """Convert the numpy array of PNG channels to 32 bit integers"""
+
+  # I think this is yxchannel indexing 
+  cdef int xrange = data.shape[1]
+  cdef int yrange = data.shape[0]
+
+  cdef np.ndarray newdata = np.zeros([yrange,xrange], dtype=np.uint32) 
+
+  for y in range (yrange):
+    for x in range(xrange):
+      newdata[y,x] = (data[y,x,0] << 16) + (data[y,x,1] << 8) + data[y,x,2]
+
+  return newdata 
+       
