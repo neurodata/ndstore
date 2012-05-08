@@ -10,8 +10,6 @@ import dbconfig
 #
 
 
-# TODO need to add host to annoprojects
-
 #
 # Annotation project not found
 #
@@ -33,7 +31,6 @@ class AnnotateProject:
     self._dbhost = dbhost
     self._dbname = dbname
     self._dataset = dataset
-
 
     # Could add these to dbconfig.  Probably remove res as tablebase instead
     self._ids_tbl = "ids"
@@ -83,7 +80,6 @@ class AnnotateProjectsDB:
     # Lookup the information for the database project based on the token
     sql = "SELECT * from %s where token = \'%s\'" % (annpriv.table, token)
 
-    # RBTODO database query
     try:
       cursor = self.conn.cursor()
       cursor.execute ( sql )

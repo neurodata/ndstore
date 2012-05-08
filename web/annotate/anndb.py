@@ -2,6 +2,7 @@ import numpy as np
 import cStringIO
 import zlib
 import MySQLdb
+import collections
 
 import zindex
 import anncube
@@ -10,8 +11,6 @@ import annproj
 from time import time
 
 import sys
-
-#TODO convert the asserts into exceptions so that not found can be returned
 
 ################################################################################
 #
@@ -72,7 +71,7 @@ class AnnotateDB:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Problem retrieving identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-      assert 0
+      raise
 
     # Here we've queried the highest id successfully    
     row = cursor.fetchone ()
@@ -88,7 +87,7 @@ class AnnotateDB:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-      assert 0
+      raise
 
     # InnoDB needs a commit
     cursor.close()
@@ -116,7 +115,7 @@ class AnnotateDB:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Failed to retrieve cube %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-      assert 0
+      raise
 
     row = cursor.fetchone ()
 
@@ -151,7 +150,7 @@ class AnnotateDB:
         cursor.execute ( sql, (key,npz))
       except MySQLdb.Error, e:
         print "Error inserting cube %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-        assert 0
+        raise
 
     else:
 
@@ -160,7 +159,7 @@ class AnnotateDB:
         cursor.execute ( sql, (npz))
       except MySQLdb.Error, e:
         print "Error updating cube %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-        assert 0
+        raise
 
     cursor.close()
     self.conn.commit()
@@ -185,7 +184,7 @@ class AnnotateDB:
       self._qr_cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Failed to retrieve cube %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-      assert 0
+      raise
 
   
   #
@@ -270,8 +269,7 @@ class AnnotateDB:
         cursor.execute ( sql, (key, entityid, fileobj.getvalue()))
       except MySQLdb.Error, e:
         print "Error inserting exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-        assert 0
-
+        raise
     # In this case we have an update query
     else:
 
@@ -312,16 +310,13 @@ class AnnotateDB:
     #  Convert the locations into Morton order
 
     # dictionary of mortonkeys
-    # RBTODO make a defaultdict
-    cubelocs = {}
+    cubelocs = defaultdict(list)
 
     t1 = time()
     #  list of locations inside each morton key
     for loc in locations:
       cubeno = loc[0]/cubedim[0], loc[1]/cubedim[1], (loc[2]-self.startslice)/cubedim[2]
       key = zindex.XYZMorton(cubeno)
-      if cubelocs.get(key,None) == None:
-        cubelocs[key] = [];
       cubelocs[key].append([loc[0],loc[1],loc[2]-self.startslice])
 
     # iterator over the list for each cube
@@ -375,8 +370,6 @@ class AnnotateDB:
   #
   def extendEntity ( self, entityid, resolution, locations, conflictopt ):
     """Extend an existing entity as a list of voxels"""
-
-# RB TODO comment out for kasthuri.  Do we want to check?
 
     # Query the identifier
     cursor = self.conn.cursor ()
