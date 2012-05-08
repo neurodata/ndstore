@@ -9,11 +9,7 @@ import cStringIO
 import collections
 import zlib
 
-from kanno_opt import pngMerge
-
-# RBTODO: batchsize requires alignment in the arguments. 
-#  This should be fixed so that it ingests aligned, regardless of 
-#  the arguments
+import ann_cy
 
 #
 #  ingest the PNG files into the database
@@ -29,10 +25,11 @@ _xtiles = 2
 _ytiles = 2
 _xtilesz = 8192
 _ytilesz = 8192
-_startslice = 1632
-_endslice = 1699 
+_startslice = 1600
+_endslice = 1601
 _prefix = 'fullresseg22312_s'
 _batchsz = 16 
+_batchsz = 1 
 
 # Shape that we want to ingest into the database.
 #  This should be aligned to the database cube size to perform best.
@@ -45,6 +42,7 @@ def main():
 
   parser = argparse.ArgumentParser(description='Ingest the kasthuri11 dataset annotations.')
   parser.add_argument('token', action="store", help='Token for the annotation project.')
+  parser.add_argument('resolution', action="store", help='Resolution of the ingest data.')
   parser.add_argument('path', action="store", help='Directory with annotation PNG files.')
   
   result = parser.parse_args()
@@ -54,6 +52,7 @@ def main():
     for ytile in range ( _ytiles ):
       for xtile in range ( _xtiles ):
         newdata = np.zeros ( [ _batchsz, _ytilesz, _xtilesz ], dtype=np.uint32 )
+        newdata2 = np.zeros ( [ _batchsz, _ytilesz, _xtilesz ], dtype=np.uint32 )
         for b in range ( _batchsz ):
           if ( sl + b <= _endslice ):
 
@@ -62,13 +61,9 @@ def main():
             tileimage = Image.open ( filenm, 'r' )
             imgdata = np.asarray ( tileimage )
 
-            # RB: this seems to be as fast as Cython
-            # turn the triple vector 3-channel into one int
-            vecfunc_merge = np.vectorize(lambda a,b,c: (a << 16) + (b << 8) + c, otypes=[np.uint32])
-            #  merge the data 
-            newdata[b,:,:] = vecfunc_merge(imgdata[:,:,0], imgdata[:,:,1], imgdata[:,:,2])
+            newdata[b,:,:]  = ann_cy.pngto32 ( imgdata )
 
-            # test this
+            # the last z offset that we ingest, if the batch ends before _batchsz
             endz = b
     
         zlow = sl+1
@@ -91,7 +86,7 @@ def main():
               # check if there's anything to store
               if ( np.count_nonzero(data) != 0 ):
 
-                url = 'http://127.0.0.1/EM/annotate/%s/npdense/add/%s,%s/%s,%s/%s,%s/' % ( result.token, x, min(xhigh,x+_xingestsz), y, min(yhigh,y+_yingestsz), z, min(zhigh,z+_zingestsz ))
+                url = 'http://127.0.0.1/EM/annotate/%s/npdense/add/%s/%s,%s/%s,%s/%s,%s/' % ( result.token, result.resolution, x, min(xhigh,x+_xingestsz), y, min(yhigh,y+_yingestsz), z, min(zhigh,z+_zingestsz ))
 
                 print url
 
@@ -107,6 +102,8 @@ def main():
                 req = urllib2.Request(url, cdz)
                 response = urllib2.urlopen(req)
                 the_page = response.read()
+
+        sys.exit(0)
 
 
 if __name__ == "__main__":
