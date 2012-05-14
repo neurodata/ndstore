@@ -2,7 +2,7 @@ import numpy as np
 import cStringIO
 import zlib
 import MySQLdb
-import collections
+from collections import defaultdict
 
 import zindex
 import anncube
