@@ -210,6 +210,7 @@ def SeedtoH5 ( seed, annoid ):
 
 
 def main():
+  """Testing main"""
 
   annprojdb = annproj.AnnotateProjectsDB()
   annoproj = annprojdb.getAnnoProj ( 'hanno' )
@@ -231,7 +232,7 @@ def main():
 
   # synapse fields
   syn.weight = 200.0
-  syn.synapse_type = 8
+  syn.synapse_type = 87
   syn.seeds = [ 102, 104, 106 ]
   syn.segments = [ [102,104], [106,108] ]
 
@@ -251,22 +252,20 @@ def main():
 
   h5seed = SeedtoH5 ( seed, 7 )
 
-  h5syn  = SynapsetoH5 ( syn, 7, location, voxels )
-
-#  import pdb; pdb.set_trace()
+  h5syn  = SynapsetoH5 ( syn, 8, location, voxels )
 
   [outtype, outsyn] = H5toAnnotation ( h5syn.h5fh )
+
+  outsyn.store(annodb)
 
   print "Synapse type ", outtype, "data:"
   pprint( vars(outsyn)) 
 
   [outtype, outseed] = H5toAnnotation ( h5seed.h5fh )
+  outseed.store(annodb)
 
   print "Seed type ", outtype, "data:"
   pprint( vars(outseed)) 
-
-
-
     
 if __name__ == "__main__":
   main()

@@ -1,4 +1,8 @@
+
+import MySQLdb
+import sys
 from collections import defaultdict
+
 
 # All sorts of RBTODO.  Just a 
 
@@ -11,6 +15,7 @@ ANNO_SEED = 3
 
 # list of database table names.  Move to annproj?
 anno_dbtables = { 'annotation':'annotations',\
+                  'kvpairs':'kvpairs',\
                   'synapse':'synapses',\
                   'seed':'seeds',\
                   'synapse_segment':'synapse_segments',\
@@ -28,22 +33,33 @@ class Annotation:
     self.kvpairs = defaultdict(list)
 
 
-  def store ( self, annotype, dbcfg ):
+  def store ( self, annotype, annodb ):
     """Store the annotation to the annotations databae"""
 
-    sql = "INSERT INTO %s WHERE id = %s VALUES ( %s, %s, %s, %s ) " \
-            % ( anno_dbtables['annotation'], self.annid, self.annid, annotype, self.confidece, self.status )
+    sql = "INSERT INTO %s VALUES ( %s, %s, %s, %s )"\
+            % ( anno_dbtables['annotation'], self.annid, annotype, self.confidence, self.status )
 
-    cursor = self.annodb.conn.cursor ()
+    cursor = annodb.conn.cursor ()
     try:
-      cursor.execute ( sql )
+       pass
+#      cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error inserting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise
 
-
-
+  
+    sql = "INSERT INTO %s VALUES ( %s )"
+    vals = ''
     #  And update the kvstore
+    for (k,v) in self.kvpairs.iteritems(): 
+      print k, v
+      vals += '(' + k + ',' + v +'),' 
+
+    sql = sql % ( anno_dbtables['kvpairs'], vals )
+    # DEBUG THIS SQL line
+    print sql
+
+    sys.exit(-1)
     #RBTODO
 
   def retrieve ( self, annid ):
@@ -63,13 +79,15 @@ class AnnSynapse (Annotation):
     # Call the base class constructor
     Annotation.__init__(self)
 
-  def store ( self, dbcfg ):
+  def store ( self, annodb ):
     """Store the synapse to the annotations databae"""
 
-    sql = "INSERT INTO %s WHERE id = %s VALUES ( %s, %s, %s ) " \
-            % ( anno_dbtables[SYNAPSES], self.annid, self.synapse_type, self.weight )
+    sql = "INSERT INTO %s VALUES ( %s, %s, %s )"\
+            % ( anno_dbtables['synapse'], self.annid, self.synapse_type, self.weight )
 
-    cursor = self.annodb.conn.cursor ()
+    print sql
+
+    cursor = annodb.conn.cursor ()
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
@@ -80,7 +98,9 @@ class AnnSynapse (Annotation):
     #RBTODO
 
     # and call store on the base classs
-    Annotation.store ( self, ANNO_SYNAPSE, dbcfg )
+    Annotation.store ( self, ANNO_SYNAPSE, annodb )
+
+    annodb.conn.commit()
 
 
 
@@ -101,23 +121,30 @@ class AnnSeed (Annotation):
     # Call the base class constructor
     Annotation.__init__(self)
 
-  def store ( self, dbcfg ):
+  def store ( self, annodb ):
     """Store the seed to the annotations databae"""
 
-    sql = "INSERT INTO %s WHERE id = %s VALUES ( %s, %s, %s, %s, %s, %s ) " \
-            % ( anno_dbtables[SEEDS], self.annid, self.parent, self.source, self.cubelocation, self.position[0], self.position[1], self.position[2])
+    if self.position == []:
+      storepos = [ 'NULL', 'NULL', 'NULL' ]
+    else:
+      storepos = self.position
+      
+    sql = "INSERT INTO %s VALUES ( %s, %s, %s, %s, %s, %s, %s )"\
+            % ( anno_dbtables['seed'], self.annid, self.parent, self.source, self.cubelocation, storepos[0], storepos[1], storepos[2])
 
-    # and call store on the base classs
-    Annotation.store ( self, ANNO_SEED, dbcfg )
+    print sql
 
-    cursor = self.annodb.conn.cursor ()
+    cursor = annodb.conn.cursor ()
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error inserting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise
-    
-    self.annodb.conn.commit()
+
+    # and call store on the base classs
+    Annotation.store ( self, ANNO_SEED, annodb )
+
+    annodb.conn.commit()
 
   def retrieve ( self, annid ):
      """Retrieve the seed by annid"""
