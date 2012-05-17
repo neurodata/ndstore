@@ -19,10 +19,7 @@ anno_dbtables = { 'annotation':'annotations',\
 class Annotation:
   """Metdata common to all annotations."""
 
-  def __init__ ( self, annodb ):
-
-    # annotation database
-    self.annodb = annodb
+  def __init__ ( self ):
 
     # metadata fields
     self.annid = 0 
@@ -31,7 +28,7 @@ class Annotation:
     self.kvpairs = defaultdict(list)
 
 
-  def store ( self, annotype ):
+  def store ( self, annotype, dbcfg ):
     """Store the annotation to the annotations databae"""
 
     sql = "INSERT INTO %s WHERE id = %s VALUES ( %s, %s, %s, %s ) " \
@@ -57,13 +54,16 @@ class Annotation:
 class AnnSynapse (Annotation):
   """Metadata specific to synapses"""
 
-  def __init__(self):
+  def __init__(self ):
     self.weight = 0.0 
     self.synapse_type = 0 
     self.seeds = []
     self.segments = []
 
-  def store ( self ):
+    # Call the base class constructor
+    Annotation.__init__(self)
+
+  def store ( self, dbcfg ):
     """Store the synapse to the annotations databae"""
 
     sql = "INSERT INTO %s WHERE id = %s VALUES ( %s, %s, %s ) " \
@@ -76,36 +76,39 @@ class AnnSynapse (Annotation):
       print "Error inserting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise
 
-
     # and udpate segments and seeds
     #RBTODO
 
     # and call store on the base classs
-    #RBTODO
+    Annotation.store ( self, ANNO_SYNAPSE, dbcfg )
 
 
 
   def retrieve ( self, annid ):
      """Retrieve the synapse by annid"""
+     pass
 
   
 class AnnSeed (Annotation):
   """Metadata specific to seeds"""
 
-  def __init__ (self)
+  def __init__ (self):
     self.parent=0        # parent seed
     self.position=[]
     self.cubelocation=0  # some enumeration
     self.source=0        # source annotation id
 
-  def store ( self ):
+    # Call the base class constructor
+    Annotation.__init__(self)
+
+  def store ( self, dbcfg ):
     """Store the seed to the annotations databae"""
 
     sql = "INSERT INTO %s WHERE id = %s VALUES ( %s, %s, %s, %s, %s, %s ) " \
             % ( anno_dbtables[SEEDS], self.annid, self.parent, self.source, self.cubelocation, self.position[0], self.position[1], self.position[2])
 
     # and call store on the base classs
-    # RBTODO
+    Annotation.store ( self, ANNO_SEED, dbcfg )
 
     cursor = self.annodb.conn.cursor ()
     try:
@@ -116,8 +119,8 @@ class AnnSeed (Annotation):
     
     self.annodb.conn.commit()
 
-
-
   def retrieve ( self, annid ):
      """Retrieve the seed by annid"""
+     pass
+
 

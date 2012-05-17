@@ -8,7 +8,11 @@ import collections
 
 import sys
 
+import empaths
 import annotation
+import anndb
+import annproj
+import dbconfig
 
 from pprint import pprint
 
@@ -207,12 +211,17 @@ def SeedtoH5 ( seed, annoid ):
 
 def main():
 
+  annprojdb = annproj.AnnotateProjectsDB()
+  annoproj = annprojdb.getAnnoProj ( 'hanno' )
+  dbcfg = dbconfig.switchDataset ( annoproj.getDataset() )
 
+  #Load the database
+  annodb = anndb.AnnotateDB ( dbcfg, annoproj )
   
   location=[100,200,300]
   voxels = np.ones ( [ 100,100,100] )
 
-  syn = annotation.AnnSynapse()
+  syn = annotation.AnnSynapse( )
 
   # common fields
   syn.annid = 16
@@ -226,7 +235,7 @@ def main():
   syn.seeds = [ 102, 104, 106 ]
   syn.segments = [ [102,104], [106,108] ]
 
-  seed = annotation.AnnSeed()
+  seed = annotation.AnnSeed( )
 
   # common fields
   seed.annid = 17
@@ -244,19 +253,18 @@ def main():
 
   h5syn  = SynapsetoH5 ( syn, 7, location, voxels )
 
+#  import pdb; pdb.set_trace()
+
   [outtype, outsyn] = H5toAnnotation ( h5syn.h5fh )
 
   print "Synapse type ", outtype, "data:"
   pprint( vars(outsyn)) 
-
-  import pdb; pdb.set_trace()
 
   [outtype, outseed] = H5toAnnotation ( h5seed.h5fh )
 
   print "Seed type ", outtype, "data:"
   pprint( vars(outseed)) 
 
-  import pdb; pdb.set_trace()
 
 
     
