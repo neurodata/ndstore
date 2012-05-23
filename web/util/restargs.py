@@ -89,10 +89,10 @@ class BrainRestArgs:
 
     # Convert to local coordinates if global specified
     if ( globalcoords ):
-      x1i = int ( float(x1i) / float( 2**(self._resolution-dbcfg.baseres)))
-      x2i = int ( float(x2i) / float( 2**(self._resolution-dbcfg.baseres)))
-      y1i = int ( float(y1i) / float( 2**(self._resolution-dbcfg.baseres)))
-      y2i = int ( float(y2i) / float( 2**(self._resolution-dbcfg.baseres)))
+      x1i = int ( float(x1i) / float( 2**(self._resolution)))
+      x2i = int ( float(x2i) / float( 2**(self._resolution)))
+      y1i = int ( float(y1i) / float( 2**(self._resolution)))
+      y2i = int ( float(y2i) / float( 2**(self._resolution)))
 
     # Check arguments for legal values
     if not ( dbcfg.checkCube ( self._resolution, x1i, x2i, y1i, y2i, z1i, z2i )):
@@ -143,10 +143,10 @@ class BrainRestArgs:
 
     # Convert to local coordinates if global specified
     if ( globalcoords ):
-      x1i = int ( float(x1i) / float( 2**(self._resolution-dbcfg.baseres)))
-      x2i = int ( float(x2i) / float( 2**(self._resolution-dbcfg.baseres)))
-      y1i = int ( float(y1i) / float( 2**(self._resolution-dbcfg.baseres)))
-      y2i = int ( float(y2i) / float( 2**(self._resolution-dbcfg.baseres)))
+      x1i = int ( float(x1i) / float( 2**(self._resolution)))
+      x2i = int ( float(x2i) / float( 2**(self._resolution)))
+      y1i = int ( float(y1i) / float( 2**(self._resolution)))
+      y2i = int ( float(y2i) / float( 2**(self._resolution)))
 
     # Check arguments for legal values
     if not ( dbcfg.checkCube ( self._resolution, x1i, x2i, y1i, y2i, z, z )):
@@ -193,9 +193,9 @@ class BrainRestArgs:
 
     # Convert to local coordinates if global specified
     if ( globalcoords ):
-      x1i = int ( float(x1i) / float( 2**(self._resolution-dbcfg.baseres)))
-      x2i = int ( float(x2i) / float( 2**(self._resolution-dbcfg.baseres)))
-      y = int ( float(y) / float( 2**(self._resolution-dbcfg.baseres)))
+      x1i = int ( float(x1i) / float( 2**(self._resolution)))
+      x2i = int ( float(x2i) / float( 2**(self._resolution)))
+      y = int ( float(y) / float( 2**(self._resolution)))
 
     # Check arguments for legal values
     if not dbcfg.checkCube ( self._resolution, x1i, x2i, y, y, z1i, z2i )\
@@ -242,9 +242,9 @@ class BrainRestArgs:
 
     # Convert to local coordinates if global specified
     if ( globalcoords ):
-      x = int ( float(x) / float( 2**(self._resolution-dbcfg.baseres)))
-      y1i = int ( float(y1i) / float( 2**(self._resolution-dbcfg.baseres)))
-      y2i = int ( float(y2i) / float( 2**(self._resolution-dbcfg.baseres)))
+      x = int ( float(x) / float( 2**(self._resolution)))
+      y1i = int ( float(y1i) / float( 2**(self._resolution)))
+      y2i = int ( float(y2i) / float( 2**(self._resolution)))
 
 
     #RBTODO need to make a dbconfig object 
