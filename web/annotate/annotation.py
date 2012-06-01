@@ -21,10 +21,15 @@ anno_dbtables = { 'annotation':'annotations',\
                   'synapse_segment':'synapse_segments',\
                   'synapse_seed':'synapse_seeds' }
 
+
+
+###############  Annotation  ##################
+
 class Annotation:
   """Metdata common to all annotations."""
 
   def __init__ ( self ):
+    """Initialize the fields to zero or null"""
 
     # metadata fields
     self.annid = 0 
@@ -41,36 +46,60 @@ class Annotation:
 
     cursor = annodb.conn.cursor ()
     try:
-       pass
-#      cursor.execute ( sql )
+      cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error inserting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise
 
   
-    sql = "INSERT INTO %s VALUES ( %s )"
-    vals = ''
-    #  And update the kvstore
-    for (k,v) in self.kvpairs.iteritems(): 
-      print k, v
-      vals += '(' + k + ',' + v +'),' 
+    kvclause = ','.join(['(' + str(self.annid) +',\'' + k + '\',\'' + v +'\')' for (k,v) in self.kvpairs.iteritems()])  
+    sql = "INSERT INTO %s VALUES %s" % ( anno_dbtables['kvpairs'], kvclause )
 
-    sql = sql % ( anno_dbtables['kvpairs'], vals )
-    # DEBUG THIS SQL line
-    print sql
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      print "Error inserting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      raise
 
-    sys.exit(-1)
-    #RBTODO
+    annodb.conn.commit()
 
-  def retrieve ( self, annid ):
-     """Retrieve the annotation by annid"""
 
-     sql = "SELECT * FROM %s WHERE annid = %s" % ( anno_dbtables['annotation'], annid )
+  def retrieve ( self, annid, annodb ):
+    """Retrieve the annotation by annid"""
+
+    sql = "SELECT * FROM %s WHERE annoid = %s" % ( anno_dbtables['annotation'], annid )
+
+    cursor = annodb.conn.cursor ()
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      print "Error retrieving annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      raise
+    ( self.annid, annotype, self.confidence, self.status ) = cursor.fetchone()
+
+    sql = "SELECT * FROM %s WHERE annoid = %s" % ( anno_dbtables['kvpairs'], annid )
+
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      print "Error retrieving kvpairs %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      raise
+    kvpairs = cursor.fetchall()
+    for kv in kvpairs:
+      self.kvpairs[kv[1]] = kv[2]
+
+    return annotype
+
+
+
+###############  Synapse  ##################
 
 class AnnSynapse (Annotation):
   """Metadata specific to synapses"""
 
   def __init__(self ):
+    """Initialize the fields to zero or null"""
+
     self.weight = 0.0 
     self.synapse_type = 0 
     self.seeds = []
@@ -85,17 +114,36 @@ class AnnSynapse (Annotation):
     sql = "INSERT INTO %s VALUES ( %s, %s, %s )"\
             % ( anno_dbtables['synapse'], self.annid, self.synapse_type, self.weight )
 
-    print sql
+    cursor = annodb.conn.cursor ()
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      print "Error inserting synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      raise
+
+    # udpate synapse_seeds
+    seedsclause= ','.join ( [ '(' + str(self.annid) + ',' + str(v) + ')' for v in self.seeds ] )
+    sql = "INSERT INTO %s VALUES %s"\
+            % ( anno_dbtables['synapse_seed'], seedsclause )
 
     cursor = annodb.conn.cursor ()
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Error inserting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      print "Error inserting synapse seeds %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise
 
-    # and udpate segments and seeds
-    #RBTODO
+    # udpate synapse_segments
+    segmentsclause= ','.join ( [ '(' + str(self.annid) + ',' + str(v[0]) + ',' + str(v[1]) + ')' for v in self.segments ] )
+    sql = "INSERT INTO %s VALUES %s"\
+            % ( anno_dbtables['synapse_segment'], segmentsclause )
+
+    cursor = annodb.conn.cursor ()
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      print "Error inserting synapse segments %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      raise
 
     # and call store on the base classs
     Annotation.store ( self, ANNO_SYNAPSE, annodb )
@@ -103,16 +151,53 @@ class AnnSynapse (Annotation):
     annodb.conn.commit()
 
 
+  def retrieve ( self, annid, annodb ):
+    """Retrieve the synapse by annid"""
 
-  def retrieve ( self, annid ):
-     """Retrieve the synapse by annid"""
-     pass
+    # Call the base class retrieve
+    annotype = Annotation.retrieve ( self, annid, annodb )
 
-  
+    # verify the annotation object type
+    # RBTODO make an exception
+    assert ( annotype == ANNO_SYNAPSE )
+
+    sql = "SELECT synapse_type, weight FROM %s WHERE annoid = %s" % ( anno_dbtables['synapse'], annid )
+
+    cursor = annodb.conn.cursor ()
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      print "Error retrieving synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      raise
+    ( self.synapse_type, self.weight ) = cursor.fetchone()
+
+    sql = "SELECT seed FROM %s WHERE annoid = %s" % ( anno_dbtables['synapse_seed'], annid )
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      print "Error retrieving synapse seeds %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      raise
+    seedtuples = cursor.fetchall()
+    self.seeds = [x[0] for x in seedtuples]
+
+    sql = "SELECT segmentid, segment_type FROM %s WHERE annoid = %s" % ( anno_dbtables['synapse_segment'], annid )
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      print "Error retrieving synapse segments %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      raise
+    segmenttuples = cursor.fetchall()
+    self.segments = [ [x[0],x[1]] for x in segmenttuples ]
+
+
+###############  Seed  ##################
+
 class AnnSeed (Annotation):
   """Metadata specific to seeds"""
 
   def __init__ (self):
+    """Initialize the fields to zero or null"""
+
     self.parent=0        # parent seed
     self.position=[]
     self.cubelocation=0  # some enumeration
@@ -132,13 +217,11 @@ class AnnSeed (Annotation):
     sql = "INSERT INTO %s VALUES ( %s, %s, %s, %s, %s, %s, %s )"\
             % ( anno_dbtables['seed'], self.annid, self.parent, self.source, self.cubelocation, storepos[0], storepos[1], storepos[2])
 
-    print sql
-
     cursor = annodb.conn.cursor ()
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Error inserting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      print "Error inserting seed %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise
 
     # and call store on the base classs
@@ -146,8 +229,23 @@ class AnnSeed (Annotation):
 
     annodb.conn.commit()
 
-  def retrieve ( self, annid ):
-     """Retrieve the seed by annid"""
-     pass
+  def retrieve ( self, annid, annodb ):
+    """Retrieve the seed by annid"""
+
+    # Call the base class retrieve
+    Annotation.retrieve ( self, annid, annodb )
+
+    sql = "SELECT parentid, sourceid, cube_location, positionx, positiony, positionz FROM %s WHERE annoid = %s" % ( anno_dbtables['seed'], annid )
+      
+    cursor = annodb.conn.cursor ()
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      print "Error retrieving seed %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      raise
+
+    # need to initialize position to prevent index error
+    self.position = [0,0,0]
+    (self.parent, self.source, self.cubelocation, self.position[0], self.position[1], self.position[2]) = cursor.fetchone()
 
 

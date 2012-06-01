@@ -101,7 +101,7 @@ def H5toAnnotation ( h5fh ):
 
     # load the seed specific metadata
     anno.parent = mdgrp['PARENT'][0]
-#    anno.position = mdgrp['POSITION'][:]
+    anno.position = mdgrp['POSITION'][:]
     anno.cubelocation = mdgrp['CUBE_LOCATION'][0]
     anno.source = mdgrp['SOURCE'][0] 
 
@@ -148,19 +148,19 @@ def H5GetVoxelData ( h5fh ):
 
 ############## Converting Annotation to HDF5 ####################
 
-def AnnotationtoH5 ( annotation, annotype, annoid, location=None, voxels=None ):
+def AnnotationtoH5 ( anno, annotype, location=None, voxels=None ):
   """Convert an annotation to HDF5 for interchange"""
 
-  h5anno = H5Annotation ( annotype, annoid, location, voxels )
+  h5anno = H5Annotation ( annotype, anno.annid, location, voxels )
   
   # Set Annotation specific metadata
-  h5anno.mdgrp.create_dataset ( "STATUS", (1,), np.uint32, data=annotation.status )
-  h5anno.mdgrp.create_dataset ( "CONFIDENCE", (1,), np.float, data=annotation.confidence )
+  h5anno.mdgrp.create_dataset ( "STATUS", (1,), np.uint32, data=anno.status )
+  h5anno.mdgrp.create_dataset ( "CONFIDENCE", (1,), np.float, data=anno.confidence )
 
   # Turn our dictionary into a csv file
   fstring = cStringIO.StringIO()
   csvw = csv.writer(fstring, delimiter=',')
-  csvw.writerows([r for r in annotation.kvpairs.iteritems()]) 
+  csvw.writerows([r for r in anno.kvpairs.iteritems()]) 
 
   # User-defined metadata
   h5anno.mdgrp.create_dataset ( "KVPAIRS", (1,), dtype=h5py.special_dtype(vlen=str), data=fstring.getvalue())
@@ -168,11 +168,11 @@ def AnnotationtoH5 ( annotation, annotype, annoid, location=None, voxels=None ):
   return h5anno
 
 
-def SynapsetoH5 ( synapse, annoid, location, voxels ):
+def SynapsetoH5 ( synapse, location, voxels ):
   """Convert a synapse to HDF5"""
 
   # First create the base object
-  h5synapse = AnnotationtoH5 ( synapse, annotation.ANNO_SYNAPSE, annoid, location, voxels )
+  h5synapse = AnnotationtoH5 ( synapse, annotation.ANNO_SYNAPSE, location, voxels )
 
   # Then customize
   h5synapse.mdgrp.create_dataset ( "WEIGHT", (1,), np.float, data=synapse.weight )
@@ -193,11 +193,11 @@ def SynapsetoH5 ( synapse, annoid, location, voxels ):
   return h5synapse
 
 
-def SeedtoH5 ( seed, annoid ):
+def SeedtoH5 ( seed ):
   """Convert a seed to HDF5"""
 
   # First create the base object
-  h5seed = AnnotationtoH5 ( seed, annotation.ANNO_SEED, annoid )
+  h5seed = AnnotationtoH5 ( seed, annotation.ANNO_SEED )
 
   # convert these  to enumerations??
   h5seed.mdgrp.create_dataset ( "PARENT", (1,), np.uint32, data=seed.parent )
@@ -234,7 +234,7 @@ def main():
   syn.weight = 200.0
   syn.synapse_type = 87
   syn.seeds = [ 102, 104, 106 ]
-  syn.segments = [ [102,104], [106,108] ]
+  syn.segments = [ [112,114], [116,118] ]
 
   seed = annotation.AnnSeed( )
 
@@ -250,23 +250,41 @@ def main():
   seed.cubelocation = 73
   seed.source = 57
 
-  h5seed = SeedtoH5 ( seed, 7 )
-
-  h5syn  = SynapsetoH5 ( syn, 8, location, voxels )
+  h5seed = SeedtoH5 ( seed )
+  h5syn  = SynapsetoH5 ( syn, location, voxels )
 
   [outtype, outsyn] = H5toAnnotation ( h5syn.h5fh )
-
   outsyn.store(annodb)
-
-  print "Synapse type ", outtype, "data:"
-  pprint( vars(outsyn)) 
 
   [outtype, outseed] = H5toAnnotation ( h5seed.h5fh )
   outseed.store(annodb)
 
-  print "Seed type ", outtype, "data:"
-  pprint( vars(outseed)) 
-    
+  readsyn = annotation.AnnSynapse()
+  readseed = annotation.AnnSeed()
+
+  readsyn.retrieve(16, annodb)
+  readseed.retrieve(17, annodb)
+
+  h5seed = SeedtoH5 ( readseed )
+  h5syn  = SynapsetoH5 ( readsyn, location, voxels )
+
+  [outtype, lastsyn] = H5toAnnotation ( h5syn.h5fh )
+  [outtype, lastseed] = H5toAnnotation ( h5seed.h5fh )
+
+
+  print "Synapse start:"
+  pprint(vars(syn)) 
+
+  print "Synapse end data:"
+  pprint(vars(lastsyn)) 
+
+  print "Seed start:"
+  pprint(vars(seed)) 
+
+  print "Seed end data:"
+  pprint(vars(lastseed)) 
+
+
 if __name__ == "__main__":
   main()
 
