@@ -39,7 +39,7 @@ class Annotation:
 
 
   def store ( self, annotype, annodb ):
-    """Store the annotation to the annotations databae"""
+    """Store the annotation to the annotations database"""
 
     sql = "INSERT INTO %s VALUES ( %s, %s, %s, %s )"\
             % ( anno_dbtables['annotation'], self.annid, annotype, self.confidence, self.status )
@@ -249,3 +249,45 @@ class AnnSeed (Annotation):
     (self.parent, self.source, self.cubelocation, self.position[0], self.position[1], self.position[2]) = cursor.fetchone()
 
 
+#
+#  getAnnotation returns an annotation object
+#
+def getAnnotation ( annid, options, annodb ): 
+  """Return an annotation object by identifier"""
+
+  # First, what type is it.  Look at the annotation table.
+  sql = "SELECT anno_type FROM %s WHERE annoid = %s" % ( anno_dbtables['annotation'], annid )
+  cursor = annodb.conn.cursor ()
+  try:
+    cursor.execute ( sql )
+  except MySQLdb.Error, e:
+    print "Error reading id %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+    raise
+  
+  type = cursor.fetchone()[0]
+
+  # switch on the type of annotation
+  if type == ANNO_SYNAPSE:
+    syn = AnnSynapse()
+    syn.retrieve(annid, annodb)
+    return syn
+
+  elif type == ANNO_SEED:
+    seed = AnnSeed()
+    seed.retrieve(annid, annodb)
+    return seed
+
+  elif type == ANNO_ANNOTATION:
+    raise ANNOError ( "Found type ANNO_ANNOTATION. Should not store/fetch base type." )
+  else:
+    # not a type that we recognize
+    raise ANNOError ( "Unrecognized annotation type %s" % type )
+
+
+#
+#  putAnnotation 
+#
+def putAnnotation ( anno, options, annodb ): 
+  """Return an annotation object by identifier"""
+
+  anno.store(annodb) 

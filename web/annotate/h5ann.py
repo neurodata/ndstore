@@ -25,7 +25,8 @@ from pprint import pprint
 /  (Root) group:
 
 ANNOTATION_TYPE (int)
-ANNOTATION_ID (int)OFFSET ( int[3] optional )
+ANNOTATION_ID (int)
+OFFSET ( int[3] optional )
 VOXEL_DATA ( int32 3-d array optional )
 
 METADATA group;
@@ -77,8 +78,9 @@ class H5Annotation:
     """Destructor"""
     self.h5fh.close()
 
-  def fileRead():
+  def fileReader( self ):
     """Return a file read stream to be transferred as put data"""
+    self.h5fh.flush()
     self.tmpfile.seek(0)
     return self.tmpfile.read()
 
@@ -133,7 +135,7 @@ def H5toAnnotation ( h5fh ):
   for r in csvr:
     anno.kvpairs[r[0]] = r[1] 
 
-  return [annotype, anno]
+  return anno
 
 
 def H5GetVoxelData ( h5fh ):
@@ -148,7 +150,7 @@ def H5GetVoxelData ( h5fh ):
 
 ############## Converting Annotation to HDF5 ####################
 
-def AnnotationtoH5 ( anno, annotype, location=None, voxels=None ):
+def BasetoH5 ( anno, annotype, location=None, voxels=None ):
   """Convert an annotation to HDF5 for interchange"""
 
   h5anno = H5Annotation ( annotype, anno.annid, location, voxels )
@@ -172,7 +174,7 @@ def SynapsetoH5 ( synapse, location, voxels ):
   """Convert a synapse to HDF5"""
 
   # First create the base object
-  h5synapse = AnnotationtoH5 ( synapse, annotation.ANNO_SYNAPSE, location, voxels )
+  h5synapse = BasetoH5 ( synapse, annotation.ANNO_SYNAPSE, location, voxels )
 
   # Then customize
   h5synapse.mdgrp.create_dataset ( "WEIGHT", (1,), np.float, data=synapse.weight )
@@ -197,7 +199,7 @@ def SeedtoH5 ( seed ):
   """Convert a seed to HDF5"""
 
   # First create the base object
-  h5seed = AnnotationtoH5 ( seed, annotation.ANNO_SEED )
+  h5seed = BasetoH5 ( seed, annotation.ANNO_SEED )
 
   # convert these  to enumerations??
   h5seed.mdgrp.create_dataset ( "PARENT", (1,), np.uint32, data=seed.parent )
@@ -207,6 +209,17 @@ def SeedtoH5 ( seed ):
 
   return h5seed
 
+def AnnotationtoH5 ( anno ):
+  """Operate polymorphically on annotations"""
+
+  if anno.__class__ == annotation.AnnSynapse:
+    return SynapsetoH5 ( anno, None, None )
+  elif anno.__class__ == annotation.AnnSeed:
+    return SeedtoH5 ( anno )
+  elif anno.__class__ == annotation.Annotation:
+    raise Exception ("(AnnotationtoH5) Can't instantiate the base class")
+  else:
+    raise Exception ("(AnnotationtoH5) Dont support this annotation type yet")
 
 
 def main():
@@ -225,7 +238,7 @@ def main():
   syn = annotation.AnnSynapse( )
 
   # common fields
-  syn.annid = 16
+  syn.annid = 36
   syn.status = 2
   syn.confidence = 0.02
   syn.kvpairs = { 'key0':'value0', 'key2':'value2' }
@@ -239,7 +252,7 @@ def main():
   seed = annotation.AnnSeed( )
 
   # common fields
-  seed.annid = 17
+  seed.annid = 37
   seed.status = 3
   seed.confidence = 0.03
   seed.kvpairs = { 'key1':'value1', 'key3':'value3', 'key5':'value5' }
@@ -253,23 +266,23 @@ def main():
   h5seed = SeedtoH5 ( seed )
   h5syn  = SynapsetoH5 ( syn, location, voxels )
 
-  [outtype, outsyn] = H5toAnnotation ( h5syn.h5fh )
+  outsyn = H5toAnnotation ( h5syn.h5fh )
   outsyn.store(annodb)
 
-  [outtype, outseed] = H5toAnnotation ( h5seed.h5fh )
+  outseed = H5toAnnotation ( h5seed.h5fh )
   outseed.store(annodb)
 
   readsyn = annotation.AnnSynapse()
   readseed = annotation.AnnSeed()
 
-  readsyn.retrieve(16, annodb)
-  readseed.retrieve(17, annodb)
+  readsyn.retrieve(36, annodb)
+  readseed.retrieve(37, annodb)
 
   h5seed = SeedtoH5 ( readseed )
   h5syn  = SynapsetoH5 ( readsyn, location, voxels )
 
-  [outtype, lastsyn] = H5toAnnotation ( h5syn.h5fh )
-  [outtype, lastseed] = H5toAnnotation ( h5seed.h5fh )
+  lastsyn = H5toAnnotation ( h5syn.h5fh )
+  lastseed = H5toAnnotation ( h5seed.h5fh )
 
 
   print "Synapse start:"

@@ -7,6 +7,7 @@ from collections import defaultdict
 import zindex
 import anncube
 import annproj
+import annotation
 
 from time import time
 
@@ -607,4 +608,24 @@ class AnnotateDB:
   def getLocations ( self, locations ):
     """Return the list of locations associated with an identifier"""
     pass
+
+  #
+  # getAnnotation:  
+  #    Look up an annotation, switch on what kind it is, build an HDF5 file and
+  #     return it.
+  def getAnnotation ( self, id, options ):
+    """Return a RAMON object by identifier"""
+    
+    return annotation.getAnnotation( id, options, self )
+
+  #
+  # putAnnotation:  
+  #    store an HDF5 annotation to the database
+  def putAnnotation ( self, anno, options ):
+    """store an HDF5 annotation to the database"""
+    
+    return annotation.putAnnotation( anno, options, self )
+
+
+  
 

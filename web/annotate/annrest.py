@@ -14,9 +14,11 @@ import anncube
 import anndb
 import dbconfig
 import annproj
+import h5ann
 
 from time import time
 
+#RBTODO create common code for loading projects and databases.  appears in many routines
 
 #
 #  annrest: RESTful interface to annotations
@@ -289,38 +291,6 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
 
     return str(entityid)
 
-  #RBTODO HDF5 for matlab users?
-  elif service == 'h5new':
-
-    assert 0  # rb test fix
-
-    [ entity, sym, conflictargs ] = postargs.partition ('/')
-    conflictopt = restargs.conflictOption ( conflictargs )
-
-  #try:
-    # Grab the cube data
-    fileobj = cStringIO.StringIO ( postdata )
-    tmpfile = tempfile.NamedTemporaryFile ( )
-    tmpfile.write ( fileobj.read() )
-    print tmpfile.tell()
-    h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
-    print h5f.keys()
-
-    cube = h5f['annotations']
-
-    # Make the annotation to the database
-    annoDB = anndb.AnnotateDB ( dbcfg, annoproj )
-    sys.exit(-1)
-    # gotta get arguments and fix newCube
-    entityid = annoDB.newCube ( cube, conflictopt )
-
-  #except:
-  #  return web.BadRequest()  
-
-    return str(entityid)
-    return "Not yet"
-    pass
-
   else:
     raise restargs.RESTBadArgsError ("No such service: %s" % service )
     
@@ -353,3 +323,51 @@ def annopost ( webargs, postdata ):
   return selectPost ( rangeargs, dbcfg, annoproj, postdata )
 
 
+def getAnnotation ( webargs ):
+  """Fetch a RAMON object as HDF5 by object identifier"""
+
+  [ token, sym, restargs ] = webargs.partition ('/')
+
+  # Get the annotation database
+  annprojdb = annproj.AnnotateProjectsDB()
+  annoproj = annprojdb.getAnnoProj ( token )
+  dbcfg = dbconfig.switchDataset ( annoproj.getDataset() )
+  annodb = anndb.AnnotateDB ( dbcfg, annoproj )
+
+  [ id, sym, optionsargs ] = restargs.partition ('/')
+  if re.search ( '^\d+$', id ) == None:
+    raise Exception ( "Must specify an id" )
+  
+  options = optionsargs.split('/')
+  anno = annodb.getAnnotation ( id, options )
+  h5 = h5ann.AnnotationtoH5 ( anno )
+  
+  return h5.fileReader()
+
+
+def putAnnotation ( webargs, postdata ):
+  """Put a RAMON object as HDF5 by object identifier"""
+
+  [ token, sym, restargs ] = webargs.partition ('/')
+
+  # Get the annotation database
+  annprojdb = annproj.AnnotateProjectsDB()
+  annoproj = annprojdb.getAnnoProj ( token )
+  dbcfg = dbconfig.switchDataset ( annoproj.getDataset() )
+  annodb = anndb.AnnotateDB ( dbcfg, annoproj )
+
+  options = restargs.split('/')
+
+  # Make a named temporary file for the HDF5
+  tmpfile = tempfile.NamedTemporaryFile ( )
+  tmpfile.write ( postdata )
+  tmpfile.seek(0)
+  h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
+
+  # Convert HDF5 to annotation
+  anno = h5ann.H5toAnnotation ( h5f )
+  # Put into the database
+  annodb.putAnnotation ( anno, options )
+  
+  # return the identifier
+  return str(anno.annid)
