@@ -52,14 +52,68 @@ class Annotation:
       raise
 
   
-    kvclause = ','.join(['(' + str(self.annid) +',\'' + k + '\',\'' + v +'\')' for (k,v) in self.kvpairs.iteritems()])  
-    sql = "INSERT INTO %s VALUES %s" % ( anno_dbtables['kvpairs'], kvclause )
+    if len(self.kvpairs) != 0:
+      kvclause = ','.join(['(' + str(self.annid) +',\'' + k + '\',\'' + v +'\')' for (k,v) in self.kvpairs.iteritems()])  
+      sql = "INSERT INTO %s VALUES %s" % ( anno_dbtables['kvpairs'], kvclause )
 
+      try:
+        cursor.execute ( sql )
+      except MySQLdb.Error, e:
+        print "Error inserting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+        raise
+
+    annodb.conn.commit()
+
+
+  def update ( self, annotype, annodb ):
+    """Update the annotation in the annotations database"""
+
+    sql = "UPDATE %s SET  anno_type=%s, confidence=%s, status=%s WHERE annoid = %s"\
+            % ( anno_dbtables['annotation'], annotype, self.confidence, self.status, self.annid)
+
+    cursor = annodb.conn.cursor ()
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Error inserting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      print "Error updating annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise
+
+    # Get the old kvpairs and identify new kvpairs
+    sql = "SELECT * FROM %s WHERE annoid = %s" % ( anno_dbtables['kvpairs'], self.annid )
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      print "Error retrieving kvpairs %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      raise
+    kvresult = cursor.fetchall()
+
+    kvupdate = {}
+
+    for kv in kvresult:
+      # for key values already stored
+      if self.kvpairs.has_key( kv[1] ): 
+        # update if they are new
+        if self.kvpairs[kv[1]] != kv[2]:
+          kvupdate[kv[1]] = self.kvpairs[kv[1]]
+        # ignore if they are the same
+        del(self.kvpairs[kv[1]])
+
+    # Update changed keys
+    if len(kvupdate) != 0:
+      for (k,v) in kvupdate.iteritems():
+        sql = "UPDATE %s SET kv_value='%s' WHERE annoid=%s AND kv_key='%s'" % ( anno_dbtables['kvpairs'], v, self.annid, k )
+        cursor.execute ( sql )
+        
+    # insert new kv pairs
+    if len(self.kvpairs) != 0:
+      kvclause = ','.join(['(' + str(self.annid) +',\'' + k + '\',\'' + v +'\')' for (k,v) in self.kvpairs.iteritems()])  
+      sql = "INSERT INTO %s VALUES %s" % ( anno_dbtables['kvpairs'], kvclause )
+
+      try:
+        cursor.execute ( sql )
+      except MySQLdb.Error, e:
+        print "Error inserting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+        raise
 
     annodb.conn.commit()
 
@@ -121,7 +175,54 @@ class AnnSynapse (Annotation):
       print "Error inserting synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise
 
+    # synapse_seeds
+    seedsclause= ','.join ( [ '(' + str(self.annid) + ',' + str(v) + ')' for v in self.seeds ] )
+    sql = "INSERT INTO %s VALUES %s"\
+            % ( anno_dbtables['synapse_seed'], seedsclause )
+
+    cursor = annodb.conn.cursor ()
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      print "Error inserting synapse seeds %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      raise
+
+    # synapse_segments
+    segmentsclause= ','.join ( [ '(' + str(self.annid) + ',' + str(v[0]) + ',' + str(v[1]) + ')' for v in self.segments ] )
+    sql = "INSERT INTO %s VALUES %s"\
+            % ( anno_dbtables['synapse_segment'], segmentsclause )
+
+    cursor = annodb.conn.cursor ()
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      print "Error inserting synapse segments %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      raise
+
+    # and call store on the base classs
+    Annotation.store ( self, ANNO_SYNAPSE, annodb )
+
+    annodb.conn.commit()
+
+
+  def update ( self, annodb ):
+    """Update the synapse in the annotations databae"""
+
+    sql = "UPDATE %s SET synapse_type=s, weigth=%s WHERE annoid=%s )"\
+            % (anno_dbtables['synapse'], self.synapse_type, self.weight, self.annid)
+
+    cursor = annodb.conn.cursor ()
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      print "Error updating synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      raise
+
     # udpate synapse_seeds
+
+    # get the old synapse seeds
+
+
     seedsclause= ','.join ( [ '(' + str(self.annid) + ',' + str(v) + ')' for v in self.seeds ] )
     sql = "INSERT INTO %s VALUES %s"\
             % ( anno_dbtables['synapse_seed'], seedsclause )
@@ -149,6 +250,7 @@ class AnnSynapse (Annotation):
     Annotation.store ( self, ANNO_SYNAPSE, annodb )
 
     annodb.conn.commit()
+
 
 
   def retrieve ( self, annid, annodb ):
@@ -229,6 +331,30 @@ class AnnSeed (Annotation):
 
     annodb.conn.commit()
 
+  def update ( self, annodb ):
+    """Update the seed to the annotations databae"""
+
+    if self.position == []:
+      storepos = [ 'NULL', 'NULL', 'NULL' ]
+    else:
+      storepos = self.position
+      
+    sql = "UPDATE %s SET parentid=%s, sourceid=%s, cube_location=%s, positionx=%s, positiony=%s, positionz=%s where annoid = %s"\
+            % ( anno_dbtables['seed'], self.parent, self.source, self.cubelocation, storepos[0], storepos[1], storepos[2], self.annid)
+
+    cursor = annodb.conn.cursor ()
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      print "Error inserting seed %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      raise
+
+    # and call update on the base classs
+    Annotation.update ( self, ANNO_SEED, annodb )
+
+    annodb.conn.commit()
+
+
   def retrieve ( self, annid, annodb ):
     """Retrieve the seed by annid"""
 
@@ -252,7 +378,7 @@ class AnnSeed (Annotation):
 #
 #  getAnnotation returns an annotation object
 #
-def getAnnotation ( annid, options, annodb ): 
+def getAnnotation ( annid, annodb, options=None ): 
   """Return an annotation object by identifier"""
 
   # First, what type is it.  Look at the annotation table.
@@ -264,7 +390,11 @@ def getAnnotation ( annid, options, annodb ):
     print "Error reading id %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
     raise
   
-  type = cursor.fetchone()[0]
+  sqlresult = cursor.fetchone()
+  if sqlresult == None:
+    return None
+  else:
+    type = sqlresult[0]
 
   # switch on the type of annotation
   if type == ANNO_SYNAPSE:
@@ -287,7 +417,25 @@ def getAnnotation ( annid, options, annodb ):
 #
 #  putAnnotation 
 #
-def putAnnotation ( anno, options, annodb ): 
+def putAnnotation ( anno, annodb, options=None ): 
   """Return an annotation object by identifier"""
 
-  anno.store(annodb) 
+  # if annid == 0, create a new identifier
+  if anno.annid == 0 or anno.annid == None:
+    print "DB choosing ID"
+    anno.annid = annodb.nextID()
+    anno.store(annodb) 
+  # for updates, make sure the annotation exists and is of the right type
+  elif  'update' in options:
+    oldanno = getAnnotation ( anno.annid, annodb )
+    if  oldanno == None or oldanno.__class__ != anno.__class__:
+      raise ANNOError ( "During update no annotation found at id %d" % anno.annid  )
+    # update the annotation
+    else:
+      print "Updating id"
+      anno.update(annodb)
+  # Write the user chosen annotation id
+  else:
+    print "User chose ID"
+    anno.store(annodb)
+ 
