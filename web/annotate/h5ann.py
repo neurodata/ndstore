@@ -188,7 +188,7 @@ def SynapsetoH5 ( synapse, location, voxels ):
 
   #  segments and segment type
   if ( synapse.segments != [] ):
-    h5synapse.mdgrp.create_dataset ( "SEGMENTS", (len(synapse.segments[0]),2), np.uint32, data=synapse.segments)
+    h5synapse.mdgrp.create_dataset ( "SEGMENTS", (len(synapse.segments),2), np.uint32, data=synapse.segments)
   else:
     h5synapse.mdgrp.create_dataset ( "SEGMENTS", (0,0), np.uint32 )
 

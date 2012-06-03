@@ -116,6 +116,7 @@ class Annotation:
         raise
 
     annodb.conn.commit()
+    print "Commited on base class"
 
 
   def retrieve ( self, annid, annodb ):
@@ -208,7 +209,7 @@ class AnnSynapse (Annotation):
   def update ( self, annodb ):
     """Update the synapse in the annotations databae"""
 
-    sql = "UPDATE %s SET synapse_type=s, weigth=%s WHERE annoid=%s )"\
+    sql = "UPDATE %s SET synapse_type=%s, weight=%s WHERE annoid=%s "\
             % (anno_dbtables['synapse'], self.synapse_type, self.weight, self.annid)
 
     cursor = annodb.conn.cursor ()
@@ -218,10 +219,12 @@ class AnnSynapse (Annotation):
       print "Error updating synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise
 
+    annodb.conn.commit()
+
+
     # udpate synapse_seeds
-
-    # get the old synapse seeds
-
+    sql = "DELETE from %s WHERE annoid=%s;" % (anno_dbtables['synapse_seed'], self.annid) 
+    cursor.execute(sql)
 
     seedsclause= ','.join ( [ '(' + str(self.annid) + ',' + str(v) + ')' for v in self.seeds ] )
     sql = "INSERT INTO %s VALUES %s"\
@@ -231,10 +234,13 @@ class AnnSynapse (Annotation):
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Error inserting synapse seeds %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      print "Error updating synapse seeds %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise
 
     # udpate synapse_segments
+    sql = "DELETE from %s WHERE annoid=%s;" % (anno_dbtables['synapse_segment'], self.annid) 
+    cursor.execute(sql)
+
     segmentsclause= ','.join ( [ '(' + str(self.annid) + ',' + str(v[0]) + ',' + str(v[1]) + ')' for v in self.segments ] )
     sql = "INSERT INTO %s VALUES %s"\
             % ( anno_dbtables['synapse_segment'], segmentsclause )
@@ -246,8 +252,8 @@ class AnnSynapse (Annotation):
       print "Error inserting synapse segments %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise
 
-    # and call store on the base classs
-    Annotation.store ( self, ANNO_SYNAPSE, annodb )
+    # and call update on the base classs
+    Annotation.update ( self, ANNO_SYNAPSE, annodb )
 
     annodb.conn.commit()
 
@@ -429,10 +435,11 @@ def putAnnotation ( anno, annodb, options=None ):
     oldanno = getAnnotation ( anno.annid, annodb )
     if  oldanno == None or oldanno.__class__ != anno.__class__:
       raise ANNOError ( "During update no annotation found at id %d" % anno.annid  )
-    # update the annotation
+   # update the annotation
     else:
       anno.update(annodb)
   # Write the user chosen annotation id
   else:
+    annodb.setID ( anno.annid )
     anno.store(annodb)
  

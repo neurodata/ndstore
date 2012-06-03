@@ -54,9 +54,9 @@ class AnnotateDB:
     # PYTODO create annidx object
 
 
-  def __del ( self ):
+  def __del__ ( self ):
     """Close the connection"""
-    conn.close()
+    self.conn.close()
 
 
   #
@@ -95,6 +95,31 @@ class AnnotateDB:
     self.conn.commit()
 
     return identifier
+
+
+  #
+  #  setID
+  # 
+  #  Place the user selected id into the ids table
+  #
+  def setID ( self, annoid ):
+    """Set a user specified identifier"""
+
+    # try the insert, get ane exception if it doesn't work
+    cursor = self.conn.cursor ()
+    sql = "INSERT INTO " + str(self.annoproj.getIDsTbl()) + " VALUES ( " + str(annoid) + " ) "
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      print "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      raise
+
+    # InnoDB needs a commit
+    cursor.close()
+    self.conn.commit()
+
+    return annoid
+
 
   #
   # getCube
