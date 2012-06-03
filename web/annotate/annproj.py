@@ -95,7 +95,7 @@ class AnnotateProjectsDB:
       print "No project found"
       raise AnnoProjException ( "Project token not found" )
 
-    [token, openid, host, project, dataset ] = row
+    [token, openid, host, project, dataset, resolution ] = row
 
     return AnnotateProject ( project, host, dataset )
 
@@ -103,7 +103,7 @@ class AnnotateProjectsDB:
   #
   # Load the annotation databse information based on the token
   #
-  def newAnnoProj ( self, token, openid, dbhost, project, dataset ):
+  def newAnnoProj ( self, token, openid, dbhost, project, dataset, resolution ):
     """Create a new annotation project"""
 
     dbcfg = dbconfig.switchDataset ( dataset )
@@ -111,8 +111,8 @@ class AnnotateProjectsDB:
     print dbhost, project
 
     # Insert the project entry into the database
-    sql = "INSERT INTO {0} VALUES ( \'{1}\', \'{2}\', \'{3}\', \'{4}\', \'{5}\' )".format (\
-        annpriv.table, token, openid, dbhost, project, dataset )
+    sql = "INSERT INTO {0} VALUES ( \'{1}\', \'{2}\', \'{3}\', \'{4}\', \'{5}\', {6}  )".format (\
+        annpriv.table, token, openid, dbhost, project, dataset, resolution )
 
     print sql
 
@@ -144,10 +144,18 @@ class AnnotateProjectsDB:
 
     newcursor = newconn.cursor()
 
-    sql = "create table ids ( id BIGINT PRIMARY KEY);\n"
+    sql = "CREATE TABLE ids ( id BIGINT PRIMARY KEY);\n"
+
+    # And the RAMON objects
+    sql += "CREATE TABLE annotations (annoid BIGINT PRIMARY KEY, anno_type INT, confidence FLOAT, status INT);"
+    sql += "CREATE TABLE seeds (annoid BIGINT PRIMARY KEY, parentid BIGINT, sourceid BIGINT, cube_location INT, positionx INT, positiony INT, positionz INT);"
+    sql += "CREATE TABLE synapses (annoid BIGINT PRIMARY KEY, synapse_type INT, weight FLOAT);"
+    sql += "CREATE TABLE synapse_seeds (annoid BIGINT, seed BIGINT, PRIMARY KEY (annoid, seed));"
+    sql += "CREATE TABLE synapse_segments (annoid BIGINT, segmentid BIGINT, segment_type INT, PRIMARY KEY (annoid, segmentid));"
+    sql += "CREATE TABLE kvpairs ( annoid BIGINT, kv_key VARCHAR(255), kv_value VARCHAR(255), PRIMARY KEY ( annoid, kv_key ));"
 
     for i in dbcfg.resolutions: 
-      sql += "create table res%s ( zindex BIGINT PRIMARY KEY, cube LONGBLOB );\n" % i
+      sql += "CREATE TABLE res%s ( zindex BIGINT PRIMARY KEY, cube LONGBLOB );\n" % i
 
     print sql
 
@@ -156,4 +164,4 @@ class AnnotateProjectsDB:
       newcursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Failed to create tables for new project", e
-      raise AnnoProjException ( "Failed to create database for nww project" )
+      raise AnnoProjException ( "Failed to create database for new project" )

@@ -616,7 +616,7 @@ class AnnotateDB:
   def getAnnotation ( self, id, options ):
     """Return a RAMON object by identifier"""
     
-    return annotation.getAnnotation( id, options, self )
+    return annotation.getAnnotation( id, self, options )
 
   #
   # putAnnotation:  
@@ -624,7 +624,7 @@ class AnnotateDB:
   def putAnnotation ( self, anno, options ):
     """store an HDF5 annotation to the database"""
     
-    return annotation.putAnnotation( anno, options, self )
+    return annotation.putAnnotation( anno, self, options )
 
 
   

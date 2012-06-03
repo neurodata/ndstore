@@ -422,7 +422,6 @@ def putAnnotation ( anno, annodb, options=None ):
 
   # if annid == 0, create a new identifier
   if anno.annid == 0 or anno.annid == None:
-    print "DB choosing ID"
     anno.annid = annodb.nextID()
     anno.store(annodb) 
   # for updates, make sure the annotation exists and is of the right type
@@ -432,10 +431,8 @@ def putAnnotation ( anno, annodb, options=None ):
       raise ANNOError ( "During update no annotation found at id %d" % anno.annid  )
     # update the annotation
     else:
-      print "Updating id"
       anno.update(annodb)
   # Write the user chosen annotation id
   else:
-    print "User chose ID"
     anno.store(annodb)
  
