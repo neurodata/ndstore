@@ -21,14 +21,14 @@ import ann_cy
      So, we try to ingest in that pattern."""
 
 # Stuff we make take from a config or the command line in the future
-_xtiles = 2 
-_ytiles = 2
-_xtilesz = 8192
-_ytilesz = 8192
-_startslice = 1600
-_endslice = 1601
+_xtiles = 1 
+_ytiles = 1
+_xtilesz = 10748
+_ytilesz = 12896
+_startslice = 1100
+_endslice = 1850
 _prefix = 'fullresseg22312_s'
-_batchsz = 16 
+#_batchsz = 16 
 _batchsz = 1 
 
 # Shape that we want to ingest into the database.
@@ -69,9 +69,9 @@ def main():
         zlow = sl+1
         zhigh = sl+endz+2
         ylow = ytile*_ytilesz
-        yhigh = min((ytile+1)*_ytilesz, 13312 )
+        yhigh = min((ytile+1)*_ytilesz, 12896 )
         xlow = xtile*_xtilesz
-        xhigh = min((xtile+1)*_xtilesz, 10752)
+        xhigh = min((xtile+1)*_xtilesz, 10748)
 
         # Send a cube at a time to the database
         for z in range ( zlow, zhigh, _zingestsz ):
