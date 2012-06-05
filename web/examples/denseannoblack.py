@@ -10,6 +10,7 @@ import sys
 def main():
 
   parser = argparse.ArgumentParser(description='Cutout a portion of the database.')
+  parser.add_argument('baseurl', action="store")
   parser.add_argument('token', action="store")
   parser.add_argument('resolution', action="store", type=int )
   parser.add_argument('xlow', action="store", type=int )
@@ -21,7 +22,7 @@ def main():
 
   result = parser.parse_args()
 
-  url = 'http://127.0.0.1/EM/cutout/hayworth5nm/npz/' +\
+  url = 'http://' + result.baseurl + '/cutout/hayworth5nm/npz/' +\
             str(result.resolution) + "/" +\
             str(result.xlow) + "," + str(result.xhigh) + "/" +\
             str(result.ylow) + "," + str(result.yhigh) + "/" +\
@@ -51,7 +52,7 @@ def main():
   vec_func = np.vectorize ( lambda x: 0 if x > 30 else 125 ) 
   annodata = vec_func ( cube )
 
-  url = 'http://127.0.0.1/EM/annotate/%s/npdense/add/%s/%s,%s/%s,%s/%s,%s/' % ( result.token, result.resolution, result.xlow, result.xhigh, result.ylow, result.yhigh, result.zlow, result.zhigh ) 
+  url = 'http://%s/annotate/%s/npdense/add/%s/%s,%s/%s,%s/%s,%s/' % ( result.baseurl, result.token, result.resolution, result.xlow, result.xhigh, result.ylow, result.yhigh, result.zlow, result.zhigh ) 
 
 
   # Encode the voxelist an pickle
@@ -65,9 +66,6 @@ def main():
   req = urllib2.Request(url, cdz)
   response = urllib2.urlopen(req)
   the_page = response.read()
-
-  print "Done"
-
 
 
 if __name__ == "__main__":

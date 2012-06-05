@@ -10,6 +10,7 @@ import sys
 def main():
 
   parser = argparse.ArgumentParser(description='Cutout a portion of the database.')
+  parser.add_argument('baseurl', action="store")
   parser.add_argument('token', action="store")
   parser.add_argument('resolution', action="store", type=int )
   parser.add_argument('xlow', action="store", type=int )
@@ -21,7 +22,7 @@ def main():
 
   result = parser.parse_args()
 
-  url = 'http://127.0.0.1/EM/cutout/kasthuri11/npz/' +\
+  url = 'http://' + result.baseurl + '/cutout/hayworth5nm/npz/' +\
             str(result.resolution) + "/" +\
             str(result.xlow) + "," + str(result.xhigh) + "/" +\
             str(result.ylow) + "," + str(result.yhigh) + "/" +\
@@ -55,7 +56,7 @@ def main():
                          it.multi_index[0]+zoffset ] )
     it.iternext()
 
-  url = 'http://127.0.0.1/EM/annotate/%s/npvoxels/new/%s/' % (result.token, result.resolution)
+  url = 'http://%s/annotate/%s/npvoxels/new/%s/' % (result.baseurl, result.token, result.resolution)
 
   print url
 
