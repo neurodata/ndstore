@@ -18,6 +18,7 @@ from pprint import pprint
 def main():
 
   parser = argparse.ArgumentParser(description='Fetch an annotation as an HDF5 file')
+  parser.add_argument('baseurl', action="store")
   parser.add_argument('token', action="store")
   parser.add_argument('annid', action="store", type=int, help='Annotation ID to extract')
   parser.add_argument('--option', action="store", help='insert (default) or update')
@@ -45,9 +46,9 @@ def main():
 
   # Build the put URL
   if result.option == 'update':
-    url = "http://127.0.0.1:8000/annotate/%s/update/" % (result.token)
+    url = "http://%s/annotate/%s/update/" % ( result.baseurl, result.token)
   else:
-    url = "http://127.0.0.1:8000/annotate/%s/" % (result.token)
+    url = "http://%s/annotate/%s/" % ( result.baseurl, result.token)
   print url
 
   try:

@@ -25,7 +25,7 @@ def main():
 
   # Get annotation in question
   try:
-    url = "http://%s/annotate/%s/%s/" % (result.baseurl, result.token,result.annid)
+    url = "http://%s/annotate/%s/%s/" % (result.baseurl,result.token,result.annid)
     f = urllib2.urlopen ( url )
   except urllib2.URLError:
     print "Failed to get URL", url
