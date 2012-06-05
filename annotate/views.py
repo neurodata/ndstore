@@ -29,6 +29,14 @@ def annopost (request, webargs):
   # All handling done by annrest
   return HttpResponse(annrest.annopost(webargs,request.body))
 
+def annotation (request, webargs):
+  """Get put object interface for RAMON objects"""
+
+  if request.method == 'GET':
+    return HttpResponse(annrest.getAnnotation(webargs), mimetype="product/hdf5" )
+  elif request.method == 'POST':
+    return HttpResponse(annrest.putAnnotation(webargs,request.body))
+
 def post_test ( request ):
   return HttpResponse("<html> Post test </html>")
 

@@ -5,6 +5,8 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('annotate.views',
+  # annotations get and put: must be a number
+  url(r'(?P<webargs>^\w+/[\d+/]?[\w,/]*)$', 'annotation'),
   # test 
   url(r'^$', 'index'),
   # get services
