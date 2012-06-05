@@ -16,6 +16,7 @@ from pprint import pprint
 def main():
 
   parser = argparse.ArgumentParser(description='Fetch an annotation as an HDF5 file')
+  parser.add_argument('baseurl', action="store")
   parser.add_argument('token', action="store")
   parser.add_argument('annid', action="store", type=int, help='Annotation ID to extract')
   parser.add_argument('--option', action="store", help='How you want the data: nodata list cube')
@@ -24,7 +25,7 @@ def main():
 
   # Get annotation in question
   try:
-    url = "http://127.0.0.1:8000/annotate/%s/%s/" % (result.token,result.annid)
+    url = "http://%s/annotate/%s/%s/" % (result.baseurl, result.token,result.annid)
     f = urllib2.urlopen ( url )
   except urllib2.URLError:
     print "Failed to get URL", url
