@@ -21,6 +21,7 @@ def main():
   parser.add_argument('baseurl', action="store")
   parser.add_argument('token', action="store")
   parser.add_argument('annid', action="store", type=int, help='Annotation ID to extract')
+  parser.add_argument('--kv', action="store", help='key:value')
   parser.add_argument('--option', action="store", help='insert (default) or update')
 
   result = parser.parse_args()
@@ -33,6 +34,9 @@ def main():
   seed.status = random.randint(0,4)
   seed.confidence = random.random()
   seed.kvpairs = { 'author':'randalburns', 'type':str(seed.__class__) }
+#  if result.kv!= '':
+#    [ k, sym, v ] = result.kv.partition(':')
+#    seed.kvpairs[k]=v
 
   # seed fields
   seed.parent = random.randint(1,1000)
