@@ -1,0 +1,70 @@
+import urllib2
+import argparse
+import numpy as np
+import urllib2
+import cStringIO
+import sys
+import tempfile
+import h5py
+import random 
+
+import empaths
+import annotation
+import h5ann
+
+from pprint import pprint
+
+
+def main():
+
+  parser = argparse.ArgumentParser(description='Fetch an annotation as an HDF5 file')
+  parser.add_argument('baseurl', action="store")
+  parser.add_argument('token', action="store")
+  parser.add_argument('annid', action="store", type=int, help='Annotation ID to extract')
+  parser.add_argument('--option', action="store", help='insert (default) or update')
+  parser.add_argument('--kv', action="store", help='key:value')
+
+  result = parser.parse_args()
+
+  # Create the synapse and initialize it's fields
+  syn = annotation.AnnSynapse()
+
+  syn.annid = result.annid
+  syn.status = random.randint(0,4)
+  syn.confidence = random.random()
+  syn.kvpairs = { 'author':'randal', 'type':str(syn.__class__) }
+  if result.kv!= None:
+    [ k, sym, v ] = result.kv.partition(':')
+    syn.kvpairs[k]=v
+
+  # synapse fields
+  syn.weight = random.random()*1000.0
+  syn.synapse_type = random.randint(1,9)
+  syn.seeds = [ random.randint(1,1000) for x in range(5) ]
+  syn.segments = [ [random.randint(1,1000),random.randint(1,1000)] for x in range(4) ]
+
+  pprint(vars(syn))
+
+  h5syn = h5ann.SynapsetoH5 ( syn, None, None )
+
+  # Build the put URL
+  if result.option == 'update':
+    url = "http://%s/annotate/%s/update/" % ( result.baseurl, result.token)
+  else:
+    url = "http://%s/annotate/%s/" % ( result.baseurl, result.token)
+  print url
+
+  try:
+    req = urllib2.Request ( url, h5syn.fileReader()) 
+    response = urllib2.urlopen(req)
+  except urllib2.URLError:
+    print "Failed to put URL", url
+    sys.exit(0)
+
+  the_page = response.read()
+  print "Success with id %s" % the_page
+
+if __name__ == "__main__":
+
+      main()
+
