@@ -34,9 +34,9 @@ def main():
   seed.status = random.randint(0,4)
   seed.confidence = random.random()
   seed.kvpairs = { 'author':'randalburns', 'type':str(seed.__class__) }
-#  if result.kv!= '':
-#    [ k, sym, v ] = result.kv.partition(':')
-#    seed.kvpairs[k]=v
+  if result.kv!= None:
+    [ k, sym, v ] = result.kv.partition(':')
+    seed.kvpairs[k]=v
 
   # seed fields
   seed.parent = random.randint(1,1000)
