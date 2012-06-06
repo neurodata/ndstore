@@ -150,8 +150,6 @@ class AnnotateProjectsDB:
     sql += "CREATE TABLE annotations (annoid BIGINT PRIMARY KEY, anno_type INT, confidence FLOAT, status INT);"
     sql += "CREATE TABLE seeds (annoid BIGINT PRIMARY KEY, parentid BIGINT, sourceid BIGINT, cube_location INT, positionx INT, positiony INT, positionz INT);"
     sql += "CREATE TABLE synapses (annoid BIGINT PRIMARY KEY, synapse_type INT, weight FLOAT);"
-    sql += "CREATE TABLE synapse_seeds (annoid BIGINT, seed BIGINT, PRIMARY KEY (annoid, seed));"
-    sql += "CREATE TABLE synapse_segments (annoid BIGINT, segmentid BIGINT, segment_type INT, PRIMARY KEY (annoid, segmentid));"
     sql += "CREATE TABLE kvpairs ( annoid BIGINT, kv_key VARCHAR(255), kv_value VARCHAR(255), PRIMARY KEY ( annoid, kv_key ));"
 
     for i in dbcfg.resolutions: 

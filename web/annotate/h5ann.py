@@ -28,6 +28,7 @@ ANNOTATION_TYPE (int)
 ANNOTATION_ID (int)
 OFFSET ( int[3] optional )
 VOXEL_DATA ( int32 3-d array optional )
+VOXEL_LIST ( int32[][3] optional ) 
 
 METADATA group;
 

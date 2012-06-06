@@ -31,6 +31,8 @@ def main():
     print "Failed to get URL", url
     sys.exit(0)
 
+  print url
+
   # This feels like one more copy than is needed
   tmpfile = tempfile.NamedTemporaryFile ( )
   tmpfile.write ( f.read() )
