@@ -57,10 +57,6 @@ class AnnotateProject:
   def getTable ( self, resolution ):
     """Return the appropriate table for the specified resolution"""
     return "res"+str(resolution)
-  
-  def getIdxTable ( self, resolution ):
-    """Return the appropriate Index table for the specified resolution"""
-    return "idx"+str(resolution)
 
 class AnnotateProjectsDB:
   """Database for the annotation projects"""
