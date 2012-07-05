@@ -161,6 +161,7 @@ class AnnotateProjectsDB:
 
     for i in dbcfg.resolutions: 
       sql += "CREATE TABLE res%s ( zindex BIGINT PRIMARY KEY, cube LONGBLOB );\n" % i
+      sql += "CREATE TABLE idx%s ( annid BIGINT PRIMARY KEY, cube LONGBLOB );\n" % i
 
     print sql
 
