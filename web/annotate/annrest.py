@@ -328,21 +328,31 @@ def getAnnotation ( webargs ):
   """Fetch a RAMON object as HDF5 by object identifier"""
   [ token, sym, restargs ] = webargs.partition ('/')
 
-  import pdb; pdb.set_trace() 
-
   # Get the annotation database
   annprojdb = annproj.AnnotateProjectsDB()
   annoproj = annprojdb.getAnnoProj ( token )
   dbcfg = dbconfig.switchDataset ( annoproj.getDataset() )
   annodb = anndb.AnnotateDB ( dbcfg, annoproj )
 
-  [ id, sym, optionsargs ] = restargs.partition ('/')
-  if re.search ( '^\d+$', id ) == None:
+  # RBTODO Fix resolution and options processing
+  [ annoid, sym, optionsargs ] = restargs.partition ('/')
+  if re.search ( '^\d+$', annoid ) == None:
     raise Exception ( "Must specify an id" )
   
+  [ resstr, sym, optionsargs ] = optionsargs.partition ('/')
+  resolution = int(resstr)
   options = optionsargs.split('/')
   print options
-  anno = annodb.getAnnotation ( id, options )
+
+  import pdb; pdb.set_trace()
+
+  # retrieve the annotation 
+  anno = annodb.getAnnotation ( annoid, options )
+
+  # get the data
+  # TODO fix the options so that the resolution is in there
+  voxlist = annodb.getLocations ( annoid, resolution )                                         
+
   h5 = h5ann.AnnotationtoH5 ( anno )
   
   return h5.fileReader()
@@ -401,26 +411,3 @@ def putAnnotation ( webargs, postdata ):
   return str(anno.annid)
 
 
-#                                                                                  
-#  getVoxels                                                                      
-#  get the list of voxels for an annotation                                      
-#                                                                                   
-def getVoxels ( webargs, dbcfg, annoproj ):
-  """Return the annotation identifier of a voxel"""
-  print "In get Voxels- annrest.py"
-
-  [ service, sym, postargs ] = webargs.partition ('/')
-  print "++++++++++WEBARGS+++++++++",webargs
-  
-  # Perform argument processing                                                                                 
-  annoid = restargs.annotationId ( webargs, dbcfg)
-  print"Annotation id", annoid
-  # Get the identifier                                                                                          
-  annodb = anndb.AnnotateDB ( dbcfg, annoproj )
- # return annodb.getLocations ( annoid )                                         
-
-  # Package the compressed list of voxels  as a Web readable file handle
-                                                                                 
-  fileobj = StringIO.StringIO ( annodb.getLocations ( annoid ) )
-  fileobj.seek(0)
-  return fileobj.read()

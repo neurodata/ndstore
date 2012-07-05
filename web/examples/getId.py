@@ -21,11 +21,11 @@ def main():
 
   result = parser.parse_args()
 
-  url = 'http://127.0.0.1:8000/annotate/hanno3/getVoxels/' +\
-      str(result.resolution) +"/" +\
-      str(result.annid)
+  url = "http://127.0.0.1:8000/annotate/%s/%s/%s/" %\
+      (result.token, str(result.annid), str(result.resolution))
     
   print url
+
 #  import pdb; pdb.set_trace() 
   # Get cube in question
   f = urllib2.urlopen ( url )

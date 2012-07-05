@@ -681,6 +681,8 @@ class AnnotateDB:
       it = np.nditer ( cube.data, flags=['multi_index'])
       print"Iterating for the voxel list"
     
+      # RB voxels not getting appended
+
       while not it.finished:
         if (it[0] == entityid):
           # import pdb; pdb.set_trace()                                                 
