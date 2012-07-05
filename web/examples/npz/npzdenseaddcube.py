@@ -5,10 +5,8 @@ import dbconfighayworth5nm
 import numpy as np
 import urllib, urllib2
 import cStringIO
+import zlib
 import sys
-
-import tempfile
-import h5py
 
 import anncube
 import anndb
@@ -28,36 +26,24 @@ def main():
   parser.add_argument('zhigh', action="store", type=int)
 
   result = parser.parse_args()
-  voxlist= []
 
-  for k in range (result.zlow,result.zhigh):
-    for j in range (result.ylow,result.yhigh):
-      for i in range (result.xlow,result.xhigh):
-        voxlist.append ( [ i,j,k ] )
+  anndata = np.ones ( [ result.zhigh-result.zlow, result.yhigh-result.ylow, result.xhigh-result.xlow ] )
 
-  # Build a minimal hdf5 file
-  # Create an in-memory HDF5 file
-  tmpfile = tempfile.NamedTemporaryFile()
-  h5fh = h5py.File ( tmpfile.name )
-
-  h5fh.create_dataset ( "RESOLUTION", (1,), np.uint32, data=result.resolution )
-  h5fh.create_dataset ( "VOXELS", (len(voxlist),3), np.uint32, data=voxlist )
-
-  url = 'http://%s/annotate/%s/' % ( result.baseurl, result.token )
-  
+  url = 'http://%s/annotate/%s/npdense/add/%s/%s,%s/%s,%s/%s,%s/' % ( result.baseurl, result.token, result.resolution, result.xlow, result.xhigh, result.ylow, result.yhigh, result.zlow, result.zhigh )
   print url
 
-  try:
-    h5fh.flush()
-    tmpfile.seek(0)
-    req = urllib2.Request ( url, tmpfile.read())
-    response = urllib2.urlopen(req)
-  except urllib2.URLError:
-    print "Failed to put URL", url
-    sys.exit(0)
+  # Encode the voxelist an pickle
+  fileobj = cStringIO.StringIO ()
+  np.save ( fileobj, anndata )
+  cdz = zlib.compress (fileobj.getvalue()) 
 
+  # Build the post request
+  req = urllib2.Request(url,cdz)
+  response = urllib2.urlopen(req)
   the_page = response.read()
-  print "Success with id %s" % the_page
+
+  print "Done"
+
 
 if __name__ == "__main__":
   main()

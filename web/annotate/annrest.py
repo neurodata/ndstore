@@ -261,7 +261,6 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
     args.cutoutArgs ( cutoutargs, dbcfg )
 
     corner = args.getCorner()
-    dim = args.getDim()
     resolution = args.getResolution()
 
     # RBTODO conflict option with cutout args doesn't work.  Using overwrite now.
@@ -282,12 +281,12 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
     # Choose the verb, get the entity (as needed), and annotate
     # Translates the values directly
     if verb == 'add':
-      entityid = annoDB.addEntityDense ( corner, dim, resolution, voxarray, conflictopt )
+      entityid = annoDB.addEntityDense ( corner, resolution, voxarray, conflictopt )
 
     # renumbers the annotations
 #    elif verb == 'new':
 #      conflictopt = restargs.conflictOption ( serviceargs )
-#      entityid = annoDB.newEntityDense ( corner, dime, resolution, voxarray, conflictopt )
+#      entityid = annoDB.newEntityDense ( corner, dim, resolution, voxarray, conflictopt )
 
     else: 
       raise restargs.RESTBadArgsError ("No such verb: %s" % verb )
@@ -335,12 +334,25 @@ def getAnnotation ( webargs ):
   dbcfg = dbconfig.switchDataset ( annoproj.getDataset() )
   annodb = anndb.AnnotateDB ( dbcfg, annoproj )
 
-  [ id, sym, optionsargs ] = restargs.partition ('/')
-  if re.search ( '^\d+$', id ) == None:
+  # RBTODO Fix resolution and options processing
+  [ annoid, sym, optionsargs ] = restargs.partition ('/')
+  if re.search ( '^\d+$', annoid ) == None:
     raise Exception ( "Must specify an id" )
   
+  [ resstr, sym, optionsargs ] = optionsargs.partition ('/')
+  resolution = int(resstr)
   options = optionsargs.split('/')
-  anno = annodb.getAnnotation ( id, options )
+  print options
+
+  import pdb; pdb.set_trace()
+
+  # retrieve the annotation 
+  anno = annodb.getAnnotation ( annoid, options )
+
+  # get the data
+  # TODO fix the options so that the resolution is in there
+  voxlist = annodb.getLocations ( annoid, resolution )                                         
+
   h5 = h5ann.AnnotationtoH5 ( anno )
   
   return h5.fileReader()
@@ -369,31 +381,33 @@ def putAnnotation ( webargs, postdata ):
   anno = h5ann.H5toAnnotation ( h5f )
   # Put into the database
   annodb.putAnnotation ( anno, options )
-  
+
+  # Is a resolution specified?  or use default
+  h5resolution = h5f.get('RESOLUTION')
+  if h5resolution == None:
+    resolution = annoproj.getResolution()
+  else:
+    resolution = h5resolution[0]
+
+  # Load the data associated with this annotation
+  #  Is it voxel data?
+  voxels = h5f.get('VOXELS')
+  if voxels:
+
+    # TODO Need to cope with annotation options later
+    # Need to deal with conflict option
+    annodb.annotate ( anno.annid, resolution, voxels, 'O' )
+
+  # Is it dense data?
+  volume = h5f.get('VOLUME')
+  h5xyzoffset = h5f.get('XYZOFFSET')
+  if volume != None and h5xyzoffset != None:
+    annodb.newEntityDense ( anno.annid, h5xyzoffset[0], resolution, volume, 'O' )
+  elif volume != None or h5xyzoffset != None:
+    #TODO this is a loggable error
+    pass
+
   # return the identifier
   return str(anno.annid)
 
 
-#                                                                                  
-#  getVoxels                                                                      
-#  get the list of voxels for an annotation                                      
-#                                                                                   
-def getVoxels ( webargs, dbcfg, annoproj ):
-  """Return the annotation identifier of a voxel"""
-  print "In get Voxels- annrest.py"
-
-  [ service, sym, postargs ] = webargs.partition ('/')
-  print "++++++++++WEBARGS+++++++++",webargs
-  
-  # Perform argument processing                                                                                 
-  annoid = restargs.annotationId ( webargs, dbcfg)
-  print"Annotation id", annoid
-  # Get the identifier                                                                                          
-  annodb = anndb.AnnotateDB ( dbcfg, annoproj )
- # return annodb.getLocations ( annoid )                                         
-
-  # Package the compressed list of voxels  as a Web readable file handle
-                                                                                 
-  fileobj = StringIO.StringIO ( annodb.getLocations ( annoid ) )
-  fileobj.seek(0)
-  return fileobj.read()

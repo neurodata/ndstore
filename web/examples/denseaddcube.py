@@ -1,20 +1,18 @@
 import argparse
 import empaths
-import dbconfig
-import dbconfighayworth5nm
 import numpy as np
 import urllib, urllib2
 import cStringIO
 import zlib
 import sys
 
-import anncube
-import anndb
-import zindex
+import tempfile
+import h5py
 
 def main():
 
   parser = argparse.ArgumentParser(description='Annotate a cubic a portion of the database.')
+  parser.add_argument('baseurl', action="store" )
   parser.add_argument('token', action="store" )
   parser.add_argument('resolution', action="store", type=int )
   parser.add_argument('xlow', action="store", type=int )
@@ -28,25 +26,30 @@ def main():
 
   anndata = np.ones ( [ result.zhigh-result.zlow, result.yhigh-result.ylow, result.xhigh-result.xlow ] )
 
-  url = 'http://127.0.0.1/EM/annotate/%s/npdense/add/%s/%s,%s/%s,%s/%s,%s/' % ( result.token, result.resolution, result.xlow, result.xhigh, result.ylow, result.yhigh, result.zlow, result.zhigh )
+  # Build a minimal hdf5 file
+  # Create an in-memory HDF5 file
+  tmpfile = tempfile.NamedTemporaryFile()
+  h5fh = h5py.File ( tmpfile.name )
+
+  h5fh.create_dataset ( "RESOLUTION", (1,), np.uint32, data=result.resolution )
+  h5fh.create_dataset ( "XYZOFFSET", (1,3), np.uint32, data=[result.xlow,result.ylow,result.zlow] )
+  h5fh.create_dataset ( "VOLUME", anndata.shape, np.uint32, data=anndata )
+
+  url = 'http://%s/annotate/%s/' % ( result.baseurl, result.token )
+  
   print url
 
-  # Encode the voxelist an pickle
-  fileobj = cStringIO.StringIO ()
-  np.save ( fileobj, anndata )
-  cdz = zlib.compress (fileobj.getvalue()) 
+  try:
+    h5fh.flush()
+    tmpfile.seek(0)
+    req = urllib2.Request ( url, tmpfile.read())
+    response = urllib2.urlopen(req)
+  except urllib2.URLError:
+    print "Failed to put URL", url
+    sys.exit(0)
 
-  # Build the post request
-  req = urllib2.Request(url,cdz)
-  response = urllib2.urlopen(req)
   the_page = response.read()
-
-  print the_page
-
+  print "Success with id %s" % the_page
 
 if __name__ == "__main__":
   main()
-
-
-
-

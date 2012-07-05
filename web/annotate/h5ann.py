@@ -20,14 +20,20 @@ from pprint import pprint
 #  class to define the HDF5 format of annotations.
 #
 
+# TODO implement data and author
+#  support missing values
+# suport untyped files
+
 """The HDF5 format currently looks like:
 
 /  (Root) group:
 
 ANNOTATION_TYPE (int)
 ANNOTATION_ID (int)
-OFFSET ( int[3] optional )
-VOXEL_DATA ( int32 3-d array optional )
+RESOLUTION (int optional) defaults to project resolution
+XYZOFFSET ( int[3] optional defined with volume )
+VOLUME ( int32 3-d array optional defined with XYZOFFSET )
+VOXELS ( int32[][3] optional if defined XYZOFFSET and VOLUME must be empty ) 
 
 METADATA group;
 
@@ -35,6 +41,7 @@ METADATA group;
  CONFIDENCE (float)
  STATUS (int) 
  KVPAIRS   (string containing csv pairs)
+ AUTHOR ( string ) 
 
  # for seeds
 
@@ -55,8 +62,11 @@ METADATA group;
 class H5Annotation:
   """Class to move data into and out of HDF5 files"""
 
-  def __init__( self, annotype, annoid, location=None, voxels=None ):
-    """Create an HDF5 file and simple structure"""
+  def __init__( self, annotype, annoid, anndata=None, xyzoffset=None):
+    """Create an HDF5 file and simple structure
+      calls with data as a list of voxels and location == None for voxel lists
+      call with data as an array of data and xyzoffset for a volume
+     """
 
     # Create an in-memory HDF5 file
     self.tmpfile = tempfile.NamedTemporaryFile()
@@ -65,14 +75,19 @@ class H5Annotation:
     # Annotation type
     self.h5fh.create_dataset ( "ANNOTATION_TYPE", (1,), np.uint32, data=annotype )
     self.h5fh.create_dataset ( "ANNOTATION_ID", (1,), np.uint32, data=annoid )
-
+    
     # Create a metadata group
     self.mdgrp = self.h5fh.create_group ( "METADATA" ) 
 
-    # Zeroed data if not none
-    if location != None:
-      self.h5fh.create_dataset ( "OFFSET", (3,), np.uint32, data=location )     
-      self.h5fh.create_dataset ( "VOXEL_DATA", voxels.shape, np.uint32, compression='gzip', data=voxels )
+    # who is the author
+
+    # Volume of data if xyzoffset defined
+    if xyzoffset != None:
+      self.h5fh.create_dataset ( "XYZOFFSET", (3,), np.uint32, anndata=xyzoffset )     
+      self.h5fh.create_dataset ( "VOLUME", anndata.shape, np.uint32, compression='gzip', data=anndata )
+    # List of voxels if anndata defined and not xyzoffset
+    elif anndata != None:
+      self.h5fh.create_dataset ( "VOXELS", anndata.shape, np.uint32, compression='gzip', data=anndata )
 
   def __del__ ( self ):
     """Destructor"""
@@ -91,73 +106,109 @@ def H5toAnnotation ( h5fh ):
   """Return an annotation constructed from the contents of this HDF5 file"""
 
   # get the annotation type
-  annotype = h5fh['ANNOTATION_TYPE'][0]
+  if h5fh.get('ANNOTATION_TYPE'):
+    annotype = h5fh['ANNOTATION_TYPE'][0]
+  else:
+    annotype = annotation.ANNO_NOTYPE
 
   # And get the metadata group
-  mdgrp = h5fh['METADATA']
+  mdgrp = h5fh.get('METADATA')
 
   if annotype == annotation.ANNO_SEED:
 
     # Create the appropriate annotation type
     anno = annotation.AnnSeed()
 
-    # load the seed specific metadata
-    anno.parent = mdgrp['PARENT'][0]
-    anno.position = mdgrp['POSITION'][:]
-    anno.cubelocation = mdgrp['CUBE_LOCATION'][0]
-    anno.source = mdgrp['SOURCE'][0] 
+    # Load metadata if it exists
+    if mdgrp:
+      # load the seed specific metadata
+      if mdgrp.get('PARENT'):
+        anno.parent = mdgrp['PARENT'][0]
+      if mdgrp.get('POSITION'):
+        anno.position = mdgrp['POSITION'][:]
+      if mdgrp.get('CUBE_LOCATION'):
+        anno.cubelocation = mdgrp['CUBE_LOCATION'][0]
+      if mdgrp.get('SOURCE'):
+        anno.source = mdgrp['SOURCE'][0] 
 
   elif annotype == annotation.ANNO_SYNAPSE:
-
+    
     # Create the appropriate annotation type
     anno = annotation.AnnSynapse()
 
-    # load the synapse specific metadata
-    anno.synapse_type = mdgrp['SYNAPSE_TYPE'][0]
-    anno.weight = mdgrp['WEIGHT'][0]
-    anno.seeds = mdgrp['SEEDS'][:]
-    anno.segments = mdgrp['SEGMENTS'] [:]
+    # Load metadata if it exists
+    if mdgrp:
+      # load the synapse specific metadata
+      if mdgrp.get('SYNAPSE_TYPE'):
+        anno.synapse_type = mdgrp['SYNAPSE_TYPE'][0]
+      if mdgrp.get('WEIGHT'):
+        anno.weight = mdgrp['WEIGHT'][0]
+      if mdgrp.get('SEEDS') and len(mdgrp['SEEDS'])!=0:
+        anno.seeds = mdgrp['SEEDS'][:]
+      if mdgrp.get('SEGMENTS') and len(mdgrp['SEGMENTS'])!=0:
+        anno.segments = mdgrp['SEGMENTS'] [:]
+
+  # No special action if it's a no type
+  elif annotype == annotation.ANNO_NOTYPE:
+    # Just create a generic annotation object
+    anno = annotation.Annotation()
 
   else:
     raise Exception ("Dont support this annotation type yet")
 
   # now load the annotation common fields
-  anno.annid = h5fh['ANNOTATION_ID'][0]
-  anno.confidence = mdgrp['CONFIDENCE'][0]
+  if h5fh.get('ANNOTATION_ID'):
+    anno.annid = h5fh['ANNOTATION_ID'][0]
 
-  # now load the metadata common fields
-  anno.status = mdgrp['STATUS'][0]
-  anno.confidence = mdgrp['CONFIDENCE'][0]
+  if mdgrp:
+    # now load the metadata common fields
+    if mdgrp.get('STATUS'):
+      anno.status = mdgrp['STATUS'][0]
+    if mdgrp.get('CONFIDENCE'):
+      anno.confidence = mdgrp['CONFIDENCE'][0]
+    if mdgrp.get('AUTHOR'):
+      anno.author = mdgrp['AUTHOR'][0]
 
-  # and the key/value pairs
-  fstring = cStringIO.StringIO( mdgrp['KVPAIRS'][0] )
-  csvr = csv.reader(fstring, delimiter=',')
-  for r in csvr:
-    anno.kvpairs[r[0]] = r[1] 
+    # and the key/value pairs
+    if mdgrp.get('KVPAIRS'):
+      fstring = cStringIO.StringIO( mdgrp['KVPAIRS'][0] )
+      csvr = csv.reader(fstring, delimiter=',')
+      for r in csvr:
+        anno.kvpairs[r[0]] = r[1] 
 
   return anno
 
+def H5GetVoxels ( h5fh ):
+  """Return the voxel data associated with the annotation"""
 
-def H5GetVoxelData ( h5fh ):
-  """Return the voxel data associated with the annotation
-       This returns a dim3 and a numpy array"""
+  if h5fh.get('VOXELS'):
+    return h5fh['VOXELS']
+  else:
+    return None
 
-  # RBTODO
+def H5GetVolume ( h5fh ):
+  """Return the volume associated with the annotation"""
 
-  return [offset, voxels]
-
-
+  if h5fh.get('XYZOFFSET'):
+    if h5fh.get('VOLUME'):
+      return (h5fh['XYZOFFSET'], h5fh['VOLUME'])
+    else:
+      # TODO log message improper data format
+      pass
+  else:
+    return None
 
 ############## Converting Annotation to HDF5 ####################
 
-def BasetoH5 ( anno, annotype, location=None, voxels=None ):
+def BasetoH5 ( anno, annotype, anndata=None, xyzoffset=None ):
   """Convert an annotation to HDF5 for interchange"""
 
-  h5anno = H5Annotation ( annotype, anno.annid, location, voxels )
-  
+  h5anno = H5Annotation ( annotype, anno.annid, anndata, xyzoffset )
+
   # Set Annotation specific metadata
   h5anno.mdgrp.create_dataset ( "STATUS", (1,), np.uint32, data=anno.status )
   h5anno.mdgrp.create_dataset ( "CONFIDENCE", (1,), np.float, data=anno.confidence )
+  h5anno.mdgrp.create_dataset ( "AUTHOR", (1,), dtype=h5py.special_dtype(vlen=str), data=anno.author )
 
   # Turn our dictionary into a csv file
   fstring = cStringIO.StringIO()
@@ -170,11 +221,11 @@ def BasetoH5 ( anno, annotype, location=None, voxels=None ):
   return h5anno
 
 
-def SynapsetoH5 ( synapse, location, voxels ):
+def SynapsetoH5 ( synapse, anndata, xyzoffset ):
   """Convert a synapse to HDF5"""
 
   # First create the base object
-  h5synapse = BasetoH5 ( synapse, annotation.ANNO_SYNAPSE, location, voxels )
+  h5synapse = BasetoH5 ( synapse, annotation.ANNO_SYNAPSE, anndata, xyzoffset )
 
   # Then customize
   h5synapse.mdgrp.create_dataset ( "WEIGHT", (1,), np.float, data=synapse.weight )
@@ -204,8 +255,9 @@ def SeedtoH5 ( seed ):
   # convert these  to enumerations??
   h5seed.mdgrp.create_dataset ( "PARENT", (1,), np.uint32, data=seed.parent )
   h5seed.mdgrp.create_dataset ( "CUBE_LOCATION", (1,), np.uint32, data=seed.cubelocation )
-  h5seed.mdgrp.create_dataset ( "POSITION", (3,), np.uint32, data=seed.position )     
   h5seed.mdgrp.create_dataset ( "SOURCE", (1,), np.uint32, data=seed.source )     
+  if seed.position != [None, None, None]:
+    h5seed.mdgrp.create_dataset ( "POSITION", (3,), np.uint32, data=seed.position )     
 
   return h5seed
 
@@ -217,7 +269,7 @@ def AnnotationtoH5 ( anno ):
   elif anno.__class__ == annotation.AnnSeed:
     return SeedtoH5 ( anno )
   elif anno.__class__ == annotation.Annotation:
-    raise Exception ("(AnnotationtoH5) Can't instantiate the base class")
+    return BasetoH5 ( anno, annotation.ANNO_NOTYPE, None, None )
   else:
     raise Exception ("(AnnotationtoH5) Dont support this annotation type yet")
 
@@ -232,8 +284,8 @@ def main():
   #Load the database
   annodb = anndb.AnnotateDB ( dbcfg, annoproj )
   
-  location=[100,200,300]
-  voxels = np.ones ( [ 100,100,100] )
+  xyzoffset=[100,200,300]
+  anndata = np.ones ( [ 100,100,100] )
 
   syn = annotation.AnnSynapse( )
 

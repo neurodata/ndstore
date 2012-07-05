@@ -11,6 +11,7 @@ def main():
 
   parser = argparse.ArgumentParser(description='Cutout a portion of the database.')
   parser.add_argument('baseurl', action="store")
+  parser.add_argument('dataset', action="store")
   parser.add_argument('token', action="store")
   parser.add_argument('resolution', action="store", type=int )
   parser.add_argument('xlow', action="store", type=int )
@@ -22,7 +23,7 @@ def main():
 
   result = parser.parse_args()
 
-  url = 'http://' + result.baseurl + '/cutout/hayworth5nm/npz/' +\
+  url = 'http://' + result.baseurl + '/cutout/' + result.dataset + '/npz/' +\
             str(result.resolution) + "/" +\
             str(result.xlow) + "," + str(result.xhigh) + "/" +\
             str(result.ylow) + "," + str(result.yhigh) + "/" +\
@@ -67,6 +68,7 @@ def main():
   response = urllib2.urlopen(req)
   the_page = response.read()
 
+  print "Done"
 
 if __name__ == "__main__":
       main()
