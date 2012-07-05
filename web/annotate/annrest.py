@@ -190,6 +190,9 @@ def selectService ( webargs, dbcfg, annoproj ):
   elif service == 'annid':
     return annId ( rangeargs, dbcfg, annoproj )
 
+  elif service == 'getVoxels':
+    return getVoxels ( rangeargs, dbcfg, annoproj )
+
   else:
     raise restargs.RESTBadArgsError ("No such service: %s" % service )
 
@@ -314,7 +317,6 @@ def annopost ( webargs, postdata ):
   """Interface to the annotation write service 
       Load the annotation project and invoke the appropriate
       dataset."""
-
   [ token, sym, rangeargs ] = webargs.partition ('/')
   annprojdb = annproj.AnnotateProjectsDB()
   annoproj = annprojdb.getAnnoProj ( token )
@@ -324,7 +326,6 @@ def annopost ( webargs, postdata ):
 
 def getAnnotation ( webargs ):
   """Fetch a RAMON object as HDF5 by object identifier"""
-
   [ token, sym, restargs ] = webargs.partition ('/')
 
   import pdb; pdb.set_trace() 
@@ -398,3 +399,28 @@ def putAnnotation ( webargs, postdata ):
 
   # return the identifier
   return str(anno.annid)
+
+
+#                                                                                  
+#  getVoxels                                                                      
+#  get the list of voxels for an annotation                                      
+#                                                                                   
+def getVoxels ( webargs, dbcfg, annoproj ):
+  """Return the annotation identifier of a voxel"""
+  print "In get Voxels- annrest.py"
+
+  [ service, sym, postargs ] = webargs.partition ('/')
+  print "++++++++++WEBARGS+++++++++",webargs
+  
+  # Perform argument processing                                                                                 
+  annoid = restargs.annotationId ( webargs, dbcfg)
+  print"Annotation id", annoid
+  # Get the identifier                                                                                          
+  annodb = anndb.AnnotateDB ( dbcfg, annoproj )
+ # return annodb.getLocations ( annoid )                                         
+
+  # Package the compressed list of voxels  as a Web readable file handle
+                                                                                 
+  fileobj = StringIO.StringIO ( annodb.getLocations ( annoid ) )
+  fileobj.seek(0)
+  return fileobj.read()

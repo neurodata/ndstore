@@ -307,6 +307,15 @@ def conflictOption  ( imageargs ):
     else:
       return 'O'
 
+#                                                                                
+#  Process annotation id for queries                                             
+#                                                                               \
+                                                                                 
+def annotationId ( webargs, dbcfg ):
+  """Process REST arguments for a single"""
 
+  rangeargs = webargs.split('/')
+  # PYTODO: check validity of annotation id                                      
+  return int(rangeargs[0])
 
 
