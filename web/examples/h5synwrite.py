@@ -32,7 +32,8 @@ def main():
   syn.annid = result.annid
   syn.status = random.randint(0,4)
   syn.confidence = random.random()
-  syn.kvpairs = { 'author':'randal', 'type':str(syn.__class__) }
+  syn.author = 'randal'
+  syn.kvpairs = { 'key1':'value1', 'type':str(syn.__class__) }
   if result.kv!= None:
     [ k, sym, v ] = result.kv.partition(':')
     syn.kvpairs[k]=v

@@ -33,7 +33,8 @@ def main():
   seed.annid = result.annid
   seed.status = random.randint(0,4)
   seed.confidence = random.random()
-  seed.kvpairs = { 'author':'randalburns', 'type':str(seed.__class__) }
+  seed.author = 'randal'
+  seed.kvpairs = { 'key1':'value1', 'type':str(seed.__class__) }
   if result.kv!= None:
     [ k, sym, v ] = result.kv.partition(':')
     seed.kvpairs[k]=v

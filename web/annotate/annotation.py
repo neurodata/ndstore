@@ -5,12 +5,15 @@ import MySQLdb
 import sys
 from collections import defaultdict
 
+from pprint import pprint
 
-# All sorts of RBTODO.  Just a 
+
+# Check that the author stuff works
 
 """Classes that hold annotation metadata"""
 
 # Annotation types
+ANNO_NOTYPE = 0
 ANNO_ANNOTATION = 1
 ANNO_SYNAPSE = 2
 ANNO_SEED = 3
@@ -35,10 +38,11 @@ class Annotation:
     self.annid = 0 
     self.status = 0 
     self.confidence = 0.0 
+    self.author = ""
     self.kvpairs = defaultdict(list)
 
 
-  def store ( self, annotype, annodb ):
+  def store ( self, annodb, annotype=ANNO_NOTYPE ):
     """Store the annotation to the annotations database"""
 
     sql = "INSERT INTO %s VALUES ( %s, %s, %s, %s )"\
@@ -51,6 +55,9 @@ class Annotation:
       print "Error inserting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise
 
+    # author: make a KV pair
+    if self.author != "":
+      self.kvpairs['ann_author'] = self.author
   
     if len(self.kvpairs) != 0:
       kvclause = ','.join(['(' + str(self.annid) +',\'' + k + '\',\'' + v +'\')' for (k,v) in self.kvpairs.iteritems()])  
@@ -77,6 +84,10 @@ class Annotation:
     except MySQLdb.Error, e:
       print "Error updating annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise
+
+    # Make the author field a kvpair
+    if self.author != "":
+      self.kvpairs['ann_author'] = self.author
 
     # Get the old kvpairs and identify new kvpairs
     sql = "SELECT * FROM %s WHERE annoid = %s" % ( anno_dbtables['kvpairs'], self.annid )
@@ -143,6 +154,11 @@ class Annotation:
     for kv in kvpairs:
       self.kvpairs[kv[1]] = kv[2]
 
+    # Extract the author field if it exists
+    if self.kvpairs.get('ann_author'):
+      self.author = self.kvpairs['ann_author']
+      del ( self.kvpairs['ann_author'] )
+
     return annotype
 
 
@@ -177,13 +193,15 @@ class AnnSynapse (Annotation):
       raise
 
     # synapse_seeds: pack into a kv pair
-    self.kvpairs['synapse_seeds'] = ','.join([str(i) for i in self.seeds])
+    if self.seeds != []:
+      self.kvpairs['synapse_seeds'] = ','.join([str(i) for i in self.seeds])
 
     # synapse_segments: pack into a kv pair
-    self.kvpairs['synapse_segments'] = ','.join([str(i) + ':' + str(j) for i,j in self.segments])
+    if self.segments != []:
+      self.kvpairs['synapse_segments'] = ','.join([str(i) + ':' + str(j) for i,j in self.segments])
 
     # and call store on the base classs
-    Annotation.store ( self, ANNO_SYNAPSE, annodb )
+    Annotation.store ( self, annodb, ANNO_SYNAPSE)
 
     annodb.conn.commit()
 
@@ -234,16 +252,16 @@ class AnnSynapse (Annotation):
       raise
     ( self.synapse_type, self.weight ) = cursor.fetchone()
 
-
-    self.seeds = [int(i) for i in self.kvpairs['synapse_seeds'].split(',')]
+    if self.kvpairs.get('synapse_seeds'):
+      self.seeds = [int(i) for i in self.kvpairs['synapse_seeds'].split(',')]
+      del ( self.kvpairs['synapse_seeds'] )
 
     # RBTODO optimize this loop
-    for p in self.kvpairs['synapse_segments'].split(','):
-      f,s = p.split(':')
-      self.segments.append([int(f),int(s)])
-
-    del ( self.kvpairs['synapse_seeds'] )
-    del ( self.kvpairs['synapse_segments'] )
+    if self.kvpairs.get('synapse_segments'):
+      for p in self.kvpairs['synapse_segments'].split(','):
+        f,s = p.split(':')
+        self.segments.append([int(f),int(s)])
+      del ( self.kvpairs['synapse_segments'] )
     
 
 ###############  Seed  ##################
@@ -281,7 +299,7 @@ class AnnSeed (Annotation):
       raise
 
     # and call store on the base classs
-    Annotation.store ( self, ANNO_SEED, annodb )
+    Annotation.store ( self, annodb, ANNO_SEED)
 
     annodb.conn.commit()
 
@@ -365,8 +383,14 @@ def getAnnotation ( annid, annodb, options=None ):
     seed.retrieve(annid, annodb)
     return seed
 
+  elif type == ANNO_NOTYPE:
+    anno = Annotation()
+    anno.retrieve(annid, annodb)
+    return anno
+
   elif type == ANNO_ANNOTATION:
     raise ANNOError ( "Found type ANNO_ANNOTATION. Should not store/fetch base type." )
+
   else:
     # not a type that we recognize
     raise ANNOError ( "Unrecognized annotation type %s" % type )
