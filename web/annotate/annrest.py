@@ -353,6 +353,7 @@ def getAnnotation ( webargs ):
   # TODO fix the options so that the resolution is in there
   voxlist = annodb.getLocations ( annoid, resolution )                                         
   # PYTODO make voxlist return the correct locations
+  # Creating a conflict lines
   # PYTODO test dense index action as well
   #PYTODO
   # RBTODO package into the HDF5 file
