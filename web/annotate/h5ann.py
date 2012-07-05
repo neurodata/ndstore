@@ -30,6 +30,7 @@ from pprint import pprint
 
 ANNOTATION_TYPE (int)
 ANNOTATION_ID (int)
+RESOLUTION (int optional) defaults to project resolution
 XYZOFFSET ( int[3] optional defined with volume )
 VOLUME ( int32 3-d array optional defined with XYZOFFSET )
 VOXELS ( int32[][3] optional if defined XYZOFFSET and VOLUME must be empty ) 
@@ -177,16 +178,25 @@ def H5toAnnotation ( h5fh ):
 
   return anno
 
+def H5GetVoxels ( h5fh ):
+  """Return the voxel data associated with the annotation"""
 
-def H5GetVoxelData ( h5fh ):
-  """Return the voxel data associated with the annotation
-       This returns a dim3 and a numpy array"""
+  if h5fh.get('VOXELS'):
+    return h5fh['VOXELS']
+  else:
+    return None
 
-  # RBTODO
+def H5GetVolume ( h5fh ):
+  """Return the volume associated with the annotation"""
 
-  return [offset, voxels]
-
-
+  if h5fh.get('XYZOFFSET'):
+    if h5fh.get('VOLUME'):
+      return (h5fh['XYZOFFSET'], h5fh['VOLUME'])
+    else:
+      # TODO log message improper data format
+      pass
+  else:
+    return None
 
 ############## Converting Annotation to HDF5 ####################
 

@@ -1,7 +1,7 @@
 import empaths
 import MySQLdb
 
-import annpriv
+import annprivate
 import dbconfig
 
 #
@@ -25,12 +25,13 @@ class AnnotateProject:
   """Project specific annotation data"""
 
   # Constructor 
-  def __init__(self, dbname, dbhost, dataset ):
+  def __init__(self, dbname, dbhost, dataset, resolution ):
     """Initialize the Annotation Project"""
     
     self._dbhost = dbhost
     self._dbname = dbname
     self._dataset = dataset
+    self._resolution = resolution
 
     # Could add these to dbconfig.  Probably remove res as tablebase instead
     self._ids_tbl = "ids"
@@ -43,6 +44,8 @@ class AnnotateProject:
     return self._dbname
   def getDataset ( self ):
     return self._dataset
+  def getResolution ( self ):
+    return self._resolution
   def getIDsTbl ( self ):
     return self._ids_tbl
   def getEntitiesTbl ( self ):
@@ -50,9 +53,9 @@ class AnnotateProject:
 
   # accessors for RB to fix
   def getDBUser( self ):
-    return annpriv.dbuser
+    return annprivate.dbuser
   def getDBPasswd( self ):
-    return annpriv.dbpasswd
+    return annprivate.dbpasswd
 
   def getTable ( self, resolution ):
     """Return the appropriate table for the specified resolution"""
@@ -65,10 +68,10 @@ class AnnotateProjectsDB:
     """Create the database connection"""
 
     # Connection info in dbconfig
-    self.conn = MySQLdb.connect (host = annpriv.dbhost,
-                          user = annpriv.dbuser,
-                          passwd = annpriv.dbpasswd,
-                          db = annpriv.db )
+    self.conn = MySQLdb.connect (host = annprivate.dbhost,
+                          user = annprivate.dbuser,
+                          passwd = annprivate.dbpasswd,
+                          db = annprivate.db )
 
   #
   # Load the annotation databse information based on the token
@@ -78,7 +81,7 @@ class AnnotateProjectsDB:
 
 
     # Lookup the information for the database project based on the token
-    sql = "SELECT * from %s where token = \'%s\'" % (annpriv.table, token)
+    sql = "SELECT * from %s where token = \'%s\'" % (annprivate.table, token)
 
     try:
       cursor = self.conn.cursor()
@@ -97,7 +100,7 @@ class AnnotateProjectsDB:
 
     [token, openid, host, project, dataset, resolution ] = row
 
-    return AnnotateProject ( project, host, dataset )
+    return AnnotateProject ( project, host, dataset, resolution )
 
 
   #
@@ -112,7 +115,7 @@ class AnnotateProjectsDB:
 
     # Insert the project entry into the database
     sql = "INSERT INTO {0} VALUES ( \'{1}\', \'{2}\', \'{3}\', \'{4}\', \'{5}\', {6}  )".format (\
-        annpriv.table, token, openid, dbhost, project, dataset, resolution )
+        annprivate.table, token, openid, dbhost, project, dataset, resolution )
 
     print sql
 
@@ -138,8 +141,8 @@ class AnnotateProjectsDB:
 
     # Connect to the new database
     newconn = MySQLdb.connect (host = dbhost,
-                          user = annpriv.dbuser,
-                          passwd = annpriv.dbpasswd,
+                          user = annprivate.dbuser,
+                          passwd = annprivate.dbpasswd,
                           db = project )
 
     newcursor = newconn.cursor()

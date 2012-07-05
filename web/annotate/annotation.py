@@ -1,3 +1,6 @@
+# TODO Need to test updating with missing values
+# updating needs to take a different model???
+# only overwrite the fields that exist
 
 import numpy as np
 import cStringIO
@@ -127,7 +130,6 @@ class Annotation:
         raise
 
     annodb.conn.commit()
-    print "Commited on base class"
 
 
   def retrieve ( self, annid, annodb ):

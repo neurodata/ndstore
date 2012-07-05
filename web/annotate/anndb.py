@@ -9,8 +9,6 @@ import anncube
 import annproj
 import annotation
 
-from time import time
-
 import sys
 
 ################################################################################
@@ -338,7 +336,6 @@ class AnnotateDB:
     # dictionary of mortonkeys
     cubelocs = defaultdict(list)
 
-    t1 = time()
     #  list of locations inside each morton key
     for loc in locations:
       cubeno = loc[0]/cubedim[0], loc[1]/cubedim[1], (loc[2]-self.startslice)/cubedim[2]
@@ -357,7 +354,6 @@ class AnnotateDB:
                    cubeoff[2]*cubedim[2] ]
 
         # add the items
-        t1 = time()
         exceptions = cube.annotate ( entityid, offset, loclist, conflictopt )
 
         # update the sparse list of exceptions
@@ -440,8 +436,11 @@ class AnnotateDB:
   #
   #  Process a cube of data that has been labelled with annotations.
   #
-  def annotateEntityDense ( self, corner, dim, resolution, annodata, conflictopt ):
+  def annotateEntityDense ( self, corner, resolution, annodata, conflictopt ):
     """Process all the annotations in the dense volume"""
+
+    # dim is in xyz, data is in zyxj
+    dim = [ annodata.shape[2], annodata.shape[1], annodata.shape[0] ]
 
     # get the size of the image and cube
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.dbcfg.cubedim [ resolution ] 
@@ -480,17 +479,18 @@ class AnnotateDB:
    
 
 
-  def addEntityDense ( self, corner, dim, resolution, annodata, conflictopt ):
+  def addEntityDense ( self, corner, resolution, annodata, conflictopt ):
     """Add the annotations in this cube.  Do not interpret the values.  Put values straight into the DB."""
 
-    self.annotateEntityDense ( corner, dim, resolution, annodata, conflictopt )
+    self.annotateEntityDense ( corner, resolution, annodata, conflictopt )
 
 
-  def newEntityDense ( self, corner, dim, resolution, annodata, conflictopt ):
+  def newEntityDense ( self, entityid, corner, resolution, annodata, conflictopt ):
     """Add a new annotation associated with the cube of data.  Create new identifiers."""
 
-    # TODO rewrite volume with identifiers
-    self.annotateEntityDense ( corner, dim, resolution, annodata, conflictopt )
+    # convert all the non-zero entries to entity id.
+
+    self.annotateEntityDense ( corner, resolution, annodata, conflictopt )
 
 
 
