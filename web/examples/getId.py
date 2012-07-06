@@ -30,24 +30,24 @@ def main():
   # Get cube in question
   f = urllib2.urlopen ( url )
   print "Here"
-  zdata = f.read ()
+#  zdata = f.read ()
 
   # get the data out of the compressed blob
-  pagestr = zlib.decompress ( zdata[:] )
-  pagefobj = StringIO.StringIO ( pagestr )
-  cube = np.load ( pagefobj )
-  print cube
-  voxlist= []
+ # pagestr = zlib.decompress ( zdata[:] )
+ # pagefobj = StringIO.StringIO ( pagestr )
+ # cube = np.load ( pagefobj )
+ # print cube
+ # voxlist= []
   # Again, should the interface be all zyx
-  it = np.nditer ( cube, flags=['multi_index'])
-  while not it.finished:
-    if it[0] > 0:
-      voxlist.append ( [ it.multi_index[2],\
-                         it.multi_index[1],\
-                         it.multi_index[0] ] )
-    it.iternext()
+ # it = np.nditer ( cube, flags=['multi_index'])
+ # while not it.finished:
+  #  if it[0] > 0:
+  #    voxlist.append ( [ it.multi_index[2],\
+   #                      it.multi_index[1],\
+   #                      it.multi_index[0] ] )
+   # it.iternext()
 
-  print voxlist
+ # print voxlist
 #  url = 'http://127.0.0.1:8000/annotate/%s/npvoxels/new/' % result.token
 #  url = 'http://127.0.0.1:8000/annotate/%s/npvoxels/new/' % result.token
 

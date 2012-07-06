@@ -366,21 +366,19 @@ class AnnotateDB:
 
         self.putCube ( key, resolution, cube)
 
-    # PMTODO update index
-         #build an array with cubeid's                                               
+    # UPDATING THE INDEX FOR THE ANNOTATION
     cubeIdx1 = []
     for key, loclist in cubelocs.iteritems():
       cubeIdx1.append(key)
-          
-    print "Index for annotation", entityid, "is ", cubeIdx1
+    #print "Index for annotation", entityid, "is ", cubeIdx1
     
-    # compress the index and write it to the database                                                                  
+    # compress the index and write it to the database
     cubeIdx = np.array(cubeIdx1)
     self.annoIdx.updateIndex(entityid,cubeIdx,resolution)
 
     #TESTING
-    voxlist = []
-    voxlist = self.getLocations(entityid,resolution)
+    #voxlist = []
+    #voxlist = self.getLocations(entityid,resolution)
     #print voxlist
   # end annotate
 
@@ -646,61 +644,41 @@ class AnnotateDB:
   #
   # getLocations -- return the list of locations associated with an identifier
   #
-  # PYTODO
-  #
   def getLocations ( self, entityid, resolution ):
-   
-     # get the size of the image and cube
+    # get the size of the image and cube
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.dbcfg.cubedim [ resolution ]
 
-    print "=========TESTING============="
-    print "retrieving inde for an annotation set"
-
     # get the index for the data                                                 
-    curIndex = self.annoIdx.getIndex(entityid,resolution)                                          \
+    curIndex = self.annoIdx.getIndex(entityid,resolution)
 
-    print "Current Index for annotation id ",curIndex
-    #iterate over index                                                          
+    #print "Current Index for annotation id ",curIndex
+
+    #Retrieve the voxel list from the index
     voxlist= []
     for key in curIndex:
-      print "Key",key
       cube = self.getCube(key,resolution)
-      print cube
-      
-#use the key to get the cube number and offset of the cube                 
-# get a voxel offset for the cube                                                                                                   
+            
       cubeoff = zindex.MortonXYZ(key)
-      offset = [ cubeoff[0]*cubedim[0],\
-                   cubeoff[1]*cubedim[1],\
-                   cubeoff[2]*cubedim[2] ]
-      
-
-      print offset
-
-  
       it = np.nditer ( cube.data, flags=['multi_index'])
-      print"Iterating for the voxel list"
-    
-      # RB voxels not getting appended
-
+      
       while not it.finished:
-        if (it[0] == entityid):
-          # import pdb; pdb.set_trace()                                                 
+        if (it[0] == int(entityid)):
           voxlist.append ( [ it.multi_index[2]+cubeoff[0]*cubedim[0],\
                                it.multi_index[1]+ cubeoff[1]*cubedim[1],\
                                it.multi_index[0]+ cubeoff[2]*cubedim[2] ])
           
         it.iternext()
-    print "Voxel List for annotation id", entityid
+
+    #print "=========TESTING============="
+    #print "Voxel List for annotation id", entityid
     #print voxlist
-    print "Done"
+    return voxlist
 
    # Create the compressed cube                                                 \
-                                                                                 
-    fileobj = cStringIO.StringIO ()
-    np.save ( fileobj, voxlist )
-    return  zlib.compress (fileobj.getvalue())
-  pass
+   #fileobj = cStringIO.StringIO ()
+   #np.save ( fileobj, voxlist )
+   #return  zlib.compress (fileobj.getvalue())
+ # pass
 
   #
   # getAnnotation:  

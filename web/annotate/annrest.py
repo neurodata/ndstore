@@ -352,15 +352,15 @@ def getAnnotation ( webargs ):
   # get the data
   # TODO fix the options so that the resolution is in there
   voxlist = annodb.getLocations ( annoid, resolution )                                         
-  # PYTODO make voxlist return the correct locations
-  # Creating a conflict lines
+  print voxlist
+# PYTODO make voxlist return the correct locations- complete
+ 
+
   # PYTODO test dense index action as well
-  #PYTODO
-  # RBTODO package into the HDF5 file
+   # RBTODO package into the HDF5 file
   
 
   h5 = h5ann.AnnotationtoH5 ( anno )
-  
   return h5.fileReader()
 
 
