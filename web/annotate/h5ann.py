@@ -62,7 +62,7 @@ METADATA group;
 class H5Annotation:
   """Class to move data into and out of HDF5 files"""
 
-  def __init__( self, annotype, annoid, anndata=None, xyzoffset=None):
+  def __init__( self, annotype, annoid ):
     """Create an HDF5 file and simple structure
       calls with data as a list of voxels and location == None for voxel lists
       call with data as an array of data and xyzoffset for a volume
@@ -79,16 +79,6 @@ class H5Annotation:
     # Create a metadata group
     self.mdgrp = self.h5fh.create_group ( "METADATA" ) 
 
-    # who is the author
-
-    # Volume of data if xyzoffset defined
-    if xyzoffset != None:
-      self.h5fh.create_dataset ( "XYZOFFSET", (3,), np.uint32, anndata=xyzoffset )     
-      self.h5fh.create_dataset ( "VOLUME", anndata.shape, np.uint32, compression='gzip', data=anndata )
-    # List of voxels if anndata defined and not xyzoffset
-    elif anndata != None:
-      self.h5fh.create_dataset ( "VOXELS", anndata.shape, np.uint32, compression='gzip', data=anndata )
-
   def __del__ ( self ):
     """Destructor"""
     self.h5fh.close()
@@ -99,6 +89,9 @@ class H5Annotation:
     self.tmpfile.seek(0)
     return self.tmpfile.read()
 
+  def addVoxels ( self, voxlist ):
+    """Add the list of voxels to the HDF5 file"""
+    self.h5fh.create_dataset ( "VOXELS", (len(voxlist),3), np.uint32, data=voxlist )     
 
 ############## Converting HDF5 to Annotations
 
@@ -200,10 +193,10 @@ def H5GetVolume ( h5fh ):
 
 ############## Converting Annotation to HDF5 ####################
 
-def BasetoH5 ( anno, annotype, anndata=None, xyzoffset=None ):
+def BasetoH5 ( anno, annotype ):
   """Convert an annotation to HDF5 for interchange"""
 
-  h5anno = H5Annotation ( annotype, anno.annid, anndata, xyzoffset )
+  h5anno = H5Annotation ( annotype, anno.annid )
 
   # Set Annotation specific metadata
   h5anno.mdgrp.create_dataset ( "STATUS", (1,), np.uint32, data=anno.status )
@@ -221,11 +214,11 @@ def BasetoH5 ( anno, annotype, anndata=None, xyzoffset=None ):
   return h5anno
 
 
-def SynapsetoH5 ( synapse, anndata, xyzoffset ):
+def SynapsetoH5 ( synapse ):
   """Convert a synapse to HDF5"""
 
   # First create the base object
-  h5synapse = BasetoH5 ( synapse, annotation.ANNO_SYNAPSE, anndata, xyzoffset )
+  h5synapse = BasetoH5 ( synapse, annotation.ANNO_SYNAPSE )
 
   # Then customize
   h5synapse.mdgrp.create_dataset ( "WEIGHT", (1,), np.float, data=synapse.weight )
@@ -269,91 +262,8 @@ def AnnotationtoH5 ( anno ):
   elif anno.__class__ == annotation.AnnSeed:
     return SeedtoH5 ( anno )
   elif anno.__class__ == annotation.Annotation:
-    return BasetoH5 ( anno, annotation.ANNO_NOTYPE, None, None )
+    return BasetoH5 ( anno, annotation.ANNO_NOTYPE )
   else:
     raise Exception ("(AnnotationtoH5) Dont support this annotation type yet")
-
-
-def main():
-  """Testing main"""
-
-  annprojdb = annproj.AnnotateProjectsDB()
-  annoproj = annprojdb.getAnnoProj ( 'hanno' )
-  dbcfg = dbconfig.switchDataset ( annoproj.getDataset() )
-
-  #Load the database
-  annodb = anndb.AnnotateDB ( dbcfg, annoproj )
-  
-  xyzoffset=[100,200,300]
-  anndata = np.ones ( [ 100,100,100] )
-
-  syn = annotation.AnnSynapse( )
-
-  # common fields
-  syn.annid = 36
-  syn.status = 2
-  syn.confidence = 0.02
-  syn.kvpairs = { 'key0':'value0', 'key2':'value2' }
-
-  # synapse fields
-  syn.weight = 200.0
-  syn.synapse_type = 87
-  syn.seeds = [ 102, 104, 106 ]
-  syn.segments = [ [112,114], [116,118] ]
-
-  seed = annotation.AnnSeed( )
-
-  # common fields
-  seed.annid = 37
-  seed.status = 3
-  seed.confidence = 0.03
-  seed.kvpairs = { 'key1':'value1', 'key3':'value3', 'key5':'value5' }
-
-  # seed fields
-  seed.parent=99
-  seed.position=[1,3,5]
-  seed.cubelocation = 73
-  seed.source = 57
-
-  h5seed = SeedtoH5 ( seed )
-  h5syn  = SynapsetoH5 ( syn, location, voxels )
-
-  outsyn = H5toAnnotation ( h5syn.h5fh )
-  outsyn.store(annodb)
-
-  outseed = H5toAnnotation ( h5seed.h5fh )
-  outseed.store(annodb)
-
-  readsyn = annotation.AnnSynapse()
-  readseed = annotation.AnnSeed()
-
-  readsyn.retrieve(36, annodb)
-  readseed.retrieve(37, annodb)
-
-  h5seed = SeedtoH5 ( readseed )
-  h5syn  = SynapsetoH5 ( readsyn, location, voxels )
-
-  lastsyn = H5toAnnotation ( h5syn.h5fh )
-  lastseed = H5toAnnotation ( h5seed.h5fh )
-
-
-  print "Synapse start:"
-  pprint(vars(syn)) 
-
-  print "Synapse end data:"
-  pprint(vars(lastsyn)) 
-
-  print "Seed start:"
-  pprint(vars(seed)) 
-
-  print "Seed end data:"
-  pprint(vars(lastseed)) 
-
-
-if __name__ == "__main__":
-  main()
-
-
-
 
 

@@ -448,11 +448,11 @@ class AnnotateDB:
 
 
   #
-  # annotateEntityDense
+  # annotateDense
   #
   #  Process a cube of data that has been labelled with annotations.
   #
-  def annotateEntityDense ( self, corner, resolution, annodata, conflictopt ):
+  def annotateDense ( self, corner, resolution, annodata, conflictopt ):
     """Process all the annotations in the dense volume"""
 
     # dim is in xyz, data is in zyxj
@@ -495,18 +495,20 @@ class AnnotateDB:
    
 
 
-  def addEntityDense ( self, corner, resolution, annodata, conflictopt ):
+  def addDense ( self, corner, resolution, annodata, conflictopt ):
     """Add the annotations in this cube.  Do not interpret the values.  Put values straight into the DB."""
 
-    self.annotateEntityDense ( corner, resolution, annodata, conflictopt )
+    self.annotateDense ( corner, resolution, annodata, conflictopt )
 
 
   def newEntityDense ( self, entityid, corner, resolution, annodata, conflictopt ):
-    """Add a new annotation associated with the cube of data.  Create new identifiers."""
+    """Add a new annotation associated with the cube of data.
+        Creates a new identifier.  Can only annotate one object at a time."""
 
     # convert all the non-zero entries to entity id.
-
-    self.annotateEntityDense ( corner, resolution, annodata, conflictopt )
+    vec_func = np.vectorize ( lambda x: entityid if x != 0 else 0 )
+    rewritedata = vec_func ( annodata[:] )
+    self.annotateDense ( corner, resolution, rewritedata, conflictopt )
 
 
 
@@ -684,10 +686,10 @@ class AnnotateDB:
   # getAnnotation:  
   #    Look up an annotation, switch on what kind it is, build an HDF5 file and
   #     return it.
-  def getAnnotation ( self, id, options ):
+  def getAnnotation ( self, id ):
     """Return a RAMON object by identifier"""
     
-    return annotation.getAnnotation( id, self, options )
+    return annotation.getAnnotation( id, self )
 
   #
   # putAnnotation:  

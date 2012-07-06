@@ -281,7 +281,7 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
     # Choose the verb, get the entity (as needed), and annotate
     # Translates the values directly
     if verb == 'add':
-      entityid = annoDB.addEntityDense ( corner, resolution, voxarray, conflictopt )
+      entityid = annoDB.addDense ( corner, resolution, voxarray, conflictopt )
 
     # renumbers the annotations
 #    elif verb == 'new':
@@ -324,9 +324,15 @@ def annopost ( webargs, postdata ):
   return selectPost ( rangeargs, dbcfg, annoproj, postdata )
 
 
+"""An enumeration for options processing in getAnnotation"""
+AR_NODATA = 0
+AR_VOXELS = 1
+AR_CUTOUT = 2
+
 def getAnnotation ( webargs ):
   """Fetch a RAMON object as HDF5 by object identifier"""
-  [ token, sym, restargs ] = webargs.partition ('/')
+
+  [ token, sym, otherargs ] = webargs.partition ('/')
 
   # Get the annotation database
   annprojdb = annproj.AnnotateProjectsDB()
@@ -334,25 +340,48 @@ def getAnnotation ( webargs ):
   dbcfg = dbconfig.switchDataset ( annoproj.getDataset() )
   annodb = anndb.AnnotateDB ( dbcfg, annoproj )
 
-  # RBTODO Fix resolution and options processing
-  [ annoid, sym, optionsargs ] = restargs.partition ('/')
-  if re.search ( '^\d+$', annoid ) == None:
-    raise Exception ( "Must specify an id" )
-  
-  [ resstr, sym, optionsargs ] = optionsargs.partition ('/')
-  resolution = int(resstr)
-  options = optionsargs.split('/')
-  print options
+  # Split the URL and get the args
+  args = otherargs.split('/', 2)
 
-  import pdb; pdb.set_trace()
+  # if the first argument is numeric.  it is an annoid
+  if re.match ( '^\d+$', args[0] ): 
+    annoid = args[0]
+    
+    # default is no data
+    if args[1] == '' or args[1] == 'nodata':
+      dataoption = AR_NODATA
+    # if you want voxels you either requested the resolution id/voxels/resolution
+    #  or you get data from the default resolution
+    elif args[1] == 'voxels':
+      dataoption = AR_VOXELS
+      resolution = args[2] if args[2] != '' else annoproj.getResolution()
+    elif args[1] =='cutout':
+      dataoption = AR_CUTOUT
+      # RBTODO process cutout arguments
+    else:
+      raise restargs.RESTBadArgsError ("Fetch identifier %s.  Error: no such data option %s " % ( annoid, args[1] ))
+
+  # the first argument is not numeric.  it is a service other than getAnnotation
+  else:
+      raise restargs.RESTBadArgsError ("Get interface %s requested.  Illegal or not implemented" % ( args[0] ))
 
   # retrieve the annotation 
-  anno = annodb.getAnnotation ( annoid, options )
+  anno = annodb.getAnnotation ( annoid )
 
-  # get the data
-  # TODO fix the options so that the resolution is in there
-  voxlist = annodb.getLocations ( annoid, resolution )                                         
-  print voxlist
+  # create the HDF5 object
+  h5 = h5ann.AnnotationtoH5 ( anno )
+
+  # get the voxel data if requested
+  if dataoption==AR_VOXELS:
+
+    voxlist = annodb.getLocations ( annoid, resolution ) 
+    print voxlist
+    h5.addVoxels ( voxlist )
+
+  elif dataoption==AR_CUTOUT:
+    # RBTODO get this working
+    pass
+
 # PYTODO make voxlist return the correct locations- complete
  #denseArray = annodb.getDenseArray(annoid,resolution)
 
@@ -360,7 +389,6 @@ def getAnnotation ( webargs ):
    # RBTODO package into the HDF5 file
   
 
-  h5 = h5ann.AnnotationtoH5 ( anno )
   return h5.fileReader()
 
 

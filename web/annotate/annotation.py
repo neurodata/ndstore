@@ -356,7 +356,7 @@ class AnnSeed (Annotation):
 #
 #  getAnnotation returns an annotation object
 #
-def getAnnotation ( annid, annodb, options=None ): 
+def getAnnotation ( annid, annodb ): 
   """Return an annotation object by identifier"""
 
   # First, what type is it.  Look at the annotation table.

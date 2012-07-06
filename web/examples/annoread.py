@@ -19,13 +19,13 @@ def main():
   parser.add_argument('baseurl', action="store")
   parser.add_argument('token', action="store")
   parser.add_argument('annid', action="store", type=int, help='Annotation ID to extract')
-  parser.add_argument('--option', action="store", help='How you want the data: nodata list cube')
+  parser.add_argument('--option', action="store", help='How you want the data: nodata voxels cutout', default='nodata')
 
   result = parser.parse_args()
 
   # Get annotation in question
   try:
-    url = "http://%s/annotate/%s/%s/" % (result.baseurl,result.token,result.annid)
+    url = "http://%s/annotate/%s/%s/%s/" % (result.baseurl,result.token,result.annid, result.option)
     f = urllib2.urlopen ( url )
   except urllib2.URLError:
     print "Failed to get URL", url
@@ -43,6 +43,9 @@ def main():
 
   pprint(vars(anno))
 
+  if h5f.get('VOXELS'):
+    print "Voxel list for object:"
+    print h5f['VOXELS'][:]
 
 if __name__ == "__main__":
 
