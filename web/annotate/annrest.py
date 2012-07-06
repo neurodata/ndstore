@@ -354,7 +354,7 @@ def getAnnotation ( webargs ):
   voxlist = annodb.getLocations ( annoid, resolution )                                         
   print voxlist
 # PYTODO make voxlist return the correct locations- complete
- 
+ #denseArray = annodb.getDenseArray(annoid,resolution)
 
   # PYTODO test dense index action as well
    # RBTODO package into the HDF5 file
