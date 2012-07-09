@@ -46,7 +46,7 @@ def main():
 
   pprint(vars(syn))
 
-  h5syn = h5ann.SynapsetoH5 ( syn, None, None )
+  h5syn = h5ann.SynapsetoH5 ( syn )
 
   # Build the put URL
   if result.option == 'update':

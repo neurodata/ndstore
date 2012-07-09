@@ -2,6 +2,8 @@
 # updating needs to take a different model???
 # only overwrite the fields that exist
 
+# Must make the commits make sense.
+
 import numpy as np
 import cStringIO
 import MySQLdb
@@ -130,6 +132,22 @@ class Annotation:
         raise
 
     annodb.conn.commit()
+
+
+  def delete ( self, annodb ):
+    """Delete the annotation from the database"""
+
+    sql = "DELETE FROM %s WHERE annoid = %s;"\
+            % ( anno_dbtables['annotation'], self.annid ) 
+
+    sql += "DELETE FROM %s WHERE annoid = %s" % ( anno_dbtables['kvpairs'], self.annid )
+
+    cursor = annodb.conn.cursor ()
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      print "Error deleting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      raise
 
 
   def retrieve ( self, annid, annodb ):
@@ -359,6 +377,8 @@ class AnnSeed (Annotation):
 def getAnnotation ( annid, annodb ): 
   """Return an annotation object by identifier"""
 
+  import pdb; pdb.set_trace()
+
   # First, what type is it.  Look at the annotation table.
   sql = "SELECT anno_type FROM %s WHERE annoid = %s" % ( anno_dbtables['annotation'], annid )
   cursor = annodb.conn.cursor ()
@@ -404,18 +424,35 @@ def getAnnotation ( annid, annodb ):
 def putAnnotation ( anno, annodb, options=None ): 
   """Return an annotation object by identifier"""
 
+  import pdb; pdb.set_trace() 
+
   # if annid == 0, create a new identifier
   if anno.annid == 0 or anno.annid == None:
     anno.annid = annodb.nextID()
     anno.store(annodb) 
+
   # for updates, make sure the annotation exists and is of the right type
   elif  'update' in options:
     oldanno = getAnnotation ( anno.annid, annodb )
-    if  oldanno == None or oldanno.__class__ != anno.__class__:
+
+    # can't update annotations that don't exist
+    if  oldanno == None:
       raise ANNOError ( "During update no annotation found at id %d" % anno.annid  )
-   # update the annotation
-    else:
+
+    # can update if they are the same type
+    elif oldanno.__class__ == anno.__class__:
       anno.update(annodb)
+
+    # need to delete and then insert if we're changing the annotation type
+    #  only from the base type
+    elif oldanno.__class__ == Annotation:
+      oldanno.delete(annodb)
+      anno.store(annodb)
+    
+   # otherwise an illegal update
+    else:
+      raise ANNOError ( "Cannot change the type of annotation from %s to %s" % (oldanno.__class__,anno.__class__))
+
   # Write the user chosen annotation id
   else:
     annodb.setID ( anno.annid )

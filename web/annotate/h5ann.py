@@ -258,7 +258,7 @@ def AnnotationtoH5 ( anno ):
   """Operate polymorphically on annotations"""
 
   if anno.__class__ == annotation.AnnSynapse:
-    return SynapsetoH5 ( anno, None, None )
+    return SynapsetoH5 ( anno )
   elif anno.__class__ == annotation.AnnSeed:
     return SeedtoH5 ( anno )
   elif anno.__class__ == annotation.Annotation:
