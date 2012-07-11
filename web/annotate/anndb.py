@@ -8,7 +8,7 @@ import zindex
 import anncube
 import annproj
 import annotation
-import annIndex
+import annindex
 
 import sys
 
@@ -52,7 +52,7 @@ class AnnotateDB:
 
     # PYTODO create annidx object
     print "Ready to create an index object"
-    self.annoIdx = annIndex.AnnotateIndex (dbconf,annoproj)
+    self.annoIdx = annindex.AnnotateIndex (dbconf,annoproj)
 
   def __del__ ( self ):
     """Close the connection"""
@@ -347,6 +347,8 @@ class AnnotateDB:
       # Note: the key in this case is zindex of the cube number and is what I need to store in the index table
 
     # iterator over the list for each cube
+    #   and UPDATE THE INDEX FOR THE ANNOTATION
+    cubeIdx1 = []
     for key, loclist in cubelocs.iteritems():
 
         cube = self.getCube ( key, resolution )
@@ -366,13 +368,10 @@ class AnnotateDB:
 
         self.putCube ( key, resolution, cube)
 
-    # UPDATING THE INDEX FOR THE ANNOTATION
-    cubeIdx1 = []
-    for key, loclist in cubelocs.iteritems():
-      cubeIdx1.append(key)
-    #print "Index for annotation", entityid, "is ", cubeIdx1
-    
-    # compress the index and write it to the database
+        # add this cube to the index
+        cubeIdx1.append(key)
+
+    # write it to the database
     cubeIdx = np.array(cubeIdx1)
     self.annoIdx.updateIndex(entityid,cubeIdx,resolution)
 
@@ -454,6 +453,7 @@ class AnnotateDB:
   #
   def annotateDense ( self, corner, resolution, annodata, conflictopt ):
     """Process all the annotations in the dense volume"""
+
     index_dict = defaultdict(set)
 
     # dim is in xyz, data is in zyxj

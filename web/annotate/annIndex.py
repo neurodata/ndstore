@@ -95,10 +95,12 @@ class AnnotateIndex:
    #
    # getIndex -- Retrieve the index for the annotation with id
    #
-   def getIndex ( self, entityid,resolution ):
+   def getIndex ( self, entityid, resolution ):
     #Establish a connection
       print "In getIndex with id!", entityid                                      
       cursor = self.conn.cursor ()
+
+  # PYTODO rename cube to cubes
      
     #get the block from the database                                            
       sql = "SELECT cube FROM " + self.annoproj.getIdxTable(resolution) + " WHERE annid\
