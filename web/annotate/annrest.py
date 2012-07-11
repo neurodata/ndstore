@@ -381,8 +381,9 @@ def getAnnotation ( webargs ):
 
   elif dataoption==AR_CUTOUT:
     # RBTODO get this working
-    print "TODO"
-    #denseArray = annodb.getDenseArray(annoid,resolution,cutoutargs)
+    corner=[0,0,0]
+    dim = [100,100,10]
+    denseArray = annodb.getDenseArray(annoid,resolution,corner,dim)
    # print denseArray
    # RBTODO package into the HDF5 file
   
