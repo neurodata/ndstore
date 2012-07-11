@@ -132,4 +132,55 @@ class AnnotateIndex:
       cubeIdx = np.array(value)
       self.updateIndex(key,cubeIdx,resolution)
       pass
+#         
+#
+#
+#
+   def updateIndexDense(self,index,resolution):
+      for key, value in index.iteritems():
+         cubelist = list(value)
+         cubeindex=np.array(cubelist)
+         #print cubeindex
+         
+         cursor = self.conn.cursor ()
+         curIndex = self.getIndex(key,resolution)
+         
+    #Used for testing
+         print ("Current Index", curIndex )
+         if curIndex==[]:
+            print "Adding a new Index for annotation", key, ": ", cubeindex
+            sql = "INSERT INTO " +  self.annoproj.getIdxTable(resolution)  +  "( annid, cube) VALUES ( %s, %s)"
+            
+            try:
+               fileobj = cStringIO.StringIO ()
+               np.save ( fileobj, cubeindex )
+               print sql, key
+               cursor.execute ( sql, (key, fileobj.getvalue()))
+            except MySQLdb.Error, e:
+               print "Error inserting exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+               assert 0
+            except BaseException, e:
+               print "DBG: SOMETHING REALLY WRONG HERE", e
+         else:
+             #Update index to the union of the currentIndex and the updated index                                                               
+            newIndex=np.union1d(curIndex,cubeindex)
+            print "Updating Index for annotation ",key, " to" , newIndex
+            
+         #update index in the database                                                                                                      
+            sql = "UPDATE " + self.annoproj.getIdxTable(resolution) + " SET cube=(%s) WHERE annid=" + str(key)
+            try:
+               fileobj = cStringIO.StringIO ()
+               np.save ( fileobj, newIndex )
+               cursor.execute ( sql, (fileobj.getvalue()))
+            except MySQLdb.Error, e:
+               print "Error updating exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+               assert 0
+               
+      cursor.close()
+      self.conn.commit()
+              #self.updateIndex(key,cubeIdx,resolution)
+      pass
+
+
+
 # end AnnotateIndex

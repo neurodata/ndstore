@@ -454,6 +454,7 @@ class AnnotateDB:
   #
   def annotateDense ( self, corner, resolution, annodata, conflictopt ):
     """Process all the annotations in the dense volume"""
+    index_dict = defaultdict(set)
 
     # dim is in xyz, data is in zyxj
     dim = [ annodata.shape[2], annodata.shape[1], annodata.shape[0] ]
@@ -490,9 +491,19 @@ class AnnotateDB:
             assert 0
 
           self.putCube ( key, resolution, cube)
+          #update the index for the cube
           
-          
-   
+          it = np.nditer ( cube.data, flags=['multi_index'])
+          while not it.finished:
+            if (it[0] != 0):
+            #There is an annotation found at this location
+              annid = int(it[0])
+              index_dict[annid].add(key)
+            it.iternext()
+    
+    print "Updating Index with dense write", key  
+    print index_dict
+    self.annoIdx.updateIndexDense(index_dict,resolution)
 
 
   def addDense ( self, corner, resolution, annodata, conflictopt ):
@@ -643,11 +654,22 @@ class AnnotateDB:
      
     return retval
 
+
+  #
+  # getDenseArray -- return the list of locations associated with an identifier                                                                         
+  #                                                                         
+  def getDenseArray ( self, entityid, resolution, options ):
+    print "anndb-in dense Array"
+    print entityid
+    print options
+    pass
+
   #
   # getLocations -- return the list of locations associated with an identifier
   #
-  def getLocations ( self, entityid, resolution ):
+  def getLocations ( self, entityid, res ):
     # get the size of the image and cube
+    resolution = int(res)
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.dbcfg.cubedim [ resolution ]
 
     # get the index for the data                                                 

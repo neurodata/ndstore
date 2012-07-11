@@ -339,6 +339,7 @@ def getAnnotation ( webargs ):
   annoproj = annprojdb.getAnnoProj ( token )
   dbcfg = dbconfig.switchDataset ( annoproj.getDataset() )
   annodb = anndb.AnnotateDB ( dbcfg, annoproj )
+  import pdb;pdb.set_trace()
 
   # Split the URL and get the args
   args = otherargs.split('/', 2)
@@ -357,6 +358,7 @@ def getAnnotation ( webargs ):
       resolution = args[2] if args[2] != '' else annoproj.getResolution()
     elif args[1] =='cutout':
       dataoption = AR_CUTOUT
+      
       # RBTODO process cutout arguments
     else:
       raise restargs.RESTBadArgsError ("Fetch identifier %s.  Error: no such data option %s " % ( annoid, args[1] ))
@@ -373,19 +375,15 @@ def getAnnotation ( webargs ):
 
   # get the voxel data if requested
   if dataoption==AR_VOXELS:
-
     voxlist = annodb.getLocations ( annoid, resolution ) 
     print voxlist
     h5.addVoxels ( voxlist )
 
   elif dataoption==AR_CUTOUT:
     # RBTODO get this working
-    pass
-
-# PYTODO make voxlist return the correct locations- complete
- #denseArray = annodb.getDenseArray(annoid,resolution)
-
-  # PYTODO test dense index action as well
+    print "TODO"
+    #denseArray = annodb.getDenseArray(annoid,resolution,cutoutargs)
+   # print denseArray
    # RBTODO package into the HDF5 file
   
 
