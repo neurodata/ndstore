@@ -339,14 +339,13 @@ def getAnnotation ( webargs ):
   annoproj = annprojdb.getAnnoProj ( token )
   dbcfg = dbconfig.switchDataset ( annoproj.getDataset() )
   annodb = anndb.AnnotateDB ( dbcfg, annoproj )
-  import pdb;pdb.set_trace()
 
   # Split the URL and get the args
   args = otherargs.split('/', 2)
 
   # if the first argument is numeric.  it is an annoid
   if re.match ( '^\d+$', args[0] ): 
-    annoid = args[0]
+    annoid = int(args[0])
     
     # default is no data
     if args[1] == '' or args[1] == 'nodata':
@@ -392,11 +391,8 @@ def getAnnotation ( webargs ):
     h5.addVoxels ( voxlist )
 
   elif dataoption==AR_CUTOUT:
-    # RBTODO get this working
-    corner=[0,0,0]
-    dim = [100,100,10]
-    denseArray = annodb.getVolume(annoid,resolution,corner,dim)
-   # print denseArray
+    densearray = annodb.getVolume(annoid,resolution,corner,dim)
+    h5.addCutout ( corner, densearray )
    # RBTODO package into the HDF5 file
   
 
@@ -444,11 +440,11 @@ def putAnnotation ( webargs, postdata ):
     annodb.annotate ( anno.annid, resolution, voxels, 'O' )
 
   # Is it dense data?
-  volume = h5f.get('VOLUME')
+  cutout = h5f.get('CUTOUT')
   h5xyzoffset = h5f.get('XYZOFFSET')
-  if volume != None and h5xyzoffset != None:
-    annodb.newEntityDense ( anno.annid, h5xyzoffset[0], resolution, volume, 'O' )
-  elif volume != None or h5xyzoffset != None:
+  if cutout != None and h5xyzoffset != None:
+    annodb.newEntityDense ( anno.annid, h5xyzoffset[0], resolution, cutout, 'O' )
+  elif cutout != None or h5xyzoffset != None:
     #TODO this is a loggable error
     pass
 

@@ -32,8 +32,8 @@ ANNOTATION_TYPE (int)
 ANNOTATION_ID (int)
 RESOLUTION (int optional) defaults to project resolution
 XYZOFFSET ( int[3] optional defined with volume )
-VOLUME ( int32 3-d array optional defined with XYZOFFSET )
-VOXELS ( int32[][3] optional if defined XYZOFFSET and VOLUME must be empty ) 
+CUTOUT ( int32 3-d array optional defined with XYZOFFSET )
+VOXELS ( int32[][3] optional if defined XYZOFFSET and CUTOUT must be empty ) 
 
 METADATA group;
 
@@ -92,6 +92,11 @@ class H5Annotation:
   def addVoxels ( self, voxlist ):
     """Add the list of voxels to the HDF5 file"""
     self.h5fh.create_dataset ( "VOXELS", (len(voxlist),3), np.uint32, data=voxlist )     
+
+  def addCutout ( self, corner, volume ):
+    """Add the cutout  to the HDF5 file"""
+    self.h5fh.create_dataset ( "XYZOFFSET", (3,), np.uint32, data=corner )     
+    self.h5fh.create_dataset ( "CUTOUT", volume.shape, np.uint32, data=volume )     
 
 ############## Converting HDF5 to Annotations
 
@@ -183,8 +188,8 @@ def H5GetVolume ( h5fh ):
   """Return the volume associated with the annotation"""
 
   if h5fh.get('XYZOFFSET'):
-    if h5fh.get('VOLUME'):
-      return (h5fh['XYZOFFSET'], h5fh['VOLUME'])
+    if h5fh.get('CUTOUT'):
+      return (h5fh['XYZOFFSET'], h5fh['CUTOUe'])
     else:
       # TODO log message improper data format
       pass

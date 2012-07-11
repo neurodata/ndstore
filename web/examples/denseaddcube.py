@@ -33,7 +33,7 @@ def main():
 
   h5fh.create_dataset ( "RESOLUTION", (1,), np.uint32, data=result.resolution )
   h5fh.create_dataset ( "XYZOFFSET", (1,3), np.uint32, data=[result.xlow,result.ylow,result.zlow] )
-  h5fh.create_dataset ( "VOLUME", anndata.shape, np.uint32, data=anndata )
+  h5fh.create_dataset ( "CUTOUT", anndata.shape, np.uint32, data=anndata )
 
   url = 'http://%s/annotate/%s/' % ( result.baseurl, result.token )
   

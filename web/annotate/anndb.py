@@ -686,7 +686,7 @@ class AnnotateDB:
       it = np.nditer ( cube.data, flags=['multi_index'])
       
       while not it.finished:
-        if (it[0] == int(entityid)):
+        if (it[0] == entityid):
           voxlist.append ( [ it.multi_index[2]+cubeoff[0]*cubedim[0],\
                                it.multi_index[1]+ cubeoff[1]*cubedim[1],\
                                it.multi_index[0]+ cubeoff[2]*cubedim[2] ])

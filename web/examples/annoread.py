@@ -55,6 +55,10 @@ def main():
     print "Voxel list for object:"
     print h5f['VOXELS'][:]
 
+  if h5f.get('CUTOUT') and h5f.get('XYZOFFSET'):
+    print "Cutout at corner %s dim %s = " % (h5f['XYZOFFSET'][:],h5f['CUTOUT'].shape)
+    print h5f['CUTOUT'][:,:,:]
+
 if __name__ == "__main__":
 
       main()
