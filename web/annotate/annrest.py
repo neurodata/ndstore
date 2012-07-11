@@ -342,7 +342,7 @@ def getAnnotation ( webargs ):
   import pdb;pdb.set_trace()
 
   # Split the URL and get the args
-  args = otherargs.split('/')
+  args = otherargs.split('/', 2)
 
   # if the first argument is numeric.  it is an annoid
   if re.match ( '^\d+$', args[0] ): 
@@ -353,11 +353,23 @@ def getAnnotation ( webargs ):
       dataoption = AR_NODATA
     # if you want voxels you either requested the resolution id/voxels/resolution
     #  or you get data from the default resolution
+
     elif args[1] == 'voxels':
       dataoption = AR_VOXELS
-      resolution = int(args[2]) if args[2] != '' else annoproj.getResolution()
+      [resstr, sym, rest] = args[2].partition('/')
+      resolution = int(resstr) if resstr != '' else annoproj.getResolution()
+
     elif args[1] =='cutout':
       dataoption = AR_CUTOUT
+
+      # Perform argument processing
+      brargs = restargs.BrainRestArgs ();
+      brargs.cutoutArgs ( args[2], dbcfg )
+
+      # Extract the relevant values
+      corner = brargs.getCorner()
+      dim = brargs.getDim()
+      resolution = brargs.getResolution()
       
       # RBTODO process cutout arguments
     else:
