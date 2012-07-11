@@ -395,7 +395,7 @@ def getAnnotation ( webargs ):
     # RBTODO get this working
     corner=[0,0,0]
     dim = [100,100,10]
-    denseArray = annodb.getDenseArray(annoid,resolution,corner,dim)
+    denseArray = annodb.getVolume(annoid,resolution,corner,dim)
    # print denseArray
    # RBTODO package into the HDF5 file
   

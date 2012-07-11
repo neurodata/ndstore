@@ -656,13 +656,13 @@ class AnnotateDB:
 
 
   #
-  # getDenseArray -- return the list of locations associated with an identifier                                                                         
+  # getVolume -- return the volume associated with an identifier                                                                         
   #                                                                         
-  def getDenseArray ( self, entityid, resolution, options ):
-    print "anndb-in dense Array"
-    print entityid
-    print options
-    pass
+  def getVolume ( self, entityid, resolution, corner, dim ):
+    cube = self.cutout( corner,dim,resolution)
+    vec_func = np.vectorize ( lambda x: 0 if x != entityid else entityid ) 
+    annodata = vec_func ( cube.data )
+    return annodata
 
   #
   # getLocations -- return the list of locations associated with an identifier
