@@ -658,11 +658,13 @@ class AnnotateDB:
   #
   # getDenseArray -- return the list of locations associated with an identifier                                                                         
   #                                                                         
-  def getDenseArray ( self, entityid, resolution, options ):
-    print "anndb-in dense Array"
-    print entityid
-    print options
-    pass
+  def getDenseArray ( self, entityid, resolution, corner, dim ):
+    cube = self.cutout( corner,dim,resolution)
+     # Round to the nearest larger cube in all dimensions                                                                                                                      
+    annodata = np.zeros( [ dim[2], dim[1], dim[0] ] )
+    vec_func = np.vectorize ( lambda x: 0 if x != entityid else entityid ) 
+    annodata = vec_func ( cube.data )
+    return annodata
 
   #
   # getLocations -- return the list of locations associated with an identifier

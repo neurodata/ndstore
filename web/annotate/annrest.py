@@ -358,7 +358,7 @@ def getAnnotation ( webargs ):
       resolution = int(args[2]) if args[2] != '' else annoproj.getResolution()
     elif args[1] =='cutout':
       dataoption = AR_CUTOUT
-      
+      resolution = int(args[2]) if args[2] != '' else annoproj.getResolution()
       # RBTODO process cutout arguments
     else:
       raise restargs.RESTBadArgsError ("Fetch identifier %s.  Error: no such data option %s " % ( annoid, args[1] ))
