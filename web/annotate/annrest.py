@@ -341,7 +341,7 @@ def getAnnotation ( webargs ):
   annodb = anndb.AnnotateDB ( dbcfg, annoproj )
 
   # Split the URL and get the args
-  args = otherargs.split('/', 2)
+  args = otherargs.split('/')
 
   # if the first argument is numeric.  it is an annoid
   if re.match ( '^\d+$', args[0] ): 
@@ -354,7 +354,7 @@ def getAnnotation ( webargs ):
     #  or you get data from the default resolution
     elif args[1] == 'voxels':
       dataoption = AR_VOXELS
-      resolution = args[2] if args[2] != '' else annoproj.getResolution()
+      resolution = int(args[2]) if args[2] != '' else annoproj.getResolution()
     elif args[1] =='cutout':
       dataoption = AR_CUTOUT
       # RBTODO process cutout arguments

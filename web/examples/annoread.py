@@ -20,18 +20,23 @@ def main():
   parser.add_argument('token', action="store")
   parser.add_argument('annid', action="store", type=int, help='Annotation ID to extract')
   parser.add_argument('--option', action="store", help='How you want the data: nodata voxels cutout', default='nodata')
+  parser.add_argument('--resolution', action="store", help='Resolution at which you want the voxels', default=None)
 
   result = parser.parse_args()
 
+  if result.resolution != None and result.option != 'nodata':
+    url = "http://%s/annotate/%s/%s/%s/%s/" % (result.baseurl,result.token,result.annid, result.option, result.resolution)
+  else:
+    url = "http://%s/annotate/%s/%s/%s/" % (result.baseurl,result.token,result.annid, result.option)
+
+  print url
+
   # Get annotation in question
   try:
-    url = "http://%s/annotate/%s/%s/%s/" % (result.baseurl,result.token,result.annid, result.option)
     f = urllib2.urlopen ( url )
   except urllib2.URLError:
     print "Failed to get URL", url
     sys.exit(0)
-
-  print url
 
   # This feels like one more copy than is needed
   tmpfile = tempfile.NamedTemporaryFile ( )

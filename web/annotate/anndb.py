@@ -490,9 +490,6 @@ class AnnotateDB:
             assert 0
 
           self.putCube ( key, resolution, cube)
-          
-          
-   
 
 
   def addDense ( self, corner, resolution, annodata, conflictopt ):
@@ -509,7 +506,6 @@ class AnnotateDB:
     vec_func = np.vectorize ( lambda x: entityid if x != 0 else 0 )
     rewritedata = vec_func ( annodata[:] )
     self.annotateDense ( corner, resolution, rewritedata, conflictopt )
-
 
 
   #

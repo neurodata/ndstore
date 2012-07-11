@@ -377,8 +377,6 @@ class AnnSeed (Annotation):
 def getAnnotation ( annid, annodb ): 
   """Return an annotation object by identifier"""
 
-  import pdb; pdb.set_trace()
-
   # First, what type is it.  Look at the annotation table.
   sql = "SELECT anno_type FROM %s WHERE annoid = %s" % ( anno_dbtables['annotation'], annid )
   cursor = annodb.conn.cursor ()
@@ -423,8 +421,6 @@ def getAnnotation ( annid, annodb ):
 #
 def putAnnotation ( anno, annodb, options=None ): 
   """Return an annotation object by identifier"""
-
-  import pdb; pdb.set_trace() 
 
   # if annid == 0, create a new identifier
   if anno.annid == 0 or anno.annid == None:
