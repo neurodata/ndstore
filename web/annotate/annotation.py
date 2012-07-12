@@ -655,8 +655,6 @@ def getAnnotation ( annid, annodb ):
   else:
     type = sqlresult[0]
 
-  import pdb; pdb.set_trace()
-
   # switch on the type of annotation
   if type == ANNO_SYNAPSE:
     syn = AnnSynapse()
