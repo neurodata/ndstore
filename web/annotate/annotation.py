@@ -23,6 +23,7 @@ ANNO_ANNOTATION = 1
 ANNO_SYNAPSE = 2
 ANNO_SEED = 3
 ANNO_SEGMENT = 4
+ANNO_NEURON = 5
 
 # list of database table names.  Move to annproj?
 anno_dbtables = { 'annotation':'annotations',\
@@ -471,6 +472,58 @@ class AnnSegment (Annotation):
       del ( self.kvpairs['organelles'] )
 
 
+###############  Neuron  ##################
+
+class AnnNeuron (Annotation):
+  """Metadata specific to neurons"""
+
+  def __init__(self ):
+    """Initialize the fields to zero or null"""
+
+    self.segments = []
+
+    # Call the base class constructor
+    Annotation.__init__(self)
+
+  def store ( self, annodb ):
+    """Store the synapse to the annotations databae"""
+
+    # segments: pack into a kv pair
+    self.kvpairs['segments'] = ','.join([str(i) for i in self.segments])
+
+    # and call store on the base classs
+    Annotation.store ( self, annodb, ANNO_NEURON )
+
+    annodb.conn.commit()
+
+
+  def update ( self, annodb ):
+    """Update the synapse in the annotations databae"""
+
+    # segments: pack into a kv pair
+    self.kvpairs['segments'] = ','.join([str(i) for i in self.segments])
+
+    # and call update on the base classs
+    Annotation.update ( self, ANNO_SYNAPSE, annodb )
+
+    annodb.conn.commit()
+
+
+
+  def retrieve ( self, annid, annodb ):
+    """Retrieve the synapse by annid"""
+
+    # Call the base class retrieve
+    annotype = Annotation.retrieve ( self, annid, annodb )
+
+    # verify the annotation object type
+    # RBTODO make an exception
+    assert ( annotype == ANNO_NEURON )
+
+    if self.kvpairs.get('segments'):
+      self.segments = [int(i) for i in self.kvpairs['segments'].split(',')]
+      del ( self.kvpairs['segments'] )
+
 
 #####################  Get and Put external interfaces  ##########################
 
@@ -495,6 +548,8 @@ def getAnnotation ( annid, annodb ):
   else:
     type = sqlresult[0]
 
+  import pdb; pdb.set_trace()
+
   # switch on the type of annotation
   if type == ANNO_SYNAPSE:
     syn = AnnSynapse()
@@ -510,6 +565,11 @@ def getAnnotation ( annid, annodb ):
     segment = AnnSegment()
     segment.retrieve(annid, annodb)
     return segment
+
+  elif type == ANNO_NEURON:
+    neuron = AnnNeuron()
+    neuron.retrieve(annid, annodb)
+    return neuron
 
   elif type == ANNO_NOTYPE:
     anno = Annotation()

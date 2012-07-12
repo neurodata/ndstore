@@ -63,6 +63,9 @@ METADATA group;
  WEIGHT (float)
  SEEDS (int[]) 
  SEGMENTS ( int[ ][2] )
+
+ # for neurons
+ SEGMENTS ( int[] )
 """
 
 
@@ -169,6 +172,17 @@ def H5toAnnotation ( h5fh ):
         anno.synapses = mdgrp['SYNAPSES'][:]
       if mdgrp.get('ORGANELLES') and len(mdgrp['ORGANELLES'])!=0:
         anno.organelles = mdgrp['ORGANELLES'] [:]
+
+  elif annotype == annotation.ANNO_NEURON:
+    
+    # Create the appropriate annotation type
+    anno = annotation.AnnNeuron()
+
+    # Load metadata if it exists
+    if mdgrp:
+      # load the synapse specific metadata
+      if mdgrp.get('SEGMENTS') and len(mdgrp['SEGMENTS'])!=0:
+        anno.segments = mdgrp['SEGMENTS'][:]
 
   # No special action if it's a no type
   elif annotype == annotation.ANNO_NOTYPE:
@@ -308,6 +322,21 @@ def SegmenttoH5 ( segment ):
   return h5segment
 
 
+def NeurontoH5 ( neuron ):
+  """Convert a neuron to HDF5"""
+
+  # First create the base object
+  h5neuron = BasetoH5 ( neuron, annotation.ANNO_NEURON )
+
+  # Lists (as arrays)
+  if ( neuron.segments != [] ):
+    h5neuron.mdgrp.create_dataset ( "SEGMENTS", (len(neuron.segments),), np.uint32, neuron.segments )
+  else:
+    h5neuron.mdgrp.create_dataset ( "SEGMENTS", (0,), np.uint32 )
+
+  return h5neuron
+
+
 def AnnotationtoH5 ( anno ):
   """Operate polymorphically on annotations"""
 
@@ -317,9 +346,10 @@ def AnnotationtoH5 ( anno ):
     return SeedtoH5 ( anno )
   if anno.__class__ == annotation.AnnSegment:
     return SegmenttoH5 ( anno )
+  if anno.__class__ == annotation.AnnNeuron:
+    return NeurontoH5 ( anno )
   elif anno.__class__ == annotation.Annotation:
     return BasetoH5 ( anno, annotation.ANNO_NOTYPE )
   else:
-    raise Exception ("(AnnotationtoH5) Dont support this annotation type yet")
-
+    raise Exception ("(AnnotationtoH5) Does not support this annotation type yet")
 
