@@ -498,7 +498,7 @@ def putAnnotation ( webargs, postdata ):
   tmpfile.write ( postdata )
   tmpfile.seek(0)
   h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
-  
+
   # Convert HDF5 to annotation
   anno = h5ann.H5toAnnotation ( h5f )
   # Put into the database
