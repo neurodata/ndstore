@@ -20,7 +20,7 @@ def annoget (request, webargs):
     return HttpResponse(annrest.annoget(webargs), mimetype="product/hdf5" )
   elif service=='npz':
     return HttpResponse(annrest.annoget(webargs), mimetype="product/npz" )
-  elif service=='xyanno':
+  elif service=='xyanno' or service=='yzanno' or service=='xzanno':
     return HttpResponse(annrest.annoget(webargs), mimetype="image/png" )
   elif service=='id':
     return HttpResponse(annrest.annoget(webargs))
