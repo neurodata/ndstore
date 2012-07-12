@@ -81,34 +81,6 @@ def HDF5 ( imageargs, dbcfg, annoproj ):
   return tmpfile.read()
 
 #
-#  Read individual annotations xyAnno, xzAnno, yzAnno
-#
-def xyAnno ( imageargs, dbcfg, annoproj ):
-  """Return an xy plane fileobj.read() for a single objects"""
-
-  [ annoidstr, sym, imageargs ] = imageargs.partition('/')
-  annoid = int(annoidstr)
-
-  # Perform argument processing
-  args = restargs.BrainRestArgs ();
-  args.xyArgs ( imageargs, dbcfg )
-
-  # Extract the relevant values
-  corner = args.getCorner()
-  dim = args.getDim()
-  resolution = args.getResolution()
-
-  annodb = anndb.AnnotateDB ( dbcfg, annoproj )
-  cb = annodb.annoCutout ( annoid, resolution, corner, dim )
-
-  fileobj = StringIO.StringIO ( )
-  cb.xySlice ( fileobj )
-
-  fileobj.seek(0)
-  return fileobj.read()
-
-
-#
 #  **Image return a readable png object
 #    where ** is xy, xz, yz
 #
@@ -171,7 +143,83 @@ def yzImage ( imageargs, dbcfg, annoproj ):
 
   fileobj.seek(0)
   return fileobj.read()
-  
+
+
+#
+#  Read individual annotations xyAnno, xzAnno, yzAnno
+#
+def xyAnno ( imageargs, dbcfg, annoproj ):
+  """Return an xy plane fileobj.read() for a single objects"""
+
+  [ annoidstr, sym, imageargs ] = imageargs.partition('/')
+  annoid = int(annoidstr)
+
+  # Perform argument processing
+  args = restargs.BrainRestArgs ();
+  args.xyArgs ( imageargs, dbcfg )
+
+  # Extract the relevant values
+  corner = args.getCorner()
+  dim = args.getDim()
+  resolution = args.getResolution()
+
+  annodb = anndb.AnnotateDB ( dbcfg, annoproj )
+  cb = annodb.annoCutout ( annoid, resolution, corner, dim )
+
+  fileobj = StringIO.StringIO ( )
+  cb.xySlice ( fileobj )
+
+  fileobj.seek(0)
+  return fileobj.read()
+
+
+def xzAnno ( imageargs, dbcfg, annoproj ):
+  """Return an xz plane fileobj.read()"""
+
+  [ annoidstr, sym, imageargs ] = imageargs.partition('/')
+  annoid = int(annoidstr)
+
+  # Perform argument processing
+  args = restargs.BrainRestArgs ();
+  args.xzArgs ( imageargs, dbcfg )
+
+  # Extract the relevant values
+  corner = args.getCorner()
+  dim = args.getDim()
+  resolution = args.getResolution()
+
+  annodb = anndb.AnnotateDB ( dbcfg, annoproj )
+  cb = annodb.annoCutout ( annoid, resolution, corner, dim )
+  fileobj = StringIO.StringIO ( )
+  cb.xzSlice ( dbcfg.zscale[resolution], fileobj )
+
+  fileobj.seek(0)
+  return fileobj.read()
+
+
+def yzAnno ( imageargs, dbcfg, annoproj ):
+  """Return an yz plane fileobj.read()"""
+
+  [ annoidstr, sym, imageargs ] = imageargs.partition('/')
+  annoid = int(annoidstr)
+
+  # Perform argument processing
+  args = restargs.BrainRestArgs ();
+  args.yzArgs ( imageargs, dbcfg )
+
+  # Extract the relevant values
+  corner = args.getCorner()
+  dim = args.getDim()
+  resolution = args.getResolution()
+
+  annodb = anndb.AnnotateDB ( dbcfg, annoproj )
+  cb = annodb.annoCutout ( annoid, resolution, corner, dim )
+  fileobj = StringIO.StringIO ( )
+  cb.yzSlice ( dbcfg.zscale[resolution], fileobj )
+
+  fileobj.seek(0)
+  return fileobj.read()
+
 #
 #  annId
 #    return the annotation identifier of a pixel
@@ -220,8 +268,11 @@ def selectService ( webargs, dbcfg, annoproj ):
   elif service == 'xyanno':
     return xyAnno ( rangeargs, dbcfg, annoproj )
 
-  elif service == 'getVoxels':
-    return getVoxels ( rangeargs, dbcfg, annoproj )
+  elif service == 'xzanno':
+    return xzAnno ( rangeargs, dbcfg, annoproj )
+
+  elif service == 'yzanno':
+    return yzAnno ( rangeargs, dbcfg, annoproj )
 
   else:
     raise restargs.RESTBadArgsError ("No such service: %s" % service )

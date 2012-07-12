@@ -8,7 +8,7 @@ urlpatterns = patterns('annotate.views',
   # test 
   url(r'^$', 'index'),
   # get services
-  url(r'(?P<webargs>^\w+/(xy|xz|yz|hdf5|npz|id|xyanno)/[\w,/]+)$', 'annoget'),
+  url(r'(?P<webargs>^\w+/(xy|xz|yz|hdf5|npz|id|xyanno||xzanno|yzanno)/[\w,/]+)$', 'annoget'),
   # the post services
   url(r'(?P<webargs>^\w+/(npvoxels|npdense)/[\w,/]+)$', 'annopost'),
   # HDF5 interfaces
