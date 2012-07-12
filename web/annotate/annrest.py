@@ -187,7 +187,8 @@ def selectService ( webargs, dbcfg, annoproj ):
   elif service == 'npz':
     return  numpyZip ( rangeargs, dbcfg, annoproj ) 
 
-  elif service == 'annid':
+  elif service == 'id':
+    import pdb; pdb.set_trace()
     return annId ( rangeargs, dbcfg, annoproj )
 
   elif service == 'getVoxels':

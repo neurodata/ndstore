@@ -39,7 +39,7 @@ def main():
     neur.kvpairs[k]=v
 
   # neuron fields
-  neur.segments = [ random.randint(1,1000) for x in range(5) ]
+  neur.segments = [ random.randint(1,1000) for x in range(1000) ]
 
   pprint(vars(neur))
 
