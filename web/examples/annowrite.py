@@ -25,7 +25,7 @@ def main():
 
   result = parser.parse_args()
 
-  # Create the synapse and initialize it's fields
+  # Create the annotation and initialize it's fields
   anno = annotation.Annotation()
 
   anno.annid = result.annid
@@ -34,12 +34,12 @@ def main():
   anno.author = 'randal'
   if result.kv!= None:
     [ k, sym, v ] = result.kv.partition(':')
-    syn.kvpairs[k]=v
+    anno.kvpairs[k]=v
 
 
   pprint(vars(anno))
 
-  h5syn = h5ann.AnnotationtoH5 ( anno )
+  h5anno = h5ann.AnnotationtoH5 ( anno )
 
   # Build the put URL
   if result.option == 'update':
@@ -49,7 +49,7 @@ def main():
   print url
 
   try:
-    req = urllib2.Request ( url, h5syn.fileReader()) 
+    req = urllib2.Request ( url, h5anno.fileReader()) 
     response = urllib2.urlopen(req)
   except urllib2.URLError:
     print "Failed to put URL", url

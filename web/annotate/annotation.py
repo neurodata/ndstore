@@ -18,7 +18,6 @@ from pprint import pprint
 """Classes that hold annotation metadata"""
 
 # Annotation types
-ANNO_NOTYPE = 0
 ANNO_ANNOTATION = 1
 ANNO_SYNAPSE = 2
 ANNO_SEED = 3
@@ -50,7 +49,7 @@ class Annotation:
     self.kvpairs = defaultdict(list)
 
 
-  def store ( self, annodb, annotype=ANNO_NOTYPE ):
+  def store ( self, annodb, annotype=ANNO_ANNOTATION ):
     """Store the annotation to the annotations database"""
 
     sql = "INSERT INTO %s VALUES ( %s, %s, %s, %s )"\
@@ -676,13 +675,10 @@ def getAnnotation ( annid, annodb ):
     neuron.retrieve(annid, annodb)
     return neuron
 
-  elif type == ANNO_NOTYPE:
+  elif type == ANNO_ANNOTATION:
     anno = Annotation()
     anno.retrieve(annid, annodb)
     return anno
-
-  elif type == ANNO_ANNOTATION:
-    raise ANNOError ( "Found type ANNO_ANNOTATION. Should not store/fetch base type." )
 
   else:
     # not a type that we recognize
@@ -710,7 +706,7 @@ def putAnnotation ( anno, annodb, options=None ):
 
     # can update if they are the same type
     elif oldanno.__class__ == anno.__class__:
-      anno.update(annodb)
+      anno.update(ANNO_ANNOTATION, annodb)
 
     # need to delete and then insert if we're changing the annotation type
     #  only from the base type

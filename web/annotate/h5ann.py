@@ -117,7 +117,7 @@ def H5toAnnotation ( h5fh ):
   if h5fh.get('ANNOTATION_TYPE'):
     annotype = h5fh['ANNOTATION_TYPE'][0]
   else:
-    annotype = annotation.ANNO_NOTYPE
+    annotype = annotation.ANNO_ANNOTATION
 
   # And get the metadata group
   mdgrp = h5fh.get('METADATA')
@@ -185,7 +185,7 @@ def H5toAnnotation ( h5fh ):
         anno.segments = mdgrp['SEGMENTS'][:]
 
   # No special action if it's a no type
-  elif annotype == annotation.ANNO_NOTYPE:
+  elif annotype == annotation.ANNO_ANNOTATION:
     # Just create a generic annotation object
     anno = annotation.Annotation()
 
@@ -349,7 +349,7 @@ def AnnotationtoH5 ( anno ):
   if anno.__class__ == annotation.AnnNeuron:
     return NeurontoH5 ( anno )
   elif anno.__class__ == annotation.Annotation:
-    return BasetoH5 ( anno, annotation.ANNO_NOTYPE )
+    return BasetoH5 ( anno, annotation.ANNO_ANNOTATION )
   else:
     raise Exception ("(AnnotationtoH5) Does not support this annotation type yet")
 
