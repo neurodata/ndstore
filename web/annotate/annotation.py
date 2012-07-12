@@ -504,7 +504,7 @@ class AnnNeuron (Annotation):
     self.kvpairs['segments'] = ','.join([str(i) for i in self.segments])
 
     # and call update on the base classs
-    Annotation.update ( self, ANNO_SYNAPSE, annodb )
+    Annotation.update ( self, ANNO_NEURON, annodb )
 
     annodb.conn.commit()
 
