@@ -14,8 +14,6 @@ import h5ann
 
 from pprint import pprint
 
-RB TODO
-
 def main():
 
   parser = argparse.ArgumentParser(description='Write an untyped annotation object.')
@@ -28,26 +26,20 @@ def main():
   result = parser.parse_args()
 
   # Create the synapse and initialize it's fields
-  syn = annotation.AnnSynapse()
+  anno = annotation.Annotation()
 
-  syn.annid = result.annid
-  syn.status = random.randint(0,4)
-  syn.confidence = random.random()
-  syn.author = 'randal'
-  syn.kvpairs = { 'key1':'value1', 'type':str(syn.__class__) }
+  anno.annid = result.annid
+  anno.status = random.randint(0,4)
+  anno.confidence = random.random()
+  anno.author = 'randal'
   if result.kv!= None:
     [ k, sym, v ] = result.kv.partition(':')
     syn.kvpairs[k]=v
 
-  # synapse fields
-  syn.weight = random.random()*1000.0
-  syn.synapse_type = random.randint(1,9)
-  syn.seeds = [ random.randint(1,1000) for x in range(5) ]
-  syn.segments = [ [random.randint(1,1000),random.randint(1,1000)] for x in range(4) ]
 
-  pprint(vars(syn))
+  pprint(vars(anno))
 
-  h5syn = h5ann.SynapsetoH5 ( syn )
+  h5syn = h5ann.AnnotationtoH5 ( anno )
 
   # Build the put URL
   if result.option == 'update':
