@@ -19,7 +19,9 @@ def annoget (request, webargs):
   elif service=='hdf5':
     return HttpResponse(annrest.annoget(webargs), mimetype="product/hdf5" )
   elif service=='npz':
-    return HttpResponse(annrest.annoget(webargs), mimetype="produc/npz" )
+    return HttpResponse(annrest.annoget(webargs), mimetype="product/npz" )
+  elif service=='id':
+    return HttpResponse(annrest.annoget(webargs))
   else:
     return HttpResponseBadRequest ("Could not find service %s" % dataset )
 

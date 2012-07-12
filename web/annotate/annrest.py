@@ -153,11 +153,11 @@ def annId ( imageargs, dbcfg, annoproj ):
   """Return the annotation identifier of a voxel"""
 
   # Perform argument processing
-  voxel = restargs.voxel ( imageargs, dbcfg )
+  (resolution, voxel) = restargs.voxel ( imageargs, dbcfg )
 
   # Get the identifier
   annodb = anndb.AnnotateDB ( dbcfg, annoproj )
-  return annodb.getVoxel ( voxel )
+  return annodb.getVoxel ( resolution, voxel )
 
 
 #
