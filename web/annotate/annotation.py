@@ -22,11 +22,13 @@ ANNO_NOTYPE = 0
 ANNO_ANNOTATION = 1
 ANNO_SYNAPSE = 2
 ANNO_SEED = 3
+ANNO_SEGMENT = 4
 
 # list of database table names.  Move to annproj?
 anno_dbtables = { 'annotation':'annotations',\
                   'kvpairs':'kvpairs',\
                   'synapse':'synapses',\
+                  'segment':'segments',\
                   'seed':'seeds' }
 
 
@@ -367,6 +369,107 @@ class AnnSeed (Annotation):
     (self.parent, self.source, self.cubelocation, self.position[0], self.position[1], self.position[2]) = cursor.fetchone()
 
 
+###############  Segment  ##################
+
+class AnnSegment (Annotation):
+  """Metadata specific to segment"""
+
+  def __init__(self ):
+    """Initialize the fields to zero or null"""
+
+    self.segmentclass = 0            # enumerated label
+    self.parentseed = 0              # seed that started this segment
+    self.synapses = []               # synapses connected to this segment
+    self.organelles = []             # organells associated with this segment
+
+    # Call the base class constructor
+    Annotation.__init__(self)
+
+  def store ( self, annodb ):
+    """Store the synapse to the annotations databae"""
+
+    sql = "INSERT INTO %s VALUES ( %s, %s, %s )"\
+            % ( anno_dbtables['segment'], self.annid, self.segmentclass, self.parentseed )
+
+    cursor = annodb.conn.cursor ()
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      print "Error inserting segment %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      raise
+
+    # synapses: pack into a kv pair
+    if self.synapses != []:
+      self.kvpairs['synapses'] = ','.join([str(i) for i in self.synapses])
+
+    # organelles: pack into a kv pair
+    if self.organelles != []:
+      self.kvpairs['organelles'] = ','.join([str(i) for i in self.organelles])
+
+    # and call store on the base classs
+    Annotation.store ( self, annodb, ANNO_SEGMENT)
+
+    annodb.conn.commit()
+
+
+  def update ( self, annodb ):
+    """Update the synapse in the annotations database"""
+
+
+    sql = "UPDATE %s SET segmentclass=%s, parentseed=%s WHERE annoid=%s "\
+            % (anno_dbtables['segment'], self.segmentclass, self.parentseed, self.annid)
+
+    cursor = annodb.conn.cursor ()
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      print "Error updating segment %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      raise
+
+    # synapses: pack into a kv pair
+    if self.synapses != []:
+      self.kvpairs['synapses'] = ','.join([str(i) for i in self.synapses])
+
+    # organelles: pack into a kv pair
+    if self.organelles != []:
+      self.kvpairs['organelles'] = ','.join([str(i) for i in self.organelles])
+
+
+    # and call update on the base classs
+    Annotation.update ( self, ANNO_SEGMENT, annodb )
+
+    annodb.conn.commit()
+
+
+
+  def retrieve ( self, annid, annodb ):
+    """Retrieve the synapse by annid"""
+
+    # Call the base class retrieve
+    annotype = Annotation.retrieve ( self, annid, annodb )
+
+    # verify the annotation object type
+    # RBTODO make an exception
+    assert ( annotype == ANNO_SEGMENT )
+
+    sql = "SELECT segmentclass, parentseed FROM %s WHERE annoid = %s" % ( anno_dbtables['segment'], annid )
+
+    cursor = annodb.conn.cursor ()
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      print "Error retrieving synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      raise
+    ( self.segmentclass, self.parentseed ) = cursor.fetchone()
+
+    if self.kvpairs.get('synapses'):
+      self.synapses = [int(i) for i in self.kvpairs['synapses'].split(',')]
+      del ( self.kvpairs['synapses'] )
+
+    if self.kvpairs.get('organelles'):
+      self.organelles = [int(i) for i in self.kvpairs['organelles'].split(',')]
+      del ( self.kvpairs['organelles'] )
+
 
 
 #####################  Get and Put external interfaces  ##########################
@@ -402,6 +505,11 @@ def getAnnotation ( annid, annodb ):
     seed = AnnSeed()
     seed.retrieve(annid, annodb)
     return seed
+
+  elif type == ANNO_SEGMENT:
+    segment = AnnSegment()
+    segment.retrieve(annid, annodb)
+    return segment
 
   elif type == ANNO_NOTYPE:
     anno = Annotation()
