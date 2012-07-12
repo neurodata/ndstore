@@ -8,11 +8,10 @@ urlpatterns = patterns('annotate.views',
   # test 
   url(r'^$', 'index'),
   # get services
-  url(r'(?P<webargs>^\w+/(xy|xz|yz|hdf5|npz|id)/[\w,/]+)$', 'annoget'),
+  url(r'(?P<webargs>^\w+/(xy|xz|yz|hdf5|npz|id|xyanno)/[\w,/]+)$', 'annoget'),
   # the post services
   url(r'(?P<webargs>^\w+/(npvoxels|npdense)/[\w,/]+)$', 'annopost'),
-  # annotations get and put: must be a number
+  # HDF5 interfaces
   url(r'(?P<webargs>^\w+/[\d+/]?[\w,/]*)$', 'annotation'),
-  url(r'^post/$', 'post_test'),
   url(r'^admin/', include(admin.site.urls)),
 )

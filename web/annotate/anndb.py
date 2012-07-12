@@ -657,12 +657,21 @@ class AnnotateDB:
 
   #
   # getVolume -- return the volume associated with an identifier                                                                         
-  #                                                                         
+  # RB deprecated.  Use annoCutout instead. PYTODO
   def getVolume ( self, entityid, resolution, corner, dim ):
     cube = self.cutout( corner,dim,resolution)
     vec_func = np.vectorize ( lambda x: 0 if x != entityid else entityid ) 
     annodata = vec_func ( cube.data )
     return annodata
+
+  # Alternate to getVolume that returns a annocube
+  def annoCutout ( self, entityid, resolution, corner, dim ):
+    """Fetch a volume cutout with only the specified annotation"""
+
+    cube = self.cutout( corner,dim,resolution)
+    vec_func = np.vectorize ( lambda x: 0 if x != entityid else entityid ) 
+    cube.data = vec_func ( cube.data )
+    return cube
 
   #
   # getLocations -- return the list of locations associated with an identifier
