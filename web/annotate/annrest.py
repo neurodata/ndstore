@@ -153,11 +153,11 @@ def annId ( imageargs, dbcfg, annoproj ):
   """Return the annotation identifier of a voxel"""
 
   # Perform argument processing
-  voxel = restargs.voxel ( imageargs, dbcfg )
+  (resolution, voxel) = restargs.voxel ( imageargs, dbcfg )
 
   # Get the identifier
   annodb = anndb.AnnotateDB ( dbcfg, annoproj )
-  return annodb.getVoxel ( voxel )
+  return annodb.getVoxel ( resolution, voxel )
 
 
 #
@@ -187,7 +187,8 @@ def selectService ( webargs, dbcfg, annoproj ):
   elif service == 'npz':
     return  numpyZip ( rangeargs, dbcfg, annoproj ) 
 
-  elif service == 'annid':
+  elif service == 'id':
+    import pdb; pdb.set_trace()
     return annId ( rangeargs, dbcfg, annoproj )
 
   elif service == 'getVoxels':
@@ -417,7 +418,7 @@ def putAnnotation ( webargs, postdata ):
   tmpfile.write ( postdata )
   tmpfile.seek(0)
   h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
-
+  
   # Convert HDF5 to annotation
   anno = h5ann.H5toAnnotation ( h5f )
   # Put into the database

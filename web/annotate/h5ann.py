@@ -50,12 +50,22 @@ METADATA group;
  CUBE_LOCATION (int)
  SOURCE (int)
 
+ # for segments:
+
+ SEGMENTCLASS (int)
+ PARENTSEED (int)
+ SYNAPSES (int[]) 
+ ORGANELLES ( int[])
+
  # for synapses:
 
  SYNAPSE_TYPE (int)
  WEIGHT (float)
  SEEDS (int[]) 
  SEGMENTS ( int[ ][2] )
+
+ # for neurons
+ SEGMENTS ( int[] )
 """
 
 
@@ -145,6 +155,34 @@ def H5toAnnotation ( h5fh ):
         anno.seeds = mdgrp['SEEDS'][:]
       if mdgrp.get('SEGMENTS') and len(mdgrp['SEGMENTS'])!=0:
         anno.segments = mdgrp['SEGMENTS'] [:]
+
+  elif annotype == annotation.ANNO_SEGMENT:
+    
+    # Create the appropriate annotation type
+    anno = annotation.AnnSegment()
+
+    # Load metadata if it exists
+    if mdgrp:
+      # load the synapse specific metadata
+      if mdgrp.get('PARENTSEED'):
+        anno.parentseed = mdgrp['PARENTSEED'][0]
+      if mdgrp.get('SEGMENTCLASS'):
+        anno.segmentclass = mdgrp['SEGMENTCLASS'][0]
+      if mdgrp.get('SYNAPSES') and len(mdgrp['SYNAPSES'])!=0:
+        anno.synapses = mdgrp['SYNAPSES'][:]
+      if mdgrp.get('ORGANELLES') and len(mdgrp['ORGANELLES'])!=0:
+        anno.organelles = mdgrp['ORGANELLES'] [:]
+
+  elif annotype == annotation.ANNO_NEURON:
+    
+    # Create the appropriate annotation type
+    anno = annotation.AnnNeuron()
+
+    # Load metadata if it exists
+    if mdgrp:
+      # load the synapse specific metadata
+      if mdgrp.get('SEGMENTS') and len(mdgrp['SEGMENTS'])!=0:
+        anno.segments = mdgrp['SEGMENTS'][:]
 
   # No special action if it's a no type
   elif annotype == annotation.ANNO_NOTYPE:
@@ -259,6 +297,46 @@ def SeedtoH5 ( seed ):
 
   return h5seed
 
+
+def SegmenttoH5 ( segment ):
+  """Convert a segment to HDF5"""
+
+  # First create the base object
+  h5segment = BasetoH5 ( segment, annotation.ANNO_SEGMENT )
+
+  # Then customize
+  h5segment.mdgrp.create_dataset ( "SEGMENTCLASS", (1,), np.float, data=segment.segmentclass )
+  h5segment.mdgrp.create_dataset ( "PARENTSEED", (1,), np.uint32, data=segment.parentseed )
+
+  # Lists (as arrays)
+  if ( segment.synapses != [] ):
+    h5segment.mdgrp.create_dataset ( "SYNAPSES", (len(segment.synapses),), np.uint32, segment.synapses )
+  else:
+    h5segment.mdgrp.create_dataset ( "SYNAPSES", (0,), np.uint32 )
+
+  if ( segment.organelles != [] ):
+    h5segment.mdgrp.create_dataset ( "ORGANELLES", (len(segment.organelles),), np.uint32, segment.organelles )
+  else:
+    h5segment.mdgrp.create_dataset ( "ORGANELLES", (0,), np.uint32 )
+
+  return h5segment
+
+
+def NeurontoH5 ( neuron ):
+  """Convert a neuron to HDF5"""
+
+  # First create the base object
+  h5neuron = BasetoH5 ( neuron, annotation.ANNO_NEURON )
+
+  # Lists (as arrays)
+  if ( neuron.segments != [] ):
+    h5neuron.mdgrp.create_dataset ( "SEGMENTS", (len(neuron.segments),), np.uint32, neuron.segments )
+  else:
+    h5neuron.mdgrp.create_dataset ( "SEGMENTS", (0,), np.uint32 )
+
+  return h5neuron
+
+
 def AnnotationtoH5 ( anno ):
   """Operate polymorphically on annotations"""
 
@@ -266,9 +344,12 @@ def AnnotationtoH5 ( anno ):
     return SynapsetoH5 ( anno )
   elif anno.__class__ == annotation.AnnSeed:
     return SeedtoH5 ( anno )
+  if anno.__class__ == annotation.AnnSegment:
+    return SegmenttoH5 ( anno )
+  if anno.__class__ == annotation.AnnNeuron:
+    return NeurontoH5 ( anno )
   elif anno.__class__ == annotation.Annotation:
     return BasetoH5 ( anno, annotation.ANNO_NOTYPE )
   else:
-    raise Exception ("(AnnotationtoH5) Dont support this annotation type yet")
-
+    raise Exception ("(AnnotationtoH5) Does not support this annotation type yet")
 

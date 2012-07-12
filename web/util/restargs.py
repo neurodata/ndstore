@@ -263,7 +263,7 @@ class BrainRestArgs:
 #
 #  Process cutout arguments
 #
-def voxel ( imageargs, dbcfg, resolution ):
+def voxel ( imageargs, dbcfg ):
   """Process REST arguments for a single point"""
 
   rangeargs = imageargs.split('/')
@@ -281,6 +281,7 @@ def voxel ( imageargs, dbcfg, resolution ):
      not re.match ('[0-9]+$', zstr):
     raise RESTBadArgsError ("Non-numeric range argument" % rangeargs)
 
+  resolution = int(resstr)
   x = int(xstr)
   y = int(ystr)
   z = int(zstr)
@@ -289,7 +290,7 @@ def voxel ( imageargs, dbcfg, resolution ):
   if not ( dbcfg.checkCube ( resolution, x, x, y, y, z, z )):
     raise RESTRangeError ( "Illegal range. Image size:" +  str(dbcfg.imageSize( self._resolution )))
 
-  return [ x,y,z ]
+  return (resolution, [ x,y,z ])
 
 
 #

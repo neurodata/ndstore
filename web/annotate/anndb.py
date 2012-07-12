@@ -615,7 +615,7 @@ class AnnotateDB:
   # getVoxel -- return the identifier at a voxel
   #
   #
-  def getVoxel ( self, voxel, resolution ):
+  def getVoxel ( self, resolution, voxel ):
     """Return the identifier at a voxel"""
 
     # get the size of the image and cube
