@@ -337,19 +337,16 @@ class AnnotateDB:
 
     # dictionary of mortonkeys
     cubelocs = defaultdict(list)
+    # dictionary with the index
+    cubeidx = defaultdict(set)
 
     #  list of locations inside each morton key
     for loc in locations:
       cubeno = loc[0]/cubedim[0], loc[1]/cubedim[1], (loc[2]-self.startslice)/cubedim[2]
       key = zindex.XYZMorton(cubeno)
       cubelocs[key].append([loc[0],loc[1],loc[2]-self.startslice])
-      #print "Key : ", key
-      # Note: the key in this case is zindex of the cube number and is what I need to store in the index table
-
-    # iterator over the list for each cube
-    #   and UPDATE THE INDEX FOR THE ANNOTATION
-    cubeIdx1 = []
-    for key, loclist in cubelocs.iteritems():
+      
+      for key, loclist in cubelocs.iteritems():
 
         cube = self.getCube ( key, resolution )
 
@@ -369,12 +366,11 @@ class AnnotateDB:
         self.putCube ( key, resolution, cube)
 
         # add this cube to the index
-        cubeIdx1.append(key)
+        cubeidx[entityid].add(key)
 
     # write it to the database
-    cubeIdx = np.array(cubeIdx1)
-    self.annoIdx.updateIndex(entityid,cubeIdx,resolution)
-
+    self.annoIdx.updateIndexDense(cubeidx,resolution)
+    
     #TESTING
     #voxlist = []
     #voxlist = self.getLocations(entityid,resolution)

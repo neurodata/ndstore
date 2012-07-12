@@ -21,7 +21,6 @@ class AnnotateIndex:
   # Constructor 
   #
    def __init__(self,dbconf,annoproj):
-      print "in Annotate Index"
       self.dbcfg = dbconf
       self.annoproj = annoproj
       
@@ -51,7 +50,7 @@ class AnnotateIndex:
    # cubeIdx - array of cubelocations                                                                                 
    # 
    def updateIndex ( self, entityid,cubeIdx,resolution ):
-      print "in update Index with annotation is :", entityid
+#      print "in update Index with annotation is :", entityid
       cursor = self.conn.cursor ()
       #Check if index already exists for a given annotation id                    
       curIndex = self.getIndex(entityid,resolution)
