@@ -78,8 +78,13 @@ class Annotation:
 
     annodb.conn.commit()
 
+  def update ( self, annodb ):
+    """Set type and update base class."""
+    
+    self.updateBase ( ANNO_ANNOTATION, annodb )
 
-  def update ( self, annotype, annodb ):
+
+  def updateBase ( self, annotype, annodb ):
     """Update the annotation in the annotations database"""
 
     sql = "UPDATE %s SET  anno_type=%s, confidence=%s, status=%s WHERE annoid = %s"\
@@ -248,7 +253,7 @@ class AnnSynapse (Annotation):
     self.kvpairs['synapse_segments'] = ','.join([str(i) + ':' + str(j) for i,j in self.segments])
 
     # and call update on the base classs
-    Annotation.update ( self, ANNO_SYNAPSE, annodb )
+    Annotation.updateBase ( self, ANNO_SYNAPSE, annodb )
 
     annodb.conn.commit()
 
@@ -344,7 +349,7 @@ class AnnSeed (Annotation):
       raise
 
     # and call update on the base classs
-    Annotation.update ( self, ANNO_SEED, annodb )
+    Annotation.updateBase ( self, ANNO_SEED, annodb )
 
     annodb.conn.commit()
 
@@ -436,7 +441,7 @@ class AnnSegment (Annotation):
 
 
     # and call update on the base classs
-    Annotation.update ( self, ANNO_SEGMENT, annodb )
+    Annotation.updateBase ( self, ANNO_SEGMENT, annodb )
 
     annodb.conn.commit()
 
@@ -503,7 +508,7 @@ class AnnNeuron (Annotation):
     self.kvpairs['segments'] = ','.join([str(i) for i in self.segments])
 
     # and call update on the base classs
-    Annotation.update ( self, ANNO_NEURON, annodb )
+    Annotation.updateBase ( self, ANNO_NEURON, annodb )
 
     annodb.conn.commit()
 
@@ -593,7 +598,7 @@ class AnnOrganelle (Annotation):
 
 
     # and call update on the base classs
-    Annotation.update ( self, ANNO_SEGMENT, annodb )
+    Annotation.updateBase ( self, ANNO_SEGMENT, annodb )
 
     annodb.conn.commit()
 
@@ -706,7 +711,7 @@ def putAnnotation ( anno, annodb, options=None ):
 
     # can update if they are the same type
     elif oldanno.__class__ == anno.__class__:
-      anno.update(ANNO_ANNOTATION, annodb)
+      anno.update(annodb)
 
     # need to delete and then insert if we're changing the annotation type
     #  only from the base type
