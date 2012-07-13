@@ -410,6 +410,8 @@ class AnnotateDB:
 
           if conflictopt == 'O':
             cube.overwrite ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
+          if conflictopt == 'P':
+            cube.preserve ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
           else:
             print "Unsupported conflict option.  FIX ME"
             assert 0
@@ -429,6 +431,17 @@ class AnnotateDB:
     print "Updating Index with dense write", key  
     print index_dict
     self.annoIdx.updateIndexDense(index_dict,resolution)
+
+
+  #
+  #  Called when labeling an entity
+  #
+  def annotateEntityDense ( self, entityid, corner, resolution, annodata, conflictopt ):
+    """Relabel all nonzero pixels to annotation id and call annotateDense"""
+
+    vec_func = np.vectorize ( lambda x: 0 if x == 0 else entityid ) 
+    annodata = vec_func ( annodata )
+    return self.annotateDense ( corner, resolution, annodata, conflictopt )
 
 
   #

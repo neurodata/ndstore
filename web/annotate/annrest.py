@@ -16,6 +16,8 @@ import dbconfig
 import annproj
 import h5ann
 
+from pprint import pprint
+
 from time import time
 
 #RBTODO create common code for loading projects and databases.  appears in many routines
@@ -296,8 +298,6 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
 
   if service == 'npvoxels':
 
-    import pdb; pdb.set_trace()
-
     #  get the resolution
     [ entity, resolution, conflictargs ] = postargs.split('/', 2)
 
@@ -453,8 +453,6 @@ def putAnnotation ( webargs, postdata ):
 
   [ token, sym, restargs ] = webargs.partition ('/')
 
-  import pdb; pdb.set_trace()
-
   # Get the annotation database
   annprojdb = annproj.AnnotateProjectsDB()
   annoproj = annprojdb.getAnnoProj ( token )
@@ -507,7 +505,7 @@ def putAnnotation ( webargs, postdata ):
     else:
       conflictopt = 'O'
 
-    annodb.newEntityDense ( anno.annid, h5xyzoffset[0], resolution, cutout, conflictopt )
+    annodb.annotateEntityDense ( anno.annid, h5xyzoffset[0], resolution, np.array(cutout), conflictopt )
 
   elif cutout != None or h5xyzoffset != None:
     #TODO this is a loggable error

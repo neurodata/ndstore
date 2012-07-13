@@ -28,6 +28,7 @@ def main():
   parser.add_argument('zhigh', action="store", type=int)
   parser.add_argument('--dataoption', action="store", help='Choice of how to handle data overwrite, preserve or exception', default=None)
   parser.add_argument('--annoid', action="store", type=int, help='Specify an identifier.  Server chooses otherwise.', default=0)
+  parser.add_argument('--update', action='store_true')
 
   result = parser.parse_args()
   voxlist= []
@@ -56,6 +57,9 @@ def main():
       url = 'http://%s/annotate/%s/%s/' % ( result.baseurl, result.token, result.dataoption )
   else:
     url = 'http://%s/annotate/%s/' % ( result.baseurl, result.token )
+
+  if result.update:
+    url+='update/'
   
   print url
 
