@@ -20,7 +20,9 @@ from pprint import pprint
 
 from time import time
 
-#RBTODO create common code for loading projects and databases.  appears in many routines
+#TODO create common code for loading projects and databases.  appears in many routines
+#
+#  return dense data from HDF5....not yet.
 
 #
 #  annrest: RESTful interface to annotations
@@ -440,10 +442,9 @@ def getAnnotation ( webargs ):
     h5.addVoxels ( voxlist )
 
   elif dataoption==AR_CUTOUT:
-    densearray = annodb.getVolume(annoid,resolution,corner,dim)
-    h5.addCutout ( corner, densearray )
+    cb = annodb.getAnnoCutout(annoid,resolution,corner,dim)
+    h5.addCutout ( corner, cb.data )
    # RBTODO package into the HDF5 file
-  
 
   return h5.fileReader()
 
@@ -466,6 +467,8 @@ def putAnnotation ( webargs, postdata ):
   tmpfile.write ( postdata )
   tmpfile.seek(0)
   h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
+
+  import pdb; pdb.set_trace()
 
   # Convert HDF5 to annotation
   anno = h5ann.H5toAnnotation ( h5f )

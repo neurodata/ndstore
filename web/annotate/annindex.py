@@ -1,16 +1,12 @@
 import numpy as np
 import array
 import cStringIO
-#from PIL import Image
-#import zlib
 import MySQLdb
 
 import empaths
 import dbconfig
 import zindex
 import annproj
-#from ann_cy import annotate_cy
-
 
 #
 #  AnnotateIndex: Maintain the index in the database

@@ -335,9 +335,11 @@ class AnnotateDB:
 
     # dictionary of mortonkeys
     cubelocs = defaultdict(list)
+    
     # dictionary with the index
     cubeidx = defaultdict(set)
 
+    # RBTODO optimize this
     #  list of locations inside each morton key
     for loc in locations:
       cubeno = loc[0]/cubedim[0], loc[1]/cubedim[1], (loc[2]-self.startslice)/cubedim[2]
@@ -368,7 +370,6 @@ class AnnotateDB:
 
     # write it to the database
     self.annoIdx.updateIndexDense(cubeidx,resolution)
-
 
   #
   # annotateDense
@@ -410,7 +411,7 @@ class AnnotateDB:
 
           if conflictopt == 'O':
             cube.overwrite ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
-          if conflictopt == 'P':
+          elif conflictopt == 'P':
             cube.preserve ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
           else:
             print "Unsupported conflict option.  FIX ME"
@@ -419,17 +420,17 @@ class AnnotateDB:
           self.putCube ( key, resolution, cube)
 
           #update the index for the cube
-          
-          it = np.nditer ( cube.data, flags=['multi_index'])
-          while not it.finished:
-            if (it[0] != 0):
-            #There is an annotation found at this location
-              annid = int(it[0])
-              index_dict[annid].add(key)
-            it.iternext()
-    
-    print "Updating Index with dense write", key  
-    print index_dict
+
+          # get the unique elements that are being added to the data
+          uniqueels = np.unique ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
+          # remove the 0 element
+          for el in uniqueels:
+            index_dict[el].add(key) 
+
+          # remove 0 no reason to index that
+          del(index_dict[0])
+
+    # Update all indexes
     self.annoIdx.updateIndexDense(index_dict,resolution)
 
 
