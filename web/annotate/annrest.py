@@ -1,6 +1,3 @@
-# RBTODO Remove the verbs in npinterfaces.  They should just annotate directly.
-# Test the npinterfaces
-
 import sys
 import re
 import StringIO
@@ -302,7 +299,7 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
     import pdb; pdb.set_trace()
 
     #  get the resolution
-    [ resolution, entity, conflictargs ] = postargs.partition('/', 2)
+    [ entity, resolution, conflictargs ] = postargs.split('/', 2)
 
     # Grab the voxel list
     fileobj = cStringIO.StringIO ( postdata )
@@ -329,8 +326,6 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
     #  Will probably need to fix cutout
     #  Or make conflict option a part of the annotation database configuration.
     conflictopt = restargs.conflictOption ( "" )
-
-    # RBTODO need to add conflict argument
 
     # get the data out of the compressed blob
     rawdata = zlib.decompress ( postdata )

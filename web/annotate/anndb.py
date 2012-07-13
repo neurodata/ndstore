@@ -428,8 +428,7 @@ class AnnotateDB:
     
     print "Updating Index with dense write", key  
     print index_dict
-#RBTODO index must work if the item's aren't present
-#    self.annoIdx.updateIndexDense(index_dict,resolution)
+    self.annoIdx.updateIndexDense(index_dict,resolution)
 
 
   #
