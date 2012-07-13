@@ -530,6 +530,7 @@ class AnnNeuron (Annotation):
 
 
 ###############  Organelle  ##################
+#RBTODO finish and test
 
 class AnnOrganelle (Annotation):
   """Metadata specific to organelle"""
@@ -725,7 +726,6 @@ def putAnnotation ( anno, annodb, options=None ):
 
   # Write the user chosen annotation id
   else:
-    annodb.setID ( anno.annid )
     anno.store(annodb)
  
 

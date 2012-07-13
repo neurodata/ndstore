@@ -96,7 +96,6 @@ class AnnotateIndex:
    #
    def getIndex ( self, entityid, resolution ):
     #Establish a connection
-      import pdb;pdb.set_trace()
       print "In getIndex with id!", entityid                                      
       cursor = self.conn.cursor ()
 

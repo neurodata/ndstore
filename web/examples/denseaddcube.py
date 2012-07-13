@@ -21,6 +21,10 @@ def main():
   parser.add_argument('yhigh', action="store", type=int)
   parser.add_argument('zlow', action="store", type=int)
   parser.add_argument('zhigh', action="store", type=int)
+  parser.add_argument('--dataoption', action="store", help='Choice of how to handle data overwrite, preserve or exception', default=None)
+  parser.add_argument('--annoid', action="store", type=int, help='Specify an identifier.  Server chooses otherwise.', default=0)
+
+  result = parser.parse_args()
 
   result = parser.parse_args()
 
@@ -31,11 +35,20 @@ def main():
   tmpfile = tempfile.NamedTemporaryFile()
   h5fh = h5py.File ( tmpfile.name )
 
+  h5fh.create_dataset ( "ANNOTATION_ID", (1,), np.uint32, data=result.annoid )
   h5fh.create_dataset ( "RESOLUTION", (1,), np.uint32, data=result.resolution )
   h5fh.create_dataset ( "XYZOFFSET", (1,3), np.uint32, data=[result.xlow,result.ylow,result.zlow] )
   h5fh.create_dataset ( "CUTOUT", anndata.shape, np.uint32, data=anndata )
 
-  url = 'http://%s/annotate/%s/' % ( result.baseurl, result.token )
+  if result.dataoption:  
+    if result.dataoption not in ('overwrite','preserve','exception'):
+      print "Illegal data option %s" % result.dataoption
+      sys.exit(-1)
+    else:
+      url = 'http://%s/annotate/%s/%s/' % ( result.baseurl, result.token, result.dataoption )
+  else:
+    url = 'http://%s/annotate/%s/' % ( result.baseurl, result.token )
+  
   
   print url
 

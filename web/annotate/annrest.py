@@ -1,3 +1,6 @@
+# RBTODO Remove the verbs in npinterfaces.  They should just annotate directly.
+# Test the npinterfaces
+
 import sys
 import re
 import StringIO
@@ -296,12 +299,10 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
 
   if service == 'npvoxels':
 
-    # which type of voxel post is it
-    [ verb, sym, resargs ] = postargs.partition ('/')
+    import pdb; pdb.set_trace()
 
     #  get the resolution
-    [ resstr, sym, serviceargs ] = resargs.partition('/')
-    resolution = int(resstr)
+    [ resolution, entity, conflictargs ] = postargs.partition('/', 2)
 
     # Grab the voxel list
     fileobj = cStringIO.StringIO ( postdata )
@@ -310,36 +311,16 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
     # Bind the annotation database
     annoDB = anndb.AnnotateDB ( dbcfg, annoproj )
 
-    # Choose the verb, get the entity (as needed), and annotate
-    if verb == 'add':
-
-      [ entity, sym, conflictargs ] = serviceargs.partition ('/')
-      conflictopt = restargs.conflictOption ( conflictargs )
-      entityid = annoDB.addEntity ( int(entity), resolution, voxlist, conflictopt )
+    conflictopt = restargs.conflictOption ( conflictargs )
+    entityid = annoDB.annotate ( int(entity), int(resolution), voxlist, conflictopt )
       
-
-    elif verb == 'extend':
-
-      [ entity, sym, conflictargs ] = serviceargs.partition ('/')
-      conflictopt = restargs.conflictOption ( conflictargs )
-      entityid = annoDB.extendEntity ( int(entity), resolution, voxlist, conflictopt )
-
-    elif verb == 'new':
-      conflictopt = restargs.conflictOption ( serviceargs )
-      entityid = annoDB.newEntity ( resolution, voxlist, conflictopt )
-
-    else: 
-      raise restargs.RESTBadArgsError ("No such verb: %s" % verb )
-
     return str(entityid)
 
   elif service == 'npdense':
-    
-    [ verb, sym, cutoutargs ] = postargs.partition ('/')
 
     # Process the arguments
     args = restargs.BrainRestArgs ();
-    args.cutoutArgs ( cutoutargs, dbcfg )
+    args.cutoutArgs ( postargs, dbcfg )
 
     corner = args.getCorner()
     resolution = args.getResolution()
@@ -361,22 +342,14 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
 
     # Choose the verb, get the entity (as needed), and annotate
     # Translates the values directly
-    if verb == 'add':
-      entityid = annoDB.addDense ( corner, resolution, voxarray, conflictopt )
-
-    # renumbers the annotations
-#    elif verb == 'new':
-#      conflictopt = restargs.conflictOption ( serviceargs )
-#      entityid = annoDB.newEntityDense ( corner, dim, resolution, voxarray, conflictopt )
-
-    else: 
-      raise restargs.RESTBadArgsError ("No such verb: %s" % verb )
+    entityid = annoDB.annotateDense ( corner, resolution, voxarray, conflictopt )
 
     return str(entityid)
 
   else:
     raise restargs.RESTBadArgsError ("No such service: %s" % service )
     
+
 #
 #  Interface to annotation by project.
 #   Lookup the project token in the database and figure out the 
@@ -485,6 +458,8 @@ def putAnnotation ( webargs, postdata ):
 
   [ token, sym, restargs ] = webargs.partition ('/')
 
+  import pdb; pdb.set_trace()
+
   # Get the annotation database
   annprojdb = annproj.AnnotateProjectsDB()
   annoproj = annprojdb.getAnnoProj ( token )
@@ -516,15 +491,29 @@ def putAnnotation ( webargs, postdata ):
   voxels = h5f.get('VOXELS')
   if voxels:
 
-    # TODO Need to cope with annotation options later
-    # Need to deal with conflict option
-    annodb.annotate ( anno.annid, resolution, voxels, 'O' )
+    if 'preserve' in options:
+      conflictopt = 'P'
+    elif 'exception' in options:
+      conflictopt = 'E'
+    else:
+      conflictopt = 'O'
+
+    annodb.annotate ( anno.annid, resolution, voxels, conflictopt )
 
   # Is it dense data?
   cutout = h5f.get('CUTOUT')
   h5xyzoffset = h5f.get('XYZOFFSET')
   if cutout != None and h5xyzoffset != None:
-    annodb.newEntityDense ( anno.annid, h5xyzoffset[0], resolution, cutout, 'O' )
+
+    if 'preserve' in options:
+      conflictopt = 'P'
+    elif 'exception' in options:
+      conflictopt = 'E'
+    else:
+      conflictopt = 'O'
+
+    annodb.newEntityDense ( anno.annid, h5xyzoffset[0], resolution, cutout, conflictopt )
+
   elif cutout != None or h5xyzoffset != None:
     #TODO this is a loggable error
     pass

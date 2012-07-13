@@ -323,13 +323,11 @@ class AnnotateDB:
   #
   # annotate
   #
-  #  Called by newEntity, addEntity and extendEntity to actually number
-  #   the voxels and build the exception
+  #  number the voxels and build the exceptions
   #
   def annotate ( self, entityid, resolution, locations, conflictopt ):
     """Label the voxel locations or add as exceptions is the are already labeled."""
 
-    # get the size of the image and cube
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.dbcfg.cubedim [ resolution ] 
 
     #  An item may exist across several cubes
@@ -345,101 +343,31 @@ class AnnotateDB:
       cubeno = loc[0]/cubedim[0], loc[1]/cubedim[1], (loc[2]-self.startslice)/cubedim[2]
       key = zindex.XYZMorton(cubeno)
       cubelocs[key].append([loc[0],loc[1],loc[2]-self.startslice])
-      
-      for key, loclist in cubelocs.iteritems():
 
-        cube = self.getCube ( key, resolution )
+    for key, loclist in cubelocs.iteritems():
 
-        # get a voxel offset for the cube
-        cubeoff = zindex.MortonXYZ(key)
-        offset = [ cubeoff[0]*cubedim[0],\
-                   cubeoff[1]*cubedim[1],\
-                   cubeoff[2]*cubedim[2] ]
+      cube = self.getCube ( key, resolution )
 
-        # add the items
-        exceptions = cube.annotate ( entityid, offset, loclist, conflictopt )
+      # get a voxel offset for the cube
+      cubeoff = zindex.MortonXYZ(key)
+      offset = [ cubeoff[0]*cubedim[0],\
+                 cubeoff[1]*cubedim[1],\
+                 cubeoff[2]*cubedim[2] ]
 
-        # update the sparse list of exceptions
-        if len(exceptions) != 0:
-          self.updateExceptions ( key, entityid, exceptions )
+      # add the items
+      exceptions = cube.annotate ( entityid, offset, loclist, conflictopt )
 
-        self.putCube ( key, resolution, cube)
+      # update the sparse list of exceptions
+      if len(exceptions) != 0:
+        self.updateExceptions ( key, entityid, exceptions )
 
-        # add this cube to the index
-        cubeidx[entityid].add(key)
+      self.putCube ( key, resolution, cube)
+
+      # add this cube to the index
+      cubeidx[entityid].add(key)
 
     # write it to the database
     self.annoIdx.updateIndexDense(cubeidx,resolution)
-    
-    #TESTING
-    #voxlist = []
-    #voxlist = self.getLocations(entityid,resolution)
-    #print voxlist
-  # end annotate
-
-  #
-  # addEntity
-  #
-  #  Include the following locations as part of the specified entity.
-  #  entity as a list of voxels.  Returns the entity id
-  #  This is for ingesting already annotated data sets.  
-  #  Don't check to make sure that the object exists.
-  #
-  def addEntity ( self, entityid, resolution, locations, conflictopt ):
-    """Extend an existing entity as a list of voxels"""
-
-    print type(locations).__name__
-
-    # label the voxels and exceptions
-    self.annotate ( entityid, resolution, locations, conflictopt )
-
-    return entityid
-
-  #
-  # extendEntity
-  #
-  #  Include the following locations as part of the specified entity.
-  #  entity as a list of voxels.  Returns the entity id
-  #
-  def extendEntity ( self, entityid, resolution, locations, conflictopt ):
-    """Extend an existing entity as a list of voxels"""
-    print "in extendEntity"
-    # Query the identifier
-    cursor = self.conn.cursor ()
-    sql = "SELECT id FROM {0} WHERE id={1}".format(str(self.annoproj.getIDsTbl()),str(entityid))
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      print "Error reading identifier: %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-      assert 0
-
-    # Get the query result
-    row = cursor.fetchone ()
-    print row
-    # If the annotation doesn't exist, throw an error
-    if ( row == None ):
-      assert 0
-
-    # label the voxels and exceptions
-    self.annotate ( entityid, resolution, locations, conflictopt )
-
-    return entityid
-
-
-  #
-  # newEntity
-  #
-  #  Add a single entity as a list of voxels. Returns the entity id.
-  #
-  def newEntit ( self, resolution, locations, conflictopt ):
-    """Add an entity as a list of voxels"""
-
-    # get and identifier for this object
-    entityid = self.nextID()
-
-    self.annotate ( entityid, resolution, locations, conflictopt )
-
-    return entityid
 
 
   #
@@ -500,23 +428,8 @@ class AnnotateDB:
     
     print "Updating Index with dense write", key  
     print index_dict
-    self.annoIdx.updateIndexDense(index_dict,resolution)
-
-
-  def addDense ( self, corner, resolution, annodata, conflictopt ):
-    """Add the annotations in this cube.  Do not interpret the values.  Put values straight into the DB."""
-
-    self.annotateDense ( corner, resolution, annodata, conflictopt )
-
-
-  def newEntityDense ( self, entityid, corner, resolution, annodata, conflictopt ):
-    """Add a new annotation associated with the cube of data.
-        Creates a new identifier.  Can only annotate one object at a time."""
-
-    # convert all the non-zero entries to entity id.
-    vec_func = np.vectorize ( lambda x: entityid if x != 0 else 0 )
-    rewritedata = vec_func ( annodata[:] )
-    self.annotateDense ( corner, resolution, rewritedata, conflictopt )
+#RBTODO index must work if the item's aren't present
+#    self.annoIdx.updateIndexDense(index_dict,resolution)
 
 
   #
