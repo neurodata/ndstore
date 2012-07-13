@@ -1,4 +1,5 @@
 import numpy as np
+
 import urllib2
 import tempfile
 import h5py
@@ -352,4 +353,21 @@ def AnnotationtoH5 ( anno ):
     return BasetoH5 ( anno, annotation.ANNO_ANNOTATION )
   else:
     raise Exception ("(AnnotationtoH5) Does not support this annotation type yet")
+
+
+def PackageIDs ( annoids ):
+  """Create an HDF5 file that contains a list of IDs in a field entitled ANNOIDS
+      and return a file reader for that HDF5 file"""
+
+  # Create an in-memory HDF5 file
+  tmpfile = tempfile.NamedTemporaryFile()
+  h5fh = h5py.File ( tmpfile.name )
+
+  h5fh.create_dataset ( "ANNOIDS", annoids.shape, np.uint32, data=annoids )     
+
+  h5fh.flush()
+  tmpfile.seek(0)
+  return tmpfile.read()
+
+
 

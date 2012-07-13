@@ -431,7 +431,7 @@ class AnnotateDB:
   #
   #  Add a single entity as a list of voxels. Returns the entity id.
   #
-  def newEntity ( self, resolution, locations, conflictopt ):
+  def newEntit ( self, resolution, locations, conflictopt ):
     """Add an entity as a list of voxels"""
 
     # get and identifier for this object
@@ -725,4 +725,47 @@ class AnnotateDB:
     """store an HDF5 annotation to the database"""
     
     return annotation.putAnnotation( anno, self, options )
+
+
+  # getAnnoIDs:  
+  #    Return a list of annotation IDs
+  #  for now by type and status
+  def getAnnoIDs ( self, predicates ):
+    """Return a list of annotation ids that match equality predicates.  
+      Legal predicates are currently:
+        type
+        status
+      Predicates are given in a dictionary.
+    """
+
+    # legal fields
+    fields = ( 'type', 'status' )
+
+    # start of the SQL clause
+    sql = "SELECT annoid FROM " + annotation.anno_dbtables['annotation'] + " WHERE "
+
+    clause = ''
+
+    # probably need to avoid SQL injection attacks.
+    #  throw an error or build the sql clause
+    for field in predicates.keys():
+      if field not in fields:
+        raise AnnError ( "Illegal field in URL: %s" % (field) )
+      elif  clause != '':
+        clause += ' AND '
+      clause += '%s = %s' % ( field, predicates[field] )
+
+    sql += clause + ';'
+
+    cursor = self.conn.cursor ()
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      print "Error retrieving ids. sql=%s" % (e.args[0], e.args[1], sql)
+      raise
+
+    annoids = cursor.fetchall()
+    return np.array(annoids)
+
+
 

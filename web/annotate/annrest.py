@@ -533,3 +533,26 @@ def putAnnotation ( webargs, postdata ):
   return str(anno.annid)
 
 
+#  Return a list of annotation IDs
+#  for now by type and status
+def getAnnoIDs ( webargs ):
+  """ Return a list of anno ids restricted by equality predicates.
+      Equalities are alternating in field/value in the url.
+  """
+
+  [ token, dontuse, restargs ] = webargs.split ('/',2)
+
+  # Get the annotation database
+  annprojdb = annproj.AnnotateProjectsDB()
+  annoproj = annprojdb.getAnnoProj ( token )
+  dbcfg = dbconfig.switchDataset ( annoproj.getDataset() )
+  annodb = anndb.AnnotateDB ( dbcfg, annoproj )
+
+
+  # Split the URL and get the args
+  args = restargs.split('/')
+  predicates = dict(zip(args[::2], args[1::2]))
+
+  annoids = annodb.getAnnoIDs ( predicates )
+  return h5ann.PackageIDs ( annoids )
+

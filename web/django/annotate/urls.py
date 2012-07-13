@@ -7,6 +7,8 @@ admin.autodiscover()
 urlpatterns = patterns('annotate.views',
   # test 
   url(r'^$', 'index'),
+  # fetch ids (with predicates)
+  url(r'(?P<webargs>^\w+/ids/[\w,/]+)$', 'getannoids'),
   # get services
   url(r'(?P<webargs>^\w+/(xy|xz|yz|hdf5|npz|id|xyanno||xzanno|yzanno)/[\w,/]+)$', 'annoget'),
   # the post services

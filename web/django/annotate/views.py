@@ -41,6 +41,6 @@ def annotation (request, webargs):
   elif request.method == 'POST':
     return HttpResponse(annrest.putAnnotation(webargs,request.body))
 
-def post_test ( request ):
-  return HttpResponse("<html> Post test </html>")
+def getannoids ( request, webargs ):
+    return HttpResponse(annrest.getAnnoIDs(webargs), mimetype="product/hdf5") 
 
