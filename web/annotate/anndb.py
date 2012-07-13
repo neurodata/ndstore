@@ -51,7 +51,6 @@ class AnnotateDB:
     self.slices = endslice - self.startslice + 1 
 
     # PYTODO create annidx object
-    print "Ready to create an index object"
     self.annoIdx = annindex.AnnotateIndex (dbconf,annoproj)
 
   def __del__ ( self ):
@@ -449,7 +448,6 @@ class AnnotateDB:
   #
   def annotateDense ( self, corner, resolution, annodata, conflictopt ):
     """Process all the annotations in the dense volume"""
-
     index_dict = defaultdict(set)
     # dim is in xyz, data is in zyxj
     dim = [ annodata.shape[2], annodata.shape[1], annodata.shape[0] ]
@@ -486,14 +484,14 @@ class AnnotateDB:
             assert 0
 
           self.putCube ( key, resolution, cube)
-
+          
           #update the index for the cube
           array = np.unique(cube.data)
           for id in array:
             if id != 0:
               index_dict[id].add(key)
     
-    #Save the index
+        #Save the index
     # print index_dict
     self.annoIdx.updateIndexDense(index_dict,resolution)
 
