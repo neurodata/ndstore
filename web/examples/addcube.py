@@ -26,6 +26,9 @@ def main():
   parser.add_argument('yhigh', action="store", type=int)
   parser.add_argument('zlow', action="store", type=int)
   parser.add_argument('zhigh', action="store", type=int)
+  parser.add_argument('--dataoption', action="store", help='Choice of how to handle data overwrite, preserve or exception', default=None)
+  parser.add_argument('--annoid', action="store", type=int, help='Specify an identifier.  Server chooses otherwise.', default=0)
+  parser.add_argument('--update', action='store_true')
 
   result = parser.parse_args()
   voxlist= []
@@ -40,10 +43,23 @@ def main():
   tmpfile = tempfile.NamedTemporaryFile()
   h5fh = h5py.File ( tmpfile.name )
 
+# RBTODO test with setting identifier
+  h5fh.create_dataset ( "ANNOTATION_ID", (1,), np.uint32, data=result.annoid )
   h5fh.create_dataset ( "RESOLUTION", (1,), np.uint32, data=result.resolution )
   h5fh.create_dataset ( "VOXELS", (len(voxlist),3), np.uint32, data=voxlist )
 
-  url = 'http://%s/annotate/%s/' % ( result.baseurl, result.token )
+  
+  if result.dataoption:  
+    if result.dataoption not in ('overwrite','preserve','exception'):
+      print "Illegal data option %s" % result.dataoption
+      sys.exit(-1)
+    else:
+      url = 'http://%s/annotate/%s/%s/' % ( result.baseurl, result.token, result.dataoption )
+  else:
+    url = 'http://%s/annotate/%s/' % ( result.baseurl, result.token )
+
+  if result.update:
+    url+='update/'
   
   print url
 

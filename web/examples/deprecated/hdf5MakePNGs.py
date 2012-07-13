@@ -41,7 +41,7 @@ tmpfile.write ( f.read() )
 print tmpfile.tell()
 h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
 print h5f.keys()
-cube = h5f['cube']
+cube = h5f['CUTOUT']
 
 # Write out the cube as files
 cubeToPNGs ( cube, "/tmp/t" )

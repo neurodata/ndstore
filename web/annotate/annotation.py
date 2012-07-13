@@ -87,7 +87,7 @@ class Annotation:
   def updateBase ( self, annotype, annodb ):
     """Update the annotation in the annotations database"""
 
-    sql = "UPDATE %s SET  anno_type=%s, confidence=%s, status=%s WHERE annoid = %s"\
+    sql = "UPDATE %s SET type=%s, confidence=%s, status=%s WHERE annoid = %s"\
             % ( anno_dbtables['annotation'], annotype, self.confidence, self.status, self.annid)
 
     cursor = annodb.conn.cursor ()
@@ -530,6 +530,7 @@ class AnnNeuron (Annotation):
 
 
 ###############  Organelle  ##################
+#RBTODO finish and test
 
 class AnnOrganelle (Annotation):
   """Metadata specific to organelle"""
@@ -645,7 +646,7 @@ def getAnnotation ( annid, annodb ):
   """Return an annotation object by identifier"""
 
   # First, what type is it.  Look at the annotation table.
-  sql = "SELECT anno_type FROM %s WHERE annoid = %s" % ( anno_dbtables['annotation'], annid )
+  sql = "SELECT type FROM %s WHERE annoid = %s" % ( anno_dbtables['annotation'], annid )
   cursor = annodb.conn.cursor ()
   try:
     cursor.execute ( sql )
@@ -725,6 +726,7 @@ def putAnnotation ( anno, annodb, options=None ):
 
   # Write the user chosen annotation id
   else:
-    annodb.setID ( anno.annid )
     anno.store(annodb)
  
+
+

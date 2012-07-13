@@ -154,7 +154,7 @@ class AnnotateProjectsDB:
     sql = "CREATE TABLE ids ( id BIGINT PRIMARY KEY);\n"
 
     # And the RAMON objects
-    sql += "CREATE TABLE annotations (annoid BIGINT PRIMARY KEY, anno_type INT, confidence FLOAT, status INT);"
+    sql += "CREATE TABLE annotations (annoid BIGINT PRIMARY KEY, type INT, confidence FLOAT, status INT);"
     sql += "CREATE TABLE seeds (annoid BIGINT PRIMARY KEY, parentid BIGINT, sourceid BIGINT, cube_location INT, positionx INT, positiony INT, positionz INT);"
     sql += "CREATE TABLE synapses (annoid BIGINT PRIMARY KEY, synapse_type INT, weight FLOAT);"
     sql += "CREATE TABLE segments (annoid BIGINT PRIMARY KEY, segmentclass INT, parentseed INT);"

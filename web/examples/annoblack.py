@@ -13,6 +13,7 @@ def main():
   parser.add_argument('baseurl', action="store")
   parser.add_argument('dataset', action="store")
   parser.add_argument('token', action="store")
+  parser.add_argument('annoid', action="store", type=int)
   parser.add_argument('resolution', action="store", type=int )
   parser.add_argument('xlow', action="store", type=int )
   parser.add_argument('xhigh', action="store", type=int)
@@ -29,7 +30,7 @@ def main():
             str(result.ylow) + "," + str(result.yhigh) + "/" +\
             str(result.zlow) + "," + str(result.zhigh) + "/"\
 
-  print url
+  print "Getting URL",  url
 
   #  Grab the bottom corner of the cutout
   xoffset = result.xlow
@@ -57,7 +58,7 @@ def main():
                          it.multi_index[0]+zoffset ] )
     it.iternext()
 
-  url = 'http://%s/annotate/%s/npvoxels/new/%s/' % (result.baseurl, result.token, result.resolution)
+  url = 'http://%s/annotate/%s/npvoxels/%s/%s/' % (result.baseurl, result.token, result.annoid, result.resolution)
 
   print url
 
