@@ -385,6 +385,8 @@ def getAnnotation ( webargs ):
 
   [ token, sym, otherargs ] = webargs.partition ('/')
 
+  import pdb; pdb.set_trace
+
   # Get the annotation database
   annprojdb = annproj.AnnotateProjectsDB()
   annoproj = annprojdb.getAnnoProj ( token )

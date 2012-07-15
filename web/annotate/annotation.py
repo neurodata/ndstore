@@ -23,14 +23,27 @@ ANNO_SYNAPSE = 2
 ANNO_SEED = 3
 ANNO_SEGMENT = 4
 ANNO_NEURON = 5
+ANNO_ORGANELLE = 6
 
 # list of database table names.  Move to annproj?
 anno_dbtables = { 'annotation':'annotations',\
                   'kvpairs':'kvpairs',\
                   'synapse':'synapses',\
                   'segment':'segments',\
+                  'organelle':'organelles',\
                   'seed':'seeds' }
 
+
+
+#
+# General annotation exception
+#
+class ANNOError(Exception):
+  """General exception for annotations"""
+  def __init__(self, value):
+    self.value = value
+  def __str__(self):
+    return repr(self.value)
 
 
 ###############  Annotation  ##################
@@ -530,7 +543,6 @@ class AnnNeuron (Annotation):
 
 
 ###############  Organelle  ##################
-#RBTODO finish and test
 
 class AnnOrganelle (Annotation):
   """Metadata specific to organelle"""
@@ -539,7 +551,7 @@ class AnnOrganelle (Annotation):
     """Initialize the fields to zero or None"""
 
     self.organelleclass = 0          # enumerated label
-    self.centroid = None             # centroid -- xyz coordinate
+    self.centroid = [ None, None, None ]             # centroid -- xyz coordinate
     self.parentseed = 0              # seed that started this segment
     self.seeds = []                  # seeds generated from this organelle
 
@@ -554,8 +566,8 @@ class AnnOrganelle (Annotation):
     else:
       storecentroid = self.centroid
 
-    sql = "INSERT INTO %s VALUES ( %s, %s, %s, %s, %s, %s, %s )"\
-            % ( anno_dbtables['segment'], self.annid, self.organelleclass, self.parentseed,
+    sql = "INSERT INTO %s VALUES ( %s, %s, %s, %s, %s, %s )"\
+            % ( anno_dbtables['organelle'], self.annid, self.organelleclass, self.parentseed,
               storecentroid[0], storecentroid[1], storecentroid[2] )
 
     cursor = annodb.conn.cursor ()
@@ -565,38 +577,37 @@ class AnnOrganelle (Annotation):
       print "Error inserting organelle %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise
 
-    # synapses: pack into a kv pair
+    # seeds: pack into a kv pair
     if self.seeds != []:
       self.kvpairs['seeds'] = ','.join([str(i) for i in self.seeds])
 
     # and call store on the base classs
-    Annotation.store ( self, annodb, ANNO_SEGMENT)
+    Annotation.store ( self, annodb, ANNO_ORGANELLE)
 
     annodb.conn.commit()
 
 
   def update ( self, annodb ):
-    """Update the synapse in the annotations database"""
+    """Update the organelle in the annotations database"""
 
+    if self.centroid == None:
+      storecentroid = [ 'NULL', 'NULL', 'NULL' ]
+    else:
+      storecentroid = self.centroid
 
-    sql = "UPDATE %s SET organelleclass=%s, parentseed=%s WHERE annoid=%s "\
-            % (anno_dbtables['segment'], self.segmentclass, self.parentseed, self.annid)
+    sql = "UPDATE %s SET organelleclass=%s, parentseed=%s, centroidx=%s, centroidy=%s, centroidz=%s WHERE annoid=%s "\
+            % (anno_dbtables['segment'], self.segmentclass, self.parentseed, storecentroid[1], storecentroid[2], storecentroid[3], self.annid)
 
     cursor = annodb.conn.cursor ()
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Error updating segment %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      print "Error updating organelle %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise
 
-    # synapses: pack into a kv pair
-    if self.synapses != []:
-      self.kvpairs['synapses'] = ','.join([str(i) for i in self.synapses])
-
-    # organelles: pack into a kv pair
-    if self.organelles != []:
-      self.kvpairs['organelles'] = ','.join([str(i) for i in self.organelles])
-
+    # seeds: pack into a kv pair
+    if self.seeds != []:
+      self.kvpairs['seeds'] = ','.join([str(i) for i in self.seeds])
 
     # and call update on the base classs
     Annotation.updateBase ( self, ANNO_SEGMENT, annodb )
@@ -604,35 +615,29 @@ class AnnOrganelle (Annotation):
     annodb.conn.commit()
 
 
-
   def retrieve ( self, annid, annodb ):
-    """Retrieve the synapse by annid"""
+    """Retrieve the organelle by annid"""
 
     # Call the base class retrieve
     annotype = Annotation.retrieve ( self, annid, annodb )
 
     # verify the annotation object type
     # RBTODO make an exception
-    assert ( annotype == ANNO_SEGMENT )
+    assert ( annotype == ANNO_ORGANELLE )
 
-    sql = "SELECT segmentclass, parentseed FROM %s WHERE annoid = %s" % ( anno_dbtables['segment'], annid )
+    sql = "SELECT organelleclass, parentseed, centroidx, centroidy, centroidz FROM %s WHERE annoid = %s" % ( anno_dbtables['organelle'], annid )
 
     cursor = annodb.conn.cursor ()
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Error retrieving synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      print "Error retrieving organelle %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise
-    ( self.segmentclass, self.parentseed ) = cursor.fetchone()
+    ( self.organelleclass, self.parentseed, self.centroid[0], self.centroid[1], self.centroid[2] ) = cursor.fetchone()
 
-    if self.kvpairs.get('synapses'):
-      self.synapses = [int(i) for i in self.kvpairs['synapses'].split(',')]
-      del ( self.kvpairs['synapses'] )
-
-    if self.kvpairs.get('organelles'):
-      self.organelles = [int(i) for i in self.kvpairs['organelles'].split(',')]
-      del ( self.kvpairs['organelles'] )
-
+    if self.kvpairs.get('seeds'):
+      self.seeds = [int(i) for i in self.kvpairs['seeds'].split(',')]
+      del ( self.kvpairs['seeds'] )
 
 
 
@@ -680,6 +685,12 @@ def getAnnotation ( annid, annodb ):
     neuron = AnnNeuron()
     neuron.retrieve(annid, annodb)
     return neuron
+
+  elif type == ANNO_ORGANELLE:
+    import pdb; pdb.set_trace()
+    org = AnnOrganelle()
+    org.retrieve(annid, annodb)
+    return org
 
   elif type == ANNO_ANNOTATION:
     anno = Annotation()

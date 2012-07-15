@@ -67,6 +67,12 @@ METADATA group;
 
  # for neurons
  SEGMENTS ( int[] )
+
+ # for organelles
+ ORGANELLECLASS (int)
+ PARENTSEED (int)
+ SEEDS (int[]) 
+
 """
 
 
@@ -172,7 +178,7 @@ def H5toAnnotation ( h5fh ):
       if mdgrp.get('SYNAPSES') and len(mdgrp['SYNAPSES'])!=0:
         anno.synapses = mdgrp['SYNAPSES'][:]
       if mdgrp.get('ORGANELLES') and len(mdgrp['ORGANELLES'])!=0:
-        anno.organelles = mdgrp['ORGANELLES'] [:]
+        anno.organelles = mdgrp['ORGANELLES'][:]
 
   elif annotype == annotation.ANNO_NEURON:
     
@@ -184,6 +190,23 @@ def H5toAnnotation ( h5fh ):
       # load the synapse specific metadata
       if mdgrp.get('SEGMENTS') and len(mdgrp['SEGMENTS'])!=0:
         anno.segments = mdgrp['SEGMENTS'][:]
+
+  elif annotype == annotation.ANNO_ORGANELLE:
+    
+    # Create the appropriate annotation type
+    anno = annotation.AnnOrganelle()
+
+    # Load metadata if it exists
+    if mdgrp:
+      # load the synapse specific metadata
+      if mdgrp.get('PARENTSEED'):
+        anno.parentseed = mdgrp['PARENTSEED'][0]
+      if mdgrp.get('ORGANELLECLASS'):
+        anno.organelleclass = mdgrp['ORGANELLECLASS'][0]
+      if mdgrp.get('SEEDS') and len(mdgrp['SEEDS'])!=0:
+        anno.seeds = mdgrp['SEEDS'][:]
+      if mdgrp.get('CENTROID'):
+        anno.centroid = mdgrp['CENTROID'][:]
 
   # No special action if it's a no type
   elif annotype == annotation.ANNO_ANNOTATION:
@@ -338,6 +361,29 @@ def NeurontoH5 ( neuron ):
   return h5neuron
 
 
+def OrganelletoH5 ( organelle ):
+  """Convert a organelle to HDF5"""
+
+  import pdb; pdb.set_trace()
+  # First create the base object
+  h5organelle = BasetoH5 ( organelle, annotation.ANNO_ORGANELLE )
+
+  # Then customize
+  h5organelle.mdgrp.create_dataset ( "ORGANELLECLASS", (1,), np.uint32, data=organelle.organelleclass )
+  h5organelle.mdgrp.create_dataset ( "PARENTSEED", (1,), np.uint32, data=organelle.parentseed )
+
+  # Lists (as arrays)
+  if ( organelle.seeds != [] ):
+    h5organelle.mdgrp.create_dataset ( "SEEDS", (len(organelle.seeds),), np.uint32, organelle.seeds )
+  else:
+    h5organelle.mdgrp.create_dataset ( "SEEDS", (0,), np.uint32 )
+    
+  if organelle.centroid != [None, None, None]:
+    h5organelle.mdgrp.create_dataset ( "CENTROID", (3,), np.uint32, data=organelle.centroid )     
+
+  return h5organelle
+
+
 def AnnotationtoH5 ( anno ):
   """Operate polymorphically on annotations"""
 
@@ -349,6 +395,8 @@ def AnnotationtoH5 ( anno ):
     return SegmenttoH5 ( anno )
   if anno.__class__ == annotation.AnnNeuron:
     return NeurontoH5 ( anno )
+  if anno.__class__ == annotation.AnnOrganelle:
+    return OrganelletoH5 ( anno )
   elif anno.__class__ == annotation.Annotation:
     return BasetoH5 ( anno, annotation.ANNO_ANNOTATION )
   else:
