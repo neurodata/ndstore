@@ -76,12 +76,14 @@ class AnnotateIndex:
 #
    def updateIndexDense(self,index,resolution):
       """Updated the database index table with the input index hash table"""
+
+      cursor = self.conn.cursor ()
+
       for key, value in index.iteritems():
          cubelist = list(value)
          cubeindex=np.array(cubelist)
          #print cubeindex
          
-         cursor = self.conn.cursor ()
          curindex = self.getIndex(key,resolution)
          
     #Used for testing

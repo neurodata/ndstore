@@ -117,7 +117,7 @@ class AnnoStack:
           outdim = [ outdata.shape[2], outdata.shape[1], outdata.shape[0]]
 
           # Preserve annotations made at the specified level RBTODO fix me
-          self.annoDB.annotateEntityDense ( outcorner, outdim, l+1, outdata, 'O' )
+          self.annoDB.annotateDense ( outcorner, l+1, outdata, 'O' )
             
           # zero the output buffer
           outdata = np.zeros ([zcubedim*4, ycubedim*2, xcubedim*2])
