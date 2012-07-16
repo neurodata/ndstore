@@ -338,7 +338,6 @@ class AnnotateDB:
     # dictionary with the index
     cubeidx = defaultdict(set)
 
-    # RBTODO optimize this
     #  list of locations inside each morton key
     for loc in locations:
       cubeno = loc[0]/cubedim[0], loc[1]/cubedim[1], (loc[2]-self.startslice)/cubedim[2]
@@ -603,8 +602,6 @@ class AnnotateDB:
     # get the index for the data                                                 
     curIndex = self.annoIdx.getIndex(entityid,resolution)
 
-    #print "Current Index for annotation id ",curIndex
-
     #Retrieve the voxel list from the index
     voxlist= []
     for key in curIndex:
@@ -617,7 +614,7 @@ class AnnotateDB:
         if (it[0] == entityid):
           voxlist.append ( [ it.multi_index[2]+cubeoff[0]*cubedim[0],\
                                it.multi_index[1]+ cubeoff[1]*cubedim[1],\
-                               it.multi_index[0]+ cubeoff[2]*cubedim[2] ])
+                               it.multi_index[0]+ cubeoff[2]*cubedim[2] + self.startslice ])
           
         it.iternext()
 

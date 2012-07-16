@@ -442,9 +442,8 @@ def getAnnotation ( webargs ):
     h5.addVoxels ( voxlist )
 
   elif dataoption==AR_CUTOUT:
-    cb = annodb.getAnnoCutout(annoid,resolution,corner,dim)
+    cb = annodb.annoCutout(annoid,resolution,corner,dim)
     h5.addCutout ( corner, cb.data )
-   # RBTODO package into the HDF5 file
 
   return h5.fileReader()
 
@@ -452,7 +451,7 @@ def getAnnotation ( webargs ):
 def putAnnotation ( webargs, postdata ):
   """Put a RAMON object as HDF5 by object identifier"""
 
-  [ token, sym, restargs ] = webargs.partition ('/')
+  [ token, sym, optionsargs ] = webargs.partition ('/')
 
   # Get the annotation database
   annprojdb = annproj.AnnotateProjectsDB()
@@ -460,7 +459,7 @@ def putAnnotation ( webargs, postdata ):
   dbcfg = dbconfig.switchDataset ( annoproj.getDataset() )
   annodb = anndb.AnnotateDB ( dbcfg, annoproj )
 
-  options = restargs.split('/')
+  options = optionsargs.split('/')
 
   # Make a named temporary file for the HDF5
   tmpfile = tempfile.NamedTemporaryFile ( )
@@ -470,8 +469,14 @@ def putAnnotation ( webargs, postdata ):
 
   # Convert HDF5 to annotation
   anno = h5ann.H5toAnnotation ( h5f )
-  # Put into the database
-  annodb.putAnnotation ( anno, options )
+
+  if 'update' in options and 'dataonly' in options:
+    raise restargs.RESTBadArgsError ("Illegal combination of options. Cannot use udpate and dataonly together")
+
+  if not 'dataonly' in options:
+
+    # Put into the database
+    annodb.putAnnotation ( anno, options )
 
   # Is a resolution specified?  or use default
   h5resolution = h5f.get('RESOLUTION')

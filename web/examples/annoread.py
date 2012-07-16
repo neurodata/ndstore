@@ -22,6 +22,7 @@ def main():
   parser.add_argument('--voxels', action='store_true', help='Return data as a list of voxels.')
   parser.add_argument('--resolution', action="store", help='Resolution at which you want the voxels.  Defaults to the annotation database resolution.', default=None)
   parser.add_argument('--cutout', action="store", help='Cutout arguments of the form resolution/x1,x2/y1,y2/z1,z2.', default=None)
+  parser.add_argument('--output', action="store", help='File name to output the HDF5 file.', default=None)
 
   result = parser.parse_args()
 
@@ -44,11 +45,20 @@ def main():
     print "Failed to get URL", url
     sys.exit(0)
 
-  # This feels like one more copy than is needed
-  tmpfile = tempfile.NamedTemporaryFile ( )
-  tmpfile.write ( f.read() )
-  tmpfile.tell()
-  h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
+  # create an in memory h5 file
+  if result.output == None:
+    # Read into a temporary file
+    tmpfile = tempfile.NamedTemporaryFile ( )
+    tmpfile.write ( f.read() )
+    tmpfile.tell()
+    h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
+
+  # unless an output file was requested
+  else:
+    fh = open ( result.output, 'w' )
+    fh.write ( f.read() )
+    fh.tell()
+    h5f = h5py.File ( result.output )
 
   anno = h5ann.H5toAnnotation ( h5f )
 
@@ -61,6 +71,11 @@ def main():
   if h5f.get('CUTOUT') and h5f.get('XYZOFFSET'):
     print "Cutout at corner %s dim %s = " % (h5f['XYZOFFSET'][:],h5f['CUTOUT'].shape)
     print h5f['CUTOUT'][:,:,:]
+
+
+  h5f.flush()
+  h5f.close()
+ 
 
 if __name__ == "__main__":
   main()

@@ -26,9 +26,11 @@ def main():
   parser.add_argument('yhigh', action="store", type=int)
   parser.add_argument('zlow', action="store", type=int)
   parser.add_argument('zhigh', action="store", type=int)
-  parser.add_argument('--dataoption', action="store", help='Choice of how to handle data overwrite, preserve or exception', default=None)
   parser.add_argument('--annoid', action="store", type=int, help='Specify an identifier.  Server chooses otherwise.', default=0)
   parser.add_argument('--update', action='store_true')
+  parser.add_argument('--dataonly', action='store_true')
+  parser.add_argument('--preserve', action='store_true', help='Preserve exisiting annotations in the database.  Default is overwrite.')
+  parser.add_argument('--exception', action='store_true', help='Store multiple nnotations at the same voxel in the database.  Default is overwrite.')
 
   result = parser.parse_args()
   voxlist= []
@@ -48,18 +50,19 @@ def main():
   h5fh.create_dataset ( "RESOLUTION", (1,), np.uint32, data=result.resolution )
   h5fh.create_dataset ( "VOXELS", (len(voxlist),3), np.uint32, data=voxlist )
 
-  
-  if result.dataoption:  
-    if result.dataoption not in ('overwrite','preserve','exception'):
-      print "Illegal data option %s" % result.dataoption
-      sys.exit(-1)
-    else:
-      url = 'http://%s/annotate/%s/%s/' % ( result.baseurl, result.token, result.dataoption )
+  if result.preserve:  
+    url = 'http://%s/annotate/%s/preserve/' % ( result.baseurl, result.token )
+  elif result.exception:  
+    print "Not implemented yet"
+    pass
   else:
     url = 'http://%s/annotate/%s/' % ( result.baseurl, result.token )
 
   if result.update:
     url+='update/'
+
+  if result.dataonly:
+    url+='dataonly/'
   
   print url
 

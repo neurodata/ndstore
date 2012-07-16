@@ -23,6 +23,7 @@ def main():
   parser.add_argument('zhigh', action="store", type=int)
   parser.add_argument('--annoid', action="store", type=int, help='Specify an identifier.  Server chooses otherwise.', default=0)
   parser.add_argument('--update', action='store_true')
+  parser.add_argument('--dataonly', action='store_true')
   parser.add_argument('--preserve', action='store_true', help='Preserve exisiting annotations in the database.  Default is overwrite.')
   parser.add_argument('--exception', action='store_true', help='Store multiple nnotations at the same voxel in the database.  Default is overwrite.')
 
@@ -51,6 +52,9 @@ def main():
 
   if result.update:
     url+='update/'
+
+  if result.dataonly:
+    url+='dataonly/'
   
   print url
 
