@@ -385,8 +385,6 @@ def getAnnotation ( webargs ):
 
   [ token, sym, otherargs ] = webargs.partition ('/')
 
-  import pdb; pdb.set_trace
-
   # Get the annotation database
   annprojdb = annproj.AnnotateProjectsDB()
   annoproj = annprojdb.getAnnoProj ( token )
@@ -469,8 +467,6 @@ def putAnnotation ( webargs, postdata ):
   tmpfile.write ( postdata )
   tmpfile.seek(0)
   h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
-
-  import pdb; pdb.set_trace()
 
   # Convert HDF5 to annotation
   anno = h5ann.H5toAnnotation ( h5f )

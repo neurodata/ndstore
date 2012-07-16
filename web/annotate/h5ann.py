@@ -364,7 +364,6 @@ def NeurontoH5 ( neuron ):
 def OrganelletoH5 ( organelle ):
   """Convert a organelle to HDF5"""
 
-  import pdb; pdb.set_trace()
   # First create the base object
   h5organelle = BasetoH5 ( organelle, annotation.ANNO_ORGANELLE )
 

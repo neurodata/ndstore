@@ -20,7 +20,7 @@ def main():
   parser.add_argument('baseurl', action="store")
   parser.add_argument('token', action="store")
   parser.add_argument('annid', action="store", type=int, help='Annotation ID to extract')
-  parser.add_argument('--option', action="store", help='insert (default) or update')
+  parser.add_argument('--update', action='store_true', help='Update an existing annotation.')
   parser.add_argument('--kv', action="store", help='key:value')
 
   result = parser.parse_args()
@@ -42,7 +42,7 @@ def main():
   h5anno = h5ann.AnnotationtoH5 ( anno )
 
   # Build the put URL
-  if result.option == 'update':
+  if result.update:
     url = "http://%s/annotate/%s/update/" % ( result.baseurl, result.token)
   else:
     url = "http://%s/annotate/%s/" % ( result.baseurl, result.token)
@@ -59,6 +59,5 @@ def main():
   print "Success with id %s" % the_page
 
 if __name__ == "__main__":
-
-      main()
+  main()
 

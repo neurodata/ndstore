@@ -19,18 +19,21 @@ def main():
   parser.add_argument('baseurl', action="store")
   parser.add_argument('token', action="store")
   parser.add_argument('annid', action="store", type=int, help='Annotation ID to extract')
-  parser.add_argument('--option', action="store", help='How you want the data (nodata|voxels|cutout)', default='nodata')
-  parser.add_argument('--resolution', action="store", help='Resolution at which you want the voxels.  If you use this option you get voxels.', default=None)
-  parser.add_argument('--cutout', action="store", help='Cutout arguments of the form resolution/x1,x2/y1,y2/z1,z2.  If you use this option you get a cutout.', default=None)
+  parser.add_argument('--voxels', action='store_true', help='Return data as a list of voxels.')
+  parser.add_argument('--resolution', action="store", help='Resolution at which you want the voxels.  Defaults to the annotation database resolution.', default=None)
+  parser.add_argument('--cutout', action="store", help='Cutout arguments of the form resolution/x1,x2/y1,y2/z1,z2.', default=None)
 
   result = parser.parse_args()
 
-  if result.resolution != None:
+  if result.voxels and result.resolution != None:
     url = "http://%s/annotate/%s/%s/voxels/%s/" % (result.baseurl,result.token,result.annid, result.resolution)
+  elif result.voxels:
+  # RBTODO does this work?
+    url = "http://%s/annotate/%s/%s/voxels/" % (result.baseurl,result.token,result.annid)
   elif result.cutout != None:
     url = "http://%s/annotate/%s/%s/cutout/%s/" % (result.baseurl,result.token,result.annid, result.cutout)
   else:
-    url = "http://%s/annotate/%s/%s/%s/" % (result.baseurl,result.token,result.annid, result.option )
+    url = "http://%s/annotate/%s/%s/" % (result.baseurl,result.token,result.annid)
 
   print url
 
@@ -60,6 +63,5 @@ def main():
     print h5f['CUTOUT'][:,:,:]
 
 if __name__ == "__main__":
-
-      main()
+  main()
 
