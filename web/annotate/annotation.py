@@ -737,6 +737,7 @@ def putAnnotation ( anno, annodb, options=None ):
 
   # Write the user chosen annotation id
   else:
+    annodb.setID(anno.annid)
     anno.store(annodb)
  
 
