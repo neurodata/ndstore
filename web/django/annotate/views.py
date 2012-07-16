@@ -10,7 +10,6 @@ def index(request):
 def annoget (request, webargs):
   """Restful URL for all read services to annotation projects"""
 
-# mimetype mg/png downloads the file.  image/png inlines the file.
   [ token , sym, cutoutargs ] = webargs.partition ('/')
   [ service, sym, rest ] = cutoutargs.partition ('/')
 
@@ -42,5 +41,5 @@ def annotation (request, webargs):
     return HttpResponse(annrest.putAnnotation(webargs,request.body))
 
 def getannoids ( request, webargs ):
-    return HttpResponse(annrest.getAnnoIDs(webargs), mimetype="product/hdf5") 
+  return HttpResponse(annrest.getAnnoIDs(webargs), mimetype="product/hdf5") 
 

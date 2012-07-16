@@ -545,7 +545,6 @@ def getAnnoIDs ( webargs ):
   dbcfg = dbconfig.switchDataset ( annoproj.getDataset() )
   annodb = anndb.AnnotateDB ( dbcfg, annoproj )
 
-
   # Split the URL and get the args
   args = restargs.split('/')
   predicates = dict(zip(args[::2], args[1::2]))

@@ -662,7 +662,7 @@ class AnnotateDB:
     fields = ( 'type', 'status' )
 
     # start of the SQL clause
-    sql = "SELECT annoid FROM " + annotation.anno_dbtables['annotation'] + " WHERE "
+    sql = "SELECT annoid FROM " + annotation.anno_dbtables['annotation'] 
 
     clause = ''
 
@@ -671,7 +671,9 @@ class AnnotateDB:
     for field in predicates.keys():
       if field not in fields:
         raise AnnError ( "Illegal field in URL: %s" % (field) )
-      elif  clause != '':
+      elif clause == '':
+        claus += " WHERE "
+      else:  
         clause += ' AND '
       clause += '%s = %s' % ( field, predicates[field] )
 
