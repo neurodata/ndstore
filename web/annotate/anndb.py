@@ -377,6 +377,7 @@ class AnnotateDB:
   #
   def annotateDense ( self, corner, resolution, annodata, conflictopt ):
     """Process all the annotations in the dense volume"""
+
     index_dict = defaultdict(set)
     # dim is in xyz, data is in zyxj
     dim = [ annodata.shape[2], annodata.shape[1], annodata.shape[0] ]

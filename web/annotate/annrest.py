@@ -506,7 +506,16 @@ def putAnnotation ( webargs, postdata ):
     else:
       conflictopt = 'O'
 
-    annodb.annotateEntityDense ( anno.annid, h5xyzoffset[0], resolution, np.array(cutout), conflictopt )
+    # RBFIX this a hack
+    #
+    #  the zstart in dbconfig is sometimes offset to make it aligned.
+    #   Probably remove the offset is the best idea.  and align data
+    #    to zero regardless of where it starts.  For now.
+    
+    corner = h5xyzoffset[0] 
+    corner[2] -= dbcfg.slicerange[0]
+
+    annodb.annotateEntityDense ( anno.annid, corner, resolution, np.array(cutout), conflictopt )
 
   elif cutout != None or h5xyzoffset != None:
     #TODO this is a loggable error
