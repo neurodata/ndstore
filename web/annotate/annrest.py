@@ -430,7 +430,6 @@ def getAnnotation ( webargs ):
       raise restargs.RESTBadArgsError ("Get interface %s requested.  Illegal or not implemented" % ( args[0] ))
 
 
-  import pdb; pdb.set_trace()
   # retrieve the annotation 
   anno = annodb.getAnnotation ( annoid )
   if anno == None:

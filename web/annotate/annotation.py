@@ -687,7 +687,6 @@ def getAnnotation ( annid, annodb ):
     return neuron
 
   elif type == ANNO_ORGANELLE:
-    import pdb; pdb.set_trace()
     org = AnnOrganelle()
     org.retrieve(annid, annodb)
     return org
