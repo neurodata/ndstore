@@ -22,6 +22,8 @@ def main():
   if result.status != None:
     url += 'status/%s/' % ( result.status )
 
+  print url
+
   # Get cube in question
   try:
     f = urllib2.urlopen ( url )
