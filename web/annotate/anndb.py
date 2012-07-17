@@ -672,7 +672,7 @@ class AnnotateDB:
       if field not in fields:
         raise AnnError ( "Illegal field in URL: %s" % (field) )
       elif clause == '':
-        claus += " WHERE "
+        clause += " WHERE "
       else:  
         clause += ' AND '
       clause += '%s = %s' % ( field, predicates[field] )

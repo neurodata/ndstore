@@ -542,6 +542,8 @@ def getAnnoIDs ( webargs ):
 
   [ token, dontuse, restargs ] = webargs.split ('/',2)
 
+  import pdb; pdb.set_trace()
+
   # Get the annotation database
   annprojdb = annproj.AnnotateProjectsDB()
   annoproj = annprojdb.getAnnoProj ( token )
