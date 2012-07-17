@@ -442,17 +442,19 @@ def getAnnotation ( webargs ):
   if dataoption==AR_VOXELS:
     voxlist = annodb.getLocations ( annoid, resolution ) 
     print voxlist
-    h5.addVoxels ( voxlist )
+    h5.addVoxels ( resolution, voxlist )
 
   elif dataoption==AR_CUTOUT:
     cb = annodb.annoCutout(annoid,resolution,corner,dim)
-    h5.addCutout ( corner, cb.data )
+    h5.addCutout ( resolution, corner, cb.data )
 
   return h5.fileReader()
 
 
 def putAnnotation ( webargs, postdata ):
   """Put a RAMON object as HDF5 by object identifier"""
+
+  import pdb; pdb.set_trace()
 
   [ token, sym, optionsargs ] = webargs.partition ('/')
 
@@ -520,7 +522,7 @@ def putAnnotation ( webargs, postdata ):
     #   Probably remove the offset is the best idea.  and align data
     #    to zero regardless of where it starts.  For now.
     
-    corner = h5xyzoffset[0] 
+    corner = h5xyzoffset[:] 
     corner[2] -= dbcfg.slicerange[0]
 
     annodb.annotateEntityDense ( anno.annid, corner, resolution, np.array(cutout), conflictopt )
@@ -541,8 +543,6 @@ def getAnnoIDs ( webargs ):
   """
 
   [ token, dontuse, restargs ] = webargs.split ('/',2)
-
-  import pdb; pdb.set_trace()
 
   # Get the annotation database
   annprojdb = annproj.AnnotateProjectsDB()
