@@ -445,8 +445,6 @@ def getAnnotation ( webargs ):
 
   elif dataoption==AR_CUTOUT:
 
-    import pdb; pdb.set_trace()
-
     cb = annodb.annoCutout(annoid,resolution,corner,dim)
 
     # FIXME again an abstraction problem with corner.
