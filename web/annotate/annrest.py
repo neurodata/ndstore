@@ -441,20 +441,25 @@ def getAnnotation ( webargs ):
   # get the voxel data if requested
   if dataoption==AR_VOXELS:
     voxlist = annodb.getLocations ( annoid, resolution ) 
-    print voxlist
     h5.addVoxels ( resolution, voxlist )
 
   elif dataoption==AR_CUTOUT:
+
+    import pdb; pdb.set_trace()
+
     cb = annodb.annoCutout(annoid,resolution,corner,dim)
-    h5.addCutout ( resolution, corner, cb.data )
+
+    # FIXME again an abstraction problem with corner.
+    #  return the corner to cutout arguments space
+    retcorner = [corner[0], corner[1], corner[2]+dbcfg.slicerange[0]]
+
+    h5.addCutout ( resolution, retcorner, cb.data )
 
   return h5.fileReader()
 
 
 def putAnnotation ( webargs, postdata ):
   """Put a RAMON object as HDF5 by object identifier"""
-
-  import pdb; pdb.set_trace()
 
   [ token, sym, optionsargs ] = webargs.partition ('/')
 

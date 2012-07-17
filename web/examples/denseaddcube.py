@@ -38,7 +38,7 @@ def main():
 
   h5fh.create_dataset ( "ANNOTATION_ID", (1,), np.uint32, data=result.annoid )
   h5fh.create_dataset ( "RESOLUTION", (1,), np.uint32, data=result.resolution )
-  h5fh.create_dataset ( "XYZOFFSET", (1,3), np.uint32, data=[result.xlow,result.ylow,result.zlow] )
+  h5fh.create_dataset ( "XYZOFFSET", (3,), np.uint32, data=[result.xlow,result.ylow,result.zlow] )
   h5fh.create_dataset ( "CUTOUT", anndata.shape, np.uint32, data=anndata )
 
   if result.preserve:  

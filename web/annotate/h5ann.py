@@ -108,11 +108,15 @@ class H5Annotation:
 
   def addVoxels ( self, resolution, voxlist ):
     """Add the list of voxels to the HDF5 file"""
+    import pdb; pdb.set_trace()
+
     self.h5fh.create_dataset ( "RESOLUTION", (1,), np.uint32, data=resolution )     
     self.h5fh.create_dataset ( "VOXELS", (len(voxlist),3), np.uint32, data=voxlist )     
 
   def addCutout ( self, resolution, corner, volume ):
     """Add the cutout  to the HDF5 file"""
+
+    import pdb; pdb.set_trace()
     self.h5fh.create_dataset ( "RESOLUTION", (1,), np.uint32, data=resolution )     
     self.h5fh.create_dataset ( "XYZOFFSET", (3,), np.uint32, data=corner )     
     self.h5fh.create_dataset ( "CUTOUT", volume.shape, np.uint32, data=volume )     
@@ -253,7 +257,7 @@ def H5GetVolume ( h5fh ):
 
   if h5fh.get('XYZOFFSET'):
     if h5fh.get('CUTOUT'):
-      return (h5fh['XYZOFFSET'], h5fh['CUTOUe'])
+      return (h5fh['XYZOFFSET'], h5fh['CUTOUT'])
     else:
       # TODO log message improper data format
       pass
