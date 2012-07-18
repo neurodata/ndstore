@@ -59,8 +59,13 @@ def annotation (request, webargs):
       
 
 def getannoids ( request, webargs ):
+
   try:
-    return django.http.HttpResponse(annrest.getAnnoIDs(webargs), mimetype="product/hdf5") 
+    if request.method == 'GET':
+      return django.http.HttpResponse(annrest.getAnnoIDs(webargs), mimetype="product/hdf5") 
+    elif request.method == 'POST':
+      return django.http.HttpResponse(annrest.getAnnoIDs(webargs,request.body), mimetype="product/hdf5") 
+    
   except ANNError, e:
     return django.http.HttpResponseNotFound(e.value)
 

@@ -413,6 +413,9 @@ def getAnnotation ( webargs ):
     elif args[1] =='cutout':
       dataoption = AR_CUTOUT
 
+#      # if there are no args or only resolution, it's a tight cutout request
+#      if args[2] = '' or re.match()
+
       # Perform argument processing
       brargs = restargs.BrainRestArgs ();
       brargs.cutoutArgs ( args[2], dbcfg )
@@ -524,7 +527,6 @@ def putAnnotation ( webargs, postdata ):
     #  the zstart in dbconfig is sometimes offset to make it aligned.
     #   Probably remove the offset is the best idea.  and align data
     #    to zero regardless of where it starts.  For now.
-    
     corner = h5xyzoffset[:] 
     corner[2] -= dbcfg.slicerange[0]
 
@@ -540,7 +542,7 @@ def putAnnotation ( webargs, postdata ):
 
 #  Return a list of annotation IDs
 #  for now by type and status
-def getAnnoIDs ( webargs ):
+def getAnnoIDs ( webargs, postdata=None ):
   """ Return a list of anno ids restricted by equality predicates.
       Equalities are alternating in field/value in the url.
   """
@@ -558,5 +560,37 @@ def getAnnoIDs ( webargs ):
   predicates = dict(zip(args[::2], args[1::2]))
 
   annoids = annodb.getAnnoIDs ( predicates )
-  return h5ann.PackageIDs ( annoids )
+
+  # We have a cutout as well
+  if postdata:
+
+
+  # RB this is a brute force implementation.  This probably needs to be
+  #  optimized to use several different execution strategies based on the
+  #  cutout size and the number of objects.
+
+    # Make a named temporary file for the HDF5
+    tmpfile = tempfile.NamedTemporaryFile ( )
+    tmpfile.write ( postdata )
+    tmpfile.seek(0)
+    h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
+
+    corner = h5f['XYZOFFSET'][:]
+    dim = h5f['CUTOUTSIZE'][:]
+    resolution = h5f['RESOLUTION'][0]
+
+    if not dbcfg.checkCube( resolution, corner[0], corner[0]+dim[0], corner[1], corner[1]+dim[1], corner[2], corner[2]+dim[2] ):
+      raise ANNError ( "Illegal cutout corner=%s, dim=%s" % ( corner, dim))
+
+    # RBFIX this a hack
+    #
+    #  the zstart in dbconfig is sometimes offset to make it aligned.
+    #   Probably remove the offset is the best idea.  and align data
+    #    to zero regardless of where it starts.  For now.
+    corner[2] -= dbcfg.slicerange[0]
+
+    cutout = annodb.cutout ( corner, dim, resolution )
+    annoids = np.intersect1d ( annoids, np.unique( cutout.data ))
+
+  return h5ann.PackageIDs ( annoids ) 
 

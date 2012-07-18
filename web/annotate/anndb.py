@@ -444,6 +444,8 @@ class AnnotateDB:
   #
   def cutout ( self, corner, dim, resolution ):
     """Extract a cube of arbitrary size.  Need not be aligned."""
+    
+    print "Calling cutout with corner dim resolution", corner, dim, resolution
 
     # get the size of the image and cube
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.dbcfg.cubedim [ resolution ] 
@@ -523,6 +525,8 @@ class AnnotateDB:
       outcube.trim ( corner[0]%xcubedim,dim[0],\
                       corner[1]%ycubedim,dim[1],\
                       corner[2]%zcubedim,dim[2] )
+
+    print "Unique values", np.unique ( outcube.data )
     return outcube
 
 

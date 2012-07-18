@@ -672,7 +672,6 @@ def getAnnotation ( annid, annodb ):
   if type == ANNO_SYNAPSE:
     syn = AnnSynapse()
     syn.retrieve(annid, annodb)
-    import pdb; pdb.set_trace()
     return syn
 
   elif type == ANNO_SEED:

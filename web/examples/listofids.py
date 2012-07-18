@@ -11,6 +11,7 @@ def main():
   parser = argparse.ArgumentParser(description='Request a list of ids that match specified type and status values')
   parser.add_argument('--status', type=int, action="store", default=None )
   parser.add_argument('--type', type=int, action="store", default=None )
+  parser.add_argument('--cutout', action="store", help='Cutout arguments of the form resolution/x1,x2/y1,y2/z1,z2.', default=None)
   parser.add_argument('baseurl', action="store" )
   parser.add_argument('token', action="store" )
 
@@ -24,14 +25,49 @@ def main():
 
   print url
 
-  # Get cube in question
-  try:
-    f = urllib2.urlopen ( url )
-  except urllib2.URLError, e:
-    print "Failed URL", url
-    print "Error %s. %s" % (e.code,e.read()) 
-    sys.exit(0)
+  if not result.cutout:
 
+    # Get cube in question
+    try:
+      f = urllib2.urlopen ( url )
+    except urllib2.URLError, e:
+      print "Failed URL", url
+      print "Error %s. %s" % (e.code,e.read()) 
+      sys.exit(0)
+
+  # POST if we have a cutout
+  else:
+
+    tmpfile = tempfile.NamedTemporaryFile ( )
+    h5f = h5py.File ( tmpfile.name )
+
+    [ resstr, xstr, ystr, zstr ] = result.cutout.split('/')
+    ( xlowstr, xhighstr ) = xstr.split(',') 
+    ( ylowstr, yhighstr ) = ystr.split(',') 
+    ( zlowstr, zhighstr ) = zstr.split(',') 
+     
+    resolution = int(resstr)
+    xlow = int(xlowstr)
+    xhigh = int(xhighstr)
+    ylow = int(ylowstr)
+    yhigh = int(yhighstr)
+    zlow = int(zlowstr)
+    zhigh = int(zhighstr)
+
+    h5f.create_dataset ( "RESOLUTION", (1,), np.uint32, data=resolution )
+    h5f.create_dataset ( "XYZOFFSET", (3,), np.uint32, data=[xlow,ylow,zlow] )
+    h5f.create_dataset ( "CUTOUTSIZE", (3,), np.uint32, data=[xhigh-xlow,yhigh-ylow,zhigh-zlow] )
+
+    try:
+      h5f.flush()
+      tmpfile.seek(0)
+      req = urllib2.Request ( url, tmpfile.read())
+      f = urllib2.urlopen(req)
+    except urllib2.URLError, e:
+      print "Failed URL", url
+      print "Error %s. %s" % (e.code,e.read()) 
+
+  # Now we are processing the return.  New tmpfile, new h5f
   tmpfile = tempfile.NamedTemporaryFile ( )
   tmpfile.write ( f.read() )
   tmpfile.tell()
