@@ -26,7 +26,7 @@ def main():
   parser.add_argument('yhigh', action="store", type=int)
   parser.add_argument('zlow', action="store", type=int)
   parser.add_argument('zhigh', action="store", type=int)
-  parser.add_argument('--annoid', action="store", type=int, help='Specify an identifier.  Server chooses otherwise.', default=0)
+  parser.add_argument('--annid', action="store", type=int, help='Specify an identifier.  Server chooses otherwise.', default=0)
   parser.add_argument('--update', action='store_true')
   parser.add_argument('--dataonly', action='store_true')
   parser.add_argument('--preserve', action='store_true', help='Preserve exisiting annotations in the database.  Default is overwrite.')
@@ -46,7 +46,7 @@ def main():
   h5fh = h5py.File ( tmpfile.name )
 
 # RBTODO test with setting identifier
-  h5fh.create_dataset ( "ANNOTATION_ID", (1,), np.uint32, data=result.annoid )
+  h5fh.create_dataset ( "ANNOTATION_ID", (1,), np.uint32, data=result.annid )
   h5fh.create_dataset ( "RESOLUTION", (1,), np.uint32, data=result.resolution )
   h5fh.create_dataset ( "VOXELS", (len(voxlist),3), np.uint32, data=voxlist )
 
@@ -71,8 +71,9 @@ def main():
     tmpfile.seek(0)
     req = urllib2.Request ( url, tmpfile.read())
     response = urllib2.urlopen(req)
-  except urllib2.URLError:
-    print "Failed to put URL", url
+  except urllib2.URLError, e:
+    print "Failed URL", url
+    print "Error %s. %s" % (e.code,e.read()) 
     sys.exit(0)
 
   the_page = response.read()

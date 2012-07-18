@@ -15,6 +15,8 @@ import anndb
 import annproj
 import dbconfig
 
+from annerror import ANNError
+
 from pprint import pprint
 
 #
@@ -218,7 +220,7 @@ def H5toAnnotation ( h5fh ):
     anno = annotation.Annotation()
 
   else:
-    raise Exception ("Dont support this annotation type yet")
+    raise ANNError ("Dont support this annotation type yet. Type = %s" % annotype)
 
   # now load the annotation common fields
   if h5fh.get('ANNOTATION_ID'):
@@ -298,14 +300,10 @@ def SynapsetoH5 ( synapse ):
   # Lists (as arrays)
   if ( synapse.seeds != [] ):
     h5synapse.mdgrp.create_dataset ( "SEEDS", (len(synapse.seeds),), np.uint32, synapse.seeds )
-  else:
-    h5synapse.mdgrp.create_dataset ( "SEEDS", (0,), np.uint32 )
 
   #  segments and segment type
   if ( synapse.segments != [] ):
     h5synapse.mdgrp.create_dataset ( "SEGMENTS", (len(synapse.segments),2), np.uint32, data=synapse.segments)
-  else:
-    h5synapse.mdgrp.create_dataset ( "SEGMENTS", (0,0), np.uint32 )
 
   return h5synapse
 
@@ -339,13 +337,9 @@ def SegmenttoH5 ( segment ):
   # Lists (as arrays)
   if ( segment.synapses != [] ):
     h5segment.mdgrp.create_dataset ( "SYNAPSES", (len(segment.synapses),), np.uint32, segment.synapses )
-  else:
-    h5segment.mdgrp.create_dataset ( "SYNAPSES", (0,), np.uint32 )
 
   if ( segment.organelles != [] ):
     h5segment.mdgrp.create_dataset ( "ORGANELLES", (len(segment.organelles),), np.uint32, segment.organelles )
-  else:
-    h5segment.mdgrp.create_dataset ( "ORGANELLES", (0,), np.uint32 )
 
   return h5segment
 
@@ -359,8 +353,6 @@ def NeurontoH5 ( neuron ):
   # Lists (as arrays)
   if ( neuron.segments != [] ):
     h5neuron.mdgrp.create_dataset ( "SEGMENTS", (len(neuron.segments),), np.uint32, neuron.segments )
-  else:
-    h5neuron.mdgrp.create_dataset ( "SEGMENTS", (0,), np.uint32 )
 
   return h5neuron
 
@@ -378,8 +370,6 @@ def OrganelletoH5 ( organelle ):
   # Lists (as arrays)
   if ( organelle.seeds != [] ):
     h5organelle.mdgrp.create_dataset ( "SEEDS", (len(organelle.seeds),), np.uint32, organelle.seeds )
-  else:
-    h5organelle.mdgrp.create_dataset ( "SEEDS", (0,), np.uint32 )
     
   if organelle.centroid != [None, None, None]:
     h5organelle.mdgrp.create_dataset ( "CENTROID", (3,), np.uint32, data=organelle.centroid )     
@@ -403,7 +393,7 @@ def AnnotationtoH5 ( anno ):
   elif anno.__class__ == annotation.Annotation:
     return BasetoH5 ( anno, annotation.ANNO_ANNOTATION )
   else:
-    raise Exception ("(AnnotationtoH5) Does not support this annotation type yet")
+    raise ANNError ("(AnnotationtoH5) Does not support this annotation type yet. Type = %s" % anno.__class__)
 
 
 def PackageIDs ( annoids ):
@@ -414,7 +404,8 @@ def PackageIDs ( annoids ):
   tmpfile = tempfile.NamedTemporaryFile()
   h5fh = h5py.File ( tmpfile.name )
 
-  h5fh.create_dataset ( "ANNOIDS", annoids.shape, np.uint32, data=annoids )     
+  if len(annoids) != 0: 
+    h5fh.create_dataset ( "ANNOIDS", annoids.shape, np.uint32, data=annoids ) 
 
   h5fh.flush()
   tmpfile.seek(0)

@@ -19,8 +19,8 @@ def main():
   # Get cube in question
   try:
     f = urllib2.urlopen ( url )
-  except urllib2.URLError:
-    print "Failed to open url ", url
+  except urllib2.URLError, e:
+    print "Failed %s.  Exception %s." % (url,e) 
     sys.exit(-1)
 
   zdata = f.read ()

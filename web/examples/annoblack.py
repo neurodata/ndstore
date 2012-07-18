@@ -13,7 +13,7 @@ def main():
   parser.add_argument('baseurl', action="store")
   parser.add_argument('dataset', action="store")
   parser.add_argument('token', action="store")
-  parser.add_argument('annoid', action="store", type=int)
+  parser.add_argument('annid', action="store", type=int)
   parser.add_argument('resolution', action="store", type=int )
   parser.add_argument('xlow', action="store", type=int )
   parser.add_argument('xhigh', action="store", type=int)
@@ -58,7 +58,7 @@ def main():
                          it.multi_index[0]+zoffset ] )
     it.iternext()
 
-  url = 'http://%s/annotate/%s/npvoxels/%s/%s/' % (result.baseurl, result.token, result.annoid, result.resolution)
+  url = 'http://%s/annotate/%s/npvoxels/%s/%s/' % (result.baseurl, result.token, result.annid, result.resolution)
 
   print url
 
@@ -67,8 +67,14 @@ def main():
   np.save ( fileobj, voxlist )
 
   # Build the post request
-  req = urllib2.Request(url, fileobj.getvalue())
-  response = urllib2.urlopen(req)
+  try:
+    req = urllib2.Request(url, fileobj.getvalue())
+    response = urllib2.urlopen(req)
+  except urllib2.URLError, e:
+    print "Failed URL", url
+    print "Error %s. %s" % (e.code,e.read()) 
+    sys.exit(0)
+
   the_page = response.read()
 
   print the_page

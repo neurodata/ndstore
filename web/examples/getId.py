@@ -28,7 +28,12 @@ def main():
 
 #  import pdb; pdb.set_trace() 
   # Get cube in question
-  f = urllib2.urlopen ( url )
+  try:
+    f = urllib2.urlopen ( url )
+  except urllib2.URLError, e:
+    print "Failed URL %s.  Exception %s." % (url,e) 
+    sys.exit(0)
+
   print "Here"
 #  zdata = f.read ()
 

@@ -41,8 +41,9 @@ def main():
   # Get annotation in question
   try:
     f = urllib2.urlopen ( url )
-  except urllib2.URLError:
-    print "Failed to get URL", url
+  except urllib2.URLError, e:
+    print "Failed URL", url
+    print "Error %s. %s" % (e.code,e.read()) 
     sys.exit(0)
 
   # create an in memory h5 file

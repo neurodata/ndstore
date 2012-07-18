@@ -27,19 +27,20 @@ def main():
   # Get cube in question
   try:
     f = urllib2.urlopen ( url )
-  except urllib2.URLError:
-    print "Failed to open url ", url
-    sys.exit(-1)
+  except urllib2.URLError, e:
+    print "Failed URL", url
+    print "Error %s. %s" % (e.code,e.read()) 
+    sys.exit(0)
 
   tmpfile = tempfile.NamedTemporaryFile ( )
   tmpfile.write ( f.read() )
   tmpfile.tell()
   h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
 
-  if len(h5f['ANNOIDS']) == 0:
-    print "Found no annotations matching type and status"
-  else:
+  if h5f.get('ANNOIDS'): 
     print "Matching annotations at %s" % ( np.array(h5f['ANNOIDS'][:]) )
+  else:
+    print "Found no annotations matching type and status"
 
 if __name__ == "__main__":
   main()

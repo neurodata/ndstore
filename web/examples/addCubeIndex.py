@@ -46,8 +46,13 @@ def main():
   np.save ( fileobj, voxlist )
 
   # Build the post request
-  req = urllib2.Request(url, fileobj.getvalue())
-  response = urllib2.urlopen(req)
+  try:
+    req = urllib2.Request(url, fileobj.getvalue())
+    response = urllib2.urlopen(req)
+  except urllib2.URLError, e:
+    print "Failed URL", url
+    print "Error %s. %s" % (e.code,e.read()) 
+
   the_page = response.read()
 
   print the_page

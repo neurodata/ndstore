@@ -1,7 +1,4 @@
-# TODO Need to test updating with missing values
-# updating needs to take a different model???
-# only overwrite the fields that exist
-
+# TODO implement delete for all objects
 # Must make the commits make sense.
 
 import numpy as np
@@ -73,7 +70,7 @@ class Annotation:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error inserting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-      raise
+      raise ANNError ( "Error inserting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # author: make a KV pair
     if self.author != "":
@@ -87,7 +84,7 @@ class Annotation:
         cursor.execute ( sql )
       except MySQLdb.Error, e:
         print "Error inserting kvpairs %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-        raise
+        raise ANNError ( "Error inserting kvpairs: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     annodb.conn.commit()
 
@@ -108,7 +105,7 @@ class Annotation:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error updating annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-      raise
+      raise ANNError ( "Error updating annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # Make the author field a kvpair
     if self.author != "":
@@ -120,7 +117,8 @@ class Annotation:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error retrieving kvpairs %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-      raise
+      raise ANNError ( "Error retrieving kvpairs: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
     kvresult = cursor.fetchall()
 
     kvupdate = {}
@@ -149,7 +147,7 @@ class Annotation:
         cursor.execute ( sql )
       except MySQLdb.Error, e:
         print "Error inserting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-        raise
+        raise ANNError ( "Error inserting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     annodb.conn.commit()
 
@@ -167,7 +165,7 @@ class Annotation:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error deleting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-      raise
+      raise ANNError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
 
   def retrieve ( self, annid, annodb ):
@@ -180,7 +178,8 @@ class Annotation:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error retrieving annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-      raise
+      raise ANNError ( "Error retrieving annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
     ( self.annid, annotype, self.confidence, self.status ) = cursor.fetchone()
 
     sql = "SELECT * FROM %s WHERE annoid = %s" % ( anno_dbtables['kvpairs'], annid )
@@ -189,7 +188,8 @@ class Annotation:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error retrieving kvpairs %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-      raise
+      raise ANNError ( "Error retrieving kvpairs: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
     kvpairs = cursor.fetchall()
     for kv in kvpairs:
       self.kvpairs[kv[1]] = kv[2]
@@ -230,7 +230,7 @@ class AnnSynapse (Annotation):
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error inserting synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-      raise
+      raise ANNError ( "Error inserting synapse: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # synapse_seeds: pack into a kv pair
     if self.seeds != []:
@@ -257,7 +257,7 @@ class AnnSynapse (Annotation):
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error updating synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-      raise
+      raise ANNError ( "Error updating synapse: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # synapse_seeds: pack into a kv pair
     self.kvpairs['synapse_seeds'] = ','.join([str(i) for i in self.seeds])
@@ -289,7 +289,8 @@ class AnnSynapse (Annotation):
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error retrieving synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-      raise
+      raise ANNError ( "Error retrieving synapse: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
     ( self.synapse_type, self.weight ) = cursor.fetchone()
 
     if self.kvpairs.get('synapse_seeds'):
@@ -336,7 +337,7 @@ class AnnSeed (Annotation):
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error inserting seed %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-      raise
+      raise ANNError ( "Error inserting seed : %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # and call store on the base classs
     Annotation.store ( self, annodb, ANNO_SEED)
@@ -359,7 +360,7 @@ class AnnSeed (Annotation):
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error inserting seed %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-      raise
+      raise ANNError ( "Error inserting seed: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # and call update on the base classs
     Annotation.updateBase ( self, ANNO_SEED, annodb )
@@ -380,7 +381,7 @@ class AnnSeed (Annotation):
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error retrieving seed %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-      raise
+      raise ANNError ( "Error retrieving seed: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # need to initialize position to prevent index error
     self.position = [0,0,0]
@@ -414,7 +415,7 @@ class AnnSegment (Annotation):
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error inserting segment %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-      raise
+      raise ANNError ( "Error inserting segment: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # synapses: pack into a kv pair
     if self.synapses != []:
@@ -442,7 +443,7 @@ class AnnSegment (Annotation):
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error updating segment %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-      raise
+      raise ANNError ( "Error updating segment: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # synapses: pack into a kv pair
     if self.synapses != []:
@@ -477,7 +478,8 @@ class AnnSegment (Annotation):
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error retrieving synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-      raise
+      raise ANNError ( "Error retrieving segment: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
     ( self.segmentclass, self.parentseed ) = cursor.fetchone()
 
     if self.kvpairs.get('synapses'):
@@ -575,7 +577,7 @@ class AnnOrganelle (Annotation):
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error inserting organelle %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-      raise
+      raise ANNError ( "Error inserting organelle: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # seeds: pack into a kv pair
     if self.seeds != []:
@@ -603,7 +605,7 @@ class AnnOrganelle (Annotation):
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error updating organelle %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-      raise
+      raise ANNError ( "Error updating organelle: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # seeds: pack into a kv pair
     if self.seeds != []:
@@ -632,7 +634,8 @@ class AnnOrganelle (Annotation):
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error retrieving organelle %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-      raise
+      raise ANNError ( "Error retrieving organelle: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
     ( self.organelleclass, self.parentseed, self.centroid[0], self.centroid[1], self.centroid[2] ) = cursor.fetchone()
 
     if self.kvpairs.get('seeds'):
@@ -657,7 +660,7 @@ def getAnnotation ( annid, annodb ):
     cursor.execute ( sql )
   except MySQLdb.Error, e:
     print "Error reading id %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-    raise
+    raise ANNError ( "Error reading id: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
   
   sqlresult = cursor.fetchone()
   if sqlresult == None:
@@ -669,6 +672,7 @@ def getAnnotation ( annid, annodb ):
   if type == ANNO_SYNAPSE:
     syn = AnnSynapse()
     syn.retrieve(annid, annodb)
+    import pdb; pdb.set_trace()
     return syn
 
   elif type == ANNO_SEED:

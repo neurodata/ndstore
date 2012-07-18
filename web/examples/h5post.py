@@ -49,8 +49,9 @@ def main():
   try:
     req = urllib2.Request ( url, open(result.h5file).read() )
     response = urllib2.urlopen(req)
-  except urllib2.URLError:
-    print "Failed to put URL", url
+  except urllib2.URLError, e:
+    print "Failed URL", url
+    print "Error %s. %s" % (e.code,e.read()) 
     sys.exit(0)
 
   the_page = response.read()

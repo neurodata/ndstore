@@ -10,6 +10,8 @@ import annproj
 import annotation
 import annindex
 
+from annerror import ANNError
+
 import sys
 
 ################################################################################
@@ -20,11 +22,6 @@ import sys
 #
 ################################################################################
 
-class AnnError(Exception):
-  def __init__(self, value):
-    self.value = value
-  def __str__(self):
-    return repr(self.value)
 
 class AnnotateDB: 
 
@@ -43,7 +40,7 @@ class AnnotateDB:
                             passwd = self.annoproj.getDBPasswd(),
                             db = self.annoproj.getDBName())
     except:
-      raise AnnError ( dbinfo )
+      raise ANNError ( dbinfo )
       
 
     # How many slices?
@@ -71,7 +68,7 @@ class AnnotateDB:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Problem retrieving identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-      raise
+      raise ANNError ( "Failed to create annotation identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # Here we've queried the highest id successfully    
     row = cursor.fetchone ()
@@ -87,7 +84,7 @@ class AnnotateDB:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-      raise
+      raise ANNError ( "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # InnoDB needs a commit
     cursor.close()
@@ -111,7 +108,7 @@ class AnnotateDB:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-      raise
+      raise ANNError ( "Failed to set identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # InnoDB needs a commit
     cursor.close()
@@ -140,7 +137,7 @@ class AnnotateDB:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Failed to retrieve cube %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-      raise
+      raise ANNError ( "Failed to retrieve data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     row = cursor.fetchone ()
 
@@ -175,7 +172,7 @@ class AnnotateDB:
         cursor.execute ( sql, (key,npz))
       except MySQLdb.Error, e:
         print "Error inserting cube %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-        raise
+        raise ANNError ( "Error inserting cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     else:
 
@@ -184,7 +181,7 @@ class AnnotateDB:
         cursor.execute ( sql, (npz))
       except MySQLdb.Error, e:
         print "Error updating cube %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-        raise
+        raise ANNError ( "Error updating data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     cursor.close()
     self.conn.commit()
@@ -209,7 +206,7 @@ class AnnotateDB:
       self._qr_cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Failed to retrieve cube %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-      raise
+      raise ANNError ( "Failed to retrieve data cube : %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
   
   #
@@ -294,7 +291,7 @@ class AnnotateDB:
         cursor.execute ( sql, (key, entityid, fileobj.getvalue()))
       except MySQLdb.Error, e:
         print "Error inserting exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-        raise
+        raise ANNError ( "Error inserting exceptions: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
     # In this case we have an update query
     else:
 
@@ -670,7 +667,7 @@ class AnnotateDB:
     #  throw an error or build the sql clause
     for field in predicates.keys():
       if field not in fields:
-        raise AnnError ( "Illegal field in URL: %s" % (field) )
+        raise ANNError ( "Illegal field in URL: %s" % (field) )
       elif clause == '':
         clause += " WHERE "
       else:  
@@ -684,7 +681,7 @@ class AnnotateDB:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error retrieving ids. sql=%s" % (e.args[0], e.args[1], sql)
-      raise
+      raise ANNError ( "Error retrieving ids: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     annoids = cursor.fetchall()
     return np.array(annoids)

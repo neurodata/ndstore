@@ -16,6 +16,7 @@ import dbconfig
 import annproj
 import h5ann
 
+from annerror import ANNError
 from pprint import pprint
 
 from time import time
@@ -279,7 +280,7 @@ def selectService ( webargs, dbcfg, annoproj ):
     return yzAnno ( rangeargs, dbcfg, annoproj )
 
   else:
-    raise restargs.RESTBadArgsError ("No such service: %s" % service )
+    raise ANNError ("No such Web service: %s" % service )
 
 
 #
@@ -344,7 +345,7 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
     return str(entityid)
 
   else:
-    raise restargs.RESTBadArgsError ("No such service: %s" % service )
+    raise AnnError ("No such Web service: %s" % service )
     
 
 #
@@ -423,17 +424,16 @@ def getAnnotation ( webargs ):
       
       # RBTODO process cutout arguments
     else:
-      raise restargs.RESTBadArgsError ("Fetch identifier %s.  Error: no such data option %s " % ( annoid, args[1] ))
+      raise ANNError ("Fetch identifier %s.  Error: no such data option %s " % ( annoid, args[1] ))
 
   # the first argument is not numeric.  it is a service other than getAnnotation
   else:
-      raise restargs.RESTBadArgsError ("Get interface %s requested.  Illegal or not implemented" % ( args[0] ))
-
+      raise ANNError ("Get interface %s requested.  Illegal or not implemented" % ( args[0] ))
 
   # retrieve the annotation 
   anno = annodb.getAnnotation ( annoid )
   if anno == None:
-    raise restargs.RESTBadArgsError ("No annotation found at identifier = %s" % (annoid))
+    raise ANNError ("No annotation found at identifier = %s" % (annoid))
 
   # create the HDF5 object
   h5 = h5ann.AnnotationtoH5 ( anno )
@@ -479,7 +479,7 @@ def putAnnotation ( webargs, postdata ):
   anno = h5ann.H5toAnnotation ( h5f )
 
   if 'update' in options and 'dataonly' in options:
-    raise restargs.RESTBadArgsError ("Illegal combination of options. Cannot use udpate and dataonly together")
+    raise ANNError ("Illegal combination of options. Cannot use udpate and dataonly together")
 
   if not 'dataonly' in options:
 

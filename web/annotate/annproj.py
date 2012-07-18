@@ -2,23 +2,13 @@ import empaths
 import MySQLdb
 
 import annprivate
+from annerror import ANNError
 import dbconfig
 
 #
 #  AnnotateCube: manipulate the in-memory data representation of the 3-d cube of data
 #    that contains annotations.  
 #
-
-
-#
-# Annotation project not found
-#
-class AnnoProjException (Exception):
-  """Could not load and annotation project"""
-  def __init__(self, value):
-    self.value = value
-  def __str__(self):
-    return repr(self.value)
 
 
 class AnnotateProject:
@@ -92,7 +82,7 @@ class AnnotateProjectsDB:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Could not query annotations projects database"
-      raise AnnoProjException ( "Annotation Project Database error" )
+      raise ANNError ( "Annotation Project Database error" )
 
     # get the project information 
     row = cursor.fetchone()
@@ -100,7 +90,7 @@ class AnnotateProjectsDB:
     # if the project is not found.  error
     if ( row == None ):
       print "No project found"
-      raise AnnoProjException ( "Project token not found" )
+      raise ANNError ( "Project token not found" )
 
     [token, openid, host, project, dataset, resolution ] = row
 
@@ -128,7 +118,7 @@ class AnnotateProjectsDB:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Failed to create new project", e
-      raise AnnoProjException ( "Failed to create new project" )
+      raise ANNError ( "Failed to create new project" )
 
     # Make the database and associated annotation tables
     sql = "CREATE DATABASE %s;" % project
@@ -139,7 +129,7 @@ class AnnotateProjectsDB:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Failed to create database for new project", e
-      raise AnnoProjException ( "Failed to create database for new project" )
+      raise ANNError ( "Failed to create database for new project" )
 
     self.conn.commit()
 
@@ -172,4 +162,4 @@ class AnnotateProjectsDB:
       newcursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Failed to create tables for new project", e
-      raise AnnoProjException ( "Failed to create database for new project" )
+      raise ANNError ( "Failed to create database for new project" )
