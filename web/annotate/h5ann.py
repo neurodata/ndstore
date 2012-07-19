@@ -100,7 +100,9 @@ class H5Annotation:
 
   def __del__ ( self ):
     """Destructor"""
-    self.h5fh.close()
+    pass
+# RB weird bug
+#    self.h5fh.close()
 
   def fileReader( self ):
     """Return a file read stream to be transferred as put data"""

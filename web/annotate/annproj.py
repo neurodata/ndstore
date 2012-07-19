@@ -89,6 +89,7 @@ class AnnotateProjectsDB:
 
     # if the project is not found.  error
     if ( row == None ):
+      # RBTODO this error occurs under load
       print "No project found"
       raise ANNError ( "Project token not found" )
 
