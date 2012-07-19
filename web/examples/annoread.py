@@ -64,10 +64,12 @@ def main():
   anno = h5ann.H5toAnnotation ( h5f )
 
   pprint(vars(anno))
-
   if h5f.get('VOXELS'):
-    print "Voxel list for object:"
-    print h5f['VOXELS'][:]
+    if len(h5f['VOXELS']) != 0:
+      print "Voxel list for object:"
+      print h5f['VOXELS'][:]
+    else:
+      print "No voxels found"
 
   if h5f.get('CUTOUT') and h5f.get('XYZOFFSET'):
     print "Cutout at corner %s dim %s = " % (h5f['XYZOFFSET'][:],h5f['CUTOUT'].shape)
