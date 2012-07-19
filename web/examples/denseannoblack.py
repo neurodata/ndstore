@@ -41,7 +41,7 @@ def main():
     f = urllib2.urlopen ( url )
   except urllib2.URLError, e:
     print "Failed URL", url
-    print "Error %s. %s" % (e.code,e.read()) 
+    print "Error %s" % (e.read()) 
     sys.exit(0)
 
   zdata = f.read ()

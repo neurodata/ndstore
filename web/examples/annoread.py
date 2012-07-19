@@ -43,7 +43,7 @@ def main():
     f = urllib2.urlopen ( url )
   except urllib2.URLError, e:
     print "Failed URL", url
-    print "Error %s. %s" % (e.code,e.read()) 
+    print "Error %s" % (e.read()) 
     sys.exit(0)
 
   # create an in memory h5 file
@@ -73,6 +73,7 @@ def main():
   if h5f.get('CUTOUT') and h5f.get('XYZOFFSET'):
     print "Cutout at corner %s dim %s = " % (h5f['XYZOFFSET'][:],h5f['CUTOUT'].shape)
     print h5f['CUTOUT'][:,:,:]
+    import pdb; pdb.set_trace()
 
 
   h5f.flush()

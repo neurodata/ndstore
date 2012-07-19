@@ -416,6 +416,8 @@ def getAnnotation ( webargs ):
 #      # if there are no args or only resolution, it's a tight cutout request
 #      if args[2] = '' or re.match()
 
+      import pdb; pdb.set_trace()
+
       # Perform argument processing
       brargs = restargs.BrainRestArgs ();
       brargs.cutoutArgs ( args[2], dbcfg )

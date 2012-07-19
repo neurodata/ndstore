@@ -596,39 +596,61 @@ class AnnotateDB:
   # getLocations -- return the list of locations associated with an identifier
   #
   def getLocations ( self, entityid, res ):
+
     # get the size of the image and cube
     resolution = int(res)
-    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.dbcfg.cubedim [ resolution ]
+    
 
-    # get the index for the data                                                 
-    curIndex = self.annoIdx.getIndex(entityid,resolution)
+#    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.dbcfg.cubedim [ resolution ]
+#
+#    # get the index for the data                                                 
+#    curIndex = self.annoIdx.getIndex(entityid,resolution)
+#
+#    #Retrieve the voxel list from the index
+#    voxlist= []
+#    for key in curIndex:
+#      cube = self.getCube(key,resolution)
+#            
+#      cubeoff = zindex.MortonXYZ(key)
+#      it = np.nditer ( cube.data, flags=['multi_index'])
+#      
+#      while not it.finished:
+#        if (it[0] == entityid):
+#          voxlist.append ( [ it.multi_index[2]+cubeoff[0]*cubedim[0],\
+#                               it.multi_index[1]+ cubeoff[1]*cubedim[1],\
+#                               it.multi_index[0]+ cubeoff[2]*cubedim[2] + self.startslice ])
+#          
+#        it.iternext()
 
-    #Retrieve the voxel list from the index
-    voxlist= []
-    for key in curIndex:
-      cube = self.getCube(key,resolution)
-            
-      cubeoff = zindex.MortonXYZ(key)
-      it = np.nditer ( cube.data, flags=['multi_index'])
-      
-      while not it.finished:
-        if (it[0] == entityid):
-          voxlist.append ( [ it.multi_index[2]+cubeoff[0]*cubedim[0],\
-                               it.multi_index[1]+ cubeoff[1]*cubedim[1],\
-                               it.multi_index[0]+ cubeoff[2]*cubedim[2] + self.startslice ])
-          
-        it.iternext()
+    # alternate (faster) implementation
+    #  use np.offsets and zip to reassmeble list.
 
-    #print "=========TESTING============="
-    #print "Voxel List for annotation id", entityid
-    #print voxlist
+    voxlist = []
+
+    zidxs = self.annoIdx.getIndex(entityid,resolution)
+
+    for zidx in zidxs:
+
+      cb = self.getCube (zidx,resolution) 
+
+      # mask out the entries that do not match the annotation id
+      vec_func = np.vectorize ( lambda x: entityid if x == entityid else 0 )
+      annodata = vec_func ( cb.data )
+    
+      # where are the entries
+      offsets = np.nonzero ( annodata ) 
+      voxels = zip ( offsets[2], offsets[1], offsets[0] ) 
+
+      # Get cube offset information
+      [x,y,z]=zindex.MortonXYZ(zidx)
+      xoffset = x * self.dbcfg.cubedim[resolution][0] 
+      yoffset = y * self.dbcfg.cubedim[resolution][1] 
+      zoffset = z * self.dbcfg.cubedim[resolution][2] + self.dbcfg.slicerange[0]
+
+      [ voxlist.append([a+xoffset, b+yoffset, c+zoffset]) for (a,b,c) in voxels ] 
+
     return voxlist
 
-   # Create the compressed cube                                                 \
-   #fileobj = cStringIO.StringIO ()
-   #np.save ( fileobj, voxlist )
-   #return  zlib.compress (fileobj.getvalue())
- # pass
 
   #
   # getAnnotation:  
