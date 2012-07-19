@@ -413,8 +413,6 @@ def getAnnotation ( webargs ):
     elif args[1] =='cutout':
       dataoption = AR_CUTOUT
 
-      import pdb; pdb.set_trace()
-
 #      # if there are no args or only resolution, it's a tight cutout request
 #      if args[2] = '' or re.match()
 
