@@ -50,6 +50,9 @@ def switchDataset ( dataset ):
   elif dataset == 'kasthuri11':
     import dbconfigkasthuri11
     return dbconfigkasthuri11.dbConfigKasthuri11()
+  elif dataset == 'will':
+    import dbconfigwill
+    return dbconfigwill.dbConfigWill()
   else:
     # RBTODO make this a dbconfig exception
     raise DBConfigError ("Could not find dataset = %s" % annoproj.getDataSet() )
