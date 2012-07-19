@@ -22,6 +22,8 @@ import sys
 #
 ################################################################################
 
+#RBTODO needs to work out rollback
+
 
 class AnnotateDB: 
 
@@ -52,6 +54,7 @@ class AnnotateDB:
 
   def __del__ ( self ):
     """Close the connection"""
+    self.conn.commit()
     self.conn.close()
 
 
@@ -86,9 +89,7 @@ class AnnotateDB:
       print "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise ANNError ( "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
-    # InnoDB needs a commit
     cursor.close()
-    self.conn.commit()
 
     return identifier
 
@@ -110,9 +111,7 @@ class AnnotateDB:
       print "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise ANNError ( "Failed to set identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
-    # InnoDB needs a commit
     cursor.close()
-    self.conn.commit()
 
     return annoid
 
@@ -184,8 +183,6 @@ class AnnotateDB:
         raise ANNError ( "Error updating data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     cursor.close()
-    self.conn.commit()
-
 
   #
   # queryRange
@@ -311,9 +308,6 @@ class AnnotateDB:
         assert 0
 
     cursor.close()
-    self.conn.commit()
-
-
 
 
   #
@@ -426,7 +420,6 @@ class AnnotateDB:
     # Update all indexes
     self.annoIdx.updateIndexDense(index_dict,resolution)
 
-
   #
   #  Called when labeling an entity
   #
@@ -445,8 +438,6 @@ class AnnotateDB:
   def cutout ( self, corner, dim, resolution ):
     """Extract a cube of arbitrary size.  Need not be aligned."""
     
-    print "Calling cutout with corner dim resolution", corner, dim, resolution
-
     # get the size of the image and cube
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.dbcfg.cubedim [ resolution ] 
 
@@ -526,7 +517,6 @@ class AnnotateDB:
                       corner[1]%ycubedim,dim[1],\
                       corner[2]%zcubedim,dim[2] )
 
-    print "Unique values", np.unique ( outcube.data )
     return outcube
 
 
@@ -711,6 +701,8 @@ class AnnotateDB:
 
     annoids = cursor.fetchall()
     return np.array(annoids)
+
+  
 
 
 

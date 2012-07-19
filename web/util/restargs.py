@@ -72,7 +72,7 @@ class BrainRestArgs:
        not re.match ('[0-9]+,[0-9]+$', xdimstr) or\
        not re.match ('[0-9]+,[0-9]+$', ydimstr) or\
        not re.match ('[0-9]+,[0-9]+$', zdimstr):
-      raise RESTBadArgsError ("Non-numeric range argument" % rangeargs)
+      raise RESTBadArgsError ("Non-numeric range argument" % restargs)
 
     self._resolution = int(resstr)
 

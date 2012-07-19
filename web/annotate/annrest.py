@@ -1,5 +1,4 @@
 import sys
-import re
 import StringIO
 import tempfile
 import numpy as np
@@ -7,6 +6,7 @@ import zlib
 import h5py
 import os
 import cStringIO
+import re
 
 import empaths
 import restargs
@@ -58,12 +58,12 @@ def numpyZip ( imageargs, dbcfg, annoproj ):
   cube = cutout ( imageargs, dbcfg, annoproj )
 
   # Create the compressed cube
-  fileobj = StringIO.StringIO ()
+  fileobj = cStringIO.StringIO ()
   np.save ( fileobj, cube.data )
   cdz = zlib.compress (fileobj.getvalue()) 
 
   # Package the object as a Web readable file handle
-  fileobj = StringIO.StringIO ( cdz )
+  fileobj = cStringIO.StringIO ( cdz )
   fileobj.seek(0)
   return fileobj.read()
 
@@ -103,7 +103,7 @@ def xyImage ( imageargs, dbcfg, annoproj ):
 
   annodb = anndb.AnnotateDB ( dbcfg, annoproj )
   cb = annodb.cutout ( corner, dim, resolution )
-  fileobj = StringIO.StringIO ( )
+  fileobj = cStringIO.StringIO ( )
   cb.xySlice ( fileobj )
 
   fileobj.seek(0)
@@ -123,7 +123,7 @@ def xzImage ( imageargs, dbcfg, annoproj ):
 
   annodb = anndb.AnnotateDB ( dbcfg, annoproj )
   cb = annodb.cutout ( corner, dim, resolution )
-  fileobj = StringIO.StringIO ( )
+  fileobj = cStringIO.StringIO ( )
   cb.xzSlice ( dbcfg.zscale[resolution], fileobj )
 
   fileobj.seek(0)
@@ -143,7 +143,7 @@ def yzImage ( imageargs, dbcfg, annoproj ):
 
   annodb = anndb.AnnotateDB ( dbcfg, annoproj )
   cb = annodb.cutout ( corner, dim, resolution )
-  fileobj = StringIO.StringIO ( )
+  fileobj = cStringIO.StringIO ( )
   cb.yzSlice ( dbcfg.zscale[resolution], fileobj )
 
   fileobj.seek(0)
@@ -171,7 +171,7 @@ def xyAnno ( imageargs, dbcfg, annoproj ):
   annodb = anndb.AnnotateDB ( dbcfg, annoproj )
   cb = annodb.annoCutout ( annoid, resolution, corner, dim )
 
-  fileobj = StringIO.StringIO ( )
+  fileobj = cStringIO.StringIO ( )
   cb.xySlice ( fileobj )
 
   fileobj.seek(0)
@@ -195,7 +195,7 @@ def xzAnno ( imageargs, dbcfg, annoproj ):
 
   annodb = anndb.AnnotateDB ( dbcfg, annoproj )
   cb = annodb.annoCutout ( annoid, resolution, corner, dim )
-  fileobj = StringIO.StringIO ( )
+  fileobj = cStringIO.StringIO ( )
   cb.xzSlice ( dbcfg.zscale[resolution], fileobj )
 
   fileobj.seek(0)
@@ -219,7 +219,7 @@ def yzAnno ( imageargs, dbcfg, annoproj ):
 
   annodb = anndb.AnnotateDB ( dbcfg, annoproj )
   cb = annodb.annoCutout ( annoid, resolution, corner, dim )
-  fileobj = StringIO.StringIO ( )
+  fileobj = cStringIO.StringIO ( )
   cb.yzSlice ( dbcfg.zscale[resolution], fileobj )
 
   fileobj.seek(0)
@@ -313,7 +313,7 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
 
     conflictopt = restargs.conflictOption ( conflictargs )
     entityid = annoDB.annotate ( int(entity), int(resolution), voxlist, conflictopt )
-      
+
     return str(entityid)
 
   elif service == 'npdense':
@@ -332,15 +332,15 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
 
     # get the data out of the compressed blob
     rawdata = zlib.decompress ( postdata )
-    fileobj = StringIO.StringIO ( rawdata )
+    fileobj = cStringIO.StringIO ( rawdata )
     voxarray = np.load ( fileobj )
 
     # Get the annotation database
-    annoDB = anndb.AnnotateDB ( dbcfg, annoproj )
+    annodb = anndb.AnnotateDB ( dbcfg, annoproj )
 
     # Choose the verb, get the entity (as needed), and annotate
     # Translates the values directly
-    entityid = annoDB.annotateDense ( corner, resolution, voxarray, conflictopt )
+    entityid = annodb.annotateDense ( corner, resolution, voxarray, conflictopt )
 
     return str(entityid)
 
@@ -412,6 +412,8 @@ def getAnnotation ( webargs ):
 
     elif args[1] =='cutout':
       dataoption = AR_CUTOUT
+
+      import pdb; pdb.set_trace()
 
 #      # if there are no args or only resolution, it's a tight cutout request
 #      if args[2] = '' or re.match()
@@ -536,6 +538,9 @@ def putAnnotation ( webargs, postdata ):
     #TODO this is a loggable error
     pass
 
+  h5f.close()
+  tmpfile.close()
+
   # return the identifier
   return str(anno.annid)
 
@@ -591,6 +596,9 @@ def getAnnoIDs ( webargs, postdata=None ):
 
     cutout = annodb.cutout ( corner, dim, resolution )
     annoids = np.intersect1d ( annoids, np.unique( cutout.data ))
+
+  h5f.close()
+  tmpfile.close()
 
   return h5ann.PackageIDs ( annoids ) 
 

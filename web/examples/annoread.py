@@ -72,8 +72,7 @@ def main():
 
   if h5f.get('CUTOUT') and h5f.get('XYZOFFSET'):
     print "Cutout at corner %s dim %s = " % (h5f['XYZOFFSET'][:],h5f['CUTOUT'].shape)
-    print h5f['CUTOUT'][:,:,:]
-    import pdb; pdb.set_trace()
+    print "%s voxels match identifier in cutout" % ( len(np.nonzero(np.array(h5f['CUTOUT'][:,:,:]))[0]))
 
 
   h5f.flush()
