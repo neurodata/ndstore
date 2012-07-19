@@ -65,11 +65,10 @@ def main():
 
   pprint(vars(anno))
   if h5f.get('VOXELS'):
-    if len(h5f['VOXELS']) != 0:
-      print "Voxel list for object:"
-      print h5f['VOXELS'][:]
-    else:
-      print "No voxels found"
+    print "Voxel list for object:"
+    print h5f['VOXELS'][:]
+  elif result.voxels:
+    print "No voxels found at this resolution"
 
   if h5f.get('CUTOUT') and h5f.get('XYZOFFSET'):
     print "Cutout at corner %s dim %s = " % (h5f['XYZOFFSET'][:],h5f['CUTOUT'].shape)

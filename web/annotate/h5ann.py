@@ -112,7 +112,8 @@ class H5Annotation:
     """Add the list of voxels to the HDF5 file"""
 
     self.h5fh.create_dataset ( "RESOLUTION", (1,), np.uint32, data=resolution )     
-    self.h5fh.create_dataset ( "VOXELS", (len(voxlist),3), np.uint32, data=voxlist )     
+    if len(voxlist) != 0:
+      self.h5fh.create_dataset ( "VOXELS", (len(voxlist),3), np.uint32, data=voxlist )     
 
   def addCutout ( self, resolution, corner, volume ):
     """Add the cutout  to the HDF5 file"""
