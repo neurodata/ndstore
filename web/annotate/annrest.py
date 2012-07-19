@@ -418,7 +418,10 @@ def getAnnotation ( webargs ):
 
       # Perform argument processing
       brargs = restargs.BrainRestArgs ();
-      brargs.cutoutArgs ( args[2], dbcfg )
+      try:
+        brargs.cutoutArgs ( args[2], dbcfg )
+      except Exception as e:
+        raise ANNError ( "Cutout error: " + e.value )
 
       # Extract the relevant values
       corner = brargs.getCorner()
