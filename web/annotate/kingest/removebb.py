@@ -30,7 +30,7 @@ class BBRemover:
   """Rewrites synapses from old values to separate objects"""
 
   # lit of identifiers that are bounding boxes
-  BBIDS = [ 2146, 2208, 2216, 2218 ]
+  BBIDS = [ 2146, 2208, 2216, 2218, 3 ]
 
   def __init__(self,token,resolution):
     """DB configuration and some state"""
