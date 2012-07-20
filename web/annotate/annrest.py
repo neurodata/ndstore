@@ -511,6 +511,10 @@ def putAnnotation ( webargs, postdata ):
     else:
       conflictopt = 'O'
 
+    # Check that the voxels have a conforming size:
+    if voxels.shape[1] != 3:
+      raise ANNError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
+
     annodb.annotate ( anno.annid, resolution, voxels, conflictopt )
 
   # Is it dense data?
