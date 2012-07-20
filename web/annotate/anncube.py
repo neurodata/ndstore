@@ -67,6 +67,9 @@ class AnnotateCube:
       print "Unpickle and unZip.  What did I catch?"
       assert 0
 
+    print "Type error?", type(self.data[0,0,0])
+#    import pdb; pdb.set_trace()
+
     self._newcube = False
 
 
@@ -156,7 +159,7 @@ class AnnotateCube:
     imagemap = np.zeros ( [ zdim, xdim ], dtype=np.uint32 )
 
     # recolor the pixels for visualization
-    vecfunc_recolor = np.vectorize ( lambda x:  np.uint32(0) if x == 0 else np.uint32(0x80000000+(x&0xFF)))
+    vecfunc_recolor = np.vectorize ( lambda x:  np.uint32(0) if x == np.uint32(0) else np.uint32(0x80000000+(x&0xFF)))
     imagemap = vecfunc_recolor ( self.data[:,:,:] )
     imagemap = imagemap.reshape ( zdim, xdim )
 

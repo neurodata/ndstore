@@ -30,7 +30,7 @@ class BBRemover:
   """Rewrites synapses from old values to separate objects"""
 
   # lit of identifiers that are bounding boxes
-  BBIDS = [ 2146, 2208, 2216, 2218 ]
+  BBIDS = np.array ([ 2146, 2208, 2216, 2218 ], dtype=np.uint32)
 
   def __init__(self,token,resolution):
     """DB configuration and some state"""
@@ -64,26 +64,35 @@ class BBRemover:
     lastzindex = (zindex.XYZMorton([xlimit,ylimit,zlimit]))
 
     # call the range query
-    self.annodb.queryRange ( 0, lastzindex, self._resolution );
+#    self.annodb.queryRange ( 0, lastzindex, self._resolution );
+    # RB restart
+    self.annodb.queryRange ( 1156230, lastzindex, self._resolution );
 
     # get the first cube
     [key,cube]  = self.annodb.getNextCube ()
 
+    count = 0 
+
     while key != None:
 
-      if np.intersect1d ( np.unique(cube.data), self.BBIDS ):
+      if len (np.intersect1d ( np.unique(cube.data), self.BBIDS )) != 0:
         print "Found bounding box data in cube ", zindex.MortonXYZ( key )
         # Remove annotations
-        vector_func = np.vectorize ( lambda a: 0 if a in self.BBIDS else a )
+        vector_func = np.vectorize ( lambda a: np.uint32(0) if a in self.BBIDS else a )
         cube.data = vector_func ( cube.data )
         # Put the cube
         self.annodb.putCube ( key, self._resolution, cube )
+        count = count + 1
 
       else: 
         print "No matching data in ", key
 
       # Get the next cube
       [key,cube]  = self.annodb.getNextCube ()
+
+      if count == 100:
+        self.annodb.conn.commit()
+        count = 0
 
     print "No more cubes"
 

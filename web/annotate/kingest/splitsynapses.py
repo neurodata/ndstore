@@ -124,7 +124,6 @@ class SynapseRewriter:
               active.append([z,b,a])
               syncutout[z,b,a] = nextid
           except Exception as e:
-            import pdb; pdb.set_trace()
             print "Object not totally contained within cutout"
             print "If you got this error.  Your ingest is broken."
             print "  There are two know problems with this script.  See comments top of file."
