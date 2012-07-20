@@ -24,7 +24,10 @@ from pprint import pprint
 #  ingest the PNG files into the database
 #
 """Currently this script is broken in the following ways.  If synapses extend more 
-     than +/- 128 beyond their seed point an assertion will be triggered
+     than +/- 128 beyond their seed point the script goes into debug mode.  This found 
+     voxels are skipped.  They may be relabelled from another seed point or they may not 
+     be relabelled at all.  This is the "dont store" stuff.
+
      If synapses are with 128 pixels of the boundary.  They will throw an exception.
      If synapses are not in 2-d xy plane only, they will get split.
      
@@ -83,6 +86,8 @@ class SynapseRewriter:
     print "Should ", len(voxels) 
     found = 0
 
+    dontstore = False
+
     # Let's assume that all the synapses are in a single plane.
     while len(voxels) != 0:
 
@@ -90,7 +95,10 @@ class SynapseRewriter:
 
       # Do a cutout around a voxel and get the data
       #RBTODO address cutouts that exceed boundaries
-      if curvoxel[0] < 128 or curvoxel[1] < 128 or curvoxel[0] >= self.dbcfg.imagesz[self._resolution][0]-128 or curvoxel[0] >= self.dbcfg.imagesz[self._resolution][1]-128:
+      if curvoxel[0] < 128 or curvoxel[1] < 128:
+        print "Found a voxel to close to border.  This script doesn't work there yet"
+        sys.exit(-1)
+      elif curvoxel[0] >= self.dbcfg.imagesz[self._resolution][0]-128 or curvoxel[0] >= self.dbcfg.imagesz[self._resolution][1]-128:
         print "Found a voxel to close to border.  This script doesn't work there yet"
         sys.exit(-1)
       # safe to cutout
@@ -107,7 +115,7 @@ class SynapseRewriter:
       active=[]
       # Search locally around center voxel
       active.append([0,128,128])
-      while len(active) != 0:
+      while len(active) != 0 and dontstore==False:
         [z,y,x] = active.pop()
         syncutout[z,y,x] = nextid
         for [b,a] in itertools.product ([y-1,y,y+1],[x-1,x,x+1]): 
@@ -115,22 +123,20 @@ class SynapseRewriter:
             if syncutout [z,b,a] == self._annid:
               active.append([z,b,a])
               syncutout[z,b,a] = nextid
-          except:
+          except Exception as e:
+            import pdb; pdb.set_trace()
             print "Object not totally contained within cutout"
             print "If you got this error.  Your ingest is broken."
             print "  There are two know problems with this script.  See comments top of file."
-            sys.exit(-1)
+            print "Skip this object and keep on going"
+
+            dontstore = True
+            break
             
 
       # Get a list of found voxels
       vec_func = np.vectorize ( lambda x: nextid if x == nextid else 0 )
       founddata = vec_func ( syncutout )
-
-      # Check that the synapse is within bounds
-      assert not [ a for a in founddata[0,:,0] if a != 0 ]  
-      assert not [ a for a in founddata[0,0,:] if a != 0 ]  
-      assert not [ a for a in founddata[0,:,255] if a != 0 ]  
-      assert not [ a for a in founddata[0,255,:] if a != 0 ]  
     
       # where are the entries
       offsets = np.nonzero ( founddata ) 
@@ -143,8 +149,10 @@ class SynapseRewriter:
      
       # Relabel voxels into global space
       foundvoxels = [ [a+xoffset, b+yoffset, c+zoffset] for (a,b,c) in foundlocvoxels ] 
-
-      self.addSynapse ( nextid, foundvoxels )
+      if not dontstore:
+        self.addSynapse ( nextid, foundvoxels )
+      else:
+        dontstore = False
 
       # Remove found voxels from list we are trying to find
       found += len(foundvoxels)
