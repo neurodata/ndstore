@@ -598,8 +598,9 @@ def getAnnoIDs ( webargs, postdata=None ):
     cutout = annodb.cutout ( corner, dim, resolution )
     annoids = np.intersect1d ( annoids, np.unique( cutout.data ))
 
-  h5f.close()
-  tmpfile.close()
+  if postdata:
+    h5f.close()
+    tmpfile.close()
 
   return h5ann.PackageIDs ( annoids ) 
 
