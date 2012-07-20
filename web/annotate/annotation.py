@@ -707,7 +707,7 @@ def getAnnotation ( annid, annodb ):
 #
 #  putAnnotation 
 #
-def putAnnotation ( anno, annodb, options=None ): 
+def putAnnotation ( anno, annodb, options ): 
   """Return an annotation object by identifier"""
 
   # if annid == 0, create a new identifier

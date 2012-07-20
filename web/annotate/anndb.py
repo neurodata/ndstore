@@ -57,6 +57,68 @@ class AnnotateDB:
     self.conn.commit()
     self.conn.close()
 
+  #
+  #  peekID
+  #
+  def peekID ( self ):
+    """What's the new identifier? Don't update.
+       Not thread safe.  Don't use."""
+    
+    # Query the current max identifier
+    cursor = self.conn.cursor ()
+    sql = "SELECT max(id) FROM " + str ( self.annoproj.getIDsTbl() )
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      print "Problem retrieving identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      raise ANNError ( "Failed to create annotation identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    # Here we've queried the highest id successfully    
+    row = cursor.fetchone ()
+    # if the table is empty start at 1, 0 is no annotation
+    if ( row[0] == None ):
+      identifier = 1
+    else:
+      identifier = int ( row[0] ) + 1
+
+    # increment and update query
+    sql = "INSERT INTO " + str(self.annoproj.getIDsTbl()) + " VALUES ( " + str(identifier) + " ) "
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      print "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      raise ANNError ( "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    cursor.close()
+
+    return identifier
+
+  #
+  #  peekID
+  #
+  def peekID ( self ):
+    """Look at the next ID but don't claim it.  This is an internal interface.
+        It is not thread safe.  Need a way to lock the ids table for the 
+        transaction to make it safe."""
+    
+    # Query the current max identifier
+    cursor = self.conn.cursor ()
+    sql = "SELECT max(id) FROM " + str ( self.annoproj.getIDsTbl() )
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      print "Problem retrieving identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      raise ANNError ( "Failed to create annotation identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    # Here we've queried the highest id successfully    
+    row = cursor.fetchone ()
+    # if the table is empty start at 1, 0 is no annotation
+    if ( row[0] == None ):
+      identifier = 1
+    else:
+      identifier = int ( row[0] ) + 1
+
+    return identifier
 
   #
   #  nextIdentifier
@@ -315,7 +377,7 @@ class AnnotateDB:
   #
   #  number the voxels and build the exceptions
   #
-  def annotate ( self, entityid, resolution, locations, conflictopt ):
+  def annotate ( self, entityid, resolution, locations, conflictopt='O' ):
     """Label the voxel locations or add as exceptions is the are already labeled."""
 
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.dbcfg.cubedim [ resolution ] 
@@ -654,7 +716,7 @@ class AnnotateDB:
   #
   # putAnnotation:  
   #    store an HDF5 annotation to the database
-  def putAnnotation ( self, anno, options ):
+  def putAnnotation ( self, anno, options='' ):
     """store an HDF5 annotation to the database"""
     
     return annotation.putAnnotation( anno, self, options )

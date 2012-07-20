@@ -89,7 +89,6 @@ class AnnotateIndex:
     #Used for testing
          #print ("Current Index", curindex )
          if curindex==[]:
-            print "Adding a new Index for annotation", key, ": ", cubeindex
             sql = "INSERT INTO " +  self.annoproj.getIdxTable(resolution)  +  "( annid, cube) VALUES ( %s, %s)"
             
             try:
