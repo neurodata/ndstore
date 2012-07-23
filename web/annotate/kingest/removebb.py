@@ -23,7 +23,7 @@ from pprint import pprint
 #
 #  Remove bounding boxes
 #
-"""Iterate over the entire database an remove the bounding boxes"""
+"""Iterate over the entire database and remove the bounding boxes"""
 
 
 class BBRemover:
@@ -66,7 +66,7 @@ class BBRemover:
     # call the range query
 #    self.annodb.queryRange ( 0, lastzindex, self._resolution );
     # RB restart
-    self.annodb.queryRange ( 1156230, lastzindex, self._resolution );
+    self.annodb.queryRange ( 0, lastzindex, self._resolution );
 
     # get the first cube
     [key,cube]  = self.annodb.getNextCube ()
@@ -80,6 +80,7 @@ class BBRemover:
         # Remove annotations
         vector_func = np.vectorize ( lambda a: np.uint32(0) if a in self.BBIDS else a )
         cube.data = vector_func ( cube.data )
+        assert(type(cube.data[0,0,0])==np.uint32)
         # Put the cube
         self.annodb.putCube ( key, self._resolution, cube )
         count = count + 1

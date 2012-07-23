@@ -16,8 +16,6 @@ import annotation
 import anndb
 import h5ann
 
-import pdb
-
 from pprint import pprint
 
 
@@ -28,10 +26,9 @@ from pprint import pprint
 """Read a vast .txt file and create RAMON objects for the segments."""
 
 
-EXCEPTIONS = [0]
-#EXCEPTIONS = range(247) 
+EXCEPTIONS = [0, 2146, 2208, 2216, 2218 ]
 
-def storeSegment ( fields, token ):
+def storeSegment ( baseurl, fields, token ):
   """Build a segment and upload it to the database"""
 
   # Create the segment and initialize it's fields
@@ -54,18 +51,13 @@ def storeSegment ( fields, token ):
 
   h5anno = h5ann.AnnotationtoH5 ( ann )
 
-  # Build the put URL
-#  if result.update:
-#   url = "http://%s/annotate/%s/update/" % ( result.baseurl, result.token)
-# else:
-  url = "http://%s/annotate/%s/" % ( 'openconnecto.me', token)
+  url = "http://%s/annotate/%s/" % ( baseurl, token)
   print url
 
   try:
     req = urllib2.Request ( url, h5anno.fileReader()) 
     response = urllib2.urlopen(req)
   except urllib2.URLError, e:
-    pdb.set_trace()
     print "Failed URL", url
     print "Error %s" % (e.read()) 
     sys.exit(0)
@@ -78,6 +70,7 @@ def storeSegment ( fields, token ):
 def main():
 
   parser = argparse.ArgumentParser(description='Read a vast .txt file and create RAMON objects for the segments.')
+  parser.add_argument('baseurl', action="store")
   parser.add_argument('token', action="store", help='Token for the annotation project.')
   parser.add_argument('input', action="store", help='VAST .txt file')
 
@@ -95,7 +88,7 @@ def main():
     
     # Found an identifier (there are blank lines)
     if re.match ( "\d+", fields[0] ):
-      storeSegment ( fields, result.token )
+      storeSegment ( result.baseurl, fields, result.token )
 
     else:
       print "Other line", line

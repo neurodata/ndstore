@@ -67,9 +67,6 @@ class AnnotateCube:
       print "Unpickle and unZip.  What did I catch?"
       assert 0
 
-    print "Type error?", type(self.data[0,0,0])
-#    import pdb; pdb.set_trace()
-
     self._newcube = False
 
 

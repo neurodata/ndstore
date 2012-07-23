@@ -55,24 +55,25 @@ class BrainRestArgs:
     """Process REST arguments for an cutout plane request"""
 
     # expecting an argument of the form /resolution/x1,x2/y1,y2/z1,z2/
+    import pdb; pdb.set_trace()
 
-    restargs = imageargs.split('/')
+    try:
+      [ resstr, xdimstr, ydimstr, zdimstr, rest ]  = imageargs.split('/',4)
+      options = rest.split ( '/' )
 
-    if len ( restargs ) == 5:
-      [ resstr, xdimstr, ydimstr, zdimstr, rest ]  = restargs
-      globalcoords = False
-    elif len ( restargs ) == 6:
-      [ resstr, xdimstr, ydimstr, zdimstr, rest, other ]  = restargs
-      globalcoords = True
-    else:
-      raise RESTBadArgsError ( "Incorrect command string" )
+      if 'global' in options:
+          globalcoords = True
+      else:
+        globalcoords = False
+    except:
+      raise RESTBadArgsError ( "Incorrect cutout arguments %s" % imageargs )
 
     # Check that the arguments are well formatted
     if not re.match ('[0-9]+$', resstr) or\
        not re.match ('[0-9]+,[0-9]+$', xdimstr) or\
        not re.match ('[0-9]+,[0-9]+$', ydimstr) or\
        not re.match ('[0-9]+,[0-9]+$', zdimstr):
-      raise RESTBadArgsError ("Non-conforming range arguments %s" % restargs)
+      raise RESTBadArgsError ("Non-conforming range arguments %s" % imageargs)
 
     self._resolution = int(resstr)
 
@@ -111,16 +112,16 @@ class BrainRestArgs:
     """Process REST arguments for an xy plane request.
        You must have set the resolution prior to calling this function."""
 
-    rangeargs = imageargs.split('/')
+    try:
+      [ resstr, xdimstr, ydimstr, zstr, rest ]  = imageargs.split('/',4)
+      options = rest.split ( '/' )
 
-    if len ( rangeargs ) == 5:
-      [ resstr, xdimstr, ydimstr, zstr, rest ]  = rangeargs
-      globalcoords = False
-    elif len ( rangeargs ) == 6:
-      [ resstr, xdimstr, ydimstr, zstr, rest, other ]  = rangeargs
-      globalcoords = True
-    else:
-      raise RESTBadArgsError ("Wrong number of arguments for xyArgs %s" % rangeargs)
+      if 'global' in options:
+          globalcoords = True
+      else:
+        globalcoords = False
+    except:
+      raise RESTBadArgsError ( "Incorrect cutout arguments %s" % imageargs )
 
     # expecting an argument of the form /resolution/x1,x2/y1,y2/z/
     # Check that the arguments are well formatted
@@ -128,7 +129,7 @@ class BrainRestArgs:
        not re.match ('[0-9]+,[0-9]+$', xdimstr) or\
        not re.match ('[0-9]+,[0-9]+$', ydimstr) or\
        not re.match ('[0-9]+$', zstr):
-      raise RESTBadArgsError ("Non-numeric range argument" % rangeargs)
+      raise RESTBadArgsError ("Non-numeric range argument" % imageargs)
 
     self._resolution = int(resstr)
 
@@ -161,16 +162,16 @@ class BrainRestArgs:
     """Process REST arguments for an xz plane request
        You must have set the resolution prior to calling this function."""
 
-    rangeargs = imageargs.split('/')
+    try:
+      [ resstr, xdimstr, ystr, zdimstr, rest ]  = imageargs.split('/',4)
+      options = rest.split ( '/' )
 
-    if len ( rangeargs ) == 5:
-      [ resstr, xdimstr, ystr, zdimstr, rest ]  = rangeargs
-      globalcoords = False
-    elif len ( rangeargs ) == 6:
-      [ resstr, xdimstr, ystr, zdimstr, rest, other ]  = rangeargs
-      globalcoords = True
-    else:
-      raise RESTBadArgsError ("Wrong number of arguments for xzArgs %s" % rangeargs)
+      if 'global' in options:
+          globalcoords = True
+      else:
+        globalcoords = False
+    except:
+      raise RESTBadArgsError ( "Incorrect cutout arguments %s" % imageargs )
 
     # expecting an argument of the form /resolution/x1,x2/y1,y2/z/
     # Check that the arguments are well formatted
@@ -210,16 +211,16 @@ class BrainRestArgs:
     """Process REST arguments for an yz plane request
        You must have set the resolution prior to calling this function."""
 
-    rangeargs = imageargs.split('/')
+    try:
+      [ resstr, xstr, ydimstr, zdimstr, rest ]  = imageargs.split('/',4)
+      options = rest.split ( '/' )
 
-    if len ( rangeargs ) == 5:
-      [ resstr, xstr, ydimstr, zdimstr, rest ]  = rangeargs
-      globalcoords = False
-    elif len ( rangeargs ) == 6:
-      [ resstr, xstr, ydimstr, zdimstr, rest, other ]  = rangeargs
-      globalcoords = True
-    else:
-      raise RESTBadArgsError ("Wrong number of arguments for yzArgs %s" % rangeargs)
+      if 'global' in options:
+          globalcoords = True
+      else:
+        globalcoords = False
+    except:
+      raise RESTBadArgsError ( "Incorrect cutout arguments %s" % imageargs )
 
     # expecting an argument of the form /resolution/x/y1,y2/z1,z2/
     # Check that the arguments are well formatted
@@ -266,12 +267,10 @@ class BrainRestArgs:
 def voxel ( imageargs, dbcfg ):
   """Process REST arguments for a single point"""
 
-  rangeargs = imageargs.split('/')
-
-  if len ( rangeargs ) == 5:
-    [ resstr, xstr, ystr, zstr, rest ]  = rangeargs
-  else:
-    raise RESTBadArgsError ("Wrong number of arguments for voxel %s" % rangeargs)
+  try:
+    [ resstr, xstr, ystr, zstr, rest ]  = imageargs.split('/',4)
+  except:
+    raise RESTBadArgsError ("Bad arguments to voxel" % rangeargs)
 
   # expecting an argument of the form /resolution/x/y1,y2/z1,z2/
   # Check that the arguments are well formatted
