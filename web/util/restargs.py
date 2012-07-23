@@ -129,7 +129,7 @@ class BrainRestArgs:
        not re.match ('[0-9]+,[0-9]+$', xdimstr) or\
        not re.match ('[0-9]+,[0-9]+$', ydimstr) or\
        not re.match ('[0-9]+$', zstr):
-      raise RESTBadArgsError ("Non-numeric range argument" % imageargs)
+      raise RESTBadArgsError ("Non-numeric range argument %s" % imageargs)
 
     self._resolution = int(resstr)
 
@@ -151,7 +151,7 @@ class BrainRestArgs:
 
     # Check arguments for legal values
     if not ( dbcfg.checkCube ( self._resolution, x1i, x2i, y1i, y2i, z, z )):
-      raise RESTBadArgsError ("Range exceeds data boundaries" % imageargs)
+      raise RESTBadArgsError ("Range exceeds data boundaries %s" % imageargs)
 
     self._corner=[x1i,y1i,z-dbcfg.slicerange[0]]
     self._dim=[x2i-x1i,y2i-y1i,1]
@@ -179,7 +179,7 @@ class BrainRestArgs:
        not re.match ('[0-9]+,[0-9]+$', xdimstr) or\
        not re.match ('[0-9]+$', ystr) or\
        not re.match ('[0-9]+,[0-9]+$', zdimstr):
-      raise RESTBadArgsError ("Non-numeric range argument" % imageargs)
+      raise RESTBadArgsError ("Non-numeric range argument %s" % imageargs)
 
     self._resolution = int(resstr)
 
@@ -201,7 +201,7 @@ class BrainRestArgs:
     # Check arguments for legal values
     if not dbcfg.checkCube ( self._resolution, x1i, x2i, y, y, z1i, z2i )\
        or y >= dbcfg.imagesz[self._resolution][1]:
-      raise RESTBadArgsError ("Range exceeds data boundaries" % imageargs)
+      raise RESTBadArgsError ("Range exceeds data boundaries %s" % imageargs)
 
     self._corner=[x1i,y,z1i-dbcfg.slicerange[0]]
     self._dim=[x2i-x1i,1,z2i-z1i ]
@@ -228,7 +228,7 @@ class BrainRestArgs:
        not re.match ('[0-9]+$', xstr) or\
        not re.match ('[0-9]+,[0-9]+$', ydimstr) or\
        not re.match ('[0-9]+,[0-9]+$', zdimstr):
-      raise RESTBadArgsError ("Non-numeric range argument" % imageargs)
+      raise RESTBadArgsError ("Non-numeric range argument %s" % imageargs)
 
     self._resolution = int(resstr)
 
@@ -252,7 +252,7 @@ class BrainRestArgs:
     # Check arguments for legal values
     if not dbcfg.checkCube ( self._resolution, x, x, y1i, y2i, z1i, z2i  )\
        or  x >= dbcfg.imagesz[self._resolution][0]:
-      raise RESTBadArgsError ("Range exceeds data boundaries" % imageargs)
+      raise RESTBadArgsError ("Range exceeds data boundarie %s" % imageargs)
 
     self._corner=[x,y1i,z1i-dbcfg.slicerange[0]]
     self._dim=[1,y2i-y1i,z2i-z1i ]
@@ -270,7 +270,7 @@ def voxel ( imageargs, dbcfg ):
   try:
     [ resstr, xstr, ystr, zstr, rest ]  = imageargs.split('/',4)
   except:
-    raise RESTBadArgsError ("Bad arguments to voxel" % imageargs)
+    raise RESTBadArgsError ("Bad arguments to voxel %s" % imageargs)
 
   # expecting an argument of the form /resolution/x/y1,y2/z1,z2/
   # Check that the arguments are well formatted
@@ -278,7 +278,7 @@ def voxel ( imageargs, dbcfg ):
      not re.match ('[0-9]+$', xstr) or\
      not re.match ('[0-9]+$', ystr) or\
      not re.match ('[0-9]+$', zstr):
-    raise RESTBadArgsError ("Non-numeric range argument" % imageargs)
+    raise RESTBadArgsError ("Non-numeric range argument %s" % imageargs)
 
   resolution = int(resstr)
   x = int(xstr)
