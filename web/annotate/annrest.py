@@ -258,13 +258,10 @@ def listIds ( imageargs, dbcfg, annoproj ):
   annodb = anndb.AnnotateDB ( dbcfg, annoproj )
   cb = annodb.cutout ( corner, dim, resolution )
   ids =  np.unique(cb.data)
-  idsstr = ''
-  for id in ids:
-    if ( id != 0):
-      idsstr += `id`
-      idsstr += ', '
-
-  return idsstr.rstrip(', ')
+  idstr=''.join([`id`+', ' for id in ids])
+  
+  idstr1 = idstr.lstrip('0,')
+  return idstr1.rstrip(', ')
 #
 #  Select the service that you want.
 #  Truncate this from the arguments and past 
