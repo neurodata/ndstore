@@ -28,6 +28,8 @@ def annoget (request, webargs):
       return django.http.HttpResponse(annrest.annoget(webargs), mimetype="image/png" )
     elif service=='id':
       return django.http.HttpResponse(annrest.annoget(webargs))
+    elif service=='listids':
+      return django.http.HttpResponse(annrest.annoget(webargs))
     else:
       return django.http.HttpResponseBadRequest ("Could not find service %s" % dataset )
   except (ANNError,MySQLdb.Error), e:

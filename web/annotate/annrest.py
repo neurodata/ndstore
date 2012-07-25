@@ -239,7 +239,32 @@ def annId ( imageargs, dbcfg, annoproj ):
   annodb = anndb.AnnotateDB ( dbcfg, annoproj )
   return annodb.getVoxel ( resolution, voxel )
 
+#
+#  listIds
+#  return the annotation identifiers in a region                         
+#                                                                         
+def listIds ( imageargs, dbcfg, annoproj ):
+  """Return the list  of annotation identifier in a region"""
+  #import pdb;pdb.set_trace()
+ # Perform argument processing                                                                                           
+  args = restargs.BrainRestArgs ();
+  args.cutoutArgs ( imageargs, dbcfg )
 
+  # Extract the relevant values                                                                                           
+  corner = args.getCorner()
+  dim = args.getDim()
+  resolution = args.getResolution()
+  
+  annodb = anndb.AnnotateDB ( dbcfg, annoproj )
+  cb = annodb.cutout ( corner, dim, resolution )
+  ids =  np.unique(cb.data)
+  idsstr = ''
+  for id in ids:
+    if ( id != 0):
+      idsstr += `id`
+      idsstr += ', '
+
+  return idsstr.rstrip(', ')
 #
 #  Select the service that you want.
 #  Truncate this from the arguments and past 
@@ -269,6 +294,9 @@ def selectService ( webargs, dbcfg, annoproj ):
 
   elif service == 'id':
     return annId ( rangeargs, dbcfg, annoproj )
+  
+  elif service == 'listids':
+    return listIds ( rangeargs, dbcfg, annoproj )
 
   elif service == 'xyanno':
     return xyAnno ( rangeargs, dbcfg, annoproj )
