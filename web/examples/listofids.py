@@ -8,7 +8,7 @@ import tempfile
 
 def main():
 
-  parser = argparse.ArgumentParser(description='Request a list of ids that match specified type and status values')
+  parser = argparse.ArgumentParser(description='Request a list of RAMON object ids that match specified type and status values')
   parser.add_argument('--status', type=int, action="store", default=None )
   parser.add_argument('--type', type=int, action="store", default=None )
   parser.add_argument('--cutout', action="store", help='Cutout arguments of the form resolution/x1,x2/y1,y2/z1,z2.', default=None)
@@ -17,7 +17,7 @@ def main():
 
   result = parser.parse_args()
 
-  url = 'http://%s/annotate/%s/ids/' % ( result.baseurl, result.token )
+  url = 'http://%s/annotate/%s/objects/' % ( result.baseurl, result.token )
   if result.type != None:
     url += 'type/%s/' % ( result.type )
   if result.status != None:

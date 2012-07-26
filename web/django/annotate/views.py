@@ -28,7 +28,7 @@ def annoget (request, webargs):
       return django.http.HttpResponse(annrest.annoget(webargs), mimetype="image/png" )
     elif service=='id':
       return django.http.HttpResponse(annrest.annoget(webargs))
-    elif service=='listids':
+    elif service=='ids':
       return django.http.HttpResponse(annrest.annoget(webargs))
     else:
       return django.http.HttpResponseBadRequest ("Could not find service %s" % dataset )
@@ -60,13 +60,13 @@ def annotation (request, webargs):
       return django.http.HttpResponseNotFound(e)
       
 
-def getannoids ( request, webargs ):
+def getannoobjects ( request, webargs ):
 
   try:
     if request.method == 'GET':
-      return django.http.HttpResponse(annrest.getAnnoIDs(webargs), mimetype="product/hdf5") 
+      return django.http.HttpResponse(annrest.getAnnoObjects(webargs), mimetype="product/hdf5") 
     elif request.method == 'POST':
-      return django.http.HttpResponse(annrest.getAnnoIDs(webargs,request.body), mimetype="product/hdf5") 
+      return django.http.HttpResponse(annrest.getAnnoObjects(webargs,request.body), mimetype="product/hdf5") 
     
   except ANNError, e:
     return django.http.HttpResponseNotFound(e.value)

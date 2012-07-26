@@ -575,9 +575,9 @@ def putAnnotation ( webargs, postdata ):
   return str(anno.annid)
 
 
-#  Return a list of annotation IDs
+#  Return a list of annotation object IDs
 #  for now by type and status
-def getAnnoIDs ( webargs, postdata=None ):
+def getAnnoObjects ( webargs, postdata=None ):
   """ Return a list of anno ids restricted by equality predicates.
       Equalities are alternating in field/value in the url.
   """
@@ -594,11 +594,10 @@ def getAnnoIDs ( webargs, postdata=None ):
   args = restargs.split('/')
   predicates = dict(zip(args[::2], args[1::2]))
 
-  annoids = annodb.getAnnoIDs ( predicates )
+  annoids = annodb.getAnnoObjects ( predicates )
 
   # We have a cutout as well
   if postdata:
-
 
   # RB this is a brute force implementation.  This probably needs to be
   #  optimized to use several different execution strategies based on the
