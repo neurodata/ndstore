@@ -245,8 +245,7 @@ def annId ( imageargs, dbcfg, annoproj ):
 #                                                                         
 def listIds ( imageargs, dbcfg, annoproj ):
   """Return the list  of annotation identifier in a region"""
-  #import pdb;pdb.set_trace()
- # Perform argument processing                                                                                           
+   # Perform argument processing                                                                                           
   args = restargs.BrainRestArgs ();
   args.cutoutArgs ( imageargs, dbcfg )
 
@@ -292,7 +291,7 @@ def selectService ( webargs, dbcfg, annoproj ):
   elif service == 'id':
     return annId ( rangeargs, dbcfg, annoproj )
   
-  elif service == 'listids':
+  elif service == 'ids':
     return listIds ( rangeargs, dbcfg, annoproj )
 
   elif service == 'xyanno':
