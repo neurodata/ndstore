@@ -536,6 +536,10 @@ def putAnnotation ( webargs, postdata ):
     else:
       conflictopt = 'O'
 
+    # Check that the voxels have a conforming size:
+    if voxels.shape[1] != 3:
+      raise ANNError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
+
     annodb.annotate ( anno.annid, resolution, voxels, conflictopt )
 
   # Is it dense data?
@@ -623,8 +627,9 @@ def getAnnoIDs ( webargs, postdata=None ):
     cutout = annodb.cutout ( corner, dim, resolution )
     annoids = np.intersect1d ( annoids, np.unique( cutout.data ))
 
-  h5f.close()
-  tmpfile.close()
+  if postdata:
+    h5f.close()
+    tmpfile.close()
 
   return h5ann.PackageIDs ( annoids ) 
 

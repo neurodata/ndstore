@@ -89,7 +89,6 @@ class AnnotateIndex:
     #Used for testing
          #print ("Current Index", curindex )
          if curindex==[]:
-            print "Adding a new Index for annotation", key, ": ", cubeindex
             sql = "INSERT INTO " +  self.annoproj.getIdxTable(resolution)  +  "( annid, cube) VALUES ( %s, %s)"
             
             try:
@@ -105,7 +104,7 @@ class AnnotateIndex:
          else:
              #Update index to the union of the currentIndex and the updated index                                                               
             newIndex=np.union1d(curindex,cubeindex)
-            print "Updating Index for annotation ",key, " to" , newIndex
+#            print "Updating Index for annotation ",key, " to" , newIndex
             
          #update index in the database                                                                                                      
             sql = "UPDATE " + self.annoproj.getIdxTable(resolution) + " SET cube=(%s) WHERE annid=" + str(key)
