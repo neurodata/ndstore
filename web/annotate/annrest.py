@@ -239,21 +239,19 @@ def annId ( imageargs, dbcfg, annoproj ):
   annodb = anndb.AnnotateDB ( dbcfg, annoproj )
   return annodb.getVoxel ( resolution, voxel )
 
+
 #
 #  listIds
 #  return the annotation identifiers in a region                         
 #                                                                         
 def listIds ( imageargs, dbcfg, annoproj ):
   """Return the list  of annotation identifier in a region"""
-<<<<<<< HEAD
-   # Perform argument processing                                                                                           
-=======
- # Perform argument processing                                                                                           
->>>>>>> rbdevel
+
+  # Perform argument processing
   args = restargs.BrainRestArgs ();
   args.cutoutArgs ( imageargs, dbcfg )
 
-  # Extract the relevant values                                                                                           
+  # Extract the relevant values
   corner = args.getCorner()
   dim = args.getDim()
   resolution = args.getResolution()
@@ -265,6 +263,7 @@ def listIds ( imageargs, dbcfg, annoproj ):
   
   idstr1 = idstr.lstrip('0,')
   return idstr1.rstrip(', ')
+
 #
 #  Select the service that you want.
 #  Truncate this from the arguments and past 
@@ -327,54 +326,59 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
   #  when voxels conflict
   # Perform argument processing
 
-  if service == 'npvoxels':
+  # Bind the annotation database
+  annoDB = anndb.AnnotateDB ( dbcfg, annoproj )
 
-    #  get the resolution
-    [ entity, resolution, conflictargs ] = postargs.split('/', 2)
+  try:
 
-    # Grab the voxel list
-    fileobj = cStringIO.StringIO ( postdata )
-    voxlist =  np.load ( fileobj )
+    if service == 'npvoxels':
 
-    # Bind the annotation database
-    annoDB = anndb.AnnotateDB ( dbcfg, annoproj )
+      #  get the resolution
+      [ entity, resolution, conflictargs ] = postargs.split('/', 2)
 
-    conflictopt = restargs.conflictOption ( conflictargs )
-    entityid = annoDB.annotate ( int(entity), int(resolution), voxlist, conflictopt )
+      # Grab the voxel list
+      fileobj = cStringIO.StringIO ( postdata )
+      voxlist =  np.load ( fileobj )
 
-    return str(entityid)
 
-  elif service == 'npdense':
+      conflictopt = restargs.conflictOption ( conflictargs )
+      entityid = annoDB.annotate ( int(entity), int(resolution), voxlist, conflictopt )
 
-    # Process the arguments
-    args = restargs.BrainRestArgs ();
-    args.cutoutArgs ( postargs, dbcfg )
+    elif service == 'npdense':
 
-    corner = args.getCorner()
-    resolution = args.getResolution()
+      # Process the arguments
+      args = restargs.BrainRestArgs ();
+      args.cutoutArgs ( postargs, dbcfg )
 
-    # RBTODO conflict option with cutout args doesn't work.  Using overwrite now.
-    #  Will probably need to fix cutout
-    #  Or make conflict option a part of the annotation database configuration.
-    conflictopt = restargs.conflictOption ( "" )
+      corner = args.getCorner()
+      resolution = args.getResolution()
 
-    # get the data out of the compressed blob
-    rawdata = zlib.decompress ( postdata )
-    fileobj = cStringIO.StringIO ( rawdata )
-    voxarray = np.load ( fileobj )
+      # RBTODO conflict option with cutout args doesn't work.  Using overwrite now.
+      #  Will probably need to fix cutout
+      #  Or make conflict option a part of the annotation database configuration.
+      conflictopt = restargs.conflictOption ( "" )
 
-    # Get the annotation database
-    annodb = anndb.AnnotateDB ( dbcfg, annoproj )
+      # get the data out of the compressed blob
+      rawdata = zlib.decompress ( postdata )
+      fileobj = cStringIO.StringIO ( rawdata )
+      voxarray = np.load ( fileobj )
 
-    # Choose the verb, get the entity (as needed), and annotate
-    # Translates the values directly
-    entityid = annodb.annotateDense ( corner, resolution, voxarray, conflictopt )
+      # Get the annotation database
+      annodb = anndb.AnnotateDB ( dbcfg, annoproj )
 
-    return str(entityid)
+      # Choose the verb, get the entity (as needed), and annotate
+      # Translates the values directly
+      entityid = annodb.annotateDense ( corner, resolution, voxarray, conflictopt )
 
-  else:
-    raise AnnError ("No such Web service: %s" % service )
+    else:
+      raise AnnError ("No such Web service: %s" % service )
+
+  except:
+    annoDB.rollback()
     
+  annoDB.commit()
+
+  return str(entityid)
 
 #
 #  Interface to annotation by project.
@@ -537,70 +541,85 @@ def putAnnotation ( webargs, postdata ):
   tmpfile.seek(0)
   h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
 
-  # Convert HDF5 to annotation
-  anno = h5ann.H5toAnnotation ( h5f )
+  try:
 
-  if 'update' in options and 'dataonly' in options:
-    raise ANNError ("Illegal combination of options. Cannot use udpate and dataonly together")
+    # Convert HDF5 to annotation
+    anno = h5ann.H5toAnnotation ( h5f )
 
-  if not 'dataonly' in options:
+    if 'update' in options and 'dataonly' in options:
+      raise ANNError ("Illegal combination of options. Cannot use udpate and dataonly together")
 
-    # Put into the database
-    annodb.putAnnotation ( anno, options )
+    if not 'dataonly' in options:
 
-  # Is a resolution specified?  or use default
-  h5resolution = h5f.get('RESOLUTION')
-  if h5resolution == None:
-    resolution = annoproj.getResolution()
-  else:
-    resolution = h5resolution[0]
+      # Put into the database
+      annodb.putAnnotation ( anno, options )
 
-  # Load the data associated with this annotation
-  #  Is it voxel data?
-  voxels = h5f.get('VOXELS')
-  if voxels:
-
-    if 'preserve' in options:
-      conflictopt = 'P'
-    elif 'exception' in options:
-      conflictopt = 'E'
+    # Is a resolution specified?  or use default
+    h5resolution = h5f.get('RESOLUTION')
+    if h5resolution == None:
+      resolution = annoproj.getResolution()
     else:
-      conflictopt = 'O'
+      resolution = h5resolution[0]
 
-    # Check that the voxels have a conforming size:
-    if voxels.shape[1] != 3:
-      raise ANNError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
+    # Load the data associated with this annotation
+    #  Is it voxel data?
+    voxels = h5f.get('VOXELS')
+    if voxels:
 
-    annodb.annotate ( anno.annid, resolution, voxels, conflictopt )
+      if 'preserve' in options:
+        conflictopt = 'P'
+      elif 'exception' in options:
+        conflictopt = 'E'
+      else:
+        conflictopt = 'O'
 
-  # Is it dense data?
-  cutout = h5f.get('CUTOUT')
-  h5xyzoffset = h5f.get('XYZOFFSET')
-  if cutout != None and h5xyzoffset != None:
+      # Check that the voxels have a conforming size:
+      if voxels.shape[1] != 3:
+        raise ANNError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
 
-    if 'preserve' in options:
-      conflictopt = 'P'
-    elif 'exception' in options:
-      conflictopt = 'E'
-    else:
-      conflictopt = 'O'
+      annodb.annotate ( anno.annid, resolution, voxels, conflictopt )
 
-    # RBFIX this a hack
-    #
-    #  the zstart in dbconfig is sometimes offset to make it aligned.
-    #   Probably remove the offset is the best idea.  and align data
-    #    to zero regardless of where it starts.  For now.
-    corner = h5xyzoffset[:] 
-    corner[2] -= dbcfg.slicerange[0]
+    # Is it dense data?
+    cutout = h5f.get('CUTOUT')
+    h5xyzoffset = h5f.get('XYZOFFSET')
+    if cutout != None and h5xyzoffset != None:
 
-    annodb.annotateEntityDense ( anno.annid, corner, resolution, np.array(cutout), conflictopt )
+      if 'preserve' in options:
+        conflictopt = 'P'
+      elif 'exception' in options:
+        conflictopt = 'E'
+      else:
+        conflictopt = 'O'
 
-  elif cutout != None or h5xyzoffset != None:
-    #TODO this is a loggable error
-    pass
+      # RBFIX this a hack
+      #
+      #  the zstart in dbconfig is sometimes offset to make it aligned.
+      #   Probably remove the offset is the best idea.  and align data
+      #    to zero regardless of where it starts.  For now.
+      corner = h5xyzoffset[:] 
+      corner[2] -= dbcfg.slicerange[0]
 
-  h5f.close()
-  tmpfile.close()
+      annodb.annotateEntityDense ( anno.annid, corner, resolution, np.array(cutout), conflictopt )
+
+    elif cutout != None or h5xyzoffset != None:
+      #TODO this is a loggable error
+      pass
+
+#    import pdb; pdb.set_trace()
+    print "Everything is awesome.  Let's test the exception."
+    raise Exception("test")
+
+  # rollback if you catch an error
+  except:
+    print "Calling rollback"
+    annodb.rollback()
+    raise
+  finally:
+    h5f.close()
+    tmpfile.close()
+
+  # Commit if there is no error
+  annodb.commit()
 
   # return the identifier
   return str(anno.annid)

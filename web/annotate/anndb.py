@@ -22,8 +22,6 @@ import sys
 #
 ################################################################################
 
-#RBTODO needs to work out rollback
-
 
 class AnnotateDB: 
 
@@ -44,6 +42,7 @@ class AnnotateDB:
     except:
       raise ANNError ( dbinfo )
       
+    self.wcursor = self.conn.cursor()
 
     # How many slices?
     [ self.startslice, endslice ] = self.dbcfg.slicerange
@@ -52,46 +51,20 @@ class AnnotateDB:
     # PYTODO create annidx object
     self.annoIdx = annindex.AnnotateIndex (dbconf,annoproj)
 
+
+  def commit ( self ):
+    """Commit the transaction.  Moved out of __del__ to make explicit.""" 
+    self.conn.commit()
+
+  def rollback ( self ):
+    """Rollback the transaction.  To be called on exceptions."""
+    self.conn.rollback()
+
   def __del__ ( self ):
     """Close the connection"""
-    self.conn.commit()
+    self.wcursor.close()
     self.conn.close()
 
-  #
-  #  peekID
-  #
-  def peekID ( self ):
-    """What's the new identifier? Don't update.
-       Not thread safe.  Don't use."""
-    
-    # Query the current max identifier
-    cursor = self.conn.cursor ()
-    sql = "SELECT max(id) FROM " + str ( self.annoproj.getIDsTbl() )
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      print "Problem retrieving identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-      raise ANNError ( "Failed to create annotation identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-    # Here we've queried the highest id successfully    
-    row = cursor.fetchone ()
-    # if the table is empty start at 1, 0 is no annotation
-    if ( row[0] == None ):
-      identifier = 1
-    else:
-      identifier = int ( row[0] ) + 1
-
-    # increment and update query
-    sql = "INSERT INTO " + str(self.annoproj.getIDsTbl()) + " VALUES ( " + str(identifier) + " ) "
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      print "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-      raise ANNError ( "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-    cursor.close()
-
-    return identifier
 
   #
   #  peekID
@@ -117,6 +90,8 @@ class AnnotateDB:
       identifier = 1
     else:
       identifier = int ( row[0] ) + 1
+
+    cursor.close
 
     return identifier
 
@@ -146,7 +121,7 @@ class AnnotateDB:
     # increment and update query
     sql = "INSERT INTO " + str(self.annoproj.getIDsTbl()) + " VALUES ( " + str(identifier) + " ) "
     try:
-      cursor.execute ( sql )
+      self.wcursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise ANNError ( "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
@@ -165,15 +140,12 @@ class AnnotateDB:
     """Set a user specified identifier"""
 
     # try the insert, get ane exception if it doesn't work
-    cursor = self.conn.cursor ()
     sql = "INSERT INTO " + str(self.annoproj.getIDsTbl()) + " VALUES ( " + str(annoid) + " ) "
     try:
-      cursor.execute ( sql )
+      self.wcursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise ANNError ( "Failed to set identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-    cursor.close()
 
     return annoid
 
@@ -220,8 +192,6 @@ class AnnotateDB:
   def putCube ( self, key, resolution, cube ):
     """Store a cube from the annotation database"""
 
-    cursor = self.conn.cursor ()
-
     # compress the cube
     npz = cube.toNPZ ()
 
@@ -230,7 +200,7 @@ class AnnotateDB:
 
       sql = "INSERT INTO " + self.annoproj.getTable(resolution) +  "(zindex, cube) VALUES (%s, %s)"
       try:
-        cursor.execute ( sql, (key,npz))
+        self.wcursor.execute ( sql, (key,npz))
       except MySQLdb.Error, e:
         print "Error inserting cube %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
         raise ANNError ( "Error inserting cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
@@ -239,12 +209,11 @@ class AnnotateDB:
 
       sql = "UPDATE " + self.annoproj.getTable(resolution) + " SET cube=(%s) WHERE zindex=" + str(key)
       try:
-        cursor.execute ( sql, (npz))
+        self.wcursor.execute ( sql, (npz))
       except MySQLdb.Error, e:
         print "Error updating cube %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
         raise ANNError ( "Error updating data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
-    cursor.close()
 
   #
   # queryRange
@@ -335,8 +304,6 @@ class AnnotateDB:
 
     print ("Current exceptions", curexlist )
 
-    cursor = self.conn.cursor ()
-
     # RBTODO need to make exceptions a set
     if curexlist==[]:
 
@@ -347,7 +314,7 @@ class AnnotateDB:
         fileobj = cStringIO.StringIO ()
         np.save ( fileobj, exceptions )
         print sql, key, entityid 
-        cursor.execute ( sql, (key, entityid, fileobj.getvalue()))
+        self.wcursor.execute ( sql, (key, entityid, fileobj.getvalue()))
       except MySQLdb.Error, e:
         print "Error inserting exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
         raise ANNError ( "Error inserting exceptions: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
@@ -364,12 +331,10 @@ class AnnotateDB:
       try:
         fileobj = cStringIO.StringIO ()
         np.save ( fileobj, newexlist )
-        cursor.execute ( sql, (fileobj.getvalue()))
+        self.wcursor.execute ( sql, (fileobj.getvalue()))
       except MySQLdb.Error, e:
         print "Error updating exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
         assert 0
-
-    cursor.close()
 
 
   #
@@ -557,7 +522,6 @@ class AnnotateDB:
       curxyz = zindex.MortonXYZ(int(idx))
       offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
 
-
       # get an input cube 
       incube.fromNPZ ( datastring[:] )
 
@@ -652,31 +616,6 @@ class AnnotateDB:
     # get the size of the image and cube
     resolution = int(res)
     
-
-#    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.dbcfg.cubedim [ resolution ]
-#
-#    # get the index for the data                                                 
-#    curIndex = self.annoIdx.getIndex(entityid,resolution)
-#
-#    #Retrieve the voxel list from the index
-#    voxlist= []
-#    for key in curIndex:
-#      cube = self.getCube(key,resolution)
-#            
-#      cubeoff = zindex.MortonXYZ(key)
-#      it = np.nditer ( cube.data, flags=['multi_index'])
-#      
-#      while not it.finished:
-#        if (it[0] == entityid):
-#          voxlist.append ( [ it.multi_index[2]+cubeoff[0]*cubedim[0],\
-#                               it.multi_index[1]+ cubeoff[1]*cubedim[1],\
-#                               it.multi_index[0]+ cubeoff[2]*cubedim[2] + self.startslice ])
-#          
-#        it.iternext()
-
-    # alternate (faster) implementation
-    #  use np.offsets and zip to reassmeble list.
-
     voxlist = []
 
     zidxs = self.annoIdx.getIndex(entityid,resolution)
