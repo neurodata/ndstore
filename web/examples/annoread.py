@@ -23,16 +23,25 @@ def main():
   parser.add_argument('--resolution', action="store", help='Resolution at which you want the voxels.  Defaults to the annotation database resolution.', default=None)
   parser.add_argument('--cutout', action="store", help='Cutout arguments of the form resolution/x1,x2/y1,y2/z1,z2.', default=None)
   parser.add_argument('--output', action="store", help='File name to output the HDF5 file.', default=None)
+  parser.add_argument('--tightcutout', action='store_true', help='Return a cutout as a minimum bounding box. Requires a resolution')
 
   result = parser.parse_args()
 
-  if result.voxels and result.resolution != None:
-    url = "http://%s/annotate/%s/%s/voxels/%s/" % (result.baseurl,result.token,result.annid, result.resolution)
+  if result.voxels:
+    if result.resolution == None:
+      url = "http://%s/annotate/%s/%s/voxels/" % (result.baseurl,result.token,result.annid)
+    else:
+      url = "http://%s/annotate/%s/%s/voxels/%s/" % (result.baseurl,result.token,result.annid, result.resolution)
   elif result.voxels:
   # RBTODO does this work?
     url = "http://%s/annotate/%s/%s/voxels/" % (result.baseurl,result.token,result.annid)
   elif result.cutout != None:
     url = "http://%s/annotate/%s/%s/cutout/%s/" % (result.baseurl,result.token,result.annid, result.cutout)
+  elif result.tightcutout: 
+    if result.resolution == None:
+      url = "http://%s/annotate/%s/%s/cutout/" % (result.baseurl,result.token,result.annid)
+    else:
+      url = "http://%s/annotate/%s/%s/cutout/%s/" % (result.baseurl,result.token,result.annid, result.resolution)
   else:
     url = "http://%s/annotate/%s/%s/" % (result.baseurl,result.token,result.annid)
 

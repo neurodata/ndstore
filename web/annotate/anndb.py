@@ -722,11 +722,11 @@ class AnnotateDB:
     return annotation.putAnnotation( anno, self, options )
 
 
-  # getAnnoIDs:  
-  #    Return a list of annotation IDs
+  # getAnnoObjects:  
+  #    Return a list of annotation object IDs
   #  for now by type and status
-  def getAnnoIDs ( self, predicates ):
-    """Return a list of annotation ids that match equality predicates.  
+  def getAnnoObjects ( self, predicates ):
+    """Return a list of annotation object ids that match equality predicates.  
       Legal predicates are currently:
         type
         status
@@ -763,8 +763,4 @@ class AnnotateDB:
 
     annoids = cursor.fetchall()
     return np.array(annoids)
-
-  
-
-
 

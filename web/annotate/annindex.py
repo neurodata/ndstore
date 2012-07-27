@@ -104,7 +104,7 @@ class AnnotateIndex:
          else:
              #Update index to the union of the currentIndex and the updated index                                                               
             newIndex=np.union1d(curindex,cubeindex)
-            print "Updating Index for annotation ",key, " to" , newIndex
+#            print "Updating Index for annotation ",key, " to" , newIndex
             
          #update index in the database                                                                                                      
             sql = "UPDATE " + self.annoproj.getIdxTable(resolution) + " SET cube=(%s) WHERE annid=" + str(key)

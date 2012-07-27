@@ -153,6 +153,7 @@ class SynapseRewriter:
       else:
         dontstore = False
 
+      # RBTODO this may not be correct?  maybe this should be in the don't store clause
       # Remove found voxels from list we are trying to find
       found += len(foundvoxels)
       voxels = [ x for x in voxels if not x in foundvoxels ]

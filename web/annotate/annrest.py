@@ -239,7 +239,28 @@ def annId ( imageargs, dbcfg, annoproj ):
   annodb = anndb.AnnotateDB ( dbcfg, annoproj )
   return annodb.getVoxel ( resolution, voxel )
 
+#
+#  listIds
+#  return the annotation identifiers in a region                         
+#                                                                         
+def listIds ( imageargs, dbcfg, annoproj ):
+  """Return the list  of annotation identifier in a region"""
+ # Perform argument processing                                                                                           
+  args = restargs.BrainRestArgs ();
+  args.cutoutArgs ( imageargs, dbcfg )
 
+  # Extract the relevant values                                                                                           
+  corner = args.getCorner()
+  dim = args.getDim()
+  resolution = args.getResolution()
+  
+  annodb = anndb.AnnotateDB ( dbcfg, annoproj )
+  cb = annodb.cutout ( corner, dim, resolution )
+  ids =  np.unique(cb.data)
+  idstr=''.join([`id`+', ' for id in ids])
+  
+  idstr1 = idstr.lstrip('0,')
+  return idstr1.rstrip(', ')
 #
 #  Select the service that you want.
 #  Truncate this from the arguments and past 
@@ -269,6 +290,9 @@ def selectService ( webargs, dbcfg, annoproj ):
 
   elif service == 'id':
     return annId ( rangeargs, dbcfg, annoproj )
+  
+  elif service == 'listids':
+    return listIds ( rangeargs, dbcfg, annoproj )
 
   elif service == 'xyanno':
     return xyAnno ( rangeargs, dbcfg, annoproj )
@@ -380,6 +404,7 @@ def annopost ( webargs, postdata ):
 AR_NODATA = 0
 AR_VOXELS = 1
 AR_CUTOUT = 2
+AR_TIGHTCUTOUT = 3
 
 def getAnnotation ( webargs ):
   """Fetch a RAMON object as HDF5 by object identifier"""
@@ -411,24 +436,27 @@ def getAnnotation ( webargs ):
       resolution = int(resstr) if resstr != '' else annoproj.getResolution()
 
     elif args[1] =='cutout':
-      dataoption = AR_CUTOUT
 
-#      # if there are no args or only resolution, it's a tight cutout request
-#      if args[2] = '' or re.match()
+      # if there are no args or only resolution, it's a tight cutout request
+      if args[2] == '' or re.match('^\d+[\/]*$', args[2]):
+        dataoption = AR_TIGHTCUTOUT
+        [resstr, sym, rest] = args[2].partition('/')
+        resolution = int(resstr) if resstr != '' else annoproj.getResolution()
+      else:
+        dataoption = AR_CUTOUT
 
-      # Perform argument processing
-      brargs = restargs.BrainRestArgs ();
-      try:
-        brargs.cutoutArgs ( args[2], dbcfg )
-      except Exception as e:
-        raise ANNError ( "Cutout error: " + e.value )
+        # Perform argument processing
+        brargs = restargs.BrainRestArgs ();
+        try:
+          brargs.cutoutArgs ( args[2], dbcfg )
+        except Exception as e:
+          raise ANNError ( "Cutout error: " + e.value )
 
-      # Extract the relevant values
-      corner = brargs.getCorner()
-      dim = brargs.getDim()
-      resolution = brargs.getResolution()
-      
-      # RBTODO process cutout arguments
+        # Extract the relevant values
+        corner = brargs.getCorner()
+        dim = brargs.getDim()
+        resolution = brargs.getResolution()
+
     else:
       raise ANNError ("Fetch identifier %s.  Error: no such data option %s " % ( annoid, args[1] ))
 
@@ -458,6 +486,30 @@ def getAnnotation ( webargs ):
     retcorner = [corner[0], corner[1], corner[2]+dbcfg.slicerange[0]]
 
     h5.addCutout ( resolution, retcorner, cb.data )
+
+  elif dataoption==AR_TIGHTCUTOUT:
+
+    #  get the voxel list
+    voxarray = np.array ( annodb.getLocations ( annoid, resolution ) )
+
+    # determin the extrema
+    xmin = min(voxarray[:,0])
+    xmax = max(voxarray[:,0])
+    ymin = min(voxarray[:,1])
+    ymax = max(voxarray[:,1])
+    zmin = min(voxarray[:,2])
+    zmax = max(voxarray[:,2])
+
+    if (xmax-xmin)*(ymax-ymin)*(zmax-zmin) >= 1024*1024*16 :
+      raise ANNError ("Cutout region is inappropriately large.  Dimension: %s,%s,%s" % (str(xmax-xmin),str(ymax-ymin),str(zmax-zmin)))
+
+    cutoutdata = np.zeros([zmax-zmin+1,ymax-ymin+1,xmax-xmin+1])
+
+    # rewrite as a list comprehension
+    for (a,b,c) in voxarray: 
+       cutoutdata[c-zmin,b-ymin,a-xmin] = annoid 
+
+    h5.addCutout ( resolution, [xmin,ymin,zmin], cutoutdata )
 
   return h5.fileReader()
 
@@ -550,9 +602,9 @@ def putAnnotation ( webargs, postdata ):
   return str(anno.annid)
 
 
-#  Return a list of annotation IDs
+#  Return a list of annotation object IDs
 #  for now by type and status
-def getAnnoIDs ( webargs, postdata=None ):
+def getAnnoObjects ( webargs, postdata=None ):
   """ Return a list of anno ids restricted by equality predicates.
       Equalities are alternating in field/value in the url.
   """
@@ -569,11 +621,10 @@ def getAnnoIDs ( webargs, postdata=None ):
   args = restargs.split('/')
   predicates = dict(zip(args[::2], args[1::2]))
 
-  annoids = annodb.getAnnoIDs ( predicates )
+  annoids = annodb.getAnnoObjects ( predicates )
 
   # We have a cutout as well
   if postdata:
-
 
   # RB this is a brute force implementation.  This probably needs to be
   #  optimized to use several different execution strategies based on the

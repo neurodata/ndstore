@@ -8,9 +8,9 @@ urlpatterns = patterns('annotate.views',
   # test 
   url(r'^$', 'index'),
   # fetch ids (with predicates)
-  url(r'(?P<webargs>^\w+/ids/[\w,/]*)$', 'getannoids'),
+  url(r'(?P<webargs>^\w+/objects/[\w,/]*)$', 'getannoobjects'),
   # get services
-  url(r'(?P<webargs>^\w+/(xy|xz|yz|hdf5|npz|id|xyanno||xzanno|yzanno)/[\w,/]+)$', 'annoget'),
+  url(r'(?P<webargs>^\w+/(xy|xz|yz|hdf5|npz|id|ids|xyanno||xzanno|yzanno)/[\w,/]+)$', 'annoget'),
   # the post services
   url(r'(?P<webargs>^\w+/(npvoxels|npdense)/[\w,/]+)$', 'annopost'),
   # HDF5 interfaces
