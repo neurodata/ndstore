@@ -55,8 +55,6 @@ class BrainRestArgs:
     """Process REST arguments for an cutout plane request"""
 
     # expecting an argument of the form /resolution/x1,x2/y1,y2/z1,z2/
-    import pdb; pdb.set_trace()
-
     try:
       [ resstr, xdimstr, ydimstr, zdimstr, rest ]  = imageargs.split('/',4)
       options = rest.split ( '/' )
