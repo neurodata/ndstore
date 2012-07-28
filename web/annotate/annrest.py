@@ -245,11 +245,7 @@ def annId ( imageargs, dbcfg, annoproj ):
 #                                                                         
 def listIds ( imageargs, dbcfg, annoproj ):
   """Return the list  of annotation identifier in a region"""
-<<<<<<< HEAD
-   # Perform argument processing                                                                                           
-=======
- # Perform argument processing                                                                                           
->>>>>>> rbdevel
+  # Perform argument processing                                                                                           
   args = restargs.BrainRestArgs ();
   args.cutoutArgs ( imageargs, dbcfg )
 
