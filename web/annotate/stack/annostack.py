@@ -11,7 +11,7 @@ import anndb
 import dbconfig
 import zindex
 
-from ann_cy import addData
+from ann_cy import addData_cy
 
 """Construct an annotation hierarchy off of a completed annotation database."""
 
@@ -100,7 +100,7 @@ class AnnoStack:
           # add the contribution of the cube in the hierarchy
           #self.addData ( cube, outdata, offset )
           # use the cython version
-          addData ( cube, outdata, offset )
+          addData_cy ( cube, outdata, offset )
 
           # Get the next value
           [key,cube]  = self.annoDB.getNextCube ()

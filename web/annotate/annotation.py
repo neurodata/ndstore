@@ -297,7 +297,6 @@ class AnnSynapse (Annotation):
       self.seeds = [int(i) for i in self.kvpairs['synapse_seeds'].split(',')]
       del ( self.kvpairs['synapse_seeds'] )
 
-    # RBTODO optimize this loop
     if self.kvpairs.get('synapse_segments'):
       for p in self.kvpairs['synapse_segments'].split(','):
         f,s = p.split(':')

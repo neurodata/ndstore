@@ -1,5 +1,6 @@
 import numpy as np
 cimport numpy as np
+import zindex
 
 DTYPE = np.uint32
 ctypedef np.uint32_t DTYPE_t
@@ -72,7 +73,7 @@ cdef int getAnnValue ( int value00, int value01, int value10, int value11 ):
 
 
 
-def addData ( cube, output, offset ):
+def addData_cy ( cube, output, offset ):
     """Add the contribution of the input data to the next level at the given offset in the output cube"""
 
     for z in range (cube.data.shape[0]):
@@ -83,19 +84,62 @@ def addData ( cube, output, offset ):
             output [ z+offset[2], y+offset[1], x+offset[0] ] = value
 
 
+#################  Annotation recoloring function   ##################
 
-def pngto32 ( np.ndarray[np.uint8_t,ndim=3] data ):
-  """Convert the numpy array of PNG channels to 32 bit integers"""
+# 10 color categorical from colorbrewer
+pcolors = ((166, 206, 227),\
+(31, 120, 180),\
+(178, 223, 138),\
+(51, 160, 44),\
+(251, 154, 153),\
+(227, 26, 28),\
+(253, 191, 111),\
+(255, 127, 0),\
+(202, 178, 214),\
+(106, 61, 154),\
+(255, 255, 153))
 
-  # I think this is yxchannel indexing 
-  cdef int xrange = data.shape[1]
-  cdef int yrange = data.shape[0]
+rgbcolor=[]
+for pc in pcolors:
+  rgbcolor.append((0xFF<<24)+(pc[0]<<16)+(pc[1]<<8)+pc[2])
 
-  cdef np.ndarray newdata = np.zeros([yrange,xrange], dtype=np.uint32) 
+def recolor_cy ( np.ndarray[np.uint32_t, ndim=2] cutout, np.ndarray[np.uint32_t, ndim=2] imagemap ):
+  """Annotation recoloring function."""
 
-  for y in range (yrange):
-    for x in range(xrange):
-      newdata[y,x] = (data[y,x,0] << 16) + (data[y,x,1] << 8) + data[y,x,2]
+  cdef int i
+  cdef int j
+  for j in range ( cutout.shape[0] ):
+    for i in range ( cutout.shape[1] ):
+      if cutout[j,i]!=0:
+        imagemap[j,i] = rgbcolor[cutout[j,i]%10]
 
-  return newdata 
-       
+
+#################  Tight cutout function ##################
+
+def assignVoxels_cy ( np.ndarray[np.uint32_t, ndim=2] voxarray, np.ndarray[np.uint32_t, ndim=3] cutout, int annoid, int xmin, int ymin, int zmin):
+  """Set the voxels specified in voxarray to annoid in the cutout data"""
+
+  cdef int a
+  cdef int b
+  cdef int c
+  for (a,b,c) in voxarray:
+    cutout[c-zmin,b-ymin,a-xmin] = annoid 
+
+
+#################  Loop  for uploading voxels function ##################
+
+def cubeLocs_cy ( np.ndarray[np.uint32_t, ndim=2] locations, cubedim ):
+
+  cubelocs = np.zeros ( [len(locations),4], dtype=np.uint32 )
+
+  #  construct a list of the voxels in each cube using arrays
+  for i in range(len(locations)):
+    loc = locations[i]
+    cubeno = loc[0]/cubedim[0], loc[1]/cubedim[1], loc[2]/cubedim[2]
+    cubekey = zindex.XYZMorton(cubeno)
+    cubelocs[i]=[cubekey,loc[0],loc[1],loc[2]]
+
+  return cubelocs
+
+
+

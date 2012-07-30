@@ -12,6 +12,8 @@ import annindex
 
 from annerror import ANNError
 
+from ann_cy import cubeLocs_cy
+
 import sys
 
 ################################################################################
@@ -385,30 +387,82 @@ class AnnotateDB:
     #  An item may exist across several cubes
     #  Convert the locations into Morton order
 
-    # dictionary of mortonkeys
-    cubelocs = defaultdict(list)
-    
     # dictionary with the index
     cubeidx = defaultdict(set)
 
-    #  list of locations inside each morton key
-    for loc in locations:
-      cubeno = loc[0]/cubedim[0], loc[1]/cubedim[1], (loc[2]-self.startslice)/cubedim[2]
-      key = zindex.XYZMorton(cubeno)
-      cubelocs[key].append([loc[0],loc[1],loc[2]-self.startslice])
+##########  RBRM keeping this code around awhile in case somthing breaks. 
+#    SLOW = False
+#    if SLOW:
+#      print "Slow path?"
+#
+#      # dictionary of mortonkeys
+#      cubelocs = defaultdict(list)
+#      
+#
+#      #  list of locations inside each morton key
+#      for loc in locations:
+#        cubeno = loc[0]/cubedim[0], loc[1]/cubedim[1], (loc[2]-self.startslice)/cubedim[2]
+#        key = zindex.XYZMorton(cubeno)
+#        cubelocs[key].append([loc[0],loc[1],loc[2]-self.startslice])
+#
+#
+#      for key, loclist in cubelocs.iteritems():
+#
+#        cube = self.getCube ( key, resolution )
+#
+#        # get a voxel offset for the cube
+#        cubeoff = zindex.MortonXYZ(key)
+#        offset = [ cubeoff[0]*cubedim[0],\
+#                   cubeoff[1]*cubedim[1],\
+#                   cubeoff[2]*cubedim[2] ]
+#
+#        # add the items
+#        exceptions = cube.annotate ( entityid, offset, loclist, conflictopt )
+#
+#        # update the sparse list of exceptions
+#        if len(exceptions) != 0:
+#          self.updateExceptions ( key, entityid, exceptions )
+#
+#        self.putCube ( key, resolution, cube)
+#
+#        # add this cube to the index
+#        cubeidx[entityid].add(key)
+#
+#      # write it to the database
+#      self.annoIdx.updateIndexDense(cubeidx,resolution)
+#
+#      return
 
-    for key, loclist in cubelocs.iteritems():
+###### this is the test code
+
+    # convert voxels z coordinate
+    locations[:,2] = locations[:,2] - 1
+
+    cubelocs = cubeLocs_cy ( np.array(locations, dtype=np.uint32), cubedim )
+
+    # sort the arrary, by cubeloc
+    cubelocs.view('u4,u4,u4,u4').sort(order=['f0'], axis=0)
+
+    # get the nonzero element offsets 
+    nzdiff = np.r_[np.nonzero(np.diff(cubelocs[:,0]))]
+    # then turn into a set of ranges of the same element
+    listoffsets = np.r_[0, nzdiff + 1, len(cubelocs)]
+
+    for i in range(len(listoffsets)-1):
+
+      # grab the list of voxels for the first cube
+      voxlist = cubelocs[listoffsets[i]:listoffsets[i+1],:][:,1:4]
+      #  and the morton key
+      key = cubelocs[listoffsets[i],0]
 
       cube = self.getCube ( key, resolution )
 
       # get a voxel offset for the cube
       cubeoff = zindex.MortonXYZ(key)
-      offset = [ cubeoff[0]*cubedim[0],\
-                 cubeoff[1]*cubedim[1],\
-                 cubeoff[2]*cubedim[2] ]
+      offset = [cubeoff[0]*cubedim[0],cubeoff[1]*cubedim[1],cubeoff[2]*cubedim[2]]
 
       # add the items
-      exceptions = cube.annotate ( entityid, offset, loclist, conflictopt )
+      exceptions = cube.annotate ( entityid, offset, voxlist, conflictopt )
 
       # update the sparse list of exceptions
       if len(exceptions) != 0:
@@ -421,6 +475,8 @@ class AnnotateDB:
 
     # write it to the database
     self.annoIdx.updateIndexDense(cubeidx,resolution)
+
+
 
   #
   # annotateDense
@@ -640,8 +696,9 @@ class AnnotateDB:
     """Fetch a volume cutout with only the specified annotation"""
 
     cube = self.cutout( corner,dim,resolution)
-    vec_func = np.vectorize ( lambda x: 0 if x != entityid else entityid ) 
+    vec_func = np.vectorize ( lambda x: np.uint32(0) if x != entityid else np.uint32(entityid)) 
     cube.data = vec_func ( cube.data )
+    print "Want an np.uint32 here", type(cube.data[0,0,0])
     return cube
 
   #
@@ -673,6 +730,7 @@ class AnnotateDB:
 #                               it.multi_index[0]+ cubeoff[2]*cubedim[2] + self.startslice ])
 #          
 #        it.iternext()
+# RBRM
 
     # alternate (faster) implementation
     #  use np.offsets and zip to reassmeble list.

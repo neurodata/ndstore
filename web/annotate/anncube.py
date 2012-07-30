@@ -9,6 +9,7 @@ import dbconfig
 import zindex
 
 from ann_cy import annotate_cy
+from ann_cy import recolor_cy
 
 #
 #  AnnotateCube: manipulate the in-memory data representation of the 3-d cube of data
@@ -136,13 +137,10 @@ class AnnotateCube:
   def xySlice ( self, fileobj ):
 
     zdim,ydim,xdim = self.data.shape
-
     imagemap = np.zeros ( [ ydim, xdim ], dtype=np.uint32 )
 
-    # recolor the pixels for visualization
-    vecfunc_recolor = np.vectorize ( lambda x:  np.uint32(0) if x == 0 else np.uint32(0x80000000+(x&0xFF)))
-    imagemap = vecfunc_recolor ( self.data[:,:,:] )
-    imagemap = imagemap.reshape ( ydim, xdim )
+    # false color redrawing of the region
+    recolor_cy ( self.data.reshape((imagemap.shape[0],imagemap.shape[1])), imagemap )
 
     outimage = Image.frombuffer ( 'RGBA', (xdim,ydim), imagemap, 'raw', 'RGBA', 0, 1 )
     outimage.save ( fileobj, "PNG" )
@@ -155,10 +153,8 @@ class AnnotateCube:
     zdim,ydim,xdim = self.data.shape
     imagemap = np.zeros ( [ zdim, xdim ], dtype=np.uint32 )
 
-    # recolor the pixels for visualization
-    vecfunc_recolor = np.vectorize ( lambda x:  np.uint32(0) if x == np.uint32(0) else np.uint32(0x80000000+(x&0xFF)))
-    imagemap = vecfunc_recolor ( self.data[:,:,:] )
-    imagemap = imagemap.reshape ( zdim, xdim )
+    # false color redrawing of the region
+    recolor_cy ( self.data.reshape((imagemap.shape[0],imagemap.shape[1])), imagemap )
 
     outimage = Image.frombuffer ( 'RGBA', (xdim,zdim), imagemap, 'raw', 'RGBA', 0, 1 )
     newimage = outimage.resize ( [xdim, int(zdim*scale)] )
@@ -172,10 +168,8 @@ class AnnotateCube:
     zdim,ydim,xdim = self.data.shape
     imagemap = np.zeros ( [ zdim, ydim ], dtype=np.uint32 )
 
-    # recolor the pixels for visualization
-    vecfunc_recolor = np.vectorize ( lambda x:  np.uint32(0) if x == 0 else np.uint32(0x80000000+(x&0xFF)))
-    imagemap = vecfunc_recolor ( self.data[:,:,:] )
-    imagemap = imagemap.reshape ( zdim, ydim )
+    # false color redrawing of the region
+    recolor_cy ( self.data.reshape((imagemap.shape[0],imagemap.shape[1])), imagemap )
 
     outimage = Image.frombuffer ( 'RGBA', (ydim,zdim), imagemap, 'raw', 'RGBA', 0, 1 )
     newimage = outimage.resize ( [ydim, int(zdim*scale)] )

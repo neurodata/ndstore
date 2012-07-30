@@ -16,6 +16,7 @@ import dbconfig
 import annproj
 import h5ann
 
+from ann_cy import assignVoxels_cy
 from annerror import ANNError
 from pprint import pprint
 
@@ -490,7 +491,7 @@ def getAnnotation ( webargs ):
   elif dataoption==AR_TIGHTCUTOUT:
 
     #  get the voxel list
-    voxarray = np.array ( annodb.getLocations ( annoid, resolution ) )
+    voxarray = np.array ( annodb.getLocations ( annoid, resolution ), dtype=np.uint32 )
 
     # determin the extrema
     xmin = min(voxarray[:,0])
@@ -503,11 +504,12 @@ def getAnnotation ( webargs ):
     if (xmax-xmin)*(ymax-ymin)*(zmax-zmin) >= 1024*1024*16 :
       raise ANNError ("Cutout region is inappropriately large.  Dimension: %s,%s,%s" % (str(xmax-xmin),str(ymax-ymin),str(zmax-zmin)))
 
-    cutoutdata = np.zeros([zmax-zmin+1,ymax-ymin+1,xmax-xmin+1])
+    cutoutdata = np.zeros([zmax-zmin+1,ymax-ymin+1,xmax-xmin+1], dtype=np.uint32)
 
-    # rewrite as a list comprehension
-    for (a,b,c) in voxarray: 
-       cutoutdata[c-zmin,b-ymin,a-xmin] = annoid 
+    # cython optimized: set the cutoutdata values based on the voxarray
+    assignVoxels_cy ( voxarray, cutoutdata, annoid, xmin, ymin, zmin )
+#    for (a,b,c) in voxarray: 
+#       cutoutdata[c-zmin,b-ymin,a-xmin] = annoid 
 
     h5.addCutout ( resolution, [xmin,ymin,zmin], cutoutdata )
 
