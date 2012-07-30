@@ -672,36 +672,7 @@ class AnnotateDB:
 
     # get the size of the image and cube
     resolution = int(res)
-    
-<<<<<<< HEAD
 
-#    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.dbcfg.cubedim [ resolution ]
-#
-#    # get the index for the data                                                 
-#    curIndex = self.annoIdx.getIndex(entityid,resolution)
-#
-#    #Retrieve the voxel list from the index
-#    voxlist= []
-#    for key in curIndex:
-#      cube = self.getCube(key,resolution)
-#            
-#      cubeoff = zindex.MortonXYZ(key)
-#      it = np.nditer ( cube.data, flags=['multi_index'])
-#      
-#      while not it.finished:
-#        if (it[0] == entityid):
-#          voxlist.append ( [ it.multi_index[2]+cubeoff[0]*cubedim[0],\
-#                               it.multi_index[1]+ cubeoff[1]*cubedim[1],\
-#                               it.multi_index[0]+ cubeoff[2]*cubedim[2] + self.startslice ])
-#          
-#        it.iternext()
-# RBRM
-
-    # alternate (faster) implementation
-    #  use np.offsets and zip to reassmeble list.
-
-=======
->>>>>>> b736b8e41923987ca466da4c5922c03c7202a47b
     voxlist = []
 
     zidxs = self.annoIdx.getIndex(entityid,resolution)
