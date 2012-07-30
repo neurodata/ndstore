@@ -59,11 +59,13 @@ class Annotation:
   def store ( self, annodb, annotype=ANNO_ANNOTATION ):
     """Store the annotation to the annotations database"""
 
+    cursor = annodb.conn.cursor()
+
     sql = "INSERT INTO %s VALUES ( %s, %s, %s, %s )"\
             % ( anno_dbtables['annotation'], self.annid, annotype, self.confidence, self.status )
 
     try:
-      annodb.wcursor.execute ( sql )
+      cursor.execute(sql)
     except MySQLdb.Error, e:
       print "Error inserting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise ANNError ( "Error inserting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
@@ -77,10 +79,12 @@ class Annotation:
       sql = "INSERT INTO %s VALUES %s" % ( anno_dbtables['kvpairs'], kvclause )
 
       try:
-        annodb.wcursor.execute ( sql )
+        cursor.execute(sql)
       except MySQLdb.Error, e:
         print "Error inserting kvpairs %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
         raise ANNError ( "Error inserting kvpairs: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    cursor.close()
 
 
   def update ( self, annodb ):
@@ -92,11 +96,13 @@ class Annotation:
   def updateBase ( self, annotype, annodb ):
     """Update the annotation in the annotations database"""
 
+    cursor = annodb.conn.cursor()
+
     sql = "UPDATE %s SET type=%s, confidence=%s, status=%s WHERE annoid = %s"\
             % ( anno_dbtables['annotation'], annotype, self.confidence, self.status, self.annid)
 
     try:
-      annodb.wcursor.execute ( sql )
+      cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error updating annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise ANNError ( "Error updating annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
@@ -108,12 +114,12 @@ class Annotation:
     # Get the old kvpairs and identify new kvpairs
     sql = "SELECT * FROM %s WHERE annoid = %s" % ( anno_dbtables['kvpairs'], self.annid )
     try:
-      annodb.wcursor.execute ( sql )
+      cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error retrieving kvpairs %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise ANNError ( "Error retrieving kvpairs: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
-    kvresult = annodb.wcursor.fetchall()
+    kvresult = cursor.fetchall()
 
     kvupdate = {}
 
@@ -130,7 +136,7 @@ class Annotation:
     if len(kvupdate) != 0:
       for (k,v) in kvupdate.iteritems():
         sql = "UPDATE %s SET kv_value='%s' WHERE annoid=%s AND kv_key='%s'" % ( anno_dbtables['kvpairs'], v, self.annid, k )
-        annodb.wcursor.execute ( sql )
+        cursor.execute ( sql )
         
     # insert new kv pairs
     if len(self.kvpairs) != 0:
@@ -138,15 +144,18 @@ class Annotation:
       sql = "INSERT INTO %s VALUES %s" % ( anno_dbtables['kvpairs'], kvclause )
 
       try:
-        annodb.wcursor.execute ( sql )
+        cursor.execute ( sql )
       except MySQLdb.Error, e:
         print "Error inserting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
         raise ANNError ( "Error inserting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
+    cursor.close()
 
 
   def delete ( self, annodb ):
     """Delete the annotation from the database"""
+
+    cursor = annodb.conn.cursor()
 
     sql = "DELETE FROM %s WHERE annoid = %s;"\
             % ( anno_dbtables['annotation'], self.annid ) 
@@ -154,34 +163,38 @@ class Annotation:
     sql += "DELETE FROM %s WHERE annoid = %s" % ( anno_dbtables['kvpairs'], self.annid )
 
     try:
-      annodb.wcursor.execute ( sql )
+      cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error deleting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise ANNError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    cursor.close()
 
 
   def retrieve ( self, annid, annodb ):
     """Retrieve the annotation by annid"""
 
+    cursor = annodb.conn.cursor()
+
     sql = "SELECT * FROM %s WHERE annoid = %s" % ( anno_dbtables['annotation'], annid )
 
     try:
-      annodb.wcursor.execute ( sql )
+      cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error retrieving annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise ANNError ( "Error retrieving annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
-    ( self.annid, annotype, self.confidence, self.status ) = annodb.wcursor.fetchone()
+    ( self.annid, annotype, self.confidence, self.status ) = cursor.fetchone()
 
     sql = "SELECT * FROM %s WHERE annoid = %s" % ( anno_dbtables['kvpairs'], annid )
 
     try:
-      annodb.wcursor.execute ( sql )
+      cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error retrieving kvpairs %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise ANNError ( "Error retrieving kvpairs: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
-    kvpairs = annodb.wcursor.fetchall()
+    kvpairs = cursor.fetchall()
     for kv in kvpairs:
       self.kvpairs[kv[1]] = kv[2]
 
@@ -189,6 +202,8 @@ class Annotation:
     if self.kvpairs.get('ann_author'):
       self.author = self.kvpairs['ann_author']
       del ( self.kvpairs['ann_author'] )
+
+    cursor.close()
 
     return annotype
 
@@ -213,11 +228,13 @@ class AnnSynapse (Annotation):
   def store ( self, annodb ):
     """Store the synapse to the annotations databae"""
 
+    cursor = annodb.conn.cursor()
+
     sql = "INSERT INTO %s VALUES ( %s, %s, %s )"\
             % ( anno_dbtables['synapse'], self.annid, self.synapse_type, self.weight )
 
     try:
-      annodb.wcursor.execute ( sql )
+      cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error inserting synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise ANNError ( "Error inserting synapse: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
@@ -230,19 +247,24 @@ class AnnSynapse (Annotation):
     if self.segments != []:
       self.kvpairs['synapse_segments'] = ','.join([str(i) + ':' + str(j) for i,j in self.segments])
 
+    cursor.close()
+
     # and call store on the base classs
     Annotation.store ( self, annodb, ANNO_SYNAPSE)
+
 
 
 
   def update ( self, annodb ):
     """Update the synapse in the annotations databae"""
 
+    cursor = annodb.conn.cursor()
+
     sql = "UPDATE %s SET synapse_type=%s, weight=%s WHERE annoid=%s "\
             % (anno_dbtables['synapse'], self.synapse_type, self.weight, self.annid)
 
     try:
-      annodb.wcursor.execute ( sql )
+      cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error updating synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise ANNError ( "Error updating synapse: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
@@ -253,12 +275,16 @@ class AnnSynapse (Annotation):
     # synapse_segments: pack into a kv pair
     self.kvpairs['synapse_segments'] = ','.join([str(i) + ':' + str(j) for i,j in self.segments])
 
+    cursor.close()
+
     # and call update on the base classs
     Annotation.updateBase ( self, ANNO_SYNAPSE, annodb )
 
 
   def retrieve ( self, annid, annodb ):
     """Retrieve the synapse by annid"""
+
+    cursor = annodb.conn.cursor()
 
     # Call the base class retrieve
     annotype = Annotation.retrieve ( self, annid, annodb )
@@ -270,12 +296,12 @@ class AnnSynapse (Annotation):
     sql = "SELECT synapse_type, weight FROM %s WHERE annoid = %s" % ( anno_dbtables['synapse'], annid )
 
     try:
-      annodb.wcursor.execute ( sql )
+      cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error retrieving synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise ANNError ( "Error retrieving synapse: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
-    ( self.synapse_type, self.weight ) = annodb.wcursor.fetchone()
+    ( self.synapse_type, self.weight ) = cursor.fetchone()
 
     if self.kvpairs.get('synapse_seeds'):
       self.seeds = [int(i) for i in self.kvpairs['synapse_seeds'].split(',')]
@@ -286,6 +312,8 @@ class AnnSynapse (Annotation):
         f,s = p.split(':')
         self.segments.append([int(f),int(s)])
       del ( self.kvpairs['synapse_segments'] )
+
+    cursor.close()
     
 
 ###############  Seed  ##################
@@ -305,7 +333,9 @@ class AnnSeed (Annotation):
     Annotation.__init__(self)
 
   def store ( self, annodb ):
-    """Store the seed to the annotations databae"""
+    """Store thwe seed to the annotations databae"""
+
+    cursor = annodb.conn.cursor()
 
     if self.position == []:
       storepos = [ 'NULL', 'NULL', 'NULL' ]
@@ -316,7 +346,7 @@ class AnnSeed (Annotation):
             % ( anno_dbtables['seed'], self.annid, self.parent, self.source, self.cubelocation, storepos[0], storepos[1], storepos[2])
 
     try:
-      annodb.wcursor.execute ( sql )
+      cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error inserting seed %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise ANNError ( "Error inserting seed : %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
@@ -328,6 +358,8 @@ class AnnSeed (Annotation):
   def update ( self, annodb ):
     """Update the seed to the annotations databae"""
 
+    cursor = annodb.conn.cursor()
+
     if self.position == []:
       storepos = [ 'NULL', 'NULL', 'NULL' ]
     else:
@@ -337,10 +369,12 @@ class AnnSeed (Annotation):
             % ( anno_dbtables['seed'], self.parent, self.source, self.cubelocation, storepos[0], storepos[1], storepos[2], self.annid)
 
     try:
-      annodb.wcursor.execute ( sql )
+      cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error inserting seed %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise ANNError ( "Error inserting seed: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    cursor.close()
 
     # and call update on the base classs
     Annotation.updateBase ( self, ANNO_SEED, annodb )
@@ -349,20 +383,24 @@ class AnnSeed (Annotation):
   def retrieve ( self, annid, annodb ):
     """Retrieve the seed by annid"""
 
+    cursor = annodb.conn.cursor()
+
     # Call the base class retrieve
     Annotation.retrieve ( self, annid, annodb )
 
     sql = "SELECT parentid, sourceid, cube_location, positionx, positiony, positionz FROM %s WHERE annoid = %s" % ( anno_dbtables['seed'], annid )
       
     try:
-      annodb.wcursor.execute ( sql )
+      cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error retrieving seed %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise ANNError ( "Error retrieving seed: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # need to initialize position to prevent index error
     self.position = [0,0,0]
-    (self.parent, self.source, self.cubelocation, self.position[0], self.position[1], self.position[2]) = annodb.wcursor.fetchone()
+    (self.parent, self.source, self.cubelocation, self.position[0], self.position[1], self.position[2]) = cursor.fetchone()
+
+    cursor.close()
 
 
 ###############  Segment  ##################
@@ -384,11 +422,13 @@ class AnnSegment (Annotation):
   def store ( self, annodb ):
     """Store the synapse to the annotations databae"""
 
+    cursor = annodb.conn.cursor()
+
     sql = "INSERT INTO %s VALUES ( %s, %s, %s )"\
             % ( anno_dbtables['segment'], self.annid, self.segmentclass, self.parentseed )
 
     try:
-      annodb.wcursor.execute ( sql )
+      cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error inserting segment %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise ANNError ( "Error inserting segment: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
@@ -401,6 +441,8 @@ class AnnSegment (Annotation):
     if self.organelles != []:
       self.kvpairs['organelles'] = ','.join([str(i) for i in self.organelles])
 
+    cursor.close()
+
     # and call store on the base classs
     Annotation.store ( self, annodb, ANNO_SEGMENT)
 
@@ -408,12 +450,13 @@ class AnnSegment (Annotation):
   def update ( self, annodb ):
     """Update the synapse in the annotations database"""
 
+    cursor = annodb.conn.cursor()
 
     sql = "UPDATE %s SET segmentclass=%s, parentseed=%s WHERE annoid=%s "\
             % (anno_dbtables['segment'], self.segmentclass, self.parentseed, self.annid)
 
     try:
-      annodb.wcursor.execute ( sql )
+      cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error updating segment %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise ANNError ( "Error updating segment: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
@@ -426,6 +469,7 @@ class AnnSegment (Annotation):
     if self.organelles != []:
       self.kvpairs['organelles'] = ','.join([str(i) for i in self.organelles])
 
+    cursor.close()
 
     # and call update on the base classs
     Annotation.updateBase ( self, ANNO_SEGMENT, annodb )
@@ -433,6 +477,8 @@ class AnnSegment (Annotation):
 
   def retrieve ( self, annid, annodb ):
     """Retrieve the synapse by annid"""
+
+    cursor = annodb.conn.cursor()
 
     # Call the base class retrieve
     annotype = Annotation.retrieve ( self, annid, annodb )
@@ -444,12 +490,12 @@ class AnnSegment (Annotation):
     sql = "SELECT segmentclass, parentseed FROM %s WHERE annoid = %s" % ( anno_dbtables['segment'], annid )
 
     try:
-      annodb.wcursor.execute ( sql )
+      cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error retrieving synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise ANNError ( "Error retrieving segment: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
-    ( self.segmentclass, self.parentseed ) = annodb.wcursor.fetchone()
+    ( self.segmentclass, self.parentseed ) = cursor.fetchone()
 
     if self.kvpairs.get('synapses'):
       self.synapses = [int(i) for i in self.kvpairs['synapses'].split(',')]
@@ -458,6 +504,8 @@ class AnnSegment (Annotation):
     if self.kvpairs.get('organelles'):
       self.organelles = [int(i) for i in self.kvpairs['organelles'].split(',')]
       del ( self.kvpairs['organelles'] )
+
+    cursor.close()
 
 
 ###############  Neuron  ##################
@@ -475,6 +523,8 @@ class AnnNeuron (Annotation):
 
   def store ( self, annodb ):
     """Store the synapse to the annotations databae"""
+
+    cursor = annodb.conn.cursor()
 
     # segments: pack into a kv pair
     self.kvpairs['segments'] = ','.join([str(i) for i in self.segments])
@@ -528,6 +578,8 @@ class AnnOrganelle (Annotation):
   def store ( self, annodb ):
     """Store the synapse to the annotations databae"""
 
+    cursor = annodb.conn.cursor()
+
     if self.centroid == None:
       storecentroid = [ 'NULL', 'NULL', 'NULL' ]
     else:
@@ -538,7 +590,7 @@ class AnnOrganelle (Annotation):
               storecentroid[0], storecentroid[1], storecentroid[2] )
 
     try:
-      annodb.wcursor.execute ( sql )
+      cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error inserting organelle %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise ANNError ( "Error inserting organelle: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
@@ -547,6 +599,8 @@ class AnnOrganelle (Annotation):
     if self.seeds != []:
       self.kvpairs['seeds'] = ','.join([str(i) for i in self.seeds])
 
+    cursor.close()
+
     # and call store on the base classs
     Annotation.store ( self, annodb, ANNO_ORGANELLE)
 
@@ -554,16 +608,18 @@ class AnnOrganelle (Annotation):
   def update ( self, annodb ):
     """Update the organelle in the annotations database"""
 
+    cursor = annodb.conn.cursor()
+
     if self.centroid == None:
       storecentroid = [ 'NULL', 'NULL', 'NULL' ]
     else:
       storecentroid = self.centroid
 
     sql = "UPDATE %s SET organelleclass=%s, parentseed=%s, centroidx=%s, centroidy=%s, centroidz=%s WHERE annoid=%s "\
-            % (anno_dbtables['segment'], self.segmentclass, self.parentseed, storecentroid[1], storecentroid[2], storecentroid[3], self.annid)
+            % (anno_dbtables['organelle'], self.organelleclass, self.parentseed, storecentroid[0], storecentroid[1], storecentroid[2], self.annid)
 
     try:
-      annodb.wcursor.execute ( sql )
+      cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error updating organelle %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise ANNError ( "Error updating organelle: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
@@ -572,12 +628,16 @@ class AnnOrganelle (Annotation):
     if self.seeds != []:
       self.kvpairs['seeds'] = ','.join([str(i) for i in self.seeds])
 
+    cursor.close()
+
     # and call update on the base classs
-    Annotation.updateBase ( self, ANNO_SEGMENT, annodb )
+    Annotation.updateBase ( self, ANNO_ORGANELLE, annodb )
 
 
   def retrieve ( self, annid, annodb ):
     """Retrieve the organelle by annid"""
+
+    cursor = annodb.conn.cursor()
 
     # Call the base class retrieve
     annotype = Annotation.retrieve ( self, annid, annodb )
@@ -589,16 +649,18 @@ class AnnOrganelle (Annotation):
     sql = "SELECT organelleclass, parentseed, centroidx, centroidy, centroidz FROM %s WHERE annoid = %s" % ( anno_dbtables['organelle'], annid )
 
     try:
-      annodb.wcursor.execute ( sql )
+      cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error retrieving organelle %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise ANNError ( "Error retrieving organelle: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
-    ( self.organelleclass, self.parentseed, self.centroid[0], self.centroid[1], self.centroid[2] ) = annodb.wcursor.fetchone()
+    ( self.organelleclass, self.parentseed, self.centroid[0], self.centroid[1], self.centroid[2] ) = cursor.fetchone()
 
     if self.kvpairs.get('seeds'):
       self.seeds = [int(i) for i in self.kvpairs['seeds'].split(',')]
       del ( self.kvpairs['seeds'] )
+
+    cursor.close()
 
 
 
@@ -610,6 +672,8 @@ class AnnOrganelle (Annotation):
 #
 def getAnnotation ( annid, annodb ): 
   """Return an annotation object by identifier"""
+
+  cursor = annodb.conn.cursor()
 
   # First, what type is it.  Look at the annotation table.
   sql = "SELECT type FROM %s WHERE annoid = %s" % ( anno_dbtables['annotation'], annid )

@@ -248,12 +248,8 @@ def annId ( imageargs, dbcfg, annoproj ):
 #                                                                         
 def listIds ( imageargs, dbcfg, annoproj ):
   """Return the list  of annotation identifier in a region"""
-<<<<<<< HEAD
-  # Perform argument processing                                                                                           
-=======
 
   # Perform argument processing
->>>>>>> b736b8e41923987ca466da4c5922c03c7202a47b
   args = restargs.BrainRestArgs ();
   args.cutoutArgs ( imageargs, dbcfg )
 
@@ -615,8 +611,8 @@ def putAnnotation ( webargs, postdata ):
       pass
 
 #    import pdb; pdb.set_trace()
-    print "Everything is awesome.  Let's test the exception."
-    raise Exception("test")
+#    print "Everything is awesome.  Let's test the exception."
+#    raise Exception("test")
 
   # rollback if you catch an error
   except:

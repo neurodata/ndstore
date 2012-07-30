@@ -44,8 +44,6 @@ class AnnotateDB:
     except:
       raise ANNError ( dbinfo )
       
-    self.wcursor = self.conn.cursor()
-
     # How many slices?
     [ self.startslice, endslice ] = self.dbcfg.slicerange
     self.slices = endslice - self.startslice + 1 
@@ -64,7 +62,6 @@ class AnnotateDB:
 
   def __del__ ( self ):
     """Close the connection"""
-    self.wcursor.close()
     self.conn.close()
 
 
@@ -123,7 +120,7 @@ class AnnotateDB:
     # increment and update query
     sql = "INSERT INTO " + str(self.annoproj.getIDsTbl()) + " VALUES ( " + str(identifier) + " ) "
     try:
-      self.wcursor.execute ( sql )
+      cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise ANNError ( "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
@@ -141,13 +138,17 @@ class AnnotateDB:
   def setID ( self, annoid ):
     """Set a user specified identifier"""
 
+    cursor = self.conn.cursor()
+
     # try the insert, get ane exception if it doesn't work
     sql = "INSERT INTO " + str(self.annoproj.getIDsTbl()) + " VALUES ( " + str(annoid) + " ) "
     try:
-      self.wcursor.execute ( sql )
+      cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise ANNError ( "Failed to set identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    cursor.close()
 
     return annoid
 
@@ -194,6 +195,8 @@ class AnnotateDB:
   def putCube ( self, key, resolution, cube ):
     """Store a cube from the annotation database"""
 
+    cursor = self.conn.cursor()
+
     # compress the cube
     npz = cube.toNPZ ()
 
@@ -202,7 +205,7 @@ class AnnotateDB:
 
       sql = "INSERT INTO " + self.annoproj.getTable(resolution) +  "(zindex, cube) VALUES (%s, %s)"
       try:
-        self.wcursor.execute ( sql, (key,npz))
+        cursor.execute ( sql, (key,npz))
       except MySQLdb.Error, e:
         print "Error inserting cube %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
         raise ANNError ( "Error inserting cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
@@ -211,10 +214,12 @@ class AnnotateDB:
 
       sql = "UPDATE " + self.annoproj.getTable(resolution) + " SET cube=(%s) WHERE zindex=" + str(key)
       try:
-        self.wcursor.execute ( sql, (npz))
+        cursor.execute ( sql, (npz))
       except MySQLdb.Error, e:
         print "Error updating cube %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
         raise ANNError ( "Error updating data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    cursor.close()
 
 
   #
@@ -302,6 +307,8 @@ class AnnotateDB:
 
     assert (0) # test/fix for resolutions
 
+    cursor = self.conn.cursor()
+
     curexlist = self.getExceptions( key, entityid ) 
 
     print ("Current exceptions", curexlist )
@@ -316,7 +323,7 @@ class AnnotateDB:
         fileobj = cStringIO.StringIO ()
         np.save ( fileobj, exceptions )
         print sql, key, entityid 
-        self.wcursor.execute ( sql, (key, entityid, fileobj.getvalue()))
+        cursor.execute ( sql, (key, entityid, fileobj.getvalue()))
       except MySQLdb.Error, e:
         print "Error inserting exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
         raise ANNError ( "Error inserting exceptions: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
@@ -333,7 +340,7 @@ class AnnotateDB:
       try:
         fileobj = cStringIO.StringIO ()
         np.save ( fileobj, newexlist )
-        self.wcursor.execute ( sql, (fileobj.getvalue()))
+        cursor.execute ( sql, (fileobj.getvalue()))
       except MySQLdb.Error, e:
         print "Error updating exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
         assert 0
@@ -584,7 +591,6 @@ class AnnotateDB:
       # add it to the output cube
       outcube.addData ( incube, offset ) 
 
-
     # need to trim down the array to size
     #  only if the dimensions are not the same
     if dim[0] % xcubedim  == 0 and\
@@ -599,6 +605,7 @@ class AnnotateDB:
                       corner[1]%ycubedim,dim[1],\
                       corner[2]%zcubedim,dim[2] )
 
+    cursor.close()
     return outcube
 
 
@@ -642,7 +649,6 @@ class AnnotateDB:
       retval = cube.getVoxel ( xyzoffset )
 
     cursor.close()
-     
     return retval
 
 
@@ -758,5 +764,7 @@ class AnnotateDB:
       raise ANNError ( "Error retrieving ids: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     annoids = cursor.fetchall()
+
+    cursor.close()
     return np.array(annoids)
 
