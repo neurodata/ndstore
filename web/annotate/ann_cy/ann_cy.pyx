@@ -69,8 +69,6 @@ cdef int getAnnValue ( int value00, int value01, int value10, int value11 ):
 
   return value
 
-
-
 def addData_cy ( cube, output, offset ):
     """Add the contribution of the input data to the next level at the given offset in the output cube"""
 

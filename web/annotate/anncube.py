@@ -181,14 +181,12 @@ class AnnotateCube:
   def overwrite ( self, annodata ):
     """Get's a dense voxel region and overwrites all non-zero values"""
 
-    assert ( self.data.shape == annodata.shape )
     vector_func = np.vectorize ( lambda a,b: b if b!=0 else a ) 
     self.data = vector_func ( self.data, annodata ) 
 
   def preserve ( self, annodata ):
     """Get's a dense voxel region and overwrites all non-zero values"""
 
-    assert ( self.data.shape == annodata.shape )
     vector_func = np.vectorize ( lambda a,b: b if b!=0 and a==0 else a ) 
     self.data = vector_func ( self.data, annodata ) 
 

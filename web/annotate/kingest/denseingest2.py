@@ -9,7 +9,7 @@ import cStringIO
 import collections
 import zlib
 
-import ann_cy
+import kanno_opt
 
 #
 #  ingest the PNG files into the database
@@ -24,10 +24,10 @@ import ann_cy
 _xtilesz = 10748
 _ytilesz = 12896
 #  Haven't done from 0-1088 
-_startslice = 0000
-_endslice = 1088
-_prefix = 'output71212_s'
-_batchsz = 8
+_startslice = 1200
+_endslice = 1200
+_prefix = 'ForAlyssa62812_export_s'
+_batchsz = 1
 
 # Shape that we want to ingest into the database.
 #  This should be aligned to the database cube size to perform best.
@@ -57,7 +57,7 @@ def main():
             tileimage = Image.open ( filenm, 'r' )
             imgdata = np.asarray ( tileimage )
 
-            newdata[b,:,:]  = ann_cy.pngto32 ( imgdata )
+            newdata[b,:,:]  = kanno_opt.pngto32 ( imgdata )
 
             # the last z offset that we ingest, if the batch ends before _batchsz
             endz = b
@@ -82,15 +82,13 @@ def main():
               # check if there's anything to store
               if ( np.count_nonzero(data) != 0 ):
 
-                url = 'http://127.0.0.1/EM/annotate/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( result.token, result.resolution, x, min(xhigh,x+_xingestsz), y, min(yhigh,y+_yingestsz), z, min(zhigh,z+_zingestsz ))
+                url = 'http://localhost:8000/annotate/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( result.token, result.resolution, x, min(xhigh,x+_xingestsz), y, min(yhigh,y+_yingestsz), z, min(zhigh,z+_zingestsz ))
 
-                print url
+                print url, data.shape, np.nonzero(data)
 
                 # Encode the voxelist an pickle
                 fileobj = cStringIO.StringIO ()
-                np.save ( fileobj, newdata[ z-zlow:min(zhigh,z+_zingestsz)-zlow,\
-                                            y-ylow:min(yhigh,y+_yingestsz)-ylow,\
-                                            x-xlow:min(xhigh,x+_xingestsz)-xlow] )
+                np.save ( fileobj, data )
 
                 cdz = zlib.compress (fileobj.getvalue())
 

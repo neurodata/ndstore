@@ -378,6 +378,7 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
   except:
     annoDB.rollback()
     
+  print "Calling commit"
   annoDB.commit()
 
   return str(entityid)

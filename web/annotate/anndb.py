@@ -204,6 +204,7 @@ class AnnotateDB:
     if cube.fromZeros ():
 
       sql = "INSERT INTO " + self.annoproj.getTable(resolution) +  "(zindex, cube) VALUES (%s, %s)"
+
       try:
         cursor.execute ( sql, (key,npz))
       except MySQLdb.Error, e:
@@ -219,6 +220,8 @@ class AnnotateDB:
         print "Error updating cube %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
         raise ANNError ( "Error updating data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
+    #RBTODO shouldn't need this commit, but somehow we do.
+    self.conn.commit()
     cursor.close()
 
 
@@ -471,6 +474,7 @@ class AnnotateDB:
 
     databuffer = np.zeros ([znumcubes*zcubedim, ynumcubes*ycubedim, xnumcubes*xcubedim], dtype=np.uint32 )
     databuffer [ zoffset:zoffset+dim[2], yoffset:yoffset+dim[1], xoffset:xoffset+dim[0] ] = annodata 
+
     for z in range(znumcubes):
       for y in range(ynumcubes):
         for x in range(xnumcubes):
@@ -482,21 +486,32 @@ class AnnotateDB:
             cube.overwrite ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
           elif conflictopt == 'P':
             cube.preserve ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
+#          elif conflictopt == 'E':
+#           exceptionids = cube.exception ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
+#           if excepttrue 
           else:
             print "Unsupported conflict option.  FIX ME"
             assert 0
+
+#          if len(np.nonzero(cube.data)[0]) == 0:
+#            print "Writing no data", key
+#          else:
+#            print "Found data", key
 
           self.putCube ( key, resolution, cube)
 
           #update the index for the cube
           # get the unique elements that are being added to the data
           uniqueels = np.unique ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
-          # remove the 0 element
           for el in uniqueels:
             index_dict[el].add(key) 
 
           # remove 0 no reason to index that
           del(index_dict[0])
+
+          # And index the exceptions
+#          if exceptionids != []:
+#            [ index_dict[e].add(key) for e in exceptionids ]  
 
     # Update all indexes
     self.annoIdx.updateIndexDense(index_dict,resolution)
