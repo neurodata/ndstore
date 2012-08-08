@@ -48,7 +48,7 @@ class AnnotateDB:
     [ self.startslice, endslice ] = self.dbcfg.slicerange
     self.slices = endslice - self.startslice + 1 
 
-    # PYTODO create annidx object
+    # create annidx object
     self.annoIdx = annindex.AnnotateIndex (dbconf,annoproj)
 
 
@@ -275,13 +275,10 @@ class AnnotateDB:
   def getExceptions ( self, key, resolution, entityid ):
     """Load a the list of excpetions for this cube"""
 
-    assert (0) # test/fix for resolutions
-
     cursor = self.conn.cursor ()
 
     # get the block from the database
-    sql = "SELECT exlist FROM " + self.except_tbl + " WHERE zindex = " + str(key) + " AND id = " + str(entityid)
-    print sql 
+    sql = "SELECT exlist FROM %s where zindex=%s AND id=%s" % ( 'exc'+str(resolution), key, entityid )
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
@@ -296,8 +293,8 @@ class AnnotateDB:
     if ( row == None ):
       return []
     else: 
-      fobj = cStringIO.StringIO ( row[0] )
-      return np.load ( fobj )
+      fobj = cStringIO.StringIO ( zlib.decompress(row[0]) )
+      return np.load (fobj)
 
   #
   # updateExceptions
@@ -305,42 +302,35 @@ class AnnotateDB:
   def updateExceptions ( self, key, resolution, entityid, exceptions ):
     """Store a list of exceptions"""
 
-    assert (0) # test/fix for resolutions
+    curexlist = self.getExceptions( key, resolution, entityid ) 
 
+    table = 'exc'+str(resolution)
     cursor = self.conn.cursor()
-
-    curexlist = self.getExceptions( key, entityid ) 
-
-    print ("Current exceptions", curexlist )
 
     # RBTODO need to make exceptions a set
     if curexlist==[]:
 
-      print "Adding new exceptions", exceptions 
-
-      sql = "INSERT INTO " + self.except_tbl +  "(zindex, id, exlist) VALUES (%s, %s, %s)"
+      sql = "INSERT INTO " + table + " (zindex, id, exlist) VALUES (%s, %s, %s)"
       try:
         fileobj = cStringIO.StringIO ()
         np.save ( fileobj, exceptions )
         print sql, key, entityid 
-        cursor.execute ( sql, (key, entityid, fileobj.getvalue()))
+        cursor.execute ( sql, (key, entityid, zlib.compress(fileobj.getvalue())))
       except MySQLdb.Error, e:
         print "Error inserting exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
         raise ANNError ( "Error inserting exceptions: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
     # In this case we have an update query
     else:
 
-      newexlist = np.append ( curexlist, exceptions )
+      # RBTODO need to make a set
+      newexlist = np.append ( curexlist.flatten(), exceptions.flatten())
+      newexlist = newexlist.reshape(len(newexlist)/3,3)
 
-      print newexlist
-
-      print "Updating exceptions with ", exceptions 
-
-      sql = "UPDATE " + self.except_tbl + " SET exlist=(%s) WHERE zindex=" + str(key) + " AND id = " + str(entityid)
+      sql = "UPDATE " + table + " SET exlist=(%s) WHERE zindex=%s AND id=%s" 
       try:
         fileobj = cStringIO.StringIO ()
         np.save ( fileobj, newexlist )
-        cursor.execute ( sql, (fileobj.getvalue()))
+        cursor.execute ( sql, (key, entityid, zlib.compress(fileobj.getvalue())))
       except MySQLdb.Error, e:
         print "Error updating exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
         assert 0
@@ -434,11 +424,11 @@ class AnnotateDB:
       offset = [cubeoff[0]*cubedim[0],cubeoff[1]*cubedim[1],cubeoff[2]*cubedim[2]]
 
       # add the items
-      exceptions = cube.annotate ( entityid, offset, voxlist, conflictopt )
+      exceptions = np.array(cube.annotate(entityid, offset, voxlist, conflictopt), dtype=np.uint8)
 
       # update the sparse list of exceptions
       if len(exceptions) != 0:
-        self.updateExceptions ( key, entityid, exceptions )
+        self.updateExceptions ( key, resolution, entityid, exceptions )
 
       self.putCube ( key, resolution, cube)
 
@@ -459,6 +449,7 @@ class AnnotateDB:
     """Process all the annotations in the dense volume"""
 
     index_dict = defaultdict(set)
+
     # dim is in xyz, data is in zyxj
     dim = [ annodata.shape[2], annodata.shape[1], annodata.shape[0] ]
 
@@ -665,10 +656,42 @@ class AnnotateDB:
   def annoCutout ( self, entityid, resolution, corner, dim ):
     """Fetch a volume cutout with only the specified annotation"""
 
-    cube = self.cutout( corner,dim,resolution)
+    cube = self.cutout(corner,dim,resolution)
     vec_func = np.vectorize ( lambda x: np.uint32(0) if x != entityid else np.uint32(entityid)) 
     cube.data = vec_func ( cube.data )
-    print "Want an np.uint32 here", type(cube.data[0,0,0])
+
+    # And get the exceptions
+    # get the size of the image and cube
+    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.dbcfg.cubedim [ resolution ] 
+
+    # Round to the nearest larger cube in all dimensions
+    zstart = corner[2]/zcubedim
+    ystart = corner[1]/ycubedim
+    xstart = corner[0]/xcubedim
+
+    znumcubes = (corner[2]+dim[2]+zcubedim-1)/zcubedim - zstart
+    ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
+    xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
+
+    zoffset = corner[2]%zcubedim
+    yoffset = corner[1]%ycubedim
+    xoffset = corner[0]%xcubedim
+
+    for z in range(znumcubes):
+      for y in range(ynumcubes):
+        for x in range(xnumcubes):
+
+          key = zindex.XYZMorton ([x+xstart,y+ystart,z+zstart])
+          exceptions = self.getExceptions( key, resolution, entityid ) 
+          if exceptions != []:
+            # write as a loop first, then figure out how to optimize RBTODO   
+            for e in exceptions:
+              xloc = e[0]+(x+xstart)*xcubedim
+              yloc = e[1]+(y+ystart)*ycubedim
+              zloc = e[2]+(z+zstart)*zcubedim
+              if xloc>=corner[0] and xloc<corner[0]+dim[0] and yloc>=corner[1] and yloc<corner[1]+dim[1] and zloc>=corner[2] and zloc<corner[2]+dim[2]:
+                cube.data[e[2]-zoffset+z*zcubedim,e[1]-yoffset+y*ycubedim,e[0]-xoffset+x*xcubedim]=entityid
+
     return cube
 
   #
@@ -693,7 +716,7 @@ class AnnotateDB:
     
       # where are the entries
       offsets = np.nonzero ( annodata ) 
-      voxels = zip ( offsets[2], offsets[1], offsets[0] ) 
+      voxels = np.array(zip(offsets[2], offsets[1], offsets[0]), dtype=np.uint32)
 
       # Get cube offset information
       [x,y,z]=zindex.MortonXYZ(zidx)
@@ -701,6 +724,14 @@ class AnnotateDB:
       yoffset = y * self.dbcfg.cubedim[resolution][1] 
       zoffset = z * self.dbcfg.cubedim[resolution][2] + self.dbcfg.slicerange[0]
 
+      # RBTODO -- do we need a fast path for no exceptions?
+      # Now add the exception voxels
+      exceptions = self.getExceptions( zidx, resolution, entityid ) 
+      if exceptions != []:
+        voxels = np.append ( voxels.flatten(), exceptions.flatten())
+        voxels = voxels.reshape(len(voxels)/3,3)
+
+      # Change the voxels back to image address space
       [ voxlist.append([a+xoffset, b+yoffset, c+zoffset]) for (a,b,c) in voxels ] 
 
     return voxlist
@@ -722,6 +753,14 @@ class AnnotateDB:
     """store an HDF5 annotation to the database"""
     
     return annotation.putAnnotation( anno, self, options )
+
+  #
+  # deleteAnnotation:  
+  #    remove an HDF5 annotation from the database
+  def deleteAnnotation ( self, anno, options='' ):
+    """delete an HDF5 annotation from the database"""
+    import pdb; pdb.set_trace() 
+    return annotation.deleteAnnotation ( anno, self, options )
 
 
   # getAnnoObjects:  

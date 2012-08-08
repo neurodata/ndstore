@@ -4,6 +4,8 @@ import MySQLdb
 import sys
 from collections import defaultdict
 
+from annerror import ANNError 
+
 from pprint import pprint
 
 
@@ -253,8 +255,6 @@ class AnnSynapse (Annotation):
     Annotation.store ( self, annodb, ANNO_SYNAPSE)
 
 
-
-
   def update ( self, annodb ):
     """Update the synapse in the annotations databae"""
 
@@ -314,6 +314,30 @@ class AnnSynapse (Annotation):
       del ( self.kvpairs['synapse_segments'] )
 
     cursor.close()
+
+
+  def delete ( self, annodb ):
+    """Delete the synapse from the database"""
+
+    cursor = annodb.conn.cursor()
+
+    sql = "DELETE FROM %s WHERE annoid = %s;"\
+            % ( anno_dbtables['synapse'], self.annid );
+
+    sql += "DELETE FROM %s WHERE annoid = %s" % ( anno_dbtables['kvpairs'], self.annid )
+
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      print "Error deleting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      raise ANNError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    #Call the base class delete
+    import pdb; pdb.set_trace()
+    Annotation.delete(self, annodb)
+    cursor.close()
+
+
     
 
 ###############  Seed  ##################
@@ -401,6 +425,28 @@ class AnnSeed (Annotation):
     (self.parent, self.source, self.cubelocation, self.position[0], self.position[1], self.position[2]) = cursor.fetchone()
 
     cursor.close()
+
+
+  def delete ( self, annodb ):
+    """Delete the seeed from the database"""
+
+    cursor = annodb.conn.cursor()
+
+    sql = "DELETE FROM %s WHERE annoid = %s;"\
+            % ( anno_dbtables['seed'], self.annid ) 
+
+    sql += "DELETE FROM %s WHERE annoid = %s" % ( anno_dbtables['kvpairs'], self.annid )
+
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      print "Error deleting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      raise ANNError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    Annotation.delete ( annodb )
+
+    cursor.close()
+
 
 
 ###############  Segment  ##################
@@ -508,6 +554,26 @@ class AnnSegment (Annotation):
     cursor.close()
 
 
+  def delete ( self, annodb ):
+    """Delete the segment from the database"""
+
+    cursor = annodb.conn.cursor()
+
+    sql = "DELETE FROM %s WHERE annoid = %s;"\
+            % ( anno_dbtables['segment'], self.annid ) 
+
+    sql += "DELETE FROM %s WHERE annoid = %s" % ( anno_dbtables['kvpairs'], self.annid )
+
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      print "Error deleting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      raise ANNError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    cursor.close()
+
+
+
 ###############  Neuron  ##################
 
 class AnnNeuron (Annotation):
@@ -557,6 +623,25 @@ class AnnNeuron (Annotation):
     if self.kvpairs.get('segments'):
       self.segments = [int(i) for i in self.kvpairs['segments'].split(',')]
       del ( self.kvpairs['segments'] )
+      
+
+  def delete ( self, annodb ):
+    """Delete the annotation from the database"""
+
+    cursor = annodb.conn.cursor()
+
+    sql = "DELETE FROM %s WHERE annoid = %s;"\
+            % ( anno_dbtables['synapse'], self.annid ) 
+
+    sql += "DELETE FROM %s WHERE annoid = %s" % ( anno_dbtables['kvpairs'], self.annid )
+
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      print "Error deleting synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      raise ANNError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    cursor.close()
 
 
 ###############  Organelle  ##################
@@ -663,6 +748,27 @@ class AnnOrganelle (Annotation):
     cursor.close()
 
 
+  def delete ( self, annodb ):
+    """Delete the organelle from the database"""
+
+    cursor = annodb.conn.cursor()
+
+    sql = "DELETE FROM %s WHERE annoid = %s;"\
+            % ( anno_dbtables['organelle'], self.annid ) 
+
+    sql += "DELETE FROM %s WHERE annoid = %s" % ( anno_dbtables['kvpairs'], self.annid )
+
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      print "Error deleting organelle %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      raise ANNError ( "Error deleting organelle: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    cursor.close()
+
+
+
+
 
 
 #####################  Get and Put external interfaces  ##########################
@@ -765,4 +871,28 @@ def putAnnotation ( anno, annodb, options ):
     anno.store(annodb)
  
 
+#
+#  deleteAnnotation 
+#
+def deleteAnnotation ( anno, annodb, options ): 
+  """Polymorphically delete an annotaiton by identifier"""
+
+  import pdb; pdb.set_trace()
+  oldanno = getAnnotation ( anno.annid, annodb )
+
+  # can't delete annotations that don't exist
+  if  oldanno == None:
+    raise ANNOError ( "During delete no annotation found at id %d" % anno.annid  )
+
+  # methinks we can call polymorphically
+  oldanno.delete(annodb) 
+
+#j  # Switch on the different types of objects
+#j  if oldanno.__class__ == Annotation:
+#j    anno.delete(annodb)
+#j if oldanno.__class__ == AnnSeed:
+
+
+#  else:
+#    print "Please implement me"
 

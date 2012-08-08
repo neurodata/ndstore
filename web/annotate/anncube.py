@@ -91,6 +91,8 @@ class AnnotateCube:
   #  
   #  Returns a list of exceptions  
   #
+  #  Exceptions are uint8 to keep them small.  Max cube size is 256^3.
+  #
   def annotate ( self, annid, offset, locations, conflictopt ):
     """Add annotation by a list of locations"""
 

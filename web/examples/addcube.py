@@ -53,8 +53,7 @@ def main():
   if result.preserve:  
     url = 'http://%s/annotate/%s/preserve/' % ( result.baseurl, result.token )
   elif result.exception:  
-    print "Not implemented yet"
-    pass
+    url = 'http://%s/annotate/%s/exception/' % ( result.baseurl, result.token )
   else:
     url = 'http://%s/annotate/%s/' % ( result.baseurl, result.token )
 

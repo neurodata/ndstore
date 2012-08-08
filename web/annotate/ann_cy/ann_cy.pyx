@@ -8,8 +8,6 @@ ctypedef np.uint32_t DTYPE_t
 def annotate_cy ( np.ndarray[DTYPE_t, ndim=3] data, int annid, offset, np.ndarray[DTYPE_t, ndim=2] locations, conflictopt ):
   """Add annotation by a list of locations"""
 
-# RBTODO do need to implement exceptions correctly
-
   cdef int xoffset
   cdef int yoffset
   cdef int zoffset
@@ -35,8 +33,8 @@ def annotate_cy ( np.ndarray[DTYPE_t, ndim=3] data, int annid, offset, np.ndarra
       elif conflictopt == 'P':
         pass
       # E creates exceptions
-#      elif conflictopt == 'E':
-#        exceptions.append ( voxel )
+      elif conflictopt == 'E':
+        exceptions.append ([voxel[0]-offset[0], voxel[1]-offset[1], voxel[2]-offset[2]])
       else:
         print ( "Improper conflict option selected.  Option = ", conflictopt  )
         assert 0
@@ -101,7 +99,7 @@ pcolors = ((166, 206, 227),\
 
 rgbcolor=[]
 for pc in pcolors:
-  rgbcolor.append((0xFF<<24)+(pc[0]<<16)+(pc[1]<<8)+pc[2])
+  rgbcolor.append((0x80<<24)+(pc[0]<<16)+(pc[1]<<8)+pc[2])
 
 def recolor_cy ( np.ndarray[np.uint32_t, ndim=2] cutout, np.ndarray[np.uint32_t, ndim=2] imagemap ):
   """Annotation recoloring function."""

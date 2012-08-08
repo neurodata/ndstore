@@ -554,7 +554,10 @@ def putAnnotation ( webargs, postdata ):
     if 'update' in options and 'dataonly' in options:
       raise ANNError ("Illegal combination of options. Cannot use udpate and dataonly together")
 
-    if not 'dataonly' in options:
+    elif 'delete' in options:
+      annodb.deleteAnnotation ( anno, options )
+
+    elif not 'dataonly' in options:
 
       # Put into the database
       annodb.putAnnotation ( anno, options )

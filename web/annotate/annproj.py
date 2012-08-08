@@ -26,7 +26,6 @@ class AnnotateProject:
     # Could add these to dbconfig.  Probably remove res as tablebase instead
     self._ids_tbl = "ids"
 
-
   # Accessors
   def getDBHost ( self ):
     return self._dbhost
@@ -38,8 +37,9 @@ class AnnotateProject:
     return self._resolution
   def getIDsTbl ( self ):
     return self._ids_tbl
-  def getEntitiesTbl ( self ):
-    return self._entities_tbl
+  def getExceptionsTbl ( self ):
+    return self._exceptions_tbl
+    
 
   # accessors for RB to fix
   def getDBUser( self ):
@@ -154,6 +154,7 @@ class AnnotateProjectsDB:
 
     for i in dbcfg.resolutions: 
       sql += "CREATE TABLE res%s ( zindex BIGINT PRIMARY KEY, cube LONGBLOB );\n" % i
+      sql += "CREATE TABLE exc%s ( zindex BIGINT, id INT, exlist LONGBLOB, PRIMARY KEY ( zindex, id));\n" % i
       sql += "CREATE TABLE idx%s ( annid BIGINT PRIMARY KEY, cube LONGBLOB );\n" % i
 
     print sql

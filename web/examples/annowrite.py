@@ -21,6 +21,8 @@ def main():
   parser.add_argument('token', action="store")
   parser.add_argument('--annid', action="store", type=int, help='Annotation ID to extract', default=0)
   parser.add_argument('--update', action='store_true', help='Update an existing annotation.')
+  parser.add_argument('--delete', action='store_true', help='Delete an existing annotation.')
+
   parser.add_argument('--kv', action="store", help='key:value')
 
   result = parser.parse_args()
@@ -44,6 +46,8 @@ def main():
   # Build the put URL
   if result.update:
     url = "http://%s/annotate/%s/update/" % ( result.baseurl, result.token)
+  elif result.delete:
+    url = "http://%s/annotate/%s/delete/" % ( result.baseurl, result.token)
   else:
     url = "http://%s/annotate/%s/" % ( result.baseurl, result.token)
   print url

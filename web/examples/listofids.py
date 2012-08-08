@@ -66,6 +66,7 @@ def main():
     except urllib2.URLError, e:
       print "Failed URL", url
       print "Error %s. %s" % (e.code,e.read()) 
+      sys.exit(-1)
 
   # Now we are processing the return.  New tmpfile, new h5f
   tmpfile = tempfile.NamedTemporaryFile ( )
