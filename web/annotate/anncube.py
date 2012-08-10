@@ -190,5 +190,19 @@ class AnnotateCube:
     vector_func = np.vectorize ( lambda a,b: b if b!=0 and a==0 else a ) 
     self.data = vector_func ( self.data, annodata ) 
 
+  def exception ( self, annodata ):
+    """Get's a dense voxel region and overwrites all non-zero values"""
+
+    # get all the exceptions
+    # not equal and both annotated
+    exdata = ((self.data-annodata)*self.data*annodata!=0) * annodata 
+
+    # then annotate to preserve 
+    vector_func = np.vectorize ( lambda a,b: b if b!=0 and a==0 else a ) 
+    self.data = vector_func ( self.data, annodata ) 
+
+    # return the list of exceptions ids and the exceptions
+    return exdata
+
 # end AnnotateCube
 

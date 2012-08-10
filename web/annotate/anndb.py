@@ -486,17 +486,22 @@ class AnnotateDB:
             cube.overwrite ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
           elif conflictopt == 'P':
             cube.preserve ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
-#          elif conflictopt == 'E':
-#           exceptionids = cube.exception ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
-#           if excepttrue 
+          elif conflictopt == 'E':
+            exdata = cube.exception ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
+            for exid in np.unique ( exdata ):
+              if exid != 0:
+                # get the offsets
+                exoffsets = np.nonzero ( exdata==exid )
+                # assemble into 3-tuples zyx->xyz
+                exceptions = np.array ( zip(exoffsets[2], exoffsets[1], exoffsets[0]), dtype=np.uint32 )
+                # update the exceptions
+                self.updateExceptions ( key, resolution, exid, exceptions )
+                # add to the index
+                index_dict[exid].add(key)
+
           else:
             print "Unsupported conflict option.  FIX ME"
             assert 0
-
-#          if len(np.nonzero(cube.data)[0]) == 0:
-#            print "Writing no data", key
-#          else:
-#            print "Found data", key
 
           self.putCube ( key, resolution, cube)
 
@@ -509,9 +514,6 @@ class AnnotateDB:
           # remove 0 no reason to index that
           del(index_dict[0])
 
-          # And index the exceptions
-#          if exceptionids != []:
-#            [ index_dict[e].add(key) for e in exceptionids ]  
 
     # Update all indexes
     self.annoIdx.updateIndexDense(index_dict,resolution)
