@@ -378,7 +378,6 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
   except:
     annoDB.rollback()
     
-  print "Calling commit"
   annoDB.commit()
 
   return str(entityid)
@@ -555,9 +554,6 @@ def putAnnotation ( webargs, postdata ):
     if 'update' in options and 'dataonly' in options:
       raise ANNError ("Illegal combination of options. Cannot use udpate and dataonly together")
 
-    elif 'delete' in options:
-      annodb.deleteAnnotation ( anno, options )
-
     elif not 'dataonly' in options:
 
       # Put into the database
@@ -690,4 +686,34 @@ def getAnnoObjects ( webargs, postdata=None ):
     tmpfile.close()
 
   return h5ann.PackageIDs ( annoids ) 
+
+
+def deleteAnnotation ( webargs ):
+  """Delete a RAMON object"""
+
+  [ token, sym, otherargs ] = webargs.partition ('/')
+
+  # Get the annotation database
+  annprojdb = annproj.AnnotateProjectsDB()
+  annoproj = annprojdb.getAnnoProj ( token )
+  dbcfg = dbconfig.switchDataset ( annoproj.getDataset() )
+  annodb = anndb.AnnotateDB ( dbcfg, annoproj )
+
+  # Split the URL and get the args
+  args = otherargs.split('/', 2)
+
+  # if the first argument is numeric.  it is an annoid
+  if re.match ( '^\d+$', args[0] ): 
+    annoid = int(args[0])
+  # if not..this is not a well-formed delete request
+  else:
+    raise ANNError ("Delete did not specify a legal object identifier = %s" % args[0] )
+
+  try:
+    annodb.deleteAnnotation ( annoid )
+  except:
+    annodb.rollback() 
+    raise
+  annodb.commit()
+
 

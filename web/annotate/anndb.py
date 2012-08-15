@@ -774,10 +774,9 @@ class AnnotateDB:
   #
   # deleteAnnotation:  
   #    remove an HDF5 annotation from the database
-  def deleteAnnotation ( self, anno, options='' ):
+  def deleteAnnotation ( self, annoid, options='' ):
     """delete an HDF5 annotation from the database"""
-    import pdb; pdb.set_trace() 
-    return annotation.deleteAnnotation ( anno, self, options )
+    return annotation.deleteAnnotation ( annoid, self, options )
 
 
   # getAnnoObjects:  

@@ -53,6 +53,9 @@ def annotation (request, webargs):
       return django.http.HttpResponse(annrest.getAnnotation(webargs), mimetype="product/hdf5" )
     elif request.method == 'POST':
       return django.http.HttpResponse(annrest.putAnnotation(webargs,request.body))
+    elif request.method == 'DELETE':
+      annrest.deleteAnnotation(webargs)
+      return django.http.HttpResponse ("Success", mimetype='text/html')
   except ANNError, e:
     if hasattr(e,'value'):
       return django.http.HttpResponseNotFound(e.value)

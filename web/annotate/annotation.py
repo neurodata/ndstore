@@ -31,15 +31,6 @@ anno_dbtables = { 'annotation':'annotations',\
 
 
 
-#
-# General annotation exception
-#
-class ANNOError(Exception):
-  """General exception for annotations"""
-  def __init__(self, value):
-    self.value = value
-  def __str__(self):
-    return repr(self.value)
 
 
 ###############  Annotation  ##################
@@ -337,6 +328,10 @@ class AnnSynapse (Annotation):
     Annotation.delete(self, annodb)
     cursor.close()
 
+    # and call delete on the base classs
+    Annotation.delete ( self, annodb )
+
+
 
     
 
@@ -572,6 +567,10 @@ class AnnSegment (Annotation):
 
     cursor.close()
 
+    # and call delete on the base classs
+    Annotation.delete ( self, annodb )
+
+
 
 
 ###############  Neuron  ##################
@@ -766,6 +765,9 @@ class AnnOrganelle (Annotation):
 
     cursor.close()
 
+    # and call delete on the base classs
+    Annotation.delete ( self, annodb )
+
 
 
 
@@ -829,7 +831,7 @@ def getAnnotation ( annid, annodb ):
 
   else:
     # not a type that we recognize
-    raise ANNOError ( "Unrecognized annotation type %s" % type )
+    raise ANNError ( "Unrecognized annotation type %s" % type )
 
 
 #
@@ -849,7 +851,7 @@ def putAnnotation ( anno, annodb, options ):
 
     # can't update annotations that don't exist
     if  oldanno == None:
-      raise ANNOError ( "During update no annotation found at id %d" % anno.annid  )
+      raise ANNError ( "During update no annotation found at id %d" % anno.annid  )
 
     # can update if they are the same type
     elif oldanno.__class__ == anno.__class__:
@@ -863,7 +865,7 @@ def putAnnotation ( anno, annodb, options ):
     
    # otherwise an illegal update
     else:
-      raise ANNOError ( "Cannot change the type of annotation from %s to %s" % (oldanno.__class__,anno.__class__))
+      raise ANNError ( "Cannot change the type of annotation from %s to %s" % (oldanno.__class__,anno.__class__))
 
   # Write the user chosen annotation id
   else:
@@ -874,25 +876,16 @@ def putAnnotation ( anno, annodb, options ):
 #
 #  deleteAnnotation 
 #
-def deleteAnnotation ( anno, annodb, options ): 
+def deleteAnnotation ( annoid, annodb, options ): 
   """Polymorphically delete an annotaiton by identifier"""
 
   import pdb; pdb.set_trace()
-  oldanno = getAnnotation ( anno.annid, annodb )
+  oldanno = getAnnotation ( annoid, annodb )
 
   # can't delete annotations that don't exist
   if  oldanno == None:
-    raise ANNOError ( "During delete no annotation found at id %d" % anno.annid  )
+    raise ANNError ( "During delete no annotation found at id %d" % annoid  )
 
   # methinks we can call polymorphically
   oldanno.delete(annodb) 
-
-#j  # Switch on the different types of objects
-#j  if oldanno.__class__ == Annotation:
-#j    anno.delete(annodb)
-#j if oldanno.__class__ == AnnSeed:
-
-
-#  else:
-#    print "Please implement me"
 
