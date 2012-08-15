@@ -323,15 +323,10 @@ class AnnSynapse (Annotation):
       print "Error deleting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise ANNError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
-    #Call the base class delete
-    import pdb; pdb.set_trace()
-    Annotation.delete(self, annodb)
     cursor.close()
 
     # and call delete on the base classs
     Annotation.delete ( self, annodb )
-
-
 
     
 
@@ -438,9 +433,10 @@ class AnnSeed (Annotation):
       print "Error deleting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise ANNError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
-    Annotation.delete ( annodb )
-
     cursor.close()
+
+    # and call delete on the base classs
+    Annotation.delete ( self, annodb )
 
 
 
@@ -641,6 +637,10 @@ class AnnNeuron (Annotation):
       raise ANNError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     cursor.close()
+
+    # and call delete on the base classs
+    Annotation.delete ( self, annodb )
+
 
 
 ###############  Organelle  ##################
@@ -879,7 +879,6 @@ def putAnnotation ( anno, annodb, options ):
 def deleteAnnotation ( annoid, annodb, options ): 
   """Polymorphically delete an annotaiton by identifier"""
 
-  import pdb; pdb.set_trace()
   oldanno = getAnnotation ( annoid, annodb )
 
   # can't delete annotations that don't exist

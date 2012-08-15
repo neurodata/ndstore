@@ -610,10 +610,6 @@ def putAnnotation ( webargs, postdata ):
       #TODO this is a loggable error
       pass
 
-#    import pdb; pdb.set_trace()
-#    print "Everything is awesome.  Let's test the exception."
-#    raise Exception("test")
-
   # rollback if you catch an error
   except:
     print "Calling rollback"
