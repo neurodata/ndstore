@@ -777,7 +777,7 @@ class AnnotateDB:
   def deleteAnnotation ( self, annoid, options='' ):
     """delete an HDF5 annotation from the database"""
     #delete the data associated with the annoid
-    deleteAnnoData ( self, annoid)
+    self.deleteAnnoData ( annoid)
     return annotation.deleteAnnotation ( annoid, self, options )
   
   #

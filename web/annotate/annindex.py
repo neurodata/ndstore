@@ -142,5 +142,5 @@ class AnnotateIndex:
          except BaseException, e:
             print "DBG: SOMETHING REALLY WRONG HERE", e
       cursor.close()
-#      self.conn.commit()
+      self.conn.commit()
 # end AnnotateIndex
