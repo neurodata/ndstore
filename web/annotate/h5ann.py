@@ -409,7 +409,7 @@ def PackageIDs ( annoids ):
   if len(annoids) != 0: 
     h5fh.create_dataset ( "ANNOIDS", annoids.shape, np.uint32, data=annoids ) 
   else:
-    h5fh.create_dataset ( "ANNOIDS", (0,), np.uint32, data=[] ) 
+    h5fh.create_dataset ( "ANNOIDS", (1,), np.uint32, data=0 ) 
 
 
   h5fh.flush()

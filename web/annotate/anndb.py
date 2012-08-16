@@ -16,6 +16,9 @@ from ann_cy import cubeLocs_cy
 
 import sys
 
+#RBTODO make configurable on a DB by DB basis
+EXCEPTIONS=False
+
 ################################################################################
 #
 #  class: AnnotateDB
@@ -355,51 +358,6 @@ class AnnotateDB:
     # dictionary with the index
     cubeidx = defaultdict(set)
 
-##########  RBRM keeping this code around awhile in case somthing breaks. 
-#    SLOW = False
-#    if SLOW:
-#      print "Slow path?"
-#
-#      # dictionary of mortonkeys
-#      cubelocs = defaultdict(list)
-#      
-#
-#      #  list of locations inside each morton key
-#      for loc in locations:
-#        cubeno = loc[0]/cubedim[0], loc[1]/cubedim[1], (loc[2]-self.startslice)/cubedim[2]
-#        key = zindex.XYZMorton(cubeno)
-#        cubelocs[key].append([loc[0],loc[1],loc[2]-self.startslice])
-#
-#
-#      for key, loclist in cubelocs.iteritems():
-#
-#        cube = self.getCube ( key, resolution )
-#
-#        # get a voxel offset for the cube
-#        cubeoff = zindex.MortonXYZ(key)
-#        offset = [ cubeoff[0]*cubedim[0],\
-#                   cubeoff[1]*cubedim[1],\
-#                   cubeoff[2]*cubedim[2] ]
-#
-#        # add the items
-#        exceptions = cube.annotate ( entityid, offset, loclist, conflictopt )
-#
-#        # update the sparse list of exceptions
-#        if len(exceptions) != 0:
-#          self.updateExceptions ( key, entityid, exceptions )
-#
-#        self.putCube ( key, resolution, cube)
-#
-#        # add this cube to the index
-#        cubeidx[entityid].add(key)
-#
-#      # write it to the database
-#      self.annoIdx.updateIndexDense(cubeidx,resolution)
-#
-#      return
-
-###### this is the test code
-
     # convert voxels z coordinate
     locations[:,2] = locations[:,2] - 1
 
@@ -430,8 +388,9 @@ class AnnotateDB:
       exceptions = np.array(cube.annotate(entityid, offset, voxlist, conflictopt), dtype=np.uint8)
 
       # update the sparse list of exceptions
-      if len(exceptions) != 0:
-        self.updateExceptions ( key, resolution, entityid, exceptions )
+      if EXCEPTIONS:
+        if len(exceptions) != 0:
+          self.updateExceptions ( key, resolution, entityid, exceptions )
 
       self.putCube ( key, resolution, cube)
 
@@ -486,7 +445,7 @@ class AnnotateDB:
             cube.overwrite ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
           elif conflictopt == 'P':
             cube.preserve ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
-          elif conflictopt == 'E':
+          elif conflictopt == 'E' and EXCEPTIONS:
             exdata = cube.exception ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
             for exid in np.unique ( exdata ):
               if exid != 0:
@@ -699,15 +658,18 @@ class AnnotateDB:
         for x in range(xnumcubes):
 
           key = zindex.XYZMorton ([x+xstart,y+ystart,z+zstart])
-          exceptions = self.getExceptions( key, resolution, entityid ) 
-          if exceptions != []:
-            # write as a loop first, then figure out how to optimize RBTODO   
-            for e in exceptions:
-              xloc = e[0]+(x+xstart)*xcubedim
-              yloc = e[1]+(y+ystart)*ycubedim
-              zloc = e[2]+(z+zstart)*zcubedim
-              if xloc>=corner[0] and xloc<corner[0]+dim[0] and yloc>=corner[1] and yloc<corner[1]+dim[1] and zloc>=corner[2] and zloc<corner[2]+dim[2]:
-                cube.data[e[2]-zoffset+z*zcubedim,e[1]-yoffset+y*ycubedim,e[0]-xoffset+x*xcubedim]=entityid
+          
+          # Get exceptions if this DB supports it
+          if EXCEPTIONS:
+            exceptions = self.getExceptions( key, resolution, entityid ) 
+            if exceptions != []:
+              # write as a loop first, then figure out how to optimize RBTODO   
+              for e in exceptions:
+                xloc = e[0]+(x+xstart)*xcubedim
+                yloc = e[1]+(y+ystart)*ycubedim
+                zloc = e[2]+(z+zstart)*zcubedim
+                if xloc>=corner[0] and xloc<corner[0]+dim[0] and yloc>=corner[1] and yloc<corner[1]+dim[1] and zloc>=corner[2] and zloc<corner[2]+dim[2]:
+                  cube.data[e[2]-zoffset+z*zcubedim,e[1]-yoffset+y*ycubedim,e[0]-xoffset+x*xcubedim]=entityid
 
     return cube
 
@@ -743,10 +705,11 @@ class AnnotateDB:
 
       # RBTODO -- do we need a fast path for no exceptions?
       # Now add the exception voxels
-      exceptions = self.getExceptions( zidx, resolution, entityid ) 
-      if exceptions != []:
-        voxels = np.append ( voxels.flatten(), exceptions.flatten())
-        voxels = voxels.reshape(len(voxels)/3,3)
+      if EXCEPTIONS:
+        exceptions = self.getExceptions( zidx, resolution, entityid ) 
+        if exceptions != []:
+          voxels = np.append ( voxels.flatten(), exceptions.flatten())
+          voxels = voxels.reshape(len(voxels)/3,3)
 
       # Change the voxels back to image address space
       [ voxlist.append([a+xoffset, b+yoffset, c+zoffset]) for (a,b,c) in voxels ] 

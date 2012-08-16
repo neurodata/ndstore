@@ -430,6 +430,8 @@ def getAnnotation ( webargs ):
   # Split the URL and get the args
   args = otherargs.split('/', 2)
 
+  import pdb; pdb.set_trace()
+
   # if the first argument is numeric.  it is an annoid
   if re.match ( '^\d+$', args[0] ): 
     annoid = int(args[0])

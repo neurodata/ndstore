@@ -74,10 +74,9 @@ def main():
   tmpfile.tell()
   h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
 
-  import pdb; pdb.set_trace()
-
   if h5f.get('ANNOIDS'): 
-    print "Matching annotations at %s" % ( np.array(h5f['ANNOIDS'][:]) )
+    if len(h5f['ANNOIDS']) != 0:
+      print "Matching annotations at %s" % ( np.array(h5f['ANNOIDS'][:]) )
   else:
     print "Found no annotations matching type and status"
 
