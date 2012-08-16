@@ -117,10 +117,30 @@ class AnnotateIndex:
                assert 0
                
       cursor.close()
-      self.conn.commit()
+ #     self.conn.commit()
               #self.updateIndex(key,cubeIdx,resolution)
       pass
 
+   #
+   #deleteIndex:
+   #   Delete the index for a given annotation id
+   #
+   def deleteIndex(self,annid,resolutions):
+      """delete the index for a given annid""" 
+      cursor = self.conn.cursor ()
 
-
+      #delete Index table for each resolution
+      for res in resolutions:
+         sql = "DELETE FROM " +  self.annoproj.getIdxTable(res)  +  " WHERE annid=" + str(annid)
+         print sql
+         
+         try:
+            cursor.execute ( sql )
+         except MySQLdb.Error, e:
+            print "Error deleting the index %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+            assert 0
+         except BaseException, e:
+            print "DBG: SOMETHING REALLY WRONG HERE", e
+      cursor.close()
+      self.conn.commit()
 # end AnnotateIndex
