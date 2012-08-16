@@ -17,7 +17,7 @@ from ann_cy import cubeLocs_cy
 import sys
 
 #RBTODO make configurable on a DB by DB basis
-EXCEPTIONS=False
+EXCEPTIONS=True
 
 ################################################################################
 #
@@ -400,6 +400,58 @@ class AnnotateDB:
     # write it to the database
     self.annoIdx.updateIndexDense(cubeidx,resolution)
 
+  #
+  # shave
+  #
+  #  reduce the voxels 
+  #
+  def shave ( self, entityid, resolution, locations, conflictopt='O' ):
+    """Label the voxel locations or add as exceptions is the are already labeled."""
+
+    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.dbcfg.cubedim [ resolution ] 
+
+    # dictionary with the index
+    cubeidx = defaultdict(set)
+
+    # convert voxels z coordinate
+    locations[:,2] = locations[:,2] - 1
+
+    cubelocs = cubeLocs_cy ( np.array(locations, dtype=np.uint32), cubedim )
+
+    # sort the arrary, by cubeloc
+    cubelocs.view('u4,u4,u4,u4').sort(order=['f0'], axis=0)
+
+    # get the nonzero element offsets 
+    nzdiff = np.r_[np.nonzero(np.diff(cubelocs[:,0]))]
+    # then turn into a set of ranges of the same element
+    listoffsets = np.r_[0, nzdiff + 1, len(cubelocs)]
+
+    for i in range(len(listoffsets)-1):
+
+      # grab the list of voxels for the first cube
+      voxlist = cubelocs[listoffsets[i]:listoffsets[i+1],:][:,1:4]
+      #  and the morton key
+      key = cubelocs[listoffsets[i],0]
+
+      cube = self.getCube ( key, resolution )
+
+      # get a voxel offset for the cube
+      cubeoff = zindex.MortonXYZ(key)
+      offset = [cubeoff[0]*cubedim[0],cubeoff[1]*cubedim[1],cubeoff[2]*cubedim[2]]
+
+      import pdb; pdb.set_trace()
+      # add the items
+      exceptions = np.array(cube.shave(entityid, offset, voxlist), dtype=np.uint8)
+
+      # update the sparse list of exceptions
+      if EXCEPTIONS:
+        if len(exceptions) != 0:
+          self.removeExceptions ( key, resolution, entityid, exceptions )
+
+      self.putCube ( key, resolution, cube)
+
+      # For now do no index processing when shaving.  Assume there are still some
+      #  voxels in the cube???
 
 
   #

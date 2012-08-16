@@ -10,6 +10,7 @@ import zindex
 
 from ann_cy import annotate_cy
 from ann_cy import recolor_cy
+from ann_cy import shave_cy
 
 #
 #  AnnotateCube: manipulate the in-memory data representation of the 3-d cube of data
@@ -98,6 +99,12 @@ class AnnotateCube:
 
     # the cython optimized version of this function.
     return annotate_cy ( self.data, annid, offset, np.array(locations, dtype=np.uint32), conflictopt )
+
+  def shave ( self, annid, offset, locations ):
+    """Remove annotation by a list of locations"""
+
+    # the cython optimized version of this function.
+    return shave_cy ( self.data, annid, offset, np.array(locations, dtype=np.uint32))
   
 
   #

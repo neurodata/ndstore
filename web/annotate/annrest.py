@@ -546,6 +546,8 @@ def putAnnotation ( webargs, postdata ):
   tmpfile.seek(0)
   h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
 
+  import pdb; pdb.set_trace()
+
   try:
 
     # Convert HDF5 to annotation
@@ -569,7 +571,7 @@ def putAnnotation ( webargs, postdata ):
     # Load the data associated with this annotation
     #  Is it voxel data?
     voxels = h5f.get('VOXELS')
-    if voxels:
+    if voxels and 'reduce' not in options:
 
       if 'preserve' in options:
         conflictopt = 'P'
@@ -583,6 +585,14 @@ def putAnnotation ( webargs, postdata ):
         raise ANNError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
 
       annodb.annotate ( anno.annid, resolution, voxels, conflictopt )
+
+    # Otherwise this is a shave operation
+    elif voxels and 'reduce' in options:
+
+      # Check that the voxels have a conforming size:
+      if voxels.shape[1] != 3:
+        raise ANNError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
+      annodb.shave ( anno.annid, resolution, voxels )
 
     # Is it dense data?
     cutout = h5f.get('CUTOUT')
