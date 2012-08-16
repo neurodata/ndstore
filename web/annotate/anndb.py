@@ -776,9 +776,32 @@ class AnnotateDB:
   #    remove an HDF5 annotation from the database
   def deleteAnnotation ( self, annoid, options='' ):
     """delete an HDF5 annotation from the database"""
+    #delete the data associated with the annoid
+    deleteAnnoData ( self, annoid)
     return annotation.deleteAnnotation ( annoid, self, options )
-
-
+  
+  #
+  #deleteAnnoData:
+  #    Delete the voxel data from the database for annoid 
+  #
+  def deleteAnnoData ( self, annoid):
+    resolutions = self.dbcfg.resolutions
+    for res in resolutions:
+    
+    #get the cubes that contain the annotation
+      zidxs = self.annoIdx.getIndex(annoid,res)
+      
+    #Delete annotation data
+      for key in zidxs:
+        cube = self.getCube ( key, res)
+        vec_func = np.vectorize ( lambda x: 0 if x == annoid else x )
+        cube.data = vec_func ( cube.data )
+        self.putCube ( key, res, cube)
+      
+    # delete Index
+    self.annoIdx.deleteIndex(annoid,resolutions)
+    
+  
   # getAnnoObjects:  
   #    Return a list of annotation object IDs
   #  for now by type and status
