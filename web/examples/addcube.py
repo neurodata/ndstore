@@ -50,13 +50,13 @@ def main():
   h5fh.create_dataset ( "VOXELS", (len(voxlist),3), np.uint32, data=voxlist )
 
   if result.preserve:  
-    url = 'http://%s/emac/%s/preserve/' % ( result.baseurl, result.token )
+    url = 'http://%s/emca/%s/preserve/' % ( result.baseurl, result.token )
   elif result.exception:  
-    url = 'http://%s/emac/%s/exception/' % ( result.baseurl, result.token )
+    url = 'http://%s/emca/%s/exception/' % ( result.baseurl, result.token )
   elif result.reduce:  
-    url = 'http://%s/emac/%s/reduce/' % ( result.baseurl, result.token )
+    url = 'http://%s/emca/%s/reduce/' % ( result.baseurl, result.token )
   else:
-    url = 'http://%s/emac/%s/' % ( result.baseurl, result.token )
+    url = 'http://%s/emca/%s/' % ( result.baseurl, result.token )
 
   if result.update:
     url+='update/'

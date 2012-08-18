@@ -12,7 +12,7 @@ import sys
 import empaths
 import annotation
 
-from emacerror import ANNError
+from emcaerror import ANNError
 
 from pprint import pprint
 

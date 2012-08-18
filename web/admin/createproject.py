@@ -2,7 +2,7 @@ import argparse
 import empaths
 import sys
 
-import annproj
+import emcaproj
 
 def main():
 
@@ -17,9 +17,9 @@ def main():
   result = parser.parse_args()
 
   # Get database info
-  pd = annproj.AnnotateProjectsDB()
+  pd = emcaproj.EMCAProjectsDB()
 
-  pd.newAnnoProj ( result.token, result.openid, result.host, result.project, result.dataset, result.resolution )
+  pd.newEMCAProj ( result.token, result.openid, result.host, result.project, result.dataset, result.resolution )
 
 
 if __name__ == "__main__":

@@ -1,8 +1,8 @@
 import empaths
 import MySQLdb
 
-import emacprivate
-from emacerror import ANNError
+import emcaprivate
+from emcaerror import ANNError
 import dbconfig
 
 # TODO need to make this work for both read-only projects and writeable projects.
@@ -48,9 +48,9 @@ class EMCAProject:
 
   # accessors for RB to fix
   def getDBUser( self ):
-    return emacprivate.dbuser
+    return emcaprivate.dbuser
   def getDBPasswd( self ):
-    return emacprivate.dbpasswd
+    return emcaprivate.dbpasswd
 
   def getTable ( self, resolution ):
     """Return the appropriate table for the specified resolution"""
@@ -67,26 +67,26 @@ class EMCAProjectsDB:
     """Create the database connection"""
 
     # Connection info in dbconfig
-    self.conn = MySQLdb.connect (host = emacprivate.dbhost,
-                          user = emacprivate.dbuser,
-                          passwd = emacprivate.dbpasswd,
-                          db = emacprivate.db )
+    self.conn = MySQLdb.connect (host = emcaprivate.dbhost,
+                          user = emcaprivate.dbuser,
+                          passwd = emcaprivate.dbpasswd,
+                          db = emcaprivate.db )
 
   #
-  # Load the emac databse information based on the token
+  # Load the emca databse information based on the token
   #
   def getProj ( self, token ):
     """Load the annotation database information based on the token"""
 
 
     # Lookup the information for the database project based on the token
-    sql = "SELECT * from %s where token = \'%s\'" % (emacprivate.table, token)
+    sql = "SELECT * from %s where token = \'%s\'" % (emcaprivate.table, token)
 
     try:
       cursor = self.conn.cursor()
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Could not query emac projects database"
+      print "Could not query emca projects database"
       raise ANNError ( "EMCA Project Database error" )
 
     # get the project information 
@@ -107,7 +107,7 @@ class EMCAProjectsDB:
   # Load the  databse information based on the token
   #
   def newEMCAProj ( self, token, openid, dbhost, project, dataset, resolution ):
-    """Create a new emac project"""
+    """Create a new emca project"""
 
     dbcfg = dbconfig.switchDataset ( dataset )
 
@@ -115,7 +115,7 @@ class EMCAProjectsDB:
 
     # Insert the project entry into the database
     sql = "INSERT INTO {0} VALUES ( \'{1}\', \'{2}\', \'{3}\', \'{4}\', \'{5}\', {6}  )".format (\
-        emacprivate.table, token, openid, dbhost, project, dataset, resolution )
+        emcaprivate.table, token, openid, dbhost, project, dataset, resolution )
 
     print sql
 
@@ -126,7 +126,7 @@ class EMCAProjectsDB:
       print "Failed to create new project", e
       raise ANNError ( "Failed to create new project" )
 
-    # Make the database and associated emac tables
+    # Make the database and associated emca tables
     sql = "CREATE DATABASE %s;" % project
     print "Executing: ", sql
    
@@ -141,8 +141,8 @@ class EMCAProjectsDB:
 
     # Connect to the new database
     newconn = MySQLdb.connect (host = dbhost,
-                          user = emacprivate.dbuser,
-                          passwd = emacprivate.dbpasswd,
+                          user = emcaprivate.dbuser,
+                          passwd = emcaprivate.dbpasswd,
                           db = project )
 
     newcursor = newconn.cursor()

@@ -24,7 +24,7 @@ def main():
 
   result = parser.parse_args()
 
-  url = 'http://' + result.baseurl + '/emac/' + result.dataset + '/npz/' +\
+  url = 'http://' + result.baseurl + '/emca/' + result.dataset + '/npz/' +\
             str(result.resolution) + "/" +\
             str(result.xlow) + "," + str(result.xhigh) + "/" +\
             str(result.ylow) + "," + str(result.yhigh) + "/" +\
@@ -58,7 +58,7 @@ def main():
                          it.multi_index[0]+zoffset ] )
     it.iternext()
 
-  url = 'http://%s/emac/%s/npvoxels/%s/%s/' % (result.baseurl, result.token, result.annid, result.resolution)
+  url = 'http://%s/emca/%s/npvoxels/%s/%s/' % (result.baseurl, result.token, result.annid, result.resolution)
 
   print url
 

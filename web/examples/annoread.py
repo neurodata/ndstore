@@ -29,21 +29,21 @@ def main():
 
   if result.voxels:
     if result.resolution == None:
-      url = "http://%s/annotate/%s/%s/voxels/" % (result.baseurl,result.token,result.annid)
+      url = "http://%s/emca/%s/%s/voxels/" % (result.baseurl,result.token,result.annid)
     else:
-      url = "http://%s/annotate/%s/%s/voxels/%s/" % (result.baseurl,result.token,result.annid, result.resolution)
+      url = "http://%s/emca/%s/%s/voxels/%s/" % (result.baseurl,result.token,result.annid, result.resolution)
   elif result.voxels:
   # RBTODO does this work?
-    url = "http://%s/annotate/%s/%s/voxels/" % (result.baseurl,result.token,result.annid)
+    url = "http://%s/emca/%s/%s/voxels/" % (result.baseurl,result.token,result.annid)
   elif result.cutout != None:
-    url = "http://%s/annotate/%s/%s/cutout/%s/" % (result.baseurl,result.token,result.annid, result.cutout)
+    url = "http://%s/emca/%s/%s/cutout/%s/" % (result.baseurl,result.token,result.annid, result.cutout)
   elif result.tightcutout: 
     if result.resolution == None:
-      url = "http://%s/annotate/%s/%s/cutout/" % (result.baseurl,result.token,result.annid)
+      url = "http://%s/emca/%s/%s/cutout/" % (result.baseurl,result.token,result.annid)
     else:
-      url = "http://%s/annotate/%s/%s/cutout/%s/" % (result.baseurl,result.token,result.annid, result.resolution)
+      url = "http://%s/emca/%s/%s/cutout/%s/" % (result.baseurl,result.token,result.annid, result.resolution)
   else:
-    url = "http://%s/annotate/%s/%s/" % (result.baseurl,result.token,result.annid)
+    url = "http://%s/emca/%s/%s/" % (result.baseurl,result.token,result.annid)
 
   print url
 

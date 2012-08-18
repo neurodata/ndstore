@@ -2,16 +2,16 @@ import django.http
 
 import empaths
 import zindex
-import emacrest
+import emcarest
 
 # Errors we are going to catch
-from emacerror import ANNError
+from emcaerror import ANNError
 import MySQLdb
 
 def index(request):
     return django.http.HttpResponse("This view works.")
 
-def emacget (request, webargs):
+def emcaget (request, webargs):
   """Restful URL for all read services to annotation projects"""
 
   [ token , sym, cutoutargs ] = webargs.partition ('/')
@@ -19,17 +19,17 @@ def emacget (request, webargs):
 
   try:
     if service=='xy' or service=='yz' or service=='xz':
-      return django.http.HttpResponse(emacrest.emacget(webargs), mimetype="image/png" )
+      return django.http.HttpResponse(emcarest.emcaget(webargs), mimetype="image/png" )
     elif service=='hdf5':
-      return django.http.HttpResponse(emacrest.emacget(webargs), mimetype="product/hdf5" )
+      return django.http.HttpResponse(emcarest.emcaget(webargs), mimetype="product/hdf5" )
     elif service=='npz':
-      return django.http.HttpResponse(emacrest.emacget(webargs), mimetype="product/npz" )
+      return django.http.HttpResponse(emcarest.emcaget(webargs), mimetype="product/npz" )
     elif service=='xyanno' or service=='yzanno' or service=='xzanno':
-      return django.http.HttpResponse(emacrest.emacget(webargs), mimetype="image/png" )
+      return django.http.HttpResponse(emcarest.emcaget(webargs), mimetype="image/png" )
     elif service=='id':
-      return django.http.HttpResponse(emacrest.emacget(webargs))
+      return django.http.HttpResponse(emcarest.emcaget(webargs))
     elif service=='ids':
-      return django.http.HttpResponse(emacrest.emacget(webargs))
+      return django.http.HttpResponse(emcarest.emcaget(webargs))
     else:
       return django.http.HttpResponseBadRequest ("Could not find service %s" % dataset )
   except (ANNError,MySQLdb.Error), e:
@@ -39,9 +39,9 @@ def emacget (request, webargs):
 def annopost (request, webargs):
   """Restful URL for all write/post services to annotation projects"""
 
-  # All handling done by emacrest
+  # All handling done by emcarest
   try:
-    return django.http.HttpResponse(emacrest.annopost(webargs,request.body))
+    return django.http.HttpResponse(emcarest.annopost(webargs,request.body))
   except ANNError, e:
     return django.http.HttpResponseNotFound(e.value)
 
@@ -50,11 +50,11 @@ def annotation (request, webargs):
 
   try:
     if request.method == 'GET':
-      return django.http.HttpResponse(emacrest.getAnnotation(webargs), mimetype="product/hdf5" )
+      return django.http.HttpResponse(emcarest.getAnnotation(webargs), mimetype="product/hdf5" )
     elif request.method == 'POST':
-      return django.http.HttpResponse(emacrest.putAnnotation(webargs,request.body))
+      return django.http.HttpResponse(emcarest.putAnnotation(webargs,request.body))
     elif request.method == 'DELETE':
-      emacrest.deleteAnnotation(webargs)
+      emcarest.deleteAnnotation(webargs)
       return django.http.HttpResponse ("Success", mimetype='text/html')
   except ANNError, e:
     if hasattr(e,'value'):
@@ -67,9 +67,9 @@ def getannoobjects ( request, webargs ):
 
   try:
     if request.method == 'GET':
-      return django.http.HttpResponse(emacrest.getAnnoObjects(webargs), mimetype="product/hdf5") 
+      return django.http.HttpResponse(emcarest.getAnnoObjects(webargs), mimetype="product/hdf5") 
     elif request.method == 'POST':
-      return django.http.HttpResponse(emacrest.getAnnoObjects(webargs,request.body), mimetype="product/hdf5") 
+      return django.http.HttpResponse(emcarest.getAnnoObjects(webargs,request.body), mimetype="product/hdf5") 
     
   except ANNError, e:
     return django.http.HttpResponseNotFound(e.value)

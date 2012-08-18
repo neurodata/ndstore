@@ -49,9 +49,9 @@ def main():
 
   # Build the put URL
   if result.update:
-    url = "http://%s/emac/%s/update/" % ( result.baseurl, result.token)
+    url = "http://%s/emca/%s/update/" % ( result.baseurl, result.token)
   else:
-    url = "http://%s/emac/%s/" % ( result.baseurl, result.token)
+    url = "http://%s/emca/%s/" % ( result.baseurl, result.token)
   print url
 
   try:

@@ -11,23 +11,23 @@ import re
 import empaths
 import restargs
 import anncube
-import emacdb
+import emcadb
 import dbconfig
-import emacproj
+import emcaproj
 import h5ann
 
 from ann_cy import assignVoxels_cy
 
-from emacerror import ANNError
+from emcaerror import ANNError
 from pprint import pprint
 
 from time import time
 
 #
-#  emacrest: RESTful interface to annotations and cutouts
+#  emcarest: RESTful interface to annotations and cutouts
 #
 
-def cutout ( imageargs, dbcfg, emacproj ):
+def cutout ( imageargs, dbcfg, proj ):
   """Build the returned cube of data.  This method is called by all
        of the more basic services to build the data.
        They then format and refine the output."""
@@ -42,17 +42,17 @@ def cutout ( imageargs, dbcfg, emacproj ):
   resolution = args.getResolution()
 
   #Load the database
-  db = emacdb.EMACDB ( dbcfg, emacproj )
+  db = emcadb.EMCADB ( dbcfg, proj )
   # Perform the cutout
   return db.cutout ( corner, dim, resolution )
 
 #
 #  Return a Numpy Pickle zipped
 #
-def numpyZip ( imageargs, dbcfg, annoproj ):
+def numpyZip ( imageargs, dbcfg, proj ):
   """Return a web readable Numpy Pickle zipped"""
 
-  cube = cutout ( imageargs, dbcfg, annoproj )
+  cube = cutout ( imageargs, dbcfg, proj )
 
   # Create the compressed cube
   fileobj = cStringIO.StringIO ()
@@ -68,10 +68,10 @@ def numpyZip ( imageargs, dbcfg, annoproj ):
 #
 #  Return a HDF5 file
 #
-def HDF5 ( imageargs, dbcfg, annoproj ):
+def HDF5 ( imageargs, dbcfg, proj ):
   """Return a web readable HDF5 file"""
 
-  cube = cutout ( imageargs, dbcfg, annoproj )
+  cube = cutout ( imageargs, dbcfg, proj )
 
   # Create an in-memory HDF5 file
   tmpfile = tempfile.NamedTemporaryFile ()
@@ -86,7 +86,7 @@ def HDF5 ( imageargs, dbcfg, annoproj ):
 #  **Image return a readable png object
 #    where ** is xy, xz, yz
 #
-def xyImage ( imageargs, dbcfg, annoproj ):
+def xyImage ( imageargs, dbcfg, proj ):
   """Return an xy plane fileobj.read()"""
 
   # Perform argument processing
@@ -98,7 +98,7 @@ def xyImage ( imageargs, dbcfg, annoproj ):
   dim = args.getDim()
   resolution = args.getResolution()
 
-  db = emacdb.EMACDB ( dbcfg, annoproj )
+  db = emcadb.EMCADB ( dbcfg, proj )
   cb = db.cutout ( corner, dim, resolution )
   fileobj = cStringIO.StringIO ( )
   cb.xySlice ( fileobj )
@@ -106,7 +106,7 @@ def xyImage ( imageargs, dbcfg, annoproj ):
   fileobj.seek(0)
   return fileobj.read()
 
-def xzImage ( imageargs, dbcfg, annoproj ):
+def xzImage ( imageargs, dbcfg, proj ):
   """Return an xz plane fileobj.read()"""
 
   # Perform argument processing
@@ -118,7 +118,7 @@ def xzImage ( imageargs, dbcfg, annoproj ):
   dim = args.getDim()
   resolution = args.getResolution()
 
-  db = emacdb.EMACDB ( dbcfg, annoproj )
+  db = emcadb.EMCADB ( dbcfg, proj )
   cb = db.cutout ( corner, dim, resolution )
   fileobj = cStringIO.StringIO ( )
   cb.xzSlice ( dbcfg.zscale[resolution], fileobj )
@@ -126,7 +126,7 @@ def xzImage ( imageargs, dbcfg, annoproj ):
   fileobj.seek(0)
   return fileobj.read()
 
-def yzImage ( imageargs, dbcfg, annoproj ):
+def yzImage ( imageargs, dbcfg, proj ):
   """Return an yz plane fileobj.read()"""
 
   # Perform argument processing
@@ -138,7 +138,7 @@ def yzImage ( imageargs, dbcfg, annoproj ):
   dim = args.getDim()
   resolution = args.getResolution()
 
-  db = emacdb.EMACDB ( dbcfg, annoproj )
+  db = emcadb.EMCADB ( dbcfg, proj )
   cb = db.cutout ( corner, dim, resolution )
   fileobj = cStringIO.StringIO ( )
   cb.yzSlice ( dbcfg.zscale[resolution], fileobj )
@@ -150,7 +150,7 @@ def yzImage ( imageargs, dbcfg, annoproj ):
 #
 #  Read individual annotations xyAnno, xzAnno, yzAnno
 #
-def xyAnno ( imageargs, dbcfg, annoproj ):
+def xyAnno ( imageargs, dbcfg, proj ):
   """Return an xy plane fileobj.read() for a single objects"""
 
   [ annoidstr, sym, imageargs ] = imageargs.partition('/')
@@ -165,7 +165,7 @@ def xyAnno ( imageargs, dbcfg, annoproj ):
   dim = args.getDim()
   resolution = args.getResolution()
 
-  db = emacdb.EMACDB ( dbcfg, annoproj )
+  db = emcadb.EMCADB ( dbcfg, proj )
   cb = db.annoCutout ( annoid, resolution, corner, dim )
 
   fileobj = cStringIO.StringIO ( )
@@ -175,7 +175,7 @@ def xyAnno ( imageargs, dbcfg, annoproj ):
   return fileobj.read()
 
 
-def xzAnno ( imageargs, dbcfg, annoproj ):
+def xzAnno ( imageargs, dbcfg, proj ):
   """Return an xz plane fileobj.read()"""
 
   [ annoidstr, sym, imageargs ] = imageargs.partition('/')
@@ -190,7 +190,7 @@ def xzAnno ( imageargs, dbcfg, annoproj ):
   dim = args.getDim()
   resolution = args.getResolution()
 
-  db = emacdb.EMACDB ( dbcfg, annoproj )
+  db = emcadb.EMCADB ( dbcfg, proj )
   cb = db.annoCutout ( annoid, resolution, corner, dim )
   fileobj = cStringIO.StringIO ( )
   cb.xzSlice ( dbcfg.zscale[resolution], fileobj )
@@ -199,7 +199,7 @@ def xzAnno ( imageargs, dbcfg, annoproj ):
   return fileobj.read()
 
 
-def yzAnno ( imageargs, dbcfg, annoproj ):
+def yzAnno ( imageargs, dbcfg, proj ):
   """Return an yz plane fileobj.read()"""
 
   [ annoidstr, sym, imageargs ] = imageargs.partition('/')
@@ -214,7 +214,7 @@ def yzAnno ( imageargs, dbcfg, annoproj ):
   dim = args.getDim()
   resolution = args.getResolution()
 
-  db = emacdb.EMACDB ( dbcfg, annoproj )
+  db = emcadb.EMCADB ( dbcfg, proj )
   cb = db.annoCutout ( annoid, resolution, corner, dim )
   fileobj = cStringIO.StringIO ( )
   cb.yzSlice ( dbcfg.zscale[resolution], fileobj )
@@ -226,14 +226,14 @@ def yzAnno ( imageargs, dbcfg, annoproj ):
 #  annId
 #    return the annotation identifier of a pixel
 #
-def annId ( imageargs, dbcfg, annoproj ):
+def annId ( imageargs, dbcfg, proj ):
   """Return the annotation identifier of a voxel"""
 
   # Perform argument processing
   (resolution, voxel) = restargs.voxel ( imageargs, dbcfg )
 
   # Get the identifier
-  db = emacdb.EMACDB ( dbcfg, annoproj )
+  db = emcadb.EMCADB ( dbcfg, proj )
   return db.getVoxel ( resolution, voxel )
 
 
@@ -241,7 +241,7 @@ def annId ( imageargs, dbcfg, annoproj ):
 #  listIds
 #  return the annotation identifiers in a region                         
 #                                                                         
-def listIds ( imageargs, dbcfg, annoproj ):
+def listIds ( imageargs, dbcfg, proj ):
   """Return the list  of annotation identifier in a region"""
 
   # Perform argument processing
@@ -253,7 +253,7 @@ def listIds ( imageargs, dbcfg, annoproj ):
   dim = args.getDim()
   resolution = args.getResolution()
   
-  db = emacdb.EMACDB ( dbcfg, annoproj )
+  db = emcadb.EMCADB ( dbcfg, proj )
   cb = db.cutout ( corner, dim, resolution )
   ids =  np.unique(cb.data)
   idstr=''.join([`id`+', ' for id in ids])
@@ -268,40 +268,40 @@ def listIds ( imageargs, dbcfg, annoproj ):
 #  appropriate function.  At this point, we have a 
 #  data set and a service.
 #
-def selectService ( webargs, dbcfg, annoproj ):
+def selectService ( webargs, dbcfg, proj ):
   """Parse the first arg and call service, HDF5, mpz, etc."""
 
   [ service, sym, rangeargs ] = webargs.partition ('/')
 
   if service == 'xy':
-    return xyImage ( rangeargs, dbcfg, annoproj )
+    return xyImage ( rangeargs, dbcfg, proj )
 
   elif service == 'xz':
-    return xzImage ( rangeargs, dbcfg, annoproj)
+    return xzImage ( rangeargs, dbcfg, proj)
 
   elif service == 'yz':
-    return yzImage ( rangeargs, dbcfg, annoproj )
+    return yzImage ( rangeargs, dbcfg, proj )
 
   elif service == 'hdf5':
-    return HDF5 ( rangeargs, dbcfg, annoproj )
+    return HDF5 ( rangeargs, dbcfg, proj )
 
   elif service == 'npz':
-    return  numpyZip ( rangeargs, dbcfg, annoproj ) 
+    return  numpyZip ( rangeargs, dbcfg, proj ) 
 
   elif service == 'id':
-    return annId ( rangeargs, dbcfg, annoproj )
+    return annId ( rangeargs, dbcfg, proj )
   
   elif service == 'ids':
-    return listIds ( rangeargs, dbcfg, annoproj )
+    return listIds ( rangeargs, dbcfg, proj )
 
   elif service == 'xyanno':
-    return xyAnno ( rangeargs, dbcfg, annoproj )
+    return xyAnno ( rangeargs, dbcfg, proj )
 
   elif service == 'xzanno':
-    return xzAnno ( rangeargs, dbcfg, annoproj )
+    return xzAnno ( rangeargs, dbcfg, proj )
 
   elif service == 'yzanno':
-    return yzAnno ( rangeargs, dbcfg, annoproj )
+    return yzAnno ( rangeargs, dbcfg, proj )
 
   else:
     raise ANNError ("No such Web service: %s" % service )
@@ -314,7 +314,7 @@ def selectService ( webargs, dbcfg, annoproj ):
 #  appropriate function.  At this point, we have a 
 #  data set and a service.
 #
-def selectPost ( webargs, dbcfg, annoproj, postdata ):
+def selectPost ( webargs, dbcfg, proj, postdata ):
   """Parse the first arg and call the right post service"""
 
   [ service, sym, postargs ] = webargs.partition ('/')
@@ -324,7 +324,7 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
   # Perform argument processing
 
   # Bind the annotation database
-  annoDB = emacdb.EMACDB ( dbcfg, annoproj )
+  annoDB = emcadb.EMCADB ( dbcfg, proj )
 
   try:
 
@@ -361,7 +361,7 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
       voxarray = np.load ( fileobj )
 
       # Get the annotation database
-      db = emacdb.EMACDB ( dbcfg, annoproj )
+      db = emcadb.EMCADB ( dbcfg, proj )
 
       # Choose the verb, get the entity (as needed), and annotate
       # Translates the values directly
@@ -382,13 +382,13 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
 #   Lookup the project token in the database and figure out the 
 #   right database to load.
 #
-def emacget ( webargs ):
+def emcaget ( webargs ):
   """Interface to the cutout service for annotations.
       Load the annotation project and invoke the appropriate
       dataset."""
 
   [ token, sym, rangeargs ] = webargs.partition ('/')
-  projdb = emacproj.EMACProjectsDB()
+  projdb = emcaproj.EMCAProjectsDB()
   proj = projdb.getProj ( token )
   dbcfg = dbconfig.switchDataset ( proj.getDataset() )
   return selectService ( rangeargs, dbcfg, proj )
@@ -399,7 +399,7 @@ def annopost ( webargs, postdata ):
       Load the annotation project and invoke the appropriate
       dataset."""
   [ token, sym, rangeargs ] = webargs.partition ('/')
-  projdb = emacproj.EMACProjectsDB()
+  projdb = emcaproj.EMCAProjectsDB()
   proj = projdb.getProj ( token )
   dbcfg = dbconfig.switchDataset ( proj.getDataset() )
   return selectPost ( rangeargs, dbcfg, proj, postdata )
@@ -417,10 +417,10 @@ def getAnnotation ( webargs ):
   [ token, sym, otherargs ] = webargs.partition ('/')
 
   # Get the annotation database
-  projdb = emacproj.EMACProjectsDB()
+  projdb = emcaproj.EMCAProjectsDB()
   proj = projdb.getProj ( token )
   dbcfg = dbconfig.switchDataset ( proj.getDataset() )
-  db = emacdb.EMACDB ( dbcfg, proj )
+  db = emcadb.EMCADB ( dbcfg, proj )
 
   # Split the URL and get the args
   args = otherargs.split('/', 2)
@@ -438,7 +438,7 @@ def getAnnotation ( webargs ):
     elif args[1] == 'voxels':
       dataoption = AR_VOXELS
       [resstr, sym, rest] = args[2].partition('/')
-      resolution = int(resstr) if resstr != '' else annoproj.getResolution()
+      resolution = int(resstr) if resstr != '' else proj.getResolution()
 
     elif args[1] =='cutout':
 
@@ -446,7 +446,7 @@ def getAnnotation ( webargs ):
       if args[2] == '' or re.match('^\d+[\/]*$', args[2]):
         dataoption = AR_TIGHTCUTOUT
         [resstr, sym, rest] = args[2].partition('/')
-        resolution = int(resstr) if resstr != '' else annoproj.getResolution()
+        resolution = int(resstr) if resstr != '' else proj.getResolution()
       else:
         dataoption = AR_CUTOUT
 
@@ -528,10 +528,10 @@ def putAnnotation ( webargs, postdata ):
   [ token, sym, optionsargs ] = webargs.partition ('/')
 
   # Get the annotation database
-  projdb = emacproj.EMACProjectsDB()
+  projdb = emcaproj.EMCAProjectsDB()
   proj = projdb.getProj ( token )
   dbcfg = dbconfig.switchDataset ( proj.getDataset() )
-  db = emacdb.EMACDB ( dbcfg, proj )
+  db = emcadb.EMCADB ( dbcfg, proj )
 
   options = optionsargs.split('/')
 
@@ -540,8 +540,6 @@ def putAnnotation ( webargs, postdata ):
   tmpfile.write ( postdata )
   tmpfile.seek(0)
   h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
-
-  import pdb; pdb.set_trace()
 
   try:
 
@@ -559,7 +557,7 @@ def putAnnotation ( webargs, postdata ):
     # Is a resolution specified?  or use default
     h5resolution = h5f.get('RESOLUTION')
     if h5resolution == None:
-      resolution = annoproj.getResolution()
+      resolution = proj.getResolution()
     else:
       resolution = h5resolution[0]
 
@@ -641,10 +639,10 @@ def getAnnoObjects ( webargs, postdata=None ):
   [ token, dontuse, restargs ] = webargs.split ('/',2)
 
   # Get the annotation database
-  projdb = emacproj.EMACProjectsDB()
+  projdb = emcaproj.EMCAProjectsDB()
   proj = projdb.getProj ( token )
   dbcfg = dbconfig.switchDataset ( proj.getDataset() )
-  db = emacdb.EMACDB ( dbcfg, proj )
+  db = emcadb.EMCADB ( dbcfg, proj )
 
   # Split the URL and get the args
   args = restargs.split('/')
@@ -695,10 +693,10 @@ def deleteAnnotation ( webargs ):
   [ token, sym, otherargs ] = webargs.partition ('/')
 
   # Get the annotation database
-  projdb = emacproj.EMACProjectsDB()
+  projdb = emcaproj.EMCAProjectsDB()
   proj = projdb.getProj ( token )
   dbcfg = dbconfig.switchDataset ( proj.getDataset() )
-  db = emacdb.EMACDB ( dbcfg, proj )
+  db = emcadb.EMCADB ( dbcfg, proj )
 
   # Split the URL and get the args
   args = otherargs.split('/', 2)

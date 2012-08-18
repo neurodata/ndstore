@@ -6,7 +6,7 @@ import MySQLdb
 import empaths
 import dbconfig
 import zindex
-import emacproj
+import emcaproj
 
 #
 #  AnnotateIndex: Maintain the index in the database
@@ -16,9 +16,9 @@ class AnnotateIndex:
 
   # Constructor 
   #
-   def __init__(self,dbconf,emacproj):
+   def __init__(self,dbconf,emcaproj):
       self.dbcfg = dbconf
-      self.proj = emacproj
+      self.proj = emcaproj
       
       dbinfo = self.proj.getDBHost(), self.proj.getDBUser(), self.proj.getDBPasswd(), self.proj.getDBName()
 
@@ -117,9 +117,8 @@ class AnnotateIndex:
                assert 0
                
       cursor.close()
- #     self.conn.commit()
+      self.conn.commit()
               #self.updateIndex(key,cubeIdx,resolution)
-      pass
 
    #
    #deleteIndex:

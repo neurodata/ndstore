@@ -7,12 +7,12 @@ from collections import defaultdict
 import zindex
 import anncube
 import imagecube
-import emacproj
+import emcaproj
 import annotation
 import annindex
 import imagecube
 
-from emacerror import ANNError
+from emcaerror import ANNError
 
 from ann_cy import cubeLocs_cy
 
@@ -527,7 +527,6 @@ class EMCADB:
           # remove 0 no reason to index that
           del(index_dict[0])
 
-
     # Update all indexes
     self.annoIdx.updateIndexDense(index_dict,resolution)
 
@@ -561,7 +560,7 @@ class EMCADB:
     ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
     xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
 
-    if (self.annoproj.dbtype == emacproj.ANNOTATIONS):
+    if (self.annoproj.dbtype == emcaproj.ANNOTATIONS):
 
       # input cube is the database size
       incube = anncube.AnnotateCube ( cubedim )
@@ -572,7 +571,7 @@ class EMCADB:
                                         znumcubes*zcubedim] )
       outcube.zeros()
 
-    elif (self.annoproj.dbtype == emacproj.IMAGES):
+    elif (self.annoproj.dbtype == emcaproj.IMAGES):
       
       incube = imagecube.ImageCube ( cubedim )
       outcube = imagecube.ImageCube ( [xnumcubes*xcubedim,\

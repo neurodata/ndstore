@@ -23,7 +23,7 @@ def main():
 
   result = parser.parse_args()
 
-  url = 'http://' + result.baseurl + '/annotate/' + result.dataset + '/npz/' +\
+  url = 'http://' + result.baseurl + '/emca/' + result.dataset + '/npz/' +\
             str(result.resolution) + "/" +\
             str(result.xlow) + "," + str(result.xhigh) + "/" +\
             str(result.ylow) + "," + str(result.yhigh) + "/" +\
@@ -58,7 +58,7 @@ def main():
   vec_func = np.vectorize ( lambda x: 0 if x > 30 else 125 ) 
   annodata = vec_func ( cube )
 
-  url = 'http://%s/annotate/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( result.baseurl, result.token, result.resolution, result.xlow, result.xhigh, result.ylow, result.yhigh, result.zlow, result.zhigh ) 
+  url = 'http://%s/emca/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( result.baseurl, result.token, result.resolution, result.xlow, result.xhigh, result.ylow, result.yhigh, result.zlow, result.zhigh ) 
 
 
   # Encode the voxelist an pickle
