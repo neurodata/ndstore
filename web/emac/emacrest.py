@@ -11,27 +11,23 @@ import re
 import empaths
 import restargs
 import anncube
-import anndb
+import emacdb
 import dbconfig
-import annproj
+import emacproj
 import h5ann
 
 from ann_cy import assignVoxels_cy
 
-from annerror import ANNError
+from emacerror import ANNError
 from pprint import pprint
 
 from time import time
 
-#TODO create common code for loading projects and databases.  appears in many routines
 #
-#  return dense data from HDF5....not yet.
-
-#
-#  annrest: RESTful interface to annotations
+#  emacrest: RESTful interface to annotations and cutouts
 #
 
-def cutout ( imageargs, dbcfg, annoproj ):
+def cutout ( imageargs, dbcfg, emacproj ):
   """Build the returned cube of data.  This method is called by all
        of the more basic services to build the data.
        They then format and refine the output."""
@@ -46,9 +42,9 @@ def cutout ( imageargs, dbcfg, annoproj ):
   resolution = args.getResolution()
 
   #Load the database
-  annodb = anndb.AnnotateDB ( dbcfg, annoproj )
+  db = emacdb.EMACDB ( dbcfg, emacproj )
   # Perform the cutout
-  return annodb.cutout ( corner, dim, resolution )
+  return db.cutout ( corner, dim, resolution )
 
 #
 #  Return a Numpy Pickle zipped
@@ -102,8 +98,8 @@ def xyImage ( imageargs, dbcfg, annoproj ):
   dim = args.getDim()
   resolution = args.getResolution()
 
-  annodb = anndb.AnnotateDB ( dbcfg, annoproj )
-  cb = annodb.cutout ( corner, dim, resolution )
+  db = emacdb.EMACDB ( dbcfg, annoproj )
+  cb = db.cutout ( corner, dim, resolution )
   fileobj = cStringIO.StringIO ( )
   cb.xySlice ( fileobj )
 
@@ -122,8 +118,8 @@ def xzImage ( imageargs, dbcfg, annoproj ):
   dim = args.getDim()
   resolution = args.getResolution()
 
-  annodb = anndb.AnnotateDB ( dbcfg, annoproj )
-  cb = annodb.cutout ( corner, dim, resolution )
+  db = emacdb.EMACDB ( dbcfg, annoproj )
+  cb = db.cutout ( corner, dim, resolution )
   fileobj = cStringIO.StringIO ( )
   cb.xzSlice ( dbcfg.zscale[resolution], fileobj )
 
@@ -142,8 +138,8 @@ def yzImage ( imageargs, dbcfg, annoproj ):
   dim = args.getDim()
   resolution = args.getResolution()
 
-  annodb = anndb.AnnotateDB ( dbcfg, annoproj )
-  cb = annodb.cutout ( corner, dim, resolution )
+  db = emacdb.EMACDB ( dbcfg, annoproj )
+  cb = db.cutout ( corner, dim, resolution )
   fileobj = cStringIO.StringIO ( )
   cb.yzSlice ( dbcfg.zscale[resolution], fileobj )
 
@@ -169,8 +165,8 @@ def xyAnno ( imageargs, dbcfg, annoproj ):
   dim = args.getDim()
   resolution = args.getResolution()
 
-  annodb = anndb.AnnotateDB ( dbcfg, annoproj )
-  cb = annodb.annoCutout ( annoid, resolution, corner, dim )
+  db = emacdb.EMACDB ( dbcfg, annoproj )
+  cb = db.annoCutout ( annoid, resolution, corner, dim )
 
   fileobj = cStringIO.StringIO ( )
   cb.xySlice ( fileobj )
@@ -194,8 +190,8 @@ def xzAnno ( imageargs, dbcfg, annoproj ):
   dim = args.getDim()
   resolution = args.getResolution()
 
-  annodb = anndb.AnnotateDB ( dbcfg, annoproj )
-  cb = annodb.annoCutout ( annoid, resolution, corner, dim )
+  db = emacdb.EMACDB ( dbcfg, annoproj )
+  cb = db.annoCutout ( annoid, resolution, corner, dim )
   fileobj = cStringIO.StringIO ( )
   cb.xzSlice ( dbcfg.zscale[resolution], fileobj )
 
@@ -218,8 +214,8 @@ def yzAnno ( imageargs, dbcfg, annoproj ):
   dim = args.getDim()
   resolution = args.getResolution()
 
-  annodb = anndb.AnnotateDB ( dbcfg, annoproj )
-  cb = annodb.annoCutout ( annoid, resolution, corner, dim )
+  db = emacdb.EMACDB ( dbcfg, annoproj )
+  cb = db.annoCutout ( annoid, resolution, corner, dim )
   fileobj = cStringIO.StringIO ( )
   cb.yzSlice ( dbcfg.zscale[resolution], fileobj )
 
@@ -237,8 +233,8 @@ def annId ( imageargs, dbcfg, annoproj ):
   (resolution, voxel) = restargs.voxel ( imageargs, dbcfg )
 
   # Get the identifier
-  annodb = anndb.AnnotateDB ( dbcfg, annoproj )
-  return annodb.getVoxel ( resolution, voxel )
+  db = emacdb.EMACDB ( dbcfg, annoproj )
+  return db.getVoxel ( resolution, voxel )
 
 
 #
@@ -257,8 +253,8 @@ def listIds ( imageargs, dbcfg, annoproj ):
   dim = args.getDim()
   resolution = args.getResolution()
   
-  annodb = anndb.AnnotateDB ( dbcfg, annoproj )
-  cb = annodb.cutout ( corner, dim, resolution )
+  db = emacdb.EMACDB ( dbcfg, annoproj )
+  cb = db.cutout ( corner, dim, resolution )
   ids =  np.unique(cb.data)
   idstr=''.join([`id`+', ' for id in ids])
   
@@ -328,7 +324,7 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
   # Perform argument processing
 
   # Bind the annotation database
-  annoDB = anndb.AnnotateDB ( dbcfg, annoproj )
+  annoDB = emacdb.EMACDB ( dbcfg, annoproj )
 
   try:
 
@@ -365,11 +361,11 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
       voxarray = np.load ( fileobj )
 
       # Get the annotation database
-      annodb = anndb.AnnotateDB ( dbcfg, annoproj )
+      db = emacdb.EMACDB ( dbcfg, annoproj )
 
       # Choose the verb, get the entity (as needed), and annotate
       # Translates the values directly
-      entityid = annodb.annotateDense ( corner, resolution, voxarray, conflictopt )
+      entityid = db.annotateDense ( corner, resolution, voxarray, conflictopt )
 
     else:
       raise AnnError ("No such Web service: %s" % service )
@@ -386,16 +382,16 @@ def selectPost ( webargs, dbcfg, annoproj, postdata ):
 #   Lookup the project token in the database and figure out the 
 #   right database to load.
 #
-def annoget ( webargs ):
+def emacget ( webargs ):
   """Interface to the cutout service for annotations.
       Load the annotation project and invoke the appropriate
       dataset."""
 
   [ token, sym, rangeargs ] = webargs.partition ('/')
-  annprojdb = annproj.AnnotateProjectsDB()
-  annoproj = annprojdb.getAnnoProj ( token )
-  dbcfg = dbconfig.switchDataset ( annoproj.getDataset() )
-  return selectService ( rangeargs, dbcfg, annoproj )
+  projdb = emacproj.EMACProjectsDB()
+  proj = projdb.getProj ( token )
+  dbcfg = dbconfig.switchDataset ( proj.getDataset() )
+  return selectService ( rangeargs, dbcfg, proj )
 
 
 def annopost ( webargs, postdata ):
@@ -403,10 +399,10 @@ def annopost ( webargs, postdata ):
       Load the annotation project and invoke the appropriate
       dataset."""
   [ token, sym, rangeargs ] = webargs.partition ('/')
-  annprojdb = annproj.AnnotateProjectsDB()
-  annoproj = annprojdb.getAnnoProj ( token )
-  dbcfg = dbconfig.switchDataset ( annoproj.getDataset() )
-  return selectPost ( rangeargs, dbcfg, annoproj, postdata )
+  projdb = emacproj.EMACProjectsDB()
+  proj = projdb.getProj ( token )
+  dbcfg = dbconfig.switchDataset ( proj.getDataset() )
+  return selectPost ( rangeargs, dbcfg, proj, postdata )
 
 
 """An enumeration for options processing in getAnnotation"""
@@ -421,10 +417,10 @@ def getAnnotation ( webargs ):
   [ token, sym, otherargs ] = webargs.partition ('/')
 
   # Get the annotation database
-  annprojdb = annproj.AnnotateProjectsDB()
-  annoproj = annprojdb.getAnnoProj ( token )
-  dbcfg = dbconfig.switchDataset ( annoproj.getDataset() )
-  annodb = anndb.AnnotateDB ( dbcfg, annoproj )
+  projdb = emacproj.EMACProjectsDB()
+  proj = projdb.getProj ( token )
+  dbcfg = dbconfig.switchDataset ( proj.getDataset() )
+  db = emacdb.EMACDB ( dbcfg, proj )
 
   # Split the URL and get the args
   args = otherargs.split('/', 2)
@@ -474,7 +470,7 @@ def getAnnotation ( webargs ):
       raise ANNError ("Get interface %s requested.  Illegal or not implemented" % ( args[0] ))
 
   # retrieve the annotation 
-  anno = annodb.getAnnotation ( annoid )
+  anno = db.getAnnotation ( annoid )
   if anno == None:
     raise ANNError ("No annotation found at identifier = %s" % (annoid))
 
@@ -483,12 +479,12 @@ def getAnnotation ( webargs ):
 
   # get the voxel data if requested
   if dataoption==AR_VOXELS:
-    voxlist = annodb.getLocations ( annoid, resolution ) 
+    voxlist = db.getLocations ( annoid, resolution ) 
     h5.addVoxels ( resolution, voxlist )
 
   elif dataoption==AR_CUTOUT:
 
-    cb = annodb.annoCutout(annoid,resolution,corner,dim)
+    cb = db.annoCutout(annoid,resolution,corner,dim)
 
     # FIXME again an abstraction problem with corner.
     #  return the corner to cutout arguments space
@@ -499,7 +495,7 @@ def getAnnotation ( webargs ):
   elif dataoption==AR_TIGHTCUTOUT:
 
     #  get the voxel list
-    voxarray = np.array ( annodb.getLocations ( annoid, resolution ), dtype=np.uint32 )
+    voxarray = np.array ( db.getLocations ( annoid, resolution ), dtype=np.uint32 )
 
     # determin the extrema
     xmin = min(voxarray[:,0])
@@ -532,10 +528,10 @@ def putAnnotation ( webargs, postdata ):
   [ token, sym, optionsargs ] = webargs.partition ('/')
 
   # Get the annotation database
-  annprojdb = annproj.AnnotateProjectsDB()
-  annoproj = annprojdb.getAnnoProj ( token )
-  dbcfg = dbconfig.switchDataset ( annoproj.getDataset() )
-  annodb = anndb.AnnotateDB ( dbcfg, annoproj )
+  projdb = emacproj.EMACProjectsDB()
+  proj = projdb.getProj ( token )
+  dbcfg = dbconfig.switchDataset ( proj.getDataset() )
+  db = emacdb.EMACDB ( dbcfg, proj )
 
   options = optionsargs.split('/')
 
@@ -558,7 +554,7 @@ def putAnnotation ( webargs, postdata ):
     elif not 'dataonly' in options:
 
       # Put into the database
-      annodb.putAnnotation ( anno, options )
+      db.putAnnotation ( anno, options )
 
     # Is a resolution specified?  or use default
     h5resolution = h5f.get('RESOLUTION')
@@ -583,7 +579,7 @@ def putAnnotation ( webargs, postdata ):
       if voxels.shape[1] != 3:
         raise ANNError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
 
-      annodb.annotate ( anno.annid, resolution, voxels, conflictopt )
+      db.annotate ( anno.annid, resolution, voxels, conflictopt )
 
     # Otherwise this is a shave operation
     elif voxels and 'reduce' in options:
@@ -591,7 +587,7 @@ def putAnnotation ( webargs, postdata ):
       # Check that the voxels have a conforming size:
       if voxels.shape[1] != 3:
         raise ANNError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
-      annodb.shave ( anno.annid, resolution, voxels )
+      db.shave ( anno.annid, resolution, voxels )
 
     # Is it dense data?
     cutout = h5f.get('CUTOUT')
@@ -613,7 +609,7 @@ def putAnnotation ( webargs, postdata ):
       corner = h5xyzoffset[:] 
       corner[2] -= dbcfg.slicerange[0]
 
-      annodb.annotateEntityDense ( anno.annid, corner, resolution, np.array(cutout), conflictopt )
+      db.annotateEntityDense ( anno.annid, corner, resolution, np.array(cutout), conflictopt )
 
     elif cutout != None or h5xyzoffset != None:
       #TODO this is a loggable error
@@ -622,14 +618,14 @@ def putAnnotation ( webargs, postdata ):
   # rollback if you catch an error
   except:
     print "Calling rollback"
-    annodb.rollback()
+    db.rollback()
     raise
   finally:
     h5f.close()
     tmpfile.close()
 
   # Commit if there is no error
-  annodb.commit()
+  db.commit()
 
   # return the identifier
   return str(anno.annid)
@@ -645,16 +641,16 @@ def getAnnoObjects ( webargs, postdata=None ):
   [ token, dontuse, restargs ] = webargs.split ('/',2)
 
   # Get the annotation database
-  annprojdb = annproj.AnnotateProjectsDB()
-  annoproj = annprojdb.getAnnoProj ( token )
-  dbcfg = dbconfig.switchDataset ( annoproj.getDataset() )
-  annodb = anndb.AnnotateDB ( dbcfg, annoproj )
+  projdb = emacproj.EMACProjectsDB()
+  proj = projdb.getProj ( token )
+  dbcfg = dbconfig.switchDataset ( proj.getDataset() )
+  db = emacdb.EMACDB ( dbcfg, proj )
 
   # Split the URL and get the args
   args = restargs.split('/')
   predicates = dict(zip(args[::2], args[1::2]))
 
-  annoids = annodb.getAnnoObjects ( predicates )
+  annoids = db.getAnnoObjects ( predicates )
 
   # We have a cutout as well
   if postdata:
@@ -683,7 +679,7 @@ def getAnnoObjects ( webargs, postdata=None ):
     #    to zero regardless of where it starts.  For now.
     corner[2] -= dbcfg.slicerange[0]
 
-    cutout = annodb.cutout ( corner, dim, resolution )
+    cutout = db.cutout ( corner, dim, resolution )
     annoids = np.intersect1d ( annoids, np.unique( cutout.data ))
 
   if postdata:
@@ -699,10 +695,10 @@ def deleteAnnotation ( webargs ):
   [ token, sym, otherargs ] = webargs.partition ('/')
 
   # Get the annotation database
-  annprojdb = annproj.AnnotateProjectsDB()
-  annoproj = annprojdb.getAnnoProj ( token )
-  dbcfg = dbconfig.switchDataset ( annoproj.getDataset() )
-  annodb = anndb.AnnotateDB ( dbcfg, annoproj )
+  projdb = emacproj.EMACProjectsDB()
+  proj = projdb.getProj ( token )
+  dbcfg = dbconfig.switchDataset ( proj.getDataset() )
+  db = emacdb.EMACDB ( dbcfg, proj )
 
   # Split the URL and get the args
   args = otherargs.split('/', 2)
@@ -715,10 +711,10 @@ def deleteAnnotation ( webargs ):
     raise ANNError ("Delete did not specify a legal object identifier = %s" % args[0] )
 
   try:
-    annodb.deleteAnnotation ( annoid )
+    db.deleteAnnotation ( annoid )
   except:
-    annodb.rollback() 
+    db.rollback() 
     raise
-  annodb.commit()
+  db.commit()
 
 

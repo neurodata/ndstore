@@ -42,11 +42,11 @@ def main():
   h5fh.create_dataset ( "CUTOUT", anndata.shape, np.uint32, data=anndata )
 
   if result.preserve:  
-    url = 'http://%s/annotate/%s/preserve/' % ( result.baseurl, result.token )
+    url = 'http://%s/emac/%s/preserve/' % ( result.baseurl, result.token )
   elif result.exception:  
-    url = 'http://%s/annotate/%s/exception/' % ( result.baseurl, result.token )
+    url = 'http://%s/emac/%s/exception/' % ( result.baseurl, result.token )
   else:
-    url = 'http://%s/annotate/%s/' % ( result.baseurl, result.token )
+    url = 'http://%s/emac/%s/' % ( result.baseurl, result.token )
 
   if result.update:
     url+='update/'

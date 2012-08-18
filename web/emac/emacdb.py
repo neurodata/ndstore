@@ -6,12 +6,13 @@ from collections import defaultdict
 
 import zindex
 import anncube
-import annproj
+import imagecube
+import emacproj
 import annotation
 import annindex
 import imagecube
 
-from annerror import ANNError
+from emacerror import ANNError
 
 from ann_cy import cubeLocs_cy
 
@@ -22,14 +23,14 @@ EXCEPTIONS=True
 
 ################################################################################
 #
-#  class: AnnotateDB
+#  class: EMCADB
 #
 #  Manipulate/create/read from the Morton-order cube store
 #
 ################################################################################
 
 
-class AnnotateDB: 
+class EMCADB: 
 
   def __init__ (self, dbconf, annoproj):
     """Connect with the brain databases"""
@@ -560,7 +561,7 @@ class AnnotateDB:
     ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
     xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
 
-    if (self.annoproj.dbtype == annproj.ANNOTATIONS):
+    if (self.annoproj.dbtype == emacproj.ANNOTATIONS):
 
       # input cube is the database size
       incube = anncube.AnnotateCube ( cubedim )
@@ -571,7 +572,7 @@ class AnnotateDB:
                                         znumcubes*zcubedim] )
       outcube.zeros()
 
-    elif (self.annoproj.dbtype == annproj.IMAGES):
+    elif (self.annoproj.dbtype == emacproj.IMAGES):
       
       incube = imagecube.ImageCube ( cubedim )
       outcube = imagecube.ImageCube ( [xnumcubes*xcubedim,\

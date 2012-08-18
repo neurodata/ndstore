@@ -1,25 +1,22 @@
 import empaths
 import MySQLdb
 
-import annprivate
-from annerror import ANNError
+import emacprivate
+from emacerror import ANNError
 import dbconfig
 
-#
-#  AnnotateCube: manipulate the in-memory data representation of the 3-d cube of data
-#    that contains annotations.  
-#
+# TODO need to make this work for both read-only projects and writeable projects.
 
 # datatype enumerations
 IMAGES = 1
 ANNOTATIONS = 2
 
-class AnnotateProject:
-  """Project specific annotation data"""
+class EMCAProject:
+  """Project specific for cutout and annotation data"""
 
   # Constructor 
   def __init__(self, dbname, dbhost, dataset, resolution ):
-    """Initialize the Annotation Project"""
+    """Initialize the EMCA Project"""
     
     self._dbhost = dbhost
     self._dbname = dbname
@@ -51,9 +48,9 @@ class AnnotateProject:
 
   # accessors for RB to fix
   def getDBUser( self ):
-    return annprivate.dbuser
+    return emacprivate.dbuser
   def getDBPasswd( self ):
-    return annprivate.dbpasswd
+    return emacprivate.dbpasswd
 
   def getTable ( self, resolution ):
     """Return the appropriate table for the specified resolution"""
@@ -63,34 +60,34 @@ class AnnotateProject:
     """Return the appropriate Index table for the specified resolution"""
     return "idx"+str(resolution)
 
-class AnnotateProjectsDB:
-  """Database for the annotation projects"""
+class EMCAProjectsDB:
+  """Database for the annotation and cutout projects"""
 
   def __init__(self):
     """Create the database connection"""
 
     # Connection info in dbconfig
-    self.conn = MySQLdb.connect (host = annprivate.dbhost,
-                          user = annprivate.dbuser,
-                          passwd = annprivate.dbpasswd,
-                          db = annprivate.db )
+    self.conn = MySQLdb.connect (host = emacprivate.dbhost,
+                          user = emacprivate.dbuser,
+                          passwd = emacprivate.dbpasswd,
+                          db = emacprivate.db )
 
   #
-  # Load the annotation databse information based on the token
+  # Load the emac databse information based on the token
   #
-  def getAnnoProj ( self, token ):
+  def getProj ( self, token ):
     """Load the annotation database information based on the token"""
 
 
     # Lookup the information for the database project based on the token
-    sql = "SELECT * from %s where token = \'%s\'" % (annprivate.table, token)
+    sql = "SELECT * from %s where token = \'%s\'" % (emacprivate.table, token)
 
     try:
       cursor = self.conn.cursor()
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Could not query annotations projects database"
-      raise ANNError ( "Annotation Project Database error" )
+      print "Could not query emac projects database"
+      raise ANNError ( "EMCA Project Database error" )
 
     # get the project information 
     row = cursor.fetchone()
@@ -103,14 +100,14 @@ class AnnotateProjectsDB:
 
     [token, openid, host, project, dataset, resolution ] = row
 
-    return AnnotateProject ( project, host, dataset, resolution )
+    return EMCAProject ( project, host, dataset, resolution )
 
 
   #
-  # Load the annotation databse information based on the token
+  # Load the  databse information based on the token
   #
-  def newAnnoProj ( self, token, openid, dbhost, project, dataset, resolution ):
-    """Create a new annotation project"""
+  def newEMCAProj ( self, token, openid, dbhost, project, dataset, resolution ):
+    """Create a new emac project"""
 
     dbcfg = dbconfig.switchDataset ( dataset )
 
@@ -118,7 +115,7 @@ class AnnotateProjectsDB:
 
     # Insert the project entry into the database
     sql = "INSERT INTO {0} VALUES ( \'{1}\', \'{2}\', \'{3}\', \'{4}\', \'{5}\', {6}  )".format (\
-        annprivate.table, token, openid, dbhost, project, dataset, resolution )
+        emacprivate.table, token, openid, dbhost, project, dataset, resolution )
 
     print sql
 
@@ -129,7 +126,7 @@ class AnnotateProjectsDB:
       print "Failed to create new project", e
       raise ANNError ( "Failed to create new project" )
 
-    # Make the database and associated annotation tables
+    # Make the database and associated emac tables
     sql = "CREATE DATABASE %s;" % project
     print "Executing: ", sql
    
@@ -144,8 +141,8 @@ class AnnotateProjectsDB:
 
     # Connect to the new database
     newconn = MySQLdb.connect (host = dbhost,
-                          user = annprivate.dbuser,
-                          passwd = annprivate.dbpasswd,
+                          user = emacprivate.dbuser,
+                          passwd = emacprivate.dbpasswd,
                           db = project )
 
     newcursor = newconn.cursor()
