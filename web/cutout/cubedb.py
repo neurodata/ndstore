@@ -4,7 +4,6 @@ import cStringIO
 import zlib
 import MySQLdb
 import zindex
-import braincube
 import dbconfig
 
 ################################################################################
@@ -49,7 +48,7 @@ class CubeDB:
 
     [ x, y, z ] = zindex.MortonXYZ ( mortonidx )
     [xcubedim, ycubedim, zcubedim] = self.dbcfg.cubedim [resolution ]
-    bc = braincube.BrainCube ( self.dbcfg.cubedim[resolution] )
+    bc = imagecube.ImageCube ( self.dbcfg.cubedim[resolution] )
     corner = [ x*xcubedim, y*ycubedim, z*zcubedim ]
     bc.cubeFromFiles (corner, tilestack)
     return bc
@@ -70,12 +69,6 @@ class CubeDB:
     # round up to the next largest slice
     if self.slices % zcubedim != 0 : 
       self.slices = ( self.slices / zcubedim + 1 ) * zcubedim
-
-    # You've made this assumption.  It's reasonable.  Make it explicit
-    # process more slices than you need.  Round up.  Missing data is 0s.
-#    assert self.slices % zcubedim == 0
-#    assert yimagesz % ycubedim == 0
-#    assert ximagesz % xcubedim == 0
 
     tilestack = tiles.Tiles ( self.dbcfg.tilesz, self.dbcfg.inputprefix + '/' + str(resolution), self.startslice) 
 
@@ -178,8 +171,8 @@ class CubeDB:
                 (corner[1]+dim[1]+ycubedim-1)/ycubedim - start[1],\
                 (corner[2]+dim[2]+zcubedim-1)/zcubedim - start[2] ] 
 
-    inbuf = braincube.BrainCube ( self.dbcfg.cubedim [resolution] )
-    outbuf = braincube.BrainCube ( [numcubes[0]*xcubedim, numcubes[1]*ycubedim, numcubes[2]*zcubedim] )
+    inbuf = imagecube.ImageCube ( self.dbcfg.cubedim [resolution] )
+    outbuf = imagecube.ImageCube ( [numcubes[0]*xcubedim, numcubes[1]*ycubedim, numcubes[2]*zcubedim] )
 
     # Build a list of indexes to access
     listofidxs = []

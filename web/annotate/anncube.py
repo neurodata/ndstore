@@ -7,6 +7,7 @@ import zlib
 import empaths
 import dbconfig
 import zindex
+from cube import Cube
 
 from ann_cy import annotate_cy
 from ann_cy import recolor_cy
@@ -17,7 +18,7 @@ from ann_cy import shave_cy
 #    that contains annotations.  
 #
 
-class AnnotateCube:
+class AnnotateCube(Cube):
 
   # Constructor 
   #
@@ -25,18 +26,13 @@ class AnnotateCube:
   def __init__(self, cubesize):
     """Create empty array of cubesize"""
 
-    # cubesize is in z,y,x for interactions with tile/image data
-    self.zdim, self.ydim, self.xdim = self.cubesize = [ cubesize[2],cubesize[1],cubesize[0] ]
+    # call the base class constructor
+    Cube.__init__( self, cubesize )
 
     # variable that describes when a cube is created from zeros
     #  rather than loaded from another source
     self._newcube = False
 
-
-  # Constructor 
-  def __del__(self):
-    """Destructor"""
-    pass
 
   # get the value by x,y,z coordinate
   def getVoxel ( self, voxel ):
@@ -57,32 +53,6 @@ class AnnotateCube:
     """Create a cube of all 0"""
     self._newcube = True
     self.data = np.zeros ( self.cubesize, dtype=np.uint32 )
-
-  # load the object from a Numpy pickle
-  def fromNPZ ( self, pandz ):
-    """Load the cube from a pickled and zipped blob"""
-    try:
-      newstr = zlib.decompress ( pandz[:] )
-      newfobj = cStringIO.StringIO ( newstr )
-      self.data = np.load ( newfobj )
-    except:
-      print "Unpickle and unZip.  What did I catch?"
-      assert 0
-
-    self._newcube = False
-
-
-  # return a numpy pickle to be stored in the database
-  def toNPZ ( self ):
-    """Pickle and zip the object"""
-    try:
-      # Create the compressed cube
-      fileobj = cStringIO.StringIO ()
-      np.save ( fileobj, self.data )
-      return  zlib.compress (fileobj.getvalue())
-    except:
-      print "Pickle and Zip.  What did I catch?"
-      assert 0
 
 
   # Add annotations
@@ -106,39 +76,6 @@ class AnnotateCube:
     # the cython optimized version of this function.
     return shave_cy ( self.data, annid, offset, np.array(locations, dtype=np.uint32))
   
-
-  #
-  #  addData -- from another cube to this cube
-  #
-  def addData ( self, other, index ):
-    """Add data to a larger cube from a smaller cube"""
-
-    # Check that it is a legal assignment   
-    #  aligned and within bounds
-    assert self.xdim % other.xdim == 0
-    assert self.ydim % other.ydim == 0
-    assert self.zdim % other.zdim == 0
-
-    assert (index[0]+1)*other.xdim <= self.xdim
-    assert (index[1]+1)*other.ydim <= self.ydim
-    assert (index[2]+1)*other.zdim <= self.zdim
-
-    xoffset = index[0]*other.xdim
-    yoffset = index[1]*other.ydim
-    zoffset = index[2]*other.zdim
-
-    self.data [ zoffset:zoffset+other.zdim,\
-                yoffset:yoffset+other.ydim,\
-                xoffset:xoffset+other.xdim]\
-            = other.data [:,:,:]
-
-  #
-  # Trim off the excess data
-  #
-  def trim ( self, xoffset, xsize, yoffset, ysize, zoffset, zsize ):
-    """Trim off the excess data"""
-    self.data = self.data [ zoffset:zoffset+zsize, yoffset:yoffset+ysize, xoffset:xoffset+xsize ]
-
 
   #
   # Create the specified slice (index) at filename

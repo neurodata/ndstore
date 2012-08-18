@@ -9,6 +9,7 @@ import anncube
 import annproj
 import annotation
 import annindex
+import imagecube
 
 from annerror import ANNError
 
@@ -359,7 +360,7 @@ class AnnotateDB:
     cubeidx = defaultdict(set)
 
     # convert voxels z coordinate
-    locations[:,2] = locations[:,2] - 1
+    locations[:,2] = locations[:,2] - self.dbcfg.slicerange[0]
 
     cubelocs = cubeLocs_cy ( np.array(locations, dtype=np.uint32), cubedim )
 
@@ -559,14 +560,23 @@ class AnnotateDB:
     ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
     xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
 
-    # input cube is the database size
-    incube = anncube.AnnotateCube ( cubedim )
+    if (self.annoproj.dbtype == annproj.ANNOTATIONS):
 
-    # output cube is as big as was asked for and zero it.
-    outcube = anncube.AnnotateCube ( [xnumcubes*xcubedim,\
-                                      ynumcubes*ycubedim,\
-                                      znumcubes*zcubedim] )
-    outcube.zeros()
+      # input cube is the database size
+      incube = anncube.AnnotateCube ( cubedim )
+
+      # output cube is as big as was asked for and zero it.
+      outcube = anncube.AnnotateCube ( [xnumcubes*xcubedim,\
+                                        ynumcubes*ycubedim,\
+                                        znumcubes*zcubedim] )
+      outcube.zeros()
+
+    elif (self.annoproj.dbtype == annproj.IMAGES):
+      
+      incube = imagecube.ImageCube ( cubedim )
+      outcube = imagecube.ImageCube ( [xnumcubes*xcubedim,\
+                                        ynumcubes*ycubedim,\
+                                        znumcubes*zcubedim] )
 
     # Build a list of indexes to access
     listofidxs = []
@@ -604,11 +614,10 @@ class AnnotateDB:
       curxyz = zindex.MortonXYZ(int(idx))
       offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
 
-      # get an input cube 
       incube.fromNPZ ( datastring[:] )
-
       # add it to the output cube
       outcube.addData ( incube, offset ) 
+        
 
     # need to trim down the array to size
     #  only if the dimensions are not the same

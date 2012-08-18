@@ -50,7 +50,6 @@ def cutout ( imageargs, dbcfg, annoproj ):
   # Perform the cutout
   return annodb.cutout ( corner, dim, resolution )
 
-
 #
 #  Return a Numpy Pickle zipped
 #

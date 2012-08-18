@@ -23,7 +23,7 @@ def main():
 
   result = parser.parse_args()
 
-  url = 'http://' + result.baseurl + '/cutout/' + result.dataset + '/npz/' +\
+  url = 'http://' + result.baseurl + '/annotate/' + result.dataset + '/npz/' +\
             str(result.resolution) + "/" +\
             str(result.xlow) + "," + str(result.xhigh) + "/" +\
             str(result.ylow) + "," + str(result.yhigh) + "/" +\

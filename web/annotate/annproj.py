@@ -10,6 +10,9 @@ import dbconfig
 #    that contains annotations.  
 #
 
+# datatype enumerations
+IMAGES = 1
+ANNOTATIONS = 2
 
 class AnnotateProject:
   """Project specific annotation data"""
@@ -23,6 +26,11 @@ class AnnotateProject:
     self._dataset = dataset
     self._resolution = resolution
 
+    # RBTODO make programmatic
+    if dbname =='hayworth5nm':
+      self.dbtype = IMAGES
+    else:
+      self.dbtype = ANNOTATIONS
     # Could add these to dbconfig.  Probably remove res as tablebase instead
     self._ids_tbl = "ids"
 
