@@ -11,7 +11,6 @@ from cube import Cube
 
 from ann_cy import annotate_cy
 from ann_cy import recolor_cy
-from ann_cy import shave_cy
 
 #
 #  AnnotateCube: manipulate the in-memory data representation of the 3-d cube of data
@@ -144,6 +143,22 @@ class AnnotateCube(Cube):
     # then annotate to preserve 
     vector_func = np.vectorize ( lambda a,b: b if b!=0 and a==0 else a ) 
     self.data = vector_func ( self.data, annodata ) 
+
+    # return the list of exceptions ids and the exceptions
+    return exdata
+
+  def shaveDense ( self, annodata ):
+    """Remove the specified voxels from the annotation"""
+
+    # get all the exceptions that are equal to the annid in both datasets
+    shavedata = ((self.data-annodata)==0) * annodata 
+
+    # find all shave requests that don't match the dense data
+    exdata = (self.data != annodata) * annodata
+
+    # then shave 
+    vector_func = np.vectorize ( lambda a,b: 0 if b!=0 else a ) 
+    self.data = vector_func ( self.data, shavedata ) 
 
     # return the list of exceptions ids and the exceptions
     return exdata

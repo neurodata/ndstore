@@ -590,7 +590,7 @@ def putAnnotation ( webargs, postdata ):
     # Is it dense data?
     cutout = h5f.get('CUTOUT')
     h5xyzoffset = h5f.get('XYZOFFSET')
-    if cutout != None and h5xyzoffset != None:
+    if cutout != None and h5xyzoffset != None and 'reduce' not in options:
 
       if 'preserve' in options:
         conflictopt = 'P'
@@ -608,6 +608,13 @@ def putAnnotation ( webargs, postdata ):
       corner[2] -= dbcfg.slicerange[0]
 
       db.annotateEntityDense ( anno.annid, corner, resolution, np.array(cutout), conflictopt )
+
+    elif cutout != None and h5xyzoffset != None and 'reduce' in options:
+
+      corner = h5xyzoffset[:] 
+      corner[2] -= dbcfg.slicerange[0]
+
+      db.shaveEntityDense ( anno.annid, corner, resolution, np.array(cutout))
 
     elif cutout != None or h5xyzoffset != None:
       #TODO this is a loggable error

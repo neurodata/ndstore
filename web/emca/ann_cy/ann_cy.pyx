@@ -17,7 +17,6 @@ def annotate_cy ( np.ndarray[DTYPE_t, ndim=3] data, int annid, offset, np.ndarra
   xoffset, yoffset, zoffset = offset
 
   exceptions = []
-  zeros - []
 
   # xyz coordinates get stored as zyx to be more
   #  efficient when converting to images

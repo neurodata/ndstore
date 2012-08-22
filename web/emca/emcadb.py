@@ -18,6 +18,8 @@ from ann_cy import cubeLocs_cy
 
 import sys
 
+#TODO -- what to do about promote?
+
 #RBTODO make configurable on a DB by DB basis
 EXCEPTIONS=True
 
@@ -359,7 +361,6 @@ class EMCADB:
 
       oldexlist = set([ zindex.XYZMorton ( trpl ) for trpl in curexlist ])
       newexlist = set([ zindex.XYZMorton ( trpl ) for trpl in exceptions ])
-      import pdb; pdb.set_trace()
       exlist = oldexlist-newexlist
       exlist = [ zindex.MortonXYZ ( zidx ) for zidx in exlist ]
 
@@ -436,7 +437,7 @@ class EMCADB:
   #
   #  reduce the voxels 
   #
-  def shave ( self, entityid, resolution, locations, conflictopt='O' ):
+  def shave ( self, entityid, resolution, locations ):
     """Label the voxel locations or add as exceptions is the are already labeled."""
 
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.dbcfg.cubedim [ resolution ] 
@@ -566,6 +567,87 @@ class EMCADB:
     vec_func = np.vectorize ( lambda x: 0 if x == 0 else entityid ) 
     annodata = vec_func ( annodata )
     return self.annotateDense ( corner, resolution, annodata, conflictopt )
+
+  #
+  # shaveDense
+  #
+  #  Reduce the specified annotations 
+  #
+  def shaveDense ( self, entityid, corner, resolution, annodata ):
+    """Process all the annotations in the dense volume"""
+
+
+    index_dict = defaultdict(set)
+
+    # dim is in xyz, data is in zyxj
+    dim = [ annodata.shape[2], annodata.shape[1], annodata.shape[0] ]
+
+    # get the size of the image and cube
+    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.dbcfg.cubedim [ resolution ] 
+
+    # Round to the nearest larger cube in all dimensions
+    zstart = corner[2]/zcubedim
+    ystart = corner[1]/ycubedim
+    xstart = corner[0]/xcubedim
+
+    znumcubes = (corner[2]+dim[2]+zcubedim-1)/zcubedim - zstart
+    ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
+    xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
+
+    zoffset = corner[2]%zcubedim
+    yoffset = corner[1]%ycubedim
+    xoffset = corner[0]%xcubedim
+
+    databuffer = np.zeros ([znumcubes*zcubedim, ynumcubes*ycubedim, xnumcubes*xcubedim], dtype=np.uint32 )
+    databuffer [ zoffset:zoffset+dim[2], yoffset:yoffset+dim[1], xoffset:xoffset+dim[0] ] = annodata 
+
+    for z in range(znumcubes):
+      for y in range(ynumcubes):
+        for x in range(xnumcubes):
+
+          key = zindex.XYZMorton ([x+xstart,y+ystart,z+zstart])
+          cube = self.getCube ( key, resolution )
+
+          exdata = cube.shaveDense ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
+          for exid in np.unique ( exdata ):
+            if exid != 0:
+              # get the offsets
+              exoffsets = np.nonzero ( exdata==exid )
+              # assemble into 3-tuples zyx->xyz
+              exceptions = np.array ( zip(exoffsets[2], exoffsets[1], exoffsets[0]), dtype=np.uint32 )
+              # update the exceptions
+              self.removeExceptions ( key, resolution, exid, exceptions )
+              # add to the index
+              index_dict[exid].add(key)
+
+          self.putCube ( key, resolution, cube)
+
+          #update the index for the cube
+          # get the unique elements that are being added to the data
+          uniqueels = np.unique ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
+          for el in uniqueels:
+            index_dict[el].add(key) 
+
+          # remove 0 no reason to index that
+          del(index_dict[0])
+
+    # Update all indexes
+    self.annoIdx.updateIndexDense(index_dict,resolution)
+
+  #
+  # shaveEntityDense
+  #
+  #  Takes a bitmap for an entity and calls denseShave
+  #  renumber the annotations to match the entity id.
+  #
+  def shaveEntityDense ( self, entityid, corner, resolution, annodata ):
+    """Process all the annotations in the dense volume"""
+
+    # Make shaving a per entity operation
+    vec_func = np.vectorize ( lambda x: 0 if x == 0 else entityid ) 
+    annodata = vec_func ( annodata )
+
+    self.shaveDense ( entityid, corner, resolution, annodata )
 
 
   #
