@@ -17,6 +17,7 @@ def annotate_cy ( np.ndarray[DTYPE_t, ndim=3] data, int annid, offset, np.ndarra
   xoffset, yoffset, zoffset = offset
 
   exceptions = []
+  zeros - []
 
   # xyz coordinates get stored as zyx to be more
   #  efficient when converting to images
@@ -62,11 +63,11 @@ def shave_cy ( np.ndarray[DTYPE_t, ndim=3] data, int annid, offset, np.ndarray[D
   for i in range (len(locations)):
 
     voxel = locations[i]
-    #  label unlabeled voxels
+    #  if it's labeled, remove the label
     if ( data [ voxel[2]-offset[2], voxel[1]-offset[1], voxel[0]-offset[0]] == annid ):
          data [ voxel[2]-offset[2], voxel[1]-offset[1], voxel[0]-offset[0] ] = 0
 
-    # already labelled voxels are exceptions, unless they are the same value
+    # already labelled voxels may be in the exceptions list
     elif (data [ voxel[2]-offset[2], voxel[1]-offset[1], voxel[0]-offset[0]] != 0 ):
       exceptions.append ([voxel[0]-offset[0], voxel[1]-offset[1], voxel[2]-offset[2]])
 

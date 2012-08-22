@@ -315,7 +315,6 @@ class EMCADB:
     table = 'exc'+str(resolution)
     cursor = self.conn.cursor()
 
-    # RBTODO need to make exceptions a set
     if curexlist==[]:
 
       sql = "INSERT INTO " + table + " (zindex, id, exlist) VALUES (%s, %s, %s)"
@@ -327,20 +326,50 @@ class EMCADB:
       except MySQLdb.Error, e:
         print "Error inserting exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
         raise ANNError ( "Error inserting exceptions: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
     # In this case we have an update query
     else:
 
-      # RBTODO need to make a set
-      newexlist = np.append ( curexlist.flatten(), exceptions.flatten())
-      newexlist = newexlist.reshape(len(newexlist)/3,3)
+      oldexlist = [ zindex.XYZMorton ( trpl ) for trpl in curexlist ]
+      newexlist = [ zindex.XYZMorton ( trpl ) for trpl in exceptions ]
+      exlist = set(newexlist + oldexlist)
+      exlist = [ zindex.MortonXYZ ( zidx ) for zidx in exlist ]
 
       sql = "UPDATE " + table + " SET exlist=(%s) WHERE zindex=%s AND id=%s" 
       try:
         fileobj = cStringIO.StringIO ()
-        np.save ( fileobj, newexlist )
-        cursor.execute ( sql, (key, entityid, zlib.compress(fileobj.getvalue())))
+        np.save ( fileobj, exlist )
+        cursor.execute ( sql, (zlib.compress(fileobj.getvalue()),key,entityid))
       except MySQLdb.Error, e:
         print "Error updating exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+        assert 0
+
+  #
+  # removeExceptions
+  #
+  def removeExceptions ( self, key, resolution, entityid, exceptions ):
+    """Remove a list of exceptions"""
+
+    curexlist = self.getExceptions( key, resolution, entityid ) 
+
+    table = 'exc'+str(resolution)
+    cursor = self.conn.cursor()
+
+    if curexlist != []:
+
+      oldexlist = set([ zindex.XYZMorton ( trpl ) for trpl in curexlist ])
+      newexlist = set([ zindex.XYZMorton ( trpl ) for trpl in exceptions ])
+      import pdb; pdb.set_trace()
+      exlist = oldexlist-newexlist
+      exlist = [ zindex.MortonXYZ ( zidx ) for zidx in exlist ]
+
+      sql = "UPDATE " + table + " SET exlist=(%s) WHERE zindex=%s AND id=%s" 
+      try:
+        fileobj = cStringIO.StringIO ()
+        np.save ( fileobj, exlist )
+        cursor.execute ( sql, (zlib.compress(fileobj.getvalue()),key,entityid))
+      except MySQLdb.Error, e:
+        print "Error removing exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
         assert 0
 
 
@@ -416,7 +445,7 @@ class EMCADB:
     cubeidx = defaultdict(set)
 
     # convert voxels z coordinate
-    locations[:,2] = locations[:,2] - 1
+    locations[:,2] = locations[:,2] - self.dbcfg.slicerange[0]
 
     cubelocs = cubeLocs_cy ( np.array(locations, dtype=np.uint32), cubedim )
 
@@ -441,10 +470,8 @@ class EMCADB:
       cubeoff = zindex.MortonXYZ(key)
       offset = [cubeoff[0]*cubedim[0],cubeoff[1]*cubedim[1],cubeoff[2]*cubedim[2]]
 
-      import pdb; pdb.set_trace()
-      # add the items
+      # remove the items
       exceptions = np.array(cube.shave(entityid, offset, voxlist), dtype=np.uint8)
-
       # update the sparse list of exceptions
       if EXCEPTIONS:
         if len(exceptions) != 0:

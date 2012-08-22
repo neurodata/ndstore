@@ -577,7 +577,7 @@ def putAnnotation ( webargs, postdata ):
       if voxels.shape[1] != 3:
         raise ANNError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
 
-      db.annotate ( anno.annid, resolution, voxels, conflictopt )
+      exceptions = db.annotate ( anno.annid, resolution, voxels, conflictopt )
 
     # Otherwise this is a shave operation
     elif voxels and 'reduce' in options:
