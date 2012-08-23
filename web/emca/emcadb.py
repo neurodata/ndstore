@@ -90,7 +90,7 @@ class EMCADB:
       raise ANNError ( "Failed to create annotation identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # Here we've queried the highest id successfully    
-    row = cursor.fetchone ()
+    row = cursor.fetchone()
     # if the table is empty start at 1, 0 is no annotation
     if ( row[0] == None ):
       identifier = 1
@@ -117,7 +117,7 @@ class EMCADB:
       raise ANNError ( "Failed to create annotation identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # Here we've queried the highest id successfully    
-    row = cursor.fetchone ()
+    row = cursor.fetchone()
     # if the table is empty start at 1, 0 is no annotation
     if ( row[0] == None ):
       identifier = 1
@@ -182,7 +182,7 @@ class EMCADB:
       print "Failed to retrieve cube %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise ANNError ( "Failed to retrieve data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
-    row = cursor.fetchone ()
+    row = cursor.fetchone()
 
     # If we can't find a cube, assume it hasn't been written yet
     if ( row == None ):
@@ -295,8 +295,33 @@ class EMCADB:
       print "Error reading exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       assert 0
 
-    row = cursor.fetchone ()
+    row = cursor.fetchone()
+    cursor.close()
 
+    # If we can't find a list of exceptions, they don't exist
+    if ( row == None ):
+      return []
+    else: 
+      fobj = cStringIO.StringIO ( zlib.decompress(row[0]) )
+      return np.load (fobj)
+
+  #
+  # getAllExceptions
+  #
+  def getAllExceptions ( self, key, resolution ):
+    """Load all exceptions for this cube"""
+
+    cursor = self.conn.cursor ()
+
+    # get the block from the database
+    sql = "SELECT id, exlist FROM %s where zindex=%s" % ( 'exc'+str(resolution), key )
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      print "Error reading exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      assert 0
+
+    row = cursor.fetchall()
     cursor.close()
 
     # If we can't find a list of exceptions, they don't exist
@@ -472,11 +497,19 @@ class EMCADB:
       offset = [cubeoff[0]*cubedim[0],cubeoff[1]*cubedim[1],cubeoff[2]*cubedim[2]]
 
       # remove the items
-      exceptions = np.array(cube.shave(entityid, offset, voxlist), dtype=np.uint8)
+      exlist, zeroed = cube.shave(entityid, offset, voxlist)
+      # make sure that exceptions are stored as 8 bits
+      exceptions = np.array(exlist, dtype=np.uint8)
+
       # update the sparse list of exceptions
       if EXCEPTIONS:
         if len(exceptions) != 0:
           self.removeExceptions ( key, resolution, entityid, exceptions )
+
+      # zeroed is the list that needs to get promoted here.
+      # RBTODO
+#      if EXCEPTIONS:
+#        for z in zeroed
 
       self.putCube ( key, resolution, cube)
 
@@ -776,7 +809,7 @@ class EMCADB:
       print "Error reading annotation data: %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       assert 0
 
-    row = cursor.fetchone ()
+    row=cursor.fetchone()
 
     # If we can't find a cube, assume it hasn't been written yet
     if ( row == None ):

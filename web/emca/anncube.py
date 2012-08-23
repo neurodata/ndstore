@@ -10,6 +10,7 @@ import zindex
 from cube import Cube
 
 from ann_cy import annotate_cy
+from ann_cy import shave_cy
 from ann_cy import recolor_cy
 
 #
