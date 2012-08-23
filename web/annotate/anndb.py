@@ -359,7 +359,7 @@ class AnnotateDB:
     cubeidx = defaultdict(set)
 
     # convert voxels z coordinate
-    locations[:,2] = locations[:,2] - 1
+    locations[:,2] = locations[:,2] - self.dbcfg.slicerange[0]
 
     cubelocs = cubeLocs_cy ( np.array(locations, dtype=np.uint32), cubedim )
 
