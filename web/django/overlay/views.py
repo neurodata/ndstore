@@ -7,12 +7,9 @@ import zlib
 
 import cStringIO
 
-#TODO need to get url from django
-
 """Merge two cutouts one from a data set and one from an annotation database"""
 
-
-def overlay (request, webargs):
+def imgAnnoOverlay (request, webargs):
   """Get both data and annotation cubes as npz"""
 
   datatoken, annotoken, cutout = webargs.split('/',2)
@@ -20,6 +17,8 @@ def overlay (request, webargs):
 #  dataurl = request.build_absolute_uri( '/emca/%s/%s' % ( datatoken, cutout ))
 #  annourl = request.build_absolute_uri( '/emca/%s/%s' % ( annotoken, cutout ))
 
+  # RBTODO can't seen to get WSGIScriptAlias information from apache.  So 
+  #  right now we have to hardwire.  Yuck.
   dataurl = request.build_absolute_uri( '/EM/emca/%s/%s' % ( datatoken, cutout ))
   annourl = request.build_absolute_uri( '/EM/emca/%s/%s' % ( annotoken, cutout ))
 
