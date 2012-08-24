@@ -6,5 +6,6 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     url(r'^emca/', include('emca.urls')),
+    url(r'^overlay/', include('overlay.urls')),
     url(r'^admin/', include(admin.site.urls)),
 )
