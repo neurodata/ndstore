@@ -15,20 +15,13 @@ import cStringIO
 def overlay (request, webargs):
   """Get both data and annotation cubes as npz"""
 
-  import pdb; pdb.set_trace()
-
-  # Build the urls for the two requests
-  if request.is_secure():
-    protocol = "https"
-  else:
-    protocol = "http"
-
-  baseurl=request.get_host()
-
   datatoken, annotoken, cutout = webargs.split('/',2)
 
-  dataurl = '%s://%s/emca/%s/%s' % ( protocol, baseurl, datatoken, cutout )
-  annourl = '%s://%s/emca/%s/%s' % ( protocol, baseurl, annotoken, cutout )
+#  dataurl = request.build_absolute_uri( '/emca/%s/%s' % ( datatoken, cutout ))
+#  annourl = request.build_absolute_uri( '/emca/%s/%s' % ( annotoken, cutout ))
+
+  dataurl = request.build_absolute_uri( '/EM/emca/%s/%s' % ( datatoken, cutout ))
+  annourl = request.build_absolute_uri( '/EM/emca/%s/%s' % ( annotoken, cutout ))
 
   # Get data 
   try:

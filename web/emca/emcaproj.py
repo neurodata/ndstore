@@ -26,9 +26,9 @@ class EMCAProject:
     # RBTODO make programmatic
     if dbname =='hayworth5nm':
       self.dbtype = IMAGES
-    if dbname =='kasthuri11':
+    elif dbname =='kasthuri11':
       self.dbtype = IMAGES
-    if dbname =='bock11':
+    elif dbname =='bock11':
       self.dbtype = IMAGES
     else:
       self.dbtype = ANNOTATIONS

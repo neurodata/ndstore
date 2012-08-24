@@ -2,7 +2,6 @@
 #  dbconfig: based class for database configuration
 #
 
-
 class DBConfigError(Exception): 
   """Failed to load dataset"""
   def __init__(self, value):
@@ -55,5 +54,5 @@ def switchDataset ( dataset ):
     return dbconfigwill.dbConfigWill()
   else:
     # RBTODO make this a dbconfig exception
-    raise DBConfigError ("Could not find dataset = %s" % annoproj.getDataSet() )
+    raise DBConfigError ("Could not find dataset = %s" % dataset)
 
