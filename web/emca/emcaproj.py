@@ -26,6 +26,10 @@ class EMCAProject:
     # RBTODO make programmatic
     if dbname =='hayworth5nm':
       self.dbtype = IMAGES
+    if dbname =='kasthuri11':
+      self.dbtype = IMAGES
+    if dbname =='bock11':
+      self.dbtype = IMAGES
     else:
       self.dbtype = ANNOTATIONS
     # Could add these to dbconfig.  Probably remove res as tablebase instead
