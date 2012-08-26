@@ -7,6 +7,9 @@ import zlib
 
 import cStringIO
 
+# CATMAID parameter
+CM_TILESIZE=256
+
 """Merge two cutouts one from a data set and one from an annotation database"""
 
 def imgAnnoOverlay (request, webargs):
@@ -55,6 +58,25 @@ def imgAnnoOverlay (request, webargs):
 
   fobj2.seek(0)
   return django.http.HttpResponse(fobj2.read(), mimetype="image/png" )
+
+
+def catmaid (request, webargs):
+  """Convert a CATMAID request into an imgAnnoOverlay.
+    Webargs are going to be in the form of project/res/xtile/ytile/ztile/"""
+
+  project, resstr, xtilestr, ytilestr, zslicestr, rest = webargs.split('/',6)
+  xtile = int(xtilestr)
+  ytile = int(ytilestr)
+
+  # Look up the project
+  #  RBTODO for now.  Hard code the kasthuri11 and kat11
+  if project == 'kat11':
+    newwebargs = '%s/%s/xy/%s/%s,%s/%s,%s/%s/' % ( 'kasthuri11', 'kat11', resstr, xtile*CM_TILESIZE, (xtile+1)*CM_TILESIZE, ytile*CM_TILESIZE, (ytile+1)*CM_TILESIZE, zslicestr )
+
+    return imgAnnoOverlay ( request, newwebargs )
+     
+  else:
+    return django.http.HttpResponseNotFound("No such CATMAID project")
 
 
 
