@@ -117,6 +117,7 @@ class AnnotateIndex:
                assert 0
                
       cursor.close()
+<<<<<<< HEAD:web/emca/annindex.py
       self.conn.commit()
               #self.updateIndex(key,cubeIdx,resolution)
 
@@ -126,6 +127,7 @@ class AnnotateIndex:
    #
    def deleteIndex(self,annid,resolutions):
       """delete the index for a given annid""" 
+      
       cursor = self.conn.cursor ()
 
       #delete Index table for each resolution
