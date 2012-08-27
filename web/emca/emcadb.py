@@ -114,15 +114,6 @@ class EMCADB:
     try:
       cursor.execute ( sql )
 
-<<<<<<< HEAD:web/emca/emcadb.py
-    # Here we've queried the highest id successfully    
-    row = cursor.fetchone()
-    # if the table is empty start at 1, 0 is no annotation
-    if ( row[0] == None ):
-      identifier = 1
-    else:
-      identifier = int ( row[0] ) + 1
-=======
       sql = "SELECT max(id) FROM " + str ( self.annoproj.getIDsTbl() )
       try:
         cursor.execute ( sql )
@@ -144,16 +135,12 @@ class EMCADB:
         cursor.execute ( sql )
       except MySQLdb.Error, e:
         raise ANNError ( "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
->>>>>>> master:web/annotate/anndb.py
 
     except MySQLdb.Error, e:
-      raise ANNError ( "Failed to lock IDs table %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise 
     finally:
       sql = "UNLOCK TABLES" 
-      try:
-        cursor.execute ( sql )
-      except MySQLdb.Error, e:
-        raise ANNError ( "Failed to unlock IDs table %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      cursor.execute ( sql )
 
     cursor.close()
 
