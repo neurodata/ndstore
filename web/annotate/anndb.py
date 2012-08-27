@@ -104,29 +104,42 @@ class AnnotateDB:
     """Get an new identifier"""
     
     # Query the current max identifier
+
     cursor = self.conn.cursor ()
-    sql = "SELECT max(id) FROM " + str ( self.annoproj.getIDsTbl() )
+    sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getIDsTbl() )
     try:
       cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      print "Problem retrieving identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-      raise ANNError ( "Failed to create annotation identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
-    # Here we've queried the highest id successfully    
-    row = cursor.fetchone ()
-    # if the table is empty start at 1, 0 is no annotation
-    if ( row[0] == None ):
-      identifier = 1
-    else:
-      identifier = int ( row[0] ) + 1
+      sql = "SELECT max(id) FROM " + str ( self.annoproj.getIDsTbl() )
+      try:
+        cursor.execute ( sql )
+      except MySQLdb.Error, e:
+        print "Problem retrieving identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+        raise ANNError ( "Failed to create annotation identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
-    # increment and update query
-    sql = "INSERT INTO " + str(self.annoproj.getIDsTbl()) + " VALUES ( " + str(identifier) + " ) "
-    try:
-      cursor.execute ( sql )
+      # Here we've queried the highest id successfully    
+      row = cursor.fetchone ()
+      # if the table is empty start at 1, 0 is no annotation
+      if ( row[0] == None ):
+        identifier = 1
+      else:
+        identifier = int ( row[0] ) + 1
+
+      # increment and update query
+      sql = "INSERT INTO " + str(self.annoproj.getIDsTbl()) + " VALUES ( " + str(identifier) + " ) "
+      try:
+        cursor.execute ( sql )
+      except MySQLdb.Error, e:
+        raise ANNError ( "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
     except MySQLdb.Error, e:
-      print "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-      raise ANNError ( "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise ANNError ( "Failed to lock IDs table %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+    finally:
+      sql = "UNLOCK TABLES" 
+      try:
+        cursor.execute ( sql )
+      except MySQLdb.Error, e:
+        raise ANNError ( "Failed to unlock IDs table %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     cursor.close()
 
@@ -148,7 +161,6 @@ class AnnotateDB:
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise ANNError ( "Failed to set identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     cursor.close()
@@ -175,7 +187,6 @@ class AnnotateDB:
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Failed to retrieve cube %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise ANNError ( "Failed to retrieve data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     row = cursor.fetchone ()
@@ -211,7 +222,6 @@ class AnnotateDB:
       try:
         cursor.execute ( sql, (key,npz))
       except MySQLdb.Error, e:
-        print "Error inserting cube %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
         raise ANNError ( "Error inserting cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     else:
@@ -220,7 +230,6 @@ class AnnotateDB:
       try:
         cursor.execute ( sql, (npz))
       except MySQLdb.Error, e:
-        print "Error updating cube %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
         raise ANNError ( "Error updating data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     #RBTODO shouldn't need this commit, but somehow we do.
@@ -246,7 +255,6 @@ class AnnotateDB:
     try:
       self._qr_cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Failed to retrieve cube %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise ANNError ( "Failed to retrieve data cube : %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
   
@@ -288,8 +296,7 @@ class AnnotateDB:
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Error reading exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-      assert 0
+      raise ANNError ( "Error reading exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     row = cursor.fetchone ()
 
@@ -320,10 +327,8 @@ class AnnotateDB:
       try:
         fileobj = cStringIO.StringIO ()
         np.save ( fileobj, exceptions )
-        print sql, key, entityid 
         cursor.execute ( sql, (key, entityid, zlib.compress(fileobj.getvalue())))
       except MySQLdb.Error, e:
-        print "Error inserting exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
         raise ANNError ( "Error inserting exceptions: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
     # In this case we have an update query
     else:
@@ -338,8 +343,7 @@ class AnnotateDB:
         np.save ( fileobj, newexlist )
         cursor.execute ( sql, (key, entityid, zlib.compress(fileobj.getvalue())))
       except MySQLdb.Error, e:
-        print "Error updating exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-        assert 0
+        raise ANNError ( "Error updating exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
 
   #
@@ -459,8 +463,8 @@ class AnnotateDB:
                 index_dict[exid].add(key)
 
           else:
-            print "Unsupported conflict option.  FIX ME"
-            assert 0
+           
+            raise ANNError ( "Unsupported conflict option %s" % conflictopt )
 
           self.putCube ( key, resolution, cube)
 
@@ -603,8 +607,7 @@ class AnnotateDB:
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Error reading annotation data: %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-      assert 0
+      raise ANNError ( "Error reading annotation data: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     row = cursor.fetchone ()
 

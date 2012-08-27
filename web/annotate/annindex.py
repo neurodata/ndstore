@@ -117,10 +117,5 @@ class AnnotateIndex:
                assert 0
                
       cursor.close()
-      self.conn.commit()
-              #self.updateIndex(key,cubeIdx,resolution)
-      pass
-
-
 
 # end AnnotateIndex
