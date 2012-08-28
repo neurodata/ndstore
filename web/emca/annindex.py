@@ -16,25 +16,11 @@ class AnnotateIndex:
 
   # Constructor 
   #
-   def __init__(self,dbconf,emcaproj):
-      self.dbcfg = dbconf
-      self.proj = emcaproj
-      
-      dbinfo = self.proj.getDBHost(), self.proj.getDBUser(), self.proj.getDBPasswd(), self.proj.getDBName()
+   def __init__(self,conn,proj):
+      """Give an active connection.  This puts all index operations in the same transation as the calling db."""
 
-    # Connection info                                                                                                
-      try:
-         self.conn = MySQLdb.connect (host = self.proj.getDBHost(),
-                                      user = self.proj.getDBUser(),
-                                      passwd = self.proj.getDBPasswd(),
-                                      db = self.proj.getDBName())
-      except:
-         raise AnnError ( dbinfo )
-    
-    # How many slices?                                                                                               
-      [ self.startslice, endslice ] = self.dbcfg.slicerange
-      self.slices = endslice - self.startslice + 1
-      pass
+      self.conn = conn
+      self.proj = proj
    
    def __del__(self):
       """Destructor"""
@@ -117,9 +103,6 @@ class AnnotateIndex:
                assert 0
                
       cursor.close()
-<<<<<<< HEAD:web/emca/annindex.py
-      self.conn.commit()
-              #self.updateIndex(key,cubeIdx,resolution)
 
    #
    #deleteIndex:
@@ -143,5 +126,4 @@ class AnnotateIndex:
          except BaseException, e:
             print "DBG: SOMETHING REALLY WRONG HERE", e
       cursor.close()
-      self.conn.commit()
 # end AnnotateIndex

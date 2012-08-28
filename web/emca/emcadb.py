@@ -56,7 +56,7 @@ class EMCADB:
     self.slices = endslice - self.startslice + 1 
 
     # create annidx object
-    self.annoIdx = annindex.AnnotateIndex (dbconf,annoproj)
+    self.annoIdx = annindex.AnnotateIndex (self.conn, self.annoproj)
 
 
   def commit ( self ):
