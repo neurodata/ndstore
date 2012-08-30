@@ -117,6 +117,7 @@ class AnnotateIndex:
                assert 0
                
       cursor.close()
+<<<<<<< HEAD
       self.conn.commit()
               #self.updateIndex(key,cubeIdx,resolution)
 
@@ -127,6 +128,8 @@ class AnnotateIndex:
    def deleteIndex(self,annid,resolutions):
       """delete the index for a given annid""" 
       cursor = self.conn.cursor ()
+=======
+>>>>>>> 2cd2ce566b4f69b79009068aa81bea408470a666
 
       #delete Index table for each resolution
       for res in resolutions:
