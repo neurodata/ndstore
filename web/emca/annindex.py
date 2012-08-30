@@ -16,25 +16,11 @@ class AnnotateIndex:
 
   # Constructor 
   #
-   def __init__(self,dbconf,emcaproj):
-      self.dbcfg = dbconf
-      self.proj = emcaproj
-      
-      dbinfo = self.proj.getDBHost(), self.proj.getDBUser(), self.proj.getDBPasswd(), self.proj.getDBName()
+   def __init__(self,conn,proj):
+      """Give an active connection.  This puts all index operations in the same transation as the calling db."""
 
-    # Connection info                                                                                                
-      try:
-         self.conn = MySQLdb.connect (host = self.proj.getDBHost(),
-                                      user = self.proj.getDBUser(),
-                                      passwd = self.proj.getDBPasswd(),
-                                      db = self.proj.getDBName())
-      except:
-         raise AnnError ( dbinfo )
-    
-    # How many slices?                                                                                               
-      [ self.startslice, endslice ] = self.dbcfg.slicerange
-      self.slices = endslice - self.startslice + 1
-      pass
+      self.conn = conn
+      self.proj = proj
    
    def __del__(self):
       """Destructor"""
@@ -118,8 +104,11 @@ class AnnotateIndex:
                
       cursor.close()
 <<<<<<< HEAD
+<<<<<<< HEAD
       self.conn.commit()
               #self.updateIndex(key,cubeIdx,resolution)
+=======
+>>>>>>> a360c715f0cdbc39ce89a9f2f19fd2fa84d43322
 
    #
    #deleteIndex:
@@ -127,9 +116,13 @@ class AnnotateIndex:
    #
    def deleteIndex(self,annid,resolutions):
       """delete the index for a given annid""" 
+      
       cursor = self.conn.cursor ()
+<<<<<<< HEAD
 =======
 >>>>>>> 2cd2ce566b4f69b79009068aa81bea408470a666
+=======
+>>>>>>> a360c715f0cdbc39ce89a9f2f19fd2fa84d43322
 
       #delete Index table for each resolution
       for res in resolutions:
@@ -144,5 +137,4 @@ class AnnotateIndex:
          except BaseException, e:
             print "DBG: SOMETHING REALLY WRONG HERE", e
       cursor.close()
-      self.conn.commit()
 # end AnnotateIndex

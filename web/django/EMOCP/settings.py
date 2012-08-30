@@ -124,7 +124,7 @@ INSTALLED_APPS = (
     # 'django.contrib.admindocs',
     #RB 3/26 add applications
     'emca',
-
+    'overlay',
 )
 
 # A sample logging configuration. The only tangible logging

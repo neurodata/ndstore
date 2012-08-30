@@ -56,7 +56,7 @@ class EMCADB:
     self.slices = endslice - self.startslice + 1 
 
     # create annidx object
-    self.annoIdx = annindex.AnnotateIndex (dbconf,annoproj)
+    self.annoIdx = annindex.AnnotateIndex (self.conn, self.annoproj)
 
 
   def commit ( self ):
@@ -137,13 +137,10 @@ class EMCADB:
         raise ANNError ( "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     except MySQLdb.Error, e:
-      raise ANNError ( "Failed to lock IDs table %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise 
     finally:
       sql = "UNLOCK TABLES" 
-      try:
-        cursor.execute ( sql )
-      except MySQLdb.Error, e:
-        raise ANNError ( "Failed to unlock IDs table %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      cursor.execute ( sql )
 
     cursor.close()
 
