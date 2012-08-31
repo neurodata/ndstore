@@ -1,5 +1,3 @@
-# TODO move all the fobj.read() stuff to django files.
-
 import sys
 import StringIO
 import tempfile
@@ -63,9 +61,10 @@ def numpyZip ( imageargs, dbcfg, proj ):
   np.save ( fileobj, cube.data )
   cdz = zlib.compress (fileobj.getvalue()) 
 
-  return cdz
-
-
+  # Package the object as a Web readable file handle
+  fileobj = cStringIO.StringIO ( cdz )
+  fileobj.seek(0)
+  return fileobj.read()
 
 #
 #  Return a HDF5 file
