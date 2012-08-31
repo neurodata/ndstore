@@ -1,12 +1,15 @@
 import django.http
+import MySQLdb
+import cStringIO
 
 import empaths
 import zindex
 import emcarest
+import emcaproj
+import dbconfig
 
 # Errors we are going to catch
 from emcaerror import ANNError
-import MySQLdb
 
 def index(request):
     return django.http.HttpResponse("This view works.")
@@ -74,3 +77,16 @@ def getannoobjects ( request, webargs ):
   except ANNError, e:
     return django.http.HttpResponseNotFound(e.value)
 
+def catmaid (request, webargs):
+  """Convert a CATMAID request into an cutout."""
+
+  try:
+    catmaidimg = emcarest.emcacatmaid(webargs)
+
+    fobj = cStringIO.StringIO ( )
+    catmaidimg.save ( fobj, "PNG" )
+    fobj.seek(0)
+    return django.http.HttpResponse(fobj.read(), mimetype="image/png")
+
+  except Exception, e:
+    return django.http.HttpResponseNotFound(e)

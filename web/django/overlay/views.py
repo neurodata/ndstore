@@ -9,11 +9,11 @@ import cStringIO
 
 import empaths
 import emcaproj
+import emcarest
+import dbconfig
 
 from emcaerror import ANNError
 
-# CATMAID parameter
-CM_TILESIZE=256
 
 """Merge two cutouts one from a data set and one from an annotation database"""
 
@@ -67,39 +67,40 @@ def imgAnnoOverlay (request, webargs):
 
   return django.http.HttpResponse(fobj2.read(), mimetype="image/png" )
 
+
+############### Run CATMAID through the cutout service
+
+# CATMAID parameter
+CM_TILESIZE=256
+
 def catmaid (request, webargs):
   """Convert a CATMAID request into an imgAnnoOverlay.
     Webargs are going to be in the form of project/res/xtile/ytile/ztile/"""
 
-  import pdb; pdb.set_trace()
-#
-  token, plane, resstr, xtilestr, ytilestr, zslicestr, rest = webargs.split('/',7)
-  xtile = int(xtilestr)
-  ytile = int(ytilestr)
-
-  # Get the project and dataset
   try:
+
+    token, imageargs = webargs.split('/',1)
+
+    # Get the project and dataset
     projdb = emcaproj.EMCAProjectsDB()
     proj = projdb.getProj ( token )
 
-    # build the overlay request
-    if plane=='xy':
+    annimg = emcarest.emcacatmaid(webargs)
+    dataimg = emcarest.emcacatmaid ( proj.getDataset() + '/' + imageargs )
 
-      newwebargs = '%s/%s/%s/%s/%s,%s/%s,%s/%s/' % ( proj.getDataset(), token, plane, resstr, xtile*CM_TILESIZE, (xtile+1)*CM_TILESIZE, ytile*CM_TILESIZE, (ytile+1)*CM_TILESIZE, zslicestr )
+    # upsample the dataimage to 32 bit RGBA
+    dataimg = dataimg.convert("RGBA")
+    # make a composite of the two images
+    compimg = Image.composite ( annimg, dataimg, annimg )
 
-      overlayimg = overlayCutout ( request, newwebargs )
+    # write the merged image to a buffer
+    fobj2 = cStringIO.StringIO ( )
+    compimg.save ( fobj2, "PNG" )
 
-    else:
-      raise ANNError ( "No such cutout plane: %s.  Must be (xy|xz|yz)." % plane )
+    fobj2.seek(0)
 
+    return django.http.HttpResponse(fobj2.read(), mimetype="image/png" )
 
   except Exception, e:
     return django.http.HttpResponseNotFound(e)
 
-  # write the merged image to a buffer
-  fobj2 = cStringIO.StringIO ( )
-  overlayimg.save ( fobj2, "PNG" )
-
-  fobj2.seek(0)
-
-  return django.http.HttpResponse(fobj2.read(), mimetype="image/png" )

@@ -1,3 +1,5 @@
+# TODO move all the fobj.read() stuff to django files.
+
 import sys
 import StringIO
 import tempfile
@@ -7,6 +9,7 @@ import h5py
 import os
 import cStringIO
 import re
+from PIL import Image
 
 import empaths
 import restargs
@@ -17,6 +20,7 @@ import emcaproj
 import h5ann
 
 from ann_cy import assignVoxels_cy
+from ann_cy import recolor_cy
 
 from emcaerror import ANNError
 from pprint import pprint
@@ -59,10 +63,8 @@ def numpyZip ( imageargs, dbcfg, proj ):
   np.save ( fileobj, cube.data )
   cdz = zlib.compress (fileobj.getvalue()) 
 
-  # Package the object as a Web readable file handle
-  fileobj = cStringIO.StringIO ( cdz )
-  fileobj.seek(0)
-  return fileobj.read()
+  return cdz
+
 
 
 #
@@ -86,8 +88,8 @@ def HDF5 ( imageargs, dbcfg, proj ):
 #  **Image return a readable png object
 #    where ** is xy, xz, yz
 #
-def xyImage ( imageargs, dbcfg, proj ):
-  """Return an xy plane fileobj.read()"""
+def xySlice ( imageargs, dbcfg, proj ):
+  """Return the cube object for an xy plane"""
 
   # Perform argument processing
   args = restargs.BrainRestArgs ();
@@ -99,15 +101,20 @@ def xyImage ( imageargs, dbcfg, proj ):
   resolution = args.getResolution()
 
   db = emcadb.EMCADB ( dbcfg, proj )
-  cb = db.cutout ( corner, dim, resolution )
+  return db.cutout ( corner, dim, resolution )
+
+def xyImage ( imageargs, dbcfg, proj ):
+  """Return an xy plane fileobj.read()"""
+
+  cb = xySlice ( imageargs, dbcfg, proj )
   fileobj = cStringIO.StringIO ( )
   cb.xySlice ( fileobj )
 
   fileobj.seek(0)
   return fileobj.read()
 
-def xzImage ( imageargs, dbcfg, proj ):
-  """Return an xz plane fileobj.read()"""
+def xzSlice ( imageargs, dbcfg, proj ):
+  """Return an xz plane cube"""
 
   # Perform argument processing
   args = restargs.BrainRestArgs ();
@@ -119,15 +126,24 @@ def xzImage ( imageargs, dbcfg, proj ):
   resolution = args.getResolution()
 
   db = emcadb.EMCADB ( dbcfg, proj )
-  cb = db.cutout ( corner, dim, resolution )
-  fileobj = cStringIO.StringIO ( )
-  cb.xzSlice ( dbcfg.zscale[resolution], fileobj )
+  return db.cutout ( corner, dim, resolution )
 
+
+def xzImage ( imageargs, dbcfg, proj ):
+  """Return an xz plane fileobj.read()"""
+
+  # little awkward because we need resolution here
+  # it will be reparse in xzSlice
+  resolution, sym, rest = imageargs.partition("/")
+
+  cb = xzSlice ( imageargs, dbcfg, proj )
+  fileobj = cStringIO.StringIO ( )
+  cb.xzSlice ( dbcfg.zscale[int(resolution)], fileobj )
   fileobj.seek(0)
   return fileobj.read()
 
-def yzImage ( imageargs, dbcfg, proj ):
-  """Return an yz plane fileobj.read()"""
+def yzSlice ( imageargs, dbcfg, proj ):
+  """Return an yz plane as a cube"""
 
   # Perform argument processing
   args = restargs.BrainRestArgs ();
@@ -139,9 +155,18 @@ def yzImage ( imageargs, dbcfg, proj ):
   resolution = args.getResolution()
 
   db = emcadb.EMCADB ( dbcfg, proj )
-  cb = db.cutout ( corner, dim, resolution )
+  return db.cutout ( corner, dim, resolution )
+
+def yzImage ( imageargs, dbcfg, proj ):
+  """Return an yz plane fileobj.read()"""
+
+  # little awkward because we need resolution here
+  # it will be reparse in xzSlice
+  resolution, sym, rest = imageargs.partition("/")
+
+  cb = yzSlice (imageargs, dbcfg, proj)
   fileobj = cStringIO.StringIO ( )
-  cb.yzSlice ( dbcfg.zscale[resolution], fileobj )
+  cb.yzSlice ( dbcfg.zscale[int(resolution)], fileobj )
 
   fileobj.seek(0)
   return fileobj.read()
@@ -403,6 +428,74 @@ def annopost ( webargs, postdata ):
   proj = projdb.getProj ( token )
   dbcfg = dbconfig.switchDataset ( proj.getDataset() )
   return selectPost ( rangeargs, dbcfg, proj, postdata )
+
+
+def emcacatmaid ( webargs ):
+  """Interface to the cutout service for catmaid request.  It does address translation."""
+
+  CM_TILESIZE=256
+
+  token, plane, resstr, xtilestr, ytilestr, zslicestr, rest = webargs.split('/',7)
+  xtile = int(xtilestr)
+  ytile = int(ytilestr)
+
+  projdb = emcaproj.EMCAProjectsDB()
+  proj = projdb.getProj ( token )
+  dbcfg = dbconfig.switchDataset ( proj.getDataset() )
+
+  # build the overlay request
+  if plane=='xy':
+
+    imageargs = '%s/%s,%s/%s,%s/%s/' % ( resstr, xtile*CM_TILESIZE, (xtile+1)*CM_TILESIZE, ytile*CM_TILESIZE, (ytile+1)*CM_TILESIZE, zslicestr )
+
+    cb = xySlice ( imageargs, dbcfg, proj )
+    cutoutdata = cb.data.reshape([CM_TILESIZE,CM_TILESIZE])
+
+  elif plane=='xz' or plane=='yz':
+
+    # The x or y plane is normal.  The z plane needs some translation.
+    #  the ytilestr actually represents data in the z-plane
+    pixelsperslice = dbcfg.zscale[int(resstr)]
+
+    # Now we need the ytile'th set of CM_TILESZ
+    ystart = ytile*int(float(CM_TILESIZE)/pixelsperslice)
+    # get more data so that we always have 512 pixels 
+    yend = (ytile+1)*int(float(CM_TILESIZE)/pixelsperslice+1)
+
+    if plane=='xz':
+      imageargs = '%s/%s,%s/%s/%s,%s/' % ( resstr, xtile*CM_TILESIZE, (xtile+1)*CM_TILESIZE, zslicestr, ystart, yend )
+      cb = xzSlice ( imageargs, dbcfg, proj )
+
+      if cb.data.shape != [CM_TILESIZE,1,CM_TILESIZE]:
+        cutoutdata = np.zeros ( [CM_TILESIZE,CM_TILESIZE], dtype=cb.data.dtype )
+        cutoutdata[0:cb.data.shape[0],0:cb.data.shape[2]] = cb.data.reshape([cb.data.shape[0],cb.data.shape[2]])
+      else:
+        # reshape
+        cutoutdata = cb.data.reshape([CM_TILESIZE,CM_TILESIZE])
+
+    elif plane=='yz':
+      imageargs = '%s/%s/%s,%s/%s,%s/' % ( resstr, zslicestr, xtile*CM_TILESIZE, (xtile+1)*CM_TILESIZE, ystart, yend )
+      cb = yzSlice ( imageargs, dbcfg, proj )
+      if cb.data.shape != [CM_TILESIZE,CM_TILESIZE,1]:
+        cutoutdata = np.zeros ( [CM_TILESIZE,CM_TILESIZE], dtype=cb.data.dtype)
+        cutoutdata[0:cb.data.shape[0],0:cb.data.shape[1]] = cb.data.reshape([cb.data.shape[0],cb.data.shape[1]])
+      else:
+        cutoutdata = cb.data.reshape([CM_TILESIZE,CM_TILESIZE])
+
+    else:
+      raise ANNError ( "No such cutout plane: %s.  Must be (xy|xz|yz)." % plane )
+
+  # Write the image to a readable stream
+  if cutoutdata.dtype==np.uint8:
+    outimage = Image.frombuffer ( 'L', [CM_TILESIZE,CM_TILESIZE], cutoutdata, 'raw', 'L', 0, 1 ) 
+  elif cutoutdata.dtype==np.uint32:
+    recolor_cy (cutoutdata, cutoutdata)
+    outimage = Image.frombuffer ( 'RGBA', [CM_TILESIZE,CM_TILESIZE], cutoutdata, 'raw', 'RGBA', 0, 1 ) 
+
+  return outimage
+    
+
+################# RAMON interfaces #######################
 
 
 """An enumeration for options processing in getAnnotation"""
