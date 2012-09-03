@@ -18,11 +18,6 @@ from ann_cy import cubeLocs_cy
 
 import sys
 
-#TODO -- what to do about promote?
-
-#RBTODO make configurable on a DB by DB basis
-EXCEPTIONS=True
-
 ################################################################################
 #
 #  class: EMCADB
@@ -39,6 +34,9 @@ class EMCADB:
 
     self.dbcfg = dbconf
     self.annoproj = annoproj
+
+    # Are there exceptions?
+    self.EXCEPT_FLAG = self.annoproj.getExceptions()
 
     dbinfo = self.annoproj.getDBHost(), self.annoproj.getDBUser(), self.annoproj.getDBPasswd(), self.annoproj.getDBName() 
 
@@ -446,7 +444,7 @@ class EMCADB:
       exceptions = np.array(cube.annotate(entityid, offset, voxlist, conflictopt), dtype=np.uint8)
 
       # update the sparse list of exceptions
-      if EXCEPTIONS:
+      if self.EXCEPT_FLAG:
         if len(exceptions) != 0:
           self.updateExceptions ( key, resolution, entityid, exceptions )
 
@@ -503,7 +501,7 @@ class EMCADB:
       exceptions = np.array(exlist, dtype=np.uint8)
 
       # update the sparse list of exceptions
-      if EXCEPTIONS:
+      if self.EXCEPT_FLAG:
         if len(exceptions) != 0:
           self.removeExceptions ( key, resolution, entityid, exceptions )
 
@@ -561,7 +559,7 @@ class EMCADB:
             cube.overwrite ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
           elif conflictopt == 'P':
             cube.preserve ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
-          elif conflictopt == 'E' and EXCEPTIONS:
+          elif conflictopt == 'E' and self.EXCEPT_FLAG:
             exdata = cube.exception ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
             for exid in np.unique ( exdata ):
               if exid != 0:
@@ -703,7 +701,7 @@ class EMCADB:
     ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
     xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
 
-    if (self.annoproj.dbtype == emcaproj.ANNOTATIONS):
+    if (self.annoproj.getDBType() == emcaproj.ANNOTATIONS):
 
       # input cube is the database size
       incube = anncube.AnnotateCube ( cubedim )
@@ -714,7 +712,7 @@ class EMCADB:
                                         znumcubes*zcubedim] )
       outcube.zeros()
 
-    elif (self.annoproj.dbtype == emcaproj.IMAGES):
+    elif (self.annoproj.getDBType() == emcaproj.IMAGES):
       
       incube = imagecube.ImageCube ( cubedim )
       outcube = imagecube.ImageCube ( [xnumcubes*xcubedim,\
@@ -863,7 +861,7 @@ class EMCADB:
           key = zindex.XYZMorton ([x+xstart,y+ystart,z+zstart])
           
           # Get exceptions if this DB supports it
-          if EXCEPTIONS:
+          if self.EXCEPT_FLAG:
             exceptions = self.getExceptions( key, resolution, entityid ) 
             if exceptions != []:
               # write as a loop first, then figure out how to optimize RBTODO   
@@ -908,7 +906,7 @@ class EMCADB:
 
       # RBTODO -- do we need a fast path for no exceptions?
       # Now add the exception voxels
-      if EXCEPTIONS:
+      if self.EXCEPT_FLAG:
         exceptions = self.getExceptions( zidx, resolution, entityid ) 
         if exceptions != []:
           voxels = np.append ( voxels.flatten(), exceptions.flatten())

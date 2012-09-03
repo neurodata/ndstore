@@ -33,7 +33,6 @@ def main():
     else:
       url = "http://%s/emca/%s/%s/voxels/%s/" % (result.baseurl,result.token,result.annid, result.resolution)
   elif result.voxels:
-  # RBTODO does this work?
     url = "http://%s/emca/%s/%s/voxels/" % (result.baseurl,result.token,result.annid)
   elif result.cutout != None:
     url = "http://%s/emca/%s/%s/cutout/%s/" % (result.baseurl,result.token,result.annid, result.cutout)

@@ -281,8 +281,8 @@ class AnnSynapse (Annotation):
     annotype = Annotation.retrieve ( self, annid, annodb )
 
     # verify the annotation object type
-    # RBTODO make an exception
-    assert ( annotype == ANNO_SYNAPSE )
+    if annotype != ANNO_SYNAPSE:
+      raise ANNError ( "Incompatible annotation type.  Expected SYNAPSE got %s" % annotype )
 
     sql = "SELECT synapse_type, weight FROM %s WHERE annoid = %s" % ( anno_dbtables['synapse'], annid )
 
@@ -522,8 +522,8 @@ class AnnSegment (Annotation):
     annotype = Annotation.retrieve ( self, annid, annodb )
 
     # verify the annotation object type
-    # RBTODO make an exception
-    assert ( annotype == ANNO_SEGMENT )
+    if annotype != ANNO_SEGMENT:
+      raise ANNError ( "Incompatible annotation type.  Expected SEGMENT got %s" % annotype )
 
     sql = "SELECT segmentclass, parentseed, neuron FROM %s WHERE annoid = %s" % ( anno_dbtables['segment'], annid )
 
@@ -613,8 +613,8 @@ class AnnNeuron (Annotation):
     annotype = Annotation.retrieve ( self, annid, annodb )
 
     # verify the annotation object type
-    # RBTODO make an exception
-    assert ( annotype == ANNO_NEURON )
+    if annotype != ANNO_NEURON:
+      raise ANNError ( "Incompatible annotation type.  Expected NEURON got %s" % annotype )
 
     if self.kvpairs.get('segments'):
       self.segments = [int(i) for i in self.kvpairs['segments'].split(',')]
@@ -728,8 +728,8 @@ class AnnOrganelle (Annotation):
     annotype = Annotation.retrieve ( self, annid, annodb )
 
     # verify the annotation object type
-    # RBTODO make an exception
-    assert ( annotype == ANNO_ORGANELLE )
+    if annotype != ANNO_ORGANELLE:
+      raise ANNError ( "Incompatible annotation type.  Expected ORGANELLE got %s" % annotype )
 
     sql = "SELECT organelleclass, parentseed, centroidx, centroidy, centroidz FROM %s WHERE annoid = %s" % ( anno_dbtables['organelle'], annid )
 

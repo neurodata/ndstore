@@ -20,14 +20,17 @@ from emcaerror import ANNError
 def overlayCutout (request, webargs):
   """Get both data and annotation cubes as npz"""
 
-  datatoken, annotoken, cutout = webargs.split('/',2)
+  token, cutout = webargs.split('/',1)
 
-  dataurl = request.build_absolute_uri( '/emca/%s/%s' % ( datatoken, cutout ))
-  annourl = request.build_absolute_uri( '/emca/%s/%s' % ( annotoken, cutout ))
+  # Get the project and dataset
+  projdb = emcaproj.EMCAProjectsDB()
+  proj = projdb.getProj ( token )
+
+  dataurl = request.build_absolute_uri( '%s/%s/%s' % ( proj.getDataURL(), proj.getDataset(), cutout ))
 
   # RBTODO can't seen to get WSGIScriptAlias information from apache.  So 
   #  right now we have to hardwire.  Yuck.
-#  dataurl = request.build_absolute_uri( '/EM/emca/%s/%s' % ( datatoken, cutout ))
+  annourl = request.build_absolute_uri( '/emca/%s/%s' % ( token, cutout ))
 #  annourl = request.build_absolute_uri( '/EM/emca/%s/%s' % ( annotoken, cutout ))
 
   # Get data 
@@ -86,7 +89,13 @@ def catmaid (request, webargs):
     proj = projdb.getProj ( token )
 
     annimg = emcarest.emcacatmaid(webargs)
-    dataimg = emcarest.emcacatmaid ( proj.getDataset() + '/' + imageargs )
+
+    #  fetch data from url
+    dataurl = request.build_absolute_uri( '%s/catmaid/%s/%s' % ( proj.getDataURL(), proj.getDataset(), imageargs ))
+    # Get data 
+    f = urllib2.urlopen ( dataurl )
+    fobj = cStringIO.StringIO ( f.read() )
+    dataimg = Image.open(fobj) 
 
     # upsample the dataimage to 32 bit RGBA
     dataimg = dataimg.convert("RGBA")

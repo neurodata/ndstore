@@ -374,9 +374,7 @@ def selectPost ( webargs, dbcfg, proj, postdata ):
       corner = args.getCorner()
       resolution = args.getResolution()
 
-      # RBTODO conflict option with cutout args doesn't work.  Using overwrite now.
-      #  Will probably need to fix cutout
-      #  Or make conflict option a part of the annotation database configuration.
+      # This is used for ingest only now.  So, overwrite conflict option.
       conflictopt = restargs.conflictOption ( "" )
 
       # get the data out of the compressed blob
@@ -442,13 +440,27 @@ def emcacatmaid ( webargs ):
   proj = projdb.getProj ( token )
   dbcfg = dbconfig.switchDataset ( proj.getDataset() )
 
-  # build the overlay request
+  resolution = int(resstr)
+
+  # build the cutout request
   if plane=='xy':
 
-    imageargs = '%s/%s,%s/%s,%s/%s/' % ( resstr, xtile*CM_TILESIZE, (xtile+1)*CM_TILESIZE, ytile*CM_TILESIZE, (ytile+1)*CM_TILESIZE, zslicestr )
+    # figure out the cutout (limit to max image size)
+    xstart = xtile*CM_TILESIZE
+    ystart = ytile*CM_TILESIZE
+    xend = min ((xtile+1)*CM_TILESIZE,dbcfg.imagesz[resolution][0])
+    yend = min ((ytile+1)*CM_TILESIZE,dbcfg.imagesz[resolution][0])
+  
+    imageargs = '%s/%s,%s/%s,%s/%s/' % ( resstr, xstart, xend, ystart, yend, zslicestr )
 
     cb = xySlice ( imageargs, dbcfg, proj )
-    cutoutdata = cb.data.reshape([CM_TILESIZE,CM_TILESIZE])
+
+    # reshape (if it's not a full cutout)
+    if cb.data.shape != [1,CM_TILESIZE,CM_TILESIZE]:
+      cutoutdata = np.zeros ( [CM_TILESIZE,CM_TILESIZE], dtype=cb.data.dtype )
+      cutoutdata[0:cb.data.shape[1],0:cb.data.shape[2]] = cb.data.reshape([cb.data.shape[1],cb.data.shape[2]])
+    else:
+      cutoutdata = cb.data.reshape([CM_TILESIZE,CM_TILESIZE])
 
   elif plane=='xz' or plane=='yz':
 
@@ -456,13 +468,20 @@ def emcacatmaid ( webargs ):
     #  the ytilestr actually represents data in the z-plane
     pixelsperslice = dbcfg.zscale[int(resstr)]
 
-    # Now we need the ytile'th set of CM_TILESZ
-    ystart = ytile*int(float(CM_TILESIZE)/pixelsperslice)
-    # get more data so that we always have 512 pixels 
-    yend = (ytile+1)*int(float(CM_TILESIZE)/pixelsperslice+1)
-
     if plane=='xz':
-      imageargs = '%s/%s,%s/%s/%s,%s/' % ( resstr, xtile*CM_TILESIZE, (xtile+1)*CM_TILESIZE, zslicestr, ystart, yend )
+
+      # figure out the cutout (limit to max image size)
+      xstart = xtile*CM_TILESIZE
+      xend = min ((xtile+1)*CM_TILESIZE,dbcfg.imagesz[resolution][0])
+
+      # Now we need the ytile'th set of CM_TILESZ
+      ystart = ytile*int(float(CM_TILESIZE)/pixelsperslice)
+      # get more data so that we always have 512 pixels 
+      yend = min((ytile+1)*int(float(CM_TILESIZE)/pixelsperslice+1),dbcfg.slicerange[1]-dbcfg.slicerange[0]+1)
+                  
+
+      imageargs = '%s/%s,%s/%s/%s,%s/' % ( resstr, xstart, xend, zslicestr, ystart, yend )
+
       cb = xzSlice ( imageargs, dbcfg, proj )
 
       if cb.data.shape != [CM_TILESIZE,1,CM_TILESIZE]:
@@ -473,6 +492,14 @@ def emcacatmaid ( webargs ):
         cutoutdata = cb.data.reshape([CM_TILESIZE,CM_TILESIZE])
 
     elif plane=='yz':
+
+      # figure out the cutout (limit to max image size)
+      xtart = xtile*CM_TILESIZE
+      xend = min ((xtile+1)*CM_TILESIZE,dbcfg.imagesz[resolution][1])
+
+      ystart = ytile*int(float(CM_TILESIZE)/pixelsperslice)
+      yend = min((ytile+1)*int(float(CM_TILESIZE)/pixelsperslice+1),dbcfg.slicerange[1]-dbcfg.slicerange[0]+1)
+
       imageargs = '%s/%s/%s,%s/%s,%s/' % ( resstr, zslicestr, xtile*CM_TILESIZE, (xtile+1)*CM_TILESIZE, ystart, yend )
       cb = yzSlice ( imageargs, dbcfg, proj )
       if cb.data.shape != [CM_TILESIZE,CM_TILESIZE,1]:

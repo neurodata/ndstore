@@ -44,7 +44,7 @@ def main():
   tmpfile = tempfile.NamedTemporaryFile()
   h5fh = h5py.File ( tmpfile.name )
 
-# RBTODO test with setting identifier
+# test with setting identifier
   h5fh.create_dataset ( "ANNOTATION_ID", (1,), np.uint32, data=result.annid )
   h5fh.create_dataset ( "RESOLUTION", (1,), np.uint32, data=result.resolution )
   h5fh.create_dataset ( "VOXELS", (len(voxlist),3), np.uint32, data=voxlist )

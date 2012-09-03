@@ -39,8 +39,6 @@ def main():
     neur.kvpairs[k]=v
 
   # neuron fields
-  # RBTODO make big
-#  neur.segments = [ random.randint(1,1000) for x in range(1000) ]
   neur.segments = [ random.randint(1,1000) for x in range(10) ]
 
   pprint(vars(neur))

@@ -24,6 +24,8 @@ def main():
 
   result = parser.parse_args()
 
+  import pdb; pdb.set_trace()
+
   url = 'http://' + result.baseurl + '/emca/' + result.dataset + '/npz/' +\
             str(result.resolution) + "/" +\
             str(result.xlow) + "," + str(result.xhigh) + "/" +\
