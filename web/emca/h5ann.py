@@ -180,6 +180,8 @@ def H5toAnnotation ( h5fh ):
         anno.parentseed = mdgrp['PARENTSEED'][0]
       if mdgrp.get('SEGMENTCLASS'):
         anno.segmentclass = mdgrp['SEGMENTCLASS'][0]
+      if mdgrp.get('NEURON'):
+        anno.neuron = mdgrp['NEURON'][0]
       if mdgrp.get('SYNAPSES') and len(mdgrp['SYNAPSES'])!=0:
         anno.synapses = mdgrp['SYNAPSES'][:]
       if mdgrp.get('ORGANELLES') and len(mdgrp['ORGANELLES'])!=0:
@@ -332,6 +334,7 @@ def SegmenttoH5 ( segment ):
   # Then customize
   h5segment.mdgrp.create_dataset ( "SEGMENTCLASS", (1,), np.float, data=segment.segmentclass )
   h5segment.mdgrp.create_dataset ( "PARENTSEED", (1,), np.uint32, data=segment.parentseed )
+  h5segment.mdgrp.create_dataset ( "NEURON", (1,), np.uint32, data=segment.neuron )
 
   # Lists (as arrays)
   if ( segment.synapses != [] ):

@@ -41,6 +41,7 @@ def main():
   # segment fields
   seg.parentseed = random.randint(1,100000)
   seg.segmentclass = random.randint(1,9)
+  seg.neuron = random.randint(1,100000)
   seg.synapses = [ random.randint(1,100000) for x in range(5) ]
   seg.organelles = [ random.randint(1,100000) for x in range(5) ]
 

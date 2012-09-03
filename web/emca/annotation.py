@@ -450,6 +450,7 @@ class AnnSegment (Annotation):
 
     self.segmentclass = 0            # enumerated label
     self.parentseed = 0              # seed that started this segment
+    self.neuron = 0                  # add a neuron field
     self.synapses = []               # synapses connected to this segment
     self.organelles = []             # organells associated with this segment
 
@@ -461,8 +462,8 @@ class AnnSegment (Annotation):
 
     cursor = annodb.conn.cursor()
 
-    sql = "INSERT INTO %s VALUES ( %s, %s, %s )"\
-            % ( anno_dbtables['segment'], self.annid, self.segmentclass, self.parentseed )
+    sql = "INSERT INTO %s VALUES ( %s, %s, %s, %s )"\
+            % ( anno_dbtables['segment'], self.annid, self.segmentclass, self.parentseed, self.neuron )
 
     try:
       cursor.execute ( sql )
@@ -489,8 +490,8 @@ class AnnSegment (Annotation):
 
     cursor = annodb.conn.cursor()
 
-    sql = "UPDATE %s SET segmentclass=%s, parentseed=%s WHERE annoid=%s "\
-            % (anno_dbtables['segment'], self.segmentclass, self.parentseed, self.annid)
+    sql = "UPDATE %s SET segmentclass=%s, parentseed=%s, neuron=%s WHERE annoid=%s "\
+            % (anno_dbtables['segment'], self.segmentclass, self.parentseed, self.neuron, self.annid)
 
     try:
       cursor.execute ( sql )
@@ -524,7 +525,7 @@ class AnnSegment (Annotation):
     # RBTODO make an exception
     assert ( annotype == ANNO_SEGMENT )
 
-    sql = "SELECT segmentclass, parentseed FROM %s WHERE annoid = %s" % ( anno_dbtables['segment'], annid )
+    sql = "SELECT segmentclass, parentseed, neuron FROM %s WHERE annoid = %s" % ( anno_dbtables['segment'], annid )
 
     try:
       cursor.execute ( sql )
@@ -532,7 +533,7 @@ class AnnSegment (Annotation):
       print "Error retrieving synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       raise ANNError ( "Error retrieving segment: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
-    ( self.segmentclass, self.parentseed ) = cursor.fetchone()
+    ( self.segmentclass, self.parentseed, self.neuron ) = cursor.fetchone()
 
     if self.kvpairs.get('synapses'):
       self.synapses = [int(i) for i in self.kvpairs['synapses'].split(',')]

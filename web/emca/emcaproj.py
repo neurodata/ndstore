@@ -5,7 +5,9 @@ import emcaprivate
 from emcaerror import ANNError
 import dbconfig
 
-# TODO need to make this work for both read-only projects and writeable projects.
+# TODO need to make this work for both read-only projects and writeable projects
+# TODO need to add dataset baseurl to projects
+# TODO need to add project type anno, 8-bit, 32-bit field
 
 # datatype enumerations
 IMAGES = 1
@@ -98,7 +100,6 @@ class EMCAProjectsDB:
 
     # if the project is not found.  error
     if ( row == None ):
-      # RBTODO this error occurs under load
       print "No project found"
       raise ANNError ( "Project token not found" )
 
@@ -157,7 +158,7 @@ class EMCAProjectsDB:
     sql += "CREATE TABLE annotations (annoid BIGINT PRIMARY KEY, type INT, confidence FLOAT, status INT);\n"
     sql += "CREATE TABLE seeds (annoid BIGINT PRIMARY KEY, parentid BIGINT, sourceid BIGINT, cube_location INT, positionx INT, positiony INT, positionz INT);\n"
     sql += "CREATE TABLE synapses (annoid BIGINT PRIMARY KEY, synapse_type INT, weight FLOAT);\n"
-    sql += "CREATE TABLE segments (annoid BIGINT PRIMARY KEY, segmentclass INT, parentseed INT);\n"
+    sql += "CREATE TABLE segments (annoid BIGINT PRIMARY KEY, segmentclass INT, parentseed INT, neuron INT);\n"
     sql += "CREATE TABLE organelles (annoid BIGINT PRIMARY KEY, organelleclass INT, parentseed INT, centroidx INT, centroidy INT, centroidz INT);\n"
     sql += "CREATE TABLE kvpairs ( annoid BIGINT, kv_key VARCHAR(255), kv_value VARCHAR(64000), PRIMARY KEY ( annoid, kv_key ));\n"
 
