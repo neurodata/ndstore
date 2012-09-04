@@ -361,7 +361,6 @@ def selectPost ( webargs, dbcfg, proj, postdata ):
       fileobj = cStringIO.StringIO ( postdata )
       voxlist =  np.load ( fileobj )
 
-
       conflictopt = restargs.conflictOption ( conflictargs )
       entityid = annoDB.annotate ( int(entity), int(resolution), voxlist, conflictopt )
 
@@ -395,6 +394,7 @@ def selectPost ( webargs, dbcfg, proj, postdata ):
   except:
     annoDB.rollback()
     
+  print "Committing here"
   annoDB.commit()
 
   return str(entityid)

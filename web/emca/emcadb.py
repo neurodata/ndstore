@@ -864,7 +864,7 @@ class EMCADB:
           if self.EXCEPT_FLAG:
             exceptions = self.getExceptions( key, resolution, entityid ) 
             if exceptions != []:
-              # write as a loop first, then figure out how to optimize RBTODO   
+              # write as a loop first, then figure out how to optimize 
               for e in exceptions:
                 xloc = e[0]+(x+xstart)*xcubedim
                 yloc = e[1]+(y+ystart)*ycubedim
