@@ -11,9 +11,6 @@ import sys
 
 import empaths
 import annotation
-import anndb
-import annproj
-import dbconfig
 
 from annerror import ANNError
 
