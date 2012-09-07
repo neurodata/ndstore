@@ -239,8 +239,6 @@ class EMCAProjectsDB:
   def newEMCAProj ( self, token, openid, dbhost, project, dbtype, dataset, dataurl, resolution, readonly, exceptions ):
     """Create a new emca project"""
 
-    import pdb; pdb.set_trace()
-
     dbcfg = dbconfig.switchDataset ( dataset )
 
     print dbhost, project

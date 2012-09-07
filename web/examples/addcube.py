@@ -1,7 +1,4 @@
 import argparse
-import empaths
-import dbconfig
-import dbconfighayworth5nm
 import numpy as np
 import urllib, urllib2
 import cStringIO
@@ -9,8 +6,6 @@ import sys
 
 import tempfile
 import h5py
-
-import zindex
 
 def main():
 
@@ -44,10 +39,12 @@ def main():
   tmpfile = tempfile.NamedTemporaryFile()
   h5fh = h5py.File ( tmpfile.name )
 
-# test with setting identifier
-  h5fh.create_dataset ( "ANNOTATION_ID", (1,), np.uint32, data=result.annid )
-  h5fh.create_dataset ( "RESOLUTION", (1,), np.uint32, data=result.resolution )
-  h5fh.create_dataset ( "VOXELS", (len(voxlist),3), np.uint32, data=voxlist )
+  # top group is the annotation identifier
+  idgrp = h5fh.create_group ( str(result.annid) )
+
+  idgrp.create_dataset ( "ANNOTATION_ID", (1,), np.uint32, data=result.annid )
+  idgrp.create_dataset ( "RESOLUTION", (1,), np.uint32, data=result.resolution )
+  idgrp.create_dataset ( "VOXELS", (len(voxlist),3), np.uint32, data=voxlist )
 
   if result.preserve:  
     url = 'http://%s/emca/%s/preserve/' % ( result.baseurl, result.token )
