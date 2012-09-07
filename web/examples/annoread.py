@@ -72,20 +72,23 @@ def main():
   anno = h5ann.H5toAnnotation ( h5f )
 
   pprint(vars(anno))
-  if h5f.get('VOXELS'):
+
+  # assume a single annotation for now
+  keys = h5f.keys()
+  idgrp = h5f.get(keys[0])
+
+  if idgrp.get('VOXELS'):
     print "Voxel list for object:"
-    print h5f['VOXELS'][:]
+    print idgrp['VOXELS'][:]
   elif result.voxels:
     print "No voxels found at this resolution"
 
-  if h5f.get('CUTOUT') and h5f.get('XYZOFFSET'):
-    print "Cutout at corner %s dim %s = " % (h5f['XYZOFFSET'][:],h5f['CUTOUT'].shape)
-    print "%s voxels match identifier in cutout" % ( len(np.nonzero(np.array(h5f['CUTOUT'][:,:,:]))[0]))
-
+  if idgrp.get('CUTOUT') and idgrp.get('XYZOFFSET'):
+    print "Cutout at corner %s dim %s = " % (idgrp['XYZOFFSET'][:],idgrp['CUTOUT'].shape)
+    print "%s voxels match identifier in cutout" % ( len(np.nonzero(np.array(idgrp['CUTOUT'][:,:,:]))[0]))
 
   h5f.flush()
   h5f.close()
- 
 
 if __name__ == "__main__":
   main()
