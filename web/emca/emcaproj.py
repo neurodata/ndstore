@@ -48,6 +48,8 @@ class EMCAProject:
     return self._ids_tbl
   def getExceptions ( self ):
     return self._exceptions
+  def getDBType ( self ):
+    return self._dbtype
     
 
   # accessors for RB to fix
@@ -111,8 +113,6 @@ class EMCAProjectsDB:
   #
   def newEMCAProj ( self, token, openid, dbhost, project, dbtype, dataset, dataurl, resolution, readonly, exceptions ):
     """Create a new emca project"""
-
-    import pdb; pdb.set_trace()
 
     dbcfg = dbconfig.switchDataset ( dataset )
 

@@ -77,6 +77,7 @@ def getannoobjects ( request, webargs ):
   except ANNError, e:
     return django.http.HttpResponseNotFound(e.value)
 
+
 def catmaid (request, webargs):
   """Convert a CATMAID request into an cutout."""
 

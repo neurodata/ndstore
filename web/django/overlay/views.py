@@ -26,12 +26,12 @@ def overlayCutout (request, webargs):
   projdb = emcaproj.EMCAProjectsDB()
   proj = projdb.getProj ( token )
 
-  dataurl = request.build_absolute_uri( '%s/%s/%s' % ( proj.getDataURL(), proj.getDataset(), cutout ))
+  dataurl = request.build_absolute_uri( '%s/emca/%s/%s' % ( proj.getDataURL(), proj.getDataset(), cutout ))
 
   # RBTODO can't seen to get WSGIScriptAlias information from apache.  So 
   #  right now we have to hardwire.  Yuck.
-  annourl = request.build_absolute_uri( '/emca/%s/%s' % ( token, cutout ))
-#  annourl = request.build_absolute_uri( '/EM/emca/%s/%s' % ( annotoken, cutout ))
+#  annourl = request.build_absolute_uri( '/emca/%s/%s' % ( token, cutout ))
+  annourl = request.build_absolute_uri( '/EM/emca/%s/%s' % ( token, cutout ))
 
   # Get data 
   f = urllib2.urlopen ( dataurl )
@@ -57,6 +57,7 @@ def overlayCutout (request, webargs):
 
 def imgAnnoOverlay (request, webargs):
   """Return overlayCutout as a png"""
+
   try:
      overlayimg = overlayCutout ( request, webargs )
   except Exception, e:
@@ -91,7 +92,7 @@ def catmaid (request, webargs):
     annimg = emcarest.emcacatmaid(webargs)
 
     #  fetch data from url
-    dataurl = request.build_absolute_uri( '%s/catmaid/%s/%s' % ( proj.getDataURL(), proj.getDataset(), imageargs ))
+    dataurl = request.build_absolute_uri( '%s/emca/catmaid/%s/%s' % ( proj.getDataURL(), proj.getDataset(), imageargs ))
     # Get data 
     f = urllib2.urlopen ( dataurl )
     fobj = cStringIO.StringIO ( f.read() )
