@@ -660,6 +660,10 @@ def putAnnotation ( webargs, postdata ):
   tmpfile.seek(0)
   h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
 
+  # assume a single annotation for now
+  keys = h5f.keys()
+  idgrp = h5f.get(keys[0])
+
   try:
 
     # Convert HDF5 to annotation
@@ -674,7 +678,7 @@ def putAnnotation ( webargs, postdata ):
       db.putAnnotation ( anno, options )
 
     # Is a resolution specified?  or use default
-    h5resolution = h5f.get('RESOLUTION')
+    h5resolution = idgrp.get('RESOLUTION')
     if h5resolution == None:
       resolution = proj.getResolution()
     else:
@@ -682,7 +686,7 @@ def putAnnotation ( webargs, postdata ):
 
     # Load the data associated with this annotation
     #  Is it voxel data?
-    voxels = h5f.get('VOXELS')
+    voxels = idgrp.get('VOXELS')
     if voxels and 'reduce' not in options:
 
       if 'preserve' in options:
@@ -707,8 +711,8 @@ def putAnnotation ( webargs, postdata ):
       db.shave ( anno.annid, resolution, voxels )
 
     # Is it dense data?
-    cutout = h5f.get('CUTOUT')
-    h5xyzoffset = h5f.get('XYZOFFSET')
+    cutout = idgrp.get('CUTOUT')
+    h5xyzoffset = idgrp.get('XYZOFFSET')
     if cutout != None and h5xyzoffset != None and 'reduce' not in options:
 
       if 'preserve' in options:
@@ -789,9 +793,13 @@ def getAnnoObjects ( webargs, postdata=None ):
     tmpfile.seek(0)
     h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
 
-    corner = h5f['XYZOFFSET'][:]
-    dim = h5f['CUTOUTSIZE'][:]
-    resolution = h5f['RESOLUTION'][0]
+    # assume a single annotation for now
+    keys = h5fh.keys()
+    idgrp = h5fh.get(keys[0])
+
+    corner = idgrp['XYZOFFSET'][:]
+    dim = idgrp['CUTOUTSIZE'][:]
+    resolution = idgrp['RESOLUTION'][0]
 
     if not dbcfg.checkCube( resolution, corner[0], corner[0]+dim[0], corner[1], corner[1]+dim[1], corner[2], corner[2]+dim[2] ):
       raise ANNError ( "Illegal cutout corner=%s, dim=%s" % ( corner, dim))

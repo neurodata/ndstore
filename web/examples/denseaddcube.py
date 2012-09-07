@@ -37,10 +37,13 @@ def main():
   tmpfile = tempfile.NamedTemporaryFile()
   h5fh = h5py.File ( tmpfile.name )
 
-  h5fh.create_dataset ( "ANNOTATION_ID", (1,), np.uint32, data=result.annid )
-  h5fh.create_dataset ( "RESOLUTION", (1,), np.uint32, data=result.resolution )
-  h5fh.create_dataset ( "XYZOFFSET", (3,), np.uint32, data=[result.xlow,result.ylow,result.zlow] )
-  h5fh.create_dataset ( "CUTOUT", anndata.shape, np.uint32, data=anndata )
+  # top group is the annotation identifier
+  idgrp = h5fh.create_group ( str(result.annid) )
+
+  idgrp.create_dataset ( "ANNOTATION_ID", (1,), np.uint32, data=result.annid )
+  idgrp.create_dataset ( "RESOLUTION", (1,), np.uint32, data=result.resolution )
+  idgrp.create_dataset ( "XYZOFFSET", (3,), np.uint32, data=[result.xlow,result.ylow,result.zlow] )
+  idgrp.create_dataset ( "CUTOUT", anndata.shape, np.uint32, data=anndata )
 
   if result.preserve:  
     url = 'http://%s/emca/%s/preserve/' % ( result.baseurl, result.token )
