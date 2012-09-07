@@ -23,6 +23,7 @@ def main():
   parser.add_argument('zhigh', action="store", type=int)
   parser.add_argument('--annid', action="store", type=int, help='Specify an identifier.  Server chooses otherwise.', default=0)
   parser.add_argument('--update', action='store_true')
+  parser.add_argument('--reduce', action='store_true')
   parser.add_argument('--dataonly', action='store_true')
   parser.add_argument('--preserve', action='store_true', help='Preserve exisiting annotations in the database.  Default is overwrite.')
   parser.add_argument('--exception', action='store_true', help='Store multiple nnotations at the same voxel in the database.  Default is overwrite.')
@@ -36,17 +37,22 @@ def main():
   tmpfile = tempfile.NamedTemporaryFile()
   h5fh = h5py.File ( tmpfile.name )
 
-  h5fh.create_dataset ( "ANNOTATION_ID", (1,), np.uint32, data=result.annid )
-  h5fh.create_dataset ( "RESOLUTION", (1,), np.uint32, data=result.resolution )
-  h5fh.create_dataset ( "XYZOFFSET", (3,), np.uint32, data=[result.xlow,result.ylow,result.zlow] )
-  h5fh.create_dataset ( "CUTOUT", anndata.shape, np.uint32, data=anndata )
+  # top group is the annotation identifier
+  idgrp = h5fh.create_group ( str(result.annid) )
+
+  idgrp.create_dataset ( "ANNOTATION_ID", (1,), np.uint32, data=result.annid )
+  idgrp.create_dataset ( "RESOLUTION", (1,), np.uint32, data=result.resolution )
+  idgrp.create_dataset ( "XYZOFFSET", (3,), np.uint32, data=[result.xlow,result.ylow,result.zlow] )
+  idgrp.create_dataset ( "CUTOUT", anndata.shape, np.uint32, data=anndata )
 
   if result.preserve:  
-    url = 'http://%s/annotate/%s/preserve/' % ( result.baseurl, result.token )
+    url = 'http://%s/emca/%s/preserve/' % ( result.baseurl, result.token )
   elif result.exception:  
-    url = 'http://%s/annotate/%s/exception/' % ( result.baseurl, result.token )
+    url = 'http://%s/emca/%s/exception/' % ( result.baseurl, result.token )
+  elif result.reduce:  
+    url = 'http://%s/emca/%s/reduce/' % ( result.baseurl, result.token )
   else:
-    url = 'http://%s/annotate/%s/' % ( result.baseurl, result.token )
+    url = 'http://%s/emca/%s/' % ( result.baseurl, result.token )
 
   if result.update:
     url+='update/'

@@ -41,6 +41,7 @@ def main():
   # segment fields
   seg.parentseed = random.randint(1,100000)
   seg.segmentclass = random.randint(1,9)
+  seg.neuron = random.randint(1,100000)
   seg.synapses = [ random.randint(1,100000) for x in range(5) ]
   seg.organelles = [ random.randint(1,100000) for x in range(5) ]
 
@@ -51,9 +52,9 @@ def main():
 
   # Build the put URL
   if result.update:
-    url = "http://%s/annotate/%s/update/" % ( result.baseurl, result.token)
+    url = "http://%s/emca/%s/update/" % ( result.baseurl, result.token)
   else:
-    url = "http://%s/annotate/%s/" % ( result.baseurl, result.token)
+    url = "http://%s/emca/%s/" % ( result.baseurl, result.token)
   print url
 
   try:

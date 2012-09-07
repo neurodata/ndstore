@@ -45,11 +45,11 @@ def main():
 
   # Build the put URL
   if result.update:
-    url = "http://%s/annotate/%s/update/" % ( result.baseurl, result.token)
+    url = "http://%s/emca/%s/update/" % ( result.baseurl, result.token)
   elif result.delete:
-    url = "http://%s/annotate/%s/delete/" % ( result.baseurl, result.token)
+    url = "http://%s/emca/%s/delete/" % ( result.baseurl, result.token)
   else:
-    url = "http://%s/annotate/%s/" % ( result.baseurl, result.token)
+    url = "http://%s/emca/%s/" % ( result.baseurl, result.token)
   print url
 
   try:

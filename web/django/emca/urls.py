@@ -4,13 +4,15 @@ from django.conf.urls import patterns, include, url
 from django.contrib import admin
 admin.autodiscover()
 
-urlpatterns = patterns('annotate.views',
+urlpatterns = patterns('emca.views',
   # test 
   url(r'^$', 'index'),
+  # catmaid
+  url(r'^catmaid/(?P<webargs>\w+/.*)$', 'catmaid'),
   # fetch ids (with predicates)
   url(r'(?P<webargs>^\w+/objects/[\w,/]*)$', 'getannoobjects'),
   # get services
-  url(r'(?P<webargs>^\w+/(xy|xz|yz|hdf5|npz|id|ids|xyanno||xzanno|yzanno)/[\w,/]+)$', 'annoget'),
+  url(r'(?P<webargs>^\w+/(xy|xz|yz|hdf5|npz|id|ids|xyanno||xzanno|yzanno)/[\w,/]+)$', 'emcaget'),
   # the post services
   url(r'(?P<webargs>^\w+/(npvoxels|npdense)/[\w,/]+)$', 'annopost'),
   # HDF5 interfaces

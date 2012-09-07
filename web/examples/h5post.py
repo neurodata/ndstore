@@ -1,7 +1,4 @@
 import argparse
-import empaths
-import dbconfig
-import numpy as np
 import urllib, urllib2
 import cStringIO
 import sys
@@ -9,9 +6,6 @@ import sys
 import tempfile
 import h5py
 
-import anncube
-import anndb
-import zindex
 
 def main():
 
@@ -31,12 +25,11 @@ def main():
   h5fh = h5py.File ( result.h5file )
 
   if result.preserve:  
-    url = 'http://%s/annotate/%s/preserve/' % ( result.baseurl, result.token )
+    url = 'http://%s/emca/%s/preserve/' % ( result.baseurl, result.token )
   elif result.exception:  
-    print "Not implemented yet"
-    pass
+    url = 'http://%s/emca/%s/exception/' % ( result.baseurl, result.token )
   else:
-    url = 'http://%s/annotate/%s/' % ( result.baseurl, result.token )
+    url = 'http://%s/emca/%s/' % ( result.baseurl, result.token )
 
   if result.update:
     url+='update/'

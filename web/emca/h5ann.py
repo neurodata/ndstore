@@ -12,7 +12,7 @@ import sys
 import empaths
 import annotation
 
-from annerror import ANNError
+from emcaerror import ANNError
 
 from pprint import pprint
 
@@ -20,57 +20,52 @@ from pprint import pprint
 #  class to define the HDF5 format of annotations.
 #
 
-# TODO implement data and author
-#  support missing values
-# suport untyped files
-
 """The HDF5 format currently looks like:
 
-/  (Root) group:
+/**ID**  # the top namespace is the annotation identifier.
 
-ANNOTATION_TYPE (int)
-ANNOTATION_ID (int)
-RESOLUTION (int optional) defaults to project resolution
-XYZOFFSET ( int[3] optional defined with volume )
-CUTOUT ( int32 3-d array optional defined with XYZOFFSET )
-VOXELS ( int32[][3] optional if defined XYZOFFSET and CUTOUT must be empty ) 
+  ANNOTATION_TYPE (int)
+  RESOLUTION (int optional) defaults to project resolution
+  XYZOFFSET ( int[3] optional defined with volume )
+  CUTOUT ( int32 3-d array optional defined with XYZOFFSET )
+  VOXELS ( int32[][3] optional if defined XYZOFFSET and CUTOUT must be empty ) 
 
-METADATA group;
+  METADATA group;
 
- # metadata for all annotations
- CONFIDENCE (float)
- STATUS (int) 
- KVPAIRS   (string containing csv pairs)
- AUTHOR ( string ) 
+   # metadata for all annotations
+   CONFIDENCE (float)
+   STATUS (int) 
+   KVPAIRS   (string containing csv pairs)
+   AUTHOR ( string ) 
 
- # for seeds
+   # for seeds
 
- PARENT (int)
- POSITION (int[3])
- CUBE_LOCATION (int)
- SOURCE (int)
+   PARENT (int)
+   POSITION (int[3])
+   CUBE_LOCATION (int)
+   SOURCE (int)
 
- # for segments:
+   # for segments:
 
- SEGMENTCLASS (int)
- PARENTSEED (int)
- SYNAPSES (int[]) 
- ORGANELLES ( int[])
+   SEGMENTCLASS (int)
+   PARENTSEED (int)
+   SYNAPSES (int[]) 
+   ORGANELLES ( int[])
 
- # for synapses:
+   # for synapses:
 
- SYNAPSE_TYPE (int)
- WEIGHT (float)
- SEEDS (int[]) 
- SEGMENTS ( int[ ][2] )
+   SYNAPSE_TYPE (int)
+   WEIGHT (float)
+   SEEDS (int[]) 
+   SEGMENTS ( int[ ][2] )
 
- # for neurons
- SEGMENTS ( int[] )
+   # for neurons
+   SEGMENTS ( int[] )
 
- # for organelles
- ORGANELLECLASS (int)
- PARENTSEED (int)
- SEEDS (int[]) 
+   # for organelles
+   ORGANELLECLASS (int)
+   PARENTSEED (int)
+   SEEDS (int[]) 
 
 """
 
@@ -88,12 +83,16 @@ class H5Annotation:
     self.tmpfile = tempfile.NamedTemporaryFile()
     self.h5fh = h5py.File ( self.tmpfile.name )
 
+    # Create the top level annotation id namespace
+
+    self.idgrp = self.h5fh.create_group ( str(annoid) ) 
+
     # Annotation type
-    self.h5fh.create_dataset ( "ANNOTATION_TYPE", (1,), np.uint32, data=annotype )
-    self.h5fh.create_dataset ( "ANNOTATION_ID", (1,), np.uint32, data=annoid )
+    self.idgrp.create_dataset ( "ANNOTATION_TYPE", (1,), np.uint32, data=annotype )
+    self.idgrp.create_dataset ( "ANNOTATION_ID", (1,), np.uint32, data=annoid )
     
     # Create a metadata group
-    self.mdgrp = self.h5fh.create_group ( "METADATA" ) 
+    self.mdgrp = self.idgrp.create_group ( "METADATA" ) 
 
   def __del__ ( self ):
     """Destructor"""
@@ -109,30 +108,34 @@ class H5Annotation:
   def addVoxels ( self, resolution, voxlist ):
     """Add the list of voxels to the HDF5 file"""
 
-    self.h5fh.create_dataset ( "RESOLUTION", (1,), np.uint32, data=resolution )     
+    self.idgrp.create_dataset ( "RESOLUTION", (1,), np.uint32, data=resolution )     
     if len(voxlist) != 0:
-      self.h5fh.create_dataset ( "VOXELS", (len(voxlist),3), np.uint32, data=voxlist )     
+      self.idgrp.create_dataset ( "VOXELS", (len(voxlist),3), np.uint32, data=voxlist )     
 
   def addCutout ( self, resolution, corner, volume ):
     """Add the cutout  to the HDF5 file"""
 
-    self.h5fh.create_dataset ( "RESOLUTION", (1,), np.uint32, data=resolution )     
-    self.h5fh.create_dataset ( "XYZOFFSET", (3,), np.uint32, data=corner )     
-    self.h5fh.create_dataset ( "CUTOUT", volume.shape, np.uint32, data=volume )     
+    self.idgrp.create_dataset ( "RESOLUTION", (1,), np.uint32, data=resolution )     
+    self.idgrp.create_dataset ( "XYZOFFSET", (3,), np.uint32, data=corner )     
+    self.idgrp.create_dataset ( "CUTOUT", volume.shape, np.uint32, data=volume )     
 
 ############## Converting HDF5 to Annotations
 
 def H5toAnnotation ( h5fh ):
   """Return an annotation constructed from the contents of this HDF5 file"""
 
+  # assume a single annotation for now
+  keys = h5fh.keys()
+  idgrp = h5fh.get(keys[0])
+
   # get the annotation type
-  if h5fh.get('ANNOTATION_TYPE'):
-    annotype = h5fh['ANNOTATION_TYPE'][0]
+  if idgrp.get('ANNOTATION_TYPE'):
+    annotype = idgrp['ANNOTATION_TYPE'][0]
   else:
     annotype = annotation.ANNO_ANNOTATION
 
   # And get the metadata group
-  mdgrp = h5fh.get('METADATA')
+  mdgrp = idgrp.get('METADATA')
 
   if annotype == annotation.ANNO_SEED:
 
@@ -180,6 +183,8 @@ def H5toAnnotation ( h5fh ):
         anno.parentseed = mdgrp['PARENTSEED'][0]
       if mdgrp.get('SEGMENTCLASS'):
         anno.segmentclass = mdgrp['SEGMENTCLASS'][0]
+      if mdgrp.get('NEURON'):
+        anno.neuron = mdgrp['NEURON'][0]
       if mdgrp.get('SYNAPSES') and len(mdgrp['SYNAPSES'])!=0:
         anno.synapses = mdgrp['SYNAPSES'][:]
       if mdgrp.get('ORGANELLES') and len(mdgrp['ORGANELLES'])!=0:
@@ -222,8 +227,8 @@ def H5toAnnotation ( h5fh ):
     raise ANNError ("Dont support this annotation type yet. Type = %s" % annotype)
 
   # now load the annotation common fields
-  if h5fh.get('ANNOTATION_ID'):
-    anno.annid = h5fh['ANNOTATION_ID'][0]
+  if idgrp.get('ANNOTATION_ID'):
+    anno.annid = idgrp['ANNOTATION_ID'][0]
 
   if mdgrp:
     # now load the metadata common fields
@@ -246,17 +251,25 @@ def H5toAnnotation ( h5fh ):
 def H5GetVoxels ( h5fh ):
   """Return the voxel data associated with the annotation"""
 
-  if h5fh.get('VOXELS'):
-    return h5fh['VOXELS']
+  # assume a single annotation for now
+  keys = h5fh.keys()
+  idgrp = h5fh.get(keys[0])
+
+  if idgrp.get('VOXELS'):
+    return idgrp['VOXELS']
   else:
     return None
 
 def H5GetVolume ( h5fh ):
   """Return the volume associated with the annotation"""
 
-  if h5fh.get('XYZOFFSET'):
-    if h5fh.get('CUTOUT'):
-      return (h5fh['XYZOFFSET'], h5fh['CUTOUT'])
+  # assume a single annotation for now
+  keys = h5fh.keys()
+  idgrp = h5fh.get(keys[0])
+
+  if idgrp.get('XYZOFFSET'):
+    if idgrp.get('CUTOUT'):
+      return (idgrp['XYZOFFSET'], idgrp['CUTOUT'])
     else:
       # TODO log message improper data format
       pass
@@ -332,6 +345,7 @@ def SegmenttoH5 ( segment ):
   # Then customize
   h5segment.mdgrp.create_dataset ( "SEGMENTCLASS", (1,), np.float, data=segment.segmentclass )
   h5segment.mdgrp.create_dataset ( "PARENTSEED", (1,), np.uint32, data=segment.parentseed )
+  h5segment.mdgrp.create_dataset ( "NEURON", (1,), np.uint32, data=segment.neuron )
 
   # Lists (as arrays)
   if ( segment.synapses != [] ):

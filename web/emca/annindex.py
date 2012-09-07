@@ -6,7 +6,7 @@ import MySQLdb
 import empaths
 import dbconfig
 import zindex
-import annproj
+import emcaproj
 
 #
 #  AnnotateIndex: Maintain the index in the database
@@ -16,25 +16,11 @@ class AnnotateIndex:
 
   # Constructor 
   #
-   def __init__(self,dbconf,annoproj):
-      self.dbcfg = dbconf
-      self.annoproj = annoproj
-      
-      dbinfo = self.annoproj.getDBHost(), self.annoproj.getDBUser(), self.annoproj.getDBPasswd(), self.annoproj.getDBName()
+   def __init__(self,conn,proj):
+      """Give an active connection.  This puts all index operations in the same transation as the calling db."""
 
-    # Connection info                                                                                                
-      try:
-         self.conn = MySQLdb.connect (host = self.annoproj.getDBHost(),
-                                      user = self.annoproj.getDBUser(),
-                                      passwd = self.annoproj.getDBPasswd(),
-                                      db = self.annoproj.getDBName())
-      except:
-         raise AnnError ( dbinfo )
-    
-    # How many slices?                                                                                               
-      [ self.startslice, endslice ] = self.dbcfg.slicerange
-      self.slices = endslice - self.startslice + 1
-      pass
+      self.conn = conn
+      self.proj = proj
    
    def __del__(self):
       """Destructor"""
@@ -50,7 +36,7 @@ class AnnotateIndex:
   # PYTODO rename cube to cubes
      
     #get the block from the database                                            
-      sql = "SELECT cube FROM " + self.annoproj.getIdxTable(resolution) + " WHERE annid\
+      sql = "SELECT cube FROM " + self.proj.getIdxTable(resolution) + " WHERE annid\
  = " + str(entityid)
       #print sql
       try:
@@ -89,7 +75,7 @@ class AnnotateIndex:
     #Used for testing
          #print ("Current Index", curindex )
          if curindex==[]:
-            sql = "INSERT INTO " +  self.annoproj.getIdxTable(resolution)  +  "( annid, cube) VALUES ( %s, %s)"
+            sql = "INSERT INTO " +  self.proj.getIdxTable(resolution)  +  "( annid, cube) VALUES ( %s, %s)"
             
             try:
                fileobj = cStringIO.StringIO ()
@@ -107,7 +93,7 @@ class AnnotateIndex:
 #            print "Updating Index for annotation ",key, " to" , newIndex
             
          #update index in the database                                                                                                      
-            sql = "UPDATE " + self.annoproj.getIdxTable(resolution) + " SET cube=(%s) WHERE annid=" + str(key)
+            sql = "UPDATE " + self.proj.getIdxTable(resolution) + " SET cube=(%s) WHERE annid=" + str(key)
             try:
                fileobj = cStringIO.StringIO ()
                np.save ( fileobj, newIndex )
@@ -118,4 +104,26 @@ class AnnotateIndex:
                
       cursor.close()
 
+   #
+   #deleteIndex:
+   #   Delete the index for a given annotation id
+   #
+   def deleteIndex(self,annid,resolutions):
+      """delete the index for a given annid""" 
+      
+      cursor = self.conn.cursor ()
+
+      #delete Index table for each resolution
+      for res in resolutions:
+         sql = "DELETE FROM " +  self.proj.getIdxTable(res)  +  " WHERE annid=" + str(annid)
+         print sql
+         
+         try:
+            cursor.execute ( sql )
+         except MySQLdb.Error, e:
+            print "Error deleting the index %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+            assert 0
+         except BaseException, e:
+            print "DBG: SOMETHING REALLY WRONG HERE", e
+      cursor.close()
 # end AnnotateIndex

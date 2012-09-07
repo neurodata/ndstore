@@ -39,8 +39,6 @@ def main():
     neur.kvpairs[k]=v
 
   # neuron fields
-  # RBTODO make big
-#  neur.segments = [ random.randint(1,1000) for x in range(1000) ]
   neur.segments = [ random.randint(1,1000) for x in range(10) ]
 
   pprint(vars(neur))
@@ -49,9 +47,9 @@ def main():
 
   # Build the put URL
   if result.update:
-    url = "http://%s/annotate/%s/update/" % ( result.baseurl, result.token)
+    url = "http://%s/emca/%s/update/" % ( result.baseurl, result.token)
   else:
-    url = "http://%s/annotate/%s/" % ( result.baseurl, result.token)
+    url = "http://%s/emca/%s/" % ( result.baseurl, result.token)
   print url
 
   try:

@@ -6,35 +6,37 @@ from collections import defaultdict
 
 import zindex
 import anncube
-import annproj
+import imagecube
+import emcaproj
 import annotation
 import annindex
+import imagecube
 
-from annerror import ANNError
+from emcaerror import ANNError
 
 from ann_cy import cubeLocs_cy
 
 import sys
 
-#RBTODO make configurable on a DB by DB basis
-EXCEPTIONS=False
-
 ################################################################################
 #
-#  class: AnnotateDB
+#  class: EMCADB
 #
 #  Manipulate/create/read from the Morton-order cube store
 #
 ################################################################################
 
 
-class AnnotateDB: 
+class EMCADB: 
 
   def __init__ (self, dbconf, annoproj):
     """Connect with the brain databases"""
 
     self.dbcfg = dbconf
     self.annoproj = annoproj
+
+    # Are there exceptions?
+    self.EXCEPT_FLAG = self.annoproj.getExceptions()
 
     dbinfo = self.annoproj.getDBHost(), self.annoproj.getDBUser(), self.annoproj.getDBPasswd(), self.annoproj.getDBName() 
 
@@ -52,7 +54,7 @@ class AnnotateDB:
     self.slices = endslice - self.startslice + 1 
 
     # create annidx object
-    self.annoIdx = annindex.AnnotateIndex (dbconf,annoproj)
+    self.annoIdx = annindex.AnnotateIndex (self.conn, self.annoproj)
 
 
   def commit ( self ):
@@ -86,7 +88,7 @@ class AnnotateDB:
       raise ANNError ( "Failed to create annotation identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # Here we've queried the highest id successfully    
-    row = cursor.fetchone ()
+    row = cursor.fetchone()
     # if the table is empty start at 1, 0 is no annotation
     if ( row[0] == None ):
       identifier = 1
@@ -133,13 +135,10 @@ class AnnotateDB:
         raise ANNError ( "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     except MySQLdb.Error, e:
-      raise ANNError ( "Failed to lock IDs table %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise 
     finally:
       sql = "UNLOCK TABLES" 
-      try:
-        cursor.execute ( sql )
-      except MySQLdb.Error, e:
-        raise ANNError ( "Failed to unlock IDs table %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      cursor.execute ( sql )
 
     cursor.close()
 
@@ -189,7 +188,7 @@ class AnnotateDB:
     except MySQLdb.Error, e:
       raise ANNError ( "Failed to retrieve data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
-    row = cursor.fetchone ()
+    row = cursor.fetchone()
 
     # If we can't find a cube, assume it hasn't been written yet
     if ( row == None ):
@@ -298,8 +297,33 @@ class AnnotateDB:
     except MySQLdb.Error, e:
       raise ANNError ( "Error reading exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
-    row = cursor.fetchone ()
+    row = cursor.fetchone()
+    cursor.close()
 
+    # If we can't find a list of exceptions, they don't exist
+    if ( row == None ):
+      return []
+    else: 
+      fobj = cStringIO.StringIO ( zlib.decompress(row[0]) )
+      return np.load (fobj)
+
+  #
+  # getAllExceptions
+  #
+  def getAllExceptions ( self, key, resolution ):
+    """Load all exceptions for this cube"""
+
+    cursor = self.conn.cursor ()
+
+    # get the block from the database
+    sql = "SELECT id, exlist FROM %s where zindex=%s" % ( 'exc'+str(resolution), key )
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      print "Error reading exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      assert 0
+
+    row = cursor.fetchall()
     cursor.close()
 
     # If we can't find a list of exceptions, they don't exist
@@ -320,7 +344,6 @@ class AnnotateDB:
     table = 'exc'+str(resolution)
     cursor = self.conn.cursor()
 
-    # RBTODO need to make exceptions a set
     if curexlist==[]:
 
       sql = "INSERT INTO " + table + " (zindex, id, exlist) VALUES (%s, %s, %s)"
@@ -330,20 +353,49 @@ class AnnotateDB:
         cursor.execute ( sql, (key, entityid, zlib.compress(fileobj.getvalue())))
       except MySQLdb.Error, e:
         raise ANNError ( "Error inserting exceptions: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
     # In this case we have an update query
     else:
 
-      # RBTODO need to make a set
-      newexlist = np.append ( curexlist.flatten(), exceptions.flatten())
-      newexlist = newexlist.reshape(len(newexlist)/3,3)
+      oldexlist = [ zindex.XYZMorton ( trpl ) for trpl in curexlist ]
+      newexlist = [ zindex.XYZMorton ( trpl ) for trpl in exceptions ]
+      exlist = set(newexlist + oldexlist)
+      exlist = [ zindex.MortonXYZ ( zidx ) for zidx in exlist ]
 
       sql = "UPDATE " + table + " SET exlist=(%s) WHERE zindex=%s AND id=%s" 
       try:
         fileobj = cStringIO.StringIO ()
-        np.save ( fileobj, newexlist )
-        cursor.execute ( sql, (key, entityid, zlib.compress(fileobj.getvalue())))
+        np.save ( fileobj, exlist )
+        cursor.execute ( sql, (zlib.compress(fileobj.getvalue()),key,entityid))
       except MySQLdb.Error, e:
         raise ANNError ( "Error updating exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+  #
+  # removeExceptions
+  #
+  def removeExceptions ( self, key, resolution, entityid, exceptions ):
+    """Remove a list of exceptions"""
+
+    curexlist = self.getExceptions( key, resolution, entityid ) 
+
+    table = 'exc'+str(resolution)
+    cursor = self.conn.cursor()
+
+    if curexlist != []:
+
+      oldexlist = set([ zindex.XYZMorton ( trpl ) for trpl in curexlist ])
+      newexlist = set([ zindex.XYZMorton ( trpl ) for trpl in exceptions ])
+      exlist = oldexlist-newexlist
+      exlist = [ zindex.MortonXYZ ( zidx ) for zidx in exlist ]
+
+      sql = "UPDATE " + table + " SET exlist=(%s) WHERE zindex=%s AND id=%s" 
+      try:
+        fileobj = cStringIO.StringIO ()
+        np.save ( fileobj, exlist )
+        cursor.execute ( sql, (zlib.compress(fileobj.getvalue()),key,entityid))
+      except MySQLdb.Error, e:
+        print "Error removing exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+        assert 0
 
 
   #
@@ -392,7 +444,7 @@ class AnnotateDB:
       exceptions = np.array(cube.annotate(entityid, offset, voxlist, conflictopt), dtype=np.uint8)
 
       # update the sparse list of exceptions
-      if EXCEPTIONS:
+      if self.EXCEPT_FLAG:
         if len(exceptions) != 0:
           self.updateExceptions ( key, resolution, entityid, exceptions )
 
@@ -404,6 +456,64 @@ class AnnotateDB:
     # write it to the database
     self.annoIdx.updateIndexDense(cubeidx,resolution)
 
+  #
+  # shave
+  #
+  #  reduce the voxels 
+  #
+  def shave ( self, entityid, resolution, locations ):
+    """Label the voxel locations or add as exceptions is the are already labeled."""
+
+    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.dbcfg.cubedim [ resolution ] 
+
+    # dictionary with the index
+    cubeidx = defaultdict(set)
+
+    # convert voxels z coordinate
+    locations[:,2] = locations[:,2] - self.dbcfg.slicerange[0]
+
+    cubelocs = cubeLocs_cy ( np.array(locations, dtype=np.uint32), cubedim )
+
+    # sort the arrary, by cubeloc
+    cubelocs.view('u4,u4,u4,u4').sort(order=['f0'], axis=0)
+
+    # get the nonzero element offsets 
+    nzdiff = np.r_[np.nonzero(np.diff(cubelocs[:,0]))]
+    # then turn into a set of ranges of the same element
+    listoffsets = np.r_[0, nzdiff + 1, len(cubelocs)]
+
+    for i in range(len(listoffsets)-1):
+
+      # grab the list of voxels for the first cube
+      voxlist = cubelocs[listoffsets[i]:listoffsets[i+1],:][:,1:4]
+      #  and the morton key
+      key = cubelocs[listoffsets[i],0]
+
+      cube = self.getCube ( key, resolution )
+
+      # get a voxel offset for the cube
+      cubeoff = zindex.MortonXYZ(key)
+      offset = [cubeoff[0]*cubedim[0],cubeoff[1]*cubedim[1],cubeoff[2]*cubedim[2]]
+
+      # remove the items
+      exlist, zeroed = cube.shave(entityid, offset, voxlist)
+      # make sure that exceptions are stored as 8 bits
+      exceptions = np.array(exlist, dtype=np.uint8)
+
+      # update the sparse list of exceptions
+      if self.EXCEPT_FLAG:
+        if len(exceptions) != 0:
+          self.removeExceptions ( key, resolution, entityid, exceptions )
+
+      # zeroed is the list that needs to get promoted here.
+      # RBTODO
+#      if EXCEPTIONS:
+#        for z in zeroed
+
+      self.putCube ( key, resolution, cube)
+
+      # For now do no index processing when shaving.  Assume there are still some
+      #  voxels in the cube???
 
 
   #
@@ -449,7 +559,7 @@ class AnnotateDB:
             cube.overwrite ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
           elif conflictopt == 'P':
             cube.preserve ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
-          elif conflictopt == 'E' and EXCEPTIONS:
+          elif conflictopt == 'E' and self.EXCEPT_FLAG:
             exdata = cube.exception ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
             for exid in np.unique ( exdata ):
               if exid != 0:
@@ -477,7 +587,6 @@ class AnnotateDB:
           # remove 0 no reason to index that
           del(index_dict[0])
 
-
     # Update all indexes
     self.annoIdx.updateIndexDense(index_dict,resolution)
 
@@ -490,6 +599,87 @@ class AnnotateDB:
     vec_func = np.vectorize ( lambda x: 0 if x == 0 else entityid ) 
     annodata = vec_func ( annodata )
     return self.annotateDense ( corner, resolution, annodata, conflictopt )
+
+  #
+  # shaveDense
+  #
+  #  Reduce the specified annotations 
+  #
+  def shaveDense ( self, entityid, corner, resolution, annodata ):
+    """Process all the annotations in the dense volume"""
+
+
+    index_dict = defaultdict(set)
+
+    # dim is in xyz, data is in zyxj
+    dim = [ annodata.shape[2], annodata.shape[1], annodata.shape[0] ]
+
+    # get the size of the image and cube
+    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.dbcfg.cubedim [ resolution ] 
+
+    # Round to the nearest larger cube in all dimensions
+    zstart = corner[2]/zcubedim
+    ystart = corner[1]/ycubedim
+    xstart = corner[0]/xcubedim
+
+    znumcubes = (corner[2]+dim[2]+zcubedim-1)/zcubedim - zstart
+    ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
+    xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
+
+    zoffset = corner[2]%zcubedim
+    yoffset = corner[1]%ycubedim
+    xoffset = corner[0]%xcubedim
+
+    databuffer = np.zeros ([znumcubes*zcubedim, ynumcubes*ycubedim, xnumcubes*xcubedim], dtype=np.uint32 )
+    databuffer [ zoffset:zoffset+dim[2], yoffset:yoffset+dim[1], xoffset:xoffset+dim[0] ] = annodata 
+
+    for z in range(znumcubes):
+      for y in range(ynumcubes):
+        for x in range(xnumcubes):
+
+          key = zindex.XYZMorton ([x+xstart,y+ystart,z+zstart])
+          cube = self.getCube ( key, resolution )
+
+          exdata = cube.shaveDense ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
+          for exid in np.unique ( exdata ):
+            if exid != 0:
+              # get the offsets
+              exoffsets = np.nonzero ( exdata==exid )
+              # assemble into 3-tuples zyx->xyz
+              exceptions = np.array ( zip(exoffsets[2], exoffsets[1], exoffsets[0]), dtype=np.uint32 )
+              # update the exceptions
+              self.removeExceptions ( key, resolution, exid, exceptions )
+              # add to the index
+              index_dict[exid].add(key)
+
+          self.putCube ( key, resolution, cube)
+
+          #update the index for the cube
+          # get the unique elements that are being added to the data
+          uniqueels = np.unique ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
+          for el in uniqueels:
+            index_dict[el].add(key) 
+
+          # remove 0 no reason to index that
+          del(index_dict[0])
+
+    # Update all indexes
+    self.annoIdx.updateIndexDense(index_dict,resolution)
+
+  #
+  # shaveEntityDense
+  #
+  #  Takes a bitmap for an entity and calls denseShave
+  #  renumber the annotations to match the entity id.
+  #
+  def shaveEntityDense ( self, entityid, corner, resolution, annodata ):
+    """Process all the annotations in the dense volume"""
+
+    # Make shaving a per entity operation
+    vec_func = np.vectorize ( lambda x: 0 if x == 0 else entityid ) 
+    annodata = vec_func ( annodata )
+
+    self.shaveDense ( entityid, corner, resolution, annodata )
 
 
   #
@@ -511,14 +701,23 @@ class AnnotateDB:
     ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
     xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
 
-    # input cube is the database size
-    incube = anncube.AnnotateCube ( cubedim )
+    if (self.annoproj.getDBType() == emcaproj.ANNOTATIONS):
 
-    # output cube is as big as was asked for and zero it.
-    outcube = anncube.AnnotateCube ( [xnumcubes*xcubedim,\
-                                      ynumcubes*ycubedim,\
-                                      znumcubes*zcubedim] )
-    outcube.zeros()
+      # input cube is the database size
+      incube = anncube.AnnotateCube ( cubedim )
+
+      # output cube is as big as was asked for and zero it.
+      outcube = anncube.AnnotateCube ( [xnumcubes*xcubedim,\
+                                        ynumcubes*ycubedim,\
+                                        znumcubes*zcubedim] )
+      outcube.zeros()
+
+    elif (self.annoproj.getDBType() == emcaproj.IMAGES):
+      
+      incube = imagecube.ImageCube ( cubedim )
+      outcube = imagecube.ImageCube ( [xnumcubes*xcubedim,\
+                                        ynumcubes*ycubedim,\
+                                        znumcubes*zcubedim] )
 
     # Build a list of indexes to access
     listofidxs = []
@@ -556,11 +755,10 @@ class AnnotateDB:
       curxyz = zindex.MortonXYZ(int(idx))
       offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
 
-      # get an input cube 
       incube.fromNPZ ( datastring[:] )
-
       # add it to the output cube
       outcube.addData ( incube, offset ) 
+        
 
     # need to trim down the array to size
     #  only if the dimensions are not the same
@@ -609,7 +807,7 @@ class AnnotateDB:
     except MySQLdb.Error, e:
       raise ANNError ( "Error reading annotation data: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
-    row = cursor.fetchone ()
+    row=cursor.fetchone()
 
     # If we can't find a cube, assume it hasn't been written yet
     if ( row == None ):
@@ -663,10 +861,10 @@ class AnnotateDB:
           key = zindex.XYZMorton ([x+xstart,y+ystart,z+zstart])
           
           # Get exceptions if this DB supports it
-          if EXCEPTIONS:
+          if self.EXCEPT_FLAG:
             exceptions = self.getExceptions( key, resolution, entityid ) 
             if exceptions != []:
-              # write as a loop first, then figure out how to optimize RBTODO   
+              # write as a loop first, then figure out how to optimize 
               for e in exceptions:
                 xloc = e[0]+(x+xstart)*xcubedim
                 yloc = e[1]+(y+ystart)*ycubedim
@@ -708,7 +906,7 @@ class AnnotateDB:
 
       # RBTODO -- do we need a fast path for no exceptions?
       # Now add the exception voxels
-      if EXCEPTIONS:
+      if self.EXCEPT_FLAG:
         exceptions = self.getExceptions( zidx, resolution, entityid ) 
         if exceptions != []:
           voxels = np.append ( voxels.flatten(), exceptions.flatten())
@@ -742,9 +940,32 @@ class AnnotateDB:
   #    remove an HDF5 annotation from the database
   def deleteAnnotation ( self, annoid, options='' ):
     """delete an HDF5 annotation from the database"""
+    #delete the data associated with the annoid
+    self.deleteAnnoData ( annoid)
     return annotation.deleteAnnotation ( annoid, self, options )
-
-
+  
+  #
+  #deleteAnnoData:
+  #    Delete the voxel data from the database for annoid 
+  #
+  def deleteAnnoData ( self, annoid):
+    resolutions = self.dbcfg.resolutions
+    for res in resolutions:
+    
+    #get the cubes that contain the annotation
+      zidxs = self.annoIdx.getIndex(annoid,res)
+      
+    #Delete annotation data
+      for key in zidxs:
+        cube = self.getCube ( key, res)
+        vec_func = np.vectorize ( lambda x: 0 if x == annoid else x )
+        cube.data = vec_func ( cube.data )
+        self.putCube ( key, res, cube)
+      
+    # delete Index
+    self.annoIdx.deleteIndex(annoid,resolutions)
+    
+  
   # getAnnoObjects:  
   #    Return a list of annotation object IDs
   #  for now by type and status

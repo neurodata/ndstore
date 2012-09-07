@@ -26,7 +26,6 @@ def main():
     
   print url
 
-#  import pdb; pdb.set_trace() 
   # Get cube in question
   try:
     f = urllib2.urlopen ( url )
