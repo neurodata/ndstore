@@ -7,12 +7,6 @@ import sys
 import tempfile
 import h5py
 
-import empaths
-import h5ann
-from pprint import pprint
-
-
-
 def main():
 
   parser = argparse.ArgumentParser(description='Fetch an annotation as an HDF5 file')

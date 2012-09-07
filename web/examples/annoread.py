@@ -4,14 +4,18 @@ import numpy as np
 import urllib2
 import cStringIO
 import sys
+
 import tempfile
 import h5py
 
-import empaths
-import h5ann
-from pprint import pprint
 
-
+# Annotation types
+anno_names = { 1:'ANNO_ANNOTATION',\
+               2:'ANNO_SYNAPSE',\
+               3:'ANNO_SEED',\
+               4:'ANNO_SEGMENT',\
+               5:'ANNO_NEURON',\
+               6:'ANNO_ORGANELLE' }
 
 def main():
 
@@ -69,13 +73,17 @@ def main():
     fh.tell()
     h5f = h5py.File ( result.output )
 
-  anno = h5ann.H5toAnnotation ( h5f )
-
-  pprint(vars(anno))
-
   # assume a single annotation for now
   keys = h5f.keys()
   idgrp = h5f.get(keys[0])
+
+  print "Annotation id: ", keys[0]
+  print "Annotation type: ", anno_names[idgrp['ANNOTATION_TYPE'][0]]
+
+  mdgrp = idgrp['METADATA']
+
+  for field in mdgrp.keys():
+    print field, mdgrp[field][:]
 
   if idgrp.get('VOXELS'):
     print "Voxel list for object:"
