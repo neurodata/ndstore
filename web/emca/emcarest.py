@@ -61,6 +61,8 @@ def numpyZip ( imageargs, dbcfg, proj ):
   np.save ( fileobj, cube.data )
   cdz = zlib.compress (fileobj.getvalue()) 
 
+  import pdb; pdb.set_trace()
+
   # Package the object as a Web readable file handle
   fileobj = cStringIO.StringIO ( cdz )
   fileobj.seek(0)
@@ -868,4 +870,27 @@ def deleteAnnotation ( webargs ):
     raise
   db.commit()
 
+
+
+def projInfo ( webargs ):
+  """Return information about the project and database"""
+
+  [ token, sym, otherargs ] = webargs.partition ('/')
+
+  # Get the annotation database
+  projdb = emcaproj.EMCAProjectsDB()
+  proj = projdb.getProj ( token )
+  dbcfg = dbconfig.switchDataset ( proj.getDataset() )
+
+  # Create an in-memory HDF5 file
+  tmpfile = tempfile.NamedTemporaryFile ()
+  h5f = h5py.File ( tmpfile.name )
+
+  # Populate the file with project information
+  proj.h5Info ( h5f )
+  dbcfg.h5Info ( h5f )
+
+  h5f.close()
+  tmpfile.seek(0)
+  return tmpfile.read()
 
