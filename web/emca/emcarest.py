@@ -77,7 +77,7 @@ def HDF5 ( imageargs, dbcfg, proj ):
   # Create an in-memory HDF5 file
   tmpfile = tempfile.NamedTemporaryFile ()
   fh5out = h5py.File ( tmpfile.name )
-  ds = fh5out.create_dataset ( "cube", tuple(cube.data.shape), np.uint32,
+  ds = fh5out.create_dataset ( "cube", tuple(cube.data.shape), cube.data.dtype,
                                  compression='gzip', data=cube.data )
   fh5out.close()
   tmpfile.seek(0)

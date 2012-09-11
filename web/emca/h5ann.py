@@ -343,7 +343,7 @@ def SegmenttoH5 ( segment ):
   h5segment = BasetoH5 ( segment, annotation.ANNO_SEGMENT )
 
   # Then customize
-  h5segment.mdgrp.create_dataset ( "SEGMENTCLASS", (1,), np.float, data=segment.segmentclass )
+  h5segment.mdgrp.create_dataset ( "SEGMENTCLASS", (1,), np.uint32, data=segment.segmentclass )
   h5segment.mdgrp.create_dataset ( "PARENTSEED", (1,), np.uint32, data=segment.parentseed )
   h5segment.mdgrp.create_dataset ( "NEURON", (1,), np.uint32, data=segment.neuron )
 
