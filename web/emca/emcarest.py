@@ -61,8 +61,6 @@ def numpyZip ( imageargs, dbcfg, proj ):
   np.save ( fileobj, cube.data )
   cdz = zlib.compress (fileobj.getvalue()) 
 
-  import pdb; pdb.set_trace()
-
   # Package the object as a Web readable file handle
   fileobj = cStringIO.StringIO ( cdz )
   fileobj.seek(0)
@@ -614,8 +612,11 @@ def getAnnotation ( webargs ):
   if anno == None:
     raise ANNError ("No annotation found at identifier = %s" % (annoid))
 
-  # create the HDF5 object
-  h5 = h5ann.AnnotationtoH5 ( anno )
+  # Create an in-memory HDF5 file
+  h5f = h5ann.H5File ()
+
+  # create the HDF5 version of the annotation
+  h5 = h5ann.AnnotationtoH5 ( anno, h5f )
 
   # get the voxel data if requested
   if dataoption==AR_VOXELS:
@@ -626,7 +627,7 @@ def getAnnotation ( webargs ):
 
     cb = db.annoCutout(annoid,resolution,corner,dim)
 
-    # FIXME again an abstraction problem with corner.
+    # again an abstraction problem with corner.
     #  return the corner to cutout arguments space
     retcorner = [corner[0], corner[1], corner[2]+dbcfg.slicerange[0]]
 
@@ -659,7 +660,7 @@ def getAnnotation ( webargs ):
 
     h5.addCutout ( resolution, [xmin,ymin,zmin], cutoutdata )
 
-  return h5.fileReader()
+  return h5f.fileReader()
 
 
 def putAnnotation ( webargs, postdata ):
@@ -681,88 +682,89 @@ def putAnnotation ( webargs, postdata ):
   tmpfile.seek(0)
   h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
 
-  # assume a single annotation for now
-  keys = h5f.keys()
-  idgrp = h5f.get(keys[0])
+  import pdb; pdb.set_trace()
+
 
   try:
 
-    # Convert HDF5 to annotation
-    anno = h5ann.H5toAnnotation ( h5f )
+    for k in h5f.keys():
 
-    if 'update' in options and 'dataonly' in options:
-      raise ANNError ("Illegal combination of options. Cannot use udpate and dataonly together")
+      idgrp = h5f.get(k)
 
-    elif not 'dataonly' in options:
+      # Convert HDF5 to annotation
+      anno = h5ann.H5toAnnotation ( h5f )
 
-      # Put into the database
-      db.putAnnotation ( anno, options )
+      if 'update' in options and 'dataonly' in options:
+        raise ANNError ("Illegal combination of options. Cannot use udpate and dataonly together")
 
-    # Is a resolution specified?  or use default
-    h5resolution = idgrp.get('RESOLUTION')
-    if h5resolution == None:
-      resolution = proj.getResolution()
-    else:
-      resolution = h5resolution[0]
+      elif not 'dataonly' in options:
 
-    # Load the data associated with this annotation
-    #  Is it voxel data?
-    voxels = idgrp.get('VOXELS')
-    if voxels and 'reduce' not in options:
+        # Put into the database
+        db.putAnnotation ( anno, options )
 
-      if 'preserve' in options:
-        conflictopt = 'P'
-      elif 'exception' in options:
-        conflictopt = 'E'
+      # Is a resolution specified?  or use default
+      h5resolution = idgrp.get('RESOLUTION')
+      if h5resolution == None:
+        resolution = proj.getResolution()
       else:
-        conflictopt = 'O'
+        resolution = h5resolution[0]
 
-      # Check that the voxels have a conforming size:
-      if voxels.shape[1] != 3:
-        raise ANNError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
+      # Load the data associated with this annotation
+      #  Is it voxel data?
+      voxels = idgrp.get('VOXELS')
+      if voxels and 'reduce' not in options:
 
-      exceptions = db.annotate ( anno.annid, resolution, voxels, conflictopt )
+        if 'preserve' in options:
+          conflictopt = 'P'
+        elif 'exception' in options:
+          conflictopt = 'E'
+        else:
+          conflictopt = 'O'
 
-    # Otherwise this is a shave operation
-    elif voxels and 'reduce' in options:
+        # Check that the voxels have a conforming size:
+        if voxels.shape[1] != 3:
+          raise ANNError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
 
-      # Check that the voxels have a conforming size:
-      if voxels.shape[1] != 3:
-        raise ANNError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
-      db.shave ( anno.annid, resolution, voxels )
+        exceptions = db.annotate ( anno.annid, resolution, voxels, conflictopt )
 
-    # Is it dense data?
-    cutout = idgrp.get('CUTOUT')
-    h5xyzoffset = idgrp.get('XYZOFFSET')
-    if cutout != None and h5xyzoffset != None and 'reduce' not in options:
+      # Otherwise this is a shave operation
+      elif voxels and 'reduce' in options:
 
-      if 'preserve' in options:
-        conflictopt = 'P'
-      elif 'exception' in options:
-        conflictopt = 'E'
-      else:
-        conflictopt = 'O'
+        # Check that the voxels have a conforming size:
+        if voxels.shape[1] != 3:
+          raise ANNError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
+        db.shave ( anno.annid, resolution, voxels )
 
-      # RBFIX this a hack
-      #
-      #  the zstart in dbconfig is sometimes offset to make it aligned.
-      #   Probably remove the offset is the best idea.  and align data
-      #    to zero regardless of where it starts.  For now.
-      corner = h5xyzoffset[:] 
-      corner[2] -= dbcfg.slicerange[0]
+      # Is it dense data?
+      cutout = idgrp.get('CUTOUT')
+      h5xyzoffset = idgrp.get('XYZOFFSET')
+      if cutout != None and h5xyzoffset != None and 'reduce' not in options:
 
-      db.annotateEntityDense ( anno.annid, corner, resolution, np.array(cutout), conflictopt )
+        if 'preserve' in options:
+          conflictopt = 'P'
+        elif 'exception' in options:
+          conflictopt = 'E'
+        else:
+          conflictopt = 'O'
 
-    elif cutout != None and h5xyzoffset != None and 'reduce' in options:
+        #  the zstart in dbconfig is sometimes offset to make it aligned.
+        #   Probably remove the offset is the best idea.  and align data
+        #    to zero regardless of where it starts.  For now.
+        corner = h5xyzoffset[:] 
+        corner[2] -= dbcfg.slicerange[0]
 
-      corner = h5xyzoffset[:] 
-      corner[2] -= dbcfg.slicerange[0]
+        db.annotateEntityDense ( anno.annid, corner, resolution, np.array(cutout), conflictopt )
 
-      db.shaveEntityDense ( anno.annid, corner, resolution, np.array(cutout))
+      elif cutout != None and h5xyzoffset != None and 'reduce' in options:
 
-    elif cutout != None or h5xyzoffset != None:
-      #TODO this is a loggable error
-      pass
+        corner = h5xyzoffset[:] 
+        corner[2] -= dbcfg.slicerange[0]
+
+        db.shaveEntityDense ( anno.annid, corner, resolution, np.array(cutout))
+
+      elif cutout != None or h5xyzoffset != None:
+        #TODO this is a loggable error
+        pass
 
   # rollback if you catch an error
   except:
