@@ -11,6 +11,8 @@ urlpatterns = patterns('emca.views',
   url(r'^catmaid/(?P<webargs>\w+/.*)$', 'catmaid'),
   # fetch ids (with predicates)
   url(r'(?P<webargs>^\w+/objects/[\w,/]*)$', 'getannoobjects'),
+  # get project information
+  url(r'^projinfo/(?P<webargs>\w+/)$', 'projinfo'),
   # get services
   url(r'(?P<webargs>^\w+/(xy|xz|yz|hdf5|npz|id|ids|xyanno||xzanno|yzanno)/[\w,/]+)$', 'emcaget'),
   # the post services

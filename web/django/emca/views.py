@@ -91,3 +91,10 @@ def catmaid (request, webargs):
 
   except Exception, e:
     return django.http.HttpResponseNotFound(e)
+
+
+
+def projinfo (request, webargs):
+  """Return project and dataset configuration information"""
+
+  return django.http.HttpResponse(emcarest.projInfo(webargs), mimetype="product/hdf5" )

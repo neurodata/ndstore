@@ -227,8 +227,7 @@ def H5toAnnotation ( h5fh ):
     raise ANNError ("Dont support this annotation type yet. Type = %s" % annotype)
 
   # now load the annotation common fields
-  if idgrp.get('ANNOTATION_ID'):
-    anno.annid = idgrp['ANNOTATION_ID'][0]
+  anno.annid = int(keys[0])
 
   if mdgrp:
     # now load the metadata common fields

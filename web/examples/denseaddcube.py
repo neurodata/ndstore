@@ -40,7 +40,6 @@ def main():
   # top group is the annotation identifier
   idgrp = h5fh.create_group ( str(result.annid) )
 
-  idgrp.create_dataset ( "ANNOTATION_ID", (1,), np.uint32, data=result.annid )
   idgrp.create_dataset ( "RESOLUTION", (1,), np.uint32, data=result.resolution )
   idgrp.create_dataset ( "XYZOFFSET", (3,), np.uint32, data=[result.xlow,result.ylow,result.zlow] )
   idgrp.create_dataset ( "CUTOUT", anndata.shape, np.uint32, data=anndata )

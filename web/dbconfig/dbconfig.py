@@ -34,6 +34,27 @@ class dbConfig:
   def imageSize ( self, resolution ):
     return  [ self.imagesz [resolution], self.slicerange ]
 
+  #
+  # H5info
+  #
+  def h5Info ( self, h5f ):
+    """Populate the HDF5 with dbconfiguration information"""
+
+    import pdb; pdb.set_trace()
+
+    dbcfggrp = h5f.create_group ( 'DATASET' )
+    dbcfggrp.create_dataset ( "RESOLUTIONS", data=self.resolutions )
+    dbcfggrp.create_dataset ( "SLICERANGE", data=self.slicerange )
+    imggrp = dbcfggrp.create_group ( 'IMAGE_SIZE' )
+    for k,v in self.imagesz.iteritems():
+      imggrp.create_dataset ( str(k), data=v )
+    zsgrp = dbcfggrp.create_group ( 'ZSCALE' )
+    for k,v in self.zscale.iteritems():
+      zsgrp.create_dataset ( str(k), data=v )
+    cdgrp = dbcfggrp.create_group ( 'CUBE_DIMENSION' )
+    for k,v in self.cubedim.iteritems():
+      cdgrp.create_dataset ( str(k), data=v )
+
 # end dbconfig
 
 def switchDataset ( dataset ):
