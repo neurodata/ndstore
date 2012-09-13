@@ -89,8 +89,6 @@ class H5Annotation:
 
     # Annotation type
     self.idgrp.create_dataset ( "ANNOTATION_TYPE", (1,), np.uint32, data=annotype )
-    self.idgrp.create_dataset ( "ANNOTATION_ID", (1,), np.uint32, data=annoid )
-    
     # Create a metadata group
     self.mdgrp = self.idgrp.create_group ( "METADATA" ) 
 
@@ -191,7 +189,7 @@ def H5toAnnotation ( h5fh ):
         anno.organelles = mdgrp['ORGANELLES'][:]
 
   elif annotype == annotation.ANNO_NEURON:
-    
+
     # Create the appropriate annotation type
     anno = annotation.AnnNeuron()
 
