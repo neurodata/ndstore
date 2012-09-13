@@ -61,8 +61,6 @@ def numpyZip ( imageargs, dbcfg, proj ):
   np.save ( fileobj, cube.data )
   cdz = zlib.compress (fileobj.getvalue()) 
 
-  import pdb; pdb.set_trace()
-
   # Package the object as a Web readable file handle
   fileobj = cStringIO.StringIO ( cdz )
   fileobj.seek(0)
