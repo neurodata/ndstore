@@ -816,13 +816,11 @@ def getAnnoObjects ( webargs, postdata=None ):
     tmpfile.seek(0)
     h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
 
-    # assume a single annotation for now
-    keys = h5fh.keys()
-    idgrp = h5fh.get(keys[0])
+    import pdb; pdb.set_trace()
 
-    corner = idgrp['XYZOFFSET'][:]
-    dim = idgrp['CUTOUTSIZE'][:]
-    resolution = idgrp['RESOLUTION'][0]
+    corner = h5f['XYZOFFSET'][:]
+    dim = h5f['CUTOUTSIZE'][:]
+    resolution = h5f['RESOLUTION'][0]
 
     if not dbcfg.checkCube( resolution, corner[0], corner[0]+dim[0], corner[1], corner[1]+dim[1], corner[2], corner[2]+dim[2] ):
       raise ANNError ( "Illegal cutout corner=%s, dim=%s" % ( corner, dim))
