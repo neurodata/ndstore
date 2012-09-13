@@ -232,11 +232,13 @@ class AnnSynapse (Annotation):
       raise ANNError ( "Error inserting synapse: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # synapse_seeds: pack into a kv pair
-    if self.seeds != []:
+#    if self.seeds != []:
+    if len(self.seeds)!=0:
       self.kvpairs['synapse_seeds'] = ','.join([str(i) for i in self.seeds])
 
     # synapse_segments: pack into a kv pair
-    if self.segments != []:
+#    if self.segments != []:
+    if len(self.segments)!=0:
       self.kvpairs['synapse_segments'] = ','.join([str(i) + ':' + str(j) for i,j in self.segments])
 
     cursor.close()
@@ -260,11 +262,13 @@ class AnnSynapse (Annotation):
       raise ANNError ( "Error updating synapse: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # synapse_seeds: pack into a kv pair
-    if self.seeds != []:
+#    if self.seeds != []:
+    if len(self.seeds)!=0:
       self.kvpairs['synapse_seeds'] = ','.join([str(i) for i in self.seeds])
 
     # synapse_segments: pack into a kv pair
-    if self.segments != []:
+#    if self.segments != []:
+    if len(self.segments)!=0:
       self.kvpairs['synapse_segments'] = ','.join([str(i) + ':' + str(j) for i,j in self.segments])
 
     cursor.close()
@@ -473,11 +477,13 @@ class AnnSegment (Annotation):
       raise ANNError ( "Error inserting segment: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # synapses: pack into a kv pair
-    if self.synapses != []:
+#    if self.synapses != []:
+    if len(self.synapses)!=0:
       self.kvpairs['synapses'] = ','.join([str(i) for i in self.synapses])
 
     # organelles: pack into a kv pair
-    if self.organelles != []:
+#    if self.organelles != []:
+    if len(self.organelles)!=0:
       self.kvpairs['organelles'] = ','.join([str(i) for i in self.organelles])
 
     cursor.close()
@@ -501,11 +507,13 @@ class AnnSegment (Annotation):
       raise ANNError ( "Error updating segment: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # synapses: pack into a kv pair
-    if self.synapses != []:
+#    if self.synapses != []:
+    if len(self.synapses)!=0:
       self.kvpairs['synapses'] = ','.join([str(i) for i in self.synapses])
 
     # organelles: pack into a kv pair
-    if self.organelles != []:
+#    if self.organelles != []:
+    if len(self.organelles)!=0:
       self.kvpairs['organelles'] = ','.join([str(i) for i in self.organelles])
 
     cursor.close()
@@ -590,7 +598,8 @@ class AnnNeuron (Annotation):
     cursor = annodb.conn.cursor()
 
     # segments: pack into a kv pair
-    if self.segments != []:
+#    if self.segments != []:
+    if len(self.segments)!=0:
       self.kvpairs['segments'] = ','.join([str(i) for i in self.segments])
 
     # and call store on the base classs
@@ -601,7 +610,8 @@ class AnnNeuron (Annotation):
     """Update the synapse in the annotations databae"""
 
     # segments: pack into a kv pair
-    if self.segments != []:
+#    if self.segments != []:
+    if len(self.segments)!=0:
       self.kvpairs['segments'] = ','.join([str(i) for i in self.segments])
 
     # and call update on the base classs
@@ -684,7 +694,8 @@ class AnnOrganelle (Annotation):
       raise ANNError ( "Error inserting organelle: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # seeds: pack into a kv pair
-    if self.seeds != []:
+#    if self.seeds != []:
+    if len(self.seeds)!=0:
       self.kvpairs['seeds'] = ','.join([str(i) for i in self.seeds])
 
     cursor.close()
@@ -713,7 +724,8 @@ class AnnOrganelle (Annotation):
       raise ANNError ( "Error updating organelle: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # seeds: pack into a kv pair
-    if self.seeds != []:
+#    if self.seeds != []:
+    if len(self.seeds)!=0:
       self.kvpairs['seeds'] = ','.join([str(i) for i in self.seeds])
 
     cursor.close()
