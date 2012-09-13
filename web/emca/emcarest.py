@@ -816,8 +816,6 @@ def getAnnoObjects ( webargs, postdata=None ):
     tmpfile.seek(0)
     h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
 
-    import pdb; pdb.set_trace()
-
     corner = h5f['XYZOFFSET'][:]
     dim = h5f['CUTOUTSIZE'][:]
     resolution = h5f['RESOLUTION'][0]
