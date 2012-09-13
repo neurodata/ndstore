@@ -20,7 +20,7 @@ def main():
   try:
     import httplib
     conn = httplib.HTTPConnection ( "%s" % ( result.baseurl ))
-    conn.request ( 'DELETE', '/annotate/%s/%s/' % ( result.token, result.annid ))
+    conn.request ( 'DELETE', '/emca/%s/%s/' % ( result.token, result.annid ))
     resp = conn.getresponse()
     content=resp.read()
   except httplib.HTTPException, e:

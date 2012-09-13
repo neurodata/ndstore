@@ -865,3 +865,26 @@ def deleteAnnotation ( webargs ):
   db.commit()
 
 
+
+def projInfo ( webargs ):
+  """Return information about the project and database"""
+
+  [ token, sym, otherargs ] = webargs.partition ('/')
+
+  # Get the annotation database
+  projdb = emcaproj.EMCAProjectsDB()
+  proj = projdb.getProj ( token )
+  dbcfg = dbconfig.switchDataset ( proj.getDataset() )
+
+  # Create an in-memory HDF5 file
+  tmpfile = tempfile.NamedTemporaryFile ()
+  h5f = h5py.File ( tmpfile.name )
+
+  # Populate the file with project information
+  proj.h5Info ( h5f )
+  dbcfg.h5Info ( h5f )
+
+  h5f.close()
+  tmpfile.seek(0)
+  return tmpfile.read()
+
