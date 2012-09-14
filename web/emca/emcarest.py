@@ -869,7 +869,7 @@ def deleteAnnotation ( webargs ):
 def projInfo ( webargs ):
   """Return information about the project and database"""
 
-  [ token, sym, otherargs ] = webargs.partition ('/')
+  [ token, projinfoliteral, otherargs ] = webargs.split ('/',2)
 
   # Get the annotation database
   projdb = emcaproj.EMCAProjectsDB()

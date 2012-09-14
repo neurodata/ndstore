@@ -12,7 +12,7 @@ urlpatterns = patterns('emca.views',
   # fetch ids (with predicates)
   url(r'(?P<webargs>^\w+/objects/[\w,/]*)$', 'getannoobjects'),
   # get project information
-  url(r'^projinfo/(?P<webargs>\w+/)$', 'projinfo'),
+  url(r'(?P<webargs>^\w+/projinfo/[\w,/]*)$', 'projinfo'),
   # get services
   url(r'(?P<webargs>^\w+/(xy|xz|yz|hdf5|npz|id|ids|xyanno||xzanno|yzanno)/[\w,/]+)$', 'emcaget'),
   # the post services
