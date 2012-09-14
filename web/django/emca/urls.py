@@ -14,7 +14,7 @@ urlpatterns = patterns('emca.views',
   # batch fetch RAMON 
   url(r'^\w+/objects/(?P<webargs>[\w,/]*)$', 'getObjects'),
   # get project information
-  url(r'^projinfo/(?P<webargs>\w+/)$', 'projinfo'),
+  url(r'(?P<webargs>^\w+/projinfo/[\w,/]*)$', 'projinfo'),
   # get services
   url(r'(?P<webargs>^\w+/(xy|xz|yz|hdf5|npz|id|ids|xyanno||xzanno|yzanno)/[\w,/]+)$', 'emcaget'),
   # the post services
