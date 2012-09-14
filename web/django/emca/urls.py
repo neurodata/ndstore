@@ -12,7 +12,7 @@ urlpatterns = patterns('emca.views',
   # fetch ids (with predicates)
   url(r'(?P<webargs>^\w+/list/[\w,/]*)$', 'listObjects'),
   # batch fetch RAMON 
-  url(r'^\w+/objects/(?P<webargs>[\w,/]*)$', 'getObjects'),
+  url(r'(?P<webargs>^\w+/objects/[\w,/]*)$', 'getObjects'),
   # get project information
   url(r'(?P<webargs>^\w+/projinfo/[\w,/]*)$', 'projinfo'),
   # get services
