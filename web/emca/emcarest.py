@@ -684,7 +684,7 @@ def getAnnotations ( webargs, postdata ):
 
   import pdb; pdb.set_trace()
 
-  [ token, sym, otherargs ] = webargs.partition ('/')
+  [ token, objectsliteral, otherargs ] = webargs.split ('/',2)
 
   # Get the annotation database
   projdb = emcaproj.EMCAProjectsDB()
@@ -702,14 +702,16 @@ def getAnnotations ( webargs, postdata ):
   if not h5in.get('ANNOIDS'):
     raise ANNError ("Requesting multiple annotations.  But no HDF5 \'ANNOIDS\' field specified.") 
 
-  # process options
-  # Split the URL and get the args
-  ( dataarg, cutout ) = otherargs.split('/', 1)
-
   # set variables to None: need them in call to getAnnoByID, but not all paths set all
   corner = None
   dim = None
   resolution = None
+  dataarg = ''
+
+  # process options
+  # Split the URL and get the args
+  if otherargs != '':
+    ( dataarg, cutout ) = otherargs.split('/', 1)
 
   if dataarg =='' or dataarg == 'nodata':
     dataoption = AR_NODATA
@@ -747,7 +749,7 @@ def getAnnotations ( webargs, postdata ):
   # Make the HDF5 output file
   # Create an in-memory HDF5 file
   tmpoutfile = tempfile.NamedTemporaryFile()
-  h5fout = h5py.File ( tmoutpfile.name )
+  h5fout = h5py.File ( tmpoutfile.name )
 
   # get annotations for each identifier
   for annoid in h5in['ANNOIDS'][:]:
