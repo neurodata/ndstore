@@ -17,7 +17,7 @@ def main():
 
   result = parser.parse_args()
 
-  url = 'http://%s/emca/%s/objects/' % ( result.baseurl, result.token )
+  url = 'http://%s/emca/%s/list/' % ( result.baseurl, result.token )
   if result.type != None:
     url += 'type/%s/' % ( result.type )
   if result.status != None:

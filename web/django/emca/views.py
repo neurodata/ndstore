@@ -65,14 +65,26 @@ def annotation (request, webargs):
     else: 
       return django.http.HttpResponseNotFound(e)
       
-
-def getannoobjects ( request, webargs ):
+def getObjects ( request, webargs ):
+  """Batch fetch of RAMON objects"""
 
   try:
     if request.method == 'GET':
-      return django.http.HttpResponse(emcarest.getAnnoObjects(webargs), mimetype="product/hdf5") 
+      raise ANNError ( "GET requested. objects Web service requires a POST of a list of identifiers.")
     elif request.method == 'POST':
-      return django.http.HttpResponse(emcarest.getAnnoObjects(webargs,request.body), mimetype="product/hdf5") 
+      return django.http.HttpResponse(emcarest.getAnnotations(webargs,request.body), mimetype="product/hdf5") 
+    
+  except ANNError, e:
+    return django.http.HttpResponseNotFound(e.value)
+
+def listObjects ( request, webargs ):
+  """Return a list of objects matching predicates and cutout"""
+
+  try:
+    if request.method == 'GET':
+      return django.http.HttpResponse(emcarest.listAnnoObjects(webargs), mimetype="product/hdf5") 
+    elif request.method == 'POST':
+      return django.http.HttpResponse(emcarest.listAnnoObjects(webargs,request.body), mimetype="product/hdf5") 
     
   except ANNError, e:
     return django.http.HttpResponseNotFound(e.value)

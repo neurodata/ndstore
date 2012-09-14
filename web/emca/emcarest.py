@@ -549,89 +549,34 @@ AR_VOXELS = 1
 AR_CUTOUT = 2
 AR_TIGHTCUTOUT = 3
 
-def getAnnotation ( webargs ):
-  """Fetch a RAMON object as HDF5 by object identifier"""
 
-  [ token, sym, otherargs ] = webargs.partition ('/')
-
-  # Get the annotation database
-  projdb = emcaproj.EMCAProjectsDB()
-  proj = projdb.getProj ( token )
-  dbcfg = dbconfig.switchDataset ( proj.getDataset() )
-  db = emcadb.EMCADB ( dbcfg, proj )
-
-  # Split the URL and get the args
-  args = otherargs.split('/', 2)
-
-  # if the first argument is numeric.  it is an annoid
-  if re.match ( '^\d+$', args[0] ): 
-    annoid = int(args[0])
-    
-    # default is no data
-    if args[1] == '' or args[1] == 'nodata':
-      dataoption = AR_NODATA
-    # if you want voxels you either requested the resolution id/voxels/resolution
-    #  or you get data from the default resolution
-
-    elif args[1] == 'voxels':
-      dataoption = AR_VOXELS
-      [resstr, sym, rest] = args[2].partition('/')
-      resolution = int(resstr) if resstr != '' else proj.getResolution()
-
-    elif args[1] =='cutout':
-
-      # if there are no args or only resolution, it's a tight cutout request
-      if args[2] == '' or re.match('^\d+[\/]*$', args[2]):
-        dataoption = AR_TIGHTCUTOUT
-        [resstr, sym, rest] = args[2].partition('/')
-        resolution = int(resstr) if resstr != '' else proj.getResolution()
-      else:
-        dataoption = AR_CUTOUT
-
-        # Perform argument processing
-        brargs = restargs.BrainRestArgs ();
-        try:
-          brargs.cutoutArgs ( args[2], dbcfg )
-        except Exception as e:
-          raise ANNError ( "Cutout error: " + e.value )
-
-        # Extract the relevant values
-        corner = brargs.getCorner()
-        dim = brargs.getDim()
-        resolution = brargs.getResolution()
-
-    else:
-      raise ANNError ("Fetch identifier %s.  Error: no such data option %s " % ( annoid, args[1] ))
-
-  # the first argument is not numeric.  it is a service other than getAnnotation
-  else:
-      raise ANNError ("Get interface %s requested.  Illegal or not implemented" % ( args[0] ))
+def getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution=None, corner=None, dim=None ): 
+  """Retrieve the annotation and put it in the HDF5 file.
+      This is called by both getAnnotation and getAnnotations
+      to add annotations to the HDF5 file."""
 
   # retrieve the annotation 
   anno = db.getAnnotation ( annoid )
   if anno == None:
     raise ANNError ("No annotation found at identifier = %s" % (annoid))
 
-  # Create an in-memory HDF5 file
-  h5f = h5ann.H5File ()
-
-  # create the HDF5 version of the annotation
-  h5 = h5ann.AnnotationtoH5 ( anno, h5f )
+  # create the HDF5 object
+  h5anno = h5ann.AnnotationtoH5 ( anno, h5f )
 
   # get the voxel data if requested
   if dataoption==AR_VOXELS:
     voxlist = db.getLocations ( annoid, resolution ) 
-    h5.addVoxels ( resolution, voxlist )
+    h5anno.addVoxels ( resolution, voxlist )
 
   elif dataoption==AR_CUTOUT:
 
     cb = db.annoCutout(annoid,resolution,corner,dim)
 
-    # again an abstraction problem with corner.
+    # FIXME again an abstraction problem with corner.
     #  return the corner to cutout arguments space
     retcorner = [corner[0], corner[1], corner[2]+dbcfg.slicerange[0]]
 
-    h5.addCutout ( resolution, retcorner, cb.data )
+    h5anno.addCutout ( resolution, retcorner, cb.data )
 
   elif dataoption==AR_TIGHTCUTOUT:
 
@@ -653,14 +598,169 @@ def getAnnotation ( webargs ):
 
     # cython optimized: set the cutoutdata values based on the voxarray
     assignVoxels_cy ( voxarray, cutoutdata, annoid, xmin, ymin, zmin )
-#    for (a,b,c) in voxarray: 
-#       cutoutdata[c-zmin,b-ymin,a-xmin] = annoid 
 
-    # try to make more efficient (map with setitem doesn't work).
+    h5anno.addCutout ( resolution, [xmin,ymin,zmin], cutoutdata )
 
-    h5.addCutout ( resolution, [xmin,ymin,zmin], cutoutdata )
 
-  return h5f.fileReader()
+def getAnnotation ( webargs ):
+  """Fetch a RAMON object as HDF5 by object identifier"""
+
+  [ token, sym, otherargs ] = webargs.partition ('/')
+
+  # Get the annotation database
+  projdb = emcaproj.EMCAProjectsDB()
+  proj = projdb.getProj ( token )
+  dbcfg = dbconfig.switchDataset ( proj.getDataset() )
+  db = emcadb.EMCADB ( dbcfg, proj )
+
+  # Split the URL and get the args
+  args = otherargs.split('/', 2)
+
+  # Make the HDF5 file
+  # Create an in-memory HDF5 file
+  tmpfile = tempfile.NamedTemporaryFile()
+  h5f = h5py.File ( tmpfile.name )
+
+  # if the first argument is numeric.  it is an annoid
+  if re.match ( '^\d+$', args[0] ): 
+
+    annoid = int(args[0])
+
+    # default is no data
+    if args[1] == '' or args[1] == 'nodata':
+      dataoption = AR_NODATA
+      getAnnoById ( annoid, h5f, db, dbcfg, dataoption )
+
+    # if you want voxels you either requested the resolution id/voxels/resolution
+    #  or you get data from the default resolution
+    elif args[1] == 'voxels':
+      dataoption = AR_VOXELS
+      [resstr, sym, rest] = args[2].partition('/')
+      resolution = int(resstr) if resstr != '' else proj.getResolution()
+
+      getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution )
+
+    elif args[1] =='cutout':
+
+      # if there are no args or only resolution, it's a tight cutout request
+      if args[2] == '' or re.match('^\d+[\/]*$', args[2]):
+        dataoption = AR_TIGHTCUTOUT
+        [resstr, sym, rest] = args[2].partition('/')
+        resolution = int(resstr) if resstr != '' else proj.getResolution()
+
+        getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution )
+
+      else:
+        dataoption = AR_CUTOUT
+
+        # Perform argument processing
+        brargs = restargs.BrainRestArgs ();
+        try:
+          brargs.cutoutArgs ( args[2], dbcfg )
+        except Exception as e:
+          raise ANNError ( "Cutout error: " + e.value )
+
+        # Extract the relevant values
+        corner = brargs.getCorner()
+        dim = brargs.getDim()
+        resolution = brargs.getResolution()
+
+        getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution, corner, dim )
+
+    else:
+      raise ANNError ("Fetch identifier %s.  Error: no such data option %s " % ( annoid, args[1] ))
+
+  # the first argument is not numeric.  it is a service other than getAnnotation
+  else:
+      raise ANNError ("Get interface %s requested.  Illegal or not implemented" % ( args[0] ))
+
+  h5f.flush()
+  tmpfile.seek(0)
+  return tmpfile.read()
+
+
+def getAnnotations ( webargs, postdata ):
+  """Get multiple annotations.  Takes an HDF5 that lists ids in the post."""
+
+  import pdb; pdb.set_trace()
+
+  [ token, sym, otherargs ] = webargs.partition ('/')
+
+  # Get the annotation database
+  projdb = emcaproj.EMCAProjectsDB()
+  proj = projdb.getProj ( token )
+  dbcfg = dbconfig.switchDataset ( proj.getDataset() )
+  db = emcadb.EMCADB ( dbcfg, proj )
+
+  # Read the post data HDF5 and get a list of identifiers
+  tmpinfile = tempfile.NamedTemporaryFile ( )
+  tmpinfile.write ( postdata )
+  tmpinfile.seek(0)
+  h5in = h5py.File ( tmpinfile.name, driver='core', backing_store=False )
+
+  # IDENTIFIERS
+  if not h5in.get('ANNOIDS'):
+    raise ANNError ("Requesting multiple annotations.  But no HDF5 \'ANNOIDS\' field specified.") 
+
+  # process options
+  # Split the URL and get the args
+  ( dataarg, cutout ) = otherargs.split('/', 1)
+
+  # set variables to None: need them in call to getAnnoByID, but not all paths set all
+  corner = None
+  dim = None
+  resolution = None
+
+  if dataarg =='' or dataarg == 'nodata':
+    dataoption = AR_NODATA
+
+  elif dataarg == 'voxels':
+    dataoption = AR_VOXELS
+    # only arg to voxels is resolution
+    [resstr, sym, rest] = cutout.partition('/')
+    resolution = int(resstr) if resstr != '' else proj.getResolution()
+
+  elif dataarg == 'cutout':
+    # if blank of just resolution then a tightcutout
+    if cutout == '' or re.match('^\d+[\/]*$', cutout):
+      dataoption = AR_TIGHTCUTOUT
+      [resstr, sym, rest] = cutout.partition('/')
+      resolution = int(resstr) if resstr != '' else proj.getResolution()
+    else:
+      dataoption = AR_CUTOUT
+
+      # Perform argument processing
+      brargs = restargs.BrainRestArgs ();
+      try:
+        brargs.cutoutArgs ( cutout, dbcfg )
+      except Exception as e:
+        raise ANNError ( "Cutout error: " + e.value )
+
+      # Extract the relevant values
+      corner = brargs.getCorner()
+      dim = brargs.getDim()
+      resolution = brargs.getResolution()
+
+  else:
+      raise ANNError ("In getAnnotations: Error: no such data option %s " % ( dataarg ))
+
+  # Make the HDF5 output file
+  # Create an in-memory HDF5 file
+  tmpoutfile = tempfile.NamedTemporaryFile()
+  h5fout = h5py.File ( tmoutpfile.name )
+
+  # get annotations for each identifier
+  for annoid in h5in['ANNOIDS'][:]:
+    getAnnoById ( annoid, h5fout, db, dbcfg, dataoption, resolution, corner, dim )
+
+  # close temporary file
+  h5in.close()
+  tmpinfile.close()
+
+  # Transmit back the populated HDF5 file
+  h5fout.flush()
+  tmpoutfile.seek(0)
+  return tmpoutfile.read()
 
 
 def putAnnotation ( webargs, postdata ):
@@ -681,9 +781,6 @@ def putAnnotation ( webargs, postdata ):
   tmpfile.write ( postdata )
   tmpfile.seek(0)
   h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
-
-  import pdb; pdb.set_trace()
-
 
   try:
 
@@ -784,7 +881,7 @@ def putAnnotation ( webargs, postdata ):
 
 #  Return a list of annotation object IDs
 #  for now by type and status
-def getAnnoObjects ( webargs, postdata=None ):
+def listAnnoObjects ( webargs, postdata=None ):
   """ Return a list of anno ids restricted by equality predicates.
       Equalities are alternating in field/value in the url.
   """

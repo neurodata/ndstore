@@ -10,7 +10,9 @@ urlpatterns = patterns('emca.views',
   # catmaid
   url(r'^catmaid/(?P<webargs>\w+/.*)$', 'catmaid'),
   # fetch ids (with predicates)
-  url(r'(?P<webargs>^\w+/objects/[\w,/]*)$', 'getannoobjects'),
+  url(r'(?P<webargs>^\w+/list/[\w,/]*)$', 'listObjects'),
+  # batch fetch RAMON 
+  url(r'^\w+/objects/(?P<webargs>[\w,/]*)$', 'getObjects'),
   # get project information
   url(r'^projinfo/(?P<webargs>\w+/)$', 'projinfo'),
   # get services

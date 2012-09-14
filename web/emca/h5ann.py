@@ -70,37 +70,15 @@ from pprint import pprint
 
 """
 
-class H5File:
-  """File creation and destruction routines.
-      This is seperate from H5Annotation so that multiple 
-      annotations can be placed in the same file."""
-
-  def __init__( self ):
-
-    # Create an in-memory HDF5 file
-    self.tmpfile = tempfile.NamedTemporaryFile()
-    self.h5fh = h5py.File ( self.tmpfile.name )
-
-  def __del__(self):
-    """File destructor"""
-    self.h5fh.close()
-    self.tmpfile.close()
-
-  def fileReader( self ):
-    """Return a file read stream to be transferred as put data"""
-    self.h5fh.flush()
-    self.tmpfile.seek(0)
-    return self.tmpfile.read()
-
 
 class H5Annotation:
   """Class to move RAMON objects into and out of HDF5 files"""
 
-  def __init__( self, annotype, annoid, h5file ):
+  def __init__( self, annotype, annoid, h5fh ):
     """Create an annotation and put in the specified HDF5 file."""
 
     # Give the HDF5 file handle to the H5Annotation
-    self.h5fh = h5file.h5fh
+    self.h5fh = h5fh
 
     # Create the top level annotation id namespace
     self.idgrp = self.h5fh.create_group ( str(annoid) ) 
