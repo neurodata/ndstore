@@ -394,7 +394,6 @@ def selectPost ( webargs, dbcfg, proj, postdata ):
   except:
     annoDB.rollback()
     
-  print "Committing here"
   annoDB.commit()
 
   return str(entityid)
