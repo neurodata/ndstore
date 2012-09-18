@@ -40,8 +40,6 @@ class dbConfig:
   def h5Info ( self, h5f ):
     """Populate the HDF5 with dbconfiguration information"""
 
-    import pdb; pdb.set_trace()
-
     dbcfggrp = h5f.create_group ( 'DATASET' )
     dbcfggrp.create_dataset ( "RESOLUTIONS", data=self.resolutions )
     dbcfggrp.create_dataset ( "SLICERANGE", data=self.slicerange )

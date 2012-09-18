@@ -1005,7 +1005,7 @@ class EMCADB:
       print "Error retrieving ids. sql=%s" % (e.args[0], e.args[1], sql)
       raise ANNError ( "Error retrieving ids: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
-    annoids = cursor.fetchall()
+    annoids = np.array ( cursor.fetchall(), dtype=np.uint32 ).flatten()
 
     cursor.close()
     return np.array(annoids)
