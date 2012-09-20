@@ -71,6 +71,9 @@ def switchDataset ( dataset ):
   elif dataset == 'will':
     import dbconfigwill
     return dbconfigwill.dbConfigWill()
+  elif dataset == 'kat11iso':
+    import dbconfigkat11iso
+    return dbconfigkat11iso.dbConfigKasthuri11Isotropic()
   else:
     # RBTODO make this a dbconfig exception
     raise DBConfigError ("Could not find dataset = %s" % dataset)

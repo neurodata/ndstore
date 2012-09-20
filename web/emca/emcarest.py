@@ -350,6 +350,7 @@ def selectPost ( webargs, dbcfg, proj, postdata ):
   # Bind the annotation database
   annoDB = emcadb.EMCADB ( dbcfg, proj )
 
+  # RBTODO need to make work for annotations and cutouts.  Just annotations now
   try:
 
     if service == 'npvoxels':
@@ -394,7 +395,6 @@ def selectPost ( webargs, dbcfg, proj, postdata ):
   except:
     annoDB.rollback()
     
-  print "Committing here"
   annoDB.commit()
 
   return str(entityid)

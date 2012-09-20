@@ -587,6 +587,7 @@ class EMCADB:
           # remove 0 no reason to index that
           del(index_dict[0])
 
+
     # Update all indexes
     self.annoIdx.updateIndexDense(index_dict,resolution)
 

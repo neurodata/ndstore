@@ -1,0 +1,86 @@
+import numpy as np
+import urllib, urllib2
+import cStringIO
+import sys
+import zlib
+from PIL import Image
+import zindex
+import MySQLdb
+
+#_startslice = 1089 # 15*64+1
+#_endslice = 1537  # 24*64+1
+_startslice = 1 # 15*64+1
+_endslice = 993  # 24*64+1
+
+conn = MySQLdb.connect (host = 'localhost',
+                            user = 'brain',
+                            passwd = '88brain88',
+                            db = 'kat11isodata')
+
+cursor = conn.cursor ()
+
+# It's a 64^3 cube
+for z in range (_startslice, _endslice, 64):
+  for y in range (0,((2579-1)/64+1)*64, 64):
+    for x in range (0,((2150-1)/64+1)*64, 64):
+
+      xmax = min((x+64)*5,10752)
+      ymax = min((y+64)*5,13312)
+
+      # Cutout the data from the kasthuri11 data set at resolution 1
+      url = "http://rio.cs.jhu.edu/EM/emca/kasthuri11/npz/1/%s,%s/%s,%s/%s,%s/" % (x*5, xmax, y*5, ymax, z, z+64)
+      
+      print url
+
+      # Get cube in question
+      try:
+        f = urllib2.urlopen ( url )
+      except urllib2.URLError, e:
+        print "Failed %s.  Exception %s." % (url,e)
+        sys.exit(-1)
+
+      zdatain = f.read ()
+
+      # get the data out of the compressed blob
+      instr = zlib.decompress ( zdatain[:] )
+      infobj = cStringIO.StringIO ( instr )
+      cube = np.load ( infobj )
+      infobj.close()
+
+
+      # Put the cutout into the array
+      olddata = np.zeros( [ 64,320,320 ], dtype=np.uint8 )
+      olddata[0:cube.shape[0],0:cube.shape[1],0:cube.shape[2]] = cube
+
+      # target cube
+      newdata = np.zeros ( [64, 64, 64], dtype=np.uint8 )
+
+      # Rescale the data to be one fifth the size 
+      for s in range(64):
+
+        # Convert each slice to an image
+        simage = Image.frombuffer ( 'L', (320,320), olddata[s,:,:].flatten(), 'raw', 'L', 0, 1 )
+
+        # Resize the image
+        newimage = simage.resize ( [64, 64] )
+
+        # Put to a new cube
+        newdata[s,:,:] = np.asarray ( newimage )
+
+      # Compress the data
+      outfobj = cStringIO.StringIO ()
+      np.save ( outfobj, newdata )
+      zdataout = zlib.compress (outfobj.getvalue())
+      outfobj.close()
+
+      key = zindex.XYZMorton ( [x/64,y/64,z/64] )
+
+      # Put in the database
+      sql = "INSERT INTO res0 (zindex, cube) VALUES (%s, %s)"
+      try:
+        cursor.execute ( sql, (key,zdataout))
+        conn.commit()
+      except:
+        print "SQL error"
+
+

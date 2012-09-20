@@ -87,11 +87,16 @@ class AnnotateIndex:
                assert 0
             except BaseException, e:
                print "DBG: SOMETHING REALLY WRONG HERE", e
+            
+            #RBTODO why this commit for NPZ?  does it work without for RAmon
+            self.conn.commit()
+
+
          else:
              #Update index to the union of the currentIndex and the updated index                                                               
             newIndex=np.union1d(curindex,cubeindex)
 #            print "Updating Index for annotation ",key, " to" , newIndex
-            
+
          #update index in the database                                                                                                      
             sql = "UPDATE " + self.proj.getIdxTable(resolution) + " SET cube=(%s) WHERE annid=" + str(key)
             try:
@@ -101,6 +106,9 @@ class AnnotateIndex:
             except MySQLdb.Error, e:
                print "Error updating exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
                assert 0
+
+            #RBTODO why this commit for NPZ?  does it work without for RAmon
+            self.conn.commit()
                
       cursor.close()
 

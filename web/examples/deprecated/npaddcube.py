@@ -34,7 +34,7 @@ def main():
       for i in range (result.xlow,result.xhigh):
         voxlist.append ( [ i,j,k ] )
 
-  url = 'http://%s/annotate/%s/npvoxels/new/%s/' % ( result.baseurl, result.token, result.resolution )
+  url = 'http://%s/emca/%s/npvoxels/%s/' % ( result.baseurl, result.token, result.resolution )
   
   print url
 
