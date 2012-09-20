@@ -580,26 +580,30 @@ def getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution=None, corner=No
 
   elif dataoption==AR_TIGHTCUTOUT:
 
+    # RBTODO need to get this from the index not build the whole voxarray
+
     #  get the voxel list
     voxarray = np.array ( db.getLocations ( annoid, resolution ), dtype=np.uint32 )
 
-    # determin the extrema
-    xmin = min(voxarray[:,0])
-    xmax = max(voxarray[:,0])
-    ymin = min(voxarray[:,1])
-    ymax = max(voxarray[:,1])
-    zmin = min(voxarray[:,2])
-    zmax = max(voxarray[:,2])
+    if len(voxarray) != 0:
 
-    if (xmax-xmin)*(ymax-ymin)*(zmax-zmin) >= 1024*1024*16 :
-      raise ANNError ("Cutout region is inappropriately large.  Dimension: %s,%s,%s" % (str(xmax-xmin),str(ymax-ymin),str(zmax-zmin)))
+      # determine the extrema
+      xmin = min(voxarray[:,0])
+      xmax = max(voxarray[:,0])
+      ymin = min(voxarray[:,1])
+      ymax = max(voxarray[:,1])
+      zmin = min(voxarray[:,2])
+      zmax = max(voxarray[:,2])
 
-    cutoutdata = np.zeros([zmax-zmin+1,ymax-ymin+1,xmax-xmin+1], dtype=np.uint32)
+      if (xmax-xmin)*(ymax-ymin)*(zmax-zmin) >= 1024*1024*16 :
+        raise ANNError ("Cutout region is inappropriately large.  Dimension: %s,%s,%s" % (str(xmax-xmin),str(ymax-ymin),str(zmax-zmin)))
 
-    # cython optimized: set the cutoutdata values based on the voxarray
-    assignVoxels_cy ( voxarray, cutoutdata, annoid, xmin, ymin, zmin )
+      cutoutdata = np.zeros([zmax-zmin+1,ymax-ymin+1,xmax-xmin+1], dtype=np.uint32)
 
-    h5anno.addCutout ( resolution, [xmin,ymin,zmin], cutoutdata )
+      # cython optimized: set the cutoutdata values based on the voxarray
+      assignVoxels_cy ( voxarray, cutoutdata, annoid, xmin, ymin, zmin )
+
+      h5anno.addCutout ( resolution, [xmin,ymin,zmin], cutoutdata )
 
 
 def getAnnotation ( webargs ):
@@ -681,8 +685,6 @@ def getAnnotation ( webargs ):
 
 def getAnnotations ( webargs, postdata ):
   """Get multiple annotations.  Takes an HDF5 that lists ids in the post."""
-
-  import pdb; pdb.set_trace()
 
   [ token, objectsliteral, otherargs ] = webargs.split ('/',2)
 

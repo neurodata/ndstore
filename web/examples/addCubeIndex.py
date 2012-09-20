@@ -51,7 +51,7 @@ def main():
     response = urllib2.urlopen(req)
   except urllib2.URLError, e:
     print "Failed URL", url
-    print "Error %s" % (e.read()) 
+    print "Error %s" % (e) 
 
   the_page = response.read()
 

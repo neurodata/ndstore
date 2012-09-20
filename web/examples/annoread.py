@@ -36,8 +36,6 @@ def main():
       url = "http://%s/emca/%s/%s/voxels/" % (result.baseurl,result.token,result.annid)
     else:
       url = "http://%s/emca/%s/%s/voxels/%s/" % (result.baseurl,result.token,result.annid, result.resolution)
-  elif result.voxels:
-    url = "http://%s/emca/%s/%s/voxels/" % (result.baseurl,result.token,result.annid)
   elif result.cutout != None:
     url = "http://%s/emca/%s/%s/cutout/%s/" % (result.baseurl,result.token,result.annid, result.cutout)
   elif result.tightcutout: 
@@ -55,7 +53,7 @@ def main():
     f = urllib2.urlopen ( url )
   except urllib2.URLError, e:
     print "Failed URL", url
-    print "Error %s" % (e.read()) 
+    print "Error %s" % (e) 
     sys.exit(0)
 
   # create an in memory h5 file
