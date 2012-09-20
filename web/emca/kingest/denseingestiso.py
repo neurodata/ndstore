@@ -27,11 +27,11 @@ _startslice = 992
 _endslice = 1319
 _prefix = 'redapical_s'
 _suffix = '_30nm.png'
-_batchsz = 16
+_batchsz = 16 
 
 # Shape that we want to ingest into the database.
 #  This should be aligned to the database cube size to perform best.
-_zingestsz = 16
+_zingestsz = 16 
 _yingestsz = 1024
 _xingestsz = 1024
 
@@ -82,8 +82,8 @@ def main():
               # check if there's anything to store
               if ( np.count_nonzero(data) != 0 ):
               
-#                url = 'http://rio.cs.jhu.edu/EM/emca/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( result.token, result.resolution, x, min(xhigh,x+_xingestsz), y, min(yhigh,y+_yingestsz), z, min(zhigh,z+_zingestsz ))
-                url = 'http://localhost:8000/emca/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( result.token, result.resolution, x, min(xhigh,x+_xingestsz), y, min(yhigh,y+_yingestsz), z, min(zhigh,z+_zingestsz ))
+                url = 'http://rio.cs.jhu.edu/EM/emca/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( result.token, result.resolution, x, min(xhigh,x+_xingestsz), y, min(yhigh,y+_yingestsz), z, min(zhigh,z+_zingestsz ))
+#                url = 'http://localhost:8000/emca/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( result.token, result.resolution, x, min(xhigh,x+_xingestsz), y, min(yhigh,y+_yingestsz), z, min(zhigh,z+_zingestsz ))
 
                 print url, data.shape, np.nonzero(data)
 
