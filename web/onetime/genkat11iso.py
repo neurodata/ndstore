@@ -9,7 +9,7 @@ import MySQLdb
 
 #_startslice = 1089 # 15*64+1
 #_endslice = 1537  # 24*64+1
-_startslice = 1 # 15*64+1
+_startslice = 65 # 15*64+1
 _endslice = 993  # 24*64+1
 
 conn = MySQLdb.connect (host = 'localhost',
