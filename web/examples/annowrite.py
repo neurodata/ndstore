@@ -57,7 +57,6 @@ def H5AnnotationFile ( annotype, annoid, kv=None ):
     syn_weight = random.random()*1000.0
     syn_synapse_type = random.randint(1,9)
     syn_seeds = [ random.randint(1,1000) for x in range(5) ]
-    print "Seeds = ", syn_seeds
 
     syn_segments = [ [random.randint(1,1000),random.randint(1,1000)] for x in range(4) ]
 
@@ -216,8 +215,6 @@ def main():
 
   print url
 
-  import pdb; pdb.set_trace()
-  
   if result.cutout:
     if result.voxels:
       H5AddVoxels ( h5, result.annid, result.cutout )
