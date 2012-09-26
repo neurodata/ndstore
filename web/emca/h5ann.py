@@ -27,6 +27,7 @@ from pprint import pprint
   ANNOTATION_TYPE (int)
   RESOLUTION (int optional) defaults to project resolution
   XYZOFFSET ( int[3] optional defined with volume )
+  XYZDIMENSION ( int[3] optional used only by server when asking for a bounding box )
   CUTOUT ( int32 3-d array optional defined with XYZOFFSET )
   VOXELS ( int32[][3] optional if defined XYZOFFSET and CUTOUT must be empty ) 
 
@@ -103,6 +104,13 @@ class H5Annotation:
     self.idgrp.create_dataset ( "XYZOFFSET", (3,), np.uint32, data=corner )     
     self.idgrp.create_dataset ( "CUTOUT", volume.shape, np.uint32, data=volume )     
     
+  def addBoundingBox ( self, resolution, corner, dim ):
+    """Add the cutout  to the HDF5 file"""
+
+    self.idgrp.create_dataset ( "RESOLUTION", (1,), np.uint32, data=resolution )     
+    self.idgrp.create_dataset ( "XYZOFFSET", (3,), np.uint32, data=corner )     
+    self.idgrp.create_dataset ( "XYZDIMENSION", (3,), np.uint32, data=dim )     
+
 
 ############## Converting HDF5 to Annotations
 

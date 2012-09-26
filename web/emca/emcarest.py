@@ -266,7 +266,7 @@ def annId ( imageargs, dbcfg, proj ):
 #  return the annotation identifiers in a region                         
 #                                                                         
 def listIds ( imageargs, dbcfg, proj ):
-  """Return the list  of annotation identifier in a region"""
+  """Return the list of annotation identifiers in a region"""
 
   # Perform argument processing
   args = restargs.BrainRestArgs ();
@@ -548,6 +548,7 @@ AR_NODATA = 0
 AR_VOXELS = 1
 AR_CUTOUT = 2
 AR_TIGHTCUTOUT = 3
+AR_BOUNDINGBOX = 4
 
 
 def getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution=None, corner=None, dim=None ): 
@@ -580,31 +581,19 @@ def getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution=None, corner=No
 
   elif dataoption==AR_TIGHTCUTOUT:
 
-    # RBTODO need to get this from the index not build the whole voxarray
+    # get the bounding box from the index
+    bbcorner, bbdim = db.getBoundingBox ( annoid, resolution )
 
-    #  get the voxel list
-    voxarray = np.array ( db.getLocations ( annoid, resolution ), dtype=np.uint32 )
+    if bbcorner != None:
 
-    if len(voxarray) != 0:
+      # do a cutout and add the cutout to the HDF5 file
+      cutout = db.cutout ( bbcorner, bbdim, resolution ) 
+      h5anno.addCutout ( resolution, bbcorner, cutout.data )
 
-      # determine the extrema
-      xmin = min(voxarray[:,0])
-      xmax = max(voxarray[:,0])
-      ymin = min(voxarray[:,1])
-      ymax = max(voxarray[:,1])
-      zmin = min(voxarray[:,2])
-      zmax = max(voxarray[:,2])
+  elif dataoption==AR_BOUNDINGBOX:
 
-      if (xmax-xmin)*(ymax-ymin)*(zmax-zmin) >= 1024*1024*16 :
-        raise ANNError ("Cutout region is inappropriately large.  Dimension: %s,%s,%s" % (str(xmax-xmin),str(ymax-ymin),str(zmax-zmin)))
-
-      cutoutdata = np.zeros([zmax-zmin+1,ymax-ymin+1,xmax-xmin+1], dtype=np.uint32)
-
-      # cython optimized: set the cutoutdata values based on the voxarray
-      assignVoxels_cy ( voxarray, cutoutdata, annoid, xmin, ymin, zmin )
-
-      h5anno.addCutout ( resolution, [xmin,ymin,zmin], cutoutdata )
-
+    bbcorner, bbdim = db.getBoundingBox ( annoid, resolution )
+    h5anno.addBoundingBox ( resolution, bbcorner, bbdim )
 
 def getAnnotation ( webargs ):
   """Fetch a RAMON object as HDF5 by object identifier"""
@@ -670,6 +659,14 @@ def getAnnotation ( webargs ):
         resolution = brargs.getResolution()
 
         getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution, corner, dim )
+
+    elif args[1] == 'boundingbox':
+
+      dataoption = AR_BOUNDINGBOX
+      [resstr, sym, rest] = args[2].partition('/')
+      resolution = int(resstr) if resstr != '' else proj.getResolution()
+  
+      getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution )
 
     else:
       raise ANNError ("Fetch identifier %s.  Error: no such data option %s " % ( annoid, args[1] ))
@@ -744,6 +741,14 @@ def getAnnotations ( webargs, postdata ):
       corner = brargs.getCorner()
       dim = brargs.getDim()
       resolution = brargs.getResolution()
+
+  # RBTODO test this interface
+  elif dataarg == 'boundingbox':
+    # if blank of just resolution then a tightcutout
+    if cutout == '' or re.match('^\d+[\/]*$', cutout):
+      dataoption = AR_BOUNDINGBOX
+      [resstr, sym, rest] = cutout.partition('/')
+      resolution = int(resstr) if resstr != '' else proj.getResolution()
 
   else:
       raise ANNError ("In getAnnotations: Error: no such data option %s " % ( dataarg ))
@@ -943,6 +948,8 @@ def listAnnoObjects ( webargs, postdata=None ):
 
 def deleteAnnotation ( webargs ):
   """Delete a RAMON object"""
+
+  import pdb; pdb.set_trace()
 
   [ token, sym, otherargs ] = webargs.partition ('/')
 

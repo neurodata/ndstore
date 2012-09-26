@@ -918,6 +918,38 @@ class EMCADB:
 
     return voxlist
 
+  #
+  # getBoundingBox -- return a corner and dimension of the bounding box 
+  #   for an annotation using the index.
+  #
+  def getBoundingBox ( self, entityid, res ):
+  
+    # get the size of the image and cube
+    resolution = int(res)
+
+    # all boxes in the index
+    zidxs = self.annoIdx.getIndex(entityid,resolution)
+
+    if len(zidxs)==0:
+      return None, None
+    
+    # convert to xyz coordinates
+    xyzvals = np.array ( [ zindex.MortonXYZ(zidx) for zidx in zidxs ], dtype=np.uint32 )
+
+    cubedim = self.dbcfg.cubedim [ resolution ] 
+
+    # find the corners
+    xmin = min(xyzvals[:,0]) * cubedim[0]
+    xmax = (max(xyzvals[:,0])+1) * cubedim[0]
+    ymin = min(xyzvals[:,1]) * cubedim[1]
+    ymax = (max(xyzvals[:,1])+1) * cubedim[1]
+    zmin = min(xyzvals[:,2]) * cubedim[2]
+    zmax = (max(xyzvals[:,2])+1) * cubedim[2]
+
+    corner = [ xmin, ymin, zmin ]
+    dim = [ xmax-xmin, ymax-ymin, zmax-zmin ]
+
+    return (corner,dim)
 
   #
   # getAnnotation:  
