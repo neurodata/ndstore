@@ -26,7 +26,7 @@ def overlayCutout (request, webargs):
   projdb = emcaproj.EMCAProjectsDB()
   proj = projdb.getProj ( token )
 
-  dataurl = request.build_absolute_uri( '%s/cutout' % ( proj.getDataURL(), cutout ))
+  dataurl = request.build_absolute_uri( '%s/emca/%s/%s' % ( proj.getDataURL(), proj.getDataset(), cutout ))
 
   # RBTODO can't seen to get WSGIScriptAlias information from apache.  So 
   #  right now we have to hardwire.  Yuck.

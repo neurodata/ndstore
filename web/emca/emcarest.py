@@ -618,8 +618,7 @@ def getAnnotation ( webargs ):
   # get the voxel data if requested
   if dataoption==AR_VOXELS:
     voxlist = db.getLocations ( annoid, resolution ) 
-    if len(voxlist) != 0:
-      h5.addVoxels ( resolution, voxlist )
+    h5.addVoxels ( resolution, voxlist )
 
   elif dataoption==AR_CUTOUT:
 
@@ -635,7 +634,6 @@ def getAnnotation ( webargs ):
 
     #  get the voxel list
     voxarray = np.array ( db.getLocations ( annoid, resolution ), dtype=np.uint32 )
-    if len(voxarray) !=0:
 
     # determin the extrema
     xmin = min(voxarray[:,0])
@@ -652,6 +650,10 @@ def getAnnotation ( webargs ):
 
     # cython optimized: set the cutoutdata values based on the voxarray
     assignVoxels_cy ( voxarray, cutoutdata, annoid, xmin, ymin, zmin )
+#    for (a,b,c) in voxarray: 
+#       cutoutdata[c-zmin,b-ymin,a-xmin] = annoid 
+
+    # try to make more efficient (map with setitem doesn't work).
 
     h5.addCutout ( resolution, [xmin,ymin,zmin], cutoutdata )
 
