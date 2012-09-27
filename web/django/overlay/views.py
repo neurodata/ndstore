@@ -30,8 +30,7 @@ def overlayCutout (request, webargs):
 
   # RBTODO can't seen to get WSGIScriptAlias information from apache.  So 
   #  right now we have to hardwire.  Yuck.
-#  annourl = request.build_absolute_uri( '/emca/%s/%s' % ( token, cutout ))
-  annourl = request.build_absolute_uri( '/EM/emca/%s/%s' % ( token, cutout ))
+  annourl = request.build_absolute_uri( '/emca/%s/%s' % ( token, cutout ))
 
   # Get data 
   f = urllib2.urlopen ( dataurl )
