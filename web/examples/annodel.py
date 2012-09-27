@@ -12,7 +12,7 @@ def main():
   parser = argparse.ArgumentParser(description='Fetch an annotation as an HDF5 file')
   parser.add_argument('baseurl', action="store")
   parser.add_argument('token', action="store")
-  parser.add_argument('annid', action="store", type=int, help='Annotation ID to extract')
+  parser.add_argument('annid', action="store", type=int, help='Annotation ID to delete')
 
   result = parser.parse_args()
 

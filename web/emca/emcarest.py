@@ -567,13 +567,16 @@ def getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution=None, corner=No
   # get the voxel data if requested
   if dataoption==AR_VOXELS:
     voxlist = db.getLocations ( annoid, resolution ) 
-    h5anno.addVoxels ( resolution, voxlist )
+    # RBTODO check this 
+    import pdb; pdb.set_trace()
+    if len(voxlist) != 0:
+      h5anno.addVoxels ( resolution, voxlist )
 
   elif dataoption==AR_CUTOUT:
 
     cb = db.annoCutout(annoid,resolution,corner,dim)
 
-    # FIXME again an abstraction problem with corner.
+    # again an abstraction problem with corner.
     #  return the corner to cutout arguments space
     retcorner = [corner[0], corner[1], corner[2]+dbcfg.slicerange[0]]
 

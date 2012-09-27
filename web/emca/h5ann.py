@@ -110,9 +110,8 @@ class H5Annotation:
     self.idgrp.create_dataset ( "RESOLUTION", (1,), np.uint32, data=resolution )     
     self.idgrp.create_dataset ( "XYZOFFSET", (3,), np.uint32, data=corner )     
     self.idgrp.create_dataset ( "XYZDIMENSION", (3,), np.uint32, data=dim )     
-
-
 ############## Converting HDF5 to Annotations
+
 
 def H5toAnnotation ( h5fh ):
   """Return an annotation constructed from the contents of this HDF5 file"""
