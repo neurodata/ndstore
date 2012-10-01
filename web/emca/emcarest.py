@@ -16,6 +16,7 @@ import emcadb
 import dbconfig
 import emcaproj
 import h5ann
+import annotation
 
 from ann_cy import assignVoxels_cy
 from ann_cy import recolor_cy
@@ -564,11 +565,14 @@ def getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution=None, corner=No
   # create the HDF5 object
   h5anno = h5ann.AnnotationtoH5 ( anno, h5f )
 
+  # only return data for annotation types that have data
+  if anno.__class__ in [ annotation.AnnNeuron, annotation.AnnSeed ] and dataoption != AR_NODATA: 
+    raise ANNError ("No data associated with annotation type %s" % ( anno.__class__))
+
   # get the voxel data if requested
   if dataoption==AR_VOXELS:
+  
     voxlist = db.getLocations ( annoid, resolution ) 
-    # RBTODO check this 
-    import pdb; pdb.set_trace()
     if len(voxlist) != 0:
       h5anno.addVoxels ( resolution, voxlist )
 
@@ -597,6 +601,7 @@ def getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution=None, corner=No
 
     bbcorner, bbdim = db.getBoundingBox ( annoid, resolution )
     h5anno.addBoundingBox ( resolution, bbcorner, bbdim )
+
 
 def getAnnotation ( webargs ):
   """Fetch a RAMON object as HDF5 by object identifier"""
@@ -796,12 +801,17 @@ def putAnnotation ( webargs, postdata ):
 
   try:
 
+    import pdb; pdb.set_trace()
+
     for k in h5f.keys():
 
       idgrp = h5f.get(k)
 
       # Convert HDF5 to annotation
       anno = h5ann.H5toAnnotation ( h5f )
+
+      if anno.__class__ in [ annotation.AnnNeuron, annotation.AnnSeed ] and ( idgrp.get('VOXELS') or idgrp.get('CUTOUT')):
+        raise ANNError ("Cannot write to annotation type %s" % (anno.__class__))
 
       if 'update' in options and 'dataonly' in options:
         raise ANNError ("Illegal combination of options. Cannot use udpate and dataonly together")
@@ -951,8 +961,6 @@ def listAnnoObjects ( webargs, postdata=None ):
 
 def deleteAnnotation ( webargs ):
   """Delete a RAMON object"""
-
-  import pdb; pdb.set_trace()
 
   [ token, sym, otherargs ] = webargs.partition ('/')
 

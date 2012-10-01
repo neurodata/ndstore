@@ -24,7 +24,7 @@ def main():
     resp = conn.getresponse()
     content=resp.read()
   except httplib.HTTPException, e:
-    print "Error %s" % (e) 
+    print "Error %s" % (e.read()) 
     sys.exit(0)
 
   print "Delete returns %s" % content

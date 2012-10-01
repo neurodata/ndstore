@@ -32,7 +32,7 @@ def main():
       f = urllib2.urlopen ( url )
     except urllib2.URLError, e:
       print "Failed URL", url
-      print "Error %s" % (e) 
+      print "Error %s" % (e.read()) 
       sys.exit(0)
 
   # POST if we have a cutout
@@ -65,7 +65,7 @@ def main():
       f = urllib2.urlopen(req)
     except urllib2.URLError, e:
       print "Failed URL", url
-      print "Error %s" % (e) 
+      print "Error %s" % (e.read()) 
       sys.exit(-1)
 
   # Now we are processing the return.  New tmpfile, new h5f
