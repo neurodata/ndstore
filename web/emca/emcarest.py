@@ -801,8 +801,6 @@ def putAnnotation ( webargs, postdata ):
 
   try:
 
-    import pdb; pdb.set_trace()
-
     for k in h5f.keys():
 
       idgrp = h5f.get(k)
