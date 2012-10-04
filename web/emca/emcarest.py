@@ -586,9 +586,13 @@ def getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution=None, corner=No
 
     if bbcorner != None:
 
+      if bbdim[0]*bbdim[1]*bbdim[2] >= 1024*1024*256:
+        raise ANNError ("Cutout region is inappropriately large.  Dimension: %s,%s,%s" % (str(xmax-xmin),str(ymax-ymin),str(zmax-zmin)))
+
       # do a cutout and add the cutout to the HDF5 file
       cutout = db.cutout ( bbcorner, bbdim, resolution ) 
-      h5anno.addCutout ( resolution, bbcorner, cutout.data )
+      retcorner = [bbcorner[0], bbcorner[1], bbcorner[2]+dbcfg.slicerange[0]]
+      h5anno.addCutout ( resolution, retcorner, cutout.data )
 
   elif dataoption==AR_BOUNDINGBOX:
 
@@ -948,8 +952,6 @@ def listAnnoObjects ( webargs, postdata=None ):
 
 def deleteAnnotation ( webargs ):
   """Delete a RAMON object"""
-
-  import pdb; pdb.set_trace()
 
   [ token, sym, otherargs ] = webargs.partition ('/')
 
