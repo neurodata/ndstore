@@ -57,6 +57,7 @@ def H5AnnotationFile ( annotype, annoid, kv=None ):
     syn_weight = random.random()*1000.0
     syn_synapse_type = random.randint(1,9)
     syn_seeds = [ random.randint(1,1000) for x in range(5) ]
+
     syn_segments = [ [random.randint(1,1000),random.randint(1,1000)] for x in range(4) ]
 
     mdgrp.create_dataset ( "WEIGHT", (1,), np.float, data=syn_weight )
@@ -113,7 +114,63 @@ def H5AnnotationFile ( annotype, annoid, kv=None ):
 
   h5fh.flush()
   tmpfile.seek(0)
-  return tmpfile
+  # return the h5 file object and the tmpfile that stores it
+  return h5fh, tmpfile
+
+
+def H5AddCutout (h5, annid, cutout):
+  """Add a cube of data to the HDF5 file"""
+
+  [ resstr, xstr, ystr, zstr ] = cutout.split('/')
+  ( xlowstr, xhighstr ) = xstr.split(',')
+  ( ylowstr, yhighstr ) = ystr.split(',')
+  ( zlowstr, zhighstr ) = zstr.split(',')
+
+  resolution = int(resstr)
+  xlow = int(xlowstr)
+  xhigh = int(xhighstr)
+  ylow = int(ylowstr)
+  yhigh = int(yhighstr)
+  zlow = int(zlowstr)
+  zhigh = int(zhighstr)
+
+  idgrp = h5[str(annid)]
+
+  anndata = np.ones ( [ zhigh-zlow, yhigh-ylow, xhigh-xlow ] )
+  idgrp.create_dataset ( "RESOLUTION", (1,), np.uint32, data=resolution )
+  idgrp.create_dataset ( "XYZOFFSET", (3,), np.uint32, data=[xlow,ylow,zlow] )
+  idgrp.create_dataset ( "CUTOUT", anndata.shape, np.uint32, data=anndata )
+
+
+def H5AddVoxels(h5, annid, cutout):
+  """Add a cube of data to the HDF5 file as a list of voxels"""
+
+  [ resstr, xstr, ystr, zstr ] = cutout.split('/')
+  ( xlowstr, xhighstr ) = xstr.split(',')
+  ( ylowstr, yhighstr ) = ystr.split(',')
+  ( zlowstr, zhighstr ) = zstr.split(',')
+
+  resolution = int(resstr)
+  xlow = int(xlowstr)
+  xhigh = int(xhighstr)
+  ylow = int(ylowstr)
+  yhigh = int(yhighstr)
+  zlow = int(zlowstr)
+  zhigh = int(zhighstr)
+
+  voxlist =[]
+
+  for k in range (zlow,zhigh):
+    for j in range (ylow,yhigh):
+      for i in range (xlow,xhigh):
+        voxlist.append ( [ i,j,k ] )
+
+  idgrp = h5[str(annid)]
+
+  idgrp.create_dataset ( "ANNOTATION_ID", (1,), np.uint32, data=annid )
+  idgrp.create_dataset ( "RESOLUTION", (1,), np.uint32, data=resolution )
+  idgrp.create_dataset ( "VOXELS", (len(voxlist),3), np.uint32, data=voxlist )
+
 
 def main():
 
@@ -124,21 +181,48 @@ def main():
   parser.add_argument('--annid', action="store", type=int, help='Annotation ID to extract', default=0)
   parser.add_argument('--update', action='store_true', help='Update an existing annotation.')
   parser.add_argument('--delete', action='store_true', help='Delete an existing annotation.')
-
+  parser.add_argument('--cutout', action="store", help='Cutout arguments of the form resolution/x1,x2/y1,y2/z1,z2.', default=None)
+  parser.add_argument('--voxels', action='store_true', help='Store the voxels as a list.')
+  parser.add_argument('--reduce', action='store_true', help="Remove the specified voxels from the annotation.")
+  parser.add_argument('--dataonly', action='store_true', help="Data only not metadata")
+  parser.add_argument('--overwrite', action='store_true', help='Overwrite exisiting annotations in the database.  Thi is the Default.')
+  parser.add_argument('--preserve', action='store_true', help='Preserve exisiting annotations in the database.  Default is overwrite.')
+  parser.add_argument('--exception', action='store_true', help='Store multiple nnotations at the same voxel in the database.  Default is overwrite.')
   parser.add_argument('--kv', action="store", help='key:value')
 
   result = parser.parse_args()
 
-  fileobj = H5AnnotationFile ( result.type, result.annid, result.kv )
+  h5, fileobj = H5AnnotationFile ( result.type, result.annid, result.kv )
 
   # Build the put URL
   if result.update:
     url = "http://%s/emca/%s/update/" % ( result.baseurl, result.token)
   elif result.delete:
     url = "http://%s/emca/%s/delete/" % ( result.baseurl, result.token)
+  elif result.dataonly:
+    url = "http://%s/emca/%s/dataonly/" % ( result.baseurl, result.token)
   else:
     url = "http://%s/emca/%s/" % ( result.baseurl, result.token)
+
+  if result.preserve:  
+    url += 'preserve/'
+  elif result.exception:  
+    url += 'exception/'
+  elif result.overwrite:  
+    url += 'overwrite/'
+  elif result.reduce:  
+    url += 'reduce/'
+
   print url
+
+  if result.cutout:
+    if result.voxels:
+      H5AddVoxels ( h5, result.annid, result.cutout )
+    else:
+      H5AddCutout ( h5, result.annid, result.cutout )
+    h5.flush()
+    fileobj.seek(0)
+
 
   try:
     req = urllib2.Request ( url, fileobj.read()) 

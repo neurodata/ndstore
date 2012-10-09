@@ -103,6 +103,9 @@ class H5Annotation:
     self.idgrp.create_dataset ( "RESOLUTION", (1,), np.uint32, data=resolution )     
     self.idgrp.create_dataset ( "XYZOFFSET", (3,), np.uint32, data=corner )     
     self.idgrp.create_dataset ( "CUTOUT", volume.shape, np.uint32, data=volume )     
+
+    if volume != None:
+      self.idgrp.create_dataset ( "CUTOUT", volume.shape, np.uint32, data=volume )     
     
   def addBoundingBox ( self, resolution, corner, dim ):
     """Add the cutout  to the HDF5 file"""
