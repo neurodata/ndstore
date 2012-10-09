@@ -1,8 +1,8 @@
 from django.conf.urls import patterns, include, url
 
 # Uncomment the next two lines to enable the admin:
-from django.contrib import admin
-admin.autodiscover()
+#from django.contrib import admin
+#admin.autodiscover()
 
 urlpatterns = patterns('emca.views',
   # test 
@@ -21,5 +21,4 @@ urlpatterns = patterns('emca.views',
   url(r'(?P<webargs>^\w+/(npvoxels|npdense)/[\w,/]+)$', 'annopost'),
   # HDF5 interfaces
   url(r'(?P<webargs>^\w+/[\d+/]?[\w,/]*)$', 'annotation'),
-  url(r'^admin/', include(admin.site.urls)),
 )
