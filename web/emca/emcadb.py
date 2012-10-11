@@ -231,9 +231,10 @@ class EMCADB:
       except MySQLdb.Error, e:
         raise ANNError ( "Error updating data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
+    # 
     #RBTODO shouldn't need this commit, but somehow we do.
-    self.conn.commit()
-    cursor.close()
+#    self.conn.commit()
+#    cursor.close()
 
 
   #
@@ -821,15 +822,6 @@ class EMCADB:
     return retval
 
 
-  #
-  # getVolume -- return the volume associated with an identifier                                                                         
-  # RB deprecated.  Use annoCutout instead. PYTODO
-  def getVolume ( self, entityid, resolution, corner, dim ):
-    cube = self.cutout( corner,dim,resolution)
-    vec_func = np.vectorize ( lambda x: 0 if x != entityid else entityid ) 
-    annodata = vec_func ( cube.data )
-    return annodata
-
   # Alternate to getVolume that returns a annocube
   def annoCutout ( self, entityid, resolution, corner, dim ):
     """Fetch a volume cutout with only the specified annotation"""
@@ -905,7 +897,6 @@ class EMCADB:
       yoffset = y * self.dbcfg.cubedim[resolution][1] 
       zoffset = z * self.dbcfg.cubedim[resolution][2] + self.dbcfg.slicerange[0]
 
-      # RBTODO -- do we need a fast path for no exceptions?
       # Now add the exception voxels
       if self.EXCEPT_FLAG:
         exceptions = self.getExceptions( zidx, resolution, entityid ) 

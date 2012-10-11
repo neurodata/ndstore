@@ -37,8 +37,7 @@ def cubeToPNGs ( nparray, prefix ):
 # Get cube in question
 try:
 
-#  url = "http://0.0.0.0:8080/npz/2/0,2000/0,2000/0,10/global/"
-  url ="http://openconnectomeproject.org/cutout/hayworth5nm/npz/2/0,2000/0,2000/0,10/global/"
+  url = "http://localhost:8000/emca/hayworth5nm/npz/2/0,1000/0,1000/0,10/"
   f = urllib2.urlopen ( url )
 except urllib2.URLError:
   print "Failed to open url ", url

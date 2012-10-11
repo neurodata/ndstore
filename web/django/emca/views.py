@@ -27,6 +27,8 @@ def emcaget (request, webargs):
       return django.http.HttpResponse(emcarest.emcaget(webargs), mimetype="product/hdf5" )
     elif service=='npz':
       return django.http.HttpResponse(emcarest.emcaget(webargs), mimetype="product/npz" )
+    elif service=='zip':
+      return django.http.HttpResponse(emcarest.emcaget(webargs), mimetype="product/zip" )
     elif service=='xyanno' or service=='yzanno' or service=='xzanno':
       return django.http.HttpResponse(emcarest.emcaget(webargs), mimetype="image/png" )
     elif service=='id':

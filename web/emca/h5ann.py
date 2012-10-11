@@ -262,8 +262,7 @@ def H5GetVolume ( h5fh ):
     if idgrp.get('CUTOUT'):
       return (idgrp['XYZOFFSET'], idgrp['CUTOUT'])
     else:
-      # TODO log message improper data format
-      pass
+      raise ANNError("Improperly formatted HDF5 file.  XYZOFFSET define but no CUTOUT.")
   else:
     return None
 

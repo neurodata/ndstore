@@ -50,6 +50,23 @@ def cutout ( imageargs, dbcfg, proj ):
   return db.cutout ( corner, dim, resolution )
 
 #
+#  Return a Flat binary file zipped (for Stefan) 
+#
+def binZip ( imageargs, dbcfg, proj ):
+  """Return a web readable Numpy Pickle zipped"""
+
+  cube = cutout ( imageargs, dbcfg, proj )
+
+  # Create the compressed cube
+  cdz = zlib.compress ( cube.data.tostring()) 
+
+  # Package the object as a Web readable file handle
+  fileobj = cStringIO.StringIO ( cdz )
+  fileobj.seek(0)
+  return fileobj.read()
+
+
+#
 #  Return a Numpy Pickle zipped
 #
 def numpyZip ( imageargs, dbcfg, proj ):
@@ -313,6 +330,9 @@ def selectService ( webargs, dbcfg, proj ):
   elif service == 'npz':
     return  numpyZip ( rangeargs, dbcfg, proj ) 
 
+  elif service == 'zip':
+    return  binZip ( rangeargs, dbcfg, proj ) 
+
   elif service == 'id':
     return annId ( rangeargs, dbcfg, proj )
   
@@ -351,7 +371,6 @@ def selectPost ( webargs, dbcfg, proj, postdata ):
   # Bind the annotation database
   annoDB = emcadb.EMCADB ( dbcfg, proj )
 
-  # RBTODO need to make work for annotations and cutouts.  Just annotations now
   try:
 
     if service == 'npvoxels':
