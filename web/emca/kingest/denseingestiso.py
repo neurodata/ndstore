@@ -23,10 +23,10 @@ import kanno_opt
 # Stuff we make take from a config or the command line in the future
 _xtilesz = 2150
 _ytilesz = 2579
-_startslice = 992
-_endslice = 1319
-_prefix = 'redapical_s'
-_suffix = '_30nm.png'
+_startslice = 0
+_endslice = 1849
+_prefix = 'Merged_s'
+_suffix = '.png'
 _batchsz = 16 
 
 # Shape that we want to ingest into the database.
