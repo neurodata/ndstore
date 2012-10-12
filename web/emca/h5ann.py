@@ -103,7 +103,6 @@ class H5Annotation:
     self.idgrp.create_dataset ( "RESOLUTION", (1,), np.uint32, data=resolution )     
     self.idgrp.create_dataset ( "XYZOFFSET", (3,), np.uint32, data=corner )     
     self.idgrp.create_dataset ( "CUTOUT", volume.shape, np.uint32, data=volume )     
-
     if volume != None:
       self.idgrp.create_dataset ( "CUTOUT", volume.shape, np.uint32, data=volume )     
     
@@ -266,8 +265,7 @@ def H5GetVolume ( h5fh ):
     if idgrp.get('CUTOUT'):
       return (idgrp['XYZOFFSET'], idgrp['CUTOUT'])
     else:
-      # TODO log message improper data format
-      pass
+      raise ANNError("Improperly formatted HDF5 file.  XYZOFFSET define but no CUTOUT.")
   else:
     return None
 
@@ -421,6 +419,31 @@ def PackageIDs ( annoids ):
   h5fh.flush()
   tmpfile.seek(0)
   return tmpfile.read()
+
+def h5toCSV ( h5f ):
+  """Marshall all HDF5 fields into a csv file"""
+
+  fstring = cStringIO.StringIO()
+  csvw = csv.writer(fstring, delimiter=',')
+
+  keys = h5f.keys()
+  idgrp = h5f.get(keys[0])
+
+  for k in idgrp.keys():
+    if k == 'METADATA':
+      mdgrp = idgrp.get('METADATA')
+      for m in mdgrp.keys():
+        if len(mdgrp[m]) == 1:
+          csvw.writerow ( [m, mdgrp[m][0]] )
+        else: 
+          csvw.writerow ( [m, mdgrp[m][:]] )
+    else:
+      if len(idgrp[k]) == 1:
+        csvw.writerow ( [k, idgrp[k][0]] )
+      else: 
+        csvw.writerow ( [k, idgrp[k][:]] )
+
+  return fstring.getvalue()
 
 
 

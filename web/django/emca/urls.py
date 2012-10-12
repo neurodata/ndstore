@@ -16,9 +16,11 @@ urlpatterns = patterns('emca.views',
   # get project information
   url(r'(?P<webargs>^\w+/projinfo/[\w,/]*)$', 'projinfo'),
   # get services
-  url(r'(?P<webargs>^\w+/(xy|xz|yz|hdf5|npz|id|ids|xyanno||xzanno|yzanno)/[\w,/]+)$', 'emcaget'),
+  url(r'(?P<webargs>^\w+/(xy|xz|yz|hdf5|npz|zip|id|ids|xyanno||xzanno|yzanno)/[\w,/]+)$', 'emcaget'),
   # the post services
   url(r'(?P<webargs>^\w+/(npvoxels|npdense)/[\w,/]+)$', 'annopost'),
+  # csv metadata read
+  url(r'(?P<webargs>^\w+/(csv)[\d+/]?[\w,/]*)$', 'csv'),
   # HDF5 interfaces
   url(r'(?P<webargs>^\w+/[\d+/]?[\w,/]*)$', 'annotation'),
 )

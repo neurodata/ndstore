@@ -30,15 +30,13 @@ class AnnotateIndex:
    # getIndex -- Retrieve the index for the annotation with id
    #
    def getIndex ( self, entityid, resolution ):
-    #Establish a connection
+
+      #Establish a connection
       cursor = self.conn.cursor ()
 
-  # PYTODO rename cube to cubes
-     
-    #get the block from the database                                            
+      #get the block from the database                                            
       sql = "SELECT cube FROM " + self.proj.getIdxTable(resolution) + " WHERE annid\
  = " + str(entityid)
-      #print sql
       try:
          cursor.execute ( sql )
       except MySQLdb.Error, e:
@@ -50,7 +48,7 @@ class AnnotateIndex:
       row = cursor.fetchone ()
       cursor.close()
      
-    # If we can't find a index, they don't exist                                
+      # If we can't find a index, they don't exist                                
       if ( row == None ):
          return []
       else:
@@ -68,19 +66,15 @@ class AnnotateIndex:
       for key, value in index.iteritems():
          cubelist = list(value)
          cubeindex=np.array(cubelist)
-         #print cubeindex
          
          curindex = self.getIndex(key,resolution)
          
-    #Used for testing
-         #print ("Current Index", curindex )
          if curindex==[]:
             sql = "INSERT INTO " +  self.proj.getIdxTable(resolution)  +  "( annid, cube) VALUES ( %s, %s)"
             
             try:
                fileobj = cStringIO.StringIO ()
                np.save ( fileobj, cubeindex )
-          #     print sql, key
                cursor.execute ( sql, (key, fileobj.getvalue()))
             except MySQLdb.Error, e:
                print "Error inserting exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
@@ -88,16 +82,17 @@ class AnnotateIndex:
             except BaseException, e:
                print "DBG: SOMETHING REALLY WRONG HERE", e
             
+            # Almost certainly introduced this bug again.  Works on devel. machine.  Test on rio.
             #RBTODO why this commit for NPZ?  does it work without for RAmon
-            self.conn.commit()
+#            self.conn.commit()
 
 
          else:
-             #Update index to the union of the currentIndex and the updated index                                                               
+             #Update index to the union of the currentIndex and the updated index
             newIndex=np.union1d(curindex,cubeindex)
-#            print "Updating Index for annotation ",key, " to" , newIndex
 
-         #update index in the database                                                                                                      
+
+            #update index in the database
             sql = "UPDATE " + self.proj.getIdxTable(resolution) + " SET cube=(%s) WHERE annid=" + str(key)
             try:
                fileobj = cStringIO.StringIO ()
@@ -108,7 +103,7 @@ class AnnotateIndex:
                assert 0
 
             #RBTODO why this commit for NPZ?  does it work without for RAmon
-            self.conn.commit()
+#            self.conn.commit()
                
       cursor.close()
 
