@@ -10,6 +10,7 @@ import MySQLdb
 #_startslice = 1089 # 15*64+1
 #_endslice = 1537  # 24*64+1
 _startslice = 65 # 15*64+1
+#_startslice = 129 # 15*64+1
 _endslice = 993  # 24*64+1
 
 conn = MySQLdb.connect (host = 'localhost',
@@ -22,6 +23,7 @@ cursor = conn.cursor ()
 # It's a 64^3 cube
 for z in range (_startslice, _endslice, 64):
   for y in range (0,((2579-1)/64+1)*64, 64):
+    conn.commit()
     for x in range (0,((2150-1)/64+1)*64, 64):
 
       xmax = min((x+64)*5,10752)
@@ -37,7 +39,6 @@ for z in range (_startslice, _endslice, 64):
         f = urllib2.urlopen ( url )
       except urllib2.URLError, e:
         print "Failed %s.  Exception %s." % (url,e)
-        sys.exit(-1)
 
       zdatain = f.read ()
 
@@ -79,8 +80,7 @@ for z in range (_startslice, _endslice, 64):
       sql = "INSERT INTO res0 (zindex, cube) VALUES (%s, %s)"
       try:
         cursor.execute ( sql, (key,zdataout))
-        conn.commit()
-      except:
-        print "SQL error"
+      except MySQLdb.Error, e:
+        print "Failed insert %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
 
 
