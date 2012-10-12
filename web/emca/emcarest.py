@@ -612,8 +612,13 @@ def getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution=None, corner=No
 
     if bbcorner != None:
 
+    # RBTODO bigger values cause a server error.  Debug the url
+    #  http://openconnecto.me/emca/xXkat11iso_will2xX00/804/cutout/
+    #  with the next line 
+    #  if bbdim[0]*bbdim[1]*bbdim[2] >= 1024*1024*512:
+
       if bbdim[0]*bbdim[1]*bbdim[2] >= 1024*1024*256:
-        raise ANNError ("Cutout region is inappropriately large.  Dimension: %s,%s,%s" % (str(xmax-xmin),str(ymax-ymin),str(zmax-zmin)))
+        raise ANNError ("Cutout region is inappropriately large.  Dimension: %s,%s,%s" % (bbdim[0],bbdim[1],bbdim[2]))
 
       # do a cutout and add the cutout to the HDF5 file
       cutout = db.cutout ( bbcorner, bbdim, resolution ) 
