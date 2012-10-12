@@ -420,5 +420,30 @@ def PackageIDs ( annoids ):
   tmpfile.seek(0)
   return tmpfile.read()
 
+def h5toCSV ( h5f ):
+  """Marshall all HDF5 fields into a csv file"""
+
+  fstring = cStringIO.StringIO()
+  csvw = csv.writer(fstring, delimiter=',')
+
+  keys = h5f.keys()
+  idgrp = h5f.get(keys[0])
+
+  for k in idgrp.keys():
+    if k == 'METADATA':
+      mdgrp = idgrp.get('METADATA')
+      for m in mdgrp.keys():
+        if len(mdgrp[m]) == 1:
+          csvw.writerow ( [m, mdgrp[m][0]] )
+        else: 
+          csvw.writerow ( [m, mdgrp[m][:]] )
+    else:
+      if len(idgrp[k]) == 1:
+        csvw.writerow ( [k, idgrp[k][0]] )
+      else: 
+        csvw.writerow ( [k, idgrp[k][:]] )
+
+  return fstring.getvalue()
+
 
 

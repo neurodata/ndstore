@@ -66,6 +66,20 @@ def annotation (request, webargs):
       return django.http.HttpResponseNotFound(e.value)
     else: 
       return django.http.HttpResponseNotFound(e)
+
+
+def csv (request, webargs):
+  """Get (not yet put) csv interface for RAMON objects"""
+
+  try:
+    if request.method == 'GET':
+      return django.http.HttpResponse(emcarest.getCSV(webargs), mimetype="text/html" )
+  except ANNError, e:
+    if hasattr(e,'value'):
+      return django.http.HttpResponseNotFound(e.value)
+    else: 
+      return django.http.HttpResponseNotFound(e)
+      
       
 def getObjects ( request, webargs ):
   """Batch fetch of RAMON objects"""

@@ -715,6 +715,31 @@ def getAnnotation ( webargs ):
   tmpfile.seek(0)
   return tmpfile.read()
 
+def getCSV ( webargs ):
+  """Fetch a RAMON object as CSV.  Always includes bounding box.  No data option."""
+
+  [ token, csvliteral, annoid, reststr ] = webargs.split ('/',3)
+
+  # Get the annotation database
+  projdb = emcaproj.EMCAProjectsDB()
+  proj = projdb.getProj ( token )
+  dbcfg = dbconfig.switchDataset ( proj.getDataset() )
+  db = emcadb.EMCADB ( dbcfg, proj )
+
+  # Make the HDF5 file
+  # Create an in-memory HDF5 file
+  tmpfile = tempfile.NamedTemporaryFile()
+  h5f = h5py.File ( tmpfile.name )
+
+  dataoption = AR_BOUNDINGBOX
+  [resstr, sym, rest] = reststr.partition('/')
+  resolution = int(resstr) if resstr != '' else proj.getResolution()
+  
+  getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution )
+
+  # convert the HDF5 file to csv
+  csvstr = h5ann.h5toCSV ( h5f )
+  return csvstr 
 
 def getAnnotations ( webargs, postdata ):
   """Get multiple annotations.  Takes an HDF5 that lists ids in the post."""
