@@ -11,9 +11,6 @@ import dbconfig
 # Errors we are going to catch
 from emcaerror import ANNError
 
-def index(request):
-    return django.http.HttpResponse("This view works.")
-
 def emcaget (request, webargs):
   """Restful URL for all read services to annotation projects"""
 
