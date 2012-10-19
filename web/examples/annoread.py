@@ -58,7 +58,6 @@ def main():
   try:
     f = urllib2.urlopen ( url )
   except urllib2.URLError, e:
-    import pdb; pdb.set_trace()
     print "Failed URL", url
     print "Error %s" % (e.read()) 
     sys.exit(0)
