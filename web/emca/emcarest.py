@@ -621,7 +621,7 @@ def getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution=None, corner=No
         raise ANNError ("Cutout region is inappropriately large.  Dimension: %s,%s,%s" % (bbdim[0],bbdim[1],bbdim[2]))
 
       # do a cutout and add the cutout to the HDF5 file
-      cutout = db.cutout ( bbcorner, bbdim, resolution ) 
+      cutout = db.annoCutout ( annoid, resolution, bbcorner, bbdim )
       retcorner = [bbcorner[0], bbcorner[1], bbcorner[2]+dbcfg.slicerange[0]]
       h5anno.addCutout ( resolution, retcorner, cutout.data )
 
