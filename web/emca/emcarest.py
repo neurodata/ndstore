@@ -756,11 +756,14 @@ def getAnnotations ( webargs, postdata ):
   tmpinfile = tempfile.NamedTemporaryFile ( )
   tmpinfile.write ( postdata )
   tmpinfile.seek(0)
-  h5in = h5py.File ( tmpinfile.name, driver='core', backing_store=False )
+  h5in = h5py.File ( tmpinfile.name )
 
   # IDENTIFIERS
   if not h5in.get('ANNOIDS'):
     raise ANNError ("Requesting multiple annotations.  But no HDF5 \'ANNOIDS\' field specified.") 
+
+  # GET the data out of the HDF5 file.  Never operate on the data in place.
+  annoids = h5in['ANNOIDS'][:]
 
   # set variables to None: need them in call to getAnnoByID, but not all paths set all
   corner = None
@@ -820,8 +823,11 @@ def getAnnotations ( webargs, postdata ):
   h5fout = h5py.File ( tmpoutfile.name )
 
   # get annotations for each identifier
-  for annoid in h5in['ANNOIDS'][:]:
-    getAnnoById ( annoid, h5fout, db, dbcfg, dataoption, resolution, corner, dim )
+  for annoid in annoids:
+    # the int here is to prevent using a numpy value in an inner loop.  This is a 10x performance gain.
+    getAnnoById ( int(annoid), h5fout, db, dbcfg, dataoption, resolution, corner, dim )
+
+  print "Loaded all into a file"
 
   # close temporary file
   h5in.close()
