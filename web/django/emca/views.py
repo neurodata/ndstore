@@ -1,4 +1,5 @@
 import django.http
+from django.views.decorators.cache import cache_control
 import MySQLdb
 import cStringIO
 
@@ -10,9 +11,6 @@ import dbconfig
 
 # Errors we are going to catch
 from emcaerror import ANNError
-
-def index(request):
-    return django.http.HttpResponse("This view works.")
 
 def emcaget (request, webargs):
   """Restful URL for all read services to annotation projects"""
@@ -40,7 +38,7 @@ def emcaget (request, webargs):
   except (ANNError,MySQLdb.Error), e:
     return django.http.HttpResponseNotFound(e.value)
 
-
+@cache_control(no_cache=True)
 def annopost (request, webargs):
   """Restful URL for all write/post services to annotation projects"""
 
@@ -50,6 +48,7 @@ def annopost (request, webargs):
   except ANNError, e:
     return django.http.HttpResponseNotFound(e.value)
 
+@cache_control(no_cache=True)
 def annotation (request, webargs):
   """Get put object interface for RAMON objects"""
 
@@ -68,6 +67,7 @@ def annotation (request, webargs):
       return django.http.HttpResponseNotFound(e)
 
 
+@cache_control(no_cache=True)
 def csv (request, webargs):
   """Get (not yet put) csv interface for RAMON objects"""
 
@@ -80,7 +80,7 @@ def csv (request, webargs):
     else: 
       return django.http.HttpResponseNotFound(e)
       
-      
+@cache_control(no_cache=True)
 def getObjects ( request, webargs ):
   """Batch fetch of RAMON objects"""
 
@@ -93,6 +93,7 @@ def getObjects ( request, webargs ):
   except ANNError, e:
     return django.http.HttpResponseNotFound(e.value)
 
+@cache_control(no_cache=True)
 def listObjects ( request, webargs ):
   """Return a list of objects matching predicates and cutout"""
 
@@ -121,7 +122,7 @@ def catmaid (request, webargs):
     return django.http.HttpResponseNotFound(e)
 
 
-
+@cache_control(no_cache=True)
 def projinfo (request, webargs):
   """Return project and dataset configuration information"""
 
