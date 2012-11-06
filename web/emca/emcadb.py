@@ -740,7 +740,9 @@ class EMCADB:
     in_p=', '.join(map(lambda x: '%s', listofidxs))
     # replace the single %s with the in_p string
     sql = sql % in_p
+    print "Calling sql"
     rc = cursor.execute(sql, listofidxs)
+    print "Returned"
 
     # xyz offset stored for later use
     lowxyz = zindex.MortonXYZ ( listofidxs[0] )
