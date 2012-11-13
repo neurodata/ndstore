@@ -43,6 +43,7 @@ fid = open ( "/data/formisha/bigcutout.screened.data", "r" )
 resolution = 1
 
 for zstart in range(1,1850,16):
+#for zstart in range(1,2,16):
 
   zend = min(zstart+16,1851)
 
@@ -55,16 +56,16 @@ for zstart in range(1,1850,16):
       mortonidx = zindex.XYZMorton ( [ x/_xcubedim, y/_ycubedim, (zstart-1)/_zcubedim] )
       cubedata = np.zeros ( [_zcubedim, _ycubedim, _xcubedim], dtype=np.uint8 )
 
-      xmin = x*_xcubedim 
-      ymin = y*_ycubedim 
-      xmax = min ( _ximagesz, (x+1)*_xcubedim )
-      ymax = min ( _yimagesz, (y+1)*_ycubedim )
+      xmin = x
+      ymin = y
+      xmax = min ( _ximagesz, x+_xcubedim )
+      ymax = min ( _yimagesz, y+_ycubedim )
       zmin = 0
       zmax = zend-zstart
 
       cubedata[0:zmax-zmin,0:ymax-ymin,0:xmax-xmin] = slab[zmin:zmax,ymin:ymax,xmin:xmax]
 
-      print "zindex,x,y,z,xmax,ymax,zmax,shape",mortonidx,x,y,zstart,xmax,ymax,zend,cubedata.shape
+#      print "zindex,x,y,z,xmax,ymax,zmax,shape",mortonidx,x,y,zstart,xmax,ymax,zend,cubedata.shape
 
       # create the DB BLOB
       fileobj = cStringIO.StringIO ()
@@ -74,8 +75,7 @@ for zstart in range(1,1850,16):
       # insert the blob into the database
       cursor = db.conn.cursor()
       sql = "INSERT INTO res1 (zindex, cube) VALUES (%s, %s)"
-      print sql
       cursor.execute(sql, (mortonidx, cdz))
       cursor.close()
-
-sys.exit(0)
+    print "Commiting at x=%s, y=%s, z=%s" % (x,y,zstart) 
+    db.conn.commit()
