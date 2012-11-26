@@ -6,8 +6,8 @@ import urllib, urllib2
 import cStringIO
 
 import empaths
-import annproj
-import anndb
+import emcaproj
+import emcadb
 import dbconfig
 import zindex
 
@@ -21,13 +21,13 @@ class AnnoStack:
   def __init__(self, token):
     """Load the annotation database and project"""
 
-    annprojdb = annproj.AnnotateProjectsDB()
-    self.annoproj = annprojdb.getAnnoProj ( token )
-    self.dbcfg = dbconfig.switchDataset ( self.annoproj.getDataset() )
+    projdb = emcaproj.EMCAProjectsDB()
+    self.proj = projdb.getProj ( token )
+    self.dbcfg = dbconfig.switchDataset ( self.proj.getDataset() )
 
     # Bind the annotation database
-    self.annoDB = anndb.AnnotateDB ( self.dbcfg, self.annoproj )
-
+    self.annoDB = emcadb.EMCADB ( self.dbcfg, self.proj )
+   
 
   def createTables ( self  ):
     """Create the database tables""" 
