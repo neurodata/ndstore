@@ -38,8 +38,8 @@ Last slice:
 http://openconnecto.me/emca/kat11iso/xy/0/563,1587/778,1802/1000/
 """
 
-#_startslice = 1   
-_startslice = 417   
+_startslice = 1   
+_startslice = 625   
 _endslice = 1000     
 _prefix = 'z=00'
 _batchsz = 16
@@ -76,7 +76,7 @@ def main():
 
     # Now we have a 1024x1024x16 z-aligned cube.  
     #   Send it to the database.
-    url = 'http://localhost:8000/emca/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( result.token, _resolution, _xoffset, _xoffset+_xtilesz, _yoffset, _yoffset+_ytilesz, sl, sl+endz+1 )
+    url = 'http://openconnecto.me/emca/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( result.token, _resolution, _xoffset, _xoffset+_xtilesz, _yoffset, _yoffset+_ytilesz, sl, sl+endz+1 )
 
     print url, newdata.shape
 
