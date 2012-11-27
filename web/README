@@ -8,4 +8,5 @@ Major directories include:
   util -- files used by cutout and annotate
   examples -- how to use the service
   admin -- scripts to manage databases
+  scripts -- utilities to build annotation and image stacks
 

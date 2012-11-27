@@ -90,6 +90,7 @@ class ImgStack:
             except MySQLdb.Error, e:
               print "Failed insert %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
 
+      self.imgDB.conn.commit()
 
 def main():
 

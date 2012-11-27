@@ -1,7 +1,0 @@
-
-The files in this directory converted the exported PNG files from VAST into an annotation database.  Data only.
-
-*** denseingest.py -- dense ingest for old versions of VAST data that export data as 4 8192x8192 .png files
-
-*** denseingest2.py -- updated version of the dense ingest process for the Bobby's annotations that 
-            represent data in a single .png file.
