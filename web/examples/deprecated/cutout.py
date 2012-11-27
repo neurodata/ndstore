@@ -32,6 +32,7 @@ def main():
 
   print cube
 
+  cube.tostring()
 
 if __name__ == "__main__":
   main()
