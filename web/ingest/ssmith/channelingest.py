@@ -5,55 +5,53 @@ import urllib2
 import sys
 import zlib
 import zindex
-from PIL import Image
 import MySQLdb
+from libtiff import TIFF
 
 
 def main():
 
   parser = argparse.ArgumentParser(description='Ingest a tiff stack.')
-  parser.add_argument('dbname', action="store" )
   parser.add_argument('token', action="store" )
-  parser.add_argument('file', action="store" )
+  parser.add_argument('channel', type=int, action="store" )
+  parser.add_argument('filename', action="store" )
+  parser.add_argument('numslices', type=int, action="store" )
 
   result = parser.parse_args()
 
-  conn = MySQLdb.connect (host = 'localhost',
-                            user = 'brain',
-                            passwd = '88brain88',
-                            db = result.dbname)
+  projdb = emcaproj.EMCAProjectsDB()
+  proj = projdb.getProj ( result.token )
+  dbcfg = dbconfig.switchDataset ( proj.getDataset() )
 
-  cursor = conn.cursor ()
+  # use the projDBs conncetion
+  cursor = projdb.conn.cursor ()
 
-  #Load the TIFF stack
-  im = Image.open(result.file)
+  tif = TIFF.open(result.filename, mode='r')
+  _ximgsz = tif.GetField("ImageWidth")
+  _yimgsz = tif.GetField("ImageLength")
+  _imagejinfo = tif.GetField("ImageDescription")
 
-  # get the tile size from the image
-  _xtilesize,_ytilesize = im.size 
+  imarray = np.zeros ( [result.numslices, _yimgsz, _ximgsz], dtype=np.uint16 )
 
-  print _xtilesize,_ytilesize
+  sliceno=0
+  for im in tif.iter_images():
+    imarray[sliceno,:,:] = im
 
-  import pdb; pdb.set_trace()
-
-  # figure out how many images in the stack
-  numslices=0;
-  try:
-    while(1):
-      im.seek(numslices)
-      numslices+=1
-  except EOFError:
-    print "Found slices: ", numslices
-
-  imarray = np.zeros ( [numslices, _ytilesize, _xtilesize], dtype=np.uint16 )
-  for sl in range(numslices):
-    im.seek(sl)
-
-    imarray[sl,:,:] = np.array(im.getdata()).reshape([_ytilesize,_xtilesize])
-    print "Slice", sl
-
-    import cutouttotiff
-    cutouttotiff.cubeToTIFFs ( imarray[0:1,:,:], '/data/tmp/slice' )
+    tifo = TIFF.open("/tmp/t.tif", mode="w")
+    tifo.write_image( im )
+    tif.close()
     sys.exit(0)
+    
+    sliceno+=1
+
+  assert sliceno==result.numslices
+
+#  import cutouttotiff
+#  cutouttotiff.cubeToTIFFs ( imarray[:,:,:], '/data/tmp/slice' )
+#  sys.exit(0)
+  
+  xlimit = (_ximgsz-1) / xcubedim + 1
+  ylimit = (_yimgsz-1) / ycubedim + 1
 
   for z in range(0,2):
     conn.commit()

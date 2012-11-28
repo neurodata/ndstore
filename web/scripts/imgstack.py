@@ -46,6 +46,7 @@ class ImgStack:
       slices = endslice - startslice + 1
 
       # Set the limits for iteration on the number of cubes in each dimension
+      # RBTODO These limits may be wrong for even (see channelingest.py)
       xlimit = ximagesz / xcubedim
       ylimit = yimagesz / ycubedim
       #  Round up the zlimit to the next larger

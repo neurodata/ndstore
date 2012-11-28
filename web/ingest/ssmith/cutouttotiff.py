@@ -1,6 +1,6 @@
 import argparse
 import numpy as np
-from PIL import Image
+from libtiff import TIFF
 import tempfile
 
 #
@@ -14,8 +14,9 @@ def cubeToTIFFs ( nparray, prefix ):
 
   # One file per xy plane
   for k in range(zdim):
-    outimage = Image.frombuffer ( 'I;16B', (xdim,ydim), nparray[k,:,:].flatten(), 'raw', 'I;16B', 0, 1 )
-    outimage.save ( prefix + str(k) + ".tif", "TIFF" )
+    tif = TIFF.open(prefix + str(k) + ".tif", mode="w")
+    tif.write_image( nparray[k,:,:] )
+    tif.close()
 
 def main():
 
