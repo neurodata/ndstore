@@ -9,7 +9,7 @@ import cStringIO
 import collections
 import zlib
 
-import kanno_opt
+import kanno_cy
 
 #
 #  ingest the PNG files into the database
@@ -21,17 +21,17 @@ import kanno_opt
      So, we try to ingest in that pattern."""
 
 # Stuff we make take from a config or the command line in the future
-_xtilesz = 2150
-_ytilesz = 2579
-_startslice = 0
-_endslice = 1849
-_prefix = 'Merged_s'
-_suffix = '.png'
-_batchsz = 16 
+_xtilesz = 10748
+_ytilesz = 12896
+#  Haven't done from 0-1088 
+_startslice = 1200
+_endslice = 1200
+_prefix = 'ForAlyssa62812_export_s'
+_batchsz = 1
 
 # Shape that we want to ingest into the database.
 #  This should be aligned to the database cube size to perform best.
-_zingestsz = 16 
+_zingestsz = 16
 _yingestsz = 1024
 _xingestsz = 1024
 
@@ -52,12 +52,12 @@ def main():
         for b in range ( _batchsz ):
           if ( sl + b <= _endslice ):
 
-            filenm = result.path + '/' + _prefix + '{:0>4}'.format(sl+b) + _suffix
+            filenm = result.path + '/' + _prefix + '{:0>4}'.format(sl+b) + '.png'
             print filenm
             tileimage = Image.open ( filenm, 'r' )
             imgdata = np.asarray ( tileimage )
 
-            newdata[b,:,:]  = kanno_opt.pngto32 ( imgdata )
+            newdata[b,:,:]  = kanno_cy.pngto32 ( imgdata )
 
             # the last z offset that we ingest, if the batch ends before _batchsz
             endz = b
@@ -73,7 +73,7 @@ def main():
         for z in range ( zlow, zhigh, _zingestsz ):
           for y in range ( ylow, yhigh, _yingestsz ):
             for x in range ( xlow, xhigh, _xingestsz ):
-
+              
               # cutout the data
               data = newdata[ z-zlow:min(zhigh,z+_zingestsz)-zlow,\
                               y-ylow:min(yhigh,y+_yingestsz)-ylow,\
@@ -81,9 +81,8 @@ def main():
 
               # check if there's anything to store
               if ( np.count_nonzero(data) != 0 ):
-              
-                url = 'http://rio.cs.jhu.edu/EM/emca/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( result.token, result.resolution, x, min(xhigh,x+_xingestsz), y, min(yhigh,y+_yingestsz), z, min(zhigh,z+_zingestsz ))
-#                url = 'http://localhost:8000/emca/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( result.token, result.resolution, x, min(xhigh,x+_xingestsz), y, min(yhigh,y+_yingestsz), z, min(zhigh,z+_zingestsz ))
+
+                url = 'http://localhost:8000/annotate/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( result.token, result.resolution, x, min(xhigh,x+_xingestsz), y, min(yhigh,y+_yingestsz), z, min(zhigh,z+_zingestsz ))
 
                 print url, data.shape, np.nonzero(data)
 
