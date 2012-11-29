@@ -65,7 +65,11 @@ class Annotation:
       self.kvpairs['ann_author'] = self.author
   
     if len(self.kvpairs) != 0:
-      kvclause = ','.join(['(' + str(self.annid) +',\'' + k + '\',\'' + v +'\')' for (k,v) in self.kvpairs.iteritems()])  
+      try:
+        kvclause = ','.join(['(' + str(self.annid) +',\'' + k + '\',\'' + v +'\')' for (k,v) in self.kvpairs.iteritems()])  
+      except:
+        raise ANNError ( "Improperly formatted key/value csv string:" + kvclause ) 
+
       sql = "INSERT INTO %s VALUES %s" % ( anno_dbtables['kvpairs'], kvclause )
 
       try:
@@ -234,12 +238,20 @@ class AnnSynapse (Annotation):
     # synapse_seeds: pack into a kv pair
 #    if self.seeds != []:
     if len(self.seeds)!=0:
-      self.kvpairs['synapse_seeds'] = ','.join([str(i) for i in self.seeds])
+      try:
+        self.kvpairs['synapse_seeds'] = ','.join([str(i) for i in self.seeds])
+      except:
+        raise ANNError ("Improperly formatted seeds: %s " % (self.seeds) )
+
+    import pdb; pdb.set_trace()
 
     # synapse_segments: pack into a kv pair
 #    if self.segments != []:
     if len(self.segments)!=0:
-      self.kvpairs['synapse_segments'] = ','.join([str(i) + ':' + str(j) for i,j in self.segments])
+      try:
+        self.kvpairs['synapse_segments'] = ','.join([str(i) + ':' + str(j) for i,j in self.segments])
+      except:
+        raise ANNError ("Improperly formatted segments.  Should be nx2 matrix: %s" % (self.segments) )
 
     cursor.close()
 
@@ -264,12 +276,18 @@ class AnnSynapse (Annotation):
     # synapse_seeds: pack into a kv pair
 #    if self.seeds != []:
     if len(self.seeds)!=0:
-      self.kvpairs['synapse_seeds'] = ','.join([str(i) for i in self.seeds])
+      try:
+        self.kvpairs['synapse_seeds'] = ','.join([str(i) for i in self.seeds])
+      except:
+        raise ANNError ("Improperly formatted seeds: %s " % (self.seeds) )
 
     # synapse_segments: pack into a kv pair
 #    if self.segments != []:
     if len(self.segments)!=0:
-      self.kvpairs['synapse_segments'] = ','.join([str(i) + ':' + str(j) for i,j in self.segments])
+      try:
+        self.kvpairs['synapse_segments'] = ','.join([str(i) + ':' + str(j) for i,j in self.segments])
+      except:
+        raise ANNError ("Improperly formatted segments.  Should be nx2 matrix: %s" % (self.segments))
 
     cursor.close()
 
