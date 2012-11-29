@@ -44,11 +44,9 @@ def overlayCutout (request, webargs):
   fobj = cStringIO.StringIO ( f.read() )
   annoimg = Image.open(fobj) 
 
+
   # convert data image to RGBA
   dataimg = dataimg.convert("RGBA")
-
-  # build a mask out of the annoimg
-  annodata = np.asarray ( annoimg )
 
   # Create blended image of the two
   return Image.composite ( annoimg, dataimg, annoimg )
@@ -60,7 +58,7 @@ def imgAnnoOverlay (request, webargs):
   try:
      overlayimg = overlayCutout ( request, webargs )
   except Exception, e:
-    return django.http.HttpResponseNotFound(e)
+    return django.http.HttpResponseNotFound(e.read())
 
   # write the merged image to a buffer
   fobj2 = cStringIO.StringIO ( )

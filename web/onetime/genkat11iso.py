@@ -9,8 +9,9 @@ import MySQLdb
 
 #_startslice = 1089 # 15*64+1
 #_endslice = 1537  # 24*64+1
-_startslice = 65 # 15*64+1
-_endslice = 993  # 24*64+1
+_startslice = 1793 # 15*64+1
+#_startslice = 129 # 15*64+1
+_endslice = 1850  # 24*64+1
 
 conn = MySQLdb.connect (host = 'localhost',
                             user = 'brain',
@@ -22,13 +23,16 @@ cursor = conn.cursor ()
 # It's a 64^3 cube
 for z in range (_startslice, _endslice, 64):
   for y in range (0,((2579-1)/64+1)*64, 64):
+    conn.commit()
     for x in range (0,((2150-1)/64+1)*64, 64):
+
+      zmax = min(z+64,1850+1)
 
       xmax = min((x+64)*5,10752)
       ymax = min((y+64)*5,13312)
 
       # Cutout the data from the kasthuri11 data set at resolution 1
-      url = "http://rio.cs.jhu.edu/EM/emca/kasthuri11/npz/1/%s,%s/%s,%s/%s,%s/" % (x*5, xmax, y*5, ymax, z, z+64)
+      url = "http://rio.cs.jhu.edu/EM/emca/kasthuri11/npz/1/%s,%s/%s,%s/%s,%s/" % (x*5, xmax, y*5, ymax, z, zmax)
       
       print url
 
@@ -37,7 +41,6 @@ for z in range (_startslice, _endslice, 64):
         f = urllib2.urlopen ( url )
       except urllib2.URLError, e:
         print "Failed %s.  Exception %s." % (url,e)
-        sys.exit(-1)
 
       zdatain = f.read ()
 
@@ -76,11 +79,13 @@ for z in range (_startslice, _endslice, 64):
       key = zindex.XYZMorton ( [x/64,y/64,z/64] )
 
       # Put in the database
+      sql = "DELETE FROM res0 where zindex=%s" % key
+      print sql
+      cursor.execute ( sql )
       sql = "INSERT INTO res0 (zindex, cube) VALUES (%s, %s)"
       try:
         cursor.execute ( sql, (key,zdataout))
-        conn.commit()
-      except:
-        print "SQL error"
+      except MySQLdb.Error, e:
+        print "Failed insert %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
 
 

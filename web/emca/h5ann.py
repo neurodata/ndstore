@@ -27,6 +27,7 @@ from pprint import pprint
   ANNOTATION_TYPE (int)
   RESOLUTION (int optional) defaults to project resolution
   XYZOFFSET ( int[3] optional defined with volume )
+  XYZDIMENSION ( int[3] optional used only by server when asking for a bounding box )
   CUTOUT ( int32 3-d array optional defined with XYZOFFSET )
   VOXELS ( int32[][3] optional if defined XYZOFFSET and CUTOUT must be empty ) 
 
@@ -49,6 +50,7 @@ from pprint import pprint
 
    SEGMENTCLASS (int)
    PARENTSEED (int)
+   NEURON (int)
    SYNAPSES (int[]) 
    ORGANELLES ( int[])
 
@@ -71,20 +73,15 @@ from pprint import pprint
 
 
 class H5Annotation:
-  """Class to move data into and out of HDF5 files"""
+  """Class to move RAMON objects into and out of HDF5 files"""
 
-  def __init__( self, annotype, annoid ):
-    """Create an HDF5 file and simple structure
-      calls with data as a list of voxels and location == None for voxel lists
-      call with data as an array of data and xyzoffset for a volume
-     """
+  def __init__( self, annotype, annoid, h5fh ):
+    """Create an annotation and put in the specified HDF5 file."""
 
-    # Create an in-memory HDF5 file
-    self.tmpfile = tempfile.NamedTemporaryFile()
-    self.h5fh = h5py.File ( self.tmpfile.name )
+    # Give the HDF5 file handle to the H5Annotation
+    self.h5fh = h5fh
 
     # Create the top level annotation id namespace
-
     self.idgrp = self.h5fh.create_group ( str(annoid) ) 
 
     # Annotation type
@@ -92,16 +89,6 @@ class H5Annotation:
     # Create a metadata group
     self.mdgrp = self.idgrp.create_group ( "METADATA" ) 
 
-  def __del__ ( self ):
-    """Destructor"""
-    self.h5fh.close()
-    self.tmpfile.close()
-
-  def fileReader( self ):
-    """Return a file read stream to be transferred as put data"""
-    self.h5fh.flush()
-    self.tmpfile.seek(0)
-    return self.tmpfile.read()
 
   def addVoxels ( self, resolution, voxlist ):
     """Add the list of voxels to the HDF5 file"""
@@ -117,6 +104,14 @@ class H5Annotation:
     self.idgrp.create_dataset ( "XYZOFFSET", (3,), np.uint32, data=corner )     
     if volume != None:
       self.idgrp.create_dataset ( "CUTOUT", volume.shape, np.uint32, data=volume )     
+    
+  def addBoundingBox ( self, resolution, corner, dim ):
+    """Add the cutout  to the HDF5 file"""
+
+    self.idgrp.create_dataset ( "RESOLUTION", (1,), np.uint32, data=resolution )     
+    self.idgrp.create_dataset ( "XYZOFFSET", (3,), np.uint32, data=corner )     
+    self.idgrp.create_dataset ( "XYZDIMENSION", (3,), np.uint32, data=dim )     
+
 
 ############## Converting HDF5 to Annotations
 
@@ -269,17 +264,16 @@ def H5GetVolume ( h5fh ):
     if idgrp.get('CUTOUT'):
       return (idgrp['XYZOFFSET'], idgrp['CUTOUT'])
     else:
-      # TODO log message improper data format
-      pass
+      raise ANNError("Improperly formatted HDF5 file.  XYZOFFSET define but no CUTOUT.")
   else:
     return None
 
 ############## Converting Annotation to HDF5 ####################
 
-def BasetoH5 ( anno, annotype ):
+def BasetoH5 ( anno, annotype, h5fh ):
   """Convert an annotation to HDF5 for interchange"""
 
-  h5anno = H5Annotation ( annotype, anno.annid )
+  h5anno = H5Annotation ( annotype, anno.annid, h5fh )
 
   # Set Annotation specific metadata
   h5anno.mdgrp.create_dataset ( "STATUS", (1,), np.uint32, data=anno.status )
@@ -297,11 +291,11 @@ def BasetoH5 ( anno, annotype ):
   return h5anno
 
 
-def SynapsetoH5 ( synapse ):
+def SynapsetoH5 ( synapse, h5fh ):
   """Convert a synapse to HDF5"""
 
   # First create the base object
-  h5synapse = BasetoH5 ( synapse, annotation.ANNO_SYNAPSE )
+  h5synapse = BasetoH5 ( synapse, annotation.ANNO_SYNAPSE, h5fh )
 
   # Then customize
   h5synapse.mdgrp.create_dataset ( "WEIGHT", (1,), np.float, data=synapse.weight )
@@ -318,11 +312,11 @@ def SynapsetoH5 ( synapse ):
   return h5synapse
 
 
-def SeedtoH5 ( seed ):
+def SeedtoH5 ( seed, h5fh ):
   """Convert a seed to HDF5"""
 
   # First create the base object
-  h5seed = BasetoH5 ( seed, annotation.ANNO_SEED )
+  h5seed = BasetoH5 ( seed, annotation.ANNO_SEED, h5fh )
 
   # convert these  to enumerations??
   h5seed.mdgrp.create_dataset ( "PARENT", (1,), np.uint32, data=seed.parent )
@@ -334,11 +328,11 @@ def SeedtoH5 ( seed ):
   return h5seed
 
 
-def SegmenttoH5 ( segment ):
+def SegmenttoH5 ( segment, h5fh ):
   """Convert a segment to HDF5"""
 
   # First create the base object
-  h5segment = BasetoH5 ( segment, annotation.ANNO_SEGMENT )
+  h5segment = BasetoH5 ( segment, annotation.ANNO_SEGMENT, h5fh )
 
   # Then customize
   h5segment.mdgrp.create_dataset ( "SEGMENTCLASS", (1,), np.uint32, data=segment.segmentclass )
@@ -355,11 +349,11 @@ def SegmenttoH5 ( segment ):
   return h5segment
 
 
-def NeurontoH5 ( neuron ):
+def NeurontoH5 ( neuron, h5fh ):
   """Convert a neuron to HDF5"""
 
   # First create the base object
-  h5neuron = BasetoH5 ( neuron, annotation.ANNO_NEURON )
+  h5neuron = BasetoH5 ( neuron, annotation.ANNO_NEURON, h5fh )
 
   # Lists (as arrays)
   if ( neuron.segments != [] ):
@@ -368,11 +362,11 @@ def NeurontoH5 ( neuron ):
   return h5neuron
 
 
-def OrganelletoH5 ( organelle ):
+def OrganelletoH5 ( organelle, h5fh ):
   """Convert a organelle to HDF5"""
 
   # First create the base object
-  h5organelle = BasetoH5 ( organelle, annotation.ANNO_ORGANELLE )
+  h5organelle = BasetoH5 ( organelle, annotation.ANNO_ORGANELLE, h5fh )
 
   # Then customize
   h5organelle.mdgrp.create_dataset ( "ORGANELLECLASS", (1,), np.uint32, data=organelle.organelleclass )
@@ -388,24 +382,27 @@ def OrganelletoH5 ( organelle ):
   return h5organelle
 
 
-def AnnotationtoH5 ( anno ):
+def AnnotationtoH5 ( anno, h5fh ):
   """Operate polymorphically on annotations"""
 
   if anno.__class__ == annotation.AnnSynapse:
-    return SynapsetoH5 ( anno )
+    return SynapsetoH5 ( anno, h5fh )
   elif anno.__class__ == annotation.AnnSeed:
-    return SeedtoH5 ( anno )
+    return SeedtoH5 ( anno, h5fh )
   if anno.__class__ == annotation.AnnSegment:
-    return SegmenttoH5 ( anno )
+    return SegmenttoH5 ( anno, h5fh )
   if anno.__class__ == annotation.AnnNeuron:
-    return NeurontoH5 ( anno )
+    return NeurontoH5 ( anno, h5fh )
   if anno.__class__ == annotation.AnnOrganelle:
-    return OrganelletoH5 ( anno )
+    return OrganelletoH5 ( anno, h5fh )
   elif anno.__class__ == annotation.Annotation:
-    return BasetoH5 ( anno, annotation.ANNO_ANNOTATION )
+    return BasetoH5 ( anno, annotation.ANNO_ANNOTATION, h5fh )
   else:
     raise ANNError ("(AnnotationtoH5) Does not support this annotation type yet. Type = %s" % anno.__class__)
 
+
+
+#########  Other HDF5 utility functions.  Not RAMON   ############
 
 def PackageIDs ( annoids ):
   """Create an HDF5 file that contains a list of IDs in a field entitled ANNOIDS
@@ -417,13 +414,35 @@ def PackageIDs ( annoids ):
 
   if len(annoids) != 0: 
     h5fh.create_dataset ( "ANNOIDS", annoids.shape, np.uint32, data=annoids ) 
-  else:
-    h5fh.create_dataset ( "ANNOIDS", (1,), np.uint32, data=0 ) 
-
 
   h5fh.flush()
   tmpfile.seek(0)
   return tmpfile.read()
+
+def h5toCSV ( h5f ):
+  """Marshall all HDF5 fields into a csv file"""
+
+  fstring = cStringIO.StringIO()
+  csvw = csv.writer(fstring, delimiter=',')
+
+  keys = h5f.keys()
+  idgrp = h5f.get(keys[0])
+
+  for k in idgrp.keys():
+    if k == 'METADATA':
+      mdgrp = idgrp.get('METADATA')
+      for m in mdgrp.keys():
+        if len(mdgrp[m]) == 1:
+          csvw.writerow ( [m, mdgrp[m][0]] )
+        else: 
+          csvw.writerow ( [m, mdgrp[m][:]] )
+    else:
+      if len(idgrp[k]) == 1:
+        csvw.writerow ( [k, idgrp[k][0]] )
+      else: 
+        csvw.writerow ( [k, idgrp[k][:]] )
+
+  return fstring.getvalue()
 
 
 

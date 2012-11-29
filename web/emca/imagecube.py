@@ -56,7 +56,7 @@ class ImageCube(Cube):
 
     zdim,ydim,xdim = self.data.shape
     outimage = Image.frombuffer ( 'L', (xdim,zdim), self.data[:,0,:].flatten(), 'raw', 'L', 0, 1 ) 
-    #TODO if the image scales to 0 pixels it don't work
+    #if the image scales to 0 pixels it don't work
     newimage = outimage.resize ( [xdim, int(zdim*zscale)] )
     newimage.save ( fileobj, "PNG" )
   
@@ -68,7 +68,7 @@ class ImageCube(Cube):
 
     zdim,ydim,xdim = self.data.shape
     outimage = Image.frombuffer ( 'L', (ydim,zdim), self.data[:,:,0].flatten(), 'raw', 'L', 0, 1 ) 
-    #TODO if the image scales to 0 pixels it don't work
+    #if the image scales to 0 pixels it don't work
     newimage = outimage.resize ( [ydim, int(zdim*zscale)] )
     newimage.save ( fileobj, "PNG" )
   

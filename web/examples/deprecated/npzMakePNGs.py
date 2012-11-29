@@ -1,11 +1,3 @@
-##############################################################################
-#
-#    Randal C. Burns
-#    Department of Computer Science
-#    Johns Hopkins University
-#
-################################################################################
-
 import numpy as np
 from PIL import Image
 import urllib2
@@ -37,8 +29,11 @@ def cubeToPNGs ( nparray, prefix ):
 # Get cube in question
 try:
 
-#  url = "http://0.0.0.0:8080/npz/2/0,2000/0,2000/0,10/global/"
-  url ="http://openconnectomeproject.org/cutout/hayworth5nm/npz/2/0,2000/0,2000/0,10/global/"
+<<<<<<< HEAD
+  url = "http://localhost:8000/emca/hayworth5nm/npz/2/0,2000/0,2000/0,10/"
+=======
+  url = "http://localhost:8000/emca/hayworth5nm/npz/2/0,1000/0,1000/0,10/"
+>>>>>>> b1364441d6438f06bae7e7f81fbdee89278faacb
   f = urllib2.urlopen ( url )
 except urllib2.URLError:
   print "Failed to open url ", url

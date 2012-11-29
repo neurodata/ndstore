@@ -27,7 +27,8 @@ def main():
   parser.add_argument('--resolution', action="store", help='Resolution at which you want the voxels.  Defaults to the annotation database resolution.', default=None)
   parser.add_argument('--cutout', action="store", help='Cutout arguments of the form resolution/x1,x2/y1,y2/z1,z2.', default=None)
   parser.add_argument('--output', action="store", help='File name to output the HDF5 file.', default=None)
-  parser.add_argument('--tightcutout', action='store_true', help='Return a cutout as a minimum bounding box. Requires a resolution')
+  parser.add_argument('--tightcutout', action='store_true', help='Return a cutout as a bounding box. Requires a resolution')
+  parser.add_argument('--boundingbox', action='store_true', help='Return a the bounding box with no data. Requires a resolution')
 
   result = parser.parse_args()
 
@@ -36,8 +37,6 @@ def main():
       url = "http://%s/emca/%s/%s/voxels/" % (result.baseurl,result.token,result.annid)
     else:
       url = "http://%s/emca/%s/%s/voxels/%s/" % (result.baseurl,result.token,result.annid, result.resolution)
-  elif result.voxels:
-    url = "http://%s/emca/%s/%s/voxels/" % (result.baseurl,result.token,result.annid)
   elif result.cutout != None:
     url = "http://%s/emca/%s/%s/cutout/%s/" % (result.baseurl,result.token,result.annid, result.cutout)
   elif result.tightcutout: 
@@ -45,6 +44,11 @@ def main():
       url = "http://%s/emca/%s/%s/cutout/" % (result.baseurl,result.token,result.annid)
     else:
       url = "http://%s/emca/%s/%s/cutout/%s/" % (result.baseurl,result.token,result.annid, result.resolution)
+  elif result.boundingbox: 
+    if result.resolution == None:
+      url = "http://%s/emca/%s/%s/boundingbox/" % (result.baseurl,result.token,result.annid)
+    else:
+      url = "http://%s/emca/%s/%s/boundingbox/%s/" % (result.baseurl,result.token,result.annid, result.resolution)
   else:
     url = "http://%s/emca/%s/%s/" % (result.baseurl,result.token,result.annid)
 
@@ -94,6 +98,9 @@ def main():
   if idgrp.get('CUTOUT') and idgrp.get('XYZOFFSET'):
     print "Cutout at corner %s dim %s = " % (idgrp['XYZOFFSET'][:],idgrp['CUTOUT'].shape)
     print "%s voxels match identifier in cutout" % ( len(np.nonzero(np.array(idgrp['CUTOUT'][:,:,:]))[0]))
+
+  if idgrp.get('XYZDIMENSION') and idgrp.get('XYZOFFSET'):
+    print "Bounding box corner %s dim %s = " % (idgrp['XYZOFFSET'][:],idgrp['XYZDIMENSION'][:])
 
   h5f.flush()
   h5f.close()

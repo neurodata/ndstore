@@ -23,7 +23,7 @@ class dbConfig:
 
     if (( xstart >= 0 ) and ( xstart <= xend) and ( xend <= self.imagesz[resolution][0]) and\
         ( ystart >= 0 ) and ( ystart <= yend) and ( yend <= self.imagesz[resolution][1]) and\
-        ( zstart >= self.slicerange[0] ) and ( zstart <= zend) and ( zend <= (self.slicerange[1]+1))):
+        ( zstart >= self.slicerange[0] ) and ( zstart <= zend) and ( zend <= (self.slicerange[1]))):
       return True
     else:
       return False
@@ -71,6 +71,9 @@ def switchDataset ( dataset ):
   elif dataset == 'will':
     import dbconfigwill
     return dbconfigwill.dbConfigWill()
+  elif dataset == 'drosophila':
+    import dbconfigdrosophila
+    return dbconfigdrosophila.dbConfigDrosophila()
   elif dataset == 'kat11iso':
     import dbconfigkat11iso
     return dbconfigkat11iso.dbConfigKasthuri11Isotropic()

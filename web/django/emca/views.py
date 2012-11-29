@@ -1,4 +1,5 @@
 import django.http
+from django.views.decorators.cache import cache_control
 import MySQLdb
 import cStringIO
 
@@ -10,9 +11,6 @@ import dbconfig
 
 # Errors we are going to catch
 from emcaerror import ANNError
-
-def index(request):
-    return django.http.HttpResponse("This view works.")
 
 def emcaget (request, webargs):
   """Restful URL for all read services to annotation projects"""
@@ -27,6 +25,8 @@ def emcaget (request, webargs):
       return django.http.HttpResponse(emcarest.emcaget(webargs), mimetype="product/hdf5" )
     elif service=='npz':
       return django.http.HttpResponse(emcarest.emcaget(webargs), mimetype="product/npz" )
+    elif service=='zip':
+      return django.http.HttpResponse(emcarest.emcaget(webargs), mimetype="product/zip" )
     elif service=='xyanno' or service=='yzanno' or service=='xzanno':
       return django.http.HttpResponse(emcarest.emcaget(webargs), mimetype="image/png" )
     elif service=='id':
@@ -38,7 +38,7 @@ def emcaget (request, webargs):
   except (ANNError,MySQLdb.Error), e:
     return django.http.HttpResponseNotFound(e.value)
 
-
+@cache_control(no_cache=True)
 def annopost (request, webargs):
   """Restful URL for all write/post services to annotation projects"""
 
@@ -48,6 +48,7 @@ def annopost (request, webargs):
   except ANNError, e:
     return django.http.HttpResponseNotFound(e.value)
 
+@cache_control(no_cache=True)
 def annotation (request, webargs):
   """Get put object interface for RAMON objects"""
 
@@ -64,15 +65,43 @@ def annotation (request, webargs):
       return django.http.HttpResponseNotFound(e.value)
     else: 
       return django.http.HttpResponseNotFound(e)
-      
 
-def getannoobjects ( request, webargs ):
+
+@cache_control(no_cache=True)
+def csv (request, webargs):
+  """Get (not yet put) csv interface for RAMON objects"""
 
   try:
     if request.method == 'GET':
-      return django.http.HttpResponse(emcarest.getAnnoObjects(webargs), mimetype="product/hdf5") 
+      return django.http.HttpResponse(emcarest.getCSV(webargs), mimetype="text/html" )
+  except ANNError, e:
+    if hasattr(e,'value'):
+      return django.http.HttpResponseNotFound(e.value)
+    else: 
+      return django.http.HttpResponseNotFound(e)
+      
+@cache_control(no_cache=True)
+def getObjects ( request, webargs ):
+  """Batch fetch of RAMON objects"""
+
+  try:
+    if request.method == 'GET':
+      raise ANNError ( "GET requested. objects Web service requires a POST of a list of identifiers.")
     elif request.method == 'POST':
-      return django.http.HttpResponse(emcarest.getAnnoObjects(webargs,request.body), mimetype="product/hdf5") 
+      return django.http.HttpResponse(emcarest.getAnnotations(webargs,request.body), mimetype="product/hdf5") 
+    
+  except ANNError, e:
+    return django.http.HttpResponseNotFound(e.value)
+
+@cache_control(no_cache=True)
+def listObjects ( request, webargs ):
+  """Return a list of objects matching predicates and cutout"""
+
+  try:
+    if request.method == 'GET':
+      return django.http.HttpResponse(emcarest.listAnnoObjects(webargs), mimetype="product/hdf5") 
+    elif request.method == 'POST':
+      return django.http.HttpResponse(emcarest.listAnnoObjects(webargs,request.body), mimetype="product/hdf5") 
     
   except ANNError, e:
     return django.http.HttpResponseNotFound(e.value)
@@ -93,7 +122,7 @@ def catmaid (request, webargs):
     return django.http.HttpResponseNotFound(e)
 
 
-
+@cache_control(no_cache=True)
 def projinfo (request, webargs):
   """Return project and dataset configuration information"""
 

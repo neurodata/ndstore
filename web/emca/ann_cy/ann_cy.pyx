@@ -93,6 +93,8 @@ pcolors = ((166, 206, 227),\
 rgbcolor=[]
 for pc in pcolors:
   rgbcolor.append((0xFF<<24)+(pc[0]<<16)+(pc[1]<<8)+pc[2])
+#  for will temporary
+#  rgbcolor.append((0xA0<<24)+(pc[0]<<16)+(pc[1]<<8)+pc[2])
 
 def recolor_cy ( np.ndarray[np.uint32_t, ndim=2] cutout, np.ndarray[np.uint32_t, ndim=2] imagemap ):
   """Annotation recoloring function."""

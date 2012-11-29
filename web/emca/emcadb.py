@@ -231,9 +231,10 @@ class EMCADB:
       except MySQLdb.Error, e:
         raise ANNError ( "Error updating data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
+    # 
     #RBTODO shouldn't need this commit, but somehow we do.
-    self.conn.commit()
-    cursor.close()
+#    self.conn.commit()
+#    cursor.close()
 
 
   #
@@ -739,7 +740,9 @@ class EMCADB:
     in_p=', '.join(map(lambda x: '%s', listofidxs))
     # replace the single %s with the in_p string
     sql = sql % in_p
+    print "Calling sql"
     rc = cursor.execute(sql, listofidxs)
+    print "Returned"
 
     # xyz offset stored for later use
     lowxyz = zindex.MortonXYZ ( listofidxs[0] )
@@ -821,15 +824,6 @@ class EMCADB:
     return retval
 
 
-  #
-  # getVolume -- return the volume associated with an identifier                                                                         
-  # RB deprecated.  Use annoCutout instead. PYTODO
-  def getVolume ( self, entityid, resolution, corner, dim ):
-    cube = self.cutout( corner,dim,resolution)
-    vec_func = np.vectorize ( lambda x: 0 if x != entityid else entityid ) 
-    annodata = vec_func ( cube.data )
-    return annodata
-
   # Alternate to getVolume that returns a annocube
   def annoCutout ( self, entityid, resolution, corner, dim ):
     """Fetch a volume cutout with only the specified annotation"""
@@ -905,7 +899,6 @@ class EMCADB:
       yoffset = y * self.dbcfg.cubedim[resolution][1] 
       zoffset = z * self.dbcfg.cubedim[resolution][2] + self.dbcfg.slicerange[0]
 
-      # RBTODO -- do we need a fast path for no exceptions?
       # Now add the exception voxels
       if self.EXCEPT_FLAG:
         exceptions = self.getExceptions( zidx, resolution, entityid ) 
@@ -918,6 +911,38 @@ class EMCADB:
 
     return voxlist
 
+  #
+  # getBoundingBox -- return a corner and dimension of the bounding box 
+  #   for an annotation using the index.
+  #
+  def getBoundingBox ( self, entityid, res ):
+  
+    # get the size of the image and cube
+    resolution = int(res)
+
+    # all boxes in the index
+    zidxs = self.annoIdx.getIndex(entityid,resolution)
+
+    if len(zidxs)==0:
+      return None, None
+    
+    # convert to xyz coordinates
+    xyzvals = np.array ( [ zindex.MortonXYZ(zidx) for zidx in zidxs ], dtype=np.uint32 )
+
+    cubedim = self.dbcfg.cubedim [ resolution ] 
+
+    # find the corners
+    xmin = min(xyzvals[:,0]) * cubedim[0]
+    xmax = (max(xyzvals[:,0])+1) * cubedim[0]
+    ymin = min(xyzvals[:,1]) * cubedim[1]
+    ymax = (max(xyzvals[:,1])+1) * cubedim[1]
+    zmin = min(xyzvals[:,2]) * cubedim[2]
+    zmax = (max(xyzvals[:,2])+1) * cubedim[2]
+
+    corner = [ xmin, ymin, zmin ]
+    dim = [ xmax-xmin, ymax-ymin, zmax-zmin ]
+
+    return (corner,dim)
 
   #
   # getAnnotation:  

@@ -17,7 +17,7 @@ def main():
 
   result = parser.parse_args()
 
-  url = 'http://%s/emca/%s/objects/' % ( result.baseurl, result.token )
+  url = 'http://%s/emca/%s/list/' % ( result.baseurl, result.token )
   if result.type != None:
     url += 'type/%s/' % ( result.type )
   if result.status != None:
@@ -65,7 +65,7 @@ def main():
       f = urllib2.urlopen(req)
     except urllib2.URLError, e:
       print "Failed URL", url
-      print "Error %s. %s" % (e.code,e.read()) 
+      print "Error %s" % (e.read()) 
       sys.exit(-1)
 
   # Now we are processing the return.  New tmpfile, new h5f
