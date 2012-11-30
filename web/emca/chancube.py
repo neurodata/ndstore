@@ -7,7 +7,7 @@ from cube import Cube
 #  ChanCube: manipulate the in-memory data representation of the 3-d cube 
 #    includes loading, export, read and write routines
 #
-#  This sub-class is for 16 bit channel data with a channel number
+#  This sub-class is for 16 bit channel data 
 #
 #  All the interfaces to this class are in x,y,z order
 #  Cube data goes in z,y,x order this is compatible with images and more efficient?
@@ -15,12 +15,12 @@ from cube import Cube
 class ChanCube(Cube):
 
   # Constructor 
-  def __init__(self, channel, cubesize=[64,64,64]):
+  def __init__(self, cubesize=[64,64,64]):
     """Create empty array of cubesize"""
 
     # call the base class constructor
     Cube.__init__(self,cubesize)
-    self.channel = channel
+    # note that this is self.cubesize (which is transposed) in Cube
     self.data = np.zeros ( self.cubesize, dtype=np.uint16 )
 
   #

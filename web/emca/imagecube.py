@@ -19,6 +19,7 @@ class ImageCube(Cube):
 
     # call the base class constructor
     Cube.__init__(self,cubesize)
+    # note that this is self.cubesize (which is transposed) in Cube
     self.data = np.zeros ( self.cubesize, dtype=np.uint8 )
 
 

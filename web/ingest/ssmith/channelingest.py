@@ -1,4 +1,3 @@
-import numpy as np
 import argparse
 import cStringIO
 import urllib2
@@ -7,6 +6,12 @@ import zlib
 import zindex
 import MySQLdb
 from libtiff import TIFF
+import empaths
+import emcaproj
+import dbconfig
+import chandb
+import chancube
+import numpy as np
 
 
 def main():
@@ -23,9 +28,6 @@ def main():
   proj = projdb.getProj ( result.token )
   dbcfg = dbconfig.switchDataset ( proj.getDataset() )
 
-  # use the projDBs conncetion
-  cursor = projdb.conn.cursor ()
-
   tif = TIFF.open(result.filename, mode='r')
   _ximgsz = tif.GetField("ImageWidth")
   _yimgsz = tif.GetField("ImageLength")
@@ -36,56 +38,53 @@ def main():
   sliceno=0
   for im in tif.iter_images():
     imarray[sliceno,:,:] = im
-
-    tifo = TIFF.open("/tmp/t.tif", mode="w")
-    tifo.write_image( im )
-    tif.close()
-    sys.exit(0)
-    
     sliceno+=1
 
   assert sliceno==result.numslices
+  slices = result.numslices
 
 #  import cutouttotiff
 #  cutouttotiff.cubeToTIFFs ( imarray[:,:,:], '/data/tmp/slice' )
 #  sys.exit(0)
+
+  # get the size of the cube
+  xcubedim,ycubedim,zcubedim = dbcfg.cubedim[0]
   
+  # and the limits of iteration
   xlimit = (_ximgsz-1) / xcubedim + 1
   ylimit = (_yimgsz-1) / ycubedim + 1
+  zlimit = (slices-1) / zcubedim + 1
 
-  for z in range(0,2):
-    conn.commit()
-    for y in range(0,4):
-      for x in range(0,4):
+  # open the database
+  db = chandb.ChanDB ( dbcfg, proj )
 
-        zmin = z*16
-        zmax = min((z+1)*16,30)
-        zmaxrel = ((zmax-1) % 16) + 1 
-        ymin = y*128
-        ymax = (y+1)*128
-        xmin = x*128
-        xmax = (x+1)*128
+  for z in range(zlimit):
+    db.commit()
+    for y in range(ylimit):
+      for x in range(xlimit):
 
+        zmin = z*zcubedim
+        zmax = min((z+1)*zcubedim,slices)
+        zmaxrel = ((zmax-1)%zcubedim)+1 
+        ymin = y*ycubedim
+        ymax = min((y+1)*ycubedim,_yimgsz)
+        ymaxrel = ((ymax-1)%ycubedim)+1
+        xmin = x*xcubedim
+        xmax = min((x+1)*xcubedim,_ximgsz)
+        xmaxrel = ((xmax-1)%xcubedim)+1
+
+        # morton key
         key = zindex.XYZMorton ( [x,y,z] )
 
-        dataout = np.zeros([16,128,128],dtype=np.uint8)
+        # Create a channel cube
+        cube = chancube.ChanCube ( [xcubedim,ycubedim,zcubedim] )
 
-        dataout[0:zmaxrel,0:128,0:128] = imarray[zmin:zmax,ymin:ymax,xmin:xmax]
+        # data for this key
+        cube.data[0:zmaxrel,0:ymaxrel,0:xmaxrel] = imarray[zmin:zmax,ymin:ymax,xmin:xmax]
 
-        url = 'http://localhost:8000/emca/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( result.token, 0, xmin, xmax, ymin, ymax, zmin, zmax )
+#        need to make a channel cube?
 
-        print url, dataout.shape, np.unique(dataout)
-
-        # Encode the voxelist an pickle
-        fileobj = cStringIO.StringIO ()
-        np.save ( fileobj, dataout )
-
-        cdz = zlib.compress (fileobj.getvalue())
-
-        # Build the post request
-        req = urllib2.Request(url, cdz)
-        response = urllib2.urlopen(req)
-        the_page = response.read()
+        db.putCube ( key, result.channel, 0, cube )
 
 if __name__ == "__main__":
   main()
