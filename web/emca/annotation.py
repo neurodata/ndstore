@@ -236,17 +236,13 @@ class AnnSynapse (Annotation):
       raise ANNError ( "Error inserting synapse: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # synapse_seeds: pack into a kv pair
-#    if self.seeds != []:
     if len(self.seeds)!=0:
       try:
         self.kvpairs['synapse_seeds'] = ','.join([str(i) for i in self.seeds])
       except:
         raise ANNError ("Improperly formatted seeds: %s " % (self.seeds) )
 
-    import pdb; pdb.set_trace()
-
     # synapse_segments: pack into a kv pair
-#    if self.segments != []:
     if len(self.segments)!=0:
       try:
         self.kvpairs['synapse_segments'] = ','.join([str(i) + ':' + str(j) for i,j in self.segments])
@@ -274,7 +270,6 @@ class AnnSynapse (Annotation):
       raise ANNError ( "Error updating synapse: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # synapse_seeds: pack into a kv pair
-#    if self.seeds != []:
     if len(self.seeds)!=0:
       try:
         self.kvpairs['synapse_seeds'] = ','.join([str(i) for i in self.seeds])
