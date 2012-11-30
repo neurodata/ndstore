@@ -121,8 +121,6 @@ def catmaid (request, webargs):
   except Exception, e:
     return django.http.HttpResponseNotFound(e)
 
-
-@cache_control(no_cache=True)
 def projinfo (request, webargs):
   """Return project and dataset configuration information"""
 

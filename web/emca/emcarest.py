@@ -108,6 +108,11 @@ def HDF5 ( imageargs, dbcfg, proj ):
 def xySlice ( imageargs, dbcfg, proj ):
   """Return the cube object for an xy plane"""
 
+  if proj.getDBType() == emcaproj.CHANNELS:
+    [ channel, sym, imageargs ] = imageargs.partition ('/')
+  else: 
+    channel = None
+
   # Perform argument processing
   args = restargs.BrainRestArgs ();
   args.xyArgs ( imageargs, dbcfg )
@@ -118,20 +123,30 @@ def xySlice ( imageargs, dbcfg, proj ):
   resolution = args.getResolution()
 
   db = emcadb.EMCADB ( dbcfg, proj )
-  return db.cutout ( corner, dim, resolution )
+  return db.cutout ( corner, dim, resolution, channel )
+
 
 def xyImage ( imageargs, dbcfg, proj ):
   """Return an xy plane fileobj.read()"""
 
   cb = xySlice ( imageargs, dbcfg, proj )
-  fileobj = cStringIO.StringIO ( )
-  cb.xySlice ( fileobj )
+  if proj.getDBType() == emcaproj.CHANNELS:
+    fileobj = tempfile.NamedTemporaryFile()
+    cb.xySlice ( fileobj.name )
+  else:
+    fileobj = cStringIO.StringIO ( )
+    cb.xySlice ( fileobj )
 
   fileobj.seek(0)
   return fileobj.read()
 
 def xzSlice ( imageargs, dbcfg, proj ):
   """Return an xz plane cube"""
+
+  if proj.getDBType() == emcaproj.CHANNELS:
+    [ channel, sym, imageargs ] = imageargs.partition ('/')
+  else: 
+    channel = None
 
   # Perform argument processing
   args = restargs.BrainRestArgs ();
@@ -143,7 +158,7 @@ def xzSlice ( imageargs, dbcfg, proj ):
   resolution = args.getResolution()
 
   db = emcadb.EMCADB ( dbcfg, proj )
-  return db.cutout ( corner, dim, resolution )
+  return db.cutout ( corner, dim, resolution, channel )
 
 
 def xzImage ( imageargs, dbcfg, proj ):
@@ -151,16 +166,31 @@ def xzImage ( imageargs, dbcfg, proj ):
 
   # little awkward because we need resolution here
   # it will be reparse in xzSlice
-  resolution, sym, rest = imageargs.partition("/")
+  if proj.getDBType() == emcaproj.CHANNELS:
+    channel, sym, rest = imageargs.partition("/")
+    resolution, sym, rest = rest.partition("/")
+  else:
+    resolution, sym, rest = imageargs.partition("/")
 
   cb = xzSlice ( imageargs, dbcfg, proj )
-  fileobj = cStringIO.StringIO ( )
-  cb.xzSlice ( dbcfg.zscale[int(resolution)], fileobj )
+  if proj.getDBType() == emcaproj.CHANNELS:
+    fileobj = tempfile.NamedTemporaryFile()
+    cb.xzSlice ( dbcfg.zscale[int(resolution)], fileobj.name )
+  else:
+    fileobj = cStringIO.StringIO ( )
+    cb.xzSlice ( dbcfg.zscale[int(resolution)], fileobj )
+
   fileobj.seek(0)
   return fileobj.read()
 
+
 def yzSlice ( imageargs, dbcfg, proj ):
   """Return an yz plane as a cube"""
+
+  if proj.getDBType() == emcaproj.CHANNELS:
+    [ channel, sym, imageargs ] = imageargs.partition ('/')
+  else: 
+    channel = None
 
   # Perform argument processing
   args = restargs.BrainRestArgs ();
@@ -172,22 +202,30 @@ def yzSlice ( imageargs, dbcfg, proj ):
   resolution = args.getResolution()
 
   db = emcadb.EMCADB ( dbcfg, proj )
-  return db.cutout ( corner, dim, resolution )
+  return db.cutout ( corner, dim, resolution, channel )
 
 def yzImage ( imageargs, dbcfg, proj ):
   """Return an yz plane fileobj.read()"""
 
   # little awkward because we need resolution here
   # it will be reparse in xzSlice
-  resolution, sym, rest = imageargs.partition("/")
+  if proj.getDBType() == emcaproj.CHANNELS:
+    channel, sym, rest = imageargs.partition("/")
+    resolution, sym, rest = rest.partition("/")
+  else:
+    resolution, sym, rest = imageargs.partition("/")
 
-  cb = yzSlice (imageargs, dbcfg, proj)
-  fileobj = cStringIO.StringIO ( )
-  cb.yzSlice ( dbcfg.zscale[int(resolution)], fileobj )
+  import pdb; pdb.set_trace()
+  cb = yzSlice ( imageargs, dbcfg, proj )
+  if proj.getDBType() == emcaproj.CHANNELS:
+    fileobj = tempfile.NamedTemporaryFile()
+    cb.yzSlice ( dbcfg.zscale[int(resolution)], fileobj.name )
+  else:
+    fileobj = cStringIO.StringIO ( )
+    cb.yzSlice ( dbcfg.zscale[int(resolution)], fileobj )
 
   fileobj.seek(0)
   return fileobj.read()
-
 
 #
 #  Read individual annotations xyAnno, xzAnno, yzAnno

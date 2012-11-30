@@ -63,7 +63,7 @@ class ChanCube(Cube):
 
     zdim,ydim,xdim = self.data.shape
     tif = TIFF.open(fileobj, mode="w")
-    tif.write_image( self.data[:,0,:] )
+    tif.write_image( self.data[:,:,0] )
     tif.close()
 
 # end BrainCube
