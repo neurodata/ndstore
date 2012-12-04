@@ -5,7 +5,7 @@ from Cython.Distutils import build_ext
 
 import numpy
 
-ext_modules = [Extension("kanno_opt", ["kanno_opt.pyx"],include_dirs=[numpy.get_include()])]
+ext_modules = [Extension("kanno_cy", ["kanno_cy.pyx"],include_dirs=[numpy.get_include()])]
 # You can add directives for each extension too
 # by attaching the `pyrex_directives`
 for e in ext_modules:

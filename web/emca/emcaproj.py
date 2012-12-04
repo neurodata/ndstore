@@ -12,6 +12,7 @@ import dbconfig
 # dbtype enumerations
 IMAGES = 1
 ANNOTATIONS = 2
+CHANNELS = 3
 
 class EMCAProject:
   """Project specific for cutout and annotation data"""
@@ -129,6 +130,8 @@ class EMCAProjectsDB:
   def newEMCAProj ( self, token, openid, dbhost, project, dbtype, dataset, dataurl, resolution, readonly, exceptions ):
     """Create a new emca project"""
 
+# TODO need to undo the project creation if not totally sucessful
+
     dbcfg = dbconfig.switchDataset ( dataset )
 
     print dbhost, project
@@ -167,20 +170,36 @@ class EMCAProjectsDB:
 
     newcursor = newconn.cursor()
 
-    sql = "CREATE TABLE ids ( id BIGINT PRIMARY KEY);\n"
+    sql = ""
 
-    # And the RAMON objects
-    sql += "CREATE TABLE annotations (annoid BIGINT PRIMARY KEY, type INT, confidence FLOAT, status INT);\n"
-    sql += "CREATE TABLE seeds (annoid BIGINT PRIMARY KEY, parentid BIGINT, sourceid BIGINT, cube_location INT, positionx INT, positiony INT, positionz INT);\n"
-    sql += "CREATE TABLE synapses (annoid BIGINT PRIMARY KEY, synapse_type INT, weight FLOAT);\n"
-    sql += "CREATE TABLE segments (annoid BIGINT PRIMARY KEY, segmentclass INT, parentseed INT, neuron INT);\n"
-    sql += "CREATE TABLE organelles (annoid BIGINT PRIMARY KEY, organelleclass INT, parentseed INT, centroidx INT, centroidy INT, centroidz INT);\n"
-    sql += "CREATE TABLE kvpairs ( annoid BIGINT, kv_key VARCHAR(255), kv_value VARCHAR(64000), PRIMARY KEY ( annoid, kv_key ));\n"
+    # tables for annotations and images
+    if dbtype == IMAGES or dbtype == ANNOTATIONS:
 
-    for i in dbcfg.resolutions: 
-      sql += "CREATE TABLE res%s ( zindex BIGINT PRIMARY KEY, cube LONGBLOB );\n" % i
-      sql += "CREATE TABLE exc%s ( zindex BIGINT, id INT, exlist LONGBLOB, PRIMARY KEY ( zindex, id));\n" % i
-      sql += "CREATE TABLE idx%s ( annid BIGINT PRIMARY KEY, cube LONGBLOB );\n" % i
+      for i in dbcfg.resolutions: 
+        sql += "CREATE TABLE res%s ( zindex BIGINT PRIMARY KEY, cube LONGBLOB );\n" % i
+
+    # tables for channel dbs
+    if dbtype == CHANNELS:
+      for i in dbcfg.resolutions: 
+        sql += "CREATE TABLE res%s ( zindex BIGINT, channel INT, cube LONGBLOB, PRIMARY KEY(zindex,channel) );\n" % i
+
+    # tables specific to annotation projects
+    if dbtype == ANNOTATIONS:
+
+      sql += "CREATE TABLE ids ( id BIGINT PRIMARY KEY);\n"
+
+      # And the RAMON objects
+      sql += "CREATE TABLE annotations (annoid BIGINT PRIMARY KEY, type INT, confidence FLOAT, status INT);\n"
+      sql += "CREATE TABLE seeds (annoid BIGINT PRIMARY KEY, parentid BIGINT, sourceid BIGINT, cube_location INT, positionx INT, positiony INT, positionz INT);\n"
+      sql += "CREATE TABLE synapses (annoid BIGINT PRIMARY KEY, synapse_type INT, weight FLOAT);\n"
+      sql += "CREATE TABLE segments (annoid BIGINT PRIMARY KEY, segmentclass INT, parentseed INT, neuron INT);\n"
+      sql += "CREATE TABLE organelles (annoid BIGINT PRIMARY KEY, organelleclass INT, parentseed INT, centroidx INT, centroidy INT, centroidz INT);\n"
+      sql += "CREATE TABLE kvpairs ( annoid BIGINT, kv_key VARCHAR(255), kv_value VARCHAR(64000), PRIMARY KEY ( annoid, kv_key ));\n"
+
+      for i in dbcfg.resolutions: 
+        if exceptions:
+          sql += "CREATE TABLE exc%s ( zindex BIGINT, id INT, exlist LONGBLOB, PRIMARY KEY ( zindex, id));\n" % i
+        sql += "CREATE TABLE idx%s ( annid BIGINT PRIMARY KEY, cube LONGBLOB );\n" % i
 
     print sql
 
