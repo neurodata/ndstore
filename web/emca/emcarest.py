@@ -200,7 +200,7 @@ def xzTiff ( imageargs, dbcfg, proj ):
   resolution, sym, rest = rest.partition("/")
   cb = xzSlice ( imageargs, dbcfg, proj )
   fileobj = tempfile.NamedTemporaryFile()
-  cb.xzTiff ( fileobj.name )
+  cb.xzTiff ( dbcfg.zscale[int(resolution)], fileobj.name )
 
   fileobj.seek(0)
   return fileobj.read()
@@ -237,7 +237,6 @@ def yzImage ( imageargs, dbcfg, proj ):
   else:
     resolution, sym, rest = imageargs.partition("/")
 
-  import pdb; pdb.set_trace()
   cb = yzSlice ( imageargs, dbcfg, proj )
   fileobj = cStringIO.StringIO ( )
   cb.yzSlice ( dbcfg.zscale[int(resolution)], fileobj )
@@ -254,7 +253,7 @@ def yzTiff ( imageargs, dbcfg, proj ):
   resolution, sym, rest = rest.partition("/")
   cb = yzSlice ( imageargs, dbcfg, proj )
   fileobj = tempfile.NamedTemporaryFile()
-  cb.yzTiff ( fileobj.name )
+  cb.yzTiff ( dbcfg.zscale[int(resolution)], fileobj.name )
 
   fileobj.seek(0)
   return fileobj.read()
