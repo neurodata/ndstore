@@ -30,7 +30,7 @@ from time import time
 #  emcarest: RESTful interface to annotations and cutouts
 #
 
-def cutout ( imageargs, dbcfg, proj ):
+def cutout ( imageargs, dbcfg, proj, channel=None ):
   """Build the returned cube of data.  This method is called by all
        of the more basic services to build the data.
        They then format and refine the output."""
@@ -47,7 +47,7 @@ def cutout ( imageargs, dbcfg, proj ):
   #Load the database
   db = emcadb.EMCADB ( dbcfg, proj )
   # Perform the cutout
-  return db.cutout ( corner, dim, resolution )
+  return db.cutout ( corner, dim, resolution, channel )
 
 #
 #  Return a Flat binary file zipped (for Stefan) 
@@ -65,14 +65,19 @@ def binZip ( imageargs, dbcfg, proj ):
   fileobj.seek(0)
   return fileobj.read()
 
-
 #
 #  Return a Numpy Pickle zipped
 #
 def numpyZip ( imageargs, dbcfg, proj ):
   """Return a web readable Numpy Pickle zipped"""
 
-  cube = cutout ( imageargs, dbcfg, proj )
+  # if it's a channel database, pull out the channel
+  if proj.getDBType() == emcaproj.CHANNELS:
+    [ channel, sym, imageargs ] = imageargs.partition ('/')
+  else: 
+    channel = None
+
+  cube = cutout ( imageargs, dbcfg, proj, channel )
 
   # Create the compressed cube
   fileobj = cStringIO.StringIO ()
@@ -90,7 +95,13 @@ def numpyZip ( imageargs, dbcfg, proj ):
 def HDF5 ( imageargs, dbcfg, proj ):
   """Return a web readable HDF5 file"""
 
-  cube = cutout ( imageargs, dbcfg, proj )
+  # if it's a channel database, pull out the channel
+  if proj.getDBType() == emcaproj.CHANNELS:
+    [ channel, sym, imageargs ] = imageargs.partition ('/')
+  else: 
+    channel = None
+
+  cube = cutout ( imageargs, dbcfg, proj, channel )
 
   # Create an in-memory HDF5 file
   tmpfile = tempfile.NamedTemporaryFile ()
