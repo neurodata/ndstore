@@ -429,14 +429,14 @@ def selectService ( webargs, dbcfg, proj ):
   elif service == 'yzanno':
     return yzAnno ( rangeargs, dbcfg, proj )
 
-  elif service == 'xytiff':
-    return xyTiff ( rangeargs, dbcfg, proj )
-
-  elif service == 'xztiff':
-    return xzTiff ( rangeargs, dbcfg, proj)
-
-  elif service == 'yztiff':
-    return yzTiff ( rangeargs, dbcfg, proj )
+#  elif service == 'xytiff':
+#    return xyTiff ( rangeargs, dbcfg, proj )
+#
+#  elif service == 'xztiff':
+#    return xzTiff ( rangeargs, dbcfg, proj)
+#
+#  elif service == 'yztiff':
+#    return yzTiff ( rangeargs, dbcfg, proj )
 
   else:
     raise ANNError ("No such Web service: %s" % service )

@@ -1,6 +1,6 @@
 import numpy as np
 import zindex
-from libtiff import TIFF
+#from libtiff import TIFF
 from PIL import Image
 from cube import Cube
 
@@ -39,12 +39,12 @@ class ChanCube(Cube):
   #
   # Create the specified slice (index) at filename
   #
-  def xyTiff ( self, fileobj ):
-
-    zdim,ydim,xdim = self.data.shape
-    tif = TIFF.open(fileobj, mode="w")
-    tif.write_image( self.data[0,:,:] )
-    tif.close()
+#  def xyTiff ( self, fileobj ):
+#
+#    zdim,ydim,xdim = self.data.shape
+#    tif = TIFF.open(fileobj, mode="w")
+#    tif.write_image( self.data[0,:,:] )
+#    tif.close()
 
 
   #
@@ -61,12 +61,12 @@ class ChanCube(Cube):
   #
   # Create the specified slice (index) at filename
   #
-  def xzTiff ( self, zscale, fileobj  ):
-
-    zdim,ydim,xdim = self.data.shape
-    tif = TIFF.open(fileobj, mode="w")
-    tif.write_image( self.data[:,0,:] )
-    tif.close()
+#  def xzTiff ( self, zscale, fileobj  ):
+#
+#    zdim,ydim,xdim = self.data.shape
+#    tif = TIFF.open(fileobj, mode="w")
+#    tif.write_image( self.data[:,0,:] )
+#    tif.close()
 
   #
   # Create the specified slice (index) at filename
@@ -81,12 +81,12 @@ class ChanCube(Cube):
   #
   # Create the specified slice (index) at filename
   #
-  def yzTiff ( self, zscale, fileobj  ):
-
-    zdim,ydim,xdim = self.data.shape
-    tif = TIFF.open(fileobj, mode="w")
-    tif.write_image( self.data[:,:,0] )
-    tif.close()
+#  def yzTiff ( self, zscale, fileobj  ):
+#
+#    zdim,ydim,xdim = self.data.shape
+#    tif = TIFF.open(fileobj, mode="w")
+#    tif.write_image( self.data[:,:,0] )
+#    tif.close()
 
 # end BrainCube
 
