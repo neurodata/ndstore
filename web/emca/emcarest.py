@@ -30,7 +30,7 @@ from time import time
 #  emcarest: RESTful interface to annotations and cutouts
 #
 
-def cutout ( imageargs, dbcfg, proj ):
+def cutout ( imageargs, dbcfg, proj, channel=None ):
   """Build the returned cube of data.  This method is called by all
        of the more basic services to build the data.
        They then format and refine the output."""
@@ -47,7 +47,7 @@ def cutout ( imageargs, dbcfg, proj ):
   #Load the database
   db = emcadb.EMCADB ( dbcfg, proj )
   # Perform the cutout
-  return db.cutout ( corner, dim, resolution )
+  return db.cutout ( corner, dim, resolution, channel )
 
 #
 #  Return a Flat binary file zipped (for Stefan) 
@@ -65,14 +65,19 @@ def binZip ( imageargs, dbcfg, proj ):
   fileobj.seek(0)
   return fileobj.read()
 
-
 #
 #  Return a Numpy Pickle zipped
 #
 def numpyZip ( imageargs, dbcfg, proj ):
   """Return a web readable Numpy Pickle zipped"""
 
-  cube = cutout ( imageargs, dbcfg, proj )
+  # if it's a channel database, pull out the channel
+  if proj.getDBType() == emcaproj.CHANNELS:
+    [ channel, sym, imageargs ] = imageargs.partition ('/')
+  else: 
+    channel = None
+
+  cube = cutout ( imageargs, dbcfg, proj, channel )
 
   # Create the compressed cube
   fileobj = cStringIO.StringIO ()
@@ -90,7 +95,13 @@ def numpyZip ( imageargs, dbcfg, proj ):
 def HDF5 ( imageargs, dbcfg, proj ):
   """Return a web readable HDF5 file"""
 
-  cube = cutout ( imageargs, dbcfg, proj )
+  # if it's a channel database, pull out the channel
+  if proj.getDBType() == emcaproj.CHANNELS:
+    [ channel, sym, imageargs ] = imageargs.partition ('/')
+  else: 
+    channel = None
+
+  cube = cutout ( imageargs, dbcfg, proj, channel )
 
   # Create an in-memory HDF5 file
   tmpfile = tempfile.NamedTemporaryFile ()
@@ -108,6 +119,11 @@ def HDF5 ( imageargs, dbcfg, proj ):
 def xySlice ( imageargs, dbcfg, proj ):
   """Return the cube object for an xy plane"""
 
+  if proj.getDBType() == emcaproj.CHANNELS:
+    [ channel, sym, imageargs ] = imageargs.partition ('/')
+  else: 
+    channel = None
+
   # Perform argument processing
   args = restargs.BrainRestArgs ();
   args.xyArgs ( imageargs, dbcfg )
@@ -118,20 +134,42 @@ def xySlice ( imageargs, dbcfg, proj ):
   resolution = args.getResolution()
 
   db = emcadb.EMCADB ( dbcfg, proj )
-  return db.cutout ( corner, dim, resolution )
+  return db.cutout ( corner, dim, resolution, channel )
+
 
 def xyImage ( imageargs, dbcfg, proj ):
   """Return an xy plane fileobj.read()"""
 
   cb = xySlice ( imageargs, dbcfg, proj )
+#  if proj.getDBType() == emcaproj.CHANNELS:
+#    fileobj = tempfile.NamedTemporaryFile()
+#    cb.xySlice ( fileobj.name )
+#  else:
   fileobj = cStringIO.StringIO ( )
   cb.xySlice ( fileobj )
 
   fileobj.seek(0)
   return fileobj.read()
 
+def xyTiff ( imageargs, dbcfg, proj ):
+  """Return an xy plane fileobj.read()"""
+
+  cb = xySlice ( imageargs, dbcfg, proj )
+  fileobj = tempfile.NamedTemporaryFile()
+  cb.xyTiff ( fileobj.name )
+
+  fileobj.seek(0)
+  return fileobj.read()
+
+
+
 def xzSlice ( imageargs, dbcfg, proj ):
   """Return an xz plane cube"""
+
+  if proj.getDBType() == emcaproj.CHANNELS:
+    [ channel, sym, imageargs ] = imageargs.partition ('/')
+  else: 
+    channel = None
 
   # Perform argument processing
   args = restargs.BrainRestArgs ();
@@ -143,7 +181,7 @@ def xzSlice ( imageargs, dbcfg, proj ):
   resolution = args.getResolution()
 
   db = emcadb.EMCADB ( dbcfg, proj )
-  return db.cutout ( corner, dim, resolution )
+  return db.cutout ( corner, dim, resolution, channel )
 
 
 def xzImage ( imageargs, dbcfg, proj ):
@@ -151,16 +189,41 @@ def xzImage ( imageargs, dbcfg, proj ):
 
   # little awkward because we need resolution here
   # it will be reparse in xzSlice
-  resolution, sym, rest = imageargs.partition("/")
+  if proj.getDBType() == emcaproj.CHANNELS:
+    channel, sym, rest = imageargs.partition("/")
+    resolution, sym, rest = rest.partition("/")
+  else:
+    resolution, sym, rest = imageargs.partition("/")
 
   cb = xzSlice ( imageargs, dbcfg, proj )
   fileobj = cStringIO.StringIO ( )
   cb.xzSlice ( dbcfg.zscale[int(resolution)], fileobj )
+
   fileobj.seek(0)
   return fileobj.read()
 
+def xzTiff ( imageargs, dbcfg, proj ):
+  """Return an xy plane fileobj.read()"""
+
+  # little awkward because we need resolution here
+  # it will be reparsed in xzSlice
+  channel, sym, rest = imageargs.partition("/")
+  resolution, sym, rest = rest.partition("/")
+  cb = xzSlice ( imageargs, dbcfg, proj )
+  fileobj = tempfile.NamedTemporaryFile()
+  cb.xzTiff ( dbcfg.zscale[int(resolution)], fileobj.name )
+
+  fileobj.seek(0)
+  return fileobj.read()
+
+
 def yzSlice ( imageargs, dbcfg, proj ):
   """Return an yz plane as a cube"""
+
+  if proj.getDBType() == emcaproj.CHANNELS:
+    [ channel, sym, imageargs ] = imageargs.partition ('/')
+  else: 
+    channel = None
 
   # Perform argument processing
   args = restargs.BrainRestArgs ();
@@ -172,18 +235,36 @@ def yzSlice ( imageargs, dbcfg, proj ):
   resolution = args.getResolution()
 
   db = emcadb.EMCADB ( dbcfg, proj )
-  return db.cutout ( corner, dim, resolution )
+  return db.cutout ( corner, dim, resolution, channel )
 
 def yzImage ( imageargs, dbcfg, proj ):
   """Return an yz plane fileobj.read()"""
 
   # little awkward because we need resolution here
   # it will be reparse in xzSlice
-  resolution, sym, rest = imageargs.partition("/")
+  if proj.getDBType() == emcaproj.CHANNELS:
+    channel, sym, rest = imageargs.partition("/")
+    resolution, sym, rest = rest.partition("/")
+  else:
+    resolution, sym, rest = imageargs.partition("/")
 
-  cb = yzSlice (imageargs, dbcfg, proj)
+  cb = yzSlice ( imageargs, dbcfg, proj )
   fileobj = cStringIO.StringIO ( )
   cb.yzSlice ( dbcfg.zscale[int(resolution)], fileobj )
+
+  fileobj.seek(0)
+  return fileobj.read()
+
+def yzTiff ( imageargs, dbcfg, proj ):
+  """Return an yz plane fileobj.read()"""
+
+  # little awkward because we need resolution here
+  # it will be reparsed in yzSlice
+  channel, sym, rest = imageargs.partition("/")
+  resolution, sym, rest = rest.partition("/")
+  cb = yzSlice ( imageargs, dbcfg, proj )
+  fileobj = tempfile.NamedTemporaryFile()
+  cb.yzTiff ( dbcfg.zscale[int(resolution)], fileobj.name )
 
   fileobj.seek(0)
   return fileobj.read()
@@ -347,6 +428,15 @@ def selectService ( webargs, dbcfg, proj ):
 
   elif service == 'yzanno':
     return yzAnno ( rangeargs, dbcfg, proj )
+
+#  elif service == 'xytiff':
+#    return xyTiff ( rangeargs, dbcfg, proj )
+#
+#  elif service == 'xztiff':
+#    return xzTiff ( rangeargs, dbcfg, proj)
+#
+#  elif service == 'yztiff':
+#    return yzTiff ( rangeargs, dbcfg, proj )
 
   else:
     raise ANNError ("No such Web service: %s" % service )

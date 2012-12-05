@@ -9,7 +9,7 @@ import cStringIO
 import collections
 import zlib
 
-import kanno_opt
+import kanno_cy
 
 
 """Ingest Mitra's data."""
@@ -53,7 +53,7 @@ def main():
             tileimage = Image.open ( filenm, 'r' )
             imgdata = np.asarray ( tileimage )
 
-            newdata[b*3+(k-1),:,:]  = kanno_opt.pngto32 ( imgdata )
+            newdata[b*3+(k-1),:,:]  = kanno_cy.pngto32 ( imgdata )
 
             # the last z offset that we ingest, if the batch ends before _batchsz
             endz = b

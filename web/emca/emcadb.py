@@ -11,6 +11,7 @@ import emcaproj
 import annotation
 import annindex
 import imagecube
+import chancube
 
 from emcaerror import ANNError
 
@@ -688,7 +689,7 @@ class EMCADB:
   #  Return a cube of data from the database
   #  Must account for zeros.
   #
-  def cutout ( self, corner, dim, resolution ):
+  def cutout ( self, corner, dim, resolution, channel=None ):
     """Extract a cube of arbitrary size.  Need not be aligned."""
     
     # get the size of the image and cube
@@ -721,6 +722,13 @@ class EMCADB:
                                         ynumcubes*ycubedim,\
                                         znumcubes*zcubedim] )
 
+    elif (self.annoproj.getDBType() == emcaproj.CHANNELS):
+      
+      incube = chancube.ChanCube ( cubedim )
+      outcube = chancube.ChanCube ( [xnumcubes*xcubedim,\
+                                        ynumcubes*ycubedim,\
+                                        znumcubes*zcubedim] )
+
     # Build a list of indexes to access
     listofidxs = []
     for z in range ( znumcubes ):
@@ -735,21 +743,24 @@ class EMCADB:
     # Batch query for all cubes
     dbname = self.annoproj.getTable(resolution)
     cursor = self.conn.cursor()
-    sql = "SELECT zindex, cube from " + dbname + " where zindex in (%s)" 
+
+    # Customize query to the database (include channel or not)
+    if (self.annoproj.getDBType() == emcaproj.CHANNELS):
+      sql = "SELECT zindex, cube FROM " + dbname + " WHERE channel= " + str(channel) + " AND zindex in (%s)" 
+    else:
+      sql = "SELECT zindex, cube FROM " + dbname + " WHERE zindex IN (%s)" 
+
     # creats a %s for each list element
     in_p=', '.join(map(lambda x: '%s', listofidxs))
     # replace the single %s with the in_p string
     sql = sql % in_p
-    print "Calling sql"
     rc = cursor.execute(sql, listofidxs)
-    print "Returned"
 
     # xyz offset stored for later use
     lowxyz = zindex.MortonXYZ ( listofidxs[0] )
 
     # Get the objects and add to the cube
     while ( True ):
-
       try: 
         idx, datastring = cursor.fetchone()
       except:
@@ -763,7 +774,6 @@ class EMCADB:
       # add it to the output cube
       outcube.addData ( incube, offset ) 
         
-
     # need to trim down the array to size
     #  only if the dimensions are not the same
     if dim[0] % xcubedim  == 0 and\
