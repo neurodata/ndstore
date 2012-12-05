@@ -23,7 +23,7 @@ class dbConfig:
 
     if (( xstart >= 0 ) and ( xstart <= xend) and ( xend <= self.imagesz[resolution][0]) and\
         ( ystart >= 0 ) and ( ystart <= yend) and ( yend <= self.imagesz[resolution][1]) and\
-        ( zstart >= self.slicerange[0] ) and ( zstart <= zend) and ( zend <= (self.slicerange[1]))):
+        ( zstart >= self.slicerange[0] ) and ( zstart <= zend) and ( zend <= (self.slicerange[1]+1))):
       return True
     else:
       return False

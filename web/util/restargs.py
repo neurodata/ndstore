@@ -148,7 +148,7 @@ class BrainRestArgs:
       y2i = int ( float(y2i) / float( 2**(self._resolution)))
 
     # Check arguments for legal values
-    if not ( dbcfg.checkCube ( self._resolution, x1i, x2i, y1i, y2i, z, z )):
+    if not ( dbcfg.checkCube ( self._resolution, x1i, x2i, y1i, y2i, z, z+1 )):
       raise RESTBadArgsError ("Range exceeds data boundaries %s" % imageargs)
 
     self._corner=[x1i,y1i,z-dbcfg.slicerange[0]]
@@ -197,7 +197,7 @@ class BrainRestArgs:
       y = int ( float(y) / float( 2**(self._resolution)))
 
     # Check arguments for legal values
-    if not dbcfg.checkCube ( self._resolution, x1i, x2i, y, y, z1i, z2i )\
+    if not dbcfg.checkCube ( self._resolution, x1i, x2i, y, y+1, z1i, z2i )\
        or y >= dbcfg.imagesz[self._resolution][1]:
       raise RESTBadArgsError ("Range exceeds data boundaries %s" % imageargs)
 
@@ -248,7 +248,7 @@ class BrainRestArgs:
 
     #RBTODO need to make a dbconfig object 
     # Check arguments for legal values
-    if not dbcfg.checkCube ( self._resolution, x, x, y1i, y2i, z1i, z2i  )\
+    if not dbcfg.checkCube ( self._resolution, x, x+1, y1i, y2i, z1i, z2i  )\
        or  x >= dbcfg.imagesz[self._resolution][0]:
       raise RESTBadArgsError ("Range exceeds data boundarie %s" % imageargs)
 

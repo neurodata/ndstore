@@ -242,8 +242,6 @@ class AnnSynapse (Annotation):
       except:
         raise ANNError ("Improperly formatted seeds: %s " % (self.seeds) )
 
-    import pdb; pdb.set_trace()
-
     # synapse_segments: pack into a kv pair
     if len(self.segments)!=0:
       try:
