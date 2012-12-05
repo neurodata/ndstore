@@ -19,8 +19,11 @@ def emcaget (request, webargs):
   [ service, sym, rest ] = cutoutargs.partition ('/')
 
   try:
+    # add a tiff service for cutouts?
     if service=='xy' or service=='yz' or service=='xz':
       return django.http.HttpResponse(emcarest.emcaget(webargs), mimetype="image/png" )
+    elif service=='xytiff' or service=='yztiff' or service=='xztiff':
+      return django.http.HttpResponse(emcarest.emcaget(webargs), mimetype="image/tiff" )
     elif service=='hdf5':
       return django.http.HttpResponse(emcarest.emcaget(webargs), mimetype="product/hdf5" )
     elif service=='npz':

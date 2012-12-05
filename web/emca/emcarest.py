@@ -130,15 +130,27 @@ def xyImage ( imageargs, dbcfg, proj ):
   """Return an xy plane fileobj.read()"""
 
   cb = xySlice ( imageargs, dbcfg, proj )
-  if proj.getDBType() == emcaproj.CHANNELS:
-    fileobj = tempfile.NamedTemporaryFile()
-    cb.xySlice ( fileobj.name )
-  else:
-    fileobj = cStringIO.StringIO ( )
-    cb.xySlice ( fileobj )
+#  if proj.getDBType() == emcaproj.CHANNELS:
+#    fileobj = tempfile.NamedTemporaryFile()
+#    cb.xySlice ( fileobj.name )
+#  else:
+  fileobj = cStringIO.StringIO ( )
+  cb.xySlice ( fileobj )
 
   fileobj.seek(0)
   return fileobj.read()
+
+def xyTiff ( imageargs, dbcfg, proj ):
+  """Return an xy plane fileobj.read()"""
+
+  cb = xySlice ( imageargs, dbcfg, proj )
+  fileobj = tempfile.NamedTemporaryFile()
+  cb.xyTiff ( fileobj.name )
+
+  fileobj.seek(0)
+  return fileobj.read()
+
+
 
 def xzSlice ( imageargs, dbcfg, proj ):
   """Return an xz plane cube"""
@@ -173,12 +185,22 @@ def xzImage ( imageargs, dbcfg, proj ):
     resolution, sym, rest = imageargs.partition("/")
 
   cb = xzSlice ( imageargs, dbcfg, proj )
-  if proj.getDBType() == emcaproj.CHANNELS:
-    fileobj = tempfile.NamedTemporaryFile()
-    cb.xzSlice ( dbcfg.zscale[int(resolution)], fileobj.name )
-  else:
-    fileobj = cStringIO.StringIO ( )
-    cb.xzSlice ( dbcfg.zscale[int(resolution)], fileobj )
+  fileobj = cStringIO.StringIO ( )
+  cb.xzSlice ( dbcfg.zscale[int(resolution)], fileobj )
+
+  fileobj.seek(0)
+  return fileobj.read()
+
+def xzTiff ( imageargs, dbcfg, proj ):
+  """Return an xy plane fileobj.read()"""
+
+  # little awkward because we need resolution here
+  # it will be reparsed in xzSlice
+  channel, sym, rest = imageargs.partition("/")
+  resolution, sym, rest = rest.partition("/")
+  cb = xzSlice ( imageargs, dbcfg, proj )
+  fileobj = tempfile.NamedTemporaryFile()
+  cb.xzTiff ( fileobj.name )
 
   fileobj.seek(0)
   return fileobj.read()
@@ -217,15 +239,26 @@ def yzImage ( imageargs, dbcfg, proj ):
 
   import pdb; pdb.set_trace()
   cb = yzSlice ( imageargs, dbcfg, proj )
-  if proj.getDBType() == emcaproj.CHANNELS:
-    fileobj = tempfile.NamedTemporaryFile()
-    cb.yzSlice ( dbcfg.zscale[int(resolution)], fileobj.name )
-  else:
-    fileobj = cStringIO.StringIO ( )
-    cb.yzSlice ( dbcfg.zscale[int(resolution)], fileobj )
+  fileobj = cStringIO.StringIO ( )
+  cb.yzSlice ( dbcfg.zscale[int(resolution)], fileobj )
 
   fileobj.seek(0)
   return fileobj.read()
+
+def yzTiff ( imageargs, dbcfg, proj ):
+  """Return an yz plane fileobj.read()"""
+
+  # little awkward because we need resolution here
+  # it will be reparsed in yzSlice
+  channel, sym, rest = imageargs.partition("/")
+  resolution, sym, rest = rest.partition("/")
+  cb = yzSlice ( imageargs, dbcfg, proj )
+  fileobj = tempfile.NamedTemporaryFile()
+  cb.yzTiff ( fileobj.name )
+
+  fileobj.seek(0)
+  return fileobj.read()
+
 
 #
 #  Read individual annotations xyAnno, xzAnno, yzAnno
@@ -385,6 +418,15 @@ def selectService ( webargs, dbcfg, proj ):
 
   elif service == 'yzanno':
     return yzAnno ( rangeargs, dbcfg, proj )
+
+  elif service == 'xytiff':
+    return xyTiff ( rangeargs, dbcfg, proj )
+
+  elif service == 'xztiff':
+    return xzTiff ( rangeargs, dbcfg, proj)
+
+  elif service == 'yztiff':
+    return yzTiff ( rangeargs, dbcfg, proj )
 
   else:
     raise ANNError ("No such Web service: %s" % service )

@@ -8,11 +8,14 @@ import MySQLdb
 from libtiff import TIFF
 import empaths
 import emcaproj
+import emcadb
 import dbconfig
-import chandb
 import chancube
 import numpy as np
 
+
+#assume a 0 resolution level for now for ingest
+RESOLUTION = 0
 
 def main():
 
@@ -56,7 +59,10 @@ def main():
   zlimit = (slices-1) / zcubedim + 1
 
   # open the database
-  db = chandb.ChanDB ( dbcfg, proj )
+  db = emcadb.EMCADB ( dbcfg, proj )
+
+  # get a db cursor 
+  cursor = db.conn.cursor()
 
   for z in range(zlimit):
     db.commit()
@@ -82,9 +88,17 @@ def main():
         # data for this key
         cube.data[0:zmaxrel,0:ymaxrel,0:xmaxrel] = imarray[zmin:zmax,ymin:ymax,xmin:xmax]
 
-#        need to make a channel cube?
+        # compress the cube
+        npz = cube.toNPZ ()
 
-        db.putCube ( key, result.channel, 0, cube )
+
+        # add the cube to the database
+        sql = "INSERT INTO " + proj.getTable(RESOLUTION) +  "(zindex, channel, cube) VALUES (%s, %s, %s)"
+        try:
+          cursor.execute ( sql, (key, result.channel, npz))
+        except MySQLdb.Error, e:
+          raise ANNError ( "Error updating data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
 
 if __name__ == "__main__":
   main()

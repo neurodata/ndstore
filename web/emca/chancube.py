@@ -1,6 +1,7 @@
 import numpy as np
 import zindex
 from libtiff import TIFF
+from PIL import Image
 from cube import Cube
 
 #
@@ -23,33 +24,44 @@ class ChanCube(Cube):
     # note that this is self.cubesize (which is transposed) in Cube
     self.data = np.zeros ( self.cubesize, dtype=np.uint16 )
 
-  #
-  # Extract data from the cube and write out TIFF files.
-  #
-  def cubeToTIFFs ( self, prefix ):
-    """Move data from tiled files to array"""  
-
-    zdim,ydim,xdim = self.data.shape
-    for k in range(zdim):
-      tif = TIFF.open(prefix + str(k) + ".tif", mode="w")
-      tif.write_image( self.data[k,:,:] )
-      tif.close()
 
   #
   # Create the specified slice (index) at filename
   #
   def xySlice ( self, fileobj ):
 
+# This works for 16-> conversions
+    zdim,ydim,xdim = self.data.shape
+    outimage = Image.frombuffer ( 'I;16', (xdim,ydim), self.data[0,:,:].flatten(), 'raw', 'I;16', 0, 1) 
+    outimage = outimage.point(lambda i:i*(1./256)).convert('L')
+    outimage.save ( fileobj, "PNG" )
+
+  #
+  # Create the specified slice (index) at filename
+  #
+  def xyTiff ( self, fileobj ):
+
     zdim,ydim,xdim = self.data.shape
     tif = TIFF.open(fileobj, mode="w")
     tif.write_image( self.data[0,:,:] )
     tif.close()
-  
+
 
   #
   # Create the specified slice (index) at filename
   #
   def xzSlice ( self, zscale, fileobj  ):
+
+    zdim,ydim,xdim = self.data.shape
+    outimage = Image.frombuffer ( 'I;16', (xdim,zdim), self.data[:,0,:].flatten(), 'raw', 'I;16', 0, 1) 
+    outimage = outimage.point(lambda i:i*(1./256)).convert('L')
+    outimage.save ( fileobj, "PNG" )
+
+
+  #
+  # Create the specified slice (index) at filename
+  #
+  def xzTiff ( self, zscale, fileobj  ):
 
     zdim,ydim,xdim = self.data.shape
     tif = TIFF.open(fileobj, mode="w")
@@ -60,6 +72,16 @@ class ChanCube(Cube):
   # Create the specified slice (index) at filename
   #
   def yzSlice ( self, zscale, fileobj  ):
+
+    zdim,ydim,xdim = self.data.shape
+    outimage = Image.frombuffer ( 'I;16', (ydim,zdim), self.data[:,:,0].flatten(), 'raw', 'I;16', 0, 1) 
+    outimage = outimage.point(lambda i:i*(1./256)).convert('L')
+    outimage.save ( fileobj, "PNG" )
+
+  #
+  # Create the specified slice (index) at filename
+  #
+  def yzTiff ( self, zscale, fileobj  ):
 
     zdim,ydim,xdim = self.data.shape
     tif = TIFF.open(fileobj, mode="w")
