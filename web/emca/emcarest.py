@@ -6,6 +6,7 @@ import zlib
 import h5py
 import os
 import cStringIO
+import csv
 import re
 from PIL import Image
 
@@ -917,8 +918,6 @@ def getAnnotations ( webargs, postdata ):
     # the int here is to prevent using a numpy value in an inner loop.  This is a 10x performance gain.
     getAnnoById ( int(annoid), h5fout, db, dbcfg, dataoption, resolution, corner, dim )
 
-  print "Loaded all into a file"
-
   # close temporary file
   h5in.close()
   tmpinfile.close()
@@ -948,6 +947,9 @@ def putAnnotation ( webargs, postdata ):
   tmpfile.seek(0)
   h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
 
+  # return string of id values
+  retvals = [] 
+
   try:
 
     for k in h5f.keys():
@@ -956,8 +958,6 @@ def putAnnotation ( webargs, postdata ):
 
       # Convert HDF5 to annotation
       anno = h5ann.H5toAnnotation ( k, idgrp )
-
-      print "Inserting annotation of type ", anno.__class__
 
       if anno.__class__ in [ annotation.AnnNeuron, annotation.AnnSeed ] and ( idgrp.get('VOXELS') or idgrp.get('CUTOUT')):
         raise ANNError ("Cannot write to annotation type %s" % (anno.__class__))
@@ -969,6 +969,8 @@ def putAnnotation ( webargs, postdata ):
 
         # Put into the database
         db.putAnnotation ( anno, options )
+
+        retvals.append(anno.annid)
 
       # Is a resolution specified?  or use default
       h5resolution = idgrp.get('RESOLUTION')
@@ -1046,8 +1048,11 @@ def putAnnotation ( webargs, postdata ):
   # Commit if there is no error
   db.commit()
 
+
+  retstr = ','.join(map(str, retvals))
+
   # return the identifier
-  return str(anno.annid)
+  return retstr
 
 
 #  Return a list of annotation object IDs
