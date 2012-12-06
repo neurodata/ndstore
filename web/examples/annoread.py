@@ -22,7 +22,7 @@ def main():
   parser = argparse.ArgumentParser(description='Fetch an annotation as an HDF5 file')
   parser.add_argument('baseurl', action="store")
   parser.add_argument('token', action="store")
-  parser.add_argument('annid', action="store", type=int, help='Annotation ID to extract')
+  parser.add_argument('annids', action="store", help='Annotation IDs (comman sepearted list  to extract')
   parser.add_argument('--voxels', action='store_true', help='Return data as a list of voxels.')
   parser.add_argument('--resolution', action="store", help='Resolution at which you want the voxels.  Defaults to the annotation database resolution.', default=None)
   parser.add_argument('--cutout', action="store", help='Cutout arguments of the form resolution/x1,x2/y1,y2/z1,z2.', default=None)
@@ -34,23 +34,23 @@ def main():
 
   if result.voxels:
     if result.resolution == None:
-      url = "http://%s/emca/%s/%s/voxels/" % (result.baseurl,result.token,result.annid)
+      url = "http://%s/emca/%s/%s/voxels/" % (result.baseurl,result.token,result.annids)
     else:
-      url = "http://%s/emca/%s/%s/voxels/%s/" % (result.baseurl,result.token,result.annid, result.resolution)
+      url = "http://%s/emca/%s/%s/voxels/%s/" % (result.baseurl,result.token,result.annids, result.resolution)
   elif result.cutout != None:
-    url = "http://%s/emca/%s/%s/cutout/%s/" % (result.baseurl,result.token,result.annid, result.cutout)
+    url = "http://%s/emca/%s/%s/cutout/%s/" % (result.baseurl,result.token,result.annids, result.cutout)
   elif result.tightcutout: 
     if result.resolution == None:
-      url = "http://%s/emca/%s/%s/cutout/" % (result.baseurl,result.token,result.annid)
+      url = "http://%s/emca/%s/%s/cutout/" % (result.baseurl,result.token,result.annids)
     else:
-      url = "http://%s/emca/%s/%s/cutout/%s/" % (result.baseurl,result.token,result.annid, result.resolution)
+      url = "http://%s/emca/%s/%s/cutout/%s/" % (result.baseurl,result.token,result.annids, result.resolution)
   elif result.boundingbox: 
     if result.resolution == None:
-      url = "http://%s/emca/%s/%s/boundingbox/" % (result.baseurl,result.token,result.annid)
+      url = "http://%s/emca/%s/%s/boundingbox/" % (result.baseurl,result.token,result.annids)
     else:
-      url = "http://%s/emca/%s/%s/boundingbox/%s/" % (result.baseurl,result.token,result.annid, result.resolution)
+      url = "http://%s/emca/%s/%s/boundingbox/%s/" % (result.baseurl,result.token,result.annids, result.resolution)
   else:
-    url = "http://%s/emca/%s/%s/" % (result.baseurl,result.token,result.annid)
+    url = "http://%s/emca/%s/%s/" % (result.baseurl,result.token,result.annids)
 
   print url
 
@@ -79,28 +79,29 @@ def main():
 
   # assume a single annotation for now
   keys = h5f.keys()
-  idgrp = h5f.get(keys[0])
+  for k in keys:
+    idgrp = h5f.get(k)
 
-  print "Annotation id: ", keys[0]
-  print "Annotation type: ", anno_names[idgrp['ANNOTATION_TYPE'][0]]
+    print "Annotation id: ", keys[0]
+    print "Annotation type: ", anno_names[idgrp['ANNOTATION_TYPE'][0]]
 
-  mdgrp = idgrp['METADATA']
+    mdgrp = idgrp['METADATA']
 
-  for field in mdgrp.keys():
-    print field, mdgrp[field][:]
+    for field in mdgrp.keys():
+      print field, mdgrp[field][:]
 
-  if idgrp.get('VOXELS'):
-    print "Voxel list for object:"
-    print idgrp['VOXELS'][:]
-  elif result.voxels:
-    print "No voxels found at this resolution"
+    if idgrp.get('VOXELS'):
+      print "Voxel list for object:"
+      print idgrp['VOXELS'][:]
+    elif result.voxels:
+      print "No voxels found at this resolution"
 
-  if idgrp.get('CUTOUT') and idgrp.get('XYZOFFSET'):
-    print "Cutout at corner %s dim %s = " % (idgrp['XYZOFFSET'][:],idgrp['CUTOUT'].shape)
-    print "%s voxels match identifier in cutout" % ( len(np.nonzero(np.array(idgrp['CUTOUT'][:,:,:]))[0]))
+    if idgrp.get('CUTOUT') and idgrp.get('XYZOFFSET'):
+      print "Cutout at corner %s dim %s = " % (idgrp['XYZOFFSET'][:],idgrp['CUTOUT'].shape)
+      print "%s voxels match identifier in cutout" % ( len(np.nonzero(np.array(idgrp['CUTOUT'][:,:,:]))[0]))
 
-  if idgrp.get('XYZDIMENSION') and idgrp.get('XYZOFFSET'):
-    print "Bounding box corner %s dim %s = " % (idgrp['XYZOFFSET'][:],idgrp['XYZDIMENSION'][:])
+    if idgrp.get('XYZDIMENSION') and idgrp.get('XYZOFFSET'):
+      print "Bounding box corner %s dim %s = " % (idgrp['XYZOFFSET'][:],idgrp['XYZDIMENSION'][:])
 
   h5f.flush()
   h5f.close()

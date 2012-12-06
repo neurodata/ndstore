@@ -742,61 +742,63 @@ def getAnnotation ( webargs ):
   h5f = h5py.File ( tmpfile.name )
 
   # if the first argument is numeric.  it is an annoid
-  if re.match ( '^\d+$', args[0] ): 
+  if re.match ( '^[\d,]+$', args[0] ): 
 
-    annoid = int(args[0])
+    annoids = map(int, args[0].split(','))
 
-    # default is no data
-    if args[1] == '' or args[1] == 'nodata':
-      dataoption = AR_NODATA
-      getAnnoById ( annoid, h5f, db, dbcfg, dataoption )
+    for annoid in annoids: 
 
-    # if you want voxels you either requested the resolution id/voxels/resolution
-    #  or you get data from the default resolution
-    elif args[1] == 'voxels':
-      dataoption = AR_VOXELS
-      [resstr, sym, rest] = args[2].partition('/')
-      resolution = int(resstr) if resstr != '' else proj.getResolution()
+      # default is no data
+      if args[1] == '' or args[1] == 'nodata':
+        dataoption = AR_NODATA
+        getAnnoById ( annoid, h5f, db, dbcfg, dataoption )
 
-      getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution )
-
-    elif args[1] =='cutout':
-
-      # if there are no args or only resolution, it's a tight cutout request
-      if args[2] == '' or re.match('^\d+[\/]*$', args[2]):
-        dataoption = AR_TIGHTCUTOUT
+      # if you want voxels you either requested the resolution id/voxels/resolution
+      #  or you get data from the default resolution
+      elif args[1] == 'voxels':
+        dataoption = AR_VOXELS
         [resstr, sym, rest] = args[2].partition('/')
         resolution = int(resstr) if resstr != '' else proj.getResolution()
 
         getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution )
 
+      elif args[1] =='cutout':
+
+        # if there are no args or only resolution, it's a tight cutout request
+        if args[2] == '' or re.match('^\d+[\/]*$', args[2]):
+          dataoption = AR_TIGHTCUTOUT
+          [resstr, sym, rest] = args[2].partition('/')
+          resolution = int(resstr) if resstr != '' else proj.getResolution()
+
+          getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution )
+
+        else:
+          dataoption = AR_CUTOUT
+
+          # Perform argument processing
+          brargs = restargs.BrainRestArgs ();
+          try:
+            brargs.cutoutArgs ( args[2], dbcfg )
+          except Exception as e:
+            raise ANNError ( "Cutout error: " + e.value )
+
+          # Extract the relevant values
+          corner = brargs.getCorner()
+          dim = brargs.getDim()
+          resolution = brargs.getResolution()
+
+          getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution, corner, dim )
+
+      elif args[1] == 'boundingbox':
+
+        dataoption = AR_BOUNDINGBOX
+        [resstr, sym, rest] = args[2].partition('/')
+        resolution = int(resstr) if resstr != '' else proj.getResolution()
+    
+        getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution )
+
       else:
-        dataoption = AR_CUTOUT
-
-        # Perform argument processing
-        brargs = restargs.BrainRestArgs ();
-        try:
-          brargs.cutoutArgs ( args[2], dbcfg )
-        except Exception as e:
-          raise ANNError ( "Cutout error: " + e.value )
-
-        # Extract the relevant values
-        corner = brargs.getCorner()
-        dim = brargs.getDim()
-        resolution = brargs.getResolution()
-
-        getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution, corner, dim )
-
-    elif args[1] == 'boundingbox':
-
-      dataoption = AR_BOUNDINGBOX
-      [resstr, sym, rest] = args[2].partition('/')
-      resolution = int(resstr) if resstr != '' else proj.getResolution()
-  
-      getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution )
-
-    else:
-      raise ANNError ("Fetch identifier %s.  Error: no such data option %s " % ( annoid, args[1] ))
+        raise ANNError ("Fetch identifier %s.  Error: no such data option %s " % ( annoid, args[1] ))
 
   # the first argument is not numeric.  it is a service other than getAnnotation
   else:
