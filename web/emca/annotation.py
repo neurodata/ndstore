@@ -866,7 +866,7 @@ def putAnnotation ( anno, annodb, options ):
   """Return an annotation object by identifier"""
 
   # if annid == 0, create a new identifier
-  if anno.annid == 0 or anno.annid == None:
+  if anno.annid == 0 or not isinstance(anno.annid,int):
     anno.annid = annodb.nextID()
     anno.store(annodb) 
 

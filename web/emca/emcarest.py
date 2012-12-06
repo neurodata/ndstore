@@ -950,12 +950,16 @@ def putAnnotation ( webargs, postdata ):
 
   try:
 
+    import pdb; pdb.set_trace()
+
     for k in h5f.keys():
 
       idgrp = h5f.get(k)
 
       # Convert HDF5 to annotation
-      anno = h5ann.H5toAnnotation ( h5f )
+      anno = h5ann.H5toAnnotation ( k, idgrp )
+
+      print "Inserting annotation of type ", anno.__class__
 
       if anno.__class__ in [ annotation.AnnNeuron, annotation.AnnSeed ] and ( idgrp.get('VOXELS') or idgrp.get('CUTOUT')):
         raise ANNError ("Cannot write to annotation type %s" % (anno.__class__))

@@ -115,12 +115,8 @@ class H5Annotation:
 
 ############## Converting HDF5 to Annotations
 
-def H5toAnnotation ( h5fh ):
+def H5toAnnotation ( key, idgrp ):
   """Return an annotation constructed from the contents of this HDF5 file"""
-
-  # assume a single annotation for now
-  keys = h5fh.keys()
-  idgrp = h5fh.get(keys[0])
 
   # get the annotation type
   if idgrp.get('ANNOTATION_TYPE'):
@@ -221,7 +217,7 @@ def H5toAnnotation ( h5fh ):
     raise ANNError ("Dont support this annotation type yet. Type = %s" % annotype)
 
   # now load the annotation common fields
-  anno.annid = int(keys[0])
+  anno.annid = key
 
   if mdgrp:
     # now load the metadata common fields
@@ -240,6 +236,8 @@ def H5toAnnotation ( h5fh ):
         anno.kvpairs[r[0]] = r[1] 
 
   return anno
+
+# Need to convert the rest of this to multiple key
 
 def H5GetVoxels ( h5fh ):
   """Return the voxel data associated with the annotation"""
