@@ -84,7 +84,7 @@ class AnnotateIndex:
             
             # Almost certainly introduced this bug again.  Works on devel. machine.  Test on rio.
             #RBTODO why this commit for NPZ?  does it work without for RAmon
-            self.conn.commit()
+#            self.conn.commit()
 
 
          else:
@@ -103,7 +103,7 @@ class AnnotateIndex:
                assert 0
 
             #RBTODO why this commit for NPZ?  does it work without for RAmon
-            self.conn.commit()
+#            self.conn.commit()
                
       cursor.close()
 
