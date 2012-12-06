@@ -96,7 +96,7 @@ class EMCADB:
     else:
       identifier = int ( row[0] ) + 1
 
-    cursor.close
+    cursor.close()
 
     return identifier
 

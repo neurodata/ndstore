@@ -6,6 +6,7 @@ import h5py
 import csv
 import cStringIO
 import collections
+import re
 
 import sys
 
@@ -217,7 +218,10 @@ def H5toAnnotation ( key, idgrp ):
     raise ANNError ("Dont support this annotation type yet. Type = %s" % annotype)
 
   # now load the annotation common fields
-  anno.annid = key
+  if re.match("^\d+$", key):
+    anno.annid = int(key)
+  else:
+    anno.annid = 0
 
   if mdgrp:
     # now load the metadata common fields
