@@ -82,7 +82,7 @@ def main():
   for k in keys:
     idgrp = h5f.get(k)
 
-    print "Annotation id: ", keys[0]
+    print "Annotation id: ", k
     print "Annotation type: ", anno_names[idgrp['ANNOTATION_TYPE'][0]]
 
     mdgrp = idgrp['METADATA']
@@ -91,7 +91,7 @@ def main():
       print field, mdgrp[field][:]
 
     if idgrp.get('VOXELS'):
-      print "Voxel list for object:"
+      print "Voxel list for object of length", len(idgrp['VOXELS'][:])
       print idgrp['VOXELS'][:]
     elif result.voxels:
       print "No voxels found at this resolution"

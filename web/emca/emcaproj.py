@@ -85,14 +85,24 @@ class EMCAProject:
 class EMCAProjectsDB:
   """Database for the annotation and cutout projects"""
 
-  def __init__(self):
+  def openConn (self):
     """Create the database connection"""
 
     # Connection info in dbconfig
-    self.conn = MySQLdb.connect (host = emcaprivate.dbhost,
+    try:
+      self.conn = MySQLdb.connect (host = emcaprivate.dbhost,
                           user = emcaprivate.dbuser,
                           passwd = emcaprivate.dbpasswd,
                           db = emcaprivate.db )
+    except:
+      self.conn = None
+      raise ANNError ( "Failed to connect to host/table", emcaprivate.dbhost, emcaprivate.db ) 
+                          
+
+  def closeConn (self):
+    """Close the database connection"""
+    if self.conn:
+      self.conn.close()
 
   #
   # Load the emca databse information based on the token
@@ -105,6 +115,7 @@ class EMCAProjectsDB:
     sql = "SELECT * from %s where token = \'%s\'" % (emcaprivate.table, token)
 
     try:
+      self.openConn()
       cursor = self.conn.cursor()
       cursor.execute ( sql )
     except MySQLdb.Error, e:
@@ -113,6 +124,8 @@ class EMCAProjectsDB:
 
     # get the project information 
     row = cursor.fetchone()
+
+    self.closeConn()
 
     # if the project is not found.  error
     if ( row == None ):
@@ -142,7 +155,9 @@ class EMCAProjectsDB:
 
     print sql
 
+   
     try:
+      self.openConn()
       cursor = self.conn.cursor()
       cursor.execute ( sql )
     except MySQLdb.Error, e:
@@ -161,6 +176,7 @@ class EMCAProjectsDB:
       raise ANNError ( "Failed to create database for new project" )
 
     self.conn.commit()
+    self.closeConn()
 
     # Connect to the new database
     newconn = MySQLdb.connect (host = dbhost,

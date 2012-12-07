@@ -39,8 +39,6 @@ class EMCADB:
     # Are there exceptions?
     self.EXCEPT_FLAG = self.annoproj.getExceptions()
 
-    dbinfo = self.annoproj.getDBHost(), self.annoproj.getDBUser(), self.annoproj.getDBPasswd(), self.annoproj.getDBName() 
-
     # Connection info 
     try:
       self.conn = MySQLdb.connect (host = self.annoproj.getDBHost(),
@@ -48,7 +46,8 @@ class EMCADB:
                             passwd = self.annoproj.getDBPasswd(),
                             db = self.annoproj.getDBName())
     except:
-      raise ANNError ( dbinfo )
+      self.conn = None
+      raise ANNError ( "Failed to connect to database: %s, %s" % (self.annoproj.getDBHost(), self.annoproj.getDBName()))
       
     # How many slices?
     [ self.startslice, endslice ] = self.dbcfg.slicerange
@@ -68,8 +67,8 @@ class EMCADB:
 
   def __del__ ( self ):
     """Close the connection"""
-    self.conn.close()
-
+    if self.conn:
+      self.conn.close()
 
   #
   #  peekID
