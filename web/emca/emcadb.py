@@ -231,10 +231,7 @@ class EMCADB:
       except MySQLdb.Error, e:
         raise ANNError ( "Error updating data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
-    # 
-    #RBTODO shouldn't need this commit, but somehow we do.
-#    self.conn.commit()
-#    cursor.close()
+    cursor.close()
 
 
   #
