@@ -138,7 +138,7 @@ class EMCAProjectsDB:
 
 
   #
-  # Load the  databse information based on the token
+  # Load the  database information based on the token
   #
   def newEMCAProj ( self, token, openid, dbhost, project, dbtype, dataset, dataurl, resolution, readonly, exceptions ):
     """Create a new emca project"""
@@ -164,19 +164,30 @@ class EMCAProjectsDB:
       print "Failed to create new project", e
       raise ANNError ( "Failed to create new project" )
 
+
+    self.conn.commit()
+    self.closeConn()
+
+    # Connect to the new database
+    newconn = MySQLdb.connect (host = dbhost,
+                          user = emcaprivate.dbuser,
+                          passwd = emcaprivate.dbpasswd )
+
+    newcursor = newconn.cursor()
+  
+
     # Make the database and associated emca tables
     sql = "CREATE DATABASE %s;" % project
     print "Executing: ", sql
    
     try:
-      cursor = self.conn.cursor()
-      cursor.execute ( sql )
+      newcursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Failed to create database for new project", e
       raise ANNError ( "Failed to create database for new project" )
 
-    self.conn.commit()
-    self.closeConn()
+    newconn.commit()
+    newconn.close()
 
     # Connect to the new database
     newconn = MySQLdb.connect (host = dbhost,
@@ -225,6 +236,9 @@ class EMCAProjectsDB:
     except MySQLdb.Error, e:
       print "Failed to create tables for new project", e
       raise ANNError ( "Failed to create database for new project" )
+
+    newconn.commit()
+    newconn.close()
 
 
   def deleteEMCAProj ( self, token ):
