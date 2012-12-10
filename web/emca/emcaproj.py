@@ -152,8 +152,6 @@ class EMCAProjectsDB:
 
     self.conn.commit()
 
-    import pdb; pdb.set_trace()
-
     # Connect to the new database
     newconn = MySQLdb.connect (host = dbhost,
                           user = emcaprivate.dbuser,
