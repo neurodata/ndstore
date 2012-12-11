@@ -128,3 +128,9 @@ def projinfo (request, webargs):
   """Return project and dataset configuration information"""
 
   return django.http.HttpResponse(emcarest.projInfo(webargs), mimetype="product/hdf5" )
+
+
+def mcFalseColor (request, webargs):
+  """Cutout of multiple channels with false color rendering"""
+
+  return django.http.HttpResponse(emcarest.mcFalseColor(webargs), mimetype="image/png" )

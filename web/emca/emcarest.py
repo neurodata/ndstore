@@ -1172,3 +1172,78 @@ def projInfo ( webargs ):
   tmpfile.seek(0)
   return tmpfile.read()
 
+
+def mcFalseColor ( webargs ):
+  """False color image of multiple channels"""
+
+  [ token, mcfcstr, chanstr, service, imageargs ] = webargs.split ('/', 4)
+  projdb = emcaproj.EMCAProjectsDB()
+  proj = projdb.getProj ( token )
+  dbcfg = dbconfig.switchDataset ( proj.getDataset() )
+
+  if proj.getDBType() != emcaproj.CHANNELS:
+    raise ANNError ( "Not a multiple channel project." )
+
+  channels = chanstr.split(",")
+
+  combined_img = None
+
+  for i in range(len(channels)):
+       
+    if service == 'xy':
+      cb = xySlice ( str(channels[i]) + "/" + imageargs, dbcfg, proj )
+    elif service == 'xz':
+      cb = xzSlice ( str(channels[i]) + "/" + imageargs, dbcfg, proj )
+    elif service == 'yz':
+      cb = yzSlice ( str(channels[i]) + "/" + imageargs, dbcfg, proj )
+    else:
+      raise ANNError ( "No such service %s" % (service) )
+
+    # First channel is cyan
+    if i == 0:
+      data32 = np.array ( cb.data * (1./256), dtype=np.uint32 )
+      combined_img = 0xFF000000 + np.left_shift(data32,8) + np.left_shift(data32,16)
+    # Second is yellow
+    elif i == 1:  
+      data32 = np.array ( cb.data * (1./256), dtype=np.uint32 )
+      combined_img +=  np.left_shift(data32,8) + data32 
+    # Third is Magenta
+    elif i == 2:
+      data32 = np.array ( cb.data * (1./256), dtype=np.uint32 )
+      combined_img +=  np.left_shift(data32,16) + data32 
+    # Fourth is Red
+    elif i == 3:
+      data32 = np.array ( cb.data * (1./256), dtype=np.uint32 )
+      combined_img +=  data32 
+    # Fifth is Green
+    elif i == 4:
+      data32 = np.array ( cb.data * (1./256), dtype=np.uint32 )
+      combined_img += np.left_shift(data32,8)
+    # Sixth is Blue
+    elif i == 5:
+      data32 = np.array ( cb.data * (1./256), dtype=np.uint32 )
+      combined_img +=  np.left_shift(data32,16) 
+    else:
+      raise ANNError ( "Only support six channels at a time.  You requested %s " % (chanstr))
+
+    
+  if service == 'xy':
+    ydim, xdim = combined_img.shape[1:3]
+    outimage = Image.frombuffer ( 'RGBA', (xdim,ydim), combined_img[0,:,:].flatten(), 'raw', 'RGBA', 0, 1 ) 
+  elif service == 'xz':
+    ydim = combined_img.shape[0]
+    xdim = combined_img.shape[2]
+    outimage = Image.frombuffer ( 'RGBA', (xdim,ydim), combined_img[:,0,:].flatten(), 'raw', 'RGBA', 0, 1 ) 
+  elif service == 'yz':
+    ydim = combined_img.shape[0]
+    xdim = combined_img.shape[1]
+    outimage = Image.frombuffer ( 'RGBA', (xdim,ydim), combined_img[:,:,0].flatten(), 'raw', 'RGBA', 0, 1 ) 
+
+  fileobj = cStringIO.StringIO ( )
+  outimage.save ( fileobj, "PNG" )
+
+  fileobj.seek(0)
+  return fileobj.read()
+
+
+
