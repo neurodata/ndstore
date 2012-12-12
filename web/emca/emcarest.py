@@ -511,6 +511,7 @@ def selectPost ( webargs, dbcfg, proj, postdata ):
 
   except:
     annoDB.rollback()
+    raise 
     
   annoDB.commit()
 
@@ -1009,8 +1010,6 @@ def putAnnotation ( webargs, postdata ):
           raise ANNError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
 
         exceptions = db.annotate ( anno.annid, resolution, voxels, conflictopt )
-        # RBTODO testing to see if commits help perofrmance
-        db.commit()
 
       # Otherwise this is a shave operation
       elif voxels and 'reduce' in options:
@@ -1040,9 +1039,6 @@ def putAnnotation ( webargs, postdata ):
         corner[2] -= dbcfg.slicerange[0]
 
         db.annotateEntityDense ( anno.annid, corner, resolution, np.array(cutout), conflictopt )
-        # RBTODO testing to see if commits help perofrmance
-        db.commit()
-
       elif cutout != None and h5xyzoffset != None and 'reduce' in options:
 
         corner = h5xyzoffset[:] 
