@@ -19,16 +19,15 @@ class AnnotateIndex:
 
   # Constructor 
   #
-   def __init__(self,conn,proj):
+   def __init__(self,conn,cursor,proj):
       """Give an active connection.  This puts all index operations in the same transation as the calling db."""
 
       self.conn = conn
       self.proj = proj
-      self.cursor = self.conn.cursor()
+      self.cursor = cursor
    
    def __del__(self):
       """Destructor"""
-      self.cursor.close()
    
    #
    # getIndex -- Retrieve the index for the annotation with id

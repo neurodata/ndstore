@@ -60,7 +60,7 @@ class EMCADB:
     self.slices = endslice - self.startslice + 1 
 
     # create annidx object
-    self.annoIdx = annindex.AnnotateIndex (self.conn, self.annoproj)
+    self.annoIdx = annindex.AnnotateIndex (self.conn, self.cursor, self.annoproj)
 
 
   def commit ( self ):
@@ -112,9 +112,9 @@ class EMCADB:
     # Query the current max identifier
 
     # LOCK the table to prevent race conditions on the ID
-    sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getIDsTbl() )
+#    sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getIDsTbl() )
     try:
-      self.cursor.execute ( sql )
+#      self.cursor.execute ( sql )
 
       sql = "SELECT max(id) FROM " + str ( self.annoproj.getIDsTbl() )
       try:
@@ -140,8 +140,9 @@ class EMCADB:
         raise ANNError ( "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     finally:
-      sql = "UNLOCK TABLES" 
-      self.cursor.execute ( sql )
+      pass
+#      sql = "UNLOCK TABLES" 
+#      self.cursor.execute ( sql )
 
     return identifier
 
@@ -422,9 +423,9 @@ class EMCADB:
       key = cubelocs[listoffsets[i],0]
 
       # Must lock the get/put cycle to prevent race conditions on parallel writes
-      sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getTable(resolution) )
+#      sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getTable(resolution) )
       try:
-        self.cursor.execute ( sql )
+#        self.cursor.execute ( sql )
 
         cube = self.getCube ( key, resolution )
 
@@ -443,8 +444,9 @@ class EMCADB:
         self.putCube ( key, resolution, cube)
 
       finally:
-        sql = "UNLOCK TABLES" 
-        self.cursor.execute ( sql )
+        pass
+#        sql = "UNLOCK TABLES" 
+#        self.cursor.execute ( sql )
       
       # add this cube to the index
       cubeidx[entityid].add(key)
@@ -487,7 +489,7 @@ class EMCADB:
 
       # Must lock the get/put cycle to prevent race conditions on parallel writes
       #  also define a cursor for get/put associated with this lock
-      sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getTable(resolution) )
+#      sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getTable(resolution) )
       try:
         self.cursor.execute ( sql )
 
@@ -518,8 +520,9 @@ class EMCADB:
         #  voxels in the cube???
 
       finally:
-        sql = "UNLOCK TABLES" 
-        self.cursor.execute ( sql )
+        pass
+#        sql = "UNLOCK TABLES" 
+#        self.cursor.execute ( sql )
       
 
 
@@ -561,9 +564,9 @@ class EMCADB:
 
           # Must lock the get/put cycle to prevent race conditions on parallel writes
           #  also define a cursor for get/put associated with this lock
-          sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getTable(resolution) )
+#          sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getTable(resolution) )
           try:
-            self.cursor.execute ( sql )
+#            self.cursor.execute ( sql )
 
             key = zindex.XYZMorton ([x+xstart,y+ystart,z+zstart])
             cube = self.getCube ( key, resolution )
@@ -590,8 +593,9 @@ class EMCADB:
             self.putCube ( key, resolution, cube)
 
           finally:
-            sql = "UNLOCK TABLES" 
-            self.cursor.execute ( sql )
+            pass
+#            sql = "UNLOCK TABLES" 
+#            self.cursor.execute ( sql )
       
 
           #update the index for the cube
@@ -655,7 +659,7 @@ class EMCADB:
         for x in range(xnumcubes):
 
           # Must lock the get/put cycle to prevent race conditions on parallel writes
-          sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getTable(resolution) )
+#          sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getTable(resolution) )
           try:
             self.cursor.execute ( sql )
 
@@ -677,8 +681,9 @@ class EMCADB:
             self.putCube ( key, resolution, cube)
 
           finally:
-            sql = "UNLOCK TABLES" 
-            self.cursor.execute ( sql )
+            pass
+#            sql = "UNLOCK TABLES" 
+#            self.cursor.execute ( sql )
       
           #update the index for the cube
           # get the unique elements that are being added to the data
