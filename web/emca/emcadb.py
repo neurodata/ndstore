@@ -50,7 +50,7 @@ class EMCADB:
                             db = self.annoproj.getDBName())
     except:
       self.conn = None
-      logger.warning("Failed to connect to database: %s, %s" % (self.annoproj.getDBHost(), self.annoproj.getDBName()))
+      logger.error("Failed to connect to database: %s, %s" % (self.annoproj.getDBHost(), self.annoproj.getDBName()))
       raise ANNError ( "Failed to connect to database: %s, %s" % (self.annoproj.getDBHost(), self.annoproj.getDBName()))
 
     self.cursor = self.conn.cursor()
@@ -120,7 +120,7 @@ class EMCADB:
       try:
         self.cursor.execute ( sql )
       except MySQLdb.Error, e:
-        logger.warning ( "Failed to create annotation identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+        logger.error ( "Failed to create annotation identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         raise ANNError ( "Failed to create annotation identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
       # Here we've queried the highest id successfully    
@@ -136,7 +136,7 @@ class EMCADB:
       try:
         self.cursor.execute ( sql )
       except MySQLdb.Error, e:
-        logger.warning ( "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+        logger.error ( "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         raise ANNError ( "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     finally:
@@ -184,7 +184,7 @@ class EMCADB:
     try:
       self.cursor.execute ( sql )
     except MySQLdb.Error, e:
-      logger.warning ( "Failed to retrieve data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      logger.error ( "Failed to retrieve data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise ANNError ( "Failed to retrieve data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     row = self.cursor.fetchone()
@@ -217,7 +217,7 @@ class EMCADB:
       try:
         self.cursor.execute ( sql, (key,npz))
       except MySQLdb.Error, e:
-        logger.warning ( "Error inserting cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+        logger.error ( "Error inserting cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         raise ANNError ( "Error inserting cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     else:
@@ -226,7 +226,7 @@ class EMCADB:
       try:
         self.cursor.execute ( sql, (npz))
       except MySQLdb.Error, e:
-        logger.warning ( "Error updating data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+        logger.error ( "Error updating data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         raise ANNError ( "Error updating data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
 
@@ -248,7 +248,7 @@ class EMCADB:
     try:
       self._qr_cursor.execute ( sql )
     except MySQLdb.Error, e:
-      logger.warning ( "Failed to retrieve data cube : %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      logger.error ( "Failed to retrieve data cube : %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise ANNError ( "Failed to retrieve data cube : %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
   
@@ -288,7 +288,7 @@ class EMCADB:
     try:
       self.cursor.execute ( sql )
     except MySQLdb.Error, e:
-      logger.warning ( "Error reading exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      logger.error ( "Error reading exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise ANNError ( "Error reading exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     row = self.cursor.fetchone()
@@ -311,8 +311,8 @@ class EMCADB:
     try:
       self.cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Error reading exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-      assert 0
+      logger.error ( "Error reading exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise ANNError ( "Error reading exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     row = cursor.fetchall()
 
@@ -341,6 +341,7 @@ class EMCADB:
         np.save ( fileobj, exceptions )
         self.cursor.execute ( sql, (key, entityid, zlib.compress(fileobj.getvalue())))
       except MySQLdb.Error, e:
+        logger.error ( "Error inserting exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         raise ANNError ( "Error inserting exceptions: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # In this case we have an update query
@@ -357,6 +358,7 @@ class EMCADB:
         np.save ( fileobj, exlist )
         self.cursor.execute ( sql, (zlib.compress(fileobj.getvalue()),key,entityid))
       except MySQLdb.Error, e:
+        logger.error ( "Error updating exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         raise ANNError ( "Error updating exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
   #
@@ -382,9 +384,8 @@ class EMCADB:
         np.save ( fileobj, exlist )
         self.cursor.execute ( sql, (zlib.compress(fileobj.getvalue()),key,entityid))
       except MySQLdb.Error, e:
-        print "Error removing exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-        assert 0
-
+        logger.error("Error removing exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+        raise ANNError ("Error removing exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
   #
   # annotate
@@ -1062,7 +1063,7 @@ class EMCADB:
     try:
       self.cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Error retrieving ids. sql=%s" % (e.args[0], e.args[1], sql)
+      logger.error ( "Error retrieving ids: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise ANNError ( "Error retrieving ids: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     annoids = np.array ( self.cursor.fetchall(), dtype=np.uint32 ).flatten()
