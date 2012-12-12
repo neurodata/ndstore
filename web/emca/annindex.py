@@ -24,24 +24,22 @@ class AnnotateIndex:
 
       self.conn = conn
       self.proj = proj
+      self.cursor = self.conn.cursor()
    
    def __del__(self):
       """Destructor"""
-      pass
+      self.cursor.close()
    
    #
    # getIndex -- Retrieve the index for the annotation with id
    #
    def getIndex ( self, entityid, resolution ):
 
-      #Establish a connection
-      cursor = self.conn.cursor ()
-
       #get the block from the database                                            
       sql = "SELECT cube FROM " + self.proj.getIdxTable(resolution) + " WHERE annid\
  = " + str(entityid)
       try:
-         cursor.execute ( sql )
+         self.cursor.execute ( sql )
       except MySQLdb.Error, e:
          logger.warning ("Failed to retrieve cube %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
          raise
@@ -49,8 +47,7 @@ class AnnotateIndex:
          logger.exception("Unknown exception")
          raise
          
-      row = cursor.fetchone ()
-      cursor.close()
+      row = self.cursor.fetchone ()
      
       # If we can't find a index, they don't exist                                
       if ( row == None ):
@@ -65,8 +62,6 @@ class AnnotateIndex:
    def updateIndexDense(self,index,resolution):
       """Updated the database index table with the input index hash table"""
 
-      cursor = self.conn.cursor ()
-
       for key, value in index.iteritems():
          cubelist = list(value)
          cubeindex=np.array(cubelist)
@@ -79,7 +74,7 @@ class AnnotateIndex:
             try:
                fileobj = cStringIO.StringIO ()
                np.save ( fileobj, cubeindex )
-               cursor.execute ( sql, (key, fileobj.getvalue()))
+               self.cursor.execute ( sql, (key, fileobj.getvalue()))
             except MySQLdb.Error, e:
                logger.warning("Error inserting exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
                raise
@@ -102,7 +97,7 @@ class AnnotateIndex:
             try:
                fileobj = cStringIO.StringIO ()
                np.save ( fileobj, newIndex )
-               cursor.execute ( sql, (fileobj.getvalue()))
+               self.cursor.execute ( sql, (fileobj.getvalue()))
             except MySQLdb.Error, e:
                logger.warnig("Error updating exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
                raise
@@ -113,8 +108,6 @@ class AnnotateIndex:
             #RBTODO why this commit for NPZ?  does it work without for RAmon
 #            self.conn.commit()
                
-      cursor.close()
-
    #
    #deleteIndex:
    #   Delete the index for a given annotation id
@@ -122,15 +115,13 @@ class AnnotateIndex:
    def deleteIndex(self,annid,resolutions):
       """delete the index for a given annid""" 
       
-      cursor = self.conn.cursor ()
-
       #delete Index table for each resolution
       for res in resolutions:
          sql = "DELETE FROM " +  self.proj.getIdxTable(res)  +  " WHERE annid=" + str(annid)
          print sql
          
          try:
-            cursor.execute ( sql )
+            self.cursor.execute ( sql )
          except MySQLdb.Error, e:
             logger.error("Error deleting the index %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
             raise
@@ -138,5 +129,4 @@ class AnnotateIndex:
            logger.exception("Unknown exception")
            raise
 
-      cursor.close()
 # end AnnotateIndex

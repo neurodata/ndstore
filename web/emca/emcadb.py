@@ -52,6 +52,8 @@ class EMCADB:
       self.conn = None
       logger.warning("Failed to connect to database: %s, %s" % (self.annoproj.getDBHost(), self.annoproj.getDBName()))
       raise ANNError ( "Failed to connect to database: %s, %s" % (self.annoproj.getDBHost(), self.annoproj.getDBName()))
+
+    self.cursor = self.conn.cursor()
       
     # How many slices?
     [ self.startslice, endslice ] = self.dbcfg.slicerange
@@ -72,6 +74,7 @@ class EMCADB:
   def __del__ ( self ):
     """Close the connection"""
     if self.conn:
+      self.cursor.close()
       self.conn.close()
 
   #
@@ -83,23 +86,20 @@ class EMCADB:
         transaction to make it safe."""
     
     # Query the current max identifier
-    cursor = self.conn.cursor ()
     sql = "SELECT max(id) FROM " + str ( self.annoproj.getIDsTbl() )
     try:
-      cursor.execute ( sql )
+      self.cursor.execute ( sql )
     except MySQLdb.Error, e:
       logger.warning ("Problem retrieving identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise ANNError ( "Problem retrieving annotation identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # Here we've queried the highest id successfully    
-    row = cursor.fetchone()
+    row = self.cursor.fetchone()
     # if the table is empty start at 1, 0 is no annotation
     if ( row[0] == None ):
       identifier = 1
     else:
       identifier = int ( row[0] ) + 1
-
-    cursor.close()
 
     return identifier
 
@@ -112,20 +112,19 @@ class EMCADB:
     # Query the current max identifier
 
     # LOCK the table to prevent race conditions on the ID
-    cursor = self.conn.cursor ()
     sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getIDsTbl() )
     try:
-      cursor.execute ( sql )
+      self.cursor.execute ( sql )
 
       sql = "SELECT max(id) FROM " + str ( self.annoproj.getIDsTbl() )
       try:
-        cursor.execute ( sql )
+        self.cursor.execute ( sql )
       except MySQLdb.Error, e:
         logger.warning ( "Failed to create annotation identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         raise ANNError ( "Failed to create annotation identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
       # Here we've queried the highest id successfully    
-      row = cursor.fetchone ()
+      row = self.cursor.fetchone ()
       # if the table is empty start at 1, 0 is no annotation
       if ( row[0] == None ):
         identifier = 1
@@ -135,15 +134,14 @@ class EMCADB:
       # increment and update query
       sql = "INSERT INTO " + str(self.annoproj.getIDsTbl()) + " VALUES ( " + str(identifier) + " ) "
       try:
-        cursor.execute ( sql )
+        self.cursor.execute ( sql )
       except MySQLdb.Error, e:
         logger.warning ( "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         raise ANNError ( "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     finally:
       sql = "UNLOCK TABLES" 
-      cursor.execute ( sql )
-      cursor.close()
+      self.cursor.execute ( sql )
 
     return identifier
 
@@ -156,17 +154,13 @@ class EMCADB:
   def setID ( self, annoid ):
     """Set a user specified identifier"""
 
-    cursor = self.conn.cursor()
-
     # try the insert, get ane exception if it doesn't work
     sql = "INSERT INTO " + str(self.annoproj.getIDsTbl()) + " VALUES ( " + str(annoid) + " ) "
     try:
-      cursor.execute ( sql )
+      self.cursor.execute ( sql )
     except MySQLdb.Error, e:
       logger.warning ( "Failed to set identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise ANNError ( "Failed to set identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-    cursor.close()
 
     return annoid
 
@@ -186,7 +180,6 @@ class EMCADB:
     # get the block from the database
     sql = "SELECT cube FROM " + self.annoproj.getTable(resolution) + " WHERE zindex = " + str(key)
 
-    # this uses a cursor defined in the caller (locking context): not beautiful, but needed for locking
     try:
       self.cursor.execute ( sql )
     except MySQLdb.Error, e:
@@ -429,8 +422,6 @@ class EMCADB:
       key = cubelocs[listoffsets[i],0]
 
       # Must lock the get/put cycle to prevent race conditions on parallel writes
-      #  also define a cursor for get/put associated with this lock
-      self.cursor = self.conn.cursor ()
       sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getTable(resolution) )
       try:
         self.cursor.execute ( sql )
@@ -454,7 +445,6 @@ class EMCADB:
       finally:
         sql = "UNLOCK TABLES" 
         self.cursor.execute ( sql )
-        self.cursor.close()
       
       # add this cube to the index
       cubeidx[entityid].add(key)
@@ -497,7 +487,6 @@ class EMCADB:
 
       # Must lock the get/put cycle to prevent race conditions on parallel writes
       #  also define a cursor for get/put associated with this lock
-      self.cursor = self.conn.cursor ()
       sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getTable(resolution) )
       try:
         self.cursor.execute ( sql )
@@ -531,7 +520,6 @@ class EMCADB:
       finally:
         sql = "UNLOCK TABLES" 
         self.cursor.execute ( sql )
-        self.cursor.close()
       
 
 
@@ -573,7 +561,6 @@ class EMCADB:
 
           # Must lock the get/put cycle to prevent race conditions on parallel writes
           #  also define a cursor for get/put associated with this lock
-          self.cursor = self.conn.cursor ()
           sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getTable(resolution) )
           try:
             self.cursor.execute ( sql )
@@ -605,7 +592,6 @@ class EMCADB:
           finally:
             sql = "UNLOCK TABLES" 
             self.cursor.execute ( sql )
-            self.cursor.close()
       
 
           #update the index for the cube
@@ -669,8 +655,6 @@ class EMCADB:
         for x in range(xnumcubes):
 
           # Must lock the get/put cycle to prevent race conditions on parallel writes
-          #  also define a cursor for get/put associated with this lock
-          self.cursor = self.conn.cursor ()
           sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getTable(resolution) )
           try:
             self.cursor.execute ( sql )
@@ -695,7 +679,6 @@ class EMCADB:
           finally:
             sql = "UNLOCK TABLES" 
             self.cursor.execute ( sql )
-            self.cursor.close()
       
           #update the index for the cube
           # get the unique elements that are being added to the data
@@ -782,7 +765,6 @@ class EMCADB:
 
     # Batch query for all cubes
     dbname = self.annoproj.getTable(resolution)
-    cursor = self.conn.cursor()
 
     # Customize query to the database (include channel or not)
     if (self.annoproj.getDBType() == emcaproj.CHANNELS):
@@ -794,7 +776,7 @@ class EMCADB:
     in_p=', '.join(map(lambda x: '%s', listofidxs))
     # replace the single %s with the in_p string
     sql = sql % in_p
-    rc = cursor.execute(sql, listofidxs)
+    rc = self.cursor.execute(sql, listofidxs)
 
     # xyz offset stored for later use
     lowxyz = zindex.MortonXYZ ( listofidxs[0] )
@@ -802,7 +784,7 @@ class EMCADB:
     # Get the objects and add to the cube
     while ( True ):
       try: 
-        idx, datastring = cursor.fetchone()
+        idx, datastring = self.cursor.fetchone()
       except:
         break
 
@@ -828,7 +810,6 @@ class EMCADB:
                       corner[1]%ycubedim,dim[1],\
                       corner[2]%zcubedim,dim[2] )
 
-    cursor.close()
     return outcube
 
 
@@ -852,16 +833,14 @@ class EMCADB:
 
     mortonidx = zindex.XYZMorton ( xyzcube )
 
-    cursor = self.conn.cursor ()
-
     # get the block from the database
     sql = "SELECT cube FROM " + self.annoproj.getTable(resolution) + " WHERE zindex = " + str(mortonidx)
     try:
-      cursor.execute ( sql )
+      self.cursor.execute ( sql )
     except MySQLdb.Error, e:
       raise ANNError ( "Error reading annotation data: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
-    row=cursor.fetchone()
+    row=self.cursor.fetchone()
 
     # If we can't find a cube, assume it hasn't been written yet
     if ( row == None ):
@@ -870,7 +849,6 @@ class EMCADB:
       cube.fromNPZ ( row[0] )
       retval = cube.getVoxel ( xyzoffset )
 
-    cursor.close()
     return retval
 
 
@@ -899,8 +877,6 @@ class EMCADB:
     yoffset = corner[1]%ycubedim
     xoffset = corner[0]%xcubedim
 
-    self.cursor = self.conn.cursor()
-
     for z in range(znumcubes):
       for y in range(ynumcubes):
         for x in range(xnumcubes):
@@ -919,8 +895,6 @@ class EMCADB:
                 if xloc>=corner[0] and xloc<corner[0]+dim[0] and yloc>=corner[1] and yloc<corner[1]+dim[1] and zloc>=corner[2] and zloc<corner[2]+dim[2]:
                   cube.data[e[2]-zoffset+z*zcubedim,e[1]-yoffset+y*ycubedim,e[0]-xoffset+x*xcubedim]=entityid
 
-    self.cursor.close()
-
     return cube
 
   #
@@ -934,8 +908,6 @@ class EMCADB:
     voxlist = []
 
     zidxs = self.annoIdx.getIndex(entityid,resolution)
-
-    self.cursor = self.conn.cursor ()
 
     for zidx in zidxs:
 
@@ -964,8 +936,6 @@ class EMCADB:
 
       # Change the voxels back to image address space
       [ voxlist.append([a+xoffset, b+yoffset, c+zoffset]) for (a,b,c) in voxels ] 
-
-    self.cursor.close()
 
     return voxlist
 
@@ -1035,7 +1005,6 @@ class EMCADB:
   def deleteAnnoData ( self, annoid):
 
     resolutions = self.dbcfg.resolutions
-    self.cursor = self.conn.cursor ()
 
     for res in resolutions:
     
@@ -1052,8 +1021,6 @@ class EMCADB:
     # delete Index
     self.annoIdx.deleteIndex(annoid,resolutions)
 
-    self.cursor.close()
-    
   
   # getAnnoObjects:  
   #    Return a list of annotation object IDs
@@ -1087,15 +1054,13 @@ class EMCADB:
 
     sql += clause + ';'
 
-    cursor = self.conn.cursor ()
     try:
-      cursor.execute ( sql )
+      self.cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error retrieving ids. sql=%s" % (e.args[0], e.args[1], sql)
       raise ANNError ( "Error retrieving ids: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
-    annoids = np.array ( cursor.fetchall(), dtype=np.uint32 ).flatten()
+    annoids = np.array ( self.cursor.fetchall(), dtype=np.uint32 ).flatten()
 
-    cursor.close()
     return np.array(annoids)
 
