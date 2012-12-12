@@ -58,7 +58,7 @@ class Cube:
       newfobj = cStringIO.StringIO ( newstr )
       self.data = np.load ( newfobj )
     except:
-      logger.error ("Failed to decompress database cube.  Data integrity concern."
+      logger.error ("Failed to decompress database cube.  Data integrity concern.")
       raise
 
     self._newcube = False
@@ -73,7 +73,7 @@ class Cube:
       np.save ( fileobj, self.data )
       return  zlib.compress (fileobj.getvalue())
     except:
-      logger.error ("Failed to compress database cube.  Data integrity concern."
+      logger.error ("Failed to compress database cube.  Data integrity concern.")
       raise
 
 
