@@ -8,6 +8,9 @@ import dbconfig
 import zindex
 import emcaproj
 
+import logging
+logger=logging.getLogger("emca")
+
 #
 #  AnnotateIndex: Maintain the index in the database
 # AUTHOR: Priya Manavalan
@@ -40,10 +43,11 @@ class AnnotateIndex:
       try:
          cursor.execute ( sql )
       except MySQLdb.Error, e:
-         print "Failed to retrieve cube %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-         assert 0
+         logger.warning ("Failed to retrieve cube %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+         raise
       except BaseException, e:
-         print "DBG: SOMETHING REALLY WRONG HERE", e
+         logger.exception("Unknown exception")
+         raise
          
       row = cursor.fetchone ()
       cursor.close()
@@ -77,10 +81,11 @@ class AnnotateIndex:
                np.save ( fileobj, cubeindex )
                cursor.execute ( sql, (key, fileobj.getvalue()))
             except MySQLdb.Error, e:
-               print "Error inserting exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-               assert 0
+               logger.warning("Error inserting exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+               raise
             except BaseException, e:
-               print "DBG: SOMETHING REALLY WRONG HERE", e
+               logger.exception("Unknown error")
+               raise
             
             # Almost certainly introduced this bug again.  Works on devel. machine.  Test on rio.
             #RBTODO why this commit for NPZ?  does it work without for RAmon
@@ -99,8 +104,11 @@ class AnnotateIndex:
                np.save ( fileobj, newIndex )
                cursor.execute ( sql, (fileobj.getvalue()))
             except MySQLdb.Error, e:
-               print "Error updating exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-               assert 0
+               logger.warnig("Error updating exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+               raise
+            except:
+              logger.exception("Unknown exception")
+              raise
 
             #RBTODO why this commit for NPZ?  does it work without for RAmon
 #            self.conn.commit()
@@ -124,9 +132,11 @@ class AnnotateIndex:
          try:
             cursor.execute ( sql )
          except MySQLdb.Error, e:
-            print "Error deleting the index %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
-            assert 0
-         except BaseException, e:
-            print "DBG: SOMETHING REALLY WRONG HERE", e
+            logger.error("Error deleting the index %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+            raise
+         except:
+           logger.exception("Unknown exception")
+           raise
+
       cursor.close()
 # end AnnotateIndex

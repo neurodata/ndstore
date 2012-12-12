@@ -139,8 +139,7 @@ class EMCADB:
     finally:
       sql = "UNLOCK TABLES" 
       cursor.execute ( sql )
-
-    cursor.close()
+      cursor.close()
 
     return identifier
 
@@ -179,16 +178,14 @@ class EMCADB:
     # Create a cube object
     cube = anncube.AnnotateCube ( cubedim )
 
-    cursor = self.conn.cursor ()
-
     # get the block from the database
     sql = "SELECT cube FROM " + self.annoproj.getTable(resolution) + " WHERE zindex = " + str(key)
     try:
-      cursor.execute ( sql )
+      self.cursor.execute ( sql )
     except MySQLdb.Error, e:
       raise ANNError ( "Failed to retrieve data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
-    row = cursor.fetchone()
+    row = self.cursor.fetchone()
 
     # If we can't find a cube, assume it hasn't been written yet
     if ( row == None ):
@@ -197,8 +194,6 @@ class EMCADB:
       # decompress the cube
       cube.fromNPZ ( row[0] )
 
-    cursor.close()
-     
     return cube
 
 
@@ -207,8 +202,6 @@ class EMCADB:
   #
   def putCube ( self, key, resolution, cube ):
     """Store a cube from the annotation database"""
-
-    cursor = self.conn.cursor()
 
     # compress the cube
     npz = cube.toNPZ ()
@@ -219,7 +212,7 @@ class EMCADB:
       sql = "INSERT INTO " + self.annoproj.getTable(resolution) +  "(zindex, cube) VALUES (%s, %s)"
 
       try:
-        cursor.execute ( sql, (key,npz))
+        self.cursor.execute ( sql, (key,npz))
       except MySQLdb.Error, e:
         raise ANNError ( "Error inserting cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
@@ -227,11 +220,9 @@ class EMCADB:
 
       sql = "UPDATE " + self.annoproj.getTable(resolution) + " SET cube=(%s) WHERE zindex=" + str(key)
       try:
-        cursor.execute ( sql, (npz))
+        self.cursor.execute ( sql, (npz))
       except MySQLdb.Error, e:
         raise ANNError ( "Error updating data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-    cursor.close()
 
 
   #
@@ -286,17 +277,14 @@ class EMCADB:
   def getExceptions ( self, key, resolution, entityid ):
     """Load a the list of excpetions for this cube"""
 
-    cursor = self.conn.cursor ()
-
     # get the block from the database
     sql = "SELECT exlist FROM %s where zindex=%s AND id=%s" % ( 'exc'+str(resolution), key, entityid )
     try:
-      cursor.execute ( sql )
+      self.cursor.execute ( sql )
     except MySQLdb.Error, e:
       raise ANNError ( "Error reading exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
-    row = cursor.fetchone()
-    cursor.close()
+    row = self.cursor.fetchone()
 
     # If we can't find a list of exceptions, they don't exist
     if ( row == None ):
@@ -311,18 +299,15 @@ class EMCADB:
   def getAllExceptions ( self, key, resolution ):
     """Load all exceptions for this cube"""
 
-    cursor = self.conn.cursor ()
-
     # get the block from the database
     sql = "SELECT id, exlist FROM %s where zindex=%s" % ( 'exc'+str(resolution), key )
     try:
-      cursor.execute ( sql )
+      self.cursor.execute ( sql )
     except MySQLdb.Error, e:
       print "Error reading exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
       assert 0
 
     row = cursor.fetchall()
-    cursor.close()
 
     # If we can't find a list of exceptions, they don't exist
     if ( row == None ):
@@ -340,7 +325,6 @@ class EMCADB:
     curexlist = self.getExceptions( key, resolution, entityid ) 
 
     table = 'exc'+str(resolution)
-    cursor = self.conn.cursor()
 
     if curexlist==[]:
 
@@ -348,7 +332,7 @@ class EMCADB:
       try:
         fileobj = cStringIO.StringIO ()
         np.save ( fileobj, exceptions )
-        cursor.execute ( sql, (key, entityid, zlib.compress(fileobj.getvalue())))
+        self.cursor.execute ( sql, (key, entityid, zlib.compress(fileobj.getvalue())))
       except MySQLdb.Error, e:
         raise ANNError ( "Error inserting exceptions: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
@@ -364,7 +348,7 @@ class EMCADB:
       try:
         fileobj = cStringIO.StringIO ()
         np.save ( fileobj, exlist )
-        cursor.execute ( sql, (zlib.compress(fileobj.getvalue()),key,entityid))
+        self.cursor.execute ( sql, (zlib.compress(fileobj.getvalue()),key,entityid))
       except MySQLdb.Error, e:
         raise ANNError ( "Error updating exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
@@ -377,7 +361,6 @@ class EMCADB:
     curexlist = self.getExceptions( key, resolution, entityid ) 
 
     table = 'exc'+str(resolution)
-    cursor = self.conn.cursor()
 
     if curexlist != []:
 
@@ -390,7 +373,7 @@ class EMCADB:
       try:
         fileobj = cStringIO.StringIO ()
         np.save ( fileobj, exlist )
-        cursor.execute ( sql, (zlib.compress(fileobj.getvalue()),key,entityid))
+        self.cursor.execute ( sql, (zlib.compress(fileobj.getvalue()),key,entityid))
       except MySQLdb.Error, e:
         print "Error removing exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
         assert 0
@@ -432,22 +415,32 @@ class EMCADB:
       #  and the morton key
       key = cubelocs[listoffsets[i],0]
 
-      cube = self.getCube ( key, resolution )
+      self.cursor = self.conn.cursor ()
+      sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getTable(resolution) )
+      try:
+        self.cursor.execute ( sql )
 
-      # get a voxel offset for the cube
-      cubeoff = zindex.MortonXYZ(key)
-      offset = [cubeoff[0]*cubedim[0],cubeoff[1]*cubedim[1],cubeoff[2]*cubedim[2]]
+        cube = self.getCube ( key, resolution )
 
-      # add the items
-      exceptions = np.array(cube.annotate(entityid, offset, voxlist, conflictopt), dtype=np.uint8)
+        # get a voxel offset for the cube
+        cubeoff = zindex.MortonXYZ(key)
+        offset = [cubeoff[0]*cubedim[0],cubeoff[1]*cubedim[1],cubeoff[2]*cubedim[2]]
 
-      # update the sparse list of exceptions
-      if self.EXCEPT_FLAG:
-        if len(exceptions) != 0:
-          self.updateExceptions ( key, resolution, entityid, exceptions )
+        # add the items
+        exceptions = np.array(cube.annotate(entityid, offset, voxlist, conflictopt), dtype=np.uint8)
 
-      self.putCube ( key, resolution, cube)
+        # update the sparse list of exceptions
+        if self.EXCEPT_FLAG:
+          if len(exceptions) != 0:
+            self.updateExceptions ( key, resolution, entityid, exceptions )
 
+        self.putCube ( key, resolution, cube)
+
+      finally:
+        sql = "UNLOCK TABLES" 
+        self.cursor.execute ( sql )
+        self.cursor.close()
+      
       # add this cube to the index
       cubeidx[entityid].add(key)
 
@@ -487,31 +480,42 @@ class EMCADB:
       #  and the morton key
       key = cubelocs[listoffsets[i],0]
 
-      cube = self.getCube ( key, resolution )
+      self.cursor = self.conn.cursor ()
+      sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getTable(resolution) )
+      try:
+        self.cursor.execute ( sql )
 
-      # get a voxel offset for the cube
-      cubeoff = zindex.MortonXYZ(key)
-      offset = [cubeoff[0]*cubedim[0],cubeoff[1]*cubedim[1],cubeoff[2]*cubedim[2]]
+        cube = self.getCube ( key, resolution )
 
-      # remove the items
-      exlist, zeroed = cube.shave(entityid, offset, voxlist)
-      # make sure that exceptions are stored as 8 bits
-      exceptions = np.array(exlist, dtype=np.uint8)
+        # get a voxel offset for the cube
+        cubeoff = zindex.MortonXYZ(key)
+        offset = [cubeoff[0]*cubedim[0],cubeoff[1]*cubedim[1],cubeoff[2]*cubedim[2]]
 
-      # update the sparse list of exceptions
-      if self.EXCEPT_FLAG:
-        if len(exceptions) != 0:
-          self.removeExceptions ( key, resolution, entityid, exceptions )
+        # remove the items
+        exlist, zeroed = cube.shave(entityid, offset, voxlist)
+        # make sure that exceptions are stored as 8 bits
+        exceptions = np.array(exlist, dtype=np.uint8)
 
-      # zeroed is the list that needs to get promoted here.
-      # RBTODO
-#      if EXCEPTIONS:
-#        for z in zeroed
+        # update the sparse list of exceptions
+        if self.EXCEPT_FLAG:
+          if len(exceptions) != 0:
+            self.removeExceptions ( key, resolution, entityid, exceptions )
 
-      self.putCube ( key, resolution, cube)
+        # zeroed is the list that needs to get promoted here.
+        # RBTODO
+    #      if EXCEPTIONS:
+    #        for z in zeroed
 
-      # For now do no index processing when shaving.  Assume there are still some
-      #  voxels in the cube???
+        self.putCube ( key, resolution, cube)
+
+        # For now do no index processing when shaving.  Assume there are still some
+        #  voxels in the cube???
+
+      finally:
+        sql = "UNLOCK TABLES" 
+        self.cursor.execute ( sql )
+        self.cursor.close()
+      
 
 
   #
@@ -550,31 +554,40 @@ class EMCADB:
       for y in range(ynumcubes):
         for x in range(xnumcubes):
 
-          key = zindex.XYZMorton ([x+xstart,y+ystart,z+zstart])
-          cube = self.getCube ( key, resolution )
+          self.cursor = self.conn.cursor ()
+          sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getTable(resolution) )
+          try:
+            self.cursor.execute ( sql )
 
-          if conflictopt == 'O':
-            cube.overwrite ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
-          elif conflictopt == 'P':
-            cube.preserve ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
-          elif conflictopt == 'E' and self.EXCEPT_FLAG:
-            exdata = cube.exception ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
-            for exid in np.unique ( exdata ):
-              if exid != 0:
-                # get the offsets
-                exoffsets = np.nonzero ( exdata==exid )
-                # assemble into 3-tuples zyx->xyz
-                exceptions = np.array ( zip(exoffsets[2], exoffsets[1], exoffsets[0]), dtype=np.uint32 )
-                # update the exceptions
-                self.updateExceptions ( key, resolution, exid, exceptions )
-                # add to the index
-                index_dict[exid].add(key)
+            key = zindex.XYZMorton ([x+xstart,y+ystart,z+zstart])
+            cube = self.getCube ( key, resolution )
 
-          else:
-           
-            raise ANNError ( "Unsupported conflict option %s" % conflictopt )
+            if conflictopt == 'O':
+              cube.overwrite ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
+            elif conflictopt == 'P':
+              cube.preserve ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
+            elif conflictopt == 'E' and self.EXCEPT_FLAG:
+              exdata = cube.exception ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
+              for exid in np.unique ( exdata ):
+                if exid != 0:
+                  # get the offsets
+                  exoffsets = np.nonzero ( exdata==exid )
+                  # assemble into 3-tuples zyx->xyz
+                  exceptions = np.array ( zip(exoffsets[2], exoffsets[1], exoffsets[0]), dtype=np.uint32 )
+                  # update the exceptions
+                  self.updateExceptions ( key, resolution, exid, exceptions )
+                  # add to the index
+                  index_dict[exid].add(key)
+            else:
+              raise ANNError ( "Unsupported conflict option %s" % conflictopt )
 
-          self.putCube ( key, resolution, cube)
+            self.putCube ( key, resolution, cube)
+
+          finally:
+            sql = "UNLOCK TABLES" 
+            self.cursor.execute ( sql )
+            self.cursor.close()
+      
 
           #update the index for the cube
           # get the unique elements that are being added to the data
@@ -636,23 +649,33 @@ class EMCADB:
       for y in range(ynumcubes):
         for x in range(xnumcubes):
 
-          key = zindex.XYZMorton ([x+xstart,y+ystart,z+zstart])
-          cube = self.getCube ( key, resolution )
+          self.cursor = self.conn.cursor ()
+          sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getTable(resolution) )
+          try:
+            self.cursor.execute ( sql )
 
-          exdata = cube.shaveDense ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
-          for exid in np.unique ( exdata ):
-            if exid != 0:
-              # get the offsets
-              exoffsets = np.nonzero ( exdata==exid )
-              # assemble into 3-tuples zyx->xyz
-              exceptions = np.array ( zip(exoffsets[2], exoffsets[1], exoffsets[0]), dtype=np.uint32 )
-              # update the exceptions
-              self.removeExceptions ( key, resolution, exid, exceptions )
-              # add to the index
-              index_dict[exid].add(key)
+            key = zindex.XYZMorton ([x+xstart,y+ystart,z+zstart])
+            cube = self.getCube ( key, resolution )
 
-          self.putCube ( key, resolution, cube)
+            exdata = cube.shaveDense ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
+            for exid in np.unique ( exdata ):
+              if exid != 0:
+                # get the offsets
+                exoffsets = np.nonzero ( exdata==exid )
+                # assemble into 3-tuples zyx->xyz
+                exceptions = np.array ( zip(exoffsets[2], exoffsets[1], exoffsets[0]), dtype=np.uint32 )
+                # update the exceptions
+                self.removeExceptions ( key, resolution, exid, exceptions )
+                # add to the index
+                index_dict[exid].add(key)
 
+            self.putCube ( key, resolution, cube)
+
+          finally:
+            sql = "UNLOCK TABLES" 
+            self.cursor.execute ( sql )
+            self.cursor.close()
+      
           #update the index for the cube
           # get the unique elements that are being added to the data
           uniqueels = np.unique ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
