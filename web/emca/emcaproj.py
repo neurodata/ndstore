@@ -7,6 +7,9 @@ import emcaprivate
 from emcaerror import ANNError
 import dbconfig
 
+import logging
+logger=logging.getLogger("emca")
+
 #TODO enforce readonly
 
 # dbtype enumerations
@@ -108,16 +111,16 @@ class EMCAProjectsDB:
       cursor = self.conn.cursor()
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Could not query emca projects database"
-      raise ANNError ( "EMCA Project Database error" )
+      logger.error ("Could not query emca projects database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise ANNError ("Could not query emca projects database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # get the project information 
     row = cursor.fetchone()
 
     # if the project is not found.  error
     if ( row == None ):
-      print "No project found"
-      raise ANNError ( "Project token not found" )
+      logger.warning ( "Project token %s not found." % ( token ))
+      raise ANNError ( "Project token %s not found." % ( token ))
 
     [token, openid, host, project, dbtype, dataset, dataurl, resolution, readonly, exceptions ] = row
 
@@ -146,9 +149,8 @@ class EMCAProjectsDB:
       cursor = self.conn.cursor()
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Failed to create new project", e
-      raise ANNError ( "Failed to create new project" )
-
+      logger.error ("Could not query emca projects database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise ANNError ("Could not query emca projects database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     self.conn.commit()
 
@@ -167,8 +169,8 @@ class EMCAProjectsDB:
     try:
       newcursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Failed to create database for new project", e
-      raise ANNError ( "Failed to create database for new project" )
+      logger.error ("Failed to create database for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise ANNError ("Failed to create database for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     newconn.commit()
 
@@ -217,8 +219,8 @@ class EMCAProjectsDB:
       cursor = newconn.cursor()
       newcursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Failed to create tables for new project", e
-      raise ANNError ( "Failed to create database for new project" )
+      logging.error ("Failed to create tables for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise ANNError ("Failed to create tables for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
 
   def deleteEMCAProj ( self, token ):
@@ -233,7 +235,8 @@ class EMCAProjectsDB:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       conn.rollback()
-      raise ANNError ( "Failed to remove project from projects table" )
+      logging.error ("Failed to remove project from projects tables %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise ANNError ("Failed to remove project from projects tables %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     self.conn.commit()
 
@@ -253,14 +256,12 @@ class EMCAProjectsDB:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       conn.rollback()
-      raise ANNError ( "Failed to remove project from projects table" )
+      logging.error ("Failed to drop project database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise ANNError ("Failed to drop project database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     self.conn.commit()
 
 
-
-
-    
 
   # accessors for RB to fix
   def getDBUser( self ):
