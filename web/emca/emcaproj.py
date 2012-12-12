@@ -137,13 +137,11 @@ class EMCAProjectsDB:
 
     dbcfg = dbconfig.switchDataset ( dataset )
 
-    print dbhost, project
-
     # Insert the project entry into the database
     sql = "INSERT INTO {0} VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',{5},\'{6}\',\'{7}\',{8},{9},{10})".format (\
         emcaprivate.table, token, openid, dbhost, project, dbtype, dataset, dataurl, resolution, readonly, exceptions )
 
-    print sql
+    logger.info ( "Creating new project. Host %s. Project %s. SQL=%s" % ( dbhost, project, sql ))
 
     try:
       cursor = self.conn.cursor()
@@ -164,7 +162,6 @@ class EMCAProjectsDB:
 
     # Make the database and associated emca tables
     sql = "CREATE DATABASE %s;" % project
-    print "Executing: ", sql
    
     try:
       newcursor.execute ( sql )
@@ -213,8 +210,6 @@ class EMCAProjectsDB:
           sql += "CREATE TABLE exc%s ( zindex BIGINT, id INT, exlist LONGBLOB, PRIMARY KEY ( zindex, id));\n" % i
         sql += "CREATE TABLE idx%s ( annid BIGINT PRIMARY KEY, cube LONGBLOB );\n" % i
 
-    print sql
-
     try:
       cursor = newconn.cursor()
       newcursor.execute ( sql )
@@ -229,7 +224,6 @@ class EMCAProjectsDB:
     proj = self.getProj ( token )
     sql = "DELETE FROM %s WHERE token=\'%s\'" % ( emcaprivate.table, token ) 
 
-    print sql
     try:
       cursor = self.conn.cursor()
       cursor.execute ( sql )

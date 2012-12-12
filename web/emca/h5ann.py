@@ -15,7 +15,8 @@ import annotation
 
 from emcaerror import ANNError
 
-from pprint import pprint
+import logging
+logger=logging.getLogger("emca")
 
 #
 #  class to define the HDF5 format of annotations.
@@ -215,6 +216,7 @@ def H5toAnnotation ( key, idgrp ):
     anno = annotation.Annotation()
 
   else:
+    logger.warning ("Dont support this annotation type yet. Type = %s" % annotype)
     raise ANNError ("Dont support this annotation type yet. Type = %s" % annotype)
 
   # now load the annotation common fields
@@ -266,6 +268,7 @@ def H5GetVolume ( h5fh ):
     if idgrp.get('CUTOUT'):
       return (idgrp['XYZOFFSET'], idgrp['CUTOUT'])
     else:
+      logger.warning("Improperly formatted HDF5 file.  XYZOFFSET define but no CUTOUT.")
       raise ANNError("Improperly formatted HDF5 file.  XYZOFFSET define but no CUTOUT.")
   else:
     return None
@@ -400,6 +403,7 @@ def AnnotationtoH5 ( anno, h5fh ):
   elif anno.__class__ == annotation.Annotation:
     return BasetoH5 ( anno, annotation.ANNO_ANNOTATION, h5fh )
   else:
+    logger.warning ("(AnnotationtoH5) Does not support this annotation type yet. Type = %s" % anno.__class__)
     raise ANNError ("(AnnotationtoH5) Does not support this annotation type yet. Type = %s" % anno.__class__)
 
 

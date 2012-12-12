@@ -8,6 +8,9 @@ import empaths
 import dbconfig
 import zindex
 
+import logging
+logger=logging.getLogger("emca")
+
 #
 #  AnnotateCube: manipulate the in-memory data representation of the 3-d cube of data
 #    that contains annotations.  
@@ -55,8 +58,8 @@ class Cube:
       newfobj = cStringIO.StringIO ( newstr )
       self.data = np.load ( newfobj )
     except:
-      print "Unpickle and unZip.  What did I catch?"
-      assert 0
+      logger.error ("Failed to decompress database cube.  Data integrity concern."
+      raise
 
     self._newcube = False
 
@@ -70,8 +73,8 @@ class Cube:
       np.save ( fileobj, self.data )
       return  zlib.compress (fileobj.getvalue())
     except:
-      print "Pickle and Zip.  What did I catch?"
-      assert 0
+      logger.error ("Failed to compress database cube.  Data integrity concern."
+      raise
 
 
 

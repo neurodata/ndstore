@@ -23,9 +23,6 @@ from ann_cy import assignVoxels_cy
 from ann_cy import recolor_cy
 
 from emcaerror import ANNError
-from pprint import pprint
-
-from time import time
 
 import logging
 logger=logging.getLogger("emca")

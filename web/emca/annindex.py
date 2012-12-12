@@ -117,7 +117,6 @@ class AnnotateIndex:
       #delete Index table for each resolution
       for res in resolutions:
          sql = "DELETE FROM " +  self.proj.getIdxTable(res)  +  " WHERE annid=" + str(annid)
-         print sql
          
          try:
             self.cursor.execute ( sql )

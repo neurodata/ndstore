@@ -492,7 +492,7 @@ class EMCADB:
       #  also define a cursor for get/put associated with this lock
 #      sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getTable(resolution) )
       try:
-        self.cursor.execute ( sql )
+#        self.cursor.execute ( sql )
 
         cube = self.getCube ( key, resolution )
 
