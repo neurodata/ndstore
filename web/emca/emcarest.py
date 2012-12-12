@@ -444,7 +444,7 @@ def selectService ( webargs, dbcfg, proj ):
 #    return yzTiff ( rangeargs, dbcfg, proj )
 
   else:
-    logger.warning("An illegal Web services was request %s.  Args %s" % ( service, webargs ))
+    logger.warning("An illegal Web GET service was requested %s.  Args %s" % ( service, webargs ))
     raise ANNError ("No such Web service: %s" % service )
 
 
@@ -506,6 +506,7 @@ def selectPost ( webargs, dbcfg, proj, postdata ):
       entityid = db.annotateDense ( corner, resolution, voxarray, conflictopt )
 
     else:
+      logger.warning("An illegal Web POST service was requested: %s.  Args %s" % ( service, webargs ))
       raise AnnError ("No such Web service: %s" % service )
 
   except:
@@ -644,6 +645,7 @@ def emcacatmaid ( webargs ):
           cutoutdata = cb.data.reshape([CM_TILESIZE,CM_TILESIZE])
 
     else:
+      logger.warning("No such cutout plane: %s.  Must be (xy|xz|yz)..  Args %s" % ( service, webargs ))
       raise ANNError ( "No such cutout plane: %s.  Must be (xy|xz|yz)." % plane )
 
   # Write the image to a readable stream
@@ -675,6 +677,7 @@ def getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution=None, corner=No
   # retrieve the annotation 
   anno = db.getAnnotation ( annoid )
   if anno == None:
+    logger.warning("No annotation found at identifier = %s" % ( service, webargs ))
     raise ANNError ("No annotation found at identifier = %s" % (annoid))
 
   # create the HDF5 object
@@ -682,6 +685,7 @@ def getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution=None, corner=No
 
   # only return data for annotation types that have data
   if anno.__class__ in [ annotation.AnnNeuron, annotation.AnnSeed ] and dataoption != AR_NODATA: 
+    logger.warning("No data associated with annotation type %s" % ( anno.__class__))
     raise ANNError ("No data associated with annotation type %s" % ( anno.__class__))
 
   # get the voxel data if requested
@@ -714,6 +718,7 @@ def getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution=None, corner=No
     #  if bbdim[0]*bbdim[1]*bbdim[2] >= 1024*1024*512:
 
       if bbdim[0]*bbdim[1]*bbdim[2] >= 1024*1024*256:
+        logger.warning ("Cutout region is inappropriately large.  Dimension: %s,%s,%s" % (bbdim[0],bbdim[1],bbdim[2]))
         raise ANNError ("Cutout region is inappropriately large.  Dimension: %s,%s,%s" % (bbdim[0],bbdim[1],bbdim[2]))
 
       # do a cutout and add the cutout to the HDF5 file
@@ -782,10 +787,7 @@ def getAnnotation ( webargs ):
 
           # Perform argument processing
           brargs = restargs.BrainRestArgs ();
-          try:
-            brargs.cutoutArgs ( args[2], dbcfg )
-          except Exception as e:
-            raise ANNError ( "Cutout error: " + e.value )
+          brargs.cutoutArgs ( args[2], dbcfg )
 
           # Extract the relevant values
           corner = brargs.getCorner()
@@ -803,11 +805,11 @@ def getAnnotation ( webargs ):
         getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution )
 
       else:
+        logger.warning ("Fetch identifier %s.  Error: no such data option %s " % ( annoid, args[1] ))
         raise ANNError ("Fetch identifier %s.  Error: no such data option %s " % ( annoid, args[1] ))
 
   # the first argument is not numeric.  it is a service other than getAnnotation
   else:
-    import pdb; pdb.set_trace()
     logger.warning("Get interface %s requested.  Illegal or not implemented. Args: %s" % ( args[0], webargs ))
     raise ANNError ("Get interface %s requested.  Illegal or not implemented" % ( args[0] ))
 
@@ -860,6 +862,7 @@ def getAnnotations ( webargs, postdata ):
 
   # IDENTIFIERS
   if not h5in.get('ANNOIDS'):
+    logger.warning ("Requesting multiple annotations.  But no HDF5 \'ANNOIDS\' field specified.") 
     raise ANNError ("Requesting multiple annotations.  But no HDF5 \'ANNOIDS\' field specified.") 
 
   # GET the data out of the HDF5 file.  Never operate on the data in place.
@@ -896,10 +899,7 @@ def getAnnotations ( webargs, postdata ):
 
       # Perform argument processing
       brargs = restargs.BrainRestArgs ();
-      try:
-        brargs.cutoutArgs ( cutout, dbcfg )
-      except Exception as e:
-        raise ANNError ( "Cutout error: " + e.value )
+      brargs.cutoutArgs ( cutout, dbcfg )
 
       # Extract the relevant values
       corner = brargs.getCorner()
@@ -915,6 +915,7 @@ def getAnnotations ( webargs, postdata ):
       resolution = int(resstr) if resstr != '' else proj.getResolution()
 
   else:
+      logger.warning ("In getAnnotations: Error: no such data option %s " % ( dataarg ))
       raise ANNError ("In getAnnotations: Error: no such data option %s " % ( dataarg ))
 
   # Make the HDF5 output file
@@ -969,9 +970,11 @@ def putAnnotation ( webargs, postdata ):
       anno = h5ann.H5toAnnotation ( k, idgrp )
 
       if anno.__class__ in [ annotation.AnnNeuron, annotation.AnnSeed ] and ( idgrp.get('VOXELS') or idgrp.get('CUTOUT')):
+        logger.warning ("Cannot write to annotation type %s" % (anno.__class__))
         raise ANNError ("Cannot write to annotation type %s" % (anno.__class__))
 
       if 'update' in options and 'dataonly' in options:
+        logger.warning ("Illegal combination of options. Cannot use udpate and dataonly together")
         raise ANNError ("Illegal combination of options. Cannot use udpate and dataonly together")
 
       elif not 'dataonly' in options:
@@ -1002,6 +1005,7 @@ def putAnnotation ( webargs, postdata ):
 
         # Check that the voxels have a conforming size:
         if voxels.shape[1] != 3:
+          logger.warning ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
           raise ANNError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
 
         exceptions = db.annotate ( anno.annid, resolution, voxels, conflictopt )
@@ -1013,6 +1017,7 @@ def putAnnotation ( webargs, postdata ):
 
         # Check that the voxels have a conforming size:
         if voxels.shape[1] != 3:
+          logger.warning ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
           raise ANNError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
         db.shave ( anno.annid, resolution, voxels )
 
@@ -1051,8 +1056,12 @@ def putAnnotation ( webargs, postdata ):
 
 
   # rollback if you catch an error
-  except:
-    print "Calling rollback"
+  except AnnError, e:
+    logger.warning ("Put transaction rollback. ANNError: %s" % (e))
+    db.rollback()
+    raise
+  except Exception, e:
+    logger.exception ("Put transaction rollback. Unknown error.")
     db.rollback()
     raise
   finally:
@@ -1061,7 +1070,6 @@ def putAnnotation ( webargs, postdata ):
 
   # Commit if there is no error
   db.commit()
-
 
   retstr = ','.join(map(str, retvals))
 
@@ -1108,6 +1116,7 @@ def listAnnoObjects ( webargs, postdata=None ):
     resolution = h5f['RESOLUTION'][0]
 
     if not dbcfg.checkCube( resolution, corner[0], corner[0]+dim[0], corner[1], corner[1]+dim[1], corner[2], corner[2]+dim[2] ):
+      logger.warning ( "Illegal cutout corner=%s, dim=%s" % ( corner, dim))
       raise ANNError ( "Illegal cutout corner=%s, dim=%s" % ( corner, dim))
 
     # RBFIX this a hack
@@ -1146,13 +1155,20 @@ def deleteAnnotation ( webargs ):
     annoid = int(args[0])
   # if not..this is not a well-formed delete request
   else:
+    logger.warning ("Delete did not specify a legal object identifier = %s" % args[0] )
     raise ANNError ("Delete did not specify a legal object identifier = %s" % args[0] )
 
   try:
     db.deleteAnnotation ( annoid )
-  except:
-    db.rollback() 
+  except AnnError, e:
+    logger.warning ("Delete transaction rollback. ANNError: %s" % (e))
+    db.rollback()
     raise
+  except Exception, e:
+    logger.exception ("Delete transaction rollback. Unknown error.")
+    db.rollback()
+    raise
+
   db.commit()
 
 
@@ -1189,6 +1205,7 @@ def mcFalseColor ( webargs ):
   dbcfg = dbconfig.switchDataset ( proj.getDataset() )
 
   if proj.getDBType() != emcaproj.CHANNELS:
+    logger.warning ( "Not a multiple channel project." )
     raise ANNError ( "Not a multiple channel project." )
 
   channels = chanstr.split(",")
@@ -1204,6 +1221,7 @@ def mcFalseColor ( webargs ):
     elif service == 'yz':
       cb = yzSlice ( str(channels[i]) + "/" + imageargs, dbcfg, proj )
     else:
+      logger.warning ( "No such service %s. Args: %s" % (service,webargs))
       raise ANNError ( "No such service %s" % (service) )
 
     # First channel is cyan
@@ -1231,6 +1249,7 @@ def mcFalseColor ( webargs ):
       data32 = np.array ( cb.data * (1./256), dtype=np.uint32 )
       combined_img +=  np.left_shift(data32,16) 
     else:
+      logger.warning ( "Only support six channels at a time.  You requested %s " % (chanstr))
       raise ANNError ( "Only support six channels at a time.  You requested %s " % (chanstr))
 
     
@@ -1257,80 +1276,6 @@ def mcFalseColor ( webargs ):
   fileobj.seek(0)
   return fileobj.read()
 
-
-
-
-def mcFalseColor2 ( webargs ):
-  """False color image of multiple channels"""
-
-  [ token, mcfcstr, chanstr, service, imageargs ] = webargs.split ('/', 4)
-  projdb = emcaproj.EMCAProjectsDB()
-  proj = projdb.getProj ( token )
-  dbcfg = dbconfig.switchDataset ( proj.getDataset() )
-
-  if proj.getDBType() != emcaproj.CHANNELS:
-    raise ANNError ( "Not a multiple channel project." )
-
-  channels = chanstr.split(",")
-
-  combined_img = None
-
-  for i in range(len(channels)):
-       
-    if service == 'xy':
-      cb = xySlice ( str(channels[i]) + "/" + imageargs, dbcfg, proj )
-    elif service == 'xz':
-      cb = xzSlice ( str(channels[i]) + "/" + imageargs, dbcfg, proj )
-    elif service == 'yz':
-      cb = yzSlice ( str(channels[i]) + "/" + imageargs, dbcfg, proj )
-    else:
-      raise ANNError ( "No such service %s" % (service) )
-
-    # First channel is cyan
-    if i == 0:
-      data32 = np.array ( cb.data * (1./256), dtype=np.uint32 )
-      combined_img = 0xFF000000 + np.left_shift(data32,8) + np.left_shift(data32,16)
-    # Second is yellow
-    elif i == 1:  
-      data32 = np.array ( cb.data * (1./256), dtype=np.uint32 )
-      combined_img +=  np.left_shift(data32,8) + data32 
-    # Third is Magenta
-    elif i == 2:
-      data32 = np.array ( cb.data * (1./256), dtype=np.uint32 )
-      combined_img +=  np.left_shift(data32,16) + data32 
-    # Fourth is Red
-    elif i == 3:
-      data32 = np.array ( cb.data * (1./256), dtype=np.uint32 )
-      combined_img +=  data32 
-    # Fifth is Green
-    elif i == 4:
-      data32 = np.array ( cb.data * (1./256), dtype=np.uint32 )
-      combined_img += np.left_shift(data32,8)
-    # Sixth is Blue
-    elif i == 5:
-      data32 = np.array ( cb.data * (1./256), dtype=np.uint32 )
-      combined_img +=  np.left_shift(data32,16) 
-    else:
-      raise ANNError ( "Only support six channels at a time.  You requested %s " % (chanstr))
-
-    
-  if service == 'xy':
-    ydim, xdim = combined_img.shape[1:3]
-    outimage = Image.frombuffer ( 'RGBA', (xdim,ydim), combined_img[0,:,:].flatten(), 'raw', 'RGBA', 0, 1 ) 
-  elif service == 'xz':
-    ydim = combined_img.shape[0]
-    xdim = combined_img.shape[2]
-    outimage = Image.frombuffer ( 'RGBA', (xdim,ydim), combined_img[:,0,:].flatten(), 'raw', 'RGBA', 0, 1 ) 
-  elif service == 'yz':
-    ydim = combined_img.shape[0]
-    xdim = combined_img.shape[1]
-    outimage = Image.frombuffer ( 'RGBA', (xdim,ydim), combined_img[:,:,0].flatten(), 'raw', 'RGBA', 0, 1 ) 
-
-  fileobj = cStringIO.StringIO ( )
-  outimage.save ( fileobj, "PNG" )
-
-  fileobj.seek(0)
-  return fileobj.read()
 
 
 

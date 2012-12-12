@@ -190,12 +190,12 @@ class EMCAProjectsDB:
     newconn.close()
 
     # Connect to the new database
-    newconn = MySQLdb.connect (host = dbhost,
+    newconn2 = MySQLdb.connect (host = dbhost,
                           user = emcaprivate.dbuser,
                           passwd = emcaprivate.dbpasswd,
                           db = project )
 
-    newcursor = newconn.cursor()
+    newcursor2 = newconn2.cursor()
 
     sql = ""
 
@@ -231,14 +231,13 @@ class EMCAProjectsDB:
     print sql
 
     try:
-      cursor = newconn.cursor()
-      newcursor.execute ( sql )
+      newcursor2.execute ( sql )
     except MySQLdb.Error, e:
       print "Failed to create tables for new project", e
       raise ANNError ( "Failed to create database for new project" )
 
-    newconn.commit()
-    newconn.close()
+    newconn2.commit()
+    newconn2.close()
 
 
   def deleteEMCAProj ( self, token ):
@@ -252,7 +251,7 @@ class EMCAProjectsDB:
       cursor = self.conn.cursor()
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      conn.rollback()
+      self.conn.rollback()
       raise ANNError ( "Failed to remove project from projects table" )
 
     self.conn.commit()

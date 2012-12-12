@@ -198,7 +198,7 @@ LOGGING = {
         },
         'emca': {
             'handlers': ['console', 'logfile'],
-            'level': 'DEBUG',
+            'level': 'WARN',
         },
     }
 }
