@@ -899,6 +899,8 @@ class EMCADB:
     yoffset = corner[1]%ycubedim
     xoffset = corner[0]%xcubedim
 
+    self.cursor = self.conn.cursor()
+
     for z in range(znumcubes):
       for y in range(ynumcubes):
         for x in range(xnumcubes):
@@ -916,6 +918,8 @@ class EMCADB:
                 zloc = e[2]+(z+zstart)*zcubedim
                 if xloc>=corner[0] and xloc<corner[0]+dim[0] and yloc>=corner[1] and yloc<corner[1]+dim[1] and zloc>=corner[2] and zloc<corner[2]+dim[2]:
                   cube.data[e[2]-zoffset+z*zcubedim,e[1]-yoffset+y*ycubedim,e[0]-xoffset+x*xcubedim]=entityid
+
+    self.cursor.close()
 
     return cube
 
