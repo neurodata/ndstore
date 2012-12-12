@@ -507,7 +507,7 @@ def selectPost ( webargs, dbcfg, proj, postdata ):
 
     else:
       logger.warning("An illegal Web POST service was requested: %s.  Args %s" % ( service, webargs ))
-      raise AnnError ("No such Web service: %s" % service )
+      raise ANNError ("No such Web service: %s" % service )
 
   except:
     annoDB.rollback()
@@ -678,7 +678,7 @@ def getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution=None, corner=No
   # retrieve the annotation 
   anno = db.getAnnotation ( annoid )
   if anno == None:
-    logger.warning("No annotation found at identifier = %s" % ( service, webargs ))
+    logger.warning("No annotation found at identifier = %s" % (annoid))
     raise ANNError ("No annotation found at identifier = %s" % (annoid))
 
   # create the HDF5 object
@@ -1052,7 +1052,7 @@ def putAnnotation ( webargs, postdata ):
 
 
   # rollback if you catch an error
-  except AnnError, e:
+  except ANNError, e:
     logger.warning ("Put transaction rollback. ANNError: %s" % (e))
     db.rollback()
     raise
@@ -1156,7 +1156,7 @@ def deleteAnnotation ( webargs ):
 
   try:
     db.deleteAnnotation ( annoid )
-  except AnnError, e:
+  except ANNError, e:
     logger.warning ("Delete transaction rollback. ANNError: %s" % (e))
     db.rollback()
     raise
