@@ -62,7 +62,6 @@ class EMCADB:
     # create annidx object
     self.annoIdx = annindex.AnnotateIndex (self.conn, self.cursor, self.annoproj)
 
-
   def commit ( self ):
     """Commit the transaction.  Moved out of __del__ to make explicit.""" 
     self.conn.commit()
@@ -428,6 +427,9 @@ class EMCADB:
       try:
 #        self.cursor.execute ( sql )
 
+        sql = "START TRANSACTION"
+        self.cursor.execute ( sql )
+
         cube = self.getCube ( key, resolution )
 
         # get a voxel offset for the cube
@@ -493,6 +495,9 @@ class EMCADB:
 #      sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getTable(resolution) )
       try:
 #        self.cursor.execute ( sql )
+
+        sql = "START TRANSACTION"
+        self.cursor.execute ( sql )
 
         cube = self.getCube ( key, resolution )
 
@@ -568,6 +573,9 @@ class EMCADB:
 #          sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getTable(resolution) )
           try:
 #            self.cursor.execute ( sql )
+
+            sql = "START TRANSACTION"
+            self.cursor.execute ( sql )
 
             key = zindex.XYZMorton ([x+xstart,y+ystart,z+zstart])
             cube = self.getCube ( key, resolution )
@@ -662,6 +670,9 @@ class EMCADB:
           # Must lock the get/put cycle to prevent race conditions on parallel writes
 #          sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getTable(resolution) )
           try:
+#            self.cursor.execute ( sql )
+
+            sql = "START TRANSACTION"
             self.cursor.execute ( sql )
 
             key = zindex.XYZMorton ([x+xstart,y+ystart,z+zstart])
