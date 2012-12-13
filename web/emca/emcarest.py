@@ -463,55 +463,73 @@ def selectPost ( webargs, dbcfg, proj, postdata ):
   # Perform argument processing
 
   # Bind the annotation database
-  annoDB = emcadb.EMCADB ( dbcfg, proj )
+  db = emcadb.EMCADB ( dbcfg, proj )
+  db.startTxn()
 
-  try:
+  tries = 0
+  done = False
 
-    if service == 'npvoxels':
+  while not done and tries < 5:
 
-      #  get the resolution
-      [ entity, resolution, conflictargs ] = postargs.split('/', 2)
+    try:
 
-      # Grab the voxel list
-      fileobj = cStringIO.StringIO ( postdata )
-      voxlist =  np.load ( fileobj )
+      if service == 'npvoxels':
 
-      conflictopt = restargs.conflictOption ( conflictargs )
-      entityid = annoDB.annotate ( int(entity), int(resolution), voxlist, conflictopt )
+        #  get the resolution
+        [ entity, resolution, conflictargs ] = postargs.split('/', 2)
 
-    elif service == 'npdense':
+        # Grab the voxel list
+        fileobj = cStringIO.StringIO ( postdata )
+        voxlist =  np.load ( fileobj )
 
-      # Process the arguments
-      args = restargs.BrainRestArgs ();
-      args.cutoutArgs ( postargs, dbcfg )
+        conflictopt = restargs.conflictOption ( conflictargs )
+        entityid = db.annotate ( int(entity), int(resolution), voxlist, conflictopt )
 
-      corner = args.getCorner()
-      resolution = args.getResolution()
+      elif service == 'npdense':
 
-      # This is used for ingest only now.  So, overwrite conflict option.
-      conflictopt = restargs.conflictOption ( "" )
+        # Process the arguments
+        args = restargs.BrainRestArgs ();
+        args.cutoutArgs ( postargs, dbcfg )
 
-      # get the data out of the compressed blob
-      rawdata = zlib.decompress ( postdata )
-      fileobj = cStringIO.StringIO ( rawdata )
-      voxarray = np.load ( fileobj )
+        corner = args.getCorner()
+        resolution = args.getResolution()
 
-      # Get the annotation database
-      db = emcadb.EMCADB ( dbcfg, proj )
+        # This is used for ingest only now.  So, overwrite conflict option.
+        conflictopt = restargs.conflictOption ( "" )
 
-      # Choose the verb, get the entity (as needed), and annotate
-      # Translates the values directly
-      entityid = db.annotateDense ( corner, resolution, voxarray, conflictopt )
+        # get the data out of the compressed blob
+        rawdata = zlib.decompress ( postdata )
+        fileobj = cStringIO.StringIO ( rawdata )
+        voxarray = np.load ( fileobj )
 
-    else:
-      logger.warning("An illegal Web POST service was requested: %s.  Args %s" % ( service, webargs ))
-      raise ANNError ("No such Web service: %s" % service )
+        # Get the annotation database
+        db = emcadb.EMCADB ( dbcfg, proj )
 
-  except:
-    annoDB.rollback()
-    raise 
-    
-  annoDB.commit()
+        # Choose the verb, get the entity (as needed), and annotate
+        # Translates the values directly
+        entityid = db.annotateDense ( corner, resolution, voxarray, conflictopt )
+        db.conn.commit()
+
+      else:
+        logger.warning("An illegal Web POST service was requested: %s.  Args %s" % ( service, webargs ))
+        raise ANNError ("No such Web service: %s" % service )
+        
+      db.commit()
+      done=True
+
+    # rollback if you catch an error
+    except MySQLdb.OperationalError, e:
+      logger.warning ("Transaction did not complete. %s" % (e))
+      tries += 1
+      db.rollback()
+      continue
+    except MySQLdb.Error, e:
+      logger.warning ("POST transaction rollback. %s" % (e))
+      db.rollback()
+      raise
+    except Exception, e:
+      logger.exception ("POST transaction rollback. Unknown error. %s" % (e))
+      db.rollback()
 
   return str(entityid)
 
@@ -1079,6 +1097,7 @@ def putAnnotation ( webargs, postdata ):
         except Exception, e:
           logger.exception ("Put transaction rollback. Unknown error. %s" % (e))
           db.rollback()
+          raise
 
   finally:
     h5f.close()
@@ -1153,6 +1172,8 @@ def listAnnoObjects ( webargs, postdata=None ):
 def deleteAnnotation ( webargs ):
   """Delete a RAMON object"""
 
+  ## TODO add retry loop for transaction
+
   [ token, sym, otherargs ] = webargs.partition ('/')
 
   # Get the annotation database
@@ -1165,25 +1186,39 @@ def deleteAnnotation ( webargs ):
   args = otherargs.split('/', 2)
 
   # if the first argument is numeric.  it is an annoid
-  if re.match ( '^\d+$', args[0] ): 
-    annoid = int(args[0])
+  if re.match ( '^[\d,]+$', args[0] ): 
+    annoids = map(int, args[0].split(','))
   # if not..this is not a well-formed delete request
   else:
     logger.warning ("Delete did not specify a legal object identifier = %s" % args[0] )
     raise ANNError ("Delete did not specify a legal object identifier = %s" % args[0] )
 
-  try:
-    db.deleteAnnotation ( annoid )
-  except ANNError, e:
-    logger.warning ("Delete transaction rollback. ANNError: %s" % (e))
-    db.rollback()
-    raise
-  except Exception, e:
-    logger.exception ("Delete transaction rollback. Unknown error.")
-    db.rollback()
-    raise
+  for annoid in annoids: 
 
-  db.commit()
+    db.startTxn()
+    tries = 0
+    done = False
+    while not done and tries < 5:
+
+      try:
+        db.deleteAnnotation ( annoid )
+        done = True
+      # rollback if you catch an error
+      except MySQLdb.OperationalError, e:
+        logger.warning ("Transaction did not complete. %s" % (e))
+        tries += 1
+        db.rollback()
+        continue
+      except MySQLdb.Error, e:
+        logger.warning ("Put transaction rollback. %s" % (e))
+        db.rollback()
+        raise
+      except Exception, e:
+        logger.exception ("Put transaction rollback. Unknown error. %s" % (e))
+        db.rollback()
+        raise
+
+      db.commit()
 
 
 

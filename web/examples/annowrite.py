@@ -190,7 +190,6 @@ def main():
   parser.add_argument('--anntype', action="store", type=int, default=1)
   parser.add_argument('--annid', action="store", type=int, help='Annotation ID to extract', default=0)
   parser.add_argument('--update', action='store_true', help='Update an existing annotation.')
-  parser.add_argument('--delete', action='store_true', help='Delete an existing annotation.')
   parser.add_argument('--cutout', action="store", help='Cutout arguments of the form resolution/x1,x2/y1,y2/z1,z2.', default=None)
   parser.add_argument('--voxels', action='store_true', help='Store the voxels as a list.')
   parser.add_argument('--reduce', action='store_true', help="Remove the specified voxels from the annotation.")
@@ -233,8 +232,6 @@ def main():
   # Build the put URL
   if result.update:
     url = "http://%s/emca/%s/update/" % ( result.baseurl, result.token)
-  elif result.delete:
-    url = "http://%s/emca/%s/delete/" % ( result.baseurl, result.token)
   elif result.dataonly:
     url = "http://%s/emca/%s/dataonly/" % ( result.baseurl, result.token)
   else:
