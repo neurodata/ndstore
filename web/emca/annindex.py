@@ -36,7 +36,7 @@ class AnnotateIndex:
 
       #get the block from the database                                            
       sql = "SELECT cube FROM " + self.proj.getIdxTable(resolution) + " WHERE annid\
- = " + str(entityid)
+ = " + str(entityid) + " FOR UPDATE"
       try:
          self.cursor.execute ( sql )
       except MySQLdb.Error, e:
