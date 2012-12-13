@@ -108,14 +108,21 @@ class EMCADB:
   def nextID ( self ):
     """Get an new identifier"""
     
-    # Query the current max identifier
+   # Query the current max identifier
 
-    # LOCK the table to prevent race conditions on the ID
-#    sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getIDsTbl() )
+   # LOCK the table to prevent race conditions on the ID
+    sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getIDsTbl() )
     try:
-#      self.cursor.execute ( sql )
+      self.cursor.execute ( sql )
 
-      sql = "SELECT max(id) FROM " + str ( self.annoproj.getIDsTbl() )
+#      print "Autocommit"
+#      sql = "SET AUTOCOMMIT=0;" 
+#      self.cursor.execute ( sql )
+#      sql = "START TRANSACTION "
+#      self.cursor.execute ( sql )
+#      sql = "SELECT max(id) FROM " + str ( self.annoproj.getIDsTbl() ) + " FOR UPDATE"
+
+      sql = "SELECT max(id) FROM " + str ( self.annoproj.getIDsTbl() ) + " FOR UPDATE"
       try:
         self.cursor.execute ( sql )
       except MySQLdb.Error, e:
@@ -140,9 +147,10 @@ class EMCADB:
 
     finally:
       pass
-#      sql = "UNLOCK TABLES" 
-#      self.cursor.execute ( sql )
+      sql = "UNLOCK TABLES" 
+      self.cursor.execute ( sql )
 
+    self.commit()
     return identifier
 
 
@@ -178,7 +186,7 @@ class EMCADB:
     cube = anncube.AnnotateCube ( cubedim )
 
     # get the block from the database
-    sql = "SELECT cube FROM " + self.annoproj.getTable(resolution) + " WHERE zindex = " + str(key)
+    sql = "SELECT cube FROM " + self.annoproj.getTable(resolution) + " WHERE zindex = " + str(key) + " FOR UPDATE"
 
     try:
       self.cursor.execute ( sql )
