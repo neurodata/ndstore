@@ -9,6 +9,7 @@ import cStringIO
 import csv
 import re
 from PIL import Image
+import MySQLdb
 
 import empaths
 import restargs
@@ -949,14 +950,14 @@ def putAnnotation ( webargs, postdata ):
 
   options = optionsargs.split('/')
 
+  # return string of id values
+  retvals = [] 
+
   # Make a named temporary file for the HDF5
   tmpfile = tempfile.NamedTemporaryFile ( )
   tmpfile.write ( postdata )
   tmpfile.seek(0)
   h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
-
-  # return string of id values
-  retvals = [] 
 
   try:
 
@@ -967,102 +968,122 @@ def putAnnotation ( webargs, postdata ):
       # Convert HDF5 to annotation
       anno = h5ann.H5toAnnotation ( k, idgrp )
 
-      if anno.__class__ in [ annotation.AnnNeuron, annotation.AnnSeed ] and ( idgrp.get('VOXELS') or idgrp.get('CUTOUT')):
-        logger.warning ("Cannot write to annotation type %s" % (anno.__class__))
-        raise ANNError ("Cannot write to annotation type %s" % (anno.__class__))
+      # set the identifier (separate transaction)
+      anno.setID ( db )
 
-      if 'update' in options and 'dataonly' in options:
-        logger.warning ("Illegal combination of options. Cannot use udpate and dataonly together")
-        raise ANNError ("Illegal combination of options. Cannot use udpate and dataonly together")
+      tries = 0 
+      done = False
+      while not done and tries < 5:
 
-      elif not 'dataonly' in options:
+        # start a transaction: get mysql out of line at a time mode
+        db.startTxn ()
 
-        # Put into the database
-        db.putAnnotation ( anno, options )
+        try:
 
-        retvals.append(anno.annid)
+          if anno.__class__ in [ annotation.AnnNeuron, annotation.AnnSeed ] and ( idgrp.get('VOXELS') or idgrp.get('CUTOUT')):
+            logger.warning ("Cannot write to annotation type %s" % (anno.__class__))
+            raise ANNError ("Cannot write to annotation type %s" % (anno.__class__))
 
-      # Is a resolution specified?  or use default
-      h5resolution = idgrp.get('RESOLUTION')
-      if h5resolution == None:
-        resolution = proj.getResolution()
-      else:
-        resolution = h5resolution[0]
+          if 'update' in options and 'dataonly' in options:
+            logger.warning ("Illegal combination of options. Cannot use udpate and dataonly together")
+            raise ANNError ("Illegal combination of options. Cannot use udpate and dataonly together")
 
-      # Load the data associated with this annotation
-      #  Is it voxel data?
-      voxels = idgrp.get('VOXELS')
-      if voxels and 'reduce' not in options:
+          elif not 'dataonly' in options:
 
-        if 'preserve' in options:
-          conflictopt = 'P'
-        elif 'exception' in options:
-          conflictopt = 'E'
-        else:
-          conflictopt = 'O'
+            # Put into the database
+            db.putAnnotation ( anno, options )
 
-        # Check that the voxels have a conforming size:
-        if voxels.shape[1] != 3:
-          logger.warning ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
-          raise ANNError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
+            retvals.append(anno.annid)
 
-        exceptions = db.annotate ( anno.annid, resolution, voxels, conflictopt )
+          # Is a resolution specified?  or use default
+          h5resolution = idgrp.get('RESOLUTION')
+          if h5resolution == None:
+            resolution = proj.getResolution()
+          else:
+            resolution = h5resolution[0]
 
-      # Otherwise this is a shave operation
-      elif voxels and 'reduce' in options:
+          # Load the data associated with this annotation
+          #  Is it voxel data?
+          voxels = idgrp.get('VOXELS')
+          if voxels and 'reduce' not in options:
 
-        # Check that the voxels have a conforming size:
-        if voxels.shape[1] != 3:
-          logger.warning ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
-          raise ANNError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
-        db.shave ( anno.annid, resolution, voxels )
+            if 'preserve' in options:
+              conflictopt = 'P'
+            elif 'exception' in options:
+              conflictopt = 'E'
+            else:
+              conflictopt = 'O'
 
-      # Is it dense data?
-      cutout = idgrp.get('CUTOUT')
-      h5xyzoffset = idgrp.get('XYZOFFSET')
-      if cutout != None and h5xyzoffset != None and 'reduce' not in options:
+            # Check that the voxels have a conforming size:
+            if voxels.shape[1] != 3:
+              logger.warning ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
+              raise ANNError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
 
-        if 'preserve' in options:
-          conflictopt = 'P'
-        elif 'exception' in options:
-          conflictopt = 'E'
-        else:
-          conflictopt = 'O'
+            exceptions = db.annotate ( anno.annid, resolution, voxels, conflictopt )
 
-        #  the zstart in dbconfig is sometimes offset to make it aligned.
-        #   Probably remove the offset is the best idea.  and align data
-        #    to zero regardless of where it starts.  For now.
-        corner = h5xyzoffset[:] 
-        corner[2] -= dbcfg.slicerange[0]
+          # Otherwise this is a shave operation
+          elif voxels and 'reduce' in options:
 
-        db.annotateEntityDense ( anno.annid, corner, resolution, np.array(cutout), conflictopt )
-      elif cutout != None and h5xyzoffset != None and 'reduce' in options:
+            # Check that the voxels have a conforming size:
+            if voxels.shape[1] != 3:
+              logger.warning ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
+              raise ANNError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
+            db.shave ( anno.annid, resolution, voxels )
 
-        corner = h5xyzoffset[:] 
-        corner[2] -= dbcfg.slicerange[0]
+          # Is it dense data?
+          cutout = idgrp.get('CUTOUT')
+          h5xyzoffset = idgrp.get('XYZOFFSET')
+          if cutout != None and h5xyzoffset != None and 'reduce' not in options:
 
-        db.shaveEntityDense ( anno.annid, corner, resolution, np.array(cutout))
+            if 'preserve' in options:
+              conflictopt = 'P'
+            elif 'exception' in options:
+              conflictopt = 'E'
+            else:
+              conflictopt = 'O'
 
-      elif cutout != None or h5xyzoffset != None:
-        #TODO this is a loggable error
-        pass
+            #  the zstart in dbconfig is sometimes offset to make it aligned.
+            #   Probably remove the offset is the best idea.  and align data
+            #    to zero regardless of where it starts.  For now.
+            corner = h5xyzoffset[:] 
+            corner[2] -= dbcfg.slicerange[0]
 
+            db.annotateEntityDense ( anno.annid, corner, resolution, np.array(cutout), conflictopt )
+          elif cutout != None and h5xyzoffset != None and 'reduce' in options:
 
-  # rollback if you catch an error
-  except ANNError, e:
-    logger.warning ("Put transaction rollback. ANNError: %s" % (e))
-    db.rollback()
-    raise
-  except Exception, e:
-    logger.exception ("Put transaction rollback. Unknown error.")
-    db.rollback()
-    raise
+            corner = h5xyzoffset[:] 
+            corner[2] -= dbcfg.slicerange[0]
+
+            db.shaveEntityDense ( anno.annid, corner, resolution, np.array(cutout))
+
+          elif cutout != None or h5xyzoffset != None:
+            #TODO this is a loggable error
+            pass
+
+          # Commit if there is no error
+          db.commit()
+
+          # Here with no error is successful
+          done = True
+
+        # rollback if you catch an error
+        except MySQLdb.OperationalError, e:
+          logger.warning ("Transaction did not complete. %s" % (e))
+          tries += 1
+          db.rollback()
+          continue
+        except MySQLdb.Error, e:
+          logger.warning ("Put transaction rollback. %s" % (e))
+          db.rollback()
+          raise
+        except Exception, e:
+          logger.exception ("Put transaction rollback. Unknown error. %s" % (e))
+          db.rollback()
+
   finally:
     h5f.close()
     tmpfile.close()
 
-  # Commit if there is no error
-  db.commit()
 
   retstr = ','.join(map(str, retvals))
 

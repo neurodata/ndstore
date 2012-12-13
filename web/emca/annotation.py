@@ -47,6 +47,10 @@ class Annotation:
     self.author = ""
     self.kvpairs = defaultdict(list)
 
+  def setID ( self, db ):
+    """if annid == 0, create a new identifier"""
+    if self.annid == 0: 
+      self.annid = db.nextID()
 
   def store ( self, annodb, annotype=ANNO_ANNOTATION ):
     """Store the annotation to the annotations database"""
@@ -867,13 +871,8 @@ def getAnnotation ( annid, annodb ):
 def putAnnotation ( anno, annodb, options ): 
   """Return an annotation object by identifier"""
 
-  # if annid == 0, create a new identifier
-  if anno.annid == 0: 
-    anno.annid = annodb.nextID()
-    anno.store(annodb) 
-
   # for updates, make sure the annotation exists and is of the right type
-  elif  'update' in options:
+  if  'update' in options:
     oldanno = getAnnotation ( anno.annid, annodb )
 
     # can't update annotations that don't exist
@@ -896,7 +895,6 @@ def putAnnotation ( anno, annodb, options ):
 
   # Write the user chosen annotation id
   else:
-    annodb.setID(anno.annid)
     anno.store(annodb)
  
 
