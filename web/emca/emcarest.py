@@ -987,7 +987,8 @@ def putAnnotation ( webargs, postdata ):
       anno = h5ann.H5toAnnotation ( k, idgrp )
 
       # set the identifier (separate transaction)
-      anno.setID ( db )
+      if not ('update' in options or 'dataonly' in options):
+        anno.setID ( db )
 
       tries = 0 
       done = False

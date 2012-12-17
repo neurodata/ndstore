@@ -51,7 +51,6 @@ class EMCADB:
     except MySQLdb.Error, e:
       self.conn = None
       logger.error("Failed to connect to database: %s, %s" % (self.annoproj.getDBHost(), self.annoproj.getDBName()))
-      #raise ANNError ( "Failed to connect to database: %s, %s" % (self.annoproj.getDBHost(), self.annoproj.getDBName()))
       raise
 
     self.cursor = self.conn.cursor()
@@ -96,7 +95,6 @@ class EMCADB:
       self.cursor.execute ( sql )
     except MySQLdb.Error, e:
       logger.warning ("Problem retrieving identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      #raise ANNError ( "Problem retrieving annotation identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise
 
     # Here we've queried the highest id successfully    
@@ -128,7 +126,6 @@ class EMCADB:
         self.cursor.execute ( sql )
       except MySQLdb.Error, e:
         logger.error ( "Failed to create annotation identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        #raise ANNError ( "Failed to create annotation identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         raise
 
       # Here we've queried the highest id successfully    
@@ -145,7 +142,6 @@ class EMCADB:
         self.cursor.execute ( sql )
       except MySQLdb.Error, e:
         logger.error ( "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        #raise ANNError ( "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         raise
 
     finally:
@@ -171,16 +167,16 @@ class EMCADB:
       self.cursor.execute ( sql )
     except MySQLdb.Error, e:
       logger.warning ( "Failed to set identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      #raise ANNError ( "Failed to set identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise
 
+    self.commit()
     return annoid
 
 
   #
   # getCube
   #
-  def getCube ( self, key, resolution ):
+  def getCube ( self, key, resolution, update=False ):
     """Load a cube from the annotation database"""
 
     # get the size of the image and cube
@@ -190,13 +186,14 @@ class EMCADB:
     cube = anncube.AnnotateCube ( cubedim )
 
     # get the block from the database
-    sql = "SELECT cube FROM " + self.annoproj.getTable(resolution) + " WHERE zindex = " + str(key) + " FOR UPDATE"
+    sql = "SELECT cube FROM " + self.annoproj.getTable(resolution) + " WHERE zindex = " + str(key) 
+    if update==True:
+          sql += " FOR UPDATE"
 
     try:
       self.cursor.execute ( sql )
     except MySQLdb.Error, e:
       logger.error ( "Failed to retrieve data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      #raise ANNError ( "Failed to retrieve data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise
 
     row = self.cursor.fetchone()
@@ -230,7 +227,6 @@ class EMCADB:
         self.cursor.execute ( sql, (key,npz))
       except MySQLdb.Error, e:
         logger.error ( "Error inserting cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        #raise ANNError ( "Error inserting cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         raise
 
     else:
@@ -240,7 +236,6 @@ class EMCADB:
         self.cursor.execute ( sql, (npz))
       except MySQLdb.Error, e:
         logger.error ( "Error updating data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        #raise ANNError ( "Error updating data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         raise
 
 
@@ -263,7 +258,6 @@ class EMCADB:
       self._qr_cursor.execute ( sql )
     except MySQLdb.Error, e:
       logger.error ( "Failed to retrieve data cube : %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      #raise ANNError ( "Failed to retrieve data cube : %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise
 
   
@@ -304,7 +298,6 @@ class EMCADB:
       self.cursor.execute ( sql )
     except MySQLdb.Error, e:
       logger.error ( "Error reading exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      #raise ANNError ( "Error reading exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise
 
     row = self.cursor.fetchone()
@@ -328,7 +321,6 @@ class EMCADB:
       self.cursor.execute ( sql )
     except MySQLdb.Error, e:
       logger.error ( "Error reading exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      #raise ANNError ( "Error reading exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise
 
     row = cursor.fetchall()
@@ -359,7 +351,6 @@ class EMCADB:
         self.cursor.execute ( sql, (key, entityid, zlib.compress(fileobj.getvalue())))
       except MySQLdb.Error, e:
         logger.error ( "Error inserting exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        #raise ANNError ( "Error inserting exceptions: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         raise
 
     # In this case we have an update query
@@ -377,7 +368,6 @@ class EMCADB:
         self.cursor.execute ( sql, (zlib.compress(fileobj.getvalue()),key,entityid))
       except MySQLdb.Error, e:
         logger.error ( "Error updating exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        #raise ANNError ( "Error updating exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         raise
 
   #
@@ -404,7 +394,6 @@ class EMCADB:
         self.cursor.execute ( sql, (zlib.compress(fileobj.getvalue()),key,entityid))
       except MySQLdb.Error, e:
         logger.error("Error removing exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        #raise ANNError ("Error removing exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         raise
 
   #
@@ -443,7 +432,7 @@ class EMCADB:
       #  and the morton key
       key = cubelocs[listoffsets[i],0]
 
-      cube = self.getCube ( key, resolution )
+      cube = self.getCube ( key, resolution, True )
 
       # get a voxel offset for the cube
       cubeoff = zindex.MortonXYZ(key)
@@ -498,7 +487,7 @@ class EMCADB:
       #  and the morton key
       key = cubelocs[listoffsets[i],0]
 
-      cube = self.getCube ( key, resolution )
+      cube = self.getCube ( key, resolution, True )
 
       # get a voxel offset for the cube
       cubeoff = zindex.MortonXYZ(key)
@@ -560,7 +549,7 @@ class EMCADB:
         for x in range(xnumcubes):
 
           key = zindex.XYZMorton ([x+xstart,y+ystart,z+zstart])
-          cube = self.getCube ( key, resolution )
+          cube = self.getCube ( key, resolution, True )
 
           if conflictopt == 'O':
             cube.overwrite ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
@@ -644,7 +633,7 @@ class EMCADB:
         for x in range(xnumcubes):
 
           key = zindex.XYZMorton ([x+xstart,y+ystart,z+zstart])
-          cube = self.getCube ( key, resolution )
+          cube = self.getCube ( key, resolution, True )
 
           exdata = cube.shaveDense ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
           for exid in np.unique ( exdata ):
@@ -819,7 +808,6 @@ class EMCADB:
       self.cursor.execute ( sql )
     except MySQLdb.Error, e:
       logger.warning ( "Error reading annotation data: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      #raise ANNError ( "Error reading annotation data: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise
 
     row=self.cursor.fetchone()
@@ -991,11 +979,11 @@ class EMCADB:
     for res in resolutions:
     
     #get the cubes that contain the annotation
-      zidxs = self.annoIdx.getIndex(annoid,res)
+      zidxs = self.annoIdx.getIndex(annoid,res,True)
       
     #Delete annotation data
       for key in zidxs:
-        cube = self.getCube ( key, res)
+        cube = self.getCube ( key, res, True )
         vec_func = np.vectorize ( lambda x: 0 if x == annoid else x )
         cube.data = vec_func ( cube.data )
         self.putCube ( key, res, cube)
@@ -1040,7 +1028,6 @@ class EMCADB:
       self.cursor.execute ( sql )
     except MySQLdb.Error, e:
       logger.error ( "Error retrieving ids: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      #raise ANNError ( "Error retrieving ids: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise
 
     annoids = np.array ( self.cursor.fetchall(), dtype=np.uint32 ).flatten()

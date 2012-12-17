@@ -51,11 +51,15 @@ class Annotation:
     """if annid == 0, create a new identifier"""
     if self.annid == 0: 
       self.annid = db.nextID()
+    else:
+      db.setID(self.annid)
 
   def store ( self, annodb, annotype=ANNO_ANNOTATION ):
     """Store the annotation to the annotations database"""
 
     cursor = annodb.conn.cursor()
+
+    print "Inserting annotation id", self.annid
 
     sql = "INSERT INTO %s VALUES ( %s, %s, %s, %s )"\
             % ( anno_dbtables['annotation'], self.annid, annotype, self.confidence, self.status )

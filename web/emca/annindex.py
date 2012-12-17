@@ -32,11 +32,13 @@ class AnnotateIndex:
    #
    # getIndex -- Retrieve the index for the annotation with id
    #
-   def getIndex ( self, entityid, resolution ):
+   def getIndex ( self, entityid, resolution, update=False ):
 
       #get the block from the database                                            
       sql = "SELECT cube FROM " + self.proj.getIdxTable(resolution) + " WHERE annid\
- = " + str(entityid) + " FOR UPDATE"
+ = " + str(entityid) 
+      if update==True:
+         sql += " FOR UPDATE"
       try:
          self.cursor.execute ( sql )
       except MySQLdb.Error, e:
@@ -65,7 +67,7 @@ class AnnotateIndex:
          cubelist = list(value)
          cubeindex=np.array(cubelist)
          
-         curindex = self.getIndex(key,resolution)
+         curindex = self.getIndex(key,resolution,True)
          
          if curindex==[]:
             sql = "INSERT INTO " +  self.proj.getIdxTable(resolution)  +  "( annid, cube) VALUES ( %s, %s)"
@@ -81,11 +83,6 @@ class AnnotateIndex:
                logger.exception("Unknown error")
                raise
             
-            # Almost certainly introduced this bug again.  Works on devel. machine.  Test on rio.
-            #RBTODO why this commit for NPZ?  does it work without for RAmon
-#            self.conn.commit()
-
-
          else:
              #Update index to the union of the currentIndex and the updated index
             newIndex=np.union1d(curindex,cubeindex)
@@ -104,9 +101,6 @@ class AnnotateIndex:
               logger.exception("Unknown exception")
               raise
 
-            #RBTODO why this commit for NPZ?  does it work without for RAmon
-#            self.conn.commit()
-               
    #
    #deleteIndex:
    #   Delete the index for a given annotation id
