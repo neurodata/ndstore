@@ -530,6 +530,7 @@ def selectPost ( webargs, dbcfg, proj, postdata ):
     except Exception, e:
       logger.exception ("POST transaction rollback. Unknown error. %s" % (e))
       db.rollback()
+      raise
 
   return str(entityid)
 
@@ -987,7 +988,7 @@ def putAnnotation ( webargs, postdata ):
       anno = h5ann.H5toAnnotation ( k, idgrp )
 
       # set the identifier (separate transaction)
-      if not ('update' in options or 'dataonly' in options):
+      if not ('update' in options or 'dataonly' in options or 'reduce' in options):
         anno.setID ( db )
 
       tries = 0 
@@ -1007,11 +1008,10 @@ def putAnnotation ( webargs, postdata ):
             logger.warning ("Illegal combination of options. Cannot use udpate and dataonly together")
             raise ANNError ("Illegal combination of options. Cannot use udpate and dataonly together")
 
-          elif not 'dataonly' in options:
+          elif not 'dataonly' in options and not 'reduce' in options:
 
             # Put into the database
             db.putAnnotation ( anno, options )
-
             retvals.append(anno.annid)
 
           # Is a resolution specified?  or use default
