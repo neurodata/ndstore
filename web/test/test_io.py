@@ -367,10 +367,10 @@ class TestRW:
     # variables for all tests
     # read
     rp.token = "unittest_rw"
-    rp.baseurl = "localhost:8000"
+    rp.baseurl = "openconnecto.me"
     # write
     wp.token = "unittest_rw"
-    wp.baseurl = "localhost:8000"
+    wp.baseurl = "openconnecto.me"
 
     # upload voxels (anonymous id)
     wp.numobjects = 1
@@ -421,10 +421,10 @@ class TestRW:
     # variables for all tests
     # read
     rp.token = "unittest_rw"
-    rp.baseurl = "localhost:8000"
+    rp.baseurl = "openconnecto.me"
     # write
     wp.token = "unittest_rw"
-    wp.baseurl = "localhost:8000"
+    wp.baseurl = "openconnecto.me"
 
     # upload voxels (anonymous id)
     wp.numobjects = 1
@@ -501,10 +501,10 @@ class TestRW:
 
     # read
     rp.token = "unittest_rw"
-    rp.baseurl = "localhost:8000"
+    rp.baseurl = "openconnecto.me"
     # write
     wp.token = "unittest_rw"
-    wp.baseurl = "localhost:8000"
+    wp.baseurl = "openconnecto.me"
 
     # Create an annotation
     wp.numobjects = 1
@@ -543,10 +543,10 @@ class TestRW:
 
     # read
     rp.token = "unittest_rw"
-    rp.baseurl = "localhost:8000"
+    rp.baseurl = "openconnecto.me"
     # write
     wp.token = "unittest_rw"
-    wp.baseurl = "localhost:8000"
+    wp.baseurl = "openconnecto.me"
 
     # Create an annotation
     wp.numobjects = 1
