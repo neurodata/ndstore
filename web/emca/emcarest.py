@@ -395,7 +395,7 @@ def listIds ( imageargs, dbcfg, proj ):
 #  data set and a service.
 #
 def selectService ( webargs, dbcfg, proj ):
-  """Parse the first arg and call service, HDF5, mpz, etc."""
+  """Parse the first arg and call service, HDF5, npz, etc."""
 
   [ service, sym, rangeargs ] = webargs.partition ('/')
 
