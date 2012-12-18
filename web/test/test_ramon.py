@@ -414,13 +414,13 @@ class TestRamon:
       putid2 = int(response.read())
 
       # retrieve both annotations
-      url = "http://%s/emca/%s/%s/" % ( 'localhost:8000', 'unittest', str(putid1))
+      url = "http://%s/emca/%s/%s/" % ( SITE_URL, 'unittest', str(putid1))
       f = urllib2.urlopen ( url )
       getid1 = self.getH5id ( f )
    
       assert ( getid1 == putid1 )
 
-      url = "http://%s/emca/%s/%s/" % ( 'localhost:8000', 'unittest', str(putid2))
+      url = "http://%s/emca/%s/%s/" % ( SITE_URL, 'unittest', str(putid2))
       req = urllib2.Request ( url )
       f = urllib2.urlopen ( url )
       getid2 = self.getH5id ( f )
