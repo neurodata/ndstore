@@ -6,7 +6,6 @@ import argparse
 import cStringIO
 import sys
 
-
 def main():
 
   parser = argparse.ArgumentParser(description='Cutout a portion of the database.')

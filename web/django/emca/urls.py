@@ -19,6 +19,8 @@ urlpatterns = patterns('emca.views',
   url(r'(?P<webargs>^\w+/(npvoxels|npdense)/[\w,/]+)$', 'annopost'),
   # csv metadata read
   url(r'(?P<webargs>^\w+/(csv)[\d+/]?[\w,/]*)$', 'csv'),
+  # multi-channel false color 
+  url(r'(?P<webargs>^\w+/mcfc/[\w,/]+)$', 'mcFalseColor'),
   # HDF5 interfaces
   url(r'(?P<webargs>^\w+/[\d+/]?[\w,/]*)$', 'annotation'),
 )

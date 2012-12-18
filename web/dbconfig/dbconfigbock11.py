@@ -3,7 +3,6 @@
 #
 
 import dbconfig
-import bock11private
 
 class dbConfigBock11 ( dbconfig.dbConfig ):
 
@@ -53,13 +52,5 @@ class dbConfigBock11 ( dbconfig.dbConfig ):
              1: 10.0/2.0,\
              0: 10.0 }
 
-
-  #database parameters
-  tablebase = bock11private.tablebase
-  dbuser = bock11private.dbuser
-  dbpasswd = bock11private.dbpasswd
-  dbname = bock11private.dbname
-  dbhost = bock11private.dbhost
-  inputprefix = bock11private.inputprefix
 
 # end dbconfigbock11

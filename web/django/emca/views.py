@@ -12,6 +12,10 @@ import dbconfig
 # Errors we are going to catch
 from emcaerror import ANNError
 
+import logging
+logger=logging.getLogger("emca")
+
+
 def emcaget (request, webargs):
   """Restful URL for all read services to annotation projects"""
 
@@ -37,9 +41,13 @@ def emcaget (request, webargs):
     elif service=='ids':
       return django.http.HttpResponse(emcarest.emcaget(webargs))
     else:
+      logger.warning ("HTTP Bad request. Could not find service %s" % dataset )
       return django.http.HttpResponseBadRequest ("Could not find service %s" % dataset )
   except (ANNError,MySQLdb.Error), e:
     return django.http.HttpResponseNotFound(e.value)
+  except:
+    logger.exception("Unknown exception in emcaget.")
+    raise
 
 @cache_control(no_cache=True)
 def annopost (request, webargs):
@@ -50,6 +58,9 @@ def annopost (request, webargs):
     return django.http.HttpResponse(emcarest.annopost(webargs,request.body))
   except ANNError, e:
     return django.http.HttpResponseNotFound(e.value)
+  except:
+    logger.exception("Unknown exception in annopost.")
+    raise
 
 @cache_control(no_cache=True)
 def annotation (request, webargs):
@@ -68,6 +79,9 @@ def annotation (request, webargs):
       return django.http.HttpResponseNotFound(e.value)
     else: 
       return django.http.HttpResponseNotFound(e)
+  except:
+    logger.exception("Unknown exception in annotation.")
+    raise
 
 
 @cache_control(no_cache=True)
@@ -82,6 +96,9 @@ def csv (request, webargs):
       return django.http.HttpResponseNotFound(e.value)
     else: 
       return django.http.HttpResponseNotFound(e)
+  except:
+    logger.exception("Unknown exception in csv.")
+    raise
       
 @cache_control(no_cache=True)
 def getObjects ( request, webargs ):
@@ -95,6 +112,9 @@ def getObjects ( request, webargs ):
     
   except ANNError, e:
     return django.http.HttpResponseNotFound(e.value)
+  except:
+    logger.exception("Unknown exception in getObjects.")
+    raise
 
 @cache_control(no_cache=True)
 def listObjects ( request, webargs ):
@@ -108,6 +128,9 @@ def listObjects ( request, webargs ):
     
   except ANNError, e:
     return django.http.HttpResponseNotFound(e.value)
+  except:
+    logger.exception("Unknown exception in listObjects.")
+    raise
 
 
 def catmaid (request, webargs):
@@ -121,10 +144,32 @@ def catmaid (request, webargs):
     fobj.seek(0)
     return django.http.HttpResponse(fobj.read(), mimetype="image/png")
 
-  except Exception, e:
+  except ANNError, e:
     return django.http.HttpResponseNotFound(e)
+  except:
+    logger.exception("Unknown exception in annopost.")
+    raise
+
 
 def projinfo (request, webargs):
   """Return project and dataset configuration information"""
 
-  return django.http.HttpResponse(emcarest.projInfo(webargs), mimetype="product/hdf5" )
+  try:  
+    return django.http.HttpResponse(emcarest.projInfo(webargs), mimetype="product/hdf5" )
+  except ANNError, e:
+    return django.http.HttpResponseNotFound(e)
+  except:
+    logger.exception("Unknown exception in projInfo.")
+    raise
+
+
+def mcFalseColor (request, webargs):
+  """Cutout of multiple channels with false color rendering"""
+
+  try:
+    return django.http.HttpResponse(emcarest.mcFalseColor(webargs), mimetype="image/png" )
+  except ANNError, e:
+    return django.http.HttpResponseNotFound(e)
+  except:
+    logger.exception("Unknown exception in mcFalseColor.")
+    raise

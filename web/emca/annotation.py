@@ -6,7 +6,9 @@ from collections import defaultdict
 
 from emcaerror import ANNError 
 
-from pprint import pprint
+import logging
+logger=logging.getLogger("emca")
+
 
 """Classes that hold annotation metadata"""
 
@@ -45,11 +47,19 @@ class Annotation:
     self.author = ""
     self.kvpairs = defaultdict(list)
 
+  def setID ( self, db ):
+    """if annid == 0, create a new identifier"""
+    if self.annid == 0: 
+      self.annid = db.nextID()
+    else:
+      db.setID(self.annid)
 
   def store ( self, annodb, annotype=ANNO_ANNOTATION ):
     """Store the annotation to the annotations database"""
 
     cursor = annodb.conn.cursor()
+
+    print "Inserting annotation id", self.annid
 
     sql = "INSERT INTO %s VALUES ( %s, %s, %s, %s )"\
             % ( anno_dbtables['annotation'], self.annid, annotype, self.confidence, self.status )
@@ -57,7 +67,7 @@ class Annotation:
     try:
       cursor.execute(sql)
     except MySQLdb.Error, e:
-      print "Error inserting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      logger.warning ( "Error inserting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise ANNError ( "Error inserting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # author: make a KV pair
@@ -75,7 +85,7 @@ class Annotation:
       try:
         cursor.execute(sql)
       except MySQLdb.Error, e:
-        print "Error inserting kvpairs %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+        logger.warning ( "Error inserting kvpairs %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         raise ANNError ( "Error inserting kvpairs: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     cursor.close()
@@ -98,7 +108,7 @@ class Annotation:
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Error updating annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      logger.warning ( "Error updating annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise ANNError ( "Error updating annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # Make the author field a kvpair
@@ -110,7 +120,7 @@ class Annotation:
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Error retrieving kvpairs %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      logger.warning ( "Error retrieving kvpairs %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise ANNError ( "Error retrieving kvpairs: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     kvresult = cursor.fetchall()
@@ -140,7 +150,7 @@ class Annotation:
       try:
         cursor.execute ( sql )
       except MySQLdb.Error, e:
-        print "Error inserting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+        logger.warning ( "Error inserting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         raise ANNError ( "Error inserting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     cursor.close()
@@ -159,7 +169,7 @@ class Annotation:
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Error deleting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      logger.warning ( "Error deleting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise ANNError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     cursor.close()
@@ -175,7 +185,7 @@ class Annotation:
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Error retrieving annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      logger.warning ( "Error retrieving annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise ANNError ( "Error retrieving annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     ( self.annid, annotype, self.confidence, self.status ) = cursor.fetchone()
@@ -185,7 +195,7 @@ class Annotation:
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Error retrieving kvpairs %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      logger.warning ( "Error retrieving kvpairs %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise ANNError ( "Error retrieving kvpairs: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     kvpairs = cursor.fetchall()
@@ -232,7 +242,7 @@ class AnnSynapse (Annotation):
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Error inserting synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      logger.warning ( "Error inserting synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise ANNError ( "Error inserting synapse: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # synapse_seeds: pack into a kv pair
@@ -266,7 +276,7 @@ class AnnSynapse (Annotation):
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Error updating synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      logger.warning ( "Error updating synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise ANNError ( "Error updating synapse: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # synapse_seeds: pack into a kv pair
@@ -306,7 +316,7 @@ class AnnSynapse (Annotation):
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Error retrieving synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      logger.warning ( "Error retrieving synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise ANNError ( "Error retrieving synapse: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     ( self.synapse_type, self.weight ) = cursor.fetchone()
@@ -337,7 +347,7 @@ class AnnSynapse (Annotation):
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Error deleting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      logger.warning ( "Error deleting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise ANNError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     cursor.close()
@@ -379,7 +389,7 @@ class AnnSeed (Annotation):
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Error inserting seed %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      logger.warning ( "Error inserting seed %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise ANNError ( "Error inserting seed : %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # and call store on the base classs
@@ -402,7 +412,7 @@ class AnnSeed (Annotation):
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Error inserting seed %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      logger.warning ( "Error inserting seed %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise ANNError ( "Error inserting seed: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     cursor.close()
@@ -424,7 +434,7 @@ class AnnSeed (Annotation):
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Error retrieving seed %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      logger.warning ( "Error retrieving seed %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise ANNError ( "Error retrieving seed: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # need to initialize position to prevent index error
@@ -447,7 +457,7 @@ class AnnSeed (Annotation):
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Error deleting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      logger.warning ( "Error deleting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise ANNError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     cursor.close()
@@ -485,7 +495,7 @@ class AnnSegment (Annotation):
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Error inserting segment %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      logger.warning ( "Error inserting segment %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise ANNError ( "Error inserting segment: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # synapses: pack into a kv pair
@@ -515,7 +525,7 @@ class AnnSegment (Annotation):
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Error updating segment %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      logger.warning ( "Error updating segment %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise ANNError ( "Error updating segment: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # synapses: pack into a kv pair
@@ -551,7 +561,7 @@ class AnnSegment (Annotation):
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Error retrieving synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      logger.warning ( "Error retrieving synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise ANNError ( "Error retrieving segment: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     ( self.segmentclass, self.parentseed, self.neuron ) = cursor.fetchone()
@@ -580,7 +590,7 @@ class AnnSegment (Annotation):
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Error deleting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      logger.warning ( "Error deleting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise ANNError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     cursor.close()
@@ -656,7 +666,7 @@ class AnnNeuron (Annotation):
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Error deleting synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      logger.warning ( "Error deleting synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise ANNError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     cursor.close()
@@ -699,7 +709,7 @@ class AnnOrganelle (Annotation):
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Error inserting organelle %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      logger.warning ( "Error inserting organelle %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise ANNError ( "Error inserting organelle: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # seeds: pack into a kv pair
@@ -729,7 +739,7 @@ class AnnOrganelle (Annotation):
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Error updating organelle %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      logger.warning ( "Error updating organelle %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise ANNError ( "Error updating organelle: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # seeds: pack into a kv pair
@@ -760,7 +770,7 @@ class AnnOrganelle (Annotation):
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Error retrieving organelle %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      logger.warning ( "Error retrieving organelle %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise ANNError ( "Error retrieving organelle: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     ( self.organelleclass, self.parentseed, self.centroid[0], self.centroid[1], self.centroid[2] ) = cursor.fetchone()
@@ -785,7 +795,7 @@ class AnnOrganelle (Annotation):
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      print "Error deleting organelle %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+      logger.warning ( "Error deleting organelle %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise ANNError ( "Error deleting organelle: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     cursor.close()
@@ -814,7 +824,7 @@ def getAnnotation ( annid, annodb ):
   try:
     cursor.execute ( sql )
   except MySQLdb.Error, e:
-    print "Error reading id %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+    logger.warning ( "Error reading id %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
     raise ANNError ( "Error reading id: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
   
   sqlresult = cursor.fetchone()
@@ -865,13 +875,8 @@ def getAnnotation ( annid, annodb ):
 def putAnnotation ( anno, annodb, options ): 
   """Return an annotation object by identifier"""
 
-  # if annid == 0, create a new identifier
-  if anno.annid == 0 or anno.annid == None:
-    anno.annid = annodb.nextID()
-    anno.store(annodb) 
-
   # for updates, make sure the annotation exists and is of the right type
-  elif  'update' in options:
+  if  'update' in options:
     oldanno = getAnnotation ( anno.annid, annodb )
 
     # can't update annotations that don't exist
@@ -894,7 +899,6 @@ def putAnnotation ( anno, annodb, options ):
 
   # Write the user chosen annotation id
   else:
-    annodb.setID(anno.annid)
     anno.store(annodb)
  
 

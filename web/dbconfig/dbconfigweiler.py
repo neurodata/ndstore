@@ -3,7 +3,6 @@
 #
 
 import dbconfig
-import weilerprivate
 
 class dbConfigWeiler ( dbconfig.dbConfig ):
 
@@ -32,13 +31,5 @@ class dbConfigWeiler ( dbconfig.dbConfig ):
   # Resize factor to eliminate distortion
   zscale = { 0: 1.0 }\
 
-
-  #database parameters
-  tablebase = weilerprivate.tablebase
-  dbuser = weilerprivate.dbuser
-  dbpasswd = weilerprivate.dbpasswd
-  dbname = weilerprivate.dbname
-  dbhost = weilerprivate.dbhost
-  inputprefix = weilerprivate.inputprefix
 
 # end dbconfigweiler

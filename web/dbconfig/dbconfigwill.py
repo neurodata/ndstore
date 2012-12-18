@@ -3,7 +3,6 @@
 #
 
 import dbconfig
-import willprivate
 
 class dbConfigWill ( dbconfig.dbConfig ):
 
@@ -22,13 +21,5 @@ class dbConfigWill ( dbconfig.dbConfig ):
 
   # Resize factor to eliminate distortion
   zscale = { 5: 1.0 }
-
-  #database parameters
-  tablebase = willprivate.tablebase
-  dbuser = willprivate.dbuser
-  dbpasswd = willprivate.dbpasswd
-  dbname = willprivate.dbname
-  dbhost = willprivate.dbhost
-  inputprefix = willprivate.inputprefix
 
 

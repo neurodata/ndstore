@@ -6,6 +6,7 @@ import h5py
 import csv
 import cStringIO
 import collections
+import re
 
 import sys
 
@@ -14,7 +15,8 @@ import annotation
 
 from emcaerror import ANNError
 
-from pprint import pprint
+import logging
+logger=logging.getLogger("emca")
 
 #
 #  class to define the HDF5 format of annotations.
@@ -115,12 +117,8 @@ class H5Annotation:
 
 ############## Converting HDF5 to Annotations
 
-def H5toAnnotation ( h5fh ):
+def H5toAnnotation ( key, idgrp ):
   """Return an annotation constructed from the contents of this HDF5 file"""
-
-  # assume a single annotation for now
-  keys = h5fh.keys()
-  idgrp = h5fh.get(keys[0])
 
   # get the annotation type
   if idgrp.get('ANNOTATION_TYPE'):
@@ -218,10 +216,14 @@ def H5toAnnotation ( h5fh ):
     anno = annotation.Annotation()
 
   else:
+    logger.warning ("Dont support this annotation type yet. Type = %s" % annotype)
     raise ANNError ("Dont support this annotation type yet. Type = %s" % annotype)
 
   # now load the annotation common fields
-  anno.annid = int(keys[0])
+  if re.match("^\d+$", key):
+    anno.annid = int(key)
+  else:
+    anno.annid = 0
 
   if mdgrp:
     # now load the metadata common fields
@@ -240,6 +242,8 @@ def H5toAnnotation ( h5fh ):
         anno.kvpairs[r[0]] = r[1] 
 
   return anno
+
+# Need to convert the rest of this to multiple key
 
 def H5GetVoxels ( h5fh ):
   """Return the voxel data associated with the annotation"""
@@ -264,6 +268,7 @@ def H5GetVolume ( h5fh ):
     if idgrp.get('CUTOUT'):
       return (idgrp['XYZOFFSET'], idgrp['CUTOUT'])
     else:
+      logger.warning("Improperly formatted HDF5 file.  XYZOFFSET define but no CUTOUT.")
       raise ANNError("Improperly formatted HDF5 file.  XYZOFFSET define but no CUTOUT.")
   else:
     return None
@@ -398,6 +403,7 @@ def AnnotationtoH5 ( anno, h5fh ):
   elif anno.__class__ == annotation.Annotation:
     return BasetoH5 ( anno, annotation.ANNO_ANNOTATION, h5fh )
   else:
+    logger.warning ("(AnnotationtoH5) Does not support this annotation type yet. Type = %s" % anno.__class__)
     raise ANNError ("(AnnotationtoH5) Does not support this annotation type yet. Type = %s" % anno.__class__)
 
 

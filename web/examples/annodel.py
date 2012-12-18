@@ -12,7 +12,7 @@ def main():
   parser = argparse.ArgumentParser(description='Fetch an annotation as an HDF5 file')
   parser.add_argument('baseurl', action="store")
   parser.add_argument('token', action="store")
-  parser.add_argument('annid', action="store", type=int, help='Annotation ID to delete')
+  parser.add_argument('annids', action="store", help='Comma separated list of annotation IDs to delete')
 
   result = parser.parse_args()
 
@@ -20,7 +20,7 @@ def main():
   try:
     import httplib
     conn = httplib.HTTPConnection ( "%s" % ( result.baseurl ))
-    conn.request ( 'DELETE', '/emca/%s/%s/' % ( result.token, result.annid ))
+    conn.request ( 'DELETE', '/emca/%s/%s/' % ( result.token, result.annids ))
     resp = conn.getresponse()
     content=resp.read()
   except httplib.HTTPException, e:

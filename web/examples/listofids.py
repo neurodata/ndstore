@@ -76,7 +76,8 @@ def main():
 
   if h5f.get('ANNOIDS'): 
     if len(h5f['ANNOIDS']) != 0:
-      print "Matching annotations at %s" % ( np.array(h5f['ANNOIDS'][:]) )
+      print "Found %s matching annotations." % ( len(h5f['ANNOIDS'][:]))
+      print "values = %s" % ( np.array(h5f['ANNOIDS'][:]) )
   else:
     print "Found no annotations matching type and status"
 

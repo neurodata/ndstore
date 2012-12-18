@@ -6,8 +6,10 @@ import zlib
 import h5py
 import os
 import cStringIO
+import csv
 import re
 from PIL import Image
+import MySQLdb
 
 import empaths
 import restargs
@@ -18,13 +20,14 @@ import emcaproj
 import h5ann
 import annotation
 
-from ann_cy import assignVoxels_cy
-from ann_cy import recolor_cy
+from emca_cy import assignVoxels_cy
+from emca_cy import recolor_cy
 
 from emcaerror import ANNError
-from pprint import pprint
 
-from time import time
+import logging
+logger=logging.getLogger("emca")
+
 
 #
 #  emcarest: RESTful interface to annotations and cutouts
@@ -392,7 +395,7 @@ def listIds ( imageargs, dbcfg, proj ):
 #  data set and a service.
 #
 def selectService ( webargs, dbcfg, proj ):
-  """Parse the first arg and call service, HDF5, mpz, etc."""
+  """Parse the first arg and call service, HDF5, npz, etc."""
 
   [ service, sym, rangeargs ] = webargs.partition ('/')
 
@@ -439,6 +442,7 @@ def selectService ( webargs, dbcfg, proj ):
 #    return yzTiff ( rangeargs, dbcfg, proj )
 
   else:
+    logger.warning("An illegal Web GET service was requested %s.  Args %s" % ( service, webargs ))
     raise ANNError ("No such Web service: %s" % service )
 
 
@@ -459,53 +463,74 @@ def selectPost ( webargs, dbcfg, proj, postdata ):
   # Perform argument processing
 
   # Bind the annotation database
-  annoDB = emcadb.EMCADB ( dbcfg, proj )
+  db = emcadb.EMCADB ( dbcfg, proj )
+  db.startTxn()
 
-  try:
+  tries = 0
+  done = False
 
-    if service == 'npvoxels':
+  while not done and tries < 5:
 
-      #  get the resolution
-      [ entity, resolution, conflictargs ] = postargs.split('/', 2)
+    try:
 
-      # Grab the voxel list
-      fileobj = cStringIO.StringIO ( postdata )
-      voxlist =  np.load ( fileobj )
+      if service == 'npvoxels':
 
-      conflictopt = restargs.conflictOption ( conflictargs )
-      entityid = annoDB.annotate ( int(entity), int(resolution), voxlist, conflictopt )
+        #  get the resolution
+        [ entity, resolution, conflictargs ] = postargs.split('/', 2)
 
-    elif service == 'npdense':
+        # Grab the voxel list
+        fileobj = cStringIO.StringIO ( postdata )
+        voxlist =  np.load ( fileobj )
 
-      # Process the arguments
-      args = restargs.BrainRestArgs ();
-      args.cutoutArgs ( postargs, dbcfg )
+        conflictopt = restargs.conflictOption ( conflictargs )
+        entityid = db.annotate ( int(entity), int(resolution), voxlist, conflictopt )
 
-      corner = args.getCorner()
-      resolution = args.getResolution()
+      elif service == 'npdense':
 
-      # This is used for ingest only now.  So, overwrite conflict option.
-      conflictopt = restargs.conflictOption ( "" )
+        # Process the arguments
+        args = restargs.BrainRestArgs ();
+        args.cutoutArgs ( postargs, dbcfg )
 
-      # get the data out of the compressed blob
-      rawdata = zlib.decompress ( postdata )
-      fileobj = cStringIO.StringIO ( rawdata )
-      voxarray = np.load ( fileobj )
+        corner = args.getCorner()
+        resolution = args.getResolution()
 
-      # Get the annotation database
-      db = emcadb.EMCADB ( dbcfg, proj )
+        # This is used for ingest only now.  So, overwrite conflict option.
+        conflictopt = restargs.conflictOption ( "" )
 
-      # Choose the verb, get the entity (as needed), and annotate
-      # Translates the values directly
-      entityid = db.annotateDense ( corner, resolution, voxarray, conflictopt )
+        # get the data out of the compressed blob
+        rawdata = zlib.decompress ( postdata )
+        fileobj = cStringIO.StringIO ( rawdata )
+        voxarray = np.load ( fileobj )
 
-    else:
-      raise AnnError ("No such Web service: %s" % service )
+        # Get the annotation database
+        db = emcadb.EMCADB ( dbcfg, proj )
 
-  except:
-    annoDB.rollback()
-    
-  annoDB.commit()
+        # Choose the verb, get the entity (as needed), and annotate
+        # Translates the values directly
+        entityid = db.annotateDense ( corner, resolution, voxarray, conflictopt )
+        db.conn.commit()
+
+      else:
+        logger.warning("An illegal Web POST service was requested: %s.  Args %s" % ( service, webargs ))
+        raise ANNError ("No such Web service: %s" % service )
+        
+      db.commit()
+      done=True
+
+    # rollback if you catch an error
+    except MySQLdb.OperationalError, e:
+      logger.warning ("Transaction did not complete. %s" % (e))
+      tries += 1
+      db.rollback()
+      continue
+    except MySQLdb.Error, e:
+      logger.warning ("POST transaction rollback. %s" % (e))
+      db.rollback()
+      raise
+    except Exception, e:
+      logger.exception ("POST transaction rollback. Unknown error. %s" % (e))
+      db.rollback()
+      raise
 
   return str(entityid)
 
@@ -638,6 +663,7 @@ def emcacatmaid ( webargs ):
           cutoutdata = cb.data.reshape([CM_TILESIZE,CM_TILESIZE])
 
     else:
+      logger.warning("No such cutout plane: %s.  Must be (xy|xz|yz)..  Args %s" % ( service, webargs ))
       raise ANNError ( "No such cutout plane: %s.  Must be (xy|xz|yz)." % plane )
 
   # Write the image to a readable stream
@@ -669,6 +695,7 @@ def getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution=None, corner=No
   # retrieve the annotation 
   anno = db.getAnnotation ( annoid )
   if anno == None:
+    logger.warning("No annotation found at identifier = %s" % (annoid))
     raise ANNError ("No annotation found at identifier = %s" % (annoid))
 
   # create the HDF5 object
@@ -676,6 +703,7 @@ def getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution=None, corner=No
 
   # only return data for annotation types that have data
   if anno.__class__ in [ annotation.AnnNeuron, annotation.AnnSeed ] and dataoption != AR_NODATA: 
+    logger.warning("No data associated with annotation type %s" % ( anno.__class__))
     raise ANNError ("No data associated with annotation type %s" % ( anno.__class__))
 
   # get the voxel data if requested
@@ -708,6 +736,7 @@ def getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution=None, corner=No
     #  if bbdim[0]*bbdim[1]*bbdim[2] >= 1024*1024*512:
 
       if bbdim[0]*bbdim[1]*bbdim[2] >= 1024*1024*256:
+        logger.warning ("Cutout region is inappropriately large.  Dimension: %s,%s,%s" % (bbdim[0],bbdim[1],bbdim[2]))
         raise ANNError ("Cutout region is inappropriately large.  Dimension: %s,%s,%s" % (bbdim[0],bbdim[1],bbdim[2]))
 
       # do a cutout and add the cutout to the HDF5 file
@@ -741,65 +770,66 @@ def getAnnotation ( webargs ):
   h5f = h5py.File ( tmpfile.name )
 
   # if the first argument is numeric.  it is an annoid
-  if re.match ( '^\d+$', args[0] ): 
+  if re.match ( '^[\d,]+$', args[0] ): 
 
-    annoid = int(args[0])
+    annoids = map(int, args[0].split(','))
 
-    # default is no data
-    if args[1] == '' or args[1] == 'nodata':
-      dataoption = AR_NODATA
-      getAnnoById ( annoid, h5f, db, dbcfg, dataoption )
+    for annoid in annoids: 
 
-    # if you want voxels you either requested the resolution id/voxels/resolution
-    #  or you get data from the default resolution
-    elif args[1] == 'voxels':
-      dataoption = AR_VOXELS
-      [resstr, sym, rest] = args[2].partition('/')
-      resolution = int(resstr) if resstr != '' else proj.getResolution()
+      # default is no data
+      if args[1] == '' or args[1] == 'nodata':
+        dataoption = AR_NODATA
+        getAnnoById ( annoid, h5f, db, dbcfg, dataoption )
 
-      getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution )
-
-    elif args[1] =='cutout':
-
-      # if there are no args or only resolution, it's a tight cutout request
-      if args[2] == '' or re.match('^\d+[\/]*$', args[2]):
-        dataoption = AR_TIGHTCUTOUT
+      # if you want voxels you either requested the resolution id/voxels/resolution
+      #  or you get data from the default resolution
+      elif args[1] == 'voxels':
+        dataoption = AR_VOXELS
         [resstr, sym, rest] = args[2].partition('/')
         resolution = int(resstr) if resstr != '' else proj.getResolution()
 
         getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution )
 
-      else:
-        dataoption = AR_CUTOUT
+      elif args[1] =='cutout':
 
-        # Perform argument processing
-        brargs = restargs.BrainRestArgs ();
-        try:
+        # if there are no args or only resolution, it's a tight cutout request
+        if args[2] == '' or re.match('^\d+[\/]*$', args[2]):
+          dataoption = AR_TIGHTCUTOUT
+          [resstr, sym, rest] = args[2].partition('/')
+          resolution = int(resstr) if resstr != '' else proj.getResolution()
+
+          getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution )
+
+        else:
+          dataoption = AR_CUTOUT
+
+          # Perform argument processing
+          brargs = restargs.BrainRestArgs ();
           brargs.cutoutArgs ( args[2], dbcfg )
-        except Exception as e:
-          raise ANNError ( "Cutout error: " + e.value )
 
-        # Extract the relevant values
-        corner = brargs.getCorner()
-        dim = brargs.getDim()
-        resolution = brargs.getResolution()
+          # Extract the relevant values
+          corner = brargs.getCorner()
+          dim = brargs.getDim()
+          resolution = brargs.getResolution()
 
-        getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution, corner, dim )
+          getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution, corner, dim )
 
-    elif args[1] == 'boundingbox':
+      elif args[1] == 'boundingbox':
 
-      dataoption = AR_BOUNDINGBOX
-      [resstr, sym, rest] = args[2].partition('/')
-      resolution = int(resstr) if resstr != '' else proj.getResolution()
-  
-      getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution )
+        dataoption = AR_BOUNDINGBOX
+        [resstr, sym, rest] = args[2].partition('/')
+        resolution = int(resstr) if resstr != '' else proj.getResolution()
+    
+        getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution )
 
-    else:
-      raise ANNError ("Fetch identifier %s.  Error: no such data option %s " % ( annoid, args[1] ))
+      else:
+        logger.warning ("Fetch identifier %s.  Error: no such data option %s " % ( annoid, args[1] ))
+        raise ANNError ("Fetch identifier %s.  Error: no such data option %s " % ( annoid, args[1] ))
 
   # the first argument is not numeric.  it is a service other than getAnnotation
   else:
-      raise ANNError ("Get interface %s requested.  Illegal or not implemented" % ( args[0] ))
+    logger.warning("Get interface %s requested.  Illegal or not implemented. Args: %s" % ( args[0], webargs ))
+    raise ANNError ("Get interface %s requested.  Illegal or not implemented" % ( args[0] ))
 
   h5f.flush()
   tmpfile.seek(0)
@@ -850,6 +880,7 @@ def getAnnotations ( webargs, postdata ):
 
   # IDENTIFIERS
   if not h5in.get('ANNOIDS'):
+    logger.warning ("Requesting multiple annotations.  But no HDF5 \'ANNOIDS\' field specified.") 
     raise ANNError ("Requesting multiple annotations.  But no HDF5 \'ANNOIDS\' field specified.") 
 
   # GET the data out of the HDF5 file.  Never operate on the data in place.
@@ -886,10 +917,7 @@ def getAnnotations ( webargs, postdata ):
 
       # Perform argument processing
       brargs = restargs.BrainRestArgs ();
-      try:
-        brargs.cutoutArgs ( cutout, dbcfg )
-      except Exception as e:
-        raise ANNError ( "Cutout error: " + e.value )
+      brargs.cutoutArgs ( cutout, dbcfg )
 
       # Extract the relevant values
       corner = brargs.getCorner()
@@ -905,6 +933,7 @@ def getAnnotations ( webargs, postdata ):
       resolution = int(resstr) if resstr != '' else proj.getResolution()
 
   else:
+      logger.warning ("In getAnnotations: Error: no such data option %s " % ( dataarg ))
       raise ANNError ("In getAnnotations: Error: no such data option %s " % ( dataarg ))
 
   # Make the HDF5 output file
@@ -916,8 +945,6 @@ def getAnnotations ( webargs, postdata ):
   for annoid in annoids:
     # the int here is to prevent using a numpy value in an inner loop.  This is a 10x performance gain.
     getAnnoById ( int(annoid), h5fout, db, dbcfg, dataoption, resolution, corner, dim )
-
-  print "Loaded all into a file"
 
   # close temporary file
   h5in.close()
@@ -942,6 +969,9 @@ def putAnnotation ( webargs, postdata ):
 
   options = optionsargs.split('/')
 
+  # return string of id values
+  retvals = [] 
+
   # Make a named temporary file for the HDF5
   tmpfile = tempfile.NamedTemporaryFile ( )
   tmpfile.write ( postdata )
@@ -955,97 +985,130 @@ def putAnnotation ( webargs, postdata ):
       idgrp = h5f.get(k)
 
       # Convert HDF5 to annotation
-      anno = h5ann.H5toAnnotation ( h5f )
+      anno = h5ann.H5toAnnotation ( k, idgrp )
 
-      if anno.__class__ in [ annotation.AnnNeuron, annotation.AnnSeed ] and ( idgrp.get('VOXELS') or idgrp.get('CUTOUT')):
-        raise ANNError ("Cannot write to annotation type %s" % (anno.__class__))
+      # set the identifier (separate transaction)
+      if not ('update' in options or 'dataonly' in options or 'reduce' in options):
+        anno.setID ( db )
 
-      if 'update' in options and 'dataonly' in options:
-        raise ANNError ("Illegal combination of options. Cannot use udpate and dataonly together")
+      tries = 0 
+      done = False
+      while not done and tries < 5:
 
-      elif not 'dataonly' in options:
+        # start a transaction: get mysql out of line at a time mode
+        db.startTxn ()
 
-        # Put into the database
-        db.putAnnotation ( anno, options )
+        try:
 
-      # Is a resolution specified?  or use default
-      h5resolution = idgrp.get('RESOLUTION')
-      if h5resolution == None:
-        resolution = proj.getResolution()
-      else:
-        resolution = h5resolution[0]
+          if anno.__class__ in [ annotation.AnnNeuron, annotation.AnnSeed ] and ( idgrp.get('VOXELS') or idgrp.get('CUTOUT')):
+            logger.warning ("Cannot write to annotation type %s" % (anno.__class__))
+            raise ANNError ("Cannot write to annotation type %s" % (anno.__class__))
 
-      # Load the data associated with this annotation
-      #  Is it voxel data?
-      voxels = idgrp.get('VOXELS')
-      if voxels and 'reduce' not in options:
+          if 'update' in options and 'dataonly' in options:
+            logger.warning ("Illegal combination of options. Cannot use udpate and dataonly together")
+            raise ANNError ("Illegal combination of options. Cannot use udpate and dataonly together")
 
-        if 'preserve' in options:
-          conflictopt = 'P'
-        elif 'exception' in options:
-          conflictopt = 'E'
-        else:
-          conflictopt = 'O'
+          elif not 'dataonly' in options and not 'reduce' in options:
 
-        # Check that the voxels have a conforming size:
-        if voxels.shape[1] != 3:
-          raise ANNError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
+            # Put into the database
+            db.putAnnotation ( anno, options )
+            retvals.append(anno.annid)
 
-        exceptions = db.annotate ( anno.annid, resolution, voxels, conflictopt )
+          # Is a resolution specified?  or use default
+          h5resolution = idgrp.get('RESOLUTION')
+          if h5resolution == None:
+            resolution = proj.getResolution()
+          else:
+            resolution = h5resolution[0]
 
-      # Otherwise this is a shave operation
-      elif voxels and 'reduce' in options:
+          # Load the data associated with this annotation
+          #  Is it voxel data?
+          voxels = idgrp.get('VOXELS')
+          if voxels and 'reduce' not in options:
 
-        # Check that the voxels have a conforming size:
-        if voxels.shape[1] != 3:
-          raise ANNError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
-        db.shave ( anno.annid, resolution, voxels )
+            if 'preserve' in options:
+              conflictopt = 'P'
+            elif 'exception' in options:
+              conflictopt = 'E'
+            else:
+              conflictopt = 'O'
 
-      # Is it dense data?
-      cutout = idgrp.get('CUTOUT')
-      h5xyzoffset = idgrp.get('XYZOFFSET')
-      if cutout != None and h5xyzoffset != None and 'reduce' not in options:
+            # Check that the voxels have a conforming size:
+            if voxels.shape[1] != 3:
+              logger.warning ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
+              raise ANNError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
 
-        if 'preserve' in options:
-          conflictopt = 'P'
-        elif 'exception' in options:
-          conflictopt = 'E'
-        else:
-          conflictopt = 'O'
+            exceptions = db.annotate ( anno.annid, resolution, voxels, conflictopt )
 
-        #  the zstart in dbconfig is sometimes offset to make it aligned.
-        #   Probably remove the offset is the best idea.  and align data
-        #    to zero regardless of where it starts.  For now.
-        corner = h5xyzoffset[:] 
-        corner[2] -= dbcfg.slicerange[0]
+          # Otherwise this is a shave operation
+          elif voxels and 'reduce' in options:
 
-        db.annotateEntityDense ( anno.annid, corner, resolution, np.array(cutout), conflictopt )
+            # Check that the voxels have a conforming size:
+            if voxels.shape[1] != 3:
+              logger.warning ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
+              raise ANNError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
+            db.shave ( anno.annid, resolution, voxels )
 
-      elif cutout != None and h5xyzoffset != None and 'reduce' in options:
+          # Is it dense data?
+          cutout = idgrp.get('CUTOUT')
+          h5xyzoffset = idgrp.get('XYZOFFSET')
+          if cutout != None and h5xyzoffset != None and 'reduce' not in options:
 
-        corner = h5xyzoffset[:] 
-        corner[2] -= dbcfg.slicerange[0]
+            if 'preserve' in options:
+              conflictopt = 'P'
+            elif 'exception' in options:
+              conflictopt = 'E'
+            else:
+              conflictopt = 'O'
 
-        db.shaveEntityDense ( anno.annid, corner, resolution, np.array(cutout))
+            #  the zstart in dbconfig is sometimes offset to make it aligned.
+            #   Probably remove the offset is the best idea.  and align data
+            #    to zero regardless of where it starts.  For now.
+            corner = h5xyzoffset[:] 
+            corner[2] -= dbcfg.slicerange[0]
 
-      elif cutout != None or h5xyzoffset != None:
-        #TODO this is a loggable error
-        pass
+            db.annotateEntityDense ( anno.annid, corner, resolution, np.array(cutout), conflictopt )
+          elif cutout != None and h5xyzoffset != None and 'reduce' in options:
 
-  # rollback if you catch an error
-  except:
-    print "Calling rollback"
-    db.rollback()
-    raise
+            corner = h5xyzoffset[:] 
+            corner[2] -= dbcfg.slicerange[0]
+
+            db.shaveEntityDense ( anno.annid, corner, resolution, np.array(cutout))
+
+          elif cutout != None or h5xyzoffset != None:
+            #TODO this is a loggable error
+            pass
+
+          # Commit if there is no error
+          db.commit()
+
+          # Here with no error is successful
+          done = True
+
+        # rollback if you catch an error
+        except MySQLdb.OperationalError, e:
+          logger.warning ("Transaction did not complete. %s" % (e))
+          tries += 1
+          db.rollback()
+          continue
+        except MySQLdb.Error, e:
+          logger.warning ("Put transaction rollback. %s" % (e))
+          db.rollback()
+          raise
+        except Exception, e:
+          logger.exception ("Put transaction rollback. Unknown error. %s" % (e))
+          db.rollback()
+          raise
+
   finally:
     h5f.close()
     tmpfile.close()
 
-  # Commit if there is no error
-  db.commit()
+
+  retstr = ','.join(map(str, retvals))
 
   # return the identifier
-  return str(anno.annid)
+  return retstr
 
 
 #  Return a list of annotation object IDs
@@ -1087,6 +1150,7 @@ def listAnnoObjects ( webargs, postdata=None ):
     resolution = h5f['RESOLUTION'][0]
 
     if not dbcfg.checkCube( resolution, corner[0], corner[0]+dim[0], corner[1], corner[1]+dim[1], corner[2], corner[2]+dim[2] ):
+      logger.warning ( "Illegal cutout corner=%s, dim=%s" % ( corner, dim))
       raise ANNError ( "Illegal cutout corner=%s, dim=%s" % ( corner, dim))
 
     # RBFIX this a hack
@@ -1109,6 +1173,8 @@ def listAnnoObjects ( webargs, postdata=None ):
 def deleteAnnotation ( webargs ):
   """Delete a RAMON object"""
 
+  ## TODO add retry loop for transaction
+
   [ token, sym, otherargs ] = webargs.partition ('/')
 
   # Get the annotation database
@@ -1121,18 +1187,39 @@ def deleteAnnotation ( webargs ):
   args = otherargs.split('/', 2)
 
   # if the first argument is numeric.  it is an annoid
-  if re.match ( '^\d+$', args[0] ): 
-    annoid = int(args[0])
+  if re.match ( '^[\d,]+$', args[0] ): 
+    annoids = map(int, args[0].split(','))
   # if not..this is not a well-formed delete request
   else:
+    logger.warning ("Delete did not specify a legal object identifier = %s" % args[0] )
     raise ANNError ("Delete did not specify a legal object identifier = %s" % args[0] )
 
-  try:
-    db.deleteAnnotation ( annoid )
-  except:
-    db.rollback() 
-    raise
-  db.commit()
+  for annoid in annoids: 
+
+    db.startTxn()
+    tries = 0
+    done = False
+    while not done and tries < 5:
+
+      try:
+        db.deleteAnnotation ( annoid )
+        done = True
+      # rollback if you catch an error
+      except MySQLdb.OperationalError, e:
+        logger.warning ("Transaction did not complete. %s" % (e))
+        tries += 1
+        db.rollback()
+        continue
+      except MySQLdb.Error, e:
+        logger.warning ("Put transaction rollback. %s" % (e))
+        db.rollback()
+        raise
+      except Exception, e:
+        logger.exception ("Put transaction rollback. Unknown error. %s" % (e))
+        db.rollback()
+        raise
+
+      db.commit()
 
 
 
@@ -1157,4 +1244,88 @@ def projInfo ( webargs ):
   h5f.close()
   tmpfile.seek(0)
   return tmpfile.read()
+
+
+def mcFalseColor ( webargs ):
+  """False color image of multiple channels"""
+
+  [ token, mcfcstr, chanstr, service, imageargs ] = webargs.split ('/', 4)
+  projdb = emcaproj.EMCAProjectsDB()
+  proj = projdb.getProj ( token )
+  dbcfg = dbconfig.switchDataset ( proj.getDataset() )
+
+  if proj.getDBType() != emcaproj.CHANNELS:
+    logger.warning ( "Not a multiple channel project." )
+    raise ANNError ( "Not a multiple channel project." )
+
+  channels = chanstr.split(",")
+
+  combined_img = None
+
+  for i in range(len(channels)):
+       
+    if service == 'xy':
+      cb = xySlice ( str(channels[i]) + "/" + imageargs, dbcfg, proj )
+    elif service == 'xz':
+      cb = xzSlice ( str(channels[i]) + "/" + imageargs, dbcfg, proj )
+    elif service == 'yz':
+      cb = yzSlice ( str(channels[i]) + "/" + imageargs, dbcfg, proj )
+    else:
+      logger.warning ( "No such service %s. Args: %s" % (service,webargs))
+      raise ANNError ( "No such service %s" % (service) )
+
+    # First channel is cyan
+    if i == 0:
+      data32 = np.array ( cb.data * (1./256), dtype=np.uint32 )
+      combined_img = 0xFF000000 + np.left_shift(data32,8) + np.left_shift(data32,16)
+    # Second is yellow
+    elif i == 1:  
+      data32 = np.array ( cb.data * (1./256), dtype=np.uint32 )
+      combined_img +=  np.left_shift(data32,8) + data32 
+    # Third is Magenta
+    elif i == 2:
+      data32 = np.array ( cb.data * (1./256), dtype=np.uint32 )
+      combined_img +=  np.left_shift(data32,16) + data32 
+    # Fourth is Red
+    elif i == 3:
+      data32 = np.array ( cb.data * (1./256), dtype=np.uint32 )
+      combined_img +=  data32 
+    # Fifth is Green
+    elif i == 4:
+      data32 = np.array ( cb.data * (1./256), dtype=np.uint32 )
+      combined_img += np.left_shift(data32,8)
+    # Sixth is Blue
+    elif i == 5:
+      data32 = np.array ( cb.data * (1./256), dtype=np.uint32 )
+      combined_img +=  np.left_shift(data32,16) 
+    else:
+      logger.warning ( "Only support six channels at a time.  You requested %s " % (chanstr))
+      raise ANNError ( "Only support six channels at a time.  You requested %s " % (chanstr))
+
+    
+  if service == 'xy':
+    ydim, xdim = combined_img.shape[1:3]
+    outimage = Image.frombuffer ( 'RGBA', (xdim,ydim), combined_img[0,:,:].flatten(), 'raw', 'RGBA', 0, 1 ) 
+  elif service == 'xz':
+    ydim = combined_img.shape[0]
+    xdim = combined_img.shape[2]
+    outimage = Image.frombuffer ( 'RGBA', (xdim,ydim), combined_img[:,0,:].flatten(), 'raw', 'RGBA', 0, 1 ) 
+  elif service == 'yz':
+    ydim = combined_img.shape[0]
+    xdim = combined_img.shape[1]
+    outimage = Image.frombuffer ( 'RGBA', (xdim,ydim), combined_img[:,:,0].flatten(), 'raw', 'RGBA', 0, 1 ) 
+
+  # Enhance the image
+  import ImageEnhance
+  enhancer = ImageEnhance.Brightness(outimage)
+  outimage = enhancer.enhance(4.0)
+
+  fileobj = cStringIO.StringIO ( )
+  outimage.save ( fileobj, "PNG" )
+
+  fileobj.seek(0)
+  return fileobj.read()
+
+
+
 

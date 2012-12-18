@@ -9,9 +9,9 @@ import dbconfig
 import zindex
 from cube import Cube
 
-from ann_cy import annotate_cy
-from ann_cy import shave_cy
-from ann_cy import recolor_cy
+from emca_cy import annotate_cy
+from emca_cy import shave_cy
+from emca_cy import recolor_cy
 
 #
 #  AnnotateCube: manipulate the in-memory data representation of the 3-d cube of data

@@ -3,7 +3,6 @@
 #
 
 import dbconfig
-import hayworth5nmprivate
 
 class dbConfigHayworth5nm ( dbconfig.dbConfig ):
 
@@ -38,13 +37,5 @@ class dbConfigHayworth5nm ( dbconfig.dbConfig ):
              1: 6.0/2.0,\
              0: 6.0 }
 
-
-  #database parameters
-  tablebase = hayworth5nmprivate.tablebase
-  dbuser = hayworth5nmprivate.dbuser
-  dbpasswd = hayworth5nmprivate.dbpasswd
-  dbname = hayworth5nmprivate.dbname
-  dbhost = hayworth5nmprivate.dbhost
-  inputprefix = hayworth5nmprivate.inputprefix
 
 
