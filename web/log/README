@@ -1,0 +1,3 @@
+Directory to hold log files for the emca service.
+Redirect the log file here in web/django/EMOCP/settings.py 
+when running the debug server.

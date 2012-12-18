@@ -177,8 +177,8 @@ LOGGING = {
         'logfile': {
             'level':'DEBUG',
             'class':'logging.handlers.RotatingFileHandler',
-#            'filename': "/var/log/emca" + "/logfile",
-            'filename': SITE_ROOT + "/../../emcalog/logfile",
+            'filename': "/var/log/emcalog" + "/emca.log",
+#            'filename': SITE_ROOT + "/../../log/emca.log",
             'maxBytes': 500000,
             'backupCount': 7,
             'formatter': 'standard',

@@ -14,6 +14,9 @@ EM_BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".." ))
 EM_EMCA_PATH = os.path.join(EM_BASE_PATH, "emca" )
 sys.path += [ EM_EMCA_PATH ]
 
+SITE_URL = 'localhost'
+#SITE_URL = 'localhost:8000'
+
 import emcaproj
 
 # Module level setup/teardown
@@ -367,10 +370,10 @@ class TestRW:
     # variables for all tests
     # read
     rp.token = "unittest_rw"
-    rp.baseurl = "localhost:8000"
+    rp.baseurl = SITE_URL
     # write
     wp.token = "unittest_rw"
-    wp.baseurl = "localhost:8000"
+    wp.baseurl = SITE_URL
 
     # upload voxels (anonymous id)
     wp.numobjects = 1
@@ -421,10 +424,10 @@ class TestRW:
     # variables for all tests
     # read
     rp.token = "unittest_rw"
-    rp.baseurl = "localhost:8000"
+    rp.baseurl = SITE_URL
     # write
     wp.token = "unittest_rw"
-    wp.baseurl = "localhost:8000"
+    wp.baseurl = SITE_URL
 
     # upload voxels (anonymous id)
     wp.numobjects = 1
@@ -501,10 +504,10 @@ class TestRW:
 
     # read
     rp.token = "unittest_rw"
-    rp.baseurl = "localhost:8000"
+    rp.baseurl = SITE_URL
     # write
     wp.token = "unittest_rw"
-    wp.baseurl = "localhost:8000"
+    wp.baseurl = SITE_URL
 
     # Create an annotation
     wp.numobjects = 1
@@ -543,10 +546,10 @@ class TestRW:
 
     # read
     rp.token = "unittest_rw"
-    rp.baseurl = "localhost:8000"
+    rp.baseurl = SITE_URL
     # write
     wp.token = "unittest_rw"
-    wp.baseurl = "localhost:8000"
+    wp.baseurl = SITE_URL
 
     # Create an annotation
     wp.numobjects = 1

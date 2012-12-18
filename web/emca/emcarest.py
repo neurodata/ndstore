@@ -39,8 +39,12 @@ def cutout ( imageargs, dbcfg, proj, channel=None ):
        They then format and refine the output."""
 
   # Perform argument processing
-  args = restargs.BrainRestArgs ();
-  args.cutoutArgs ( imageargs, dbcfg )
+  try:
+    args = restargs.BrainRestArgs ();
+    args.cutoutArgs ( imageargs, dbcfg )
+  except restargs.RESTArgsError, e:
+    logger.warning("REST Arguments failed: %s" % (e))
+    raise ANNError(e)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -128,8 +132,12 @@ def xySlice ( imageargs, dbcfg, proj ):
     channel = None
 
   # Perform argument processing
-  args = restargs.BrainRestArgs ();
-  args.xyArgs ( imageargs, dbcfg )
+  try:
+    args = restargs.BrainRestArgs ();
+    args.xyArgs ( imageargs, dbcfg )
+  except restargs.RESTArgsError, e:
+    logger.warning("REST Arguments failed: %s" % (e))
+    raise ANNError(e)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -175,8 +183,12 @@ def xzSlice ( imageargs, dbcfg, proj ):
     channel = None
 
   # Perform argument processing
-  args = restargs.BrainRestArgs ();
-  args.xzArgs ( imageargs, dbcfg )
+  try:
+    args = restargs.BrainRestArgs ();
+    args.xzArgs ( imageargs, dbcfg )
+  except restargs.RESTArgsError, e:
+    logger.warning("REST Arguments failed: %s" % (e))
+    raise ANNError(e)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -229,8 +241,12 @@ def yzSlice ( imageargs, dbcfg, proj ):
     channel = None
 
   # Perform argument processing
-  args = restargs.BrainRestArgs ();
-  args.yzArgs ( imageargs, dbcfg )
+  try:
+    args = restargs.BrainRestArgs ();
+    args.yzArgs ( imageargs, dbcfg )
+  except restargs.RESTArgsError, e:
+    logger.warning("REST Arguments failed: %s" % (e))
+    raise ANNError(e)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -283,8 +299,12 @@ def xyAnno ( imageargs, dbcfg, proj ):
   annoid = int(annoidstr)
 
   # Perform argument processing
-  args = restargs.BrainRestArgs ();
-  args.xyArgs ( imageargs, dbcfg )
+  try:
+    args = restargs.BrainRestArgs ();
+    args.xyArgs ( imageargs, dbcfg )
+  except restargs.RESTArgsError, e:
+    logger.warning("REST Arguments failed: %s" % (e))
+    raise ANNError(e)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -308,8 +328,12 @@ def xzAnno ( imageargs, dbcfg, proj ):
   annoid = int(annoidstr)
 
   # Perform argument processing
-  args = restargs.BrainRestArgs ();
-  args.xzArgs ( imageargs, dbcfg )
+  try:
+    args = restargs.BrainRestArgs ();
+    args.xzArgs ( imageargs, dbcfg )
+  except restargs.RESTArgsError, e:
+    logger.warning("REST Arguments failed: %s" % (e))
+    raise ANNError(e)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -332,8 +356,12 @@ def yzAnno ( imageargs, dbcfg, proj ):
   annoid = int(annoidstr)
 
   # Perform argument processing
-  args = restargs.BrainRestArgs ();
-  args.yzArgs ( imageargs, dbcfg )
+  try:
+    args = restargs.BrainRestArgs ();
+    args.yzArgs ( imageargs, dbcfg )
+  except restargs.RESTArgsError, e:
+    logger.warning("REST Arguments failed: %s" % (e))
+    raise ANNError(e)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -371,8 +399,12 @@ def listIds ( imageargs, dbcfg, proj ):
   """Return the list of annotation identifiers in a region"""
 
   # Perform argument processing
-  args = restargs.BrainRestArgs ();
-  args.cutoutArgs ( imageargs, dbcfg )
+  try:
+    args = restargs.BrainRestArgs ();
+    args.cutoutArgs ( imageargs, dbcfg )
+  except restargs.RESTArgsError, e:
+    logger.warning("REST Arguments failed: %s" % (e))
+    raise ANNError(e)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -488,8 +520,12 @@ def selectPost ( webargs, dbcfg, proj, postdata ):
       elif service == 'npdense':
 
         # Process the arguments
-        args = restargs.BrainRestArgs ();
-        args.cutoutArgs ( postargs, dbcfg )
+        try:
+          args = restargs.BrainRestArgs ();
+          args.cutoutArgs ( postargs, dbcfg )
+        except restargs.RESTArgsError, e:
+          logger.warning("REST Arguments failed: %s" % (e))
+          raise ANNError(e)
 
         corner = args.getCorner()
         resolution = args.getResolution()
