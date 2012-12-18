@@ -13,8 +13,8 @@ EM_BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".." ))
 EM_EMCA_PATH = os.path.join(EM_BASE_PATH, "emca" )
 sys.path += [ EM_EMCA_PATH ]
 
-SITE_URL = 'localhost'
-#SITE_URL = 'localhost:8000'
+SITE_HOST = 'openconnecto.me'
+#SITE_HOST = 'localhost:8000'
 
 import emcaproj
 
@@ -60,7 +60,7 @@ class TestRamon:
     tmpfile.seek(0)
 
     # Build the put URL
-    url = "http://%s/emca/%s/" % ( SITE_URL, 'unittest')
+    url = "http://%s/emca/%s/" % ( SITE_HOST, 'unittest')
 
     # write an object (server creates identifier)
     req = urllib2.Request ( url, tmpfile.read())
@@ -68,7 +68,7 @@ class TestRamon:
     putid1 = int(response.read())
     
     # retrieve the annotation
-    url = "http://%s/emca/%s/%s/" % ( SITE_URL, 'unittest', str(putid1))
+    url = "http://%s/emca/%s/%s/" % ( SITE_HOST, 'unittest', str(putid1))
     f = urllib2.urlopen ( url )
     retfile = tempfile.NamedTemporaryFile ( )
     retfile.write ( f.read() )
@@ -110,7 +110,7 @@ class TestRamon:
     tmpfile.seek(0)
 
     # Build the put URL
-    url = "http://%s/emca/%s/" % ( SITE_URL, 'unittest')
+    url = "http://%s/emca/%s/" % ( SITE_HOST, 'unittest')
 
     # write an object (server creates identifier)
     req = urllib2.Request ( url, tmpfile.read())
@@ -118,7 +118,7 @@ class TestRamon:
     putid2 = int(response.read())
 
     # retrieve the annotation
-    url = "http://%s/emca/%s/%s/" % ( SITE_URL, 'unittest', str(putid2))
+    url = "http://%s/emca/%s/%s/" % ( SITE_HOST, 'unittest', str(putid2))
     f = urllib2.urlopen ( url )
     retfile = tempfile.NamedTemporaryFile ( )
     retfile.write ( f.read() )
@@ -169,7 +169,7 @@ class TestRamon:
     tmpfile.seek(0)
 
     # Build the put URL
-    url = "http://%s/emca/%s/update/" % ( SITE_URL, 'unittest')
+    url = "http://%s/emca/%s/update/" % ( SITE_HOST, 'unittest')
 
     # write an object (server creates identifier)
     req = urllib2.Request ( url, tmpfile.read())
@@ -177,7 +177,7 @@ class TestRamon:
     putid3 = int(response.read())
 
     # retrieve the annotation
-    url = "http://%s/emca/%s/%s/" % ( SITE_URL, 'unittest', str(putid3))
+    url = "http://%s/emca/%s/%s/" % ( SITE_HOST, 'unittest', str(putid3))
     f = urllib2.urlopen ( url )
     retfile = tempfile.NamedTemporaryFile ( )
     retfile.write ( f.read() )
@@ -200,9 +200,9 @@ class TestRamon:
 
     """Test 4 delete the object"""
     # Build the delete URL
-    url = "http://%s/emca/%s/delete/%s/" % ( SITE_URL, 'unittest', putid3)
+    url = "http://%s/emca/%s/delete/%s/" % ( SITE_HOST, 'unittest', putid3)
     import httplib
-    conn = httplib.HTTPConnection ( "%s" % ( SITE_URL ))
+    conn = httplib.HTTPConnection ( "%s" % ( SITE_HOST ))
     conn.request ( 'DELETE', '/emca/%s/%s/' % ( 'unittest', putid3 ))
     resp = conn.getresponse()
     content=resp.read()
@@ -211,7 +211,7 @@ class TestRamon:
 
     # retrieve the annotation
     # verify that it's not there.
-    url = "http://%s/emca/%s/%s/" % ( SITE_URL, 'unittest', str(putid3))
+    url = "http://%s/emca/%s/%s/" % ( SITE_HOST, 'unittest', str(putid3))
     with pytest.raises(urllib2.HTTPError): 
       urllib2.urlopen ( url )
 
@@ -241,7 +241,7 @@ class TestRamon:
 #
 #    # Now put an empty file
 #    # Build the put URL
-#    url = "http://%s/emca/%s/" % ( SITE_URL, 'unittest')
+#    url = "http://%s/emca/%s/" % ( SITE_HOST, 'unittest')
 #
 #    # write an object (server creates identifier)
 #    req = urllib2.Request ( url, tmpfile.read())
@@ -250,7 +250,7 @@ class TestRamon:
 #
 #    # now read and verify
 #    # retrieve the annotation
-#    url = "http://%s/emca/%s/%s/" % ( SITE_URL, 'unittest', str(putid))
+#    url = "http://%s/emca/%s/%s/" % ( SITE_HOST, 'unittest', str(putid))
 #    f = urllib2.urlopen ( url )
 #    retfile = tempfile.NamedTemporaryFile ( )
 #    retfile.write ( f.read() )
@@ -397,7 +397,7 @@ class TestRamon:
       fobj = self.H5AnnotationFile ( anntype, annoid )
 
       # Build the put URL
-      url = "http://%s/emca/%s/" % ( SITE_URL, 'unittest')
+      url = "http://%s/emca/%s/" % ( SITE_HOST, 'unittest')
 
       # write an object (server creates identifier)
       req = urllib2.Request ( url, fobj.read())
@@ -414,13 +414,13 @@ class TestRamon:
       putid2 = int(response.read())
 
       # retrieve both annotations
-      url = "http://%s/emca/%s/%s/" % ( SITE_URL, 'unittest', str(putid1))
+      url = "http://%s/emca/%s/%s/" % ( SITE_HOST, 'unittest', str(putid1))
       f = urllib2.urlopen ( url )
       getid1 = self.getH5id ( f )
    
       assert ( getid1 == putid1 )
 
-      url = "http://%s/emca/%s/%s/" % ( SITE_URL, 'unittest', str(putid2))
+      url = "http://%s/emca/%s/%s/" % ( SITE_HOST, 'unittest', str(putid2))
       req = urllib2.Request ( url )
       f = urllib2.urlopen ( url )
       getid2 = self.getH5id ( f )

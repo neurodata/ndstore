@@ -14,8 +14,8 @@ EM_BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".." ))
 EM_EMCA_PATH = os.path.join(EM_BASE_PATH, "emca" )
 sys.path += [ EM_EMCA_PATH ]
 
-SITE_URL = 'localhost'
-#SITE_URL = 'localhost:8000'
+SITE_HOST = 'openconnecto.me'
+#SITE_HOST = 'localhost:8000'
 
 import emcaproj
 
@@ -370,10 +370,10 @@ class TestRW:
     # variables for all tests
     # read
     rp.token = "unittest_rw"
-    rp.baseurl = SITE_URL
+    rp.baseurl = SITE_HOST
     # write
     wp.token = "unittest_rw"
-    wp.baseurl = SITE_URL
+    wp.baseurl = SITE_HOST
 
     # upload voxels (anonymous id)
     wp.numobjects = 1
@@ -424,10 +424,10 @@ class TestRW:
     # variables for all tests
     # read
     rp.token = "unittest_rw"
-    rp.baseurl = SITE_URL
+    rp.baseurl = SITE_HOST
     # write
     wp.token = "unittest_rw"
-    wp.baseurl = SITE_URL
+    wp.baseurl = SITE_HOST
 
     # upload voxels (anonymous id)
     wp.numobjects = 1
@@ -504,10 +504,10 @@ class TestRW:
 
     # read
     rp.token = "unittest_rw"
-    rp.baseurl = SITE_URL
+    rp.baseurl = SITE_HOST
     # write
     wp.token = "unittest_rw"
-    wp.baseurl = SITE_URL
+    wp.baseurl = SITE_HOST
 
     # Create an annotation
     wp.numobjects = 1
@@ -546,10 +546,10 @@ class TestRW:
 
     # read
     rp.token = "unittest_rw"
-    rp.baseurl = SITE_URL
+    rp.baseurl = SITE_HOST
     # write
     wp.token = "unittest_rw"
-    wp.baseurl = SITE_URL
+    wp.baseurl = SITE_HOST
 
     # Create an annotation
     wp.numobjects = 1
