@@ -20,8 +20,8 @@ import emcaproj
 import h5ann
 import annotation
 
-from ann_cy import assignVoxels_cy
-from ann_cy import recolor_cy
+from emca_cy import assignVoxels_cy
+from emca_cy import recolor_cy
 
 from emcaerror import ANNError
 

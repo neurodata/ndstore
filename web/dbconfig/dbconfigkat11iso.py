@@ -3,7 +3,6 @@
 #
 
 import dbconfig
-import kat11isoprivate
 
 class dbConfigKasthuri11Isotropic ( dbconfig.dbConfig ):
 
@@ -21,13 +20,5 @@ class dbConfigKasthuri11Isotropic ( dbconfig.dbConfig ):
 
   # Resize factor to eliminate distortion
   zscale = { 0: 1.0 }
-
-  #database parameters
-  tablebase = kat11isoprivate.tablebase
-  dbuser = kat11isoprivate.dbuser
-  dbpasswd = kat11isoprivate.dbpasswd
-  dbname = kat11isoprivate.dbname
-  dbhost = kat11isoprivate.dbhost
-  inputprefix = kat11isoprivate.inputprefix
 
 # end dbconfigkasthuri11

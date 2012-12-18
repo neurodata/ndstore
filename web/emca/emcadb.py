@@ -15,7 +15,7 @@ import chancube
 
 from emcaerror import ANNError
 
-from ann_cy import cubeLocs_cy
+from emca_cy import cubeLocs_cy
 
 import logging
 logger=logging.getLogger("emca")
