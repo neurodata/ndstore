@@ -3,7 +3,6 @@
 #
 
 import dbconfig
-import drosophilaprivate
 
 class dbConfigDrosophila ( dbconfig.dbConfig ):
 
@@ -22,13 +21,5 @@ class dbConfigDrosophila ( dbconfig.dbConfig ):
 
   # Resize factor to eliminate distortion
   zscale = { 5: 1.0 }
-
-  #database parameters
-  tablebase = drosophilaprivate.tablebase
-  dbuser = drosophilaprivate.dbuser
-  dbpasswd = drosophilaprivate.dbpasswd
-  dbname = drosophilaprivate.dbname
-  dbhost = drosophilaprivate.dbhost
-  inputprefix = drosophilaprivate.inputprefix
 
 

@@ -58,6 +58,8 @@ def main():
   vec_func = np.vectorize ( lambda x: 0 if x > 30 else 125 ) 
   annodata = vec_func ( cube )
 
+  print np.nonzero ( annodata )
+
   url = 'http://%s/emca/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( result.baseurl, result.token, result.resolution, result.xlow, result.xhigh, result.ylow, result.yhigh, result.zlow, result.zhigh ) 
 
 

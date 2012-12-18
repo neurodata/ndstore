@@ -38,7 +38,7 @@ def main():
     url+='dataonly/'
   
   print url
-  
+
   try:
     req = urllib2.Request ( url, open(result.h5file).read() )
     response = urllib2.urlopen(req)
