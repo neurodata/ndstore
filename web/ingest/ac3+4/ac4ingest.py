@@ -70,11 +70,12 @@ def main():
 
         # For Daniel's backwards slices
         slicenum = endslice - startslice - (sl+b)
-        filenm = result.path + '/' + '{:0>4}'.format(slicenum) + '.png'
+
+        # raw data
+        filenm = result.path + '/' + '{:0>4}'.format(slicenum) + '.raw'
         print "Opening filenm" + filenm
-        img = Image.open ( filenm, 'r' )
-        imgdata = np.asarray ( img, dtype=np.uint16 )
-        
+
+        imgdata = np.fromfile ( filenm, dtype=np.uint16 ).reshape([ytilesz,xtilesz])
         newdata[b,:,:]  = imgdata
 
         # the last z offset that we ingest, if the batch ends before batchsz

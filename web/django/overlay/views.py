@@ -58,7 +58,7 @@ def imgAnnoOverlay (request, webargs):
   try:
      overlayimg = overlayCutout ( request, webargs )
   except Exception, e:
-    return django.http.HttpResponseNotFound(e.read())
+    return django.http.HttpResponseNotFound(e)
 
   # write the merged image to a buffer
   fobj2 = cStringIO.StringIO ( )
