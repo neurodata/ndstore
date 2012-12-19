@@ -1,106 +1,88 @@
 import argparse
-import cStringIO
-import urllib2
 import sys
-import zlib
-import zindex
-import MySQLdb
-from PIL import Image
-import empaths
-import emcaproj
-import emcadb
-import dbconfig
-import image16cube
+import os
+
 import numpy as np
+from PIL import Image
+import urllib, urllib2
+import cStringIO
+import collections
+import zlib
 
+import kanno_opt
 
-#assume a 0 resolution level for now for ingest
-RESOLUTION = 0
+#
+#  ingest the PNG files into the database
+#
+
+"""This file is super-customized for autism*.lif
+     """
+
+# Stuff we make take from a config or the command line in the future
+#  This is the size of amelio's data set
+xtilesz = 9218
+ytilesz = 3779
+_resolution = 0
+
+startslice = 0 
+endslice = 1015   
+batchsz = 16
+
+xoffset = 0
+yoffset = 0
 
 def main():
 
-  parser = argparse.ArgumentParser(description='Ingest a PNG stack.')
-  parser.add_argument('token', action="store" )
-  parser.add_argument('path', action="store" )
-  parser.add_argument('numslices', type=int, action="store" )
+  parser = argparse.ArgumentParser(description='Ingest the autism dataset annotations.')
+  parser.add_argument('baseurl', action="store", help='Base URL to of emca service no http://, e.g. openconnecto.me')
+  parser.add_argument('token', action="store", help='Token for the annotation project.')
+  parser.add_argument('path', action="store", help='Directory with annotation PNG files.')
 
   result = parser.parse_args()
 
-  projdb = emcaproj.EMCAProjectsDB()
-  proj = projdb.getProj ( result.token )
-  dbcfg = dbconfig.switchDataset ( proj.getDataset() )
+  # Get a list of the files in the directories
+  for sl in range (startslice,endslice+1,batchsz):
 
-  _ximgsz = None
-  _yimgsz = None
+    newdata = np.zeros ( [ batchsz, ytilesz, xtilesz ], dtype=np.uint8 )
+   
+    for b in range ( batchsz ):
 
-  for slab in range(0,result.numslices,128)):
-    for sl in range(slab,min(slab+128,numslices):
+      if ( sl + b <= endslice ):
 
-      filenm = result.path + '/' + '{:0>4}'.format(sl) + '.png'
-      print filenm
-      img = Image.open ( filenm, "r" )
+        # raw data
+        filenm = result.path + '/' + '{:0>4}'.format(sl+b) + '.raw'
+        print "Opening filenm" + filenm
 
-      if _ximgsz==None and _yimgsz==None:
-        _ximgsz,_yimgsz = img.size
-        imarray = np.zeros ( [128, _yimgsz, _ximgsz], dtype=np.uint16 )
-      else:
-        assert _ximgsz == img.size[0] and _yimgsz == img.size[1]
+        imgdata = np.fromfile ( filenm, dtype=np.uint8 ).reshape([ytilesz,xtilesz])
+        newdata[b,:,:]  = imgdata
 
-      imarray[sl,:,:] = np.asarray ( img )
+        # the last z offset that we ingest, if the batch ends before batchsz
+        endz = b
 
-    # get the size of the cube
-    xcubedim,ycubedim,zcubedim = dbcfg.cubedim[0]
-    
-    # and the limits of iteration
-    xlimit = (_ximgsz-1) / xcubedim + 1
-    ylimit = (_yimgsz-1) / ycubedim + 1
-    zlow = sl
-    zhigh = min(sl+128,result.numslices)
-    zlimit = (zhigh-zlow-1) / zcubedim + 1
 
-    # open the database
-    db = emcadb.EMCADB ( dbcfg, proj )
+    # Now we have a 1024x1024x16 z-aligned cube.  
+    #   Send it to the database.
+    url = 'http://%s/emca/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( result.baseurl, result.token, _resolution, xoffset, xoffset+xtilesz, yoffset, yoffset+ytilesz, sl, sl+endz+1)
 
-    # get a db cursor 
-    cursor = db.conn.cursor()
+# DBG send tiny data
+#    url = 'http://%s/emca/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( result.baseurl, result.token, _resolution, 0,2,0,2,0,1 )
+#    newdata = np.array ([ 0, 255, 0 ,255 ], dtype=np.uint8).reshape([1,2,2])
 
-# Need to fix this logic for batches
+    print url
 
-    for z in range(zlimit):
-      db.commit()
-      for y in range(ylimit):
-        for x in range(xlimit):
+    # Encode the voxelist an pickle
+    fileobj = cStringIO.StringIO ()
+    np.save ( fileobj, newdata )
 
-          zmin = z*zcubedim
-          zmax = min((z+1)*zcubedim,result.numslices)
-          zmaxrel = ((zmax-1)%zcubedim)+1 
-          ymin = y*ycubedim
-          ymax = min((y+1)*ycubedim,_yimgsz)
-          ymaxrel = ((ymax-1)%ycubedim)+1
-          xmin = x*xcubedim
-          xmax = min((x+1)*xcubedim,_ximgsz)
-          xmaxrel = ((xmax-1)%xcubedim)+1
+    cdz = zlib.compress (fileobj.getvalue())
 
-          # morton key
-          key = zindex.XYZMorton ( [x,y,z] )
-
-          # Create a cube 
-          cube = image16cube.Image16Cube ( [xcubedim,ycubedim,zcubedim] )
-
-          # data for this key
-          cube.data[0:zmaxrel,0:ymaxrel,0:xmaxrel] = imarray[zmin:zmax,ymin:ymax,xmin:xmax]
-
-          # compress the cube
-          npz = cube.toNPZ ()
-
-          # add the cube to the database
-          sql = "INSERT INTO " + proj.getTable(RESOLUTION) +  "(zindex, cube) VALUES (%s, %s)"
-          print sql
-          try:
-            cursor.execute ( sql, (key, npz))
-          except MySQLdb.Error, e:
-            raise ANNError ( "Error updating data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
+    # Build the post request
+    try:
+      req = urllib2.Request(url, cdz)
+      response = urllib2.urlopen(req)
+      the_page = response.read()
+    except Exception, e:
+      print "Failed ", e
 
 if __name__ == "__main__":
   main()

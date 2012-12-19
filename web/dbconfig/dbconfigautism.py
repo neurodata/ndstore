@@ -21,7 +21,7 @@ class dbConfigAutism ( dbconfig.dbConfig ):
   #resolution information -- lowest resolution and list of resolution
   resolutions = [ 0, 1, 2 ]
 
-  imagesz = { 0: [ 9218, 3379 ]}
+  imagesz = { 0: [ 9218, 3779 ]}
 
   # Resize factor to eliminate distortion
   zscale = { 0: 1.0,\

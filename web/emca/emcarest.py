@@ -490,6 +490,11 @@ def selectPost ( webargs, dbcfg, proj, postdata ):
 
   [ service, sym, postargs ] = webargs.partition ('/')
 
+  # Don't write to readonly projects
+  if proj.getReadOnly()==1:
+    logger.warning("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
+    raise ANNError("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
+
   # choose to overwrite (default), preserve, or make exception lists
   #  when voxels conflict
   # Perform argument processing
@@ -541,9 +546,15 @@ def selectPost ( webargs, dbcfg, proj, postdata ):
         # Get the annotation database
         db = emcadb.EMCADB ( dbcfg, proj )
 
+        if proj.getDBType() == emcaproj.IMAGES: 
+          db.writeImageCuboid ( corner, resolution, voxarray )
+          # this is just a status
+          entityid=0
+
         # Choose the verb, get the entity (as needed), and annotate
         # Translates the values directly
-        entityid = db.annotateDense ( corner, resolution, voxarray, conflictopt )
+        else:
+          entityid = db.annotateDense ( corner, resolution, voxarray, conflictopt )
         db.conn.commit()
 
       else:
@@ -1002,6 +1013,11 @@ def putAnnotation ( webargs, postdata ):
   proj = projdb.getProj ( token )
   dbcfg = dbconfig.switchDataset ( proj.getDataset() )
   db = emcadb.EMCADB ( dbcfg, proj )
+
+  # Don't write to readonly projects
+  if proj.getReadOnly()==1:
+    logger.warning("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
+    raise ANNError("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
 
   options = optionsargs.split('/')
 

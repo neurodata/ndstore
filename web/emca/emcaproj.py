@@ -56,6 +56,8 @@ class EMCAProject:
     return self._exceptions
   def getDBType ( self ):
     return self._dbtype
+  def getReadOnly ( self ):
+    return self._readonly
     
 
   # accessors for RB to fix
