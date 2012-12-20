@@ -125,7 +125,7 @@ def HDF5 ( imageargs, dbcfg, proj ):
 #
 def xySlice ( imageargs, dbcfg, proj ):
   """Return the cube object for an xy plane"""
-
+  
   if proj.getDBType() == emcaproj.CHANNELS:
     [ channel, sym, imageargs ] = imageargs.partition ('/')
   else: 
@@ -637,10 +637,14 @@ def emcacatmaid ( webargs ):
     xstart = xtile*CM_TILESIZE
     ystart = ytile*CM_TILESIZE
     xend = min ((xtile+1)*CM_TILESIZE,dbcfg.imagesz[resolution][0])
-    yend = min ((ytile+1)*CM_TILESIZE,dbcfg.imagesz[resolution][0])
+    yend = min ((ytile+1)*CM_TILESIZE,dbcfg.imagesz[resolution][1])
+    
+    import pdb; pdb.set_trace()
+
+    # TODO catmaid problem here.
 
     # Return empty data if request is outside bounds.  don't like it.
-    if xstart==xend or ystart==yend:
+    if xstart>=xend or ystart>=yend:
       cutoutdata = np.zeros ( [CM_TILESIZE,CM_TILESIZE], dtype=datatype )
 
     else: 

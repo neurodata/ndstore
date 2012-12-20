@@ -24,8 +24,8 @@ xtilesz = 9218
 ytilesz = 3779
 _resolution = 0
 
-startslice = 0 
-endslice = 1015   
+startslice = 192 
+endslice = 319   
 batchsz = 16
 
 xoffset = 0
