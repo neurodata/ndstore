@@ -639,10 +639,6 @@ def emcacatmaid ( webargs ):
     xend = min ((xtile+1)*CM_TILESIZE,dbcfg.imagesz[resolution][0])
     yend = min ((ytile+1)*CM_TILESIZE,dbcfg.imagesz[resolution][1])
     
-    import pdb; pdb.set_trace()
-
-    # TODO catmaid problem here.
-
     # Return empty data if request is outside bounds.  don't like it.
     if xstart>=xend or ystart>=yend:
       cutoutdata = np.zeros ( [CM_TILESIZE,CM_TILESIZE], dtype=datatype )
