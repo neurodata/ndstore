@@ -59,8 +59,6 @@ class Annotation:
 
     cursor = annodb.conn.cursor()
 
-    print "Inserting annotation id", self.annid
-
     sql = "INSERT INTO %s VALUES ( %s, %s, %s, %s )"\
             % ( anno_dbtables['annotation'], self.annid, annotype, self.confidence, self.status )
 
