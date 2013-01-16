@@ -1,8 +1,8 @@
 import os
 import shutil
 
-inputdir = '/data/EM/bumbarger13'
-outputdir = '/data/EM/bumbarger13.small'
+inputdir = '/data/projects/kunal/bumbarger/series15'
+outputdir = '/data/EM/bumbarger13/series15'
 
 #
 #  Customize ingest script to turn the output of TrackEM export 
@@ -26,7 +26,7 @@ xtiles = xrange[1]-xrange[0]
 ytiles = yrange[1]-yrange[0]
 
 # Slices to ingest [first,last]
-slices = [0,1]
+slices = [0,6]
 
 # build the directories
 for res in range(highres+1):
