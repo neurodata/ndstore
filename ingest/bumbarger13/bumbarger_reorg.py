@@ -26,7 +26,7 @@ xtiles = xrange[1]-xrange[0]
 ytiles = yrange[1]-yrange[0]
 
 # Slices to ingest [first,last]
-slices = [0,6]
+slices = [0,90]
 
 # build the directories
 for res in range(highres+1):
@@ -43,7 +43,8 @@ for res in range(highres+1):
       os.mkdir ( dirname )
 
 
-for res in range(highres,-1,-1):
+#for res in range(highres,-1,-1):
+for res in range(highres,0,-1):
   for slice in range(slices[0],slices[1]+1):
     for ytile in range(xtiles*2**(highres-res)):
       for xtile in range(ytiles*2**(highres-res)):
@@ -58,7 +59,7 @@ for res in range(highres,-1,-1):
           if not os.path.exists(outfile):
             print "Copying %s to %s" % ( infile, outfile )
             shutil.copy ( infile, outfile )
-          else: 
-            print "Found %s" % ( outfile )
+#          else: 
+#            print "Found %s" % ( outfile )
         except:
           print "Missing file %s" % ( infile )
