@@ -832,8 +832,12 @@ def getAnnotation ( webargs ):
       #  or you get data from the default resolution
       elif args[1] == 'voxels':
         dataoption = AR_VOXELS
-        [resstr, sym, rest] = args[2].partition('/')
-        resolution = int(resstr) if resstr != '' else proj.getResolution()
+        try:
+          [resstr, sym, rest] = args[2].partition('/')
+          resolution = int(resstr) 
+        except:
+          logger.warning ( "Improperly formatted voxel arguments {}".format(args[2]))
+          raise ANNError("Improperly formatted voxel arguments {}".format(args[2]))
 
         getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution )
 
@@ -842,8 +846,12 @@ def getAnnotation ( webargs ):
         # if there are no args or only resolution, it's a tight cutout request
         if args[2] == '' or re.match('^\d+[\/]*$', args[2]):
           dataoption = AR_TIGHTCUTOUT
-          [resstr, sym, rest] = args[2].partition('/')
-          resolution = int(resstr) if resstr != '' else proj.getResolution()
+          try:
+            [resstr, sym, rest] = args[2].partition('/')
+            resolution = int(resstr) 
+          except:
+            logger.warning ( "Improperly formatted cutout arguments {}".format(args[2]))
+            raise ANNError("Improperly formatted cutout arguments {}".format(args[2]))
 
           getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution )
 
@@ -864,8 +872,12 @@ def getAnnotation ( webargs ):
       elif args[1] == 'boundingbox':
 
         dataoption = AR_BOUNDINGBOX
-        [resstr, sym, rest] = args[2].partition('/')
-        resolution = int(resstr) if resstr != '' else proj.getResolution()
+        try:
+          [resstr, sym, rest] = args[2].partition('/')
+          resolution = int(resstr) 
+        except:
+          logger.warning ( "Improperly formatted bounding box arguments {}".format(args[2]))
+          raise ANNError("Improperly formatted bounding box arguments {}".format(args[2]))
     
         getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution )
 
@@ -899,8 +911,13 @@ def getCSV ( webargs ):
   h5f = h5py.File ( tmpfile.name )
 
   dataoption = AR_BOUNDINGBOX
-  [resstr, sym, rest] = reststr.partition('/')
-  resolution = int(resstr) if resstr != '' else proj.getResolution()
+  try:
+    [resstr, sym, rest] = reststr.partition('/')
+    resolution = int(resstr) 
+  except:
+    logger.warning ( "Improperly formatted cutout arguments {}".format(reststr))
+    raise ANNError("Improperly formatted cutout arguments {}".format(reststr))
+
   
   getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution )
 
@@ -950,15 +967,24 @@ def getAnnotations ( webargs, postdata ):
   elif dataarg == 'voxels':
     dataoption = AR_VOXELS
     # only arg to voxels is resolution
-    [resstr, sym, rest] = cutout.partition('/')
-    resolution = int(resstr) if resstr != '' else proj.getResolution()
+    try:
+      [resstr, sym, rest] = cutout.partition('/')
+      resolution = int(resstr) 
+    except:
+      logger.warning ( "Improperly formatted voxel arguments {}".format(cutout))
+      raise ANNError("Improperly formatted voxel arguments {}".format(cutout))
+
 
   elif dataarg == 'cutout':
     # if blank of just resolution then a tightcutout
     if cutout == '' or re.match('^\d+[\/]*$', cutout):
       dataoption = AR_TIGHTCUTOUT
-      [resstr, sym, rest] = cutout.partition('/')
-      resolution = int(resstr) if resstr != '' else proj.getResolution()
+      try:
+        [resstr, sym, rest] = cutout.partition('/')
+        resolution = int(resstr) 
+      except:
+        logger.warning ( "Improperly formatted cutout arguments {}".format(cutout))
+        raise ANNError("Improperly formatted cutout arguments {}".format(cutout))
     else:
       dataoption = AR_CUTOUT
 
@@ -976,8 +1002,12 @@ def getAnnotations ( webargs, postdata ):
     # if blank of just resolution then a tightcutout
     if cutout == '' or re.match('^\d+[\/]*$', cutout):
       dataoption = AR_BOUNDINGBOX
-      [resstr, sym, rest] = cutout.partition('/')
-      resolution = int(resstr) if resstr != '' else proj.getResolution()
+      try:
+        [resstr, sym, rest] = cutout.partition('/')
+        resolution = int(resstr) 
+      except:
+        logger.warning ( "Improperly formatted bounding box arguments {}".format(cutout))
+        raise ANNError("Improperly formatted bounding box arguments {}".format(cutout))
 
   else:
       logger.warning ("In getAnnotations: Error: no such data option %s " % ( dataarg ))
@@ -1066,11 +1096,9 @@ def putAnnotation ( webargs, postdata ):
             db.putAnnotation ( anno, options )
             retvals.append(anno.annid)
 
-          # Is a resolution specified?  or use default
+          #  Get the resolution if it's specified
           h5resolution = idgrp.get('RESOLUTION')
-          if h5resolution == None:
-            resolution = proj.getResolution()
-          else:
+          if h5resolution:
             resolution = h5resolution[0]
 
           # Load the data associated with this annotation
@@ -1120,6 +1148,7 @@ def putAnnotation ( webargs, postdata ):
             corner[2] -= dbcfg.slicerange[0]
 
             db.annotateEntityDense ( anno.annid, corner, resolution, np.array(cutout), conflictopt )
+
           elif cutout != None and h5xyzoffset != None and 'reduce' in options:
 
             corner = h5xyzoffset[:] 

@@ -14,8 +14,8 @@ EM_EMCA_PATH = os.path.join(EM_BASE_PATH, "emca" )
 sys.path += [ EM_EMCA_PATH ]
 
 #SITE_HOST = 'openconnecto.me'
-#SITE_HOST = 'localhost:8000'
-SITE_HOST = 'localhost'
+SITE_HOST = 'localhost:8000'
+#SITE_HOST = 'localhost'
 
 import emcaproj
 
@@ -38,7 +38,7 @@ class TestRamon:
     """Create the unittest database"""
 
     self.pd = emcaproj.EMCAProjectsDB()
-    self.pd.newEMCAProj ( 'unittest', 'test', 'localhost', 'unittest', 2, 'kasthuri11', None, 0, False, True )
+    self.pd.newEMCAProj ( 'unittest', 'test', 'localhost', 'unittest', 2, 'kasthuri11', None, False, True )
 
   def teardown_class (self):
     """Destroy the unittest database"""

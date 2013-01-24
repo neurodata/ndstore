@@ -21,7 +21,7 @@ class EMCAProject:
   """Project specific for cutout and annotation data"""
 
   # Constructor 
-  def __init__(self, dbname, dbhost, dbtype, dataset, dataurl, resolution, readonly, exceptions ):
+  def __init__(self, dbname, dbhost, dbtype, dataset, dataurl, readonly, exceptions ):
     """Initialize the EMCA Project"""
     
     self._dbname = dbname
@@ -29,7 +29,6 @@ class EMCAProject:
     self._dbtype = dbtype
     self._dataset = dataset
     self._dataurl = dataurl
-    self._resolution = resolution
     self._readonly = readonly
     self._exceptions = exceptions
     self._dbtype = dbtype
@@ -48,8 +47,6 @@ class EMCAProject:
     return self._dataset
   def getDataURL ( self ):
     return self._dataurl
-  def getResolution ( self ):
-    return self._resolution
   def getIDsTbl ( self ):
     return self._ids_tbl
   def getExceptions ( self ):
@@ -107,7 +104,10 @@ class EMCAProjectsDB:
 
 
     # Lookup the information for the database project based on the token
-    sql = "SELECT * from %s where token = \'%s\'" % (emcaprivate.table, token)
+#    sql = "SELECT * from %s where token = \'%s\'" % (emcaprivate.table, token)
+
+    # RBTODO specify fielss for that you can ignore resolution column
+    sql = "SELECT token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions from %s where token = \'%s\'" % (emcaprivate.table, token)
 
     try:
       cursor = self.conn.cursor()
@@ -124,24 +124,29 @@ class EMCAProjectsDB:
       logger.warning ( "Project token %s not found." % ( token ))
       raise ANNError ( "Project token %s not found." % ( token ))
 
-    [token, openid, host, project, dbtype, dataset, dataurl, resolution, readonly, exceptions ] = row
+    [token, openid, host, project, dbtype, dataset, dataurl, readonly, exceptions ] = row
 
-    return EMCAProject ( project, host, dbtype, dataset, dataurl, resolution, readonly, exceptions )
+    return EMCAProject ( project, host, dbtype, dataset, dataurl, readonly, exceptions )
 
 
   #
   # Load the  database information based on the token
   #
-  def newEMCAProj ( self, token, openid, dbhost, project, dbtype, dataset, dataurl, resolution, readonly, exceptions ):
+  def newEMCAProj ( self, token, openid, dbhost, project, dbtype, dataset, dataurl, readonly, exceptions ):
     """Create a new emca project"""
 
 # TODO need to undo the project creation if not totally sucessful
 
     dbcfg = dbconfig.switchDataset ( dataset )
 
+
+    # RBTODO specify fields so that you can ignore resoution.
     # Insert the project entry into the database
-    sql = "INSERT INTO {0} VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',{5},\'{6}\',\'{7}\',{8},{9},{10})".format (\
-        emcaprivate.table, token, openid, dbhost, project, dbtype, dataset, dataurl, resolution, readonly, exceptions )
+#    sql = "INSERT INTO {0} VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',{5},\'{6}\',\'{7}\',{8},{9},{10})".format (\
+#        emcaprivate.table, token, openid, dbhost, project, dbtype, dataset, dataurl, resolution, readonly, exceptions )
+
+    sql = "INSERT INTO {0} (token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',{5},\'{6}\',\'{7}\',\'{8}\',\'{9}\')".format (\
+       emcaprivate.table, token, openid, dbhost, project, dbtype, dataset, dataurl, readonly, exceptions )
 
     logger.info ( "Creating new project. Host %s. Project %s. SQL=%s" % ( dbhost, project, sql ))
 
