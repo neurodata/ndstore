@@ -16,13 +16,14 @@ def main():
   parser.add_argument('dataurl', action="store")
   parser.add_argument('--readonly', action='store_true', help='Project is readonly')
   parser.add_argument('--noexceptions', action='store_true', help='Project has no exceptions.  (FASTER).')
+  parser.add_argument('--nocreate', action='store_true', help='Do not create a database.  Just make a project entry.')
 
   result = parser.parse_args()
 
   # Get database info
   pd = emcaproj.EMCAProjectsDB()
 
-  pd.newEMCAProj ( result.token, result.openid, result.host, result.project, result.datatype, result.dataset, result.dataurl, result.readonly, not result.noexceptions )
+  pd.newEMCAProj ( result.token, result.openid, result.host, result.project, result.datatype, result.dataset, result.dataurl, result.readonly, not result.noexceptions, result.nocreate )
 
 
 if __name__ == "__main__":

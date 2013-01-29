@@ -132,18 +132,12 @@ class EMCAProjectsDB:
   #
   # Load the  database information based on the token
   #
-  def newEMCAProj ( self, token, openid, dbhost, project, dbtype, dataset, dataurl, readonly, exceptions ):
+  def newEMCAProj ( self, token, openid, dbhost, project, dbtype, dataset, dataurl, readonly, exceptions, nocreate ):
     """Create a new emca project"""
 
 # TODO need to undo the project creation if not totally sucessful
 
     dbcfg = dbconfig.switchDataset ( dataset )
-
-
-    # RBTODO specify fields so that you can ignore resoution.
-    # Insert the project entry into the database
-#    sql = "INSERT INTO {0} VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',{5},\'{6}\',\'{7}\',{8},{9},{10})".format (\
-#        emcaprivate.table, token, openid, dbhost, project, dbtype, dataset, dataurl, resolution, readonly, exceptions )
 
     sql = "INSERT INTO {0} (token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',{5},\'{6}\',\'{7}\',\'{8}\',\'{9}\')".format (\
        emcaprivate.table, token, openid, dbhost, project, dbtype, dataset, dataurl, readonly, exceptions )
@@ -159,71 +153,91 @@ class EMCAProjectsDB:
 
     self.conn.commit()
 
-    # Connect to the new database
-    newconn = MySQLdb.connect (host = dbhost,
-                          user = emcaprivate.dbuser,
-                          passwd = emcaprivate.dbpasswd )
-
-    newcursor = newconn.cursor()
-  
-
-    # Make the database and associated emca tables
-    sql = "CREATE DATABASE %s;" % project
-   
+    # Exception block around database creation
     try:
-      newcursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.error ("Failed to create database for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise ANNError ("Failed to create database for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
-    newconn.commit()
+      # Make the database unless specified
+      if not nocreate: 
 
-    # Connect to the new database
-    newconn = MySQLdb.connect (host = dbhost,
-                          user = emcaprivate.dbuser,
-                          passwd = emcaprivate.dbpasswd,
-                          db = project )
+        # Connect to the new database
+        newconn = MySQLdb.connect (host = dbhost,
+                              user = emcaprivate.dbuser,
+                              passwd = emcaprivate.dbpasswd )
 
-    newcursor = newconn.cursor()
+        newcursor = newconn.cursor()
+      
 
-    sql = ""
+        # Make the database and associated emca tables
+        sql = "CREATE DATABASE %s;" % project
+       
+        try:
+          newcursor.execute ( sql )
+        except MySQLdb.Error, e:
+          logger.error ("Failed to create database for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+          raise ANNError ("Failed to create database for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
-    # tables for annotations and images
-    if dbtype == IMAGES or dbtype == ANNOTATIONS:
+        newconn.commit()
 
-      for i in dbcfg.resolutions: 
-        sql += "CREATE TABLE res%s ( zindex BIGINT PRIMARY KEY, cube LONGBLOB );\n" % i
+        # Connect to the new database
+        newconn = MySQLdb.connect (host = dbhost,
+                              user = emcaprivate.dbuser,
+                              passwd = emcaprivate.dbpasswd,
+                              db = project )
 
-    # tables for channel dbs
-    if dbtype == CHANNELS:
-      for i in dbcfg.resolutions: 
-        sql += "CREATE TABLE res%s ( zindex BIGINT, channel INT, cube LONGBLOB, PRIMARY KEY(zindex,channel) );\n" % i
+        newcursor = newconn.cursor()
 
-    # tables specific to annotation projects
-    if dbtype == ANNOTATIONS:
+        sql = ""
 
-      sql += "CREATE TABLE ids ( id BIGINT PRIMARY KEY);\n"
+        # tables for annotations and images
+        if dbtype == IMAGES or dbtype == ANNOTATIONS:
 
-      # And the RAMON objects
-      sql += "CREATE TABLE annotations (annoid BIGINT PRIMARY KEY, type INT, confidence FLOAT, status INT);\n"
-      sql += "CREATE TABLE seeds (annoid BIGINT PRIMARY KEY, parentid BIGINT, sourceid BIGINT, cube_location INT, positionx INT, positiony INT, positionz INT);\n"
-      sql += "CREATE TABLE synapses (annoid BIGINT PRIMARY KEY, synapse_type INT, weight FLOAT);\n"
-      sql += "CREATE TABLE segments (annoid BIGINT PRIMARY KEY, segmentclass INT, parentseed INT, neuron INT);\n"
-      sql += "CREATE TABLE organelles (annoid BIGINT PRIMARY KEY, organelleclass INT, parentseed INT, centroidx INT, centroidy INT, centroidz INT);\n"
-      sql += "CREATE TABLE kvpairs ( annoid BIGINT, kv_key VARCHAR(255), kv_value VARCHAR(64000), PRIMARY KEY ( annoid, kv_key ));\n"
+          for i in dbcfg.resolutions: 
+            sql += "CREATE TABLE res%s ( zindex BIGINT PRIMARY KEY, cube LONGBLOB );\n" % i
 
-      for i in dbcfg.resolutions: 
-        if exceptions:
-          sql += "CREATE TABLE exc%s ( zindex BIGINT, id INT, exlist LONGBLOB, PRIMARY KEY ( zindex, id));\n" % i
-        sql += "CREATE TABLE idx%s ( annid BIGINT PRIMARY KEY, cube LONGBLOB );\n" % i
+        # tables for channel dbs
+        if dbtype == CHANNELS:
+          for i in dbcfg.resolutions: 
+            sql += "CREATE TABLE res%s ( zindex BIGINT, channel INT, cube LONGBLOB, PRIMARY KEY(zindex,channel) );\n" % i
 
-    try:
-      cursor = newconn.cursor()
-      newcursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logging.error ("Failed to create tables for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise ANNError ("Failed to create tables for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+        # tables specific to annotation projects
+        if dbtype == ANNOTATIONS:
 
+          sql += "CREATE TABLE ids ( id BIGINT PRIMARY KEY);\n"
+
+          # And the RAMON objects
+          sql += "CREATE TABLE annotations (annoid BIGINT PRIMARY KEY, type INT, confidence FLOAT, status INT);\n"
+          sql += "CREATE TABLE seeds (annoid BIGINT PRIMARY KEY, parentid BIGINT, sourceid BIGINT, cube_location INT, positionx INT, positiony INT, positionz INT);\n"
+          sql += "CREATE TABLE synapses (annoid BIGINT PRIMARY KEY, synapse_type INT, weight FLOAT);\n"
+          sql += "CREATE TABLE segments (annoid BIGINT PRIMARY KEY, segmentclass INT, parentseed INT, neuron INT);\n"
+          sql += "CREATE TABLE organelles (annoid BIGINT PRIMARY KEY, organelleclass INT, parentseed INT, centroidx INT, centroidy INT, centroidz INT);\n"
+          sql += "CREATE TABLE kvpairs ( annoid BIGINT, kv_key VARCHAR(255), kv_value VARCHAR(64000), PRIMARY KEY ( annoid, kv_key ));\n"
+
+          for i in dbcfg.resolutions: 
+            if exceptions:
+              sql += "CREATE TABLE exc%s ( zindex BIGINT, id INT, exlist LONGBLOB, PRIMARY KEY ( zindex, id));\n" % i
+            sql += "CREATE TABLE idx%s ( annid BIGINT PRIMARY KEY, cube LONGBLOB );\n" % i
+
+        try:
+          cursor = newconn.cursor()
+          newcursor.execute ( sql )
+        except MySQLdb.Error, e:
+          logging.error ("Failed to create tables for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+          raise ANNError ("Failed to create tables for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    # Error, undo the projects table entry
+    except:
+      sql = "DELETE FROM {0} WHERE token=\'{1}\'".format (emcaprivate.table, token)
+
+      logger.info ( "Could not create project database.  Undoing projects insert. Project %s. SQL=%s" % ( dbhost, project, sql ))
+
+      try:
+        cursor = self.conn.cursor()
+        cursor.execute ( sql )
+      except MySQLdb.Error, e:
+        logger.error ("Could not undo insert into emca projects database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+        logger.error ("Check project database for project not linked to database.")
+        raise
+    
 
   def deleteEMCAProj ( self, token ):
     """Create a new emca project"""
@@ -240,6 +254,7 @@ class EMCAProjectsDB:
       raise ANNError ("Failed to remove project from projects tables %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     self.conn.commit()
+
 
   def deleteEMCADB ( self, token ):
 
@@ -261,8 +276,6 @@ class EMCAProjectsDB:
       raise ANNError ("Failed to drop project database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     self.conn.commit()
-
-
 
   # accessors for RB to fix
   def getDBUser( self ):
