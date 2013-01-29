@@ -34,23 +34,23 @@ def main():
 
   if result.voxels:
     if result.resolution == None:
-      url = "http://%s/emca/%s/%s/voxels/" % (result.baseurl,result.token,result.annids)
+      url = "%s/emca/%s/%s/voxels/" % (result.baseurl,result.token,result.annids)
     else:
-      url = "http://%s/emca/%s/%s/voxels/%s/" % (result.baseurl,result.token,result.annids, result.resolution)
+      url = "%s/emca/%s/%s/voxels/%s/" % (result.baseurl,result.token,result.annids, result.resolution)
   elif result.cutout != None:
-    url = "http://%s/emca/%s/%s/cutout/%s/" % (result.baseurl,result.token,result.annids, result.cutout)
+    url = "%s/emca/%s/%s/cutout/%s/" % (result.baseurl,result.token,result.annids, result.cutout)
   elif result.tightcutout: 
     if result.resolution == None:
-      url = "http://%s/emca/%s/%s/cutout/" % (result.baseurl,result.token,result.annids)
+      url = "%s/emca/%s/%s/cutout/" % (result.baseurl,result.token,result.annids)
     else:
-      url = "http://%s/emca/%s/%s/cutout/%s/" % (result.baseurl,result.token,result.annids, result.resolution)
+      url = "%s/emca/%s/%s/cutout/%s/" % (result.baseurl,result.token,result.annids, result.resolution)
   elif result.boundingbox: 
     if result.resolution == None:
-      url = "http://%s/emca/%s/%s/boundingbox/" % (result.baseurl,result.token,result.annids)
+      url = "%s/emca/%s/%s/boundingbox/" % (result.baseurl,result.token,result.annids)
     else:
-      url = "http://%s/emca/%s/%s/boundingbox/%s/" % (result.baseurl,result.token,result.annids, result.resolution)
+      url = "%s/emca/%s/%s/boundingbox/%s/" % (result.baseurl,result.token,result.annids, result.resolution)
   else:
-    url = "http://%s/emca/%s/%s/" % (result.baseurl,result.token,result.annids)
+    url = "%s/emca/%s/%s/" % (result.baseurl,result.token,result.annids)
 
   print url
 
@@ -59,7 +59,7 @@ def main():
     f = urllib2.urlopen ( url )
   except urllib2.URLError, e:
     print "Failed URL", url
-    print "Error %s" % (e.read()) 
+    print "Error %s" % (e) 
     sys.exit(0)
 
   # create an in memory h5 file

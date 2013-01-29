@@ -2,6 +2,7 @@ import urllib2
 import cStringIO
 import sys
 import os
+import re
 import tempfile
 import h5py
 import random 
@@ -14,9 +15,10 @@ EM_BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".." ))
 EM_EMCA_PATH = os.path.join(EM_BASE_PATH, "emca" )
 sys.path += [ EM_EMCA_PATH ]
 
-#SITE_HOST = 'openconnecto.me'
-#SITE_HOST = 'localhost:8000'
-SITE_HOST = 'localhost'
+#SITE_HOST = 'http://openconnecto.me'
+#SITE_HOST = 'http://localhost:8000'
+SITE_HOST = 'http://localhost'
+#SITE_HOST = 'https://openconnecto.me'
 
 import emcaproj
 
@@ -51,23 +53,23 @@ def readAnno ( params ):
 
   if params.voxels:
     if params.resolution == None:
-      url = "http://%s/emca/%s/%s/voxels/" % (params.baseurl,params.token,params.annids)
+      url = "%s/emca/%s/%s/voxels/" % (params.baseurl,params.token,params.annids)
     else:
-      url = "http://%s/emca/%s/%s/voxels/%s/" % (params.baseurl,params.token,params.annids, params.resolution)
+      url = "%s/emca/%s/%s/voxels/%s/" % (params.baseurl,params.token,params.annids, params.resolution)
   elif params.cutout != None:
-    url = "http://%s/emca/%s/%s/cutout/%s/" % (params.baseurl,params.token,params.annids, params.cutout)
+    url = "%s/emca/%s/%s/cutout/%s/" % (params.baseurl,params.token,params.annids, params.cutout)
   elif params.tightcutout: 
     if params.resolution == None:
-      url = "http://%s/emca/%s/%s/cutout/" % (params.baseurl,params.token,params.annids)
+      url = "%s/emca/%s/%s/cutout/" % (params.baseurl,params.token,params.annids)
     else:
-      url = "http://%s/emca/%s/%s/cutout/%s/" % (params.baseurl,params.token,params.annids, params.resolution)
+      url = "%s/emca/%s/%s/cutout/%s/" % (params.baseurl,params.token,params.annids, params.resolution)
   elif params.boundingbox: 
     if params.resolution == None:
-      url = "http://%s/emca/%s/%s/boundingbox/" % (params.baseurl,params.token,params.annids)
+      url = "%s/emca/%s/%s/boundingbox/" % (params.baseurl,params.token,params.annids)
     else:
-      url = "http://%s/emca/%s/%s/boundingbox/%s/" % (params.baseurl,params.token,params.annids, params.resolution)
+      url = "%s/emca/%s/%s/boundingbox/%s/" % (params.baseurl,params.token,params.annids, params.resolution)
   else:
-    url = "http://%s/emca/%s/%s/" % (params.baseurl,params.token,params.annids)
+    url = "%s/emca/%s/%s/" % (params.baseurl,params.token,params.annids)
 
   # Get annotation in question
   f = urllib2.urlopen ( url )
@@ -304,11 +306,11 @@ def writeAnno ( params ):
 
   # Build the put URL
   if params.update:
-    url = "http://%s/emca/%s/update/" % ( params.baseurl, params.token)
+    url = "%s/emca/%s/update/" % ( params.baseurl, params.token)
   elif params.dataonly:
-    url = "http://%s/emca/%s/dataonly/" % ( params.baseurl, params.token)
+    url = "%s/emca/%s/dataonly/" % ( params.baseurl, params.token)
   else:
-    url = "http://%s/emca/%s/" % ( params.baseurl, params.token)
+    url = "%s/emca/%s/" % ( params.baseurl, params.token)
 
   if params.preserve:  
     url += 'preserve/'
@@ -486,7 +488,15 @@ class TestRW:
 
     # And delete
     import httplib
-    conn = httplib.HTTPConnection ( "%s" % ( rp.baseurl ))
+
+    # Check if it's an HTTPS conncetion
+    m = re.match('http(s?)://(.*)', rp.baseurl)
+    durl = m.group(2)
+    if m.group(1) == 's':
+      conn = httplib.HTTPSConnection ( "%s" % ( durl ))
+    else:
+      conn = httplib.HTTPConnection ( "%s" % ( durl ))
+
     conn.request ( 'DELETE', '/emca/%s/%s/' % ( rp.token, rp.annids ))
     resp = conn.getresponse()
     content=resp.read()
@@ -568,7 +578,7 @@ class TestRW:
         for i in range (1000,1050):
           voxlist.append ( [ i,j,k ] )
 
-    url = 'http://%s/emca/%s/npvoxels/%s/%s/' % ( wp.baseurl, wp.token, int(retval), wp.resolution)
+    url = '%s/emca/%s/npvoxels/%s/%s/' % ( wp.baseurl, wp.token, int(retval), wp.resolution)
 
     # Encode the voxelist an pickle
     fileobj = cStringIO.StringIO ()
@@ -588,7 +598,7 @@ class TestRW:
     annodata = np.zeros( [ 2, 50, 50 ] )
     annodata = annodata + int(retval)
 
-    url = 'http://%s/emca/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( wp.baseurl, wp.token, wp.resolution, 200, 250, 200, 250, 200, 202 )
+    url = '%s/emca/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( wp.baseurl, wp.token, wp.resolution, 200, 250, 200, 250, 200, 202 )
 
     # Encode the voxelist as a pickle
     fileobj = cStringIO.StringIO ()

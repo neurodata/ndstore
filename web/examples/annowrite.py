@@ -231,11 +231,11 @@ def main():
 
   # Build the put URL
   if result.update:
-    url = "http://%s/emca/%s/update/" % ( result.baseurl, result.token)
+    url = "%s/emca/%s/update/" % ( result.baseurl, result.token)
   elif result.dataonly:
-    url = "http://%s/emca/%s/dataonly/" % ( result.baseurl, result.token)
+    url = "%s/emca/%s/dataonly/" % ( result.baseurl, result.token)
   else:
-    url = "http://%s/emca/%s/" % ( result.baseurl, result.token)
+    url = "%s/emca/%s/" % ( result.baseurl, result.token)
 
   if result.preserve:  
     url += 'preserve/'
@@ -253,7 +253,7 @@ def main():
     response = urllib2.urlopen(req)
   except urllib2.URLError, e:
     print "Failed URL", url
-    print "Error %s" % (e.read()) 
+    print "Error %s" % (e) 
     sys.exit(0)
 
   the_page = response.read()
