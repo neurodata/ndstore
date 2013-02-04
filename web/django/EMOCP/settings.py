@@ -34,6 +34,9 @@ TIME_ZONE = 'America/New_York'
 LANGUAGE_CODE = 'en-us'
 
 SITE_ID = 1
+#RB 12/15/12 create a SITE_ROOT
+import os
+SITE_ROOT = os.path.dirname(os.path.realpath(__file__))
 
 # If you set this to False, Django will make some optimizations so as not
 # to load the internationalization machinery.
@@ -174,7 +177,8 @@ LOGGING = {
         'logfile': {
             'level':'DEBUG',
             'class':'logging.handlers.RotatingFileHandler',
-            'filename': "/var/log/django" + "/logfile",
+            'filename': "/var/log/emca" + "/emca.log",
+#            'filename': SITE_ROOT + "/../../log/emca.log",
             'maxBytes': 500000,
             'backupCount': 7,
             'formatter': 'standard',

@@ -24,7 +24,7 @@ import kanno_opt
 #  This is the size of amelio's data set
 _xtilesz = 1024
 _ytilesz = 1024
-_resolution = 1
+_resolution = 0
 
 """Will's comment on the location of the data
 

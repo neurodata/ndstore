@@ -80,6 +80,9 @@ def switchDataset ( dataset ):
   elif dataset == 'weiler':
     import dbconfigweiler
     return dbconfigweiler.dbConfigWeiler()
+  elif dataset == 'autism':
+    import dbconfigautism
+    return dbconfigautism.dbConfigAutism()
   else:
     # RBTODO make this a dbconfig exception
     raise DBConfigError ("Could not find dataset = %s" % dataset)

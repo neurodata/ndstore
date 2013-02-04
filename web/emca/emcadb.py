@@ -15,7 +15,7 @@ import chancube
 
 from emcaerror import ANNError
 
-from ann_cy import cubeLocs_cy
+from emca_cy import cubeLocs_cy
 
 import logging
 logger=logging.getLogger("emca")
@@ -1033,4 +1033,46 @@ class EMCADB:
     annoids = np.array ( self.cursor.fetchall(), dtype=np.uint32 ).flatten()
 
     return np.array(annoids)
+
+
+  #
+  # writeImageCuboid
+  #
+  #  Write an image through the Web service.  Make ingest easier.
+  #
+  def writeImageCuboid ( self, corner, resolution, imgdata ):
+    """Write an image through the Web service"""
+
+    # dim is in xyz, data is in zyxj
+    dim = [ imgdata.shape[2], imgdata.shape[1], imgdata.shape[0] ]
+
+    # get the size of the image and cube
+    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.dbcfg.cubedim [ resolution ] 
+
+    # Round to the nearest larger cube in all dimensions
+    zstart = corner[2]/zcubedim
+    ystart = corner[1]/ycubedim
+    xstart = corner[0]/xcubedim
+
+    znumcubes = (corner[2]+dim[2]+zcubedim-1)/zcubedim - zstart
+    ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
+    xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
+
+    zoffset = corner[2]%zcubedim
+    yoffset = corner[1]%ycubedim
+    xoffset = corner[0]%xcubedim
+
+    databuffer = np.zeros ([znumcubes*zcubedim, ynumcubes*ycubedim, xnumcubes*xcubedim], dtype=np.uint8 )
+    databuffer [ zoffset:zoffset+dim[2], yoffset:yoffset+dim[1], xoffset:xoffset+dim[0] ] = imgdata 
+
+    for z in range(znumcubes):
+      for y in range(ynumcubes):
+        for x in range(xnumcubes):
+
+          key = zindex.XYZMorton ([x+xstart,y+ystart,z+zstart])
+          cube = self.getCube ( key, resolution, True )
+
+          cube.data = databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] 
+
+          self.putCube ( key, resolution, cube)
 

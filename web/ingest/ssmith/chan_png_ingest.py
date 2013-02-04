@@ -5,7 +5,7 @@ import sys
 import zlib
 import zindex
 import MySQLdb
-from libtiff import TIFF
+from PIL import Image
 import empaths
 import emcaproj
 import emcadb
@@ -22,7 +22,7 @@ def main():
   parser = argparse.ArgumentParser(description='Ingest a tiff stack.')
   parser.add_argument('token', action="store" )
   parser.add_argument('channel', type=int, action="store" )
-  parser.add_argument('filename', action="store" )
+  parser.add_argument('path', action="store" )
   parser.add_argument('numslices', type=int, action="store" )
 
   result = parser.parse_args()
@@ -31,24 +31,22 @@ def main():
   proj = projdb.getProj ( result.token )
   dbcfg = dbconfig.switchDataset ( proj.getDataset() )
 
-  tif = TIFF.open(result.filename, mode='r')
-  _ximgsz = tif.GetField("ImageWidth")
-  _yimgsz = tif.GetField("ImageLength")
-  _imagejinfo = tif.GetField("ImageDescription")
+  _ximgsz = None
+  _yimgsz = None
 
-  imarray = np.zeros ( [result.numslices, _yimgsz, _ximgsz], dtype=np.uint16 )
+  for sl in range(result.numslices):
 
-  sliceno=0
-  for im in tif.iter_images():
-    imarray[sliceno,:,:] = im
-    sliceno+=1
+    filenm = result.path + '/' + '{:0>4}'.format(sl) + '.png'
+    print filenm
+    img = Image.open ( filenm, "r" )
 
-  assert sliceno==result.numslices
-  slices = result.numslices
+    if _ximgsz==None and _yimgsz==None:
+      _ximgsz,_yimgsz = img.size
+      imarray = np.zeros ( [result.numslices, _yimgsz, _ximgsz], dtype=np.uint16 )
+    else:
+      assert _ximgsz == img.size[0] and _yimgsz == img.size[1]
 
-#  import cutouttotiff
-#  cutouttotiff.cubeToTIFFs ( imarray[:,:,:], '/data/tmp/slice' )
-#  sys.exit(0)
+    imarray[sl,:,:] = np.asarray ( img )
 
   # get the size of the cube
   xcubedim,ycubedim,zcubedim = dbcfg.cubedim[0]
@@ -56,7 +54,7 @@ def main():
   # and the limits of iteration
   xlimit = (_ximgsz-1) / xcubedim + 1
   ylimit = (_yimgsz-1) / ycubedim + 1
-  zlimit = (slices-1) / zcubedim + 1
+  zlimit = (result.numslices-1) / zcubedim + 1
 
   # open the database
   db = emcadb.EMCADB ( dbcfg, proj )
@@ -70,7 +68,7 @@ def main():
       for x in range(xlimit):
 
         zmin = z*zcubedim
-        zmax = min((z+1)*zcubedim,slices)
+        zmax = min((z+1)*zcubedim,result.numslices)
         zmaxrel = ((zmax-1)%zcubedim)+1 
         ymin = y*ycubedim
         ymax = min((y+1)*ycubedim,_yimgsz)
@@ -94,6 +92,7 @@ def main():
 
         # add the cube to the database
         sql = "INSERT INTO " + proj.getTable(RESOLUTION) +  "(zindex, channel, cube) VALUES (%s, %s, %s)"
+        print sql
         try:
           cursor.execute ( sql, (key, result.channel, npz))
         except MySQLdb.Error, e:
@@ -102,3 +101,4 @@ def main():
 
 if __name__ == "__main__":
   main()
+

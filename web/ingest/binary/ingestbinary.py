@@ -38,12 +38,11 @@ _xcubedim = 128
 _ycubedim = 128
 _zcubedim = 16
 
-fid = open ( "/data/formisha/bigcutout.screened.data", "r" )
+fid = open ( "/data/scratch/bigcutout.screened.zs.data", "r" )
 
 resolution = 1
 
 for zstart in range(1,1850,16):
-#for zstart in range(1,2,16):
 
   zend = min(zstart+16,1851)
 

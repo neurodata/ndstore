@@ -3,7 +3,6 @@
 #
 
 import dbconfig
-import kasthuri11private
 
 class dbConfigKasthuri11 ( dbconfig.dbConfig ):
 
@@ -45,13 +44,5 @@ class dbConfigKasthuri11 ( dbconfig.dbConfig ):
              0: 10.0 }
 
   inputprefix = "/data/kasthuri11"
-
-  #database parameters
-  tablebase = kasthuri11private.tablebase
-  dbuser = kasthuri11private.dbuser
-  dbpasswd = kasthuri11private.dbpasswd
-  dbname = kasthuri11private.dbname
-  dbhost = kasthuri11private.dbhost
-  inputprefix = kasthuri11private.inputprefix
 
 # end dbconfigkasthuri11

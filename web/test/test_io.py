@@ -14,6 +14,10 @@ EM_BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".." ))
 EM_EMCA_PATH = os.path.join(EM_BASE_PATH, "emca" )
 sys.path += [ EM_EMCA_PATH ]
 
+#SITE_HOST = 'openconnecto.me'
+SITE_HOST = 'localhost:8000'
+#SITE_HOST = 'localhost'
+
 import emcaproj
 
 # Module level setup/teardown
@@ -38,7 +42,7 @@ def readAnno ( params ):
      params -- with fields 
        baseurl
        token 
-       resolution = number or None
+       resolution = number 
        annids = 1,2,3,4,5
        voxels = None or True
        cutout = form 0/100,200/100,200/1,2 or None
@@ -46,22 +50,13 @@ def readAnno ( params ):
    """
 
   if params.voxels:
-    if params.resolution == None:
-      url = "http://%s/emca/%s/%s/voxels/" % (params.baseurl,params.token,params.annids)
-    else:
-      url = "http://%s/emca/%s/%s/voxels/%s/" % (params.baseurl,params.token,params.annids, params.resolution)
+    url = "http://%s/emca/%s/%s/voxels/%s/" % (params.baseurl,params.token,params.annids, params.resolution)
   elif params.cutout != None:
     url = "http://%s/emca/%s/%s/cutout/%s/" % (params.baseurl,params.token,params.annids, params.cutout)
   elif params.tightcutout: 
-    if params.resolution == None:
-      url = "http://%s/emca/%s/%s/cutout/" % (params.baseurl,params.token,params.annids)
-    else:
-      url = "http://%s/emca/%s/%s/cutout/%s/" % (params.baseurl,params.token,params.annids, params.resolution)
+    url = "http://%s/emca/%s/%s/cutout/%s/" % (params.baseurl,params.token,params.annids, params.resolution)
   elif params.boundingbox: 
-    if params.resolution == None:
-      url = "http://%s/emca/%s/%s/boundingbox/" % (params.baseurl,params.token,params.annids)
-    else:
-      url = "http://%s/emca/%s/%s/boundingbox/%s/" % (params.baseurl,params.token,params.annids, params.resolution)
+    url = "http://%s/emca/%s/%s/boundingbox/%s/" % (params.baseurl,params.token,params.annids, params.resolution)
   else:
     url = "http://%s/emca/%s/%s/" % (params.baseurl,params.token,params.annids)
 
@@ -352,7 +347,7 @@ class TestRW:
     """Create the unittest database"""
     
     self.pd = emcaproj.EMCAProjectsDB()
-    self.pd.newEMCAProj ( 'unittest_rw', 'test', 'localhost', 'unittest_rw', 2, 'kasthuri11', None, 0, False, True )
+    self.pd.newEMCAProj ( 'unittest_rw', 'test', 'localhost', 'unittest_rw', 2, 'kasthuri11', None, False, True )
 
   def teardown_class (self):
     """Destroy the unittest database"""
@@ -367,10 +362,13 @@ class TestRW:
     # variables for all tests
     # read
     rp.token = "unittest_rw"
-    rp.baseurl = "openconnecto.me"
+    rp.baseurl = SITE_HOST
+    rp.resolution = 0
+
     # write
     wp.token = "unittest_rw"
-    wp.baseurl = "openconnecto.me"
+    wp.baseurl = SITE_HOST
+    wp.resolution = 0
 
     # upload voxels (anonymous id)
     wp.numobjects = 1
@@ -382,6 +380,7 @@ class TestRW:
     assert retval >= 1
 
     # Read it as voxels and as a cutout
+    rp.resolution = 0
     rp.annids = retval
     rp.voxels = True
     h5r = readAnno(rp)
@@ -421,10 +420,13 @@ class TestRW:
     # variables for all tests
     # read
     rp.token = "unittest_rw"
-    rp.baseurl = "openconnecto.me"
+    rp.baseurl = SITE_HOST
+    rp.resolution = 0
+
     # write
     wp.token = "unittest_rw"
-    wp.baseurl = "openconnecto.me"
+    wp.baseurl = SITE_HOST
+    wp.resolution = 0
 
     # upload voxels (anonymous id)
     wp.numobjects = 1
@@ -442,6 +444,7 @@ class TestRW:
     retval = writeAnno(wp) 
 
     # Check that the combination of write + update sums
+    rp.resolution = 0
     rp.annids = int(retval)
     rp.voxels = True
     h5r = readAnno(rp)
@@ -501,10 +504,20 @@ class TestRW:
 
     # read
     rp.token = "unittest_rw"
+<<<<<<< HEAD
     rp.baseurl = "openconnecto.me"
     # write
     wp.token = "unittest_rw"
     wp.baseurl = "openconnecto.me"
+=======
+    rp.baseurl = SITE_HOST
+    rp.resolution = 0
+   
+    # write
+    wp.token = "unittest_rw"
+    wp.baseurl = SITE_HOST
+    wp.resolution = 0
+>>>>>>> 3a5784160c69fdb21173ab82c2eb1577eae5a143
 
     # Create an annotation
     wp.numobjects = 1
@@ -543,10 +556,20 @@ class TestRW:
 
     # read
     rp.token = "unittest_rw"
+<<<<<<< HEAD
     rp.baseurl = "openconnecto.me"
     # write
     wp.token = "unittest_rw"
     wp.baseurl = "openconnecto.me"
+=======
+    rp.baseurl = SITE_HOST
+    rp.resolution = 0
+
+    # write
+    wp.token = "unittest_rw"
+    wp.baseurl = SITE_HOST
+    wp.resolution = 0
+>>>>>>> 3a5784160c69fdb21173ab82c2eb1577eae5a143
 
     # Create an annotation
     wp.numobjects = 1

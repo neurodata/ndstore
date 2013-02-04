@@ -20,8 +20,8 @@ import emcaproj
 import h5ann
 import annotation
 
-from ann_cy import assignVoxels_cy
-from ann_cy import recolor_cy
+from emca_cy import assignVoxels_cy
+from emca_cy import recolor_cy
 
 from emcaerror import ANNError
 
@@ -39,8 +39,12 @@ def cutout ( imageargs, dbcfg, proj, channel=None ):
        They then format and refine the output."""
 
   # Perform argument processing
-  args = restargs.BrainRestArgs ();
-  args.cutoutArgs ( imageargs, dbcfg )
+  try:
+    args = restargs.BrainRestArgs ();
+    args.cutoutArgs ( imageargs, dbcfg )
+  except restargs.RESTArgsError, e:
+    logger.warning("REST Arguments failed: %s" % (e))
+    raise ANNError(e)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -121,15 +125,19 @@ def HDF5 ( imageargs, dbcfg, proj ):
 #
 def xySlice ( imageargs, dbcfg, proj ):
   """Return the cube object for an xy plane"""
-
+  
   if proj.getDBType() == emcaproj.CHANNELS:
     [ channel, sym, imageargs ] = imageargs.partition ('/')
   else: 
     channel = None
 
   # Perform argument processing
-  args = restargs.BrainRestArgs ();
-  args.xyArgs ( imageargs, dbcfg )
+  try:
+    args = restargs.BrainRestArgs ();
+    args.xyArgs ( imageargs, dbcfg )
+  except restargs.RESTArgsError, e:
+    logger.warning("REST Arguments failed: %s" % (e))
+    raise ANNError(e)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -175,8 +183,12 @@ def xzSlice ( imageargs, dbcfg, proj ):
     channel = None
 
   # Perform argument processing
-  args = restargs.BrainRestArgs ();
-  args.xzArgs ( imageargs, dbcfg )
+  try:
+    args = restargs.BrainRestArgs ();
+    args.xzArgs ( imageargs, dbcfg )
+  except restargs.RESTArgsError, e:
+    logger.warning("REST Arguments failed: %s" % (e))
+    raise ANNError(e)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -229,8 +241,12 @@ def yzSlice ( imageargs, dbcfg, proj ):
     channel = None
 
   # Perform argument processing
-  args = restargs.BrainRestArgs ();
-  args.yzArgs ( imageargs, dbcfg )
+  try:
+    args = restargs.BrainRestArgs ();
+    args.yzArgs ( imageargs, dbcfg )
+  except restargs.RESTArgsError, e:
+    logger.warning("REST Arguments failed: %s" % (e))
+    raise ANNError(e)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -283,8 +299,12 @@ def xyAnno ( imageargs, dbcfg, proj ):
   annoid = int(annoidstr)
 
   # Perform argument processing
-  args = restargs.BrainRestArgs ();
-  args.xyArgs ( imageargs, dbcfg )
+  try:
+    args = restargs.BrainRestArgs ();
+    args.xyArgs ( imageargs, dbcfg )
+  except restargs.RESTArgsError, e:
+    logger.warning("REST Arguments failed: %s" % (e))
+    raise ANNError(e)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -308,8 +328,12 @@ def xzAnno ( imageargs, dbcfg, proj ):
   annoid = int(annoidstr)
 
   # Perform argument processing
-  args = restargs.BrainRestArgs ();
-  args.xzArgs ( imageargs, dbcfg )
+  try:
+    args = restargs.BrainRestArgs ();
+    args.xzArgs ( imageargs, dbcfg )
+  except restargs.RESTArgsError, e:
+    logger.warning("REST Arguments failed: %s" % (e))
+    raise ANNError(e)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -332,8 +356,12 @@ def yzAnno ( imageargs, dbcfg, proj ):
   annoid = int(annoidstr)
 
   # Perform argument processing
-  args = restargs.BrainRestArgs ();
-  args.yzArgs ( imageargs, dbcfg )
+  try:
+    args = restargs.BrainRestArgs ();
+    args.yzArgs ( imageargs, dbcfg )
+  except restargs.RESTArgsError, e:
+    logger.warning("REST Arguments failed: %s" % (e))
+    raise ANNError(e)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -371,8 +399,12 @@ def listIds ( imageargs, dbcfg, proj ):
   """Return the list of annotation identifiers in a region"""
 
   # Perform argument processing
-  args = restargs.BrainRestArgs ();
-  args.cutoutArgs ( imageargs, dbcfg )
+  try:
+    args = restargs.BrainRestArgs ();
+    args.cutoutArgs ( imageargs, dbcfg )
+  except restargs.RESTArgsError, e:
+    logger.warning("REST Arguments failed: %s" % (e))
+    raise ANNError(e)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -458,6 +490,11 @@ def selectPost ( webargs, dbcfg, proj, postdata ):
 
   [ service, sym, postargs ] = webargs.partition ('/')
 
+  # Don't write to readonly projects
+  if proj.getReadOnly()==1:
+    logger.warning("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
+    raise ANNError("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
+
   # choose to overwrite (default), preserve, or make exception lists
   #  when voxels conflict
   # Perform argument processing
@@ -488,8 +525,12 @@ def selectPost ( webargs, dbcfg, proj, postdata ):
       elif service == 'npdense':
 
         # Process the arguments
-        args = restargs.BrainRestArgs ();
-        args.cutoutArgs ( postargs, dbcfg )
+        try:
+          args = restargs.BrainRestArgs ();
+          args.cutoutArgs ( postargs, dbcfg )
+        except restargs.RESTArgsError, e:
+          logger.warning("REST Arguments failed: %s" % (e))
+          raise ANNError(e)
 
         corner = args.getCorner()
         resolution = args.getResolution()
@@ -505,9 +546,15 @@ def selectPost ( webargs, dbcfg, proj, postdata ):
         # Get the annotation database
         db = emcadb.EMCADB ( dbcfg, proj )
 
+        if proj.getDBType() == emcaproj.IMAGES: 
+          db.writeImageCuboid ( corner, resolution, voxarray )
+          # this is just a status
+          entityid=0
+
         # Choose the verb, get the entity (as needed), and annotate
         # Translates the values directly
-        entityid = db.annotateDense ( corner, resolution, voxarray, conflictopt )
+        else:
+          entityid = db.annotateDense ( corner, resolution, voxarray, conflictopt )
         db.conn.commit()
 
       else:
@@ -590,10 +637,10 @@ def emcacatmaid ( webargs ):
     xstart = xtile*CM_TILESIZE
     ystart = ytile*CM_TILESIZE
     xend = min ((xtile+1)*CM_TILESIZE,dbcfg.imagesz[resolution][0])
-    yend = min ((ytile+1)*CM_TILESIZE,dbcfg.imagesz[resolution][0])
-
+    yend = min ((ytile+1)*CM_TILESIZE,dbcfg.imagesz[resolution][1])
+    
     # Return empty data if request is outside bounds.  don't like it.
-    if xstart==xend or ystart==yend:
+    if xstart>=xend or ystart>=yend:
       cutoutdata = np.zeros ( [CM_TILESIZE,CM_TILESIZE], dtype=datatype )
 
     else: 
@@ -785,8 +832,12 @@ def getAnnotation ( webargs ):
       #  or you get data from the default resolution
       elif args[1] == 'voxels':
         dataoption = AR_VOXELS
-        [resstr, sym, rest] = args[2].partition('/')
-        resolution = int(resstr) if resstr != '' else proj.getResolution()
+        try:
+          [resstr, sym, rest] = args[2].partition('/')
+          resolution = int(resstr) 
+        except:
+          logger.warning ( "Improperly formatted voxel arguments {}".format(args[2]))
+          raise ANNError("Improperly formatted voxel arguments {}".format(args[2]))
 
         getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution )
 
@@ -795,8 +846,12 @@ def getAnnotation ( webargs ):
         # if there are no args or only resolution, it's a tight cutout request
         if args[2] == '' or re.match('^\d+[\/]*$', args[2]):
           dataoption = AR_TIGHTCUTOUT
-          [resstr, sym, rest] = args[2].partition('/')
-          resolution = int(resstr) if resstr != '' else proj.getResolution()
+          try:
+            [resstr, sym, rest] = args[2].partition('/')
+            resolution = int(resstr) 
+          except:
+            logger.warning ( "Improperly formatted cutout arguments {}".format(args[2]))
+            raise ANNError("Improperly formatted cutout arguments {}".format(args[2]))
 
           getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution )
 
@@ -817,8 +872,12 @@ def getAnnotation ( webargs ):
       elif args[1] == 'boundingbox':
 
         dataoption = AR_BOUNDINGBOX
-        [resstr, sym, rest] = args[2].partition('/')
-        resolution = int(resstr) if resstr != '' else proj.getResolution()
+        try:
+          [resstr, sym, rest] = args[2].partition('/')
+          resolution = int(resstr) 
+        except:
+          logger.warning ( "Improperly formatted bounding box arguments {}".format(args[2]))
+          raise ANNError("Improperly formatted bounding box arguments {}".format(args[2]))
     
         getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution )
 
@@ -852,8 +911,13 @@ def getCSV ( webargs ):
   h5f = h5py.File ( tmpfile.name )
 
   dataoption = AR_BOUNDINGBOX
-  [resstr, sym, rest] = reststr.partition('/')
-  resolution = int(resstr) if resstr != '' else proj.getResolution()
+  try:
+    [resstr, sym, rest] = reststr.partition('/')
+    resolution = int(resstr) 
+  except:
+    logger.warning ( "Improperly formatted cutout arguments {}".format(reststr))
+    raise ANNError("Improperly formatted cutout arguments {}".format(reststr))
+
   
   getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution )
 
@@ -903,15 +967,24 @@ def getAnnotations ( webargs, postdata ):
   elif dataarg == 'voxels':
     dataoption = AR_VOXELS
     # only arg to voxels is resolution
-    [resstr, sym, rest] = cutout.partition('/')
-    resolution = int(resstr) if resstr != '' else proj.getResolution()
+    try:
+      [resstr, sym, rest] = cutout.partition('/')
+      resolution = int(resstr) 
+    except:
+      logger.warning ( "Improperly formatted voxel arguments {}".format(cutout))
+      raise ANNError("Improperly formatted voxel arguments {}".format(cutout))
+
 
   elif dataarg == 'cutout':
     # if blank of just resolution then a tightcutout
     if cutout == '' or re.match('^\d+[\/]*$', cutout):
       dataoption = AR_TIGHTCUTOUT
-      [resstr, sym, rest] = cutout.partition('/')
-      resolution = int(resstr) if resstr != '' else proj.getResolution()
+      try:
+        [resstr, sym, rest] = cutout.partition('/')
+        resolution = int(resstr) 
+      except:
+        logger.warning ( "Improperly formatted cutout arguments {}".format(cutout))
+        raise ANNError("Improperly formatted cutout arguments {}".format(cutout))
     else:
       dataoption = AR_CUTOUT
 
@@ -929,8 +1002,12 @@ def getAnnotations ( webargs, postdata ):
     # if blank of just resolution then a tightcutout
     if cutout == '' or re.match('^\d+[\/]*$', cutout):
       dataoption = AR_BOUNDINGBOX
-      [resstr, sym, rest] = cutout.partition('/')
-      resolution = int(resstr) if resstr != '' else proj.getResolution()
+      try:
+        [resstr, sym, rest] = cutout.partition('/')
+        resolution = int(resstr) 
+      except:
+        logger.warning ( "Improperly formatted bounding box arguments {}".format(cutout))
+        raise ANNError("Improperly formatted bounding box arguments {}".format(cutout))
 
   else:
       logger.warning ("In getAnnotations: Error: no such data option %s " % ( dataarg ))
@@ -966,6 +1043,11 @@ def putAnnotation ( webargs, postdata ):
   proj = projdb.getProj ( token )
   dbcfg = dbconfig.switchDataset ( proj.getDataset() )
   db = emcadb.EMCADB ( dbcfg, proj )
+
+  # Don't write to readonly projects
+  if proj.getReadOnly()==1:
+    logger.warning("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
+    raise ANNError("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
 
   options = optionsargs.split('/')
 
@@ -1014,11 +1096,9 @@ def putAnnotation ( webargs, postdata ):
             db.putAnnotation ( anno, options )
             retvals.append(anno.annid)
 
-          # Is a resolution specified?  or use default
+          #  Get the resolution if it's specified
           h5resolution = idgrp.get('RESOLUTION')
-          if h5resolution == None:
-            resolution = proj.getResolution()
-          else:
+          if h5resolution:
             resolution = h5resolution[0]
 
           # Load the data associated with this annotation
@@ -1068,6 +1148,7 @@ def putAnnotation ( webargs, postdata ):
             corner[2] -= dbcfg.slicerange[0]
 
             db.annotateEntityDense ( anno.annid, corner, resolution, np.array(cutout), conflictopt )
+
           elif cutout != None and h5xyzoffset != None and 'reduce' in options:
 
             corner = h5xyzoffset[:] 
