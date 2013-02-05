@@ -140,7 +140,7 @@ class EMCAProjectsDB:
     dbcfg = dbconfig.switchDataset ( dataset )
 
     sql = "INSERT INTO {0} (token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',{5},\'{6}\',\'{7}\',\'{8}\',\'{9}\')".format (\
-       emcaprivate.table, token, openid, dbhost, project, dbtype, dataset, dataurl, readonly, exceptions )
+       emcaprivate.table, token, openid, dbhost, project, dbtype, dataset, dataurl, int(readonly), int(exceptions) )
 
     logger.info ( "Creating new project. Host %s. Project %s. SQL=%s" % ( dbhost, project, sql ))
 

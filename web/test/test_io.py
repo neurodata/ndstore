@@ -539,6 +539,32 @@ class TestRW:
 
   def test_batch(self):
     """Batch interface"""
+
+    # Upload a batch of objects
+    rp = ReadParms()
+    wp = WriteParms()
+
+    # read
+    rp.token = "unittest_rw"
+    rp.baseurl = SITE_HOST
+    rp.resolution = 0
+
+    # write
+    wp.token = "unittest_rw"
+    wp.baseurl = SITE_HOST
+    wp.resolution = 0
+
+    # Create an annotation
+    wp.numobjects = 3
+    retval = writeAnno(wp) 
+    assert int(retval) >= 1
+
+    # read the batch back
+
+    rp.annid = int(retval)
+    rp.resolution = 0
+    
+    # Create a batch write
     pass
 
   def test_npz(self):
