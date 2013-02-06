@@ -575,6 +575,12 @@ class TestRW:
 
     # read
     rp.token = "unittest_rw"
+<<<<<<< HEAD
+    rp.baseurl = "openconnecto.me"
+    # write
+    wp.token = "unittest_rw"
+    wp.baseurl = "openconnecto.me"
+=======
     rp.baseurl = SITE_HOST
     rp.resolution = 0
    
@@ -582,6 +588,7 @@ class TestRW:
     wp.token = "unittest_rw"
     wp.baseurl = SITE_HOST
     wp.resolution = 0
+>>>>>>> 3a5784160c69fdb21173ab82c2eb1577eae5a143
 
     # Create an annotation
     wp.numobjects = 1
@@ -616,6 +623,12 @@ class TestRW:
 
     # read
     rp.token = "unittest_rw"
+<<<<<<< HEAD
+    rp.baseurl = "openconnecto.me"
+    # write
+    wp.token = "unittest_rw"
+    wp.baseurl = "openconnecto.me"
+=======
     rp.baseurl = SITE_HOST
     rp.resolution = 0
 
@@ -623,6 +636,7 @@ class TestRW:
     wp.token = "unittest_rw"
     wp.baseurl = SITE_HOST
     wp.resolution = 0
+>>>>>>> 3a5784160c69fdb21173ab82c2eb1577eae5a143
 
     # Create an annotation
     wp.numobjects = 1
