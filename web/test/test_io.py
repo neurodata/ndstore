@@ -318,7 +318,6 @@ def writeAnno ( params ):
 
   return response.read()
 
-
 def countVoxels ( annid, h5 ):
   """Count the number of voxels in an HDF5 file for an annotation id"""
 
@@ -331,8 +330,6 @@ def countVoxels ( annid, h5 ):
       elif idgrp.get('CUTOUT') and idgrp.get('XYZOFFSET'):
         return len(np.nonzero(np.array(idgrp['CUTOUT'][:,:,:]))[0])
   return 0
-
-   
 
 
 class TestRW:
@@ -352,6 +349,80 @@ class TestRW:
   def teardown_class (self):
     """Destroy the unittest database"""
     self.pd.deleteEMCADB ('unittest_rw')
+
+  def test_batch(self):
+    """Batch interface"""
+
+    # Upload a batch of objects
+    rp = ReadParms()
+    wp = WriteParms()
+
+    # read
+    rp.token = "unittest_rw"
+    rp.baseurl = SITE_HOST
+    rp.resolution = 0
+
+    # write
+    wp.token = "unittest_rw"
+    wp.baseurl = SITE_HOST
+    wp.resolution = 0
+
+    # Create an annotation
+    wp.numobjects = 3
+    retval = writeAnno(wp) 
+    assert retval
+
+    # read the batch back
+    ids = retval.split(",")
+
+    rp.annids = retval
+    rp.resolution = 0
+    h5r = readAnno(rp)
+
+    for i in ids:
+      assert h5r.get(str(i))
+
+    # Specify two annotations with two voxel lists
+    # write them to the same location as exceptions and verify they are both there
+    wp.annid = 100000
+    wp.numobjects = 2
+    wp.voxels = True
+    wp.exceptions = True
+    wp.cutout = '0/100,200/100,200/100,101'
+    retval = writeAnno(wp)
+
+    ids = retval.split(",")
+
+    assert int(ids[0])==100000 and int(ids[1])==100001
+
+    # Specify two annotations with two dense cutouts 
+    # write them to the same location as exceptions and verify they are both there
+    wp.annid = 100002
+    wp.numobjects = 2
+    wp.voxels = False
+    wp.exceptions = True
+    wp.cutout = '0/100,200/100,200/101,102'
+    retval = writeAnno(wp)
+
+    ids = retval.split(",")
+
+    assert int(ids[0])==100002 and int(ids[1])==100003
+
+    # Read all 4 with voxel lists
+    rp.annids = '100000,100001,100002,100003'
+    rp.voxels = True
+    h5r = readAnno(rp)
+
+    # Now verify that we have the right count in each annotation
+    for id in [100000,100001,100002,100003]:
+
+    assert False
+
+    # RB pick up here  check exceptions.  do same this with dense annotations
+    
+    # Create a batch write
+
+
 
   def test_rw(self):
     """A battery of read and writes"""
@@ -536,36 +607,6 @@ class TestRW:
     rp.voxels = True
     h5r = readAnno(rp)
     assert countVoxels ( retval, h5r ) == 2*50*50*2
-
-  def test_batch(self):
-    """Batch interface"""
-
-    # Upload a batch of objects
-    rp = ReadParms()
-    wp = WriteParms()
-
-    # read
-    rp.token = "unittest_rw"
-    rp.baseurl = SITE_HOST
-    rp.resolution = 0
-
-    # write
-    wp.token = "unittest_rw"
-    wp.baseurl = SITE_HOST
-    wp.resolution = 0
-
-    # Create an annotation
-    wp.numobjects = 3
-    retval = writeAnno(wp) 
-    assert int(retval) >= 1
-
-    # read the batch back
-
-    rp.annid = int(retval)
-    rp.resolution = 0
-    
-    # Create a batch write
-    pass
 
   def test_npz(self):
     """npz upload/download"""

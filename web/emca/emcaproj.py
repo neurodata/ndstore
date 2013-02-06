@@ -132,7 +132,7 @@ class EMCAProjectsDB:
   #
   # Load the  database information based on the token
   #
-  def newEMCAProj ( self, token, openid, dbhost, project, dbtype, dataset, dataurl, readonly, exceptions, nocreate ):
+  def newEMCAProj ( self, token, openid, dbhost, project, dbtype, dataset, dataurl, readonly, exceptions, nocreate=False ):
     """Create a new emca project"""
 
 # TODO need to undo the project creation if not totally sucessful
