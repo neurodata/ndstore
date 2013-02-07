@@ -1070,8 +1070,6 @@ def putAnnotation ( webargs, postdata ):
       # Convert HDF5 to annotation
       anno = h5ann.H5toAnnotation ( k, idgrp )
 
-      import pdb; pdb.set_trace()
-
       # set the identifier (separate transaction)
       if not ('update' in options or 'dataonly' in options or 'reduce' in options):
         anno.setID ( db )
