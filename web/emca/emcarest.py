@@ -1064,10 +1064,13 @@ def putAnnotation ( webargs, postdata ):
 
     for k in h5f.keys():
 
+      
       idgrp = h5f.get(k)
 
       # Convert HDF5 to annotation
       anno = h5ann.H5toAnnotation ( k, idgrp )
+
+      import pdb; pdb.set_trace()
 
       # set the identifier (separate transaction)
       if not ('update' in options or 'dataonly' in options or 'reduce' in options):
@@ -1119,6 +1122,7 @@ def putAnnotation ( webargs, postdata ):
               raise ANNError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
 
             exceptions = db.annotate ( anno.annid, resolution, voxels, conflictopt )
+            print "Exceptions {} voxels {}".format(exceptions,voxels)
 
           # Otherwise this is a shave operation
           elif voxels and 'reduce' in options:
