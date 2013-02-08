@@ -1410,5 +1410,65 @@ def mcFalseColor ( webargs ):
   return fileobj.read()
 
 
+def getField ( webargs ):
+  """Return a single HDF5 field"""
+
+  try:
+    [ token, annid, verb, field, rest ] = webargs.split ('/',4)
+  except:
+    logger.warning("Illegal getField request.  Wrong number of arguments.")
+    raise ANNError("Illegal getField request.  Wrong number of arguments.")
+
+  [ db, dbcfg, proj, projdb ] = _loadDBProj ( token )
+
+  # retrieve the annotation 
+  anno = db.getAnnotation ( annid )
+  if anno == None:
+    logger.warning("No annotation found at identifier = %s" % (annoid))
+    raise ANNError ("No annotation found at identifier = %s" % (annoid))
+
+  value = anno.getField ( field )
+  return value
+
+
+def setField ( webargs ):
+  """Assign a single HDF5 field"""
+
+  try:
+    [ token, annid, verb, field, value, rest ] = webargs.split ('/',5)
+  except:
+    logger.warning("Illegal getField request.  Wrong number of arguments.")
+    raise ANNError("Illegal getField request.  Wrong number of arguments.")
+    
+  [ db, dbcfg, proj, projdb ] = _loadDBProj ( token )
+
+  # retrieve the annotation 
+  anno = db.getAnnotation ( annid )
+  if anno == None:
+    logger.warning("No annotation found at identifier = %s" % (annoid))
+    raise ANNError ("No annotation found at identifier = %s" % (annoid))
+
+  anno.setField ( field, value )
+  anno.update ( db )
+  db.commit()
+
+
+#
+#  Private helper functions
+#
+
+def _loadDBProj ( token ):
+  """Load the configuration for this database and project"""
+
+  # Get the annotation database
+  projdb = emcaproj.EMCAProjectsDB()
+  proj = projdb.getProj ( token )
+  dbcfg = dbconfig.switchDataset ( proj.getDataset() )
+  db = emcadb.EMCADB ( dbcfg, proj )
+
+  return db, dbcfg, proj, projdb
+
+
+  
 
 

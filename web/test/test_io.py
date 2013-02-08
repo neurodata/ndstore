@@ -417,13 +417,6 @@ class TestRW:
     for id in [100000,100001,100002,100003]:
       assert countVoxels ( id, h5r ) == 20000 
 
-    assert False
-
-    # RB pick up here  check exceptions.  do same this with dense annotations
-    
-    # Create a batch write
-
-
 
   def test_rw(self):
     """A battery of read and writes"""

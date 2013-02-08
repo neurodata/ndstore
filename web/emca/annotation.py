@@ -54,6 +54,32 @@ class Annotation:
     else:
       db.setID(self.annid)
 
+  def getField ( self, field ):
+    """Accessor by field name"""
+
+    if field == 'status':
+      return self.status
+    elif field == 'confidence':
+      return self.confidence
+    elif field == 'author':
+      return self.author
+    elif self.kvpairs.get(field):
+      return self.kvpairs['field']
+    else:
+      logger.warning ( "getField: No such field %" % (field))
+      raise ANNError ( "getField: No such field %" % (field))
+
+  def setField ( self, field, value ):
+    """Mutator by field name.  Then need to store the field."""
+    
+    if field == 'status':
+      self.status = value
+    elif field == 'confidence':
+      self.confidence = value
+    else:
+      logger.warning ( "setField: No such or can't update field %" % (field))
+      raise ANNError ( "setField: No such or can't update field %" % (field))
+
   def store ( self, annodb, annotype=ANNO_ANNOTATION ):
     """Store the annotation to the annotations database"""
 
@@ -229,6 +255,30 @@ class AnnSynapse (Annotation):
     # Call the base class constructor
     Annotation.__init__(self)
 
+  def getField ( self, field ):
+    """Accessor by field name"""
+
+    if field == 'weight':
+      return self.weight
+    elif field == 'synapse_type':
+      return self.synapse_type
+    elif field == 'seeds':
+      return self.seeds
+    elif field == 'segments':
+      return self.segments
+    else:
+      return Annotation.getField(self,field)
+
+  def setField ( self, field, value ):
+    """Mutator by field name.  Then need to store the field."""
+    
+    if field == 'weight':
+      self.weight = value
+    elif field == 'synapse_type':
+      self.synapse_type = value
+    else:
+      Annotation.setField ( self, field, value )
+
   def store ( self, annodb ):
     """Store the synapse to the annotations databae"""
 
@@ -371,6 +421,34 @@ class AnnSeed (Annotation):
     # Call the base class constructor
     Annotation.__init__(self)
 
+  def getField ( self, field ):
+    """Accessor by field name"""
+
+    if field == 'parent':
+      return self.parent
+    elif field == 'position':
+      return self.position
+    elif field == 'cubelocation':
+      return self.cubelocation
+    elif field == 'source':
+      return self.source
+    else:
+      return Annotation.getField(self,field)
+
+  def setField ( self, field, value ):
+    """Mutator by field name.  Then need to store the field."""
+    
+    if field == 'parent':
+      self.parent = value
+    elif field == 'position':
+      self.position = value
+    elif field == 'cubelocation':
+      self.cubelocation = value
+    elif field == 'source':
+      self.source = value
+    else:
+      Annotation.setField ( self, field, value )
+
   def store ( self, annodb ):
     """Store thwe seed to the annotations databae"""
 
@@ -399,7 +477,7 @@ class AnnSeed (Annotation):
 
     cursor = annodb.conn.cursor()
 
-    if self.position == []:
+    if self.position == [] or self.position==[None,None,None]:
       storepos = [ 'NULL', 'NULL', 'NULL' ]
     else:
       storepos = self.position
@@ -481,6 +559,34 @@ class AnnSegment (Annotation):
 
     # Call the base class constructor
     Annotation.__init__(self)
+
+  def getField ( self, field ):
+    """Accessor by field name"""
+
+    if field == 'segmentclass':
+      return self.segmentclass
+    elif field == 'parentseed':
+      return self.parentseed
+    elif field == 'neuron':
+      return self.neuron
+    elif field == 'synapses':
+      return self.synapses
+    elif field == 'organelles':
+      return self.organelles
+    else:
+      return Annotation.getField(self,field)
+
+  def setField ( self, field, value ):
+    """Mutator by field name.  Then need to store the field."""
+    
+    if field == 'segmentclass':
+      self.segmentclass = value
+    elif field == 'parentseed':
+      self.parentseed = value
+    elif field == 'neuron':
+      self.neuron = value
+    else:
+      Annotation.setField ( self, field, value )
 
   def store ( self, annodb ):
     """Store the synapse to the annotations databae"""
@@ -612,6 +718,20 @@ class AnnNeuron (Annotation):
     # Call the base class constructor
     Annotation.__init__(self)
 
+  def getField ( self, field ):
+    """Accessor by field name"""
+
+    if field == 'segments':
+      return self.segments
+    else:
+      return Annotation.getField(self,field)
+
+  def setField ( self, field, value ):
+    """Mutator by field name.  Then need to store the field."""
+    
+    Annotation.setField ( self, field, value )
+
+
   def store ( self, annodb ):
     """Store the synapse to the annotations databae"""
 
@@ -690,15 +810,41 @@ class AnnOrganelle (Annotation):
     # Call the base class constructor
     Annotation.__init__(self)
 
+  def getField ( self, field ):
+    """Accessor by field name"""
+
+    if field == 'organelleclass':
+      return self.organelleclass
+    elif field == 'centroid':
+      return self.centroid
+    elif field == 'parentseed':
+      return self.parentseed
+    elif field == 'seeds':
+      return self.seeds
+    else:
+      return Annotation.getField(self,field)
+
+  def setField ( self, field, value ):
+    """Mutator by field name.  Then need to store the field."""
+    
+    if field == 'organelleclass':
+      self.organelleclass = value
+    elif field == 'parentseed':
+      self.parentseed = value
+    else:
+      Annotation.setField ( self, field, value )
+
   def store ( self, annodb ):
     """Store the synapse to the annotations databae"""
 
     cursor = annodb.conn.cursor()
 
-    if self.centroid == None:
+    # TODO need a.any or a.all (also fix other None,None,None
+    if self.centroid == None or self.centroid[0]==None or self.centroid[1]==None or self.centroid[2]==None:
       storecentroid = [ 'NULL', 'NULL', 'NULL' ]
     else:
       storecentroid = self.centroid
+    storecentroid = [ 'NULL', 'NULL', 'NULL' ]
 
     sql = "INSERT INTO %s VALUES ( %s, %s, %s, %s, %s, %s )"\
             % ( anno_dbtables['organelle'], self.annid, self.organelleclass, self.parentseed,
@@ -726,7 +872,7 @@ class AnnOrganelle (Annotation):
 
     cursor = annodb.conn.cursor()
 
-    if self.centroid == None:
+    if self.centroid == None or self.centroid[0]==None or self.centroid[1]==None or self.centroid[2]==None:
       storecentroid = [ 'NULL', 'NULL', 'NULL' ]
     else:
       storecentroid = self.centroid
