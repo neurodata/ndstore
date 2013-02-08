@@ -80,7 +80,6 @@ class EMCAProject:
     projgrp.create_dataset ( "TYPE", (1,), dtype=np.uint32, data=self._dbtype )
     projgrp.create_dataset ( "DATASET", (1,), dtype=h5py.special_dtype(vlen=str), data=self._dataset )
     projgrp.create_dataset ( "DATAURL", (1,), dtype=h5py.special_dtype(vlen=str), data=self._dataurl )
-    projgrp.create_dataset ( "RESOLUTION", (1,), dtype=np.uint32, data=self._resolution )
     projgrp.create_dataset ( "READONLY", (1,), dtype=bool, data=(False if self._readonly==0 else True))
     projgrp.create_dataset ( "EXCEPTIONS", (1,), dtype=bool, data=(False if self._exceptions==0 else True))
 
@@ -132,7 +131,7 @@ class EMCAProjectsDB:
   #
   # Load the  database information based on the token
   #
-  def newEMCAProj ( self, token, openid, dbhost, project, dbtype, dataset, dataurl, readonly, exceptions, nocreate ):
+  def newEMCAProj ( self, token, openid, dbhost, project, dbtype, dataset, dataurl, readonly, exceptions, nocreate=False ):
     """Create a new emca project"""
 
 # TODO need to undo the project creation if not totally sucessful

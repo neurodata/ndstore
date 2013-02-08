@@ -585,6 +585,7 @@ class EMCADB:
     # Update all indexes
     self.annoIdx.updateIndexDense(index_dict,resolution)
 
+
   #
   #  Called when labeling an entity
   #

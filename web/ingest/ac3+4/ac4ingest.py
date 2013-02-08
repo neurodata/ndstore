@@ -9,7 +9,7 @@ import cStringIO
 import collections
 import zlib
 
-import kanno_opt
+import kanno_cy
 
 #
 #  ingest the PNG files into the database

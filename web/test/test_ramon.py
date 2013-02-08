@@ -14,8 +14,8 @@ EM_EMCA_PATH = os.path.join(EM_BASE_PATH, "emca" )
 sys.path += [ EM_EMCA_PATH ]
 
 #SITE_HOST = 'openconnecto.me'
-SITE_HOST = 'localhost:8000'
-#SITE_HOST = 'localhost'
+#SITE_HOST = 'localhost:8000'
+SITE_HOST = 'localhost'
 
 import emcaproj
 
@@ -427,4 +427,278 @@ class TestRamon:
       getid2 = self.getH5id ( f )
 
       assert ( getid2 == putid2 )
+
+
+  def _makeAnno ( self, anntype ):
+
+    # Create an annotation
+    tmpfile = tempfile.NamedTemporaryFile()
+    h5fh = h5py.File ( tmpfile.name )
+
+    # Create the top level annotation id namespace
+    idgrp = h5fh.create_group ( str(0) )
+    mdgrp = idgrp.create_group ( "METADATA" )
+    ann_author='Randal Burns'
+    mdgrp.create_dataset ( "AUTHOR", (1,), dtype=h5py.special_dtype(vlen=str), data=ann_author )
+
+    idgrp.create_dataset ( "ANNOTATION_TYPE", (1,), np.uint32, data=anntype )
+
+    h5fh.flush()
+    tmpfile.seek(0)
+
+    # Build the put URL
+    url = "http://%s/emca/%s/" % ( SITE_HOST, 'unittest')
+
+    # write an object (server creates identifier)
+    req = urllib2.Request ( url, tmpfile.read())
+    response = urllib2.urlopen(req)
+    putid = int(response.read())
+
+    tmpfile.close()
+
+    return putid
+    
+
+
+  def test_fields (self):
+    """Test the getField and setField"""
+
+    # Make an annotation 
+    annid = self._makeAnno ( 1 )
+
+    # set the status
+    status = random.randint (0,100)
+    url =  "http://%s/emca/%s/%s/setField/status/%s/" % ( SITE_HOST, 'unittest',str(annid), status )
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert f.read()==''
+
+    # get the status
+    url =  "http://%s/emca/%s/%s/getField/status/" % ( SITE_HOST, 'unittest',str(annid))
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert status == int(f.read()) 
+
+    # set the confidence
+    confidence = random.random ()
+    url =  "http://%s/emca/%s/%s/setField/confidence/%s/" % ( SITE_HOST, 'unittest',str(annid), confidence )
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert f.read()==''
+
+    # get the confidence
+    url =  "http://%s/emca/%s/%s/getField/confidence/" % ( SITE_HOST, 'unittest',str(annid))
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert confidence - float(f.read()) < 0.001
+    
+    # get the author
+    url =  "http://%s/emca/%s/%s/getField/author/" % ( SITE_HOST, 'unittest',str(annid))
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert 'Randal Burns' == f.read()
+
+    # Make a synapse
+    annid = self._makeAnno ( 2 )
+
+    # set the type
+    synapse_type = random.randint (0,100)
+    url =  "http://%s/emca/%s/%s/setField/synapse_type/%s/" % ( SITE_HOST, 'unittest',str(annid), synapse_type )
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert f.read()==''
+
+    # get the synapse_type
+    url =  "http://%s/emca/%s/%s/getField/synapse_type/" % ( SITE_HOST, 'unittest',str(annid))
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert synapse_type == int(f.read()) 
+
+    # set the weight
+    weight = random.random ()
+    url =  "http://%s/emca/%s/%s/setField/weight/%s/" % ( SITE_HOST, 'unittest',str(annid), weight )
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert f.read()==''
+
+    # get the weight
+    url =  "http://%s/emca/%s/%s/getField/weight/" % ( SITE_HOST, 'unittest',str(annid))
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert weight - float(f.read()) < 0.001
+
+    # check inheritance
+    # set the status
+    status = random.randint (0,100)
+    url =  "http://%s/emca/%s/%s/setField/status/%s/" % ( SITE_HOST, 'unittest',str(annid), status )
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert f.read()==''
+
+    # get the status
+    url =  "http://%s/emca/%s/%s/getField/status/" % ( SITE_HOST, 'unittest',str(annid))
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert status == int(f.read()) 
+
+    
+    # Make a seed
+    annid = self._makeAnno ( 3 )
+
+    # set the parent
+    parent = random.randint (0,100)
+    url =  "http://%s/emca/%s/%s/setField/parent/%s/" % ( SITE_HOST, 'unittest',str(annid), parent )
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert f.read()==''
+
+    # get the parent
+    url =  "http://%s/emca/%s/%s/getField/parent/" % ( SITE_HOST, 'unittest',str(annid))
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert parent == int(f.read()) 
+
+    # set the source
+    source = random.randint (0,100)
+    url =  "http://%s/emca/%s/%s/setField/source/%s/" % ( SITE_HOST, 'unittest',str(annid), source )
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert f.read()==''
+
+    # get the source
+    url =  "http://%s/emca/%s/%s/getField/source/" % ( SITE_HOST, 'unittest',str(annid))
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert source == int(f.read()) 
+
+    # set the cubelocation
+    cubelocation = random.randint (0,100)
+    url =  "http://%s/emca/%s/%s/setField/cubelocation/%s/" % ( SITE_HOST, 'unittest',str(annid), cubelocation )
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert f.read()==''
+
+    # get the cubelocation
+    url =  "http://%s/emca/%s/%s/getField/cubelocation/" % ( SITE_HOST, 'unittest',str(annid))
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert cubelocation == int(f.read()) 
+
+    # Make a segment
+    annid = self._makeAnno ( 4 )
+
+    # set the parentseed
+    parentseed = random.randint (0,100)
+    url =  "http://%s/emca/%s/%s/setField/parentseed/%s/" % ( SITE_HOST, 'unittest',str(annid), parentseed )
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert f.read()==''
+
+    # get the parentseed
+    url =  "http://%s/emca/%s/%s/getField/parentseed/" % ( SITE_HOST, 'unittest',str(annid))
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert parentseed == int(f.read()) 
+
+    # set the segmentclass
+    segmentclass = random.randint (0,100)
+    url =  "http://%s/emca/%s/%s/setField/segmentclass/%s/" % ( SITE_HOST, 'unittest',str(annid), segmentclass )
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert f.read()==''
+
+    # get the segmentclass
+    url =  "http://%s/emca/%s/%s/getField/segmentclass/" % ( SITE_HOST, 'unittest',str(annid))
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert segmentclass == int(f.read()) 
+
+    # set the neuron
+    neuron = random.randint (0,100)
+    url =  "http://%s/emca/%s/%s/setField/neuron/%s/" % ( SITE_HOST, 'unittest',str(annid), neuron )
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert f.read()==''
+
+    # get the neuron
+    url =  "http://%s/emca/%s/%s/getField/neuron/" % ( SITE_HOST, 'unittest',str(annid))
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert neuron == int(f.read()) 
+
+    # check inheritance
+    # set the status
+    status = random.randint (0,100)
+    url =  "http://%s/emca/%s/%s/setField/status/%s/" % ( SITE_HOST, 'unittest',str(annid), status )
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert f.read()==''
+
+    # get the status
+    url =  "http://%s/emca/%s/%s/getField/status/" % ( SITE_HOST, 'unittest',str(annid))
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert status == int(f.read()) 
+
+    # Make a neuron
+    annid = self._makeAnno ( 5 )
+
+    # no independently set fields
+
+    # check inheritance
+    # set the status
+    status = random.randint (0,100)
+    url =  "http://%s/emca/%s/%s/setField/status/%s/" % ( SITE_HOST, 'unittest',str(annid), status )
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert f.read()==''
+
+    # get the status
+    url =  "http://%s/emca/%s/%s/getField/status/" % ( SITE_HOST, 'unittest',str(annid))
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert status == int(f.read()) 
+
+    # Make an organelle 
+    annid = self._makeAnno ( 6 )
+
+    # set the parentseed
+    parentseed = random.randint (0,100)
+    url =  "http://%s/emca/%s/%s/setField/parentseed/%s/" % ( SITE_HOST, 'unittest',str(annid), parentseed )
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert f.read()==''
+
+    # get the parentseed
+    url =  "http://%s/emca/%s/%s/getField/parentseed/" % ( SITE_HOST, 'unittest',str(annid))
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert parentseed == int(f.read()) 
+
+    # set the organelleclass
+    organelleclass = random.randint (0,100)
+    url =  "http://%s/emca/%s/%s/setField/organelleclass/%s/" % ( SITE_HOST, 'unittest',str(annid), organelleclass )
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert f.read()==''
+
+    # get the organelleclass
+    url =  "http://%s/emca/%s/%s/getField/organelleclass/" % ( SITE_HOST, 'unittest',str(annid))
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert organelleclass == int(f.read()) 
+
+    # check inheritance
+    # set the status
+    status = random.randint (0,100)
+    url =  "http://%s/emca/%s/%s/setField/status/%s/" % ( SITE_HOST, 'unittest',str(annid), status )
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert f.read()==''
+
+    # get the status
+    url =  "http://%s/emca/%s/%s/getField/status/" % ( SITE_HOST, 'unittest',str(annid))
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert status == int(f.read()) 
 
