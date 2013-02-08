@@ -702,3 +702,28 @@ class TestRamon:
     f = urllib2.urlopen ( url )
     assert status == int(f.read()) 
 
+    # TODO error cases.
+    #  bad format to a number
+    url =  "http://%s/emca/%s/%s/setField/status/aa/" % ( SITE_HOST, 'unittest',str(annid))
+    with pytest.raises(urllib2.HTTPError): 
+      req = urllib2.Request ( url )
+      f = urllib2.urlopen ( url )
+
+    #  assign a field for a wrong annotation type
+    url =  "http://%s/emca/%s/%s/setField/segmentclass/2/" % ( SITE_HOST, 'unittest',str(annid))
+    with pytest.raises(urllib2.HTTPError): 
+      req = urllib2.Request ( url )
+      f = urllib2.urlopen ( url )
+
+    #  assign a missing field
+    url =  "http://%s/emca/%s/%s/setField/nonesuch/2/" % ( SITE_HOST, 'unittest',str(annid))
+    with pytest.raises(urllib2.HTTPError): 
+      req = urllib2.Request ( url )
+      f = urllib2.urlopen ( url )
+
+    #  request a missing field
+    url =  "http://%s/emca/%s/%s/getField/othernonesuch/" % ( SITE_HOST, 'unittest',str(annid))
+    with pytest.raises(urllib2.HTTPError): 
+      req = urllib2.Request ( url )
+      f = urllib2.urlopen ( url )
+
