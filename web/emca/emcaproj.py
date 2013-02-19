@@ -80,7 +80,6 @@ class EMCAProject:
     projgrp.create_dataset ( "TYPE", (1,), dtype=np.uint32, data=self._dbtype )
     projgrp.create_dataset ( "DATASET", (1,), dtype=h5py.special_dtype(vlen=str), data=self._dataset )
     projgrp.create_dataset ( "DATAURL", (1,), dtype=h5py.special_dtype(vlen=str), data=self._dataurl )
-    projgrp.create_dataset ( "RESOLUTION", (1,), dtype=np.uint32, data=self._resolution )
     projgrp.create_dataset ( "READONLY", (1,), dtype=bool, data=(False if self._readonly==0 else True))
     projgrp.create_dataset ( "EXCEPTIONS", (1,), dtype=bool, data=(False if self._exceptions==0 else True))
 
@@ -158,7 +157,7 @@ class EMCAProjectsDB:
 
       # Make the database unless specified
       if not nocreate: 
-
+       
         # Connect to the new database
         newconn = MySQLdb.connect (host = dbhost,
                               user = emcaprivate.dbuser,
@@ -228,15 +227,17 @@ class EMCAProjectsDB:
     except:
       sql = "DELETE FROM {0} WHERE token=\'{1}\'".format (emcaprivate.table, token)
 
-      logger.info ( "Could not create project database.  Undoing projects insert. Project %s. SQL=%s" % ( dbhost, project, sql ))
+      logger.info ( "Could not create project database.  Undoing projects insert. Project %s. SQL=%s" % ( project, sql ))
 
       try:
         cursor = self.conn.cursor()
         cursor.execute ( sql )
+        self.conn.commit()
       except MySQLdb.Error, e:
         logger.error ("Could not undo insert into emca projects database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         logger.error ("Check project database for project not linked to database.")
         raise
+
     
 
   def deleteEMCAProj ( self, token ):

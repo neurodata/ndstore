@@ -173,3 +173,27 @@ def mcFalseColor (request, webargs):
   except:
     logger.exception("Unknown exception in mcFalseColor.")
     raise
+
+
+def setField (request, webargs):
+  """Set an individual RAMON field for an object"""
+
+  try:
+    emcarest.setField(webargs)
+    return django.http.HttpResponse()
+  except ANNError, e:
+    return django.http.HttpResponseNotFound(e)
+  except:
+    logger.exception("Unknown exception in setField.")
+    raise
+
+def getField (request, webargs):
+  """Get an individual RAMON field for an object"""
+
+  try:
+    return django.http.HttpResponse(emcarest.getField(webargs), mimetype="text/html" )
+  except ANNError, e:
+    return django.http.HttpResponseNotFound(e)
+  except:
+    logger.exception("Unknown exception in getField.")
+    raise

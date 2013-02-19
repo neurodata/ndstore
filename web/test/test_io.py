@@ -15,8 +15,8 @@ EM_EMCA_PATH = os.path.join(EM_BASE_PATH, "emca" )
 sys.path += [ EM_EMCA_PATH ]
 
 #SITE_HOST = 'openconnecto.me'
-SITE_HOST = 'localhost:8000'
-#SITE_HOST = 'localhost'
+#SITE_HOST = 'localhost:8000'
+SITE_HOST = 'localhost'
 
 import emcaproj
 
@@ -387,8 +387,8 @@ class TestRW:
     wp.annid = 100000
     wp.numobjects = 2
     wp.voxels = True
-    wp.exceptions = True
-    wp.cutout = '0/100,200/100,200/100,101'
+    wp.exception = True
+    wp.cutout = '0/100,200/100,200/100,102'
     retval = writeAnno(wp)
 
     ids = retval.split(",")
@@ -400,8 +400,8 @@ class TestRW:
     wp.annid = 100002
     wp.numobjects = 2
     wp.voxels = False
-    wp.exceptions = True
-    wp.cutout = '0/100,200/100,200/101,102'
+    wp.exception = True
+    wp.cutout = '0/100,200/100,200/101,103'
     retval = writeAnno(wp)
 
     ids = retval.split(",")
@@ -415,13 +415,7 @@ class TestRW:
 
     # Now verify that we have the right count in each annotation
     for id in [100000,100001,100002,100003]:
-
-    assert False
-
-    # RB pick up here  check exceptions.  do same this with dense annotations
-    
-    # Create a batch write
-
+      assert countVoxels ( id, h5r ) == 20000 
 
 
   def test_rw(self):
@@ -575,12 +569,6 @@ class TestRW:
 
     # read
     rp.token = "unittest_rw"
-<<<<<<< HEAD
-    rp.baseurl = "openconnecto.me"
-    # write
-    wp.token = "unittest_rw"
-    wp.baseurl = "openconnecto.me"
-=======
     rp.baseurl = SITE_HOST
     rp.resolution = 0
    
@@ -588,7 +576,6 @@ class TestRW:
     wp.token = "unittest_rw"
     wp.baseurl = SITE_HOST
     wp.resolution = 0
->>>>>>> 3a5784160c69fdb21173ab82c2eb1577eae5a143
 
     # Create an annotation
     wp.numobjects = 1
@@ -623,12 +610,6 @@ class TestRW:
 
     # read
     rp.token = "unittest_rw"
-<<<<<<< HEAD
-    rp.baseurl = "openconnecto.me"
-    # write
-    wp.token = "unittest_rw"
-    wp.baseurl = "openconnecto.me"
-=======
     rp.baseurl = SITE_HOST
     rp.resolution = 0
 
@@ -636,7 +617,6 @@ class TestRW:
     wp.token = "unittest_rw"
     wp.baseurl = SITE_HOST
     wp.resolution = 0
->>>>>>> 3a5784160c69fdb21173ab82c2eb1577eae5a143
 
     # Create an annotation
     wp.numobjects = 1
