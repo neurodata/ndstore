@@ -574,13 +574,14 @@ class EMCADB:
 
           #update the index for the cube
           # get the unique elements that are being added to the data
+
           uniqueels = np.unique ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
           for el in uniqueels:
             index_dict[el].add(key) 
 
           # remove 0 no reason to index that
-          del(index_dict[0])
-
+          if 0 in index_dict:
+            del(index_dict[0])
 
     # Update all indexes
     self.annoIdx.updateIndexDense(index_dict,resolution)

@@ -524,6 +524,7 @@ def selectPost ( webargs, dbcfg, proj, postdata ):
 
       elif service == 'npdense':
 
+        logger.warning("In npdense")
         # Process the arguments
         try:
           args = restargs.BrainRestArgs ();
@@ -555,7 +556,6 @@ def selectPost ( webargs, dbcfg, proj, postdata ):
         # Translates the values directly
         else:
           entityid = db.annotateDense ( corner, resolution, voxarray, conflictopt )
-        db.conn.commit()
 
       else:
         logger.warning("An illegal Web POST service was requested: %s.  Args %s" % ( service, webargs ))
