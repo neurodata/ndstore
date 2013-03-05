@@ -128,6 +128,7 @@ INSTALLED_APPS = (
     #RB 3/26 add applications
     'emca',
     'overlay',
+    'catmaid',
 )
 
 # A sample logging configuration. The only tangible logging
