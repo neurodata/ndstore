@@ -12,7 +12,7 @@ import annotation
 import annindex
 import imagecube
 
-from emcaerror import ANNError
+from emcaerror import EMCAError
 
 from emca_cy import cubeLocs_cy
 
@@ -567,7 +567,7 @@ class EMCADB:
                 # add to the index
                 index_dict[exid].add(key)
           else:
-            raise ANNError ( "Unsupported conflict option %s" % conflictopt )
+            raise EMCAError ( "Unsupported conflict option %s" % conflictopt )
 
           self.putCube ( key, resolution, cube)
 
@@ -1016,7 +1016,7 @@ class EMCADB:
     #  throw an error or build the sql clause
     for field in predicates.keys():
       if field not in fields:
-        raise ANNError ( "Illegal field in URL: %s" % (field) )
+        raise EMCAError ( "Illegal field in URL: %s" % (field) )
       elif clause == '':
         clause += " WHERE "
       else:  

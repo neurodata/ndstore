@@ -23,7 +23,7 @@ import annotation
 from emca_cy import assignVoxels_cy
 from emca_cy import recolor_cy
 
-from emcaerror import ANNError
+from emcaerror import EMCAError
 
 import logging
 logger=logging.getLogger("emca")
@@ -44,7 +44,7 @@ def cutout ( imageargs, dbcfg, proj, channel=None ):
     args.cutoutArgs ( imageargs, dbcfg )
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments failed: %s" % (e))
-    raise ANNError(e)
+    raise EMCAError(e)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -137,7 +137,7 @@ def xySlice ( imageargs, dbcfg, proj ):
     args.xyArgs ( imageargs, dbcfg )
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments failed: %s" % (e))
-    raise ANNError(e)
+    raise EMCAError(e)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -188,7 +188,7 @@ def xzSlice ( imageargs, dbcfg, proj ):
     args.xzArgs ( imageargs, dbcfg )
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments failed: %s" % (e))
-    raise ANNError(e)
+    raise EMCAError(e)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -246,7 +246,7 @@ def yzSlice ( imageargs, dbcfg, proj ):
     args.yzArgs ( imageargs, dbcfg )
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments failed: %s" % (e))
-    raise ANNError(e)
+    raise EMCAError(e)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -304,7 +304,7 @@ def xyAnno ( imageargs, dbcfg, proj ):
     args.xyArgs ( imageargs, dbcfg )
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments failed: %s" % (e))
-    raise ANNError(e)
+    raise EMCAError(e)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -333,7 +333,7 @@ def xzAnno ( imageargs, dbcfg, proj ):
     args.xzArgs ( imageargs, dbcfg )
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments failed: %s" % (e))
-    raise ANNError(e)
+    raise EMCAError(e)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -361,7 +361,7 @@ def yzAnno ( imageargs, dbcfg, proj ):
     args.yzArgs ( imageargs, dbcfg )
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments failed: %s" % (e))
-    raise ANNError(e)
+    raise EMCAError(e)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -404,7 +404,7 @@ def listIds ( imageargs, dbcfg, proj ):
     args.cutoutArgs ( imageargs, dbcfg )
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments failed: %s" % (e))
-    raise ANNError(e)
+    raise EMCAError(e)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -475,7 +475,7 @@ def selectService ( webargs, dbcfg, proj ):
 
   else:
     logger.warning("An illegal Web GET service was requested %s.  Args %s" % ( service, webargs ))
-    raise ANNError ("No such Web service: %s" % service )
+    raise EMCAError ("No such Web service: %s" % service )
 
 
 #
@@ -493,7 +493,7 @@ def selectPost ( webargs, dbcfg, proj, postdata ):
   # Don't write to readonly projects
   if proj.getReadOnly()==1:
     logger.warning("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
-    raise ANNError("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
+    raise EMCAError("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
 
   # choose to overwrite (default), preserve, or make exception lists
   #  when voxels conflict
@@ -531,7 +531,7 @@ def selectPost ( webargs, dbcfg, proj, postdata ):
           args.cutoutArgs ( postargs, dbcfg )
         except restargs.RESTArgsError, e:
           logger.warning("REST Arguments failed: %s" % (e))
-          raise ANNError(e)
+          raise EMCAError(e)
 
         corner = args.getCorner()
         resolution = args.getResolution()
@@ -559,7 +559,7 @@ def selectPost ( webargs, dbcfg, proj, postdata ):
 
       else:
         logger.warning("An illegal Web POST service was requested: %s.  Args %s" % ( service, webargs ))
-        raise ANNError ("No such Web service: %s" % service )
+        raise EMCAError ("No such Web service: %s" % service )
         
       db.commit()
       done=True
@@ -711,7 +711,7 @@ def emcacatmaid ( webargs ):
 
     else:
       logger.warning("No such cutout plane: %s.  Must be (xy|xz|yz)..  Args %s" % ( service, webargs ))
-      raise ANNError ( "No such cutout plane: %s.  Must be (xy|xz|yz)." % plane )
+      raise EMCAError ( "No such cutout plane: %s.  Must be (xy|xz|yz)." % plane )
 
   # Write the image to a readable stream
   if cutoutdata.dtype==np.uint8:
@@ -743,7 +743,7 @@ def getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution=None, corner=No
   anno = db.getAnnotation ( annoid )
   if anno == None:
     logger.warning("No annotation found at identifier = %s" % (annoid))
-    raise ANNError ("No annotation found at identifier = %s" % (annoid))
+    raise EMCAError ("No annotation found at identifier = %s" % (annoid))
 
   # create the HDF5 object
   h5anno = h5ann.AnnotationtoH5 ( anno, h5f )
@@ -751,7 +751,7 @@ def getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution=None, corner=No
   # only return data for annotation types that have data
   if anno.__class__ in [ annotation.AnnNeuron, annotation.AnnSeed ] and dataoption != AR_NODATA: 
     logger.warning("No data associated with annotation type %s" % ( anno.__class__))
-    raise ANNError ("No data associated with annotation type %s" % ( anno.__class__))
+    raise EMCAError ("No data associated with annotation type %s" % ( anno.__class__))
 
   # get the voxel data if requested
   if dataoption==AR_VOXELS:
@@ -784,7 +784,7 @@ def getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution=None, corner=No
 
       if bbdim[0]*bbdim[1]*bbdim[2] >= 1024*1024*256:
         logger.warning ("Cutout region is inappropriately large.  Dimension: %s,%s,%s" % (bbdim[0],bbdim[1],bbdim[2]))
-        raise ANNError ("Cutout region is inappropriately large.  Dimension: %s,%s,%s" % (bbdim[0],bbdim[1],bbdim[2]))
+        raise EMCAError ("Cutout region is inappropriately large.  Dimension: %s,%s,%s" % (bbdim[0],bbdim[1],bbdim[2]))
 
       # do a cutout and add the cutout to the HDF5 file
       cutout = db.annoCutout ( annoid, resolution, bbcorner, bbdim )
@@ -837,7 +837,7 @@ def getAnnotation ( webargs ):
           resolution = int(resstr) 
         except:
           logger.warning ( "Improperly formatted voxel arguments {}".format(args[2]))
-          raise ANNError("Improperly formatted voxel arguments {}".format(args[2]))
+          raise EMCAError("Improperly formatted voxel arguments {}".format(args[2]))
 
         getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution )
 
@@ -851,7 +851,7 @@ def getAnnotation ( webargs ):
             resolution = int(resstr) 
           except:
             logger.warning ( "Improperly formatted cutout arguments {}".format(args[2]))
-            raise ANNError("Improperly formatted cutout arguments {}".format(args[2]))
+            raise EMCAError("Improperly formatted cutout arguments {}".format(args[2]))
 
           getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution )
 
@@ -877,18 +877,18 @@ def getAnnotation ( webargs ):
           resolution = int(resstr) 
         except:
           logger.warning ( "Improperly formatted bounding box arguments {}".format(args[2]))
-          raise ANNError("Improperly formatted bounding box arguments {}".format(args[2]))
+          raise EMCAError("Improperly formatted bounding box arguments {}".format(args[2]))
     
         getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution )
 
       else:
         logger.warning ("Fetch identifier %s.  Error: no such data option %s " % ( annoid, args[1] ))
-        raise ANNError ("Fetch identifier %s.  Error: no such data option %s " % ( annoid, args[1] ))
+        raise EMCAError ("Fetch identifier %s.  Error: no such data option %s " % ( annoid, args[1] ))
 
   # the first argument is not numeric.  it is a service other than getAnnotation
   else:
     logger.warning("Get interface %s requested.  Illegal or not implemented. Args: %s" % ( args[0], webargs ))
-    raise ANNError ("Get interface %s requested.  Illegal or not implemented" % ( args[0] ))
+    raise EMCAError ("Get interface %s requested.  Illegal or not implemented" % ( args[0] ))
 
   h5f.flush()
   tmpfile.seek(0)
@@ -916,7 +916,7 @@ def getCSV ( webargs ):
     resolution = int(resstr) 
   except:
     logger.warning ( "Improperly formatted cutout arguments {}".format(reststr))
-    raise ANNError("Improperly formatted cutout arguments {}".format(reststr))
+    raise EMCAError("Improperly formatted cutout arguments {}".format(reststr))
 
   
   getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution )
@@ -945,7 +945,7 @@ def getAnnotations ( webargs, postdata ):
   # IDENTIFIERS
   if not h5in.get('ANNOIDS'):
     logger.warning ("Requesting multiple annotations.  But no HDF5 \'ANNOIDS\' field specified.") 
-    raise ANNError ("Requesting multiple annotations.  But no HDF5 \'ANNOIDS\' field specified.") 
+    raise EMCAError ("Requesting multiple annotations.  But no HDF5 \'ANNOIDS\' field specified.") 
 
   # GET the data out of the HDF5 file.  Never operate on the data in place.
   annoids = h5in['ANNOIDS'][:]
@@ -972,7 +972,7 @@ def getAnnotations ( webargs, postdata ):
       resolution = int(resstr) 
     except:
       logger.warning ( "Improperly formatted voxel arguments {}".format(cutout))
-      raise ANNError("Improperly formatted voxel arguments {}".format(cutout))
+      raise EMCAError("Improperly formatted voxel arguments {}".format(cutout))
 
 
   elif dataarg == 'cutout':
@@ -984,7 +984,7 @@ def getAnnotations ( webargs, postdata ):
         resolution = int(resstr) 
       except:
         logger.warning ( "Improperly formatted cutout arguments {}".format(cutout))
-        raise ANNError("Improperly formatted cutout arguments {}".format(cutout))
+        raise EMCAError("Improperly formatted cutout arguments {}".format(cutout))
     else:
       dataoption = AR_CUTOUT
 
@@ -1007,11 +1007,11 @@ def getAnnotations ( webargs, postdata ):
         resolution = int(resstr) 
       except:
         logger.warning ( "Improperly formatted bounding box arguments {}".format(cutout))
-        raise ANNError("Improperly formatted bounding box arguments {}".format(cutout))
+        raise EMCAError("Improperly formatted bounding box arguments {}".format(cutout))
 
   else:
       logger.warning ("In getAnnotations: Error: no such data option %s " % ( dataarg ))
-      raise ANNError ("In getAnnotations: Error: no such data option %s " % ( dataarg ))
+      raise EMCAError ("In getAnnotations: Error: no such data option %s " % ( dataarg ))
 
   # Make the HDF5 output file
   # Create an in-memory HDF5 file
@@ -1047,7 +1047,7 @@ def putAnnotation ( webargs, postdata ):
   # Don't write to readonly projects
   if proj.getReadOnly()==1:
     logger.warning("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
-    raise ANNError("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
+    raise EMCAError("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
 
   options = optionsargs.split('/')
 
@@ -1085,11 +1085,11 @@ def putAnnotation ( webargs, postdata ):
 
           if anno.__class__ in [ annotation.AnnNeuron, annotation.AnnSeed ] and ( idgrp.get('VOXELS') or idgrp.get('CUTOUT')):
             logger.warning ("Cannot write to annotation type %s" % (anno.__class__))
-            raise ANNError ("Cannot write to annotation type %s" % (anno.__class__))
+            raise EMCAError ("Cannot write to annotation type %s" % (anno.__class__))
 
           if 'update' in options and 'dataonly' in options:
             logger.warning ("Illegal combination of options. Cannot use udpate and dataonly together")
-            raise ANNError ("Illegal combination of options. Cannot use udpate and dataonly together")
+            raise EMCAError ("Illegal combination of options. Cannot use udpate and dataonly together")
 
           elif not 'dataonly' in options and not 'reduce' in options:
 
@@ -1117,7 +1117,7 @@ def putAnnotation ( webargs, postdata ):
             # Check that the voxels have a conforming size:
             if voxels.shape[1] != 3:
               logger.warning ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
-              raise ANNError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
+              raise EMCAError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
 
             exceptions = db.annotate ( anno.annid, resolution, voxels, conflictopt )
 
@@ -1127,7 +1127,7 @@ def putAnnotation ( webargs, postdata ):
             # Check that the voxels have a conforming size:
             if voxels.shape[1] != 3:
               logger.warning ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
-              raise ANNError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
+              raise EMCAError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
             db.shave ( anno.annid, resolution, voxels )
 
           # Is it dense data?
@@ -1233,7 +1233,7 @@ def listAnnoObjects ( webargs, postdata=None ):
 
     if not dbcfg.checkCube( resolution, corner[0], corner[0]+dim[0], corner[1], corner[1]+dim[1], corner[2], corner[2]+dim[2] ):
       logger.warning ( "Illegal cutout corner=%s, dim=%s" % ( corner, dim))
-      raise ANNError ( "Illegal cutout corner=%s, dim=%s" % ( corner, dim))
+      raise EMCAError ( "Illegal cutout corner=%s, dim=%s" % ( corner, dim))
 
     # RBFIX this a hack
     #
@@ -1274,7 +1274,7 @@ def deleteAnnotation ( webargs ):
   # if not..this is not a well-formed delete request
   else:
     logger.warning ("Delete did not specify a legal object identifier = %s" % args[0] )
-    raise ANNError ("Delete did not specify a legal object identifier = %s" % args[0] )
+    raise EMCAError ("Delete did not specify a legal object identifier = %s" % args[0] )
 
   for annoid in annoids: 
 
@@ -1338,7 +1338,7 @@ def mcFalseColor ( webargs ):
 
   if proj.getDBType() != emcaproj.CHANNELS_16bit and proj.getDBType() != emcaproj.CHANNELS_8bit:
     logger.warning ( "Not a multiple channel project." )
-    raise ANNError ( "Not a multiple channel project." )
+    raise EMCAError ( "Not a multiple channel project." )
 
   channels = chanstr.split(",")
 
@@ -1354,7 +1354,7 @@ def mcFalseColor ( webargs ):
       cb = yzSlice ( str(channels[i]) + "/" + imageargs, dbcfg, proj )
     else:
       logger.warning ( "No such service %s. Args: %s" % (service,webargs))
-      raise ANNError ( "No such service %s" % (service) )
+      raise EMCAError ( "No such service %s" % (service) )
 
     # reduction factor
     if proj.getDBType() == emcaproj.CHANNELS_8bit:
@@ -1388,7 +1388,7 @@ def mcFalseColor ( webargs ):
       combined_img +=  np.left_shift(data32,16) 
     else:
       logger.warning ( "Only support six channels at a time.  You requested %s " % (chanstr))
-      raise ANNError ( "Only support six channels at a time.  You requested %s " % (chanstr))
+      raise EMCAError ( "Only support six channels at a time.  You requested %s " % (chanstr))
 
     
   if service == 'xy':
@@ -1422,7 +1422,7 @@ def getField ( webargs ):
     [ token, annid, verb, field, rest ] = webargs.split ('/',4)
   except:
     logger.warning("Illegal getField request.  Wrong number of arguments.")
-    raise ANNError("Illegal getField request.  Wrong number of arguments.")
+    raise EMCAError("Illegal getField request.  Wrong number of arguments.")
 
   [ db, dbcfg, proj, projdb ] = _loadDBProj ( token )
 
@@ -1430,7 +1430,7 @@ def getField ( webargs ):
   anno = db.getAnnotation ( annid )
   if anno == None:
     logger.warning("No annotation found at identifier = %s" % (annoid))
-    raise ANNError ("No annotation found at identifier = %s" % (annoid))
+    raise EMCAError ("No annotation found at identifier = %s" % (annoid))
 
   value = anno.getField ( field )
   return value
@@ -1443,7 +1443,7 @@ def setField ( webargs ):
     [ token, annid, verb, field, value, rest ] = webargs.split ('/',5)
   except:
     logger.warning("Illegal getField request.  Wrong number of arguments.")
-    raise ANNError("Illegal getField request.  Wrong number of arguments.")
+    raise EMCAError("Illegal getField request.  Wrong number of arguments.")
     
   [ db, dbcfg, proj, projdb ] = _loadDBProj ( token )
 
@@ -1451,7 +1451,7 @@ def setField ( webargs ):
   anno = db.getAnnotation ( annid )
   if anno == None:
     logger.warning("No annotation found at identifier = %s" % (annoid))
-    raise ANNError ("No annotation found at identifier = %s" % (annoid))
+    raise EMCAError ("No annotation found at identifier = %s" % (annoid))
 
   anno.setField ( field, value )
   anno.update ( db )

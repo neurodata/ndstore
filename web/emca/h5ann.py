@@ -13,7 +13,7 @@ import sys
 import empaths
 import annotation
 
-from emcaerror import ANNError
+from emcaerror import EMCAError
 
 import logging
 logger=logging.getLogger("emca")
@@ -217,7 +217,7 @@ def H5toAnnotation ( key, idgrp ):
 
   else:
     logger.warning ("Dont support this annotation type yet. Type = %s" % annotype)
-    raise ANNError ("Dont support this annotation type yet. Type = %s" % annotype)
+    raise EMCAError ("Dont support this annotation type yet. Type = %s" % annotype)
 
   # now load the annotation common fields
   if re.match("^\d+$", key):
@@ -269,7 +269,7 @@ def H5GetVolume ( h5fh ):
       return (idgrp['XYZOFFSET'], idgrp['CUTOUT'])
     else:
       logger.warning("Improperly formatted HDF5 file.  XYZOFFSET define but no CUTOUT.")
-      raise ANNError("Improperly formatted HDF5 file.  XYZOFFSET define but no CUTOUT.")
+      raise EMCAError("Improperly formatted HDF5 file.  XYZOFFSET define but no CUTOUT.")
   else:
     return None
 
@@ -404,7 +404,7 @@ def AnnotationtoH5 ( anno, h5fh ):
     return BasetoH5 ( anno, annotation.ANNO_ANNOTATION, h5fh )
   else:
     logger.warning ("(AnnotationtoH5) Does not support this annotation type yet. Type = %s" % anno.__class__)
-    raise ANNError ("(AnnotationtoH5) Does not support this annotation type yet. Type = %s" % anno.__class__)
+    raise EMCAError ("(AnnotationtoH5) Does not support this annotation type yet. Type = %s" % anno.__class__)
 
 
 

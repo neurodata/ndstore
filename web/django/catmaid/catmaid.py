@@ -23,20 +23,44 @@ import h5ann
 def catmaid ( webargs ):
   """Either fetch the file from memcache or load a new region into memcache by cutout"""
 
+  # do something to sanitize the webargs??
   # if tile is in memcache, return it
+  tile = memcache.get(webargs)
+  if tile != None:
+       catmaidimg = emcarest.emcacatmaid(webargs)
+
+    fobj = cStringIO.StringIO ( )
+    catmaidimg.save ( fobj, "PNG" )
+    fobj.seek(0)
+    return django.http.HttpResponse(fobj.read(), mimetype="image/png")
+
+
+
+   
   if fetch_memcache:
+    
 
   # otherwise load a cutout worth of tiles from memcache
   else:
 
     load memcache
 
+
   # return the specific tile
 
   token, tilesz, channel, plane, resstr, xtilestr, ytilestr, zslicestr, rest = webargs.split('/',9)
 
+  # 
+  [ db, dbcfg, proj, projdb ] = emcarest.loadDBProj ( token )
+
+  return db.cutout ( corner, dim, resolution, channel )0
+
+
+
   xtile = int(xtilestr)
   ytile = int(ytilestr)
+
+
 
   projdb = emcaproj.EMCAProjectsDB()
   proj = projdb.getProj ( token )
