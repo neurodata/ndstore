@@ -79,7 +79,7 @@ def numpyZip ( imageargs, dbcfg, proj ):
   """Return a web readable Numpy Pickle zipped"""
 
   # if it's a channel database, pull out the channel
-  if proj.getDBType() == emcaproj.CHANNELS:
+  if proj.getDBType() == emcaproj.CHANNELS_8bit or proj.getDBType() == emcaproj.CHANNELS_16bit:
     [ channel, sym, imageargs ] = imageargs.partition ('/')
   else: 
     channel = None
@@ -103,7 +103,7 @@ def HDF5 ( imageargs, dbcfg, proj ):
   """Return a web readable HDF5 file"""
 
   # if it's a channel database, pull out the channel
-  if proj.getDBType() == emcaproj.CHANNELS:
+  if proj.getDBType() == emcaproj.CHANNELS_8bit or proj.getDBType() == emcaproj.CHANNELS_16bit:
     [ channel, sym, imageargs ] = imageargs.partition ('/')
   else: 
     channel = None
@@ -126,7 +126,7 @@ def HDF5 ( imageargs, dbcfg, proj ):
 def xySlice ( imageargs, dbcfg, proj ):
   """Return the cube object for an xy plane"""
   
-  if proj.getDBType() == emcaproj.CHANNELS:
+  if proj.getDBType() == emcaproj.CHANNELS_8bit or proj.getDBType() == emcaproj.CHANNELS_16bit:
     [ channel, sym, imageargs ] = imageargs.partition ('/')
   else: 
     channel = None
@@ -177,7 +177,7 @@ def xyTiff ( imageargs, dbcfg, proj ):
 def xzSlice ( imageargs, dbcfg, proj ):
   """Return an xz plane cube"""
 
-  if proj.getDBType() == emcaproj.CHANNELS:
+  if proj.getDBType() == emcaproj.CHANNELS_8bit or proj.getDBType() == emcaproj.CHANNELS_16bit:
     [ channel, sym, imageargs ] = imageargs.partition ('/')
   else: 
     channel = None
@@ -204,7 +204,7 @@ def xzImage ( imageargs, dbcfg, proj ):
 
   # little awkward because we need resolution here
   # it will be reparse in xzSlice
-  if proj.getDBType() == emcaproj.CHANNELS:
+  if proj.getDBType() == emcaproj.CHANNELS_8bit or proj.getDBType() == emcaproj.CHANNELS_16bit:
     channel, sym, rest = imageargs.partition("/")
     resolution, sym, rest = rest.partition("/")
   else:
@@ -235,7 +235,7 @@ def xzTiff ( imageargs, dbcfg, proj ):
 def yzSlice ( imageargs, dbcfg, proj ):
   """Return an yz plane as a cube"""
 
-  if proj.getDBType() == emcaproj.CHANNELS:
+  if proj.getDBType() == emcaproj.CHANNELS_8bit or proj.getDBType() == emcaproj.CHANNELS_16bit:
     [ channel, sym, imageargs ] = imageargs.partition ('/')
   else: 
     channel = None
@@ -261,7 +261,7 @@ def yzImage ( imageargs, dbcfg, proj ):
 
   # little awkward because we need resolution here
   # it will be reparse in xzSlice
-  if proj.getDBType() == emcaproj.CHANNELS:
+  if proj.getDBType() == emcaproj.CHANNELS_8bit or proj.getDBType() == emcaproj.CHANNELS_16bit:
     channel, sym, rest = imageargs.partition("/")
     resolution, sym, rest = rest.partition("/")
   else:
@@ -547,7 +547,7 @@ def selectPost ( webargs, dbcfg, proj, postdata ):
         # Get the annotation database
         db = emcadb.EMCADB ( dbcfg, proj )
 
-        if proj.getDBType() == emcaproj.IMAGES: 
+        if proj.getDBType() == emcaproj.IMAGES_8bit: 
           db.writeImageCuboid ( corner, resolution, voxarray )
           # this is just a status
           entityid=0
@@ -623,7 +623,7 @@ def emcacatmaid ( webargs ):
   dbcfg = dbconfig.switchDataset ( proj.getDataset() )
   
   # datatype from the project
-  if proj.getDBType() == emcaproj.IMAGES:
+  if proj.getDBType() == emcaproj.IMAGES_8bit:
     datatype = np.uint8
   else:
     datatype = np.uint32
@@ -1336,7 +1336,7 @@ def mcFalseColor ( webargs ):
   proj = projdb.getProj ( token )
   dbcfg = dbconfig.switchDataset ( proj.getDataset() )
 
-  if proj.getDBType() != emcaproj.CHANNELS:
+  if proj.getDBType() != emcaproj.CHANNELS_16bit and proj.getDBType() != emcaproj.CHANNELS_8bit:
     logger.warning ( "Not a multiple channel project." )
     raise ANNError ( "Not a multiple channel project." )
 
@@ -1356,29 +1356,35 @@ def mcFalseColor ( webargs ):
       logger.warning ( "No such service %s. Args: %s" % (service,webargs))
       raise ANNError ( "No such service %s" % (service) )
 
+    # reduction factor
+    if proj.getDBType() == emcaproj.CHANNELS_8bit:
+      scaleby = 1
+    elif proj.getDBType() == emcaproj.CHANNELS_16bit:
+      scaleby = 1.0/256
+
     # First channel is cyan
     if i == 0:
-      data32 = np.array ( cb.data * (1./256), dtype=np.uint32 )
+      data32 = np.array ( cb.data * scaleby, dtype=np.uint32 )
       combined_img = 0xFF000000 + np.left_shift(data32,8) + np.left_shift(data32,16)
     # Second is yellow
     elif i == 1:  
-      data32 = np.array ( cb.data * (1./256), dtype=np.uint32 )
+      data32 = np.array ( cb.data * scaleby, dtype=np.uint32 )
       combined_img +=  np.left_shift(data32,8) + data32 
     # Third is Magenta
     elif i == 2:
-      data32 = np.array ( cb.data * (1./256), dtype=np.uint32 )
+      data32 = np.array ( cb.data * scaleby, dtype=np.uint32 )
       combined_img +=  np.left_shift(data32,16) + data32 
     # Fourth is Red
     elif i == 3:
-      data32 = np.array ( cb.data * (1./256), dtype=np.uint32 )
+      data32 = np.array ( cb.data * scaleby, dtype=np.uint32 )
       combined_img +=  data32 
     # Fifth is Green
     elif i == 4:
-      data32 = np.array ( cb.data * (1./256), dtype=np.uint32 )
+      data32 = np.array ( cb.data * scaleby, dtype=np.uint32 )
       combined_img += np.left_shift(data32,8)
     # Sixth is Blue
     elif i == 5:
-      data32 = np.array ( cb.data * (1./256), dtype=np.uint32 )
+      data32 = np.array ( cb.data * scaleby, dtype=np.uint32 )
       combined_img +=  np.left_shift(data32,16) 
     else:
       logger.warning ( "Only support six channels at a time.  You requested %s " % (chanstr))

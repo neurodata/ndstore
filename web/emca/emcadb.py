@@ -11,7 +11,6 @@ import emcaproj
 import annotation
 import annindex
 import imagecube
-import chancube
 
 from emcaerror import ANNError
 
@@ -709,17 +708,17 @@ class EMCADB:
                                         znumcubes*zcubedim] )
       outcube.zeros()
 
-    elif (self.annoproj.getDBType() == emcaproj.IMAGES):
+    elif (self.annoproj.getDBType() == emcaproj.IMAGES_8bit or self.annoproj.getDBType() == emcaproj.CHANNELS_8bit):
       
-      incube = imagecube.ImageCube ( cubedim )
-      outcube = imagecube.ImageCube ( [xnumcubes*xcubedim,\
+      incube = imagecube.ImageCube8 ( cubedim )
+      outcube = imagecube.ImageCube8 ( [xnumcubes*xcubedim,\
                                         ynumcubes*ycubedim,\
                                         znumcubes*zcubedim] )
 
-    elif (self.annoproj.getDBType() == emcaproj.CHANNELS):
+    elif (self.annoproj.getDBType() == emcaproj.CHANNELS_16bit):
       
-      incube = chancube.ChanCube ( cubedim )
-      outcube = chancube.ChanCube ( [xnumcubes*xcubedim,\
+      incube = imagecube.ImageCube16 ( cubedim )
+      outcube = imagecube.ImageCube16 ( [xnumcubes*xcubedim,\
                                         ynumcubes*ycubedim,\
                                         znumcubes*zcubedim] )
 
@@ -738,7 +737,7 @@ class EMCADB:
     dbname = self.annoproj.getTable(resolution)
 
     # Customize query to the database (include channel or not)
-    if (self.annoproj.getDBType() == emcaproj.CHANNELS):
+    if (self.annoproj.getDBType() == emcaproj.CHANNELS_8bit or self.annoproj.getDBType() == emcaproj.CHANNELS_16bit):
       sql = "SELECT zindex, cube FROM " + dbname + " WHERE channel= " + str(channel) + " AND zindex in (%s)" 
     else:
       sql = "SELECT zindex, cube FROM " + dbname + " WHERE zindex IN (%s)" 
@@ -766,7 +765,7 @@ class EMCADB:
       incube.fromNPZ ( datastring[:] )
       # add it to the output cube
       outcube.addData ( incube, offset ) 
-        
+
     # need to trim down the array to size
     #  only if the dimensions are not the same
     if dim[0] % xcubedim  == 0 and\

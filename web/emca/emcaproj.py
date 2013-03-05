@@ -13,9 +13,10 @@ logger=logging.getLogger("emca")
 #TODO enforce readonly
 
 # dbtype enumerations
-IMAGES = 1
+IMAGES_8bit = 1
 ANNOTATIONS = 2
-CHANNELS = 3
+CHANNELS_16bit = 3
+CHANNELS_8bit = 4
 
 class EMCAProject:
   """Project specific for cutout and annotation data"""
@@ -188,15 +189,15 @@ class EMCAProjectsDB:
         sql = ""
 
         # tables for annotations and images
-        if dbtype == IMAGES or dbtype == ANNOTATIONS:
+        if dbtype == IMAGES_8bit or dbtype == ANNOTATIONS:
 
           for i in dbcfg.resolutions: 
             sql += "CREATE TABLE res%s ( zindex BIGINT PRIMARY KEY, cube LONGBLOB );\n" % i
 
         # tables for channel dbs
-        if dbtype == CHANNELS:
+        if dbtype == CHANNELS_8bit or dbtype == CHANNELS_16bit:
           for i in dbcfg.resolutions: 
-            sql += "CREATE TABLE res%s ( zindex BIGINT, channel INT, cube LONGBLOB, PRIMARY KEY(zindex,channel) );\n" % i
+            sql += "CREATE TABLE res%s ( channel INT, zindex BIGINT, cube LONGBLOB, PRIMARY KEY(channel,zindex) );\n" % i
 
         # tables specific to annotation projects
         if dbtype == ANNOTATIONS:
