@@ -162,18 +162,6 @@ def xyImage ( imageargs, dbcfg, proj ):
   fileobj.seek(0)
   return fileobj.read()
 
-def xyTiff ( imageargs, dbcfg, proj ):
-  """Return an xy plane fileobj.read()"""
-
-  cb = xySlice ( imageargs, dbcfg, proj )
-  fileobj = tempfile.NamedTemporaryFile()
-  cb.xyTiff ( fileobj.name )
-
-  fileobj.seek(0)
-  return fileobj.read()
-
-
-
 def xzSlice ( imageargs, dbcfg, proj ):
   """Return an xz plane cube"""
 
@@ -217,20 +205,6 @@ def xzImage ( imageargs, dbcfg, proj ):
   fileobj.seek(0)
   return fileobj.read()
 
-def xzTiff ( imageargs, dbcfg, proj ):
-  """Return an xy plane fileobj.read()"""
-
-  # little awkward because we need resolution here
-  # it will be reparsed in xzSlice
-  channel, sym, rest = imageargs.partition("/")
-  resolution, sym, rest = rest.partition("/")
-  cb = xzSlice ( imageargs, dbcfg, proj )
-  fileobj = tempfile.NamedTemporaryFile()
-  cb.xzTiff ( dbcfg.zscale[int(resolution)], fileobj.name )
-
-  fileobj.seek(0)
-  return fileobj.read()
-
 
 def yzSlice ( imageargs, dbcfg, proj ):
   """Return an yz plane as a cube"""
@@ -270,20 +244,6 @@ def yzImage ( imageargs, dbcfg, proj ):
   cb = yzSlice ( imageargs, dbcfg, proj )
   fileobj = cStringIO.StringIO ( )
   cb.yzSlice ( dbcfg.zscale[int(resolution)], fileobj )
-
-  fileobj.seek(0)
-  return fileobj.read()
-
-def yzTiff ( imageargs, dbcfg, proj ):
-  """Return an yz plane fileobj.read()"""
-
-  # little awkward because we need resolution here
-  # it will be reparsed in yzSlice
-  channel, sym, rest = imageargs.partition("/")
-  resolution, sym, rest = rest.partition("/")
-  cb = yzSlice ( imageargs, dbcfg, proj )
-  fileobj = tempfile.NamedTemporaryFile()
-  cb.yzTiff ( dbcfg.zscale[int(resolution)], fileobj.name )
 
   fileobj.seek(0)
   return fileobj.read()
@@ -1424,7 +1384,7 @@ def getField ( webargs ):
     logger.warning("Illegal getField request.  Wrong number of arguments.")
     raise EMCAError("Illegal getField request.  Wrong number of arguments.")
 
-  [ db, dbcfg, proj, projdb ] = _loadDBProj ( token )
+  [ db, dbcfg, proj, projdb ] = loadDBProj ( token )
 
   # retrieve the annotation 
   anno = db.getAnnotation ( annid )
@@ -1445,7 +1405,7 @@ def setField ( webargs ):
     logger.warning("Illegal getField request.  Wrong number of arguments.")
     raise EMCAError("Illegal getField request.  Wrong number of arguments.")
     
-  [ db, dbcfg, proj, projdb ] = _loadDBProj ( token )
+  [ db, dbcfg, proj, projdb ] = loadDBProj ( token )
 
   # retrieve the annotation 
   anno = db.getAnnotation ( annid )
@@ -1459,10 +1419,10 @@ def setField ( webargs ):
 
 
 #
-#  Private helper functions
+#  Helper functions
 #
 
-def _loadDBProj ( token ):
+def loadDBProj ( token ):
   """Load the configuration for this database and project"""
 
   # Get the annotation database

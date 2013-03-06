@@ -1,11 +1,12 @@
 import django.http
 from django.views.decorators.cache import cache_control
+import cStringIO
 
 import empaths
 import catmaid
 
 # Errors we are going to catch
-from emcaerror import ANNError
+from emcaerror import EMCAError
 
 import logging
 logger=logging.getLogger("emca")
@@ -14,11 +15,11 @@ logger=logging.getLogger("emca")
 
 # Create your views here.
 
-def catmaid (request, webargs):
+def catmaidview (request, webargs):
   """Convert a CATMAID request into an cutout."""
 
   try:
-    catmaidimg = catmaid(webargs)
+    catmaidimg = catmaid.catmaid(webargs)
 
     fobj = cStringIO.StringIO ( )
     catmaidimg.save ( fobj, "PNG" )

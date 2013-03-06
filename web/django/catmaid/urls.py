@@ -5,7 +5,7 @@ from django.conf.urls import patterns, include, url
 #admin.autodiscover()
 
 # already have the ^catmaid stripped off
-urlpatterns = patterns('emca.views',
+urlpatterns = patterns('catmaid.views',
   # catmaid
-  url(r'^(?P<webargs>\w+/.*)$', 'catmaid'),
+  url(r'^(?P<webargs>\w+/.*)$', 'catmaidview'),
 )

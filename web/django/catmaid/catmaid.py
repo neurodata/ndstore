@@ -1,74 +1,84 @@
 import sys
-import StringIO
 import tempfile
 import numpy as np
 import zlib
-import h5py
-import os
 import cStringIO
-import csv
-import re
 from PIL import Image
-import MySQLdb
+import pylibmc
 
 import empaths
 import restargs
-import anncube
 import emcadb
 import dbconfig
 import emcaproj
-import h5ann
+import emcarest
+import django
 
+
+from emca_cy import recolor_cy
+
+
+def tile2WebPNG ( tile, tilesz ):
+
+  # write it as a png file
+  if tile.dtype==np.uint8:
+    return Image.frombuffer ( 'L', [tilesz,tilesz], tile, 'raw', 'L', 0, 1 )
+  elif tile.dtype==np.uint32:
+    recolor_cy (tile, tile)
+    return Image.frombuffer ( 'RGBA', [tilesz,tilesz], tile, 'raw', 'RGBA', 0, 1 )
 
 def catmaid ( webargs ):
   """Either fetch the file from memcache or load a new region into memcache by cutout"""
 
-  # do something to sanitize the webargs??
-  # if tile is in memcache, return it
-  tile = memcache.get(webargs)
-  if tile != None:
-       catmaidimg = emcarest.emcacatmaid(webargs)
+  # make the memcache connection
+  mc = pylibmc.Client(["127.0.0.1"], binary=True,behaviors={"tcp_nodelay":True,"ketama": True})
 
-    fobj = cStringIO.StringIO ( )
-    catmaidimg.save ( fobj, "PNG" )
-    fobj.seek(0)
-    return django.http.HttpResponse(fobj.read(), mimetype="image/png")
-
-
-
-   
-  if fetch_memcache:
-    
-
-  # otherwise load a cutout worth of tiles from memcache
-  else:
-
-    load memcache
-
-
-  # return the specific tile
-
-  token, tilesz, channel, plane, resstr, xtilestr, ytilestr, zslicestr, rest = webargs.split('/',9)
-
-  # 
-  [ db, dbcfg, proj, projdb ] = emcarest.loadDBProj ( token )
-
-  return db.cutout ( corner, dim, resolution, channel )0
-
-
-
+  # parse the web args
+  token, tileszstr, chanstr, plane, resstr, xtilestr, ytilestr, zslicestr, rest = webargs.split('/',9)
+  # convert args to ints
   xtile = int(xtilestr)
   ytile = int(ytilestr)
+  res = int(resstr)
+  channel = int(chanstr)
+  zslice = int(zslicestr)
+  tilesz = int(tileszstr)
+
+  # memcache key
+  mckey = '{}/{}/{}/{}/{}/{}/{}'.format(token,tileszstr,chanstr,resstr,xtilestr,ytilestr,zslicestr)
+
+  # do something to sanitize the webargs??
+  # if tile is in memcache, return it
+  tile = mc.get(mckey)
+  if tile != None:
+    # convert to an image
+    return tile2WebPNG ( tile, tilesz )
 
 
-
-  projdb = emcaproj.EMCAProjectsDB()
-  proj = projdb.getProj ( token )
-  dbcfg = dbconfig.switchDataset ( proj.getDataset() )
-  
-  # datatype from the project
-  if proj.getDBType() == emcaproj.IMAGES_8bit:
-    datatype = np.uint8
+  # load a slab into CATMAID
   else:
-    datatype = np.uint32
 
+    # load the database/token
+    [ db, dbcfg, proj, projdb ] = emcarest.loadDBProj ( token )
+
+    # make sure that the tile size is aligned with the cubedim
+    if tilesz % dbcfg.cubedim[res][0] != 0 or tilesz % dbcfg.cubedim[res][1]:
+      assert 0
+
+    # cutout the entire slab 
+    numslices = dbcfg.cubedim[res][2] 
+    # RB checkout offest here
+    zstart = (zslice / numslices) * numslices
+
+    corner = [xtile*tilesz, ytile*tilesz, zstart]
+    dim = [tilesz,tilesz,numslices]
+
+    cuboid = db.cutout ( corner, dim, res, channel )
+
+    # add each image slice to memcache
+    for i in range(numslices):
+      mckey = '{}/{}/{}/{}/{}/{}/{}'.format(token,tileszstr,chanstr,resstr,xtilestr,ytilestr,zstart+i)
+      mc.set(mckey,cuboid.data[i,:,:])
+
+    return tile2WebPNG ( cuboid.data[zslice%numslices,:,:], tilesz )
+
+      
