@@ -569,119 +569,158 @@ def annopost ( webargs, postdata ):
   return selectPost ( rangeargs, dbcfg, proj, postdata )
 
 
-def emcacatmaid ( webargs ):
+def catmaid ( cmtilesz, token, plane, resolution, xtile, ytile, zslice, channel ):
   """Interface to the cutout service for catmaid request.  It does address translation."""
-
-  CM_TILESIZE=256
-
-  token, plane, resstr, xtilestr, ytilestr, zslicestr, rest = webargs.split('/',7)
-  xtile = int(xtilestr)
-  ytile = int(ytilestr)
 
   projdb = emcaproj.EMCAProjectsDB()
   proj = projdb.getProj ( token )
   dbcfg = dbconfig.switchDataset ( proj.getDataset() )
   
   # datatype from the project
-  if proj.getDBType() == emcaproj.IMAGES_8bit:
+  if proj.getDBType() == emcaproj.IMAGES_8bit or proj.getDBType == emcaproj.CHANNELS_8bit:
     datatype = np.uint8
+  elif proj.getDBType() == emcaproj.CHANNELS_16bit:
+    datatype = np.uint16
   else:
     datatype = np.uint32
-
-  resolution = int(resstr)
 
   # build the cutout request
   if plane=='xy':
    
     # figure out the cutout (limit to max image size)
-    xstart = xtile*CM_TILESIZE
-    ystart = ytile*CM_TILESIZE
-    xend = min ((xtile+1)*CM_TILESIZE,dbcfg.imagesz[resolution][0])
-    yend = min ((ytile+1)*CM_TILESIZE,dbcfg.imagesz[resolution][1])
+    xstart = xtile*cmtilesz
+    ystart = ytile*cmtilesz
+    xend = min ((xtile+1)*cmtilesz,dbcfg.imagesz[resolution][0])
+    yend = min ((ytile+1)*cmtilesz,dbcfg.imagesz[resolution][1])
     
     # Return empty data if request is outside bounds.  don't like it.
     if xstart>=xend or ystart>=yend:
-      cutoutdata = np.zeros ( [CM_TILESIZE,CM_TILESIZE], dtype=datatype )
+      cutoutdata = np.zeros ( [cmtilesz,cmtilesz], dtype=datatype )
 
     else: 
-      imageargs = '%s/%s,%s/%s,%s/%s/' % ( resstr, xstart, xend, ystart, yend, zslicestr )
+      if proj.getDBType() == emcaproj.CHANNELS_16bit or proj.getDBType == emcaproj.CHANNELS_8bit:
+        imageargs = '%s/%s/%s,%s/%s,%s/%s/' % ( channel, resolution, xstart, xend, ystart, yend, zslice )
+      else:
+        imageargs = '%s/%s,%s/%s,%s/%s/' % ( resolution, xstart, xend, ystart, yend, zslice )
+
       cb = xySlice ( imageargs, dbcfg, proj )
 
       # reshape (if it's not a full cutout)
-      if cb.data.shape != [1,CM_TILESIZE,CM_TILESIZE]:
-        cutoutdata = np.zeros ( [CM_TILESIZE,CM_TILESIZE], dtype=cb.data.dtype )
+      if cb.data.shape != [1,cmtilesz,cmtilesz]:
+        cutoutdata = np.zeros ( [cmtilesz,cmtilesz], dtype=cb.data.dtype )
         cutoutdata[0:cb.data.shape[1],0:cb.data.shape[2]] = cb.data.reshape([cb.data.shape[1],cb.data.shape[2]])
       else:
-        cutoutdata = cb.data.reshape([CM_TILESIZE,CM_TILESIZE])
+        cutoutdata = cb.data.reshape([cmtilesz,cmtilesz])
 
-  elif plane=='xz' or plane=='yz':
 
-    # The x or y plane is normal.  The z plane needs some translation.
-    #  the ytilestr actually represents data in the z-plane
-    pixelsperslice = dbcfg.zscale[int(resstr)]
+# RB not maintained
+#  elif plane=='xz' or plane=='yz':
+#
+#    # The x or y plane is normal.  The z plane needs some translation.
+##    #  the ytilestr actually represents data in the z-plane
+#    pixelsperslice = dbcfg.zscale[resolution]
+#
+#    if plane=='xz':
+#
+#      # figure out the cutout (limit to max image size)
+#      xstart = xtile*cmtilesz
+#      xend = min ((xtile+1)*cmtilesz,dbcfg.imagesz[resolution][0])
+#
+#      # Now we need the ytile'th set of cmtilesz
+#      ystart = ytile*int(float(cmtilesz)/pixelsperslice) + dbcfg.slicerange[0]
+#      # get more data so that we always have 512 pixels 
+#      yend = min((ytile+1)*int(float(cmtilesz)/pixelsperslice+1),dbcfg.slicerange[1]-dbcfg.slicerange[0]+1) + dbcfg.slicerange[0]
+#                    
+#      # Return empty data if request is outside bounds.  don't like it.
+#      if xstart==xend or ystart==yend:
+#        cutoutdata = np.zeros ( [cmtilesz,cmtilesz], dtype=datatype )
+#
+#      else:
+#        imageargs = '%s/%s,%s/%s/%s,%s/' % ( resolution, xstart, xend, zslice, ystart, yend )
+#
+#        cb = xzSlice ( imageargs, dbcfg, proj )
+#
+#        if cb.data.shape != [cmtilesz,1,cmtilesz]:
+#          cutoutdata = np.zeros ( [cmtilesz,cmtilesz], dtype=cb.data.dtype )
+#          cutoutdata[0:cb.data.shape[0],0:cb.data.shape[2]] = cb.data.reshape([cb.data.shape[0],cb.data.shape[2]])
+#        else:
+#          # reshape
+#          cutoutdata = cb.data.reshape([cmtilesz,cmtilesz])
+#
+#    elif plane=='yz':
+#
+#      # figure out the cutout (limit to max image size)
+#      xtart = xtile*cmtilesz
+#      xend = min ((xtile+1)*cmtilesz,dbcfg.imagesz[resolution][1])
+#
+#      ystart = ytile*int(float(cmtilesz)/pixelsperslice)+ dbcfg.slicerange[0]
+#      yend = min((ytile+1)*int(float(cmtilesz)/pixelsperslice+1),dbcfg.slicerange[1]-dbcfg.slicerange[0]+1)+ dbcfg.slicerange[0]
+#
+#      # Return empty data if request is outside bounds.  don't like it.
+#      if xstart==xend or ystart==yend:
+#        cutoutdata = np.zeros ( [cmtilesz,cmtilesz], dtype=datatype )
+#
+#      else:
+#        imageargs = '%s/%s/%s,%s/%s,%s/' % ( resolution, zslice, xtile*cmtilesz, (xtile+1)*cmtilesz, ystart, yend )
+#        cb = yzSlice ( imageargs, dbcfg, proj )
+#        if cb.data.shape != [cmtilesz,cmtilesz,1]:
+#          cutoutdata = np.zeros ( [cmtilesz,cmtilesz], dtype=cb.data.dtype)
+#          cutoutdata[0:cb.data.shape[0],0:cb.data.shape[1]] = cb.data.reshape([cb.data.shape[0],cb.data.shape[1]])
+#        else:
+#          cutoutdata = cb.data.reshape([cmtilesz,cmtilesz])
 
-    if plane=='xz':
-
-      # figure out the cutout (limit to max image size)
-      xstart = xtile*CM_TILESIZE
-      xend = min ((xtile+1)*CM_TILESIZE,dbcfg.imagesz[resolution][0])
-
-      # Now we need the ytile'th set of CM_TILESZ
-      ystart = ytile*int(float(CM_TILESIZE)/pixelsperslice) + dbcfg.slicerange[0]
-      # get more data so that we always have 512 pixels 
-      yend = min((ytile+1)*int(float(CM_TILESIZE)/pixelsperslice+1),dbcfg.slicerange[1]-dbcfg.slicerange[0]+1) + dbcfg.slicerange[0]
-                    
-      # Return empty data if request is outside bounds.  don't like it.
-      if xstart==xend or ystart==yend:
-        cutoutdata = np.zeros ( [CM_TILESIZE,CM_TILESIZE], dtype=datatype )
-
-      else:
-        imageargs = '%s/%s,%s/%s/%s,%s/' % ( resstr, xstart, xend, zslicestr, ystart, yend )
-
-        cb = xzSlice ( imageargs, dbcfg, proj )
-
-        if cb.data.shape != [CM_TILESIZE,1,CM_TILESIZE]:
-          cutoutdata = np.zeros ( [CM_TILESIZE,CM_TILESIZE], dtype=cb.data.dtype )
-          cutoutdata[0:cb.data.shape[0],0:cb.data.shape[2]] = cb.data.reshape([cb.data.shape[0],cb.data.shape[2]])
-        else:
-          # reshape
-          cutoutdata = cb.data.reshape([CM_TILESIZE,CM_TILESIZE])
-
-    elif plane=='yz':
-
-      # figure out the cutout (limit to max image size)
-      xtart = xtile*CM_TILESIZE
-      xend = min ((xtile+1)*CM_TILESIZE,dbcfg.imagesz[resolution][1])
-
-      ystart = ytile*int(float(CM_TILESIZE)/pixelsperslice)+ dbcfg.slicerange[0]
-      yend = min((ytile+1)*int(float(CM_TILESIZE)/pixelsperslice+1),dbcfg.slicerange[1]-dbcfg.slicerange[0]+1)+ dbcfg.slicerange[0]
-
-      # Return empty data if request is outside bounds.  don't like it.
-      if xstart==xend or ystart==yend:
-        cutoutdata = np.zeros ( [CM_TILESIZE,CM_TILESIZE], dtype=datatype )
-
-      else:
-        imageargs = '%s/%s/%s,%s/%s,%s/' % ( resstr, zslicestr, xtile*CM_TILESIZE, (xtile+1)*CM_TILESIZE, ystart, yend )
-        cb = yzSlice ( imageargs, dbcfg, proj )
-        if cb.data.shape != [CM_TILESIZE,CM_TILESIZE,1]:
-          cutoutdata = np.zeros ( [CM_TILESIZE,CM_TILESIZE], dtype=cb.data.dtype)
-          cutoutdata[0:cb.data.shape[0],0:cb.data.shape[1]] = cb.data.reshape([cb.data.shape[0],cb.data.shape[1]])
-        else:
-          cutoutdata = cb.data.reshape([CM_TILESIZE,CM_TILESIZE])
-
-    else:
-      logger.warning("No such cutout plane: %s.  Must be (xy|xz|yz)..  Args %s" % ( service, webargs ))
-      raise EMCAError ( "No such cutout plane: %s.  Must be (xy|xz|yz)." % plane )
+  else:
+    logger.warning("No such cutout plane: %s.  Must be (xy|xz|yz)..  Args %s" % ( service, webargs ))
+    raise ANNError ( "No such cutout plane: %s.  Must be (xy|xz|yz)." % plane )
 
   # Write the image to a readable stream
   if cutoutdata.dtype==np.uint8:
-    outimage = Image.frombuffer ( 'L', [CM_TILESIZE,CM_TILESIZE], cutoutdata, 'raw', 'L', 0, 1 ) 
+    outimage = Image.frombuffer ( 'L', [cmtilesz,cmtilesz], cutoutdata, 'raw', 'L', 0, 1 ) 
+  elif cutoutdata.dtype==np.uint16:
+    # RBTODO need to multicolor this bitch
+    outimage = Image.frombuffer ( 'L', [cmtilesz,cmtilesz], cutoutdata/256, 'raw', 'L', 0, 1 ) 
   elif cutoutdata.dtype==np.uint32:
     recolor_cy (cutoutdata, cutoutdata)
-    outimage = Image.frombuffer ( 'RGBA', [CM_TILESIZE,CM_TILESIZE], cutoutdata, 'raw', 'RGBA', 0, 1 ) 
+    outimage = Image.frombuffer ( 'RGBA', [cmtilesz,cmtilesz], cutoutdata, 'raw', 'RGBA', 0, 1 ) 
 
   return outimage
-    
+
+
+def emcacatmaid_legacy ( webargs ):
+  """Interface to the cutout service for catmaid request.  It does address translation."""
+
+  CM_TILESIZE=256
+
+  token, plane, resstr, xtilestr, ytilestr, zslicestr, rest = webargs.split('/',7)
+
+  # invoke general catmaid with a 0 channel argument
+  return catmaid ( CM_TILESIZE, token, plane, int(resstr), int(xtilestr), int(ytilestr), int(zslicestr), 0 )
+
+def emca_catmaid ( webargs ):
+  """Interface to the cutout service for catmaid request.  It does address translation.
+      Same as emcacatmaid, but supports a dimension argument"""
+
+  token, tilesz, plane, resstr, xtilestr, ytilestr, zslicestr, rest = webargs.split('/',8)
+  import pdb; pdb.set_trace()
+
+  # invoke general catmaid with a 0 channel argument
+  return catmaid ( int(tilesz), token, plane, int(resstr), int(xtilestr), int(ytilestr), int(zslicestr), 0 )
+
+def emca_mccatmaid ( webargs ):
+  """Interface to the cutout service for catmaid request.  It does address translation.
+      Same as emcacatmaid, but supports a dimension argument"""
+
+<<<<<<< Updated upstream
+    else:
+      logger.warning("No such cutout plane: %s.  Must be (xy|xz|yz)..  Args %s" % ( service, webargs ))
+      raise EMCAError ( "No such cutout plane: %s.  Must be (xy|xz|yz)." % plane )
+=======
+  token, tilesz, channel, plane, resstr, xtilestr, ytilestr, zslicestr, rest = webargs.split('/',9)
+>>>>>>> Stashed changes
+
+  # invoke general catmaid with the specified channel argument
+  return catmaid ( int(tilesz), token, plane, int(resstr), int(xtilestr), int(ytilestr), int(zslicestr), int(channel) )
+
 
 ################# RAMON interfaces #######################
 

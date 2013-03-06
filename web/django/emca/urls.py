@@ -7,6 +7,8 @@ from django.conf.urls import patterns, include, url
 urlpatterns = patterns('emca.views',
   # catmaid
   url(r'^catmaid/(?P<webargs>\w+/.*)$', 'catmaid'),
+  url(r'^catmaid2/(?P<webargs>\w+/.*)$', 'catmaid2'),
+  url(r'^mccatmaid/(?P<webargs>\w+/.*)$', 'mccatmaid'),
   # fetch ids (with predicates)
   url(r'(?P<webargs>^\w+/list/[\w,/]*)$', 'listObjects'),
   # batch fetch RAMON 

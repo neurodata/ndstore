@@ -15,8 +15,8 @@ EM_EMCA_PATH = os.path.join(EM_BASE_PATH, "emca" )
 sys.path += [ EM_EMCA_PATH ]
 
 #SITE_HOST = 'openconnecto.me'
-SITE_HOST = 'localhost:8000'
-#SITE_HOST = 'localhost'
+#SITE_HOST = 'localhost:8000'
+SITE_HOST = 'localhost'
 
 import emcaproj
 

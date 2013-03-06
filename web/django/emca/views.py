@@ -23,11 +23,8 @@ def emcaget (request, webargs):
   [ service, sym, rest ] = cutoutargs.partition ('/')
 
   try:
-    # add a tiff service for cutouts?
     if service=='xy' or service=='yz' or service=='xz':
       return django.http.HttpResponse(emcarest.emcaget(webargs), mimetype="image/png" )
-    elif service=='xytiff' or service=='yztiff' or service=='xztiff':
-      return django.http.HttpResponse(emcarest.emcaget(webargs), mimetype="image/tiff" )
     elif service=='hdf5':
       return django.http.HttpResponse(emcarest.emcaget(webargs), mimetype="product/hdf5" )
     elif service=='npz':
@@ -137,17 +134,17 @@ def catmaid (request, webargs):
   """Convert a CATMAID request into an cutout."""
 
   try:
-    catmaidimg = emcarest.emcacatmaid(webargs)
+    catmaidimg = emcarest.emcacatmaid_legacy(webargs)
 
     fobj = cStringIO.StringIO ( )
     catmaidimg.save ( fobj, "PNG" )
     fobj.seek(0)
     return django.http.HttpResponse(fobj.read(), mimetype="image/png")
 
-  except EMCAError, e:
+  except ANNError, e:
     return django.http.HttpResponseNotFound(e)
   except:
-    logger.exception("Unknown exception in annopost.")
+    logger.exception("Unknown exception in catmaid %s.", e)
     raise
 
 
@@ -186,6 +183,7 @@ def setField (request, webargs):
   except:
     logger.exception("Unknown exception in setField.")
     raise
+
 
 def getField (request, webargs):
   """Get an individual RAMON field for an object"""
