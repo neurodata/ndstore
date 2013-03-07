@@ -114,14 +114,14 @@ def getObjects ( request, webargs ):
     raise
 
 @cache_control(no_cache=True)
-def listObjects ( request, webargs ):
+def queryObjects ( request, webargs ):
   """Return a list of objects matching predicates and cutout"""
 
   try:
     if request.method == 'GET':
-      return django.http.HttpResponse(emcarest.listAnnoObjects(webargs), mimetype="product/hdf5") 
+      return django.http.HttpResponse(emcarest.queryAnnoObjects(webargs), mimetype="product/hdf5") 
     elif request.method == 'POST':
-      return django.http.HttpResponse(emcarest.listAnnoObjects(webargs,request.body), mimetype="product/hdf5") 
+      return django.http.HttpResponse(emcarest.queryAnnoObjects(webargs,request.body), mimetype="product/hdf5") 
     
   except EMCAError, e:
     return django.http.HttpResponseNotFound(e.value)

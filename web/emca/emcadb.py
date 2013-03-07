@@ -2,6 +2,7 @@ import numpy as np
 import cStringIO
 import zlib
 import MySQLdb
+import re
 from collections import defaultdict
 
 import zindex
@@ -996,7 +997,7 @@ class EMCADB:
   # getAnnoObjects:  
   #    Return a list of annotation object IDs
   #  for now by type and status
-  def getAnnoObjects ( self, predicates ):
+  def getAnnoObjects ( self, args ):
     """Return a list of annotation object ids that match equality predicates.  
       Legal predicates are currently:
         type
@@ -1004,24 +1005,73 @@ class EMCADB:
       Predicates are given in a dictionary.
     """
 
-    # legal fields
-    fields = ( 'type', 'status' )
+    # RBTODO debug
+
+    # legal equality fields
+    eqfields = ( 'type', 'status' )
+
+    # legal comparative fields
+    compfields = ( 'confidence' )
 
     # start of the SQL clause
     sql = "SELECT annoid FROM " + annotation.anno_dbtables['annotation'] 
-
     clause = ''
 
-    # probably need to avoid SQL injection attacks.
-    #  throw an error or build the sql clause
-    for field in predicates.keys():
-      if field not in fields:
-        raise EMCAError ( "Illegal field in URL: %s" % (field) )
-      elif clause == '':
-        clause += " WHERE "
-      else:  
-        clause += ' AND '
-      clause += '%s = %s' % ( field, predicates[field] )
+    import pdb; pdb.set_trace()
+
+    # iterate over the predicates
+    it = iter(args)
+    try: 
+      field = it.next()
+
+
+      # build a query for all the predicates
+      while ( field ):
+
+        if clause == '':
+          clause += " WHERE "
+        else:  
+          clause += ' AND '
+
+        if field in eqfields:
+          val = it.next()
+          if not re.match('^\w+$',val): 
+            logger.warning ( "For field %s. Illegal value:%s" % (field,val) )
+            raise EMCAError ( "For field %s. Illegal value:%s" % (field,val) )
+
+          clause += '%s = %s' % ( field, val )
+
+        elif field in compfields:
+          opstr = it.next()
+          if opstr == 'lt':
+            op = ' < '
+          elif opstr == 'gt':
+            op = ' > '
+          elif opstr == 'lte':
+            op = ' <= '
+          elif opstr == 'gte':
+            op = ' >= '
+          elif opstr == 'neq':
+            op = ' >= '
+          else:
+            logger.warning ( "Not a comparison operator: %s" % (opstr) )
+            raise EMCAError ( "Not a comparison operator: %s" % (opstr) )
+
+          val = it.next()
+          if not re.match('^[\d\.]+$',val): 
+            logger.warning ( "For field %s. Illegal value:%s" % (field,val) )
+            raise EMCAError ( "For field %s. Illegal value:%s" % (field,val) )
+          clause += '%s %s %s' % ( field, op, val )
+
+        #RBTODO key/value fields?
+
+        else:
+          raise EMCAError ( "Illegal field in URL: %s" % (field) )
+
+        field = it.next()
+
+    except StopIteration:
+      pass
 
     sql += clause + ';'
 

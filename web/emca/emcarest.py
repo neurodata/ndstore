@@ -696,31 +696,6 @@ def emcacatmaid_legacy ( webargs ):
   # invoke general catmaid with a 0 channel argument
   return catmaid ( CM_TILESIZE, token, plane, int(resstr), int(xtilestr), int(ytilestr), int(zslicestr), 0 )
 
-def emca_catmaid ( webargs ):
-  """Interface to the cutout service for catmaid request.  It does address translation.
-      Same as emcacatmaid, but supports a dimension argument"""
-
-  token, tilesz, plane, resstr, xtilestr, ytilestr, zslicestr, rest = webargs.split('/',8)
-  import pdb; pdb.set_trace()
-
-  # invoke general catmaid with a 0 channel argument
-  return catmaid ( int(tilesz), token, plane, int(resstr), int(xtilestr), int(ytilestr), int(zslicestr), 0 )
-
-def emca_mccatmaid ( webargs ):
-  """Interface to the cutout service for catmaid request.  It does address translation.
-      Same as emcacatmaid, but supports a dimension argument"""
-
-<<<<<<< Updated upstream
-    else:
-      logger.warning("No such cutout plane: %s.  Must be (xy|xz|yz)..  Args %s" % ( service, webargs ))
-      raise EMCAError ( "No such cutout plane: %s.  Must be (xy|xz|yz)." % plane )
-=======
-  token, tilesz, channel, plane, resstr, xtilestr, ytilestr, zslicestr, rest = webargs.split('/',9)
->>>>>>> Stashed changes
-
-  # invoke general catmaid with the specified channel argument
-  return catmaid ( int(tilesz), token, plane, int(resstr), int(xtilestr), int(ytilestr), int(zslicestr), int(channel) )
-
 
 ################# RAMON interfaces #######################
 
@@ -1194,7 +1169,7 @@ def putAnnotation ( webargs, postdata ):
 
 #  Return a list of annotation object IDs
 #  for now by type and status
-def listAnnoObjects ( webargs, postdata=None ):
+def queryAnnoObjects ( webargs, postdata=None ):
   """ Return a list of anno ids restricted by equality predicates.
       Equalities are alternating in field/value in the url.
   """
@@ -1207,11 +1182,7 @@ def listAnnoObjects ( webargs, postdata=None ):
   dbcfg = dbconfig.switchDataset ( proj.getDataset() )
   db = emcadb.EMCADB ( dbcfg, proj )
 
-  # Split the URL and get the args
-  args = restargs.split('/')
-  predicates = dict(zip(args[::2], args[1::2]))
-
-  annoids = db.getAnnoObjects ( predicates )
+  annoids = db.getAnnoObjects ( restargs.split('/') )
 
   # We have a cutout as well
   if postdata:
@@ -1253,8 +1224,6 @@ def listAnnoObjects ( webargs, postdata=None ):
 
 def deleteAnnotation ( webargs ):
   """Delete a RAMON object"""
-
-  ## TODO add retry loop for transaction
 
   [ token, sym, otherargs ] = webargs.partition ('/')
 
