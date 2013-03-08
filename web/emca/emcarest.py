@@ -25,6 +25,8 @@ from emca_cy import recolor_cy
 
 from emcaerror import EMCAError
 
+from emcafilter import filterCutout
+
 import logging
 logger=logging.getLogger("emca")
 
@@ -50,11 +52,16 @@ def cutout ( imageargs, dbcfg, proj, channel=None ):
   corner = args.getCorner()
   dim = args.getDim()
   resolution = args.getResolution()
+  filterlist = args.getFilter()
 
   #Load the database
   db = emcadb.EMCADB ( dbcfg, proj )
   # Perform the cutout
-  return db.cutout ( corner, dim, resolution, channel )
+  cube = db.cutout ( corner, dim, resolution, channel )
+  if filterlist != None:
+    print "Filtering by values {}".format(filterlist)
+
+  return cube
 
 #
 #  Return a Flat binary file zipped (for Stefan) 
@@ -62,7 +69,13 @@ def cutout ( imageargs, dbcfg, proj, channel=None ):
 def binZip ( imageargs, dbcfg, proj ):
   """Return a web readable Numpy Pickle zipped"""
 
-  cube = cutout ( imageargs, dbcfg, proj )
+  # if it's a channel database, pull out the channel
+  if proj.getDBType() == emcaproj.CHANNELS_8bit or proj.getDBType() == emcaproj.CHANNELS_16bit:
+    [ channel, sym, imageargs ] = imageargs.partition ('/')
+  else: 
+    channel = None
+
+  cube = cutout ( imageargs, dbcfg, proj, channel )
 
   # Create the compressed cube
   cdz = zlib.compress ( cube.data.tostring()) 
@@ -102,18 +115,22 @@ def numpyZip ( imageargs, dbcfg, proj ):
 def HDF5 ( imageargs, dbcfg, proj ):
   """Return a web readable HDF5 file"""
 
-  # if it's a channel database, pull out the channel
-  if proj.getDBType() == emcaproj.CHANNELS_8bit or proj.getDBType() == emcaproj.CHANNELS_16bit:
-    [ channel, sym, imageargs ] = imageargs.partition ('/')
-  else: 
-    channel = None
-
-  cube = cutout ( imageargs, dbcfg, proj, channel )
-
   # Create an in-memory HDF5 file
   tmpfile = tempfile.NamedTemporaryFile ()
   fh5out = h5py.File ( tmpfile.name )
-  ds = fh5out.create_dataset ( "cube", tuple(cube.data.shape), cube.data.dtype,
+
+  # if it's a channel database, pull out the channels
+  if proj.getDBType() == emcaproj.CHANNELS_8bit or proj.getDBType() == emcaproj.CHANNELS_16bit:
+   
+    [ channels, sym, imageargs ] = imageargs.partition ('/')
+    for channel in channels.split(','):
+      cube = cutout ( imageargs, dbcfg, proj, channel )
+      ds = fh5out.create_dataset ( "{}".format(channel), tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data )
+      
+  else: 
+    cube = cutout ( imageargs, dbcfg, proj, None )
+
+    ds = fh5out.create_dataset ( "cube", tuple(cube.data.shape), cube.data.dtype,
                                  compression='gzip', data=cube.data )
   fh5out.close()
   tmpfile.seek(0)
@@ -143,9 +160,18 @@ def xySlice ( imageargs, dbcfg, proj ):
   corner = args.getCorner()
   dim = args.getDim()
   resolution = args.getResolution()
+  filterlist = args.getFilter()
 
   db = emcadb.EMCADB ( dbcfg, proj )
-  return db.cutout ( corner, dim, resolution, channel )
+
+  # Perform the cutout
+  cube = db.cutout ( corner, dim, resolution, channel )
+  if filterlist != None:
+    print "Filtering by values {}".format(filterlist)
+    import pdb; pdb.set_trace()
+    filterCutout ( cube.data, filterlist )
+
+  return cube
 
 
 def xyImage ( imageargs, dbcfg, proj ):
@@ -182,9 +208,16 @@ def xzSlice ( imageargs, dbcfg, proj ):
   corner = args.getCorner()
   dim = args.getDim()
   resolution = args.getResolution()
+  filterlist = args.getFilter()
 
   db = emcadb.EMCADB ( dbcfg, proj )
-  return db.cutout ( corner, dim, resolution, channel )
+
+  # Perform the cutout
+  cube = db.cutout ( corner, dim, resolution, channel )
+  if filterlist != None:
+    print "Filtering by values {}".format(filterlist)
+
+  return cube
 
 
 def xzImage ( imageargs, dbcfg, proj ):
@@ -226,9 +259,17 @@ def yzSlice ( imageargs, dbcfg, proj ):
   corner = args.getCorner()
   dim = args.getDim()
   resolution = args.getResolution()
+  filterlist = args.getFilter()
 
   db = emcadb.EMCADB ( dbcfg, proj )
-  return db.cutout ( corner, dim, resolution, channel )
+
+  # Perform the cutout
+  cube = db.cutout ( corner, dim, resolution, channel )
+  if filterlist != None:
+    print "Filtering by values {}".format(filterlist)
+
+  return cube
+
 
 def yzImage ( imageargs, dbcfg, proj ):
   """Return an yz plane fileobj.read()"""
@@ -424,14 +465,15 @@ def selectService ( webargs, dbcfg, proj ):
   elif service == 'yzanno':
     return yzAnno ( rangeargs, dbcfg, proj )
 
-#  elif service == 'xytiff':
-#    return xyTiff ( rangeargs, dbcfg, proj )
-#
-#  elif service == 'xztiff':
-#    return xzTiff ( rangeargs, dbcfg, proj)
-#
-#  elif service == 'yztiff':
-#    return yzTiff ( rangeargs, dbcfg, proj )
+  elif service == 'xyanno':
+    return xyAnno ( rangeargs, dbcfg, proj )
+
+  elif service == 'xzanno':
+    return xzAnno ( rangeargs, dbcfg, proj )
+
+  elif service == 'yzanno':
+    return yzAnno ( rangeargs, dbcfg, proj )
+
 
   else:
     logger.warning("An illegal Web GET service was requested %s.  Args %s" % ( service, webargs ))
@@ -546,7 +588,7 @@ def selectPost ( webargs, dbcfg, proj, postdata ):
 #   Lookup the project token in the database and figure out the 
 #   right database to load.
 #
-def emcaget ( webargs ):
+def getCutout ( webargs ):
   """Interface to the cutout service for annotations.
       Load the annotation project and invoke the appropriate
       dataset."""
@@ -1299,7 +1341,7 @@ def projInfo ( webargs ):
 def mcFalseColor ( webargs ):
   """False color image of multiple channels"""
 
-  [ token, mcfcstr, chanstr, service, imageargs ] = webargs.split ('/', 4)
+  [ token, mcfcstr, service, chanstr, imageargs ] = webargs.split ('/', 4)
   projdb = emcaproj.EMCAProjectsDB()
   proj = projdb.getProj ( token )
   dbcfg = dbconfig.switchDataset ( proj.getDataset() )

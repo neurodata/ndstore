@@ -710,7 +710,7 @@ class EMCADB:
       outcube.zeros()
 
     elif (self.annoproj.getDBType() == emcaproj.IMAGES_8bit or self.annoproj.getDBType() == emcaproj.CHANNELS_8bit):
-      
+
       incube = imagecube.ImageCube8 ( cubedim )
       outcube = imagecube.ImageCube8 ( [xnumcubes*xcubedim,\
                                         ynumcubes*ycubedim,\
@@ -766,6 +766,7 @@ class EMCADB:
       incube.fromNPZ ( datastring[:] )
       # add it to the output cube
       outcube.addData ( incube, offset ) 
+
 
     # need to trim down the array to size
     #  only if the dimensions are not the same

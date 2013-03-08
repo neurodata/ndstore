@@ -6,6 +6,7 @@
 import sys
 import re
 import os
+import numpy as np
 
 import dbconfig
 
@@ -33,6 +34,9 @@ class BrainRestArgs:
   def getResolution (self):
    return self._resolution
 
+  def getFilter ( self ):
+    return self._filterlist
+
 
   #
   #  Process cutout arguments
@@ -44,11 +48,6 @@ class BrainRestArgs:
     try:
       [ resstr, xdimstr, ydimstr, zdimstr, rest ]  = imageargs.split('/',4)
       options = rest.split ( '/' )
-
-      if 'global' in options:
-          globalcoords = True
-      else:
-        globalcoords = False
     except:
       raise RESTArgsError ( "Incorrect cutout arguments %s" % imageargs )
 
@@ -72,19 +71,25 @@ class BrainRestArgs:
     z1i = int(z1s)
     z2i = int(z2s)
 
-    # Convert to local coordinates if global specified
-    if ( globalcoords ):
-      x1i = int ( float(x1i) / float( 2**(self._resolution)))
-      x2i = int ( float(x2i) / float( 2**(self._resolution)))
-      y1i = int ( float(y1i) / float( 2**(self._resolution)))
-      y2i = int ( float(y2i) / float( 2**(self._resolution)))
-
     # Check arguments for legal values
-    if not ( dbcfg.checkCube ( self._resolution, x1i, x2i, y1i, y2i, z1i, z2i )):
-      raise RESTArgsError ( "Illegal range. Image size:" +  str(dbcfg.imageSize( self._resolution )))
+    try:
+      if not ( dbcfg.checkCube ( self._resolution, x1i, x2i, y1i, y2i, z1i, z2i )):
+        raise RESTArgsError ( "Illegal range. Image size:" +  str(dbcfg.imageSize( self._resolution )))
+    except Exception, e:
+      # RBTODO make this error better.  How to print good information about e?
+      #  it only prints 3, not KeyError 3, whereas print e in the debugger gives good info
+      raise RESTArgsError ( "Illegal arguments to cutout.  Check cube failed {}".format(e))
 
     self._corner=[x1i,y1i,z1i-dbcfg.slicerange[0]]
     self._dim=[x2i-x1i,y2i-y1i,z2i-z1i ]
+
+    # list of identifiers to keep
+    result = re.match ("filter/([\d/,]+)/",rest)
+    if result != None:
+      self._filterlist = np.array(result.group(1).split(','),dtype=np.uint32)
+    else:
+      self._filterlist = None
+
 
 
 
@@ -99,11 +104,6 @@ class BrainRestArgs:
     try:
       [ resstr, xdimstr, ydimstr, zstr, rest ]  = imageargs.split('/',4)
       options = rest.split ( '/' )
-
-      if 'global' in options:
-          globalcoords = True
-      else:
-        globalcoords = False
     except:
       raise RESTArgsError ( "Incorrect cutout arguments %s" % imageargs )
 
@@ -126,20 +126,25 @@ class BrainRestArgs:
     y2i = int(y2s)
     z = int(zstr)
 
-    # Convert to local coordinates if global specified
-    if ( globalcoords ):
-      x1i = int ( float(x1i) / float( 2**(self._resolution)))
-      x2i = int ( float(x2i) / float( 2**(self._resolution)))
-      y1i = int ( float(y1i) / float( 2**(self._resolution)))
-      y2i = int ( float(y2i) / float( 2**(self._resolution)))
-
     # Check arguments for legal values
-    if not ( dbcfg.checkCube ( self._resolution, x1i, x2i, y1i, y2i, z, z+1 )):
-      raise RESTArgsError ("Range exceeds data boundaries %s" % imageargs)
+    # Check arguments for legal values
+    try:
+      if not ( dbcfg.checkCube ( self._resolution, x1i, x2i, y1i, y2i, z, z+1 )):
+        raise RESTArgsError ( "Illegal range. Image size:" +  str(dbcfg.imageSize( self._resolution )))
+    except Exception, e:
+      # RBTODO make this error better.  How to print good information about e?
+      #  it only prints 3, not KeyError 3, whereas print e in the debugger gives good info
+      raise RESTArgsError ( "Illegal arguments to cutout.  Check cube failed {}".format(e))
 
     self._corner=[x1i,y1i,z-dbcfg.slicerange[0]]
     self._dim=[x2i-x1i,y2i-y1i,1]
 
+    # list of identifiers to keep
+    result = re.match ("filter/([\d/,]+)/",rest)
+    if result != None:
+      self._filterlist = np.array(result.group(1).split(','),dtype=np.uint32)
+    else:
+      self._filterlist = None
 
     
   def xzArgs ( self, imageargs, dbcfg ):
@@ -149,11 +154,6 @@ class BrainRestArgs:
     try:
       [ resstr, xdimstr, ystr, zdimstr, rest ]  = imageargs.split('/',4)
       options = rest.split ( '/' )
-
-      if 'global' in options:
-          globalcoords = True
-      else:
-        globalcoords = False
     except:
       raise RESTArgsError ( "Incorrect cutout arguments %s" % imageargs )
 
@@ -176,19 +176,25 @@ class BrainRestArgs:
     z1i = int(z1s)
     z2i = int(z2s)
 
-    # Convert to local coordinates if global specified
-    if ( globalcoords ):
-      x1i = int ( float(x1i) / float( 2**(self._resolution)))
-      x2i = int ( float(x2i) / float( 2**(self._resolution)))
-      y = int ( float(y) / float( 2**(self._resolution)))
-
     # Check arguments for legal values
-    if not dbcfg.checkCube ( self._resolution, x1i, x2i, y, y+1, z1i, z2i )\
-       or y >= dbcfg.imagesz[self._resolution][1]:
-      raise RESTArgsError ("Range exceeds data boundaries %s" % imageargs)
+    try:
+      if not dbcfg.checkCube ( self._resolution, x1i, x2i, y, y+1, z1i, z2i )\
+         or y >= dbcfg.imagesz[self._resolution][1]:
+        raise RESTArgsError ( "Illegal range. Image size:" +  str(dbcfg.imageSize( self._resolution )))
+    except Exception, e:
+      # RBTODO make this error better.  How to print good information about e?
+      #  it only prints 3, not KeyError 3, whereas print e in the debugger gives good info
+      raise RESTArgsError ( "Illegal arguments to cutout.  Check cube failed {}".format(e))
 
     self._corner=[x1i,y,z1i-dbcfg.slicerange[0]]
     self._dim=[x2i-x1i,1,z2i-z1i ]
+
+    # list of identifiers to keep
+    result = re.match ("filter/([\d/,]+)/",rest)
+    if result != None:
+      self._filterlist = np.array(result.group(1).split(','),dtype=np.uint32)
+    else:
+      self._filterlist = None
 
 
   def yzArgs ( self, imageargs, dbcfg ):
@@ -198,11 +204,6 @@ class BrainRestArgs:
     try:
       [ resstr, xstr, ydimstr, zdimstr, rest ]  = imageargs.split('/',4)
       options = rest.split ( '/' )
-
-      if 'global' in options:
-          globalcoords = True
-      else:
-        globalcoords = False
     except:
       raise RESTArgsError ( "Incorrect cutout arguments %s" % imageargs )
 
@@ -225,21 +226,26 @@ class BrainRestArgs:
     z1i = int(z1s)
     z2i = int(z2s)
 
-    # Convert to local coordinates if global specified
-    if ( globalcoords ):
-      x = int ( float(x) / float( 2**(self._resolution)))
-      y1i = int ( float(y1i) / float( 2**(self._resolution)))
-      y2i = int ( float(y2i) / float( 2**(self._resolution)))
-
-
-    #RBTODO need to make a dbconfig object 
     # Check arguments for legal values
-    if not dbcfg.checkCube ( self._resolution, x, x+1, y1i, y2i, z1i, z2i  )\
-       or  x >= dbcfg.imagesz[self._resolution][0]:
-      raise RESTArgsError ("Range exceeds data boundarie %s" % imageargs)
+    try:
+      if not dbcfg.checkCube ( self._resolution, x, x+1, y1i, y2i, z1i, z2i  )\
+         or  x >= dbcfg.imagesz[self._resolution][0]:
+        raise RESTArgsError ( "Illegal range. Image size:" +  str(dbcfg.imageSize( self._resolution )))
+    except Exception, e:
+      # RBTODO make this error better.  How to print good information about e?
+      #  it only prints 3, not KeyError 3, whereas print e in the debugger gives good info
+      raise RESTArgsError ( "Illegal arguments to cutout.  Check cube failed {}".format(e))
 
     self._corner=[x,y1i,z1i-dbcfg.slicerange[0]]
     self._dim=[1,y2i-y1i,z2i-z1i ]
+
+    # list of identifiers to keep
+    result = re.match ("filter/([\d/,]+)/",rest)
+    if result != None:
+      self._filterlist = np.array(result.group(1).split(','),dtype=np.uint32)
+    else:
+      self._filterlist = None
+
 
 
 # Unbound functions  not part of the class object

@@ -28,7 +28,7 @@ class dbConfig:
     else:
       return False
 
-  #
+#
   #  Return the image size
   #
   def imageSize ( self, resolution ):
