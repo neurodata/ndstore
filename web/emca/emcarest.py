@@ -25,7 +25,7 @@ from emca_cy import recolor_cy
 
 from emcaerror import EMCAError
 
-from emcafilter import filterCutout
+from filtercutout import filterCutout
 
 import logging
 logger=logging.getLogger("emca")
@@ -167,9 +167,12 @@ def xySlice ( imageargs, dbcfg, proj ):
   # Perform the cutout
   cube = db.cutout ( corner, dim, resolution, channel )
   if filterlist != None:
-    print "Filtering by values {}".format(filterlist)
-    import pdb; pdb.set_trace()
+    # slowest implementation
     filterCutout ( cube.data, filterlist )
+    # inline vectorized is actually slower
+#    vec_func = np.vectorize ( lambda x: 0 if x not in filterlist else x )
+#    cube.data = vec_func ( cube.data )
+
 
   return cube
 
