@@ -118,6 +118,7 @@ class AnnoStack:
 
           # Preserve annotations made at the specified level RBTODO fix me
           self.annoDB.annotateDense ( outcorner, l+1, outdata, 'O' )
+          self.annoDB.commit()
             
           # zero the output buffer
           outdata = np.zeros ([zcubedim*4, ycubedim*2, xcubedim*2])
