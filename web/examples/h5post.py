@@ -37,7 +37,7 @@ def main():
   if result.dataonly:
     url+='dataonly/'
   
-  print url
+ # print url
 
   try:
     req = urllib2.Request ( url, open(result.h5file).read() )
@@ -47,8 +47,8 @@ def main():
     print "Error %s" % (e.read()) 
     sys.exit(0)
 
-  the_page = response.read()
-  print "Success with id %s" % the_page
+#  the_page = response.read()
+ # print "Success with id %s" % the_page
 
 if __name__ == "__main__":
   main()

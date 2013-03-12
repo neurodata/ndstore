@@ -40,7 +40,8 @@ class AnnoStack:
 
   def buildStack ( self, startlevel ):
     """Build the hierarchy of annotations"""
-
+    print "here"
+    import pdb;pdb.set_trace();
     for  l in range ( startlevel, len(self.dbcfg.resolutions)-1 ):
 
       # Get the source database sizes
@@ -68,7 +69,8 @@ class AnnoStack:
       lastzindex = (zindex.XYZMorton([xlimit,ylimit,zlimit])/64+1)*64
 
       # Iterate over the cubes in morton order
-      for mortonidx in range(256*192*128, lastzindex, 64): 
+#      for mortonidx in range(256*192*128, lastzindex, 64): 
+      for mortonidx in range(1, lastzindex, 64): 
 
         print "Working on batch %s at %s" % (mortonidx, zindex.MortonXYZ(mortonidx))
         
