@@ -4,7 +4,7 @@ import h5py
 import numpy as np
 
 import emcaprivate
-from emcaerror import ANNError
+from emcaerror import EMCAError
 import dbconfig
 
 import logging
@@ -13,9 +13,10 @@ logger=logging.getLogger("emca")
 #TODO enforce readonly
 
 # dbtype enumerations
-IMAGES = 1
+IMAGES_8bit = 1
 ANNOTATIONS = 2
-CHANNELS = 3
+CHANNELS_16bit = 3
+CHANNELS_8bit = 4
 
 class EMCAProject:
   """Project specific for cutout and annotation data"""
@@ -113,7 +114,7 @@ class EMCAProjectsDB:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       logger.error ("Could not query emca projects database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise ANNError ("Could not query emca projects database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise EMCAError ("Could not query emca projects database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # get the project information 
     row = cursor.fetchone()
@@ -121,7 +122,7 @@ class EMCAProjectsDB:
     # if the project is not found.  error
     if ( row == None ):
       logger.warning ( "Project token %s not found." % ( token ))
-      raise ANNError ( "Project token %s not found." % ( token ))
+      raise EMCAError ( "Project token %s not found." % ( token ))
 
     [token, openid, host, project, dbtype, dataset, dataurl, readonly, exceptions ] = row
 
@@ -148,7 +149,7 @@ class EMCAProjectsDB:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       logger.error ("Could not query emca projects database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise ANNError ("Could not query emca projects database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise EMCAError ("Could not query emca projects database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     self.conn.commit()
 
@@ -173,7 +174,7 @@ class EMCAProjectsDB:
           newcursor.execute ( sql )
         except MySQLdb.Error, e:
           logger.error ("Failed to create database for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-          raise ANNError ("Failed to create database for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+          raise EMCAError ("Failed to create database for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
         newconn.commit()
 
@@ -188,15 +189,15 @@ class EMCAProjectsDB:
         sql = ""
 
         # tables for annotations and images
-        if dbtype == IMAGES or dbtype == ANNOTATIONS:
+        if dbtype == IMAGES_8bit or dbtype == ANNOTATIONS:
 
           for i in dbcfg.resolutions: 
             sql += "CREATE TABLE res%s ( zindex BIGINT PRIMARY KEY, cube LONGBLOB );\n" % i
 
         # tables for channel dbs
-        if dbtype == CHANNELS:
+        if dbtype == CHANNELS_8bit or dbtype == CHANNELS_16bit:
           for i in dbcfg.resolutions: 
-            sql += "CREATE TABLE res%s ( zindex BIGINT, channel INT, cube LONGBLOB, PRIMARY KEY(zindex,channel) );\n" % i
+            sql += "CREATE TABLE res%s ( channel INT, zindex BIGINT, cube LONGBLOB, PRIMARY KEY(channel,zindex) );\n" % i
 
         # tables specific to annotation projects
         if dbtype == ANNOTATIONS:
@@ -221,7 +222,7 @@ class EMCAProjectsDB:
           newcursor.execute ( sql )
         except MySQLdb.Error, e:
           logging.error ("Failed to create tables for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-          raise ANNError ("Failed to create tables for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+          raise EMCAError ("Failed to create tables for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # Error, undo the projects table entry
     except:
@@ -252,7 +253,7 @@ class EMCAProjectsDB:
     except MySQLdb.Error, e:
       conn.rollback()
       logging.error ("Failed to remove project from projects tables %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise ANNError ("Failed to remove project from projects tables %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise EMCAError ("Failed to remove project from projects tables %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     self.conn.commit()
 
@@ -274,7 +275,7 @@ class EMCAProjectsDB:
     except MySQLdb.Error, e:
       conn.rollback()
       logging.error ("Failed to drop project database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise ANNError ("Failed to drop project database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise EMCAError ("Failed to drop project database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     self.conn.commit()
 

@@ -11,17 +11,20 @@ def main():
   parser = argparse.ArgumentParser(description='Request a list of RAMON object ids that match specified type and status values')
   parser.add_argument('--status', type=int, action="store", default=None )
   parser.add_argument('--type', type=int, action="store", default=None )
+  parser.add_argument('--confidence', type=float, action="store", default=None )
   parser.add_argument('--cutout', action="store", help='Cutout arguments of the form resolution/x1,x2/y1,y2/z1,z2.', default=None)
   parser.add_argument('baseurl', action="store" )
   parser.add_argument('token', action="store" )
 
   result = parser.parse_args()
 
-  url = 'http://%s/emca/%s/list/' % ( result.baseurl, result.token )
+  url = 'http://%s/emca/%s/query/' % ( result.baseurl, result.token )
   if result.type != None:
     url += 'type/%s/' % ( result.type )
   if result.status != None:
     url += 'status/%s/' % ( result.status )
+  if result.confidence != None:
+    url += 'confidence/lt/%s/' % ( result.confidence )
 
   print url
 
@@ -32,7 +35,7 @@ def main():
       f = urllib2.urlopen ( url )
     except urllib2.URLError, e:
       print "Failed URL", url
-      print "Error %s" % (e.read()) 
+      print "Error %s" % (e) 
       sys.exit(0)
 
   # POST if we have a cutout
@@ -65,7 +68,7 @@ def main():
       f = urllib2.urlopen(req)
     except urllib2.URLError, e:
       print "Failed URL", url
-      print "Error %s" % (e.read()) 
+      print "Error %s" % (e) 
       sys.exit(-1)
 
   # Now we are processing the return.  New tmpfile, new h5f

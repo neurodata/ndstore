@@ -10,7 +10,7 @@ import emcaproj
 import dbconfig
 
 # Errors we are going to catch
-from emcaerror import ANNError
+from emcaerror import EMCAError
 
 import logging
 logger=logging.getLogger("emca")
@@ -23,11 +23,8 @@ def emcaget (request, webargs):
   [ service, sym, rest ] = cutoutargs.partition ('/')
 
   try:
-    # add a tiff service for cutouts?
     if service=='xy' or service=='yz' or service=='xz':
       return django.http.HttpResponse(emcarest.emcaget(webargs), mimetype="image/png" )
-    elif service=='xytiff' or service=='yztiff' or service=='xztiff':
-      return django.http.HttpResponse(emcarest.emcaget(webargs), mimetype="image/tiff" )
     elif service=='hdf5':
       return django.http.HttpResponse(emcarest.emcaget(webargs), mimetype="product/hdf5" )
     elif service=='npz':
@@ -43,7 +40,7 @@ def emcaget (request, webargs):
     else:
       logger.warning ("HTTP Bad request. Could not find service %s" % dataset )
       return django.http.HttpResponseBadRequest ("Could not find service %s" % dataset )
-  except (ANNError,MySQLdb.Error), e:
+  except (EMCAError,MySQLdb.Error), e:
     return django.http.HttpResponseNotFound(e.value)
   except:
     logger.exception("Unknown exception in emcaget.")
@@ -56,7 +53,7 @@ def annopost (request, webargs):
   # All handling done by emcarest
   try:
     return django.http.HttpResponse(emcarest.annopost(webargs,request.body))
-  except ANNError, e:
+  except EMCAError, e:
     return django.http.HttpResponseNotFound(e.value)
   except:
     logger.exception("Unknown exception in annopost.")
@@ -74,7 +71,7 @@ def annotation (request, webargs):
     elif request.method == 'DELETE':
       emcarest.deleteAnnotation(webargs)
       return django.http.HttpResponse ("Success", mimetype='text/html')
-  except ANNError, e:
+  except EMCAError, e:
     if hasattr(e,'value'):
       return django.http.HttpResponseNotFound(e.value)
     else: 
@@ -91,7 +88,7 @@ def csv (request, webargs):
   try:
     if request.method == 'GET':
       return django.http.HttpResponse(emcarest.getCSV(webargs), mimetype="text/html" )
-  except ANNError, e:
+  except EMCAError, e:
     if hasattr(e,'value'):
       return django.http.HttpResponseNotFound(e.value)
     else: 
@@ -106,27 +103,27 @@ def getObjects ( request, webargs ):
 
   try:
     if request.method == 'GET':
-      raise ANNError ( "GET requested. objects Web service requires a POST of a list of identifiers.")
+      raise EMCAError ( "GET requested. objects Web service requires a POST of a list of identifiers.")
     elif request.method == 'POST':
       return django.http.HttpResponse(emcarest.getAnnotations(webargs,request.body), mimetype="product/hdf5") 
     
-  except ANNError, e:
+  except EMCAError, e:
     return django.http.HttpResponseNotFound(e.value)
   except:
     logger.exception("Unknown exception in getObjects.")
     raise
 
 @cache_control(no_cache=True)
-def listObjects ( request, webargs ):
+def queryObjects ( request, webargs ):
   """Return a list of objects matching predicates and cutout"""
 
   try:
     if request.method == 'GET':
-      return django.http.HttpResponse(emcarest.listAnnoObjects(webargs), mimetype="product/hdf5") 
+      return django.http.HttpResponse(emcarest.queryAnnoObjects(webargs), mimetype="product/hdf5") 
     elif request.method == 'POST':
-      return django.http.HttpResponse(emcarest.listAnnoObjects(webargs,request.body), mimetype="product/hdf5") 
+      return django.http.HttpResponse(emcarest.queryAnnoObjects(webargs,request.body), mimetype="product/hdf5") 
     
-  except ANNError, e:
+  except EMCAError, e:
     return django.http.HttpResponseNotFound(e.value)
   except:
     logger.exception("Unknown exception in listObjects.")
@@ -137,7 +134,7 @@ def catmaid (request, webargs):
   """Convert a CATMAID request into an cutout."""
 
   try:
-    catmaidimg = emcarest.emcacatmaid(webargs)
+    catmaidimg = emcarest.emcacatmaid_legacy(webargs)
 
     fobj = cStringIO.StringIO ( )
     catmaidimg.save ( fobj, "PNG" )
@@ -147,7 +144,7 @@ def catmaid (request, webargs):
   except ANNError, e:
     return django.http.HttpResponseNotFound(e)
   except:
-    logger.exception("Unknown exception in annopost.")
+    logger.exception("Unknown exception in catmaid %s.", e)
     raise
 
 
@@ -156,7 +153,7 @@ def projinfo (request, webargs):
 
   try:  
     return django.http.HttpResponse(emcarest.projInfo(webargs), mimetype="product/hdf5" )
-  except ANNError, e:
+  except EMCAError, e:
     return django.http.HttpResponseNotFound(e)
   except:
     logger.exception("Unknown exception in projInfo.")
@@ -168,7 +165,7 @@ def mcFalseColor (request, webargs):
 
   try:
     return django.http.HttpResponse(emcarest.mcFalseColor(webargs), mimetype="image/png" )
-  except ANNError, e:
+  except EMCAError, e:
     return django.http.HttpResponseNotFound(e)
   except:
     logger.exception("Unknown exception in mcFalseColor.")
@@ -181,18 +178,19 @@ def setField (request, webargs):
   try:
     emcarest.setField(webargs)
     return django.http.HttpResponse()
-  except ANNError, e:
+  except EMCAError, e:
     return django.http.HttpResponseNotFound(e)
   except:
     logger.exception("Unknown exception in setField.")
     raise
+
 
 def getField (request, webargs):
   """Get an individual RAMON field for an object"""
 
   try:
     return django.http.HttpResponse(emcarest.getField(webargs), mimetype="text/html" )
-  except ANNError, e:
+  except EMCAError, e:
     return django.http.HttpResponseNotFound(e)
   except:
     logger.exception("Unknown exception in getField.")

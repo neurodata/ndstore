@@ -2,6 +2,7 @@ import numpy as np
 import cStringIO
 import zlib
 import MySQLdb
+import re
 from collections import defaultdict
 
 import zindex
@@ -11,9 +12,8 @@ import emcaproj
 import annotation
 import annindex
 import imagecube
-import chancube
 
-from emcaerror import ANNError
+from emcaerror import EMCAError
 
 from emca_cy import cubeLocs_cy
 
@@ -568,7 +568,7 @@ class EMCADB:
                 # add to the index
                 index_dict[exid].add(key)
           else:
-            raise ANNError ( "Unsupported conflict option %s" % conflictopt )
+            raise EMCAError ( "Unsupported conflict option %s" % conflictopt )
 
           self.putCube ( key, resolution, cube)
 
@@ -709,17 +709,17 @@ class EMCADB:
                                         znumcubes*zcubedim] )
       outcube.zeros()
 
-    elif (self.annoproj.getDBType() == emcaproj.IMAGES):
+    elif (self.annoproj.getDBType() == emcaproj.IMAGES_8bit or self.annoproj.getDBType() == emcaproj.CHANNELS_8bit):
       
-      incube = imagecube.ImageCube ( cubedim )
-      outcube = imagecube.ImageCube ( [xnumcubes*xcubedim,\
+      incube = imagecube.ImageCube8 ( cubedim )
+      outcube = imagecube.ImageCube8 ( [xnumcubes*xcubedim,\
                                         ynumcubes*ycubedim,\
                                         znumcubes*zcubedim] )
 
-    elif (self.annoproj.getDBType() == emcaproj.CHANNELS):
+    elif (self.annoproj.getDBType() == emcaproj.CHANNELS_16bit):
       
-      incube = chancube.ChanCube ( cubedim )
-      outcube = chancube.ChanCube ( [xnumcubes*xcubedim,\
+      incube = imagecube.ImageCube16 ( cubedim )
+      outcube = imagecube.ImageCube16 ( [xnumcubes*xcubedim,\
                                         ynumcubes*ycubedim,\
                                         znumcubes*zcubedim] )
 
@@ -738,7 +738,7 @@ class EMCADB:
     dbname = self.annoproj.getTable(resolution)
 
     # Customize query to the database (include channel or not)
-    if (self.annoproj.getDBType() == emcaproj.CHANNELS):
+    if (self.annoproj.getDBType() == emcaproj.CHANNELS_8bit or self.annoproj.getDBType() == emcaproj.CHANNELS_16bit):
       sql = "SELECT zindex, cube FROM " + dbname + " WHERE channel= " + str(channel) + " AND zindex in (%s)" 
     else:
       sql = "SELECT zindex, cube FROM " + dbname + " WHERE zindex IN (%s)" 
@@ -766,7 +766,7 @@ class EMCADB:
       incube.fromNPZ ( datastring[:] )
       # add it to the output cube
       outcube.addData ( incube, offset ) 
-        
+
     # need to trim down the array to size
     #  only if the dimensions are not the same
     if dim[0] % xcubedim  == 0 and\
@@ -997,7 +997,7 @@ class EMCADB:
   # getAnnoObjects:  
   #    Return a list of annotation object IDs
   #  for now by type and status
-  def getAnnoObjects ( self, predicates ):
+  def getAnnoObjects ( self, args ):
     """Return a list of annotation object ids that match equality predicates.  
       Legal predicates are currently:
         type
@@ -1005,24 +1005,71 @@ class EMCADB:
       Predicates are given in a dictionary.
     """
 
-    # legal fields
-    fields = ( 'type', 'status' )
+    # RBTODO debug
+
+    # legal equality fields
+    eqfields = ( 'type', 'status' )
+
+    # legal comparative fields
+    compfields = ( 'confidence' )
 
     # start of the SQL clause
     sql = "SELECT annoid FROM " + annotation.anno_dbtables['annotation'] 
-
     clause = ''
 
-    # probably need to avoid SQL injection attacks.
-    #  throw an error or build the sql clause
-    for field in predicates.keys():
-      if field not in fields:
-        raise ANNError ( "Illegal field in URL: %s" % (field) )
-      elif clause == '':
-        clause += " WHERE "
-      else:  
-        clause += ' AND '
-      clause += '%s = %s' % ( field, predicates[field] )
+    # iterate over the predicates
+    it = iter(args)
+    try: 
+      field = it.next()
+
+
+      # build a query for all the predicates
+      while ( field ):
+
+        if clause == '':
+          clause += " WHERE "
+        else:  
+          clause += ' AND '
+
+        if field in eqfields:
+          val = it.next()
+          if not re.match('^\w+$',val): 
+            logger.warning ( "For field %s. Illegal value:%s" % (field,val) )
+            raise EMCAError ( "For field %s. Illegal value:%s" % (field,val) )
+
+          clause += '%s = %s' % ( field, val )
+
+        elif field in compfields:
+          opstr = it.next()
+          if opstr == 'lt':
+            op = ' < '
+          elif opstr == 'gt':
+            op = ' > '
+          elif opstr == 'lte':
+            op = ' <= '
+          elif opstr == 'gte':
+            op = ' >= '
+          elif opstr == 'neq':
+            op = ' >= '
+          else:
+            logger.warning ( "Not a comparison operator: %s" % (opstr) )
+            raise EMCAError ( "Not a comparison operator: %s" % (opstr) )
+
+          val = it.next()
+          if not re.match('^[\d\.]+$',val): 
+            logger.warning ( "For field %s. Illegal value:%s" % (field,val) )
+            raise EMCAError ( "For field %s. Illegal value:%s" % (field,val) )
+          clause += '%s %s %s' % ( field, op, val )
+
+        #RBTODO key/value fields?
+
+        else:
+          raise EMCAError ( "Illegal field in URL: %s" % (field) )
+
+        field = it.next()
+
+    except StopIteration:
+      pass
 
     sql += clause + ';'
 

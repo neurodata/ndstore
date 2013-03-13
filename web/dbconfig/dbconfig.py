@@ -77,9 +77,12 @@ def switchDataset ( dataset ):
   elif dataset == 'kat11iso':
     import dbconfigkat11iso
     return dbconfigkat11iso.dbConfigKasthuri11Isotropic()
-  elif dataset == 'weiler':
-    import dbconfigweiler
-    return dbconfigweiler.dbConfigWeiler()
+  elif dataset == 'kdmsyn091207':
+    import dbconfigkdmsyn091207
+    return dbconfigkdmsyn091207.dbConfigKDMSYN091207()
+  elif dataset == 'kdmsyn120529':
+    import dbconfigkdmsyn120529
+    return dbconfigkdmsyn120529.dbConfigKDMSYN120529()
   elif dataset == 'autism':
     import dbconfigautism
     return dbconfigautism.dbConfigAutism()
