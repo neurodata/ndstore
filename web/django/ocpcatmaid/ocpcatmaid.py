@@ -14,6 +14,9 @@ import emcaproj
 import emcarest
 import django
 
+import logging
+logger=logging.getLogger("emca")
+
 
 from emca_cy import recolor_cy
 
@@ -42,6 +45,9 @@ def ocpcatmaid ( webargs ):
   channel = int(chanstr)
   zslice = int(zslicestr)
   tilesz = int(tileszstr)
+
+#  logger.error('{}/{}/{}/'.format(token,tileszstr,chanstr)
+#  logger.error('{}/{}/{}/{}'.format(resstr,xtilestr,ytilestr,zslicestr)
 
   # memcache key
   mckey = '{}/{}/{}/{}/{}/{}/{}'.format(token,tileszstr,chanstr,resstr,xtilestr,ytilestr,zslicestr)

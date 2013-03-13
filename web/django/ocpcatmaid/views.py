@@ -28,6 +28,6 @@ def ocpcatmaidview (request, webargs):
 
   except EMCAError, e:
     return django.http.HttpResponseNotFound(e)
-  except:
-    logger.exception("Unknown exception in annopost: %s" % e )
+  except Exception, e:
+    logger.exception("Unknown exception in ocpcatmaidview: %s" % e )
     raise

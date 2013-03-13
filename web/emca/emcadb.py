@@ -1017,8 +1017,6 @@ class EMCADB:
     sql = "SELECT annoid FROM " + annotation.anno_dbtables['annotation'] 
     clause = ''
 
-    import pdb; pdb.set_trace()
-
     # iterate over the predicates
     it = iter(args)
     try: 
