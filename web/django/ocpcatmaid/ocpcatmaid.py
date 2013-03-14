@@ -17,6 +17,12 @@ import django
 
 from emca_cy import recolor_cy
 
+from threading import Thread
+
+import logging
+logger=logging.getLogger("emca")
+
+
 
 def tile2WebPNG ( tile, tilesz ):
 
@@ -26,6 +32,19 @@ def tile2WebPNG ( tile, tilesz ):
   elif tile.dtype==np.uint32:
     recolor_cy (tile, tile)
     return Image.frombuffer ( 'RGBA', [tilesz,tilesz], tile, 'raw', 'RGBA', 0, 1 )
+
+
+def loadMCache ( mc,token,tilesz,channel,res,xtile,ytile,zstart,numslices,cuboid ):
+
+  # add each image slice to memcache
+  for i in range(numslices):
+    mckey = '{}/{}/{}/{}/{}/{}/{}'.format(token,tilesz,channel,res,xtile,ytile,zstart+i)
+    img = tile2WebPNG ( cuboid.data[i,:,:], tilesz )
+    fobj = cStringIO.StringIO ( )
+    img.save ( fobj, "PNG" )
+    mc.set(mckey,fobj.getvalue())
+
+
 
 def ocpcatmaid ( webargs ):
   """Either fetch the file from memcache or load a new region into memcache by cutout"""
@@ -44,19 +63,20 @@ def ocpcatmaid ( webargs ):
   tilesz = int(tileszstr)
 
   # memcache key
-  mckey = '{}/{}/{}/{}/{}/{}/{}'.format(token,tileszstr,chanstr,resstr,xtilestr,ytilestr,zslicestr)
+  mckey = '{}/{}/{}/{}/{}/{}/{}'.format(token,tilesz,channel,res,xtile,ytile,zslice)
 
   # do something to sanitize the webargs??
   # if tile is in memcache, return it
-  tile = mc.get(mckey)
-  if tile != None:
-
-    # convert to an image
-    return tile2WebPNG ( tile, tilesz )
-
+  img = mc.get(mckey)
+  if img != None:
+    fobj = cStringIO.StringIO(img)
+    fobj.seek(0)
+    return fobj
 
   # load a slab into CATMAID
   else:
+
+    logger.warning("Miss")
   
     # load the database/token
     [ db, dbcfg, proj, projdb ] = emcarest.loadDBProj ( token )
@@ -75,11 +95,14 @@ def ocpcatmaid ( webargs ):
 
     cuboid = db.cutout ( corner, dim, res, channel )
 
-    # add each image slice to memcache
-    for i in range(numslices):
-      mckey = '{}/{}/{}/{}/{}/{}/{}'.format(token,tileszstr,chanstr,resstr,xtilestr,ytilestr,zstart+i)
-      mc.set(mckey,cuboid.data[i,:,:])
+    # Load the current cutout as a cuboid
+    t = Thread ( target=loadMCache, args=(mc,token,tilesz,channel,res,xtile,ytile,zstart,numslices,cuboid))
+    t.start()
 
-    return tile2WebPNG ( cuboid.data[zslice%numslices,:,:], tilesz )
+    img = tile2WebPNG ( cuboid.data[zslice%numslices,:,:], tilesz )
+    fobj = cStringIO.StringIO ( )
+    img.save ( fobj, "PNG" )
+    fobj.seek(0)
 
-      
+    return fobj
+
