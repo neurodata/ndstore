@@ -14,9 +14,6 @@ import emcaproj
 import emcarest
 import django
 
-import logging
-logger=logging.getLogger("emca")
-
 
 from emca_cy import recolor_cy
 
@@ -46,9 +43,6 @@ def ocpcatmaid ( webargs ):
   zslice = int(zslicestr)
   tilesz = int(tileszstr)
 
-#  logger.error('{}/{}/{}/'.format(token,tileszstr,chanstr)
-#  logger.error('{}/{}/{}/{}'.format(resstr,xtilestr,ytilestr,zslicestr)
-
   # memcache key
   mckey = '{}/{}/{}/{}/{}/{}/{}'.format(token,tileszstr,chanstr,resstr,xtilestr,ytilestr,zslicestr)
 
@@ -56,13 +50,14 @@ def ocpcatmaid ( webargs ):
   # if tile is in memcache, return it
   tile = mc.get(mckey)
   if tile != None:
+
     # convert to an image
     return tile2WebPNG ( tile, tilesz )
 
 
   # load a slab into CATMAID
   else:
-
+  
     # load the database/token
     [ db, dbcfg, proj, projdb ] = emcarest.loadDBProj ( token )
 
