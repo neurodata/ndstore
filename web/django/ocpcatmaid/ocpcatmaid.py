@@ -37,13 +37,14 @@ def tile2WebPNG ( tile, tilesz ):
 def loadMCache ( mc,token,tilesz,channel,res,xtile,ytile,zstart,numslices,cuboid ):
 
   # add each image slice to memcache
-  for i in range(numslices):
-    mckey = '{}/{}/{}/{}/{}/{}/{}'.format(token,tilesz,channel,res,xtile,ytile,zstart+i)
-    img = tile2WebPNG ( cuboid.data[i,:,:], tilesz )
-    fobj = cStringIO.StringIO ( )
-    img.save ( fobj, "PNG" )
-    mc.set(mckey,fobj.getvalue())
-
+  for z in range(cuboid.shape[0]):
+    for y in range(cuboid.shape[1]/tilesz):
+      for x in range(cuboid.shape[1]/tilesz):
+        mckey = '{}/{}/{}/{}/{}/{}/{}'.format(token,tilesz,channel,res,xtile+x,ytile+y,zstart+z)
+        img = tile2WebPNG ( cuboid.data[z,y*tilesz:(y+1)*tilesz,x*tilesz:(x+1)*tilesz], tilesz )
+        fobj = cStringIO.StringIO ( )
+        img.save ( fobj, "PNG" )
+        mc.set(mckey,fobj.getvalue())
 
 
 def ocpcatmaid ( webargs ):
@@ -76,8 +77,6 @@ def ocpcatmaid ( webargs ):
   # load a slab into CATMAID
   else:
 
-    logger.warning("Miss")
-  
     # load the database/token
     [ db, dbcfg, proj, projdb ] = emcarest.loadDBProj ( token )
 
@@ -91,7 +90,7 @@ def ocpcatmaid ( webargs ):
     zstart = (zslice / numslices) * numslices
 
     corner = [xtile*tilesz, ytile*tilesz, zstart]
-    dim = [tilesz,tilesz,numslices]
+    dim = [2*tilesz,2*tilesz,numslices]
 
     cuboid = db.cutout ( corner, dim, res, channel )
 
