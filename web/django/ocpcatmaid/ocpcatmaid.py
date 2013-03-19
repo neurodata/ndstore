@@ -5,6 +5,7 @@ import zlib
 import cStringIO
 from PIL import Image
 import pylibmc
+import posix_ipc 
 
 import empaths
 import restargs
@@ -13,6 +14,7 @@ import dbconfig
 import emcaproj
 import emcarest
 import django
+
 
 
 from emca_cy import recolor_cy
@@ -75,7 +77,7 @@ class OCPCatmaid:
     self.addCuboid ( res, xtile, ytile, zstart, cuboid )
 
     # Having loaded the cuboid prefetch other data
-    #self.prefetchMCache ()
+    self.prefetchMCache ( res, xtile, ytile, zstart )
 
 
   def checkFetch ( self, res, xtile, ytile, zslice ):
@@ -87,7 +89,6 @@ class OCPCatmaid:
 
       # make sure the db is loaded
       self.loadDB ( )
-
 
       # cutout the entire slab -- align to cuboid in z
       numslices = self.dbcfg.cubedim[res][2] 
@@ -105,14 +106,20 @@ class OCPCatmaid:
         # put it in memcache
         self.addCuboid(res,xtile,ytile,zstart,imgcube.data)
 
-      else:
-        print "Didn't prefetch %s" % ( mckey )
-
 
   def prefetchMCache ( self, res, xtile, ytile, zslice ):
     """Background thread to load the cache"""
 
+
     # acquire the prefetch lock -- IPC semaphore
+    # open the system sempahore
+    sem = posix_ipc.Semaphore ( "/mcprefetch", flags=posix_ipc.O_CREAT, initial_value=1 ) 
+
+    # acquire it immediately
+    try:
+      sem.acquire ( 0 )
+    except Exception, e:
+      return
 
     # we already have the current slab 1024^2 x 16
     # probe to see if we have the left/right slab
@@ -124,6 +131,9 @@ class OCPCatmaid:
     # probe to see if we have the up/down resolution
     self.checkFetch ( res-1, xtile, ytile, zslice )
     self.checkFetch ( res+1, xtile, ytile, zslice )
+
+    sem.release()
+    sem.close()
 
 
   def cacheMiss ( self, res, xtile, ytile, zslice ):
@@ -153,10 +163,8 @@ class OCPCatmaid:
 
   def cacheHit ( self, res, xtile, ytile, zslice ):
     """Prefetch in the background on a hit."""
-
-    self.prefetchMCache( res, xtile, ytile, zslice )
-   # t = Thread ( target=self.prefetchMCache )
-   # t.start()
+    t = Thread ( target=self.prefetchMCache, args=(res,xtile,ytile,zslice ))
+    t.start()
 
 
   def getTile ( self, webargs ):
@@ -174,18 +182,17 @@ class OCPCatmaid:
 
     # memcache key
     mckey = self.buildKey(res,xtile,ytile,zslice)
-    print "Key", mckey
 
     # do something to sanitize the webargs??
     # if tile is in memcache, return it
     tile = self.mc.get(mckey)
     if tile != None:
-      print "Cache hit ", mckey
+      logger.warning( "Cache hit %s" % mckey)
       self.cacheHit(res,xtile,ytile,zslice)
       fobj = cStringIO.StringIO(tile)
     # load a slab into CATMAID
     else:
-      print "Cache miss ", mckey
+      logger.warning( "Cache miss %s" % mckey)
       img=self.cacheMiss(res,xtile,ytile,zslice)
       fobj = cStringIO.StringIO ( )
       img.save ( fobj, "PNG" )
