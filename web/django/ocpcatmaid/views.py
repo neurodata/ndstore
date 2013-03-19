@@ -19,7 +19,8 @@ def ocpcatmaidview (request, webargs):
   """Convert a CATMAID request into an cutout."""
 
   try:
-    imgfobj = ocpcatmaid.ocpcatmaid(webargs)
+    oc = ocpcatmaid.OCPCatmaid()
+    imgfobj = oc.getTile(webargs)
     return django.http.HttpResponse(imgfobj.read(), mimetype="image/png")
 
   except EMCAError, e:

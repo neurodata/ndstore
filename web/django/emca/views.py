@@ -41,7 +41,7 @@ def emcaget (request, webargs):
       logger.warning ("HTTP Bad request. Could not find service %s" % dataset )
       return django.http.HttpResponseBadRequest ("Could not find service %s" % dataset )
   except (EMCAError,MySQLdb.Error), e:
-    return django.http.HttpResponseNotFound(e.value)
+    return django.http.HttpResponseNotFound(e)
   except:
     logger.exception("Unknown exception in emcaget.")
     raise
