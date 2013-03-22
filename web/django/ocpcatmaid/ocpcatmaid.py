@@ -5,6 +5,8 @@ import zlib
 import cStringIO
 from PIL import Image
 import pylibmc
+import posix_ipc 
+import time
 
 import empaths
 import restargs
@@ -15,12 +17,10 @@ import emcarest
 import django
 
 
+
 from emca_cy import recolor_cy
 
 from threading import Thread
-
-import logging
-logger=logging.getLogger("emca")
 
 class OCPCatmaid:
   """Prefetch CATMAID tiles into MemcacheDB"""
@@ -31,6 +31,11 @@ class OCPCatmaid:
     # make the memcache connection
     self.mc = pylibmc.Client(["127.0.0.1"], binary=True,behaviors={"tcp_nodelay":True,"ketama": True})
 
+    # Locks for doing I/O and for prefetching
+    self.pfsem = posix_ipc.Semaphore ( "/mcprefetch", flags=posix_ipc.O_CREAT, initial_value=1 ) 
+
+  def __del__(self):
+    self.pfsem.close()
 
   def loadDB ( self ):
     """Load the database if it hasn't been load."""
@@ -75,7 +80,7 @@ class OCPCatmaid:
     self.addCuboid ( res, xtile, ytile, zstart, cuboid )
 
     # Having loaded the cuboid prefetch other data
-    #self.prefetchMCache ()
+    self.prefetchMCache ( res, xtile, ytile, zstart )
 
 
   def checkFetch ( self, res, xtile, ytile, zslice ):
@@ -88,7 +93,6 @@ class OCPCatmaid:
       # make sure the db is loaded
       self.loadDB ( )
 
-
       # cutout the entire slab -- align to cuboid in z
       numslices = self.dbcfg.cubedim[res][2] 
       zstart = (zslice / numslices) * numslices
@@ -98,32 +102,49 @@ class OCPCatmaid:
 
       # do some bounds checkout  -- only prefetch in the range
       if self.dbcfg.checkCube( res, corner[0], corner[0]+dim[0], corner[1], corner[1]+dim[1], corner[2], corner[2]+dim[2] ):
-
         # do the cutout
         imgcube = self.db.cutout ( corner, dim, res, self.channel )
 
         # put it in memcache
         self.addCuboid(res,xtile,ytile,zstart,imgcube.data)
 
-      else:
-        print "Didn't prefetch %s" % ( mckey )
-
 
   def prefetchMCache ( self, res, xtile, ytile, zslice ):
     """Background thread to load the cache"""
 
-    # acquire the prefetch lock -- IPC semaphore
+    time.sleep(1)
+
+    # only one active prefetcher at a time
+    # don't wait a long time
+    try:
+      self.pfsem.acquire ( 5 )
+    except Exception, e:
+      self.pfsem.release()
+      return
 
     # we already have the current slab 1024^2 x 16
     # probe to see if we have the left/right slab
     self.checkFetch ( res, xtile-1, ytile, zslice )
-    self.checkFetch ( res, xtile+1, ytile, zslice )
+    self.checkFetch ( res, xtile+2, ytile, zslice )
     # probe to see if we have the top/bottom slab
     self.checkFetch ( res, xtile, ytile-1, zslice )
-    self.checkFetch ( res, xtile, ytile+1, zslice )
+    self.checkFetch ( res, xtile, ytile+2, zslice )
+    # probe to see if we have the next slab or previous slab
+
+    # make sure the db is loaded -- needed for numslices
+    self.loadDB ( )
+    
+    # RBTODO this logic doesn't work
+    numslices = self.dbcfg.cubedim[res][2] 
+    if zslice % numslices < 2:
+      self.checkFetch ( res, xtile, ytile, zslice-numslices )
+    if zslice % numslices >= (numslices - 2):
+      self.checkFetch ( res, xtile, ytile, zslice+numslices )
     # probe to see if we have the up/down resolution
-    self.checkFetch ( res-1, xtile, ytile, zslice )
-    self.checkFetch ( res+1, xtile, ytile, zslice )
+    # self.checkFetch ( res-1, xtile, ytile, zslice )
+    # self.checkFetch ( res+1, xtile, ytile, zslice )
+
+    self.pfsem.release()
 
 
   def cacheMiss ( self, res, xtile, ytile, zslice ):
@@ -153,10 +174,8 @@ class OCPCatmaid:
 
   def cacheHit ( self, res, xtile, ytile, zslice ):
     """Prefetch in the background on a hit."""
-
-    self.prefetchMCache( res, xtile, ytile, zslice )
-   # t = Thread ( target=self.prefetchMCache )
-   # t.start()
+    t = Thread ( target=self.prefetchMCache, args=(res,xtile,ytile,zslice ))
+    t.start()
 
 
   def getTile ( self, webargs ):
@@ -174,18 +193,15 @@ class OCPCatmaid:
 
     # memcache key
     mckey = self.buildKey(res,xtile,ytile,zslice)
-    print "Key", mckey
 
     # do something to sanitize the webargs??
     # if tile is in memcache, return it
     tile = self.mc.get(mckey)
     if tile != None:
-      print "Cache hit ", mckey
       self.cacheHit(res,xtile,ytile,zslice)
       fobj = cStringIO.StringIO(tile)
     # load a slab into CATMAID
     else:
-      print "Cache miss ", mckey
       img=self.cacheMiss(res,xtile,ytile,zslice)
       fobj = cStringIO.StringIO ( )
       img.save ( fobj, "PNG" )
