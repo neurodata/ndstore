@@ -16,8 +16,8 @@ EM_EMCA_PATH = os.path.join(EM_BASE_PATH, "emca" )
 sys.path += [ EM_EMCA_PATH ]
 
 #SITE_HOST = 'openconnecto.me'
-SITE_HOST = 'localhost:8000'
-#SITE_HOST = 'localhost'
+#SITE_HOST = 'localhost:8000'
+SITE_HOST = 'localhost'
 
 import emcaproj
 
@@ -121,22 +121,25 @@ class TestRamon:
     h5ret = h5py.File ( retfile.name, driver='core', backing_store=False )
     assert h5ret['ANNOIDS'].shape[0] ==5
 
-    # check the synapse_type 
-    url =  "http://%s/emca/%s/query/synapse_type/%s/" % ( SITE_HOST, 'unittest', synapse_type )
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
-    retfile = tempfile.NamedTemporaryFile ( )
-    retfile.write ( f.read() )
-    retfile.tell()
-    h5ret = h5py.File ( retfile.name, driver='core', backing_store=False )
-    assert h5ret['ANNOIDS'].shape[0] ==5
 
-    # check the synapse_weight 
-    url =  "http://%s/emca/%s/query/synapse_weight/%s/%s/" % ( SITE_HOST, 'unittest', 'gt', confidence-0.00001 )
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
-    retfile = tempfile.NamedTemporaryFile ( )
-    retfile.write ( f.read() )
-    retfile.tell()
-    h5ret = h5py.File ( retfile.name, driver='core', backing_store=False )
-    assert h5ret['ANNOIDS'].shape[0] ==5
+# Not implemented yet.
+
+    # check the synapse_type 
+#    url =  "http://%s/emca/%s/query/synapse_type/%s/" % ( SITE_HOST, 'unittest', synapse_type )
+#    req = urllib2.Request ( url )
+#    f = urllib2.urlopen ( url )
+#    retfile = tempfile.NamedTemporaryFile ( )
+#    retfile.write ( f.read() )
+#    retfile.tell()
+#    h5ret = h5py.File ( retfile.name, driver='core', backing_store=False )
+#    assert h5ret['ANNOIDS'].shape[0] ==5
+#
+#    # check the synapse_weight 
+#    url =  "http://%s/emca/%s/query/synapse_weight/%s/%s/" % ( SITE_HOST, 'unittest', 'gt', confidence-0.00001 )
+#    req = urllib2.Request ( url )
+#    f = urllib2.urlopen ( url )
+#    retfile = tempfile.NamedTemporaryFile ( )
+#    retfile.write ( f.read() )
+#    retfile.tell()
+#    h5ret = h5py.File ( retfile.name, driver='core', backing_store=False )
+#    assert h5ret['ANNOIDS'].shape[0] ==5
