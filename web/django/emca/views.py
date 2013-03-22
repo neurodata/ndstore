@@ -16,7 +16,7 @@ import logging
 logger=logging.getLogger("emca")
 
 
-def emcaget (request, webargs):
+def getCutout (request, webargs):
   """Restful URL for all read services to annotation projects"""
 
   [ token , sym, cutoutargs ] = webargs.partition ('/')
@@ -24,27 +24,28 @@ def emcaget (request, webargs):
 
   try:
     if service=='xy' or service=='yz' or service=='xz':
-      return django.http.HttpResponse(emcarest.emcaget(webargs), mimetype="image/png" )
+      return django.http.HttpResponse(emcarest.getCutout(webargs), mimetype="image/png" )
     elif service=='hdf5':
-      return django.http.HttpResponse(emcarest.emcaget(webargs), mimetype="product/hdf5" )
+      return django.http.HttpResponse(emcarest.getCutout(webargs), mimetype="product/hdf5" )
     elif service=='npz':
-      return django.http.HttpResponse(emcarest.emcaget(webargs), mimetype="product/npz" )
+      return django.http.HttpResponse(emcarest.getCutout(webargs), mimetype="product/npz" )
     elif service=='zip':
-      return django.http.HttpResponse(emcarest.emcaget(webargs), mimetype="product/zip" )
+      return django.http.HttpResponse(emcarest.getCutout(webargs), mimetype="product/zip" )
     elif service=='xyanno' or service=='yzanno' or service=='xzanno':
-      return django.http.HttpResponse(emcarest.emcaget(webargs), mimetype="image/png" )
+      return django.http.HttpResponse(emcarest.getCutout(webargs), mimetype="image/png" )
     elif service=='id':
-      return django.http.HttpResponse(emcarest.emcaget(webargs))
+      return django.http.HttpResponse(emcarest.getCutout(webargs))
     elif service=='ids':
-      return django.http.HttpResponse(emcarest.emcaget(webargs))
+      return django.http.HttpResponse(emcarest.getCutout(webargs))
     else:
-      logger.warning ("HTTP Bad request. Could not find service %s" % dataset )
-      return django.http.HttpResponseBadRequest ("Could not find service %s" % dataset )
+      logger.warning ("HTTP Bad request. Could not find service %s" % service )
+      return django.http.HttpResponseBadRequest ("Could not find service %s" % service )
   except (EMCAError,MySQLdb.Error), e:
-    return django.http.HttpResponseNotFound(e.value)
+    return django.http.HttpResponseNotFound(e)
   except:
-    logger.exception("Unknown exception in emcaget.")
+    logger.exception("Unknown exception in getCutout.")
     raise
+
 
 @cache_control(no_cache=True)
 def annopost (request, webargs):
@@ -54,7 +55,7 @@ def annopost (request, webargs):
   try:
     return django.http.HttpResponse(emcarest.annopost(webargs,request.body))
   except EMCAError, e:
-    return django.http.HttpResponseNotFound(e.value)
+    return django.http.HttpResponseNotFound(e)
   except:
     logger.exception("Unknown exception in annopost.")
     raise
@@ -72,10 +73,7 @@ def annotation (request, webargs):
       emcarest.deleteAnnotation(webargs)
       return django.http.HttpResponse ("Success", mimetype='text/html')
   except EMCAError, e:
-    if hasattr(e,'value'):
-      return django.http.HttpResponseNotFound(e.value)
-    else: 
-      return django.http.HttpResponseNotFound(e)
+    return django.http.HttpResponseNotFound(e)
   except:
     logger.exception("Unknown exception in annotation.")
     raise
@@ -89,10 +87,7 @@ def csv (request, webargs):
     if request.method == 'GET':
       return django.http.HttpResponse(emcarest.getCSV(webargs), mimetype="text/html" )
   except EMCAError, e:
-    if hasattr(e,'value'):
-      return django.http.HttpResponseNotFound(e.value)
-    else: 
-      return django.http.HttpResponseNotFound(e)
+    return django.http.HttpResponseNotFound(e)
   except:
     logger.exception("Unknown exception in csv.")
     raise
@@ -108,7 +103,7 @@ def getObjects ( request, webargs ):
       return django.http.HttpResponse(emcarest.getAnnotations(webargs,request.body), mimetype="product/hdf5") 
     
   except EMCAError, e:
-    return django.http.HttpResponseNotFound(e.value)
+    return django.http.HttpResponseNotFound(e)
   except:
     logger.exception("Unknown exception in getObjects.")
     raise
@@ -124,7 +119,7 @@ def queryObjects ( request, webargs ):
       return django.http.HttpResponse(emcarest.queryAnnoObjects(webargs,request.body), mimetype="product/hdf5") 
     
   except EMCAError, e:
-    return django.http.HttpResponseNotFound(e.value)
+    return django.http.HttpResponseNotFound(e)
   except:
     logger.exception("Unknown exception in listObjects.")
     raise
@@ -195,3 +190,4 @@ def getField (request, webargs):
   except:
     logger.exception("Unknown exception in getField.")
     raise
+

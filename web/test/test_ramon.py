@@ -9,6 +9,8 @@ import csv
 import numpy as np
 import pytest
 
+from pytesthelpers import makeAnno
+
 EM_BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".." ))
 EM_EMCA_PATH = os.path.join(EM_BASE_PATH, "emca" )
 sys.path += [ EM_EMCA_PATH ]
@@ -429,42 +431,11 @@ class TestRamon:
       assert ( getid2 == putid2 )
 
 
-  def _makeAnno ( self, anntype ):
-
-    # Create an annotation
-    tmpfile = tempfile.NamedTemporaryFile()
-    h5fh = h5py.File ( tmpfile.name )
-
-    # Create the top level annotation id namespace
-    idgrp = h5fh.create_group ( str(0) )
-    mdgrp = idgrp.create_group ( "METADATA" )
-    ann_author='Randal Burns'
-    mdgrp.create_dataset ( "AUTHOR", (1,), dtype=h5py.special_dtype(vlen=str), data=ann_author )
-
-    idgrp.create_dataset ( "ANNOTATION_TYPE", (1,), np.uint32, data=anntype )
-
-    h5fh.flush()
-    tmpfile.seek(0)
-
-    # Build the put URL
-    url = "http://%s/emca/%s/" % ( SITE_HOST, 'unittest')
-
-    # write an object (server creates identifier)
-    req = urllib2.Request ( url, tmpfile.read())
-    response = urllib2.urlopen(req)
-    putid = int(response.read())
-
-    tmpfile.close()
-
-    return putid
-    
-
-
   def test_fields (self):
     """Test the getField and setField"""
 
     # Make an annotation 
-    annid = self._makeAnno ( 1 )
+    annid = makeAnno ( 1, SITE_HOST )
 
     # set the status
     status = random.randint (0,100)
@@ -496,10 +467,10 @@ class TestRamon:
     url =  "http://%s/emca/%s/%s/getField/author/" % ( SITE_HOST, 'unittest',str(annid))
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
-    assert 'Randal Burns' == f.read()
+    assert 'Unit Test' == f.read()
 
     # Make a synapse
-    annid = self._makeAnno ( 2 )
+    annid = makeAnno ( 2, SITE_HOST )
 
     # set the type
     synapse_type = random.randint (0,100)
@@ -543,7 +514,7 @@ class TestRamon:
 
     
     # Make a seed
-    annid = self._makeAnno ( 3 )
+    annid = makeAnno ( 3, SITE_HOST )
 
     # set the parent
     parent = random.randint (0,100)
@@ -585,7 +556,7 @@ class TestRamon:
     assert cubelocation == int(f.read()) 
 
     # Make a segment
-    annid = self._makeAnno ( 4 )
+    annid = makeAnno ( 4, SITE_HOST )
 
     # set the parentseed
     parentseed = random.randint (0,100)
@@ -641,7 +612,7 @@ class TestRamon:
     assert status == int(f.read()) 
 
     # Make a neuron
-    annid = self._makeAnno ( 5 )
+    annid = makeAnno ( 5, SITE_HOST )
 
     # no independently set fields
 
@@ -660,7 +631,7 @@ class TestRamon:
     assert status == int(f.read()) 
 
     # Make an organelle 
-    annid = self._makeAnno ( 6 )
+    annid = makeAnno ( 6, SITE_HOST )
 
     # set the parentseed
     parentseed = random.randint (0,100)
@@ -726,4 +697,5 @@ class TestRamon:
     with pytest.raises(urllib2.HTTPError): 
       req = urllib2.Request ( url )
       f = urllib2.urlopen ( url )
+
 
