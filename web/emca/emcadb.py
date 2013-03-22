@@ -710,7 +710,7 @@ class EMCADB:
       outcube.zeros()
 
     elif (self.annoproj.getDBType() == emcaproj.IMAGES_8bit or self.annoproj.getDBType() == emcaproj.CHANNELS_8bit):
-      
+
       incube = imagecube.ImageCube8 ( cubedim )
       outcube = imagecube.ImageCube8 ( [xnumcubes*xcubedim,\
                                         ynumcubes*ycubedim,\
@@ -766,6 +766,7 @@ class EMCADB:
       incube.fromNPZ ( datastring[:] )
       # add it to the output cube
       outcube.addData ( incube, offset ) 
+
 
     # need to trim down the array to size
     #  only if the dimensions are not the same
@@ -1009,7 +1010,6 @@ class EMCADB:
 
     # legal equality fields
     eqfields = ( 'type', 'status' )
-
     # legal comparative fields
     compfields = ( 'confidence' )
 
@@ -1021,7 +1021,6 @@ class EMCADB:
     it = iter(args)
     try: 
       field = it.next()
-
 
       # build a query for all the predicates
       while ( field ):
@@ -1040,17 +1039,12 @@ class EMCADB:
           clause += '%s = %s' % ( field, val )
 
         elif field in compfields:
+
           opstr = it.next()
           if opstr == 'lt':
             op = ' < '
           elif opstr == 'gt':
             op = ' > '
-          elif opstr == 'lte':
-            op = ' <= '
-          elif opstr == 'gte':
-            op = ' >= '
-          elif opstr == 'neq':
-            op = ' >= '
           else:
             logger.warning ( "Not a comparison operator: %s" % (opstr) )
             raise EMCAError ( "Not a comparison operator: %s" % (opstr) )
@@ -1072,6 +1066,7 @@ class EMCADB:
       pass
 
     sql += clause + ';'
+    print sql;
 
     try:
       self.cursor.execute ( sql )
