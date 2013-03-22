@@ -685,6 +685,8 @@ class EMCADB:
   #
   def cutout ( self, corner, dim, resolution, channel=None ):
     """Extract a cube of arbitrary size.  Need not be aligned."""
+
+    # TODO some range checking?  illegal cutouts work
     
     # get the size of the image and cube
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.dbcfg.cubedim [ resolution ] 
