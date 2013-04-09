@@ -1006,6 +1006,7 @@ class EMCADB:
       #get the cubes that contain the annotation
       zidxs = self.annoIdx.getIndex(annoid,res,True)
       
+      # RBTODO when we delete we do not promote exceptions to image data
       #Delete annotation data
       for key in zidxs:
         cube = self.getCube ( key, res, True )
