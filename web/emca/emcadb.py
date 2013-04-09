@@ -168,8 +168,6 @@ class EMCADB:
     except MySQLdb.Error, e:
       logger.warning ( "Failed to set identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise
-    except:
-      pass
 
     self.commit()
     return annoid

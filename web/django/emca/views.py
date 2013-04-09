@@ -40,7 +40,9 @@ def getCutout (request, webargs):
     else:
       logger.warning ("HTTP Bad request. Could not find service %s" % service )
       return django.http.HttpResponseBadRequest ("Could not find service %s" % service )
-  except (EMCAError,MySQLdb.Error), e:
+  except EMCAError, e:
+    return django.http.HttpResponseNotFound(e.value)
+  except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except:
     logger.exception("Unknown exception in getCutout.")
@@ -54,7 +56,9 @@ def annopost (request, webargs):
   # All handling done by emcarest
   try:
     return django.http.HttpResponse(emcarest.annopost(webargs,request.body))
-  except (EMCAError,MySQLdb.Error), e:
+  except EMCAError, e:
+    return django.http.HttpResponseNotFound(e.value)
+  except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except:
     logger.exception("Unknown exception in annopost.")
@@ -72,8 +76,10 @@ def annotation (request, webargs):
     elif request.method == 'DELETE':
       emcarest.deleteAnnotation(webargs)
       return django.http.HttpResponse ("Success", mimetype='text/html')
-  except (EMCAError,MySQLdb.Error), e:
+  except EMCAError, e:
     return django.http.HttpResponseNotFound(e.value)
+  except MySQLdb.Error, e:
+    return django.http.HttpResponseNotFound(e)
   except:
     logger.exception("Unknown exception in annotation.")
     raise
@@ -86,7 +92,9 @@ def csv (request, webargs):
   try:
     if request.method == 'GET':
       return django.http.HttpResponse(emcarest.getCSV(webargs), mimetype="text/html" )
-  except (EMCAError,MySQLdb.Error), e:
+  except EMCAError, e:
+    return django.http.HttpResponseNotFound(e.value)
+  except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except:
     logger.exception("Unknown exception in csv.")
@@ -102,7 +110,9 @@ def getObjects ( request, webargs ):
     elif request.method == 'POST':
       return django.http.HttpResponse(emcarest.getAnnotations(webargs,request.body), mimetype="product/hdf5") 
     
-  except (EMCAError,MySQLdb.Error), e:
+  except EMCAError, e:
+    return django.http.HttpResponseNotFound(e.value)
+  except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except:
     logger.exception("Unknown exception in getObjects.")
@@ -118,7 +128,9 @@ def queryObjects ( request, webargs ):
     elif request.method == 'POST':
       return django.http.HttpResponse(emcarest.queryAnnoObjects(webargs,request.body), mimetype="product/hdf5") 
     
-  except (EMCAError,MySQLdb.Error), e:
+  except EMCAError, e:
+    return django.http.HttpResponseNotFound(e.value)
+  except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except:
     logger.exception("Unknown exception in listObjects.")
@@ -136,7 +148,9 @@ def catmaid (request, webargs):
     fobj.seek(0)
     return django.http.HttpResponse(fobj.read(), mimetype="image/png")
 
-  except (EMCAError,MySQLdb.Error), e:
+  except EMCAError, e:
+    return django.http.HttpResponseNotFound(e.value)
+  except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except:
     logger.exception("Unknown exception in catmaid %s.", e)
@@ -148,7 +162,9 @@ def projinfo (request, webargs):
 
   try:  
     return django.http.HttpResponse(emcarest.projInfo(webargs), mimetype="product/hdf5" )
-  except (EMCAError,MySQLdb.Error), e:
+  except EMCAError, e:
+    return django.http.HttpResponseNotFound(e.value)
+  except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except:
     logger.exception("Unknown exception in projInfo.")
@@ -160,7 +176,9 @@ def mcFalseColor (request, webargs):
 
   try:
     return django.http.HttpResponse(emcarest.mcFalseColor(webargs), mimetype="image/png" )
-  except (EMCAError,MySQLdb.Error), e:
+  except EMCAError, e:
+    return django.http.HttpResponseNotFound(e.value)
+  except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except:
     logger.exception("Unknown exception in mcFalseColor.")
@@ -173,7 +191,9 @@ def setField (request, webargs):
   try:
     emcarest.setField(webargs)
     return django.http.HttpResponse()
-  except (EMCAError,MySQLdb.Error), e:
+  except EMCAError, e:
+    return django.http.HttpResponseNotFound(e.value)
+  except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except:
     logger.exception("Unknown exception in setField.")
@@ -185,7 +205,9 @@ def getField (request, webargs):
 
   try:
     return django.http.HttpResponse(emcarest.getField(webargs), mimetype="text/html" )
-  except (EMCAError,MySQLdb.Error), e:
+  except EMCAError, e:
+    return django.http.HttpResponseNotFound(e.value)
+  except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except:
     logger.exception("Unknown exception in getField.")
