@@ -9,7 +9,7 @@ import cStringIO
 import collections
 import zlib
 
-import kanno_opt
+import kanno_cy
 
 #
 #  ingest the PNG files into the database
@@ -24,8 +24,8 @@ xtilesz = 9218
 ytilesz = 3779
 _resolution = 0
 
-startslice = 192 
-endslice = 319   
+startslice = 0 
+endslice = 1015   
 batchsz = 16
 
 xoffset = 0

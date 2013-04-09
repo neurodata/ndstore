@@ -73,7 +73,7 @@ def annotation (request, webargs):
       emcarest.deleteAnnotation(webargs)
       return django.http.HttpResponse ("Success", mimetype='text/html')
   except EMCAError, e:
-    return django.http.HttpResponseNotFound(e)
+    return django.http.HttpResponseNotFound(e.value)
   except:
     logger.exception("Unknown exception in annotation.")
     raise

@@ -580,7 +580,7 @@ def selectPost ( webargs, dbcfg, proj, postdata ):
       db.rollback()
       raise
     except Exception, e:
-      logger.exception ("POST transaction rollback. Unknown error. %s" % (e))
+      logger.exception ("POST transaction rollback. %s" % (e))
       db.rollback()
       raise
 
@@ -1197,7 +1197,7 @@ def putAnnotation ( webargs, postdata ):
           db.rollback()
           raise
         except Exception, e:
-          logger.exception ("Put transaction rollback. Unknown error. %s" % (e))
+          logger.exception ("Put transaction rollback. %s" % (e))
           db.rollback()
           raise
 
@@ -1310,7 +1310,7 @@ def deleteAnnotation ( webargs ):
         db.rollback()
         raise
       except Exception, e:
-        logger.exception ("Put transaction rollback. Unknown error. %s" % (e))
+        logger.exception ("Put transaction rollback. %s" % (e))
         db.rollback()
         raise
 
