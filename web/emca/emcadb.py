@@ -168,6 +168,8 @@ class EMCADB:
     except MySQLdb.Error, e:
       logger.warning ( "Failed to set identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise
+    except:
+      pass
 
     self.commit()
     return annoid
@@ -1015,7 +1017,6 @@ class EMCADB:
         self.putCube ( key, res, cube)
         # remove the expcetions
         if self.EXCEPT_FLAG:
-          logger.warning ( "Deleting exceptions" )
           self.deleteExceptions ( key, res, annoid )
       
     # delete Index
