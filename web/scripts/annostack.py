@@ -11,7 +11,7 @@ import emcadb
 import dbconfig
 import zindex
 
-from ann_cy import addData_cy
+from emca_cy import addData_cy
 
 """Construct an annotation hierarchy off of a completed annotation database."""
 
@@ -40,8 +40,6 @@ class AnnoStack:
 
   def buildStack ( self, startlevel ):
     """Build the hierarchy of annotations"""
-    print "here"
-    import pdb;pdb.set_trace();
     for  l in range ( startlevel, len(self.dbcfg.resolutions)-1 ):
 
       # Get the source database sizes
