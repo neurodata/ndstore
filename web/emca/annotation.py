@@ -477,7 +477,7 @@ class AnnSeed (Annotation):
 
     cursor = annodb.conn.cursor()
 
-    if self.position == [] or np.all(self.position==None):
+    if self.position == [] or np.all(self.position==[None,None,None]):
       storepos = [ 'NULL', 'NULL', 'NULL' ]
     else:
       storepos = self.position
@@ -839,7 +839,7 @@ class AnnOrganelle (Annotation):
 
     cursor = annodb.conn.cursor()
 
-    if self.centroid == None or np.all(self.centroid,None):
+    if self.centroid == None or np.all(self.centroid==[None,None,None]):
       storecentroid = [ 'NULL', 'NULL', 'NULL' ]
     else:
       storecentroid = self.centroid
@@ -870,7 +870,7 @@ class AnnOrganelle (Annotation):
 
     cursor = annodb.conn.cursor()
 
-    if self.centroid == None or np.all(self.centroid==None):
+    if self.centroid == None or np.all(self.centroid==[None,None,None]):
       storecentroid = [ 'NULL', 'NULL', 'NULL' ]
     else:
       storecentroid = self.centroid
