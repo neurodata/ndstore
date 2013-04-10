@@ -477,7 +477,7 @@ class AnnSeed (Annotation):
 
     cursor = annodb.conn.cursor()
 
-    if self.position == [] or self.position==[None,None,None]:
+    if self.position == [] or np.all(self.position==None):
       storepos = [ 'NULL', 'NULL', 'NULL' ]
     else:
       storepos = self.position
@@ -839,12 +839,10 @@ class AnnOrganelle (Annotation):
 
     cursor = annodb.conn.cursor()
 
-    # TODO need a.any or a.all (also fix other None,None,None
-    if self.centroid == None or self.centroid[0]==None or self.centroid[1]==None or self.centroid[2]==None:
+    if self.centroid == None or np.all(self.centroid,None):
       storecentroid = [ 'NULL', 'NULL', 'NULL' ]
     else:
       storecentroid = self.centroid
-    storecentroid = [ 'NULL', 'NULL', 'NULL' ]
 
     sql = "INSERT INTO %s VALUES ( %s, %s, %s, %s, %s, %s )"\
             % ( anno_dbtables['organelle'], self.annid, self.organelleclass, self.parentseed,
@@ -872,7 +870,7 @@ class AnnOrganelle (Annotation):
 
     cursor = annodb.conn.cursor()
 
-    if self.centroid == None or self.centroid[0]==None or self.centroid[1]==None or self.centroid[2]==None:
+    if self.centroid == None or np.all(self.centroid==None):
       storecentroid = [ 'NULL', 'NULL', 'NULL' ]
     else:
       storecentroid = self.centroid
