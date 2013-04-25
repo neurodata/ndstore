@@ -17,7 +17,7 @@ urlpatterns = patterns('emca.views',
   url(r'(?P<webargs>^\w+/(xy|xz|yz|hdf5|npz|zip|id|ids|xyanno||xzanno|yzanno|xytiff|xztiff|yztiff)/[\w,/]+)$', 'getCutout'),
   # single field interfaces
   url(r'(?P<webargs>^\w+/\d+/getField/[\w,/]*)$', 'getField'),
-  url(r'(?P<webargs>^\w+/\d+/setField/[\w\.,/]*)$', 'setField'),
+  url(r'(?P<webargs>^\w+/\d+/setField/[\w\. ,/]*)$', 'setField'),
   # the post services
   url(r'(?P<webargs>^\w+/(npvoxels|npdense)/[\w,/]+)$', 'annopost'),
   # csv metadata read
