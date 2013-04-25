@@ -64,7 +64,7 @@ class Annotation:
     elif field == 'author':
       return self.author
     elif self.kvpairs.get(field):
-      return self.kvpairs['field']
+      return self.kvpairs[field]
     else:
       logger.warning ( "getField: No such field %s" % (field))
       raise EMCAError ( "getField: No such field %s" % (field))
@@ -78,9 +78,12 @@ class Annotation:
       self.confidence = value
     elif field == 'author':
       self.author = value
-    else:
-      logger.warning ( "setField: No such or can't update field %s" % (field))
-      raise EMCAError ( "setField: No such or can't update field %s" % (field))
+    # if we don't recognize the field, store it as a kv pair.
+    else: 
+      self.kvpairs[field]=value
+#    else:
+#     logger.warning ( "setField: No such or can't update field %s" % (field))
+#     raise EMCAError ( "setField: No such or can't update field %s" % (field))
 
   def store ( self, annodb, annotype=ANNO_ANNOTATION ):
     """Store the annotation to the annotations database"""
@@ -278,6 +281,8 @@ class AnnSynapse (Annotation):
       self.weight = value
     elif field == 'synapse_type':
       self.synapse_type = value
+    elif field == 'seeds':
+      self.seeds = [int(x) for x in value.split(',')] 
     else:
       Annotation.setField ( self, field, value )
 
@@ -443,7 +448,9 @@ class AnnSeed (Annotation):
     if field == 'parent':
       self.parent = value
     elif field == 'position':
-      self.position = value
+      self.position = [int(x) for x in value.split(',')] 
+      if len(self.position) != 3:
+        raise EMCAError ("Illegal arguments to set field position: %s" % value)
     elif field == 'cubelocation':
       self.cubelocation = value
     elif field == 'source':
@@ -587,6 +594,10 @@ class AnnSegment (Annotation):
       self.parentseed = value
     elif field == 'neuron':
       self.neuron = value
+    elif field == 'synapses':
+      self.synapses = [int(x) for x in value.split(',')] 
+    elif field == 'organelles':
+      self.organelles = [int(x) for x in value.split(',')] 
     else:
       Annotation.setField ( self, field, value )
 
@@ -731,6 +742,8 @@ class AnnNeuron (Annotation):
   def setField ( self, field, value ):
     """Mutator by field name.  Then need to store the field."""
     
+    if field == 'segments':
+      self.segments = [int(x) for x in value.split(',')] 
     Annotation.setField ( self, field, value )
 
 
@@ -831,6 +844,10 @@ class AnnOrganelle (Annotation):
     
     if field == 'organelleclass':
       self.organelleclass = value
+    elif field == 'centroid':
+      self.centroid = [int(x) for x in value.split(',')] 
+      if len(self.centroid) != 3:
+        raise EMCAError ("Illegal arguments to set field centroid: %s" % value)
     elif field == 'parentseed':
       self.parentseed = value
     else:
