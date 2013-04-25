@@ -1042,6 +1042,7 @@ class EMCADB:
     # start of the SQL clause
     sql = "SELECT annoid FROM " + annotation.anno_dbtables['annotation'] 
     clause = ''
+    limitclause = ""
 
     # iterate over the predicates
     it = iter(args)
@@ -1051,48 +1052,59 @@ class EMCADB:
       # build a query for all the predicates
       while ( field ):
 
-        if clause == '':
-          clause += " WHERE "
-        else:  
-          clause += ' AND '
-
-        if field in eqfields:
+        # provide a limit clause for iterating through the database
+        if field == "limit":
           val = it.next()
-          if not re.match('^\w+$',val): 
-            logger.warning ( "For field %s. Illegal value:%s" % (field,val) )
-            raise EMCAError ( "For field %s. Illegal value:%s" % (field,val) )
+          if not re.match('^\d+$',val): 
+            logger.warning ( "Limit needs an integer. Illegal value:%s" % (field,val) )
+            raise EMCAError ( "Limit needs an integer. Illegal value:%s" % (field,val) )
 
-          clause += '%s = %s' % ( field, val )
+          limitclause = " LIMIT %s " % (val)
 
-        elif field in compfields:
-
-          opstr = it.next()
-          if opstr == 'lt':
-            op = ' < '
-          elif opstr == 'gt':
-            op = ' > '
-          else:
-            logger.warning ( "Not a comparison operator: %s" % (opstr) )
-            raise EMCAError ( "Not a comparison operator: %s" % (opstr) )
-
-          val = it.next()
-          if not re.match('^[\d\.]+$',val): 
-            logger.warning ( "For field %s. Illegal value:%s" % (field,val) )
-            raise EMCAError ( "For field %s. Illegal value:%s" % (field,val) )
-          clause += '%s %s %s' % ( field, op, val )
-
-        #RBTODO key/value fields?
-
+        # all other clauses
         else:
-          raise EMCAError ( "Illegal field in URL: %s" % (field) )
+          if clause == '':
+            clause += " WHERE "
+          else:  
+            clause += ' AND '
+
+          if field in eqfields:
+            val = it.next()
+            if not re.match('^\w+$',val): 
+              logger.warning ( "For field %s. Illegal value:%s" % (field,val) )
+              raise EMCAError ( "For field %s. Illegal value:%s" % (field,val) )
+
+            clause += '%s = %s' % ( field, val )
+
+          elif field in compfields:
+
+            opstr = it.next()
+            if opstr == 'lt':
+              op = ' < '
+            elif opstr == 'gt':
+              op = ' > '
+            else:
+              logger.warning ( "Not a comparison operator: %s" % (opstr) )
+              raise EMCAError ( "Not a comparison operator: %s" % (opstr) )
+
+            val = it.next()
+            if not re.match('^[\d\.]+$',val): 
+              logger.warning ( "For field %s. Illegal value:%s" % (field,val) )
+              raise EMCAError ( "For field %s. Illegal value:%s" % (field,val) )
+            clause += '%s %s %s' % ( field, op, val )
+
+
+          #RBTODO key/value fields?
+
+          else:
+            raise EMCAError ( "Illegal field in URL: %s" % (field) )
 
         field = it.next()
 
     except StopIteration:
       pass
 
-    sql += clause + ';'
-    print sql;
+    sql += clause + limitclause + ';'
 
     try:
       self.cursor.execute ( sql )
