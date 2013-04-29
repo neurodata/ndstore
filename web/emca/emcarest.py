@@ -1126,7 +1126,6 @@ def putAnnotation ( webargs, postdata ):
 
             # Put into the database
             db.putAnnotation ( anno, options )
-            retvals.append(anno.annid)
 
           #  Get the resolution if it's specified
           h5resolution = idgrp.get('RESOLUTION')
@@ -1194,6 +1193,10 @@ def putAnnotation ( webargs, postdata ):
 
           # Commit if there is no error
           db.commit()
+
+          # only add the identifier if you commit
+          if not 'dataonly' in options and not 'reduce' in options:
+            retvals.append(anno.annid)
 
           # Here with no error is successful
           done = True
