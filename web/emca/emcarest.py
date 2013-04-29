@@ -1080,7 +1080,7 @@ def putAnnotation ( webargs, postdata ):
   h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
 
   try:
-
+    
     for k in h5f.keys():
 
       
@@ -1114,7 +1114,6 @@ def putAnnotation ( webargs, postdata ):
 
             # Put into the database
             db.putAnnotation ( anno, options )
-            retvals.append(anno.annid)
 
           #  Get the resolution if it's specified
           h5resolution = idgrp.get('RESOLUTION')
@@ -1182,6 +1181,10 @@ def putAnnotation ( webargs, postdata ):
 
           # Commit if there is no error
           db.commit()
+
+          # After the commit add the retval
+          if not 'dataonly' in options and not 'reduce' in options:
+            retvals.append(anno.annid)
 
           # Here with no error is successful
           done = True
