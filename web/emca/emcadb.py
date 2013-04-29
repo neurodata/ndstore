@@ -905,6 +905,19 @@ class EMCADB:
 
     return cube
 
+
+  #
+  # getLocations -- return the list of locations associated with an identifier
+  #
+  def getCuboids ( self, entityid, res ):
+
+    zidxs = self.annoIdx.getIndex(entityid,resolution)
+    for zidx in zidxs:
+      cuboids.append ( zindex.MortonXYZ ( zidx ) )
+
+    return cuboids
+
+
   #
   # getLocations -- return the list of locations associated with an identifier
   #
