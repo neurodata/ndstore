@@ -1194,7 +1194,7 @@ def putAnnotation ( webargs, postdata ):
           # Commit if there is no error
           db.commit()
 
-          # After the commit add the retval
+          # only add the identifier if you commit
           if not 'dataonly' in options and not 'reduce' in options:
             retvals.append(anno.annid)
 

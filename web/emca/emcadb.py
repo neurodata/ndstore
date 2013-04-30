@@ -144,6 +144,8 @@ class EMCADB:
         logger.error ( "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         raise
 
+      self.commit()
+
     finally:
       pass
       sql = "UNLOCK TABLES" 
@@ -161,13 +163,23 @@ class EMCADB:
   def setID ( self, annoid ):
     """Set a user specified identifier"""
 
-    # try the insert, get ane exception if it doesn't work
-    sql = "INSERT INTO " + str(self.annoproj.getIDsTbl()) + " VALUES ( " + str(annoid) + " ) "
+    # LOCK the table to prevent race conditions on the ID
+    sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getIDsTbl() )
     try:
+
+      # try the insert, get ane exception if it doesn't work
+      sql = "INSERT INTO " + str(self.annoproj.getIDsTbl()) + " VALUES ( " + str(annoid) + " ) "
+      try:
+        self.cursor.execute ( sql )
+      except MySQLdb.Error, e:
+        logger.warning ( "Failed to set identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+        raise
+
+      self.commit()
+
+    finally:
+      sql = "UNLOCK TABLES" 
       self.cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ( "Failed to set identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise
 
     self.commit()
     return annoid
@@ -603,6 +615,7 @@ class EMCADB:
           if 0 in index_dict:
             del(index_dict[0])
 
+    logger.warning ( "update indexes %s" % index_dict )
     # Update all indexes
     self.annoIdx.updateIndexDense(index_dict,resolution)
 

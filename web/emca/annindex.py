@@ -77,10 +77,10 @@ class AnnotateIndex:
                np.save ( fileobj, cubeindex )
                self.cursor.execute ( sql, (key, fileobj.getvalue()))
             except MySQLdb.Error, e:
-               logger.warning("Error inserting exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+               logger.warning("Error updating index %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
                raise
             except BaseException, e:
-               logger.exception("Unknown error")
+               logger.exception("Unknown error when updating index")
                raise
             
          else:
