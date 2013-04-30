@@ -751,7 +751,7 @@ AR_VOXELS = 1
 AR_CUTOUT = 2
 AR_TIGHTCUTOUT = 3
 AR_BOUNDINGBOX = 4
-AR_CUBOIDS = 5
+#AR_CUBOIDS = 5
 
 
 def getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution=None, corner=None, dim=None ): 
@@ -818,11 +818,11 @@ def getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution=None, corner=No
 
   # return an HDF5 file that contains the minimal amount of data. 
   # cuboids that contain data
-  elif dataoption=+AR_CUBOIDS:
-
-  # FIX me here
-    cuboidlist = db.getCuboids( annoid, resolution )
-    for cuboid in cuboidlist ():
+#  elif dataoption=+AR_CUBOIDS:
+#
+#  # FIX me here
+#    cuboidlist = db.getCuboids( annoid, resolution )
+#    for cuboid in cuboidlist ():
       
     
 
