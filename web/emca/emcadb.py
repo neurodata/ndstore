@@ -33,10 +33,10 @@ import sys
 
 class EMCADB: 
 
-  def __init__ (self, dbconf, annoproj):
+  def __init__ (self, annoproj):
     """Connect with the brain databases"""
 
-    self.dbcfg = dbconf
+    self.datasetcfg = annoproj.datasetcfg 
     self.annoproj = annoproj
 
     # Are there exceptions?
@@ -56,7 +56,7 @@ class EMCADB:
     self.cursor = self.conn.cursor()
       
     # How many slices?
-    [ self.startslice, endslice ] = self.dbcfg.slicerange
+    [ self.startslice, endslice ] = self.datasetcfg.slicerange
     self.slices = endslice - self.startslice + 1 
 
     # create annidx object
@@ -192,7 +192,7 @@ class EMCADB:
     """Load a cube from the annotation database"""
 
     # get the size of the image and cube
-    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.dbcfg.cubedim [ resolution ] 
+    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
     # Create a cube object
     cube = anncube.AnnotateCube ( cubedim )
@@ -281,7 +281,7 @@ class EMCADB:
          Not thread safe (context per object)"""
 
     # get the size of the image and cube
-    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.dbcfg.cubedim [ self._qr_resolution ] 
+    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ self._qr_resolution ] 
 
     # Create a cube object
     cube = anncube.AnnotateCube ( cubedim )
@@ -431,7 +431,7 @@ class EMCADB:
   def annotate ( self, entityid, resolution, locations, conflictopt='O' ):
     """Label the voxel locations or add as exceptions is the are already labeled."""
 
-    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.dbcfg.cubedim [ resolution ] 
+    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
     #  An item may exist across several cubes
     #  Convert the locations into Morton order
@@ -440,7 +440,7 @@ class EMCADB:
     cubeidx = defaultdict(set)
 
     # convert voxels z coordinate
-    locations[:,2] = locations[:,2] - self.dbcfg.slicerange[0]
+    locations[:,2] = locations[:,2] - self.datasetcfg.slicerange[0]
 
     cubelocs = cubeLocs_cy ( np.array(locations, dtype=np.uint32), cubedim )
 
@@ -489,13 +489,13 @@ class EMCADB:
   def shave ( self, entityid, resolution, locations ):
     """Label the voxel locations or add as exceptions is the are already labeled."""
 
-    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.dbcfg.cubedim [ resolution ] 
+    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
     # dictionary with the index
     cubeidx = defaultdict(set)
 
     # convert voxels z coordinate
-    locations[:,2] = locations[:,2] - self.dbcfg.slicerange[0]
+    locations[:,2] = locations[:,2] - self.datasetcfg.slicerange[0]
 
     cubelocs = cubeLocs_cy ( np.array(locations, dtype=np.uint32), cubedim )
 
@@ -553,7 +553,7 @@ class EMCADB:
     dim = [ annodata.shape[2], annodata.shape[1], annodata.shape[0] ]
 
     # get the size of the image and cube
-    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.dbcfg.cubedim [ resolution ] 
+    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
     # Round to the nearest larger cube in all dimensions
     zstart = corner[2]/zcubedim
@@ -645,7 +645,7 @@ class EMCADB:
     dim = [ annodata.shape[2], annodata.shape[1], annodata.shape[0] ]
 
     # get the size of the image and cube
-    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.dbcfg.cubedim [ resolution ] 
+    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
     # Round to the nearest larger cube in all dimensions
     zstart = corner[2]/zcubedim
@@ -722,7 +722,7 @@ class EMCADB:
     # TODO some range checking?  illegal cutouts work
     
     # get the size of the image and cube
-    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.dbcfg.cubedim [ resolution ] 
+    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
     # Round to the nearest larger cube in all dimensions
     zstart = corner[2]/zcubedim
@@ -828,7 +828,7 @@ class EMCADB:
     """Return the identifier at a voxel"""
 
     # get the size of the image and cube
-    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.dbcfg.cubedim [ resolution ] 
+    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
     # convert the voxel into zindex and offsets
     # Round to the nearest larger cube in all dimensions
@@ -870,7 +870,7 @@ class EMCADB:
 
     # And get the exceptions
     # get the size of the image and cube
-    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.dbcfg.cubedim [ resolution ] 
+    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
     # Round to the nearest larger cube in all dimensions
     zstart = corner[2]/zcubedim
@@ -944,9 +944,9 @@ class EMCADB:
 
       # Get cube offset information
       [x,y,z]=zindex.MortonXYZ(zidx)
-      xoffset = x * self.dbcfg.cubedim[resolution][0] 
-      yoffset = y * self.dbcfg.cubedim[resolution][1] 
-      zoffset = z * self.dbcfg.cubedim[resolution][2] + self.dbcfg.slicerange[0]
+      xoffset = x * self.datasetcfg.cubedim[resolution][0] 
+      yoffset = y * self.datasetcfg.cubedim[resolution][1] 
+      zoffset = z * self.datasetcfg.cubedim[resolution][2] + self.datasetcfg.slicerange[0]
 
       # Now add the exception voxels
       if self.EXCEPT_FLAG:
@@ -978,7 +978,7 @@ class EMCADB:
     # convert to xyz coordinates
     xyzvals = np.array ( [ zindex.MortonXYZ(zidx) for zidx in zidxs ], dtype=np.uint32 )
 
-    cubedim = self.dbcfg.cubedim [ resolution ] 
+    cubedim = self.datasetcfg.cubedim [ resolution ] 
 
     # find the corners
     xmin = min(xyzvals[:,0]) * cubedim[0]
@@ -1025,7 +1025,7 @@ class EMCADB:
   #
   def deleteAnnoData ( self, annoid):
 
-    resolutions = self.dbcfg.resolutions
+    resolutions = self.datasetcfg.resolutions
 
     for res in resolutions:
     
@@ -1155,7 +1155,7 @@ class EMCADB:
     dim = [ imgdata.shape[2], imgdata.shape[1], imgdata.shape[0] ]
 
     # get the size of the image and cube
-    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.dbcfg.cubedim [ resolution ] 
+    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
     # Round to the nearest larger cube in all dimensions
     zstart = corner[2]/zcubedim

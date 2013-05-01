@@ -9,8 +9,6 @@ from emcaerror import EMCAError
 import logging
 logger=logging.getLogger("emca")
 
-#TODO enforce readonly
-
 # dbtype enumerations
 IMAGES_8bit = 1
 ANNOTATIONS = 2
@@ -215,9 +213,7 @@ class EMCAProjectsDB:
     """Create a new emca project"""
 
 # TODO need to undo the project creation if not totally sucessful
-
-    # RBTODO remove
-    dbcfg = dbconfig.switchDataset ( dataset )
+    datasetcfg = self.loadDatasetConfig ( dataset )
 
     sql = "INSERT INTO {0} (token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',{5},\'{6}\',\'{7}\',\'{8}\',\'{9}\')".format (\
        emcaprivate.projects, token, openid, dbhost, project, dbtype, dataset, dataurl, int(readonly), int(exceptions) )
@@ -271,12 +267,12 @@ class EMCAProjectsDB:
         # tables for annotations and images
         if dbtype == IMAGES_8bit or dbtype == ANNOTATIONS:
 
-          for i in proj.datasetcfg.resolutions: 
+          for i in datasetcfg.resolutions: 
             sql += "CREATE TABLE res%s ( zindex BIGINT PRIMARY KEY, cube LONGBLOB );\n" % i
 
         # tables for channel dbs
         if dbtype == CHANNELS_8bit or dbtype == CHANNELS_16bit:
-          for i in proj.datasetcfg.resolutions: 
+          for i in datasetcfg.resolutions: 
             sql += "CREATE TABLE res%s ( channel INT, zindex BIGINT, cube LONGBLOB, PRIMARY KEY(channel,zindex) );\n" % i
 
         # tables specific to annotation projects
@@ -292,7 +288,7 @@ class EMCAProjectsDB:
           sql += "CREATE TABLE organelles (annoid BIGINT PRIMARY KEY, organelleclass INT, parentseed INT, centroidx INT, centroidy INT, centroidz INT);\n"
           sql += "CREATE TABLE kvpairs ( annoid BIGINT, kv_key VARCHAR(255), kv_value VARCHAR(64000), PRIMARY KEY ( annoid, kv_key ));\n"
 
-          for i in proj.datasetcfg.resolutions: 
+          for i in datasetcfg.resolutions: 
             if exceptions:
               sql += "CREATE TABLE exc%s ( zindex BIGINT, id INT, exlist LONGBLOB, PRIMARY KEY ( zindex, id));\n" % i
             sql += "CREATE TABLE idx%s ( annid BIGINT PRIMARY KEY, cube LONGBLOB );\n" % i
@@ -324,7 +320,7 @@ class EMCAProjectsDB:
   def deleteEMCAProj ( self, token ):
     """Create a new emca project"""
 
-    proj = self.getProj ( token )
+    proj = self.loadProject ( token )
     sql = "DELETE FROM %s WHERE token=\'%s\'" % ( emcaprivate.projects, token ) 
 
     try:
@@ -341,7 +337,7 @@ class EMCAProjectsDB:
   def deleteEMCADB ( self, token ):
 
     # load the project
-    proj = self.getProj ( token )
+    proj = self.loadProject ( token )
 
     # delete line from projects table
     self.deleteEMCAProj ( token )

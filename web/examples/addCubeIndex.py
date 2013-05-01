@@ -2,8 +2,6 @@
 
 import argparse
 import empaths
-import dbconfig
-import dbconfighayworth5nm
 import numpy as np
 import urllib, urllib2
 import cStringIO

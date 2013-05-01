@@ -5,7 +5,6 @@ from PIL import Image
 import zlib
 
 import empaths
-import dbconfig
 import zindex
 
 import logging

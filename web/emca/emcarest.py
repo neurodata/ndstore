@@ -15,7 +15,6 @@ import empaths
 import restargs
 import anncube
 import emcadb
-import dbconfig
 import emcaproj
 import h5ann
 import annotation
@@ -143,8 +142,6 @@ def HDF5 ( imageargs, proj ):
 def xySlice ( imageargs, proj ):
   """Return the cube object for an xy plane"""
 
-  import pdb; pdb.set_trace()
-  
   if proj.getDBType() == emcaproj.CHANNELS_8bit or proj.getDBType() == emcaproj.CHANNELS_16bit:
     [ channel, sym, imageargs ] = imageargs.partition ('/')
   else: 
@@ -153,7 +150,7 @@ def xySlice ( imageargs, proj ):
   # Perform argument processing
   try:
     args = restargs.BrainRestArgs ();
-    args.xyArgs ( imageargs, proj )
+    args.xyArgs ( imageargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments failed: %s" % (e))
     raise EMCAError(e)
@@ -204,7 +201,7 @@ def xzSlice ( imageargs, proj ):
   # Perform argument processing
   try:
     args = restargs.BrainRestArgs ();
-    args.xzArgs ( imageargs, proj )
+    args.xzArgs ( imageargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments failed: %s" % (e))
     raise EMCAError(e)
@@ -255,7 +252,7 @@ def yzSlice ( imageargs, proj ):
   # Perform argument processing
   try:
     args = restargs.BrainRestArgs ();
-    args.yzArgs ( imageargs, proj )
+    args.yzArgs ( imageargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments failed: %s" % (e))
     raise EMCAError(e)
@@ -307,7 +304,7 @@ def xyAnno ( imageargs, proj ):
   # Perform argument processing
   try:
     args = restargs.BrainRestArgs ();
-    args.xyArgs ( imageargs, proj )
+    args.xyArgs ( imageargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments failed: %s" % (e))
     raise EMCAError(e)
@@ -336,7 +333,7 @@ def xzAnno ( imageargs, proj ):
   # Perform argument processing
   try:
     args = restargs.BrainRestArgs ();
-    args.xzArgs ( imageargs, proj )
+    args.xzArgs ( imageargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments failed: %s" % (e))
     raise EMCAError(e)
@@ -364,7 +361,7 @@ def yzAnno ( imageargs, proj ):
   # Perform argument processing
   try:
     args = restargs.BrainRestArgs ();
-    args.yzArgs ( imageargs, proj )
+    args.yzArgs ( imageargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments failed: %s" % (e))
     raise EMCAError(e)
@@ -535,7 +532,7 @@ def selectPost ( webargs, proj, postdata ):
         # Process the arguments
         try:
           args = restargs.BrainRestArgs ();
-          args.cutoutArgs ( postargs, proj )
+          args.cutoutArgs ( postargs, proj.datasetcfg )
         except restargs.RESTArgsError, e:
           logger.warning("REST Arguments failed: %s" % (e))
           raise EMCAError(e)
@@ -601,7 +598,6 @@ def getCutout ( webargs ):
   [ token, sym, rangeargs ] = webargs.partition ('/')
   projdb = emcaproj.EMCAProjectsDB()
   proj = projdb.loadProject ( token )
-#  dbcfg = dbconfig.switchDataset ( proj.getDataset() )
   return selectService ( rangeargs, proj )
 
 
@@ -611,8 +607,7 @@ def annopost ( webargs, postdata ):
       dataset."""
   [ token, sym, rangeargs ] = webargs.partition ('/')
   projdb = emcaproj.EMCAProjectsDB()
-  proj = projdb.getProj ( token )
-#  dbcfg = dbconfig.switchDataset ( proj.getDataset() )
+  proj = projdb.loadProject ( token )
   return selectPost ( rangeargs, proj, postdata )
 
 
@@ -620,8 +615,7 @@ def catmaid ( cmtilesz, token, plane, resolution, xtile, ytile, zslice, channel 
   """Interface to the cutout service for catmaid request.  It does address translation."""
 
   projdb = emcaproj.EMCAProjectsDB()
-  proj = projdb.getProj ( token )
-#  dbcfg = dbconfig.switchDataset ( proj.getDataset() )
+  proj = projdb.loadProject ( token )
   
   # datatype from the project
   if proj.getDBType() == emcaproj.IMAGES_8bit or proj.getDBType == emcaproj.CHANNELS_8bit:
@@ -780,8 +774,7 @@ def getAnnotation ( webargs ):
 
   # Get the annotation database
   projdb = emcaproj.EMCAProjectsDB()
-  proj = projdb.getProj ( token )
-#  dbcfg = dbconfig.switchDataset ( proj.getDataset() )
+  proj = projdb.loadProject ( token )
   db = emcadb.EMCADB ( proj )
 
   # Split the URL and get the args
@@ -877,8 +870,7 @@ def getCSV ( webargs ):
 
   # Get the annotation database
   projdb = emcaproj.EMCAProjectsDB()
-  proj = projdb.getProj ( token )
-#  dbcfg = dbconfig.switchDataset ( proj.getDataset() )
+  proj = projdb.loadProject ( token )
   db = emcadb.EMCADB ( proj )
 
   # Make the HDF5 file
@@ -908,8 +900,7 @@ def getAnnotations ( webargs, postdata ):
 
   # Get the annotation database
   projdb = emcaproj.EMCAProjectsDB()
-  proj = projdb.getProj ( token )
-#  dbcfg = dbconfig.switchDataset ( proj.getDataset() )
+  proj = projdb.loadProject ( token )
   db = emcadb.EMCADB ( proj )
 
   # Read the post data HDF5 and get a list of identifiers
@@ -1016,8 +1007,7 @@ def putAnnotation ( webargs, postdata ):
 
   # Get the annotation database
   projdb = emcaproj.EMCAProjectsDB()
-  proj = projdb.getProj ( token )
-#  dbcfg = dbconfig.switchDataset ( proj.getDataset() )
+  proj = projdb.loadProject ( token )
   db = emcadb.EMCADB ( proj )
 
   # Don't write to readonly projects
@@ -1117,7 +1107,7 @@ def putAnnotation ( webargs, postdata ):
             else:
               conflictopt = 'O'
 
-            #  the zstart in dbconfig is sometimes offset to make it aligned.
+            #  the zstart in datasetcfg is sometimes offset to make it aligned.
             #   Probably remove the offset is the best idea.  and align data
             #    to zero regardless of where it starts.  For now.
             corner = h5xyzoffset[:] 
@@ -1183,8 +1173,7 @@ def queryAnnoObjects ( webargs, postdata=None ):
 
   # Get the annotation database
   projdb = emcaproj.EMCAProjectsDB()
-  proj = projdb.getProj ( token )
-#  dbcfg = dbconfig.switchDataset ( proj.getDataset() )
+  proj = projdb.loadProject ( token )
   db = emcadb.EMCADB ( proj )
 
   annoids = db.getAnnoObjects ( restargs.split('/') )
@@ -1212,7 +1201,7 @@ def queryAnnoObjects ( webargs, postdata=None ):
 
     # RBFIX this a hack
     #
-    #  the zstart in dbconfig is sometimes offset to make it aligned.
+    #  the zstart in datasetcfg is sometimes offset to make it aligned.
     #   Probably remove the offset is the best idea.  and align data
     #    to zero regardless of where it starts.  For now.
     corner[2] -= proj.datasetcfg.slicerange[0]
@@ -1234,8 +1223,7 @@ def deleteAnnotation ( webargs ):
 
   # Get the annotation database
   projdb = emcaproj.EMCAProjectsDB()
-  proj = projdb.getProj ( token )
-#  dbcfg = dbconfig.switchDataset ( proj.getDataset() )
+  proj = projdb.loadProject ( token )
   db = emcadb.EMCADB ( proj )
 
   # Split the URL and get the args
@@ -1285,8 +1273,7 @@ def projInfo ( webargs ):
 
   # Get the annotation database
   projdb = emcaproj.EMCAProjectsDB()
-  proj = projdb.getProj ( token )
-#  dbcfg = dbconfig.switchDataset ( proj.getDataset() )
+  proj = projdb.loadProject ( token )
 
   # Create an in-memory HDF5 file
   tmpfile = tempfile.NamedTemporaryFile ()
@@ -1306,8 +1293,7 @@ def mcFalseColor ( webargs ):
 
   [ token, mcfcstr, service, chanstr, imageargs ] = webargs.split ('/', 4)
   projdb = emcaproj.EMCAProjectsDB()
-  proj = projdb.getProj ( token )
-#  dbcfg = dbconfig.switchDataset ( proj.getDataset() )
+  proj = projdb.loadProject ( token )
 
   if proj.getDBType() != emcaproj.CHANNELS_16bit and proj.getDBType() != emcaproj.CHANNELS_8bit:
     logger.warning ( "Not a multiple channel project." )
@@ -1440,7 +1426,7 @@ def loadDBProj ( token ):
 
   # Get the annotation database
   projdb = emcaproj.EMCAProjectsDB()
-  proj = projdb.getProj ( token )
+  proj = projdb.loadProject ( token )
   db = emcadb.EMCADB ( proj )
 
   return db, proj, projdb

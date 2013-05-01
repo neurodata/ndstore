@@ -4,7 +4,6 @@ import cStringIO
 import MySQLdb
 
 import empaths
-import dbconfig
 import zindex
 import emcaproj
 
