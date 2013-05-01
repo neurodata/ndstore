@@ -5,7 +5,6 @@ import numpy as np
 
 import emcaprivate
 from emcaerror import EMCAError
-import dbconfig
 
 import logging
 logger=logging.getLogger("emca")
@@ -34,7 +33,7 @@ class EMCAProject:
     self._exceptions = exceptions
     self._dbtype = dbtype
 
-    # Could add these to dbconfig.  Probably remove res as tablebase instead
+    # Could add these to configuration.  Probably remove res as tablebase instead
     self._ids_tbl = "ids"
 
   # Accessors
@@ -84,13 +83,93 @@ class EMCAProject:
     projgrp.create_dataset ( "READONLY", (1,), dtype=bool, data=(False if self._readonly==0 else True))
     projgrp.create_dataset ( "EXCEPTIONS", (1,), dtype=bool, data=(False if self._exceptions==0 else True))
 
+class EMCADataset:
+  """Configuration for a dataset"""
+
+  def __init__ ( self, ximagesz, yimagesz, startslice, endslice, zoomlevels, zscale ):
+    """Construct a db configuration from the dataset parameters""" 
+
+    self.slicerange = [ startslice, endslice ]
+
+    self.resolutions = []
+    self.cubedim = {}
+    self.imagesz = {}
+    self.zscale = {}
+
+    for i in range (zoomlevels+1):
+      """Populate the dictionaries"""
+
+      # add this level to the resolutions
+      self.resolutions.append( i )
+
+      # set the zscale factor
+      self.zscale[i] = float(zscale)/(2**i);
+
+      # choose the cubedim as a function of the zscale
+      #  this may need to be changed.  
+      if self.zscale[i] >  0.5:
+        self.cubedim[i] = [128, 128, 16]
+      else: 
+        self.cubedim[i] = [64, 64, 64]
+
+      # Make an exception for bock11 data -- just an inconsistency in original ingest
+  #    if dataset == "bock11" and i == 5:
+  #      dbcfg.cubedim[i] = [128, 128, 16]
+
+      # set the image size
+      #  the scaled down image rounded up to the nearest cube
+      ximgsz = (ximagesz / 2**i) / self.cubedim[i][0] * self.cubedim[i][0]
+      yimgsz = (yimagesz / 2**i) / self.cubedim[i][0] * self.cubedim[i][0]
+      self.imagesz[i] = [ ximgsz, yimgsz ]
+
+  #
+  #  Check that the specified arguments are legal
+  #
+  def checkCube ( self, resolution, xstart, xend, ystart, yend, zstart, zend ):
+    """Return true if the specified range of values is inside the cube"""
+
+    [xmax, ymax] = self.imagesz [ resolution ]
+
+    if (( xstart >= 0 ) and ( xstart <= xend) and ( xend <= self.imagesz[resolution][0]) and\
+        ( ystart >= 0 ) and ( ystart <= yend) and ( yend <= self.imagesz[resolution][1]) and\
+        ( zstart >= self.slicerange[0] ) and ( zstart <= zend) and ( zend <= (self.slicerange[1]+1))):
+      return True
+    else:
+      return False
+
+#
+  #  Return the image size
+  #
+  def imageSize ( self, resolution ):
+    return  [ self.imagesz [resolution], self.slicerange ]
+
+  #
+  # H5info
+  #
+  def h5Info ( self, h5f ):
+    """Populate the HDF5 with db configuration information"""
+
+    dcfggrp = h5f.create_group ( 'DATASET' )
+    dcfggrp.create_dataset ( "RESOLUTIONS", data=self.resolutions )
+    dcfggrp.create_dataset ( "SLICERANGE", data=self.slicerange )
+    imggrp = dcfggrp.create_group ( 'IMAGE_SIZE' )
+    for k,v in self.imagesz.iteritems():
+      imggrp.create_dataset ( str(k), data=v )
+    zsgrp = dcfggrp.create_group ( 'ZSCALE' )
+    for k,v in self.zscale.iteritems():
+      zsgrp.create_dataset ( str(k), data=v )
+    cdgrp = dcfggrp.create_group ( 'CUBE_DIMENSION' )
+    for k,v in self.cubedim.iteritems():
+      cdgrp.create_dataset ( str(k), data=v )
+
+
 class EMCAProjectsDB:
   """Database for the annotation and cutout projects"""
 
   def __init__(self):
     """Create the database connection"""
 
-    # Connection info in dbconfig
+    # Connection info 
     self.conn = MySQLdb.connect (host = emcaprivate.dbhost,
                           user = emcaprivate.dbuser,
                           passwd = emcaprivate.dbpasswd,
@@ -99,15 +178,11 @@ class EMCAProjectsDB:
   #
   # Load the emca databse information based on the token
   #
-  def getProj ( self, token ):
+  def loadProject ( self, token ):
     """Load the annotation database information based on the token"""
 
-
     # Lookup the information for the database project based on the token
-#    sql = "SELECT * from %s where token = \'%s\'" % (emcaprivate.table, token)
-
-    # RBTODO specify fielss for that you can ignore resolution column
-    sql = "SELECT token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions from %s where token = \'%s\'" % (emcaprivate.table, token)
+    sql = "SELECT token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions from %s where token = \'%s\'" % (emcaprivate.projects, token)
 
     try:
       cursor = self.conn.cursor()
@@ -126,7 +201,11 @@ class EMCAProjectsDB:
 
     [token, openid, host, project, dbtype, dataset, dataurl, readonly, exceptions ] = row
 
-    return EMCAProject ( project, host, dbtype, dataset, dataurl, readonly, exceptions )
+    # Create a project object
+    proj = EMCAProject ( project, host, dbtype, dataset, dataurl, readonly, exceptions ) 
+    proj.datasetcfg = self.loadDatasetConfig ( dataset )
+
+    return proj
 
 
   #
@@ -137,10 +216,11 @@ class EMCAProjectsDB:
 
 # TODO need to undo the project creation if not totally sucessful
 
+    # RBTODO remove
     dbcfg = dbconfig.switchDataset ( dataset )
 
     sql = "INSERT INTO {0} (token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',{5},\'{6}\',\'{7}\',\'{8}\',\'{9}\')".format (\
-       emcaprivate.table, token, openid, dbhost, project, dbtype, dataset, dataurl, int(readonly), int(exceptions) )
+       emcaprivate.projects, token, openid, dbhost, project, dbtype, dataset, dataurl, int(readonly), int(exceptions) )
 
     logger.info ( "Creating new project. Host %s. Project %s. SQL=%s" % ( dbhost, project, sql ))
 
@@ -191,12 +271,12 @@ class EMCAProjectsDB:
         # tables for annotations and images
         if dbtype == IMAGES_8bit or dbtype == ANNOTATIONS:
 
-          for i in dbcfg.resolutions: 
+          for i in proj.datasetcfg.resolutions: 
             sql += "CREATE TABLE res%s ( zindex BIGINT PRIMARY KEY, cube LONGBLOB );\n" % i
 
         # tables for channel dbs
         if dbtype == CHANNELS_8bit or dbtype == CHANNELS_16bit:
-          for i in dbcfg.resolutions: 
+          for i in proj.datasetcfg.resolutions: 
             sql += "CREATE TABLE res%s ( channel INT, zindex BIGINT, cube LONGBLOB, PRIMARY KEY(channel,zindex) );\n" % i
 
         # tables specific to annotation projects
@@ -212,7 +292,7 @@ class EMCAProjectsDB:
           sql += "CREATE TABLE organelles (annoid BIGINT PRIMARY KEY, organelleclass INT, parentseed INT, centroidx INT, centroidy INT, centroidz INT);\n"
           sql += "CREATE TABLE kvpairs ( annoid BIGINT, kv_key VARCHAR(255), kv_value VARCHAR(64000), PRIMARY KEY ( annoid, kv_key ));\n"
 
-          for i in dbcfg.resolutions: 
+          for i in proj.datasetcfg.resolutions: 
             if exceptions:
               sql += "CREATE TABLE exc%s ( zindex BIGINT, id INT, exlist LONGBLOB, PRIMARY KEY ( zindex, id));\n" % i
             sql += "CREATE TABLE idx%s ( annid BIGINT PRIMARY KEY, cube LONGBLOB );\n" % i
@@ -226,7 +306,7 @@ class EMCAProjectsDB:
 
     # Error, undo the projects table entry
     except:
-      sql = "DELETE FROM {0} WHERE token=\'{1}\'".format (emcaprivate.table, token)
+      sql = "DELETE FROM {0} WHERE token=\'{1}\'".format (emcaprivate.projects, token)
 
       logger.info ( "Could not create project database.  Undoing projects insert. Project %s. SQL=%s" % ( project, sql ))
 
@@ -245,7 +325,7 @@ class EMCAProjectsDB:
     """Create a new emca project"""
 
     proj = self.getProj ( token )
-    sql = "DELETE FROM %s WHERE token=\'%s\'" % ( emcaprivate.table, token ) 
+    sql = "DELETE FROM %s WHERE token=\'%s\'" % ( emcaprivate.projects, token ) 
 
     try:
       cursor = self.conn.cursor()
@@ -292,4 +372,29 @@ class EMCAProjectsDB:
   def getIdxTable ( self, resolution ):
     """Return the appropriate Index table for the specified resolution"""
     return "idx"+str(resolution)
+
+  def loadDatasetConfig ( self, dataset ):
+    """Query the database for the dataset information and build a db configuration"""
+
+    sql = "SELECT ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale from %s where dataset = \'%s\'" % (emcaprivate.datasets, dataset)
+
+    try:
+      cursor = self.conn.cursor()
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      logger.error ("Could not query emca datasets database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise EMCAError ("Could not query emca datasets database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    # get the project information 
+    row = cursor.fetchone()
+
+    # if the project is not found.  error
+    if ( row == None ):
+      logger.warning ( "Dataset %s not found." % ( dataset ))
+      raise EMCAError ( "Dataset %s not found." % ( dataset ))
+
+    [ ximagesz, yimagesz, startslice, endslice, zoomlevels, zscale ] = row
+    return EMCADataset ( ximagesz, yimagesz, startslice, endslice, zoomlevels, zscale ) 
+
+
 
