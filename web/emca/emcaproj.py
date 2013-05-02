@@ -212,6 +212,8 @@ class EMCAProjectsDB:
   def newEMCAProj ( self, token, openid, dbhost, project, dbtype, dataset, dataurl, readonly, exceptions, nocreate=False ):
     """Create a new emca project"""
 
+    import pdb; pdb.set_trace()
+
 # TODO need to undo the project creation if not totally sucessful
     datasetcfg = self.loadDatasetConfig ( dataset )
 
