@@ -205,9 +205,29 @@ class EMCAProjectsDB:
 
     return proj
 
+  #
+  # Create a new dataset
+  #
+  def newDataset ( self, dsname, ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale ):
+    """Create a new emca dataset"""
+
+    sql = "INSERT INTO {0} (dataset, ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',{5},\'{6}\',\'{7}\')".format (\
+       emcaprivate.datasets, dsname, ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale )
+
+    logger.info ( "Creating new dataset. Name %s. SQL=%s" % ( dsname, sql ))
+
+    try:
+      cursor = self.conn.cursor()
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      logger.error ("Could not query emca datsets database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise EMCAError ("Could not query emca datsets database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    self.conn.commit()
+
 
   #
-  # Load the  database information based on the token
+  # Create a new project (annotation or data)
   #
   def newEMCAProj ( self, token, openid, dbhost, project, dbtype, dataset, dataurl, readonly, exceptions, nocreate=False ):
     """Create a new emca project"""
