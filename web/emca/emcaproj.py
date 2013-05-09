@@ -116,8 +116,10 @@ class EMCADataset:
 
       # set the image size
       #  the scaled down image rounded up to the nearest cube
-      ximgsz = (ximagesz / 2**i) / self.cubedim[i][0] * self.cubedim[i][0]
-      yimgsz = (yimagesz / 2**i) / self.cubedim[i][0] * self.cubedim[i][0]
+      xpixels=((ximagesz-1)/2**i)+1
+      ximgsz = (((xpixels-1)/self.cubedim[i][0])+1)*self.cubedim[i][0]
+      ypixels=((yimagesz-1)/2**i)+1
+      yimgsz = (((ypixels-1)/self.cubedim[i][1])+1)*self.cubedim[i][1]
       self.imagesz[i] = [ ximgsz, yimgsz ]
 
   #
@@ -231,8 +233,6 @@ class EMCAProjectsDB:
   #
   def newEMCAProj ( self, token, openid, dbhost, project, dbtype, dataset, dataurl, readonly, exceptions, nocreate=False ):
     """Create a new emca project"""
-
-    import pdb; pdb.set_trace()
 
 # TODO need to undo the project creation if not totally sucessful
     datasetcfg = self.loadDatasetConfig ( dataset )
@@ -393,7 +393,6 @@ class EMCAProjectsDB:
 
   def loadDatasetConfig ( self, dataset ):
     """Query the database for the dataset information and build a db configuration"""
-
     sql = "SELECT ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale from %s where dataset = \'%s\'" % (emcaprivate.datasets, dataset)
 
     try:
