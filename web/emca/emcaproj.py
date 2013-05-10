@@ -69,18 +69,6 @@ class EMCAProject:
     """Return the appropriate Index table for the specified resolution"""
     return "idx"+str(resolution)
 
-  def h5Info ( self, h5f ):
-    """Populate the HDF5 file with project attributes"""
-
-    projgrp = h5f.create_group ( 'PROJECT' )
-    projgrp.create_dataset ( "NAME", (1,), dtype=h5py.special_dtype(vlen=str), data=self._dbname )
-    projgrp.create_dataset ( "HOST", (1,), dtype=h5py.special_dtype(vlen=str), data=self._dbhost )
-    projgrp.create_dataset ( "TYPE", (1,), dtype=np.uint32, data=self._dbtype )
-    projgrp.create_dataset ( "DATASET", (1,), dtype=h5py.special_dtype(vlen=str), data=self._dataset )
-    projgrp.create_dataset ( "DATAURL", (1,), dtype=h5py.special_dtype(vlen=str), data=self._dataurl )
-    projgrp.create_dataset ( "READONLY", (1,), dtype=bool, data=(False if self._readonly==0 else True))
-    projgrp.create_dataset ( "EXCEPTIONS", (1,), dtype=bool, data=(False if self._exceptions==0 else True))
-
 class EMCADataset:
   """Configuration for a dataset"""
 
@@ -142,25 +130,6 @@ class EMCADataset:
   #
   def imageSize ( self, resolution ):
     return  [ self.imagesz [resolution], self.slicerange ]
-
-  #
-  # H5info
-  #
-  def h5Info ( self, h5f ):
-    """Populate the HDF5 with db configuration information"""
-
-    dcfggrp = h5f.create_group ( 'DATASET' )
-    dcfggrp.create_dataset ( "RESOLUTIONS", data=self.resolutions )
-    dcfggrp.create_dataset ( "SLICERANGE", data=self.slicerange )
-    imggrp = dcfggrp.create_group ( 'IMAGE_SIZE' )
-    for k,v in self.imagesz.iteritems():
-      imggrp.create_dataset ( str(k), data=v )
-    zsgrp = dcfggrp.create_group ( 'ZSCALE' )
-    for k,v in self.zscale.iteritems():
-      zsgrp.create_dataset ( str(k), data=v )
-    cdgrp = dcfggrp.create_group ( 'CUBE_DIMENSION' )
-    for k,v in self.cubedim.iteritems():
-      cdgrp.create_dataset ( str(k), data=v )
 
 
 class EMCAProjectsDB:
@@ -294,6 +263,7 @@ class EMCAProjectsDB:
 
         # tables for channel dbs
         if dbtype == CHANNELS_8bit or dbtype == CHANNELS_16bit:
+          sql += 'CREATE TABLE channels ( chanstr VARCHAR(255), chanid INT, PRIMARY KEY(chanstr));\n'
           for i in datasetcfg.resolutions: 
             sql += "CREATE TABLE res%s ( channel INT, zindex BIGINT, cube LONGBLOB, PRIMARY KEY(channel,zindex) );\n" % i
 

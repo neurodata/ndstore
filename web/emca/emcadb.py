@@ -1184,3 +1184,20 @@ class EMCADB:
 
           self.putCube ( key, resolution, cube)
 
+
+  #
+  # getChannels
+  #
+  #  query the channels and their identifiers
+  #
+  def getChannels ( self ):
+    """query the channels and their identifiers"""
+    sql = 'SELECT * FROM channels';
+    try:
+      self.cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      logger.warning ("Failed to query channels %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise
+
+    return dict(self.cursor.fetchall())
+

@@ -45,6 +45,17 @@ class ChessboardIngest:
     self.cursor = self.db.conn.cursor()
 
 
+  def label ( self, chanid, chanstr ):
+    """ Write the channel label/string associated with the channel identifier"""
+
+    sql = 'INSERT INTO channels VALUES ( \'%s\', %s )' % ( chanstr, chanid )
+    try:
+      self.cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      print ("Error updating channels table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise 
+
+
   def ingest( self ):
 
     # number the channels
@@ -72,14 +83,13 @@ class ChessboardIngest:
       if pdir:
 
         # label channel/protein
-        #RBTODO 
+        self.label ( channel, prot )
 
         # for each slice
         for sl in range(self.startslice,self.endslice+1):
 
           # New array for every new batch
           if (sl-self.startslice) % self.batchsz == 0:
-            print "Reset array"
             imarray = np.zeros ( [self.batchsz,self._yimgsz,self._ximgsz], dtype=np.uint16 )
 
           # open the slice file and ingest
@@ -135,7 +145,8 @@ class ChessboardIngest:
         try:
           self.cursor.execute ( sql, (channel, key, npz))
         except MySQLdb.Error, e:
-          raise ANNError ( "Error updating data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+          print ("Error updating data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+          raise 
 
     self.db.conn.commit()
 
