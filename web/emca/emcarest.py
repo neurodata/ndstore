@@ -1353,7 +1353,7 @@ def mcFalseColor ( webargs ):
     outimage = Image.frombuffer ( 'RGBA', (xdim,ydim), combined_img[:,:,0].flatten(), 'raw', 'RGBA', 0, 1 ) 
 
   # Enhance the image
-  import ImageEnhance
+  from PIL import ImageEnhance
   enhancer = ImageEnhance.Brightness(outimage)
   outimage = enhancer.enhance(4.0)
 

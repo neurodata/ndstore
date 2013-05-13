@@ -141,7 +141,6 @@ class ChessboardIngest:
 
         # add the cube to the database
         sql = "INSERT INTO " + self.proj.getTable(self.resolution) +  "(channel, zindex, cube) VALUES (%s, %s, %s)"
-        print sql%(channel,key,None)
         try:
           self.cursor.execute ( sql, (channel, key, npz))
         except MySQLdb.Error, e:
