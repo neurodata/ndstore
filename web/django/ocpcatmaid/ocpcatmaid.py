@@ -16,8 +16,6 @@ import emcarest
 import django
 import posix_ipc
 
-
-
 from emca_cy import recolor_cy
 
 from threading import Thread
