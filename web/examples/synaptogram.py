@@ -30,6 +30,7 @@ def main():
   parser.add_argument('centroid', action="store", help='Centroid for the synaptogram x,y,z', default=None)
   parser.add_argument('--width', action="store", type=int, help='Width of the synaptogram. Rounded up to nearest odd number.', default=11)
   parser.add_argument('--resolution', action="store", type=int, help='Width of the synaptogram. Rounded up to nearest odd number.', default=0)
+  parser.add_argument('--outfile', action="store", help='Target filename to store synapotogram image.  Should be .png', default=None)
 
   result = parser.parse_args()
   
@@ -73,11 +74,11 @@ def main():
 
   enhancer = ImageEnhance.Brightness(sog)
   sog = enhancer.enhance(4.0)
-  sog.save ( "/tmp/sog.png" )
+  if result.outfile == None:
+    sog.show()
+  else:
+    sog.save ( result.outfile )
      
-
-
-
 
 
   h5f.flush()
