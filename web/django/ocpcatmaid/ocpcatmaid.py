@@ -14,6 +14,7 @@ import dbconfig
 import emcaproj
 import emcarest
 import django
+import posix_ipc
 
 
 
@@ -41,7 +42,7 @@ class OCPCatmaid:
 
     if self.db == None:
       # load the database/token
-      [ self.db, self.dbcfg, self.proj, self.projdb ] = emcarest.loadDBProj ( self.token )
+      [ self.db, self.proj, self.projdb ] = emcarest.loadDBProj ( self.token )
 
   def buildKey (self,res,xtile,ytile,zslice):
 #    key =  '{}/{}/{}/{}/{}/{}/{}'.format(token,tilesz,channel,res,xtile,ytile,zslice)
@@ -93,14 +94,14 @@ class OCPCatmaid:
       self.loadDB ( )
 
       # cutout the entire slab -- align to cuboid in z
-      numslices = self.dbcfg.cubedim[res][2] 
+      numslices = self.proj.datasetcfg.cubedim[res][2] 
       zstart = (zslice / numslices) * numslices
 
       corner = [xtile*self.tilesz, ytile*self.tilesz, zstart]
       dim = [self.tilesz,self.tilesz,numslices]
 
       # do some bounds checkout  -- only prefetch in the range
-      if self.dbcfg.checkCube( res, corner[0], corner[0]+dim[0], corner[1], corner[1]+dim[1], corner[2], corner[2]+dim[2] ):
+      if self.proj.datasetcfg.checkCube( res, corner[0], corner[0]+dim[0], corner[1], corner[1]+dim[1], corner[2], corner[2]+dim[2] ):
         # do the cutout
         imgcube = self.db.cutout ( corner, dim, res, self.channel )
 
@@ -134,7 +135,7 @@ class OCPCatmaid:
     self.loadDB ( )
     
     # RBTODO this logic doesn't work
-    numslices = self.dbcfg.cubedim[res][2] 
+    numslices = self.proj.datasetcfg.cubedim[res][2] 
     if zslice % numslices < 2:
       self.checkFetch ( res, xtile, ytile, zslice-numslices )
     if zslice % numslices >= (numslices - 2):
@@ -152,11 +153,11 @@ class OCPCatmaid:
     self.loadDB ( )
 
     # make sure that the tile size is aligned with the cubedim
-    if self.tilesz % self.dbcfg.cubedim[res][0] != 0 or self.tilesz % self.dbcfg.cubedim[res][1]:
+    if self.tilesz % self.proj.datasetcfg.cubedim[res][0] != 0 or self.tilesz % self.proj.datasetcfg.cubedim[res][1]:
       raise("Illegal tile size.  Not aligned")
 
     # cutout the entire slab -- align to cuboid in z
-    numslices = self.dbcfg.cubedim[res][2] 
+    numslices = self.proj.datasetcfg.cubedim[res][2] 
     zstart = (zslice / numslices) * numslices
 
     corner = [xtile*self.tilesz, ytile*self.tilesz, zstart]
