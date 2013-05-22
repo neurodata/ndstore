@@ -12,6 +12,7 @@ import emcaproj
 import annotation
 import annindex
 import imagecube
+import emcachannel
 
 from emcaerror import EMCAError
 
@@ -774,6 +775,8 @@ class EMCADB:
 
     # Customize query to the database (include channel or not)
     if (self.annoproj.getDBType() == emcaproj.CHANNELS_8bit or self.annoproj.getDBType() == emcaproj.CHANNELS_16bit):
+      # Convert channel as needed
+      channel = emcachannel.toID ( channel, self )
       sql = "SELECT zindex, cube FROM " + dbname + " WHERE channel= " + str(channel) + " AND zindex in (%s)" 
     else:
       sql = "SELECT zindex, cube FROM " + dbname + " WHERE zindex IN (%s)" 

@@ -181,7 +181,6 @@ def xySlice ( imageargs, proj, db ):
 #    vec_func = np.vectorize ( lambda x: 0 if x not in filterlist else x )
 #    cube.data = vec_func ( cube.data )
 
-
   return cube
 
 
@@ -225,8 +224,6 @@ def xzSlice ( imageargs, proj, db ):
 
   # Perform the cutout
   cube = db.cutout ( corner, dim, resolution, channel )
-  if filterlist != None:
-    print "Filtering by values {}".format(filterlist)
 
   return cube
 
@@ -274,8 +271,6 @@ def yzSlice ( imageargs, proj, db ):
 
   # Perform the cutout
   cube = db.cutout ( corner, dim, resolution, channel )
-  if filterlist != None:
-    print "Filtering by values {}".format(filterlist)
 
   return cube
 
