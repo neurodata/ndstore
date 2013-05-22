@@ -64,6 +64,18 @@ def main():
       tmpimg = Image.frombuffer ( 'I;16', (2*hwidth+1,2*hwidth+1), h5f[channel][sl,:,:].flatten(), 'raw', 'I;16', 0, 1)
       tmpimg = tmpimg.point(lambda i:i*(1./256)).convert('L')
       bigtmpimg = tmpimg.resize ( (200,200), Image.ANTIALIAS )
+<<<<<<< Updated upstream
+=======
+      sog.paste ( bigtmpimg, (chidx*(sog_width+sog_frame)+sog_frame, sl*(sog_width+sog_frame)+sog_frame))
+
+  enhancer = ImageEnhance.Brightness(sog)
+  sog = enhancer.enhance(result.enhance)
+  sog.save ( "/tmp/sog.png" )
+     
+
+
+
+>>>>>>> Stashed changes
 
       # if we're not enhancing, we're normalizing
       if result.enhance != None:
