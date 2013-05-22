@@ -58,7 +58,7 @@ def toID ( channel, db ):
   """Convert a single channel to an identifier"""
 
   # integers are kept
-  if re.match ('^\d+$', channel):
+  if type(channel)==int or re.match ('^\d+$', channel):
     return channel
   else:
     emcachans = EMCAChannels( db )
