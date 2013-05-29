@@ -21,6 +21,10 @@ from emca_cy import recolor_cy
 
 from threading import Thread
 
+#import logging
+#logger=logging.getLogger("emca")
+
+
 class OCPCatmaid:
   """Prefetch CATMAID tiles into MemcacheDB"""
 
@@ -44,7 +48,7 @@ class OCPCatmaid:
       [ self.db, self.proj, self.projdb ] = emcarest.loadDBProj ( self.token )
 
   def buildKey (self,res,xtile,ytile,zslice,color,brightness):
-    return '{}/{}/{}/{}/{}/{}/{}/{}'.format(self.token,self.tilesz,self.channel,res,xtile,ytile,zslice,color,brightness)
+    return '{}/{}/{}/{}/{}/{}/{}/{}/{}'.format(self.token,self.tilesz,self.channel,res,xtile,ytile,zslice,color,brightness)
 
 
   def falseColor ( self, tile, color ):
@@ -122,10 +126,11 @@ class OCPCatmaid:
   
   def loadMCache ( self, res, xtile, ytile, zstart, cuboid, color, brightness ):
     """Populate the cache with a cuboid."""
+
     self.addCuboid ( res, xtile, ytile, zstart, cuboid, color, brightness )
 
     # Having loaded the cuboid prefetch other data
-#    self.prefetchMCache ( res, xtile, ytile, zstart, color, brightness )
+    self.prefetchMCache ( res, xtile, ytile, zstart, color, brightness )
 
 
   def checkFetch ( self, res, xtile, ytile, zslice, color, brightness ):
@@ -157,41 +162,46 @@ class OCPCatmaid:
   def prefetchMCache ( self, res, xtile, ytile, zslice, color, brightness ):
     """Background thread to load the cache"""
 
-    time.sleep(1)
+    # make sure the db is loaded -- needed for numslices
+    self.loadDB ( )
+    
+    # probe to see if we have the up/down resolution
+    numslices = self.proj.datasetcfg.cubedim[res][2] 
 
     # only one active prefetcher at a time
     # don't wait a long time
     try:
-      self.pfsem.acquire ( 5 )
+      self.pfsem.acquire ( 2 )
+
+      if zslice % numslices >= (numslices - 2):
+        self.checkFetch ( res, xtile, ytile, zslice+numslices, color, brightness )
+
     except Exception, e:
+      pass
+
+    finally:
       self.pfsem.release()
-      return
+
+# prefetech backward (disable for now)
+#    if zslice % numslices < 2:
+#      self.checkFetch ( res, xtile, ytile, zslice-numslices, color, brightness )
+#   prefetch forward
+#    time.sleep(1)
+# RB -- this lead to too much redundant work.  Take one fault in each column.
 
     # we already have the current slab 1024^2 x 16
     # probe to see if we have the left/right slab
-    self.checkFetch ( res, xtile-1, ytile, zslice, color, brightness )
-    self.checkFetch ( res, xtile+2, ytile, zslice, color, brightness )
+#    self.checkFetch ( res, xtile-1, ytile, zslice, color, brightness )
+#    self.checkFetch ( res, xtile+2, ytile, zslice, color, brightness )
     # probe to see if we have the top/bottom slab
-    self.checkFetch ( res, xtile, ytile-1, zslice, color, brightness )
-    self.checkFetch ( res, xtile, ytile+2, zslice, color, brightness )
+#    self.checkFetch ( res, xtile, ytile-1, zslice, color, brightness )
+#    self.checkFetch ( res, xtile, ytile+2, zslice, color, brightness )
     # probe to see if we have the next slab or previous slab
-
-    # make sure the db is loaded -- needed for numslices
-    self.loadDB ( )
-    
-    # RBTODO this logic doesn't work
-    # probe to see if we have the up/down resolution
-    numslices = self.proj.datasetcfg.cubedim[res][2] 
-    if zslice % numslices < 2:
-      self.checkFetch ( res, xtile, ytile, zslice-numslices, color, brightness )
-    if zslice % numslices >= (numslices - 2):
-      self.checkFetch ( res, xtile, ytile, zslice+numslices, color, brightness )
-
-    self.pfsem.release()
-
+  
 
   def cacheMiss ( self, res, xtile, ytile, zslice, color, brightness ):
     """On a miss. Cutout, return the image and load the cache in a background thread"""
+
     # load the database/token
     self.loadDB ( )
 
@@ -204,7 +214,7 @@ class OCPCatmaid:
     zstart = (zslice / numslices) * numslices
 
     corner = [xtile*self.tilesz, ytile*self.tilesz, zstart]
-    dim = [2*self.tilesz,2*self.tilesz,numslices]
+    dim = [self.tilesz,self.tilesz,numslices]
 
     # do the cutout on demand so that it can be returned immediately
     imgcube = self.db.cutout ( corner, dim, res, self.channel )
@@ -215,10 +225,10 @@ class OCPCatmaid:
 
     return self.tile2WebPNG ( imgcube.data[zslice%numslices,0:self.tilesz,0:self.tilesz], color, brightness)
 
-  def cacheHit ( self, res, xtile, ytile, zslice, color ):
+  def cacheHit ( self, res, xtile, ytile, zslice, color, brightness ):
     """Prefetch in the background on a hit."""
-#    t = Thread ( target=self.prefetchMCache, args=(res,xtile,ytile,zslice,color,brightness))
-#    t.start()
+    t = Thread ( target=self.prefetchMCache, args=(res,xtile,ytile,zslice,color,brightness))
+    t.start()
 
 
   def getTile ( self, webargs ):
@@ -248,22 +258,17 @@ class OCPCatmaid:
 
     # do something to sanitize the webargs??
     # if tile is in memcache, return it
-#    tile = self.mc.get(mckey)
-    tile = None
+    tile = self.mc.get(mckey)
     if tile != None:
-      self.cacheHit(res,xtile,ytile,zslice,color)
+#      logger.warning("Cache hit %s" % mckey )
+      self.cacheHit(res,xtile,ytile,zslice,color,brightness)
       fobj = cStringIO.StringIO(tile)
     # load a slab into CATMAID
     else:
+#      logger.warning("Cache miss %s" % mckey )
       img=self.cacheMiss(res,xtile,ytile,zslice,color,brightness)
       fobj = cStringIO.StringIO ( )
       img.save ( fobj, "PNG" )
-
-    if brightness != None:
-      # Enhance the image
-      import ImageEnhance
-      enhancer = ImageEnhance.Brightness(img)
-      img = enhancer.enhance(brightness)
 
     fobj.seek(0)
     return fobj
