@@ -63,27 +63,37 @@ class ChessboardIngest:
 
     # for each protein
     for prot in proteins.proteins:
-     
-      # increment the channels starting with 1
-      channel+=1
-
-      # this finds the highest run (number suffix) for each channel
-      pdir = None
       for x in self.alldirs:
         m = re.match('{0}.*(\d+)$'.format(prot),x)
-        if m != None:
-          if pdir == None:
-            pdir = x
-            run = m.group(1)
-          else:
-            if m.group(1) > run:
-              pdir = x
+        if m == None:
+          continue
 
-      # if this protein is present
-      if pdir:
+        # ingest each match as a channel
+        pdir = x
+
+        # increment the channels starting with 1
+        channel+=1
+
+#  RB Old Code to take just the highest imaging session
+#    instaad we will take all
+#
+#      # this finds the highest run (number suffix) for each channel
+#      pdir = None
+#      for x in self.alldirs:
+#        m = re.match('{0}.*(\d+)$'.format(prot),x)
+#        if m != None:
+#          if pdir == None:
+#            pdir = x
+#            run = m.group(1)
+##          else:
+#            if m.group(1) > run:
+#              pdir = x
+
 
         # label channel/protein
-        self.label ( channel, prot )
+#        self.label ( channel, pdir )
+        # label by imaging session and protein, i.e. use the pdir
+        self.label ( channel, pdir )
 
         # for each slice
         for sl in range(self.startslice,self.endslice+1):
@@ -111,8 +121,6 @@ class ChessboardIngest:
 
   def upload ( self, channel, sl, imarray ):
     """Transfer the array to the database"""
-
-    import pdb;
 
     # get the size of the cube
     xcubedim,ycubedim,zcubedim = self.proj.datasetcfg.cubedim[self.resolution]
