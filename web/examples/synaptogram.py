@@ -55,7 +55,7 @@ def main():
   parser.add_argument('--width', action="store", type=int, help='Width of the synaptogram. Rounded up to nearest odd number.', default=9)
   parser.add_argument('--resolution', action="store", type=int, help='Width of the synaptogram. Rounded up to nearest odd number.', default=0)
   parser.add_argument('--outfile', action="store", help='Target filename to store synapotogram image.  Should be .png', default=None)
-  parser.add_argument('--reference', action="store", help='Reference channel (drawn in red)')
+  parser.add_argument('--reference', action="store", help='Reference channels (up to 6)')
   parser.add_argument('--enhance', action="store", type=float, help='Brightness enhancement factor for all pixels', default=None)
   parser.add_argument('--normalize', action='store_true', help='Normalize to the per channel maximum value with the syanptogram')
   parser.add_argument('--normalize2', action='store_true', help='Normalize to the per channel maximum value within a large region around the synaptogram')
@@ -100,25 +100,52 @@ def main():
   channels = result.channels.split(",")
 
   # create a white image as the background
-  sog = Image.new("L", ((hwidth*2+1)*(sog_width+sog_frame)+sog_frame,len(channels)*(sog_width+sog_frame)+sog_frame),(255)).convert('RGBA')
+  sog = Image.new("L", ((hwidth*2+1)*(sog_width+sog_frame)+sog_frame,len(channels)*(sog_width+sog_frame)+sog_frame),(255)).convert('RGB')
 
   # build the reference channel data
   if result.reference != None:
-    refgrp = h5f.get(result.reference)
-    if result.normalize2:
-      chmaxval = gchmaxval[result.reference]
-    else:
-      chmaxval = np.max(refgrp[:,:,:])
 
-    # array of reference images
-    reference = np.zeros([2*hwidth+1,2*hwidth+1,2*hwidth+1],np.uint8)
-    for sl in range(2*hwidth+1):
-      if result.normalize:
-        normdata = np.uint8(np.uint32(h5f[result.reference][sl,:,:])*256/(chmaxval+1))
+    # list of reference channels
+    refchannels = result.reference.split(',')
+
+    # array of reference images and intensities
+    refimgdata = np.zeros((2*hwidth+1,2*hwidth+1,2*hwidth+1),dtype=np.uint32)
+    refintensity = np.zeros((2*hwidth+1,2*hwidth+1,2*hwidth+1),dtype=np.uint8)
+
+    for refchanid in range(len(refchannels)):
+
+      refchan = refchannels[refchanid]
+
+      refgrp = h5f.get(refchan)
+      if result.normalize2:
+        chmaxval = gchmaxval[refchan]
       else:
-        normdata = np.uint8(h5f[result.reference][sl,:,:]/256)
+        chmaxval = np.max(refgrp[:,:,:])
 
-      reference[sl,:,:] = normdata
+      for sl in range(2*hwidth+1):
+        if result.normalize:
+          normdata = np.uint8(np.uint32(h5f[refchan][sl,:,:])*256/(chmaxval+1))
+        else:
+          normdata = np.uint8(h5f[refchan][sl,:,:]/256)
+
+        refintensity[sl,:,:] = np.where ( normdata>refintensity[sl], normdata, refintensity[sl,:,:])
+        tmpimgdata = np.where ( normdata == refintensity[sl,:,:], normdata, 0 )
+        
+        # channel 0 is red
+        if refchanid == 0:
+          refimgdata[sl,:,:] = np.where ( tmpimgdata, np.uint32(tmpimgdata), refimgdata[sl,:,:] )
+        elif refchanid == 1:
+          refimgdata[sl,:,:] = np.where ( tmpimgdata, np.uint32(tmpimgdata)<<8, refimgdata[sl,:,:] )
+        elif refchanid == 2:
+          refimgdata[sl,:,:] = np.where ( tmpimgdata, np.uint32(tmpimgdata)<<16, refimgdata[sl,:,:] )
+        elif refchanid == 3:
+          refimgdata[sl,:,:] = np.where ( tmpimgdata, (np.uint32(tmpimgdata)<<8)+np.uint32(tmpimgdata), refimgdata[sl,:,:] )
+        elif refchanid == 4:
+          refimgdata[sl,:,:] = np.where ( tmpimgdata, (np.uint32(tmpimgdata)<<16)+np.uint32(tmpimgdata), refimgdata[sl,:,:] )
+        elif refchanid == 5:
+          refimgdata[sl,:,:] = np.where ( tmpimgdata, (np.uint32(tmpimgdata)<<16)+(np.uint32(tmpimgdata)<<8), refimgdata[sl,:,:] )
+        # Add the image data
+        # Add the image data
 
   # add each channel to the synaptogram
   for chidx in range(len(channels)):
@@ -139,16 +166,10 @@ def main():
         normdata = np.uint8(h5f[channel][sl,:,:]/256)
 
       # OK, here we have normalized 8 bit data.  Add in the reference channel
-      if result.reference != None and result.reference!=channel:
-
-        # if the channel is brighter take the channel pixels
-        chandata = np.where ( normdata>=reference[sl,:,:], normdata, 0 )
-        # otherwise take the reference pixels
-        refdata = np.where ( reference[sl,:,:]>normdata, reference[sl,:,:], 0 )
-
-      else:
-        chandata = normdata
-        refdata = np.zeros ( ((2*hwidth+1), (2*hwidth+1)), dtype=np.uint32 )
+      # if the channel is brighter take the channel pixels
+      chandata = np.where ( normdata>=refintensity[sl,:,:], normdata, 0 )
+      # otherwise take the reference pixels
+      refdata = np.where ( refintensity[sl,:,:]>normdata, refimgdata[sl,:,:], 0 )
 
       # generate the channel panel
       tmpimg = Image.frombuffer ( 'L',  (2*hwidth+1,2*hwidth+1), normdata.flatten(), 'raw', 'L', 0, 1)
