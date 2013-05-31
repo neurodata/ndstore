@@ -96,13 +96,13 @@ def main():
   # Now generate a synaptogram
 
   # get the channels
-  channels = h5f.keys()
+#  channels = h5f.keys()
+  channels = result.channels.split(",")
 
   # create a white image as the background
   sog = Image.new("L", ((hwidth*2+1)*(sog_width+sog_frame)+sog_frame,len(channels)*(sog_width+sog_frame)+sog_frame),(255)).convert('RGBA')
 
-  regimg = []
-#  # build the reference images
+  # build the reference channel data
   if result.reference != None:
     refgrp = h5f.get(result.reference)
     if result.normalize2:
@@ -146,21 +146,15 @@ def main():
         # otherwise take the reference pixels
         refdata = np.where ( reference[sl,:,:]>normdata, reference[sl,:,:], 0 )
 
-        # use the filtered channel data to make the image
-        normdata = chandata
+      else:
+        chandata = normdata
+        refdata = np.zeros ( ((2*hwidth+1), (2*hwidth+1)), dtype=np.uint32 )
 
       # generate the channel panel
       tmpimg = Image.frombuffer ( 'L',  (2*hwidth+1,2*hwidth+1), normdata.flatten(), 'raw', 'L', 0, 1)
-
-      if result.reference != None and result.reference!=channel:
-        # add the reference
-        refimg = Image.frombuffer ( 'RGBA',  (2*hwidth+1,2*hwidth+1), np.uint32(refdata), 'raw', 'RGBA', 0, 1)
-        refimg.paste ( tmpimg, (0,0), tmpimg )
-        bigtmpimg = refimg.resize ( (200,200), Image.ANTIALIAS )
-
-      else:
-        # Scale up the image
-        bigtmpimg = tmpimg.resize ( (200,200), Image.ANTIALIAS ).convert("RGBA")
+      refimg = Image.frombuffer ( 'RGBA',  (2*hwidth+1,2*hwidth+1), np.uint32(refdata), 'raw', 'RGBA', 0, 1)
+      refimg.paste ( tmpimg, (0,0), tmpimg )
+      bigtmpimg = refimg.resize ( (200,200), Image.ANTIALIAS )
 
       sog.paste ( bigtmpimg, (sl*(sog_width+sog_frame)+sog_frame, chidx*(sog_width+sog_frame)+sog_frame))
 
