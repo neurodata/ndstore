@@ -13,11 +13,15 @@ from PIL import ImageOps
 sog_width = 200
 sog_frame = 20
 
+#TODO broken with a reference channel
+# TODO make the getChannelMax robust to locations
+
 
 def getChannelMax ( baseurl, token, channels, resolution, x,y,z ):
   """Helper function to determine the maximum in biggish box around each centroid"""
 
-  cutout = '%s/%s,%s/%s,%s/%s,%s' % ( resolution, x-512,x+512, y-512, y+512, z-8, z+8 ) 
+#  cutout = '%s/%s,%s/%s,%s/%s,%s' % ( resolution, x-512,x+512, y-512, y+512, z-8, z+8 ) 
+  cutout = '%s/%s,%s/%s,%s/%s,%s' % ( resolution, x-512,x+512, 0, 512, z-8, z+8 ) 
 
   url = "http://%s/emca/%s/hdf5/%s/%s/" % (baseurl,token,channels,cutout)
 
