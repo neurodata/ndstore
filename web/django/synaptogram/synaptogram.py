@@ -82,7 +82,10 @@ class Synaptogram:
     chancuboids = {}
     # get the data region for each channel 
     for chan in self.channels:
-      chancuboids[chan] = self.db.cutout ( corner, dim, self.resolution, chan )
+      try: 
+        chancuboids[chan] = self.db.cutout ( corner, dim, self.resolution, chan )
+      except KeyError:
+          raise Exception ("Cannel %s not found" % ( chan ))
 
 
     # Now generate a synaptogram
@@ -97,12 +100,17 @@ class Synaptogram:
     # build the reference channel data
     if self.refchannels != None:
 
+
       # list of reference channels
       for refchanid in range(len(self.refchannels)):
 
         refchan = self.refchannels[refchanid]
 
-        refdata = chancuboids[refchan].data
+        try:
+          refdata = chancuboids[refchan].data
+        except KeyError:
+          raise Exception ("Reference channel %s not found" % ( refchan ))
+
         if self.normalize2:
           chmaxval = gchmaxval[refdata]
         else:
