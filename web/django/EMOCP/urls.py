@@ -8,5 +8,6 @@ urlpatterns = patterns('',
     url(r'^emca/', include('emca.urls')),
     url(r'^overlay/', include('overlay.urls')),
     url(r'^ocpcatmaid/', include('ocpcatmaid.urls')),
+    url(r'^synaptogram/', include('synaptogram.urls')),
     url(r'^admin/', include(admin.site.urls)),
 )
