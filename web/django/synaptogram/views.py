@@ -38,6 +38,11 @@ def synaptogram_view (request, webargs):
     if s != None:
       sog.setReference(s.group(1).split(','))
 
+    # tell which channels are EM channels -- no reference
+    s = re.search ( 'EM/([\w\-,]+)/', rest )
+    if s != None:
+      sog.setEM(s.group(1).split(','))
+
     # if there is a enhance string in the URL
     s = re.search ( 'enhance/([\d.]+)/', rest )
     if s != None:
@@ -50,6 +55,11 @@ def synaptogram_view (request, webargs):
     s = re.search ( 'normalize2/', rest )
     if s != None:
       sog.setNormalize2()
+
+    # resolution
+    s = re.search ( 'resolution/([\d]+)/', rest )
+    if s != None:
+      sog.setResolution(int(s.group(1)))
 
     # Width of the input data
     s = re.search ( 'width/([\d]+)/', rest )

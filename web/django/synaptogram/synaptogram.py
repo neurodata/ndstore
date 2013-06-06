@@ -29,7 +29,8 @@ class Synaptogram:
     self.normalize = True
     self.normalize2 = False
     self.resolution = 0
-    self.refchannels = None
+    self.refchannels = []
+    self.emchannels = []
     self.enhance = None
 
     [ self.db, self.proj, self.projdb ] = emcarest.loadDBProj ( self.token )
@@ -37,6 +38,10 @@ class Synaptogram:
   def setReference ( self, refchans ):
     """Modifier to set reference channels. Default value is None."""
     self.refchannels = refchans
+
+  def setEM ( self, emchans ):
+    """Modifier to set EM channels. No reference drawn for EM channels. Default value is None."""
+    self.emchannels = emchans
 
   def setEnhance ( self, enhance ):
     """Modifier to set reference channels. Default value is None."""
@@ -61,6 +66,10 @@ class Synaptogram:
   def setFrameWidth ( self, sogframe ):
     """How many pixels in the frame between iamges"""
     self.sog_frame=sogframe
+
+  def setResolution ( self, resolution ):
+    """Choose a resolution, default is 0"""
+    self.resolution=resolution
 
   def construct ( self ):
 
@@ -98,8 +107,7 @@ class Synaptogram:
     refintensity = np.zeros((2*hwidth+1,2*hwidth+1,2*hwidth+1),dtype=np.uint8)
 
     # build the reference channel data
-    if self.refchannels != None:
-
+    if self.refchannels != []:
 
       # list of reference channels
       for refchanid in range(len(self.refchannels)):
@@ -111,8 +119,9 @@ class Synaptogram:
         except KeyError:
           raise Exception ("Reference channel %s not found" % ( refchan ))
 
+        print refdata
         if self.normalize2:
-          chmaxval = gchmaxval[refdata]
+          chmaxval = gchmaxval[refchan]
         else:
           chmaxval = np.max(refdata)
 
@@ -164,10 +173,15 @@ class Synaptogram:
           normdata = np.uint8(chandata[sl,:,:]/256)
 
         # OK, here we have normalized 8 bit data.  Add in the reference channel
-        # if the channel is brighter take the channel pixels
-        chansldata = np.where ( normdata>=refintensity[sl,:,:], normdata, 0 )
-        # otherwise take the reference pixels
-        refsldata = np.where ( refintensity[sl,:,:]>normdata, refimgdata[sl,:,:], 0 )
+        # if it's an EM channel, use no reference
+        if chan in self.emchannels:
+          chansldata = normdata
+          refsldata = np.zeros ( normdata.shape )
+        else: 
+          # if the channel is brighter take the channel pixels
+          chansldata = np.where ( normdata>=refintensity[sl,:,:], normdata, 0 )
+          # otherwise take the reference pixels
+          refsldata = np.where ( refintensity[sl,:,:]>normdata, refimgdata[sl,:,:], 0 )
 
         # generate the channel panel
         tmpimg = Image.frombuffer ( 'L',  (2*hwidth+1,2*hwidth+1), chansldata.flatten(), 'raw', 'L', 0, 1)
