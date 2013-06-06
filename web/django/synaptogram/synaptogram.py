@@ -22,24 +22,45 @@ class Synaptogram:
     self.channels = channels
     self.centroid = centroid
     
-    # Fixed parameters for now should be adjustable
+    # parameter defaults.  set be accessors.
     self.sog_width = 200
     self.sog_frame = 20
     self.width = 11
     self.normalize = True
-    self.normalization = 1.0
     self.normalize2 = False
     self.resolution = 0
     self.refchannels = None
-    self.enhance = 2.0
+    self.enhance = None
 
     [ self.db, self.proj, self.projdb ] = emcarest.loadDBProj ( self.token )
 
   def setReference ( self, refchans ):
     """Modifier to set reference channels. Default value is None."""
-
     self.refchannels = refchans
 
+  def setEnhance ( self, enhance ):
+    """Modifier to set reference channels. Default value is None."""
+    self.enhance = enhance
+
+  def setNormalize ( self ):
+    """Modifier to set reference channels. Default value is None."""
+    self.normalize=True
+
+  def setNormalize2 ( self ):
+    """Modifier to set reference channels. Default value is None."""
+    self.normalize2=True
+
+  def setWidth ( self, width ):
+    """How many pixels in the synaptogram data"""
+    self.width=width
+
+  def setTileWidth ( self, sogwidth ):
+    """How many pixels in the synaptogram panel"""
+    self.sog_width=sogwidth
+
+  def setFrameWidth ( self, sogframe ):
+    """How many pixels in the frame between iamges"""
+    self.sog_frame=sogframe
 
   def construct ( self ):
 
@@ -52,7 +73,7 @@ class Synaptogram:
     if self.normalize2:
       # is a form of normalization
       self.normalize = True
-      gchmaxval = getChannelMax(result.baseurl,self.token,self.channels,self.resolution,x,y,z)
+      gchmaxval = self.getChannelMax()
 
     # convert to cutout coordinates
     corner = [ x-hwidth, y-hwidth, z-hwidth ]
@@ -123,7 +144,7 @@ class Synaptogram:
 
       # select a normalization value for the chanel
       if self.normalize2:
-        chmaxval = gchmaxval[channel]
+        chmaxval = gchmaxval[chan]
       else:
         chmaxval = np.max(chandata)
 
@@ -163,33 +184,28 @@ class Synaptogram:
     """Accessor function"""
     return self.sog
 
-  def getChannelMax ( self, baseurl, token, channels, resolution, x,y,z ):
+  def getChannelMax ( self ):
     """Helper function to determine the maximum in biggish box around each centroid"""
 
-    cutout = '%s/%s,%s/%s,%s/%s,%s' % ( resolution, x-512,x+512, y-512, y+512, z-8, z+8 ) 
+    [x,y,z] = self.centroid
 
-    url = "http://%s/emca/%s/hdf5/%s/%s/" % (baseurl,token,channels,cutout)
+    xmin = max ( 0, x -256 )
+    ymin = max ( 0, y- 256 )
+    zmin = max ( 0, z-8 )
+    xmax = min ( x +256, self.proj.datasetcfg.imagesz[self.resolution][0])
+    ymax = min ( y+256, self.proj.datasetcfg.imagesz[self.resolution][1])
+    zmax = min ( z+8, self.proj.datasetcfg.slicerange[1] )
 
-    # Get data in question
-    try:
-      f = urllib2.urlopen ( url )
-    except urllib2.URLError, e:
-      print "Failed URL", url
-      print "Error %s" % (e) 
-      sys.exit(0)
+    # convert to cutout coordinates
+    corner = [ xmin, ymin, zmin ]
+    dim = [ xmax-xmin, ymax-ymin, zmax-zmin ] 
 
-    # create an in memory h5 file
-    tmpfile = tempfile.NamedTemporaryFile ( )
-    tmpfile.write ( f.read() )
-    tmpfile.tell()
-    h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
-
+    # get the data region for each channel 
     # dictionary that stores the maximum value per channel
     gchmaxval={}
-    channels = h5f.keys()
-    for channel in channels:
-      chgrp = h5f.get(channel)
-      gchmaxval[channel] = np.max(chgrp[:,:,:])
+    for chan in self.channels:
+      cuboid = self.db.cutout ( corner, dim, self.resolution, chan )
+      gchmaxval[chan] = np.max(cuboid.data)
 
     return gchmaxval
 

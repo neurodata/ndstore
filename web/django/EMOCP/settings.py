@@ -129,6 +129,7 @@ INSTALLED_APPS = (
     'emca',
     'overlay',
     'ocpcatmaid',
+    'synaptogram',
 )
 
 # A sample logging configuration. The only tangible logging
