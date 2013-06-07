@@ -231,11 +231,11 @@ def main():
 
   # Build the put URL
   if result.update:
-    url = "%s/emca/%s/update/" % ( result.baseurl, result.token)
+    url = "http://%s/emca/%s/update/" % ( result.baseurl, result.token)
   elif result.dataonly:
-    url = "%s/emca/%s/dataonly/" % ( result.baseurl, result.token)
+    url = "http://%s/emca/%s/dataonly/" % ( result.baseurl, result.token)
   else:
-    url = "%s/emca/%s/" % ( result.baseurl, result.token)
+    url = "http://%s/emca/%s/" % ( result.baseurl, result.token)
 
   if result.preserve:  
     url += 'preserve/'

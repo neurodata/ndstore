@@ -15,10 +15,8 @@ EM_BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".." ))
 EM_EMCA_PATH = os.path.join(EM_BASE_PATH, "emca" )
 sys.path += [ EM_EMCA_PATH ]
 
-#SITE_HOST = 'http://openconnecto.me'
-#SITE_HOST = 'http://localhost:8000'
-SITE_HOST = 'http://localhost'
-#SITE_HOST = 'https://openconnecto.me'
+SITE_HOST = 'localhost'
+#SITE_HOST = 'localhost:8000'
 
 import emcaproj
 
@@ -54,13 +52,13 @@ def readAnno ( params ):
   if params.voxels:
     url = "http://%s/emca/%s/%s/voxels/%s/" % (params.baseurl,params.token,params.annids, params.resolution)
   elif params.cutout != None:
-    url = "%s/emca/%s/%s/cutout/%s/" % (params.baseurl,params.token,params.annids, params.cutout)
+    url = "http://%s/emca/%s/%s/cutout/%s/" % (params.baseurl,params.token,params.annids, params.cutout)
   elif params.tightcutout: 
     url = "http://%s/emca/%s/%s/cutout/%s/" % (params.baseurl,params.token,params.annids, params.resolution)
   elif params.boundingbox: 
     url = "http://%s/emca/%s/%s/boundingbox/%s/" % (params.baseurl,params.token,params.annids, params.resolution)
   else:
-    url = "%s/emca/%s/%s/" % (params.baseurl,params.token,params.annids)
+    url = "http://%s/emca/%s/%s/" % (params.baseurl,params.token,params.annids)
 
   # Get annotation in question
   f = urllib2.urlopen ( url )
@@ -297,11 +295,11 @@ def writeAnno ( params ):
 
   # Build the put URL
   if params.update:
-    url = "%s/emca/%s/update/" % ( params.baseurl, params.token)
+    url = "http://%s/emca/%s/update/" % ( params.baseurl, params.token)
   elif params.dataonly:
-    url = "%s/emca/%s/dataonly/" % ( params.baseurl, params.token)
+    url = "http://%s/emca/%s/dataonly/" % ( params.baseurl, params.token)
   else:
-    url = "%s/emca/%s/" % ( params.baseurl, params.token)
+    url = "http://%s/emca/%s/" % ( params.baseurl, params.token)
 
   if params.preserve:  
     url += 'preserve/'
@@ -644,7 +642,7 @@ class TestRW:
         for i in range (1000,1050):
           voxlist.append ( [ i,j,k ] )
 
-    url = '%s/emca/%s/npvoxels/%s/%s/' % ( wp.baseurl, wp.token, int(retval), wp.resolution)
+    url = 'http://%s/emca/%s/npvoxels/%s/%s/' % ( wp.baseurl, wp.token, int(retval), wp.resolution)
 
     # Encode the voxelist an pickle
     fileobj = cStringIO.StringIO ()
@@ -664,7 +662,7 @@ class TestRW:
     annodata = np.zeros( [ 2, 50, 50 ] )
     annodata = annodata + int(retval)
 
-    url = '%s/emca/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( wp.baseurl, wp.token, wp.resolution, 200, 250, 200, 250, 200, 202 )
+    url = 'http://%s/emca/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( wp.baseurl, wp.token, wp.resolution, 200, 250, 200, 250, 200, 202 )
 
     # Encode the voxelist as a pickle
     fileobj = cStringIO.StringIO ()
