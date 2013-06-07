@@ -37,18 +37,18 @@ def main():
   if result.dataonly:
     url+='dataonly/'
   
-  print url
+ # print url
 
   try:
     req = urllib2.Request ( url, open(result.h5file).read() )
     response = urllib2.urlopen(req)
   except urllib2.URLError, e:
     print "Failed URL", url
-    print "Error %s" % (e.read()) 
+    print "Error %s" % (e) 
     sys.exit(0)
 
-  the_page = response.read()
-  print "Success with id %s" % the_page
+#  the_page = response.read()
+ # print "Success with id %s" % the_page
 
 if __name__ == "__main__":
   main()

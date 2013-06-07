@@ -10,7 +10,7 @@ import empaths
 import emcaproj
 import emcadb
 import dbconfig
-import chancube
+import imagecube
 import numpy as np
 
 
@@ -81,7 +81,7 @@ def main():
         key = zindex.XYZMorton ( [x,y,z] )
 
         # Create a channel cube
-        cube = chancube.ChanCube ( [xcubedim,ycubedim,zcubedim] )
+        cube = imagecube.ImageCube16 ( [xcubedim,ycubedim,zcubedim] )
 
         # data for this key
         cube.data[0:zmaxrel,0:ymaxrel,0:xmaxrel] = imarray[zmin:zmax,ymin:ymax,xmin:xmax]
@@ -89,14 +89,15 @@ def main():
         # compress the cube
         npz = cube.toNPZ ()
 
-
         # add the cube to the database
-        sql = "INSERT INTO " + proj.getTable(RESOLUTION) +  "(zindex, channel, cube) VALUES (%s, %s, %s)"
+        sql = "INSERT INTO " + proj.getTable(RESOLUTION) +  "(channel, zindex, cube) VALUES (%s, %s, %s)"
         print sql
         try:
-          cursor.execute ( sql, (key, result.channel, npz))
+          cursor.execute ( sql, (result.channel, key, npz))
         except MySQLdb.Error, e:
           raise ANNError ( "Error updating data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+  db.conn.commit()
 
 
 if __name__ == "__main__":

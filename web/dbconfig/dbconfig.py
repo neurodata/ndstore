@@ -28,7 +28,7 @@ class dbConfig:
     else:
       return False
 
-  #
+#
   #  Return the image size
   #
   def imageSize ( self, resolution ):
@@ -71,18 +71,30 @@ def switchDataset ( dataset ):
   elif dataset == 'will':
     import dbconfigwill
     return dbconfigwill.dbConfigWill()
+  elif dataset == 'map2':
+    import dbconfigmap2
+    return dbconfigmap2.dbConfigMap2()
   elif dataset == 'drosophila':
     import dbconfigdrosophila
     return dbconfigdrosophila.dbConfigDrosophila()
   elif dataset == 'kat11iso':
     import dbconfigkat11iso
     return dbconfigkat11iso.dbConfigKasthuri11Isotropic()
-  elif dataset == 'weiler':
-    import dbconfigweiler
-    return dbconfigweiler.dbConfigWeiler()
+  elif dataset == 'kdmsyn091207':
+    import dbconfigkdmsyn091207
+    return dbconfigkdmsyn091207.dbConfigKDMSYN091207()
+  elif dataset == 'kdmsyn120529':
+    import dbconfigkdmsyn120529
+    return dbconfigkdmsyn120529.dbConfigKDMSYN120529()
   elif dataset == 'autism':
     import dbconfigautism
     return dbconfigautism.dbConfigAutism()
+  elif dataset == 'map2':
+    import dbconfigmap2
+    return dbconfigmap2.dbConfigMap2()
+  elif dataset == 'bock7k':
+    import dbconfigbock7k
+    return dbconfigbock7k.dbConfigBock7k()
   else:
     # RBTODO make this a dbconfig exception
     raise DBConfigError ("Could not find dataset = %s" % dataset)

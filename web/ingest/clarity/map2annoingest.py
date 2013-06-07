@@ -15,17 +15,15 @@ import kanno_cy
 #  ingest the PNG files into the database
 #
 
-"""This file is super-customized for autism*.lif
-     """
+"""This file is super-customized for clarity data."""
 
 # Stuff we make take from a config or the command line in the future
-#  This is the size of amelio's data set
-xtilesz = 9218
-ytilesz = 3779
+xtilesz = 512
+ytilesz = 512
 _resolution = 0
 
 startslice = 0 
-endslice = 1015   
+endslice = 2023   
 batchsz = 16
 
 xoffset = 0
@@ -37,13 +35,15 @@ def main():
   parser.add_argument('baseurl', action="store", help='Base URL to of emca service no http://, e.g. openconnecto.me')
   parser.add_argument('token', action="store", help='Token for the annotation project.')
   parser.add_argument('path', action="store", help='Directory with annotation PNG files.')
+  parser.add_argument('annid', action="store",  type=int, help='ID for the annotation')
+  parser.add_argument('threshhold', action="store",  type=int, help='Minimum intensity (0.255) for annotation')
 
   result = parser.parse_args()
 
   # Get a list of the files in the directories
   for sl in range (startslice,endslice+1,batchsz):
 
-    newdata = np.zeros ( [ batchsz, ytilesz, xtilesz ], dtype=np.uint8 )
+    newdata = np.zeros ( [ batchsz, ytilesz, xtilesz ], dtype=np.uint32 )
    
     for b in range ( batchsz ):
 
@@ -54,7 +54,9 @@ def main():
         print "Opening filenm" + filenm
 
         imgdata = np.fromfile ( filenm, dtype=np.uint8 ).reshape([ytilesz,xtilesz])
-        newdata[b,:,:]  = imgdata
+        vec_func = np.vectorize ( lambda x: 0 if x < result.threshhold else result.annid )
+
+        newdata[b,:,:]  = vec_func ( imgdata )
 
         # the last z offset that we ingest, if the batch ends before batchsz
         endz = b

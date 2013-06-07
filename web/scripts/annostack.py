@@ -11,7 +11,7 @@ import emcadb
 import dbconfig
 import zindex
 
-from ann_cy import addData_cy
+from emca_cy import addData_cy
 
 """Construct an annotation hierarchy off of a completed annotation database."""
 
@@ -40,7 +40,6 @@ class AnnoStack:
 
   def buildStack ( self, startlevel ):
     """Build the hierarchy of annotations"""
-
     for  l in range ( startlevel, len(self.dbcfg.resolutions)-1 ):
 
       # Get the source database sizes
@@ -57,10 +56,8 @@ class AnnoStack:
       #  Round up the zlimit to the next larger
       zlimit = (((slices-1)/zcubedim+1)*zcubedim)/zcubedim 
 
-      # These constants work for all resolutions.  Bigger batches are harder.
-      #  They require logic about 
-      #  They also transfer entire blocks. 
-      # Create an output buffer
+      #  Choose constants that work for all resolutions.
+      #   recall that cube size changes from 128x128x16 to 64*64*64
       outdata = np.zeros ( [ zcubedim*4, ycubedim*2, xcubedim*2 ] )
 
       # We've written to this offset already
@@ -70,7 +67,8 @@ class AnnoStack:
       lastzindex = (zindex.XYZMorton([xlimit,ylimit,zlimit])/64+1)*64
 
       # Iterate over the cubes in morton order
-      for mortonidx in range(0, lastzindex, 64): 
+#      for mortonidx in range(256*192*128, lastzindex, 64): 
+      for mortonidx in range(1, lastzindex, 64): 
 
         print "Working on batch %s at %s" % (mortonidx, zindex.MortonXYZ(mortonidx))
         

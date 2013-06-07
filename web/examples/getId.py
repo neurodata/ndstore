@@ -30,7 +30,7 @@ def main():
   try:
     f = urllib2.urlopen ( url )
   except urllib2.URLError, e:
-    print "Failed URL %s.  Exception %s." % (url,e.read()) 
+    print "Failed URL %s.  Exception %s." % (url,e) 
     sys.exit(0)
 
   print "Here"

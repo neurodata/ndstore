@@ -23,11 +23,10 @@ import kanno_cy
 # Stuff we make take from a config or the command line in the future
 _xtilesz = 10748
 _ytilesz = 12896
-#  Haven't done from 0-1088 
-_startslice = 1200
-_endslice = 1200
-_prefix = 'ForAlyssa62812_export_s'
-_batchsz = 1
+_startslice = 0
+_endslice = 1849
+_prefix = 'combinedJose_15_s'
+_batchsz = 16 
 
 # Shape that we want to ingest into the database.
 #  This should be aligned to the database cube size to perform best.
@@ -82,9 +81,9 @@ def main():
               # check if there's anything to store
               if ( np.count_nonzero(data) != 0 ):
 
-                url = 'http://localhost:8000/annotate/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( result.token, result.resolution, x, min(xhigh,x+_xingestsz), y, min(yhigh,y+_yingestsz), z, min(zhigh,z+_zingestsz ))
+                url = 'http://localhost/emca/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( result.token, result.resolution, x, min(xhigh,x+_xingestsz), y, min(yhigh,y+_yingestsz), z, min(zhigh,z+_zingestsz ))
 
-                print url, data.shape, np.nonzero(data)
+                print url
 
                 # Encode the voxelist an pickle
                 fileobj = cStringIO.StringIO ()

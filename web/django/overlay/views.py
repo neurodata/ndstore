@@ -12,8 +12,6 @@ import emcaproj
 import emcarest
 import dbconfig
 
-from emcaerror import ANNError
-
 
 """Merge two cutouts one from a data set and one from an annotation database"""
 

@@ -75,7 +75,7 @@ def main():
       f = urllib2.urlopen ( url )
     except urllib2.URLError, e:
       print "Failed URL", url
-      print "Error %s" % (e.read()) 
+      print "Error %s" % (e) 
       sys.exit(0)
 
 
