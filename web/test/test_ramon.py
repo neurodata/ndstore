@@ -206,11 +206,12 @@ class TestRamon:
 
     # Check if it's an HTTPS conncetion
     import httplib
-    m = re.match('http(s?)://(.*)', SITE_HOST)
-    if m.group(1) == 's':
-      conn = httplib.HTTPSConnection ( "%s" % ( m.group(2)))
-    else:
-      conn = httplib.HTTPConnection ( "%s" % ( m.group(2)))
+#    m = re.match('http(s?)://(.*)', SITE_HOST)
+#    if m.group(1) == 's':
+#      conn = httplib.HTTPSConnection ( "%s" % ( m.group(2)))
+#    else:
+#      conn = httplib.HTTPConnection ( "%s" % ( m.group(2)))
+    conn = httplib.HTTPConnection ( SITE_HOST )
 
     conn.request ( 'DELETE', '/emca/%s/%s/' % ( 'unittest', putid3 ))
     resp = conn.getresponse()

@@ -551,13 +551,16 @@ class TestRW:
     # And delete
     import httplib
 
-    # Check if it's an HTTPS conncetion
-    m = re.match('http(s?)://(.*)', rp.baseurl)
-    durl = m.group(2)
-    if m.group(1) == 's':
-      conn = httplib.HTTPSConnection ( "%s" % ( durl ))
-    else:
-      conn = httplib.HTTPConnection ( "%s" % ( durl ))
+#    # Check if it's an HTTPS conncetion
+#    m = re.match('http(s?)://(.*)', rp.baseurl)
+#    durl = m.group(2)
+#    if m.group(1) == 's':
+#      conn = httplib.HTTPSConnection ( "%s" % ( durl ))
+#    else:
+#      conn = httplib.HTTPConnection ( "%s" % ( durl ))
+
+    print rp.baseurl
+    conn = httplib.HTTPConnection ( rp.baseurl )
 
     conn.request ( 'DELETE', '/emca/%s/%s/' % ( rp.token, rp.annids ))
     resp = conn.getresponse()
