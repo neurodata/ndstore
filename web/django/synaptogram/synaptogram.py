@@ -189,15 +189,15 @@ class Synaptogram:
         refimg.paste ( tmpimg, (0,0), tmpimg )
         bigtmpimg = refimg.resize ( (200,200), Image.ANTIALIAS )
 
+        # if enhance was chosen 
+        if self.enhance != None and chan not in self.emchannels:
+          enhancer = ImageEnhance.Brightness(bigtmpimg)
+          bigtmpimg = enhancer.enhance(self.enhance)
+
         self.sog.paste ( bigtmpimg, (sl*(self.sog_width+self.sog_frame)+self.sog_frame, chanidx*(self.sog_width+self.sog_frame)+self.sog_frame))
 
       # go on to the next channel
       chanidx += 1
-
-    # if enhance was chosen 
-    if self.enhance != None:
-      enhancer = ImageEnhance.Brightness(self.sog)
-      self.sog = enhancer.enhance(self.enhance)
 
     # at this point self.sog contains a synaptogram image
     return self.sog
