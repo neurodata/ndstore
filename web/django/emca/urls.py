@@ -13,6 +13,8 @@ urlpatterns = patterns('emca.views',
   url(r'(?P<webargs>^\w+/objects/[\w,/]*)$', 'getObjects'),
   # get project information
   url(r'(?P<webargs>^\w+/projinfo/[\w,/]*)$', 'projinfo'),
+  # get channel information
+  url(r'(?P<webargs>^\w+/chaninfo/[\w,/]*)$', 'chaninfo'),
   # get services
   url(r'(?P<webargs>^\w+/(xy|xz|yz|hdf5|npz|zip|id|ids|xyanno||xzanno|yzanno|xytiff|xztiff|yztiff)/[\w,/]+)$', 'getCutout'),
   # single field interfaces

@@ -47,6 +47,9 @@ def main():
     print "Error %s" % (e) 
     sys.exit(0)
 
+  print response.read()
+
+
 #  the_page = response.read()
  # print "Success with id %s" % the_page
 

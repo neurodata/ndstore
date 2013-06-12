@@ -99,3 +99,45 @@ def switchDataset ( dataset ):
     # RBTODO make this a dbconfig exception
     raise DBConfigError ("Could not find dataset = %s" % dataset)
 
+
+def buildConfig ( ximagesz, yimagesz, startslice, endslice, zoomlevels, zscale ):
+  """Construct a db configuration from the dataset parameters""" 
+
+  dbcfg = dbConfig() 
+
+  dbcfg.slicerange = [ startslice, endslice ]
+
+  dbcfg.resolutions = []
+  dbcfg.cubedim = {}
+  dbcfg.imagesz = {}
+  dbcfg.zscale = {}
+
+  for i in range (zoomlevels+1):
+    """Populate the dictionaries"""
+
+    # add this level to the resolutions
+    dbcfg.resolutions.append( i )
+
+    # set the zscale factor
+    dbcfg.zscale[i] = float(zscale)/(2**i);
+
+    # choose the cubedim as a function of the zscale
+    #  this may need to be changed.  
+    if dbcfg.zscale[i] >  0.5:
+      dbcfg.cubedim[i] = [128, 128, 16]
+    else: 
+      dbcfg.cubedim[i] = [64, 64, 64]
+
+    # Make an exception for bock11 data -- just an inconsistency in original ingest
+#    if dataset == "bock11" and i == 5:
+#      dbcfg.cubedim[i] = [128, 128, 16]
+
+    # set the image size
+    #  the scaled down image rounded up to the nearest cube
+    ximgsz = (ximagesz / 2**i) / dbcfg.cubedim[i][0] * dbcfg.cubedim[i][0]
+    yimgsz = (yimagesz / 2**i) / dbcfg.cubedim[i][0] * dbcfg.cubedim[i][0]
+    dbcfg.imagesz[i] = [ ximgsz, yimgsz ]
+
+  return dbcfg
+
+

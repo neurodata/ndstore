@@ -171,6 +171,20 @@ def projinfo (request, webargs):
     raise
 
 
+def chaninfo (request, webargs):
+  """Return channel information"""
+
+  try:  
+    return django.http.HttpResponse(emcarest.chanInfo(webargs), mimetype="text/html" )
+  except EMCAError, e:
+    return django.http.HttpResponseNotFound(e.value)
+  except MySQLdb.Error, e:
+    return django.http.HttpResponseNotFound(e)
+  except:
+    logger.exception("Unknown exception in chanInfo.")
+    raise
+
+
 def mcFalseColor (request, webargs):
   """Cutout of multiple channels with false color rendering"""
 

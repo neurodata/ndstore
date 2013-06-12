@@ -137,6 +137,7 @@ INSTALLED_APPS = (
     #RB 3/26 add applications
     'emca',
     'overlay',
+    'synaptogram',
     'ocpcatmaid',
     'registration',
 )

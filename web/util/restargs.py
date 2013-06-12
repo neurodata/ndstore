@@ -41,7 +41,7 @@ class BrainRestArgs:
   #
   #  Process cutout arguments
   #
-  def cutoutArgs ( self, imageargs, dbcfg ):
+  def cutoutArgs ( self, imageargs, datasetcfg ):
     """Process REST arguments for an cutout plane request"""
 
     # expecting an argument of the form /resolution/x1,x2/y1,y2/z1,z2/
@@ -73,14 +73,14 @@ class BrainRestArgs:
 
     # Check arguments for legal values
     try:
-      if not ( dbcfg.checkCube ( self._resolution, x1i, x2i, y1i, y2i, z1i, z2i )):
-        raise RESTArgsError ( "Illegal range. Image size:" +  str(dbcfg.imageSize( self._resolution )))
+      if not ( datasetcfg.checkCube ( self._resolution, x1i, x2i, y1i, y2i, z1i, z2i )):
+        raise RESTArgsError ( "Illegal range. Image size:" +  str(datasetcfg.imageSize( self._resolution )))
     except Exception, e:
       # RBTODO make this error better.  How to print good information about e?
       #  it only prints 3, not KeyError 3, whereas print e in the debugger gives good info
       raise RESTArgsError ( "Illegal arguments to cutout.  Check cube failed {}".format(e))
 
-    self._corner=[x1i,y1i,z1i-dbcfg.slicerange[0]]
+    self._corner=[x1i,y1i,z1i-datasetcfg.slicerange[0]]
     self._dim=[x2i-x1i,y2i-y1i,z2i-z1i ]
 
     # list of identifiers to keep
@@ -97,7 +97,7 @@ class BrainRestArgs:
   #  **Image return a readable png object
   #    where ** is xy, xz, yz
   #
-  def xyArgs ( self, imageargs, dbcfg ):
+  def xyArgs ( self, imageargs, datasetcfg ):
     """Process REST arguments for an xy plane request.
        You must have set the resolution prior to calling this function."""
 
@@ -129,14 +129,14 @@ class BrainRestArgs:
     # Check arguments for legal values
     # Check arguments for legal values
     try:
-      if not ( dbcfg.checkCube ( self._resolution, x1i, x2i, y1i, y2i, z, z+1 )):
-        raise RESTArgsError ( "Illegal range. Image size:" +  str(dbcfg.imageSize( self._resolution )))
+      if not ( datasetcfg.checkCube ( self._resolution, x1i, x2i, y1i, y2i, z, z+1 )):
+        raise RESTArgsError ( "Illegal range. Image size:" +  str(datasetcfg.imageSize( self._resolution )))
     except Exception, e:
       # RBTODO make this error better.  How to print good information about e?
       #  it only prints 3, not KeyError 3, whereas print e in the debugger gives good info
       raise RESTArgsError ( "Illegal arguments to cutout.  Check cube failed {}".format(e))
 
-    self._corner=[x1i,y1i,z-dbcfg.slicerange[0]]
+    self._corner=[x1i,y1i,z-datasetcfg.slicerange[0]]
     self._dim=[x2i-x1i,y2i-y1i,1]
 
     # list of identifiers to keep
@@ -147,7 +147,7 @@ class BrainRestArgs:
       self._filterlist = None
 
     
-  def xzArgs ( self, imageargs, dbcfg ):
+  def xzArgs ( self, imageargs, datasetcfg ):
     """Process REST arguments for an xz plane request
        You must have set the resolution prior to calling this function."""
 
@@ -178,15 +178,15 @@ class BrainRestArgs:
 
     # Check arguments for legal values
     try:
-      if not dbcfg.checkCube ( self._resolution, x1i, x2i, y, y+1, z1i, z2i )\
-         or y >= dbcfg.imagesz[self._resolution][1]:
-        raise RESTArgsError ( "Illegal range. Image size:" +  str(dbcfg.imageSize( self._resolution )))
+      if not datasetcfg.checkCube ( self._resolution, x1i, x2i, y, y+1, z1i, z2i )\
+         or y >= datasetcfg.imagesz[self._resolution][1]:
+        raise RESTArgsError ( "Illegal range. Image size:" +  str(datasetcfg.imageSize( self._resolution )))
     except Exception, e:
       # RBTODO make this error better.  How to print good information about e?
       #  it only prints 3, not KeyError 3, whereas print e in the debugger gives good info
       raise RESTArgsError ( "Illegal arguments to cutout.  Check cube failed {}".format(e))
 
-    self._corner=[x1i,y,z1i-dbcfg.slicerange[0]]
+    self._corner=[x1i,y,z1i-datasetcfg.slicerange[0]]
     self._dim=[x2i-x1i,1,z2i-z1i ]
 
     # list of identifiers to keep
@@ -197,7 +197,7 @@ class BrainRestArgs:
       self._filterlist = None
 
 
-  def yzArgs ( self, imageargs, dbcfg ):
+  def yzArgs ( self, imageargs, datasetcfg ):
     """Process REST arguments for an yz plane request
        You must have set the resolution prior to calling this function."""
 
@@ -228,15 +228,15 @@ class BrainRestArgs:
 
     # Check arguments for legal values
     try:
-      if not dbcfg.checkCube ( self._resolution, x, x+1, y1i, y2i, z1i, z2i  )\
-         or  x >= dbcfg.imagesz[self._resolution][0]:
-        raise RESTArgsError ( "Illegal range. Image size:" +  str(dbcfg.imageSize( self._resolution )))
+      if not datasetcfg.checkCube ( self._resolution, x, x+1, y1i, y2i, z1i, z2i  )\
+         or  x >= datasetcfg.imagesz[self._resolution][0]:
+        raise RESTArgsError ( "Illegal range. Image size:" +  str(datasetcfg.imageSize( self._resolution )))
     except Exception, e:
       # RBTODO make this error better.  How to print good information about e?
       #  it only prints 3, not KeyError 3, whereas print e in the debugger gives good info
       raise RESTArgsError ( "Illegal arguments to cutout.  Check cube failed {}".format(e))
 
-    self._corner=[x,y1i,z1i-dbcfg.slicerange[0]]
+    self._corner=[x,y1i,z1i-datasetcfg.slicerange[0]]
     self._dim=[1,y2i-y1i,z2i-z1i ]
 
     # list of identifiers to keep
@@ -254,7 +254,7 @@ class BrainRestArgs:
 #
 #  Process cutout arguments
 #
-def voxel ( imageargs, dbcfg ):
+def voxel ( imageargs, datasetcfg ):
   """Process REST arguments for a single point"""
 
   try:
@@ -276,8 +276,8 @@ def voxel ( imageargs, dbcfg ):
   z = int(zstr)
 
   # Check arguments for legal values
-  if not ( dbcfg.checkCube ( resolution, x, x, y, y, z, z )):
-    raise RESTArgsError ( "Illegal range. Image size:" +  str(dbcfg.imageSize( self._resolution )))
+  if not ( datasetcfg.checkCube ( resolution, x, x, y, y, z, z )):
+    raise RESTArgsError ( "Illegal range. Image size:" +  str(datasetcfg.imageSize( self._resolution )))
 
   return (resolution, [ x,y,z ])
 
@@ -301,7 +301,7 @@ def conflictOption  ( imageargs ):
 #  Process annotation id for queries                                             
 #                                                                               \
                                                                                  
-def annotationId ( webargs, dbcfg ):
+def annotationId ( webargs, datasetcfg ):
   """Process REST arguments for a single"""
 
   rangeargs = webargs.split('/')
