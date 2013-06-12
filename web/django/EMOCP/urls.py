@@ -9,4 +9,6 @@ urlpatterns = patterns('',
     url(r'^overlay/', include('overlay.urls')),
     url(r'^ocpcatmaid/', include('ocpcatmaid.urls')),
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^accounts/', include('registration.backends.default.urls')),
+    url(r'^ocpuser/', include('ocpuser.urls')),
 )

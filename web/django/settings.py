@@ -1,4 +1,4 @@
-# Django settings for EMOCP project.
+2# Django settings for EMOCP project.
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -17,16 +17,8 @@ DATABASES = {
         'PASSWORD': '88brain88',                  # Not used with sqlite3.
         'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
         'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
-    },
-    'emcaprojects': {
-        'ENGINE': 'django.db.backends.mysql', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.                                               
-        'NAME': 'emcaprojects',                      # Or path to database file if using sqlite3.                                                            
-        'USER': 'brain',                      # Not used with sqlite3.       
-        'PASSWORD': '88brain88',                  # Not used with sqlite3.   
-        'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.                                                     
-        'PORT': '',                      # Set to empty string for default. Not used with sqlite3.                                                       
     }
-}
+    }
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -81,6 +73,7 @@ STATICFILES_DIRS = (
     # Put strings here, like "/home/html/static" or "C:/www/django/static".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
+   "/usr/local/lib/python2.7/dist-packages/django/contrib/admin/static",
 )
 
 # List of finder classes that know how to find static files in
@@ -135,12 +128,18 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
     #RB 3/26 add applications
+    'registration',
     'emca',
     'overlay',
-    'ocpcatmaid',
-    'registration',
 )
-ACCOUNT_ACTIVATION_DAYS = 2
+
+ACCOUNT_ACTIVATION_DAYS=1
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'priya.manavalan@gmail.com'
+EMAIL_HOST_PASSWORD = 'GuchusMachu1981'
+
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
 # the site admins on every HTTP 500 error when DEBUG=False.
@@ -189,7 +188,7 @@ LOGGING = {
             'level':'DEBUG',
             'class':'logging.handlers.RotatingFileHandler',
             'filename': "/var/log/emca" + "/emca.log",
-#            'filename': "/tmp" + "/emca.log",
+#            'filename': SITE_ROOT + "/../../log/emca.log",
             'maxBytes': 500000,
             'backupCount': 7,
             'formatter': 'standard',

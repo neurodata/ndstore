@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+
+  {% block title %}
+    Welcome 
+  {% endblock title %}
+
+
+{% block content %}
+<form method="post" action="">
+<div id="container" style="width:800px">
+
+  <div id="header" style="background-color:#4682B4;">
+    <h1 style="margin-bottom:0;">PROJECTS</h1></div>
+
+  <div id="content" style="background-color:#F5F6CE;height:80px;width:800px;float:left;">
+    <div id="filtermenu"style="background-color:#F5F6CE; height:80px;width:400px;float:left;">
+      Filter By:
+      <select name="filteroption">
+	<option value="token">Token</option>
+	<option value="project">Project</option>
+	<option value="datatype">Datatype</option>
+	<option value="dataset">Dataset</option>
+      </select>
+      
+      <textarea name="filtervalue" cols="20" rows="1">
+      </textarea>
+      <br>
+      <input type="submit" name ="filter" value="Filter Projects" />
+    </div>
+   
+
+
+</div>
+
+</form>
+
+
+
+{% for row in projs %}
+<form method="post" action="">
+  <input type="hidden" name="token" value={{row.0}}>
+  <div id="tableheader" style="background-color:#EEEEEE;height:50px;width:800px;float:left;">
+    <div id="pname" style ="float:left;">
+      <a name="projname"></a><h3>Project Name: {{row.3}}</h3>
+    </div>
+    <div id="poptions" style ="float:right;">
+      <input id="update" type="submit" name="update" value="Update Project">       
+      <input id="delete" type="submit" name="delete" value="Delete Project">       
+      <input id="info" type="submit" name="info" value="Get Project Info">       
+      <input id="backup" type="submit" name="backup" value="Backup Project">       
+  
+    </div>
+  </div>
+  <table border="1">
+    <tr>
+      <th>Token</th>
+      <th>Datatype</th>
+      <th>Dataset</th>
+      <th>Readonly</th>
+      <th>Exceptions</th>
+    </tr>
+
+    <tr>
+      <td style="width: 15%;">{{ row.0 }}</td>
+      <td>{{ row.4 }}</td>
+      <td>{{ row.5 }}</td>
+      <td>{{ row.8 }}</td>
+      <td>{{ row.9 }}</td>
+    </tr>
+    
+    <tr>
+
+      <td colspan=5 align ="center"> <input id="DownloadToken" type="submit" name="downloadtoken" value="Download Token"></td>
+
+    </tr>
+  </table>
+</form>
+
+
+
+<br>
+<br>
+{% endfor %}
+
+{% endblock content %}
+
+

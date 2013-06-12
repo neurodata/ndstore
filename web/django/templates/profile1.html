@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+
+  {% block title %}
+    Welcome 
+  {% endblock title %}
+
+
+{% block content %}
+<div id="container" style="width:800px">
+<form method="post" action="">
+  <div id="header" style="background-color:#4682B4;">
+    <h1 style="margin-bottom:0;">PROJECTS</h1></div>
+
+  <div id="content" style="background-color:#EEEEEE;height:80px;width:800px;float:left;">
+    <div id="filtermenu"style="background-color:#EEEEEE; height:80px;width:400px;float:left;">
+      Filter By:
+      <select name="filteroption">
+	<option value="token">Token</option>
+	<option value="project">Project</option>
+	<option value="datatype">Datatype</option>
+	<option value="dataset">Dataset</option>
+      </select>
+      
+      <textarea name="filtervalue" cols="20" rows="1">
+      </textarea>
+      <br>
+      <input type="submit" name ="filter" value="Filter Projects" />
+    </div>
+    <div id="projmenu"style="background-color:#EEEEEE; height:80px;width:400px;float:left;">
+      <input type="submit" name ="UpdateProject" value="Update Project" />
+      <input type="submit" name ="DeleteProject" value="Delete Project" />
+    </div>
+</form>
+
+</div>
+
+
+
+
+
+{% for row in projs %}
+<a name="projname"></a><h3>Project Name: {{row.3}}</h3>
+
+<table>
+<tr><td>
+<table border="1">
+<tr>
+<th>Token</th><td>{{ row.0 }}</td>
+</tr>
+<tr>
+<th>Openid</th><td>{{ row.1 }}</td>
+</tr>
+<tr>
+<th>DataType</th><td>{{ row.4 }}</td>
+</tr>
+<tr>
+<th>Dataset</th><td>{{ row.5 }}</td>
+</tr>
+<tr>
+<th>Readonly</th><td>{{ row.8 }}</td>
+</tr>
+<tr>
+<th>Exceptions</th><td>{{ row.9 }}</td>
+</tr>
+<tr>
+<td colspan=2 align ="center"> <input id="DownloadToken" type="submit" name="downloadtoken" value="Download Token"></td>
+</tr>
+</table>
+</td>
+<td>
+
+ <form name="f2" action="#" >
+   <input id="Update" type="submit" name="edit" value="Update">
+ </form>
+ <form name="f1" action="#" >
+   <input id="Delete" type="submit" name="edit" value="Delete Project">
+ </form>
+</td>
+
+</tr>
+
+</table>
+<br>
+<br>
+{% endfor %}
+
+{% endblock content %}
+
+

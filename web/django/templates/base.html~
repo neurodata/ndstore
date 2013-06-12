@@ -1,0 +1,52 @@
+{% load i18n %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+    <link rel="stylesheet" href="/style.css" />
+    <title>{% block title %}User test{% endblock %}</title>
+</head>
+
+<body>
+<a href="http://s1061.beta.photobucket.com/user/dmhembe/media/MR-connect\
+ome/openconnectome_brain_logo_zpsd1e2d1fd.png.html" target="_blank"><img src="http://i1061.photobucket.com/albums/t473/dmhembe/MR-connectome/openconnectome_brain_logo_zpsd1e2d1fd.png" border="0" alt="openconnectine_brain_logo photo openconnectome_brain_logo_zpsd1e2d1fd.png"/></a>
+
+
+<div id="header" align="right">
+       {% block header %}
+       
+
+        {% if user.is_authenticated %}
+        {% trans "Logged in" %}: {{ user.username }} 
+        (<a href="{% url auth_logout %}">{% trans "Log out" %}</a> | 
+        <a href="{% url auth_password_change %}">{% trans "Change password" %}</a>)
+	<!-- Navigation pane -->
+	<div class="container" align ="left">
+	  <div class="navigation">
+            <a href="/EM/ocpuser/profile/">Home</a>
+            <a href="/EM/ocpuser/createproject/">Create Project</a>
+            <a href="/EM/ocpuser/backup/">Backup database</a>
+	     
+	  </div>
+	</div>
+
+        {% else %}
+        <a href="{% url auth_login %}">{% trans "Log in" %}</a>
+        {% endif %}
+        <hr />
+        {% endblock %}
+    </div>
+
+    <div id="content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <div id="footer">
+        {% block footer %}
+        <hr />
+        {% endblock %}
+    </div>
+</body>
+
+</html>

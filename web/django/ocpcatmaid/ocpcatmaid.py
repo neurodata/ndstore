@@ -5,7 +5,7 @@ import zlib
 import cStringIO
 from PIL import Image
 import pylibmc
-import posix_ipc 
+#import posix_ipc 
 import time
 
 import empaths

@@ -293,3 +293,58 @@ class EMCAProjectsDB:
     """Return the appropriate Index table for the specified resolution"""
     return "idx"+str(resolution)
 
+  #                                                                     
+  # Load the emca databse information based on openid 
+  #                                                                     
+  def getProjects ( self, openid ):
+    """Load the annotation database information based on the openid"""
+    # Lookup the information for the database project based on the openid                                                                 
+    sql = "SELECT * from %s where openid = \'%s\'" % (emcaprivate.table, openid)                                                            
+    try:
+      cursor = self.conn.cursor()
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      logger.error ("Could not query emca projects database %d: %s. sql\
+=%s" % (e.args[0], e.args[1], sql))
+      raise EMCAError ("Could not query emca projects database %d: %s. \
+sql=%s" % (e.args[0], e.args[1], sql))
+
+    # get the project information                                       
+    row = cursor.fetchall()
+    return row
+ 
+
+  #
+  # Load the emca databse information based on openid
+  #
+  def getFilteredProjects ( self, filterby, filtervalue ):
+    """Load the annotation database information based on the openid"""
+    # Lookup the information for the database project based on the openid
+    #url = "SELECT * from %s where " + filterby
+    sql = "SELECT * from %s where %s = \'%s\'" % (emcaprivate.table, filterby, filtervalue)
+    print sql
+    try:
+      cursor = self.conn.cursor()
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+       logger.error ("FAILED TO FILTER")
+       raise
+    # get the project information                                                                                                          
+    row = cursor.fetchall()
+    return row
+
+  #
+  # Update the token for a project
+  #
+  def updateProject ( self, curtoken ,newtoken):
+    """Load the annotation database information based on the openid"""
+    sql = "UPDATE %s SET token = \'%s\' where token = \'%s\'" % (emcaprivate.table, newtoken, curtoken)
+    print sql
+    try:
+      cursor = self.conn.cursor()
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+       logger.error ("FAILED TO UPDATE")
+       raise
+    # get the project information                                                                                                          
+    self.conn.commit()
