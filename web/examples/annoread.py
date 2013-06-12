@@ -24,7 +24,7 @@ def main():
   parser.add_argument('token', action="store")
   parser.add_argument('annids', action="store", help='Annotation IDs (comman sepearted list  to extract')
   parser.add_argument('--voxels', action='store_true', help='Return data as a list of voxels.')
-  parser.add_argument('--resolution', action="store", help='Resolution at which you want the voxels.  Defaults to the annotation database resolution.', default=None)
+  parser.add_argument('--resolution', type=int, action="store", help='Resolution at which you want the voxels.  Defaults to 0.', default=0)
   parser.add_argument('--cutout', action="store", help='Cutout arguments of the form resolution/x1,x2/y1,y2/z1,z2.', default=None)
   parser.add_argument('--output', action="store", help='File name to output the HDF5 file.', default=None)
   parser.add_argument('--tightcutout', action='store_true', help='Return a cutout as a bounding box. Requires a resolution')
@@ -33,22 +33,13 @@ def main():
   result = parser.parse_args()
 
   if result.voxels:
-    if result.resolution == None:
-      url = "http://%s/emca/%s/%s/voxels/" % (result.baseurl,result.token,result.annids)
-    else:
-      url = "http://%s/emca/%s/%s/voxels/%s/" % (result.baseurl,result.token,result.annids, result.resolution)
+    url = "http://%s/emca/%s/%s/voxels/%s/" % (result.baseurl,result.token,result.annids, result.resolution)
   elif result.cutout != None:
     url = "http://%s/emca/%s/%s/cutout/%s/" % (result.baseurl,result.token,result.annids, result.cutout)
   elif result.tightcutout: 
-    if result.resolution == None:
-      url = "http://%s/emca/%s/%s/cutout/" % (result.baseurl,result.token,result.annids)
-    else:
-      url = "http://%s/emca/%s/%s/cutout/%s/" % (result.baseurl,result.token,result.annids, result.resolution)
+    url = "http://%s/emca/%s/%s/cutout/%s/" % (result.baseurl,result.token,result.annids, result.resolution)
   elif result.boundingbox: 
-    if result.resolution == None:
-      url = "http://%s/emca/%s/%s/boundingbox/" % (result.baseurl,result.token,result.annids)
-    else:
-      url = "http://%s/emca/%s/%s/boundingbox/%s/" % (result.baseurl,result.token,result.annids, result.resolution)
+    url = "http://%s/emca/%s/%s/boundingbox/%s/" % (result.baseurl,result.token,result.annids, result.resolution)
   else:
     url = "http://%s/emca/%s/%s/" % (result.baseurl,result.token,result.annids)
 

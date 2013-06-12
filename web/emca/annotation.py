@@ -64,10 +64,10 @@ class Annotation:
     elif field == 'author':
       return self.author
     elif self.kvpairs.get(field):
-      return self.kvpairs['field']
+      return self.kvpairs[field]
     else:
-      logger.warning ( "getField: No such field %" % (field))
-      raise EMCAError ( "getField: No such field %" % (field))
+      logger.warning ( "getField: No such field %s" % (field))
+      raise EMCAError ( "getField: No such field %s" % (field))
 
   def setField ( self, field, value ):
     """Mutator by field name.  Then need to store the field."""
@@ -76,9 +76,14 @@ class Annotation:
       self.status = value
     elif field == 'confidence':
       self.confidence = value
-    else:
-      logger.warning ( "setField: No such or can't update field %" % (field))
-      raise EMCAError ( "setField: No such or can't update field %" % (field))
+    elif field == 'author':
+      self.author = value
+    # if we don't recognize the field, store it as a kv pair.
+    else: 
+      self.kvpairs[field]=value
+#    else:
+#     logger.warning ( "setField: No such or can't update field %s" % (field))
+#     raise EMCAError ( "setField: No such or can't update field %s" % (field))
 
   def store ( self, annodb, annotype=ANNO_ANNOTATION ):
     """Store the annotation to the annotations database"""
@@ -263,9 +268,9 @@ class AnnSynapse (Annotation):
     elif field == 'synapse_type':
       return self.synapse_type
     elif field == 'seeds':
-      return self.seeds
+      return ','.join(str(x) for x in self.seeds)
     elif field == 'segments':
-      return self.segments
+      return ','.join(str(x) for x in self.segments)
     else:
       return Annotation.getField(self,field)
 
@@ -276,6 +281,8 @@ class AnnSynapse (Annotation):
       self.weight = value
     elif field == 'synapse_type':
       self.synapse_type = value
+    elif field == 'seeds':
+      self.seeds = [int(x) for x in value.split(',')] 
     else:
       Annotation.setField ( self, field, value )
 
@@ -427,7 +434,7 @@ class AnnSeed (Annotation):
     if field == 'parent':
       return self.parent
     elif field == 'position':
-      return self.position
+      return ','.join(str(x) for x in self.position)
     elif field == 'cubelocation':
       return self.cubelocation
     elif field == 'source':
@@ -441,7 +448,9 @@ class AnnSeed (Annotation):
     if field == 'parent':
       self.parent = value
     elif field == 'position':
-      self.position = value
+      self.position = [int(x) for x in value.split(',')] 
+      if len(self.position) != 3:
+        raise EMCAError ("Illegal arguments to set field position: %s" % value)
     elif field == 'cubelocation':
       self.cubelocation = value
     elif field == 'source':
@@ -477,7 +486,7 @@ class AnnSeed (Annotation):
 
     cursor = annodb.conn.cursor()
 
-    if self.position == [] or self.position==[None,None,None]:
+    if self.position == [] or np.all(self.position==[None,None,None]):
       storepos = [ 'NULL', 'NULL', 'NULL' ]
     else:
       storepos = self.position
@@ -570,9 +579,9 @@ class AnnSegment (Annotation):
     elif field == 'neuron':
       return self.neuron
     elif field == 'synapses':
-      return self.synapses
+      return ','.join(str(x) for x in self.synapses)
     elif field == 'organelles':
-      return self.organelles
+      return ','.join(str(x) for x in self.organelles)
     else:
       return Annotation.getField(self,field)
 
@@ -585,6 +594,10 @@ class AnnSegment (Annotation):
       self.parentseed = value
     elif field == 'neuron':
       self.neuron = value
+    elif field == 'synapses':
+      self.synapses = [int(x) for x in value.split(',')] 
+    elif field == 'organelles':
+      self.organelles = [int(x) for x in value.split(',')] 
     else:
       Annotation.setField ( self, field, value )
 
@@ -722,13 +735,15 @@ class AnnNeuron (Annotation):
     """Accessor by field name"""
 
     if field == 'segments':
-      return self.segments
+      return ','.join(str(x) for x in self.segments)
     else:
       return Annotation.getField(self,field)
 
   def setField ( self, field, value ):
     """Mutator by field name.  Then need to store the field."""
     
+    if field == 'segments':
+      self.segments = [int(x) for x in value.split(',')] 
     Annotation.setField ( self, field, value )
 
 
@@ -816,11 +831,11 @@ class AnnOrganelle (Annotation):
     if field == 'organelleclass':
       return self.organelleclass
     elif field == 'centroid':
-      return self.centroid
+      return ','.join(str(x) for x in self.centroid)
     elif field == 'parentseed':
       return self.parentseed
     elif field == 'seeds':
-      return self.seeds
+      return ','.join(str(x) for x in self.seeds)
     else:
       return Annotation.getField(self,field)
 
@@ -829,6 +844,10 @@ class AnnOrganelle (Annotation):
     
     if field == 'organelleclass':
       self.organelleclass = value
+    elif field == 'centroid':
+      self.centroid = [int(x) for x in value.split(',')] 
+      if len(self.centroid) != 3:
+        raise EMCAError ("Illegal arguments to set field centroid: %s" % value)
     elif field == 'parentseed':
       self.parentseed = value
     else:
@@ -839,12 +858,10 @@ class AnnOrganelle (Annotation):
 
     cursor = annodb.conn.cursor()
 
-    # TODO need a.any or a.all (also fix other None,None,None
-    if self.centroid == None or self.centroid[0]==None or self.centroid[1]==None or self.centroid[2]==None:
+    if self.centroid == None or np.all(self.centroid==[None,None,None]):
       storecentroid = [ 'NULL', 'NULL', 'NULL' ]
     else:
       storecentroid = self.centroid
-    storecentroid = [ 'NULL', 'NULL', 'NULL' ]
 
     sql = "INSERT INTO %s VALUES ( %s, %s, %s, %s, %s, %s )"\
             % ( anno_dbtables['organelle'], self.annid, self.organelleclass, self.parentseed,
@@ -872,7 +889,7 @@ class AnnOrganelle (Annotation):
 
     cursor = annodb.conn.cursor()
 
-    if self.centroid == None or self.centroid[0]==None or self.centroid[1]==None or self.centroid[2]==None:
+    if self.centroid == None or np.all(self.centroid==[None,None,None]):
       storecentroid = [ 'NULL', 'NULL', 'NULL' ]
     else:
       storecentroid = self.centroid

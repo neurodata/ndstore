@@ -580,7 +580,7 @@ def selectPost ( webargs, dbcfg, proj, postdata ):
       db.rollback()
       raise
     except Exception, e:
-      logger.exception ("POST transaction rollback. Unknown error. %s" % (e))
+      logger.exception ("POST transaction rollback. %s" % (e))
       db.rollback()
       raise
 
@@ -751,6 +751,7 @@ AR_VOXELS = 1
 AR_CUTOUT = 2
 AR_TIGHTCUTOUT = 3
 AR_BOUNDINGBOX = 4
+#AR_CUBOIDS = 5
 
 
 def getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution=None, corner=None, dim=None ): 
@@ -814,6 +815,17 @@ def getAnnoById ( annoid, h5f, db, dbcfg, dataoption, resolution=None, corner=No
 
     bbcorner, bbdim = db.getBoundingBox ( annoid, resolution )
     h5anno.addBoundingBox ( resolution, bbcorner, bbdim )
+
+  # return an HDF5 file that contains the minimal amount of data. 
+  # cuboids that contain data
+#  elif dataoption=+AR_CUBOIDS:
+#
+#  # FIX me here
+#    cuboidlist = db.getCuboids( annoid, resolution )
+#    for cuboid in cuboidlist ():
+      
+    
+
 
 
 def getAnnotation ( webargs ):
@@ -1114,7 +1126,6 @@ def putAnnotation ( webargs, postdata ):
 
             # Put into the database
             db.putAnnotation ( anno, options )
-            retvals.append(anno.annid)
 
           #  Get the resolution if it's specified
           h5resolution = idgrp.get('RESOLUTION')
@@ -1183,6 +1194,10 @@ def putAnnotation ( webargs, postdata ):
           # Commit if there is no error
           db.commit()
 
+          # only add the identifier if you commit
+          if not 'dataonly' in options and not 'reduce' in options:
+            retvals.append(anno.annid)
+
           # Here with no error is successful
           done = True
 
@@ -1197,7 +1212,7 @@ def putAnnotation ( webargs, postdata ):
           db.rollback()
           raise
         except Exception, e:
-          logger.exception ("Put transaction rollback. Unknown error. %s" % (e))
+          logger.exception ("Put transaction rollback. %s" % (e))
           db.rollback()
           raise
 
@@ -1310,7 +1325,7 @@ def deleteAnnotation ( webargs ):
         db.rollback()
         raise
       except Exception, e:
-        logger.exception ("Put transaction rollback. Unknown error. %s" % (e))
+        logger.exception ("Put transaction rollback. %s" % (e))
         db.rollback()
         raise
 

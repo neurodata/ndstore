@@ -144,6 +144,8 @@ class EMCADB:
         logger.error ( "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         raise
 
+      self.commit()
+
     finally:
       pass
       sql = "UNLOCK TABLES" 
@@ -161,13 +163,23 @@ class EMCADB:
   def setID ( self, annoid ):
     """Set a user specified identifier"""
 
-    # try the insert, get ane exception if it doesn't work
-    sql = "INSERT INTO " + str(self.annoproj.getIDsTbl()) + " VALUES ( " + str(annoid) + " ) "
+    # LOCK the table to prevent race conditions on the ID
+    sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getIDsTbl() )
     try:
+
+      # try the insert, get ane exception if it doesn't work
+      sql = "INSERT INTO " + str(self.annoproj.getIDsTbl()) + " VALUES ( " + str(annoid) + " ) "
+      try:
+        self.cursor.execute ( sql )
+      except MySQLdb.Error, e:
+        logger.warning ( "Failed to set identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+        raise
+
+      self.commit()
+
+    finally:
+      sql = "UNLOCK TABLES" 
       self.cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ( "Failed to set identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise
 
     self.commit()
     return annoid
@@ -331,6 +343,21 @@ class EMCADB:
     else: 
       fobj = cStringIO.StringIO ( zlib.decompress(row[0]) )
       return np.load (fobj)
+
+  #
+  # deleteExceptions
+  #
+  def deleteExceptions ( self, key, resolution, entityid ):
+    """Delete a list of exceptions for this cuboid"""
+
+    table = 'exc'+str(resolution)
+
+    sql = "DELETE FROM " + table + " WHERE zindex = %s AND id = %s" 
+    try:
+      self.cursor.execute ( sql, (key, entityid))
+    except MySQLdb.Error, e:
+      logger.error ( "Error deleting exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise
 
   #
   # updateExceptions
@@ -555,19 +582,24 @@ class EMCADB:
             cube.overwrite ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
           elif conflictopt == 'P':
             cube.preserve ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
-          elif conflictopt == 'E' and self.EXCEPT_FLAG:
-            exdata = cube.exception ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
-            for exid in np.unique ( exdata ):
-              if exid != 0:
-                # get the offsets
-                exoffsets = np.nonzero ( exdata==exid )
-                # assemble into 3-tuples zyx->xyz
-                exceptions = np.array ( zip(exoffsets[2], exoffsets[1], exoffsets[0]), dtype=np.uint32 )
-                # update the exceptions
-                self.updateExceptions ( key, resolution, exid, exceptions )
-                # add to the index
-                index_dict[exid].add(key)
+          elif conflictopt == 'E': 
+            if self.EXCEPT_FLAG:
+              exdata = cube.exception ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
+              for exid in np.unique ( exdata ):
+                if exid != 0:
+                  # get the offsets
+                  exoffsets = np.nonzero ( exdata==exid )
+                  # assemble into 3-tuples zyx->xyz
+                  exceptions = np.array ( zip(exoffsets[2], exoffsets[1], exoffsets[0]), dtype=np.uint32 )
+                  # update the exceptions
+                  self.updateExceptions ( key, resolution, exid, exceptions )
+                  # add to the index
+                  index_dict[exid].add(key)
+            else:
+              logger.error("No exceptions for this project.")
+              raise EMCAError ( "No exceptions for this project.")
           else:
+            logger.error ( "Unsupported conflict option %s" % conflictopt )
             raise EMCAError ( "Unsupported conflict option %s" % conflictopt )
 
           self.putCube ( key, resolution, cube)
@@ -583,6 +615,7 @@ class EMCADB:
           if 0 in index_dict:
             del(index_dict[0])
 
+    logger.warning ( "update indexes %s" % index_dict )
     # Update all indexes
     self.annoIdx.updateIndexDense(index_dict,resolution)
 
@@ -872,6 +905,19 @@ class EMCADB:
 
     return cube
 
+
+  #
+  # getLocations -- return the list of locations associated with an identifier
+  #
+  def getCuboids ( self, entityid, res ):
+
+    zidxs = self.annoIdx.getIndex(entityid,resolution)
+    for zidx in zidxs:
+      cuboids.append ( zindex.MortonXYZ ( zidx ) )
+
+    return cuboids
+
+
   #
   # getLocations -- return the list of locations associated with an identifier
   #
@@ -983,15 +1029,19 @@ class EMCADB:
 
     for res in resolutions:
     
-    #get the cubes that contain the annotation
+      #get the cubes that contain the annotation
       zidxs = self.annoIdx.getIndex(annoid,res,True)
       
-    #Delete annotation data
+      # RBTODO when we delete we do not promote exceptions to image data
+      #Delete annotation data
       for key in zidxs:
         cube = self.getCube ( key, res, True )
         vec_func = np.vectorize ( lambda x: 0 if x == annoid else x )
         cube.data = vec_func ( cube.data )
         self.putCube ( key, res, cube)
+        # remove the expcetions
+        if self.EXCEPT_FLAG:
+          self.deleteExceptions ( key, res, annoid )
       
     # delete Index
     self.annoIdx.deleteIndex(annoid,resolutions)
@@ -1018,6 +1068,7 @@ class EMCADB:
     # start of the SQL clause
     sql = "SELECT annoid FROM " + annotation.anno_dbtables['annotation'] 
     clause = ''
+    limitclause = ""
 
     # iterate over the predicates
     it = iter(args)
@@ -1027,48 +1078,59 @@ class EMCADB:
       # build a query for all the predicates
       while ( field ):
 
-        if clause == '':
-          clause += " WHERE "
-        else:  
-          clause += ' AND '
-
-        if field in eqfields:
+        # provide a limit clause for iterating through the database
+        if field == "limit":
           val = it.next()
-          if not re.match('^\w+$',val): 
-            logger.warning ( "For field %s. Illegal value:%s" % (field,val) )
-            raise EMCAError ( "For field %s. Illegal value:%s" % (field,val) )
+          if not re.match('^\d+$',val): 
+            logger.warning ( "Limit needs an integer. Illegal value:%s" % (field,val) )
+            raise EMCAError ( "Limit needs an integer. Illegal value:%s" % (field,val) )
 
-          clause += '%s = %s' % ( field, val )
+          limitclause = " LIMIT %s " % (val)
 
-        elif field in compfields:
-
-          opstr = it.next()
-          if opstr == 'lt':
-            op = ' < '
-          elif opstr == 'gt':
-            op = ' > '
-          else:
-            logger.warning ( "Not a comparison operator: %s" % (opstr) )
-            raise EMCAError ( "Not a comparison operator: %s" % (opstr) )
-
-          val = it.next()
-          if not re.match('^[\d\.]+$',val): 
-            logger.warning ( "For field %s. Illegal value:%s" % (field,val) )
-            raise EMCAError ( "For field %s. Illegal value:%s" % (field,val) )
-          clause += '%s %s %s' % ( field, op, val )
-
-        #RBTODO key/value fields?
-
+        # all other clauses
         else:
-          raise EMCAError ( "Illegal field in URL: %s" % (field) )
+          if clause == '':
+            clause += " WHERE "
+          else:  
+            clause += ' AND '
+
+          if field in eqfields:
+            val = it.next()
+            if not re.match('^\w+$',val): 
+              logger.warning ( "For field %s. Illegal value:%s" % (field,val) )
+              raise EMCAError ( "For field %s. Illegal value:%s" % (field,val) )
+
+            clause += '%s = %s' % ( field, val )
+
+          elif field in compfields:
+
+            opstr = it.next()
+            if opstr == 'lt':
+              op = ' < '
+            elif opstr == 'gt':
+              op = ' > '
+            else:
+              logger.warning ( "Not a comparison operator: %s" % (opstr) )
+              raise EMCAError ( "Not a comparison operator: %s" % (opstr) )
+
+            val = it.next()
+            if not re.match('^[\d\.]+$',val): 
+              logger.warning ( "For field %s. Illegal value:%s" % (field,val) )
+              raise EMCAError ( "For field %s. Illegal value:%s" % (field,val) )
+            clause += '%s %s %s' % ( field, op, val )
+
+
+          #RBTODO key/value fields?
+
+          else:
+            raise EMCAError ( "Illegal field in URL: %s" % (field) )
 
         field = it.next()
 
     except StopIteration:
       pass
 
-    sql += clause + ';'
-    print sql;
+    sql += clause + limitclause + ';'
 
     try:
       self.cursor.execute ( sql )

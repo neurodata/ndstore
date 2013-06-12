@@ -20,6 +20,6 @@ class dbConfigWill ( dbconfig.dbConfig ):
   imagesz = { 0: [ 65536, 65536 ] }
 
   # Resize factor to eliminate distortion
-  zscale = { 5: 1.0 }
+  zscale = { 0: 1.0 }
 
 

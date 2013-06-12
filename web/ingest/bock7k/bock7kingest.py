@@ -15,17 +15,15 @@ import kanno_cy
 #  ingest the PNG files into the database
 #
 
-"""This file is super-customized for autism*.lif
-     """
+"""This file is super-customized for Davi Bock's reregistered data."""
 
 # Stuff we make take from a config or the command line in the future
-#  This is the size of amelio's data set
-xtilesz = 9218
-ytilesz = 3779
+ximagesz = 7198
+yimagesz = 7352
 _resolution = 0
 
 startslice = 0 
-endslice = 1015   
+endslice = 61   
 batchsz = 16
 
 xoffset = 0
@@ -33,7 +31,7 @@ yoffset = 0
 
 def main():
 
-  parser = argparse.ArgumentParser(description='Ingest the autism dataset annotations.')
+  parser = argparse.ArgumentParser(description='Ingest the Bock reregistered data.')
   parser.add_argument('baseurl', action="store", help='Base URL to of emca service no http://, e.g. openconnecto.me')
   parser.add_argument('token', action="store", help='Token for the annotation project.')
   parser.add_argument('path', action="store", help='Directory with annotation PNG files.')
@@ -43,7 +41,7 @@ def main():
   # Get a list of the files in the directories
   for sl in range (startslice,endslice+1,batchsz):
 
-    newdata = np.zeros ( [ batchsz, ytilesz, xtilesz ], dtype=np.uint8 )
+    newdata = np.zeros ( [ batchsz, yimagesz, ximagesz ], dtype=np.uint8 )
    
     for b in range ( batchsz ):
 
@@ -53,7 +51,7 @@ def main():
         filenm = result.path + '/' + '{:0>4}'.format(sl+b) + '.raw'
         print "Opening filenm" + filenm
 
-        imgdata = np.fromfile ( filenm, dtype=np.uint8 ).reshape([ytilesz,xtilesz])
+        imgdata = np.fromfile ( filenm, dtype=np.uint8 ).reshape([yimagesz,ximagesz])
         newdata[b,:,:]  = imgdata
 
         # the last z offset that we ingest, if the batch ends before batchsz
@@ -62,7 +60,7 @@ def main():
 
     # Now we have a 1024x1024x16 z-aligned cube.  
     #   Send it to the database.
-    url = 'http://%s/emca/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( result.baseurl, result.token, _resolution, xoffset, xoffset+xtilesz, yoffset, yoffset+ytilesz, sl, sl+endz+1)
+    url = 'http://%s/emca/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( result.baseurl, result.token, _resolution, xoffset, xoffset+ximagesz, yoffset, yoffset+yimagesz, sl, sl+endz+1)
 
 # DBG send tiny data
 #    url = 'http://%s/emca/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( result.baseurl, result.token, _resolution, 0,2,0,2,0,1 )

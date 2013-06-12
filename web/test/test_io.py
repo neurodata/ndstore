@@ -2,6 +2,7 @@ import urllib2
 import cStringIO
 import sys
 import os
+import re
 import tempfile
 import h5py
 import random 
@@ -14,9 +15,8 @@ EM_BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".." ))
 EM_EMCA_PATH = os.path.join(EM_BASE_PATH, "emca" )
 sys.path += [ EM_EMCA_PATH ]
 
-#SITE_HOST = 'openconnecto.me'
-#SITE_HOST = 'localhost:8000'
 SITE_HOST = 'localhost'
+#SITE_HOST = 'localhost:8000'
 
 import emcaproj
 
@@ -550,7 +550,18 @@ class TestRW:
 
     # And delete
     import httplib
-    conn = httplib.HTTPConnection ( "%s" % ( rp.baseurl ))
+
+#    # Check if it's an HTTPS conncetion
+#    m = re.match('http(s?)://(.*)', rp.baseurl)
+#    durl = m.group(2)
+#    if m.group(1) == 's':
+#      conn = httplib.HTTPSConnection ( "%s" % ( durl ))
+#    else:
+#      conn = httplib.HTTPConnection ( "%s" % ( durl ))
+
+    print rp.baseurl
+    conn = httplib.HTTPConnection ( rp.baseurl )
+
     conn.request ( 'DELETE', '/emca/%s/%s/' % ( rp.token, rp.annids ))
     resp = conn.getresponse()
     content=resp.read()

@@ -8,12 +8,14 @@ import cStringIO
 import collections
 import zlib
 import re
+import tempfile
+import h5py
 
 import empaths
 
 import random
 import annotation
-import anndb
+import emcadb
 import h5ann
 
 from pprint import pprint
@@ -26,7 +28,7 @@ from pprint import pprint
 """Read a vast .txt file and create RAMON objects for the segments."""
 
 
-EXCEPTIONS = [0, 2146, 2208, 2216, 2218 ]
+EXCEPTIONS = [0]
 
 def storeSegment ( baseurl, fields, token ):
   """Build a segment and upload it to the database"""
@@ -49,13 +51,19 @@ def storeSegment ( baseurl, fields, token ):
 
   pprint(vars(ann))
 
-  h5anno = h5ann.AnnotationtoH5 ( ann )
+  # Make the HDF5 file
+  # Create an in-memory HDF5 file
+  tmpfile = tempfile.NamedTemporaryFile()
+  h5f = h5py.File ( tmpfile.name )
+  h5anno = h5ann.AnnotationtoH5 ( ann, h5f )
+  h5f.close()
 
-  url = "http://%s/annotate/%s/" % ( baseurl, token)
+  url = "http://%s/emca/%s/" % ( baseurl, token)
   print url
 
   try:
-    req = urllib2.Request ( url, h5anno.fileReader()) 
+    tmpfile.seek(0)
+    req = urllib2.Request ( url, tmpfile.read() ) 
     response = urllib2.urlopen(req)
   except urllib2.URLError, e:
     print "Failed URL", url
@@ -85,7 +93,7 @@ def main():
       continue
 
     fields = line.split ( " ", 40  )
-    
+
     # Found an identifier (there are blank lines)
     if re.match ( "\d+", fields[0] ):
       storeSegment ( result.baseurl, fields, result.token )

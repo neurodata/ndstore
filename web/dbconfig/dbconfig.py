@@ -92,6 +92,9 @@ def switchDataset ( dataset ):
   elif dataset == 'map2':
     import dbconfigmap2
     return dbconfigmap2.dbConfigMap2()
+  elif dataset == 'bock7k':
+    import dbconfigbock7k
+    return dbconfigbock7k.dbConfigBock7k()
   else:
     # RBTODO make this a dbconfig exception
     raise DBConfigError ("Could not find dataset = %s" % dataset)
