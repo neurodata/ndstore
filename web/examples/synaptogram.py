@@ -13,7 +13,6 @@ from PIL import ImageOps
 sog_width = 200
 sog_frame = 20
 
-#TODO broken with a reference channel
 # TODO make the getChannelMax robust to locations
 
 
@@ -106,15 +105,15 @@ def main():
   # create a white image as the background
   sog = Image.new("L", ((hwidth*2+1)*(sog_width+sog_frame)+sog_frame,len(channels)*(sog_width+sog_frame)+sog_frame),(255)).convert('RGB')
 
+  # array of reference images and intensities
+  refimgdata = np.zeros((2*hwidth+1,2*hwidth+1,2*hwidth+1),dtype=np.uint32)
+  refintensity = np.zeros((2*hwidth+1,2*hwidth+1,2*hwidth+1),dtype=np.uint8)
+
   # build the reference channel data
   if result.reference != None:
 
     # list of reference channels
     refchannels = result.reference.split(',')
-
-    # array of reference images and intensities
-    refimgdata = np.zeros((2*hwidth+1,2*hwidth+1,2*hwidth+1),dtype=np.uint32)
-    refintensity = np.zeros((2*hwidth+1,2*hwidth+1,2*hwidth+1),dtype=np.uint8)
 
     for refchanid in range(len(refchannels)):
 
@@ -176,7 +175,7 @@ def main():
       refdata = np.where ( refintensity[sl,:,:]>normdata, refimgdata[sl,:,:], 0 )
 
       # generate the channel panel
-      tmpimg = Image.frombuffer ( 'L',  (2*hwidth+1,2*hwidth+1), normdata.flatten(), 'raw', 'L', 0, 1)
+      tmpimg = Image.frombuffer ( 'L',  (2*hwidth+1,2*hwidth+1), chandata.flatten(), 'raw', 'L', 0, 1)
       refimg = Image.frombuffer ( 'RGBA',  (2*hwidth+1,2*hwidth+1), np.uint32(refdata), 'raw', 'RGBA', 0, 1)
       refimg.paste ( tmpimg, (0,0), tmpimg )
       bigtmpimg = refimg.resize ( (200,200), Image.ANTIALIAS )
