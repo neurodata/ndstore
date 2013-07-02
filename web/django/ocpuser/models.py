@@ -7,7 +7,7 @@ class ocpProject ( models.Model):
     token  =  models. CharField(max_length=200)
     #openid  =  models. CharField(max_length=200,default=User, editable=False)
 #    openid  =   models.OneToOneField(User)
-    host  =  models. CharField(max_length=200)
+    description  =  models. CharField(max_length=4096)
     project  =  models. CharField(max_length=200)
     dataset  =  models. CharField(max_length=200)
 

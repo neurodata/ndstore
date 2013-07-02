@@ -49,8 +49,9 @@ def h5DatasetInfo ( dataset, h5f ):
 
 
 def h5Info ( proj, db, h5f ):
-   """wrapper for the parts"""
+  """wrapper for the parts"""
 
-   h5ProjInfo ( proj, h5f )
-   h5DatasetInfo ( proj.datasetcfg, h5f ) 
-   h5ChannelsInfo ( db, h5f )
+  h5ProjInfo ( proj, h5f )
+  h5DatasetInfo ( proj.datasetcfg, h5f ) 
+  if proj.getDBType() == emcaproj.CHANNELS_16bit or proj.getDBType() == emcaproj.CHANNELS_8bit:
+    h5ChannelsInfo ( db, h5f )

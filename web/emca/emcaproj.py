@@ -99,8 +99,8 @@ class EMCADataset:
         self.cubedim[i] = [64, 64, 64]
 
       # Make an exception for bock11 data -- just an inconsistency in original ingest
-  #    if dataset == "bock11" and i == 5:
-  #      dbcfg.cubedim[i] = [128, 128, 16]
+      if ximagesz == 135424 and i == 5:
+        self.cubedim[i] = [128, 128, 16]
 
       # set the image size
       #  the scaled down image rounded up to the nearest cube
@@ -401,11 +401,17 @@ class EMCAProjectsDB:
   #
   # Load the emca databse information based on openid
   #
-  def getFilteredProjects ( self, filterby, filtervalue ):
+  def getFilteredProjects ( self, openid, filterby, filtervalue ):
     """Load the annotation database information based on the openid"""
     # Lookup the information for the database project based on the openid
     #url = "SELECT * from %s where " + filterby
-    sql = "SELECT * from %s where %s = \'%s\'" % (emcaprivate.table, filterby, filtervalue)
+    #sql = "SELECT * from %s where %s = \'%s\'" % (emcaprivate.table, filterby, filtervalue)
+    token_desc = emcaprivate.token_description;
+    proj_tbl = emcaprivate.projects;
+    if (filterby == ""):
+      sql = "SELECT * from %s LEFT JOIN %s on %s.token = %s.token where %s.openid = \'%s\' ORDER BY project" % (emcaprivate.projects,token_desc,proj_tbl,token_desc,proj_tbl,openid)
+    else:
+      sql = "SELECT * from %s LEFT JOIN %s on %s.token = %s.token where %s.openid = \'%s\' and %s.%s = \'%s\' ORDER BY project" % (emcaprivate.projects,token_desc,proj_tbl,token_desc, proj_tbl,openid, proj_tbl,filterby, filtervalue.strip())
     print sql
     try:
       cursor = self.conn.cursor()
@@ -413,16 +419,64 @@ class EMCAProjectsDB:
     except MySQLdb.Error, e:
        logger.error ("FAILED TO FILTER")
        raise
-    # get the project information                                                                                                          
+    # get the project information
+   
     row = cursor.fetchall()
     return row
+
+#*******************************************************************************
+  #
+  # Load the emca databse information based on openid and filter options
+  #
+  def getFilteredProjs ( self, openid, filterby, filtervalue,dataset ):
+    """Load the annotation database information based on the openid"""
+    # Lookup the information for the database project based on the openid
+    token_desc = emcaprivate.token_description;
+    proj_tbl = emcaprivate.projects;
+    if (filterby == ""):
+      sql = "SELECT * from %s LEFT JOIN %s on %s.token = %s.token where %s.openid = \'%s\' and %s.dataset = \'%s\'" % (emcaprivate.projects,token_desc,proj_tbl,token_desc,proj_tbl,openid,proj_tbl,dataset)
+    else:
+      sql = "SELECT * from %s LEFT JOIN %s on %s.token = %s.token where %s.openid = \'%s\' and %s.%s = \'%s\' and %s.dataset =\'%s\'" % (emcaprivate.projects,token_desc,proj_tbl,token_desc, proj_tbl,openid, proj_tbl,filterby, filtervalue.strip(),proj_tbl,dataset)
+    print sql
+    try:
+      cursor = self.conn.cursor()
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+       logger.error ("FAILED TO FILTER")
+       raise
+    # get the project information
+
+    row = cursor.fetchall()
+    return row
+
+  def getDatabases ( self, openid):
+    """Load the annotation database information based on the openid"""
+    # Lookup the information for the database project based on the openid
+    
+    token_desc = emcaprivate.token_description;
+    proj_tbl = emcaprivate.projects;
+
+    sql = "SELECT distinct(dataset) from %s where openid = \'%s\'"  % (emcaprivate.projects,openid)
+       
+    try:
+      cursor = self.conn.cursor()
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+       logger.error ("FAILED TO FILTER")
+       raise
+    # get the project information
+
+    row = cursor.fetchall()
+    return row
+   
+#******************************************************************************
 
   #
   # Update the token for a project
   #
   def updateProject ( self, curtoken ,newtoken):
     """Load the annotation database information based on the openid"""
-    sql = "UPDATE %s SET token = \'%s\' where token = \'%s\'" % (emcaprivate.table, newtoken, curtoken)
+    sql = "UPDATE %s SET token = \'%s\' where token = \'%s\'" % (emcaprivate.projects, newtoken, curtoken)
     print sql
     try:
       cursor = self.conn.cursor()
@@ -433,3 +487,50 @@ class EMCAProjectsDB:
     # get the project information                                                                                                          
     self.conn.commit()
 
+    #
+    # Add token descriptiton for new projects
+    #
+  def insertTokenDescription ( self, token ,desc):
+    """Add a token description for a new project"""
+   # sql = "UPDATE %s SET token = \'%s\' where token = \'%s\'" % (emcaprivate.projects, newtoken, curtoken)
+    sql = "INSERT INTO %s (token,description) VALUES (\'%s\',\'%s\')" % (emcaprivate.token_description, token, desc)
+    print sql
+    try:
+      cursor = self.conn.cursor()
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      logger.error ("FAILED TO INSERT NEW TOKEN DESCRIPTION")
+      raise
+    # get the project information
+    self.conn.commit()
+
+    #
+    # Update token descriptiton a project
+    #
+  def updateTokenDescription ( self, token ,description):
+    """Update token description for a project"""
+    sql = "UPDATE %s SET description = \'%s\' where token = \'%s\'" % (emcaprivate.token_description, description, token)
+    print sql
+    try:
+      cursor = self.conn.cursor()
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      logger.error ("FAILED TO UPDATE TOKEN DESCRIPTION")
+      raise
+    self.conn.commit()
+
+    #
+    # Delete row from token_description table
+    # Used with delete project
+    #
+  def deleteTokenDescription ( self, token):
+    """Delete entry from token description table"""
+    sql = "DELETE FROM  %s where token = \'%s\'" % (emcaprivate.token_description, token)
+    print sql
+    try:
+      cursor = self.conn.cursor()
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      logger.error ("FAILED TO DELETE TOKEN DESCRIPTION")
+      raise
+    self.conn.commit()

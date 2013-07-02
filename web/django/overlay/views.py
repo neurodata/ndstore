@@ -22,7 +22,7 @@ def overlayCutout (request, webargs):
 
   # Get the project and dataset
   projdb = emcaproj.EMCAProjectsDB()
-  proj = projdb.getProj ( token )
+  proj = projdb.loadProject ( token )
 
   dataurl = request.build_absolute_uri( '%s/emca/%s/%s' % ( proj.getDataURL(), proj.getDataset(), cutout ))
 
@@ -82,7 +82,7 @@ def catmaid (request, webargs):
 
     # Get the project and dataset
     projdb = emcaproj.EMCAProjectsDB()
-    proj = projdb.getProj ( token )
+    proj = projdb.loadProject ( token )
 
     annimg = emcarest.emcacatmaid(webargs)
 

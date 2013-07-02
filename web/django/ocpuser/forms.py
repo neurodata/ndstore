@@ -28,6 +28,7 @@ class CreateProjectForm(ModelForm):
 class UpdateProjectForm(forms.Form):
     currentToken = forms.CharField(label=(u' Current Token'), widget = forms.TextInput(attrs={'readonly':'readonly'}))
     newToken = forms.CharField(label=(u' New Token'))
+    description = forms.CharField(label=(u' Description'))
 #    host = forms.CharField(label=(u'Host'))
 #    project = forms.CharField(label=(u'Project'))
 #    dataset = forms.CharField(label=(u'Dataset'))
