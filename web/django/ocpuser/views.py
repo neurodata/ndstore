@@ -51,24 +51,28 @@ def profile(request):
       #DELETE PROJECT WITH SPECIFIED TOKEN
       pd = emcaproj.EMCAProjectsDB()
       openid = request.user.username
-      token = (request.POST.get('token')).strip()
+      token = (request.POST.get('roptions')).strip()
+      #token = (request.POST.get('token')).strip()
       pd.deleteEMCADB(token)
      # pd.deleteTokenDescription(token)
       return redirect(profile)
     elif 'downloadtoken' in request.POST:
       #DOWNLOAD TOKEN FILE
-      token = (request.POST.get('token')).strip()
+#      token = (request.POST.get('token')).strip()
+      token = (request.POST.get('roptions')).strip()
       print token
       response = HttpResponse(token,content_type='text/html')
       response['Content-Disposition'] = 'attachment; filename="emca.token"'
       return response
     elif 'info' in request.POST:
       #GET PROJECT INFO -----------TODO
-      token = (request.POST.get('token')).strip()+"/projinfo/test"
+      token = (request.POST.get('roptions')).strip()
+      #token = (request.POST.get('token')).strip()+"/projinfo/test"
       return HttpResponse(emcarest.projInfo(token), mimetype="product/hdf5" )
     elif 'update' in request.POST:
       #UPDATE PROJECT TOKEN -- FOLOWUP
-      token = (request.POST.get('token')).strip()
+      #token = (request.POST.get('token')).strip()
+      token = (request.POST.get('roptions')).strip()
       print token
       request.session["token"] = token
       return redirect(updateproject)
@@ -81,7 +85,8 @@ def profile(request):
       #subprocess.call('whoami')
       # Get the database information
       pd = emcaproj.EMCAProjectsDB()
-      token = (request.POST.get('token')).strip()
+      token = (request.POST.get('roptions')).strip()
+#      token = (request.POST.get('token')).strip()
       proj= pd.loadProject(token)
       db=proj.getDBName()
 

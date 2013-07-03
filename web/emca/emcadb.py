@@ -616,7 +616,6 @@ class EMCADB:
           if 0 in index_dict:
             del(index_dict[0])
 
-    logger.warning ( "update indexes %s" % index_dict )
     # Update all indexes
     self.annoIdx.updateIndexDense(index_dict,resolution)
 

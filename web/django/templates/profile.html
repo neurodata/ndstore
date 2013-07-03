@@ -32,9 +32,14 @@ Welcome
 
 
  </form>
+ <form method="post" action="">
+<div id="poptions">
+  <input id="DownloadToken" type="submit" name="downloadtoken" value="Download Token">
+  <input id="update" type="submit" name="update" value="Update Project">
+  <input id="delete" type="submit" name="delete" value="Delete Project">
+  <input id="backup" type="submit" name="backup" value="Backup Project">
 
-
-
+</div>
 
 
 {% for key, value in databases %}
@@ -49,6 +54,7 @@ Welcome
 <table border="1">
     
 	<tr>
+	  <th></th>
 	  <th>Token</th>
 	  <th>Datatype</th>
 	  <th>Project</th>
@@ -63,13 +69,18 @@ Welcome
     
    {% for proj in value %}
        {% for field in proj %}
- 
-   <form method="post" action="">
-     <input type="hidden" name="token" value={{field.0}}>
+    
 
          <tr>
+	   <td><input type="radio" name="roptions" value={{field.0}}></td>
              <td style="width: 15%;">{{ field.0 }}</td>
-	     <td>{{ field.4 }}</td>
+	     {% if field.4 == 1 %}
+                  <td>Image</td>
+	     {% else %}
+                  <td>Annotation</td>
+             {% endif %}
+
+	     
 	     <td>{{ field.3 }}</td>
 	     {% if field.8 == 1 %}
 	          <td>No</td>
@@ -83,11 +94,9 @@ Welcome
                   <td>Yes</td>
              {% endif %}
 
-             <td>{{ field.10 }}</td>
-	     <td colspan=1 align ="center"> <input id="DownloadToken" type="submit" name="downloadtoken" value="Download Token"></td>
-	     <td colspan=1 align ="center"><input id="update" type="submit" name="update" value="Update Project">
-	     <td colspan=1 align ="center"> <input id="delete" type="submit" name="delete" value="Delete Project">
-	     <td colspan=1 align ="center"> <input id="backup" type="submit" name="backup" value="Backup Project">
+             <td colspan=50>{{ field.10 }}</td>
+
+
 	 </tr>
    </form>
      
