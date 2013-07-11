@@ -1,2 +1,2 @@
-#site='localhost'
-site='localhost:8000'
+site='localhost'
+#site='localhost:8000'
