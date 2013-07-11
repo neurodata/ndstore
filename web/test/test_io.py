@@ -69,7 +69,7 @@ def readAnno ( params ):
   # Read into a temporary file
   tmpfile = tempfile.NamedTemporaryFile ( )
   tmpfile.write ( f.read() )
-  tmpfile.tell()
+  tmpfile.seek(0)
   h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
 
   return h5f
