@@ -11,7 +11,6 @@ import re
 import empaths
 import emcaproj
 import emcarest
-import dbconfig
 import synaptogram
 
 
