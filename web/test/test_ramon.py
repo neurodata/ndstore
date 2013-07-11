@@ -17,8 +17,8 @@ EM_BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".." ))
 EM_EMCA_PATH = os.path.join(EM_BASE_PATH, "emca" )
 sys.path += [ EM_EMCA_PATH ]
 
-SITE_HOST = 'localhost'
-#SITE_HOST = 'localhost:8000'
+import site_to_test
+SITE_HOST = site_to_test.site
 
 import emcaproj
 
@@ -76,7 +76,7 @@ class TestRamon:
     f = urllib2.urlopen ( url )
     retfile = tempfile.NamedTemporaryFile ( )
     retfile.write ( f.read() )
-    retfile.tell()
+    retfile.seek(0)
     h5ret = h5py.File ( retfile.name, driver='core', backing_store=False )
 
     idgrpret = h5ret.get(str(putid1))
@@ -126,7 +126,7 @@ class TestRamon:
     f = urllib2.urlopen ( url )
     retfile = tempfile.NamedTemporaryFile ( )
     retfile.write ( f.read() )
-    retfile.tell()
+    retfile.seek(0)
     h5ret = h5py.File ( retfile.name, driver='core', backing_store=False )
 
     idgrpret = h5ret.get(str(putid2))
@@ -185,7 +185,7 @@ class TestRamon:
     f = urllib2.urlopen ( url )
     retfile = tempfile.NamedTemporaryFile ( )
     retfile.write ( f.read() )
-    retfile.tell()
+    retfile.seek(0)
     h5ret = h5py.File ( tmpfile.name, driver='core', backing_store=False )
 
     idgrpret = h5ret.get(str(putid3))
@@ -265,7 +265,7 @@ class TestRamon:
 #    f = urllib2.urlopen ( url )
 #    retfile = tempfile.NamedTemporaryFile ( )
 #    retfile.write ( f.read() )
-#    retfile.tell()
+#    retfile.seek(0)
 #    h5ret = h5py.File ( tmpfile.name, driver='core', backing_store=False )
 #
 #    mdgrpret = idgrpret['METADATA']
@@ -393,7 +393,8 @@ class TestRamon:
     """Extract annotation id from the HDF5 file"""
     tmpfile = tempfile.NamedTemporaryFile ( )
     tmpfile.write ( f.read() )
-    tmpfile.tell()
+#    tmpfile.tell()
+    tmpfile.seek(0)
     h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
     keys = h5f.keys()
     tmpfile.close()

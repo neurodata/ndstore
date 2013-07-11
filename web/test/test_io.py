@@ -18,8 +18,8 @@ EM_BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".." ))
 EM_EMCA_PATH = os.path.join(EM_BASE_PATH, "emca" )
 sys.path += [ EM_EMCA_PATH ]
 
-SITE_HOST = 'localhost'
-#SITE_HOST = 'localhost:8000'
+import site_to_test
+SITE_HOST = site_to_test.site
 
 import emcaproj
 
@@ -69,7 +69,7 @@ def readAnno ( params ):
   # Read into a temporary file
   tmpfile = tempfile.NamedTemporaryFile ( )
   tmpfile.write ( f.read() )
-  tmpfile.tell()
+  tmpfile.seek(0)
   h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
 
   return h5f

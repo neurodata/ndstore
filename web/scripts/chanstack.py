@@ -12,7 +12,6 @@ import empaths
 import emcaproj
 import emcachannel
 import emcadb
-import dbconfig
 import zindex
 
 """Construct an image hierarchy up from a given resolution"""

@@ -11,7 +11,6 @@ import MySQLdb
 import empaths
 import emcaproj
 import emcadb
-import dbconfig
 import zindex
 
 """Construct an image hierarchy up from a given resolution"""
@@ -23,26 +22,25 @@ class ImgStack:
     """Load the database and project"""
 
     projdb = emcaproj.EMCAProjectsDB()
-    self.proj = projdb.getProj ( token )
-    self.dbcfg = dbconfig.switchDataset ( self.proj.getDataset() )
+    self.proj = projdb.loadProject ( token )
 
     # Bind the annotation database
-    self.imgDB = emcadb.EMCADB ( self.dbcfg, self.proj )
+    self.imgDB = emcadb.EMCADB ( self.proj )
 
 
   def buildStack ( self, startlevel ):
     """Build the hierarchy of images"""
 
-    for  l in range ( startlevel, len(self.dbcfg.resolutions) ):
+    for  l in range ( startlevel, len(self.proj.datasetcfg.resolutions) ):
 
       # Get the source database sizes
-      [ximagesz, yimagesz] = self.dbcfg.imagesz [ l ]
-      [xcubedim, ycubedim, zcubedim] = self.dbcfg.cubedim [ l ]
+      [ximagesz, yimagesz] = self.proj.datasetcfg.imagesz [ l ]
+      [xcubedim, ycubedim, zcubedim] = self.proj.datasetcfg.cubedim [ l ]
 
       biggercubedim = [xcubedim*2,ycubedim*2,zcubedim]
 
       # Get the slices
-      [ startslice, endslice ] = self.dbcfg.slicerange
+      [ startslice, endslice ] = self.proj.datasetcfg.slicerange
       slices = endslice - startslice + 1
 
       # Set the limits for iteration on the number of cubes in each dimension
@@ -85,7 +83,7 @@ class ImgStack:
             
             # put in the database
             sql = "INSERT INTO res" + str(l) + "(zindex, cube) VALUES (%s, %s)"
-            print sql % (key,0)
+            print sql % (key,"x,y,z=%s,%s,%s"%(x,y,z))
             try:
               cursor.execute ( sql, (key,zdataout))
             except MySQLdb.Error, e:

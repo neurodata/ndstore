@@ -515,7 +515,6 @@ def selectPost ( webargs, proj, db, postdata ):
 
       elif service == 'npdense':
 
-        logger.warning("In npdense")
         # Process the arguments
         try:
           args = restargs.BrainRestArgs ();

@@ -8,9 +8,9 @@ admin.autodiscover()
 
 urlpatterns = patterns('ocpuser.views',
                        url(r'^profile/$', 'profile'),
-                       url(r'^datasets/$', 'datasets'),
+#                       url(r'^datasets/$', 'datasets'),
                        url(r'^createproject/$', 'createproject'),
-                       url(r'^createdataset/$', 'createdataset'),
+#                       url(r'^createdataset/$', 'createdataset'),
                        url(r'^updateproject/$', 'updateproject'),
                        url(r'^restore/$', 'restore'),
    

@@ -16,8 +16,8 @@ EM_BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".." ))
 EM_EMCA_PATH = os.path.join(EM_BASE_PATH, "emca" )
 sys.path += [ EM_EMCA_PATH ]
 
-SITE_HOST = 'localhost'
-#SITE_HOST = 'localhost:8000'
+import site_to_test
+SITE_HOST = site_to_test.site
 
 import emcaproj
 
@@ -98,7 +98,7 @@ class TestRamon:
     f = urllib2.urlopen ( url )
     retfile = tempfile.NamedTemporaryFile ( )
     retfile.write ( f.read() )
-    retfile.tell()
+    retfile.seek(0)
     h5ret = h5py.File ( retfile.name, driver='core', backing_store=False )
     assert h5ret['ANNOIDS'].shape[0] ==5
 
@@ -108,7 +108,7 @@ class TestRamon:
     f = urllib2.urlopen ( url )
     retfile = tempfile.NamedTemporaryFile ( )
     retfile.write ( f.read() )
-    retfile.tell()
+    retfile.seek(0)
     h5ret = h5py.File ( retfile.name, driver='core', backing_store=False )
     assert h5ret['ANNOIDS'].shape[0] ==5
 
@@ -117,7 +117,7 @@ class TestRamon:
     f = urllib2.urlopen ( url )
     retfile = tempfile.NamedTemporaryFile ( )
     retfile.write ( f.read() )
-    retfile.tell()
+    retfile.seek(0)
     h5ret = h5py.File ( retfile.name, driver='core', backing_store=False )
     assert h5ret['ANNOIDS'].shape[0] ==5
 
@@ -130,7 +130,7 @@ class TestRamon:
 #    f = urllib2.urlopen ( url )
 #    retfile = tempfile.NamedTemporaryFile ( )
 #    retfile.write ( f.read() )
-#    retfile.tell()
+#    retfile.seek(0)
 #    h5ret = h5py.File ( retfile.name, driver='core', backing_store=False )
 #    assert h5ret['ANNOIDS'].shape[0] ==5
 #
@@ -140,6 +140,6 @@ class TestRamon:
 #    f = urllib2.urlopen ( url )
 #    retfile = tempfile.NamedTemporaryFile ( )
 #    retfile.write ( f.read() )
-#    retfile.tell()
+#    retfile.seek(0)
 #    h5ret = h5py.File ( retfile.name, driver='core', backing_store=False )
 #    assert h5ret['ANNOIDS'].shape[0] ==5
