@@ -6,8 +6,6 @@ import numpy as np
 def filterCutout ( cutout, filterlist ):
   """Remove all annotations in a cutout that do not match the filterlist"""
 
-  import pdb; pdb.set_trace()
-
   # dumbest implementation
   for z in range(cutout.shape[0]):
     for y in range(cutout.shape[1]):

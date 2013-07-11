@@ -16,7 +16,9 @@ import emcaproj
 import string
 import random
 from models import ocpProject
+from models import ocpDataset
 from forms import CreateProjectForm
+from forms import CreateDatasetForm
 from forms import UpdateProjectForm
 from django.core.urlresolvers import get_script_prefix
 import os
@@ -168,6 +170,46 @@ def createproject(request):
     context = {'form': form}
     return render_to_response('createproject.html',context,context_instance=RequestContext(request))
       
+def createdataset(request):
+
+  if request.method == 'POST':
+    if 'CreateDataset' in request.POST:
+      form = CreateDatasetForm(request.POST)
+      if form.is_valid():
+        #dataset = form.cleaned_data['dataset']
+
+        #description = form.cleaned_data['description']
+        #project = form.cleaned_data['project']
+        #dataset = form.cleaned_data['dataset']
+        #datatype = form.cleaned_data['datatype']
+
+        #dataurl = form.cleaned_data['dataurl']
+        #readonly = form.cleaned_data['readonly']
+        #exceptions = form.cleaned_data['exceptions']
+        #nocreate = form.cleaned_data['nocreate']
+        #openid = request.user.username
+        #print "Creating a project with:"
+        #print token, project, dataset, dataurl,readonly, exceptions, openid
+   #     return redirect(get_script_prefix()+'profile', {"user":request.user})                                                                           
+        # Get database info                                                                                                                              
+        #pd = emcaproj.EMCAProjectsDB()
+        #pd.newEMCAProj ( token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate )
+        #pd.insertTokenDescription ( token, description )
+        return redirect(profile)
+
+      else:
+        context = {'form': form}
+        print form.errors
+        return render_to_response('createproject.html',context,context_instance=RequestContext(request))
+    else:
+      #default                                                                                                                                           
+      return redirect(profile)
+  else:
+    '''Show the Create projects form'''
+    randtoken = ''.join(random.choice(string.ascii_uppercase + string.digits + string.ascii_lowercase) for x in range(64))
+    form = CreateProjectForm(initial={'token': randtoken})
+    context = {'form': form}
+    return render_to_response('createproject.html',context,context_instance=RequestContext(request))
 
 @login_required
 def updateproject(request):

@@ -850,6 +850,8 @@ class AnnOrganelle (Annotation):
         raise EMCAError ("Illegal arguments to set field centroid: %s" % value)
     elif field == 'parentseed':
       self.parentseed = value
+    elif field == 'seeds':
+      self.seeds = [int(x) for x in value.split(',')] 
     else:
       Annotation.setField ( self, field, value )
 

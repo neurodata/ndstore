@@ -43,3 +43,20 @@ class ocpProject ( models.Model):
         return self.name
 
 # Create your models here.
+class ocpDataset ( models.Model):
+    dataset  =  models. CharField(max_length=200)    
+    ximagesize =  models.IntegerField()
+    yimagesize =  models.IntegerField()
+
+    startslice = models.IntegerField()
+    endslice = models.IntegerField()
+    zoomlevels = models.IntegerField()
+    zscale = models.FloatField()
+    description  =  models. CharField(max_length=4096)
+    
+    class Meta:
+        """ Meta """
+        app_label = 'emca'
+        db_table = u"projects"
+    def __unicode__(self):
+        return self.name
