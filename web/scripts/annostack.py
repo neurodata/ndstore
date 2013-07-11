@@ -22,11 +22,12 @@ class AnnoStack:
     """Load the annotation database and project"""
 
     projdb = emcaproj.EMCAProjectsDB()
-    self.proj = projdb.getProj ( token )
+    self.proj = projdb.loadProject ( token )
     self.dbcfg = dbconfig.switchDataset ( self.proj.getDataset() )
 
     # Bind the annotation database
-    self.annoDB = emcadb.EMCADB ( self.dbcfg, self.proj )
+ #   self.annoDB = emcadb.EMCADB ( self.dbcfg, self.proj )
+    self.annoDB = emcadb.EMCADB ( self.proj )
    
 
   def createTables ( self  ):

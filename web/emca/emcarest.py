@@ -58,7 +58,7 @@ def cutout ( imageargs, proj, db, channel=None ):
   # Perform the cutout
   cube = db.cutout ( corner, dim, resolution, channel )
   if filterlist != None:
-    print "Filtering by values {}".format(filterlist)
+    filterCutout ( cube.data, filterlist )
 
   return cube
 
@@ -150,7 +150,7 @@ def HDF5 ( imageargs, proj, db ):
 #
 def xySlice ( imageargs, proj, db ):
   """Return the cube object for an xy plane"""
-
+ 
   if proj.getDBType() == emcaproj.CHANNELS_8bit or proj.getDBType() == emcaproj.CHANNELS_16bit:
     [ channel, sym, imageargs ] = imageargs.partition ('/')
     # make sure that the channel is an int identifier
@@ -386,7 +386,7 @@ def annId ( imageargs, proj, db ):
   """Return the annotation identifier of a voxel"""
 
   # Perform argument processing
-  (resolution, voxel) = restargs.voxel ( imageargs, proj )
+  (resolution, voxel) = restargs.voxel ( imageargs, proj.datasetcfg )
 
   # Get the identifier
   return db.getVoxel ( resolution, voxel )
