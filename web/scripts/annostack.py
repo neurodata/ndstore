@@ -26,7 +26,6 @@ class AnnoStack:
     self.dbcfg = dbconfig.switchDataset ( self.proj.getDataset() )
 
     # Bind the annotation database
- #   self.annoDB = emcadb.EMCADB ( self.dbcfg, self.proj )
     self.annoDB = emcadb.EMCADB ( self.proj )
    
 
