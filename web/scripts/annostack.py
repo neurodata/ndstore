@@ -8,7 +8,6 @@ import cStringIO
 import empaths
 import emcaproj
 import emcadb
-import dbconfig
 import zindex
 
 from emca_cy import addData_cy
@@ -23,10 +22,8 @@ class AnnoStack:
 
     projdb = emcaproj.EMCAProjectsDB()
     self.proj = projdb.loadProject ( token )
-    self.dbcfg = dbconfig.switchDataset ( self.proj.getDataset() )
 
     # Bind the annotation database
- #   self.annoDB = emcadb.EMCADB ( self.dbcfg, self.proj )
     self.annoDB = emcadb.EMCADB ( self.proj )
    
 
@@ -41,14 +38,14 @@ class AnnoStack:
 
   def buildStack ( self, startlevel ):
     """Build the hierarchy of annotations"""
-    for  l in range ( startlevel, len(self.dbcfg.resolutions)-1 ):
+    for  l in range ( startlevel, len(self.proj.datasetcfg.resolutions)-1 ):
 
       # Get the source database sizes
-      [ximagesz, yimagesz] = self.dbcfg.imagesz [ l ]
-      [xcubedim, ycubedim, zcubedim] = self.dbcfg.cubedim [ l ]
+      [ximagesz, yimagesz] = self.proj.datasetcfg.imagesz [ l ]
+      [xcubedim, ycubedim, zcubedim] = self.proj.datasetcfg.cubedim [ l ]
 
       # Get the slices
-      [ startslice, endslice ] = self.dbcfg.slicerange
+      [ startslice, endslice ] = self.proj.datasetcfg.slicerange
       slices = endslice - startslice + 1
 
       # Set the limits for iteration on the number of cubes in each dimension

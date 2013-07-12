@@ -412,7 +412,6 @@ class EMCAProjectsDB:
       sql = "SELECT * from %s LEFT JOIN %s on %s.token = %s.token where %s.openid = \'%s\' ORDER BY project" % (emcaprivate.projects,token_desc,proj_tbl,token_desc,proj_tbl,openid)
     else:
       sql = "SELECT * from %s LEFT JOIN %s on %s.token = %s.token where %s.openid = \'%s\' and %s.%s = \'%s\' ORDER BY project" % (emcaprivate.projects,token_desc,proj_tbl,token_desc, proj_tbl,openid, proj_tbl,filterby, filtervalue.strip())
-    print sql
     try:
       cursor = self.conn.cursor()
       cursor.execute ( sql )
@@ -437,7 +436,6 @@ class EMCAProjectsDB:
       sql = "SELECT * from %s LEFT JOIN %s on %s.token = %s.token where %s.openid = \'%s\' and %s.dataset = \'%s\'" % (emcaprivate.projects,token_desc,proj_tbl,token_desc,proj_tbl,openid,proj_tbl,dataset)
     else:
       sql = "SELECT * from %s LEFT JOIN %s on %s.token = %s.token where %s.openid = \'%s\' and %s.%s = \'%s\' and %s.dataset =\'%s\'" % (emcaprivate.projects,token_desc,proj_tbl,token_desc, proj_tbl,openid, proj_tbl,filterby, filtervalue.strip(),proj_tbl,dataset)
-    print sql
     try:
       cursor = self.conn.cursor()
       cursor.execute ( sql )
@@ -477,7 +475,6 @@ class EMCAProjectsDB:
   def updateProject ( self, curtoken ,newtoken):
     """Load the annotation database information based on the openid"""
     sql = "UPDATE %s SET token = \'%s\' where token = \'%s\'" % (emcaprivate.projects, newtoken, curtoken)
-    print sql
     try:
       cursor = self.conn.cursor()
       cursor.execute ( sql )
@@ -494,7 +491,6 @@ class EMCAProjectsDB:
     """Add a token description for a new project"""
    # sql = "UPDATE %s SET token = \'%s\' where token = \'%s\'" % (emcaprivate.projects, newtoken, curtoken)
     sql = "INSERT INTO %s (token,description) VALUES (\'%s\',\'%s\')" % (emcaprivate.token_description, token, desc)
-    print sql
     try:
       cursor = self.conn.cursor()
       cursor.execute ( sql )
@@ -510,7 +506,6 @@ class EMCAProjectsDB:
   def updateTokenDescription ( self, token ,description):
     """Update token description for a project"""
     sql = "UPDATE %s SET description = \'%s\' where token = \'%s\'" % (emcaprivate.token_description, description, token)
-    print sql
     try:
       cursor = self.conn.cursor()
       cursor.execute ( sql )
@@ -526,7 +521,6 @@ class EMCAProjectsDB:
   def deleteTokenDescription ( self, token):
     """Delete entry from token description table"""
     sql = "DELETE FROM  %s where token = \'%s\'" % (emcaprivate.token_description, token)
-    print sql
     try:
       cursor = self.conn.cursor()
       cursor.execute ( sql )

@@ -10,7 +10,6 @@ import cStringIO
 import empaths
 import emcaproj
 import emcarest
-import dbconfig
 
 
 """Merge two cutouts one from a data set and one from an annotation database"""

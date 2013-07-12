@@ -7,7 +7,6 @@ import empaths
 import zindex
 import emcarest
 import emcaproj
-import dbconfig
 
 # Errors we are going to catch
 from emcaerror import EMCAError
