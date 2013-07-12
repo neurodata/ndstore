@@ -35,7 +35,7 @@ class OCPCatmaid:
     self.mc = pylibmc.Client(["127.0.0.1"], binary=True,behaviors={"tcp_nodelay":True,"ketama": True})
 
     # Locks for doing I/O and for prefetching
-    self.pfsem = posix_ipc.Semaphore ( "/mcprefetch2", flags=posix_ipc.O_CREAT, initial_value=1 ) 
+    self.pfsem = posix_ipc.Semaphore ( "/mcprefetch", flags=posix_ipc.O_CREAT, initial_value=1 ) 
 
   def __del__(self):
     self.pfsem.close()
