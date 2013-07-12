@@ -36,7 +36,7 @@ class OCPCatmaid:
     self.mc = pylibmc.Client(["127.0.0.1"], binary=True,behaviors={"tcp_nodelay":True,"ketama": True})
 
     # Locks for doing I/O and for prefetching
-    self.pfsem = posix_ipc.Semaphore ( "/mcprefetch", flags=posix_ipc.O_CREAT, initial_value=1 ) 
+    self.pfsem = posix_ipc.Semaphore ( "/mcprefetch2", flags=posix_ipc.O_CREAT, initial_value=1 ) 
 
   def __del__(self):
     self.pfsem.close()
@@ -235,13 +235,19 @@ class OCPCatmaid:
   def getTile ( self, webargs ):
     """Either fetch the file from memcache or load a new region into memcache by cutout"""
 
+
     # parse the web args
     self.token, tileszstr, self.channel, plane, resstr, xtilestr, ytilestr, zslicestr, rest = webargs.split('/',8)
+
+    # load the database
+    self.loadDB ( )
+
     # convert args to ints
     xtile = int(xtilestr)
     ytile = int(ytilestr)
     res = int(resstr)
-    zslice = int(zslicestr)
+    # modify the zslice to the offset
+    zslice = int(zslicestr)-self.proj.datasetcfg.slicerange[0]
     self.tilesz = int(tileszstr)
 
     brightness = None
