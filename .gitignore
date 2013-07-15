@@ -1,3 +1,8 @@
 .DS_Store
-*.pyc
 *private.py
+
+# Compiled source #
+###################
+*.pyc
+*.o
+*.so
