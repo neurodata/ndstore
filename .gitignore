@@ -1,4 +1,3 @@
-.DS_Store
 *private.py
 
 # Compiled source #
@@ -6,3 +5,12 @@
 *.pyc
 *.o
 *.so
+*.out
+*.exe
+*.a
+*.log
+
+# OS Generated Files #
+######################
+.DS_Store
+*.swp
