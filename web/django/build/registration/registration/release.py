@@ -1,0 +1,7 @@
+version = "0.50"
+author = "Patrick Lewis"
+email = "plewis@spamcop.net"
+copyright = "Copyright 2008 Patrick Lewis"
+license = "MIT"
+summary = "A set of TurboGears templates to provide user registration functions."
+home_page = "http://patrickhlewis.googlepages.com/registration.html"

@@ -4,24 +4,28 @@ Create Project Template
 {% endcomment %}
 
 {% block title %}
-    <section>
-        <h2> Create New Project </h2>
+    
+    
 
 {% endblock %}
 {% block content %}
-
-       <form action="" method="post" enctype="multipart/form-data">
-         {% csrf_token %}
-         <div align=left>
-           <p>{{form.as_p}}</p>
-         </div>
-         <div align=left>
-           <p><input name = "CreateProject" type="submit" value="Create Project"></p>
-
-           <div>
-       </form>
-
-    </section>
+ <div id="header" style="background-color:#4682B4;" align="center">
+    <h2 style="margin-bottom:0;">CREATE NEW PROJECT</h2></div>
+ <form method="post" action="" enctype="multipart/form-data">
+  <div class="tabbable tabs-left">
+    <ul class="nav nav-pills nav-stacked span2">
+      <li> <a href="/EM/ocpuser/profile/">Projects</a></li>
+      <li  class="active"><a href="/EM/ocpuser/createproject/">Create Project</a></li>
+      <li> <a href="/EM/ocpuser/restore/">Restore Project</a></li>
+     </ul>
+    <div class="tab-content">
+        
+	<p>{{form.as_table}}</p>
+       <p><button class="btn btn-primary" name = "CreateProject" type="submit">Create Project</button></p>
+    </div>
+</div>
+  </form>
+       
 {% endblock %}
 
 

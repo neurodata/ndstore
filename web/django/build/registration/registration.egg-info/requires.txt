@@ -1,0 +1,4 @@
+TurboGears >= 1.0
+
+[turbomail]
+TurboMail >= 2.0

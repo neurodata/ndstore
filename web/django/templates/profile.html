@@ -1,45 +1,98 @@
 {% extends "base.html" %}
 
-
 {% block title %}
-Welcome 
+   Welcome 
 {% endblock title %}
 
 
 {% block content %}
+
+<form class="form-inline" method="post" action="">
+
+
+  <div id="header" style="background-color:#4682B4;" align="center">  
+    <h2 style="margin-bottom:0;">PROJECTS</h2></div>
+
+  <div id="content" style="background-color:#F5F6CE;height:50px;width:1900px;float:left;">
+    
+    Filter By:
+    <select name="filteroption">
+      <option value="token">Token</option>
+      <option value="project">Project</option>
+      <option value="datatype">Datatype</option>
+      <option value="dataset">Dataset</option>
+    </select>
+    
+    <input type="text"  name="filtervalue" placeholder="Enter Filter Value">
+    <button type="submit" class= "btn" name ="filter">Filter Projects </button>
+    
+  </div>
+</div>
+
+</form>
 <form method="post" action="">
-
-
-  <div id="header" style="background-color:#4682B4;">
-    <h1 style="margin-bottom:0;">PROJECTS</h1></div>
-
-  <div id="content" style="background-color:#F5F6CE;height:80px;width:1900px;float:left;">
-    <div id="filtermenu"style="background-color:#F5F6CE; height:80px;width:400px;float:left;">
-      Filter By:
-      <select name="filteroption">
-	<option value="token">Token</option>
-	<option value="project">Project</option>
-	<option value="datatype">Datatype</option>
-	<option value="dataset">Dataset</option>
-      </select>
-      
-      <textarea name="filtervalue" cols="20" rows="1">
-      </textarea>
-      <br>
-      <input type="submit" name ="filter" value="Filter Projects" />
+  <div class="tabbable tabs-left">
+    <ul class="nav nav-pills nav-stacked span2">
+      <li class="active"> <a href="/EM/ocpuser/profile/">Projects</a></li>
+      <li><a href="/EM/ocpuser/createproject/">Create Project</a></li>
+      <li> <a href="/EM/ocpuser/restore/">Restore Project</a></li>
+    </ul>
+    <div class="tab-content">
+      <table class ="table">
+	{% for key, value in databases %}
+	
+	<thead>
+	  <tr class="success"><th>Dataset</th> <th>{{key.0}}</th></tr>
+	</thead>
+	<tr>
+	  <td></td>
+	  <td>
+	    <table class="table table-bordered">
+	      {% for proj in value %}
+              <tr class ="error">
+		<th>Project</th>
+		<th>Type</th>
+		<th>Description</th>
+              </tr>	   
+	      {% for field in proj %}
+              <tr>
+	        
+                <td style="width: 15%;">{{ field.0 }}</td>
+                {% if field.4 == 1 %}
+                <td>Image</td>
+                {% else %}
+                <td>Annotation</td>
+                {% endif %}
+		<td colspan=50>{{ field.10 }}</td>
+                <td><button class="btn" id="delete" type="submit" name="delete"> <i class ="icon-trash icon-black"></i>Delete Project</button></td>
+                <td><button class="btn" id="backup" type="submit" name="backup"> <i class ="icon-inbox icon-black"></i>Backup Project</button></td>
+		<td><button class="btn" id="viewtokens" type="submit" name="tokens"> <i class ="icon-inbox icon-black"></i>View Tokens</button></td>
+		
+		{% endfor %}         
+		{% empty %}
+		<li>No Projects Available!</li>
+		{% endfor %}         
+	  </table></td>
+	</tr>
+	{% empty %}
+	<li>No Datasets Available!</li>
+	{% endfor %}      
+      </table>
     </div>
   </div>
+</form>
 
 
- </form>
- <form method="post" action="">
-<div id="poptions">
-  <input id="DownloadToken" type="submit" name="downloadtoken" value="Download Token">
-  <input id="update" type="submit" name="update" value="Update Project">
-  <input id="delete" type="submit" name="delete" value="Delete Project">
-  <input id="backup" type="submit" name="backup" value="Backup Project">
-
-</div>
+  <div id="poptions">
+    <br>
+    <br>
+    <button class="btn" id="DownloadToken" type="submit" name="downloadtoken"><i class="icon-file icon-black"></i>Download Token </button>
+    <button class="btn" id="update" type="submit" name="update" ><i class ="icon-edit icon-black"></i>Update Project</button>
+    <button class="btn" id="delete" type="submit" name="delete"> <i class ="icon-trash icon-black"></i>Delete Project</button>
+    <button class="btn" id="backup" type="submit" name="backup"> <i class ="icon-inbox icon-black"></i>Backup Project</button>
+    
+    
+  </div>
 
 
 {% for key, value in databases %}
@@ -107,7 +160,9 @@ Welcome
     </div>
  </table>
 
-
+ <div class="well">
+        <p><button class="btn btn-primary" href="https://github.com/dyve/django-bootstrap-toolkit/">Check it out on GitHub &raquo;</button></p>
+    </div>
 
 
 <br>
