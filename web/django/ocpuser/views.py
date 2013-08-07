@@ -134,14 +134,14 @@ def createproject(request):
       if form.is_valid():
 #        import pdb;pdb.set_trace();
         token = form.cleaned_data['token']
-       # host = form.cleaned_data['host']
+        # host = form.cleaned_data['host']
         host = 'localhost'
         description = form.cleaned_data['description']
         print description
         project = form.cleaned_data['project']
         dataset = form.cleaned_data['dataset']
         datatype = form.cleaned_data['datatype']
-
+        
         dataurl = form.cleaned_data['dataurl']
         readonly = form.cleaned_data['readonly']
         exceptions = form.cleaned_data['exceptions']
