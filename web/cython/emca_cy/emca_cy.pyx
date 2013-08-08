@@ -177,3 +177,13 @@ def addData_cy ( cube, output, offset ):
             output [ z+offset[2], y+offset[1], x+offset[0] ] = value
 
 
+def zoomData_cy ( np.ndarray[np.uint32_t, ndim=3] olddata, np.ndarray[np.uint32_t, ndim=3] newdata, int factor ):
+    """Add the contribution of the input data to the next level at the given offset in the output cube"""
+
+    cdef int z
+    cdef int y
+    cdef int x
+    for z in range (newdata.shape[0]):
+      for y in range (newdata.shape[1]):
+        for x in range (newdata.shape[2]):
+          newdata[z,y,x] = olddata[z,y/(2**factor),x/(2**factor)]

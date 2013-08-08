@@ -719,19 +719,48 @@ class EMCADB:
   def cutout ( self, corner, dim, resolution, channel=None ):
     """Extract a cube of arbitrary size.  Need not be aligned."""
 
-    # TODO some range checking?  illegal cutouts work
+    # PYTODO alter query if  (emcaproj)._resolution is > resolution
+    # if cutout is below resolution, get a smaller cube and scaleup
+    if self.annoproj.getDBType()==emcaproj.ANNOTATIONS and  self.annoproj.getResolution() > resolution:
+      logger.warning ( "Zooming into higher resolution than maximum.  From %s to %s." % ( resolution, self.annoproj.getResolution()))
+
+      # scale the corner to higher resolution
+      newcorner = corner[0]/(2**(self.annoproj.getResolution()-resolution)), corner[1]/(2**(self.annoproj.getResolution()-resolution)), corner[2]
+
+      # scale the dimension to higher resolution
+      [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
+      newdim = [ (dim[0]-1)/(2**(self.annoproj.getResolution()-resolution))+1, (dim[1]-1)/(2**(self.annoproj.getResolution()-resolution))+1, dim[2] ]
+
+      # Round to the nearest larger cube in all dimensions
+      zstart = newcorner[2]/zcubedim
+      ystart = newcorner[1]/ycubedim
+      xstart = newcorner[0]/xcubedim
+
+      znumcubes = (newcorner[2]+newdim[2]+zcubedim-1)/zcubedim - zstart
+      ynumcubes = (newcorner[1]+newdim[1]+ycubedim-1)/ycubedim - ystart
+      xnumcubes = (newcorner[0]+newdim[0]+xcubedim-1)/xcubedim - xstart
+
+      # query the max resolution and scale up
+      dbname = self.annoproj.getTable(self.annoproj.getResolution())
+
+    # this is the default path when not scaling up the resolution
+    else:
     
-    # get the size of the image and cube
-    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
+      # get the size of the image and cube
+      [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
-    # Round to the nearest larger cube in all dimensions
-    zstart = corner[2]/zcubedim
-    ystart = corner[1]/ycubedim
-    xstart = corner[0]/xcubedim
+      # Round to the nearest larger cube in all dimensions
+      zstart = corner[2]/zcubedim
+      ystart = corner[1]/ycubedim
+      xstart = corner[0]/xcubedim
 
-    znumcubes = (corner[2]+dim[2]+zcubedim-1)/zcubedim - zstart
-    ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
-    xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
+      znumcubes = (corner[2]+dim[2]+zcubedim-1)/zcubedim - zstart
+      ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
+      xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
+
+      # use the requested resolution
+      dbname = self.annoproj.getTable(self.annoproj.getResolution())
+
 
     if (self.annoproj.getDBType() == emcaproj.ANNOTATIONS):
 
@@ -770,8 +799,6 @@ class EMCADB:
     listofidxs.sort()
 
     # Batch query for all cubes
-    dbname = self.annoproj.getTable(resolution)
-
     # Customize query to the database (include channel or not)
     if (self.annoproj.getDBType() == emcaproj.CHANNELS_8bit or self.annoproj.getDBType() == emcaproj.CHANNELS_16bit):
       # Convert channel as needed
@@ -804,23 +831,23 @@ class EMCADB:
       # add it to the output cube
       outcube.addData ( incube, offset ) 
 
+    # if we fetched a smaller cube to zoom, correct the result
+    if self.annoproj.getDBType()==emcaproj.ANNOTATIONS and  self.annoproj.getResolution() > resolution:
+      logger.warning ( "Correcting for zoomed resolution." )
 
+      outcube.zoomData ( self.annoproj.getResolution()-resolution )
+
+      # need to trime based on the cube cutout at self.annoproj.getResolution()
+      outcube.trim ( corner[0]%(xcubedim*(2**(self.annoproj.getResolution()-resolution))),dim[0], corner[1]%(ycubedim*(2**(self.annoproj.getResolution()-resolution))),dim[1], corner[2]%zcubedim,dim[2] )
+      
     # need to trim down the array to size
     #  only if the dimensions are not the same
-    if dim[0] % xcubedim  == 0 and\
-       dim[1] % ycubedim  == 0 and\
-       dim[2] % zcubedim  == 0 and\
-       corner[0] % xcubedim  == 0 and\
-       corner[1] % ycubedim  == 0 and\
-       corner[2] % zcubedim  == 0:
+    elif dim[0] % xcubedim  == 0 and dim[1] % ycubedim  == 0 and dim[2] % zcubedim  == 0 and corner[0] % xcubedim  == 0 and corner[1] % ycubedim  == 0 and corner[2] % zcubedim  == 0:
       pass
     else:
-      outcube.trim ( corner[0]%xcubedim,dim[0],\
-                      corner[1]%ycubedim,dim[1],\
-                      corner[2]%zcubedim,dim[2] )
+      outcube.trim ( corner[0]%xcubedim,dim[0],corner[1]%ycubedim,dim[1],corner[2]%zcubedim,dim[2] )
 
     return outcube
-
 
   #
   # getVoxel -- return the identifier at a voxel

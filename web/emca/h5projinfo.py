@@ -29,6 +29,7 @@ def h5ProjInfo ( proj, h5f ):
   projgrp.create_dataset ( "DATAURL", (1,), dtype=h5py.special_dtype(vlen=str), data=proj._dataurl )
   projgrp.create_dataset ( "READONLY", (1,), dtype=bool, data=(False if proj._readonly==0 else True))
   projgrp.create_dataset ( "EXCEPTIONS", (1,), dtype=bool, data=(False if proj._exceptions==0 else True))
+  projgrp.create_dataset ( "RESOLUTION", (1,), dtype=uint8, data=(False if proj._exceptions==0 else True))
 
 
 def h5DatasetInfo ( dataset, h5f ):

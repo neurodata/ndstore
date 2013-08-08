@@ -126,7 +126,6 @@ INSTALLED_APPS = (
     'synaptogram',
     'ocpcatmaid',
     'registration',
-    'bootstrap_toolkit',
 )
 
 # A sample logging configuration. The only tangible logging
