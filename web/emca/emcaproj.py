@@ -19,7 +19,7 @@ class EMCAProject:
   """Project specific for cutout and annotation data"""
 
   # Constructor 
-  def __init__(self, dbname, dbhost, dbtype, dataset, dataurl, readonly, exceptions ):
+  def __init__(self, dbname, dbhost, dbtype, dataset, dataurl, readonly, exceptions, resolution ):
     """Initialize the EMCA Project"""
     
     self._dbname = dbname
@@ -30,6 +30,7 @@ class EMCAProject:
     self._readonly = readonly
     self._exceptions = exceptions
     self._dbtype = dbtype
+    self._resolution = resolution
 
     # Could add these to configuration.  Probably remove res as tablebase instead
     self._ids_tbl = "ids"
@@ -53,7 +54,8 @@ class EMCAProject:
     return self._dbtype
   def getReadOnly ( self ):
     return self._readonly
-    
+  def getResolution ( self ):
+    return self._resolution
 
   # accessors for RB to fix
   def getDBUser( self ):
@@ -151,7 +153,7 @@ class EMCAProjectsDB:
     """Load the annotation database information based on the token"""
 
     # Lookup the information for the database project based on the token
-    sql = "SELECT token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions from %s where token = \'%s\'" % (emcaprivate.projects, token)
+    sql = "SELECT token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions, resolution from %s where token = \'%s\'" % (emcaprivate.projects, token)
 
     try:
       cursor = self.conn.cursor()
@@ -168,10 +170,10 @@ class EMCAProjectsDB:
       logger.warning ( "Project token %s not found." % ( token ))
       raise EMCAError ( "Project token %s not found." % ( token ))
 
-    [token, openid, host, project, dbtype, dataset, dataurl, readonly, exceptions ] = row
+    [token, openid, host, project, dbtype, dataset, dataurl, readonly, exceptions, resolution ] = row
 
     # Create a project object
-    proj = EMCAProject ( project, host, dbtype, dataset, dataurl, readonly, exceptions ) 
+    proj = EMCAProject ( project, host, dbtype, dataset, dataurl, readonly, exceptions, resolution ) 
     proj.datasetcfg = self.loadDatasetConfig ( dataset )
 
     return proj
@@ -200,14 +202,14 @@ class EMCAProjectsDB:
   #
   # Create a new project (annotation or data)
   #
-  def newEMCAProj ( self, token, openid, dbhost, project, dbtype, dataset, dataurl, readonly, exceptions, nocreate=False ):
+  def newEMCAProj ( self, token, openid, dbhost, project, dbtype, dataset, dataurl, readonly, exceptions, nocreate, resolution ):
     """Create a new emca project"""
 
 # TODO need to undo the project creation if not totally sucessful
     datasetcfg = self.loadDatasetConfig ( dataset )
 
-    sql = "INSERT INTO {0} (token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',{5},\'{6}\',\'{7}\',\'{8}\',\'{9}\')".format (\
-       emcaprivate.projects, token, openid, dbhost, project, dbtype, dataset, dataurl, int(readonly), int(exceptions) )
+    sql = "INSERT INTO {0} (token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions, resolution) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',{5},\'{6}\',\'{7}\',\'{8}\',\'{9}\',\'{10}\')".format (\
+       emcaprivate.projects, token, openid, dbhost, project, dbtype, dataset, dataurl, int(readonly), int(exceptions), resolution )
 
     logger.info ( "Creating new project. Host %s. Project %s. SQL=%s" % ( dbhost, project, sql ))
 
