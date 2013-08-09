@@ -54,6 +54,7 @@ def readAnno ( params ):
 
   if params.voxels:
     url = "http://%s/emca/%s/%s/voxels/%s/" % (params.baseurl,params.token,params.annids, params.resolution)
+    print url
   elif params.cutout != None:
     url = "http://%s/emca/%s/%s/cutout/%s/" % (params.baseurl,params.token,params.annids, params.cutout)
   elif params.tightcutout: 
@@ -347,7 +348,7 @@ class TestRW:
     """Create the unittest database"""
     
     self.pd = emcaproj.EMCAProjectsDB()
-    self.pd.newEMCAProj ( 'unittest_rw', 'test', 'localhost', 'unittest_rw', 2, 'kasthuri11', None, False, True )
+    self.pd.newEMCAProj ( 'unittest_rw', 'test', 'localhost', 'unittest_rw', 2, 'kasthuri11', None, False, True, False, 0 )
 
   def teardown_class (self):
     """Destroy the unittest database"""
