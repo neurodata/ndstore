@@ -3,4 +3,7 @@
 *private.py
 settings_secret.py
 settings_bkup.py
+godown.py
+npzToPNGs.py
+activation_email.txt
 *.py~
