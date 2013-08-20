@@ -5,6 +5,9 @@ import numpy as np
 import emcadb
 import emcaproj
 
+import logging
+logger=logging.getLogger("emca")
+
 #
 # h5ChannelsInfo
 #
@@ -20,7 +23,7 @@ def h5ChannelsInfo ( db, h5f ):
 
 def h5ProjInfo ( proj, h5f ):
   """Populate the HDF5 file with project attributes"""
-
+  logger.warning("In h5projInfo")
   projgrp = h5f.create_group ( 'PROJECT' )
   projgrp.create_dataset ( "NAME", (1,), dtype=h5py.special_dtype(vlen=str), data=proj._dbname )
   projgrp.create_dataset ( "HOST", (1,), dtype=h5py.special_dtype(vlen=str), data=proj._dbhost )

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% comment %}
+Create Project Template
+{% endcomment %}
+
+{% block title %}
+    <section>
+        <h2> Create New Project </h2>
+
+{% endblock %}
+{% block content %}
+   <div id="header" style="background-color:#4682B4;" align="center">
+     <h2 style="margin-bottom:0;">RESTORE PROJECT FROM FILE</h2></div>
+   <form method="post" action="" enctype="multipart/form-data">
+     {% csrf_token %}  
+     <div class="tabbable tabs-left">
+       <ul class="nav nav-pills nav-stacked span2">
+         <li> <a href="/EM/ocpuser/profile/">Projects</a></li>
+         <li  class="active"><a href="/EM/ocpuser/createproject/">Create Project</a></li>
+         <li> <a href="/EM/ocpuser/restore/">Restore Project</a></li>
+       </ul>
+       <div class="tab-content">
+
+	 
+         <p>{{form.as_table}}</p>
+	 
+	 <div id="filtermenu"style="background-color:#F5F6CE; height:40px;width:800px;float:left;">
+           Select backup file:
+	   
+           <select name="backupfile">
+             <option value="None">None</option>
+             {% for file in flist %}
+             <option value={{file}}>{{file}}</option>
+             {% endfor %}
+           </select>
+	 </div>
+	 <br><br>
+	 <p><button class="btn btn-primary" name = "RestoreProject" type="submit">Restore Project</button></p>
+       </div>
+     </div>
+   </form>
+
+
+    </section>
+{% endblock %}
+
+

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% comment %}
+Create Dataset Template
+{% endcomment %}
+
+{% block title %}
+Create New Dataset 
+{% endblock %}
+
+{% block content %}
+ <div id="header" style="background-color:#4682B4;" align="center">
+    <h2 style="margin-bottom:0;">CREATE NEW DATASET></div>
+
+ <div id="form" >
+   <table class="table">
+     <form action="" method="post">
+     
+       
+       {{ form.non_field_errors }}
+     <tr>  
+	 <div class="fieldWrapper">
+	   {{ form.subject.errors }}
+	   <th><label for="dataset">Dataset Name:</label> </th>
+	   <td>{{ form.dataset }}</td>
+	 </div>
+     </tr>
+
+       <tr>
+	 <div class="fieldWrapper">
+	   {{ form.subject.errors }}
+	   <th><label for="ximagesize">X Image Size:</label></th><td> {{ form.ximagesize }}</td>
+	 </div>
+       </tr>
+       <tr>
+	 <div class="fieldWrapper">
+	   {{ form.subject.errors }}
+	   <th><label for="yimagesize">Y Image Size:</label></th>
+	   <td>{{ form.yimagesize }}</td>
+	 </div>
+       </tr>
+       <tr>
+	 <div class="fieldWrapper">
+	   {{ form.subject.errors }}
+	   <th><label for="startslice">Start Slice:</label></th>
+	   <td>{{ form.startslice }}</td>
+	 </div>
+       </tr>
+       <tr>
+	 <div class="fieldWrapper">
+	   {{ form.subject.errors }}
+	   <th  align="right"><label for="endslice">End Slice:</label></th>
+	   <td>{{ form.endslice }}</td>
+	 </div>
+       </tr>
+       <tr>
+	 <div class="fieldWrapper">
+	   {{ form.subject.errors }}
+	   <th><label for="zoomlevels">Zoom Levels:</label></th>
+	   <td>{{ form.zoomlevels }}</td>
+	 </div>
+       </tr>
+       <tr>
+	 <div class="fieldWrapper">
+	   {{ form.subject.errors }}
+	   <th><label for="zscale">Z Scale:</label></th>
+	   <td> {{ form.zscale }}</td>
+	 </div>
+       </tr>
+       <tr>
+	 <div class="fieldWrapper">
+	   {{ form.subject.errors }}
+	   <th><label for="description">Description:</label></th>
+	   <td> {{ form.description}}</td>
+	 </div>
+       </tr>
+
+       <tr>
+	 <td><p><input name = "createdataset" type="submit" value="Create Dataset"></p></td>
+       </tr>
+     </form>  
+ </table>
+  
+ </div>
+
+{% endblock %}
+
+
