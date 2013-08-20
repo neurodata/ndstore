@@ -347,7 +347,7 @@ class TestRW:
     """Create the unittest database"""
     
     self.pd = emcaproj.EMCAProjectsDB()
-    self.pd.newEMCAProj ( 'unittest_rw', 'test', 'localhost', 'unittest_rw', 2, 'kasthuri11', None, False, True )
+    self.pd.newEMCAProj ( 'unittest_rw', 'test', 'localhost', 'unittest_rw', 2, 'kasthuri11', None, False, True, False, 0)
 
   def teardown_class (self):
     """Destroy the unittest database"""
