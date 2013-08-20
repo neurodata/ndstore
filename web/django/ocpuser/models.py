@@ -19,6 +19,7 @@ class ocpProject ( models.Model):
     
 
     dataurl  =  models. CharField(max_length=200)
+    resolution = models.IntegerField(default=0)
     READONLY_CHOICES = (
         (1, 'Yes'),
         (2, 'No'),

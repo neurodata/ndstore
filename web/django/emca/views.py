@@ -158,7 +158,7 @@ def catmaid (request, webargs):
 
 def projinfo (request, webargs):
   """Return project and dataset configuration information"""
-
+  logger.warning("In projinfo(views.py)")
   try:  
     return django.http.HttpResponse(emcarest.projInfo(webargs), mimetype="product/hdf5" )
   except EMCAError, e:

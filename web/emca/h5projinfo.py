@@ -33,7 +33,9 @@ def h5ProjInfo ( proj, h5f ):
   projgrp.create_dataset ( "READONLY", (1,), dtype=bool, data=(False if proj._readonly==0 else True))
   projgrp.create_dataset ( "EXCEPTIONS", (1,), dtype=bool, data=(False if proj._exceptions==0 else True))
   logger.warning("In h5projInfo 1")
-#  projgrp.create_dataset ( "RESOLUTION", (1,), dtype=np.uint8, data=(False if proj._exceptions==0 else True))
+  projgrp.create_dataset ( "RESOLUTION", (1,), dtype=np.uint8, data=proj._resolution)
+
+
 
   logger.warning("Done with h5projinfo")
 

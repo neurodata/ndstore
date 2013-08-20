@@ -163,7 +163,7 @@ class EMCAProjectsDB:
       raise EMCAError ("Could not query emca projects database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # get the project information 
-    row = cursor.fetchone()
+    row= cursor.fetchone()
 
     # if the project is not found.  error
     if ( row == None ):
@@ -432,12 +432,12 @@ class EMCAProjectsDB:
   def getFilteredProjs ( self, openid, filterby, filtervalue,dataset ):
     """Load the annotation database information based on the openid"""
     # Lookup the information for the database project based on the openid
-    token_desc = emcaprivate.token_description;
+    proj_desc = emcaprivate.project_description;
     proj_tbl = emcaprivate.projects;
     if (filterby == ""):
-      sql = "SELECT * from %s LEFT JOIN %s on %s.token = %s.token where %s.openid = \'%s\' and %s.dataset = \'%s\'" % (emcaprivate.projects,token_desc,proj_tbl,token_desc,proj_tbl,openid,proj_tbl,dataset)
+      sql = "SELECT * from %s LEFT JOIN %s on %s.project = %s.project where %s.openid = \'%s\' and %s.dataset = \'%s\'" % (emcaprivate.projects,proj_desc,proj_tbl,proj_desc,proj_tbl,openid,proj_tbl,dataset)
     else:
-      sql = "SELECT * from %s LEFT JOIN %s on %s.token = %s.token where %s.openid = \'%s\' and %s.%s = \'%s\' and %s.dataset =\'%s\'" % (emcaprivate.projects,token_desc,proj_tbl,token_desc, proj_tbl,openid, proj_tbl,filterby, filtervalue.strip(),proj_tbl,dataset)
+      sql = "SELECT * from %s LEFT JOIN %s on %s.project = %s.project where %s.openid = \'%s\' and %s.%s = \'%s\' and %s.dataset =\'%s\'" % (emcaprivate.projects,proj_desc,proj_tbl,proj_desc, proj_tbl,openid, proj_tbl,filterby, filtervalue.strip(),proj_tbl,dataset)
     try:
       cursor = self.conn.cursor()
       cursor.execute ( sql )
@@ -449,6 +449,9 @@ class EMCAProjectsDB:
     row = cursor.fetchall()
     return row
 
+  #
+  # Load Projects created by user ( projadmin)
+  #
   def getDatabases ( self, openid):
     """Load the annotation database information based on the openid"""
     # Lookup the information for the database project based on the openid
@@ -468,6 +471,26 @@ class EMCAProjectsDB:
 
     row = cursor.fetchall()
     return row
+
+  #
+  # Load Projects created by user ( projadmin)
+  #
+  def getDatasets ( self):
+    """Load the annotation database information based on the openid"""
+    # Lookup the information for the database project based on the openid
+    sql = "SELECT * from %s"  % (emcaprivate.datasets)
+
+    try:
+      cursor = self.conn.cursor()
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+       logger.error ("FAILED TO FILTER")
+       raise
+    # get the project information
+
+    row = cursor.fetchall()
+    return row
+
    
 #******************************************************************************
 
@@ -530,3 +553,60 @@ class EMCAProjectsDB:
       logger.error ("FAILED TO DELETE TOKEN DESCRIPTION")
       raise
     self.conn.commit()
+
+
+  def deleteEMCADatabase ( self, project ):
+    #Used for the project management interface
+#PYTODO - Check about function
+    # Check if there are any tokens for this database
+    sql = "SELECT count(*) FROM %s WHERE project=\'%s\'" % ( emcaprivate.projects,project )
+    try:
+      cursor = self.conn.cursor()
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      conn.rollback()
+      logging.error ("Failed to query projects for database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise EMCAError ("Failed to query projects for database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+    self.conn.commit()
+    row = cursor.fetchone()
+    if (row == None):
+      # delete the database
+      sql = "DROP DATABASE " + proj.getDBName()
+      
+      try:
+        cursor = self.conn.cursor()
+        cursor.execute ( sql )
+      except MySQLdb.Error, e:
+        conn.rollback()
+        logging.error ("Failed to drop project database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+        raise EMCAError ("Failed to drop project database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      self.conn.commit()
+    else:
+      raise EMCAError ("Tokens still exists. Failed to drop project database")
+
+  def deleteDataset ( self, dataset ):
+    #Used for the project management interface
+#PYTODO - Check about function
+    # Check if there are any tokens for this dataset    
+    sql = "SELECT * FROM %s WHERE dataset=\'%s\'" % ( emcaprivate.projects, dataset )
+    try:
+      cursor = self.conn.cursor()
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      conn.rollback()
+      logging.error ("Failed to query projects for dataset %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise EMCAError ("Failed to query projects for dataset %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+    self.conn.commit()
+    row = cursor.fetchone()
+    if (row == None):
+      sql = "DELETE FROM {0} WHERE dataset=\'{1}\'".format (emcaprivate.datasets,dataset)
+      try:
+        cursor = self.conn.cursor()
+        cursor.execute ( sql )
+      except MySQLdb.Error, e:
+        conn.rollback()
+        logging.error ("Failed to delete dataset %d : %s. sql=%s" % (e.args[0], e.args[1], sql))
+        raise EMCAError ("Failed to delete dataset %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      self.conn.commit()
+    else:
+      raise EMCAError ("Tokens still exists. Failed to drop project database")

@@ -25,55 +25,60 @@
   
         <!-- Navigation pane -->
         <div class="navbar">  
-	   <div class="navbar-inner"> 
-	     <div class="container">
-	       <ul class="nav nav-pills nav-tabs">  
-		 
-		 <li class="dropdown active">
-		   <a class="dropdown-toggle" data-toggle="dropdown" href="/EM/ocpuser/profile/">
-		     PROJECTS <b class="caret"></b>
-		   </a>
-		   <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
-		     <li><a href="/EM/ocpuser/profile/">Projects</a></li>
-		     <li><a href="/EM/ocpuser/createproject/">Create Project</a></li>
-                     <li><a href="/EM/ocpuser/restore/">Restore Project</a></li>
-		   </ul>
-		 </li>
+	  <div class="navbar-inner"> 
+	    <div class="container">
+	      <ul class="nav nav-pills nav-tabs">  
+		
+		<li class="dropdown active">
+		  <a class="dropdown-toggle" data-toggle="dropdown" href="/EM/ocpuser/profile/">
+		    PROJECTS <b class="caret"></b>
+		  </a>
+		  <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+		    <li><a href="/EM/ocpuser/profile/">Projects</a></li>
+		    <li><a href="/EM/ocpuser/createproject/">Create Project</a></li>
+                    <li><a href="/EM/ocpuser/restore/">Restore Project</a></li>
+		  </ul>
+		</li>
 
-		 <li class="dropdown">                                                                                                                   
-                   <a class="dropdown-toggle" data-toggle="dropdown" href="/EM/ocpuser/profile/">
-		     DATASETS <b class="caret"></b>                                                                                                             
-                   </a>                                                                                                                                         
-                   <ul class="dropdown-menu">                                                                                                                                         <li><a href="/EM/ocpuser/datasets/">Datasets</a></li>                                                                                                            <li><a href="/EM/ocpuser/createdataset/">Create Dataset</a></li>                                                                                                <li><a href="/EM/ocpuser/restore/">Restore Project</a></li>                                                                                                  </ul>                                                                                                                                                          </li> 		 
-		 <li><a href="/EM/ocpuser/createdataset/">CATMAID</a></li>
-             </div>
-           </div>
-	</div>
-
+		<li class="dropdown">                                                                                                                   
+                  <a class="dropdown-toggle" data-toggle="dropdown" href="/EM/ocpuser/profile/">
+		    DATASETS <b class="caret"></b>                                                                                                             
+                  </a>                                                                                                                                         
+		  <ul class="dropdown-menu">
+		    <li><a href="/EM/ocpuser/datasets/">Datasets</a></li>
+		    <li><a href="/EM/ocpuser/createdataset/">Create Dataset</a></li>
+		
+		  </ul>
+		</li> 		 
+		<li><a href="/EM/ocpuser/createdataset/">CATMAID</a></li>
+              </div>
+            </div>
+	  </div>
+	  
    {% else %}
-      <a href="{% url auth_login %}">{% trans "Log in" %}</a>
-   {% endif %}
-    <hr />
-   {% endblock %}
- </div>
-
-    <div id="content">
-        {% block content %}{% endblock %}
-    </div>
-
-    <div id="footer">
-        {% block footer %}
-        <hr />
-        {% endblock %}
+	  <a href="{% url auth_login %}">{% trans "Log in" %}</a>
+	  {% endif %}
+	  <hr />
+	  {% endblock %}
+	</div>
 	
-
-        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-
-
-	<script type="text/javascript" src="/static/js/bootstrap.js"></script>
-
-
-
-
-</body>
+	<div id="content">
+          {% block content %}{% endblock %}
+	</div>
+	
+	<div id="footer">
+          {% block footer %}
+          <hr />
+          {% endblock %}
+	  
+	  
+          <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+	  
+	  
+	  <script type="text/javascript" src="/static/js/bootstrap.js"></script>
+	  
+	  
+	  
+	  
+	</body>
 

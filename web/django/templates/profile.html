@@ -1,11 +1,17 @@
 {% extends "base.html" %}
 
 {% block title %}
-   Welcome 
+     Welcome 
 {% endblock title %}
 
 
 {% block content %}
+<ul>
+  {% for message in messages %}
+  <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+  {% endfor %}
+</ul>
+
 
 <form class="form-inline" method="post" action="">
 
@@ -17,10 +23,8 @@
     
     Filter By:
     <select name="filteroption">
-      <option value="token">Token</option>
       <option value="project">Project</option>
       <option value="datatype">Datatype</option>
-      <option value="dataset">Dataset</option>
     </select>
     
     <input type="text"  name="filtervalue" placeholder="Enter Filter Value">
@@ -30,6 +34,8 @@
 </div>
 
 </form>
+<body>
+
 <form method="post" action="">
   <div class="tabbable tabs-left">
     <ul class="nav nav-pills nav-stacked span2">
@@ -54,122 +60,49 @@
 		<th>Type</th>
 		<th>Description</th>
               </tr>	   
+	      
 	      {% for field in proj %}
-              <tr>
-	        
-                <td style="width: 15%;">{{ field.0 }}</td>
-                {% if field.4 == 1 %}
-                <td>Image</td>
-                {% else %}
-                <td>Annotation</td>
-                {% endif %}
-		<td colspan=50>{{ field.10 }}</td>
-                <td><button class="btn" id="delete" type="submit" name="delete"> <i class ="icon-trash icon-black"></i>Delete Project</button></td>
-                <td><button class="btn" id="backup" type="submit" name="backup"> <i class ="icon-inbox icon-black"></i>Backup Project</button></td>
-		<td><button class="btn" id="viewtokens" type="submit" name="tokens"> <i class ="icon-inbox icon-black"></i>View Tokens</button></td>
-		
-		{% endfor %}         
-		{% empty %}
-		<li>No Projects Available!</li>
-		{% endfor %}         
+	      <form method="post" action = "">
+	      <tr>
+	          <input type="hidden" name="projname" value={{field.3}}>
+                  <td style="width: 15%;">{{ field.3 }}</td>
+                  {% if field.4 == 1 %}
+                  <td>Image</td>
+                  {% else %}
+                  <td>Annotation</td>
+                  {% endif %}
+		  <td colspan=50>{{ field.11 }}</td>
+                  <td><button class="btn" id="delete" type="submit" name="delete"> <i class ="icon-trash icon-black"></i>Delete Project</button></td>
+                  <td><button class="btn" id="backup" type="submit" name="backup"> <i class ="icon-inbox icon-black"></i>Backup Project</button></td>
+		  <td><button class="btn" id="tokens" type="submit" name="tokens"> <i class ="icon-inbox icon-black"></i>View Tokens</button></td>
+	      </form>	  
+	      {% endfor %}         
+	      
+	      {% empty %}
+	      <li>No Projects Available!</li>
+	      {% endfor %}         
 	  </table></td>
 	</tr>
 	{% empty %}
-	<li>No Datasets Available!</li>
+	<li>No Projects Available!</li>
 	{% endfor %}      
       </table>
     </div>
   </div>
+
+
 </form>
 
 
-  <div id="poptions">
-    <br>
-    <br>
-    <button class="btn" id="DownloadToken" type="submit" name="downloadtoken"><i class="icon-file icon-black"></i>Download Token </button>
-    <button class="btn" id="update" type="submit" name="update" ><i class ="icon-edit icon-black"></i>Update Project</button>
-    <button class="btn" id="delete" type="submit" name="delete"> <i class ="icon-trash icon-black"></i>Delete Project</button>
-    <button class="btn" id="backup" type="submit" name="backup"> <i class ="icon-inbox icon-black"></i>Backup Project</button>
-    
-    
-  </div>
 
 
-{% for key, value in databases %}
-    
-    <div id="tableheader" style="background-color:#EEEEEE;height:40px;width:1900px;float:left;">
-      
-       <div id="pname" style ="float:left;">
- 	  <a name="projname"></a><h3>Dataset: {{key.0}}</h3>
-       </div>
-   </div>
-
-<table border="1">
-    
-	<tr>
-	  <th></th>
-	  <th>Token</th>
-	  <th>Datatype</th>
-	  <th>Project</th>
-	  <th>Readonly</th>
-	  <th>Exceptions</th>
-	  <th>Description</th>
-	</tr>
- 
-
-    <div>
-
-    
-   {% for proj in value %}
-       {% for field in proj %}
-    
-
-         <tr>
-	   <td><input type="radio" name="roptions" value={{field.0}}></td>
-             <td style="width: 15%;">{{ field.0 }}</td>
-	     {% if field.4 == 1 %}
-                  <td>Image</td>
-	     {% else %}
-                  <td>Annotation</td>
-             {% endif %}
-
-	     
-	     <td>{{ field.3 }}</td>
-	     {% if field.8 == 1 %}
-	          <td>No</td>
-             {% else %}
-	          <td>Yes</td>
-	     {% endif %}
-
-             {% if field.7 == 1 %}
-                  <td>No</td>
-             {% else %}
-                  <td>Yes</td>
-             {% endif %}
-
-             <td colspan=50>{{ field.10 }}</td>
 
 
-	 </tr>
-   </form>
-     
-       {%  endfor %}
-    {%  endfor %}
-    
-    
-    </div>
- </table>
-
- <div class="well">
-        <p><button class="btn btn-primary" href="https://github.com/dyve/django-bootstrap-toolkit/">Check it out on GitHub &raquo;</button></p>
-    </div>
 
 
-<br>
-<br>
-{% empty %}
-    <li>No projects Available!</li>
-{% endfor %}
+</body>
+
+
 
 {% endblock content %}
 
