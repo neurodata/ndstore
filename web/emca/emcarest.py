@@ -150,7 +150,7 @@ def HDF5 ( imageargs, proj, db ):
 #
 def xySlice ( imageargs, proj, db ):
   """Return the cube object for an xy plane"""
- 
+
   if proj.getDBType() == emcaproj.CHANNELS_8bit or proj.getDBType() == emcaproj.CHANNELS_16bit:
     [ channel, sym, imageargs ] = imageargs.partition ('/')
     # make sure that the channel is an int identifier

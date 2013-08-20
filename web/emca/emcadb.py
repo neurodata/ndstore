@@ -722,7 +722,6 @@ class EMCADB:
     # PYTODO alter query if  (emcaproj)._resolution is > resolution
     # if cutout is below resolution, get a smaller cube and scaleup
     if self.annoproj.getDBType()==emcaproj.ANNOTATIONS and  self.annoproj.getResolution() > resolution:
-      logger.warning ( "Zooming into higher resolution than maximum.  From %s to %s." % ( resolution, self.annoproj.getResolution()))
 
       # scale the corner to higher resolution
       newcorner = corner[0]/(2**(self.annoproj.getResolution()-resolution)), corner[1]/(2**(self.annoproj.getResolution()-resolution)), corner[2]
@@ -759,7 +758,7 @@ class EMCADB:
       xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
 
       # use the requested resolution
-      dbname = self.annoproj.getTable(self.annoproj.getResolution())
+      dbname = self.annoproj.getTable(resolution)
 
 
     if (self.annoproj.getDBType() == emcaproj.ANNOTATIONS):
