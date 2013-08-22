@@ -58,15 +58,11 @@ class AnnoStack:
       #   recall that cube size changes from 128x128x16 to 64*64*64
       outdata = np.zeros ( [ zcubedim*4, ycubedim*2, xcubedim*2 ] )
 
-      # We've written to this offset already
-      prevmortonidx = 0
-
       # Round up to the top of the range
       lastzindex = (zindex.XYZMorton([xlimit,ylimit,zlimit])/64+1)*64
 
       # Iterate over the cubes in morton order
-#      for mortonidx in range(256*192*128, lastzindex, 64): 
-      for mortonidx in range(1, lastzindex, 64): 
+      for mortonidx in range(0, lastzindex, 64): 
 
         print "Working on batch %s at %s" % (mortonidx, zindex.MortonXYZ(mortonidx))
         

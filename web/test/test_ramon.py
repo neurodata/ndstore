@@ -41,7 +41,7 @@ class TestRamon:
     """Create the unittest database"""
 
     self.pd = emcaproj.EMCAProjectsDB()
-    self.pd.newEMCAProj ( 'unittest', 'test', 'localhost', 'unittest', 2, 'kasthuri11', None, False, True )
+    self.pd.newEMCAProj ( 'unittest', 'test', 'localhost', 'unittest', 2, 'kasthuri11', None, False, True, False, 0 )
 
   def teardown_class (self):
     """Destroy the unittest database"""

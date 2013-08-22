@@ -12,24 +12,36 @@
 
   <div id="login">
     <div id="content">
-        <form method="post" action=".">{% csrf_token %}
-	  <p class="form">
-	      {{ form.username.label_tag }}: {{ form.username }} <br />
-	        {{ form.password.label_tag }}: {{ form.password }}
-	      </p>
+        <form  class="form-horizontal" method="post" action=".">{% csrf_token %}
+	  <div class="form-group">
+	    <label for="inputEmail" class="col-lg-2 control-label"> {{ form.username.label_tag }}</label>
+	    <div class="col-lg-2">
+	      {{ form.username }} 
+	    </div>
+	  </div>
+	  <br>
+	  <div class="form-group">
+	    <label for="inputPassword" class="col-lg-2 control-label">{{ form.password.label_tag }}</label>
+	    <div class="col-lg-2">
+	       {{ form.password }}
+	    </div>
+	  </div>
 
 	  <p class="submit">
-	      <input type="submit" value="Log In" class="button"/>
-	        <input type="hidden" name="next" value="/EM/ocpuser/profile/" /> {# TEMPORARY#}
-		  {#<input type="hidden" name="next" value="{{ next }}" /> #}
-		</p>
-	  </form>
+	    <button type="submit" class="btn btn-default">Sign in</button>
 
-	<p class="register">
-	  Don't have an account? <a href="{% url registration_register %}">Register!</a><br/>
-                {# Forgot your password? <a href="{% url password_reset %}">Set a new one</a>. #}
+	    <input type="hidden" name="next" value="/EM/ocpuser/profile/" /> {# TEMPORARY#}
+	    {#<input type="hidden" name="next" value="{{ next }}" /> #}
 	  </p>
-
-	</div>
+	</form>
+	
+	<p class="register">
+	  Don't have an account? <a href="{% url registration_register %}">Register!</a>
+          {# Forgot your password? <a href="{% url password_reset %}">Set a new one</a>. #}
+	</p>
+	
+    </div>
   </div>
+
+
 {% endblock content %}

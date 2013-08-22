@@ -23,8 +23,8 @@ import kanno_cy
 # Stuff we make take from a config or the command line in the future
 _xtilesz = 10748
 _ytilesz = 12896
-_startslice = 80
-_endslice = 1849
+_startslice = 0
+_endslice = 1023
 _prefix = 'combinedjose28fixed2_export_s'
 _batchsz = 16 
 

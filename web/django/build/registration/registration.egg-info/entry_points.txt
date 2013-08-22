@@ -1,0 +1,4 @@
+
+        [paste.paster_create_template]
+            registration = registration:Registration
+        

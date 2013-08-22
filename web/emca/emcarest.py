@@ -150,7 +150,7 @@ def HDF5 ( imageargs, proj, db ):
 #
 def xySlice ( imageargs, proj, db ):
   """Return the cube object for an xy plane"""
- 
+
   if proj.getDBType() == emcaproj.CHANNELS_8bit or proj.getDBType() == emcaproj.CHANNELS_16bit:
     [ channel, sym, imageargs ] = imageargs.partition ('/')
     # make sure that the channel is an int identifier
@@ -1236,7 +1236,7 @@ def deleteAnnotation ( webargs ):
 
 def projInfo ( webargs ):
   """Return information about the project and database"""
-
+  logger.warning("Enter emcarest proj info")
   [ token, projinfoliteral, otherargs ] = webargs.split ('/',2)
 
   # Get the annotation database
@@ -1251,6 +1251,8 @@ def projInfo ( webargs ):
 
   h5f.close()
   tmpfile.seek(0)
+  logger.warning("Done emcarest proj info")
+
   return tmpfile.read()
 
 

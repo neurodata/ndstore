@@ -10,30 +10,176 @@ Create Project Template
 {% endblock %}
 {% block content %}
 
-	<form action="" method="post" enctype="multipart/form-data">
-          {% csrf_token %}
-          <div align=left>
-            <p>{{form.as_p}}</p>
-          </div>
-   	  <div id="filtermenu"style="background-color:#F5F6CE; height:40px;width:800px;float:left;">
-	    Select backup file:
-
-            <select name="backupfile">
-	      <option value="None">None</option>
-	      {% for file in flist %}
-	      <option value={{file}}>{{file}}</option>
-              {% endfor %}    
-	    </select>
-	    
+	<div class="container-fluid">
+	  <div class = "row-fluid">
+            <div class ="span12">
+	      <div id="header" style="background-color:#4682B4;" align="center">
+		<h2 style="margin-bottom:0;">RESTORE PROJECT FROM FILE</h2></div>
+	        </div>
 	  </div>
-	  <br><br>
-	  <div align=left>
-            <p><input name = "RestoreProject" type="submit" value="Create Project With data"></p>
-          </div>
 
-	 
 	  
-       </form>
+   <form method="post" action="" enctype="multipart/form-data">
+     {% csrf_token %}  
+     
+     {{ form.non_field_errors }}
+     <div class="container-fluid">
+       <div class = "row-fluid"> <div class ="span12"></div></div>
+       <div class = "row-fluid">
+	 <div class ="span4"></div>
+	 <div class ="span2 blue">
+           <div class="fieldWrapper">
+             {{ form.subject.errors }}
+             <label for="Token">Token:</label>
+           </div>
+	 </div>
+	 <div class ="span2">
+           {{ form.token }}
+	 </div>
+	 <div class ="span4"></div>
+       </div>
+       
+       <div class = "row-fluid">
+	 <div class ="span4"></div>
+	 <div class ="span2">
+           <div class="fieldWrapper">
+             {{ form.subject.errors }}
+             <label for="description">Description</label>
+           </div>
+	 </div>
+	 <div class ="span2">
+           {{ form.description }}
+	 </div>
+	 <div class ="span4"></div>
+       </div>
+       
+       <div class = "row-fluid">
+	 <div class ="span4"></div>
+	 <div class ="span2">
+           <div class="fieldWrapper">
+             {{ form.subject.errors }}
+             <label for="project">Project:</label>
+           </div>
+	 </div>
+	 <div class ="span2">
+           {{ form.project }}
+	 </div>
+	 <div class ="span4"></div>
+       </div>
+
+       <div class = "row-fluid">
+	 <div class ="span4"></div>
+	 <div class ="span2">
+           <div class="fieldWrapper">
+             {{ form.subject.errors }}
+             <label for="dataset">Dataset</label>
+           </div>
+	 </div>
+	 <div class ="span2">
+           {{ form.dataset }}
+	 </div>
+	 <div class ="span4"></div>
+       </div>
+       
+       <div class = "row-fluid">
+	 <div class ="span4"></div>
+	 <div class ="span2">
+           <div class="fieldWrapper">
+             {{ form.subject.errors }}
+           <label for="datatype">Datatype:</label>
+           </div>
+         </div>
+         <div class ="span2">
+           {{ form.datatype }}
+         </div>
+         <div class ="span4"></div>
+       </div>
+       
+       <div class = "row-fluid">
+	 <div class ="span4"></div>
+	 <div class ="span2">
+           <div class="fieldWrapper">
+             {{ form.subject.errors }}
+             <label for="dataurl">Data URL</label>
+           </div>
+	 </div>
+	 <div class ="span2">
+           {{ form.dataurl }}
+	 </div>
+	 <div class ="span4"></div>
+       </div>
+       
+       <div class = "row-fluid">
+	 <div class ="span4"></div>
+	 <div class ="span2">
+           <div class="fieldWrapper">
+             {{ form.subject.errors }}
+             <label for="resolution">Resolution:</label>
+           </div>
+	 </div>
+	 <div class ="span2">
+           {{ form.resolution }}
+	 </div>
+	 <div class ="span4"></div>
+       </div>
+       
+       <div class = "row-fluid">
+	 <div class ="span4"></div>
+	 <div class ="span2">
+           <div class="fieldWrapper">
+             {{ form.subject.errors }}
+             <label for="readonly">Read Only:</label>
+           </div>
+	 </div>
+	 <div class ="span2">
+           {{ form.readonly }}
+	 </div>
+	 <div class ="span4"></div>
+       </div>
+
+       <div class = "row-fluid">
+	 <div class ="span4"></div>
+	 <div class ="span2">
+           <div class="fieldWrapper">
+             {{ form.subject.errors }}
+             <label for="exceptions">Enable Exceptions:</label>
+           </div>
+	 </div>
+	 <div class ="span2">
+           {{ form.exceptions }}
+	 </div>
+	 <div class ="span4"></div>
+       </div>
+       
+       <div class = "row-fluid">
+         <div class ="span4"></div>
+         <div class ="span4">
+	   
+	   <div id="filtermenu"style="background-color:#F5F6CE; height:40px;width:800px;float:left;">
+             Select backup file:
+	     
+             <select name="backupfile">
+               <option value="None">None</option>
+               {% for file in flist %}
+               <option value={{file}}>{{file}}</option>
+               {% endfor %}
+             </select>
+	   </div>
+	   <div class ="span4"></div>
+	 </div>
+
+       <br><br>
+
+       <div class = "row-fluid">
+	 <div class ="span5"></div>
+	 <div class ="span3">
+	   
+	   <p><button class="btn btn-primary" name = "RestoreProject" type="submit">Restore Project</button></p>
+	 </div>
+	 <div class ="span4"></div>
+
+   </form>
+
 
     </section>
 {% endblock %}

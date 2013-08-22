@@ -11,6 +11,7 @@ from cube import Cube
 from emca_cy import annotate_cy
 from emca_cy import shave_cy
 from emca_cy import recolor_cy
+from emca_cy import zoomData_cy
 
 #
 #  AnnotateCube: manipulate the in-memory data representation of the 3-d cube of data
@@ -162,6 +163,23 @@ class AnnotateCube(Cube):
 
     # return the list of exceptions ids and the exceptions
     return exdata
+
+  # placeholder function move and optimize
+  def zoomData ( self, factor ):
+    """Cube data zoomed up"""
+
+    newdata = np.zeros ( [self.data.shape[0], self.data.shape[1]*(2**factor), self.data.shape[2]*(2**factor)], dtype=np.uint32) 
+
+    zoomData_cy ( self.data, newdata, int(factor) )
+
+    self.data = newdata
+
+#    for z in range (newdata.shape[0]):
+#      for y in range (newdata.shape[1]):
+#        for x in range (newdata.shape[2]):
+#          newdata[z,y,x] = self.data[z,y/(2**factor),x/(2**factor)]
+#
+#    self.data = newdata          
 
 # end AnnotateCube
 

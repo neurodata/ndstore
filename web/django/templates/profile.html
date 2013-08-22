@@ -1,120 +1,125 @@
 {% extends "base.html" %}
 
-
 {% block title %}
-Welcome 
+     Welcome 
 {% endblock title %}
 
 
 {% block content %}
-<form method="post" action="">
+<ul>
+  {% for message in messages %}
+  <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+  {% endfor %}
+</ul>
 
 
-  <div id="header" style="background-color:#4682B4;">
-    <h1 style="margin-bottom:0;">PROJECTS</h1></div>
+<form class="form-inline" method="post" action="">
 
-  <div id="content" style="background-color:#F5F6CE;height:80px;width:1900px;float:left;">
-    <div id="filtermenu"style="background-color:#F5F6CE; height:80px;width:400px;float:left;">
-      Filter By:
-      <select name="filteroption">
-	<option value="token">Token</option>
-	<option value="project">Project</option>
-	<option value="datatype">Datatype</option>
-	<option value="dataset">Dataset</option>
-      </select>
+  
+  <div class="container-fluid">
+    <div class = "row-fluid">
       
-      <textarea name="filtervalue" cols="20" rows="1">
-      </textarea>
-      <br>
-      <input type="submit" name ="filter" value="Filter Projects" />
+      <div class ="span12">
+	<div id="header" style="background-color:#4682B4;" align="center">  
+	  <h2 style="margin-bottom:0;">PROJECTS</h2></div>
+      </div>
+    </div>
+  </div>
+  
+
+  <div class="container-fluid">
+    <div class = "row-fluid">
+      <div class ="span3"></div>
+      <div class ="span6">
+	<div id="content" style="background-color:#F5F6CE;float:left;">
+	  
+	  Filter By:
+	  <select name="filteroption">
+	    <option value="project">Project</option>
+	    <option value="datatype">Datatype</option>
+	  </select>
+	  
+	  <input type="text"  name="filtervalue" placeholder="Enter Filter Value">
+	  <button type="submit" class= "btn" name ="filter">Filter Projects </button>
+	  
+	</div>
+	<div class ="span3"></div>
+      </div>
     </div>
   </div>
 
+</form>
+<body>
 
- </form>
- <form method="post" action="">
-<div id="poptions">
-  <input id="DownloadToken" type="submit" name="downloadtoken" value="Download Token">
-  <input id="update" type="submit" name="update" value="Update Project">
-  <input id="delete" type="submit" name="delete" value="Delete Project">
-  <input id="backup" type="submit" name="backup" value="Backup Project">
-
-</div>
-
-
-{% for key, value in databases %}
-    
-    <div id="tableheader" style="background-color:#EEEEEE;height:40px;width:1900px;float:left;">
-      
-       <div id="pname" style ="float:left;">
- 	  <a name="projname"></a><h3>Dataset: {{key.0}}</h3>
-       </div>
-   </div>
-
-<table border="1">
-    
-	<tr>
-	  <th></th>
-	  <th>Token</th>
-	  <th>Datatype</th>
-	  <th>Project</th>
-	  <th>Readonly</th>
-	  <th>Exceptions</th>
-	  <th>Description</th>
-	</tr>
+<form method="post" action="">
  
-
-    <div>
-
-    
-   {% for proj in value %}
-       {% for field in proj %}
-    
-
-         <tr>
-	   <td><input type="radio" name="roptions" value={{field.0}}></td>
-             <td style="width: 15%;">{{ field.0 }}</td>
-	     {% if field.4 == 1 %}
-                  <td>Image</td>
-	     {% else %}
-                  <td>Annotation</td>
-             {% endif %}
-
-	     
-	     <td>{{ field.3 }}</td>
-	     {% if field.8 == 1 %}
-	          <td>No</td>
-             {% else %}
-	          <td>Yes</td>
-	     {% endif %}
-
-             {% if field.7 == 1 %}
-                  <td>No</td>
-             {% else %}
-                  <td>Yes</td>
-             {% endif %}
-
-             <td colspan=50>{{ field.10 }}</td>
-
-
-	 </tr>
-   </form>
-     
-       {%  endfor %}
-    {%  endfor %}
-    
-    
+ <div class="container-fluid">
+    <div class = "row-fluid">
+      	<div class ="span1"></div>
+	<div class ="span10">
+	  <table class ="table">
+	    {% for key, value in databases %}
+	    
+	    <thead>
+	      <tr class="success"><th>Dataset</th> <th>{{key.0}}</th></tr>
+	    </thead>
+	    <tr>
+	      <td></td>
+	      <td>
+		<table class="table table-bordered">
+		  {% for proj in value %}
+		  <tr class ="error">
+		    <th>Project</th>
+		    <th>Type</th>
+		    <th>Description</th>
+		  </tr>	   
+		  
+		  {% for field in proj %}
+		  <form method="post" action = "">
+		    <tr>
+		      <input type="hidden" name="projname" value={{field.3}}>
+		      <td style="width: 15%;">{{ field.3 }}</td>
+		      {% if field.4 == 1 %}
+		      <td>Image</td>
+		      {% else %}
+		      <td>Annotation</td>
+		      {% endif %}
+		      <td colspan=50>{{ field.11 }}</td>
+<!--		      <td><button class="btn" id="delete" type="submit" name="delete"> <i class ="icon-trash icon-black"></i>Delete Project</button></td>
+-->
+		      <td><button class="btn" id="backup" type="submit" name="backup"> <i class ="icon-inbox icon-black"></i>Backup Project</button></td>
+		      <td><button class="btn" id="tokens" type="submit" name="tokens"> <i class ="icon-inbox icon-black"></i>View Tokens</button></td>
+		  </form>	  
+		  {% endfor %}         
+		  
+		  {% empty %}
+		  <li>No Projects Available!</li>
+		  {% endfor %}         
+	      </table></td>
+	    </tr>
+	    {% empty %}
+	    <li>No Projects Available!</li>
+	    {% endfor %}      
+	  </table>
+	</div>
+	<div class ="span1"></div>
     </div>
- </table>
+ </div>
+  
+
+
+</form>
 
 
 
 
-<br>
-<br>
-{% empty %}
-    <li>No projects Available!</li>
-{% endfor %}
+
+
+
+
+</body>
+
+
 
 {% endblock content %}
 
