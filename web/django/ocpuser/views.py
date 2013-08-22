@@ -184,18 +184,25 @@ def datasets(request):
       if 'delete' in request.POST:
         pd = emcaproj.EMCAProjectsDB()
         openid = request.user.username
-       
         ds = (request.POST.get('dataset')).strip()
-        print " Ready to delete " ,ds
-        import pdb;pdb.set_trace()
-        
         pd.deleteDataset(ds)
         #pd.deleteTokenDescription(token)
         pd = emcaproj.EMCAProjectsDB()
         datasets = pd.getDatasets()
         return render_to_response('datasets.html', { 'dts': datasets },context_instance=RequestContext(request))
+      elif 'viewprojects' in request.POST:
+        pd = emcaproj.EMCAProjectsDB()
+        openid = request.user.username
+        ds = (request.POST.get('dataset')).strip()
+        filteroption= ""
+        filtervalue = ""
+        dbs = defaultdict(list)
+        proj = pd.getFilteredProjs(openid,filteroption,filtervalue,ds);
+        dbs[ds].append(proj)
+        return render_to_response('profile.html', { 'projs': proj, 'databases':  dbs.iteritems() },context_instance=RequestContext(request))
       else:
-        return redirect(datasets)
+        datasets = pd.getDatasets()
+        return render_to_response('datasets.html', { 'dts': datasets },context_instance=RequestContext(request))
     else:
       # GET datasets
       pd = emcaproj.EMCAProjectsDB()

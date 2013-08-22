@@ -7,78 +7,156 @@ Create Dataset Template
 Create New Dataset 
 {% endblock %}
 
+<head>
+  <style>
+    .blue { background-color:#00F; }
+    div { height: 100px; }
+  </style>
+</head>
 {% block content %}
- <div id="header" style="background-color:#4682B4;" align="center">
-    <h2 style="margin-bottom:0;">CREATE NEW DATASET></div>
+ <div class="container-fluid">
+   <div class = "row-fluid">
+        <div class ="span12">
+       
+       <div id="header" style="background-color:#4682B4;" align="center">
+	 <h2 style="margin-bottom:0;">CREATE NEW DATASET </div>
+     </div>
+   
+   </div>
+   
+ </div>
 
  <div id="form" >
-   <table class="table">
      <form action="" method="post">
-     
-       
        {{ form.non_field_errors }}
-     <tr>  
-	 <div class="fieldWrapper">
-	   {{ form.subject.errors }}
-	   <th><label for="dataset">Dataset Name:</label> </th>
-	   <td>{{ form.dataset }}</td>
+       <div class="container-fluid">
+	 <div class = "row-fluid"> <div class ="span12"></div></div>
+	 <div class = "row-fluid">
+	   <div class ="span4"></div>
+	   <div class ="span2 blue">
+	     <div class="fieldWrapper">
+	       {{ form.subject.errors }}
+	       <label for="dataset">Dataset Name:</label>
+	     </div>
+	   </div>
+	   <div class ="span2">
+	     {{ form.dataset }}
+	   </div>
+	   <div class ="span4"></div>
 	 </div>
-     </tr>
+       
+	 <div class = "row-fluid">
+           <div class ="span4"></div>
+           <div class ="span2">
+	     <div class="fieldWrapper">
+	       {{ form.subject.errors }}
+	       <label for="ximagesize">X Image Size:</label>
+	     </div>
+           </div>
+           <div class ="span2">
+	     {{ form.ximagesize }}
+	   </div>
+	   <div class ="span4"></div>
+         </div>
 
-       <tr>
-	 <div class="fieldWrapper">
-	   {{ form.subject.errors }}
-	   <th><label for="ximagesize">X Image Size:</label></th><td> {{ form.ximagesize }}</td>
-	 </div>
-       </tr>
-       <tr>
-	 <div class="fieldWrapper">
-	   {{ form.subject.errors }}
-	   <th><label for="yimagesize">Y Image Size:</label></th>
-	   <td>{{ form.yimagesize }}</td>
-	 </div>
-       </tr>
-       <tr>
-	 <div class="fieldWrapper">
-	   {{ form.subject.errors }}
-	   <th><label for="startslice">Start Slice:</label></th>
-	   <td>{{ form.startslice }}</td>
-	 </div>
-       </tr>
-       <tr>
-	 <div class="fieldWrapper">
-	   {{ form.subject.errors }}
-	   <th  align="right"><label for="endslice">End Slice:</label></th>
-	   <td>{{ form.endslice }}</td>
-	 </div>
-       </tr>
-       <tr>
-	 <div class="fieldWrapper">
-	   {{ form.subject.errors }}
-	   <th><label for="zoomlevels">Zoom Levels:</label></th>
-	   <td>{{ form.zoomlevels }}</td>
-	 </div>
-       </tr>
-       <tr>
-	 <div class="fieldWrapper">
-	   {{ form.subject.errors }}
-	   <th><label for="zscale">Z Scale:</label></th>
-	   <td> {{ form.zscale }}</td>
-	 </div>
-       </tr>
-       <tr>
-	 <div class="fieldWrapper">
-	   {{ form.subject.errors }}
-	   <th><label for="description">Description:</label></th>
-	   <td> {{ form.description}}</td>
-	 </div>
-       </tr>
+	 <div class = "row-fluid">
+           <div class ="span4"></div>
+           <div class ="span2">
+       	     <div class="fieldWrapper">
+	       {{ form.subject.errors }}
+	       <label for="yimagesize">Y Image Size:</label>
+	     </div>
+           </div>
+           <div class ="span2">
+	     {{ form.yimagesize }}
+	   </div>
+	   <div class ="span4"></div>
+         </div>
+	 
+         <div class = "row-fluid">
+           <div class ="span4"></div>
+           <div class ="span2">
+	     <div class="fieldWrapper">
+	       {{ form.subject.errors }}
+	       <label for="startslice">Start Slice:</label>
+	     </div>
+           </div>
+           <div class ="span2">
+	     {{ form.startslice }}
+	   </div>
+	   <div class ="span4"></div>
+         </div>
 
-       <tr>
-	 <td><p><input name = "createdataset" type="submit" value="Create Dataset"></p></td>
-       </tr>
+         <div class = "row-fluid">
+           <div class ="span4"></div>
+           <div class ="span2">
+	     <div class="fieldWrapper">
+	       {{ form.subject.errors }}
+	       <label for="endslice">End Slice:</label>
+	     </div>
+           </div>
+           <div class ="span2">
+	     {{ form.endslice }}
+	   </div>
+	   <div class ="span4"></div>
+         </div>
+	 
+       
+	  <div class = "row-fluid">
+            <div class ="span4"></div>
+            <div class ="span2">
+       	      <div class="fieldWrapper">
+		{{ form.subject.errors }}
+		<label for="zoomlevels">Zoom Levels:</label>
+	      </div>
+            </div>
+            <div class ="span2">
+	      {{ form.zoomlevels }}
+	    </div>
+	    <div class ="span4"></div>
+          </div>
+	  
+	  
+       	  <div class = "row-fluid">
+            <div class ="span4"></div>
+            <div class ="span2">
+	      <div class="fieldWrapper">
+		{{ form.subject.errors }}
+		<label for="zscale">Z Scale:</label>
+	      </div>
+            </div>
+            <div class ="span2">
+	      {{ form.zscale }}
+	    </div>
+	    <div class ="span4"></div>
+          </div>
+	  
+       
+       	  <div class = "row-fluid">
+            <div class ="span4"></div>
+            <div class ="span2">
+	      <div class="fieldWrapper">
+		{{ form.subject.errors }}
+		<label for="description">Description:</label>
+	      </div>
+            </div>
+	    <div class ="span2">
+	      {{ form.description}}
+	    </div>
+            <div class ="span4"></div>
+	  </div>
+	  
+	  <div class = "row-fluid">
+            <div class ="span5"></div>
+            <div class ="span3">
+
+	      <p><button class="btn btn-primary" name = "createdataset" type="submit">Create Dataset</button></p>
+
+	    </div>
+            <div class ="span4"></div>
+
      </form>  
- </table>
+
   
  </div>
 
