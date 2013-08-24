@@ -107,27 +107,23 @@ def profile(request):
         path = '/data/scratch/ocpbackup/'+ request.user.username
         if not os.path.exists(path):
           os.mkdir( path, 0755 )
-          
-      #subprocess.call('whoami')
+              #subprocess.call('whoami')
       # Get the database information
-          pd = emcaproj.EMCAProjectsDB()
-          db = (request.POST.get('projname')).strip()
-          #      token = (request.POST.get('token')).strip()
-      #proj= pd.loadProject(token)
-      #db=proj.getDBName()
-          
-      #Open backupfile
-          ofile = path +'/'+ db +'.sql'
-          outputfile = open(ofile, 'w')
-          p = subprocess.Popen(['mysqldump', '-ubrain', '-p88brain88', '--single-transaction', '--opt', db], stdout=outputfile).communicate(None)
+        pd = emcaproj.EMCAProjectsDB()
+        db = (request.POST.get('projname')).strip()
+              #Open backupfile
+        ofile = path +'/'+ db +'.sql'
+        outputfile = open(ofile, 'w')
+        p = subprocess.Popen(['mysqldump', '-ubrain', '-p88brain88', '--single-transaction', '--opt', db], stdout=outputfile).communicate(None)
          # return redirect(profile)
-          messages.success(request, 'Sucessfully backed up database'+ db)
-        else:
-          # Invalid POST
-          return redirect(profile)
+        messages.success(request, 'Sucessfully backed up database '+ db)
+        return redirect(profile)
+      else:
+        # Invalid POST
+        #
         pd = emcaproj.EMCAProjectsDB()
         openid = request.user.username
-      # projects = pd.getProjects ( openid )
+# projects = pd.getProjects ( openid )
         projects = pd.getFilteredProjects ( openid ,"","")
         databases = pd.getDatabases ( openid)
         dbs = defaultdict(list)
@@ -138,26 +134,16 @@ def profile(request):
 
     else:
     # GET Option
+      #import pdb;pdb.set_trace()
       pd = emcaproj.EMCAProjectsDB()
       openid = request.user.username
-    # projects = pd.getProjects ( openid )
-      projects = pd.getFilteredProjects ( openid ,"","")
       databases = pd.getDatabases ( openid)
       dbs = defaultdict(list)
       for db in databases:
         proj = pd.getFilteredProjs(openid,"","",db[0]);
         dbs[db].append(proj)
         
-        # for p,d in dbs.iteritems():
-        #  print p[0]
-        
-        # for x in d[0]:
-        #   print "===================="
-     #   print x
-        
-        
-    #d = dict(dbs);
-      return render_to_response('profile.html', { 'projs': projects, 'databases': dbs.iteritems() },context_instance=RequestContext(request))
+      return render_to_response('profile.html', { 'databases': dbs.iteritems() },context_instance=RequestContext(request))
     
   except EMCAError, e:
     #import pdb;pdb.set_trace();
@@ -194,12 +180,14 @@ def datasets(request):
         pd = emcaproj.EMCAProjectsDB()
         openid = request.user.username
         ds = (request.POST.get('dataset')).strip()
+        request.session["project"] = ds
         filteroption= ""
         filtervalue = ""
         dbs = defaultdict(list)
         proj = pd.getFilteredProjs(openid,filteroption,filtervalue,ds);
         dbs[ds].append(proj)
-        return render_to_response('profile.html', { 'projs': proj, 'databases':  dbs.iteritems() },context_instance=RequestContext(request))
+        return redirect(profile)
+        #return render_to_response('profile.html', { 'projs': proj, 'databases':  dbs },context_instance=RequestContext(request))
       else:
         datasets = pd.getDatasets()
         return render_to_response('datasets.html', { 'dts': datasets },context_instance=RequestContext(request))
@@ -411,11 +399,12 @@ def updateproject(request):
 @login_required
 def restore(request):
   if request.method == 'POST':
+    #import pdb;pdb.set_trace();
     if 'RestoreProject' in request.POST:
       form = CreateProjectForm(request.POST)
       if form.is_valid():
         token = form.cleaned_data['token']
-        host = form.cleaned_data['host']
+        host = "localhost"
         project = form.cleaned_data['project']
         dataset = form.cleaned_data['dataset']
         datatype = form.cleaned_data['datatype']
@@ -423,13 +412,14 @@ def restore(request):
         dataurl = form.cleaned_data['dataurl']
         readonly = form.cleaned_data['readonly']
         exceptions = form.cleaned_data['exceptions']
-        nocreate = form.cleaned_data['nocreate']
+        nocreate = 0
+        resolution = form.cleaned_data['resolution']
         openid = request.user.username
         print "Creating a project with:"
  #       print token, host, project, dataset, dataurl,readonly, exceptions, openid
         # Get database info
         pd = emcaproj.EMCAProjectsDB()
-        pd.newEMCAProj ( token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate )
+        pd.newEMCAProj ( token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate ,resolution)
         bkupfile = request.POST.get('backupfile')
         path = '/data/scratch/ocpbackup/'+ request.user.username + '/' + bkupfile
         print path
@@ -441,13 +431,13 @@ def restore(request):
       # Get the database information                                                                                                  
       #pd = emcaproj.EMCAProjectsDB()
       #token = (request.POST.get('token')).strip()
-        proj= pd.getProj(token)
+        proj= pd.loadProject(token)
         db=proj.getDBName()
         print db
       #Open backupfile                                                                                                                
-      #ofile = path +'/'+ db +'.sql'
-     #   outputfile = open(path, 'r')
-      #  p = subprocess.Popen(['mysql', '-ubrain', '-p88brain88', db], stdout=outputfile).communicate(None)        
+        outputfile = open(path, 'r')
+#        p = subprocess.Popen(['mysql', '-ubrain', '-p88brain88', db], stdout=outputfile).communicate(None)        
+        messages.success(request, 'Sucessfully restored database '+ db)
         return redirect(profile)
 
       else:
@@ -462,7 +452,7 @@ def restore(request):
       #GET DATA
     randtoken = ''.join(random.choice(string.ascii_uppercase + string.digits + string.ascii_lowercase) for x in range(64))
     form = CreateProjectForm(initial={'token': randtoken})
-    path = '/data/backup/'+ request.user.username
+    path = '/data/scratch/ocpbackup/'+ request.user.username
     if os.path.exists(path):
       file_list =os.listdir(path)   
     else:
