@@ -17,7 +17,7 @@ def main():
   parser.add_argument('--readonly', action='store_true', help='Project is readonly')
   parser.add_argument('--noexceptions', action='store_true', help='Project has no exceptions.  (FASTER).')
   parser.add_argument('--nocreate', action='store_true', help='Do not create a database.  Just make a project entry.')
-  parser.add_argument('--resolution', action='store',type=int, help='Maximum resolution for an annotation projects')
+  parser.add_argument('--resolution', action='store',type=int, help='Maximum resolution for an annotation projects', default=0)
 
   result = parser.parse_args()
 
