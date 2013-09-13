@@ -244,10 +244,56 @@ class BrainRestArgs:
     else:
       self._filterlist = None
 
+      #
+#Process merge arguments
+# global - none
+# 2D - resolution/Slice num
+# 3D - resolution/boundingbox
+#
+  def mergeArgs ( self, imageargs, datasetcfg ):
+    """Process REST arguments for an cutout plane request"""
+    
+  # expecting an argument of the form /resolution/x1,x2/y1,y2/z1,z2/
+    try:
+      [ resstr, xdimstr, ydimstr, zdimstr, rest ]  = imageargs.split('/',4)
+      options = rest.split ( '/' )
+    except:
+      raise RESTArgsError ( "Incorrect merge arguments %s" % imageargs )
+    
+  # Check that the arguments are well formatted
+    if not re.match ('[0-9]+$', resstr) or\
+          not re.match ('[0-9]+,[0-9]+$', xdimstr) or\
+          not re.match ('[0-9]+,[0-9]+$', ydimstr) or\
+          not re.match ('[0-9]+,[0-9]+$', zdimstr):
+      raise RESTArgsError ("Non-conforming range arguments %s" % imageargs)
+    
+    self._resolution = int(resstr)
+    
+    z1s,z2s = zdimstr.split(',')
+    y1s,y2s = ydimstr.split(',')
+    x1s,x2s = xdimstr.split(',')
+    
+    x1i = int(x1s)
+    x2i = int(x2s)
+    y1i = int(y1s)
+    y2i = int(y2s)
+    z1i = int(z1s)
+    z2i = int(z2s)
+    
+  # Check arguments for legal values
+    try:
+      if not ( datasetcfg.checkCube ( self._resolution, x1i, x2i, y1i, y2i, z1i, z2i )):
+        raise RESTArgsError ( "Illegal range. Image size:" +  str(datasetcfg.imageSize( self._resolution )))
+    except Exception, e:
+      raise RESTArgsError ( "Illegal arguments to cutout.  Check cube failed {}".format(e))
+    
+    self._corner=[x1i,y1i,z1i-datasetcfg.slicerange[0]]
+    self._dim=[x2i-x1i,y2i-y1i,z2i-z1i ]
+    
+    
 
 
 # Unbound functions  not part of the class object
-
 
 #
 #  Process cutout arguments
@@ -306,4 +352,56 @@ def annotationId ( webargs, datasetcfg ):
   # PYTODO: check validity of annotation id                                      
   return int(rangeargs[0])
 
+#
+#Process merge arguments
+# global - none
+# 2D - resolution/Slice num
+# 3D - resolution/boundingbox
+#
+def mergeArgs ( self, imageargs, datasetcfg ):
+  """Process REST arguments for an cutout plane request"""
+  
+    # expecting an argument of the form /resolution/x1,x2/y1,y2/z1,z2/
+  try:
+    [ resstr, xdimstr, ydimstr, zdimstr, rest ]  = imageargs.split('/',4)
+    options = rest.split ( '/' )
+  except:
+    raise RESTArgsError ( "Incorrect merge arguments %s" % imageargs )
+  
+    # Check that the arguments are well formatted
+  if not re.match ('[0-9]+$', resstr) or\
+        not re.match ('[0-9]+,[0-9]+$', xdimstr) or\
+        not re.match ('[0-9]+,[0-9]+$', ydimstr) or\
+        not re.match ('[0-9]+,[0-9]+$', zdimstr):
+    raise RESTArgsError ("Non-conforming range arguments %s" % imageargs)
+  
+  self._resolution = int(resstr)
+  
+  z1s,z2s = zdimstr.split(',')
+  y1s,y2s = ydimstr.split(',')
+  x1s,x2s = xdimstr.split(',')
+  
+  x1i = int(x1s)
+  x2i = int(x2s)
+  y1i = int(y1s)
+  y2i = int(y2s)
+  z1i = int(z1s)
+  z2i = int(z2s)
+  
+    # Check arguments for legal values
+  try:
+    if not ( datasetcfg.checkCube ( self._resolution, x1i, x2i, y1i, y2i, z1i, z2i )):
+      raise RESTArgsError ( "Illegal range. Image size:" +  str(datasetcfg.imageSize( self._resolution )))
+  except Exception, e:
+    raise RESTArgsError ( "Illegal arguments to cutout.  Check cube failed {}".format(e))
+  
+  self._corner=[x1i,y1i,z1i-datasetcfg.slicerange[0]]
+  self._dim=[x2i-x1i,y2i-y1i,z2i-z1i ]
+  
+    ## list of identifiers to keep
+    #result = re.match ("filter/([\d/,]+)/",rest)
+    #if result != None:
+    #  self._filterlist = np.array(result.group(1).split(','),dtype=np.uint32)
+    #else:
+    #  self._filterlist = None
 
