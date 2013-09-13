@@ -396,7 +396,7 @@ def annId ( imageargs, proj, db ):
 #  listIds
 #  return the annotation identifiers in a region                         
 #                                                                         
-def listIds ( imageargs, proj ):
+def listIds ( imageargs, proj,db ):
   """Return the list of annotation identifiers in a region"""
 
   # Perform argument processing
@@ -1418,6 +1418,64 @@ def loadDBProj ( token ):
   return db, proj, projdb
 
 
+def merge ( webargs ):
+  """Return a single HDF5 field"""
+
+  try:
+    [token, service, relabelids, rest] = webargs.split ('/',3)
+  except:
+    logger.warning("Illegal globalMerge request.  Wrong number of arguments.")
+    raise EMCAError("Illegal globalMerber request.  Wrong number of arguments.")
+  
+  # get the ids from the list of ids and store it in a list vairable
+  ids = relabelids.split(',')
+  last_id = len(ids)-1
+  ids[last_id] = ids[last_id].replace("/","")
+  
+
+  [ db, proj, projdb ] = loadDBProj ( token )
+
+  mergetype = rest
+  #mergetype = rest.strip('/')
+  if mergetype == "global":
+    return db.mergeGlobal(ids, mergetype, 1)
+  else:
+    [mergetype, imageargs] = mergetype.split ('/',1)
+    print mergetype
+    
+    if mergetype == "2D":
+      slicenum = imageargs.strip('/')
+      return db.merge2D(ids, mergetype, 1, slicenum)
+  
+    elif mergetype == "3D":
+      # 3d merge 
+      imageargs = "1/"+ imageargs
+      print imageargs
+      # Perform argument processing for the bounding box
+      try:
+        args = restargs.BrainRestArgs ();
+        args.mergeArgs ( imageargs, proj.datasetcfg )
+      except restargs.RESTArgsError, e:
+        logger.warning("REST Arguments failed: %s" % (e))
+        raise EMCAError(e)
+      # Extract the relevant values
+      corner = args.getCorner()
+      dim = args.getDim()
+      resolution = args.getResolution()
+      
+      print corner
+      print dim
+      print resolution
+      
+      # Perform the relabeling
+     # cube = db.cutout ( corner, dim, resolution, channel )
+    
+
+      return db.merge3D(ids,corner, dim, resolution)
+    else:
+      return "Invalid Merge Type : Select global, 2D or 3D"
+  
+  
   
 
 

@@ -284,21 +284,28 @@ def createproject(request):
         project = form.cleaned_data['project']
         dataset = form.cleaned_data['dataset']
         datatype = form.cleaned_data['datatype']
-        
-        dataurl = form.cleaned_data['dataurl']
+        nocreateoption = request.POST.get('nocreate')
+        print nocreateoption
+        if nocreateoption =="on":
+          nocreate = 0
+        else:
+          nocreate = 1
+  
+        dataurl = "http://openconnecto.me/EM"
         readonly = form.cleaned_data['readonly']
         exceptions = form.cleaned_data['exceptions']
-        nocreate = form.cleaned_data['nocreate']
         openid = request.user.username
         resolution =form.cleaned_data['resolution']
         print "Creating a project with:"
         print token, project, dataset, dataurl,readonly, exceptions, openid , resolution
+        print nocreate
    #     return redirect(get_script_prefix()+'profile', {"user":request.user})
         # Get database info                                        
         pd = emcaproj.EMCAProjectsDB()
         pd.newEMCAProj ( token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate, int(resolution) )
         pd.insertTokenDescription ( token, description )
         return redirect(profile)
+      
        
       else:
         context = {'form': form}
@@ -399,7 +406,7 @@ def updateproject(request):
 @login_required
 def restore(request):
   if request.method == 'POST':
-    #import pdb;pdb.set_trace();
+   
     if 'RestoreProject' in request.POST:
       form = CreateProjectForm(request.POST)
       if form.is_valid():
@@ -416,27 +423,22 @@ def restore(request):
         resolution = form.cleaned_data['resolution']
         openid = request.user.username
         print "Creating a project with:"
- #       print token, host, project, dataset, dataurl,readonly, exceptions, openid
+        #       print token, host, project, dataset, dataurl,readonly, exceptions, openid
         # Get database info
         pd = emcaproj.EMCAProjectsDB()
         pd.newEMCAProj ( token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate ,resolution)
         bkupfile = request.POST.get('backupfile')
         path = '/data/scratch/ocpbackup/'+ request.user.username + '/' + bkupfile
-        print path
-        
         if os.path.exists(path):
           print "File exists"
-
-      #subprocess.call('whoami')                                                                                                      
-      # Get the database information                                                                                                  
-      #pd = emcaproj.EMCAProjectsDB()
-      #token = (request.POST.get('token')).strip()
+          
         proj= pd.loadProject(token)
         db=proj.getDBName()
-        print db
-      #Open backupfile                                                                                                                
-        outputfile = open(path, 'r')
-#        p = subprocess.Popen(['mysql', '-ubrain', '-p88brain88', db], stdout=outputfile).communicate(None)        
+        
+        user ="brain"
+        password ="88brain88"
+        proc = subprocess.Popen(["mysql", "--user=%s" % user, "--password=%s" % password, db],stdin=subprocess.PIPE,stdout=subprocess.PIPE)
+        proc.communicate(file(path).read())
         messages.success(request, 'Sucessfully restored database '+ db)
         return redirect(profile)
 

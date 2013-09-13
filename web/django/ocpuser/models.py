@@ -18,7 +18,7 @@ class ocpProject ( models.Model):
     datatype = models.IntegerField(choices=DATATYPE_CHOICES, default=1)
     
 
-    dataurl  =  models. CharField(max_length=200)
+#    dataurl  =  models. CharField(max_length=200)
     resolution = models.IntegerField(default=0)
     READONLY_CHOICES = (
         (1, 'Yes'),
@@ -31,11 +31,11 @@ class ocpProject ( models.Model):
         (0, 'No'),
         )
     exceptions =  models.IntegerField(choices=EXCEPTION_CHOICES, default=2)
-    NOCREATE_CHOICES = (
-        (0, 'No'),
-        (1, 'Yes'),
-        )
-    nocreate =  models.IntegerField(choices=NOCREATE_CHOICES, default=0)
+#    NOCREATE_CHOICES = (
+ #       (0, 'No'),
+ #       (1, 'Yes'),
+ #       )
+ #   nocreate =  models.IntegerField(choices=NOCREATE_CHOICES, default=0)
     class Meta:
         """ Meta """
         app_label = 'emca'
