@@ -22,13 +22,13 @@ class ocpProject ( models.Model):
     resolution = models.IntegerField(default=0)
     READONLY_CHOICES = (
         (1, 'Yes'),
-        (2, 'No'),
+        (0, 'No'),
         )
     readonly =  models.IntegerField(choices=READONLY_CHOICES, default=2)
 
     EXCEPTION_CHOICES = (
         (1, 'Yes'),
-        (2, 'No'),
+        (0, 'No'),
         )
     exceptions =  models.IntegerField(choices=EXCEPTION_CHOICES, default=2)
     NOCREATE_CHOICES = (
