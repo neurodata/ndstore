@@ -106,16 +106,6 @@ class ImageCube16(Cube):
     outimage = outimage.point(lambda i:i*(1./256)).convert('L')
     outimage.save ( fileobj, "PNG" )
 
-  #
-  # Create the specified slice (index) at filename
-  #
-#  def xyTiff ( self, fileobj ):
-#
-#    zdim,ydim,xdim = self.data.shape
-#    tif = TIFF.open(fileobj, mode="w")
-#    tif.write_image( self.data[0,:,:] )
-#    tif.close()
-
 
   #
   # Create the specified slice (index) at filename
@@ -131,16 +121,6 @@ class ImageCube16(Cube):
   #
   # Create the specified slice (index) at filename
   #
-#  def xzTiff ( self, zscale, fileobj  ):
-#
-#    zdim,ydim,xdim = self.data.shape
-#    tif = TIFF.open(fileobj, mode="w")
-#    tif.write_image( self.data[:,0,:] )
-#    tif.close()
-
-  #
-  # Create the specified slice (index) at filename
-  #
   def yzSlice ( self, zscale, fileobj  ):
 
     zdim,ydim,xdim = self.data.shape
@@ -148,19 +128,5 @@ class ImageCube16(Cube):
     outimage = outimage.point(lambda i:i*(1./256)).convert('L')
     outimage.save ( fileobj, "PNG" )
 
-  #
-  # Create the specified slice (index) at filename
-  #
-#  def yzTiff ( self, zscale, fileobj  ):
-#
-#    zdim,ydim,xdim = self.data.shape
-#    tif = TIFF.open(fileobj, mode="w")
-#    tif.write_image( self.data[:,:,0] )
-#    tif.close()
-
-# end BrainCube
-
-
-  
 # end BrainCube
 
