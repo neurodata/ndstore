@@ -31,6 +31,13 @@ class ocpProject ( models.Model):
         (0, 'No'),
         )
     exceptions =  models.IntegerField(choices=EXCEPTION_CHOICES, default=2)
+    HOST_CHOICES = (
+        ('localhost', 'localhost'),
+        ('braingraph1.cs.jhu.edu', 'openconnecto.me'),
+        ('braingraph1dev.cs.jhu.edu', 'braingraph1dev'),
+        ('braingraph2.cs.jhu.edu', 'braingraph2'),
+        )
+    host =  models.CharField(max_length=200, choices=HOST_CHOICES, default='localhost')
 #    NOCREATE_CHOICES = (
  #       (0, 'No'),
  #       (1, 'Yes'),
