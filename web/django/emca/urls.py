@@ -12,6 +12,7 @@ urlpatterns = patterns('emca.views',
   # batch fetch RAMON 
   url(r'(?P<webargs>^\w+/objects/[\w,/]*)$', 'getObjects'),
   # get project information
+# get project information
   url(r'(?P<webargs>^\w+/projinfo/[\w,/]*)$', 'projinfo'),
   # get channel information
   url(r'(?P<webargs>^\w+/chaninfo/[\w,/]*)$', 'chaninfo'),
@@ -22,6 +23,8 @@ urlpatterns = patterns('emca.views',
   url(r'(?P<webargs>^\w+/\d+/setField/[\w\. ,/]*)$', 'setField'),
   # the post services
   url(r'(?P<webargs>^\w+/(npvoxels|npdense)/[\w,/]+)$', 'annopost'),
+  # merge annotations
+  url(r'(?P<webargs>^\w+/merge/[\w,/]+)$', 'merge'),
   # csv metadata read
   url(r'(?P<webargs>^\w+/(csv)[\d+/]?[\w,/]*)$', 'csv'),
   # multi-channel false color image

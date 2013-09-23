@@ -3,9 +3,13 @@
 Create Project Template
 {% endcomment %}
 
+
+
 {% block title %}
-        Create New Project
-{% endblock title%}
+    
+    
+
+{% endblock %}
 {% block content %}
  <div class="container-fluid">
    <div class = "row-fluid">

@@ -226,3 +226,15 @@ def getField (request, webargs):
     logger.exception("Unknown exception in getField.")
     raise
 
+def merge (request, webargs):
+  """Merge annotation objects"""
+
+  try:
+    return django.http.HttpResponse(emcarest.merge(webargs), mimetype="text/html" )
+  except EMCAError, e:
+    return django.http.HttpResponseNotFound(e.value)
+  except MySQLdb.Error, e:
+    return django.http.HttpResponseNotFound(e)
+  except:
+    logger.exception("Unknown exception in global Merge.")
+    raise
