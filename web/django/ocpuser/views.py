@@ -274,23 +274,19 @@ def createproject(request):
   if request.method == 'POST':
     if 'CreateProject' in request.POST:
       form = CreateProjectForm(request.POST)
+      #import pdb;pdb.set_trace()
       if form.is_valid():
-#        import pdb;pdb.set_trace();
         token = form.cleaned_data['token']
-        # host = form.cleaned_data['host']
-        host = 'localhost'
+        host = form.cleaned_data['host']
         description = form.cleaned_data['description']
-        print description
         project = form.cleaned_data['project']
         dataset = form.cleaned_data['dataset']
         datatype = form.cleaned_data['datatype']
         nocreateoption = request.POST.get('nocreate')
-        print nocreateoption
         if nocreateoption =="on":
-          nocreate = 0
-        else:
           nocreate = 1
-  
+        else:
+          nocreate = 0
         dataurl = "http://openconnecto.me/EM"
         readonly = form.cleaned_data['readonly']
         exceptions = form.cleaned_data['exceptions']
@@ -298,16 +294,17 @@ def createproject(request):
         resolution =form.cleaned_data['resolution']
         print "Creating a project with:"
         print token, project, dataset, dataurl,readonly, exceptions, openid , resolution
-        print nocreate
-   #     return redirect(get_script_prefix()+'profile', {"user":request.user})
-        # Get database info                                        
-        pd = emcaproj.EMCAProjectsDB()
-        pd.newEMCAProj ( token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate, int(resolution) )
-        pd.insertTokenDescription ( token, description )
-        return redirect(profile)
-      
-       
+        # Get database info                
+        try:
+          pd = emcaproj.EMCAProjectsDB()
+          pd.newEMCAProj ( token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate, int(resolution) )
+          pd.insertTokenDescription ( token, description )
+          return redirect(profile)          
+        except EMCAError, e:
+          messages.error(request, e.value)
+          return redirect(profile)          
       else:
+        #Invalid Form
         context = {'form': form}
         print form.errors
         return render_to_response('createproject.html',context,context_instance=RequestContext(request))
@@ -416,7 +413,7 @@ def restore(request):
         dataset = form.cleaned_data['dataset']
         datatype = form.cleaned_data['datatype']
         
-        dataurl = form.cleaned_data['dataurl']
+        dataurl = "http://openconnecto.me/EM"
         readonly = form.cleaned_data['readonly']
         exceptions = form.cleaned_data['exceptions']
         nocreate = 0

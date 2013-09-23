@@ -1,0 +1,11 @@
+.DS_Store
+*.pyc
+*private.py
+web/django/EMOCP/settings.py
+settings.py
+settings_secret.py
+settings_bkup.py
+godown.py
+npzToPNGs.py
+activation_email.txt
+*.py~

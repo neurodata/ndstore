@@ -1175,7 +1175,7 @@ class EMCADB:
   #
   # writeImageCuboid
   #
-  #  Write an image through the Web service.  Make ingest easier.
+  #  Write data that is not integral in cuboids
   #
   def writeImageCuboid ( self, corner, resolution, imgdata ):
     """Write an image through the Web service"""
