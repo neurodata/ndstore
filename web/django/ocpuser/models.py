@@ -3,10 +3,7 @@ from django.db.models.signals import post_save
 from django.contrib.auth.models import User
 
 class ocpProject ( models.Model):
-    #user  =  models.OneToOneField(User)
     token  =  models. CharField(max_length=200)
-    #openid  =  models. CharField(max_length=200,default=User, editable=False)
-#    openid  =   models.OneToOneField(User)
     description  =  models. CharField(max_length=4096)
     project  =  models. CharField(max_length=200)
     dataset  =  models. CharField(max_length=200)
@@ -14,6 +11,8 @@ class ocpProject ( models.Model):
     DATATYPE_CHOICES = (
         (1, 'Image'),
         (2, 'Annotation'),
+        (3, 'Channel 16 bit'),
+        (4, 'Channel 8 bit'),
         )
     datatype = models.IntegerField(choices=DATATYPE_CHOICES, default=1)
     

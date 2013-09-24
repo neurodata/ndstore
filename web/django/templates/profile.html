@@ -81,8 +81,14 @@
 		      <td style="width: 15%;">{{ field.3 }}</td>
 		      {% if field.4 == 1 %}
 		      <td>Image</td>
-		      {% else %}
+		      {% elif field.4 == 2%}
 		      <td>Annotation</td>
+		      {% elif field.4 == 3%}
+		      <td>Channel 16 Bit</td>
+		      {% elif field.4 == 4%}
+		      <td>Channel 16 Bit</td>
+		      {% else %}
+		      <td>OTHER</td>
 		      {% endif %}
 		      <td colspan=50>{{ field.11 }}</td>
 <!--		      <td><button class="btn" id="delete" type="submit" name="delete"> <i class ="icon-trash icon-black"></i>Delete Project</button></td>
