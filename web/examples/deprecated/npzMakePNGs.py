@@ -29,14 +29,10 @@ def cubeToPNGs ( nparray, prefix ):
 # Get cube in question
 try:
 
-<<<<<<< HEAD
-  url = "http://localhost:8000/emca/hayworth5nm/npz/2/0,2000/0,2000/0,10/"
-=======
-  url = "http://localhost:8000/emca/hayworth5nm/npz/2/0,1000/0,1000/0,10/"
->>>>>>> b1364441d6438f06bae7e7f81fbdee89278faacb
+  url = "http://localhost:8000/emca/kasthuri11/npz/7/0,192/0,256/1,100/iso/"
   f = urllib2.urlopen ( url )
-except urllib2.URLError:
-  print "Failed to open url ", url
+except urllib2.URLError, e:
+  print "Failed to open url ", url, e
   assert 0
 
 zdata = f.read ()

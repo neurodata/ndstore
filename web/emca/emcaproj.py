@@ -66,6 +66,10 @@ class EMCAProject:
   def getTable ( self, resolution ):
     """Return the appropriate table for the specified resolution"""
     return "res"+str(resolution)
+
+  def getIsotropicTable ( self, resolution ):
+    """Return the appropriate table for the specified resolution"""
+    return "res"+str(resolution)+"iso"
   
   def getIdxTable ( self, resolution ):
     """Return the appropriate Index table for the specified resolution"""
