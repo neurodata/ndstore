@@ -21,15 +21,16 @@ def cubeToPNGs ( nparray, prefix ):
   zdim,ydim,xdim = nparray.shape
 
   # One file per xy plane
-  for k in range(zdim):
-    outimage = Image.frombuffer ( 'L', (xdim,ydim), nparray[k,:,:].flatten(), 'raw', 'L', 0, 1 ) 
-    outimage.save ( prefix + str(k) + ".png", "PNG" )
+  for j in range(ydim):
+    outimage = Image.frombuffer ( 'L', (xdim,zdim), nparray[:,j,:].flatten(), 'raw', 'L', 0, 1 ) 
+    outimage.save ( prefix + str(j) + ".png", "PNG" )
 
 
 # Get cube in question
 try:
 
-  url = "http://localhost:8000/emca/kasthuri11/npz/7/0,192/0,256/1,100/iso/"
+  url = "http://localhost/emca/kasthuri11/npz/5/0,256/0,256/1,257/iso/"
+#  url = "http://localhost/emca/kasthuri11/npz/7/0,192/0,256/1,1850/"
   f = urllib2.urlopen ( url )
 except urllib2.URLError, e:
   print "Failed to open url ", url, e

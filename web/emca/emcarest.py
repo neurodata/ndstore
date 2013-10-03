@@ -54,9 +54,10 @@ def cutout ( imageargs, proj, db, channel=None ):
   dim = args.getDim()
   resolution = args.getResolution()
   filterlist = args.getFilter()
+  isotropic = args.getIsotropic()
 
   # Perform the cutout
-  cube = db.cutout ( corner, dim, resolution, channel )
+  cube = db.cutout ( corner, dim, resolution, channel, isotropic )
   if filterlist != None:
     filterCutout ( cube.data, filterlist )
 
