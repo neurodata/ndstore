@@ -23,7 +23,6 @@ def main():
 
   # Get database info
   pd = emcaproj.EMCAProjectsDB()
-  import pdb;pdb.set_trace();
   pd.newEMCAProj ( result.token, result.openid, result.host, result.project, result.datatype, result.dataset, result.dataurl, result.readonly, not result.noexceptions, result.nocreate, result.resolution )
 
 

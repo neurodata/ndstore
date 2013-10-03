@@ -1280,13 +1280,8 @@ def chanInfo ( webargs ):
   return '<pre> %s </pre>' % pprint.pformat(chans)
 
 
-def mcFalseColor ( webargs ):
-  """False color image of multiple channels"""
-
-  [ token, mcfcstr, service, chanstr, imageargs ] = webargs.split ('/', 4)
-  projdb = emcaproj.EMCAProjectsDB()
-  proj = projdb.loadProject ( token )
-  db = emcadb.EMCADB ( proj )
+def mcfcPNG ( proj, db, token, service, chanstr, imageargs ):
+  """Inner part of mcFalseColor returns and PNG file"""
 
   if proj.getDBType() != emcaproj.CHANNELS_16bit and proj.getDBType() != emcaproj.CHANNELS_8bit:
     logger.warning ( "Not a multiple channel project." )
@@ -1363,6 +1358,19 @@ def mcFalseColor ( webargs ):
   from PIL import ImageEnhance
   enhancer = ImageEnhance.Brightness(outimage)
   outimage = enhancer.enhance(4.0)
+  
+  return outimage
+
+
+def mcFalseColor ( webargs ):
+  """False color image of multiple channels"""
+
+  [ token, mcfcstr, service, chanstr, imageargs ] = webargs.split ('/', 4)
+  projdb = emcaproj.EMCAProjectsDB()
+  proj = projdb.loadProject ( token )
+  db = emcadb.EMCADB ( proj )
+
+  outimage = mcfcPNG ( proj, db,  token, service, chanstr, imageargs )
 
   fileobj = cStringIO.StringIO ( )
   outimage.save ( fileobj, "PNG" )

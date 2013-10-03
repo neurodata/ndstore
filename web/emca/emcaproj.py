@@ -226,9 +226,6 @@ class EMCAProjectsDB:
 
     logger.info ( "Creating new project. Host %s. Project %s. SQL=%s" % ( dbhost, project, sql ))
 
-    # RB tmp fix wei ingest
-    if resolution == None: 
-      resolution = 0
     try:
       cursor = self.conn.cursor()
       cursor.execute ( sql )

@@ -17,6 +17,8 @@ import django
 import posix_ipc
 import re
 
+#RBTODO more efficient to load project and db separately
+
 from emca_cy import recolor_cy
 
 from threading import Thread
@@ -89,7 +91,7 @@ class OCPCatmaid:
       # enhance false color images when requested
       if brightness != None:
         # Enhance the image
-        import ImageEnhance
+        from PIL import ImageEnhance
         enhancer = ImageEnhance.Brightness(img)
         img = enhancer.enhance(brightness)
 

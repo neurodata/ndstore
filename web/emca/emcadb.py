@@ -1367,6 +1367,7 @@ class EMCADB:
       incube.fromNPZ ( datastring[:] )
       # add it to the output cube
       outcube.addData ( incube, offset )
+
     outcube.trim ( corner[0]%xcubedim,dim[0],corner[1]%ycubedim,dim[1],corner[2]%zcubedim,dim[2] )
     
     for key in listofids:

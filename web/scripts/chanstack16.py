@@ -4,7 +4,8 @@ import os
 import numpy as np
 import urllib, urllib2
 import cStringIO
-from PIL import Image
+#from PIL import Image
+import cv2
 import zlib
 import MySQLdb
 
@@ -35,7 +36,7 @@ class ChanStack:
     for  l in range ( startlevel, len(self.proj.datasetcfg.resolutions) ):
 
       for chnm, chid in self.chanDB.getChannels().iteritems():
-
+        
         chan = int(chid)
 
         # Get the source database sizes
@@ -65,21 +66,16 @@ class ChanStack:
               # cutout the data at the -1 resolution
               olddata = self.chanDB.cutout ( [ x*2*xcubedim, y*2*ycubedim, z*zcubedim ], biggercubedim, l-1, chan ).data
               # target array for the new data (z,y,x) order
-              newdata = np.zeros([zcubedim,ycubedim,xcubedim], dtype=np.uint8)
+              newdata = np.zeros([zcubedim,ycubedim,xcubedim], dtype=np.uint16)
 
               for sl in range(zcubedim):
 
-                # Convert each slice to an image
-                slimage = Image.frombuffer ( 'L', (xcubedim*2,ycubedim*2), olddata[sl,:,:].flatten(), 'raw', 'L', 0, 1 )
-
-                # Resize the image
-                newimage = slimage.resize ( [xcubedim,ycubedim] )
+                # resize the image
+                newimage = cv2.resize ( olddata[sl,:,:], (xcubedim,ycubedim) ) 
 
                 # Put to a new cube
                 newdata[sl,:,:] = np.asarray ( newimage )
                  
-                import pdb; pdb.set_trace()
-
                 # Compress the data
                 outfobj = cStringIO.StringIO ()
                 np.save ( outfobj, newdata )
