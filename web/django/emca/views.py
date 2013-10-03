@@ -156,6 +156,32 @@ def catmaid (request, webargs):
     raise
 
 
+def publictokens (request, webargs):
+  """Return list of public tokens"""
+  try:  
+    return django.http.HttpResponse(emcarest.publicTokens(webargs), mimetype="application/json" )
+  except EMCAError, e:
+    return django.http.HttpResponseNotFound(e.value)
+  except MySQLdb.Error, e:
+    return django.http.HttpResponseNotFound(e)
+  except:
+    logger.exception("Unknown exception in publictokens.")
+    raise
+
+
+def jsoninfo (request, webargs):
+  """Return project and dataset configuration information"""
+
+  try:  
+    return django.http.HttpResponse(emcarest.jsonInfo(webargs), mimetype="application/json" )
+  except EMCAError, e:
+    return django.http.HttpResponseNotFound(e.value)
+  except MySQLdb.Error, e:
+    return django.http.HttpResponseNotFound(e)
+  except:
+    logger.exception("Unknown exception in jsoninfo.")
+    raise
+
 def projinfo (request, webargs):
   """Return project and dataset configuration information"""
   

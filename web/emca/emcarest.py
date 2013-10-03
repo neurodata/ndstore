@@ -1234,10 +1234,20 @@ def deleteAnnotation ( webargs ):
       db.commit()
 
 
+def jsonInfo ( webargs ):
+  """Return project information in json format"""
+
+  [ token, projinfoliteral, otherargs ] = webargs.split ('/',2)
+
+  # Get the annotation database
+  [ db, proj, projdb ] = loadDBProj ( token )
+
+  import jsonprojinfo
+  return jsonprojinfo.jsonInfo( proj, db )
+
 
 def projInfo ( webargs ):
-  """Return information about the project and database"""
-  logger.warning("Enter emcarest proj info")
+
   [ token, projinfoliteral, otherargs ] = webargs.split ('/',2)
 
   # Get the annotation database
@@ -1477,6 +1487,12 @@ def merge ( webargs ):
       return "Invalid Merge Type : Select global, 2D or 3D"
   
   
+def publicTokens ( self ):
+  """Return a json formatted list of public tokens"""
   
+  projdb = emcaproj.EMCAProjectsDB()
 
+  tokens = projdb.getPublic ()
+  import json;
+  return json.dumps (tokens)
 

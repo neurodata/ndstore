@@ -29,7 +29,7 @@ def cubeToPNGs ( nparray, prefix ):
 # Get cube in question
 try:
 
-  url = "http://localhost/emca/kasthuri11/npz/5/0,256/0,256/1,257/iso/"
+  url = "http://localhost/emca/bock11/npz/7/0,1088/0,960/2917,3013/iso/"
 #  url = "http://localhost/emca/kasthuri11/npz/7/0,192/0,256/1,1850/"
   f = urllib2.urlopen ( url )
 except urllib2.URLError, e:

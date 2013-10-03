@@ -14,6 +14,9 @@ urlpatterns = patterns('emca.views',
   # get project information
 # get project information
   url(r'(?P<webargs>^\w+/projinfo/[\w,/]*)$', 'projinfo'),
+  url(r'(?P<webargs>^\w+/info/[\w,/]*)$', 'jsoninfo'),
+  # get public tokens 
+  url(r'(?P<webargs>^public_tokens/)$', 'publictokens'),
   # get channel information
   url(r'(?P<webargs>^\w+/chaninfo/[\w,/]*)$', 'chaninfo'),
   # get services

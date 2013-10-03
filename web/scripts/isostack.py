@@ -43,7 +43,6 @@ class IsoStack:
 
     # number of slices in isotropic database
     newslices = int(math.floor(slices * self.proj.datasetcfg.zscale[level]))
-    print newslices
 
     # Set the limits for iteration on the number of cubes in each dimension
     # RBTODO These limits may be wrong for even (see channelingest.py)
@@ -88,7 +87,6 @@ class IsoStack:
 
           key = zindex.XYZMorton ( [x,y,z] )
           
-          print "Inserting key"
           # put in the database
           sql = "INSERT INTO res" + str(level) + "iso (zindex, cube) VALUES (%s, %s)"
           print sql % (key,"x,y,z=%s,%s,%s"%(x,y,z))
