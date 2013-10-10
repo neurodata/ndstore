@@ -35,8 +35,8 @@ class BrainRestArgs:
   def getFilter ( self ):
     return self._filterlist
 
-  def getIsotropic ( self ):
-    return self._isotropic
+  def getZScaling ( self ):
+    return self._zscaling
 
 
   #
@@ -92,11 +92,15 @@ class BrainRestArgs:
       self._filterlist = None
 
     # See if it is an isotropic cutout request
+    self._zscaling = None
     result = re.match ("iso/",rest)
     if result != None:
-      self._isotropic = True
-    else:
-      self._isotropic = False
+      self._zscaling = 'isotropic'
+     
+    # See if it is an integral cutout request
+    result = re.match ("zscaled/",rest)
+    if result != None:
+      self._zscaling = 'integral'
 
 
   #

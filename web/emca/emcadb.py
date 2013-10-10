@@ -716,7 +716,7 @@ class EMCADB:
   #  Return a cube of data from the database
   #  Must account for zeros.
   #
-  def cutout ( self, corner, dim, resolution, channel=None, isotropic=False ):
+  def cutout ( self, corner, dim, resolution, channel=None, zscaling=None ):
     """Extract a cube of arbitrary size.  Need not be aligned."""
 
     # PYTODO alter query if  (emcaproj)._resolution is > resolution
@@ -758,11 +758,12 @@ class EMCADB:
       xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
 
       # use the requested resolution
-      if isotropic == False:
-        dbname = self.annoproj.getTable(resolution)
-      else:
-        # interface to isotropic database
+      if zscaling == 'isotropic':
         dbname = self.annoproj.getIsotropicTable(resolution)
+      elif zscaling == 'nearisotropic':
+        dbname = self.annoproj.getNearIstoropicTable(resolution)
+      else:
+        dbname = self.annoproj.getTable(resolution)
 
 
     if (self.annoproj.getDBType() == emcaproj.ANNOTATIONS):

@@ -71,6 +71,10 @@ class EMCAProject:
   def getIsotropicTable ( self, resolution ):
     """Return the appropriate table for the specified resolution"""
     return "res"+str(resolution)+"iso"
+
+  def getNearIso ( self, resolution ):
+    """Return the appropriate table for the specified resolution"""
+    return "res"+str(resolution)+"neariso"
   
   def getIdxTable ( self, resolution ):
     """Return the appropriate Index table for the specified resolution"""
@@ -86,11 +90,11 @@ class EMCADataset:
 
     # istropic slice range is a function of resolution
     self.isoslicerange = {} 
+    self.nearisoscaledown = {}
 
     self.resolutions = []
     self.cubedim = {}
     self.imagesz = {}
-    self.isoimagesz = {}
     self.zscale = {}
 
     for i in range (zoomlevels+1):
@@ -124,6 +128,14 @@ class EMCADataset:
       # set the isotropic image size when well defined
       if self.zscale[i] < 1.0:
         self.isoslicerange[i] = [ startslice, startslice + int(math.floor((endslice-startslice+1)*self.zscale[i])) ]
+
+        # find the neareat to isotropic value
+        scalepixels = 1/self.zscale[i]
+#        import pdb; pdb.set_trace()
+#        if ((math.ceil(scalepixels)-scalepixels)/scalepixels) <= ((scalepixels-math.floor(scalepixels)):
+        self.nearisoscaledown[i] = int(math.ceil(scalepixels))
+#        else:
+        self.nearisoscaledown[i] = int(math.floor(scalepixels))
 
   #
   #  Check that the specified arguments are legal

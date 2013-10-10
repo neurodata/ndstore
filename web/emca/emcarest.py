@@ -54,10 +54,10 @@ def cutout ( imageargs, proj, db, channel=None ):
   dim = args.getDim()
   resolution = args.getResolution()
   filterlist = args.getFilter()
-  isotropic = args.getIsotropic()
+  zscaling = args.getZScaling()
 
   # Perform the cutout
-  cube = db.cutout ( corner, dim, resolution, channel, isotropic )
+  cube = db.cutout ( corner, dim, resolution, channel, zscaling )
   if filterlist != None:
     filterCutout ( cube.data, filterlist )
 
@@ -716,11 +716,6 @@ def getAnnoById ( annoid, h5f, proj, db, dataoption, resolution=None, corner=Non
     bbcorner, bbdim = db.getBoundingBox ( annoid, resolution )
 
     if bbcorner != None:
-
-    # RBTODO bigger values cause a server error.  Debug the url
-    #  http://openconnecto.me/emca/xXkat11iso_will2xX00/804/cutout/
-    #  with the next line 
-    #  if bbdim[0]*bbdim[1]*bbdim[2] >= 1024*1024*512:
 
       if bbdim[0]*bbdim[1]*bbdim[2] >= 1024*1024*256:
         logger.warning ("Cutout region is inappropriately large.  Dimension: %s,%s,%s" % (bbdim[0],bbdim[1],bbdim[2]))
