@@ -24,8 +24,8 @@ def annotate_cy ( np.ndarray[DTYPE_t, ndim=3] data, unsigned int annid, offset, 
   for i in range (len(locations)):
     voxel = locations[i]
 
-    if xoffset<voxel[0] or yoffset<voxel[1] or zoffset<voxel[2]:
-      raise Exception("WTF")
+#    if xoffset<voxel[0] or yoffset<voxel[1] or zoffset<voxel[2]:
+#      raise Exception( '{},{},{}{}'.format(xoffset, yoffset, zoffset, voxel))
 
     #  label unlabeled voxels
     if ( data [ voxel[2]-zoffset, voxel[1]-yoffset, voxel[0]-xoffset] == 0 ):

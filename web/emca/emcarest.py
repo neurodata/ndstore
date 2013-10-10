@@ -997,7 +997,6 @@ def putAnnotation ( webargs, postdata ):
   try:
     
     for k in h5f.keys():
-
       
       idgrp = h5f.get(k)
 
@@ -1064,8 +1063,15 @@ def putAnnotation ( webargs, postdata ):
             db.shave ( anno.annid, resolution, voxels )
 
           # Is it dense data?
-          cutout = idgrp.get('CUTOUT')
-          h5xyzoffset = idgrp.get('XYZOFFSET')
+          if 'CUTOUT' in idgrp:
+            cutout = idgrp.get('CUTOUT')
+          else:
+            cutout = None
+          if 'XYZOFFSET' in idgrp:
+            h5xyzoffset = idgrp.get('XYZOFFSET')
+          else:
+            h5xyzoffset = None
+
           if cutout != None and h5xyzoffset != None and 'reduce' not in options:
 
             if 'preserve' in options:
