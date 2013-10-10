@@ -2,6 +2,7 @@ import empaths
 import MySQLdb
 import h5py
 import numpy as np
+import math
 
 import emcaprivate
 from emcaerror import EMCAError
@@ -66,6 +67,14 @@ class EMCAProject:
   def getTable ( self, resolution ):
     """Return the appropriate table for the specified resolution"""
     return "res"+str(resolution)
+
+  def getIsotropicTable ( self, resolution ):
+    """Return the appropriate table for the specified resolution"""
+    return "res"+str(resolution)+"iso"
+
+  def getNearIso ( self, resolution ):
+    """Return the appropriate table for the specified resolution"""
+    return "res"+str(resolution)+"neariso"
   
   def getIdxTable ( self, resolution ):
     """Return the appropriate Index table for the specified resolution"""
@@ -78,6 +87,10 @@ class EMCADataset:
     """Construct a db configuration from the dataset parameters""" 
 
     self.slicerange = [ startslice, endslice ]
+
+    # istropic slice range is a function of resolution
+    self.isoslicerange = {} 
+    self.nearisoscaledown = {}
 
     self.resolutions = []
     self.cubedim = {}
@@ -111,6 +124,18 @@ class EMCADataset:
       ypixels=((yimagesz-1)/2**i)+1
       yimgsz = (((ypixels-1)/self.cubedim[i][1])+1)*self.cubedim[i][1]
       self.imagesz[i] = [ ximgsz, yimgsz ]
+
+      # set the isotropic image size when well defined
+      if self.zscale[i] < 1.0:
+        self.isoslicerange[i] = [ startslice, startslice + int(math.floor((endslice-startslice+1)*self.zscale[i])) ]
+
+        # find the neareat to isotropic value
+        scalepixels = 1/self.zscale[i]
+#        import pdb; pdb.set_trace()
+#        if ((math.ceil(scalepixels)-scalepixels)/scalepixels) <= ((scalepixels-math.floor(scalepixels)):
+        self.nearisoscaledown[i] = int(math.ceil(scalepixels))
+#        else:
+        self.nearisoscaledown[i] = int(math.floor(scalepixels))
 
   #
   #  Check that the specified arguments are legal
@@ -213,9 +238,6 @@ class EMCAProjectsDB:
 
     logger.info ( "Creating new project. Host %s. Project %s. SQL=%s" % ( dbhost, project, sql ))
 
-    # RB tmp fix wei ingest
-    if resolution == None: 
-      resolution = 0
     try:
       cursor = self.conn.cursor()
       cursor.execute ( sql )
@@ -613,3 +635,22 @@ class EMCAProjectsDB:
       self.conn.commit()
     else:
       raise EMCAError ("Tokens still exists. Failed to drop project database")
+
+  #
+  #  getPublicTokens
+  #
+  def getPublic ( self ):
+    """return a list of public tokens"""
+
+    # RBTODO our notion of a public project is not good so far 
+    sql = "select token from {} where token=project".format(emcaprivate.projects)
+    try:
+      cursor = self.conn.cursor()
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      conn.rollback()
+      logging.error ("Failed to query projects for public tokens %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise EMCAError ("Failed to query projects for public tokens %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    return cursor.fetchall()
+

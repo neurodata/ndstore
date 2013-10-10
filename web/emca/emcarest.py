@@ -54,9 +54,10 @@ def cutout ( imageargs, proj, db, channel=None ):
   dim = args.getDim()
   resolution = args.getResolution()
   filterlist = args.getFilter()
+  zscaling = args.getZScaling()
 
   # Perform the cutout
-  cube = db.cutout ( corner, dim, resolution, channel )
+  cube = db.cutout ( corner, dim, resolution, channel, zscaling )
   if filterlist != None:
     filterCutout ( cube.data, filterlist )
 
@@ -716,11 +717,6 @@ def getAnnoById ( annoid, h5f, proj, db, dataoption, resolution=None, corner=Non
 
     if bbcorner != None:
 
-    # RBTODO bigger values cause a server error.  Debug the url
-    #  http://openconnecto.me/emca/xXkat11iso_will2xX00/804/cutout/
-    #  with the next line 
-    #  if bbdim[0]*bbdim[1]*bbdim[2] >= 1024*1024*512:
-
       if bbdim[0]*bbdim[1]*bbdim[2] >= 1024*1024*256:
         logger.warning ("Cutout region is inappropriately large.  Dimension: %s,%s,%s" % (bbdim[0],bbdim[1],bbdim[2]))
         raise EMCAError ("Cutout region is inappropriately large.  Dimension: %s,%s,%s" % (bbdim[0],bbdim[1],bbdim[2]))
@@ -1001,7 +997,6 @@ def putAnnotation ( webargs, postdata ):
   try:
     
     for k in h5f.keys():
-
       
       idgrp = h5f.get(k)
 
@@ -1068,8 +1063,15 @@ def putAnnotation ( webargs, postdata ):
             db.shave ( anno.annid, resolution, voxels )
 
           # Is it dense data?
-          cutout = idgrp.get('CUTOUT')
-          h5xyzoffset = idgrp.get('XYZOFFSET')
+          if 'CUTOUT' in idgrp:
+            cutout = idgrp.get('CUTOUT')
+          else:
+            cutout = None
+          if 'XYZOFFSET' in idgrp:
+            h5xyzoffset = idgrp.get('XYZOFFSET')
+          else:
+            h5xyzoffset = None
+
           if cutout != None and h5xyzoffset != None and 'reduce' not in options:
 
             if 'preserve' in options:
@@ -1233,10 +1235,20 @@ def deleteAnnotation ( webargs ):
       db.commit()
 
 
+def jsonInfo ( webargs ):
+  """Return project information in json format"""
+
+  [ token, projinfoliteral, otherargs ] = webargs.split ('/',2)
+
+  # Get the annotation database
+  [ db, proj, projdb ] = loadDBProj ( token )
+
+  import jsonprojinfo
+  return jsonprojinfo.jsonInfo( proj, db )
+
 
 def projInfo ( webargs ):
-  """Return information about the project and database"""
-  logger.warning("Enter emcarest proj info")
+
   [ token, projinfoliteral, otherargs ] = webargs.split ('/',2)
 
   # Get the annotation database
@@ -1269,13 +1281,8 @@ def chanInfo ( webargs ):
   return '<pre> %s </pre>' % pprint.pformat(chans)
 
 
-def mcFalseColor ( webargs ):
-  """False color image of multiple channels"""
-
-  [ token, mcfcstr, service, chanstr, imageargs ] = webargs.split ('/', 4)
-  projdb = emcaproj.EMCAProjectsDB()
-  proj = projdb.loadProject ( token )
-  db = emcadb.EMCADB ( proj )
+def mcfcPNG ( proj, db, token, service, chanstr, imageargs ):
+  """Inner part of mcFalseColor returns and PNG file"""
 
   if proj.getDBType() != emcaproj.CHANNELS_16bit and proj.getDBType() != emcaproj.CHANNELS_8bit:
     logger.warning ( "Not a multiple channel project." )
@@ -1352,6 +1359,19 @@ def mcFalseColor ( webargs ):
   from PIL import ImageEnhance
   enhancer = ImageEnhance.Brightness(outimage)
   outimage = enhancer.enhance(4.0)
+  
+  return outimage
+
+
+def mcFalseColor ( webargs ):
+  """False color image of multiple channels"""
+
+  [ token, mcfcstr, service, chanstr, imageargs ] = webargs.split ('/', 4)
+  projdb = emcaproj.EMCAProjectsDB()
+  proj = projdb.loadProject ( token )
+  db = emcadb.EMCADB ( proj )
+
+  outimage = mcfcPNG ( proj, db,  token, service, chanstr, imageargs )
 
   fileobj = cStringIO.StringIO ( )
   outimage.save ( fileobj, "PNG" )
@@ -1476,6 +1496,12 @@ def merge ( webargs ):
       return "Invalid Merge Type : Select global, 2D or 3D"
   
   
+def publicTokens ( self ):
+  """Return a json formatted list of public tokens"""
   
+  projdb = emcaproj.EMCAProjectsDB()
 
+  tokens = projdb.getPublic ()
+  import json;
+  return json.dumps (tokens)
 

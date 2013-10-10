@@ -35,6 +35,9 @@ class BrainRestArgs:
   def getFilter ( self ):
     return self._filterlist
 
+  def getZScaling ( self ):
+    return self._zscaling
+
 
   #
   #  Process cutout arguments
@@ -88,6 +91,31 @@ class BrainRestArgs:
     else:
       self._filterlist = None
 
+    # See if it is an isotropic cutout request
+    self._zscaling = None
+    result = re.match ("iso/",rest)
+    if result != None:
+      self._zscaling = 'isotropic'
+     
+    # See if it is an integral cutout request
+    result = re.match ("zscaled/",rest)
+    if result != None:
+      self._zscaling = 'integral'
+
+
+  #
+  #  **Image return a readable png object
+  #    where ** is xy, xz, yz
+  #
+  def xyArgs ( self, imageargs, datasetcfg ):
+    """Process REST arguments for an xy plane request.
+       You must have set the resolution prior to calling this function."""
+
+    try:
+      [ resstr, xdimstr, ydimstr, zstr, rest ]  = imageargs.split('/',4)
+      options = rest.split ( '/' )
+    except:
+      raise RESTArgsError ( "Incorrect cutout arguments %s" % imageargs )
 
 
 

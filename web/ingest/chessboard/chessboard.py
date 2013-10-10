@@ -49,6 +49,7 @@ class ChessboardIngest:
     """ Write the channel label/string associated with the channel identifier"""
 
     sql = 'INSERT INTO channels VALUES ( \'%s\', %s )' % ( chanstr, chanid )
+    print sql
     try:
       self.cursor.execute ( sql )
     except MySQLdb.Error, e:
@@ -62,11 +63,15 @@ class ChessboardIngest:
     channel = 0
 
     # for each protein
-    for prot in proteins.proteins:
-      for x in self.alldirs:
-        m = re.match('{0}.*(\d+)$'.format(prot),x)
-        if m == None:
-          continue
+    for x in self.alldirs:
+
+      # extract the protein part of the name
+      m = re.match('([\d\w]+)',x)
+      if m == None:
+        continue
+
+      # see if it's a protein
+      if m.group(1) in proteins.proteins:
 
         # ingest each match as a channel
         pdir = x
@@ -74,27 +79,13 @@ class ChessboardIngest:
         # increment the channels starting with 1
         channel+=1
 
-#  RB Old Code to take just the highest imaging session
-#    instaad we will take all
-#
-#      # this finds the highest run (number suffix) for each channel
-#      pdir = None
-#      for x in self.alldirs:
-#        m = re.match('{0}.*(\d+)$'.format(prot),x)
-#        if m != None:
-#          if pdir == None:
-#            pdir = x
-#            run = m.group(1)
-##          else:
-#            if m.group(1) > run:
-#              pdir = x
 
-
-        # label channel/protein
-#        self.label ( channel, pdir )
         # label by imaging session and protein, i.e. use the pdir
         self.label ( channel, pdir )
-
+        
+# used to count channels
+#        continue
+         
         # for each slice
         for sl in range(self.startslice,self.endslice+1):
 
@@ -106,6 +97,8 @@ class ChessboardIngest:
           filenm = self.path + '/' + pdir + '/' + pdir + '-S' + '{:0>3}'.format(sl) + '.tif'
 
           print filenm
+
+
           # load the image and check the dimension
           img = cv2.imread(filenm,-1)
           # add it to the array

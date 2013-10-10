@@ -14,6 +14,9 @@ urlpatterns = patterns('emca.views',
   # get project information
 # get project information
   url(r'(?P<webargs>^\w+/projinfo/[\w,/]*)$', 'projinfo'),
+  url(r'(?P<webargs>^\w+/info/[\w,/]*)$', 'jsoninfo'),
+  # get public tokens 
+  url(r'(?P<webargs>^public_tokens/)$', 'publictokens'),
   # get channel information
   url(r'(?P<webargs>^\w+/chaninfo/[\w,/]*)$', 'chaninfo'),
   # get services
@@ -28,7 +31,7 @@ urlpatterns = patterns('emca.views',
   # csv metadata read
   url(r'(?P<webargs>^\w+/(csv)[\d+/]?[\w,/]*)$', 'csv'),
   # multi-channel false color image
-  url(r'(?P<webargs>^\w+/mcfc/[\w,/]+)$', 'mcFalseColor'),
+  url(r'(?P<webargs>^\w+/mcfc/[\w,/-]+)$', 'mcFalseColor'),
   # HDF5 interfaces
   url(r'(?P<webargs>^\w+/[\d+/]?[\w,/]*)$', 'annotation'),
 )

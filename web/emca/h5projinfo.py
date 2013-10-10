@@ -50,6 +50,9 @@ def h5DatasetInfo ( dataset, h5f ):
   cdgrp = dcfggrp.create_group ( 'CUBE_DIMENSION' )
   for k,v in dataset.cubedim.iteritems():
     cdgrp.create_dataset ( str(k), data=v )
+  isgrp = dcfggrp.create_group ( 'ISOTROPIC_SLICERANGE' )
+  for k,v, in dataset.isoslicerange.iteritems():
+    isgrp.create_dataset ( str(k), data=v )
 
 
 def h5Info ( proj, db, h5f ):

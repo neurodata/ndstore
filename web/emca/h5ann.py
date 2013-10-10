@@ -121,7 +121,8 @@ def H5toAnnotation ( key, idgrp ):
   """Return an annotation constructed from the contents of this HDF5 file"""
 
   # get the annotation type
-  if idgrp.get('ANNOTATION_TYPE'):
+#  if idgrp.get('ANNOTATION_TYPE'):
+  if 'ANNOTATION_TYPE' in idgrp:
     annotype = idgrp['ANNOTATION_TYPE'][0]
   else:
     annotype = annotation.ANNO_ANNOTATION
@@ -137,13 +138,17 @@ def H5toAnnotation ( key, idgrp ):
     # Load metadata if it exists
     if mdgrp:
       # load the seed specific metadata
-      if mdgrp.get('PARENT'):
+#      if mdgrp.get('PARENT'):
+      if 'PARENT' in mdgrp:
         anno.parent = mdgrp['PARENT'][0]
-      if mdgrp.get('POSITION'):
+#      if mdgrp.get('POSITION'):
+      if 'POSITION' in mdgrp:
         anno.position = mdgrp['POSITION'][:]
-      if mdgrp.get('CUBE_LOCATION'):
+#      if mdgrp.get('CUBE_LOCATION'):
+      if 'CUBE_LOCATION' in mdgrp:
         anno.cubelocation = mdgrp['CUBE_LOCATION'][0]
-      if mdgrp.get('SOURCE'):
+#      if mdgrp.get('SOURCE'):
+      if 'SOURCE' in mdgrp:
         anno.source = mdgrp['SOURCE'][0] 
 
   elif annotype == annotation.ANNO_SYNAPSE:
@@ -154,13 +159,17 @@ def H5toAnnotation ( key, idgrp ):
     # Load metadata if it exists
     if mdgrp:
       # load the synapse specific metadata
-      if mdgrp.get('SYNAPSE_TYPE'):
+#      if mdgrp.get('SYNAPSE_TYPE'):
+      if 'SYNAPSE_TYPE' in mdgrp:
         anno.synapse_type = mdgrp['SYNAPSE_TYPE'][0]
-      if mdgrp.get('WEIGHT'):
+#      if mdgrp.get('WEIGHT'):
+      if 'WEIGHT' in mdgrp:
         anno.weight = mdgrp['WEIGHT'][0]
-      if mdgrp.get('SEEDS') and len(mdgrp['SEEDS'])!=0:
+#      if mdgrp.get('SEEDS') and len(mdgrp['SEEDS'])!=0:
+      if 'SEEDS' in mdgrp:
         anno.seeds = mdgrp['SEEDS'][:]
-      if mdgrp.get('SEGMENTS') and len(mdgrp['SEGMENTS'])!=0:
+#      if mdgrp.get('SEGMENTS') and len(mdgrp['SEGMENTS'])!=0:
+      if 'SEGMENTS' in mdgrp:
         anno.segments = mdgrp['SEGMENTS'] [:]
 
   elif annotype == annotation.ANNO_SEGMENT:

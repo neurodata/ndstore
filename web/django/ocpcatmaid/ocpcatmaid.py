@@ -17,6 +17,8 @@ import django
 import posix_ipc
 import re
 
+#RBTODO more efficient to load project and db separately
+
 from emca_cy import recolor_cy
 
 from threading import Thread
@@ -89,7 +91,7 @@ class OCPCatmaid:
       # enhance false color images when requested
       if brightness != None:
         # Enhance the image
-        import ImageEnhance
+        from PIL import ImageEnhance
         enhancer = ImageEnhance.Brightness(img)
         img = enhancer.enhance(brightness)
 
@@ -234,13 +236,19 @@ class OCPCatmaid:
   def getTile ( self, webargs ):
     """Either fetch the file from memcache or load a new region into memcache by cutout"""
 
+
     # parse the web args
     self.token, tileszstr, self.channel, plane, resstr, xtilestr, ytilestr, zslicestr, rest = webargs.split('/',8)
+
+    # load the database
+    self.loadDB ( )
+
     # convert args to ints
     xtile = int(xtilestr)
     ytile = int(ytilestr)
     res = int(resstr)
-    zslice = int(zslicestr)
+    # modify the zslice to the offset
+    zslice = int(zslicestr)-self.proj.datasetcfg.slicerange[0]
     self.tilesz = int(tileszstr)
 
     brightness = None

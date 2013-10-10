@@ -716,7 +716,7 @@ class EMCADB:
   #  Return a cube of data from the database
   #  Must account for zeros.
   #
-  def cutout ( self, corner, dim, resolution, channel=None ):
+  def cutout ( self, corner, dim, resolution, channel=None, zscaling=None ):
     """Extract a cube of arbitrary size.  Need not be aligned."""
 
     # PYTODO alter query if  (emcaproj)._resolution is > resolution
@@ -758,7 +758,12 @@ class EMCADB:
       xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
 
       # use the requested resolution
-      dbname = self.annoproj.getTable(resolution)
+      if zscaling == 'isotropic':
+        dbname = self.annoproj.getIsotropicTable(resolution)
+      elif zscaling == 'nearisotropic':
+        dbname = self.annoproj.getNearIstoropicTable(resolution)
+      else:
+        dbname = self.annoproj.getTable(resolution)
 
 
     if (self.annoproj.getDBType() == emcaproj.ANNOTATIONS):
@@ -1363,7 +1368,7 @@ class EMCADB:
       incube.fromNPZ ( datastring[:] )
       # add it to the output cube
       outcube.addData ( incube, offset )
-    import pdb; pdb.set_trace()
+
     outcube.trim ( corner[0]%xcubedim,dim[0],corner[1]%ycubedim,dim[1],corner[2]%zcubedim,dim[2] )
     
     for key in listofids:
@@ -1382,3 +1387,5 @@ class EMCADB:
       print "updateIndex"
 
     return "Merge 3D"
+
+
