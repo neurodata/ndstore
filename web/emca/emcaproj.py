@@ -131,11 +131,14 @@ class EMCADataset:
 
         # find the neareat to isotropic value
         scalepixels = 1/self.zscale[i]
-#        import pdb; pdb.set_trace()
-#        if ((math.ceil(scalepixels)-scalepixels)/scalepixels) <= ((scalepixels-math.floor(scalepixels)):
-        self.nearisoscaledown[i] = int(math.ceil(scalepixels))
-#        else:
-        self.nearisoscaledown[i] = int(math.floor(scalepixels))
+        if ((math.ceil(scalepixels)-scalepixels)/scalepixels) <= ((scalepixels-math.floor(scalepixels))/scalepixels):
+          self.nearisoscaledown[i] = int(math.ceil(scalepixels))
+        else:
+          self.nearisoscaledown[i] = int(math.floor(scalepixels))
+
+      else:
+        self.isoslicerange[i] = self.slicerange
+        self.nearisoscaledown[i] = int(1)
 
   #
   #  Check that the specified arguments are legal
@@ -652,5 +655,5 @@ class EMCAProjectsDB:
       logging.error ("Failed to query projects for public tokens %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise EMCAError ("Failed to query projects for public tokens %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
-    return cursor.fetchall()
+    return [item[0] for item in cursor.fetchall()]
 
