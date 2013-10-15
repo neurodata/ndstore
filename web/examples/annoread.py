@@ -58,14 +58,14 @@ def main():
     # Read into a temporary file
     tmpfile = tempfile.NamedTemporaryFile ( )
     tmpfile.write ( f.read() )
-    tmpfile.tell()
+    tmpfile.seek(0)
     h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
 
   # unless an output file was requested
   else:
     fh = open ( result.output, 'w' )
     fh.write ( f.read() )
-    fh.tell()
+    fh.seek(0)
     h5f = h5py.File ( result.output )
 
   # assume a single annotation for now

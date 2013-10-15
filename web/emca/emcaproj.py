@@ -409,7 +409,7 @@ class EMCAProjectsDB:
       raise EMCAError ( "Dataset %s not found." % ( dataset ))
 
     [ ximagesz, yimagesz, startslice, endslice, zoomlevels, zscale ] = row
-    return EMCADataset ( ximagesz, yimagesz, startslice, endslice, zoomlevels, zscale ) 
+    return EMCADataset ( np.uint32(ximagesz), np.uint32(yimagesz), np.uint32(startslice), np.uint32(endslice), int(zoomlevels), float(zscale) ) 
 
 
 

@@ -1030,14 +1030,17 @@ def putAnnotation ( webargs, postdata ):
             db.putAnnotation ( anno, options )
 
           #  Get the resolution if it's specified
-          h5resolution = idgrp.get('RESOLUTION')
-          if h5resolution:
-            resolution = h5resolution[0]
+          if 'RESOLUTION' in idgrp:
+            resolution = int(idgrp.get('RESOLUTION')[0])
 
           # Load the data associated with this annotation
           #  Is it voxel data?
-          voxels = idgrp.get('VOXELS')
-          if voxels and 'reduce' not in options:
+          if 'VOXELS' in idgrp:
+            voxels = np.array(idgrp.get('VOXELS'),dtype=np.uint32)
+          else: 
+            voxels = None
+
+          if voxels!=None and 'reduce' not in options:
 
             if 'preserve' in options:
               conflictopt = 'P'
@@ -1054,7 +1057,7 @@ def putAnnotation ( webargs, postdata ):
             exceptions = db.annotate ( anno.annid, resolution, voxels, conflictopt )
 
           # Otherwise this is a shave operation
-          elif voxels and 'reduce' in options:
+          elif voxels != None and 'reduce' in options:
 
             # Check that the voxels have a conforming size:
             if voxels.shape[1] != 3:
@@ -1064,7 +1067,7 @@ def putAnnotation ( webargs, postdata ):
 
           # Is it dense data?
           if 'CUTOUT' in idgrp:
-            cutout = idgrp.get('CUTOUT')
+            cutout = np.array(idgrp.get('CUTOUT'),dtype=np.uint32)
           else:
             cutout = None
           if 'XYZOFFSET' in idgrp:
@@ -1263,7 +1266,6 @@ def projInfo ( webargs ):
 
   h5f.close()
   tmpfile.seek(0)
-  logger.warning("Done emcarest proj info")
 
   return tmpfile.read()
 
