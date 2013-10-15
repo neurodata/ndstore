@@ -13,6 +13,11 @@ from emca_cy import shave_cy
 from emca_cy import recolor_cy
 from emca_cy import zoomData_cy
 
+from emcaerror import EMCAError 
+
+import logging
+logger=logging.getLogger("emca")
+
 #
 #  AnnotateCube: manipulate the in-memory data representation of the 3-d cube of data
 #    that contains annotations.  
@@ -55,6 +60,48 @@ class AnnotateCube(Cube):
     self.data = np.zeros ( self.cubesize, dtype=np.uint32 )
 
 
+  #RB for testing only.
+  def annotate_nocy ( self, data, annid, offset, locations, conflictopt ):
+   """Add annotation by a list of locations"""
+
+   try:
+    xoffset, yoffset, zoffset = offset
+
+    exceptions = []
+
+    # xyz coordinates get stored as zyx to be more
+    #  efficient when converting to images
+    for i in range (len(locations)):
+      voxel = locations[i]
+
+      val = data [ voxel[2]-zoffset, voxel[1]-yoffset, voxel[0]-xoffset ]
+
+      #  label unlabeled voxels
+      if ( data [ voxel[2]-zoffset, voxel[1]-yoffset, voxel[0]-xoffset] == 0 ):
+           data [ voxel[2]-zoffset, voxel[1]-yoffset, voxel[0]-xoffset ] = annid
+
+      # already labelled voxels are exceptions, unless they are the same value
+      elif (data [ voxel[2]-zoffset, voxel[1]-yoffset, voxel[0]-xoffset] != annid ):
+        # O is for overwrite
+        if conflictopt == 'O':
+          data [ voxel[2]-zoffset, voxel[1]-yoffset, voxel[0]-xoffset ] = annid
+        # P preserves the existing content
+        elif conflictopt == 'P':
+          pass
+        # E creates exceptions
+        elif conflictopt == 'E':
+          exceptions.append ([voxel[0]-xoffset, voxel[1]-yoffset, voxel[2]-zoffset])
+        else:
+          print ( "Improper conflict option selected.  Option = ", conflictopt  )
+          assert 0
+
+    return exceptions
+
+   except Exception, e:
+    logger.error("Exception in annotate_nocy %s" % (e))
+    raise
+
+
   # Add annotations
   #
   #  We are mostly going to assume that annotations are non-overlapping.  When they are,
@@ -67,8 +114,14 @@ class AnnotateCube(Cube):
   def annotate ( self, annid, offset, locations, conflictopt ):
     """Add annotation by a list of locations"""
 
+    try:
     # the cython optimized version of this function.
-    return annotate_cy ( self.data, annid, offset, np.array(locations, dtype=np.uint32), conflictopt )
+      return annotate_cy ( self.data, annid, offset, np.array(locations, dtype=np.uint32), conflictopt )
+#      return self.annotate_nocy ( self.data, annid, offset, np.array(locations, dtype=np.uint32), conflictopt )
+    except IndexError, e:
+#      logger.error("Tried to paint a voxel that is out of bounds.  Locations={}".format(locations))
+      raise EMCAError ("Voxel list includes out of bounds request.")
+
 
   def shave ( self, annid, offset, locations ):
     """Remove annotation by a list of locations"""

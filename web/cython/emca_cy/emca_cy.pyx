@@ -128,6 +128,8 @@ def assignVoxels_cy ( np.ndarray[np.uint32_t, ndim=2] voxarray, np.ndarray[np.ui
 
 def cubeLocs_cy ( np.ndarray[np.uint32_t, ndim=2] locations, cubedim ):
 
+  cdef int i
+
   cubelocs = np.zeros ( [len(locations),4], dtype=np.uint32 )
 
   #  construct a list of the voxels in each cube using arrays

@@ -424,6 +424,29 @@ class EMCADB:
         logger.error("Error removing exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         raise
 
+
+#  RB this routine was for testing to validate that the cython output is the same as normal python
+  #
+  #  cubelocs_nocy
+  #
+  #  Remove cython for testing
+  #
+#  def cubeLocs_nocy ( self, locations, cubedim ):
+#
+#    cubelocs = np.zeros ( [len(locations),4], dtype=np.uint32 )
+#
+#    #  construct a list of the voxels in each cube using arrays
+#    for i in range(len(locations)):
+#      loc = locations[i]
+#      cubeno = loc[0]/cubedim[0], loc[1]/cubedim[1], loc[2]/cubedim[2]
+#      cubekey = zindex.XYZMorton(cubeno)
+#      cubelocs[i]=[cubekey,loc[0],loc[1],loc[2]]
+#
+#      if loc[2] > 100000 or cubelocs[i][3] > 100000:
+#        logger.error("Bad location for z value {},{}".format(loc[2],cubelocs[i][3]))
+#
+#    return cubelocs
+
   #
   # annotate
   #
@@ -440,8 +463,10 @@ class EMCADB:
     # dictionary with the index
     cubeidx = defaultdict(set)
 
-    # convert voxels z coordinate
     locations[:,2] = locations[:,2] - self.datasetcfg.slicerange[0]
+    # RB  there was a bug here from conflicting types of locations (HDF5 array) and slicerange (L from MySQL query)
+#    if max(locations[:,2]) > self.datasetcfg.slicerange[1]:
+#      logger.error("Bad adjusted locations. Max z slice value {}".format(max(locations[:,2])))
 
     cubelocs = cubeLocs_cy ( np.array(locations, dtype=np.uint32), cubedim )
 
