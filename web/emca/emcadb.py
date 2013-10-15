@@ -1320,11 +1320,10 @@ class EMCADB:
 
     mergeregion =self.cutout( corner,dim,resolution)
        
-    # mask out the entries that do not match the annotation id
+    # relabel ids in cube
     vec_func = np.vectorize ( lambda x: ids[0] if x in ids[1:] else x )
     cb.data = vec_func ( mergeregion.data )
-      #self.putCube ( key, resolution, cube)
-
+    self.annotateDense(corner,resolution,mergeregion)
       # PYTODO - Relabel exceptions?????
 
     # Update Index and delete object?
