@@ -264,3 +264,18 @@ def merge (request, webargs):
   except:
     logger.exception("Unknown exception in global Merge.")
     raise
+
+
+def exceptions (request, webargs):
+  """Return a list of multiply labeled pixels in a cutout region"""
+
+  try:
+    return django.http.HttpResponse(emcarest.exceptions(webargs), mimetype="product/hdf5" )
+  except EMCAError, e:
+    return django.http.HttpResponseNotFound(e.value)
+  except MySQLdb.Error, e:
+    return django.http.HttpResponseNotFound(e)
+  except:
+    logger.exception("Unknown exception in exceptions Web service.")
+    raise
+

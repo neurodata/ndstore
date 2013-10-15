@@ -19,6 +19,8 @@ urlpatterns = patterns('emca.views',
   url(r'(?P<webargs>^public_tokens/)$', 'publictokens'),
   # get channel information
   url(r'(?P<webargs>^\w+/chaninfo/[\w,/]*)$', 'chaninfo'),
+  # get list of multiply labelled voxels in a cutout region
+  url(r'(?P<webargs>^\w+/exceptions/[\w,/]*)$', 'exceptions'),
   # get services
   url(r'(?P<webargs>^\w+/(xy|xz|yz|hdf5|npz|zip|id|ids|xyanno||xzanno|yzanno|xytiff|xztiff|yztiff)/[\w,/]+)$', 'getCutout'),
   # single field interfaces

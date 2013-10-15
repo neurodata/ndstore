@@ -1507,3 +1507,44 @@ def publicTokens ( self ):
   import json;
   return json.dumps (tokens)
 
+
+#
+#  exceptions: list of multiply defined voxels in a cutout
+#
+def exceptions ( webargs, ):
+  """list of multiply defined voxels in a cutout"""
+
+  [ token, exceptliteral, cutoutargs ] = webargs.split ('/',2)
+  [ db, proj, projdb ] = loadDBProj ( token )
+
+  # Perform argument processing
+  try:
+    args = restargs.BrainRestArgs ();
+    args.cutoutArgs ( cutoutargs, proj.datasetcfg )
+  except restargs.RESTArgsError, e:
+    logger.warning("REST Arguments failed: %s" % (e))
+    raise EMCAError(e)
+
+  # Extract the relevant values
+  corner = args.getCorner()
+  dim = args.getDim()
+  resolution = args.getResolution()
+
+  # check to make sure it's an annotation project
+  if proj.getDBType() != emcaproj.ANNOTATIONS:
+    logger.warning("Asked for exceptions on project that is not of type ANNOTATIONS")
+    raise EMCAError("Asked for exceptions on project that is not of type ANNOTATIONS")
+  elif not proj.getExceptions():
+    logger.warning("Asked for exceptions on project without exceptions")
+    raise EMCAError("Asked for exceptions on project without exceptions")
+    
+  # Get the exceptions -- expect a rect np.array of shape x,y,z,id1,id2,...,idn where n is the longest exception list
+  exceptions = db.exceptionsCutout ( corner, dim, resolution )
+
+  # package as an HDF5 file
+  tmpfile = tempfile.NamedTemporaryFile ()
+  fh5out = h5py.File ( tmpfile.name )
+  ds = fh5out.create_dataset ( "exceptions", tuple(exceptions.shape), exceptions.dtype, compression='gzip', data=exceptions )
+  fh5out.close()
+  tmpfile.seek(0)
+  return tmpfile.read()

@@ -4,6 +4,7 @@ import zlib
 import MySQLdb
 import re
 from collections import defaultdict
+import itertools
 
 import zindex
 import anncube
@@ -463,6 +464,7 @@ class EMCADB:
     # dictionary with the index
     cubeidx = defaultdict(set)
 
+    # convert voxels z coordinate
     locations[:,2] = locations[:,2] - self.datasetcfg.slicerange[0]
     # RB  there was a bug here from conflicting types of locations (HDF5 array) and slicerange (L from MySQL query)
 #    if max(locations[:,2]) > self.datasetcfg.slicerange[1]:
@@ -954,6 +956,7 @@ class EMCADB:
             exceptions = self.getExceptions( key, resolution, entityid ) 
             if exceptions != []:
               # write as a loop first, then figure out how to optimize 
+              # exceptions are stored relative to cube offset
               for e in exceptions:
                 xloc = e[0]+(x+xstart)*xcubedim
                 yloc = e[1]+(y+ystart)*ycubedim
@@ -1414,3 +1417,89 @@ class EMCADB:
     return "Merge 3D"
 
 
+  def exceptionsCutout ( self, corner, dim, resolution ):
+    """Return a list of exceptions in the specified region.
+        Will return a np.array of shape x,y,z,id1,...,idn where n is the longest exception list"""
+  
+    # get the size of the image and cube
+    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
+
+    # Round to the nearest larger cube in all dimensions
+    zstart = corner[2]/zcubedim
+    ystart = corner[1]/ycubedim
+    xstart = corner[0]/xcubedim
+
+    znumcubes = (corner[2]+dim[2]+zcubedim-1)/zcubedim - zstart
+    ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
+    xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
+
+    dbname = self.annoproj.getTable(resolution)
+
+    # Build a list of indexes to access
+    listofidxs = []
+    for z in range ( znumcubes ):
+      for y in range ( ynumcubes ):
+        for x in range ( xnumcubes ):
+          mortonidx = zindex.XYZMorton ( [x+xstart, y+ystart, z+zstart] )
+          listofidxs.append ( mortonidx )
+
+    # Sort the indexes in Morton order
+    listofidxs.sort()
+
+    # generate list of ids for query
+    sqllist = ', '.join(map(lambda x: str(x), listofidxs))
+    sql = "SELECT zindex,id,exlist FROM exc{} WHERE zindex in ({})".format(resolution,sqllist)
+
+    # this query needs its own cursor
+    func_cursor = self.conn.cursor()
+    func_cursor.execute(sql)
+
+    # data structure to hold list of exceptions
+    excdict = defaultdict(set)
+
+    prevzindex = None
+
+    while ( True ):
+
+      try: 
+        cuboidzindex, annid, zexlist = func_cursor.fetchone()
+      except:
+        break
+
+      # first row in a cuboid
+      if np.uint32(cuboidzindex) != prevzindex:
+        prevzindex = cuboidzindex
+        # data for the current cube
+        cube = self.getCube ( cuboidzindex, resolution )
+        [ xcube, ycube, zcube ] = zindex.MortonXYZ ( cuboidzindex )
+        xcubeoff =xcube*xcubedim
+        ycubeoff =ycube*ycubedim
+        zcubeoff =zcube*zcubedim
+
+      # accumulate entries
+      # decompress the llist of exceptions
+      fobj = cStringIO.StringIO ( zlib.decompress(zexlist) )
+      exlist = np.load (fobj)
+      print exlist
+
+      for exc in exlist:
+        excdict[(exc[0]+xcubeoff,exc[1]+ycubeoff,exc[2]+zcubeoff)].add(np.uint32(annid))
+        # add voxel data 
+        excdict[(exc[0]+xcubeoff,exc[1]+ycubeoff,exc[2]+zcubeoff)].add(cube.data[exc[2]%zcubedim,exc[1]%ycubedim,exc[0]%xcubedim])
+
+
+    # ASSUMPTION need to promte during shave as well as annotation deletes
+    # this is a priority todo RB 10/17/13
+    maxlist = max([ len(v) for (k,v) in excdict.iteritems() ])
+
+    exoutput = np.zeros([len(excdict),maxlist+3], dtype=np.uint32)
+
+    print excdict
+    i=0
+    for k,v in excdict.iteritems():
+      l = len(v)
+      exoutput[i,0:(l+3)] = [x for x in itertools.chain(k,v)]
+#      exoutput[i,0:(l+3)] = [(k[0],k[1],k[2])+=v]  
+      i+=1
+
+    return exoutput

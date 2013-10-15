@@ -30,7 +30,6 @@ class EMCAProject:
     self._dataurl = dataurl
     self._readonly = readonly
     self._exceptions = exceptions
-    self._dbtype = dbtype
     self._resolution = resolution
 
     # Could add these to configuration.  Probably remove res as tablebase instead
