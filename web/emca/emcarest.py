@@ -587,6 +587,7 @@ def annopost ( webargs, postdata ):
   """Interface to the annotation write service 
       Load the annotation project and invoke the appropriate
       dataset."""
+  import pdb;pdb.set_trace();
   [ token, sym, rangeargs ] = webargs.partition ('/')
   [ db, proj, projdb ] = loadDBProj ( token )
   return selectPost ( rangeargs, proj, db, postdata )
