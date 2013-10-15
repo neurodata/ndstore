@@ -1263,7 +1263,7 @@ class EMCADB:
 
     return dict(self.cursor.fetchall())
 
-  def mergeGlobal(self, ids, mergetype, res):
+  def mergeglobal(self, ids, mergetype, res):
      # get the size of the image and cube
     resolution = int(res)
     print ids
@@ -1337,32 +1337,9 @@ class EMCADB:
     for annid in ids[1:]:
       listofids |= set(self.annoIdx.getIndex(annid,resolution))
 
-      # Perform the cutout
-    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ]
-
-      # Round to the nearest larger cube in all dimensions                                                                  
-    zstart = corner[2]/zcubedim
-    ystart = corner[1]/ycubedim
-    xstart = corner[0]/xcubedim
-    
-    znumcubes = (corner[2]+dim[2]+zcubedim-1)/zcubedim - zstart
-    ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
-    xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
-    
-     # use the requested resolution
+    # use the requested resolution
     dbname = self.annoproj.getTable(resolution)
     
-    if (self.annoproj.getDBType() == emcaproj.ANNOTATIONS):
-      # input cube is the database size                                    
-      incube = anncube.AnnotateCube ( cubedim )
-      # output cube is as big as was asked for and zero it.                 
-      outcube = anncube.AnnotateCube ( [xnumcubes*xcubedim, 
-                                        ynumcubes*ycubedim,
-                                        znumcubes*zcubedim] )
-      outcube.zeros()
-    else:
-      raise EMCAError ( "Invalid database selected.Specify an annotation database" % (dbname) )
-
     # Build a list of indexes to access                                                                                     
     listofidxs = []
     for z in range ( znumcubes ):
@@ -1374,6 +1351,7 @@ class EMCADB:
      # Sort the indexes in Morton order                                    
     listofidxs.sort()
 
+<<<<<<< HEAD
     sql = "SELECT zindex, cube FROM " + dbname + " WHERE zindex IN (%s)"
     # creats a %s for each list element
     in_p=', '.join(map(lambda x: '%s', listofidxs))
@@ -1407,6 +1385,12 @@ class EMCADB:
       cb.data = vec_func ( cb.data )
       #self.putCube ( key, resolution, cube)
 
+    mergeregion =self.cutout( corner,dim,resolution)
+       
+    # relabel ids in cube
+    vec_func = np.vectorize ( lambda x: ids[0] if x in ids[1:] else x )
+    cb.data = vec_func ( mergeregion.data )
+    self.annotateDense(corner,resolution,mergeregion)
       # PYTODO - Relabel exceptions?????
 
     # Update Index and delete object?
