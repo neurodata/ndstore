@@ -1453,7 +1453,8 @@ def merge ( webargs ):
   ids = relabelids.split(',')
   last_id = len(ids)-1
   ids[last_id] = ids[last_id].replace("/","")
-  
+  #Make idsnumpy array to speed vectorize
+  ids = np.array(ids,dtype=np.uint32)
 
   [ db, proj, projdb ] = loadDBProj ( token )
 

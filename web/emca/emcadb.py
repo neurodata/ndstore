@@ -1265,30 +1265,34 @@ class EMCADB:
 
   def mergeGlobal(self, ids, mergetype, res):
      # get the size of the image and cube
+    import time
     resolution = int(res)
     print "Id's to merge" + str(ids)
-    import pdb;pdb.set_trace()
+    mergeid = ids[0]
+ 
     # PYTODO Check if this is a valid annotation that we are relabelubg to
-    if len(self.annoIdx.getIndex(int(ids[0]),resolution)) == 0:
+    if len(self.annoIdx.getIndex(int(mergeid),resolution)) == 0:
       raise EMCAError(ids[0] + " not a valid annotation id")
     print mergetype
     listofids = set()
     for annid in ids[1:]:
       listofids |= set(self.annoIdx.getIndex(annid,resolution))
     #print listofids
-        
-    for key in listofids:
-      cb = self.getCube (key,resolution)
-      vec_func = np.vectorize ( lambda x: ids[0] if x in ids[1:] else x )
-      cb.data = vec_func ( cb.data )
-      self.putCube ( key, resolution, cb)
-      
-      # PYTODO - Relabel exceptions?????
-    import pdb;pdb.set_trace()  
-    # Update Index and delete object?
+    import pdb;pdb.set_trace()
     for annid in ids[1:]:
-      print "Removing Object " + str(annid)
+      listofids = set(self.annoIdx.getIndex(annid,resolution))
+     
+      for key in listofids:
+        cb = self.getCube (key,resolution)
+        vec_func = np.vectorize ( lambda x: mergeid if x == annid else x )
+        start = time.time()
+        cb.data = vec_func ( cb.data )
+        print time.time()-start
+        self.putCube ( key, resolution, cb)
+      start= time.time()
       self.deleteAnnotation(annid)
+      print time.time()-start
+      # PYTODO - Relabel exceptions?????
     return "Merge complete"
 
   def merge2D(self, ids, mergetype, res,slicenum):
