@@ -1266,32 +1266,30 @@ class EMCADB:
   def mergeGlobal(self, ids, mergetype, res):
      # get the size of the image and cube
     resolution = int(res)
-    print ids
+    print "Id's to merge" + str(ids)
+    import pdb;pdb.set_trace()
     # PYTODO Check if this is a valid annotation that we are relabelubg to
-    if len(self.annoIdx.getIndex(ids[0],1)) == 0:
+    if len(self.annoIdx.getIndex(int(ids[0]),resolution)) == 0:
       raise EMCAError(ids[0] + " not a valid annotation id")
     print mergetype
     listofids = set()
     for annid in ids[1:]:
-      #print annid
       listofids |= set(self.annoIdx.getIndex(annid,resolution))
     #print listofids
         
     for key in listofids:
       cb = self.getCube (key,resolution)
-      # mask out the entries that do not match the annotation id
       vec_func = np.vectorize ( lambda x: ids[0] if x in ids[1:] else x )
       cb.data = vec_func ( cb.data )
-      #self.putCube ( key, resolution, cube)
+      self.putCube ( key, resolution, cb)
       
       # PYTODO - Relabel exceptions?????
-      
+    import pdb;pdb.set_trace()  
     # Update Index and delete object?
     for annid in ids[1:]:
-      #Wself.annoIdx.deleteIndex(annid,resolution)
-      print "updateIndex"
-      
-    return "done"
+      print "Removing Object " + str(annid)
+      self.deleteAnnotation(annid)
+    return "Merge complete"
 
   def merge2D(self, ids, mergetype, res,slicenum):
      # get the size of the image and cube
@@ -1307,32 +1305,19 @@ class EMCADB:
       listofids |= set(self.annoIdx.getIndex(annid,resolution))
     #print listofids
 
-    for key in listofids:
-      print zindex.MortonXYZ(key)
-      
-      cb = self.getCube (key,resolution)
-      # mask out the entries that do not match the annotation id
-      vec_func = np.vectorize ( lambda x: ids[0] if x in ids[1:] else x )
-      cb.data = vec_func ( cb.data )
-      #self.putCube ( key, resolution, cube)
-
-      # PYTODO - Relabel exceptions?????
-
-    # Update Index and delete object?
-    for annid in ids[1:]:
-      #Wself.annoIdx.deleteIndex(annid,resolution)
-      print "updateIndex"
-
     return "Merge 2D"
 
   def merge3D(self, ids, corner, dim, res):
      # get the size of the image and cube
     resolution = int(res)
-    print ids
+    dbname = self.annoproj.getTable(resolution)
+    if (self.annoproj.getDBType() == emcaproj.ANNOTATIONS):
+      raise EMCAError("The project is not  a Annotation project")
+    
     # PYTODO Check if this is a valid annotation that we are relabelubg to
     if len(self.annoIdx.getIndex(ids[0],1)) == 0:
       raise EMCAError(ids[0] + " not a valid annotation id")
-
+        
     listofids = set()
     for annid in ids[1:]:
       listofids |= set(self.annoIdx.getIndex(annid,resolution))
@@ -1340,73 +1325,12 @@ class EMCADB:
       # Perform the cutout
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ]
 
-      # Round to the nearest larger cube in all dimensions                                                                  
-    zstart = corner[2]/zcubedim
-    ystart = corner[1]/ycubedim
-    xstart = corner[0]/xcubedim
-    
-    znumcubes = (corner[2]+dim[2]+zcubedim-1)/zcubedim - zstart
-    ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
-    xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
-    
-     # use the requested resolution
-    dbname = self.annoproj.getTable(resolution)
-    
-    if (self.annoproj.getDBType() == emcaproj.ANNOTATIONS):
-      # input cube is the database size                                    
-      incube = anncube.AnnotateCube ( cubedim )
-      # output cube is as big as was asked for and zero it.                 
-      outcube = anncube.AnnotateCube ( [xnumcubes*xcubedim, 
-                                        ynumcubes*ycubedim,
-                                        znumcubes*zcubedim] )
-      outcube.zeros()
-    else:
-      raise EMCAError ( "Invalid database selected.Specify an annotation database" % (dbname) )
+    # Get the Cutout
+    cube = self.cutout(corner,dim,resolution)    
+    vec_func = np.vectorize ( lambda x: ids[0] if x in ids[1:] else x )
+    cube.data = vec_func ( cube.data )
 
-    # Build a list of indexes to access                                                                                     
-    listofidxs = []
-    for z in range ( znumcubes ):
-      for y in range ( ynumcubes ):
-        for x in range ( xnumcubes ):
-          mortonidx = zindex.XYZMorton ( [x+xstart, y+ystart, z+zstart] )
-          listofidxs.append ( mortonidx )
-
-     # Sort the indexes in Morton order                                    
-    listofidxs.sort()
-
-    sql = "SELECT zindex, cube FROM " + dbname + " WHERE zindex IN (%s)"
-    # creats a %s for each list element
-    in_p=', '.join(map(lambda x: '%s', listofidxs))
-    # replace the single %s with the in_p string
-    sql = sql % in_p
-    rc = self.cursor.execute(sql, listofidxs)
-
-    # xyz offset stored for later use 
-    lowxyz = zindex.MortonXYZ ( listofidxs[0] )
-
- # Get the objects and add to the cube  
-    while ( True ):
-      try:
-        idx, datastring = self.cursor.fetchone()
-      except:
-        break
-      #add the query result cube to the bigger cube
-      curxyz = zindex.MortonXYZ(int(idx))
-      offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
-      incube.fromNPZ ( datastring[:] )
-      # add it to the output cube
-      outcube.addData ( incube, offset )
-
-    outcube.trim ( corner[0]%xcubedim,dim[0],corner[1]%ycubedim,dim[1],corner[2]%zcubedim,dim[2] )
-    
-    for key in listofids:
-      #      print zindex.MortonXYZ(key)
-      cb = self.getCube (key,resolution)
-      # mask out the entries that do not match the annotation id
-      vec_func = np.vectorize ( lambda x: ids[0] if x in ids[1:] else x )
-      cb.data = vec_func ( cb.data )
-      #self.putCube ( key, resolution, cube)
-
+    self.annotateDense ( corner, resolution, cube )    
       # PYTODO - Relabel exceptions?????
 
     # Update Index and delete object?
