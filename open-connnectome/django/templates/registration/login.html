@@ -6,7 +6,7 @@
   {% if form.errors %}
     <div id="errors">
       <p>Sorry, your username and password didn't match our records. Please try again.</p>
-      <p>If you don't have an account yet, you should <a href="{% url registration_register %}">register one</a>.</p>
+      <p>If you don't have an account yet, you should <a href="{% url "registration_register" %}">register one</a>.</p>
     </div>
   {% endif %}
 
@@ -36,8 +36,8 @@
 	</form>
 	
 	<p class="register">
-	  Don't have an account? <a href="{% url registration_register %}">Register!</a>
-          {# Forgot your password? <a href="{% url password_reset %}">Set a new one</a>. #}
+	  Don't have an account? <a href="{% url "registration_register" %}">Register!</a>
+          {# Forgot your password? <a href="{% url "password_reset" %}">Set a new one</a>. #}
 	</p>
 	
     </div>
