@@ -1264,8 +1264,8 @@ class EMCADB:
 
     return dict(self.cursor.fetchall())
 
-  def mergeGlobal(self, ids, mergetype, res):
-     
+  def mergeglobal(self, ids, mergetype, res):
+
     resolution = int(res)
     # ID to merge annotations into 
     mergeid = ids[0]
@@ -1371,7 +1371,7 @@ class EMCADB:
 
     dbname = self.annoproj.getTable(resolution)
 
-    # Build a list of indexes to access
+    # Build a list of indexes to access                                                                                     
     listofidxs = []
     for z in range ( znumcubes ):
       for y in range ( ynumcubes ):
@@ -1401,6 +1401,7 @@ class EMCADB:
         cuboidzindex, annid, zexlist = func_cursor.fetchone()
       except:
         break
+
 
       # first row in a cuboid
       if np.uint32(cuboidzindex) != prevzindex:
