@@ -71,7 +71,7 @@ class EMCAProject:
     """Return the appropriate table for the specified resolution"""
     return "res"+str(resolution)+"iso"
 
-  def getNearIso ( self, resolution ):
+  def getNearIsoTable ( self, resolution ):
     """Return the appropriate table for the specified resolution"""
     return "res"+str(resolution)+"neariso"
   
@@ -411,7 +411,7 @@ class EMCAProjectsDB:
       raise EMCAError ( "Dataset %s not found." % ( dataset ))
 
     [ ximagesz, yimagesz, startslice, endslice, zoomlevels, zscale ] = row
-    return EMCADataset ( np.uint32(ximagesz), np.uint32(yimagesz), np.uint32(startslice), np.uint32(endslice), int(zoomlevels), float(zscale) ) 
+    return EMCADataset ( int(ximagesz), int(yimagesz), int(startslice), int(endslice), int(zoomlevels), float(zscale) ) 
 
 
 

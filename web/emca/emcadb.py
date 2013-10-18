@@ -465,7 +465,7 @@ class EMCADB:
     cubeidx = defaultdict(set)
 
     # convert voxels z coordinate
-    locations[:,2] = locations[:,2] - self.datasetcfg.slicerange[0]
+    locations[:,2] = locations[:,2] - np.uint32(self.datasetcfg.slicerange[0])
     # RB  there was a bug here from conflicting types of locations (HDF5 array) and slicerange (L from MySQL query)
 #    if max(locations[:,2]) > self.datasetcfg.slicerange[1]:
 #      logger.error("Bad adjusted locations. Max z slice value {}".format(max(locations[:,2])))
@@ -788,7 +788,7 @@ class EMCADB:
       if zscaling == 'isotropic':
         dbname = self.annoproj.getIsotropicTable(resolution)
       elif zscaling == 'nearisotropic':
-        dbname = self.annoproj.getNearIstoropicTable(resolution)
+        dbname = self.annoproj.getNearIsoTable(resolution)
       else:
         dbname = self.annoproj.getTable(resolution)
 
@@ -1351,7 +1351,6 @@ class EMCADB:
      # Sort the indexes in Morton order                                    
     listofidxs.sort()
 
-<<<<<<< HEAD
     sql = "SELECT zindex, cube FROM " + dbname + " WHERE zindex IN (%s)"
     # creats a %s for each list element
     in_p=', '.join(map(lambda x: '%s', listofidxs))

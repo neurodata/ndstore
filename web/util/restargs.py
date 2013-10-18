@@ -92,15 +92,16 @@ class BrainRestArgs:
       self._filterlist = None
 
     # See if it is an isotropic cutout request
+    
     self._zscaling = None
     result = re.match ("iso/",rest)
     if result != None:
       self._zscaling = 'isotropic'
      
     # See if it is an integral cutout request
-    result = re.match ("zscaled/",rest)
+    result = re.match ("neariso/",rest)
     if result != None:
-      self._zscaling = 'integral'
+      self._zscaling = 'nearisotropic'
 
 
   #

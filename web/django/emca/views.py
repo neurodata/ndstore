@@ -51,7 +51,6 @@ def getCutout (request, webargs):
 @cache_control(no_cache=True)
 def annopost (request, webargs):
   """Restful URL for all write/post services to annotation projects"""
-  import pdb;pdb.set_trace()
   # All handling done by emcarest
   try:
     return django.http.HttpResponse(emcarest.annopost(webargs,request.body))
@@ -66,12 +65,10 @@ def annopost (request, webargs):
 @cache_control(no_cache=True)
 def annotation (request, webargs):
   """Get put object interface for RAMON objects"""
-  import pdb;pdb.set_trace()
   try:
     if request.method == 'GET':
       return django.http.HttpResponse(emcarest.getAnnotation(webargs), mimetype="product/hdf5" )
     elif request.method == 'POST':
-      import pdb;pdb.set_trace()
       return django.http.HttpResponse(emcarest.putAnnotation(webargs,request.body))
     elif request.method == 'DELETE':
       emcarest.deleteAnnotation(webargs)
