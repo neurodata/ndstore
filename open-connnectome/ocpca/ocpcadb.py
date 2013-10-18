@@ -465,15 +465,10 @@ class OCPCADB:
     cubeidx = defaultdict(set)
 
     # convert voxels z coordinate
-<<<<<<< Updated upstream:open-connectome/ocpca/ocpcadb.py
     locations[:,2] = locations[:,2] - np.uint32(self.datasetcfg.slicerange[0])
     # RB  there was a bug here from conflicting types of locations (HDF5 array) and slicerange (L from MySQL query)
 #    if max(locations[:,2]) > self.datasetcfg.slicerange[1]:
 #      logger.error("Bad adjusted locations. Max z slice value {}".format(max(locations[:,2])))
-=======
-    import pdb; pdb.set_trace()
-    locations[:,2] = locations[:,2] - self.datasetcfg.slicerange[0]
->>>>>>> Stashed changes:web/emca/emcadb.py
 
     cubelocs = cubeLocs_cy ( np.array(locations, dtype=np.uint32), cubedim )
 
@@ -793,7 +788,7 @@ class OCPCADB:
       if zscaling == 'isotropic':
         dbname = self.annoproj.getIsotropicTable(resolution)
       elif zscaling == 'nearisotropic':
-        dbname = self.annoproj.getNearIstoropicTable(resolution)
+        dbname = self.annoproj.getNearIsoTable(resolution)
       else:
         dbname = self.annoproj.getTable(resolution)
 

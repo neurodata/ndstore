@@ -3,7 +3,6 @@ from django.views.decorators.cache import cache_control
 import MySQLdb
 import cStringIO
 
-import ocppaths
 import zindex
 import ocpcarest
 import ocpcaproj

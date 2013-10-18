@@ -70,7 +70,7 @@ class OCPCAProject:
     """Return the appropriate table for the specified resolution"""
     return "res"+str(resolution)+"iso"
 
-  def getNearIso ( self, resolution ):
+  def getNearIsoTable ( self, resolution ):
     """Return the appropriate table for the specified resolution"""
     return "res"+str(resolution)+"neariso"
   
