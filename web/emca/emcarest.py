@@ -1453,15 +1453,18 @@ def merge ( webargs ):
   ids = relabelids.split(',')
   last_id = len(ids)-1
   ids[last_id] = ids[last_id].replace("/","")
-  #Make idsnumpy array to speed vectorize
+  
+  # Make ids a numpy array to speed vectorize
   ids = np.array(ids,dtype=np.uint32)
 
   [ db, proj, projdb ] = loadDBProj ( token )
-
-  mergetype = rest
-  #mergetype = rest.strip('/')
+  import pdb;pdb.set_trace()
+  #mergetype = rest
+  [mergetype,resolution] = rest.split('/',1)
   if mergetype == "global":
-    return db.mergeGlobal(ids, mergetype, 1)
+    if resolution != '':
+      [resolution,extra] = resolution.split('/')
+    return db.mergeGlobal(ids, mergetype, resolution)
   else:
     [mergetype, imageargs] = mergetype.split ('/',1)
     print mergetype

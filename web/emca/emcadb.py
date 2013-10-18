@@ -18,6 +18,7 @@ import emcachannel
 from emcaerror import EMCAError
 
 from emca_cy import cubeLocs_cy
+from emca_cy import mergeCube_cy
 
 import logging
 logger=logging.getLogger("emca")
@@ -1264,35 +1265,42 @@ class EMCADB:
     return dict(self.cursor.fetchall())
 
   def mergeGlobal(self, ids, mergetype, res):
-     # get the size of the image and cube
-    import time
+     
     resolution = int(res)
-    print "Id's to merge" + str(ids)
+    # ID to merge annotations into 
     mergeid = ids[0]
  
     # PYTODO Check if this is a valid annotation that we are relabelubg to
     if len(self.annoIdx.getIndex(int(mergeid),resolution)) == 0:
       raise EMCAError(ids[0] + " not a valid annotation id")
-    print mergetype
+  
+    # Get the list of cubeindexes for the Ramon objects
     listofids = set()
     for annid in ids[1:]:
       listofids |= set(self.annoIdx.getIndex(annid,resolution))
-    #print listofids
-    import pdb;pdb.set_trace()
+        
+    # For each annotation, get the cubes and relabel it
     for annid in ids[1:]:
       listofids = set(self.annoIdx.getIndex(annid,resolution))
-     
       for key in listofids:
-        cb = self.getCube (key,resolution)
-        vec_func = np.vectorize ( lambda x: mergeid if x == annid else x )
-        start = time.time()
-        cb.data = vec_func ( cb.data )
-        print time.time()-start
-        self.putCube ( key, resolution, cb)
-      start= time.time()
-      self.deleteAnnotation(annid)
-      print time.time()-start
-      # PYTODO - Relabel exceptions?????
+        cube = self.getCube (key,resolution)
+        #Update exceptions
+        oldexlist = self.getExceptions( key, resolution, annid ) 
+        self.updateExceptions ( key, resolution, mergeid, oldexlist )
+        self.deleteExceptions ( key, resolution, annid )
+        
+        # Cython optimized function  to relabel data from annid to mergeid
+        mergeCube_cy (cube.data,mergeid,annid ) 
+        self.putCube ( key, resolution,cube)
+        
+      # Delete annotation and all it's meta data from the database
+      annotation.deleteAnnotation(annid,self,'')
+      
+
+    self.commit()
+
+     # PYTODO - Relabel exceptions?????
+    
     return "Merge complete"
 
   def merge2D(self, ids, mergetype, res,slicenum):
