@@ -4,7 +4,7 @@ from django.conf.urls import patterns, include, url
 #from django.contrib import admin
 #admin.autodiscover()
 
-urlpatterns = patterns('emca.views',
+urlpatterns = patterns('ocpca.views',
   # catmaid
   url(r'^catmaid/(?P<webargs>\w+/.*)$', 'catmaid'),
   # fetch ids (with predicates)

@@ -9,31 +9,31 @@ import itertools
 import zindex
 import anncube
 import imagecube
-import emcaproj
+import ocpcaproj
 import annotation
 import annindex
 import imagecube
-import emcachannel
+import ocpcachannel
 
-from emcaerror import EMCAError
+from ocpcaerror import OCPCAError
 
-from emca_cy import cubeLocs_cy
+from ocpca_cy import cubeLocs_cy
 
 import logging
-logger=logging.getLogger("emca")
+logger=logging.getLogger("ocp")
 
 import sys
 
 ################################################################################
 #
-#  class: EMCADB
+#  class: OCPCADB
 #
 #  Manipulate/create/read from the Morton-order cube store
 #
 ################################################################################
 
 
-class EMCADB: 
+class OCPCADB: 
 
   def __init__ (self, annoproj):
     """Connect with the brain databases"""
@@ -465,10 +465,15 @@ class EMCADB:
     cubeidx = defaultdict(set)
 
     # convert voxels z coordinate
-    locations[:,2] = locations[:,2] - self.datasetcfg.slicerange[0]
+<<<<<<< Updated upstream:open-connectome/ocpca/ocpcadb.py
+    locations[:,2] = locations[:,2] - np.uint32(self.datasetcfg.slicerange[0])
     # RB  there was a bug here from conflicting types of locations (HDF5 array) and slicerange (L from MySQL query)
 #    if max(locations[:,2]) > self.datasetcfg.slicerange[1]:
 #      logger.error("Bad adjusted locations. Max z slice value {}".format(max(locations[:,2])))
+=======
+    import pdb; pdb.set_trace()
+    locations[:,2] = locations[:,2] - self.datasetcfg.slicerange[0]
+>>>>>>> Stashed changes:web/emca/emcadb.py
 
     cubelocs = cubeLocs_cy ( np.array(locations, dtype=np.uint32), cubedim )
 
@@ -625,10 +630,10 @@ class EMCADB:
                   index_dict[exid].add(key)
             else:
               logger.error("No exceptions for this project.")
-              raise EMCAError ( "No exceptions for this project.")
+              raise OCPCAError ( "No exceptions for this project.")
           else:
             logger.error ( "Unsupported conflict option %s" % conflictopt )
-            raise EMCAError ( "Unsupported conflict option %s" % conflictopt )
+            raise OCPCAError ( "Unsupported conflict option %s" % conflictopt )
 
           self.putCube ( key, resolution, cube)
 
@@ -746,9 +751,9 @@ class EMCADB:
   def cutout ( self, corner, dim, resolution, channel=None, zscaling=None ):
     """Extract a cube of arbitrary size.  Need not be aligned."""
 
-    # PYTODO alter query if  (emcaproj)._resolution is > resolution
+    # PYTODO alter query if  (ocpcaproj)._resolution is > resolution
     # if cutout is below resolution, get a smaller cube and scaleup
-    if self.annoproj.getDBType()==emcaproj.ANNOTATIONS and  self.annoproj.getResolution() > resolution:
+    if self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS and  self.annoproj.getResolution() > resolution:
 
       # scale the corner to higher resolution
       newcorner = corner[0]/(2**(self.annoproj.getResolution()-resolution)), corner[1]/(2**(self.annoproj.getResolution()-resolution)), corner[2]
@@ -793,7 +798,7 @@ class EMCADB:
         dbname = self.annoproj.getTable(resolution)
 
 
-    if (self.annoproj.getDBType() == emcaproj.ANNOTATIONS):
+    if (self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS):
 
       # input cube is the database size
       incube = anncube.AnnotateCube ( cubedim )
@@ -804,14 +809,14 @@ class EMCADB:
                                         znumcubes*zcubedim] )
       outcube.zeros()
 
-    elif (self.annoproj.getDBType() == emcaproj.IMAGES_8bit or self.annoproj.getDBType() == emcaproj.CHANNELS_8bit):
+    elif (self.annoproj.getDBType() == ocpcaproj.IMAGES_8bit or self.annoproj.getDBType() == ocpcaproj.CHANNELS_8bit):
 
       incube = imagecube.ImageCube8 ( cubedim )
       outcube = imagecube.ImageCube8 ( [xnumcubes*xcubedim,\
                                         ynumcubes*ycubedim,\
                                         znumcubes*zcubedim] )
 
-    elif (self.annoproj.getDBType() == emcaproj.CHANNELS_16bit):
+    elif (self.annoproj.getDBType() == ocpcaproj.CHANNELS_16bit):
       
       incube = imagecube.ImageCube16 ( cubedim )
       outcube = imagecube.ImageCube16 ( [xnumcubes*xcubedim,\
@@ -831,9 +836,9 @@ class EMCADB:
 
     # Batch query for all cubes
     # Customize query to the database (include channel or not)
-    if (self.annoproj.getDBType() == emcaproj.CHANNELS_8bit or self.annoproj.getDBType() == emcaproj.CHANNELS_16bit):
+    if (self.annoproj.getDBType() == ocpcaproj.CHANNELS_8bit or self.annoproj.getDBType() == ocpcaproj.CHANNELS_16bit):
       # Convert channel as needed
-      channel = emcachannel.toID ( channel, self )
+      channel = ocpcachannel.toID ( channel, self )
       sql = "SELECT zindex, cube FROM " + dbname + " WHERE channel= " + str(channel) + " AND zindex in (%s)" 
     else:
       sql = "SELECT zindex, cube FROM " + dbname + " WHERE zindex IN (%s)" 
@@ -863,7 +868,7 @@ class EMCADB:
       outcube.addData ( incube, offset ) 
 
     # if we fetched a smaller cube to zoom, correct the result
-    if self.annoproj.getDBType()==emcaproj.ANNOTATIONS and  self.annoproj.getResolution() > resolution:
+    if self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS and  self.annoproj.getResolution() > resolution:
       logger.warning ( "Correcting for zoomed resolution." )
 
       outcube.zoomData ( self.annoproj.getResolution()-resolution )
@@ -1145,7 +1150,7 @@ class EMCADB:
           val = it.next()
           if not re.match('^\d+$',val): 
             logger.warning ( "Limit needs an integer. Illegal value:%s" % (field,val) )
-            raise EMCAError ( "Limit needs an integer. Illegal value:%s" % (field,val) )
+            raise OCPCAError ( "Limit needs an integer. Illegal value:%s" % (field,val) )
 
           limitclause = " LIMIT %s " % (val)
 
@@ -1160,7 +1165,7 @@ class EMCADB:
             val = it.next()
             if not re.match('^\w+$',val): 
               logger.warning ( "For field %s. Illegal value:%s" % (field,val) )
-              raise EMCAError ( "For field %s. Illegal value:%s" % (field,val) )
+              raise OCPCAError ( "For field %s. Illegal value:%s" % (field,val) )
 
             clause += '%s = %s' % ( field, val )
 
@@ -1173,19 +1178,19 @@ class EMCADB:
               op = ' > '
             else:
               logger.warning ( "Not a comparison operator: %s" % (opstr) )
-              raise EMCAError ( "Not a comparison operator: %s" % (opstr) )
+              raise OCPCAError ( "Not a comparison operator: %s" % (opstr) )
 
             val = it.next()
             if not re.match('^[\d\.]+$',val): 
               logger.warning ( "For field %s. Illegal value:%s" % (field,val) )
-              raise EMCAError ( "For field %s. Illegal value:%s" % (field,val) )
+              raise OCPCAError ( "For field %s. Illegal value:%s" % (field,val) )
             clause += '%s %s %s' % ( field, op, val )
 
 
           #RBTODO key/value fields?
 
           else:
-            raise EMCAError ( "Illegal field in URL: %s" % (field) )
+            raise OCPCAError ( "Illegal field in URL: %s" % (field) )
 
         field = it.next()
 
@@ -1263,13 +1268,13 @@ class EMCADB:
 
     return dict(self.cursor.fetchall())
 
-  def mergeglobal(self, ids, mergetype, res):
+  def mergeGlobal(self, ids, mergetype, res):
      # get the size of the image and cube
     resolution = int(res)
     print ids
     # PYTODO Check if this is a valid annotation that we are relabelubg to
     if len(self.annoIdx.getIndex(ids[0],1)) == 0:
-      raise EMCAError(ids[0] + " not a valid annotation id")
+      raise OCPCAError(ids[0] + " not a valid annotation id")
     print mergetype
     listofids = set()
     for annid in ids[1:]:
@@ -1299,7 +1304,7 @@ class EMCADB:
     print ids
     # PYTODO Check if this is a valid annotation that we are relabelubg to
     if len(self.annoIdx.getIndex(ids[0],1)) == 0:
-      raise EMCAError(ids[0] + " not a valid annotation id")
+      raise OCPCAError(ids[0] + " not a valid annotation id")
     print mergetype
     listofids = set()
     for annid in ids[1:]:
@@ -1331,15 +1336,38 @@ class EMCADB:
     print ids
     # PYTODO Check if this is a valid annotation that we are relabelubg to
     if len(self.annoIdx.getIndex(ids[0],1)) == 0:
-      raise EMCAError(ids[0] + " not a valid annotation id")
+      raise OCPCAError(ids[0] + " not a valid annotation id")
 
     listofids = set()
     for annid in ids[1:]:
       listofids |= set(self.annoIdx.getIndex(annid,resolution))
 
-    # use the requested resolution
+      # Perform the cutout
+    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ]
+
+      # Round to the nearest larger cube in all dimensions                                                                  
+    zstart = corner[2]/zcubedim
+    ystart = corner[1]/ycubedim
+    xstart = corner[0]/xcubedim
+    
+    znumcubes = (corner[2]+dim[2]+zcubedim-1)/zcubedim - zstart
+    ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
+    xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
+    
+     # use the requested resolution
     dbname = self.annoproj.getTable(resolution)
     
+    if (self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS):
+      # input cube is the database size                                    
+      incube = anncube.AnnotateCube ( cubedim )
+      # output cube is as big as was asked for and zero it.                 
+      outcube = anncube.AnnotateCube ( [xnumcubes*xcubedim, 
+                                        ynumcubes*ycubedim,
+                                        znumcubes*zcubedim] )
+      outcube.zeros()
+    else:
+      raise OCPCAError ( "Invalid database selected.Specify an annotation database" % (dbname) )
+
     # Build a list of indexes to access                                                                                     
     listofidxs = []
     for z in range ( znumcubes ):
@@ -1351,7 +1379,6 @@ class EMCADB:
      # Sort the indexes in Morton order                                    
     listofidxs.sort()
 
-<<<<<<< HEAD
     sql = "SELECT zindex, cube FROM " + dbname + " WHERE zindex IN (%s)"
     # creats a %s for each list element
     in_p=', '.join(map(lambda x: '%s', listofidxs))
@@ -1385,12 +1412,6 @@ class EMCADB:
       cb.data = vec_func ( cb.data )
       #self.putCube ( key, resolution, cube)
 
-    mergeregion =self.cutout( corner,dim,resolution)
-       
-    # relabel ids in cube
-    vec_func = np.vectorize ( lambda x: ids[0] if x in ids[1:] else x )
-    cb.data = vec_func ( mergeregion.data )
-    self.annotateDense(corner,resolution,mergeregion)
       # PYTODO - Relabel exceptions?????
 
     # Update Index and delete object?

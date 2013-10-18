@@ -27,7 +27,7 @@ def main():
     fname = "/home/priya/kat11hdf5/anno" + str(i) +".h5"
     tmpfile = tempfile.NamedTemporaryFile()
     h5fh = h5py.File (fname )
-    import pdb;pdb.set_trace();
+
     
     if result.preserve:  
       url = 'http://%s/emca/%s/preserve/' % ( result.baseurl, result.token )

@@ -5,9 +5,9 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
-    url(r'^emca/', include('emca.urls')),
+    url(r'^ocpca/', include('ocpca.urls')),
     url(r'^overlay/', include('overlay.urls')),
-    url(r'^ocpcatmaid/', include('ocpcatmaid.urls')),
+    url(r'^catmaid/', include('catmaid.urls')),
     url(r'^synaptogram/', include('synaptogram.urls')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^accounts/', include('registration.backends.default.urls')),

@@ -20,7 +20,7 @@ def main():
   try:
     import httplib
     conn = httplib.HTTPConnection ( "%s" % ( result.baseurl ))
-    conn.request ( 'DELETE', '/emca/%s/%s/' % ( result.token, result.annids ))
+    conn.request ( 'DELETE', '/ocpca/%s/%s/' % ( result.token, result.annids ))
     resp = conn.getresponse()
     content=resp.read()
   except httplib.HTTPException, e:

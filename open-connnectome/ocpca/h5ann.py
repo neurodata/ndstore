@@ -10,13 +10,12 @@ import re
 
 import sys
 
-import empaths
 import annotation
 
-from emcaerror import EMCAError
+from ocpcaerror import OCPCAError
 
 import logging
-logger=logging.getLogger("emca")
+logger=logging.getLogger("ocp")
 
 #
 #  class to define the HDF5 format of annotations.
@@ -226,7 +225,7 @@ def H5toAnnotation ( key, idgrp ):
 
   else:
     logger.warning ("Dont support this annotation type yet. Type = %s" % annotype)
-    raise EMCAError ("Dont support this annotation type yet. Type = %s" % annotype)
+    raise OCPCAError ("Dont support this annotation type yet. Type = %s" % annotype)
 
   # now load the annotation common fields
   if re.match("^\d+$", key):
@@ -278,7 +277,7 @@ def H5GetVolume ( h5fh ):
       return (idgrp['XYZOFFSET'], idgrp['CUTOUT'])
     else:
       logger.warning("Improperly formatted HDF5 file.  XYZOFFSET define but no CUTOUT.")
-      raise EMCAError("Improperly formatted HDF5 file.  XYZOFFSET define but no CUTOUT.")
+      raise OCPCAError("Improperly formatted HDF5 file.  XYZOFFSET define but no CUTOUT.")
   else:
     return None
 
@@ -413,7 +412,7 @@ def AnnotationtoH5 ( anno, h5fh ):
     return BasetoH5 ( anno, annotation.ANNO_ANNOTATION, h5fh )
   else:
     logger.warning ("(AnnotationtoH5) Does not support this annotation type yet. Type = %s" % anno.__class__)
-    raise EMCAError ("(AnnotationtoH5) Does not support this annotation type yet. Type = %s" % anno.__class__)
+    raise OCPCAError ("(AnnotationtoH5) Does not support this annotation type yet. Type = %s" % anno.__class__)
 
 
 

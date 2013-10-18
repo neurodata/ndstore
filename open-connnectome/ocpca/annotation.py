@@ -4,10 +4,10 @@ import MySQLdb
 import sys
 from collections import defaultdict
 
-from emcaerror import EMCAError 
+from ocpcaerror import OCPCAError 
 
 import logging
-logger=logging.getLogger("emca")
+logger=logging.getLogger("ocp")
 
 
 """Classes that hold annotation metadata"""
@@ -67,7 +67,7 @@ class Annotation:
       return self.kvpairs[field]
     else:
       logger.warning ( "getField: No such field %s" % (field))
-      raise EMCAError ( "getField: No such field %s" % (field))
+      raise OCPCAError ( "getField: No such field %s" % (field))
 
   def setField ( self, field, value ):
     """Mutator by field name.  Then need to store the field."""
@@ -83,7 +83,7 @@ class Annotation:
       self.kvpairs[field]=value
 #    else:
 #     logger.warning ( "setField: No such or can't update field %s" % (field))
-#     raise EMCAError ( "setField: No such or can't update field %s" % (field))
+#     raise OCPCAError ( "setField: No such or can't update field %s" % (field))
 
   def store ( self, annodb, annotype=ANNO_ANNOTATION ):
     """Store the annotation to the annotations database"""
@@ -97,7 +97,7 @@ class Annotation:
       cursor.execute(sql)
     except MySQLdb.Error, e:
       logger.warning ( "Error inserting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise EMCAError ( "Error inserting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error inserting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # author: make a KV pair
     if self.author != "":
@@ -107,7 +107,7 @@ class Annotation:
       try:
         kvclause = ','.join(['(' + str(self.annid) +',\'' + k + '\',\'' + v +'\')' for (k,v) in self.kvpairs.iteritems()])  
       except:
-        raise EMCAError ( "Improperly formatted key/value csv string:" + kvclause ) 
+        raise OCPCAError ( "Improperly formatted key/value csv string:" + kvclause ) 
 
       sql = "INSERT INTO %s VALUES %s" % ( anno_dbtables['kvpairs'], kvclause )
 
@@ -115,7 +115,7 @@ class Annotation:
         cursor.execute(sql)
       except MySQLdb.Error, e:
         logger.warning ( "Error inserting kvpairs %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        raise EMCAError ( "Error inserting kvpairs: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+        raise OCPCAError ( "Error inserting kvpairs: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     cursor.close()
 
@@ -138,7 +138,7 @@ class Annotation:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       logger.warning ( "Error updating annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise EMCAError ( "Error updating annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error updating annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # Make the author field a kvpair
     if self.author != "":
@@ -150,7 +150,7 @@ class Annotation:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       logger.warning ( "Error retrieving kvpairs %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise EMCAError ( "Error retrieving kvpairs: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error retrieving kvpairs: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     kvresult = cursor.fetchall()
 
@@ -180,7 +180,7 @@ class Annotation:
         cursor.execute ( sql )
       except MySQLdb.Error, e:
         logger.warning ( "Error inserting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        raise EMCAError ( "Error inserting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+        raise OCPCAError ( "Error inserting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     cursor.close()
 
@@ -199,7 +199,7 @@ class Annotation:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       logger.warning ( "Error deleting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise EMCAError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     cursor.close()
 
@@ -215,7 +215,7 @@ class Annotation:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       logger.warning ( "Error retrieving annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise EMCAError ( "Error retrieving annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error retrieving annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     ( self.annid, annotype, self.confidence, self.status ) = cursor.fetchone()
 
@@ -225,7 +225,7 @@ class Annotation:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       logger.warning ( "Error retrieving kvpairs %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise EMCAError ( "Error retrieving kvpairs: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error retrieving kvpairs: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     kvpairs = cursor.fetchall()
     for kv in kvpairs:
@@ -298,21 +298,21 @@ class AnnSynapse (Annotation):
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       logger.warning ( "Error inserting synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise EMCAError ( "Error inserting synapse: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error inserting synapse: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # synapse_seeds: pack into a kv pair
     if len(self.seeds)!=0:
       try:
         self.kvpairs['synapse_seeds'] = ','.join([str(i) for i in self.seeds])
       except:
-        raise EMCAError ("Improperly formatted seeds: %s " % (self.seeds) )
+        raise OCPCAError ("Improperly formatted seeds: %s " % (self.seeds) )
 
     # synapse_segments: pack into a kv pair
     if len(self.segments)!=0:
       try:
         self.kvpairs['synapse_segments'] = ','.join([str(i) + ':' + str(j) for i,j in self.segments])
       except:
-        raise EMCAError ("Improperly formatted segments.  Should be nx2 matrix: %s" % (self.segments) )
+        raise OCPCAError ("Improperly formatted segments.  Should be nx2 matrix: %s" % (self.segments) )
 
     cursor.close()
 
@@ -332,21 +332,21 @@ class AnnSynapse (Annotation):
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       logger.warning ( "Error updating synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise EMCAError ( "Error updating synapse: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error updating synapse: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # synapse_seeds: pack into a kv pair
     if len(self.seeds)!=0:
       try:
         self.kvpairs['synapse_seeds'] = ','.join([str(i) for i in self.seeds])
       except:
-        raise EMCAError ("Improperly formatted seeds: %s " % (self.seeds) )
+        raise OCPCAError ("Improperly formatted seeds: %s " % (self.seeds) )
 
     # synapse_segments: pack into a kv pair
     if len(self.segments)!=0:
       try:
         self.kvpairs['synapse_segments'] = ','.join([str(i) + ':' + str(j) for i,j in self.segments])
       except:
-        raise EMCAError ("Improperly formatted segments.  Should be nx2 matrix: %s" % (self.segments))
+        raise OCPCAError ("Improperly formatted segments.  Should be nx2 matrix: %s" % (self.segments))
 
     cursor.close()
 
@@ -364,7 +364,7 @@ class AnnSynapse (Annotation):
 
     # verify the annotation object type
     if annotype != ANNO_SYNAPSE:
-      raise EMCAError ( "Incompatible annotation type.  Expected SYNAPSE got %s" % annotype )
+      raise OCPCAError ( "Incompatible annotation type.  Expected SYNAPSE got %s" % annotype )
 
     sql = "SELECT synapse_type, weight FROM %s WHERE annoid = %s" % ( anno_dbtables['synapse'], annid )
 
@@ -372,7 +372,7 @@ class AnnSynapse (Annotation):
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       logger.warning ( "Error retrieving synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise EMCAError ( "Error retrieving synapse: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error retrieving synapse: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     ( self.synapse_type, self.weight ) = cursor.fetchone()
 
@@ -403,7 +403,7 @@ class AnnSynapse (Annotation):
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       logger.warning ( "Error deleting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise EMCAError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     cursor.close()
 
@@ -450,7 +450,7 @@ class AnnSeed (Annotation):
     elif field == 'position':
       self.position = [int(x) for x in value.split(',')] 
       if len(self.position) != 3:
-        raise EMCAError ("Illegal arguments to set field position: %s" % value)
+        raise OCPCAError ("Illegal arguments to set field position: %s" % value)
     elif field == 'cubelocation':
       self.cubelocation = value
     elif field == 'source':
@@ -475,7 +475,7 @@ class AnnSeed (Annotation):
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       logger.warning ( "Error inserting seed %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise EMCAError ( "Error inserting seed : %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error inserting seed : %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # and call store on the base classs
     Annotation.store ( self, annodb, ANNO_SEED)
@@ -498,7 +498,7 @@ class AnnSeed (Annotation):
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       logger.warning ( "Error inserting seed %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise EMCAError ( "Error inserting seed: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error inserting seed: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     cursor.close()
 
@@ -520,7 +520,7 @@ class AnnSeed (Annotation):
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       logger.warning ( "Error retrieving seed %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise EMCAError ( "Error retrieving seed: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error retrieving seed: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # need to initialize position to prevent index error
     self.position = [0,0,0]
@@ -543,7 +543,7 @@ class AnnSeed (Annotation):
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       logger.warning ( "Error deleting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise EMCAError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     cursor.close()
 
@@ -613,7 +613,7 @@ class AnnSegment (Annotation):
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       logger.warning ( "Error inserting segment %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise EMCAError ( "Error inserting segment: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error inserting segment: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # synapses: pack into a kv pair
 #    if self.synapses != []:
@@ -643,7 +643,7 @@ class AnnSegment (Annotation):
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       logger.warning ( "Error updating segment %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise EMCAError ( "Error updating segment: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error updating segment: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # synapses: pack into a kv pair
 #    if self.synapses != []:
@@ -671,7 +671,7 @@ class AnnSegment (Annotation):
 
     # verify the annotation object type
     if annotype != ANNO_SEGMENT:
-      raise EMCAError ( "Incompatible annotation type.  Expected SEGMENT got %s" % annotype )
+      raise OCPCAError ( "Incompatible annotation type.  Expected SEGMENT got %s" % annotype )
 
     sql = "SELECT segmentclass, parentseed, neuron FROM %s WHERE annoid = %s" % ( anno_dbtables['segment'], annid )
 
@@ -679,7 +679,7 @@ class AnnSegment (Annotation):
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       logger.warning ( "Error retrieving synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise EMCAError ( "Error retrieving segment: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error retrieving segment: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     ( self.segmentclass, self.parentseed, self.neuron ) = cursor.fetchone()
 
@@ -708,7 +708,7 @@ class AnnSegment (Annotation):
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       logger.warning ( "Error deleting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise EMCAError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     cursor.close()
 
@@ -779,7 +779,7 @@ class AnnNeuron (Annotation):
 
     # verify the annotation object type
     if annotype != ANNO_NEURON:
-      raise EMCAError ( "Incompatible annotation type.  Expected NEURON got %s" % annotype )
+      raise OCPCAError ( "Incompatible annotation type.  Expected NEURON got %s" % annotype )
 
     if self.kvpairs.get('segments'):
       self.segments = [int(i) for i in self.kvpairs['segments'].split(',')]
@@ -800,7 +800,7 @@ class AnnNeuron (Annotation):
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       logger.warning ( "Error deleting synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise EMCAError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     cursor.close()
 
@@ -847,7 +847,7 @@ class AnnOrganelle (Annotation):
     elif field == 'centroid':
       self.centroid = [int(x) for x in value.split(',')] 
       if len(self.centroid) != 3:
-        raise EMCAError ("Illegal arguments to set field centroid: %s" % value)
+        raise OCPCAError ("Illegal arguments to set field centroid: %s" % value)
     elif field == 'parentseed':
       self.parentseed = value
     elif field == 'seeds':
@@ -873,7 +873,7 @@ class AnnOrganelle (Annotation):
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       logger.warning ( "Error inserting organelle %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise EMCAError ( "Error inserting organelle: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error inserting organelle: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # seeds: pack into a kv pair
 #    if self.seeds != []:
@@ -903,7 +903,7 @@ class AnnOrganelle (Annotation):
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       logger.warning ( "Error updating organelle %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise EMCAError ( "Error updating organelle: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error updating organelle: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # seeds: pack into a kv pair
 #    if self.seeds != []:
@@ -926,7 +926,7 @@ class AnnOrganelle (Annotation):
 
     # verify the annotation object type
     if annotype != ANNO_ORGANELLE:
-      raise EMCAError ( "Incompatible annotation type.  Expected ORGANELLE got %s" % annotype )
+      raise OCPCAError ( "Incompatible annotation type.  Expected ORGANELLE got %s" % annotype )
 
     sql = "SELECT organelleclass, parentseed, centroidx, centroidy, centroidz FROM %s WHERE annoid = %s" % ( anno_dbtables['organelle'], annid )
 
@@ -934,7 +934,7 @@ class AnnOrganelle (Annotation):
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       logger.warning ( "Error retrieving organelle %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise EMCAError ( "Error retrieving organelle: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error retrieving organelle: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     ( self.organelleclass, self.parentseed, self.centroid[0], self.centroid[1], self.centroid[2] ) = cursor.fetchone()
 
@@ -959,7 +959,7 @@ class AnnOrganelle (Annotation):
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       logger.warning ( "Error deleting organelle %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise EMCAError ( "Error deleting organelle: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error deleting organelle: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     cursor.close()
 
@@ -988,7 +988,7 @@ def getAnnotation ( annid, annodb ):
     cursor.execute ( sql )
   except MySQLdb.Error, e:
     logger.warning ( "Error reading id %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-    raise EMCAError ( "Error reading id: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+    raise OCPCAError ( "Error reading id: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
   
   sqlresult = cursor.fetchone()
   if sqlresult == None:
@@ -1029,7 +1029,7 @@ def getAnnotation ( annid, annodb ):
 
   else:
     # not a type that we recognize
-    raise EMCAError ( "Unrecognized annotation type %s" % type )
+    raise OCPCAError ( "Unrecognized annotation type %s" % type )
 
 
 #
@@ -1044,7 +1044,7 @@ def putAnnotation ( anno, annodb, options ):
 
     # can't update annotations that don't exist
     if  oldanno == None:
-      raise EMCAError ( "During update no annotation found at id %d" % anno.annid  )
+      raise OCPCAError ( "During update no annotation found at id %d" % anno.annid  )
 
     # can update if they are the same type
     elif oldanno.__class__ == anno.__class__:
@@ -1058,7 +1058,7 @@ def putAnnotation ( anno, annodb, options ):
     
    # otherwise an illegal update
     else:
-      raise EMCAError ( "Cannot change the type of annotation from %s to %s" % (oldanno.__class__,anno.__class__))
+      raise OCPCAError ( "Cannot change the type of annotation from %s to %s" % (oldanno.__class__,anno.__class__))
 
   # Write the user chosen annotation id
   else:
@@ -1075,7 +1075,7 @@ def deleteAnnotation ( annoid, annodb, options ):
 
   # can't delete annotations that don't exist
   if  oldanno == None:
-    raise EMCAError ( "During delete no annotation found at id %d" % annoid  )
+    raise OCPCAError ( "During delete no annotation found at id %d" % annoid  )
 
   # methinks we can call polymorphically
   oldanno.delete(annodb) 

@@ -1,4 +1,4 @@
-# Django settings for EMOCP project.
+# Django settings for OCP project.
 from settings_secret import *
 
 DEBUG = True
@@ -54,7 +54,7 @@ MEDIA_URL = ''
 # Don't put anything in this directory yourself; store your static files
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/home/media/media.lawrence.com/static/"
-STATIC_ROOT ='/var/www/EM-connectome/web/django/templates/static/'
+STATIC_ROOT ='/var/www/open-connectome/web/django/templates/static/'
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
@@ -67,7 +67,7 @@ STATICFILES_DIRS = (
     # Don't forget to use absolute paths, not relative paths.
     #os.path.join(os.path.dirname(__file__), 'templates/static/'),
 #    os.path.join(os.path.dirname(__file__), 'templates/static/'),
-    "/var/www/EM-connectome/web/django/static/",
+    "/var/www/open-connectome/web/django/static/",
 )
 
 # List of finder classes that know how to find static files in
@@ -97,16 +97,16 @@ MIDDLEWARE_CLASSES = (
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
-ROOT_URLCONF = 'EMOCP.urls'
+ROOT_URLCONF = 'OCP.urls'
 
 # Python dotted path to the WSGI application used by Django's runserver.
-WSGI_APPLICATION = 'EMOCP.wsgi.application'
+WSGI_APPLICATION = 'OCP.wsgi.application'
 
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-    '/var/www/EM-connectome/web/django/templates'
+    '/var/www/open-connectome/web/django/templates'
 )
 
 INSTALLED_APPS = (
@@ -121,41 +121,12 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
     #RB 3/26 add applications
-    'emca',
+    'ocpca',
     'overlay',
     'synaptogram',
-    'ocpcatmaid',
+    'catmaid',
     'registration',
 )
-
-# A sample logging configuration. The only tangible logging
-# performed by this configuration is to send an email to
-# the site admins on every HTTP 500 error when DEBUG=False.
-# See http://docs.djangoproject.com/en/dev/topics/logging for
-# more details on how to customize your logging configuration.
-#LOGGING = {
-#    'version': 1,
-#    'disable_existing_loggers': False,
-#    'filters': {
-#        'require_debug_false': {
-#            '()': 'django.utils.log.RequireDebugFalse'
-#        }
-#    },
-#    'handlers': {
-#        'mail_admins': {
-#            'level': 'ERROR',
-#            'filters': ['require_debug_false'],
-#            'class': 'django.utils.log.AdminEmailHandler'
-#        }
-#    },
-#    'loggers': {
-#        'django.request': {
-#            'handlers': ['mail_admins'],
-#            'level': 'ERROR',
-#            'propagate': True,
-#        },
-#    }
-#}
 
 
 LOGGING = {
@@ -175,8 +146,7 @@ LOGGING = {
         'logfile': {
             'level':'DEBUG',
             'class':'logging.handlers.RotatingFileHandler',
-            'filename': "/var/log/emca" + "/emca.log",
-#            'filename': "/tmp" + "/emca.log",
+            'filename': "/var/log/ocp" + "/ocp.log",
             'maxBytes': 500000,
             'backupCount': 7,
             'formatter': 'standard',
@@ -198,7 +168,7 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': False,
         },
-        'emca': {
+        'ocp': {
             'handlers': ['console', 'logfile'],
             'level': 'WARN',
         },

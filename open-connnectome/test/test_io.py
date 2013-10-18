@@ -12,16 +12,14 @@ import zlib
 import pytest
 
 from pytesthelpers import makeAnno
-import emcaproj
+import ocpcaproj
 
-EM_BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".." ))
-EM_EMCA_PATH = os.path.join(EM_BASE_PATH, "emca" )
-sys.path += [ EM_EMCA_PATH ]
+import ocppaths
 
 import site_to_test
 SITE_HOST = site_to_test.site
 
-import emcaproj
+import ocpcaproj
 
 # Module level setup/teardown
 def setup_module(module):
@@ -53,16 +51,16 @@ def readAnno ( params ):
    """
 
   if params.voxels:
-    url = "http://%s/emca/%s/%s/voxels/%s/" % (params.baseurl,params.token,params.annids, params.resolution)
+    url = "http://%s/ocpca/%s/%s/voxels/%s/" % (params.baseurl,params.token,params.annids, params.resolution)
     print url
   elif params.cutout != None:
-    url = "http://%s/emca/%s/%s/cutout/%s/" % (params.baseurl,params.token,params.annids, params.cutout)
+    url = "http://%s/ocpca/%s/%s/cutout/%s/" % (params.baseurl,params.token,params.annids, params.cutout)
   elif params.tightcutout: 
-    url = "http://%s/emca/%s/%s/cutout/%s/" % (params.baseurl,params.token,params.annids, params.resolution)
+    url = "http://%s/ocpca/%s/%s/cutout/%s/" % (params.baseurl,params.token,params.annids, params.resolution)
   elif params.boundingbox: 
-    url = "http://%s/emca/%s/%s/boundingbox/%s/" % (params.baseurl,params.token,params.annids, params.resolution)
+    url = "http://%s/ocpca/%s/%s/boundingbox/%s/" % (params.baseurl,params.token,params.annids, params.resolution)
   else:
-    url = "http://%s/emca/%s/%s/" % (params.baseurl,params.token,params.annids)
+    url = "http://%s/ocpca/%s/%s/" % (params.baseurl,params.token,params.annids)
 
   # Get annotation in question
   f = urllib2.urlopen ( url )
@@ -299,11 +297,11 @@ def writeAnno ( params ):
 
   # Build the put URL
   if params.update:
-    url = "http://%s/emca/%s/update/" % ( params.baseurl, params.token)
+    url = "http://%s/ocpca/%s/update/" % ( params.baseurl, params.token)
   elif params.dataonly:
-    url = "http://%s/emca/%s/dataonly/" % ( params.baseurl, params.token)
+    url = "http://%s/ocpca/%s/dataonly/" % ( params.baseurl, params.token)
   else:
-    url = "http://%s/emca/%s/" % ( params.baseurl, params.token)
+    url = "http://%s/ocpca/%s/" % ( params.baseurl, params.token)
 
   if params.preserve:  
     url += 'preserve/'
@@ -347,12 +345,12 @@ class TestRW:
   def setup_class(self):
     """Create the unittest database"""
     
-    self.pd = emcaproj.EMCAProjectsDB()
-    self.pd.newEMCAProj ( 'unittest_rw', 'test', 'localhost', 'unittest_rw', 2, 'kasthuri11', None, False, True, False, 0 )
+    self.pd = ocpcaproj.OCPCAProjectsDB()
+    self.pd.newOCPCAProj ( 'unittest_rw', 'test', 'localhost', 'unittest_rw', 2, 'kasthuri11', None, False, True, False, 0 )
 
   def teardown_class (self):
     """Destroy the unittest database"""
-    self.pd.deleteEMCADB ('unittest_rw')
+    self.pd.deleteOCPCADB ('unittest_rw')
 
   def test_batch(self):
     """Batch interface"""
@@ -563,10 +561,18 @@ class TestRW:
 #    else:
 #      conn = httplib.HTTPConnection ( "%s" % ( durl ))
 
-    print rp.baseurl
-    conn = httplib.HTTPConnection ( rp.baseurl )
+    try:
+      (base,suffix) = rp.baseurl.split("/",1)
+    except:
+      base = rp.baseurl
+      suffix = None
 
-    conn.request ( 'DELETE', '/emca/%s/%s/' % ( rp.token, rp.annids ))
+    conn = httplib.HTTPConnection ( base )
+
+    if suffix:
+      conn.request ( 'DELETE', '/%s/ocpca/%s/%s/' % ( suffix, rp.token, rp.annids ))
+    else:
+      conn.request ( 'DELETE', '/ocpca/%s/%s/' % ( rp.token, rp.annids ))
     resp = conn.getresponse()
     content=resp.read()
     assert content == "Success"
@@ -649,7 +655,7 @@ class TestRW:
         for i in range (1000,1050):
           voxlist.append ( [ i,j,k ] )
 
-    url = 'http://%s/emca/%s/npvoxels/%s/%s/' % ( wp.baseurl, wp.token, int(retval), wp.resolution)
+    url = 'http://%s/ocpca/%s/npvoxels/%s/%s/' % ( wp.baseurl, wp.token, int(retval), wp.resolution)
 
     # Encode the voxelist an pickle
     fileobj = cStringIO.StringIO ()
@@ -669,7 +675,7 @@ class TestRW:
     annodata = np.zeros( [ 2, 50, 50 ] )
     annodata = annodata + int(retval)
 
-    url = 'http://%s/emca/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( wp.baseurl, wp.token, wp.resolution, 200, 250, 200, 250, 200, 202 )
+    url = 'http://%s/ocpca/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( wp.baseurl, wp.token, wp.resolution, 200, 250, 200, 250, 200, 202 )
 
     # Encode the voxelist as a pickle
     fileobj = cStringIO.StringIO ()

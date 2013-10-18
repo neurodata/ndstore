@@ -15,7 +15,7 @@ import django
 import re
 
 
-class MCFCCatmaid:
+class SimpleCatmaid:
   """Prefetch CATMAID tiles into MocpcacheDB"""
 
   def __init__(self):
@@ -30,7 +30,7 @@ class MCFCCatmaid:
 
 
   def buildKey (self,res,xtile,ytile,zslice):
-    return 'mcfc/{}/{}/{}/{}/{}/{}/{}'.format(self.token,self.tilesz,self.channels,res,xtile,ytile,zslice)
+    return 'simple/{}/{}/{}/{}/{}/{}'.format(self.token,self.tilesz,res,xtile,ytile,zslice)
 
 
   def cacheMiss ( self, resolution, xtile, ytile, zslice ):
@@ -47,17 +47,25 @@ class MCFCCatmaid:
     xend = min ((xtile+1)*self.tilesz,self.proj.datasetcfg.imagesz[resolution][0])
     yend = min ((ytile+1)*self.tilesz,self.proj.datasetcfg.imagesz[resolution][1])
 
-    # call the mcfc interface
+    # get an xy image slice
     imageargs = '{}/{},{}/{},{}/{}/'.format(resolution,xstart,xend,ystart,yend,zslice) 
+    cb = ocpcarest.xySlice ( imageargs, self.proj, self.db )
+    if cb.data.shape != (1,self.tilesz,self.tilesz):
+      tiledata = np.zeros((self.tilesz,self.tilesz), cb.data.dtype )
+      tiledata[0:((yend-1)%self.tilesz+1),0:((xend-1)%self.tilesz+1)] = cb.data[0,:,:]
+    else:
+      tiledata = cb.data
 
-    return ocpcarest.mcfcPNG ( self.proj, self.db, self.token, "xy", self.channels, imageargs )
+    # need to make polymorphic for different image types     
+    outimage = Image.frombuffer ( 'L', (self.tilesz,self.tilesz), tiledata, 'raw', 'L', 0, 1 ) 
+    return outimage
 
 
   def getTile ( self, webargs ):
     """Either fetch the file from mocpcache or get a mcfc image"""
 
     # parse the web args
-    self.token, tileszstr, self.channels, plane, resstr, xtilestr, ytilestr, zslicestr, rest = webargs.split('/',8)
+    self.token, tileszstr, resstr, xtilestr, ytilestr, zslicestr, rest = webargs.split('/',6)
 
     [ self.db, self.proj, projdb ] = ocpcarest.loadDBProj ( self.token )
 
@@ -65,8 +73,8 @@ class MCFCCatmaid:
     xtile = int(xtilestr)
     ytile = int(ytilestr)
     res = int(resstr)
-    # modify the zslice to the offset
-    zslice = int(zslicestr)-self.proj.datasetcfg.slicerange[0]
+    # xyslice will modify zslice to the offset
+    zslice = int(zslicestr)
     self.tilesz = int(tileszstr)
 
     # mocpcache key

@@ -5,9 +5,10 @@ from django.conf.urls import patterns, include, url
 #admin.autodiscover()
 
 # already have the ^catmaid stripped off
-urlpatterns = patterns('ocpcatmaid.views',
+urlpatterns = patterns('catmaid.views',
   # mcfc
   url(r'^mcfc/(?P<webargs>.*)$', 'mcfccatmaidview'),
+  url(r'^prefetch/(?P<webargs>.*)$', 'prefetchcatmaidview'),
+  url(r'^(?P<webargs>.*)$', 'simplecatmaidview'),
   # catmaid
-  url(r'^(?P<webargs>\w+/.*)$', 'ocpcatmaidview'),
 )

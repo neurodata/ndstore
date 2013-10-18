@@ -3,12 +3,11 @@ import array
 import cStringIO
 import MySQLdb
 
-import empaths
 import zindex
-import emcaproj
+import ocpcaproj
 
 import logging
-logger=logging.getLogger("emca")
+logger=logging.getLogger("ocp")
 
 #
 #  AnnotateIndex: Maintain the index in the database

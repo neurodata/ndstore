@@ -4,19 +4,18 @@ import cStringIO
 from PIL import Image
 import zlib
 
-import empaths
 import zindex
 from cube import Cube
 
-from emca_cy import annotate_cy
-from emca_cy import shave_cy
-from emca_cy import recolor_cy
-from emca_cy import zoomData_cy
+from ocpca_cy import annotate_cy
+from ocpca_cy import shave_cy
+from ocpca_cy import recolor_cy
+from ocpca_cy import zoomData_cy
 
-from emcaerror import EMCAError 
+from ocpcaerror import OCPCAError 
 
 import logging
-logger=logging.getLogger("emca")
+logger=logging.getLogger("ocp")
 
 #
 #  AnnotateCube: manipulate the in-memory data representation of the 3-d cube of data
@@ -120,7 +119,7 @@ class AnnotateCube(Cube):
 #      return self.annotate_nocy ( self.data, annid, offset, np.array(locations, dtype=np.uint32), conflictopt )
     except IndexError, e:
 #      logger.error("Tried to paint a voxel that is out of bounds.  Locations={}".format(locations))
-      raise EMCAError ("Voxel list includes out of bounds request.")
+      raise OCPCAError ("Voxel list includes out of bounds request.")
 
 
   def shave ( self, annid, offset, locations ):

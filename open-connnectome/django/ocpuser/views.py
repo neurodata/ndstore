@@ -12,9 +12,8 @@ from django.core.urlresolvers import get_script_prefix
 from django.template import Context
 from collections import defaultdict
 from django.contrib import messages
-import empaths
-import emcarest
-import emcaproj
+import ocpcarest
+import ocpcaproj
 import string
 import random
 from models import ocpProject
@@ -25,10 +24,10 @@ from forms import UpdateProjectForm
 from django.core.urlresolvers import get_script_prefix
 import os
 import subprocess
-from emcaerror import EMCAError
+from ocpcaerror import OCPCAError
 
 import logging
-logger=logging.getLogger("emca")
+logger=logging.getLogger("ocp")
 
 # Helpers
 
@@ -46,7 +45,7 @@ def profile(request):
         openid = request.user.username
         filteroption = request.POST.get('filteroption')
         filtervalue = (request.POST.get('filtervalue')).strip()
-        pd = emcaproj.EMCAProjectsDB()
+        pd = ocpcaproj.OCPCAProjectsDB()
         projects = pd.getFilteredProjects ( openid,filteroption,filtervalue )
         
         databases = pd.getDatabases ( openid)
@@ -60,14 +59,14 @@ def profile(request):
       elif 'delete' in request.POST:
       #DELETE PROJECT WITH SPECIFIED TOKEN
 
-        pd = emcaproj.EMCAProjectsDB()
+        pd = ocpcaproj.OCPCAProjectsDB()
         openid = request.user.username
         
         project = (request.POST.get('projname')).strip()
         print " Ready to delete " ,project
       #token = (request.POST.get('token')).strip()
        
-        pd.deleteEMCADatabase(project)
+        pd.deleteOCPCADatabase(project)
         # pd.deleteTokenDescription(token)
         #return redirect(profile)
       elif 'downloadtoken' in request.POST:
@@ -76,13 +75,13 @@ def profile(request):
         token = (request.POST.get('roptions')).strip()
         print token
         response = HttpResponse(token,content_type='text/html')
-        response['Content-Disposition'] = 'attachment; filename="emca.token"'
+        response['Content-Disposition'] = 'attachment; filename="ocpca.token"'
         return response
       elif 'info' in request.POST:
       #GET PROJECT INFO -----------TODO
         token = (request.POST.get('roptions')).strip()
       #token = (request.POST.get('token')).strip()+"/projinfo/test"
-        return HttpResponse(emcarest.projInfo(token), mimetype="product/hdf5" )
+        return HttpResponse(ocpcarest.projInfo(token), mimetype="product/hdf5" )
       elif 'update' in request.POST:
       #UPDATE PROJECT TOKEN -- FOLOWUP
       #token = (request.POST.get('token')).strip()
@@ -109,7 +108,7 @@ def profile(request):
           os.mkdir( path, 0755 )
               #subprocess.call('whoami')
       # Get the database information
-        pd = emcaproj.EMCAProjectsDB()
+        pd = ocpcaproj.OCPCAProjectsDB()
         db = (request.POST.get('projname')).strip()
               #Open backupfile
         ofile = path +'/'+ db +'.sql'
@@ -121,7 +120,7 @@ def profile(request):
       else:
         # Invalid POST
         #
-        pd = emcaproj.EMCAProjectsDB()
+        pd = ocpcaproj.OCPCAProjectsDB()
         openid = request.user.username
 # projects = pd.getProjects ( openid )
         projects = pd.getFilteredProjects ( openid ,"","")
@@ -135,7 +134,7 @@ def profile(request):
     else:
     # GET Option
       #import pdb;pdb.set_trace()
-      pd = emcaproj.EMCAProjectsDB()
+      pd = ocpcaproj.OCPCAProjectsDB()
       openid = request.user.username
       databases = pd.getDatabases ( openid)
       dbs = defaultdict(list)
@@ -145,10 +144,10 @@ def profile(request):
         
       return render_to_response('profile.html', { 'databases': dbs.iteritems() },context_instance=RequestContext(request))
     
-  except EMCAError, e:
+  except OCPCAError, e:
     #import pdb;pdb.set_trace();
     messages.error(request, e.value)
-    pd = emcaproj.EMCAProjectsDB()
+    pd = ocpcaproj.OCPCAProjectsDB()
     openid = request.user.username
     projects = pd.getFilteredProjects ( openid ,"","")
     databases = pd.getDatabases ( openid)
@@ -164,20 +163,20 @@ def profile(request):
 def datasets(request):
   
   try:
-    pd = emcaproj.EMCAProjectsDB()
+    pd = ocpcaproj.OCPCAProjectsDB()
    
     if request.method == 'POST':
       if 'delete' in request.POST:
-        pd = emcaproj.EMCAProjectsDB()
+        pd = ocpcaproj.OCPCAProjectsDB()
         openid = request.user.username
         ds = (request.POST.get('dataset')).strip()
         pd.deleteDataset(ds)
         #pd.deleteTokenDescription(token)
-        pd = emcaproj.EMCAProjectsDB()
+        pd = ocpcaproj.OCPCAProjectsDB()
         datasets = pd.getDatasets()
         return render_to_response('datasets.html', { 'dts': datasets },context_instance=RequestContext(request))
       elif 'viewprojects' in request.POST:
-        pd = emcaproj.EMCAProjectsDB()
+        pd = ocpcaproj.OCPCAProjectsDB()
         openid = request.user.username
         ds = (request.POST.get('dataset')).strip()
         request.session["project"] = ds
@@ -193,10 +192,10 @@ def datasets(request):
         return render_to_response('datasets.html', { 'dts': datasets },context_instance=RequestContext(request))
     else:
       # GET datasets
-      pd = emcaproj.EMCAProjectsDB()
+      pd = ocpcaproj.OCPCAProjectsDB()
       datasets = pd.getDatasets()
       return render_to_response('datasets.html', { 'dts': datasets },context_instance=RequestContext(request))
-  except EMCAError, e:
+  except OCPCAError, e:
     #return django.http.HttpResponseNotFound(e.value)
     datasets = pd.getDatasets()    
     messages.error(request, e.value)
@@ -208,7 +207,7 @@ def datasets(request):
 
 @login_required
 def tokens(request):
-  pd = emcaproj.EMCAProjectsDB()  
+  pd = ocpcaproj.OCPCAProjectsDB()  
   #import pdb;pdb.set_trace();
   try:
     if request.method == 'POST':
@@ -217,7 +216,7 @@ def tokens(request):
         openid = request.user.username
         filteroption = request.POST.get('filteroption')
         filtervalue = (request.POST.get('filtervalue')).strip()
-        pd = emcaproj.EMCAProjectsDB()
+        pd = ocpcaproj.OCPCAProjectsDB()
         projects = pd.getFilteredProjects ( openid,filteroption,filtervalue )
         return render_to_response('token.html', { 'tokens': projects},
                                   context_instance=RequestContext(request))
@@ -226,7 +225,7 @@ def tokens(request):
         openid = request.user.username
         token = (request.POST.get('token')).strip()
         print " Ready to delete " ,token
-        pd.deleteEMCAProj(token)
+        pd.deleteOCPCAProj(token)
          # pd.deleteTokenDescription(token)
         return redirect(tokens)
       elif 'downloadtoken' in request.POST:
@@ -234,7 +233,7 @@ def tokens(request):
         token = (request.POST.get('token')).strip()
         print token
         response = HttpResponse(token,content_type='text/html')
-        response['Content-Disposition'] = 'attachment; filename="emca.token"'
+        response['Content-Disposition'] = 'attachment; filename="ocpca.token"'
         return response
       elif 'update' in request.POST:
       #UPDATE PROJECT TOKEN -- FOLOWUP
@@ -258,7 +257,7 @@ def tokens(request):
         projects = pd.getFilteredProjects ( openid ,"","")
       return render_to_response('token.html', { 'tokens': projects, 'database': proj },context_instance=RequestContext(request))
     
-  except EMCAError, e:
+  except OCPCAError, e:
     #return django.http.HttpResponseNotFound(e.value)
     datasets = pd.getDatasets()
     messages.error(request, e.value)
@@ -296,11 +295,11 @@ def createproject(request):
         print token, project, dataset, dataurl,readonly, exceptions, openid , resolution
         # Get database info                
         try:
-          pd = emcaproj.EMCAProjectsDB()
-          pd.newEMCAProj ( token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate, int(resolution) )
+          pd = ocpcaproj.OCPCAProjectsDB()
+          pd.newOCPCAProj ( token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate, int(resolution) )
           pd.insertTokenDescription ( token, description )
           return redirect(profile)          
-        except EMCAError, e:
+        except OCPCAError, e:
           messages.error(request, e.value)
           return redirect(profile)          
       else:
@@ -338,9 +337,9 @@ def createdataset(request):
         print "Creating a dataset with:"
         print dataset, ximagesize, yimagesize, startslice,endslice,zoomlevels,zscale
         # Get database info                                                                      
-        pd = emcaproj.EMCAProjectsDB()
+        pd = ocpcaproj.OCPCAProjectsDB()
         pd.newDataset ( dataset, ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale )        
-#pd.newEMCAProj ( token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate )
+#pd.newOCPCAProj ( token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate )
         #pd.insertTokenDescription ( token, description )
         return redirect(datasets)
 
@@ -361,8 +360,8 @@ def createdataset(request):
 @login_required
 def updateproject(request):
   
-  #emcauser = request.user.get_profile
-  #context = {'emcauser': emcauser}
+  #ocpcauser = request.user.get_profile
+  #context = {'ocpcauser': ocpcauser}
   print "In update project view"
   if request.method == 'POST':
     if 'UpdateProject' in request.POST:
@@ -372,10 +371,10 @@ def updateproject(request):
         curtoken = form.cleaned_data['currentToken']
         newtoken = form.cleaned_data['newToken']
         description = form.cleaned_data['description']
-        pd = emcaproj.EMCAProjectsDB()
+        pd = ocpcaproj.OCPCAProjectsDB()
         pd.updateProject(curtoken,newtoken)
         pd.updateTokenDescription ( newtoken ,description)
-#pd.newEMCAProj ( token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate )
+#pd.newOCPCAProj ( token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate )
         return redirect(profile)
        
       else:
@@ -422,8 +421,8 @@ def restore(request):
         print "Creating a project with:"
         #       print token, host, project, dataset, dataurl,readonly, exceptions, openid
         # Get database info
-        pd = emcaproj.EMCAProjectsDB()
-        pd.newEMCAProj ( token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate ,resolution)
+        pd = ocpcaproj.OCPCAProjectsDB()
+        pd.newOCPCAProj ( token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate ,resolution)
         bkupfile = request.POST.get('backupfile')
         path = '/data/scratch/ocpbackup/'+ request.user.username + '/' + bkupfile
         if os.path.exists(path):

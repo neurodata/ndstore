@@ -1,14 +1,13 @@
-import empaths
 import MySQLdb
 import h5py
 import numpy as np
 import math
 
-import emcaprivate
-from emcaerror import EMCAError
+import ocpcaprivate
+from ocpcaerror import OCPCAError
 
 import logging
-logger=logging.getLogger("emca")
+logger=logging.getLogger("ocp")
 
 # dbtype enumerations
 IMAGES_8bit = 1
@@ -16,12 +15,12 @@ ANNOTATIONS = 2
 CHANNELS_16bit = 3
 CHANNELS_8bit = 4
 
-class EMCAProject:
+class OCPCAProject:
   """Project specific for cutout and annotation data"""
 
   # Constructor 
   def __init__(self, dbname, dbhost, dbtype, dataset, dataurl, readonly, exceptions, resolution ):
-    """Initialize the EMCA Project"""
+    """Initialize the OCPCA Project"""
     
     self._dbname = dbname
     self._dbhost = dbhost
@@ -59,9 +58,9 @@ class EMCAProject:
 
   # accessors for RB to fix
   def getDBUser( self ):
-    return emcaprivate.dbuser
+    return ocpcaprivate.dbuser
   def getDBPasswd( self ):
-    return emcaprivate.dbpasswd
+    return ocpcaprivate.dbpasswd
 
   def getTable ( self, resolution ):
     """Return the appropriate table for the specified resolution"""
@@ -79,7 +78,7 @@ class EMCAProject:
     """Return the appropriate Index table for the specified resolution"""
     return "idx"+str(resolution)
 
-class EMCADataset:
+class OCPCADataset:
   """Configuration for a dataset"""
 
   def __init__ ( self, ximagesz, yimagesz, startslice, endslice, zoomlevels, zscale ):
@@ -161,33 +160,33 @@ class EMCADataset:
     return  [ self.imagesz [resolution], self.slicerange ]
 
 
-class EMCAProjectsDB:
+class OCPCAProjectsDB:
   """Database for the annotation and cutout projects"""
 
   def __init__(self):
     """Create the database connection"""
 
     # Connection info 
-    self.conn = MySQLdb.connect (host = emcaprivate.dbhost,
-                          user = emcaprivate.dbuser,
-                          passwd = emcaprivate.dbpasswd,
-                          db = emcaprivate.db )
+    self.conn = MySQLdb.connect (host = ocpcaprivate.dbhost,
+                          user = ocpcaprivate.dbuser,
+                          passwd = ocpcaprivate.dbpasswd,
+                          db = ocpcaprivate.db )
 
   #
-  # Load the emca databse information based on the token
+  # Load the ocpca databse information based on the token
   #
   def loadProject ( self, token ):
     """Load the annotation database information based on the token"""
 
     # Lookup the information for the database project based on the token
-    sql = "SELECT token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions, resolution from %s where token = \'%s\'" % (emcaprivate.projects, token)
+    sql = "SELECT token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions, resolution from %s where token = \'%s\'" % (ocpcaprivate.projects, token)
 
     try:
       cursor = self.conn.cursor()
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      logger.error ("Could not query emca projects database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise EMCAError ("Could not query emca projects database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      logger.error ("Could not query ocpca projects database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ("Could not query ocpca projects database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # get the project information 
     row= cursor.fetchone()
@@ -195,12 +194,12 @@ class EMCAProjectsDB:
     # if the project is not found.  error
     if ( row == None ):
       logger.warning ( "Project token %s not found." % ( token ))
-      raise EMCAError ( "Project token %s not found." % ( token ))
+      raise OCPCAError ( "Project token %s not found." % ( token ))
 
     [token, openid, host, project, dbtype, dataset, dataurl, readonly, exceptions, resolution ] = row
 
     # Create a project object
-    proj = EMCAProject ( project, host, dbtype, dataset, dataurl, readonly, exceptions, resolution ) 
+    proj = OCPCAProject ( project, host, dbtype, dataset, dataurl, readonly, exceptions, resolution ) 
     proj.datasetcfg = self.loadDatasetConfig ( dataset )
 
     return proj
@@ -209,10 +208,10 @@ class EMCAProjectsDB:
   # Create a new dataset
   #
   def newDataset ( self, dsname, ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale ):
-    """Create a new emca dataset"""
+    """Create a new ocpca dataset"""
 
     sql = "INSERT INTO {0} (dataset, ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',{5},\'{6}\',\'{7}\')".format (\
-       emcaprivate.datasets, dsname, ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale )
+       ocpcaprivate.datasets, dsname, ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale )
 
     logger.info ( "Creating new dataset. Name %s. SQL=%s" % ( dsname, sql ))
 
@@ -220,8 +219,8 @@ class EMCAProjectsDB:
       cursor = self.conn.cursor()
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      logger.error ("Could not query emca datsets database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise EMCAError ("Could not query emca datsets database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      logger.error ("Could not query ocpca datsets database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ("Could not query ocpca datsets database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     self.conn.commit()
 
@@ -229,14 +228,14 @@ class EMCAProjectsDB:
   #
   # Create a new project (annotation or data)
   #
-  def newEMCAProj ( self, token, openid, dbhost, project, dbtype, dataset, dataurl, readonly, exceptions, nocreate, resolution ):
-    """Create a new emca project"""
+  def newOCPCAProj ( self, token, openid, dbhost, project, dbtype, dataset, dataurl, readonly, exceptions, nocreate, resolution ):
+    """Create a new ocpca project"""
 
 # TODO need to undo the project creation if not totally sucessful
     datasetcfg = self.loadDatasetConfig ( dataset )
 
     sql = "INSERT INTO {0} (token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions, resolution) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',{5},\'{6}\',\'{7}\',\'{8}\',\'{9}\',\'{10}\')".format (\
-       emcaprivate.projects, token, openid, dbhost, project, dbtype, dataset, dataurl, int(readonly), int(exceptions), resolution )
+       ocpcaprivate.projects, token, openid, dbhost, project, dbtype, dataset, dataurl, int(readonly), int(exceptions), resolution )
 
     logger.info ( "Creating new project. Host %s. Project %s. SQL=%s" % ( dbhost, project, sql ))
 
@@ -244,8 +243,8 @@ class EMCAProjectsDB:
       cursor = self.conn.cursor()
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      logger.error ("Could not query emca projects database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise EMCAError ("Could not query emca projects database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      logger.error ("Could not query ocpca projects database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ("Could not query ocpca projects database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     self.conn.commit()
 
@@ -257,27 +256,27 @@ class EMCAProjectsDB:
        
         # Connect to the new database
         newconn = MySQLdb.connect (host = dbhost,
-                              user = emcaprivate.dbuser,
-                              passwd = emcaprivate.dbpasswd )
+                              user = ocpcaprivate.dbuser,
+                              passwd = ocpcaprivate.dbpasswd )
 
         newcursor = newconn.cursor()
       
 
-        # Make the database and associated emca tables
+        # Make the database and associated ocpca tables
         sql = "CREATE DATABASE %s;" % project
        
         try:
           newcursor.execute ( sql )
         except MySQLdb.Error, e:
           logger.error ("Failed to create database for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-          raise EMCAError ("Failed to create database for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+          raise OCPCAError ("Failed to create database for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
         newconn.commit()
 
         # Connect to the new database
         newconn = MySQLdb.connect (host = dbhost,
-                              user = emcaprivate.dbuser,
-                              passwd = emcaprivate.dbpasswd,
+                              user = ocpcaprivate.dbuser,
+                              passwd = ocpcaprivate.dbpasswd,
                               db = project )
 
         newcursor = newconn.cursor()
@@ -319,11 +318,11 @@ class EMCAProjectsDB:
           newcursor.execute ( sql )
         except MySQLdb.Error, e:
           logging.error ("Failed to create tables for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-          raise EMCAError ("Failed to create tables for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+          raise OCPCAError ("Failed to create tables for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # Error, undo the projects table entry
     except:
-      sql = "DELETE FROM {0} WHERE token=\'{1}\'".format (emcaprivate.projects, token)
+      sql = "DELETE FROM {0} WHERE token=\'{1}\'".format (ocpcaprivate.projects, token)
 
       logger.info ( "Could not create project database.  Undoing projects insert. Project %s. SQL=%s" % ( project, sql ))
 
@@ -332,17 +331,17 @@ class EMCAProjectsDB:
         cursor.execute ( sql )
         self.conn.commit()
       except MySQLdb.Error, e:
-        logger.error ("Could not undo insert into emca projects database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+        logger.error ("Could not undo insert into ocpca projects database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         logger.error ("Check project database for project not linked to database.")
         raise
 
     
 
-  def deleteEMCAProj ( self, token ):
-    """Create a new emca project"""
+  def deleteOCPCAProj ( self, token ):
+    """Create a new ocpca project"""
 
     proj = self.loadProject ( token )
-    sql = "DELETE FROM %s WHERE token=\'%s\'" % ( emcaprivate.projects, token ) 
+    sql = "DELETE FROM %s WHERE token=\'%s\'" % ( ocpcaprivate.projects, token ) 
 
     try:
       cursor = self.conn.cursor()
@@ -350,18 +349,18 @@ class EMCAProjectsDB:
     except MySQLdb.Error, e:
       conn.rollback()
       logging.error ("Failed to remove project from projects tables %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise EMCAError ("Failed to remove project from projects tables %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ("Failed to remove project from projects tables %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     self.conn.commit()
 
 
-  def deleteEMCADB ( self, token ):
+  def deleteOCPCADB ( self, token ):
 
     # load the project
     proj = self.loadProject ( token )
 
     # delete line from projects table
-    self.deleteEMCAProj ( token )
+    self.deleteOCPCAProj ( token )
 
     # delete the database
     sql = "DROP DATABASE " + proj.getDBName()
@@ -372,15 +371,15 @@ class EMCAProjectsDB:
     except MySQLdb.Error, e:
       conn.rollback()
       logging.error ("Failed to drop project database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise EMCAError ("Failed to drop project database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ("Failed to drop project database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     self.conn.commit()
 
   # accessors for RB to fix
   def getDBUser( self ):
-    return emcaprivate.dbuser
+    return ocpcaprivate.dbuser
   def getDBPasswd( self ):
-    return emcaprivate.dbpasswd
+    return ocpcaprivate.dbpasswd
 
   def getTable ( self, resolution ):
     """Return the appropriate table for the specified resolution"""
@@ -392,15 +391,15 @@ class EMCAProjectsDB:
 
   def loadDatasetConfig ( self, dataset ):
     """Query the database for the dataset information and build a db configuration"""
-    sql = "SELECT ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale from %s where dataset = \'%s\'" % (emcaprivate.datasets, dataset)
+    sql = "SELECT ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale from %s where dataset = \'%s\'" % (ocpcaprivate.datasets, dataset)
 
     try:
       cursor = self.conn.cursor()
       cursor.execute ( sql )
     except MySQLdb.Error, e:
 
-      logger.error ("Could not query emca datasets database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise EMCAError ("Could not query emca datasets database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      logger.error ("Could not query ocpca datasets database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ("Could not query ocpca datasets database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # get the project information 
     row = cursor.fetchone()
@@ -408,18 +407,18 @@ class EMCAProjectsDB:
     # if the project is not found.  error
     if ( row == None ):
       logger.warning ( "Dataset %s not found." % ( dataset ))
-      raise EMCAError ( "Dataset %s not found." % ( dataset ))
+      raise OCPCAError ( "Dataset %s not found." % ( dataset ))
 
     [ ximagesz, yimagesz, startslice, endslice, zoomlevels, zscale ] = row
-    return EMCADataset ( np.uint32(ximagesz), np.uint32(yimagesz), np.uint32(startslice), np.uint32(endslice), int(zoomlevels), float(zscale) ) 
+    return OCPCADataset ( int(ximagesz), int(yimagesz), int(startslice), int(endslice), int(zoomlevels), float(zscale) ) 
 
 
 
 # RBTODO where did this come from?
 #
-#      logger.error ("Could not query emca projects database %d: %s. sql\
+#      logger.error ("Could not query ocpca projects database %d: %s. sql\
 #=%s" % (e.args[0], e.args[1], sql))
-#      raise EMCAError ("Could not query emca projects database %d: %s. \
+#      raise OCPCAError ("Could not query ocpca projects database %d: %s. \
 #sql=%s" % (e.args[0], e.args[1], sql))
 #
 #    # get the project information                                       
@@ -428,19 +427,19 @@ class EMCAProjectsDB:
  
 
   #
-  # Load the emca databse information based on openid
+  # Load the ocpca databse information based on openid
   #
   def getFilteredProjects ( self, openid, filterby, filtervalue ):
     """Load the annotation database information based on the openid"""
     # Lookup the information for the database project based on the openid
     #url = "SELECT * from %s where " + filterby
-    #sql = "SELECT * from %s where %s = \'%s\'" % (emcaprivate.table, filterby, filtervalue)
-    token_desc = emcaprivate.token_description;
-    proj_tbl = emcaprivate.projects;
+    #sql = "SELECT * from %s where %s = \'%s\'" % (ocpcaprivate.table, filterby, filtervalue)
+    token_desc = ocpcaprivate.token_description;
+    proj_tbl = ocpcaprivate.projects;
     if (filterby == ""):
-      sql = "SELECT * from %s LEFT JOIN %s on %s.token = %s.token where %s.openid = \'%s\' ORDER BY project" % (emcaprivate.projects,token_desc,proj_tbl,token_desc,proj_tbl,openid)
+      sql = "SELECT * from %s LEFT JOIN %s on %s.token = %s.token where %s.openid = \'%s\' ORDER BY project" % (ocpcaprivate.projects,token_desc,proj_tbl,token_desc,proj_tbl,openid)
     else:
-      sql = "SELECT * from %s LEFT JOIN %s on %s.token = %s.token where %s.openid = \'%s\' and %s.%s = \'%s\' ORDER BY project" % (emcaprivate.projects,token_desc,proj_tbl,token_desc, proj_tbl,openid, proj_tbl,filterby, filtervalue.strip())
+      sql = "SELECT * from %s LEFT JOIN %s on %s.token = %s.token where %s.openid = \'%s\' and %s.%s = \'%s\' ORDER BY project" % (ocpcaprivate.projects,token_desc,proj_tbl,token_desc, proj_tbl,openid, proj_tbl,filterby, filtervalue.strip())
     try:
       cursor = self.conn.cursor()
       cursor.execute ( sql )
@@ -454,17 +453,17 @@ class EMCAProjectsDB:
 
 #*******************************************************************************
   #
-  # Load the emca databse information based on openid and filter options
+  # Load the ocpca databse information based on openid and filter options
   #
   def getFilteredProjs ( self, openid, filterby, filtervalue,dataset ):
     """Load the annotation database information based on the openid"""
     # Lookup the information for the database project based on the openid
-    proj_desc = emcaprivate.project_description;
-    proj_tbl = emcaprivate.projects;
+    proj_desc = ocpcaprivate.project_description;
+    proj_tbl = ocpcaprivate.projects;
     if (filterby == ""):
-      sql = "SELECT * from %s LEFT JOIN %s on %s.project = %s.project where %s.openid = \'%s\' and %s.dataset = \'%s\'" % (emcaprivate.projects,proj_desc,proj_tbl,proj_desc,proj_tbl,openid,proj_tbl,dataset)
+      sql = "SELECT * from %s LEFT JOIN %s on %s.project = %s.project where %s.openid = \'%s\' and %s.dataset = \'%s\'" % (ocpcaprivate.projects,proj_desc,proj_tbl,proj_desc,proj_tbl,openid,proj_tbl,dataset)
     else:
-      sql = "SELECT * from %s LEFT JOIN %s on %s.project = %s.project where %s.openid = \'%s\' and %s.%s = \'%s\' and %s.dataset =\'%s\'" % (emcaprivate.projects,proj_desc,proj_tbl,proj_desc, proj_tbl,openid, proj_tbl,filterby, filtervalue.strip(),proj_tbl,dataset)
+      sql = "SELECT * from %s LEFT JOIN %s on %s.project = %s.project where %s.openid = \'%s\' and %s.%s = \'%s\' and %s.dataset =\'%s\'" % (ocpcaprivate.projects,proj_desc,proj_tbl,proj_desc, proj_tbl,openid, proj_tbl,filterby, filtervalue.strip(),proj_tbl,dataset)
     try:
       cursor = self.conn.cursor()
       cursor.execute ( sql )
@@ -483,10 +482,10 @@ class EMCAProjectsDB:
     """Load the annotation database information based on the openid"""
     # Lookup the information for the database project based on the openid
     
-    token_desc = emcaprivate.token_description;
-    proj_tbl = emcaprivate.projects;
+    token_desc = ocpcaprivate.token_description;
+    proj_tbl = ocpcaprivate.projects;
 
-    sql = "SELECT distinct(dataset) from %s where openid = \'%s\'"  % (emcaprivate.projects,openid)
+    sql = "SELECT distinct(dataset) from %s where openid = \'%s\'"  % (ocpcaprivate.projects,openid)
        
     try:
       cursor = self.conn.cursor()
@@ -505,7 +504,7 @@ class EMCAProjectsDB:
   def getDatasets ( self):
     """Load the annotation database information based on the openid"""
     # Lookup the information for the database project based on the openid
-    sql = "SELECT * from %s"  % (emcaprivate.datasets)
+    sql = "SELECT * from %s"  % (ocpcaprivate.datasets)
 
     try:
       cursor = self.conn.cursor()
@@ -526,7 +525,7 @@ class EMCAProjectsDB:
   #
   def updateProject ( self, curtoken ,newtoken):
     """Load the annotation database information based on the openid"""
-    sql = "UPDATE %s SET token = \'%s\' where token = \'%s\'" % (emcaprivate.projects, newtoken, curtoken)
+    sql = "UPDATE %s SET token = \'%s\' where token = \'%s\'" % (ocpcaprivate.projects, newtoken, curtoken)
     try:
       cursor = self.conn.cursor()
       cursor.execute ( sql )
@@ -541,8 +540,8 @@ class EMCAProjectsDB:
     #
   def insertTokenDescription ( self, token ,desc):
     """Add a token description for a new project"""
-   # sql = "UPDATE %s SET token = \'%s\' where token = \'%s\'" % (emcaprivate.projects, newtoken, curtoken)
-    sql = "INSERT INTO %s (token,description) VALUES (\'%s\',\'%s\')" % (emcaprivate.token_description, token, desc)
+   # sql = "UPDATE %s SET token = \'%s\' where token = \'%s\'" % (ocpcaprivate.projects, newtoken, curtoken)
+    sql = "INSERT INTO %s (token,description) VALUES (\'%s\',\'%s\')" % (ocpcaprivate.token_description, token, desc)
     try:
       cursor = self.conn.cursor()
       cursor.execute ( sql )
@@ -557,7 +556,7 @@ class EMCAProjectsDB:
     #
   def updateTokenDescription ( self, token ,description):
     """Update token description for a project"""
-    sql = "UPDATE %s SET description = \'%s\' where token = \'%s\'" % (emcaprivate.token_description, description, token)
+    sql = "UPDATE %s SET description = \'%s\' where token = \'%s\'" % (ocpcaprivate.token_description, description, token)
     try:
       cursor = self.conn.cursor()
       cursor.execute ( sql )
@@ -572,7 +571,7 @@ class EMCAProjectsDB:
     #
   def deleteTokenDescription ( self, token):
     """Delete entry from token description table"""
-    sql = "DELETE FROM  %s where token = \'%s\'" % (emcaprivate.token_description, token)
+    sql = "DELETE FROM  %s where token = \'%s\'" % (ocpcaprivate.token_description, token)
     try:
       cursor = self.conn.cursor()
       cursor.execute ( sql )
@@ -582,18 +581,18 @@ class EMCAProjectsDB:
     self.conn.commit()
 
 
-  def deleteEMCADatabase ( self, project ):
+  def deleteOCPCADatabase ( self, project ):
     #Used for the project management interface
 #PYTODO - Check about function
     # Check if there are any tokens for this database
-    sql = "SELECT count(*) FROM %s WHERE project=\'%s\'" % ( emcaprivate.projects,project )
+    sql = "SELECT count(*) FROM %s WHERE project=\'%s\'" % ( ocpcaprivate.projects,project )
     try:
       cursor = self.conn.cursor()
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       conn.rollback()
       logging.error ("Failed to query projects for database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise EMCAError ("Failed to query projects for database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ("Failed to query projects for database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
     self.conn.commit()
     row = cursor.fetchone()
     if (row == None):
@@ -606,37 +605,37 @@ class EMCAProjectsDB:
       except MySQLdb.Error, e:
         conn.rollback()
         logging.error ("Failed to drop project database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        raise EMCAError ("Failed to drop project database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+        raise OCPCAError ("Failed to drop project database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       self.conn.commit()
     else:
-      raise EMCAError ("Tokens still exists. Failed to drop project database")
+      raise OCPCAError ("Tokens still exists. Failed to drop project database")
 
   def deleteDataset ( self, dataset ):
     #Used for the project management interface
 #PYTODO - Check about function
     # Check if there are any tokens for this dataset    
-    sql = "SELECT * FROM %s WHERE dataset=\'%s\'" % ( emcaprivate.projects, dataset )
+    sql = "SELECT * FROM %s WHERE dataset=\'%s\'" % ( ocpcaprivate.projects, dataset )
     try:
       cursor = self.conn.cursor()
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       conn.rollback()
       logging.error ("Failed to query projects for dataset %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise EMCAError ("Failed to query projects for dataset %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ("Failed to query projects for dataset %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
     self.conn.commit()
     row = cursor.fetchone()
     if (row == None):
-      sql = "DELETE FROM {0} WHERE dataset=\'{1}\'".format (emcaprivate.datasets,dataset)
+      sql = "DELETE FROM {0} WHERE dataset=\'{1}\'".format (ocpcaprivate.datasets,dataset)
       try:
         cursor = self.conn.cursor()
         cursor.execute ( sql )
       except MySQLdb.Error, e:
         conn.rollback()
         logging.error ("Failed to delete dataset %d : %s. sql=%s" % (e.args[0], e.args[1], sql))
-        raise EMCAError ("Failed to delete dataset %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+        raise OCPCAError ("Failed to delete dataset %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       self.conn.commit()
     else:
-      raise EMCAError ("Tokens still exists. Failed to drop project database")
+      raise OCPCAError ("Tokens still exists. Failed to drop project database")
 
   #
   #  getPublicTokens
@@ -645,14 +644,14 @@ class EMCAProjectsDB:
     """return a list of public tokens"""
 
     # RBTODO our notion of a public project is not good so far 
-    sql = "select token from {} where token=project".format(emcaprivate.projects)
+    sql = "select token from {} where token=project".format(ocpcaprivate.projects)
     try:
       cursor = self.conn.cursor()
       cursor.execute ( sql )
     except MySQLdb.Error, e:
       conn.rollback()
       logging.error ("Failed to query projects for public tokens %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise EMCAError ("Failed to query projects for public tokens %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ("Failed to query projects for public tokens %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     return [item[0] for item in cursor.fetchall()]
 

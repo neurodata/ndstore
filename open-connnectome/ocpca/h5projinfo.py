@@ -2,11 +2,11 @@
 import h5py
 import numpy as np
 
-import emcadb
-import emcaproj
+import ocpcadb
+import ocpcaproj
 
 import logging
-logger=logging.getLogger("emca")
+logger=logging.getLogger("ocp")
 
 #
 # h5ChannelsInfo
@@ -59,5 +59,5 @@ def h5Info ( proj, db, h5f ):
 
   h5ProjInfo ( proj, h5f )
   h5DatasetInfo ( proj.datasetcfg, h5f ) 
-  if proj.getDBType() == emcaproj.CHANNELS_16bit or proj.getDBType() == emcaproj.CHANNELS_8bit:
+  if proj.getDBType() == ocpcaproj.CHANNELS_16bit or proj.getDBType() == ocpcaproj.CHANNELS_8bit:
     h5ChannelsInfo ( db, h5f )

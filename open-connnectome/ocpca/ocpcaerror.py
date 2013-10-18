@@ -1,7 +1,7 @@
 #
-# EMCA errors
+# OCPCA errors
 #
-class EMCAError (Exception):
+class OCPCAError (Exception):
   """General annotation error"""
   def __init__(self, value):
     self.value = value

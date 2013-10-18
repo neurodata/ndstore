@@ -11,16 +11,14 @@ import numpy as np
 import pytest
 
 from pytesthelpers import makeAnno
-import emcaproj
+import ocpcaproj
 
-EM_BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".." ))
-EM_EMCA_PATH = os.path.join(EM_BASE_PATH, "emca" )
-sys.path += [ EM_EMCA_PATH ]
+import ocppaths
 
 import site_to_test
 SITE_HOST = site_to_test.site
 
-import emcaproj
+import ocpcaproj
 
 # Module level setup/teardown
 def setup_module(module):
@@ -40,13 +38,13 @@ class TestRamon:
   def setup_class(self):
     """Create the unittest database"""
 
-    self.pd = emcaproj.EMCAProjectsDB()
-    self.pd.newEMCAProj ( 'unittest', 'test', 'localhost', 'unittest', 2, 'kasthuri11', None, False, True, False, 0 )
+    self.pd = ocpcaproj.OCPCAProjectsDB()
+    self.pd.newOCPCAProj ( 'unittest', 'test', 'localhost', 'unittest', 2, 'kasthuri11', None, False, True, False, 0 )
 
   def teardown_class (self):
     """Destroy the unittest database"""
     print "in teardown_class"
-    self.pd.deleteEMCADB ('unittest')
+    self.pd.deleteOCPCADB ('unittest')
 
 
   def test_anno(self):
@@ -64,7 +62,7 @@ class TestRamon:
     tmpfile.seek(0)
 
     # Build the put URL
-    url = "http://%s/emca/%s/" % ( SITE_HOST, 'unittest')
+    url = "http://%s/ocpca/%s/" % ( SITE_HOST, 'unittest')
 
     # write an object (server creates identifier)
     req = urllib2.Request ( url, tmpfile.read())
@@ -72,7 +70,7 @@ class TestRamon:
     putid1 = int(response.read())
     
     # retrieve the annotation
-    url = "http://%s/emca/%s/%s/" % ( SITE_HOST, 'unittest', str(putid1))
+    url = "http://%s/ocpca/%s/%s/" % ( SITE_HOST, 'unittest', str(putid1))
     f = urllib2.urlopen ( url )
     retfile = tempfile.NamedTemporaryFile ( )
     retfile.write ( f.read() )
@@ -114,7 +112,7 @@ class TestRamon:
     tmpfile.seek(0)
 
     # Build the put URL
-    url = "http://%s/emca/%s/" % ( SITE_HOST, 'unittest')
+    url = "http://%s/ocpca/%s/" % ( SITE_HOST, 'unittest')
 
     # write an object (server creates identifier)
     req = urllib2.Request ( url, tmpfile.read())
@@ -122,7 +120,7 @@ class TestRamon:
     putid2 = int(response.read())
 
     # retrieve the annotation
-    url = "http://%s/emca/%s/%s/" % ( SITE_HOST, 'unittest', str(putid2))
+    url = "http://%s/ocpca/%s/%s/" % ( SITE_HOST, 'unittest', str(putid2))
     f = urllib2.urlopen ( url )
     retfile = tempfile.NamedTemporaryFile ( )
     retfile.write ( f.read() )
@@ -173,7 +171,7 @@ class TestRamon:
     tmpfile.seek(0)
 
     # Build the put URL
-    url = "http://%s/emca/%s/update/" % ( SITE_HOST, 'unittest')
+    url = "http://%s/ocpca/%s/update/" % ( SITE_HOST, 'unittest')
 
     # write an object (server creates identifier)
     req = urllib2.Request ( url, tmpfile.read())
@@ -181,7 +179,7 @@ class TestRamon:
     putid3 = int(response.read())
 
     # retrieve the annotation
-    url = "http://%s/emca/%s/%s/" % ( SITE_HOST, 'unittest', str(putid3))
+    url = "http://%s/ocpca/%s/%s/" % ( SITE_HOST, 'unittest', str(putid3))
     f = urllib2.urlopen ( url )
     retfile = tempfile.NamedTemporaryFile ( )
     retfile.write ( f.read() )
@@ -211,10 +209,21 @@ class TestRamon:
 #    if m.group(1) == 's':
 #      conn = httplib.HTTPSConnection ( "%s" % ( m.group(2)))
 #    else:
-#      conn = httplib.HTTPConnection ( "%s" % ( m.group(2)))
-    conn = httplib.HTTPConnection ( SITE_HOST )
+#      conn = httplib.HTTPConnection ( "%s" % ( m.group(2))
 
-    conn.request ( 'DELETE', '/emca/%s/%s/' % ( 'unittest', putid3 ))
+    try:
+      (base,suffix) = SITE_HOST.split("/",1)
+    except:
+      base = SITE_HOST
+      suffix = None
+
+    conn = httplib.HTTPConnection ( base )
+
+    if suffix:
+      conn.request ( 'DELETE', '/%s/ocpca/%s/%s/' % ( suffix, 'unittest', putid3 )) 
+    else:
+      conn.request ( 'DELETE', '/ocpca/%s/%s/' % ( 'unittest', putid3 ))
+
     resp = conn.getresponse()
     content=resp.read()
 
@@ -222,7 +231,7 @@ class TestRamon:
 
     # retrieve the annotation
     # verify that it's not there.
-    url = "http://%s/emca/%s/%s/" % ( SITE_HOST, 'unittest', str(putid3))
+    url = "http://%s/ocpca/%s/%s/" % ( SITE_HOST, 'unittest', str(putid3))
     with pytest.raises(urllib2.HTTPError): 
       urllib2.urlopen ( url )
 
@@ -252,7 +261,7 @@ class TestRamon:
 #
 #    # Now put an empty file
 #    # Build the put URL
-#    url = "http://%s/emca/%s/" % ( SITE_HOST, 'unittest')
+#    url = "http://%s/ocpca/%s/" % ( SITE_HOST, 'unittest')
 #
 #    # write an object (server creates identifier)
 #    req = urllib2.Request ( url, tmpfile.read())
@@ -261,7 +270,7 @@ class TestRamon:
 #
 #    # now read and verify
 #    # retrieve the annotation
-#    url = "http://%s/emca/%s/%s/" % ( SITE_HOST, 'unittest', str(putid))
+#    url = "http://%s/ocpca/%s/%s/" % ( SITE_HOST, 'unittest', str(putid))
 #    f = urllib2.urlopen ( url )
 #    retfile = tempfile.NamedTemporaryFile ( )
 #    retfile.write ( f.read() )
@@ -409,7 +418,7 @@ class TestRamon:
       fobj = self.H5AnnotationFile ( anntype, annoid )
 
       # Build the put URL
-      url = "http://%s/emca/%s/" % ( SITE_HOST, 'unittest')
+      url = "http://%s/ocpca/%s/" % ( SITE_HOST, 'unittest')
 
       # write an object (server creates identifier)
       req = urllib2.Request ( url, fobj.read())
@@ -426,13 +435,13 @@ class TestRamon:
       putid2 = int(response.read())
 
       # retrieve both annotations
-      url = "http://%s/emca/%s/%s/" % ( SITE_HOST, 'unittest', str(putid1))
+      url = "http://%s/ocpca/%s/%s/" % ( SITE_HOST, 'unittest', str(putid1))
       f = urllib2.urlopen ( url )
       getid1 = self.getH5id ( f )
    
       assert ( getid1 == putid1 )
 
-      url = "http://%s/emca/%s/%s/" % ( SITE_HOST, 'unittest', str(putid2))
+      url = "http://%s/ocpca/%s/%s/" % ( SITE_HOST, 'unittest', str(putid2))
       req = urllib2.Request ( url )
       f = urllib2.urlopen ( url )
       getid2 = self.getH5id ( f )
@@ -448,32 +457,32 @@ class TestRamon:
 
     # set the status
     status = random.randint (0,100)
-    url =  "http://%s/emca/%s/%s/setField/status/%s/" % ( SITE_HOST, 'unittest',str(annid), status )
+    url =  "http://%s/ocpca/%s/%s/setField/status/%s/" % ( SITE_HOST, 'unittest',str(annid), status )
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     assert f.read()==''
 
     # get the status
-    url =  "http://%s/emca/%s/%s/getField/status/" % ( SITE_HOST, 'unittest',str(annid))
+    url =  "http://%s/ocpca/%s/%s/getField/status/" % ( SITE_HOST, 'unittest',str(annid))
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     assert status == int(f.read()) 
 
     # set the confidence
     confidence = random.random ()
-    url =  "http://%s/emca/%s/%s/setField/confidence/%s/" % ( SITE_HOST, 'unittest',str(annid), confidence )
+    url =  "http://%s/ocpca/%s/%s/setField/confidence/%s/" % ( SITE_HOST, 'unittest',str(annid), confidence )
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     assert f.read()==''
 
     # get the confidence
-    url =  "http://%s/emca/%s/%s/getField/confidence/" % ( SITE_HOST, 'unittest',str(annid))
+    url =  "http://%s/ocpca/%s/%s/getField/confidence/" % ( SITE_HOST, 'unittest',str(annid))
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     assert confidence - float(f.read()) < 0.001
     
     # get the author
-    url =  "http://%s/emca/%s/%s/getField/author/" % ( SITE_HOST, 'unittest',str(annid))
+    url =  "http://%s/ocpca/%s/%s/getField/author/" % ( SITE_HOST, 'unittest',str(annid))
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     assert 'Unit Test' == f.read()
@@ -483,26 +492,26 @@ class TestRamon:
 
     # set the type
     synapse_type = random.randint (0,100)
-    url =  "http://%s/emca/%s/%s/setField/synapse_type/%s/" % ( SITE_HOST, 'unittest',str(annid), synapse_type )
+    url =  "http://%s/ocpca/%s/%s/setField/synapse_type/%s/" % ( SITE_HOST, 'unittest',str(annid), synapse_type )
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     assert f.read()==''
 
     # get the synapse_type
-    url =  "http://%s/emca/%s/%s/getField/synapse_type/" % ( SITE_HOST, 'unittest',str(annid))
+    url =  "http://%s/ocpca/%s/%s/getField/synapse_type/" % ( SITE_HOST, 'unittest',str(annid))
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     assert synapse_type == int(f.read()) 
 
     # set the weight
     weight = random.random ()
-    url =  "http://%s/emca/%s/%s/setField/weight/%s/" % ( SITE_HOST, 'unittest',str(annid), weight )
+    url =  "http://%s/ocpca/%s/%s/setField/weight/%s/" % ( SITE_HOST, 'unittest',str(annid), weight )
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     assert f.read()==''
 
     # get the weight
-    url =  "http://%s/emca/%s/%s/getField/weight/" % ( SITE_HOST, 'unittest',str(annid))
+    url =  "http://%s/ocpca/%s/%s/getField/weight/" % ( SITE_HOST, 'unittest',str(annid))
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     assert weight - float(f.read()) < 0.001
@@ -510,13 +519,13 @@ class TestRamon:
     # check inheritance
     # set the status
     status = random.randint (0,100)
-    url =  "http://%s/emca/%s/%s/setField/status/%s/" % ( SITE_HOST, 'unittest',str(annid), status )
+    url =  "http://%s/ocpca/%s/%s/setField/status/%s/" % ( SITE_HOST, 'unittest',str(annid), status )
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     assert f.read()==''
 
     # get the status
-    url =  "http://%s/emca/%s/%s/getField/status/" % ( SITE_HOST, 'unittest',str(annid))
+    url =  "http://%s/ocpca/%s/%s/getField/status/" % ( SITE_HOST, 'unittest',str(annid))
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     assert status == int(f.read()) 
@@ -527,39 +536,39 @@ class TestRamon:
 
     # set the parent
     parent = random.randint (0,100)
-    url =  "http://%s/emca/%s/%s/setField/parent/%s/" % ( SITE_HOST, 'unittest',str(annid), parent )
+    url =  "http://%s/ocpca/%s/%s/setField/parent/%s/" % ( SITE_HOST, 'unittest',str(annid), parent )
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     assert f.read()==''
 
     # get the parent
-    url =  "http://%s/emca/%s/%s/getField/parent/" % ( SITE_HOST, 'unittest',str(annid))
+    url =  "http://%s/ocpca/%s/%s/getField/parent/" % ( SITE_HOST, 'unittest',str(annid))
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     assert parent == int(f.read()) 
 
     # set the source
     source = random.randint (0,100)
-    url =  "http://%s/emca/%s/%s/setField/source/%s/" % ( SITE_HOST, 'unittest',str(annid), source )
+    url =  "http://%s/ocpca/%s/%s/setField/source/%s/" % ( SITE_HOST, 'unittest',str(annid), source )
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     assert f.read()==''
 
     # get the source
-    url =  "http://%s/emca/%s/%s/getField/source/" % ( SITE_HOST, 'unittest',str(annid))
+    url =  "http://%s/ocpca/%s/%s/getField/source/" % ( SITE_HOST, 'unittest',str(annid))
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     assert source == int(f.read()) 
 
     # set the cubelocation
     cubelocation = random.randint (0,100)
-    url =  "http://%s/emca/%s/%s/setField/cubelocation/%s/" % ( SITE_HOST, 'unittest',str(annid), cubelocation )
+    url =  "http://%s/ocpca/%s/%s/setField/cubelocation/%s/" % ( SITE_HOST, 'unittest',str(annid), cubelocation )
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     assert f.read()==''
 
     # get the cubelocation
-    url =  "http://%s/emca/%s/%s/getField/cubelocation/" % ( SITE_HOST, 'unittest',str(annid))
+    url =  "http://%s/ocpca/%s/%s/getField/cubelocation/" % ( SITE_HOST, 'unittest',str(annid))
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     assert cubelocation == int(f.read()) 
@@ -569,39 +578,39 @@ class TestRamon:
 
     # set the parentseed
     parentseed = random.randint (0,100)
-    url =  "http://%s/emca/%s/%s/setField/parentseed/%s/" % ( SITE_HOST, 'unittest',str(annid), parentseed )
+    url =  "http://%s/ocpca/%s/%s/setField/parentseed/%s/" % ( SITE_HOST, 'unittest',str(annid), parentseed )
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     assert f.read()==''
 
     # get the parentseed
-    url =  "http://%s/emca/%s/%s/getField/parentseed/" % ( SITE_HOST, 'unittest',str(annid))
+    url =  "http://%s/ocpca/%s/%s/getField/parentseed/" % ( SITE_HOST, 'unittest',str(annid))
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     assert parentseed == int(f.read()) 
 
     # set the segmentclass
     segmentclass = random.randint (0,100)
-    url =  "http://%s/emca/%s/%s/setField/segmentclass/%s/" % ( SITE_HOST, 'unittest',str(annid), segmentclass )
+    url =  "http://%s/ocpca/%s/%s/setField/segmentclass/%s/" % ( SITE_HOST, 'unittest',str(annid), segmentclass )
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     assert f.read()==''
 
     # get the segmentclass
-    url =  "http://%s/emca/%s/%s/getField/segmentclass/" % ( SITE_HOST, 'unittest',str(annid))
+    url =  "http://%s/ocpca/%s/%s/getField/segmentclass/" % ( SITE_HOST, 'unittest',str(annid))
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     assert segmentclass == int(f.read()) 
 
     # set the neuron
     neuron = random.randint (0,100)
-    url =  "http://%s/emca/%s/%s/setField/neuron/%s/" % ( SITE_HOST, 'unittest',str(annid), neuron )
+    url =  "http://%s/ocpca/%s/%s/setField/neuron/%s/" % ( SITE_HOST, 'unittest',str(annid), neuron )
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     assert f.read()==''
 
     # get the neuron
-    url =  "http://%s/emca/%s/%s/getField/neuron/" % ( SITE_HOST, 'unittest',str(annid))
+    url =  "http://%s/ocpca/%s/%s/getField/neuron/" % ( SITE_HOST, 'unittest',str(annid))
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     assert neuron == int(f.read()) 
@@ -609,13 +618,13 @@ class TestRamon:
     # check inheritance
     # set the status
     status = random.randint (0,100)
-    url =  "http://%s/emca/%s/%s/setField/status/%s/" % ( SITE_HOST, 'unittest',str(annid), status )
+    url =  "http://%s/ocpca/%s/%s/setField/status/%s/" % ( SITE_HOST, 'unittest',str(annid), status )
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     assert f.read()==''
 
     # get the status
-    url =  "http://%s/emca/%s/%s/getField/status/" % ( SITE_HOST, 'unittest',str(annid))
+    url =  "http://%s/ocpca/%s/%s/getField/status/" % ( SITE_HOST, 'unittest',str(annid))
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     assert status == int(f.read()) 
@@ -628,13 +637,13 @@ class TestRamon:
     # check inheritance
     # set the status
     status = random.randint (0,100)
-    url =  "http://%s/emca/%s/%s/setField/status/%s/" % ( SITE_HOST, 'unittest',str(annid), status )
+    url =  "http://%s/ocpca/%s/%s/setField/status/%s/" % ( SITE_HOST, 'unittest',str(annid), status )
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     assert f.read()==''
 
     # get the status
-    url =  "http://%s/emca/%s/%s/getField/status/" % ( SITE_HOST, 'unittest',str(annid))
+    url =  "http://%s/ocpca/%s/%s/getField/status/" % ( SITE_HOST, 'unittest',str(annid))
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     assert status == int(f.read()) 
@@ -644,26 +653,26 @@ class TestRamon:
 
     # set the parentseed
     parentseed = random.randint (0,100)
-    url =  "http://%s/emca/%s/%s/setField/parentseed/%s/" % ( SITE_HOST, 'unittest',str(annid), parentseed )
+    url =  "http://%s/ocpca/%s/%s/setField/parentseed/%s/" % ( SITE_HOST, 'unittest',str(annid), parentseed )
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     assert f.read()==''
 
     # get the parentseed
-    url =  "http://%s/emca/%s/%s/getField/parentseed/" % ( SITE_HOST, 'unittest',str(annid))
+    url =  "http://%s/ocpca/%s/%s/getField/parentseed/" % ( SITE_HOST, 'unittest',str(annid))
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     assert parentseed == int(f.read()) 
 
     # set the organelleclass
     organelleclass = random.randint (0,100)
-    url =  "http://%s/emca/%s/%s/setField/organelleclass/%s/" % ( SITE_HOST, 'unittest',str(annid), organelleclass )
+    url =  "http://%s/ocpca/%s/%s/setField/organelleclass/%s/" % ( SITE_HOST, 'unittest',str(annid), organelleclass )
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     assert f.read()==''
 
     # get the organelleclass
-    url =  "http://%s/emca/%s/%s/getField/organelleclass/" % ( SITE_HOST, 'unittest',str(annid))
+    url =  "http://%s/ocpca/%s/%s/getField/organelleclass/" % ( SITE_HOST, 'unittest',str(annid))
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     assert organelleclass == int(f.read()) 
@@ -671,39 +680,39 @@ class TestRamon:
     # check inheritance
     # set the status
     status = random.randint (0,100)
-    url =  "http://%s/emca/%s/%s/setField/status/%s/" % ( SITE_HOST, 'unittest',str(annid), status )
+    url =  "http://%s/ocpca/%s/%s/setField/status/%s/" % ( SITE_HOST, 'unittest',str(annid), status )
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     assert f.read()==''
 
     # get the status
-    url =  "http://%s/emca/%s/%s/getField/status/" % ( SITE_HOST, 'unittest',str(annid))
+    url =  "http://%s/ocpca/%s/%s/getField/status/" % ( SITE_HOST, 'unittest',str(annid))
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     assert status == int(f.read()) 
 
-    # TODO error cases.
+    # TODO error ocpcaes.
     #  bad format to a number
-    url =  "http://%s/emca/%s/%s/setField/status/aa/" % ( SITE_HOST, 'unittest',str(annid))
+    url =  "http://%s/ocpca/%s/%s/setField/status/aa/" % ( SITE_HOST, 'unittest',str(annid))
     with pytest.raises(urllib2.HTTPError): 
       req = urllib2.Request ( url )
       f = urllib2.urlopen ( url )
 
 # RBTODO add tests key/value and compound fields.
     #  assign a field for a wrong annotation type
-#    url =  "http://%s/emca/%s/%s/setField/segmentclass/2/" % ( SITE_HOST, 'unittest',str(annid))
+#    url =  "http://%s/ocpca/%s/%s/setField/segmentclass/2/" % ( SITE_HOST, 'unittest',str(annid))
 #    with pytest.raises(urllib2.HTTPError): 
 #      req = urllib2.Request ( url )
 #      f = urllib2.urlopen ( url )
 
     #  assign a missing field
-#    url =  "http://%s/emca/%s/%s/setField/nonesuch/2/" % ( SITE_HOST, 'unittest',str(annid))
+#    url =  "http://%s/ocpca/%s/%s/setField/nonesuch/2/" % ( SITE_HOST, 'unittest',str(annid))
 #    with pytest.raises(urllib2.HTTPError): 
 #      req = urllib2.Request ( url )
 #      f = urllib2.urlopen ( url )
 
     #  request a missing field
-    url =  "http://%s/emca/%s/%s/getField/othernonesuch/" % ( SITE_HOST, 'unittest',str(annid))
+    url =  "http://%s/ocpca/%s/%s/getField/othernonesuch/" % ( SITE_HOST, 'unittest',str(annid))
     with pytest.raises(urllib2.HTTPError): 
       req = urllib2.Request ( url )
       f = urllib2.urlopen ( url )

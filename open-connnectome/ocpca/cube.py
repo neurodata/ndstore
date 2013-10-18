@@ -4,11 +4,10 @@ import cStringIO
 from PIL import Image
 import zlib
 
-import empaths
 import zindex
 
 import logging
-logger=logging.getLogger("emca")
+logger=logging.getLogger("ocp")
 
 #
 #  AnnotateCube: manipulate the in-memory data representation of the 3-d cube of data

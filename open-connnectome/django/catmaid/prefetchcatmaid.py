@@ -8,32 +8,31 @@ import pylibmc
 #import posix_ipc 
 import time
 
-import empaths
 import restargs
-import emcadb
-import emcaproj
-import emcarest
+import ocpcadb
+import ocpcaproj
+import ocpcarest
 import django
 import posix_ipc
 import re
 
 #RBTODO more efficient to load project and db separately
 
-from emca_cy import recolor_cy
+from ocpca_cy import recolor_cy
 
 from threading import Thread
 
-#import logging
-#logger=logging.getLogger("emca")
+import logging
+logger=logging.getLogger("ocp")
 
 
-class OCPCatmaid:
-  """Prefetch CATMAID tiles into MemcacheDB"""
+class PrefetchCatmaid:
+  """Prefetch CATMAID tiles into MocpcacheDB"""
 
   def __init__(self):
-    """Bind the memcache"""
+    """Bind the mocpcache"""
     self.db = None
-    # make the memcache connection
+    # make the mocpcache connection
     self.mc = pylibmc.Client(["127.0.0.1"], binary=True,behaviors={"tcp_nodelay":True,"ketama": True})
 
     # Locks for doing I/O and for prefetching
@@ -47,7 +46,7 @@ class OCPCatmaid:
 
     if self.db == None:
       # load the database/token
-      [ self.db, self.proj, self.projdb ] = emcarest.loadDBProj ( self.token )
+      [ self.db, self.proj, self.projdb ] = ocpcarest.loadDBProj ( self.token )
 
   def buildKey (self,res,xtile,ytile,zslice,color,brightness):
     return '{}/{}/{}/{}/{}/{}/{}/{}/{}'.format(self.token,self.tilesz,self.channel,res,xtile,ytile,zslice,color,brightness)
@@ -113,9 +112,9 @@ class OCPCatmaid:
 
 
   def addCuboid ( self, res, xtile, ytile, zstart, cuboid, color, brightness ):
-    """Add the cutout to memcache.  Specify res,x,y,z to load different tiles."""
+    """Add the cutout to mocpcache.  Specify res,x,y,z to load different tiles."""
 
-    # add each image slice to memcache
+    # add each image slice to mocpcache
     for z in range(cuboid.shape[0]):
       for y in range(cuboid.shape[1]/self.tilesz):
         for x in range(cuboid.shape[1]/self.tilesz):
@@ -157,7 +156,7 @@ class OCPCatmaid:
         # do the cutout
         imgcube = self.db.cutout ( corner, dim, res, self.channel )
 
-        # put it in memcache
+        # put it in mocpcache
         self.addCuboid(res,xtile,ytile,zstart,imgcube.data,color,brightness)
 
 
@@ -234,11 +233,13 @@ class OCPCatmaid:
 
 
   def getTile ( self, webargs ):
-    """Either fetch the file from memcache or load a new region into memcache by cutout"""
-
+    """Either fetch the file from mocpcache or load a new region into mocpcache by cutout"""
 
     # parse the web args
     self.token, tileszstr, self.channel, plane, resstr, xtilestr, ytilestr, zslicestr, rest = webargs.split('/',8)
+
+    logger.warning(webargs)
+    logger.warning(self.token)
 
     # load the database
     self.loadDB ( )
@@ -261,11 +262,11 @@ class OCPCatmaid:
       if m.group(2):
         brightness = float(m.group(2))
 
-    # memcache key
+    # mocpcache key
     mckey = self.buildKey(res,xtile,ytile,zslice,color,brightness)
 
     # do something to sanitize the webargs??
-    # if tile is in memcache, return it
+    # if tile is in mocpcache, return it
     tile = self.mc.get(mckey)
     if tile != None:
 #      logger.warning("Cache hit %s" % mckey )

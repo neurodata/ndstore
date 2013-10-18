@@ -3,17 +3,16 @@ from django.views.decorators.cache import cache_control
 import MySQLdb
 import cStringIO
 
-import empaths
+import ocppaths
 import zindex
-import emcarest
-import emcaproj
+import ocpcarest
+import ocpcaproj
 
 # Errors we are going to catch
-from emcaerror import EMCAError
+from ocpcaerror import OCPCAError
 
 import logging
-logger=logging.getLogger("emca")
-
+logger=logging.getLogger("ocp")
 
 def getCutout (request, webargs):
   """Restful URL for all read services to annotation projects"""
@@ -23,23 +22,23 @@ def getCutout (request, webargs):
 
   try:
     if service=='xy' or service=='yz' or service=='xz':
-      return django.http.HttpResponse(emcarest.getCutout(webargs), mimetype="image/png" )
+      return django.http.HttpResponse(ocpcarest.getCutout(webargs), mimetype="image/png" )
     elif service=='hdf5':
-      return django.http.HttpResponse(emcarest.getCutout(webargs), mimetype="product/hdf5" )
+      return django.http.HttpResponse(ocpcarest.getCutout(webargs), mimetype="product/hdf5" )
     elif service=='npz':
-      return django.http.HttpResponse(emcarest.getCutout(webargs), mimetype="product/npz" )
+      return django.http.HttpResponse(ocpcarest.getCutout(webargs), mimetype="product/npz" )
     elif service=='zip':
-      return django.http.HttpResponse(emcarest.getCutout(webargs), mimetype="product/zip" )
+      return django.http.HttpResponse(ocpcarest.getCutout(webargs), mimetype="product/zip" )
     elif service=='xyanno' or service=='yzanno' or service=='xzanno':
-      return django.http.HttpResponse(emcarest.getCutout(webargs), mimetype="image/png" )
+      return django.http.HttpResponse(ocpcarest.getCutout(webargs), mimetype="image/png" )
     elif service=='id':
-      return django.http.HttpResponse(emcarest.getCutout(webargs))
+      return django.http.HttpResponse(ocpcarest.getCutout(webargs))
     elif service=='ids':
-      return django.http.HttpResponse(emcarest.getCutout(webargs))
+      return django.http.HttpResponse(ocpcarest.getCutout(webargs))
     else:
       logger.warning ("HTTP Bad request. Could not find service %s" % service )
       return django.http.HttpResponseBadRequest ("Could not find service %s" % service )
-  except EMCAError, e:
+  except OCPCAError, e:
     return django.http.HttpResponseNotFound(e.value)
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
@@ -51,11 +50,11 @@ def getCutout (request, webargs):
 @cache_control(no_cache=True)
 def annopost (request, webargs):
   """Restful URL for all write/post services to annotation projects"""
-  import pdb;pdb.set_trace()
-  # All handling done by emcarest
+
+  # All handling done by ocpcarest
   try:
-    return django.http.HttpResponse(emcarest.annopost(webargs,request.body))
-  except EMCAError, e:
+    return django.http.HttpResponse(ocpcarest.annopost(webargs,request.body))
+  except OCPCAError, e:
     return django.http.HttpResponseNotFound(e.value)
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
@@ -66,17 +65,16 @@ def annopost (request, webargs):
 @cache_control(no_cache=True)
 def annotation (request, webargs):
   """Get put object interface for RAMON objects"""
-  import pdb;pdb.set_trace()
+
   try:
     if request.method == 'GET':
-      return django.http.HttpResponse(emcarest.getAnnotation(webargs), mimetype="product/hdf5" )
+      return django.http.HttpResponse(ocpcarest.getAnnotation(webargs), mimetype="product/hdf5" )
     elif request.method == 'POST':
-      import pdb;pdb.set_trace()
-      return django.http.HttpResponse(emcarest.putAnnotation(webargs,request.body))
+      return django.http.HttpResponse(ocpcarest.putAnnotation(webargs,request.body))
     elif request.method == 'DELETE':
-      emcarest.deleteAnnotation(webargs)
+      ocpcarest.deleteAnnotation(webargs)
       return django.http.HttpResponse ("Success", mimetype='text/html')
-  except EMCAError, e:
+  except OCPCAError, e:
     return django.http.HttpResponseNotFound(e.value)
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
@@ -91,8 +89,8 @@ def csv (request, webargs):
 
   try:
     if request.method == 'GET':
-      return django.http.HttpResponse(emcarest.getCSV(webargs), mimetype="text/html" )
-  except EMCAError, e:
+      return django.http.HttpResponse(ocpcarest.getCSV(webargs), mimetype="text/html" )
+  except OCPCAError, e:
     return django.http.HttpResponseNotFound(e.value)
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
@@ -106,11 +104,11 @@ def getObjects ( request, webargs ):
 
   try:
     if request.method == 'GET':
-      raise EMCAError ( "GET requested. objects Web service requires a POST of a list of identifiers.")
+      raise OCPCAError ( "GET requested. objects Web service requires a POST of a list of identifiers.")
     elif request.method == 'POST':
-      return django.http.HttpResponse(emcarest.getAnnotations(webargs,request.body), mimetype="product/hdf5") 
+      return django.http.HttpResponse(ocpcarest.getAnnotations(webargs,request.body), mimetype="product/hdf5") 
     
-  except EMCAError, e:
+  except OCPCAError, e:
     return django.http.HttpResponseNotFound(e.value)
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
@@ -124,11 +122,11 @@ def queryObjects ( request, webargs ):
 
   try:
     if request.method == 'GET':
-      return django.http.HttpResponse(emcarest.queryAnnoObjects(webargs), mimetype="product/hdf5") 
+      return django.http.HttpResponse(ocpcarest.queryAnnoObjects(webargs), mimetype="product/hdf5") 
     elif request.method == 'POST':
-      return django.http.HttpResponse(emcarest.queryAnnoObjects(webargs,request.body), mimetype="product/hdf5") 
+      return django.http.HttpResponse(ocpcarest.queryAnnoObjects(webargs,request.body), mimetype="product/hdf5") 
     
-  except EMCAError, e:
+  except OCPCAError, e:
     return django.http.HttpResponseNotFound(e.value)
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
@@ -141,14 +139,14 @@ def catmaid (request, webargs):
   """Convert a CATMAID request into an cutout."""
 
   try:
-    catmaidimg = emcarest.emcacatmaid_legacy(webargs)
+    catmaidimg = ocpcarest.ocpcacatmaid_legacy(webargs)
 
     fobj = cStringIO.StringIO ( )
     catmaidimg.save ( fobj, "PNG" )
     fobj.seek(0)
     return django.http.HttpResponse(fobj.read(), mimetype="image/png")
 
-  except EMCAError, e:
+  except OCPCAError, e:
     return django.http.HttpResponseNotFound(e.value)
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
@@ -157,11 +155,12 @@ def catmaid (request, webargs):
     raise
 
 
+@cache_control(no_cache=True)
 def publictokens (request, webargs):
   """Return list of public tokens"""
   try:  
-    return django.http.HttpResponse(emcarest.publicTokens(webargs), mimetype="application/json" )
-  except EMCAError, e:
+    return django.http.HttpResponse(ocpcarest.publicTokens(webargs), mimetype="application/json" )
+  except OCPCAError, e:
     return django.http.HttpResponseNotFound(e.value)
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
@@ -170,12 +169,13 @@ def publictokens (request, webargs):
     raise
 
 
+@cache_control(no_cache=True)
 def jsoninfo (request, webargs):
   """Return project and dataset configuration information"""
 
   try:  
-    return django.http.HttpResponse(emcarest.jsonInfo(webargs), mimetype="application/json" )
-  except EMCAError, e:
+    return django.http.HttpResponse(ocpcarest.jsonInfo(webargs), mimetype="application/json" )
+  except OCPCAError, e:
     return django.http.HttpResponseNotFound(e.value)
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
@@ -183,12 +183,13 @@ def jsoninfo (request, webargs):
     logger.exception("Unknown exception in jsoninfo.")
     raise
 
+@cache_control(no_cache=True)
 def projinfo (request, webargs):
   """Return project and dataset configuration information"""
   
   try:  
-    return django.http.HttpResponse(emcarest.projInfo(webargs), mimetype="product/hdf5" )
-  except EMCAError, e:
+    return django.http.HttpResponse(ocpcarest.projInfo(webargs), mimetype="product/hdf5" )
+  except OCPCAError, e:
     return django.http.HttpResponseNotFound(e.value)
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
@@ -197,12 +198,13 @@ def projinfo (request, webargs):
     raise
 
 
+@cache_control(no_cache=True)
 def chaninfo (request, webargs):
   """Return channel information"""
 
   try:  
-    return django.http.HttpResponse(emcarest.chanInfo(webargs), mimetype="text/html" )
-  except EMCAError, e:
+    return django.http.HttpResponse(ocpcarest.chanInfo(webargs), mimetype="text/html" )
+  except OCPCAError, e:
     return django.http.HttpResponseNotFound(e.value)
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
@@ -215,8 +217,8 @@ def mcFalseColor (request, webargs):
   """Cutout of multiple channels with false color rendering"""
 
   try:
-    return django.http.HttpResponse(emcarest.mcFalseColor(webargs), mimetype="image/png" )
-  except EMCAError, e:
+    return django.http.HttpResponse(ocpcarest.mcFalseColor(webargs), mimetype="image/png" )
+  except OCPCAError, e:
     return django.http.HttpResponseNotFound(e.value)
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
@@ -229,9 +231,9 @@ def setField (request, webargs):
   """Set an individual RAMON field for an object"""
 
   try:
-    emcarest.setField(webargs)
+    ocpcarest.setField(webargs)
     return django.http.HttpResponse()
-  except EMCAError, e:
+  except OCPCAError, e:
     return django.http.HttpResponseNotFound(e.value)
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
@@ -240,12 +242,13 @@ def setField (request, webargs):
     raise
 
 
+@cache_control(no_cache=True)
 def getField (request, webargs):
   """Get an individual RAMON field for an object"""
 
   try:
-    return django.http.HttpResponse(emcarest.getField(webargs), mimetype="text/html" )
-  except EMCAError, e:
+    return django.http.HttpResponse(ocpcarest.getField(webargs), mimetype="text/html" )
+  except OCPCAError, e:
     return django.http.HttpResponseNotFound(e.value)
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
@@ -257,8 +260,8 @@ def merge (request, webargs):
   """Merge annotation objects"""
 
   try:
-    return django.http.HttpResponse(emcarest.merge(webargs), mimetype="text/html" )
-  except EMCAError, e:
+    return django.http.HttpResponse(ocpcarest.merge(webargs), mimetype="text/html" )
+  except OCPCAError, e:
     return django.http.HttpResponseNotFound(e.value)
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
@@ -271,8 +274,8 @@ def exceptions (request, webargs):
   """Return a list of multiply labeled pixels in a cutout region"""
 
   try:
-    return django.http.HttpResponse(emcarest.exceptions(webargs), mimetype="product/hdf5" )
-  except EMCAError, e:
+    return django.http.HttpResponse(ocpcarest.exceptions(webargs), mimetype="product/hdf5" )
+  except OCPCAError, e:
     return django.http.HttpResponseNotFound(e.value)
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)

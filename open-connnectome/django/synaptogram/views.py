@@ -8,9 +8,8 @@ import zlib
 import cStringIO
 import re
 
-import empaths
-import emcaproj
-import emcarest
+import ocpcaproj
+import ocpcarest
 import synaptogram
 
 

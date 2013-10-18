@@ -11,29 +11,28 @@ import re
 from PIL import Image
 import MySQLdb
 
-import empaths
 import restargs
 import anncube
-import emcadb
-import emcaproj
-import emcachannel
+import ocpcadb
+import ocpcaproj
+import ocpcachannel
 import h5ann
 import h5projinfo
 import annotation
 
-from emca_cy import assignVoxels_cy
-from emca_cy import recolor_cy
+from ocpca_cy import assignVoxels_cy
+from ocpca_cy import recolor_cy
 
-from emcaerror import EMCAError
+from ocpcaerror import OCPCAError
 
 from filtercutout import filterCutout
 
 import logging
-logger=logging.getLogger("emca")
+logger=logging.getLogger("ocp")
 
 
 #
-#  emcarest: RESTful interface to annotations and cutouts
+#  ocpcarest: RESTful interface to annotations and cutouts
 #
 
 def cutout ( imageargs, proj, db, channel=None ):
@@ -47,7 +46,7 @@ def cutout ( imageargs, proj, db, channel=None ):
     args.cutoutArgs ( imageargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments failed: %s" % (e))
-    raise EMCAError(e)
+    raise OCPCAError(e)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -70,7 +69,7 @@ def binZip ( imageargs, proj, db ):
   """Return a web readable Numpy Pickle zipped"""
 
   # if it's a channel database, pull out the channel
-  if proj.getDBType() == emcaproj.CHANNELS_8bit or proj.getDBType() == emcaproj.CHANNELS_16bit:
+  if proj.getDBType() == ocpcaproj.CHANNELS_8bit or proj.getDBType() == ocpcaproj.CHANNELS_16bit:
     [ channel, sym, imageargs ] = imageargs.partition ('/')
   else: 
     channel = None
@@ -92,10 +91,10 @@ def numpyZip ( imageargs, proj, db ):
   """Return a web readable Numpy Pickle zipped"""
 
   # if it's a channel database, pull out the channel
-  if proj.getDBType() == emcaproj.CHANNELS_8bit or proj.getDBType() == emcaproj.CHANNELS_16bit:
+  if proj.getDBType() == ocpcaproj.CHANNELS_8bit or proj.getDBType() == ocpcaproj.CHANNELS_16bit:
     [ channel, sym, imageargs ] = imageargs.partition ('/')
     # make sure that the channel is an int identifier
-    channel = emcachannel.toID ( channel, db ) 
+    channel = ocpcachannel.toID ( channel, db ) 
   else: 
     channel = None
 
@@ -122,14 +121,14 @@ def HDF5 ( imageargs, proj, db ):
   fh5out = h5py.File ( tmpfile.name )
 
   # if it's a channel database, pull out the channels
-  if proj.getDBType() == emcaproj.CHANNELS_8bit or proj.getDBType() == emcaproj.CHANNELS_16bit:
+  if proj.getDBType() == ocpcaproj.CHANNELS_8bit or proj.getDBType() == ocpcaproj.CHANNELS_16bit:
    
     [ chanurl, sym, imageargs ] = imageargs.partition ('/')
 
     # make sure that the channels are ints
     channels = chanurl.split(',')
 
-    chanobj = emcachannel.EMCAChannels ( db )
+    chanobj = ocpcachannel.OCPCAChannels ( db )
     chanids = chanobj.rewriteToInts ( channels )
 
     for i in range(len(chanids)):
@@ -152,10 +151,10 @@ def HDF5 ( imageargs, proj, db ):
 def xySlice ( imageargs, proj, db ):
   """Return the cube object for an xy plane"""
 
-  if proj.getDBType() == emcaproj.CHANNELS_8bit or proj.getDBType() == emcaproj.CHANNELS_16bit:
+  if proj.getDBType() == ocpcaproj.CHANNELS_8bit or proj.getDBType() == ocpcaproj.CHANNELS_16bit:
     [ channel, sym, imageargs ] = imageargs.partition ('/')
     # make sure that the channel is an int identifier
-    channel = emcachannel.toID ( channel, db ) 
+    channel = ocpcachannel.toID ( channel, db ) 
   else: 
     channel = None
 
@@ -165,7 +164,7 @@ def xySlice ( imageargs, proj, db ):
     args.xyArgs ( imageargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments failed: %s" % (e))
-    raise EMCAError(e)
+    raise OCPCAError(e)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -189,7 +188,7 @@ def xyImage ( imageargs, proj, db ):
   """Return an xy plane fileobj.read()"""
 
   cb = xySlice ( imageargs, proj, db )
-#  if proj.getDBType() == emcaproj.CHANNELS:
+#  if proj.getDBType() == ocpcaproj.CHANNELS:
 #    fileobj = tempfile.NamedTemporaryFile()
 #    cb.xySlice ( fileobj.name )
 #  else:
@@ -202,10 +201,10 @@ def xyImage ( imageargs, proj, db ):
 def xzSlice ( imageargs, proj, db ):
   """Return an xz plane cube"""
 
-  if proj.getDBType() == emcaproj.CHANNELS_8bit or proj.getDBType() == emcaproj.CHANNELS_16bit:
+  if proj.getDBType() == ocpcaproj.CHANNELS_8bit or proj.getDBType() == ocpcaproj.CHANNELS_16bit:
     [ channel, sym, imageargs ] = imageargs.partition ('/')
     # make sure that the channel is an int identifier
-    channel = emcachannel.toID ( channel, db ) 
+    channel = ocpcachannel.toID ( channel, db ) 
   else: 
     channel = None
 
@@ -215,7 +214,7 @@ def xzSlice ( imageargs, proj, db ):
     args.xzArgs ( imageargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments failed: %s" % (e))
-    raise EMCAError(e)
+    raise OCPCAError(e)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -234,7 +233,7 @@ def xzImage ( imageargs, proj, db ):
 
   # little awkward because we need resolution here
   # it will be reparse in xzSlice
-  if proj.getDBType() == emcaproj.CHANNELS_8bit or proj.getDBType() == emcaproj.CHANNELS_16bit:
+  if proj.getDBType() == ocpcaproj.CHANNELS_8bit or proj.getDBType() == ocpcaproj.CHANNELS_16bit:
     channel, sym, rest = imageargs.partition("/")
     resolution, sym, rest = rest.partition("/")
   else:
@@ -251,7 +250,7 @@ def xzImage ( imageargs, proj, db ):
 def yzSlice ( imageargs, proj, db ):
   """Return an yz plane as a cube"""
 
-  if proj.getDBType() == emcaproj.CHANNELS_8bit or proj.getDBType() == emcaproj.CHANNELS_16bit:
+  if proj.getDBType() == ocpcaproj.CHANNELS_8bit or proj.getDBType() == ocpcaproj.CHANNELS_16bit:
     [ channel, sym, imageargs ] = imageargs.partition ('/')
   else: 
     channel = None
@@ -262,7 +261,7 @@ def yzSlice ( imageargs, proj, db ):
     args.yzArgs ( imageargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments failed: %s" % (e))
-    raise EMCAError(e)
+    raise OCPCAError(e)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -281,7 +280,7 @@ def yzImage ( imageargs, proj, db ):
 
   # little awkward because we need resolution here
   # it will be reparse in xzSlice
-  if proj.getDBType() == emcaproj.CHANNELS_8bit or proj.getDBType() == emcaproj.CHANNELS_16bit:
+  if proj.getDBType() == ocpcaproj.CHANNELS_8bit or proj.getDBType() == ocpcaproj.CHANNELS_16bit:
     channel, sym, rest = imageargs.partition("/")
     resolution, sym, rest = rest.partition("/")
   else:
@@ -310,7 +309,7 @@ def xyAnno ( imageargs, proj, db ):
     args.xyArgs ( imageargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments failed: %s" % (e))
-    raise EMCAError(e)
+    raise OCPCAError(e)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -338,7 +337,7 @@ def xzAnno ( imageargs, proj, db ):
     args.xzArgs ( imageargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments failed: %s" % (e))
-    raise EMCAError(e)
+    raise OCPCAError(e)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -365,7 +364,7 @@ def yzAnno ( imageargs, proj, db ):
     args.yzArgs ( imageargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments failed: %s" % (e))
-    raise EMCAError(e)
+    raise OCPCAError(e)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -406,14 +405,14 @@ def listIds ( imageargs, proj,db ):
     args.cutoutArgs ( imageargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments failed: %s" % (e))
-    raise EMCAError(e)
+    raise OCPCAError(e)
 
   # Extract the relevant values
   corner = args.getCorner()
   dim = args.getDim()
   resolution = args.getResolution()
   
-  db = emcadb.EMCADB ( proj )
+  db = ocpcadb.OCPCADB ( proj )
   cb = db.cutout ( corner, dim, resolution )
   ids =  np.unique(cb.data)
   idstr=''.join([`id`+', ' for id in ids])
@@ -468,7 +467,7 @@ def selectService ( webargs, proj, db ):
 
   else:
     logger.warning("An illegal Web GET service was requested %s.  Args %s" % ( service, webargs ))
-    raise EMCAError ("No such Web service: %s" % service )
+    raise OCPCAError ("No such Web service: %s" % service )
 
 
 #
@@ -486,7 +485,7 @@ def selectPost ( webargs, proj, db, postdata ):
   # Don't write to readonly projects
   if proj.getReadOnly()==1:
     logger.warning("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
-    raise EMCAError("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
+    raise OCPCAError("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
 
   # choose to overwrite (default), preserve, or make exception lists
   #  when voxels conflict
@@ -522,7 +521,7 @@ def selectPost ( webargs, proj, db, postdata ):
           args.cutoutArgs ( postargs, proj.datasetcfg )
         except restargs.RESTArgsError, e:
           logger.warning("REST Arguments failed: %s" % (e))
-          raise EMCAError(e)
+          raise OCPCAError(e)
 
         corner = args.getCorner()
         resolution = args.getResolution()
@@ -535,7 +534,7 @@ def selectPost ( webargs, proj, db, postdata ):
         fileobj = cStringIO.StringIO ( rawdata )
         voxarray = np.load ( fileobj )
 
-        if proj.getDBType() == emcaproj.IMAGES_8bit: 
+        if proj.getDBType() == ocpcaproj.IMAGES_8bit: 
           db.writeImageCuboid ( corner, resolution, voxarray )
           # this is just a status
           entityid=0
@@ -547,7 +546,7 @@ def selectPost ( webargs, proj, db, postdata ):
 
       else:
         logger.warning("An illegal Web POST service was requested: %s.  Args %s" % ( service, webargs ))
-        raise EMCAError ("No such Web service: %s" % service )
+        raise OCPCAError ("No such Web service: %s" % service )
         
       db.commit()
       done=True
@@ -588,7 +587,6 @@ def annopost ( webargs, postdata ):
   """Interface to the annotation write service 
       Load the annotation project and invoke the appropriate
       dataset."""
-  import pdb;pdb.set_trace();
   [ token, sym, rangeargs ] = webargs.partition ('/')
   [ db, proj, projdb ] = loadDBProj ( token )
   return selectPost ( rangeargs, proj, db, postdata )
@@ -600,9 +598,9 @@ def catmaid ( cmtilesz, token, plane, resolution, xtile, ytile, zslice, channel 
   [ db, proj, projdb ] = loadDBProj ( token )
   
   # datatype from the project
-  if proj.getDBType() == emcaproj.IMAGES_8bit or proj.getDBType == emcaproj.CHANNELS_8bit:
+  if proj.getDBType() == ocpcaproj.IMAGES_8bit or proj.getDBType == ocpcaproj.CHANNELS_8bit:
     datatype = np.uint8
-  elif proj.getDBType() == emcaproj.CHANNELS_16bit:
+  elif proj.getDBType() == ocpcaproj.CHANNELS_16bit:
     datatype = np.uint16
   else:
     datatype = np.uint32
@@ -621,7 +619,7 @@ def catmaid ( cmtilesz, token, plane, resolution, xtile, ytile, zslice, channel 
       cutoutdata = np.zeros ( [cmtilesz,cmtilesz], dtype=datatype )
 
     else: 
-      if proj.getDBType() == emcaproj.CHANNELS_16bit or proj.getDBType == emcaproj.CHANNELS_8bit:
+      if proj.getDBType() == ocpcaproj.CHANNELS_16bit or proj.getDBType == ocpcaproj.CHANNELS_8bit:
         imageargs = '%s/%s/%s,%s/%s,%s/%s/' % ( channel, resolution, xstart, xend, ystart, yend, zslice )
       else:
         imageargs = '%s/%s,%s/%s,%s/%s/' % ( resolution, xstart, xend, ystart, yend, zslice )
@@ -652,7 +650,7 @@ def catmaid ( cmtilesz, token, plane, resolution, xtile, ytile, zslice, channel 
   return outimage
 
 
-def emcacatmaid_legacy ( webargs ):
+def ocpcacatmaid_legacy ( webargs ):
   """Interface to the cutout service for catmaid request.  It does address translation."""
 
   CM_TILESIZE=256
@@ -684,7 +682,7 @@ def getAnnoById ( annoid, h5f, proj, db, dataoption, resolution=None, corner=Non
   anno = db.getAnnotation ( annoid )
   if anno == None:
     logger.warning("No annotation found at identifier = %s" % (annoid))
-    raise EMCAError ("No annotation found at identifier = %s" % (annoid))
+    raise OCPCAError ("No annotation found at identifier = %s" % (annoid))
 
   # create the HDF5 object
   h5anno = h5ann.AnnotationtoH5 ( anno, h5f )
@@ -692,7 +690,7 @@ def getAnnoById ( annoid, h5f, proj, db, dataoption, resolution=None, corner=Non
   # only return data for annotation types that have data
   if anno.__class__ in [ annotation.AnnNeuron, annotation.AnnSeed ] and dataoption != AR_NODATA: 
     logger.warning("No data associated with annotation type %s" % ( anno.__class__))
-    raise EMCAError ("No data associated with annotation type %s" % ( anno.__class__))
+    raise OCPCAError ("No data associated with annotation type %s" % ( anno.__class__))
 
   # get the voxel data if requested
   if dataoption==AR_VOXELS:
@@ -720,7 +718,7 @@ def getAnnoById ( annoid, h5f, proj, db, dataoption, resolution=None, corner=Non
 
       if bbdim[0]*bbdim[1]*bbdim[2] >= 1024*1024*256:
         logger.warning ("Cutout region is inappropriately large.  Dimension: %s,%s,%s" % (bbdim[0],bbdim[1],bbdim[2]))
-        raise EMCAError ("Cutout region is inappropriately large.  Dimension: %s,%s,%s" % (bbdim[0],bbdim[1],bbdim[2]))
+        raise OCPCAError ("Cutout region is inappropriately large.  Dimension: %s,%s,%s" % (bbdim[0],bbdim[1],bbdim[2]))
 
       # do a cutout and add the cutout to the HDF5 file
       cutout = db.annoCutout ( annoid, resolution, bbcorner, bbdim )
@@ -781,7 +779,7 @@ def getAnnotation ( webargs ):
           resolution = int(resstr) 
         except:
           logger.warning ( "Improperly formatted voxel arguments {}".format(args[2]))
-          raise EMCAError("Improperly formatted voxel arguments {}".format(args[2]))
+          raise OCPCAError("Improperly formatted voxel arguments {}".format(args[2]))
 
         getAnnoById ( annoid, h5f, proj, db, dataoption, resolution )
 
@@ -795,7 +793,7 @@ def getAnnotation ( webargs ):
             resolution = int(resstr) 
           except:
             logger.warning ( "Improperly formatted cutout arguments {}".format(args[2]))
-            raise EMCAError("Improperly formatted cutout arguments {}".format(args[2]))
+            raise OCPCAError("Improperly formatted cutout arguments {}".format(args[2]))
 
           getAnnoById ( annoid, h5f, proj, db, dataoption, resolution )
 
@@ -821,18 +819,18 @@ def getAnnotation ( webargs ):
           resolution = int(resstr) 
         except:
           logger.warning ( "Improperly formatted bounding box arguments {}".format(args[2]))
-          raise EMCAError("Improperly formatted bounding box arguments {}".format(args[2]))
+          raise OCPCAError("Improperly formatted bounding box arguments {}".format(args[2]))
     
         getAnnoById ( annoid, h5f, proj, db, dataoption, resolution )
 
       else:
         logger.warning ("Fetch identifier %s.  Error: no such data option %s " % ( annoid, args[1] ))
-        raise EMCAError ("Fetch identifier %s.  Error: no such data option %s " % ( annoid, args[1] ))
+        raise OCPCAError ("Fetch identifier %s.  Error: no such data option %s " % ( annoid, args[1] ))
 
   # the first argument is not numeric.  it is a service other than getAnnotation
   else:
     logger.warning("Get interface %s requested.  Illegal or not implemented. Args: %s" % ( args[0], webargs ))
-    raise EMCAError ("Get interface %s requested.  Illegal or not implemented" % ( args[0] ))
+    raise OCPCAError ("Get interface %s requested.  Illegal or not implemented" % ( args[0] ))
 
   h5f.flush()
   tmpfile.seek(0)
@@ -857,7 +855,7 @@ def getCSV ( webargs ):
     resolution = int(resstr) 
   except:
     logger.warning ( "Improperly formatted cutout arguments {}".format(reststr))
-    raise EMCAError("Improperly formatted cutout arguments {}".format(reststr))
+    raise OCPCAError("Improperly formatted cutout arguments {}".format(reststr))
 
   
   getAnnoById ( annoid, h5f, proj, db, dataoption, resolution )
@@ -883,7 +881,7 @@ def getAnnotations ( webargs, postdata ):
   # IDENTIFIERS
   if not h5in.get('ANNOIDS'):
     logger.warning ("Requesting multiple annotations.  But no HDF5 \'ANNOIDS\' field specified.") 
-    raise EMCAError ("Requesting multiple annotations.  But no HDF5 \'ANNOIDS\' field specified.") 
+    raise OCPCAError ("Requesting multiple annotations.  But no HDF5 \'ANNOIDS\' field specified.") 
 
   # GET the data out of the HDF5 file.  Never operate on the data in place.
   annoids = h5in['ANNOIDS'][:]
@@ -910,7 +908,7 @@ def getAnnotations ( webargs, postdata ):
       resolution = int(resstr) 
     except:
       logger.warning ( "Improperly formatted voxel arguments {}".format(cutout))
-      raise EMCAError("Improperly formatted voxel arguments {}".format(cutout))
+      raise OCPCAError("Improperly formatted voxel arguments {}".format(cutout))
 
 
   elif dataarg == 'cutout':
@@ -922,7 +920,7 @@ def getAnnotations ( webargs, postdata ):
         resolution = int(resstr) 
       except:
         logger.warning ( "Improperly formatted cutout arguments {}".format(cutout))
-        raise EMCAError("Improperly formatted cutout arguments {}".format(cutout))
+        raise OCPCAError("Improperly formatted cutout arguments {}".format(cutout))
     else:
       dataoption = AR_CUTOUT
 
@@ -945,11 +943,11 @@ def getAnnotations ( webargs, postdata ):
         resolution = int(resstr) 
       except:
         logger.warning ( "Improperly formatted bounding box arguments {}".format(cutout))
-        raise EMCAError("Improperly formatted bounding box arguments {}".format(cutout))
+        raise OCPCAError("Improperly formatted bounding box arguments {}".format(cutout))
 
   else:
       logger.warning ("In getAnnotations: Error: no such data option %s " % ( dataarg ))
-      raise EMCAError ("In getAnnotations: Error: no such data option %s " % ( dataarg ))
+      raise OCPCAError ("In getAnnotations: Error: no such data option %s " % ( dataarg ))
 
   # Make the HDF5 output file
   # Create an in-memory HDF5 file
@@ -982,7 +980,7 @@ def putAnnotation ( webargs, postdata ):
   # Don't write to readonly projects
   if proj.getReadOnly()==1:
     logger.warning("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
-    raise EMCAError("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
+    raise OCPCAError("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
 
   options = optionsargs.split('/')
 
@@ -1019,11 +1017,11 @@ def putAnnotation ( webargs, postdata ):
 
           if anno.__class__ in [ annotation.AnnNeuron, annotation.AnnSeed ] and ( idgrp.get('VOXELS') or idgrp.get('CUTOUT')):
             logger.warning ("Cannot write to annotation type %s" % (anno.__class__))
-            raise EMCAError ("Cannot write to annotation type %s" % (anno.__class__))
+            raise OCPCAError ("Cannot write to annotation type %s" % (anno.__class__))
 
           if 'update' in options and 'dataonly' in options:
             logger.warning ("Illegal combination of options. Cannot use udpate and dataonly together")
-            raise EMCAError ("Illegal combination of options. Cannot use udpate and dataonly together")
+            raise OCPCAError ("Illegal combination of options. Cannot use udpate and dataonly together")
 
           elif not 'dataonly' in options and not 'reduce' in options:
 
@@ -1053,7 +1051,7 @@ def putAnnotation ( webargs, postdata ):
             # Check that the voxels have a conforming size:
             if voxels.shape[1] != 3:
               logger.warning ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
-              raise EMCAError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
+              raise OCPCAError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
 
             exceptions = db.annotate ( anno.annid, resolution, voxels, conflictopt )
 
@@ -1063,7 +1061,7 @@ def putAnnotation ( webargs, postdata ):
             # Check that the voxels have a conforming size:
             if voxels.shape[1] != 3:
               logger.warning ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
-              raise EMCAError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
+              raise OCPCAError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
             db.shave ( anno.annid, resolution, voxels )
 
           # Is it dense data?
@@ -1173,7 +1171,7 @@ def queryAnnoObjects ( webargs, postdata=None ):
 
     if not proj.datasetcfg.checkCube( resolution, corner[0], corner[0]+dim[0], corner[1], corner[1]+dim[1], corner[2], corner[2]+dim[2] ):
       logger.warning ( "Illegal cutout corner=%s, dim=%s" % ( corner, dim))
-      raise EMCAError ( "Illegal cutout corner=%s, dim=%s" % ( corner, dim))
+      raise OCPCAError ( "Illegal cutout corner=%s, dim=%s" % ( corner, dim))
 
     # RBFIX this a hack
     #
@@ -1209,7 +1207,7 @@ def deleteAnnotation ( webargs ):
   # if not..this is not a well-formed delete request
   else:
     logger.warning ("Delete did not specify a legal object identifier = %s" % args[0] )
-    raise EMCAError ("Delete did not specify a legal object identifier = %s" % args[0] )
+    raise OCPCAError ("Delete did not specify a legal object identifier = %s" % args[0] )
 
   for annoid in annoids: 
 
@@ -1287,14 +1285,14 @@ def chanInfo ( webargs ):
 def mcfcPNG ( proj, db, token, service, chanstr, imageargs ):
   """Inner part of mcFalseColor returns and PNG file"""
 
-  if proj.getDBType() != emcaproj.CHANNELS_16bit and proj.getDBType() != emcaproj.CHANNELS_8bit:
+  if proj.getDBType() != ocpcaproj.CHANNELS_16bit and proj.getDBType() != ocpcaproj.CHANNELS_8bit:
     logger.warning ( "Not a multiple channel project." )
-    raise EMCAError ( "Not a multiple channel project." )
+    raise OCPCAError ( "Not a multiple channel project." )
 
   channels = chanstr.split(",")
 
   # make sure that the channels are ints
-  chanobj = emcachannel.EMCAChannels ( db )
+  chanobj = ocpcachannel.OCPCAChannels ( db )
   channels = chanobj.rewriteToInts ( channels )
 
   combined_img = None
@@ -1309,12 +1307,12 @@ def mcfcPNG ( proj, db, token, service, chanstr, imageargs ):
       cb = yzSlice ( str(channels[i]) + "/" + imageargs, proj, db )
     else:
       logger.warning ( "No such service %s. Args: %s" % (service,webargs))
-      raise EMCAError ( "No such service %s" % (service) )
+      raise OCPCAError ( "No such service %s" % (service) )
 
     # reduction factor
-    if proj.getDBType() == emcaproj.CHANNELS_8bit:
+    if proj.getDBType() == ocpcaproj.CHANNELS_8bit:
       scaleby = 1
-    elif proj.getDBType() == emcaproj.CHANNELS_16bit:
+    elif proj.getDBType() == ocpcaproj.CHANNELS_16bit:
       scaleby = 1.0/256
 
     # First channel is cyan
@@ -1343,7 +1341,7 @@ def mcfcPNG ( proj, db, token, service, chanstr, imageargs ):
       combined_img +=  np.left_shift(data32,16) 
     else:
       logger.warning ( "Only support six channels at a time.  You requested %s " % (chanstr))
-      raise EMCAError ( "Only support six channels at a time.  You requested %s " % (chanstr))
+      raise OCPCAError ( "Only support six channels at a time.  You requested %s " % (chanstr))
 
     
   if service == 'xy':
@@ -1370,9 +1368,9 @@ def mcFalseColor ( webargs ):
   """False color image of multiple channels"""
 
   [ token, mcfcstr, service, chanstr, imageargs ] = webargs.split ('/', 4)
-  projdb = emcaproj.EMCAProjectsDB()
+  projdb = ocpcaproj.OCPCAProjectsDB()
   proj = projdb.loadProject ( token )
-  db = emcadb.EMCADB ( proj )
+  db = ocpcadb.OCPCADB ( proj )
 
   outimage = mcfcPNG ( proj, db,  token, service, chanstr, imageargs )
 
@@ -1390,7 +1388,7 @@ def getField ( webargs ):
     [ token, annid, verb, field, rest ] = webargs.split ('/',4)
   except:
     logger.warning("Illegal getField request.  Wrong number of arguments.")
-    raise EMCAError("Illegal getField request.  Wrong number of arguments.")
+    raise OCPCAError("Illegal getField request.  Wrong number of arguments.")
 
   [ db, proj, projdb ] = loadDBProj ( token )
 
@@ -1398,7 +1396,7 @@ def getField ( webargs ):
   anno = db.getAnnotation ( annid )
   if anno == None:
     logger.warning("No annotation found at identifier = %s" % (annoid))
-    raise EMCAError ("No annotation found at identifier = %s" % (annoid))
+    raise OCPCAError ("No annotation found at identifier = %s" % (annoid))
 
   value = anno.getField ( field )
   return value
@@ -1411,7 +1409,7 @@ def setField ( webargs ):
     [ token, annid, verb, field, value, rest ] = webargs.split ('/',5)
   except:
     logger.warning("Illegal getField request.  Wrong number of arguments.")
-    raise EMCAError("Illegal getField request.  Wrong number of arguments.")
+    raise OCPCAError("Illegal getField request.  Wrong number of arguments.")
     
   [ db, proj, projdb ] = loadDBProj ( token )
 
@@ -1419,7 +1417,7 @@ def setField ( webargs ):
   anno = db.getAnnotation ( annid )
   if anno == None:
     logger.warning("No annotation found at identifier = %s" % (annoid))
-    raise EMCAError ("No annotation found at identifier = %s" % (annoid))
+    raise OCPCAError ("No annotation found at identifier = %s" % (annoid))
 
   anno.setField ( field, value )
   anno.update ( db )
@@ -1434,9 +1432,9 @@ def loadDBProj ( token ):
   """Load the configuration for this database and project"""
 
   # Get the annotation database
-  projdb = emcaproj.EMCAProjectsDB()
+  projdb = ocpcaproj.OCPCAProjectsDB()
   proj = projdb.loadProject ( token )
-  db = emcadb.EMCADB ( proj )
+  db = ocpcadb.OCPCADB ( proj )
 
   return db, proj, projdb
 
@@ -1448,7 +1446,7 @@ def merge ( webargs ):
     [token, service, relabelids, rest] = webargs.split ('/',3)
   except:
     logger.warning("Illegal globalMerge request.  Wrong number of arguments.")
-    raise EMCAError("Illegal globalMerber request.  Wrong number of arguments.")
+    raise OCPCAError("Illegal globalMerber request.  Wrong number of arguments.")
   
   # get the ids from the list of ids and store it in a list vairable
   ids = relabelids.split(',')
@@ -1480,7 +1478,7 @@ def merge ( webargs ):
         args.mergeArgs ( imageargs, proj.datasetcfg )
       except restargs.RESTArgsError, e:
         logger.warning("REST Arguments failed: %s" % (e))
-        raise EMCAError(e)
+        raise OCPCAError(e)
       # Extract the relevant values
       corner = args.getCorner()
       dim = args.getDim()
@@ -1502,7 +1500,7 @@ def merge ( webargs ):
 def publicTokens ( self ):
   """Return a json formatted list of public tokens"""
   
-  projdb = emcaproj.EMCAProjectsDB()
+  projdb = ocpcaproj.OCPCAProjectsDB()
 
   tokens = projdb.getPublic ()
   import json;
@@ -1524,7 +1522,7 @@ def exceptions ( webargs, ):
     args.cutoutArgs ( cutoutargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments failed: %s" % (e))
-    raise EMCAError(e)
+    raise OCPCAError(e)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -1532,12 +1530,12 @@ def exceptions ( webargs, ):
   resolution = args.getResolution()
 
   # check to make sure it's an annotation project
-  if proj.getDBType() != emcaproj.ANNOTATIONS:
+  if proj.getDBType() != ocpcaproj.ANNOTATIONS:
     logger.warning("Asked for exceptions on project that is not of type ANNOTATIONS")
-    raise EMCAError("Asked for exceptions on project that is not of type ANNOTATIONS")
+    raise OCPCAError("Asked for exceptions on project that is not of type ANNOTATIONS")
   elif not proj.getExceptions():
     logger.warning("Asked for exceptions on project without exceptions")
-    raise EMCAError("Asked for exceptions on project without exceptions")
+    raise OCPCAError("Asked for exceptions on project without exceptions")
     
   # Get the exceptions -- expect a rect np.array of shape x,y,z,id1,id2,...,idn where n is the longest exception list
   exceptions = db.exceptionsCutout ( corner, dim, resolution )

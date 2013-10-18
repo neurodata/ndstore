@@ -1,10 +1,10 @@
 
 import re
 
-from emcaerror import EMCAError
+from ocpcaerror import OCPCAError
 
 import logging
-logger=logging.getLogger("emca")
+logger=logging.getLogger("ocp")
 
 
 #
@@ -13,7 +13,7 @@ logger=logging.getLogger("emca")
 #    convert from numerals to integers and back
 #
 
-class EMCAChannels:
+class OCPCAChannels:
 
   def __init__( self, db ):
     """Do nothing on init.  Load the channels lazily"""
@@ -32,7 +32,7 @@ class EMCAChannels:
       return self.chanmap[chanstr]
     except:
       logger.error("Did not find channel %s" % (chanstr))
-      raise EMCAError("Did not find channel %s" % (chanstr))
+      raise OCPCAError("Did not find channel %s" % (chanstr))
 
 
   def rewriteToInts ( self, channels ):
@@ -52,7 +52,7 @@ class EMCAChannels:
 
     return outchannels
 
-# end EMCAChannel
+# end OCPCAChannel
 
 def toID ( channel, db ):
   """Convert a single channel to an identifier"""
@@ -61,5 +61,5 @@ def toID ( channel, db ):
   if type(channel)==int or type(channel)==long or re.match ('^\d+$', channel):
     return channel
   else:
-    emcachans = EMCAChannels( db )
-    return emcachans.getChannelID ( channel )
+    ocpcachans = OCPCAChannels( db )
+    return ocpcachans.getChannelID ( channel )

@@ -2,11 +2,11 @@
 import numpy as np
 import json
 
-import emcadb
-import emcaproj
+import ocpcadb
+import ocpcaproj
 
 import logging
-logger=logging.getLogger("emca")
+logger=logging.getLogger("ocp")
 
 
 #
@@ -48,6 +48,6 @@ def jsonInfo ( proj, db ):
   jsonprojinfo = {}
   jsonprojinfo['dataset'] = datasetdict ( proj.datasetcfg )
   jsonprojinfo['project'] = projdict ( proj )
-  if proj.getDBType() == emcaproj.CHANNELS_16bit or proj.getDBType() == emcaproj.CHANNELS_8bit:
+  if proj.getDBType() == ocpcaproj.CHANNELS_16bit or proj.getDBType() == ocpcaproj.CHANNELS_8bit:
     jsonprojinfo['channels'] = db.getChannels()
   return json.dumps ( jsonprojinfo, sort_keys=True, indent=4 )

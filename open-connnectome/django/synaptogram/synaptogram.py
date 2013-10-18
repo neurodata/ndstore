@@ -9,7 +9,7 @@ import h5py
 from PIL import Image, ImageEnhance
 from PIL import ImageOps
 
-import emcarest
+import ocpcarest
 
 
 class Synaptogram:
@@ -33,7 +33,7 @@ class Synaptogram:
     self.emchannels = []
     self.enhance = None
 
-    [ self.db, self.proj, self.projdb ] = emcarest.loadDBProj ( self.token )
+    [ self.db, self.proj, self.projdb ] = ocpcarest.loadDBProj ( self.token )
 
   def setReference ( self, refchans ):
     """Modifier to set reference channels. Default value is None."""

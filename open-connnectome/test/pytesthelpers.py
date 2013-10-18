@@ -5,9 +5,7 @@ import tempfile
 import h5py
 import numpy as np
 
-EM_BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".." ))
-EM_EMCA_PATH = os.path.join(EM_BASE_PATH, "emca" )
-sys.path += [ EM_EMCA_PATH ]
+import ocppaths
 
 def makeAnno ( anntype, hosturl ):
   """Helper make an annotation"""
@@ -28,7 +26,7 @@ def makeAnno ( anntype, hosturl ):
   tmpfile.seek(0)
 
   # Build the put URL
-  url = "http://%s/emca/%s/" % ( hosturl, 'unittest')
+  url = "http://%s/ocpca/%s/" % ( hosturl, 'unittest')
 
   # write an object (server creates identifier)
   req = urllib2.Request ( url, tmpfile.read())
