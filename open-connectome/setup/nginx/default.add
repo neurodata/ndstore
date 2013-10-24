@@ -1,0 +1,17 @@
+
+upstream ocp-wsgi {
+  server unix:///run/uwsgi/app/ocp/socket;
+}
+
+
+server {
+  ...
+
+  location /ocp/ {
+    rewrite ^/ocp/(.*)$ /$1 break;
+    uwsgi_pass  ocp-wsgi;
+    include     /etc/nginx/uwsgi_params;
+  }
+  ...
+}
+
