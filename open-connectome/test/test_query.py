@@ -42,7 +42,6 @@ class TestRamon:
 
   def teardown_class (self):
     """Destroy the unittest database"""
-    print "in teardown_class"
     self.pd.deleteOCPCADB ('unittest')
 
 

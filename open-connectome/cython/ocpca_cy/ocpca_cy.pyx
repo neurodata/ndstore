@@ -194,3 +194,22 @@ def zoomData_cy ( np.ndarray[np.uint32_t, ndim=3] olddata, np.ndarray[np.uint32_
       for y in range (newdata.shape[1]):
         for x in range (newdata.shape[2]):
           newdata[z,y,x] = olddata[z,y/(2**factor),x/(2**factor)]
+
+#######################   Annotate -- list processing optimized ##########################
+
+def mergeCube_cy ( np.ndarray[DTYPE_t, ndim=3] data, unsigned int newid, unsigned int oldid):
+    """Relabel voxels in cuve from oldid to newid"""
+    cdef int z
+    cdef int y
+    cdef int x
+    for z in range (data.shape[0]):
+      for y in range (data.shape[1]):
+        for x in range (data.shape[2]):
+          if data[z,y,x]== oldid:
+            data[z,y,x]=newid
+	      
+
+
+
+
+  
