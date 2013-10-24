@@ -1,5 +1,6 @@
 # Django settings for OCP project.
 from settings_secret import *
+import ocppaths
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
