@@ -1,0 +1,6 @@
+
+=== Configuration Information for OCP ===
+
+  ** Python dependencies **
+
+    pip install -r pip.frozen
