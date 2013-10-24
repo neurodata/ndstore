@@ -1,0 +1,30 @@
+
+upstream ocp-wsgi {
+  server unix:///run/uwsgi/app/ocp/socket;
+}
+
+
+server {
+  ...
+  # base url for all ocp services
+  location /ocp/ {
+    rewrite ^/ocp/(.*)$ /$1 break;
+    uwsgi_pass  ocp-wsgi;
+    include     /etc/nginx/uwsgi_params;
+  }
+  ...
+  #ocp catmaid with memcache.
+  location /catmaidmemcache/ {
+      # (1)token/(2)channel/(3)color/(4)brightness/(5)z/(6)y_(7)x_(8).jpg
+      rewrite .*catmaidmemcache/(.*)/(.*)/(.*)/(.*)/(.*)/(.*)_(.*)_(.*)\.png$ http://braingraph2.cs.jhu.edu/ocp/catmaid/prefetch/$1/512/$2/xy/$8/$7/$6/$5/$3/$4/ break;
+    }
+
+  # ocp catmaid multichannel false color
+  location /catmaidmcfc/ {
+    # (1)token/(2)channels/(3)z/(4)y_(5)x_(6).jpg
+    rewrite .*catmaidmcfc/(.*)/(.*)/(.*)/(.*)_(.*)_(.*)\.png$ http://braingraph2.cs.jhu.edu/ocp/catmaid/mcfc/$1/512/$2/xy/$6/$5/$4/$3/ break;
+  }
+
+  
+}
+

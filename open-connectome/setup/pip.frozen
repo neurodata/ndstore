@@ -1,3 +1,4 @@
+numpy==1.6.2
 Cython==0.17.4
 Django==1.5.4
 MySQL-python==1.2.4
@@ -5,7 +6,6 @@ PIL==1.1.7
 distribute==0.7.3
 django-registration==1.0
 h5py==2.2.0
-numpy==1.6.2
 posix-ipc==0.9.4
 pylibmc==1.2.2
 pytest==2.3.4
