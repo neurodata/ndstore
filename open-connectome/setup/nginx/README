@@ -8,6 +8,8 @@ Configuration information for nginx
  
     uWSGI configuration file in /etc/uwsgi/apps-enabled/
 
+  ** packages -- to install nginx on ubuntu
+
 Commands to restart services
 
   sudo /etc/init.d/uwsgi restart ocp

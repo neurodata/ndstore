@@ -1,0 +1,11 @@
+libmysqlclient-dev
+python-all-dev
+libhdf5-serial-dev 
+liblapack-dev 
+libatlas-dev
+python-pip
+python-mysqldb
+libevent-dev
+memcached 
+libmemcached-dev
+gfortran
