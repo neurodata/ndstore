@@ -771,7 +771,7 @@ class OCPCADB:
 
     # this is the default path when not scaling up the resolution
     else:
-    
+
       # get the size of the image and cube
       [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
