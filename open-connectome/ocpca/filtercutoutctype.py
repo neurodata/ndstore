@@ -2,7 +2,7 @@ import ctypes as cp
 import numpy as np
 import numpy.ctypeslib as npct
 import os
-import empaths
+import OCP.ocppaths
 
 #
 # Filter Cutout using ctypes
@@ -12,7 +12,7 @@ import empaths
 #
 
 # Getting the filter directory path
-filterdirpath = os.path.join(empaths.EM_EMCA_PATH,"filterlib")
+filterdirpath = os.path.join(OCP.ocppaths.OCP_OCPCA_PATH,"filterlib")
 # Load the shared C library using numpy mechanism
 filterlib = npct.load_library("filterCutout",filterdirpath) 
 filterlibOMP = npct.load_library("filterCutoutOMP",filterdirpath)
