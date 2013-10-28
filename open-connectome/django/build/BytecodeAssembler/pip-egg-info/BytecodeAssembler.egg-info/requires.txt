@@ -1,0 +1,2 @@
+DecoratorTools>=1.2
+SymbolType>=1.0

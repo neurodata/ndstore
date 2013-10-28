@@ -1,0 +1,110 @@
+Metadata-Version: 1.0
+Name: DecoratorTools
+Version: 1.8
+Summary: Class, function, and metaclass decorators -- even in Python 2.3 (now with source debugging for generated code)!
+Home-page: http://cheeseshop.python.org/pypi/DecoratorTools
+Author: Phillip J. Eby
+Author-email: peak@eby-sarna.com
+License: PSF or ZPL
+Description: Want to use decorators, but still need to support Python 2.3?  Wish you could
+        have class decorators, decorate arbitrary assignments, or match decorated
+        function signatures to their original functions?  Want to get metaclass
+        features without creating metaclasses?  How about synchronized methods?
+        
+        "DecoratorTools" gets you all of this and more.  Some quick examples::
+        
+        # Method decorator example
+        from peak.util.decorators import decorate
+        
+        class Demo1(object):
+        decorate(classmethod)   # equivalent to @classmethod
+        def example(cls):
+        print "hello from", cls
+        
+        
+        # Class decorator example
+        from peak.util.decorators import decorate_class
+        
+        def my_class_decorator():
+        def decorator(cls):
+        print "decorating", cls
+        return cls
+        decorate_class(decorator)
+        
+        class Demo2:
+        my_class_decorator()
+        
+        # "decorating <class Demo2>" will be printed when execution gets here
+        
+        
+        Installing DecoratorTools (using ``"easy_install DecoratorTools"`` or
+        ``"setup.py install"``) gives you access to the ``peak.util.decorators``
+        module.  The tools in this module have been bundled for years inside of PEAK,
+        PyProtocols, RuleDispatch, and the zope.interface package, so they have been
+        widely used and tested.  (Unit tests are also included, of course.)
+        
+        This standalone version is backward-compatible with the bundled versions, so you
+        can mix and match decorators from this package with those provided by
+        zope.interface, TurboGears, etc.
+        
+        For complete documentation, see the `DecoratorTools manual`_.
+        
+        Changes since version 1.7:
+        
+        * The ``@template_function`` decorator now supports using a return value
+        instead of a docstring, in order to work with the "-OO" option to Python;
+        it's highly recommended that you update your template functions to use
+        a return value instead of a docstring.  (The error message has also been
+        improved for the missing docstring case.)
+        
+        * Fixed metaclass collisions in ``classy`` subclasses that mix in abstract
+        classes (e.g. ``collections.Sequence``) in Python 2.6+.
+        
+        Changes since version 1.6:
+        
+        * Added ``synchronized`` decorator to support locking objects during method
+        execution.
+        
+        Changes since version 1.5:
+        
+        * Added ``classy`` base class that allows you to do the most often-needed
+        metaclass behviors *without* needing an actual metaclass.
+        
+        Changes since version 1.4:
+        
+        * Added ``enclosing_frame()`` function, so that complex decorators that call
+        DecoratorTools functions while being called *by* DecoratorTools functions,
+        will work correctly.
+        
+        Changes since version 1.3:
+        
+        * Added support for debugging generated code, including the code generated
+        by ``rewrap()`` and ``template_function``.
+        
+        Changes since version 1.2:
+        
+        * Added ``rewrap()`` function and ``template_function`` decorator to support
+        signature matching for decorated functions.  (These features are similar to
+        the ones provided by Michele Simionato's "decorator" package, but do not
+        require Python 2.4 and don't change the standard idioms for creating
+        decorator functions.)
+        
+        * ``decorate_class()`` will no longer apply duplicate class decorator
+        callbacks unless the ``allow_duplicates`` argument is true.
+        
+        Changes since version 1.1:
+        
+        * Fixed a problem where instances of different struct types could equal each
+        other
+        
+        Changes since version 1.0:
+        
+        * The ``struct()`` decorator makes it easy to create tuple-like data
+        structure types, by decorating a constructor function.
+        
+        .. _DecoratorTools Manual: http://peak.telecommunity.com/DevCenter/DecoratorTools#toc
+        
+        .. _toc:
+        
+        
+Platform: UNKNOWN

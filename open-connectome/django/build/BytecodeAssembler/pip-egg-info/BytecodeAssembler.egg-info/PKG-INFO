@@ -1,0 +1,180 @@
+Metadata-Version: 1.0
+Name: BytecodeAssembler
+Version: 0.6
+Summary: Generate Python code objects by "assembling" bytecode (Now includes a functional/AST-oriented API, too!)
+Home-page: http://pypi.python.org/pypi/BytecodeAssembler
+Author: Phillip J. Eby
+Author-email: peak@eby-sarna.com
+License: http://www.apache.org/licenses/LICENSE-2.0
+Description: ``peak.util.assembler`` is a simple bytecode assembler module that handles most
+        low-level bytecode generation details like jump offsets, stack size tracking,
+        line number table generation, constant and variable name index tracking, etc.
+        That way, you can focus your attention on the desired semantics of your
+        bytecode instead of on these mechanical issues.
+        
+        In addition to a low-level opcode-oriented API for directly generating specific
+        Python bytecodes, this module also offers an extensible mini-AST framework for
+        generating code from high-level specifications.  This framework does most of
+        the work needed to transform tree-like structures into linear bytecode
+        instructions, and includes the ability to do compile-time constant folding.
+        
+        Please see the `BytecodeAssembler reference manual`_ for more details.
+        
+        .. _BytecodeAssembler reference manual: http://peak.telecommunity.com/DevCenter/BytecodeAssembler#toc
+        
+        
+        Changes since version 0.5.2:
+        
+        * Symbolic disassembly with full emulation of backward-compatible
+          ``JUMP_IF_TRUE`` and ``JUMP_IF_FALSE`` opcodes on Python 2.7 -- tests now
+          run clean on Python 2.7.
+        
+        * Support for backward emulation of Python 2.7's ``JUMP_IF_TRUE_OR_POP`` and
+          ``JUMP_IF_FALSE_OR_POP`` instructions on earlier Python versions; these
+          emulations are also used in BytecodeAssembler's internal code generation,
+          for maximum performance on 2.7+ (with no change to performance on older
+          versions).
+        
+        Changes since version 0.5.1:
+        
+        * Initial support for Python 2.7's new opcodes and semantics changes, mostly
+          by emulating older versions' behavior with macros.  (0.5.2 is really just
+          a quick-fix release to allow packages using BytecodeAssembler to run on 2.7
+          without having to change any of their code generation; future releases will
+          provide proper support for the new and changed opcodes, as well as a test
+          suite that doesn't show spurious differences in the disassembly listings
+          under Python 2.7.)
+        
+        Changes since version 0.5:
+        
+        * Fix incorrect stack size calculation for ``MAKE_CLOSURE`` on Python 2.5+
+        
+        Changes since version 0.3:
+        
+        * New node types:
+        
+          * ``For(iterable, assign, body)`` -- define a "for" loop over `iterable`
+        
+          * ``UnpackSequence(nodes)`` -- unpacks a sequence that's ``len(nodes)`` long,
+            and then generates the given nodes.
+        
+          * ``LocalAssign(name)`` -- issues a ``STORE_FAST``, ``STORE_DEREF`` or
+            ``STORE_LOCAL`` as appropriate for the given name.
+        
+          * ``Function(body, name='<lambda>', args=(), var=None, kw=None, defaults=())``
+            -- creates a nested function from `body` and puts it on the stack.
+        
+          * ``If(cond, then_, else_=Pass)`` -- "if" statement analogue
+        
+          * ``ListComp(body)`` and ``LCAppend(value)`` -- implement list comprehensions
+        
+          * ``YieldStmt(value)`` -- generates a ``YIELD_VALUE`` (plus a ``POP_TOP`` in
+            Python 2.5+)
+        
+        * ``Code`` objects are now iterable, yielding ``(offset, op, arg)`` triples,
+          where `op` is numeric and `arg` is either numeric or ``None``.
+        
+        * ``Code`` objects' ``.code()`` method can now take a "parent" ``Code`` object,
+          to link the child code's free variables to cell variables in the parent.
+        
+        * Added ``Code.from_spec()`` classmethod, that initializes a code object from a
+          name and argument spec.
+        
+        * ``Code`` objects now have a ``.nested(name, args, var, kw)`` method, that
+          creates a child code object with the same ``co_filename`` and the supplied
+          name/arg spec.
+        
+        * Fixed incorrect stack tracking for the ``FOR_ITER`` and ``YIELD_VALUE``
+          opcodes
+        
+        * Ensure that ``CO_GENERATOR`` flag is set if ``YIELD_VALUE`` opcode is used
+        
+        * Change tests so that Python 2.3's broken line number handling in ``dis.dis``
+          and constant-folding optimizer don't generate spurious failures in this
+          package's test suite.
+        
+        
+        Changes since version 0.2:
+        
+        * Added ``Suite``, ``TryExcept``, and ``TryFinally`` node types
+        
+        * Added a ``Getattr`` node type that does static or dynamic attribute access
+          and constant folding
+        
+        * Fixed ``code.from_function()`` not copying the ``co_filename`` attribute when
+          ``copy_lineno`` was specified.
+        
+        * The ``repr()`` of AST nodes doesn't include a trailing comma for 1-argument
+          node types any more.
+        
+        * Added a ``Pass`` symbol that generates no code, a ``Compare()`` node type
+          that does n-way comparisons, and ``And()`` and ``Or()`` node types for doing
+          logical operations.
+        
+        * The ``COMPARE_OP()`` method now accepts operator strings like ``"<="``,
+          ``"not in"``, ``"exception match"``, and so on, as well as numeric opcodes.
+          See the standard library's ``opcode`` module for a complete list of the
+          strings accepted (in the ``cmp_op`` tuple).  ``"<>"`` is also accepted as an
+          alias for ``"!="``.
+        
+        * Added code to verify that forward jump offsets don't exceed a 64KB span, and
+          support absolute backward jumps to locations >64KB.
+        
+        Changes since version 0.1:
+        
+        * Constant handling has been fixed so that it doesn't confuse equal values of
+          differing types (e.g. ``1.0`` and ``True``), or equal unhashable objects
+          (e.g. two empty lists).
+        
+        * Removed ``nil``, ``ast_curry()`` and ``folding_curry()``, replacing them with
+          the ``nodetype()`` decorator and ``fold_args()``; please see the docs for
+          more details.
+        
+        * Added stack tracking across jumps, globally verifying stack level prediction
+          consistency and automatically rejecting attempts to generate dead code.  It
+          should now be virtually impossible to accidentally generate bytecode that can
+          crash the interpreter.  (If you find a way, let me know!)
+        
+        Changes since version 0.0.1:
+        
+        * Added massive quantities of new documentation and examples
+        
+        * Full block, loop, and closure support
+        
+        * High-level functional code generation from trees, with smart labels and
+          blocks, constant folding, extensibility, smart local variable names, etc.
+        
+        * The ``.label()`` method was renamed to ``.here()`` to distinguish it from
+          the new smart ``Label`` objects.
+        
+        * Docs and tests were moved to README.txt instead of assembler.txt
+        
+        * Added a demo that implements a "switch"-like statement template that shows
+          how to extend the code generation system and how to abuse ``END_FINALLY``
+          to implement a "computed goto" in bytecode.
+        
+        * Various bug fixes
+        
+        There are a few features that aren't tested yet, and not all opcodes may be
+        fully supported.  Also note the following limitations:
+        
+        * Jumps to as-yet-undefined labels cannot span a distance greater than 65,535
+          bytes.
+        
+        * The ``dis()`` function in Python 2.3 has a bug that makes it show incorrect
+          line numbers when the difference between two adjacent line numbers is
+          greater than 255.  (To work around this, the test_suite uses a later version
+          of ``dis()``, but do note that it may affect your own tests if you use
+          ``dis()`` with Python 2.3 and use widely separated line numbers.)
+          
+        If you find any other issues, please let me know.
+        
+        Please also keep in mind that this is a work in progress, and the API may
+        change if I come up with a better way to do something.
+        
+        Questions and discussion regarding this software should be directed to the
+        `PEAK Mailing List <http://www.eby-sarna.com/mailman/listinfo/peak>`_.
+        
+        .. _toc:
+        
+Platform: UNKNOWN

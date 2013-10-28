@@ -1,0 +1,1042 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>News &mdash; Paste v1.7.5 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.7.5',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Paste v1.7.5 documentation" href="index.html" />
+    <link rel="next" title="The Future Of Paste" href="future.html" />
+    <link rel="prev" title="Python Paste" href="index.html" />
+ 
+<link rel="stylesheet" type="text/css"
+ href="_static/paste.css.html">
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="future.html" title="The Future Of Paste"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Python Paste"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="news">
+<h1><a class="toc-backref" href="#id36">News</a><a class="headerlink" href="#news" title="Permalink to this headline">¶</a></h1>
+<div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="simple">
+<li><a class="reference external" href="#news" id="id36">News</a><ul>
+<li><a class="reference external" href="#id1" id="id37">1.7.5</a></li>
+<li><a class="reference external" href="#id2" id="id38">1.7.4</a></li>
+<li><a class="reference external" href="#id3" id="id39">1.7.3.1</a></li>
+<li><a class="reference external" href="#id4" id="id40">1.7.3</a></li>
+<li><a class="reference external" href="#id5" id="id41">1.7.2</a></li>
+<li><a class="reference external" href="#id6" id="id42">1.7.1</a></li>
+<li><a class="reference external" href="#id7" id="id43">1.7</a></li>
+<li><a class="reference external" href="#id8" id="id44">1.6.1</a></li>
+<li><a class="reference external" href="#id9" id="id45">1.6</a></li>
+<li><a class="reference external" href="#id10" id="id46">1.5.1</a></li>
+<li><a class="reference external" href="#id11" id="id47">1.5</a></li>
+<li><a class="reference external" href="#id12" id="id48">1.4.2</a></li>
+<li><a class="reference external" href="#id13" id="id49">1.4.1</a></li>
+<li><a class="reference external" href="#id14" id="id50">1.4</a></li>
+<li><a class="reference external" href="#id15" id="id51">1.3</a></li>
+<li><a class="reference external" href="#id16" id="id52">1.2.1</a></li>
+<li><a class="reference external" href="#id17" id="id53">1.2</a><ul>
+<li><a class="reference external" href="#in-paste-wsgiwrappers" id="id54">In paste.wsgiwrappers</a></li>
+<li><a class="reference external" href="#in-paste-httpserver" id="id55">In paste.httpserver</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#id18" id="id56">1.1.1</a></li>
+<li><a class="reference external" href="#id19" id="id57">1.1</a></li>
+<li><a class="reference external" href="#id20" id="id58">1.0</a></li>
+<li><a class="reference external" href="#id21" id="id59">0.9.9</a></li>
+<li><a class="reference external" href="#id22" id="id60">0.9.8</a></li>
+<li><a class="reference external" href="#id23" id="id61">0.9.7</a></li>
+<li><a class="reference external" href="#id24" id="id62">0.9.6</a></li>
+<li><a class="reference external" href="#id25" id="id63">0.9.5</a></li>
+<li><a class="reference external" href="#id26" id="id64">0.9.4</a></li>
+<li><a class="reference external" href="#id27" id="id65">0.9.3</a></li>
+<li><a class="reference external" href="#id28" id="id66">0.9.2</a></li>
+<li><a class="reference external" href="#id29" id="id67">0.9.1</a></li>
+<li><a class="reference external" href="#id30" id="id68">0.9</a></li>
+<li><a class="reference external" href="#id31" id="id69">0.5</a></li>
+<li><a class="reference external" href="#id32" id="id70">0.4.1</a></li>
+<li><a class="reference external" href="#id33" id="id71">0.4</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="id1">
+<h2><a class="toc-backref" href="#id37">1.7.5</a><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Won&#8217;t install <tt class="docutils literal"><span class="pre">tests/</span></tt> directory (also caused installation
+problems on some Mac systems).</li>
+<li>Fixed problem with gzip middleware and zero-length responses.</li>
+<li>Use <tt class="docutils literal"><span class="pre">X-Forwarded-For</span></tt> header in <a class="reference internal" href="modules/translogger.html#module-paste.translogger"><tt class="xref py py-mod docutils literal"><span class="pre">paste.translogger</span></tt></a></li>
+<li>Fixed problems with mimeparse code</li>
+<li>Fixed some corner cases with CGI scripts</li>
+<li><a class="reference internal" href="modules/auth.auth_tkt.html#module-paste.auth.auth_tkt"><tt class="xref py py-mod docutils literal"><span class="pre">paste.auth.auth_tkt</span></tt></a> will URL-quote usernames, avoiding some
+errors with usernames with <tt class="docutils literal"><span class="pre">!</span></tt> in them.</li>
+<li>Improve handling of errors in fetching error pages in
+<a class="reference internal" href="modules/errordocument.html#module-paste.errordocument"><tt class="xref py py-mod docutils literal"><span class="pre">paste.errordocument</span></tt></a>.</li>
+</ul>
+</div>
+<div class="section" id="id2">
+<h2><a class="toc-backref" href="#id38">1.7.4</a><a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Fix XSS bug (security issue) with not found handlers for
+<a class="reference internal" href="modules/urlparser.html#paste.urlparser.StaticURLParser" title="paste.urlparser.StaticURLParser"><tt class="xref py py-class docutils literal"><span class="pre">paste.urlparser.StaticURLParser</span></tt></a> and
+<a class="reference internal" href="modules/urlmap.html#paste.urlmap.URLMap" title="paste.urlmap.URLMap"><tt class="xref py py-class docutils literal"><span class="pre">paste.urlmap.URLMap</span></tt></a>.  If you ask for a path with
+<tt class="docutils literal"><span class="pre">/--&gt;&lt;script&gt;...</span></tt> that will be inserted in the error page and can
+execute Javascript.  Reported by Tim Wintle with further details
+from Georg-Christian Pranschke.</li>
+<li>Replaced <tt class="xref py py-func docutils literal"><span class="pre">paste.util.mimeparse.desired_match()</span></tt></li>
+</ul>
+</div>
+<div class="section" id="id3">
+<h2><a class="toc-backref" href="#id39">1.7.3.1</a><a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Removed directory name from 404 errors in
+<a class="reference internal" href="modules/urlparser.html#paste.urlparser.StaticURLParser" title="paste.urlparser.StaticURLParser"><tt class="xref py py-class docutils literal"><span class="pre">paste.urlparser.StaticURLParser</span></tt></a>.</li>
+<li>Fixed packaging to include Javascript and images for
+<a class="reference internal" href="modules/evalexception.html#module-paste.evalexception"><tt class="xref py py-mod docutils literal"><span class="pre">paste.evalexception</span></tt></a></li>
+</ul>
+</div>
+<div class="section" id="id4">
+<h2><a class="toc-backref" href="#id40">1.7.3</a><a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>I got a fever and the only prescription is more <tt class="xref py py-mod docutils literal"><span class="pre">paste.cowbell</span></tt>!</li>
+<li>Fix <a class="reference internal" href="modules/httpserver.html#module-paste.httpserver"><tt class="xref py py-mod docutils literal"><span class="pre">paste.httpserver</span></tt></a> on Python 2.6.</li>
+<li>Fix <a class="reference internal" href="modules/auth.cookie.html#module-paste.auth.cookie"><tt class="xref py py-mod docutils literal"><span class="pre">paste.auth.cookie</span></tt></a>, which would insert newlines for long
+cookies.</li>
+<li><tt class="xref py py-mod docutils literal"><span class="pre">paste.util.mimeparse</span></tt> parses a single <tt class="docutils literal"><span class="pre">*</span></tt> in Accept headers
+(sent by IE 6).</li>
+<li>Fix some problems with the <tt class="docutils literal"><span class="pre">wdg_validate</span></tt> middleware.</li>
+<li>Improvements to <a class="reference internal" href="modules/auth.auth_tkt.html#module-paste.auth.auth_tkt"><tt class="xref py py-mod docutils literal"><span class="pre">paste.auth.auth_tkt</span></tt></a>: add httponly support,
+don&#8217;t always aggressively set cookies without the
+<tt class="docutils literal"><span class="pre">wildcard_cookie</span></tt> option.  Also on logout, make cookies expire.</li>
+<li>In <a class="reference internal" href="modules/proxy.html#paste.proxy.Proxy" title="paste.proxy.Proxy"><tt class="xref py py-class docutils literal"><span class="pre">paste.proxy.Proxy</span></tt></a> handle Content-Length of -1.</li>
+<li>In <a class="reference internal" href="modules/httpexceptions.html#module-paste.httpexceptions"><tt class="xref py py-mod docutils literal"><span class="pre">paste.httpexceptions</span></tt></a> avoid some unicode errors.</li>
+<li>In <a class="reference internal" href="modules/httpserver.html#module-paste.httpserver"><tt class="xref py py-mod docutils literal"><span class="pre">paste.httpserver</span></tt></a> handle <tt class="docutils literal"><span class="pre">.read()</span></tt> from 100 Continue
+properly (because of a typo it was doing a readline).</li>
+<li>Update <tt class="docutils literal"><span class="pre">paste.util.mimeparse</span></tt> from <a class="reference external" href="http://code.google.com/p/mimeparse/">upstream</a>.</li>
+</ul>
+</div>
+<div class="section" id="id5">
+<h2><a class="toc-backref" href="#id41">1.7.2</a><a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>In <a class="reference internal" href="modules/proxy.html#module-paste.proxy"><tt class="xref py py-mod docutils literal"><span class="pre">paste.proxy</span></tt></a>, added some more headers that are disallowed
+in WSGI (e.g., Keep-Alive).  Send Content-Length.  Also fix the
+missing query string when using <a class="reference internal" href="modules/proxy.html#paste.proxy.Proxy" title="paste.proxy.Proxy"><tt class="xref py py-class docutils literal"><span class="pre">paste.proxy.Proxy</span></tt></a>
+(<a class="reference internal" href="modules/proxy.html#paste.proxy.TransparentProxy" title="paste.proxy.TransparentProxy"><tt class="xref py py-class docutils literal"><span class="pre">paste.proxy.TransparentProxy</span></tt></a> already worked).</li>
+<li>Make <a class="reference internal" href="modules/debug.prints.html#module-paste.debug.prints"><tt class="xref py py-mod docutils literal"><span class="pre">paste.debug.prints</span></tt></a> work with Google App Engine.</li>
+<li>Make <tt class="docutils literal"><span class="pre">environ['wsgi.input']</span></tt> with <a class="reference internal" href="modules/httpserver.html#module-paste.httpserver"><tt class="xref py py-mod docutils literal"><span class="pre">paste.httpserver</span></tt></a> only
+have a <tt class="docutils literal"><span class="pre">seek</span></tt> method if it is wrapping something with a seek
+method (which usually it is not).</li>
+<li>In <a class="reference internal" href="modules/httpserver.html#module-paste.httpserver"><tt class="xref py py-mod docutils literal"><span class="pre">paste.httpserver</span></tt></a> re-raise KeyboardInterrupt in worker
+threads.</li>
+<li>Added support for the <tt class="docutils literal"><span class="pre">HttpOnly</span></tt> Cookie property to
+<a class="reference internal" href="modules/wsgiwrappers.html#module-paste.wsgiwrappers"><tt class="xref py py-mod docutils literal"><span class="pre">paste.wsgiwrappers</span></tt></a></li>
+<li>Added <tt class="xref py py-func docutils literal"><span class="pre">paste.reloader.add_file_callback()</span></tt>, which lets you watch
+files based on a callback.</li>
+<li>Quiet Python 2.6 deprecation warnings.</li>
+<li>Fix <a class="reference internal" href="modules/auth.cookie.html#module-paste.auth.cookie"><tt class="xref py py-mod docutils literal"><span class="pre">paste.auth.cookie</span></tt></a> generating bad headers.</li>
+<li>Added <tt class="xref py py-class docutils literal"><span class="pre">paste.reloader.JythonMonitor</span></tt> for an experimental,
+optimized reloader on Jython.</li>
+</ul>
+</div>
+<div class="section" id="id6">
+<h2><a class="toc-backref" href="#id42">1.7.1</a><a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Normalize and make absolute the paths passed to
+<a class="reference internal" href="modules/urlparser.html#paste.urlparser.StaticURLParser" title="paste.urlparser.StaticURLParser"><tt class="xref py py-class docutils literal"><span class="pre">paste.urlparser.StaticURLParser</span></tt></a> (before passing a
+relative-to-cwd path to that class would cause Forbidden errors).</li>
+<li>Deprecate <tt class="xref py py-func docutils literal"><span class="pre">paste.fixture.setup_module()</span></tt></li>
+</ul>
+</div>
+<div class="section" id="id7">
+<h2><a class="toc-backref" href="#id43">1.7</a><a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Fixed bug in <a class="reference internal" href="modules/fixture.html#paste.fixture.TestApp" title="paste.fixture.TestApp"><tt class="xref py py-class docutils literal"><span class="pre">paste.fixture.TestApp</span></tt></a> that would submit forms
+with unnamed fields (like an unnamed submit button).  Also made
+checkboxes with no explicit <tt class="docutils literal"><span class="pre">value</span></tt> send <tt class="docutils literal"><span class="pre">on</span></tt> instead of
+<tt class="docutils literal"><span class="pre">checked</span></tt> (which is what browsers do).</li>
+<li>Fixed bug in <a class="reference internal" href="modules/httpserver.html#module-paste.httpserver"><tt class="xref py py-mod docutils literal"><span class="pre">paste.httpserver</span></tt></a> where
+<tt class="docutils literal"><span class="pre">environ['wsgi.input'].readline(max_size)</span></tt> ignored the max_size
+argument, which can lead to large memory usage (from Jakub Stolarski)</li>
+<li>Make <a class="reference internal" href="modules/cascade.html#module-paste.cascade"><tt class="xref py py-mod docutils literal"><span class="pre">paste.cascade</span></tt></a> notice sockets that have stopped producing
+data.  From Casey Zednick.</li>
+<li>In <a class="reference internal" href="modules/fixture.html#paste.fixture.TestApp" title="paste.fixture.TestApp"><tt class="xref py py-class docutils literal"><span class="pre">paste.fixture.TestApp</span></tt></a> Accept MultiDict values for the
+<tt class="docutils literal"><span class="pre">params</span></tt> argument in requests.  (Anything with a <tt class="docutils literal"><span class="pre">.items()</span></tt>
+method will have its items encoded as the request parameters.)</li>
+<li>Fix <a class="reference internal" href="modules/httpserver.html#module-paste.httpserver"><tt class="xref py py-mod docutils literal"><span class="pre">paste.httpserver</span></tt></a> to allow binding to port 0.</li>
+<li>In <a class="reference internal" href="modules/auth.auth_tkt.html#module-paste.auth.auth_tkt"><tt class="xref py py-mod docutils literal"><span class="pre">paste.auth.auth_tkt</span></tt></a>, set the same cookies (with the same
+domains) in <tt class="docutils literal"><span class="pre">set_cookie</span></tt> as get unset in <tt class="docutils literal"><span class="pre">logout_user_cookie</span></tt>.</li>
+<li>In <a class="reference internal" href="modules/translogger.html#module-paste.translogger"><tt class="xref py py-mod docutils literal"><span class="pre">paste.translogger</span></tt></a> save REQUEST_METHOD in case it gets
+overridden somewhere (e.g., when using errordocuments POST would
+show up as GET).</li>
+<li>Exceptions with unicode messages don&#8217;t cause the collector to fail.</li>
+<li>Sometimes <a class="reference internal" href="modules/exceptions.html#paste.exceptions.errormiddleware.ErrorMiddleware" title="paste.exceptions.errormiddleware.ErrorMiddleware"><tt class="xref py py-class docutils literal"><span class="pre">paste.exceptions.errormiddleware.ErrorMiddleware</span></tt></a>
+would not call start_response properly; this is fixed (from Andreas
+Kloecker).</li>
+<li><tt class="xref py py-mod docutils literal"><span class="pre">paste.fixture.TestApp</span></tt> can store multiple cookie values
+(previously only one cookie was stored; from Andrey Lebedev)</li>
+<li><tt class="docutils literal"><span class="pre">u''</span> <span class="pre">in</span> <span class="pre">TestApp(app).get('/')</span></tt> will work when the body isn&#8217;t ASCII
+(before it would give a unicode error).  This problem wasn&#8217;t present
+in the recommended <a class="reference external" href="http://pythonpaste.org/webtest/">WebTest</a>.</li>
+<li><a class="reference internal" href="modules/debug.profile.html#module-paste.debug.profile"><tt class="xref py py-mod docutils literal"><span class="pre">paste.debug.profile</span></tt></a> won&#8217;t break when content is served with no
+Content-Type.</li>
+<li>Accept relative paths and paths with <tt class="docutils literal"><span class="pre">/../</span></tt> in them for
+<a class="reference internal" href="modules/urlparser.html#paste.urlparser.StaticURLParser" title="paste.urlparser.StaticURLParser"><tt class="xref py py-class docutils literal"><span class="pre">paste.urlparser.StaticURLParser</span></tt></a> (from Eric Larson).  Also fix
+problem with case normalization on Windows (from Ionel Maries
+Cristian).</li>
+<li><a class="reference internal" href="modules/registry.html#paste.registry.StackedObjectProxy" title="paste.registry.StackedObjectProxy"><tt class="xref py py-class docutils literal"><span class="pre">paste.registry.StackedObjectProxy</span></tt></a>&#8216;s now include the proxied object&#8217;s names via
+<tt class="docutils literal"><span class="pre">__dir__</span></tt> (for Python 2.6).</li>
+<li>Use <tt class="docutils literal"><span class="pre">environ['wsgi.file_wrapper']</span></tt> when available (in
+<tt class="docutils literal"><span class="pre">paste.fileapp</span></tt>).</li>
+<li>Make <a class="reference internal" href="modules/debug.prints.html#module-paste.debug.prints"><tt class="xref py py-mod docutils literal"><span class="pre">paste.debug.prints</span></tt></a> compatible with App Engine.</li>
+<li>Fix the <tt class="docutils literal"><span class="pre">domain</span></tt> keyword in
+<tt class="xref py py-meth docutils literal"><span class="pre">paste.wsgiwrappers.WSGIResponse.delete_cookie()</span></tt>.</li>
+</ul>
+</div>
+<div class="section" id="id8">
+<h2><a class="toc-backref" href="#id44">1.6.1</a><a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Fixed bug in paste lint where PATH_INFO would become unicode.</li>
+</ul>
+</div>
+<div class="section" id="id9">
+<h2><a class="toc-backref" href="#id45">1.6</a><a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Make the import of <tt class="docutils literal"><span class="pre">socket.sslerror</span></tt> conditional in
+<tt class="docutils literal"><span class="pre">paste.exceptions.reporter</span></tt> (needed for Python interpreters
+compiled without SSL support).</li>
+<li>In <tt class="docutils literal"><span class="pre">paste.proxy.TransparentProxy</span></tt>, don&#8217;t overwrite
+<tt class="docutils literal"><span class="pre">X-Forwarded-For</span></tt> header if it is already in the environment.</li>
+<li>Added <tt class="docutils literal"><span class="pre">226</span> <span class="pre">IM</span> <span class="pre">Used</span></tt> status code to <tt class="docutils literal"><span class="pre">paste.wsgiwrappers</span></tt></li>
+<li>In <tt class="docutils literal"><span class="pre">paste.fixture.TestApp</span></tt> treat <tt class="docutils literal"><span class="pre">&lt;image</span> <span class="pre">type=&quot;image&quot;&gt;</span></tt> the same
+as a submit button.</li>
+<li>Use <tt class="docutils literal"><span class="pre">OpenSSL.tsafe.Connection</span></tt> for https with
+<tt class="docutils literal"><span class="pre">paste.httpserver</span></tt>, avoiding some possible errors (<tt class="docutils literal"><span class="pre">sslv3</span> <span class="pre">alert</span>
+<span class="pre">bad</span> <span class="pre">record</span> <span class="pre">mac</span></tt>).</li>
+<li>Fix small issue with <tt class="docutils literal"><span class="pre">paste.cgiapp</span></tt> and mod_wsgi.</li>
+<li>Use <tt class="docutils literal"><span class="pre">BaseCookie</span></tt> instead of <tt class="docutils literal"><span class="pre">SimpleCookie</span></tt> for storing cookies
+(avoids quoting cookie values).</li>
+</ul>
+</div>
+<div class="section" id="id10">
+<h2><a class="toc-backref" href="#id46">1.5.1</a><a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Make <tt class="docutils literal"><span class="pre">paste.cascade</span></tt> more tolerant of a missing or invalid
+Content-Length.</li>
+</ul>
+</div>
+<div class="section" id="id11">
+<h2><a class="toc-backref" href="#id47">1.5</a><a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Fixed memory leak with <tt class="docutils literal"><span class="pre">paste.registry</span></tt> not properly removing
+all references to registered objects should register be called
+multiple times during a single context for a StackedObjectProxy.</li>
+<li><tt class="docutils literal"><span class="pre">paste.httpheaders.CONTENT_RANGE</span></tt> returns <tt class="docutils literal"><span class="pre">bytes</span>
+<span class="pre">START-END/LENGTH</span></tt> instead of just <tt class="docutils literal"><span class="pre">START-END/LENGTH</span></tt></li>
+<li>In <tt class="docutils literal"><span class="pre">paste.fixture.TestApp</span></tt> set <tt class="docutils literal"><span class="pre">CONTENT_TYPE</span></tt> to
+<tt class="docutils literal"><span class="pre">'application/x-www-form-urlencoded'</span></tt> whenever there are
+parameters (and no other content type was provided).</li>
+<li>In <tt class="docutils literal"><span class="pre">paste.session</span></tt>, when cleaning files ignore files that aren&#8217;t
+session files.</li>
+<li><tt class="docutils literal"><span class="pre">paste.httpexceptions.HTTPExceptionHandler</span></tt> will no longer catch
+exceptions raised during the app_iter iteration.</li>
+<li><tt class="docutils literal"><span class="pre">paste.cascade.Cascade</span></tt> copies <tt class="docutils literal"><span class="pre">wsgi.input</span></tt> when cascading, so
+that one of the applications cannot read the input and leave a later
+application blocked when it tries to read the input.</li>
+<li>Fix assigning to <tt class="docutils literal"><span class="pre">WSGIResponse.charset</span></tt> breaking the content-type.</li>
+<li>SMTP authentication is supported for the exception handler.  You may
+now set <tt class="docutils literal"><span class="pre">smtp_username</span></tt>, <tt class="docutils literal"><span class="pre">smtp_password</span></tt> and <tt class="docutils literal"><span class="pre">smtp_use_tls</span></tt> to
+control this behavior.  From pthy.</li>
+</ul>
+</div>
+<div class="section" id="id12">
+<h2><a class="toc-backref" href="#id48">1.4.2</a><a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Remove FreeBSD threadpool condition in paste.httpserver (which was
+also breaking code for Windows users).</li>
+<li>Fix problem with <tt class="docutils literal"><span class="pre">paste.wsgilib.intercept_output</span></tt> and passing up
+exceptions.</li>
+</ul>
+</div>
+<div class="section" id="id13">
+<h2><a class="toc-backref" href="#id49">1.4.1</a><a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Allow customization of the <tt class="docutils literal"><span class="pre">paste.config.ConfigMiddleware</span></tt> environ
+key.</li>
+<li>Added a <tt class="docutils literal"><span class="pre">current</span></tt> method (an alias of <tt class="docutils literal"><span class="pre">current_conf</span></tt>) to
+<tt class="docutils literal"><span class="pre">paste.config.DispatchingConfig</span></tt>.</li>
+<li>Make test response <tt class="docutils literal"><span class="pre">.form</span></tt> attribute work when you have a single
+named form.</li>
+<li>Try to encode any unicode input to <tt class="docutils literal"><span class="pre">paste.auth.auth_tkt</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">paste.wsgiwrappers.WSGIResponse</span></tt> now has a <tt class="docutils literal"><span class="pre">.content_type</span></tt>
+attribute (that does not include parameters), and a <tt class="docutils literal"><span class="pre">.charset</span></tt>
+attribute (that gets the charset parameter).</li>
+<li>Inherit inherit show_exceptions_in_wsgi_errors from global
+configuration.  Inherit <tt class="docutils literal"><span class="pre">debug</span></tt> more properly.</li>
+</ul>
+</div>
+<div class="section" id="id14">
+<h2><a class="toc-backref" href="#id50">1.4</a><a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>In <tt class="docutils literal"><span class="pre">paste.httpserver</span></tt> added lots of functionality to the
+threadpool.  See <a class="reference external" href="paste-httpserver-threadpool.html">the paste.httpserver threadpool documentation</a> for details.  This catches
+worker threads (and WSGI apps) that take too long to complete their
+task; killing them eventually, adding more worker threads when the
+pool is exhausted and it doesn&#8217;t look good that it&#8217;ll clear soon,
+and optionally killing the process when there are too many
+lost/zombie threads (you must be using some kind supervisor process
+for this last response to make sense).</li>
+<li>Save host and scheme information during real HTTP proxy requests to
+<tt class="docutils literal"><span class="pre">paste.httpserver</span></tt>, into the keys
+<tt class="docutils literal"><span class="pre">paste.httpserver.proxy.scheme</span></tt> and
+<tt class="docutils literal"><span class="pre">paste.httpserver.proxy.host</span></tt></li>
+<li>In <tt class="docutils literal"><span class="pre">paste.exceptions</span></tt> always call <tt class="docutils literal"><span class="pre">start_response</span></tt>; may help
+problems when there is an exception in <tt class="docutils literal"><span class="pre">start_response</span></tt> itself.</li>
+<li>Added method to <tt class="docutils literal"><span class="pre">paste.registry.StackedObjectProxy</span></tt>,
+<tt class="docutils literal"><span class="pre">_object_stack()</span></tt>, which returns a list of all the registered
+objects.  Useful if you want to search through the effective history
+of a stacked object.</li>
+<li>Fixed infinite recursion problem with
+<tt class="docutils literal"><span class="pre">paste.request.EnvironHeaders.keys()</span></tt>.</li>
+<li>Fix <tt class="docutils literal"><span class="pre">paste.wsgiwrappers.WSGIRequest.urlvars</span></tt> to use
+<tt class="docutils literal"><span class="pre">wsgiorg.routing_args</span></tt></li>
+<li>Remove port from <tt class="docutils literal"><span class="pre">paste.request.construct_url</span></tt> if it&#8217;s the default
+port (e.g., port 80 for <tt class="docutils literal"><span class="pre">http</span></tt>).</li>
+<li><tt class="docutils literal"><span class="pre">paste.proxy</span></tt> works with headers with continuations in the
+response (i.e., a header that spans multiple lines).  Also, treat a
+missing Content-Length as 0, not unlimited (may have previously
+caused freeze ups for some kinds of requests).</li>
+<li><tt class="docutils literal"><span class="pre">StackedObjectProxy</span></tt> supports <tt class="docutils literal"><span class="pre">__call__</span></tt> (i.e., you can use
+<tt class="docutils literal"><span class="pre">StackedObjectProxy</span></tt> with callable objects).</li>
+<li>Fixed <tt class="docutils literal"><span class="pre">ProfileMiddleware</span></tt> not calling <tt class="docutils literal"><span class="pre">close()</span></tt> on consumed
+app_iters.</li>
+<li><tt class="docutils literal"><span class="pre">httpheaders.AcceptLanguage</span></tt> now won&#8217;t give an exception when
+there is a malformed parameter in the header.</li>
+<li>Fix <tt class="docutils literal"><span class="pre">paste.auth.form.auth_form</span></tt> Paste Deploy entry point.</li>
+<li>Added REST methods to <tt class="docutils literal"><span class="pre">paste.fixture.TestApp</span></tt>, so you can more
+easily do requests like PUT and DELETE.  From Anders Pearson.</li>
+<li>Added <tt class="docutils literal"><span class="pre">{{default</span> <span class="pre">var=default_value}}</span></tt> command to
+<tt class="docutils literal"><span class="pre">paste.util.template</span></tt>.  Make <tt class="docutils literal"><span class="pre">{{#</span> <span class="pre">comment}}</span></tt> work.</li>
+</ul>
+</div>
+<div class="section" id="id15">
+<h2><a class="toc-backref" href="#id51">1.3</a><a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>In <tt class="docutils literal"><span class="pre">paste.httpserver</span></tt> remove the reverse DNS lookup to set
+<tt class="docutils literal"><span class="pre">REMOTE_HOST</span></tt></li>
+<li>In <tt class="docutils literal"><span class="pre">paste.fileapp</span></tt>, if the client sends both If-None-Match and
+If-Modified-Since, prefer If-None-Match.  Make ETags include the
+size as well as last modified timestamp.  Make it possible to
+override how mimetypes are guessed.</li>
+<li><tt class="docutils literal"><span class="pre">HTTPException</span></tt> objects now have a <tt class="docutils literal"><span class="pre">exc.response(environ)</span></tt>
+method that returns a <tt class="docutils literal"><span class="pre">WSGIResponse</span></tt> object.</li>
+<li><tt class="docutils literal"><span class="pre">egg:Paste#watch_threads</span></tt> will show tracebacks of each thread
+under Python 2.5.</li>
+<li>Made <tt class="docutils literal"><span class="pre">paste.util.template</span></tt> trim whitespace around statements that
+are on their own line.</li>
+<li><tt class="docutils literal"><span class="pre">paste.fileapp.DataApp</span></tt> now accepts <tt class="docutils literal"><span class="pre">allowed_headers=[...]</span></tt> to
+specify the allowed headers.  By default only <tt class="docutils literal"><span class="pre">GET</span></tt> and <tt class="docutils literal"><span class="pre">HEAD</span></tt>
+are allowed.</li>
+<li>Added <tt class="docutils literal"><span class="pre">paste.util.import_string.try_import_module</span></tt>, which imports
+modules and catches <tt class="docutils literal"><span class="pre">ImportError</span></tt>, but only if it&#8217;s an error
+importing the specific module, not an uncaught <tt class="docutils literal"><span class="pre">ImportError</span></tt> in
+the module being imported.</li>
+</ul>
+</div>
+<div class="section" id="id16">
+<h2><a class="toc-backref" href="#id52">1.2.1</a><a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">paste.httpserver</span></tt> didn&#8217;t implement the <tt class="docutils literal"><span class="pre">readline</span></tt> that the
+<tt class="docutils literal"><span class="pre">cgi</span></tt> module wants (regression in 1.2).</li>
+</ul>
+</div>
+<div class="section" id="id17">
+<h2><a class="toc-backref" href="#id53">1.2</a><a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><strong>Backward incompatible change</strong>: <tt class="docutils literal"><span class="pre">paste.fileapp.FileApp</span></tt> properly
+supports request methods, including HEAD.  If you were subclassing
+<tt class="docutils literal"><span class="pre">FileApp</span></tt> or <tt class="docutils literal"><span class="pre">DataApp</span></tt> and overriding <tt class="docutils literal"><span class="pre">__call__()</span></tt> you may have
+to subclass <tt class="docutils literal"><span class="pre">get()</span></tt> instead.</li>
+<li>paste.httpheaders now parses the HTTP Accept-Language header and returns
+a list of languages the browser supports in the order it prefers them.</li>
+<li>paste.mimeparse module added that handles parsing HTTP Accept headers
+for quality and mime-types.</li>
+<li><tt class="docutils literal"><span class="pre">paste.request.construct_url</span></tt> was adding <tt class="docutils literal"><span class="pre">SERVER_PORT</span></tt> to
+<tt class="docutils literal"><span class="pre">HTTP_HOST</span></tt>; but <tt class="docutils literal"><span class="pre">HTTP_HOST</span></tt> (from the Host header) generally
+contains a port when necessary, and <tt class="docutils literal"><span class="pre">SERVER_PORT</span></tt> should only be
+used with <tt class="docutils literal"><span class="pre">SERVER_NAME</span></tt>.</li>
+<li>Added entry point for <tt class="docutils literal"><span class="pre">paste.registry.RegistryManager</span></tt>
+(<tt class="docutils literal"><span class="pre">egg:Paste#registry</span></tt>).</li>
+<li><tt class="docutils literal"><span class="pre">paste.request.HeaderDict</span></tt> fixed to know that <tt class="docutils literal"><span class="pre">Content-Length</span></tt>
+maps to <tt class="docutils literal"><span class="pre">CONTENT_LENGTH</span></tt>.</li>
+<li>Can use <tt class="docutils literal"><span class="pre">paste.urlparser.StaticURLParser</span></tt> with sub-instances other
+than <tt class="docutils literal"><span class="pre">paste.fileapp.FileApp</span></tt> (if you subclass and override
+<tt class="docutils literal"><span class="pre">make_app</span></tt>)</li>
+<li><tt class="docutils literal"><span class="pre">paste.fixture.TestApp.get(status=X)</span></tt> takes a list of allowed
+status codes for <tt class="docutils literal"><span class="pre">X</span></tt>.</li>
+<li>Added a small templating system for internal use (<tt class="docutils literal"><span class="pre">paste.util.template</span></tt>)</li>
+<li>Removed a bunch of long-deprecated modules (generally modules that
+have been moved to other names).</li>
+</ul>
+<div class="section" id="in-paste-wsgiwrappers">
+<h3><a class="toc-backref" href="#id54">In paste.wsgiwrappers</a><a class="headerlink" href="#in-paste-wsgiwrappers" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p class="first"><tt class="docutils literal"><span class="pre">paste.wsgiwrappers.WSGIRequest</span></tt> has match_accept() function to screen
+incoming HTPT Accept values against a list of mime-types.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">paste.wsgiwrappers.WSGIRequest.defaults</span></tt> now accepts a new key:</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">language</span></tt>:</dt>
+<dd><p class="first last">The i18n language that should be used as the fallback should
+a translation not occur in a language file. See docs for
+details.</p>
+</dd>
+</dl>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">paste.wsgiwrappers.WSGIRequest</span></tt> can now optionally decode form
+parameters to unicode when it has a <tt class="docutils literal"><span class="pre">charset</span></tt> value set.</p>
+</li>
+<li><p class="first">Deprecated the <tt class="docutils literal"><span class="pre">paste.wsgiwrappers.settings</span></tt> StackedObjectProxy
+dictionary for <tt class="docutils literal"><span class="pre">paste.wsgiwrappers.WSGIResponse.defaults</span></tt>.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="in-paste-httpserver">
+<h3><a class="toc-backref" href="#id55">In paste.httpserver</a><a class="headerlink" href="#in-paste-httpserver" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Regression in 1.1 fixed, where Paste&#8217;s HTTP server would drop
+trailing slashes from paths.</li>
+<li><tt class="docutils literal"><span class="pre">paste.httpserver</span></tt> now puts a key in the environment when using a
+thread pool that allows you to track the thread pool and see any
+wedged threads.  <tt class="docutils literal"><span class="pre">egg:Paste#watch_threads</span></tt> is an application that
+can display this information.</li>
+<li><tt class="docutils literal"><span class="pre">paste.httpserver</span></tt> now accepts all request methods, not just
+<tt class="docutils literal"><span class="pre">GET</span></tt>, <tt class="docutils literal"><span class="pre">PUT</span></tt>, etc.  (Methods like <tt class="docutils literal"><span class="pre">MKCOL</span></tt> were previously
+rejected.)</li>
+<li><tt class="docutils literal"><span class="pre">paste.httpserver</span></tt> has a <tt class="docutils literal"><span class="pre">wsgi.input</span></tt> that now does not block if
+you try to read past the end (it is limited to returning the number
+of bytes given in <tt class="docutils literal"><span class="pre">Content-Length</span></tt>).  Double-reading from
+<tt class="docutils literal"><span class="pre">wsgi.input</span></tt> won&#8217;t give you the same data, but it won&#8217;t cause
+blocking.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="id18">
+<h2><a class="toc-backref" href="#id56">1.1.1</a><a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Fixed major issue with serving static files on Windows (a regression
+in Paste 1.1 where most static files would return 404 Not Found).</li>
+<li>Fixed <tt class="docutils literal"><span class="pre">parse_dict_querystring</span></tt> returning empty dicts instead of
+<tt class="docutils literal"><span class="pre">MultiDict</span></tt>s.</li>
+<li>Added <tt class="docutils literal"><span class="pre">paste.config</span></tt>, a rewrite of <tt class="docutils literal"><span class="pre">paste.deploy.config</span></tt> using
+<tt class="docutils literal"><span class="pre">paste.registry</span></tt>. This version of <tt class="docutils literal"><span class="pre">ConfigMiddleware</span></tt> will
+enable use of <tt class="docutils literal"><span class="pre">paste.config.CONFIG</span></tt> within the <tt class="docutils literal"><span class="pre">EvalException</span></tt>
+interactive debugger.</li>
+<li>Fixed problem where <tt class="docutils literal"><span class="pre">paste.recursive</span></tt> would leave <tt class="docutils literal"><span class="pre">wsgi.input</span></tt>
+and <tt class="docutils literal"><span class="pre">CONTENT_LENGTH</span></tt> set for recursive requests.</li>
+<li>Changed the static file servers to give 404 Not Found responses when
+you have extra parts after a static file, instead of 400 Bad
+Request (like when you request <tt class="docutils literal"><span class="pre">/file.html/extra/path</span></tt>)</li>
+</ul>
+</div>
+<div class="section" id="id19">
+<h2><a class="toc-backref" href="#id57">1.1</a><a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Security fix for <tt class="docutils literal"><span class="pre">paste.urlparser.StaticURLParser</span></tt>.  The problem
+allowed escaping the root (and reading files) when used with
+<tt class="docutils literal"><span class="pre">paste.httpserver</span></tt> (this does not effect other servers, and does
+not apply when proxying requests from Apache to
+<tt class="docutils literal"><span class="pre">paste.httpserver</span></tt>).</li>
+<li><tt class="docutils literal"><span class="pre">paste.httpserver</span></tt> and <tt class="docutils literal"><span class="pre">paste.fixture.TestApp</span></tt> url-unquote
+<tt class="docutils literal"><span class="pre">SCRIPT_NAME</span></tt> and <tt class="docutils literal"><span class="pre">PATH_INFO</span></tt>, as specified in the CGI spec.
+Thanks to Jon Nelson for pointing out both these issues.</li>
+<li><tt class="docutils literal"><span class="pre">paste.registry</span></tt> now works within the <tt class="docutils literal"><span class="pre">EvalException</span></tt>
+interactive debugger.</li>
+<li>Fixed <tt class="docutils literal"><span class="pre">paste.auth.open_id</span></tt> failures not returning a correct
+response.</li>
+<li>Changed <tt class="docutils literal"><span class="pre">paste.httpexceptions.HTTPUnauthorized</span></tt> so that the
+<tt class="docutils literal"><span class="pre">WWW-Authenticate</span></tt> header is not required.  401 responses don&#8217;t
+<em>have</em> to have that header.</li>
+<li>In <tt class="docutils literal"><span class="pre">paste.fixture.TestApp</span></tt>: <tt class="docutils literal"><span class="pre">&lt;form&gt;</span></tt> tags that have to
+<tt class="docutils literal"><span class="pre">action</span></tt> will preserve the existing query string.  (Generally
+relative links that are completely empty should but were not
+preserving the query string)</li>
+<li>Made <tt class="docutils literal"><span class="pre">paste.*</span></tt> compatible with <a class="reference external" href="http://www.py2exe.org/">py2exe</a>
+by adding a <tt class="docutils literal"><span class="pre">modulefinder</span></tt> call in <tt class="docutils literal"><span class="pre">__init__.py</span></tt></li>
+<li>The <tt class="docutils literal"><span class="pre">paste.gzipper</span></tt> gzipping middleware wasn&#8217;t changing the
+Content-Length header properly; thanks to Brad Clements for the fix.</li>
+<li>Fixed <tt class="docutils literal"><span class="pre">paste.proxy</span></tt> to not use anything based on the dict form of
+<tt class="docutils literal"><span class="pre">httplib..HTTPMessage</span></tt>.  This form folds headers together in a way
+that breaks <tt class="docutils literal"><span class="pre">Set-Cookie</span></tt> headers (two <tt class="docutils literal"><span class="pre">Set-Cookie</span></tt> headers would
+be merged into one).</li>
+<li><tt class="docutils literal"><span class="pre">paste.request.parse_formvars</span></tt> didn&#8217;t accept parameters in
+<tt class="docutils literal"><span class="pre">CONTENT_TYPE</span></tt>.  <tt class="docutils literal"><span class="pre">prototype.js</span></tt> sets a <tt class="docutils literal"><span class="pre">charset</span></tt> parameter,
+which caused a problem.</li>
+<li>Added a <tt class="docutils literal"><span class="pre">__traceback_decorator__</span></tt> magic local variable, to allow
+arbitrary manipulation of the output of
+<tt class="docutils literal"><span class="pre">paste.exceptions.collector</span></tt> before formatting.</li>
+<li>Added unicorn power to <tt class="docutils literal"><span class="pre">paste.pony</span></tt> (from Chad Whitacre)</li>
+<li>For <tt class="docutils literal"><span class="pre">paste.httpserver</span></tt> SSL support: add support loading an
+explicit certificate context, and using <tt class="docutils literal"><span class="pre">ssl_pem='*'</span></tt> create an
+unsigned SSL certificate (from Jason Kirtland).</li>
+<li>Fix some cases where <tt class="docutils literal"><span class="pre">paste.httpserver</span></tt> can have an orphaned
+thread pool (causing the process to not shut down properly).  Patch
+from jek.</li>
+</ul>
+</div>
+<div class="section" id="id20">
+<h2><a class="toc-backref" href="#id58">1.0</a><a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Fixed <tt class="docutils literal"><span class="pre">parsed_formvars</span></tt> potentially locking up on wsgi.input
+after modification of <tt class="docutils literal"><span class="pre">QUERY_STRING</span></tt>.</li>
+<li>Fixed problem where <tt class="docutils literal"><span class="pre">paste.exceptions.errormiddleware</span></tt> didn&#8217;t
+expose the <tt class="docutils literal"><span class="pre">.close()</span></tt> method of the app_iter that it wraps (to
+catch exceptions).  This is a problem if the server about the
+errormiddleware aborts the request; it should then call
+<tt class="docutils literal"><span class="pre">.close()</span></tt>, but won&#8217;t necessarily exhaust the iterator to do so.</li>
+<li>Added entry point for <tt class="docutils literal"><span class="pre">paste.translogger</span></tt>
+(<tt class="docutils literal"><span class="pre">egg:Paste#translogger</span></tt>)</li>
+<li>Fixed some cases where long data (e.g., a file upload) would show up
+in the error report, creating a very very large report.  Also, put
+in a monkeypatch for the <tt class="docutils literal"><span class="pre">cgi</span></tt> module so that
+<tt class="docutils literal"><span class="pre">repr(uploaded_field)</span></tt> won&#8217;t load the entire field into memory
+(from its temporary file location).</li>
+<li>Added a <tt class="docutils literal"><span class="pre">force_host</span></tt> option to <tt class="docutils literal"><span class="pre">paste.proxy.TransparentProxy</span></tt>,
+which will force all incoming requests to the same host, but leave
+the <tt class="docutils literal"><span class="pre">Host</span></tt> header intact.</li>
+<li>Added automatic cleanup of old sessions for <tt class="docutils literal"><span class="pre">paste.session</span></tt>, from
+Amir Salihefendic.</li>
+<li>Quote the function name in tracebacks in the exception formatter;
+Genshi has function names that use <tt class="docutils literal"><span class="pre">&lt;&gt;</span></tt>.</li>
+</ul>
+</div>
+<div class="section" id="id21">
+<h2><a class="toc-backref" href="#id59">0.9.9</a><a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Fixed <tt class="docutils literal"><span class="pre">paste.response.HeaderDict</span></tt> <tt class="docutils literal"><span class="pre">get</span></tt> and <tt class="docutils literal"><span class="pre">setdefault</span></tt>
+methods to be case insensitive</li>
+<li>Fix use of <tt class="docutils literal"><span class="pre">TestApp().post(params={'key':</span> <span class="pre">['list</span> <span class="pre">of',</span>
+<span class="pre">'values']})</span></tt> as reported by Syver Enstad.</li>
+<li><tt class="docutils literal"><span class="pre">paste.fileapp.DataApp</span></tt> is now directly usable (was previously
+only usable as an abstract base class).</li>
+</ul>
+</div>
+<div class="section" id="id22">
+<h2><a class="toc-backref" href="#id60">0.9.8</a><a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Fixed <tt class="docutils literal"><span class="pre">wsgiwrappers.WSGIResponse.delete_cookie</span></tt>. It also now takes
+optional path and domain arguments</li>
+<li><tt class="docutils literal"><span class="pre">wsgiwrappers.WSGIResponse</span></tt> now handles generator/iterator content
+more cleanly, and properly encodes unicode content according to its
+specified charset</li>
+<li>Fixed <tt class="docutils literal"><span class="pre">wsgiwrappers.WSGIResponse</span></tt> mishandling multiple headers of
+the same name</li>
+<li>Added a Paste Deploy entry point for <tt class="docutils literal"><span class="pre">paste.auth.cookie</span></tt></li>
+<li>Moved Paste Deploy dependencies out of top-level modules and into
+Paste-Deploy-specific entry point functions.  This should make Paste
+more-or-less Paste Deploy independent.  <tt class="docutils literal"><span class="pre">paste.urlparser</span></tt> and
+<tt class="docutils literal"><span class="pre">paste.exceptions.errormiddleware</span></tt> still have some leftover bits.</li>
+<li>Added another redirector type to <tt class="docutils literal"><span class="pre">paste.recursive</span></tt>,
+<tt class="docutils literal"><span class="pre">environ['paste.recursive.include_app_iter']</span></tt> which gives access
+to the original app_iter.</li>
+<li>Bug with <tt class="docutils literal"><span class="pre">wsgilib.catch_errors</span></tt> and app_iters with no <tt class="docutils literal"><span class="pre">close()</span></tt>
+method.</li>
+<li>Long words in tracebacks weren&#8217;t being wrapped correctly at all.
+Also, large data would cause the wrapping routine to give a
+recursion error.  Now large data is truncated (at 1000 characters),
+and recursion won&#8217;t be a problem.  Also, wrapping shouldn&#8217;t lose
+characters.</li>
+<li>Better exception if you try to put a non-str into environ when using
+<tt class="docutils literal"><span class="pre">paste.auth.cookie</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">paste.exceptions.collector</span></tt> produces an
+<tt class="docutils literal"><span class="pre">exc_data.exception_type</span></tt> that is a class, not a string.  This
+helps it get formatted better in Python 2.5.</li>
+<li>All the tests pass on Python 2.5!</li>
+<li>Added <tt class="docutils literal"><span class="pre">paste.proxy.TransparentProxy</span></tt>, which just sends the request
+described in the WSGI environ on without any modification.  More
+useful for WSGI clients than servers, it effectively allows any
+WSGI-based request mechanism to act like an httplib-based request
+mechanism.</li>
+<li>Added a <tt class="docutils literal"><span class="pre">cache_max_age</span></tt> argument to
+<tt class="docutils literal"><span class="pre">paste.urlparser.StaticURLParser</span></tt>, which allows you to encourage
+the caching of static files.  Patch from Brad Clements.</li>
+<li>Added <tt class="docutils literal"><span class="pre">suppress_http_headers</span></tt> to <tt class="docutils literal"><span class="pre">paste.proxy.Proxy</span></tt>, which will
+filter out HTTP headers from the request before passing it on.
+Patch from Brad Clements.</li>
+</ul>
+</div>
+<div class="section" id="id23">
+<h2><a class="toc-backref" href="#id61">0.9.7</a><a class="headerlink" href="#id23" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>The <tt class="docutils literal"><span class="pre">EvalException</span></tt> &#8216;full traceback&#8217; button is now only displayed
+when the full traceback differs from the regular (includes hidden
+frames).</li>
+<li>Fixed <tt class="docutils literal"><span class="pre">EvalException</span></tt> returning a Content-type of &#8216;text-html&#8217;
+instead of &#8216;text/html&#8217; in some cases.</li>
+</ul>
+</div>
+<div class="section" id="id24">
+<h2><a class="toc-backref" href="#id62">0.9.6</a><a class="headerlink" href="#id24" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Renamed the <tt class="docutils literal"><span class="pre">paste.util.multidict.multidict</span></tt> class to
+<tt class="docutils literal"><span class="pre">paste.util.multidict.MultiDict</span></tt></li>
+</ul>
+</div>
+<div class="section" id="id25">
+<h2><a class="toc-backref" href="#id63">0.9.5</a><a class="headerlink" href="#id25" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p class="first">Fixed a security vulnerability in <tt class="docutils literal"><span class="pre">paste.urlparser</span></tt>&#8216;s StaticURLParser
+and PkgResourcesParser where, with some servers, you could escape
+the document root.</p>
+</li>
+<li><p class="first">Significantly improved <tt class="docutils literal"><span class="pre">paste.httpserver</span></tt>&#8216;s (egg:Paste#http)
+performance. It now uses a thread pool: previously it created a new
+thread for every request. To revert back to the old, slower behavior,
+set:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">use_threadpool</span> <span class="o">=</span> <span class="n">false</span>
+</pre></div>
+</div>
+<p>in the [server:main] section of the config file.</p>
+</li>
+<li><p class="first">More control of where the output of <tt class="docutils literal"><span class="pre">paste.debug.prints</span></tt> goes.</p>
+</li>
+<li><p class="first">Added a warning to <tt class="docutils literal"><span class="pre">paste.wsgilib.add_close</span></tt> if the upstream
+app_iter consumer doesn&#8217;t call the <tt class="docutils literal"><span class="pre">app_iter.close()</span></tt> method.</p>
+</li>
+<li><p class="first">Fixed <tt class="docutils literal"><span class="pre">testapp.post(params={})</span></tt></p>
+</li>
+<li><p class="first">Fixed <tt class="docutils literal"><span class="pre">paste.translogger.TransLogger</span></tt> to log to the Apache combined
+log format as advertised.</p>
+</li>
+<li><p class="first">Fixed <tt class="docutils literal"><span class="pre">paste.urlparser</span></tt> classes to handle quoted characters (e.g.
+%20) in URL paths.</p>
+</li>
+<li><p class="first">Changed <tt class="docutils literal"><span class="pre">paste.session</span></tt> to allow manipulating a session for the
+first time after <tt class="docutils literal"><span class="pre">start_response</span></tt> is called.</p>
+</li>
+<li><p class="first">Added <tt class="docutils literal"><span class="pre">paste.wsgilib.add_start_close</span></tt> which calls a function just
+before returning the first chunk of the app_iter.</p>
+</li>
+<li><p class="first">Changed <tt class="docutils literal"><span class="pre">paste.urlmap</span></tt> so that it matches domain-specific mappings
+before domain-neutral mappings.</p>
+</li>
+<li><p class="first">Fixed IE 6 potentially receiving the following <tt class="docutils literal"><span class="pre">&quot;400</span> <span class="pre">Bad</span> <span class="pre">Request&quot;</span></tt>
+error on file downloads:</p>
+<div class="highlight-python"><pre>Please check your system clock.
+According to this server, the time provided in the
+If-Modified-Since header is in the future.</pre>
+</div>
+</li>
+<li><p class="first">Added a &#8216;no&#8217; keyword argument to <tt class="docutils literal"><span class="pre">TestResponse.mustcontain</span></tt>, so
+you can assert that a response does contain some strings at the same
+time that you assert that a response <em>does not</em> contain other
+strings, like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">res</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">)</span>
+<span class="n">res</span><span class="o">.</span><span class="n">mustcontain</span><span class="p">(</span><span class="s">&#39;this must be there&#39;</span><span class="p">,</span>
+                <span class="n">no</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;error&#39;</span><span class="p">,</span> <span class="s">&#39;unexpected&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Fixed <tt class="docutils literal"><span class="pre">fileapp.FileApp</span></tt> to pay attention to the <tt class="docutils literal"><span class="pre">If-None-Match</span></tt>
+header, which does ETag matching; before only <tt class="docutils literal"><span class="pre">If-Modified-Since</span></tt>
+was supported, even though an <tt class="docutils literal"><span class="pre">ETag</span></tt> header was being sent; in
+particular Firefox would then only send <tt class="docutils literal"><span class="pre">If-None-Match</span></tt> and so
+conditional requests never worked.</p>
+</li>
+<li><p class="first">Changed usage of <tt class="docutils literal"><span class="pre">paste.request.MultiDict</span></tt> to
+<tt class="docutils literal"><span class="pre">paste.util.multidict</span></tt>, particularly in <tt class="docutils literal"><span class="pre">paste.wsgiwrappers</span></tt>
+where <tt class="docutils literal"><span class="pre">request.GET</span></tt> returns a new style of dictionary interface.</p>
+</li>
+<li><p class="first">Be more careful in <tt class="docutils literal"><span class="pre">paste.request.parse_formvars</span></tt> not to let
+the <tt class="docutils literal"><span class="pre">cgi</span></tt> module read from <tt class="docutils literal"><span class="pre">wsgi.input</span></tt> when there are no
+parsable variables in the input (based on <tt class="docutils literal"><span class="pre">CONTENT_TYPE</span></tt>).</p>
+</li>
+</ul>
+</div>
+<div class="section" id="id26">
+<h2><a class="toc-backref" href="#id64">0.9.4</a><a class="headerlink" href="#id26" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>This released was lost in a tragic clerical accident.</li>
+</ul>
+</div>
+<div class="section" id="id27">
+<h2><a class="toc-backref" href="#id65">0.9.3</a><a class="headerlink" href="#id27" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>0.9.2 Included a version of MochiKit that was no longer compatible with
+evalexception; 0.9.3 reverts to a previous version.</li>
+<li>Change wsgi.run_once=False for <tt class="docutils literal"><span class="pre">paste.httpserver</span></tt></li>
+<li>Added entry points for debug apps</li>
+</ul>
+</div>
+<div class="section" id="id28">
+<h2><a class="toc-backref" href="#id66">0.9.2</a><a class="headerlink" href="#id28" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Fix in paste.urlmap when connecting with host:port.</li>
+<li>Added <tt class="docutils literal"><span class="pre">/_debug/summary</span></tt> to evalexception, which gives a
+JSON-formatted list of all the exceptions in memory.</li>
+</ul>
+</div>
+<div class="section" id="id29">
+<h2><a class="toc-backref" href="#id67">0.9.1</a><a class="headerlink" href="#id29" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>A fix for paste.errordocument, when doing an internal redirect from
+a POST request (the request is rewritten as a GET request)</li>
+</ul>
+</div>
+<div class="section" id="id30">
+<h2><a class="toc-backref" href="#id68">0.9</a><a class="headerlink" href="#id30" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Added <a class="reference external" href="class-paste.request.WSGIRequest.html">paste.request.WSGIRequest</a>, a request object that
+wraps the WSGI environment.</li>
+<li>Added <a class="reference external" href="module-paste.registry.html">paste.registry</a>, which is
+middleware for registering threadlocal objects in a request.</li>
+<li>Avoid annoying warning from paste.recursive</li>
+<li><tt class="docutils literal"><span class="pre">paste.httpserver</span></tt> now removes HTTPServer&#8217;s transaction logging,
+which was doing a reverse DNS lookup.</li>
+<li>Added <tt class="docutils literal"><span class="pre">has_session</span></tt> to <tt class="docutils literal"><span class="pre">paste.session</span></tt></li>
+<li>Allow for conditional <tt class="docutils literal"><span class="pre">paste.wsgilib.intercept_output</span></tt> which
+should be slightly faster (and streamable) compared to doing the
+condition manually.</li>
+<li>Added entry point for <a class="reference external" href="module-paste.proxy.html">paste.proxy</a>, plus
+improvements from Brad Clements (support path in target, filter
+request methods)</li>
+<li>Added <a class="reference external" href="module-paste.pony.html">paste.pony</a> so pony power can be
+added to any WSGI application.</li>
+<li>Added port matching to <tt class="docutils literal"><span class="pre">paste.urlmap</span></tt>.</li>
+</ul>
+</div>
+<div class="section" id="id31">
+<h2><a class="toc-backref" href="#id69">0.5</a><a class="headerlink" href="#id31" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Added <a class="reference external" href="module-paste.auth.auth_tkt.html">paste.auth.auth_tkt</a></li>
+<li>Added <a class="reference external" href="module-paste.auth.grantip.html">paste.auth.grantip</a></li>
+</ul>
+</div>
+<div class="section" id="id32">
+<h2><a class="toc-backref" href="#id70">0.4.1</a><a class="headerlink" href="#id32" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Some bug fixes to the <a class="reference external" href="module-paste.httpserver.html">built-in HTTP server</a>.</li>
+<li>Experimental <a class="reference external" href="module-paste.progress.html">paste.progress</a>
+middleware for tracking upload progress</li>
+<li>Some tweaking of how <a class="reference external" href="module-paste.reload.html">paste.reload</a>
+works, especially with respect to shutdown.</li>
+</ul>
+</div>
+<div class="section" id="id33">
+<h2><a class="toc-backref" href="#id71">0.4</a><a class="headerlink" href="#id33" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Fixed up paste documentation (especially for new packages/modules)</li>
+<li>Added <a class="reference external" href="module-paste.auth.html">paste.auth</a> package for authentication
+related WSGI middle-ware components:<ul>
+<li><tt class="docutils literal"><span class="pre">basic</span></tt> and <tt class="docutils literal"><span class="pre">digest</span></tt> HTTP authentication as described by RFC 2617</li>
+<li>support for Yale&#8217;s Central Authentication System (<tt class="docutils literal"><span class="pre">cas</span></tt>)</li>
+<li><tt class="docutils literal"><span class="pre">open_id</span></tt> supports single sign-on originally developed for
+LiveJournal (see <a class="reference external" href="http://openid.net">http://openid.net</a>)</li>
+<li><tt class="docutils literal"><span class="pre">cookie</span></tt> digitally signs cookies to record the current
+authenticated user (<tt class="docutils literal"><span class="pre">REMOTE_USER</span></tt>), session identifier
+(<tt class="docutils literal"><span class="pre">REMOTE_SESSION</span></tt>), and other WSGI entries in the <tt class="docutils literal"><span class="pre">environ</span></tt>.</li>
+<li>a <tt class="docutils literal"><span class="pre">form</span></tt> module (to be used with <tt class="docutils literal"><span class="pre">cookie</span></tt> or an equivalent)
+provides a simple HTML based form authentication.</li>
+<li>the <tt class="docutils literal"><span class="pre">multi</span></tt> module is an <em>experimental</em> mechanism for choosing
+an authentication mechanism based on the WSGI <tt class="docutils literal"><span class="pre">environ</span></tt></li>
+</ul>
+</li>
+<li>Added <a class="reference external" href="module-paste.httpserver.html">paste.httpserver</a> module which
+provides a very simple WSGI server built upon python&#8217;s
+<tt class="docutils literal"><span class="pre">BaseHTTPServer</span></tt>; this server has support for several features:<ul>
+<li>support for SSL connections via OpenSSL</li>
+<li>support for HTTP/1.1 <tt class="docutils literal"><span class="pre">100</span> <span class="pre">Continue</span></tt> messages as required by the
+WSGI specification (many HTTP server implementations don&#8217;t do this)</li>
+<li>implemented as a Mix-In so that it can be used with other
+more enchanted versions of <tt class="docutils literal"><span class="pre">BaseHTTPServer</span></tt></li>
+<li>support for &#8216;Keep-Alive&#8217; (standard in HTTP/1.1) by either providing
+a content-length or closing a connection if one is not available</li>
+</ul>
+</li>
+<li>Improved the <a class="reference external" href="module-paste.httpexceptions.html">paste.httpexceptions</a>
+module:<ul>
+<li>added missing exception objects, and better descriptions</li>
+<li>fixed several bugs in how exceptions are caught and propagated</li>
+<li>usage as a <tt class="docutils literal"><span class="pre">wsgi_application()</span></tt> enables exceptions to be
+returned without throwing or catching the error</li>
+<li>support for plain/text messages for text-only clients such as
+curl, python&#8217;s urllib, or Microsoft Excel</li>
+<li>allows customization of the HTML template for higher-level frameworks</li>
+</ul>
+</li>
+<li>Added <a class="reference external" href="module-paste.httpheaders.html">paste.httpheaders</a> module
+to provide a uniform mechanism to access/update standard HTTP headers
+in a WSGI <tt class="docutils literal"><span class="pre">environ</span></tt> and <tt class="docutils literal"><span class="pre">response_headers</span></tt> collection; it includes
+specific support for:<ul>
+<li>providing &#8220;common&#8221; header names and sorting them as suggested
+by RFC 2616</li>
+<li>validated support for <tt class="docutils literal"><span class="pre">Cache-Control</span></tt> header construction</li>
+<li>validated support for <tt class="docutils literal"><span class="pre">Content-Disposition</span></tt> header construction</li>
+<li>parsing of <tt class="docutils literal"><span class="pre">If-Modified-Since</span></tt> and other date oriented headers</li>
+<li>parsing of Range header for partial-content delivery</li>
+<li>composition of HTTP/1.1 digest <tt class="docutils literal"><span class="pre">Authorization</span></tt> responses</li>
+</ul>
+</li>
+<li>Improved <a class="reference external" href="module-paste.fileapp.html">paste.fileapp</a> to support:<ul>
+<li>static in-memory resources</li>
+<li>incremental downloading of files from disk</li>
+<li>responding to &#8216;Range&#8217; requests to handle partial downloads</li>
+<li>allowing cache settings to be easily provided; including
+support for HTTP/1.0 &#8216;Expires&#8217; and HTTP/1.1 &#8216;Cache-Control&#8217;</li>
+</ul>
+</li>
+<li>Added an <em>experimental</em> <a class="reference external" href="module-paste.transaction.html">paste.transaction</a> module for handling
+commit/rollback of standard DBAPI database connections</li>
+<li>Added a <a class="reference external" href="module-paste.util.datetimeutil.html">paste.util.datetimeutil</a>
+module for parsing standard date/time user-generated text values</li>
+<li>Added a <a class="reference external" href="module-paste.debug.html">debug</a> package, which includes:<ul>
+<li>previous top-level modules <tt class="docutils literal"><span class="pre">prints</span></tt>, <tt class="docutils literal"><span class="pre">profile</span></tt>,
+<tt class="docutils literal"><span class="pre">wdg_validate</span></tt> and <tt class="docutils literal"><span class="pre">doctest_webapp</span></tt></li>
+<li>a <tt class="docutils literal"><span class="pre">testserver</span></tt> module suitable to test HTTP socket
+connections via <tt class="docutils literal"><span class="pre">py.test</span></tt></li>
+</ul>
+</li>
+<li>Re-factored <a class="reference external" href="module-paste.wsgilib.html">paste.wsgilib</a> into
+several other modules:<ul>
+<li>functions regarding header manipulation moved to
+<a class="reference external" href="module-paste.response.html">paste.response</a></li>
+<li>functions regarding cookies and arguments moved to
+<a class="reference external" href="module-paste.request.html">paste.request</a></li>
+</ul>
+</li>
+<li>Significant improvements to <tt class="docutils literal"><span class="pre">wsgiutils.wsgilib</span></tt> module:<ul>
+<li>added a <tt class="docutils literal"><span class="pre">dump_environ</span></tt> application to help debugging</li>
+<li>fixes to <tt class="docutils literal"><span class="pre">raw_interactive</span></tt> to comply with WSGI specifications</li>
+<li><tt class="docutils literal"><span class="pre">raw_interactive</span></tt> now logs all 5xx exceptions and sets HTTP_HOST</li>
+</ul>
+</li>
+<li>Added an argument <tt class="docutils literal"><span class="pre">no_profile</span></tt> to
+<a class="reference external" href="module-paste.debug.profile.html#profile_decorator">paste.debug.profile.profile_decorator</a>; if that
+option is false, then don&#8217;t profile the function at all.</li>
+<li>Changed <a class="reference external" href="module-paste.lint.html">paste.lint</a> to check that the
+status contains a message (e.g., <tt class="docutils literal"><span class="pre">&quot;404</span> <span class="pre">Not</span> <span class="pre">Found&quot;</span></tt> instead of just
+<tt class="docutils literal"><span class="pre">&quot;404&quot;</span></tt>).  Check that environmental variables
+<tt class="docutils literal"><span class="pre">HTTP_CONTENT_TYPE</span></tt> and <tt class="docutils literal"><span class="pre">HTTP_CONTENT_LENGTH</span></tt> are no present.
+Made unknown <tt class="docutils literal"><span class="pre">REQUEST_METHOD</span></tt> a warning (not an error).</li>
+<li>Added parameter <tt class="docutils literal"><span class="pre">cwd</span></tt> to <a class="reference external" href="class-paste.fixture.TestFileEnvironment.html#run">TestFileEnvironment.run</a></li>
+<li><a class="reference external" href="class-paste.fixture.TestApp.html">paste.fixture.TestApp</a>:<ul>
+<li>Form filling code (use <tt class="docutils literal"><span class="pre">response.forms[0]</span></tt> to get a <a class="reference external" href="class-paste.fixture.Form.html">form object</a>)</li>
+<li>Added <a class="reference external" href="class-paste.fixture.TestResponse.html#click">click method</a>.</li>
+<li>Better attribute errors.</li>
+<li>You can force set hidden fields using
+<tt class="docutils literal"><span class="pre">form.fields[name].force_value(value)</span></tt> (normally setting the
+value of a hidden field is an error).</li>
+<li>Frameworks can now add custom attributes to the response object.</li>
+</ul>
+</li>
+<li><tt class="docutils literal"><span class="pre">paste.wsgilib.capture_output</span></tt> is deprecated in favor of
+<a class="reference external" href="module-paste.wsgilib.html#intercept_output">paste.wsgilib.intercept_output</a></li>
+<li>Remove use of exceptions in <a class="reference external" href="class-paste.cascade.Cascade.html">paste.cascade.Cascade</a>, which causes weird effects in
+some cases.  Generally we aren&#8217;t using exceptions internally now,
+only return status codes.  Also in cascade, be careful to keep
+cascaded requests from sharing the same environment.</li>
+<li><tt class="docutils literal"><span class="pre">paste.wsgilib.error_response</span></tt> is deprecated
+(<a class="reference external" href="module-paste.httpexceptions.html">paste.httpexceptions</a> replaces
+this with exception&#8217;s <tt class="docutils literal"><span class="pre">.wsgi_application</span></tt> method).</li>
+<li>Moved <tt class="docutils literal"><span class="pre">paste.login</span></tt> to the attic, since <a class="reference external" href="module-paste.auth.html">paste.auth</a> pretty much replaces it.</li>
+<li><a class="reference external" href="module-paste.urlparser.html">paste.urlparser</a> improvements:<ul>
+<li>Added an application <a class="reference external" href="class-paste.urlparser.StaticURLParser.html">urlparser.StaticURLParser</a> for serving static
+files.</li>
+<li>Added an application <a class="reference external" href="class-paste.urlparser.PkgResourcesParser.html">urlparser.PkgResourcesParser</a> for serving static
+files found with <tt class="docutils literal"><span class="pre">pkg_resources</span></tt> (e.g., out of zipped Eggs).</li>
+<li>Be less picky about ambiguous filenames when using <a class="reference external" href="class-paste.urlparser.URLParser.html">URLParser</a>; if an exact file match
+exists, use that.  (<tt class="docutils literal"><span class="pre">file.gif.bak</span></tt> would cause a request for
+<tt class="docutils literal"><span class="pre">file.gif</span></tt> to be ambiguous before)</li>
+<li>Now looks for a <tt class="docutils literal"><span class="pre">.wsgi_application</span></tt> attribute when serving
+Python files/modules, as a general hook for returning a WSGI
+application version of an object.</li>
+</ul>
+</li>
+<li>The <a class="reference external" href="class-paste.exceptions.errormiddleware.ErrorMiddleware.html">ErrorMiddleware</a>:<ul>
+<li>Returns trimmed-down exceptions if there is a <tt class="docutils literal"><span class="pre">_</span></tt> GET variable
+in the request (which is meant to signal an XMLHttpRequest).
+Exceptions displayed in this context are best when they are smaller
+and easier to display.</li>
+<li>Includes a text version of the traceback, for easier
+copy-and-paste.</li>
+<li>Avoid printing exceptions to <tt class="docutils literal"><span class="pre">wsgi.errors</span></tt> if they are already
+displayed elsewhere (at least by default).</li>
+<li>Highlight Python code.</li>
+</ul>
+</li>
+<li>Use <tt class="docutils literal"><span class="pre">pkg_resources.declare_namespace</span></tt> so that there are less
+problems about confusing the <tt class="docutils literal"><span class="pre">paste</span></tt> package that is provided by
+Paste, Paste Script, Paste Deploy, and Paste WebKit.  Before you
+could get one of these at random if you didn&#8217;t use
+<tt class="docutils literal"><span class="pre">pkg_resources.require</span></tt> first.</li>
+<li>Cleaned up use of <tt class="docutils literal"><span class="pre">exc_info</span></tt> argument in <tt class="docutils literal"><span class="pre">start_response</span></tt> calls
+(both accepting and producing), in a variety of places.</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="http://pythonpaste.org/" class="invisible-link">Python Paste</a></h3>
+
+<ul>
+<li><a href="http://trac.pythonpaste.org">Issue tracker</a></li>
+<li><a href="http://pythonpaste.org/">Paste core</a></li>
+<li><a href="http://pythonpaste.org/webob/">WebOb</a></li>
+<li><a href="http://pythonpaste.org/deploy/">Paste Deploy</a></li>
+<li><a href="http://pythonpaste.org/script/">Paste Script</a></li>
+<li><a href="http://pythonpaste.org/webtest/">WebTest</a></li>
+<li><a href="http://pythonpaste.org/scripttest/">ScriptType</a></li>
+<li><a href="http://pythonpaste.org/initools/">INITools</a></li>
+<li><a href="http://pythonpaste.org/tempita/">Tempita</a></li>
+<li><a href="http://pythonpaste.org/waitforit/">WaitForIt</a></li>
+<li><a href="http://pythonpaste.org/wphp/">WPHP</a></li>
+<li><a href="http://pythonpaste.org/wsgifilter/">WSGIFilter</a></li>
+<li><a href="http://pythonpaste.org/wsgiproxy/">WSGIProxy</a></li>
+</ul>
+
+
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">News</a><ul>
+<li><a class="reference internal" href="#id1">1.7.5</a></li>
+<li><a class="reference internal" href="#id2">1.7.4</a></li>
+<li><a class="reference internal" href="#id3">1.7.3.1</a></li>
+<li><a class="reference internal" href="#id4">1.7.3</a></li>
+<li><a class="reference internal" href="#id5">1.7.2</a></li>
+<li><a class="reference internal" href="#id6">1.7.1</a></li>
+<li><a class="reference internal" href="#id7">1.7</a></li>
+<li><a class="reference internal" href="#id8">1.6.1</a></li>
+<li><a class="reference internal" href="#id9">1.6</a></li>
+<li><a class="reference internal" href="#id10">1.5.1</a></li>
+<li><a class="reference internal" href="#id11">1.5</a></li>
+<li><a class="reference internal" href="#id12">1.4.2</a></li>
+<li><a class="reference internal" href="#id13">1.4.1</a></li>
+<li><a class="reference internal" href="#id14">1.4</a></li>
+<li><a class="reference internal" href="#id15">1.3</a></li>
+<li><a class="reference internal" href="#id16">1.2.1</a></li>
+<li><a class="reference internal" href="#id17">1.2</a><ul>
+<li><a class="reference internal" href="#in-paste-wsgiwrappers">In paste.wsgiwrappers</a></li>
+<li><a class="reference internal" href="#in-paste-httpserver">In paste.httpserver</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id18">1.1.1</a></li>
+<li><a class="reference internal" href="#id19">1.1</a></li>
+<li><a class="reference internal" href="#id20">1.0</a></li>
+<li><a class="reference internal" href="#id21">0.9.9</a></li>
+<li><a class="reference internal" href="#id22">0.9.8</a></li>
+<li><a class="reference internal" href="#id23">0.9.7</a></li>
+<li><a class="reference internal" href="#id24">0.9.6</a></li>
+<li><a class="reference internal" href="#id25">0.9.5</a></li>
+<li><a class="reference internal" href="#id26">0.9.4</a></li>
+<li><a class="reference internal" href="#id27">0.9.3</a></li>
+<li><a class="reference internal" href="#id28">0.9.2</a></li>
+<li><a class="reference internal" href="#id29">0.9.1</a></li>
+<li><a class="reference internal" href="#id30">0.9</a></li>
+<li><a class="reference internal" href="#id31">0.5</a></li>
+<li><a class="reference internal" href="#id32">0.4.1</a></li>
+<li><a class="reference internal" href="#id33">0.4</a></li>
+</ul>
+</li>
+</ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Python Paste</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="future.html"
+                        title="next chapter">The Future Of Paste</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/news.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="future.html" title="The Future Of Paste"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Python Paste"
+             >previous</a> |</li>
+        <li><a href="index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, Ian Bicking.
+      Last updated on Sep 14, 2010.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

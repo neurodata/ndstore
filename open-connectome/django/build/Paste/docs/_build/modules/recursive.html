@@ -1,0 +1,235 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>paste.recursive – internal requests &mdash; Paste v1.7.5 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.7.5',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Paste v1.7.5 documentation" href="../index.html" />
+ 
+<link rel="stylesheet" type="text/css"
+ href="../_static/paste.css.html">
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-paste.recursive">
+<span id="paste-recursive-internal-requests"></span><h1><a class="reference internal" href="#module-paste.recursive"><tt class="xref py py-mod docutils literal"><span class="pre">paste.recursive</span></tt></a> &#8211; internal requests<a class="headerlink" href="#module-paste.recursive" title="Permalink to this headline">¶</a></h1>
+<p>Middleware to make internal requests and forward requests internally.</p>
+<p>When applied, several keys are added to the environment that will allow
+you to trigger recursive redirects and forwards.</p>
+<blockquote>
+<dl class="docutils">
+<dt>paste.recursive.include:</dt>
+<dd>When you call
+<tt class="docutils literal"><span class="pre">environ['paste.recursive.include'](new_path_info)</span></tt> a response
+will be returned.  The response has a <tt class="docutils literal"><span class="pre">body</span></tt> attribute, a
+<tt class="docutils literal"><span class="pre">status</span></tt> attribute, and a <tt class="docutils literal"><span class="pre">headers</span></tt> attribute.</dd>
+<dt>paste.recursive.script_name:</dt>
+<dd>The <tt class="docutils literal"><span class="pre">SCRIPT_NAME</span></tt> at the point that recursive lives.  Only
+paths underneath this path can be redirected to.</dd>
+<dt>paste.recursive.old_path_info:</dt>
+<dd>A list of previous <tt class="docutils literal"><span class="pre">PATH_INFO</span></tt> values from previous redirects.</dd>
+</dl>
+</blockquote>
+<p>Raise <tt class="docutils literal"><span class="pre">ForwardRequestException(new_path_info)</span></tt> to do a forward
+(aborting the current request).</p>
+<div class="section" id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="paste.recursive.RecursiveMiddleware">
+<em class="property">class </em><tt class="descclassname">paste.recursive.</tt><tt class="descname">RecursiveMiddleware</tt><big>(</big><em>application</em>, <em>global_conf=None</em><big>)</big><a class="headerlink" href="#paste.recursive.RecursiveMiddleware" title="Permalink to this definition">¶</a></dt>
+<dd><p>A WSGI middleware that allows for recursive and forwarded calls.
+All these calls go to the same &#8216;application&#8217;, but presumably that
+application acts differently with different URLs.  The forwarded
+URLs must be relative to this container.</p>
+<p>Interface is entirely through the <tt class="docutils literal"><span class="pre">paste.recursive.forward</span></tt> and
+<tt class="docutils literal"><span class="pre">paste.recursive.include</span></tt> environmental keys.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="paste.recursive.ForwardRequestException">
+<tt class="descclassname">paste.recursive.</tt><tt class="descname">ForwardRequestException</tt><big>(</big><em>url=None</em>, <em>environ={}</em>, <em>factory=None</em>, <em>path_info=None</em><big>)</big><a class="headerlink" href="#paste.recursive.ForwardRequestException" title="Permalink to this definition">¶</a></dt>
+<dd><p>Used to signal that a request should be forwarded to a different location.</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">url</span></tt></dt>
+<dd>The URL to forward to starting with a <tt class="docutils literal"><span class="pre">/</span></tt> and relative to
+<tt class="docutils literal"><span class="pre">RecursiveMiddleware</span></tt>. URL fragments can also contain query strings
+so <tt class="docutils literal"><span class="pre">/error?code=404</span></tt> would be a valid URL fragment.</dd>
+<dt><tt class="docutils literal"><span class="pre">environ</span></tt></dt>
+<dd>An altertative WSGI environment dictionary to use for the forwarded
+request. If specified is used <em>instead</em> of the <tt class="docutils literal"><span class="pre">url_fragment</span></tt></dd>
+<dt><tt class="docutils literal"><span class="pre">factory</span></tt></dt>
+<dd>If specifed <tt class="docutils literal"><span class="pre">factory</span></tt> is used instead of <tt class="docutils literal"><span class="pre">url</span></tt> or <tt class="docutils literal"><span class="pre">environ</span></tt>.
+<tt class="docutils literal"><span class="pre">factory</span></tt> is a callable that takes a WSGI application object
+as the first argument and returns an initialised WSGI middleware
+which can alter the forwarded response.</dd>
+</dl>
+<p>Basic usage (must have <tt class="docutils literal"><span class="pre">RecursiveMiddleware</span></tt> present) :</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">paste.recursive</span> <span class="kn">import</span> <span class="n">ForwardRequestException</span>
+<span class="k">def</span> <span class="nf">app</span><span class="p">(</span><span class="n">environ</span><span class="p">,</span> <span class="n">start_response</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">environ</span><span class="p">[</span><span class="s">&#39;PATH_INFO&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;/hello&#39;</span><span class="p">:</span>
+        <span class="n">start_response</span><span class="p">(</span><span class="s">&quot;200 OK&quot;</span><span class="p">,</span> <span class="p">[(</span><span class="s">&#39;Content-type&#39;</span><span class="p">,</span> <span class="s">&#39;text/plain&#39;</span><span class="p">)])</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s">&#39;Hello World!&#39;</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">environ</span><span class="p">[</span><span class="s">&#39;PATH_INFO&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;/error&#39;</span><span class="p">:</span>
+        <span class="n">start_response</span><span class="p">(</span><span class="s">&quot;404 Not Found&quot;</span><span class="p">,</span> <span class="p">[(</span><span class="s">&#39;Content-type&#39;</span><span class="p">,</span> <span class="s">&#39;text/plain&#39;</span><span class="p">)])</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s">&#39;Page not found&#39;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ForwardRequestException</span><span class="p">(</span><span class="s">&#39;/error&#39;</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">paste.recursive</span> <span class="kn">import</span> <span class="n">RecursiveMiddleware</span>
+<span class="n">app</span> <span class="o">=</span> <span class="n">RecursiveMiddleware</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If you ran this application and visited <tt class="docutils literal"><span class="pre">/hello</span></tt> you would get a
+<tt class="docutils literal"><span class="pre">Hello</span> <span class="pre">World!</span></tt> message. If you ran the application and visited
+<tt class="docutils literal"><span class="pre">/not_found</span></tt> a <tt class="docutils literal"><span class="pre">ForwardRequestException</span></tt> would be raised and the caught
+by the <tt class="docutils literal"><span class="pre">RecursiveMiddleware</span></tt>. The <tt class="docutils literal"><span class="pre">RecursiveMiddleware</span></tt> would then
+return the headers and response from the <tt class="docutils literal"><span class="pre">/error</span></tt> URL but would display
+a <tt class="docutils literal"><span class="pre">404</span> <span class="pre">Not</span> <span class="pre">found</span></tt> status message.</p>
+<p>You could also specify an <tt class="docutils literal"><span class="pre">environ</span></tt> dictionary instead of a url. Using
+the same example as before:</p>
+<div class="highlight-python"><pre>def app(environ, start_response):
+    ... same as previous example ...
+    else:
+        new_environ = environ.copy()
+        new_environ['PATH_INFO'] = '/error'
+        raise ForwardRequestException(environ=new_environ)</pre>
+</div>
+<p>Finally, if you want complete control over every aspect of the forward you
+can specify a middleware factory. For example to keep the old status code
+but use the headers and resposne body from the forwarded response you might
+do this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">paste.recursive</span> <span class="kn">import</span> <span class="n">ForwardRequestException</span>
+<span class="kn">from</span> <span class="nn">paste.recursive</span> <span class="kn">import</span> <span class="n">RecursiveMiddleware</span>
+<span class="kn">from</span> <span class="nn">paste.errordocument</span> <span class="kn">import</span> <span class="n">StatusKeeper</span>
+
+<span class="k">def</span> <span class="nf">app</span><span class="p">(</span><span class="n">environ</span><span class="p">,</span> <span class="n">start_response</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">environ</span><span class="p">[</span><span class="s">&#39;PATH_INFO&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;/hello&#39;</span><span class="p">:</span>
+        <span class="n">start_response</span><span class="p">(</span><span class="s">&quot;200 OK&quot;</span><span class="p">,</span> <span class="p">[(</span><span class="s">&#39;Content-type&#39;</span><span class="p">,</span> <span class="s">&#39;text/plain&#39;</span><span class="p">)])</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s">&#39;Hello World!&#39;</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">environ</span><span class="p">[</span><span class="s">&#39;PATH_INFO&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;/error&#39;</span><span class="p">:</span>
+        <span class="n">start_response</span><span class="p">(</span><span class="s">&quot;404 Not Found&quot;</span><span class="p">,</span> <span class="p">[(</span><span class="s">&#39;Content-type&#39;</span><span class="p">,</span> <span class="s">&#39;text/plain&#39;</span><span class="p">)])</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s">&#39;Page not found&#39;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">def</span> <span class="nf">factory</span><span class="p">(</span><span class="n">app</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">StatusKeeper</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s">&#39;404 Not Found&#39;</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="s">&#39;/error&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">ForwardRequestException</span><span class="p">(</span><span class="n">factory</span><span class="o">=</span><span class="n">factory</span><span class="p">)</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">RecursiveMiddleware</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="http://pythonpaste.org/" class="invisible-link">Python Paste</a></h3>
+
+<ul>
+<li><a href="http://trac.pythonpaste.org">Issue tracker</a></li>
+<li><a href="http://pythonpaste.org/">Paste core</a></li>
+<li><a href="http://pythonpaste.org/webob/">WebOb</a></li>
+<li><a href="http://pythonpaste.org/deploy/">Paste Deploy</a></li>
+<li><a href="http://pythonpaste.org/script/">Paste Script</a></li>
+<li><a href="http://pythonpaste.org/webtest/">WebTest</a></li>
+<li><a href="http://pythonpaste.org/scripttest/">ScriptType</a></li>
+<li><a href="http://pythonpaste.org/initools/">INITools</a></li>
+<li><a href="http://pythonpaste.org/tempita/">Tempita</a></li>
+<li><a href="http://pythonpaste.org/waitforit/">WaitForIt</a></li>
+<li><a href="http://pythonpaste.org/wphp/">WPHP</a></li>
+<li><a href="http://pythonpaste.org/wsgifilter/">WSGIFilter</a></li>
+<li><a href="http://pythonpaste.org/wsgiproxy/">WSGIProxy</a></li>
+</ul>
+
+
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">paste.recursive</span></tt> &#8211; internal requests</a><ul>
+<li><a class="reference internal" href="#module-contents">Module Contents</a></li>
+</ul>
+</li>
+</ul>
+
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/modules/recursive.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, Ian Bicking.
+      Last updated on Sep 14, 2010.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

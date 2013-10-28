@@ -1,0 +1,36 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2006 Matej Barič
+# Matej Barič <matej.baric@gmail.com>, 2006.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0\n"
+"POT-Creation-Date: 2006-10-03 10:24+CET\n"
+"PO-Revision-Date: 2006-12-11 20:48+CET\n"
+"Last-Translator: Matej Barič <matej.baric@gmail.com>\n"
+"Language-Team: Slovenian <matej.baric@gmail.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: utf-8\n"
+"Generated-By: pygettext.py 1.5\n"
+
+
+#: validators.py:29
+msgid "Invalid number format"
+msgstr "Neveljavna oblika števila"
+
+#: validators.py:30 validators.py:80
+msgid "Empty values not allowed"
+msgstr "Prazne vrednosti niso dovoljene"
+
+#: validators.py:79
+msgid "Invalid datetime format"
+msgstr "Neveljavna oblika datuma/časa"
+
+#: validators.py:125
+msgid "Invalid data or incorrect encoding"
+msgstr "Neveljaven podatek ali napačna abeceda"
+
+#: validators.py:169
+msgid "Please select at least a value"
+msgstr "Prosim, izberite vsaj eno vrednost"

@@ -1,0 +1,441 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>paste.httpheaders – Manipulate HTTP Headers &mdash; Paste v1.7.5 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.7.5',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Paste v1.7.5 documentation" href="../index.html" />
+ 
+<link rel="stylesheet" type="text/css"
+ href="../_static/paste.css.html">
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="paste-httpheaders-manipulate-http-headers">
+<h1><a class="reference internal" href="#module-paste.httpheaders"><tt class="xref py py-mod docutils literal"><span class="pre">paste.httpheaders</span></tt></a> &#8211; Manipulate HTTP Headers<a class="headerlink" href="#paste-httpheaders-manipulate-http-headers" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-paste.httpheaders"></span><p>HTTP Message Header Fields (see RFC 4229)</p>
+<p>This contains general support for HTTP/1.1 message headers <a class="footnote-reference" href="#id4" id="id1">[1]</a> in a
+manner that supports WSGI <tt class="docutils literal"><span class="pre">environ</span></tt> <a class="footnote-reference" href="#id5" id="id2">[2]</a> and <tt class="docutils literal"><span class="pre">response_headers</span></tt>
+<a class="footnote-reference" href="#id6" id="id3">[3]</a>. Specifically, this module defines a <tt class="docutils literal"><span class="pre">HTTPHeader</span></tt> class whose
+instances correspond to field-name items.  The actual field-content for
+the message-header is stored in the appropriate WSGI collection (either
+the <tt class="docutils literal"><span class="pre">environ</span></tt> for requests, or <tt class="docutils literal"><span class="pre">response_headers</span></tt> for responses).</p>
+<p>Each <tt class="docutils literal"><span class="pre">HTTPHeader</span></tt> instance is a callable (defining <tt class="docutils literal"><span class="pre">__call__</span></tt>)
+that takes one of the following:</p>
+<blockquote>
+<ul class="simple">
+<li>an <tt class="docutils literal"><span class="pre">environ</span></tt> dictionary, returning the corresponding header
+value by according to the WSGI&#8217;s <tt class="docutils literal"><span class="pre">HTTP_</span></tt> prefix mechanism, e.g.,
+<tt class="docutils literal"><span class="pre">USER_AGENT(environ)</span></tt> returns <tt class="docutils literal"><span class="pre">environ.get('HTTP_USER_AGENT')</span></tt></li>
+<li>a <tt class="docutils literal"><span class="pre">response_headers</span></tt> list, giving a comma-delimited string for
+each corresponding <tt class="docutils literal"><span class="pre">header_value</span></tt> tuple entries (see below).</li>
+<li>a sequence of string <tt class="docutils literal"><span class="pre">*args</span></tt> that are comma-delimited into
+a single string value: <tt class="docutils literal"><span class="pre">CONTENT_TYPE(&quot;text/html&quot;,&quot;text/plain&quot;)</span></tt>
+returns <tt class="docutils literal"><span class="pre">&quot;text/html,</span> <span class="pre">text/plain&quot;</span></tt></li>
+<li>a set of <tt class="docutils literal"><span class="pre">**kwargs</span></tt> keyword arguments that are used to create
+a header value, in a manner dependent upon the particular header in
+question (to make value construction easier and error-free):
+<tt class="docutils literal"><span class="pre">CONTENT_DISPOSITION(max_age=CONTENT_DISPOSITION.ONEWEEK)</span></tt>
+returns <tt class="docutils literal"><span class="pre">&quot;public,</span> <span class="pre">max-age=60480&quot;</span></tt></li>
+</ul>
+</blockquote>
+<p>Each <tt class="docutils literal"><span class="pre">HTTPHeader</span></tt> instance also provides several methods to act on
+a WSGI collection, for removing and setting header values.</p>
+<blockquote>
+<p><tt class="docutils literal"><span class="pre">delete(collection)</span></tt></p>
+<blockquote>
+This method removes all entries of the corresponding header from
+the given collection (<tt class="docutils literal"><span class="pre">environ</span></tt> or <tt class="docutils literal"><span class="pre">response_headers</span></tt>), e.g.,
+<tt class="docutils literal"><span class="pre">USER_AGENT.delete(environ)</span></tt> deletes the &#8216;HTTP_USER_AGENT&#8217; entry
+from the <tt class="docutils literal"><span class="pre">environ</span></tt>.</blockquote>
+<p><tt class="docutils literal"><span class="pre">update(collection,</span> <span class="pre">*args,</span> <span class="pre">**kwargs)</span></tt></p>
+<blockquote>
+<p>This method does an in-place replacement of the given header entry,
+for example: <tt class="docutils literal"><span class="pre">CONTENT_LENGTH(response_headers,len(body))</span></tt></p>
+<p>The first argument is a valid <tt class="docutils literal"><span class="pre">environ</span></tt> dictionary or
+<tt class="docutils literal"><span class="pre">response_headers</span></tt> list; remaining arguments are passed on to
+<tt class="docutils literal"><span class="pre">__call__(*args,</span> <span class="pre">**kwargs)</span></tt> for value construction.</p>
+</blockquote>
+<p><tt class="docutils literal"><span class="pre">apply(collection,</span> <span class="pre">**kwargs)</span></tt></p>
+<blockquote>
+This method is similar to update, only that it may affect other
+headers.  For example, according to recommendations in RFC 2616,
+certain Cache-Control configurations should also set the
+<tt class="docutils literal"><span class="pre">Expires</span></tt> header for HTTP/1.0 clients. By default, <tt class="docutils literal"><span class="pre">apply()</span></tt>
+is simply <tt class="docutils literal"><span class="pre">update()</span></tt> but limited to keyword arguments.</blockquote>
+</blockquote>
+<p>This particular approach to managing headers within a WSGI collection
+has several advantages:</p>
+<blockquote>
+<ol class="arabic simple">
+<li>Typos in the header name are easily detected since they become a
+<tt class="docutils literal"><span class="pre">NameError</span></tt> when executed.  The approach of using header strings
+directly can be problematic; for example, the following should
+return <tt class="xref docutils literal"><span class="pre">None</span></tt> : <tt class="docutils literal"><span class="pre">environ.get(&quot;HTTP_ACCEPT_LANGUAGES&quot;)</span></tt></li>
+<li>For specific headers with validation, using <tt class="docutils literal"><span class="pre">__call__</span></tt> will
+result in an automatic header value check.  For example, the
+_ContentDisposition header will reject a value having <tt class="docutils literal"><span class="pre">maxage</span></tt>
+or <tt class="docutils literal"><span class="pre">max_age</span></tt> (the appropriate parameter is <tt class="docutils literal"><span class="pre">max-age</span></tt> ).</li>
+<li>When appending/replacing headers, the field-name has the suggested
+RFC capitalization (e.g. <tt class="docutils literal"><span class="pre">Content-Type</span></tt> or <tt class="docutils literal"><span class="pre">ETag</span></tt>) for
+user-agents that incorrectly use case-sensitive matches.</li>
+<li>Some headers (such as <tt class="docutils literal"><span class="pre">Content-Type</span></tt>) are 0, that is,
+only one entry of this type may occur in a given set of
+<tt class="docutils literal"><span class="pre">response_headers</span></tt>.  This module knows about those cases and
+enforces this cardinality constraint.</li>
+<li>The exact details of WSGI header management are abstracted so
+the programmer need not worry about operational differences
+between <tt class="docutils literal"><span class="pre">environ</span></tt> dictionary or <tt class="docutils literal"><span class="pre">response_headers</span></tt> list.</li>
+<li>Sorting of <tt class="docutils literal"><span class="pre">HTTPHeaders</span></tt> is done following the RFC suggestion
+that general-headers come first, followed by request and response
+headers, and finishing with entity-headers.</li>
+<li>Special care is given to exceptional cases such as Set-Cookie
+which violates the RFC&#8217;s recommendation about combining header
+content into a single entry using comma separation.</li>
+</ol>
+</blockquote>
+<p>A particular difficulty with HTTP message headers is a categorization
+of sorts as described in section 4.2:</p>
+<blockquote>
+Multiple message-header fields with the same field-name MAY be
+present in a message if and only if the entire field-value for
+that header field is defined as a comma-separated list [i.e.,
+#(values)]. It MUST be possible to combine the multiple header
+fields into one &#8220;field-name: field-value&#8221; pair, without changing
+the semantics of the message, by appending each subsequent
+field-value to the first, each separated by a comma.</blockquote>
+<p>This creates three fundamentally different kinds of headers:</p>
+<blockquote>
+<ul class="simple">
+<li>Those that do not have a #(values) production, and hence are
+singular and may only occur once in a set of response fields;
+this case is handled by the <tt class="docutils literal"><span class="pre">_SingleValueHeader</span></tt> subclass.</li>
+<li>Those which have the #(values) production and follow the
+combining rule outlined above; our <tt class="docutils literal"><span class="pre">_MultiValueHeader</span></tt> case.</li>
+<li>Those which are multi-valued, but cannot be combined (such as the
+<tt class="docutils literal"><span class="pre">Set-Cookie</span></tt> header due to its <tt class="docutils literal"><span class="pre">Expires</span></tt> parameter); or where
+combining them into a single header entry would cause common
+user-agents to fail (<tt class="docutils literal"><span class="pre">WWW-Authenticate</span></tt>, <tt class="docutils literal"><span class="pre">Warning</span></tt>) since
+they fail to handle dates even when properly quoted. This case
+is handled by <tt class="docutils literal"><span class="pre">_MultiEntryHeader</span></tt>.</li>
+</ul>
+</blockquote>
+<p>Since this project does not have time to provide rigorous support
+and validation for all headers, it does a basic construction of
+headers listed in RFC 2616 (plus a few others) so that they can
+be obtained by simply doing <tt class="docutils literal"><span class="pre">from</span> <span class="pre">paste.httpheaders</span> <span class="pre">import</span> <span class="pre">*</span></tt>;
+the name of the header instance is the &#8220;common name&#8221; less any
+dashes to give CamelCase style names.</p>
+<table class="docutils footnote" frame="void" id="id4" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2">http://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id5" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[2]</a></td><td><a class="reference external" href="http://www.python.org/peps/pep-0333.html#environ-variables">http://www.python.org/peps/pep-0333.html#environ-variables</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id6" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id3">[3]</a></td><td><a class="reference external" href="http://www.python.org/peps/pep-0333.html#the-start-response-callable">http://www.python.org/peps/pep-0333.html#the-start-response-callable</a></td></tr>
+</tbody>
+</table>
+<dl class="function">
+<dt id="paste.httpheaders.get_header">
+<tt class="descclassname">paste.httpheaders.</tt><tt class="descname">get_header</tt><big>(</big><em>name</em>, <em>raiseError=True</em><big>)</big><a class="headerlink" href="#paste.httpheaders.get_header" title="Permalink to this definition">¶</a></dt>
+<dd><p>find the given <tt class="docutils literal"><span class="pre">HTTPHeader</span></tt> instance</p>
+<p>This function finds the corresponding <tt class="docutils literal"><span class="pre">HTTPHeader</span></tt> for the
+<tt class="docutils literal"><span class="pre">name</span></tt> provided.  So that python-style names can be used,
+underscores are converted to dashes before the lookup.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="paste.httpheaders.list_headers">
+<tt class="descclassname">paste.httpheaders.</tt><tt class="descname">list_headers</tt><big>(</big><em>general=None</em>, <em>request=None</em>, <em>response=None</em>, <em>entity=None</em><big>)</big><a class="headerlink" href="#paste.httpheaders.list_headers" title="Permalink to this definition">¶</a></dt>
+<dd><p>list all headers for a given category</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="paste.httpheaders.normalize_headers">
+<tt class="descclassname">paste.httpheaders.</tt><tt class="descname">normalize_headers</tt><big>(</big><em>response_headers</em>, <em>strict=True</em><big>)</big><a class="headerlink" href="#paste.httpheaders.normalize_headers" title="Permalink to this definition">¶</a></dt>
+<dd><p>sort headers as suggested by  RFC 2616</p>
+<p>This alters the underlying response_headers to use the common
+name for each header; as well as sorting them with general
+headers first, followed by request/response headers, then
+entity headers, and unknown headers last.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="paste.httpheaders.HTTPHeader">
+<em class="property">class </em><tt class="descclassname">paste.httpheaders.</tt><tt class="descname">HTTPHeader</tt><a class="headerlink" href="#paste.httpheaders.HTTPHeader" title="Permalink to this definition">¶</a></dt>
+<dd><p>an HTTP header</p>
+<p>HTTPHeader instances represent a particular <tt class="docutils literal"><span class="pre">field-name</span></tt> of an
+HTTP message header. They do not hold a field-value, but instead
+provide operations that work on is corresponding values.  Storage
+of the actual field values is done with WSGI <tt class="docutils literal"><span class="pre">environ</span></tt> or
+<tt class="docutils literal"><span class="pre">response_headers</span></tt> as appropriate.  Typically, a sub-classes that
+represent a specific HTTP header, such as _ContentDisposition, are
+0.  Once constructed the HTTPHeader instances themselves
+are immutable and stateless.</p>
+<p>For purposes of documentation a &#8220;container&#8221; refers to either a
+WSGI <tt class="docutils literal"><span class="pre">environ</span></tt> dictionary, or a <tt class="docutils literal"><span class="pre">response_headers</span></tt> list.</p>
+<p>Member variables (and correspondingly constructor arguments).</p>
+<blockquote>
+<p><tt class="docutils literal"><span class="pre">name</span></tt></p>
+<blockquote>
+the <tt class="docutils literal"><span class="pre">field-name</span></tt> of the header, in &#8220;common form&#8221;
+as presented in RFC 2616; e.g. &#8216;Content-Type&#8217;</blockquote>
+<p><tt class="docutils literal"><span class="pre">category</span></tt></p>
+<blockquote>
+one of &#8216;general&#8217;, &#8216;request&#8217;, &#8216;response&#8217;, or &#8216;entity&#8217;</blockquote>
+<p><tt class="docutils literal"><span class="pre">version</span></tt></p>
+<blockquote>
+version of HTTP (informational) with which the header should
+be recognized</blockquote>
+<p><tt class="docutils literal"><span class="pre">sort_order</span></tt></p>
+<blockquote>
+sorting order to be applied before sorting on
+field-name when ordering headers in a response</blockquote>
+</blockquote>
+<p>Special Methods:</p>
+<blockquote>
+<p><tt class="docutils literal"><span class="pre">__call__</span></tt></p>
+<blockquote>
+The primary method of the HTTPHeader instance is to make
+it a callable, it takes either a collection, a string value,
+or keyword arguments and attempts to find/construct a valid
+field-value</blockquote>
+<p><tt class="docutils literal"><span class="pre">__lt__</span></tt></p>
+<blockquote>
+This method is used so that HTTPHeader objects can be
+sorted in a manner suggested by RFC 2616.</blockquote>
+<p><tt class="docutils literal"><span class="pre">__str__</span></tt></p>
+<blockquote>
+The string-value for instances of this class is
+the <tt class="docutils literal"><span class="pre">field-name</span></tt>.</blockquote>
+</blockquote>
+<p>Primary Methods:</p>
+<blockquote>
+<p><tt class="docutils literal"><span class="pre">delete()</span></tt></p>
+<blockquote>
+remove the all occurrences (if any) of the given
+header in the collection provided</blockquote>
+<p><tt class="docutils literal"><span class="pre">update()</span></tt></p>
+<blockquote>
+replaces (if they exist) all field-value items
+in the given collection with the value provided</blockquote>
+<p><tt class="docutils literal"><span class="pre">tuples()</span></tt></p>
+<blockquote>
+returns a set of (field-name, field-value) tuples
+5 for extending <tt class="docutils literal"><span class="pre">response_headers</span></tt></blockquote>
+</blockquote>
+<p>Custom Methods (these may not be implemented):</p>
+<blockquote>
+<p><tt class="docutils literal"><span class="pre">apply()</span></tt></p>
+<blockquote>
+similar to <tt class="docutils literal"><span class="pre">update</span></tt>, but with two differences; first,
+only keyword arguments can be used, and second, specific
+sub-classes may introduce side-effects</blockquote>
+<p><tt class="docutils literal"><span class="pre">parse()</span></tt></p>
+<blockquote>
+converts a string value of the header into a more usable
+form, such as time in seconds for a date header, etc.</blockquote>
+</blockquote>
+<p>The collected versions of initialized header instances are immediately
+registered and accessible through the <tt class="docutils literal"><span class="pre">get_header</span></tt> function.  Do not
+inherit from this directly, use one of <tt class="docutils literal"><span class="pre">_SingleValueHeader</span></tt>,
+<tt class="docutils literal"><span class="pre">_MultiValueHeader</span></tt>, or <tt class="docutils literal"><span class="pre">_MultiEntryHeader</span></tt> as appropriate.</p>
+<dl class="method">
+<dt id="paste.httpheaders.HTTPHeader.apply">
+<tt class="descname">apply</tt><big>(</big><em>collection</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#paste.httpheaders.HTTPHeader.apply" title="Permalink to this definition">¶</a></dt>
+<dd><p>update the collection /w header value (may have side effects)</p>
+<p>This method is similar to <tt class="docutils literal"><span class="pre">update</span></tt> only that usage may result
+in other headers being changed as recommended by the corresponding
+specification.  The return value is defined by the particular
+sub-class. For example, the <tt class="docutils literal"><span class="pre">_CacheControl.apply()</span></tt> sets the
+<tt class="docutils literal"><span class="pre">Expires</span></tt> header in addition to its normal behavior.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="paste.httpheaders.HTTPHeader.compose">
+<tt class="descname">compose</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#paste.httpheaders.HTTPHeader.compose" title="Permalink to this definition">¶</a></dt>
+<dd><p>build header value from keyword arguments</p>
+<p>This method is used to build the corresponding header value when
+keyword arguments (or no arguments) were provided.  The result
+should be a sequence of values.  For example, the <tt class="docutils literal"><span class="pre">Expires</span></tt>
+header takes a keyword argument <tt class="docutils literal"><span class="pre">time</span></tt> (e.g. time.time()) from
+which it returns a the corresponding date.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="paste.httpheaders.HTTPHeader.delete">
+<tt class="descname">delete</tt><big>(</big><em>collection</em><big>)</big><a class="headerlink" href="#paste.httpheaders.HTTPHeader.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>removes all occurances of the header from the collection provided</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="paste.httpheaders.HTTPHeader.parse">
+<tt class="descname">parse</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#paste.httpheaders.HTTPHeader.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>convert raw header value into more usable form</p>
+<p>This method invokes <tt class="docutils literal"><span class="pre">values()</span></tt> with the arguments provided,
+parses the header results, and then returns a header-specific
+data structure corresponding to the header.  For example, the
+<tt class="docutils literal"><span class="pre">Expires</span></tt> header returns seconds (as returned by time.time())</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="paste.httpheaders.HTTPHeader.update">
+<tt class="descname">update</tt><big>(</big><em>collection</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#paste.httpheaders.HTTPHeader.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>updates the collection with the provided header value</p>
+<p>This method replaces (in-place when possible) all occurrences of
+the given header with the provided value.  If no value is
+provided, this is the same as <tt class="docutils literal"><span class="pre">remove</span></tt> (note that this case
+can only occur if the target is a collection w/o a corresponding
+header value). The return value is the new header value (which
+could be a list for <tt class="docutils literal"><span class="pre">_MultiEntryHeader</span></tt> instances).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="paste.httpheaders.HTTPHeader.values">
+<tt class="descname">values</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#paste.httpheaders.HTTPHeader.values" title="Permalink to this definition">¶</a></dt>
+<dd><p>find/construct field-value(s) for the given header</p>
+<p>Resolution is done according to the following arguments:</p>
+<ul class="simple">
+<li>If only keyword arguments are given, then this is equivalent
+to <tt class="docutils literal"><span class="pre">compose(**kwargs)</span></tt>.</li>
+<li>If the first (and only) argument is a dict, it is assumed
+to be a WSGI <tt class="docutils literal"><span class="pre">environ</span></tt> and the result of the corresponding
+<tt class="docutils literal"><span class="pre">HTTP_</span></tt> entry is returned.</li>
+<li>If the first (and only) argument is a list, it is assumed
+to be a WSGI <tt class="docutils literal"><span class="pre">response_headers</span></tt> and the field-value(s)
+for this header are collected and returned.</li>
+<li>In all other cases, the arguments are collected, checked that
+they are string values, possibly verified by the header&#8217;s
+logic, and returned.</li>
+</ul>
+<p>At this time it is an error to provide keyword arguments if args
+is present (this might change).  It is an error to provide both
+a WSGI object and also string arguments.  If no arguments are
+provided, then <tt class="docutils literal"><span class="pre">compose()</span></tt> is called to provide a default
+value for the header; if there is not default it is an error.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="paste.httpheaders.EnvironVariable">
+<em class="property">class </em><tt class="descclassname">paste.httpheaders.</tt><tt class="descname">EnvironVariable</tt><a class="headerlink" href="#paste.httpheaders.EnvironVariable" title="Permalink to this definition">¶</a></dt>
+<dd><p>a CGI <tt class="docutils literal"><span class="pre">environ</span></tt> variable as described by WSGI</p>
+<p>This is a helper object so that standard WSGI <tt class="docutils literal"><span class="pre">environ</span></tt> variables
+can be extracted w/o syntax error possibility.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="http://pythonpaste.org/" class="invisible-link">Python Paste</a></h3>
+
+<ul>
+<li><a href="http://trac.pythonpaste.org">Issue tracker</a></li>
+<li><a href="http://pythonpaste.org/">Paste core</a></li>
+<li><a href="http://pythonpaste.org/webob/">WebOb</a></li>
+<li><a href="http://pythonpaste.org/deploy/">Paste Deploy</a></li>
+<li><a href="http://pythonpaste.org/script/">Paste Script</a></li>
+<li><a href="http://pythonpaste.org/webtest/">WebTest</a></li>
+<li><a href="http://pythonpaste.org/scripttest/">ScriptType</a></li>
+<li><a href="http://pythonpaste.org/initools/">INITools</a></li>
+<li><a href="http://pythonpaste.org/tempita/">Tempita</a></li>
+<li><a href="http://pythonpaste.org/waitforit/">WaitForIt</a></li>
+<li><a href="http://pythonpaste.org/wphp/">WPHP</a></li>
+<li><a href="http://pythonpaste.org/wsgifilter/">WSGIFilter</a></li>
+<li><a href="http://pythonpaste.org/wsgiproxy/">WSGIProxy</a></li>
+</ul>
+
+
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/modules/httpheaders.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, Ian Bicking.
+      Last updated on Sep 14, 2010.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

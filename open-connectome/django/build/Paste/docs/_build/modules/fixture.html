@@ -1,0 +1,445 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>paste.fixture – Test applications &mdash; Paste v1.7.5 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.7.5',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Paste v1.7.5 documentation" href="../index.html" />
+ 
+<link rel="stylesheet" type="text/css"
+ href="../_static/paste.css.html">
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="paste-fixture-test-applications">
+<h1><a class="toc-backref" href="#id5"><a class="reference internal" href="#module-paste.fixture"><tt class="xref py py-mod docutils literal"><span class="pre">paste.fixture</span></tt></a> &#8211; Test applications</a><a class="headerlink" href="#paste-fixture-test-applications" title="Permalink to this headline">¶</a></h1>
+<div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="simple">
+<li><a class="reference external" href="#paste-fixture-test-applications" id="id5"><a class="reference internal" href="#module-paste.fixture"><tt class="xref py py-mod docutils literal"><span class="pre">paste.fixture</span></tt></a> &#8211; Test applications</a><ul>
+<li><a class="reference external" href="#module-contents" id="id6">Module Contents</a></li>
+<li><a class="reference external" href="#forms" id="id7">Forms</a></li>
+<li><a class="reference external" href="#script-testing" id="id8">Script Testing</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<span class="target" id="module-paste.fixture"></span><p>Routines for testing WSGI applications.</p>
+<p>Most interesting is the <a class="reference external" href="class-paste.fixture.TestApp.html">TestApp</a>
+for testing WSGI applications, and the <a class="reference external" href="class-paste.fixture.TestFileEnvironment.html">TestFileEnvironment</a> class for testing the
+effects of command-line scripts.</p>
+<div class="section" id="module-contents">
+<h2><a class="toc-backref" href="#id6">Module Contents</a><a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="paste.fixture.TestApp">
+<em class="property">class </em><tt class="descclassname">paste.fixture.</tt><tt class="descname">TestApp</tt><big>(</big><em>app</em>, <em>namespace=None</em>, <em>relative_to=None</em>, <em>extra_environ=None</em>, <em>pre_request_hook=None</em>, <em>post_request_hook=None</em><big>)</big><a class="headerlink" href="#paste.fixture.TestApp" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="paste.fixture.TestApp.delete">
+<tt class="descname">delete</tt><big>(</big><em>url</em>, <em>params=''</em>, <em>headers=None</em>, <em>extra_environ=None</em>, <em>status=None</em>, <em>expect_errors=False</em><big>)</big><a class="headerlink" href="#paste.fixture.TestApp.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do a DELETE request.  Very like the <tt class="docutils literal"><span class="pre">.get()</span></tt> method.
+<tt class="docutils literal"><span class="pre">params</span></tt> are put in the body of the request.</p>
+<p>Returns a <a class="reference external" href="class-paste.fixture.TestResponse.html">response object</a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="paste.fixture.TestApp.do_request">
+<tt class="descname">do_request</tt><big>(</big><em>req</em>, <em>status</em><big>)</big><a class="headerlink" href="#paste.fixture.TestApp.do_request" title="Permalink to this definition">¶</a></dt>
+<dd><p>Executes the given request (<tt class="docutils literal"><span class="pre">req</span></tt>), with the expected
+<tt class="docutils literal"><span class="pre">status</span></tt>.  Generally <tt class="docutils literal"><span class="pre">.get()</span></tt> and <tt class="docutils literal"><span class="pre">.post()</span></tt> are used
+instead.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="paste.fixture.TestApp.encode_multipart">
+<tt class="descname">encode_multipart</tt><big>(</big><em>params</em>, <em>files</em><big>)</big><a class="headerlink" href="#paste.fixture.TestApp.encode_multipart" title="Permalink to this definition">¶</a></dt>
+<dd><p>Encodes a set of parameters (typically a name/value list) and
+a set of files (a list of (name, filename, file_body)) into a
+typical POST body, returning the (content_type, body).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="paste.fixture.TestApp.get">
+<tt class="descname">get</tt><big>(</big><em>url</em>, <em>params=None</em>, <em>headers=None</em>, <em>extra_environ=None</em>, <em>status=None</em>, <em>expect_errors=False</em><big>)</big><a class="headerlink" href="#paste.fixture.TestApp.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the given url (well, actually a path like
+<tt class="docutils literal"><span class="pre">'/page.html'</span></tt>).</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">params</span></tt>:</dt>
+<dd>A query string, or a dictionary that will be encoded
+into a query string.  You may also include a query
+string on the <tt class="docutils literal"><span class="pre">url</span></tt>.</dd>
+<dt><tt class="docutils literal"><span class="pre">headers</span></tt>:</dt>
+<dd>A dictionary of extra headers to send.</dd>
+<dt><tt class="docutils literal"><span class="pre">extra_environ</span></tt>:</dt>
+<dd>A dictionary of environmental variables that should
+be added to the request.</dd>
+<dt><tt class="docutils literal"><span class="pre">status</span></tt>:</dt>
+<dd>The integer status code you expect (if not 200 or 3xx).
+If you expect a 404 response, for instance, you must give
+<tt class="docutils literal"><span class="pre">status=404</span></tt> or it will be an error.  You can also give
+a wildcard, like <tt class="docutils literal"><span class="pre">'3*'</span></tt> or <tt class="docutils literal"><span class="pre">'*'</span></tt>.</dd>
+<dt><tt class="docutils literal"><span class="pre">expect_errors</span></tt>:</dt>
+<dd>If this is not true, then if anything is written to
+<tt class="docutils literal"><span class="pre">wsgi.errors</span></tt> it will be an error.  If it is true, then
+non-200/3xx responses are also okay.</dd>
+</dl>
+<p>Returns a <a class="reference external" href="class-paste.fixture.TestResponse.html">response object</a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="paste.fixture.TestApp.post">
+<tt class="descname">post</tt><big>(</big><em>url</em>, <em>params=''</em>, <em>headers=None</em>, <em>extra_environ=None</em>, <em>status=None</em>, <em>upload_files=None</em>, <em>expect_errors=False</em><big>)</big><a class="headerlink" href="#paste.fixture.TestApp.post" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do a POST request.  Very like the <tt class="docutils literal"><span class="pre">.get()</span></tt> method.
+<tt class="docutils literal"><span class="pre">params</span></tt> are put in the body of the request.</p>
+<p><tt class="docutils literal"><span class="pre">upload_files</span></tt> is for file uploads.  It should be a list of
+<tt class="docutils literal"><span class="pre">[(fieldname,</span> <span class="pre">filename,</span> <span class="pre">file_content)]</span></tt>.  You can also use
+just <tt class="docutils literal"><span class="pre">[(fieldname,</span> <span class="pre">filename)]</span></tt> and the file content will be
+read from disk.</p>
+<p>Returns a <a class="reference external" href="class-paste.fixture.TestResponse.html">response object</a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="paste.fixture.TestApp.put">
+<tt class="descname">put</tt><big>(</big><em>url</em>, <em>params=''</em>, <em>headers=None</em>, <em>extra_environ=None</em>, <em>status=None</em>, <em>upload_files=None</em>, <em>expect_errors=False</em><big>)</big><a class="headerlink" href="#paste.fixture.TestApp.put" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do a PUT request.  Very like the <tt class="docutils literal"><span class="pre">.get()</span></tt> method.
+<tt class="docutils literal"><span class="pre">params</span></tt> are put in the body of the request.</p>
+<p><tt class="docutils literal"><span class="pre">upload_files</span></tt> is for file uploads.  It should be a list of
+<tt class="docutils literal"><span class="pre">[(fieldname,</span> <span class="pre">filename,</span> <span class="pre">file_content)]</span></tt>.  You can also use
+just <tt class="docutils literal"><span class="pre">[(fieldname,</span> <span class="pre">filename)]</span></tt> and the file content will be
+read from disk.</p>
+<p>Returns a <a class="reference external" href="class-paste.fixture.TestResponse.html">response object</a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="paste.fixture.TestApp.reset">
+<tt class="descname">reset</tt><big>(</big><big>)</big><a class="headerlink" href="#paste.fixture.TestApp.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resets the state of the application; currently just clears
+saved cookies.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="paste.fixture.TestRequest">
+<em class="property">class </em><tt class="descclassname">paste.fixture.</tt><tt class="descname">TestRequest</tt><big>(</big><em>url</em>, <em>environ</em>, <em>expect_errors=False</em><big>)</big><a class="headerlink" href="#paste.fixture.TestRequest" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="forms">
+<h2><a class="toc-backref" href="#id7">Forms</a><a class="headerlink" href="#forms" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="paste.fixture.Form">
+<em class="property">class </em><tt class="descclassname">paste.fixture.</tt><tt class="descname">Form</tt><big>(</big><em>response</em>, <em>text</em><big>)</big><a class="headerlink" href="#paste.fixture.Form" title="Permalink to this definition">¶</a></dt>
+<dd><p>This object represents a form that has been found in a page.
+This has a couple useful attributes:</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">text</span></tt>:</dt>
+<dd>the full HTML of the form.</dd>
+<dt><tt class="docutils literal"><span class="pre">action</span></tt>:</dt>
+<dd>the relative URI of the action.</dd>
+<dt><tt class="docutils literal"><span class="pre">method</span></tt>:</dt>
+<dd>the method (e.g., <tt class="docutils literal"><span class="pre">'GET'</span></tt>).</dd>
+<dt><tt class="docutils literal"><span class="pre">id</span></tt>:</dt>
+<dd>the id, or None if not given.</dd>
+<dt><tt class="docutils literal"><span class="pre">fields</span></tt>:</dt>
+<dd>a dictionary of fields, each value is a list of fields by
+that name.  <tt class="docutils literal"><span class="pre">&lt;input</span> <span class="pre">type=&quot;radio&quot;&gt;</span></tt> and <tt class="docutils literal"><span class="pre">&lt;select&gt;</span></tt> are
+both represented as single fields with multiple options.</dd>
+</dl>
+<dl class="method">
+<dt id="paste.fixture.Form.get">
+<tt class="descname">get</tt><big>(</big><em>name</em>, <em>index=None</em>, <em>default=&lt;class 'paste.fixture.NoDefault'&gt;</em><big>)</big><a class="headerlink" href="#paste.fixture.Form.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the named/indexed field object, or <tt class="docutils literal"><span class="pre">default</span></tt> if no field
+is found.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="paste.fixture.Form.select">
+<tt class="descname">select</tt><big>(</big><em>name</em>, <em>value</em>, <em>index=None</em><big>)</big><a class="headerlink" href="#paste.fixture.Form.select" title="Permalink to this definition">¶</a></dt>
+<dd><p>Like <tt class="docutils literal"><span class="pre">.set()</span></tt>, except also confirms the target is a
+<tt class="docutils literal"><span class="pre">&lt;select&gt;</span></tt>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="paste.fixture.Form.set">
+<tt class="descname">set</tt><big>(</big><em>name</em>, <em>value</em>, <em>index=None</em><big>)</big><a class="headerlink" href="#paste.fixture.Form.set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the given name, using <tt class="docutils literal"><span class="pre">index</span></tt> to disambiguate.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="paste.fixture.Form.submit">
+<tt class="descname">submit</tt><big>(</big><em>name=None</em>, <em>index=None</em>, <em>**args</em><big>)</big><a class="headerlink" href="#paste.fixture.Form.submit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Submits the form.  If <tt class="docutils literal"><span class="pre">name</span></tt> is given, then also select that
+button (using <tt class="docutils literal"><span class="pre">index</span></tt> to disambiguate)``.</p>
+<p>Any extra keyword arguments are passed to the <tt class="docutils literal"><span class="pre">.get()</span></tt> or
+<tt class="docutils literal"><span class="pre">.post()</span></tt> method.</p>
+<p>Returns a response object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="paste.fixture.Form.submit_fields">
+<tt class="descname">submit_fields</tt><big>(</big><em>name=None</em>, <em>index=None</em><big>)</big><a class="headerlink" href="#paste.fixture.Form.submit_fields" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of <tt class="docutils literal"><span class="pre">[(name,</span> <span class="pre">value),</span> <span class="pre">...]</span></tt> for the current
+state of the form.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="paste.fixture.Field">
+<em class="property">class </em><tt class="descclassname">paste.fixture.</tt><tt class="descname">Field</tt><big>(</big><em>form</em>, <em>tag</em>, <em>name</em>, <em>pos</em>, <em>value=None</em>, <em>id=None</em>, <em>**attrs</em><big>)</big><a class="headerlink" href="#paste.fixture.Field" title="Permalink to this definition">¶</a></dt>
+<dd><p>Field object.</p>
+<dl class="method">
+<dt id="paste.fixture.Field.force_value">
+<tt class="descname">force_value</tt><big>(</big><em>value</em><big>)</big><a class="headerlink" href="#paste.fixture.Field.force_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Like setting a value, except forces it even for, say, hidden
+fields.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="paste.fixture.Select">
+<em class="property">class </em><tt class="descclassname">paste.fixture.</tt><tt class="descname">Select</tt><big>(</big><em>*args</em>, <em>**attrs</em><big>)</big><a class="headerlink" href="#paste.fixture.Select" title="Permalink to this definition">¶</a></dt>
+<dd><p>Field representing <tt class="docutils literal"><span class="pre">&lt;select&gt;</span></tt></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="paste.fixture.Radio">
+<em class="property">class </em><tt class="descclassname">paste.fixture.</tt><tt class="descname">Radio</tt><big>(</big><em>*args</em>, <em>**attrs</em><big>)</big><a class="headerlink" href="#paste.fixture.Radio" title="Permalink to this definition">¶</a></dt>
+<dd><p>Field representing <tt class="docutils literal"><span class="pre">&lt;input</span> <span class="pre">type=&quot;radio&quot;&gt;</span></tt></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="paste.fixture.Checkbox">
+<em class="property">class </em><tt class="descclassname">paste.fixture.</tt><tt class="descname">Checkbox</tt><big>(</big><em>*args</em>, <em>**attrs</em><big>)</big><a class="headerlink" href="#paste.fixture.Checkbox" title="Permalink to this definition">¶</a></dt>
+<dd><p>Field representing <tt class="docutils literal"><span class="pre">&lt;input</span> <span class="pre">type=&quot;checkbox&quot;&gt;</span></tt></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="paste.fixture.Text">
+<em class="property">class </em><tt class="descclassname">paste.fixture.</tt><tt class="descname">Text</tt><big>(</big><em>form</em>, <em>tag</em>, <em>name</em>, <em>pos</em>, <em>value=''</em>, <em>id=None</em>, <em>**attrs</em><big>)</big><a class="headerlink" href="#paste.fixture.Text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Field representing <tt class="docutils literal"><span class="pre">&lt;input</span> <span class="pre">type=&quot;text&quot;&gt;</span></tt></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="paste.fixture.Textarea">
+<em class="property">class </em><tt class="descclassname">paste.fixture.</tt><tt class="descname">Textarea</tt><big>(</big><em>form</em>, <em>tag</em>, <em>name</em>, <em>pos</em>, <em>value=''</em>, <em>id=None</em>, <em>**attrs</em><big>)</big><a class="headerlink" href="#paste.fixture.Textarea" title="Permalink to this definition">¶</a></dt>
+<dd><p>Field representing <tt class="docutils literal"><span class="pre">&lt;textarea&gt;</span></tt></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="paste.fixture.Hidden">
+<em class="property">class </em><tt class="descclassname">paste.fixture.</tt><tt class="descname">Hidden</tt><big>(</big><em>form</em>, <em>tag</em>, <em>name</em>, <em>pos</em>, <em>value=''</em>, <em>id=None</em>, <em>**attrs</em><big>)</big><a class="headerlink" href="#paste.fixture.Hidden" title="Permalink to this definition">¶</a></dt>
+<dd><p>Field representing <tt class="docutils literal"><span class="pre">&lt;input</span> <span class="pre">type=&quot;hidden&quot;&gt;</span></tt></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="paste.fixture.Submit">
+<em class="property">class </em><tt class="descclassname">paste.fixture.</tt><tt class="descname">Submit</tt><big>(</big><em>form</em>, <em>tag</em>, <em>name</em>, <em>pos</em>, <em>value=None</em>, <em>id=None</em>, <em>**attrs</em><big>)</big><a class="headerlink" href="#paste.fixture.Submit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Field representing <tt class="docutils literal"><span class="pre">&lt;input</span> <span class="pre">type=&quot;submit&quot;&gt;</span></tt> and <tt class="docutils literal"><span class="pre">&lt;button&gt;</span></tt></p>
+</dd></dl>
+
+</div>
+<div class="section" id="script-testing">
+<h2><a class="toc-backref" href="#id8">Script Testing</a><a class="headerlink" href="#script-testing" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="paste.fixture.TestFileEnvironment">
+<em class="property">class </em><tt class="descclassname">paste.fixture.</tt><tt class="descname">TestFileEnvironment</tt><big>(</big><em>base_path</em>, <em>template_path=None</em>, <em>script_path=None</em>, <em>environ=None</em>, <em>cwd=None</em>, <em>start_clear=True</em>, <em>ignore_paths=None</em>, <em>ignore_hidden=True</em><big>)</big><a class="headerlink" href="#paste.fixture.TestFileEnvironment" title="Permalink to this definition">¶</a></dt>
+<dd><p>This represents an environment in which files will be written, and
+scripts will be run.</p>
+<dl class="method">
+<dt id="paste.fixture.TestFileEnvironment.clear">
+<tt class="descname">clear</tt><big>(</big><big>)</big><a class="headerlink" href="#paste.fixture.TestFileEnvironment.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete all the files in the base directory.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="paste.fixture.TestFileEnvironment.run">
+<tt class="descname">run</tt><big>(</big><em>script</em>, <em>*args</em>, <em>**kw</em><big>)</big><a class="headerlink" href="#paste.fixture.TestFileEnvironment.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the command, with the given arguments.  The <tt class="docutils literal"><span class="pre">script</span></tt>
+argument can have space-separated arguments, or you can use
+the positional arguments.</p>
+<p>Keywords allowed are:</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">expect_error</span></tt>: (default False)</dt>
+<dd>Don&#8217;t raise an exception in case of errors</dd>
+<dt><tt class="docutils literal"><span class="pre">expect_stderr</span></tt>: (default <tt class="docutils literal"><span class="pre">expect_error</span></tt>)</dt>
+<dd>Don&#8217;t raise an exception if anything is printed to stderr</dd>
+<dt><tt class="docutils literal"><span class="pre">stdin</span></tt>: (default <tt class="docutils literal"><span class="pre">&quot;&quot;</span></tt>)</dt>
+<dd>Input to the script</dd>
+<dt><tt class="docutils literal"><span class="pre">printresult</span></tt>: (default True)</dt>
+<dd>Print the result after running</dd>
+<dt><tt class="docutils literal"><span class="pre">cwd</span></tt>: (default <tt class="docutils literal"><span class="pre">self.cwd</span></tt>)</dt>
+<dd>The working directory to run in</dd>
+</dl>
+<p>Returns a <a class="reference external" href="class-paste.fixture.ProcResponse.html">ProcResponse</a> object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="paste.fixture.TestFileEnvironment.writefile">
+<tt class="descname">writefile</tt><big>(</big><em>path</em>, <em>content=None</em>, <em>frompath=None</em><big>)</big><a class="headerlink" href="#paste.fixture.TestFileEnvironment.writefile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write a file to the given path.  If <tt class="docutils literal"><span class="pre">content</span></tt> is given then
+that text is written, otherwise the file in <tt class="docutils literal"><span class="pre">frompath</span></tt> is
+used.  <tt class="docutils literal"><span class="pre">frompath</span></tt> is relative to <tt class="docutils literal"><span class="pre">self.template_path</span></tt></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="paste.fixture.ProcResult">
+<em class="property">class </em><tt class="descclassname">paste.fixture.</tt><tt class="descname">ProcResult</tt><big>(</big><em>test_env</em>, <em>args</em>, <em>stdin</em>, <em>stdout</em>, <em>stderr</em>, <em>returncode</em>, <em>files_before</em>, <em>files_after</em><big>)</big><a class="headerlink" href="#paste.fixture.ProcResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents the results of running a command in
+<a class="reference external" href="class-paste.fixture.TestFileEnvironment.html">TestFileEnvironment</a>.</p>
+<p>Attributes to pay particular attention to:</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">stdout</span></tt>, <tt class="docutils literal"><span class="pre">stderr</span></tt>:</dt>
+<dd>What is produced</dd>
+<dt><tt class="docutils literal"><span class="pre">files_created</span></tt>, <tt class="docutils literal"><span class="pre">files_deleted</span></tt>, <tt class="docutils literal"><span class="pre">files_updated</span></tt>:</dt>
+<dd>Dictionaries mapping filenames (relative to the <tt class="docutils literal"><span class="pre">base_dir</span></tt>)
+to <a class="reference external" href="class-paste.fixture.FoundFile.html">FoundFile</a> or
+<a class="reference external" href="class-paste.fixture.FoundDir.html">FoundDir</a> objects.</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="paste.fixture.FoundFile">
+<em class="property">class </em><tt class="descclassname">paste.fixture.</tt><tt class="descname">FoundFile</tt><big>(</big><em>base_path</em>, <em>path</em><big>)</big><a class="headerlink" href="#paste.fixture.FoundFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents a single file found as the result of a command.</p>
+<p>Has attributes:</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">path</span></tt>:</dt>
+<dd>The path of the file, relative to the <tt class="docutils literal"><span class="pre">base_path</span></tt></dd>
+<dt><tt class="docutils literal"><span class="pre">full</span></tt>:</dt>
+<dd>The full path</dd>
+<dt><tt class="docutils literal"><span class="pre">stat</span></tt>:</dt>
+<dd>The results of <tt class="docutils literal"><span class="pre">os.stat</span></tt>.  Also <tt class="docutils literal"><span class="pre">mtime</span></tt> and <tt class="docutils literal"><span class="pre">size</span></tt>
+contain the <tt class="docutils literal"><span class="pre">.st_mtime</span></tt> and <tt class="docutils literal"><span class="pre">st_size</span></tt> of the stat.</dd>
+<dt><tt class="docutils literal"><span class="pre">bytes</span></tt>:</dt>
+<dd>The contents of the file.</dd>
+</dl>
+<p>You may use the <tt class="docutils literal"><span class="pre">in</span></tt> operator with these objects (tested against
+the contents of the file), and the <tt class="docutils literal"><span class="pre">.mustcontain()</span></tt> method.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="paste.fixture.FoundDir">
+<em class="property">class </em><tt class="descclassname">paste.fixture.</tt><tt class="descname">FoundDir</tt><big>(</big><em>base_path</em>, <em>path</em><big>)</big><a class="headerlink" href="#paste.fixture.FoundDir" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents a directory created by a command.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="http://pythonpaste.org/" class="invisible-link">Python Paste</a></h3>
+
+<ul>
+<li><a href="http://trac.pythonpaste.org">Issue tracker</a></li>
+<li><a href="http://pythonpaste.org/">Paste core</a></li>
+<li><a href="http://pythonpaste.org/webob/">WebOb</a></li>
+<li><a href="http://pythonpaste.org/deploy/">Paste Deploy</a></li>
+<li><a href="http://pythonpaste.org/script/">Paste Script</a></li>
+<li><a href="http://pythonpaste.org/webtest/">WebTest</a></li>
+<li><a href="http://pythonpaste.org/scripttest/">ScriptType</a></li>
+<li><a href="http://pythonpaste.org/initools/">INITools</a></li>
+<li><a href="http://pythonpaste.org/tempita/">Tempita</a></li>
+<li><a href="http://pythonpaste.org/waitforit/">WaitForIt</a></li>
+<li><a href="http://pythonpaste.org/wphp/">WPHP</a></li>
+<li><a href="http://pythonpaste.org/wsgifilter/">WSGIFilter</a></li>
+<li><a href="http://pythonpaste.org/wsgiproxy/">WSGIProxy</a></li>
+</ul>
+
+
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">paste.fixture</span></tt> &#8211; Test applications</a><ul>
+<li><a class="reference internal" href="#module-contents">Module Contents</a></li>
+<li><a class="reference internal" href="#forms">Forms</a></li>
+<li><a class="reference internal" href="#script-testing">Script Testing</a></li>
+</ul>
+</li>
+</ul>
+
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/modules/fixture.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, Ian Bicking.
+      Last updated on Sep 14, 2010.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

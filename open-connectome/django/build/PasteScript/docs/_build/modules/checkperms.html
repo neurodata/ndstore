@@ -1,0 +1,251 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>paste.script.checkperms – functions to check and diff file permissions &mdash; Paste Script v1.7.4.1 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.7.4.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Paste Script v1.7.4.1 documentation" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste Script v1.7.4.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-paste.script.checkperms">
+<span id="paste-script-checkperms-functions-to-check-and-diff-file-permissions"></span><h1><a class="toc-backref" href="#id1"><a class="reference internal" href="#module-paste.script.checkperms" title="paste.script.checkperms"><tt class="xref py py-mod docutils literal"><span class="pre">paste.script.checkperms</span></tt></a> &#8211; functions to check and diff file permissions</a><a class="headerlink" href="#module-paste.script.checkperms" title="Permalink to this headline">¶</a></h1>
+<p>This is a module to check the filesystem for the presence and
+permissions of certain files.  It can also be used to correct the
+permissions (but not existance) of those files.</p>
+<p>Currently only supports Posix systems (with Posixy permissions).
+Permission stuff can probably be stubbed out later.</p>
+<div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#module-paste.script.checkperms" id="id1"><a class="reference internal" href="#module-paste.script.checkperms" title="paste.script.checkperms"><tt class="xref py py-mod docutils literal"><span class="pre">paste.script.checkperms</span></tt></a> &#8211; functions to check and diff file permissions</a><ul>
+<li><a class="reference internal" href="#module-contents" id="id2">Module Contents</a><ul>
+<li><a class="reference internal" href="#permissions" id="id3">Permissions</a></li>
+<li><a class="reference internal" href="#ownership" id="id4">Ownership</a></li>
+<li><a class="reference internal" href="#models" id="id5">Models</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="module-contents">
+<h2><a class="toc-backref" href="#id2">Module Contents</a><a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="permissions">
+<h3><a class="toc-backref" href="#id3">Permissions</a><a class="headerlink" href="#permissions" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="paste.script.checkperms.read_perm_spec">
+<tt class="descclassname">paste.script.checkperms.</tt><tt class="descname">read_perm_spec</tt><big>(</big><em>spec</em><big>)</big><a class="headerlink" href="#paste.script.checkperms.read_perm_spec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads a spec like &#8216;rw-r&#8211;r&#8211;&#8217; into a octal number suitable for
+chmod.  That is characters in groups of three &#8211; first group is
+user, second for group, third for other (all other people).  The
+characters are r (read), w (write), and x (executable), though the
+executable can also be s (sticky).  Files in sticky directories
+get the directories permission setting.</p>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="nb">oct</span><span class="p">(</span><span class="n">read_perm_spec</span><span class="p">(</span><span class="s">&#39;rw-r--r--&#39;</span><span class="p">))</span>
+<span class="go">0644</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="nb">oct</span><span class="p">(</span><span class="n">read_perm_spec</span><span class="p">(</span><span class="s">&#39;rw-rwsr--&#39;</span><span class="p">))</span>
+<span class="go">02664</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="nb">oct</span><span class="p">(</span><span class="n">read_perm_spec</span><span class="p">(</span><span class="s">&#39;r-xr--r--&#39;</span><span class="p">))</span>
+<span class="go">0544</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="nb">oct</span><span class="p">(</span><span class="n">read_perm_spec</span><span class="p">(</span><span class="s">&#39;r--------&#39;</span><span class="p">))</span>
+<span class="go">0400</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="paste.script.checkperms.mode_diff">
+<tt class="descclassname">paste.script.checkperms.</tt><tt class="descname">mode_diff</tt><big>(</big><em>filename</em>, <em>mode</em>, <em>**kw</em><big>)</big><a class="headerlink" href="#paste.script.checkperms.mode_diff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the differences calculated using <tt class="docutils literal"><span class="pre">calc_mode_diff</span></tt></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="paste.script.checkperms.calc_mode_diff">
+<tt class="descclassname">paste.script.checkperms.</tt><tt class="descname">calc_mode_diff</tt><big>(</big><em>cur_mode</em>, <em>mode</em>, <em>keep_exe=True</em>, <em>not_set='not set: '</em>, <em>set='set: '</em><big>)</big><a class="headerlink" href="#paste.script.checkperms.calc_mode_diff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gives the difference between the actual mode of the file and the
+given mode.  If <tt class="docutils literal"><span class="pre">keep_exe</span></tt> is true, then if the mode doesn&#8217;t
+include any executable information the executable information will
+simply be ignored.  High bits are also always ignored (except
+suid/sgid and sticky bit).</p>
+<p>Returns a list of differences (empty list if no differences)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="paste.script.checkperms.calc_set_mode">
+<tt class="descclassname">paste.script.checkperms.</tt><tt class="descname">calc_set_mode</tt><big>(</big><em>cur_mode</em>, <em>mode</em>, <em>keep_exe=True</em><big>)</big><a class="headerlink" href="#paste.script.checkperms.calc_set_mode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the new mode given the current node <tt class="docutils literal"><span class="pre">cur_mode</span></tt> and
+the mode spec <tt class="docutils literal"><span class="pre">mode</span></tt> and if <tt class="docutils literal"><span class="pre">keep_exe</span></tt> is true then also keep
+the executable bits in <tt class="docutils literal"><span class="pre">cur_mode</span></tt> if <tt class="docutils literal"><span class="pre">mode</span></tt> has no executable
+bits in it.  Return the new mode.</p>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="nb">oct</span><span class="p">(</span><span class="n">calc_set_mode</span><span class="p">(</span><span class="mo">0775</span><span class="p">,</span> <span class="mo">0644</span><span class="p">))</span>
+<span class="go">0755</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="nb">oct</span><span class="p">(</span><span class="n">calc_set_mode</span><span class="p">(</span><span class="mo">0775</span><span class="p">,</span> <span class="mo">0744</span><span class="p">))</span>
+<span class="go">0744</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="nb">oct</span><span class="p">(</span><span class="n">calc_set_mode</span><span class="p">(</span><span class="mo">010600</span><span class="p">,</span> <span class="mo">0644</span><span class="p">))</span>
+<span class="go">010644</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="nb">oct</span><span class="p">(</span><span class="n">calc_set_mode</span><span class="p">(</span><span class="mo">0775</span><span class="p">,</span> <span class="mo">0644</span><span class="p">,</span> <span class="bp">False</span><span class="p">))</span>
+<span class="go">0644</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="paste.script.checkperms.set_mode">
+<tt class="descclassname">paste.script.checkperms.</tt><tt class="descname">set_mode</tt><big>(</big><em>filename</em>, <em>mode</em>, <em>**kw</em><big>)</big><a class="headerlink" href="#paste.script.checkperms.set_mode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the mode on <tt class="docutils literal"><span class="pre">filename</span></tt> using <tt class="docutils literal"><span class="pre">calc_set_mode</span></tt></p>
+</dd></dl>
+
+</div>
+<div class="section" id="ownership">
+<h3><a class="toc-backref" href="#id4">Ownership</a><a class="headerlink" href="#ownership" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="paste.script.checkperms.calc_ownership_spec">
+<tt class="descclassname">paste.script.checkperms.</tt><tt class="descname">calc_ownership_spec</tt><big>(</big><em>spec</em><big>)</big><a class="headerlink" href="#paste.script.checkperms.calc_ownership_spec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates what a string spec means, returning (uid, username,
+gid, groupname), where there can be None values meaning no
+preference.</p>
+<p>The spec is a string like <tt class="docutils literal"><span class="pre">owner:group</span></tt>.  It may use numbers
+instead of user/group names.  It may leave out <tt class="docutils literal"><span class="pre">:group</span></tt>.  It may
+use &#8216;-&#8216; to mean any-user/any-group.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="paste.script.checkperms.ownership_diff">
+<tt class="descclassname">paste.script.checkperms.</tt><tt class="descname">ownership_diff</tt><big>(</big><em>filename</em>, <em>spec</em><big>)</big><a class="headerlink" href="#paste.script.checkperms.ownership_diff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of differences between the ownership of <tt class="docutils literal"><span class="pre">filename</span></tt>
+and the spec given.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="paste.script.checkperms.set_ownership">
+<tt class="descclassname">paste.script.checkperms.</tt><tt class="descname">set_ownership</tt><big>(</big><em>filename</em>, <em>spec</em><big>)</big><a class="headerlink" href="#paste.script.checkperms.set_ownership" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the ownership of <tt class="docutils literal"><span class="pre">filename</span></tt> given the spec.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="models">
+<h3><a class="toc-backref" href="#id5">Models</a><a class="headerlink" href="#models" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="paste.script.checkperms.PermissionSpec">
+<em class="property">class </em><tt class="descclassname">paste.script.checkperms.</tt><tt class="descname">PermissionSpec</tt><a class="headerlink" href="#paste.script.checkperms.PermissionSpec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents a set of specifications for permissions.</p>
+<p>Typically reads from a file that looks like this:</p>
+<div class="highlight-python"><pre>rwxrwxrwx user:group filename</pre>
+</div>
+<p>If the filename ends in /, then it expected to be a directory, and
+the directory is made executable automatically, and the contents
+of the directory are given the same permission (recursively).  By
+default the executable bit on files is left as-is, unless the
+permissions specifically say it should be on in some way.</p>
+<p>You can use &#8216;nomodify filename&#8217; for permissions to say that any
+permission is okay, and permissions should not be changed.</p>
+<p>Use &#8216;noexist filename&#8217; to say that a specific file should not
+exist.</p>
+<p>Use &#8216;symlink filename symlinked_to&#8217; to assert a symlink destination</p>
+<p>The entire file is read, and most specific rules are used for each
+file (i.e., a rule for a subdirectory overrides the rule for a
+superdirectory).  Order does not matter.</p>
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">paste.script.checkperms</span></tt> &#8211; functions to check and diff file permissions</a><ul>
+<li><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li><a class="reference internal" href="#permissions">Permissions</a></li>
+<li><a class="reference internal" href="#ownership">Ownership</a></li>
+<li><a class="reference internal" href="#models">Models</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/modules/checkperms.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste Script v1.7.4.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, Ian Bicking.
+      Last updated on Aug 12, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

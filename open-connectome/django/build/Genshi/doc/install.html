@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="generator" content="Docutils 0.8.1: http://docutils.sourceforge.net/">
+<title>Genshi: Installing Genshi</title>
+<link rel="stylesheet" href="common/style/edgewall.css" type="text/css">
+</head>
+<body>
+<div class="document" id="installing-genshi">
+    <div id="navigation">
+      <span class="projinfo">Genshi 0.7</span>
+      <a href="index.html">Documentation Index</a>
+    </div>
+<h1 class="title">Installing Genshi</h1>
+<div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="auto-toc simple">
+<li><a class="reference internal" href="#prerequisites" id="id1">1   Prerequisites</a></li>
+<li><a class="reference internal" href="#installing-via-easy-install" id="id2">2   Installing via <tt class="docutils literal">easy_install</tt></a></li>
+<li><a class="reference internal" href="#installing-from-a-binary-installer" id="id3">3   Installing from a Binary Installer</a></li>
+<li><a class="reference internal" href="#installing-from-a-source-tarball" id="id4">4   Installing from a Source Tarball</a></li>
+<li><a class="reference internal" href="#support" id="id5">5   Support</a></li>
+</ul>
+</div>
+<div class="section" id="prerequisites">
+<h1>1   Prerequisites</h1>
+<ul class="simple">
+<li><a class="reference external" href="http://www.python.org/">Python</a> 2.4 or later</li>
+<li>Optional: <a class="reference external" href="http://cheeseshop.python.org/pypi/setuptools">Setuptools</a> 0.6c3 or later</li>
+</ul>
+<p>Setuptools is only required for the <a class="reference external" href="plugin.html">template engine plugin</a>, which can be
+used to integrate Genshi with Python web application frameworks such as Pylons
+or TurboGears. Genshi also provides a Setuptools-based plugin that integrates
+its <a class="reference external" href="i18n.html">internationalization support</a> with the <a class="reference external" href="http://babel.edgewall.org/">Babel</a> library, but that support
+can also be used without Setuptools being available (although in a slightly
+less convenient fashion).</p>
+</div>
+<div class="section" id="installing-via-easy-install">
+<h1>2   Installing via <tt class="docutils literal">easy_install</tt></h1>
+<p>If you have a recent version of <a class="reference external" href="http://cheeseshop.python.org/pypi/setuptools">Setuptools</a> installed, you can directly install
+Genshi using the easy_install command-line tool:</p>
+<pre class="literal-block">
+$ easy_install Genshi
+</pre>
+<p>This downloads and installs the latest version of the Genshi package.</p>
+<p>If you have an older Genshi release installed and would like to upgrade, add
+the <tt class="docutils literal"><span class="pre">-U</span></tt> option to the above command.</p>
+</div>
+<div class="section" id="installing-from-a-binary-installer">
+<h1>3   Installing from a Binary Installer</h1>
+<p>Binary packages for Windows and Mac OS X are provided for Genshi. To install
+from such a package, simply download and open it.</p>
+</div>
+<div class="section" id="installing-from-a-source-tarball">
+<h1>4   Installing from a Source Tarball</h1>
+<p>Once you've downloaded and unpacked a Genshi source release, enter the
+directory where the archive was unpacked, and run:</p>
+<pre class="literal-block">
+$ python setup.py install
+</pre>
+<p>Note that you may need administrator/root privileges for this step, as this
+command will by default attempt to install Genshi to the Python
+<tt class="docutils literal"><span class="pre">site-packages</span></tt> directory on your system.</p>
+<p>Genshi comes with an optional extension module written in C that is used to
+improve performance in some areas. This extension is automatically compiled
+when you run the <tt class="docutils literal">setup.py</tt> script as shown above. In the case that the
+extension can not be compiled, possibly due to a missing or incompatible C
+compiler, the compilation is skipped. If you'd prefer Genshi to not use this
+native extension module, you can explicitly bypass the compilation using the
+<tt class="docutils literal"><span class="pre">--without-speedups</span></tt> option:</p>
+<pre class="literal-block">
+$ python setup.py --without-speedups install
+</pre>
+<p>For other build and installation options, please consult the <a class="reference external" href="http://peak.telecommunity.com/DevCenter/EasyInstall">easy_install</a>
+and/or the Python <a class="reference external" href="http://docs.python.org/inst/inst.html">distutils</a> documentation.</p>
+</div>
+<div class="section" id="support">
+<h1>5   Support</h1>
+<p>If you encounter any problems with Genshi, please don't hesitate to ask
+questions on the Genshi <a class="reference external" href="http://genshi.edgewall.org/wiki/MailingList">mailing list</a> or <a class="reference external" href="http://genshi.edgewall.org/wiki/IrcChannel">IRC channel</a>.</p>
+</div>
+    <div id="footer">
+      Visit the Genshi open source project at
+      <a href="http://genshi.edgewall.org/">http://genshi.edgewall.org/</a>
+    </div>
+  </div>
+</body>
+</html>

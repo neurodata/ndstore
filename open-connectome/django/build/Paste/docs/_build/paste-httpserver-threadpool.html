@@ -1,0 +1,280 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The Paste HTTP Server Thread Pool &mdash; Paste v1.7.5 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.7.5',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Paste v1.7.5 documentation" href="index.html" />
+    <link rel="next" title="Testing Applications with Paste" href="testing-applications.html" />
+    <link rel="prev" title="Paste Style Guide" href="StyleGuide.html" />
+ 
+<link rel="stylesheet" type="text/css"
+ href="_static/paste.css.html">
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="testing-applications.html" title="Testing Applications with Paste"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="StyleGuide.html" title="Paste Style Guide"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-paste-http-server-thread-pool">
+<h1>The Paste HTTP Server Thread Pool<a class="headerlink" href="#the-paste-http-server-thread-pool" title="Permalink to this headline">¶</a></h1>
+<p>This document describes how the thread pool in <tt class="docutils literal"><span class="pre">paste.httpserver</span></tt>
+works, and how it can adapt to problems.</p>
+<p>Note all of the configuration parameters listed here are prefixed with
+<tt class="docutils literal"><span class="pre">threadpool_</span></tt> when running through a Paste Deploy configuration.</p>
+<div class="section" id="error-cases">
+<h2>Error Cases<a class="headerlink" href="#error-cases" title="Permalink to this headline">¶</a></h2>
+<p>When a WSGI application is called, it&#8217;s possible that it will block
+indefinitely.  There&#8217;s two basic ways you can manage threads:</p>
+<ul class="simple">
+<li>Start a thread on every request, close it down when the thread stops</li>
+<li>Start a pool of threads, and reuse those threads for subsequent
+requests</li>
+</ul>
+<p>In both cases things go wrong &#8211; if you start a thread every request
+you will have an explosion of threads, and with it memory and a loss
+of performance.  This can culminate in really high loads, swapping,
+and the whole site grinds to a halt.</p>
+<p>If you are using a pool of threads, all the threads can simply be used
+up.  New requests go into a queue to be processed, but since that
+queue never moves forward everyone will just block.  The site
+basically freezes, though memory usage doesn&#8217;t generally get worse.</p>
+</div>
+<div class="section" id="paste-thread-pool">
+<h2>Paste Thread Pool<a class="headerlink" href="#paste-thread-pool" title="Permalink to this headline">¶</a></h2>
+<p>The thread pool in Paste has some options to walk the razor&#8217;s edge
+between the two techniques, and to try to respond usefully in most
+cases.</p>
+<p>The pool tracks all workers threads.  Threads can be in a few states:</p>
+<ul class="simple">
+<li>Idle, waiting for a request (&#8220;idle&#8221;)</li>
+<li>Working on a request<ul>
+<li>For a reasonable amount of time (&#8220;busy&#8221;)</li>
+<li>For an unreasonably long amount of time (&#8220;hung&#8221;)</li>
+</ul>
+</li>
+<li>Thread that should die<ul>
+<li>An exception has been injected that should kill the thread, but it
+hasn&#8217;t happened yet (&#8220;dying&#8221;)</li>
+<li>An exception has been injected, but the thread has persisted for
+an unreasonable amount of time (&#8220;zombie&#8221;)</li>
+</ul>
+</li>
+</ul>
+<p>When a request comes in, if there are no idle worker threads waiting
+then the server looks at the workers; all workers are busy or hung.
+If too many are hung, another thread is opened up.  The limit is if
+there are less than <tt class="docutils literal"><span class="pre">spawn_if_under</span></tt> busy threads.  So if you have
+10 workers, <tt class="docutils literal"><span class="pre">spawn_if_under</span></tt> is 5, and there are 6 hung threads and
+4 busy threads, another thread will be opened (bringing the number of
+busy threads back to 5).  Later those threads may be collected again
+if some of the threads become un-hung.  A thread is hung if it has
+been working for longer than <tt class="docutils literal"><span class="pre">hung_thread_limit</span></tt> (default 30
+seconds).</p>
+<p>Every so often, the server will check all the threads for error
+conditions.  This happens every <tt class="docutils literal"><span class="pre">hung_check_period</span></tt> requests
+(default 100).  At this time if there are more than enough threads
+(because of <tt class="docutils literal"><span class="pre">spawn_if_under</span></tt>) some threads may be collected.  If any
+threads have been working for longer than <tt class="docutils literal"><span class="pre">kill_thread_limit</span></tt>
+(default 1800 seconds, i.e., 30 minutes) then the thread will be
+killed.</p>
+<p>To kill a thread the <tt class="docutils literal"><span class="pre">ctypes</span></tt> module must be installed.  This will
+raise an exception (<tt class="docutils literal"><span class="pre">SystemExit</span></tt>) in the thread, which should cause
+the thread to stop.  It can take quite a while for this to actually
+take effect, sometimes on the order of several minutes.  This uses a
+non-public API (hence the <tt class="docutils literal"><span class="pre">ctypes</span></tt> requirement), and so it might not
+work in all cases.  I&#8217;ve tried it in pure Python code and with a hung
+socket, and in both cases it worked.  As soon as the thread is killed
+(before it is actually dead) another worker is added to the pool.</p>
+<p>If the killed thread lives longer than <tt class="docutils literal"><span class="pre">dying_thread_limit</span></tt> (default
+300 seconds, 5 minutes) then it is considered a zombie.</p>
+<p>Zombie threads are not handled specially unless you set
+<tt class="docutils literal"><span class="pre">max_zombies_before_die</span></tt>.  If you set this and there are more than
+this many zombie threads, then the entire process will be killed.
+This is useful if you are running the server under some process
+monitor, such as <tt class="docutils literal"><span class="pre">start-stop-daemon</span></tt>, <tt class="docutils literal"><span class="pre">daemontools</span></tt>, <tt class="docutils literal"><span class="pre">runit</span></tt>, or
+with <tt class="docutils literal"><span class="pre">paster</span> <span class="pre">serve</span> <span class="pre">--monitor</span></tt>.  To make the process die, it may run
+<tt class="docutils literal"><span class="pre">os._exit</span></tt>, which is considered an impolite way to exit a process
+(akin to <tt class="docutils literal"><span class="pre">kill</span> <span class="pre">-9</span></tt>).  It <em>will</em> try to run the functions registered
+with <tt class="docutils literal"><span class="pre">atexit</span></tt> (except for the thread cleanup functions, which are
+the ones which will block so long as there are living threads).</p>
+</div>
+<div class="section" id="notification">
+<h2>Notification<a class="headerlink" href="#notification" title="Permalink to this headline">¶</a></h2>
+<p>If you set <tt class="docutils literal"><span class="pre">error_email</span></tt> (including setting it globally in a Paste
+Deploy <tt class="docutils literal"><span class="pre">[DEFAULT]</span></tt> section) then you will be notified of two error
+conditions: when hung threads are killed, and when the process is
+killed due to too many zombie threads.</p>
+</div>
+<div class="section" id="missed-cases">
+<h2>Missed Cases<a class="headerlink" href="#missed-cases" title="Permalink to this headline">¶</a></h2>
+<p>If you have a worker pool size of 10, and 11 slow or hung requests
+come in, the first 10 will get handed off but the server won&#8217;t know
+yet that they will hang.  The last request will stay stuck in a queue
+until another request comes in.  When a later request comes later
+(after <tt class="docutils literal"><span class="pre">hung_thread_limit</span></tt> seconds) the server will notice the
+problem and add more threads, and the 11th request will come through.</p>
+<p>If a trickle of bad requests keeps coming in, the number of hung
+threads will keep increasing.  At 100 the <tt class="docutils literal"><span class="pre">hung_check_period</span></tt> may
+not clean them up fast enough.</p>
+<p>Killing threads is not something Python really supports.  Corruption
+of the process, memory leaks, or who knows what might occur.  For the
+most part the threads seem to be killed in a fairly simple manner &#8211;
+an exception is raised, and <tt class="docutils literal"><span class="pre">finally</span></tt> blocks do get executed.  But
+this hasn&#8217;t been tried much in production, so there&#8217;s not much
+experience with it.</p>
+</div>
+<div class="section" id="watch-threads">
+<h2>watch_threads<a class="headerlink" href="#watch-threads" title="Permalink to this headline">¶</a></h2>
+<p>If you want to see what&#8217;s going on in your process, you can install
+the application <tt class="docutils literal"><span class="pre">egg:Paste#watch_threads</span></tt> (in the
+<tt class="docutils literal"><span class="pre">paste.debug.watchthreads</span></tt> module).  This lets you see requests and
+how long they have been running.  In Python 2.5 you can see tracebacks
+of the running requests; before that you can only see request data
+(URLs, User-Agent, etc).  If you set <tt class="docutils literal"><span class="pre">allow_kill</span> <span class="pre">=</span> <span class="pre">true</span></tt> then you
+can also kill threads from the application.  The thread pool is
+intended to run reliably without intervention, but this can help debug
+problems or give you some feeling of what causes problems in the site.</p>
+<p>This does open up privacy problems, as it gives you access to all the
+request data in the site, including cookies, IP addresses, etc.  It
+shouldn&#8217;t be left on in a public setting.</p>
+</div>
+<div class="section" id="socket-timeout">
+<h2>socket_timeout<a class="headerlink" href="#socket-timeout" title="Permalink to this headline">¶</a></h2>
+<p>The HTTP server (not the thread pool) also accepts an argument
+<tt class="docutils literal"><span class="pre">socket_timeout</span></tt>.  It is turned off by default.  You might find it
+helpful to turn it on.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="http://pythonpaste.org/" class="invisible-link">Python Paste</a></h3>
+
+<ul>
+<li><a href="http://trac.pythonpaste.org">Issue tracker</a></li>
+<li><a href="http://pythonpaste.org/">Paste core</a></li>
+<li><a href="http://pythonpaste.org/webob/">WebOb</a></li>
+<li><a href="http://pythonpaste.org/deploy/">Paste Deploy</a></li>
+<li><a href="http://pythonpaste.org/script/">Paste Script</a></li>
+<li><a href="http://pythonpaste.org/webtest/">WebTest</a></li>
+<li><a href="http://pythonpaste.org/scripttest/">ScriptType</a></li>
+<li><a href="http://pythonpaste.org/initools/">INITools</a></li>
+<li><a href="http://pythonpaste.org/tempita/">Tempita</a></li>
+<li><a href="http://pythonpaste.org/waitforit/">WaitForIt</a></li>
+<li><a href="http://pythonpaste.org/wphp/">WPHP</a></li>
+<li><a href="http://pythonpaste.org/wsgifilter/">WSGIFilter</a></li>
+<li><a href="http://pythonpaste.org/wsgiproxy/">WSGIProxy</a></li>
+</ul>
+
+
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">The Paste HTTP Server Thread Pool</a><ul>
+<li><a class="reference internal" href="#error-cases">Error Cases</a></li>
+<li><a class="reference internal" href="#paste-thread-pool">Paste Thread Pool</a></li>
+<li><a class="reference internal" href="#notification">Notification</a></li>
+<li><a class="reference internal" href="#missed-cases">Missed Cases</a></li>
+<li><a class="reference internal" href="#watch-threads">watch_threads</a></li>
+<li><a class="reference internal" href="#socket-timeout">socket_timeout</a></li>
+</ul>
+</li>
+</ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="StyleGuide.html"
+                        title="previous chapter">Paste Style Guide</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="testing-applications.html"
+                        title="next chapter">Testing Applications with Paste</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/paste-httpserver-threadpool.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="testing-applications.html" title="Testing Applications with Paste"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="StyleGuide.html" title="Paste Style Guide"
+             >previous</a> |</li>
+        <li><a href="index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, Ian Bicking.
+      Last updated on Sep 14, 2010.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

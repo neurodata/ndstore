@@ -1,0 +1,190 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>paste.debug.profile – profile applications and requests &mdash; Paste v1.7.5 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.7.5',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Paste v1.7.5 documentation" href="../index.html" />
+ 
+<link rel="stylesheet" type="text/css"
+ href="../_static/paste.css.html">
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-paste.debug.profile">
+<span id="paste-debug-profile-profile-applications-and-requests"></span><h1><a class="reference internal" href="#module-paste.debug.profile"><tt class="xref py py-mod docutils literal"><span class="pre">paste.debug.profile</span></tt></a> &#8211; profile applications and requests<a class="headerlink" href="#module-paste.debug.profile" title="Permalink to this headline">¶</a></h1>
+<p>Middleware that profiles the request and displays profiling
+information at the bottom of each page.</p>
+<div class="section" id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="paste.debug.profile.ProfileMiddleware">
+<em class="property">class </em><tt class="descclassname">paste.debug.profile.</tt><tt class="descname">ProfileMiddleware</tt><big>(</big><em>app</em>, <em>global_conf=None</em>, <em>log_filename='profile.log.tmp'</em>, <em>limit=40</em><big>)</big><a class="headerlink" href="#paste.debug.profile.ProfileMiddleware" title="Permalink to this definition">¶</a></dt>
+<dd><p>Middleware that profiles all requests.</p>
+<p>All HTML pages will have profiling information appended to them.
+The data is isolated to that single request, and does not include
+data from previous requests.</p>
+<p>This uses the <tt class="docutils literal"><span class="pre">hotshot</span></tt> module, which affects performance of the
+application.  It also runs in a single-threaded mode, so it is
+only usable in development environments.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="paste.debug.profile.make_profile_middleware">
+<tt class="descclassname">paste.debug.profile.</tt><tt class="descname">make_profile_middleware</tt><big>(</big><em>app</em>, <em>global_conf</em>, <em>log_filename='profile.log.tmp'</em>, <em>limit=40</em><big>)</big><a class="headerlink" href="#paste.debug.profile.make_profile_middleware" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrap the application in a component that will profile each
+request.  The profiling data is then appended to the output
+of each page.</p>
+<p>Note that this serializes all requests (i.e., removing
+concurrency).  Therefore never use this in production.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="paste.debug.profile.profile_decorator">
+<tt class="descclassname">paste.debug.profile.</tt><tt class="descname">profile_decorator</tt><big>(</big><em>**options</em><big>)</big><a class="headerlink" href="#paste.debug.profile.profile_decorator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Profile a single function call.</p>
+<p>Used around a function, like:</p>
+<div class="highlight-python"><pre>@profile_decorator(options...)
+def ...</pre>
+</div>
+<p>All calls to the function will be profiled.  The options are
+all keywords, and are:</p>
+<blockquote>
+<dl class="docutils">
+<dt>log_file:</dt>
+<dd>The filename to log to (or <tt class="docutils literal"><span class="pre">'stdout'</span></tt> or <tt class="docutils literal"><span class="pre">'stderr'</span></tt>).
+Default: stderr.</dd>
+<dt>display_limit:</dt>
+<dd>Only show the top N items, default: 20.</dd>
+<dt>sort_stats:</dt>
+<dd>A list of string-attributes to sort on.  Default
+<tt class="docutils literal"><span class="pre">('time',</span> <span class="pre">'calls')</span></tt>.</dd>
+<dt>strip_dirs:</dt>
+<dd>Strip directories/module names from files?  Default True.</dd>
+<dt>add_info:</dt>
+<dd>If given, this info will be added to the report (for your
+own tracking).  Default: none.</dd>
+<dt>log_filename:</dt>
+<dd>The temporary filename to log profiling data to.  Default;
+<tt class="docutils literal"><span class="pre">./profile_data.log.tmp</span></tt></dd>
+<dt>no_profile:</dt>
+<dd>If true, then don&#8217;t actually profile anything.  Useful for
+conditional profiling.</dd>
+</dl>
+</blockquote>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="http://pythonpaste.org/" class="invisible-link">Python Paste</a></h3>
+
+<ul>
+<li><a href="http://trac.pythonpaste.org">Issue tracker</a></li>
+<li><a href="http://pythonpaste.org/">Paste core</a></li>
+<li><a href="http://pythonpaste.org/webob/">WebOb</a></li>
+<li><a href="http://pythonpaste.org/deploy/">Paste Deploy</a></li>
+<li><a href="http://pythonpaste.org/script/">Paste Script</a></li>
+<li><a href="http://pythonpaste.org/webtest/">WebTest</a></li>
+<li><a href="http://pythonpaste.org/scripttest/">ScriptType</a></li>
+<li><a href="http://pythonpaste.org/initools/">INITools</a></li>
+<li><a href="http://pythonpaste.org/tempita/">Tempita</a></li>
+<li><a href="http://pythonpaste.org/waitforit/">WaitForIt</a></li>
+<li><a href="http://pythonpaste.org/wphp/">WPHP</a></li>
+<li><a href="http://pythonpaste.org/wsgifilter/">WSGIFilter</a></li>
+<li><a href="http://pythonpaste.org/wsgiproxy/">WSGIProxy</a></li>
+</ul>
+
+
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">paste.debug.profile</span></tt> &#8211; profile applications and requests</a><ul>
+<li><a class="reference internal" href="#module-contents">Module Contents</a></li>
+</ul>
+</li>
+</ul>
+
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/modules/debug.profile.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, Ian Bicking.
+      Last updated on Sep 14, 2010.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

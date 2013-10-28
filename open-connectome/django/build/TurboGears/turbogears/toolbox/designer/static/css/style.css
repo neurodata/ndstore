@@ -1,0 +1,75 @@
+body {
+       margin:0;
+       padding:0;
+       font-family:verdana,sans-serif;
+       font-size:12px;
+       background-image:url('/tg_static/images/tg_under_the_hood_sans_gear.png');
+       background-repeat:no-repeat;
+       background-position:bottom center;
+}
+body td {
+    font-family:verdana,sans-serif;
+    font-size:12px;
+    color:#333;
+}
+#left_col { width:200px; }
+#left_col ul { list-style-type:none;padding:0;margin:0;margin-top:20px; }
+#left_col ul li { margin-bottom:0d; }
+#left_col ul li a {
+    padding-left:10px;
+    background-image:none;
+    color:#cc3300;
+    text-decoration:none;
+}
+#right_col h1 { color:#666;width:400px;font-size:16px;border-bottom:1px solid #9A4515; }
+.add_column { width:400px; }
+.add_column td { background-color:#e3e3e3;}
+.add_column select { width:300px; }
+.faded { font-size:10px;color:#666 }
+ul.boxy {
+    list-style-type:none;
+    padding:0;
+    margin:0;
+    font-size:13px;
+    font-family:Arial, sans-serif;
+}
+ul.boxy li { margin:0;margin-top:4px;border-bottom:1px solid #e3e3e3; }
+#main_content a { text-decoration:none; }
+
+.field input { width:175px; }
+.field select { width:175px; }
+.ak { font-size:9px;color:#999;display:none }
+#model_actions { margin-top:10px }
+#model_actions button { margin-right:5px }
+.columns_list { width:400px; }
+.column_doc { width:300px;display:none; }
+.parent_class {font-style:normal;font-size:11px;color:#999; }
+#help {
+    width:250px;padding:15px;
+    background-color:#ffffdd;
+    border:1px solid #999;
+    font-family:verdana,sans-serif;font-size:13px;
+    visibility:hidden;margin-top:16px;
+}
+#help DT { font-weight:900; }
+#help a { text-decoration:none;color:#cc3300; }
+#tab a { padding:5px;padding-right:10px;background-color:#e3e3e3; }
+#tab td { padding-bottom:5px;border-right:2px solid #fff }
+#canvas { padding:15px;width:500px;height:500px;border-left:1px solid #e3e3e3;border-top:2px solid #e3e3e3; }
+#samples { width:100%;background-color:#e3e3e3;padding:5px;padding-left:160px; }
+#samples td { font-size:10px; }
+#samples select { width:200px;font-size:10px; }
+#samples input { font-size:10px; }
+.handle {
+    background-color:#ccc;
+    width:7px;
+    height:20px;
+    cursor:move;
+    font-size:14px;
+    visibility:hidden;
+}
+.key { text-decoration:underline; }
+#diagram { width:100%;height:100%;border:1px solid #000; }
+#left_col button { padding-left:5px;text-align:left;width:145px;font-size:10px;cursor:pointer; }
+#left_col .container { padding-left:10px; }
+

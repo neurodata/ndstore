@@ -1,0 +1,31 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:py="http://genshi.edgewall.org/">
+
+<head py:match="head">
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <title py:replace="''">Your title goes here</title>
+    <link type="text/css" rel="stylesheet" href="/tg_static/css/toolbox.css" />
+    <link py:for="css in tg_css" py:replace="css.display()" />
+    <link py:for="js in tg_js_head" py:replace="js.display()" />
+    <meta py:replace="select('*')"/>
+    <link rel="shortcut icon" href="/tg_static/images/favicon.ico" type="image/ico"/>
+</head>
+
+<body py:match="body">
+    <div py:strip="1" py:for="js in tg_js_bodytop">${js.display()}</div>
+    <table id="top" width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+            <td id="logo">
+                <a href="/" border="0"><img src="/tg_static/images/toolbox_logo.png" border="0"/></a>
+            </td>
+            <td valign="bottom"><img src="/tg_static/images/toolbox_top_vertical_line.png" border="0"/></td>
+        </tr>
+    </table>
+
+    <div py:if="tg_flash" class="flash" py:content="tg_flash"></div>
+
+    <div py:replace="select('*|text()')"/>
+
+    <div py:strip="True" py:for="js in tg_js_bodybottom">${js.display()}</div>
+</body>
+</html>

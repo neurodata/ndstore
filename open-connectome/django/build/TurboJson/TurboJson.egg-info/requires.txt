@@ -1,0 +1,2 @@
+PEAK-Rules >= 0.5a1.dev-r2600
+simplejson >= 1.9.1

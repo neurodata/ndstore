@@ -1,0 +1,13 @@
+:mod:`paste.script.cherrypy_server` -- CherryPy WSGI server
+===========================================================
+
+This is a slightly repackaged version of the WSGI HTTP server in
+`CherryPy <http://cherrypy.org>`_.
+
+.. automodule:: paste.script.wsgiserver
+
+Module Contents
+---------------
+
+.. autofunction:: cpwsgi_server
+

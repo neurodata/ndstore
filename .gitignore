@@ -1,5 +1,6 @@
-.DS_Store
-*.pyc
+# OCP Files #
+#############
+
 *private.py
 web/django/EMOCP/settings.py
 settings.py
@@ -9,3 +10,18 @@ godown.py
 npzToPNGs.py
 activation_email.txt
 *.py~
+
+# Compiled source #
+###################
+*.pyc
+*.o
+*.so
+*.out
+*.exe
+*.a
+*.log
+
+# OS Generated Files #
+######################
+.DS_Store
+*.swp

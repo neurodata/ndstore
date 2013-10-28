@@ -1,0 +1,182 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>paste.reloader – Monitor for file changes to restart the process &mdash; Paste v1.7.5 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.7.5',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Paste v1.7.5 documentation" href="../index.html" />
+ 
+<link rel="stylesheet" type="text/css"
+ href="../_static/paste.css.html">
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-paste.reloader">
+<span id="paste-reloader-monitor-for-file-changes-to-restart-the-process"></span><h1><a class="reference internal" href="#module-paste.reloader"><tt class="xref py py-mod docutils literal"><span class="pre">paste.reloader</span></tt></a> &#8211; Monitor for file changes to restart the process<a class="headerlink" href="#module-paste.reloader" title="Permalink to this headline">¶</a></h1>
+<p>A file monitor and server restarter.</p>
+<p>Use this like:</p>
+<p>..code-block:: Python</p>
+<blockquote>
+import reloader
+reloader.install()</blockquote>
+<p>Then make sure your server is installed with a shell script like:</p>
+<div class="highlight-python"><pre>err=3
+while test "$err" -eq 3 ; do
+    python server.py
+    err="$?"
+done</pre>
+</div>
+<p>or is run from this .bat file (if you use Windows):</p>
+<div class="highlight-python"><pre>@echo off
+:repeat
+    python server.py
+if %errorlevel% == 3 goto repeat</pre>
+</div>
+<p>or run a monitoring process in Python (<tt class="docutils literal"><span class="pre">paster</span> <span class="pre">serve</span> <span class="pre">--reload</span></tt> does
+this).</p>
+<p>Use the <tt class="docutils literal"><span class="pre">watch_file(filename)</span></tt> function to cause a reload/restart for
+other other non-Python files (e.g., configuration files).  If you have
+a dynamic set of files that grows over time you can use something like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">watch_config_files</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">CONFIG_FILE_CACHE</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+<span class="n">paste</span><span class="o">.</span><span class="n">reloader</span><span class="o">.</span><span class="n">add_file_callback</span><span class="p">(</span><span class="n">watch_config_files</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Then every time the reloader polls files it will call
+<tt class="docutils literal"><span class="pre">watch_config_files</span></tt> and check all the filenames it returns.</p>
+<div class="section" id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="paste.reloader.install">
+<tt class="descclassname">paste.reloader.</tt><tt class="descname">install</tt><big>(</big><em>poll_interval=1</em><big>)</big><a class="headerlink" href="#paste.reloader.install" title="Permalink to this definition">¶</a></dt>
+<dd><p>Install the reloading monitor.</p>
+<p>On some platforms server threads may not terminate when the main
+thread does, causing ports to remain open/locked.  The
+<tt class="docutils literal"><span class="pre">raise_keyboard_interrupt</span></tt> option creates a unignorable signal
+which causes the whole application to shut-down (rudely).</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="paste.reloader.Monitor">
+<em class="property">class </em><tt class="descclassname">paste.reloader.</tt><tt class="descname">Monitor</tt><big>(</big><em>poll_interval</em><big>)</big><a class="headerlink" href="#paste.reloader.Monitor" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="paste.reloader.watch_file">
+<tt class="descclassname">paste.reloader.</tt><tt class="descname">watch_file</tt><big>(</big><em>func</em>, <em>obj</em>, <em>type</em><big>)</big><a class="headerlink" href="#paste.reloader.watch_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="http://pythonpaste.org/" class="invisible-link">Python Paste</a></h3>
+
+<ul>
+<li><a href="http://trac.pythonpaste.org">Issue tracker</a></li>
+<li><a href="http://pythonpaste.org/">Paste core</a></li>
+<li><a href="http://pythonpaste.org/webob/">WebOb</a></li>
+<li><a href="http://pythonpaste.org/deploy/">Paste Deploy</a></li>
+<li><a href="http://pythonpaste.org/script/">Paste Script</a></li>
+<li><a href="http://pythonpaste.org/webtest/">WebTest</a></li>
+<li><a href="http://pythonpaste.org/scripttest/">ScriptType</a></li>
+<li><a href="http://pythonpaste.org/initools/">INITools</a></li>
+<li><a href="http://pythonpaste.org/tempita/">Tempita</a></li>
+<li><a href="http://pythonpaste.org/waitforit/">WaitForIt</a></li>
+<li><a href="http://pythonpaste.org/wphp/">WPHP</a></li>
+<li><a href="http://pythonpaste.org/wsgifilter/">WSGIFilter</a></li>
+<li><a href="http://pythonpaste.org/wsgiproxy/">WSGIProxy</a></li>
+</ul>
+
+
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">paste.reloader</span></tt> &#8211; Monitor for file changes to restart the process</a><ul>
+<li><a class="reference internal" href="#module-contents">Module Contents</a></li>
+</ul>
+</li>
+</ul>
+
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/modules/reloader.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, Ian Bicking.
+      Last updated on Sep 14, 2010.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

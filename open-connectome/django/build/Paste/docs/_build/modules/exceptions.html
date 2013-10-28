@@ -1,0 +1,499 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>paste.exceptions – Catch, display, and notify for exceptions &mdash; Paste v1.7.5 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.7.5',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Paste v1.7.5 documentation" href="../index.html" />
+ 
+<link rel="stylesheet" type="text/css"
+ href="../_static/paste.css.html">
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-paste.exceptions.errormiddleware">
+<span id="paste-exceptions-catch-display-and-notify-for-exceptions"></span><h1><tt class="xref py py-mod docutils literal"><span class="pre">paste.exceptions</span></tt> &#8211; Catch, display, and notify for exceptions<a class="headerlink" href="#module-paste.exceptions.errormiddleware" title="Permalink to this headline">¶</a></h1>
+<p>Error handler middleware</p>
+<div class="section" id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="paste.exceptions.errormiddleware.ErrorMiddleware">
+<em class="property">class </em><tt class="descclassname">paste.exceptions.errormiddleware.</tt><tt class="descname">ErrorMiddleware</tt><big>(</big><em>application</em>, <em>global_conf=None</em>, <em>debug=&lt;NoDefault&gt;</em>, <em>error_email=None</em>, <em>error_log=None</em>, <em>show_exceptions_in_wsgi_errors=&lt;NoDefault&gt;</em>, <em>from_address=None</em>, <em>smtp_server=None</em>, <em>smtp_username=None</em>, <em>smtp_password=None</em>, <em>smtp_use_tls=False</em>, <em>error_subject_prefix=None</em>, <em>error_message=None</em>, <em>xmlhttp_key=None</em><big>)</big><a class="headerlink" href="#paste.exceptions.errormiddleware.ErrorMiddleware" title="Permalink to this definition">¶</a></dt>
+<dd><p>Error handling middleware</p>
+<p>Usage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">error_catching_wsgi_app</span> <span class="o">=</span> <span class="n">ErrorMiddleware</span><span class="p">(</span><span class="n">wsgi_app</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Settings:</p>
+<blockquote>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">debug</span></tt>:</dt>
+<dd>If true, then tracebacks will be shown in the browser.</dd>
+<dt><tt class="docutils literal"><span class="pre">error_email</span></tt>:</dt>
+<dd>an email address (or list of addresses) to send exception 
+reports to</dd>
+<dt><tt class="docutils literal"><span class="pre">error_log</span></tt>:</dt>
+<dd>a filename to append tracebacks to</dd>
+<dt><tt class="docutils literal"><span class="pre">show_exceptions_in_wsgi_errors</span></tt>:</dt>
+<dd>If true, then errors will be printed to <tt class="docutils literal"><span class="pre">wsgi.errors</span></tt> 
+(frequently a server error log, or stderr).</dd>
+<dt><tt class="docutils literal"><span class="pre">from_address</span></tt>, <tt class="docutils literal"><span class="pre">smtp_server</span></tt>, <tt class="docutils literal"><span class="pre">error_subject_prefix</span></tt>, <tt class="docutils literal"><span class="pre">smtp_username</span></tt>, <tt class="docutils literal"><span class="pre">smtp_password</span></tt>, <tt class="docutils literal"><span class="pre">smtp_use_tls</span></tt>:</dt>
+<dd>variables to control the emailed exception reports</dd>
+<dt><tt class="docutils literal"><span class="pre">error_message</span></tt>:</dt>
+<dd>When debug mode is off, the error message to show to users.</dd>
+<dt><tt class="docutils literal"><span class="pre">xmlhttp_key</span></tt>:</dt>
+<dd>When this key (default <tt class="docutils literal"><span class="pre">_</span></tt>) is in the request GET variables
+(not POST!), expect that this is an XMLHttpRequest, and the
+response should be more minimal; it should not be a complete
+HTML page.</dd>
+</dl>
+</blockquote>
+<p>Environment Configuration:</p>
+<blockquote>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">paste.throw_errors</span></tt>:</dt>
+<dd>If this setting in the request environment is true, then this
+middleware is disabled. This can be useful in a testing situation
+where you don&#8217;t want errors to be caught and transformed.</dd>
+<dt><tt class="docutils literal"><span class="pre">paste.expected_exceptions</span></tt>:</dt>
+<dd>When this middleware encounters an exception listed in this
+environment variable and when the <tt class="docutils literal"><span class="pre">start_response</span></tt> has not 
+yet occurred, the exception will be re-raised instead of being
+caught.  This should generally be set by middleware that may 
+(but probably shouldn&#8217;t be) installed above this middleware, 
+and wants to get certain exceptions.  Exceptions raised after
+<tt class="docutils literal"><span class="pre">start_response</span></tt> have been called are always caught since
+by definition they are no longer expected.</dd>
+</dl>
+</blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="paste.exceptions.errormiddleware.handle_exception">
+<tt class="descclassname">paste.exceptions.errormiddleware.</tt><tt class="descname">handle_exception</tt><big>(</big><em>exc_info</em>, <em>error_stream</em>, <em>html=True</em>, <em>debug_mode=False</em>, <em>error_email=None</em>, <em>error_log=None</em>, <em>show_exceptions_in_wsgi_errors=False</em>, <em>error_email_from='errors&#64;localhost'</em>, <em>smtp_server='localhost'</em>, <em>smtp_username=None</em>, <em>smtp_password=None</em>, <em>smtp_use_tls=False</em>, <em>error_subject_prefix=''</em>, <em>error_message=None</em>, <em>simple_html_error=False</em><big>)</big><a class="headerlink" href="#paste.exceptions.errormiddleware.handle_exception" title="Permalink to this definition">¶</a></dt>
+<dd><p>For exception handling outside of a web context</p>
+<p>Use like:</p>
+<div class="highlight-python"><pre>import sys
+from paste.exceptions.errormiddleware import handle_exception
+try:
+    do stuff
+except:
+    handle_exception(
+        sys.exc_info(), sys.stderr, html=False, ...other config...)</pre>
+</div>
+<p>If you want to report, but not fully catch the exception, call
+<tt class="docutils literal"><span class="pre">raise</span></tt> after <tt class="docutils literal"><span class="pre">handle_exception</span></tt>, which (when given no argument)
+will reraise the exception.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="paste.exceptions.errormiddleware.make_error_middleware">
+<tt class="descclassname">paste.exceptions.errormiddleware.</tt><tt class="descname">make_error_middleware</tt><big>(</big><em>app</em>, <em>global_conf</em>, <em>**kw</em><big>)</big><a class="headerlink" href="#paste.exceptions.errormiddleware.make_error_middleware" title="Permalink to this definition">¶</a></dt>
+<dd><p>Settings:</p>
+<blockquote>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">debug</span></tt>:</dt>
+<dd>If true, then tracebacks will be shown in the browser.</dd>
+<dt><tt class="docutils literal"><span class="pre">error_email</span></tt>:</dt>
+<dd>an email address (or list of addresses) to send exception 
+reports to</dd>
+<dt><tt class="docutils literal"><span class="pre">error_log</span></tt>:</dt>
+<dd>a filename to append tracebacks to</dd>
+<dt><tt class="docutils literal"><span class="pre">show_exceptions_in_wsgi_errors</span></tt>:</dt>
+<dd>If true, then errors will be printed to <tt class="docutils literal"><span class="pre">wsgi.errors</span></tt> 
+(frequently a server error log, or stderr).</dd>
+<dt><tt class="docutils literal"><span class="pre">from_address</span></tt>, <tt class="docutils literal"><span class="pre">smtp_server</span></tt>, <tt class="docutils literal"><span class="pre">error_subject_prefix</span></tt>, <tt class="docutils literal"><span class="pre">smtp_username</span></tt>, <tt class="docutils literal"><span class="pre">smtp_password</span></tt>, <tt class="docutils literal"><span class="pre">smtp_use_tls</span></tt>:</dt>
+<dd>variables to control the emailed exception reports</dd>
+<dt><tt class="docutils literal"><span class="pre">error_message</span></tt>:</dt>
+<dd>When debug mode is off, the error message to show to users.</dd>
+<dt><tt class="docutils literal"><span class="pre">xmlhttp_key</span></tt>:</dt>
+<dd>When this key (default <tt class="docutils literal"><span class="pre">_</span></tt>) is in the request GET variables
+(not POST!), expect that this is an XMLHttpRequest, and the
+response should be more minimal; it should not be a complete
+HTML page.</dd>
+</dl>
+</blockquote>
+<p>Environment Configuration:</p>
+<blockquote>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">paste.throw_errors</span></tt>:</dt>
+<dd>If this setting in the request environment is true, then this
+middleware is disabled. This can be useful in a testing situation
+where you don&#8217;t want errors to be caught and transformed.</dd>
+<dt><tt class="docutils literal"><span class="pre">paste.expected_exceptions</span></tt>:</dt>
+<dd>When this middleware encounters an exception listed in this
+environment variable and when the <tt class="docutils literal"><span class="pre">start_response</span></tt> has not 
+yet occurred, the exception will be re-raised instead of being
+caught.  This should generally be set by middleware that may 
+(but probably shouldn&#8217;t be) installed above this middleware, 
+and wants to get certain exceptions.  Exceptions raised after
+<tt class="docutils literal"><span class="pre">start_response</span></tt> have been called are always caught since
+by definition they are no longer expected.</dd>
+</dl>
+</blockquote>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="module-paste.exceptions.collector">
+<span id="paste-exceptions-collector-collection-information-from-exceptions"></span><h1><a class="reference internal" href="#module-paste.exceptions.collector"><tt class="xref py py-mod docutils literal"><span class="pre">paste.exceptions.collector</span></tt></a> &#8211; Collection information from exceptions<a class="headerlink" href="#module-paste.exceptions.collector" title="Permalink to this headline">¶</a></h1>
+<p>An exception collector that finds traceback information plus
+supplements</p>
+<div class="section" id="id1">
+<h2>Module Contents<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="paste.exceptions.collector.ExceptionCollector">
+<em class="property">class </em><tt class="descclassname">paste.exceptions.collector.</tt><tt class="descname">ExceptionCollector</tt><big>(</big><em>limit=None</em><big>)</big><a class="headerlink" href="#paste.exceptions.collector.ExceptionCollector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produces a data structure that can be used by formatters to
+display exception reports.</p>
+<p>Magic variables:</p>
+<p>If you define one of these variables in your local scope, you can
+add information to tracebacks that happen in that context.  This
+allows applications to add all sorts of extra information about
+the context of the error, including URLs, environmental variables,
+users, hostnames, etc.  These are the variables we look for:</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">__traceback_supplement__</span></tt>:</dt>
+<dd><p class="first">You can define this locally or globally (unlike all the other
+variables, which must be defined locally).</p>
+<p class="last"><tt class="docutils literal"><span class="pre">__traceback_supplement__</span></tt> is a tuple of <tt class="docutils literal"><span class="pre">(factory,</span> <span class="pre">arg1,</span>
+<span class="pre">arg2...)</span></tt>.  When there is an exception, <tt class="docutils literal"><span class="pre">factory(arg1,</span> <span class="pre">arg2,</span>
+<span class="pre">...)</span></tt> is called, and the resulting object is inspected for
+supplemental information.</p>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">__traceback_info__</span></tt>:</dt>
+<dd>This information is added to the traceback, usually fairly
+literally.</dd>
+<dt><tt class="docutils literal"><span class="pre">__traceback_hide__</span></tt>:</dt>
+<dd><p class="first">If set and true, this indicates that the frame should be
+hidden from abbreviated tracebacks.  This way you can hide
+some of the complexity of the larger framework and let the
+user focus on their own errors.</p>
+<p>By setting it to <tt class="docutils literal"><span class="pre">'before'</span></tt>, all frames before this one will
+be thrown away.  By setting it to <tt class="docutils literal"><span class="pre">'after'</span></tt> then all frames
+after this will be thrown away until <tt class="docutils literal"><span class="pre">'reset'</span></tt> is found.  In
+each case the frame where it is set is included, unless you
+append <tt class="docutils literal"><span class="pre">'_and_this'</span></tt> to the value (e.g.,
+<tt class="docutils literal"><span class="pre">'before_and_this'</span></tt>).</p>
+<p class="last">Note that formatters will ignore this entirely if the frame
+that contains the error wouldn&#8217;t normally be shown according
+to these rules.</p>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">__traceback_reporter__</span></tt>:</dt>
+<dd>This should be a reporter object (see the reporter module),
+or a list/tuple of reporter objects.  All reporters found this
+way will be given the exception, innermost first.</dd>
+<dt><tt class="docutils literal"><span class="pre">__traceback_decorator__</span></tt>:</dt>
+<dd>This object (defined in a local or global scope) will get the
+result of this function (the CollectedException defined
+below).  It may modify this object in place, or return an
+entirely new object.  This gives the object the ability to
+manipulate the traceback arbitrarily.</dd>
+</dl>
+<p>The actually interpretation of these values is largely up to the
+reporters and formatters.</p>
+<p><tt class="docutils literal"><span class="pre">collect_exception(*sys.exc_info())</span></tt> will return an object with
+several attributes:</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">frames</span></tt>:</dt>
+<dd>A list of frames</dd>
+<dt><tt class="docutils literal"><span class="pre">exception_formatted</span></tt>:</dt>
+<dd>The formatted exception, generally a full traceback</dd>
+<dt><tt class="docutils literal"><span class="pre">exception_type</span></tt>:</dt>
+<dd>The type of the exception, like <tt class="docutils literal"><span class="pre">ValueError</span></tt></dd>
+<dt><tt class="docutils literal"><span class="pre">exception_value</span></tt>:</dt>
+<dd>The string value of the exception, like <tt class="docutils literal"><span class="pre">'x</span> <span class="pre">not</span> <span class="pre">in</span> <span class="pre">list'</span></tt></dd>
+<dt><tt class="docutils literal"><span class="pre">identification_code</span></tt>:</dt>
+<dd>A hash of the exception data meant to identify the general
+exception, so that it shares this code with other exceptions
+that derive from the same problem.  The code is a hash of
+all the module names and function names in the traceback,
+plus exception_type.  This should be shown to users so they
+can refer to the exception later. (&#64;&#64;: should it include a
+portion that allows identification of the specific instance
+of the exception as well?)</dd>
+</dl>
+<p>The list of frames goes innermost first.  Each frame has these
+attributes; some values may be None if they could not be
+determined.</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">modname</span></tt>:</dt>
+<dd>the name of the module</dd>
+<dt><tt class="docutils literal"><span class="pre">filename</span></tt>:</dt>
+<dd>the filename of the module</dd>
+<dt><tt class="docutils literal"><span class="pre">lineno</span></tt>:</dt>
+<dd>the line of the error</dd>
+<dt><tt class="docutils literal"><span class="pre">revision</span></tt>:</dt>
+<dd>the contents of __version__ or __revision__</dd>
+<dt><tt class="docutils literal"><span class="pre">name</span></tt>:</dt>
+<dd>the function name</dd>
+<dt><tt class="docutils literal"><span class="pre">supplement</span></tt>:</dt>
+<dd>an object created from <tt class="docutils literal"><span class="pre">__traceback_supplement__</span></tt></dd>
+<dt><tt class="docutils literal"><span class="pre">supplement_exception</span></tt>:</dt>
+<dd>a simple traceback of any exception <tt class="docutils literal"><span class="pre">__traceback_supplement__</span></tt>
+created</dd>
+<dt><tt class="docutils literal"><span class="pre">traceback_info</span></tt>:</dt>
+<dd>the str() of any <tt class="docutils literal"><span class="pre">__traceback_info__</span></tt> variable found in the local
+scope (&#64;&#64;: should it str()-ify it or not?)</dd>
+<dt><tt class="docutils literal"><span class="pre">traceback_hide</span></tt>:</dt>
+<dd>the value of any <tt class="docutils literal"><span class="pre">__traceback_hide__</span></tt> variable</dd>
+<dt><tt class="docutils literal"><span class="pre">traceback_log</span></tt>:</dt>
+<dd>the value of any <tt class="docutils literal"><span class="pre">__traceback_log__</span></tt> variable</dd>
+</dl>
+<p><tt class="docutils literal"><span class="pre">__traceback_supplement__</span></tt> is thrown away, but a fixed
+set of attributes are captured; each of these attributes is
+optional.</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">object</span></tt>:</dt>
+<dd>the name of the object being visited</dd>
+<dt><tt class="docutils literal"><span class="pre">source_url</span></tt>:</dt>
+<dd>the original URL requested</dd>
+<dt><tt class="docutils literal"><span class="pre">line</span></tt>:</dt>
+<dd>the line of source being executed (for interpreters, like ZPT)</dd>
+<dt><tt class="docutils literal"><span class="pre">column</span></tt>:</dt>
+<dd>the column of source being executed</dd>
+<dt><tt class="docutils literal"><span class="pre">expression</span></tt>:</dt>
+<dd>the expression being evaluated (also for interpreters)</dd>
+<dt><tt class="docutils literal"><span class="pre">warnings</span></tt>:</dt>
+<dd>a list of (string) warnings to be displayed</dd>
+<dt><tt class="docutils literal"><span class="pre">getInfo</span></tt>:</dt>
+<dd>a function/method that takes no arguments, and returns a string
+describing any extra information</dd>
+<dt><tt class="docutils literal"><span class="pre">extraData</span></tt>:</dt>
+<dd>a function/method that takes no arguments, and returns a
+dictionary.  The contents of this dictionary will not be
+displayed in the context of the traceback, but globally for
+the exception.  Results will be grouped by the keys in the
+dictionaries (which also serve as titles).  The keys can also
+be tuples of (importance, title); in this case the importance
+should be <tt class="docutils literal"><span class="pre">important</span></tt> (shows up at top), <tt class="docutils literal"><span class="pre">normal</span></tt> (shows
+up somewhere; unspecified), <tt class="docutils literal"><span class="pre">supplemental</span></tt> (shows up at
+bottom), or <tt class="docutils literal"><span class="pre">extra</span></tt> (shows up hidden or not at all).</dd>
+</dl>
+<p>These are used to create an object with attributes of the same
+names (<tt class="docutils literal"><span class="pre">getInfo</span></tt> becomes a string attribute, not a method).
+<tt class="docutils literal"><span class="pre">__traceback_supplement__</span></tt> implementations should be careful to
+produce values that are relatively static and unlikely to cause
+further errors in the reporting system &#8211; any complex
+introspection should go in <tt class="docutils literal"><span class="pre">getInfo()</span></tt> and should ultimately
+return a string.</p>
+<p>Note that all attributes are optional, and under certain
+circumstances may be None or may not exist at all &#8211; the collector
+can only do a best effort, but must avoid creating any exceptions
+itself.</p>
+<p>Formatters may want to use <tt class="docutils literal"><span class="pre">__traceback_hide__</span></tt> as a hint to
+hide frames that are part of the &#8216;framework&#8217; or underlying system.
+There are a variety of rules about special values for this
+variables that formatters should be aware of.</p>
+<p>TODO:</p>
+<p>More attributes in __traceback_supplement__?  Maybe an attribute
+that gives a list of local variables that should also be
+collected?  Also, attributes that would be explicitly meant for
+the entire request, not just a single frame.  Right now some of
+the fixed set of attributes (e.g., source_url) are meant for this
+use, but there&#8217;s no explicit way for the supplement to indicate
+new values, e.g., logged-in user, HTTP referrer, environment, etc.
+Also, the attributes that do exist are Zope/Web oriented.</p>
+<p>More information on frames?  cgitb, for instance, produces
+extensive information on local variables.  There exists the
+possibility that getting this information may cause side effects,
+which can make debugging more difficult; but it also provides
+fodder for post-mortem debugging.  However, the collector is not
+meant to be configurable, but to capture everything it can and let
+the formatters be configurable.  Maybe this would have to be a
+configuration value, or maybe it could be indicated by another
+magical variable (which would probably mean &#8216;show all local
+variables below this frame&#8217;)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="paste.exceptions.collector.collect_exception">
+<tt class="descclassname">paste.exceptions.collector.</tt><tt class="descname">collect_exception</tt><big>(</big><em>t</em>, <em>v</em>, <em>tb</em>, <em>limit=None</em><big>)</big><a class="headerlink" href="#paste.exceptions.collector.collect_exception" title="Permalink to this definition">¶</a></dt>
+<dd><p>Collection an exception from <tt class="docutils literal"><span class="pre">sys.exc_info()</span></tt>.</p>
+<p>Use like:</p>
+<div class="highlight-python"><pre>try:
+    blah blah
+except:
+    exc_data = collect_exception(*sys.exc_info())</pre>
+</div>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="module-paste.exceptions.formatter">
+<span id="paste-exceptions-formatter-format-exception-information"></span><h1><a class="reference internal" href="#module-paste.exceptions.formatter"><tt class="xref py py-mod docutils literal"><span class="pre">paste.exceptions.formatter</span></tt></a> &#8211; Format exception information<a class="headerlink" href="#module-paste.exceptions.formatter" title="Permalink to this headline">¶</a></h1>
+<p>Formatters for the exception data that comes from ExceptionCollector.</p>
+<div class="section" id="id2">
+<h2>Module Contents<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="paste.exceptions.formatter.TextFormatter">
+<em class="property">class </em><tt class="descclassname">paste.exceptions.formatter.</tt><tt class="descname">TextFormatter</tt><big>(</big><em>show_hidden_frames=False</em>, <em>include_reusable=True</em>, <em>show_extra_data=True</em>, <em>trim_source_paths=()</em><big>)</big><a class="headerlink" href="#paste.exceptions.formatter.TextFormatter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="paste.exceptions.formatter.HTMLFormatter">
+<em class="property">class </em><tt class="descclassname">paste.exceptions.formatter.</tt><tt class="descname">HTMLFormatter</tt><big>(</big><em>show_hidden_frames=False</em>, <em>include_reusable=True</em>, <em>show_extra_data=True</em>, <em>trim_source_paths=()</em><big>)</big><a class="headerlink" href="#paste.exceptions.formatter.HTMLFormatter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="paste.exceptions.formatter.format_html">
+<tt class="descclassname">paste.exceptions.formatter.</tt><tt class="descname">format_html</tt><big>(</big><em>exc_data</em>, <em>include_hidden_frames=False</em>, <em>**ops</em><big>)</big><a class="headerlink" href="#paste.exceptions.formatter.format_html" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="paste.exceptions.formatter.format_text">
+<tt class="descclassname">paste.exceptions.formatter.</tt><tt class="descname">format_text</tt><big>(</big><em>exc_data</em>, <em>**ops</em><big>)</big><a class="headerlink" href="#paste.exceptions.formatter.format_text" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+<div class="section" id="module-paste.exceptions.reporter">
+<span id="paste-exceptions-reporter-report-exceptions"></span><h1><a class="reference internal" href="#module-paste.exceptions.reporter"><tt class="xref py py-mod docutils literal"><span class="pre">paste.exceptions.reporter</span></tt></a> &#8211; Report exceptions<a class="headerlink" href="#module-paste.exceptions.reporter" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id3">
+<h2>Module Contents<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="paste.exceptions.reporter.EmailReporter">
+<em class="property">class </em><tt class="descclassname">paste.exceptions.reporter.</tt><tt class="descname">EmailReporter</tt><big>(</big><em>**conf</em><big>)</big><a class="headerlink" href="#paste.exceptions.reporter.EmailReporter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="paste.exceptions.reporter.LogReporter">
+<em class="property">class </em><tt class="descclassname">paste.exceptions.reporter.</tt><tt class="descname">LogReporter</tt><big>(</big><em>**conf</em><big>)</big><a class="headerlink" href="#paste.exceptions.reporter.LogReporter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="paste.exceptions.reporter.FileReporter">
+<em class="property">class </em><tt class="descclassname">paste.exceptions.reporter.</tt><tt class="descname">FileReporter</tt><big>(</big><em>**conf</em><big>)</big><a class="headerlink" href="#paste.exceptions.reporter.FileReporter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="paste.exceptions.reporter.WSGIAppReporter">
+<em class="property">class </em><tt class="descclassname">paste.exceptions.reporter.</tt><tt class="descname">WSGIAppReporter</tt><big>(</big><em>exc_data</em><big>)</big><a class="headerlink" href="#paste.exceptions.reporter.WSGIAppReporter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="http://pythonpaste.org/" class="invisible-link">Python Paste</a></h3>
+
+<ul>
+<li><a href="http://trac.pythonpaste.org">Issue tracker</a></li>
+<li><a href="http://pythonpaste.org/">Paste core</a></li>
+<li><a href="http://pythonpaste.org/webob/">WebOb</a></li>
+<li><a href="http://pythonpaste.org/deploy/">Paste Deploy</a></li>
+<li><a href="http://pythonpaste.org/script/">Paste Script</a></li>
+<li><a href="http://pythonpaste.org/webtest/">WebTest</a></li>
+<li><a href="http://pythonpaste.org/scripttest/">ScriptType</a></li>
+<li><a href="http://pythonpaste.org/initools/">INITools</a></li>
+<li><a href="http://pythonpaste.org/tempita/">Tempita</a></li>
+<li><a href="http://pythonpaste.org/waitforit/">WaitForIt</a></li>
+<li><a href="http://pythonpaste.org/wphp/">WPHP</a></li>
+<li><a href="http://pythonpaste.org/wsgifilter/">WSGIFilter</a></li>
+<li><a href="http://pythonpaste.org/wsgiproxy/">WSGIProxy</a></li>
+</ul>
+
+
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">paste.exceptions</span></tt> &#8211; Catch, display, and notify for exceptions</a><ul>
+<li><a class="reference internal" href="#module-contents">Module Contents</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-paste.exceptions.collector"><tt class="docutils literal"><span class="pre">paste.exceptions.collector</span></tt> &#8211; Collection information from exceptions</a><ul>
+<li><a class="reference internal" href="#id1">Module Contents</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-paste.exceptions.formatter"><tt class="docutils literal"><span class="pre">paste.exceptions.formatter</span></tt> &#8211; Format exception information</a><ul>
+<li><a class="reference internal" href="#id2">Module Contents</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-paste.exceptions.reporter"><tt class="docutils literal"><span class="pre">paste.exceptions.reporter</span></tt> &#8211; Report exceptions</a><ul>
+<li><a class="reference internal" href="#id3">Module Contents</a></li>
+</ul>
+</li>
+</ul>
+
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/modules/exceptions.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, Ian Bicking.
+      Last updated on Sep 14, 2010.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

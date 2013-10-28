@@ -1,0 +1,8 @@
+[tool:projectname]
+name = ProjectName
+id = projectname
+roles = editor
+home = <base>/
+admin_index.href = admin/
+admin_index.title = ProjectName Admin
+admin_index.roles = admin

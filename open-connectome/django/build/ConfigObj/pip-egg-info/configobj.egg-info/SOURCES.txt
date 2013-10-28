@@ -1,0 +1,6 @@
+configobj.py
+validate.py
+pip-egg-info/configobj.egg-info/PKG-INFO
+pip-egg-info/configobj.egg-info/SOURCES.txt
+pip-egg-info/configobj.egg-info/dependency_links.txt
+pip-egg-info/configobj.egg-info/top_level.txt

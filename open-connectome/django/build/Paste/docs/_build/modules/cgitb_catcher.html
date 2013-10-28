@@ -1,0 +1,159 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>paste.cgitb_catcher – catch exceptions using cgitb &mdash; Paste v1.7.5 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.7.5',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Paste v1.7.5 documentation" href="../index.html" />
+ 
+<link rel="stylesheet" type="text/css"
+ href="../_static/paste.css.html">
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-paste.cgitb_catcher">
+<span id="paste-cgitb-catcher-catch-exceptions-using-cgitb"></span><h1><a class="reference internal" href="#module-paste.cgitb_catcher"><tt class="xref py py-mod docutils literal"><span class="pre">paste.cgitb_catcher</span></tt></a> &#8211; catch exceptions using cgitb<a class="headerlink" href="#module-paste.cgitb_catcher" title="Permalink to this headline">¶</a></h1>
+<p>WSGI middleware</p>
+<p>Captures any exceptions and prints a pretty report.  See the <a class="reference external" href="http://python.org/doc/current/lib/module-cgitb.html">cgitb
+documentation</a>
+for more.</p>
+<div class="section" id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="paste.cgitb_catcher.CgitbMiddleware">
+<em class="property">class </em><tt class="descclassname">paste.cgitb_catcher.</tt><tt class="descname">CgitbMiddleware</tt><big>(</big><em>app</em>, <em>global_conf=None</em>, <em>display=&lt;class 'paste.cgitb_catcher.NoDefault'&gt;</em>, <em>logdir=None</em>, <em>context=5</em>, <em>format='html'</em><big>)</big><a class="headerlink" href="#paste.cgitb_catcher.CgitbMiddleware" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="paste.cgitb_catcher.make_cgitb_middleware">
+<tt class="descclassname">paste.cgitb_catcher.</tt><tt class="descname">make_cgitb_middleware</tt><big>(</big><em>app</em>, <em>global_conf</em>, <em>display=&lt;class 'paste.cgitb_catcher.NoDefault'&gt;</em>, <em>logdir=None</em>, <em>context=5</em>, <em>format='html'</em><big>)</big><a class="headerlink" href="#paste.cgitb_catcher.make_cgitb_middleware" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wraps the application in the <tt class="docutils literal"><span class="pre">cgitb</span></tt> (standard library)
+error catcher.</p>
+<blockquote>
+<dl class="docutils">
+<dt>display:</dt>
+<dd>If true (or debug is set in the global configuration)
+then the traceback will be displayed in the browser</dd>
+<dt>logdir:</dt>
+<dd>Writes logs of all errors in that directory</dd>
+<dt>context:</dt>
+<dd>Number of lines of context to show around each line of
+source code</dd>
+</dl>
+</blockquote>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="http://pythonpaste.org/" class="invisible-link">Python Paste</a></h3>
+
+<ul>
+<li><a href="http://trac.pythonpaste.org">Issue tracker</a></li>
+<li><a href="http://pythonpaste.org/">Paste core</a></li>
+<li><a href="http://pythonpaste.org/webob/">WebOb</a></li>
+<li><a href="http://pythonpaste.org/deploy/">Paste Deploy</a></li>
+<li><a href="http://pythonpaste.org/script/">Paste Script</a></li>
+<li><a href="http://pythonpaste.org/webtest/">WebTest</a></li>
+<li><a href="http://pythonpaste.org/scripttest/">ScriptType</a></li>
+<li><a href="http://pythonpaste.org/initools/">INITools</a></li>
+<li><a href="http://pythonpaste.org/tempita/">Tempita</a></li>
+<li><a href="http://pythonpaste.org/waitforit/">WaitForIt</a></li>
+<li><a href="http://pythonpaste.org/wphp/">WPHP</a></li>
+<li><a href="http://pythonpaste.org/wsgifilter/">WSGIFilter</a></li>
+<li><a href="http://pythonpaste.org/wsgiproxy/">WSGIProxy</a></li>
+</ul>
+
+
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">paste.cgitb_catcher</span></tt> &#8211; catch exceptions using cgitb</a><ul>
+<li><a class="reference internal" href="#module-contents">Module Contents</a></li>
+</ul>
+</li>
+</ul>
+
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/modules/cgitb_catcher.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, Ian Bicking.
+      Last updated on Sep 14, 2010.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,15 @@
+:mod:`formencode.api` -- Core classes for validation
+===========================================================================
+
+.. automodule:: formencode.api
+
+Module Contents
+---------------
+
+.. autofunction:: is_empty
+.. autofunction:: is_validator
+.. autoclass:: NoDefault
+.. autoclass:: Invalid
+.. autoclass:: Validator
+.. autoclass:: Identity
+.. autoclass:: FancyValidator

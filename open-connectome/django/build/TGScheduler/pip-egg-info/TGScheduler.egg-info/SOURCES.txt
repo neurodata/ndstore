@@ -1,0 +1,13 @@
+setup.cfg
+pip-egg-info/TGScheduler.egg-info/PKG-INFO
+pip-egg-info/TGScheduler.egg-info/SOURCES.txt
+pip-egg-info/TGScheduler.egg-info/dependency_links.txt
+pip-egg-info/TGScheduler.egg-info/not-zip-safe
+pip-egg-info/TGScheduler.egg-info/requires.txt
+pip-egg-info/TGScheduler.egg-info/top_level.txt
+tgscheduler/__init__.py
+tgscheduler/kronos.py
+tgscheduler/release.py
+tgscheduler/scheduler.py
+tgscheduler/tests/__init__.py
+tgscheduler/tests/test_scheduler.py

@@ -1,0 +1,181 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>paste.wsgiwrappers – Wrapper functions for WSGI request and response &mdash; Paste v1.7.5 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.7.5',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Paste v1.7.5 documentation" href="../index.html" />
+ 
+<link rel="stylesheet" type="text/css"
+ href="../_static/paste.css.html">
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-paste.wsgiwrappers">
+<span id="paste-wsgiwrappers-wrapper-functions-for-wsgi-request-and-response"></span><h1><a class="reference internal" href="#module-paste.wsgiwrappers"><tt class="xref py py-mod docutils literal"><span class="pre">paste.wsgiwrappers</span></tt></a> &#8211; Wrapper functions for WSGI request and response<a class="headerlink" href="#module-paste.wsgiwrappers" title="Permalink to this headline">¶</a></h1>
+<p>WSGI Wrappers for a Request and Response</p>
+<p>The WSGIRequest and WSGIResponse objects are light wrappers to make it easier
+to deal with an incoming request and sending a response.</p>
+<div class="section" id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="paste.wsgiwrappers.WSGIRequest">
+<em class="property">class </em><tt class="descclassname">paste.wsgiwrappers.</tt><tt class="descname">WSGIRequest</tt><big>(</big><em>environ</em><big>)</big><a class="headerlink" href="#paste.wsgiwrappers.WSGIRequest" title="Permalink to this definition">¶</a></dt>
+<dd><p>WSGI Request API Object</p>
+<p>This object represents a WSGI request with a more friendly interface.
+This does not expose every detail of the WSGI environment, and attempts
+to express nothing beyond what is available in the environment
+dictionary.</p>
+<p>The only state maintained in this object is the desired <tt class="docutils literal"><span class="pre">charset</span></tt>,
+its associated <tt class="docutils literal"><span class="pre">errors</span></tt> handler, and the <tt class="docutils literal"><span class="pre">decode_param_names</span></tt>
+option.</p>
+<p>The incoming parameter values will be automatically coerced to unicode
+objects of the <tt class="docutils literal"><span class="pre">charset</span></tt> encoding when <tt class="docutils literal"><span class="pre">charset</span></tt> is set. The
+incoming parameter names are not decoded to unicode unless the
+<tt class="docutils literal"><span class="pre">decode_param_names</span></tt> option is enabled.</p>
+<p>When unicode is expected, <tt class="docutils literal"><span class="pre">charset</span></tt> will overridden by the the
+value of the <tt class="docutils literal"><span class="pre">Content-Type</span></tt> header&#8217;s charset parameter if one was
+specified by the client.</p>
+<p>The class variable <tt class="docutils literal"><span class="pre">defaults</span></tt> specifies default values for
+<tt class="docutils literal"><span class="pre">charset</span></tt>, <tt class="docutils literal"><span class="pre">errors</span></tt>, and <tt class="docutils literal"><span class="pre">langauge</span></tt>. These can be overridden for the
+current request via the registry.</p>
+<p>The <tt class="docutils literal"><span class="pre">language</span></tt> default value is considered the fallback during i18n
+translations to ensure in odd cases that mixed languages don&#8217;t occur should
+the <tt class="docutils literal"><span class="pre">language</span></tt> file contain the string but not another language in the
+accepted languages list. The <tt class="docutils literal"><span class="pre">language</span></tt> value only applies when getting
+a list of accepted languages from the HTTP Accept header.</p>
+<p>This behavior is duplicated from Aquarium, and may seem strange but is
+very useful. Normally, everything in the code is in &#8220;en-us&#8221;.  However, 
+the &#8220;en-us&#8221; translation catalog is usually empty.  If the user requests
+<tt class="docutils literal"><span class="pre">[&quot;en-us&quot;,</span> <span class="pre">&quot;zh-cn&quot;]</span></tt> and a translation isn&#8217;t found for a string in
+&#8220;en-us&#8221;, you don&#8217;t want gettext to fallback to &#8220;zh-cn&#8221;.  You want it to 
+just use the string itself.  Hence, if a string isn&#8217;t found in the
+<tt class="docutils literal"><span class="pre">language</span></tt> catalog, the string in the source code will be used.</p>
+<p><em>All</em> other state is kept in the environment dictionary; this is
+essential for interoperability.</p>
+<p>You are free to subclass this object.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="paste.wsgiwrappers.WSGIResponse">
+<em class="property">class </em><tt class="descclassname">paste.wsgiwrappers.</tt><tt class="descname">WSGIResponse</tt><big>(</big><em>content=''</em>, <em>mimetype=None</em>, <em>code=200</em><big>)</big><a class="headerlink" href="#paste.wsgiwrappers.WSGIResponse" title="Permalink to this definition">¶</a></dt>
+<dd><p>A basic HTTP response with content, headers, and out-bound cookies</p>
+<p>The class variable <tt class="docutils literal"><span class="pre">defaults</span></tt> specifies default values for
+<tt class="docutils literal"><span class="pre">content_type</span></tt>, <tt class="docutils literal"><span class="pre">charset</span></tt> and <tt class="docutils literal"><span class="pre">errors</span></tt>. These can be overridden
+for the current request via the registry.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="http://pythonpaste.org/" class="invisible-link">Python Paste</a></h3>
+
+<ul>
+<li><a href="http://trac.pythonpaste.org">Issue tracker</a></li>
+<li><a href="http://pythonpaste.org/">Paste core</a></li>
+<li><a href="http://pythonpaste.org/webob/">WebOb</a></li>
+<li><a href="http://pythonpaste.org/deploy/">Paste Deploy</a></li>
+<li><a href="http://pythonpaste.org/script/">Paste Script</a></li>
+<li><a href="http://pythonpaste.org/webtest/">WebTest</a></li>
+<li><a href="http://pythonpaste.org/scripttest/">ScriptType</a></li>
+<li><a href="http://pythonpaste.org/initools/">INITools</a></li>
+<li><a href="http://pythonpaste.org/tempita/">Tempita</a></li>
+<li><a href="http://pythonpaste.org/waitforit/">WaitForIt</a></li>
+<li><a href="http://pythonpaste.org/wphp/">WPHP</a></li>
+<li><a href="http://pythonpaste.org/wsgifilter/">WSGIFilter</a></li>
+<li><a href="http://pythonpaste.org/wsgiproxy/">WSGIProxy</a></li>
+</ul>
+
+
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">paste.wsgiwrappers</span></tt> &#8211; Wrapper functions for WSGI request and response</a><ul>
+<li><a class="reference internal" href="#module-contents">Module Contents</a></li>
+</ul>
+</li>
+</ul>
+
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/modules/wsgiwrappers.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, Ian Bicking.
+      Last updated on Sep 14, 2010.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

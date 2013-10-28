@@ -1,0 +1,442 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>URL Parsing With WSGI And Paste &mdash; Paste v1.7.5 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.7.5',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Paste v1.7.5 documentation" href="index.html" />
+    <link rel="next" title="Community" href="community/index.html" />
+    <link rel="prev" title="Testing Applications with Paste" href="testing-applications.html" />
+ 
+<link rel="stylesheet" type="text/css"
+ href="_static/paste.css.html">
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="community/index.html" title="Community"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="testing-applications.html" title="Testing Applications with Paste"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="url-parsing-with-wsgi-and-paste">
+<h1><a class="toc-backref" href="#id1">URL Parsing With WSGI And Paste</a><a class="headerlink" href="#url-parsing-with-wsgi-and-paste" title="Permalink to this headline">¶</a></h1>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">author:</th><td class="field-body">Ian Bicking &lt;<a class="reference external" href="mailto:ianb&#37;&#52;&#48;colorstudy&#46;com">ianb<span>&#64;</span>colorstudy<span>&#46;</span>com</a>&gt;</td>
+</tr>
+<tr class="field"><th class="field-name">revision:</th><td class="field-body">$Rev$</td>
+</tr>
+<tr class="field"><th class="field-name">date:</th><td class="field-body">$LastChangedDate$</td>
+</tr>
+</tbody>
+</table>
+<div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="simple">
+<li><a class="reference external" href="#url-parsing-with-wsgi-and-paste" id="id1">URL Parsing With WSGI And Paste</a><ul>
+<li><a class="reference external" href="#introduction-and-audience" id="id2">Introduction and Audience</a></li>
+<li><a class="reference external" href="#url-parsing" id="id3">URL Parsing</a></li>
+<li><a class="reference external" href="#dispatching" id="id4">Dispatching</a></li>
+<li><a class="reference external" href="#motivations" id="id5">Motivations</a></li>
+<li><a class="reference external" href="#finding-applications" id="id6">Finding Applications</a></li>
+<li><a class="reference external" href="#modifying-the-request" id="id7">Modifying The Request</a></li>
+<li><a class="reference external" href="#object-publishing" id="id8">Object Publishing</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="introduction-and-audience">
+<h2><a class="toc-backref" href="#id2">Introduction and Audience</a><a class="headerlink" href="#introduction-and-audience" title="Permalink to this headline">¶</a></h2>
+<p>This document is intended for web framework authors and integrators,
+and people who want to understand the internal architecture of Paste.</p>
+<p>If you have questions about this document, please contact the <a class="reference external" href="http://groups.google.com/group/paste-users">paste
+mailing list</a>
+or try IRC (<tt class="docutils literal"><span class="pre">#pythonpaste</span></tt> on freenode.net).  If there&#8217;s something that
+confused you and you want to give feedback, please <a class="reference external" href="http://pythonpaste.org/trac/newticket?component=documentation">submit an issue</a>.</p>
+</div>
+<div class="section" id="url-parsing">
+<h2><a class="toc-backref" href="#id3">URL Parsing</a><a class="headerlink" href="#url-parsing" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Sometimes people use &#8220;URL&#8221;, and sometimes &#8220;URI&#8221;.  I think URLs are
+a subset of URIs.  But in practice you&#8217;ll almost never see URIs
+that aren&#8217;t URLs, and certainly not in Paste.  URIs that aren&#8217;t
+URLs are abstract Identifiers, that cannot necessarily be used to
+Locate the resource.  This document is <em>all</em> about locating.</p>
+</div>
+<p>Most generally, URL parsing is about taking a URL and determining what
+&#8220;resource&#8221; the URL refers to.  &#8220;Resource&#8221; is a rather vague term,
+intentionally.  It&#8217;s really just a metaphor &#8211; in reality there aren&#8217;t
+any &#8220;resources&#8221; in HTTP; there are only requests and responses.</p>
+<p>In Paste, everything is about WSGI.  But that can seem too fancy.
+There are four core things involved: the <em>request</em> (personified in the
+WSGI environment), the <em>response</em> (personified inthe
+<tt class="docutils literal"><span class="pre">start_response</span></tt> callback and the return iterator), the WSGI
+application, and the server that calls that application.  The
+application and request are objects, while the server and response are
+really more like actions than concrete objects.</p>
+<p>In this context, URL parsing is about mapping a URL to an
+<em>application</em> and a <em>request</em>.  The request actually gets modified as
+it moves through different parts of the system.  Two dictionary keys
+in particular relate to URLs &#8211; <tt class="docutils literal"><span class="pre">SCRIPT_NAME</span></tt> and <tt class="docutils literal"><span class="pre">PATH_INFO</span></tt> &#8211;
+but any part of the environment can be modified as it is passed
+through the system.</p>
+</div>
+<div class="section" id="dispatching">
+<h2><a class="toc-backref" href="#id4">Dispatching</a><a class="headerlink" href="#dispatching" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">WSGI isn&#8217;t object oriented?  Well, if you look at it, you&#8217;ll notice
+there&#8217;s no objects except built-in types, so it shouldn&#8217;t be a
+surprise.  Additionally, the interface and promises of the objects
+we do see are very minimal.  An application doesn&#8217;t have any
+interface except one method &#8211; <tt class="docutils literal"><span class="pre">__call__</span></tt> &#8211; and that method
+<em>does</em> things, it doesn&#8217;t give any other information.</p>
+</div>
+<p>Because WSGI is action-oriented, rather than object-oriented, it&#8217;s
+more important what we <em>do</em>.  &#8220;Finding&#8221; an application is probably an
+intermediate step, but &#8220;running&#8221; the application is our ultimate goal,
+and the only real judge of success.  An application that isn&#8217;t run is
+useless to us, because it doesn&#8217;t have any other useful methods.</p>
+<p>So what we&#8217;re really doing is <em>dispatching</em> &#8211; we&#8217;re handing the
+request and responsibility for the response off to another object
+(another actor, really).  In the process we can actually retain some
+control &#8211; we can capture and transform the response, and we can
+modify the request &#8211; but that&#8217;s not what the typical URL resolver will
+do.</p>
+</div>
+<div class="section" id="motivations">
+<h2><a class="toc-backref" href="#id5">Motivations</a><a class="headerlink" href="#motivations" title="Permalink to this headline">¶</a></h2>
+<p>The most obvious kind of URL parsing is finding a WSGI application.</p>
+<p>Typically when a framework first supports WSGI or is integrated into
+Paste, it is &#8220;monolithic&#8221; with respect to URLs.  That is, you define
+(in Paste, or maybe in Apache) a &#8220;root&#8221; URL, and everything under that
+goes into the framework.  What the framework does internally, Paste
+does not know &#8211; it probably finds internal objects to dispatch to,
+but the framework is opaque to Paste.  Not just to Paste, but to
+any code that isn&#8217;t in that framework.</p>
+<p>That means that we can&#8217;t mix code from multiple frameworks, or as
+easily share services, or use WSGI middleware that doesn&#8217;t apply to
+the entire framework/application.</p>
+<p>An example of someplace we might want to use an &#8220;application&#8221; that
+isn&#8217;t part of the framework would be uploading large files.  It&#8217;s
+possible to keep track of upload progress, and report that back to the
+user, but no framework typically is capable of this.  This is usually
+because the POST request is completely read and parsed before it
+invokes any application code.</p>
+<p>This is resolvable in WSGI &#8211; a WSGI application can provide its own
+code to read and parse the POST request, and simultaneously report
+progress (usually in a way that <em>another</em> WSGI application/request can
+read and report to the user on that progress).  This is an example
+where you want to allow &#8220;foreign&#8221; applications to be intermingled with
+framework application code.</p>
+</div>
+<div class="section" id="finding-applications">
+<h2><a class="toc-backref" href="#id6">Finding Applications</a><a class="headerlink" href="#finding-applications" title="Permalink to this headline">¶</a></h2>
+<p>OK, enough theory.  How does a URL parser work?  Well, it is a WSGI
+application, and a WSGI server, in the typical &#8220;WSGI middleware&#8221;
+style.  Except that it determines which application it will serve
+for each request.</p>
+<p>Let&#8217;s consider Paste&#8217;s <tt class="docutils literal"><span class="pre">URLParser</span></tt> (in <tt class="docutils literal"><span class="pre">paste.urlparser</span></tt>).  This
+class takes a directory name as its only required argument, and
+instances are WSGI applications.</p>
+<p>When a request comes in, the parser looks at <tt class="docutils literal"><span class="pre">PATH_INFO</span></tt> to see
+what&#8217;s left to parse.  <tt class="docutils literal"><span class="pre">SCRIPT_NAME</span></tt> represents where we are <em>now</em>;
+it&#8217;s the part of the URL that has been parsed.</p>
+<p>There&#8217;s a couple special cases:</p>
+<p>The empty string:</p>
+<blockquote>
+URLParser serves directories.  When <tt class="docutils literal"><span class="pre">PATH_INFO</span></tt> is empty, that
+means we got a request with no trailing <tt class="docutils literal"><span class="pre">/</span></tt>, like say <tt class="docutils literal"><span class="pre">/blog</span></tt>
+If URLParser serves the <tt class="docutils literal"><span class="pre">blog</span></tt> directory, then this won&#8217;t do &#8211;
+the user is requesting the <tt class="docutils literal"><span class="pre">blog</span></tt> <em>page</em>.  We have to redirect
+them to <tt class="docutils literal"><span class="pre">/blog/</span></tt>.</blockquote>
+<p>A single <tt class="docutils literal"><span class="pre">/</span></tt>:</p>
+<blockquote>
+So, we got a trailing <tt class="docutils literal"><span class="pre">/</span></tt>.  This means we need to serve the
+&#8220;index&#8221; page.  In URLParser, this is some file named <tt class="docutils literal"><span class="pre">index</span></tt>,
+though that&#8217;s really an implementation detail.  You could create
+an index dynamically (like Apache&#8217;s file listings), or whatever.</blockquote>
+<p>Otherwise we get a string like <tt class="docutils literal"><span class="pre">/path...</span></tt>.  Note that <tt class="docutils literal"><span class="pre">PATH_INFO</span></tt>
+<em>must</em> start with a <tt class="docutils literal"><span class="pre">/</span></tt>, or it must be empty.</p>
+<p>URLParser pulls off the first part of the path.  E.g., if
+<tt class="docutils literal"><span class="pre">PATH_INFO</span></tt> is <tt class="docutils literal"><span class="pre">/blog/edit/285</span></tt>, then the first part is <tt class="docutils literal"><span class="pre">blog</span></tt>.
+It appends this to <tt class="docutils literal"><span class="pre">SCRIPT_NAME</span></tt>, and strips it off <tt class="docutils literal"><span class="pre">PATH_INFO</span></tt>
+(which becomes <tt class="docutils literal"><span class="pre">/edit/285</span></tt>).</p>
+<p>It then searches for a file that matches &#8220;blog&#8221;.  In URLParser, this
+means it looks for a filename which matches that name (ignoring the
+extension).  It then uses the type of that file (determined by
+extension) to create a WSGI application.</p>
+<p>One case is that the file is a directory.  In that case, the
+application is <em>another</em> URLParser instance, this time with the new
+directory.</p>
+<p>URLParser actually allows per-extension &#8220;plugins&#8221; &#8211; these are just
+functions that get a filename, and produce a WSGI application.  One of
+these is <tt class="docutils literal"><span class="pre">make_py</span></tt> &#8211; this function imports the module, and looks
+for special symbols; if it finds a symbol <tt class="docutils literal"><span class="pre">application</span></tt>, it assumes
+this is a WSGI application that is ready to accept the request.  If it
+finds a symbol that matches the name of the module (e.g., <tt class="docutils literal"><span class="pre">edit</span></tt>),
+then it assumes that is an application <em>factory</em>, meaning that when
+you call it with no arguments you get a WSGI application.</p>
+<p>Another function takes &#8220;unknown&#8221; files (files for which no better
+constructor exists) and creates an application that simply responds
+with the contents of that file (and the appropriate <tt class="docutils literal"><span class="pre">Content-Type</span></tt>).</p>
+<p>In any case, <tt class="docutils literal"><span class="pre">URLParser</span></tt> delegates as soon as it can.  It doesn&#8217;t
+parse the entire path &#8211; it just finds the <em>next</em> application, which
+in turn may delegate to yet another application.</p>
+<p>Here&#8217;s a very simple implementation of URLParser:</p>
+<div class="highlight-python"><pre>class URLParser(object):
+    def __init__(self, dir):
+        self.dir = dir
+    def __call__(self, environ, start_response):
+        segment = wsgilib.path_info_pop(environ)
+        if segment is None: # No trailing /
+            # do a redirect...
+        for filename in os.listdir(self.dir):
+            if os.path.splitext(filename)[0] == segment:
+                return self.serve_application(
+                    environ, start_response, filename)
+        # do a 404 Not Found
+    def serve_application(self, environ, start_response, filename):
+        basename, ext = os.path.splitext(filename)
+        filename = os.path.join(self.dir, filename)
+        if os.path.isdir(filename):
+            return URLParser(filename)(environ, start_response)
+        elif ext == '.py':
+            module = import_module(filename)
+            if hasattr(module, 'application'):
+                return module.application(environ, start_response)
+            elif hasattr(module, basename):
+                return getattr(module, basename)(
+                    environ, start_response)
+        else:
+            return wsgilib.send_file(filename)</pre>
+</div>
+</div>
+<div class="section" id="modifying-the-request">
+<h2><a class="toc-backref" href="#id7">Modifying The Request</a><a class="headerlink" href="#modifying-the-request" title="Permalink to this headline">¶</a></h2>
+<p>Well, URLParser is one kind of parser.  But others are possible, and
+aren&#8217;t too hard to write.</p>
+<p>Lets imagine a URL like <tt class="docutils literal"><span class="pre">/2004/05/01/edit</span></tt>.  It&#8217;s likely that
+<tt class="docutils literal"><span class="pre">/2004/05/01</span></tt> doesn&#8217;t point to anything on file, but is really more
+of a &#8220;variable&#8221; that gets passed to <tt class="docutils literal"><span class="pre">edit</span></tt>.  So we can pull them off
+and put them somewhere.  This is a good place for a WSGI extension.
+Lets put them in <tt class="docutils literal"><span class="pre">environ[&quot;app.url_date&quot;]</span></tt>.</p>
+<p>We&#8217;ll pass one other applications in &#8211; once we get the date (if any)
+we need to pass the request onto an application that can actually
+handle it.  This &#8220;application&#8221; might be a URLParser or similar system
+(that figures out what <tt class="docutils literal"><span class="pre">/edit</span></tt> means).</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">GrabDate</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subapp</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subapp</span> <span class="o">=</span> <span class="n">subapp</span>
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">environ</span><span class="p">,</span> <span class="n">start_response</span><span class="p">):</span>
+        <span class="n">date_parts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">date_parts</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+           <span class="n">first</span><span class="p">,</span> <span class="n">rest</span> <span class="o">=</span> <span class="n">wsgilib</span><span class="o">.</span><span class="n">path_info_split</span><span class="p">(</span><span class="n">environ</span><span class="p">[</span><span class="s">&#39;PATH_INFO&#39;</span><span class="p">])</span>
+           <span class="k">try</span><span class="p">:</span>
+               <span class="n">date_parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">first</span><span class="p">))</span>
+               <span class="n">wsgilib</span><span class="o">.</span><span class="n">path_info_pop</span><span class="p">(</span><span class="n">environ</span><span class="p">)</span>
+           <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+               <span class="k">break</span>
+        <span class="n">environ</span><span class="p">[</span><span class="s">&#39;app.date_parts&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">date_parts</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">subapp</span><span class="p">(</span><span class="n">environ</span><span class="p">,</span> <span class="n">start_response</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This is really like traditional &#8220;middleware&#8221;, in that it sits between
+the server and just one application.</p>
+<p>Assuming you put this class in the <tt class="docutils literal"><span class="pre">myapp.grabdate</span></tt> module, you
+could install it by adding this to your configuration:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">middleware</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;myapp.grabdate.GrabDate&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="object-publishing">
+<h2><a class="toc-backref" href="#id8">Object Publishing</a><a class="headerlink" href="#object-publishing" title="Permalink to this headline">¶</a></h2>
+<p>Besides looking in the filesystem, &#8220;object publishing&#8221; is another
+popular way to do URL parsing.  This is pretty easy to implement as
+well &#8211; it usually just means use <tt class="docutils literal"><span class="pre">getattr</span></tt> with the popped
+segments.  But we&#8217;ll implement a rough approximation of <a class="reference external" href="http://www.mems-exchange.org/software/quixote/">Quixote&#8217;s</a> URL parsing:</p>
+<div class="highlight-python"><pre>class ObjectApp(object):
+    def __init__(self, obj):
+        self.obj = obj
+    def __call__(self, environ, start_response):
+        next = wsgilib.path_info_pop(environ)
+        if next is None:
+            # This is the object, lets serve it...
+            return self.publish(obj, environ, start_response)
+        next = next or '_q_index' # the default index method
+        if next in obj._q_export and getattr(obj, next, None):
+            return ObjectApp(getattr(obj, next))(
+                environ, start_reponse)
+        next_obj = obj._q_traverse(next)
+        if not next_obj:
+            # Do a 404
+        return ObjectApp(next_obj)(environ, start_response)
+
+    def publish(self, obj, environ, start_response):
+        if callable(obj):
+            output = str(obj())
+        else:
+            output = str(obj)
+        start_response('200 OK', [('Content-type', 'text/html')])
+        return [output]</pre>
+</div>
+<p>The <tt class="docutils literal"><span class="pre">publish</span></tt> object is a little weak, and functions like
+<tt class="docutils literal"><span class="pre">_q_traverse</span></tt> aren&#8217;t passed interesting information about the
+request, but this is only a rough approximation of the framework.
+Things to note:</p>
+<ul class="simple">
+<li>The object has standard attributes and methods &#8211; <tt class="docutils literal"><span class="pre">_q_exports</span></tt>
+(attributes that are public to the web) and <tt class="docutils literal"><span class="pre">_q_traverse</span></tt>
+(a way of overriding the traversal without having an attribute for
+each possible path segment).</li>
+<li>The object isn&#8217;t rendered until the path is completely consumed
+(when <tt class="docutils literal"><span class="pre">next</span></tt> is <tt class="xref docutils literal"><span class="pre">None</span></tt>).  This means <tt class="docutils literal"><span class="pre">_q_traverse</span></tt> has to
+consume extra segments of the path.  In this version <tt class="docutils literal"><span class="pre">_q_traverse</span></tt>
+is only given the next piece of the path; Quixote gives it the
+entire path (as a list of segments).</li>
+<li><tt class="docutils literal"><span class="pre">publish</span></tt> is really a small and lame way to turn a Quixote object
+into a WSGI application.  For any serious framework you&#8217;d want to do
+a better job than what I do here.</li>
+<li>It would be even better if you used something like <a class="reference external" href="http://www.python.org/peps/pep-0246.html">Adaptation</a> to convert objects into
+applications.  This would include removing the explicit creation of
+new <tt class="docutils literal"><span class="pre">ObjectApp</span></tt> instances, which could also be a kind of fall-back
+adaptation.</li>
+</ul>
+<p>Anyway, this example is less complete, but maybe it will get you
+thinking.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="http://pythonpaste.org/" class="invisible-link">Python Paste</a></h3>
+
+<ul>
+<li><a href="http://trac.pythonpaste.org">Issue tracker</a></li>
+<li><a href="http://pythonpaste.org/">Paste core</a></li>
+<li><a href="http://pythonpaste.org/webob/">WebOb</a></li>
+<li><a href="http://pythonpaste.org/deploy/">Paste Deploy</a></li>
+<li><a href="http://pythonpaste.org/script/">Paste Script</a></li>
+<li><a href="http://pythonpaste.org/webtest/">WebTest</a></li>
+<li><a href="http://pythonpaste.org/scripttest/">ScriptType</a></li>
+<li><a href="http://pythonpaste.org/initools/">INITools</a></li>
+<li><a href="http://pythonpaste.org/tempita/">Tempita</a></li>
+<li><a href="http://pythonpaste.org/waitforit/">WaitForIt</a></li>
+<li><a href="http://pythonpaste.org/wphp/">WPHP</a></li>
+<li><a href="http://pythonpaste.org/wsgifilter/">WSGIFilter</a></li>
+<li><a href="http://pythonpaste.org/wsgiproxy/">WSGIProxy</a></li>
+</ul>
+
+
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">URL Parsing With WSGI And Paste</a><ul>
+<li><a class="reference internal" href="#introduction-and-audience">Introduction and Audience</a></li>
+<li><a class="reference internal" href="#url-parsing">URL Parsing</a></li>
+<li><a class="reference internal" href="#dispatching">Dispatching</a></li>
+<li><a class="reference internal" href="#motivations">Motivations</a></li>
+<li><a class="reference internal" href="#finding-applications">Finding Applications</a></li>
+<li><a class="reference internal" href="#modifying-the-request">Modifying The Request</a></li>
+<li><a class="reference internal" href="#object-publishing">Object Publishing</a></li>
+</ul>
+</li>
+</ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="testing-applications.html"
+                        title="previous chapter">Testing Applications with Paste</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="community/index.html"
+                        title="next chapter">Community</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/url-parsing-with-wsgi.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="community/index.html" title="Community"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="testing-applications.html" title="Testing Applications with Paste"
+             >previous</a> |</li>
+        <li><a href="index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, Ian Bicking.
+      Last updated on Sep 14, 2010.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

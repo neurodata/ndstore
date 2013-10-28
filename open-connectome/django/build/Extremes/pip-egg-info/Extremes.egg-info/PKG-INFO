@@ -1,0 +1,73 @@
+Metadata-Version: 1.0
+Name: Extremes
+Version: 1.1.1
+Summary: Production-quality 'Min' and 'Max' objects (adapted from PEP 326)
+Home-page: http://pypi.python.org/pypi/Extremes
+Author: Phillip J. Eby
+Author-email: peak@eby-sarna.com
+License: PSF or ZPL
+Description: ===============================
+        "Minimum" and "Maximum" Objects
+        ===============================
+        
+        The ``peak.util.extremes`` module provides a production-quality implementation
+        of the ``Min`` and ``Max`` objects from PEP 326.  While PEP 326 was rejected
+        for inclusion in the language or standard library, the objects described in it
+        are useful in a variety of applications.  In PEAK, they have been used to
+        implement generic functions (in RuleDispatch and PEAK-Rules), as well as to
+        handle scheduling and time operations in the Trellis.  Because this has led to
+        each project copying the same code, we've now split the module out so it can
+        be used independently.
+        
+        Some simple usage examples::
+        
+            >>> from peak.util.extremes import Min, Max
+            >>> import sys
+        
+            >>> Min < -sys.maxint
+            True
+            >>> Min < None
+            True
+            >>> Min < ''
+            True
+            >>> Max > sys.maxint
+            True
+            >>> Max > 99999999999999999
+            True
+        
+            >>> type(Min)
+            <class 'peak.util.extremes.Extreme'>
+        
+        The ``Min`` object compares less than any other object but itself, while the
+        ``Max`` object compares greater than any other object but itself.  Both are
+        instances of the ``Extreme`` type.
+        
+        While the original PEP 326 implementation of these extreme values is shorter
+        than the version used here, it contains a flaw: it does not correctly handle
+        comparisons with classic class instances.  Therefore, this version defines
+        methods for all six rich comparison operators, to ensure correct support for
+        classic as well as new-style classes::
+        
+            >>> Max >= Min and Max > Min and Max==Max and Max!=Min
+            True
+            >>> Max < Min or Max <= Min or Max==Min or Max!=Max
+            False
+        
+            >>> Min <= Max and Min < Max and Min==Min and Min!=Max
+            True
+            >>> Min > Max or Min >= Max or Min==Max or Min!=Min
+            False
+        
+            >>> class X:
+            ...     """Ensure rich comparisons work correctly with classic classes"""
+        
+            >>> x = X()
+        
+            >>> Min<x<Max and Min<=x<=Max and Min!=x!=Max and Max!=x!=Min
+            True
+            
+            >>> Min>x or x>Max or x<=Min or x>=Max or x==Min or Min==x
+            False
+        
+        
+Platform: UNKNOWN

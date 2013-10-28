@@ -1,0 +1,14 @@
+README.txt
+setup.cfg
+pip-egg-info/tgMochiKit.egg-info/PKG-INFO
+pip-egg-info/tgMochiKit.egg-info/SOURCES.txt
+pip-egg-info/tgMochiKit.egg-info/dependency_links.txt
+pip-egg-info/tgMochiKit.egg-info/entry_points.txt
+pip-egg-info/tgMochiKit.egg-info/not-zip-safe
+pip-egg-info/tgMochiKit.egg-info/top_level.txt
+tgmochikit/__init__.py
+tgmochikit/base.py
+tgmochikit/release.py
+tgmochikit/templates/__init__.py
+tgmochikit/tests/__init__.py
+tgmochikit/tests/test_tgmochikit.py

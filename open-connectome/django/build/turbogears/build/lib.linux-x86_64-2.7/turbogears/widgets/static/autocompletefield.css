@@ -1,0 +1,36 @@
+span.autoTextResults {
+	position: absolute;
+	z-index: 100;
+	border-right: 2px solid #eee;
+	border-bottom: 2px solid #eee;
+	display: none;
+}
+
+table.autoTextTable {
+	background-color: white;
+	border: 1px solid black;
+	font-family: arial, sans-serif;
+	font-size: 13px;
+	font-style: normal;
+	font-variant: normal;
+	font-weight: normal;
+}
+
+table.autoTextTable tr.autoTextNormalRow td {
+	background-color: white;
+	color: black;
+}
+
+table.autoTextTable tr.autoTextSelectedRow td {
+	background-color: #36c;
+	color: white;
+	cursor: pointer;
+}
+
+table.autoTextTable td span.autoTextHighlight {
+	font-weight: bold;
+}
+
+table.autoTextTable td.autoTextHidden {
+	display: none;
+}

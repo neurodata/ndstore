@@ -1,0 +1,4 @@
+BytecodeAssembler>=0.6
+DecoratorTools>=1.7dev-r2450
+AddOns>=0.6
+Extremes>=1.1

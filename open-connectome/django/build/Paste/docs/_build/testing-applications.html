@@ -1,0 +1,305 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Testing Applications with Paste &mdash; Paste v1.7.5 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.7.5',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Paste v1.7.5 documentation" href="index.html" />
+    <link rel="next" title="URL Parsing With WSGI And Paste" href="url-parsing-with-wsgi.html" />
+    <link rel="prev" title="The Paste HTTP Server Thread Pool" href="paste-httpserver-threadpool.html" />
+ 
+<link rel="stylesheet" type="text/css"
+ href="_static/paste.css.html">
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="url-parsing-with-wsgi.html" title="URL Parsing With WSGI And Paste"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="paste-httpserver-threadpool.html" title="The Paste HTTP Server Thread Pool"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="testing-applications-with-paste">
+<h1><a class="toc-backref" href="#id2">Testing Applications with Paste</a><a class="headerlink" href="#testing-applications-with-paste" title="Permalink to this headline">¶</a></h1>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">author:</th><td class="field-body">Ian Bicking &lt;<a class="reference external" href="mailto:ianb&#37;&#52;&#48;colorstudy&#46;com">ianb<span>&#64;</span>colorstudy<span>&#46;</span>com</a>&gt;</td>
+</tr>
+<tr class="field"><th class="field-name">revision:</th><td class="field-body">$Rev$</td>
+</tr>
+<tr class="field"><th class="field-name">date:</th><td class="field-body">$LastChangedDate$</td>
+</tr>
+</tbody>
+</table>
+<div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="simple">
+<li><a class="reference external" href="#testing-applications-with-paste" id="id2">Testing Applications with Paste</a><ul>
+<li><a class="reference external" href="#introduction" id="id3">Introduction</a></li>
+<li><a class="reference external" href="#the-tests-themselves" id="id4">The Tests Themselves</a></li>
+<li><a class="reference external" href="#id1" id="id5">Form Submissions</a></li>
+<li><a class="reference external" href="#framework-hooks" id="id6">Framework Hooks</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="introduction">
+<h2><a class="toc-backref" href="#id3">Introduction</a><a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>Paste includes functionality for testing your application in a
+convenient manner.  These facilities are quite young, and feedback is
+invited.  Feedback and discussion should take place on the
+<a class="reference external" href="http://groups.google.com/group/paste-users">Paste-users list</a>.</p>
+<p>These facilities let you test your Paste and WSGI-based applications
+easily and without a server.</p>
+<p>If you have questions about this document, please contact the <a class="reference external" href="http://groups.google.com/group/paste-users">paste
+mailing list</a>
+or try IRC (<tt class="docutils literal"><span class="pre">#pythonpaste</span></tt> on freenode.net).  If there&#8217;s something that
+confused you and you want to give feedback, please <a class="reference external" href="http://pythonpaste.org/trac/newticket?component=documentation">submit an issue</a>.</p>
+</div>
+<div class="section" id="the-tests-themselves">
+<h2><a class="toc-backref" href="#id4">The Tests Themselves</a><a class="headerlink" href="#the-tests-themselves" title="Permalink to this headline">¶</a></h2>
+<p>The <tt class="docutils literal"><span class="pre">app</span></tt> object is a wrapper around your application, with many
+methods to make testing convenient.  Here&#8217;s an example test script:</p>
+<div class="highlight-python"><pre>def test_myapp():
+    res = app.get('/view', params={'id': 10})
+    # We just got /view?id=10
+    res.mustcontain('Item 10')
+    res = app.post('/view', params={'id': 10, 'name': 'New item
+        name'})
+    # The app does POST-and-redirect...
+    res = res.follow()
+    assert res.request.url == '/view?id=10'
+    res.mustcontain('New item name')
+    res.mustcontain('Item updated')</pre>
+</div>
+<p>The methods of the <tt class="docutils literal"><span class="pre">app</span></tt> object (a <tt class="docutils literal"><span class="pre">paste.tests.fixture.TestApp</span></tt>
+object):</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">get(url,</span> <span class="pre">params={},</span> <span class="pre">headers={},</span> <span class="pre">status=None)</span></tt>:</dt>
+<dd><p class="first">Gets the URL.  URLs are based in the root of your application; no
+domains are allowed.  Parameters can be given as a dictionary, or
+included directly in the <tt class="docutils literal"><span class="pre">url</span></tt>.  Headers can also be added.</p>
+<p>This tests that the status is a <tt class="docutils literal"><span class="pre">200</span> <span class="pre">OK</span></tt> or a redirect header,
+unless you pass in a <tt class="docutils literal"><span class="pre">status</span></tt>.  A status of <tt class="docutils literal"><span class="pre">&quot;*&quot;</span></tt> will never
+fail; or you can assert a specific status (like <tt class="docutils literal"><span class="pre">500</span></tt>).</p>
+<p class="last">Also, if any errors are written to the error stream this will
+raise an error.</p>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">post(url,</span> <span class="pre">params={},</span> <span class="pre">headers={},</span> <span class="pre">status=None,</span> <span class="pre">upload_files=())</span></tt>:</dt>
+<dd><p class="first">POSTS to the URL.  Like GET, except also allows for uploading
+files.  The uploaded files are a list of <tt class="docutils literal"><span class="pre">(field_name,</span> <span class="pre">filename,</span>
+<span class="pre">file_content)</span></tt>.</p>
+<p class="last">If you don&#8217;t want to do a urlencoded post body, you can put a
+<tt class="docutils literal"><span class="pre">content-type</span></tt> header in your header, and pass the body in as a
+string with <tt class="docutils literal"><span class="pre">params</span></tt>.</p>
+</dd>
+</dl>
+<p>The response object:</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">header(header_name,</span> <span class="pre">[default])</span></tt>:</dt>
+<dd>Returns the named header.  It&#8217;s an error if there is more than one
+matching header.  If you don&#8217;t provide a default, it is an error
+if there is no matching header.</dd>
+<dt><tt class="docutils literal"><span class="pre">all_headers(header_name):</span></tt></dt>
+<dd>Returns a list of all matching headers.</dd>
+<dt><tt class="docutils literal"><span class="pre">follow(**kw)</span></tt>:</dt>
+<dd>Follows the redirect, returning the new response.  It is an error
+if this response wasn&#8217;t a redirect.  Any keyword arguments are
+passed to <tt class="docutils literal"><span class="pre">app.get</span></tt> (e.g., <tt class="docutils literal"><span class="pre">status</span></tt>).</dd>
+<dt><tt class="docutils literal"><span class="pre">x</span> <span class="pre">in</span> <span class="pre">res</span></tt>:</dt>
+<dd>Returns True if the string is found in the response.  Whitespace
+is normalized for this test.</dd>
+<dt><tt class="docutils literal"><span class="pre">mustcontain(*strings)</span></tt>:</dt>
+<dd>Raises an error if any of the strings are not found in the
+response.</dd>
+<dt><tt class="docutils literal"><span class="pre">showbrowser()</span></tt>:</dt>
+<dd>Opens the HTML response in a browser; useful for debugging.</dd>
+<dt><tt class="docutils literal"><span class="pre">str(res)</span></tt>:</dt>
+<dd>Gives a slightly-compacted version of the response.</dd>
+<dt><tt class="docutils literal"><span class="pre">click(description=None,</span> <span class="pre">linkid=None,</span> <span class="pre">href=None,</span> <span class="pre">anchor=None,</span> <span class="pre">index=None,</span> <span class="pre">verbose=False)</span></tt>:</dt>
+<dd>Clicks the described link (<a class="reference external" href="./class-paste.fixture.TestResponse.html#click">see docstring for more</a>)</dd>
+<dt><tt class="docutils literal"><span class="pre">forms</span></tt>:</dt>
+<dd>Return a dictionary of forms; you can use both indexes (refer to
+the forms in order) or the string ids of forms (if you&#8217;ve given
+them ids) to identify the form.  See <a class="reference external" href="#form-submissions">Form Submissions</a> for
+more on the form objects.</dd>
+</dl>
+<p>Request objects:</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">url</span></tt>:</dt>
+<dd>The url requested.</dd>
+<dt><tt class="docutils literal"><span class="pre">environ</span></tt>:</dt>
+<dd>The environment used for the request.</dd>
+<dt><tt class="docutils literal"><span class="pre">full_url</span></tt>:</dt>
+<dd>The url with query string.</dd>
+</dl>
+</div>
+<div class="section" id="id1">
+<h2><a class="toc-backref" href="#id5">Form Submissions</a><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p>You can fill out and submit forms from your tests.  First you get the
+form:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">res</span> <span class="o">=</span> <span class="n">testapp</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;/entry_form&#39;</span><span class="p">)</span>
+<span class="n">form</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">forms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Then you fill it in fields:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># when there&#39;s one unambiguous name field:</span>
+<span class="n">form</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Bob&#39;</span>
+<span class="c"># Enter something into the first field named &#39;age&#39;</span>
+<span class="n">form</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&#39;age&#39;</span><span class="p">,</span> <span class="s">&#39;45&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Finally you submit:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Submit with no particular submit button pressed:</span>
+<span class="n">form</span><span class="o">.</span><span class="n">submit</span><span class="p">()</span>
+<span class="c"># Or submit a button:</span>
+<span class="n">form</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="s">&#39;submit_button_name&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="framework-hooks">
+<h2><a class="toc-backref" href="#id6">Framework Hooks</a><a class="headerlink" href="#framework-hooks" title="Permalink to this headline">¶</a></h2>
+<p>Frameworks can detect that they are in a testing environment by the
+presence (and truth) of the WSGI environmental variable
+<tt class="docutils literal"><span class="pre">&quot;paste.testing&quot;</span></tt>.</p>
+<p>More generally, frameworks can detect that something (possibly a test
+fixture) is ready to catch unexpected errors by the presence and truth
+of <tt class="docutils literal"><span class="pre">&quot;paste.throw_errors&quot;</span></tt> (this is sometimes set outside of testing
+fixtures too, when an error-handling middleware is in place).</p>
+<p>Frameworks that want to expose the inner structure of the request may
+use <tt class="docutils literal"><span class="pre">&quot;paste.testing_variables&quot;</span></tt>.  This will be a dictionary &#8211; any
+values put into that dictionary will become attributes of the response
+object.  So if you do <tt class="docutils literal"><span class="pre">env[&quot;paste.testing_variables&quot;]['template']</span> <span class="pre">=</span>
+<span class="pre">template_name</span></tt> in your framework, then <tt class="docutils literal"><span class="pre">response.template</span></tt> will be
+<tt class="docutils literal"><span class="pre">template_name</span></tt>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="http://pythonpaste.org/" class="invisible-link">Python Paste</a></h3>
+
+<ul>
+<li><a href="http://trac.pythonpaste.org">Issue tracker</a></li>
+<li><a href="http://pythonpaste.org/">Paste core</a></li>
+<li><a href="http://pythonpaste.org/webob/">WebOb</a></li>
+<li><a href="http://pythonpaste.org/deploy/">Paste Deploy</a></li>
+<li><a href="http://pythonpaste.org/script/">Paste Script</a></li>
+<li><a href="http://pythonpaste.org/webtest/">WebTest</a></li>
+<li><a href="http://pythonpaste.org/scripttest/">ScriptType</a></li>
+<li><a href="http://pythonpaste.org/initools/">INITools</a></li>
+<li><a href="http://pythonpaste.org/tempita/">Tempita</a></li>
+<li><a href="http://pythonpaste.org/waitforit/">WaitForIt</a></li>
+<li><a href="http://pythonpaste.org/wphp/">WPHP</a></li>
+<li><a href="http://pythonpaste.org/wsgifilter/">WSGIFilter</a></li>
+<li><a href="http://pythonpaste.org/wsgiproxy/">WSGIProxy</a></li>
+</ul>
+
+
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Testing Applications with Paste</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#the-tests-themselves">The Tests Themselves</a></li>
+<li><a class="reference internal" href="#id1">Form Submissions</a></li>
+<li><a class="reference internal" href="#framework-hooks">Framework Hooks</a></li>
+</ul>
+</li>
+</ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="paste-httpserver-threadpool.html"
+                        title="previous chapter">The Paste HTTP Server Thread Pool</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="url-parsing-with-wsgi.html"
+                        title="next chapter">URL Parsing With WSGI And Paste</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/testing-applications.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="url-parsing-with-wsgi.html" title="URL Parsing With WSGI And Paste"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="paste-httpserver-threadpool.html" title="The Paste HTTP Server Thread Pool"
+             >previous</a> |</li>
+        <li><a href="index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, Ian Bicking.
+      Last updated on Sep 14, 2010.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

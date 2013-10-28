@@ -1,0 +1,192 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>paste.response – Utility functions for producing responses &mdash; Paste v1.7.5 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.7.5',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Paste v1.7.5 documentation" href="../index.html" />
+ 
+<link rel="stylesheet" type="text/css"
+ href="../_static/paste.css.html">
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-paste.response">
+<span id="paste-response-utility-functions-for-producing-responses"></span><h1><a class="reference internal" href="#module-paste.response"><tt class="xref py py-mod docutils literal"><span class="pre">paste.response</span></tt></a> &#8211; Utility functions for producing responses<a class="headerlink" href="#module-paste.response" title="Permalink to this headline">¶</a></h1>
+<p>Routines to generate WSGI responses</p>
+<div class="section" id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="paste.response.HeaderDict">
+<em class="property">class </em><tt class="descclassname">paste.response.</tt><tt class="descname">HeaderDict</tt><a class="headerlink" href="#paste.response.HeaderDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>This represents response headers.  It handles the headers as a
+dictionary, with case-insensitive keys.</p>
+<p>Also there is an <tt class="docutils literal"><span class="pre">.add(key,</span> <span class="pre">value)</span></tt> method, which sets the key,
+or adds the value to the current value (turning it into a list if
+necessary).</p>
+<p>For passing to WSGI there is a <tt class="docutils literal"><span class="pre">.headeritems()</span></tt> method which is
+like <tt class="docutils literal"><span class="pre">.items()</span></tt> but unpacks value that are lists.  It also
+handles encoding &#8211; all headers are encoded in ASCII (if they are
+unicode).</p>
+<p>&#64;&#64;: Should that encoding be ISO-8859-1 or UTF-8?  I&#8217;m not sure
+what the spec says.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="paste.response.has_header">
+<tt class="descclassname">paste.response.</tt><tt class="descname">has_header</tt><big>(</big><em>headers</em>, <em>name</em><big>)</big><a class="headerlink" href="#paste.response.has_header" title="Permalink to this definition">¶</a></dt>
+<dd><p>Is header named <tt class="docutils literal"><span class="pre">name</span></tt> present in headers?</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="paste.response.header_value">
+<tt class="descclassname">paste.response.</tt><tt class="descname">header_value</tt><big>(</big><em>headers</em>, <em>name</em><big>)</big><a class="headerlink" href="#paste.response.header_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the header&#8217;s value, or None if no such header.  If a
+header appears more than once, all the values of the headers
+are joined with &#8216;,&#8217;.   Note that this is consistent /w RFC 2616
+section 4.2 which states:</p>
+<blockquote>
+It MUST be possible to combine the multiple header fields
+into one &#8220;field-name: field-value&#8221; pair, without changing
+the semantics of the message, by appending each subsequent
+field-value to the first, each separated by a comma.</blockquote>
+<p>However, note that the original netscape usage of &#8216;Set-Cookie&#8217;,
+especially in MSIE which contains an &#8216;expires&#8217; date will is not
+compatible with this particular concatination method.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="paste.response.remove_header">
+<tt class="descclassname">paste.response.</tt><tt class="descname">remove_header</tt><big>(</big><em>headers</em>, <em>name</em><big>)</big><a class="headerlink" href="#paste.response.remove_header" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes the named header from the list of headers.  Returns the
+value of that header, or None if no header found.  If multiple
+headers are found, only the last one is returned.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="paste.response.replace_header">
+<tt class="descclassname">paste.response.</tt><tt class="descname">replace_header</tt><big>(</big><em>headers</em>, <em>name</em>, <em>value</em><big>)</big><a class="headerlink" href="#paste.response.replace_header" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates the headers replacing the first occurance of the given name
+with the value provided; asserting that no further occurances
+happen. Note that this is _not_ the same as remove_header and then
+append, as two distinct operations (del followed by an append) are
+not atomic in a threaded environment. Returns the previous header
+value for the provided name, if any.   Clearly one should not use
+this function with <tt class="docutils literal"><span class="pre">set-cookie</span></tt> or other names that may have more
+than one occurance in the headers.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="http://pythonpaste.org/" class="invisible-link">Python Paste</a></h3>
+
+<ul>
+<li><a href="http://trac.pythonpaste.org">Issue tracker</a></li>
+<li><a href="http://pythonpaste.org/">Paste core</a></li>
+<li><a href="http://pythonpaste.org/webob/">WebOb</a></li>
+<li><a href="http://pythonpaste.org/deploy/">Paste Deploy</a></li>
+<li><a href="http://pythonpaste.org/script/">Paste Script</a></li>
+<li><a href="http://pythonpaste.org/webtest/">WebTest</a></li>
+<li><a href="http://pythonpaste.org/scripttest/">ScriptType</a></li>
+<li><a href="http://pythonpaste.org/initools/">INITools</a></li>
+<li><a href="http://pythonpaste.org/tempita/">Tempita</a></li>
+<li><a href="http://pythonpaste.org/waitforit/">WaitForIt</a></li>
+<li><a href="http://pythonpaste.org/wphp/">WPHP</a></li>
+<li><a href="http://pythonpaste.org/wsgifilter/">WSGIFilter</a></li>
+<li><a href="http://pythonpaste.org/wsgiproxy/">WSGIProxy</a></li>
+</ul>
+
+
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">paste.response</span></tt> &#8211; Utility functions for producing responses</a><ul>
+<li><a class="reference internal" href="#module-contents">Module Contents</a></li>
+</ul>
+</li>
+</ul>
+
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/modules/response.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, Ian Bicking.
+      Last updated on Sep 14, 2010.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

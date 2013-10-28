@@ -1,0 +1,174 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>paste.url – URL convenience class &mdash; Paste v1.7.5 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.7.5',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Paste v1.7.5 documentation" href="../index.html" />
+ 
+<link rel="stylesheet" type="text/css"
+ href="../_static/paste.css.html">
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-paste.url">
+<span id="paste-url-url-convenience-class"></span><h1><a class="reference internal" href="#module-paste.url"><tt class="xref py py-mod docutils literal"><span class="pre">paste.url</span></tt></a> &#8211; URL convenience class<a class="headerlink" href="#module-paste.url" title="Permalink to this headline">¶</a></h1>
+<p>This module implements a class for handling URLs.</p>
+<div class="section" id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="paste.url.URL">
+<em class="property">class </em><tt class="descclassname">paste.url.</tt><tt class="descname">URL</tt><big>(</big><em>url</em>, <em>vars=None</em>, <em>attrs=None</em>, <em>params=None</em><big>)</big><a class="headerlink" href="#paste.url.URL" title="Permalink to this definition">¶</a></dt>
+<dd><div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">URL</span><span class="p">(</span><span class="s">&#39;http://localhost&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span>
+<span class="go">&lt;URL http://localhost&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">u</span><span class="p">[</span><span class="s">&#39;view&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+<span class="go">&#39;http://localhost/view&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span><span class="p">[</span><span class="s">&#39;//foo&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">param</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="s">&#39;view&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">html</span>
+<span class="go">&#39;&lt;a href=&quot;http://localhost/view/foo&quot;&gt;view&lt;/a&gt;&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span><span class="o">.</span><span class="n">param</span><span class="p">(</span><span class="n">confirm</span><span class="o">=</span><span class="s">&#39;Really?&#39;</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="s">&#39;goto&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">html</span>
+<span class="go">&#39;&lt;a href=&quot;http://localhost/view&quot; onclick=&quot;return confirm(\&#39;Really?\&#39;)&quot;&gt;goto&lt;/a&gt;&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s">&#39;See &quot;it&quot;&#39;</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="s">&#39;goto&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">html</span>
+<span class="go">&#39;&lt;a href=&quot;http://localhost/view?title=See+%22it%22&quot;&gt;goto&lt;/a&gt;&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span><span class="p">(</span><span class="s">&#39;another&#39;</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="s">&#39;fuggetaboutit&#39;</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="s">&#39;goto&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">html</span>
+<span class="go">&#39;&lt;a href=&quot;http://localhost/view/another?var=fuggetaboutit&quot;&gt;goto&lt;/a&gt;&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span><span class="o">.</span><span class="n">attr</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="s">&#39;goto&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">html</span>
+<span class="gt">Traceback (most recent call last):</span>
+    <span class="o">....</span>
+<span class="nc">ValueError</span>: <span class="n-Identifier">You must give a content param to &lt;URL http://localhost/view attrs(content=&quot;goto&quot;)&gt; generate anchor tags</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="s">&#39;foo=bar</span><span class="si">%20s</span><span class="s">tuff&#39;</span><span class="p">])</span>
+<span class="go">&#39;http://localhost/view?foo=bar+stuff&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="paste.url.Image">
+<em class="property">class </em><tt class="descclassname">paste.url.</tt><tt class="descname">Image</tt><big>(</big><em>url</em>, <em>vars=None</em>, <em>attrs=None</em>, <em>params=None</em><big>)</big><a class="headerlink" href="#paste.url.Image" title="Permalink to this definition">¶</a></dt>
+<dd><div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">i</span> <span class="o">=</span> <span class="n">Image</span><span class="p">(</span><span class="s">&#39;/images&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">i</span> <span class="o">=</span> <span class="n">i</span> <span class="o">/</span> <span class="s">&#39;/foo.png&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">i</span><span class="o">.</span><span class="n">html</span>
+<span class="go">&#39;&lt;img src=&quot;/images/foo.png&quot; /&gt;&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="s">&#39;alt=foo&#39;</span><span class="p">])</span>
+<span class="go">&#39;&lt;img src=&quot;/images/foo.png&quot; alt=&quot;foo&quot; /&gt;&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">i</span><span class="o">.</span><span class="n">href</span>
+<span class="go">&#39;/images/foo.png&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="http://pythonpaste.org/" class="invisible-link">Python Paste</a></h3>
+
+<ul>
+<li><a href="http://trac.pythonpaste.org">Issue tracker</a></li>
+<li><a href="http://pythonpaste.org/">Paste core</a></li>
+<li><a href="http://pythonpaste.org/webob/">WebOb</a></li>
+<li><a href="http://pythonpaste.org/deploy/">Paste Deploy</a></li>
+<li><a href="http://pythonpaste.org/script/">Paste Script</a></li>
+<li><a href="http://pythonpaste.org/webtest/">WebTest</a></li>
+<li><a href="http://pythonpaste.org/scripttest/">ScriptType</a></li>
+<li><a href="http://pythonpaste.org/initools/">INITools</a></li>
+<li><a href="http://pythonpaste.org/tempita/">Tempita</a></li>
+<li><a href="http://pythonpaste.org/waitforit/">WaitForIt</a></li>
+<li><a href="http://pythonpaste.org/wphp/">WPHP</a></li>
+<li><a href="http://pythonpaste.org/wsgifilter/">WSGIFilter</a></li>
+<li><a href="http://pythonpaste.org/wsgiproxy/">WSGIProxy</a></li>
+</ul>
+
+
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">paste.url</span></tt> &#8211; URL convenience class</a><ul>
+<li><a class="reference internal" href="#module-contents">Module Contents</a></li>
+</ul>
+</li>
+</ul>
+
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/modules/url.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, Ian Bicking.
+      Last updated on Sep 14, 2010.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

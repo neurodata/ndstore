@@ -1,0 +1,148 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>paste.script.copydir – recursive, interactive copy &mdash; Paste Script v1.7.4.1 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.7.4.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Paste Script v1.7.4.1 documentation" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste Script v1.7.4.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-paste.script.copydir">
+<span id="paste-script-copydir-recursive-interactive-copy"></span><h1><a class="reference internal" href="#module-paste.script.copydir" title="paste.script.copydir"><tt class="xref py py-mod docutils literal"><span class="pre">paste.script.copydir</span></tt></a> &#8211; recursive, interactive copy<a class="headerlink" href="#module-paste.script.copydir" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="paste.script.copydir.copy_dir">
+<tt class="descclassname">paste.script.copydir.</tt><tt class="descname">copy_dir</tt><big>(</big><em>source</em>, <em>dest</em>, <em>vars</em>, <em>verbosity</em>, <em>simulate</em>, <em>indent=0</em>, <em>use_cheetah=False</em>, <em>sub_vars=True</em>, <em>interactive=False</em>, <em>svn_add=True</em>, <em>overwrite=True</em>, <em>template_renderer=None</em><big>)</big><a class="headerlink" href="#paste.script.copydir.copy_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>Copies the <tt class="docutils literal"><span class="pre">source</span></tt> directory to the <tt class="docutils literal"><span class="pre">dest</span></tt> directory.</p>
+<p><tt class="docutils literal"><span class="pre">vars</span></tt>: A dictionary of variables to use in any substitutions.</p>
+<p><tt class="docutils literal"><span class="pre">verbosity</span></tt>: Higher numbers will show more about what is happening.</p>
+<p><tt class="docutils literal"><span class="pre">simulate</span></tt>: If true, then don&#8217;t actually <em>do</em> anything.</p>
+<p><tt class="docutils literal"><span class="pre">indent</span></tt>: Indent any messages by this amount.</p>
+<p><tt class="docutils literal"><span class="pre">sub_vars</span></tt>: If true, variables in <tt class="docutils literal"><span class="pre">_tmpl</span></tt> files and <tt class="docutils literal"><span class="pre">+var+</span></tt>
+in filenames will be substituted.</p>
+<p><tt class="docutils literal"><span class="pre">use_cheetah</span></tt>: If true, then any templates encountered will be
+substituted with Cheetah.  Otherwise <tt class="docutils literal"><span class="pre">template_renderer</span></tt> or
+<tt class="docutils literal"><span class="pre">string.Template</span></tt> will be used for templates.</p>
+<p><tt class="docutils literal"><span class="pre">svn_add</span></tt>: If true, any files written out in directories with
+<tt class="docutils literal"><span class="pre">.svn/</span></tt> directories will be added (via <tt class="docutils literal"><span class="pre">svn</span> <span class="pre">add</span></tt>).</p>
+<p><tt class="docutils literal"><span class="pre">overwrite</span></tt>: If false, then don&#8217;t every overwrite anything.</p>
+<p><tt class="docutils literal"><span class="pre">interactive</span></tt>: If you are overwriting a file and interactive is
+true, then ask before overwriting.</p>
+<p><tt class="docutils literal"><span class="pre">template_renderer</span></tt>: This is a function for rendering templates
+(if you don&#8217;t want to use Cheetah or string.Template).  It should
+have the signature <tt class="docutils literal"><span class="pre">template_renderer(content_as_string,</span>
+<span class="pre">vars_as_dict,</span> <span class="pre">filename=filename)</span></tt>.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="paste.script.copydir.SkipTemplate">
+<em class="property">exception </em><tt class="descclassname">paste.script.copydir.</tt><tt class="descname">SkipTemplate</tt><a class="headerlink" href="#paste.script.copydir.SkipTemplate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raised to indicate that the template should not be copied over.
+Raise this exception during the substitution of your template</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="paste.script.copydir.query_interactive">
+<tt class="descclassname">paste.script.copydir.</tt><tt class="descname">query_interactive</tt><big>(</big><em>src_fn</em>, <em>dest_fn</em>, <em>src_content</em>, <em>dest_content</em>, <em>simulate</em><big>)</big><a class="headerlink" href="#paste.script.copydir.query_interactive" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="paste.script.copydir.LaxTemplate">
+<em class="property">class </em><tt class="descclassname">paste.script.copydir.</tt><tt class="descname">LaxTemplate</tt><big>(</big><em>template</em><big>)</big><a class="headerlink" href="#paste.script.copydir.LaxTemplate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">paste.script.copydir</span></tt> &#8211; recursive, interactive copy</a><ul>
+<li><a class="reference internal" href="#module-contents">Module Contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/modules/copydir.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste Script v1.7.4.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, Ian Bicking.
+      Last updated on Aug 12, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

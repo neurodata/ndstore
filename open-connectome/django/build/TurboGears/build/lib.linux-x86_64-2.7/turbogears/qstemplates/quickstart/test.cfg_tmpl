@@ -1,0 +1,60 @@
+[global]
+# You can place test-specific configuration options here (like test db uri, etc)
+#
+
+# DATABASE
+
+#if $sqlalchemy != 'True'
+sqlobject.dburi = 'sqlite:///:memory:'
+#else
+sqlalchemy.dburi = 'sqlite:///:memory:'
+#end if
+
+# LOGGING
+
+log.screen = False
+
+[logging]
+
+[[formatters]]
+
+[[[full_content]]]
+format='*(asctime)s *(name)s *(levelname)s *(message)s'
+
+[[handlers]]
+
+[[[test_out]]]
+class='StreamHandler'
+level='DEBUG'
+args='(sys.stdout,)'
+formatter='full_content'
+
+[[loggers]]
+
+[[[allinfo]]]
+level='INFO'
+handlers=['test_out']
+
+[[[${package}]]]
+level='DEBUG'
+qualname='${package}'
+handlers=['test_out']
+propagate=0
+
+[[[access]]]
+level='INFO'
+qualname='cherrpy.access'
+handlers=['test_out']
+propagate=0
+
+[[[error]]]
+level='WARNING'
+qualname='cherrypy.error'
+handlers=['test_out']
+propagate=0
+
+[[[turbogears]]]
+level='INFO'
+qualname='turbogears'
+handlers=['test_out']
+propagate=0

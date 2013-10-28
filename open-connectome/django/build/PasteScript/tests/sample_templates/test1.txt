@@ -1,0 +1,3 @@
+#def body(c, d):
+This shouldn't work, since it doesn't end with _tmpl
+#end def

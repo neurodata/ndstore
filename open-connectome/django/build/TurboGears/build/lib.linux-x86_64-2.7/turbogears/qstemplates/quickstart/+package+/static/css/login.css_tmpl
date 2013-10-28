@@ -1,0 +1,93 @@
+#if $identity == 'none'
+#raise $SkipTemplate
+#end if
+/* Login form*/
+
+#loginform {
+	text-align: center;
+	padding: 1em 2em 2em 2em;
+	overflow: auto;
+	position: relative;
+}
+
+#loginform p {
+	font-size: 12px;
+	font-weight: bold;
+	color: #555;
+}
+
+form.loginfields {
+	text-align: left;
+	width: 270px;
+	background: url('../images/loginbg.png') top left no-repeat;
+	padding: 0;
+	margin: 0 auto;
+	border: 0;
+}
+
+form.loginfields h2 {
+	font-size: 16px;
+	float: left;
+	padding: 0;
+	margin: 5px;
+	margin-top: 0;
+	background: url('../images/loginheader-left.png') top left no-repeat;
+}
+
+* html form.loginfields h2 {
+	margin-left: 3px;
+	width: 80px;
+	text-align: center;
+}
+
+form.loginfields h2 span {
+	background: url('../images/loginheader-right.png') right top no-repeat;
+	height: 30px;
+	line-height: 30px;
+	display: block;
+	font-size: 100%;
+	font-weight: normal;
+	color: #fff;
+	padding: 0 10px;
+}
+
+*+html form.loginfields h2 span {
+	padding: 0 20px;
+}
+
+form.loginfields label {
+	clear: left;
+	float: left;
+	margin-top: 5px;
+	margin-left: 10px;
+	width: 65px;
+	line-height: 31px;
+	vertical-align: middle;
+}
+
+form.loginfields input.text {
+	float: left;
+	margin-left: 10px;
+	margin-top: 5px;
+	width: 165px;
+	height: 21px;
+	padding: 5px;
+	border: 0;
+	background: url('../images/inputbg.png') top left no-repeat;
+	color: #fff;
+}
+
+form.loginfields input#submit {
+	background: url('../images/loginbottombg.png') bottom left no-repeat;
+	width: 270px;
+	height: 61px;
+	border: 0;
+	margin-top: 10px;
+	color: #fff;
+	padding: 10px 140px 20px 10px;
+}
+
+* html form.loginfields input#submit {
+	clear: both;
+	margin-left: -10px;
+}

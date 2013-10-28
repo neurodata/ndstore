@@ -1,0 +1,18 @@
+Metadata-Version: 1.0
+Name: tgMochiKit
+Version: 1.4.2
+Summary: MochiKit packaged as TurboGears widgets.
+Home-page: http://docs.turbogears.org/tgMochiKit
+Author: Diez B. Roggisch
+Author-email: deets@web.de
+License: AFL/MIT
+Download-URL: http://pypi.python.org/pypi/tgMochiKit
+Description: UNKNOWN
+Keywords: turbogears.widgets
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Framework :: TurboGears
+Classifier: Framework :: TurboGears :: Widgets

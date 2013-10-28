@@ -1,0 +1,73 @@
+body {
+    margin:0;
+    padding:0;
+    font-family:verdana,sans-serif;
+    font-size:12px;
+}
+td { font-family:verdana,sans-serif;font-size:12px; }
+h1 {font-size:12px;color:#666;margin:0;padding:0;margin-top:10px;margin-left:6px; }
+#sqlmonitor a { text-decoration:none;color:#598B5A;font-size:10px;margin-right:10px; }
+#left_col { width:229px;color:#333; }
+#left_col ul { list-style-type:none;padding:0;margin:0; }
+#left_col ul li { margin-bottom:0; }
+#left_col ul li a { padding-left:0;background-image:none; }
+#content { padding-left:10px;border-left:none; }
+#models a { margin-left:5px;font-size:12px; color:#999;text-decoration:none; }
+.detail_menu td { border:1px solid #999;border-bottom:none;padding-left:10px;padding-right:10px;background-color:#e3e3e3; }
+.detail_menu a { text-decoration:none;color:#999; }
+.detail_menu { border-bottom:1px solid #999; }
+.detail_menu .spacing { border:none;background-color:#fff;width:6px;padding:0; }
+.detail_menu .selected { background-color:#999; }
+.detail_menu .selected a { color:#fff; }
+.menu_link { margin-top:10px;margin-bottom:10px;font-size:12px;color:#598B5A;display:block;font-weight:900; }
+.detail_grid td { border-bottom:1px solid #e3e3e3;padding:4px;padding-left:10px; }
+.table_head { background-color:#e3e3e3; }
+.txtfield { width:300px;font-size:12px; }
+.txtarea { width:300px;font-size:12px; }
+.action { font-size:10px;text-decoration:none;background-color:#598B5A;color:#fff; border-bottom:2px solid #466B47;padding:3px;margin-right:5px; }
+.previewLabel { font-weight:900; }
+.handle {
+    background-color: #ccc;
+    width:7px;
+    height:20px;
+    cursor:move;
+    font-size:14px;
+    visibility:hidden;
+}
+.discloser { font-size:13px;text-decoration:none;color:#999; }
+ul.boxy {
+    list-style-type:none;
+    padding:0;
+    margin:0;
+    font-size:13px;
+    font-family:Arial, sans-serif;
+}
+ul.boxy li { margin:0;margin-top:4px;border-bottom:1px solid #e3e3e3; }
+.label { margin-left:5px;width:120px;padding-left:5px; }
+.coltype { color:#999; }
+.multiplejoin table { border:1px solid #999;margin-bottom:5px;margin-top:3px; }
+.reordering { margin-top:20px;color:#999; }
+.updown { font-size:14px;color:#000; }
+#btnSaveAndAdd { width:200px; }
+#btnUpdate { width:150px; }
+.blue_button {
+    cursor:pointer;
+    color:#fff;
+    background-color:#1E75BC;
+    border-width:0;
+    margin-left:0;
+    margin-right:4px;
+    padding:3px;
+    width:150px;
+}
+.buts {
+    cursor:pointer;
+    color:#fff;
+    background-color:#1E75BC;
+    border-width:0;
+    margin-left:0;
+    margin-right:4px;
+    padding:3px;
+    min-width:100px;
+}
+

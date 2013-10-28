@@ -1,0 +1,85 @@
+# -*- coding: utf-8 -*-
+"""This module contains the root controller class of the application."""
+
+# symbols which are imported by "from ${package}.controllers.root import *"
+__all__ = ['Root']
+
+# standard library imports
+# import logging
+import datetime
+
+# third-party imports
+#if $identity == "none"
+from turbogears import controllers, expose, flash
+#else
+from cherrypy import request
+from turbogears import controllers, expose, flash, identity, redirect, visit
+#end if
+
+# project specific imports
+# from ${package} import model
+# from ${package} import jsonify
+
+# log = logging.getLogger('${package}.controllers')
+
+
+class Root(controllers.RootController):
+    """The root controller of the application."""
+
+    @expose('${package}.templates.welcome')
+#if $identity != 'none'
+    # @identity.require(identity.in_group('admin'))
+#end if
+    def index(self):
+        """Show the welcome page."""
+        # log.debug("Happy TurboGears Controller Responding For Duty")
+        flash(_(u"Your application is now running"))
+        return dict(now=datetime.datetime.now())
+#if $identity != 'none'
+
+    @expose('${package}.templates.login')
+    def login(self, forward_url=None, *args, **kw):
+        """Show the login form or forward user to previously requested page."""
+
+        if forward_url:
+            if isinstance(forward_url, list):
+                forward_url = forward_url.pop(0)
+            else:
+                del request.params['forward_url']
+
+        new_visit = visit.current()
+        if new_visit:
+            new_visit = new_visit.is_new
+
+        if (not new_visit and not identity.current.anonymous
+                and identity.was_login_attempted()
+                and not identity.get_identity_errors()):
+            redirect(forward_url or '/', kw)
+
+        if identity.was_login_attempted():
+            if new_visit:
+                msg = _(u"Cannot log in because your browser "
+                         "does not support session cookies.")
+            else:
+                msg = _(u"The credentials you supplied were not correct or "
+                         "did not grant access to this resource.")
+        elif identity.get_identity_errors():
+            msg = _(u"You must provide your credentials before accessing "
+                     "this resource.")
+        else:
+            msg = _(u"Please log in.")
+            if not forward_url:
+                forward_url = request.headers.get('Referer', '/')
+
+        # we do not set the response status here anymore since it
+        # is now handled in the identity exception.
+        return dict(logging_in=True, message=msg,
+            forward_url=forward_url, previous_url=request.path_info,
+            original_parameters=request.params)
+
+    @expose()
+    def logout(self):
+        """Log out the current identity and redirect to start page."""
+        identity.current.logout()
+        redirect('/')
+#end if

@@ -1,0 +1,196 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>paste.auth.basic – Basic HTTP authentication &mdash; Paste v1.7.5 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.7.5',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Paste v1.7.5 documentation" href="../index.html" />
+ 
+<link rel="stylesheet" type="text/css"
+ href="../_static/paste.css.html">
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-paste.auth.basic">
+<span id="paste-auth-basic-basic-http-authentication"></span><h1><a class="reference internal" href="#module-paste.auth.basic"><tt class="xref py py-mod docutils literal"><span class="pre">paste.auth.basic</span></tt></a> &#8211; Basic HTTP authentication<a class="headerlink" href="#module-paste.auth.basic" title="Permalink to this headline">¶</a></h1>
+<p>Basic HTTP/1.0 Authentication</p>
+<p>This module implements <tt class="docutils literal"><span class="pre">Basic</span></tt> authentication as described in
+HTTP/1.0 specification <a class="footnote-reference" href="#id2" id="id1">[1]</a> .  Do not use this module unless you
+are using SSL or need to work with very out-dated clients, instead
+use <tt class="docutils literal"><span class="pre">digest</span></tt> authentication.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">paste.wsgilib</span> <span class="kn">import</span> <span class="n">dump_environ</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">paste.httpserver</span> <span class="kn">import</span> <span class="n">serve</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># from paste.auth.basic import AuthBasicHandler</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">realm</span> <span class="o">=</span> <span class="s">&#39;Test Realm&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">authfunc</span><span class="p">(</span><span class="n">environ</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">username</span> <span class="o">==</span> <span class="n">password</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">serve</span><span class="p">(</span><span class="n">AuthBasicHandler</span><span class="p">(</span><span class="n">dump_environ</span><span class="p">,</span> <span class="n">realm</span><span class="p">,</span> <span class="n">authfunc</span><span class="p">))</span>
+<span class="go">serving on...</span>
+</pre></div>
+</div>
+<table class="docutils footnote" frame="void" id="id2" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td><a class="reference external" href="http://www.w3.org/Protocols/HTTP/1.0/draft-ietf-http-spec.html#BasicAA">http://www.w3.org/Protocols/HTTP/1.0/draft-ietf-http-spec.html#BasicAA</a></td></tr>
+</tbody>
+</table>
+<div class="section" id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="paste.auth.basic.AuthBasicAuthenticator">
+<em class="property">class </em><tt class="descclassname">paste.auth.basic.</tt><tt class="descname">AuthBasicAuthenticator</tt><big>(</big><em>realm</em>, <em>authfunc</em><big>)</big><a class="headerlink" href="#paste.auth.basic.AuthBasicAuthenticator" title="Permalink to this definition">¶</a></dt>
+<dd><p>implements <tt class="docutils literal"><span class="pre">Basic</span></tt> authentication details</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="paste.auth.basic.AuthBasicHandler">
+<em class="property">class </em><tt class="descclassname">paste.auth.basic.</tt><tt class="descname">AuthBasicHandler</tt><big>(</big><em>application</em>, <em>realm</em>, <em>authfunc</em><big>)</big><a class="headerlink" href="#paste.auth.basic.AuthBasicHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTTP/1.0 <tt class="docutils literal"><span class="pre">Basic</span></tt> authentication middleware</p>
+<p>Parameters:</p>
+<blockquote>
+<p><tt class="docutils literal"><span class="pre">application</span></tt></p>
+<blockquote>
+The application object is called only upon successful
+authentication, and can assume <tt class="docutils literal"><span class="pre">environ['REMOTE_USER']</span></tt>
+is set.  If the <tt class="docutils literal"><span class="pre">REMOTE_USER</span></tt> is already set, this
+middleware is simply pass-through.</blockquote>
+<p><tt class="docutils literal"><span class="pre">realm</span></tt></p>
+<blockquote>
+This is a identifier for the authority that is requesting
+authorization.  It is shown to the user and should be unique
+within the domain it is being used.</blockquote>
+<p><tt class="docutils literal"><span class="pre">authfunc</span></tt></p>
+<blockquote>
+This is a mandatory user-defined function which takes a
+<tt class="docutils literal"><span class="pre">environ</span></tt>, <tt class="docutils literal"><span class="pre">username</span></tt> and <tt class="docutils literal"><span class="pre">password</span></tt> for its first
+three arguments.  It should return <tt class="xref docutils literal"><span class="pre">True</span></tt> if the user is
+authenticated.</blockquote>
+</blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="paste.auth.basic.make_basic">
+<tt class="descclassname">paste.auth.basic.</tt><tt class="descname">make_basic</tt><big>(</big><em>app</em>, <em>global_conf</em>, <em>realm</em>, <em>authfunc</em>, <em>**kw</em><big>)</big><a class="headerlink" href="#paste.auth.basic.make_basic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Grant access via basic authentication</p>
+<p>Config looks like this:</p>
+<div class="highlight-python"><pre>[filter:grant]
+use = egg:Paste#auth_basic
+realm=myrealm
+authfunc=somepackage.somemodule:somefunction</pre>
+</div>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="http://pythonpaste.org/" class="invisible-link">Python Paste</a></h3>
+
+<ul>
+<li><a href="http://trac.pythonpaste.org">Issue tracker</a></li>
+<li><a href="http://pythonpaste.org/">Paste core</a></li>
+<li><a href="http://pythonpaste.org/webob/">WebOb</a></li>
+<li><a href="http://pythonpaste.org/deploy/">Paste Deploy</a></li>
+<li><a href="http://pythonpaste.org/script/">Paste Script</a></li>
+<li><a href="http://pythonpaste.org/webtest/">WebTest</a></li>
+<li><a href="http://pythonpaste.org/scripttest/">ScriptType</a></li>
+<li><a href="http://pythonpaste.org/initools/">INITools</a></li>
+<li><a href="http://pythonpaste.org/tempita/">Tempita</a></li>
+<li><a href="http://pythonpaste.org/waitforit/">WaitForIt</a></li>
+<li><a href="http://pythonpaste.org/wphp/">WPHP</a></li>
+<li><a href="http://pythonpaste.org/wsgifilter/">WSGIFilter</a></li>
+<li><a href="http://pythonpaste.org/wsgiproxy/">WSGIProxy</a></li>
+</ul>
+
+
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">paste.auth.basic</span></tt> &#8211; Basic HTTP authentication</a><ul>
+<li><a class="reference internal" href="#module-contents">Module Contents</a></li>
+</ul>
+</li>
+</ul>
+
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/modules/auth.basic.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, Ian Bicking.
+      Last updated on Sep 14, 2010.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,82 @@
+Metadata-Version: 1.0
+Name: PEAK-Rules
+Version: 0.5a1.dev-r2713
+Summary: Generic functions and business rules support systems
+Home-page: http://pypi.python.org/pypi/PEAK-Rules
+Author: Phillip J. Eby
+Author-email: peak@eby-sarna.com
+License: ZPL 2.1
+Download-URL: http://peak.telecommunity.com/snapshots/
+Description: PEAK-Rules is a highly-extensible framework for creating and using generic
+        functions, from the very simple to the very complex.  Out of the box, it
+        supports multiple-dispatch on positional arguments using tuples of types,
+        full predicate dispatch using strings containing Python expressions, and
+        CLOS-like method combining.  (But the framework allows you to mix and match
+        dispatch engines and custom method combinations, if you need or want to.)
+        
+        Basic usage::
+        
+        >>> from peak.rules import abstract, when, around, before, after
+        
+        >>> @abstract()
+        ... def pprint(ob):
+        ...     """A pretty-printing generic function"""
+        
+        >>> @when(pprint, (list,))
+        ... def pprint_list(ob):
+        ...     print "pretty-printing a list"
+        
+        >>> @when(pprint, "isinstance(ob,list) and len(ob)>50")
+        ... def pprint_long_list(ob):
+        ...     print "pretty-printing a long list"
+        
+        >>> pprint([1,2,3])
+        pretty-printing a list
+        
+        >>> pprint([42]*1000)
+        pretty-printing a long list
+        
+        >>> pprint(42)
+        Traceback (most recent call last):
+        ...
+        NoApplicableMethods: ...
+        
+        PEAK-Rules works with Python 2.3 and up -- just omit the ``@`` signs if your
+        code needs to run under 2.3.  Also, note that with PEAK-Rules, *any* function
+        can be generic: you don't have to predeclare a function as generic.  (The
+        ``abstract`` decorator is used to declare a function with no *default* method;
+        i.e., one that will raise ``NoApplicableMethods`` instead of executing a
+        default implementation, if no rules match the arguments it's invoked with.)
+        
+        PEAK-Rules is still under development; it lacks much in the way of error
+        checking, so if you mess up your rules, it may not be obvious where or how you
+        did.  User documentation is also lacking, although there are extensive doctests
+        describing and testing most of its internals, including:
+        
+        * `Introduction`_ (Method combination, porting from RuleDispatch)
+        * `Core Design Overview`_ (Terminology, method precedence, etc.)
+        * The `Basic AST Builder`_ and advanced `Code Generation`_
+        * `Criteria`_, `Indexing`_, and `Predicates`_
+        * `Syntax pattern matching`_
+        
+        (Please note that these documents are still in a state of flux and some may
+        still be incomplete or disorganized, prior to the first official release.)
+        
+        Source distribution snapshots are generated daily, but you can also update
+        directly from the `development version`_ in SVN.
+        
+        .. _development version: svn://svn.eby-sarna.com/svnroot/PEAK-Rules#egg=PEAK_Rules-dev
+        .. _Introduction: http://peak.telecommunity.com/DevCenter/PEAK-Rules#toc
+        .. _Core Design Overview: http://peak.telecommunity.com/DevCenter/PEAK-Rules/Design
+        .. _Predicates: http://peak.telecommunity.com/DevCenter/PEAK-Rules/Predicates
+        .. _Basic AST Builder: http://peak.telecommunity.com/DevCenter/PEAK-Rules/AST-Builder
+        .. _Code Generation: http://peak.telecommunity.com/DevCenter/PEAK-Rules/Code-Generation
+        .. _Criteria: http://peak.telecommunity.com/DevCenter/PEAK-Rules/Criteria
+        .. _Indexing: http://peak.telecommunity.com/DevCenter/PEAK-Rules/Indexing
+        .. _Predicates: http://peak.telecommunity.com/DevCenter/PEAK-Rules/Predicates
+        .. _Syntax pattern matching: http://peak.telecommunity.com/DevCenter/PEAK-Rules/Syntax-Matching
+        
+        .. _toc:
+        
+        
+Platform: UNKNOWN

@@ -1,0 +1,158 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>paste.cgiapp – run CGI scripts as WSGI applications &mdash; Paste v1.7.5 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.7.5',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Paste v1.7.5 documentation" href="../index.html" />
+ 
+<link rel="stylesheet" type="text/css"
+ href="../_static/paste.css.html">
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-paste.cgiapp">
+<span id="paste-cgiapp-run-cgi-scripts-as-wsgi-applications"></span><h1><a class="reference internal" href="#module-paste.cgiapp"><tt class="xref py py-mod docutils literal"><span class="pre">paste.cgiapp</span></tt></a> &#8211; run CGI scripts as WSGI applications<a class="headerlink" href="#module-paste.cgiapp" title="Permalink to this headline">¶</a></h1>
+<p>Application that runs a CGI script.</p>
+<div class="section" id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="paste.cgiapp.CGIApplication">
+<em class="property">class </em><tt class="descclassname">paste.cgiapp.</tt><tt class="descname">CGIApplication</tt><big>(</big><em>global_conf</em>, <em>script</em>, <em>path=None</em>, <em>include_os_environ=True</em>, <em>query_string=None</em><big>)</big><a class="headerlink" href="#paste.cgiapp.CGIApplication" title="Permalink to this definition">¶</a></dt>
+<dd><p>This object acts as a proxy to a CGI application.  You pass in the
+script path (<tt class="docutils literal"><span class="pre">script</span></tt>), an optional path to search for the
+script (if the name isn&#8217;t absolute) (<tt class="docutils literal"><span class="pre">path</span></tt>).  If you don&#8217;t give
+a path, then <tt class="docutils literal"><span class="pre">$PATH</span></tt> will be used.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="paste.cgiapp.CGIError">
+<em class="property">exception </em><tt class="descclassname">paste.cgiapp.</tt><tt class="descname">CGIError</tt><a class="headerlink" href="#paste.cgiapp.CGIError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raised when the CGI script can&#8217;t be found or doesn&#8217;t
+act like a proper CGI script.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="paste.cgiapp.make_cgi_application">
+<tt class="descclassname">paste.cgiapp.</tt><tt class="descname">make_cgi_application</tt><big>(</big><em>global_conf</em>, <em>script</em>, <em>path=None</em>, <em>include_os_environ=None</em>, <em>query_string=None</em><big>)</big><a class="headerlink" href="#paste.cgiapp.make_cgi_application" title="Permalink to this definition">¶</a></dt>
+<dd><p>Paste Deploy interface for <a class="reference internal" href="#paste.cgiapp.CGIApplication" title="paste.cgiapp.CGIApplication"><tt class="xref py py-class docutils literal"><span class="pre">CGIApplication</span></tt></a></p>
+<p>This object acts as a proxy to a CGI application.  You pass in the
+script path (<tt class="docutils literal"><span class="pre">script</span></tt>), an optional path to search for the
+script (if the name isn&#8217;t absolute) (<tt class="docutils literal"><span class="pre">path</span></tt>).  If you don&#8217;t give
+a path, then <tt class="docutils literal"><span class="pre">$PATH</span></tt> will be used.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="http://pythonpaste.org/" class="invisible-link">Python Paste</a></h3>
+
+<ul>
+<li><a href="http://trac.pythonpaste.org">Issue tracker</a></li>
+<li><a href="http://pythonpaste.org/">Paste core</a></li>
+<li><a href="http://pythonpaste.org/webob/">WebOb</a></li>
+<li><a href="http://pythonpaste.org/deploy/">Paste Deploy</a></li>
+<li><a href="http://pythonpaste.org/script/">Paste Script</a></li>
+<li><a href="http://pythonpaste.org/webtest/">WebTest</a></li>
+<li><a href="http://pythonpaste.org/scripttest/">ScriptType</a></li>
+<li><a href="http://pythonpaste.org/initools/">INITools</a></li>
+<li><a href="http://pythonpaste.org/tempita/">Tempita</a></li>
+<li><a href="http://pythonpaste.org/waitforit/">WaitForIt</a></li>
+<li><a href="http://pythonpaste.org/wphp/">WPHP</a></li>
+<li><a href="http://pythonpaste.org/wsgifilter/">WSGIFilter</a></li>
+<li><a href="http://pythonpaste.org/wsgiproxy/">WSGIProxy</a></li>
+</ul>
+
+
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">paste.cgiapp</span></tt> &#8211; run CGI scripts as WSGI applications</a><ul>
+<li><a class="reference internal" href="#module-contents">Module Contents</a></li>
+</ul>
+</li>
+</ul>
+
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/modules/cgiapp.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, Ian Bicking.
+      Last updated on Sep 14, 2010.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

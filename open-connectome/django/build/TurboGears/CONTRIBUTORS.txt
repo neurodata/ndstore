@@ -1,0 +1,51 @@
+TurboGears was founded by Kevin Dangoor. Included projects were
+created by Ian Bicking, Remi Delon, Bob Ippolito, Ryan Tomayko and
+Fredrik Lundh. Many other people have contributed to the included
+projects.
+
+Other TurboGears contributors:
+* Elvelind Grandin
+* Ronald Jaramillo
+* Jeff Watkins
+* Dan Jacob
+* Max Ischenko
+* Simon Belak
+* Karl Guertin
+* Jared Kuolt
+* David Stanek
+* Richard Standbrook
+* Michele Cella
+* Alberto Valverde
+* Lee McFadden
+* Jorge Godoy
+* Ondrej Zara (author of WWW SQL Designer)
+* Irmen de Jong (author of Kronos)
+* Florent Aide
+* Travis Bradshaw
+* Mark Ramm
+* Felix Schwarz
+* Christopher Arndt
+* Chris Miles
+* Diez B. Roggisch
+* Remi Jolin
+* Dag Brattli
+* Christoph Zwerschke
+* Ken Kuhlman
+
+Contributor Statement:
+
+People who contribute non-trivial changes to TurboGears or have
+commit access to the repository agree to the following statement:
+
+I, __(your name here)__ agree to the following statements concerning
+my contributions to the TurboGears project:
+
+ * These contributions are my own work and that I have full ownership
+   authority over them
+ * My contributions will be licensed under the same terms as TurboGears
+   itself (an "MIT-style" license)
+ * I am unaware of any patent or patent application that would prevent
+   free use of my contribution
+
+Full legal name and address:
+(your name and address here)

@@ -1,0 +1,80 @@
+Metadata-Version: 1.0
+Name: SymbolType
+Version: 1.0
+Summary: Simple "symbol" type, useful for enumerations or sentinels
+Home-page: http://peak.telecommunity.com/DevCenter/SymbolType
+Author: Phillip J. Eby
+Author-email: peak@eby-sarna.com
+License: PSF or ZPL
+Description: Installing SymbolType (using ``"easy_install SymbolType"`` or
+        ``"setup.py install"``) gives you access to the ``peak.util.symbols``
+        module, previously available only by installing the full PEAK toolkit.
+        ``peak.util.symbols`` provides a ``Symbol`` type and two built-in symbols
+        that are used by PEAK: ``NOT_FOUND`` and ``NOT_GIVEN``.  You can create your
+        own symbol objects using the ``Symbol`` type, by giving it the symbol name
+        and the name of the module where the symbol is being created::
+        
+            >>> from peak.util.symbols import Symbol
+            >>> AN_EXAMPLE = Symbol('AN_EXAMPLE', __name__)
+        
+        The resulting object's ``repr()`` and ``str()`` forms are the same as the name
+        you passed in::
+        
+            >>> AN_EXAMPLE
+            AN_EXAMPLE
+        
+            >>> str(AN_EXAMPLE)
+            'AN_EXAMPLE'
+        
+        But symbols compare equal only to themselves; they are not equal to strings::
+        
+            >>> AN_EXAMPLE == 'AN_EXAMPLE'
+            False
+        
+            >>> AN_EXAMPLE == AN_EXAMPLE
+            True
+        
+        A symbol's ``__name__`` and ``__module__`` attributes are the original name and
+        module used to create the symbol::
+        
+            >>> from peak.util.symbols import NOT_FOUND
+        
+            >>> NOT_FOUND.__name__
+            'NOT_FOUND'
+        
+            >>> NOT_FOUND.__module__
+            'peak.util.symbols'
+        
+        The reason that symbols want to know their defining module is that this allows
+        them to be pickled and unpickled correctly::
+        
+            >>> import pickle
+            >>> pickle.loads(pickle.dumps(NOT_FOUND))
+            NOT_FOUND
+        
+        Specifically, it's so that the result of unpickling a symbol is exactly the
+        same object as the original symbol::
+        
+            >>> pickle.loads(pickle.dumps(NOT_FOUND)) is NOT_FOUND
+            True
+        
+        Note that this means the symbol must be defined at module level within its
+        module, with the same name that's passed in to it, or else ``pickle`` will
+        not be able to find it when unpickling.
+        
+        Last, but not least, symbol objects are immutable and cannot be changed in
+        any way::
+        
+            >>> AN_EXAMPLE.foo = "bar"
+            Traceback (most recent call last):
+            ...
+            TypeError: Symbols are immutable
+        
+        
+        Mailing List
+        ------------
+        
+        Please direct questions regarding this package to the PEAK mailing list; see
+        http://www.eby-sarna.com/mailman/listinfo/PEAK/ for details.
+        
+Platform: UNKNOWN

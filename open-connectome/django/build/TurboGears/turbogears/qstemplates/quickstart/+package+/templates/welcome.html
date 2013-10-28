@@ -1,0 +1,107 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+<xi:include href="master.html" />
+<?python
+from turbogears.i18n.format import format_date
+def dateandtime(d):
+    return format_date(d, format="full", time_format=" @ %X %Z")
+?>
+
+<head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <title>Welcome to TurboGears</title>
+</head>
+<body>
+
+    <!--! template functions -->
+    <span py:def="code(codestring)" py:content="codestring" class="code" />
+
+    <div class="content-section">
+      <!--! Normal content: Stuff that's not in the left or right column. !-->
+      <h3 id="turbogears">
+        <strong>TurboGears</strong>
+        <sup py:content="tg.tg_version">tg version</sup>
+        is propelling this web site
+      </h3>
+
+      <p style="text-align:right" py:content="dateandtime(now)">(the current time)</p>
+
+      <p>TurboGears <sup py:content="tg.tg_version">tg version</sup> is
+        the latest in the line of regular, reliable releases from the
+        TurboGears team. TurboGears follows a component-based development
+        model that is built on best-of-breed Python tools. With it, you can
+        create a database-driven, ready-to-extend application in minutes.
+        All with designer friendly templates, easy AJAX on the browser side
+        and on the server side, not a single SQL query in sight with code
+        that is as natural as writing a function.
+      </p>
+      <p>See it for yourself in the
+        <a href="http://www.turbogears.org/1.0/docs/TGScreencasts.html">20 Minute
+        Wiki screencast</a>. Or try it for yourself with the
+        <a href="http://www.turbogears.org/1.5/docs/Wiki20/Page1.html">20 Minute
+        Wiki tutorial</a>.
+      </p>
+      <p>If you create something cool, please
+        <a href="http://www.turbogears.org/en/contribute">let
+        people know</a>, and consider contributing something back to the
+        <a href="http://www.turbogears.org/en/resources">community</a>.
+      </p>
+      <p>TurboGears: the rapid web development mega framework you've been
+        looking for.
+      </p>
+    </div>
+
+    <div class="content-section">
+      <h4 id="model">Model</h4>
+      <ul>
+        <li>
+          <a href="http://www.turbogears.org/1.5/docs/GettingStarted/index.html#define-your-model"
+          >Design the data model</a> in the ${code('model.py')} file.
+        </li>
+        <li>
+          Edit ${code('dev.cfg')} to
+          <a href="http://www.turbogears.org/1.5/docs/GettingStarted/index.html#using-the-database"
+          >use a different backend</a>, or start with a pre-configured SQLite
+          database.
+        </li>
+        <li>
+          Use the tool ${code('tg-admin sql create')} to create the database
+          tables.
+        </li>
+      </ul>
+    </div>
+
+    <div class="content-section">
+      <h4 id="view">View</h4>
+      <ul>
+        <li>
+          Edit <a href="http://www.turbogears.org/1.5/docs/GettingStarted/index.html#templates"
+          >html-like templates</a> in the ${code('/templates')} folder.
+        </li>
+        <li>
+          Put all <a href="http://www.turbogears.org/1.5/docs/AddStaticFiles.html">static
+          content</a> in the ${code('/static')} folder.
+        </li>
+      </ul>
+    </div>
+
+    <div class="content-section last">
+      <h4 id="controller">Controller</h4>
+      <ul>
+        <li>
+          Edit ${code('controllers.py')} and
+          <a href="http://www.turbogears.org/1.5/docs/GettingStarted/index.html#the-controller">
+          build your website structure</a> with the simplicity of Python objects.
+        </li>
+        <li>
+          TurboGears will automatically reload itself when you modify your project.
+        </li>
+      </ul>
+    </div>
+
+</body>
+</html>

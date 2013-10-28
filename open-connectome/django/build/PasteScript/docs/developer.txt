@@ -1,0 +1,204 @@
+Paste Script: Development
+=========================
+
+:author: Ian Bicking <ianb@colorstudy.com>
+:revision: $Rev$
+:date: $LastChangedDate$
+
+.. contents::
+
+Introduction
+------------
+
+This document is an introduction to how you can extend ``paster`` and
+Paste Script for your system -- be it a framework, server setup, or
+whatever else you want to do.
+
+What Paste Script Can Do
+------------------------
+
+``paster`` is a two-level command, where the second level (e.g.,
+``paster help``, ``paster create``, etc) is pluggable.
+
+Commands are attached to `Python Eggs
+<http://peak.telecommunity.com/DevCenter/PythonEggs>`_, i.e., to the
+package you distribute and someone installs.  The commands are
+identified using `entry points
+<http://peak.telecommunity.com/DevCenter/setuptools#dynamic-discovery-of-services-and-plugins>`_.
+
+To make your command available do something like this in your
+``setup.py`` file::
+
+    from setuptools import setup
+    setup(...
+        entry_points="""
+        [paste.paster_command]
+        mycommand = mypackage.mycommand:MyCommand
+        
+        [paste.global_paster_command]
+        myglobal = mypackage.myglobal:MyGlobalCommand
+        """)
+
+This means that ``paster mycommand`` will run the ``MyCommand``
+command located in the ``mypackage.mycommand`` module.  Similarly with
+``paster myglobal``.  The distinction between these two entry points
+is that the first will only be usable when ``paster`` is run inside a
+project that is identified as using your project, while the second
+will be globally available as a command as soon as your package is
+installed.
+
+How's the Local Thing Work?
+---------------------------
+
+So if you have a local command, how does it get enabled?  If the
+person is running ``paster`` inside their project directory,
+``paster`` will look in ``Project_Name.egg-info/paster_plugins.txt``
+which is a list of project names (the name of your package) whose
+commands should be made available.
+
+This is for frameworks, so frameworks can add commands to ``paster``
+that only apply to projects that use that framework.
+
+What Do Commands Look Like?
+---------------------------
+
+The command objects (like ``MyCommand``) are subclasses of
+``paste.script.command.Command``.  You can look at that class to get
+an idea, but a basic outline looks like this::
+
+    from paste.script import command
+
+    class MyCommand(command.Command):
+
+        max_args = 1
+        min_args = 1
+
+        usage = "NAME"
+        summary = "Say hello!"
+        group_name = "My Package Name"
+
+        parser = command.Command.standard_parser(verbose=True)
+        parser.add_option('--goodbye',
+                          action='store_true',
+                          dest='goodbye',
+                          help="Say 'Goodbye' instead")
+
+        def command(self):
+            name = self.args[0]
+            if self.verbose:
+                print "Got name: %r" % name
+            if self.options.goodbye:
+                print "Goodbye", name
+            else:
+                print "Hello", name
+
+``max_args`` and ``min_args`` are used to give error messages.  You
+can also raise ``command.BadCommand(msg)`` if the arguments are
+incorrect in some way.  (Use ``None`` here to give no restriction)
+
+The ``usage`` variable means ``paster mycommand -h`` will give a usage
+of ``paster mycommand [options] NAME``.  ``summary`` is used with
+``paster help`` (describing your command in a short form).
+``group_name`` is used to group commands together for ``paste help``
+under that title.
+
+The ``parser`` object is an `optparse
+<http://python.org/doc/current/lib/module-optparse.html>`
+``OptionParser`` object.  ``Command.standard_parser`` is a class
+method that creates normal options, and enables options based on these
+keyword (boolean) arguments: ``verbose``, ``interactive``,
+``no_interactive`` (if interactive is the default), ``simulate``,
+``quiet`` (undoes verbose), and ``overwrite``.  You can create the
+parser however you want, but using ``standard_parser()`` encourages a
+consistent set of shared options across commands.
+
+When your command is run, ``.command()`` is called.  As you can see,
+the options are in ``self.options`` and the positional arguments are
+in ``self.args``.  Some options are turned into instance variables --
+especially ``self.verbose`` and ``self.simulate`` (even if you haven't
+chosen to use those options, many methods expect to find some value
+there, which is why they are turned into instance variables).
+
+There are quite a few useful methods you can use in your command.  See
+the `Command class <class-paste.script.command.Command.html>`_ for a
+complete list.  Some particulars:
+
+``run_command(cmd, arg1, arg2, ..., cwd=os.getcwd(), capture_stderr=False)``:
+
+    Runs the command, respecting verbosity and simulation.  Will raise
+    an error if the command doesn't exit with a 0 code.
+
+``insert_into_file(filename, marker_name, text, indent=False)``:
+
+    Inserts a line of text into the file, looking for a marker like
+    ``-*- marker_name -*-`` (and inserting just after it).  If
+    ``indent=True``, then the line will be indented at the same level
+    as the marker line.
+
+``ensure_dir(dir, svn_add=True)``:
+
+    Ensures that the directory exists.  If ``svn_add`` is true and the
+    parent directory has an ``.svn`` directory, add the new directory
+    to Subversion.
+
+``ensure_file(filename, content, svn_add=True)``:
+
+    Ensure the file exists with the given content.  Will ask the user
+    before overwriting a file if ``--interactive`` has been given.
+
+Templates
+---------
+
+The other pluggable part is "templates".  These are used to create new
+projects.  Paste Script includes one template itself:
+``basic_package`` which creates a new setuptools package.
+
+To enable, add to ``setup.py``::
+
+    setup(...
+        entry_points="""
+        [paste.paster_create_template]
+        framework = framework.templates:FrameworkTemplate
+        """)
+
+``FrameworkTemplate`` should be a subclass of
+``paste.script.templates.Template``.  An easy way to do this is simply
+with::
+
+    from paste.script import templates
+
+    class FrameworkTemplate(templates.Template):
+
+        egg_plugins = ['Framework']
+        summary = 'Template for creating a basic Framework package'
+        required_templates = ['basic_package']
+        _template_dir = 'template'
+        use_cheetah = True
+
+``egg_plugins`` will add ``Framework`` to ``paste_plugins.txt`` in the
+package.  ``required_template`` means those template will be run
+before this one (so in this case you'll have a complete package ready,
+and you can just write your framework files to it).  ``_template_dir``
+is a module-relative directory to find your source files.
+
+The source files are just a directory of files that will be copied
+into place, potentially with variable substitutions.  Three variables
+are expected: ``project`` is the project name (e.g., ``Project-Name``),
+``package`` is the Python package in that project (e.g.,
+``projectname``) and ``egg`` is the project's egg name as generated by
+setuptools (e.g., ``Project_Name``). Users can add other variables by
+adding ``foo=bar`` arguments to ``paster create``.
+
+Filenames are substituted with ``+var_name+``, e.g., ``+package+`` is
+the package directory.
+
+If a file in the template directory ends in ``_tmpl`` then it will be
+substituted.  If ``use_cheetah`` is true, then it's treated as a
+`Cheetah <http://www.cheetahtemplate.org/>`_ template.  Otherwise
+`string.Template
+<http://docs.python.org/library/string.html#template-strings>`_ is
+used, though full expressions are allowed in ``${expr}`` instead of
+just variables.
+
+See the `templates module <module-paste.script.templates.html>`_ for
+more.

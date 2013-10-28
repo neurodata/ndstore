@@ -1,0 +1,705 @@
+Metadata-Version: 1.0
+Name: AddOns
+Version: 0.7
+Summary: Dynamically extend other objects with AddOns (formerly ObjectRoles)
+Home-page: http://pypi.python.org/pypi/AddOns
+Author: Phillip J. Eby
+Author-email: peak@eby-sarna.com
+License: PSF or ZPL
+Description: ========================================
+        Separating Concerns Using Object Add-Ons
+        ========================================
+        
+        (NEW in version 0.6: the``Registry`` base class, and the
+        ``ClassAddOn.for_frame()`` classmethod.)
+        
+        In any sufficiently-sized application or framework, it's common to end up
+        lumping a lot of different concerns into the same class.  For example, you
+        may have business logic, persistence code, and UI all jammed into a single
+        class.  Attribute and method names for all sorts of different operations get
+        shoved into a single namespace -- even when using mixin classes.
+        
+        Separating concerns into different objects, however, makes it easier to write
+        reusable and separately-testable components.  The AddOns package
+        (``peak.util.addons``) lets you manage concerns using ``AddOn`` classes.
+        
+        ``AddOn`` classes are like dynamic mixins, but with their own private attribute
+        and method namespaces.  A concern implemented using add-ons can be added at
+        runtime to any object that either has a writable ``__dict__`` attribute, or
+        is weak-referenceable.
+        
+        ``AddOn`` classes are also like adapters, but rather than creating a new
+        instance each time you ask for one, an existing instance is returned if
+        possible.  In this way, add-ons can keep track of ongoing state.  For example,
+        a ``Persistence`` add-on might keep track of whether its subject has been saved
+        to disk yet::
+        
+            >>> from peak.util.addons import AddOn
+        
+            >>> class Persistence(AddOn):
+            ...     saved = True
+            ...     def changed(self):
+            ...         self.saved = False
+            ...     def save_if_needed(self):
+            ...         if not self.saved:
+            ...             print "saving"
+            ...             self.saved = True
+        
+            >>> class Thing: pass
+            >>> aThing = Thing()
+        
+            >>> Persistence(aThing).saved
+            True
+            >>> Persistence(aThing).changed()
+            >>> Persistence(aThing).saved
+            False
+            >>> Persistence(aThing).save_if_needed()
+            saving
+            >>> Persistence(aThing).save_if_needed() # no action taken
+        
+        This makes it easy for us to, for example, write a loop that saves a bunch of
+        objects, because we don't need to concern ourselves with initializing the
+        state of the persistence add-on.  A class doesn't need to inherit from a
+        special base in order to be able to have this state tracked, and it doesn't
+        need to know *how* to initialize it, either.
+        
+        Of course, in the case of persistence, a class does need to know *when* to call
+        the persistence methods, to indicate changedness and to request saving.
+        However, a library providing such an add-on can also provide decorators and
+        other tools to make this easier, while still remaining largely independent of
+        the objects involved.
+        
+        Indeed, the AddOns library was actually created to make it easier to implement
+        functionality using function or method decorators.  For example, one can create
+        a ``@synchronized`` decorator that safely locks an object -- see the example
+        below under `Threading Concerns`_.
+        
+        In summary, the AddOns library provides you with a basic form of AOP, that lets
+        you attach (or "introduce", in AspectJ terminology) additional attributes and
+        methods to an object, using a private namespace.  (If you also want to do
+        AspectJ-style "advice", the PEAK-Rules package can be used to do "before",
+        "after", and "around" advice in combination with add-ons.)
+        
+        
+        .. contents:: **Table of Contents**
+        
+        
+        Basic API
+        ---------
+        
+        If you need to, you can query for the existence of an add-on::
+        
+            >>> Persistence.exists_for(aThing)
+            True
+        
+        And by default, it won't exist::
+        
+            >>> anotherThing = Thing()
+            >>> Persistence.exists_for(anotherThing)
+            False
+        
+        Until you refer to it directly, e.g.::
+        
+            >>> Persistence(aThing) is Persistence(anotherThing)
+            False
+        
+        At which point it will of course exist::
+        
+            >>> Persistence.exists_for(anotherThing)
+            True
+        
+        And maintain its state, linked to its subject::
+        
+            >>> Persistence(anotherThing) is Persistence(anotherThing)
+            True
+        
+        Until/unless you delete it (or its subject is garbage collected)::
+        
+            >>> Persistence.delete_from(anotherThing)
+            >>> Persistence.exists_for(anotherThing)
+            False
+        
+        
+        AddOn Keys and Instances
+        ------------------------
+        
+        Add-ons are stored either in their subject's ``__dict__``, or if it does not
+        have one (or is a type object with a read-only ``__dict__``), they are
+        stored in a special dictionary linked to the subject via a weak reference.
+        
+        By default, the dictionary key is the add-on class, so there is exactly one
+        add-on instance per subject::
+        
+            >>> aThing.__dict__
+            {<class 'Persistence'>: <Persistence object at...>}
+        
+        But in some cases, you may wish to have more than one instance of a given
+        add-on class for a subject.  (For example, PEAK-Rules uses add-ons to represent
+        indexes on different expressions contained within rules.)  For this purpose,
+        you can redefine your AddOn's ``__init__`` method to accept additional
+        arguments besides its subject.  The additional arguments become part of the key
+        that instances are stored under, such that more than one add-on instance can
+        exist for a given object::
+        
+            >>> class Index(AddOn, dict):
+            ...     def __init__(self, subject, expression):
+            ...         self.expression = expression
+        
+            >>> something = Thing()
+            >>> Index(something, "x>y")["a"] = "b"
+            >>> dir(something)
+            ['__doc__', '__module__', (<class 'Index'>, 'x>y')]
+        
+            >>> "a" in Index(something, "z<22")
+            False
+        
+            >>> Index(something, "x>y")
+            {'a': 'b'}
+        
+            >>> Index(something, "x>y").expression
+            'x>y'
+        
+            >>> dir(something)
+            ['__doc__', '__module__', (<class 'Index'>, 'x>y'), (<class 'Index'>, 'z<22')]
+        
+            >>> Index.exists_for(something, 'x>y')
+            True
+        
+            >>> Index.exists_for(anotherThing, 'q==42')
+            False
+        
+        By default, an add-on class' key is either the class by itself, or a tuple
+        containing the class, followed by any arguments that appeared in the
+        constructor call after the add-on's subject.  However, you can redefine the
+        ``addon_key()`` classmethod in your subclass, and change it to do something
+        different.  For example, you could make different add-on classes generate
+        overlapping keys, or you could use attributes of the arguments to generate the
+        key.  You could even generate a string key, to cause the add-on to be attached
+        as an attribute!::
+        
+            >>> class Leech(AddOn):
+            ...     def addon_key(cls):
+            ...         return "__leech__"
+            ...     addon_key = classmethod(addon_key)
+        
+            >>> something = Thing()
+        
+            >>> Leech(something) is something.__leech__
+            True
+        
+        The ``addon_key`` method only receives the arguments that appear *after* the
+        subject in the constructor call.  So, in the case above, it receives no
+        arguments.  Had we called it with additional arguments, we'd have gotten an
+        error::
+        
+            >>> Leech(something, 42)
+            Traceback (most recent call last):
+              ...
+            TypeError: addon_key() takes exactly 1 argument (2 given)
+        
+        Naturally, your ``addon_key()`` and ``__init__()`` (and/or ``__new__()``)
+        methods should also agree on how many arguments there can be, and what they
+        mean!
+        
+        In general, you should include your add-on class (or some add-on class) as part
+        of your key, so as to make collisions with other people's add-on classes
+        impossible.  Keys should also be designed for thread-safety, where applicable.
+        (See the section below on `Threading Concerns`_ for more details.)
+        
+        
+        Role Storage and Garbage Collection
+        -----------------------------------
+        
+        By the way, the approach above of using an string as an add-on key won't always
+        make the add-on into an attribute of the subject!  If an object doesn't have a
+        ``__dict__``, or that ``__dict__`` isn't writable (as in the case of type
+        objects), then the add-on is stored in a weakly-keyed dictionary, maintained
+        elsewhere::
+        
+            >>> class NoDict(object):
+            ...     __slots__ = '__weakref__'
+        
+            >>> dictless = NoDict()
+        
+            >>> Leech(dictless)
+            <Leech object at ...>
+        
+            >>> dictless.__leech__
+            Traceback (most recent call last):
+              ...
+            AttributeError: 'NoDict' object has no attribute '__leech__'
+        
+        Of course, if an object doesn't have a dictionary *and* isn't
+        weak-referenceable, there's simply no way to store an add-on for it::
+        
+            >>> ob = object()
+            >>> Leech(ob)
+            Traceback (most recent call last):
+              ...
+            TypeError: cannot create weak reference to 'object' object
+        
+        However, there is an ``addons_for()`` function in the ``peak.util.addons``
+        module that you can extend using PEAK-Rules advice.  Once you add a method to
+        support a type that otherwise can't be used with add-ons, you should be able to
+        use any and all kinds of add-on objects with that type.  (Assuming, of course,
+        that you can implement a suitable storage mechanism!)
+        
+        Finally, a few words regarding garbage collection.  If you don't want to create
+        a reference cycle, don't store a reference to your subject in your add-on. Even
+        though the ``__init__`` and ``__new__`` messages get the subject passed in, you
+        are not under any obligation to *store* the subject, and often won't need to.
+        Usually, the code that is accessing the add-on knows what subject is in use,
+        and can pass the subject to the add-on's methods if needed.  It's rare that the
+        add-on really needs to keep a reference to the subject past the ``__new__()``
+        and ``__init__()`` calls.
+        
+        Add-on instances will usually be garbage collected at the same time as their
+        subject, unless there is some other reference to them.  If they keep a
+        reference to their subject, their garbage collection may be delayed until
+        Python's cycle collector is run.  But if they don't keep a reference, they will
+        usually be deleted as soon as the subject is::
+        
+            >>> def deleting(r):
+            ...     print "deleting", r
+        
+            >>> from weakref import ref
+        
+            >>> r = ref(Leech(something), deleting)
+            >>> del something
+            deleting <weakref at ...; dead>
+        
+        (Add-ons that are stored outside the instance dictionary of their subject,
+        however, may take slightly longer, as Python processes weak reference
+        callbacks.)
+        
+        It is also *not* recommended that you have ``__del__`` methods on your add-on
+        objects, especially if you keep a reference to your subject.  In such a case,
+        garbage collection may become impossible, and both the add-on and its subject
+        would "leak" (i.e., take up memory forever without being recoverable).
+        
+        
+        Class Add-Ons
+        -------------
+        
+        Sometimes, it's useful to attach add-ons to classes instead of instances.  You
+        could use normal ``AddOn`` classes, of course, as they work just fine with both
+        classic classes and new-style types -- even built-ins::
+        
+            >>> Persistence.exists_for(int)
+            False
+        
+            >>> Persistence(int) is Persistence(int)
+            True
+        
+            >>> Persistence.exists_for(int)
+            True
+        
+            >>> class X: pass
+        
+            >>> Persistence.exists_for(X)
+            False
+        
+            >>> Persistence(X) is Persistence(X)
+            True
+        
+            >>> Persistence.exists_for(X)
+            True
+        
+        But, sometimes you have add-ons that are specifically intended for adding
+        metadata to classes -- perhaps by way of class or method decorators.  In such
+        a case, you need a way to access the add-on *before* its subject even exists!
+        
+        The ``ClassAddOn`` base class provides a mechanism for this.  It adds an extra
+        classmethod, ``for_enclosing_class()``, that you can use to access the add-on
+        for the class that is currently being defined in the scope that invoked the
+        caller.  For example, suppose we want to have a method decorator that adds
+        the method to some class-level registry::
+        
+            >>> from peak.util.addons import ClassAddOn
+        
+            >>> class SpecialMethodRegistry(ClassAddOn):
+            ...     def __init__(self, subject):
+            ...         self.special_methods = {}
+            ...         super(SpecialMethodRegistry, self).__init__(subject)
+        
+            >>> def specialmethod(func):
+            ...     smr = SpecialMethodRegistry.for_enclosing_class()
+            ...     smr.special_methods[func.__name__] = func
+            ...     return func
+        
+            >>> class Demo:
+            ...     def dummy(self, foo):
+            ...         pass
+            ...     dummy = specialmethod(dummy)
+        
+            >>> SpecialMethodRegistry(Demo).special_methods
+            {'dummy': <function dummy at ...>}
+        
+            >>> class Demo2(object):
+            ...     def dummy(self, foo):
+            ...         pass
+            ...     dummy = specialmethod(dummy)
+        
+            >>> SpecialMethodRegistry(Demo2).special_methods
+            {'dummy': <function dummy at ...>}
+        
+        You can of course use the usual add-on API for class add-ons::
+        
+            >>> SpecialMethodRegistry.exists_for(int)
+            False
+        
+            >>> SpecialMethodRegistry(int).special_methods['x'] = 123
+        
+            >>> SpecialMethodRegistry.exists_for(int)
+            True
+        
+        Except that you cannot explicitly delete them, they must be garbage collected
+        naturally::
+        
+            >>> SpecialMethodRegistry.delete_from(Demo)
+            Traceback (most recent call last):
+              ...
+            TypeError: ClassAddOns cannot be deleted
+        
+        
+        Delayed Initialization
+        ~~~~~~~~~~~~~~~~~~~~~~
+        
+        When a class add-on is initialized, the class may not exist yet.  In this case,
+        ``None`` is passed as the first argument to the ``__new__`` and ``__init__``
+        methods.  You must be able to handle this case correctly, if your add-on will
+        be accessed inside a class definition with ``for_enclosing_class()``.
+        
+        You can, however, define a ``created_for()`` instance method that will be
+        called as soon as the actual class is available.  It is also called by the
+        default ``__init__`` method, if the add-on is initially created for a class
+        that already exists.  Either way, the ``created_for()`` method should be called
+        at most once for any given add-on instance.  For example::
+        
+            >>> class SpecialMethodRegistry(ClassAddOn):
+            ...     def __init__(self, subject):
+            ...         print "init called for", subject
+            ...         self.special_methods = {}
+            ...         super(SpecialMethodRegistry, self).__init__(subject)
+            ...
+            ...     def created_for(self, cls):
+            ...         print "created for", cls.__name__
+        
+            >>> class Demo:
+            ...     def dummy(self, foo):
+            ...         pass
+            ...     dummy = specialmethod(dummy)
+            init called for None
+            created for Demo
+        
+        Above, ``__init__`` was called with ``None`` since the type didn't exist yet.
+        However, accessing the add-on for an existing type (that doesn't have the add-
+        on yet) will call ``__init__`` with the type, and the default implementation of
+        ``ClassAddOn.__init__`` will also call ``created_for()`` for us, when it sees
+        the subject is not ``None``::
+        
+            >>> SpecialMethodRegistry(float)
+            init called for <type 'float'>
+            created for float
+            <SpecialMethodRegistry object at ...>
+        
+            >>> SpecialMethodRegistry(float)    # created_for doesn't get called again
+            <SpecialMethodRegistry object at ...>
+        
+        One of the most useful features of having this ``created_for()`` method is
+        that it allows you to set up class-level metadata that involves inherited
+        settings from base classes.  In ``created_for()``, you have access to the
+        class' ``__bases__`` and or ``__mro__``, and you can just ask for an instance
+        of the same add-on for those base classes, then incorporate their data into
+        your own instance as appropriate.  You are guaranteed that any such add-ons you
+        access will already be initialized, including having their ``created_for()``
+        method called.
+        
+        Since this works recursively, and because class add-ons can be attached even to
+        built-in types like ``object``, the work of creating a correct class metadata
+        registry is immensely simplified, compared to having to special case such base
+        classes, check for bases where no metadata was added or defined, etc.
+        
+        Instead, classes that didn't define any metadata will just have an add-on
+        instance containing whatever was setup by your add-on's ``__init__()`` method,
+        plus whatever additional data was added by its ``created_for()`` method.
+        
+        Thus, metadata accumulation using class add-ons can actually be simpler than
+        doing the same things with metaclasses, since metaclasses can't be
+        retroactively added to existing classes.  Of course, class add-ons can't
+        entirely replace metaclasses or base class mixins, but for the things they
+        *can* do, they are much easier to implement correctly.
+        
+        
+        Keys, Decoration, and ``for_enclosing_class()``
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        
+        Class add-ons can have add-on keys, just like regular add-ons, and they're
+        implemented in the same way.  And, you can pass the extra arguments as
+        positional arguments to ``for_enclosing_class()``.  For example::
+        
+            >>> class Index(ClassAddOn):
+            ...     def __init__(self, subject, expr):
+            ...         self.expr = expr
+            ...         self.funcs = []
+            ...         super(Index, self).__init__(subject)
+        
+            >>> def indexedmethod(expr):
+            ...     def decorate(func):
+            ...         Index.for_enclosing_class(expr).funcs.append(func)
+            ...         return func
+            ...     return decorate
+        
+            >>> class Demo:
+            ...     def dummy(self, foo):
+            ...         pass
+            ...     dummy = indexedmethod("x*y")(dummy)
+        
+            >>> Index(Demo, "x*y").funcs
+            [<function dummy at ...>]
+        
+            >>> Index(Demo, "y+z").funcs
+            []
+        
+        Note, by the way, that you do not need to use a function decorator to add
+        metadata to a class.  You just need to be calling ``for_enclosing_class()``
+        in a function called directly from the class body::
+        
+            >>> def special_methods(**kw):
+            ...     smr = SpecialMethodRegistry.for_enclosing_class()
+            ...     smr.special_methods.update(kw)
+        
+            >>> class Demo:
+            ...     special_methods(x=23, y=55)
+            init called for None
+            created for Demo
+        
+            >>> SpecialMethodRegistry(Demo).special_methods
+            {'y': 55, 'x': 23}
+        
+        By default, the ``for_enclosing_class()`` method assumes is it being called by
+        a function that is being called directly from the class suite, such as a
+        method decorator, or a standalone function call as shown above.  But if you
+        make a call from somewhere else, such as outside a class statement, you will
+        get an error::
+        
+            >>> special_methods(z=42)
+            Traceback (most recent call last):
+              ...
+            SyntaxError: Class decorators may only be used inside a class statement
+        
+        Similarly, if you have a function that calls ``for_enclosing_class()``, but
+        then you call that function from another function, it will still fail::
+        
+            >>> def sm(**kw):
+            ...     special_methods(**kw)
+        
+            >>> class Demo:
+            ...     sm(x=23, y=55)
+            Traceback (most recent call last):
+              ...
+            SyntaxError: Class decorators may only be used inside a class statement
+        
+        This is because ``for_enclosing_class()`` assumes the class is being defined
+        two stack levels above its frame.  You can change this assumption, however,
+        by using the ``level`` keyword argument::
+        
+            >>> def special_methods(level=2, **kw):
+            ...     smr = SpecialMethodRegistry.for_enclosing_class(level=level)
+            ...     smr.special_methods.update(kw)
+        
+            >>> def sm(**kw):
+            ...     special_methods(level=3, **kw)
+        
+            >>> class Demo:
+            ...     sm(x=23)
+            ...     special_methods(y=55)
+            init called for None
+            created for Demo
+        
+            >>> SpecialMethodRegistry(Demo).special_methods
+            {'y': 55, 'x': 23}
+        
+        Alternately, you can pass a specific Python frame object via the ``frame``
+        keyword argument to ``for_enclosing_class()``, or use the ``for_frame()``
+        classmethod instead.  ``for_frame()`` takes a Python stack frame, followed by
+        any extra positional arguments needed to create the key.
+        
+        
+        Class Registries (NEW in version 0.6)
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        
+        For many of common class add-on use cases, you just want a dict-like object
+        with "inheritance" for the values in base classes.  The ``Registry`` base class
+        provides this behavior, by subclassing ``ClassAddOn`` and the Python ``dict``
+        builtin type, to create a class add-on that's also a dictionary.  It then
+        overrides the ``created_for()`` method to automatically populate itself with
+        any inherited values from base classes.
+        
+        Let's define a ``MethodGoodness`` registry that will store a "goodness"
+        rating for methods::
+        
+            >>> from peak.util.addons import Registry
+        
+            >>> class MethodGoodness(Registry):
+            ...     """Dictionary of method goodness"""
+        
+            >>> def goodness(value):
+            ...     def decorate(func):
+            ...         MethodGoodness.for_enclosing_class()[func.__name__]=value
+            ...         return func
+            ...     return decorate
+        
+            >>> class Demo(object):
+            ...     def aMethod(self, foo):
+            ...         pass
+            ...     aMethod = goodness(17)(aMethod)
+            ...     def another_method(whinge, spam):
+            ...         woohoo
+            ...     another_method = goodness(-99)(another_method)
+        
+            >>> MethodGoodness(Demo)
+            {'aMethod': 17, 'another_method': -99}
+        
+        So far, so good.  Let's see what happens with a subclass::    
+        
+            >>> class Demo2(Demo):
+            ...     def another_method(self, fixed):
+            ...         pass
+            ...     another_method = goodness(42)(another_method)
+        
+            >>> MethodGoodness(Demo2)
+            {'another_method': 42, 'aMethod': 17}
+        
+        Values set in base class registries are automatically added to the current
+        class' registry of the same type and key, if the current class doesn't have
+        an entry defined.  Python's new-style method resolution order is used to
+        determine the precedence of inherited attributes.  (For classic classes, a
+        temporary new-style class is created that inherits from the classic class, in
+        order to determine the resolution order, then discarded.)
+        
+        Once the class in question has been created, the registry gets an extra
+        attribute, ``defined_in_class``, which is a dictionary listing the entries that
+        were actually defined in the corresponding class, e.g.::
+        
+            >>> MethodGoodness(Demo).defined_in_class
+            {'aMethod': 17, 'another_method': -99}
+            
+            >>> MethodGoodness(Demo2).defined_in_class
+            {'another_method': 42}
+        
+        As you can see, this second dictionary contains only the values registered in
+        that class, and not any inherited values.
+        
+        Finally, note that ``Registry`` objects have one additional method that can
+        be useful to call from a decorator: ``set(key, value)``.  This method will
+        raise an error if a different value already exists for the given key, and is
+        useful for catching errors in class definitions, e.g.:
+        
+            >>> def goodness(value):
+            ...     def decorate(func):
+            ...         MethodGoodness.for_enclosing_class().set(func.__name__, value)
+            ...         return func
+            ...     return decorate
+        
+            >>> class Demo3(object):
+            ...     def aMethod(self, foo):
+            ...         pass
+            ...     aMethod = goodness(17)(aMethod)
+            ...     def aMethod(self, foo):
+            ...         pass
+            ...     aMethod = goodness(27)(aMethod)
+            Traceback (most recent call last):
+              ...
+            ValueError: MethodGoodness['aMethod'] already contains 17; can't set to 27
+        
+        
+        Threading Concerns
+        ------------------
+        
+        Add-on lookup and creation is thread-safe (i.e. race-condition free), so long
+        as the add-on key contains no objects with ``__hash__`` or ``__equals__``
+        methods involve any Python code (as opposed to being pure C code that doesn't
+        call any Python code).  So, unkeyed add-ons, or add-ons whose keys consist only
+        of instances of built-in types (recursively, in the case of tuples) or types
+        that inherit their ``__hash__`` and ``__equals__`` methods from built-in types,
+        can be initialized in a thread-safe manner.
+        
+        This does *not* mean, however, that two or more add-on instances can't be
+        created for the same subject at the same time!  Code in an add-on class'
+        ``__new__`` or ``__init__`` methods **must not** assume that it will in fact be
+        the only add-on instance attached to its subject, if you wish the code to be
+        thread-safe.
+        
+        This is because the ``AddOn`` access machinery allows multiple threads to
+        *create* an add-on instance at the same time, but only one of those objects
+        will *win* the race to become "the" add-on instance, and no thread can know in
+        advance whether it will win.  Thus, if you wish your ``AddOn`` instances to do
+        something *to* their constructor arguments at initialization time, you must
+        either give up on your add-on being thread-safe, or use some other locking
+        mechanism.
+        
+        Of course, add-on initialization is only one small part of the overall thread-
+        safety puzzle.  Unless your add-on exists only to compute some immutable
+        metadata about its subject, the rest of your add-on's methods need to be
+        thread-safe also.
+        
+        One way to do that, is to use a ``@synchronized`` decorator, combined with a
+        ``Locking`` add-on::
+        
+            >>> class Locking(AddOn):
+            ...     def __init__(self, subject):
+            ...         from threading import RLock
+            ...         self.lock = RLock()
+            ...     def acquire(self):
+            ...         print "acquiring"
+            ...         self.lock.acquire()
+            ...     def release(self):
+            ...         self.lock.release()
+            ...         print "released"
+        
+            >>> def synchronized(func):
+            ...     def wrapper(self, *__args,**__kw):
+            ...         Locking(self).acquire()
+            ...         try:
+            ...             func(self, *__args,**__kw)
+            ...         finally:
+            ...             Locking(self).release()
+            ...
+            ...     from peak.util.decorators import rewrap
+            ...     return rewrap(func, wrapper)
+        
+            >>> class AnotherThing:
+            ...     def ping(self):
+            ...         print "ping"
+            ...     ping = synchronized(ping)
+        
+            >>> AnotherThing().ping()
+            acquiring
+            ping
+            released
+        
+        If the ``Locking()`` add-on constructor were not thread-safe, this decorator
+        would not be able to do its job correctly, because two threads accessing an
+        object that didn't *have* the add-on yet, could end up locking two different
+        locks, and proceeding to run the supposedly-"synchronized" method at the same
+        time!
+        
+        (In general, thread-safety is harder than it looks.  But at least you don't have
+        to worry about this one tiny part of correctly implementing it.)
+        
+        Of course, synchronized methods will be slower than normal methods, which is
+        why AddOns doesn't do anything besides that one small part of the thread-safety
+        puzzle, to avoid penalizing non-threaded code.  As the PEAK motto says,
+        STASCTAP! (Simple Things Are Simple, Complex Things Are Possible.)
+        
+        
+        Mailing List
+        ------------
+        
+        Questions, discussion, and bug reports for this software should be directed to
+        the PEAK mailing list; see http://www.eby-sarna.com/mailman/listinfo/PEAK/
+        for details.
+        
+        
+Platform: UNKNOWN

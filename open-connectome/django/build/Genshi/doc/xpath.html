@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="generator" content="Docutils 0.8.1: http://docutils.sourceforge.net/">
+<title>Genshi: Using XPath in Genshi</title>
+<link rel="stylesheet" href="common/style/edgewall.css" type="text/css">
+</head>
+<body>
+<div class="document" id="using-xpath-in-genshi">
+    <div id="navigation">
+      <span class="projinfo">Genshi 0.7</span>
+      <a href="index.html">Documentation Index</a>
+    </div>
+<h1 class="title">Using XPath in Genshi</h1>
+<p>Genshi provides basic <a class="reference external" href="http://www.w3.org/TR/xpath">XPath</a> support for matching and querying event streams.</p>
+<div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="auto-toc simple">
+<li><a class="reference internal" href="#limitations" id="id1">1   Limitations</a></li>
+<li><a class="reference internal" href="#querying-streams" id="id2">2   Querying Streams</a></li>
+<li><a class="reference internal" href="#matching-in-templates" id="id3">3   Matching in Templates</a></li>
+</ul>
+</div>
+<div class="section" id="limitations">
+<h1>1   Limitations</h1>
+<p>Due to the streaming nature of the processing model, Genshi uses only a subset
+of the <a class="reference external" href="http://www.w3.org/TR/xpath">XPath 1.0</a> language.</p>
+<p>In particular, only the following axes are supported:</p>
+<ul class="simple">
+<li><tt class="docutils literal">attribute</tt></li>
+<li><tt class="docutils literal">child</tt></li>
+<li><tt class="docutils literal">descendant</tt></li>
+<li><tt class="docutils literal"><span class="pre">descendant-or-self</span></tt></li>
+<li><tt class="docutils literal">self</tt></li>
+</ul>
+<p>This means you can't use the <tt class="docutils literal">parent</tt>, ancestor, or sibling axes in Genshi
+(the <tt class="docutils literal">namespace</tt> axis isn't supported either, but what you'd ever need that
+for I don't know). Basically, any path expression that would require buffering
+of the stream is not supported.</p>
+<p>Predicates are of course supported, but path expressions <em>inside</em> predicates
+are restricted to attribute lookups (again due to the lack of buffering).</p>
+<p>Most of the XPath functions and operators are supported, however they
+(currently) only work inside predicates. The following functions are <strong>not</strong>
+supported:</p>
+<ul class="simple">
+<li><tt class="docutils literal">count()</tt></li>
+<li><tt class="docutils literal">id()</tt></li>
+<li><tt class="docutils literal">lang()</tt></li>
+<li><tt class="docutils literal">last()</tt></li>
+<li><tt class="docutils literal">position()</tt></li>
+<li><tt class="docutils literal">string()</tt></li>
+<li><tt class="docutils literal">sum()</tt></li>
+</ul>
+<p>The mathematical operators (<tt class="docutils literal">+</tt>, <tt class="docutils literal">-</tt>, <tt class="docutils literal">*</tt>, <tt class="docutils literal">div</tt>, and <tt class="docutils literal">mod</tt>) are not
+yet supported, whereas sub-expressions and the various comparison and logical
+operators should work as expected.</p>
+<p>You can also use XPath variable references (<tt class="docutils literal">$var</tt>) inside predicates.</p>
+</div>
+<div class="section" id="querying-streams">
+<h1>2   Querying Streams</h1>
+<p>The <tt class="docutils literal">Stream</tt> class provides a <tt class="docutils literal">select(path)</tt> function that can be used to
+retrieve subsets of the stream:</p>
+<div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">genshi.input</span> <span class="kn">import</span> <span class="n">XML</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">doc</span> <span class="o">=</span> <span class="n">XML</span><span class="p">(</span><span class="s">'''&lt;doc&gt;</span>
+<span class="gp">... </span><span class="s"> &lt;items count="4"&gt;</span>
+<span class="gp">... </span><span class="s">      &lt;item status="new"&gt;</span>
+<span class="gp">... </span><span class="s">        &lt;summary&gt;Foo&lt;/summary&gt;</span>
+<span class="gp">... </span><span class="s">      &lt;/item&gt;</span>
+<span class="gp">... </span><span class="s">      &lt;item status="closed"&gt;</span>
+<span class="gp">... </span><span class="s">        &lt;summary&gt;Bar&lt;/summary&gt;</span>
+<span class="gp">... </span><span class="s">      &lt;/item&gt;</span>
+<span class="gp">... </span><span class="s">      &lt;item status="closed" resolution="invalid"&gt;</span>
+<span class="gp">... </span><span class="s">        &lt;summary&gt;Baz&lt;/summary&gt;</span>
+<span class="gp">... </span><span class="s">      &lt;/item&gt;</span>
+<span class="gp">... </span><span class="s">      &lt;item status="closed" resolution="fixed"&gt;</span>
+<span class="gp">... </span><span class="s">        &lt;summary&gt;Waz&lt;/summary&gt;</span>
+<span class="gp">... </span><span class="s">      &lt;/item&gt;</span>
+<span class="gp">... </span><span class="s">  &lt;/items&gt;</span>
+<span class="gp">... </span><span class="s">&lt;/doc&gt;'''</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s">'items/item[@status="closed" and '</span>
+<span class="gp">... </span>    <span class="s">'(@resolution="invalid" or not(@resolution))]/summary/text()'</span><span class="p">))</span>
+<span class="go">BarBaz</span>
+</pre></div>
+</div>
+<div class="section" id="matching-in-templates">
+<h1>3   Matching in Templates</h1>
+<p>See the directive <tt class="docutils literal">py:match</tt> in the <a class="reference external" href="xml-templates.html">XML Template Language Specification</a>.</p>
+</div>
+    <div id="footer">
+      Visit the Genshi open source project at
+      <a href="http://genshi.edgewall.org/">http://genshi.edgewall.org/</a>
+    </div>
+  </div>
+</body>
+</html>

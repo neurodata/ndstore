@@ -1,0 +1,5 @@
+Dear ${name}
+Your items:
+{% for item in itemlist %}\
+  * ${item}
+{% end %}

@@ -1,0 +1,30 @@
+:mod:`paste.script.checkperms` -- functions to check and diff file permissions
+==============================================================================
+
+.. automodule:: paste.script.checkperms
+
+.. contents::
+
+Module Contents
+---------------
+
+Permissions
+~~~~~~~~~~~
+
+.. autofunction:: read_perm_spec
+.. autofunction:: mode_diff
+.. autofunction:: calc_mode_diff
+.. autofunction:: calc_set_mode
+.. autofunction:: set_mode
+
+Ownership
+~~~~~~~~~
+
+.. autofunction:: calc_ownership_spec
+.. autofunction:: ownership_diff
+.. autofunction:: set_ownership
+
+Models
+~~~~~~
+
+.. autoclass:: PermissionSpec

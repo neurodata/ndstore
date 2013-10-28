@@ -1,0 +1,201 @@
+Paste Script
+============
+
+:author: Ian Bicking <ianb@colorstudy.com>
+:revision: $Rev$
+:date: $LastChangedDate$
+
+Contents:
+
+.. toctree::
+   :maxdepth: 1
+
+   news
+   developer
+   license
+
+Introduction
+------------
+
+If you are developer, see the `Developer Documentation
+<developer.html>`_; this will tell you how to add commands and
+templates to ``paster``.  For a list of updates see the `news file
+<news.html>`_.
+
+Paste Script is released under the `MIT license
+<http://www.opensource.org/licenses/mit-license.php>`_.
+
+Status
+------
+
+Paste Script has passed version 1.0.  Paste Script is an actively
+maintained project.  As of 1.0, we'll make a strong effort to maintain
+backward compatibility.  This will include deprecation warnings when
+necessary.  Major changes will take place under new functions or with
+new entry points.
+
+``paster create``
+-----------------
+
+This creates the skeleton for new projects.  Many different kinds of
+projects have created skeletons for their projects (Pylons,
+TurboGears, ZopeSkel, and others).
+
+For a tutorial for making new skeletons, see `this tutorial from Lucas
+Szybalski <http://lucasmanual.com/mywiki/PythonPaste>`_.  It also
+discusses creating new subcommands for paster.
+
+``paster serve``
+----------------
+
+The one useful command you may want to know about for ``paster`` is
+``paster serve``.  This serves an application described in a `Paste
+Deploy <http://pythonpaste.org/deploy>`_ configuration file.
+
+Configuration
+-------------
+
+A quickstart (and example), if not complete explanation::
+
+    [app:main]
+    use = egg:PasteEnabledPackage
+    option1 = foo
+    option2 = bar
+
+    [server:main]
+    use = egg:PasteScript#wsgiutils
+    host = 127.0.0.1
+    port = 80
+
+``egg:PasteEnabledPackage`` refers to some package that has been
+prepared for use with paste.deploy, and options given to that
+package.  If you are starting out with some framework, you'll have to
+reference some documentation for that framework to paste-deploy-ify
+your application (or read the paste.deploy documentation).
+
+In the same file is a server description.
+``egg:PasteScript#wsgiutils`` is a server (named ``wsgiutils``)
+provided by this package, based on `WSGIUtils
+<http://www.owlfish.com/software/wsgiutils/>`_.  And we pass various
+options particular to that server.
+
+Other packages can provide servers, but currently Paste Script
+includes glue for these:
+
+``wsgiutils``:
+
+    A `SimpleHTTPServer
+    <http://python.org/doc/current/lib/module-SimpleHTTPServer.html>`_
+    based threaded HTTP server, using `WSGIUtils
+    <http://www.owlfish.com/software/wsgiutils/>`_.
+
+``flup_(scgi|fcgi|ajp)_(thread|fork)``:
+
+    This set of servers supports `SCGI
+    <http://www.mems-exchange.org/software/scgi/>`_, `FastCGI
+    <http://www.fastcgi.com/>`_ and `AJP
+    <http://jakarta.apache.org/tomcat/connectors-doc/common/ajpv13a.html>`_
+    protocols, for connection an external web server (like Apache) to
+    your application.  Both threaded and forking versions are
+    available.  This is based on `flup
+    <http://www.saddi.com/software/flup/>`_.
+
+There is the start of support for `twisted.web2
+<http://twistedmatrix.com/projects/web2/>`_ in
+``paste.script.twisted_web2_server``; patches welcome.
+
+Running the Server
+------------------
+
+``paster serve --help`` gives useful output::
+
+  usage: /usr/local/bin/paster serve [options] CONFIG_FILE [start|stop|restart|status]
+  Serve the described application
+
+  If start/stop/restart is given, then it will start (normal
+  operation), stop (--stop-daemon), or do both.  You probably want
+  ``--daemon`` as well for stopping.
+
+  Options:
+    -h, --help            show this help message and exit
+    -v, --verbose         
+    -q, --quiet           
+    -nNAME, --app-name=NAME
+                          Load the named application (default main)
+    -sSERVER_TYPE, --server=SERVER_TYPE
+                          Use the named server.
+    --server-name=SECTION_NAME
+                          Use the named server as defined in the configuration
+                          file (default: main)
+    --daemon              Run in daemon (background) mode
+    --pid-file=FILENAME   Save PID to file (default to paster.pid if running in
+                          daemon mode)
+    --log-file=LOG_FILE   Save output to the given log file (redirects stdout)
+    --reload              Use auto-restart file monitor
+    --reload-interval=RELOAD_INTERVAL
+                          Seconds between checking files (low number can cause
+                          significant CPU usage)
+    --status              Show the status of the (presumably daemonized) server
+    --user=USERNAME       Set the user (usually only possible when run as root)
+    --group=GROUP         Set the group (usually only possible when run as root)
+    --stop-daemon         Stop a daemonized server (given a PID file, or default
+                          paster.pid file)
+
+Basically you give it a configuration file.  If you don't do anything
+else, it'll serve the ``[app:main]`` application with the
+``[server:main]`` server.  You can pass in ``--server-name=foo`` to
+serve the ``[server:foo]`` section (or even
+``--server-name=config:foo.ini`` to use a separate configuration
+file).
+
+Similarly you can use ``--app-name=foo`` to serve ``[app:foo]``.
+
+``--daemon`` will run the server in the backgroup, ``--user`` and
+``--group`` will set the user, as you might want to do from a start
+script (run as root).  If you don't give a ``--pid-file`` it will
+write the pid to ``paster.pid`` (in the current directory).
+
+``--stop-daemon`` will stop the daemon in ``paster.pid`` or whatever
+``--pid-file`` you give.  ``--log-file`` will redirect stdout and
+stderr to that file.
+
+``--reload`` will start the reload monitor, and restart the server
+whenever a file is edited.  This can be a little expensive, but is
+very useful during development.
+
+#! Scripts
+----------
+
+On Posix (Linux, Unix, etc) systems you can turn your configuration
+files into executable scripts.
+
+First make the file executable (``chmod +x config_file.ini``).  The
+you should add a line like this to the top of the file::
+
+    #!/usr/bin/env paster
+
+You can include a command and command-line options in an ``[exe]``
+section, like::
+
+    [exe]
+    command = serve
+    daemon = true
+    user = nobody
+    group = nobody
+
+(use ``true`` and ``false`` for options that don't take an argument).
+
+If you use ``daemon = true`` then you'll be able to use the script as
+an rc script, so you can do::
+
+    $ sudo ./config_file.ini start
+    $ sudo ./config_file.ini restart
+
+and so forth.
+
+Note that this is a little wonky still on some platforms and shells
+(notably it doesn't work under `csh
+<http://www.faqs.org/faqs/unix-faq/shell/csh-whynot/>`_).  If you get
+an error about "Command config_file.ini not known" then this probably
+won't work for you.  In the future an additional script to ``paster``
+will be added just for this purpose.

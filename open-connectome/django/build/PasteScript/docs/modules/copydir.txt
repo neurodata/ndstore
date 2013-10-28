@@ -1,0 +1,14 @@
+:mod:`paste.script.copydir` -- recursive, interactive copy
+==========================================================
+
+.. automodule:: paste.script.copydir
+
+Module Contents
+---------------
+
+.. autofunction:: copy_dir
+.. autoexception:: SkipTemplate
+.. autofunction:: query_interactive
+.. autoclass:: LaxTemplate
+
+

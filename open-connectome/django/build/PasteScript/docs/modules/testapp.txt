@@ -1,0 +1,11 @@
+:mod:`paste.script.testapp` -- simple test WSGI application
+===========================================================
+
+.. automodule:: paste.script.testapp
+
+Module Contents
+---------------
+
+.. autoclass:: TestApplication
+
+

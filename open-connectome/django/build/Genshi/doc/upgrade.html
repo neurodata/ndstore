@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="generator" content="Docutils 0.8.1: http://docutils.sourceforge.net/">
+<title>Genshi: Upgrading Genshi</title>
+<link rel="stylesheet" href="common/style/edgewall.css" type="text/css">
+</head>
+<body>
+<div class="document" id="upgrading-genshi">
+    <div id="navigation">
+      <span class="projinfo">Genshi 0.7</span>
+      <a href="index.html">Documentation Index</a>
+    </div>
+<h1 class="title">Upgrading Genshi</h1>
+<div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="auto-toc simple">
+<li><a class="reference internal" href="#upgrading-from-genshi-0-6-x-to-the-development-version" id="id1">1   Upgrading from Genshi 0.6.x to the development version</a></li>
+<li><a class="reference internal" href="#upgrading-from-genshi-0-5-x-to-0-6-x" id="id2">2   Upgrading from Genshi 0.5.x to 0.6.x</a><ul class="auto-toc">
+<li><a class="reference internal" href="#required-python-version" id="id3">2.1   Required Python Version</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#upgrading-from-genshi-0-4-x-to-0-5-x" id="id4">3   Upgrading from Genshi 0.4.x to 0.5.x</a><ul class="auto-toc">
+<li><a class="reference internal" href="#error-handling" id="id5">3.1   Error Handling</a></li>
+<li><a class="reference internal" href="#match-template-processing" id="id6">3.2   Match Template Processing</a></li>
+<li><a class="reference internal" href="#text-templates" id="id7">3.3   Text Templates</a></li>
+<li><a class="reference internal" href="#markup-constructor" id="id8">3.4   <tt class="docutils literal">Markup</tt> Constructor</a></li>
+<li><a class="reference internal" href="#template-constructor" id="id9">3.5   <tt class="docutils literal">Template</tt> Constructor</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#upgrading-from-genshi-0-3-x-to-0-4-x" id="id10">4   Upgrading from Genshi 0.3.x to 0.4.x</a></li>
+<li><a class="reference internal" href="#upgrading-from-markup" id="id11">5   Upgrading from Markup</a></li>
+</ul>
+</div>
+<div class="section" id="upgrading-from-genshi-0-6-x-to-the-development-version">
+<h1>1   Upgrading from Genshi 0.6.x to the development version</h1>
+<p>The Genshi development version now supports both Python 2 and Python 3.</p>
+<p>The most noticable API change in the Genshi development version is that the
+default encoding in numerous places is now None (i.e. unicode) instead
+of UTF-8. This change was made in order to ease the transition to Python 3
+where strings are unicode strings by default.</p>
+<p>If your application relies on the default UTF-8 encoding a simple way to
+have it work both with Genshi 0.6.x and the development version is to specify the
+encoding explicitly in calls to the following classes, methods and functions:</p>
+<ul class="simple">
+<li>genshi.HTML</li>
+<li>genshi.Stream.render</li>
+<li>genshi.input.HTMLParser</li>
+<li>genshi.template.MarkupTemplate</li>
+<li>genshi.template.TemplateLoader</li>
+<li>genshi.template.TextTemplate (and genshi.template.NewTextTemplate)</li>
+<li>genshi.template.OldTextTemplate</li>
+</ul>
+<p>Whether you explicitly specify UTF-8 or explicitly specify None (unicode) is
+a matter of personal taste, although working with unicode may make porting
+your own application to Python 3 easier.</p>
+</div>
+<div class="section" id="upgrading-from-genshi-0-5-x-to-0-6-x">
+<h1>2   Upgrading from Genshi 0.5.x to 0.6.x</h1>
+<div class="section" id="required-python-version">
+<h2>2.1   Required Python Version</h2>
+<p>Support for Python 2.3 has been dropped in this release. Python 2.4 is
+now the minimum version of Python required to run Genshi.</p>
+<p>The XPath engine has been completely overhauled for this version. Some
+patterns that previously matched incorrectly will no longer match, and
+the other way around. In such cases, the XPath expressions need to be
+fixed in your application and templates.</p>
+</div>
+</div>
+<div class="section" id="upgrading-from-genshi-0-4-x-to-0-5-x">
+<h1>3   Upgrading from Genshi 0.4.x to 0.5.x</h1>
+<div class="section" id="error-handling">
+<h2>3.1   Error Handling</h2>
+<p>The default error handling mode has been changed to "strict". This
+means that accessing variables not defined in the template data will
+now generate an immediate exception, as will accessing object
+attributes or dictionary keys that don't exist. If your templates rely
+on the old lenient behavior, you can configure Genshi to use that
+instead. See the documentation for details on how to do that. But be
+warned that lenient error handling may be removed completely in a
+future release.</p>
+</div>
+<div class="section" id="match-template-processing">
+<h2>3.2   Match Template Processing</h2>
+<p>There has also been a subtle change to how <tt class="docutils literal">py:match</tt> templates are
+processed: in previous versions, all match templates would be applied
+to the content generated by the matching template, and only the
+matching template itself was applied recursively to the original
+content. This behavior resulted in problems with many kinds of
+recursive matching, and hence was changed for 0.5: now, all match
+templates declared before the matching template are applied to the
+original content, and match templates declared after the matching
+template are applied to the generated content. This change should not
+have any effect on most applications, but you may want to check your
+use of match templates to make sure.</p>
+</div>
+<div class="section" id="text-templates">
+<h2>3.3   Text Templates</h2>
+<p>Genshi 0.5 introduces a new, alternative syntax for text templates,
+which is more flexible and powerful compared to the old syntax. For
+backwards compatibility, this new syntax is not used by default,
+though it will be in a future version. It is recommended that you
+migrate to using this new syntax. To do so, simply rename any
+references in your code to <tt class="docutils literal">TextTemplate</tt> to <tt class="docutils literal">NewTextTemplate</tt>. To
+explicitly use the old syntax, use <tt class="docutils literal">OldTextTemplate</tt> instead, so
+that you can be sure you'll be using the same language when the
+default in Genshi is changed (at least until the old implementation is
+completely removed).</p>
+</div>
+<div class="section" id="markup-constructor">
+<h2>3.4   <tt class="docutils literal">Markup</tt> Constructor</h2>
+<p>The <tt class="docutils literal">Markup</tt> class no longer has a specialized constructor. The old
+(undocumented) constructor provided a shorthand for doing positional
+substitutions. If you have code like this:</p>
+<div class="highlight"><pre><span class="n">Markup</span><span class="p">(</span><span class="s">'&lt;b&gt;</span><span class="si">%s</span><span class="s">&lt;/b&gt;'</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+</pre></div>
+<p>You must replace it by the more explicit:</p>
+<div class="highlight"><pre><span class="n">Markup</span><span class="p">(</span><span class="s">'&lt;b&gt;</span><span class="si">%s</span><span class="s">&lt;/b&gt;'</span><span class="p">)</span> <span class="o">%</span> <span class="n">name</span>
+</pre></div>
+</div>
+<div class="section" id="template-constructor">
+<h2>3.5   <tt class="docutils literal">Template</tt> Constructor</h2>
+<p>The constructor of the <tt class="docutils literal">Template</tt> class and its subclasses has changed
+slightly: instead of the optional <tt class="docutils literal">basedir</tt> parameter, it now expects
+an (also optional) <tt class="docutils literal">filepath</tt> parameter, which specifies the absolute
+path to the template. You probably aren't using those constructors
+directly, anyway, but using the <tt class="docutils literal">TemplateLoader</tt> API instead.</p>
+</div>
+</div>
+<div class="section" id="upgrading-from-genshi-0-3-x-to-0-4-x">
+<h1>4   Upgrading from Genshi 0.3.x to 0.4.x</h1>
+<p>The modules <tt class="docutils literal">genshi.filters</tt> and <tt class="docutils literal">genshi.template</tt> have been
+refactored into packages containing multiple modules. While code using
+the regular APIs should continue to work without problems, you should
+make sure to remove any leftover traces of the files <tt class="docutils literal">filters.py</tt>
+and <tt class="docutils literal">template.py</tt> in the <tt class="docutils literal">genshi</tt> package on the installation
+path (including the corresponding <tt class="docutils literal">.pyc</tt> files). This is not
+necessary when Genshi was installed as a Python egg.</p>
+<p>Results of evaluating template expressions are no longer implicitly
+called if they are callable. If you have been using that feature, you
+will need to add the parenthesis to actually call the function.</p>
+<p>Instances of <tt class="docutils literal">genshi.core.Attrs</tt> are now immutable. Filters
+manipulating the attributes in a stream may need to be updated. Also,
+the <tt class="docutils literal">Attrs</tt> class no longer automatically wraps all attribute names
+in <tt class="docutils literal">QName</tt> objects, so users of the <tt class="docutils literal">Attrs</tt> class need to do this
+themselves. See the documentation of the <tt class="docutils literal">Attrs</tt> class for more
+information.</p>
+</div>
+<div class="section" id="upgrading-from-markup">
+<h1>5   Upgrading from Markup</h1>
+<p>Prior to version 0.3, the name of the Genshi project was "Markup". The
+name change means that you will have to adjust your import statements
+and the namespace URI of XML templates, among other things:</p>
+<ul class="simple">
+<li>The package name was changed from "markup" to "genshi". Please
+adjust any import statements referring to the old package name.</li>
+<li>The namespace URI for directives in Genshi XML templates has changed
+from <tt class="docutils literal"><span class="pre">http://markup.edgewall.org/</span></tt> to
+<tt class="docutils literal"><span class="pre">http://genshi.edgewall.org/</span></tt>. Please update the <tt class="docutils literal">xmlns:py</tt>
+declaration in your template files accordingly.</li>
+</ul>
+<p>Furthermore, due to the inclusion of a text-based template language,
+the class:</p>
+<pre class="literal-block">
+markup.template.Template
+</pre>
+<p>has been renamed to:</p>
+<pre class="literal-block">
+genshi.template.MarkupTemplate
+</pre>
+<p>If you've been using the Template class directly, you'll need to
+update your code (a simple find/replace should do—the API itself
+did not change).</p>
+</div>
+    <div id="footer">
+      Visit the Genshi open source project at
+      <a href="http://genshi.edgewall.org/">http://genshi.edgewall.org/</a>
+    </div>
+  </div>
+</body>
+</html>

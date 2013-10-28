@@ -1,0 +1,97 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude"
+      py:strip="">
+
+<head py:match="head" py:attrs="select('@*')">
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <title py:replace="''">Your title goes here</title>
+    <link py:for="css in tg_css" py:replace="css.display()" />
+    <link py:for="js in tg_js_head" py:replace="js.display()" />
+    <meta py:replace="select('*')" />
+    <link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/static/css/style.css')}" />
+</head>
+
+<?python
+  # define mock menus as list of (title, url, is_active) tuples
+  menu_top = [
+    ('Welcome', '/', True),
+    ('Model', '/#model', False),
+    ('View', '/#view', False),
+    ('Controller', '/#controller', False),
+    ('About', '/#about', False),
+    ('Contact', 'http://www.turbogears.org/en/resources', False)
+  ]
+  menu_side = [
+    ('Official Website', 'http://www.turbogears.org'),
+    ('Documentation', 'http://www.turbogears.org/1.5/docs/'),
+    ('Bugs & Suggestions', 'https://sourceforge.net/p/turbogears1/tickets/'),
+    ('Mailing List', 'http://groups.google.com/group/turbogears'),
+  ]
+?>
+
+<body py:match="body" py:attrs="select('@*')">
+
+  <div py:for="js in tg_js_bodytop" py:replace="js.display()" />
+
+  <div id="header">
+    <h1>
+      Welcome to TurboGears
+      <span class="subtitle">The Python web metaframework</span>
+    </h1>
+  </div>
+
+  <ul id="mainmenu">
+    <li py:for="num, (title, url, is_active) in enumerate(menu_top)" class="${('', 'first')[not num]}">
+      <a href="${url}" class="${('', 'active')[is_active]}" py:content="title"></a>
+    </li>
+    <li py:if="tg.config('identity.on') and not defined('logging_in')" class="loginlogout"><py:choose>
+      <py:when test="tg.identity.anonymous">
+        <a href="${tg.url(tg.identity.login_url)}" class="loginlogout">Login</a>
+      </py:when>
+      <py:otherwise>
+        <span>Welcome <span py:replace="tg.identity.user.display_name or tg.identity.user.user_name">user</span></span>
+        <a href="${tg.url('/logout')}" class="loginlogout">Logout</a>
+      </py:otherwise>
+    </py:choose></li>
+  </ul>
+  <div id="content">
+    <div id="flash" class="notice" py:if="value_of('tg_flash', None)" py:content="tg_flash"></div>
+
+    <div id="sb_top" class="sidebar">
+        <h2>Learn More</h2>
+        <p>Want to learn more about TurboGears and
+                    take part in its development?</p>
+        <ul class="links">
+          <li py:for="title, url in menu_side"><a py:attrs="dict(href=url)" py:content="title"></a></li>
+        </ul>
+    </div>
+
+    <div id="sb_bottom" class="sidebar">
+        <h2>Successful Quickstart!</h2>
+        <p>If you can read this page it means you have successfully quickstarted your
+                TurboGears application. Thank you for choosing TurboGears.</p>
+    </div>
+
+    <div py:replace="select('*|text()')"/>
+
+    <div id="footer">
+      <div class="flogo">
+        <a href="http://www.turbogears.org/" title="Powered by TurboGears"
+          ><img src="${tg.url('/static/images/under_the_hood_blue.png')}"
+          alt="TurboGears under the hood" /></a>
+      </div>
+      <div class="foottext">
+        <p>TurboGears is a open source front-to-back web development
+          framework written in Python. Copyright (c) 2005-2010</p>
+      </div>
+    </div>
+  </div>
+
+  <div py:for="js in tg_js_bodybottom" py:replace="js.display()" />
+
+</body>
+
+</html>

@@ -1,0 +1,17 @@
+:mod:`formencode.htmlfill` -- Fill in HTML forms
+================================================
+
+.. automodule:: formencode.htmlfill
+
+Module Contents
+---------------
+
+.. autofunction:: render
+.. autoclass:: htmlliteral
+.. autofunction:: default_formatter
+.. autofunction: none_formatter
+.. autofunction:: escape_formatter
+.. autofunction:: escapenl_formatter
+.. autofunction:: ignore_formatter
+.. autofunction:: ignore_formatter
+.. autoclass:: FillingParser

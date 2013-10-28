@@ -1,0 +1,432 @@
+News: Paste Script
+==================
+
+.. contents::
+
+1.7.5
+-----
+
+* Import CherryPy directly instead of including its server inline in the
+  ``paste.script`` package.  You must install CherryPy before using
+  ``egg:PasteScript#cherrypy``
+
+1.7.4.2
+-------
+
+* 1.7.4 had package release problems, was reverted; 1.7.4.1 also had
+  package problems.
+
+* Include special ``here`` and ``__file__`` default vars for logging
+  config files, similar to PasteDeploy config loading.
+
+* Allow Jython to import various bits from ``paste.script.command`` and
+  ``paste.script.copydir`` without throwing an import error (subprocess
+  module cannot be imported on Jython).  This allows PasteScript to work
+  minimally on Jython, although execution will fail for
+  ``command.run_command`` and ``copydir.copydir``.
+
+1.7.3
+-----
+
+* CherryPy wsgiserver updated to 3.1.1, fixes a regression in Python
+  2.5 plus a couple other small fixes.
+
+1.7.2
+-----
+
+* Fix a packaging issue that could cause problems when installing
+  PasteScript.
+
+1.7.1
+-----
+
+* filemaker.py's FileOp can now handle a tuple as a source_dir argument that
+  should function the same as the _template_dir option for pkg_resources.
+
+* CherryPy wsgiserver updated to trunk@2063 for Python 2.6
+  compatibility.
+
+1.7
+---
+
+* _template_dir now takes a tuple argument, which should be the
+  package name, and the relative location to the package of its template
+  directory. pkg_resources will then be used to load make the templates
+  rather than raw file access making it zip-safe.
+
+* CherryPy wsgiserver updated to the 3.1.0 release's.
+
+* Support Python 2.6.
+
+* Added experimental support for a quicker paster serve --reload for
+  Jython.
+
+* Non-Python files in ``paste/script/templates/`` causes an error on
+  2.6; renamed directory to avoid this.
+
+1.6.3
+-----
+
+* Fixes for ``paste.script.filemaker``
+
+* A setuptools ``egg_info.writers`` entry point is now provided that's
+  responsible for writing paster_plugins.txt for projects that define
+  a new ``paster_plugins`` setup() keyword. paster_plugins.txt will
+  still be created for new projects that need it and lack a
+  ``paster_plugins`` setup() keyword, but this is deprecated. Projects
+  defining ``paster_plugins`` in setup() should also define a
+  ``setup_requires`` setup() keyword including PasteScript.
+
+* An ``egg_plugins`` variable (a list of strings based off the
+  Templates classes' ``egg_plugins`` variables) is now available to
+  paster create templates for the new ``paster_plugins`` setup()
+  keyword.
+
+* PasteScript is no longer included in
+  ``egg_plugins``/paster_plugins.txt by default.
+
+1.6.2
+-----
+
+* Fix SkipTemplate (could raise ``TypeError: argument 1 must be string
+  or read-only buffer, not None`` before)
+
+1.6.1 (and 1.6.1.1)
+-------------------
+
+* Fix paster serve under Windows.
+
+1.6
+---
+
+* Added commands ``paster request config.ini URL`` and ``paster post
+  config.ini URL < post-body``, that allow you to do artificial
+  requests to applications.
+
+* Check the writability of the pid and log files earlier.  This caused
+  particular problems if you started it in daemon mode, and the files
+  weren't writable.  From Chris Atlee.
+
+* Start the monitor (when using ``--monitor``) after daemonizing, so
+  that ``paster serve --monitor --daemon`` works (before it would
+  constantly restart).
+
+* In Paste Script templates, you can give ``should_echo=False`` in
+  variable definitions, and if the user is queried for the variable
+  then the input will not be echoed (as for a password).  From Dirceu
+  Pereira Tiegs.
+
+* Added a method
+  ``paste.script.appinstall.Installer.template_renderer``, which can
+  be used to override template substitution with ``paster
+  make-config``.  The function is similar to the same function used
+  with ``paster create`` templates.
+
+* Remove ``--daemon`` option from Windows, as it depends on
+  ``os.fork``
+
+* When using ``paster create`` and inserting text with a ``-*-``
+  marker, multi-line text will no longer be reinserted.
+
+* Improved output when skipping templates with ``paster create``.
+
+* When starting a server with ``paster serve --daemon`` and the pid
+  file exists and describes a running process, do not start another
+  process.
+
+* Added ``umask`` option to
+  ``egg:PasteScript#flup_fcgi_thread/fork``.
+
+* Deprecate the flup entry points, as flup now has the necessary entry
+  points in its own package.
+
+1.3.6
+-----
+
+* CherryPy wsgiserver updated to the 3.0.2 release's
+
+* paster no longer hides ``pkg_resources.DistributionNotFound`` error
+  messages describing the target project's requirements. Aids the
+  somewhat confusing "did you run setup.py develop?" message when it had
+  already been ran, but since then had a requirement added that wasn't
+  installed.
+
+* Logging configuration is now read from the config file during ``paster
+  setup-app``.
+
+* Custom Formatters and Handlers (Handlers outside of the logging module)
+  are now supported in logging configuration files.
+
+1.3.5
+-----
+
+* Initialize logging earlier in the serve command for components that want
+  to utilize it. Patch from Christopher Lenz.
+
+* Fixed Python 2.3 incompatibility (no ``string.Template``) in
+  ``paste.script.appinstall``.
+
+1.3.4
+-----
+
+* Make sure that when using ``--monitor`` or ``--reload``, if the
+  parent monitoring process dies, also kill the subprocess.
+* When using ``paster serve --log-file``, append to the log file (was
+  truncating any previous contents).
+
+* Read logging information from the server file, using the logging module's
+  `standard configuration format
+  <http://python.org/doc/current/lib/logging-config-fileformat.html>`_
+
+* When adding files don't fail because an svn command fails.  Helpful
+  particularly on Windows, when the svn command-line isn't installed
+  (e.g., using TortoiseSVN).
+
+1.3.3
+-----
+
+* Fixed problem with ``paster serve`` on Windows.  Also on Windows,
+  fixed issue with executables with spaces in their names (this case
+  requires the ``win32all`` module).
+
+* You can use ``+dot+`` in your project template filenames,
+  specifically so that you can use leading dots in the filename.
+  Usually leading dots cause the file to be ignored.  So if you want
+  to have new projects contain a ``.cvsignore`` file, you can put a
+  ``+dot+cvsignore`` file in your template.
+
+* Relatedly, ``+plus+`` has been added so you can include pluses.
+
+1.3.2
+-----
+
+* ``paster`` was largely broken under Windows; fixed.
+
+1.3.1
+-----
+
+* Fix related to Python 2.5 (when there are errors creating files, you
+  could get infinite recursion under Python 2.5).
+
+* Use ``subprocess`` module in ``paster serve`` command.  Added
+  ``--monitor`` option which will restart the server if it exits.
+
+* The ``exe`` command now does % substitution in keys (e.g.,
+  ``pid_file=%(here)s/paste.pid``).
+
+* Some import problems with Cheetah should be improved.
+
+1.3
+---
+
+* Fixed an exception being raised when shutting down flup servers using
+  sockets.
+
+* Fixed the CherryPy 3 WSGI server entry point's handling of SIGHUP
+  and SIGTERM.
+
+* The CherryPy wsgiserver is now available at
+  ``paste.script.wsgiserver`` (no longer requiring CherryPy to be
+  installed).
+
+* Added entry point for twisted server.
+
+* Made ``paste.script.pluginlib:egg_info_dir`` work with packages that
+  put the ``Package.egg-info/`` directory in a subdirectory (typically
+  ``src/``).
+
+* Remove Cheetah requirement.  Packages using Cheetah templates should
+  require Cheetah themselves.  If you are using ``paster make-config``
+  and you *don't* want to use Cheetah, you must add ``use_cheetah =
+  False`` to your ``Installer`` subclass (it defaults to true for
+  backward compatibility).
+
+* Make scripts work when there is no ``setup.py`` (if you aren't
+  making a Python/setuptools package).
+
+* When using ``paste.script.copydir.copy_dir`` (as with most ``paster
+  create`` templates), you can raise ``SkipTemplate`` (or call the
+  ``skip_template()`` function) which will cause the template to be
+  skipped.  You can use this to conditionally include files.
+
+* When using ``paster serve c:/...``, it should no longer confuse
+  ``c:`` with a scheme (such as ``config:`` or ``egg:``).
+
+* More careful about catching import errors in ``websetup``, so if you
+  have a bug in your ``app.websetup`` module it won't swallow it.
+
+1.1
+---
+
+* Added a ``warn_returncode`` option to ``Command.run_command``, and
+  make ``ensure_file`` use this for its svn command.
+
+* If the svn command-line program isn't working for you, commands that
+  use ``ensure_file`` will continue to work but just with a warning.
+
+* Removed copyright notice that was accidentally included in new
+  packages created by ``paster create``.
+
+* Allow variable assignments at the end of ``paster serve``, like
+  ``paster serve http_port=80``; then you can use ``%(http_port)s`` in
+  your config files (requires up-to-date Paste Deploy).
+
+* Allow a ``package_dir`` variable so that you can put your package
+  into subdirectories of the base directory (e.g., ``src/``).
+
+* Changes to the ``twisted.web2`` wrapper (from pythy).
+
+* Warn when you run ``paster setup-app`` and no modules are listed in
+  ``top_level.txt`` (which can happen with a newly checked out
+  project).
+
+1.0
+---
+
+* Added entry point for CherryPy 3's WSGI server.
+
+* Fixed ``paster serve`` to hide KeyboardInterrupt (CTRL-C) tracebacks
+  in ``--reload`` mode.
+
+* Added ``template_renderer`` argument to
+  ``paste.script.copydir.copydir``.  This allows you to use arbitrary
+  template languages, instead of just ``string.Template`` and Cheetah.
+
+0.9.9
+-----
+
+* egg:PasteScript#test (the paste.script.testapp) now accepts ``lint``
+  and ``text`` boolean configuration.  ``lint`` will turn on
+  ``paste.lint`` validation.  ``text`` will cause it to return a
+  simple text/plain response with the environ, instead of an HTML
+  table.
+
+* Improvements all around to ``paster points``, plus documentation for
+  existing entry point groups.
+
+0.9.8
+-----
+
+* New projects will now ignore
+  ``Package.egg-info/dependency_links.txt``, just like all the other
+  derivative files in the ``egg-info`` directory
+
+* ``paster serve --reload`` was broken on Windows when the Python
+  executable was in a directory with spaces in it.  This is probably a
+  bug in the ``subprocess`` module.
+
+0.9.7
+-----
+
+* Update to filemaker commands to take optional argument so that when
+  new directories are for a Python package, they will have a __init__.py
+  created as well.
+
+0.9.6
+-----
+
+* Do all variable assignment during package creation up-front, before
+  actually creating the files.
+
+* Added the ``egg`` template variable: provides projects with a safe
+  egg name as generated by setuptools. This should be used for
+  egg-info directories in templates (e.g. ``+egg+.egg-info`` instead
+  of ``+project+.egg-info``), and anywhere else the egg name is
+  expected, to prevent errors with project names containing hyphens.
+
+0.9
+---
+
+* Installer calls ``websetup.setup_app(command, conf, vars)``;
+  ``setup_config()`` will be deprecated in the future
+
+* Added copyright information
+
+* ``paster serve config.ini#section`` works now
+
+* ``paster make-config/setup-app`` will read ``$PASTE_SYSCONFIG`` to
+  find extra ``sysconfig.py`` files.
+
+* ``paster create`` will now query interactively for variables if they
+  aren't explicitly provided.
+
+0.5
+---
+
+* If the output directory doesn't exist when running ``paster
+  create``, do not default to having interactive (confirmation) on.
+
+0.4.2
+-----
+
+* Fixed the Flup FastCGI interface.  (There seem to still be problems
+  with forking FastCGI.)
+
+* The ``prepare-app`` command has been renamed ``make-config``
+
+* Changed the way ``make-config`` and ``setup-app`` use ``sysconfig``
+  -- these are now modules that can define various functions
+
+* Allow for default config file names
+
+* Consider config generation that may produce a directory (this case
+  is now generally workable)
+
+* Allow for multiple config files (specifically with --edit)
+
+* Give config file generation the variables ``app_install_uuid`` and
+  ``app_install_secret`` that they can use for their config files
+
+* Include Ka-Ping Yee's uuid module in ``paste.script.util.uuid``
+
+* ``paster help`` doesn't bail when commands can't be loaded
+
+* Be a little safer when ``--edit`` fails and ``--setup`` is provided
+  (don't automatically set up if the edit seems to have failed)
+
+0.4.1
+-----
+
+* Two small bugfixes, one related to the ``basic_package`` template
+  (it included a reference to ``finddata``, which it should not have),
+  and a fix to how the ``.egg-info`` directory is determined.
+
+0.4
+---
+
+* Added ``points`` command, for entry-point related queries.
+
+* paste.deploy config files that start with ``#!/usr/bin/env paster``
+  can make a script into an executable.
+
+* Improvements to ``paster serve`` command:
+
+  - Handle bad PID files better
+
+  - Daemonization is more reliable
+
+  - Allow ``start``, ``stop``, ``restart`` instead of just options
+
+* Improvements to ``paster create`` command:
+
+  - Invoked interactively by default (so that you are warned before
+    overwriting files)
+
+* Added new commands:
+
+  - ``points`` for viewing Egg entry point information
+
+  - ``prepare-app`` and ``setup-app`` for installing web applications
+
+* Fixed bug in how Egg distributions are loaded.
+
+0.3.1
+-----
+
+* Fixed small bug with running ``paster serve`` on Windows.  (Small to
+  fix, kept script from running on Windows entirely).
+
+0.3
+---
+
+Initial release.

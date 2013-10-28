@@ -1,0 +1,45 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:py="http://genshi.edgewall.org/">
+
+<head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type"/>
+    <link type="text/css" rel="stylesheet" href="/tg_static/css/toolbox.css"/>
+    <title>TurboGears Toolbox</title>
+</head>
+
+<body>
+    <div id="top_background">
+        <div id="top">
+            <h1>Toolbox</h1>
+        </div>
+    </div>
+
+    <div id="main_content" style="margin:0 auto">
+        <h2>Welcome to the TurboGears ToolBox</h2>
+        <p>
+            A collection of web based tools for TurboGears applications.
+        </p>
+        <p py:if="not project" style="color:red">
+        Note: Some functions are not available as the toolbox was not started in a valid TurboGears project directory.
+        </p>
+
+        <table id="tools" cellpadding="8" cellspacing="0">
+            <tr py:for="toolpair in toolbox">
+                <td py:for="tool in toolpair" style="width:50%">
+                    <table py:if="tool" cellpadding="6" cellspacing="0">
+                        <tr>
+                            <td valign="top">
+                                <a py:strip="tool['disabled']" href="${tool['path']}/"><img style="margin:6pt 4pt;border:none" src="${tool['icon']}" alt=""/></a>
+                            </td>
+                            <td class="${tool['disabled']}" valign="top">
+                                <h4><a py:strip="tool['disabled']" href="${tool['path']}/" py:content="tool['label']"/></h4>
+                                <div py:replace="tool['description']"/>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+           </tr>
+        </table>
+    </div>
+</body>
+</html>

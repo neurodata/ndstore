@@ -1,0 +1,20 @@
+.grid {background-color:#e3e3e3;font-size:12px;font-family:verdana,sans-serif;border:none}
+.grid td, .grid th {padding:3px;border:none}
+.grid .action_cell {text-align:right}
+.grid thead tr th {text-align:left;background-color:#f0f0f0;color:#333}
+.grid thead tr td {text-align:center;padding:5px}
+.grid thead tr td a {text-decoration:none;font-weight:bold}
+.grid .heading img {float:right;margin-left:2px;margin-right:3px}
+.grid .heading a {text-decoration:none;color:#333}
+.grid tbody tr td a {text-decoration:none;color:#333}
+.grid tr.odd td {background-color:#edf3fe}
+.grid tr.even td {background-color:#fff}
+.grid .pointer {cursor:pointer}
+.grid .column_chooser_link {position:relative;background-color:#e3e3e3}
+.grid .column_chooser_link ul {position:absolute;display:none;top:0;right:-20px}
+.grid .column_chooser_list a {width:200px;display:block;padding:3px;background-color:#e3e3e3}
+.grid .column_chooser_list a:hover {background-color:#cdcdcd}
+.grid .column_chooser_list {padding:0;margin:0;list-style:none;background-color:#e3e3e3}
+.grid .tgp_button {border-width:2px;border-style:outset;padding:1px 3px;color:#999;background:#f3f3f3}
+.grid a .tgp_button {color:#369;background:#edf3fe}
+.grid a:hover .tgp_button {border-style:inset}

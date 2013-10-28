@@ -1,0 +1,6 @@
+include start-${package}.py
+include *.cfg
+include ${package}/config/*.cfg
+recursive-include ${package}/templates *.html
+recursive-include ${package}/templates *.kid
+recursive-include ${package}/static *

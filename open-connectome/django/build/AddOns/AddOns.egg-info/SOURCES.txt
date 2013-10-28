@@ -1,0 +1,14 @@
+README.txt
+setup.cfg
+setup.py
+AddOns.egg-info/PKG-INFO
+AddOns.egg-info/SOURCES.txt
+AddOns.egg-info/dependency_links.txt
+AddOns.egg-info/namespace_packages.txt
+AddOns.egg-info/requires.txt
+AddOns.egg-info/top_level.txt
+ez_setup/README.txt
+ez_setup/__init__.py
+peak/__init__.py
+peak/util/__init__.py
+peak/util/addons.py

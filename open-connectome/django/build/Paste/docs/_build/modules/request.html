@@ -1,0 +1,260 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>paste.request – Utility functions for the WSGI environment &mdash; Paste v1.7.5 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.7.5',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Paste v1.7.5 documentation" href="../index.html" />
+ 
+<link rel="stylesheet" type="text/css"
+ href="../_static/paste.css.html">
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-paste.request">
+<span id="paste-request-utility-functions-for-the-wsgi-environment"></span><h1><a class="reference internal" href="#module-paste.request"><tt class="xref py py-mod docutils literal"><span class="pre">paste.request</span></tt></a> &#8211; Utility functions for the WSGI environment<a class="headerlink" href="#module-paste.request" title="Permalink to this headline">¶</a></h1>
+<p>This module provides helper routines with work directly on a WSGI
+environment to solve common requirements.</p>
+<blockquote>
+<ul>
+<li><p class="first">get_cookies(environ)</p>
+</li>
+<li><p class="first">parse_querystring(environ)</p>
+</li>
+<li><p class="first">parse_formvars(environ, include_get_vars=True)</p>
+</li>
+<li><dl class="first docutils">
+<dt>construct_url(environ, with_query_string=True, with_path_info=True,</dt>
+<dd><p class="first last">script_name=None, path_info=None, querystring=None)</p>
+</dd>
+</dl>
+</li>
+<li><p class="first">path_info_split(path_info)</p>
+</li>
+<li><p class="first">path_info_pop(environ)</p>
+</li>
+<li><p class="first">resolve_relative_url(url, environ)</p>
+</li>
+</ul>
+</blockquote>
+<div class="section" id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="paste.request.get_cookies">
+<tt class="descclassname">paste.request.</tt><tt class="descname">get_cookies</tt><big>(</big><em>environ</em><big>)</big><a class="headerlink" href="#paste.request.get_cookies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets a cookie object (which is a dictionary-like object) from the
+request environment; caches this value in case get_cookies is
+called again for the same request.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="paste.request.get_cookie_dict">
+<tt class="descclassname">paste.request.</tt><tt class="descname">get_cookie_dict</tt><big>(</big><em>environ</em><big>)</big><a class="headerlink" href="#paste.request.get_cookie_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a <em>plain</em> dictionary of cookies as found in the request.</p>
+<p>Unlike <tt class="docutils literal"><span class="pre">get_cookies</span></tt> this returns a dictionary, not a
+<tt class="docutils literal"><span class="pre">SimpleCookie</span></tt> object.  For incoming cookies a dictionary fully
+represents the information.  Like <tt class="docutils literal"><span class="pre">get_cookies</span></tt> this caches and
+checks the cache.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="paste.request.parse_querystring">
+<tt class="descclassname">paste.request.</tt><tt class="descname">parse_querystring</tt><big>(</big><em>environ</em><big>)</big><a class="headerlink" href="#paste.request.parse_querystring" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses a query string into a list like <tt class="docutils literal"><span class="pre">[(name,</span> <span class="pre">value)]</span></tt>.
+Caches this value in case parse_querystring is called again
+for the same request.</p>
+<p>You can pass the result to <tt class="docutils literal"><span class="pre">dict()</span></tt>, but be aware that keys that
+appear multiple times will be lost (only the last value will be
+preserved).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="paste.request.parse_formvars">
+<tt class="descclassname">paste.request.</tt><tt class="descname">parse_formvars</tt><big>(</big><em>environ</em>, <em>include_get_vars=True</em><big>)</big><a class="headerlink" href="#paste.request.parse_formvars" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses the request, returning a MultiDict of form variables.</p>
+<p>If <tt class="docutils literal"><span class="pre">include_get_vars</span></tt> is true then GET (query string) variables
+will also be folded into the MultiDict.</p>
+<p>All values should be strings, except for file uploads which are
+left as <tt class="docutils literal"><span class="pre">FieldStorage</span></tt> instances.</p>
+<p>If the request was not a normal form request (e.g., a POST with an
+XML body) then <tt class="docutils literal"><span class="pre">environ['wsgi.input']</span></tt> won&#8217;t be read.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="paste.request.construct_url">
+<tt class="descclassname">paste.request.</tt><tt class="descname">construct_url</tt><big>(</big><em>environ</em>, <em>with_query_string=True</em>, <em>with_path_info=True</em>, <em>script_name=None</em>, <em>path_info=None</em>, <em>querystring=None</em><big>)</big><a class="headerlink" href="#paste.request.construct_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reconstructs the URL from the WSGI environment.</p>
+<p>You may override SCRIPT_NAME, PATH_INFO, and QUERYSTRING with
+the keyword arguments.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="paste.request.path_info_split">
+<tt class="descclassname">paste.request.</tt><tt class="descname">path_info_split</tt><big>(</big><em>path_info</em><big>)</big><a class="headerlink" href="#paste.request.path_info_split" title="Permalink to this definition">¶</a></dt>
+<dd><p>Splits off the first segment of the path.  Returns (first_part,
+rest_of_path).  first_part can be None (if PATH_INFO is empty), &#8216;&#8217;
+(if PATH_INFO is &#8216;/&#8217;), or a name without any /&#8217;s.  rest_of_path
+can be &#8216;&#8217; or a string starting with /.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="paste.request.path_info_pop">
+<tt class="descclassname">paste.request.</tt><tt class="descname">path_info_pop</tt><big>(</big><em>environ</em><big>)</big><a class="headerlink" href="#paste.request.path_info_pop" title="Permalink to this definition">¶</a></dt>
+<dd><p>&#8216;Pops&#8217; off the next segment of PATH_INFO, pushing it onto
+SCRIPT_NAME, and returning that segment.</p>
+<p>For instance:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">call_it</span><span class="p">(</span><span class="n">script_name</span><span class="p">,</span> <span class="n">path_info</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">env</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;SCRIPT_NAME&#39;</span><span class="p">:</span> <span class="n">script_name</span><span class="p">,</span> <span class="s">&#39;PATH_INFO&#39;</span><span class="p">:</span> <span class="n">path_info</span><span class="p">}</span>
+<span class="gp">... </span>    <span class="n">result</span> <span class="o">=</span> <span class="n">path_info_pop</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="k">print</span> <span class="s">&#39;SCRIPT_NAME=</span><span class="si">%r</span><span class="s">; PATH_INFO=</span><span class="si">%r</span><span class="s">; returns=</span><span class="si">%r</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+<span class="gp">... </span>        <span class="n">env</span><span class="p">[</span><span class="s">&#39;SCRIPT_NAME&#39;</span><span class="p">],</span> <span class="n">env</span><span class="p">[</span><span class="s">&#39;PATH_INFO&#39;</span><span class="p">],</span> <span class="n">result</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">call_it</span><span class="p">(</span><span class="s">&#39;/foo&#39;</span><span class="p">,</span> <span class="s">&#39;/bar&#39;</span><span class="p">)</span>
+<span class="go">SCRIPT_NAME=&#39;/foo/bar&#39;; PATH_INFO=&#39;&#39;; returns=&#39;bar&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">call_it</span><span class="p">(</span><span class="s">&#39;/foo/bar&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
+<span class="go">SCRIPT_NAME=&#39;/foo/bar&#39;; PATH_INFO=&#39;&#39;; returns=None</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">call_it</span><span class="p">(</span><span class="s">&#39;/foo/bar&#39;</span><span class="p">,</span> <span class="s">&#39;/&#39;</span><span class="p">)</span>
+<span class="go">SCRIPT_NAME=&#39;/foo/bar/&#39;; PATH_INFO=&#39;&#39;; returns=&#39;&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">call_it</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="s">&#39;/1/2/3&#39;</span><span class="p">)</span>
+<span class="go">SCRIPT_NAME=&#39;/1&#39;; PATH_INFO=&#39;/2/3&#39;; returns=&#39;1&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">call_it</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="s">&#39;//1/2&#39;</span><span class="p">)</span>
+<span class="go">SCRIPT_NAME=&#39;//1&#39;; PATH_INFO=&#39;/2&#39;; returns=&#39;1&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="paste.request.resolve_relative_url">
+<tt class="descclassname">paste.request.</tt><tt class="descname">resolve_relative_url</tt><big>(</big><em>url</em>, <em>environ</em><big>)</big><a class="headerlink" href="#paste.request.resolve_relative_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resolve the given relative URL as being relative to the
+location represented by the environment.  This can be used
+for redirecting to a relative path.  Note: if url is already
+absolute, this function will (intentionally) have no effect
+on it.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="paste.request.EnvironHeaders">
+<em class="property">class </em><tt class="descclassname">paste.request.</tt><tt class="descname">EnvironHeaders</tt><big>(</big><em>environ</em><big>)</big><a class="headerlink" href="#paste.request.EnvironHeaders" title="Permalink to this definition">¶</a></dt>
+<dd><p>An object that represents the headers as present in a
+WSGI environment.</p>
+<p>This object is a wrapper (with no internal state) for a WSGI
+request object, representing the CGI-style HTTP_* keys as a
+dictionary.  Because a CGI environment can only hold one value for
+each key, this dictionary is single-valued (unlike outgoing
+headers).</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="http://pythonpaste.org/" class="invisible-link">Python Paste</a></h3>
+
+<ul>
+<li><a href="http://trac.pythonpaste.org">Issue tracker</a></li>
+<li><a href="http://pythonpaste.org/">Paste core</a></li>
+<li><a href="http://pythonpaste.org/webob/">WebOb</a></li>
+<li><a href="http://pythonpaste.org/deploy/">Paste Deploy</a></li>
+<li><a href="http://pythonpaste.org/script/">Paste Script</a></li>
+<li><a href="http://pythonpaste.org/webtest/">WebTest</a></li>
+<li><a href="http://pythonpaste.org/scripttest/">ScriptType</a></li>
+<li><a href="http://pythonpaste.org/initools/">INITools</a></li>
+<li><a href="http://pythonpaste.org/tempita/">Tempita</a></li>
+<li><a href="http://pythonpaste.org/waitforit/">WaitForIt</a></li>
+<li><a href="http://pythonpaste.org/wphp/">WPHP</a></li>
+<li><a href="http://pythonpaste.org/wsgifilter/">WSGIFilter</a></li>
+<li><a href="http://pythonpaste.org/wsgiproxy/">WSGIProxy</a></li>
+</ul>
+
+
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">paste.request</span></tt> &#8211; Utility functions for the WSGI environment</a><ul>
+<li><a class="reference internal" href="#module-contents">Module Contents</a></li>
+</ul>
+</li>
+</ul>
+
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/modules/request.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, Ian Bicking.
+      Last updated on Sep 14, 2010.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

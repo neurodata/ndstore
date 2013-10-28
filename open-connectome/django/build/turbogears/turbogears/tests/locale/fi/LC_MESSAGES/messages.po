@@ -1,0 +1,25 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR ORGANIZATION
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: Thu Oct 07 15:40:37 2004\n"
+"PO-Revision-Date: 2005-11-10 09:23+0200\n"
+"Last-Translator: Dan Jacob <dan.jacob@xeepra.fi>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=iso-8859-1\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: pygettext.py 1.5\n"
+
+msgid "Welcome"
+msgstr "Tervetuloa"
+
+msgid "You have %i apple"
+msgstr "Sinulla on %i omena"
+
+msgid "You have %i apples"
+msgstr "Sinulla on %i omenaa"
+

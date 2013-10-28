@@ -1,0 +1,229 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>paste.auth.digest – HTTP Digest login &mdash; Paste v1.7.5 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.7.5',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Paste v1.7.5 documentation" href="../index.html" />
+ 
+<link rel="stylesheet" type="text/css"
+ href="../_static/paste.css.html">
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-paste.auth.digest">
+<span id="paste-auth-digest-http-digest-login"></span><h1><a class="reference internal" href="#module-paste.auth.digest"><tt class="xref py py-mod docutils literal"><span class="pre">paste.auth.digest</span></tt></a> &#8211; HTTP Digest login<a class="headerlink" href="#module-paste.auth.digest" title="Permalink to this headline">¶</a></h1>
+<p>Digest HTTP/1.1 Authentication</p>
+<p>This module implements <tt class="docutils literal"><span class="pre">Digest</span></tt> authentication as described by
+RFC 2617 <a class="footnote-reference" href="#id2" id="id1">[1]</a> .</p>
+<p>Basically, you just put this module before your application, and it
+takes care of requesting and handling authentication requests.  This
+module has been tested with several common browsers &#8220;out-in-the-wild&#8221;.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">paste.wsgilib</span> <span class="kn">import</span> <span class="n">dump_environ</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">paste.httpserver</span> <span class="kn">import</span> <span class="n">serve</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># from paste.auth.digest import digest_password, AuthDigestHandler</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">realm</span> <span class="o">=</span> <span class="s">&#39;Test Realm&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">authfunc</span><span class="p">(</span><span class="n">environ</span><span class="p">,</span> <span class="n">realm</span><span class="p">,</span> <span class="n">username</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">digest_password</span><span class="p">(</span><span class="n">realm</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">username</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">serve</span><span class="p">(</span><span class="n">AuthDigestHandler</span><span class="p">(</span><span class="n">dump_environ</span><span class="p">,</span> <span class="n">realm</span><span class="p">,</span> <span class="n">authfunc</span><span class="p">))</span>
+<span class="go">serving on...</span>
+</pre></div>
+</div>
+<p>This code has not been audited by a security expert, please use with
+caution (or better yet, report security holes). At this time, this
+implementation does not provide for further challenges, nor does it
+support Authentication-Info header.  It also uses md5, and an option
+to use sha would be a good thing.</p>
+<table class="docutils footnote" frame="void" id="id2" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td><a class="reference external" href="http://www.faqs.org/rfcs/rfc2617.html">http://www.faqs.org/rfcs/rfc2617.html</a></td></tr>
+</tbody>
+</table>
+<div class="section" id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="paste.auth.digest.AuthDigestAuthenticator">
+<em class="property">class </em><tt class="descclassname">paste.auth.digest.</tt><tt class="descname">AuthDigestAuthenticator</tt><big>(</big><em>realm</em>, <em>authfunc</em><big>)</big><a class="headerlink" href="#paste.auth.digest.AuthDigestAuthenticator" title="Permalink to this definition">¶</a></dt>
+<dd><p>implementation of RFC 2617 - HTTP Digest Authentication</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="paste.auth.digest.AuthDigestHandler">
+<em class="property">class </em><tt class="descclassname">paste.auth.digest.</tt><tt class="descname">AuthDigestHandler</tt><big>(</big><em>application</em>, <em>realm</em>, <em>authfunc</em><big>)</big><a class="headerlink" href="#paste.auth.digest.AuthDigestHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>middleware for HTTP Digest authentication (RFC 2617)</p>
+<p>This component follows the procedure below:</p>
+<blockquote>
+<ol class="arabic simple" start="0">
+<li>If the REMOTE_USER environment variable is already populated;
+then this middleware is a no-op, and the request is passed
+along to the application.</li>
+<li>If the HTTP_AUTHORIZATION header was not provided or specifies
+an algorithem other than <tt class="docutils literal"><span class="pre">digest</span></tt>, then a HTTPUnauthorized
+response is generated with the challenge.</li>
+<li>If the response is malformed or or if the user&#8217;s credientials
+do not pass muster, another HTTPUnauthorized is raised.</li>
+<li>If all goes well, and the user&#8217;s credintials pass; then
+REMOTE_USER environment variable is filled in and the
+AUTH_TYPE is listed as &#8216;digest&#8217;.</li>
+</ol>
+</blockquote>
+<p>Parameters:</p>
+<blockquote>
+<p><tt class="docutils literal"><span class="pre">application</span></tt></p>
+<blockquote>
+The application object is called only upon successful
+authentication, and can assume <tt class="docutils literal"><span class="pre">environ['REMOTE_USER']</span></tt>
+is set.  If the <tt class="docutils literal"><span class="pre">REMOTE_USER</span></tt> is already set, this
+middleware is simply pass-through.</blockquote>
+<p><tt class="docutils literal"><span class="pre">realm</span></tt></p>
+<blockquote>
+This is a identifier for the authority that is requesting
+authorization.  It is shown to the user and should be unique
+within the domain it is being used.</blockquote>
+<p><tt class="docutils literal"><span class="pre">authfunc</span></tt></p>
+<blockquote>
+<p>This is a callback function which performs the actual
+authentication; the signature of this callback is:</p>
+<blockquote>
+authfunc(environ, realm, username) -&gt; hashcode</blockquote>
+<p>This module provides a &#8216;digest_password&#8217; helper function
+which can help construct the hashcode; it is recommended
+that the hashcode is stored in a database, not the user&#8217;s
+actual password (since you only need the hashcode).</p>
+</blockquote>
+</blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="paste.auth.digest.digest_password">
+<tt class="descclassname">paste.auth.digest.</tt><tt class="descname">digest_password</tt><big>(</big><em>realm</em>, <em>username</em>, <em>password</em><big>)</big><a class="headerlink" href="#paste.auth.digest.digest_password" title="Permalink to this definition">¶</a></dt>
+<dd><p>construct the appropriate hashcode needed for HTTP digest</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="paste.auth.digest.make_digest">
+<tt class="descclassname">paste.auth.digest.</tt><tt class="descname">make_digest</tt><big>(</big><em>app</em>, <em>global_conf</em>, <em>realm</em>, <em>authfunc</em>, <em>**kw</em><big>)</big><a class="headerlink" href="#paste.auth.digest.make_digest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Grant access via digest authentication</p>
+<p>Config looks like this:</p>
+<div class="highlight-python"><pre>[filter:grant]
+use = egg:Paste#auth_digest
+realm=myrealm
+authfunc=somepackage.somemodule:somefunction</pre>
+</div>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="http://pythonpaste.org/" class="invisible-link">Python Paste</a></h3>
+
+<ul>
+<li><a href="http://trac.pythonpaste.org">Issue tracker</a></li>
+<li><a href="http://pythonpaste.org/">Paste core</a></li>
+<li><a href="http://pythonpaste.org/webob/">WebOb</a></li>
+<li><a href="http://pythonpaste.org/deploy/">Paste Deploy</a></li>
+<li><a href="http://pythonpaste.org/script/">Paste Script</a></li>
+<li><a href="http://pythonpaste.org/webtest/">WebTest</a></li>
+<li><a href="http://pythonpaste.org/scripttest/">ScriptType</a></li>
+<li><a href="http://pythonpaste.org/initools/">INITools</a></li>
+<li><a href="http://pythonpaste.org/tempita/">Tempita</a></li>
+<li><a href="http://pythonpaste.org/waitforit/">WaitForIt</a></li>
+<li><a href="http://pythonpaste.org/wphp/">WPHP</a></li>
+<li><a href="http://pythonpaste.org/wsgifilter/">WSGIFilter</a></li>
+<li><a href="http://pythonpaste.org/wsgiproxy/">WSGIProxy</a></li>
+</ul>
+
+
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">paste.auth.digest</span></tt> &#8211; HTTP Digest login</a><ul>
+<li><a class="reference internal" href="#module-contents">Module Contents</a></li>
+</ul>
+</li>
+</ul>
+
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/modules/auth.digest.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, Ian Bicking.
+      Last updated on Sep 14, 2010.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

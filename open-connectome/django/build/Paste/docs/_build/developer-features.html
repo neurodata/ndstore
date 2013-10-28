@@ -1,0 +1,270 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Features &mdash; Paste v1.7.5 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.7.5',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Paste v1.7.5 documentation" href="index.html" />
+    <link rel="next" title="Python Paste Developer Guide" href="DeveloperGuidelines.html" />
+    <link rel="prev" title="The Paste HTTP Server Thread Pool" href="paste-httpserver-threadpool.html" />
+ 
+<link rel="stylesheet" type="text/css"
+ href="_static/paste.css.html">
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="DeveloperGuidelines.html" title="Python Paste Developer Guide"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="paste-httpserver-threadpool.html" title="The Paste HTTP Server Thread Pool"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="features">
+<h1>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="testing">
+<h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>A fixture for testing WSGI applications conveniently and in-process,
+in <a class="reference internal" href="modules/fixture.html#paste.fixture.TestApp" title="paste.fixture.TestApp"><tt class="xref py py-class docutils literal"><span class="pre">paste.fixture.TestApp</span></tt></a></li>
+<li>A fixture for testing command-line applications, also in
+<a class="reference internal" href="modules/fixture.html#paste.fixture.TestFileEnvironment" title="paste.fixture.TestFileEnvironment"><tt class="xref py py-class docutils literal"><span class="pre">paste.fixture.TestFileEnvironment</span></tt></a></li>
+<li>Check components for WSGI-compliance in <a class="reference internal" href="modules/lint.html#module-paste.lint"><tt class="xref py py-mod docutils literal"><span class="pre">paste.lint</span></tt></a></li>
+<li>Check filesystem changes, with <a class="reference internal" href="modules/debug.fsdiff.html#module-paste.debug.fsdiff"><tt class="xref py py-mod docutils literal"><span class="pre">paste.debug.fsdiff</span></tt></a></li>
+</ul>
+</div>
+<div class="section" id="server">
+<h2>Server<a class="headerlink" href="#server" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>A threaded HTTP server in <a class="reference internal" href="modules/httpserver.html#module-paste.httpserver"><tt class="xref py py-mod docutils literal"><span class="pre">paste.httpserver</span></tt></a></li>
+<li>A tool for seeing and killing errant threads in the HTTP server, in
+<a class="reference internal" href="modules/debug.watchthreads.html#module-paste.debug.watchthreads"><tt class="xref py py-mod docutils literal"><span class="pre">paste.debug.watchthreads</span></tt></a></li>
+</ul>
+</div>
+<div class="section" id="dispatching">
+<h2>Dispatching<a class="headerlink" href="#dispatching" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Chain and cascade WSGI applications (returning the first non-error
+response) in <a class="reference internal" href="modules/cascade.html#module-paste.cascade"><tt class="xref py py-mod docutils literal"><span class="pre">paste.cascade</span></tt></a></li>
+<li>Dispatch to several WSGI applications based on URL prefixes, in
+<a class="reference internal" href="modules/urlmap.html#module-paste.urlmap"><tt class="xref py py-mod docutils literal"><span class="pre">paste.urlmap</span></tt></a></li>
+<li>Allow applications to make subrequests and forward requests
+internally, in <a class="reference internal" href="modules/recursive.html#module-paste.recursive"><tt class="xref py py-mod docutils literal"><span class="pre">paste.recursive</span></tt></a></li>
+<li>Redirect error pages (e.g., 404 Not Found) to custom error pages, in
+<a class="reference internal" href="modules/errordocument.html#module-paste.errordocument"><tt class="xref py py-mod docutils literal"><span class="pre">paste.errordocument</span></tt></a>.</li>
+</ul>
+</div>
+<div class="section" id="web-application">
+<h2>Web Application<a class="headerlink" href="#web-application" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Easily deal with incoming requests and sending a response in
+<a class="reference internal" href="modules/wsgiwrappers.html#module-paste.wsgiwrappers"><tt class="xref py py-mod docutils literal"><span class="pre">paste.wsgiwrappers</span></tt></a></li>
+<li>Work directly with the WSGI environment in <a class="reference internal" href="modules/request.html#module-paste.request"><tt class="xref py py-mod docutils literal"><span class="pre">paste.request</span></tt></a></li>
+<li>Run CGI programs as WSGI applications in <a class="reference internal" href="modules/cgiapp.html#module-paste.cgiapp"><tt class="xref py py-mod docutils literal"><span class="pre">paste.cgiapp</span></tt></a></li>
+<li>Traverse files and load WSGI applications from <tt class="docutils literal"><span class="pre">.py</span></tt> files (or
+static files), in <a class="reference internal" href="modules/urlparser.html#module-paste.urlparser"><tt class="xref py py-mod docutils literal"><span class="pre">paste.urlparser</span></tt></a></li>
+<li>Serve static directories of files, also in <a class="reference internal" href="modules/urlparser.html#module-paste.urlparser"><tt class="xref py py-mod docutils literal"><span class="pre">paste.urlparser</span></tt></a>; also
+serve using the Setuptools <tt class="docutils literal"><span class="pre">pkg_resources</span></tt> resource API.</li>
+<li>Proxy to other servers, treating external HTTP servers as WSGI
+applications, in <a class="reference internal" href="modules/proxy.html#module-paste.proxy"><tt class="xref py py-mod docutils literal"><span class="pre">paste.proxy</span></tt></a>.</li>
+<li>Serve files (with support for <tt class="docutils literal"><span class="pre">If-Modified-Since</span></tt>, etc) in
+<a class="reference internal" href="modules/fileapp.html#module-paste.fileapp"><tt class="xref py py-mod docutils literal"><span class="pre">paste.fileapp</span></tt></a></li>
+</ul>
+</div>
+<div class="section" id="tools">
+<h2>Tools<a class="headerlink" href="#tools" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Catch HTTP-related exceptions (e.g., <tt class="docutils literal"><span class="pre">HTTPNotFound</span></tt>) and turn them
+into proper responses in <a class="reference internal" href="modules/httpexceptions.html#module-paste.httpexceptions"><tt class="xref py py-mod docutils literal"><span class="pre">paste.httpexceptions</span></tt></a></li>
+<li>Manage HTTP header fields with <a class="reference internal" href="modules/httpheaders.html#module-paste.httpheaders"><tt class="xref py py-mod docutils literal"><span class="pre">paste.httpheaders</span></tt></a></li>
+<li>Handle authentication/identification of requests in <tt class="xref py py-mod docutils literal"><span class="pre">paste.auth</span></tt></li>
+<li>Create sessions in <a class="reference internal" href="modules/session.html#module-paste.session"><tt class="xref py py-mod docutils literal"><span class="pre">paste.session</span></tt></a> and <tt class="xref py py-mod docutils literal"><span class="pre">paste.flup_session</span></tt></li>
+<li>Gzip responses in <a class="reference internal" href="modules/gzipper.html#module-paste.gzipper"><tt class="xref py py-mod docutils literal"><span class="pre">paste.gzipper</span></tt></a></li>
+<li>A wide variety of routines for manipulating WSGI requests and
+producing responses, in <a class="reference internal" href="modules/request.html#module-paste.request"><tt class="xref py py-mod docutils literal"><span class="pre">paste.request</span></tt></a>, <a class="reference internal" href="modules/response.html#module-paste.response"><tt class="xref py py-mod docutils literal"><span class="pre">paste.response</span></tt></a> and
+<a class="reference internal" href="modules/wsgilib.html#module-paste.wsgilib"><tt class="xref py py-mod docutils literal"><span class="pre">paste.wsgilib</span></tt></a>.</li>
+<li>Create Apache-style logs in <a class="reference internal" href="modules/translogger.html#module-paste.translogger"><tt class="xref py py-mod docutils literal"><span class="pre">paste.translogger</span></tt></a></li>
+<li>Handy request and response wrappers in <a class="reference internal" href="modules/wsgiwrappers.html#module-paste.wsgiwrappers"><tt class="xref py py-mod docutils literal"><span class="pre">paste.wsgiwrappers</span></tt></a></li>
+<li>Handling of request-local module globals sanely in <a class="reference internal" href="modules/registry.html#module-paste.registry"><tt class="xref py py-mod docutils literal"><span class="pre">paste.registry</span></tt></a></li>
+</ul>
+</div>
+<div class="section" id="authentication">
+<h2>Authentication<a class="headerlink" href="#authentication" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Authentication using cookies in <a class="reference internal" href="modules/auth.cookie.html#module-paste.auth.cookie"><tt class="xref py py-mod docutils literal"><span class="pre">paste.auth.cookie</span></tt></a> and
+<a class="reference internal" href="modules/auth.auth_tkt.html#module-paste.auth.auth_tkt"><tt class="xref py py-mod docutils literal"><span class="pre">paste.auth.auth_tkt</span></tt></a>; login form in <a class="reference internal" href="modules/auth.form.html#module-paste.auth.form"><tt class="xref py py-mod docutils literal"><span class="pre">paste.auth.form</span></tt></a></li>
+<li>Authentication using <a class="reference external" href="http://openid.net/">OpenID</a> in
+<tt class="xref py py-mod docutils literal"><span class="pre">paste.auth.open_id</span></tt>, using <a class="reference external" href="http://www.ja-sig.org/products/cas/">CAS</a> in <a class="reference internal" href="modules/auth.cas.html#module-paste.auth.cas"><tt class="xref py py-mod docutils literal"><span class="pre">paste.auth.cas</span></tt></a></li>
+<li>HTTP authentication in <a class="reference internal" href="modules/auth.basic.html#module-paste.auth.basic"><tt class="xref py py-mod docutils literal"><span class="pre">paste.auth.basic</span></tt></a> and
+<a class="reference internal" href="modules/auth.digest.html#module-paste.auth.digest"><tt class="xref py py-mod docutils literal"><span class="pre">paste.auth.digest</span></tt></a></li>
+<li>Dispatch to different authentication methods based on User-Agent, in
+<a class="reference internal" href="modules/auth.multi.html#module-paste.auth.multi"><tt class="xref py py-mod docutils literal"><span class="pre">paste.auth.multi</span></tt></a></li>
+<li>Grant roles based on IP addresses, in <a class="reference internal" href="modules/auth.grantip.html#module-paste.auth.grantip"><tt class="xref py py-mod docutils literal"><span class="pre">paste.auth.grantip</span></tt></a></li>
+</ul>
+</div>
+<div class="section" id="debugging-filters">
+<h2>Debugging Filters<a class="headerlink" href="#debugging-filters" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Catch (optionally email) errors with extended tracebacks (using
+Zope/ZPT conventions) in <tt class="xref py py-mod docutils literal"><span class="pre">paste.exceptions</span></tt></li>
+<li>During debugging, show tracebacks with information about each stack
+frame, including an interactive prompt that runs in the individual
+stack frames, in <a class="reference internal" href="modules/evalexception.html#module-paste.evalexception"><tt class="xref py py-mod docutils literal"><span class="pre">paste.evalexception</span></tt></a>.</li>
+<li>Catch errors presenting a <a class="reference external" href="http://python.org/doc/current/lib/module-cgitb.html">cgitb</a>-based
+output, in <a class="reference internal" href="modules/cgitb_catcher.html#module-paste.cgitb_catcher"><tt class="xref py py-mod docutils literal"><span class="pre">paste.cgitb_catcher</span></tt></a>.</li>
+<li>Profile each request and append profiling information to the HTML,
+in <a class="reference internal" href="modules/debug.profile.html#module-paste.debug.profile"><tt class="xref py py-mod docutils literal"><span class="pre">paste.debug.profile</span></tt></a></li>
+<li>Capture <tt class="docutils literal"><span class="pre">print</span></tt> output and present it in the browser for
+debugging, in <a class="reference internal" href="modules/debug.prints.html#module-paste.debug.prints"><tt class="xref py py-mod docutils literal"><span class="pre">paste.debug.prints</span></tt></a></li>
+<li>Validate all HTML output from applications using the <a class="reference external" href="http://www.htmlhelp.com/tools/validator/">WDG Validator</a>, appending any errors
+or warnings to the page, in <tt class="xref py py-mod docutils literal"><span class="pre">paste.debug.wdg_validator</span></tt></li>
+</ul>
+</div>
+<div class="section" id="other-tools">
+<h2>Other Tools<a class="headerlink" href="#other-tools" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>A file monitor to allow restarting the server when files have been
+updated (for automatic restarting when editing code) in
+<a class="reference internal" href="modules/reloader.html#module-paste.reloader"><tt class="xref py py-mod docutils literal"><span class="pre">paste.reloader</span></tt></a></li>
+<li>A class for generating and traversing URLs, and creating associated
+HTML code, in <a class="reference internal" href="modules/url.html#module-paste.url"><tt class="xref py py-mod docutils literal"><span class="pre">paste.url</span></tt></a></li>
+<li>A small templating language (for internal use) in
+<tt class="xref py py-mod docutils literal"><span class="pre">paste.util.template</span></tt></li>
+<li>A class to help with loops in templates, in <tt class="xref py py-mod docutils literal"><span class="pre">paste.util.looper</span></tt></li>
+<li>Import modules and objects given a string, in
+<a class="reference internal" href="modules/util.import_string.html#module-paste.util.import_string"><tt class="xref py py-mod docutils literal"><span class="pre">paste.util.import_string</span></tt></a></li>
+<li>Ordered dictionary that can have multiple values with the same key,
+in <a class="reference internal" href="modules/util.multidict.html#module-paste.util.multidict"><tt class="xref py py-mod docutils literal"><span class="pre">paste.util.multidict</span></tt></a></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="http://pythonpaste.org/" class="invisible-link">Python Paste</a></h3>
+
+<ul>
+<li><a href="http://trac.pythonpaste.org">Issue tracker</a></li>
+<li><a href="http://pythonpaste.org/">Paste core</a></li>
+<li><a href="http://pythonpaste.org/webob/">WebOb</a></li>
+<li><a href="http://pythonpaste.org/deploy/">Paste Deploy</a></li>
+<li><a href="http://pythonpaste.org/script/">Paste Script</a></li>
+<li><a href="http://pythonpaste.org/webtest/">WebTest</a></li>
+<li><a href="http://pythonpaste.org/scripttest/">ScriptType</a></li>
+<li><a href="http://pythonpaste.org/initools/">INITools</a></li>
+<li><a href="http://pythonpaste.org/tempita/">Tempita</a></li>
+<li><a href="http://pythonpaste.org/waitforit/">WaitForIt</a></li>
+<li><a href="http://pythonpaste.org/wphp/">WPHP</a></li>
+<li><a href="http://pythonpaste.org/wsgifilter/">WSGIFilter</a></li>
+<li><a href="http://pythonpaste.org/wsgiproxy/">WSGIProxy</a></li>
+</ul>
+
+
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Features</a><ul>
+<li><a class="reference internal" href="#testing">Testing</a></li>
+<li><a class="reference internal" href="#server">Server</a></li>
+<li><a class="reference internal" href="#dispatching">Dispatching</a></li>
+<li><a class="reference internal" href="#web-application">Web Application</a></li>
+<li><a class="reference internal" href="#tools">Tools</a></li>
+<li><a class="reference internal" href="#authentication">Authentication</a></li>
+<li><a class="reference internal" href="#debugging-filters">Debugging Filters</a></li>
+<li><a class="reference internal" href="#other-tools">Other Tools</a></li>
+</ul>
+</li>
+</ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="paste-httpserver-threadpool.html"
+                        title="previous chapter">The Paste HTTP Server Thread Pool</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="DeveloperGuidelines.html"
+                        title="next chapter">Python Paste Developer Guide</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/developer-features.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="DeveloperGuidelines.html" title="Python Paste Developer Guide"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="paste-httpserver-threadpool.html" title="The Paste HTTP Server Thread Pool"
+             >previous</a> |</li>
+        <li><a href="index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, Ian Bicking.
+      Last updated on Sep 14, 2010.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

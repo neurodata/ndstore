@@ -1,0 +1,4 @@
+[run]
+# use a simpler but slower trace method
+# because TurboGears uses PEAK-Rules:
+timid = True

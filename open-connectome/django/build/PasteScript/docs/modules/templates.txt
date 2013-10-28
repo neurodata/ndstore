@@ -1,0 +1,12 @@
+:mod:`paste.script.templates` -- framework for paster create templates
+======================================================================
+
+.. automodule:: paste.script.templates
+
+Module Contents
+---------------
+
+.. autoclass:: Template
+.. autoclass:: var
+.. autoclass:: BasicPackage
+

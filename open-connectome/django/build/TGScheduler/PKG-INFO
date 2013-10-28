@@ -1,0 +1,19 @@
+Metadata-Version: 1.0
+Name: TGScheduler
+Version: 1.6.3
+Summary: TurboGears Scheduler
+Home-page: http://tgscheduler.googlecode.com
+Author: Vince Spicer
+Author-email: vinces1979@gmail.com
+License: MIT
+Description: This scheduler package is based on the TurboGears 1
+        built-in scheduler which is based on the Kronos by Irmen de Jong.
+        The scheduler makes it easy to have one-time or recurring tasks run as needed.
+Keywords: turbogears.widgets,tg2
+Platform: any
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Framework :: TurboGears
+Classifier: Framework :: TurboGears :: Widgets

@@ -1,0 +1,17 @@
+README.txt
+_dis.py
+setup.cfg
+setup.py
+test_assembler.py
+wikiup.cfg
+BytecodeAssembler.egg-info/PKG-INFO
+BytecodeAssembler.egg-info/SOURCES.txt
+BytecodeAssembler.egg-info/dependency_links.txt
+BytecodeAssembler.egg-info/namespace_packages.txt
+BytecodeAssembler.egg-info/requires.txt
+BytecodeAssembler.egg-info/top_level.txt
+ez_setup/README.txt
+ez_setup/__init__.py
+peak/__init__.py
+peak/util/__init__.py
+peak/util/assembler.py

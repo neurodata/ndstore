@@ -26,6 +26,8 @@ from ocpca_cy import recolor_cy
 from ocpcaerror import OCPCAError
 
 from filtercutout import filterCutout
+from filtercutoutctype import filterCutoutCtype
+from filtercutoutctype import filterCutoutCtypeOMP
 
 import logging
 logger=logging.getLogger("ocp")
@@ -175,8 +177,11 @@ def xySlice ( imageargs, proj, db ):
   # Perform the cutout
   cube = db.cutout ( corner, dim, resolution, channel )
   if filterlist != None:
-    # slowest implementation
-    filterCutout ( cube.data, filterlist )
+    # slowest implementation calling the implementation in python
+    #filterCutout ( cube.data, filterlist )
+	# calling the ctype filter function
+	#cube.data = filterCutoutCtype ( cube.data, filterlist )
+	cube.data = filterCutoutCtypeOMP ( cube.data, filterlist )
     # inline vectorized is actually slower
 #    vec_func = np.vectorize ( lambda x: 0 if x not in filterlist else x )
 #    cube.data = vec_func ( cube.data )

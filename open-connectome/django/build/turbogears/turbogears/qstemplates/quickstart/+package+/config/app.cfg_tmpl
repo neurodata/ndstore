@@ -1,0 +1,294 @@
+[global]
+# The settings in this file should not vary depending on the deployment
+# environment. dev.cfg and prod.cfg are the locations for
+# the different deployment settings. Settings in this file will
+# be overridden by settings in those other files.
+
+# The commented out values below are the defaults
+
+# APPLICATION PACKAGE
+
+package = '${package}'
+
+# VIEW
+
+# If you change any of the following template engine options after your
+# application has started, you need to call view.load_engines() for the change
+# to take effect.
+
+# which view (template engine) to use if one is not specified in the
+# template name
+tg.defaultview = 'genshi'
+
+# The following settings determine the options used by the Genshi engine.
+
+# One of (html|html-strict|html-transitional|xhtml|xhtml-strict|html5) or None
+# or a dictionary mapping format names (see below) to one of the above.
+# genshi.default_doctype =  {
+#   'html: 'html-strict', 'xhtml': 'xhtml-strict', xml: None}
+
+# Encoding of Genshi output.
+# genshi.default_encoding = 'utf-8'
+
+# One of (xml|xhtml|html|text)
+# Warning: this setting will be overwritten by 'genshi.outputformat' if the
+# latter is set.
+# genshi.default_format = 'html'
+
+# lenient or strict
+# genshi.lookup_errors = 'strict'
+
+# The following genshi.* settings are NOT set to default values by TurboGears
+# but the commented settings show the default value the Genshi plugin uses.
+# If you set them, they are passed to the gesnhi plugin on initialisation.
+
+# The maximum number of templates that the loader will cache in memory.
+# genshi.max_cache_size = 25
+
+# File-system path names to be use to search for templates.
+# genshi.search_path = ''
+
+# Whether the Python code blocks should be permitted in templates (boolean).
+# genshi.allow_exec = True
+
+# Whether the template loader should check the last modification time of
+# template files and relaod them if they have changed ('yes' or 'no').
+# genshi.auto_reload = 'yes'
+
+# Whether the new syntax for text templates should be used ('yes' or 'no').
+# genshi.new_text_syntax = 'no'
+
+# The following settings determine the options used by the Kid engine.
+
+# Kid output method (e.g. html, html-strict, xhtml, xhtml-strict, xml, json)
+# and formatting (e.g. default, straight, compact, newlines, wrap, nice)
+# kid.outputformat = 'html default'
+
+# Encoding of Kid output.
+# kid.encoding = 'utf-8'
+
+# End template engine options.
+
+
+# The sitetemplate is used for overall styling of a site that
+# includes multiple TurboGears applications
+# tg.sitetemplate = '<packagename.templates.templatename>'
+
+# Allow every exposed function to be called as json,
+# tg.allow_json = False
+
+# Control how MochiKit is loaded using tgMochiKit.
+# See http://docs.turbogears.org/tgMochiKit for more information.
+# tg_mochikit.packed = False
+# tg_mochikit.xhtml = False
+# TurboGears >= 1.1 needs MochiKit >= 1.4 for all JS-enhanced widgets
+# to work correctly. So don't change the following setting unless you
+# know what you are doing!
+tg_mochikit.version = '1.4'
+
+# List of Widgets to include on every page.
+# tg.include_widgets = []
+# For example to include the MochiKit library provided by TurboGears+tgMochiKit:
+# tg.include_widgets = ['turbogears.mochikit']
+
+# If you want to use ToscaWidgets, you need to activate them here.
+# toscawidgets.on = True
+
+# Set to True if the scheduler should be started
+# tg.scheduler = False
+
+# Set to True to allow paginate decorator redirects when page number gets
+# out of bound. Useful for getting the real page id in the url
+# paginate.redirect_on_out_of_range = True
+
+# Set to True to allow paginate decorator redirects when last page is requested.
+# This is useful for getting the real last page id in the url
+# paginate.redirect_on_last_page = True
+
+# Set session or cookie
+# tools.sessions.on = True
+
+# Set internationalization
+# i18n.run_template_filter = True
+# possible values are 'tg_gettext', 'so_gettext', 'sa_gettext'
+# the default one if nothing is set will be tg_gettext, so and sa
+# are specific storage backends that will use a database and
+# SQLObject driver or SQLAlchemy driver respectively
+# i18n.gettext = 'tg_gettext'
+
+# CatWalk session directory
+# You may need to set this to the path of a directory with write access for
+# your server, e.g. if you deploy behind mod-wsgi and you want to use CatWalk
+# mounted in your own controllers.
+# By default CatWalk stores its session data in the directory 'catwalk-session'
+# below your application's package directory or below the current directory.
+# The path may be absolute or relative to the current working directory of your
+# server. The directory will be created if it does not exist, so make sure it
+# either exists already or the server has write access in the parent directory
+# as well. Example:
+# catwalk.session_dir = '/absolute/path/to/catwalk-session-dir'
+# Default:
+# catwalk.session_dir = 'catwalk-session'
+
+#if $identity != 'none'
+# VISIT TRACKING
+# --------------
+# Each visit to your application will be assigned a unique visit ID tracked via
+# a cookie sent to the visitor's browser.
+
+# Enable Visit tracking
+visit.on = True
+
+# Number of minutes a visit may be idle before it expires.
+# visit.timeout=20
+
+# The interval for updating the visits in the database in seconds.
+# visit.interval = 30
+
+# Where to look for the key of an existing visit in the request and in which
+# order. Comma-separated list of possible values: 'cookie', 'form'.
+# By default only use visit key in session cookie.
+# visit.source = 'cookie'
+
+# The name of the cookie to transmit to the visitor's browser.
+# visit.cookie.name = 'tg-visit'
+
+# The name of the request parameter with the session key (for when
+# 'visit.source' includes 'form'). Name MUST NOT contain dashes or dots!
+# visit.form.name = 'tg_visit'
+
+# Domain name to specify when setting the cookie (must begin with . according to
+# RFC 2109). The default (None) should work for most cases and will default to
+# the machine to which the request was made. NOTE: localhost is NEVER a valid
+# value and will NOT WORK.
+# visit.cookie.domain = None
+
+# Specific path for the cookie
+# visit.cookie.path = '/'
+
+# The name of the VisitManager class or plugin used for visitor tracking.
+visit.manager = '${identity}'
+
+#if $identity == 'sqlobject'
+# Database class to use for visit tracking
+visit.soprovider.model = '${package}.model.Visit'
+identity.soprovider.model.visit = '${package}.model.VisitIdentity'
+#else if $identity == 'sqlalchemy'
+# Database class to use for visit tracking
+visit.saprovider.model = '${package}.model.Visit'
+identity.saprovider.model.visit = '${package}.model.VisitIdentity'
+#end if
+
+# IDENTITY
+# --------
+# General configuration of the TurboGears Identity management module
+
+# Switch to turn on or off the Identity management module
+identity.on = True
+
+# Should the server request the client to provide credentials via HTTP basic
+# authentication? This is off by default, since identity identity uses
+# form/cookie-based authentication.
+# identity.http_basic_auth = False
+
+# The authentication realm to use for HTTP authentication
+identity.http_auth_realm = '${project}'
+
+# [REQUIRED] URL to which CherryPy will internally redirect when an access
+# control check fails. If Identity management is turned on, a value for this
+# option must be specified.
+# If you use HTTP basic auth and you don't want to allow form-based login
+# you should set this to the URL of a controller which just returns an
+# "Authorization required" error message. You probably also want to change
+# the 'identity.source' setting below.
+identity.failure_url = '/login'
+
+# If force_external_redirect is set to True, then the identity
+# framework will use an external redirection.
+# This is mainly used to make sure that if you use
+# an https:// url in the failure_url, this will be respected.
+identity.force_external_redirect = False
+
+identity.provider = '${identity}'
+
+# The names of the fields on the login form containing the visitor's user ID
+# and password. In addition, the submit button is specified simply so its
+# existence may be stripped out prior to passing the form data to the target
+# controller.
+# identity.form.user_name = 'user_name'
+# identity.form.password = 'password'
+# identity.form.submit = 'login'
+
+# What sources should the identity provider consider when determining the
+# identity associated with a request? Comma separated list of identity sources.
+# Valid sources:
+#     form = User and password supplied as GET or POST request parameters
+#     visit = Session cookie
+#     http_auth = User and password supplied via HTTP Authorization header.
+#                 Only HTTP Basic Authentication is currently supported.
+# identity.source = 'form,http_auth,visit'
+
+#if $identity=='sqlobject'
+# SqlObjectIdentityProvider
+# -------------------------
+# Configuration options for the default IdentityProvider
+
+# The classes you wish to use for your Identity model. Remember to not use reserved
+# SQL keywords for class names (at least unless you specify a different table
+# name using sqlmeta).
+identity.soprovider.model.user = '${package}.model.User'
+identity.soprovider.model.group = '${package}.model.Group'
+identity.soprovider.model.permission = '${package}.model.Permission'
+
+# The password encryption algorithm used when comparing passwords against what's
+# stored in the database. Valid values are 'md5' or 'sha1'. If you do not
+# specify an encryption algorithm, passwords are expected to be clear text.
+#
+# The SqlObjectProvider *will* encrypt passwords supplied as part of your login
+# form.  If you set the password through the password property, like:
+# my_user.password = 'secret'
+# the password will be encrypted in the database, provided identity is up and
+# running, or you have loaded the configuration specifying what encryption to
+# use (in situations where identity may not yet be running, like tests).
+
+# identity.soprovider.encryption_algorithm = None
+#else
+# SqlAlchemyIdentityProvider
+# --------------------------
+# Configuration options for the default IdentityProvider
+
+# The classes you wish to use for your Identity model. Remember to not use reserved
+# SQL keywords for class names (at least unless you specify a different table
+# name using sqlmeta).
+identity.saprovider.model.user = '${package}.model.User'
+identity.saprovider.model.group = '${package}.model.Group'
+identity.saprovider.model.permission = '${package}.model.Permission'
+
+# The password encryption algorithm used when comparing passwords against what's
+# stored in the database. Valid values are 'md5' or 'sha1'. If you do not
+# specify an encryption algorithm, passwords are expected to be clear text.
+#
+# The SqlAlchemyProvider *will* encrypt passwords supplied as part of your login
+# form.  If you set the password through the password property, like:
+# my_user.password = 'secret'
+# the password will be encrypted in the database, provided identity is up and
+# running, or you have loaded the configuration specifying what encryption to
+# use (in situations where identity may not yet be running, like tests).
+
+# identity.saprovider.encryption_algorithm = None
+#end if
+#end if
+
+# compress the data sends to the web browser
+# [/]
+# tools.gzip_filter.on = True
+# tools.gzip.mime_types = ['application/json', 'application/x-javascript',
+#     'text/javascript', 'text/html', 'text/css', 'text/plain']
+
+[/static]
+tools.staticdir.on = True
+tools.staticdir.dir = '%(package_dir)s/static'
+
+[/favicon.ico]
+tools.staticfile.on = True
+tools.staticfile.filename = '%(package_dir)s/static/images/favicon.ico'

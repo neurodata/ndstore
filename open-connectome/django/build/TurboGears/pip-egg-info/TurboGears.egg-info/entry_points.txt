@@ -1,0 +1,44 @@
+
+    [console_scripts]
+    tg-admin = turbogears.command:main
+
+    [distutils.commands]
+    docs = turbogears.docgen:GenSite
+
+    [paste.paster_create_template]
+    tgbase = turbogears.command.quickstart:BaseTemplate
+    turbogears = turbogears.command.quickstart:TurbogearsTemplate
+    tgbig = turbogears.command.quickstart:TGBig
+    tgwidget = turbogears.command.quickstart:TGWidgetTemplate
+
+    [turbogears.command]
+    quickstart = turbogears.command.quickstart:quickstart
+    sql = turbogears.command.base:SQL
+    shell = turbogears.command.base:Shell
+    toolbox = turbogears.command.base:ToolboxCommand
+    update = turbogears.command.quickstart:update
+    i18n = turbogears.command.i18n:InternationalizationTool
+    info = turbogears.command.info:InfoCommand
+    kid2genshi = turbogears.command.kid2genshi:Kid2Genshi
+
+    [turbogears.identity.provider]
+    sqlobject = turbogears.identity.soprovider:SqlObjectIdentityProvider
+    sqlalchemy= turbogears.identity.saprovider:SqlAlchemyIdentityProvider
+
+    [turbogears.extensions]
+    identity = turbogears.identity.visitor
+    visit = turbogears.visit
+
+    [turbogears.visit.manager]
+    sqlobject = turbogears.visit.sovisit:SqlObjectVisitManager
+    sqlalchemy = turbogears.visit.savisit:SqlAlchemyVisitManager
+
+    [turbogears.toolboxcommand]
+    widgets = turbogears.toolbox.base:WidgetBrowser
+    shell = turbogears.toolbox.shell:WebConsole
+    admi18n = turbogears.toolbox.admi18n:Internationalization
+    designer = turbogears.toolbox.designer:Designer
+    info = turbogears.toolbox.base:Info
+    catwalk = turbogears.toolbox.catwalk:CatWalk
+
+    

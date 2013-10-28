@@ -1,0 +1,195 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>paste.errordocument – Do internal redirects for error responses &mdash; Paste v1.7.5 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.7.5',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Paste v1.7.5 documentation" href="../index.html" />
+ 
+<link rel="stylesheet" type="text/css"
+ href="../_static/paste.css.html">
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-paste.errordocument">
+<span id="paste-errordocument-do-internal-redirects-for-error-responses"></span><h1><a class="reference internal" href="#module-paste.errordocument"><tt class="xref py py-mod docutils literal"><span class="pre">paste.errordocument</span></tt></a> &#8211; Do internal redirects for error responses<a class="headerlink" href="#module-paste.errordocument" title="Permalink to this headline">¶</a></h1>
+<p>Middleware to display error documents for certain status codes</p>
+<p>The middleware in this module can be used to intercept responses with
+specified status codes and internally forward the request to an appropriate
+URL where the content can be displayed to the user as an error document.</p>
+<div class="section" id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="paste.errordocument.StatusBasedForward">
+<em class="property">class </em><tt class="descclassname">paste.errordocument.</tt><tt class="descname">StatusBasedForward</tt><big>(</big><em>app</em>, <em>mapper</em>, <em>global_conf=None</em>, <em>**params</em><big>)</big><a class="headerlink" href="#paste.errordocument.StatusBasedForward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Middleware that lets you test a response against a custom mapper object to
+programatically determine whether to internally forward to another URL and
+if so, which URL to forward to.</p>
+<p>If you don&#8217;t need the full power of this middleware you might choose to use
+the simpler <tt class="docutils literal"><span class="pre">forward</span></tt> middleware instead.</p>
+<p>The arguments are:</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">app</span></tt></dt>
+<dd>The WSGI application or middleware chain.</dd>
+<dt><tt class="docutils literal"><span class="pre">mapper</span></tt></dt>
+<dd>A callable that takes a status code as the
+first parameter, a message as the second, and accepts optional environ,
+global_conf and named argments afterwards. It should return a
+URL to forward to or <tt class="xref docutils literal"><span class="pre">None</span></tt> if the code is not to be intercepted.</dd>
+<dt><tt class="docutils literal"><span class="pre">global_conf</span></tt></dt>
+<dd>Optional default configuration from your config file. If <tt class="docutils literal"><span class="pre">debug</span></tt> is
+set to <tt class="docutils literal"><span class="pre">true</span></tt> a message will be written to <tt class="docutils literal"><span class="pre">wsgi.errors</span></tt> on each
+internal forward stating the URL forwarded to.</dd>
+<dt><tt class="docutils literal"><span class="pre">**params</span></tt></dt>
+<dd>Optional, any other configuration and extra arguments you wish to
+pass which will in turn be passed back to the custom mapper object.</dd>
+</dl>
+<p>Here is an example where a <tt class="docutils literal"><span class="pre">404</span> <span class="pre">File</span> <span class="pre">Not</span> <span class="pre">Found</span></tt> status response would be
+redirected to the URL <tt class="docutils literal"><span class="pre">/error?code=404&amp;message=File%20Not%20Found</span></tt>. This
+could be useful for passing the status code and message into another
+application to display an error document:</p>
+<div class="highlight-python"><pre>from paste.errordocument import StatusBasedForward
+from paste.recursive import RecursiveMiddleware
+from urllib import urlencode
+
+def error_mapper(code, message, environ, global_conf, kw)
+    if code in [404, 500]:
+        params = urlencode({'message':message, 'code':code})
+        url = '/error?'%(params)
+        return url
+    else:
+        return None
+
+app = RecursiveMiddleware(
+    StatusBasedForward(app, mapper=error_mapper),
+)</pre>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="paste.errordocument.make_errordocument">
+<tt class="descclassname">paste.errordocument.</tt><tt class="descname">make_errordocument</tt><big>(</big><em>app</em>, <em>global_conf</em>, <em>**kw</em><big>)</big><a class="headerlink" href="#paste.errordocument.make_errordocument" title="Permalink to this definition">¶</a></dt>
+<dd><p>Paste Deploy entry point to create a error document wrapper.</p>
+<p>Use like:</p>
+<div class="highlight-python"><pre>[filter-app:main]
+use = egg:Paste#errordocument
+next = real-app
+500 = /lib/msg/500.html
+404 = /lib/msg/404.html</pre>
+</div>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="http://pythonpaste.org/" class="invisible-link">Python Paste</a></h3>
+
+<ul>
+<li><a href="http://trac.pythonpaste.org">Issue tracker</a></li>
+<li><a href="http://pythonpaste.org/">Paste core</a></li>
+<li><a href="http://pythonpaste.org/webob/">WebOb</a></li>
+<li><a href="http://pythonpaste.org/deploy/">Paste Deploy</a></li>
+<li><a href="http://pythonpaste.org/script/">Paste Script</a></li>
+<li><a href="http://pythonpaste.org/webtest/">WebTest</a></li>
+<li><a href="http://pythonpaste.org/scripttest/">ScriptType</a></li>
+<li><a href="http://pythonpaste.org/initools/">INITools</a></li>
+<li><a href="http://pythonpaste.org/tempita/">Tempita</a></li>
+<li><a href="http://pythonpaste.org/waitforit/">WaitForIt</a></li>
+<li><a href="http://pythonpaste.org/wphp/">WPHP</a></li>
+<li><a href="http://pythonpaste.org/wsgifilter/">WSGIFilter</a></li>
+<li><a href="http://pythonpaste.org/wsgiproxy/">WSGIProxy</a></li>
+</ul>
+
+
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">paste.errordocument</span></tt> &#8211; Do internal redirects for error responses</a><ul>
+<li><a class="reference internal" href="#module-contents">Module Contents</a></li>
+</ul>
+</li>
+</ul>
+
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/modules/errordocument.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, Ian Bicking.
+      Last updated on Sep 14, 2010.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

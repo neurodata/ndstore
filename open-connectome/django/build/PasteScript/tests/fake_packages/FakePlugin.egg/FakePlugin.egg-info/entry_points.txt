@@ -1,0 +1,2 @@
+[paste.paster_command]
+testcom = fakeplugin.testcom:TestCommand

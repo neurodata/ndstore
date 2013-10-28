@@ -1,0 +1,37 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR ORGANIZATION
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2006-10-03 10:24+CEST\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: ENCODING\n"
+"Generated-By: pygettext.py 1.5\n"
+
+
+#: validators.py:29
+msgid "Invalid number format"
+msgstr ""
+
+#: validators.py:30 validators.py:80
+msgid "Empty values not allowed"
+msgstr ""
+
+#: validators.py:79
+msgid "Invalid datetime format"
+msgstr ""
+
+#: validators.py:125
+msgid "Invalid data or incorrect encoding"
+msgstr ""
+
+#: validators.py:169
+msgid "Please select at least a value"
+msgstr ""
+

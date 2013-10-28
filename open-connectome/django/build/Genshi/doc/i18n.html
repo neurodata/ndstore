@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="generator" content="Docutils 0.8.1: http://docutils.sourceforge.net/">
+<title>Genshi: Internationalization and Localization</title>
+<link rel="stylesheet" href="common/style/edgewall.css" type="text/css">
+</head>
+<body>
+<div class="document" id="internationalization-and-localization">
+    <div id="navigation">
+      <span class="projinfo">Genshi 0.7</span>
+      <a href="index.html">Documentation Index</a>
+    </div>
+<h1 class="title">Internationalization and Localization</h1>
+<p>Genshi provides comprehensive supporting infrastructure for internationalizing
+and localizing templates. That includes functionality for extracting
+localizable strings from templates, as well as a template filter and special
+directives that can apply translations to templates as they get rendered.</p>
+<p>This support is based on <a class="reference external" href="http://www.gnu.org/software/gettext/">gettext</a> message catalogs and the <a class="reference external" href="http://docs.python.org/lib/module-gettext.html">gettext Python
+module</a>. The extraction process can be used from the API level, or through
+the front-ends implemented by the <a class="reference external" href="http://babel.edgewall.org/">Babel</a> project, for which Genshi provides
+a plugin.</p>
+<div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="auto-toc simple">
+<li><a class="reference internal" href="#basics" id="id3">1   Basics</a><ul class="auto-toc">
+<li><a class="reference internal" href="#language-tagging" id="id4">1.1   Language Tagging</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id1" id="id5">2   Template Directives</a><ul class="auto-toc">
+<li><a class="reference internal" href="#messages" id="id6">2.1   Messages</a></li>
+<li><a class="reference internal" href="#comments-and-domains" id="id7">2.2   Comments and Domains</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#extraction" id="id8">3   Extraction</a><ul class="auto-toc">
+<li><a class="reference internal" href="#babel-integration" id="id9">3.1   Babel Integration</a></li>
+<li><a class="reference internal" href="#configuration-options" id="id10">3.2   Configuration Options</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#translation" id="id11">4   Translation</a></li>
+<li><a class="reference internal" href="#related-considerations" id="id12">5   Related Considerations</a><ul class="auto-toc">
+<li><a class="reference internal" href="#unicode" id="id13">5.1   Unicode</a></li>
+<li><a class="reference internal" href="#date-and-time" id="id14">5.2   Date and Time</a></li>
+<li><a class="reference internal" href="#formatting-and-locale-data" id="id15">5.3   Formatting and Locale Data</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="basics">
+<h1>1   Basics</h1>
+<p>The simplest way to internationalize and translate templates would be to wrap
+all localizable strings in a <tt class="docutils literal">gettext()</tt> function call (which is often
+aliased to <tt class="docutils literal">_()</tt> for brevity). In that case, no extra template filter is
+required.</p>
+<div class="highlight"><pre><span class="nt">&lt;p&gt;</span><span class="cp">${</span><span class="n">_</span><span class="p">(</span><span class="s">"Hello, world!"</span><span class="p">)</span><span class="cp">}</span><span class="nt">&lt;/p&gt;</span>
+</pre></div>
+<p>However, this approach results in significant “character noise” in templates,
+making them harder to read and preview.</p>
+<p>The <tt class="docutils literal">genshi.filters.Translator</tt> filter allows you to get rid of the
+explicit <a class="reference external" href="http://www.gnu.org/software/gettext/">gettext</a> function calls, so you can (often) just continue to write:</p>
+<div class="highlight"><pre><span class="nt">&lt;p&gt;</span>Hello, world!<span class="nt">&lt;/p&gt;</span>
+</pre></div>
+<p>This text will still be extracted and translated as if you had wrapped it in a
+<tt class="docutils literal">_()</tt> call.</p>
+<div class="note">
+<p class="first admonition-title">Note</p>
+<p class="last">For parameterized or pluralizable messages, you need to use the
+special <a class="reference internal" href="#template-directives">template directives</a> described below, or use the
+corresponding <tt class="docutils literal">gettext</tt> function in embedded Python expressions.</p>
+</div>
+<p>You can control which tags should be ignored by this process; for example, it
+doesn't really make sense to translate the content of the HTML
+<tt class="docutils literal"><span class="pre">&lt;script&gt;&lt;/script&gt;</span></tt> element. Both <tt class="docutils literal">&lt;script&gt;</tt> and <tt class="docutils literal">&lt;style&gt;</tt> are excluded
+by default.</p>
+<p>Attribute values can also be automatically translated. The default is to
+consider the attributes <tt class="docutils literal">abbr</tt>, <tt class="docutils literal">alt</tt>, <tt class="docutils literal">label</tt>, <tt class="docutils literal">prompt</tt>, <tt class="docutils literal">standby</tt>,
+<tt class="docutils literal">summary</tt>, and <tt class="docutils literal">title</tt>, which is a list that makes sense for HTML
+documents.  Of course, you can tell the translator to use a different set of
+attribute names, or none at all.</p>
+<div class="section" id="language-tagging">
+<h2>1.1   Language Tagging</h2>
+<p>You can control automatic translation in your templates using the <tt class="docutils literal">xml:lang</tt>
+attribute. If the value of that attribute is a literal string, the contents and
+attributes of the element will be ignored:</p>
+<div class="highlight"><pre><span class="nt">&lt;p</span> <span class="na">xml:lang=</span><span class="s">"en"</span><span class="nt">&gt;</span>Hello, world!<span class="nt">&lt;/p&gt;</span>
+</pre></div>
+<p>On the other hand, if the value of the <tt class="docutils literal">xml:lang</tt> attribute contains a Python
+expression, the element contents and attributes are still considered for
+automatic translation:</p>
+<div class="highlight"><pre><span class="nt">&lt;html</span> <span class="na">xml:lang=</span><span class="s">"</span><span class="nv">$locale</span><span class="s">"</span><span class="nt">&gt;</span>
+  ...
+<span class="nt">&lt;/html&gt;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id1">
+<span id="template-directives"></span><h1>2   Template Directives</h1>
+<p>Sometimes localizable strings in templates may contain dynamic parameters, or
+they may depend on the numeric value of some variable to choose a proper
+plural form. Sometimes the strings contain embedded markup, such as tags for
+emphasis or hyperlinks, and you don't want to rely on the people doing the
+translations to know the syntax and escaping rules of HTML and XML.</p>
+<p>In those cases the simple text extraction and translation process described
+above is not sufficient. You could just use <tt class="docutils literal">gettext</tt> API functions in
+embedded Python expressions for parameters and pluralization, but that does
+not help when messages contain embedded markup. Genshi provides special
+template directives for internationalization that attempt to provide a
+comprehensive solution for this problem space.</p>
+<p>To enable these directives, you'll need to register them with the templates
+they are used in. You can do this by adding them manually via the
+<tt class="docutils literal">Template.add_directives(namespace, factory)</tt> (where <tt class="docutils literal">namespace</tt> would be
+“<a class="reference external" href="http://genshi.edgewall.org/i18n">http://genshi.edgewall.org/i18n</a>” and <tt class="docutils literal">factory</tt> would be an instance of the
+<tt class="docutils literal">Translator</tt> class). Or you can just call the <tt class="docutils literal">Translator.setup(template)</tt>
+class method, which both registers the directives and adds the translation
+filter.</p>
+<p>After the directives have been registered with the template engine on the
+Python side of your application, you need to declare the corresponding
+directive namespace in all markup templates that use them. For example:</p>
+<div class="highlight"><pre><span class="nt">&lt;html</span> <span class="na">xmlns:py=</span><span class="s">"http://genshi.edgewall.org/"</span>
+      <span class="na">xmlns:i18n=</span><span class="s">"http://genshi.edgewall.org/i18n"</span><span class="nt">&gt;</span>
+  …
+<span class="nt">&lt;/html&gt;</span>
+</pre></div>
+<p>These directives only make sense in the context of <a class="reference external" href="xml-templates.html">markup templates</a>. For
+<a class="reference external" href="text-templates.html">text templates</a>, you can just use the corresponding <tt class="docutils literal">gettext</tt> API calls as needed.</p>
+<div class="note">
+<p class="first admonition-title">Note</p>
+<p class="last">The internationalization directives are still somewhat experimental
+and have some known issues. However, the attribute language they
+implement should be stable and is not subject to change
+substantially in future versions.</p>
+</div>
+<div class="section" id="messages">
+<h2>2.1   Messages</h2>
+<div class="section" id="i18n-msg">
+<h3>2.1.1   <tt class="docutils literal">i18n:msg</tt></h3>
+<p>This is the basic directive for defining localizable text passages that
+contain parameters and/or markup.</p>
+<p>For example, consider the following template snippet:</p>
+<div class="highlight"><pre><span class="nt">&lt;p&gt;</span>
+  Please visit <span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"</span><span class="cp">${</span><span class="n">site</span><span class="o">.</span><span class="n">url</span><span class="cp">}</span><span class="s">"</span><span class="nt">&gt;</span><span class="cp">${</span><span class="n">site</span><span class="o">.</span><span class="n">name</span><span class="cp">}</span><span class="nt">&lt;/a&gt;</span> for help.
+<span class="nt">&lt;/p&gt;</span>
+</pre></div>
+<p>Without further annotation, the translation filter would treat this sentence
+as two separate messages (“Please visit” and “for help”), and the translator
+would have no control over the position of the link in the sentence.</p>
+<p>However, when you use the Genshi internationalization directives, you simply
+add an <tt class="docutils literal">i18n:msg</tt> attribute to the enclosing <tt class="docutils literal">&lt;p&gt;</tt> element:</p>
+<div class="highlight"><pre><span class="nt">&lt;p</span> <span class="na">i18n:msg=</span><span class="s">"name"</span><span class="nt">&gt;</span>
+  Please visit <span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"</span><span class="cp">${</span><span class="n">site</span><span class="o">.</span><span class="n">url</span><span class="cp">}</span><span class="s">"</span><span class="nt">&gt;</span><span class="cp">${</span><span class="n">site</span><span class="o">.</span><span class="n">name</span><span class="cp">}</span><span class="nt">&lt;/a&gt;</span> for help.
+<span class="nt">&lt;/p&gt;</span>
+</pre></div>
+<p>Genshi is then able to identify the text in the <tt class="docutils literal">&lt;p&gt;</tt> element as a single
+message for translation purposes. You'll see the following string in your
+message catalog:</p>
+<pre class="literal-block">
+Please visit [1:%(name)s] for help.
+</pre>
+<p>The <cite>&lt;a&gt;</cite> element with its attribute has been replaced by a part in square
+brackets, which does not include the tag name or the attributes of the element.</p>
+<p>The value of the <tt class="docutils literal">i18n:msg</tt> attribute is a comma-separated list of parameter
+names, which serve as simplified aliases for the actual Python expressions the
+message contains. The order of the paramer names in the list must correspond
+to the order of the expressions in the text. In this example, there is only
+one parameter: its alias for translation is “name”, while the corresponding
+expression is <tt class="docutils literal">${site.name}</tt>.</p>
+<p>The translator now has complete control over the structure of the sentence. He
+or she certainly does need to make sure that any bracketed parts are not
+removed, and that the <tt class="docutils literal">name</tt> parameter is preserved correctly. But those are
+things that can be easily checked by validating the message catalogs. The
+important thing is that the translator can change the sentence structure, and
+has no way to break the application by forgetting to close a tag, for example.</p>
+<p>So if the German translator of this snippet decided to translate it to:</p>
+<pre class="literal-block">
+Um Hilfe zu erhalten, besuchen Sie bitte [1:%(name)s]
+</pre>
+<p>The resulting output might be:</p>
+<div class="highlight"><pre><span class="nt">&lt;p&gt;</span>
+  Um Hilfe zu erhalten, besuchen Sie bitte
+  <span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"http://example.com/"</span><span class="nt">&gt;</span>Example<span class="nt">&lt;/a&gt;</span>
+<span class="nt">&lt;/p&gt;</span>
+</pre></div>
+<p>Messages may contain multiple tags, and they may also be nested. For example:</p>
+<div class="highlight"><pre><span class="nt">&lt;p</span> <span class="na">i18n:msg=</span><span class="s">"name"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;i&gt;</span>Please<span class="nt">&lt;/i&gt;</span> visit <span class="nt">&lt;b&gt;</span>the site <span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"</span><span class="cp">${</span><span class="n">site</span><span class="o">.</span><span class="n">url</span><span class="cp">}</span><span class="s">"</span><span class="nt">&gt;</span><span class="cp">${</span><span class="n">site</span><span class="o">.</span><span class="n">name</span><span class="cp">}</span><span class="nt">&lt;/a&gt;&lt;/b&gt;</span>
+  for help.
+<span class="nt">&lt;/p&gt;</span>
+</pre></div>
+<p>This would result in the following message ID:</p>
+<pre class="literal-block">
+[1:Please] visit [2:the site [3:%(name)s]] for help.
+</pre>
+<p>Again, the translator has full control over the structure of the sentence. So
+the German translation could actually look like this:</p>
+<pre class="literal-block">
+Um Hilfe zu erhalten besuchen Sie [1:bitte]
+[3:%(name)s], [2:das ist eine Web-Site]
+</pre>
+<p>Which Genshi would recompose into the following outout:</p>
+<div class="highlight"><pre><span class="nt">&lt;p&gt;</span>
+  Um Hilfe zu erhalten besuchen Sie <span class="nt">&lt;i&gt;</span>bitte<span class="nt">&lt;/i&gt;</span>
+  <span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"http://example.com/"</span><span class="nt">&gt;</span>Example<span class="nt">&lt;/a&gt;</span>, <span class="nt">&lt;b&gt;</span>das ist eine Web-Site<span class="nt">&lt;/b&gt;</span>
+<span class="nt">&lt;/p&gt;</span>
+</pre></div>
+<p>Note how the translation has changed the order and even the nesting of the
+tags.</p>
+<div class="warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Please note that <tt class="docutils literal">i18n:msg</tt> directives do not support other
+nested directives. Directives commonly change the structure of
+the generated markup dynamically, which often would result in the
+structure of the text changing, thus making translation as a
+single message ineffective.</p>
+</div>
+</div>
+<div class="section" id="i18n-choose-i18n-singular-i18n-plural">
+<h3>2.1.2   <tt class="docutils literal">i18n:choose</tt>, <tt class="docutils literal">i18n:singular</tt>, <tt class="docutils literal">i18n:plural</tt></h3>
+<p>Translatable strings that vary based on some number of objects, such as “You
+have 1 new message” or “You have 3 new messages”, present their own challenge,
+in particular when you consider that different languages have different rules
+for pluralization. For example, while English and most western languages have
+two plural forms (one for <tt class="docutils literal">n=1</tt> and an other for <tt class="docutils literal"><span class="pre">n&lt;&gt;1</span></tt>), Welsh has five
+different plural forms, while Hungarian only has one.</p>
+<p>The <tt class="docutils literal">gettext</tt> framework has long supported this via the <tt class="docutils literal">ngettext()</tt>
+family of functions. You specify two default messages, one singular and one
+plural, and the number of items. The translations however may contain any
+number of plural forms for the message, depending on how many are commonly
+used in the language. <tt class="docutils literal">ngettext</tt> will choose the correct plural form of the
+translated message based on the specified number of items.</p>
+<p>Genshi provides a variant of the <tt class="docutils literal">i18n:msg</tt> directive described above that
+allows choosing the proper plural form based on the numeric value of a given
+variable. The pluralization support is implemented in a set of three
+directives that must be used together: <tt class="docutils literal">i18n:choose</tt>, <tt class="docutils literal">i18n:singular</tt>, and
+<tt class="docutils literal">i18n:plural</tt>.</p>
+<p>The <tt class="docutils literal">i18n:choose</tt> directive is used to set up the context of the message: it
+simply wraps the singular and plural variants.</p>
+<p>The value of this directive is split into two parts: the first is the
+<em>numeral</em>, a Python expression that evaluates to a number to determine which
+plural form should be chosen. The second part, separated by a semicolon, lists
+the parameter names. This part is equivalent to the value of the <tt class="docutils literal">i18n:msg</tt>
+directive.</p>
+<p>For example:</p>
+<div class="highlight"><pre><span class="nt">&lt;p</span> <span class="na">i18n:choose=</span><span class="s">"len(messages); num"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;i18n:singular&gt;</span>You have <span class="nt">&lt;b&gt;</span><span class="cp">${</span><span class="nb">len</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span><span class="cp">}</span><span class="nt">&lt;/b&gt;</span> new message.<span class="nt">&lt;/i18n:singular&gt;</span>
+  <span class="nt">&lt;i18n:plural&gt;</span>You have <span class="nt">&lt;b&gt;</span><span class="cp">${</span><span class="nb">len</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span><span class="cp">}</span><span class="nt">&lt;/b&gt;</span> new messages.<span class="nt">&lt;/i18n:plural&gt;</span>
+<span class="nt">&lt;/p&gt;</span>
+</pre></div>
+<p>All three directives can be used either as elements or attribute. So the above
+example could also be written as follows:</p>
+<div class="highlight"><pre><span class="nt">&lt;i18n:choose</span> <span class="na">numeral=</span><span class="s">"len(messages)"</span> <span class="na">params=</span><span class="s">"num"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;p</span> <span class="na">i18n:singular=</span><span class="s">""</span><span class="nt">&gt;</span>You have <span class="nt">&lt;b&gt;</span><span class="cp">${</span><span class="nb">len</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span><span class="cp">}</span><span class="nt">&lt;/b&gt;</span> new message.<span class="nt">&lt;/p&gt;</span>
+  <span class="nt">&lt;p</span> <span class="na">i18n:plural=</span><span class="s">""</span><span class="nt">&gt;</span>You have <span class="nt">&lt;b&gt;</span><span class="cp">${</span><span class="nb">len</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span><span class="cp">}</span><span class="nt">&lt;/b&gt;</span> new messages.<span class="nt">&lt;/p&gt;</span>
+<span class="nt">&lt;/i18n:choose&gt;</span>
+</pre></div>
+<p>When used as an element, the two parts of the <tt class="docutils literal">i18n:choose</tt> value are split
+into two different attributes: <tt class="docutils literal">numeral</tt> and <tt class="docutils literal">params</tt>. The
+<tt class="docutils literal">i18n:singular</tt> and <tt class="docutils literal">i18n:plural</tt> directives do not require or support any
+value (or any extra attributes).</p>
+</div>
+</div>
+<div class="section" id="comments-and-domains">
+<h2>2.2   Comments and Domains</h2>
+<div class="section" id="i18n-comment">
+<h3>2.2.1   <tt class="docutils literal">i18n:comment</tt></h3>
+<p>The <tt class="docutils literal">i18n:comment</tt> directive can be used to supply a comment for the
+translator. For example, if a template snippet is not easily understood
+outside of its context, you can add a translator comment to help the
+translator understand in what context the message will be used:</p>
+<div class="highlight"><pre><span class="nt">&lt;p</span> <span class="na">i18n:msg=</span><span class="s">"name"</span> <span class="na">i18n:comment=</span><span class="s">"Link to the relevant support site"</span><span class="nt">&gt;</span>
+  Please visit <span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"</span><span class="cp">${</span><span class="n">site</span><span class="o">.</span><span class="n">url</span><span class="cp">}</span><span class="s">"</span><span class="nt">&gt;</span><span class="cp">${</span><span class="n">site</span><span class="o">.</span><span class="n">name</span><span class="cp">}</span><span class="nt">&lt;/a&gt;</span> for help.
+<span class="nt">&lt;/p&gt;</span>
+</pre></div>
+<p>This comment will be extracted together with the message itself, and will
+commonly be placed along the message in the message catalog, so that it is
+easily visible to the person doing the translation.</p>
+<p>This directive has no impact on how the template is rendered, and is ignored
+outside of the extraction process.</p>
+</div>
+<div class="section" id="i18n-domain">
+<h3>2.2.2   <tt class="docutils literal">i18n:domain</tt></h3>
+<p>In larger projects, message catalogs are commonly split up into different
+<em>domains</em>. For example, you might have a core application domain, and then
+separate domains for extensions or libraries.</p>
+<p>Genshi provides a directive called <tt class="docutils literal">i18n:domain</tt> that lets you choose the
+translation domain for a particular scope. For example:</p>
+<div class="highlight"><pre><span class="nt">&lt;div</span> <span class="na">i18n:domain=</span><span class="s">"examples"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;p&gt;</span>Hello, world!<span class="nt">&lt;/p&gt;</span>
+<span class="nt">&lt;/div&gt;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="extraction">
+<h1>3   Extraction</h1>
+<p>The <tt class="docutils literal">Translator</tt> class provides a class method called <tt class="docutils literal">extract</tt>, which is
+a generator yielding all localizable strings found in a template or markup
+stream. This includes both literal strings in text nodes and attribute values,
+as well as strings in <tt class="docutils literal">gettext()</tt> calls in embedded Python code. See the API
+documentation for details on how to use this method directly.</p>
+<div class="section" id="babel-integration">
+<h2>3.1   Babel Integration</h2>
+<p>This functionality is integrated with the message extraction framework provided
+by the <a class="reference external" href="http://babel.edgewall.org/">Babel</a> project. Babel provides a command-line interface as well as
+commands that can be used from <tt class="docutils literal">setup.py</tt> scripts using <a class="reference external" href="http://peak.telecommunity.com/DevCenter/setuptools">Setuptools</a> or
+<a class="reference external" href="http://docs.python.org/dist/dist.html">Distutils</a>.</p>
+<p>The first thing you need to do to make Babel extract messages from Genshi
+templates is to let Babel know which files are Genshi templates. This is done
+using a “mapping configuration”, which can be stored in a configuration file,
+or specified directly in your <tt class="docutils literal">setup.py</tt>.</p>
+<p>In a configuration file, the mapping may look like this:</p>
+<div class="highlight"><pre><span class="c"># Python souce</span>
+<span class="k">[python:**.py]</span>
+
+<span class="c"># Genshi templates</span>
+<span class="k">[genshi:**/templates/**.html]</span>
+<span class="na">include_attrs</span> <span class="o">=</span> <span class="s">title</span>
+
+<span class="k">[genshi:**/templates/**.txt]</span>
+<span class="na">template_class</span> <span class="o">=</span> <span class="s">genshi.template.TextTemplate</span>
+<span class="na">encoding</span> <span class="o">=</span> <span class="s">latin-1</span>
+</pre></div>
+<p>Please consult the Babel documentation for details on configuration.</p>
+<p>If all goes well, running the extraction with Babel should create a POT file
+containing the strings from your Genshi templates and your Python source files.</p>
+</div>
+<div class="section" id="configuration-options">
+<h2>3.2   Configuration Options</h2>
+<p>The Genshi extraction plugin for Babel supports the following options:</p>
+<div class="section" id="template-class">
+<h3>3.2.1   <tt class="docutils literal">template_class</tt></h3>
+<p>The concrete <tt class="docutils literal">Template</tt> class that the file should be loaded with. Specify
+the package/module name and the class name, separated by a colon.</p>
+<p>The default is to use <tt class="docutils literal">genshi.template:MarkupTemplate</tt>, and you'll want to
+set it to <tt class="docutils literal">genshi.template:TextTemplate</tt> for <a class="reference external" href="text-templates.html">text templates</a>.</p>
+</div>
+<div class="section" id="encoding">
+<h3>3.2.2   <tt class="docutils literal">encoding</tt></h3>
+<p>The encoding of the template file. This is only used for text templates. The
+default is to assume “utf-8”.</p>
+</div>
+<div class="section" id="include-attrs">
+<h3>3.2.3   <tt class="docutils literal">include_attrs</tt></h3>
+<p>Comma-separated list of attribute names that should be considered to have
+localizable values. Only used for markup templates.</p>
+</div>
+<div class="section" id="ignore-tags">
+<h3>3.2.4   <tt class="docutils literal">ignore_tags</tt></h3>
+<p>Comma-separated list of tag names that should be ignored. Only used for markup
+templates.</p>
+</div>
+<div class="section" id="extract-text">
+<h3>3.2.5   <tt class="docutils literal">extract_text</tt></h3>
+<p>Whether text outside explicit <tt class="docutils literal">gettext</tt> function calls should be extracted.
+By default, any text nodes not inside ignored tags, and values of attribute in
+the <tt class="docutils literal">include_attrs</tt> list are extracted. If this option is disabled, only
+strings in <tt class="docutils literal">gettext</tt> function calls are extracted.</p>
+<div class="note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you disable this option, and do not make use of the
+internationalization directives, it's not necessary to add the
+translation filter as described above. You only need to make sure
+that the template has access to the <tt class="docutils literal">gettext</tt> functions it uses.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="translation">
+<h1>4   Translation</h1>
+<p>If you have prepared MO files for use with Genshi using the appropriate tools,
+you can access the message catalogs with the <a class="reference external" href="http://docs.python.org/lib/module-gettext.html">gettext Python module</a>. You'll
+probably want to create a <tt class="docutils literal">gettext.GNUTranslations</tt> instance, and make the
+translation functions it provides available to your templates by putting them
+in the template context.</p>
+<p>The <tt class="docutils literal">Translator</tt> filter needs to be added to the filters of the template
+(applying it as a stream filter will likely not have the desired effect).
+Furthermore it needs to be the first filter in the list, including the internal
+filters that Genshi adds itself:</p>
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">genshi.filters</span> <span class="kn">import</span> <span class="n">Translator</span>
+<span class="kn">from</span> <span class="nn">genshi.template</span> <span class="kn">import</span> <span class="n">MarkupTemplate</span>
+
+<span class="n">template</span> <span class="o">=</span> <span class="n">MarkupTemplate</span><span class="p">(</span><span class="s">"..."</span><span class="p">)</span>
+<span class="n">template</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">Translator</span><span class="p">(</span><span class="n">translations</span><span class="o">.</span><span class="n">ugettext</span><span class="p">))</span>
+</pre></div>
+<p>The <tt class="docutils literal">Translator</tt> class also provides the convenience method <tt class="docutils literal">setup()</tt>,
+which will both add the filter and register the i18n directives:</p>
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">genshi.filters</span> <span class="kn">import</span> <span class="n">Translator</span>
+<span class="kn">from</span> <span class="nn">genshi.template</span> <span class="kn">import</span> <span class="n">MarkupTemplate</span>
+
+<span class="n">template</span> <span class="o">=</span> <span class="n">MarkupTemplate</span><span class="p">(</span><span class="s">"..."</span><span class="p">)</span>
+<span class="n">translator</span> <span class="o">=</span> <span class="n">Translator</span><span class="p">(</span><span class="n">translations</span><span class="o">.</span><span class="n">ugettext</span><span class="p">)</span>
+<span class="n">translator</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="n">template</span><span class="p">)</span>
+</pre></div>
+<div class="warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">If you're using <tt class="docutils literal">TemplateLoader</tt>, you should specify a
+<a class="reference external" href="loader.html#callback-interface">callback function</a> in which you add the filter. That ensures
+that the filter is not added everytime the template is rendered,
+thereby being applied multiple times.</p>
+</div>
+</div>
+<div class="section" id="related-considerations">
+<h1>5   Related Considerations</h1>
+<p>If you intend to produce an application that is fully prepared for an
+international audience, there are a couple of other things to keep in mind:</p>
+<div class="section" id="unicode">
+<h2>5.1   Unicode</h2>
+<p>Use <tt class="docutils literal">unicode</tt> internally, not encoded bytestrings. Only encode/decode where
+data enters or exits the system. This means that your code works with characters
+and not just with bytes, which is an important distinction for example when
+calculating the length of a piece of text. When you need to decode/encode, it's
+probably a good idea to use UTF-8.</p>
+</div>
+<div class="section" id="date-and-time">
+<h2>5.2   Date and Time</h2>
+<p>If your application uses datetime information that should be displayed to users
+in different timezones, you should try to work with UTC (universal time)
+internally. Do the conversion from and to "local time" when the data enters or
+exits the system. Make use the Python <a class="reference external" href="http://docs.python.org/lib/module-datetime.html">datetime</a> module and the third-party
+<a class="reference external" href="http://pytz.sourceforge.net/">pytz</a> package.</p>
+</div>
+<div class="section" id="formatting-and-locale-data">
+<h2>5.3   Formatting and Locale Data</h2>
+<p>Make sure you check out the functionality provided by the <a class="reference external" href="http://babel.edgewall.org/">Babel</a> project for
+things like number and date formatting, locale display strings, etc.</p>
+</div>
+</div>
+    <div id="footer">
+      Visit the Genshi open source project at
+      <a href="http://genshi.edgewall.org/">http://genshi.edgewall.org/</a>
+    </div>
+  </div>
+</body>
+</html>

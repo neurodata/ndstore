@@ -1,0 +1,232 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>paste.auth.auth_tkt – auth_tkt cookie parsing &mdash; Paste v1.7.5 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.7.5',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Paste v1.7.5 documentation" href="../index.html" />
+ 
+<link rel="stylesheet" type="text/css"
+ href="../_static/paste.css.html">
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-paste.auth.auth_tkt">
+<span id="paste-auth-auth-tkt-auth-tkt-cookie-parsing"></span><h1><a class="reference internal" href="#module-paste.auth.auth_tkt"><tt class="xref py py-mod docutils literal"><span class="pre">paste.auth.auth_tkt</span></tt></a> &#8211; auth_tkt cookie parsing<a class="headerlink" href="#module-paste.auth.auth_tkt" title="Permalink to this headline">¶</a></h1>
+<p>Implementation of cookie signing as done in <a class="reference external" href="http://www.openfusion.com.au/labs/mod_auth_tkt/">mod_auth_tkt</a>.</p>
+<p>mod_auth_tkt is an Apache module that looks for these signed cookies
+and sets <tt class="docutils literal"><span class="pre">REMOTE_USER</span></tt>, <tt class="docutils literal"><span class="pre">REMOTE_USER_TOKENS</span></tt> (a comma-separated
+list of groups) and <tt class="docutils literal"><span class="pre">REMOTE_USER_DATA</span></tt> (arbitrary string data).</p>
+<p>This module is an alternative to the <tt class="docutils literal"><span class="pre">paste.auth.cookie</span></tt> module;
+it&#8217;s primary benefit is compatibility with mod_auth_tkt, which in turn
+makes it possible to use the same authentication process with
+non-Python code run under Apache.</p>
+<div class="section" id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="paste.auth.auth_tkt.AuthTKTMiddleware">
+<em class="property">class </em><tt class="descclassname">paste.auth.auth_tkt.</tt><tt class="descname">AuthTKTMiddleware</tt><big>(</big><em>app</em>, <em>secret</em>, <em>cookie_name='auth_tkt'</em>, <em>secure=False</em>, <em>include_ip=True</em>, <em>logout_path=None</em>, <em>httponly=False</em>, <em>no_domain_cookie=True</em>, <em>current_domain_cookie=True</em>, <em>wildcard_cookie=True</em><big>)</big><a class="headerlink" href="#paste.auth.auth_tkt.AuthTKTMiddleware" title="Permalink to this definition">¶</a></dt>
+<dd><p>Middleware that checks for signed cookies that match what
+<a class="reference external" href="http://www.openfusion.com.au/labs/mod_auth_tkt/">mod_auth_tkt</a>
+looks for (if you have mod_auth_tkt installed, you don&#8217;t need this
+middleware, since Apache will set the environmental variables for
+you).</p>
+<p>Arguments:</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">secret</span></tt>:</dt>
+<dd>A secret that should be shared by any instances of this application.
+If this app is served from more than one machine, they should all
+have the same secret.</dd>
+<dt><tt class="docutils literal"><span class="pre">cookie_name</span></tt>:</dt>
+<dd>The name of the cookie to read and write from.  Default <tt class="docutils literal"><span class="pre">auth_tkt</span></tt>.</dd>
+<dt><tt class="docutils literal"><span class="pre">secure</span></tt>:</dt>
+<dd>If the cookie should be set as &#8216;secure&#8217; (only sent over SSL) and if
+the login must be over SSL. (Defaults to False)</dd>
+<dt><tt class="docutils literal"><span class="pre">httponly</span></tt>:</dt>
+<dd>If the cookie should be marked as HttpOnly, which means that it&#8217;s
+not accessible to JavaScript. (Defaults to False)</dd>
+<dt><tt class="docutils literal"><span class="pre">include_ip</span></tt>:</dt>
+<dd>If the cookie should include the user&#8217;s IP address.  If so, then
+if they change IPs their cookie will be invalid.</dd>
+<dt><tt class="docutils literal"><span class="pre">logout_path</span></tt>:</dt>
+<dd>The path under this middleware that should signify a logout.  The
+page will be shown as usual, but the user will also be logged out
+when they visit this page.</dd>
+</dl>
+<p>If used with mod_auth_tkt, then these settings (except logout_path) should
+match the analogous Apache configuration settings.</p>
+<p>This also adds two functions to the request:</p>
+<p><tt class="docutils literal"><span class="pre">environ['paste.auth_tkt.set_user'](userid,</span> <span class="pre">tokens='',</span> <span class="pre">user_data='')</span></tt></p>
+<blockquote>
+This sets a cookie that logs the user in.  <tt class="docutils literal"><span class="pre">tokens</span></tt> is a
+string (comma-separated groups) or a list of strings.
+<tt class="docutils literal"><span class="pre">user_data</span></tt> is a string for your own use.</blockquote>
+<p><tt class="docutils literal"><span class="pre">environ['paste.auth_tkt.logout_user']()</span></tt></p>
+<blockquote>
+Logs out the user.</blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="paste.auth.auth_tkt.make_auth_tkt_middleware">
+<tt class="descclassname">paste.auth.auth_tkt.</tt><tt class="descname">make_auth_tkt_middleware</tt><big>(</big><em>app</em>, <em>global_conf</em>, <em>secret=None</em>, <em>cookie_name='auth_tkt'</em>, <em>secure=False</em>, <em>include_ip=True</em>, <em>logout_path=None</em><big>)</big><a class="headerlink" href="#paste.auth.auth_tkt.make_auth_tkt_middleware" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates the <a class="reference external" href="class-paste.auth.auth_tkt.AuthTKTMiddleware.html">AuthTKTMiddleware</a>.</p>
+<p><tt class="docutils literal"><span class="pre">secret</span></tt> is requird, but can be set globally or locally.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="paste.auth.auth_tkt.AuthTicket">
+<em class="property">class </em><tt class="descclassname">paste.auth.auth_tkt.</tt><tt class="descname">AuthTicket</tt><big>(</big><em>secret</em>, <em>userid</em>, <em>ip</em>, <em>tokens=()</em>, <em>user_data=''</em>, <em>time=None</em>, <em>cookie_name='auth_tkt'</em>, <em>secure=False</em><big>)</big><a class="headerlink" href="#paste.auth.auth_tkt.AuthTicket" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class represents an authentication token.  You must pass in
+the shared secret, the userid, and the IP address.  Optionally you
+can include tokens (a list of strings, representing role names),
+&#8216;user_data&#8217;, which is arbitrary data available for your own use in
+later scripts.  Lastly, you can override the cookie name and
+timestamp.</p>
+<p>Once you provide all the arguments, use .cookie_value() to
+generate the appropriate authentication ticket.  .cookie()
+generates a Cookie object, the str() of which is the complete
+cookie header to be sent.</p>
+<p>CGI usage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">token</span> <span class="o">=</span> <span class="n">auth_tkt</span><span class="o">.</span><span class="n">AuthTick</span><span class="p">(</span><span class="s">&#39;sharedsecret&#39;</span><span class="p">,</span> <span class="s">&#39;username&#39;</span><span class="p">,</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">&#39;REMOTE_ADDR&#39;</span><span class="p">],</span> <span class="n">tokens</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;admin&#39;</span><span class="p">])</span>
+<span class="k">print</span> <span class="s">&#39;Status: 200 OK&#39;</span>
+<span class="k">print</span> <span class="s">&#39;Content-type: text/html&#39;</span>
+<span class="k">print</span> <span class="n">token</span><span class="o">.</span><span class="n">cookie</span><span class="p">()</span>
+<span class="k">print</span>
+<span class="o">...</span> <span class="n">redirect</span> <span class="n">HTML</span> <span class="o">...</span>
+</pre></div>
+</div>
+<p>Webware usage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">token</span> <span class="o">=</span> <span class="n">auth_tkt</span><span class="o">.</span><span class="n">AuthTick</span><span class="p">(</span><span class="s">&#39;sharedsecret&#39;</span><span class="p">,</span> <span class="s">&#39;username&#39;</span><span class="p">,</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">()</span><span class="o">.</span><span class="n">environ</span><span class="p">()[</span><span class="s">&#39;REMOTE_ADDR&#39;</span><span class="p">],</span> <span class="n">tokens</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;admin&#39;</span><span class="p">])</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">response</span><span class="p">()</span><span class="o">.</span><span class="n">setCookie</span><span class="p">(</span><span class="s">&#39;auth_tkt&#39;</span><span class="p">,</span> <span class="n">token</span><span class="o">.</span><span class="n">cookie_value</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>Be careful not to do an HTTP redirect after login; use meta
+refresh or Javascript &#8211; some browsers have bugs where cookies
+aren&#8217;t saved when set on a redirect.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="paste.auth.auth_tkt.BadTicket">
+<em class="property">exception </em><tt class="descclassname">paste.auth.auth_tkt.</tt><tt class="descname">BadTicket</tt><big>(</big><em>msg</em>, <em>expected=None</em><big>)</big><a class="headerlink" href="#paste.auth.auth_tkt.BadTicket" title="Permalink to this definition">¶</a></dt>
+<dd><p>Exception raised when a ticket can&#8217;t be parsed.  If we get
+far enough to determine what the expected digest should have
+been, expected is set.  This should not be shown by default,
+but can be useful for debugging.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="http://pythonpaste.org/" class="invisible-link">Python Paste</a></h3>
+
+<ul>
+<li><a href="http://trac.pythonpaste.org">Issue tracker</a></li>
+<li><a href="http://pythonpaste.org/">Paste core</a></li>
+<li><a href="http://pythonpaste.org/webob/">WebOb</a></li>
+<li><a href="http://pythonpaste.org/deploy/">Paste Deploy</a></li>
+<li><a href="http://pythonpaste.org/script/">Paste Script</a></li>
+<li><a href="http://pythonpaste.org/webtest/">WebTest</a></li>
+<li><a href="http://pythonpaste.org/scripttest/">ScriptType</a></li>
+<li><a href="http://pythonpaste.org/initools/">INITools</a></li>
+<li><a href="http://pythonpaste.org/tempita/">Tempita</a></li>
+<li><a href="http://pythonpaste.org/waitforit/">WaitForIt</a></li>
+<li><a href="http://pythonpaste.org/wphp/">WPHP</a></li>
+<li><a href="http://pythonpaste.org/wsgifilter/">WSGIFilter</a></li>
+<li><a href="http://pythonpaste.org/wsgiproxy/">WSGIProxy</a></li>
+</ul>
+
+
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">paste.auth.auth_tkt</span></tt> &#8211; auth_tkt cookie parsing</a><ul>
+<li><a class="reference internal" href="#module-contents">Module Contents</a></li>
+</ul>
+</li>
+</ul>
+
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/modules/auth.auth_tkt.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, Ian Bicking.
+      Last updated on Sep 14, 2010.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

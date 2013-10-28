@@ -1,0 +1,11 @@
+:mod:`paste.script.command` -- framework for paster commands
+============================================================
+
+.. automodule:: paste.script.command
+
+Module Contents
+---------------
+
+.. autoexception:: BadCommand
+.. autoclass:: Command
+

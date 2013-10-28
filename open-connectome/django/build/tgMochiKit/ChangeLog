@@ -1,0 +1,9 @@
+2008-06-08  Diez Roggisch  <deets@web.de>
+
+	* tgmochikit/base.py (get_shipped_versions): added so that 
+          users can query the shipped versions.
+
+	* tgmochikit/base.py (init): removed dependency from turbogears.config,
+	  added 1.4-version chosing logic, suppressed draganddrop for
+	  version 1.3.1
+

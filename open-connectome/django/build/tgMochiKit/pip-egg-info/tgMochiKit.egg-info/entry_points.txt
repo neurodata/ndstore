@@ -1,0 +1,4 @@
+
+    [turbogears.widgets]
+    tgmochikit = tgmochikit
+    

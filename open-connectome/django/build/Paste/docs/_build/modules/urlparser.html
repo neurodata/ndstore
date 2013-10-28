@@ -1,0 +1,223 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>paste.urlparser – Handle URL paths and server static files &mdash; Paste v1.7.5 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.7.5',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Paste v1.7.5 documentation" href="../index.html" />
+ 
+<link rel="stylesheet" type="text/css"
+ href="../_static/paste.css.html">
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-paste.urlparser">
+<span id="paste-urlparser-handle-url-paths-and-server-static-files"></span><h1><a class="reference internal" href="#module-paste.urlparser"><tt class="xref py py-mod docutils literal"><span class="pre">paste.urlparser</span></tt></a> &#8211; Handle URL paths and server static files<a class="headerlink" href="#module-paste.urlparser" title="Permalink to this headline">¶</a></h1>
+<p>WSGI applications that parse the URL and dispatch to on-disk resources</p>
+<div class="section" id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="paste.urlparser.StaticURLParser">
+<em class="property">class </em><tt class="descclassname">paste.urlparser.</tt><tt class="descname">StaticURLParser</tt><big>(</big><em>directory</em>, <em>root_directory=None</em>, <em>cache_max_age=None</em><big>)</big><a class="headerlink" href="#paste.urlparser.StaticURLParser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Like <tt class="docutils literal"><span class="pre">URLParser</span></tt> but only serves static files.</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">cache_max_age</span></tt>:</dt>
+<dd>integer specifies Cache-Control max_age in seconds</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="paste.urlparser.make_static">
+<tt class="descclassname">paste.urlparser.</tt><tt class="descname">make_static</tt><big>(</big><em>global_conf</em>, <em>document_root</em>, <em>cache_max_age=None</em><big>)</big><a class="headerlink" href="#paste.urlparser.make_static" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a WSGI application that serves a directory (configured
+with document_root)</p>
+<p>cache_max_age - integer specifies CACHE_CONTROL max_age in seconds</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="paste.urlparser.PkgResourcesParser">
+<em class="property">class </em><tt class="descclassname">paste.urlparser.</tt><tt class="descname">PkgResourcesParser</tt><big>(</big><em>egg_or_spec</em>, <em>resource_name</em>, <em>manager=None</em>, <em>root_resource=None</em><big>)</big><a class="headerlink" href="#paste.urlparser.PkgResourcesParser" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="paste.urlparser.make_pkg_resources">
+<tt class="descclassname">paste.urlparser.</tt><tt class="descname">make_pkg_resources</tt><big>(</big><em>global_conf</em>, <em>egg</em>, <em>resource_name=''</em><big>)</big><a class="headerlink" href="#paste.urlparser.make_pkg_resources" title="Permalink to this definition">¶</a></dt>
+<dd><p>A static file parser that loads data from an egg using
+<tt class="docutils literal"><span class="pre">pkg_resources</span></tt>.  Takes a configuration value <tt class="docutils literal"><span class="pre">egg</span></tt>, which is
+an egg spec, and a base <tt class="docutils literal"><span class="pre">resource_name</span></tt> (default empty string)
+which is the path in the egg that this starts at.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="paste.urlparser.URLParser">
+<em class="property">class </em><tt class="descclassname">paste.urlparser.</tt><tt class="descname">URLParser</tt><big>(</big><em>global_conf</em>, <em>directory</em>, <em>base_python_name</em>, <em>index_names=&lt;class 'paste.urlparser.NoDefault'&gt;</em>, <em>hide_extensions=&lt;class 'paste.urlparser.NoDefault'&gt;</em>, <em>ignore_extensions=&lt;class 'paste.urlparser.NoDefault'&gt;</em>, <em>constructors=None</em>, <em>**constructor_conf</em><big>)</big><a class="headerlink" href="#paste.urlparser.URLParser" title="Permalink to this definition">¶</a></dt>
+<dd><p>WSGI middleware</p>
+<p>Application dispatching, based on URL.  An instance of <cite>URLParser</cite> is
+an application that loads and delegates to other applications.  It
+looks for files in its directory that match the first part of
+PATH_INFO; these may have an extension, but are not required to have
+one, in which case the available files are searched to find the
+appropriate file.  If it is ambiguous, a 404 is returned and an error
+logged.</p>
+<p>By default there is a constructor for .py files that loads the module,
+and looks for an attribute <tt class="docutils literal"><span class="pre">application</span></tt>, which is a ready
+application object, or an attribute that matches the module name,
+which is a factory for building applications, and is called with no
+arguments.</p>
+<p>URLParser will also look in __init__.py for special overrides.
+These overrides are:</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">urlparser_hook(environ)</span></tt></dt>
+<dd>This can modify the environment.  Its return value is ignored,
+and it cannot be used to change the response in any way.  You
+<em>can</em> use this, for example, to manipulate SCRIPT_NAME/PATH_INFO
+(try to keep them consistent with the original URL &#8211; but
+consuming PATH_INFO and moving that to SCRIPT_NAME is ok).</dd>
+<dt><tt class="docutils literal"><span class="pre">urlparser_wrap(environ,</span> <span class="pre">start_response,</span> <span class="pre">app)</span></tt>:</dt>
+<dd>After URLParser finds the application, it calls this function
+(if present).  If this function doesn&#8217;t call
+<tt class="docutils literal"><span class="pre">app(environ,</span> <span class="pre">start_response)</span></tt> then the application won&#8217;t be
+called at all!  This can be used to allocate resources (with
+<tt class="docutils literal"><span class="pre">try:finally:</span></tt>) or otherwise filter the output of the
+application.</dd>
+<dt><tt class="docutils literal"><span class="pre">not_found_hook(environ,</span> <span class="pre">start_response)</span></tt>:</dt>
+<dd>If no file can be found (<em>in this directory</em>) to match the
+request, then this WSGI application will be called.  You can
+use this to change the URL and pass the request back to
+URLParser again, or on to some other application.  This
+doesn&#8217;t catch all <tt class="docutils literal"><span class="pre">404</span> <span class="pre">Not</span> <span class="pre">Found</span></tt> responses, just missing
+files.</dd>
+<dt><tt class="docutils literal"><span class="pre">application(environ,</span> <span class="pre">start_response)</span></tt>:</dt>
+<dd>This basically overrides URLParser completely, and the given
+application is used for all requests.  <tt class="docutils literal"><span class="pre">urlparser_wrap</span></tt> and
+<tt class="docutils literal"><span class="pre">urlparser_hook</span></tt> are still called, but the filesystem isn&#8217;t
+searched in any way.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="paste.urlparser.make_url_parser">
+<tt class="descclassname">paste.urlparser.</tt><tt class="descname">make_url_parser</tt><big>(</big><em>global_conf</em>, <em>directory</em>, <em>base_python_name</em>, <em>index_names=None</em>, <em>hide_extensions=None</em>, <em>ignore_extensions=None</em>, <em>**constructor_conf</em><big>)</big><a class="headerlink" href="#paste.urlparser.make_url_parser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a URLParser application that looks in <tt class="docutils literal"><span class="pre">directory</span></tt>, which
+should be the directory for the Python package named in
+<tt class="docutils literal"><span class="pre">base_python_name</span></tt>.  <tt class="docutils literal"><span class="pre">index_names</span></tt> are used when viewing the
+directory (like <tt class="docutils literal"><span class="pre">'index'</span></tt> for <tt class="docutils literal"><span class="pre">'index.html'</span></tt>).
+<tt class="docutils literal"><span class="pre">hide_extensions</span></tt> are extensions that are not viewable (like
+<tt class="docutils literal"><span class="pre">'.pyc'</span></tt>) and <tt class="docutils literal"><span class="pre">ignore_extensions</span></tt> are viewable but only if an
+explicit extension is given.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="http://pythonpaste.org/" class="invisible-link">Python Paste</a></h3>
+
+<ul>
+<li><a href="http://trac.pythonpaste.org">Issue tracker</a></li>
+<li><a href="http://pythonpaste.org/">Paste core</a></li>
+<li><a href="http://pythonpaste.org/webob/">WebOb</a></li>
+<li><a href="http://pythonpaste.org/deploy/">Paste Deploy</a></li>
+<li><a href="http://pythonpaste.org/script/">Paste Script</a></li>
+<li><a href="http://pythonpaste.org/webtest/">WebTest</a></li>
+<li><a href="http://pythonpaste.org/scripttest/">ScriptType</a></li>
+<li><a href="http://pythonpaste.org/initools/">INITools</a></li>
+<li><a href="http://pythonpaste.org/tempita/">Tempita</a></li>
+<li><a href="http://pythonpaste.org/waitforit/">WaitForIt</a></li>
+<li><a href="http://pythonpaste.org/wphp/">WPHP</a></li>
+<li><a href="http://pythonpaste.org/wsgifilter/">WSGIFilter</a></li>
+<li><a href="http://pythonpaste.org/wsgiproxy/">WSGIProxy</a></li>
+</ul>
+
+
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">paste.urlparser</span></tt> &#8211; Handle URL paths and server static files</a><ul>
+<li><a class="reference internal" href="#module-contents">Module Contents</a></li>
+</ul>
+</li>
+</ul>
+
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/modules/urlparser.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Paste v1.7.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, Ian Bicking.
+      Last updated on Sep 14, 2010.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

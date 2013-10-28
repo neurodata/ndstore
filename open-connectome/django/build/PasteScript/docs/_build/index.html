@@ -1,0 +1,289 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Paste Script &mdash; Paste Script v1.7.4.1 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.7.4.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Paste Script v1.7.4.1 documentation" href="#" />
+    <link rel="next" title="News: Paste Script" href="news.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="news.html" title="News: Paste Script"
+             accesskey="N">next</a> |</li>
+        <li><a href="#">Paste Script v1.7.4.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="paste-script">
+<h1>Paste Script<a class="headerlink" href="#paste-script" title="Permalink to this headline">¶</a></h1>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">author:</th><td class="field-body">Ian Bicking &lt;<a class="reference external" href="mailto:ianb&#37;&#52;&#48;colorstudy&#46;com">ianb<span>&#64;</span>colorstudy<span>&#46;</span>com</a>&gt;</td>
+</tr>
+<tr class="field"><th class="field-name">revision:</th><td class="field-body">$Rev$</td>
+</tr>
+<tr class="field"><th class="field-name">date:</th><td class="field-body">$LastChangedDate$</td>
+</tr>
+</tbody>
+</table>
+<p>Contents:</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="news.html">News: Paste Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developer.html">Paste Script: Development</a></li>
+</ul>
+</div>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>If you are developer, see the <a class="reference external" href="developer.html">Developer Documentation</a>; this will tell you how to add commands and
+templates to <tt class="docutils literal"><span class="pre">paster</span></tt>.  For a list of updates see the <a class="reference external" href="news.html">news file</a>.</p>
+<p>Paste Script is released under the <a class="reference external" href="http://www.opensource.org/licenses/mit-license.php">MIT license</a>.</p>
+</div>
+<div class="section" id="status">
+<h2>Status<a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h2>
+<p>Paste Script has passed version 1.0.  Paste Script is an actively
+maintained project.  As of 1.0, we&#8217;ll make a strong effort to maintain
+backward compatibility.  This will include deprecation warnings when
+necessary.  Major changes will take place under new functions or with
+new entry points.</p>
+</div>
+<div class="section" id="paster-create">
+<h2><tt class="docutils literal"><span class="pre">paster</span> <span class="pre">create</span></tt><a class="headerlink" href="#paster-create" title="Permalink to this headline">¶</a></h2>
+<p>This creates the skeleton for new projects.  Many different kinds of
+projects have created skeletons for their projects (Pylons,
+TurboGears, ZopeSkel, and others).</p>
+<p>For a tutorial for making new skeletons, see <a class="reference external" href="http://lucasmanual.com/mywiki/PythonPaste">this tutorial from Lucas
+Szybalski</a>.  It also
+discusses creating new subcommands for paster.</p>
+</div>
+<div class="section" id="paster-serve">
+<h2><tt class="docutils literal"><span class="pre">paster</span> <span class="pre">serve</span></tt><a class="headerlink" href="#paster-serve" title="Permalink to this headline">¶</a></h2>
+<p>The one useful command you may want to know about for <tt class="docutils literal"><span class="pre">paster</span></tt> is
+<tt class="docutils literal"><span class="pre">paster</span> <span class="pre">serve</span></tt>.  This serves an application described in a <a class="reference external" href="http://pythonpaste.org/deploy">Paste
+Deploy</a> configuration file.</p>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<p>A quickstart (and example), if not complete explanation:</p>
+<div class="highlight-python"><pre>[app:main]
+use = egg:PasteEnabledPackage
+option1 = foo
+option2 = bar
+
+[server:main]
+use = egg:PasteScript#wsgiutils
+host = 127.0.0.1
+port = 80</pre>
+</div>
+<p><tt class="docutils literal"><span class="pre">egg:PasteEnabledPackage</span></tt> refers to some package that has been
+prepared for use with paste.deploy, and options given to that
+package.  If you are starting out with some framework, you&#8217;ll have to
+reference some documentation for that framework to paste-deploy-ify
+your application (or read the paste.deploy documentation).</p>
+<p>In the same file is a server description.
+<tt class="docutils literal"><span class="pre">egg:PasteScript#wsgiutils</span></tt> is a server (named <tt class="docutils literal"><span class="pre">wsgiutils</span></tt>)
+provided by this package, based on <a class="reference external" href="http://www.owlfish.com/software/wsgiutils/">WSGIUtils</a>.  And we pass various
+options particular to that server.</p>
+<p>Other packages can provide servers, but currently Paste Script
+includes glue for these:</p>
+<p><tt class="docutils literal"><span class="pre">wsgiutils</span></tt>:</p>
+<blockquote>
+<div>A <a class="reference external" href="http://python.org/doc/current/lib/module-SimpleHTTPServer.html">SimpleHTTPServer</a>
+based threaded HTTP server, using <a class="reference external" href="http://www.owlfish.com/software/wsgiutils/">WSGIUtils</a>.</div></blockquote>
+<p><tt class="docutils literal"><span class="pre">flup_(scgi|fcgi|ajp)_(thread|fork)</span></tt>:</p>
+<blockquote>
+<div>This set of servers supports <a class="reference external" href="http://www.mems-exchange.org/software/scgi/">SCGI</a>, <a class="reference external" href="http://www.fastcgi.com/">FastCGI</a> and <a class="reference external" href="http://jakarta.apache.org/tomcat/connectors-doc/common/ajpv13a.html">AJP</a>
+protocols, for connection an external web server (like Apache) to
+your application.  Both threaded and forking versions are
+available.  This is based on <a class="reference external" href="http://www.saddi.com/software/flup/">flup</a>.</div></blockquote>
+<p>There is the start of support for <a class="reference external" href="http://twistedmatrix.com/projects/web2/">twisted.web2</a> in
+<tt class="docutils literal"><span class="pre">paste.script.twisted_web2_server</span></tt>; patches welcome.</p>
+</div>
+<div class="section" id="running-the-server">
+<h2>Running the Server<a class="headerlink" href="#running-the-server" title="Permalink to this headline">¶</a></h2>
+<p><tt class="docutils literal"><span class="pre">paster</span> <span class="pre">serve</span> <span class="pre">--help</span></tt> gives useful output:</p>
+<div class="highlight-python"><pre>usage: /usr/local/bin/paster serve [options] CONFIG_FILE [start|stop|restart|status]
+Serve the described application
+
+If start/stop/restart is given, then it will start (normal
+operation), stop (--stop-daemon), or do both.  You probably want
+``--daemon`` as well for stopping.
+
+Options:
+  -h, --help            show this help message and exit
+  -v, --verbose
+  -q, --quiet
+  -nNAME, --app-name=NAME
+                        Load the named application (default main)
+  -sSERVER_TYPE, --server=SERVER_TYPE
+                        Use the named server.
+  --server-name=SECTION_NAME
+                        Use the named server as defined in the configuration
+                        file (default: main)
+  --daemon              Run in daemon (background) mode
+  --pid-file=FILENAME   Save PID to file (default to paster.pid if running in
+                        daemon mode)
+  --log-file=LOG_FILE   Save output to the given log file (redirects stdout)
+  --reload              Use auto-restart file monitor
+  --reload-interval=RELOAD_INTERVAL
+                        Seconds between checking files (low number can cause
+                        significant CPU usage)
+  --status              Show the status of the (presumably daemonized) server
+  --user=USERNAME       Set the user (usually only possible when run as root)
+  --group=GROUP         Set the group (usually only possible when run as root)
+  --stop-daemon         Stop a daemonized server (given a PID file, or default
+                        paster.pid file)</pre>
+</div>
+<p>Basically you give it a configuration file.  If you don&#8217;t do anything
+else, it&#8217;ll serve the <tt class="docutils literal"><span class="pre">[app:main]</span></tt> application with the
+<tt class="docutils literal"><span class="pre">[server:main]</span></tt> server.  You can pass in <tt class="docutils literal"><span class="pre">--server-name=foo</span></tt> to
+serve the <tt class="docutils literal"><span class="pre">[server:foo]</span></tt> section (or even
+<tt class="docutils literal"><span class="pre">--server-name=config:foo.ini</span></tt> to use a separate configuration
+file).</p>
+<p>Similarly you can use <tt class="docutils literal"><span class="pre">--app-name=foo</span></tt> to serve <tt class="docutils literal"><span class="pre">[app:foo]</span></tt>.</p>
+<p><tt class="docutils literal"><span class="pre">--daemon</span></tt> will run the server in the backgroup, <tt class="docutils literal"><span class="pre">--user</span></tt> and
+<tt class="docutils literal"><span class="pre">--group</span></tt> will set the user, as you might want to do from a start
+script (run as root).  If you don&#8217;t give a <tt class="docutils literal"><span class="pre">--pid-file</span></tt> it will
+write the pid to <tt class="docutils literal"><span class="pre">paster.pid</span></tt> (in the current directory).</p>
+<p><tt class="docutils literal"><span class="pre">--stop-daemon</span></tt> will stop the daemon in <tt class="docutils literal"><span class="pre">paster.pid</span></tt> or whatever
+<tt class="docutils literal"><span class="pre">--pid-file</span></tt> you give.  <tt class="docutils literal"><span class="pre">--log-file</span></tt> will redirect stdout and
+stderr to that file.</p>
+<p><tt class="docutils literal"><span class="pre">--reload</span></tt> will start the reload monitor, and restart the server
+whenever a file is edited.  This can be a little expensive, but is
+very useful during development.</p>
+</div>
+<div class="section" id="scripts">
+<h2>#! Scripts<a class="headerlink" href="#scripts" title="Permalink to this headline">¶</a></h2>
+<p>On Posix (Linux, Unix, etc) systems you can turn your configuration
+files into executable scripts.</p>
+<p>First make the file executable (<tt class="docutils literal"><span class="pre">chmod</span> <span class="pre">+x</span> <span class="pre">config_file.ini</span></tt>).  The
+you should add a line like this to the top of the file:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#!/usr/bin/env paster</span>
+</pre></div>
+</div>
+<p>You can include a command and command-line options in an <tt class="docutils literal"><span class="pre">[exe]</span></tt>
+section, like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="n">exe</span><span class="p">]</span>
+<span class="n">command</span> <span class="o">=</span> <span class="n">serve</span>
+<span class="n">daemon</span> <span class="o">=</span> <span class="n">true</span>
+<span class="n">user</span> <span class="o">=</span> <span class="n">nobody</span>
+<span class="n">group</span> <span class="o">=</span> <span class="n">nobody</span>
+</pre></div>
+</div>
+<p>(use <tt class="docutils literal"><span class="pre">true</span></tt> and <tt class="docutils literal"><span class="pre">false</span></tt> for options that don&#8217;t take an argument).</p>
+<p>If you use <tt class="docutils literal"><span class="pre">daemon</span> <span class="pre">=</span> <span class="pre">true</span></tt> then you&#8217;ll be able to use the script as
+an rc script, so you can do:</p>
+<div class="highlight-python"><pre>$ sudo ./config_file.ini start
+$ sudo ./config_file.ini restart</pre>
+</div>
+<p>and so forth.</p>
+<p>Note that this is a little wonky still on some platforms and shells
+(notably it doesn&#8217;t work under <a class="reference external" href="http://www.faqs.org/faqs/unix-faq/shell/csh-whynot/">csh</a>).  If you get
+an error about &#8220;Command config_file.ini not known&#8221; then this probably
+won&#8217;t work for you.  In the future an additional script to <tt class="docutils literal"><span class="pre">paster</span></tt>
+will be added just for this purpose.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Paste Script</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#status">Status</a></li>
+<li><a class="reference internal" href="#paster-create"><tt class="docutils literal"><span class="pre">paster</span> <span class="pre">create</span></tt></a></li>
+<li><a class="reference internal" href="#paster-serve"><tt class="docutils literal"><span class="pre">paster</span> <span class="pre">serve</span></tt></a></li>
+<li><a class="reference internal" href="#configuration">Configuration</a></li>
+<li><a class="reference internal" href="#running-the-server">Running the Server</a></li>
+<li><a class="reference internal" href="#scripts">#! Scripts</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Next topic</h4>
+  <p class="topless"><a href="news.html"
+                        title="next chapter">News: Paste Script</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="news.html" title="News: Paste Script"
+             >next</a> |</li>
+        <li><a href="#">Paste Script v1.7.4.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2008, Ian Bicking.
+      Last updated on Aug 12, 2011.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

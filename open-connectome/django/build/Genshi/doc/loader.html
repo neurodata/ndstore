@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="generator" content="Docutils 0.8.1: http://docutils.sourceforge.net/">
+<title>Genshi: Loading Templates</title>
+<link rel="stylesheet" href="common/style/edgewall.css" type="text/css">
+</head>
+<body>
+<div class="document" id="loading-templates">
+    <div id="navigation">
+      <span class="projinfo">Genshi 0.7</span>
+      <a href="index.html">Documentation Index</a>
+    </div>
+<h1 class="title">Loading Templates</h1>
+<p>Genshi comes with a simple but flexible implementation of a template loader in
+the <tt class="docutils literal">genshi.template.loader</tt> module. The loader provides caching of
+templates so they do not need to be reparsed when used, support for multiple
+template directories that together form a virtual search path, as well as
+support for different template loading strategies.</p>
+<div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="auto-toc simple">
+<li><a class="reference internal" href="#usage" id="id1">1   Usage</a></li>
+<li><a class="reference internal" href="#caching" id="id2">2   Caching</a><ul class="auto-toc">
+<li><a class="reference internal" href="#automatic-reloading" id="id3">2.1   Automatic Reloading</a></li>
+<li><a class="reference internal" href="#callback-interface" id="id4">2.2   Callback Interface</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#template-search-path" id="id5">3   Template Search Path</a><ul class="auto-toc">
+<li><a class="reference internal" href="#load-functions" id="id6">3.1   Load Functions</a><ul class="auto-toc">
+<li><a class="reference internal" href="#directory-path" id="id7">3.1.1   <tt class="docutils literal">directory(path)</tt></a></li>
+<li><a class="reference internal" href="#package-name-path" id="id8">3.1.2   <tt class="docutils literal">package(name, path)</tt></a></li>
+<li><a class="reference internal" href="#prefixed-delegates" id="id9">3.1.3   <tt class="docutils literal"><span class="pre">prefixed(**delegates)</span></tt></a></li>
+<li><a class="reference internal" href="#custom-load-functions" id="id10">3.1.4   Custom Load Functions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#customized-loading" id="id11">4   Customized Loading</a><ul class="auto-toc">
+<li><a class="reference internal" href="#protocol" id="id12">4.1   Protocol</a></li>
+<li><a class="reference internal" href="#subclassing-templateloader" id="id13">4.2   Subclassing <tt class="docutils literal">TemplateLoader</tt></a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="usage">
+<h1>1   Usage</h1>
+<p>The basic usage pattern is simple: instantiate one <tt class="docutils literal">TemplateLoader</tt> object
+and keep it around, then ask it to load a template whenever you need to load
+one:</p>
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">genshi.template</span> <span class="kn">import</span> <span class="n">TemplateLoader</span>
+
+<span class="n">loader</span> <span class="o">=</span> <span class="n">TemplateLoader</span><span class="p">([</span><span class="s">'/path/to/dir1'</span><span class="p">,</span> <span class="s">'/path/to/dir2'</span><span class="p">],</span>
+                        <span class="n">auto_reload</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">tmpl</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">'test.html'</span><span class="p">)</span>
+</pre></div>
+<p>When you try to load a template that can't be found, you get a
+<tt class="docutils literal">TemplateNotFound</tt> error.</p>
+<p>The default template class used by the loader is <tt class="docutils literal">MarkupTemplate</tt>, but that
+can be overridden both with a different default (as a keyword argument to the
+<tt class="docutils literal">TemplateLoader</tt> constructor), as well as on invocation of the <tt class="docutils literal">load()</tt>
+method:</p>
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">genshi.template.text</span> <span class="kn">import</span> <span class="n">NewTextTemplate</span>
+
+<span class="n">tmpl</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">'mail.txt'</span><span class="p">,</span> <span class="n">cls</span><span class="o">=</span><span class="n">NewTextTemplate</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="section" id="caching">
+<h1>2   Caching</h1>
+<p>The <tt class="docutils literal">TemplateLoader</tt> class provides a simple in-memory cache for parsed
+template objects. This improves performance, because templates do not need to
+be reparsed every time they are rendered.</p>
+<p>The size of this cache can be adjusted using the <cite>max_cache_size</cite> option on
+the <tt class="docutils literal">TemplateLoader</tt> constructor. The value of that option determines the
+maximum number of template objects kept in the cache. When this limit is
+reached, any templates that haven't been used in a while get purged.
+Technically, this is a least-recently-used (LRU) cache, the default limit is
+set to 25 templates.</p>
+<div class="section" id="automatic-reloading">
+<h2>2.1   Automatic Reloading</h2>
+<p>Once a template has been cached, it will normally not get reparsed until it
+has been purged from the cache. This means that any changes to the template
+file are not taken into consideration as long as it is still found in the
+cache. As this is inconvenient in development scenarios, the <tt class="docutils literal">auto_reload</tt>
+option allows for automatic cache invalidation based on whether the template
+source has changed.</p>
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">genshi.template</span> <span class="kn">import</span> <span class="n">TemplateLoader</span>
+
+<span class="n">loader</span> <span class="o">=</span> <span class="n">TemplateLoader</span><span class="p">(</span><span class="s">'templates'</span><span class="p">,</span> <span class="n">auto_reload</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">max_cache_size</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+</pre></div>
+<p>In production environments, automatic reloading should be disabled, as it does
+affect performance negatively.</p>
+</div>
+<div class="section" id="callback-interface">
+<h2>2.2   Callback Interface</h2>
+<p>Sometimes you need to make sure that templates get properly configured after
+they have been loaded, but you only want to do that when the template is
+actually loaded and parsed, not when it is returned from the cache.</p>
+<p>For such cases, the <tt class="docutils literal">TemplateLoader</tt> provides a way to specify a callback
+function that gets invoked whenever a template is loaded. You can specify that
+callback by passing it into the loader constructor via the <tt class="docutils literal">callback</tt>
+keyword argument, or later by setting the attribute of the same name. The
+callback function should expect a single argument, the template object.</p>
+<p>For example, to properly inject the <a class="reference external" href="i18n.html">translation filter</a> into any loaded
+template, you'd use code similar to this:</p>
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">genshi.filters</span> <span class="kn">import</span> <span class="n">Translator</span>
+<span class="kn">from</span> <span class="nn">genshi.template</span> <span class="kn">import</span> <span class="n">TemplateLoader</span>
+
+<span class="k">def</span> <span class="nf">template_loaded</span><span class="p">(</span><span class="n">template</span><span class="p">):</span>
+    <span class="n">Translator</span><span class="p">(</span><span class="n">translations</span><span class="o">.</span><span class="n">ugettext</span><span class="p">)</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="n">template</span><span class="p">)</span>
+
+<span class="n">loader</span> <span class="o">=</span> <span class="n">TemplateLoader</span><span class="p">(</span><span class="s">'templates'</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="n">template_loaded</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="template-search-path">
+<h1>3   Template Search Path</h1>
+<p>The template loader can be configured with a list of multiple directories to
+search for templates. The loader maps these directories to a single logical
+directory for locating templates by file name.</p>
+<p>The order of the directories making up the search path is significant: the
+loader will first try to locate a requested template in the first directory on
+the path, then in the second, and so on. If there are two templates with the
+same file name in multiple directories on the search path, whatever file is
+found first gets used.</p>
+<p>Based on this design, an application could, for example, configure a search
+path consisting of a directory containing the default templates, as well as a
+directory where site-specific templates can be stored that will override the
+default templates.</p>
+<div class="section" id="load-functions">
+<h2>3.1   Load Functions</h2>
+<p>Usually the search path consists of strings representing directory paths, but
+it may also contain “load functions”: functions that are basically invoked
+with the file name, and return the template content.</p>
+<p>Genshi comes with three builtin load functions:</p>
+<div class="section" id="directory-path">
+<h3>3.1.1   <tt class="docutils literal">directory(path)</tt></h3>
+<p>The equivalent of just using a string containing the directory path: looks up
+the file name in a specific directory.</p>
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">genshi.template</span> <span class="kn">import</span> <span class="n">TemplateLoader</span><span class="p">,</span> <span class="n">loader</span>
+<span class="n">tl</span> <span class="o">=</span> <span class="n">TemplateLoader</span><span class="p">([</span><span class="n">loader</span><span class="o">.</span><span class="n">directory</span><span class="p">(</span><span class="s">'/path/to/dir/'</span><span class="p">)])</span>
+</pre></div>
+<p>That is the same as:</p>
+<div class="highlight"><pre><span class="n">tl</span> <span class="o">=</span> <span class="n">TemplateLoader</span><span class="p">([</span><span class="s">'/path/to/dir/'</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="section" id="package-name-path">
+<h3>3.1.2   <tt class="docutils literal">package(name, path)</tt></h3>
+<p>Uses the <tt class="docutils literal">pkg_resources</tt> API to locate files in Python package data (which
+may be inside a ZIP archive).</p>
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">genshi.template</span> <span class="kn">import</span> <span class="n">TemplateLoader</span><span class="p">,</span> <span class="n">loader</span>
+<span class="n">tl</span> <span class="o">=</span> <span class="n">TemplateLoader</span><span class="p">([</span><span class="n">loader</span><span class="o">.</span><span class="n">package</span><span class="p">(</span><span class="s">'myapp'</span><span class="p">,</span> <span class="s">'templates'</span><span class="p">)])</span>
+</pre></div>
+<p>This will look for templates in the <tt class="docutils literal">templates</tt> directory of the Python
+package <tt class="docutils literal">myapp</tt>.</p>
+</div>
+<div class="section" id="prefixed-delegates">
+<h3>3.1.3   <tt class="docutils literal"><span class="pre">prefixed(**delegates)</span></tt></h3>
+<p>Delegates load requests to different load functions based on the path prefix.</p>
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">genshi.template</span> <span class="kn">import</span> <span class="n">TemplateLoader</span><span class="p">,</span> <span class="n">loader</span>
+<span class="n">tl</span> <span class="o">=</span> <span class="n">TemplateLoader</span><span class="p">(</span><span class="n">loader</span><span class="o">.</span><span class="n">prefixed</span><span class="p">(</span>
+  <span class="n">core</span> <span class="o">=</span> <span class="s">'/tmp/dir1'</span><span class="p">,</span>
+  <span class="n">plugin1</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">package</span><span class="p">(</span><span class="s">'plugin1'</span><span class="p">,</span> <span class="s">'templates'</span><span class="p">),</span>
+  <span class="n">plugin2</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">package</span><span class="p">(</span><span class="s">'plugin2'</span><span class="p">,</span> <span class="s">'templates'</span><span class="p">),</span>
+<span class="p">))</span>
+<span class="n">tmpl</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">'core/index.html'</span><span class="p">)</span>
+</pre></div>
+<p>This example sets up a loader with three delegates, under the prefixes “core”,
+“plugin1”, and “plugin2”. When a template is requested, the <tt class="docutils literal">prefixed</tt> load
+function looks for a delegate with a corresponding prefix, removes the prefix
+from the path and asks the delegate to load the template.</p>
+<p>In this case, assuming the directory <tt class="docutils literal">/path/to/dir</tt> contains a file named
+<tt class="docutils literal">index.html</tt>, that file will be used when we load <tt class="docutils literal">core/index.html</tt>. The
+other delegates are not checked as their prefix does not match.</p>
+<div class="note">
+<p class="first admonition-title">Note</p>
+<p class="last">These builtin load functions are available both as class methods
+of the <tt class="docutils literal">TemplateLoader</tt> class as well as on the module level</p>
+</div>
+</div>
+<div class="section" id="custom-load-functions">
+<h3>3.1.4   Custom Load Functions</h3>
+<p>You can easily use your own load function with the template loader, for
+example to load templates from a database. All that is needed is a callable
+object that accepts a <tt class="docutils literal">filename</tt> (a string) and returns a tuple of the form
+<tt class="docutils literal">(filepath, filename, fileobj, uptodate_fun)</tt>, where:</p>
+<dl class="docutils">
+<dt><tt class="docutils literal">filepath</tt></dt>
+<dd>is the absolute path to the template. This is primarily used for output in
+tracebacks, and does not need to map to an actual path on the file system.</dd>
+<dt><tt class="docutils literal">filename</tt></dt>
+<dd>is the base name of the template file</dd>
+<dt><tt class="docutils literal">fileobj</tt></dt>
+<dd>is a readable file-like object that provides the content of the template</dd>
+<dt><tt class="docutils literal">uptodate_fun</tt></dt>
+<dd>is a function that the loader can invoke to check whether the cached version
+of the template is still up-to-date, or <tt class="docutils literal">None</tt> if the load function is not
+able to provide such a check. If provided, the function should not expect
+any parameters (so you'll definitely want to use a closure here), and should
+return <tt class="docutils literal">True</tt> if the template has not changed since it was last loaded.</dd>
+</dl>
+<p>When the requested template can not be found, the function should raise an
+<tt class="docutils literal">IOError</tt> or <tt class="docutils literal">TemplateNotFound</tt> exception.</p>
+</div>
+</div>
+</div>
+<div class="section" id="customized-loading">
+<h1>4   Customized Loading</h1>
+<p>If you require a completely different implementation of template loading, you
+can extend or even replace the builtin <tt class="docutils literal">TemplateLoader</tt> class.</p>
+<div class="section" id="protocol">
+<h2>4.1   Protocol</h2>
+<p>The protocol between the template loader and the <tt class="docutils literal">Template</tt> class is simple
+and only used for processing includes. The only required part of that protocol
+is that the object assigned to <tt class="docutils literal">Template.loader</tt> implements a <tt class="docutils literal">load</tt>
+method compatible to that of the <tt class="docutils literal">TemplateLoader</tt> class, at the minimum with
+the signature <tt class="docutils literal">load(filename, relative_to=None, cls=None)</tt>.</p>
+<p>In addition, templates currently check for the existence and value of a boolean
+<tt class="docutils literal">auto_reload</tt> property. If the property does not exist or evaluates to a
+non-truth value, inlining of included templates is disabled. Inlining is a
+small optimization that removes some overhead in the processing of includes.</p>
+</div>
+<div class="section" id="subclassing-templateloader">
+<h2>4.2   Subclassing <tt class="docutils literal">TemplateLoader</tt></h2>
+<p>You can also adjust the behavior of the <tt class="docutils literal">TemplateLoader</tt> class by subclassing
+it. You can of course override anything needed, but the class also provides the
+<tt class="docutils literal">_instantiate()</tt> hook, which is intended for use by subclasses to customize
+the creation of the template object from the file name and content. Please
+consult the code and the API documentation for more detail.</p>
+</div>
+</div>
+    <div id="footer">
+      Visit the Genshi open source project at
+      <a href="http://genshi.edgewall.org/">http://genshi.edgewall.org/</a>
+    </div>
+  </div>
+</body>
+</html>

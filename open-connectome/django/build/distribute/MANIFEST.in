@@ -1,0 +1,3 @@
+include pkg_resources.py
+recursive-include setuptools *.py *.xml
+recursive-include setuptools.egg-info *

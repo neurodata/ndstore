@@ -1,0 +1,35 @@
+# MANIFEST.in for TurboGears 1.5
+# This is needed so that the include_package_data option in setup.py works
+# when building distribution packages when not working from a SVN working copy.
+include *.txt *.cfg ez_setup.py
+include doc/README.txt
+include doc/doc.ini
+include doc/*.sh
+# to be removed when feed package is removed
+include turbogears/feed/*.kid
+include turbogears/tests/*.cfg
+include turbogears/tests/*.html
+include turbogears/tests/*.kid
+include turbogears/tests/*.tmpl
+include turbogears/tests/*.txt
+include turbogears/tests/catwalk_models/catwalk-session/*.pkl
+include turbogears/view/templates/*.kid
+include turbogears/widgets/templates/*.kid
+include turbogears/widgets/tests/*.html
+include turbogears/widgets/tests/*.kid
+
+recursive-include turbogears/i18n/data *.mo *.po *.pot
+recursive-include turbogears/qstemplates *.css *.html *.ico *.py *.png *_tmpl PKG-INFO
+recursive-include turbogears/static *.css *.gif *.js *.png *.py
+recursive-include turbogears/tests/locale *.mo *.po
+recursive-include turbogears/toolbox *.css *.gif *.html *.js *.kid *.png
+recursive-include turbogears/widgets/static *.css *.gif *.js *.png
+
+graft tools
+
+prune build
+prune dist
+prune thirdparty
+
+# just a security net
+global-exclude .*.rej *.bak *.log *.orig *.pyc *.pyo *.rej .DS_Store ._.DS_store
