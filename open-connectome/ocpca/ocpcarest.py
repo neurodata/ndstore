@@ -47,7 +47,7 @@ def cutout ( imageargs, proj, db, channel=None ):
     args = restargs.BrainRestArgs ();
     args.cutoutArgs ( imageargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
-    logger.warning("REST Arguments failed: %s" % (e))
+    logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
     raise OCPCAError(e)
 
   # Extract the relevant values
@@ -165,7 +165,7 @@ def xySlice ( imageargs, proj, db ):
     args = restargs.BrainRestArgs ();
     args.xyArgs ( imageargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
-    logger.warning("REST Arguments failed: %s" % (e))
+    logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
     raise OCPCAError(e)
 
   # Extract the relevant values
@@ -218,7 +218,7 @@ def xzSlice ( imageargs, proj, db ):
     args = restargs.BrainRestArgs ();
     args.xzArgs ( imageargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
-    logger.warning("REST Arguments failed: %s" % (e))
+    logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
     raise OCPCAError(e)
 
   # Extract the relevant values
@@ -265,7 +265,7 @@ def yzSlice ( imageargs, proj, db ):
     args = restargs.BrainRestArgs ();
     args.yzArgs ( imageargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
-    logger.warning("REST Arguments failed: %s" % (e))
+    logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
     raise OCPCAError(e)
 
   # Extract the relevant values
@@ -313,7 +313,7 @@ def xyAnno ( imageargs, proj, db ):
     args = restargs.BrainRestArgs ();
     args.xyArgs ( imageargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
-    logger.warning("REST Arguments failed: %s" % (e))
+    logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
     raise OCPCAError(e)
 
   # Extract the relevant values
@@ -341,7 +341,7 @@ def xzAnno ( imageargs, proj, db ):
     args = restargs.BrainRestArgs ();
     args.xzArgs ( imageargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
-    logger.warning("REST Arguments failed: %s" % (e))
+    logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
     raise OCPCAError(e)
 
   # Extract the relevant values
@@ -368,7 +368,7 @@ def yzAnno ( imageargs, proj, db ):
     args = restargs.BrainRestArgs ();
     args.yzArgs ( imageargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
-    logger.warning("REST Arguments failed: %s" % (e))
+    logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
     raise OCPCAError(e)
 
   # Extract the relevant values
@@ -409,7 +409,7 @@ def listIds ( imageargs, proj,db ):
     args = restargs.BrainRestArgs ();
     args.cutoutArgs ( imageargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
-    logger.warning("REST Arguments failed: %s" % (e))
+    logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
     raise OCPCAError(e)
 
   # Extract the relevant values
@@ -525,7 +525,7 @@ def selectPost ( webargs, proj, db, postdata ):
           args = restargs.BrainRestArgs ();
           args.cutoutArgs ( postargs, proj.datasetcfg )
         except restargs.RESTArgsError, e:
-          logger.warning("REST Arguments failed: %s" % (e))
+          logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
           raise OCPCAError(e)
 
         corner = args.getCorner()
@@ -1458,13 +1458,17 @@ def merge ( webargs ):
   last_id = len(ids)-1
   ids[last_id] = ids[last_id].replace("/","")
   
+  # Make ids a numpy array to speed vectorize
+  ids = np.array(ids,dtype=np.uint32)
 
   [ db, proj, projdb ] = loadDBProj ( token )
-
-  mergetype = rest
-  #mergetype = rest.strip('/')
+  import pdb;pdb.set_trace()
+  #mergetype = rest
+  [mergetype,resolution] = rest.split('/',1)
   if mergetype == "global":
-    return db.mergeGlobal(ids, mergetype, 1)
+    if resolution != '':
+      [resolution,extra] = resolution.split('/')
+    return db.mergeGlobal(ids, mergetype, resolution)
   else:
     [mergetype, imageargs] = mergetype.split ('/',1)
     print mergetype
@@ -1482,7 +1486,7 @@ def merge ( webargs ):
         args = restargs.BrainRestArgs ();
         args.mergeArgs ( imageargs, proj.datasetcfg )
       except restargs.RESTArgsError, e:
-        logger.warning("REST Arguments failed: %s" % (e))
+        logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
         raise OCPCAError(e)
       # Extract the relevant values
       corner = args.getCorner()
@@ -1526,7 +1530,7 @@ def exceptions ( webargs, ):
     args = restargs.BrainRestArgs ();
     args.cutoutArgs ( cutoutargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
-    logger.warning("REST Arguments failed: %s" % (e))
+    logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
     raise OCPCAError(e)
 
   # Extract the relevant values

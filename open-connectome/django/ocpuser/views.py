@@ -442,7 +442,7 @@ def restore(request):
         #Invalid Form
         context = {'form': form}
         print form.errors
-        return render_to_response('createproject.html',context,context_instance=RequestContext(request))
+        return render_to_response('profile.html',context,context_instance=RequestContext(request))
     else:
       #Invalid post - redirect to profile for now
       return redirect(profile)
