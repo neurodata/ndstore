@@ -37,7 +37,7 @@ def overlayCutout (request, webargs):
   #  dev server and production server urls.
   #
 #  import pdb; pdb.set_trace()
-  logger.warning("SCRIPT_NAME {}".format(request.META.get('SCRIPT_NAME')))
+#  logger.warning("SCRIPT_NAME {}".format(request.META.get('SCRIPT_NAME')))
   annourl = request.build_absolute_uri( '%s/ocpca/%s/%s' % ( request.META.get('SCRIPT_NAME'), token, cutout ))
 #  annourl = request.build_absolute_uri( '/ocpca/%s/%s' % ( token, cutout ))
 
