@@ -9,9 +9,13 @@ import zlib
 import math
 import MySQLdb
 
-import empaths
-import emcaproj
-import emcadb
+sys.path += [os.path.abspath('../django')]
+import OCP.settings
+os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
+from django.conf import settings
+
+import ocpcaproj
+import ocpcadb
 import zindex
 
 """Construct a near-isotropic version of a given resolution"""
@@ -23,11 +27,11 @@ class ZScaleStack:
   def __init__(self, token):
     """Load the database and project"""
 
-    projdb = emcaproj.EMCAProjectsDB()
+    projdb = ocpcaproj.OCPCAProjectsDB()
     self.proj = projdb.loadProject ( token )
 
     # Bind the annotation database
-    self.imgDB = emcadb.EMCADB ( self.proj )
+    self.imgDB = ocpcadb.OCPCADB ( self.proj )
 
 
   def buildStack ( self, level ):
@@ -63,25 +67,29 @@ class ZScaleStack:
 
           # cutout the data 
           olddata = self.imgDB.cutout ( [x*xcubedim,y*ycubedim,z*zcubedim*scaling], [xcubedim,ycubedim,zcubedim*scaling], level ).data
-          # target array for the new data (z,y,x) order
-          newdata = np.zeros([zcubedim,ycubedim,xcubedim], dtype=np.uint8)
 
-          for sl in range(ycubedim):
+          # 3d-averaging
+  
+          # float64 version 
+          oldata_float64 = olddata.astype(np.float64)
 
-            # Convert each slice to an image
-            slimage = Image.frombuffer ( 'L', (xcubedim,zcubedim*scaling), olddata[:,sl,:].flatten(), 'raw', 'L', 0, 1 )
+          # chunk it into scaling sized slabs          
+          chunks=np.array_split(oldata_float64, zcubedim)
 
-            # Resize the image
-            newimage = slimage.resize ( [xcubedim,zcubedim] )
-            
-            # Put to a new cube
-            newdata[:,sl,:] = np.asarray ( newimage )
+          sums = [chunk.sum(0) for chunk in chunks]
 
-            # Compress the data
-            outfobj = cStringIO.StringIO ()
-            np.save ( outfobj, newdata )
-            zdataout = zlib.compress (outfobj.getvalue())
-            outfobj.close()
+
+          avgs = np.array(sums) / scaling
+          # normalize for float to int
+          avgs += 0.5
+ 
+          newdata = np.uint8(avgs)
+
+          # Compress the data
+          outfobj = cStringIO.StringIO ()
+          np.save ( outfobj, newdata )
+          zdataout = zlib.compress (outfobj.getvalue())
+          outfobj.close()
 
           key = zindex.XYZMorton ( [x,y,z] )
           

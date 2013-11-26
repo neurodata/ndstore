@@ -29,8 +29,8 @@ def cubeToPNGs ( nparray, prefix ):
 # Get cube in question
 try:
 
-  url = "http://localhost/emca/bock11/npz/7/0,1088/0,960/2917,3013/neariso/"
-#  url = "http://localhost/emca/kasthuri11/npz/7/0,192/0,256/1,1850/"
+#  url = "http://localhost/emca/bock11/npz/7/0,1088/0,960/2917,3013/neariso/"
+  url = "http://localhost/ocp/ocpca/kasthuri11/npz/7/0,192/0,256/1,1850/neariso/"
   f = urllib2.urlopen ( url )
 except urllib2.URLError, e:
   print "Failed to open url ", url, e
