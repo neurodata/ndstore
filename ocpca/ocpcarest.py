@@ -1547,7 +1547,13 @@ def exceptions ( webargs, ):
   # package as an HDF5 file
   tmpfile = tempfile.NamedTemporaryFile ()
   fh5out = h5py.File ( tmpfile.name )
-  ds = fh5out.create_dataset ( "exceptions", tuple(exceptions.shape), exceptions.dtype, compression='gzip', data=exceptions )
+
+  # empty HDF5 file if exceptions = None
+  if exceptions == None:
+    ds = fh5out.create_dataset ( "exceptions", (3,), np.uint8 )
+  else:
+    ds = fh5out.create_dataset ( "exceptions", tuple(exceptions.shape), exceptions.dtype, compression='gzip', data=exceptions )
+
   fh5out.close()
   tmpfile.seek(0)
   return tmpfile.read()

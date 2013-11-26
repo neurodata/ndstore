@@ -1388,8 +1388,13 @@ class OCPCADB:
     sql = "SELECT zindex,id,exlist FROM exc{} WHERE zindex in ({})".format(resolution,sqllist)
 
     # this query needs its own cursor
-    func_cursor = self.conn.cursor()
-    func_cursor.execute(sql)
+    try:
+      func_cursor = self.conn.cursor()
+      func_cursor.execute(sql)
+    except MySQLdb.Error, e:
+      logger.warning ("Failed to query exceptions in cutout %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise
+
 
     # data structure to hold list of exceptions
     excdict = defaultdict(set)
@@ -1402,7 +1407,6 @@ class OCPCADB:
         cuboidzindex, annid, zexlist = func_cursor.fetchone()
       except:
         break
-
 
       # first row in a cuboid
       if np.uint32(cuboidzindex) != prevzindex:
@@ -1428,16 +1432,21 @@ class OCPCADB:
 
     # ASSUMPTION need to promte during shave as well as annotation deletes
     # this is a priority todo RB 10/17/13
-    maxlist = max([ len(v) for (k,v) in excdict.iteritems() ])
 
-    exoutput = np.zeros([len(excdict),maxlist+3], dtype=np.uint32)
+    # Watch out for no exceptions
+    if len(excdict) != 0:
 
-    print excdict
-    i=0
-    for k,v in excdict.iteritems():
-      l = len(v)
-      exoutput[i,0:(l+3)] = [x for x in itertools.chain(k,v)]
-#      exoutput[i,0:(l+3)] = [(k[0],k[1],k[2])+=v]  
-      i+=1
+      maxlist = max([ len(v) for (k,v) in excdict.iteritems() ])
+      exoutput = np.zeros([len(excdict),maxlist+3], dtype=np.uint32)
+
+      i=0
+      for k,v in excdict.iteritems():
+        l = len(v)
+        exoutput[i,0:(l+3)] = [x for x in itertools.chain(k,v)]
+        i+=1
+
+    # Return None if there are no exceptions.
+    else:
+      exoutput = None
 
     return exoutput
