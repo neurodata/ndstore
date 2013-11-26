@@ -1387,9 +1387,14 @@ class OCPCADB:
     sqllist = ', '.join(map(lambda x: str(x), listofidxs))
     sql = "SELECT zindex,id,exlist FROM exc{} WHERE zindex in ({})".format(resolution,sqllist)
 
+
     # this query needs its own cursor
-    func_cursor = self.conn.cursor()
-    func_cursor.execute(sql)
+    try:
+      func_cursor = self.conn.cursor()
+      func_cursor.execute(sql)
+    except MySQLdb.Error, e:
+      logger.warning ("Failed to query exceptions in cutout %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise
 
     # data structure to hold list of exceptions
     excdict = defaultdict(set)
@@ -1418,7 +1423,6 @@ class OCPCADB:
       # decompress the llist of exceptions
       fobj = cStringIO.StringIO ( zlib.decompress(zexlist) )
       exlist = np.load (fobj)
-      print exlist
 
       for exc in exlist:
         excdict[(exc[0]+xcubeoff,exc[1]+ycubeoff,exc[2]+zcubeoff)].add(np.uint32(annid))
@@ -1432,7 +1436,6 @@ class OCPCADB:
 
     exoutput = np.zeros([len(excdict),maxlist+3], dtype=np.uint32)
 
-    print excdict
     i=0
     for k,v in excdict.iteritems():
       l = len(v)
