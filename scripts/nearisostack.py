@@ -65,6 +65,7 @@ class ZScaleStack:
         self.imgDB.conn.commit()
         for x in range(xlimit):
 
+
           # cutout the data 
           olddata = self.imgDB.cutout ( [x*xcubedim,y*ycubedim,z*zcubedim*scaling], [xcubedim,ycubedim,zcubedim*scaling], level ).data
 
@@ -77,7 +78,6 @@ class ZScaleStack:
           chunks=np.array_split(oldata_float64, zcubedim)
 
           sums = [chunk.sum(0) for chunk in chunks]
-
 
           avgs = np.array(sums) / scaling
           # normalize for float to int
