@@ -644,7 +644,7 @@ class OCPCAProjectsDB:
     """return a list of public tokens"""
 
     # RBTODO our notion of a public project is not good so far 
-    sql = "select token from {} where token=project".format(ocpcaprivate.projects)
+    sql = "select token from {} where public=1".format(ocpcaprivate.projects)
     try:
       cursor = self.conn.cursor()
       cursor.execute ( sql )

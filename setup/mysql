@@ -11,7 +11,7 @@ grant all privileges on *.* to 'brain'@'%' with grant option;
 
 create database ocpconfig;  
 use ocpconfig;
-create table projects ( token VARCHAR(255), openid VARCHAR(255), host VARCHAR(255), project VARCHAR(255), datatype INT, dataset VARCHAR(255), dataurl VARCHAR(255), readonly BOOLEAN, exceptions BOOLEAN, PRIMARY KEY ( project ), UNIQUE ( token ));
+create table projects ( token VARCHAR(255), openid VARCHAR(255), host VARCHAR(255), project VARCHAR(255), datatype INT, dataset VARCHAR(255), dataurl VARCHAR(255), readonly BOOLEAN, exceptions BOOLEAN, resolution INT DEFAULT 0, public TINYINT(1) DEFAULT 0, PRIMARY KEY ( project ), UNIQUE ( token ));
 create table project_description ( project VARCHAR(255), description VARCHAR(4096) );
 create table token_description ( token VARCHAR(255), description VARCHAR(4096) );
 create table datasets ( dataset VARCHAR(255), ximagesize INT, yimagesize INT, startslice INT, endslice INT, zoomlevels INT, zscale DOUBLE );
