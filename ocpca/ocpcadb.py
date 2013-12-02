@@ -1408,7 +1408,6 @@ class OCPCADB:
       except:
         break
 
-
       # first row in a cuboid
       if np.uint32(cuboidzindex) != prevzindex:
         prevzindex = cuboidzindex
@@ -1432,15 +1431,21 @@ class OCPCADB:
 
     # ASSUMPTION need to promte during shave as well as annotation deletes
     # this is a priority todo RB 10/17/13
-    maxlist = max([ len(v) for (k,v) in excdict.iteritems() ])
 
-    exoutput = np.zeros([len(excdict),maxlist+3], dtype=np.uint32)
+    # Watch out for no exceptions
+    if len(excdict) != 0:
 
-    i=0
-    for k,v in excdict.iteritems():
-      l = len(v)
-      exoutput[i,0:(l+3)] = [x for x in itertools.chain(k,v)]
-#      exoutput[i,0:(l+3)] = [(k[0],k[1],k[2])+=v]  
-      i+=1
+      maxlist = max([ len(v) for (k,v) in excdict.iteritems() ])
+      exoutput = np.zeros([len(excdict),maxlist+3], dtype=np.uint32)
+
+      i=0
+      for k,v in excdict.iteritems():
+        l = len(v)
+        exoutput[i,0:(l+3)] = [x for x in itertools.chain(k,v)]
+        i+=1
+
+    # Return None if there are no exceptions.
+    else:
+      exoutput = None
 
     return exoutput

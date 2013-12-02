@@ -349,8 +349,8 @@ def voxel ( imageargs, datasetcfg ):
   z = int(zstr)
 
   # Check arguments for legal values
-  if not ( datasetcfg.checkCube ( resolution, x, x, y, y, z, z )):
-    raise RESTArgsError ( "Illegal range. Image size:" +  str(datasetcfg.imageSize( self._resolution )))
+  if not ( datasetcfg.checkCube ( resolution, x, x+1, y, y+1, z, z+1 )):
+    raise RESTArgsError ( "Illegal range. Image size:" +  str(datasetcfg.imageSize( resolution )))
 
   return (resolution, [ x,y,z ])
 
