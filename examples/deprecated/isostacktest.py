@@ -20,7 +20,7 @@ def cubeToPNGs ( nparray, prefix ):
   # Note the data order is z then y then x
   zdim,ydim,xdim = nparray.shape
 
-  # One file per xy plane
+  # One file per xz plane
   for j in range(ydim):
     outimage = Image.frombuffer ( 'L', (xdim,zdim), nparray[:,j,:].flatten(), 'raw', 'L', 0, 1 ) 
     outimage.save ( prefix + str(j) + ".png", "PNG" )
@@ -30,7 +30,11 @@ def cubeToPNGs ( nparray, prefix ):
 try:
 
 #  url = "http://localhost/emca/bock11/npz/7/0,1088/0,960/2917,3013/neariso/"
-  url = "http://localhost/ocp/ocpca/kasthuri11/npz/7/0,192/0,256/1,1850/neariso/"
+#  url = "http://rio.cs.jhu.edu/ocp/ocpca/kasthuri11/npz/7/0,192/0,256/1,142/neariso/"
+#  url = "http://openconnecto.me/ocp/ocpca/kasthuri11/npz/5/100,300/200,448/1,400/neariso/"
+#  url = "http://openconnecto.me/ocp/ocpca/kasthuri11/npz/5/100,700/200,500/1,500/neariso/"
+#  url = "http://openconnecto.me/ocp/ocpca/bock11/npz/7/0,1088/0,960/2917,3013/neariso/"
+  url = "http://openconnecto.me/emca/bock11/npz/4/4000,5000/4000,4050/2917,3413/neariso/"
   f = urllib2.urlopen ( url )
 except urllib2.URLError, e:
   print "Failed to open url ", url, e
