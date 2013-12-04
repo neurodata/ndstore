@@ -24,6 +24,8 @@ def cubeToPNGs ( nparray, prefix ):
   for j in range(ydim):
     outimage = Image.frombuffer ( 'L', (xdim,zdim), nparray[:,j,:].flatten(), 'raw', 'L', 0, 1 ) 
     outimage.save ( prefix + str(j) + ".png", "PNG" )
+    t = nparray[:,j,:]
+    print (np.unique(t))
 
 
 # Get cube in question
@@ -34,7 +36,8 @@ try:
 #  url = "http://openconnecto.me/ocp/ocpca/kasthuri11/npz/5/100,300/200,448/1,400/neariso/"
 #  url = "http://openconnecto.me/ocp/ocpca/kasthuri11/npz/5/100,700/200,500/1,500/neariso/"
 #  url = "http://openconnecto.me/ocp/ocpca/bock11/npz/7/0,1088/0,960/2917,3013/neariso/"
-  url = "http://openconnecto.me/emca/bock11/npz/4/4000,5000/4000,4050/2917,3413/neariso/"
+#  url = "http://openconnecto.me/emca/bock11/npz/4/4000,5000/4000,4050/2917,3413/neariso/"
+  url = "http://localhost/ocp/ocpca/kasthuri11/npz/7/0,192/0,256/1,143/neariso/"
   f = urllib2.urlopen ( url )
 except urllib2.URLError, e:
   print "Failed to open url ", url, e
