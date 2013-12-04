@@ -14,6 +14,8 @@ import ocpcarest
 import django
 import re
 
+from ocpca_cy import recolor_cy
+
 
 class SimpleCatmaid:
   """Prefetch CATMAID tiles into MocpcacheDB"""
@@ -56,7 +58,16 @@ class SimpleCatmaid:
       tiledata = cb.data
 
     # need to make polymorphic for different image types     
-    outimage = Image.frombuffer ( 'L', (self.tilesz,self.tilesz), tiledata, 'raw', 'L', 0, 1 ) 
+    if tiledata.dtype == np.uint8:
+      outimage = Image.frombuffer ( 'L', (self.tilesz,self.tilesz), tiledata, 'raw', 'L', 0, 1 ) 
+    elif tiledata.dtype == np.uint32:
+      tiledata = tiledata.reshape([self.tilesz,self.tilesz])
+      recolor_cy (tiledata, tiledata)
+      outimage = Image.frombuffer ( 'RGBA', [self.tilesz,self.tilesz], tiledata, 'raw', 'RGBA', 0, 1 )
+    else:
+      assert 0 
+      # need to fix here and add falsecolor args
+
     return outimage
 
 
