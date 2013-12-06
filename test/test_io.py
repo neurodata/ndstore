@@ -19,7 +19,6 @@ import ocppaths
 import site_to_test
 SITE_HOST = site_to_test.site
 
-import ocpcaproj
 
 # Module level setup/teardown
 def setup_module(module):
@@ -51,16 +50,16 @@ def readAnno ( params ):
    """
 
   if params.voxels:
-    url = "http://%s/ocpca/%s/%s/voxels/%s/" % (params.baseurl,params.token,params.annids, params.resolution)
+    url = "http://%s/ca/%s/%s/voxels/%s/" % (params.baseurl,params.token,params.annids, params.resolution)
     print url
   elif params.cutout != None:
-    url = "http://%s/ocpca/%s/%s/cutout/%s/" % (params.baseurl,params.token,params.annids, params.cutout)
+    url = "http://%s/ca/%s/%s/cutout/%s/" % (params.baseurl,params.token,params.annids, params.cutout)
   elif params.tightcutout: 
-    url = "http://%s/ocpca/%s/%s/cutout/%s/" % (params.baseurl,params.token,params.annids, params.resolution)
+    url = "http://%s/ca/%s/%s/cutout/%s/" % (params.baseurl,params.token,params.annids, params.resolution)
   elif params.boundingbox: 
-    url = "http://%s/ocpca/%s/%s/boundingbox/%s/" % (params.baseurl,params.token,params.annids, params.resolution)
+    url = "http://%s/ca/%s/%s/boundingbox/%s/" % (params.baseurl,params.token,params.annids, params.resolution)
   else:
-    url = "http://%s/ocpca/%s/%s/" % (params.baseurl,params.token,params.annids)
+    url = "http://%s/ca/%s/%s/" % (params.baseurl,params.token,params.annids)
 
   # Get annotation in question
   f = urllib2.urlopen ( url )
@@ -297,11 +296,11 @@ def writeAnno ( params ):
 
   # Build the put URL
   if params.update:
-    url = "http://%s/ocpca/%s/update/" % ( params.baseurl, params.token)
+    url = "http://%s/ca/%s/update/" % ( params.baseurl, params.token)
   elif params.dataonly:
-    url = "http://%s/ocpca/%s/dataonly/" % ( params.baseurl, params.token)
+    url = "http://%s/ca/%s/dataonly/" % ( params.baseurl, params.token)
   else:
-    url = "http://%s/ocpca/%s/" % ( params.baseurl, params.token)
+    url = "http://%s/ca/%s/" % ( params.baseurl, params.token)
 
   if params.preserve:  
     url += 'preserve/'
@@ -570,9 +569,9 @@ class TestRW:
     conn = httplib.HTTPConnection ( base )
 
     if suffix:
-      conn.request ( 'DELETE', '/%s/ocpca/%s/%s/' % ( suffix, rp.token, rp.annids ))
+      conn.request ( 'DELETE', '/%s/ca/%s/%s/' % ( suffix, rp.token, rp.annids ))
     else:
-      conn.request ( 'DELETE', '/ocpca/%s/%s/' % ( rp.token, rp.annids ))
+      conn.request ( 'DELETE', '/ca/%s/%s/' % ( rp.token, rp.annids ))
     resp = conn.getresponse()
     content=resp.read()
     assert content == "Success"
@@ -655,7 +654,7 @@ class TestRW:
         for i in range (1000,1050):
           voxlist.append ( [ i,j,k ] )
 
-    url = 'http://%s/ocpca/%s/npvoxels/%s/%s/' % ( wp.baseurl, wp.token, int(retval), wp.resolution)
+    url = 'http://%s/ca/%s/npvoxels/%s/%s/' % ( wp.baseurl, wp.token, int(retval), wp.resolution)
 
     # Encode the voxelist an pickle
     fileobj = cStringIO.StringIO ()
@@ -675,7 +674,7 @@ class TestRW:
     annodata = np.zeros( [ 2, 50, 50 ] )
     annodata = annodata + int(retval)
 
-    url = 'http://%s/ocpca/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( wp.baseurl, wp.token, wp.resolution, 200, 250, 200, 250, 200, 202 )
+    url = 'http://%s/ca/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( wp.baseurl, wp.token, wp.resolution, 200, 250, 200, 250, 200, 202 )
 
     # Encode the voxelist as a pickle
     fileobj = cStringIO.StringIO ()
