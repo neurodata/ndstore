@@ -43,7 +43,7 @@ def datasetdict ( dataset ):
   return dsdict
 
 def jsonInfo ( proj, db ):
-  """wrapper for the parts"""
+  """All Project Info"""
 
   jsonprojinfo = {}
   jsonprojinfo['dataset'] = datasetdict ( proj.datasetcfg )
@@ -51,3 +51,20 @@ def jsonInfo ( proj, db ):
   if proj.getDBType() == ocpcaproj.CHANNELS_16bit or proj.getDBType() == ocpcaproj.CHANNELS_8bit:
     jsonprojinfo['channels'] = db.getChannels()
   return json.dumps ( jsonprojinfo, sort_keys=True, indent=4 )
+
+
+def jsonChanInfo ( proj, db ):
+  """List of Channels"""
+
+  if proj.getDBType() == ocpcaproj.CHANNELS_16bit or proj.getDBType() == ocpcaproj.CHANNELS_8bit:
+    return json.dumps ( db.getChannels(), sort_keys=True, indent=4 )
+  else:
+    return json.dumps ({})
+
+
+def publicTokens ( projdb ):
+  """List of Public Tokens"""
+
+  tokens = projdb.getPublic ()
+  import json;
+  return json.dumps (tokens, sort_keys=True, indent=4)

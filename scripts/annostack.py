@@ -5,12 +5,16 @@ import numpy as np
 import urllib, urllib2
 import cStringIO
 
-import empaths
-import emcaproj
-import emcadb
+sys.path += [os.path.abspath('../django')]
+import OCP.settings
+os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
+from django.conf import settings
+
+import ocpcaproj
+import ocpcadb
 import zindex
 
-from emca_cy import addData_cy
+from ocpca_cy import addData_cy
 
 """Construct an annotation hierarchy off of a completed annotation database."""
 
@@ -20,11 +24,11 @@ class AnnoStack:
   def __init__(self, token):
     """Load the annotation database and project"""
 
-    projdb = emcaproj.EMCAProjectsDB()
+    projdb = ocpcaproj.OCPCAProjectsDB()
     self.proj = projdb.loadProject ( token )
 
     # Bind the annotation database
-    self.annoDB = emcadb.EMCADB ( self.proj )
+    self.annoDB = ocpcadb.OCPCADB ( self.proj )
    
 
   def createTables ( self  ):
