@@ -57,7 +57,7 @@ class MCFCCatmaid:
     """Either fetch the file from mocpcache or get a mcfc image"""
 
     # parse the web args
-    self.token, tileszstr, self.channels, plane, resstr, xtilestr, ytilestr, zslicestr, rest = webargs.split('/',8)
+    self.token, tileszstr, self.channels, resstr, xtilestr, ytilestr, zslicestr, rest = webargs.split('/',8)
 
     [ self.db, self.proj, projdb ] = ocpcarest.loadDBProj ( self.token )
 

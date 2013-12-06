@@ -103,7 +103,3 @@ class SimpleCatmaid:
 
     fobj.seek(0)
     return fobj
-
-
-
-
