@@ -788,7 +788,7 @@ class OCPCADB:
       # use the requested resolution
       if zscaling == 'isotropic':
         dbname = self.annoproj.getIsotropicTable(resolution)
-      elif zscaling == 'nearisotropic':
+      elif zscaling == 'nearisotropic' and self.datasetcfg.nearisoscaledown[resolution] > 1:
         dbname = self.annoproj.getNearIsoTable(resolution)
       else:
         dbname = self.annoproj.getTable(resolution)
