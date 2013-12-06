@@ -6,6 +6,7 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     url(r'^ocpca/', include('ocpca.urls')),
+    url(r'^ca/', include('ocpca.urls')),
     url(r'^overlay/', include('overlay.urls')),
     url(r'^catmaid/', include('catmaid.urls')),
     url(r'^synaptogram/', include('synaptogram.urls')),
