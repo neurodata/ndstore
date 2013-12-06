@@ -202,7 +202,7 @@ def chaninfo (request, webargs):
   """Return channel information"""
 
   try:  
-    return django.http.HttpResponse(ocpcarest.chanInfo(webargs), mimetype="text/html" )
+    return django.http.HttpResponse(ocpcarest.chanInfo(webargs), mimetype="application/json" )
   except OCPCAError, e:
     return django.http.HttpResponseNotFound(e.value)
   except MySQLdb.Error, e:

@@ -1277,9 +1277,8 @@ def chanInfo ( webargs ):
   # Get the annotation database
   [ db, proj, projdb ] = loadDBProj ( token )
 
-  chans = db.getChannels()
-  import pprint
-  return '<pre> %s </pre>' % pprint.pformat(chans)
+  import jsonprojinfo
+  return jsonprojinfo.jsonChanInfo( proj, db )
 
 
 def mcfcPNG ( proj, db, token, service, chanstr, imageargs ):
@@ -1506,9 +1505,8 @@ def publicTokens ( self ):
   
   projdb = ocpcaproj.OCPCAProjectsDB()
 
-  tokens = projdb.getPublic ()
-  import json;
-  return json.dumps (tokens)
+  import jsonprojinfo
+  return jsonprojinfo.publicTokens ( projdb )
 
 
 #
