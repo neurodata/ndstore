@@ -32,7 +32,7 @@ def cubeToPNGs ( nparray, prefix ):
 try:
 
 #  url = "http://localhost/emca/bock11/npz/7/0,1088/0,960/2917,3013/neariso/"
-  url = "http://localhost/ocp/ocpca/kasthuri11/npz/7/0,192/0,256/1,143/neariso/"
+  url = "http://openconnecto.me/ocp/ocpca/kasthuri11/npz/3/1000,1500/1000,1016/1,400/neariso/"
   f = urllib2.urlopen ( url )
 except urllib2.URLError, e:
   print "Failed to open url ", url, e
