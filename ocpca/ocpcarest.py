@@ -90,19 +90,31 @@ def binZip ( imageargs, proj, db ):
 def numpyZip ( imageargs, proj, db ):
   """Return a web readable Numpy Pickle zipped"""
 
-  # if it's a channel database, pull out the channel
+  # if it's a channel database, pull out the channels and return a 4-d numpy array
   if proj.getDBType() == ocpcaproj.CHANNELS_8bit or proj.getDBType() == ocpcaproj.CHANNELS_16bit:
-    [ channel, sym, imageargs ] = imageargs.partition ('/')
-    # make sure that the channel is an int identifier
-    channel = ocpcachannel.toID ( channel, db ) 
+
+    [ chanurl, sym, imageargs ] = imageargs.partition ('/')
+
+    # make sure that the channels are ints
+    channels = chanurl.split(',')
+
+    chanobj = ocpcachannel.OCPCAChannels ( db )
+    chanids = chanobj.rewriteToInts ( channels )
+
+    ccdata = cutout ( imageargs, proj, db, chanids[0] ).data
+    cubedata = np.zeros ( (len(chanids),ccdata.shape[0],ccdata.shape[1],ccdata.shape[2]) , dtype=ccdata.dtype )
+    cubedata[0,:,:,:] = ccdata
+    for i in range(1,len(chanids)):
+      cubedata[i,:,:,:] = cutout ( imageargs, proj, db, chanids[i] ).data
+
+  # single channel cutout
   else: 
     channel = None
-
-  cube = cutout ( imageargs, proj, db, channel )
+    cubedata = cutout ( imageargs, proj, db, channel ).data
 
   # Create the compressed cube
   fileobj = cStringIO.StringIO ()
-  np.save ( fileobj, cube.data )
+  np.save ( fileobj, cubedata )
   cdz = zlib.compress (fileobj.getvalue()) 
 
   # Package the object as a Web readable file handle
@@ -1318,14 +1330,14 @@ def mcfcPNG ( proj, db, token, service, chanstr, imageargs ):
     if i == 0:
       data32 = np.array ( cb.data * scaleby, dtype=np.uint32 )
       combined_img = 0xFF000000 + np.left_shift(data32,8) + np.left_shift(data32,16)
-    # Second is yellow
-    elif i == 1:  
-      data32 = np.array ( cb.data * scaleby, dtype=np.uint32 )
-      combined_img +=  np.left_shift(data32,8) + data32 
-    # Third is Magenta
-    elif i == 2:
+    # Second is Magenta
+    elif i == 1:
       data32 = np.array ( cb.data * scaleby, dtype=np.uint32 )
       combined_img +=  np.left_shift(data32,16) + data32 
+    # THird is yellow
+    elif i == 2:  
+      data32 = np.array ( cb.data * scaleby, dtype=np.uint32 )
+      combined_img +=  np.left_shift(data32,8) + data32 
     # Fourth is Red
     elif i == 3:
       data32 = np.array ( cb.data * scaleby, dtype=np.uint32 )
@@ -1456,7 +1468,6 @@ def merge ( webargs ):
   ids = np.array(ids,dtype=np.uint32)
 
   [ db, proj, projdb ] = loadDBProj ( token )
-  import pdb;pdb.set_trace()
   #mergetype = rest
   [mergetype,resolution] = rest.split('/',1)
   if mergetype == "global":

@@ -121,8 +121,6 @@ class ColorCatmaid:
   def getTile ( self, webargs ):
     """Either fetch the file from mocpcache or load a new region into mocpcache by cutout"""
 
-    import pdb; pdb.set_trace()
-
     # parse the web args
     self.token, tileszstr, self.channel, resstr, xtilestr, ytilestr, zslicestr, color, brightnessstr, rest = webargs.split('/',9)
 
