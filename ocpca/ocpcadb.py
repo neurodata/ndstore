@@ -1274,15 +1274,25 @@ class OCPCADB:
     if len(self.annoIdx.getIndex(int(mergeid),resolution)) == 0:
       raise EMCAError(ids[0] + " not a valid annotation id")
   
+  # RB!!! this loop does nothing.  You get teh listofids 
+  #  it should be removed.  but for now, I am changing to make 
+  #  more general  and include the merge object in the list of indexes
+  #
+  #  I suspect that exceptions are not being indexed.
+  #
     # Get the list of cubeindexes for the Ramon objects
-    listofids = set()
-    for annid in ids[1:]:
-      listofids |= set(self.annoIdx.getIndex(annid,resolution))
+    listofidxs = set()
+    #for annid in ids[1:]:
+    # RB for now
+    for annid in ids:
+      listofidxs |= set(self.annoIdx.getIndex(annid,resolution))
         
     # For each annotation, get the cubes and relabel it
     for annid in ids[1:]:
-      listofids = set(self.annoIdx.getIndex(annid,resolution))
-      for key in listofids:
+#  RB!!! somethign is broken.  let's iterate over all indexes for now
+#     including those of the base url.
+#      listofidxs = set(self.annoIdx.getIndex(annid,resolution))
+      for key in listofidxs:
         cube = self.getCube (key,resolution)
         #Update exceptions
         oldexlist = self.getExceptions( key, resolution, annid ) 
@@ -1294,7 +1304,10 @@ class OCPCADB:
         self.putCube ( key, resolution,cube)
         
       # Delete annotation and all it's meta data from the database
-      annotation.deleteAnnotation(annid,self,'')
+      try:
+        annotation.deleteAnnotation(annid,self,'')
+      except:
+        logger.warning ( "No aanotation to delete @ {}".format(annid))
       
 
     self.commit()
@@ -1311,10 +1324,10 @@ class OCPCADB:
     if len(self.annoIdx.getIndex(ids[0],1)) == 0:
       raise OCPCAError(ids[0] + " not a valid annotation id")
     print mergetype
-    listofids = set()
+    listofidxs = set()
     for annid in ids[1:]:
       #print annid
-      listofids |= set(self.annoIdx.getIndex(annid,resolution))
+      listofidxs |= set(self.annoIdx.getIndex(annid,resolution))
     #print listofids
 
     return "Merge 2D"
@@ -1330,9 +1343,9 @@ class OCPCADB:
     if len(self.annoIdx.getIndex(ids[0],1)) == 0:
       raise OCPCAError(ids[0] + " not a valid annotation id")
 
-    listofids = set()
+    listofidxs = set()
     for annid in ids[1:]:
-      listofids |= set(self.annoIdx.getIndex(annid,resolution))
+      listofidxs |= set(self.annoIdx.getIndex(annid,resolution))
 
       # Perform the cutout
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ]

@@ -18,7 +18,7 @@ def main():
 
   result = parser.parse_args()
 
-  url = 'http://%s/emca/%s/query/' % ( result.baseurl, result.token )
+  url = 'http://%s/ca/%s/query/' % ( result.baseurl, result.token )
   if result.type != None:
     url += 'type/%s/' % ( result.type )
   if result.status != None:
