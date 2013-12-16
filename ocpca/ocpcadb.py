@@ -1274,29 +1274,38 @@ class OCPCADB:
     if len(self.annoIdx.getIndex(int(mergeid),resolution)) == 0:
       raise EMCAError(ids[0] + " not a valid annotation id")
   
-  # RB!!! this loop does nothing.  You get teh listofids 
-  #  it should be removed.  but for now, I am changing to make 
-  #  more general  and include the merge object in the list of indexes
-  #
-  #  I suspect that exceptions are not being indexed.
-  #
-    # Get the list of cubeindexes for the Ramon objects
     listofidxs = set()
+
+  # RB!!! this loop does nothing.  listofidxs is written later
+    # Get the list of cubeindexes for the Ramon objects
     #for annid in ids[1:]:
     # RB for now
-    for annid in ids:
-      listofidxs |= set(self.annoIdx.getIndex(annid,resolution))
+#    for annid in ids:
+#      listofidxs |= set(self.annoIdx.getIndex(annid,resolution))
         
     # For each annotation, get the cubes and relabel it
-    for annid in ids[1:]:
+    #
+    #  RB!!!!
+    #  we need to do this for all annotations, including 
+    #  the merge id so that at the end there are no exceptions
+#    for annid in ids[1:]:
+    for annid in ids:
+    
 #  RB!!! somethign is broken.  let's iterate over all indexes for now
 #     including those of the base url.
-#      listofidxs = set(self.annoIdx.getIndex(annid,resolution))
+      listofidxs = set(self.annoIdx.getIndex(annid,resolution))
       for key in listofidxs:
         cube = self.getCube (key,resolution)
         #Update exceptions
         oldexlist = self.getExceptions( key, resolution, annid ) 
-        self.updateExceptions ( key, resolution, mergeid, oldexlist )
+        #
+        # RB!!!!! this next line is wrong!  the problem is that
+        #  we are merging all annotations.  So at the end, there
+        #  need to be no exceptions left.  This line will leave
+        #  exceptions with the same value as the annotation.
+        #  Just delete the exceptions
+        #
+        #self.updateExceptions ( key, resolution, mergeid, oldexlist )
         self.deleteExceptions ( key, resolution, annid )
         
         # Cython optimized function  to relabel data from annid to mergeid
@@ -1304,11 +1313,10 @@ class OCPCADB:
         self.putCube ( key, resolution,cube)
         
       # Delete annotation and all it's meta data from the database
-      try:
+      if annid != mergeid:
         annotation.deleteAnnotation(annid,self,'')
-      except:
-        logger.warning ( "No aanotation to delete @ {}".format(annid))
-      
+      else:
+        logger.warning ( "Not deleteing the mergid annotation." )
 
     self.commit()
 
