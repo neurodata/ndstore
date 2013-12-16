@@ -33,15 +33,15 @@ def main():
   result = parser.parse_args()
 
   if result.voxels:
-    url = "http://%s/emca/%s/%s/voxels/%s/" % (result.baseurl,result.token,result.annids, result.resolution)
+    url = "http://%s/ca/%s/%s/voxels/%s/" % (result.baseurl,result.token,result.annids, result.resolution)
   elif result.cutout != None:
-    url = "http://%s/emca/%s/%s/cutout/%s/" % (result.baseurl,result.token,result.annids, result.cutout)
+    url = "http://%s/ca/%s/%s/cutout/%s/" % (result.baseurl,result.token,result.annids, result.cutout)
   elif result.tightcutout: 
-    url = "http://%s/emca/%s/%s/cutout/%s/" % (result.baseurl,result.token,result.annids, result.resolution)
+    url = "http://%s/ca/%s/%s/cutout/%s/" % (result.baseurl,result.token,result.annids, result.resolution)
   elif result.boundingbox: 
-    url = "http://%s/emca/%s/%s/boundingbox/%s/" % (result.baseurl,result.token,result.annids, result.resolution)
+    url = "http://%s/ca/%s/%s/boundingbox/%s/" % (result.baseurl,result.token,result.annids, result.resolution)
   else:
-    url = "http://%s/emca/%s/%s/" % (result.baseurl,result.token,result.annids)
+    url = "http://%s/ca/%s/%s/" % (result.baseurl,result.token,result.annids)
 
   print url
 

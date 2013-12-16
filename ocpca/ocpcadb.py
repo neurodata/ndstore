@@ -1274,29 +1274,28 @@ class OCPCADB:
     if len(self.annoIdx.getIndex(int(mergeid),resolution)) == 0:
       raise EMCAError(ids[0] + " not a valid annotation id")
   
-  # RB!!! this loop does nothing.  You get teh listofids 
-  #  it should be removed.  but for now, I am changing to make 
-  #  more general  and include the merge object in the list of indexes
-  #
-  #  I suspect that exceptions are not being indexed.
-  #
     # Get the list of cubeindexes for the Ramon objects
     listofidxs = set()
+
+  # RB!!! this loop does nothing.  
+  #   I have removed 
+  #
     #for annid in ids[1:]:
-    # RB for now
-    for annid in ids:
-      listofidxs |= set(self.annoIdx.getIndex(annid,resolution))
+#      listofidxs |= set(self.annoIdx.getIndex(annid,resolution))
         
     # For each annotation, get the cubes and relabel it
-    for annid in ids[1:]:
-#  RB!!! somethign is broken.  let's iterate over all indexes for now
-#     including those of the base url.
-#      listofidxs = set(self.annoIdx.getIndex(annid,resolution))
+    #for annid in ids[1:]:
+
+    # RB!!!! do this for all ids, promoting the exceptions of the merge id
+    for annid in ids:
+      listofidxs = set(self.annoIdx.getIndex(annid,resolution))
       for key in listofidxs:
         cube = self.getCube (key,resolution)
         #Update exceptions
         oldexlist = self.getExceptions( key, resolution, annid ) 
-        self.updateExceptions ( key, resolution, mergeid, oldexlist )
+        # RB!!! no reason to update exceptions.  We will eventually flatten.
+        #
+        #self.updateExceptions ( key, resolution, mergeid, oldexlist )
         self.deleteExceptions ( key, resolution, annid )
         
         # Cython optimized function  to relabel data from annid to mergeid
@@ -1304,10 +1303,10 @@ class OCPCADB:
         self.putCube ( key, resolution,cube)
         
       # Delete annotation and all it's meta data from the database
-      try:
+      #
+      # RB!!!!! except for the merge annotation
+      if annid != mergeid:
         annotation.deleteAnnotation(annid,self,'')
-      except:
-        logger.warning ( "No aanotation to delete @ {}".format(annid))
       
 
     self.commit()
