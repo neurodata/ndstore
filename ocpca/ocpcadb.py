@@ -1293,7 +1293,12 @@ class OCPCADB:
         cube = self.getCube (key,resolution)
         #Update exceptions
         oldexlist = self.getExceptions( key, resolution, annid ) 
-        # RB!!! no reason to update exceptions.  We will eventually flatten.
+        #
+        # RB!!!!! this next line is wrong!  the problem is that
+        #  we are merging all annotations.  So at the end, there
+        #  need to be no exceptions left.  This line will leave
+        #  exceptions with the same value as the annotation.
+        #  Just delete the exceptions
         #
         #self.updateExceptions ( key, resolution, mergeid, oldexlist )
         self.deleteExceptions ( key, resolution, annid )
@@ -1310,7 +1315,6 @@ class OCPCADB:
           annotation.deleteAnnotation(annid,self,'')
         except:
           logger.warning("Failed to delete annotation {} during merge.".format(annid))
-      
 
     self.commit()
 
