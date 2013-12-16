@@ -1306,7 +1306,10 @@ class OCPCADB:
       #
       # RB!!!!! except for the merge annotation
       if annid != mergeid:
-        annotation.deleteAnnotation(annid,self,'')
+        try:
+          annotation.deleteAnnotation(annid,self,'')
+        except:
+          logger.warning("Failed to delete annotation {} during merge.".format(annid))
       
 
     self.commit()
