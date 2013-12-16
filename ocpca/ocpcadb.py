@@ -1272,7 +1272,7 @@ class OCPCADB:
  
     # PYTODO Check if this is a valid annotation that we are relabelubg to
     if len(self.annoIdx.getIndex(int(mergeid),resolution)) == 0:
-      raise EMCAError(ids[0] + " not a valid annotation id")
+      raise OCPCAError(ids[0] + " not a valid annotation id")
   
     # Get the list of cubeindexes for the Ramon objects
     listofidxs = set()
@@ -1343,7 +1343,7 @@ class OCPCADB:
     resolution = int(res)
     dbname = self.annoproj.getTable(resolution)
     if (self.annoproj.getDBType() == emcaproj.ANNOTATIONS):
-      raise EMCAError("The project is not  a Annotation project")
+      raise OCPCAError("The project is not  a Annotation project")
     
     # PYTODO Check if this is a valid annotation that we are relabelubg to
     if len(self.annoIdx.getIndex(ids[0],1)) == 0:
