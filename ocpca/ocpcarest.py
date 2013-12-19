@@ -1309,6 +1309,10 @@ def mcfcPNG ( proj, db, token, service, chanstr, imageargs ):
   combined_img = None
 
   for i in range(len(channels)):
+     
+    # skip 0 channels
+    if channels[i]==0:
+      continue
        
     if service == 'xy':
       cb = xySlice ( str(channels[i]) + "/" + imageargs, proj, db )
