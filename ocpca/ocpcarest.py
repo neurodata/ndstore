@@ -105,7 +105,11 @@ def numpyZip ( imageargs, proj, db ):
     cubedata = np.zeros ( (len(chanids),ccdata.shape[0],ccdata.shape[1],ccdata.shape[2]) , dtype=ccdata.dtype )
     cubedata[0,:,:,:] = ccdata
     for i in range(1,len(chanids)):
-      cubedata[i,:,:,:] = cutout ( imageargs, proj, db, chanids[i] ).data
+      # allow 0 channels to be a noop for mcfc catmaid requests to choose color
+      if chanids[i] == 0:
+        continue
+      else:
+        cubedata[i,:,:,:] = cutout ( imageargs, proj, db, chanids[i] ).data
 
   # single channel cutout
   else: 
@@ -1309,6 +1313,10 @@ def mcfcPNG ( proj, db, token, service, chanstr, imageargs ):
   combined_img = None
 
   for i in range(len(channels)):
+     
+    # skip 0 channels
+    if channels[i]==0:
+      continue
        
     if service == 'xy':
       cb = xySlice ( str(channels[i]) + "/" + imageargs, proj, db )
