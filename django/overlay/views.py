@@ -30,6 +30,7 @@ def overlayCutout (request, webargs):
   proj = projdb.loadProject ( token )
 
   dataurl = request.build_absolute_uri( '%s/ocpca/%s/%s' % ( proj.getDataURL(), proj.getDataset(), cutout ))
+  #dataurl = request.build_absolute_uri( '%s%s/ocpca/%s/%s' % ( proj.getDataURL(),request.META.get('SCRIPT_NAME'), proj.getDataset(), cutout ))
 
   # RBTODO can't seen to get WSGIScriptAlias information from apache.  So 
   #  right now we have to hardwire.  Yuck.
@@ -84,7 +85,7 @@ def imgAnnoOverlay (request, webargs):
   """Return overlayCutout as a png"""
 
   try:
-     overlayimg = overlayCutout ( request, webargs )
+    overlayimg = overlayCutout ( request, webargs )
   except Exception, e:
      raise
 #    return django.http.HttpResponseNotFound(e)
