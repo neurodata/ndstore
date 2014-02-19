@@ -769,88 +769,101 @@ def getAnnotation ( webargs ):
   # Split the URL and get the args
   args = otherargs.split('/', 2)
 
-  # Make the HDF5 file
-  # Create an in-memory HDF5 file
-  tmpfile = tempfile.NamedTemporaryFile()
-  h5f = h5py.File ( tmpfile.name )
+  try: 
+    # Make the HDF5 file
+    # Create an in-memory HDF5 file
+    tmpfile = tempfile.NamedTemporaryFile()
+    h5f = h5py.File ( tmpfile.name )
+  
+    # if the first argument is numeric.  it is an annoid
+    if re.match ( '^[\d,]+$', args[0] ): 
 
-  # if the first argument is numeric.  it is an annoid
-  if re.match ( '^[\d,]+$', args[0] ): 
-
-    annoids = map(int, args[0].split(','))
-
-    for annoid in annoids: 
-
-      # default is no data
-      if args[1] == '' or args[1] == 'nodata':
-        dataoption = AR_NODATA
-        getAnnoById ( annoid, h5f, proj, db, dataoption )
-
-      # if you want voxels you either requested the resolution id/voxels/resolution
-      #  or you get data from the default resolution
-      elif args[1] == 'voxels':
-        dataoption = AR_VOXELS
-        try:
-          [resstr, sym, rest] = args[2].partition('/')
-          resolution = int(resstr) 
-        except:
-          logger.warning ( "Improperly formatted voxel arguments {}".format(args[2]))
-          raise OCPCAError("Improperly formatted voxel arguments {}".format(args[2]))
-
-        getAnnoById ( annoid, h5f, proj, db, dataoption, resolution )
-
-      elif args[1] =='cutout':
-
-        # if there are no args or only resolution, it's a tight cutout request
-        if args[2] == '' or re.match('^\d+[\/]*$', args[2]):
-          dataoption = AR_TIGHTCUTOUT
+      annoids = map(int, args[0].split(','))
+  
+      for annoid in annoids: 
+  
+        # default is no data
+        if args[1] == '' or args[1] == 'nodata':
+          dataoption = AR_NODATA
+          getAnnoById ( annoid, h5f, proj, db, dataoption )
+  
+        # if you want voxels you either requested the resolution id/voxels/resolution
+        #  or you get data from the default resolution
+        elif args[1] == 'voxels':
+          dataoption = AR_VOXELS
           try:
             [resstr, sym, rest] = args[2].partition('/')
             resolution = int(resstr) 
           except:
-            logger.warning ( "Improperly formatted cutout arguments {}".format(args[2]))
-            raise OCPCAError("Improperly formatted cutout arguments {}".format(args[2]))
-
+            logger.warning ( "Improperly formatted voxel arguments {}".format(args[2]))
+            raise OCPCAError("Improperly formatted voxel arguments {}".format(args[2]))
+  
           getAnnoById ( annoid, h5f, proj, db, dataoption, resolution )
-
+  
+        elif args[1] =='cutout':
+  
+          # if there are no args or only resolution, it's a tight cutout request
+          if args[2] == '' or re.match('^\d+[\/]*$', args[2]):
+            dataoption = AR_TIGHTCUTOUT
+            try:
+              [resstr, sym, rest] = args[2].partition('/')
+              resolution = int(resstr) 
+            except:
+              logger.warning ( "Improperly formatted cutout arguments {}".format(args[2]))
+              raise OCPCAError("Improperly formatted cutout arguments {}".format(args[2]))
+  
+            getAnnoById ( annoid, h5f, proj, db, dataoption, resolution )
+  
+          else:
+            dataoption = AR_CUTOUT
+  
+            # Perform argument processing
+            brargs = restargs.BrainRestArgs ();
+            brargs.cutoutArgs ( args[2], proj.datasetcfg )
+  
+            # Extract the relevant values
+            corner = brargs.getCorner()
+            dim = brargs.getDim()
+            resolution = brargs.getResolution()
+  
+            getAnnoById ( annoid, h5f, proj, db, dataoption, resolution, corner, dim )
+  
+        elif args[1] == 'boundingbox':
+  
+          dataoption = AR_BOUNDINGBOX
+          try:
+            [resstr, sym, rest] = args[2].partition('/')
+            resolution = int(resstr) 
+          except:
+            logger.warning ( "Improperly formatted bounding box arguments {}".format(args[2]))
+            raise OCPCAError("Improperly formatted bounding box arguments {}".format(args[2]))
+      
+          getAnnoById ( annoid, h5f, proj, db, dataoption, resolution )
+  
         else:
-          dataoption = AR_CUTOUT
+          logger.warning ("Fetch identifier %s.  Error: no such data option %s " % ( annoid, args[1] ))
+          raise OCPCAError ("Fetch identifier %s.  Error: no such data option %s " % ( annoid, args[1] ))
+  
+    # the first argument is not numeric.  it is a service other than getAnnotation
+    else:
+      logger.warning("Get interface %s requested.  Illegal or not implemented. Args: %s" % ( args[0], webargs ))
+      raise OCPCAError ("Get interface %s requested.  Illegal or not implemented" % ( args[0] ))
+  
+  # Close the file on a error: it won't get closed by the Web server
+  except: 
+    tmpfile.close()
+    h5f.flush()
+    h5f.close()
+    raise
 
-          # Perform argument processing
-          brargs = restargs.BrainRestArgs ();
-          brargs.cutoutArgs ( args[2], proj.datasetcfg )
-
-          # Extract the relevant values
-          corner = brargs.getCorner()
-          dim = brargs.getDim()
-          resolution = brargs.getResolution()
-
-          getAnnoById ( annoid, h5f, proj, db, dataoption, resolution, corner, dim )
-
-      elif args[1] == 'boundingbox':
-
-        dataoption = AR_BOUNDINGBOX
-        try:
-          [resstr, sym, rest] = args[2].partition('/')
-          resolution = int(resstr) 
-        except:
-          logger.warning ( "Improperly formatted bounding box arguments {}".format(args[2]))
-          raise OCPCAError("Improperly formatted bounding box arguments {}".format(args[2]))
-    
-        getAnnoById ( annoid, h5f, proj, db, dataoption, resolution )
-
-      else:
-        logger.warning ("Fetch identifier %s.  Error: no such data option %s " % ( annoid, args[1] ))
-        raise OCPCAError ("Fetch identifier %s.  Error: no such data option %s " % ( annoid, args[1] ))
-
-  # the first argument is not numeric.  it is a service other than getAnnotation
-  else:
-    logger.warning("Get interface %s requested.  Illegal or not implemented. Args: %s" % ( args[0], webargs ))
-    raise OCPCAError ("Get interface %s requested.  Illegal or not implemented" % ( args[0] ))
-
+  # Close the HDF5 file always
   h5f.flush()
+  h5f.close()
+
+  # Return the HDF5 file
   tmpfile.seek(0)
   return tmpfile.read()
+
 
 def getCSV ( webargs ):
   """Fetch a RAMON object as CSV.  Always includes bounding box.  No data option."""
@@ -981,6 +994,7 @@ def getAnnotations ( webargs, postdata ):
 
   # Transmit back the populated HDF5 file
   h5fout.flush()
+  h5fout.close()
   tmpoutfile.seek(0)
   return tmpoutfile.read()
 
