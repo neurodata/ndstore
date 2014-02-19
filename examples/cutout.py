@@ -10,13 +10,12 @@ def main():
 
   parser = argparse.ArgumentParser(description='Cutout a small region of the database and print the contents')
   parser.add_argument('baseurl', action="store" )
+  parser.add_argument('token', action="store" )
   parser.add_argument('cutout', action="store", help='Cutout arguments of the form resolution/x1,x2/y1,y2/z1,z2.' )
-
-  import pdb; pdb.set_trace()
 
   result = parser.parse_args()
 
-  url = 'http://%s/npz/%s/' % ( result.baseurl, result.cutout )
+  url = 'http://%s/ca/%s/npz/%s/' % ( result.baseurl, result.token, result.cutout )
 
   # Get cube in question
   try:
@@ -31,6 +30,8 @@ def main():
   pagestr = zlib.decompress ( zdata[:] )
   pagefobj = cStringIO.StringIO ( pagestr )
   cube = np.load ( pagefobj )
+
+  import pdb; pdb.set_trace()
 
   print cube
 

@@ -1556,7 +1556,7 @@ def exceptions ( webargs, ):
     args = restargs.BrainRestArgs ();
     args.cutoutArgs ( cutoutargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
-    logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
+    logger.warning("REST Arguments %s failed: %s" % (webargs,e))
     raise OCPCAError(e)
 
   # Extract the relevant values

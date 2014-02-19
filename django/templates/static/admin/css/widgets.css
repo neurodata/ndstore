@@ -1,18 +1,18 @@
 /* SELECTOR (FILTER INTERFACE) */
 
 .selector {
-    width: 580px;
+    width: 840px;
     float: left;
 }
 
 .selector select {
-    width: 270px;
+    width: 400px;
     height: 17.2em;
 }
 
 .selector-available, .selector-chosen {
     float: left;
-    width: 270px;
+    width: 400px;
     text-align: center;
     margin-bottom: 5px;
 }
@@ -48,7 +48,7 @@
 }
 
 .selector .selector-available input {
-    width: 230px;
+    width: 360px;
 }
 
 .selector ul.selector-chooser {
@@ -223,6 +223,21 @@ table p.datetime {
     font-size: 10px;
     margin-left: 0;
     padding-left: 0;
+}
+
+/* URL */
+
+p.url {
+    line-height: 20px;
+    margin: 0;
+    padding: 0;
+    color: #666;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.url a {
+    font-weight: normal;
 }
 
 /* FILE UPLOADS */

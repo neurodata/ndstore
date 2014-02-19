@@ -1272,21 +1272,35 @@ class OCPCADB:
  
     # PYTODO Check if this is a valid annotation that we are relabelubg to
     if len(self.annoIdx.getIndex(int(mergeid),resolution)) == 0:
-      raise EMCAError(ids[0] + " not a valid annotation id")
+      raise OCPCAError(ids[0] + " not a valid annotation id")
   
     # Get the list of cubeindexes for the Ramon objects
-    listofids = set()
-    for annid in ids[1:]:
-      listofids |= set(self.annoIdx.getIndex(annid,resolution))
+    listofidxs = set()
+
+  # RB!!! this loop does nothing.  
+  #   I have removed 
+  #
+    #for annid in ids[1:]:
+#      listofidxs |= set(self.annoIdx.getIndex(annid,resolution))
         
     # For each annotation, get the cubes and relabel it
-    for annid in ids[1:]:
-      listofids = set(self.annoIdx.getIndex(annid,resolution))
-      for key in listofids:
+    #for annid in ids[1:]:
+
+    # RB!!!! do this for all ids, promoting the exceptions of the merge id
+    for annid in ids:
+      listofidxs = set(self.annoIdx.getIndex(annid,resolution))
+      for key in listofidxs:
         cube = self.getCube (key,resolution)
         #Update exceptions
         oldexlist = self.getExceptions( key, resolution, annid ) 
-        self.updateExceptions ( key, resolution, mergeid, oldexlist )
+        #
+        # RB!!!!! this next line is wrong!  the problem is that
+        #  we are merging all annotations.  So at the end, there
+        #  need to be no exceptions left.  This line will leave
+        #  exceptions with the same value as the annotation.
+        #  Just delete the exceptions
+        #
+        #self.updateExceptions ( key, resolution, mergeid, oldexlist )
         self.deleteExceptions ( key, resolution, annid )
         
         # Cython optimized function  to relabel data from annid to mergeid
@@ -1294,8 +1308,13 @@ class OCPCADB:
         self.putCube ( key, resolution,cube)
         
       # Delete annotation and all it's meta data from the database
-      annotation.deleteAnnotation(annid,self,'')
-      
+      #
+      # RB!!!!! except for the merge annotation
+      if annid != mergeid:
+        try:
+          annotation.deleteAnnotation(annid,self,'')
+        except:
+          logger.warning("Failed to delete annotation {} during merge.".format(annid))
 
     self.commit()
 
@@ -1311,10 +1330,10 @@ class OCPCADB:
     if len(self.annoIdx.getIndex(ids[0],1)) == 0:
       raise OCPCAError(ids[0] + " not a valid annotation id")
     print mergetype
-    listofids = set()
+    listofidxs = set()
     for annid in ids[1:]:
       #print annid
-      listofids |= set(self.annoIdx.getIndex(annid,resolution))
+      listofidxs |= set(self.annoIdx.getIndex(annid,resolution))
     #print listofids
 
     return "Merge 2D"
@@ -1324,15 +1343,15 @@ class OCPCADB:
     resolution = int(res)
     dbname = self.annoproj.getTable(resolution)
     if (self.annoproj.getDBType() == emcaproj.ANNOTATIONS):
-      raise EMCAError("The project is not  a Annotation project")
+      raise OCPCAError("The project is not  a Annotation project")
     
     # PYTODO Check if this is a valid annotation that we are relabelubg to
     if len(self.annoIdx.getIndex(ids[0],1)) == 0:
       raise OCPCAError(ids[0] + " not a valid annotation id")
 
-    listofids = set()
+    listofidxs = set()
     for annid in ids[1:]:
-      listofids |= set(self.annoIdx.getIndex(annid,resolution))
+      listofidxs |= set(self.annoIdx.getIndex(annid,resolution))
 
       # Perform the cutout
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ]

@@ -12,8 +12,8 @@ import ocpcarest
 
 import zindex
 
-import kanno_cy
-
+import anydbm
+import pdb
 #
 #  ingest the PNG files into the database
 #
@@ -29,7 +29,7 @@ import kanno_cy
 def main():
 
   parser = argparse.ArgumentParser(description='Ingest the FlyEM image data.')
-  parser.add_argument('baseurl', action="store", help='Base URL to of ocp service no http://, e.g. openconnecto.me')
+  parser.add_argument('baseurl', action="store", help='Base URL to of ocp service no http://, e.  g. openconnecto.me')
   parser.add_argument('token', action="store", help='Token for the annotation project.')
   parser.add_argument('path', action="store", help='Directory with annotation PNG files.')
 
@@ -53,6 +53,9 @@ def main():
 
   batchsz=1
 
+  # Accessing the dict in dbm
+  anydb = anydbm.open('bodydict','r')
+
   # Get a list of the files in the directories
   for sl in range (startslice,endslice+1,batchsz):
 
@@ -66,12 +69,25 @@ def main():
         filenm = result.path + '/superpixel.' + '{:0>5}'.format(sl+b) + '.png'
         print "Opening filenm " + filenm
         
+        
         img = Image.open ( filenm, 'r' )
         imgdata = np.asarray ( img )
-        slab[b,:,:]  = kanno_cy.pngto32(imgdata)
-
+        #lab[b,:,:]  = kanno_cy.pngto32(imgdata)
+        #Adding new lines
+        superpixelarray = imgdata[:,:,0] + (np.uint32(imgdata[:,:,1])<<8)
+        newdata = np.zeros([superpixelarray.shape[0],superpixelarray.shape[1]], dtype=np.uint32)
+        print "slice",sl
+        for i in range(superpixelarray.shape[0]):
+          for j in range(superpixelarray.shape[1]):
+            dictvalue = anydb.get( str(sl)+','+str(superpixelarray[i,j]) )
+            newdata[i,j] = int(dictvalue)
+        slab[b,:,:] = newdata
+        print "end on slice:",sl
+        
         # the last z offset that we ingest, if the batch ends before batchsz
         endz = b
+        continue
+    continue
 
     # Now we have a 1024x1024x16 z-aligned cube.  
     # Send it to the database.
@@ -90,17 +106,8 @@ def main():
 
         cubedata[0:zmax-zmin,0:ymax-ymin,0:xmax-xmin] = slab[zmin:zmax,ymin:ymax,xmin:xmax]
 
-#        # create the DB BLOB
-#        fileobj = cStringIO.StringIO ()
-#        np.save ( fileobj, cubedata )
-#        cdz = zlib.compress (fileobj.getvalue())
-
         # insert the blob into the database
-        db.annotateDense ((x,y,sl),resolution,cubedata,'O')
-#        cursor = db.conn.cursor()
-#        sql = "INSERT INTO res{} (zindex, cube) VALUES (%s, %s)".format(int(resolution))
-#        cursor.execute(sql, (mortonidx, cdz))
-#        cursor.close()
+        db.annotateDense ((x,y,sl-startslice),resolution,cubedata,'O')
 
       print "Commiting at x=%s, y=%s, z=%s" % (x,y,sl)
       db.conn.commit()
