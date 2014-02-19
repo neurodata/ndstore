@@ -136,26 +136,34 @@ def HDF5 ( imageargs, proj, db ):
   tmpfile = tempfile.NamedTemporaryFile ()
   fh5out = h5py.File ( tmpfile.name )
 
-  # if it's a channel database, pull out the channels
-  if proj.getDBType() == ocpcaproj.CHANNELS_8bit or proj.getDBType() == ocpcaproj.CHANNELS_16bit:
-   
-    [ chanurl, sym, imageargs ] = imageargs.partition ('/')
+  try: 
 
-    # make sure that the channels are ints
-    channels = chanurl.split(',')
+    # if it's a channel database, pull out the channels
+    if proj.getDBType() == ocpcaproj.CHANNELS_8bit or proj.getDBType() == ocpcaproj.CHANNELS_16bit:
+     
+      [ chanurl, sym, imageargs ] = imageargs.partition ('/')
 
-    chanobj = ocpcachannel.OCPCAChannels ( db )
-    chanids = chanobj.rewriteToInts ( channels )
+      # make sure that the channels are ints
+      channels = chanurl.split(',')
 
-    for i in range(len(chanids)):
-      cube = cutout ( imageargs, proj, db, chanids[i] )
-      ds = fh5out.create_dataset ( "{}".format(channels[i]), tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data )
-      
-  else: 
-    cube = cutout ( imageargs, proj, db, None )
+      chanobj = ocpcachannel.OCPCAChannels ( db )
+      chanids = chanobj.rewriteToInts ( channels )
 
-    ds = fh5out.create_dataset ( "cube", tuple(cube.data.shape), cube.data.dtype,
+      for i in range(len(chanids)):
+        cube = cutout ( imageargs, proj, db, chanids[i] )
+        ds = fh5out.create_dataset ( "{}".format(channels[i]), tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data )
+        
+    else: 
+      cube = cutout ( imageargs, proj, db, None )
+
+      ds = fh5out.create_dataset ( "cube", tuple(cube.data.shape), cube.data.dtype,
                                  compression='gzip', data=cube.data )
+
+  except:
+    tmpfile.close()
+    fh5out.close()
+    raise
+
   fh5out.close()
   tmpfile.seek(0)
   return tmpfile.read()
@@ -769,11 +777,12 @@ def getAnnotation ( webargs ):
   # Split the URL and get the args
   args = otherargs.split('/', 2)
 
+  # Make the HDF5 file
+  # Create an in-memory HDF5 file
+  tmpfile = tempfile.NamedTemporaryFile()
+  h5f = h5py.File ( tmpfile.name )
+
   try: 
-    # Make the HDF5 file
-    # Create an in-memory HDF5 file
-    tmpfile = tempfile.NamedTemporaryFile()
-    h5f = h5py.File ( tmpfile.name )
   
     # if the first argument is numeric.  it is an annoid
     if re.match ( '^[\d,]+$', args[0] ): 
@@ -852,7 +861,6 @@ def getAnnotation ( webargs ):
   # Close the file on a error: it won't get closed by the Web server
   except: 
     tmpfile.close()
-    h5f.flush()
     h5f.close()
     raise
 
@@ -878,20 +886,28 @@ def getCSV ( webargs ):
   tmpfile = tempfile.NamedTemporaryFile()
   h5f = h5py.File ( tmpfile.name )
 
-  dataoption = AR_BOUNDINGBOX
   try:
-    [resstr, sym, rest] = reststr.partition('/')
-    resolution = int(resstr) 
-  except:
-    logger.warning ( "Improperly formatted cutout arguments {}".format(reststr))
-    raise OCPCAError("Improperly formatted cutout arguments {}".format(reststr))
 
-  
-  getAnnoById ( annoid, h5f, proj, db, dataoption, resolution )
+    dataoption = AR_BOUNDINGBOX
+    try:
+      [resstr, sym, rest] = reststr.partition('/')
+      resolution = int(resstr) 
+    except:
+      logger.warning ( "Improperly formatted cutout arguments {}".format(reststr))
+      raise OCPCAError("Improperly formatted cutout arguments {}".format(reststr))
 
-  # convert the HDF5 file to csv
-  csvstr = h5ann.h5toCSV ( h5f )
+    
+    getAnnoById ( annoid, h5f, proj, db, dataoption, resolution )
+
+    # convert the HDF5 file to csv
+    csvstr = h5ann.h5toCSV ( h5f )
+
+  finally:
+    h5f.close()
+    tmpfile.close()
+
   return csvstr 
+
 
 def getAnnotations ( webargs, postdata ):
   """Get multiple annotations.  Takes an HDF5 that lists ids in the post."""
@@ -907,90 +923,99 @@ def getAnnotations ( webargs, postdata ):
   tmpinfile.seek(0)
   h5in = h5py.File ( tmpinfile.name )
 
-  # IDENTIFIERS
-  if not h5in.get('ANNOIDS'):
-    logger.warning ("Requesting multiple annotations.  But no HDF5 \'ANNOIDS\' field specified.") 
-    raise OCPCAError ("Requesting multiple annotations.  But no HDF5 \'ANNOIDS\' field specified.") 
+  try:
 
-  # GET the data out of the HDF5 file.  Never operate on the data in place.
-  annoids = h5in['ANNOIDS'][:]
+    # IDENTIFIERS
+    if not h5in.get('ANNOIDS'):
+      logger.warning ("Requesting multiple annotations.  But no HDF5 \'ANNOIDS\' field specified.") 
+      raise OCPCAError ("Requesting multiple annotations.  But no HDF5 \'ANNOIDS\' field specified.") 
 
-  # set variables to None: need them in call to getAnnoByID, but not all paths set all
-  corner = None
-  dim = None
-  resolution = None
-  dataarg = ''
+    # GET the data out of the HDF5 file.  Never operate on the data in place.
+    annoids = h5in['ANNOIDS'][:]
 
-  # process options
-  # Split the URL and get the args
-  if otherargs != '':
-    ( dataarg, cutout ) = otherargs.split('/', 1)
+    # set variables to None: need them in call to getAnnoByID, but not all paths set all
+    corner = None
+    dim = None
+    resolution = None
+    dataarg = ''
 
-  if dataarg =='' or dataarg == 'nodata':
-    dataoption = AR_NODATA
+    # process options
+    # Split the URL and get the args
+    if otherargs != '':
+      ( dataarg, cutout ) = otherargs.split('/', 1)
 
-  elif dataarg == 'voxels':
-    dataoption = AR_VOXELS
-    # only arg to voxels is resolution
-    try:
-      [resstr, sym, rest] = cutout.partition('/')
-      resolution = int(resstr) 
-    except:
-      logger.warning ( "Improperly formatted voxel arguments {}".format(cutout))
-      raise OCPCAError("Improperly formatted voxel arguments {}".format(cutout))
+    if dataarg =='' or dataarg == 'nodata':
+      dataoption = AR_NODATA
 
-
-  elif dataarg == 'cutout':
-    # if blank of just resolution then a tightcutout
-    if cutout == '' or re.match('^\d+[\/]*$', cutout):
-      dataoption = AR_TIGHTCUTOUT
+    elif dataarg == 'voxels':
+      dataoption = AR_VOXELS
+      # only arg to voxels is resolution
       try:
         [resstr, sym, rest] = cutout.partition('/')
         resolution = int(resstr) 
       except:
-        logger.warning ( "Improperly formatted cutout arguments {}".format(cutout))
-        raise OCPCAError("Improperly formatted cutout arguments {}".format(cutout))
+        logger.warning ( "Improperly formatted voxel arguments {}".format(cutout))
+        raise OCPCAError("Improperly formatted voxel arguments {}".format(cutout))
+
+
+    elif dataarg == 'cutout':
+      # if blank of just resolution then a tightcutout
+      if cutout == '' or re.match('^\d+[\/]*$', cutout):
+        dataoption = AR_TIGHTCUTOUT
+        try:
+          [resstr, sym, rest] = cutout.partition('/')
+          resolution = int(resstr) 
+        except:
+          logger.warning ( "Improperly formatted cutout arguments {}".format(cutout))
+          raise OCPCAError("Improperly formatted cutout arguments {}".format(cutout))
+      else:
+        dataoption = AR_CUTOUT
+
+        # Perform argument processing
+        brargs = restargs.BrainRestArgs ();
+        brargs.cutoutArgs ( cutout, proj.datsetcfg )
+
+        # Extract the relevant values
+        corner = brargs.getCorner()
+        dim = brargs.getDim()
+        resolution = brargs.getResolution()
+
+    # RBTODO test this interface
+    elif dataarg == 'boundingbox':
+      # if blank of just resolution then a tightcutout
+      if cutout == '' or re.match('^\d+[\/]*$', cutout):
+        dataoption = AR_BOUNDINGBOX
+        try:
+          [resstr, sym, rest] = cutout.partition('/')
+          resolution = int(resstr) 
+        except:
+          logger.warning ( "Improperly formatted bounding box arguments {}".format(cutout))
+          raise OCPCAError("Improperly formatted bounding box arguments {}".format(cutout))
+
     else:
-      dataoption = AR_CUTOUT
+        logger.warning ("In getAnnotations: Error: no such data option %s " % ( dataarg ))
+        raise OCPCAError ("In getAnnotations: Error: no such data option %s " % ( dataarg ))
 
-      # Perform argument processing
-      brargs = restargs.BrainRestArgs ();
-      brargs.cutoutArgs ( cutout, proj.datsetcfg )
+    try:
 
-      # Extract the relevant values
-      corner = brargs.getCorner()
-      dim = brargs.getDim()
-      resolution = brargs.getResolution()
+      # Make the HDF5 output file
+      # Create an in-memory HDF5 file
+      tmpoutfile = tempfile.NamedTemporaryFile()
+      h5fout = h5py.File ( tmpoutfile.name )
 
-  # RBTODO test this interface
-  elif dataarg == 'boundingbox':
-    # if blank of just resolution then a tightcutout
-    if cutout == '' or re.match('^\d+[\/]*$', cutout):
-      dataoption = AR_BOUNDINGBOX
-      try:
-        [resstr, sym, rest] = cutout.partition('/')
-        resolution = int(resstr) 
-      except:
-        logger.warning ( "Improperly formatted bounding box arguments {}".format(cutout))
-        raise OCPCAError("Improperly formatted bounding box arguments {}".format(cutout))
+      # get annotations for each identifier
+      for annoid in annoids:
+        # the int here is to prevent using a numpy value in an inner loop.  This is a 10x performance gain.
+        getAnnoById ( int(annoid), h5fout, proj, db, dataoption, resolution, corner, dim )
 
-  else:
-      logger.warning ("In getAnnotations: Error: no such data option %s " % ( dataarg ))
-      raise OCPCAError ("In getAnnotations: Error: no such data option %s " % ( dataarg ))
+    except:
+      h5fout.close()
+      tmpoutfile.close()
 
-  # Make the HDF5 output file
-  # Create an in-memory HDF5 file
-  tmpoutfile = tempfile.NamedTemporaryFile()
-  h5fout = h5py.File ( tmpoutfile.name )
-
-  # get annotations for each identifier
-  for annoid in annoids:
-    # the int here is to prevent using a numpy value in an inner loop.  This is a 10x performance gain.
-    getAnnoById ( int(annoid), h5fout, proj, db, dataoption, resolution, corner, dim )
-
-  # close temporary file
-  h5in.close()
-  tmpinfile.close()
+  finally:
+    # close temporary file
+    h5in.close()
+    tmpinfile.close()
 
   # Transmit back the populated HDF5 file
   h5fout.flush()
@@ -1195,27 +1220,31 @@ def queryAnnoObjects ( webargs, postdata=None ):
     tmpfile.seek(0)
     h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
 
-    corner = h5f['XYZOFFSET'][:]
-    dim = h5f['CUTOUTSIZE'][:]
-    resolution = h5f['RESOLUTION'][0]
+    try:
 
-    if not proj.datasetcfg.checkCube( resolution, corner[0], corner[0]+dim[0], corner[1], corner[1]+dim[1], corner[2], corner[2]+dim[2] ):
-      logger.warning ( "Illegal cutout corner=%s, dim=%s" % ( corner, dim))
-      raise OCPCAError ( "Illegal cutout corner=%s, dim=%s" % ( corner, dim))
 
-    # RBFIX this a hack
-    #
-    #  the zstart in datasetcfg is sometimes offset to make it aligned.
-    #   Probably remove the offset is the best idea.  and align data
-    #    to zero regardless of where it starts.  For now.
-    corner[2] -= proj.datasetcfg.slicerange[0]
+      corner = h5f['XYZOFFSET'][:]
+      dim = h5f['CUTOUTSIZE'][:]
+      resolution = h5f['RESOLUTION'][0]
 
-    cutout = db.cutout ( corner, dim, resolution )
-    annoids = np.intersect1d ( annoids, np.unique( cutout.data ))
+      if not proj.datasetcfg.checkCube( resolution, corner[0], corner[0]+dim[0], corner[1], corner[1]+dim[1], corner[2], corner[2]+dim[2] ):
+        logger.warning ( "Illegal cutout corner=%s, dim=%s" % ( corner, dim))
+        raise OCPCAError ( "Illegal cutout corner=%s, dim=%s" % ( corner, dim))
 
-  if postdata:
-    h5f.close()
-    tmpfile.close()
+      # RBFIX this a hack
+      #
+      #  the zstart in datasetcfg is sometimes offset to make it aligned.
+      #   Probably remove the offset is the best idea.  and align data
+      #    to zero regardless of where it starts.  For now.
+      corner[2] -= proj.datasetcfg.slicerange[0]
+
+      cutout = db.cutout ( corner, dim, resolution )
+      annoids = np.intersect1d ( annoids, np.unique( cutout.data ))
+
+    finally:
+
+      h5f.close()
+      tmpfile.close()
 
   return h5ann.PackageIDs ( annoids ) 
 
@@ -1290,11 +1319,14 @@ def projInfo ( webargs ):
   tmpfile = tempfile.NamedTemporaryFile ()
   h5f = h5py.File ( tmpfile.name )
 
-  # Populate the file with project information
-  h5projinfo.h5Info ( proj, db, h5f ) 
+  try:
 
-  h5f.close()
-  tmpfile.seek(0)
+    # Populate the file with project information
+    h5projinfo.h5Info ( proj, db, h5f ) 
+
+  finally:
+    h5f.close()
+    tmpfile.seek(0)
 
   return tmpfile.read()
 
@@ -1579,11 +1611,18 @@ def exceptions ( webargs, ):
   tmpfile = tempfile.NamedTemporaryFile ()
   fh5out = h5py.File ( tmpfile.name )
 
-  # empty HDF5 file if exceptions = None
-  if exceptions == None:
-    ds = fh5out.create_dataset ( "exceptions", (3,), np.uint8 )
-  else:
-    ds = fh5out.create_dataset ( "exceptions", tuple(exceptions.shape), exceptions.dtype, compression='gzip', data=exceptions )
+  try:
+
+    # empty HDF5 file if exceptions = None
+    if exceptions == None:
+      ds = fh5out.create_dataset ( "exceptions", (3,), np.uint8 )
+    else:
+      ds = fh5out.create_dataset ( "exceptions", tuple(exceptions.shape), exceptions.dtype, compression='gzip', data=exceptions )
+
+  except:
+    fh5out.close()
+    tmpfile.close()
+    raise
 
   fh5out.close()
   tmpfile.seek(0)
