@@ -364,6 +364,26 @@ class OCPCADB:
       raise
 
   #
+  # promoteExceptions
+  #
+  def promoteExceptions ( self, key, resolution, cube ):
+    """A deletion has occurred in this cuboid.  Promote exceptions into the image."""
+
+    excs = self.getAllExceptions ( key, resolution )
+
+    for e in excs: 
+      if 
+
+
+    table = 'exc'+str(resolution)
+
+    sql = "DELETE FROM " + table + " WHERE zindex = %s AND id = %s" 
+    try:
+      self.cursor.execute ( sql, (key, entityid))
+    except MySQLdb.Error, e:
+      logger.error ( "Error deleting exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise
+  #
   # updateExceptions
   #
   def updateExceptions ( self, key, resolution, entityid, exceptions ):
@@ -1105,16 +1125,16 @@ class OCPCADB:
       #get the cubes that contain the annotation
       zidxs = self.annoIdx.getIndex(annoid,res,True)
       
-      # RBTODO when we delete we do not promote exceptions to image data
       #Delete annotation data
       for key in zidxs:
         cube = self.getCube ( key, res, True )
         vec_func = np.vectorize ( lambda x: 0 if x == annoid else x )
         cube.data = vec_func ( cube.data )
-        self.putCube ( key, res, cube)
         # remove the expcetions
         if self.EXCEPT_FLAG:
           self.deleteExceptions ( key, res, annoid )
+          self.promoteExceptions ( key, res, cube )
+        self.putCube ( key, res, cube)
       
     # delete Index
     self.annoIdx.deleteIndex(annoid,resolutions)
