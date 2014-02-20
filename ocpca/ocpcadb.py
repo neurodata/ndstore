@@ -13,6 +13,7 @@ import ocpcaproj
 import annotation
 import annindex
 import imagecube
+import probmapcube
 import ocpcachannel
 
 from ocpcaerror import OCPCAError
@@ -133,7 +134,7 @@ class OCPCADB:
 
       # Here we've queried the highest id successfully    
       row = self.cursor.fetchone ()
-      # if the table is empty start at 1, 0 is no annotation
+      # if the table is empty start at 1, 0 is no 
       if ( row[0] == None ):
         identifier = 1
       else:
@@ -746,10 +747,12 @@ class OCPCADB:
   #
   def cutout ( self, corner, dim, resolution, channel=None, zscaling=None ):
     """Extract a cube of arbitrary size.  Need not be aligned."""
+ 
+    import pdb; pdb.set_trace()
 
     # PYTODO alter query if  (ocpcaproj)._resolution is > resolution
     # if cutout is below resolution, get a smaller cube and scaleup
-    if self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS and  self.annoproj.getResolution() > resolution:
+    if (self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS or self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS_64bit) and self.annoproj.getResolution() > resolution:
 
       # scale the corner to higher resolution
       newcorner = corner[0]/(2**(self.annoproj.getResolution()-resolution)), corner[1]/(2**(self.annoproj.getResolution()-resolution)), corner[2]
@@ -794,7 +797,7 @@ class OCPCADB:
         dbname = self.annoproj.getTable(resolution)
 
 
-    if (self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS):
+    if (self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS or self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS):
 
       # input cube is the database size
       incube = anncube.AnnotateCube ( cubedim )
@@ -816,6 +819,13 @@ class OCPCADB:
       
       incube = imagecube.ImageCube16 ( cubedim )
       outcube = imagecube.ImageCube16 ( [xnumcubes*xcubedim,\
+                                        ynumcubes*ycubedim,\
+                                        znumcubes*zcubedim] )
+
+    elif (self.annoproj.getDBType() == ocpcaproj.PROBMAP_32bit):
+      
+      incube = probmapcube.ProbMapCube32 ( cubedim )
+      outcube = probmapcube.ProbMapCube32 ( [xnumcubes*xcubedim,\
                                         ynumcubes*ycubedim,\
                                         znumcubes*zcubedim] )
 
@@ -864,7 +874,7 @@ class OCPCADB:
       outcube.addData ( incube, offset ) 
 
     # if we fetched a smaller cube to zoom, correct the result
-    if self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS and  self.annoproj.getResolution() > resolution:
+    if (self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS or self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS) and self.annoproj.getResolution() > resolution:
       logger.warning ( "Correcting for zoomed resolution." )
 
       outcube.zoomData ( self.annoproj.getResolution()-resolution )
@@ -1207,15 +1217,15 @@ class OCPCADB:
 
 
   #
-  # writeImageCuboid
+  # writeCuboid
   #
   #  Write data that is not integral in cuboids
   #
-  def writeImageCuboid ( self, corner, resolution, imgdata ):
+  def writeCuboid ( self, corner, resolution, cuboiddata ):
     """Write an image through the Web service"""
 
     # dim is in xyz, data is in zyxj
-    dim = [ imgdata.shape[2], imgdata.shape[1], imgdata.shape[0] ]
+    dim = [ cuboiddata.shape[2], cuboiddata.shape[1], cuboiddata.shape[0] ]
 
     # get the size of the image and cube
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
@@ -1232,9 +1242,14 @@ class OCPCADB:
     zoffset = corner[2]%zcubedim
     yoffset = corner[1]%ycubedim
     xoffset = corner[0]%xcubedim
+    
+    if self.annoproj.getDBType() == ocpcaproj.IMAGES_8bit:
+      cuboiddtype = np.uint8  
+    elif self.annoproj.getDBType() == ocpcaproj.PROBMAP_32bit:
+      cuboiddtype = np.float32
 
-    databuffer = np.zeros ([znumcubes*zcubedim, ynumcubes*ycubedim, xnumcubes*xcubedim], dtype=np.uint8 )
-    databuffer [ zoffset:zoffset+dim[2], yoffset:yoffset+dim[1], xoffset:xoffset+dim[0] ] = imgdata 
+    databuffer = np.zeros ([znumcubes*zcubedim, ynumcubes*ycubedim, xnumcubes*xcubedim], dtype=cuboiddata.dtype )
+    databuffer [ zoffset:zoffset+dim[2], yoffset:yoffset+dim[1], xoffset:xoffset+dim[0] ] = cuboiddata 
 
     for z in range(znumcubes):
       for y in range(ynumcubes):
@@ -1342,8 +1357,9 @@ class OCPCADB:
      # get the size of the image and cube
     resolution = int(res)
     dbname = self.annoproj.getTable(resolution)
-    if (self.annoproj.getDBType() == emcaproj.ANNOTATIONS):
-      raise OCPCAError("The project is not  a Annotation project")
+# No emcaproj.  PYTODO fix this.
+#    if (self.annoproj.getDBType() == emcaproj.ANNOTATIONS):
+#      raise OCPCAError("The project is not  a Annotation project")
     
     # PYTODO Check if this is a valid annotation that we are relabelubg to
     if len(self.annoIdx.getIndex(ids[0],1)) == 0:

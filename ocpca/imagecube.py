@@ -22,24 +22,6 @@ class ImageCube8(Cube):
     # note that this is self.cubesize (which is transposed) in Cube
     self.data = np.zeros ( self.cubesize, dtype=np.uint8 )
 
-
-  # CubefromFiles
-  def cubeFromFiles ( self, corner, tilestack ):
-    """Initialize the cube from files.  Specify low x,y,z corner."""
-    return tilestack.tilesToCube ( corner, self ) 
-
-    
-  #
-  # Extract data from the cube and write out PNG files.
-  #
-  def cubeToPNGs ( self, prefix ):
-    """Move data from tiled files to array"""  
-
-    zdim,ydim,xdim = self.data.shape
-    for k in range(zdim):
-      outimage = Image.frombuffer ( 'L', (xdim,ydim), self.data[k,:,:].flatten(), 'raw', 'L', 0, 1 ) 
-      outimage.save ( prefix + str(k) + ".png", "PNG" )
-
   #
   # Create the specified slice (index) at filename
   #
@@ -60,7 +42,6 @@ class ImageCube8(Cube):
     #if the image scales to 0 pixels it don't work
     newimage = outimage.resize ( [xdim, int(zdim*zscale)] )
     newimage.save ( fileobj, "PNG" )
-  
 
   #
   # Create the specified slice (index) at filename
@@ -93,7 +74,6 @@ class ImageCube16(Cube):
     Cube.__init__(self,cubesize)
     # note that this is self.cubesize (which is transposed) in Cube
     self.data = np.zeros ( self.cubesize, dtype=np.uint16 )
-
 
   #
   # Create the specified slice (index) at filename

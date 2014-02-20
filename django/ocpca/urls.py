@@ -22,12 +22,10 @@ urlpatterns = patterns('ocpca.views',
   # get list of multiply labelled voxels in a cutout region
   url(r'(?P<webargs>^\w+/exceptions/[\w,/]*)$', 'exceptions'),
   # get services
-  url(r'(?P<webargs>^\w+/(xy|xz|yz|hdf5|npz|zip|id|ids|xyanno||xzanno|yzanno|xytiff|xztiff|yztiff)/[\w,/-]+)$', 'getCutout'),
+  url(r'(?P<webargs>^\w+/(xy|xz|yz|hdf5|npz|zip|id|ids|xyanno||xzanno|yzanno|xytiff|xztiff|yztiff)/[\w,/-]+)$', 'cutout'),
   # single field interfaces
   url(r'(?P<webargs>^\w+/\d+/getField/[\w,/]*)$', 'getField'),
   url(r'(?P<webargs>^\w+/\d+/setField/[\w\. ,/]*)$', 'setField'),
-  # the post services
-  url(r'(?P<webargs>^\w+/(npvoxels|npdense)/[\w,/]+)$', 'annopost'),
   # merge annotations
   url(r'(?P<webargs>^\w+/merge/[\w,/]+)$', 'merge'),
   # csv metadata read

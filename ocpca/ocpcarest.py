@@ -513,19 +513,20 @@ def selectPost ( webargs, proj, db, postdata ):
 
     try:
 
-      if service == 'npvoxels':
+# RB deprecate voxels absent RAMON?
+#      if service == 'npvoxels':
+#
+#       #  get the resolution
+#       [ entity, resolution, conflictargs ] = postargs.split('/', 2)
+#
+#       # Grab the voxel list
+#       fileobj = cStringIO.StringIO ( postdata )
+#       voxlist =  np.load ( fileobj )
+#
+#       conflictopt = restargs.conflictOption ( conflictargs )
+#       entityid = db.annotate ( int(entity), int(resolution), voxlist, conflictopt )
 
-        #  get the resolution
-        [ entity, resolution, conflictargs ] = postargs.split('/', 2)
-
-        # Grab the voxel list
-        fileobj = cStringIO.StringIO ( postdata )
-        voxlist =  np.load ( fileobj )
-
-        conflictopt = restargs.conflictOption ( conflictargs )
-        entityid = db.annotate ( int(entity), int(resolution), voxlist, conflictopt )
-
-      elif service == 'npdense':
+      if service == 'npz':
 
         # Process the arguments
         try:
@@ -546,14 +547,52 @@ def selectPost ( webargs, proj, db, postdata ):
         fileobj = cStringIO.StringIO ( rawdata )
         voxarray = np.load ( fileobj )
 
-        if proj.getDBType() == ocpcaproj.IMAGES_8bit: 
-          db.writeImageCuboid ( corner, resolution, voxarray )
+        if proj.getDBType() != ocpcaproj.ANNOTATIONS and proj.getDBType() != ocpcaproj.ANNOTATIONS_64: 
+
+          db.writeCuboid ( corner, resolution, voxarray )
           # this is just a status
           entityid=0
 
         # Choose the verb, get the entity (as needed), and annotate
         # Translates the values directly
         else:
+
+          entityid = db.annotateDense ( corner, resolution, voxarray, conflictopt )
+
+      elif service == 'hdf5':
+
+        # Process the arguments
+        try:
+          args = restargs.BrainRestArgs ();
+          args.cutoutArgs ( postargs, proj.datasetcfg )
+        except restargs.RESTArgsError, e:
+          logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
+          raise OCPCAError(e)
+
+        corner = args.getCorner()
+        resolution = args.getResolution()
+
+        # This is used for ingest only now.  So, overwrite conflict option.
+        conflictopt = restargs.conflictOption ( "" )
+
+        # Get the HDF5 file.
+        tmpfile = tempfile.NamedTemporaryFile ( )
+        tmpfile.write ( postdata )
+        tmpfile.seek(0)
+        h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
+
+        voxarray = np.array(h5f.get('CUTOUT'))
+
+        if proj.getDBType() != ocpcaproj.ANNOTATIONS and proj.getDBType() != ocpcaproj.ANNOTATIONS_64: 
+
+          db.writeCuboid ( corner, resolution, voxarray )
+          # this is just a status
+          entityid=0
+
+        # Choose the verb, get the entity (as needed), and annotate
+        # Translates the values directly
+        else:
+
           entityid = db.annotateDense ( corner, resolution, voxarray, conflictopt )
 
       else:
@@ -595,8 +634,8 @@ def getCutout ( webargs ):
   return selectService ( rangeargs, proj, db )
 
 
-def annopost ( webargs, postdata ):
-  """Interface to the annotation write service 
+def putCutout ( webargs, postdata ):
+  """Interface to the write cutout data.
       Load the annotation project and invoke the appropriate
       dataset."""
   [ token, sym, rangeargs ] = webargs.partition ('/')
@@ -1543,7 +1582,7 @@ def exceptions ( webargs, ):
   resolution = args.getResolution()
 
   # check to make sure it's an annotation project
-  if proj.getDBType() != ocpcaproj.ANNOTATIONS:
+  if proj.getDBType() != ocpcaproj.ANNOTATIONS and proj.getDBType() != ocpcaproj.ANNOTATIONS_64: 
     logger.warning("Asked for exceptions on project that is not of type ANNOTATIONS")
     raise OCPCAError("Asked for exceptions on project that is not of type ANNOTATIONS")
   elif not proj.getExceptions():

@@ -13,30 +13,47 @@ from ocpcaerror import OCPCAError
 import logging
 logger=logging.getLogger("ocp")
 
-def getCutout (request, webargs):
+def cutout (request, webargs):
   """Restful URL for all read services to annotation projects"""
 
   [ token , sym, cutoutargs ] = webargs.partition ('/')
   [ service, sym, rest ] = cutoutargs.partition ('/')
 
   try:
-    if service=='xy' or service=='yz' or service=='xz':
-      return django.http.HttpResponse(ocpcarest.getCutout(webargs), mimetype="image/png" )
-    elif service=='hdf5':
-      return django.http.HttpResponse(ocpcarest.getCutout(webargs), mimetype="product/hdf5" )
-    elif service=='npz':
-      return django.http.HttpResponse(ocpcarest.getCutout(webargs), mimetype="product/npz" )
-    elif service=='zip':
-      return django.http.HttpResponse(ocpcarest.getCutout(webargs), mimetype="product/zip" )
-    elif service=='xyanno' or service=='yzanno' or service=='xzanno':
-      return django.http.HttpResponse(ocpcarest.getCutout(webargs), mimetype="image/png" )
-    elif service=='id':
-      return django.http.HttpResponse(ocpcarest.getCutout(webargs))
-    elif service=='ids':
-      return django.http.HttpResponse(ocpcarest.getCutout(webargs))
+    # GET methods
+    if request.method == 'GET':
+      if service=='xy' or service=='yz' or service=='xz':
+        return django.http.HttpResponse(ocpcarest.getCutout(webargs), mimetype="image/png" )
+      elif service=='hdf5':
+        return django.http.HttpResponse(ocpcarest.getCutout(webargs), mimetype="product/hdf5" )
+      elif service=='npz':
+        return django.http.HttpResponse(ocpcarest.getCutout(webargs), mimetype="product/npz" )
+      elif service=='zip':
+        return django.http.HttpResponse(ocpcarest.getCutout(webargs), mimetype="product/zip" )
+      elif service=='xyanno' or service=='yzanno' or service=='xzanno':
+        return django.http.HttpResponse(ocpcarest.getCutout(webargs), mimetype="image/png" )
+      elif service=='id':
+        return django.http.HttpResponse(ocpcarest.getCutout(webargs))
+      elif service=='ids':
+        return django.http.HttpResponse(ocpcarest.getCutout(webargs))
+      else:
+        logger.warning ("HTTP Bad request. Could not find service %s" % service )
+        return django.http.HttpResponseBadRequest ("Could not find service %s" % service )
+
+    # RBTODO control caching?
+    # POST methods
+    elif request.method == 'POST':
+      if service=='hdf5' or service=='npz':
+        django.http.HttpResponse(ocpcarest.putCutout(webargs,request.body))
+        return django.http.HttpResponse ("Success", mimetype='text/html')
+      else:
+        logger.warning ("HTTP Bad request. Could not find service %s" % service )
+        return django.http.HttpResponseBadRequest ("Could not find service %s" % service )
+
     else:
-      logger.warning ("HTTP Bad request. Could not find service %s" % service )
-      return django.http.HttpResponseBadRequest ("Could not find service %s" % service )
+      logger.warning ("Invalid HTTP method %s.  Not GET or POST." % request.method )
+      return django.http.HttpResponseBadRequest ("Invalid HTTP method %s.  Not GET or POST." % request.method )
+
   except OCPCAError, e:
     return django.http.HttpResponseNotFound(e.value)
   except MySQLdb.Error, e:
@@ -45,21 +62,6 @@ def getCutout (request, webargs):
     logger.exception("Unknown exception in getCutout.")
     raise
 
-
-@cache_control(no_cache=True)
-def annopost (request, webargs):
-  """Restful URL for all write/post services to annotation projects"""
-
-  # All handling done by ocpcarest
-  try:
-    return django.http.HttpResponse(ocpcarest.annopost(webargs,request.body))
-  except OCPCAError, e:
-    return django.http.HttpResponseNotFound(e.value)
-  except MySQLdb.Error, e:
-    return django.http.HttpResponseNotFound(e)
-  except:
-    logger.exception("Unknown exception in annopost.")
-    raise
 
 @cache_control(no_cache=True)
 def annotation (request, webargs):
