@@ -199,7 +199,11 @@ class OCPCADB:
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
     # Create a cube object
-    cube = anncube.AnnotateCube ( cubedim )
+    if (self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS):
+      cube = anncube.AnnotateCube ( cubedim )
+    elif (self.annoproj.getDBType()==ocpcaproj.PROBMAP_32bit):
+      cube = probmapcube.ProbMapCube32 ( cubedim )
+  
 
     # get the block from the database
     sql = "SELECT cube FROM " + self.annoproj.getTable(resolution) + " WHERE zindex = " + str(key) 
@@ -371,18 +375,8 @@ class OCPCADB:
 
     excs = self.getAllExceptions ( key, resolution )
 
-    for e in excs: 
-      if 
+    # RBTODO
 
-
-    table = 'exc'+str(resolution)
-
-    sql = "DELETE FROM " + table + " WHERE zindex = %s AND id = %s" 
-    try:
-      self.cursor.execute ( sql, (key, entityid))
-    except MySQLdb.Error, e:
-      logger.error ( "Error deleting exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise
   #
   # updateExceptions
   #
@@ -768,8 +762,6 @@ class OCPCADB:
   def cutout ( self, corner, dim, resolution, channel=None, zscaling=None ):
     """Extract a cube of arbitrary size.  Need not be aligned."""
  
-    import pdb; pdb.set_trace()
-
     # PYTODO alter query if  (ocpcaproj)._resolution is > resolution
     # if cutout is below resolution, get a smaller cube and scaleup
     if (self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS or self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS_64bit) and self.annoproj.getResolution() > resolution:
@@ -1278,7 +1270,9 @@ class OCPCADB:
           key = zindex.XYZMorton ([x+xstart,y+ystart,z+zstart])
           cube = self.getCube ( key, resolution, True )
 
-          cube.data = databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] 
+#  RB update
+#          cube.data = databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] 
+          cube.overwrite ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
 
           self.putCube ( key, resolution, cube)
 

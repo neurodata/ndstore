@@ -547,7 +547,7 @@ def selectPost ( webargs, proj, db, postdata ):
         fileobj = cStringIO.StringIO ( rawdata )
         voxarray = np.load ( fileobj )
 
-        if proj.getDBType() != ocpcaproj.ANNOTATIONS and proj.getDBType() != ocpcaproj.ANNOTATIONS_64: 
+        if proj.getDBType() != ocpcaproj.ANNOTATIONS and proj.getDBType() != ocpcaproj.ANNOTATIONS_64bit: 
 
           db.writeCuboid ( corner, resolution, voxarray )
           # this is just a status
@@ -583,7 +583,7 @@ def selectPost ( webargs, proj, db, postdata ):
 
         voxarray = np.array(h5f.get('CUTOUT'))
 
-        if proj.getDBType() != ocpcaproj.ANNOTATIONS and proj.getDBType() != ocpcaproj.ANNOTATIONS_64: 
+        if proj.getDBType() != ocpcaproj.ANNOTATIONS and proj.getDBType() != ocpcaproj.ANNOTATIONS_64bit: 
 
           db.writeCuboid ( corner, resolution, voxarray )
           # this is just a status
