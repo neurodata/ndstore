@@ -367,15 +367,15 @@ class OCPCADB:
       logger.error ( "Error deleting exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise
 
-  #
-  # promoteExceptions
-  #
-  def promoteExceptions ( self, key, resolution, cube ):
-    """A deletion has occurred in this cuboid.  Promote exceptions into the image."""
-
-    excs = self.getAllExceptions ( key, resolution )
-
-    # RBTODO
+#  #
+#  # promoteExceptions
+#  #
+#  def promoteExceptions ( self, key, resolution, cube ):
+#    """A deletion has occurred in this cuboid.  Promote exceptions into the image."""
+#
+#    excs = self.getAllExceptions ( key, resolution )
+#
+#    # RBTODO
 
   #
   # updateExceptions
@@ -1125,7 +1125,8 @@ class OCPCADB:
         # remove the expcetions
         if self.EXCEPT_FLAG:
           self.deleteExceptions ( key, res, annoid )
-          self.promoteExceptions ( key, res, cube )
+# RBTODO unimplemented and untested
+#          self.promoteExceptions ( key, res, cube )
         self.putCube ( key, res, cube)
       
     # delete Index

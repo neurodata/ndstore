@@ -513,18 +513,19 @@ def selectPost ( webargs, proj, db, postdata ):
 
     try:
 
-# RB deprecate voxels absent RAMON?
-#      if service == 'npvoxels':
-#
-#       #  get the resolution
-#       [ entity, resolution, conflictargs ] = postargs.split('/', 2)
-#
-#       # Grab the voxel list
-#       fileobj = cStringIO.StringIO ( postdata )
-#       voxlist =  np.load ( fileobj )
-#
-#       conflictopt = restargs.conflictOption ( conflictargs )
-#       entityid = db.annotate ( int(entity), int(resolution), voxlist, conflictopt )
+      if service == 'npvoxels':
+
+       import pdb; pdb.set_trace()
+
+       #  get the resolution
+       [ entity, resolution, conflictargs ] = postargs.split('/', 2)
+
+       # Grab the voxel list
+       fileobj = cStringIO.StringIO ( postdata )
+       voxlist =  np.load ( fileobj )
+
+       conflictopt = restargs.conflictOption ( conflictargs )
+       entityid = db.annotate ( int(entity), int(resolution), voxlist, conflictopt )
 
       if service == 'npz':
 
