@@ -31,8 +31,6 @@ def main():
   pagefobj = cStringIO.StringIO ( pagestr )
   cube = np.load ( pagefobj )
 
-  import pdb; pdb.set_trace()
-
   print cube
 
   cube.tostring()

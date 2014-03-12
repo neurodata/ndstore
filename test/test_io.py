@@ -648,46 +648,50 @@ class TestRW:
     
     voxlist=[]
 
-    # upload an npz voxels list
-    for k in range (100,102):
-      for j in range (1000,1050):
-        for i in range (1000,1050):
-          voxlist.append ( [ i,j,k ] )
 
-    url = 'http://%s/ca/%s/npvoxels/%s/%s/' % ( wp.baseurl, wp.token, int(retval), wp.resolution)
+# RBTODO PMTODO reinstate test as npz with a post
 
-    # Encode the voxelist an pickle
-    fileobj = cStringIO.StringIO ()
-    np.save ( fileobj, voxlist )
+# RB defunct npvoxels interface.  only upload through RAMON
+#    # upload an npz voxels list
+#    for k in range (100,102):
+#      for j in range (1000,1050):
+#        for i in range (1000,1050):
+#          voxlist.append ( [ i,j,k ] )
+#
+#    url = 'http://%s/ca/%s/npvoxels/%s/%s/' % ( wp.baseurl, wp.token, int(retval), wp.resolution)
+#
+#    # Encode the voxelist an pickle
+#    fileobj = cStringIO.StringIO ()
+#    np.save ( fileobj, voxlist )
+#
+#    # Build the post request
+#    req = urllib2.Request(url, fileobj.getvalue())
+#    response = urllib2.urlopen(req)
+#
+#    # Check that the combination of write + update sums
+#    rp.annids=int(retval)
+#    rp.voxels = True
+#    h5r = readAnno(rp)
+#    assert countVoxels ( retval, h5r ) == 50*50*2
 
-    # Build the post request
-    req = urllib2.Request(url, fileobj.getvalue())
-    response = urllib2.urlopen(req)
-
-    # Check that the combination of write + update sums
-    rp.annids=int(retval)
-    rp.voxels = True
-    h5r = readAnno(rp)
-    assert countVoxels ( retval, h5r ) == 50*50*2
-
-    # upload an npz dense
-    annodata = np.zeros( [ 2, 50, 50 ] )
-    annodata = annodata + int(retval)
-
-    url = 'http://%s/ca/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( wp.baseurl, wp.token, wp.resolution, 200, 250, 200, 250, 200, 202 )
-
-    # Encode the voxelist as a pickle
-    fileobj = cStringIO.StringIO ()
-    np.save ( fileobj, annodata )
-    cdz = zlib.compress (fileobj.getvalue())
-
-    # Build the post request
-    req = urllib2.Request(url, cdz)
-    response = urllib2.urlopen(req)
-
-    # Check that the combination of write + update sums
-    rp.annids=int(retval)
-    rp.voxels = True
-    h5r = readAnno(rp)
-    assert countVoxels ( retval, h5r ) == 2*50*50*2
+#    # upload an npz dense
+#    annodata = np.zeros( [ 2, 50, 50 ] )
+#    annodata = annodata + int(retval)
+#
+#    url = 'http://%s/ca/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( wp.baseurl, wp.token, wp.resolution, 200, 250, 200, 250, 200, 202 )
+#
+#    # Encode the voxelist as a pickle
+#    fileobj = cStringIO.StringIO ()
+#    np.save ( fileobj, annodata )
+#    cdz = zlib.compress (fileobj.getvalue())
+#
+#    # Build the post request
+#    req = urllib2.Request(url, cdz)
+#    response = urllib2.urlopen(req)
+#
+#    # Check that the combination of write + update sums
+#    rp.annids=int(retval)
+#    rp.voxels = True
+#    h5r = readAnno(rp)
+#    assert countVoxels ( retval, h5r ) == 2*50*50*2
 

@@ -26,8 +26,6 @@ urlpatterns = patterns('ocpca.views',
   # single field interfaces
   url(r'(?P<webargs>^\w+/\d+/getField/[\w,/]*)$', 'getField'),
   url(r'(?P<webargs>^\w+/\d+/setField/[\w\. ,/]*)$', 'setField'),
-  # the post services
-  url(r'(?P<webargs>^\w+/(npvoxels|npdense)/[\w,/]+)$', 'annopost'),
   # merge annotations
   url(r'(?P<webargs>^\w+/merge/[\w,/]+)$', 'merge'),
   # csv metadata read
