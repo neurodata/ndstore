@@ -167,6 +167,8 @@ def HDF5 ( imageargs, proj, db ):
   fh5out.close()
   tmpfile.seek(0)
   return tmpfile.read()
+  
+
 
 #
 #  **Image return a readable png object
