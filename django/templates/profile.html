@@ -80,13 +80,19 @@
 		      <input type="hidden" name="projname" value={{field.3}}>
 		      <td style="width: 15%;">{{ field.3 }}</td>
 		      {% if field.4 == 1 %}
-		      <td>Image</td>
+		      <td>IMAGE</td>
 		      {% elif field.4 == 2%}
-		      <td>Annotation</td>
+		      <td>ANNOTATION</td>
 		      {% elif field.4 == 3%}
-		      <td>Channel 16 Bit</td>
+		      <td>CHANNEL 8bit</td>
 		      {% elif field.4 == 4%}
-		      <td>Channel 16 Bit</td>
+		      <td>CHANNEL 16bit</td>
+		      {% elif field.4 == 5%}
+                      <td>PROBMAP 32bit</td>
+		      {% elif field.4 == 6%}
+                      <td>BITMASK</td>
+		      {% elif field.4 == 7%}
+                      <td>ANNOTATION 64bit</td>
 		      {% else %}
 		      <td>OTHER</td>
 		      {% endif %}

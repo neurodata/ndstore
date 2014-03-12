@@ -286,7 +286,7 @@ def createproject(request):
           nocreate = 1
         else:
           nocreate = 0
-        dataurl = "http://openconnecto.me/EM"
+        dataurl = "http://openconnecto.me/ocp"
         readonly = form.cleaned_data['readonly']
         exceptions = form.cleaned_data['exceptions']
         openid = request.user.username
@@ -297,7 +297,7 @@ def createproject(request):
         try:
           pd = ocpcaproj.OCPCAProjectsDB()
           pd.newOCPCAProj ( token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate, int(resolution) )
-          pd.insertTokenDescription ( token, description )
+          #pd.insertTokenDescription ( token, description )
           return redirect(profile)          
         except OCPCAError, e:
           messages.error(request, e.value)

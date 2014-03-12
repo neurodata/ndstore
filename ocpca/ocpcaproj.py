@@ -287,7 +287,7 @@ class OCPCAProjectsDB:
         sql = ""
 
         # tables for annotations and images
-        if dbtype==IMAGES_8bit or dbtype==ANNOTATIONS or dtype==PROBMAP_32bit or dtype==BITMASK:
+        if dbtype==IMAGES_8bit or dbtype==ANNOTATIONS or dbtype==PROBMAP_32bit or dbtype==BITMASK:
 
           for i in datasetcfg.resolutions: 
             sql += "CREATE TABLE res%s ( zindex BIGINT PRIMARY KEY, cube LONGBLOB );\n" % i
