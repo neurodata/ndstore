@@ -231,11 +231,11 @@ def main():
 
   # Build the put URL
   if result.update:
-    url = "http://%s/ocp/ca/%s/update/" % ( result.baseurl, result.token)
+    url = "http://%s/ca/%s/update/" % ( result.baseurl, result.token)
   elif result.dataonly:
-    url = "http://%s/ocp/ca/%s/dataonly/" % ( result.baseurl, result.token)
+    url = "http://%s/ca/%s/dataonly/" % ( result.baseurl, result.token)
   else:
-    url = "http://%s/ocp/ca/%s/" % ( result.baseurl, result.token)
+    url = "http://%s/ca/%s/" % ( result.baseurl, result.token)
 
   if result.preserve:  
     url += 'preserve/'

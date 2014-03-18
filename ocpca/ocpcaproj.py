@@ -14,6 +14,9 @@ IMAGES_8bit = 1
 ANNOTATIONS = 2
 CHANNELS_16bit = 3
 CHANNELS_8bit = 4
+PROBMAP_32bit = 5
+BITMASK = 6
+ANNOTATIONS_64bit = 7 
 
 class OCPCAProject:
   """Project specific for cutout and annotation data"""
@@ -284,7 +287,7 @@ class OCPCAProjectsDB:
         sql = ""
 
         # tables for annotations and images
-        if dbtype == IMAGES_8bit or dbtype == ANNOTATIONS:
+        if dbtype==IMAGES_8bit or dbtype==ANNOTATIONS or dbtype==PROBMAP_32bit or dbtype==BITMASK:
 
           for i in datasetcfg.resolutions: 
             sql += "CREATE TABLE res%s ( zindex BIGINT PRIMARY KEY, cube LONGBLOB );\n" % i
@@ -296,7 +299,7 @@ class OCPCAProjectsDB:
             sql += "CREATE TABLE res%s ( channel INT, zindex BIGINT, cube LONGBLOB, PRIMARY KEY(channel,zindex) );\n" % i
 
         # tables specific to annotation projects
-        if dbtype == ANNOTATIONS:
+        if dbtype == ANNOTATIONS or dbtype ==ANNOTATIONS_64bit:
 
           sql += "CREATE TABLE ids ( id BIGINT PRIMARY KEY);\n"
 
@@ -306,11 +309,11 @@ class OCPCAProjectsDB:
           sql += "CREATE TABLE synapses (annoid BIGINT PRIMARY KEY, synapse_type INT, weight FLOAT);\n"
           sql += "CREATE TABLE segments (annoid BIGINT PRIMARY KEY, segmentclass INT, parentseed INT, neuron INT);\n"
           sql += "CREATE TABLE organelles (annoid BIGINT PRIMARY KEY, organelleclass INT, parentseed INT, centroidx INT, centroidy INT, centroidz INT);\n"
-          sql += "CREATE TABLE kvpairs ( annoid BIGINT, kv_key VARCHAR(255), kv_value VARCHAR(64000), PRIMARY KEY ( annoid, kv_key ));\n"
+          sql += "CREATE TABLE kvpairs ( annoid BIGINT, kv_key VARCHAR(255), kv_value VARCHAR(20000), PRIMARY KEY ( annoid, kv_key ));\n"
 
           for i in datasetcfg.resolutions: 
             if exceptions:
-              sql += "CREATE TABLE exc%s ( zindex BIGINT, id INT, exlist LONGBLOB, PRIMARY KEY ( zindex, id));\n" % i
+              sql += "CREATE TABLE exc%s ( zindex BIGINT, id BIGINT, exlist LONGBLOB, PRIMARY KEY ( zindex, id));\n" % i
             sql += "CREATE TABLE idx%s ( annid BIGINT PRIMARY KEY, cube LONGBLOB );\n" % i
 
         try:
@@ -412,19 +415,6 @@ class OCPCAProjectsDB:
     [ ximagesz, yimagesz, startslice, endslice, zoomlevels, zscale ] = row
     return OCPCADataset ( int(ximagesz), int(yimagesz), int(startslice), int(endslice), int(zoomlevels), float(zscale) ) 
 
-
-
-# RBTODO where did this come from?
-#
-#      logger.error ("Could not query ocpca projects database %d: %s. sql\
-#=%s" % (e.args[0], e.args[1], sql))
-#      raise OCPCAError ("Could not query ocpca projects database %d: %s. \
-#sql=%s" % (e.args[0], e.args[1], sql))
-#
-#    # get the project information                                       
-#    row = cursor.fetchall()
-#    return row
- 
 
   #
   # Load the ocpca databse information based on openid

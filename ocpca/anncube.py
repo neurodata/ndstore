@@ -9,8 +9,8 @@ from cube import Cube
 
 from ocpca_cy import annotate_cy
 from ocpca_cy import shave_cy
-from ocpca_cy import recolor_cy
-from ocpca_cy import zoomData_cy
+from ocpca_cy import recolor_cy#, recolor64_cy
+from ocpca_cy import zoomData_cy#, zoomData64_cy
 
 from ocpcaerror import OCPCAError 
 
@@ -226,12 +226,128 @@ class AnnotateCube(Cube):
 
     self.data = newdata
 
-#    for z in range (newdata.shape[0]):
-#      for y in range (newdata.shape[1]):
-#        for x in range (newdata.shape[2]):
-#          newdata[z,y,x] = self.data[z,y/(2**factor),x/(2**factor)]
-#
-#    self.data = newdata          
+# end AnnotateCube
+
+class AnnotateCube64(AnnotateCube):
+
+  # was the cube created from zeros?
+  def fromZeros ( self ):
+    """Determine if the cube was created from all zeros?"""
+    if self._newcube == True:
+      return True
+    else: 
+      return False
+
+  # create an all zeros cube
+  def zeros ( self ):
+    """Create a cube of all 0"""
+    self._newcube = True
+    self.data = np.zeros ( self.cubesize, dtype=np.uint64 )
+
+
+  def shave ( self, annid, offset, locations ):
+    """Remove annotation by a list of locations"""
+
+    # the cython optimized version of this function.
+    return shave_cy ( self.data, annid, offset, np.array(locations, dtype=np.uint32))
+  
+
+  #
+  # Create the specified slice (index) at filename
+  #
+  def xySlice ( self, fileobj ):
+
+    zdim,ydim,xdim = self.data.shape
+    imagemap = np.zeros ( [ ydim, xdim ], dtype=np.uint32 )
+
+    # false color redrawing of the region
+#    recolor64_cy ( self.data.reshape((imagemap.shape[0],imagemap.shape[1])), imagemap )
+
+    outimage = Image.frombuffer ( 'RGBA', (xdim,ydim), imagemap, 'raw', 'RGBA', 0, 1 )
+    outimage.save ( fileobj, "PNG" )
+
+  #
+  # Create the specified slice (index) at filename
+  #
+  def xzSlice ( self, scale, fileobj ):
+
+    zdim,ydim,xdim = self.data.shape
+    imagemap = np.zeros ( [ zdim, xdim ], dtype=np.uint32 )
+
+    # false color redrawing of the region
+#    recolor64_cy ( self.data.reshape((imagemap.shape[0],imagemap.shape[1])), imagemap )
+
+    outimage = Image.frombuffer ( 'RGBA', (xdim,zdim), imagemap, 'raw', 'RGBA', 0, 1 )
+    newimage = outimage.resize ( [xdim, int(zdim*scale)] )
+    newimage.save ( fileobj, "PNG" )
+
+  #
+  # Create the specified slice (index) at filename
+  #
+  def yzSlice ( self, scale, fileobj ):
+
+    zdim,ydim,xdim = self.data.shape
+    imagemap = np.zeros ( [ zdim, ydim ], dtype=np.uint32 )
+
+    # false color redrawing of the region
+#    recolor64_cy ( self.data.reshape((imagemap.shape[0],imagemap.shape[1])), imagemap )
+
+    outimage = Image.frombuffer ( 'RGBA', (ydim,zdim), imagemap, 'raw', 'RGBA', 0, 1 )
+    newimage = outimage.resize ( [ydim, int(zdim*scale)] )
+    newimage.save ( fileobj, "PNG" )
+
+
+  def overwrite ( self, annodata ):
+    """Get's a dense voxel region and overwrites all non-zero values"""
+
+    vector_func = np.vectorize ( lambda a,b: b if b!=0 else a ) 
+    self.data = vector_func ( self.data, annodata ) 
+
+  def preserve ( self, annodata ):
+    """Get's a dense voxel region and overwrites all non-zero values"""
+
+    vector_func = np.vectorize ( lambda a,b: b if b!=0 and a==0 else a ) 
+    self.data = vector_func ( self.data, annodata ) 
+
+  def exception ( self, annodata ):
+    """Get's a dense voxel region and overwrites all non-zero values"""
+
+    # get all the exceptions
+    # not equal and both annotated
+    exdata = ((self.data-annodata)*self.data*annodata!=0) * annodata 
+
+    # then annotate to preserve 
+    vector_func = np.vectorize ( lambda a,b: b if b!=0 and a==0 else a ) 
+    self.data = vector_func ( self.data, annodata ) 
+
+    # return the list of exceptions ids and the exceptions
+    return exdata
+
+  def shaveDense ( self, annodata ):
+    """Remove the specified voxels from the annotation"""
+
+    # get all the exceptions that are equal to the annid in both datasets
+    shavedata = ((self.data-annodata)==0) * annodata 
+
+    # find all shave requests that don't match the dense data
+    exdata = (self.data != annodata) * annodata
+
+    # then shave 
+    vector_func = np.vectorize ( lambda a,b: 0 if b!=0 else a ) 
+    self.data = vector_func ( self.data, shavedata ) 
+
+    # return the list of exceptions ids and the exceptions
+    return exdata
+
+  # placeholder function move and optimize
+  def zoomData ( self, factor ):
+    """Cube data zoomed up"""
+
+    newdata = np.zeros ( [self.data.shape[0], self.data.shape[1]*(2**factor), self.data.shape[2]*(2**factor)], dtype=np.uint63) 
+
+    #zoomData64_cy ( self.data, newdata, int(factor) )
+
+    self.data = newdata
 
 # end AnnotateCube
 

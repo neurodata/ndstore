@@ -22,8 +22,8 @@ logger=logging.getLogger("ocp")
 
 def overlayCutout (request, webargs):
   """Get both data and annotation cubes as npz"""
-
-  token, cutout = webargs.split('/',1)
+  token, alpha,cutout = webargs.split('/',2)
+  alpha = float(alpha)
 
   # Get the project and dataset
   projdb = ocpcaproj.OCPCAProjectsDB()
@@ -68,8 +68,8 @@ def overlayCutout (request, webargs):
     dataimg = dataimg.convert("RGBA")
 
     # build the overlay
-    compimg = Image.composite ( annoimg, dataimg, annoimg )
-
+    #compimg = Image.composite ( annoimg, dataimg, annoimg )
+    compimg = Image.blend ( annoimg, dataimg, alpha )
     logger.warning("What up here.  {} {} {}".format(dataimg, annoimg, compimg))
 
   except Exception, e:
