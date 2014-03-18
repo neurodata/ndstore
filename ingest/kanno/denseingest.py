@@ -24,8 +24,9 @@ import kanno_cy
 _xtilesz = 10748
 _ytilesz = 12896
 _startslice = 0
-_endslice = 1023
-_prefix = 'combinedjose28fixed2_export_s'
+_endslice = 1850
+_prefix = 'Thousands_Bobbysdendrite_404_tb_export_s'
+#_batchsz = 16 
 _batchsz = 16 
 
 # Shape that we want to ingest into the database.
@@ -81,7 +82,7 @@ def main():
               # check if there's anything to store
               if ( np.count_nonzero(data) != 0 ):
 
-                url = 'http://localhost/emca/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( result.token, result.resolution, x, min(xhigh,x+_xingestsz), y, min(yhigh,y+_yingestsz), z, min(zhigh,z+_zingestsz ))
+                url = 'http://localhost/ocp/ca/%s/npz/%s/%s,%s/%s,%s/%s,%s/' % ( result.token, result.resolution, x, min(xhigh,x+_xingestsz), y, min(yhigh,y+_yingestsz), z, min(zhigh,z+_zingestsz ))
 
                 print url
 

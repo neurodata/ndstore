@@ -23,7 +23,7 @@ def main():
 
   result = parser.parse_args()
 
-  url = 'http://' + result.baseurl + '/emca/' + result.dataset + '/npz/' +\
+  url = 'http://' + result.baseurl + '/ca/' + result.dataset + '/npz/' +\
             str(result.resolution) + "/" +\
             str(result.xlow) + "," + str(result.xhigh) + "/" +\
             str(result.ylow) + "," + str(result.yhigh) + "/" +\

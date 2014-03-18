@@ -62,6 +62,7 @@ def cutout (request, webargs):
     logger.exception("Unknown exception in getCutout.")
     raise
 
+
 @cache_control(no_cache=True)
 def annotation (request, webargs):
   """Get put object interface for RAMON objects"""

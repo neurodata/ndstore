@@ -69,7 +69,7 @@ def overlayCutout (request, webargs):
 
     # build the overlay
     #compimg = Image.composite ( annoimg, dataimg, annoimg )
-    compimg = Image.blend ( annoimg, dataimg, alpha )
+    compimg = Image.blend ( dataimg, annoimg, alpha )
     logger.warning("What up here.  {} {} {}".format(dataimg, annoimg, compimg))
 
   except Exception, e:

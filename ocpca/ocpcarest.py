@@ -653,6 +653,7 @@ def putCutout ( webargs, postdata ):
   """Interface to the write cutout data.
       Load the annotation project and invoke the appropriate
       dataset."""
+
   [ token, sym, rangeargs ] = webargs.partition ('/')
   [ db, proj, projdb ] = loadDBProj ( token )
   return selectPost ( rangeargs, proj, db, postdata )
