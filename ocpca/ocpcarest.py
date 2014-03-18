@@ -780,7 +780,7 @@ def getAnnotation ( webargs ):
   # Make the HDF5 file
   # Create an in-memory HDF5 file
   tmpfile = tempfile.NamedTemporaryFile()
-  h5f = h5py.File ( tmpfile.name )
+  h5f = h5py.File ( tmpfile.name,"w" )
 
   try: 
   

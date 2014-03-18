@@ -747,6 +747,8 @@ class OCPCADB:
   def cutout ( self, corner, dim, resolution, channel=None, zscaling=None ):
     """Extract a cube of arbitrary size.  Need not be aligned."""
 
+    import pdb; pdb.set_trace()
+
     # PYTODO alter query if  (ocpcaproj)._resolution is > resolution
     # if cutout is below resolution, get a smaller cube and scaleup
     if self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS and  self.annoproj.getResolution() > resolution:
