@@ -55,8 +55,6 @@ def main():
   ximagesz = 49152
   yimagesz = 32768
 
-  startslice = 100
-
   # add all of the tiles to the image
   for sl in range (startslice,endslice+1,batchsz):
     for ytile in range(ytiles):
@@ -70,7 +68,6 @@ def main():
             # raw data
             filenm = result.path + '/S1Column_Localcellbodies_97-classified_export_s{:0>3}_Y{}_X{}.png'.format(sl+b,ytile,xtile) 
             print "Opening filenm " + filenm
-
           
             img = Image.open ( filenm, 'r' )
             imgdata = np.asarray ( img )
