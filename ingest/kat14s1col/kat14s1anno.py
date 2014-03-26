@@ -90,8 +90,8 @@ def main():
 
             xmin = x%tilesz
             ymin = y%tilesz
-            xmax = (min(ximagesz,x+xcubedim))%tilesz
-            ymax = (min(yimagesz,y+ycubedim))%tilesz
+            xmax = ((min(ximagesz-1,x+xcubedim-1))%tilesz)+1
+            ymax = ((min(yimagesz-1,y+ycubedim-1))%tilesz)+1
             zmin = 0
             zmax = min(sl+zcubedim,endslice+1)
 

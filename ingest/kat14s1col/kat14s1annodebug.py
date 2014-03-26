@@ -61,15 +61,13 @@ def main():
 
   # add all of the tiles to the image
   for sl in range (startslice,endslice+1,batchsz):
-    for ytile in range(ytiles):
-      for xtile in range(xtiles):
+#    for ytile in range(ytiles):
+#      for xtile in range(xtiles):
 
         xtile=1
         ytile=0
        
         slab = np.zeros ( [ batchsz, tilesz, tilesz ], dtype=np.uint32 )
-
-        import pdb; pdb.set_trace()
 
         for b in range ( batchsz ):
           if ( sl + b <= endslice ):
@@ -84,6 +82,8 @@ def main():
 
             slab[b,:,:] = kanno_cy.pngto32 ( imgdata )
 
+            
+
           # the last z offset that we ingest, if the batch ends before batchsz
           endz = b
 
@@ -93,23 +93,26 @@ def main():
           for x in range ( xtile*tilesz, (xtile+1)*tilesz, xcubedim ):
 
             mortonidx = zindex.XYZMorton ( [ x/xcubedim, y/ycubedim, (sl-startslice)/zcubedim] )
-            cubedata = np.zeros ( [zcubedim, ycubedim, xcubedim], dtype=np.uint8 )
-
-            if x > 24000:
-              import pdb; pdb.set_trace()
+            cubedata = np.zeros ( [zcubedim, ycubedim, xcubedim], dtype=np.uint32 )
 
             xmin = x%tilesz
             ymin = y%tilesz
-            xmax = (min(ximagesz,x+xcubedim))%tilesz
-            ymax = (min(yimagesz,y+ycubedim))%tilesz
+            xmax = ((min(ximagesz-1,x+xcubedim-1))%tilesz)+1
+            ymax = ((min(yimagesz-1,y+ycubedim-1))%tilesz)+1
             zmin = 0
             zmax = min(sl+zcubedim,endslice+1)
 
             cubedata[0:zmax-zmin,0:ymax-ymin,0:xmax-xmin] = slab[zmin:zmax,ymin:ymax,xmin:xmax]
 
+            if y == 8064:
+              print x,y,xmin,xmax,ymin,ymax,zmin,zmax
+
             # check if there's anything to store
             if ( np.count_nonzero(cubedata) == 0 ): 
               continue
+
+#            import pdb; pdb.set_trace()
+
 
             # create the DB BLOB
             fileobj = cStringIO.StringIO ()
