@@ -61,12 +61,9 @@ def main():
 
   # add all of the tiles to the image
   for sl in range (startslice,endslice+1,batchsz):
-#    for ytile in range(ytiles):
-#      for xtile in range(xtiles):
+    for ytile in range(ytiles):
+      for xtile in range(xtiles):
 
-        xtile=1
-        ytile=0
-       
         slab = np.zeros ( [ batchsz, tilesz, tilesz ], dtype=np.uint32 )
 
         for b in range ( batchsz ):
@@ -111,9 +108,6 @@ def main():
             if ( np.count_nonzero(cubedata) == 0 ): 
               continue
 
-#            import pdb; pdb.set_trace()
-
-
             # create the DB BLOB
             fileobj = cStringIO.StringIO ()
             np.save ( fileobj, cubedata )
@@ -122,7 +116,6 @@ def main():
             # insert the blob into the database
             cursor = db.conn.cursor()
             sql = "INSERT INTO res{} (zindex, cube) VALUES (%s, %s)".format(int(resolution))
-            print mortonidx
             cursor.execute(sql, (mortonidx, cdz))
             cursor.close()
 
