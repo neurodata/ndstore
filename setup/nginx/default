@@ -11,6 +11,9 @@ server {
     rewrite ^/ocp/(.*)$ /$1 break;
     uwsgi_pass  ocp-wsgi;
     include     /etc/nginx/uwsgi_params;
+    # increase buffer size to avoid hitting disk
+    uwsgi_buffering on;
+    uwsgi_buffers 4096 64k;
   }
   ...
   #ocp catmaid with memcache.

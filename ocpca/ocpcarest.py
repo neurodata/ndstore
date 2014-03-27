@@ -167,6 +167,8 @@ def HDF5 ( imageargs, proj, db ):
   fh5out.close()
   tmpfile.seek(0)
   return tmpfile.read()
+  
+
 
 #
 #  **Image return a readable png object
@@ -525,18 +527,19 @@ def selectPost ( webargs, proj, db, postdata ):
 
     try:
 
-# RB deprecate voxels absent RAMON?
-#      if service == 'npvoxels':
-#
-#       #  get the resolution
-#       [ entity, resolution, conflictargs ] = postargs.split('/', 2)
-#
-#       # Grab the voxel list
-#       fileobj = cStringIO.StringIO ( postdata )
-#       voxlist =  np.load ( fileobj )
-#
-#       conflictopt = restargs.conflictOption ( conflictargs )
-#       entityid = db.annotate ( int(entity), int(resolution), voxlist, conflictopt )
+      if service == 'npvoxels':
+
+       import pdb; pdb.set_trace()
+
+       #  get the resolution
+       [ entity, resolution, conflictargs ] = postargs.split('/', 2)
+
+       # Grab the voxel list
+       fileobj = cStringIO.StringIO ( postdata )
+       voxlist =  np.load ( fileobj )
+
+       conflictopt = restargs.conflictOption ( conflictargs )
+       entityid = db.annotate ( int(entity), int(resolution), voxlist, conflictopt )
 
       if service == 'npz':
 
@@ -559,7 +562,7 @@ def selectPost ( webargs, proj, db, postdata ):
         fileobj = cStringIO.StringIO ( rawdata )
         voxarray = np.load ( fileobj )
 
-        if proj.getDBType() != ocpcaproj.ANNOTATIONS and proj.getDBType() != ocpcaproj.ANNOTATIONS_64: 
+        if proj.getDBType() != ocpcaproj.ANNOTATIONS and proj.getDBType() != ocpcaproj.ANNOTATIONS_64bit: 
 
           db.writeCuboid ( corner, resolution, voxarray )
           # this is just a status
@@ -595,7 +598,7 @@ def selectPost ( webargs, proj, db, postdata ):
 
         voxarray = np.array(h5f.get('CUTOUT'))
 
-        if proj.getDBType() != ocpcaproj.ANNOTATIONS and proj.getDBType() != ocpcaproj.ANNOTATIONS_64: 
+        if proj.getDBType() != ocpcaproj.ANNOTATIONS and proj.getDBType() != ocpcaproj.ANNOTATIONS_64bit: 
 
           db.writeCuboid ( corner, resolution, voxarray )
           # this is just a status
@@ -650,6 +653,7 @@ def putCutout ( webargs, postdata ):
   """Interface to the write cutout data.
       Load the annotation project and invoke the appropriate
       dataset."""
+
   [ token, sym, rangeargs ] = webargs.partition ('/')
   [ db, proj, projdb ] = loadDBProj ( token )
   return selectPost ( rangeargs, proj, db, postdata )
@@ -819,7 +823,7 @@ def getAnnotation ( webargs ):
   # Make the HDF5 file
   # Create an in-memory HDF5 file
   tmpfile = tempfile.NamedTemporaryFile()
-  h5f = h5py.File ( tmpfile.name )
+  h5f = h5py.File ( tmpfile.name,"w" )
 
   try: 
   

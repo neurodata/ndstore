@@ -23,7 +23,7 @@ def main():
 
   result = parser.parse_args()
 
-  url = 'http://' + result.baseurl + '/emca/' + result.dataset + '/npz/' +\
+  url = 'http://' + result.baseurl + '/ca/' + result.dataset + '/npz/' +\
             str(result.resolution) + "/" +\
             str(result.xlow) + "," + str(result.xhigh) + "/" +\
             str(result.ylow) + "," + str(result.yhigh) + "/" +\
@@ -60,7 +60,7 @@ def main():
 
   print np.nonzero ( annodata )
 
-  url = 'http://%s/emca/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( result.baseurl, result.token, result.resolution, result.xlow, result.xhigh, result.ylow, result.yhigh, result.zlow, result.zhigh ) 
+  url = 'http://%s/ca/%s/npz/%s/%s,%s/%s,%s/%s,%s/' % ( result.baseurl, result.token, result.resolution, result.xlow, result.xhigh, result.ylow, result.yhigh, result.zlow, result.zhigh ) 
 
 
   # Encode the voxelist an pickle
