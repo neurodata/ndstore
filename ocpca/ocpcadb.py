@@ -1321,8 +1321,9 @@ class OCPCADB:
       listofidxs = set(self.annoIdx.getIndex(annid,resolution))
       for key in listofidxs:
         cube = self.getCube (key,resolution)
-        #Update exceptions
-        oldexlist = self.getExceptions( key, resolution, annid ) 
+        #Update exceptions if exception flag is set ( PJM added 03/31/14)
+        if self.EXCEPT_FLAG:
+          oldexlist = self.getExceptions( key, resolution, annid ) 
         #
         # RB!!!!! this next line is wrong!  the problem is that
         #  we are merging all annotations.  So at the end, there
@@ -1331,7 +1332,7 @@ class OCPCADB:
         #  Just delete the exceptions
         #
         #self.updateExceptions ( key, resolution, mergeid, oldexlist )
-        self.deleteExceptions ( key, resolution, annid )
+          self.deleteExceptions ( key, resolution, annid )
         
         # Cython optimized function  to relabel data from annid to mergeid
         mergeCube_cy (cube.data,mergeid,annid ) 
