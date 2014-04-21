@@ -68,7 +68,7 @@ def overlayCutout (request, webargs):
     dataimg = dataimg.convert("RGBA")
     annoimg = annoimg.convert("RGBA")
     # build the overlay
-
+    
     compimg1 = Image.composite ( annoimg, dataimg, annoimg )
     compimg = Image.blend ( dataimg, compimg1, alpha )
 
