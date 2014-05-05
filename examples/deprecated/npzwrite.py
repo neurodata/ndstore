@@ -29,7 +29,7 @@ def main():
   if m != None:
     res,xlow,xhigh,ylow,yhigh,zlow,zhigh = map(int,m.groups())
 
-  url = 'http://%s/ca/%s/hdf5/%s/' % ( result.baseurl, result.token, result.cutout )
+  url = 'http://%s/ca/%s/npz/%s/' % ( result.baseurl, result.token, result.cutout )
 
   # if it's a probability map
   if result.probmap:
@@ -48,18 +48,18 @@ def main():
   else:
     cuboid = np.ones ( [ zhigh-zlow, yhigh-ylow, xhigh-xlow ], dtype=np.uint32 )
 
-  tmpfile = tempfile.NamedTemporaryFile()
-  h5fh = h5py.File ( tmpfile.name )
-  # top group is the annotation identifier
-  h5fh.create_dataset ( "CUTOUT", cuboid.shape, data=cuboid )
+  # Encode the object as a pickle
+  fileobj = cStringIO.StringIO ()
+  np.save ( fileobj, cuboid )
+  cdz = zlib.compress (fileobj.getvalue())
 
-  # get the file read
-  h5fh.flush()
-  tmpfile.seek(0)
 
   # Get cube in question
   try:
-    f = urllib2.urlopen ( url, tmpfile.read()  )
+    # Build the post request
+    req = urllib2.Request(url, cdz)
+    response = urllib2.urlopen(req)
+    the_page = response.read()
   except urllib2.URLError, e:
     print "Failed %s.  Exception %s." % (url,e) 
     sys.exit(-1)

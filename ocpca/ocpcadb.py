@@ -203,6 +203,12 @@ class OCPCADB:
       cube = anncube.AnnotateCube ( cubedim )
     elif (self.annoproj.getDBType()==ocpcaproj.PROBMAP_32bit):
       cube = probmapcube.ProbMapCube32 ( cubedim )
+    elif (self.annoproj.getDBType()==ocpcaproj.IMAGES_8bit):
+      cube = imagecube.ImageCube8 ( cubedim )
+    elif (self.annoproj.getDBType()==ocpcaproj.IMAGES_16bit):
+      cube = imagecube.ImageCube16 ( cubedim )
+    else:
+      raise OCPCAError ("Unknown project type {}".format(self.annoproj.getDBType()))
   
 
     # get the block from the database
@@ -827,7 +833,7 @@ class OCPCADB:
                                         ynumcubes*ycubedim,\
                                         znumcubes*zcubedim] )
 
-    elif (self.annoproj.getDBType() == ocpcaproj.CHANNELS_16bit):
+    elif (self.annoproj.getDBType() == ocpcaproj.IMAGES_16bit or self.annoproj.getDBType() == ocpcaproj.CHANNELS_16bit):
       
       incube = imagecube.ImageCube16 ( cubedim )
       outcube = imagecube.ImageCube16 ( [xnumcubes*xcubedim,\
@@ -1258,6 +1264,8 @@ class OCPCADB:
     
     if self.annoproj.getDBType() == ocpcaproj.IMAGES_8bit:
       cuboiddtype = np.uint8  
+    elif self.annoproj.getDBType() == ocpcaproj.IMAGES_16bit:
+      cuboiddtype = np.uint16  
     elif self.annoproj.getDBType() == ocpcaproj.PROBMAP_32bit:
       cuboiddtype = np.float32
 
@@ -1269,14 +1277,11 @@ class OCPCADB:
         for x in range(xnumcubes):
 
           key = zindex.XYZMorton ([x+xstart,y+ystart,z+zstart])
+   
+          # probability maps have overwrite semantics
           cube = self.getCube ( key, resolution, True )
-
-#  RB update
-#          cube.data = databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] 
           cube.overwrite ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
-
           self.putCube ( key, resolution, cube)
-
 
   #
   # getChannels

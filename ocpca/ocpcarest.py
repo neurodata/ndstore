@@ -529,8 +529,6 @@ def selectPost ( webargs, proj, db, postdata ):
 
       if service == 'npvoxels':
 
-       #import pdb; pdb.set_trace()
-
        #  get the resolution
        [ entity, resolution, conflictargs ] = postargs.split('/', 2)
 
