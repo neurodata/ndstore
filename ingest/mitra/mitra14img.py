@@ -7,12 +7,11 @@ from PIL import Image
 import cStringIO
 import zlib
 
-sys.path += [os.path.abspath('../django')]
+sys.path += [os.path.abspath('../../django')]
 import OCP.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
 from django.conf import settings
 
-import ocppaths
 import ocpcarest
 
 import zindex
