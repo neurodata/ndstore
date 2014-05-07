@@ -7,6 +7,11 @@ from PIL import Image
 import cStringIO
 import zlib
 
+sys.path += [os.path.abspath('../django')]
+import OCP.settings
+os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
+from django.conf import settings
+
 import ocppaths
 import ocpcarest
 
@@ -17,7 +22,10 @@ import pdb
 # ingest the tiff files into the database
 #
 
-""" This file is customized for Mitra's brain image data """
+""" This file is customized for Mitra's brain image data. \
+    We first converted the data from jp2 to tiff using Kakadu \
+    and then ingested it. For conversion look at jp2kakadu.py
+"""
 
 def main():
 
@@ -69,6 +77,7 @@ def main():
     for y in range ( 0, yimagesz+1, ycubedim ):
       for x in range ( 0, ximagesz+1, xcubedim ):
 
+        # Getting a Cube id and ingesting the data one cube at a time
         mortonidx = zindex.XYZMorton ( [x/xcubedim, y/ycubedim, (sl-startslice)/zcubedim] )
         cubedata = np.zeros ( [zcubedim, ycubedim, xcubedim], dtype=np.uint8 )
 
