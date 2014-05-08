@@ -50,14 +50,10 @@ def main():
   (startslice,endslice)=proj.datasetcfg.slicerange
   batchsz=zcubedim
 
-  batchsz=1
-
   # This doesn't work because the image size does not match exactly the cube size
   #(ximagesz,yimagesz)=proj.datasetcfg.imagesz[resolution]
   ximagesz = 49152
   yimagesz = 32768
-
-  startslice = 100
 
   # add all of the tiles to the image
   for sl in range (startslice,endslice+1,batchsz):
@@ -100,9 +96,6 @@ def main():
             zmax = min(sl+zcubedim,endslice+1)
 
             cubedata[0:zmax-zmin,0:ymax-ymin,0:xmax-xmin] = slab[zmin:zmax,ymin:ymax,xmin:xmax]
-
-            if y == 8064:
-              print x,y,xmin,xmax,ymin,ymax,zmin,zmax
 
             # check if there's anything to store
             if ( np.count_nonzero(cubedata) == 0 ): 
