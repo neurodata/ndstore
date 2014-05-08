@@ -1,9 +1,0 @@
-:mod:`formencode.exc` -- Custom exceptions and warnings
-===============================================================
-
-.. automodule:: formencode.exc
-
-Module Contents
----------------
-
-.. autoclass:: FERuntimeWarning

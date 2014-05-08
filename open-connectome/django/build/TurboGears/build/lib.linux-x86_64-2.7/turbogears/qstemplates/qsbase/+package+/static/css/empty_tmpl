@@ -1,3 +1,0 @@
-#if $getVar('SkipTemplate', None)
-#raise $SkipTemplate
-#end if

@@ -1,9 +1,0 @@
-:mod:`paste.script.filemaker` -- interactive file writing helpers
-=================================================================
-
-.. automodule:: paste.script.filemaker
-
-Module Contents
----------------
-
-.. autoclass:: FileOp

@@ -1,5 +1,0 @@
-#if $sqlobject != 'True' and $getVar('SkipTemplate', None)
-#raise $SkipTemplate
-#end if
-db_module=${package}.model
-history_dir=${'$'}base/${package}/sqlobject-history

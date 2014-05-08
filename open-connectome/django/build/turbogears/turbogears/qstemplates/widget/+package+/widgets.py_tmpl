@@ -1,8 +1,0 @@
-import pkg_resources
-
-from turbogears.widgets import (CSSLink, JSLink,
-    Widget, WidgetDescription, register_static_directory)
-
-js_dir = pkg_resources.resource_filename('${package}',
-                                         'static/javascript')
-register_static_directory('${package}', js_dir)

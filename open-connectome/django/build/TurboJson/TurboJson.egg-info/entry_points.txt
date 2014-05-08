@@ -1,3 +1,0 @@
-    [python.templating.engines]
-    json = turbojson.jsonsupport:JsonSupport
-    
