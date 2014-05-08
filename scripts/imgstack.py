@@ -8,9 +8,13 @@ from PIL import Image
 import zlib
 import MySQLdb
 
-import empaths
-import emcaproj
-import emcadb
+sys.path += [os.path.abspath('../django')]
+import OCP.settings
+os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
+from django.conf import settings
+
+import ocpcaproj
+import ocpcadb
 import zindex
 
 """Construct an image hierarchy up from a given resolution"""
@@ -21,11 +25,11 @@ class ImgStack:
   def __init__(self, token):
     """Load the database and project"""
 
-    projdb = emcaproj.EMCAProjectsDB()
+    projdb = ocpcaproj.OCPCAProjectsDB()
     self.proj = projdb.loadProject ( token )
 
     # Bind the annotation database
-    self.imgDB = emcadb.EMCADB ( self.proj )
+    self.imgDB = ocpcadb.OCPCADB ( self.proj )
 
 
   def buildStack ( self, startlevel ):
