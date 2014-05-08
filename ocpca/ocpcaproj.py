@@ -17,6 +17,7 @@ CHANNELS_8bit = 4
 PROBMAP_32bit = 5
 BITMASK = 6
 ANNOTATIONS_64bit = 7 
+IMAGES_16bit = 8 
 
 class OCPCAProject:
   """Project specific for cutout and annotation data"""

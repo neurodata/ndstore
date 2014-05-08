@@ -529,8 +529,6 @@ def selectPost ( webargs, proj, db, postdata ):
 
       if service == 'npvoxels':
 
-       import pdb; pdb.set_trace()
-
        #  get the resolution
        [ entity, resolution, conflictargs ] = postargs.split('/', 2)
 
@@ -1104,12 +1102,12 @@ def putAnnotation ( webargs, postdata ):
       if not ('update' in options or 'dataonly' in options or 'reduce' in options):
         anno.setID ( db )
 
+      # start a transaction: get mysql out of line at a time mode
+      db.startTxn ()
+
       tries = 0 
       done = False
       while not done and tries < 5:
-
-        # start a transaction: get mysql out of line at a time mode
-        db.startTxn ()
 
         try:
 
@@ -1200,8 +1198,6 @@ def putAnnotation ( webargs, postdata ):
             #TODO this is a loggable error
             pass
 
-          # Commit if there is no error
-          db.commit()
 
           # only add the identifier if you commit
           if not 'dataonly' in options and not 'reduce' in options:
@@ -1212,18 +1208,21 @@ def putAnnotation ( webargs, postdata ):
 
         # rollback if you catch an error
         except MySQLdb.OperationalError, e:
-          logger.warning ("Transaction did not complete. %s" % (e))
+          logger.warning (" Put Anntotation: Transaction did not complete. %s" % (e))
           tries += 1
           db.rollback()
           continue
         except MySQLdb.Error, e:
-          logger.warning ("Put transaction rollback. %s" % (e))
+          logger.warning ("Put Annotation :Put transaction rollback. %s" % (e))
           db.rollback()
           raise
         except Exception, e:
-          logger.exception ("Put transaction rollback. %s" % (e))
+          logger.exception ("Put Annotation:Put transaction rollback. %s" % (e))
           db.rollback()
           raise
+
+        # Commit if there is no error
+        db.commit()
 
   finally:
     h5f.close()
@@ -1299,6 +1298,11 @@ def deleteAnnotation ( webargs ):
 
   # Get the annotation database
   [ db, proj, projdb ] = loadDBProj ( token )
+  
+  # Don't write to readonly projects                                                                                                                                          
+  if proj.getReadOnly()==1:
+    logger.warning("Attempt to delete from a read only project. %s: %s" % (proj.getDBName(),webargs))
+    raise OCPCAError("Attempt to delete from a  read only project. %s: %s" % (proj.getDBName(),webargs))
 
   # Split the URL and get the args
   args = otherargs.split('/', 2)
@@ -1549,7 +1553,7 @@ def loadDBProj ( token ):
 
 def merge ( webargs ):
   """Return a single HDF5 field"""
-
+  
   try:
     [token, service, relabelids, rest] = webargs.split ('/',3)
   except:

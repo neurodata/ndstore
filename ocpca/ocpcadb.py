@@ -203,6 +203,12 @@ class OCPCADB:
       cube = anncube.AnnotateCube ( cubedim )
     elif (self.annoproj.getDBType()==ocpcaproj.PROBMAP_32bit):
       cube = probmapcube.ProbMapCube32 ( cubedim )
+    elif (self.annoproj.getDBType()==ocpcaproj.IMAGES_8bit):
+      cube = imagecube.ImageCube8 ( cubedim )
+    elif (self.annoproj.getDBType()==ocpcaproj.IMAGES_16bit):
+      cube = imagecube.ImageCube16 ( cubedim )
+    else:
+      raise OCPCAError ("Unknown project type {}".format(self.annoproj.getDBType()))
   
 
     # get the block from the database
@@ -827,7 +833,7 @@ class OCPCADB:
                                         ynumcubes*ycubedim,\
                                         znumcubes*zcubedim] )
 
-    elif (self.annoproj.getDBType() == ocpcaproj.CHANNELS_16bit):
+    elif (self.annoproj.getDBType() == ocpcaproj.IMAGES_16bit or self.annoproj.getDBType() == ocpcaproj.CHANNELS_16bit):
       
       incube = imagecube.ImageCube16 ( cubedim )
       outcube = imagecube.ImageCube16 ( [xnumcubes*xcubedim,\
@@ -1258,6 +1264,8 @@ class OCPCADB:
     
     if self.annoproj.getDBType() == ocpcaproj.IMAGES_8bit:
       cuboiddtype = np.uint8  
+    elif self.annoproj.getDBType() == ocpcaproj.IMAGES_16bit:
+      cuboiddtype = np.uint16  
     elif self.annoproj.getDBType() == ocpcaproj.PROBMAP_32bit:
       cuboiddtype = np.float32
 
@@ -1269,14 +1277,11 @@ class OCPCADB:
         for x in range(xnumcubes):
 
           key = zindex.XYZMorton ([x+xstart,y+ystart,z+zstart])
+   
+          # probability maps have overwrite semantics
           cube = self.getCube ( key, resolution, True )
-
-#  RB update
-#          cube.data = databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] 
           cube.overwrite ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
-
           self.putCube ( key, resolution, cube)
-
 
   #
   # getChannels
@@ -1321,8 +1326,9 @@ class OCPCADB:
       listofidxs = set(self.annoIdx.getIndex(annid,resolution))
       for key in listofidxs:
         cube = self.getCube (key,resolution)
-        #Update exceptions
-        oldexlist = self.getExceptions( key, resolution, annid ) 
+        #Update exceptions if exception flag is set ( PJM added 03/31/14)
+        if self.EXCEPT_FLAG:
+          oldexlist = self.getExceptions( key, resolution, annid ) 
         #
         # RB!!!!! this next line is wrong!  the problem is that
         #  we are merging all annotations.  So at the end, there
@@ -1331,7 +1337,7 @@ class OCPCADB:
         #  Just delete the exceptions
         #
         #self.updateExceptions ( key, resolution, mergeid, oldexlist )
-        self.deleteExceptions ( key, resolution, annid )
+          self.deleteExceptions ( key, resolution, annid )
         
         # Cython optimized function  to relabel data from annid to mergeid
         mergeCube_cy (cube.data,mergeid,annid ) 

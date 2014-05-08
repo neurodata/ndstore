@@ -22,6 +22,27 @@ class ImageCube8(Cube):
     # note that this is self.cubesize (which is transposed) in Cube
     self.data = np.zeros ( self.cubesize, dtype=np.uint8 )
 
+  # was the cube created from zeros?
+  def fromZeros ( self ):
+    """Determine if the cube was created from all zeros?"""
+    if self._newcube == True:
+      return True
+    else: 
+      return False
+
+  # create an all zeros cube
+  def zeros ( self ):
+    """Create a cube of all 0"""
+    self._newcube = True
+    self.data = np.zeros ( self.cubesize, dtype=np.uint8 )
+
+  def overwrite ( self, annodata ):
+    """Get's a dense voxel region and overwrites all non-zero values"""
+
+    vector_func = np.vectorize ( lambda a,b: b if b!=0 else a ) 
+    self.data = vector_func ( self.data, annodata ) 
+
+
   #
   # Create the specified slice (index) at filename
   #
@@ -74,6 +95,27 @@ class ImageCube16(Cube):
     Cube.__init__(self,cubesize)
     # note that this is self.cubesize (which is transposed) in Cube
     self.data = np.zeros ( self.cubesize, dtype=np.uint16 )
+
+  # was the cube created from zeros?
+  def fromZeros ( self ):
+    """Determine if the cube was created from all zeros?"""
+    if self._newcube == True:
+      return True
+    else: 
+      return False
+
+  # create an all zeros cube
+  def zeros ( self ):
+    """Create a cube of all 0"""
+    self._newcube = True
+    self.data = np.zeros ( self.cubesize, dtype=np.uint16 )
+
+  def overwrite ( self, annodata ):
+    """Get's a dense voxel region and overwrites all non-zero values"""
+
+    vector_func = np.vectorize ( lambda a,b: b if b!=0 else a ) 
+    self.data = vector_func ( self.data, annodata ) 
+
 
   #
   # Create the specified slice (index) at filename

@@ -52,8 +52,15 @@ class ProbMapCube32(Cube):
     imgdata = np.uint8(self.data*256)
 
     zdim,ydim,xdim = self.data.shape
-    outimage = Image.frombuffer ( 'L', (xdim,ydim), imgdata[0,:,:].flatten(), 'raw', 'L', 0, 1 ) 
+
+    # convert the data into a RG heatmap
+    rgbdata = np.zeros ( [ydim,xdim,3], dtype=np.uint8 )
+    rgbdata[:,:,0] = imgdata[0,:,:]
+    rgbdata[:,:,1] = (256 - imgdata[0,:,:])%256
+
+    outimage = Image.frombuffer ( 'RGB', (xdim,ydim), rgbdata, 'raw', 'RGB', 0, 1 )
     outimage.save ( fileobj, "PNG" )
+
 
   #
   # Create the specified slice (index) at filename
