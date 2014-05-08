@@ -1,5 +1,12 @@
-This git repository contains code, documentation, and other tidbits
-relating to the Open Connectome Project, hosted at Johns Hopkins.
+Root directory of the cutout and annotation services.
+Major directories include:
 
-For more information, please visit http://openconnectomeproject.org/
+  django -- django project files
+  annotate -- annotation service
+  cutout -- cutout service
+  dbconfig -- description of data sets
+  util -- files used by cutout and annotate
+  examples -- how to use the service
+  admin -- scripts to manage databases
+  scripts -- utilities to build annotation and image stacks
 

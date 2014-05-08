@@ -1,0 +1,21 @@
+
+# Create brain user as MySQL root
+
+create user 'brain'@'localhost' identified by 'password_here';
+grant all privileges on *.* to 'brain'@'localhost' with grant option;
+
+create user 'brain'@'%' identified by 'password_here';
+grant all privileges on *.* to 'brain'@'%' with grant option;
+
+# Then as brain user
+
+create database ocpconfig;  
+use ocpconfig;
+create table projects ( token VARCHAR(255), openid VARCHAR(255), host VARCHAR(255), project VARCHAR(255), datatype INT, dataset VARCHAR(255), dataurl VARCHAR(255), readonly BOOLEAN, exceptions BOOLEAN, resolution INT DEFAULT 0, public TINYINT(1) DEFAULT 0, PRIMARY KEY ( project ), UNIQUE ( token ));
+create table project_description ( project VARCHAR(255), description VARCHAR(4096) );
+create table token_description ( token VARCHAR(255), description VARCHAR(4096) );
+create table datasets ( dataset VARCHAR(255), ximagesize INT, yimagesize INT, startslice INT, endslice INT, zoomlevels INT, zscale DOUBLE );
+create table dataset_description ( dataset VARCHAR(255), description VARCHAR(4096) );
+alter table dataset_description add foreign key(dataset) references datasets(dataset);
+alter table project_description add foreign key(project) references projects(project);
+alter table token_description add foreign key(token) references projects(token);
