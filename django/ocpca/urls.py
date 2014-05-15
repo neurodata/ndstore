@@ -19,6 +19,8 @@ urlpatterns = patterns('ocpca.views',
   url(r'(?P<webargs>^public_tokens/)$', 'publictokens'),
   # get channel information
   url(r'(?P<webargs>^\w+/chaninfo/[\w,/]*)$', 'chaninfo'),
+  # reserve identifiers for annotation proejcts
+  url(r'(?P<webargs>^\w+/reserve/[\w+,/]*)$', 'reserve'),
   # get list of multiply labelled voxels in a cutout region
   url(r'(?P<webargs>^\w+/exceptions/[\w,/]*)$', 'exceptions'),
   # get services

@@ -8,6 +8,7 @@ import os
 import cStringIO
 import csv
 import re
+import json
 from PIL import Image
 import MySQLdb
 
@@ -186,7 +187,7 @@ def xySlice ( imageargs, proj, db ):
 
   # Perform argument processing
   try:
-    args = restargs.BrainRestArgs ();
+    args = restargs.BrainRestArgs ()
     args.xyArgs ( imageargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
@@ -1493,6 +1494,29 @@ def mcFalseColor ( webargs ):
   return fileobj.read()
 
 
+def reserve ( webargs ):
+  """Reserve annotation ids"""
+
+  [ token, reservestr, cnt, other ] = webargs.split ('/', 3)
+  projdb = ocpcaproj.OCPCAProjectsDB()
+  proj = projdb.loadProject ( token )
+  db = ocpcadb.OCPCADB ( proj )
+
+  if proj.getDBType() != ocpcaproj.ANNOTATIONS and proj.getDBType() != ocpcaproj.ANNOTATIONS_64bit: 
+    raise OCPCAError ("Illegal project type for reserve.")
+
+  try:
+    count = int(cnt)
+  except:
+    raise OCPCAError ("Illegal arguments to reserve: {}".format(webargs))
+
+  # perform the reservation
+  firstid = db.reserve ( int(cnt))
+
+  return json.dumps ( (firstid, int(cnt)) )
+
+
+
 def getField ( webargs ):
   """Return a single HDF5 field"""
 
@@ -1644,7 +1668,7 @@ def exceptions ( webargs, ):
   resolution = args.getResolution()
 
   # check to make sure it's an annotation project
-  if proj.getDBType() != ocpcaproj.ANNOTATIONS and proj.getDBType() != ocpcaproj.ANNOTATIONS_64: 
+  if proj.getDBType() != ocpcaproj.ANNOTATIONS and proj.getDBType() != ocpcaproj.ANNOTATIONS_64bit: 
     logger.warning("Asked for exceptions on project that is not of type ANNOTATIONS")
     raise OCPCAError("Asked for exceptions on project that is not of type ANNOTATIONS")
   elif not proj.getExceptions():

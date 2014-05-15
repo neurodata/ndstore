@@ -356,7 +356,7 @@ def recolor_cy ( np.ndarray[np.uint32_t, ndim=2] cutout, np.ndarray[np.uint32_t,
   for j in range ( cutout.shape[0] ):
     for i in range ( cutout.shape[1] ):
       if cutout[j,i]!=0:
-        imagemap[j,i] = rgbcolor[cutout[j,i]%256]
+        imagemap[j,i] = rgbcolor[cutout[j,i]%217]
 
 
 #################  Tight cutout function ##################

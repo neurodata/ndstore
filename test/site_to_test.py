@@ -1,2 +1,2 @@
-site='localhost/ocp'
-#site='localhost:8000'
+#site='localhost/ocp'
+site='localhost:8000'

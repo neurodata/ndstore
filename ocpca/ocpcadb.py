@@ -188,6 +188,52 @@ class OCPCADB:
     self.commit()
     return annoid
 
+  #
+  #  reserve
+  #
+  def reserve ( self, count ):
+    """Reserve contiguous identifiers.
+       This is it's own txn and should not be called inside another transaction. """
+    
+    # LOCK the table to prevent race conditions on the ID
+    sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getIDsTbl() )
+    try:
+
+      self.cursor.execute ( sql )
+
+      # Query the current max identifier
+      sql = "SELECT max(id) FROM " + str ( self.annoproj.getIDsTbl() ) 
+      try:
+        self.cursor.execute ( sql )
+      except MySQLdb.Error, e:
+        logger.error ( "Failed to create annotation identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+        raise
+
+      # Here we've queried the highest id successfully    
+      row = self.cursor.fetchone ()
+      # if the table is empty start at 1, 0 is no 
+      if ( row[0] == None ):
+        identifier = 1
+      else:
+        identifier = int ( row[0] ) 
+
+      # increment and update query
+      sql = "INSERT INTO " + str(self.annoproj.getIDsTbl()) + " VALUES ( " + str(identifier+count) + " ) "
+      try:
+        self.cursor.execute ( sql )
+      except MySQLdb.Error, e:
+        logger.error ( "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+        raise
+
+      self.commit()
+
+    finally:
+      pass
+      sql = "UNLOCK TABLES" 
+      self.cursor.execute ( sql )
+
+    self.commit()
+    return identifier
 
   #
   # getCube

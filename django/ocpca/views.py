@@ -227,6 +227,20 @@ def mcFalseColor (request, webargs):
     logger.exception("Unknown exception in mcFalseColor.")
     raise
 
+@cache_control(no_cache=True)
+def reserve (request, webargs):
+  """Preallocate a range of ids to an application."""
+
+  try:  
+    return django.http.HttpResponse(ocpcarest.reserve(webargs), mimetype="application/json" )
+  except OCPCAError, e:
+    return django.http.HttpResponseNotFound(e.value)
+  except MySQLdb.Error, e:
+    return django.http.HttpResponseNotFound(e)
+  except:
+    logger.exception("Unknown exception in reserve.")
+    raise
+
 
 def setField (request, webargs):
   """Set an individual RAMON field for an object"""
