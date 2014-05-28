@@ -69,14 +69,12 @@ def main():
   slices = endslice - startslice + 1
 
   # Set the limits for iteration on the number of cubes in each dimension
-  xlimit = ximagesz / xcubedim
-  ylimit = yimagesz / ycubedim
+  xlimit = (ximagesz-1)/xcubedim+1
+  ylimit = (yimagesz-1)/ycubedim+1
   #  Round up the zlimit to the next larger
   zlimit = (((slices-1)/zcubedim+1)*zcubedim)/zcubedim
 
   lastzindex = (zindex.XYZMorton([xlimit,ylimit,zlimit])/64+1)*64
-
-  import pdb; pdb.set_trace()
 
   # iterate over the cubes in morton order
   for mortonidx in range(lastzindex):

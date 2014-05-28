@@ -52,8 +52,8 @@ def main():
   xcubedim, ycubedim, zcubedim =  projinfo['dataset']['cube_dimension']['{}'.format(result.resolution)]
 
   # Set the limits for iteration on the number of cubes in each dimension
-  xlimit = ximagesz / xcubedim
-  ylimit = yimagesz / ycubedim
+  xlimit = (ximagesz-1)/xcubedim+1
+  ylimit = (yimagesz-1)/ycubedim+1
   #  Round up the zlimit to the next larger
   zlimit = (((slices-1)/zcubedim+1)*zcubedim)/zcubedim
 
