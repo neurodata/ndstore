@@ -426,7 +426,7 @@ def restore(request):
         dataset = form.cleaned_data['dataset']
         datatype = form.cleaned_data['datatype']
         
-        dataurl = "http://openconnecto.me/EM"
+        dataurl = "http://openconnecto.me/ocp"
         readonly = form.cleaned_data['readonly']
         exceptions = form.cleaned_data['exceptions']
         nocreate = 0
