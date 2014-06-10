@@ -43,6 +43,7 @@ def main():
   parser.add_argument('--output', action="store", help='File name to output the HDF5 file.', default=None)
   parser.add_argument('--tightcutout', action='store_true', help='Return a cutout as a bounding box. Requires a resolution')
   parser.add_argument('--boundingbox', action='store_true', help='Return a the bounding box with no data. Requires a resolution')
+  parser.add_argument('--remap', action='store_true', help='Remap all connected items to the parent annotation id')
 
   result = parser.parse_args()
 
@@ -56,6 +57,9 @@ def main():
     url = "http://%s/ca/%s/%s/boundingbox/%s/" % (result.baseurl,result.token,result.annids, result.resolution)
   else:
     url = "http://%s/ca/%s/%s/" % (result.baseurl,result.token,result.annids)
+
+  if result.remap:
+    url += 'remap/'
 
   print url
 
