@@ -227,7 +227,7 @@ class OCPCADB:
       row = self.cursor.fetchone ()
       # if the table is empty start at 1, 0 is no 
       if ( row[0] == None ):
-        identifier = 1
+        identifier = 0
       else:
         identifier = int ( row[0] ) 
 
@@ -247,7 +247,7 @@ class OCPCADB:
       self.cursor.execute ( sql )
 
     self.commit()
-    return identifier
+    return identifier+1
 
   #
   # getCube
