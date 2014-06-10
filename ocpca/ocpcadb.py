@@ -1056,18 +1056,23 @@ class OCPCADB:
     return cube
 
 
-  #
-  # getLocations -- return the list of locations associated with an identifier
-  #
-  def getCuboids ( self, entityid, res ):
+  def annoCubeOffsets ( self, entityid, resolution ):
+    """an iterable on the offsets and cubes for an annotation"""
 
-    zidxs = self.annoIdx.getIndex(entityid,res)
-    cuboids= [];
-    for zidx in zidxs:
-      cuboids.append ( zindex.MortonXYZ ( zidx ) )
+    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
-    return cuboids
+    for zidx in self.annoIdx.getIndex(entityid,resolution):
 
+      # get the cube and mask out the non annoid values
+      cb = self.getCube (zidx,resolution) 
+      vec_func = np.vectorize ( lambda x: entityid if x == entityid else 0 )
+      cb.data = vec_func ( cb.data )
+  
+      # get the offset in xyz coordinates
+      (xoff,yoff,zoff) = zindex.MortonXYZ ( zidx )
+      offset = (xoff*xcubedim, yoff*ycubedim, zoff*zcubedim+self.startslice)
+      
+      yield (offset,cb.data)
 
   #
   # getLocations -- return the list of locations associated with an identifier
@@ -1110,6 +1115,7 @@ class OCPCADB:
       [ voxlist.append([a+xoffset, b+yoffset, c+zoffset]) for (a,b,c) in voxels ] 
 
     return voxlist
+
 
   #
   # getBoundingBox -- return a corner and dimension of the bounding box 
@@ -1565,3 +1571,6 @@ class OCPCADB:
       exoutput = None
 
     return exoutput
+
+#
+# Iterator for indexes

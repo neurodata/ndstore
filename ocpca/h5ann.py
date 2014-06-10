@@ -118,7 +118,20 @@ class H5Annotation:
     self.idgrp.create_dataset ( "RESOLUTION", (1,), np.uint32, data=resolution )     
     self.idgrp.create_dataset ( "XYZOFFSET", (3,), np.uint32, data=corner )     
     if volume != None:
-      self.idgrp.create_dataset ( "CUTOUT", volume.shape, np.uint32, data=volume )     
+      self.idgrp.create_dataset ( "CUTOUT", volume.shape, volume.dtype, data=volume )     
+
+  def mkCuboidGroup ( self ):
+    """Create the group to store cuboids"""
+    self.cbgrp = self.idgrp.create_group( "CUBOIDS" )
+
+
+  def addCuboid ( self, offset, cbdata ):
+    """Add the cutout  to the HDF5 file"""
+
+    offgrp = self.cbgrp.create_group ( '{}'.format(offset) ) 
+
+    offgrp.create_dataset ( "XYZOFFSET", (3,), np.uint32, data=offset )     
+    offgrp.create_dataset ( "CUBOID", cbdata.shape, cbdata.dtype,  data=cbdata )     
     
   def addBoundingBox ( self, resolution, corner, dim ):
     """Add the cutout  to the HDF5 file"""

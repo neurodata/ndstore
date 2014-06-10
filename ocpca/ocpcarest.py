@@ -750,7 +750,7 @@ AR_VOXELS = 1
 AR_CUTOUT = 2
 AR_TIGHTCUTOUT = 3
 AR_BOUNDINGBOX = 4
-#AR_CUBOIDS = 5
+AR_CUBOIDS = 5
 
 
 def getAnnoById ( annoid, h5f, proj, db, dataoption, resolution=None, corner=None, dim=None ): 
@@ -810,6 +810,15 @@ def getAnnoById ( annoid, h5f, proj, db, dataoption, resolution=None, corner=Non
     bbcorner, bbdim = db.getBoundingBox ( annoid, resolution )
     h5anno.addBoundingBox ( resolution, bbcorner, bbdim )
 
+  # populate with a minimal list of cuboids
+  elif dataoption==AR_CUBOIDS:
+ 
+    h5anno.mkCuboidGroup()
+    # get a list of indexes in XYZ space
+    # for each cube in the index, add it to the hdf5 file
+    for (offset,cbdata) in db.annoCubeOffsets(annoid, resolution):
+      h5anno.addCuboid ( offset, cbdata )
+
   # return an HDF5 file that contains the minimal amount of data. 
   # cuboids that contain data
 #  elif dataoption=+AR_CUBOIDS:
@@ -844,7 +853,7 @@ def getAnnotation ( webargs ):
     if re.match ( '^[\d,]+$', args[0] ): 
 
       annoids = map(int, args[0].split(','))
-  
+
       for annoid in annoids: 
   
         # default is no data
@@ -862,6 +871,18 @@ def getAnnotation ( webargs ):
           except:
             logger.warning ( "Improperly formatted voxel arguments {}".format(args[2]))
             raise OCPCAError("Improperly formatted voxel arguments {}".format(args[2]))
+  
+          getAnnoById ( annoid, h5f, proj, db, dataoption, resolution )
+
+        #  or you get data from the default resolution
+        elif args[1] == 'cuboids':
+          dataoption = AR_CUBOIDS
+          try:
+            [resstr, sym, rest] = args[2].partition('/')
+            resolution = int(resstr) 
+          except:
+            logger.warning ( "Improperly formatted cuboids arguments {}".format(args[2]))
+            raise OCPCAError("Improperly formatted cuboids arguments {}".format(args[2]))
   
           getAnnoById ( annoid, h5f, proj, db, dataoption, resolution )
   
@@ -1036,7 +1057,6 @@ def getAnnotations ( webargs, postdata ):
         dim = brargs.getDim()
         resolution = brargs.getResolution()
 
-    # RBTODO test this interface
     elif dataarg == 'boundingbox':
       # if blank of just resolution then a tightcutout
       if cutout == '' or re.match('^\d+[\/]*$', cutout):
@@ -1047,6 +1067,15 @@ def getAnnotations ( webargs, postdata ):
         except:
           logger.warning ( "Improperly formatted bounding box arguments {}".format(cutout))
           raise OCPCAError("Improperly formatted bounding box arguments {}".format(cutout))
+
+    elif dataarg == 'cuboids':
+      dataoption = AR_CUBOIDS
+      try:
+        [resstr, sym, rest] = cutout.partition('/')
+        resolution = int(resstr) 
+      except:
+        logger.warning ( "Improperly formatted cuboids arguments {}".format(cutout))
+        raise OCPCAError("Improperly formatted cuboids arguments {}".format(cutout))
 
     else:
         logger.warning ("In getAnnotations: Error: no such data option %s " % ( dataarg ))
