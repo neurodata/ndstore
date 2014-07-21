@@ -43,6 +43,7 @@ def main():
   parser.add_argument('--output', action="store", help='File name to output the HDF5 file.', default=None)
   parser.add_argument('--tightcutout', action='store_true', help='Return a cutout as a bounding box. Requires a resolution')
   parser.add_argument('--boundingbox', action='store_true', help='Return a the bounding box with no data. Requires a resolution')
+  parser.add_argument('--cuboids', action='store_true', help='Perform a mininal cutout.')
   parser.add_argument('--remap', action='store_true', help='Remap all connected items to the parent annotation id')
 
   result = parser.parse_args()
@@ -55,6 +56,8 @@ def main():
     url = "http://%s/ca/%s/%s/cutout/%s/" % (result.baseurl,result.token,result.annids, result.resolution)
   elif result.boundingbox: 
     url = "http://%s/ca/%s/%s/boundingbox/%s/" % (result.baseurl,result.token,result.annids, result.resolution)
+  elif result.cuboids: 
+    url = "http://%s/ca/%s/%s/cuboids/%s/" % (result.baseurl,result.token,result.annids, result.resolution)
   else:
     url = "http://%s/ca/%s/%s/" % (result.baseurl,result.token,result.annids)
 
@@ -111,6 +114,13 @@ def main():
 
     if idgrp.get('XYZDIMENSION') and idgrp.get('XYZOFFSET'):
       print "Bounding box corner %s dim %s = " % (idgrp['XYZOFFSET'][:],idgrp['XYZDIMENSION'][:])
+
+    if idgrp.get('CUBOIDS'):
+      numvoxels = 0
+      for k in idgrp.get('CUBOIDS').keys():
+        cb = idgrp.get('CUBOIDS').get(k).get('CUBOID')
+        numvoxels += len(np.nonzero(np.array(cb[:,:,:]))[0])
+      print "%s voxels match identifier in cutout" % ( numvoxels )
 
   h5f.flush()
   h5f.close()

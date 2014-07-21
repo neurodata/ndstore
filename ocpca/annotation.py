@@ -692,7 +692,7 @@ class AnnSegment (Annotation):
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      logger.warning ( "Error retrieving synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      logger.warning ( "Error retrieving segment %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise OCPCAError ( "Error retrieving segment: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     ( self.segmentclass, self.parentseed, self.neuron ) = cursor.fetchone()
@@ -762,7 +762,7 @@ class AnnNeuron (Annotation):
 
 
   def store ( self, annodb ):
-    """Store the synapse to the annotations databae"""
+    """Store the neuron to the annotations databae"""
 
     cursor = annodb.conn.cursor()
 
@@ -775,7 +775,7 @@ class AnnNeuron (Annotation):
 
 
   def update ( self, annodb ):
-    """Update the synapse in the annotations databae"""
+    """Update the neuron in the annotations databae"""
 
     # segments: pack into a kv pair
     if len(self.segments)!=0:
@@ -786,7 +786,7 @@ class AnnNeuron (Annotation):
 
 
   def retrieve ( self, annid, annodb ):
-    """Retrieve the synapse by annid"""
+    """Retrieve the neuron by annid"""
 
     # Call the base class retrieve
     annotype = Annotation.retrieve ( self, annid, annodb )
@@ -803,24 +803,11 @@ class AnnNeuron (Annotation):
   def delete ( self, annodb ):
     """Delete the annotation from the database"""
 
-    cursor = annodb.conn.cursor()
-
-    sql = "DELETE FROM %s WHERE annoid = %s;"\
-            % ( anno_dbtables['synapse'], self.annid ) 
-
-    sql += "DELETE FROM %s WHERE annoid = %s" % ( anno_dbtables['kvpairs'], self.annid )
-
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ( "Error deleting synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise OCPCAError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-    cursor.close()
-
     # and call delete on the base classs
     Annotation.delete ( self, annodb )
 
+
+    
 
 
 ###############  Organelle  ##################
@@ -1093,4 +1080,29 @@ def deleteAnnotation ( annoid, annodb, options ):
 
   # methinks we can call polymorphically
   oldanno.delete(annodb) 
+
+
+def getChildren ( annid, annodb ):
+    """Return a list of all annotations in this neuron"""
+
+    cursor = annodb.conn.cursor()
+
+    sql = "SELECT annoid FROM {} WHERE neuron = {}".format( anno_dbtables['segment'], annid )
+
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      logger.warning ( "Error deleting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+    
+    seglist = cursor.fetchall()
+
+    cursor.close()
+   
+    # return an empty iterable if there are none
+    if seglist == None:
+      seglist = []
+
+    return np.array ( seglist, dtype=np.uint32 ).flatten()
+
 

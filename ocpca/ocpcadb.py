@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+#RBTODO make zooming a readonly thing.  Not write.  Throw errors.
+
 import numpy as np
 import cStringIO
 import zlib
@@ -29,6 +32,7 @@ import annindex
 import imagecube
 import probmapcube
 import ocpcachannel
+from filtercutout import filterCutout
 
 from ocpcaerror import OCPCAError
 
@@ -376,7 +380,8 @@ class OCPCADB:
   # getExceptions
   #
   def getExceptions ( self, key, resolution, entityid ):
-    """Load a the list of excpetions for this cube"""
+    """Load a the list of excpetions for this cube.
+        This routine zooms data in from the project resolution."""
 
     # get the block from the database
     sql = "SELECT exlist FROM %s where zindex=%s AND id=%s" % ( 'exc'+str(resolution), key, entityid )
@@ -392,8 +397,8 @@ class OCPCADB:
     if ( row == None ):
       return []
     else: 
-      fobj = cStringIO.StringIO ( zlib.decompress(row[0]) )
-      return np.load (fobj)
+      return np.load(cStringIO.StringIO ( zlib.decompress(row[0]) ))
+
 
   #
   # getAllExceptions
@@ -409,14 +414,16 @@ class OCPCADB:
       logger.error ( "Error reading exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise
 
-    row = cursor.fetchall()
-
-    # If we can't find a list of exceptions, they don't exist
-    if ( row == None ):
+    # Parse and unzip all of the exceptions    
+    excrows = self.cursor.fetchall()
+    excs = []
+    if excrows == None:
       return []
-    else: 
-      fobj = cStringIO.StringIO ( zlib.decompress(row[0]) )
-      return np.load (fobj)
+    else:
+      for excstr in excrows:
+        excs.append ((np.uint32(excstr[0]), np.load(cStringIO.StringIO(zlib.decompress(excstr[1])))))
+      return excs
+
 
   #
   # deleteExceptions
@@ -432,16 +439,6 @@ class OCPCADB:
     except MySQLdb.Error, e:
       logger.error ( "Error deleting exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise
-
-#  #
-#  # promoteExceptions
-#  #
-#  def promoteExceptions ( self, key, resolution, cube ):
-#    """A deletion has occurred in this cuboid.  Promote exceptions into the image."""
-#
-#    excs = self.getAllExceptions ( key, resolution )
-#
-#    # RBTODO
 
   #
   # updateExceptions
@@ -640,9 +637,6 @@ class OCPCADB:
         if len(exceptions) != 0:
           self.removeExceptions ( key, resolution, entityid, exceptions )
 
-      # zeroed is the list that needs to get promoted here.
-      # RBTODO
-
       self.putCube ( key, resolution, cube)
 
       # For now do no index processing when shaving.  Assume there are still some
@@ -828,7 +822,7 @@ class OCPCADB:
   def cutout ( self, corner, dim, resolution, channel=None, zscaling=None ):
     """Extract a cube of arbitrary size.  Need not be aligned."""
 
-    # PYTODO alter query if  (ocpcaproj)._resolution is > resolution
+    # alter query if  (ocpcaproj)._resolution is > resolution
     # if cutout is below resolution, get a smaller cube and scaleup
     if (self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS or self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS_64bit) and self.annoproj.getResolution() > resolution:
 
@@ -948,12 +942,12 @@ class OCPCADB:
       offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
 
       incube.fromNPZ ( datastring[:] )
+
       # add it to the output cube
       outcube.addData ( incube, offset ) 
 
     # if we fetched a smaller cube to zoom, correct the result
     if (self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS or self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS) and self.annoproj.getResolution() > resolution:
-      logger.warning ( "Correcting for zoomed resolution." )
 
       outcube.zoomData ( self.annoproj.getResolution()-resolution )
 
@@ -1010,14 +1004,85 @@ class OCPCADB:
 
 
   # Alternate to getVolume that returns a annocube
-  def annoCutout ( self, entityid, resolution, corner, dim ):
+  def annoCutout ( self, annoids, resolution, corner, dim, remapid=None ):
     """Fetch a volume cutout with only the specified annotation"""
 
+    # cutout is zoom aware
     cube = self.cutout(corner,dim,resolution)
-    vec_func = np.vectorize ( lambda x: np.uint32(0) if x != entityid else np.uint32(entityid)) 
-    cube.data = vec_func ( cube.data )
 
-    # And get the exceptions
+    # apply exceptions if they are present
+    if self.EXCEPT_FLAG:
+      self.applyExceptions ( annoids, resolution, corner, cube )
+  
+    if not remapid:
+      filterCutout ( cube.data, annoids )
+    else: 
+      filterCutout ( cube.data, annoids )
+      vec_func = np.vectorize ( lambda x: np.uint32(remapid) if x != 0 else np.uint32(0) ) 
+      cube.data = vec_func ( cube.data )
+
+    return cube
+
+  # doesn't work yet
+  # helper function to apply exceptions
+  def applyCubeExceptions ( self, annid, resolution, idx, cube ):
+    """Apply the expcetions to a specified cube and resolution"""
+
+    # get the size of the image and cube
+    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
+  
+    (x,y,z) = zindex.MortonXYZ ( idx )
+
+    # for the target ids
+    for annoid in dataids:
+      # apply exceptions
+      exceptions = self.getExceptions( idx, resolution, annoid ) 
+      for e in exceptions:
+        cube.data[e[2]-z*zcubedim,e[1]-y*ycubedim,e[0]-x*xcubedim]=annoid
+
+  #
+  #  zoomVoxels
+  #
+  def zoomVoxels ( self, voxels, resgap ):
+    """Convert voxels from one resolution to another based 
+       on a positive number of hierarcy levels.
+       This is used by both exception and the voxels data argument."""
+
+    # correct for zoomed resolution
+    newvoxels = []
+    scaling = 2**(resgap)
+    for vox in voxels:
+      for numy in range(scaling):
+        for numx in range(scaling):
+          newvoxels.append ( (vox[0]*scaling + numx, vox[1]*scaling + numy, vox[2]) )
+    return newvoxels
+
+  # helper function to apply exceptions
+  def applyExceptions ( self, annids, resolution, corner, cube ):
+    """Apply the exceptions to a specified cube and resolution"""
+
+    dim = [cube.data.shape[2],cube.data.shape[1],cube.data.shape[0]]
+
+    # alter query if  (ocpcaproj)._resolution is > resolution
+    # if cutout is below resolution, get a smaller cube and scaleup
+    if self.annoproj.getResolution() > resolution:
+
+      effectiveres = self.annoproj.getResolution()
+
+      # scale the corner to higher resolution
+      newcorner = corner[0]/(2**(effectiveres-resolution)), corner[1]/(2**(effectiveres-resolution)), corner[2]
+
+      # scale the dimension to higher resolution
+      newdim = [ dim[0]*(2**(effectiveres-resolution))+1, (dim[1]-1)/(2**(effectiveres-resolution))+1, dim[2]]
+
+      corner = newcorner
+      dim = newdim
+
+    # this is the default path when not scaling up the resolution
+    else:
+
+      effectiveres = resolution 
+
     # get the size of the image and cube
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
@@ -1026,6 +1091,7 @@ class OCPCADB:
     ystart = corner[1]/ycubedim
     xstart = corner[0]/xcubedim
 
+    # Round to the nearest larger cube in all dimensions
     znumcubes = (corner[2]+dim[2]+zcubedim-1)/zcubedim - zstart
     ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
     xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
@@ -1034,45 +1100,31 @@ class OCPCADB:
     yoffset = corner[1]%ycubedim
     xoffset = corner[0]%xcubedim
 
-    for z in range(znumcubes):
-      for y in range(ynumcubes):
-        for x in range(xnumcubes):
+    # Build a list of indexes to access
+    listofidxs = []
+    for z in range ( znumcubes ):
+      for y in range ( ynumcubes ):
+        for x in range ( xnumcubes ):
+          mortonidx = zindex.XYZMorton ( [x+xstart, y+ystart, z+zstart] )
+          listofidxs.append ( mortonidx )
 
-          key = zindex.XYZMorton ([x+xstart,y+ystart,z+zstart])
-          
-          # Get exceptions if this DB supports it
-          if self.EXCEPT_FLAG:
-            exceptions = self.getExceptions( key, resolution, entityid ) 
-            if exceptions != []:
-              # write as a loop first, then figure out how to optimize 
-              # exceptions are stored relative to cube offset
-              for e in exceptions:
-                xloc = e[0]+(x+xstart)*xcubedim
-                yloc = e[1]+(y+ystart)*ycubedim
-                zloc = e[2]+(z+zstart)*zcubedim
-                if xloc>=corner[0] and xloc<corner[0]+dim[0] and yloc>=corner[1] and yloc<corner[1]+dim[1] and zloc>=corner[2] and zloc<corner[2]+dim[2]:
-                  cube.data[e[2]-zoffset+z*zcubedim,e[1]-yoffset+y*ycubedim,e[0]-xoffset+x*xcubedim]=entityid
+    # Sort the indexes in Morton order
+    listofidxs.sort()
 
-    return cube
-
-
-  def annoCubeOffsets ( self, entityid, resolution ):
-    """an iterable on the offsets and cubes for an annotation"""
-
-    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
-
-    for zidx in self.annoIdx.getIndex(entityid,resolution):
-
-      # get the cube and mask out the non annoid values
-      cb = self.getCube (zidx,resolution) 
-      vec_func = np.vectorize ( lambda x: entityid if x == entityid else 0 )
-      cb.data = vec_func ( cb.data )
-  
-      # get the offset in xyz coordinates
-      (xoff,yoff,zoff) = zindex.MortonXYZ ( zidx )
-      offset = (xoff*xcubedim, yoff*ycubedim, zoff*zcubedim+self.startslice)
-      
-      yield (offset,cb.data)
+    # RBTOFO turn into list comprehensions or cython
+    for idx in listofidxs:
+      for annid in annids:
+        excs = self.getExceptions ( idx, effectiveres, annid )
+        if excs != []:
+          if effectiveres > resolution:
+            excs = self.zoomVoxels ( excs, effectiveres-resolution )
+          for e in excs:
+            (x,y,z) = zindex.MortonXYZ(idx)
+            try:
+              cube.data[e[2]+(z-zstart)*zcubedim-zoffset,e[1]+(y-ystart)*ycubedim-yoffset,e[0]+(x-xstart)*xcubedim-xoffset]=annid
+            # ignore out of bounds
+            except:
+              pass
 
   #
   # getLocations -- return the list of locations associated with an identifier
@@ -1081,14 +1133,21 @@ class OCPCADB:
 
     # get the size of the image and cube
     resolution = int(res)
+    
+    #scale to project resolution
+    if self.annoproj.getResolution() > resolution:
+      effectiveres = self.annoproj.getResolution() 
+    else:
+      effectiveres = resolution
+
 
     voxlist = []
 
-    zidxs = self.annoIdx.getIndex(entityid,resolution)
+    zidxs = self.annoIdx.getIndex(entityid,effectiveres)
 
     for zidx in zidxs:
 
-      cb = self.getCube (zidx,resolution) 
+      cb = self.getCube (zidx,effectiveres) 
 
       # mask out the entries that do not match the annotation id
       vec_func = np.vectorize ( lambda x: entityid if x == entityid else 0 )
@@ -1114,6 +1173,10 @@ class OCPCADB:
       # Change the voxels back to image address space
       [ voxlist.append([a+xoffset, b+yoffset, c+zoffset]) for (a,b,c) in voxels ] 
 
+    # zoom out the voxels if necessary 
+    if effectiveres > resolution:
+      voxlist = self.zoomVoxels ( voxlist, effectiveres-resolution )
+
     return voxlist
 
 
@@ -1121,34 +1184,104 @@ class OCPCADB:
   # getBoundingBox -- return a corner and dimension of the bounding box 
   #   for an annotation using the index.
   #
-  def getBoundingBox ( self, entityid, res ):
+  def getBoundingBox ( self, annids, res ):
   
     # get the size of the image and cube
     resolution = int(res)
 
-    # all boxes in the index
-    zidxs = self.annoIdx.getIndex(entityid,resolution)
+    # determine the resolution for project information
+    if self.annoproj.getResolution() > resolution:
+      effectiveres = self.annoproj.getResolution() 
+      scaling = 2**(effectiveres-resolution)
+    else:
+      effectiveres = resolution
+      scaling=1
 
-    if len(zidxs)==0:
-      return None, None
+    # all boxes in the indexes
+    zidxs=[]
+    for annid in annids:
+      zidxs = itertools.chain(zidxs,self.annoIdx.getIndex(annid,effectiveres))
     
     # convert to xyz coordinates
-    xyzvals = np.array ( [ zindex.MortonXYZ(zidx) for zidx in zidxs ], dtype=np.uint32 )
+    try:
+      xyzvals = np.array ( [ zindex.MortonXYZ(zidx) for zidx in zidxs ], dtype=np.uint32 )
+    # if there's nothing in the chain, the array creation will fail
+    except:
+      return None, None
 
     cubedim = self.datasetcfg.cubedim [ resolution ] 
 
     # find the corners
-    xmin = min(xyzvals[:,0]) * cubedim[0]
-    xmax = (max(xyzvals[:,0])+1) * cubedim[0]
-    ymin = min(xyzvals[:,1]) * cubedim[1]
-    ymax = (max(xyzvals[:,1])+1) * cubedim[1]
+    xmin = min(xyzvals[:,0]) * cubedim[0] * scaling
+    xmax = (max(xyzvals[:,0])+1) * cubedim[0] * scaling
+    ymin = min(xyzvals[:,1]) * cubedim[1] * scaling
+    ymax = (max(xyzvals[:,1])+1) * cubedim[1] * scaling
     zmin = min(xyzvals[:,2]) * cubedim[2]
     zmax = (max(xyzvals[:,2])+1) * cubedim[2]
 
-    corner = [ xmin, ymin, zmin ]
+    corner = [ xmin, ymin, zmin+self.startslice ]
     dim = [ xmax-xmin, ymax-ymin, zmax-zmin ]
 
     return (corner,dim)
+
+
+  def annoCubeOffsets ( self, dataids, resolution, remapid=False ):
+    """an iterable on the offsets and cubes for an annotation"""
+   
+    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
+
+    # alter query if  (ocpcaproj)._resolution is > resolution
+    # if cutout is below resolution, get a smaller cube and scaleup
+    if self.annoproj.getResolution() > resolution:
+      effectiveres = self.annoproj.getResolution() 
+    else:
+      effectiveres = resolution
+
+    zidxs = set()
+    for did in dataids:
+      zidxs |= set ( self.annoIdx.getIndex(did,effectiveres))
+
+    for zidx in zidxs:
+
+      # get the cube and mask out the non annoid values
+      cb = self.getCube (zidx,effectiveres) 
+      if not remapid:
+        filterCutout ( cb.data, dataids )
+      else: 
+        filterCutout ( cb.data, dataids )
+        vec_func = np.vectorize ( lambda x: np.uint32(remapid) if x != 0 else np.uint32(0) ) 
+        cb.data = vec_func ( cb.data )
+
+      # zoom the data if not at the right resolution
+      # and translate the zindex to the upper resolution
+      (xoff,yoff,zoff) = zindex.MortonXYZ ( zidx )
+      offset = (xoff*xcubedim, yoff*ycubedim, zoff*zcubedim+self.startslice)
+
+      # if we're zooming, so be it
+      if resolution < effectiveres:
+        cb.zoomData ( effectiveres-resolution )
+        offset = (offset[0]*(2**(effectiveres-resolution)),offset[1]*(2**(effectiveres-resolution)),offset[2])
+
+      # add any exceptions
+      # Get exceptions if this DB supports it
+      if self.EXCEPT_FLAG:
+        for exid in dataids:
+          exceptions = self.getExceptions( zidx, effectiveres, exid ) 
+          if exceptions != []:
+            if resolution < effectiveres:
+                exceptions = self.zoomVoxels ( exceptions, effectiveres-resolution )
+            # write as a loop first, then figure out how to optimize 
+            # exceptions are stored relative to cube offset
+            for e in exceptions:
+              if not remapid:
+                cb.data[e[2],e[1],e[0]]=exid
+              else:
+                cb.data[e[2],e[1],e[0]]=remapid
+
+      yield (offset,cb.data)
+
+
+
 
   #
   # getAnnotation:  
@@ -1197,12 +1330,17 @@ class OCPCADB:
         # remove the expcetions
         if self.EXCEPT_FLAG:
           self.deleteExceptions ( key, res, annoid )
-# RBTODO unimplemented and untested
-#          self.promoteExceptions ( key, res, cube )
         self.putCube ( key, res, cube)
       
     # delete Index
     self.annoIdx.deleteIndex(annoid,resolutions)
+
+  #
+  # getChildren
+  def getChildren ( self, annoid ):
+    """get all the children of the annotation"""
+
+    return annotation.getChildren ( annoid, self )
 
   
   # getAnnoObjects:  
@@ -1215,8 +1353,6 @@ class OCPCADB:
         status
       Predicates are given in a dictionary.
     """
-
-    # RBTODO debug
 
     # legal equality fields
     eqfields = ( 'type', 'status' )
@@ -1371,23 +1507,15 @@ class OCPCADB:
     # ID to merge annotations into 
     mergeid = ids[0]
  
-    # PYTODO Check if this is a valid annotation that we are relabelubg to
+    # PYTODO Check if this is a valid annotation that we are relabeling to
     if len(self.annoIdx.getIndex(int(mergeid),resolution)) == 0:
       raise OCPCAError(ids[0] + " not a valid annotation id")
   
     # Get the list of cubeindexes for the Ramon objects
     listofidxs = set()
 
-  # RB!!! this loop does nothing.  
-  #   I have removed 
-  #
-    #for annid in ids[1:]:
-#      listofidxs |= set(self.annoIdx.getIndex(annid,resolution))
-        
-    # For each annotation, get the cubes and relabel it
-    #for annid in ids[1:]:
 
-    # RB!!!! do this for all ids, promoting the exceptions of the merge id
+    # Do this for all ids. 
     for annid in ids:
       listofidxs = set(self.annoIdx.getIndex(annid,resolution))
       for key in listofidxs:
@@ -1395,14 +1523,6 @@ class OCPCADB:
         #Update exceptions if exception flag is set ( PJM added 03/31/14)
         if self.EXCEPT_FLAG:
           oldexlist = self.getExceptions( key, resolution, annid ) 
-        #
-        # RB!!!!! this next line is wrong!  the problem is that
-        #  we are merging all annotations.  So at the end, there
-        #  need to be no exceptions left.  This line will leave
-        #  exceptions with the same value as the annotation.
-        #  Just delete the exceptions
-        #
-        #self.updateExceptions ( key, resolution, mergeid, oldexlist )
           self.deleteExceptions ( key, resolution, annid )
         
         # Cython optimized function  to relabel data from annid to mergeid
@@ -1410,8 +1530,7 @@ class OCPCADB:
         self.putCube ( key, resolution,cube)
         
       # Delete annotation and all it's meta data from the database
-      #
-      # RB!!!!! except for the merge annotation
+      # except for the merge annotation
       if annid != mergeid:
         try:
           annotation.deleteAnnotation(annid,self,'')
@@ -1420,23 +1539,19 @@ class OCPCADB:
 
     self.commit()
 
-     # PYTODO - Relabel exceptions?????
-    
     return "Merge complete"
 
   def merge2D(self, ids, mergetype, res,slicenum):
      # get the size of the image and cube
     resolution = int(res)
     print ids
-    # PYTODO Check if this is a valid annotation that we are relabelubg to
+    # PYTODO Check if this is a valid annotation that we are relabeling to
     if len(self.annoIdx.getIndex(ids[0],1)) == 0:
       raise OCPCAError(ids[0] + " not a valid annotation id")
     print mergetype
     listofidxs = set()
     for annid in ids[1:]:
-      #print annid
       listofidxs |= set(self.annoIdx.getIndex(annid,resolution))
-    #print listofids
 
     return "Merge 2D"
 
