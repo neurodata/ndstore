@@ -1108,7 +1108,7 @@ def putAnnotation ( webargs, postdata ):
       idgrp = h5f.get(k)
 
       # Convert HDF5 to annotation
-      anno = h5ann.H5toAnnotation ( k, idgrp )
+      anno = h5ann.H5toAnnotation ( k, idgrp, db )
 
       # set the identifier (separate transaction)
       if not ('update' in options or 'dataonly' in options or 'reduce' in options):
@@ -1567,7 +1567,7 @@ def setField ( webargs ):
     raise OCPCAError ("No annotation found at identifier = %s" % (annoid))
 
   anno.setField ( field, value )
-  anno.update ( db )
+  anno.update ( )
   db.commit()
 
 
