@@ -1077,10 +1077,6 @@ def putAnnotation ( anno, annodb, options ):
       oldanno.delete()
       anno.store()
     
-   # otherwise an illegal update
-    else:
-      raise OCPCAError ( "Cannot change the type of annotation from %s to %s" % (oldanno.__class__,anno.__class__))
-
   # Write the user chosen annotation id
   else:
     anno.store()

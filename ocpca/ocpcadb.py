@@ -815,58 +815,81 @@ class OCPCADB:
     self.shaveDense ( entityid, corner, resolution, annodata )
 
 
+  def _zoomCutout ( self, corner, dim, resolution ):
+    """Scale to a smaller cutout that will be zoomed"""
+
+    # scale the corner to higher resolution
+    effcorner = corner[0]/(2**(self.annoproj.getResolution()-resolution)), corner[1]/(2**(self.annoproj.getResolution()-resolution)), corner[2]
+
+    # pixels offset within big range
+    xpixeloffset = corner[0]%(2**(self.annoproj.getResolution()-resolution))
+    ypixeloffset = corner[1]%(2**(self.annoproj.getResolution()-resolution))
+
+    # get the new dimension, snap up to power of 2
+    outcorner = (corner[0]+dim[0],corner[1]+dim[1],corner[2]+dim[2])
+
+    newoutcorner = (outcorner[0]-1)/(2**(self.annoproj.getResolution()-resolution))+1, (outcorner[1]-1)/(2**(self.annoproj.getResolution()-resolution))+1, outcorner[2]
+    effdim = (newoutcorner[0]-effcorner[0],newoutcorner[1]-effcorner[1],newoutcorner[2]-effcorner[2])
+
+    return effcorner, effdim, (xpixeloffset,ypixeloffset)
+
   #
   #  Return a cube of data from the database
   #  Must account for zeros.
   #
-  def cutout ( self, corner, dim, resolution, channel=None, zscaling=None ):
+  def cutout ( self, corner, dim, resolution, channel=None, zscaling=None, annoids=None ):
     """Extract a cube of arbitrary size.  Need not be aligned."""
 
     # alter query if  (ocpcaproj)._resolution is > resolution
     # if cutout is below resolution, get a smaller cube and scaleup
     if (self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS or self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS_64bit) and self.annoproj.getResolution() > resolution:
 
-      # scale the corner to higher resolution
-      newcorner = corner[0]/(2**(self.annoproj.getResolution()-resolution)), corner[1]/(2**(self.annoproj.getResolution()-resolution)), corner[2]
+      #find the effective dimensions of the cutout (where the data is)
+      effcorner, effdim, (xpixeloffset,ypixeloffset) = self._zoomCutout ( corner, dim, resolution )
+      [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ self.annoproj.getResolution() ] 
+      effresolution = self.annoproj.getResolution()
+
+    # alter query if  (ocpcaproj)._resolution is < resolution
+    # if cutout is above resolution, get a large cube and scaledown
+    elif (self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS or self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS_64bit) and self.annoproj.getResolution() < resolution and True:  #RBTODO True needs to be a project dervied flag to specify is we have scaled or not 
+
+      assert 0
+
+      pass
+      # RBTODO careful with scale upp
+#      # scale the corner to higher resolution
+#      effcorner = corner[0]*(2**(resolution-self.annoproj.getResolution())), corner[1]*(2**(resolution-self.annoproj.getResolution())), corner[2]
 
       # scale the dimension to higher resolution
-      [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
-      newdim = [ (dim[0]-1)/(2**(self.annoproj.getResolution()-resolution))+1, (dim[1]-1)/(2**(self.annoproj.getResolution()-resolution))+1, dim[2] ]
-
-      # Round to the nearest larger cube in all dimensions
-      zstart = newcorner[2]/zcubedim
-      ystart = newcorner[1]/ycubedim
-      xstart = newcorner[0]/xcubedim
-
-      znumcubes = (newcorner[2]+newdim[2]+zcubedim-1)/zcubedim - zstart
-      ynumcubes = (newcorner[1]+newdim[1]+ycubedim-1)/ycubedim - ystart
-      xnumcubes = (newcorner[0]+newdim[0]+xcubedim-1)/xcubedim - xstart
-
-      # query the max resolution and scale up
-      dbname = self.annoproj.getTable(self.annoproj.getResolution())
+#      [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
+#      effdim = [ (dim[0])*(2**(resolution-self.annoproj.getResolution())), (dim[1])*(2**(resolution-self.annoproj.getResolution())), dim[2] ]
+#
 
     # this is the default path when not scaling up the resolution
     else:
 
       # get the size of the image and cube
       [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
+      effcorner = corner
+      effdim = dim
+      effresolution = resolution 
 
-      # Round to the nearest larger cube in all dimensions
-      zstart = corner[2]/zcubedim
-      ystart = corner[1]/ycubedim
-      xstart = corner[0]/xcubedim
+    # Round to the nearest larger cube in all dimensions
+    zstart = effcorner[2]/zcubedim
+    ystart = effcorner[1]/ycubedim
+    xstart = effcorner[0]/xcubedim
 
-      znumcubes = (corner[2]+dim[2]+zcubedim-1)/zcubedim - zstart
-      ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
-      xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
+    znumcubes = (effcorner[2]+effdim[2]+zcubedim-1)/zcubedim - zstart
+    ynumcubes = (effcorner[1]+effdim[1]+ycubedim-1)/ycubedim - ystart
+    xnumcubes = (effcorner[0]+effdim[0]+xcubedim-1)/xcubedim - xstart
 
-      # use the requested resolution
-      if zscaling == 'isotropic':
-        dbname = self.annoproj.getIsotropicTable(resolution)
-      elif zscaling == 'nearisotropic' and self.datasetcfg.nearisoscaledown[resolution] > 1:
-        dbname = self.annoproj.getNearIsoTable(resolution)
-      else:
-        dbname = self.annoproj.getTable(resolution)
+    # use the requested resolution
+    if zscaling == 'isotropic':
+      dbname = self.annoproj.getIsotropicTable(resolution)
+    elif zscaling == 'nearisotropic' and self.datasetcfg.nearisoscaledown[resolution] > 1:
+      dbname = self.annoproj.getNearIsoTable(resolution)
+    else:
+      dbname = self.annoproj.getTable(effresolution)
 
 
     if (self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS or self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS):
@@ -943,6 +966,11 @@ class OCPCADB:
 
       incube.fromNPZ ( datastring[:] )
 
+      # apply exceptions if it's an annotation project
+      if annoids!= None and self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS:
+        filterCutout ( incube.data, annoids )
+        self.applyCubeExceptions ( annoids, effresolution, idx, incube )
+
       # add it to the output cube
       outcube.addData ( incube, offset ) 
 
@@ -950,6 +978,14 @@ class OCPCADB:
     if (self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS or self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS) and self.annoproj.getResolution() > resolution:
 
       outcube.zoomData ( self.annoproj.getResolution()-resolution )
+
+      # need to trim based on the cube cutout at self.annoproj.getResolution()
+      outcube.trim ( corner[0]%(xcubedim*(2**(self.annoproj.getResolution()-resolution)))+xpixeloffset,dim[0], corner[1]%(ycubedim*(2**(self.annoproj.getResolution()-resolution)))+ypixeloffset,dim[1], corner[2]%zcubedim,dim[2] )
+
+    # if we fetch a larger cube, downscale it and correct
+    elif (self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS or self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS_64bit) and self.annoproj.getResolution() < resolution and True:  #RBTODO True needs to be a project dervied flag to specify is we have scaled or not 
+
+      outcube.downScale ( resolution-self.annoproj.getResolution() )
 
       # need to trime based on the cube cutout at self.annoproj.getResolution()
       outcube.trim ( corner[0]%(xcubedim*(2**(self.annoproj.getResolution()-resolution))),dim[0], corner[1]%(ycubedim*(2**(self.annoproj.getResolution()-resolution))),dim[1], corner[2]%zcubedim,dim[2] )
@@ -1008,24 +1044,15 @@ class OCPCADB:
     """Fetch a volume cutout with only the specified annotation"""
 
     # cutout is zoom aware
-    cube = self.cutout(corner,dim,resolution)
-
-    # apply exceptions if they are present
-    if self.EXCEPT_FLAG:
-      self.applyExceptions ( annoids, resolution, corner, cube )
+    cube = self.cutout(corner,dim,resolution, annoids=annoids )
   
-    if not remapid:
-      filterCutout ( cube.data, annoids )
-    else: 
-      filterCutout ( cube.data, annoids )
-      vec_func = np.vectorize ( lambda x: np.uint32(remapid) if x != 0 else np.uint32(0) ) 
-      cube.data = vec_func ( cube.data )
+    vec_func = np.vectorize ( lambda x: np.uint32(remapid) if x != 0 else np.uint32(0) ) 
+    cube.data = vec_func ( cube.data )
 
     return cube
 
-  # doesn't work yet
   # helper function to apply exceptions
-  def applyCubeExceptions ( self, annid, resolution, idx, cube ):
+  def applyCubeExceptions ( self, annoids, resolution, idx, cube ):
     """Apply the expcetions to a specified cube and resolution"""
 
     # get the size of the image and cube
@@ -1034,11 +1061,11 @@ class OCPCADB:
     (x,y,z) = zindex.MortonXYZ ( idx )
 
     # for the target ids
-    for annoid in dataids:
+    for annoid in annoids:
       # apply exceptions
       exceptions = self.getExceptions( idx, resolution, annoid ) 
       for e in exceptions:
-        cube.data[e[2]-z*zcubedim,e[1]-y*ycubedim,e[0]-x*xcubedim]=annoid
+        cube.data[e[2],e[1],e[0]]=annoid
 
   #
   #  zoomVoxels
@@ -1057,74 +1084,6 @@ class OCPCADB:
           newvoxels.append ( (vox[0]*scaling + numx, vox[1]*scaling + numy, vox[2]) )
     return newvoxels
 
-  # helper function to apply exceptions
-  def applyExceptions ( self, annids, resolution, corner, cube ):
-    """Apply the exceptions to a specified cube and resolution"""
-
-    dim = [cube.data.shape[2],cube.data.shape[1],cube.data.shape[0]]
-
-    # alter query if  (ocpcaproj)._resolution is > resolution
-    # if cutout is below resolution, get a smaller cube and scaleup
-    if self.annoproj.getResolution() > resolution:
-
-      effectiveres = self.annoproj.getResolution()
-
-      # scale the corner to higher resolution
-      newcorner = corner[0]/(2**(effectiveres-resolution)), corner[1]/(2**(effectiveres-resolution)), corner[2]
-
-      # scale the dimension to higher resolution
-      newdim = [ dim[0]*(2**(effectiveres-resolution))+1, (dim[1]-1)/(2**(effectiveres-resolution))+1, dim[2]]
-
-      corner = newcorner
-      dim = newdim
-
-    # this is the default path when not scaling up the resolution
-    else:
-
-      effectiveres = resolution 
-
-    # get the size of the image and cube
-    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
-
-    # Round to the nearest larger cube in all dimensions
-    zstart = corner[2]/zcubedim
-    ystart = corner[1]/ycubedim
-    xstart = corner[0]/xcubedim
-
-    # Round to the nearest larger cube in all dimensions
-    znumcubes = (corner[2]+dim[2]+zcubedim-1)/zcubedim - zstart
-    ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
-    xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
-
-    zoffset = corner[2]%zcubedim
-    yoffset = corner[1]%ycubedim
-    xoffset = corner[0]%xcubedim
-
-    # Build a list of indexes to access
-    listofidxs = []
-    for z in range ( znumcubes ):
-      for y in range ( ynumcubes ):
-        for x in range ( xnumcubes ):
-          mortonidx = zindex.XYZMorton ( [x+xstart, y+ystart, z+zstart] )
-          listofidxs.append ( mortonidx )
-
-    # Sort the indexes in Morton order
-    listofidxs.sort()
-
-    # RBTOFO turn into list comprehensions or cython
-    for idx in listofidxs:
-      for annid in annids:
-        excs = self.getExceptions ( idx, effectiveres, annid )
-        if excs != []:
-          if effectiveres > resolution:
-            excs = self.zoomVoxels ( excs, effectiveres-resolution )
-          for e in excs:
-            (x,y,z) = zindex.MortonXYZ(idx)
-            try:
-              cube.data[e[2]+(z-zstart)*zcubedim-zoffset,e[1]+(y-ystart)*ycubedim-yoffset,e[0]+(x-xstart)*xcubedim-xoffset]=annid
-            # ignore out of bounds
-            except:
-              pass
 
   #
   # getLocations -- return the list of locations associated with an identifier
