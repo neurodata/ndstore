@@ -1,3 +1,5 @@
+All code in this repository is citable by DOI http://dx.doi.org/10.5281/zenodo.9990
+
 Root directory of the cutout and annotation services.
 Major directories include:
 
@@ -10,3 +12,4 @@ Major directories include:
   admin -- scripts to manage databases
   scripts -- utilities to build annotation and image stacks
 
+

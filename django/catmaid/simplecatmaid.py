@@ -1,3 +1,17 @@
+# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import sys
 import tempfile
 import numpy as np
@@ -65,7 +79,10 @@ class SimpleCatmaid:
       recolor_cy (tiledata, tiledata)
       outimage = Image.frombuffer ( 'RGBA', [self.tilesz,self.tilesz], tiledata, 'raw', 'RGBA', 0, 1 )
     else:
-      assert 0 
+      #added by PJM to support probmap type.
+      tiledata = np.uint8(tiledata*256)
+      outimage = Image.frombuffer ( 'L', (self.tilesz,self.tilesz), tiledata, 'raw', 'L', 0, 1 ) 
+      #assert 0 
       # need to fix here and add falsecolor args
 
     return outimage
