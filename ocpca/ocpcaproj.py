@@ -18,6 +18,8 @@ PROBMAP_32bit = 5
 BITMASK = 6
 ANNOTATIONS_64bit = 7 
 IMAGES_16bit = 8 
+RGB_32bit = 9
+RGB_64bit = 10
 
 class OCPCAProject:
   """Project specific for cutout and annotation data"""
@@ -288,7 +290,7 @@ class OCPCAProjectsDB:
         sql = ""
 
         # tables for annotations and images
-        if dbtype==IMAGES_8bit or dbtype==ANNOTATIONS or dbtype==PROBMAP_32bit or dbtype==BITMASK:
+        if dbtype==IMAGES_8bit or dbtype==IMAGES_16bit or dbtype==ANNOTATIONS or dbtype==PROBMAP_32bit or dbtype==BITMASK or dbtype==RGB_32bit or dbtype==RGB_64bit:
 
           for i in datasetcfg.resolutions: 
             sql += "CREATE TABLE res%s ( zindex BIGINT PRIMARY KEY, cube LONGBLOB );\n" % i
