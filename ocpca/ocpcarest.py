@@ -155,6 +155,11 @@ def HDF5 ( imageargs, proj, db ):
         cube = cutout ( imageargs, proj, db, chanids[i] )
         ds = fh5out.create_dataset ( "{}".format(channels[i]), tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data )
         
+    elif proj.getDBType() == ocpcaproj.RGB_32bit or proj.getDBType() == ocpcaproj.RGB_64bit:
+      cube = cutout ( imageargs, proj, db, None)
+      cube.RGBAChannel()
+      ds = fh5out.create_dataset ( "cube", tuple(cube.data.shape), cube.data.dtype,
+                                 compression='gzip', data=cube.data )
     else: 
       cube = cutout ( imageargs, proj, db, None )
 
@@ -178,7 +183,7 @@ def HDF5 ( imageargs, proj, db ):
 #
 def xySlice ( imageargs, proj, db ):
   """Return the cube object for an xy plane"""
-
+  
   if proj.getDBType() == ocpcaproj.CHANNELS_8bit or proj.getDBType() == ocpcaproj.CHANNELS_16bit:
     [ channel, sym, imageargs ] = imageargs.partition ('/')
     # make sure that the channel is an int identifier
@@ -204,20 +209,21 @@ def xySlice ( imageargs, proj, db ):
   cube = db.cutout ( corner, dim, resolution, channel )
   if filterlist != None:
     # slowest implementation calling the implementation in python
-    #filterCutout ( cube.data, filterlist )
-	# calling the ctype filter function
-	#cube.data = filterCutoutCtype ( cube.data, filterlist )
-	cube.data = filterCutoutCtypeOMP ( cube.data, filterlist )
+    
+    filterCutout ( cube.data, filterlist )
+	  
+    # calling the ctype filter function
+  	# cube.data = filterCutoutCtype ( cube.data, filterlist )
+	  # cube.data = filterCutoutCtypeOMP ( cube.data, filterlist )
     # inline vectorized is actually slower
-#    vec_func = np.vectorize ( lambda x: 0 if x not in filterlist else x )
-#    cube.data = vec_func ( cube.data )
+    # vec_func = np.vectorize ( lambda x: 0 if x not in filterlist else x )
+    # cube.data = vec_func ( cube.data )
 
   return cube
 
 
 def xyImage ( imageargs, proj, db ):
   """Return an xy plane fileobj.read()"""
-
   cb = xySlice ( imageargs, proj, db )
 #  if proj.getDBType() == ocpcaproj.CHANNELS:
 #    fileobj = tempfile.NamedTemporaryFile()
@@ -225,7 +231,6 @@ def xyImage ( imageargs, proj, db ):
 #  else:
   fileobj = cStringIO.StringIO ( )
   cb.xySlice ( fileobj )
-
   fileobj.seek(0)
   return fileobj.read()
 
@@ -512,7 +517,6 @@ def selectPost ( webargs, proj, db, postdata ):
   """Parse the first arg and call the right post service"""
 
   [ service, sym, postargs ] = webargs.partition ('/')
-
   # Don't write to readonly projects
   if proj.getReadOnly()==1:
     logger.warning("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
@@ -522,6 +526,8 @@ def selectPost ( webargs, proj, db, postdata ):
   #  when voxels conflict
   # Perform argument processing
 
+  import pdb
+  pdb.set_trace()
   # Bind the annotation database
   db.startTxn()
 
