@@ -18,24 +18,15 @@ import zindex
 import glob
 import cv2
 
-import pdb
 #
 # ingest the tiff files into the database
 #
 
 """ This file is customized for Mitra's brain image data. \
-    It uses cv2 to read 16bit images and ingtest them in the \
+    It uses cv2 to read 16bit images and ingest them in the \
     OCP stack. Trying to make the script common for both 8-bit \
     and 16-bit
 """
-
-def tiff8bit():
-  """ Read a 8 bit Image """
-  return None
-
-def tiff16bit():
-  """ Read a 16bit Image """
-  return None
 
 def main():
 
@@ -54,7 +45,7 @@ def main():
   (startslice,endslice)=proj.datasetcfg.slicerange
   batchsz = zcubedim
 
-  batchsz = 16
+  batchsz = 1
   (ximagesz,yimagesz)=proj.datasetcfg.imagesz[result.resolution]
 
   yimagesz = 18000
@@ -63,7 +54,7 @@ def main():
   # Get a list of the files in the directories
   for sl in range (startslice, endslice+1, batchsz):
 
-    slab = np.zeros ( [ batchsz, yimagesz, ximagesz ], dtype=np.uint16 )
+    slab = np.zeros ( [ batchsz, yimagesz, ximagesz ], dtype=np.uint64 )
 
     for b in range ( batchsz ):
 
@@ -73,16 +64,12 @@ def main():
         try:
           filenm = result.path + '{:0>4}'.format(sl+b) + '.tiff'
           print "Opening filenm" + filenm
-          pdb.set_trace()
-          img = cv2.imread( filenm )
-          
-          #img = Image.open (filenm, 'r')
-          #imgdata = np.asarray ( img )
-          #slab[b,:,:] = imgdata[:,:,0]
+          import pdb; pdb.set_trace()
+          imgdata = cv2.imread( filenm, -1 )
+          slab[b,:,:] = np.left_shift(imgdata[:,:,2], 32, dtype=np.uint64) | np.left_shift(imgdata[:,:,1], 16, dtype=np.uint64) | np.uint64(imgdata[:,:,0])
         except IOError, e:
+          slab[b,:,:] = np.zeros( [ yimagesz, ximageszm ], dtype=np.uint64)
           print e
-          imgdata = np.zeros((yimagesz, ximagesz), dtype=np.uint16)
-          slab[b,:,:] = imgdata
 
         # the last z offset that we ingest, if the batch ends before batchsz
         endz = b

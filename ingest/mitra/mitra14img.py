@@ -43,7 +43,7 @@ def main():
   (startslice,endslice)=proj.datasetcfg.slicerange
   batchsz = zcubedim
 
-  batchsz = 16
+  batchsz = 5
   (ximagesz,yimagesz)=proj.datasetcfg.imagesz[result.resolution]
 
   yimagesz = 18000
@@ -52,7 +52,7 @@ def main():
   # Get a list of the files in the directories
   for sl in range (startslice, endslice+1, batchsz):
 
-    slab = np.zeros ( [ batchsz, yimagesz, ximagesz ], dtype=np.uint8 )
+    slab = np.zeros ( [ batchsz, yimagesz, ximagesz ], dtype=np.uint32 )
 
     for b in range ( batchsz ):
 
@@ -62,12 +62,14 @@ def main():
         try:
           filenm = result.path + '{:0>4}'.format(sl+b) + '.tiff'
           print "Opening filenm" + filenm
-          img = Image.open (filenm, 'r')
+          import pdb; pdb.set_trace()
+          img = Image.open (filenm, 'r').convert("RGBA")
           imgdata = np.asarray ( img )
-          slab[b,:,:] = imgdata[:,:,0]
+          img.close()
+          slab[b,:,:] = np.left_shift(imgdata[:,:,3], 24, dtype=np.uint32) | np.left_shift(imgdata[:,:,2], 16, dtype=np.uint32) | np.left_shift(imgdata[:,:,1], 8, dtype=np.uint32) | np.uint32(imgdata[:,:,0])
         except IOError, e:
           print e
-          imgdata = np.zeros((yimagesz, ximagesz), dtype=np.uint8)
+          imgdata = np.zeros((yimagesz, ximagesz), dtype=np.uint32)
           slab[b,:,:] = imgdata
 
         # the last z offset that we ingest, if the batch ends before batchsz
@@ -78,7 +80,7 @@ def main():
 
         # Getting a Cube id and ingesting the data one cube at a time
         mortonidx = zindex.XYZMorton ( [x/xcubedim, y/ycubedim, (sl-startslice)/zcubedim] )
-        cubedata = np.zeros ( [zcubedim, ycubedim, xcubedim], dtype=np.uint8 )
+        cubedata = np.zeros ( [zcubedim, ycubedim, xcubedim], dtype=np.uint32 )
 
         xmin = x
         ymin = y
@@ -101,7 +103,7 @@ def main():
         cursor.close()
 
       print " Commiting at x={}, y={}, z={}".format(x, y, sl)
-    db.conn.commit()
+      db.conn.commit()
   
     # Freeing memory
     slab = None
