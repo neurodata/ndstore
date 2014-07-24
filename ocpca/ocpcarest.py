@@ -169,17 +169,17 @@ def HDF5 ( imageargs, proj, db ):
       for i in range(len(chanids)):
         cube = cutout ( imageargs, proj, db, chanids[i] )
         ds = fh5out.create_dataset ( "{}".format(channels[i]), tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data )
-        
+    
     elif proj.getDBType() == ocpcaproj.RGB_32bit or proj.getDBType() == ocpcaproj.RGB_64bit:
       cube = cutout ( imageargs, proj, db, None)
       cube.RGBAChannel()
-      ds = fh5out.create_dataset ( "cube", tuple(cube.data.shape), cube.data.dtype,
-                                 compression='gzip', data=cube.data )
+      ds = fh5out.create_dataset ( "cube", tuple(cube.data.shape), cube.data.dtype,\
+                                  compression='gzip', data=cube.data )
     else: 
       cube = cutout ( imageargs, proj, db, None )
 
-      ds = fh5out.create_dataset ( "cube", tuple(cube.data.shape), cube.data.dtype,
-                                 compression='gzip', data=cube.data )
+      ds = fh5out.create_dataset ( "cube", tuple(cube.data.shape), cube.data.dtype,\
+                                  compression='gzip', data=cube.data )
 
   except:
     tmpfile.close()
