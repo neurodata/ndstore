@@ -1,3 +1,17 @@
+# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import sys
 import StringIO
 import tempfile
@@ -8,6 +22,7 @@ import os
 import cStringIO
 import csv
 import re
+import json
 from PIL import Image
 import MySQLdb
 
@@ -193,7 +208,7 @@ def xySlice ( imageargs, proj, db ):
 
   # Perform argument processing
   try:
-    args = restargs.BrainRestArgs ();
+    args = restargs.BrainRestArgs ()
     args.xyArgs ( imageargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
@@ -1504,6 +1519,29 @@ def mcFalseColor ( webargs ):
   return fileobj.read()
 
 
+def reserve ( webargs ):
+  """Reserve annotation ids"""
+
+  [ token, reservestr, cnt, other ] = webargs.split ('/', 3)
+  projdb = ocpcaproj.OCPCAProjectsDB()
+  proj = projdb.loadProject ( token )
+  db = ocpcadb.OCPCADB ( proj )
+
+  if proj.getDBType() != ocpcaproj.ANNOTATIONS and proj.getDBType() != ocpcaproj.ANNOTATIONS_64bit: 
+    raise OCPCAError ("Illegal project type for reserve.")
+
+  try:
+    count = int(cnt)
+  except:
+    raise OCPCAError ("Illegal arguments to reserve: {}".format(webargs))
+
+  # perform the reservation
+  firstid = db.reserve ( int(cnt))
+
+  return json.dumps ( (firstid, int(cnt)) )
+
+
+
 def getField ( webargs ):
   """Return a single HDF5 field"""
 
@@ -1655,7 +1693,7 @@ def exceptions ( webargs, ):
   resolution = args.getResolution()
 
   # check to make sure it's an annotation project
-  if proj.getDBType() != ocpcaproj.ANNOTATIONS and proj.getDBType() != ocpcaproj.ANNOTATIONS_64: 
+  if proj.getDBType() != ocpcaproj.ANNOTATIONS and proj.getDBType() != ocpcaproj.ANNOTATIONS_64bit: 
     logger.warning("Asked for exceptions on project that is not of type ANNOTATIONS")
     raise OCPCAError("Asked for exceptions on project that is not of type ANNOTATIONS")
   elif not proj.getExceptions():

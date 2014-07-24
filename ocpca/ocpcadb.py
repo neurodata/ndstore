@@ -1,3 +1,17 @@
+# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import numpy as np
 import cStringIO
 import zlib
@@ -188,6 +202,52 @@ class OCPCADB:
     self.commit()
     return annoid
 
+  #
+  #  reserve
+  #
+  def reserve ( self, count ):
+    """Reserve contiguous identifiers.
+       This is it's own txn and should not be called inside another transaction. """
+    
+    # LOCK the table to prevent race conditions on the ID
+    sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getIDsTbl() )
+    try:
+
+      self.cursor.execute ( sql )
+
+      # Query the current max identifier
+      sql = "SELECT max(id) FROM " + str ( self.annoproj.getIDsTbl() ) 
+      try:
+        self.cursor.execute ( sql )
+      except MySQLdb.Error, e:
+        logger.error ( "Failed to create annotation identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+        raise
+
+      # Here we've queried the highest id successfully    
+      row = self.cursor.fetchone ()
+      # if the table is empty start at 1, 0 is no 
+      if ( row[0] == None ):
+        identifier = 1
+      else:
+        identifier = int ( row[0] ) 
+
+      # increment and update query
+      sql = "INSERT INTO " + str(self.annoproj.getIDsTbl()) + " VALUES ( " + str(identifier+count) + " ) "
+      try:
+        self.cursor.execute ( sql )
+      except MySQLdb.Error, e:
+        logger.error ( "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+        raise
+
+      self.commit()
+
+    finally:
+      pass
+      sql = "UNLOCK TABLES" 
+      self.cursor.execute ( sql )
+
+    self.commit()
+    return identifier
 
   #
   # getCube
@@ -771,7 +831,7 @@ class OCPCADB:
   #
   def cutout ( self, corner, dim, resolution, channel=None, zscaling=None ):
     """Extract a cube of arbitrary size.  Need not be aligned."""
- 
+
     # PYTODO alter query if  (ocpcaproj)._resolution is > resolution
     # if cutout is below resolution, get a smaller cube and scaleup
     if (self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS or self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS_64bit) and self.annoproj.getResolution() > resolution:

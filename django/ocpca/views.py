@@ -1,3 +1,17 @@
+# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import django.http
 from django.views.decorators.cache import cache_control
 import MySQLdb
@@ -225,6 +239,20 @@ def mcFalseColor (request, webargs):
     return django.http.HttpResponseNotFound(e)
   except:
     logger.exception("Unknown exception in mcFalseColor.")
+    raise
+
+@cache_control(no_cache=True)
+def reserve (request, webargs):
+  """Preallocate a range of ids to an application."""
+
+  try:  
+    return django.http.HttpResponse(ocpcarest.reserve(webargs), mimetype="application/json" )
+  except OCPCAError, e:
+    return django.http.HttpResponseNotFound(e.value)
+  except MySQLdb.Error, e:
+    return django.http.HttpResponseNotFound(e)
+  except:
+    logger.exception("Unknown exception in reserve.")
     raise
 
 
