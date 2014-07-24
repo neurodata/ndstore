@@ -41,8 +41,8 @@ from ocpca_cy import recolor_cy
 from ocpcaerror import OCPCAError
 
 from filtercutout import filterCutout
-from filtercutoutctype import filterCutoutCtype
-from filtercutoutctype import filterCutoutCtypeOMP
+#from filtercutoutctype import filterCutoutCtype
+#from filtercutoutctype import filterCutoutCtypeOMP
 
 import logging
 logger=logging.getLogger("ocp")

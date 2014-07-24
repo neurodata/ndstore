@@ -911,12 +911,12 @@ class OCPCADB:
                                         ynumcubes*ycubedim,\
                                         znumcubes*zcubedim] )
 
-    elif (self.annoproj,getDBType() == ocpcaproj.RGB_64bit):
+    #elif (self.annoproj,getDBType() == ocpcaproj.RGB_64bit):
 
-      incube = imagecube.ImageCube64 ( cubedim )
-      outcube = imagecube.ImageCube64 ( [xnumcubes*xcubedim,\
-                                        ynumcubes*ycubedim,\
-                                        znumcubes*zcubedim] )
+     # incube = imagecube.ImageCube64 ( cubedim )
+     # outcube = imagecube.ImageCube64 ( [xnumcubes*xcubedim,\
+      #                                  ynumcubes*ycubedim,\
+       #                                 znumcubes*zcubedim] )
     
     elif (self.annoproj.getDBType() == ocpcaproj.PROBMAP_32bit):
       
