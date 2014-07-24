@@ -207,6 +207,10 @@ class OCPCADB:
       cube = imagecube.ImageCube8 ( cubedim )
     elif (self.annoproj.getDBType()==ocpcaproj.IMAGES_16bit):
       cube = imagecube.ImageCube16 ( cubedim )
+    elif (self.annoproj.getDBType()==ocpcaproj.RGB_32bit):
+      cube = imagecube.ImageCube32 ( cubedim )
+    elif (self.annoproj.getDBType()==ocpcaproj.RGB_64bit):
+      cube = imagecube.ImageCube64 ( cubedim )
     else:
       raise OCPCAError ("Unknown project type {}".format(self.annoproj.getDBType()))
   
@@ -840,6 +844,20 @@ class OCPCADB:
                                         ynumcubes*ycubedim,\
                                         znumcubes*zcubedim] )
 
+    elif (self.annoproj.getDBType() == ocpcaproj.RGB_32bit):
+
+      incube = imagecube.ImageCube32 ( cubedim )
+      outcube = imagecube.ImageCube32 ( [xnumcubes*xcubedim,\
+                                        ynumcubes*ycubedim,\
+                                        znumcubes*zcubedim] )
+
+    elif (self.annoproj,getDBType() == ocpcaproj.RGB_64bit):
+
+      incube = imagecube.ImageCube64 ( cubedim )
+      outcube = imagecube.ImageCube64 ( [xnumcubes*xcubedim,\
+                                        ynumcubes*ycubedim,\
+                                        znumcubes*zcubedim] )
+    
     elif (self.annoproj.getDBType() == ocpcaproj.PROBMAP_32bit):
       
       incube = probmapcube.ProbMapCube32 ( cubedim )
@@ -1266,6 +1284,10 @@ class OCPCADB:
       cuboiddtype = np.uint8  
     elif self.annoproj.getDBType() == ocpcaproj.IMAGES_16bit:
       cuboiddtype = np.uint16  
+    elif self.annoproj.getDBType() == ocpcaproj.RGB_32bit:
+      cuboiddtype = np.uint32
+    elif self.annoproj.getDBType() == ocpcaproj.RGB_64bit:
+      cuboiddtype = np.uint64
     elif self.annoproj.getDBType() == ocpcaproj.PROBMAP_32bit:
       cuboiddtype = np.float32
 
