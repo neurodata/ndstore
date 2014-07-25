@@ -70,7 +70,7 @@ class ProbMapCube32(Cube):
     # convert the data into a RG heatmap
     rgbdata = np.zeros ( [ydim,xdim,3], dtype=np.uint8 )
     rgbdata[:,:,0] = imgdata[0,:,:]
-    rgbdata[:,:,1] = (256 - imgdata[0,:,:])%256
+#    rgbdata[:,:,1] = (256 - imgdata[0,:,:])%256
 
     outimage = Image.frombuffer ( 'RGB', (xdim,ydim), rgbdata, 'raw', 'RGB', 0, 1 )
     outimage.save ( fileobj, "PNG" )

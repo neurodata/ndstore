@@ -15,12 +15,16 @@
 import argparse
 import sys
 import os
-
-import empaths
+import pdb
 import argparse
 
-import emcaproj
-import emcadb
+sys.path += [os.path.abspath('../../django')]
+import OCP.settings
+os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
+from django.conf import settings
+
+import ocpcaproj
+import ocpcadb
  
 import numpy as np
 from PIL import Image
@@ -32,9 +36,9 @@ class CatmaidIngest:
     """Load the CATMAID stack into an OCP database"""
 
     # Get the database
-    self.projdb = emcaproj.EMCAProjectsDB()
+    self.projdb = ocpcaproj.OCPCAProjectsDB()
     self.proj = self.projdb.loadProject ( token )
-    self.db = emcadb.EMCADB ( self.proj )
+    self.db = ocpcadb.OCPCADB ( self.proj )
     self.tilesz = tilesz
     self.prefix=tilepath
 
@@ -82,6 +86,9 @@ class CatmaidIngest:
               except IOError, e:
                 print "Failed to open file %s" % (e) 
                 raise
+
+            continue
+            # above line added Kunal
 
             # here we have continuous cuboid, let's upload it to the database
             corner = [ xtile*self.tilesz, ytile*self.tilesz, zslab*zslices ]
