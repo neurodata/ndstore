@@ -343,13 +343,18 @@ def xyAnno ( imageargs, proj, db ):
   """Return an xy plane fileobj.read() for a single objects"""
 
   [ annoidstr, sym, imageargs ] = imageargs.partition('/')
-  annoid = int(annoidstr)
+  annoids = [int(x) for x in annoidstr.split(',')]
 
   # retrieve the annotation 
-  anno = db.getAnnotation ( annoid )
-  if anno == None:
-    logger.warning("No annotation found at identifier = %s" % (annoid))
-    raise OCPCAError ("No annotation found at identifier = %s" % (annoid))
+  if len(annoids) == 1:
+    anno = db.getAnnotation ( annoids[0] )
+    if anno == None:
+      logger.warning("No annotation found at identifier = %s" % (annoid))
+      raise OCPCAError ("No annotation found at identifier = %s" % (annoid))
+    else:
+      iscompound = True if anno.__class__ in [ annotation.AnnNeuron ] else False; 
+  else:
+    iscompound = False
 
   # Perform argument processing
   try:
@@ -365,13 +370,13 @@ def xyAnno ( imageargs, proj, db ):
   resolution = args.getResolution()
 
   # determine if it is a compound type (NEURON) and get the list of relevant segments
-  if anno.__class__ in [ annotation.AnnNeuron ]:
+  if iscompound:
     # remap the ids for a neuron
-    dataids = db.getChildren ( annoid ) 
-    cb = db.annoCutout ( dataids, resolution, corner, dim, annoid )
+    dataids = db.getChildren ( annoids[0] ) 
+    cb = db.annoCutout ( dataids, resolution, corner, dim, annoids[0] )
   else:
     # no remap when not a neuron
-    dataids = [anno.annid]
+    dataids = annoids
     cb = db.annoCutout ( dataids, resolution, corner, dim, None )
 
 
@@ -386,13 +391,18 @@ def xzAnno ( imageargs, proj, db ):
   """Return an xz plane fileobj.read()"""
 
   [ annoidstr, sym, imageargs ] = imageargs.partition('/')
-  annoid = int(annoidstr)
+  annoids = [int(x) for x in annoidstr.split(',')]
 
   # retrieve the annotation 
-  anno = db.getAnnotation ( annoid )
-  if anno == None:
-    logger.warning("No annotation found at identifier = %s" % (annoid))
-    raise OCPCAError ("No annotation found at identifier = %s" % (annoid))
+  if len(annoids) == 1:
+    anno = db.getAnnotation ( annoids[0] )
+    if anno == None:
+      logger.warning("No annotation found at identifier = %s" % (annoid))
+      raise OCPCAError ("No annotation found at identifier = %s" % (annoid))
+    else:
+      iscompound = True if anno.__class__ in [ annotation.AnnNeuron ] else False; 
+  else:
+    iscompound = False
 
   # Perform argument processing
   try:
@@ -408,14 +418,13 @@ def xzAnno ( imageargs, proj, db ):
   resolution = args.getResolution()
 
   # determine if it is a compound type (NEURON) and get the list of relevant segments
-  if anno.__class__ in [ annotation.AnnNeuron ]:
+  if iscompound:
     # remap the ids for a neuron
-    dataids = db.getChildren ( annoid ) 
-    cb = db.annoCutout ( dataids, resolution, corner, dim, annoid )
+    dataids = db.getChildren ( annoids[0] ) 
+    cb = db.annoCutout ( dataids, resolution, corner, dim, annoids[0] )
   else:
     # no remap when not a neuron
-    dataids = [anno.annid]
-    cb = db.annoCutout ( dataids, resolution, corner, dim, None )
+    cb = db.annoCutout ( annoids, resolution, corner, dim, None )
 
   fileobj = cStringIO.StringIO ( )
   cb.xzSlice ( proj.datasetcfg.zscale[resolution], fileobj )
@@ -428,13 +437,18 @@ def yzAnno ( imageargs, proj, db ):
   """Return an yz plane fileobj.read()"""
 
   [ annoidstr, sym, imageargs ] = imageargs.partition('/')
-  annoid = int(annoidstr)
+  annoids = [int(x) for x in annoidstr.split(',')]
 
   # retrieve the annotation 
-  anno = db.getAnnotation ( annoid )
-  if anno == None:
-    logger.warning("No annotation found at identifier = %s" % (annoid))
-    raise OCPCAError ("No annotation found at identifier = %s" % (annoid))
+  if len(annoids) == 1:
+    anno = db.getAnnotation ( annoids[0] )
+    if anno == None:
+      logger.warning("No annotation found at identifier = %s" % (annoid))
+      raise OCPCAError ("No annotation found at identifier = %s" % (annoid))
+    else:
+      iscompound = True if anno.__class__ in [ annotation.AnnNeuron ] else False; 
+  else:
+    iscompound = False
 
   # Perform argument processing
   try:
@@ -450,14 +464,13 @@ def yzAnno ( imageargs, proj, db ):
   resolution = args.getResolution()
 
   # determine if it is a compound type (NEURON) and get the list of relevant segments
-  if anno.__class__ in [ annotation.AnnNeuron ]:
+  if iscompound:
     # remap the ids for a neuron
-    dataids = db.getChildren ( annoid ) 
-    cb = db.annoCutout ( dataids, resolution, corner, dim, annoid )
+    dataids = db.getChildren ( annoids[0] ) 
+    cb = db.annoCutout ( dataids, resolution, corner, dim, annoids[0] )
   else:
     # no remap when not a neuron
-    dataids = [anno.annid]
-    cb = db.annoCutout ( dataids, resolution, corner, dim, None )
+    cb = db.annoCutout ( annoids, resolution, corner, dim, None )
 
   fileobj = cStringIO.StringIO ( )
   cb.yzSlice ( proj.datasetcfg.zscale[resolution], fileobj )

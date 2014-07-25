@@ -12,9 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-#RBTODO make zooming a readonly thing.  Not write.  Throw errors.
-
 import numpy as np
 import cStringIO
 import zlib
@@ -380,8 +377,7 @@ class OCPCADB:
   # getExceptions
   #
   def getExceptions ( self, key, resolution, entityid ):
-    """Load a the list of excpetions for this cube.
-        This routine zooms data in from the project resolution."""
+    """Load a the list of excpetions for this cube."""
 
     # get the block from the database
     sql = "SELECT exlist FROM %s where zindex=%s AND id=%s" % ( 'exc'+str(resolution), key, entityid )
@@ -503,29 +499,6 @@ class OCPCADB:
       except MySQLdb.Error, e:
         logger.error("Error removing exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         raise
-
-
-#  RB this routine was for testing to validate that the cython output is the same as normal python
-  #
-  #  cubelocs_nocy
-  #
-  #  Remove cython for testing
-  #
-#  def cubeLocs_nocy ( self, locations, cubedim ):
-#
-#    cubelocs = np.zeros ( [len(locations),4], dtype=np.uint32 )
-#
-#    #  construct a list of the voxels in each cube using arrays
-#    for i in range(len(locations)):
-#      loc = locations[i]
-#      cubeno = loc[0]/cubedim[0], loc[1]/cubedim[1], loc[2]/cubedim[2]
-#      cubekey = zindex.XYZMorton(cubeno)
-#      cubelocs[i]=[cubekey,loc[0],loc[1],loc[2]]
-#
-#      if loc[2] > 100000 or cubelocs[i][3] > 100000:
-#        logger.error("Bad location for z value {},{}".format(loc[2],cubelocs[i][3]))
-#
-#    return cubelocs
 
   #
   # annotate
@@ -815,10 +788,10 @@ class OCPCADB:
     self.shaveDense ( entityid, corner, resolution, annodata )
 
 
-  def _zoomCutout ( self, corner, dim, resolution ):
+  def _zoominCutout ( self, corner, dim, resolution ):
     """Scale to a smaller cutout that will be zoomed"""
 
-    # scale the corner to higher resolution
+    # scale the corner to lower resolution
     effcorner = corner[0]/(2**(self.annoproj.getResolution()-resolution)), corner[1]/(2**(self.annoproj.getResolution()-resolution)), corner[2]
 
     # pixels offset within big range
@@ -833,6 +806,17 @@ class OCPCADB:
 
     return effcorner, effdim, (xpixeloffset,ypixeloffset)
 
+
+  def _zoomoutCutout ( self, corner, dim, resolution ):
+    """Scale to a larger cutout that will be shrunk"""
+
+    # scale the corner to higher resolution
+    effcorner = corner[0]*(2**(resolution-self.annoproj.getResolution())), corner[1]*(2**(resolution-self.annoproj.getResolution())), corner[2]
+
+    effdim = dim[0]*(2**(resolution-self.annoproj.getResolution())),dim[0]*(2**(resolution-self.annoproj.getResolution())),dim[2]
+
+    return effcorner, effdim 
+
   #
   #  Return a cube of data from the database
   #  Must account for zeros.
@@ -845,7 +829,7 @@ class OCPCADB:
     if (self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS or self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS_64bit) and self.annoproj.getResolution() > resolution:
 
       #find the effective dimensions of the cutout (where the data is)
-      effcorner, effdim, (xpixeloffset,ypixeloffset) = self._zoomCutout ( corner, dim, resolution )
+      effcorner, effdim, (xpixeloffset,ypixeloffset) = self._zoominCutout ( corner, dim, resolution )
       [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ self.annoproj.getResolution() ] 
       effresolution = self.annoproj.getResolution()
 
@@ -853,17 +837,9 @@ class OCPCADB:
     # if cutout is above resolution, get a large cube and scaledown
     elif (self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS or self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS_64bit) and self.annoproj.getResolution() < resolution and True:  #RBTODO True needs to be a project dervied flag to specify is we have scaled or not 
 
-      assert 0
-
-      pass
-      # RBTODO careful with scale upp
-#      # scale the corner to higher resolution
-#      effcorner = corner[0]*(2**(resolution-self.annoproj.getResolution())), corner[1]*(2**(resolution-self.annoproj.getResolution())), corner[2]
-
-      # scale the dimension to higher resolution
-#      [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
-#      effdim = [ (dim[0])*(2**(resolution-self.annoproj.getResolution())), (dim[1])*(2**(resolution-self.annoproj.getResolution())), dim[2] ]
-#
+      [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ self.annoproj.getResolution() ] 
+      effcorner, effdim = self._zoomoutCutout ( corner, dim, resolution )
+      effresolution = self.annoproj.getResolution()
 
     # this is the default path when not scaling up the resolution
     else:
@@ -1046,8 +1022,9 @@ class OCPCADB:
     # cutout is zoom aware
     cube = self.cutout(corner,dim,resolution, annoids=annoids )
   
-    vec_func = np.vectorize ( lambda x: np.uint32(remapid) if x != 0 else np.uint32(0) ) 
-    cube.data = vec_func ( cube.data )
+    if remapid:
+      vec_func = np.vectorize ( lambda x: np.uint32(remapid) if x != 0 else np.uint32(0) ) 
+      cube.data = vec_func ( cube.data )
 
     return cube
 
