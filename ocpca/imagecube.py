@@ -139,8 +139,10 @@ class ImageCube16(Cube):
 
 # This works for 16-> conversions
     zdim,ydim,xdim = self.data.shape
-    outimage = Image.frombuffer ( 'I;16', (xdim,ydim), self.data[0,:,:].flatten(), 'raw', 'I;16', 0, 1) 
-    outimage = outimage.point(lambda i:i*(1./256)).convert('L')
+    self.data = np.uint8(self.data)
+    outimage = Image.frombuffer ( 'L', (xdim,ydim), self.data[0,:,:].flatten(), 'raw', 'L', 0, 1)
+    #outimage2 = Image.fromarray ( self.data )
+    #outimage = outimage.point(lambda i:i*(1./256)).convert('L')
     #self.data = np.clip ( self.data, 0, 565)
     #self.data = (np.uint8)( self.data/(565.0/255) )
     #outimage = Image.fromarray(self.data[0,:,:])
