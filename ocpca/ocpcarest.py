@@ -41,6 +41,7 @@ from ocpca_cy import recolor_cy
 from ocpcaerror import OCPCAError
 
 from filtercutout import filterCutout
+from windowcutout import windowCutout
 from filtercutoutctype import filterCutoutCtype
 from filtercutoutctype import filterCutoutCtypeOMP
 
@@ -219,6 +220,7 @@ def xySlice ( imageargs, proj, db ):
   dim = args.getDim()
   resolution = args.getResolution()
   filterlist = args.getFilter()
+  window = args.getWindow()
 
   # Perform the cutout
   cube = db.cutout ( corner, dim, resolution, channel )
@@ -233,6 +235,11 @@ def xySlice ( imageargs, proj, db ):
     # inline vectorized is actually slower
     # vec_func = np.vectorize ( lambda x: 0 if x not in filterlist else x )
     # cube.data = vec_func ( cube.data )
+
+  if window != None:
+    # used to limit the range of data purely for viewing purposes
+
+    windowCutout ( cube.data, window)
 
   return cube
 
