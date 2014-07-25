@@ -42,8 +42,8 @@ from ocpcaerror import OCPCAError
 
 from filtercutout import filterCutout
 from windowcutout import windowCutout
-from filtercutoutctype import filterCutoutCtype
-from filtercutoutctype import filterCutoutCtypeOMP
+#from filtercutoutctype import filterCutoutCtype
+#from filtercutoutctype import filterCutoutCtypeOMP
 
 import logging
 logger=logging.getLogger("ocp")

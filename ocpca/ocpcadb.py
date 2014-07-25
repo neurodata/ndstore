@@ -911,8 +911,8 @@ class OCPCADB:
                                         ynumcubes*ycubedim,\
                                         znumcubes*zcubedim] )
 
-    elif (self.annoproj,getDBType() == ocpcaproj.RGB_64bit):
-
+    elif (self.annoproj.getDBType() == ocpcaproj.RGB_64bit):
+    
       incube = imagecube.ImageCube64 ( cubedim )
       outcube = imagecube.ImageCube64 ( [xnumcubes*xcubedim,\
                                         ynumcubes*ycubedim,\
@@ -924,8 +924,8 @@ class OCPCADB:
       outcube = probmapcube.ProbMapCube32 ( [xnumcubes*xcubedim,\
                                         ynumcubes*ycubedim,\
                                         znumcubes*zcubedim] )
-
-    # Build a list of indexes to access
+                                        
+   # Build a list of indexes to access
     listofidxs = []
     for z in range ( znumcubes ):
       for y in range ( ynumcubes ):
@@ -946,7 +946,7 @@ class OCPCADB:
       sql = "SELECT zindex, cube FROM " + dbname + " WHERE zindex IN (%s)" 
 
     # creats a %s for each list element
-    in_p=', '.join(map(lambda x: '%s', listofidxs))
+    in_p=', '.join( map(lambda x: '%s', listofidxs) ) 
     # replace the single %s with the in_p string
     sql = sql % in_p
     rc = self.cursor.execute(sql, listofidxs)
@@ -964,7 +964,6 @@ class OCPCADB:
       #add the query result cube to the bigger cube
       curxyz = zindex.MortonXYZ(int(idx))
       offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
-
       incube.fromNPZ ( datastring[:] )
       # add it to the output cube
       outcube.addData ( incube, offset ) 
