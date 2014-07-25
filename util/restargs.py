@@ -49,6 +49,9 @@ class BrainRestArgs:
   def getFilter ( self ):
     return self._filterlist
 
+  def getWindow ( self ):
+    return self._window
+  
   def getZScaling ( self ):
     return self._zscaling
 
@@ -105,6 +108,9 @@ class BrainRestArgs:
     else:
       self._filterlist = None
 
+    
+
+    
     # See if it is an isotropic cutout request
     
     self._zscaling = None
@@ -187,6 +193,12 @@ class BrainRestArgs:
     else:
       self._filterlist = None
 
+    # checking for window
+    result = re.match ("window/([\d/,]+)/",rest)
+    if result != None:
+      self._window = np.array(result.group(1).split(','),dtype=np.uint32)
+    else:
+      self._window = None
     
   def xzArgs ( self, imageargs, datasetcfg ):
     """Process REST arguments for an xz plane request
