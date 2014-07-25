@@ -10,7 +10,10 @@ import OCP.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
 from django.conf import settings
 
+#pdb.set_trace()
+
 import multiprocessing
+import time
 
 import ocpcaproj
 import ocpcadb
@@ -23,13 +26,12 @@ def parallel_ingester ( args ):
   """Create an object and run parallel ingest for a zslab."""
 
   # RB gotta get these from args here.
-  token = 'weismX'
-  tilesz = 512
-  tilepath = '/data3/peeps/wei/DR5_7L_catmaided/'
-  reslimit = 1
-  resolution = 1
-
-  zslab = args
+  token = args[0][0]
+  tilesz = args[0][1]
+  tilepath = args[0][2]
+  reslimit = args[0][3]
+  resolution = args[0][4]
+  zslab = args[1]
 
   ci = CatmaidIngester( token, tilesz, tilepath, reslimit )
   ci.parallelingest ( zslab, resolution )
@@ -59,6 +61,8 @@ class CatmaidIngester:
     # slices per ingest group
     zslices = self.proj.datasetcfg.cubedim[resolution][2]
 
+    print zslab, zslab*zslices, resolution, multiprocessing.current_process()
+
     # Ingest in database aligned slabs in the z dimension for each zslab
     
     # over all tiles in that slice
@@ -76,9 +80,7 @@ class CatmaidIngester:
             break
           
           filename = '{}/{}/{}/{}/{}.jpg'.format(self.prefix,resolution,zslab*zslices+zslice+zstart,ytile,xtile)
-          print filename
           try:
-            
             # add tile to stack
             tileimage = Image.open ( filename, 'r' )
             cuboid [zslice,:,:] = np.asarray ( tileimage )
@@ -89,11 +91,13 @@ class CatmaidIngester:
             f.write(filename+'\n')
             f.close()
             #raise
-
         # here we have continuous cuboid, let's upload it to the database
+        #print "Starting commit",zslab*zslices,multiprocessing.current_process()
+        #continue
         corner = [ xtile*self.tilesz, ytile*self.tilesz, zslab*zslices ]
         self.db.writeImageCuboid ( corner, resolution, cuboid) 
-        self.db.commit()
+        if(zslice%64==0):
+          self.db.commit()
   
 
 class CatmaidIngest:
@@ -134,24 +138,14 @@ class CatmaidIngest:
       sample_iter = [[self.token, self.tilesz, self.prefix, self.reslimit, resolution]]*numzslabs
       ziterable = zip(sample_iter, range(numzslabs))
 
+      start = time.time()
+      pdb.set_trace()
+      end = time.time()
+      print end-start
+
       p = multiprocessing.Pool(self.totalprocs)
+      #pdb.set_trace()
       p.map ( parallel_ingester, ziterable  )
-
-
-#  def run( self,numzslabs, zslices, resolution ):
-#
-#    zslabs = range(numzslabs)
-#    ziterable = zip([self]*len(zslabs), zslabs, [resolution]*len(zslabs) )
-#
-#    pdb.set_trace()
-#
-#    p = multiprocessing.Pool(self.totalprocs)
-#    unwrap_parallel_ingest ( ziterable[0] )
-##    p.map(unwrap_parallel_ingest, range(10), 1)
-#    p.close()
-#    p.join()
-
->>>>>>> origin/master
 
 
 def main():
