@@ -23,10 +23,14 @@ import cv2
 import zlib
 import MySQLdb
 
-import empaths
-import emcaproj
-import emcachannel
-import emcadb
+sys.path += [os.path.abspath('../django')]
+import OCP.settings
+os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
+from django.conf import settings
+
+import ocpcaproj
+import ocpcachannel
+import ocpcadb
 import zindex
 
 """Construct an image hierarchy up from a given resolution"""
@@ -37,11 +41,11 @@ class ChanStack:
   def __init__(self, token):
     """Load the database and project"""
 
-    projdb = emcaproj.EMCAProjectsDB()
+    projdb = ocpcaproj.OCPCAProjectsDB()
     self.proj = projdb.loadProject ( token )
 
     # Bind the annotation database
-    self.chanDB = emcadb.EMCADB ( self.proj )
+    self.chanDB = ocpcadb.OCPCADB ( self.proj )
 
 
   def buildStack ( self, startlevel ):
