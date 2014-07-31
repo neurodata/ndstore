@@ -924,16 +924,20 @@ class OCPCADB:
     in_p=', '.join(map(lambda x: '%s', listofidxs))
     # replace the single %s with the in_p string
     sql = sql % in_p
-    rc = self.cursor.execute(sql, listofidxs)
+ 
+    # this query needs its own cursor because it is open a long time
+    longlivedcursor = self.conn.cursor()
+    rc = longlivedcursor.execute(sql, listofidxs)
 
     # xyz offset stored for later use
     lowxyz = zindex.MortonXYZ ( listofidxs[0] )
-
+  
     # Get the objects and add to the cube
     while ( True ):
       try: 
-        idx, datastring = self.cursor.fetchone()
+        idx, datastring = longlivedcursor.fetchone()
       except:
+        longlivedcursor.close()
         break
 
       #add the query result cube to the bigger cube
