@@ -64,7 +64,7 @@ def main():
 
   sqldump = SQLDump( result.token, result.location )
  
-  if ( sqldump.proj.getDBType() == ocpcaproj.IMAGES_8bit ):
+  if ( sqldump.proj.getDBType() == ocpcaproj.IMAGES_8bit or sqldump.proj.getDBType() == ocpcaproj.IMAGES_16bit or sqldump.proj.getDBType() == ocpcaproj.RGB_32bit or sqldump.proj.getDBType() == ocpcaproj.RGB_64bit ):
     sqldump.dumpImgStack()
   else:
     sqldump.dumpAnnotationStack()
