@@ -81,7 +81,7 @@ class ChanStack:
             self.chanDB.conn.commit()
             for x in range(xlimit):
 
-              # cutout the data at the -1 resolution
+              # cutou the data at the -1 resolution
               olddata = self.chanDB.cutout ( [ x*2*xcubedim, y*2*ycubedim, z*zcubedim ], biggercubedim, l-1, chan ).data
               # target array for the new data (z,y,x) order
               newdata = np.zeros([zcubedim,ycubedim,xcubedim], dtype=np.uint16)
