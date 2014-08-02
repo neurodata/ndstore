@@ -547,8 +547,6 @@ def selectPost ( webargs, proj, db, postdata ):
   #  when voxels conflict
   # Perform argument processing
 
-  import pdb
-  pdb.set_trace()
   # Bind the annotation database
   db.startTxn()
 
