@@ -48,9 +48,9 @@ def main():
 
   yimagesz = 18000
   ximagesz = 24000
-
+  
   # Get a list of the files in the directories
-  for sl in range (startslice, endslice+1, batchsz):
+  for sl in range ( startslice, endslice+1, batchsz):
 
     slab = np.zeros ( [ batchsz, yimagesz, ximagesz ], dtype=np.uint32 )
 
