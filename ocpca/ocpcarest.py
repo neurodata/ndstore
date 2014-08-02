@@ -221,7 +221,6 @@ def xySlice ( imageargs, proj, db ):
   resolution = args.getResolution()
   filterlist = args.getFilter()
   window = args.getWindow()
-
   # Perform the cutout
   cube = db.cutout ( corner, dim, resolution, channel )
   if filterlist != None:

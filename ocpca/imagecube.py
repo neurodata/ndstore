@@ -306,8 +306,9 @@ class ImageCube64(Cube):
   #
   def xySlice ( self, fileobj ):
 
-    zdim,ydim,xdim = self.data.shape
-    outimage = Image.fromarray( self.data[0,:,:], "RGBA")
+    channels,ydim,xdim = self.data.shape
+    self.extractChannel()
+    outimage = Image.fromarray( self.data, "RGBA")
     outimage.save ( fileobj, "PNG" )
 
 
@@ -329,5 +330,31 @@ class ImageCube64(Cube):
     zdim,ydim,xdim = self.data.shape
     outimage = Image.fromarray( self.data[:,:,0], "RGBA")
     outimage.save ( fileobj, "PNG" )
+
+  #
+  # Convert the uint32 back into 4x8 bit channels
+  #
+  def extractChannel ( self ):
+
+    zdim, ydim, xdim = self.data.shape
+    newcube = np.zeros( (ydim, xdim, 4), dtype=np.uint8 )
+    newcube[:,:,0] = np.bitwise_and(self.data, 0xffff, dtype=np.uint8)
+    newcube[:,:,1] = np.uint8 ( np.right_shift( self.data, 16) & 0xffff )
+    newcube[:,:,2] = np.uint8 ( np.right_shift( self.data, 32) & 0xffff )
+    newcube[:,:,3] = np.uint8 ( np.right_shift (self.data, 48) )
+    self.data = newcube
+
+  #
+  # Convert the uint32 back into 4x8 bit channels
+  #
+  def RGBAChannel ( self ):
+
+    zdim, ydim, xdim = self.data.shape
+    newcube = np.zeros( (4, zdim, ydim, xdim), dtype=np.uint16 )
+    newcube[0,:,:,:] = np.bitwise_and(self.data, 0xffff, dtype=np.uint16)
+    newcube[1,:,:,:] = np.uint16 ( np.right_shift( self.data, 16) & 0xffff )
+    newcube[2,:,:,:] = np.uint16 ( np.right_shift( self.data, 32) & 0xffff )
+    newcube[3,:,:,:] = np.uint16 ( np.right_shift (self.data, 48) )
+    self.data = newcube
 
 # end BrainCube
