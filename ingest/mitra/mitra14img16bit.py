@@ -65,6 +65,8 @@ def main():
   yimagesz = 18000
   ximagesz = 24000
 
+  startslice = 2
+
   # Get a list of the files in the directories
   for sl in range (startslice, endslice+1, batchsz):
 
@@ -78,11 +80,15 @@ def main():
         try:
           filenm = result.path + '{:0>4}'.format(sl+b) + '.tiff'
           print "Opening filenm" + filenm
-          import pdb; pdb.set_trace()
+          
+          # Retunrs the image in BGR order. IN 8-bit script PIL returns it in correct order.
           imgdata = cv2.imread( filenm, -1 )
-          slab[b,:,:] = np.left_shift(imgdata[:,:,2], 32, dtype=np.uint64) | np.left_shift(imgdata[:,:,1], 16, dtype=np.uint64) | np.uint64(imgdata[:,:,0])
+          if imgdata != None:
+            slab[b,:,:] = np.left_shift(65535, 48, dtype=np.uint64) | np.left_shift(imgdata[:,:,0], 32, dtype=np.uint64) | np.left_shift(imgdata[:,:,1], 16, dtype=np.uint64) | np.uint64(imgdata[:,:,2])
+          else:
+            slab[b,:,:] = np.zeros( [ yimagesz, ximagesz ], dtype=np.uint64)
         except IOError, e:
-          slab[b,:,:] = np.zeros( [ yimagesz, ximageszm ], dtype=np.uint64)
+          slab[b,:,:] = np.zeros( [ yimagesz, ximagesz ], dtype=np.uint64)
           print e
 
         # the last z offset that we ingest, if the batch ends before batchsz
@@ -92,7 +98,7 @@ def main():
       for x in range ( 0, ximagesz+1, xcubedim ):
 
         mortonidx = zindex.XYZMorton ( [x/xcubedim, y/ycubedim, (sl-startslice)/zcubedim] )
-        cubedata = np.zeros ( [zcubedim, ycubedim, xcubedim], dtype=np.uint8 )
+        cubedata = np.zeros ( [zcubedim, ycubedim, xcubedim], dtype=np.uint64 )
 
         xmin = x
         ymin = y
