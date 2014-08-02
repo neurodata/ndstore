@@ -221,7 +221,6 @@ def xySlice ( imageargs, proj, db ):
   resolution = args.getResolution()
   filterlist = args.getFilter()
   window = args.getWindow()
-
   # Perform the cutout
   cube = db.cutout ( corner, dim, resolution, channel )
   if filterlist != None:
@@ -548,8 +547,6 @@ def selectPost ( webargs, proj, db, postdata ):
   #  when voxels conflict
   # Perform argument processing
 
-  import pdb
-  pdb.set_trace()
   # Bind the annotation database
   db.startTxn()
 
