@@ -187,6 +187,14 @@ class AnnotateCube(Cube):
     newimage = outimage.resize ( [ydim, int(zdim*scale)] )
     newimage.save ( fileobj, "PNG" )
 
+  #
+  # Catmaid cutout slice
+  #
+  def catmaidSlice( self ):
+
+    recolor_cy( self.data, self.data )
+    self.data = Image.frombuffer ( 'L', [cmtilesz,cmtilesz], self.data, 'raw', 'RGBA', 0, 1 )
+
 
   def overwrite ( self, annodata ):
     """Get's a dense voxel region and overwrites all non-zero values"""

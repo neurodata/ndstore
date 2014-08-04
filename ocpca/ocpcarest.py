@@ -734,31 +734,11 @@ def catmaid ( cmtilesz, token, plane, resolution, xtile, ytile, zslice, channel 
     logger.warning("No such cutout plane: %s.  Must be (xy|xz|yz)..  Args %s" % ( service, webargs ))
     raise ANNError ( "No such cutout plane: %s.  Must be (xy|xz|yz)." % plane )
 
+  cb.data = cutoutdata
   # Write the image to a readable stream
-  
-  # Check for Image8bit and Channel8bit
-  if proj.getDBType() == ocpcaproj.IMAGES_8bit or proj.getDBType() == ocpcaproj.CHANNELS_8bit:
-    outimage = Image.frombuffer ( 'L', [cmtilesz,cmtilesz], cutoutdata, 'raw', 'L', 0, 1 ) 
-  
-  # Check for Image16bit and Channel16bit
-  elif proj.getDBType() == ocpcaproj.CHANNELS_16bit or proj.getDBType() == ocpcaproj.IMAGES_16bit:
-    # RBTODO need to multicolor this bitch
-    outimage = Image.frombuffer ( 'L', [cmtilesz,cmtilesz], cutoutdata/256, 'raw', 'L', 0, 1 ) 
-  
-  # Check for Annotations32bit and recolor it
-  elif proj.getDBType() == ocpcaproj.ANNOTATIONS:
-    recolor_cy (cutoutdata, cutoutdata)
-    outimage = Image.frombuffer ( 'RGBA', [cmtilesz,cmtilesz], cutoutdata, 'raw', 'RGBA', 0, 1 ) 
-  
-  # Check for RGB32bit. This is different from Annotations becuase no recolor required
-  elif proj.getDBType() == ocpcaproj.RGB_32bit:
-    outimage = Image.frombuffer ( 'RGBA', [cmtilesz,cmtilesz], cutoutdata, 'raw', 'RGBA', '0', '1' )
-  
-  # Check for RGB64bit. This will separated from Annotation64bit at a later stage 
-  elif proj.getDBType() == ocpcaproj.RGB_64bit or proj.getDBType() == ocpcaproj.ANNOTATIONS_64bit:
-    outimage = Image.frombuffer ( 'RGBA', [cmtilesz,cmtilesz], cutoutdata, 'raw', 'RGBA', '0', '1' )
+  cb.catmaidSlice()
 
-  return outimage
+  return cb.data
 
 
 def ocpcacatmaid_legacy ( webargs ):

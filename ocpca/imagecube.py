@@ -17,6 +17,7 @@ import zindex
 from PIL import Image
 
 from cube import Cube
+from WindowCutout import windowCutout
 
 #
 #  ImageCube: manipulate the in-memory data representation of the 3-d cube of data
@@ -90,7 +91,13 @@ class ImageCube8(Cube):
     newimage = outimage.resize ( [ydim, int(zdim*zscale)] )
     newimage.save ( fileobj, "PNG" )
 
-
+  #
+  # Create a slice for CATMAID
+  #
+  def catmaidSlice ( self ):
+    
+    cmtilesz = self.data.shape[0]
+    self.data = Image.frombuffer ( 'L', [cmtilesz,cmtilesz], self.data/256, 'raw', 'L', 0, 1 )
 #
 #  ImageCube16: manipulate the in-memory data representation of the 3-d cube 
 #    includes loading, export, read and write routines
@@ -170,6 +177,16 @@ class ImageCube16(Cube):
     outimage = outimage.point(lambda i:i*(1./256)).convert('L')
     outimage.save ( fileobj, "PNG" )
 
+  #
+  # Create a slice for CATMAID
+  #
+  def catmaidSlice ( self ):
+    
+    cmtilesz = self.data.shape[0]
+    windowValue = 546
+    windowCutout ( self.data, windowValue )
+    self.data = Image.frombuffer ( 'L', (cmtilesz,cmtilesz), self.data.flatten(), 'raw', 'L', 0, 1)
+
 # end BrainCube
 
 ### Added by Kunal ###
@@ -243,6 +260,13 @@ class ImageCube32(Cube):
     zdim,ydim,xdim = self.data.shape
     outimage = Image.fromarray( self.data[:,:,0], "RGBA")
     outimage.save ( fileobj, "PNG" )
+
+  #
+  # Create a slice for CATMAID
+  #
+  def catmaidSlice ( self ):
+    
+    self.data = Image.fromarray( self.data[], "RGBA")
 
   #
   # Convert the uint32 back into 4x8 bit channels
@@ -331,6 +355,14 @@ class ImageCube64(Cube):
     outimage = Image.fromarray( self.data[:,:,0], "RGBA")
     outimage.save ( fileobj, "PNG" )
 
+  #
+  # Create a slice for CATMAID
+  #
+  def catmaidSlice ( self ):
+    
+    self.extractChannel()
+    self.data = Image.fromarray( self.data[], "RGBA")
+  
   #
   # Convert the uint32 back into 4x8 bit channels
   #
