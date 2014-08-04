@@ -155,6 +155,7 @@ def catmaid (request, webargs):
 
   try:
     catmaidimg = ocpcarest.ocpcacatmaid_legacy(webargs)
+    import pdb; pdb.set_trace()
 
     fobj = cStringIO.StringIO ( )
     catmaidimg.save ( fobj, "PNG" )

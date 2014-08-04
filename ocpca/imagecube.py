@@ -17,7 +17,7 @@ import zindex
 from PIL import Image
 
 from cube import Cube
-from WindowCutout import windowCutout
+from windowcutout import windowCutout
 
 #
 #  ImageCube: manipulate the in-memory data representation of the 3-d cube of data
@@ -64,7 +64,6 @@ class ImageCube8(Cube):
   def xySlice ( self, fileobj ):
 
     zdim,ydim,xdim = self.data.shape
-    import pdb; pdb.set_trace()
     outimage = Image.frombuffer ( 'L', (xdim,ydim), self.data[0,:,:].flatten(), 'raw', 'L', 0, 1 ) 
     outimage.save ( fileobj, "PNG" )
   
@@ -266,7 +265,7 @@ class ImageCube32(Cube):
   #
   def catmaidSlice ( self ):
     
-    self.data = Image.fromarray( self.data[], "RGBA")
+    self.data = Image.fromarray( self.data, "RGBA")
 
   #
   # Convert the uint32 back into 4x8 bit channels
@@ -361,7 +360,7 @@ class ImageCube64(Cube):
   def catmaidSlice ( self ):
     
     self.extractChannel()
-    self.data = Image.fromarray( self.data[], "RGBA")
+    self.data = Image.fromarray( self.data, "RGBA")
   
   #
   # Convert the uint32 back into 4x8 bit channels
