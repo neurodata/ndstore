@@ -152,6 +152,7 @@ def queryObjects ( request, webargs ):
 
 def catmaid (request, webargs):
   """Convert a CATMAID request into an cutout."""
+  
 
   try:
     catmaidimg = ocpcarest.ocpcacatmaid_legacy(webargs)

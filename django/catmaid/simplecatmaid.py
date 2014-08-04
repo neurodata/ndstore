@@ -93,7 +93,6 @@ class SimpleCatmaid:
 
     # parse the web args
     self.token, tileszstr, resstr, xtilestr, ytilestr, zslicestr, rest = webargs.split('/',6)
-
     [ self.db, self.proj, projdb ] = ocpcarest.loadDBProj ( self.token )
 
     # convert args to ints

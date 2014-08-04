@@ -17,7 +17,6 @@ from django.conf.urls import patterns, include, url
 # Uncomment the next two lines to enable the admin:
 #from django.contrib import admin
 #admin.autodiscover()
-
 urlpatterns = patterns('ocpca.views',
   # catmaid
   url(r'^catmaid/(?P<webargs>\w+/.*)$', 'catmaid'),
