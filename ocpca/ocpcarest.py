@@ -695,10 +695,12 @@ def catmaid ( cmtilesz, token, plane, resolution, xtile, ytile, zslice, channel 
   # datatype from the project
   if proj.getDBType() == ocpcaproj.IMAGES_8bit or proj.getDBType == ocpcaproj.CHANNELS_8bit:
     datatype = np.uint8
-  elif proj.getDBType() == ocpcaproj.CHANNELS_16bit:
+  elif proj.getDBType() == ocpcaproj.IMAGES_16bit or proj.getDBType() == ocpcaproj.CHANNELS_16bit:
     datatype = np.uint16
-  else:
+  elif proj.getDBType() == ocpcaproj.RGB_32bit or proj.getDBType() == ocpcaproj.ANNOTATIONS or proj.getDBType() == ocpcaproj.PROBMAP_32bit:
     datatype = np.uint32
+  else:
+    datatype = np.uint64
 
   # build the cutout request
   if plane=='xy':
@@ -733,14 +735,28 @@ def catmaid ( cmtilesz, token, plane, resolution, xtile, ytile, zslice, channel 
     raise ANNError ( "No such cutout plane: %s.  Must be (xy|xz|yz)." % plane )
 
   # Write the image to a readable stream
-  if cutoutdata.dtype==np.uint8:
+  
+  # Check for Image8bit and Channel8bit
+  if proj.getDBType() == ocpcaproj.IMAGES_8bit or proj.getDBType() == ocpcaproj.CHANNELS_8bit:
     outimage = Image.frombuffer ( 'L', [cmtilesz,cmtilesz], cutoutdata, 'raw', 'L', 0, 1 ) 
-  elif cutoutdata.dtype==np.uint16:
+  
+  # Check for Image16bit and Channel16bit
+  elif proj.getDBType() == ocpcaproj.CHANNELS_16bit or proj.getDBType() == ocpcaproj.IMAGES_16bit:
     # RBTODO need to multicolor this bitch
     outimage = Image.frombuffer ( 'L', [cmtilesz,cmtilesz], cutoutdata/256, 'raw', 'L', 0, 1 ) 
-  elif cutoutdata.dtype==np.uint32:
+  
+  # Check for Annotations32bit and recolor it
+  elif proj.getDBType() == ocpcaproj.ANNOTATIONS:
     recolor_cy (cutoutdata, cutoutdata)
     outimage = Image.frombuffer ( 'RGBA', [cmtilesz,cmtilesz], cutoutdata, 'raw', 'RGBA', 0, 1 ) 
+  
+  # Check for RGB32bit. This is different from Annotations becuase no recolor required
+  elif proj.getDBType() == ocpcaproj.RGB_32bit:
+    outimage = Image.frombuffer ( 'RGBA', [cmtilesz,cmtilesz], cutoutdata, 'raw', 'RGBA', '0', '1' )
+  
+  # Check for RGB64bit. This will separated from Annotation64bit at a later stage 
+  elif proj.getDBType() == ocpcaproj.RGB_64bit or proj.getDBType() == ocpcaproj.ANNOTATIONS_64bit:
+    outimage = Image.frombuffer ( 'RGBA', [cmtilesz,cmtilesz], cutoutdata, 'raw', 'RGBA', '0', '1' )
 
   return outimage
 
