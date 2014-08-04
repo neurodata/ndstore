@@ -71,21 +71,22 @@ class SimpleCatmaid:
     else:
       tiledata = cb.data
 
+    cb.catmaidSlice( )
+
+    return cb.data
     # need to make polymorphic for different image types     
-    if tiledata.dtype == np.uint8:
-      outimage = Image.frombuffer ( 'L', (self.tilesz,self.tilesz), tiledata, 'raw', 'L', 0, 1 ) 
-    elif tiledata.dtype == np.uint32:
-      tiledata = tiledata.reshape([self.tilesz,self.tilesz])
-      recolor_cy (tiledata, tiledata)
-      outimage = Image.frombuffer ( 'RGBA', [self.tilesz,self.tilesz], tiledata, 'raw', 'RGBA', 0, 1 )
-    else:
-      #added by PJM to support probmap type.
-      tiledata = np.uint8(tiledata*256)
-      outimage = Image.frombuffer ( 'L', (self.tilesz,self.tilesz), tiledata, 'raw', 'L', 0, 1 ) 
+    #if tiledata.dtype == np.uint8:
+    #  outimage = Image.frombuffer ( 'L', (self.tilesz,self.tilesz), tiledata, 'raw', 'L', 0, 1 ) 
+    #elif tiledata.dtype == np.uint32:
+    #  tiledata = tiledata.reshape([self.tilesz,self.tilesz])
+    #  recolor_cy (tiledata, tiledata)
+    #  outimage = Image.frombuffer ( 'RGBA', [self.tilesz,self.tilesz], tiledata, 'raw', 'RGBA', 0, 1 )
+    #else:
+    #  #added by PJM to support probmap type.
+    #  tiledata = np.uint8(tiledata*256)
+    #  outimage = Image.frombuffer ( 'L', (self.tilesz,self.tilesz), tiledata, 'raw', 'L', 0, 1 ) 
       #assert 0 
       # need to fix here and add falsecolor args
-
-    return outimage
 
 
   def getTile ( self, webargs ):
