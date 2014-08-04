@@ -691,7 +691,6 @@ def catmaid ( cmtilesz, token, plane, resolution, xtile, ytile, zslice, channel 
   """Interface to the cutout service for catmaid request.  It does address translation."""
 
   [ db, proj, projdb ] = loadDBProj ( token )
-  
   # datatype from the project
   if proj.getDBType() == ocpcaproj.IMAGES_8bit or proj.getDBType == ocpcaproj.CHANNELS_8bit:
     datatype = np.uint8
@@ -745,7 +744,6 @@ def ocpcacatmaid_legacy ( webargs ):
   """Interface to the cutout service for catmaid request.  It does address translation."""
 
   CM_TILESIZE=256
-
   token, plane, resstr, xtilestr, ytilestr, zslicestr, rest = webargs.split('/',7)
 
   # invoke general catmaid with a 0 channel argument

@@ -3,7 +3,6 @@
 
 import time
 import os
-import pdb
 
 # Function to calcaluate time for a given function. Stores the function in /tmp/
 def getTime( filename, func, *args):
