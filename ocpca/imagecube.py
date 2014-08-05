@@ -95,8 +95,8 @@ class ImageCube8(Cube):
   #
   def catmaidSlice ( self ):
     
-    cmtilesz = self.data.shape[0]
-    self.data = Image.frombuffer ( 'L', [cmtilesz,cmtilesz], self.data/256, 'raw', 'L', 0, 1 )
+    cmtilesz = self.data.shape[1]
+    self.data = Image.frombuffer ( 'L', [cmtilesz,cmtilesz], self.data, 'raw', 'L', 0, 1 )
 #
 #  ImageCube16: manipulate the in-memory data representation of the 3-d cube 
 #    includes loading, export, read and write routines
@@ -181,7 +181,7 @@ class ImageCube16(Cube):
   #
   def catmaidSlice ( self ):
     
-    cmtilesz = self.data.shape[0]
+    cmtilesz = self.data.shape[1]
     windowValue = 546
     windowCutout ( self.data, windowValue )
     self.data = Image.frombuffer ( 'L', (cmtilesz,cmtilesz), self.data.flatten(), 'raw', 'L', 0, 1)
@@ -265,7 +265,7 @@ class ImageCube32(Cube):
   #
   def catmaidSlice ( self ):
     
-    self.data = Image.fromarray( self.data, "RGBA")
+      self.data = Image.fromarray( self.data[0,:,:], "RGBA")
 
   #
   # Convert the uint32 back into 4x8 bit channels

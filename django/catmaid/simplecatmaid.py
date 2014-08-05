@@ -61,7 +61,7 @@ class SimpleCatmaid:
     ystart = ytile*self.tilesz
     xend = min ((xtile+1)*self.tilesz,self.proj.datasetcfg.imagesz[resolution][0])
     yend = min ((ytile+1)*self.tilesz,self.proj.datasetcfg.imagesz[resolution][1])
-
+    
     # get an xy image slice
     imageargs = '{}/{},{}/{},{}/{}/'.format(resolution,xstart,xend,ystart,yend,zslice) 
     cb = ocpcarest.xySlice ( imageargs, self.proj, self.db )
@@ -70,7 +70,8 @@ class SimpleCatmaid:
       tiledata[0:((yend-1)%self.tilesz+1),0:((xend-1)%self.tilesz+1)] = cb.data[0,:,:]
     else:
       tiledata = cb.data
-
+    
+    cb.data = tiledata
     cb.catmaidSlice( )
 
     return cb.data
@@ -110,6 +111,7 @@ class SimpleCatmaid:
     # do something to sanitize the webargs??
     # if tile is in mocpcache, return it
     tile = self.mc.get(mckey)
+    tile = None
     if tile == None:
       img=self.cacheMiss(res,xtile,ytile,zslice)
       fobj = cStringIO.StringIO ( )

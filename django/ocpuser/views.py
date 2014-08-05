@@ -105,7 +105,6 @@ def profile(request):
         return redirect(updateproject)
       elif 'tokens' in request.POST:
       #View token for the project        
-        #import pdb;pdb.set_trace();
         print "in view tokens"
         projname = (request.POST.get('projname')).strip()
         print projname
@@ -147,7 +146,6 @@ def profile(request):
 
     else:
     # GET Option
-      #import pdb;pdb.set_trace()
       pd = ocpcaproj.OCPCAProjectsDB()
       openid = request.user.username
       databases = pd.getDatabases ( openid)
@@ -159,7 +157,6 @@ def profile(request):
       return render_to_response('profile.html', { 'databases': dbs.iteritems() },context_instance=RequestContext(request))
     
   except OCPCAError, e:
-    #import pdb;pdb.set_trace();
     messages.error(request, e.value)
     pd = ocpcaproj.OCPCAProjectsDB()
     openid = request.user.username
@@ -222,7 +219,6 @@ def datasets(request):
 @login_required
 def tokens(request):
   pd = ocpcaproj.OCPCAProjectsDB()  
-  #import pdb;pdb.set_trace();
   try:
     if request.method == 'POST':
       if 'filter' in request.POST:
@@ -287,7 +283,6 @@ def createproject(request):
   if request.method == 'POST':
     if 'CreateProject' in request.POST:
       form = CreateProjectForm(request.POST)
-      #import pdb;pdb.set_trace()
       if form.is_valid():
         token = form.cleaned_data['token']
         host = form.cleaned_data['host']
@@ -381,7 +376,6 @@ def updateproject(request):
     if 'UpdateProject' in request.POST:
       form = UpdateProjectForm(request.POST)
       if form.is_valid():
-#        import pdb;pdb.set_trace();
         curtoken = form.cleaned_data['currentToken']
         newtoken = form.cleaned_data['newToken']
         description = form.cleaned_data['description']
