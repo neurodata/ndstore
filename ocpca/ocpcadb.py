@@ -835,7 +835,7 @@ class OCPCADB:
 
     # alter query if  (ocpcaproj)._resolution is < resolution
     # if cutout is above resolution, get a large cube and scaledown
-    elif (self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS or self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS_64bit) and self.annoproj.getResolution() < resolution and True:  #RBTODO True needs to be a project dervied flag to specify is we have scaled or not 
+    elif (self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS or self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS_64bit) and self.annoproj.getResolution() < resolution and True:  #PYTODO self.annoproj.isPropagated() True needs to be a project dervied flag to specify is we have scaled or not 
 
       [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ self.annoproj.getResolution() ] 
       effcorner, effdim = self._zoomoutCutout ( corner, dim, resolution )
