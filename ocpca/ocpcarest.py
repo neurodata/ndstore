@@ -230,7 +230,7 @@ def xySlice ( imageargs, proj, db ):
 	  
     # calling the ctype filter function
   	# cube.data = filterCutoutCtype ( cube.data, filterlist )
-	  # cube.data = filterCutoutCtypeOMP ( cube.data, filterlist )
+	  #cube.data = filterCutoutCtypeOMP ( cube.data, filterlist )
     # inline vectorized is actually slower
     # vec_func = np.vectorize ( lambda x: 0 if x not in filterlist else x )
     # cube.data = vec_func ( cube.data )
