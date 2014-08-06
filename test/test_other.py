@@ -37,8 +37,12 @@ class TestOther:
   def setup_class(self):
     """Create the unittest database"""
 
-    self.pd = ocpcaproj.OCPCAProjectsDB()
-    self.pd.newOCPCAProj ( 'pubunittest', 'test', 'localhost', 'unittest', 2, 'kasthuri11', None, False, True, False, 0, True )
+    try:
+      self.pd = ocpcaproj.OCPCAProjectsDB()
+      self.pd.newOCPCAProj ( 'pubunittest', 'test', 'localhost', 'unittest', 2, 'kasthuri11', None, False, True, False, 0, True )
+    except:
+      self.pd.deleteOCPCADB ('pubunittest')
+      
 
   def teardown_class (self):
     """Destroy the unittest database"""
@@ -51,7 +55,7 @@ class TestOther:
     url =  "http://%s/ca/public_tokens/" % ( SITE_HOST )
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
-    
+
     # reead the json data
     tokens = json.loads ( f.read() )
     assert ( "pubunittest" in tokens )

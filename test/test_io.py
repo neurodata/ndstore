@@ -357,9 +357,11 @@ class TestRW:
 
   def setup_class(self):
     """Create the unittest database"""
-    
-    self.pd = ocpcaproj.OCPCAProjectsDB()
-    self.pd.newOCPCAProj ( 'unittest_rw', 'test', 'localhost', 'unittest_rw', 2, 'kasthuri11', None, False, True, False, 0 )
+    try: 
+      self.pd = ocpcaproj.OCPCAProjectsDB()
+      self.pd.newOCPCAProj ( 'unittest_rw', 'test', 'localhost', 'unittest_rw', 2, 'kasthuri11', None, False, True, False, 0 )
+    except:
+      self.pd.deleteOCPCADB ('unittest_rw')
 
   def teardown_class (self):
     """Destroy the unittest database"""
