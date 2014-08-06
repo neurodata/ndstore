@@ -17,7 +17,6 @@ import collections
 import zlib
 import cv2
 
-import pdb
 
 #
 #  ingest the TIF files into the database
@@ -59,40 +58,56 @@ def main():
   ytilesz = 3600
   xtilesz = 4800
 
-  startslice = 1
+  startslice = 2
   # Get a list of the files in the directories
   for sl in range (startslice,endslice+1,batchsz):
   
     for b in range ( batchsz ):
     
-      slab = np.zeros ( [ batchsz, ytilesz, xtilesz ], dtype=np.uint16 ) 
+      slab = np.zeros ( [ batchsz, ytilesz, xtilesz ], dtype=np.uint64 ) 
       
       if ( sl + b <= endslice ):
        
         # raw data
         try:
-          pdb.set_trace()
           filenm = result.path + '{:0>4}'.format(sl+b) + '.tiff'
           print "Opening filenm" + filenm
-          img = cv2.imread( filenm, -1 )
+          imgdata = cv2.imread( filenm, -1 )
+
+          if imgdata != None:
+            newimgdata = np.left_shift(65535, 48, dtype=np.uint64) | np.left_shift(imgdata[:,:, 0], 32, dtype=np.uint64) | np.left_shift(imgdata[:,:,1], 16, dtype=np.uint64) | np.uint64(imgdata[:,:,2])
+          else:
+            newimgdata = np.zeros( [ yimagesz, ximagesz ], dtype=np.uint64 )
         except IOError, e:
           print e
-          slab[b,:,:] = img
+          newimgdata = np.zeros( [ yimagesz, ximagesz ], dtype=np.uint64 )
         
-        for tile in range(0,5):
-            
-          if img == None:
+        newytilesz = 0
+        newxtilesz = 0
+
+        for tile in range(0,25):
+          
+          
+          if tile%5==0 and tile!=0:
+            newytilesz = newytilesz + ytilesz
+            newxtilesz = 0
+          elif tile!=0:
+            # Updating the value
+            newxtilesz = newxtilesz + xtilesz
+
+
+          if newimgdata == None:
             print "Skipping Slice {} as it does not exist".format(sl+b)
             continue
           else:
-            slab[b,:,:] = img[tile*ytilesz:(tile+1)*ytilesz,tile*xtilesz:(tile+1)*xtilesz,0]
+            slab[b,:,:] = newimgdata[newytilesz:(tile/5+1)*ytilesz,newxtilesz:(tile%5+1)*xtilesz]
        
           # the last z offset that we ingest, if the batch ends before batchsz
           endz = b
 
           # Now we have a 3600x4800 tile to the server  
           # Construct the URL
-          url = 'http://{}/ocp/ca/{}/npz/{}/{},{}/{},{}/{},{}/'.format(result.baseurl, result.token,result.resolution, tile*xtilesz, (tile+1)*xtilesz, tile*ytilesz, (tile+1)*ytilesz, sl+zoffset, sl+batchsz)
+          url = 'http://{}/ocp/ca/{}/npz/{}/{},{}/{},{}/{},{}/'.format(result.baseurl, result.token,result.resolution, newxtilesz, (tile%5+1)*xtilesz, newytilesz, (tile/5+1)*ytilesz, sl+zoffset, sl+batchsz)
 
           print url
           # Encode the voxelist an pickle
@@ -100,6 +115,7 @@ def main():
           np.save ( fileobj, slab )
           cdz = zlib.compress (fileobj.getvalue())
  
+          
           print " Sending URL"
           # Build the post request
           try:

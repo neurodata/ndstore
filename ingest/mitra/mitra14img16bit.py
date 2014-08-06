@@ -81,7 +81,7 @@ def main():
           filenm = result.path + '{:0>4}'.format(sl+b) + '.tiff'
           print "Opening filenm" + filenm
           
-          # Retunrs the image in BGR order. IN 8-bit script PIL returns it in correct order.
+          # Returns the image in BGR order. IN 8-bit script PIL returns it in correct order.
           imgdata = cv2.imread( filenm, -1 )
           if imgdata != None:
             slab[b,:,:] = np.left_shift(65535, 48, dtype=np.uint64) | np.left_shift(imgdata[:,:,0], 32, dtype=np.uint64) | np.left_shift(imgdata[:,:,1], 16, dtype=np.uint64) | np.uint64(imgdata[:,:,2])
