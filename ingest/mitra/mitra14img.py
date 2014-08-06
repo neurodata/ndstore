@@ -1,17 +1,3 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
-# 
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-# 
-#     http://www.apache.org/licenses/LICENSE-2.0
-# 
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import argparse
 import sys
 import os
@@ -66,7 +52,7 @@ def main():
   # Get a list of the files in the directories
   for sl in range (startslice, endslice+1, batchsz):
 
-    slab = np.zeros ( [ batchsz, yimagesz, ximagesz ], dtype=np.uint8 )
+    slab = np.zeros ( [ batchsz, yimagesz, ximagesz ], dtype=np.uint32 )
 
     for b in range ( batchsz ):
 
@@ -76,9 +62,9 @@ def main():
         try:
           filenm = result.path + '{:0>4}'.format(sl+b) + '.tiff'
           print "Opening filenm" + filenm
-          img = Image.open (filenm, 'r')
+          img = Image.open (filenm, 'r').convert("RGBA")
           imgdata = np.asarray ( img )
-          slab[b,:,:] = imgdata[:,:,0]
+          slab[b,:,:] = np.left_shift(imgdata[:,:,3], 24, dtype=np.uint32) | np.left_shift(imgdata[:,:,2], 16, dtype=np.uint32) | np.left_shift(imgdata[:,:,1], 8, dtype=np.uint32) | np.uint32(imgdata[:,:,0])
         except IOError, e:
           print e
           imgdata = np.zeros((yimagesz, ximagesz), dtype=np.uint8)
@@ -92,7 +78,7 @@ def main():
 
         # Getting a Cube id and ingesting the data one cube at a time
         mortonidx = zindex.XYZMorton ( [x/xcubedim, y/ycubedim, (sl-startslice)/zcubedim] )
-        cubedata = np.zeros ( [zcubedim, ycubedim, xcubedim], dtype=np.uint8 )
+        cubedata = np.zeros ( [zcubedim, ycubedim, xcubedim], dtype=np.uint32 )
 
         xmin = x
         ymin = y
@@ -115,7 +101,7 @@ def main():
         cursor.close()
 
       print " Commiting at x={}, y={}, z={}".format(x, y, sl)
-    db.conn.commit()
+      db.conn.commit()
   
     # Freeing memory
     slab = None

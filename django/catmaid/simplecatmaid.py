@@ -79,7 +79,10 @@ class SimpleCatmaid:
       recolor_cy (tiledata, tiledata)
       outimage = Image.frombuffer ( 'RGBA', [self.tilesz,self.tilesz], tiledata, 'raw', 'RGBA', 0, 1 )
     else:
-      assert 0 
+      #added by PJM to support probmap type.
+      tiledata = np.uint8(tiledata*256)
+      outimage = Image.frombuffer ( 'L', (self.tilesz,self.tilesz), tiledata, 'raw', 'L', 0, 1 ) 
+      #assert 0 
       # need to fix here and add falsecolor args
 
     return outimage
