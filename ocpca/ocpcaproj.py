@@ -101,10 +101,11 @@ class OCPCAProject:
 class OCPCADataset:
   """Configuration for a dataset"""
 
-  def __init__ ( self, ximagesz, yimagesz, startslice, endslice, zoomlevels, zscale ):
+  def __init__ ( self, ximagesz, yimagesz, startslice, endslice, zoomlevels, zscale, startwindow, endwindow ):
     """Construct a db configuration from the dataset parameters""" 
 
     self.slicerange = [ startslice, endslice ]
+    self.windowrange = [ startwindow, endwindow ]
 
     # istropic slice range is a function of resolution
     self.isoslicerange = {} 
@@ -411,7 +412,7 @@ class OCPCAProjectsDB:
 
   def loadDatasetConfig ( self, dataset ):
     """Query the database for the dataset information and build a db configuration"""
-    sql = "SELECT ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale from %s where dataset = \'%s\'" % (ocpcaprivate.datasets, dataset)
+    sql = "SELECT ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale, startwindow, endwindow from %s where dataset = \'%s\'" % (ocpcaprivate.datasets, dataset)
 
     try:
       cursor = self.conn.cursor()
@@ -429,8 +430,8 @@ class OCPCAProjectsDB:
       logger.warning ( "Dataset %s not found." % ( dataset ))
       raise OCPCAError ( "Dataset %s not found." % ( dataset ))
 
-    [ ximagesz, yimagesz, startslice, endslice, zoomlevels, zscale ] = row
-    return OCPCADataset ( int(ximagesz), int(yimagesz), int(startslice), int(endslice), int(zoomlevels), float(zscale) ) 
+    [ ximagesz, yimagesz, startslice, endslice, zoomlevels, zscale, startwindow, endwindow ] = row
+    return OCPCADataset ( int(ximagesz), int(yimagesz), int(startslice), int(endslice), int(zoomlevels), float(zscale), int(startwindow), int(endwindow) ) 
 
 
   #
