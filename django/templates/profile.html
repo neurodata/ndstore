@@ -84,15 +84,22 @@
 		      {% elif field.4 == 2%}
 		      <td>ANNOTATION</td>
 		      {% elif field.4 == 3%}
-		      <td>CHANNEL 8bit</td>
+		      <td>CHANNEL 16bit</td>		      
 		      {% elif field.4 == 4%}
-		      <td>CHANNEL 16bit</td>
+		      <td>CHANNEL 8bit</td>		      
 		      {% elif field.4 == 5%}
                       <td>PROBMAP 32bit</td>
 		      {% elif field.4 == 6%}
                       <td>BITMASK</td>
 		      {% elif field.4 == 7%}
                       <td>ANNOTATION 64bit</td>
+		      {% elif field.4 == 8%}
+                      <td>IMAGE 16bit</td>
+		      {% elif field.4 == 9%}
+                      <td>RGB 32bit</td>
+		      {% elif field.4 == 10%}
+                      <td>RGB 64bit</td>
+
 		      {% else %}
 		      <td>OTHER</td>
 		      {% endif %}

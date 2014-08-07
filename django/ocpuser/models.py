@@ -30,6 +30,9 @@ class ocpProject ( models.Model):
         (5, 'PROBMAP_32bit'),
         (6, 'BITMASK'),
         (7, 'ANNOTATIONS_64bit'),
+        (8, 'IMAGES_16bit'),
+        (9, 'RGB_32bit'),
+        (10, 'RGB_64bit'),
         )
     datatype = models.IntegerField(choices=DATATYPE_CHOICES, default=1)
     
@@ -79,6 +82,8 @@ class ocpDataset ( models.Model):
 
     startslice = models.IntegerField()
     endslice = models.IntegerField()
+    startwindow = models.IntegerField(default=0)
+    endwindow = models.IntegerField(default=0)
     zoomlevels = models.IntegerField()
     zscale = models.FloatField()
     description  =  models. CharField(max_length=4096)
