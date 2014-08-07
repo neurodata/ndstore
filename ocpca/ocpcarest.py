@@ -221,10 +221,21 @@ def xySlice ( imageargs, proj, db ):
   resolution = args.getResolution()
   filterlist = args.getFilter()
   window = args.getWindow()
+  (startwindow,endwindow) = proj.datasetcfg.windowrange
+  
   # Perform the cutout
   cube = db.cutout ( corner, dim, resolution, channel )
+  
+  # Window Function - used to limit the range of data purely for viewing purposes
+  if window != None or ( endwindow !=0 ):
+    # Check which case is calling the window Function and assign the correct value
+    if window == None:
+      window = (startwindow, endwindow)
+
+    windowCutout ( cube.data, window)
+  
+  # Filter Function - Eliminate unwanted synapses ids
   if filterlist != None:
-    # slowest implementation calling the implementation in python
     
     filterCutout ( cube.data, filterlist )
 	  
@@ -234,15 +245,6 @@ def xySlice ( imageargs, proj, db ):
     # inline vectorized is actually slower
     # vec_func = np.vectorize ( lambda x: 0 if x not in filterlist else x )
     # cube.data = vec_func ( cube.data )
- 
-  (startwindow,endwindow) = proj.datasetcfg.windowrange
-  if window != None or ( endwindow !=0 ):
-    # used to limit the range of data purely for viewing purposes
-
-    if window == None:
-      window = (startwindow, endwindow)
-
-    windowCutout ( cube.data, window)
 
   return cube
 
@@ -282,10 +284,24 @@ def xzSlice ( imageargs, proj, db ):
   dim = args.getDim()
   resolution = args.getResolution()
   filterlist = args.getFilter()
+  (startwindow,endwindow) = proj.datasetcfg.windowrange
 
   # Perform the cutout
   cube = db.cutout ( corner, dim, resolution, channel )
 
+  # Window Function - used to limit the range of data purely for viewing purposes
+  if window != None or ( endwindow !=0 ):
+    # Check which case is calling the window Function and assign the correct value
+    if window == None:
+      window = (startwindow, endwindow)
+
+    windowCutout ( cube.data, window)
+  
+  # Filter Function - Eliminate unwanted synapses ids
+  if filterlist != None:
+    
+    filterCutout ( cube.data, filterlist )
+  
   return cube
 
 
@@ -329,9 +345,23 @@ def yzSlice ( imageargs, proj, db ):
   dim = args.getDim()
   resolution = args.getResolution()
   filterlist = args.getFilter()
+  (startwindow,endwindow) = proj.datasetcfg.windowrange
 
   # Perform the cutout
   cube = db.cutout ( corner, dim, resolution, channel )
+  
+  # Window Function - used to limit the range of data purely for viewing purposes
+  if window != None or ( endwindow !=0 ):
+    # Check which case is calling the window Function and assign the correct value
+    if window == None:
+      window = (startwindow, endwindow)
+
+    windowCutout ( cube.data, window)
+  
+  # Filter Function - Eliminate unwanted synapses ids
+  if filterlist != None:
+    
+    filterCutout ( cube.data, filterlist )
 
   return cube
 
