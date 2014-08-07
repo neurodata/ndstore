@@ -161,8 +161,8 @@ class ImageCube16(Cube):
   def xzSlice ( self, zscale, fileobj  ):
 
     zdim,ydim,xdim = self.data.shape
-    outimage = Image.frombuffer ( 'I;16', (xdim,zdim), self.data[:,0,:].flatten(), 'raw', 'I;16', 0, 1) 
-    outimage = outimage.point(lambda i:i*(1./256)).convert('L')
+    self.data = np.uint8(self.data)
+    outimage = Image.frombuffer ( 'L', (xdim,ydim), self.data[0,:,:].flatten(), 'raw', 'L', 0, 1)
     outimage.save ( fileobj, "PNG" )
 
 
@@ -172,8 +172,8 @@ class ImageCube16(Cube):
   def yzSlice ( self, zscale, fileobj  ):
 
     zdim,ydim,xdim = self.data.shape
-    outimage = Image.frombuffer ( 'I;16', (ydim,zdim), self.data[:,:,0].flatten(), 'raw', 'I;16', 0, 1) 
-    outimage = outimage.point(lambda i:i*(1./256)).convert('L')
+    self.data = np.uint8(self.data)
+    outimage = Image.frombuffer ( 'L', (xdim,ydim), self.data[0,:,:].flatten(), 'raw', 'L', 0, 1)
     outimage.save ( fileobj, "PNG" )
 
   #
