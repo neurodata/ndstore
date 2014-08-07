@@ -234,7 +234,7 @@ def xySlice ( imageargs, proj, db ):
     # inline vectorized is actually slower
     # vec_func = np.vectorize ( lambda x: 0 if x not in filterlist else x )
     # cube.data = vec_func ( cube.data )
-  
+ 
   (startwindow,endwindow) = proj.datasetcfg.windowrange
   if window != None or ( endwindow !=0 ):
     # used to limit the range of data purely for viewing purposes
