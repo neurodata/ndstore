@@ -162,7 +162,7 @@ class ImageCube16(Cube):
 
     zdim,ydim,xdim = self.data.shape
     self.data = np.uint8(self.data)
-    outimage = Image.frombuffer ( 'L', (xdim,ydim), self.data[0,:,:].flatten(), 'raw', 'L', 0, 1)
+    outimage = Image.frombuffer ( 'L', (xdim,zdim), self.data[:,0,:].flatten(), 'raw', 'L', 0, 1)
     outimage.save ( fileobj, "PNG" )
 
 
@@ -173,7 +173,7 @@ class ImageCube16(Cube):
 
     zdim,ydim,xdim = self.data.shape
     self.data = np.uint8(self.data)
-    outimage = Image.frombuffer ( 'L', (xdim,ydim), self.data[0,:,:].flatten(), 'raw', 'L', 0, 1)
+    outimage = Image.frombuffer ( 'L', (ydim,zdim), self.data[:,:,0].flatten(), 'raw', 'L', 0, 1)
     outimage.save ( fileobj, "PNG" )
 
   #
@@ -341,7 +341,8 @@ class ImageCube64(Cube):
   def xzSlice ( self, zscale, fileobj  ):
 
     zdim,ydim,xdim = self.data.shape
-    outimage = Image.fromarray( self.data[:,0,:], "RGBA")
+    self.extractChannel()
+    outimage = Image.fromarray( self.data, "RGBA")
     outimage.save ( fileobj, "PNG" )
 
 
@@ -351,7 +352,8 @@ class ImageCube64(Cube):
   def yzSlice ( self, zscale, fileobj  ):
 
     zdim,ydim,xdim = self.data.shape
-    outimage = Image.fromarray( self.data[:,:,0], "RGBA")
+    self.extractChannel()
+    outimage = Image.fromarray( self.data, "RGBA")
     outimage.save ( fileobj, "PNG" )
 
   #

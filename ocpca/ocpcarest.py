@@ -284,6 +284,7 @@ def xzSlice ( imageargs, proj, db ):
   dim = args.getDim()
   resolution = args.getResolution()
   filterlist = args.getFilter()
+  window = args.getWindow()
   (startwindow,endwindow) = proj.datasetcfg.windowrange
 
   # Perform the cutout
@@ -345,6 +346,7 @@ def yzSlice ( imageargs, proj, db ):
   dim = args.getDim()
   resolution = args.getResolution()
   filterlist = args.getFilter()
+  window = args.getWindow()
   (startwindow,endwindow) = proj.datasetcfg.windowrange
 
   # Perform the cutout

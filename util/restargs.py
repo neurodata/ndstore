@@ -248,6 +248,13 @@ class BrainRestArgs:
       self._filterlist = np.array(result.group(1).split(','),dtype=np.uint32)
     else:
       self._filterlist = None
+    
+    # checking for window
+    result = re.match ("window/([\d/,]+)/",rest)
+    if result != None:
+      self._window = np.array(result.group(1).split(','),dtype=np.uint32)
+    else:
+      self._window = None
 
 
   def yzArgs ( self, imageargs, datasetcfg ):
@@ -299,7 +306,14 @@ class BrainRestArgs:
     else:
       self._filterlist = None
 
-      #
+    # checking for window
+    result = re.match ("window/([\d/,]+)/",rest)
+    if result != None:
+      self._window = np.array(result.group(1).split(','),dtype=np.uint32)
+    else:
+      self._window = None
+    
+#
 #Process merge arguments
 # global - none
 # 2D - resolution/Slice num
