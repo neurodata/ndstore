@@ -87,7 +87,8 @@ class MitraIngest:
           if ( sl + b <= self.endslice ):
 
             # raw data
-            filenm = self.path + 'x0.25_unspmask3-0.6_s_{:0>4}'.format(sl+b) + '.tif'
+            filenm = self.path + '00-199_000000_{:0>6}'.format((sl+b)*50) + '.tif'
+            #filenm = self.path + 'x0.25_unspmask3-0.6_s_{:0>4}'.format(sl+b) + '.tif'
 
             # load the image and check the dimension
             try:
