@@ -78,13 +78,13 @@ class MitraIngest:
       self.label ( x, NAME[x] )
 
       # for each slice
-      for sl in range(self.startslice,self.endslice+1,self.batchsz):
+      for sl in range(1360,self.endslice+1,self.batchsz):
       
         imarray = np.zeros ( [self.batchsz,self._yimgsz,self._ximgsz], dtype=np.uint16 )
 
         for b in range ( self.batchsz ):
 
-          if ( sl + b <= self.endslice ):
+          if ( sl + b < self.endslice ):
 
             # raw data
             filenm = self.path + '00-199_000000_{:0>6}'.format((sl+b)*50) + '.tif'
