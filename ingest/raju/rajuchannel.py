@@ -78,7 +78,7 @@ class MitraIngest:
       self.label ( x, NAME[x] )
 
       # for each slice
-      for sl in range(1360,self.endslice+1,self.batchsz):
+      for sl in range(self.startslice,self.endslice+1,self.batchsz):
       
         imarray = np.zeros ( [self.batchsz,self._yimgsz,self._ximgsz], dtype=np.uint16 )
 
