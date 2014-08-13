@@ -75,7 +75,7 @@ class MitraIngest:
     for x in range(self.channel):
      
       # label by RGB Channel
-      self.label ( x, NAME[x] )
+      self.label ( x+1, NAME[x] )
 
       # for each slice
       for sl in range(1360,self.endslice+1,self.batchsz):
@@ -87,8 +87,8 @@ class MitraIngest:
           if ( sl + b < self.endslice ):
 
             # raw data
-            filenm = self.path + '00-199_000000_{:0>6}'.format((sl+b)*50) + '.tif'
-            #filenm = self.path + 'x0.25_unspmask3-0.6_s_{:0>4}'.format(sl+b) + '.tif'
+            #filenm = self.path + '00-199_000000_{:0>6}'.format((sl+b)*50) + '.tif'
+            filenm = self.path + 'x0.25_unspmask3-0.6_s_{:0>4}'.format(sl+b) + '.tif'
 
             # load the image and check the dimension
             try:
@@ -101,7 +101,7 @@ class MitraIngest:
               print e
           
         # ingset any remaining slices
-        self.upload( x, sl, imarray )
+        self.upload( x+1, sl, imarray )
 
 
   def upload ( self, channel, sl, imarray ):
