@@ -43,7 +43,7 @@ def main():
   (startslice,endslice)=proj.datasetcfg.slicerange
   batchsz = zcubedim
 
-  batchsz = 5
+  batchsz = 16
   (ximagesz,yimagesz)=proj.datasetcfg.imagesz[result.resolution]
 
   yimagesz = 18000
