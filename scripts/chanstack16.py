@@ -69,10 +69,11 @@ class ChanStack:
 
         # Set the limits for iteration on the number of cubes in each dimension
         # RBTODO These limits may be wrong for even (see channelingest.py)
-        xlimit = ximagesz / xcubedim
-        ylimit = yimagesz / ycubedim
+        xlimit = ( ximagesz / xcubedim )
+        ylimit = ( yimagesz / ycubedim ) - 1
         #  Round up the zlimit to the next larger
         zlimit = (((slices-1)/zcubedim+1)*zcubedim)/zcubedim 
+        ylimit = 16
 
         cursor = self.chanDB.conn.cursor()
 
@@ -81,7 +82,8 @@ class ChanStack:
             self.chanDB.conn.commit()
             for x in range(xlimit):
 
-              # cutou the data at the -1 resolution
+              # cutout the data at the -1 resolution
+              print x,y,z
               olddata = self.chanDB.cutout ( [ x*2*xcubedim, y*2*ycubedim, z*zcubedim ], biggercubedim, l-1, chan ).data
               # target array for the new data (z,y,x) order
               newdata = np.zeros([zcubedim,ycubedim,xcubedim], dtype=np.uint16)

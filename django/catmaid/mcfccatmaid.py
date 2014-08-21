@@ -63,7 +63,7 @@ class MCFCCatmaid:
 
     # call the mcfc interface
     imageargs = '{}/{},{}/{},{}/{}/'.format(resolution,xstart,xend,ystart,yend,zslice) 
-
+    
     return ocpcarest.mcfcPNG ( self.proj, self.db, self.token, "xy", self.channels, imageargs )
 
 

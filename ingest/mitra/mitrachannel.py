@@ -19,8 +19,9 @@ import sys
 import zlib
 import os
 import re
-from PIL import Image
+#from PIL import Image
 import cv2
+import Image
 import MySQLdb
 
 import numpy as np
@@ -61,7 +62,7 @@ class MitraIngest:
     sql = 'INSERT INTO channels VALUES ( \'{}\', {} )'.format( chanstr, chanid )
     try:
       print sql
-      self.cursor.execute ( sql )
+      #self.cursor.execute ( sql )
     except MySQLdb.Error, e:
       print ("Error updating channels table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise 
@@ -69,80 +70,73 @@ class MitraIngest:
 
   def ingest( self ):
 
-    NAME = [ "Grayscale" ]
+    channel = 0
+    NAME = [ "Red", "Green", "Blue" ]
+    import pdb; pdb.set_trace()
 
     # for each channel
     for x in range(self.channel):
-     
+      
       # label by RGB Channel
-      self.label ( x+1, NAME[x] )
-
+      self.label ( x, NAME[x] )
+         
       # for each slice
       for sl in range(self.startslice,self.endslice+1,self.batchsz):
       
-        imarray = np.zeros ( [self.batchsz,self._yimgsz,self._ximgsz], dtype=np.uint16 )
+        imarray = np.zeros ( [self.batchsz,self._yimgsz,self._ximgsz], dtype=np.uint8 )
 
         for b in range ( self.batchsz ):
 
-          if ( sl + b < self.endslice ):
+          if ( sl + b <= self.endslice ):
 
             # raw data
-            filenm = self.path + '00-462_000000_{:0>6}'.format((sl+b)*50) + '.tif'
-            #filenm = self.path + '00-199_000000_{:0>6}'.format((sl+b)*50) + '.tif'
-            #filenm = self.path + 'x0.25_unspmask3-0.6_s_{:0>4}'.format(sl+b) + '.tif'
+            filenm = self.path + '{:0>4}'.format(sl+b) + '.tiff'
 
             # load the image and check the dimension
             try:
               print "Opening filename: " + filenm
-              imgdata = cv2.imread(filenm, -1)
-              #img = Image.open(filenm, 'r')
-              #imgdata = np.asarray ( img )
-              imarray[(sl+b-self.startslice)%self.batchsz,0:imgdata.shape[0],0:imgdata.shape[1]] = imgdata[:,:]
+              img = Image.open(filenm, 'r')
+              imgdata = np.asarray ( img )
+              imarray[(sl+b-self.startslice)%self.batchsz,0:imgdata.shape[0],0:imgdata.shape[1]] = imgdata[:,:,x]
             except IOError, e:
               print e
           
         # ingset any remaining slices
-        self.upload( x+1, sl, imarray )
+        self.upload( channel, sl, imarray )
 
 
   def upload ( self, channel, sl, imarray ):
     """Transfer the array to the database"""
 
-    for y in range ( 0 , self._yimgsz+1, self.ycubedim ):
-      for x in range ( 0, self._ximgsz+1, self.xcubedim ):
+    # and the limits of iteration
+    xlimit = (self._ximgsz-1) / self.xcubedim + 1
+    ylimit = (self._yimgsz-1) / self.ycubedim + 1
+
+    for y in range(ylimit):
+      for x in range(xlimit):
+
+        # each batch is the last slice in a cube
+        z = sl/self.zcubedim
 
         # zindex
-        mortonidx = zindex.XYZMorton ( [x/self.xcubedim, y/self.ycubedim, (sl-self.startslice)/self.zcubedim] )
+        key = zindex.XYZMorton ( [x,y,z] )
 
         # Create a channel cube
         cube = imagecube.ImageCube8 ( [self.xcubedim, self.ycubedim, self.zcubedim] )
-        
-        xmin = x
-        ymin = y
-        xmax = min ( self._ximgsz, x + self.xcubedim )
-        ymax = min ( self._yimgsz, y + self.ycubedim )
-        zmin = 0
-        zmax = min ( sl + self.zcubedim, self.endslice + 1 )
 
         # data for this key
-        #cube.data = imarray[:,y*self.ycubedim:(y+1)*self.ycubedim,x*self.xcubedim:(x+1)*self.xcubedim]
-        cube.data = imarray[zmin:zmax,ymin:ymax, xmin:xmax]
+        cube.data = imarray[:,y*self.ycubedim:(y+1)*self.ycubedim,x*self.xcubedim:(x+1)*self.xcubedim]
         # compress the cube
-        #npz = cube.toNPZ ()
-
-        fileobj = cStringIO.StringIO()
-        np.save ( fileobj, cube.data )
-        cdz = zlib.compress ( fileobj.getvalue() )
+        npz = cube.toNPZ ()
 
         # add the cube to the database
-        sql = "INSERT INTO {} (channel, zindex, cube) VALUES (%s, %s, %s)".format( self.proj.getTable(self.resolution) )
+        sql = "INSERT INTO " + self.proj.getTable(self.resolution) +  "(channel, zindex, cube) VALUES (%s, %s, %s)"
         try:
-          #print xmin,xmax,ymin,ymax,zmin,zmax
-          self.cursor.execute ( sql, (channel, mortonidx, cdz))
+          print sql
+          #self.cursor.execute ( sql, (channel, key, npz))
         except MySQLdb.Error, e:
           print ("Error updating data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-          raise
-      print " Commiting at x={}, y={}, z={}".format(x, y, sl)
+          raise 
 
     self.db.conn.commit()
 
