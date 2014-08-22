@@ -12,6 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+  This file is used to check the zscale and cubedimensions for a dataset. 
+  Enter the dataset name and let it run.
+"""
+
 import os
 import sys
 import argparse
