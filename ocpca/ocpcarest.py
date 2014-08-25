@@ -1463,6 +1463,8 @@ def mcfcPNG ( proj, db, token, service, chanstr, imageargs ):
   # make sure that the channels are ints
   chanobj = ocpcachannel.OCPCAChannels ( db )
   channels = chanobj.rewriteToInts ( channels )
+  (startwindow, endwindow) = proj.datasetcfg.windowrange
+
 
   combined_img = None
 
@@ -1485,9 +1487,10 @@ def mcfcPNG ( proj, db, token, service, chanstr, imageargs ):
     # reduction factor
     if proj.getDBType() == ocpcaproj.CHANNELS_8bit:
       scaleby = 1
-    elif proj.getDBType() == ocpcaproj.CHANNELS_16bit:
+    elif proj.getDBType() == ocpcaproj.CHANNELS_16bit and ( startwindow==0 and endwindow==0):
       scaleby = 1.0/256
 
+    scaleby = 1.0
     # First channel is cyan
     if i == 0:
       data32 = np.array ( cb.data * scaleby, dtype=np.uint32 )
@@ -1530,9 +1533,10 @@ def mcfcPNG ( proj, db, token, service, chanstr, imageargs ):
     outimage = Image.frombuffer ( 'RGBA', (xdim,ydim), combined_img[:,:,0].flatten(), 'raw', 'RGBA', 0, 1 ) 
 
   # Enhance the image
-  from PIL import ImageEnhance
-  enhancer = ImageEnhance.Brightness(outimage)
-  outimage = enhancer.enhance(4.0)
+  if startwindow==0 and endwindow==0:
+    from PIL import ImageEnhance
+    enhancer = ImageEnhance.Brightness(outimage)
+    outimage = enhancer.enhance(4.0)
   
   return outimage
 
