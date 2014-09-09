@@ -53,6 +53,7 @@ def datasetdict ( dataset ):
   dsdict['cube_dimension'] = dataset.cubedim
   dsdict['isotropic_slicerange'] = dataset.isoslicerange
   dsdict['neariso_scaledown'] = dataset.nearisoscaledown
+  dsdict['windowrange'] = dataset.windowrange
 
   return dsdict
 
