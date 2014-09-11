@@ -106,14 +106,33 @@ def main():
   parser.add_argument('location', action="store", help='Location where to store the dump[')
   parser.add_argument('--dump', dest='dump', action="store_true", help='Dump the database into a sqldump')
   parser.add_argument('--ingest', dest='ingest', action="store_true", help='Ingest the sqldump')
+  parser.add_argument('--dbcopy', dest='dbcopy', action="store", default=None, help='Ingest the sqldump')
 
   result = parser.parse_args()
 
   sqldb = SQLDatabase( result.password, result.host, result.token, result.location )
 
+  # Check for copy flag
+  if result.dbcopy!=None:
+    
+
+    if ( sqldb.proj.getDBType() == ocpcaproj.IMAGES_8bit or sqldb.proj.getDBType() == ocpcaproj.IMAGES_16bit or sqldb.proj.getDBType() == ocpcaproj.RGB_32bit or sqldb.proj.getDBType() == ocpcaproj.RGB_64bit ):
+        
+      sqldb = SQLDatabase( result.password, result.host, result.token, result.location )
+      sqldb.dumpImgStack()
+      sqldb = SQLDatabase( result.password, result.host, result.dbcopy, result.location )
+      sqldb.ingestImageStack()
+  
+    elif ( sqldb.proj.getDBType() == ocpcaproj.CHANNELS_8bit or sqldb.proj.getDBType() == ocpcaproj.CHANNELS_16bit ):
+
+      sqldb.dumpChannelStack()
+      sqldb.ingestChannelStack()
+  
   # Check for dump flag
-  if result.dump:
+  elif result.dump:
  
+    sqldb = SQLDatabase( result.password, result.host, result.token, result.location )
+
     if ( sqldb.proj.getDBType() == ocpcaproj.IMAGES_8bit or sqldb.proj.getDBType() == ocpcaproj.IMAGES_16bit or sqldb.proj.getDBType() == ocpcaproj.RGB_32bit or sqldb.proj.getDBType() == ocpcaproj.RGB_64bit ):
       
       sqldb.dumpImgStack()
@@ -129,6 +148,8 @@ def main():
   # Check for ingest flag
   elif result.ingest:
     
+    sqldb = SQLDatabase( result.password, result.host, result.token, result.location )
+    
     if ( sqldb.proj.getDBType() == ocpcaproj.IMAGES_8bit or sqldb.proj.getDBType() == ocpcaproj.IMAGES_16bit or sqldb.proj.getDBType() == ocpcaproj.RGB_32bit or sqldb.proj.getDBType() == ocpcaproj.RGB_64bit ):
       
       sqldb.ingestImageStack()
@@ -140,6 +161,10 @@ def main():
     else:
       
       sqldb.ingestAnnotataionStack()
+
+  else:
+
+      print "Error: Use atleast one option"
 
 if __name__ == "__main__":
   main()
