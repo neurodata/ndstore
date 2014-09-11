@@ -21,6 +21,8 @@ import sys
 import os
 import subprocess
 
+import MySQLdb
+
 sys.path += [os.path.abspath('../django')]
 import OCP.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
@@ -31,17 +33,39 @@ import ocpcadb
 
 class SQLDatabase:
 
-  def __init__(self, password, host, token, location):
+  def __init__(self, host, token, location):
     """ Load the database and project """
 
     self.projdb = ocpcaproj.OCPCAProjectsDB()
     self.proj = self.projdb.loadProject ( token )
     self.imgDB = ocpcadb.OCPCADB ( self.proj )
-    self.password = password
+    self.user = settings.DATABASES.get('default').get('USER')
+    self.password = settings.DATABASES.get('default').get('PASSWORD')
     self.host = host
     self.token = token
     self.location = location
-    self.starterString = '-u brain -p{} -h {}'.format( self.password, self.host )
+    self.starterString = '-u {} -p{} -h {}'.format( self.user, self.password, self.host )
+    
+    try:
+      self.db = MySQLdb.connect ( host = self.host, user = self.user, passwd = self.password ) 
+      self.cur = self.db.cursor()    
+    except MySQLdb.Error, e:
+      print e
+
+  def copyTable ( self, newDBName ):
+    """ Copy Tables from Database to another"""
+
+    sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE table_schema='{}'".format( self.token )
+
+    self.cur.execute(sql)
+    cur2 = self.db.cursor()
+
+    for row in self.cur.fetchall():
+      sql = "RENAME TABLE {}.{} TO {}.{}".format( self.token, row[0], newDBName, row[0] )
+      print sql
+      cur2.execute(sql)
+
+    self.db.commit()
 
   def dumpImgStack( self ):
     """ Dump an Image Stack """
@@ -101,26 +125,28 @@ def main():
 
   parser = argparse.ArgumentParser (description='Dump an Image Stack')
   parser.add_argument('host', action="store", help='HostName where to dump from')
-  parser.add_argument('password', action="store", help='SQL Database Password')
   parser.add_argument('token', action="store", help='Token for the project.')
   parser.add_argument('location', action="store", help='Location where to store the dump[')
   parser.add_argument('--dump', dest='dump', action="store_true", help='Dump the database into a sqldump')
   parser.add_argument('--ingest', dest='ingest', action="store_true", help='Ingest the sqldump')
-  parser.add_argument('--dbcopy', dest='dbcopy', action="store", default=None, help='Ingest the sqldump')
+  parser.add_argument('--dbcopy', dest='dbcopy', action="store", default=None, help='Copy the database')
+  parser.add_argument('--dbrename', dest='dbrename', action="store", default=None, help='Rename the database')
 
   result = parser.parse_args()
-
-  sqldb = SQLDatabase( result.password, result.host, result.token, result.location )
+  
+  # Check for copy flag
+  if result.dbrename!=None:
+    sqldb = SQLDatabase ( result.host, result.token, result.location )
+    sqldb.copyTable( result.dbrename )
 
   # Check for copy flag
-  if result.dbcopy!=None:
-    
+  elif result.dbcopy!=None:
 
     if ( sqldb.proj.getDBType() == ocpcaproj.IMAGES_8bit or sqldb.proj.getDBType() == ocpcaproj.IMAGES_16bit or sqldb.proj.getDBType() == ocpcaproj.RGB_32bit or sqldb.proj.getDBType() == ocpcaproj.RGB_64bit ):
         
-      sqldb = SQLDatabase( result.password, result.host, result.token, result.location )
+      sqldb = SQLDatabase ( result.host, result.token, result.location )
       sqldb.dumpImgStack()
-      sqldb = SQLDatabase( result.password, result.host, result.dbcopy, result.location )
+      sqldb = SQLDatabase ( result.host, result.dbcopy, result.location )
       sqldb.ingestImageStack()
   
     elif ( sqldb.proj.getDBType() == ocpcaproj.CHANNELS_8bit or sqldb.proj.getDBType() == ocpcaproj.CHANNELS_16bit ):
@@ -131,7 +157,7 @@ def main():
   # Check for dump flag
   elif result.dump:
  
-    sqldb = SQLDatabase( result.password, result.host, result.token, result.location )
+    sqldb = SQLDatabase ( result.host, result.token, result.location )
 
     if ( sqldb.proj.getDBType() == ocpcaproj.IMAGES_8bit or sqldb.proj.getDBType() == ocpcaproj.IMAGES_16bit or sqldb.proj.getDBType() == ocpcaproj.RGB_32bit or sqldb.proj.getDBType() == ocpcaproj.RGB_64bit ):
       
@@ -148,7 +174,7 @@ def main():
   # Check for ingest flag
   elif result.ingest:
     
-    sqldb = SQLDatabase( result.password, result.host, result.token, result.location )
+    sqldb = SQLDatabase ( result.host, result.token, result.location )
     
     if ( sqldb.proj.getDBType() == ocpcaproj.IMAGES_8bit or sqldb.proj.getDBType() == ocpcaproj.IMAGES_16bit or sqldb.proj.getDBType() == ocpcaproj.RGB_32bit or sqldb.proj.getDBType() == ocpcaproj.RGB_64bit ):
       
