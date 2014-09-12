@@ -112,24 +112,7 @@ def csv (request, webargs):
   except:
     logger.exception("Unknown exception in csv.")
     raise
-      
-@cache_control(no_cache=True)
-def getObjects ( request, webargs ):
-  """Batch fetch of RAMON objects"""
 
-  try:
-    if request.method == 'GET':
-      raise OCPCAError ( "GET requested. objects Web service requires a POST of a list of identifiers.")
-    elif request.method == 'POST':
-      return django.http.HttpResponse(ocpcarest.getAnnotations(webargs,request.body), mimetype="product/hdf5") 
-    
-  except OCPCAError, e:
-    return django.http.HttpResponseNotFound(e.value)
-  except MySQLdb.Error, e:
-    return django.http.HttpResponseNotFound(e)
-  except:
-    logger.exception("Unknown exception in getObjects.")
-    raise
 
 @cache_control(no_cache=True)
 def queryObjects ( request, webargs ):

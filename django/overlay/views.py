@@ -43,6 +43,7 @@ def overlayCutout (request, webargs):
   projdb = ocpcaproj.OCPCAProjectsDB()
   proj = projdb.loadProject ( token )
   
+  # RBTODO assuming that the dataset name is the token.  Not the case anymore.
   dataurl = request.build_absolute_uri( '%s/ocpca/%s/%s' % ( proj.getDataURL(), proj.getDataset(), cutout ))
   #dataurl = request.build_absolute_uri( '%s%s/ocpca/%s/%s' % ( proj.getDataURL(),request.META.get('SCRIPT_NAME'), proj.getDataset(), cutout ))
 
