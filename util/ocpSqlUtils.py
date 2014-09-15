@@ -58,9 +58,8 @@ class SQLDatabase:
     sql = "SELECT COUNT(*) FROM {}".format(tableName)
     self.cur.execute( sql )
     rowSize = self.cur.fetchone()
-    import pdb; pdb.set_trace()
     for i in range(0, rowSize[0], rowSize[0]/10):
-        cmd = 'mysqldump {} {} {} --where "LIMIT {},{}" --no-create-info --skip-add-locks > {}{}.{}_{}.sql'.format ( self.starterString, self.token, tableName, i, rowSize[0] if (i+rowSize[0]/10) > rowSize[0] else i+rowSize[0]/10, self.location, self.token, tableName, rowSize[0] if (i+rowSize[0]/10) > rowSize[0] else i+     rowSize[0]/10 )
+        cmd = 'mysqldump {} {} {} --where "1 LIMIT {},{}" --no-create-info --skip-add-locks > {}{}.{}_{}.sql'.format ( self.starterString, self.token, tableName, i, rowSize[0] if (i+rowSize[0]/10) > rowSize[0] else i+rowSize[0]/10, self.location, self.token, tableName, rowSize[0] if (i+rowSize[0]/10) > rowSize[0] else i+     rowSize[0]/10 )
         print cmd
         os.system ( cmd )
 
