@@ -52,6 +52,15 @@ class SQLDatabase:
     except MySQLdb.Error, e:
       print e
 
+  def dumpBigTable( self, tableName ):
+    """ Dump a very big Table """
+
+    sql = "SELECT COUNT(*) FROM {}".format(tableName)
+    self.cur.execute( sql )
+    import pdb;pdb.set_trace()
+    rowSize = self.cur.fetchall()
+
+  
   def copyTable ( self, newDBName ):
     """ Copy Tables from Database to another"""
 
@@ -129,13 +138,18 @@ def main():
   parser.add_argument('location', action="store", help='Location where to store the dump[')
   parser.add_argument('--dump', dest='dump', action="store_true", help='Dump the database into a sqldump')
   parser.add_argument('--ingest', dest='ingest', action="store_true", help='Ingest the sqldump')
+  parser.add_argument('--bigdump', dest='bigdump', help='Dump a big mysql table')
   parser.add_argument('--dbcopy', dest='dbcopy', action="store", default=None, help='Copy the database')
   parser.add_argument('--dbrename', dest='dbrename', action="store", default=None, help='Rename the database')
 
   result = parser.parse_args()
   
+  if result.bigdump!=None:
+    sqldb = SQLDatabase (  result.host, result.token, result.location )
+    sqldb.dumpBigTable ( result.bigdump ) 
+
   # Check for copy flag
-  if result.dbrename!=None:
+  elif result.dbrename!=None:
     sqldb = SQLDatabase ( result.host, result.token, result.location )
     sqldb.copyTable( result.dbrename )
 
