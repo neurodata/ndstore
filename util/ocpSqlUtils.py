@@ -47,7 +47,7 @@ class SQLDatabase:
     self.starterString = '-u {} -p{} -h {}'.format( self.user, self.password, self.host )
     
     try:
-      self.db = MySQLdb.connect ( host = self.host, user = self.user, passwd = self.password ) 
+      self.db = MySQLdb.connect ( host = self.host, user = self.user, passwd = self.password, db = self.token ) 
       self.cur = self.db.cursor()    
     except MySQLdb.Error, e:
       print e
@@ -57,8 +57,12 @@ class SQLDatabase:
 
     sql = "SELECT COUNT(*) FROM {}".format(tableName)
     self.cur.execute( sql )
-    import pdb;pdb.set_trace()
-    rowSize = self.cur.fetchall()
+    rowSize = self.cur.fetchone()
+    import pdb; pdb.set_trace()
+    for i in range(0, rowSize[0], rowSize[0]/10):
+        cmd = 'mysqldump {} {} {} --where "LIMIT {},{}" --no-create-info --skip-add-locks > {}{}.{}_{}.sql'.format ( self.starterString, self.token, tableName, i, rowSize[0] if (i+rowSize[0]/10) > rowSize[0] else i+rowSize[0]/10, self.location, self.token, tableName, rowSize[0] if (i+rowSize[0]/10) > rowSize[0] else i+     rowSize[0]/10 )
+        print cmd
+        os.system ( cmd )
 
   
   def copyTable ( self, newDBName ):
