@@ -58,10 +58,22 @@ class SQLDatabase:
     sql = "SELECT COUNT(*) FROM {}".format(tableName)
     self.cur.execute( sql )
     rowSize = self.cur.fetchone()
+    cmd = 'mysqldump {}  -d {} {} > {}{}.{}_schema.sql'.format( self.starterString, self.token, tableName, self.location, self.token, tableName )
+    os.system ( cmd )
     for i in range(0, rowSize[0], rowSize[0]/10):
-        cmd = 'mysqldump {} {} {} --where "1 LIMIT {},{}" --no-create-info --skip-add-locks > {}{}.{}_{}.sql'.format ( self.starterString, self.token, tableName, i, rowSize[0] if (i+rowSize[0]/10) > rowSize[0] else i+rowSize[0]/10, self.location, self.token, tableName, rowSize[0] if (i+rowSize[0]/10) > rowSize[0] else i+     rowSize[0]/10 )
+        cmd = 'mysqldump {} {} {} --where "1 LIMIT {},{}" --no-create-info --skip-add-locks > {}{}.{}_{}.sql'.format ( self.starterString, self.token, tableName, i, (i-rowSize[0]) if (i-1+rowSize[0]/10) > rowSize[0] else (rowSize[0]/10), self.location, self.token, tableName, rowSize[0] if (i+rowSize[0]/10) > rowSize[0] else (i+  rowSize[0]/10) )
         print cmd
         os.system ( cmd )
+    
+    # Now ingesting this Big Table in the database
+
+    cmd = 'mysql -ubrain -p88brain88 -h localhost {} < {}{}.{}_schema.sql'.format( self.token, self.location, self.token, tableName )
+    print cmd
+    os.system(cmd)
+    for i in range(0, rowSize[0], rowSize[0]/10):
+        cmd = 'mysql -h localhost -u brain -p88brain88 {} < {}{}.{}_{}.sql'.format ( self.token, self.location, self.token, tableName, rowSize[0] if (i+rowSize[0]/10) > rowSize[0] else i+ rowSize[0]/10 )
+        print cmd
+        os.system( cmd )
 
   
   def copyTable ( self, newDBName ):
