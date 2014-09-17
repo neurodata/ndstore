@@ -48,7 +48,7 @@ class OCPAdmin ():
     
     self.token = token
     self.dataset = dataset
-    self.conn = MySQLdb.connect( host=host, user="brain", passwd=password, db=ocpcaprivate.db )
+    self.conn = MySQLdb.connect( host=host, user=settings.DATABASES.get('default').get('USER'), passwd=settings.DATABASES.get('default').get('PASSWORD'), db=ocpcaprivate.db )
     self.remoteconn = MySQLdb.connect( host=remotehost, user="brain", passwd=password, db=ocpcaprivate.db )
 
 
@@ -126,7 +126,7 @@ def main():
   parser.add_argument('password', action="store", help='Password for the host')
   parser.add_argument('token', action="store", help='Token')
   parser.add_argument('dataset', action="store", help='Dataset')
-  parser.add_argument('remotehost', action="store", help='Remote Hostname')
+  parser.add_argument('remotehost', action="store", help='Remote Hostname where to copy to')
   parser.add_argument('--project', dest="proj", action="store_true", help='Copy only project')
   parser.add_argument('--dataset', dest="dst", action="store_true", help='Copy only dataset')
 

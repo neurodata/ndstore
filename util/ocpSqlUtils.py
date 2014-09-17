@@ -71,7 +71,7 @@ class SQLDatabase:
     print cmd
     os.system(cmd)
     for i in range(0, rowSize[0], rowSize[0]/10):
-        cmd = 'mysql -h localhost -u brain -p88brain88 {} < {}{}.{}_{}.sql'.format ( self.token, self.location, self.token, tableName, rowSize[0] if (i+rowSize[0]/10) > rowSize[0] else i+ rowSize[0]/10 )
+        cmd = 'mysql -h {} -u {} -p{} {} < {}{}.{}_{}.sql'.format ( "localhost", self.user, self.password, self.token, self.location, self.token, tableName, rowSize[0] if (i+rowSize[0]/10) > rowSize[0] else i+ rowSize[0]/10 )
         print cmd
         os.system( cmd )
 
@@ -123,7 +123,7 @@ class SQLDatabase:
 
     for i in range(0, len(self.proj.datasetcfg.resolutions ) ):
       
-      cmd = 'mysql () {} < {}{}.res{}.sql'.format ( self.starterString, self.token, self.location, self.token, i )
+      cmd = 'mysql {} {} < {}{}.res{}.sql'.format ( self.starterString, self.token, self.location, self.token, i )
       print cmd
       os.system( cmd )
 
