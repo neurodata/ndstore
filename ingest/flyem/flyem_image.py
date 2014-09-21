@@ -53,7 +53,6 @@ def main():
   # load a database
   [ db, proj, projdb ] = ocpcarest.loadDBProj ( result.token )
 
-  import pdb; pdb.set_trace()
   # get the dataset configuration
   (xcubedim,ycubedim,zcubedim)=proj.datasetcfg.cubedim[resolution]
   (startslice,endslice)=proj.datasetcfg.slicerange

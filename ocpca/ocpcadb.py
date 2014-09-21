@@ -40,6 +40,11 @@ logger=logging.getLogger("ocp")
 
 import sys
 
+#import ascubeio
+import mysqlcubeio
+
+ASPIKE = False
+
 ################################################################################
 #
 #  class: OCPCADB
@@ -60,22 +65,29 @@ class OCPCADB:
     # Are there exceptions?
     self.EXCEPT_FLAG = self.annoproj.getExceptions()
 
-    # Connection info 
+    # Choose the I/O engine for key/value data
+    if ASPIKE:
+      self.cubeio = ascubeio.ASCubeIO(self)
+    else:
+      self.cubeio = mysqlcubeio.MySQLCubeIO(self)
+
+    # How many slices?
+    [ self.startslice, endslice ] = self.datasetcfg.slicerange
+    self.slices = endslice - self.startslice + 1 
+
+    # Connection info for the metadata
     try:
       self.conn = MySQLdb.connect (host = self.annoproj.getDBHost(),
                             user = self.annoproj.getDBUser(),
                             passwd = self.annoproj.getDBPasswd(),
                             db = self.annoproj.getDBName())
+
     except MySQLdb.Error, e:
       self.conn = None
-      logger.error("Failed to connect to database: %s, %s" % (self.annoproj.getDBHost(), self.annoproj.getDBName()))
+      logger.error("Failed to connect to database: %s, %s" % (dbobj.annoproj.getDBHost(), dbobj.annoproj.getDBName()))
       raise
 
     self.cursor = self.conn.cursor()
-      
-    # How many slices?
-    [ self.startslice, endslice ] = self.datasetcfg.slicerange
-    self.slices = endslice - self.startslice + 1 
 
     # create annidx object
     self.annoIdx = annindex.AnnotateIndex (self.conn, self.cursor, self.annoproj)
@@ -98,6 +110,8 @@ class OCPCADB:
     if self.conn:
       self.cursor.close()
       self.conn.close()
+    if ASPIKE:
+      self.ascli.close()
 
   #
   #  peekID
@@ -270,29 +284,12 @@ class OCPCADB:
     else:
       raise OCPCAError ("Unknown project type {}".format(self.annoproj.getDBType()))
   
-
     # get the block from the database
-    sql = "SELECT cube FROM " + self.annoproj.getTable(resolution) + " WHERE zindex = " + str(key) 
-    if update==True:
-          sql += " FOR UPDATE"
-
-    try:
-      self.cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.error ( "Failed to retrieve data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise
-
-    row = self.cursor.fetchone()
+    self.cubeio.getCube ( cube, key, resolution, update )
 
     # If we can't find a cube, assume it hasn't been written yet
-    if ( row == None ):
-      cube.zeros ()
-    else: 
-      # decompress the cube
-      cube.fromNPZ ( row[0] )
 
     return cube
-
 
   #
   # putCube
@@ -300,29 +297,9 @@ class OCPCADB:
   def putCube ( self, key, resolution, cube ):
     """Store a cube from the annotation database"""
 
-    # compress the cube
-    npz = cube.toNPZ ()
-
-    # we created a cube from zeros
-    if cube.fromZeros ():
-
-      sql = "INSERT INTO " + self.annoproj.getTable(resolution) +  "(zindex, cube) VALUES (%s, %s)"
-
-      # this uses a cursor defined in the caller (locking context): not beautiful, but needed for locking
-      try:
-        self.cursor.execute ( sql, (key,npz))
-      except MySQLdb.Error, e:
-        logger.error ( "Error inserting cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        raise
-
-    else:
-
-      sql = "UPDATE " + self.annoproj.getTable(resolution) + " SET cube=(%s) WHERE zindex=" + str(key)
-      try:
-        self.cursor.execute ( sql, (npz))
-      except MySQLdb.Error, e:
-        logger.error ( "Error updating data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        raise
+    import pdb; pdb.set_trace()
+    # Call the DB specific putcube method
+    self.cubeio.putCube ( key, resolution, cube )    
 
 
   #
@@ -918,23 +895,21 @@ class OCPCADB:
     # Sort the indexes in Morton order
     listofidxs.sort()
 
+    # xyz offset stored for later use
+    lowxyz = zindex.MortonXYZ ( listofidxs[0] )
+
     # Batch query for all cubes
     # Customize query to the database (include channel or not)
     if (self.annoproj.getDBType() == ocpcaproj.CHANNELS_8bit or self.annoproj.getDBType() == ocpcaproj.CHANNELS_16bit):
       # Convert channel as needed
       channel = ocpcachannel.toID ( channel, self )
-      sql = "SELECT zindex, cube FROM " + dbname + " WHERE channel= " + str(channel) + " AND zindex in (%s)" 
+      self.cubeio.getChannelCubes(channel,listofidxs)
+
     else:
-      sql = "SELECT zindex, cube FROM " + dbname + " WHERE zindex IN (%s)" 
+      import pdb; pdb.set_trace()
+      self.cubeio.getCubes(listofidxs)
 
-    # creats a %s for each list element
-    in_p=', '.join(map(lambda x: '%s', listofidxs))
-    # replace the single %s with the in_p string
-    sql = sql % in_p
-    rc = self.cursor.execute(sql, listofidxs)
 
-    # xyz offset stored for later use
-    lowxyz = zindex.MortonXYZ ( listofidxs[0] )
 
     # Get the objects and add to the cube
     while ( True ):
