@@ -40,8 +40,8 @@ logger=logging.getLogger("ocp")
 
 import sys
 
-#import ascubeio
-import mysqlcubeio
+#import askvio
+import mysqlkvio
 
 ASPIKE = False
 
@@ -67,9 +67,9 @@ class OCPCADB:
 
     # Choose the I/O engine for key/value data
     if ASPIKE:
-      self.cubeio = ascubeio.ASCubeIO(self)
+      self.kvio = askvio.ASCubeIO(self)
     else:
-      self.cubeio = mysqlcubeio.MySQLCubeIO(self)
+      self.kvio = mysqlkvio.MySQLKVIO(self)
 
     # How many slices?
     [ self.startslice, endslice ] = self.datasetcfg.slicerange
@@ -105,13 +105,6 @@ class OCPCADB:
     """Rollback the transaction.  To be called on exceptions."""
     self.conn.rollback()
 
-  def __del__ ( self ):
-    """Close the connection"""
-    if self.conn:
-      self.cursor.close()
-      self.conn.close()
-    if ASPIKE:
-      self.ascli.close()
 
   #
   #  peekID
@@ -285,7 +278,7 @@ class OCPCADB:
       raise OCPCAError ("Unknown project type {}".format(self.annoproj.getDBType()))
   
     # get the block from the database
-    self.cubeio.getCube ( cube, key, resolution, update )
+    self.kvio.getCube ( cube, key, resolution, update )
 
     # If we can't find a cube, assume it hasn't been written yet
 
@@ -299,7 +292,7 @@ class OCPCADB:
 
     import pdb; pdb.set_trace()
     # Call the DB specific putcube method
-    self.cubeio.putCube ( key, resolution, cube )    
+    self.kvio.putCube ( key, resolution, cube )    
 
 
   #
@@ -567,6 +560,8 @@ class OCPCADB:
 
     # write it to the database
     self.annoIdx.updateIndexDense(cubeidx,resolution)
+    # commit cubes.  not commit controlled with metadata
+    self.kvio.commit()
 
   #
   # shave
@@ -704,6 +699,8 @@ class OCPCADB:
 
     # Update all indexes
     self.annoIdx.updateIndexDense(index_dict,resolution)
+    # commit cubes.  not commit controlled with metadata
+    self.kvio.commit()
 
 
   #
@@ -781,6 +778,8 @@ class OCPCADB:
 
     # Update all indexes
     self.annoIdx.updateIndexDense(index_dict,resolution)
+    # commit cubes.  not commit controlled with metadata
+    self.kvio.commit()
 
   #
   # shaveEntityDense
@@ -903,11 +902,11 @@ class OCPCADB:
     if (self.annoproj.getDBType() == ocpcaproj.CHANNELS_8bit or self.annoproj.getDBType() == ocpcaproj.CHANNELS_16bit):
       # Convert channel as needed
       channel = ocpcachannel.toID ( channel, self )
-      self.cubeio.getChannelCubes(channel,listofidxs)
+      self.kvio.getChannelCubes(channel,listofidxs)
 
     else:
       import pdb; pdb.set_trace()
-      self.cubeio.getCubes(listofidxs)
+      self.kvio.getCubes(listofidxs)
 
 
 

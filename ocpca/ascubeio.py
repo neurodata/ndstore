@@ -32,6 +32,11 @@ def init ( dbobj ):
   ascfg = { 'hosts': [ ('127.0.0.1', 3000) ] }
   dbobj.ascli = aerospike.client(ascfg).connect()
 
+  def __del__ ( self ):
+    """Close the connection"""
+    if ASPIKE:
+      self.ascli.close()
+
 
 def getCube ( dbobj, cube, key, resolution, update )
   """Retrieve a cube from the database by token, resolution, and key"""

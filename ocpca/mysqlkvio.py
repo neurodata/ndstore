@@ -23,7 +23,7 @@ import itertools
 """Helpers function to do cube I/O in across multiple DBs.
     This uses the state and methods of ocpcadb"""
 
-class MySQLCubeIO:
+class MySQLKVIO:
 
   def __init__ ( self, db ):
     """Connect to the database"""
@@ -44,6 +44,16 @@ class MySQLCubeIO:
 
     self.cursor = self.conn.cursor()
 
+
+  def commit ( self ):
+    """Commit the transaction.  Moved out of __del__ to make explicit.""" 
+    self.conn.commit()
+
+  def __del__ ( self ):
+    """Close the connection"""
+    if self.conn:
+      self.cursor.close()
+      self.conn.close()
 
   def getCube ( self, cube, key, resolution, update ):
     """Retrieve a cube from the database by token, resolution, and key"""
