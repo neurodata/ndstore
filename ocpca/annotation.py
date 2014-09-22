@@ -39,11 +39,9 @@ anno_dbtables = { 'annotation':'annotations',\
                   'kvpairs':'kvpairs',\
                   'synapse':'synapses',\
                   'segment':'segments',\
+                  'synseg':'synseg',\
                   'organelle':'organelles',\
                   'seed':'seeds' }
-
-
-
 
 
 ###############  Annotation  ##################
@@ -51,8 +49,11 @@ anno_dbtables = { 'annotation':'annotations',\
 class Annotation:
   """Metdata common to all annotations."""
 
-  def __init__ ( self ):
+  def __init__ ( self, annodb ):
     """Initialize the fields to zero or null"""
+
+    # database to which this annotation is registered
+    self.annodb = annodb
 
     # metadata fields
     self.annid = 0 
@@ -60,6 +61,7 @@ class Annotation:
     self.confidence = 0.0 
     self.author = ""
     self.kvpairs = defaultdict(list)
+ 
 
   def setID ( self, db ):
     """if annid == 0, create a new identifier"""
@@ -99,10 +101,10 @@ class Annotation:
 #     logger.warning ( "setField: No such or can't update field %s" % (field))
 #     raise OCPCAError ( "setField: No such or can't update field %s" % (field))
 
-  def store ( self, annodb, annotype=ANNO_ANNOTATION ):
+  def store ( self, annotype=ANNO_ANNOTATION ):
     """Store the annotation to the annotations database"""
 
-    cursor = annodb.conn.cursor()
+    cursor = self.annodb.conn.cursor()
 
     sql = "INSERT INTO %s VALUES ( %s, %s, %s, %s )"\
             % ( anno_dbtables['annotation'], self.annid, annotype, self.confidence, self.status )
@@ -134,16 +136,16 @@ class Annotation:
     cursor.close()
 
 
-  def update ( self, annodb ):
+  def update ( self ):
     """Set type and update base class."""
     
-    self.updateBase ( ANNO_ANNOTATION, annodb )
+    self.updateBase ( ANNO_ANNOTATION )
 
 
-  def updateBase ( self, annotype, annodb ):
+  def updateBase ( self, annotype ):
     """Update the annotation in the annotations database"""
 
-    cursor = annodb.conn.cursor()
+    cursor = self.annodb.conn.cursor()
 
     sql = "UPDATE %s SET type=%s, confidence=%s, status=%s WHERE annoid = %s"\
             % ( anno_dbtables['annotation'], annotype, self.confidence, self.status, self.annid)
@@ -199,10 +201,10 @@ class Annotation:
     cursor.close()
 
 
-  def delete ( self, annodb ):
+  def delete ( self ):
     """Delete the annotation from the database"""
 
-    cursor = annodb.conn.cursor()
+    cursor = self.annodb.conn.cursor()
 
     sql = "DELETE FROM %s WHERE annoid = %s;"\
             % ( anno_dbtables['annotation'], self.annid ) 
@@ -218,10 +220,10 @@ class Annotation:
     cursor.close()
 
 
-  def retrieve ( self, annid, annodb ):
+  def retrieve ( self, annid ):
     """Retrieve the annotation by annid"""
 
-    cursor = annodb.conn.cursor()
+    cursor = self.annodb.conn.cursor()
 
     sql = "SELECT * FROM %s WHERE annoid = %s" % ( anno_dbtables['annotation'], annid )
 
@@ -263,7 +265,7 @@ class Annotation:
 class AnnSynapse (Annotation):
   """Metadata specific to synapses"""
 
-  def __init__(self ):
+  def __init__(self, annodb ):
     """Initialize the fields to zero or null"""
 
     self.weight = 0.0 
@@ -272,7 +274,7 @@ class AnnSynapse (Annotation):
     self.segments = []
 
     # Call the base class constructor
-    Annotation.__init__(self)
+    Annotation.__init__(self, annodb)
 
   def getField ( self, field ):
     """Accessor by field name"""
@@ -300,10 +302,10 @@ class AnnSynapse (Annotation):
     else:
       Annotation.setField ( self, field, value )
 
-  def store ( self, annodb ):
+  def store ( self ):
     """Store the synapse to the annotations databae"""
 
-    cursor = annodb.conn.cursor()
+    cursor = self.annodb.conn.cursor()
 
     sql = "INSERT INTO %s VALUES ( %s, %s, %s )"\
             % ( anno_dbtables['synapse'], self.annid, self.synapse_type, self.weight )
@@ -331,13 +333,13 @@ class AnnSynapse (Annotation):
     cursor.close()
 
     # and call store on the base classs
-    Annotation.store ( self, annodb, ANNO_SYNAPSE)
+    Annotation.store ( self, ANNO_SYNAPSE)
 
 
-  def update ( self, annodb ):
+  def update ( self ):
     """Update the synapse in the annotations databae"""
 
-    cursor = annodb.conn.cursor()
+    cursor = self.annodb.conn.cursor()
 
     sql = "UPDATE %s SET synapse_type=%s, weight=%s WHERE annoid=%s "\
             % (anno_dbtables['synapse'], self.synapse_type, self.weight, self.annid)
@@ -365,16 +367,16 @@ class AnnSynapse (Annotation):
     cursor.close()
 
     # and call update on the base classs
-    Annotation.updateBase ( self, ANNO_SYNAPSE, annodb )
+    Annotation.updateBase ( self, ANNO_SYNAPSE )
 
 
-  def retrieve ( self, annid, annodb ):
+  def retrieve ( self, annid ):
     """Retrieve the synapse by annid"""
 
-    cursor = annodb.conn.cursor()
+    cursor = self.annodb.conn.cursor()
 
     # Call the base class retrieve
-    annotype = Annotation.retrieve ( self, annid, annodb )
+    annotype = Annotation.retrieve ( self, annid )
 
     # verify the annotation object type
     if annotype != ANNO_SYNAPSE:
@@ -403,10 +405,10 @@ class AnnSynapse (Annotation):
     cursor.close()
 
 
-  def delete ( self, annodb ):
+  def delete ( self ):
     """Delete the synapse from the database"""
 
-    cursor = annodb.conn.cursor()
+    cursor = self.annodb.conn.cursor()
 
     sql = "DELETE FROM %s WHERE annoid = %s;"\
             % ( anno_dbtables['synapse'], self.annid );
@@ -422,7 +424,7 @@ class AnnSynapse (Annotation):
     cursor.close()
 
     # and call delete on the base classs
-    Annotation.delete ( self, annodb )
+    Annotation.delete ( self )
 
     
 
@@ -431,7 +433,7 @@ class AnnSynapse (Annotation):
 class AnnSeed (Annotation):
   """Metadata specific to seeds"""
 
-  def __init__ (self):
+  def __init__ (self,annodb):
     """Initialize the fields to zero or null"""
 
     self.parent=0        # parent seed
@@ -440,7 +442,7 @@ class AnnSeed (Annotation):
     self.source=0        # source annotation id
 
     # Call the base class constructor
-    Annotation.__init__(self)
+    Annotation.__init__(self,annodb)
 
   def getField ( self, field ):
     """Accessor by field name"""
@@ -472,10 +474,10 @@ class AnnSeed (Annotation):
     else:
       Annotation.setField ( self, field, value )
 
-  def store ( self, annodb ):
+  def store ( self ):
     """Store thwe seed to the annotations databae"""
 
-    cursor = annodb.conn.cursor()
+    cursor = self.annodb.conn.cursor()
 
     if self.position == []:
       storepos = [ 'NULL', 'NULL', 'NULL' ]
@@ -492,13 +494,13 @@ class AnnSeed (Annotation):
       raise OCPCAError ( "Error inserting seed : %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # and call store on the base classs
-    Annotation.store ( self, annodb, ANNO_SEED)
+    Annotation.store ( self, ANNO_SEED)
 
 
-  def update ( self, annodb ):
+  def update ( self ):
     """Update the seed to the annotations databae"""
 
-    cursor = annodb.conn.cursor()
+    cursor = self.annodb.conn.cursor()
 
     if self.position == [] or np.all(self.position==[None,None,None]):
       storepos = [ 'NULL', 'NULL', 'NULL' ]
@@ -517,16 +519,16 @@ class AnnSeed (Annotation):
     cursor.close()
 
     # and call update on the base classs
-    Annotation.updateBase ( self, ANNO_SEED, annodb )
+    Annotation.updateBase ( self, ANNO_SEED )
 
 
-  def retrieve ( self, annid, annodb ):
+  def retrieve ( self, annid ):
     """Retrieve the seed by annid"""
 
-    cursor = annodb.conn.cursor()
+    cursor = self.annodb.conn.cursor()
 
     # Call the base class retrieve
-    Annotation.retrieve ( self, annid, annodb )
+    Annotation.retrieve ( self, annid )
 
     sql = "SELECT parentid, sourceid, cube_location, positionx, positiony, positionz FROM %s WHERE annoid = %s" % ( anno_dbtables['seed'], annid )
       
@@ -543,10 +545,10 @@ class AnnSeed (Annotation):
     cursor.close()
 
 
-  def delete ( self, annodb ):
+  def delete ( self ):
     """Delete the seeed from the database"""
 
-    cursor = annodb.conn.cursor()
+    cursor = self.annodb.conn.cursor()
 
     sql = "DELETE FROM %s WHERE annoid = %s;"\
             % ( anno_dbtables['seed'], self.annid ) 
@@ -562,7 +564,7 @@ class AnnSeed (Annotation):
     cursor.close()
 
     # and call delete on the base classs
-    Annotation.delete ( self, annodb )
+    Annotation.delete ( self )
 
 
 
@@ -571,7 +573,7 @@ class AnnSeed (Annotation):
 class AnnSegment (Annotation):
   """Metadata specific to segment"""
 
-  def __init__(self ):
+  def __init__(self,annodb):
     """Initialize the fields to zero or null"""
 
     self.segmentclass = 0            # enumerated label
@@ -581,7 +583,23 @@ class AnnSegment (Annotation):
     self.organelles = []             # organells associated with this segment
 
     # Call the base class constructor
-    Annotation.__init__(self)
+    Annotation.__init__(self,annodb)
+
+  def querySynapses ( self ):
+    """Query the synseg database to resolve"""
+
+    cursor = self.annodb.conn.cursor()
+
+    sql = "SELECT synapse FROM {} WHERE segment={}".format( anno_dbtables['synseg'],self.annid)
+
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      logger.warning ( "Error querying synapses %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error querying synapses %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    return cursor.fetchall()
+
 
   def getField ( self, field ):
     """Accessor by field name"""
@@ -609,16 +627,20 @@ class AnnSegment (Annotation):
     elif field == 'neuron':
       self.neuron = value
     elif field == 'synapses':
-      self.synapses = [int(x) for x in value.split(',')] 
+#      RBTODO synapses cannot be set in segment class.  replicated from synapse 
+      pass
+#      self.synapses = [int(x) for x in value.split(',')] 
     elif field == 'organelles':
-      self.organelles = [int(x) for x in value.split(',')] 
+#      RBTODO organelles cannot be updated in segment class.  replicated from organelle 
+      pass
+#      self.organelles = [int(x) for x in value.split(',')] 
     else:
       Annotation.setField ( self, field, value )
 
-  def store ( self, annodb ):
+  def store ( self ):
     """Store the synapse to the annotations databae"""
 
-    cursor = annodb.conn.cursor()
+    cursor = self.annodb.conn.cursor()
 
     sql = "INSERT INTO %s VALUES ( %s, %s, %s, %s )"\
             % ( anno_dbtables['segment'], self.annid, self.segmentclass, self.parentseed, self.neuron )
@@ -630,25 +652,23 @@ class AnnSegment (Annotation):
       raise OCPCAError ( "Error inserting segment: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # synapses: pack into a kv pair
-#    if self.synapses != []:
     if len(self.synapses)!=0:
       self.kvpairs['synapses'] = ','.join([str(i) for i in self.synapses])
 
     # organelles: pack into a kv pair
-#    if self.organelles != []:
     if len(self.organelles)!=0:
       self.kvpairs['organelles'] = ','.join([str(i) for i in self.organelles])
 
     cursor.close()
 
     # and call store on the base classs
-    Annotation.store ( self, annodb, ANNO_SEGMENT)
+    Annotation.store ( self, ANNO_SEGMENT)
 
 
-  def update ( self, annodb ):
+  def update ( self ):
     """Update the synapse in the annotations database"""
 
-    cursor = annodb.conn.cursor()
+    cursor = self.annodb.conn.cursor()
 
     sql = "UPDATE %s SET segmentclass=%s, parentseed=%s, neuron=%s WHERE annoid=%s "\
             % (anno_dbtables['segment'], self.segmentclass, self.parentseed, self.neuron, self.annid)
@@ -660,28 +680,26 @@ class AnnSegment (Annotation):
       raise OCPCAError ( "Error updating segment: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # synapses: pack into a kv pair
-#    if self.synapses != []:
     if len(self.synapses)!=0:
       self.kvpairs['synapses'] = ','.join([str(i) for i in self.synapses])
 
     # organelles: pack into a kv pair
-#    if self.organelles != []:
     if len(self.organelles)!=0:
       self.kvpairs['organelles'] = ','.join([str(i) for i in self.organelles])
 
     cursor.close()
 
     # and call update on the base classs
-    Annotation.updateBase ( self, ANNO_SEGMENT, annodb )
+    Annotation.updateBase ( self, ANNO_SEGMENT )
 
 
-  def retrieve ( self, annid, annodb ):
+  def retrieve ( self, annid ):
     """Retrieve the synapse by annid"""
 
-    cursor = annodb.conn.cursor()
+    cursor = self.annodb.conn.cursor()
 
     # Call the base class retrieve
-    annotype = Annotation.retrieve ( self, annid, annodb )
+    annotype = Annotation.retrieve ( self, annid )
 
     # verify the annotation object type
     if annotype != ANNO_SEGMENT:
@@ -692,7 +710,7 @@ class AnnSegment (Annotation):
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      logger.warning ( "Error retrieving synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      logger.warning ( "Error retrieving segment %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise OCPCAError ( "Error retrieving segment: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     ( self.segmentclass, self.parentseed, self.neuron ) = cursor.fetchone()
@@ -708,10 +726,10 @@ class AnnSegment (Annotation):
     cursor.close()
 
 
-  def delete ( self, annodb ):
+  def delete ( self ):
     """Delete the segment from the database"""
 
-    cursor = annodb.conn.cursor()
+    cursor = self.annodb.conn.cursor()
 
     sql = "DELETE FROM %s WHERE annoid = %s;"\
             % ( anno_dbtables['segment'], self.annid ) 
@@ -727,7 +745,7 @@ class AnnSegment (Annotation):
     cursor.close()
 
     # and call delete on the base classs
-    Annotation.delete ( self, annodb )
+    Annotation.delete ( self )
 
 
 
@@ -737,90 +755,79 @@ class AnnSegment (Annotation):
 class AnnNeuron (Annotation):
   """Metadata specific to neurons"""
 
-  def __init__(self ):
+  def __init__(self,annodb):
     """Initialize the fields to zero or null"""
 
-    self.segments = []
-
     # Call the base class constructor
-    Annotation.__init__(self)
+    Annotation.__init__(self,annodb)
+
+  def querySegments ( self ):
+    """Query the segments database to resolve"""
+
+    cursor = self.annodb.conn.cursor()
+
+    sql = "SELECT annoid FROM {} WHERE neuron={}".format( anno_dbtables['segment'],self.annid)
+
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      logger.warning ( "Error querying neuron segments %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error querying neuron segments %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    return cursor.fetchall()
+
 
   def getField ( self, field ):
     """Accessor by field name"""
 
     if field == 'segments':
-      return ','.join(str(x) for x in self.segments)
+       return self.querySegments() 
     else:
       return Annotation.getField(self,field)
 
   def setField ( self, field, value ):
     """Mutator by field name.  Then need to store the field."""
     
-    if field == 'segments':
-      self.segments = [int(x) for x in value.split(',')] 
     Annotation.setField ( self, field, value )
 
 
-  def store ( self, annodb ):
-    """Store the synapse to the annotations databae"""
+  def store ( self ):
+    """Store the neuron to the annotations databae"""
 
-    cursor = annodb.conn.cursor()
-
-    # segments: pack into a kv pair
-    if len(self.segments)!=0:
-      self.kvpairs['segments'] = ','.join([str(i) for i in self.segments])
+    cursor = self.annodb.conn.cursor()
 
     # and call store on the base classs
-    Annotation.store ( self, annodb, ANNO_NEURON )
+    Annotation.store ( self, ANNO_NEURON )
 
 
-  def update ( self, annodb ):
-    """Update the synapse in the annotations databae"""
-
-    # segments: pack into a kv pair
-    if len(self.segments)!=0:
-      self.kvpairs['segments'] = ','.join([str(i) for i in self.segments])
+  def update ( self ):
+    """Update the neuron in the annotations databae"""
 
     # and call update on the base classs
-    Annotation.updateBase ( self, ANNO_NEURON, annodb )
+    Annotation.updateBase ( self, ANNO_NEURON )
 
 
-  def retrieve ( self, annid, annodb ):
-    """Retrieve the synapse by annid"""
+  def retrieve ( self, annid ):
+    """Retrieve the neuron by annid"""
 
     # Call the base class retrieve
-    annotype = Annotation.retrieve ( self, annid, annodb )
+    annotype = Annotation.retrieve ( self, annid )
 
     # verify the annotation object type
     if annotype != ANNO_NEURON:
       raise OCPCAError ( "Incompatible annotation type.  Expected NEURON got %s" % annotype )
 
-    if self.kvpairs.get('segments'):
-      self.segments = [int(i) for i in self.kvpairs['segments'].split(',')]
-      del ( self.kvpairs['segments'] )
-      
+    self.segments = self.querySegments()
 
-  def delete ( self, annodb ):
+
+  def delete ( self ):
     """Delete the annotation from the database"""
 
-    cursor = annodb.conn.cursor()
-
-    sql = "DELETE FROM %s WHERE annoid = %s;"\
-            % ( anno_dbtables['synapse'], self.annid ) 
-
-    sql += "DELETE FROM %s WHERE annoid = %s" % ( anno_dbtables['kvpairs'], self.annid )
-
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ( "Error deleting synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise OCPCAError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-    cursor.close()
-
     # and call delete on the base classs
-    Annotation.delete ( self, annodb )
+    Annotation.delete ( self )
 
+
+    
 
 
 ###############  Organelle  ##################
@@ -828,7 +835,7 @@ class AnnNeuron (Annotation):
 class AnnOrganelle (Annotation):
   """Metadata specific to organelle"""
 
-  def __init__(self ):
+  def __init__(self,annodb):
     """Initialize the fields to zero or None"""
 
     self.organelleclass = 0          # enumerated label
@@ -837,7 +844,7 @@ class AnnOrganelle (Annotation):
     self.seeds = []                  # seeds generated from this organelle
 
     # Call the base class constructor
-    Annotation.__init__(self)
+    Annotation.__init__(self,annodb)
 
   def getField ( self, field ):
     """Accessor by field name"""
@@ -869,10 +876,10 @@ class AnnOrganelle (Annotation):
     else:
       Annotation.setField ( self, field, value )
 
-  def store ( self, annodb ):
+  def store ( self ):
     """Store the synapse to the annotations databae"""
 
-    cursor = annodb.conn.cursor()
+    cursor = self.annodb.conn.cursor()
 
     if self.centroid == None or np.all(self.centroid==[None,None,None]):
       storecentroid = [ 'NULL', 'NULL', 'NULL' ]
@@ -897,13 +904,13 @@ class AnnOrganelle (Annotation):
     cursor.close()
 
     # and call store on the base classs
-    Annotation.store ( self, annodb, ANNO_ORGANELLE)
+    Annotation.store ( self, ANNO_ORGANELLE)
 
 
-  def update ( self, annodb ):
+  def update ( self ):
     """Update the organelle in the annotations database"""
 
-    cursor = annodb.conn.cursor()
+    cursor = self.annodb.conn.cursor()
 
     if self.centroid == None or np.all(self.centroid==[None,None,None]):
       storecentroid = [ 'NULL', 'NULL', 'NULL' ]
@@ -927,16 +934,16 @@ class AnnOrganelle (Annotation):
     cursor.close()
 
     # and call update on the base classs
-    Annotation.updateBase ( self, ANNO_ORGANELLE, annodb )
+    Annotation.updateBase ( self, ANNO_ORGANELLE )
 
 
-  def retrieve ( self, annid, annodb ):
+  def retrieve ( self, annid ):
     """Retrieve the organelle by annid"""
 
-    cursor = annodb.conn.cursor()
+    cursor = self.annodb.conn.cursor()
 
     # Call the base class retrieve
-    annotype = Annotation.retrieve ( self, annid, annodb )
+    annotype = Annotation.retrieve ( self, annid )
 
     # verify the annotation object type
     if annotype != ANNO_ORGANELLE:
@@ -959,10 +966,10 @@ class AnnOrganelle (Annotation):
     cursor.close()
 
 
-  def delete ( self, annodb ):
+  def delete ( self ):
     """Delete the organelle from the database"""
 
-    cursor = annodb.conn.cursor()
+    cursor = self.annodb.conn.cursor()
 
     sql = "DELETE FROM %s WHERE annoid = %s;"\
             % ( anno_dbtables['organelle'], self.annid ) 
@@ -978,7 +985,7 @@ class AnnOrganelle (Annotation):
     cursor.close()
 
     # and call delete on the base classs
-    Annotation.delete ( self, annodb )
+    Annotation.delete ( self )
 
 
 
@@ -1012,33 +1019,33 @@ def getAnnotation ( annid, annodb ):
 
   # switch on the type of annotation
   if type == ANNO_SYNAPSE:
-    syn = AnnSynapse()
-    syn.retrieve(annid, annodb)
+    syn = AnnSynapse(annodb)
+    syn.retrieve(annid)
     return syn
 
   elif type == ANNO_SEED:
-    seed = AnnSeed()
-    seed.retrieve(annid, annodb)
+    seed = AnnSeed(annodb)
+    seed.retrieve(annid)
     return seed
 
   elif type == ANNO_SEGMENT:
-    segment = AnnSegment()
-    segment.retrieve(annid, annodb)
+    segment = AnnSegment(annodb)
+    segment.retrieve(annid)
     return segment
 
   elif type == ANNO_NEURON:
-    neuron = AnnNeuron()
-    neuron.retrieve(annid, annodb)
+    neuron = AnnNeuron(annodb)
+    neuron.retrieve(annid)
     return neuron
 
   elif type == ANNO_ORGANELLE:
-    org = AnnOrganelle()
-    org.retrieve(annid, annodb)
+    org = AnnOrganelle(annodb)
+    org.retrieve(annid)
     return org
 
   elif type == ANNO_ANNOTATION:
-    anno = Annotation()
-    anno.retrieve(annid, annodb)
+    anno = Annotation(annodb)
+    anno.retrieve(annid)
     return anno
 
   else:
@@ -1062,21 +1069,17 @@ def putAnnotation ( anno, annodb, options ):
 
     # can update if they are the same type
     elif oldanno.__class__ == anno.__class__:
-      anno.update(annodb)
+      anno.update()
 
     # need to delete and then insert if we're changing the annotation type
     #  only from the base type
     elif oldanno.__class__ == Annotation:
-      oldanno.delete(annodb)
-      anno.store(annodb)
+      oldanno.delete()
+      anno.store()
     
-   # otherwise an illegal update
-    else:
-      raise OCPCAError ( "Cannot change the type of annotation from %s to %s" % (oldanno.__class__,anno.__class__))
-
   # Write the user chosen annotation id
   else:
-    anno.store(annodb)
+    anno.store()
  
 
 #
@@ -1092,5 +1095,30 @@ def deleteAnnotation ( annoid, annodb, options ):
     raise OCPCAError ( "During delete no annotation found at id %d" % annoid  )
 
   # methinks we can call polymorphically
-  oldanno.delete(annodb) 
+  oldanno.delete() 
+
+
+def getChildren ( annid, annodb ):
+    """Return a list of all annotations in this neuron"""
+
+    cursor = annodb.conn.cursor()
+
+    sql = "SELECT annoid FROM {} WHERE neuron = {}".format( anno_dbtables['segment'], annid )
+
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      logger.warning ( "Error deleting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+    
+    seglist = cursor.fetchall()
+
+    cursor.close()
+   
+    # return an empty iterable if there are none
+    if seglist == None:
+      seglist = []
+
+    return np.array ( seglist, dtype=np.uint32 ).flatten()
+
 

@@ -23,10 +23,9 @@ import csv
 import numpy as np
 import pytest
 
+import ocppaths
 from pytesthelpers import makeAnno
 import ocpcaproj
-
-import ocppaths
 
 import site_to_test
 SITE_HOST = site_to_test.site
@@ -49,8 +48,11 @@ class TestRamon:
   def setup_class(self):
     """Create the unittest database"""
 
-    self.pd = ocpcaproj.OCPCAProjectsDB()
-    self.pd.newOCPCAProj ( 'unittest', 'test', 'localhost', 'unittest', 2, 'kasthuri11', None, False, True, False, 0 )
+    try:
+      self.pd = ocpcaproj.OCPCAProjectsDB()
+      self.pd.newOCPCAProj ( 'unittest', 'test', 'localhost', 'unittest', 2, 'kasthuri11', None, False, True, False, 0 )
+    except:
+      self.pd.deleteOCPCADB ('unittest')
 
   def teardown_class (self):
     """Destroy the unittest database"""

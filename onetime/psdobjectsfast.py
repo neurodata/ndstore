@@ -82,7 +82,7 @@ class PSDObjectCreator:
           ylow = max ( 0, y*ycubedim-256 )
           zlow = max ( 0, z-8 )
           xhigh = min ( ximagesz, (x+stride)*xcubedim+256 )
-          yhigh = min ( yimagesz, (y+stride)*xcubedim+256 )
+          yhigh = min ( yimagesz, (y+stride)*ycubedim+256 )
           zhigh = min ( endslice-1, z+zcubedim+8 )
 
           # perform the cutout
@@ -97,17 +97,17 @@ class PSDObjectCreator:
           # Points are in xyz, voxels in zyx
           points = zip(nzoffs[2]+xlow,nzoffs[1]+ylow,nzoffs[0]+zlow+startslice)
 
-          print "Len points {}".format(len(points))
-
           # for all points in the interior, let's grow the region
           while len(points) != 0:
-            
+
             #grab the first psd
             seed = None
             for pt in points:
-              if self.inrange ( pt, (x*xcubedim, y*ycubedim, z), (stride*zcubedim, stride*ycubedim, zcubedim) ):
-                seed = pt
-                break
+              if self.inrange ( pt, (x*xcubedim, y*ycubedim, z), (stride*xcubedim, stride*ycubedim, zcubedim) ):
+                # only points that are not relabeled
+                if (cube.data[pt[2]-zlow-startslice,pt[1]-ylow,pt[0]-xlow] < 100 ):
+                  seed = pt
+                  break
 
             if seed == None:
               break
@@ -128,7 +128,7 @@ class PSDObjectCreator:
               for pt in points:
 
                 # put points in or out of PSD
-                if pt[0] < bbxlow - 16 or pt[0] > bbxhigh + 16 or pt[1] < bbylow - 16 or pt[1] > bbyhigh + 16 or pt[2] < bbzlow - 2 or pt[2] > bbzhigh + 2:
+                if pt[0] < bbxlow - 8 or pt[0] > bbxhigh + 8 or pt[1] < bbylow - 8 or pt[1] > bbyhigh + 8 or pt[2] < bbzlow - 2 or pt[2] > bbzhigh + 2:
                   outpoints.append(pt)
                 else: 
                   inpoints.append(pt)
@@ -144,7 +144,7 @@ class PSDObjectCreator:
 
               points = outpoints              
 
-            print "Found PSD of length {}".format(len(inpoints))
+            print "Found PSD id {} of length {}".format(startid,len(inpoints))
 
             # annotate the new object
             nppoints = np.array ( inpoints, dtype=np.uint32 )

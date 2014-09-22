@@ -20,67 +20,49 @@ import re
 from collections import defaultdict
 import itertools
 
-"""Helpers function to do cube I/O in across multiple DBs.
-    This uses the state and methods of ocpcadb"""
+import aerospike
 
-class MySQLKVIO:
+"""Helpers function to do cube I/O in across multiple DBs.
+    This file is aerospike
+    This uses the state and methods of ocpcadb"""
 
   def __init__ ( self, db ):
     """Connect to the database"""
 
     self.db = db
 
-    # Connection info 
-    try:
-      self.conn = MySQLdb.connect (host = self.db.annoproj.getDBHost(),
-                            user = self.db.annoproj.getDBUser(),
-                            passwd = self.db.annoproj.getDBPasswd(),
-                            db = self.db.annoproj.getDBName())
+    ascfg = { 'hosts': [ ('127.0.0.1', 3000) ] }
+    dbobj.ascli = aerospike.client(ascfg).connect()
 
-    except MySQLdb.Error, e:
-      self.conn = None
-      logger.error("Failed to connect to database: %s, %s" % (dbobj.annoproj.getDBHost(), dbobj.annoproj.getDBName()))
-      raise
-
-    self.cursor = self.conn.cursor()
-
-
-  def commit ( self ):
-    """Commit the transaction.  Moved out of __del__ to make explicit.""" 
-    self.conn.commit()
 
   def __del__ ( self ):
     """Close the connection"""
-    if self.conn:
-      self.cursor.close()
-      self.conn.close()
+    self.ascli.close()
+
 
   def getCube ( self, cube, key, resolution, update ):
     """Retrieve a cube from the database by token, resolution, and key"""
 
-    sql = "SELECT cube FROM " + self.db.annoproj.getTable(resolution) + " WHERE zindex = " + str(key) 
-    if update==True:
-          sql += " FOR UPDATE"
-
-    try:
-      self.cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.error ( "Failed to retrieve data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise
-
-    row = self.cursor.fetchone()
+    value = dbobj.ascli.get ( db.annoproj.token + ":" + str(resolution)  + ":" + str(key) )
 
     # If we can't find a cube, assume it hasn't been written yet
-    if ( row == None ):
+    if ( value == None ):
       cube.zeros ()
-    else: 
-      # decompress the cube
-      cube.fromNPZ ( row[0] )
+    else:
+      cube.data=value
+
+  def commit ( self ):
+    """Commit the transaction.  Moved out of __del__ to make explicit.""" 
+    pass
 
 
-  def getCubes ( self, listofidxs, resolution, dbname ):
+  def getCubes ( self, listofidxs ):
 
-    # RBTODO need to fix this for neariso interfaces
+    for key in listofidxs:
+      value = dbobj.ascli.get ( db.annoproj.token + ":" + str(resolution)  + ":" + str(key) )
+      # hoew to deal with empty cubes RBTODO
+      yield value
+
     sql = "SELECT zindex, cube FROM " + dbname + " WHERE zindex IN (%s)" 
 
     # creats a %s for each list element
@@ -88,17 +70,8 @@ class MySQLKVIO:
     # replace the single %s with the in_p string
     sql = sql % in_p
     rc = self.cursor.execute(sql, listofidxs)
-  
-    # Get the objects and add to the cube
-    while ( True ):
-      try: 
-        retval = self.cursor.fetchone() 
-      except:
-        break
-      if retval != None:
-        yield ( retval )
-      else:
-        return
+
+    yield ( self.cursor.fetchone() )
 
 
   #
@@ -196,7 +169,7 @@ class MySQLKVIO:
   def deleteIndex ( self, annid, resolution ):
     """MySQL update index routine"""
 
-    sql = "DELETE FROM " +  self.db.annoproj.getIdxTable(resolution)  +  " WHERE annid=" + str(annid)
+    sql = "DELETE FROM " +  self.db.annoproj.getIdxTable(res)  +  " WHERE annid=" + str(annid)
     
     try:
        self.cursor.execute ( sql )
@@ -206,3 +179,4 @@ class MySQLKVIO:
     except:
       logger.exception("Unknown exception")
       raise
+

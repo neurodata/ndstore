@@ -23,10 +23,7 @@ urlpatterns = patterns('ocpca.views',
   url(r'^catmaid/(?P<webargs>\w+/.*)$', 'catmaid'),
   # fetch ids (with predicates)
   url(r'(?P<webargs>^\w+/query/[\w\.,/]*)$', 'queryObjects'),
-  # batch fetch RAMON 
-  url(r'(?P<webargs>^\w+/objects/[\w,/]*)$', 'getObjects'),
   # get project information
-# get project information
   url(r'(?P<webargs>^\w+/projinfo/[\w,/]*)$', 'projinfo'),
   url(r'(?P<webargs>^\w+/info/[\w,/]*)$', 'jsoninfo'),
   # get public tokens 

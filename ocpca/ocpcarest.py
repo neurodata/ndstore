@@ -25,6 +25,7 @@ import re
 import json
 from PIL import Image
 import MySQLdb
+import itertools
 
 import restargs
 import anncube
@@ -342,7 +343,18 @@ def xyAnno ( imageargs, proj, db ):
   """Return an xy plane fileobj.read() for a single objects"""
 
   [ annoidstr, sym, imageargs ] = imageargs.partition('/')
-  annoid = int(annoidstr)
+  annoids = [int(x) for x in annoidstr.split(',')]
+
+  # retrieve the annotation 
+  if len(annoids) == 1:
+    anno = db.getAnnotation ( annoids[0] )
+    if anno == None:
+      logger.warning("No annotation found at identifier = %s" % (annoid))
+      raise OCPCAError ("No annotation found at identifier = %s" % (annoid))
+    else:
+      iscompound = True if anno.__class__ in [ annotation.AnnNeuron ] else False; 
+  else:
+    iscompound = False
 
   # Perform argument processing
   try:
@@ -357,7 +369,16 @@ def xyAnno ( imageargs, proj, db ):
   dim = args.getDim()
   resolution = args.getResolution()
 
-  cb = db.annoCutout ( annoid, resolution, corner, dim )
+  # determine if it is a compound type (NEURON) and get the list of relevant segments
+  if iscompound:
+    # remap the ids for a neuron
+    dataids = db.getChildren ( annoids[0] ) 
+    cb = db.annoCutout ( dataids, resolution, corner, dim, annoids[0] )
+  else:
+    # no remap when not a neuron
+    dataids = annoids
+    cb = db.annoCutout ( dataids, resolution, corner, dim, None )
+
 
   fileobj = cStringIO.StringIO ( )
   cb.xySlice ( fileobj )
@@ -370,7 +391,18 @@ def xzAnno ( imageargs, proj, db ):
   """Return an xz plane fileobj.read()"""
 
   [ annoidstr, sym, imageargs ] = imageargs.partition('/')
-  annoid = int(annoidstr)
+  annoids = [int(x) for x in annoidstr.split(',')]
+
+  # retrieve the annotation 
+  if len(annoids) == 1:
+    anno = db.getAnnotation ( annoids[0] )
+    if anno == None:
+      logger.warning("No annotation found at identifier = %s" % (annoid))
+      raise OCPCAError ("No annotation found at identifier = %s" % (annoid))
+    else:
+      iscompound = True if anno.__class__ in [ annotation.AnnNeuron ] else False; 
+  else:
+    iscompound = False
 
   # Perform argument processing
   try:
@@ -385,7 +417,15 @@ def xzAnno ( imageargs, proj, db ):
   dim = args.getDim()
   resolution = args.getResolution()
 
-  cb = db.annoCutout ( annoid, resolution, corner, dim )
+  # determine if it is a compound type (NEURON) and get the list of relevant segments
+  if iscompound:
+    # remap the ids for a neuron
+    dataids = db.getChildren ( annoids[0] ) 
+    cb = db.annoCutout ( dataids, resolution, corner, dim, annoids[0] )
+  else:
+    # no remap when not a neuron
+    cb = db.annoCutout ( annoids, resolution, corner, dim, None )
+
   fileobj = cStringIO.StringIO ( )
   cb.xzSlice ( proj.datasetcfg.zscale[resolution], fileobj )
 
@@ -397,7 +437,18 @@ def yzAnno ( imageargs, proj, db ):
   """Return an yz plane fileobj.read()"""
 
   [ annoidstr, sym, imageargs ] = imageargs.partition('/')
-  annoid = int(annoidstr)
+  annoids = [int(x) for x in annoidstr.split(',')]
+
+  # retrieve the annotation 
+  if len(annoids) == 1:
+    anno = db.getAnnotation ( annoids[0] )
+    if anno == None:
+      logger.warning("No annotation found at identifier = %s" % (annoid))
+      raise OCPCAError ("No annotation found at identifier = %s" % (annoid))
+    else:
+      iscompound = True if anno.__class__ in [ annotation.AnnNeuron ] else False; 
+  else:
+    iscompound = False
 
   # Perform argument processing
   try:
@@ -412,7 +463,15 @@ def yzAnno ( imageargs, proj, db ):
   dim = args.getDim()
   resolution = args.getResolution()
 
-  cb = db.annoCutout ( annoid, resolution, corner, dim )
+  # determine if it is a compound type (NEURON) and get the list of relevant segments
+  if iscompound:
+    # remap the ids for a neuron
+    dataids = db.getChildren ( annoids[0] ) 
+    cb = db.annoCutout ( dataids, resolution, corner, dim, annoids[0] )
+  else:
+    # no remap when not a neuron
+    cb = db.annoCutout ( annoids, resolution, corner, dim, None )
+
   fileobj = cStringIO.StringIO ( )
   cb.yzSlice ( proj.datasetcfg.zscale[resolution], fileobj )
 
@@ -750,15 +809,13 @@ AR_VOXELS = 1
 AR_CUTOUT = 2
 AR_TIGHTCUTOUT = 3
 AR_BOUNDINGBOX = 4
-#AR_CUBOIDS = 5
+AR_CUBOIDS = 5
 
 
 def getAnnoById ( annoid, h5f, proj, db, dataoption, resolution=None, corner=None, dim=None ): 
-  """Retrieve the annotation and put it in the HDF5 file.
-      This is called by both getAnnotation and getAnnotations
-      to add annotations to the HDF5 file."""
+  """Retrieve the annotation and put it in the HDF5 file."""
 
-  # retrieve the annotation 
+  # aetrieve the annotation 
   anno = db.getAnnotation ( annoid )
   if anno == None:
     logger.warning("No annotation found at identifier = %s" % (annoid))
@@ -768,58 +825,110 @@ def getAnnoById ( annoid, h5f, proj, db, dataoption, resolution=None, corner=Non
   h5anno = h5ann.AnnotationtoH5 ( anno, h5f )
 
   # only return data for annotation types that have data
-  if anno.__class__ in [ annotation.AnnNeuron, annotation.AnnSeed ] and dataoption != AR_NODATA: 
+  if anno.__class__ in [ annotation.AnnSeed ] and dataoption != AR_NODATA: 
     logger.warning("No data associated with annotation type %s" % ( anno.__class__))
     raise OCPCAError ("No data associated with annotation type %s" % ( anno.__class__))
 
+  # determine if it is a compound type (NEURON) and get the list of relevant segments
+  if anno.__class__ in [ annotation.AnnNeuron ] and dataoption != AR_NODATA:
+    dataids = db.getChildren ( annoid ) 
+  else:
+    dataids = [anno.annid]
+
   # get the voxel data if requested
   if dataoption==AR_VOXELS:
-  
-    voxlist = db.getLocations ( annoid, resolution ) 
-    if len(voxlist) != 0:
-      h5anno.addVoxels ( resolution, voxlist )
 
+  # RBTODO Need to make voxels zoom
+
+    allvoxels = []
+
+    # add voxels for all of the ids
+    for dataid in dataids:
+  
+      voxlist = db.getLocations ( dataid, resolution ) 
+      if len(voxlist) != 0:
+        allvoxels =  allvoxels + voxlist 
+
+    allvoxels = [ el for el in set ( [ tuple(t) for t in allvoxels ] ) ]
+    h5anno.addVoxels ( resolution,  allvoxels )
+
+  # support list of IDs to filter cutout
   elif dataoption==AR_CUTOUT:
 
-    cb = db.annoCutout(annoid,resolution,corner,dim)
+    # cutout the data with the and remap for neurons.
+    if anno.__class__ in [ annotation.AnnNeuron ] and dataoption != AR_NODATA:
+      cb = db.annoCutout(dataids,resolution,corner,dim,annoid)
+    else:
+      # don't need to remap single annotations
+      cb = db.annoCutout(dataids,resolution,corner,dim,None)
 
     # again an abstraction problem with corner.
     #  return the corner to cutout arguments space
     retcorner = [corner[0], corner[1], corner[2]+proj.datasetcfg.slicerange[0]]
-
     h5anno.addCutout ( resolution, retcorner, cb.data )
 
   elif dataoption==AR_TIGHTCUTOUT:
 
+    # determine if it is a compound type (NEURON) and get the list of relevant segments
+    if anno.__class__ in [ annotation.AnnNeuron ] and dataoption != AR_NODATA:
+      dataids = db.getChildren ( annoid ) 
+    else:
+      dataids = [anno.annid]
+
     # get the bounding box from the index
-    bbcorner, bbdim = db.getBoundingBox ( annoid, resolution )
+    bbcorner, bbdim = db.getBoundingBox ( dataids, resolution )
 
+    # figure out which ids are in object
     if bbcorner != None:
-
       if bbdim[0]*bbdim[1]*bbdim[2] >= 1024*1024*256:
         logger.warning ("Cutout region is inappropriately large.  Dimension: %s,%s,%s" % (bbdim[0],bbdim[1],bbdim[2]))
         raise OCPCAError ("Cutout region is inappropriately large.  Dimension: %s,%s,%s" % (bbdim[0],bbdim[1],bbdim[2]))
 
-      # do a cutout and add the cutout to the HDF5 file
-      cutout = db.annoCutout ( annoid, resolution, bbcorner, bbdim )
-      retcorner = [bbcorner[0], bbcorner[1], bbcorner[2]+proj.datasetcfg.slicerange[0]]
-      h5anno.addCutout ( resolution, retcorner, cutout.data )
+    # Call the cuboids interface to get the minimum amount of data
+    if anno.__class__ == annotation.AnnNeuron:
+      offsets = db.annoCubeOffsets(dataids, resolution, annoid)
+    else:
+      offsets = db.annoCubeOffsets([annoid], resolution)
+
+    datacuboid = None
+
+    # get a list of indexes in XYZ space
+    # for each cube in the index, add it to the data cube
+    for (offset,cbdata) in offsets:
+      if datacuboid == None:
+        datacuboid = np.zeros ( (bbdim[2],bbdim[1],bbdim[0]), dtype=cbdata.dtype )
+
+      datacuboid [ offset[2]-bbcorner[2]:offset[2]-bbcorner[2]+cbdata.shape[0], offset[1]-bbcorner[1]:offset[1]-bbcorner[1]+cbdata.shape[1], offset[0]-bbcorner[0]:offset[0]-bbcorner[0]+cbdata.shape[2] ]  = cbdata
+
+    h5anno.addCutout ( resolution, bbcorner, datacuboid )
 
   elif dataoption==AR_BOUNDINGBOX:
 
-    bbcorner, bbdim = db.getBoundingBox ( annoid, resolution )
+    # determine if it is a compound type (NEURON) and get the list of relevant segments
+    if anno.__class__ in [ annotation.AnnNeuron ] and dataoption != AR_NODATA:
+      dataids = db.getChildren ( annoid ) 
+    else:
+      dataids = [anno.annid]
+
+    bbcorner, bbdim = db.getBoundingBox ( dataids, resolution )
     h5anno.addBoundingBox ( resolution, bbcorner, bbdim )
 
-  # return an HDF5 file that contains the minimal amount of data. 
-  # cuboids that contain data
-#  elif dataoption=+AR_CUBOIDS:
-#
-#  # FIX me here
-#    cuboidlist = db.getCuboids( annoid, resolution )
-#    for cuboid in cuboidlist ():
-      
-    
+  # populate with a minimal list of cuboids
+  elif dataoption==AR_CUBOIDS:
 
+  #CUBOIDS don't work at zoom resolution
+  
+    h5anno.mkCuboidGroup()
+
+    if anno.__class__ == annotation.AnnNeuron:
+      offsets = db.annoCubeOffsets(dataids, resolution, annoid)
+    else:
+      offsets = db.annoCubeOffsets([annoid], resolution)
+
+    # get a list of indexes in XYZ space
+    # for each cube in the index, add it to the hdf5 file
+    for (offset,cbdata) in offsets:
+      h5anno.addCuboid ( offset, cbdata )
 
 
 def getAnnotation ( webargs ):
@@ -844,9 +953,10 @@ def getAnnotation ( webargs ):
     if re.match ( '^[\d,]+$', args[0] ): 
 
       annoids = map(int, args[0].split(','))
-  
+
       for annoid in annoids: 
-  
+
+        # if it's a compoun data type (NEURON) get the list of data ids
         # default is no data
         if args[1] == '' or args[1] == 'nodata':
           dataoption = AR_NODATA
@@ -856,19 +966,33 @@ def getAnnotation ( webargs ):
         #  or you get data from the default resolution
         elif args[1] == 'voxels':
           dataoption = AR_VOXELS
+
           try:
             [resstr, sym, rest] = args[2].partition('/')
             resolution = int(resstr) 
           except:
             logger.warning ( "Improperly formatted voxel arguments {}".format(args[2]))
             raise OCPCAError("Improperly formatted voxel arguments {}".format(args[2]))
+
+  
+          getAnnoById ( annoid, h5f, proj, db, dataoption, resolution )
+
+        #  or you get data from the default resolution
+        elif args[1] == 'cuboids':
+          dataoption = AR_CUBOIDS
+          try:
+            [resstr, sym, rest] = args[2].partition('/')
+            resolution = int(resstr) 
+          except:
+            logger.warning ( "Improperly formatted cuboids arguments {}".format(args[2]))
+            raise OCPCAError("Improperly formatted cuboids arguments {}".format(args[2]))
   
           getAnnoById ( annoid, h5f, proj, db, dataoption, resolution )
   
         elif args[1] =='cutout':
   
           # if there are no args or only resolution, it's a tight cutout request
-          if args[2] == '' or re.match('^\d+[\/]*$', args[2]):
+          if args[2] == '' or re.match('^\d+[\w\/]*$', args[2]):
             dataoption = AR_TIGHTCUTOUT
             try:
               [resstr, sym, rest] = args[2].partition('/')
@@ -876,10 +1000,11 @@ def getAnnotation ( webargs ):
             except:
               logger.warning ( "Improperly formatted cutout arguments {}".format(args[2]))
               raise OCPCAError("Improperly formatted cutout arguments {}".format(args[2]))
-  
+
             getAnnoById ( annoid, h5f, proj, db, dataoption, resolution )
   
           else:
+
             dataoption = AR_CUTOUT
   
             # Perform argument processing
@@ -965,121 +1090,6 @@ def getCSV ( webargs ):
   return csvstr 
 
 
-def getAnnotations ( webargs, postdata ):
-  """Get multiple annotations.  Takes an HDF5 that lists ids in the post."""
-
-  [ token, objectsliteral, otherargs ] = webargs.split ('/',2)
-
-  # Get the annotation database
-  [ db, proj, projdb ] = loadDBProj ( token )
-
-  # Read the post data HDF5 and get a list of identifiers
-  tmpinfile = tempfile.NamedTemporaryFile ( )
-  tmpinfile.write ( postdata )
-  tmpinfile.seek(0)
-  h5in = h5py.File ( tmpinfile.name )
-
-  try:
-
-    # IDENTIFIERS
-    if not h5in.get('ANNOIDS'):
-      logger.warning ("Requesting multiple annotations.  But no HDF5 \'ANNOIDS\' field specified.") 
-      raise OCPCAError ("Requesting multiple annotations.  But no HDF5 \'ANNOIDS\' field specified.") 
-
-    # GET the data out of the HDF5 file.  Never operate on the data in place.
-    annoids = h5in['ANNOIDS'][:]
-
-    # set variables to None: need them in call to getAnnoByID, but not all paths set all
-    corner = None
-    dim = None
-    resolution = None
-    dataarg = ''
-
-    # process options
-    # Split the URL and get the args
-    if otherargs != '':
-      ( dataarg, cutout ) = otherargs.split('/', 1)
-
-    if dataarg =='' or dataarg == 'nodata':
-      dataoption = AR_NODATA
-
-    elif dataarg == 'voxels':
-      dataoption = AR_VOXELS
-      # only arg to voxels is resolution
-      try:
-        [resstr, sym, rest] = cutout.partition('/')
-        resolution = int(resstr) 
-      except:
-        logger.warning ( "Improperly formatted voxel arguments {}".format(cutout))
-        raise OCPCAError("Improperly formatted voxel arguments {}".format(cutout))
-
-
-    elif dataarg == 'cutout':
-      # if blank of just resolution then a tightcutout
-      if cutout == '' or re.match('^\d+[\/]*$', cutout):
-        dataoption = AR_TIGHTCUTOUT
-        try:
-          [resstr, sym, rest] = cutout.partition('/')
-          resolution = int(resstr) 
-        except:
-          logger.warning ( "Improperly formatted cutout arguments {}".format(cutout))
-          raise OCPCAError("Improperly formatted cutout arguments {}".format(cutout))
-      else:
-        dataoption = AR_CUTOUT
-
-        # Perform argument processing
-        brargs = restargs.BrainRestArgs ();
-        brargs.cutoutArgs ( cutout, proj.datsetcfg )
-
-        # Extract the relevant values
-        corner = brargs.getCorner()
-        dim = brargs.getDim()
-        resolution = brargs.getResolution()
-
-    # RBTODO test this interface
-    elif dataarg == 'boundingbox':
-      # if blank of just resolution then a tightcutout
-      if cutout == '' or re.match('^\d+[\/]*$', cutout):
-        dataoption = AR_BOUNDINGBOX
-        try:
-          [resstr, sym, rest] = cutout.partition('/')
-          resolution = int(resstr) 
-        except:
-          logger.warning ( "Improperly formatted bounding box arguments {}".format(cutout))
-          raise OCPCAError("Improperly formatted bounding box arguments {}".format(cutout))
-
-    else:
-        logger.warning ("In getAnnotations: Error: no such data option %s " % ( dataarg ))
-        raise OCPCAError ("In getAnnotations: Error: no such data option %s " % ( dataarg ))
-
-    try:
-
-      # Make the HDF5 output file
-      # Create an in-memory HDF5 file
-      tmpoutfile = tempfile.NamedTemporaryFile()
-      h5fout = h5py.File ( tmpoutfile.name )
-
-      # get annotations for each identifier
-      for annoid in annoids:
-        # the int here is to prevent using a numpy value in an inner loop.  This is a 10x performance gain.
-        getAnnoById ( int(annoid), h5fout, proj, db, dataoption, resolution, corner, dim )
-
-    except:
-      h5fout.close()
-      tmpoutfile.close()
-
-  finally:
-    # close temporary file
-    h5in.close()
-    tmpinfile.close()
-
-  # Transmit back the populated HDF5 file
-  h5fout.flush()
-  h5fout.close()
-  tmpoutfile.seek(0)
-  return tmpoutfile.read()
-
-
 def putAnnotation ( webargs, postdata ):
   """Put a RAMON object as HDF5 by object identifier"""
 
@@ -1111,7 +1121,7 @@ def putAnnotation ( webargs, postdata ):
       idgrp = h5f.get(k)
 
       # Convert HDF5 to annotation
-      anno = h5ann.H5toAnnotation ( k, idgrp )
+      anno = h5ann.H5toAnnotation ( k, idgrp, db )
 
       # set the identifier (separate transaction)
       if not ('update' in options or 'dataonly' in options or 'reduce' in options):
@@ -1570,7 +1580,7 @@ def setField ( webargs ):
     raise OCPCAError ("No annotation found at identifier = %s" % (annoid))
 
   anno.setField ( field, value )
-  anno.update ( db )
+  anno.update ( )
   db.commit()
 
 

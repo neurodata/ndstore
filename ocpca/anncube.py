@@ -240,6 +240,21 @@ class AnnotateCube(Cube):
 
     self.data = newdata
 
+  def downScale ( self, factor ):
+    """Cube data zoomed up"""
+
+    #KLTODO write an optimize version in cython
+
+    newdata = np.zeros ( [self.data.shape[0], self.data.shape[1]/(2**factor), self.data.shape[2]/(2**factor)], dtype=np.uint32) 
+
+#    downScale_cy ( self.data, newdata, int(factor) )
+    for z in range(newdata.shape[0]):
+      for y in range(newdata.shape[1]):
+        for x in range(newdata.shape[2]):
+          newdata[z,y,x] = self.data[z,y*(2**factor),x*(2**factor)] 
+
+    self.data = newdata
+
 # end AnnotateCube
 
 class AnnotateCube64(AnnotateCube):
