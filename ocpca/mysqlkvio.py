@@ -49,6 +49,11 @@ class MySQLKVIO:
     # start with no cursor
     self.txncursor = None
 
+  def __del__ ( self ):
+    """Close the connection"""
+    if self.conn:
+      self.conn.close()
+
   def startTxn ( self ):
     """Start a transaction.  Ensure database is in multi-statement mode."""
 
@@ -69,12 +74,10 @@ class MySQLKVIO:
     self.txncursor.close()
     self.txncursor = None
 
-
-  def release ( self ):
+  def __del__ ( self ):
     """Close the connection"""
     if self.conn:
       self.conn.close()
-
 
   def getCube ( self, cube, key, resolution, update ):
     """Retrieve a cube from the database by token, resolution, and key"""

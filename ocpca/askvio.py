@@ -32,46 +32,46 @@ import aerospike
     self.db = db
 
     ascfg = { 'hosts': [ ('127.0.0.1', 3000) ] }
-    dbobj.ascli = aerospike.client(ascfg).connect()
+    ascli = aerospike.client(ascfg).connect()
 
 
   def __del__ ( self ):
     """Close the connection"""
     self.ascli.close()
 
+  def startTxn ( self ):
+    """Start a transaction.  Ensure database is in multi-statement mode."""
+    pass
+    
+    
+  def commit ( self ): 
+    """Commit the transaction.  Moved out of __del__ to make explicit."""
+    pass
+    
+  def rollback ( self ):
+    """Rollback the transaction.  To be called on exceptions."""
+    pass
+    
 
   def getCube ( self, cube, key, resolution, update ):
     """Retrieve a cube from the database by token, resolution, and key"""
 
-    value = dbobj.ascli.get ( db.annoproj.token + ":" + str(resolution)  + ":" + str(key) )
+    (askey, asmd, asvalue) = self.ascli.get ( db.annoproj.token + ":img:" + str(resolution)  + ":" + str(key) )
 
     # If we can't find a cube, assume it hasn't been written yet
-    if ( value == None ):
+    if ( asvalue == None ):
       cube.zeros ()
     else:
-      cube.data=value
-
-  def commit ( self ):
-    """Commit the transaction.  Moved out of __del__ to make explicit.""" 
-    pass
+      cube.data=asvalue
 
 
   def getCubes ( self, listofidxs ):
 
-    for key in listofidxs:
-      value = dbobj.ascli.get ( db.annoproj.token + ":" + str(resolution)  + ":" + str(key) )
-      # hoew to deal with empty cubes RBTODO
-      yield value
+    for zidx in listofidxs:
 
-    sql = "SELECT zindex, cube FROM " + dbname + " WHERE zindex IN (%s)" 
-
-    # creats a %s for each list element
-    in_p=', '.join(map(lambda x: '%s', listofidxs))
-    # replace the single %s with the in_p string
-    sql = sql % in_p
-    rc = self.cursor.execute(sql, listofidxs)
-
-    yield ( self.cursor.fetchone() )
+      (askey, asmd, asvalue) = self.ascli.get ( db.annoproj.token + ":img:" + str(resolution)  + ":" + str(zidx) )
+      # how to deal with empty cubes RBTODO
+      yield asvalue
 
 
   #
@@ -80,103 +80,34 @@ import aerospike
   def putCube ( self, key, resolution, cube ):
     """Store a cube from the annotation database"""
 
-    # compress the cube
-    npz = cube.toNPZ ()
+    self.ascli.put ( db.annoproj.token + ":img:" + str(resolution)  + ":" + str(key), cube.data ) 
 
-    # we created a cube from zeros
-    if cube.fromZeros ():
 
-      sql = "INSERT INTO " + self.db.annoproj.getTable(resolution) +  "(zindex, cube) VALUES (%s, %s)"
+  def getIndex ( self, annid, resolution, update ):
+    """Fetch index routine.  Update is irrelevant for KV clients"""
 
-      # this uses a cursor defined in the caller (locking context): not beautiful, but needed for locking
-      try:
-        self.cursor.execute ( sql, (key,npz))
-      except MySQLdb.Error, e:
-        logger.error ( "Error inserting cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        raise
+    (askey, asmd, asvalue) = self.ascli.get ( db.annoproj.token + ":idx:" + str(resolution)  + ":" + str(annid) )
 
+    # If we can't find a cube, assume it hasn't been written yet
+    if ( asvalue == None ):
+      return []
     else:
-
-      sql = "UPDATE " + self.db.annoproj.getTable(resolution) + " SET cube=(%s) WHERE zindex=" + str(key)
-      try:
-        self.cursor.execute ( sql, (npz))
-      except MySQLdb.Error, e:
-        logger.error ( "Error updating data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        raise
+      return=asvalue
 
 
-
-  def getIndex ( self, entityid, resolution, update ):
-    """MySQL fetch index routine"""
-
-    #get the block from the database                                            
-    sql = "SELECT cube FROM " + self.db.annoproj.getIdxTable(resolution) + " WHERE annid\
-= " + str(entityid) 
-    if update==True:
-       sql += " FOR UPDATE"
-    try:
-       self.cursor.execute ( sql )
-    except MySQLdb.Error, e:
-       logger.warning ("Failed to retrieve cube %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-       raise
-    except BaseException, e:
-       logger.exception("Unknown exception")
-       raise
-
-    row = self.cursor.fetchone ()
-   
-    # If we can't find a index, they don't exist                                
-    if ( row == None ):
-       return []
-    else:
-       fobj = cStringIO.StringIO ( row[0] )
-       return np.load ( fobj )      
-
-
-  def putIndex ( self, key, index, resolution ):
+  def putIndex ( self, annid, index, resolution ):
     """MySQL put index routine"""
 
-    sql = "INSERT INTO " +  self.db.annoproj.getIdxTable(resolution)  +  "( annid, cube) VALUES ( %s, %s)"
-    
-    try:
-       fileobj = cStringIO.StringIO ()
-       np.save ( fileobj, index )
-       self.cursor.execute ( sql, (key, fileobj.getvalue()))
-    except MySQLdb.Error, e:
-       logger.warning("Error updating index %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-       raise
-    except BaseException, e:
-       logger.exception("Unknown error when updating index")
-       raise
+    self.ascli.put ( db.annoproj.token + ":idx:" + str(resolution)  + ":" + str(annid), index ) 
 
-  def updateIndex ( self, key, index, resolution ):
+
+  def updateIndex ( self, annid, index, resolution ):
     """MySQL update index routine"""
 
-    #update index in the database
-    sql = "UPDATE " + self.db.annoproj.getIdxTable(resolution) + " SET cube=(%s) WHERE annid=" + str(key)
-    try:
-       fileobj = cStringIO.StringIO ()
-       np.save ( fileobj, index )
-       self.cursor.execute ( sql, (fileobj.getvalue()))
-    except MySQLdb.Error, e:
-       logger.warnig("Error updating exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-       raise
-    except:
-      logger.exception("Unknown exception")
-      raise
+    self.putIndex ( annid, index, resolution )
 
 
   def deleteIndex ( self, annid, resolution ):
     """MySQL update index routine"""
 
-    sql = "DELETE FROM " +  self.db.annoproj.getIdxTable(res)  +  " WHERE annid=" + str(annid)
-    
-    try:
-       self.cursor.execute ( sql )
-    except MySQLdb.Error, e:
-       logger.error("Error deleting the index %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-       raise
-    except:
-      logger.exception("Unknown exception")
-      raise
-
+    self.ascli.remove ( db.annoproj.token + ":idx:" + str(resolution)  + ":" + str(annid) ) 
