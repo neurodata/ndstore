@@ -948,6 +948,8 @@ def getAnnotation ( webargs ):
   h5f = h5py.File ( tmpfile.name,"w" )
 
   try: 
+
+    db.startTxn ()
   
     # if the first argument is numeric.  it is an annoid
     if re.match ( '^[\d,]+$', args[0] ): 
@@ -1041,6 +1043,7 @@ def getAnnotation ( webargs ):
   
   # Close the file on a error: it won't get closed by the Web server
   except: 
+    db.rollback()
     tmpfile.close()
     h5f.close()
     raise
@@ -1048,6 +1051,7 @@ def getAnnotation ( webargs ):
   # Close the HDF5 file always
   h5f.flush()
   h5f.close()
+  db.commit()
 
   # Return the HDF5 file
   tmpfile.seek(0)
@@ -1115,7 +1119,7 @@ def putAnnotation ( webargs, postdata ):
   h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
 
   try:
-    
+
     for k in h5f.keys():
       
       idgrp = h5f.get(k)
@@ -1565,6 +1569,8 @@ def getField ( webargs ):
 def setField ( webargs ):
   """Assign a single HDF5 field"""
 
+  # RBTODO this should call setField in ocpcadb.  Not here.
+
   try:
     [ token, annid, verb, field, value, rest ] = webargs.split ('/',5)
   except:
@@ -1573,14 +1579,23 @@ def setField ( webargs ):
     
   [ db, proj, projdb ] = loadDBProj ( token )
 
-  # retrieve the annotation 
-  anno = db.getAnnotation ( annid )
-  if anno == None:
-    logger.warning("No annotation found at identifier = %s" % (annoid))
-    raise OCPCAError ("No annotation found at identifier = %s" % (annoid))
+  db.startTxn()
 
-  anno.setField ( field, value )
-  anno.update ( )
+  try:
+
+    # retrieve the annotation 
+    anno = db.getAnnotation ( annid )
+    if anno == None:
+      logger.warning("No annotation found at identifier = %s" % (annoid))
+      raise OCPCAError ("No annotation found at identifier = %s" % (annoid))
+
+    anno.setField ( field, value )
+    anno.update ( db.cursor )
+
+  except:
+    db.rollback()
+    raise
+
   db.commit()
 
 
