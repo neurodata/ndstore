@@ -53,10 +53,10 @@ import aerospike
     pass
     
 
-  def getCube ( self, cube, key, resolution, update ):
-    """Retrieve a cube from the database by token, resolution, and key"""
+  def getCube ( self, cube, zidx, resolution, update ):
+    """Retrieve a cube from the database by token, resolution, and zidx"""
 
-    (askey, asmd, asvalue) = self.ascli.get ( db.annoproj.token + ":img:" + str(resolution)  + ":" + str(key) )
+    (askey, asmd, asvalue) = self.ascli.get ( db.annoproj.token + ":img:" + str(resolution)  + ":" + str(zidx) )
 
     # If we can't find a cube, assume it hasn't been written yet
     if ( asvalue == None ):
@@ -77,10 +77,10 @@ import aerospike
   #
   # putCube
   #
-  def putCube ( self, key, resolution, cube ):
+  def putCube ( self, zidx, resolution, cube ):
     """Store a cube from the annotation database"""
 
-    self.ascli.put ( db.annoproj.token + ":img:" + str(resolution)  + ":" + str(key), cube.data ) 
+    self.ascli.put ( db.annoproj.token + ":img:" + str(resolution)  + ":" + str(zidx), cube.data ) 
 
 
   def getIndex ( self, annid, resolution, update ):
