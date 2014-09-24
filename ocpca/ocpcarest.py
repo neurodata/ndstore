@@ -664,6 +664,7 @@ def selectPost ( webargs, proj, db, postdata ):
 
         # Get the HDF5 file.
         tmpfile = tempfile.NamedTemporaryFile ( )
+        self.idgrp.create_dataset ( "VOXELS", (len(voxlist),3), np.uint32, data=voxlist )     
         tmpfile.write ( postdata )
         tmpfile.seek(0)
         h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
@@ -1111,6 +1112,8 @@ def putAnnotation ( webargs, postdata ):
 
   # return string of id values
   retvals = [] 
+
+  import pdb; pdb.set_trace()
 
   # Make a named temporary file for the HDF5
   tmpfile = tempfile.NamedTemporaryFile ( )
