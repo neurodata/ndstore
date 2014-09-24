@@ -103,16 +103,16 @@ class MySQLKVIO:
       if self.txncursor == None:
         cursor.close()
 
-
     # If we can't find a cube, assume it hasn't been written yet
     if ( row == None ):
-      cube.zeros ()
+      return None
     else: 
+      row[0]
       # decompress the cube
       cube.fromNPZ ( row[0] )
 
 
-  def getCubes ( self, listofidxs, resolution, dbname ):
+  def getCubes ( self, listofidxs, resolution ):
 
     # if in a TxN us the transaction cursor.  Otherwise create one.
     if self.txncursor == None:
@@ -121,7 +121,7 @@ class MySQLKVIO:
       cursor = self.txncursor
 
     # RBTODO need to fix this for neariso interfaces
-    sql = "SELECT zindex, cube FROM " + dbname + " WHERE zindex IN (%s)" 
+    sql = "SELECT zindex, cube FROM " + self.db.annoproj.getTable(resolution)  + " WHERE zindex IN (%s)" 
 
     # creats a %s for each list element
     in_p=', '.join(map(lambda x: '%s', listofidxs))

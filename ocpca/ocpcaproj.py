@@ -37,9 +37,10 @@ class OCPCAProject:
   """Project specific for cutout and annotation data"""
 
   # Constructor 
-  def __init__(self, dbname, dbhost, dbtype, dataset, dataurl, readonly, exceptions, resolution ):
+  def __init__(self, token, dbname, dbhost, dbtype, dataset, dataurl, readonly, exceptions, resolution ):
     """Initialize the OCPCA Project"""
     
+    self._token = dbname
     self._dbname = dbname
     self._dbhost = dbhost
     self._dbtype = dbtype
@@ -217,7 +218,7 @@ class OCPCAProjectsDB:
     [token, openid, host, project, dbtype, dataset, dataurl, readonly, exceptions, resolution ] = row
 
     # Create a project object
-    proj = OCPCAProject ( project, host, dbtype, dataset, dataurl, readonly, exceptions, resolution ) 
+    proj = OCPCAProject ( token, project, host, dbtype, dataset, dataurl, readonly, exceptions, resolution ) 
     proj.datasetcfg = self.loadDatasetConfig ( dataset )
 
     return proj

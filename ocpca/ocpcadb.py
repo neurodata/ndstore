@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+# RBTODO cuboids upload.  batch i/o with getcubes when possible
+
 import numpy as np
 import cStringIO
 import zlib
@@ -44,6 +47,7 @@ import sys
 
 #import askvio
 import mysqlkvio
+import casskvio
 
 ASPIKE = False
 
@@ -68,7 +72,9 @@ class OCPCADB:
     self.EXCEPT_FLAG = self.annoproj.getExceptions()
 
     # Choose the I/O engine for key/value data
-    if ASPIKE:
+    if True:
+      self.kvio = casskvio.CassandraKVIO(self)
+    elif ASPIKE:
       self.kvio = askvio.ASCubeIO(self)
     else:
       self.kvio = mysqlkvio.MySQLKVIO(self)
@@ -93,7 +99,8 @@ class OCPCADB:
       raise
 
     # create annidx object
-    self.annoIdx = annindex.AnnotateIndex ( self.kvio, self.annoproj)
+    if (self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS):
+      self.annoIdx = annindex.AnnotateIndex ( self.kvio, self.annoproj)
 
 
 #
@@ -327,9 +334,17 @@ class OCPCADB:
       raise OCPCAError ("Unknown project type {}".format(self.annoproj.getDBType()))
   
     # get the block from the database
-    self.kvio.getCube ( cube, key, resolution, update )
+    cubestr = self.kvio.getCube ( key, resolution, update )
 
-    # If we can't find a cube, assume it hasn't been written yet
+    # Handle the cube format here.  
+    if NPZ:
+      if cubestr:
+        # decompress the cube
+        cube.fromNPZ ( row[0] )
+      else:
+        cube.fromZeros()
+    else:
+      pass # this is HDF5
 
     return cube
 
@@ -808,6 +823,7 @@ class OCPCADB:
     ynumcubes = (effcorner[1]+effdim[1]+ycubedim-1)/ycubedim - ystart
     xnumcubes = (effcorner[0]+effdim[0]+xcubedim-1)/xcubedim - xstart
 
+    # RBTODO need to fix this for new I/O interface.  No dbname to getCubes
     # use the requested resolution
     if zscaling == 'isotropic':
       dbname = self.annoproj.getIsotropicTable(resolution)
@@ -815,7 +831,6 @@ class OCPCADB:
       dbname = self.annoproj.getNearIsoTable(resolution)
     else:
       dbname = self.annoproj.getTable(effresolution)
-
 
     if (self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS or self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS):
 
@@ -863,7 +878,6 @@ class OCPCADB:
     # xyz offset stored for later use
     lowxyz = zindex.MortonXYZ ( listofidxs[0] )
 
-
     # Batch query for all cubes
     # Customize query to the database (include channel or not)
 #    if (self.annoproj.getDBType() == ocpcaproj.CHANNELS_8bit or self.annoproj.getDBType() == ocpcaproj.CHANNELS_16bit):
@@ -877,7 +891,7 @@ class OCPCADB:
 
     try:
 
-      cuboids = self.kvio.getCubes(listofidxs,resolution,dbname)
+      cuboids = self.kvio.getCubes(listofidxs,effresolution)
    
       # use the batch generator interface
       for idx, datastring in cuboids:
