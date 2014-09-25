@@ -56,41 +56,29 @@ class CassandraKVIO:
     pass
     
 
-  def getCube ( self, cube, zidx, resolution, update ):
+  def getCube ( self, zidx, resolution, update ):
     """Retrieve a cube from the database by token, resolution, and key"""
 
     cql = "SELECT cuboid FROM cuboids WHERE resolution = %s AND zidx = %s"
     row = self.session.execute ( cql, (resolution, zidx ))
 
-    # cubes are HDF5 files
-    tmpfile = tempfile.NamedTemporaryFile ()
-    tmpfile.write ( row[0].cuboid.decode('hex') )
-    tmpfile.seek(0)
-    h5 = h5py.File ( tmpfile.name ) 
+    if row:
+      return row[0]
+    else:
+      return None
 
-    # return the numpy array
-    cube.data = np.array ( h5['cuboid'] )
 
 
   def getCubes ( self, listofidxs, resolution ):
 
-    import pdb; pdb.set_trace()
 #    cql = "SELECT cuboid FROM cuboids WHERE resolution = %s AND zidx in %s" 
-    cql = "SELECT cuboid FROM cuboids WHERE resolution = %s AND zidx in %s" % (resolution, tuple(listofidxs)) 
+    cql = "SELECT zidx, cuboid FROM cuboids WHERE resolution = %s AND zidx in %s" % (resolution, tuple(listofidxs)) 
     rows = self.session.execute ( cql )
 #    rows = self.session.execute ( cql, ( resolution, tuple(listofidxs)))
 
     for row in rows:
+      yield (row.zidx, row.cuboid.decode('hex'))
 
-      # cubes are HDF5 files
-      tmpfile = tempfile.NamedTemporaryFile ()
-      tmpfile.write ( row.cuboid.decode('hex') )
-      tmpfile.seek(0)
-      h5 = h5py.File ( tmpfile.name ) 
-
-      # return the numpy array
-#      t = np.array ( h5['cuboid'] )
-      yield h5['cuboid']
 
   #
   # putCube
@@ -98,12 +86,6 @@ class CassandraKVIO:
   def putCube ( self, key, resolution, cube ):
     """Store a cube from the annotation database"""
 
-    tmpfile= tempfile.NamedTemporaryFile ()
-    h5t = h5py.File ( tmpfile.name )
-    h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype,
-                             compression='gzip',  data=cube.data )
-    h5tocass.close()
-    tmpfile.seek(0)
 
     cql = "INSERT INTO cuboids ( resolution, zidx, cuboid ) VALUES ( %s, %s, %s )"
     session.execute ( cql, ( resolution, zidx, tmpfiletocass.read().encode('hex')))
