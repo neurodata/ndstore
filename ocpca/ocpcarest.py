@@ -1113,8 +1113,6 @@ def putAnnotation ( webargs, postdata ):
   # return string of id values
   retvals = [] 
 
-  import pdb; pdb.set_trace()
-
   # Make a named temporary file for the HDF5
   tmpfile = tempfile.NamedTemporaryFile ( )
   tmpfile.write ( postdata )
@@ -1245,7 +1243,7 @@ def putAnnotation ( webargs, postdata ):
           db.rollback()
           continue
         except MySQLdb.Error, e:
-          logger.warning ("Put Annotation :Put transaction rollback. %s" % (e))
+          logger.warning ("Put Annotation: Put transaction rollback. %s" % (e))
           db.rollback()
           raise
         except Exception, e:

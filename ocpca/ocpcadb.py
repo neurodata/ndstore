@@ -47,9 +47,10 @@ import sys
 
 #import askvio
 import mysqlkvio
-import casskvio
+# RBTODO import
+#import casskvio
 
-ASPIKE = False
+NPZ = True
 
 ################################################################################
 #
@@ -72,12 +73,12 @@ class OCPCADB:
     self.EXCEPT_FLAG = self.annoproj.getExceptions()
 
     # Choose the I/O engine for key/value data
-    if True:
-      self.kvio = casskvio.CassandraKVIO(self)
+    if NPZ:
+      self.kvio = mysqlkvio.MySQLKVIO(self)
     elif ASPIKE:
       self.kvio = askvio.ASCubeIO(self)
     else:
-      self.kvio = mysqlkvio.MySQLKVIO(self)
+      self.kvio = casskvio.CassandraKVIO(self)
 
     # How many slices?
     [ self.startslice, endslice ] = self.datasetcfg.slicerange
@@ -100,7 +101,7 @@ class OCPCADB:
 
     # create annidx object
     if (self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS):
-      self.annoIdx = annindex.AnnotateIndex ( self.kvio, self.annoproj)
+      self.annoIdx = annindex.AnnotateIndex ( self.kvio, self.annoproj )
 
 
 #
@@ -340,13 +341,98 @@ class OCPCADB:
     if NPZ:
       if cubestr:
         # decompress the cube
-        cube.fromNPZ ( row[0] )
+        cube.fromNPZ ( cubestr )
       else:
-        cube.fromZeros()
+        cube.zeros()
     else:
       pass # this is HDF5
 
     return cube
+
+  #
+  # putCube
+  #
+  def putCube ( self, key, resolution, cube ):
+    """Store a cube in the annotation database"""
+
+    # Handle the cube format here.  
+    if NPZ:
+      cubestr = cube.toNPZ() 
+    else:
+      pass
+
+    self.kvio.putCube ( key, resolution, cubestr, not cube.fromZeros() )
+
+  #
+  # getExceptions
+  #
+  def getExceptions ( self, zidx, resolution, annoid ):
+    """Load a cube from the annotation database"""
+
+    if NPZ:
+      excstr = self.kvio.getExceptions ( zidx, resolution, annoid )
+      if excstr:
+        return np.load(cStringIO.StringIO ( zlib.decompress(excstr)))
+      else:
+        return []
+    else:
+      pass
+
+
+  #
+  # updateExceptions
+  #
+  def updateExceptions ( self, key, resolution, exid, exceptions, update=False ):
+    """Merge new exceptions with existing exceptions"""
+
+    curexlist = self.getExceptions( key, resolution, exid ) 
+
+    update = False
+
+    if curexlist!=[]:
+      oldexlist = [ zindex.XYZMorton ( trpl ) for trpl in curexlist ]
+      newexlist = [ zindex.XYZMorton ( trpl ) for trpl in exceptions ]
+      exlist = set(newexlist + oldexlist)
+      exlist = [ zindex.MortonXYZ ( zidx ) for zidx in exlist ]
+      update = True
+    else:
+      exlist = exceptions
+
+    self.putExceptions ( key, resolution, exid, exlist, update )
+
+
+  def putExceptions ( self, key, resolution, exid, exceptions, update ):
+    """Package the object and transact with kvio"""
+
+    #RBMAYBE make exceptions zipped in a future incompatible version??
+    if NPZ:
+      fileobj = cStringIO.StringIO ()
+      np.save ( fileobj, exceptions )
+      excstr = fileobj.getvalue()
+    else:
+      pass
+
+    self.kvio.putExceptions ( key, resolution, exid, excstr, update )
+
+
+  #
+  # removeExceptions
+  #
+  def removeExceptions ( self, key, resolution, entityid, exceptions ):
+    """Remove a list of exceptions"""
+    """Should be done in a transaction"""
+
+    curexlist = self.getExceptions( key, resolution, entityid ) 
+
+    if curexlist != []:
+
+      oldexlist = set([ zindex.XYZMorton ( trpl ) for trpl in curexlist ])
+      newexlist = set([ zindex.XYZMorton ( trpl ) for trpl in exceptions ])
+      exlist = oldexlist-newexlist
+      exlist = [ zindex.MortonXYZ ( zidx ) for zidx in exlist ]
+
+      self.putExceptions ( key, resolution, exid, exlist, True )
+
 
   #
   # queryRange
@@ -394,8 +480,6 @@ class OCPCADB:
       # decompress the cube
       cube.fromNPZ ( row[1] )
       return [row[0],cube]
-
-
 
   #
   # getAllExceptions
@@ -480,9 +564,9 @@ class OCPCADB:
       # update the sparse list of exceptions
       if self.EXCEPT_FLAG:
         if len(exceptions) != 0:
-          self.kvio.updateExceptions ( key, resolution, entityid, exceptions )
+          self.updateExceptions ( key, resolution, entityid, exceptions )
 
-      self.kvio.putCube ( key, resolution, cube)
+      self.putCube ( key, resolution, cube)
 
       # add this cube to the index
       cubeidx[entityid].add(key)
@@ -545,7 +629,7 @@ class OCPCADB:
           if len(exceptions) != 0:
             self.kvio.removeExceptions ( key, resolution, entityid, exceptions )
 
-        self.kvio.putCube ( key, resolution, cube)
+        self.putCube ( key, resolution, cube)
 
         # For now do no index processing when shaving.  Assume there are still some
         #  voxels in the cube???
@@ -614,7 +698,7 @@ class OCPCADB:
                     # assemble into 3-tuples zyx->xyz
                     exceptions = np.array ( zip(exoffsets[2], exoffsets[1], exoffsets[0]), dtype=np.uint32 )
                     # update the exceptions
-                    self.kvio.updateExceptions ( key, resolution, exid, exceptions )
+                    self.updateExceptions ( key, resolution, exid, exceptions )
                     # add to the index
                     index_dict[exid].add(key)
               else:
@@ -624,7 +708,7 @@ class OCPCADB:
               logger.error ( "Unsupported conflict option %s" % conflictopt )
               raise OCPCAError ( "Unsupported conflict option %s" % conflictopt )
 
-            self.kvio.putCube ( key, resolution, cube)
+            self.putCube ( key, resolution, cube)
 
             #update the index for the cube
             # get the unique elements that are being added to the data
@@ -715,7 +799,7 @@ class OCPCADB:
                 # add to the index
                 index_dict[exid].add(key)
 
-            self.kvio.putCube ( key, resolution, cube)
+            self.putCube ( key, resolution, cube)
 
             #update the index for the cube
             # get the unique elements that are being added to the data
@@ -900,7 +984,10 @@ class OCPCADB:
         curxyz = zindex.MortonXYZ(int(idx))
         offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
 
-        incube.fromNPZ ( datastring[:] )
+        if NPZ: 
+          incube.fromNPZ ( datastring[:] )
+        else:
+          pass
 
         # apply exceptions if it's an annotation project
         if annoids!= None and self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS:
@@ -1007,7 +1094,7 @@ class OCPCADB:
     # for the target ids
     for annoid in annoids:
       # apply exceptions
-      exceptions = self.kvio.getExceptions( idx, resolution, annoid ) 
+      exceptions = self.getExceptions( idx, resolution, annoid ) 
       for e in exceptions:
         cube.data[e[2],e[1],e[0]]=annoid
 
@@ -1068,7 +1155,7 @@ class OCPCADB:
 
       # Now add the exception voxels
       if self.EXCEPT_FLAG:
-        exceptions = self.kvio.getExceptions( zidx, resolution, entityid ) 
+        exceptions = self.getExceptions( zidx, resolution, entityid ) 
         if exceptions != []:
           voxels = np.append ( voxels.flatten(), exceptions.flatten())
           voxels = voxels.reshape(len(voxels)/3,3)
@@ -1169,7 +1256,7 @@ class OCPCADB:
       # Get exceptions if this DB supports it
       if self.EXCEPT_FLAG:
         for exid in dataids:
-          exceptions = self.kvio.getExceptions( zidx, effectiveres, exid ) 
+          exceptions = self.getExceptions( zidx, effectiveres, exid ) 
           if exceptions != []:
             if resolution < effectiveres:
                 exceptions = self.zoomVoxels ( exceptions, effectiveres-resolution )
@@ -1261,7 +1348,7 @@ class OCPCADB:
           # remove the expcetions
           if self.EXCEPT_FLAG:
             self.kvio.deleteExceptions ( key, res, annoid )
-          self.kvio.putCube ( key, res, cube)
+          self.putCube ( key, res, cube)
         
       # delete Index
       self.annoIdx.deleteIndex(annoid,resolutions)
@@ -1435,7 +1522,7 @@ class OCPCADB:
             # probability maps have overwrite semantics
             cube = self.getCube ( key, resolution, True )
             cube.overwrite ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
-            self.kvio.putCube ( key, resolution, cube)
+            self.putCube ( key, resolution, cube)
 
     except:
       self.kvio.rollback()
@@ -1483,12 +1570,12 @@ class OCPCADB:
           cube = self.getCube (key,resolution)
           #Update exceptions if exception flag is set ( PJM added 03/31/14)
           if self.EXCEPT_FLAG:
-            oldexlist = self.kvio.getExceptions( key, resolution, annid ) 
+            oldexlist = self.getExceptions( key, resolution, annid ) 
             self.kvio.deleteExceptions ( key, resolution, annid )
           
           # Cython optimized function  to relabel data from annid to mergeid
           mergeCube_cy (cube.data,mergeid,annid ) 
-          self.kvio.putCube ( key, resolution,cube)
+          self.putCube ( key, resolution,cube)
           
         # Delete annotation and all it's meta data from the database
         # except for the merge annotation

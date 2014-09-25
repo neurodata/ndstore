@@ -45,8 +45,21 @@ class AnnotateIndex:
    #
    def getIndex ( self, entityid, resolution, update=False ):
 
-      return self.kvio.getIndex ( entityid, resolution, update )
+      idxstr = self.kvio.getIndex ( entityid, resolution, update )
+      if idxstr != []:
+       fobj = cStringIO.StringIO ( idxstr )
+       return np.load ( fobj )      
+      else:
+        return []
          
+   #
+   # putIndex -- Write the index for the annotation with id
+   #
+   def putIndex ( self, entityid, resolution, index, update=False ):
+
+     fileobj = cStringIO.StringIO ()
+     np.save ( fileobj, index )
+     self.kvio.putIndex ( entityid, resolution, fileobj.getvalue(), update )
 
 #
 # Update Index Dense - Updated the annotation database with the given hash index table
@@ -57,16 +70,16 @@ class AnnotateIndex:
       for key, value in index.iteritems():
          cubelist = list(value)
          cubeindex=np.array(cubelist)
-         
+          
          curindex = self.getIndex(key,resolution,True)
          
          if curindex==[]:
-            self.kvio.putIndex ( key, cubeindex, resolution )
+            self.putIndex ( key, resolution, cubeindex, False )
             
          else:
              #Update index to the union of the currentIndex and the updated index
             newIndex=np.union1d(curindex,cubeindex)
-            self.kvio.updateIndex ( key, newIndex, resolution )
+            self.putIndex ( key, resolution, newIndex, True )
 
    #
    #deleteIndex:

@@ -63,23 +63,25 @@ class MySQLKVIO:
 
   def commit ( self ):
     """Commit the transaction.  Moved out of __del__ to make explicit.""" 
-    self.conn.commit()
-    self.txncursor.close()
-    self.txncursor = None
+    if self.txncursor:
+      self.conn.commit()
+      self.txncursor.close()
+      self.txncursor = None
 
   def rollback ( self ):
     """Rollback the transaction.  To be called on exceptions."""
 
-    self.conn.rollback()
-    self.txncursor.close()
-    self.txncursor = None
+    if self.txncursor:
+      self.conn.rollback()
+      self.txncursor.close()
+      self.txncursor = None
 
   def __del__ ( self ):
     """Close the connection"""
     if self.conn:
       self.conn.close()
 
-  def getCube ( self, cube, key, resolution, update ):
+  def getCube ( self, key, resolution, update ):
     """Retrieve a cube from the database by token, resolution, and key"""
 
     # if in a TxN us the transaction cursor.  Otherwise create one.
@@ -107,9 +109,7 @@ class MySQLKVIO:
     if ( row == None ):
       return None
     else: 
-      row[0]
-      # decompress the cube
-      cube.fromNPZ ( row[0] )
+      return row[0]
 
 
   def getCubes ( self, listofidxs, resolution ):
@@ -151,7 +151,7 @@ class MySQLKVIO:
   #
   # putCube
   #
-  def putCube ( self, key, resolution, cube ):
+  def putCube ( self, key, resolution, cubestr, update=False ):
     """Store a cube from the annotation database"""
 
     # if in a TxN us the transaction cursor.  Otherwise create one.
@@ -160,17 +160,14 @@ class MySQLKVIO:
     else:
       cursor = self.txncursor
 
-    # compress the cube
-    npz = cube.toNPZ ()
-
     # we created a cube from zeros
-    if cube.fromZeros ():
+    if not update:
 
       sql = "INSERT INTO " + self.db.annoproj.getTable(resolution) +  "(zindex, cube) VALUES (%s, %s)"
 
       # this uses a cursor defined in the caller (locking context): not beautiful, but needed for locking
       try:
-        cursor.execute ( sql, (key,npz))
+        cursor.execute ( sql, (key,cubestr))
       except MySQLdb.Error, e:
         logger.error ( "Error inserting cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         raise
@@ -184,7 +181,7 @@ class MySQLKVIO:
 
       sql = "UPDATE " + self.db.annoproj.getTable(resolution) + " SET cube=(%s) WHERE zindex=" + str(key)
       try:
-        cursor.execute ( sql, (npz))
+        cursor.execute ( sql, (cubestr))
       except MySQLdb.Error, e:
         logger.error ( "Error updating data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         raise
@@ -232,11 +229,10 @@ class MySQLKVIO:
     if ( row == None ):
        return []
     else:
-       fobj = cStringIO.StringIO ( row[0] )
-       return np.load ( fobj )      
+       return row[0]
 
 
-  def putIndex ( self, key, index, resolution ):
+  def putIndex ( self, key, resolution, indexstr, update ):
     """MySQL put index routine"""
 
     # if in a TxN us the transaction cursor.  Otherwise create one.
@@ -245,54 +241,39 @@ class MySQLKVIO:
     else:
       cursor = self.txncursor
 
+    if not update:
 
-    sql = "INSERT INTO " +  self.db.annoproj.getIdxTable(resolution)  +  "( annid, cube) VALUES ( %s, %s)"
-    
-    try:
-       fileobj = cStringIO.StringIO ()
-       np.save ( fileobj, index )
-       cursor.execute ( sql, (key, fileobj.getvalue()))
-    except MySQLdb.Error, e:
-       logger.warning("Error updating index %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-       raise
-    except BaseException, e:
-       logger.exception("Unknown error when updating index")
-       raise
-    finally:
-      # close the local cursor if not in a transaction
-      if self.txncursor == None:
-        cursor.close()
+      sql = "INSERT INTO " +  self.db.annoproj.getIdxTable(resolution)  +  "( annid, cube) VALUES ( %s, %s)"
+      
+      try:
+         cursor.execute ( sql, (key, indexstr))
+      except MySQLdb.Error, e:
+         logger.warning("Error updating index %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+         raise
+      except BaseException, e:
+         logger.exception("Unknown error when updating index")
+         raise
+      finally:
+        # close the local cursor if not in a transaction
+        if self.txncursor == None:
+          cursor.close()
 
-    # commit if not in a txn
-    if self.txncursor == None:
-      self.conn.commit()
-
-  def updateIndex ( self, key, index, resolution ):
-    """MySQL update index routine"""
-
-    # if in a TxN us the transaction cursor.  Otherwise create one.
-    if self.txncursor == None:
-      cursor = self.conn.cursor()
     else:
-      cursor = self.txncursor
 
-    #update index in the database
-    sql = "UPDATE " + self.db.annoproj.getIdxTable(resolution) + " SET cube=(%s) WHERE annid=" + str(key)
-    try:
-       fileobj = cStringIO.StringIO ()
-       np.save ( fileobj, index )
-       cursor.execute ( sql, (fileobj.getvalue()))
-    except MySQLdb.Error, e:
-       logger.warnig("Error updating exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-       raise
-    except:
-      logger.exception("Unknown exception")
-      raise
-
-    finally:
-      # close the local cursor if not in a transaction
-      if self.txncursor == None:
-        cursor.close()
+      #update index in the database
+      sql = "UPDATE " + self.db.annoproj.getIdxTable(resolution) + " SET cube=(%s) WHERE annid=" + str(key)
+      try:
+         cursor.execute ( sql, (indexstr))
+      except MySQLdb.Error, e:
+         logger.warnig("Error updating exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+         raise
+      except:
+        logger.exception("Unknown exception")
+        raise
+      finally:
+        # close the local cursor if not in a transaction
+        if self.txncursor == None:
+          cursor.close()
 
     # commit if not in a txn
     if self.txncursor == None:
@@ -356,7 +337,7 @@ class MySQLKVIO:
     if ( row == None ):
       return []
     else: 
-      return np.load(cStringIO.StringIO ( zlib.decompress(row[0]) ))
+      return row[0] 
 
   #
   # deleteExceptions
@@ -388,13 +369,11 @@ class MySQLKVIO:
 
 
   #
-  # updateExceptions
+  # putExceptions
   #
-  def updateExceptions ( self, key, resolution, entityid, exceptions ):
+  def putExceptions ( self, key, resolution, entityid, excstr, update=False ):
     """Store a list of exceptions"""
     """This should be done in a transaction"""
-
-    curexlist = self.getExceptions( key, resolution, entityid ) 
 
     # if in a TxN us the transaction cursor.  Otherwise create one.
     if self.txncursor == None:
@@ -404,13 +383,11 @@ class MySQLKVIO:
 
     table = 'exc'+str(resolution)
 
-    if curexlist==[]:
+    if not update:
 
       sql = "INSERT INTO " + table + " (zindex, id, exlist) VALUES (%s, %s, %s)"
       try:
-        fileobj = cStringIO.StringIO ()
-        np.save ( fileobj, exceptions )
-        cursor.execute ( sql, (key, entityid, zlib.compress(fileobj.getvalue())))
+        cursor.execute ( sql, (key, entityid, zlib.compress(excstr)))
       except MySQLdb.Error, e:
         logger.error ( "Error inserting exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         if self.txncursor == None:
@@ -420,16 +397,9 @@ class MySQLKVIO:
     # In this case we have an update query
     else:
 
-      oldexlist = [ zindex.XYZMorton ( trpl ) for trpl in curexlist ]
-      newexlist = [ zindex.XYZMorton ( trpl ) for trpl in exceptions ]
-      exlist = set(newexlist + oldexlist)
-      exlist = [ zindex.MortonXYZ ( zidx ) for zidx in exlist ]
-
       sql = "UPDATE " + table + " SET exlist=(%s) WHERE zindex=%s AND id=%s" 
       try:
-        fileobj = cStringIO.StringIO ()
-        np.save ( fileobj, exlist )
-        cursor.execute ( sql, (zlib.compress(fileobj.getvalue()),key,entityid))
+        cursor.execute ( sql, (zlib.compress(excstr),key,entityid))
       except MySQLdb.Error, e:
         logger.error ( "Error updating exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         if self.txncursor == None:
@@ -441,43 +411,4 @@ class MySQLKVIO:
       self.conn.commit()
       cursor.close()
 
-  #
-  # removeExceptions
-  #
-  def removeExceptions ( self, key, resolution, entityid, exceptions ):
-    """Remove a list of exceptions"""
-    """Should be done in a transaction"""
-
-    curexlist = self.getExceptions( key, resolution, entityid ) 
-
-    # if in a TxN us the transaction cursor.  Otherwise create one.
-    if self.txncursor == None:
-      cursor = self.conn.cursor()
-    else:
-      cursor = self.txncursor
-
-
-    table = 'exc'+str(resolution)
-
-    if curexlist != []:
-
-      oldexlist = set([ zindex.XYZMorton ( trpl ) for trpl in curexlist ])
-      newexlist = set([ zindex.XYZMorton ( trpl ) for trpl in exceptions ])
-      exlist = oldexlist-newexlist
-      exlist = [ zindex.MortonXYZ ( zidx ) for zidx in exlist ]
-
-      sql = "UPDATE " + table + " SET exlist=(%s) WHERE zindex=%s AND id=%s" 
-      try:
-        fileobj = cStringIO.StringIO ()
-        np.save ( fileobj, exlist )
-        self.txncursor.execute ( sql, (zlib.compress(fileobj.getvalue()),key,entityid))
-      except MySQLdb.Error, e:
-        logger.error("Error removing exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        if self.txncursor == None:
-          cursor.close()
-        raise
-
-    # commit if not in a txn
-    if self.txncursor == None:
-      self.conn.commit()
 
