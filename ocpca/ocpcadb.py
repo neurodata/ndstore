@@ -366,8 +366,6 @@ class OCPCADB:
   def cgetCube ( self, key, resolution, update=False ):
     """Load a cube from the annotation database"""
 
-    import pdb; pdb.set_trace()
-
     # get the size of the image and cube
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 

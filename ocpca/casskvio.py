@@ -67,7 +67,7 @@ class CassandraKVIO:
         return row[0].cuboid.decode('hex')
       else:
         return None
-    except:
+    except Exception, e:
       import pdb; pdb.set_trace()
       pass
 
@@ -110,21 +110,20 @@ class CassandraKVIO:
   def getIndex ( self, annid, resolution, update ):
     """Fetch index routine.  Update is irrelevant for KV clients"""
 
-    import pdb; pdb.set_trace()
     cql = "SELECT cuboids FROM indexes WHERE annoid=%s and resolution=%s" 
     row = self.session.execute ( cql, (annid, resolution ))
 
     if row:
-      return row[0].index.decode('hex')
+      import pdb; pdb.set_trace()
+      return row[0].cuboids.decode('hex')
     else:
       return None
 
   def putIndex ( self, annid, resolution, indexstr, update ):
     """MySQL put index routine"""
     
-    import pdb; pdb.set_trace()
-    cql = "INSERT INTO indexes ( annid, resolution, cuboids ) VALUES ( %s, %s, %s )"
-    self.session.execute ( cql, ( resolution, zidx, indexstr.encode('hex')))
+    cql = "INSERT INTO indexes ( resolution, annoid, cuboids ) VALUES ( %s, %s, %s )"
+    self.session.execute ( cql, ( resolution, annid, indexstr.encode('hex')))
 
 
   def updateIndex ( self, annid, resolution, indexstr, update ):

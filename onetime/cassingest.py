@@ -80,19 +80,19 @@ def main():
 
 #        mysqlcube = imgDB.cutout ( [ x*xcubedim, y*ycubedim, z*zcubedim ], cubedim, result.resolution )
         zidx = zindex.XYZMorton ( [x,y,z] )
-        cube = imgDB.getCube ( zidx, result.resolution, zidx )
+        cube = imgDB.getCube ( zidx, result.resolution )
         imgDB.cputCube ( zidx, result.resolution, cube )
         print "Ingesting {}".format(zidx)
-#
-#       tmpfiletocass = tempfile.NamedTemporaryFile ()
-#       h5tocass = h5py.File ( tmpfiletocass.name ) 
-#       h5tocass.create_dataset ( "cuboid", tuple(mysqlcube.data.shape), mysqlcube.data.dtype,
+
+#        tmpfiletocass = tempfile.NamedTemporaryFile ()
+#        h5tocass = h5py.File ( tmpfiletocass.name ) 
+#        h5tocass.create_dataset ( "cuboid", tuple(mysqlcube.data.shape), mysqlcube.data.dtype,
 #                                compression='gzip',  data=mysqlcube.data )
-#       h5tocass.close()
-#       tmpfiletocass.seek(0)
+#        h5tocass.close()
+#        tmpfiletocass.seek(0)
 #       
-#       cql = "INSERT INTO cuboids ( resolution, zidx, cuboid ) VALUES ( %s, %s, %s )"
-#       session.execute ( cql, ( result.resolution, zidx, tmpfiletocass.read().encode('hex')))
+#        cql = "INSERT INTO cuboids ( resolution, zidx, cuboid ) VALUES ( %s, %s, %s )"
+#        session.execute ( cql, ( result.resolution, zidx, tmpfiletocass.read().encode('hex')))
 #
 #        cql = "SELECT cuboid FROM cuboids WHERE resolution = %s AND zidx = %s"
 #        row = session.execute ( cql, ( result.resolution, zidx ))
