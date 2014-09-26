@@ -15,13 +15,16 @@
 import numpy as np
 import array
 import cStringIO
-import MySQLdb
+import tempfile
+import h5py
 
 import zindex
 import ocpcaproj
 
 import logging
 logger=logging.getLogger("ocp")
+
+NPZ=False
 
 #
 #  AnnotateIndex: Maintain the index in the database
@@ -45,21 +48,43 @@ class AnnotateIndex:
    #
    def getIndex ( self, entityid, resolution, update=False ):
 
-      idxstr = self.kvio.getIndex ( entityid, resolution, update )
-      if idxstr != []:
-       fobj = cStringIO.StringIO ( idxstr )
-       return np.load ( fobj )      
+    import pdb; pdb.set_trace()
+    idxstr = self.kvio.getIndex ( entityid, resolution, update )
+    if idxstr:
+      if NPZ:
+        fobj = cStringIO.StringIO ( idxstr )
+        return np.load ( fobj )      
       else:
-        return []
-         
+        # cubes are HDF5 files
+        tmpfile = tempfile.NamedTemporaryFile ()
+        tmpfile.write ( idxstr )
+        tmpfile.seek(0)
+        h5 = h5py.File ( tmpfile.name ) 
+
+        # load the numpy array
+        return np.array ( h5['index'] )
+    else:
+      return []
+       
    #
    # putIndex -- Write the index for the annotation with id
    #
    def putIndex ( self, entityid, resolution, index, update=False ):
 
-     fileobj = cStringIO.StringIO ()
-     np.save ( fileobj, index )
-     self.kvio.putIndex ( entityid, resolution, fileobj.getvalue(), update )
+    import pdb; pdb.set_trace()
+    if NPZ:
+      fileobj = cStringIO.StringIO ()
+      np.save ( fileobj, index )
+      self.kvio.putIndex ( entityid, resolution, fileobj.getvalue(), update )
+    else:
+      tmpfile= tempfile.NamedTemporaryFile ()
+      h5 = h5py.File ( tmpfile.name )
+      h5.create_dataset ( "index", tuple(index.shape), index.dtype,
+                               compression='gzip',  data=index )
+      h5.close()
+      tmpfile.seek(0)
+      self.kvio.putIndex ( entityid, resolution, tmpfile.read(), update )
+
 
 #
 # Update Index Dense - Updated the annotation database with the given hash index table

@@ -51,7 +51,6 @@ import sys
 import mysqlkvio
 import casskvio
 
-NPZ = False
 
 ################################################################################
 #
@@ -61,6 +60,7 @@ NPZ = False
 #
 ################################################################################
 
+NPZ=False
 
 class OCPCADB: 
 
@@ -74,10 +74,12 @@ class OCPCADB:
     self.EXCEPT_FLAG = self.annoproj.getExceptions()
 
     # Choose the I/O engine for key/value data
+    self.mkvio = mysqlkvio.MySQLKVIO(self)
+    self.ckvio = casskvio.CassandraKVIO(self)
     if NPZ:
-      self.kvio = mysqlkvio.MySQLKVIO(self)
+      self.kvio = self.mkvio
     else:
-      self.kvio = casskvio.CassandraKVIO(self)
+      self.kvio = self.ckvio
 
     # How many slices?
     [ self.startslice, endslice ] = self.datasetcfg.slicerange
@@ -347,7 +349,7 @@ class OCPCADB:
       else:
           # cubes are HDF5 files
           tmpfile = tempfile.NamedTemporaryFile ()
-          tmpfile.write ( row[0].cuboid.decode('hex') )
+          tmpfile.write ( cubestr )
           tmpfile.seek(0)
           h5 = h5py.File ( tmpfile.name ) 
 
@@ -356,25 +358,75 @@ class OCPCADB:
 
     return cube
 
+  #
+  # cputCube
+  #  RBRM
+  # cgetCube
+  #
+  def cgetCube ( self, key, resolution, update=False ):
+    """Load a cube from the annotation database"""
+
+    import pdb; pdb.set_trace()
+
+    # get the size of the image and cube
+    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
+
+    # Create a cube object
+    if (self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS):
+      cube = anncube.AnnotateCube ( cubedim )
+    elif (self.annoproj.getDBType()==ocpcaproj.PROBMAP_32bit):
+      cube = probmapcube.ProbMapCube32 ( cubedim )
+    elif (self.annoproj.getDBType()==ocpcaproj.IMAGES_8bit):
+      cube = imagecube.ImageCube8 ( cubedim )
+    elif (self.annoproj.getDBType()==ocpcaproj.IMAGES_16bit):
+      cube = imagecube.ImageCube16 ( cubedim )
+    else:
+      raise OCPCAError ("Unknown project type {}".format(self.annoproj.getDBType()))
+  
+    # get the block from the database
+    cubestr = self.ckvio.getCube ( key, resolution, update )
+
+    # cubes are HDF5 files
+    tmpfile = tempfile.NamedTemporaryFile ()
+    tmpfile.write ( cubestr )
+    tmpfile.seek(0)
+    h5 = h5py.File ( tmpfile.name ) 
+
+    # load the numpy array
+    cube.data = np.array ( h5['cuboid'] )
+
+    return cube
+
+  def cputCube ( self, zidx, resolution, cube ):
+    """Store a cube in the annotation database"""
+
+    # Handle the cube format here.  
+    tmpfile= tempfile.NamedTemporaryFile ()
+    h5 = h5py.File ( tmpfile.name )
+    h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype, compression='gzip',  data=cube.data )
+    h5.close()
+    tmpfile.seek(0)
+
+    self.ckvio.putCube ( zidx, resolution, tmpfile.read(), not cube.fromZeros() )
+
 
   #
   # putCube
   #
-  def putCube ( self, key, resolution, cube ):
+  def putCube ( self, zidx, resolution, cube ):
     """Store a cube in the annotation database"""
 
     # Handle the cube format here.  
     if NPZ:
-      self.kvio.putCube ( key, resolution, cube.toNPZ(), not cube.fromZeros() )
+      self.kvio.putCube ( zidx, resolution, cube.toNPZ(), not cube.fromZeros() )
     else:
       tmpfile= tempfile.NamedTemporaryFile ()
       h5 = h5py.File ( tmpfile.name )
-      h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype,
-                               compression='gzip',  data=cube.data )
+      h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype, compression='gzip',  data=cube.data )
       h5.close()
       tmpfile.seek(0)
 
-      self.kvio.putCube ( key, resolution, tmpfile.read(), not cube.fromZeros() )
+      self.kvio.putCube ( zidx, resolution, tmpfile.read(), not cube.fromZeros() )
 
 
   #
@@ -383,14 +435,21 @@ class OCPCADB:
   def getExceptions ( self, zidx, resolution, annoid ):
     """Load a cube from the annotation database"""
 
-    if NPZ:
-      excstr = self.kvio.getExceptions ( zidx, resolution, annoid )
-      if excstr:
+    excstr = self.kvio.getExceptions ( zidx, resolution, annoid )
+    if excstr:
+      if NPZ:
         return np.load(cStringIO.StringIO ( zlib.decompress(excstr)))
       else:
-        return []
+        # cubes are HDF5 files
+        tmpfile = tempfile.NamedTemporaryFile ()
+        tmpfile.write ( excstr )
+        tmpfile.seek(0)
+        h5 = h5py.File ( tmpfile.name ) 
+
+        # load the numpy array
+        return np.array ( h5['exceptions'] )
     else:
-      pass
+      return []
 
 
   #
@@ -423,10 +482,15 @@ class OCPCADB:
       fileobj = cStringIO.StringIO ()
       np.save ( fileobj, exceptions )
       excstr = fileobj.getvalue()
+      self.kvio.putExceptions ( key, resolution, exid, excstr, update )
     else:
-      pass
-
-    self.kvio.putExceptions ( key, resolution, exid, excstr, update )
+      tmpfile= tempfile.NamedTemporaryFile ()
+      h5 = h5py.File ( tmpfile.name )
+      h5.create_dataset ( "exceptions", tuple(exceptions.shape), exceptions.dtype,
+                               compression='gzip',  data=exceptions )
+      h5.close()
+      tmpfile.seek(0)
+      self.kvio.putExceptions ( key, resolution, exid, tmpfile.read(), update )
 
 
   #
@@ -650,6 +714,7 @@ class OCPCADB:
 
     except:
       self.kvio.rollback()
+      raise
 
     self.kvio.commit()
 
@@ -722,7 +787,7 @@ class OCPCADB:
               logger.error ( "Unsupported conflict option %s" % conflictopt )
               raise OCPCAError ( "Unsupported conflict option %s" % conflictopt )
 
-            self.putCube ( key, resolution, cube)
+            self.putCube ( key, resolution, cube )
 
             #update the index for the cube
             # get the unique elements that are being added to the data
@@ -742,6 +807,7 @@ class OCPCADB:
 
     except:
       self.kvio.rollback()
+      raise
 
     self.kvio.commit()
 
@@ -829,6 +895,7 @@ class OCPCADB:
 
     except:
       self.kvio.rollback()
+      raise
 
     # commit cubes.  not commit controlled with metadata
     self.kvio.commit()
@@ -990,7 +1057,7 @@ class OCPCADB:
     try:
 
       cuboids = self.kvio.getCubes(listofidxs,effresolution)
-   
+ 
       # use the batch generator interface
       for idx, datastring in cuboids:
 
@@ -1000,6 +1067,11 @@ class OCPCADB:
 
         if NPZ: 
           incube.fromNPZ ( datastring[:] )
+
+          #RB testing
+#          self.cputCube ( idx, resolution, incube )
+#          newcube = self.cgetCube ( idx, resolution )
+
         else:
           # cubes are HDF5 files
           tmpfile = tempfile.NamedTemporaryFile ()
@@ -1009,6 +1081,7 @@ class OCPCADB:
 
           # load the numpy array
           incube.data = np.array ( h5['cuboid'] )
+
 
         # apply exceptions if it's an annotation project
         if annoids!= None and self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS:
@@ -1020,6 +1093,7 @@ class OCPCADB:
 
     except:
       self.kvio.rollback()
+      raise
 
     self.kvio.commit()
 
@@ -1376,6 +1450,7 @@ class OCPCADB:
 
     except:
       self.kvio.rollback()
+      raise
 
     self.kvio.commit()
 
@@ -1547,6 +1622,7 @@ class OCPCADB:
 
     except:
       self.kvio.rollback()
+      raise
 
     seld.kvio.commit()
 

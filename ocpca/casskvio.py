@@ -59,54 +59,100 @@ class CassandraKVIO:
   def getCube ( self, zidx, resolution, update ):
     """Retrieve a cube from the database by token, resolution, and key"""
 
-    cql = "SELECT cuboid FROM cuboids WHERE resolution = %s AND zidx = %s"
-    row = self.session.execute ( cql, (resolution, zidx ))
+    try:
+      cql = "SELECT cuboid FROM cuboids WHERE resolution = %s AND zidx = %s"
+      row = self.session.execute ( cql, (resolution, zidx ))
 
-    if row:
-      return row[0]
-    else:
-      return None
-
+      if row:
+        return row[0].cuboid.decode('hex')
+      else:
+        return None
+    except:
+      import pdb; pdb.set_trace()
+      pass
 
 
   def getCubes ( self, listofidxs, resolution ):
 
-#    cql = "SELECT cuboid FROM cuboids WHERE resolution = %s AND zidx in %s" 
-    cql = "SELECT zidx, cuboid FROM cuboids WHERE resolution = %s AND zidx in %s" % (resolution, tuple(listofidxs)) 
-    rows = self.session.execute ( cql )
-#    rows = self.session.execute ( cql, ( resolution, tuple(listofidxs)))
+    # weird pythonism for tuples of length 1 they print as (1,) and don't parse
+    # just get the cube
+    if len(listofidxs)==1:
+      yield listofidxs[0], self.getCube(listofidxs[0], resolution, False)
+    else:
 
-    for row in rows:
-      yield (row.zidx, row.cuboid.decode('hex'))
+      try:
+    #    cql = "SELECT cuboid FROM cuboids WHERE resolution = %s AND zidx in %s" 
+        cql = "SELECT zidx, cuboid FROM cuboids WHERE resolution = %s AND zidx in %s" % (resolution, tuple(listofidxs)) 
+        rows = self.session.execute ( cql )
+    #    rows = self.session.execute ( cql, ( resolution, tuple(listofidxs)))
 
+        for row in rows:
+          yield (row.zidx, row.cuboid.decode('hex'))
+
+      except Exception, e:
+        import pdb; pdb.set_trace()
+        raise
 
   #
   # putCube
   #
-  def putCube ( self, key, resolution, cube ):
+  def putCube ( self, zidx, resolution, cubestr, udpate ):
     """Store a cube from the annotation database"""
 
-
-    cql = "INSERT INTO cuboids ( resolution, zidx, cuboid ) VALUES ( %s, %s, %s )"
-    session.execute ( cql, ( resolution, zidx, tmpfiletocass.read().encode('hex')))
-
+    try:
+      cql = "INSERT INTO cuboids ( resolution, zidx, cuboid ) VALUES ( %s, %s, %s )"
+      self.session.execute ( cql, ( resolution, zidx, cubestr.encode('hex')))
+    except Exception, e:
+      import pdb; pdb.set_trace()
+      pass
 
 
   def getIndex ( self, annid, resolution, update ):
     """Fetch index routine.  Update is irrelevant for KV clients"""
-    pass
 
+    import pdb; pdb.set_trace()
+    cql = "SELECT cuboids FROM indexes WHERE annoid=%s and resolution=%s" 
+    row = self.session.execute ( cql, (annid, resolution ))
 
-  def putIndex ( self, annid, index, resolution ):
+    if row:
+      return row[0].index.decode('hex')
+    else:
+      return None
+
+  def putIndex ( self, annid, resolution, indexstr, update ):
     """MySQL put index routine"""
-    pass
+    
+    import pdb; pdb.set_trace()
+    cql = "INSERT INTO indexes ( annid, resolution, cuboids ) VALUES ( %s, %s, %s )"
+    self.session.execute ( cql, ( resolution, zidx, indexstr.encode('hex')))
 
 
-  def updateIndex ( self, annid, index, resolution ):
+  def updateIndex ( self, annid, resolution, indexstr, update ):
     """MySQL update index routine"""
-    pass
+    self.putIndex ( annid, resolution, indexstr, update )
 
 
   def deleteIndex ( self, annid, resolution ):
     """MySQL update index routine"""
-    pass
+
+    cql = "DELETE FROM indexes where annid=%s and resoluton=%s"
+    self.session.execute ( cql, ( annid, resolution))
+
+
+  def getExceptions ( self, zidx, resolution, update ):
+    """Retrieve exceptions from the database by token, resolution, and key"""
+
+    cql = "SELECT exceptions FROM exceptions WHERE resolution = %s AND zidx = %s"
+    row = self.session.execute ( cql, (resolution, zidx ))
+
+    if row:
+      return row[0].cuboid.decode('hex')
+    else:
+      return None
+
+  def putExceptions ( self, key, resolution, excstr ):
+    """Store exceptions in the annotation database"""
+
+    cql = "INSERT INTO exceptions ( resolution, zidx, exceptions ) VALUES ( %s, %s, %s )"
+    self.session.execute ( cql, ( resolution, zidx, excstr.encode('hex')))
+
