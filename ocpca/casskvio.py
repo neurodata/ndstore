@@ -38,9 +38,9 @@ class CassandraKVIO:
     self.cluster = Cluster()
     self.session = self.cluster.connect(db.annoproj.getDBName())
 
-  def __del__ ( self ):
+  def close ( self ):
     """Close the connection"""
-    self.session.close()
+    self.cluster.shutdown()
 
   def startTxn ( self ):
     """Start a transaction.  Ensure database is in multi-statement mode."""
@@ -57,7 +57,7 @@ class CassandraKVIO:
     
 
   def getCube ( self, zidx, resolution, update ):
-    """Retrieve a cube from the database by token, resolution, and key"""
+    """Retrieve a cube from the database by token, resolution, and zidx"""
 
     try:
       cql = "SELECT cuboid FROM cuboids WHERE resolution = %s AND zidx = %s"
@@ -68,7 +68,6 @@ class CassandraKVIO:
       else:
         return None
     except Exception, e:
-      import pdb; pdb.set_trace()
       pass
 
 
@@ -90,7 +89,6 @@ class CassandraKVIO:
           yield (row.zidx, row.cuboid.decode('hex'))
 
       except Exception, e:
-        import pdb; pdb.set_trace()
         raise
 
   #
@@ -103,7 +101,6 @@ class CassandraKVIO:
       cql = "INSERT INTO cuboids ( resolution, zidx, cuboid ) VALUES ( %s, %s, %s )"
       self.session.execute ( cql, ( resolution, zidx, cubestr.encode('hex')))
     except Exception, e:
-      import pdb; pdb.set_trace()
       pass
 
 
@@ -114,7 +111,6 @@ class CassandraKVIO:
     row = self.session.execute ( cql, (annid, resolution ))
 
     if row:
-      import pdb; pdb.set_trace()
       return row[0].cuboids.decode('hex')
     else:
       return None
@@ -125,33 +121,35 @@ class CassandraKVIO:
     cql = "INSERT INTO indexes ( resolution, annoid, cuboids ) VALUES ( %s, %s, %s )"
     self.session.execute ( cql, ( resolution, annid, indexstr.encode('hex')))
 
-
-  def updateIndex ( self, annid, resolution, indexstr, update ):
-    """MySQL update index routine"""
-    self.putIndex ( annid, resolution, indexstr, update )
-
-
   def deleteIndex ( self, annid, resolution ):
     """MySQL update index routine"""
 
-    cql = "DELETE FROM indexes where annid=%s and resoluton=%s"
+    cql = "DELETE FROM indexes where annoid=%s and resolution=%s"
     self.session.execute ( cql, ( annid, resolution))
 
 
-  def getExceptions ( self, zidx, resolution, update ):
-    """Retrieve exceptions from the database by token, resolution, and key"""
+  def getExceptions ( self, zidx, resolution, annid ):
+    """Retrieve exceptions from the database by token, resolution, and zidx"""
 
-    cql = "SELECT exceptions FROM exceptions WHERE resolution = %s AND zidx = %s"
-    row = self.session.execute ( cql, (resolution, zidx ))
+    cql = "SELECT exceptions FROM exceptions WHERE resolution = %s AND zidx = %s and annoid=%s"
+    row = self.session.execute ( cql, (resolution, zidx, annid ))
 
     if row:
-      return row[0].cuboid.decode('hex')
+      return row[0].exceptions.decode('hex')
     else:
       return None
 
-  def putExceptions ( self, key, resolution, excstr ):
+  def putExceptions ( self, zidx, resolution, annid, excstr, update=False ):
     """Store exceptions in the annotation database"""
 
-    cql = "INSERT INTO exceptions ( resolution, zidx, exceptions ) VALUES ( %s, %s, %s )"
-    self.session.execute ( cql, ( resolution, zidx, excstr.encode('hex')))
+    cql = "INSERT INTO exceptions ( resolution, zidx, annoid, exceptions ) VALUES ( %s, %s, %s, %s )"
+    self.session.execute ( cql, ( resolution, zidx, annid, excstr.encode('hex')))
+
+
+  def deleteExceptions ( self, zidx, resolution, annid ):
+    """Delete a list of exceptions for this cuboid"""
+
+    cql = "DELETE FROM exceptions WHERE resolution = %s AND zidx = %s AND annoid = %s"
+    self.session.execute ( cql, ( resolution, zidx, annid))
+
 

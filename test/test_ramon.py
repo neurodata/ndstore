@@ -23,16 +23,20 @@ import random
 import csv
 import numpy as np
 import pytest
+from contextlib import closing
 
 from pytesthelpers import makeAnno
-import ocpcaproj
 
-import ocppaths
+sys.path += [os.path.abspath('../django')]
+import OCP.settings
+os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
+from django.conf import settings
+
+import ocpcaproj
 
 import site_to_test
 SITE_HOST = site_to_test.site
 
-import ocpcaproj
 
 # Module level setup/teardown
 def setup_module(module):
@@ -52,16 +56,17 @@ class TestRamon:
   def setup_class(self):
     """Create the unittest database"""
 
-    try:
-      self.pd = ocpcaproj.OCPCAProjectsDB()
-      self.pd.newOCPCAProj ( 'unittest', 'test', 'localhost', 'unittest', 2, 'kasthuri11', None, False, True, False, 0 )
-    except:
-      self.pd.deleteOCPCADB ('unittest')
+    with closing ( ocpcaproj.OCPCAProjectsDB() ) as pd:
+      try:
+        pd.newOCPCAProj ( 'unittest', 'test', 'localhost', 'unittest', 2, 'kasthuri11', None, False, True, False, 0 )
+      except:
+        pd.deleteOCPCADB ('unittest')
 
   def teardown_class (self):
     """Destroy the unittest database"""
-    self.pd.deleteOCPCADB ('unittest')
 
+    with closing ( ocpcaproj.OCPCAProjectsDB() ) as pd:
+      pd.deleteOCPCADB ('unittest')
 
 
   def test_anno(self):
@@ -734,4 +739,49 @@ class TestRamon:
       req = urllib2.Request ( url )
       f = urllib2.urlopen ( url )
 
+
+  def test_last ( self ):
+   
+    # Make an annotation 
+    annid = makeAnno ( 2, SITE_HOST )
+
+    # set the type
+    synapse_type = random.randint (0,100)
+    url =  "http://%s/ca/%s/%s/setField/synapse_type/%s/" % ( SITE_HOST, 'unittest',str(annid), synapse_type )
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert f.read()==''
+
+    # get the synapse_type
+    url =  "http://%s/ca/%s/%s/getField/synapse_type/" % ( SITE_HOST, 'unittest',str(annid))
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert synapse_type == int(f.read()) 
+
+    # set the weight
+    weight = random.random ()
+    url =  "http://%s/ca/%s/%s/setField/weight/%s/" % ( SITE_HOST, 'unittest',str(annid), weight )
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert f.read()==''
+
+    # get the weight
+    url =  "http://%s/ca/%s/%s/getField/weight/" % ( SITE_HOST, 'unittest',str(annid))
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert weight - float(f.read()) < 0.001
+
+    # check inheritance
+    # set the status
+    status = random.randint (0,100)
+    url =  "http://%s/ca/%s/%s/setField/status/%s/" % ( SITE_HOST, 'unittest',str(annid), status )
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert f.read()==''
+
+    # get the status
+    url =  "http://%s/ca/%s/%s/getField/status/" % ( SITE_HOST, 'unittest',str(annid))
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    assert status == int(f.read()) 
 

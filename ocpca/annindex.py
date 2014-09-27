@@ -24,8 +24,6 @@ import ocpcaproj
 import logging
 logger=logging.getLogger("ocp")
 
-NPZ=False
-
 #
 #  AnnotateIndex: Maintain the index in the database
 # AUTHOR: Priya Manavalan
@@ -39,19 +37,20 @@ class AnnotateIndex:
 
       self.proj = proj
       self.kvio = kvio
-   
-   def __del__(self):
-      """Destructor"""
+
+      if self.proj.getKVEngine() == 'MySQL':
+        self.NPZ = True
+      else: 
+        self.NPZ = False
    
    #
    # getIndex -- Retrieve the index for the annotation with id
    #
    def getIndex ( self, entityid, resolution, update=False ):
 
-    import pdb; pdb.set_trace()
     idxstr = self.kvio.getIndex ( entityid, resolution, update )
     if idxstr:
-      if NPZ:
+      if self.NPZ:
         fobj = cStringIO.StringIO ( idxstr )
         return np.load ( fobj )      
       else:
@@ -71,8 +70,7 @@ class AnnotateIndex:
    #
    def putIndex ( self, entityid, resolution, index, update=False ):
 
-    import pdb; pdb.set_trace()
-    if NPZ:
+    if self.NPZ:
       fileobj = cStringIO.StringIO ()
       np.save ( fileobj, index )
       self.kvio.putIndex ( entityid, resolution, fileobj.getvalue(), update )

@@ -22,6 +22,7 @@ import random
 import csv
 import numpy as np
 import pytest
+from contextlib import closing
 
 import ocppaths
 from pytesthelpers import makeAnno
@@ -48,15 +49,16 @@ class TestRamon:
   def setup_class(self):
     """Create the unittest database"""
 
-    try:
-      self.pd = ocpcaproj.OCPCAProjectsDB()
-      self.pd.newOCPCAProj ( 'unittest', 'test', 'localhost', 'unittest', 2, 'kasthuri11', None, False, True, False, 0 )
-    except:
-      self.pd.deleteOCPCADB ('unittest')
+    with closing ( ocpcaproj.OCPCAProjectsDB() ) as pd:
+      try:
+        pd.newOCPCAProj ( 'unittest', 'test', 'localhost', 'unittest', 2, 'kasthuri11', None, False, True, False, 0 )
+      except:
+        pd.deleteOCPCADB ('unittest')
 
   def teardown_class (self):
     """Destroy the unittest database"""
-    self.pd.deleteOCPCADB ('unittest')
+    with closing ( ocpcaproj.OCPCAProjectsDB() ) as pd:
+      pd.deleteOCPCADB ('unittest')
 
 
 

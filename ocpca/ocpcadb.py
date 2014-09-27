@@ -60,8 +60,6 @@ import casskvio
 #
 ################################################################################
 
-NPZ=False
-
 class OCPCADB: 
 
   def __init__ (self, annoproj):
@@ -72,14 +70,15 @@ class OCPCADB:
 
     # Are there exceptions?
     self.EXCEPT_FLAG = self.annoproj.getExceptions()
+    self.KVENGINE = self.annoproj.getKVEngine()
 
     # Choose the I/O engine for key/value data
-    self.mkvio = mysqlkvio.MySQLKVIO(self)
-    self.ckvio = casskvio.CassandraKVIO(self)
-    if NPZ:
-      self.kvio = self.mkvio
+    if self.annoproj.getKVEngine() == 'MySQL':
+      self.kvio = mysqlkvio.MySQLKVIO(self)
+      self.NPZ = True
     else:
-      self.kvio = self.ckvio
+      self.kvio = casskvio.CassandraKVIO(self)
+      self.NPZ = False
 
     # How many slices?
     [ self.startslice, endslice ] = self.datasetcfg.slicerange
@@ -97,13 +96,19 @@ class OCPCADB:
 
     except MySQLdb.Error, e:
       self.conn = None
-      logger.error("Failed to connect to database: %s, %s" % (dbobj.annoproj.getDBHost(), dbobj.annoproj.getDBName()))
+      logger.error("Failed to connect to database: %s, %s" % (self.annoproj.getDBHost(), self.annoproj.getDBName()))
+      import pdb; pdb.set_trace()
       raise
 
     # create annidx object
     if (self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS):
       self.annoIdx = annindex.AnnotateIndex ( self.kvio, self.annoproj )
 
+  def close ( self ):
+    """Close the connection"""
+    if self.conn:
+      self.conn.close()
+    self.kvio.close()
 
 #
 #  Cursor handling routines.  We operate in two modes.  TxN at a time
@@ -131,10 +136,6 @@ class OCPCADB:
       self.conn.commit()
       cursor.close()
 
-  def __del__ ( self ):
-    """Close the connection"""
-    if self.conn:
-      self.conn.close()
 
   def commit ( self ):
     """Commit the transaction.  Moved out of __del__ to make explicit.""" 
@@ -342,7 +343,7 @@ class OCPCADB:
       cube.zeros()
     else:
       # Handle the cube format here.  
-      if NPZ:
+      if self.NPZ:
           # decompress the cube
           cube.fromNPZ ( cubestr )
 
@@ -355,6 +356,8 @@ class OCPCADB:
 
           # load the numpy array
           cube.data = np.array ( h5['cuboid'] )
+          h5.close()
+          tmpfile.close()
 
     return cube
 
@@ -393,6 +396,9 @@ class OCPCADB:
     # load the numpy array
     cube.data = np.array ( h5['cuboid'] )
 
+    h5.close()
+    tmpfile.close()
+
     return cube
 
   def cputCube ( self, zidx, resolution, cube ):
@@ -406,6 +412,7 @@ class OCPCADB:
     tmpfile.seek(0)
 
     self.ckvio.putCube ( zidx, resolution, tmpfile.read(), not cube.fromZeros() )
+    tmpfile.close()
 
 
   #
@@ -415,7 +422,7 @@ class OCPCADB:
     """Store a cube in the annotation database"""
 
     # Handle the cube format here.  
-    if NPZ:
+    if self.NPZ:
       self.kvio.putCube ( zidx, resolution, cube.toNPZ(), not cube.fromZeros() )
     else:
       tmpfile= tempfile.NamedTemporaryFile ()
@@ -425,6 +432,8 @@ class OCPCADB:
       tmpfile.seek(0)
 
       self.kvio.putCube ( zidx, resolution, tmpfile.read(), not cube.fromZeros() )
+      tmpfile.close()
+
 
 
   #
@@ -435,7 +444,7 @@ class OCPCADB:
 
     excstr = self.kvio.getExceptions ( zidx, resolution, annoid )
     if excstr:
-      if NPZ:
+      if self.NPZ:
         return np.load(cStringIO.StringIO ( zlib.decompress(excstr)))
       else:
         # cubes are HDF5 files
@@ -445,7 +454,10 @@ class OCPCADB:
         h5 = h5py.File ( tmpfile.name ) 
 
         # load the numpy array
-        return np.array ( h5['exceptions'] )
+        excs = np.array ( h5['exceptions'] )
+        h5.close()
+        tmpfile.close()
+        return excs
     else:
       return []
 
@@ -475,8 +487,10 @@ class OCPCADB:
   def putExceptions ( self, key, resolution, exid, exceptions, update ):
     """Package the object and transact with kvio"""
 
+    exceptions = np.array ( exceptions, dtype=np.uint32 )
+
     #RBMAYBE make exceptions zipped in a future incompatible version??
-    if NPZ:
+    if self.NPZ:
       fileobj = cStringIO.StringIO ()
       np.save ( fileobj, exceptions )
       excstr = fileobj.getvalue()
@@ -489,6 +503,7 @@ class OCPCADB:
       h5.close()
       tmpfile.seek(0)
       self.kvio.putExceptions ( key, resolution, exid, tmpfile.read(), update )
+      tmpfile.close()
 
 
   #
@@ -1063,7 +1078,7 @@ class OCPCADB:
         curxyz = zindex.MortonXYZ(int(idx))
         offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
 
-        if NPZ: 
+        if self.NPZ: 
           incube.fromNPZ ( datastring[:] )
 
           #RB testing
@@ -1080,6 +1095,8 @@ class OCPCADB:
           # load the numpy array
           incube.data = np.array ( h5['cuboid'] )
 
+          h5.close()
+          tmpfile.close()
 
         # apply exceptions if it's an annotation project
         if annoids!= None and self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS:

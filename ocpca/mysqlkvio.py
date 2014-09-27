@@ -33,6 +33,7 @@ class MySQLKVIO:
     """Connect to the database"""
 
     self.db = db
+    self.conn = None
 
     # Connection info 
     try:
@@ -43,13 +44,13 @@ class MySQLKVIO:
 
     except MySQLdb.Error, e:
       self.conn = None
-      logger.error("Failed to connect to database: %s, %s" % (dbobj.annoproj.getDBHost(), dbobj.annoproj.getDBName()))
+      logger.error("Failed to connect to database: %s, %s" % (db.annoproj.getDBHost(), db.annoproj.getDBName()))
       raise
 
     # start with no cursor
     self.txncursor = None
 
-  def __del__ ( self ):
+  def close ( self ):
     """Close the connection"""
     if self.conn:
       self.conn.close()
@@ -81,8 +82,8 @@ class MySQLKVIO:
     if self.conn:
       self.conn.close()
 
-  def getCube ( self, key, resolution, update ):
-    """Retrieve a cube from the database by token, resolution, and key"""
+  def getCube ( self, zidx, resolution, update ):
+    """Retrieve a cube from the database by token, resolution, and zidx"""
 
     # if in a TxN us the transaction cursor.  Otherwise create one.
     if self.txncursor == None:
@@ -90,7 +91,7 @@ class MySQLKVIO:
     else:
       cursor = self.txncursor
 
-    sql = "SELECT cube FROM " + self.db.annoproj.getTable(resolution) + " WHERE zindex = " + str(key) 
+    sql = "SELECT cube FROM " + self.db.annoproj.getTable(resolution) + " WHERE zindex = " + str(zidx) 
     if update==True:
           sql += " FOR UPDATE"
 
@@ -151,7 +152,7 @@ class MySQLKVIO:
   #
   # putCube
   #
-  def putCube ( self, key, resolution, cubestr, update=False ):
+  def putCube ( self, zidx, resolution, cubestr, update=False ):
     """Store a cube from the annotation database"""
 
     # if in a TxN us the transaction cursor.  Otherwise create one.
@@ -167,7 +168,7 @@ class MySQLKVIO:
 
       # this uses a cursor defined in the caller (locking context): not beautiful, but needed for locking
       try:
-        cursor.execute ( sql, (key,cubestr))
+        cursor.execute ( sql, (zidx,cubestr))
       except MySQLdb.Error, e:
         logger.error ( "Error inserting cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         raise
@@ -179,7 +180,7 @@ class MySQLKVIO:
 
     else:
 
-      sql = "UPDATE " + self.db.annoproj.getTable(resolution) + " SET cube=(%s) WHERE zindex=" + str(key)
+      sql = "UPDATE " + self.db.annoproj.getTable(resolution) + " SET cube=(%s) WHERE zindex=" + str(zidx)
       try:
         cursor.execute ( sql, (cubestr))
       except MySQLdb.Error, e:
@@ -197,7 +198,7 @@ class MySQLKVIO:
 
 
 
-  def getIndex ( self, entityid, resolution, update ):
+  def getIndex ( self, annid, resolution, update ):
     """MySQL fetch index routine"""
 
     # if in a TxN us the transaction cursor.  Otherwise create one.
@@ -208,7 +209,7 @@ class MySQLKVIO:
 
     #get the block from the database                                            
     sql = "SELECT cube FROM " + self.db.annoproj.getIdxTable(resolution) + " WHERE annid\
-= " + str(entityid) 
+= " + str(annid) 
     if update==True:
       sql += " FOR UPDATE"
     try:
@@ -232,7 +233,7 @@ class MySQLKVIO:
        return row[0]
 
 
-  def putIndex ( self, key, resolution, indexstr, update ):
+  def putIndex ( self, zidx, resolution, indexstr, update ):
     """MySQL put index routine"""
 
     # if in a TxN us the transaction cursor.  Otherwise create one.
@@ -246,7 +247,7 @@ class MySQLKVIO:
       sql = "INSERT INTO " +  self.db.annoproj.getIdxTable(resolution)  +  "( annid, cube) VALUES ( %s, %s)"
       
       try:
-         cursor.execute ( sql, (key, indexstr))
+         cursor.execute ( sql, (zidx, indexstr))
       except MySQLdb.Error, e:
          logger.warning("Error updating index %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
          raise
@@ -261,7 +262,7 @@ class MySQLKVIO:
     else:
 
       #update index in the database
-      sql = "UPDATE " + self.db.annoproj.getIdxTable(resolution) + " SET cube=(%s) WHERE annid=" + str(key)
+      sql = "UPDATE " + self.db.annoproj.getIdxTable(resolution) + " SET cube=(%s) WHERE annid=" + str(zidx)
       try:
          cursor.execute ( sql, (indexstr))
       except MySQLdb.Error, e:
@@ -311,7 +312,7 @@ class MySQLKVIO:
   #
   # getExceptions
   #
-  def getExceptions ( self, key, resolution, entityid ):
+  def getExceptions ( self, zidx, resolution, annid ):
     """Load a the list of excpetions for this cube."""
 
     # if in a TxN us the transaction cursor.  Otherwise create one.
@@ -321,7 +322,7 @@ class MySQLKVIO:
       cursor = self.txncursor
 
     # get the block from the database
-    sql = "SELECT exlist FROM %s where zindex=%s AND id=%s" % ( 'exc'+str(resolution), key, entityid )
+    sql = "SELECT exlist FROM %s where zindex=%s AND id=%s" % ( 'exc'+str(resolution), zidx, annid )
     try:
       cursor.execute ( sql )
       row = cursor.fetchone()
@@ -342,7 +343,7 @@ class MySQLKVIO:
   #
   # deleteExceptions
   #
-  def deleteExceptions ( self, key, resolution, entityid ):
+  def deleteExceptions ( self, zidx, resolution, annid ):
     """Delete a list of exceptions for this cuboid"""
 
     # if in a TxN us the transaction cursor.  Otherwise create one.
@@ -355,7 +356,7 @@ class MySQLKVIO:
 
     sql = "DELETE FROM " + table + " WHERE zindex = %s AND id = %s" 
     try:
-      self.txncursor.execute ( sql, (key, entityid))
+      self.txncursor.execute ( sql, (zidx, annid))
     except MySQLdb.Error, e:
       logger.error ( "Error deleting exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       if self.txncursor == None:
@@ -371,7 +372,7 @@ class MySQLKVIO:
   #
   # putExceptions
   #
-  def putExceptions ( self, key, resolution, entityid, excstr, update=False ):
+  def putExceptions ( self, zidx, resolution, annid, excstr, update=False ):
     """Store a list of exceptions"""
     """This should be done in a transaction"""
 
@@ -387,7 +388,7 @@ class MySQLKVIO:
 
       sql = "INSERT INTO " + table + " (zindex, id, exlist) VALUES (%s, %s, %s)"
       try:
-        cursor.execute ( sql, (key, entityid, zlib.compress(excstr)))
+        cursor.execute ( sql, (zidx, annid, zlib.compress(excstr)))
       except MySQLdb.Error, e:
         logger.error ( "Error inserting exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         if self.txncursor == None:
@@ -399,7 +400,7 @@ class MySQLKVIO:
 
       sql = "UPDATE " + table + " SET exlist=(%s) WHERE zindex=%s AND id=%s" 
       try:
-        cursor.execute ( sql, (zlib.compress(excstr),key,entityid))
+        cursor.execute ( sql, (zlib.compress(excstr),zidx,annid))
       except MySQLdb.Error, e:
         logger.error ( "Error updating exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         if self.txncursor == None:

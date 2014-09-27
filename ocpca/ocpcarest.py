@@ -1582,13 +1582,14 @@ def setField ( webargs ):
 
   db.startTxn()
 
+  
   try:
 
     # retrieve the annotation 
     anno = db.getAnnotation ( annid )
     if anno == None:
-      logger.warning("No annotation found at identifier = %s" % (annoid))
-      raise OCPCAError ("No annotation found at identifier = %s" % (annoid))
+      logger.warning("No annotation found at identifier = %s" % (annid))
+      raise OCPCAError ("No annotation found at identifier = %s" % (annid))
 
     anno.setField ( field, value )
     anno.update ( db.cursor )
