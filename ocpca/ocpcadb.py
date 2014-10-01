@@ -97,7 +97,6 @@ class OCPCADB:
     except MySQLdb.Error, e:
       self.conn = None
       logger.error("Failed to connect to database: %s, %s" % (self.annoproj.getDBHost(), self.annoproj.getDBName()))
-      import pdb; pdb.set_trace()
       raise
 
     # create annidx object
@@ -127,12 +126,14 @@ class OCPCADB:
     """Close the cursor if we are not in a transaction"""
 
     if self.cursor == None:
+      print "Cursor close"
       cursor.close()
 
   def closeCursorCommit ( self, cursor ):
     """Close the cursor if we are not in a transaction"""
 
     if self.cursor == None:
+      print "Close and commit"
       self.conn.commit()
       cursor.close()
 
@@ -191,6 +192,7 @@ class OCPCADB:
   def nextID ( self ):
     """Get an new identifier.
        This is it's own txn and should not be called inside another transaction. """
+
 
     with closing ( self.conn.cursor() ) as cursor:
     
@@ -304,10 +306,10 @@ class OCPCADB:
           logger.error ( "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
           raise
 
-#RBRM        self.commit()
+      except Exception, e:
+        logger.error ( "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
       finally:
-        pass
         sql = "UNLOCK TABLES" 
         cursor.execute ( sql )
         self.conn.commit()
@@ -1159,15 +1161,18 @@ class OCPCADB:
 
     #RBTODO write a test and fix for kvio
 
+    cursor = self.getCursor()
+
     # get the block from the database
     sql = "SELECT cube FROM " + self.annoproj.getTable(resolution) + " WHERE zindex = " + str(mortonidx)
     try:
-      self.cursor.execute ( sql )
+      cursor.execute ( sql )
+      row=cursor.fetchone()
     except MySQLdb.Error, e:
       logger.warning ( "Error reading annotation data: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise
-
-    row=self.cursor.fetchone()
+    finally:
+      self.closeCursor(cursor)
 
     # If we can't find a cube, assume it hasn't been written yet
     if ( row == None ):
@@ -1649,14 +1654,20 @@ class OCPCADB:
   #
   def getChannels ( self ):
     """query the channels and their identifiers"""
+
+    cursor = self.getCursor()
+
     sql = 'SELECT * FROM channels';
     try:
-      self.cursor.execute ( sql )
+      cursor.execute ( sql )
+      chandict = dict(cursor.fetchall())
     except MySQLdb.Error, e:
       logger.warning ("Failed to query channels %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise
+    finally:
+      self.closeCursor(cursor)
 
-    return dict(self.cursor.fetchall())
+    return chandict
 
 
   def mergeGlobal(self, ids, mergetype, res):
