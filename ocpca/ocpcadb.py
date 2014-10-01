@@ -29,6 +29,7 @@ import annindex
 import imagecube
 import probmapcube
 import ocpcachannel
+import ocplib
 
 from ocpcaerror import OCPCAError
 
@@ -556,7 +557,8 @@ class OCPCADB:
 #    if max(locations[:,2]) > self.datasetcfg.slicerange[1]:
 #      logger.error("Bad adjusted locations. Max z slice value {}".format(max(locations[:,2])))
 
-    cubelocs = cubeLocs_cy ( np.array(locations, dtype=np.uint32), cubedim )
+    cubelocs = ocplib.locateCtype ( np.array(locations, dtype=np.uint32), cubedim )
+    #cubelocs = cubeLocs_cy ( np.array(locations, dtype=np.uint32), cubedim )
 
     # sort the arrary, by cubeloc
     cubelocs.view('u4,u4,u4,u4').sort(order=['f0'], axis=0)
@@ -580,7 +582,8 @@ class OCPCADB:
       offset = [cubeoff[0]*cubedim[0],cubeoff[1]*cubedim[1],cubeoff[2]*cubedim[2]]
 
       # add the items
-      exceptions = np.array(cube.annotate(entityid, offset, voxlist, conflictopt), dtype=np.uint8)
+      #exceptions = np.array(cube.annotate(entityid, offset, voxlist, conflictopt), dtype=np.uint8)
+      exceptions = np.array(cube.annotate_ctype(entityid, offset, voxlist, conflictopt), dtype=np.uint8)
 
       # update the sparse list of exceptions
       if self.EXCEPT_FLAG:
