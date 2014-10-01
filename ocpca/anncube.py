@@ -19,6 +19,7 @@ from PIL import Image
 import zlib
 
 import zindex
+import ocplib
 from cube import Cube
 
 from ocpca_cy import annotate_cy
@@ -124,16 +125,33 @@ class AnnotateCube(Cube):
   #
   #  Exceptions are uint8 to keep them small.  Max cube size is 256^3.
   #
+  def annotate_ctype ( self, annid, offset, locations, conflictopt ):
+    """Add annotation by a list of locations"""
+
+    try:
+    
+      # the ctype optimized version of this function.
+      self.data = ocplib.annotate_ctype( self.data, annid, offset, np.array(locations, dtype=np.uint32), conflictopt )
+      #return annotate_cy ( self.data, annid, offset, np.array(locations, dtype=np.uint32), conflictopt )
+      
+      # returning a zero for now. Have to return 
+      return 0
+    
+    except IndexError, e:
+      
+      raise OCPCAError ("Voxel list includes out of bounds request.")
+  
   def annotate ( self, annid, offset, locations, conflictopt ):
     """Add annotation by a list of locations"""
 
     try:
-    # the cython optimized version of this function.
+      
+      # the cython optimized version of this function.
       return annotate_cy ( self.data, annid, offset, np.array(locations, dtype=np.uint32), conflictopt )
-#      return self.annotate_nocy ( self.data, annid, offset, np.array(locations, dtype=np.uint32), conflictopt )
-    except IndexError, e:
-#      logger.error("Tried to paint a voxel that is out of bounds.  Locations={}".format(locations))
-      raise OCPCAError ("Voxel list includes out of bounds request.")
+   
+   except IndexError, e:
+      
+     raise OCPCAError ("Voxel list includes out of bounds request.")
 
 
   def shave ( self, annid, offset, locations ):
