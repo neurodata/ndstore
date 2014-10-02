@@ -328,7 +328,7 @@ class OCPCADB:
   #
   # queryRange
   #
-  def queryRange ( self, lowkey, highkey, resolution ):
+  def queryRange ( self, lowkey, highkey, resolution, channel=None ):
     """Create a stateful query to a range of values not including the high value.
          To be used with getNextCube().
          Not thread safe (context per object)
@@ -337,9 +337,14 @@ class OCPCADB:
     self._qr_cursor = self.conn.cursor ()
     self._qr_resolution = resolution
 
-    # get the block from the database
-    sql = "SELECT zindex, cube FROM " + self.annoproj.getTable(resolution) + " WHERE zindex >= " + str(lowkey) + " AND zindex < " + str(highkey)
-
+    if channel == None:
+      # get the block from the database
+      sql = "SELECT zindex, cube FROM " + self.annoproj.getTable(resolution) + " WHERE zindex >= " + str(lowkey) + " AND zindex < " + str(highkey)
+    else:
+      # or from a channel database
+      channel = ocpcachannel.toID ( channel, self )
+      sql = "SELECT zindex, cube FROM " + self.annoproj.getTable(resolution) + " WHERE channel = " + str(channel) + " AND zindex >= " + str(lowkey) + " AND zindex < " + str(highkey)
+  
     try:
       self._qr_cursor.execute ( sql )
     except MySQLdb.Error, e:
@@ -1078,7 +1083,7 @@ class OCPCADB:
     resolution = int(res)
 
     voxlist = []
-
+    
     zidxs = self.annoIdx.getIndex(entityid,resolution)
 
     for zidx in zidxs:
@@ -1108,7 +1113,7 @@ class OCPCADB:
 
       # Change the voxels back to image address space
       [ voxlist.append([a+xoffset, b+yoffset, c+zoffset]) for (a,b,c) in voxels ] 
-
+    
     return voxlist
 
   #
@@ -1364,26 +1369,26 @@ class OCPCADB:
     resolution = int(res)
     # ID to merge annotations into 
     mergeid = ids[0]
- 
-    # PYTODO Check if this is a valid annotation that we are relabelubg to
-    if len(self.annoIdx.getIndex(int(mergeid),resolution)) == 0:
-      raise OCPCAError(ids[0] + " not a valid annotation id")
+    
+    #logger.warning("Merging ids  {}".format(ids))
+    
+    # Turned off for now( Will's request)
+    #if len(self.annoIdx.getIndex(int(mergeid),resolution)) == 0:
+    #  raise OCPCAError(ids[0] + " not a valid annotation id. This id does not have paint data")
+    
   
     # Get the list of cubeindexes for the Ramon objects
     listofidxs = set()
-
-  # RB!!! this loop does nothing.  
-  #   I have removed 
-  #
-    #for annid in ids[1:]:
-#      listofidxs |= set(self.annoIdx.getIndex(annid,resolution))
-        
-    # For each annotation, get the cubes and relabel it
-    #for annid in ids[1:]:
-
+    addindex = []
+    #import pdb;pdb.set_trace()
     # RB!!!! do this for all ids, promoting the exceptions of the merge id
     for annid in ids:
-      listofidxs = set(self.annoIdx.getIndex(annid,resolution))
+      if annid== mergeid:
+        continue
+     # import pdb;pdb.set_trace()
+      curindex= self.annoIdx.getIndex(annid,resolution)
+      addindex =np.union1d(addindex,curindex)
+      listofidxs = set(curindex)
       for key in listofidxs:
         cube = self.getCube (key,resolution)
         #Update exceptions if exception flag is set ( PJM added 03/31/14)
@@ -1406,14 +1411,18 @@ class OCPCADB:
       # Delete annotation and all it's meta data from the database
       #
       # RB!!!!! except for the merge annotation
+      
       if annid != mergeid:
         try:
           annotation.deleteAnnotation(annid,self,'')
+          self.annoIdx.deleteIndexResolution(annid,resolution)
         except:
           logger.warning("Failed to delete annotation {} during merge.".format(annid))
-
+   # import pdb;pdb.set_trace()
+    self.annoIdx.updateIndex(mergeid,addindex,resolution)     
     self.commit()
-
+    
+    
      # PYTODO - Relabel exceptions?????
     
     return "Merge complete"
