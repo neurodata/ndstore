@@ -44,7 +44,7 @@ class TestOther:
 
     with closing ( ocpcaproj.OCPCAProjectsDB() ) as pd:
       try:
-        pd.newOCPCAProj ( 'pubunittest', 'test', 'localhost', 'unittest', 2, 'kasthuri11', None, False, True, False, 0, True )
+        pd.newOCPCAProj ( 'pubunittest', 'test', 'localhost', 'pubunittest', 2, 'kasthuri11', None, False, True, False, 0, True )
       except:
         pd.deleteOCPCADB ('pubunittest')
       

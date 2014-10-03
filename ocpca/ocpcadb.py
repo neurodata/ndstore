@@ -50,6 +50,7 @@ import sys
 #import askvio
 import mysqlkvio
 import casskvio
+import riakkvio
 
 
 ################################################################################
@@ -76,9 +77,14 @@ class OCPCADB:
     if self.annoproj.getKVEngine() == 'MySQL':
       self.kvio = mysqlkvio.MySQLKVIO(self)
       self.NPZ = True
-    else:
+    elif self.annoproj.getKVEngine() == 'Riak':
+      self.kvio = riakkvio.RiakKVIO(self)
+      self.NPZ = False
+    elif self.annoproj.getKVEngine() == 'Cassandra':
       self.kvio = casskvio.CassandraKVIO(self)
       self.NPZ = False
+    else:
+      raise OCPCAError ("Unknown key/value store.  Engine = {}".format(self.annoproj.getKVEngine()))
 
     # How many slices?
     [ self.startslice, endslice ] = self.datasetcfg.slicerange

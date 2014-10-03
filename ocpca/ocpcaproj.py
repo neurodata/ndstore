@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ import numpy as np
 import math
 from contextlib import closing
 from cassandra.cluster import Cluster
+import riak
 
 import ocpcaprivate
 from ocpcaerror import OCPCAError
@@ -35,7 +36,10 @@ BITMASK = 6
 ANNOTATIONS_64bit = 7 
 IMAGES_16bit = 8 
 
-Cassandra = True
+# RBTODO need to integrate this into project engine
+MySQL = False
+Cassandra = False
+Riak = True
 
 class OCPCAProject:
   """Project specific for cutout and annotation data"""
@@ -82,6 +86,8 @@ class OCPCAProject:
   def getKVEngine ( self ):
     if Cassandra:
       return 'Cassandra'
+    elif Riak:
+      return 'Riak'
     else:
       return 'MySQL'
 
@@ -197,17 +203,8 @@ class OCPCAProjectsDB:
 
     self.conn = MySQLdb.connect (host = ocpcaprivate.dbhost, user = ocpcaprivate.dbuser, passwd = ocpcaprivate.dbpasswd, db = ocpcaprivate.db ) 
 
-#        if self.getKVEngine() == 'MySQL':
-    if Cassandra:
-      # connect to cassandra
-      self.cluster = Cluster()
-      self.session = self.cluster.connect()
-
   def close (self):
     self.conn.close()
-#        if self.getKVEngine() == 'MySQL':
-    if Cassandra:
-      self.cluster.shutdown()
 
   #
   # Load the ocpca databse information based on the token
@@ -268,8 +265,6 @@ class OCPCAProjectsDB:
   def newOCPCAProj ( self, token, openid, dbhost, project, dbtype, dataset, dataurl, readonly, exceptions, nocreate, resolution, public=0 ):
     """Create a new ocpca project"""
 
-
-# TODO need to undo the project creation if not totally sucessful
     datasetcfg = self.loadDatasetConfig ( dataset )
 
     sql = "INSERT INTO {0} (token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions, resolution, public) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',{5},\'{6}\',\'{7}\',\'{8}\',\'{9}\',\'{10}\',\'{11}\')".format (\
@@ -286,12 +281,13 @@ class OCPCAProjectsDB:
 
       self.conn.commit()
 
+    proj = self.loadProject ( token )
+
     # Exception block around database creation
     try:
 
       # Make the database unless specified
       if not nocreate: 
-       
 
         with closing(self.conn.cursor()) as cursor:
           try:
@@ -313,7 +309,7 @@ class OCPCAProjectsDB:
         try:
 
   #        if self.getKVEngine() == 'MySQL':
-          if not Cassandra:
+          if MySQL:
 
             # tables for annotations and images
             if dbtype==IMAGES_8bit or dbtype==ANNOTATIONS or dbtype==PROBMAP_32bit or dbtype==BITMASK:
@@ -330,13 +326,28 @@ class OCPCAProjectsDB:
                 newcursor.execute ( "CREATE TABLE res%s ( channel INT, zindex BIGINT, cube LONGBLOB, PRIMARY KEY(channel,zindex) )" % i )
               newconn.commit()
 
-          else:  #cassandra for now
+          elif Riak:
 
-            self.session.execute ("CREATE KEYSPACE {} WITH REPLICATION = {{ 'class' : 'SimpleStrategy', 'replication_factor' : 1 }}".format(project))
-            self.session.execute ( "USE {}".format(project) )
+            rcli = riak.RiakClient(pb_port=8087, protocol='pbc')
+            bucket = rcli.bucket_type("ocp{}".format(proj.getDBType())).bucket(proj.getDBName())
+            bucket.set_property('allow_mult',False)
+       
 
-            self.session.execute ( "CREATE table cuboids ( resolution int, zidx bigint, cuboid text, PRIMARY KEY ( resolution, zidx ) )")
+          elif Cassandra:  #cassandra for now
+
+            cluster = Cluster()
+            try:
+              session = cluster.connect()
+
+              session.execute ("CREATE KEYSPACE {} WITH REPLICATION = {{ 'class' : 'SimpleStrategy', 'replication_factor' : 1 }}".format(proj.getDBName()))
+              session.execute ( "USE {}".format(proj.getDBName()) )
+              session.execute ( "CREATE table cuboids ( resolution int, zidx bigint, cuboid text, PRIMARY KEY ( resolution, zidx ) )")
+            finally:
+              cluster.shutdown()
             
+          else:
+            logging.error ("Unknown KV Engine requested: %s" % "RBTODO get name")
+            raise OCPCAError ("Unknown KV Engine requested: %s" % "RBTODO get name")
 
 
           # tables specific to annotation projects
@@ -355,7 +366,7 @@ class OCPCAProjectsDB:
             newconn.commit()
 
   #          if self.getKVEngine() == 'MySQL':
-            if not Cassandra:
+            if MySQL:
               for i in datasetcfg.resolutions: 
                 if exceptions:
                   newcursor.execute ( "CREATE TABLE exc%s ( zindex BIGINT, id BIGINT, exlist LONGBLOB, PRIMARY KEY ( zindex, id))" % i )
@@ -363,11 +374,22 @@ class OCPCAProjectsDB:
 
               newconn.commit()
 
-            else:   # cassandra for now
+            elif Riak:
+              pass
 
-              self.session.execute( "CREATE table exceptions ( resolution int, zidx bigint, annoid bigint, exceptions text, PRIMARY KEY ( resolution, zidx, annoid ) )")
-              self.session.execute("CREATE table indexes ( resolution int, annoid bigint, cuboids text, PRIMARY KEY ( resolution, annoid ) )")
+            else:   # Cassandra for now
 
+              cluster = Cluster()
+              try:
+                session = cluster.connect()
+                session.execute ( "USE {}".format(proj.getDBName()) )
+                session.execute( "CREATE table exceptions ( resolution int, zidx bigint, annoid bigint, exceptions text, PRIMARY KEY ( resolution, zidx, annoid ) )")
+                session.execute("CREATE table indexes ( resolution int, annoid bigint, cuboids text, PRIMARY KEY ( resolution, annoid ) )")
+              except Exception, e:
+                pass
+                raise
+              finally:
+                cluster.shutdown()
 
         except MySQLdb.Error, e:
           logging.error ("Failed to create tables for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
@@ -393,11 +415,10 @@ class OCPCAProjectsDB:
     
 
 
-  def deleteOCPCAProj ( self, token ):
+  def deleteOCPCAProj ( self, project ):
     """Create a new ocpca project"""
 
-    proj = self.loadProject ( token )
-    sql = "DELETE FROM %s WHERE token=\'%s\'" % ( ocpcaprivate.projects, token ) 
+    sql = "DELETE FROM %s WHERE project=\'%s\'" % ( ocpcaprivate.projects, project ) 
 
     with closing(self.conn.cursor()) as cursor:
       try:
@@ -417,7 +438,7 @@ class OCPCAProjectsDB:
     proj = self.loadProject ( token )
 
     # delete line from projects table
-    self.deleteOCPCAProj ( token )
+    self.deleteOCPCAProj ( proj.getDBName() )
 
     # delete the database
     sql = "DROP DATABASE " + proj.getDBName()
@@ -434,8 +455,26 @@ class OCPCAProjectsDB:
 
   #          if self.getKVEngine() == 'MySQL':
     if Cassandra:  # cassandra
-      self.session.execute ( "DROP KEYSPACE {}".format(proj.getDBName()))
-  
+
+      cluster = Cluster()
+      try:
+        session = cluster.connect()
+        session.execute ( "DROP KEYSPACE {}".format(proj.getDBName()))
+      finally:
+        cluster.shutdown()
+
+
+    elif Riak:
+
+      # connect to cassandra
+      rcli = riak.RiakClient(pb_port=8087, protocol='pbc')
+      bucket = rcli.bucket_type("ocp{}".format(proj.getDBType())).bucket(proj.getDBName())
+
+      key_list = rcli.get_keys(bucket)
+
+      for k in key_list:
+        bucket.delete(k)
+
 
   # accessors for RB to fix
   def getDBUser( self ):

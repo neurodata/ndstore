@@ -173,7 +173,7 @@ def HDF5 ( imageargs, proj, db ):
     else: 
       cube = cutout ( imageargs, proj, db, None )
 
-      ds = fh5out.create_dataset ( "cube", tuple(cube.data.shape), cube.data.dtype,
+      ds = fh5out.create_dataset ( "CUTOUT", tuple(cube.data.shape), cube.data.dtype,
                                  compression='gzip', data=cube.data )
 
   except:
@@ -603,18 +603,6 @@ def selectPost ( webargs, proj, db, postdata ):
 
     try:
 
-      if service == 'npvoxels':
-
-       #  get the resolution
-       [ entity, resolution, conflictargs ] = postargs.split('/', 2)
-
-       # Grab the voxel list
-       fileobj = cStringIO.StringIO ( postdata )
-       voxlist =  np.load ( fileobj )
-
-       conflictopt = restargs.conflictOption ( conflictargs )
-       entityid = db.annotate ( int(entity), int(resolution), voxlist, conflictopt )
-
       if service == 'npz':
 
         # Process the arguments
@@ -649,7 +637,7 @@ def selectPost ( webargs, proj, db, postdata ):
           entityid = db.annotateDense ( corner, resolution, voxarray, conflictopt )
 
       elif service == 'hdf5':
-
+   
         # Process the arguments
         try:
           args = restargs.BrainRestArgs ();
@@ -666,7 +654,8 @@ def selectPost ( webargs, proj, db, postdata ):
 
         # Get the HDF5 file.
         tmpfile = tempfile.NamedTemporaryFile ( )
-        self.idgrp.create_dataset ( "VOXELS", (len(voxlist),3), np.uint32, data=voxlist )     
+# RB? where did this come from
+#        self.idgrp.create_dataset ( "VOXELS", (len(voxlist),3), np.uint32, data=voxlist )     
         tmpfile.write ( postdata )
         tmpfile.seek(0)
         h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )

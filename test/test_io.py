@@ -374,6 +374,83 @@ class TestRW:
     with closing ( ocpcaproj.OCPCAProjectsDB() ) as pd:
       pd.deleteOCPCADB ('unittest_rw')
 
+
+  def test_raw(self):
+    """npz upload/download"""
+
+    rp = ReadParms()
+    wp = WriteParms()
+
+    # read
+    rp.token = "unittest_rw"
+    rp.baseurl = SITE_HOST
+    rp.resolution = 0
+
+    # write
+    wp.token = "unittest_rw"
+    wp.baseurl = SITE_HOST
+    wp.resolution = 0
+
+    # Create an annotation
+    wp.numobjects = 1
+    retval = writeAnno(wp) 
+    assert int(retval) >= 1
+
+    wp.annid = int(retval)
+    wp.resolution = 0
+    
+
+    # upload an npz dense
+    annodata = np.random.random_integers ( 0, 65535, [ 2, 50, 50 ] )
+
+    url = 'http://%s/ca/%s/npz/%s/%s,%s/%s,%s/%s,%s/' % ( wp.baseurl, wp.token, wp.resolution, 200, 250, 200, 250, 200, 202 )
+
+    # Encode the voxelist as a pickle
+    fileobj = cStringIO.StringIO ()
+    np.save ( fileobj, annodata )
+    cdz = zlib.compress (fileobj.getvalue())
+
+    # Build the post request
+    req = urllib2.Request(url, cdz)
+    response = urllib2.urlopen(req)
+
+    # Get annotation in question
+    f = urllib2.urlopen ( url )
+
+    rawdata = zlib.decompress ( f.read() )
+    fileobj = cStringIO.StringIO ( rawdata )
+    voxarray = np.load ( fileobj )
+
+    # check that the return matches the post
+    assert ( np.array_equal(voxarray, annodata) )
+
+    # now as an HDF5 file
+    url = 'http://%s/ca/%s/hdf5/%s/%s,%s/%s,%s/%s,%s/' % ( wp.baseurl, wp.token, wp.resolution, 200, 250, 200, 250, 300, 302 )
+
+    # Create an in-memory HDF5 file
+    tmpfile = tempfile.NamedTemporaryFile ()
+    fh5out = h5py.File ( tmpfile.name )
+
+    ds = fh5out.create_dataset ( "CUTOUT", tuple(annodata.shape), annodata.dtype, compression='gzip', data=annodata )
+
+    fh5out.close()
+    tmpfile.seek(0)
+
+    # Build the post request
+    req = urllib2.Request(url, tmpfile.read())
+    response = urllib2.urlopen(req)
+
+    # and read it
+    # Read into a temporary file
+    f = urllib2.urlopen ( url )
+    tmpfile = tempfile.NamedTemporaryFile ( )
+    tmpfile.write ( f.read() )
+    tmpfile.seek(0)
+    h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
+  
+    # check that the return matches the post
+    assert ( np.array_equal(np.array(h5f['CUTOUT']), annodata))
+
   def test_batch(self):
     """Batch interface"""
 
@@ -645,76 +722,4 @@ class TestRW:
     h5r = readAnno(rp)
     assert countVoxels ( retval, h5r ) == 2*50*50*2
 
-  def test_npz(self):
-    """npz upload/download"""
-
-    rp = ReadParms()
-    wp = WriteParms()
-
-    # read
-    rp.token = "unittest_rw"
-    rp.baseurl = SITE_HOST
-    rp.resolution = 0
-
-    # write
-    wp.token = "unittest_rw"
-    wp.baseurl = SITE_HOST
-    wp.resolution = 0
-
-    # Create an annotation
-    wp.numobjects = 1
-    retval = writeAnno(wp) 
-    assert int(retval) >= 1
-
-    wp.annid = int(retval)
-    wp.resolution = 0
-    
-    voxlist=[]
-
-
-# RBTODO PMTODO reinstate test as npz with a post
-
-# RB defunct npvoxels interface.  only upload through RAMON
-#    # upload an npz voxels list
-#    for k in range (100,102):
-#      for j in range (1000,1050):
-#        for i in range (1000,1050):
-#          voxlist.append ( [ i,j,k ] )
-#
-#    url = 'http://%s/ca/%s/npvoxels/%s/%s/' % ( wp.baseurl, wp.token, int(retval), wp.resolution)
-#
-#    # Encode the voxelist an pickle
-#    fileobj = cStringIO.StringIO ()
-#    np.save ( fileobj, voxlist )
-#
-#    # Build the post request
-#    req = urllib2.Request(url, fileobj.getvalue())
-#    response = urllib2.urlopen(req)
-#
-#    # Check that the combination of write + update sums
-#    rp.annids=int(retval)
-#    rp.voxels = True
-#    h5r = readAnno(rp)
-#    assert countVoxels ( retval, h5r ) == 50*50*2
-
-#    # upload an npz dense
-#    annodata = np.zeros( [ 2, 50, 50 ] )
-#    annodata = annodata + int(retval)
-#
-#    url = 'http://%s/ca/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( wp.baseurl, wp.token, wp.resolution, 200, 250, 200, 250, 200, 202 )
-#
-#    # Encode the voxelist as a pickle
-#    fileobj = cStringIO.StringIO ()
-#    np.save ( fileobj, annodata )
-#    cdz = zlib.compress (fileobj.getvalue())
-#
-#    # Build the post request
-#    req = urllib2.Request(url, cdz)
-#    response = urllib2.urlopen(req)
-#
-#    # Check that the combination of write + update sums
-#    rp.annids=int(retval)
-#    rp.voxels = True
-#    h5r = readAnno(rp)
-#    assert countVoxels ( retval, h5r ) == 2*50*50*2
 
