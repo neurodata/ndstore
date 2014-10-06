@@ -239,7 +239,7 @@ def xySlice ( imageargs, proj, db ):
   if filterlist != None:
     
     #filterCutout ( cube.data, filterlist )
-    cube.data = ocplib.filterCutoutOMP( cube.data, filterlist )
+    cube.data = ocplib.filter_ctype_OMP( cube.data, filterlist )
 	  
     # calling the ctype filter function
   	# cube.data = filterCutoutCtype ( cube.data, filterlist )
@@ -304,7 +304,7 @@ def xzSlice ( imageargs, proj, db ):
   if filterlist != None:
     
     #filterCutout ( cube.data, filterlist )
-    cube.data = ocplib.filterCutoutOMP( cube.data, filterlist )
+    cube.data = ocplib.filter_ctype_OMP( cube.data, filterlist )
   
   return cube
 
@@ -367,7 +367,7 @@ def yzSlice ( imageargs, proj, db ):
   if filterlist != None:
     
     #filterCutout ( cube.data, filterlist )
-    cube.data = ocplib.filterCutoutOMP( cube.data, filterlist )
+    cube.data = ocplib.filter_ctype_OMP( cube.data, filterlist )
 
   return cube
 

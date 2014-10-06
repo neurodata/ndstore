@@ -149,9 +149,9 @@ class AnnotateCube(Cube):
       # the cython optimized version of this function.
       return annotate_cy ( self.data, annid, offset, np.array(locations, dtype=np.uint32), conflictopt )
    
-   except IndexError, e:
+    except IndexError, e:
       
-     raise OCPCAError ("Voxel list includes out of bounds request.")
+      raise OCPCAError ("Voxel list includes out of bounds request.")
 
 
   def shave ( self, annid, offset, locations ):
@@ -170,7 +170,8 @@ class AnnotateCube(Cube):
     imagemap = np.zeros ( [ ydim, xdim ], dtype=np.uint32 )
 
     # false color redrawing of the region
-    recolor_cy ( self.data.reshape((imagemap.shape[0],imagemap.shape[1])), imagemap )
+    imagemap = ocplib.recolor_ctype ( self.data.reshape( (imagemap.shape[0], imagemap.shape[1]) ), imagemap )
+    #recolor_cy ( self.data.reshape((imagemap.shape[0],imagemap.shape[1])), imagemap )
 
     outimage = Image.frombuffer ( 'RGBA', (xdim,ydim), imagemap, 'raw', 'RGBA', 0, 1 )
     outimage.save ( fileobj, "PNG" )
@@ -184,7 +185,8 @@ class AnnotateCube(Cube):
     imagemap = np.zeros ( [ zdim, xdim ], dtype=np.uint32 )
 
     # false color redrawing of the region
-    recolor_cy ( self.data.reshape((imagemap.shape[0],imagemap.shape[1])), imagemap )
+    imagemap = ocplib.recolor_ctype ( self.data.reshape( (imagemap.shape[0], imagemap.shape[1]) ), imagemap )
+    #recolor_cy ( self.data.reshape((imagemap.shape[0],imagemap.shape[1])), imagemap )
 
     outimage = Image.frombuffer ( 'RGBA', (xdim,zdim), imagemap, 'raw', 'RGBA', 0, 1 )
     newimage = outimage.resize ( [xdim, int(zdim*scale)] )
@@ -199,7 +201,8 @@ class AnnotateCube(Cube):
     imagemap = np.zeros ( [ zdim, ydim ], dtype=np.uint32 )
 
     # false color redrawing of the region
-    recolor_cy ( self.data.reshape((imagemap.shape[0],imagemap.shape[1])), imagemap )
+    imagemap = ocplib.recolor_ctype ( self.data.reshape( (imagemap.shape[0], imagemap.shape[1]) ), imagemap )
+    #recolor_cy ( self.data.reshape((imagemap.shape[0],imagemap.shape[1])), imagemap )
 
     outimage = Image.frombuffer ( 'RGBA', (ydim,zdim), imagemap, 'raw', 'RGBA', 0, 1 )
     newimage = outimage.resize ( [ydim, int(zdim*scale)] )

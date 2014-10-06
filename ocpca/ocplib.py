@@ -17,6 +17,7 @@ import numpy as np
 import numpy.ctypeslib as npct
 import os
 import OCP.ocppaths
+import rgbColor
 
 #
 # Cube Locations using ctypes
@@ -38,7 +39,9 @@ ocplib.filterCutout.argtypes = [array_1d_uint32, cp.c_int, array_1d_uint32, cp.c
 ocplib.filterCutoutOMP.argtypes = [array_1d_uint32, cp.c_int, array_1d_uint32, cp.c_int]
 ocplib.locateCube.argtypes = [ array_2d_uint32, cp.c_int, array_2d_uint32, cp.c_int, cp.POINTER(cp.c_int) ]
 ocplib.annotateCube.argtypes = [ array_1d_uint32, cp.c_int, cp.POINTER(cp.c_int), cp.c_int, cp.POINTER(cp.c_int), array_1d_uint32, cp.c_int, cp.c_char ]
-
+ocplib.XYZMorton.argtypes = [ array_1d_uint32 ]
+ocplib.MortonXYZ.argtypes = [ cp.c_int, cp.POINTER(cp.c_int) ]
+ocplib.recolorCube.argtypes = [ array_1d_uint32, cp.c_int, cp.c_int, array_1d_uint32, array_1d_uint32 ]
 
 # setting the return type of the function in C
 # FORMAT: <library_name>.<function_name>.restype = [ ctype.<argtype> ]
@@ -47,22 +50,25 @@ ocplib.filterCutout.restype = None
 ocplib.filterCutoutOMP.restype = None
 ocplib.locateCube.restype = None
 ocplib.annotateCube.restype = None
+ocplib.XYZMorton.restype = cp.c_int
+ocplib.MortonXYZ.restype = None
+ocplib.recolorCube.restype = None
 
-# Uses OpenMP for filtercutout
-def filterCutoutCtypeOMP ( cutout, filterlist ):
+
+def filter_ctype_OMP ( cutout, filterlist ):
   """Remove all annotations in a cutout that do not match the filterlist using OpenMP"""
   
   # get a copy of the iterator as a 1-D array
-  flatcutout = cutout.flat.copy()
+  cutout_shape = cutout.shape
+  cutout = cutout.ravel()
   
   #Calling the C openmp funtion 
-  ocplib.filterCutoutOMP(flatcutout,cp.c_int(len(flatcutout)),filterlist.sort(),cp.c_int(len(filterlist)))
+  ocplib.filterCutoutOMP ( cutout, cp.c_int(len(cutout)), np.sort(filterlist), cp.c_int(len(filterlist)) )
   
-  return flatcutout.reshape(cutout.shape[0],cutout.shape[1],cutout.shape[2])
+  return cutout.reshape( cutout_shape )
            
 
-# Uses naive implementation of C for filtercutout
-def filterCutoutCtype ( cutout, filterlist ):
+def filter_ctype ( cutout, filterlist ):
   """Remove all annotations in a cutout that do not match the filterlist"""
                 
   # get a copy of the iterator as a 1-D array
@@ -74,22 +80,21 @@ def filterCutoutCtype ( cutout, filterlist ):
   return flatcutout.reshape(cutout.shape[0],cutout.shape[1],cutout.shape[2])
 
 
-# Uses naive implementation of C for annotate
 def annotate_ctype ( data, annid, offset, locations, conflictopt ):
   """ Remove all annotations in a cutout that do not match the filterlist """
 
   # get a copy of the iterator as a 1-D array
+  datashape = data.shape
   dims = [i for i in data.shape]
-  datacopy = data.flat.copy()
+  data = data.ravel()
           
   # Calling the C native function
-  ocplib.annotateCube ( datacopy, cp.c_int(len(datacopy)), (cp.c_int * len(dims))(*dims), cp.c_int(annid), (cp.c_int * len(offset))(*offset), locations.flatten(), cp.c_int(len(locations.flatten())), cp.c_char(conflictopt) )
+  ocplib.annotateCube ( data, cp.c_int(len(data)), (cp.c_int * len(dims))(*dims), cp.c_int(annid), (cp.c_int * len(offset))(*offset), locations.ravel(), cp.c_int(len(locations.ravel())), cp.c_char(conflictopt) )
 
-  return datacopy.reshape( data.shape )
+  return data.reshape ( datashape )
 
 
-# Uses naive implementation of C for locating Cube
-def locateCtype ( locations, dims ):
+def locate_ctype ( locations, dims ):
   """ Remove all annotations in a cutout that do not match the filterlist """
   
   # get a copy of the iterator as a 1-D array
@@ -100,3 +105,32 @@ def locateCtype ( locations, dims ):
   
   return cubeLocs.reshape( (len(locations),4) )
 
+
+def XYZMorton ( xyz ):
+  """ Get morton order from XYZ coordinates """
+  
+  # Calling the C native function
+  morton = ocplib.XYZMorton ( xyz )
+
+  return morton
+
+
+def MortonXYZ ( morton ):
+  """ Get morton order from XYZ coordinates """
+  
+  # Calling the C native function
+  cubeoff = (cp.c_int*3)(0,0,0)
+  ocplib.MortonXYZ ( morton, cubeoff )
+
+  return [i for i in cubeoff]
+
+def recolor_ctype ( cutout, imagemap ):
+  """ Annotation recoloring function """
+  
+  xdim, ydim = cutout.shape
+  imagemap = imagemap.ravel()
+
+  # Calling the c native function
+  ocplib.recolorCube ( cutout.flatten(), cp.c_int(xdim), cp.c_int(ydim), imagemap, np.asarray( rgbColor.rgbcolor,dtype=np.uint32) )
+
+  return imagemap.reshape( (xdim,ydim) )
