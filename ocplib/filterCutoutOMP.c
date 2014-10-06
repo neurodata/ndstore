@@ -19,18 +19,7 @@
 #include<omp.h>
 #include<stdbool.h>
 
-void sortFilterList ( uint32_t * filterlisti, int listsize )
-{
-  int i;
-
-  for ( i=0; i<listsize; i++)
-  {
-    printf("HELLO");
-  }
-}
-
-
-void filterCutoutOMP( uint32_t * cutout, int cutoutsize, uint32_t * filterlist, int listsize)
+void filterCutoutOMP ( uint32_t * cutout, int cutoutsize, uint32_t * filterlist, int listsize)
 {
 		int i,j;
 		bool equal;
