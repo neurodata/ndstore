@@ -47,11 +47,35 @@ class SQLDatabase:
     self.starterString = '-u {} -p{} -h {}'.format( self.user, self.password, self.host )
     
     try:
-      self.db = MySQLdb.connect ( host = self.host, user = self.user, passwd = self.password ) 
+      self.db = MySQLdb.connect ( host = self.host, user = self.user, passwd = self.password, db = self.token ) 
       self.cur = self.db.cursor()    
     except MySQLdb.Error, e:
       print e
 
+  def dumpBigTable( self, tableName ):
+    """ Dump a very big Table """
+
+    sql = "SELECT COUNT(*) FROM {}".format(tableName)
+    self.cur.execute( sql )
+    rowSize = self.cur.fetchone()
+    cmd = 'mysqldump {}  -d {} {} > {}{}.{}_schema.sql'.format( self.starterString, self.token, tableName, self.location, self.token, tableName )
+    os.system ( cmd )
+    for i in range(0, rowSize[0], rowSize[0]/10):
+        cmd = 'mysqldump {} {} {} --where "1 LIMIT {},{}" --no-create-info --skip-add-locks > {}{}.{}_{}.sql'.format ( self.starterString, self.token, tableName, i, (i-rowSize[0]) if (i-1+rowSize[0]/10) > rowSize[0] else (rowSize[0]/10), self.location, self.token, tableName, rowSize[0] if (i+rowSize[0]/10) > rowSize[0] else (i+  rowSize[0]/10) )
+        print cmd
+        os.system ( cmd )
+    
+    # Now ingesting this Big Table in the database
+
+    cmd = 'mysql -ubrain -p88brain88 -h localhost {} < {}{}.{}_schema.sql'.format( self.token, self.location, self.token, tableName )
+    print cmd
+    os.system(cmd)
+    for i in range(0, rowSize[0], rowSize[0]/10):
+        cmd = 'mysql -h {} -u {} -p{} {} < {}{}.{}_{}.sql'.format ( "localhost", self.user, self.password, self.token, self.location, self.token, tableName, rowSize[0] if (i+rowSize[0]/10) > rowSize[0] else i+ rowSize[0]/10 )
+        print cmd
+        os.system( cmd )
+
+  
   def copyTable ( self, newDBName ):
     """ Copy Tables from Database to another"""
 
@@ -99,7 +123,7 @@ class SQLDatabase:
 
     for i in range(0, len(self.proj.datasetcfg.resolutions ) ):
       
-      cmd = 'mysql () {} < {}{}.res{}.sql'.format ( self.starterString, self.token, self.location, self.token, i )
+      cmd = 'mysql {} {} < {}{}.res{}.sql'.format ( self.starterString, self.token, self.location, self.token, i )
       print cmd
       os.system( cmd )
 
@@ -129,13 +153,18 @@ def main():
   parser.add_argument('location', action="store", help='Location where to store the dump[')
   parser.add_argument('--dump', dest='dump', action="store_true", help='Dump the database into a sqldump')
   parser.add_argument('--ingest', dest='ingest', action="store_true", help='Ingest the sqldump')
+  parser.add_argument('--bigdump', dest='bigdump', help='Dump a big mysql table')
   parser.add_argument('--dbcopy', dest='dbcopy', action="store", default=None, help='Copy the database')
   parser.add_argument('--dbrename', dest='dbrename', action="store", default=None, help='Rename the database')
 
   result = parser.parse_args()
   
+  if result.bigdump!=None:
+    sqldb = SQLDatabase (  result.host, result.token, result.location )
+    sqldb.dumpBigTable ( result.bigdump ) 
+
   # Check for copy flag
-  if result.dbrename!=None:
+  elif result.dbrename!=None:
     sqldb = SQLDatabase ( result.host, result.token, result.location )
     sqldb.copyTable( result.dbrename )
 

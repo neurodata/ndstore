@@ -43,13 +43,13 @@ class Project():
 
 class OCPAdmin ():
 
-  def __init__(self, host, remotehost,  password, token, dataset ):
+  def __init__(self, host, remotehost, token, dataset ):
     """ Load the Project Info """
     
     self.token = token
     self.dataset = dataset
-    self.conn = MySQLdb.connect( host=host, user="brain", passwd=password, db=ocpcaprivate.db )
-    self.remoteconn = MySQLdb.connect( host=remotehost, user="brain", passwd=password, db=ocpcaprivate.db )
+    self.conn = MySQLdb.connect( host=host, user=settings.DATABASES.get('default').get('USER'), passwd=settings.DATABASES.get('default').get('PASSWORD'), db=ocpcaprivate.db )
+    self.remoteconn = MySQLdb.connect( host=remotehost, user=settings.DATABASES.get('default').get('USER'), passwd=settings.DATABASES.get('default').get('PASSWORD'), db=ocpcaprivate.db )
 
 
   def loadProject ( self ):
@@ -123,23 +123,22 @@ def main():
 
   parser = argparse.ArgumentParser ( description="Enter admin info from command line")
   parser.add_argument('host', action="store", help='Hostname where to copy from')
-  parser.add_argument('password', action="store", help='Password for the host')
   parser.add_argument('token', action="store", help='Token')
   parser.add_argument('dataset', action="store", help='Dataset')
-  parser.add_argument('remotehost', action="store", help='Remote Hostname')
+  parser.add_argument('remotehost', action="store", help='Remote Hostname where to copy to')
   parser.add_argument('--project', dest="proj", action="store_true", help='Copy only project')
   parser.add_argument('--dataset', dest="dst", action="store_true", help='Copy only dataset')
 
   result = parser.parse_args()
 
-  ocpadmin = OCPAdmin(result.host, result.remotehost, result.password, result.token, result.dataset )
+  ocpadmin = OCPAdmin(result.host, result.remotehost, result.token, result.dataset )
   if ( result.proj ):
     ocpadmin.insertProject()
   elif ( result.dst ):
     ocpadmin.insertDataset()
   else:
-    ocpadmin.insertDataset
-    ocpadmin.loadProject
+    ocpadmin.insertDataset()
+    ocpadmin.loadProject()
 
 
 if __name__ == "__main__":

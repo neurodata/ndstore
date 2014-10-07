@@ -15,13 +15,28 @@
 */
 
 /*
- * Header File for filterCutout function
+ * Header File for OCP Ctype Functions
 */
  
 #include<stdint.h>
 
-// Declaring Naive implementation
+// Declaring Naive implementation for filterCutout
 void filterCutout(uint32_t * , int , uint32_t *, int);
 
-// Declaring the OpenMP implementation
+// Declaring the OpenMP implementation for filterCutout
 void filterCutoutOMP(uint32_t *, int , uint32_t *, int);
+
+// Decalring the OpenMP cache optimized implementation for filterCutout
+void filterCutoutOMPCache(uint32_t *, int, uint32_t *, int);
+
+// Declaring the annotateCube implementation
+void annotateCube ( uint32_t * , int , int * , int , int * , uint32_t * , int , char );
+
+// Declaring the locateCube implementation
+void locateCube ( uint32_t [][4] , int , uint32_t [][3] , int , int * );
+
+// Declaring XYZMorton zindex function
+int XYZMorton ( uint32_t * );
+
+// Declaring MortonXYZ zindex function
+void MortonXYZ ( int , int [3] );

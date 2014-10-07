@@ -22,6 +22,7 @@ import cStringIO
 import cv2
 import zlib
 import MySQLdb
+from PIL import Image
 
 sys.path += [os.path.abspath('../django')]
 import OCP.settings
@@ -91,7 +92,10 @@ class ChanStack:
               for sl in range(zcubedim):
 
                 # resize the image
-                newimage = cv2.resize ( olddata[sl,:,:], (xcubedim,ycubedim) ) 
+                import pdb; pdb.set_trace()
+                #newimage = cv2.resize ( olddata[sl,:,:], (xcubedim,ycubedim) ) 
+                slimage = Image.frombuffer ( 'I;16', (xcubedim*2,ycubedim*2), oldata[sl,:,:].flatten(), 'raw', 'I;16', 0, 1 ) 
+                newimage = slimage.resize ( [xcubedim,ycubedim] )
 
                 # Put to a new cube
                 newdata[sl,:,:] = np.asarray ( newimage )

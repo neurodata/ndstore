@@ -43,8 +43,7 @@ from ocpcaerror import OCPCAError
 
 from filtercutout import filterCutout
 from windowcutout import windowCutout
-#from filtercutoutctype import filterCutoutCtype
-#from filtercutoutctype import filterCutoutCtypeOMP
+import ocplib
 
 import logging
 logger=logging.getLogger("ocp")
@@ -240,7 +239,8 @@ def xySlice ( imageargs, proj, db ):
   # Filter Function - Eliminate unwanted synapses ids
   if filterlist != None:
     
-    filterCutout ( cube.data, filterlist )
+    #filterCutout ( cube.data, filterlist )
+    cube.data = ocplib.filter_ctype_OMP( cube.data, filterlist )
 	  
     # calling the ctype filter function
   	# cube.data = filterCutoutCtype ( cube.data, filterlist )
@@ -304,7 +304,8 @@ def xzSlice ( imageargs, proj, db ):
   # Filter Function - Eliminate unwanted synapses ids
   if filterlist != None:
     
-    filterCutout ( cube.data, filterlist )
+    #filterCutout ( cube.data, filterlist )
+    cube.data = ocplib.filter_ctype_OMP( cube.data, filterlist )
   
   return cube
 
@@ -366,7 +367,8 @@ def yzSlice ( imageargs, proj, db ):
   # Filter Function - Eliminate unwanted synapses ids
   if filterlist != None:
     
-    filterCutout ( cube.data, filterlist )
+    #filterCutout ( cube.data, filterlist )
+    cube.data = ocplib.filter_ctype_OMP( cube.data, filterlist )
 
   return cube
 
@@ -585,7 +587,7 @@ def selectService ( webargs, proj, db ):
   """Parse the first arg and call service, HDF5, npz, etc."""
 
   [ service, sym, rangeargs ] = webargs.partition ('/')
-
+  
   if service == 'xy':
     return xyImage ( rangeargs, proj, db )
 
@@ -734,7 +736,7 @@ def selectPost ( webargs, proj, db, postdata ):
         else:
 
           entityid = db.annotateDense ( corner, resolution, voxarray, conflictopt )
-
+      
       else:
         logger.warning("An illegal Web POST service was requested: %s.  Args %s" % ( service, webargs ))
         raise OCPCAError ("No such Web service: %s" % service )
@@ -1138,6 +1140,145 @@ def getCSV ( webargs ):
   return csvstr 
 
 
+def getAnnotations ( webargs, postdata ):
+  """Get multiple annotations.  Takes an HDF5 that lists ids in the post."""
+
+  [ token, objectsliteral, otherargs ] = webargs.split ('/',2)
+
+  # Get the annotation database
+  [ db, proj, projdb ] = loadDBProj ( token )
+
+  # Read the post data HDF5 and get a list of identifiers
+  tmpinfile = tempfile.NamedTemporaryFile ( )
+  tmpinfile.write ( postdata )
+  tmpinfile.seek(0)
+  h5in = h5py.File ( tmpinfile.name )
+
+  try:
+
+    # IDENTIFIERS
+    if not h5in.get('ANNOIDS'):
+      logger.warning ("Requesting multiple annotations.  But no HDF5 \'ANNOIDS\' field specified.") 
+      raise OCPCAError ("Requesting multiple annotations.  But no HDF5 \'ANNOIDS\' field specified.") 
+
+    # GET the data out of the HDF5 file.  Never operate on the data in place.
+    annoids = h5in['ANNOIDS'][:]
+
+    # set variables to None: need them in call to getAnnoByID, but not all paths set all
+    corner = None
+    dim = None
+    resolution = None
+    dataarg = ''
+
+    # process options
+    # Split the URL and get the args
+    if otherargs != '':
+      ( dataarg, cutout ) = otherargs.split('/', 1)
+
+    if dataarg =='' or dataarg == 'nodata':
+      dataoption = AR_NODATA
+
+    elif dataarg == 'voxels':
+      dataoption = AR_VOXELS
+      # only arg to voxels is resolution
+      try:
+        [resstr, sym, rest] = cutout.partition('/')
+        resolution = int(resstr) 
+      except:
+        logger.warning ( "Improperly formatted voxel arguments {}".format(cutout))
+        raise OCPCAError("Improperly formatted voxel arguments {}".format(cutout))
+
+
+    elif dataarg == 'cutout':
+      # if blank of just resolution then a tightcutout
+      if cutout == '' or re.match('^\d+[\/]*$', cutout):
+        dataoption = AR_TIGHTCUTOUT
+        try:
+          [resstr, sym, rest] = cutout.partition('/')
+          resolution = int(resstr) 
+        except:
+          logger.warning ( "Improperly formatted cutout arguments {}".format(cutout))
+          raise OCPCAError("Improperly formatted cutout arguments {}".format(cutout))
+      else:
+        dataoption = AR_CUTOUT
+
+        # Perform argument processing
+        brargs = restargs.BrainRestArgs ();
+        brargs.cutoutArgs ( cutout, proj.datsetcfg )
+
+        # Extract the relevant values
+        corner = brargs.getCorner()
+        dim = brargs.getDim()
+        resolution = brargs.getResolution()
+
+    # RBTODO test this interface
+    elif dataarg == 'boundingbox':
+      # if blank of just resolution then a tightcutout
+      if cutout == '' or re.match('^\d+[\/]*$', cutout):
+        dataoption = AR_BOUNDINGBOX
+        try:
+          [resstr, sym, rest] = cutout.partition('/')
+          resolution = int(resstr) 
+        except:
+          logger.warning ( "Improperly formatted bounding box arguments {}".format(cutout))
+          raise OCPCAError("Improperly formatted bounding box arguments {}".format(cutout))
+
+    else:
+        logger.warning ("In getAnnotations: Error: no such data option %s " % ( dataarg ))
+        raise OCPCAError ("In getAnnotations: Error: no such data option %s " % ( dataarg ))
+
+    try:
+
+      # Make the HDF5 output file
+      # Create an in-memory HDF5 file
+      tmpoutfile = tempfile.NamedTemporaryFile()
+      h5fout = h5py.File ( tmpoutfile.name )
+
+      # get annotations for each identifier
+      for annoid in annoids:
+        # the int here is to prevent using a numpy value in an inner loop.  This is a 10x performance gain.
+        getAnnoById ( int(annoid), h5fout, proj, db, dataoption, resolution, corner, dim )
+
+    except:
+      h5fout.close()
+      tmpoutfile.close()
+
+  finally:
+    # close temporary file
+    h5in.close()
+    tmpinfile.close()
+
+  # Transmit back the populated HDF5 file
+  h5fout.flush()
+  h5fout.close()
+  tmpoutfile.seek(0)
+  return tmpoutfile.read()
+
+def putAnnotationAsync ( webargs, postdata ):
+  """Put a RAMON object asynchrously as HDF5 by object identifier"""
+  
+  [ token, sym, optionsargs ] = webargs.partition ('/')
+
+  # Get the annotation database
+  [ db, proj, projdb ] = loadDBProj ( token )
+
+  # Don't write to readonly projects
+  if proj.getReadOnly()==1:
+    logger.warning("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
+    raise OCPCAError("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
+
+  (fd,filename) = tempfile.mkstemp(suffix=".hdf5", prefix=token, dir=ocpcaprivate.ssd_log_location)
+  os.close(fd)
+  try:
+    fd = os.open(filename ,os.O_CREAT | os.O_WRONLY | os.O_NOATIME | os.O_SYNC )
+    os.write ( fd, postdata )
+    os.close( fd )
+  except Exception, e:
+    print e
+
+  # TODO KL - celery to rewrite data
+
+
 def putAnnotation ( webargs, postdata ):
   """Put a RAMON object as HDF5 by object identifier"""
 
@@ -1221,7 +1362,7 @@ def putAnnotation ( webargs, postdata ):
             if voxels.shape[1] != 3:
               logger.warning ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
               raise OCPCAError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
-
+            
             exceptions = db.annotate ( anno.annid, resolution, voxels, conflictopt )
 
           # Otherwise this is a shave operation

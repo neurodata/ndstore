@@ -57,7 +57,7 @@ def cutout (request, webargs):
     # RBTODO control caching?
     # POST methods
     elif request.method == 'POST':
-      if service=='hdf5' or service=='npz':
+      if service=='hdf5' or service=='npz' or 'hdf5_async':
         django.http.HttpResponse(ocpcarest.putCutout(webargs,request.body))
         return django.http.HttpResponse ("Success", mimetype='text/html')
       else:
@@ -77,15 +77,20 @@ def cutout (request, webargs):
     raise
 
 
-@cache_control(no_cache=True)
+#@cache_control(no_cache=True)
 def annotation (request, webargs):
   """Get put object interface for RAMON objects"""
+
+  [token, sym, service] = webargs.partition('/')
 
   try:
     if request.method == 'GET':
       return django.http.HttpResponse(ocpcarest.getAnnotation(webargs), mimetype="product/hdf5" )
     elif request.method == 'POST':
-      return django.http.HttpResponse(ocpcarest.putAnnotation(webargs,request.body))
+      if service == 'hdf5_async':
+        return django.http.HttpResponse( ocpcarest.putAnnotationAsync(webargs,request.body) )
+      else:
+        return django.http.HttpResponse(ocpcarest.putAnnotation(webargs,request.body))
     elif request.method == 'DELETE':
       ocpcarest.deleteAnnotation(webargs)
       return django.http.HttpResponse ("Success", mimetype='text/html')
