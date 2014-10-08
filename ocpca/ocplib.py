@@ -38,7 +38,7 @@ array_2d_uint32 = npct.ndpointer(dtype=np.uint32, ndim=2, flags='CONTIGUOUS')
 ocplib.filterCutout.argtypes = [array_1d_uint32, cp.c_int, array_1d_uint32, cp.c_int]
 ocplib.filterCutoutOMP.argtypes = [array_1d_uint32, cp.c_int, array_1d_uint32, cp.c_int]
 ocplib.locateCube.argtypes = [ array_2d_uint32, cp.c_int, array_2d_uint32, cp.c_int, cp.POINTER(cp.c_int) ]
-ocplib.annotateCube.argtypes = [ array_1d_uint32, cp.c_int, cp.POINTER(cp.c_int), cp.c_int, cp.POINTER(cp.c_int), array_1d_uint32, cp.c_int, cp.c_char ]
+ocplib.annotateCube.argtypes = [ array_1d_uint32, cp.c_int, cp.POINTER(cp.c_int), cp.c_int, cp.POINTER(cp.c_int), array_1d_uint32, cp.c_int, cp.c_char, array_1d_uint32 ]
 ocplib.XYZMorton.argtypes = [ array_1d_uint32 ]
 ocplib.MortonXYZ.argtypes = [ cp.c_int, cp.POINTER(cp.c_int) ]
 ocplib.recolorCube.argtypes = [ array_1d_uint32, cp.c_int, cp.c_int, array_1d_uint32, array_1d_uint32 ]
@@ -49,7 +49,7 @@ ocplib.recolorCube.argtypes = [ array_1d_uint32, cp.c_int, cp.c_int, array_1d_ui
 ocplib.filterCutout.restype = None
 ocplib.filterCutoutOMP.restype = None
 ocplib.locateCube.restype = None
-ocplib.annotateCube.restype = None
+ocplib.annotateCube.restype = cp.c_int
 ocplib.XYZMorton.restype = cp.c_int
 ocplib.MortonXYZ.restype = None
 ocplib.recolorCube.restype = None
@@ -87,11 +87,13 @@ def annotate_ctype ( data, annid, offset, locations, conflictopt ):
   datashape = data.shape
   dims = [i for i in data.shape]
   data = data.ravel()
+
+  exceptions = np.zeros ( (len(data)), dtype=np.uint32 )
           
   # Calling the C native function
-  ocplib.annotateCube ( data, cp.c_int(len(data)), (cp.c_int * len(dims))(*dims), cp.c_int(annid), (cp.c_int * len(offset))(*offset), locations.ravel(), cp.c_int(len(locations.ravel())), cp.c_char(conflictopt) )
+  exceptionIndex = ocplib.annotateCube ( data, cp.c_int(len(data)), (cp.c_int * len(dims))(*dims), cp.c_int(annid), (cp.c_int * len(offset))(*offset), locations.ravel(), cp.c_int(len(locations.ravel())), cp.c_char(conflictopt), exceptions )
 
-  return data.reshape ( datashape )
+  return exceptions[:exceptionIndex].shape((exceptionIndex,3)) if exceptionIndex > 0 else exceptions
 
 
 def locate_ctype ( locations, dims ):
@@ -103,7 +105,7 @@ def locate_ctype ( locations, dims ):
   # Calling the C native function
   ocplib.locateCube ( cubeLocs, cp.c_int(len(cubeLocs)), locations, cp.c_int(len(locations)), (cp.c_int * len(dims))(*dims) )
   
-  return cubeLocs.reshape( (len(locations),4) )
+  return cubeLocs
 
 
 def XYZMorton ( xyz ):

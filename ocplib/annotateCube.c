@@ -26,10 +26,9 @@
 #include<stdlib.h>
 #include<string.h>
 
-void annotateCube( uint32_t * data, int dataSize, int * dims, int annid, int * offset,  uint32_t * locations, int locationsSize, char conflictopt )
+int annotateCube( uint32_t * data, int dataSize, int * dims, int annid, int * offset,  uint32_t * locations, int locationsSize, char conflictopt, uint32_t * exceptions )
 {
 		int i,j;
-		bool equal;
     int index;
     int xoffset = offset[0];
     int yoffset = offset[1];
@@ -39,7 +38,7 @@ void annotateCube( uint32_t * data, int dataSize, int * dims, int annid, int * o
     int ydim = dims[1];
     int zdim = dims[2];
 
-    int exceptions[] = {};
+    int exceptionIndex = -1;
 
 		for ( i=0; i<locationsSize; i+=3)
 		{
@@ -67,7 +66,9 @@ void annotateCube( uint32_t * data, int dataSize, int * dims, int annid, int * o
         // E creates exceptions
         else if ( conflictopt == 'E' )
           printf ( "Append exceptions" );
-          //execptions.append ( [voxel[0]-xoffset, voxel[1]-yoffset, voxel[2]-zoffset] )
+          exceptions [ ++exceptionIndex ] = locations[i]-xoffset;
+          exceptions [ ++exceptionIndex ] = (locations[i+1]-yoffset)*(zdim);
+          exceptions [ ++exceptionIndex ] = (locations[i+2]-zoffset)*(ydim*zdim);
       }
       else
       {
@@ -75,7 +76,7 @@ void annotateCube( uint32_t * data, int dataSize, int * dims, int annid, int * o
         //assert(0);
       }
       
-      //return exceptions;
+      return exceptionIndex;
 
 		}
 }
