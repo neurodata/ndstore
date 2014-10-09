@@ -36,8 +36,8 @@ IMAGES_16bit = 8
 
 # RBTODO need to integrate this into project engine
 MySQL = False
-Cassandra = False
-Riak = True
+Cassandra = True
+Riak = False
 
 class OCPCAProject:
   """Project specific for cutout and annotation data"""
@@ -434,10 +434,17 @@ class OCPCAProjectsDB:
   def deleteOCPCADB ( self, token ):
 
     # load the project
-    proj = self.loadProject ( token )
+    try:
 
-    # delete line from projects table
-    self.deleteOCPCAProj ( proj.getDBName() )
+      proj = self.loadProject ( token )
+      # delete line from projects table
+      self.deleteOCPCAProj ( proj.getDBName() )
+
+    except Exception, e:
+      logger.warning ("Failed to delete project {}".format(e))
+
+    #  try to delete the database anyway
+    #  Sometimes weird crashes can get stuff out of sync
 
     # delete the database
     sql = "DROP DATABASE " + proj.getDBName()
@@ -445,12 +452,15 @@ class OCPCAProjectsDB:
     with closing(self.conn.cursor()) as cursor:
       try:
         cursor.execute ( sql )
+        self.conn.commit()
       except MySQLdb.Error, e:
         conn.rollback()
-        logging.error ("Failed to drop project database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        raise OCPCAError ("Failed to drop project database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+        logger.error ("Failed to drop project database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+#        raise OCPCAError ("Failed to drop project database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
-        self.conn.commit()
+
+    #  try to delete the database anyway
+    #  Sometimes weird crashes can get stuff out of sync
 
   #          if self.getKVEngine() == 'MySQL':
     if Cassandra:  # cassandra

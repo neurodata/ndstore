@@ -63,7 +63,7 @@ class MySQLKVIO:
     self.txncursor.execute ( sql )
 
   def commit ( self ):
-    """Commit the transaction.  Moved out of __del__ to make explicit.""" 
+    """Commit the transaction.  Moved out of del to make explicit.""" 
     if self.txncursor:
       self.conn.commit()
       self.txncursor.close()
@@ -76,11 +76,6 @@ class MySQLKVIO:
       self.conn.rollback()
       self.txncursor.close()
       self.txncursor = None
-
-  def __del__ ( self ):
-    """Close the connection"""
-    if self.conn:
-      self.conn.close()
 
   def getCube ( self, zidx, resolution, update ):
     """Retrieve a cube from the database by token, resolution, and zidx"""
