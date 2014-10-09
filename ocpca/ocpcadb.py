@@ -47,7 +47,6 @@ logger=logging.getLogger("ocp")
 
 import sys
 
-#import askvio
 import mysqlkvio
 import casskvio
 import riakkvio
@@ -1650,7 +1649,7 @@ class OCPCADB:
       self.kvio.rollback()
       raise
 
-    seld.kvio.commit()
+    self.kvio.commit()
 
 
   #

@@ -1,5 +1,3 @@
-
-# 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -83,6 +81,7 @@ class OCPCAProject:
   def getResolution ( self ):
     return self._resolution
   # RBTODO need to make the KVEngine a project attribute
+  # PYTODO create a project attribute that selects KVEngine
   def getKVEngine ( self ):
     if Cassandra:
       return 'Cassandra'
@@ -407,7 +406,7 @@ class OCPCAProjectsDB:
       with closing(self.conn.cursor()) as cursor:
         try:
           cursor.execute ( sql )
-          conn.commit()
+          self.conn.commit()
         except MySQLdb.Error, e:
           logger.error ("Could not undo insert into ocpca projects database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
           logger.error ("Check project database for project not linked to database.")

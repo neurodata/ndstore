@@ -80,10 +80,8 @@ class CassandraKVIO:
     else:
 
       try:
-    #    cql = "SELECT cuboid FROM cuboids WHERE resolution = %s AND zidx in %s" 
         cql = "SELECT zidx, cuboid FROM cuboids WHERE resolution = %s AND zidx in %s" % (resolution, tuple(listofidxs)) 
         rows = self.session.execute ( cql )
-    #    rows = self.session.execute ( cql, ( resolution, tuple(listofidxs)))
 
         for row in rows:
           yield (row.zidx, row.cuboid.decode('hex'))
@@ -115,6 +113,7 @@ class CassandraKVIO:
     else:
       return None
 
+  # RBTODO change name from cuboids to indexes
   def putIndex ( self, annid, resolution, indexstr, update ):
     """MySQL put index routine"""
     

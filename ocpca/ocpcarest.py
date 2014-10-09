@@ -63,7 +63,7 @@ def cutout ( imageargs, proj, db, channel=None ):
     args.cutoutArgs ( imageargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
-    raise OCPCAError(e)
+    raise OCPCAError(e.value)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -207,7 +207,7 @@ def xySlice ( imageargs, proj, db ):
     args.xyArgs ( imageargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
-    raise OCPCAError(e)
+    raise OCPCAError(e.value)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -257,7 +257,7 @@ def xzSlice ( imageargs, proj, db ):
     args.xzArgs ( imageargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
-    raise OCPCAError(e)
+    raise OCPCAError(e.value)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -304,7 +304,7 @@ def yzSlice ( imageargs, proj, db ):
     args.yzArgs ( imageargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
-    raise OCPCAError(e)
+    raise OCPCAError(e.value)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -363,7 +363,7 @@ def xyAnno ( imageargs, proj, db ):
     args.xyArgs ( imageargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
-    raise OCPCAError(e)
+    raise OCPCAError(e.value)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -637,13 +637,13 @@ def selectPost ( webargs, proj, db, postdata ):
           entityid = db.annotateDense ( corner, resolution, voxarray, conflictopt )
 
       elif service == 'hdf5':
-   
+    
         # Process the arguments
         try:
           args = restargs.BrainRestArgs ();
           args.cutoutArgs ( postargs, proj.datasetcfg )
         except restargs.RESTArgsError, e:
-          logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
+          logger.warning("REST Arguments %s failed: %s" % (postargs,e))
           raise OCPCAError(e)
 
         corner = args.getCorner()
