@@ -41,9 +41,9 @@ from ocpca_cy import recolor_cy
 
 from ocpcaerror import OCPCAError
 
-from filtercutout import filterCutout
 from windowcutout import windowCutout
 import ocplib
+import ocpcaprivate
 
 import logging
 logger=logging.getLogger("ocp")
@@ -1259,6 +1259,8 @@ def putAnnotationAsync ( webargs, postdata ):
   
   [ token, sym, optionsargs ] = webargs.partition ('/')
 
+  print "Wrting Data to SSD"
+
   # Get the annotation database
   [ db, proj, projdb ] = loadDBProj ( token )
 
@@ -1266,7 +1268,6 @@ def putAnnotationAsync ( webargs, postdata ):
   if proj.getReadOnly()==1:
     logger.warning("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
     raise OCPCAError("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
-
   (fd,filename) = tempfile.mkstemp(suffix=".hdf5", prefix=token, dir=ocpcaprivate.ssd_log_location)
   os.close(fd)
   try:
@@ -1277,6 +1278,8 @@ def putAnnotationAsync ( webargs, postdata ):
     print e
 
   # TODO KL - celery to rewrite data
+  #import h5annasync
+  #h5annasync.h5Async( token, optionsargs )
 
 
 def putAnnotation ( webargs, postdata ):
