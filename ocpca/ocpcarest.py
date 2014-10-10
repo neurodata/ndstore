@@ -76,7 +76,7 @@ def cutout ( imageargs, proj, db, channel=None ):
   # Perform the cutout
   cube = db.cutout ( corner, dim, resolution, channel, zscaling )
   if filterlist != None:
-    filterCutout ( cube.data, filterlist )
+    cube.data = ocplib.filter_ctype_OMP ( cube.data, filterlist )
 
   return cube
 

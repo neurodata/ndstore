@@ -969,7 +969,7 @@ class OCPCADB:
 
       # apply exceptions if it's an annotation project
       if annoids!= None and self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS:
-        filterCutout ( incube.data, annoids )
+        incube.data = ocplib.filter_ctype_OMP ( incube.data, annoids )
         self.applyCubeExceptions ( annoids, effresolution, idx, incube )
 
       # add it to the output cube
@@ -1207,9 +1207,9 @@ class OCPCADB:
       # get the cube and mask out the non annoid values
       cb = self.getCube (zidx,effectiveres) 
       if not remapid:
-        filterCutout ( cb.data, dataids )
+        cb.data = ocplib.filter_ctype_OMP ( cb.data, dataids )
       else: 
-        filterCutout ( cb.data, dataids )
+        cb.data = ocplib.filter_ctype_OMP ( cb.data, dataids )
         vec_func = np.vectorize ( lambda x: np.uint32(remapid) if x != 0 else np.uint32(0) ) 
         cb.data = vec_func ( cb.data )
 

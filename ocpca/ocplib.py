@@ -61,6 +61,7 @@ def filter_ctype_OMP ( cutout, filterlist ):
   # get a copy of the iterator as a 1-D array
   cutout_shape = cutout.shape
   cutout = cutout.ravel()
+  filterlist = np.asarray(filterlist, dtype=np.uint32)
   
   #Calling the C openmp funtion 
   ocplib.filterCutoutOMP ( cutout, cp.c_int(len(cutout)), np.sort(filterlist), cp.c_int(len(filterlist)) )
