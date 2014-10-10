@@ -131,11 +131,9 @@ class AnnotateCube(Cube):
     try:
     
       # the ctype optimized version of this function.
-      self.data = ocplib.annotate_ctype( self.data, annid, offset, np.array(locations, dtype=np.uint32), conflictopt )
-      #return annotate_cy ( self.data, annid, offset, np.array(locations, dtype=np.uint32), conflictopt )
-      
-      # returning a zero for now. Have to return 
-      return 0
+      self.data, exceptions = ocplib.annotate_ctype( self.data, annid, offset, np.array(locations, dtype=np.uint32), conflictopt )
+
+      return exceptions
     
     except IndexError, e:
       

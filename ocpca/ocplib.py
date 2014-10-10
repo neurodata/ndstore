@@ -38,7 +38,7 @@ array_2d_uint32 = npct.ndpointer(dtype=np.uint32, ndim=2, flags='CONTIGUOUS')
 ocplib.filterCutout.argtypes = [array_1d_uint32, cp.c_int, array_1d_uint32, cp.c_int]
 ocplib.filterCutoutOMP.argtypes = [array_1d_uint32, cp.c_int, array_1d_uint32, cp.c_int]
 ocplib.locateCube.argtypes = [ array_2d_uint32, cp.c_int, array_2d_uint32, cp.c_int, cp.POINTER(cp.c_int) ]
-ocplib.annotateCube.argtypes = [ array_1d_uint32, cp.c_int, cp.POINTER(cp.c_int), cp.c_int, cp.POINTER(cp.c_int), array_1d_uint32, cp.c_int, cp.c_char, array_1d_uint32 ]
+ocplib.annotateCube.argtypes = [ array_1d_uint32, cp.c_int, cp.POINTER(cp.c_int), cp.c_int, cp.POINTER(cp.c_int), array_2d_uint32, cp.c_int, cp.c_char, array_2d_uint32 ]
 ocplib.XYZMorton.argtypes = [ array_1d_uint32 ]
 ocplib.MortonXYZ.argtypes = [ cp.c_int, cp.POINTER(cp.c_int) ]
 ocplib.recolorCube.argtypes = [ array_1d_uint32, cp.c_int, cp.c_int, array_1d_uint32, array_1d_uint32 ]
@@ -88,12 +88,17 @@ def annotate_ctype ( data, annid, offset, locations, conflictopt ):
   dims = [i for i in data.shape]
   data = data.ravel()
 
-  exceptions = np.zeros ( (len(data)), dtype=np.uint32 )
+  exceptions = np.zeros ( (len(locations),3), dtype=np.uint32 )
           
   # Calling the C native function
-  exceptionIndex = ocplib.annotateCube ( data, cp.c_int(len(data)), (cp.c_int * len(dims))(*dims), cp.c_int(annid), (cp.c_int * len(offset))(*offset), locations.ravel(), cp.c_int(len(locations.ravel())), cp.c_char(conflictopt), exceptions )
+  exceptionIndex = ocplib.annotateCube ( data, cp.c_int(len(data)), (cp.c_int * len(dims))(*dims), cp.c_int(annid), (cp.c_int * len(offset))(*offset), locations, cp.c_int(len(locations)), cp.c_char(conflictopt), exceptions )
 
-  return exceptions[:exceptionIndex].shape((exceptionIndex,3)) if exceptionIndex > 0 else exceptions
+  if exceptionIndex > 0:
+    exceptions = exceptions[:(exceptionIndex+1)]
+  else:
+    exceptions = np.zeros ( (0), dtype=np.uint32 )
+
+  return ( data.reshape(datashape) , exceptions )
 
 
 def locate_ctype ( locations, dims ):
@@ -112,6 +117,7 @@ def XYZMorton ( xyz ):
   """ Get morton order from XYZ coordinates """
   
   # Calling the C native function
+  xyz = np.uint32( xyz )
   morton = ocplib.XYZMorton ( xyz )
 
   return morton
