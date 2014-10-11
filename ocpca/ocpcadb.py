@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+# RBTODO cuboids upload.  batch i/o with getcubes when possible
+
 import numpy as np
 import cStringIO
 import zlib
@@ -19,6 +22,7 @@ import MySQLdb
 import re
 from collections import defaultdict
 import itertools
+from contextlib import closing
 
 import zindex
 import anncube
@@ -30,6 +34,8 @@ import imagecube
 import probmapcube
 import ocpcachannel
 import ocplib
+import tempfile
+import h5py
 
 from ocpcaerror import OCPCAError
 
@@ -41,6 +47,11 @@ logger=logging.getLogger("ocp")
 
 import sys
 
+#import askvio
+import mysqlkvio
+import casskvio
+
+
 ################################################################################
 #
 #  class: OCPCADB
@@ -48,7 +59,6 @@ import sys
 #  Manipulate/create/read from the Morton-order cube store
 #
 ################################################################################
-
 
 class OCPCADB: 
 
@@ -60,45 +70,93 @@ class OCPCADB:
 
     # Are there exceptions?
     self.EXCEPT_FLAG = self.annoproj.getExceptions()
+    self.KVENGINE = self.annoproj.getKVEngine()
 
-    # Connection info 
+    # Choose the I/O engine for key/value data
+    if self.annoproj.getKVEngine() == 'MySQL':
+      self.kvio = mysqlkvio.MySQLKVIO(self)
+      self.NPZ = True
+    else:
+      self.kvio = casskvio.CassandraKVIO(self)
+      self.NPZ = False
+
+    # How many slices?
+    [ self.startslice, endslice ] = self.datasetcfg.slicerange
+    self.slices = endslice - self.startslice + 1 
+
+    # Connection info for the metadata
     try:
       self.conn = MySQLdb.connect (host = self.annoproj.getDBHost(),
                             user = self.annoproj.getDBUser(),
                             passwd = self.annoproj.getDBPasswd(),
                             db = self.annoproj.getDBName())
+
+      # start with no cursor
+      self.cursor = None
+
     except MySQLdb.Error, e:
       self.conn = None
       logger.error("Failed to connect to database: %s, %s" % (self.annoproj.getDBHost(), self.annoproj.getDBName()))
       raise
 
-    self.cursor = self.conn.cursor()
-      
-    # How many slices?
-    [ self.startslice, endslice ] = self.datasetcfg.slicerange
-    self.slices = endslice - self.startslice + 1 
-
     # create annidx object
-    self.annoIdx = annindex.AnnotateIndex (self.conn, self.cursor, self.annoproj)
+    if (self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS):
+      self.annoIdx = annindex.AnnotateIndex ( self.kvio, self.annoproj )
+
+  def close ( self ):
+    """Close the connection"""
+    if self.conn:
+      self.conn.close()
+    self.kvio.close()
+
+#
+#  Cursor handling routines.  We operate in two modes.  TxN at a time
+#  
+#
+
+  def getCursor ( self ):
+    """If we are in a transaction, return the cursor, otherwise make one"""
+
+    if self.cursor == None:
+      return self.conn.cursor()
+    else:
+      return self.cursor
+
+  def closeCursor ( self, cursor ):
+    """Close the cursor if we are not in a transaction"""
+
+    if self.cursor == None:
+      print "Cursor close"
+      cursor.close()
+
+  def closeCursorCommit ( self, cursor ):
+    """Close the cursor if we are not in a transaction"""
+
+    if self.cursor == None:
+      print "Close and commit"
+      self.conn.commit()
+      cursor.close()
+
 
   def commit ( self ):
     """Commit the transaction.  Moved out of __del__ to make explicit.""" 
+
+    self.cursor.close()
     self.conn.commit()
 
   def startTxn ( self ):
     """Start a transaction.  Ensure database is in multi-statement mode."""
+
+    self.cursor = self.conn.cursor()
     sql = "START TRANSACTION"
     self.cursor.execute ( sql )
 
   def rollback ( self ):
     """Rollback the transaction.  To be called on exceptions."""
+
+    self.cursor.close()
     self.conn.rollback()
 
-  def __del__ ( self ):
-    """Close the connection"""
-    if self.conn:
-      self.cursor.close()
-      self.conn.close()
 
   #
   #  peekID
@@ -108,23 +166,25 @@ class OCPCADB:
         It is not thread safe.  Need a way to lock the ids table for the 
         transaction to make it safe."""
     
-    # Query the current max identifier
-    sql = "SELECT max(id) FROM " + str ( self.annoproj.getIDsTbl() )
-    try:
-      self.cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ("Problem retrieving identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise
+    with closing ( self.conn.cursor() ) as cursor:
 
-    # Here we've queried the highest id successfully    
-    row = self.cursor.fetchone()
-    # if the table is empty start at 1, 0 is no annotation
-    if ( row[0] == None ):
-      identifier = 1
-    else:
-      identifier = int ( row[0] ) + 1
+      # Query the current max identifier
+      sql = "SELECT max(id) FROM " + str ( self.annoproj.getIDsTbl() )
+      try:
+        cursor.execute ( sql )
+      except MySQLdb.Error, e:
+        logger.warning ("Problem retrieving identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+        raise
 
-    return identifier
+      # Here we've queried the highest id successfully    
+      row = cursor.fetchone()
+      # if the table is empty start at 1, 0 is no annotation
+      if ( row[0] == None ):
+        identifier = 1
+      else:
+        identifier = int ( row[0] ) + 1
+
+      return identifier
 
   #
   #  nextIdentifier
@@ -132,46 +192,48 @@ class OCPCADB:
   def nextID ( self ):
     """Get an new identifier.
        This is it's own txn and should not be called inside another transaction. """
+
+
+    with closing ( self.conn.cursor() ) as cursor:
     
-    # LOCK the table to prevent race conditions on the ID
-    sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getIDsTbl() )
-    try:
-
-      self.cursor.execute ( sql )
-
-      # Query the current max identifier
-      sql = "SELECT max(id) FROM " + str ( self.annoproj.getIDsTbl() ) 
+      # LOCK the table to prevent race conditions on the ID
+      sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getIDsTbl() )
       try:
-        self.cursor.execute ( sql )
-      except MySQLdb.Error, e:
-        logger.error ( "Failed to create annotation identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        raise
 
-      # Here we've queried the highest id successfully    
-      row = self.cursor.fetchone ()
-      # if the table is empty start at 1, 0 is no 
-      if ( row[0] == None ):
-        identifier = 1
-      else:
-        identifier = int ( row[0] ) + 1
+        cursor.execute ( sql )
 
-      # increment and update query
-      sql = "INSERT INTO " + str(self.annoproj.getIDsTbl()) + " VALUES ( " + str(identifier) + " ) "
-      try:
-        self.cursor.execute ( sql )
-      except MySQLdb.Error, e:
-        logger.error ( "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        raise
+        # Query the current max identifier
+        sql = "SELECT max(id) FROM " + str ( self.annoproj.getIDsTbl() ) 
+        try:
+          cursor.execute ( sql )
+        except MySQLdb.Error, e:
+          logger.error ( "Failed to create annotation identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+          raise
 
-      self.commit()
+        # Here we've queried the highest id successfully    
+        row = cursor.fetchone ()
+        # if the table is empty start at 1, 0 is no 
+        if ( row[0] == None ):
+          identifier = 1
+        else:
+          identifier = int ( row[0] ) + 1
 
-    finally:
-      pass
-      sql = "UNLOCK TABLES" 
-      self.cursor.execute ( sql )
+        # increment and update query
+        sql = "INSERT INTO " + str(self.annoproj.getIDsTbl()) + " VALUES ( " + str(identifier) + " ) "
+        try:
+          cursor.execute ( sql )
+        except MySQLdb.Error, e:
+          logger.error ( "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+          raise
 
-    self.commit()
-    return identifier
+  #RBRM      self.conn.commit()
+
+      finally:
+        sql = "UNLOCK TABLES" 
+        cursor.execute ( sql )
+        self.conn.commit()
+
+      return identifier
 
 
   #
@@ -182,25 +244,27 @@ class OCPCADB:
   def setID ( self, annoid ):
     """Set a user specified identifier"""
 
-    # LOCK the table to prevent race conditions on the ID
-    sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getIDsTbl() )
-    try:
+    with closing ( self.conn.cursor() ) as cursor:
 
-      # try the insert, get ane exception if it doesn't work
-      sql = "INSERT INTO " + str(self.annoproj.getIDsTbl()) + " VALUES ( " + str(annoid) + " ) "
+      # LOCK the table to prevent race conditions on the ID
+      sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getIDsTbl() )
       try:
-        self.cursor.execute ( sql )
-      except MySQLdb.Error, e:
-        logger.warning ( "Failed to set identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        raise
 
-      self.commit()
+        # try the insert, get ane exception if it doesn't work
+        sql = "INSERT INTO " + str(self.annoproj.getIDsTbl()) + " VALUES ( " + str(annoid) + " ) "
+        try:
+          cursor.execute ( sql )
+        except MySQLdb.Error, e:
+          logger.warning ( "Failed to set identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+          raise
 
-    finally:
-      sql = "UNLOCK TABLES" 
-      self.cursor.execute ( sql )
+#RBRM        self.conn.commit()
 
-    self.commit()
+      finally:
+        sql = "UNLOCK TABLES" 
+        cursor.execute ( sql )
+        self.conn.commit()
+
     return annoid
 
   #
@@ -210,45 +274,48 @@ class OCPCADB:
     """Reserve contiguous identifiers.
        This is it's own txn and should not be called inside another transaction. """
     
-    # LOCK the table to prevent race conditions on the ID
-    sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getIDsTbl() )
-    try:
+    with closing ( self.conn.cursor() ) as cursor:
 
-      self.cursor.execute ( sql )
-
-      # Query the current max identifier
-      sql = "SELECT max(id) FROM " + str ( self.annoproj.getIDsTbl() ) 
+      # LOCK the table to prevent race conditions on the ID
+      sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getIDsTbl() )
       try:
-        self.cursor.execute ( sql )
-      except MySQLdb.Error, e:
-        logger.error ( "Failed to create annotation identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        raise
 
-      # Here we've queried the highest id successfully    
-      row = self.cursor.fetchone ()
-      # if the table is empty start at 1, 0 is no 
-      if ( row[0] == None ):
-        identifier = 0
-      else:
-        identifier = int ( row[0] ) 
+        cursor.execute ( sql )
 
-      # increment and update query
-      sql = "INSERT INTO " + str(self.annoproj.getIDsTbl()) + " VALUES ( " + str(identifier+count) + " ) "
-      try:
-        self.cursor.execute ( sql )
-      except MySQLdb.Error, e:
+        # Query the current max identifier
+        sql = "SELECT max(id) FROM " + str ( self.annoproj.getIDsTbl() ) 
+        try:
+          cursor.execute ( sql )
+        except MySQLdb.Error, e:
+          logger.error ( "Failed to create annotation identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+          raise
+
+        # Here we've queried the highest id successfully    
+        row = cursor.fetchone ()
+        # if the table is empty start at 1, 0 is no 
+        if ( row[0] == None ):
+          identifier = 0
+        else:
+          identifier = int ( row[0] ) 
+
+        # increment and update query
+        sql = "INSERT INTO " + str(self.annoproj.getIDsTbl()) + " VALUES ( " + str(identifier+count) + " ) "
+        try:
+          cursor.execute ( sql )
+        except MySQLdb.Error, e:
+          logger.error ( "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+          raise
+
+      except Exception, e:
         logger.error ( "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        raise
 
-      self.commit()
+      finally:
+        sql = "UNLOCK TABLES" 
+        cursor.execute ( sql )
+        self.conn.commit()
 
-    finally:
-      pass
-      sql = "UNLOCK TABLES" 
-      self.cursor.execute ( sql )
+      return identifier+1
 
-    self.commit()
-    return identifier+1
 
   #
   # getCube
@@ -275,59 +342,193 @@ class OCPCADB:
     else:
       raise OCPCAError ("Unknown project type {}".format(self.annoproj.getDBType()))
   
-
     # get the block from the database
-    sql = "SELECT cube FROM " + self.annoproj.getTable(resolution) + " WHERE zindex = " + str(key) 
-    if update==True:
-          sql += " FOR UPDATE"
+    cubestr = self.kvio.getCube ( key, resolution, update )
 
-    try:
-      self.cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.error ( "Failed to retrieve data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise
+    if not cubestr:
+      cube.zeros()
+    else:
+      # Handle the cube format here.  
+      if self.NPZ:
+          # decompress the cube
+          cube.fromNPZ ( cubestr )
 
-    row = self.cursor.fetchone()
+      else:
+          # cubes are HDF5 files
+          tmpfile = tempfile.NamedTemporaryFile ()
+          tmpfile.write ( cubestr )
+          tmpfile.seek(0)
+          h5 = h5py.File ( tmpfile.name ) 
 
-    # If we can't find a cube, assume it hasn't been written yet
-    if ( row == None ):
-      cube.zeros ()
-    else: 
-      # decompress the cube
-      cube.fromNPZ ( row[0] )
+          # load the numpy array
+          cube.data = np.array ( h5['cuboid'] )
+          h5.close()
+          tmpfile.close()
 
     return cube
+
+  #
+  # cputCube
+  #  RBRM
+  # cgetCube
+  #
+  def cgetCube ( self, key, resolution, update=False ):
+    """Load a cube from the annotation database"""
+
+    # get the size of the image and cube
+    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
+
+    # Create a cube object
+    if (self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS):
+      cube = anncube.AnnotateCube ( cubedim )
+    elif (self.annoproj.getDBType()==ocpcaproj.PROBMAP_32bit):
+      cube = probmapcube.ProbMapCube32 ( cubedim )
+    elif (self.annoproj.getDBType()==ocpcaproj.IMAGES_8bit):
+      cube = imagecube.ImageCube8 ( cubedim )
+    elif (self.annoproj.getDBType()==ocpcaproj.IMAGES_16bit):
+      cube = imagecube.ImageCube16 ( cubedim )
+    else:
+      raise OCPCAError ("Unknown project type {}".format(self.annoproj.getDBType()))
+  
+    # get the block from the database
+    cubestr = self.ckvio.getCube ( key, resolution, update )
+
+    # cubes are HDF5 files
+    tmpfile = tempfile.NamedTemporaryFile ()
+    tmpfile.write ( cubestr )
+    tmpfile.seek(0)
+    h5 = h5py.File ( tmpfile.name ) 
+
+    # load the numpy array
+    cube.data = np.array ( h5['cuboid'] )
+
+    h5.close()
+    tmpfile.close()
+
+    return cube
+
+  def cputCube ( self, zidx, resolution, cube ):
+    """Store a cube in the annotation database"""
+
+    # Handle the cube format here.  
+    tmpfile= tempfile.NamedTemporaryFile ()
+    h5 = h5py.File ( tmpfile.name )
+    h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype, compression='gzip',  data=cube.data )
+    h5.close()
+    tmpfile.seek(0)
+
+    self.ckvio.putCube ( zidx, resolution, tmpfile.read(), not cube.fromZeros() )
+    tmpfile.close()
 
 
   #
   # putCube
   #
-  def putCube ( self, key, resolution, cube ):
-    """Store a cube from the annotation database"""
+  def putCube ( self, zidx, resolution, cube ):
+    """Store a cube in the annotation database"""
 
-    # compress the cube
-    npz = cube.toNPZ ()
-
-    # we created a cube from zeros
-    if cube.fromZeros ():
-
-      sql = "INSERT INTO " + self.annoproj.getTable(resolution) +  "(zindex, cube) VALUES (%s, %s)"
-
-      # this uses a cursor defined in the caller (locking context): not beautiful, but needed for locking
-      try:
-        self.cursor.execute ( sql, (key,npz))
-      except MySQLdb.Error, e:
-        logger.error ( "Error inserting cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        raise
-
+    # Handle the cube format here.  
+    if self.NPZ:
+      self.kvio.putCube ( zidx, resolution, cube.toNPZ(), not cube.fromZeros() )
     else:
+      tmpfile= tempfile.NamedTemporaryFile ()
+      h5 = h5py.File ( tmpfile.name )
+      h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype, compression='gzip',  data=cube.data )
+      h5.close()
+      tmpfile.seek(0)
 
-      sql = "UPDATE " + self.annoproj.getTable(resolution) + " SET cube=(%s) WHERE zindex=" + str(key)
-      try:
-        self.cursor.execute ( sql, (npz))
-      except MySQLdb.Error, e:
-        logger.error ( "Error updating data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        raise
+      self.kvio.putCube ( zidx, resolution, tmpfile.read(), not cube.fromZeros() )
+      tmpfile.close()
+
+
+
+  #
+  # getExceptions
+  #
+  def getExceptions ( self, zidx, resolution, annoid ):
+    """Load a cube from the annotation database"""
+
+    excstr = self.kvio.getExceptions ( zidx, resolution, annoid )
+    if excstr:
+      if self.NPZ:
+        return np.load(cStringIO.StringIO ( zlib.decompress(excstr)))
+      else:
+        # cubes are HDF5 files
+        tmpfile = tempfile.NamedTemporaryFile ()
+        tmpfile.write ( excstr )
+        tmpfile.seek(0)
+        h5 = h5py.File ( tmpfile.name ) 
+
+        # load the numpy array
+        excs = np.array ( h5['exceptions'] )
+        h5.close()
+        tmpfile.close()
+        return excs
+    else:
+      return []
+
+
+  #
+  # updateExceptions
+  #
+  def updateExceptions ( self, key, resolution, exid, exceptions, update=False ):
+    """Merge new exceptions with existing exceptions"""
+
+    curexlist = self.getExceptions( key, resolution, exid ) 
+
+    update = False
+
+    if curexlist!=[]:
+      oldexlist = [ zindex.XYZMorton ( trpl ) for trpl in curexlist ]
+      newexlist = [ zindex.XYZMorton ( trpl ) for trpl in exceptions ]
+      exlist = set(newexlist + oldexlist)
+      exlist = [ zindex.MortonXYZ ( zidx ) for zidx in exlist ]
+      update = True
+    else:
+      exlist = exceptions
+
+    self.putExceptions ( key, resolution, exid, exlist, update )
+
+
+  def putExceptions ( self, key, resolution, exid, exceptions, update ):
+    """Package the object and transact with kvio"""
+
+    exceptions = np.array ( exceptions, dtype=np.uint32 )
+
+    #RBMAYBE make exceptions zipped in a future incompatible version??
+    if self.NPZ:
+      fileobj = cStringIO.StringIO ()
+      np.save ( fileobj, exceptions )
+      excstr = fileobj.getvalue()
+      self.kvio.putExceptions ( key, resolution, exid, excstr, update )
+    else:
+      tmpfile= tempfile.NamedTemporaryFile ()
+      h5 = h5py.File ( tmpfile.name )
+      h5.create_dataset ( "exceptions", tuple(exceptions.shape), exceptions.dtype,
+                               compression='gzip',  data=exceptions )
+      h5.close()
+      tmpfile.seek(0)
+      self.kvio.putExceptions ( key, resolution, exid, tmpfile.read(), update )
+      tmpfile.close()
+
+
+  #
+  # removeExceptions
+  #
+  def removeExceptions ( self, key, resolution, entityid, exceptions ):
+    """Remove a list of exceptions"""
+    """Should be done in a transaction"""
+
+    curexlist = self.getExceptions( key, resolution, entityid ) 
+
+    if curexlist != []:
+
+      oldexlist = set([ zindex.XYZMorton ( trpl ) for trpl in curexlist ])
+      newexlist = set([ zindex.XYZMorton ( trpl ) for trpl in exceptions ])
+      exlist = oldexlist-newexlist
+      exlist = [ zindex.MortonXYZ ( zidx ) for zidx in exlist ]
+
+      self.putExceptions ( key, resolution, exid, exlist, True )
 
 
   #
@@ -378,44 +579,24 @@ class OCPCADB:
       return [row[0],cube]
 
   #
-  # getExceptions
-  #
-  def getExceptions ( self, key, resolution, entityid ):
-    """Load a the list of excpetions for this cube."""
-
-    # get the block from the database
-    sql = "SELECT exlist FROM %s where zindex=%s AND id=%s" % ( 'exc'+str(resolution), key, entityid )
-    try:
-      self.cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.error ( "Error reading exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise
-
-    row = self.cursor.fetchone()
-
-    # If we can't find a list of exceptions, they don't exist
-    if ( row == None ):
-      return []
-    else: 
-      return np.load(cStringIO.StringIO ( zlib.decompress(row[0]) ))
-
-
-  #
   # getAllExceptions
   #
   def getAllExceptions ( self, key, resolution ):
     """Load all exceptions for this cube"""
 
     # get the block from the database
+    cursor = self.getCursor()
     sql = "SELECT id, exlist FROM %s where zindex=%s" % ( 'exc'+str(resolution), key )
     try:
-      self.cursor.execute ( sql )
+      cursor.execute ( sql )
+      excrows = cursor.fetchall()
     except MySQLdb.Error, e:
       logger.error ( "Error reading exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise
+    finally:
+      self.closeCursor ( cursor )
 
     # Parse and unzip all of the exceptions    
-    excrows = self.cursor.fetchall()
     excs = []
     if excrows == None:
       return []
@@ -425,84 +606,6 @@ class OCPCADB:
       return excs
 
 
-  #
-  # deleteExceptions
-  #
-  def deleteExceptions ( self, key, resolution, entityid ):
-    """Delete a list of exceptions for this cuboid"""
-
-    table = 'exc'+str(resolution)
-
-    sql = "DELETE FROM " + table + " WHERE zindex = %s AND id = %s" 
-    try:
-      self.cursor.execute ( sql, (key, entityid))
-    except MySQLdb.Error, e:
-      logger.error ( "Error deleting exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise
-
-  #
-  # updateExceptions
-  #
-  def updateExceptions ( self, key, resolution, entityid, exceptions ):
-    """Store a list of exceptions"""
-
-    curexlist = self.getExceptions( key, resolution, entityid ) 
-
-    table = 'exc'+str(resolution)
-
-    if curexlist==[]:
-
-      sql = "INSERT INTO " + table + " (zindex, id, exlist) VALUES (%s, %s, %s)"
-      try:
-        fileobj = cStringIO.StringIO ()
-        np.save ( fileobj, exceptions )
-        self.cursor.execute ( sql, (key, entityid, zlib.compress(fileobj.getvalue())))
-      except MySQLdb.Error, e:
-        logger.error ( "Error inserting exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        raise
-
-    # In this case we have an update query
-    else:
-
-      oldexlist = [ zindex.XYZMorton ( trpl ) for trpl in curexlist ]
-      newexlist = [ zindex.XYZMorton ( trpl ) for trpl in exceptions ]
-      exlist = set(newexlist + oldexlist)
-      exlist = [ zindex.MortonXYZ ( zidx ) for zidx in exlist ]
-
-      sql = "UPDATE " + table + " SET exlist=(%s) WHERE zindex=%s AND id=%s" 
-      try:
-        fileobj = cStringIO.StringIO ()
-        np.save ( fileobj, exlist )
-        self.cursor.execute ( sql, (zlib.compress(fileobj.getvalue()),key,entityid))
-      except MySQLdb.Error, e:
-        logger.error ( "Error updating exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        raise
-
-  #
-  # removeExceptions
-  #
-  def removeExceptions ( self, key, resolution, entityid, exceptions ):
-    """Remove a list of exceptions"""
-
-    curexlist = self.getExceptions( key, resolution, entityid ) 
-
-    table = 'exc'+str(resolution)
-
-    if curexlist != []:
-
-      oldexlist = set([ zindex.XYZMorton ( trpl ) for trpl in curexlist ])
-      newexlist = set([ zindex.XYZMorton ( trpl ) for trpl in exceptions ])
-      exlist = oldexlist-newexlist
-      exlist = [ zindex.MortonXYZ ( zidx ) for zidx in exlist ]
-
-      sql = "UPDATE " + table + " SET exlist=(%s) WHERE zindex=%s AND id=%s" 
-      try:
-        fileobj = cStringIO.StringIO ()
-        np.save ( fileobj, exlist )
-        self.cursor.execute ( sql, (zlib.compress(fileobj.getvalue()),key,entityid))
-      except MySQLdb.Error, e:
-        logger.error("Error removing exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        raise
 
   #
   # annotate
@@ -537,6 +640,9 @@ class OCPCADB:
     # then turn into a set of ranges of the same element
     listoffsets = np.r_[0, nzdiff + 1, len(cubelocs)]
 
+    # start a transaction if supported
+    self.kvio.startTxn()
+
     for i in range(len(listoffsets)-1):
 
       # grab the list of voxels for the first cube
@@ -567,6 +673,8 @@ class OCPCADB:
 
     # write it to the database
     self.annoIdx.updateIndexDense(cubeidx,resolution)
+    # commit cubes.  not commit controlled with metadata
+    self.kvio.commit()
 
   #
   # shave
@@ -594,33 +702,43 @@ class OCPCADB:
     # then turn into a set of ranges of the same element
     listoffsets = np.r_[0, nzdiff + 1, len(cubelocs)]
 
-    for i in range(len(listoffsets)-1):
+    self.kvio.startTxn()
 
-      # grab the list of voxels for the first cube
-      voxlist = cubelocs[listoffsets[i]:listoffsets[i+1],:][:,1:4]
-      #  and the morton key
-      key = cubelocs[listoffsets[i],0]
+    try:
 
-      cube = self.getCube ( key, resolution, True )
+      for i in range(len(listoffsets)-1):
 
-      # get a voxel offset for the cube
-      cubeoff = zindex.MortonXYZ(key)
-      offset = [cubeoff[0]*cubedim[0],cubeoff[1]*cubedim[1],cubeoff[2]*cubedim[2]]
+        # grab the list of voxels for the first cube
+        voxlist = cubelocs[listoffsets[i]:listoffsets[i+1],:][:,1:4]
+        #  and the morton key
+        key = cubelocs[listoffsets[i],0]
 
-      # remove the items
-      exlist, zeroed = cube.shave(entityid, offset, voxlist)
-      # make sure that exceptions are stored as 8 bits
-      exceptions = np.array(exlist, dtype=np.uint8)
+        cube = self.getCube ( key, resolution, True )
 
-      # update the sparse list of exceptions
-      if self.EXCEPT_FLAG:
-        if len(exceptions) != 0:
-          self.removeExceptions ( key, resolution, entityid, exceptions )
+        # get a voxel offset for the cube
+        cubeoff = zindex.MortonXYZ(key)
+        offset = [cubeoff[0]*cubedim[0],cubeoff[1]*cubedim[1],cubeoff[2]*cubedim[2]]
 
-      self.putCube ( key, resolution, cube)
+        # remove the items
+        exlist, zeroed = cube.shave(entityid, offset, voxlist)
+        # make sure that exceptions are stored as 8 bits
+        exceptions = np.array(exlist, dtype=np.uint8)
 
-      # For now do no index processing when shaving.  Assume there are still some
-      #  voxels in the cube???
+        # update the sparse list of exceptions
+        if self.EXCEPT_FLAG:
+          if len(exceptions) != 0:
+            self.kvio.removeExceptions ( key, resolution, entityid, exceptions )
+
+        self.putCube ( key, resolution, cube)
+
+        # For now do no index processing when shaving.  Assume there are still some
+        #  voxels in the cube???
+
+    except:
+      self.kvio.rollback()
+      raise
+
+    self.kvio.commit()
 
 
   #
@@ -655,53 +773,65 @@ class OCPCADB:
     databuffer = np.zeros ([znumcubes*zcubedim, ynumcubes*ycubedim, xnumcubes*xcubedim], dtype=np.uint32 )
     databuffer [ zoffset:zoffset+dim[2], yoffset:yoffset+dim[1], xoffset:xoffset+dim[0] ] = annodata 
 
-    for z in range(znumcubes):
-      for y in range(ynumcubes):
-        for x in range(xnumcubes):
+    # start a transaction if supported
+    self.kvio.startTxn()
 
-          #key = zindex.XYZMorton ([x+xstart,y+ystart,z+zstart])
-          key = ocplib.XYZMorton ( [x+xstart,y+ystart,z+zstart])
-          cube = self.getCube ( key, resolution, True )
+    try:
 
-          if conflictopt == 'O':
-            cube.overwrite ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
-          elif conflictopt == 'P':
-            cube.preserve ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
-          elif conflictopt == 'E': 
-            if self.EXCEPT_FLAG:
-              exdata = cube.exception ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
-              for exid in np.unique ( exdata ):
-                if exid != 0:
-                  # get the offsets
-                  exoffsets = np.nonzero ( exdata==exid )
-                  # assemble into 3-tuples zyx->xyz
-                  exceptions = np.array ( zip(exoffsets[2], exoffsets[1], exoffsets[0]), dtype=np.uint32 )
-                  # update the exceptions
-                  self.updateExceptions ( key, resolution, exid, exceptions )
-                  # add to the index
-                  index_dict[exid].add(key)
+      for z in range(znumcubes):
+        for y in range(ynumcubes):
+          for x in range(xnumcubes):
+
+            key = ocplib.XYZMorton ([x+xstart,y+ystart,z+zstart])
+            cube = self.getCube ( key, resolution, True )
+
+            if conflictopt == 'O':
+              cube.overwrite ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
+            elif conflictopt == 'P':
+              cube.preserve ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
+            elif conflictopt == 'E': 
+              if self.EXCEPT_FLAG:
+                exdata = cube.exception ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
+                for exid in np.unique ( exdata ):
+                  if exid != 0:
+                    # get the offsets
+                    exoffsets = np.nonzero ( exdata==exid )
+                    # assemble into 3-tuples zyx->xyz
+                    exceptions = np.array ( zip(exoffsets[2], exoffsets[1], exoffsets[0]), dtype=np.uint32 )
+                    # update the exceptions
+                    self.updateExceptions ( key, resolution, exid, exceptions )
+                    # add to the index
+                    index_dict[exid].add(key)
+              else:
+                logger.error("No exceptions for this project.")
+                raise OCPCAError ( "No exceptions for this project.")
             else:
-              logger.error("No exceptions for this project.")
-              raise OCPCAError ( "No exceptions for this project.")
-          else:
-            logger.error ( "Unsupported conflict option %s" % conflictopt )
-            raise OCPCAError ( "Unsupported conflict option %s" % conflictopt )
+              logger.error ( "Unsupported conflict option %s" % conflictopt )
+              raise OCPCAError ( "Unsupported conflict option %s" % conflictopt )
 
-          self.putCube ( key, resolution, cube)
+            self.putCube ( key, resolution, cube )
 
-          #update the index for the cube
-          # get the unique elements that are being added to the data
+            #update the index for the cube
+            # get the unique elements that are being added to the data
 
-          uniqueels = np.unique ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
-          for el in uniqueels:
-            index_dict[el].add(key) 
+            uniqueels = np.unique ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
+            for el in uniqueels:
+              index_dict[el].add(key) 
 
-          # remove 0 no reason to index that
-          if 0 in index_dict:
-            del(index_dict[0])
+            # remove 0 no reason to index that
+            if 0 in index_dict:
+              del(index_dict[0])
 
-    # Update all indexes
-    self.annoIdx.updateIndexDense(index_dict,resolution)
+
+      # Update all indexes
+      self.annoIdx.updateIndexDense(index_dict,resolution)
+      # commit cubes.  not commit controlled with metadata
+
+    except:
+      self.kvio.rollback()
+      raise
+
+    self.kvio.commit()
 
 
   #
@@ -747,38 +877,51 @@ class OCPCADB:
     databuffer = np.zeros ([znumcubes*zcubedim, ynumcubes*ycubedim, xnumcubes*xcubedim], dtype=np.uint32 )
     databuffer [ zoffset:zoffset+dim[2], yoffset:yoffset+dim[1], xoffset:xoffset+dim[0] ] = annodata 
 
-    for z in range(znumcubes):
-      for y in range(ynumcubes):
-        for x in range(xnumcubes):
+    # start a transaction if supported
+    self.kvio.startTxn()
 
-          key = zindex.XYZMorton ([x+xstart,y+ystart,z+zstart])
-          cube = self.getCube ( key, resolution, True )
+    try:
 
-          exdata = cube.shaveDense ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
-          for exid in np.unique ( exdata ):
-            if exid != 0:
-              # get the offsets
-              exoffsets = np.nonzero ( exdata==exid )
-              # assemble into 3-tuples zyx->xyz
-              exceptions = np.array ( zip(exoffsets[2], exoffsets[1], exoffsets[0]), dtype=np.uint32 )
-              # update the exceptions
-              self.removeExceptions ( key, resolution, exid, exceptions )
-              # add to the index
-              index_dict[exid].add(key)
+      for z in range(znumcubes):
+        for y in range(ynumcubes):
+          for x in range(xnumcubes):
 
-          self.putCube ( key, resolution, cube)
+            key = zindex.XYZMorton ([x+xstart,y+ystart,z+zstart])
+            cube = self.getCube ( key, resolution, True )
 
-          #update the index for the cube
-          # get the unique elements that are being added to the data
-          uniqueels = np.unique ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
-          for el in uniqueels:
-            index_dict[el].add(key) 
+            exdata = cube.shaveDense ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
+            for exid in np.unique ( exdata ):
+              if exid != 0:
+                # get the offsets
+                exoffsets = np.nonzero ( exdata==exid )
+                # assemble into 3-tuples zyx->xyz
+                exceptions = np.array ( zip(exoffsets[2], exoffsets[1], exoffsets[0]), dtype=np.uint32 )
+                # update the exceptions
+                self.kvio.removeExceptions ( key, resolution, exid, exceptions )
+                # add to the index
+                index_dict[exid].add(key)
 
-          # remove 0 no reason to index that
-          del(index_dict[0])
+            self.putCube ( key, resolution, cube)
 
-    # Update all indexes
-    self.annoIdx.updateIndexDense(index_dict,resolution)
+            #update the index for the cube
+            # get the unique elements that are being added to the data
+            uniqueels = np.unique ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
+            for el in uniqueels:
+              index_dict[el].add(key) 
+
+            # remove 0 no reason to index that
+            del(index_dict[0])
+
+      # Update all indexes
+      self.annoIdx.updateIndexDense(index_dict,resolution)
+
+    except:
+      self.kvio.rollback()
+      raise
+
+    # commit cubes.  not commit controlled with metadata
+    self.kvio.commit()
+
 
   #
   # shaveEntityDense
@@ -843,7 +986,7 @@ class OCPCADB:
 
     # alter query if  (ocpcaproj)._resolution is < resolution
     # if cutout is above resolution, get a large cube and scaledown
-    elif (self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS or self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS_64bit) and self.annoproj.getResolution() < resolution and True:  #RBTODO True needs to be a project dervied flag to specify is we have scaled or not 
+    elif (self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS or self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS_64bit) and self.annoproj.getResolution() < resolution and False:  #PYTODO self.annoproj.isPropagated() True needs to be a project dervied flag to specify is we have scaled or not 
 
       [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ self.annoproj.getResolution() ] 
       effcorner, effdim = self._zoomoutCutout ( corner, dim, resolution )
@@ -867,6 +1010,7 @@ class OCPCADB:
     ynumcubes = (effcorner[1]+effdim[1]+ycubedim-1)/ycubedim - ystart
     xnumcubes = (effcorner[0]+effdim[0]+xcubedim-1)/xcubedim - xstart
 
+    # RBTODO need to fix this for new I/O interface.  No dbname to getCubes
     # use the requested resolution
     if zscaling == 'isotropic':
       dbname = self.annoproj.getIsotropicTable(resolution)
@@ -874,7 +1018,6 @@ class OCPCADB:
       dbname = self.annoproj.getNearIsoTable(resolution)
     else:
       dbname = self.annoproj.getTable(effresolution)
-
 
     if (self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS or self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS):
 
@@ -933,47 +1076,51 @@ class OCPCADB:
     # Sort the indexes in Morton order
     listofidxs.sort()
 
-    # Batch query for all cubes
-    # Customize query to the database (include channel or not)
-    if (self.annoproj.getDBType() == ocpcaproj.CHANNELS_8bit or self.annoproj.getDBType() == ocpcaproj.CHANNELS_16bit):
-      # Convert channel as needed
-      channel = ocpcachannel.toID ( channel, self )
-      sql = "SELECT zindex, cube FROM " + dbname + " WHERE channel= " + str(channel) + " AND zindex in (%s)" 
-    else:
-      sql = "SELECT zindex, cube FROM " + dbname + " WHERE zindex IN (%s)" 
-
-    # creats a %s for each list element
-    in_p=', '.join( map(lambda x: '%s', listofidxs) ) 
-    # replace the single %s with the in_p string
-    sql = sql % in_p
- 
-    # this query needs its own cursor because it is open a long time
-    longlivedcursor = self.conn.cursor()
-    rc = longlivedcursor.execute(sql, listofidxs)
-
     # xyz offset stored for later use
     lowxyz = zindex.MortonXYZ ( listofidxs[0] )
-  
-    # Get the objects and add to the cube
-    while ( True ):
-      try: 
-        idx, datastring = longlivedcursor.fetchone()
-      except:
-        longlivedcursor.close()
-        break
 
-      #add the query result cube to the bigger cube
-      curxyz = zindex.MortonXYZ(int(idx))
-      offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
-      incube.fromNPZ ( datastring[:] )
+    # Batch query for all cubes
+    # Customize query to the database (include channel or not)
+#    if (self.annoproj.getDBType() == ocpcaproj.CHANNELS_8bit or self.annoproj.getDBType() == ocpcaproj.CHANNELS_16bit):
+#      # Convert channel as needed
+#      channel = ocpcachannel.toID ( channel, self )
+#      self.kvio.getChannelCubes(channel,listofidxs)
+#
+#    else:
+     
+    self.kvio.startTxn()
+
+    try:
+
+      cuboids = self.kvio.getCubes(listofidxs,effresolution)
+ 
+      # use the batch generator interface
+      for idx, datastring in cuboids:
+
+        #add the query result cube to the bigger cube
+        curxyz = zindex.MortonXYZ(int(idx))
+        offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
+
+        incube.fromNPZ ( datastring[:] )
 
       # apply exceptions if it's an annotation project
       if annoids!= None and self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS:
         incube.data = ocplib.filter_ctype_OMP ( incube.data, annoids )
         self.applyCubeExceptions ( annoids, effresolution, idx, incube )
 
-      # add it to the output cube
-      outcube.addData ( incube, offset ) 
+        # apply exceptions if it's an annotation project
+        if annoids!= None and self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS:
+          incube.data = ocplib.filter_ctype_OMP ( incube.data, annoids )
+          self.applyCubeExceptions ( annoids, effresolution, idx, incube )
+
+        # add it to the output cube
+        outcube.addData ( incube, offset ) 
+
+    except:
+      self.kvio.rollback()
+      raise
+
+    self.kvio.commit()
 
     # if we fetched a smaller cube to zoom, correct the result
     if (self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS or self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS) and self.annoproj.getResolution() > resolution:
@@ -984,7 +1131,7 @@ class OCPCADB:
       outcube.trim ( corner[0]%(xcubedim*(2**(self.annoproj.getResolution()-resolution)))+xpixeloffset,dim[0], corner[1]%(ycubedim*(2**(self.annoproj.getResolution()-resolution)))+ypixeloffset,dim[1], corner[2]%zcubedim,dim[2] )
 
     # if we fetch a larger cube, downscale it and correct
-    elif (self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS or self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS_64bit) and self.annoproj.getResolution() < resolution and True:  #RBTODO True needs to be a project dervied flag to specify is we have scaled or not 
+    elif (self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS or self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS_64bit) and self.annoproj.getResolution() < resolution and False:  #RBTODO True needs to be a project dervied flag to specify is we have scaled or not 
 
       outcube.downScale ( resolution-self.annoproj.getResolution() )
 
@@ -1020,15 +1167,20 @@ class OCPCADB:
 
     mortonidx = zindex.XYZMorton ( xyzcube )
 
+    #RBTODO write a test and fix for kvio
+
+    cursor = self.getCursor()
+
     # get the block from the database
     sql = "SELECT cube FROM " + self.annoproj.getTable(resolution) + " WHERE zindex = " + str(mortonidx)
     try:
-      self.cursor.execute ( sql )
+      cursor.execute ( sql )
+      row=cursor.fetchone()
     except MySQLdb.Error, e:
       logger.warning ( "Error reading annotation data: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise
-
-    row=self.cursor.fetchone()
+    finally:
+      self.closeCursor(cursor)
 
     # If we can't find a cube, assume it hasn't been written yet
     if ( row == None ):
@@ -1250,8 +1402,14 @@ class OCPCADB:
   #     return it.
   def getAnnotation ( self, id ):
     """Return a RAMON object by identifier"""
-    
-    return annotation.getAnnotation( id, self )
+
+    cursor = self.getCursor()
+    try:
+      retval = annotation.getAnnotation( id, self, cursor )
+    finally:
+      self.closeCursor ( cursor ) 
+
+    return retval
 
   #
   # putAnnotation:  
@@ -1259,16 +1417,34 @@ class OCPCADB:
   def putAnnotation ( self, anno, options='' ):
     """store an HDF5 annotation to the database"""
     
-    return annotation.putAnnotation( anno, self, options )
+    cursor = self.getCursor()
+    try:
+      retval = annotation.putAnnotation( anno, self, cursor, options )
+    except:
+      self.closeCursor( cursor ) 
+      raise
+
+    self.closeCursorCommit(cursor)
+
+    return retval
 
   #
   # deleteAnnotation:  
   #    remove an HDF5 annotation from the database
   def deleteAnnotation ( self, annoid, options='' ):
     """delete an HDF5 annotation from the database"""
-    #delete the data associated with the annoid
-    self.deleteAnnoData ( annoid)
-    return annotation.deleteAnnotation ( annoid, self, options )
+
+    cursor = self.getCursor()
+    try:
+      retval = annotation.deleteAnnotation ( annoid, self, cursor, options )
+      self.deleteAnnoData ( annoid )
+    except:
+      self.closeCursor( cursor ) 
+      raise
+
+    self.closeCursorCommit(cursor)
+    
+    return retval
   
   #
   #deleteAnnoData:
@@ -1278,30 +1454,47 @@ class OCPCADB:
 
     resolutions = self.datasetcfg.resolutions
 
-    for res in resolutions:
-    
-      #get the cubes that contain the annotation
-      zidxs = self.annoIdx.getIndex(annoid,res,True)
+    self.kvio.startTxn()
+
+    try:
+
+      for res in resolutions:
       
-      #Delete annotation data
-      for key in zidxs:
-        cube = self.getCube ( key, res, True )
-        vec_func = np.vectorize ( lambda x: 0 if x == annoid else x )
-        cube.data = vec_func ( cube.data )
-        # remove the expcetions
-        if self.EXCEPT_FLAG:
-          self.deleteExceptions ( key, res, annoid )
-        self.putCube ( key, res, cube)
-      
-    # delete Index
-    self.annoIdx.deleteIndex(annoid,resolutions)
+        #get the cubes that contain the annotation
+        zidxs = self.annoIdx.getIndex(annoid,res,True)
+        
+        #Delete annotation data
+        for key in zidxs:
+          cube = self.getCube ( key, res, True )
+          vec_func = np.vectorize ( lambda x: 0 if x == annoid else x )
+          cube.data = vec_func ( cube.data )
+          # remove the expcetions
+          if self.EXCEPT_FLAG:
+            self.kvio.deleteExceptions ( key, res, annoid )
+          self.putCube ( key, res, cube)
+        
+      # delete Index
+      self.annoIdx.deleteIndex(annoid,resolutions)
+
+    except:
+      self.kvio.rollback()
+      raise
+
+    self.kvio.commit()
+
 
   #
   # getChildren
   def getChildren ( self, annoid ):
     """get all the children of the annotation"""
+ 
+    cursor = self.getCursor()
+    try:
+      retval = annotation.getChildren ( annoid, self, cursor )
+    finally:
+      self.closeCursor ( cursor )
 
-    return annotation.getChildren ( annoid, self )
+    return retval
 
   
   # getAnnoObjects:  
@@ -1328,6 +1521,7 @@ class OCPCADB:
     # iterate over the predicates
     it = iter(args)
     try: 
+
       field = it.next()
 
       # build a query for all the predicates
@@ -1384,16 +1578,20 @@ class OCPCADB:
 
     except StopIteration:
       pass
+ 
 
     sql += clause + limitclause + ';'
 
+    cursor = self.getCursor()
+
     try:
-      self.cursor.execute ( sql )
+      cursor.execute ( sql )
+      annoids = np.array ( cursor.fetchall(), dtype=np.uint32 ).flatten()
     except MySQLdb.Error, e:
       logger.error ( "Error retrieving ids: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise
-
-    annoids = np.array ( self.cursor.fetchall(), dtype=np.uint32 ).flatten()
+    finally:
+      self.closeCursor( cursor )
 
     return np.array(annoids)
 
@@ -1439,16 +1637,27 @@ class OCPCADB:
     databuffer = np.zeros ([znumcubes*zcubedim, ynumcubes*ycubedim, xnumcubes*xcubedim], dtype=cuboiddata.dtype )
     databuffer [ zoffset:zoffset+dim[2], yoffset:yoffset+dim[1], xoffset:xoffset+dim[0] ] = cuboiddata 
 
-    for z in range(znumcubes):
-      for y in range(ynumcubes):
-        for x in range(xnumcubes):
+    self.kvio.startTxn()
+ 
+    try:
 
-          key = zindex.XYZMorton ([x+xstart,y+ystart,z+zstart])
-   
-          # probability maps have overwrite semantics
-          cube = self.getCube ( key, resolution, True )
-          cube.overwrite ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
-          self.putCube ( key, resolution, cube)
+      for z in range(znumcubes):
+        for y in range(ynumcubes):
+          for x in range(xnumcubes):
+
+            key = zindex.XYZMorton ([x+xstart,y+ystart,z+zstart])
+     
+            # probability maps have overwrite semantics
+            cube = self.getCube ( key, resolution, True )
+            cube.overwrite ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
+            self.putCube ( key, resolution, cube)
+
+    except:
+      self.kvio.rollback()
+      raise
+
+    seld.kvio.commit()
+
 
   #
   # getChannels
@@ -1457,14 +1666,21 @@ class OCPCADB:
   #
   def getChannels ( self ):
     """query the channels and their identifiers"""
+
+    cursor = self.getCursor()
+
     sql = 'SELECT * FROM channels';
     try:
-      self.cursor.execute ( sql )
+      cursor.execute ( sql )
+      chandict = dict(cursor.fetchall())
     except MySQLdb.Error, e:
       logger.warning ("Failed to query channels %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise
+    finally:
+      self.closeCursor(cursor)
 
-    return dict(self.cursor.fetchall())
+    return chandict
+
 
   def mergeGlobal(self, ids, mergetype, res):
      # get the size of the image and cube
@@ -1479,35 +1695,42 @@ class OCPCADB:
     # Get the list of cubeindexes for the Ramon objects
     listofidxs = set()
 
+    self.kvio.startTxn()
+    try:
 
-    # Do this for all ids. 
-    for annid in ids:
-      listofidxs = set(self.annoIdx.getIndex(annid,resolution))
-      for key in listofidxs:
-        cube = self.getCube (key,resolution)
-        #Update exceptions if exception flag is set ( PJM added 03/31/14)
-        if self.EXCEPT_FLAG:
-          oldexlist = self.getExceptions( key, resolution, annid ) 
-          self.deleteExceptions ( key, resolution, annid )
-        
-        # Cython optimized function  to relabel data from annid to mergeid
-        mergeCube_cy (cube.data,mergeid,annid ) 
-        self.putCube ( key, resolution,cube)
-        
-      # Delete annotation and all it's meta data from the database
-      # except for the merge annotation
-      if annid != mergeid:
-        try:
-          annotation.deleteAnnotation(annid,self,'')
-        except:
-          logger.warning("Failed to delete annotation {} during merge.".format(annid))
+      # Do this for all ids. 
+      for annid in ids:
+        listofidxs = set(self.annoIdx.getIndex(annid,resolution))
+        for key in listofidxs:
+          cube = self.getCube (key,resolution)
+          #Update exceptions if exception flag is set ( PJM added 03/31/14)
+          if self.EXCEPT_FLAG:
+            oldexlist = self.getExceptions( key, resolution, annid ) 
+            self.kvio.deleteExceptions ( key, resolution, annid )
+          
+          # Cython optimized function  to relabel data from annid to mergeid
+          mergeCube_cy (cube.data,mergeid,annid ) 
+          self.putCube ( key, resolution,cube)
+          
+        # Delete annotation and all it's meta data from the database
+        # except for the merge annotation
+        if annid != mergeid:
+          try:
+            annotation.deleteAnnotation(annid,self,'')
+          except:
+            logger.warning("Failed to delete annotation {} during merge.".format(annid))
 
-    self.commit()
+
+    except:
+      self.kvio.rollback()
+      raise
+
+    self.kvio.commit()
 
     return "Merge complete"
 
   def merge2D(self, ids, mergetype, res,slicenum):
-     # get the size of the image and cube
+    # get the size of the image and cube
     resolution = int(res)
     print ids
     # PYTODO Check if this is a valid annotation that we are relabeling to
@@ -1574,6 +1797,7 @@ class OCPCADB:
 
     dbname = self.annoproj.getTable(resolution)
 
+
     # Build a list of indexes to access                                                                                     
     listofidxs = []
     for z in range ( znumcubes ):
@@ -1590,49 +1814,48 @@ class OCPCADB:
     sql = "SELECT zindex,id,exlist FROM exc{} WHERE zindex in ({})".format(resolution,sqllist)
 
 
-    # this query needs its own cursor
-    try:
-      func_cursor = self.conn.cursor()
-      func_cursor.execute(sql)
-    except MySQLdb.Error, e:
-      logger.warning ("Failed to query exceptions in cutout %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise
+    with closing ( self.conn.cursor() ) as func_cursor:
 
-    # data structure to hold list of exceptions
-    excdict = defaultdict(set)
+      # this query needs its own cursor
+      try:
+        func_cursor.execute(sql)
+      except MySQLdb.Error, e:
+        logger.warning ("Failed to query exceptions in cutout %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+        raise
 
-    prevzindex = None
+      # data structure to hold list of exceptions
+      excdict = defaultdict(set)
 
-    while ( True ):
+      prevzindex = None
 
-      try: 
-        cuboidzindex, annid, zexlist = func_cursor.fetchone()
-      except:
-        break
+      while ( True ):
 
-      # first row in a cuboid
-      if np.uint32(cuboidzindex) != prevzindex:
-        prevzindex = cuboidzindex
-        # data for the current cube
-        cube = self.getCube ( cuboidzindex, resolution )
-        [ xcube, ycube, zcube ] = zindex.MortonXYZ ( cuboidzindex )
-        xcubeoff =xcube*xcubedim
-        ycubeoff =ycube*ycubedim
-        zcubeoff =zcube*zcubedim
+        try: 
+          cuboidzindex, annid, zexlist = func_cursor.fetchone()
+        except:
+          func_cursor.close()
+          break
 
-      # accumulate entries
-      # decompress the llist of exceptions
-      fobj = cStringIO.StringIO ( zlib.decompress(zexlist) )
-      exlist = np.load (fobj)
+        # first row in a cuboid
+        if np.uint32(cuboidzindex) != prevzindex:
+          prevzindex = cuboidzindex
+          # data for the current cube
+          cube = self.getCube ( cuboidzindex, resolution )
+          [ xcube, ycube, zcube ] = zindex.MortonXYZ ( cuboidzindex )
+          xcubeoff =xcube*xcubedim
+          ycubeoff =ycube*ycubedim
+          zcubeoff =zcube*zcubedim
 
-      for exc in exlist:
-        excdict[(exc[0]+xcubeoff,exc[1]+ycubeoff,exc[2]+zcubeoff)].add(np.uint32(annid))
-        # add voxel data 
-        excdict[(exc[0]+xcubeoff,exc[1]+ycubeoff,exc[2]+zcubeoff)].add(cube.data[exc[2]%zcubedim,exc[1]%ycubedim,exc[0]%xcubedim])
+        # accumulate entries
+        # decompress the llist of exceptions
+        fobj = cStringIO.StringIO ( zlib.decompress(zexlist) )
+        exlist = np.load (fobj)
 
+        for exc in exlist:
+          excdict[(exc[0]+xcubeoff,exc[1]+ycubeoff,exc[2]+zcubeoff)].add(np.uint32(annid))
+          # add voxel data 
+          excdict[(exc[0]+xcubeoff,exc[1]+ycubeoff,exc[2]+zcubeoff)].add(cube.data[exc[2]%zcubedim,exc[1]%ycubedim,exc[0]%xcubedim])
 
-    # ASSUMPTION need to promte during shave as well as annotation deletes
-    # this is a priority todo RB 10/17/13
 
     # Watch out for no exceptions
     if len(excdict) != 0:
@@ -1652,5 +1875,3 @@ class OCPCADB:
 
     return exoutput
 
-#
-# Iterator for indexes
