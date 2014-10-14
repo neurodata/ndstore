@@ -96,7 +96,7 @@ class BrainRestArgs:
     except Exception, e:
       # RBTODO make this error better.  How to print good information about e?
       #  it only prints 3, not KeyError 3, whereas print e in the debugger gives good info
-      raise RESTArgsError ( "Illegal arguments to cutout.  Check cube failed {}".format(e))
+      raise RESTArgsError ( "Illegal arguments to cutout.  Check cube failed {}".format(e.value))
 
     self._corner=[x1i,y1i,z1i-datasetcfg.slicerange[0]]
     self._dim=[x2i-x1i,y2i-y1i,z2i-z1i ]
