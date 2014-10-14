@@ -16,6 +16,11 @@ import os
 import sys
 import argparse
 
+sys.path += [os.path.abspath('../django')]
+import OCP.settings
+os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
+from django.conf import settings
+
 import h5py
 import MySQLdb
 import numpy as np
@@ -29,12 +34,12 @@ import ocpcaprivate
 
 from ocpcaerror import OCPCAError
 
-celery = Celery('tasks', broker='amqp://guest@localhost//')
+#celery = Celery('tasks', broker='amqp://guest@localhost//')
 
 import logging
 logger=logging.getLogger("ocp")
 
-@celery.task()
+#@celery.task()
 def h5Async( token, options ):
   """ Write h5py files back to database """
 
@@ -42,8 +47,10 @@ def h5Async( token, options ):
 
   retvals = []
 
-  fileList = glob.glob(ocpcaprivate.ssd_log_location+'/*')
-  import pdb; pdb.set_trace()
+  fileList = glob.glob(ocpcaprivate.ssd_log_location+'*')
+  
+  import time
+  start = time.time()
 
   for fileName in fileList:
     h5f = h5py.File ( fileName, driver='core', backing_store=False)
@@ -152,7 +159,7 @@ def h5Async( token, options ):
           retvals.append ( anno.annid )
 
         # Here with no error is successful
-        print " Done successfuley "
+        print " Done successfully "
 
       except MySQLdb.OperationalError, e:
         logger.warning ( "Put Annotation: Transaction did not complete. {}".format(e) )
@@ -163,6 +170,7 @@ def h5Async( token, options ):
       except Exception, e:
         logger.warning ( "Put Annotation: Put transaction rollback. {}".format(e) )
         raise
+  print time.time()-start
 
 if __name__ == "__main__":
   h5Async( "kunal_hdf5_test", "None" )
