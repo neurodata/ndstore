@@ -484,6 +484,3 @@ def h5toCSV ( h5f ):
         csvw.writerow ( [k, idgrp[k][:]] )
 
   return fstring.getvalue()
-
-
-
