@@ -88,6 +88,7 @@ class MCFCCatmaid:
     # do something to sanitize the webargs??
     # if tile is in mocpcache, return it
     tile = self.mc.get(mckey)
+    #tile=None
     if tile == None:
       img=self.cacheMiss(res,xtile,ytile,zslice)
       fobj = cStringIO.StringIO ( )

@@ -88,10 +88,9 @@ class SimpleCatmaid:
       #assert 0 
       # need to fix here and add falsecolor args
 
-
   def getTile ( self, webargs ):
     """Either fetch the file from mocpcache or get a mcfc image"""
-
+    
     # parse the web args
     self.token, tileszstr, resstr, xtilestr, ytilestr, zslicestr, rest = webargs.split('/',6)
     [ self.db, self.proj, projdb ] = ocpcarest.loadDBProj ( self.token )

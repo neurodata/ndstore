@@ -192,6 +192,7 @@ class AnnotateCube(Cube):
   #
   def catmaidSlice( self ):
 
+    cmtilesz = self.data.shape[0]
     recolor_cy( self.data, self.data )
     self.data = Image.frombuffer ( 'L', [cmtilesz,cmtilesz], self.data, 'raw', 'RGBA', 0, 1 )
 
