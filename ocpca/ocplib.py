@@ -42,6 +42,7 @@ ocplib.annotateCube.argtypes = [ array_1d_uint32, cp.c_int, cp.POINTER(cp.c_int)
 ocplib.XYZMorton.argtypes = [ array_1d_uint32 ]
 ocplib.MortonXYZ.argtypes = [ cp.c_int, cp.POINTER(cp.c_int) ]
 ocplib.recolorCube.argtypes = [ array_1d_uint32, cp.c_int, cp.c_int, array_1d_uint32, array_1d_uint32 ]
+ocplib.quicksort.argtypes = [ array_2d_uint32, cp.c_int ]
 
 # setting the return type of the function in C
 # FORMAT: <library_name>.<function_name>.restype = [ ctype.<argtype> ]
@@ -53,6 +54,7 @@ ocplib.annotateCube.restype = cp.c_int
 ocplib.XYZMorton.restype = cp.c_int
 ocplib.MortonXYZ.restype = None
 ocplib.recolorCube.restype = None
+ocplib.quicksort.restype = None
 
 
 def filter_ctype_OMP ( cutout, filterlist ):
@@ -143,3 +145,11 @@ def recolor_ctype ( cutout, imagemap ):
   ocplib.recolorCube ( cutout.flatten(), cp.c_int(xdim), cp.c_int(ydim), imagemap, np.asarray( rgbColor.rgbcolor,dtype=np.uint32) )
 
   return imagemap.reshape( (xdim,ydim) )
+
+def quicksort ( locs ):
+  """ Sort the cube on Morton Id """
+
+  # Calling the C native language
+  ocplib.quicksort ( locs, len(locs) )
+
+  return locs

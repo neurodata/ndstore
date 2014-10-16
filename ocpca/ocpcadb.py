@@ -39,7 +39,6 @@ import h5py
 
 from ocpcaerror import OCPCAError
 
-from ocpca_cy import cubeLocs_cy
 from ocpca_cy import mergeCube_cy
 
 import logging
@@ -484,10 +483,10 @@ class OCPCADB:
     update = False
 
     if curexlist!=[]:
-      oldexlist = [ zindex.XYZMorton ( trpl ) for trpl in curexlist ]
-      newexlist = [ zindex.XYZMorton ( trpl ) for trpl in exceptions ]
+      oldexlist = [ ocplib.XYZMorton ( trpl ) for trpl in curexlist ]
+      newexlist = [ ocplib.XYZMorton ( trpl ) for trpl in exceptions ]
       exlist = set(newexlist + oldexlist)
-      exlist = [ zindex.MortonXYZ ( zidx ) for zidx in exlist ]
+      exlist = [ ocplib.MortonXYZ ( zidx ) for zidx in exlist ]
       update = True
     else:
       exlist = exceptions
@@ -528,10 +527,10 @@ class OCPCADB:
 
     if curexlist != []:
 
-      oldexlist = set([ zindex.XYZMorton ( trpl ) for trpl in curexlist ])
-      newexlist = set([ zindex.XYZMorton ( trpl ) for trpl in exceptions ])
+      oldexlist = set([ ocplib.XYZMorton ( trpl ) for trpl in curexlist ])
+      newexlist = set([ ocplib.XYZMorton ( trpl ) for trpl in exceptions ])
       exlist = oldexlist-newexlist
-      exlist = [ zindex.MortonXYZ ( zidx ) for zidx in exlist ]
+      exlist = [ ocplib.MortonXYZ ( zidx ) for zidx in exlist ]
 
       self.putExceptions ( key, resolution, exid, exlist, True )
 
@@ -638,7 +637,8 @@ class OCPCADB:
     #cubelocs = cubeLocs_cy ( np.array(locations, dtype=np.uint32), cubedim )
 
     # sort the arrary, by cubeloc
-    cubelocs.view('u4,u4,u4,u4').sort(order=['f0'], axis=0)
+    cubelocs = ocplib.quicksort ( cubelocs )
+    #cubelocs2.view('u4,u4,u4,u4').sort(order=['f0'], axis=0)
 
     # get the nonzero element offsets 
     nzdiff = np.r_[np.nonzero(np.diff(cubelocs[:,0]))]
@@ -697,7 +697,7 @@ class OCPCADB:
     # convert voxels z coordinate
     locations[:,2] = locations[:,2] - self.datasetcfg.slicerange[0]
 
-    cubelocs = cubeLocs_cy ( np.array(locations, dtype=np.uint32), cubedim )
+    cubelocs = ocplib.locate_ctype ( np.array(locations, dtype=np.uint32), cubedim )
 
     # sort the arrary, by cubeloc
     cubelocs.view('u4,u4,u4,u4').sort(order=['f0'], axis=0)
@@ -721,7 +721,7 @@ class OCPCADB:
         cube = self.getCube ( key, resolution, True )
 
         # get a voxel offset for the cube
-        cubeoff = zindex.MortonXYZ(key)
+        cubeoff = ocplib.MortonXYZ(key)
         offset = [cubeoff[0]*cubedim[0],cubeoff[1]*cubedim[1],cubeoff[2]*cubedim[2]]
 
         # remove the items
@@ -891,7 +891,7 @@ class OCPCADB:
         for y in range(ynumcubes):
           for x in range(xnumcubes):
 
-            key = zindex.XYZMorton ([x+xstart,y+ystart,z+zstart])
+            key = ocplib.XYZMorton ([x+xstart,y+ystart,z+zstart])
             cube = self.getCube ( key, resolution, True )
 
             exdata = cube.shaveDense ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
@@ -1075,14 +1075,14 @@ class OCPCADB:
     for z in range ( znumcubes ):
       for y in range ( ynumcubes ):
         for x in range ( xnumcubes ):
-          mortonidx = zindex.XYZMorton ( [x+xstart, y+ystart, z+zstart] )
+          mortonidx = ocplib.XYZMorton ( [x+xstart, y+ystart, z+zstart] )
           listofidxs.append ( mortonidx )
 
     # Sort the indexes in Morton order
     listofidxs.sort()
 
     # xyz offset stored for later use
-    lowxyz = zindex.MortonXYZ ( listofidxs[0] )
+    lowxyz = ocplib.MortonXYZ ( listofidxs[0] )
 
     # Batch query for all cubes
     # Customize query to the database (include channel or not)
@@ -1183,7 +1183,7 @@ class OCPCADB:
     # Create a cube object
     cube = anncube.AnnotateCube ( cubedim )
 
-    mortonidx = zindex.XYZMorton ( xyzcube )
+    mortonidx = ocplib.XYZMorton ( xyzcube )
 
     #RBTODO write a test and fix for kvio
 
@@ -1230,7 +1230,7 @@ class OCPCADB:
     # get the size of the image and cube
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
   
-    (x,y,z) = zindex.MortonXYZ ( idx )
+    (x,y,z) = ocplib.MortonXYZ ( idx )
 
     # for the target ids
     for annoid in annoids:
@@ -1289,7 +1289,7 @@ class OCPCADB:
       voxels = np.array(zip(offsets[2], offsets[1], offsets[0]), dtype=np.uint32)
 
       # Get cube offset information
-      [x,y,z]=zindex.MortonXYZ(zidx)
+      [x,y,z] = ocplib.MortonXYZ(zidx)
       xoffset = x * self.datasetcfg.cubedim[resolution][0] 
       yoffset = y * self.datasetcfg.cubedim[resolution][1] 
       zoffset = z * self.datasetcfg.cubedim[resolution][2] + self.datasetcfg.slicerange[0]
@@ -1335,7 +1335,7 @@ class OCPCADB:
     
     # convert to xyz coordinates
     try:
-      xyzvals = np.array ( [ zindex.MortonXYZ(zidx) for zidx in zidxs ], dtype=np.uint32 )
+      xyzvals = np.array ( [ ocplib.MortonXYZ(zidx) for zidx in zidxs ], dtype=np.uint32 )
     # if there's nothing in the chain, the array creation will fail
     except:
       return None, None
@@ -1385,7 +1385,7 @@ class OCPCADB:
 
       # zoom the data if not at the right resolution
       # and translate the zindex to the upper resolution
-      (xoff,yoff,zoff) = zindex.MortonXYZ ( zidx )
+      (xoff,yoff,zoff) = ocplib.MortonXYZ ( zidx )
       offset = (xoff*xcubedim, yoff*ycubedim, zoff*zcubedim+self.startslice)
 
       # if we're zooming, so be it
@@ -1663,7 +1663,7 @@ class OCPCADB:
         for y in range(ynumcubes):
           for x in range(xnumcubes):
 
-            key = zindex.XYZMorton ([x+xstart,y+ystart,z+zstart])
+            key = ocplib.XYZMorton ([x+xstart,y+ystart,z+zstart])
      
             # probability maps have overwrite semantics
             cube = self.getCube ( key, resolution, True )
@@ -1821,7 +1821,7 @@ class OCPCADB:
     for z in range ( znumcubes ):
       for y in range ( ynumcubes ):
         for x in range ( xnumcubes ):
-          mortonidx = zindex.XYZMorton ( [x+xstart, y+ystart, z+zstart] )
+          mortonidx = ocplib.XYZMorton ( [x+xstart, y+ystart, z+zstart] )
           listofidxs.append ( mortonidx )
 
     # Sort the indexes in Morton order
@@ -1859,7 +1859,7 @@ class OCPCADB:
           prevzindex = cuboidzindex
           # data for the current cube
           cube = self.getCube ( cuboidzindex, resolution )
-          [ xcube, ycube, zcube ] = zindex.MortonXYZ ( cuboidzindex )
+          [ xcube, ycube, zcube ] = ocplib.MortonXYZ ( cuboidzindex )
           xcubeoff =xcube*xcubedim
           ycubeoff =ycube*ycubedim
           zcubeoff =zcube*zcubedim

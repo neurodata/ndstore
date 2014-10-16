@@ -1284,11 +1284,18 @@ def putAnnotationAsync ( webargs, postdata ):
   """Put a RAMON object asynchrously as HDF5 by object identifier"""
   
   [ token, sym, optionsargs ] = webargs.partition ('/')
+  options = optionsargs.split('/')
+
+  import bsddb
+  import time
+  bsd_db = bsddb.btopen( ocpcaprivate.ssd_log_location+'voxel.db', 'c')
 
   print "Wrting Data to SSD"
 
-  # Get the annotation database
-  [ db, proj, projdb ] = loadDBProj ( token )
+  # pattern for using contexts to close databases
+  # get the project 
+  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+    proj = projdb.loadProject ( token )
 
   # Don't write to readonly projects
   if proj.getReadOnly()==1:
@@ -1300,6 +1307,8 @@ def putAnnotationAsync ( webargs, postdata ):
     fd = os.open(filename ,os.O_CREAT | os.O_WRONLY | os.O_NOATIME | os.O_SYNC )
     os.write ( fd, postdata )
     os.close( fd )
+    metadata = (time.time(), optionsargs )
+    bsd_db[ str(filename) ] = "{}".format( metadata )
   except Exception, e:
     print e
 

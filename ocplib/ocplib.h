@@ -43,3 +43,6 @@ void MortonXYZ ( int , int [3] );
 
 // Declaring recolorSlice function
 void recolorSlice ( uint32_t * , int , int , uint32_t * , uint32_t * ); 
+
+// Declaring Quick Sort function
+void quicksort ( uint32_t [][4] , int ); 
