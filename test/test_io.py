@@ -55,6 +55,7 @@ class ReadParms:
   cutout = None
   tightcutout = False
   boundingbox = False
+  cuboids = False
 
 def readAnno ( params ):
   """Modified version of annoread that takes the following dictionary
@@ -77,6 +78,8 @@ def readAnno ( params ):
     url = "http://%s/ca/%s/%s/cutout/%s/" % (params.baseurl,params.token,params.annids, params.resolution)
   elif params.boundingbox: 
     url = "http://%s/ca/%s/%s/boundingbox/%s/" % (params.baseurl,params.token,params.annids, params.resolution)
+  elif params.cuboids: 
+    url = "http://%s/ca/%s/%s/cuboids/%s/" % (params.baseurl,params.token,params.annids, params.resolution)
   else:
     url = "http://%s/ca/%s/%s/" % (params.baseurl,params.token,params.annids)
 
@@ -282,6 +285,7 @@ class WriteParms:
   exception = False
   overwrite = False
   shave = False
+  cuboids = False
 
 def writeAnno ( params ): 
   """Write an annotation derived from annowrite"""
@@ -304,11 +308,18 @@ def writeAnno ( params ):
     # don't test kvpairs, that's part of test_ramon
     h5ann.addAnno ( anntype, annid, None )
 
+#RBTODO need to implement addCuboids somehow
+#    # craete cuboids from a cutout
+#    if params.cuboids
+#      h5ann.addCuboids ( cutout )
+
+#    elif params.cutout:
     if params.cutout:
       if params.voxels:
         h5ann.addVoxels ( annid, params.cutout )
       else:
         h5ann.addCutout ( annid, params.cutout )
+
 
   # get the file handle
   fileobj = h5ann.getFileObject()
@@ -350,6 +361,21 @@ def countVoxels ( annid, h5 ):
       elif idgrp.get('CUTOUT') and idgrp.get('XYZOFFSET'):
         return len(np.nonzero(np.array(idgrp['CUTOUT'][:,:,:]))[0])
   return 0
+
+
+def countCuboidVoxels ( annid, h5 ):
+  """Count the number of voxels in an HDF5 file for an annotation id"""
+
+  import pdb; pdb.set_trace()
+  voxsum = 0
+  keys = h5.keys()
+  for k in keys:
+    if int(k) == int(annid):
+      cbgrp = h5[k]['CUBOIDS']
+      for cb in cbgrp.keys():
+        voxsum += len(np.nonzero(np.array(cbgrp[cb]['CUBOID'][:,:,:]))[0])
+
+  return voxsum
 
 
 class TestRW:
@@ -558,8 +584,6 @@ class TestRW:
     h5r = readAnno(rp)
     assert countVoxels ( retval, h5r ) == 100*100*1
 
-    #TODO read it as a range with cutout
-
     # Write one object as a cutout
     wp.voxels=False
     retval = writeAnno ( wp ) 
@@ -576,6 +600,67 @@ class TestRW:
     rp.tightcutout = True
     h5r = readAnno(rp)
     assert countVoxels ( retval, h5r ) == 100*100*1
+
+
+  def test_cuboids(self):
+    """Cuboids read/write interfaces"""
+
+    rp = ReadParms()
+    wp = WriteParms()
+
+    # variables for all tests
+    # read
+    rp.token = "unittest_rw"
+    rp.baseurl = SITE_HOST
+    rp.resolution = 1
+
+    # write
+    wp.token = "unittest_rw"
+    wp.baseurl = SITE_HOST
+    wp.resolution = 1
+
+
+
+#RBTODO need to remove this stuff and actual add the cuboids to writeAnno
+#    
+#    # now try the cuboids interface
+#    # WRite two small regions
+#    wp.cutout = "1/200,210/200,210/101,102"
+#    retval = writeAnno ( wp ) 
+#    assert int(retval) >= 1
+#
+#    wp.cutout = "1/300,310/300,310/301,302"
+#    wp.update = True
+#    wp.annid = int(retval)
+#    retval = writeAnno ( wp ) 
+#    assert int(retval) == wp.annid
+#
+#    # Read them as an HDF5 file
+#    rp.cuboids = True
+#    rp.annids = int(retval)
+#    rp.voxels = False
+#    h5r = readAnno(rp)
+#    assert ( countCuboidVoxels(rp.annids,h5r) == 200 )
+#
+#    # write the file --- have to do this here. not part of wp
+#    # change the annotation identifier
+#    # RBTODO
+#    # post the HDF5 file
+#    url = "http://%s/ca/%s/" % (wp.baseurl,wp.token )
+#    h5r.tmpfile.seek(0)
+#    # return and file object to be posted
+#    try:
+#      req = urllib2.Request ( url, h5r.tmpfile.read()) 
+#      response = urllib2.urlopen(req)
+#    except urllib2.URLError, e:
+#      assert 0
+#    assert response >= 1
+#    
+#    # Read it back to make sure that it's correct
+#    rp.voxels = True
+#    h5r2 = readAnno(rp)
+#    assert ( countCuboidVoxels(rp.annids,h5r) == 200 )
+
 
   def test_update(self):
     """Updates"""

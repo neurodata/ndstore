@@ -39,11 +39,11 @@ def main():
   h5fh = h5py.File ( result.h5file )
 
   if result.preserve:  
-    url = 'http://%s/emca/%s/preserve/' % ( result.baseurl, result.token )
+    url = 'http://%s/ca/%s/preserve/' % ( result.baseurl, result.token )
   elif result.exception:  
-    url = 'http://%s/emca/%s/exception/' % ( result.baseurl, result.token )
+    url = 'http://%s/ca/%s/exception/' % ( result.baseurl, result.token )
   else:
-    url = 'http://%s/emca/%s/' % ( result.baseurl, result.token )
+    url = 'http://%s/ca/%s/' % ( result.baseurl, result.token )
 
   if result.update:
     url+='update/'

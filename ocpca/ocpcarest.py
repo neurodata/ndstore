@@ -929,7 +929,7 @@ def getAnnoById ( annoid, h5f, proj, db, dataoption, resolution=None, corner=Non
 
   #CUBOIDS don't work at zoom resolution
   
-    h5anno.mkCuboidGroup()
+    h5anno.mkCuboidGroup(resolution)
 
     if anno.__class__ == annotation.AnnNeuron:
       offsets = db.annoCubeOffsets(dataids, resolution, annoid)
@@ -1133,8 +1133,6 @@ def putAnnotation ( webargs, postdata ):
       logger.warning("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
       raise OCPCAError("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
 
-    options = optionsargs.split('/')
-
     # return string of id values
     retvals = [] 
 
@@ -1143,6 +1141,15 @@ def putAnnotation ( webargs, postdata ):
     tmpfile.write ( postdata )
     tmpfile.seek(0)
     h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
+
+    # get the conflict option if it exists
+    options = optionsargs.split('/')
+    if 'preserve' in options:
+      conflictopt = 'P'
+    elif 'exception' in options:
+      conflictopt = 'E'
+    else:
+      conflictopt = 'O'
 
     try:
 
@@ -1227,13 +1234,6 @@ def putAnnotation ( webargs, postdata ):
 
             if cutout != None and h5xyzoffset != None and 'reduce' not in options:
 
-              if 'preserve' in options:
-                conflictopt = 'P'
-              elif 'exception' in options:
-                conflictopt = 'E'
-              else:
-                conflictopt = 'O'
-
               #  the zstart in datasetcfg is sometimes offset to make it aligned.
               #   Probably remove the offset is the best idea.  and align data
               #    to zero regardless of where it starts.  For now.
@@ -1253,6 +1253,11 @@ def putAnnotation ( webargs, postdata ):
               #TODO this is a loggable error
               pass
 
+            # Is it dense data?
+            if 'CUBOIDS' in idgrp:
+              cuboids = h5ann.H5getCuboids(idgrp)
+              for (corner, cuboiddata) in cuboids:
+                db.annotateEntityDense ( anno.annid, corner, resolution, cuboiddata, conflictopt ) 
 
             # only add the identifier if you commit
             if not 'dataonly' in options and not 'reduce' in options:

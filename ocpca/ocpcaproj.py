@@ -36,8 +36,8 @@ IMAGES_16bit = 8
 
 # RBTODO need to integrate this into project engine
 MySQL = False
-Cassandra = True
-Riak = False
+Cassandra = False
+Riak = True
 
 class OCPCAProject:
   """Project specific for cutout and annotation data"""
@@ -291,7 +291,7 @@ class OCPCAProjectsDB:
         with closing(self.conn.cursor()) as cursor:
           try:
             # Make the database and associated ocpca tables
-            sql = "CREATE DATABASE %s;" % project
+            sql = "CREATE DATABASE %s" % project
          
             cursor.execute ( sql )
             self.conn.commit()
@@ -442,6 +442,8 @@ class OCPCAProjectsDB:
 
     except Exception, e:
       logger.warning ("Failed to delete project {}".format(e))
+      raise
+      
 
     #  try to delete the database anyway
     #  Sometimes weird crashes can get stuff out of sync
