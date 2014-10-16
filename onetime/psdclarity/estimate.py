@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+#D Copyright 2014 Open Connectome Project (http://openconnecto.me)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import numpy as np
 import urllib, urllib2
 import cStringIO
 from contextlib import closing
-import csv
 
 sys.path += [os.path.abspath('../../django')]
 import OCP.settings
@@ -29,12 +28,16 @@ from django.conf import settings
 import ocpcaproj
 import ocpcadb
 import zindex
+import restargs
+from ocpcaerror import OCPCAError
+
+# RBTDOD This doesn't work because of channel interfaces to cutout.  Try and reimplement with cassandra branch.
 
 """Extract all points above a threshhold for a specific channel and resolution."""
 
 class ThreshholdStack:
 
-  def __init__(self, token):
+  def __init__(self, token, cutout):
     """Load the annotation database and project"""
 
     projdb = ocpcaproj.OCPCAProjectsDB()
@@ -43,72 +46,74 @@ class ThreshholdStack:
     # Bind the annotation database
     self.annoDB = ocpcadb.OCPCADB ( self.proj )
 
-  def findLocations ( self, channel, resolution, threshhold, outfile ):
-    """Build the hierarchy of annotations"""
+    # Perform argument processing
+    try:
+      args = restargs.BrainRestArgs ();
+      args.cutoutArgs ( cutout+"/", self.proj.datasetcfg )
+    except restargs.RESTArgsError, e:
+      raise OCPCAError(e.value)
+      
+    # Extract the relevant values
+    self.corner = args.getCorner()
+    self.dim = args.getDim() 
 
+
+  def countLocations ( self, channel, resolution, threshhold ):
+    """Build the hierarchy of annotations"""
+     
     # Get the source database sizes
     [ximagesz, yimagesz] = self.proj.datasetcfg.imagesz [ resolution ]
     [xcubedim, ycubedim, zcubedim] = self.proj.datasetcfg.cubedim [ resolution ]
 
     # Get the slices
-    [ startslice, endslice ] = self.proj.datasetcfg.slicerange
+    [ startslice, endslice ] = self.corner[2],self.corner[2]+self.dim[2]
     slices = endslice - startslice + 1
 
     # Set the limits for iteration on the number of cubes in each dimension
-    xlimit = ximagesz / xcubedim
-    ylimit = yimagesz / ycubedim
+    xstart = self.corner[0] / xcubedim
+    ystart = self.corner[1] / ycubedim
+    xend = (self.corner[0]+self.dim[0]-1) / xcubedim + 1
+    yend = (self.corner[1]+self.dim[1]-1) / ycubedim + 1
 
     #  Round up the zlimit to the next larger
-    zlimit = (((slices-1)/zcubedim+1)*zcubedim)/zcubedim 
+    zstart = startslice/zcubedim
+    zend = (endslice+1-1)/zcubedim+1
 
-    # Round up to the top of the range
-    lastzindex = (zindex.XYZMorton([xlimit,ylimit,zlimit])/64+1)*64
+    count = 0
 
-    locs = []
-    
-    with closing (open(outfile, 'wb')) as csvfile:
-      csvwriter = csv.writer ( csvfile )  
+    for z in (zstart,zend):
+      for y in (ystart,yend):
+        for x in (xstart,xend):
 
-      # Iterate over the cubes in morton order
-      for mortonidx in range(0, lastzindex, 64): 
+          mortonidx = zindex.XYZMorton((x,y,z)) 
 
-        print "Working on batch %s at %s" % (mortonidx, zindex.MortonXYZ(mortonidx))
-        
-        # call the range query
-        self.annoDB.queryRange ( mortonidx, mortonidx+64, resolution, channel );
-
-        # Flag to indicate no data.  No update query
-        somedata = False
-
-        # get the first cube
-        [key,cube]  = self.annoDB.getNextCube ()
-
-        #  if there's a cube, there's data
-        if key != None:
-          somedata = True
-
-        while key != None:
+          print "Working on batch %s at %s" % (mortonidx, zindex.MortonXYZ(mortonidx))
           
-          xyz = zindex.MortonXYZ ( key )
+          #  get the cube
+          import pdb; pdb.set_trace() 
+          cube = self.annoDB.getCube ( mortonidx, resolution, channel );
+
+          # Flag to indicate no data.  No update query
+          somedata = False
+
+          # get the first cube
+          [key,cube]  = self.annoDB.getNextCube ()
+
+          #  if there's a cube, there's data
+          if key != None:
+            somedata = True
+
+          xyz = (x,y,z)
 
           # Compute the offset in the output data cube 
           #  we are placing 4x4x4 input blocks into a 2x2x4 cube 
           offset = [xyz[0]*xcubedim, xyz[1]*ycubedim, xyz[2]*zcubedim]
 
           nzlocs = np.nonzero ( cube.data > threshhold )
+
+          count += len(nzlocs[1]) 
              
-          if len(nzlocs[1]) != 0:
-
-            print "res : zindex = ", resolution , ":", key, ", location", zindex.MortonXYZ(key)
-            # zip together the x y z and value
-            cubelocs=zip(nzlocs[0],nzlocs[1],nzlocs[2],cube.data[nzlocs[0],nzlocs[1],nzlocs[2]])
-            # translate from z,y,x,value to x,y,z,value and add global offset
-            locs = [ (pt[2]+offset[0], pt[1]+offset[1], pt[0]+offset[2], pt[3]) for pt in cubelocs ] 
-
-            csvwriter.writerows ( [x for x in locs ] )
-
-          [key,cube]  = self.annoDB.getNextCube ()
-
+    return countt
 
 def main():
 
@@ -117,18 +122,17 @@ def main():
   parser.add_argument('channel', action="store", help='Channel.')
   parser.add_argument('resolution', action="store", type=int, help='Resolution')
   parser.add_argument('threshhold', action="store", type=int, help='Minimum value')
-  parser.add_argument('outfile', action="store")
+  parser.add_argument('cutout', action="store", help="Data regions in format r/x1,x2/y1,y2/z1,z2")
   
   result = parser.parse_args()
 
   # Create the annotation stack
-  tholder = ThreshholdStack ( result.token )
+  tholder = ThreshholdStack ( result.token, result.cutout )
 
   # Iterate over the database creating the hierarchy
-  tholder.findLocations ( result.channel, result.resolution, result.threshhold, result.outfile )
+  count = tholder.countLocations ( result.channel, result.resolution, result.threshhold )
   
-
-
+  print "Found {} locations greater than {} in {} voxels at {}".format(count,threshhold,dim[0]*dim[1]*dim[2], result.cutout)
 
 if __name__ == "__main__":
   main()
