@@ -20,6 +20,7 @@ import cStringIO
 from PIL import Image
 import pylibmc
 import time
+from contextlib import closing
 
 import restargs
 import ocpcadb
@@ -93,30 +94,35 @@ class SimpleCatmaid:
     
     # parse the web args
     self.token, tileszstr, resstr, xtilestr, ytilestr, zslicestr, rest = webargs.split('/',6)
-    [ self.db, self.proj, projdb ] = ocpcarest.loadDBProj ( self.token )
+    #[ self.db, self.proj, projdb ] = ocpcarest.loadDBProj ( self.token )
 
-    # convert args to ints
-    xtile = int(xtilestr)
-    ytile = int(ytilestr)
-    res = int(resstr)
-    # xyslice will modify zslice to the offset
-    zslice = int(zslicestr)
-    self.tilesz = int(tileszstr)
+    with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+        self.proj = projdb.loadProject ( self.token )
+    
+    with closing ( ocpcadb.OCPCADB(self.proj) ) as self.db:
 
-    # mocpcache key
-    mckey = self.buildKey(res,xtile,ytile,zslice)
+        # convert args to ints
+        xtile = int(xtilestr)
+        ytile = int(ytilestr)
+        res = int(resstr)
+        # xyslice will modify zslice to the offset
+        zslice = int(zslicestr)
+        self.tilesz = int(tileszstr)
 
-    # do something to sanitize the webargs??
-    # if tile is in mocpcache, return it
-    tile = self.mc.get(mckey)
-    tile = None
-    if tile == None:
-      img=self.cacheMiss(res,xtile,ytile,zslice)
-      fobj = cStringIO.StringIO ( )
-      img.save ( fobj, "PNG" )
-      self.mc.set(mckey,fobj.getvalue())
-    else:
-      fobj = cStringIO.StringIO(tile)
+        # mocpcache key
+        mckey = self.buildKey(res,xtile,ytile,zslice)
 
-    fobj.seek(0)
-    return fobj
+        # do something to sanitize the webargs??
+        # if tile is in mocpcache, return it
+        tile = self.mc.get(mckey)
+        tile = None
+        if tile == None:
+          img=self.cacheMiss(res,xtile,ytile,zslice)
+          fobj = cStringIO.StringIO ( )
+          img.save ( fobj, "PNG" )
+          self.mc.set(mckey,fobj.getvalue())
+        else:
+          fobj = cStringIO.StringIO(tile)
+
+        fobj.seek(0)
+        return fobj
