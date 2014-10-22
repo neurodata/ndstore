@@ -26,18 +26,21 @@ import aerospike
     This file is aerospike
     This uses the state and methods of ocpcadb"""
 
+class AerospikeKVIO:
+
   def __init__ ( self, db ):
     """Connect to the database"""
-
+ 
     self.db = db
 
     ascfg = { 'hosts': [ ('127.0.0.1', 3000) ] }
-    ascli = aerospike.client(ascfg).connect()
+    self.ascli = aerospike.client(ascfg).connect()
 
 
-  def __del__ ( self ):
+  def close ( self ):
     """Close the connection"""
     self.ascli.close()
+
 
   def startTxn ( self ):
     """Start a transaction.  Ensure database is in multi-statement mode."""
@@ -53,8 +56,10 @@ import aerospike
     pass
     
 
-  def getCube ( self, cube, zidx, resolution, update ):
+  def getCube ( self, zidx, resolution, update ):
     """Retrieve a cube from the database by token, resolution, and zidx"""
+
+    import pdb; pdb.set_trace()
 
     (askey, asmd, asvalue) = self.ascli.get ( db.annoproj.token + ":img:" + str(resolution)  + ":" + str(zidx) )
 
@@ -65,7 +70,9 @@ import aerospike
       cube.data=asvalue
 
 
-  def getCubes ( self, listofidxs ):
+  def getCubes ( self, listofidxs, resolution ):
+
+    import pdb; pdb.set_trace()
 
     for zidx in listofidxs:
 
@@ -77,7 +84,7 @@ import aerospike
   #
   # putCube
   #
-  def putCube ( self, zidx, resolution, cube ):
+  def putCube ( self, zidx, resolution, cube, update ):
     """Store a cube from the annotation database"""
 
     self.ascli.put ( db.annoproj.token + ":img:" + str(resolution)  + ":" + str(zidx), cube.data ) 
@@ -92,7 +99,7 @@ import aerospike
     if ( asvalue == None ):
       return []
     else:
-      return=asvalue
+      return asvalue
 
 
   def putIndex ( self, annid, index, resolution ):

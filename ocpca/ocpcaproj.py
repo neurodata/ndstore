@@ -15,8 +15,20 @@ import h5py
 import numpy as np
 import math
 from contextlib import closing
-from cassandra.cluster import Cluster
-import riak
+
+# need imports to be conditional
+try:
+  from cassandra.cluster import Cluster
+except:
+   pass
+try:
+  import riak
+except:
+   pass
+try:
+  import aspike
+except:
+   pass
 
 import ocpcaprivate
 from ocpcaerror import OCPCAError
@@ -37,7 +49,8 @@ IMAGES_16bit = 8
 # RBTODO need to integrate this into project engine
 MySQL = False
 Cassandra = False
-Riak = True
+Riak = False
+Aerospike = True
 
 class OCPCAProject:
   """Project specific for cutout and annotation data"""
@@ -87,6 +100,8 @@ class OCPCAProject:
       return 'Cassandra'
     elif Riak:
       return 'Riak'
+    elif Aerospike:
+      return 'Aerospike'
     else:
       return 'MySQL'
 
@@ -202,6 +217,8 @@ class OCPCAProjectsDB:
 
     self.conn = MySQLdb.connect (host = ocpcaprivate.dbhost, user = ocpcaprivate.dbuser, passwd = ocpcaprivate.dbpasswd, db = ocpcaprivate.db ) 
 
+
+  # for context lib closing
   def close (self):
     self.conn.close()
 

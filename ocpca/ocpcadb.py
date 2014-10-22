@@ -47,10 +47,6 @@ logger=logging.getLogger("ocp")
 
 import sys
 
-import mysqlkvio
-import casskvio
-import riakkvio
-
 
 ################################################################################
 #
@@ -74,12 +70,19 @@ class OCPCADB:
 
     # Choose the I/O engine for key/value data
     if self.annoproj.getKVEngine() == 'MySQL':
+      import mysqlkvio
       self.kvio = mysqlkvio.MySQLKVIO(self)
       self.NPZ = True
     elif self.annoproj.getKVEngine() == 'Riak':
+      import riakkvio
       self.kvio = riakkvio.RiakKVIO(self)
       self.NPZ = False
+    elif self.annoproj.getKVEngine() == 'Aerospike':
+      import askvio
+      self.kvio = askvio.AerospikeKVIO(self)
+      self.NPZ = False
     elif self.annoproj.getKVEngine() == 'Cassandra':
+      import casskvio
       self.kvio = casskvio.CassandraKVIO(self)
       self.NPZ = False
     else:

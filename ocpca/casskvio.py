@@ -35,7 +35,7 @@ class CassandraKVIO:
     self.db = db
 
     # connect to cassandra
-    self.cluster = Cluster()
+    self.cluster = Cluster( ['128.220.35.84', '128.220.35.75'] )
     self.session = self.cluster.connect(db.annoproj.getDBName())
 
   def close ( self ):
