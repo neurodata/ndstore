@@ -1716,16 +1716,18 @@ def mcfcPNG ( proj, db, token, service, chanstr, imageargs ):
       raise OCPCAError ( "No such service %s" % (service) )
 
     # reduction factor
+    scaleby = 1.0
     if proj.getDBType() == ocpcaproj.CHANNELS_8bit:
       scaleby = 1
     elif proj.getDBType() == ocpcaproj.CHANNELS_16bit and ( startwindow==0 and endwindow==0):
       scaleby = 1.0/256
+    elif proj.getDBType() == ocpcaproj.CHANNELS_16bit and ( endwindow!=0 ):
+      scaleby = 1
 
-    scaleby = 1.0
     # First channel is cyan
     if i == 0:
       data32 = np.array ( cb.data * scaleby, dtype=np.uint32 )
-      combined_img = 0xFF000000 + np.left_shift(data32,8) + np.left_shift(data32,16)
+      combined_img = np.left_shift(data32,8) + np.left_shift(data32,16)
     # Second is Magenta
     elif i == 1:
       data32 = np.array ( cb.data * scaleby, dtype=np.uint32 )
@@ -1750,6 +1752,8 @@ def mcfcPNG ( proj, db, token, service, chanstr, imageargs ):
       logger.warning ( "Only support six channels at a time.  You requested %s " % (chanstr))
       raise OCPCAError ( "Only support six channels at a time.  You requested %s " % (chanstr))
 
+    # Set the alpha channel only for nonzero pixels
+    combined_img = np.where ( combined_img > 0, combined_img + 0xFF000000, 0 )
     
   if service == 'xy':
     ydim, xdim = combined_img.shape[1:3]
