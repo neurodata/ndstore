@@ -56,22 +56,21 @@ import aerospike
   def getCube ( self, cube, zidx, resolution, update ):
     """Retrieve a cube from the database by token, resolution, and zidx"""
 
-    (askey, asmd, asvalue) = self.ascli.get ( db.annoproj.token + ":img:" + str(resolution)  + ":" + str(zidx) )
+    (askey, asmd, asvalue) = self.ascli.get ( self.db.annoproj.token + ":img:" + str(resolution)  + ":" + str(zidx) )
 
     # If we can't find a cube, assume it hasn't been written yet
-    if ( asvalue == None ):
-      cube.zeros ()
-    else:
-      cube.data=asvalue
+    return asvalue
 
 
   def getCubes ( self, listofidxs ):
 
+    if len(listofidxs)==1:
+      yield listofidxs[0], self.ascli.get ( self.db.annoproj.token + ":img:" + str(resolution)  + ":" + str(zidx))
     for zidx in listofidxs:
 
-      (askey, asmd, asvalue) = self.ascli.get ( db.annoproj.token + ":img:" + str(resolution)  + ":" + str(zidx) )
+      (askey, asmd, asvalue) = self.ascli.get ( self.db.annoproj.token + ":img:" + str(resolution)  + ":" + str(zidx) )
       # how to deal with empty cubes RBTODO
-      yield asvalue
+      yield zidx, asvalue
 
 
   #
@@ -80,13 +79,13 @@ import aerospike
   def putCube ( self, zidx, resolution, cube ):
     """Store a cube from the annotation database"""
 
-    self.ascli.put ( db.annoproj.token + ":img:" + str(resolution)  + ":" + str(zidx), cube.data ) 
+    self.ascli.put ( self.db.annoproj.token + ":img:" + str(resolution)  + ":" + str(zidx), cube.data ) 
 
 
   def getIndex ( self, annid, resolution, update ):
     """Fetch index routine.  Update is irrelevant for KV clients"""
 
-    (askey, asmd, asvalue) = self.ascli.get ( db.annoproj.token + ":idx:" + str(resolution)  + ":" + str(annid) )
+    (askey, asmd, asvalue) = self.ascli.get ( self.db.annoproj.token + ":idx:" + str(resolution)  + ":" + str(annid) )
 
     # If we can't find a cube, assume it hasn't been written yet
     if ( asvalue == None ):
@@ -98,7 +97,7 @@ import aerospike
   def putIndex ( self, annid, index, resolution ):
     """MySQL put index routine"""
 
-    self.ascli.put ( db.annoproj.token + ":idx:" + str(resolution)  + ":" + str(annid), index ) 
+    self.ascli.put ( self.db.annoproj.token + ":idx:" + str(resolution)  + ":" + str(annid), index ) 
 
 
   def updateIndex ( self, annid, index, resolution ):
@@ -110,4 +109,4 @@ import aerospike
   def deleteIndex ( self, annid, resolution ):
     """MySQL update index routine"""
 
-    self.ascli.remove ( db.annoproj.token + ":idx:" + str(resolution)  + ":" + str(annid) ) 
+    self.ascli.remove ( self.db.annoproj.token + ":idx:" + str(resolution)  + ":" + str(annid) ) 
