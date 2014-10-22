@@ -61,39 +61,43 @@ class AerospikeKVIO:
 
     import pdb; pdb.set_trace()
 
-    (askey, asmd, asvalue) = self.ascli.get ( db.annoproj.token + ":img:" + str(resolution)  + ":" + str(zidx) )
+    askey = ( "ocp", self.db.annoproj.getDBName(), str(resolution)+"_"+str(zidx) )
 
-    # If we can't find a cube, assume it hasn't been written yet
-    if ( asvalue == None ):
-      cube.zeros ()
+    (retkey, asmd, asvalue) = self.ascli.get ( askey )
+    if asvalue != None:
+      return asvalue('cuboid')
     else:
-      cube.data=asvalue
+      return None
 
 
   def getCubes ( self, listofidxs, resolution ):
 
     import pdb; pdb.set_trace()
 
+    if len(listofidxs)==1:
+      yield listofidxs[0], self.ascli.get ( self.db.annoproj.getTable(resolution) + ":img:" + str(resolution)  + ":" + str(zidx))
     for zidx in listofidxs:
 
-      (askey, asmd, asvalue) = self.ascli.get ( db.annoproj.token + ":img:" + str(resolution)  + ":" + str(zidx) )
+      (askey, asmd, asvalue) = self.ascli.get ( self.db.annoproj.getTable(resolution) + ":img:" + str(resolution)  + ":" + str(zidx) )
       # how to deal with empty cubes RBTODO
-      yield asvalue
+      yield zidx, asvalue
 
 
   #
   # putCube
   #
-  def putCube ( self, zidx, resolution, cube, update ):
+  def putCube ( self, zidx, resolution, cubestr, update ):
     """Store a cube from the annotation database"""
 
-    self.ascli.put ( db.annoproj.token + ":img:" + str(resolution)  + ":" + str(zidx), cube.data ) 
+    import pdb; pdb.set_trace()
+    askey = ( "ocp", self.db.annoproj.getDBName(), str(resolution)+"_"+str(zidx) )
+    self.ascli.put ( askey, {'cuboid':cubestr} ) 
 
 
   def getIndex ( self, annid, resolution, update ):
     """Fetch index routine.  Update is irrelevant for KV clients"""
 
-    (askey, asmd, asvalue) = self.ascli.get ( db.annoproj.token + ":idx:" + str(resolution)  + ":" + str(annid) )
+    (askey, asmd, asvalue) = self.ascli.get ( self.db.annoproj.getTable(resolution) + ":idx:" + str(resolution)  + ":" + str(annid) )
 
     # If we can't find a cube, assume it hasn't been written yet
     if ( asvalue == None ):
@@ -105,7 +109,7 @@ class AerospikeKVIO:
   def putIndex ( self, annid, index, resolution ):
     """MySQL put index routine"""
 
-    self.ascli.put ( db.annoproj.token + ":idx:" + str(resolution)  + ":" + str(annid), index ) 
+    self.ascli.put ( self.db.annoproj.getTable(resolution) + ":idx:" + str(resolution)  + ":" + str(annid), index ) 
 
 
   def updateIndex ( self, annid, index, resolution ):
@@ -117,4 +121,4 @@ class AerospikeKVIO:
   def deleteIndex ( self, annid, resolution ):
     """MySQL update index routine"""
 
-    self.ascli.remove ( db.annoproj.token + ":idx:" + str(resolution)  + ":" + str(annid) ) 
+    self.ascli.remove ( self.db.annoproj.getTable(resolution) + ":idx:" + str(resolution)  + ":" + str(annid) ) 
