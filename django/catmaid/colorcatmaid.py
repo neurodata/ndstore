@@ -141,33 +141,34 @@ class ColorCatmaid:
     # load the database
     self.loadDB ( )
 
-    # convert args to ints
-    xtile = int(xtilestr)
-    ytile = int(ytilestr)
-    res = int(resstr)
-    # modify the zslice to the offset
-    zslice = int(zslicestr)-self.proj.datasetcfg.slicerange[0]
-    self.tilesz = int(tileszstr)
-    brightness = float(brightnessstr)
+    with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+      self.proj = projdb.loadProject ( self.token )
 
-    # memcache key
-    mckey = self.buildKey(res,xtile,ytile,zslice,color,brightness)
+    with closing ( ocpcadb.OCPCADB(self.proj) ) as self.db:
 
-    # do something to sanitize the webargs??
-    # if tile is in mocpcache, return it
-    tile = self.mc.get(mckey)
-    if tile != None:
-      fobj = cStringIO.StringIO(tile)
-    # load a slab into CATMAID
-    else:
-      img=self.cacheMiss(res,xtile,ytile,zslice,color,brightness)
-      fobj = cStringIO.StringIO ( )
-      img.save ( fobj, "PNG" )
-      self.mc.set(mckey,fobj.getvalue())
+      # convert args to ints
+      xtile = int(xtilestr)
+      ytile = int(ytilestr)
+      res = int(resstr)
+      # modify the zslice to the offset
+      zslice = int(zslicestr)-self.proj.datasetcfg.slicerange[0]
+      self.tilesz = int(tileszstr)
+      brightness = float(brightnessstr)
 
-    fobj.seek(0)
-    return fobj
+      # memcache key
+      mckey = self.buildKey(res,xtile,ytile,zslice,color,brightness)
 
+      # do something to sanitize the webargs??
+      # if tile is in mocpcache, return it
+      tile = self.mc.get(mckey)
+      if tile != None:
+        fobj = cStringIO.StringIO(tile)
+      # load a slab into CATMAID
+      else:
+        img=self.cacheMiss(res,xtile,ytile,zslice,color,brightness)
+        fobj = cStringIO.StringIO ( )
+        img.save ( fobj, "PNG" )
+        self.mc.set(mckey,fobj.getvalue())
 
-
-
+      fobj.seek(0)
+      return fobj

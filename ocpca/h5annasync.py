@@ -27,6 +27,7 @@ import numpy as np
 from celery import Celery
 from contextlib import closing
 import glob
+import anydbm
 
 import h5ann
 import annotation
@@ -37,30 +38,29 @@ import ocpcaprivate
 
 from ocpcaerror import OCPCAError
 
-#celery = Celery('tasks', broker='amqp://guest@localhost//')
-
 import logging
 logger=logging.getLogger("ocp")
 
-#@celery.task()
-def h5Async( token, options ):
+def h5Async( ):
   """ Write h5py files back to database """
 
-  #import pdb; pdb.set_trace()
-  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
-
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
-
-    retvals = []
-    import pdb; pdb.set_trace()
-
-    fileList = glob.glob(ocpcaprivate.ssd_log_location+'*')
+  any_db = anydbm.open( ocpcaprivate.ssd_log_location+ocpcaprivate.bsd_name, 'rl' )
+  import time
   
+  while any_db:
+    
+    ( fileName, value ) = any_db.popitem()
+  
+    from ast import literal_eval as make_tuple
+    ( token, timestamp, options ) = make_tuple ( value )
+    
+    with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+      proj = projdb.loadProject ( token )
 
-    for fileName in fileList:
-      import time
-      import pdb; pdb.set_trace()
+    with closing ( ocpcadb.OCPCADB(proj) ) as db:
+
+      retvals = []
+  
       start = time.time()
       h5f = h5py.File ( fileName, driver='core', backing_store=False)
 
@@ -167,8 +167,10 @@ def h5Async( token, options ):
           if not 'dataonly' in options and not 'reduce' in options:
             retvals.append ( anno.annid )
 
+          os.remove( fileName )
+
           # Here with no error is successful
-          print " Done successfully "
+          print " Done successfully :", anno.annid
           print time.time()-start
 
         except MySQLdb.OperationalError, e:
@@ -177,9 +179,11 @@ def h5Async( token, options ):
         except MySQLdb.Error, e:
           logger.warning ( "Put Annotation: Put transaction rollback. {}".format(e) )
           raise
+        except OSError , e:
+          logger.warning ( "Cannot unlink file from system. {}".format(e) )
         except Exception, e:
           logger.warning ( "Put Annotation: Put transaction rollback. {}".format(e) )
           raise
 
 if __name__ == "__main__":
-  h5Async( "kunal_hdf5_test", "None" )
+  h5Async( )

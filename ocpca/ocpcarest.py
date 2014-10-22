@@ -1174,111 +1174,116 @@ def getAnnotations ( webargs, postdata ):
   # Get the annotation database
   [ db, proj, projdb ] = loadDBProj ( token )
 
-  # Read the post data HDF5 and get a list of identifiers
-  tmpinfile = tempfile.NamedTemporaryFile ( )
-  tmpinfile.write ( postdata )
-  tmpinfile.seek(0)
-  h5in = h5py.File ( tmpinfile.name )
-
-  try:
-
-    # IDENTIFIERS
-    if not h5in.get('ANNOIDS'):
-      logger.warning ("Requesting multiple annotations.  But no HDF5 \'ANNOIDS\' field specified.") 
-      raise OCPCAError ("Requesting multiple annotations.  But no HDF5 \'ANNOIDS\' field specified.") 
-
-    # GET the data out of the HDF5 file.  Never operate on the data in place.
-    annoids = h5in['ANNOIDS'][:]
-
-    # set variables to None: need them in call to getAnnoByID, but not all paths set all
-    corner = None
-    dim = None
-    resolution = None
-    dataarg = ''
-
-    # process options
-    # Split the URL and get the args
-    if otherargs != '':
-      ( dataarg, cutout ) = otherargs.split('/', 1)
-
-    if dataarg =='' or dataarg == 'nodata':
-      dataoption = AR_NODATA
-
-    elif dataarg == 'voxels':
-      dataoption = AR_VOXELS
-      # only arg to voxels is resolution
-      try:
-        [resstr, sym, rest] = cutout.partition('/')
-        resolution = int(resstr) 
-      except:
-        logger.warning ( "Improperly formatted voxel arguments {}".format(cutout))
-        raise OCPCAError("Improperly formatted voxel arguments {}".format(cutout))
-
-
-    elif dataarg == 'cutout':
-      # if blank of just resolution then a tightcutout
-      if cutout == '' or re.match('^\d+[\/]*$', cutout):
-        dataoption = AR_TIGHTCUTOUT
-        try:
-          [resstr, sym, rest] = cutout.partition('/')
-          resolution = int(resstr) 
-        except:
-          logger.warning ( "Improperly formatted cutout arguments {}".format(cutout))
-          raise OCPCAError("Improperly formatted cutout arguments {}".format(cutout))
-      else:
-        dataoption = AR_CUTOUT
-
-        # Perform argument processing
-        brargs = restargs.BrainRestArgs ();
-        brargs.cutoutArgs ( cutout, proj.datsetcfg )
-
-        # Extract the relevant values
-        corner = brargs.getCorner()
-        dim = brargs.getDim()
-        resolution = brargs.getResolution()
-
-    # RBTODO test this interface
-    elif dataarg == 'boundingbox':
-      # if blank of just resolution then a tightcutout
-      if cutout == '' or re.match('^\d+[\/]*$', cutout):
-        dataoption = AR_BOUNDINGBOX
-        try:
-          [resstr, sym, rest] = cutout.partition('/')
-          resolution = int(resstr) 
-        except:
-          logger.warning ( "Improperly formatted bounding box arguments {}".format(cutout))
-          raise OCPCAError("Improperly formatted bounding box arguments {}".format(cutout))
-
-    else:
-        logger.warning ("In getAnnotations: Error: no such data option %s " % ( dataarg ))
-        raise OCPCAError ("In getAnnotations: Error: no such data option %s " % ( dataarg ))
+  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+    proj = projdb.loadProject ( token )
+  
+  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  
+    # Read the post data HDF5 and get a list of identifiers
+    tmpinfile = tempfile.NamedTemporaryFile ( )
+    tmpinfile.write ( postdata )
+    tmpinfile.seek(0)
+    h5in = h5py.File ( tmpinfile.name )
 
     try:
 
-      # Make the HDF5 output file
-      # Create an in-memory HDF5 file
-      tmpoutfile = tempfile.NamedTemporaryFile()
-      h5fout = h5py.File ( tmpoutfile.name )
+      # IDENTIFIERS
+      if not h5in.get('ANNOIDS'):
+        logger.warning ("Requesting multiple annotations.  But no HDF5 \'ANNOIDS\' field specified.") 
+        raise OCPCAError ("Requesting multiple annotations.  But no HDF5 \'ANNOIDS\' field specified.") 
 
-      # get annotations for each identifier
-      for annoid in annoids:
-        # the int here is to prevent using a numpy value in an inner loop.  This is a 10x performance gain.
-        getAnnoById ( int(annoid), h5fout, proj, db, dataoption, resolution, corner, dim )
+      # GET the data out of the HDF5 file.  Never operate on the data in place.
+      annoids = h5in['ANNOIDS'][:]
 
-    except:
-      h5fout.close()
-      tmpoutfile.close()
+      # set variables to None: need them in call to getAnnoByID, but not all paths set all
+      corner = None
+      dim = None
+      resolution = None
+      dataarg = ''
 
-  finally:
-    # close temporary file
-    h5in.close()
-    tmpinfile.close()
+      # process options
+      # Split the URL and get the args
+      if otherargs != '':
+        ( dataarg, cutout ) = otherargs.split('/', 1)
 
-  # Transmit back the populated HDF5 file
-  h5fout.flush()
-  h5fout.close()
-  tmpoutfile.seek(0)
-  return tmpoutfile.read()
+      if dataarg =='' or dataarg == 'nodata':
+        dataoption = AR_NODATA
+
+      elif dataarg == 'voxels':
+        dataoption = AR_VOXELS
+        # only arg to voxels is resolution
+        try:
+          [resstr, sym, rest] = cutout.partition('/')
+          resolution = int(resstr) 
+        except:
+          logger.warning ( "Improperly formatted voxel arguments {}".format(cutout))
+          raise OCPCAError("Improperly formatted voxel arguments {}".format(cutout))
+
+
+      elif dataarg == 'cutout':
+        # if blank of just resolution then a tightcutout
+        if cutout == '' or re.match('^\d+[\/]*$', cutout):
+          dataoption = AR_TIGHTCUTOUT
+          try:
+            [resstr, sym, rest] = cutout.partition('/')
+            resolution = int(resstr) 
+          except:
+            logger.warning ( "Improperly formatted cutout arguments {}".format(cutout))
+            raise OCPCAError("Improperly formatted cutout arguments {}".format(cutout))
+        else:
+          dataoption = AR_CUTOUT
+
+          # Perform argument processing
+          brargs = restargs.BrainRestArgs ();
+          brargs.cutoutArgs ( cutout, proj.datsetcfg )
+
+          # Extract the relevant values
+          corner = brargs.getCorner()
+          dim = brargs.getDim()
+          resolution = brargs.getResolution()
+
+      # RBTODO test this interface
+      elif dataarg == 'boundingbox':
+        # if blank of just resolution then a tightcutout
+        if cutout == '' or re.match('^\d+[\/]*$', cutout):
+          dataoption = AR_BOUNDINGBOX
+          try:
+            [resstr, sym, rest] = cutout.partition('/')
+            resolution = int(resstr) 
+          except:
+            logger.warning ( "Improperly formatted bounding box arguments {}".format(cutout))
+            raise OCPCAError("Improperly formatted bounding box arguments {}".format(cutout))
+
+      else:
+          logger.warning ("In getAnnotations: Error: no such data option %s " % ( dataarg ))
+          raise OCPCAError ("In getAnnotations: Error: no such data option %s " % ( dataarg ))
+
+      try:
+
+        # Make the HDF5 output file
+        # Create an in-memory HDF5 file
+        tmpoutfile = tempfile.NamedTemporaryFile()
+        h5fout = h5py.File ( tmpoutfile.name )
+
+        # get annotations for each identifier
+        for annoid in annoids:
+          # the int here is to prevent using a numpy value in an inner loop.  This is a 10x performance gain.
+          getAnnoById ( int(annoid), h5fout, proj, db, dataoption, resolution, corner, dim )
+
+      except:
+        h5fout.close()
+        tmpoutfile.close()
+
+    finally:
+      # close temporary file
+      h5in.close()
+      tmpinfile.close()
+
+    # Transmit back the populated HDF5 file
+    h5fout.flush()
+    h5fout.close()
+    tmpoutfile.seek(0)
+    return tmpoutfile.read()
 
 def putAnnotationAsync ( webargs, postdata ):
   """Put a RAMON object asynchrously as HDF5 by object identifier"""
@@ -1286,9 +1291,9 @@ def putAnnotationAsync ( webargs, postdata ):
   [ token, sym, optionsargs ] = webargs.partition ('/')
   options = optionsargs.split('/')
 
-  import bsddb
+  import anydbm
   import time
-  bsd_db = bsddb.btopen( ocpcaprivate.ssd_log_location+'voxel.db', 'c')
+  any_db = anydbm.open( ocpcaprivate.ssd_log_location+ocpcaprivate.bsd_name, 'c', 0777)
 
   print "Wrting Data to SSD"
 
@@ -1307,10 +1312,15 @@ def putAnnotationAsync ( webargs, postdata ):
     fd = os.open(filename ,os.O_CREAT | os.O_WRONLY | os.O_NOATIME | os.O_SYNC )
     os.write ( fd, postdata )
     os.close( fd )
-    metadata = (time.time(), optionsargs )
-    bsd_db[ str(filename) ] = "{}".format( metadata )
+    metadata = ( token, time.time(), optionsargs )
+    any_db[ str(filename) ] = "{}".format( metadata )
   except Exception, e:
     print e
+  
+  from ocpca.tasks import async
+
+  async.delay()
+  #async.apply_async(countdown=5)
 
   # TODO KL - celery to rewrite data
   #import h5annasync
