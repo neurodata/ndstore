@@ -11,6 +11,7 @@ npzToPNGs.py
 activation_email.txt
 kanno_cy.c
 ocpca_cy.c
+cython/zindex/zindex.c
 
 # Compiled source #
 ###################
