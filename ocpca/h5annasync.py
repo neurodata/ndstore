@@ -44,7 +44,7 @@ logger=logging.getLogger("ocp")
 def h5Async( ):
   """ Write h5py files back to database """
 
-  any_db = anydbm.open( ocpcaprivate.ssd_log_location+ocpcaprivate.bsd_name, 'rl' )
+  any_db = anydbm.open( ocpcaprivate.ssd_log_location+ocpcaprivate.bsd_name, 'c' )
   import time
   
   while any_db:
@@ -53,7 +53,7 @@ def h5Async( ):
   
     from ast import literal_eval as make_tuple
     ( token, timestamp, options ) = make_tuple ( value )
-    
+
     with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
       proj = projdb.loadProject ( token )
 
@@ -70,6 +70,9 @@ def h5Async( ):
 
         # Convert HDF5 to Annotation
         anno = h5ann.H5toAnnotation (k, idgrp, db)
+        print anno.annid
+        os.remove(fileName)
+        continue
 
         # set the indentifier
         if not ('update' in options or 'dataonly' in options or 'reduce' in options ):

@@ -21,12 +21,12 @@ import cStringIO
 from PIL import Image
 import zlib
 import MySQLdb
+import itertools
 
 sys.path += [os.path.abspath('../django')]
 import OCP.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
 from django.conf import settings
-
 
 import ocpcaproj
 import ocpcadb
@@ -70,6 +70,8 @@ class ImgStack:
       zlimit = (((slices-1)/zcubedim+1)*zcubedim)/zcubedim 
 
       cursor = self.imgDB.conn.cursor()
+      keyList = []
+      blobList = []
 
       for z in range(zlimit):
         for y in range(ylimit):
@@ -100,15 +102,20 @@ class ImgStack:
               zdataout = zlib.compress (outfobj.getvalue())
               outfobj.close()
 
-            key = zindex.XYZMorton ( [x,y,z] )
+            keyList.append( zindex.XYZMorton ( [x,y,z] ) )
+            blobList.append( zdataout )
             
-            # put in the database
-            sql = "INSERT INTO res" + str(l) + "(zindex, cube) VALUES (%s, %s)"
-            print sql % (key,"x,y,z=%s,%s,%s"%(x,y,z))
-            try:
-              cursor.execute ( sql, (key,zdataout))
-            except MySQLdb.Error, e:
-              print "Failed insert %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+            if ( ( x%5 == 0 and x != 0 ) or ( x == xlimit-1 ) ):
+              # put in the database
+              sql = "INSERT INTO res" + str(l) + "(zindex, cube) VALUES "
+              
+              for i in range( len (keyList ) ):
+                sql = sql + "(%s, %s) "
+              print sql % (key,"x,y,z={},{},{}".format(x,y,z))
+              try:
+                cursor.execute ( sql, list( itertools.chain.from_iterable( zip(keyList,blobList) ) ) )
+              except MySQLdb.Error, e:
+                print "Failed insert {}: {}. sql={}".format(e.args[0], e.args[1], sql)
       
       print "Committing to database"
       self.imgDB.conn.commit()

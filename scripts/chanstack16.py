@@ -70,8 +70,11 @@ class ChanStack:
 
         # Set the limits for iteration on the number of cubes in each dimension
         # RBTODO These limits may be wrong for even (see channelingest.py)
+        import pdb; pdb.set_trace()
+        xlimit = ( (ximagesz-1) / (xcubedim+1) )
         xlimit = ( ximagesz / xcubedim )
-        ylimit = ( yimagesz / ycubedim ) - 1
+        ylimit = ( (yimagesz-1) / (ycubedim+1) )
+        ylimit2 = ( yimagesz / ycubedim )
         #  Round up the zlimit to the next larger
         zlimit = (((slices-1)/zcubedim+1)*zcubedim)/zcubedim 
         ylimit = 16
@@ -92,9 +95,8 @@ class ChanStack:
               for sl in range(zcubedim):
 
                 # resize the image
-                import pdb; pdb.set_trace()
                 #newimage = cv2.resize ( olddata[sl,:,:], (xcubedim,ycubedim) ) 
-                slimage = Image.frombuffer ( 'I;16', (xcubedim*2,ycubedim*2), oldata[sl,:,:].flatten(), 'raw', 'I;16', 0, 1 ) 
+                slimage = Image.frombuffer ( 'I;16', (xcubedim*2,ycubedim*2), olddata[sl,:,:].flatten(), 'raw', 'I;16', 0, 1 ) 
                 newimage = slimage.resize ( [xcubedim,ycubedim] )
 
                 # Put to a new cube

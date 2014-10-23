@@ -1319,7 +1319,7 @@ def putAnnotationAsync ( webargs, postdata ):
   
   from ocpca.tasks import async
 
-  async.delay()
+  #async.delay()
   #async.apply_async(countdown=5)
 
   # TODO KL - celery to rewrite data

@@ -9,11 +9,13 @@ settings_bkup.py
 godown.py
 npzToPNGs.py
 activation_email.txt
-*.py~
+kanno_cy.c
+ocpca_cy.c
 
 # Compiled source #
 ###################
 *.pyc
+*.py~
 *.o
 *.so
 *.out
