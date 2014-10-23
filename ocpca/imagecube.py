@@ -273,7 +273,9 @@ class ImageCube32(Cube):
   #
   def catmaidSlice ( self ):
     
-      self.data = Image.fromarray( self.data[0,:,:], "RGBA")
+    cmtilesz = self.data.shape[1]
+    self.data = Image.frombuffer ( 'RGBA', (cmtilesz,cmtilesz), self.data.flatten(), 'raw', 'RGBA', 0, 1)
+    #data2 = Image.fromarray( self.data[:,:], "RGBA")
 
   #
   # Convert the uint32 back into 4x8 bit channels

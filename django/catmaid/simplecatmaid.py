@@ -52,6 +52,7 @@ class SimpleCatmaid:
 
   def cacheMiss ( self, resolution, xtile, ytile, zslice ):
     """On a miss. Cutout, return the image and load the cache in a background thread"""
+    
     # make sure that the tile size is aligned with the cubedim
     if self.tilesz % self.proj.datasetcfg.cubedim[resolution][0] != 0 or self.tilesz % self.proj.datasetcfg.cubedim[resolution][1]:
       raise("Illegal tile size.  Not aligned")
