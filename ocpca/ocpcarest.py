@@ -1729,6 +1729,10 @@ def mcfcPNG ( proj, db, token, service, chanstr, imageargs ):
     elif proj.getDBType() == ocpcaproj.CHANNELS_16bit and ( endwindow!=0 ):
       scaleby = 1
 
+    # Check for combined_img
+    if combined_img == None:
+      combined_img = np.zeros( cb.data.shape, dtype=np.uint32 )
+    
     # First channel is cyan
     if i == 0:
       data32 = np.array ( cb.data * scaleby, dtype=np.uint32 )
