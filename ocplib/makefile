@@ -30,4 +30,4 @@ test : clean testmain.c
 	gcc -ggdb testmain.c quicksort.c -o test -I .
 
 clean :
-	-rm -vf ocplib.so zindex.o locateCube.o annotateCube.o filterCutout.o filterCutoutOMP.o recolorCube.o test
+	-rm -vf ocplib.so zindex.o locateCube.o annotateCube.o filterCutout.o filterCutoutOMP.o recolorCube.o quicksort.o test

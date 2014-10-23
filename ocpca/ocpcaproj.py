@@ -294,7 +294,7 @@ class OCPCAProjectsDB:
         with closing(self.conn.cursor()) as cursor:
           try:
             # Make the database and associated ocpca tables
-            sql = "CREATE DATABASE %s;" % project
+            sql = "CREATE DATABASE %s" % project
          
             cursor.execute ( sql )
             self.conn.commit()
@@ -445,6 +445,8 @@ class OCPCAProjectsDB:
 
     except Exception, e:
       logger.warning ("Failed to delete project {}".format(e))
+      raise
+      
 
     #  try to delete the database anyway
     #  Sometimes weird crashes can get stuff out of sync

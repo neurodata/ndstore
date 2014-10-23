@@ -120,8 +120,9 @@ class H5Annotation:
     if volume != None:
       self.idgrp.create_dataset ( "CUTOUT", volume.shape, volume.dtype, data=volume )     
 
-  def mkCuboidGroup ( self ):
+  def mkCuboidGroup ( self, resolution ):
     """Create the group to store cuboids"""
+    self.idgrp.create_dataset ( "RESOLUTION", (1,), np.uint32, data=resolution )     
     self.cbgrp = self.idgrp.create_group( "CUBOIDS" )
 
 
@@ -132,7 +133,8 @@ class H5Annotation:
 
     offgrp.create_dataset ( "XYZOFFSET", (3,), np.uint32, data=offset )     
     offgrp.create_dataset ( "CUBOID", cbdata.shape, cbdata.dtype,  data=cbdata )     
-    
+
+
   def addBoundingBox ( self, resolution, corner, dim ):
     """Add the cutout  to the HDF5 file"""
 
@@ -307,6 +309,19 @@ def H5GetVolume ( h5fh ):
       raise OCPCAError("Improperly formatted HDF5 file.  XYZOFFSET define but no CUTOUT.")
   else:
     return None
+
+
+def H5getCuboids ( idgrp ):
+  """Generator function that returns XYZOFFSETS and CUBOIDS"""
+ 
+  cuboidsgrp = idgrp.get("CUBOIDS")
+  for k in cuboidsgrp:
+    corner = np.array(cuboidsgrp[k]["XYZOFFSET"])
+    cuboiddata = np.array(cuboidsgrp[k]['CUBOID'])
+    yield (corner, cuboiddata)
+  
+
+    
 
 ############## Converting Annotation to HDF5 ####################
 
