@@ -100,6 +100,7 @@ def main():
 
   parser = argparse.ArgumentParser(description='Ingest a CATMAID stack')
   parser.add_argument('token', action="store")
+  parser.add_argument('resolution', action="store", type=int)
   parser.add_argument('tilesz', action="store", type=int)
   parser.add_argument('tilepath', action="store")
 
