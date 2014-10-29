@@ -30,7 +30,7 @@ ocplib = npct.load_library("ocplib", OCP.ocppaths.OCP_OCPLIB_PATH)
 
 array_1d_uint32 = npct.ndpointer(dtype=np.uint32, ndim=1, flags='CONTIGUOUS')
 array_2d_uint32 = npct.ndpointer(dtype=np.uint32, ndim=2, flags='CONTIGUOUS')
-
+array_1d_uint64 = npct.ndpointer(dtype=np.uint64, ndim=1, flags='CONTIGUOUS')
 
 # defining the parameter types of the functions in C
 # FORMAT: <library_name>,<functiona_name>.argtypes = [ ctype.<argtype> , ctype.<argtype> ....]
@@ -39,8 +39,8 @@ ocplib.filterCutout.argtypes = [array_1d_uint32, cp.c_int, array_1d_uint32, cp.c
 ocplib.filterCutoutOMP.argtypes = [array_1d_uint32, cp.c_int, array_1d_uint32, cp.c_int]
 ocplib.locateCube.argtypes = [ array_2d_uint32, cp.c_int, array_2d_uint32, cp.c_int, cp.POINTER(cp.c_int) ]
 ocplib.annotateCube.argtypes = [ array_1d_uint32, cp.c_int, cp.POINTER(cp.c_int), cp.c_int, cp.POINTER(cp.c_int), array_2d_uint32, cp.c_int, cp.c_char, array_2d_uint32 ]
-ocplib.XYZMorton.argtypes = [ array_1d_uint32 ]
-ocplib.MortonXYZ.argtypes = [ cp.c_int, cp.POINTER(cp.c_int) ]
+ocplib.XYZMorton.argtypes = [ array_1d_uint64 ]
+ocplib.MortonXYZ.argtypes = [ npct.ctypes.c_int64 , array_1d_uint64 ]
 ocplib.recolorCube.argtypes = [ array_1d_uint32, cp.c_int, cp.c_int, array_1d_uint32, array_1d_uint32 ]
 ocplib.quicksort.argtypes = [ array_2d_uint32, cp.c_int ]
 
@@ -51,7 +51,7 @@ ocplib.filterCutout.restype = None
 ocplib.filterCutoutOMP.restype = None
 ocplib.locateCube.restype = None
 ocplib.annotateCube.restype = cp.c_int
-ocplib.XYZMorton.restype = cp.c_int
+ocplib.XYZMorton.restype = npct.ctypes.c_uint64
 ocplib.MortonXYZ.restype = None
 ocplib.recolorCube.restype = None
 ocplib.quicksort.restype = None
@@ -120,9 +120,9 @@ def XYZMorton ( xyz ):
   """ Get morton order from XYZ coordinates """
   
   # Calling the C native function
-  xyz = np.uint32( xyz )
+  xyz = np.uint64( xyz )
   morton = ocplib.XYZMorton ( xyz )
-
+  
   return morton
 
 
@@ -130,7 +130,7 @@ def MortonXYZ ( morton ):
   """ Get morton order from XYZ coordinates """
   
   # Calling the C native function
-  cubeoff = (cp.c_int*3)(0,0,0)
+  cubeoff = np.zeros((3), dtype=np.uint64)
   ocplib.MortonXYZ ( morton, cubeoff )
 
   return [i for i in cubeoff]

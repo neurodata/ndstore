@@ -28,16 +28,16 @@
 
 // Generate morton order from XYZ coordinates
 
-int XYZMorton ( uint32_t * xyz )
+uint64_t XYZMorton ( uint64_t * xyz )
 {
   int i;
-  int morton = 0;
+  uint64_t morton = 0;
 
-  uint32_t x = xyz[0];
-  uint32_t y = xyz[1];
-  uint32_t z = xyz[2];
+  uint64_t x = xyz[0];
+  uint64_t y = xyz[1];
+  uint64_t z = xyz[2];
 
-  uint32_t mask = 0x001;
+  uint64_t mask = 0x001;
 
   // 21 triads of 3 bits each
 	for ( i=0; i<21; i++ )
@@ -54,12 +54,12 @@ int XYZMorton ( uint32_t * xyz )
 
 // Generate XYZ coordinates from Morton index
 
-void MortonXYZ ( int morton, int xyz[3] )
+void MortonXYZ ( uint64_t morton, uint64_t xyz[3] )
 {
   int i;
-  int xmask = 0x001;
-  int ymask = 0x002;
-  int zmask = 0x004;
+  uint64_t xmask = 0x001;
+  uint64_t ymask = 0x002;
+  uint64_t zmask = 0x004;
   
   // 21 triads of 3 bits each
   for( i=0; i<21; i++)

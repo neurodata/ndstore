@@ -36,10 +36,10 @@ int annotateCube ( uint32_t * , int , int * , int , int * , uint32_t [][3] , int
 void locateCube ( uint32_t [][4] , int , uint32_t [][3] , int , int * );
 
 // Declaring XYZMorton zindex function
-int XYZMorton ( uint32_t * );
+int XYZMorton ( uint64_t * );
 
 // Declaring MortonXYZ zindex function
-void MortonXYZ ( int , int [3] );
+void MortonXYZ ( uint64_t , uint64_t [3] );
 
 // Declaring recolorSlice function
 void recolorSlice ( uint32_t * , int , int , uint32_t * , uint32_t * ); 
