@@ -26,18 +26,21 @@ import aerospike
     This file is aerospike
     This uses the state and methods of ocpcadb"""
 
+class AerospikeKVIO:
+
   def __init__ ( self, db ):
     """Connect to the database"""
-
+ 
     self.db = db
 
     ascfg = { 'hosts': [ ('127.0.0.1', 3000) ] }
-    ascli = aerospike.client(ascfg).connect()
+    self.ascli = aerospike.client(ascfg).connect()
 
 
-  def __del__ ( self ):
+  def close ( self ):
     """Close the connection"""
     self.ascli.close()
+
 
   def startTxn ( self ):
     """Start a transaction.  Ensure database is in multi-statement mode."""
@@ -53,22 +56,29 @@ import aerospike
     pass
     
 
-  def getCube ( self, cube, zidx, resolution, update ):
+  def getCube ( self, zidx, resolution, update ):
     """Retrieve a cube from the database by token, resolution, and zidx"""
 
-    (askey, asmd, asvalue) = self.ascli.get ( self.db.annoproj.token + ":img:" + str(resolution)  + ":" + str(zidx) )
+    import pdb; pdb.set_trace()
 
-    # If we can't find a cube, assume it hasn't been written yet
-    return asvalue
+    askey = ( "ocp", self.db.annoproj.getDBName(), str(resolution)+"_"+str(zidx) )
+
+    (retkey, asmd, asvalue) = self.ascli.get ( askey )
+    if asvalue != None:
+      return asvalue('cuboid')
+    else:
+      return None
 
 
-  def getCubes ( self, listofidxs ):
+  def getCubes ( self, listofidxs, resolution ):
+
+    import pdb; pdb.set_trace()
 
     if len(listofidxs)==1:
-      yield listofidxs[0], self.ascli.get ( self.db.annoproj.token + ":img:" + str(resolution)  + ":" + str(zidx))
+      yield listofidxs[0], self.ascli.get ( self.db.annoproj.getTable(resolution) + ":img:" + str(resolution)  + ":" + str(zidx))
     for zidx in listofidxs:
 
-      (askey, asmd, asvalue) = self.ascli.get ( self.db.annoproj.token + ":img:" + str(resolution)  + ":" + str(zidx) )
+      (askey, asmd, asvalue) = self.ascli.get ( self.db.annoproj.getTable(resolution) + ":img:" + str(resolution)  + ":" + str(zidx) )
       # how to deal with empty cubes RBTODO
       yield zidx, asvalue
 
@@ -76,28 +86,30 @@ import aerospike
   #
   # putCube
   #
-  def putCube ( self, zidx, resolution, cube ):
+  def putCube ( self, zidx, resolution, cubestr, update ):
     """Store a cube from the annotation database"""
 
-    self.ascli.put ( self.db.annoproj.token + ":img:" + str(resolution)  + ":" + str(zidx), cube.data ) 
+    import pdb; pdb.set_trace()
+    askey = ( "ocp", self.db.annoproj.getDBName(), str(resolution)+"_"+str(zidx) )
+    self.ascli.put ( askey, {'cuboid':cubestr} ) 
 
 
   def getIndex ( self, annid, resolution, update ):
     """Fetch index routine.  Update is irrelevant for KV clients"""
 
-    (askey, asmd, asvalue) = self.ascli.get ( self.db.annoproj.token + ":idx:" + str(resolution)  + ":" + str(annid) )
+    (askey, asmd, asvalue) = self.ascli.get ( self.db.annoproj.getTable(resolution) + ":idx:" + str(resolution)  + ":" + str(annid) )
 
     # If we can't find a cube, assume it hasn't been written yet
     if ( asvalue == None ):
       return []
     else:
-      return=asvalue
+      return asvalue
 
 
   def putIndex ( self, annid, index, resolution ):
     """MySQL put index routine"""
 
-    self.ascli.put ( self.db.annoproj.token + ":idx:" + str(resolution)  + ":" + str(annid), index ) 
+    self.ascli.put ( self.db.annoproj.getTable(resolution) + ":idx:" + str(resolution)  + ":" + str(annid), index ) 
 
 
   def updateIndex ( self, annid, index, resolution ):
@@ -109,4 +121,4 @@ import aerospike
   def deleteIndex ( self, annid, resolution ):
     """MySQL update index routine"""
 
-    self.ascli.remove ( self.db.annoproj.token + ":idx:" + str(resolution)  + ":" + str(annid) ) 
+    self.ascli.remove ( self.db.annoproj.getTable(resolution) + ":idx:" + str(resolution)  + ":" + str(annid) ) 

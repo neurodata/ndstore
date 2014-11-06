@@ -15,8 +15,16 @@ import h5py
 import numpy as np
 import math
 from contextlib import closing
-#from cassandra.cluster import Cluster
-#import riak
+
+# need imports to be conditional
+try:
+  from cassandra.cluster import Cluster
+except:
+   pass
+try:
+  import riak
+except:
+   pass
 
 import ocpcaprivate
 from ocpcaerror import OCPCAError
@@ -36,16 +44,11 @@ IMAGES_16bit = 8
 RGB_32bit = 9
 RGB_64bit = 10
 
-# RBTODO need to integrate this into project engine
-MySQL = True
-Cassandra = False
-Riak = False
-
 class OCPCAProject:
   """Project specific for cutout and annotation data"""
 
   # Constructor 
-  def __init__(self, token, dbname, dbhost, dbtype, dataset, dataurl, readonly, exceptions, resolution ):
+  def __init__(self, token, dbname, dbhost, dbtype, dataset, dataurl, readonly, exceptions, resolution, kvserver, kvengine ):
     """Initialize the OCPCA Project"""
     
     self._token = dbname
@@ -57,6 +60,8 @@ class OCPCAProject:
     self._readonly = readonly
     self._exceptions = exceptions
     self._resolution = resolution
+    self._kvserver = kvserver
+    self._kvengine = kvengine
 
     # Could add these to configuration.  Probably remove res as tablebase instead
     self._ids_tbl = "ids"
@@ -85,12 +90,13 @@ class OCPCAProject:
   # RBTODO need to make the KVEngine a project attribute
   # PYTODO create a project attribute that selects KVEngine
   def getKVEngine ( self ):
-    if Cassandra:
-      return 'Cassandra'
-    elif Riak:
-      return 'Riak'
-    else:
-      return 'MySQL'
+    return self._kvengine
+
+
+  # RBTODO need to make the KVSErver a project attribute
+  # PYTODO create a project attribute that selects KVServer
+  def getKVServer ( self ):
+    return self._kvserver
 
   # accessors for RB to fix
   def getDBUser( self ):
@@ -155,10 +161,11 @@ class OCPCADataset:
       # set the image size
       #  the scaled down image rounded up to the nearest cube
       xpixels=((ximagesz-1)/2**i)+1
-      ximgsz = (((xpixels-1)/self.cubedim[i][0])+1)*self.cubedim[i][0]
       ypixels=((yimagesz-1)/2**i)+1
-      yimgsz = (((ypixels-1)/self.cubedim[i][1])+1)*self.cubedim[i][1]
-      self.imagesz[i] = [ ximgsz, yimgsz ]
+# RBRM -- don't round up to cubes.  Just pixels.
+#      ximgsz = (((xpixels-1)/self.cubedim[i][0])+1)*self.cubedim[i][0]
+#      yimgsz = (((ypixels-1)/self.cubedim[i][1])+1)*self.cubedim[i][1]
+      self.imagesz[i] = [ xpixels, ypixels ]
 
       # set the isotropic image size when well defined
       if self.zscale[i] < 1.0:
@@ -205,6 +212,8 @@ class OCPCAProjectsDB:
 
     self.conn = MySQLdb.connect (host = ocpcaprivate.dbhost, user = ocpcaprivate.dbuser, passwd = ocpcaprivate.dbpasswd, db = ocpcaprivate.db ) 
 
+
+  # for context lib closing
   def close (self):
     self.conn.close()
 
@@ -215,7 +224,7 @@ class OCPCAProjectsDB:
     """Load the annotation database information based on the token"""
 
     # Lookup the information for the database project based on the token
-    sql = "SELECT token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions, resolution from %s where token = \'%s\'" % (ocpcaprivate.projects, token)
+    sql = "SELECT token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions, resolution , kvserver, kvengine from %s where token = \'%s\'" % (ocpcaprivate.projects, token)
 
     with closing(self.conn.cursor()) as cursor:
       try:
@@ -231,10 +240,10 @@ class OCPCAProjectsDB:
       logger.warning ( "Project token %s not found." % ( token ))
       raise OCPCAError ( "Project token %s not found." % ( token ))
 
-    [token, openid, host, project, dbtype, dataset, dataurl, readonly, exceptions, resolution ] = row
+    [token, openid, host, project, dbtype, dataset, dataurl, readonly, exceptions, resolution, kvserver, kvengine ] = row
 
     # Create a project object
-    proj = OCPCAProject ( token, project, host, dbtype, dataset, dataurl, readonly, exceptions, resolution ) 
+    proj = OCPCAProject ( token, project, host, dbtype, dataset, dataurl, readonly, exceptions, resolution, kvserver, kvengine ) 
     proj.datasetcfg = self.loadDatasetConfig ( dataset )
 
     return proj
@@ -264,13 +273,13 @@ class OCPCAProjectsDB:
   #
   # Create a new project (annotation or data)
   #
-  def newOCPCAProj ( self, token, openid, dbhost, project, dbtype, dataset, dataurl, readonly, exceptions, nocreate, resolution, public=0 ):
+  def newOCPCAProj ( self, token, openid, dbhost, project, dbtype, dataset, dataurl, readonly, exceptions, nocreate, resolution, public, kvserver, kvengine ):
     """Create a new ocpca project"""
 
     datasetcfg = self.loadDatasetConfig ( dataset )
 
-    sql = "INSERT INTO {0} (token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions, resolution, public) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',{5},\'{6}\',\'{7}\',\'{8}\',\'{9}\',\'{10}\',\'{11}\')".format (\
-       ocpcaprivate.projects, token, openid, dbhost, project, dbtype, dataset, dataurl, int(readonly), int(exceptions), resolution, int(public) )
+    sql = "INSERT INTO {0} (token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions, resolution, public, kvserver, kvengine) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',{5},\'{6}\',\'{7}\',\'{8}\',\'{9}\',\'{10}\',\'{11}\',\'{12}',\'{13}')".format (\
+       ocpcaprivate.projects, token, openid, dbhost, project, dbtype, dataset, dataurl, int(readonly), int(exceptions), resolution, int(public), kvserver, kvengine )
 
     logger.info ( "Creating new project. Host %s. Project %s. SQL=%s" % ( dbhost, project, sql ))
 
@@ -310,32 +319,37 @@ class OCPCAProjectsDB:
 
         try:
 
-  #        if self.getKVEngine() == 'MySQL':
-          if MySQL:
+          if proj.getKVEngine() == 'MySQL':
 
             # tables for annotations and images
             if dbtype==IMAGES_8bit or dbtype==IMAGES_16bit or dbtype==ANNOTATIONS or dbtype==PROBMAP_32bit or dbtype==BITMASK or dbtype==RGB_32bit or dbtype==RGB_64bit:
 
               for i in datasetcfg.resolutions: 
                 newcursor.execute ( "CREATE TABLE res%s ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )" % i )
-#              sql += "CREATE TABLE res%s ( zindex BIGINT PRIMARY KEY, cube LONGBLOB );\n" % i
+              newconn.commit()
+
+            elif dbtype==TIMESERIES_4d_8bit or dbtype == TIMESERIES_4d_16bit:
+
+              for i in datasetcfg.resolutions: 
+                newcursor.execute ( "CREATE TABLE res%s ( timestamp INT, zindex BIGINT, cube LONGBLOB, PRIMARY KEY(timestamp,zindex))" % i )
+                newcursor.execute ( "CREATE TABLE timeseries%s ( z INT, y INT, x INT, t INT,  series LONGBLOB, PRIMARY KEY (z,y,x,t))"%i) 
               newconn.commit()
 
             # tables for channel dbs
-            if dbtype == CHANNELS_8bit or dbtype == CHANNELS_16bit:
+            elif dbtype == CHANNELS_8bit or dbtype == CHANNELS_16bit:
               newcursor.execute ( 'CREATE TABLE channels ( chanstr VARCHAR(255), chanid INT, PRIMARY KEY(chanstr))')
               for i in datasetcfg.resolutions: 
                 newcursor.execute ( "CREATE TABLE res%s ( channel INT, zindex BIGINT, cube LONGBLOB, PRIMARY KEY(channel,zindex) )" % i )
               newconn.commit()
 
-          elif Riak:
+          elif proj.getKVEngine() == 'Riak':
 
             rcli = riak.RiakClient(pb_port=8087, protocol='pbc')
             bucket = rcli.bucket_type("ocp{}".format(proj.getDBType())).bucket(proj.getDBName())
             bucket.set_property('allow_mult',False)
        
 
-          elif Cassandra:  #cassandra for now
+          elif proj.getKVEngine() == 'Cassandra':
 
             cluster = Cluster()
             try:
@@ -367,8 +381,7 @@ class OCPCAProjectsDB:
 
             newconn.commit()
 
-  #          if self.getKVEngine() == 'MySQL':
-            if MySQL:
+            if proj.getKVEngine() == 'MySQL':
               for i in datasetcfg.resolutions: 
                 if exceptions:
                   newcursor.execute ( "CREATE TABLE exc%s ( zindex BIGINT, id BIGINT, exlist LONGBLOB, PRIMARY KEY ( zindex, id))" % i )
@@ -376,10 +389,10 @@ class OCPCAProjectsDB:
 
               newconn.commit()
 
-            elif Riak:
+            elif proj.getKVEngine() == 'Riak':
               pass
 
-            else:   # Cassandra for now
+            elif proj.getKVEngine() == 'Cassandra':
 
               cluster = Cluster()
               try:
@@ -467,8 +480,7 @@ class OCPCAProjectsDB:
     #  try to delete the database anyway
     #  Sometimes weird crashes can get stuff out of sync
 
-  #          if self.getKVEngine() == 'MySQL':
-    if Cassandra:  # cassandra
+    if proj.getKVEngine() == 'Cassandra':
 
       cluster = Cluster()
       try:
@@ -478,7 +490,7 @@ class OCPCAProjectsDB:
         cluster.shutdown()
 
 
-    elif Riak:
+    elif proj.getKVEngine() == 'Riak':
 
       # connect to cassandra
       rcli = riak.RiakClient(pb_port=8087, protocol='pbc')

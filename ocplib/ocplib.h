@@ -30,7 +30,7 @@ void filterCutoutOMP ( uint32_t *, int , uint32_t *, int );
 void filterCutoutOMPCache ( uint32_t *, int, uint32_t *, int );
 
 // Declaring the annotateCube implementation
-int annotateCube ( uint32_t * , int , int * , int , int * , uint32_t [][3] , int , char, uint32_t [][3] );
+int annotateCube ( uint32_t * , int , int * , int , uint32_t * , uint32_t [][3] , int , char, uint32_t [][3] );
 
 // Declaring the locateCube implementation
 void locateCube ( uint32_t [][4] , int , uint32_t [][3] , int , int * );

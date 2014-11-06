@@ -40,6 +40,7 @@ import h5py
 from ocpcaerror import OCPCAError
 
 from ocpca_cy import mergeCube_cy
+from ocpca_cy import cubeLocs_cy
 
 import logging
 logger=logging.getLogger("ocp")
@@ -47,8 +48,14 @@ logger=logging.getLogger("ocp")
 import sys
 
 import mysqlkvio
-import casskvio
-#import riakkvio
+try:
+  import casskvio
+except:
+  pass
+try:
+  import riakkvio
+except:
+  pass
 
 
 ################################################################################
@@ -73,12 +80,15 @@ class OCPCADB:
 
     # Choose the I/O engine for key/value data
     if self.annoproj.getKVEngine() == 'MySQL':
+      import mysqlkvio
       self.kvio = mysqlkvio.MySQLKVIO(self)
       self.NPZ = True
     elif self.annoproj.getKVEngine() == 'Riak':
+      import riakkvio
       self.kvio = riakkvio.RiakKVIO(self)
       self.NPZ = False
     elif self.annoproj.getKVEngine() == 'Cassandra':
+      import casskvio
       self.kvio = casskvio.CassandraKVIO(self)
       self.NPZ = False
     else:
@@ -633,8 +643,8 @@ class OCPCADB:
 #    if max(locations[:,2]) > self.datasetcfg.slicerange[1]:
 #      logger.error("Bad adjusted locations. Max z slice value {}".format(max(locations[:,2])))
 
-    cubelocs = ocplib.locate_ctype ( np.array(locations, dtype=np.uint32), cubedim )
-    #cubelocs = cubeLocs_cy ( np.array(locations, dtype=np.uint32), cubedim )
+#    cubelocs = ocplib.locate_ctype ( np.array(locations, dtype=np.uint32), cubedim )
+    cubelocs = cubeLocs_cy ( np.array(locations, dtype=np.uint32), cubedim )
 
     # sort the arrary, by cubeloc
     cubelocs = ocplib.quicksort ( cubelocs )
@@ -658,13 +668,17 @@ class OCPCADB:
       cube = self.getCube ( key, resolution, True )
 
       # get a voxel offset for the cube
-      cubeoff = ocplib.MortonXYZ( key )
-      #cubeoff = zindex.MortonXYZ(key)
-      offset = [cubeoff[0]*cubedim[0],cubeoff[1]*cubedim[1],cubeoff[2]*cubedim[2]]
+      #cubeoff = ocplib.MortonXYZ( key )
+      cubeoff = zindex.MortonXYZ(key)
+      offset = np.array([cubeoff[0]*cubedim[0],cubeoff[1]*cubedim[1],cubeoff[2]*cubedim[2]],dtype=np.uint32)
 
       # add the items
-      exceptions = np.array(cube.annotate_ctype(entityid, offset, voxlist, conflictopt), dtype=np.uint8)
-      #exceptions = np.array(cube.annotate(entityid, offset, voxlist, conflictopt), dtype=np.uint8)
+#      exceptions = np.array(cube.annotate_ctype(entityid, offset, voxlist, conflictopt), dtype=np.uint8)
+      try:
+        exceptions = np.array(cube.annotate(entityid, offset, voxlist, conflictopt), dtype=np.uint8)
+      except Exception, e:         
+        import pdb; pdb.set_trace()
+        pass
 
       # update the sparse list of exceptions
       if self.EXCEPT_FLAG:

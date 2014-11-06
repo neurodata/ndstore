@@ -51,7 +51,7 @@ class TestRamon:
 
     with closing ( ocpcaproj.OCPCAProjectsDB() ) as pd:
       try:
-        pd.newOCPCAProj ( 'unittest', 'test', 'localhost', 'unittest', 2, 'kasthuri11', None, False, True, False, 0 )
+        pd.newOCPCAProj ( 'unittest', 'test', 'localhost', 'unittest', 2, 'kasthuri11', None, False, True, False, 0, False, 'localhost', 'MySQL' )
       except:
         pd.deleteOCPCADB ('unittest')
 

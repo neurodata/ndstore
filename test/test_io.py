@@ -391,7 +391,7 @@ class TestRW:
 
     with closing ( ocpcaproj.OCPCAProjectsDB() ) as pd:
       try: 
-        pd.newOCPCAProj ( 'unittest_rw', 'test', 'localhost', 'unittest_rw', 2, 'kasthuri11', None, False, True, False, 0 )
+        pd.newOCPCAProj ( 'unittest_rw', 'test', 'localhost', 'unittest_rw', 2, 'kasthuri11', None, False, True, False, 0, 0, 'localhost', 'MySQL' )
       except:
         pd.deleteOCPCADB ('unittest_rw')
 
