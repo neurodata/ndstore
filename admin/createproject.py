@@ -13,10 +13,14 @@
 # limitations under the License.
 
 import argparse
-import empaths
+import os
 import sys
+sys.path += [os.path.abspath('../django')]
+import OCP.settings
+os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
+from django.conf import settings
 
-import emcaproj
+import ocpcaproj
 
 def main():
 
@@ -35,9 +39,11 @@ def main():
 
   result = parser.parse_args()
 
+  import pdb; pdb.set_trace()
+
   # Get database info
-  pd = emcaproj.EMCAProjectsDB()
-  pd.newEMCAProj ( result.token, result.openid, result.host, result.project, result.datatype, result.dataset, result.dataurl, result.readonly, not result.noexceptions, result.nocreate, result.resolution )
+  pd = ocpcaproj.OCPCAProjectsDB()
+  pd.newOCPCAProj ( result.token, result.openid, result.host, result.project, result.datatype, result.dataset, result.dataurl, result.readonly, not result.noexceptions, result.nocreate, result.resolution )
 
 
 if __name__ == "__main__":

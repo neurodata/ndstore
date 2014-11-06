@@ -45,12 +45,14 @@ PROBMAP_32bit = 5
 BITMASK = 6
 ANNOTATIONS_64bit = 7 
 IMAGES_16bit = 8 
+TIMESERIES_4d_8bit = 15 
+TIMESERIES_4d_16bit = 16 
 
 # RBTODO need to integrate this into project engine
-MySQL = False
+MySQL = True
 Cassandra = False
 Riak = False
-Aerospike = True
+Aerospike = False
 
 class OCPCAProject:
   """Project specific for cutout and annotation data"""
@@ -167,10 +169,11 @@ class OCPCADataset:
       # set the image size
       #  the scaled down image rounded up to the nearest cube
       xpixels=((ximagesz-1)/2**i)+1
-      ximgsz = (((xpixels-1)/self.cubedim[i][0])+1)*self.cubedim[i][0]
       ypixels=((yimagesz-1)/2**i)+1
-      yimgsz = (((ypixels-1)/self.cubedim[i][1])+1)*self.cubedim[i][1]
-      self.imagesz[i] = [ ximgsz, yimgsz ]
+# RBRM -- don't round up to cubes.  Just pixels.
+#      ximgsz = (((xpixels-1)/self.cubedim[i][0])+1)*self.cubedim[i][0]
+#      yimgsz = (((ypixels-1)/self.cubedim[i][1])+1)*self.cubedim[i][1]
+      self.imagesz[i] = [ xpixels, ypixels ]
 
       # set the isotropic image size when well defined
       if self.zscale[i] < 1.0:
@@ -332,11 +335,17 @@ class OCPCAProjectsDB:
 
               for i in datasetcfg.resolutions: 
                 newcursor.execute ( "CREATE TABLE res%s ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )" % i )
-#              sql += "CREATE TABLE res%s ( zindex BIGINT PRIMARY KEY, cube LONGBLOB );\n" % i
+              newconn.commit()
+
+            elif dbtype==TIMESERIES_4d_8bit or dbtype == TIMESERIES_4d_16bit:
+
+              for i in datasetcfg.resolutions: 
+                newcursor.execute ( "CREATE TABLE res%s ( timestamp INT, zindex BIGINT, cube LONGBLOB, PRIMARY KEY(timestamp,zindex))" % i )
+                newcursor.execute ( "CREATE TABLE timeseries%s ( z INT, y INT, x INT, t INT,  series LONGBLOB, PRIMARY KEY (z,y,x,t))"%i) 
               newconn.commit()
 
             # tables for channel dbs
-            if dbtype == CHANNELS_8bit or dbtype == CHANNELS_16bit:
+            elif dbtype == CHANNELS_8bit or dbtype == CHANNELS_16bit:
               newcursor.execute ( 'CREATE TABLE channels ( chanstr VARCHAR(255), chanid INT, PRIMARY KEY(chanstr))')
               for i in datasetcfg.resolutions: 
                 newcursor.execute ( "CREATE TABLE res%s ( channel INT, zindex BIGINT, cube LONGBLOB, PRIMARY KEY(channel,zindex) )" % i )
