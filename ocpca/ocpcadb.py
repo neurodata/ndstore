@@ -677,8 +677,7 @@ class OCPCADB:
       try:
         exceptions = np.array(cube.annotate(entityid, offset, voxlist, conflictopt), dtype=np.uint8)
       except Exception, e:         
-        import pdb; pdb.set_trace()
-        pass
+        raise
 
       # update the sparse list of exceptions
       if self.EXCEPT_FLAG:
