@@ -759,11 +759,12 @@ class OCPCADB:
 
     # convert voxels z coordinate
     locations[:,2] = locations[:,2] - self.datasetcfg.slicerange[0]
-
     cubelocs = ocplib.locate_ctype ( np.array(locations, dtype=np.uint32), cubedim )
+    #cubelocs2 = cubeLocs_cy ( np.array(locations, dtype=np.uint32), cubedim )
 
     # sort the arrary, by cubeloc
-    cubelocs.view('u4,u4,u4,u4').sort(order=['f0'], axis=0)
+    cubelocs = ocplib.quicksort ( cubelocs )
+    #cubelocs.view('u4,u4,u4,u4').sort(order=['f0'], axis=0)
 
     # get the nonzero element offsets 
     nzdiff = np.r_[np.nonzero(np.diff(cubelocs[:,0]))]
@@ -785,7 +786,8 @@ class OCPCADB:
 
         # get a voxel offset for the cube
         cubeoff = ocplib.MortonXYZ(key)
-        offset = [cubeoff[0]*cubedim[0],cubeoff[1]*cubedim[1],cubeoff[2]*cubedim[2]]
+        #cubeoff2 = zindex.MortonXYZ(key)
+        offset = np.asarray( [cubeoff[0]*cubedim[0],cubeoff[1]*cubedim[1],cubeoff[2]*cubedim[2]], dtype=np.uint32 )
 
         # remove the items
         exlist, zeroed = cube.shave(entityid, offset, voxlist)
