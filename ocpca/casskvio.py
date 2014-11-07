@@ -21,7 +21,7 @@ from collections import defaultdict
 import itertools
 import tempfile
 import h5py
-#from cassandra.cluster import Cluster
+from cassandra.cluster import Cluster
 
 """Helpers function to do cube I/O in across multiple DBs.
     This file is aerospike
@@ -36,7 +36,8 @@ class CassandraKVIO:
 
     # connect to cassandra
     # maybe have multiple names in self.kVENginge todo
-    self.cluster = Cluster( [self.getKVEngine()] )
+    import pdb; pdb.set_trace()
+    self.cluster = Cluster( [db.annoproj.getKVServer()] )
     self.session = self.cluster.connect(db.annoproj.getDBName())
 
   def close ( self ):

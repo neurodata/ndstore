@@ -1333,6 +1333,8 @@ def putAnnotationAsync ( webargs, postdata ):
 def putAnnotation ( webargs, postdata ):
   """Put a RAMON object as HDF5 by object identifier"""
 
+  import pdb; pdb.set_trace()
+
   [ token, sym, optionsargs ] = webargs.partition ('/')
 
   # pattern for using contexts to close databases

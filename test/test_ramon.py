@@ -34,6 +34,7 @@ from django.conf import settings
 
 import ocpcaproj
 
+import kvengine_to_test
 import site_to_test
 SITE_HOST = site_to_test.site
 
@@ -58,7 +59,8 @@ class TestRamon:
 
     with closing ( ocpcaproj.OCPCAProjectsDB() ) as pd:
       try:
-        pd.newOCPCAProj ( 'unittest', 'test', 'localhost', 'unittest', 2, 'kasthuri11', None, False, True, False, 0, False, 'localhost', 'MySQL' )
+        import pdb; pdb.set_trace()
+        pd.newOCPCAProj ( 'unittest', 'test', 'localhost', 'unittest', 2, 'kasthuri11', None, False, True, False, 0, False, 'localhost', kvengine_to_test.kvengine )
       except:
         pd.deleteOCPCADB ('unittest')
 
