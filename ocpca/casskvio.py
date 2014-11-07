@@ -35,7 +35,8 @@ class CassandraKVIO:
     self.db = db
 
     # connect to cassandra
-    self.cluster = Cluster()
+    # maybe have multiple names in self.kVENginge todo
+    self.cluster = Cluster( [self.getKVEngine()] )
     self.session = self.cluster.connect(db.annoproj.getDBName())
 
   def close ( self ):
