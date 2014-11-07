@@ -40,6 +40,7 @@ import h5py
 from ocpcaerror import OCPCAError
 
 from ocpca_cy import mergeCube_cy
+from ocpca_cy import cubeLocs_cy
 
 import logging
 logger=logging.getLogger("ocp")
@@ -271,6 +272,38 @@ class OCPCADB:
 
     return annoid
 
+
+  #
+  #  setBatchID
+  # 
+  #  Place the user selected id into the ids table
+  #
+  def setBatchID ( self, annoidList ):
+    """ Set a user specified identifier """
+
+    with closing ( self.conn.cursor() ) as cursor:
+
+
+      # LOCK the table to prevent race conditions on the ID
+      sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getIDsTbl() )
+      try:
+
+        # try the insert, get and if it doesn't work
+        sql = "INSERT INTO {} VALUES ( %s ) ".format( str(self.annoproj.getIDsTbl()) )
+        try:
+          cursor.executemany ( sql, [str(i) for i in annoidList] )  
+        except MySQLdb.Error, e:
+          logger.warning ( "Failed to set identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+          raise
+
+      finally:
+        sql = "UNLOCK TABLES" 
+        cursor.execute ( sql )
+        self.conn.commit()
+
+    return annoidList
+
+
   #
   #  reserve
   #
@@ -444,6 +477,25 @@ class OCPCADB:
       self.kvio.putCube ( zidx, resolution, tmpfile.read(), not cube.fromZeros() )
       tmpfile.close()
 
+
+  #
+  # putBatchCube
+  #
+  def putBatchCube ( self, zidx, resolution, cube ):
+    """Store a cube in the annotation database"""
+
+    # Handle the cube format here.  
+    if self.NPZ:
+      self.kvio.putBatchCube ( zidx, resolution, cube.toNPZ(), not cube.fromZeros() )
+    else:
+      tmpfile= tempfile.NamedTemporaryFile ()
+      h5 = h5py.File ( tmpfile.name )
+      h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype, compression='gzip',  data=cube.data )
+      h5.close()
+      tmpfile.seek(0)
+
+      self.kvio.putBatchCube ( zidx, resolution, tmpfile.read(), not cube.fromZeros() )
+      tmpfile.close()
 
 
   #
@@ -660,7 +712,7 @@ class OCPCADB:
       # get a voxel offset for the cube
       cubeoff = ocplib.MortonXYZ( key )
       #cubeoff = zindex.MortonXYZ(key)
-      offset = [cubeoff[0]*cubedim[0],cubeoff[1]*cubedim[1],cubeoff[2]*cubedim[2]]
+      offset = np.asarray([cubeoff[0]*cubedim[0],cubeoff[1]*cubedim[1],cubeoff[2]*cubedim[2]], dtype = np.uint32)
 
       # add the items
       exceptions = np.array(cube.annotate_ctype(entityid, offset, voxlist, conflictopt), dtype=np.uint8)
@@ -680,6 +732,17 @@ class OCPCADB:
     self.annoIdx.updateIndexDense(cubeidx,resolution)
     # commit cubes.  not commit controlled with metadata
     self.kvio.commit()
+
+
+  #
+  # putCubeSSD
+  # 
+  def putCubeSSD ( key, reolution, cube ):
+    """ Write the cube to SSD's """
+    print "HELLO"
+
+
+
 
   #
   # shave
@@ -1092,7 +1155,6 @@ class OCPCADB:
 #      self.kvio.getChannelCubes(channel,listofidxs)
 #
 #    else:
-     
     self.kvio.startTxn()
 
     try:

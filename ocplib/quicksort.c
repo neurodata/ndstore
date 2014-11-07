@@ -27,7 +27,7 @@
 
 // cmpFunc for QuickSort
 
-int cmpFunc ( const uint32_t a[4], const uint32_t b[4] )
+int cmpFunc ( const uint64_t a[4], const uint64_t b[4] )
 {
   //uint32_t x[4] = ( uint32_t * )a;
   //uint32_t y[4] = ( uint32_t * )b;
@@ -64,11 +64,11 @@ int cmpFunc ( const uint32_t a[4], const uint32_t b[4] )
 
 // Naive Implementation of Quicksort
 
-void quicksort ( uint32_t locs[][4], int locsSize )
+void quicksort ( uint64_t locs[][4], int locsSize )
 {
   int i;
   
-  qsort ( locs , locsSize, 4*sizeof(uint32_t), cmpFunc );
+  qsort ( locs , locsSize, 4*sizeof(uint64_t), cmpFunc );
 
 }
 

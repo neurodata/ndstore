@@ -31,18 +31,19 @@ ocplib = npct.load_library("ocplib", OCP.ocppaths.OCP_OCPLIB_PATH)
 array_1d_uint32 = npct.ndpointer(dtype=np.uint32, ndim=1, flags='CONTIGUOUS')
 array_2d_uint32 = npct.ndpointer(dtype=np.uint32, ndim=2, flags='CONTIGUOUS')
 array_1d_uint64 = npct.ndpointer(dtype=np.uint64, ndim=1, flags='CONTIGUOUS')
+array_2d_uint64 = npct.ndpointer(dtype=np.uint64, ndim=2, flags='CONTIGUOUS')
 
 # defining the parameter types of the functions in C
 # FORMAT: <library_name>,<functiona_name>.argtypes = [ ctype.<argtype> , ctype.<argtype> ....]
 
 ocplib.filterCutout.argtypes = [array_1d_uint32, cp.c_int, array_1d_uint32, cp.c_int]
 ocplib.filterCutoutOMP.argtypes = [array_1d_uint32, cp.c_int, array_1d_uint32, cp.c_int]
-ocplib.locateCube.argtypes = [ array_2d_uint32, cp.c_int, array_2d_uint32, cp.c_int, cp.POINTER(cp.c_int) ]
-ocplib.annotateCube.argtypes = [ array_1d_uint32, cp.c_int, cp.POINTER(cp.c_int), cp.c_int, cp.POINTER(cp.c_int), array_2d_uint32, cp.c_int, cp.c_char, array_2d_uint32 ]
+ocplib.locateCube.argtypes = [ array_2d_uint64, cp.c_int, array_2d_uint32, cp.c_int, cp.POINTER(cp.c_int) ]
+ocplib.annotateCube.argtypes = [ array_1d_uint32, cp.c_int, cp.POINTER(cp.c_int), cp.c_int, array_1d_uint32, array_2d_uint32, cp.c_int, cp.c_char, array_2d_uint32 ]
 ocplib.XYZMorton.argtypes = [ array_1d_uint64 ]
 ocplib.MortonXYZ.argtypes = [ npct.ctypes.c_int64 , array_1d_uint64 ]
 ocplib.recolorCube.argtypes = [ array_1d_uint32, cp.c_int, cp.c_int, array_1d_uint32, array_1d_uint32 ]
-ocplib.quicksort.argtypes = [ array_2d_uint32, cp.c_int ]
+ocplib.quicksort.argtypes = [ array_2d_uint64, cp.c_int ]
 
 # setting the return type of the function in C
 # FORMAT: <library_name>.<function_name>.restype = [ ctype.<argtype> ]
@@ -94,7 +95,7 @@ def annotate_ctype ( data, annid, offset, locations, conflictopt ):
   exceptions = np.zeros ( (len(locations),3), dtype=np.uint32 )
           
   # Calling the C native function
-  exceptionIndex = ocplib.annotateCube ( data, cp.c_int(len(data)), (cp.c_int * len(dims))(*dims), cp.c_int(annid), (cp.c_int * len(offset))(*offset), locations, cp.c_int(len(locations)), cp.c_char(conflictopt), exceptions )
+  exceptionIndex = ocplib.annotateCube ( data, cp.c_int(len(data)), (cp.c_int * len(dims))(*dims), cp.c_int(annid), offset, locations, cp.c_int(len(locations)), cp.c_char(conflictopt), exceptions )
 
   if exceptionIndex > 0:
     exceptions = exceptions[:(exceptionIndex+1)]
@@ -108,7 +109,7 @@ def locate_ctype ( locations, dims ):
   """ Remove all annotations in a cutout that do not match the filterlist """
   
   # get a copy of the iterator as a 1-D array
-  cubeLocs = np.zeros ( [len(locations),4], dtype=np.uint32 )
+  cubeLocs = np.zeros ( [len(locations),4], dtype=np.uint64 )
   
   # Calling the C native function
   ocplib.locateCube ( cubeLocs, cp.c_int(len(cubeLocs)), locations, cp.c_int(len(locations)), (cp.c_int * len(dims))(*dims) )
@@ -130,9 +131,10 @@ def MortonXYZ ( morton ):
   """ Get morton order from XYZ coordinates """
   
   # Calling the C native function
+  morton = np.uint64(morton)
   cubeoff = np.zeros((3), dtype=np.uint64)
   ocplib.MortonXYZ ( morton, cubeoff )
-
+  cubeoff = np.uint32(cubeoff)
   return [i for i in cubeoff]
 
 def recolor_ctype ( cutout, imagemap ):

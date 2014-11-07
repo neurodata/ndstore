@@ -26,13 +26,13 @@
 #include<stdlib.h>
 #include<string.h>
 
-int annotateCube( uint32_t * data, int dataSize, int * dims, int annid, int * offset,  uint32_t locations[][3], int locationsSize, char conflictopt, uint32_t exceptions[][3] )
+int annotateCube( uint32_t * data, int dataSize, int * dims, int annid, uint32_t * offset,  uint32_t locations[][3], int locationsSize, char conflictopt, uint32_t exceptions[][3] )
 {
 		int i,j;
     int index;
-    int xoffset = offset[0];
-    int yoffset = offset[1];
-    int zoffset = offset[2];
+    uint32_t xoffset = offset[0];
+    uint32_t yoffset = offset[1];
+    uint32_t zoffset = offset[2];
 
     int xdim = dims[0];
     int ydim = dims[1];

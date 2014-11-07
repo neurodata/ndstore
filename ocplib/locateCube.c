@@ -26,7 +26,7 @@
 #include<stdlib.h>
 #include<string.h>
 
-void locateCube( uint32_t locs[][4], int locsSize, uint32_t locations[][3], int locationsSize, int * dims )
+void locateCube( uint64_t locs[][4], int locsSize, uint32_t locations[][3], int locationsSize, int * dims )
 {
 		int i;
 
@@ -34,7 +34,7 @@ void locateCube( uint32_t locs[][4], int locsSize, uint32_t locations[][3], int 
     int ydim = dims[1];
     int zdim = dims[2];
 
-    uint32_t cubeno[3];
+    uint64_t cubeno[3];
     
 		for ( i=0; i<locationsSize; i++)
 		{
@@ -42,7 +42,7 @@ void locateCube( uint32_t locs[][4], int locsSize, uint32_t locations[][3], int 
       cubeno[1] = locations[i][1]/ydim;
       cubeno[2] = locations[i][2]/zdim;
 
-      uint32_t cubekey = XYZMorton ( cubeno );
+      uint64_t cubekey = XYZMorton ( cubeno );
 
       locs[i][0] = cubekey;
       locs[i][1] = locations[i][0];
