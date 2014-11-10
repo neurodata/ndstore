@@ -35,6 +35,7 @@ from django.conf import settings
 
 import ocpcaproj
 
+import kvengine_to_test
 import site_to_test
 SITE_HOST = site_to_test.site
 
@@ -366,7 +367,6 @@ def countVoxels ( annid, h5 ):
 def countCuboidVoxels ( annid, h5 ):
   """Count the number of voxels in an HDF5 file for an annotation id"""
 
-  import pdb; pdb.set_trace()
   voxsum = 0
   keys = h5.keys()
   for k in keys:
@@ -391,7 +391,7 @@ class TestRW:
 
     with closing ( ocpcaproj.OCPCAProjectsDB() ) as pd:
       try: 
-        pd.newOCPCAProj ( 'unittest_rw', 'test', 'localhost', 'unittest_rw', 2, 'kasthuri11', None, False, True, False, 0, 0, 'localhost', 'MySQL' )
+        pd.newOCPCAProj ( 'unittest_rw', 'test', 'localhost', 'unittest_rw', 2, 'kasthuri11', None, False, True, False, 0, 0, 'localhost', kvengine_to_test.kvengine )
       except:
         pd.deleteOCPCADB ('unittest_rw')
 
@@ -424,10 +424,10 @@ class TestRW:
 
     wp.annid = int(retval)
     wp.resolution = 0
-    
 
     # upload an npz dense
-    annodata = np.random.random_integers ( 0, 65535, [ 2, 50, 50 ] )
+#    annodata = np.random.random_integers ( 0, 65535, [ 2, 50, 50 ] )
+    annodata = np.ones ( [ 2, 50, 50 ] ) * random.randint(0,65535)
 
     url = 'http://%s/ca/%s/npz/%s/%s,%s/%s,%s/%s,%s/' % ( wp.baseurl, wp.token, wp.resolution, 200, 250, 200, 250, 200, 202 )
 
