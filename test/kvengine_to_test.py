@@ -1,4 +1,3 @@
-
 # Copyright 2014 Open Connectome Project (http://openconnecto.me)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-kvengine='MySQL'
-#kvengine='Cassandra'
+#kvengine='MySQL'
+kvengine='Cassandra'
 #kvengine='Riak'

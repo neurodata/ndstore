@@ -1348,8 +1348,13 @@ class OCPCADB:
     voxlist = []
 
     zidxs = self.annoIdx.getIndex(entityid,effectiveres)
+    if type(zidxs[0]) == np.float64:
+      import pdb; pdb.set_trace()
+      zidxs2 = self.annoIdx.getIndex(entityid,effectiveres)
 
     for zidx in zidxs:
+
+      print zidx
 
       cb = self.getCube (zidx,effectiveres) 
 
