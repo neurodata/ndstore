@@ -61,6 +61,8 @@ class OCPCAProject:
     self._exceptions = exceptions
     self._resolution = resolution
     self._kvserver = kvserver
+    # for cassandra
+    #self._kvserver = '172.23.253.63'
     self._kvengine = kvengine
 
     # Could add these to configuration.  Probably remove res as tablebase instead
@@ -351,13 +353,15 @@ class OCPCAProjectsDB:
 
           elif proj.getKVEngine() == 'Cassandra':
 
-            cluster = Cluster()
+            cluster = Cluster( [proj.getKVServer()] )
             try:
               session = cluster.connect()
 
-              session.execute ("CREATE KEYSPACE {} WITH REPLICATION = {{ 'class' : 'SimpleStrategy', 'replication_factor' : 1 }}".format(proj.getDBName()))
+              session.execute ("CREATE KEYSPACE {} WITH REPLICATION = {{ 'class' : 'SimpleStrategy', 'replication_factor' : 1 }}".format(proj.getDBName()), timeout=30)
               session.execute ( "USE {}".format(proj.getDBName()) )
-              session.execute ( "CREATE table cuboids ( resolution int, zidx bigint, cuboid text, PRIMARY KEY ( resolution, zidx ) )")
+              session.execute ( "CREATE table cuboids ( resolution int, zidx bigint, cuboid text, PRIMARY KEY ( resolution, zidx ) )", timeout=30)
+            except Exception, e:
+              raise
             finally:
               cluster.shutdown()
             
@@ -394,14 +398,13 @@ class OCPCAProjectsDB:
 
             elif proj.getKVEngine() == 'Cassandra':
 
-              cluster = Cluster()
+              cluster = Cluster( [proj.getKVServer()] )
               try:
                 session = cluster.connect()
                 session.execute ( "USE {}".format(proj.getDBName()) )
-                session.execute( "CREATE table exceptions ( resolution int, zidx bigint, annoid bigint, exceptions text, PRIMARY KEY ( resolution, zidx, annoid ) )")
-                session.execute("CREATE table indexes ( resolution int, annoid bigint, cuboids text, PRIMARY KEY ( resolution, annoid ) )")
+                session.execute( "CREATE table exceptions ( resolution int, zidx bigint, annoid bigint, exceptions text, PRIMARY KEY ( resolution, zidx, annoid ) )", timeout=30)
+                session.execute("CREATE table indexes ( resolution int, annoid bigint, cuboids text, PRIMARY KEY ( resolution, annoid ) )", timeout=30)
               except Exception, e:
-                pass
                 raise
               finally:
                 cluster.shutdown()
@@ -409,6 +412,8 @@ class OCPCAProjectsDB:
         except MySQLdb.Error, e:
           logging.error ("Failed to create tables for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
           raise OCPCAError ("Failed to create tables for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+        except Exception, e:
+          raise 
         finally:
           newcursor.close()
           newconn.close()
@@ -427,6 +432,8 @@ class OCPCAProjectsDB:
           logger.error ("Could not undo insert into ocpca projects database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
           logger.error ("Check project database for project not linked to database.")
           raise
+
+        # RBTODO drop tables here?
     
 
 
@@ -482,10 +489,10 @@ class OCPCAProjectsDB:
 
     if proj.getKVEngine() == 'Cassandra':
 
-      cluster = Cluster()
+      cluster = Cluster( [proj.getKVServer()] )
       try:
         session = cluster.connect()
-        session.execute ( "DROP KEYSPACE {}".format(proj.getDBName()))
+        session.execute ( "DROP KEYSPACE {}".format(proj.getDBName()), timeout=30 )
       finally:
         cluster.shutdown()
 

@@ -21,7 +21,7 @@ from collections import defaultdict
 import itertools
 import tempfile
 import h5py
-#from cassandra.cluster import Cluster
+from cassandra.cluster import Cluster
 
 """Helpers function to do cube I/O in across multiple DBs.
     This file is aerospike
@@ -36,7 +36,7 @@ class CassandraKVIO:
 
     # connect to cassandra
     # maybe have multiple names in self.kVENginge todo
-    self.cluster = Cluster( [self.getKVEngine()] )
+    self.cluster = Cluster( [db.annoproj.getKVServer()] )
     self.session = self.cluster.connect(db.annoproj.getDBName())
 
   def close ( self ):
@@ -131,8 +131,12 @@ class CassandraKVIO:
   def getExceptions ( self, zidx, resolution, annid ):
     """Retrieve exceptions from the database by token, resolution, and zidx"""
 
-    cql = "SELECT exceptions FROM exceptions WHERE resolution = %s AND zidx = %s and annoid=%s"
-    row = self.session.execute ( cql, (resolution, zidx, annid ))
+    try:
+      cql = "SELECT exceptions FROM exceptions WHERE resolution = %s AND zidx = %s and annoid=%s"
+      row = self.session.execute ( cql, (resolution, zidx, annid ))
+    except Exception, e:
+      import pdb; pdb.set_trace()
+      raise
 
     if row:
       return row[0].exceptions.decode('hex')
