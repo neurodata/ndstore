@@ -72,14 +72,13 @@ def main():
   #  Round up the zlimit to the next larger
   zlimit = (((slices-1)/zcubedim+1)*zcubedim)/zcubedim 
 
-  import pdb; pdb.set_trace()
 
   for z in range(zlimit):
     for y in range(ylimit):
       for x in range(xlimit):
 
         zidx = zindex.XYZMorton ( [x,y,z] )
-        outDB.putCube ( zidx, result.resolution, inDB.getCube ( zindex, result.resolution )) 
+        outDB.putCube ( zidx, result.resolution, inDB.getCube ( zidx, result.resolution )) 
         print "Ingesting {}".format(zidx)
 
 

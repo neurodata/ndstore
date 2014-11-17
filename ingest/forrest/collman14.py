@@ -39,7 +39,7 @@ import ocpcadb
 import zindex
 import imagecube
 
-import proteins
+import proteins_collman15 as proteins
 
 class ChessboardIngest:
 
@@ -54,7 +54,7 @@ class ChessboardIngest:
     (self._ximgsz, self._yimgsz) = self.proj.datasetcfg.imagesz[resolution]
     (self.startslice, self.endslice) = self.proj.datasetcfg.slicerange
 
-    (self.ximagesz, self.yimagesz) = (9888,7936)
+    (self.ximagesz, self.yimagesz) = (6306,4518)
     self.batchsz = self.proj.datasetcfg.cubedim[resolution][2]
 
     self.alldirs = os.listdir ( path )
@@ -115,7 +115,7 @@ class ChessboardIngest:
             imarray = np.zeros ( [self.batchsz,self.yimagesz,self.ximagesz], dtype=np.uint8 )
 
           # open the slice file and ingest
-          filenm = self.path + '{}/{}-{:0>3}_tile-000dcon.tif'.format(pdir,pdir,sl)
+          filenm = self.path + '{}/{}_{:0>2}.tif'.format(pdir,pdir,sl)
 
           print filenm
           # load the image and check the dimension
@@ -147,13 +147,13 @@ class ChessboardIngest:
       for x in range(xlimit):
 
         # each batch is the last slice in a cube
-        z = sl/zcubedim
+        z = (sl-self.startslice)/zcubedim
 
         # zindex
         key = zindex.XYZMorton ( [x,y,z] )
 
         # Create a channel cube
-        cube = imagecube.ImageCube16 ( [xcubedim,ycubedim,zcubedim] )
+        cube = imagecube.ImageCube8 ( [xcubedim,ycubedim,zcubedim] )
 
         # data for this key
         cube.data = imarray[:,y*ycubedim:(y+1)*ycubedim,x*xcubedim:(x+1)*xcubedim]
@@ -167,7 +167,7 @@ class ChessboardIngest:
         except MySQLdb.Error, e:
           print ("Error updating data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
           raise 
-    print "Comminting at ",x,y,z
+    print "Committing at ",x,y,z
     self.db.conn.commit()
 
 
