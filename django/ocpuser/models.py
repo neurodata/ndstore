@@ -38,7 +38,15 @@ class ocpProject ( models.Model):
     
 
 #    dataurl  =  models. CharField(max_length=200)
+    overlayproject = models. CharField(max_length=200,default="None")
+
     resolution = models.IntegerField(default=0)
+    PUBLIC_CHOICES = (
+        (1, 'Yes'),
+        (0, 'No'),
+        )
+    public =  models.IntegerField(choices=PUBLIC_CHOICES, default=0)
+    
     READONLY_CHOICES = (
         (1, 'Yes'),
         (0, 'No'),
@@ -61,6 +69,22 @@ class ocpProject ( models.Model):
 
         )
     host =  models.CharField(max_length=200, choices=HOST_CHOICES, default='localhost')
+    
+    KVENGINE_CHOICES = (
+        ('MySQL','MySQL'),
+        ('Cassandra','Cassandra'),
+        ('Riak','Riak'),
+
+        )
+    kvengine =  models.CharField(max_length=255, choices=KVENGINE_CHOICES, default='MySQL')
+    KVSERVER_CHOICES = (
+        ('localhost','localhost'),
+        ('172.23.253.61','dsp061'),
+        ('172.23.253.62','dsp062'),
+        ('172.23.253.63','dsp063'),
+        )
+    kvserver =  models.CharField(max_length=255, choices=KVSERVER_CHOICES, default='localhost')
+    
 #    NOCREATE_CHOICES = (
  #       (0, 'No'),
  #       (1, 'Yes'),
