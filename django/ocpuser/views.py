@@ -279,7 +279,7 @@ def tokens(request):
 
 @login_required
 def createproject(request):
-
+  
   if request.method == 'POST':
     if 'CreateProject' in request.POST:
       form = CreateProjectForm(request.POST)
@@ -290,6 +290,9 @@ def createproject(request):
         project = form.cleaned_data['project']
         dataset = form.cleaned_data['dataset']
         datatype = form.cleaned_data['datatype']
+        kvengine=form.cleaned_data['kvengine']
+        kvserver=form.cleaned_data['kvserver']
+        overlayproject=form.cleaned_data['overlayproject']
         nocreateoption = request.POST.get('nocreate')
         if nocreateoption =="on":
           nocreate = 1
@@ -300,12 +303,13 @@ def createproject(request):
         exceptions = form.cleaned_data['exceptions']
         openid = request.user.username
         resolution =form.cleaned_data['resolution']
+        public =form.cleaned_data['public']
         print "Creating a project with:"
         print token, project, dataset, dataurl,readonly, exceptions, openid , resolution
         # Get database info                
         try:
           pd = ocpcaproj.OCPCAProjectsDB()
-          pd.newOCPCAProj ( token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate, int(resolution) )
+          pd.newOCPCAProj ( token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate, int(resolution), int(public),kvserver,kvengine )
           #pd.insertTokenDescription ( token, description )
           return redirect(profile)          
         except OCPCAError, e:
