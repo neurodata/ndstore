@@ -43,6 +43,18 @@ ANNOTATIONS_64bit = 7
 IMAGES_16bit = 8 
 RGB_32bit = 9
 RGB_64bit = 10
+TIMESERIES_4d_8bit = 11
+TIMESERIES_4d_16bit = 12
+
+# dbtype groups
+CHANNEL_DATASETS = [ CHANNELS_8bit, CHANNELS_16bit ]
+TIMESERIES_DATASETS = [ TIMESERIES_4d_8bit, TIMESERIES_4d_16bit ]
+ANNOTATION_DATASETS = [ ANNOTATIONS, ANNOTATIONS_64bit ]
+RGB_DATASETS = [ RGB_32bit, RGB_64bit ]
+DATASETS_8bit = [ IMAGES_8bit, CHANNELS_8bit, TIMESERIES_4d_8bit ]
+DATASETS_16bit = [ IMAGES_8bit, CHANNELS_16bit, TIMESERIES_4d_16bit ]
+DATSETS_32bit = [ RGB_32bit, ANNOTATIONS, PROBMAP_32bit ]
+COMPOSITE_DATASETS = CHANNEL_DATASETS + TIMESERIES_DATASETS
 
 class OCPCAProject:
   """Project specific for cutout and annotation data"""
@@ -125,11 +137,12 @@ class OCPCAProject:
 class OCPCADataset:
   """Configuration for a dataset"""
 
-  def __init__ ( self, ximagesz, yimagesz, startslice, endslice, zoomlevels, zscale, startwindow, endwindow ):
+  def __init__ ( self, ximagesz, yimagesz, startslice, endslice, zoomlevels, zscale, startwindow, endwindow, starttime, endtime ):
     """Construct a db configuration from the dataset parameters""" 
 
     self.slicerange = [ startslice, endslice ]
     self.windowrange = [ startwindow, endwindow ]
+    self.timerange = [ starttime, endtime ]
 
     # istropic slice range is a function of resolution
     self.isoslicerange = {} 
@@ -253,11 +266,11 @@ class OCPCAProjectsDB:
   #
   # Create a new dataset
   #
-  def newDataset ( self, dsname, ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale, startwindow, endwindow ):
+  def newDataset ( self, dsname, ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale, startwindow, endwindow, starttime, endtime ):
     """Create a new ocpca dataset"""
 
-    sql = "INSERT INTO {0} (dataset, ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale, startwindow, endwindow) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',{5},\'{6}\',\'{7}\', \'{8}\',\'{9}\')".format (\
-       ocpcaprivate.datasets, dsname, ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale, startwindow, endwindow )
+    sql = "INSERT INTO {0} (dataset, ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale, startwindow, endwindow, starttime, endtime) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',{5},\'{6}\',\'{7}\', \'{8}\',\'{9}\','{10}\','{11}\')".format (\
+       ocpcaprivate.datasets, dsname, ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale, startwindow, endwindow, starttime, endtime )
 
     logger.info ( "Creating new dataset. Name %s. SQL=%s" % ( dsname, sql ))
 
@@ -324,24 +337,24 @@ class OCPCAProjectsDB:
           if proj.getKVEngine() == 'MySQL':
 
             # tables for annotations and images
-            if dbtype==IMAGES_8bit or dbtype==IMAGES_16bit or dbtype==ANNOTATIONS or dbtype==PROBMAP_32bit or dbtype==BITMASK or dbtype==RGB_32bit or dbtype==RGB_64bit:
+            if dbtype not in CHANNEL_DATASETS + TIMESERIES_DATASETS :
 
               for i in datasetcfg.resolutions: 
-                newcursor.execute ( "CREATE TABLE res%s ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )" % i )
+                newcursor.execute ( "CREATE TABLE res{} ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(i) )
               newconn.commit()
 
-            elif dbtype==TIMESERIES_4d_8bit or dbtype == TIMESERIES_4d_16bit:
+            elif dbtype in TIMESERIES_DATASETS :
 
               for i in datasetcfg.resolutions: 
-                newcursor.execute ( "CREATE TABLE res%s ( timestamp INT, zindex BIGINT, cube LONGBLOB, PRIMARY KEY(timestamp,zindex))" % i )
-                newcursor.execute ( "CREATE TABLE timeseries%s ( z INT, y INT, x INT, t INT,  series LONGBLOB, PRIMARY KEY (z,y,x,t))"%i) 
+                newcursor.execute ( "CREATE TABLE res{} ( zindex BIGINT, timestamp INT, cube LONGBLOB, PRIMARY KEY(zindex,timestamp))".format(i) )
+                #newcursor.execute ( "CREATE TABLE timeseries%s ( z INT, y INT, x INT, t INT,  series LONGBLOB, PRIMARY KEY (z,y,x,t))"%i) 
               newconn.commit()
 
             # tables for channel dbs
-            elif dbtype == CHANNELS_8bit or dbtype == CHANNELS_16bit:
+            elif dbtype in CHANNEL_DATASETS :
               newcursor.execute ( 'CREATE TABLE channels ( chanstr VARCHAR(255), chanid INT, PRIMARY KEY(chanstr))')
               for i in datasetcfg.resolutions: 
-                newcursor.execute ( "CREATE TABLE res%s ( channel INT, zindex BIGINT, cube LONGBLOB, PRIMARY KEY(channel,zindex) )" % i )
+                newcursor.execute ( "CREATE TABLE res{} ( channel INT, zindex BIGINT, cube LONGBLOB, PRIMARY KEY(channel,zindex) )".format(i) )
               newconn.commit()
 
           elif proj.getKVEngine() == 'Riak':
@@ -371,7 +384,7 @@ class OCPCAProjectsDB:
 
 
           # tables specific to annotation projects
-          if dbtype == ANNOTATIONS or dbtype ==ANNOTATIONS_64bit:
+          if dbtype in ANNOTATION_DATASETS :
 
             newcursor.execute("CREATE TABLE ids ( id BIGINT PRIMARY KEY)")
 
@@ -525,7 +538,7 @@ class OCPCAProjectsDB:
 
   def loadDatasetConfig ( self, dataset ):
     """Query the database for the dataset information and build a db configuration"""
-    sql = "SELECT ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale, startwindow, endwindow from %s where dataset = \'%s\'" % (ocpcaprivate.datasets, dataset)
+    sql = "SELECT ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale, startwindow, endwindow, starttime, endtime from {} where dataset = \'{}\'".format( ocpcaprivate.datasets, dataset )
 
 
     with closing(self.conn.cursor()) as cursor:
@@ -544,8 +557,8 @@ class OCPCAProjectsDB:
       logger.warning ( "Dataset %s not found." % ( dataset ))
       raise OCPCAError ( "Dataset %s not found." % ( dataset ))
 
-    [ ximagesz, yimagesz, startslice, endslice, zoomlevels, zscale, startwindow, endwindow ] = row
-    return OCPCADataset ( int(ximagesz), int(yimagesz), int(startslice), int(endslice), int(zoomlevels), float(zscale), int(startwindow), int(endwindow) ) 
+    [ ximagesz, yimagesz, startslice, endslice, zoomlevels, zscale, startwindow, endwindow, starttime, endtime ] = row
+    return OCPCADataset ( int(ximagesz), int(yimagesz), int(startslice), int(endslice), int(zoomlevels), float(zscale), int(startwindow), int(endwindow), int(starttime), int(endtime) ) 
 
 
   #
@@ -611,7 +624,7 @@ class OCPCAProjectsDB:
     token_desc = ocpcaprivate.token_description;
     proj_tbl = ocpcaprivate.projects;
 
-    sql = "SELECT distinct(dataset) from %s where openid = \'%s\'"  % (ocpcaprivate.projects,openid)
+    sql = "SELECT distinct(dataset) from {} where openid = \'{}\'".format( ocpcaprivate.projects,openid )
        
     with closing(self.conn.cursor()) as cursor:
       try:
@@ -631,7 +644,7 @@ class OCPCAProjectsDB:
   def getDatasets ( self):
     """Load the annotation database information based on the openid"""
     # Lookup the information for the database project based on the openid
-    sql = "SELECT * from %s"  % (ocpcaprivate.datasets)
+    sql = "SELECT * from {}".format( ocpcaprivate.datasets )
 
     with closing(self.conn.cursor()) as cursor:
       try:
@@ -704,7 +717,7 @@ class OCPCAProjectsDB:
   def deleteTokenDescription ( self, token):
     """Delete entry from token description table"""
 
-    sql = "DELETE FROM  %s where token = \'%s\'" % (ocpcaprivate.token_description, token)
+    sql = "DELETE FROM  {} where token = \'{}\'".format( ocpcaprivate.token_description, token )
 
     with closing(self.conn.cursor()) as cursor:
       try:

@@ -367,7 +367,7 @@ class OCPCADB:
   # getCube
   #
   def getCube ( self, key, resolution, update=False ):
-    """Load a cube from the annotation database"""
+    """ Load a cube from the database """
 
     # get the size of the image and cube
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
@@ -412,6 +412,7 @@ class OCPCADB:
           tmpfile.close()
 
     return cube
+
 
   #
   # cputCube
@@ -1056,7 +1057,7 @@ class OCPCADB:
 
     # alter query if  (ocpcaproj)._resolution is > resolution
     # if cutout is below resolution, get a smaller cube and scaleup
-    if (self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS or self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS_64bit) and self.annoproj.getResolution() > resolution:
+    if self.annoproj.getDBType() in ocpcaproj.ANNOTATION_DATASETS and self.annoproj.getResolution() > resolution:
 
       #find the effective dimensions of the cutout (where the data is)
       effcorner, effdim, (xpixeloffset,ypixeloffset) = self._zoominCutout ( corner, dim, resolution )
@@ -1065,7 +1066,7 @@ class OCPCADB:
 
     # alter query if  (ocpcaproj)._resolution is < resolution
     # if cutout is above resolution, get a large cube and scaledown
-    elif (self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS or self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS_64bit) and self.annoproj.getResolution() < resolution and False:  #PYTODO self.annoproj.isPropagated() True needs to be a project dervied flag to specify is we have scaled or not 
+    elif self.annoproj.getDBType() in ocpcaproj.ANNOTATION_DATASETS and self.annoproj.getResolution() < resolution and False:  #PYTODO self.annoproj.isPropagated() True needs to be a project dervied flag to specify is we have scaled or not 
 
       [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ self.annoproj.getResolution() ] 
       effcorner, effdim = self._zoomoutCutout ( corner, dim, resolution )
@@ -1098,7 +1099,7 @@ class OCPCADB:
     else:
       dbname = self.annoproj.getTable(effresolution)
 
-    if (self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS or self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS):
+    if self.annoproj.getDBType() in ocpcaproj.ANNOTATION_DATASETS:
 
       # input cube is the database size
       incube = anncube.AnnotateCube ( cubedim )
@@ -1109,14 +1110,14 @@ class OCPCADB:
                                         znumcubes*zcubedim] )
       outcube.zeros()
 
-    elif (self.annoproj.getDBType() == ocpcaproj.IMAGES_8bit or self.annoproj.getDBType() == ocpcaproj.CHANNELS_8bit):
+    elif self.annoproj.getDBType() in ocpcaproj.DATASETS_8bit:
 
       incube = imagecube.ImageCube8 ( cubedim )
       outcube = imagecube.ImageCube8 ( [xnumcubes*xcubedim,\
                                         ynumcubes*ycubedim,\
                                         znumcubes*zcubedim] )
 
-    elif (self.annoproj.getDBType() == ocpcaproj.IMAGES_16bit or self.annoproj.getDBType() == ocpcaproj.CHANNELS_16bit):
+    elif self.annoproj.getDBType() in ocpcaproj.DATASETS_16bit:
       
       incube = imagecube.ImageCube16 ( cubedim )
       outcube = imagecube.ImageCube16 ( [xnumcubes*xcubedim,\
@@ -1144,7 +1145,7 @@ class OCPCADB:
                                         ynumcubes*ycubedim,\
                                         znumcubes*zcubedim] )
                                         
-   # Build a list of indexes to access
+    # Build a list of indexes to access
     listofidxs = []
     for z in range ( znumcubes ):
       for y in range ( ynumcubes ):
@@ -1170,7 +1171,14 @@ class OCPCADB:
 
     try:
 
-      cuboids = self.kvio.getCubes(listofidxs,effresolution)
+      if self.annoproj.getDBType() in ocpcaproj.CHANNEL_DATASETS:
+        # Convert channel as needed
+        channel = ocpcachannel.toID ( channel, self )
+        cuboids = self.kvio.getChannelCubes(listofidxs,channel,effresolution)
+      elif self.annoproj.getDBType() in ocpcaproj.TIMESERIES_DATASETS:
+        cuboids = self.kvio.getTimeSeriesCubes(listofidxs,int(channel),effresolution)
+      else:
+        cuboids = self.kvio.getCubes(listofidxs,effresolution)
  
       # use the batch generator interface
       for idx, datastring in cuboids:
@@ -1214,7 +1222,7 @@ class OCPCADB:
     self.kvio.commit()
 
     # if we fetched a smaller cube to zoom, correct the result
-    if (self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS or self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS) and self.annoproj.getResolution() > resolution:
+    if self.annoproj.getDBType() in ocpcaproj.ANNOTATION_DATASETS and self.annoproj.getResolution() > resolution:
 
       outcube.zoomData ( self.annoproj.getResolution()-resolution )
 
@@ -1222,7 +1230,7 @@ class OCPCADB:
       outcube.trim ( corner[0]%(xcubedim*(2**(self.annoproj.getResolution()-resolution)))+xpixeloffset,dim[0], corner[1]%(ycubedim*(2**(self.annoproj.getResolution()-resolution)))+ypixeloffset,dim[1], corner[2]%zcubedim,dim[2] )
 
     # if we fetch a larger cube, downscale it and correct
-    elif (self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS or self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS_64bit) and self.annoproj.getResolution() < resolution and False:  #RBTODO True needs to be a project dervied flag to specify is we have scaled or not 
+    elif self.annoproj.getDBType() in ocpcaproj.ANNOTATION_DATASETS and self.annoproj.getResolution() < resolution and False:  #RBTODO True needs to be a project dervied flag to specify is we have scaled or not 
 
       outcube.downScale ( resolution-self.annoproj.getResolution() )
 
@@ -1349,7 +1357,6 @@ class OCPCADB:
 
     zidxs = self.annoIdx.getIndex(entityid,effectiveres)
     if type(zidxs[0]) == np.float64:
-      import pdb; pdb.set_trace()
       zidxs2 = self.annoIdx.getIndex(entityid,effectiveres)
 
     for zidx in zidxs:

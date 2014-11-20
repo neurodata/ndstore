@@ -107,7 +107,69 @@ class MySQLKVIO:
     else: 
       return row[0]
 
+  
+  def getChannelCube ( self, zidx, channel, resolution, update ):
+    """Retrieve a cube from the Channel database by token, resolution, channel and zidx"""
 
+    # if in a TxN us the transaction cursor.  Otherwise create one.
+    if self.txncursor == None:
+      cursor = self.conn.cursor()
+    else:
+      cursor = self.txncursor
+
+    sql = "SELECT cube FROM {} WHERE (channel,zindex) = ({},{})".format( self.db.annoproj.getTable(resolution), channel, zidx )
+    if update==True:
+          sql += " FOR UPDATE"
+
+    try:
+      cursor.execute ( sql )
+      row = cursor.fetchone()
+    except MySQLdb.Error, e:
+      logger.error ( "Failed to retrieve data cube: {}: {}. sql={}".format(e.args[0], e.args[1], sql) )
+      raise
+    finally:
+      # close the local cursor if not in a transaction
+      if self.txncursor == None:
+        cursor.close()
+
+    # If we can't find a cube, assume it hasn't been written yet
+    if ( row == None ):
+      return None
+    else: 
+      return row[0]
+
+  
+  def getTimeSeriesCube ( self, zidx, timestamp, resolution, update ):
+    """Retrieve a cube from the TimeSeries database by token, resolution, timestamp and zidx"""
+
+    # if in a TxN us the transaction cursor.  Otherwise create one.
+    if self.txncursor == None:
+      cursor = self.conn.cursor()
+    else:
+      cursor = self.txncursor
+
+    sql = "SELECT cube FROM {} WHERE (zindex,timestamp) = ({},{})".format( self.db.annoproj.getTable(resolution), zidx, timestamp )
+    if update==True:
+          sql += " FOR UPDATE"
+
+    try:
+      cursor.execute ( sql )
+      row = cursor.fetchone()
+    except MySQLdb.Error, e:
+      logger.error ( "Failed to retrieve data cube: {}: {}. sql={}".format(e.args[0], e.args[1], sql) )
+      raise
+    finally:
+      # close the local cursor if not in a transaction
+      if self.txncursor == None:
+        cursor.close()
+
+    # If we can't find a cube, assume it hasn't been written yet
+    if ( row == None ):
+      return None
+    else: 
+      return row[0]
+  
+  
   def getCubes ( self, listofidxs, resolution ):
 
     # if in a TxN us the transaction cursor.  Otherwise create one.
@@ -117,7 +179,7 @@ class MySQLKVIO:
       cursor = self.txncursor
 
     # RBTODO need to fix this for neariso interfaces
-    sql = "SELECT zindex, cube FROM " + self.db.annoproj.getTable(resolution)  + " WHERE zindex IN (%s)" 
+    sql = "SELECT zindex, cube FROM {} WHERE zindex in (%s)".format( self.db.annoproj.getTable(resolution) ) 
 
     # creats a %s for each list element
     in_p=', '.join(map(lambda x: '%s', listofidxs))
@@ -144,6 +206,78 @@ class MySQLKVIO:
         cursor.close()
 
 
+  def getChannelCubes ( self, listofidxs, channel, resolution ):
+
+    # if in a TxN us the transaction cursor.  Otherwise create one.
+    if self.txncursor == None:
+      cursor = self.conn.cursor()
+    else:
+      cursor = self.txncursor
+
+    # RBTODO need to fix this for neariso interfaces
+    sql = "SELECT zindex, cube FROM {} WHERE channel={} and zindex in (%s)".format( self.db.annoproj.getTable(resolution), channel )
+
+    # creats a %s for each list element
+    in_p=', '.join(map(lambda x: '%s', listofidxs))
+    # replace the single %s with the in_p string
+    sql = sql % in_p
+
+    try:
+      rc = cursor.execute(sql, listofidxs)
+    
+      # Get the objects and add to the cube
+      while ( True ):
+        try: 
+          retval = cursor.fetchone() 
+        except:
+          break
+        if retval != None:
+          yield ( retval )
+        else:
+          return
+ 
+    finally:
+      # close the local cursor if not in a transaction
+      if self.txncursor == None:
+        cursor.close()
+
+
+  def getTimeSeriesCubes ( self, listofidxs, timestamp, resolution ):
+
+    # if in a TxN us the transaction cursor.  Otherwise create one.
+    if self.txncursor == None:
+      cursor = self.conn.cursor()
+    else:
+      cursor = self.txncursor
+
+    # RBTODO need to fix this for neariso interfaces
+    sql = "SELECT zindex, cube FROM {} WHERE timestamp={} and zindex in (%s)".format( self.db.annoproj.getTable(resolution), timestamp )
+
+    # creats a %s for each list element
+    in_p=', '.join(map(lambda x: '%s', listofidxs))
+    # replace the single %s with the in_p string
+    sql = sql % in_p
+
+    try:
+      rc = cursor.execute(sql, listofidxs)
+    
+      # Get the objects and add to the cube
+      while ( True ):
+        try: 
+          retval = cursor.fetchone() 
+        except:
+          break
+        if retval != None:
+          yield ( retval )
+        else:
+          return
+ 
+    finally:
+      # close the local cursor if not in a transaction
+      if self.txncursor == None:
+        cursor.close()
+  
+  
   #
   # putCube
   #

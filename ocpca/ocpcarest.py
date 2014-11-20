@@ -88,7 +88,7 @@ def binZip ( imageargs, proj, db ):
   """Return a web readable Numpy Pickle zipped"""
 
   # if it's a channel database, pull out the channel
-  if proj.getDBType() == ocpcaproj.CHANNELS_8bit or proj.getDBType() == ocpcaproj.CHANNELS_16bit:
+  if proj.getDBType() in ocpcaproj.CHANNEL_DATASETS :
     [ channel, sym, imageargs ] = imageargs.partition ('/')
   else: 
     channel = None
@@ -110,7 +110,7 @@ def numpyZip ( imageargs, proj, db ):
   """Return a web readable Numpy Pickle zipped"""
 
   # if it's a channel database, pull out the channels and return a 4-d numpy array
-  if proj.getDBType() == ocpcaproj.CHANNELS_8bit or proj.getDBType() == ocpcaproj.CHANNELS_16bit:
+  if proj.getDBType() in ocpcaproj.CHANNEL_DATASETS :
 
     [ chanurl, sym, imageargs ] = imageargs.partition ('/')
 
@@ -158,7 +158,7 @@ def HDF5 ( imageargs, proj, db ):
   try: 
 
     # if it's a channel database, pull out the channels
-    if proj.getDBType() == ocpcaproj.CHANNELS_8bit or proj.getDBType() == ocpcaproj.CHANNELS_16bit:
+    if proj.getDBType() in ocpcaproj.CHANNEL_DATASETS:
      
       [ chanurl, sym, imageargs ] = imageargs.partition ('/')
 
@@ -173,7 +173,7 @@ def HDF5 ( imageargs, proj, db ):
         changrp = fh5out.create_group( "CUTOUT" )
         changrp.create_dataset ( "{}".format(channels[i]), tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data )
     
-    elif proj.getDBType() == ocpcaproj.RGB_32bit or proj.getDBType() == ocpcaproj.RGB_64bit:
+    elif proj.getDBType() in ocpcaproj.RGB_DATASETS:
       cube = cutout ( imageargs, proj, db, None)
       cube.RGBAChannel()
       fh5out.create_dataset ( "CUTOUT", tuple(cube.data.shape), cube.data.dtype,\
@@ -204,10 +204,9 @@ def HDF5 ( imageargs, proj, db ):
 def xySlice ( imageargs, proj, db ):
   """Return the cube object for an xy plane"""
   
-  if proj.getDBType() == ocpcaproj.CHANNELS_8bit or proj.getDBType() == ocpcaproj.CHANNELS_16bit:
+  #if proj.getDBType() == ocpcaproj.CHANNELS_8bit or proj.getDBType() == ocpcaproj.CHANNELS_16bit or proj.getDBType() == ocpcaproj.TIMESERIES_4d_8bit or proj.getDBType() == ocpcaproj.TIMESERIES_4d_16bit:
+  if proj.getDBType() in ocpcaproj.COMPOSITE_DATASETS:
     [ channel, sym, imageargs ] = imageargs.partition ('/')
-    # make sure that the channel is an int identifier
-    channel = ocpcachannel.toID ( channel, db ) 
   else: 
     channel = None
 
@@ -240,16 +239,8 @@ def xySlice ( imageargs, proj, db ):
   
   # Filter Function - Eliminate unwanted synapses ids
   if filterlist != None:
-    
-    #filterCutout ( cube.data, filterlist )
-    cube.data = ocplib.filter_ctype_OMP( cube.data, filterlist )
-	  
     # calling the ctype filter function
-  	# cube.data = filterCutoutCtype ( cube.data, filterlist )
-	  #cube.data = filterCutoutCtypeOMP ( cube.data, filterlist )
-    # inline vectorized is actually slower
-    # vec_func = np.vectorize ( lambda x: 0 if x not in filterlist else x )
-    # cube.data = vec_func ( cube.data )
+    cube.data = ocplib.filter_ctype_OMP( cube.data, filterlist )
 
   return cube
 
@@ -269,10 +260,8 @@ def xyImage ( imageargs, proj, db ):
 def xzSlice ( imageargs, proj, db ):
   """Return an xz plane cube"""
 
-  if proj.getDBType() == ocpcaproj.CHANNELS_8bit or proj.getDBType() == ocpcaproj.CHANNELS_16bit:
+  if proj.getDBType() in ocpcaproj.COMPOSITE_DATASETS:
     [ channel, sym, imageargs ] = imageargs.partition ('/')
-    # make sure that the channel is an int identifier
-    channel = ocpcachannel.toID ( channel, db ) 
   else: 
     channel = None
 
@@ -305,7 +294,6 @@ def xzSlice ( imageargs, proj, db ):
   
   # Filter Function - Eliminate unwanted synapses ids
   if filterlist != None:
-    
     #filterCutout ( cube.data, filterlist )
     cube.data = ocplib.filter_ctype_OMP( cube.data, filterlist )
   
@@ -334,7 +322,7 @@ def xzImage ( imageargs, proj, db ):
 def yzSlice ( imageargs, proj, db ):
   """Return an yz plane as a cube"""
 
-  if proj.getDBType() == ocpcaproj.CHANNELS_8bit or proj.getDBType() == ocpcaproj.CHANNELS_16bit:
+  if proj.getDBType() in ocpcaproj.COMPOSITE_DATASETS:
     [ channel, sym, imageargs ] = imageargs.partition ('/')
   else: 
     channel = None
@@ -680,7 +668,7 @@ def selectPost ( webargs, proj, db, postdata ):
         fileobj = cStringIO.StringIO ( rawdata )
         voxarray = np.load ( fileobj )
 
-        if proj.getDBType() != ocpcaproj.ANNOTATIONS and proj.getDBType() != ocpcaproj.ANNOTATIONS_64bit: 
+        if proj.getDBType() not in ocpcaproj.ANNOTATION_DATASETS : 
 
           db.writeCuboid ( corner, resolution, voxarray )
           # this is just a status
@@ -718,7 +706,7 @@ def selectPost ( webargs, proj, db, postdata ):
 
         voxarray = np.array(h5f.get('CUTOUT'))
 
-        if proj.getDBType() != ocpcaproj.ANNOTATIONS and proj.getDBType() != ocpcaproj.ANNOTATIONS_64bit: 
+        if proj.getDBType() not in ocpcaproj.ANNOTATION_DATASETS : 
 
           db.writeCuboid ( corner, resolution, voxarray )
           # this is just a status
@@ -804,11 +792,11 @@ def catmaid ( cmtilesz, token, plane, resolution, xtile, ytile, zslice, channel 
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
   
     # datatype from the project
-    if proj.getDBType() == ocpcaproj.IMAGES_8bit or proj.getDBType == ocpcaproj.CHANNELS_8bit:
+    if proj.getDBType() in ocpcaproj.DATASETS_8bit :
       datatype = np.uint8
-    elif proj.getDBType() == ocpcaproj.CHANNELS_16bit or proj.getDBType() == ocpcaproj.IMAGES_16bit:
+    elif proj.getDBType() in ocpcaproj.DATASETS_16bit :
       datatype = np.uint16
-    elif proj.getDBType() == ocpcaproj.RGB_32bit or proj.getDBType() == ocpcaproj.ANNOTATIONS or proj.     getDBType() == ocpcaproj.PROBMAP_32bit:
+    elif proj.getDBType() in ocpcaproj.DATASETS_32bit :
       datatype = np.uint32
     else:
       datatype = np.uint64
@@ -827,7 +815,7 @@ def catmaid ( cmtilesz, token, plane, resolution, xtile, ytile, zslice, channel 
         cutoutdata = np.zeros ( [cmtilesz,cmtilesz], dtype=datatype )
 
       else: 
-        if proj.getDBType() == ocpcaproj.CHANNELS_16bit or proj.getDBType == ocpcaproj.CHANNELS_8bit:
+        if proj.getDBType() in ocpcaproj.CHANNEL_DATASETS :
           imageargs = '%s/%s/%s,%s/%s,%s/%s/' % ( channel, resolution, xstart, xend, ystart, yend, zslice )
         else:
           imageargs = '%s/%s,%s/%s,%s/%s/' % ( resolution, xstart, xend, ystart, yend, zslice )
@@ -1727,7 +1715,7 @@ def mcfcPNG ( proj, db, token, service, chanstr, imageargs ):
     scaleby = 1.0
     if proj.getDBType() == ocpcaproj.CHANNELS_8bit:
       scaleby = 1
-    elif proj.getDBType() == ocpcaproj.CHANNELS_16bit and ( startwindow==0 and endwindow==0):
+    elif proj.getDBType() == ocpcaproj.CHANNELS_16bit and ( startwindow == endwindow == 0):
       scaleby = 1.0/256
     elif proj.getDBType() == ocpcaproj.CHANNELS_16bit and ( endwindow!=0 ):
       scaleby = 1
@@ -2011,7 +1999,7 @@ def exceptions ( webargs, ):
     resolution = args.getResolution()
 
     # check to make sure it's an annotation project
-    if proj.getDBType() != ocpcaproj.ANNOTATIONS and proj.getDBType() != ocpcaproj.ANNOTATIONS_64bit: 
+    if proj.getDBType() not in ocpcaproj.ANNOTATION_DATASETS : 
       logger.warning("Asked for exceptions on project that is not of type ANNOTATIONS")
       raise OCPCAError("Asked for exceptions on project that is not of type ANNOTATIONS")
     elif not proj.getExceptions():
