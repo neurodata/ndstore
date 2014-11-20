@@ -13,5 +13,6 @@
 # limitations under the License.
 
 #kvengine='MySQL'
-kvengine='Cassandra'
-#kvengine='Riak'
+#kvengine='Cassandra'
+kvserver='172.23.253.63'
+kvengine='Riak'

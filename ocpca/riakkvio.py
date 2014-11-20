@@ -35,7 +35,7 @@ class RiakKVIO:
     self.db = db
 
     # connect to cassandra
-    self.rcli = riak.RiakClient(pb_port=8087, protocol='pbc')
+    self.rcli = riak.RiakClient(host=db.annoproj.getKVServer(), pb_port=8087, protocol='pbc')
     self.bucket = self.rcli.bucket_type("ocp{}".format(db.annoproj.getDBType())).bucket(db.annoproj.getDBName())
 
   def close ( self ):
