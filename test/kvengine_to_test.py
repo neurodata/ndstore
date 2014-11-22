@@ -14,5 +14,7 @@
 
 #kvengine='MySQL'
 #kvengine='Cassandra'
-kvserver='172.23.253.63'
 kvengine='Riak'
+
+#kvserver='172.23.253.63'
+kvserver='localhost'

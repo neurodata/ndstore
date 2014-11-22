@@ -80,7 +80,6 @@ def main():
       img = open(filenm,'r')
       imgdata = np.frombuffer(img.read(), dtype=np.int16, count=int(np.prod(dims))).reshape(dims, order='F')
       imgdata = np.swapaxes(imgdata,0,2)
-      import pdb; pdb.set_trace()
 
       for sl in range (startslice, endslice+1, batchsz):
 
