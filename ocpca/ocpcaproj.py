@@ -73,8 +73,6 @@ class OCPCAProject:
     self._exceptions = exceptions
     self._resolution = resolution
     self._kvserver = kvserver
-    # for cassandra
-    #self._kvserver = '172.23.253.63'
     self._kvengine = kvengine
 
     # Could add these to configuration.  Probably remove res as tablebase instead
@@ -377,10 +375,9 @@ class OCPCAProjectsDB:
 
           elif proj.getKVEngine() == 'Riak':
 
-            rcli = riak.RiakClient(pb_port=8087, protocol='pbc')
+            rcli = riak.RiakClient(host=proj.getKVServer(), pb_port=8087, protocol='pbc')
             bucket = rcli.bucket_type("ocp{}".format(proj.getDBType())).bucket(proj.getDBName())
             bucket.set_property('allow_mult',False)
-       
 
           elif proj.getKVEngine() == 'Cassandra':
 
@@ -530,8 +527,8 @@ class OCPCAProjectsDB:
 
     elif proj.getKVEngine() == 'Riak':
 
-      # connect to cassandra
-      rcli = riak.RiakClient(pb_port=8087, protocol='pbc')
+      # connect to Riak
+      rcli = riak.RiakClient(host=proj.getKVServer(), pb_port=8087, protocol='pbc')
       bucket = rcli.bucket_type("ocp{}".format(proj.getDBType())).bucket(proj.getDBName())
 
       key_list = rcli.get_keys(bucket)
