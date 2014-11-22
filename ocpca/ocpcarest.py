@@ -196,6 +196,60 @@ def HDF5 ( imageargs, proj, db ):
   return tmpfile.read()
   
 
+#
+#  Return a Timeseries Cutout as a HDF5 file
+#
+def TimeSeriesCutout ( imageargs, proj, db ):
+  """ Return a web readable HDF5 file """
+
+  # Create an in-memory HDF5 file
+  tmpfile = tempfile.NamedTemporaryFile ()
+  fh5out = h5py.File ( tmpfile.name )
+
+  try: 
+    # if it's a channel database, pull out the channels
+    if proj.getDBType() in ocpcaproj.TIMESERIES_DATASETS:
+     
+      # Perform argument processing
+      args = restargs.BrainRestArgs ()
+      args.tsArgs ( imageargs, proj.datasetcfg )
+      
+      # Extract the relevant values
+      corner = args.getCorner()
+      dim = args.getDim()
+      resolution = args.getResolution()
+      timerange = args.getTimeRange()
+      filterlist = args.getFilter()
+      window = args.getWindow()
+      (startwindow,endwindow) = proj.datasetcfg.windowrange
+
+      if proj.getDBType() in ocpcaproj.DATASETS_16bit:
+        bigCube = np.empty( ([timerange[1]-timerange[0]]+dim[::-1]), dtype=np.uint16)
+      elif proj.getDBType() in ocpcaproj.DATASETS_8bit:
+        bigCube = np.empty( ([timerange[1]-timerange[0]]+dim[::-1]), dtype=np.uint8)
+      # Perform the cutout
+      for time in range(0,timerange[1]-timerange[0]):
+        cube = db.cutout ( corner, dim, resolution, time )
+        bigCube[time,] = cube.data
+      fh5out.create_dataset ( "CUTOUT", tuple(bigCube.shape), bigCube.dtype,compression='gzip', data=bigCube )
+      fh5out.create_dataset( "DATATYPE", (1,), dtype=np.uint32, data=proj._dbtype )
+
+    else:
+      logger.warning("Not a Timeseries Dataset")
+
+  except restargs.RESTArgsError, e:
+    logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
+    raise OCPCAError(e.value)
+  
+  except:
+    tmpfile.close()
+    fh5out.close()
+    raise
+
+  fh5out.close()
+  tmpfile.seek(0)
+  return tmpfile.read()
+
 
 #
 #  **Image return a readable png object
@@ -611,6 +665,9 @@ def selectService ( webargs, proj, db ):
 
   elif service == 'yzanno':
     return yzAnno ( rangeargs, proj, db )
+
+  elif service == 'ts':
+    return TimeSeriesCutout ( rangeargs, proj, db )
 
   else:
     logger.warning("An illegal Web GET service was requested %s.  Args %s" % ( service, webargs ))

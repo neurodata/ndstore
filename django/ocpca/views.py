@@ -38,6 +38,8 @@ def cutout (request, webargs):
     if request.method == 'GET':
       if service=='xy' or service=='yz' or service=='xz':
         return django.http.HttpResponse(ocpcarest.getCutout(webargs), mimetype="image/png" )
+      elif service == 'ts':
+        return django.http.HttpResponse(ocpcarest.getCutout(webargs), mimetype="product/hdf5" )
       elif service=='hdf5':
         return django.http.HttpResponse(ocpcarest.getCutout(webargs), mimetype="product/hdf5" )
       elif service=='npz':
