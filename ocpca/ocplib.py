@@ -44,6 +44,10 @@ ocplib.XYZMorton.argtypes = [ array_1d_uint64 ]
 ocplib.MortonXYZ.argtypes = [ npct.ctypes.c_int64 , array_1d_uint64 ]
 ocplib.recolorCube.argtypes = [ array_1d_uint32, cp.c_int, cp.c_int, array_1d_uint32, array_1d_uint32 ]
 ocplib.quicksort.argtypes = [ array_2d_uint64, cp.c_int ]
+ocplib.shaveCube.argtypes = [ array_1d_uint32, cp.c_int, cp.POINTER(cp.c_int), cp.c_int, array_1d_uint32, array_2d_uint32, cp.c_int, array_2d_uint32, cp.c_int, array_2d_uint32 ]
+ocplib.annotateEntityDense.argtypes = [ array_1d_uint32, cp.POINTER(cp.c_int), cp.c_int ]
+ocplib.shaveDense.argtypes = [ array_1d_uint32, array_1d_uint32,cp.POINTER(cp.c_int) ]
+ocplib.exceptionDense.argtypes = [ array_1d_uint32, array_1d_uint32,cp.POINTER(cp.c_int) ]
 
 # setting the return type of the function in C
 # FORMAT: <library_name>.<function_name>.restype = [ ctype.<argtype> ]
@@ -56,6 +60,10 @@ ocplib.XYZMorton.restype = npct.ctypes.c_uint64
 ocplib.MortonXYZ.restype = None
 ocplib.recolorCube.restype = None
 ocplib.quicksort.restype = None
+ocplib.shaveCube.restype = None
+ocplib.annotateEntityDense.restype = None
+ocplib.shaveDense.restype = None
+ocplib.exceptionDense.restype = None
 
 
 def filter_ctype_OMP ( cutout, filterlist ):
@@ -156,3 +164,67 @@ def quicksort ( locs ):
   ocplib.quicksort ( locs, len(locs) )
 
   return locs
+
+def shave_ctype ( data, annid, offset, locations ):
+  """ Remove annotations by a list of locations """
+
+  # get a copy of the iterator as a 1-D array
+  datashape = data.shape
+  dims = [i for i in data.shape]
+  data = data.ravel()
+
+  exceptions = np.zeros ( (len(locations),3), dtype=np.uint32 )
+  zeroed = np.zeros ( (len(locations),3), dtype=np.uint32 )
+
+  exceptionIndex = -1
+  zeroedIndex = -1
+          
+  # Calling the C native function
+  ocplib.shaveCube ( data, cp.c_int(len(data)), (cp.c_int * len(dims))(*dims), cp.c_int(annid), offset, locations, cp.c_int(len(locations)), exceptions, cp.c_int(exceptionIndex), zeroed, cp.c_int(zeroedIndex) )
+
+  if exceptionIndex > 0:
+    exceptions = exceptions[:(exceptionIndex+1)]
+  else:
+    exceptions = np.zeros ( (0), dtype=np.uint32 )
+
+  if zeroedIndex > 0:
+    zeroed = zeroed[:(zeroedIndex+1)]
+  else:
+    zeroed = np.zeros ( (0), dtype=np.uint32 )
+  
+  return ( data.reshape(datashape) , exceptions, zeroed )
+
+
+def annotateEntityDense_ctype ( data, entityid ):
+  """ Relabel all non zero pixels to annotation id """
+
+  dims = [ i for i in data.shape ]
+  data = data.ravel()
+
+  ocplib.annotateEntityDense ( data, (cp.c_int * len(dims))(*dims), cp.c_int(entityid) )
+
+  return ( data.reshape(dims) )
+
+
+def shaveDense_ctype ( data, shavedata ):
+  """ Remove the specified voxels from the annotation """
+
+  dims = [ i for i in data.shape ]
+  data = data.ravel()
+  shavedata = shavedata.ravel()
+
+  ocplib.shaveDense ( data, shavedata, (cp.c_int * len(dims))(*dims) )
+
+  return ( data.reshape(dims) )
+
+
+def exceptionDense_ctype ( data, annodata ):
+  """ Get a dense voxel region and overwrite all the non-zero values """
+
+  dims = [ i for i in data.shape ]
+  data = data.ravel()
+  annodata = annodata.ravel()
+
+  ocplib.exceptionDense ( data, annodata, (cp.c_int * len(dims))(*dims) )
+
+  return ( data.reshape(dims) )

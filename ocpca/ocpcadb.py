@@ -373,17 +373,17 @@ class OCPCADB:
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
     # Create a cube object
-    if (self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS):
+    if (self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS):
       cube = anncube.AnnotateCube ( cubedim )
-    elif (self.annoproj.getDBType()==ocpcaproj.PROBMAP_32bit):
+    elif (self.annoproj.getDBType() == ocpcaproj.PROBMAP_32bit):
       cube = probmapcube.ProbMapCube32 ( cubedim )
-    elif (self.annoproj.getDBType()==ocpcaproj.IMAGES_8bit):
+    elif (self.annoproj.getDBType() == ocpcaproj.IMAGES_8bit):
       cube = imagecube.ImageCube8 ( cubedim )
-    elif (self.annoproj.getDBType()==ocpcaproj.IMAGES_16bit):
+    elif (self.annoproj.getDBType() == ocpcaproj.IMAGES_16bit):
       cube = imagecube.ImageCube16 ( cubedim )
-    elif (self.annoproj.getDBType()==ocpcaproj.RGB_32bit):
+    elif (self.annoproj.getDBType() == ocpcaproj.RGB_32bit):
       cube = imagecube.ImageCube32 ( cubedim )
-    elif (self.annoproj.getDBType()==ocpcaproj.RGB_64bit):
+    elif (self.annoproj.getDBType() == ocpcaproj.RGB_64bit):
       cube = imagecube.ImageCube64 ( cubedim )
     else:
       raise OCPCAError ("Unknown project type {}".format(self.annoproj.getDBType()))
@@ -426,13 +426,13 @@ class OCPCADB:
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
     # Create a cube object
-    if (self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS):
+    if (self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS):
       cube = anncube.AnnotateCube ( cubedim )
-    elif (self.annoproj.getDBType()==ocpcaproj.PROBMAP_32bit):
+    elif (self.annoproj.getDBType() == ocpcaproj.PROBMAP_32bit):
       cube = probmapcube.ProbMapCube32 ( cubedim )
-    elif (self.annoproj.getDBType()==ocpcaproj.IMAGES_8bit):
+    elif (self.annoproj.getDBType() == ocpcaproj.IMAGES_8bit):
       cube = imagecube.ImageCube8 ( cubedim )
-    elif (self.annoproj.getDBType()==ocpcaproj.IMAGES_16bit):
+    elif (self.annoproj.getDBType() == ocpcaproj.IMAGES_16bit):
       cube = imagecube.ImageCube16 ( cubedim )
     else:
       raise OCPCAError ("Unknown project type {}".format(self.annoproj.getDBType()))
@@ -709,7 +709,6 @@ class OCPCADB:
 
     # start a transaction if supported
     self.kvio.startTxn()
-
     for i in range(len(listoffsets)-1):
 
       # grab the list of voxels for the first cube
@@ -800,7 +799,8 @@ class OCPCADB:
         offset = np.asarray( [cubeoff[0]*cubedim[0],cubeoff[1]*cubedim[1],cubeoff[2]*cubedim[2]], dtype=np.uint32 )
 
         # remove the items
-        exlist, zeroed = cube.shave(entityid, offset, voxlist)
+        #exlist2, zeroed2 = cube2.shave(entityid, offset, voxlist)
+        exlist, zeroed = cube.shave_ctype (entityid, offset, voxlist)
         # make sure that exceptions are stored as 8 bits
         exceptions = np.array(exlist, dtype=np.uint8)
 
@@ -864,7 +864,7 @@ class OCPCADB:
 
             key = ocplib.XYZMorton ([x+xstart,y+ystart,z+zstart])
             cube = self.getCube ( key, resolution, True )
-
+            
             if conflictopt == 'O':
               cube.overwrite ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
             elif conflictopt == 'P':
@@ -888,12 +888,12 @@ class OCPCADB:
             else:
               logger.error ( "Unsupported conflict option %s" % conflictopt )
               raise OCPCAError ( "Unsupported conflict option %s" % conflictopt )
+            
 
             self.putCube ( key, resolution, cube )
 
             #update the index for the cube
             # get the unique elements that are being added to the data
-
             uniqueels = np.unique ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
             for el in uniqueels:
               index_dict[el].add(key) 
@@ -902,7 +902,6 @@ class OCPCADB:
             if 0 in index_dict:
               del(index_dict[0])
 
-
       # Update all indexes
       self.annoIdx.updateIndexDense(index_dict,resolution)
       # commit cubes.  not commit controlled with metadata
@@ -910,7 +909,7 @@ class OCPCADB:
     except:
       self.kvio.rollback()
       raise
-
+    
     self.kvio.commit()
 
 
@@ -920,8 +919,11 @@ class OCPCADB:
   def annotateEntityDense ( self, entityid, corner, resolution, annodata, conflictopt ):
     """Relabel all nonzero pixels to annotation id and call annotateDense"""
 
-    vec_func = np.vectorize ( lambda x: 0 if x == 0 else entityid ) 
-    annodata = vec_func ( annodata )
+    #vec_func = np.vectorize ( lambda x: 0 if x == 0 else entityid ) 
+    #annodata2 = vec_func ( annodata )
+
+    annodata = ocplib.annotateEntityDense_ctype ( annodata, entityid )
+
     return self.annotateDense ( corner, resolution, annodata, conflictopt )
 
   #

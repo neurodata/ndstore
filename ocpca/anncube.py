@@ -157,7 +157,16 @@ class AnnotateCube(Cube):
 
     # the cython optimized version of this function.
     return shave_cy ( self.data, annid, offset, np.array(locations, dtype=np.uint32))
-  
+
+
+  def shave_ctype ( self, annid, offset, locations ):
+    """Remove annotation by a list of locations"""
+
+    # the cython optimized version of this function.
+    self.data , exceptions, zeroed = ocplib.shave_ctype ( self.data, annid, offset, np.array(locations, dtype=np.uint32))
+    
+    return exceptions, zeroed
+
 
   #
   # Create the specified slice (index) at filename
@@ -219,14 +228,20 @@ class AnnotateCube(Cube):
   def overwrite ( self, annodata ):
     """Get's a dense voxel region and overwrites all non-zero values"""
 
-    vector_func = np.vectorize ( lambda a,b: b if b!=0 else a ) 
-    self.data = vector_func ( self.data, annodata ) 
+    #vector_func = np.vectorize ( lambda a,b: b if b!=0 else a ) 
+    #self.data = vector_func ( self.data, annodata )
+
+    # Is the same as above
+    self.data = ocplib.shaveDense_ctype ( self.data, annodata )
 
   def preserve ( self, annodata ):
     """Get's a dense voxel region and overwrites all non-zero values"""
 
-    vector_func = np.vectorize ( lambda a,b: b if b!=0 and a==0 else a ) 
-    self.data = vector_func ( self.data, annodata ) 
+    #vector_func = np.vectorize ( lambda a,b: b if b!=0 and a==0 else a ) 
+    #self.data = vector_func ( self.data, annodata )
+
+    # Is the same as above
+    self.data = exceptionDense_ctype ( self.data, annodata )
 
   def exception ( self, annodata ):
     """Get's a dense voxel region and overwrites all non-zero values"""
@@ -236,8 +251,9 @@ class AnnotateCube(Cube):
     exdata = ((self.data-annodata)*self.data*annodata!=0) * annodata 
 
     # then annotate to preserve 
-    vector_func = np.vectorize ( lambda a,b: b if b!=0 and a==0 else a ) 
-    self.data = vector_func ( self.data, annodata ) 
+    #vector_func = np.vectorize ( lambda a,b: b if b!=0 and a==0 else a ) 
+    #self.data = vector_func ( self.data, annodata ) 
+    self.data = exceptionDense_ctype ( self.data, annodata )
 
     # return the list of exceptions ids and the exceptions
     return exdata
@@ -252,8 +268,10 @@ class AnnotateCube(Cube):
     exdata = (self.data != annodata) * annodata
 
     # then shave 
-    vector_func = np.vectorize ( lambda a,b: 0 if b!=0 else a ) 
-    self.data = vector_func ( self.data, shavedata ) 
+    #vector_func = np.vectorize ( lambda a,b: 0 if b!=0 else a ) 
+    #self.data = vector_func ( self.data, shavedata )
+
+    self.data = ocplib.shaveDense_ctype ( self.data, shavedata )
 
     # return the list of exceptions ids and the exceptions
     return exdata

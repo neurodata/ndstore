@@ -27,7 +27,7 @@ logger=logging.getLogger("ocp")
 """Classes that hold annotation metadata"""
 
 # Annotation types
-ANNO_ANNOTATION = 1
+ANNO_ANNOTATION = 8
 ANNO_SYNAPSE = 2
 ANNO_SEED = 3
 ANNO_SEGMENT = 4

@@ -46,3 +46,15 @@ void recolorSlice ( uint32_t * , int , int , uint32_t * , uint32_t * );
 
 // Declaring Quick Sort function
 void quicksort ( uint64_t [][4] , int ); 
+
+// Declaring the shaveCube function
+int shaveCube ( uint32_t * , int , int * , int , uint32_t * , uint32_t [][3] , int , uint32_t [][3] , int , uint32_t [][3] , int );
+
+// Declaring the annotateEntityDense function
+int annotateEntityDense ( uint32_t * , int * , int );
+
+// Declaring the shaveDense function
+int shaveDense ( uint32_t * , uint32_t * ,int * );
+
+// Declaring the exceptionDense function
+int exceptionDense ( uint32_t * , uint32_t * ,int * );
