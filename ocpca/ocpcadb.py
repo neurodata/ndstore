@@ -799,7 +799,6 @@ class OCPCADB:
         offset = np.asarray( [cubeoff[0]*cubedim[0],cubeoff[1]*cubedim[1],cubeoff[2]*cubedim[2]], dtype=np.uint32 )
 
         # remove the items
-        #exlist2, zeroed2 = cube2.shave(entityid, offset, voxlist)
         exlist, zeroed = cube.shave_ctype (entityid, offset, voxlist)
         # make sure that exceptions are stored as 8 bits
         exceptions = np.array(exlist, dtype=np.uint8)
@@ -920,8 +919,7 @@ class OCPCADB:
     """Relabel all nonzero pixels to annotation id and call annotateDense"""
 
     #vec_func = np.vectorize ( lambda x: 0 if x == 0 else entityid ) 
-    #annodata2 = vec_func ( annodata )
-
+    #annodata = vec_func ( annodata )
     annodata = ocplib.annotateEntityDense_ctype ( annodata, entityid )
 
     return self.annotateDense ( corner, resolution, annodata, conflictopt )

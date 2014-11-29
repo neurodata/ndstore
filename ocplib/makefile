@@ -2,8 +2,8 @@
 
 all: clean ocplib.so
 
-ocplib.so : filterCutout.o filterCutoutOMP.o locateCube.o annotateCube.o shaveCube.o annotateEntityDense.o shaveDense.o exceptionDense.o zindex.o recolorCube.o quicksort.o
-	gcc -shared -fopenmp -O3 -o ocplib.so filterCutout.o filterCutoutOMP.o locateCube.o annotateCube.o shaveCube.o annotateEntityDense.o shaveDense.o exceptionDense.o zindex.o recolorCube.o quicksort.o -I .
+ocplib.so : filterCutout.o filterCutoutOMP.o locateCube.o annotateCube.o shaveCube.o annotateEntityDense.o shaveDense.o exceptionDense.o overwriteDense.o zindex.o recolorCube.o quicksort.o
+	gcc -shared -fopenmp -O3 -o ocplib.so filterCutout.o filterCutoutOMP.o locateCube.o annotateCube.o shaveCube.o annotateEntityDense.o shaveDense.o exceptionDense.o overwriteDense.o zindex.o recolorCube.o quicksort.o -I .
 
 filterCutout.o : filterCutout.c
 	gcc -c -fPIC -O3 filterCutout.c -o filterCutout.o -I .
@@ -29,6 +29,9 @@ shaveDense.o : shaveDense.c
 exceptionDense.o : exceptionDense.c
 	gcc -c -fPIC -O3 exceptionDense.c -o exceptionDense.o -I .
 
+overwriteDense.o : overwriteDense.c
+	gcc -c -fPIC -O3 overwriteDense.c -o overwriteDense.o -I .
+
 zindex.o : zindex.c
 	gcc -c -fPIC -O3 zindex.c -o zindex.o -I .
 
@@ -42,4 +45,4 @@ test : clean testmain.c
 	gcc -ggdb testmain.c quicksort.c -o test -I .
 
 clean :
-	-rm -vf ocplib.so zindex.o locateCube.o annotateCube.o shaveCube.o annotateEntityDense.o shaveDense.o exceptionDense.o filterCutout.o filterCutoutOMP.o recolorCube.o quicksort.o test
+	-rm -vf ocplib.so zindex.o locateCube.o annotateCube.o shaveCube.o annotateEntityDense.o shaveDense.o exceptionDense.o overwriteDense.o filterCutout.o filterCutoutOMP.o recolorCube.o quicksort.o test

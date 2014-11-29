@@ -58,3 +58,6 @@ int shaveDense ( uint32_t * , uint32_t * ,int * );
 
 // Declaring the exceptionDense function
 int exceptionDense ( uint32_t * , uint32_t * ,int * );
+
+// Declaring the exceptionDense function
+int overwriteDense ( uint32_t * , uint32_t * ,int * );

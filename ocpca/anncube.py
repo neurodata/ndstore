@@ -229,19 +229,19 @@ class AnnotateCube(Cube):
     """Get's a dense voxel region and overwrites all non-zero values"""
 
     #vector_func = np.vectorize ( lambda a,b: b if b!=0 else a ) 
-    #self.data = vector_func ( self.data, annodata )
-
+    #test = vector_func ( self.data, annodata )
+    
     # Is the same as above
-    self.data = ocplib.shaveDense_ctype ( self.data, annodata )
+    self.data = ocplib.overwriteDense_ctype ( self.data, annodata )
 
   def preserve ( self, annodata ):
     """Get's a dense voxel region and overwrites all non-zero values"""
 
     #vector_func = np.vectorize ( lambda a,b: b if b!=0 and a==0 else a ) 
-    #self.data = vector_func ( self.data, annodata )
+    #test = vector_func ( self.data, annodata )
 
     # Is the same as above
-    self.data = exceptionDense_ctype ( self.data, annodata )
+    self.data = ocplib.exceptionDense_ctype ( self.data, annodata )
 
   def exception ( self, annodata ):
     """Get's a dense voxel region and overwrites all non-zero values"""
@@ -252,8 +252,8 @@ class AnnotateCube(Cube):
 
     # then annotate to preserve 
     #vector_func = np.vectorize ( lambda a,b: b if b!=0 and a==0 else a ) 
-    #self.data = vector_func ( self.data, annodata ) 
-    self.data = exceptionDense_ctype ( self.data, annodata )
+    #test = vector_func ( self.data, annodata ) 
+    self.data = ocplib.exceptionDense_ctype ( self.data, annodata )
 
     # return the list of exceptions ids and the exceptions
     return exdata

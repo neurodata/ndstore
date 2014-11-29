@@ -48,6 +48,8 @@ ocplib.shaveCube.argtypes = [ array_1d_uint32, cp.c_int, cp.POINTER(cp.c_int), c
 ocplib.annotateEntityDense.argtypes = [ array_1d_uint32, cp.POINTER(cp.c_int), cp.c_int ]
 ocplib.shaveDense.argtypes = [ array_1d_uint32, array_1d_uint32,cp.POINTER(cp.c_int) ]
 ocplib.exceptionDense.argtypes = [ array_1d_uint32, array_1d_uint32,cp.POINTER(cp.c_int) ]
+ocplib.overwriteDense.argtypes = [ array_1d_uint32, array_1d_uint32,cp.POINTER(cp.c_int) ]
+
 
 # setting the return type of the function in C
 # FORMAT: <library_name>.<function_name>.restype = [ ctype.<argtype> ]
@@ -64,6 +66,7 @@ ocplib.shaveCube.restype = None
 ocplib.annotateEntityDense.restype = None
 ocplib.shaveDense.restype = None
 ocplib.exceptionDense.restype = None
+ocplib.overwriteDense.restype = None
 
 
 def filter_ctype_OMP ( cutout, filterlist ):
@@ -226,5 +229,17 @@ def exceptionDense_ctype ( data, annodata ):
   annodata = annodata.ravel()
 
   ocplib.exceptionDense ( data, annodata, (cp.c_int * len(dims))(*dims) )
+
+  return ( data.reshape(dims) )
+
+
+def overwriteDense_ctype ( data, annodata ):
+  """ Get a dense voxel region and overwrite all the non-zero values """
+
+  dims = [ i for i in data.shape ]
+  data = data.ravel()
+  annodata = annodata.ravel()
+
+  ocplib.overwriteDense ( data, annodata, (cp.c_int * len(dims))(*dims) )
 
   return ( data.reshape(dims) )
