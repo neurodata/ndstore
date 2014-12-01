@@ -176,12 +176,14 @@ def HDF5 ( imageargs, proj, db ):
     elif proj.getDBType() in ocpcaproj.RGB_DATASETS:
       cube = cutout ( imageargs, proj, db, None)
       cube.RGBAChannel()
-      fh5out.create_dataset ( "CUTOUT", tuple(cube.data.shape), cube.data.dtype,\
-                                  compression='gzip', data=cube.data )
+      fh5out.create_dataset ( "CUTOUT", tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data )
+    elif proj.getDBType() in ocpcaproj.TIMESERIES_DATASETS:
+      [ chanurl, sym, imageargs ] = imageargs.partition ('/')
+      cube = cutout ( imageargs, proj, db, int(chanurl) )
+      fh5out.create_dataset ( "CUTOUT", tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data )
     else: 
       cube = cutout ( imageargs, proj, db, None )
-      fh5out.create_dataset ( "CUTOUT", tuple(cube.data.shape), cube.data.dtype,\
-                                  compression='gzip', data=cube.data )
+      fh5out.create_dataset ( "CUTOUT", tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data )
 
     fh5out.create_dataset( "DATATYPE", (1,), dtype=np.uint32, data=proj._dbtype )
   

@@ -114,7 +114,7 @@ class OCPCADB:
       raise
 
     # create annidx object
-    if (self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS):
+    if (self.annoproj.getDBType() in ocpcaproj.ANNOTATION_DATASETS):
       self.annoIdx = annindex.AnnotateIndex ( self.kvio, self.annoproj )
 
   def close ( self ):
@@ -487,7 +487,53 @@ class OCPCADB:
       self.kvio.putCube ( zidx, resolution, tmpfile.read(), not cube.fromZeros() )
       tmpfile.close()
 
+  #
+  # putCube
+  #
+  def putCube ( self, zidx, resolution, cube ):
+    """Store a cube in the annotation database"""
 
+    # Handle the cube format here.  
+    if self.NPZ:
+      self.kvio.putCube ( zidx, resolution, cube.toNPZ(), not cube.fromZeros() )
+    else:
+      tmpfile= tempfile.NamedTemporaryFile ()
+      h5 = h5py.File ( tmpfile.name )
+      h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype, compression='gzip',  data=cube.data )
+      h5.close()
+      tmpfile.seek(0)
+
+      self.kvio.putCube ( zidx, resolution, tmpfile.read(), not cube.fromZeros() )
+      tmpfile.close()
+
+  #
+  # putChannelCube
+  #
+  def putChannelCube ( self, zidx, channel, resolution, cube ):
+    """Store a cube in the annotation database"""
+
+    # Handle the cube format here.  
+    if self.NPZ:
+      self.kvio.putChannelCube ( zidx, channel, resolution, cube.toNPZ(), not cube.fromZeros() )
+    else:
+      tmpfile= tempfile.NamedTemporaryFile ()
+      h5 = h5py.File ( tmpfile.name )
+      h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype, compression='gzip',  data=cube.data )
+      h5.close()
+      tmpfile.seek(0)
+
+      self.kvio.putChannelCube ( zidx, channel, resolution, tmpfile.read() )
+      tmpfile.close()
+ 
+  #
+  # putChannel
+  #
+  def putChannel ( self, channelstr, channelid ):
+    """ Store the channel in the channels database """
+
+    self.kvio.putChannel ( channelstr, channelid )
+
+  
   #
   # putBatchCube
   #
@@ -1171,6 +1217,7 @@ class OCPCADB:
 
     try:
 
+
       if self.annoproj.getDBType() in ocpcaproj.CHANNEL_DATASETS:
         # Convert channel as needed
         channel = ocpcachannel.toID ( channel, self )
@@ -1179,16 +1226,26 @@ class OCPCADB:
         cuboids = self.kvio.getTimeSeriesCubes(listofidxs,int(channel),effresolution)
       else:
         cuboids = self.kvio.getCubes(listofidxs,effresolution)
- 
+      
+      #import pdb; pdb.set_trace()
+      import time
+      start = time.time()
+      totaltime2 = 0
+      totaltime3 = 0
+      totaltime4 = 0
       # use the batch generator interface
       for idx, datastring in cuboids:
 
         #add the query result cube to the bigger cube
+        start4 = time.time()
         curxyz = ocplib.MortonXYZ(int(idx))
         offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
+        totaltime4 += time.time()-start4
 
-        if self.NPZ: 
+        if self.NPZ:
+          start2 = time.time()
           incube.fromNPZ ( datastring[:] )
+          totaltime2 += time.time()-start2
 
           #RB testing
 #          self.cputCube ( idx, resolution, incube )
@@ -1208,12 +1265,17 @@ class OCPCADB:
           tmpfile.close()
 
         # apply exceptions if it's an annotation project
-        if annoids!= None and self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS:
+        if annoids!= None and self.annoproj.getDBType() in ocpcaproj.ANNOTATION_DATASETS:
           incube.data = ocplib.filter_ctype_OMP ( incube.data, annoids )
           self.applyCubeExceptions ( annoids, effresolution, idx, incube )
 
         # add it to the output cube
-        outcube.addData ( incube, offset ) 
+        start3 = time.time()
+        outcube.addData_new ( incube, offset ) 
+        totaltime3 += time.time()-start3
+
+      print "NPZ Time:", totaltime2, "Add Cube", totaltime3, "Offset/Key", totaltime4
+      print "Total time:",time.time()-start, "Difference", time.time()-start-totaltime2-totaltime3-totaltime4
 
     except:
       self.kvio.rollback()

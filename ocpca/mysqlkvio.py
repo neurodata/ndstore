@@ -327,6 +327,83 @@ class MySQLKVIO:
 
 
   #
+  # putChannel
+  #
+  def putChannel ( self, channelstr, channelid ):
+    """ Store a channel in the channels database """
+
+    # if in a TxN us the transaction cursor.  Otherwise create one.
+    if self.txncursor == None:
+      cursor = self.conn.cursor()
+    else:
+      cursor = self.txncursor
+
+    sql = "INSERT INTO channels (chanstr,chanid) VALUES (%s,%s)"
+
+    # this uses a cursor defined in the caller (locking context): not beautiful, but needed for locking
+    try:
+      cursor.execute ( sql, (channelstr, str(channelid)) )
+    except MySQLdb.Error, e:
+      logger.error ( "Error inserting cube: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+      raise
+    finally:
+      # close the local cursor if not in a transaction
+      # and commit right away
+      if self.txncursor == None:
+        cursor.close()
+  
+    # commit if not in a txn
+    if self.txncursor == None:
+      self.conn.commit()
+
+  #
+  # putChannelCube
+  #
+  def putChannelCube ( self, zidx, channel, resolution, cubestr, update=False ):
+    """ Store a cube from the channel database """
+
+    # if in a TxN us the transaction cursor.  Otherwise create one.
+    if self.txncursor == None:
+      cursor = self.conn.cursor()
+    else:
+      cursor = self.txncursor
+
+    # we created a cube from zeros
+    if not update:
+
+      sql = "INSERT INTO {} (channel, zindex, cube) VALUES (%s, %s, %s)".format( self.db.annoproj.getTable(resolution) )
+
+      # this uses a cursor defined in the caller (locking context): not beautiful, but needed for locking
+      try:
+        cursor.execute ( sql, (channel,zidx,cubestr))
+      except MySQLdb.Error, e:
+        logger.error ( "Error inserting cube: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+        raise
+      finally:
+        # close the local cursor if not in a transaction
+        # and commit right away
+        if self.txncursor == None:
+          cursor.close()
+
+    else:
+
+      sql = "UPDATE {} SET cube=(%s) WHERE (channel,zindex)=({},{})".format( self.db.annoproj.getTable(resolution), channel, zidx )
+      try:
+        cursor.execute ( sql, (cubestr))
+      except MySQLdb.Error, e:
+        logger.error ( "Error updating data cube: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+        raise
+      finally:
+        # close the local cursor if not in a transaction
+        # and commit right away
+        if self.txncursor == None:
+          cursor.close()
+
+    # commit if not in a txn
+    if self.txncursor == None:
+      self.conn.commit()
+
+  #
   # putBatchCube
   #
   def putBatchCube ( self, zidx, resolution, cubestr, update=False ):

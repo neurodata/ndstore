@@ -17,6 +17,7 @@ import zindex
 from PIL import Image
 
 from cube import Cube
+import ocplib
 from windowcutout import windowCutout
 
 #
@@ -58,8 +59,10 @@ class ImageCube8(Cube):
   def overwrite ( self, annodata ):
     """Get's a dense voxel region and overwrites all non-zero values"""
 
-    vector_func = np.vectorize ( lambda a,b: b if b!=0 else a ) 
-    self.data = vector_func ( self.data, annodata ) 
+    #vector_func = np.vectorize ( lambda a,b: b if b!=0 else a ) 
+    #self.data = vector_func ( self.data, annodata ) 
+
+    self.data = ocplib.overwriteDense_ctype ( self.data, annodata )
 
 
   #
@@ -142,9 +145,10 @@ class ImageCube16(Cube):
   def overwrite ( self, annodata ):
     """Get's a dense voxel region and overwrites all non-zero values"""
 
-    vector_func = np.vectorize ( lambda a,b: b if b!=0 else a ) 
-    self.data = vector_func ( self.data, annodata ) 
+    #vector_func = np.vectorize ( lambda a,b: b if b!=0 else a ) 
+    #self.data = vector_func ( self.data, annodata ) 
 
+    self.data = ocplib.overwriteDense_ctype ( self.data, annodata )
 
   #
   # Create the specified slice (index) at filename
@@ -235,9 +239,10 @@ class ImageCube32(Cube):
   def overwrite ( self, annodata ):
     """Get's a dense voxel region and overwrites all non-zero values"""
 
-    vector_func = np.vectorize ( lambda a,b: b if b!=0 else a ) 
-    self.data = vector_func ( self.data, annodata ) 
+    #vector_func = np.vectorize ( lambda a,b: b if b!=0 else a ) 
+    #self.data = vector_func ( self.data, annodata ) 
 
+    self.data = ocplib.overwriteDense_ctype ( self.data, annodata )
 
   #
   # Create the specified slice (index) at filename
@@ -330,9 +335,10 @@ class ImageCube64(Cube):
   def overwrite ( self, annodata ):
     """Get's a dense voxel region and overwrites all non-zero values"""
 
-    vector_func = np.vectorize ( lambda a,b: b if b!=0 else a ) 
-    self.data = vector_func ( self.data, annodata ) 
+    #vector_func = np.vectorize ( lambda a,b: b if b!=0 else a ) 
+    #self.data = vector_func ( self.data, annodata ) 
 
+    self.data = ocplib.overwriteDense_ctype ( self.data, annodata )
 
   #
   # Create the specified slice (index) at filename
