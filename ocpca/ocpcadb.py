@@ -1213,6 +1213,7 @@ class OCPCADB:
 #      self.kvio.getChannelCubes(channel,listofidxs)
 #
 #    else:
+    
     self.kvio.startTxn()
 
     try:

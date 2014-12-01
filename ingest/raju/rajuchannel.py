@@ -63,7 +63,6 @@ class RajuIngest:
     with closing ( ocpcadb.OCPCADB(self.proj) ) as self.db:
       self.db.putChannel ( chanstr, chanid )
 
-
   def ingest( self ):
 
     NAME = [ "Grayscale" ]
@@ -75,7 +74,7 @@ class RajuIngest:
       self.label ( x+1, NAME[x] )
 
       # for each slice
-      for sl in range(self.startslice,self.endslice+1,self.batchsz):
+      for sl in range(784,self.endslice+1,self.batchsz):
       
         imarray = np.zeros ( [self.batchsz,self._yimgsz,self._ximgsz], dtype=np.uint16 )
 
@@ -84,8 +83,6 @@ class RajuIngest:
           if ( sl + b < self.endslice ):
 
             # raw data
-            #filenm = self.path + '00-462_000000_{:0>6}'.format((sl+b)*50) + '.tif'
-            #filenm = self.path + '00-199_000000_{:0>6}'.format((sl+b)*50) + '.tif'
             filenm = self.path + 'x0.25_unspmask3-0.6_s_{:0>4}'.format(sl+b) + '.tif'
 
             # load the image and check the dimension
@@ -94,6 +91,8 @@ class RajuIngest:
               imgdata = cv2.imread(filenm, -1)
               #img = Image.open(filenm, 'r')
               #imgdata = np.asarray ( img )
+              if imgdata == None:
+                  imgdata = np.zeros((self._yimgsz,self._ximgsz))
               imarray[(sl+b-self.startslice)%self.batchsz,0:imgdata.shape[0],0:imgdata.shape[1]] = imgdata[:,:]
             except IOError, e:
               print e
@@ -123,7 +122,6 @@ class RajuIngest:
           zmax = min ( sl + self.zcubedim, self.endslice + 1 )
 
           # data for this key
-          #cube.data = imarray[:,y*self.ycubedim:(y+1)*self.ycubedim,x*self.xcubedim:(x+1)*self.xcubedim]
           cube.data = imarray[zmin:zmax,ymin:ymax, xmin:xmax]
 
           self.db.putChannelCube(mortonidx, channel, self.resolution, cube)

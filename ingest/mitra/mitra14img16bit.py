@@ -59,13 +59,11 @@ def main():
   (startslice,endslice)=proj.datasetcfg.slicerange
   batchsz = zcubedim
 
-  batchsz = 1
+  batchsz = 16
   (ximagesz,yimagesz)=proj.datasetcfg.imagesz[result.resolution]
 
   yimagesz = 18000
   ximagesz = 24000
-
-  startslice = 2
 
   # Get a list of the files in the directories
   for sl in range (startslice, endslice+1, batchsz):
