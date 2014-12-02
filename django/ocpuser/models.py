@@ -33,6 +33,8 @@ class ocpProject ( models.Model):
         (8, 'IMAGES_16bit'),
         (9, 'RGB_32bit'),
         (10, 'RGB_64bit'),
+        (11,'TIMESERIES_4d_8bit'),
+        (12,'TIMESERIES_4d_16bit'),
         )
     datatype = models.IntegerField(choices=DATATYPE_CHOICES, default=1)
     
@@ -108,6 +110,8 @@ class ocpDataset ( models.Model):
     endslice = models.IntegerField()
     startwindow = models.IntegerField(default=0)
     endwindow = models.IntegerField(default=0)
+    starttime = models.IntegerField(default=0)
+    endtime = models.IntegerField(default=0)
     zoomlevels = models.IntegerField()
     zscale = models.FloatField()
     description  =  models. CharField(max_length=4096)

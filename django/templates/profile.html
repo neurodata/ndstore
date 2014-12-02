@@ -72,6 +72,7 @@
 		    <th>Project</th>
 		    <th>Type</th>
 		    <th>Description</th>
+
 		  </tr>	   
 		  
 		  {% for field in proj %}
@@ -99,6 +100,11 @@
                       <td>RGB 32bit</td>
 		      {% elif field.4 == 10%}
                       <td>RGB 64bit</td>
+		      {% elif field.4 == 11%}
+                      <td>TIMESERIES_4d_8bit</td>
+		      {% elif field.4 == 12%}
+                      <td>TIMESERIES_4d_16bit</td>
+
 
 		      {% else %}
 		      <td>OTHER</td>

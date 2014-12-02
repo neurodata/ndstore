@@ -347,11 +347,13 @@ def createdataset(request):
         zscale = form.cleaned_data['zscale']
         startwindow = form.cleaned_data['startwindow']
         endwindow = form.cleaned_data['endwindow']
+        starttime = form.cleaned_data['starttime']
+        endtime = form.cleaned_data['endtime']
         print "Creating a dataset with:"
         print dataset, ximagesize, yimagesize, startslice,endslice,zoomlevels,zscale
         # Get database info                                                                      
         pd = ocpcaproj.OCPCAProjectsDB()
-        pd.newDataset ( dataset, ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale, startwindow, endwindow )        
+        pd.newDataset ( dataset, ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale, startwindow, endwindow ,starttime,endtime)        
 #pd.newOCPCAProj ( token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate )
         #pd.insertTokenDescription ( token, description )
         return redirect(datasets)
