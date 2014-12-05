@@ -56,12 +56,21 @@ DATASETS_16bit = [ IMAGES_8bit, CHANNELS_16bit, TIMESERIES_4d_16bit ]
 DATSETS_32bit = [ RGB_32bit, ANNOTATIONS, PROBMAP_32bit ]
 COMPOSITE_DATASETS = CHANNEL_DATASETS + TIMESERIES_DATASETS
 
+# Propagated Values
+PROPAGATED = 2
+UNDER_PROPAGATION = 1
+NOT_PROPAGATED = 0
+
+# ReadOnly Values
+READONLY_TRUE = 1
+READONLY_FALSE = 0
+
 class OCPCAProject:
-  """Project specific for cutout and annotation data"""
+  """ Project specific for cutout and annotation data """
 
   # Constructor 
-  def __init__(self, token, dbname, dbhost, dbtype, dataset, dataurl, readonly, exceptions, resolution, kvserver, kvengine ):
-    """Initialize the OCPCA Project"""
+  def __init__(self, token, dbname, dbhost, dbtype, dataset, dataurl, readonly, exceptions, resolution, kvserver, kvengine, propagate ):
+    """ Initialize the OCPCA Project """
     
     self._token = dbname
     self._dbname = dbname
@@ -74,11 +83,14 @@ class OCPCAProject:
     self._resolution = resolution
     self._kvserver = kvserver
     self._kvengine = kvengine
+    self._propagate = propagate
 
     # Could add these to configuration.  Probably remove res as tablebase instead
     self._ids_tbl = "ids"
 
   # Accessors
+  def getToken ( self ):
+    return self._token
   def getDBHost ( self ):
     return self._dbhost
   def getDBType ( self ):
@@ -99,16 +111,45 @@ class OCPCAProject:
     return self._readonly
   def getResolution ( self ):
     return self._resolution
-  # RBTODO need to make the KVEngine a project attribute
-  # PYTODO create a project attribute that selects KVEngine
   def getKVEngine ( self ):
     return self._kvengine
-
-
-  # RBTODO need to make the KVSErver a project attribute
-  # PYTODO create a project attribute that selects KVServer
   def getKVServer ( self ):
     return self._kvserver
+  def getPropagate ( self ):
+    return self._propagate
+
+  # Setters
+  def setPropagate ( self, value ):
+    # 0 - Propagated
+    # 1 - Under Propagation
+    # 2 - UnPropagated
+    if self.getDBType() not in ANNOTATION_DATASETS:
+      logger.error ( "Cannot set Propagate Value {} for a non-Annotation Project {}".format( value, self._token ) )
+      raise OCPCAError ( "Cannot set Propogate Value {} for a non-Annotation Project {}".format( value, self._token ) )
+    elif value in [NOT_PROPAGATED]:
+      self._propagate = value
+      self.setReadOnly ( READONLY_FALSE )
+    elif value in [UNDER_PROPAGATION,PROPAGATED]:
+      self._propagate = value
+      self.setReadOnly ( READONLY_TRUE )
+    else:
+      logger.error ( "Wrong Propagate Value {} for Project {}".format( value, self._token ) )
+      raise OCPCAError ( "Wrong Propogate Value {} for Project {}".format( value, self._token ) )
+    
+  def setReadOnly ( self, value ):
+    # 0 - Readonly
+    # 1 - Not Readonly
+    if value in [READONLY_TRUE,READONLY_FALSE]:
+      self._readonly = value
+    else:
+      logger.error ( "Wrong Readonly Value {} for Project {}".format( value, self._token ) )
+      raise OCPCAError ( "Wrong Readonly Value {} for Project {}".format( value, self._token ) )
+
+  def isPropagated ( self ):
+    if self._propagate in [PROPAGATED]:
+      return True
+    else:
+      return False
 
   # accessors for RB to fix
   def getDBUser( self ):
@@ -239,7 +280,7 @@ class OCPCAProjectsDB:
   """Database for the annotation and cutout projects"""
 
   def __init__(self):
-    """Create the database connection"""
+    """ Create the database connection """
 
     self.conn = MySQLdb.connect (host = ocpcaprivate.dbhost, user = ocpcaprivate.dbuser, passwd = ocpcaprivate.dbpasswd, db = ocpcaprivate.db ) 
 
@@ -252,10 +293,10 @@ class OCPCAProjectsDB:
   # Load the ocpca databse information based on the token
   #
   def loadProject ( self, token ):
-    """Load the annotation database information based on the token"""
+    """ Load the annotation database information based on the token """
 
     # Lookup the information for the database project based on the token
-    sql = "SELECT token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions, resolution , kvserver, kvengine from %s where token = \'%s\'" % (ocpcaprivate.projects, token)
+    sql = "SELECT token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions, resolution , kvserver, kvengine, propagate from {} where token = \'{}\'".format(ocpcaprivate.projects, token)
 
     with closing(self.conn.cursor()) as cursor:
       try:
@@ -268,13 +309,13 @@ class OCPCAProjectsDB:
 
     # if the project is not found.  error
     if ( row == None ):
-      logger.warning ( "Project token %s not found." % ( token ))
-      raise OCPCAError ( "Project token %s not found." % ( token ))
+      logger.warning ( "Project token {} not found.".format( token ))
+      raise OCPCAError ( "Project token {} not found.".format( token ))
 
-    [token, openid, host, project, dbtype, dataset, dataurl, readonly, exceptions, resolution, kvserver, kvengine ] = row
+    [token, openid, host, project, dbtype, dataset, dataurl, readonly, exceptions, resolution, kvserver, kvengine, propagate ] = row
 
     # Create a project object
-    proj = OCPCAProject ( token, project, host, dbtype, dataset, dataurl, readonly, exceptions, resolution, kvserver, kvengine ) 
+    proj = OCPCAProject ( token, project, host, dbtype, dataset, dataurl, readonly, exceptions, resolution, kvserver, kvengine, propagate ) 
     proj.datasetcfg = self.loadDatasetConfig ( dataset )
 
     return proj
@@ -283,7 +324,7 @@ class OCPCAProjectsDB:
   # Create a new dataset
   #
   def newDataset ( self, dsname, ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale, startwindow, endwindow, starttime, endtime ):
-    """Create a new ocpca dataset"""
+    """ Create a new ocpca dataset """
 
     sql = "INSERT INTO {0} (dataset, ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale, startwindow, endwindow, starttime, endtime) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',{5},\'{6}\',\'{7}\', \'{8}\',\'{9}\','{10}\','{11}\')".format (\
        ocpcaprivate.datasets, dsname, ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale, startwindow, endwindow, starttime, endtime )
@@ -304,13 +345,13 @@ class OCPCAProjectsDB:
   #
   # Create a new project (annotation or data)
   #
-  def newOCPCAProj ( self, token, openid, dbhost, project, dbtype, dataset, dataurl, readonly, exceptions, nocreate, resolution, public, kvserver, kvengine ):
-    """Create a new ocpca project"""
+  def newOCPCAProj ( self, token, openid, dbhost, project, dbtype, dataset, dataurl, readonly, exceptions, nocreate, resolution, public, kvserver, kvengine, propagate ):
+    """ Create a new ocpca project """
 
     datasetcfg = self.loadDatasetConfig ( dataset )
 
-    sql = "INSERT INTO {0} (token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions, resolution, public, kvserver, kvengine) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',{5},\'{6}\',\'{7}\',\'{8}\',\'{9}\',\'{10}\',\'{11}\',\'{12}',\'{13}')".format (\
-       ocpcaprivate.projects, token, openid, dbhost, project, dbtype, dataset, dataurl, int(readonly), int(exceptions), resolution, int(public), kvserver, kvengine )
+    sql = "INSERT INTO {0} (token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions, resolution, public, kvserver, kvengine, propagate) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',{5},\'{6}\',\'{7}\',\'{8}\',\'{9}\',\'{10}\',\'{11}\',\'{12}',\'{13}',\'{14}')".format (\
+       ocpcaprivate.projects, token, openid, dbhost, project, dbtype, dataset, dataurl, int(readonly), int(exceptions), resolution, int(public), kvserver, kvengine, propagate )
 
     logger.info ( "Creating new project. Host %s. Project %s. SQL=%s" % ( dbhost, project, sql ))
 
@@ -334,7 +375,7 @@ class OCPCAProjectsDB:
         with closing(self.conn.cursor()) as cursor:
           try:
             # Make the database and associated ocpca tables
-            sql = "CREATE DATABASE %s" % project
+            sql = "CREATE DATABASE {}".format( project )
          
             cursor.execute ( sql )
             self.conn.commit()
@@ -462,13 +503,12 @@ class OCPCAProjectsDB:
           raise
 
         # RBTODO drop tables here?
-    
 
 
   def deleteOCPCAProj ( self, project ):
-    """Create a new ocpca project"""
+    """ Create a new ocpca project """
 
-    sql = "DELETE FROM %s WHERE project=\'%s\'" % ( ocpcaprivate.projects, project ) 
+    sql = "DELETE FROM {} WHERE project=\'{}\'".format( ocpcaprivate.projects, project ) 
 
     with closing(self.conn.cursor()) as cursor:
       try:
@@ -688,16 +728,30 @@ class OCPCAProjectsDB:
       except MySQLdb.Error, e:
          logger.error ("FAILED TO UPDATE")
          raise
-      # get the project information                                                                                                          
       self.conn.commit()
 
 
-    #
-    # Add token descriptiton for new projects
-    #
+  #
+  # Update the propagate  and readonly values for a project
+  #
+  def updatePropagate ( self, proj):
+    """ """
+    sql = "UPDATE {} SET propagate = \'{}\', readonly = \'{}\' where token = \'{}\'".format( ocpcaprivate.projects, proj.getPropagate(), proj.getReadOnly(), proj.getToken())
+
+    try:
+      self.conn.cursor().execute( sql )
+    except MySQLdb.Error, e:
+      logger.error ("Failed To Update Value of Propagate")
+      raise
+
+    self.conn.commit()
+
+  #
+  # Add token descriptiton for new projects
+  #
   def insertTokenDescription ( self, token ,desc):
     """Add a token description for a new project"""
-   # sql = "UPDATE %s SET token = \'%s\' where token = \'%s\'" % (ocpcaprivate.projects, newtoken, curtoken)
+    
     sql = "INSERT INTO %s (token,description) VALUES (\'%s\',\'%s\')" % (ocpcaprivate.token_description, token, desc)
 
     with closing(self.conn.cursor()) as cursor:
@@ -707,14 +761,14 @@ class OCPCAProjectsDB:
       except MySQLdb.Error, e:
         logger.error ("FAILED TO INSERT NEW TOKEN DESCRIPTION")
         raise
-      # get the project information
       self.conn.commit()
 
-    #
-    # Update token descriptiton a project
-    #
+  #
+  # Update token descriptiton a project
+  #
   def updateTokenDescription ( self, token ,description):
     """Update token description for a project"""
+    
     sql = "UPDATE %s SET description = \'%s\' where token = \'%s\'" % (ocpcaprivate.token_description, description, token)
 
     with closing(self.conn.cursor()) as cursor:
@@ -725,10 +779,9 @@ class OCPCAProjectsDB:
         raise
       self.conn.commit()
 
-    #
-    # Delete row from token_description table
-    # Used with delete project
-    #
+  #
+  # Delete row from token_description table. Used with delete project
+  #
   def deleteTokenDescription ( self, token):
     """Delete entry from token description table"""
 
@@ -745,9 +798,9 @@ class OCPCAProjectsDB:
 
   def deleteOCPCADatabase ( self, project ):
     #Used for the project management interface
-#PYTODO - Check about function
+    #PYTODO - Check about function
     # Check if there are any tokens for this database
-    sql = "SELECT count(*) FROM %s WHERE project=\'%s\'" % ( ocpcaprivate.projects,project )
+    sql = "SELECT count(*) FROM %s WHERE project=\'{}\'".format( ocpcaprivate.projects,project )
 
     with closing(self.conn.cursor()) as cursor:
       try:
@@ -776,9 +829,9 @@ class OCPCAProjectsDB:
 
   def deleteDataset ( self, dataset ):
     #Used for the project management interface
-#PYTODO - Check about function
+    #PYTODO - Check about function
     # Check if there are any tokens for this dataset    
-    sql = "SELECT * FROM %s WHERE dataset=\'%s\'" % ( ocpcaprivate.projects, dataset )
+    sql = "SELECT * FROM {} WHERE dataset=\'{}\'".format( ocpcaprivate.projects, dataset )
 
     with closing(self.conn.cursor()) as cursor:
       try:
@@ -806,7 +859,7 @@ class OCPCAProjectsDB:
   #  getPublicTokens
   #
   def getPublic ( self ):
-    """return a list of public tokens"""
+    """ Return a list of public tokens """
 
     # RBTODO our notion of a public project is not good so far 
     sql = "select token from {} where public=1".format(ocpcaprivate.projects)

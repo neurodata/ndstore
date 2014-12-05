@@ -278,6 +278,42 @@ class MySQLKVIO:
         cursor.close()
   
   
+  def getTimeSeriesColumn ( self, idx, listoftimestamps, resolution ):
+
+    # if in a TxN us the transaction cursor.  Otherwise create one.
+    if self.txncursor == None:
+      cursor = self.conn.cursor()
+    else:
+      cursor = self.txncursor
+
+    # RBTODO need to fix this for neariso interfaces
+    sql = "SELECT zindex, cube FROM {} WHERE zindex={} and timestamp in (%s)".format( self.db.annoproj.getTable(resolution), idx )
+
+    # creats a %s for each list element
+    in_p=', '.join(map(lambda x: '%s', listoftimestamps))
+    # replace the single %s with the in_p string
+    sql = sql % in_p
+
+    try:
+      rc = cursor.execute(sql, listoftimestamps)
+    
+      # Get the objects and add to the cube
+      while ( True ):
+        try: 
+          retval = cursor.fetchone() 
+        except:
+          break
+        if retval != None:
+          yield ( retval )
+        else:
+          return
+ 
+    finally:
+      # close the local cursor if not in a transaction
+      if self.txncursor == None:
+        cursor.close()
+  
+  
   #
   # putCube
   #

@@ -46,9 +46,11 @@ ocplib.recolorCube.argtypes = [ array_1d_uint32, cp.c_int, cp.c_int, array_1d_ui
 ocplib.quicksort.argtypes = [ array_2d_uint64, cp.c_int ]
 ocplib.shaveCube.argtypes = [ array_1d_uint32, cp.c_int, cp.POINTER(cp.c_int), cp.c_int, array_1d_uint32, array_2d_uint32, cp.c_int, array_2d_uint32, cp.c_int, array_2d_uint32 ]
 ocplib.annotateEntityDense.argtypes = [ array_1d_uint32, cp.POINTER(cp.c_int), cp.c_int ]
-ocplib.shaveDense.argtypes = [ array_1d_uint32, array_1d_uint32,cp.POINTER(cp.c_int) ]
-ocplib.exceptionDense.argtypes = [ array_1d_uint32, array_1d_uint32,cp.POINTER(cp.c_int) ]
-ocplib.overwriteDense.argtypes = [ array_1d_uint32, array_1d_uint32,cp.POINTER(cp.c_int) ]
+ocplib.shaveDense.argtypes = [ array_1d_uint32, array_1d_uint32, cp.POINTER(cp.c_int) ]
+ocplib.exceptionDense.argtypes = [ array_1d_uint32, array_1d_uint32, cp.POINTER(cp.c_int) ]
+ocplib.overwriteDense.argtypes = [ array_1d_uint32, array_1d_uint32, cp.POINTER(cp.c_int) ]
+ocplib.zoomOutData.argtypes = [ array_1d_uint32, array_1d_uint32, cp.POINTER(cp.c_int), cp.c_int ]
+ocplib.zoomInData.argtypes = [ array_1d_uint32, array_1d_uint32, cp.POINTER(cp.c_int), cp.c_int ]
 
 
 # setting the return type of the function in C
@@ -67,6 +69,8 @@ ocplib.annotateEntityDense.restype = None
 ocplib.shaveDense.restype = None
 ocplib.exceptionDense.restype = None
 ocplib.overwriteDense.restype = None
+ocplib.zoomOutData.restype = None
+ocplib.zoomInData.restype = None
 
 
 def filter_ctype_OMP ( cutout, filterlist ):
@@ -243,3 +247,27 @@ def overwriteDense_ctype ( data, annodata ):
   ocplib.overwriteDense ( data, annodata, (cp.c_int * len(dims))(*dims) )
 
   return ( data.reshape(dims) )
+
+
+def zoomOutData_ctype ( olddata, newdata, factor ):
+  """ Add the contribution of the input data to the next level at the given offset in the output cube """
+
+  dims = [ i for i in newdata.shape ]
+  olddata = olddata.ravel()
+  newdata = newdata.ravel()
+
+  ocplib.zoomOutData ( olddata, newdata, (cp.c_int * len(dims))(*dims), cp.c_int(factor) )
+
+  return ( newdata.reshape(dims) )
+
+
+def zoomInData_ctype ( olddata, newdata, factor ):
+  """ Add the contribution of the input data to the next level at the given offset in the output cube """
+
+  dims = [ i for i in newdata.shape ]
+  olddata = olddata.ravel()
+  newdata = newdata.ravel()
+
+  ocplib.zoomInData ( olddata, newdata, (cp.c_int * len(dims))(*dims), cp.c_int(factor) )
+
+  return ( newdata.reshape(dims) )

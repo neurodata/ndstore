@@ -16,15 +16,21 @@ from celery import Celery
 from django.conf import settings
 
 import h5annasync
+import ocpcastack
 
 celery = Celery('tasks', broker='amqp://guest@localhost//')
 
-@celery.task()
-def async ( ):
+@celery.task( )
+def async ( fileName ):
   """ Write the h5py files back to database. """
 
-  h5annasync.h5Async()
+  h5annasync.h5Async( fileName )
   #logger.warning ("Fetching url {}".format(url))
   #tc = tilecache.TileCache ( token, channels )
   #tc.loadData(url)
 
+def propagate ( token ):
+  """ Propagate the given project for all resolutions """
+
+  stackobj = ocpcastack.OCPCAStack ( token )
+  stackobj.buildStack ( )

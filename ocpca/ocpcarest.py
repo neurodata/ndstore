@@ -153,7 +153,7 @@ def HDF5 ( imageargs, proj, db ):
 
   # Create an in-memory HDF5 file
   tmpfile = tempfile.NamedTemporaryFile ()
-  fh5out = h5py.File ( tmpfile.name )
+  fh5out = h5py.File ( tmpfile.name, driver='core', backing_store=True )
 
   try: 
 
@@ -225,15 +225,15 @@ def TimeSeriesCutout ( imageargs, proj, db ):
       window = args.getWindow()
       (startwindow,endwindow) = proj.datasetcfg.windowrange
 
-      if proj.getDBType() in ocpcaproj.DATASETS_16bit:
-        bigCube = np.empty( ([timerange[1]-timerange[0]]+dim[::-1]), dtype=np.uint16)
-      elif proj.getDBType() in ocpcaproj.DATASETS_8bit:
-        bigCube = np.empty( ([timerange[1]-timerange[0]]+dim[::-1]), dtype=np.uint8)
+      #if proj.getDBType() in ocpcaproj.DATASETS_16bit:
+      #  bigCube = np.empty( ([timerange[1]-timerange[0]]+dim[::-1]), dtype=np.uint16)
+      #elif proj.getDBType() in ocpcaproj.DATASETS_8bit:
+      #  bigCube = np.empty( ([timerange[1]-timerange[0]]+dim[::-1]), dtype=np.uint8)
       # Perform the cutout
-      for time in range(0,timerange[1]-timerange[0]):
-        cube = db.cutout ( corner, dim, resolution, time )
-        bigCube[time,] = cube.data
-      fh5out.create_dataset ( "CUTOUT", tuple(bigCube.shape), bigCube.dtype,compression='gzip', data=bigCube )
+      #for time in range(0,timerange[1]-timerange[0]):
+      cube = db.TimeSeriesCutout ( corner, dim, resolution, timerange )
+        #bigCube[time,] = cube.data
+      fh5out.create_dataset ( "CUTOUT", tuple(cube.data.shape), cube.data.dtype,compression='gzip', data=cube.data )
       fh5out.create_dataset( "DATATYPE", (1,), dtype=np.uint32, data=proj._dbtype )
 
     else:
@@ -670,7 +670,7 @@ def selectService ( webargs, proj, db ):
 
   elif service == 'ts':
     return TimeSeriesCutout ( rangeargs, proj, db )
-
+  
   else:
     logger.warning("An illegal Web GET service was requested %s.  Args %s" % ( service, webargs ))
     raise OCPCAError ("No such Web service: %s" % service )
@@ -1950,6 +1950,48 @@ def setField ( webargs ):
     db.commit()
 
 
+def getPropagate ( webargs ):
+  """ Return the value of the Propagate field """
+  
+  try:
+    [ token, service ] = webargs.split ('/',1)
+  except:
+    logger.warning("Illegal getPropagate request.  Wrong number of arguments.")
+    raise OCPCAError("Illegal getPropagate request.  Wrong number of arguments.")
+
+  # pattern for using contexts to close databases
+  # get the project 
+  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+    proj = projdb.loadProject ( token )
+    value = proj.getPropagate()
+
+  return value
+
+
+def setPropagate ( webargs ):
+  """ Set the value of the propagate field """
+
+  try:
+    [ token, service, value, misc ] = webargs.split ('/',3)
+  except:
+    logger.warning("Illegal setPropagate request.  Wrong number of arguments.")
+    raise OCPCAError("Illegal setPropagate request.  Wrong number of arguments.")
+    
+  # pattern for using contexts to close databases
+  # get the project 
+  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+    proj = projdb.loadProject ( token )
+    if int(value) == ocpcaproj.UNDER_PROPAGATION:
+      proj.setPropagate ( ocpcaproj.UNDER_PROPAGATION )
+      projdb.updatePropagate ( proj )
+      from ocpca.tasks import propagate
+      propagate ( token )
+    elif int(value) == ocpcaproj.NOT_PROPAGATED:
+      proj.setPropagate ( ocpcaproj.NOT_PROPAGATED )
+      projdb.updatePropagate ( proj )
+    else:
+      logger.warning( "Invalid Value {} for setPropagate".format(value) )
+      raise OCPCAError( "Invalid Value {} for setPropagate".format(value) )
 
 def merge ( webargs ):
   """Return a single HDF5 field"""

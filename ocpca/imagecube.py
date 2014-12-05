@@ -155,7 +155,7 @@ class ImageCube16(Cube):
   #
   def xySlice ( self, fileobj ):
 
-# This works for 16-> conversions
+    # This works for 16-> conversions
     zdim,ydim,xdim = self.data.shape
     self.data = np.uint8(self.data)
     outimage = Image.frombuffer ( 'L', (xdim,ydim), self.data[0,:,:].flatten(), 'raw', 'L', 0, 1)

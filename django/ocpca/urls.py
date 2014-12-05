@@ -29,7 +29,7 @@ urlpatterns = patterns('ocpca.views',
   url(r'(?P<webargs>^public_tokens/)$', 'publictokens'),
   # get channel information
   url(r'(?P<webargs>^\w+/chaninfo/[\w,/]*)$', 'chaninfo'),
-  # reserve identifiers for annotation proejcts
+  # reserve identifiers for annotation projects
   url(r'(?P<webargs>^\w+/reserve/[\w+,/]*)$', 'reserve'),
   # get list of multiply labelled voxels in a cutout region
   url(r'(?P<webargs>^\w+/exceptions/[\w,/]*)$', 'exceptions'),
@@ -38,6 +38,9 @@ urlpatterns = patterns('ocpca.views',
   # single field interfaces
   url(r'(?P<webargs>^\w+/\d+/getField/[\w,/]*)$', 'getField'),
   url(r'(?P<webargs>^\w+/\d+/setField/[\w\. ,/]*)$', 'setField'),
+  # propagate interfaces
+  url(r'(?P<webargs>^\w+/getPropagate/*)$', 'getPropagate'),
+  url(r'(?P<webargs>^\w+/setPropagate/[\d,/]*)$', 'setPropagate'),
   # merge annotations
   url(r'(?P<webargs>^\w+/merge/[\w,/]+)$', 'merge'),
   # csv metadata read
