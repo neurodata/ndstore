@@ -468,6 +468,11 @@ class OCPCADB:
     tmpfile.close()
 
 
+  def getCubes ( self, listofidxs, resolution )
+    """ Return a list of cubes """
+
+    return self.kvio.getCubes( listofidxs, resolution )
+
   #
   # putCube
   #
@@ -649,10 +654,9 @@ class OCPCADB:
   # queryRange
   #
   def queryRange ( self, lowkey, highkey, resolution ):
-    """Create a stateful query to a range of values not including the high value.
-         To be used with getNextCube().
-         Not thread safe (context per object)
-         Also, one cursor only.  Not at multiple resolutions"""
+    """ Create a stateful query to a range of values not including the high value. 
+        To be used with getNextCube().Not thread safe (context per object)
+        Also, one cursor only.  Not at multiple resolutions """
 
     self._qr_cursor = self.conn.cursor ()
     self._qr_resolution = resolution
@@ -671,8 +675,7 @@ class OCPCADB:
   # getNextCube
   #
   def getNextCube ( self ):
-    """Retrieve the next cube in a queryRange.
-         Not thread safe (context per object)"""
+    """ Retrieve the next cube in a queryRange. Not thread safe (context per object) """
 
     # get the size of the image and cube
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ self._qr_resolution ] 

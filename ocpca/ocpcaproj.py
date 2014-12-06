@@ -506,7 +506,7 @@ class OCPCAProjectsDB:
 
 
   def deleteOCPCAProj ( self, project ):
-    """ Create a new ocpca project """
+    """ Delete an existing ocpca project """
 
     sql = "DELETE FROM {} WHERE project=\'{}\'".format( ocpcaprivate.projects, project ) 
 
@@ -519,7 +519,6 @@ class OCPCAProjectsDB:
         raise OCPCAError ("Failed to remove project from projects tables %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
       self.conn.commit()
-
 
 
   def deleteOCPCADB ( self, token ):
@@ -738,13 +737,15 @@ class OCPCAProjectsDB:
     """ """
     sql = "UPDATE {} SET propagate = \'{}\', readonly = \'{}\' where token = \'{}\'".format( ocpcaprivate.projects, proj.getPropagate(), proj.getReadOnly(), proj.getToken())
 
-    try:
-      self.conn.cursor().execute( sql )
-    except MySQLdb.Error, e:
-      logger.error ("Failed To Update Value of Propagate")
-      raise
+    
+    with closing(self.conn.cursor()) as cursor:
+      try:
+        self.conn.cursor().execute( sql )
+      except MySQLdb.Error, e:
+        logger.error ("Failed To Update Value of Propagate")
+        raise
 
-    self.conn.commit()
+      self.conn.commit()
 
   #
   # Add token descriptiton for new projects

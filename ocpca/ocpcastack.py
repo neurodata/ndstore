@@ -29,41 +29,47 @@ from ocpca_cy import addData_cy
 
 """Construct an annotation hierarchy off of a completed annotation database."""
 
-class OCPCAStack:
-  """Stack of annotations."""
 
-  def __init__ ( self, token ):
-    """Load the annotation database and project"""
+def buildStack ( token ):
+  """ Wrapper for the different datatypes """
 
-    with closing ( ocpcaproj.OCPCAProjectsDB() ) as self.projdb:
-      self.proj = self.projdb.loadProject ( token )
-    
+  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+    proj = projdb.loadProject ( token )
+  
+    if proj.getDBType() in ocpcaproj.ANNOTATION_DATASETS:
+      try:
+        buildAnnoStack( token )
+        proj.setPropagate ( ocpcaproj.PROPAGATED )
+        projdb.updatePropagate ( proj )
 
-  def buildStack ( self ):
-    """ Wrapper for the different datatypes """
+      except MySQLdb.Error, e:
+        proj.setPropagate ( ocpcaproj.NOT_PROPAGATED )
+        projdb.updatePropagate ( proj )
+        logger.error ( "Error in propagating the database {}".format(token) )
+        raise OCPCAError ( "Error in the propagating the project {}".format(token) )
 
-    with closing ( ocpcadb.OCPCADB (self.proj) ) as self.db:
-      if self.proj.getDBType() in ocpcaproj.ANNOTATION_DATASETS:
-        self.buildAnnoStack()
-        import pdb; pdb.set_trace()
-        self.proj.setPropagate ( ocpcaproj.PROPAGATED )
-        self.projdb.updatePropagate ( self.proj )
-      else:
-        logger.warning("Build function not supported for this datatype")
-        raise OCPCAError("Build function not supported for this datatype")
+    else:
+      logger.warning ( "Build function not supported for this datatype {}".format(ocpcaproj.getDBType()) )
+      raise OCPCAError ( "Build function not supported for this datatype {}".format(ocpcaproj.getDBType()) )
 
-  def buildAnnoStack ( self ):
-    """ Build the hierarchy for annotations """
-    
-    
-    for  l in range ( self.proj.datasetcfg.resolutions[0], len(self.proj.datasetcfg.resolutions) ):
+
+def buildAnnoStack ( token ):
+  """ Build the hierarchy for annotations """
+  
+  
+  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+    proj = projdb.loadProject ( token )
+  
+  with closing ( ocpcadb.OCPCADB (proj) ) as db:
+  
+    for  l in range ( proj.datasetcfg.resolutions[0], len(proj.datasetcfg.resolutions) ):
 
       # Get the source database sizes
-      [ximagesz, yimagesz] = self.proj.datasetcfg.imagesz [ l ]
-      [xcubedim, ycubedim, zcubedim] = self.proj.datasetcfg.cubedim [ l ]
+      [ximagesz, yimagesz] = proj.datasetcfg.imagesz [ l ]
+      [xcubedim, ycubedim, zcubedim] = proj.datasetcfg.cubedim [ l ]
 
       # Get the slices
-      [ startslice, endslice ] = self.proj.datasetcfg.slicerange
+      [ startslice, endslice ] = proj.datasetcfg.slicerange
       slices = endslice - startslice + 1
 
       # Set the limits for iteration on the number of cubes in each dimension
@@ -72,8 +78,7 @@ class OCPCAStack:
       #  Round up the zlimit to the next larger
       zlimit = (((slices-1)/zcubedim+1)*zcubedim)/zcubedim 
 
-      #  Choose constants that work for all resolutions.
-      #   recall that cube size changes from 128x128x16 to 64*64*64
+      #  Choose constants that work for all resolutions. recall that cube size changes from 128x128x16 to 64*64*64
       outdata = np.zeros ( [ zcubedim*4, ycubedim*2, xcubedim*2 ] )
 
       # Round up to the top of the range
@@ -85,13 +90,13 @@ class OCPCAStack:
         print "Working on batch {} at {}".format( mortonidx, ocplib.MortonXYZ(mortonidx) )
         
         # call the range query
-        self.db.queryRange ( mortonidx, mortonidx+64, l );
+        db.queryRange ( mortonidx, mortonidx+64, l );
 
         # Flag to indicate no data.  No update query
         somedata = False
 
         # get the first cube
-        [key,cube]  = self.db.getNextCube ()
+        [key,cube]  = db.getNextCube ()
 
         #  if there's a cube, there's data
         if key != None:
@@ -113,7 +118,7 @@ class OCPCAStack:
           addData_cy ( cube, outdata, offset )
 
           # Get the next value
-          [key,cube]  = self.db.getNextCube ()
+          [key,cube]  = db.getNextCube ()
 
         # Now store the data 
         if somedata == True:
@@ -127,8 +132,8 @@ class OCPCAStack:
           outdim = [ outdata.shape[2], outdata.shape[1], outdata.shape[0]]
 
           # Preserve annotations made at the specified level RBTODO fix me
-          self.db.annotateDense ( outcorner, l+1, outdata, 'O' )
-          self.db.conn.commit()
+          db.annotateDense ( outcorner, l+1, outdata, 'O' )
+          db.conn.commit()
             
           # zero the output buffer
           outdata = np.zeros ([zcubedim*4, ycubedim*2, xcubedim*2])

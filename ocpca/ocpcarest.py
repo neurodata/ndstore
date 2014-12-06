@@ -1956,8 +1956,8 @@ def getPropagate ( webargs ):
   try:
     [ token, service ] = webargs.split ('/',1)
   except:
-    logger.warning("Illegal getPropagate request.  Wrong number of arguments.")
-    raise OCPCAError("Illegal getPropagate request.  Wrong number of arguments.")
+    logger.warning ( "Illegal getPropagate request. Wrong number of arguments." )
+    raise OCPCAError ( "Illegal getPropagate request. Wrong number of arguments." )
 
   # pattern for using contexts to close databases
   # get the project 
@@ -1974,11 +1974,10 @@ def setPropagate ( webargs ):
   try:
     [ token, service, value, misc ] = webargs.split ('/',3)
   except:
-    logger.warning("Illegal setPropagate request.  Wrong number of arguments.")
-    raise OCPCAError("Illegal setPropagate request.  Wrong number of arguments.")
+    logger.warning ( "Illegal setPropagate request.  Wrong number of arguments." )
+    raise OCPCAError ( "Illegal setPropagate request.  Wrong number of arguments." )
     
-  # pattern for using contexts to close databases
-  # get the project 
+  # pattern for using contexts to close databases. get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadProject ( token )
     if int(value) == ocpcaproj.UNDER_PROPAGATION:
@@ -1990,8 +1989,8 @@ def setPropagate ( webargs ):
       proj.setPropagate ( ocpcaproj.NOT_PROPAGATED )
       projdb.updatePropagate ( proj )
     else:
-      logger.warning( "Invalid Value {} for setPropagate".format(value) )
-      raise OCPCAError( "Invalid Value {} for setPropagate".format(value) )
+      logger.warning ( "Invalid Value {} for setPropagate".format(value) )
+      raise OCPCAError ( "Invalid Value {} for setPropagate".format(value) )
 
 def merge ( webargs ):
   """Return a single HDF5 field"""

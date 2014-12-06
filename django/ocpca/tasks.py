@@ -32,5 +32,4 @@ def async ( fileName ):
 def propagate ( token ):
   """ Propagate the given project for all resolutions """
 
-  stackobj = ocpcastack.OCPCAStack ( token )
-  stackobj.buildStack ( )
+  ocpcastack.buildStack ( token )
