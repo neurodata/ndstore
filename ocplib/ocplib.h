@@ -65,5 +65,11 @@ int overwriteDense ( uint32_t * , uint32_t * , int * );
 // Declaring the zoomOutData function
 int zoomOutData ( uint32_t * , uint32_t * , int * , int );
 
+// Declaring the zoomOutData function OMP optimized
+int zoomOutDataOMP ( uint32_t * , uint32_t * , int * , int );
+
 // Declaring the zoomInData function
 int zoomInData ( uint32_t * , uint32_t * , int * , int );
+
+// Declaring the zoomInData function OMP optimized
+int zoomInDataOMP ( uint32_t * , uint32_t * , int * , int );

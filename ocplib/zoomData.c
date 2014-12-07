@@ -26,50 +26,106 @@
 #include<stdlib.h>
 #include<string.h>
 #include<math.h>
+#include<omp.h>
 
 void zoomOutData( uint32_t * olddata, uint32_t * newdata, int * dims, int factor )
 {
-		int i;
-    int j;
-    int k;
+		int i,j,k;
 
-    int xdim = dims[0];
+    int zdim = dims[0];
     int ydim = dims[1];
-    int zdim = dims[2];
+    int xdim = dims[2];
    
-    int oldindex;
-    int newindex;
+    int oldindex,newindex;
+    int power = pow(2,factor);
 
 		for ( i=0; i<zdim; i++ )
       for ( j=0; j<ydim; j++ )
         for ( k=0; k<xdim; k++ )
         {
           newindex = (i*xdim*ydim)+(j*xdim)+(k);
-          oldindex = (i*xdim*ydim)+(j*xdim*pow(2,factor))+(k*pow(2,factor));
+          oldindex = ( i*(xdim*power)*(ydim*power) ) + ( (j*power)*(xdim*power) ) + ( k*power );
           newdata[newindex] = olddata[oldindex];
         }
 }
 
 
+void zoomOutDataOMP( uint32_t * olddata, uint32_t * newdata, int * dims, int factor )
+{
+		int i,j,k;
+
+    int zdim = dims[0];
+    int ydim = dims[1];
+    int xdim = dims[2];
+   
+    int oldindex,newindex;
+    int power = pow(2,factor);
+
+    printf("MAX THREADS: %d",omp_get_max_threads());
+
+#pragma omp parallel num_threads(omp_get_max_threads())
+    {
+#pragma omp for private(i,j,k) schedule(dynamic)
+      for ( i=0; i<zdim; i++ )
+        for ( j=0; j<ydim; j++ )
+          for ( k=0; k<xdim; k++ )
+          {
+            newindex = (i*xdim*ydim)+(j*xdim)+(k);
+            oldindex = ( i*(xdim*power)*(ydim*power) ) + ( (j*power)*(xdim*power) ) + ( k*power );
+            newdata[newindex] = olddata[oldindex];
+          }
+    }
+}
+
+
 void zoomInData( uint32_t * olddata, uint32_t * newdata, int * dims, int factor )
 {
-		int i;
-    int j;
-    int k;
+		int i,j,k;
 
-    int xdim = dims[0];
+    int zdim = dims[0];
     int ydim = dims[1];
-    int zdim = dims[2];
+    int xdim = dims[2];
    
-    int oldindex;
-    int newindex;
+    int oldindex,newindex;
+    int power = pow(2,factor);
 
 		for ( i=0; i<zdim; i++ )
       for ( j=0; j<ydim; j++ )
         for ( k=0; k<xdim; k++ )
         {
           newindex = (i*xdim*ydim)+(j*xdim)+(k);
-          oldindex = (i*xdim*ydim)+(j*xdim/pow(2,factor))+(k/pow(2,factor));
+          oldindex = ( i*(xdim/power)*(ydim/power) ) + ( (j/power)*(xdim/power) ) + ( k/power );
+          if ( oldindex > (zdim*xdim*ydim)/(pow(2,factor)*pow(2,factor)) )
+          {  
+            printf("%d %d %d %d \n",i,j,k,oldindex);
+          }
           newdata[newindex] = olddata[oldindex];
         }
+}
+
+
+void zoomInDataOMP( uint32_t * olddata, uint32_t * newdata, int * dims, int factor )
+{
+		int i,j,k;
+
+    int zdim = dims[0];
+    int ydim = dims[1];
+    int xdim = dims[2];
+   
+    int oldindex, newindex;
+    int power = pow(2,factor);
+    printf("MAX THREADS: %d",omp_get_max_threads());
+
+#pragma omp parallel num_threads(omp_get_max_threads())
+    {
+#pragma omp for private(i,j,k) schedule(dynamic)
+      for ( i=0; i<zdim; i++ )
+        for ( j=0; j<ydim; j++ )
+          for ( k=0; k<xdim; k++ )
+          {
+            newindex = (i*xdim*ydim)+(j*xdim)+(k);
+            oldindex = ( i*(xdim/power)*(ydim/power) ) + ( (j/power)*(xdim/power) ) + ( k/power );
+            newdata[newindex] = olddata[oldindex];
+          }
+    }
 }

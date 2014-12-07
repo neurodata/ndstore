@@ -468,7 +468,7 @@ class OCPCADB:
     tmpfile.close()
 
 
-  def getCubes ( self, listofidxs, resolution )
+  def getCubes ( self, listofidxs, resolution ):
     """ Return a list of cubes """
 
     return self.kvio.getCubes( listofidxs, resolution )
@@ -1141,7 +1141,7 @@ class OCPCADB:
 
     # alter query if  (ocpcaproj)._resolution is < resolution
     # if cutout is above resolution, get a large cube and scaledown
-    elif self.annoproj.getDBType() in ocpcaproj.ANNOTATION_DATASETS and self.annoproj.getResolution() < resolution and False:  #PYTODO self.annoproj.isPropagated() True needs to be a project dervied flag to specify is we have scaled or not 
+    elif self.annoproj.getDBType() in ocpcaproj.ANNOTATION_DATASETS and self.annoproj.getResolution() < resolution and self.annoproj.getPropagate() not in [ocpcaproj.PROPAGATED]:  
 
       [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ self.annoproj.getResolution() ] 
       effcorner, effdim = self._zoomoutCutout ( corner, dim, resolution )
@@ -1325,7 +1325,7 @@ class OCPCADB:
       outcube.trim ( corner[0]%(xcubedim*(2**(self.annoproj.getResolution()-resolution)))+xpixeloffset,dim[0], corner[1]%(ycubedim*(2**(self.annoproj.getResolution()-resolution)))+ypixeloffset,dim[1], corner[2]%zcubedim,dim[2] )
 
     # if we fetch a larger cube, downscale it and correct
-    elif self.annoproj.getDBType() in ocpcaproj.ANNOTATION_DATASETS and self.annoproj.getResolution() < resolution and False:  #RBTODO True needs to be a project dervied flag to specify is we have scaled or not 
+    elif self.annoproj.getDBType() in ocpcaproj.ANNOTATION_DATASETS and self.annoproj.getResolution() < resolution and self.annoproj.getPropagate() not in [ocpcaproj.PROPAGATED]:
 
       outcube.downScale ( resolution-self.annoproj.getResolution() )
 

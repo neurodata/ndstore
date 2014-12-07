@@ -276,30 +276,53 @@ class AnnotateCube(Cube):
     # return the list of exceptions ids and the exceptions
     return exdata
 
-  # placeholder function move and optimize
+  
   def zoomData ( self, factor ):
-    """Cube data zoomed up"""
+    """ Cube data zoomed in """
 
     newdata = np.zeros ( [self.data.shape[0], self.data.shape[1]*(2**factor), self.data.shape[2]*(2**factor)], dtype=np.uint32) 
-
-    zoomData_cy ( self.data, newdata, int(factor) )
+    test = np.zeros ( [self.data.shape[0], self.data.shape[1]*(2**factor), self.data.shape[2]*(2**factor)], dtype=np.uint32) 
+    
+    #import pdb; pdb.set_trace()
+    import time
+    #start = time.time()
+    #zoomData_cy ( self.data, test, int(factor) )
+    #print "Cython", time.time()-start
+    #start = time.time()
+    #ocplib.zoomInData_ctype ( self.data, newdata, int(factor) )
+    #print "Ctype",time.time()-start
+    start = time.time()
+    ocplib.zoomInData_ctype_OMP ( self.data, newdata, int(factor) )
+    print "OMP",time.time()-start
 
     self.data = newdata
 
+  
   def downScale ( self, factor ):
-    """Cube data zoomed up"""
+    """ Cube data zoomed out """
 
     #KLTODO write an optimize version in cython
 
     newdata = np.zeros ( [self.data.shape[0], self.data.shape[1]/(2**factor), self.data.shape[2]/(2**factor)], dtype=np.uint32) 
+    #test = np.zeros ( [self.data.shape[0], self.data.shape[1]/(2**factor), self.data.shape[2]/(2**factor)], dtype=np.uint32) 
+    
+    import time
+    start = time.time()
+    ocplib.zoomOutData_ctype ( self.data, newdata, int(factor) )
+    print "Ctype", time.time()-start
 
-#    downScale_cy ( self.data, newdata, int(factor) )
-    for z in range(newdata.shape[0]):
-      for y in range(newdata.shape[1]):
-        for x in range(newdata.shape[2]):
-          newdata[z,y,x] = self.data[z,y*(2**factor),x*(2**factor)] 
-
+    #start = time.time()
+    #ocplib.zoomOutData_ctype_OMP ( self.data, test, int(factor) )
+    #print "OMP", time.time()-start
+    
     self.data = newdata
+    
+    # downScale_cy ( self.data, newdata, int(factor) )
+    #for z in range(newdata.shape[0]):
+    #  for y in range(newdata.shape[1]):
+    #    for x in range(newdata.shape[2]):
+    #      test[z,y,x] = self.data[z,y*(2**factor),x*(2**factor)] 
+
 
 # end AnnotateCube
 
