@@ -1,4 +1,4 @@
-# Licensed under the Apache License, Version 2.0 (the "License");
+# Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 # 
@@ -147,7 +147,7 @@ class OCPCADataset:
       self.resolutions.append( i )
 
       # set the zscale factor
-      self.zscale[i] = float(zscale)/(2**i);
+      self.zscale[i] = float(zscale)/(2**i)
 
       # choose the cubedim as a function of the zscale
       #  this may need to be changed.  
@@ -346,7 +346,7 @@ class OCPCAProjectsDB:
 
           elif proj.getKVEngine() == 'Riak':
 
-            rcli = riak.RiakClient(pb_port=8087, protocol='pbc')
+            rcli = riak.RiakClient(host='172.23.253.62', pb_port=8087, protocol='pbc')
             bucket = rcli.bucket_type("ocp{}".format(proj.getDBType())).bucket(proj.getDBName())
             bucket.set_property('allow_mult',False)
        
@@ -500,7 +500,7 @@ class OCPCAProjectsDB:
     elif proj.getKVEngine() == 'Riak':
 
       # connect to cassandra
-      rcli = riak.RiakClient(pb_port=8087, protocol='pbc')
+      rcli = riak.RiakClient(host='172.23.253.62', pb_port=8087, protocol='pbc')
       bucket = rcli.bucket_type("ocp{}".format(proj.getDBType())).bucket(proj.getDBName())
 
       key_list = rcli.get_keys(bucket)
@@ -556,8 +556,8 @@ class OCPCAProjectsDB:
     # Lookup the information for the database project based on the openid
     #url = "SELECT * from %s where " + filterby
     #sql = "SELECT * from %s where %s = \'%s\'" % (ocpcaprivate.table, filterby, filtervalue)
-    token_desc = ocpcaprivate.token_description;
-    proj_tbl = ocpcaprivate.projects;
+    token_desc = ocpcaprivate.token_description
+    proj_tbl = ocpcaprivate.projects
     if (filterby == ""):
       sql = "SELECT * from %s LEFT JOIN %s on %s.token = %s.token where %s.openid = \'%s\' ORDER BY project" % (ocpcaprivate.projects,token_desc,proj_tbl,token_desc,proj_tbl,openid)
     else:
@@ -582,8 +582,8 @@ class OCPCAProjectsDB:
   def getFilteredProjs ( self, openid, filterby, filtervalue,dataset ):
     """Load the annotation database information based on the openid"""
     # Lookup the information for the database project based on the openid
-    proj_desc = ocpcaprivate.project_description;
-    proj_tbl = ocpcaprivate.projects;
+    proj_desc = ocpcaprivate.project_description
+    proj_tbl = ocpcaprivate.projects
     if (filterby == ""):
       sql = "SELECT * from %s LEFT JOIN %s on %s.project = %s.project where %s.openid = \'%s\' and %s.dataset = \'%s\'" % (ocpcaprivate.projects,proj_desc,proj_tbl,proj_desc,proj_tbl,openid,proj_tbl,dataset)
     else:
@@ -608,8 +608,8 @@ class OCPCAProjectsDB:
     """Load the annotation database information based on the openid"""
     # Lookup the information for the database project based on the openid
     
-    token_desc = ocpcaprivate.token_description;
-    proj_tbl = ocpcaprivate.projects;
+    token_desc = ocpcaprivate.token_description
+    proj_tbl = ocpcaprivate.projects
 
     sql = "SELECT distinct(dataset) from %s where openid = \'%s\'"  % (ocpcaprivate.projects,openid)
        
