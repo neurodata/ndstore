@@ -59,7 +59,7 @@ class TestRamon:
 
     with closing ( ocpcaproj.OCPCAProjectsDB() ) as pd:
       try:
-        pd.newOCPCAProj ( 'unittest', 'test', 'localhost', 'unittest', 2, 'kasthuri11', None, False, True, False, 0, False, 'localhost', kvengine_to_test.kvengine )
+        pd.newOCPCAProj ( 'unittest', 'test', 'localhost', 'unittest', 2, 'kasthuri11', None, False, True, False, 0, False, kvengine_to_test.kvserver, kvengine_to_test.kvengine )
       except:
         pd.deleteOCPCADB ('unittest')
 

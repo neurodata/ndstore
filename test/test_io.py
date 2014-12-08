@@ -391,7 +391,7 @@ class TestRW:
 
     with closing ( ocpcaproj.OCPCAProjectsDB() ) as pd:
       try: 
-        pd.newOCPCAProj ( 'unittest_rw', 'test', 'localhost', 'unittest_rw', 2, 'kasthuri11', None, False, True, False, 0, 0, 'localhost', kvengine_to_test.kvengine )
+        pd.newOCPCAProj ( 'unittest_rw', 'test', 'localhost', 'unittest_rw', 2, 'kasthuri11', None, False, True, False, 0, 0, kvengine_to_test.kvserver, kvengine_to_test.kvengine )
       except:
         pd.deleteOCPCADB ('unittest_rw')
 
