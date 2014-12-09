@@ -74,7 +74,7 @@ class RajuIngest:
       self.label ( x+1, NAME[x] )
 
       # for each slice
-      for sl in range(784,self.endslice+1,self.batchsz):
+      for sl in range(self.startslice , self.endslice+1, self.batchsz):
       
         imarray = np.zeros ( [self.batchsz,self._yimgsz,self._ximgsz], dtype=np.uint16 )
 
@@ -88,9 +88,9 @@ class RajuIngest:
             # load the image and check the dimension
             try:
               print "Opening filename: " + filenm
-              imgdata = cv2.imread(filenm, -1)
-              #img = Image.open(filenm, 'r')
-              #imgdata = np.asarray ( img )
+              #imgdata = cv2.imread(filenm, -1)
+              img = Image.open(filenm, 'r')
+              imgdata = np.asarray ( img )
               if imgdata == None:
                   imgdata = np.zeros((self._yimgsz,self._ximgsz))
               imarray[(sl+b-self.startslice)%self.batchsz,0:imgdata.shape[0],0:imgdata.shape[1]] = imgdata[:,:]
@@ -123,7 +123,6 @@ class RajuIngest:
 
           # data for this key
           cube.data = imarray[zmin:zmax,ymin:ymax, xmin:xmax]
-
           self.db.putChannelCube(mortonidx, channel, self.resolution, cube)
       
       print " Commiting at x={}, y={}, z={}".format(x, y, sl)

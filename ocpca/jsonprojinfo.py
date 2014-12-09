@@ -42,6 +42,7 @@ def projdict ( proj ):
   projdict['resolution'] = proj._resolution
   projdict['kvengine'] = proj._kvengine
   projdict['kvserver'] = proj._kvserver
+  projdict['propagate'] = proj._propagate
 
   return projdict
 
