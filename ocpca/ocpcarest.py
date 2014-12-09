@@ -1335,8 +1335,10 @@ def getAnnotations ( webargs, postdata ):
 def putAnnotationAsync ( webargs, postdata ):
   """Put a RAMON object asynchrously as HDF5 by object identifier"""
   
-  import hdf5_new
-  hdf5_new.batchCube( webargs, postdata )
+  #import h5annasync
+  #h5annasync.writeDataSSD( webargs, postdata )
+  print "TESTING"
+  #hdf5_new.batchCube( webargs, postdata )
   
   #[ token, sym, optionsargs ] = webargs.partition ('/')
   #options = optionsargs.split('/')
