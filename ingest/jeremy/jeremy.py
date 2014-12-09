@@ -83,7 +83,7 @@ def main():
 
       for sl in range (startslice, endslice+1, batchsz):
 
-        slab = np.zeros ( [ batchsz, yimagesz, ximagesz ], dtype=np.uint8 )
+        slab = np.zeros ( [ batchsz, yimagesz, ximagesz ], dtype=np.uint16 )
 
         for b in range ( batchsz ):
 
@@ -98,7 +98,7 @@ def main():
           for x in range ( 0, ximagesz+1, xcubedim ):
 
             mortonidx = zindex.XYZMorton ( [x/xcubedim, y/ycubedim, (sl-startslice)/zcubedim] )
-            cubedata = np.zeros ( [zcubedim, ycubedim, xcubedim], dtype=np.uint8 )
+            cubedata = np.zeros ( [zcubedim, ycubedim, xcubedim], dtype=np.uint16 )
 
             xmin = x
             ymin = y
