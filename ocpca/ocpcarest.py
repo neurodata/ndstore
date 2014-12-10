@@ -1906,8 +1906,8 @@ def getField ( webargs ):
     anno = db.getAnnotation ( annid )
 
   if anno == None:
-    logger.warning("No annotation found at identifier = %s" % (annoid))
-    raise OCPCAError ("No annotation found at identifier = %s" % (annoid))
+    logger.warning("No annotation found at identifier = {}".format(annoid))
+    raise OCPCAError ("No annotation found at identifier = {}".format(annoid))
 
   value = anno.getField ( field )
   return value

@@ -392,9 +392,7 @@ class MySQLKVIO:
     if self.txncursor == None:
       self.conn.commit()
 
-  #
-  # putChannelCube
-  #
+  
   def putChannelCube ( self, zidx, channel, resolution, cubestr, update=False ):
     """ Store a cube from the channel database """
 
@@ -439,10 +437,53 @@ class MySQLKVIO:
     if self.txncursor == None:
       self.conn.commit()
 
-  #
-  # putBatchCube
-  #
-  def putBatchCube ( self, zidx, resolution, cubestr, update=False ):
+
+  def putTimeSeriesCube ( self, zidx, timestamp, resolution, cubestr, update=False ):
+    """ Store a cube from the timeseries database """
+
+    # if in a TxN us the transaction cursor.  Otherwise create one.
+    if self.txncursor == None:
+      cursor = self.conn.cursor()
+    else:
+      cursor = self.txncursor
+
+    # we created a cube from zeros
+    if not update:
+
+      sql = "INSERT INTO {} (zindex, timestamp, cube) VALUES (%s, %s, %s)".format( self.db.annoproj.getTable(resolution) )
+
+      # this uses a cursor defined in the caller (locking context): not beautiful, but needed for locking
+      try:
+        cursor.execute ( sql, (zidx,timestamp,cubestr))
+      except MySQLdb.Error, e:
+        logger.error ( "Error inserting cube: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+        raise
+      finally:
+        # close the local cursor if not in a transaction
+        # and commit right away
+        if self.txncursor == None:
+          cursor.close()
+
+    else:
+
+      sql = "UPDATE {} SET cube=(%s) WHERE (zindex,timestamp)=({},{})".format( self.db.annoproj.getTable(resolution), zidx, timestamp )
+      try:
+        cursor.execute ( sql, (cubestr))
+      except MySQLdb.Error, e:
+        logger.error ( "Error updating data cube: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+        raise
+      finally:
+        # close the local cursor if not in a transaction
+        # and commit right away
+        if self.txncursor == None:
+          cursor.close()
+
+    # commit if not in a txn
+    if self.txncursor == None:
+      self.conn.commit()
+  
+  
+  def putCubes ( self, zidx, resolution, cubestr, update=False ):
     """ Store a batch of cubes from the annotation database """
 
     # if in a TxN us the transaction cursor.  Otherwise create one.
