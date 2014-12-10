@@ -86,7 +86,13 @@ class ocpProject ( models.Model):
         ('172.23.253.63','dsp063'),
         )
     kvserver =  models.CharField(max_length=255, choices=KVSERVER_CHOICES, default='localhost')
-    
+
+    PROPOGATE_CHOICES = (
+        (0, 'NOT PROPOGATED'),
+        (1, 'UNDER PROPOGATION'),
+        (2, 'PROPOGATED'),
+        )
+    propogate =  models.IntegerField(choices=PROPOGATE_CHOICES, default=0)
 #    NOCREATE_CHOICES = (
  #       (0, 'No'),
  #       (1, 'Yes'),

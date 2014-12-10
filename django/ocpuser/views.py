@@ -304,12 +304,13 @@ def createproject(request):
         openid = request.user.username
         resolution =form.cleaned_data['resolution']
         public =form.cleaned_data['public']
+        propogate =form.cleaned_data['propogate']
         print "Creating a project with:"
         print token, project, dataset, dataurl,readonly, exceptions, openid , resolution
         # Get database info                
         try:
           pd = ocpcaproj.OCPCAProjectsDB()
-          pd.newOCPCAProj ( token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate, int(resolution), int(public),kvserver,kvengine )
+          pd.newOCPCAProj ( token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate, int(resolution), int(public),kvserver,kvengine ,propogate)
           #pd.insertTokenDescription ( token, description )
           return redirect(profile)          
         except OCPCAError, e:

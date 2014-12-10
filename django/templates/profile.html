@@ -72,6 +72,7 @@
 		    <th>Project</th>
 		    <th>Type</th>
 		    <th>Description</th>
+		    <th>Propogate</th>
 
 		  </tr>	   
 		  
@@ -110,6 +111,13 @@
 		      <td>OTHER</td>
 		      {% endif %}
 		      <td colspan=50>{{ field.11 }}</td>
+		      {% if field.13 == 0 %}
+                      <td>NOT PROPOGATED</td>
+		      {% elif field.13 == 1%}
+                      <td>UNDER PROPOGATION</td>
+                      {% else %}
+                      <td>PROPOGATED</td>
+		      {% endif %}
 <!--		      <td><button class="btn" id="delete" type="submit" name="delete"> <i class ="icon-trash icon-black"></i>Delete Project</button></td>
 -->
 		      <td><button class="btn" id="backup" type="submit" name="backup"> <i class ="icon-inbox icon-black"></i>Backup Project</button></td>
