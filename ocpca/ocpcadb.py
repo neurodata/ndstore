@@ -363,9 +363,8 @@ class OCPCADB:
       return identifier+1
 
 
-  #
-  # getCube
-  #
+  # GET and PUT Methods for Image/Annotaion Databases
+
   def getCube ( self, key, resolution, update=False ):
     """ Load a cube from the database """
 
@@ -414,11 +413,12 @@ class OCPCADB:
     return cube
 
 
-  #
-  # cputCube
-  #  RBRM
-  # cgetCube
-  #
+  def getCubes ( self, listofidxs, resolution ):
+    """ Return a list of cubes """
+
+    return self.kvio.getCubes( listofidxs, resolution )
+
+
   def cgetCube ( self, key, resolution, update=False ):
     """Load a cube from the annotation database"""
 
@@ -454,30 +454,9 @@ class OCPCADB:
 
     return cube
 
-  def cputCube ( self, zidx, resolution, cube ):
-    """Store a cube in the annotation database"""
 
-    # Handle the cube format here.  
-    tmpfile= tempfile.NamedTemporaryFile ()
-    h5 = h5py.File ( tmpfile.name )
-    h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype, compression='gzip',  data=cube.data )
-    h5.close()
-    tmpfile.seek(0)
-
-    self.ckvio.putCube ( zidx, resolution, tmpfile.read(), not cube.fromZeros() )
-    tmpfile.close()
-
-
-  def getCubes ( self, listofidxs, resolution ):
-    """ Return a list of cubes """
-
-    return self.kvio.getCubes( listofidxs, resolution )
-
-  #
-  # putCube
-  #
-  def putCube ( self, zidx, resolution, cube ):
-    """Store a cube in the annotation database"""
+  def putCube ( self, zidx, resolution, cube, update=False ):
+    """ Store a cube in the annotation database """
     
     # Handle the cube format here.  
     if self.NPZ:
@@ -494,10 +473,182 @@ class OCPCADB:
 
       self.kvio.putCube ( zidx, resolution, tmpfile.read(), not cube.fromZeros() )
       tmpfile.close()
+  
+  
+  def putCubes ( self, listofidxs, resolution, cube ):
+    """ Store a cube in the annotation database. Does not work currently. """
 
-  #
-  # putCube
-  #
+    # Handle the cube format here.  
+    if self.NPZ:
+      self.kvio.putCubes ( listofidxs, resolution, cube.toNPZ(), not cube.fromZeros() )
+    else:
+      tmpfile= tempfile.NamedTemporaryFile ()
+      h5 = h5py.File ( tmpfile.name )
+      h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype, compression='gzip',  data=cube.data )
+      h5.close()
+      tmpfile.seek(0)
+
+      self.kvio.putCubes ( listofidxs, resolution, tmpfile.read(), not cube.fromZeros() )
+      tmpfile.close()
+  
+  
+  def cputCube ( self, zidx, resolution, cube ):
+    """Store a cube in the annotation database"""
+
+    # Handle the cube format here.  
+    tmpfile= tempfile.NamedTemporaryFile ()
+    h5 = h5py.File ( tmpfile.name )
+    h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype, compression='gzip',  data=cube.data )
+    h5.close()
+    tmpfile.seek(0)
+
+    self.ckvio.putCube ( zidx, resolution, tmpfile.read(), not cube.fromZeros() )
+    tmpfile.close()
+
+
+  # GET AND PUT methods for Channel Database
+  
+  def getChannelCube ( self, key, channel, resolution, update=False ):
+    """ Load a cube from the database """
+
+    # get the size of the image and cube
+    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
+
+    # Create a cube object
+    if self.annoproj.getDBType() == ocpcaproj.CHANNELS_8bit:
+      cube = imagecube.ImageCube8 ( cubedim )
+    elif self.annoproj.getDBType() == ocpcaproj.CHANNELS_16bit:
+      cube = imagecube.ImageCube16 ( cubedim )
+    else:
+      raise OCPCAError ("Unknown project type {}".format(self.annoproj.getDBType()))
+  
+    # get the block from the database
+    cubestr = self.kvio.getChannelCube ( key, channel, resolution, update )
+
+    if not cubestr:
+      cube.zeros()
+    else:
+      # Handle the cube format here.  
+      if self.NPZ:
+          # decompress the cube
+          cube.fromNPZ ( cubestr )
+
+      else:
+          # cubes are HDF5 files
+          tmpfile = tempfile.NamedTemporaryFile ()
+          tmpfile.write ( cubestr )
+          tmpfile.seek(0)
+          h5 = h5py.File ( tmpfile.name ) 
+
+          # load the numpy array
+          cube.data = np.array ( h5['cuboid'] )
+          h5.close()
+          tmpfile.close()
+
+    return cube
+  
+  
+  def getChannelCubes ( self, listofidxs, channel, resolution ):
+    """ Return a list of channel cubes """
+
+    return self.kvio.getChannelCubes ( listofidxs, channel, resolution )
+
+  
+  def putChannel ( self, channelstr, channelid ):
+    """ Store the channel in the channels database """
+
+    self.kvio.putChannel ( channelstr, channelid )
+  
+  
+  def putChannelCube ( self, zidx, channel, resolution, cube, update=False ):
+    """Store a cube in the annotation database"""
+
+    # Handle the cube format here.  
+    if self.NPZ:
+      #self.kvio.putChannelCube ( zidx, channel, resolution, cube.toNPZ(), not cube.fromZeros() )
+      self.kvio.putChannelCube ( zidx, channel, resolution, cube.toNPZ(), update )
+    else:
+      tmpfile= tempfile.NamedTemporaryFile ()
+      h5 = h5py.File ( tmpfile.name, driver='core', backing_store=True )
+      h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype, compression='gzip',  data=cube.data )
+      h5.close()
+      tmpfile.seek(0)
+      self.kvio.putChannelCube ( zidx, channel, resolution, tmpfile.read(), update )
+      tmpfile.close()
+  
+  
+  # GET AND PUT methods for Timeseries Database
+  
+  def getTimeSeriesCube ( self, key, timestamp, resolution, update=False ):
+    """ Load a cube from the database """
+
+    # get the size of the image and cube
+    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
+
+    # Create a cube object
+    if self.annoproj.getDBType() == ocpcaproj.TIMESERIES_4d_8bit:
+      cube = imagecube.ImageCube8 ( cubedim )
+    elif self.annoproj.getDBType() == ocpcaproj.TIMESERIES_4d_16bit:
+      cube = imagecube.ImageCube16 ( cubedim )
+    else:
+      raise OCPCAError ("Unknown project type {}".format(self.annoproj.getDBType()))
+  
+    # get the block from the database
+    cubestr = self.kvio.getTimeSeriesCube ( key, timestamp, resolution, update )
+
+    if not cubestr:
+      cube.zeros()
+    else:
+      # Handle the cube format here.  
+      if self.NPZ:
+          # decompress the cube
+          cube.fromNPZ ( cubestr )
+
+      else:
+          # cubes are HDF5 files
+          tmpfile = tempfile.NamedTemporaryFile ()
+          tmpfile.write ( cubestr )
+          tmpfile.seek(0)
+          h5 = h5py.File ( tmpfile.name ) 
+
+          # load the numpy array
+          cube.data = np.array ( h5['cuboid'] )
+          h5.close()
+          tmpfile.close()
+
+    return cube
+  
+  
+  def getTimeSeriesCubes ( self, listofidxs, timestamp, resolution ):
+    """ Return a list of timeseries cubes """
+
+    return self.kvio.getChannelCubes ( listofidxs, timsestamp, resolution )
+  
+  
+  def getTimeSeriesColumn ( self, idx, listoftimestamps, resolution ):
+    """ Return a column of timeseries cubes. Better at I/O """
+
+    return self.kvio.getTimeSeriesColumn ( idx, listoftimestamps, resolution )
+
+  
+  def putTimeSeriesCube ( self, zidx, timestamp, resolution, cube, update=False ):
+    """Store a cube in the annotation database"""
+
+    # Handle the cube format here.  
+    if self.NPZ:
+      self.kvio.putTimeSeriesCube ( zidx, timestamp, resolution, cube.toNPZ(), not cube.fromZeros() )
+    else:
+      tmpfile= tempfile.NamedTemporaryFile ()
+      h5 = h5py.File ( tmpfile.name, driver='core', backing_store=True )
+      h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype, compression='gzip',  data=cube.data )
+      h5.close()
+      tmpfile.seek(0)
+      self.kvio.putTimeSeriesCube ( zidx, timestamp, resolution, tmpfile.read(), update )
+      tmpfile.close()
+  
+  
+  # TODO Unwanted Functions. Do these need to go RB?
+
   def putUnwantedCube ( self, zidx, resolution, cube ):
     """Store a cube in the annotation database"""
 
@@ -514,56 +665,7 @@ class OCPCADB:
       self.kvio.putCube ( zidx, resolution, tmpfile.read(), not cube.fromZeros() )
       tmpfile.close()
 
-  #
-  # putChannelCube
-  #
-  def putChannelCube ( self, zidx, channel, resolution, cube ):
-    """Store a cube in the annotation database"""
 
-    # Handle the cube format here.  
-    if self.NPZ:
-      self.kvio.putChannelCube ( zidx, channel, resolution, cube.toNPZ(), not cube.fromZeros() )
-    else:
-      tmpfile= tempfile.NamedTemporaryFile ()
-      h5 = h5py.File ( tmpfile.name, driver='core', backing_store=True )
-      h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype, compression='gzip',  data=cube.data )
-      h5.close()
-      tmpfile.seek(0)
-      self.kvio.putChannelCube ( zidx, channel, resolution, tmpfile.read() )
-      tmpfile.close()
- 
-  #
-  # putChannel
-  #
-  def putChannel ( self, channelstr, channelid ):
-    """ Store the channel in the channels database """
-
-    self.kvio.putChannel ( channelstr, channelid )
-
-  
-  #
-  # putBatchCube
-  #
-  def putBatchCube ( self, zidx, resolution, cube ):
-    """Store a cube in the annotation database"""
-
-    # Handle the cube format here.  
-    if self.NPZ:
-      self.kvio.putBatchCube ( zidx, resolution, cube.toNPZ(), not cube.fromZeros() )
-    else:
-      tmpfile= tempfile.NamedTemporaryFile ()
-      h5 = h5py.File ( tmpfile.name )
-      h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype, compression='gzip',  data=cube.data )
-      h5.close()
-      tmpfile.seek(0)
-
-      self.kvio.putBatchCube ( zidx, resolution, tmpfile.read(), not cube.fromZeros() )
-      tmpfile.close()
-
-
-  #
-  # getExceptions
-  #
   def getExceptions ( self, zidx, resolution, annoid ):
     """Load a cube from the annotation database"""
 
@@ -587,9 +689,6 @@ class OCPCADB:
       return []
 
 
-  #
-  # updateExceptions
-  #
   def updateExceptions ( self, key, resolution, exid, exceptions, update=False ):
     """Merge new exceptions with existing exceptions"""
 
@@ -623,20 +722,15 @@ class OCPCADB:
     else:
       tmpfile= tempfile.NamedTemporaryFile ()
       h5 = h5py.File ( tmpfile.name )
-      h5.create_dataset ( "exceptions", tuple(exceptions.shape), exceptions.dtype,
-                               compression='gzip',  data=exceptions )
+      h5.create_dataset ( "exceptions", tuple(exceptions.shape), exceptions.dtype, compression='gzip',  data=exceptions )
       h5.close()
       tmpfile.seek(0)
       self.kvio.putExceptions ( key, resolution, exid, tmpfile.read(), update )
       tmpfile.close()
 
 
-  #
-  # removeExceptions
-  #
   def removeExceptions ( self, key, resolution, entityid, exceptions ):
-    """Remove a list of exceptions"""
-    """Should be done in a transaction"""
+    """Remove a list of exceptions. Should be done in a transaction"""
 
     curexlist = self.getExceptions( key, resolution, entityid ) 
 
@@ -650,9 +744,6 @@ class OCPCADB:
       self.putExceptions ( key, resolution, exid, exlist, True )
 
 
-  #
-  # queryRange
-  #
   def queryRange ( self, lowkey, highkey, resolution ):
     """ Create a stateful query to a range of values not including the high value. 
         To be used with getNextCube().Not thread safe (context per object)
@@ -671,9 +762,6 @@ class OCPCADB:
       raise
 
   
-  #
-  # getNextCube
-  #
   def getNextCube ( self ):
     """ Retrieve the next cube in a queryRange. Not thread safe (context per object) """
 
@@ -695,9 +783,8 @@ class OCPCADB:
       cube.fromNPZ ( row[1] )
       return [row[0],cube]
 
-  #
-  # getAllExceptions
-  #
+
+
   def getAllExceptions ( self, key, resolution ):
     """Load all exceptions for this cube"""
 

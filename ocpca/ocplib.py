@@ -232,6 +232,8 @@ def shaveDense_ctype ( data, shavedata ):
 def exceptionDense_ctype ( data, annodata ):
   """ Get a dense voxel region and overwrite all the non-zero values """
 
+  data = np.uint32(data)
+  annodata = np.uint32(annodata)
   dims = [ i for i in data.shape ]
   data = data.ravel()
   annodata = annodata.ravel()
@@ -244,6 +246,8 @@ def exceptionDense_ctype ( data, annodata ):
 def overwriteDense_ctype ( data, annodata ):
   """ Get a dense voxel region and overwrite all the non-zero values """
 
+  data = np.uint32(data)
+  annodata = np.uint32(annodata)
   dims = [ i for i in data.shape ]
   data = data.ravel()
   annodata = annodata.ravel()
