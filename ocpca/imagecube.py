@@ -97,13 +97,21 @@ class ImageCube8(Cube):
     newimage = outimage.resize ( [ydim, int(zdim*zscale)] )
     newimage.save ( fileobj, "PNG" )
 
+
+  # RB fixed just this one data type
+
   #
   # Create a slice for CATMAID
   #
-  def catmaidSlice ( self ):
-    
+  def catmaidXYSlice ( self ):
     cmtilesz = self.data.shape[1]
     self.data = Image.frombuffer ( 'L', [cmtilesz,cmtilesz], self.data, 'raw', 'L', 0, 1 )
+
+  def catmaidXZSlice ( self ):
+    cmtilesz = self.data.shape[0]
+    imdata = self.data.reshape([cmtilesz,cmtilesz]).copy('C')
+    self.data = Image.frombuffer ( 'L', [cmtilesz,cmtilesz], imdata, 'raw', 'L', 0, 1 )
+
 #
 #  ImageCube16: manipulate the in-memory data representation of the 3-d cube 
 #    includes loading, export, read and write routines

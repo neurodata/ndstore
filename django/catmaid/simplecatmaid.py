@@ -73,13 +73,13 @@ class SimpleCatmaid:
       tiledata = cb.data
    
     cb.data = tiledata
-    cb.catmaidSlice( )
+    cb.catmaidXYSlice( )
 
     return cb.data
 
   def cacheMissXZ ( self, resolution, xtile, yslice, ztile ):
     """ On a miss. Cutout, return the image and load the cache in a background thread """
-    
+
     # make sure that the tile size is aligned with the cubedim
     if self.tilesz % self.proj.datasetcfg.cubedim[resolution][1] != 0 or self.tilesz % self.proj.datasetcfg.cubedim[resolution][2]:
       raise("Illegal tile size.  Not aligned")
@@ -93,14 +93,14 @@ class SimpleCatmaid:
     # get an xz image slice
     imageargs = '{}/{},{}/{}/{},{}/'.format(resolution,xstart,xend,yslice,zstart,zend) 
     cb = ocpcarest.xzSlice ( imageargs, self.proj, self.db )
-    if cb.data.shape != (1,self.tilesz,self.tilesz):
+    if cb.data.shape != (self.tilesz,1,self.tilesz):
       tiledata = np.zeros((self.tilesz,self.tilesz), cb.data.dtype )
       tiledata[0:((zend-1-self.proj.datasetcfg.slicerange[0])%self.tilesz+1),0:((xend-1)%self.tilesz+1)] = cb.data[:,0,:]
     else:
       tiledata = cb.data
 
     cb.data = tiledata
-    cb.catmaidSlice( )
+    cb.catmaidXZSlice( )
 
     return cb.data
 
