@@ -48,9 +48,8 @@ class MCFCCatmaid:
     return 'mcfc/{}/{}/{}/{}/{}/{}/{}'.format(self.token,self.tilesz,self.channels,res,xtile,ytile,zslice)
 
 
-  def cacheMiss ( self, resolution, xtile, ytile, zslice ):
+  def cacheMissXY ( self, resolution, xtile, ytile, zslice ):
     """On a miss. Cutout, return the image and load the cache in a background thread"""
-
 
     # make sure that the tile size is aligned with the cubedim
     if self.tilesz % self.proj.datasetcfg.cubedim[resolution][0] != 0 or self.tilesz % self.proj.datasetcfg.cubedim[resolution][1]:
@@ -67,11 +66,29 @@ class MCFCCatmaid:
     return ocpcarest.mcfcPNG ( self.proj, self.db, self.token, "xy", self.channels, imageargs )
 
 
+  def cacheMissXZ ( self, resolution, xtile, yslice, ztile ):
+    """On a miss. Cutout, return the image and load the cache in a background thread"""
+
+    # make sure that the tile size is aligned with the cubedim
+    if self.tilesz % self.proj.datasetcfg.cubedim[resolution][1] != 0 or self.tilesz % self.proj.datasetcfg.cubedim[resolution][2]:
+      raise("Illegal tile size.  Not aligned")
+
+    # figure out the cutout (limit to max image size)
+    xstart = xtile*self.tilesz
+    zstart = max (ztile*self.tilesz,self.proj.datasetcfg.slicerange[0])
+    xend = min ((xtile+1)*self.tilesz,self.proj.datasetcfg.imagesz[resolution][0])
+    zend = min ((ztile+1)*self.tilesz,self.proj.datasetcfg.slicerange[1])
+
+    # call the mcfc interface
+    imageargs = '{}/{},{}/{}/{},{}/'.format(resolution,xstart,xend,yslice,zstart,zend) 
+    return ocpcarest.mcfcPNG ( self.proj, self.db, self.token, "xz", self.channels, imageargs )
+
+
   def getTile ( self, webargs ):
     """Either fetch the file from mocpcache or get a mcfc image"""
 
     # parse the web args
-    self.token, tileszstr, self.channels, resstr, xtilestr, ytilestr, zslicestr, rest = webargs.split('/',8)
+    self.token, slicetypestr, tileszstr, self.channels, resstr, xvaluestr, yvaluestr, zvaluestr, rest = webargs.split('/',9)
 
     #[ self.db, self.proj, projdb ] = ocpcarest.loadDBProj ( self.token )
     with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
@@ -80,22 +97,26 @@ class MCFCCatmaid:
     with closing ( ocpcadb.OCPCADB(self.proj) ) as self.db:
 
         # convert args to ints
-        xtile = int(xtilestr)
-        ytile = int(ytilestr)
+        xvalue = int(xvaluestr)
+        yvalue = int(yvaluestr)
         res = int(resstr)
         # modify the zslice to the offset
-        zslice = int(zslicestr)-self.proj.datasetcfg.slicerange[0]
+        zvalue = int(zvaluestr)-self.proj.datasetcfg.slicerange[0]
         self.tilesz = int(tileszstr)
 
         # mocpcache key
-        mckey = self.buildKey(res,xtile,ytile,zslice)
+        mckey = self.buildKey(res,xvalue,yvalue,zvalue)
 
         # do something to sanitize the webargs??
         # if tile is in mocpcache, return it
         tile = self.mc.get(mckey)
-        #tile=None
+        tile=None
         if tile == None:
-          img=self.cacheMiss(res,xtile,ytile,zslice)
+
+          if slicetypestr == 'xy':
+            img=self.cacheMissXY(res,xvalue,yvalue,zvalue)
+          elif slicetypestr == 'xz':
+            img=self.cacheMissXZ(res,xvalue,yvalue,zvalue)
           fobj = cStringIO.StringIO ( )
           img.save ( fobj, "PNG" )
           self.mc.set(mckey,fobj.getvalue())

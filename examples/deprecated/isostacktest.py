@@ -51,7 +51,8 @@ try:
 #  url = "http://openconnecto.me/ocp/ocpca/kasthuri11/npz/5/100,700/200,500/1,500/neariso/"
 #  url = "http://openconnecto.me/ocp/ocpca/bock11/npz/7/0,1088/0,960/2917,3013/neariso/"
 #  url = "http://openconnecto.me/emca/bock11/npz/4/4000,5000/4000,4050/2917,3413/neariso/"
-  url = "http://localhost/ocp/ocpca/kasthuri11/npz/7/0,192/0,256/1,143/neariso/"
+#  url = "http://localhost/ocp/ocpca/bock11/npz/0/18000,19000/18000,19000/2917,2920/neariso/"
+  url = "http://openconnecto.me/ocp/ocpca/bock11/npz/0/18000,19000/18000,19000/2917,2920/neariso/"
   f = urllib2.urlopen ( url )
 except urllib2.URLError, e:
   print "Failed to open url ", url, e

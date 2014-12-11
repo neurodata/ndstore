@@ -72,7 +72,7 @@ def main():
   ytilesz = 3600
   xtilesz = 4800
 
-  startslice = 2
+  startslice = 174
   # Get a list of the files in the directories
   for sl in range (startslice,endslice+1,batchsz):
   

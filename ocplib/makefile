@@ -2,8 +2,8 @@
 
 all: clean ocplib.so
 
-ocplib.so : filterCutout.o filterCutoutOMP.o locateCube.o annotateCube.o zindex.o recolorCube.o quicksort.o
-	gcc -shared -fopenmp -O3 -o ocplib.so filterCutout.o filterCutoutOMP.o locateCube.o annotateCube.o zindex.o recolorCube.o quicksort.o -I .
+ocplib.so : filterCutout.o filterCutoutOMP.o locateCube.o annotateCube.o shaveCube.o annotateEntityDense.o shaveDense.o exceptionDense.o overwriteDense.o zindex.o recolorCube.o zoomData.o quicksort.o
+	gcc -shared -fopenmp -O3 -o ocplib.so filterCutout.o filterCutoutOMP.o locateCube.o annotateCube.o shaveCube.o annotateEntityDense.o shaveDense.o exceptionDense.o overwriteDense.o zindex.o recolorCube.o zoomData.o quicksort.o -I .
 
 filterCutout.o : filterCutout.c
 	gcc -c -fPIC -O3 filterCutout.c -o filterCutout.o -I .
@@ -17,11 +17,29 @@ locateCube.o : locateCube.c
 annotateCube.o : annotateCube.c
 	gcc -c -fPIC -O3 annotateCube.c -o annotateCube.o -I .
 
+shaveCube.o : shaveCube.c
+	gcc -c -fPIC -O3 shaveCube.c -o shaveCube.o -I .
+
+annotateEntityDense.o : annotateEntityDense.c
+	gcc -c -fPIC -O3 annotateEntityDense.c -o annotateEntityDense.o -I .
+
+shaveDense.o : shaveDense.c
+	gcc -c -fPIC -O3 shaveDense.c -o shaveDense.o -I .
+
+exceptionDense.o : exceptionDense.c
+	gcc -c -fPIC -O3 exceptionDense.c -o exceptionDense.o -I .
+
+overwriteDense.o : overwriteDense.c
+	gcc -c -fPIC -O3 overwriteDense.c -o overwriteDense.o -I .
+
 zindex.o : zindex.c
 	gcc -c -fPIC -O3 zindex.c -o zindex.o -I .
 
 recolorCube.o : recolorCube.c
 	gcc -c -fopenmp -fPIC -O3 recolorCube.c -o recolorCube.o -I .
+
+zoomData.o : zoomData.c
+	gcc -c -fopenmp -fPIC -O3 zoomData.c -o zoomData.o -I .
 
 quicksort.o : quicksort.c
 	gcc -c -fPIC -O3 quicksort.c -o quicksort.o -I .
@@ -30,4 +48,4 @@ test : clean testmain.c
 	gcc -ggdb testmain.c quicksort.c -o test -I .
 
 clean :
-	-rm -vf ocplib.so zindex.o locateCube.o annotateCube.o filterCutout.o filterCutoutOMP.o recolorCube.o quicksort.o test
+	-rm -vf ocplib.so zindex.o locateCube.o annotateCube.o shaveCube.o annotateEntityDense.o shaveDense.o exceptionDense.o overwriteDense.o filterCutout.o filterCutoutOMP.o recolorCube.o zoomData.o quicksort.o test

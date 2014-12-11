@@ -28,8 +28,7 @@
 
 int annotateCube( uint32_t * data, int dataSize, int * dims, int annid, uint32_t * offset,  uint32_t locations[][3], int locationsSize, char conflictopt, uint32_t exceptions[][3] )
 {
-		int i,j;
-    int index;
+		int i,j,index;
     uint32_t xoffset = offset[0];
     uint32_t yoffset = offset[1];
     uint32_t zoffset = offset[2];
