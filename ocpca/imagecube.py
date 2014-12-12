@@ -113,6 +113,12 @@ class ImageCube8(Cube):
     self.cmimg = Image.frombuffer ( 'L', [cmtilesz,self.data.shape[0]], tmpdata, 'raw', 'L', 0, 1 )
     self.cmimg = self.cmimg.resize ( [cmtilesz,cmtilesz] )
 
+  def catmaidYZSlice ( self ):
+    cmtilesz = self.data.shape[1]
+    tmpdata = self.data.reshape ( self.data.shape[0], self.data.shape[1] ).copy('C')
+    self.cmimg = Image.frombuffer ( 'L', [cmtilesz,self.data.shape[0]], tmpdata, 'raw', 'L', 0, 1 )
+    self.cmimg = self.cmimg.resize ( [cmtilesz,cmtilesz] )
+
 #
 #  ImageCube16: manipulate the in-memory data representation of the 3-d cube 
 #    includes loading, export, read and write routines
