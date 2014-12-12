@@ -138,8 +138,6 @@ class SimpleCatmaid:
 
     # scale by the appropriate amount
    
-    import pdb; pdb.set_trace()
-
     if cb.data.shape != (ztileend-ztilestart,self.tilesz,1):
       tiledata = np.zeros((ztileend-ztilestart,self.tilesz,1), cb.data.dtype )
       tiledata[0:zend-zstart,0:((yend-1)%self.tilesz+1),0] = cb.data[:,:,0]
