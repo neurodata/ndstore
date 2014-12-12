@@ -121,7 +121,7 @@ class SimpleCatmaid:
 
     # figure out the cutout (limit to max image size)
     ystart = ytile*self.tilesz
-    yend = min ((ytile+1)*self.tilesz,self.proj.datasetcfg.imagesz[resolution][0])
+    yend = min ((ytile+1)*self.tilesz,self.proj.datasetcfg.imagesz[resolution][1])
 
     # z cutouts need to get rescaled
     #  we'll map to the closest pixel range and tolerate one pixel error at the boundary
