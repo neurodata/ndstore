@@ -131,17 +131,19 @@ class SimpleCatmaid:
     zstart = max ( ztilestart, zoffset ) 
     ztileend = int(((ztile+1)*self.tilesz)/scalefactor) + zoffset
     zend = min ( ztileend, self.proj.datasetcfg.slicerange[1] )
-   
+
     # get an yz image slice
     imageargs = '{}/{}/{},{}/{},{}/'.format(resolution,xslice,ystart,yend,zstart,zend) 
     cb = ocpcarest.yzSlice ( imageargs, self.proj, self.db )
 
     # scale by the appropriate amount
+   
+    import pdb; pdb.set_trace()
 
     if cb.data.shape != (ztileend-ztilestart,self.tilesz,1):
       tiledata = np.zeros((ztileend-ztilestart,self.tilesz,1), cb.data.dtype )
-      tiledata[0:zend-zstart,0:((yend-1)%self.tilesz+1)] = cb.data[:,:,0]
-      cb.data = tiledata,1
+      tiledata[0:zend-zstart,0:((yend-1)%self.tilesz+1),0] = cb.data[:,:,0]
+      cb.data = tiledata
 
     cb.catmaidYZSlice( )
 
