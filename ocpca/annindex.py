@@ -55,13 +55,13 @@ class AnnotateIndex:
         return np.load ( fobj )      
       else:
         # cubes are HDF5 files
-        tmpfile = tempfile.NamedTemporaryFile ()
-        tmpfile.write ( idxstr )
-        tmpfile.seek(0)
-        h5 = h5py.File ( tmpfile.name ) 
-
-        # load the numpy array
-        return np.array ( h5['index'] )
+        with closing (tempfile.NamedTemporaryFile ()) as tmpfile:
+          tmpfile.write ( idxstr )
+          tmpfile.seek(0)
+          h5 = h5py.File ( tmpfile.name ) 
+  
+          # load the numpy array
+          return np.array ( h5['index'] )
     else:
       return []
        
@@ -77,14 +77,14 @@ class AnnotateIndex:
     else:
 #      if index.dtype == np.float64:
 #        import pdb; pdb.set_trace()
-      tmpfile= tempfile.NamedTemporaryFile ()
-      h5 = h5py.File ( tmpfile.name )
-      h5.create_dataset ( "index", tuple(index.shape), index.dtype,
-                               compression='gzip',  data=index )
-      h5.close()
-      tmpfile.seek(0)
-      self.kvio.putIndex ( entityid, resolution, tmpfile.read(), update )
 
+      with closing ( tempfile.NamedTemporaryFile () ) as tmpfile:
+        h5 = h5py.File ( tmpfile.name )
+        h5.create_dataset ( "index", tuple(index.shape), index.dtype,
+                                 compression='gzip',  data=index )
+        h5.close()
+        tmpfile.seek(0)
+        self.kvio.putIndex ( entityid, resolution, tmpfile.read(), update )
 
 #
 # Update Index Dense - Updated the annotation database with the given hash index table

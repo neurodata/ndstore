@@ -152,22 +152,23 @@ def HDF5 ( imageargs, proj, db ):
   """Return a web readable HDF5 file"""
 
   # Create an in-memory HDF5 file
-  tmpfile = tempfile.NamedTemporaryFile ()
+  tmpfile = tempfile.NamedTemporaryFile()
+
   fh5out = h5py.File ( tmpfile.name, driver='core', backing_store=True )
 
   try: 
-
+  
     # if it's a channel database, pull out the channels
     if proj.getDBType() in ocpcaproj.CHANNEL_DATASETS:
      
       [ chanurl, sym, imageargs ] = imageargs.partition ('/')
-
+  
       # make sure that the channels are ints
       channels = chanurl.split(',')
-
+  
       chanobj = ocpcachannel.OCPCAChannels ( db )
       chanids = chanobj.rewriteToInts ( channels )
-
+  
       for i in range(len(chanids)):
         cube = cutout ( imageargs, proj, db, chanids[i] )
         changrp = fh5out.create_group( "CUTOUT" )
@@ -184,13 +185,12 @@ def HDF5 ( imageargs, proj, db ):
     else: 
       cube = cutout ( imageargs, proj, db, None )
       fh5out.create_dataset ( "CUTOUT", tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data )
-
-    fh5out.create_dataset( "DATATYPE", (1,), dtype=np.uint32, data=proj._dbtype )
   
+    fh5out.create_dataset( "DATATYPE", (1,), dtype=np.uint32, data=proj._dbtype )
 
   except:
-    tmpfile.close()
     fh5out.close()
+    tmpfile.close()
     raise
 
   fh5out.close()
@@ -205,13 +205,13 @@ def TimeSeriesCutout ( imageargs, proj, db ):
   """ Return a web readable HDF5 file """
 
   # Create an in-memory HDF5 file
-  tmpfile = tempfile.NamedTemporaryFile ()
+  tmpfile = tempfile.NamedTemporaryFile()
   fh5out = h5py.File ( tmpfile.name )
 
   try: 
     # if it's a channel database, pull out the channels
     if proj.getDBType() in ocpcaproj.TIMESERIES_DATASETS:
-     
+   
       # Perform argument processing
       args = restargs.BrainRestArgs ()
       args.tsArgs ( imageargs, proj.datasetcfg )
@@ -242,11 +242,6 @@ def TimeSeriesCutout ( imageargs, proj, db ):
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
     raise OCPCAError(e.value)
-  
-  except:
-    tmpfile.close()
-    fh5out.close()
-    raise
 
   fh5out.close()
   tmpfile.seek(0)
@@ -1063,11 +1058,11 @@ def getAnnotation ( webargs ):
     # Create an in-memory HDF5 file
     tmpfile = tempfile.NamedTemporaryFile()
     h5f = h5py.File ( tmpfile.name,"w" )
-
+ 
     try: 
-
+ 
       db.startTxn ()
-    
+     
       # if the first argument is numeric.  it is an annoid
       if re.match ( '^[\d,]+$', args[0] ): 
 
@@ -1125,7 +1120,7 @@ def getAnnotation ( webargs ):
             else:
 
               dataoption = AR_CUTOUT
-    
+   
               # Perform argument processing
               brargs = restargs.BrainRestArgs ();
               brargs.cutoutArgs ( args[2], proj.datasetcfg )
@@ -1161,7 +1156,6 @@ def getAnnotation ( webargs ):
     # Close the file on a error: it won't get closed by the Web server
     except: 
       db.rollback()
-      tmpfile.close()
       h5f.close()
       raise
 
@@ -1169,7 +1163,7 @@ def getAnnotation ( webargs ):
     h5f.flush()
     h5f.close()
     db.commit()
-
+ 
     # Return the HDF5 file
     tmpfile.seek(0)
     return tmpfile.read()
@@ -1190,28 +1184,26 @@ def getCSV ( webargs ):
 
     # Make the HDF5 file
     # Create an in-memory HDF5 file
-    tmpfile = tempfile.NamedTemporaryFile()
-    h5f = h5py.File ( tmpfile.name )
+    with closing (tempfile.NamedTemporaryFile()) as tmpfile:
+      h5f = h5py.File ( tmpfile.name )
 
-    try:
-
-      dataoption = AR_BOUNDINGBOX
       try:
-        [resstr, sym, rest] = reststr.partition('/')
-        resolution = int(resstr) 
-      except:
-        logger.warning ( "Improperly formatted cutout arguments {}".format(reststr))
-        raise OCPCAError("Improperly formatted cutout arguments {}".format(reststr))
 
-      
-      getAnnoById ( annoid, h5f, proj, db, dataoption, resolution )
+        dataoption = AR_BOUNDINGBOX
+        try:
+          [resstr, sym, rest] = reststr.partition('/')
+          resolution = int(resstr) 
+        except:
+          logger.warning ( "Improperly formatted cutout arguments {}".format(reststr))
+          raise OCPCAError("Improperly formatted cutout arguments {}".format(reststr))
+  
+        getAnnoById ( annoid, h5f, proj, db, dataoption, resolution )
 
-      # convert the HDF5 file to csv
-      csvstr = h5ann.h5toCSV ( h5f )
-
-    finally:
-      h5f.close()
-      tmpfile.close()
+        # convert the HDF5 file to csv
+        csvstr = h5ann.h5toCSV ( h5f )
+  
+      finally:
+        h5f.close()
 
   return csvstr 
 
@@ -1404,162 +1396,161 @@ def putAnnotation ( webargs, postdata ):
     retvals = [] 
 
     # Make a named temporary file for the HDF5
-    tmpfile = tempfile.NamedTemporaryFile ( )
-    tmpfile.write ( postdata )
-    tmpfile.seek(0)
-    h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
+    with closing (tempfile.NamedTemporaryFile()) as tmpfile:
+      tmpfile.write ( postdata )
+      tmpfile.seek(0)
+      h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
 
-    # get the conflict option if it exists
-    options = optionsargs.split('/')
-    if 'preserve' in options:
-      conflictopt = 'P'
-    elif 'exception' in options:
-      conflictopt = 'E'
-    else:
-      conflictopt = 'O'
-
-    try:
-
-      for k in h5f.keys():
-        
-        idgrp = h5f.get(k)
-
-        # Convert HDF5 to annotation
-        anno = h5ann.H5toAnnotation ( k, idgrp, db )
-
-        # set the identifier (separate transaction)
-        if not ('update' in options or 'dataonly' in options or 'reduce' in options):
-          anno.setID ( db )
-
-        # start a transaction: get mysql out of line at a time mode
-        db.startTxn ()
-
-        tries = 0 
-        done = False
-        while not done and tries < 5:
-
-          try:
-
-            if anno.__class__ in [ annotation.AnnNeuron, annotation.AnnSeed ] and ( idgrp.get('VOXELS') or idgrp.get('CUTOUT')):
-              logger.warning ("Cannot write to annotation type %s" % (anno.__class__))
-              raise OCPCAError ("Cannot write to annotation type %s" % (anno.__class__))
-
-            if 'update' in options and 'dataonly' in options:
-              logger.warning ("Illegal combination of options. Cannot use udpate and dataonly together")
-              raise OCPCAError ("Illegal combination of options. Cannot use udpate and dataonly together")
-
-            elif not 'dataonly' in options and not 'reduce' in options:
-
-              # Put into the database
-              db.putAnnotation ( anno, options )
-
-            #  Get the resolution if it's specified
-            if 'RESOLUTION' in idgrp:
-              resolution = int(idgrp.get('RESOLUTION')[0])
-
-            # Load the data associated with this annotation
-            #  Is it voxel data?
-            if 'VOXELS' in idgrp:
-              voxels = np.array(idgrp.get('VOXELS'),dtype=np.uint32)
-            else: 
-              voxels = None
-
-            if voxels!=None and 'reduce' not in options:
-
-              if 'preserve' in options:
-                conflictopt = 'P'
-              elif 'exception' in options:
-                conflictopt = 'E'
+      # get the conflict option if it exists
+      options = optionsargs.split('/')
+      if 'preserve' in options:
+        conflictopt = 'P'
+      elif 'exception' in options:
+        conflictopt = 'E'
+      else:
+        conflictopt = 'O'
+  
+      try:
+  
+        for k in h5f.keys():
+          
+          idgrp = h5f.get(k)
+  
+          # Convert HDF5 to annotation
+          anno = h5ann.H5toAnnotation ( k, idgrp, db )
+  
+          # set the identifier (separate transaction)
+          if not ('update' in options or 'dataonly' in options or 'reduce' in options):
+            anno.setID ( db )
+  
+          # start a transaction: get mysql out of line at a time mode
+          db.startTxn ()
+  
+          tries = 0 
+          done = False
+          while not done and tries < 5:
+  
+            try:
+  
+              if anno.__class__ in [ annotation.AnnNeuron, annotation.AnnSeed ] and ( idgrp.get('VOXELS') or idgrp.get('CUTOUT')):
+                logger.warning ("Cannot write to annotation type %s" % (anno.__class__))
+                raise OCPCAError ("Cannot write to annotation type %s" % (anno.__class__))
+  
+              if 'update' in options and 'dataonly' in options:
+                logger.warning ("Illegal combination of options. Cannot use udpate and dataonly together")
+                raise OCPCAError ("Illegal combination of options. Cannot use udpate and dataonly together")
+  
+              elif not 'dataonly' in options and not 'reduce' in options:
+  
+                # Put into the database
+                db.putAnnotation ( anno, options )
+  
+              #  Get the resolution if it's specified
+              if 'RESOLUTION' in idgrp:
+                resolution = int(idgrp.get('RESOLUTION')[0])
+  
+              # Load the data associated with this annotation
+              #  Is it voxel data?
+              if 'VOXELS' in idgrp:
+                voxels = np.array(idgrp.get('VOXELS'),dtype=np.uint32)
+              else: 
+                voxels = None
+  
+              if voxels!=None and 'reduce' not in options:
+  
+                if 'preserve' in options:
+                  conflictopt = 'P'
+                elif 'exception' in options:
+                  conflictopt = 'E'
+                else:
+                  conflictopt = 'O'
+  
+                # Check that the voxels have a conforming size:
+                if voxels.shape[1] != 3:
+                  logger.warning ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
+                  raise OCPCAError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
+  
+                exceptions = db.annotate ( anno.annid, resolution, voxels, conflictopt )
+  
+              # Otherwise this is a shave operation
+              elif voxels != None and 'reduce' in options:
+  
+                # Check that the voxels have a conforming size:
+                if voxels.shape[1] != 3:
+                  logger.warning ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
+                  raise OCPCAError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
+                db.shave ( anno.annid, resolution, voxels )
+  
+              # Is it dense data?
+              if 'CUTOUT' in idgrp:
+                cutout = np.array(idgrp.get('CUTOUT'),dtype=np.uint32)
               else:
-                conflictopt = 'O'
-
-              # Check that the voxels have a conforming size:
-              if voxels.shape[1] != 3:
-                logger.warning ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
-                raise OCPCAError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
-
-              exceptions = db.annotate ( anno.annid, resolution, voxels, conflictopt )
-
-            # Otherwise this is a shave operation
-            elif voxels != None and 'reduce' in options:
-
-              # Check that the voxels have a conforming size:
-              if voxels.shape[1] != 3:
-                logger.warning ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
-                raise OCPCAError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
-              db.shave ( anno.annid, resolution, voxels )
-
-            # Is it dense data?
-            if 'CUTOUT' in idgrp:
-              cutout = np.array(idgrp.get('CUTOUT'),dtype=np.uint32)
-            else:
-              cutout = None
-            if 'XYZOFFSET' in idgrp:
-              h5xyzoffset = idgrp.get('XYZOFFSET')
-            else:
-              h5xyzoffset = None
-
-            if cutout != None and h5xyzoffset != None and 'reduce' not in options:
-
-              #  the zstart in datasetcfg is sometimes offset to make it aligned.
-              #   Probably remove the offset is the best idea.  and align data
-              #    to zero regardless of where it starts.  For now.
-              corner = h5xyzoffset[:] 
-              corner[2] -= proj.datasetcfg.slicerange[0]
-
-              db.annotateEntityDense ( anno.annid, corner, resolution, np.array(cutout), conflictopt )
-
-            elif cutout != None and h5xyzoffset != None and 'reduce' in options:
-
-              corner = h5xyzoffset[:] 
-              corner[2] -= proj.datasetcfg.slicerange[0]
-
-              db.shaveEntityDense ( anno.annid, corner, resolution, np.array(cutout))
-
-            elif cutout != None or h5xyzoffset != None:
-              #TODO this is a loggable error
-              pass
-
-            # Is it dense data?
-            if 'CUBOIDS' in idgrp:
-              cuboids = h5ann.H5getCuboids(idgrp)
-              for (corner, cuboiddata) in cuboids:
-                db.annotateEntityDense ( anno.annid, corner, resolution, cuboiddata, conflictopt ) 
-
-            # only add the identifier if you commit
-            if not 'dataonly' in options and not 'reduce' in options:
-              retvals.append(anno.annid)
-
-            # Here with no error is successful
-            done = True
-
-          # rollback if you catch an error
-          except MySQLdb.OperationalError, e:
-            logger.warning (" Put Anntotation: Transaction did not complete. %s" % (e))
-            tries += 1
-            db.rollback()
-            continue
-          except MySQLdb.Error, e:
-            logger.warning ("Put Annotation: Put transaction rollback. %s" % (e))
-            db.rollback()
-            raise
-          except Exception, e:
-            logger.exception ("Put Annotation:Put transaction rollback. %s" % (e))
-            db.rollback()
-            raise
-
-          # Commit if there is no error
-          db.commit()
-
-    finally:
-      h5f.close()
-      tmpfile.close()
-
-    retstr = ','.join(map(str, retvals))
-
-    # return the identifier
-    return retstr
-
+                cutout = None
+              if 'XYZOFFSET' in idgrp:
+                h5xyzoffset = idgrp.get('XYZOFFSET')
+              else:
+                h5xyzoffset = None
+  
+              if cutout != None and h5xyzoffset != None and 'reduce' not in options:
+  
+                #  the zstart in datasetcfg is sometimes offset to make it aligned.
+                #   Probably remove the offset is the best idea.  and align data
+                #    to zero regardless of where it starts.  For now.
+                corner = h5xyzoffset[:] 
+                corner[2] -= proj.datasetcfg.slicerange[0]
+  
+                db.annotateEntityDense ( anno.annid, corner, resolution, np.array(cutout), conflictopt )
+  
+              elif cutout != None and h5xyzoffset != None and 'reduce' in options:
+  
+                corner = h5xyzoffset[:] 
+                corner[2] -= proj.datasetcfg.slicerange[0]
+  
+                db.shaveEntityDense ( anno.annid, corner, resolution, np.array(cutout))
+  
+              elif cutout != None or h5xyzoffset != None:
+                #TODO this is a loggable error
+                pass
+  
+              # Is it dense data?
+              if 'CUBOIDS' in idgrp:
+                cuboids = h5ann.H5getCuboids(idgrp)
+                for (corner, cuboiddata) in cuboids:
+                  db.annotateEntityDense ( anno.annid, corner, resolution, cuboiddata, conflictopt ) 
+  
+              # only add the identifier if you commit
+              if not 'dataonly' in options and not 'reduce' in options:
+                retvals.append(anno.annid)
+  
+              # Here with no error is successful
+              done = True
+  
+            # rollback if you catch an error
+            except MySQLdb.OperationalError, e:
+              logger.warning (" Put Anntotation: Transaction did not complete. %s" % (e))
+              tries += 1
+              db.rollback()
+              continue
+            except MySQLdb.Error, e:
+              logger.warning ("Put Annotation: Put transaction rollback. %s" % (e))
+              db.rollback()
+              raise
+            except Exception, e:
+              logger.exception ("Put Annotation:Put transaction rollback. %s" % (e))
+              db.rollback()
+              raise
+  
+            # Commit if there is no error
+            db.commit()
+  
+      finally:
+        h5f.close()
+  
+      retstr = ','.join(map(str, retvals))
+  
+      # return the identifier
+      return retstr
+  
 
 #  Return a list of annotation object IDs
 #  for now by type and status
@@ -1588,38 +1579,37 @@ def queryAnnoObjects ( webargs, postdata=None ):
     #  cutout size and the number of objects.
 
       # Make a named temporary file for the HDF5
-      tmpfile = tempfile.NamedTemporaryFile ( )
-      tmpfile.write ( postdata )
-      tmpfile.seek(0)
-      h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
+      with closing (tempfile.NamedTemporaryFile()) as tmpfile:
+        tmpfile.write ( postdata )
+        tmpfile.seek(0)
+        h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
 
-      try:
-
-
-        corner = h5f['XYZOFFSET'][:]
-        dim = h5f['CUTOUTSIZE'][:]
-        resolution = h5f['RESOLUTION'][0]
-
-        if not proj.datasetcfg.checkCube( resolution, corner[0], corner[0]+dim[0], corner[1], corner[1]+dim[1], corner[2], corner[2]+dim[2] ):
-          logger.warning ( "Illegal cutout corner=%s, dim=%s" % ( corner, dim))
-          raise OCPCAError ( "Illegal cutout corner=%s, dim=%s" % ( corner, dim))
-
-        # RBFIX this a hack
-        #
-        #  the zstart in datasetcfg is sometimes offset to make it aligned.
-        #   Probably remove the offset is the best idea.  and align data
-        #    to zero regardless of where it starts.  For now.
-        corner[2] -= proj.datasetcfg.slicerange[0]
-
-        cutout = db.cutout ( corner, dim, resolution )
-        annoids = np.intersect1d ( annoids, np.unique( cutout.data ))
-
-      finally:
-
-        h5f.close()
-        tmpfile.close()
-
-  return h5ann.PackageIDs ( annoids ) 
+        try:
+  
+  
+          corner = h5f['XYZOFFSET'][:]
+          dim = h5f['CUTOUTSIZE'][:]
+          resolution = h5f['RESOLUTION'][0]
+  
+          if not proj.datasetcfg.checkCube( resolution, corner[0], corner[0]+dim[0], corner[1], corner[1]+dim[1], corner[2], corner[2]+dim[2] ):
+            logger.warning ( "Illegal cutout corner=%s, dim=%s" % ( corner, dim))
+            raise OCPCAError ( "Illegal cutout corner=%s, dim=%s" % ( corner, dim))
+  
+          # RBFIX this a hack
+          #
+          #  the zstart in datasetcfg is sometimes offset to make it aligned.
+          #   Probably remove the offset is the best idea.  and align data
+          #    to zero regardless of where it starts.  For now.
+          corner[2] -= proj.datasetcfg.slicerange[0]
+  
+          cutout = db.cutout ( corner, dim, resolution )
+          annoids = np.intersect1d ( annoids, np.unique( cutout.data ))
+  
+        finally:
+  
+          h5f.close()
+  
+    return h5ann.PackageIDs ( annoids ) 
 
 
 def deleteAnnotation ( webargs ):
@@ -2127,20 +2117,19 @@ def exceptions ( webargs, ):
     exceptions = db.exceptionsCutout ( corner, dim, resolution )
 
     # package as an HDF5 file
-    tmpfile = tempfile.NamedTemporaryFile ()
+    tmpfile = tempfile.NamedTemporaryFile()
     fh5out = h5py.File ( tmpfile.name )
-
+  
     try:
-
+  
       # empty HDF5 file if exceptions = None
       if exceptions == None:
         ds = fh5out.create_dataset ( "exceptions", (3,), np.uint8 )
       else:
         ds = fh5out.create_dataset ( "exceptions", tuple(exceptions.shape), exceptions.dtype, compression='gzip', data=exceptions )
-
+  
     except:
       fh5out.close()
-      tmpfile.close()
       raise
 
     fh5out.close()
