@@ -114,7 +114,7 @@ class OCPCADB:
       raise
 
     # create annidx object
-    if (self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS):
+    if (self.annoproj.getDBType() in ocpcaproj.ANNOTATION_DATASETS):
       self.annoIdx = annindex.AnnotateIndex ( self.kvio, self.annoproj )
 
   def close ( self ):
@@ -363,27 +363,26 @@ class OCPCADB:
       return identifier+1
 
 
-  #
-  # getCube
-  #
+  # GET and PUT Methods for Image/Annotaion Databases
+
   def getCube ( self, key, resolution, update=False ):
-    """Load a cube from the annotation database"""
+    """ Load a cube from the database """
 
     # get the size of the image and cube
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
     # Create a cube object
-    if (self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS):
+    if (self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS):
       cube = anncube.AnnotateCube ( cubedim )
-    elif (self.annoproj.getDBType()==ocpcaproj.PROBMAP_32bit):
+    elif (self.annoproj.getDBType() == ocpcaproj.PROBMAP_32bit):
       cube = probmapcube.ProbMapCube32 ( cubedim )
-    elif (self.annoproj.getDBType()==ocpcaproj.IMAGES_8bit):
+    elif (self.annoproj.getDBType() == ocpcaproj.IMAGES_8bit):
       cube = imagecube.ImageCube8 ( cubedim )
-    elif (self.annoproj.getDBType()==ocpcaproj.IMAGES_16bit):
+    elif (self.annoproj.getDBType() == ocpcaproj.IMAGES_16bit):
       cube = imagecube.ImageCube16 ( cubedim )
-    elif (self.annoproj.getDBType()==ocpcaproj.RGB_32bit):
+    elif (self.annoproj.getDBType() == ocpcaproj.RGB_32bit):
       cube = imagecube.ImageCube32 ( cubedim )
-    elif (self.annoproj.getDBType()==ocpcaproj.RGB_64bit):
+    elif (self.annoproj.getDBType() == ocpcaproj.RGB_64bit):
       cube = imagecube.ImageCube64 ( cubedim )
     else:
       raise OCPCAError ("Unknown project type {}".format(self.annoproj.getDBType()))
@@ -413,11 +412,13 @@ class OCPCADB:
 
     return cube
 
-  #
-  # cputCube
-  #  RBRM
-  # cgetCube
-  #
+
+  def getCubes ( self, listofidxs, resolution ):
+    """ Return a list of cubes """
+
+    return self.kvio.getCubes( listofidxs, resolution )
+
+
   def cgetCube ( self, key, resolution, update=False ):
     """Load a cube from the annotation database"""
 
@@ -425,13 +426,13 @@ class OCPCADB:
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
     # Create a cube object
-    if (self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS):
+    if (self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS):
       cube = anncube.AnnotateCube ( cubedim )
-    elif (self.annoproj.getDBType()==ocpcaproj.PROBMAP_32bit):
+    elif (self.annoproj.getDBType() == ocpcaproj.PROBMAP_32bit):
       cube = probmapcube.ProbMapCube32 ( cubedim )
-    elif (self.annoproj.getDBType()==ocpcaproj.IMAGES_8bit):
+    elif (self.annoproj.getDBType() == ocpcaproj.IMAGES_8bit):
       cube = imagecube.ImageCube8 ( cubedim )
-    elif (self.annoproj.getDBType()==ocpcaproj.IMAGES_16bit):
+    elif (self.annoproj.getDBType() == ocpcaproj.IMAGES_16bit):
       cube = imagecube.ImageCube16 ( cubedim )
     else:
       raise OCPCAError ("Unknown project type {}".format(self.annoproj.getDBType()))
@@ -453,6 +454,44 @@ class OCPCADB:
 
     return cube
 
+
+  def putCube ( self, zidx, resolution, cube, update=False ):
+    """ Store a cube in the annotation database """
+    
+    # Handle the cube format here.  
+    if self.NPZ:
+      self.kvio.putCube ( zidx, resolution, cube.toNPZ(), not cube.fromZeros() )
+    else:
+      tmpfile= tempfile.NamedTemporaryFile ()
+      h5 = h5py.File ( tmpfile.name, driver="core" )
+      import time
+      start = time.time()
+      h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype, compression='gzip',  data=cube.data )
+      h5.close()
+      print "HDF5 Time", time.time() - start
+      tmpfile.seek(0)
+
+      self.kvio.putCube ( zidx, resolution, tmpfile.read(), not cube.fromZeros() )
+      tmpfile.close()
+  
+  
+  def putCubes ( self, listofidxs, resolution, cube ):
+    """ Store a cube in the annotation database. Does not work currently. """
+
+    # Handle the cube format here.  
+    if self.NPZ:
+      self.kvio.putCubes ( listofidxs, resolution, cube.toNPZ(), not cube.fromZeros() )
+    else:
+      tmpfile= tempfile.NamedTemporaryFile ()
+      h5 = h5py.File ( tmpfile.name )
+      h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype, compression='gzip',  data=cube.data )
+      h5.close()
+      tmpfile.seek(0)
+
+      self.kvio.putCubes ( listofidxs, resolution, tmpfile.read(), not cube.fromZeros() )
+      tmpfile.close()
+  
+  
   def cputCube ( self, zidx, resolution, cube ):
     """Store a cube in the annotation database"""
 
@@ -467,10 +506,150 @@ class OCPCADB:
     tmpfile.close()
 
 
-  #
-  # putCube
-  #
-  def putCube ( self, zidx, resolution, cube ):
+  # GET AND PUT methods for Channel Database
+  
+  def getChannelCube ( self, key, channel, resolution, update=False ):
+    """ Load a cube from the database """
+
+    # get the size of the image and cube
+    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
+
+    # Create a cube object
+    if self.annoproj.getDBType() == ocpcaproj.CHANNELS_8bit:
+      cube = imagecube.ImageCube8 ( cubedim )
+    elif self.annoproj.getDBType() == ocpcaproj.CHANNELS_16bit:
+      cube = imagecube.ImageCube16 ( cubedim )
+    else:
+      raise OCPCAError ("Unknown project type {}".format(self.annoproj.getDBType()))
+  
+    # get the block from the database
+    cubestr = self.kvio.getChannelCube ( key, channel, resolution, update )
+
+    if not cubestr:
+      cube.zeros()
+    else:
+      # Handle the cube format here.  
+      if self.NPZ:
+          # decompress the cube
+          cube.fromNPZ ( cubestr )
+
+      else:
+          # cubes are HDF5 files
+          tmpfile = tempfile.NamedTemporaryFile ()
+          tmpfile.write ( cubestr )
+          tmpfile.seek(0)
+          h5 = h5py.File ( tmpfile.name ) 
+
+          # load the numpy array
+          cube.data = np.array ( h5['cuboid'] )
+          h5.close()
+          tmpfile.close()
+
+    return cube
+  
+  
+  def getChannelCubes ( self, listofidxs, channel, resolution ):
+    """ Return a list of channel cubes """
+
+    return self.kvio.getChannelCubes ( listofidxs, channel, resolution )
+
+  
+  def putChannel ( self, channelstr, channelid ):
+    """ Store the channel in the channels database """
+
+    self.kvio.putChannel ( channelstr, channelid )
+  
+  
+  def putChannelCube ( self, zidx, channel, resolution, cube, update=False ):
+    """Store a cube in the annotation database"""
+
+    # Handle the cube format here.  
+    if self.NPZ:
+      #self.kvio.putChannelCube ( zidx, channel, resolution, cube.toNPZ(), not cube.fromZeros() )
+      self.kvio.putChannelCube ( zidx, channel, resolution, cube.toNPZ(), update )
+    else:
+      tmpfile= tempfile.NamedTemporaryFile ()
+      h5 = h5py.File ( tmpfile.name, driver='core', backing_store=True )
+      h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype, compression='gzip',  data=cube.data )
+      h5.close()
+      tmpfile.seek(0)
+      self.kvio.putChannelCube ( zidx, channel, resolution, tmpfile.read(), update )
+      tmpfile.close()
+  
+  
+  # GET AND PUT methods for Timeseries Database
+  
+  def getTimeSeriesCube ( self, key, timestamp, resolution, update=False ):
+    """ Load a cube from the database """
+
+    # get the size of the image and cube
+    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
+
+    # Create a cube object
+    if self.annoproj.getDBType() == ocpcaproj.TIMESERIES_4d_8bit:
+      cube = imagecube.ImageCube8 ( cubedim )
+    elif self.annoproj.getDBType() == ocpcaproj.TIMESERIES_4d_16bit:
+      cube = imagecube.ImageCube16 ( cubedim )
+    else:
+      raise OCPCAError ("Unknown project type {}".format(self.annoproj.getDBType()))
+  
+    # get the block from the database
+    cubestr = self.kvio.getTimeSeriesCube ( key, timestamp, resolution, update )
+
+    if not cubestr:
+      cube.zeros()
+    else:
+      # Handle the cube format here.  
+      if self.NPZ:
+          # decompress the cube
+          cube.fromNPZ ( cubestr )
+
+      else:
+          # cubes are HDF5 files
+          tmpfile = tempfile.NamedTemporaryFile ()
+          tmpfile.write ( cubestr )
+          tmpfile.seek(0)
+          h5 = h5py.File ( tmpfile.name ) 
+
+          # load the numpy array
+          cube.data = np.array ( h5['cuboid'] )
+          h5.close()
+          tmpfile.close()
+
+    return cube
+  
+  
+  def getTimeSeriesCubes ( self, listofidxs, timestamp, resolution ):
+    """ Return a list of timeseries cubes """
+
+    return self.kvio.getChannelCubes ( listofidxs, timsestamp, resolution )
+  
+  
+  def getTimeSeriesColumn ( self, idx, listoftimestamps, resolution ):
+    """ Return a column of timeseries cubes. Better at I/O """
+
+    return self.kvio.getTimeSeriesColumn ( idx, listoftimestamps, resolution )
+
+  
+  def putTimeSeriesCube ( self, zidx, timestamp, resolution, cube, update=False ):
+    """Store a cube in the annotation database"""
+
+    # Handle the cube format here.  
+    if self.NPZ:
+      self.kvio.putTimeSeriesCube ( zidx, timestamp, resolution, cube.toNPZ(), not cube.fromZeros() )
+    else:
+      tmpfile= tempfile.NamedTemporaryFile ()
+      h5 = h5py.File ( tmpfile.name, driver='core', backing_store=True )
+      h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype, compression='gzip',  data=cube.data )
+      h5.close()
+      tmpfile.seek(0)
+      self.kvio.putTimeSeriesCube ( zidx, timestamp, resolution, tmpfile.read(), update )
+      tmpfile.close()
+  
+  
+  # TODO Unwanted Functions. Do these need to go RB?
+
+  def putUnwantedCube ( self, zidx, resolution, cube ):
     """Store a cube in the annotation database"""
 
     # Handle the cube format here.  
@@ -487,29 +666,6 @@ class OCPCADB:
       tmpfile.close()
 
 
-  #
-  # putBatchCube
-  #
-  def putBatchCube ( self, zidx, resolution, cube ):
-    """Store a cube in the annotation database"""
-
-    # Handle the cube format here.  
-    if self.NPZ:
-      self.kvio.putBatchCube ( zidx, resolution, cube.toNPZ(), not cube.fromZeros() )
-    else:
-      tmpfile= tempfile.NamedTemporaryFile ()
-      h5 = h5py.File ( tmpfile.name )
-      h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype, compression='gzip',  data=cube.data )
-      h5.close()
-      tmpfile.seek(0)
-
-      self.kvio.putBatchCube ( zidx, resolution, tmpfile.read(), not cube.fromZeros() )
-      tmpfile.close()
-
-
-  #
-  # getExceptions
-  #
   def getExceptions ( self, zidx, resolution, annoid ):
     """Load a cube from the annotation database"""
 
@@ -533,9 +689,6 @@ class OCPCADB:
       return []
 
 
-  #
-  # updateExceptions
-  #
   def updateExceptions ( self, key, resolution, exid, exceptions, update=False ):
     """Merge new exceptions with existing exceptions"""
 
@@ -569,20 +722,15 @@ class OCPCADB:
     else:
       tmpfile= tempfile.NamedTemporaryFile ()
       h5 = h5py.File ( tmpfile.name )
-      h5.create_dataset ( "exceptions", tuple(exceptions.shape), exceptions.dtype,
-                               compression='gzip',  data=exceptions )
+      h5.create_dataset ( "exceptions", tuple(exceptions.shape), exceptions.dtype, compression='gzip',  data=exceptions )
       h5.close()
       tmpfile.seek(0)
       self.kvio.putExceptions ( key, resolution, exid, tmpfile.read(), update )
       tmpfile.close()
 
 
-  #
-  # removeExceptions
-  #
   def removeExceptions ( self, key, resolution, entityid, exceptions ):
-    """Remove a list of exceptions"""
-    """Should be done in a transaction"""
+    """Remove a list of exceptions. Should be done in a transaction"""
 
     curexlist = self.getExceptions( key, resolution, entityid ) 
 
@@ -596,14 +744,10 @@ class OCPCADB:
       self.putExceptions ( key, resolution, exid, exlist, True )
 
 
-  #
-  # queryRange
-  #
   def queryRange ( self, lowkey, highkey, resolution ):
-    """Create a stateful query to a range of values not including the high value.
-         To be used with getNextCube().
-         Not thread safe (context per object)
-         Also, one cursor only.  Not at multiple resolutions"""
+    """ Create a stateful query to a range of values not including the high value. 
+        To be used with getNextCube().Not thread safe (context per object)
+        Also, one cursor only.  Not at multiple resolutions """
 
     self._qr_cursor = self.conn.cursor ()
     self._qr_resolution = resolution
@@ -618,12 +762,8 @@ class OCPCADB:
       raise
 
   
-  #
-  # getNextCube
-  #
   def getNextCube ( self ):
-    """Retrieve the next cube in a queryRange.
-         Not thread safe (context per object)"""
+    """ Retrieve the next cube in a queryRange. Not thread safe (context per object) """
 
     # get the size of the image and cube
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ self._qr_resolution ] 
@@ -643,9 +783,8 @@ class OCPCADB:
       cube.fromNPZ ( row[1] )
       return [row[0],cube]
 
-  #
-  # getAllExceptions
-  #
+
+
   def getAllExceptions ( self, key, resolution ):
     """Load all exceptions for this cube"""
 
@@ -694,11 +833,17 @@ class OCPCADB:
 #    if max(locations[:,2]) > self.datasetcfg.slicerange[1]:
 #      logger.error("Bad adjusted locations. Max z slice value {}".format(max(locations[:,2])))
 
+    import time
+    totaltime2 = totaltime3 = 0
+    start = time.time()
     cubelocs = ocplib.locate_ctype ( np.array(locations, dtype=np.uint32), cubedim )
+    print "Locations",time.time()-start
     #cubelocs = cubeLocs_cy ( np.array(locations, dtype=np.uint32), cubedim )
 
     # sort the arrary, by cubeloc
+    start4 = time.time()
     cubelocs = ocplib.quicksort ( cubelocs )
+    print "Sort", time.time()-start4
     #cubelocs2.view('u4,u4,u4,u4').sort(order=['f0'], axis=0)
 
     # get the nonzero element offsets 
@@ -708,7 +853,6 @@ class OCPCADB:
 
     # start a transaction if supported
     self.kvio.startTxn()
-
     for i in range(len(listoffsets)-1):
 
       # grab the list of voxels for the first cube
@@ -716,7 +860,9 @@ class OCPCADB:
       #  and the morton key
       key = cubelocs[listoffsets[i],0]
 
+      start3 = time.time()
       cube = self.getCube ( key, resolution, True )
+      totaltime3 += time.time()-start3
 
       # get a voxel offset for the cube
       cubeoff = ocplib.MortonXYZ( key )
@@ -724,7 +870,9 @@ class OCPCADB:
       offset = np.asarray([cubeoff[0]*cubedim[0],cubeoff[1]*cubedim[1],cubeoff[2]*cubedim[2]], dtype = np.uint32)
 
       # add the items
+      start2 = time.time()
       exceptions = np.array(cube.annotate_ctype(entityid, offset, voxlist, conflictopt), dtype=np.uint8)
+      totaltime2 += time.time()-start2
       #exceptions = np.array(cube.annotate(entityid, offset, voxlist, conflictopt), dtype=np.uint8)
 
       # update the sparse list of exceptions
@@ -732,7 +880,9 @@ class OCPCADB:
         if len(exceptions) != 0:
           self.updateExceptions ( key, resolution, entityid, exceptions )
 
+      start3 = time.time()
       self.putCube ( key, resolution, cube)
+      totaltime3 += time.time() - start3
 
       # add this cube to the index
       cubeidx[entityid].add(key)
@@ -740,6 +890,7 @@ class OCPCADB:
     # write it to the database
     self.annoIdx.updateIndexDense(cubeidx,resolution)
     # commit cubes.  not commit controlled with metadata
+    print "Annotate",totaltime2,"IO",totaltime3
     self.kvio.commit()
 
 
@@ -799,7 +950,7 @@ class OCPCADB:
         offset = np.asarray( [cubeoff[0]*cubedim[0],cubeoff[1]*cubedim[1],cubeoff[2]*cubedim[2]], dtype=np.uint32 )
 
         # remove the items
-        exlist, zeroed = cube.shave(entityid, offset, voxlist)
+        exlist, zeroed = cube.shave_ctype (entityid, offset, voxlist)
         # make sure that exceptions are stored as 8 bits
         exceptions = np.array(exlist, dtype=np.uint8)
 
@@ -854,6 +1005,8 @@ class OCPCADB:
 
     # start a transaction if supported
     self.kvio.startTxn()
+    import time
+    totaltime2 = totaltime3 = 0
 
     try:
 
@@ -862,10 +1015,14 @@ class OCPCADB:
           for x in range(xnumcubes):
 
             key = ocplib.XYZMorton ([x+xstart,y+ystart,z+zstart])
+            start3 = time.time()
             cube = self.getCube ( key, resolution, True )
-
+            totaltime3 += time.time()-start3
+            
             if conflictopt == 'O':
+              start2 = time.time()
               cube.overwrite ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
+              totaltime2 += time.time()-start2
             elif conflictopt == 'P':
               cube.preserve ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
             elif conflictopt == 'E': 
@@ -887,12 +1044,13 @@ class OCPCADB:
             else:
               logger.error ( "Unsupported conflict option %s" % conflictopt )
               raise OCPCAError ( "Unsupported conflict option %s" % conflictopt )
-
+            
+            start3 = time.time()
             self.putCube ( key, resolution, cube )
+            totaltime3 += time.time()-start3
 
             #update the index for the cube
             # get the unique elements that are being added to the data
-
             uniqueels = np.unique ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
             for el in uniqueels:
               index_dict[el].add(key) 
@@ -901,15 +1059,15 @@ class OCPCADB:
             if 0 in index_dict:
               del(index_dict[0])
 
-
       # Update all indexes
       self.annoIdx.updateIndexDense(index_dict,resolution)
       # commit cubes.  not commit controlled with metadata
 
+      print "Overwrite",totaltime2,"IO",totaltime3
     except:
       self.kvio.rollback()
       raise
-
+    
     self.kvio.commit()
 
 
@@ -919,8 +1077,13 @@ class OCPCADB:
   def annotateEntityDense ( self, entityid, corner, resolution, annodata, conflictopt ):
     """Relabel all nonzero pixels to annotation id and call annotateDense"""
 
-    vec_func = np.vectorize ( lambda x: 0 if x == 0 else entityid ) 
-    annodata = vec_func ( annodata )
+    #vec_func = np.vectorize ( lambda x: 0 if x == 0 else entityid ) 
+    #annodata = vec_func ( annodata )
+    import time
+    start = time.time()
+    annodata = ocplib.annotateEntityDense_ctype ( annodata, entityid )
+    print "EntityDense",time.time()-start
+
     return self.annotateDense ( corner, resolution, annodata, conflictopt )
 
   #
@@ -1056,7 +1219,7 @@ class OCPCADB:
 
     # alter query if  (ocpcaproj)._resolution is > resolution
     # if cutout is below resolution, get a smaller cube and scaleup
-    if (self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS or self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS_64bit) and self.annoproj.getResolution() > resolution:
+    if self.annoproj.getDBType() in ocpcaproj.ANNOTATION_DATASETS and self.annoproj.getResolution() > resolution:
 
       #find the effective dimensions of the cutout (where the data is)
       effcorner, effdim, (xpixeloffset,ypixeloffset) = self._zoominCutout ( corner, dim, resolution )
@@ -1065,7 +1228,7 @@ class OCPCADB:
 
     # alter query if  (ocpcaproj)._resolution is < resolution
     # if cutout is above resolution, get a large cube and scaledown
-    elif (self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS or self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS_64bit) and self.annoproj.getResolution() < resolution and False:  #PYTODO self.annoproj.isPropagated() True needs to be a project dervied flag to specify is we have scaled or not 
+    elif self.annoproj.getDBType() in ocpcaproj.ANNOTATION_DATASETS and self.annoproj.getResolution() < resolution and self.annoproj.getPropagate() not in [ocpcaproj.PROPAGATED]:  
 
       [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ self.annoproj.getResolution() ] 
       effcorner, effdim = self._zoomoutCutout ( corner, dim, resolution )
@@ -1098,7 +1261,7 @@ class OCPCADB:
     else:
       dbname = self.annoproj.getTable(effresolution)
 
-    if (self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS or self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS):
+    if self.annoproj.getDBType() in ocpcaproj.ANNOTATION_DATASETS:
 
       # input cube is the database size
       incube = anncube.AnnotateCube ( cubedim )
@@ -1109,14 +1272,14 @@ class OCPCADB:
                                         znumcubes*zcubedim] )
       outcube.zeros()
 
-    elif (self.annoproj.getDBType() == ocpcaproj.IMAGES_8bit or self.annoproj.getDBType() == ocpcaproj.CHANNELS_8bit):
+    elif self.annoproj.getDBType() in ocpcaproj.DATASETS_8bit:
 
       incube = imagecube.ImageCube8 ( cubedim )
       outcube = imagecube.ImageCube8 ( [xnumcubes*xcubedim,\
                                         ynumcubes*ycubedim,\
                                         znumcubes*zcubedim] )
 
-    elif (self.annoproj.getDBType() == ocpcaproj.IMAGES_16bit or self.annoproj.getDBType() == ocpcaproj.CHANNELS_16bit):
+    elif self.annoproj.getDBType() in ocpcaproj.DATASETS_16bit:
       
       incube = imagecube.ImageCube16 ( cubedim )
       outcube = imagecube.ImageCube16 ( [xnumcubes*xcubedim,\
@@ -1144,7 +1307,7 @@ class OCPCADB:
                                         ynumcubes*ycubedim,\
                                         znumcubes*zcubedim] )
                                         
-   # Build a list of indexes to access
+    # Build a list of indexes to access
     listofidxs = []
     for z in range ( znumcubes ):
       for y in range ( ynumcubes ):
@@ -1166,12 +1329,24 @@ class OCPCADB:
 #      self.kvio.getChannelCubes(channel,listofidxs)
 #
 #    else:
+    
     self.kvio.startTxn()
 
     try:
 
-      cuboids = self.kvio.getCubes(listofidxs,effresolution)
- 
+
+      if self.annoproj.getDBType() in ocpcaproj.CHANNEL_DATASETS:
+        # Convert channel as needed
+        channel = ocpcachannel.toID ( channel, self )
+        cuboids = self.kvio.getChannelCubes(listofidxs,channel,effresolution)
+      elif self.annoproj.getDBType() in ocpcaproj.TIMESERIES_DATASETS:
+        cuboids = self.kvio.getTimeSeriesCubes(listofidxs,int(channel),effresolution)
+      else:
+        cuboids = self.kvio.getCubes(listofidxs,effresolution)
+      
+      import time
+      start = time.time()
+      totaltime2 = totaltime3 = totaltime4 = totaltime5 = totaltime6 = 0
       # use the batch generator interface
       for idx, datastring in cuboids:
 
@@ -1179,8 +1354,11 @@ class OCPCADB:
         curxyz = ocplib.MortonXYZ(int(idx))
         offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
 
-        if self.NPZ: 
+        start4 = time.time()
+        if self.NPZ:
+          start2 = time.time()
           incube.fromNPZ ( datastring[:] )
+          totaltime2 += time.time()-start2
 
           #RB testing
 #          self.cputCube ( idx, resolution, incube )
@@ -1189,23 +1367,35 @@ class OCPCADB:
         else:
           # cubes are HDF5 files
           tmpfile = tempfile.NamedTemporaryFile ()
+          start5 = time.time()
           tmpfile.write ( datastring )
+          totaltime5 += time.time() - start5
           tmpfile.seek(0)
-          h5 = h5py.File ( tmpfile.name ) 
-
+          start2 = time.time()
+          h5 = h5py.File ( tmpfile.name, driver='core', backing_store=False ) 
+          totaltime2 += time.time()-start2
           # load the numpy array
+          start6 = time.time()
           incube.data = np.array ( h5['cuboid'] )
+          totaltime6 += time.time()-start6
 
           h5.close()
+
           tmpfile.close()
 
+        totaltime4 += time.time()-start4
         # apply exceptions if it's an annotation project
-        if annoids!= None and self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS:
+        if annoids!= None and self.annoproj.getDBType() in ocpcaproj.ANNOTATION_DATASETS:
           incube.data = ocplib.filter_ctype_OMP ( incube.data, annoids )
           self.applyCubeExceptions ( annoids, effresolution, idx, incube )
 
         # add it to the output cube
-        outcube.addData ( incube, offset ) 
+        start3 = time.time()
+        outcube.addData_new ( incube, offset ) 
+        totaltime3 += time.time()-start3
+
+      print "ReadFile:", totaltime2,"TempFile",totaltime5, "Array",totaltime6, "Add Cube", totaltime3, "Combined", totaltime4
+      print "Total time:",time.time()-start, "Difference", time.time()-start-totaltime2-totaltime3-totaltime4
 
     except:
       self.kvio.rollback()
@@ -1214,7 +1404,7 @@ class OCPCADB:
     self.kvio.commit()
 
     # if we fetched a smaller cube to zoom, correct the result
-    if (self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS or self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS) and self.annoproj.getResolution() > resolution:
+    if self.annoproj.getDBType() in ocpcaproj.ANNOTATION_DATASETS and self.annoproj.getResolution() > resolution:
 
       outcube.zoomData ( self.annoproj.getResolution()-resolution )
 
@@ -1222,7 +1412,7 @@ class OCPCADB:
       outcube.trim ( corner[0]%(xcubedim*(2**(self.annoproj.getResolution()-resolution)))+xpixeloffset,dim[0], corner[1]%(ycubedim*(2**(self.annoproj.getResolution()-resolution)))+ypixeloffset,dim[1], corner[2]%zcubedim,dim[2] )
 
     # if we fetch a larger cube, downscale it and correct
-    elif (self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS or self.annoproj.getDBType()==ocpcaproj.ANNOTATIONS_64bit) and self.annoproj.getResolution() < resolution and False:  #RBTODO True needs to be a project dervied flag to specify is we have scaled or not 
+    elif self.annoproj.getDBType() in ocpcaproj.ANNOTATION_DATASETS and self.annoproj.getResolution() < resolution and self.annoproj.getPropagate() not in [ocpcaproj.PROPAGATED]:
 
       outcube.downScale ( resolution-self.annoproj.getResolution() )
 
@@ -1232,6 +1422,98 @@ class OCPCADB:
     # need to trim down the array to size
     #  only if the dimensions are not the same
     elif dim[0] % xcubedim  == 0 and dim[1] % ycubedim  == 0 and dim[2] % zcubedim  == 0 and corner[0] % xcubedim  == 0 and corner[1] % ycubedim  == 0 and corner[2] % zcubedim  == 0:
+      pass
+    else:
+      outcube.trim ( corner[0]%xcubedim,dim[0],corner[1]%ycubedim,dim[1],corner[2]%zcubedim,dim[2] )
+
+    return outcube
+
+  #
+  #  Return a cube of data from the database
+  #  Must account for zeros.
+  #
+  def TimeSeriesCutout ( self, corner, dim, resolution, timerange ):
+    """Extract a cube of arbitrary size.  Need not be aligned."""
+
+    # get the size of the image and cube
+    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
+
+    # Round to the nearest larger cube in all dimensions
+    zstart = corner[2]/zcubedim
+    ystart = corner[1]/ycubedim
+    xstart = corner[0]/xcubedim
+
+    znumcubes = (corner[2]+dim[2]+zcubedim-1)/zcubedim - zstart
+    ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
+    xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
+
+    # use the requested resolution
+    dbname = self.annoproj.getTable(resolution)
+
+    if self.annoproj.getDBType() in ocpcaproj.DATASETS_8bit:
+
+      incube = imagecube.ImageCube8 ( cubedim )
+      outcube = imagecube.ImageCube8 ( [xnumcubes*xcubedim, ynumcubes*ycubedim, znumcubes*zcubedim] )
+
+    elif self.annoproj.getDBType() in ocpcaproj.DATASETS_16bit:
+      
+      incube = imagecube.ImageCube16 ( cubedim )
+      outcube = imagecube.ImageCube16 ( [xnumcubes*xcubedim, ynumcubes*ycubedim, znumcubes*zcubedim] )
+                                        
+    # Build a list of indexes to access
+    listofidxs = []
+    for z in range ( znumcubes ):
+      for y in range ( ynumcubes ):
+        for x in range ( xnumcubes ):
+          mortonidx = ocplib.XYZMorton ( [x+xstart, y+ystart, z+zstart] )
+          listofidxs.append ( mortonidx )
+
+    # Sort the indexes in Morton order
+    listofidxs.sort()
+
+    # xyz offset stored for later use
+    lowxyz = ocplib.MortonXYZ ( listofidxs[0] )
+
+    self.kvio.startTxn()
+
+    try:
+
+      for idx in listofidxs:
+
+        cuboids = self.kvio.getTimeSeriesColumn (idx, range(timerange[0],timerange[1]), resolution)
+        
+        # use the batch generator interface
+        for idx, datastring in cuboids:
+
+          #add the query result cube to the bigger cube
+          curxyz = ocplib.MortonXYZ(int(idx))
+          offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
+
+          if self.NPZ:
+            incube.fromNPZ ( datastring[:] )
+
+          else:
+            # cubes are HDF5 files
+            tmpfile = tempfile.NamedTemporaryFile ()
+            tmpfile.write ( datastring )
+            tmpfile.seek(0)
+            h5 = h5py.File ( tmpfile.name, driver='core', backing_store=False ) 
+            # load the numpy array
+            incube.data = np.array ( h5['cuboid'] )
+            h5.close()
+            tmpfile.close()
+
+          # add it to the output cube
+          outcube.addData_new ( incube, offset ) 
+
+    except:
+      self.kvio.rollback()
+      raise
+
+    self.kvio.commit()
+
+    # need to trim down the array to size only if the dimensions are not the same
+    if dim[0] % xcubedim  == 0 and dim[1] % ycubedim  == 0 and dim[2] % zcubedim  == 0 and corner[0] % xcubedim  == 0 and corner[1] % ycubedim  == 0 and corner[2] % zcubedim  == 0:
       pass
     else:
       outcube.trim ( corner[0]%xcubedim,dim[0],corner[1]%ycubedim,dim[1],corner[2]%zcubedim,dim[2] )
@@ -1348,8 +1630,12 @@ class OCPCADB:
     voxlist = []
 
     zidxs = self.annoIdx.getIndex(entityid,effectiveres)
+    if type(zidxs[0]) == np.float64:
+      zidxs2 = self.annoIdx.getIndex(entityid,effectiveres)
 
     for zidx in zidxs:
+
+      print zidx
 
       cb = self.getCube (zidx,effectiveres) 
 

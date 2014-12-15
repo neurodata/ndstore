@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 
+=======
+>>>>>>> 875350826f60e0d60c6cede4b96111049ff73701
 # Copyright 2014 Open Connectome Project (http://openconnecto.me)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,6 +16,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+<<<<<<< HEAD
 #kvengine='MySQL'
 kvengine='Cassandra'
 #kvengine='Riak'
+=======
+kvengine='MySQL'
+#kvengine='Cassandra'
+#kvengine='Riak'
+
+#kvserver='172.23.253.63'
+kvserver='localhost'
+>>>>>>> 875350826f60e0d60c6cede4b96111049ff73701

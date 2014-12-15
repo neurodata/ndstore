@@ -19,7 +19,6 @@ import numpy as np
 import urllib, urllib2
 import cStringIO
 #from PIL import Image
-import cv2
 import zlib
 import MySQLdb
 from PIL import Image

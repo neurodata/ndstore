@@ -195,16 +195,15 @@ class Annotation:
   def delete ( self, cursor ):
     """Delete the annotation from the database"""
 
-    sql = "DELETE FROM %s WHERE annoid = %s;"\
-            % ( anno_dbtables['annotation'], self.annid ) 
+    sql = "DELETE {0},{1} FROM {0},{1} WHERE {0}.annoid = {2} and {1}.annoid = {2}".format ( anno_dbtables['annotation'], anno_dbtables['kvpairs'], self.annid ) 
 
-    sql += "DELETE FROM %s WHERE annoid = %s" % ( anno_dbtables['kvpairs'], self.annid )
+    #sql += "DELETE FROM %s WHERE annoid = %s" % ( anno_dbtables['kvpairs'], self.annid )
 
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
-      logger.warning ( "Error deleting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise OCPCAError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      logger.warning ( "Error deleting annotation {}: {}. sql={}".format(e.args[0], e.args[1], sql) )
+      raise OCPCAError ( "Error deleting annotation: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
 
 
   def retrieve ( self, annid, cursor ):
@@ -919,7 +918,7 @@ def getAnnotation ( annid, annodb, cursor ):
   """Return an annotation object by identifier"""
 
   # First, what type is it.  Look at the annotation table.
-  sql = "SELECT type FROM %s WHERE annoid = %s" % ( anno_dbtables['annotation'], annid )
+  sql = "SELECT type FROM {} WHERE annoid = {}".format( anno_dbtables['annotation'], annid )
   try:
     cursor.execute ( sql )
     sqlresult = cursor.fetchone()

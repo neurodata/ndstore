@@ -17,6 +17,7 @@ import zindex
 from PIL import Image
 
 from cube import Cube
+import ocplib
 from windowcutout import windowCutout
 
 #
@@ -58,8 +59,10 @@ class ImageCube8(Cube):
   def overwrite ( self, annodata ):
     """Get's a dense voxel region and overwrites all non-zero values"""
 
-    vector_func = np.vectorize ( lambda a,b: b if b!=0 else a ) 
-    self.data = vector_func ( self.data, annodata ) 
+    #vector_func = np.vectorize ( lambda a,b: b if b!=0 else a ) 
+    #self.data = vector_func ( self.data, annodata ) 
+
+    self.data = ocplib.overwriteDense_ctype ( self.data, annodata )
 
 
   #
@@ -94,13 +97,28 @@ class ImageCube8(Cube):
     newimage = outimage.resize ( [ydim, int(zdim*zscale)] )
     newimage.save ( fileobj, "PNG" )
 
+
+  # RB fixed just this one data type
+
   #
   # Create a slice for CATMAID
   #
-  def catmaidSlice ( self ):
-    
+  def catmaidXYSlice ( self ):
     cmtilesz = self.data.shape[1]
-    self.data = Image.frombuffer ( 'L', [cmtilesz,cmtilesz], self.data, 'raw', 'L', 0, 1 )
+    self.cmimg = Image.frombuffer ( 'L', [cmtilesz,cmtilesz], self.data, 'raw', 'L', 0, 1 )
+
+  def catmaidXZSlice ( self ):
+    cmtilesz = self.data.shape[2]
+    tmpdata = self.data.reshape ( self.data.shape[0], self.data.shape[2] ).copy('C')
+    self.cmimg = Image.frombuffer ( 'L', [cmtilesz,self.data.shape[0]], tmpdata, 'raw', 'L', 0, 1 )
+    self.cmimg = self.cmimg.resize ( [cmtilesz,cmtilesz] )
+
+  def catmaidYZSlice ( self ):
+    cmtilesz = self.data.shape[1]
+    tmpdata = self.data.reshape ( self.data.shape[0], self.data.shape[1] ).copy('C')
+    self.cmimg = Image.frombuffer ( 'L', [cmtilesz,self.data.shape[0]], tmpdata, 'raw', 'L', 0, 1 )
+    self.cmimg = self.cmimg.resize ( [cmtilesz,cmtilesz] )
+
 #
 #  ImageCube16: manipulate the in-memory data representation of the 3-d cube 
 #    includes loading, export, read and write routines
@@ -142,16 +160,17 @@ class ImageCube16(Cube):
   def overwrite ( self, annodata ):
     """Get's a dense voxel region and overwrites all non-zero values"""
 
-    vector_func = np.vectorize ( lambda a,b: b if b!=0 else a ) 
-    self.data = vector_func ( self.data, annodata ) 
+    #vector_func = np.vectorize ( lambda a,b: b if b!=0 else a ) 
+    #self.data = vector_func ( self.data, annodata ) 
 
+    self.data = ocplib.overwriteDense_ctype ( self.data, annodata )
 
   #
   # Create the specified slice (index) at filename
   #
   def xySlice ( self, fileobj ):
 
-# This works for 16-> conversions
+    # This works for 16-> conversions
     zdim,ydim,xdim = self.data.shape
     self.data = np.uint8(self.data)
     outimage = Image.frombuffer ( 'L', (xdim,ydim), self.data[0,:,:].flatten(), 'raw', 'L', 0, 1)
@@ -235,9 +254,10 @@ class ImageCube32(Cube):
   def overwrite ( self, annodata ):
     """Get's a dense voxel region and overwrites all non-zero values"""
 
-    vector_func = np.vectorize ( lambda a,b: b if b!=0 else a ) 
-    self.data = vector_func ( self.data, annodata ) 
+    #vector_func = np.vectorize ( lambda a,b: b if b!=0 else a ) 
+    #self.data = vector_func ( self.data, annodata ) 
 
+    self.data = ocplib.overwriteDense_ctype ( self.data, annodata )
 
   #
   # Create the specified slice (index) at filename
@@ -330,9 +350,10 @@ class ImageCube64(Cube):
   def overwrite ( self, annodata ):
     """Get's a dense voxel region and overwrites all non-zero values"""
 
-    vector_func = np.vectorize ( lambda a,b: b if b!=0 else a ) 
-    self.data = vector_func ( self.data, annodata ) 
+    #vector_func = np.vectorize ( lambda a,b: b if b!=0 else a ) 
+    #self.data = vector_func ( self.data, annodata ) 
 
+    self.data = ocplib.overwriteDense_ctype ( self.data, annodata )
 
   #
   # Create the specified slice (index) at filename

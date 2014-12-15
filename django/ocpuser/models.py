@@ -33,12 +33,22 @@ class ocpProject ( models.Model):
         (8, 'IMAGES_16bit'),
         (9, 'RGB_32bit'),
         (10, 'RGB_64bit'),
+        (11,'TIMESERIES_4d_8bit'),
+        (12,'TIMESERIES_4d_16bit'),
         )
     datatype = models.IntegerField(choices=DATATYPE_CHOICES, default=1)
     
 
 #    dataurl  =  models. CharField(max_length=200)
+    overlayproject = models. CharField(max_length=200,default="None")
+
     resolution = models.IntegerField(default=0)
+    PUBLIC_CHOICES = (
+        (1, 'Yes'),
+        (0, 'No'),
+        )
+    public =  models.IntegerField(choices=PUBLIC_CHOICES, default=0)
+    
     READONLY_CHOICES = (
         (1, 'Yes'),
         (0, 'No'),
@@ -61,6 +71,28 @@ class ocpProject ( models.Model):
 
         )
     host =  models.CharField(max_length=200, choices=HOST_CHOICES, default='localhost')
+    
+    KVENGINE_CHOICES = (
+        ('MySQL','MySQL'),
+        ('Cassandra','Cassandra'),
+        ('Riak','Riak'),
+
+        )
+    kvengine =  models.CharField(max_length=255, choices=KVENGINE_CHOICES, default='MySQL')
+    KVSERVER_CHOICES = (
+        ('localhost','localhost'),
+        ('172.23.253.61','dsp061'),
+        ('172.23.253.62','dsp062'),
+        ('172.23.253.63','dsp063'),
+        )
+    kvserver =  models.CharField(max_length=255, choices=KVSERVER_CHOICES, default='localhost')
+
+    PROPOGATE_CHOICES = (
+        (0, 'NOT PROPOGATED'),
+        (1, 'UNDER PROPOGATION'),
+        (2, 'PROPOGATED'),
+        )
+    propogate =  models.IntegerField(choices=PROPOGATE_CHOICES, default=0)
 #    NOCREATE_CHOICES = (
  #       (0, 'No'),
  #       (1, 'Yes'),
@@ -84,6 +116,8 @@ class ocpDataset ( models.Model):
     endslice = models.IntegerField()
     startwindow = models.IntegerField(default=0)
     endwindow = models.IntegerField(default=0)
+    starttime = models.IntegerField(default=0)
+    endtime = models.IntegerField(default=0)
     zoomlevels = models.IntegerField()
     zscale = models.FloatField()
     description  =  models. CharField(max_length=4096)

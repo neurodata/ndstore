@@ -34,74 +34,52 @@ import ocpcaproj
 import ocpcadb
 import zindex
 
-"""Construct an image hierarchy up from a given resolution"""
+"""Build a Cassandra DB from an existing MySQL DB"""
 
 def main():
 
   parser = argparse.ArgumentParser(description='Build an aeropsike DB from mysql data.')
-  parser.add_argument('token', action="store", help='Token for the project.')
+  parser.add_argument('intoken', action="store", help='Token for the project.')
+  parser.add_argument('outtoken', action="store", help='Token for the project.')
   parser.add_argument('resolution', action="store", type=int)
   
   result = parser.parse_args()
 
-  # as database
-  cluster = Cluster()
-  session = cluster.connect(result.token)
+  # cassandra database
+  outprojdb = ocpcaproj.OCPCAProjectsDB()
+  outproj = outprojdb.loadProject ( result.outtoken )
 
   # mysql database
-  projdb = ocpcaproj.OCPCAProjectsDB()
-  proj = projdb.loadProject ( result.token )
+  inprojdb = ocpcaproj.OCPCAProjectsDB()
+  inproj = inprojdb.loadProject ( result.intoken )
 
-  # Bind the annotation database
-  imgDB = ocpcadb.OCPCADB ( proj )
+  # Bind the databases
+  inDB = ocpcadb.OCPCADB ( inproj )
+  outDB = ocpcadb.OCPCADB ( outproj )
 
   # Get the source database sizes
-  [ximagesz, yimagesz] = proj.datasetcfg.imagesz [ result.resolution ]
-  [xcubedim, ycubedim, zcubedim] = cubedim = proj.datasetcfg.cubedim [ result.resolution ]
+  [ximagesz, yimagesz] = inproj.datasetcfg.imagesz [ result.resolution ]
+  [xcubedim, ycubedim, zcubedim] = cubedim = inproj.datasetcfg.cubedim [ result.resolution ]
 
   # Get the slices
-  [ startslice, endslice ] = proj.datasetcfg.slicerange
+  [ startslice, endslice ] = inproj.datasetcfg.slicerange
   slices = endslice - startslice + 1
 
   # Set the limits for iteration on the number of cubes in each dimension
-  # RBTODO These limits may be wrong for even (see channelingest.py)
-  xlimit = ximagesz / xcubedim
-  ylimit = yimagesz / ycubedim
+  # and the limits of iteration
+  xlimit = (ximagesz-1) / xcubedim + 1
+  ylimit = (yimagesz-1) / ycubedim + 1
   #  Round up the zlimit to the next larger
   zlimit = (((slices-1)/zcubedim+1)*zcubedim)/zcubedim 
 
-  cursor = imgDB.conn.cursor()
-
-  import pdb; pdb.set_trace()
 
   for z in range(zlimit):
     for y in range(ylimit):
       for x in range(xlimit):
 
-#        mysqlcube = imgDB.cutout ( [ x*xcubedim, y*ycubedim, z*zcubedim ], cubedim, result.resolution )
         zidx = zindex.XYZMorton ( [x,y,z] )
-        cube = imgDB.getCube ( zidx, result.resolution )
-        imgDB.cputCube ( zidx, result.resolution, cube )
+        outDB.putCube ( zidx, result.resolution, inDB.getCube ( zidx, result.resolution )) 
         print "Ingesting {}".format(zidx)
-
-#        tmpfiletocass = tempfile.NamedTemporaryFile ()
-#        h5tocass = h5py.File ( tmpfiletocass.name ) 
-#        h5tocass.create_dataset ( "cuboid", tuple(mysqlcube.data.shape), mysqlcube.data.dtype,
-#                                compression='gzip',  data=mysqlcube.data )
-#        h5tocass.close()
-#        tmpfiletocass.seek(0)
-#       
-#        cql = "INSERT INTO cuboids ( resolution, zidx, cuboid ) VALUES ( %s, %s, %s )"
-#        session.execute ( cql, ( result.resolution, zidx, tmpfiletocass.read().encode('hex')))
-#
-#        cql = "SELECT cuboid FROM cuboids WHERE resolution = %s AND zidx = %s"
-#        row = session.execute ( cql, ( result.resolution, zidx ))
-## RB verify that the data is there.
-#        tmpfilefromcass = tempfile.NamedTemporaryFile ()
-#        tmpfilefromcass.write ( row[0].cuboid.decode('hex') )
-#        tmpfilefromcass.seek(0)
-#        h5fromcass = h5py.File ( tmpfilefromcass.name ) 
-
 
 
 if __name__ == "__main__":

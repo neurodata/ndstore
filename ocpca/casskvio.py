@@ -36,7 +36,10 @@ class CassandraKVIO:
 
     # connect to cassandra
     # maybe have multiple names in self.kVENginge todo
+<<<<<<< HEAD
     import pdb; pdb.set_trace()
+=======
+>>>>>>> 875350826f60e0d60c6cede4b96111049ff73701
     self.cluster = Cluster( [db.annoproj.getKVServer()] )
     self.session = self.cluster.connect(db.annoproj.getDBName())
 
@@ -132,8 +135,12 @@ class CassandraKVIO:
   def getExceptions ( self, zidx, resolution, annid ):
     """Retrieve exceptions from the database by token, resolution, and zidx"""
 
-    cql = "SELECT exceptions FROM exceptions WHERE resolution = %s AND zidx = %s and annoid=%s"
-    row = self.session.execute ( cql, (resolution, zidx, annid ))
+    try:
+      cql = "SELECT exceptions FROM exceptions WHERE resolution = %s AND zidx = %s and annoid=%s"
+      row = self.session.execute ( cql, (resolution, zidx, annid ))
+    except Exception, e:
+      import pdb; pdb.set_trace()
+      raise
 
     if row:
       return row[0].exceptions.decode('hex')
