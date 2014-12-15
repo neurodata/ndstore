@@ -740,7 +740,7 @@ def selectPost ( webargs, proj, db, postdata ):
           entityid = db.annotateDense ( corner, resolution, voxarray, conflictopt )
 
       elif service == 'hdf5':
-    
+
         # Process the arguments
         try:
           args = restargs.BrainRestArgs ();
@@ -748,34 +748,36 @@ def selectPost ( webargs, proj, db, postdata ):
         except restargs.RESTArgsError, e:
           logger.warning("REST Arguments %s failed: %s" % (postargs,e))
           raise OCPCAError(e)
-
+  
         corner = args.getCorner()
         resolution = args.getResolution()
-
+  
         # This is used for ingest only now.  So, overwrite conflict option.
         conflictopt = restargs.conflictOption ( "" )
+  
+          # Get the HDF5 file.
+        with closing (tempfile.NamedTemporaryFile ( )) as tmpfile:
 
-        # Get the HDF5 file.
-        tmpfile = tempfile.NamedTemporaryFile ( )
-# RB? where did this come from
-#        self.idgrp.create_dataset ( "VOXELS", (len(voxlist),3), np.uint32, data=voxlist )     
-        tmpfile.write ( postdata )
-        tmpfile.seek(0)
-        h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
-
-        voxarray = np.array(h5f.get('CUTOUT'))
-
-        if proj.getDBType() not in ocpcaproj.ANNOTATION_DATASETS : 
-
-          db.writeCuboid ( corner, resolution, voxarray )
-          # this is just a status
-          entityid=0
-
-        # Choose the verb, get the entity (as needed), and annotate
-        # Translates the values directly
-        else:
-
-          entityid = db.annotateDense ( corner, resolution, voxarray, conflictopt )
+          tmpfile.write ( postdata )
+          tmpfile.seek(0)
+          h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
+  
+          voxarray = np.array(h5f.get('CUTOUT'))
+  
+          if proj.getDBType() not in ocpcaproj.ANNOTATION_DATASETS : 
+  
+            db.writeCuboid ( corner, resolution, voxarray )
+            # this is just a status
+            entityid=0
+  
+          # Choose the verb, get the entity (as needed), and annotate
+          # Translates the values directly
+          else:
+  
+            entityid = db.annotateDense ( corner, resolution, voxarray, conflictopt )
+  
+          h5f.flush()
+          h5f.close()
       
       else:
         logger.warning("An illegal Web POST service was requested: %s.  Args %s" % ( service, webargs ))
@@ -798,6 +800,7 @@ def selectPost ( webargs, proj, db, postdata ):
       logger.exception ("POST transaction rollback. %s" % (e))
       db.rollback()
       raise
+    
 
   return str(entityid)
 
@@ -1552,7 +1555,6 @@ def putAnnotation ( webargs, postdata ):
       h5f.close()
       tmpfile.close()
 
-
     retstr = ','.join(map(str, retvals))
 
     # return the identifier
@@ -2010,6 +2012,7 @@ def merge ( webargs ):
   
   # Make ids a numpy array to speed vectorize
   ids = np.array(ids,dtype=np.uint32)
+  # Validate ids . IF ids do not exist raise errors
 
   # pattern for using contexts to close databases
   # get the project 
@@ -2019,47 +2022,59 @@ def merge ( webargs ):
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
 
-    #mergetype = rest
+# RBTODO indent for closing
+  
+    #Check that all ids in the id strings are valid annotation objects
+    for curid in ids:
+      obj = db.getAnnotation(curid)
+      if obj == None:
+        logger.warning("Invalid object id {} used in merge".format(curid))
+        raise OCPCAError("Invalid object id used in merge")
+
+
     [mergetype,resolution] = rest.split('/',1)
     if mergetype == "global":
-      if resolution != '':
+      if resolution != "":
         [resolution,extra] = resolution.split('/')
-      return db.mergeGlobal(ids, mergetype, resolution)
-    else:
-      [mergetype, imageargs] = mergetype.split ('/',1)
-      print mergetype
-      
-      if mergetype == "2D":
-        slicenum = imageargs.strip('/')
-        return db.merge2D(ids, mergetype, 1, slicenum)
-    
-      elif mergetype == "3D":
-        # 3d merge 
-        imageargs = "1/"+ imageargs
-        print imageargs
-        # Perform argument processing for the bounding box
-        try:
-          args = restargs.BrainRestArgs ();
-          args.mergeArgs ( imageargs, proj.datasetcfg )
-        except restargs.RESTArgsError, e:
-          logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
-          raise OCPCAError(e)
-        # Extract the relevant values
-        corner = args.getCorner()
-        dim = args.getDim()
-        resolution = args.getResolution()
-        
-        print corner
-        print dim
-        print resolution
-        
-        # Perform the relabeling
-       # cube = db.cutout ( corner, dim, resolution, channel )
-      
-
-        return db.merge3D(ids,corner, dim, resolution)
       else:
-        return "Invalid Merge Type : Select global, 2D or 3D"
+        resolution=proj.getResolution()
+      return db.mergeGlobal(ids, mergetype, int(resolution))
+    else:
+      # PYTODO illegal merge (no support if not global)
+      assert 0
+
+# RB -- Priya says all the following is invalid
+#    [mergetype, imageargs] = mergetype.split ('/',1)
+#
+#    
+#    if mergetype == "2D":
+#      slicenum = imageargs.strip('/')
+#      return db.merge2D(ids, mergetype, 1, slicenum)
+#  
+#    elif mergetype == "3D":
+#      # 3d merge 
+#      imageargs = "1/"+ imageargs
+#
+#      # Perform argument processing for the bounding box
+#      try:
+#        args = restargs.BrainRestArgs ();
+#        args.mergeArgs ( imageargs, proj.datasetcfg )
+#      except restargs.RESTArgsError, e:
+#        logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
+#        raise OCPCAError(e)
+#      # Extract the relevant values
+#      corner = args.getCorner()
+#      dim = args.getDim()
+#      resolution = args.getResolution()
+#      
+#      # Perform the relabeling
+#      # cube = db.cutout ( corner, dim, resolution, channel )
+#    
+#      # return db.merge3D(ids,corner, dim, resolution)
+#
+#      # PYTODO throw a real error
+#      else:
+#        return "Invalid Merge Type : Select global, 2D or 3D"
   
   
 def publicTokens ( self ):

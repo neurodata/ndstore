@@ -744,17 +744,26 @@ class OCPCADB:
       self.putExceptions ( key, resolution, exid, exlist, True )
 
 
-  def queryRange ( self, lowkey, highkey, resolution ):
-    """ Create a stateful query to a range of values not including the high value. 
-        To be used with getNextCube().Not thread safe (context per object)
-        Also, one cursor only.  Not at multiple resolutions """
+  #
+  # queryRange
+  #
+  def queryRange ( self, lowkey, highkey, resolution, channel=None ):
+    """Create a stateful query to a range of values not including the high value.
+         To be used with getNextCube().
+         Not thread safe (context per object)
+         Also, one cursor only.  Not at multiple resolutions"""
 
     self._qr_cursor = self.conn.cursor ()
     self._qr_resolution = resolution
 
-    # get the block from the database
-    sql = "SELECT zindex, cube FROM " + self.annoproj.getTable(resolution) + " WHERE zindex >= " + str(lowkey) + " AND zindex < " + str(highkey)
-
+    if channel == None:
+      # get the block from the database
+      sql = "SELECT zindex, cube FROM " + self.annoproj.getTable(resolution) + " WHERE zindex >= " + str(lowkey) + " AND zindex < " + str(highkey)
+    else:
+      # or from a channel database
+      channel = ocpcachannel.toID ( channel, self )
+      sql = "SELECT zindex, cube FROM " + self.annoproj.getTable(resolution) + " WHERE channel = " + str(channel) + " AND zindex >= " + str(lowkey) + " AND zindex < " + str(highkey)
+  
     try:
       self._qr_cursor.execute ( sql )
     except MySQLdb.Error, e:
@@ -1628,10 +1637,8 @@ class OCPCADB:
 
 
     voxlist = []
-
-    zidxs = self.annoIdx.getIndex(entityid,effectiveres)
-    if type(zidxs[0]) == np.float64:
-      zidxs2 = self.annoIdx.getIndex(entityid,effectiveres)
+    
+    zidxs = self.annoIdx.getIndex(entityid,resolution)
 
     for zidx in zidxs:
 
@@ -2060,50 +2067,66 @@ class OCPCADB:
 
 
   def mergeGlobal(self, ids, mergetype, res):
-     # get the size of the image and cube
+    """Global merge routine.  Converts a list of ids into the merge id at a given resolution.
+       This will collapse all exceptions for the voxels for the merged ids."""
+
+    # get the size of the image and cube
     resolution = int(res)
     # ID to merge annotations into 
     mergeid = ids[0]
- 
-    # PYTODO Check if this is a valid annotation that we are relabeling to
-    if len(self.annoIdx.getIndex(int(mergeid),resolution)) == 0:
-      raise OCPCAError(ids[0] + " not a valid annotation id")
+    
+    #logger.warning("Merging ids  {}".format(ids))
+    
+    # Turned off for now( Will's request)
+    #if len(self.annoIdx.getIndex(int(mergeid),resolution)) == 0:
+    #  raise OCPCAError(ids[0] + " not a valid annotation id. This id does not have paint data")
+    
   
     # Get the list of cubeindexes for the Ramon objects
     listofidxs = set()
-
-    self.kvio.startTxn()
-    try:
-
-      # Do this for all ids. 
-      for annid in ids:
-        listofidxs = set(self.annoIdx.getIndex(annid,resolution))
-        for key in listofidxs:
-          cube = self.getCube (key,resolution)
-          #Update exceptions if exception flag is set ( PJM added 03/31/14)
-          if self.EXCEPT_FLAG:
-            oldexlist = self.getExceptions( key, resolution, annid ) 
-            self.kvio.deleteExceptions ( key, resolution, annid )
-          
-          # Cython optimized function  to relabel data from annid to mergeid
-          mergeCube_cy (cube.data,mergeid,annid ) 
-          self.putCube ( key, resolution,cube)
-          
-        # Delete annotation and all it's meta data from the database
-        # except for the merge annotation
-        if annid != mergeid:
-          try:
-            annotation.deleteAnnotation(annid,self,'')
-          except:
-            logger.warning("Failed to delete annotation {} during merge.".format(annid))
-
-
-    except:
-      self.kvio.rollback()
-      raise
-
-    self.kvio.commit()
-
+    addindex = []
+    #import pdb;pdb.set_trace()
+    # RB!!!! do this for all ids, promoting the exceptions of the merge id
+    for annid in ids:
+      if annid== mergeid:
+        continue
+     # import pdb;pdb.set_trace()
+      curindex= self.annoIdx.getIndex(annid,resolution)
+      addindex =np.union1d(addindex,curindex)
+      listofidxs = set(curindex)
+      for key in listofidxs:
+        cube = self.getCube (key,resolution)
+        #Update exceptions if exception flag is set ( PJM added 03/31/14)
+        if self.EXCEPT_FLAG:
+          oldexlist = self.getExceptions( key, resolution, annid ) 
+        #
+        # RB!!!!! this next line is wrong!  the problem is that
+        #  we are merging all annotations.  So at the end, there
+        #  need to be no exceptions left.  This line will leave
+        #  exceptions with the same value as the annotation.
+        #  Just delete the exceptions
+        #
+        #self.updateExceptions ( key, resolution, mergeid, oldexlist )
+          self.deleteExceptions ( key, resolution, annid )
+        
+        # Cython optimized function  to relabel data from annid to mergeid
+        mergeCube_cy (cube.data,mergeid,annid ) 
+        self.putCube ( key, resolution,cube)
+        
+      # Delete annotation and all it's meta data from the database
+      #
+      # RB!!!!! except for the merge annotation
+      
+      if annid != mergeid:
+        try:
+          annotation.deleteAnnotation(annid,self,'')
+          self.annoIdx.deleteIndexResolution(annid,resolution)
+        except:
+          logger.warning("Failed to delete annotation {} during merge.".format(annid))
+   # import pdb;pdb.set_trace()
+    self.annoIdx.updateIndex(mergeid,addindex,resolution)     
+    self.commit()
+    
     return "Merge complete"
 
   def merge2D(self, ids, mergetype, res,slicenum):
