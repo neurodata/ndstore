@@ -505,10 +505,6 @@ class OCPCAProjectsDB:
           raise
 
         # RBTODO drop tables here?
-<<<<<<< HEAD
-    
-=======
->>>>>>> 875350826f60e0d60c6cede4b96111049ff73701
 
 
   def deleteOCPCAProj ( self, project ):

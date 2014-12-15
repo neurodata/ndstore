@@ -45,11 +45,7 @@ class TestOther:
 
     with closing ( ocpcaproj.OCPCAProjectsDB() ) as pd:
       try:
-<<<<<<< HEAD
-        pd.newOCPCAProj ( 'pubunittest', 'test', 'localhost', 'pubunittest', 2, 'kasthuri11', None, False, True, False, 0, True, 'localhost', kvengine_to_test.kvengine )
-=======
         pd.newOCPCAProj ( 'pubunittest', 'test', 'localhost', 'pubunittest', 2, 'kasthuri11', None, False, True, False, 0, True, kvengine_to_test.kvserver, kvengine_to_test.kvengine, 0 )
->>>>>>> 875350826f60e0d60c6cede4b96111049ff73701
       except:
         pd.deleteOCPCADB ('pubunittest')
       

@@ -75,8 +75,8 @@ class AnnotateIndex:
       np.save ( fileobj, index )
       self.kvio.putIndex ( entityid, resolution, fileobj.getvalue(), update )
     else:
-      if index.dtype == np.float64:
-        import pdb; pdb.set_trace()
+#      if index.dtype == np.float64:
+#        import pdb; pdb.set_trace()
       tmpfile= tempfile.NamedTemporaryFile ()
       h5 = h5py.File ( tmpfile.name )
       h5.create_dataset ( "index", tuple(index.shape), index.dtype,
