@@ -20,6 +20,7 @@ import cStringIO
 from PIL import Image
 import pylibmc
 import time
+import math
 from contextlib import closing
 
 import restargs
@@ -91,8 +92,8 @@ class SimpleCatmaid:
     zoffset = self.proj.datasetcfg.slicerange[0]
     ztilestart = int((ztile*self.tilesz)/scalefactor) + zoffset
     zstart = max ( ztilestart, zoffset ) 
-    ztileend = int(((ztile+1)*self.tilesz)/scalefactor) + zoffset
-    zend = min ( ztileend, self.proj.datasetcfg.slicerange[1] )
+    ztileend = int(math.ceil((ztile+1)*self.tilesz/scalefactor)) + zoffset
+    zend = min ( ztileend, self.proj.datasetcfg.slicerange[1]+1 )
    
     # get an xz image slice
     imageargs = '{}/{},{}/{}/{},{}/'.format(resolution,xstart,xend,yslice,zstart,zend) 
@@ -125,8 +126,8 @@ class SimpleCatmaid:
     zoffset = self.proj.datasetcfg.slicerange[0]
     ztilestart = int((ztile*self.tilesz)/scalefactor) + zoffset
     zstart = max ( ztilestart, zoffset ) 
-    ztileend = int(((ztile+1)*self.tilesz)/scalefactor) + zoffset
-    zend = min ( ztileend, self.proj.datasetcfg.slicerange[1] )
+    ztileend = int(math.ceil((ztile+1)*self.tilesz/scalefactor)) + zoffset
+    zend = min ( ztileend, self.proj.datasetcfg.slicerange[1]+1 )
 
     # get an yz image slice
     imageargs = '{}/{}/{},{}/{},{}/'.format(resolution,xslice,ystart,yend,zstart,zend) 

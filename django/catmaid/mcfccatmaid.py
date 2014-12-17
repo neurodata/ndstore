@@ -20,6 +20,7 @@ import cStringIO
 from PIL import Image
 import pylibmc
 import time
+import math
 from contextlib import closing
 
 import restargs
@@ -100,7 +101,7 @@ class MCFCCatmaid:
     zoffset = self.proj.datasetcfg.slicerange[0]
     ztilestart = int((ztile*self.tilesz)/scalefactor) + zoffset
     zstart = max ( ztilestart, zoffset ) 
-    ztileend = int(((ztile+1)*self.tilesz)/scalefactor) + zoffset
+    ztileend = int(math.ceil(((ztile+1)*self.tilesz)/scalefactor)) + zoffset
     zend = min ( ztileend, self.proj.datasetcfg.slicerange[1] )
 
     # call the mcfc interface
@@ -111,9 +112,9 @@ class MCFCCatmaid:
       cutout = ocpcarest.cutout ( imageargs, self.proj, self.db, self.channels[i] )
       # initialize the tiledata by type
       if tiledata == None:
-        tiledata = np.zeros((len(self.channels), self.tilesz, cutout.data.shape[1],self.tilesz), dtype=cutout.data.dtype)
-
-      tiledata[i,0:((zend-1)%self.tilesz+1),0,0:((xend-1)%self.tilesz+1)] = cutout.data[:,0,:]
+        tiledata = np.zeros((len(self.channels), zend-zstart, cutout.data.shape[1],self.tilesz), dtype=cutout.data.dtype)
+      tiledata[i,0:zend-zstart,0,0:((xend-1)%self.tilesz+1)] = cutout.data[:,0,:]
+      
 
     # reduction factor.  How to scale data.  16 bit->8bit, or windowed
     (startwindow,endwindow) = self.proj.datasetcfg.windowrange
@@ -125,8 +126,8 @@ class MCFCCatmaid:
 
     # We have an compound array.  Now color it.
     colors = ('C','M','Y','R','G','B')
-    return mcfc.mcfcPNG ( tiledata.reshape((tiledata.shape[0],tiledata.shape[1],tiledata.shape[3])), colors )
-
+    img = mcfc.mcfcPNG ( tiledata.reshape((tiledata.shape[0],tiledata.shape[1],tiledata.shape[3])), colors )
+    return img.resize ((self.tilesz,self.tilesz))
 
   def cacheMissYZ ( self, resolution, xslice, ytile, ztile ):
     """On a miss. Cutout, return the image and load the cache in a background thread"""
@@ -141,7 +142,7 @@ class MCFCCatmaid:
     zoffset = self.proj.datasetcfg.slicerange[0]
     ztilestart = int((ztile*self.tilesz)/scalefactor) + zoffset
     zstart = max ( ztilestart, zoffset ) 
-    ztileend = int(((ztile+1)*self.tilesz)/scalefactor) + zoffset
+    ztileend = int(math.ceil(((ztile+1)*self.tilesz)/scalefactor)) + zoffset
     zend = min ( ztileend, self.proj.datasetcfg.slicerange[1] )
 
     # call the mcfc interface
@@ -152,9 +153,9 @@ class MCFCCatmaid:
       cutout = ocpcarest.cutout ( imageargs, self.proj, self.db, self.channels[i] )
       # initialize the tiledata by type
       if tiledata == None:
-        tiledata = np.zeros((len(self.channels), self.tilesz, self.tilesz, cutout.data.shape[2]), dtype=cutout.data.dtype)
+        tiledata = np.zeros((len(self.channels), ztileend-ztilestart, self.tilesz, cutout.data.shape[2]), dtype=cutout.data.dtype)
 
-      tiledata[i,0:((zend-1)%self.tilesz+1),0:((yend-1)%self.tilesz+1),0] = cutout.data[:,:,0]
+      tiledata[i,0:zend-zstart,0:((yend-1)%self.tilesz+1),0] = cutout.data[:,:,0]
 
     # reduction factor.  How to scale data.  16 bit->8bit, or windowed
     (startwindow,endwindow) = self.proj.datasetcfg.windowrange
@@ -166,7 +167,8 @@ class MCFCCatmaid:
 
     # We have an compound array.  Now color it.
     colors = ('C','M','Y','R','G','B')
-    return mcfc.mcfcPNG ( tiledata.reshape((tiledata.shape[0],tiledata.shape[1],tiledata.shape[2])), colors )
+    img = mcfc.mcfcPNG ( tiledata.reshape((tiledata.shape[0],tiledata.shape[1],tiledata.shape[2])), colors )
+    return img.resize((self.tilesz,self.tilesz))
 
   # RBTODO YZ
 

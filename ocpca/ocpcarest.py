@@ -59,6 +59,7 @@ def cutout ( imageargs, proj, db, channels=None ):
        of the more basic services to build the data.
        They then format and refine the output."""
 
+  print "in cutout", imageargs
   # Perform argument processing
   try:
     args = restargs.BrainRestArgs ();
