@@ -98,26 +98,6 @@ class ImageCube8(Cube):
     newimage.save ( fileobj, "PNG" )
 
 
-  # RB fixed just this one data type
-
-  #
-  # Create a slice for CATMAID
-  #
-  def catmaidXYSlice ( self ):
-    cmtilesz = self.data.shape[1]
-    self.cmimg = Image.frombuffer ( 'L', [cmtilesz,cmtilesz], self.data, 'raw', 'L', 0, 1 )
-
-  def catmaidXZSlice ( self ):
-    cmtilesz = self.data.shape[2]
-    tmpdata = self.data.reshape ( self.data.shape[0], self.data.shape[2] ).copy('C')
-    self.cmimg = Image.frombuffer ( 'L', [cmtilesz,self.data.shape[0]], tmpdata, 'raw', 'L', 0, 1 )
-    self.cmimg = self.cmimg.resize ( [cmtilesz,cmtilesz] )
-
-  def catmaidYZSlice ( self ):
-    cmtilesz = self.data.shape[1]
-    tmpdata = self.data.reshape ( self.data.shape[0], self.data.shape[1] ).copy('C')
-    self.cmimg = Image.frombuffer ( 'L', [cmtilesz,self.data.shape[0]], tmpdata, 'raw', 'L', 0, 1 )
-    self.cmimg = self.cmimg.resize ( [cmtilesz,cmtilesz] )
 
 #
 #  ImageCube16: manipulate the in-memory data representation of the 3-d cube 
@@ -190,8 +170,8 @@ class ImageCube16(Cube):
     zdim,ydim,xdim = self.data.shape
     self.data = np.uint8(self.data)
     outimage = Image.frombuffer ( 'L', (xdim,zdim), self.data[:,0,:].flatten(), 'raw', 'L', 0, 1)
-    outimage.save ( fileobj, "PNG" )
-
+    newimage = outimage.resize ( [xdim, int(zdim*zscale)] )
+    newimage.save ( fileobj, "PNG" )
 
   #
   # Create the specified slice (index) at filename
@@ -201,17 +181,28 @@ class ImageCube16(Cube):
     zdim,ydim,xdim = self.data.shape
     self.data = np.uint8(self.data)
     outimage = Image.frombuffer ( 'L', (ydim,zdim), self.data[:,:,0].flatten(), 'raw', 'L', 0, 1)
-    outimage.save ( fileobj, "PNG" )
+    newimage = outimage.resize ( [xdim, int(zdim*zscale)] )
+    newimage.save ( fileobj, "PNG" )
 
   #
   # Create a slice for CATMAID
   #
-  def catmaidSlice ( self ):
-    
+  def catmaidXYSlice ( self ):
     cmtilesz = self.data.shape[1]
-    windowValue = 546
-    windowCutout ( self.data, windowValue )
-    self.data = Image.frombuffer ( 'L', (cmtilesz,cmtilesz), self.data.flatten(), 'raw', 'L', 0, 1)
+    self.cmimg = Image.frombuffer ( 'L', [cmtilesz,cmtilesz], self.data, 'raw', 'L', 0, 1 )
+
+  def catmaidXZSlice ( self ):
+    cmtilesz = self.data.shape[2]
+    tmpdata = self.data.reshape ( self.data.shape[0], self.data.shape[2] ).copy('C')
+    self.cmimg = Image.frombuffer ( 'L', [cmtilesz,self.data.shape[0]], tmpdata, 'raw', 'L', 0, 1 )
+    self.cmimg = self.cmimg.resize ( [cmtilesz,cmtilesz] )
+
+  def catmaidYZSlice ( self ):
+    cmtilesz = self.data.shape[1]
+    tmpdata = self.data.reshape ( self.data.shape[0], self.data.shape[1] ).copy('C')
+    self.cmimg = Image.frombuffer ( 'L', [cmtilesz,self.data.shape[0]], tmpdata, 'raw', 'L', 0, 1 )
+    self.cmimg = self.cmimg.resize ( [cmtilesz,cmtilesz] )
+
 
 # end BrainCube
 

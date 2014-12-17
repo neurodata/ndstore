@@ -70,7 +70,8 @@ class SimpleCatmaid:
       tiledata = np.zeros((1,self.tilesz,self.tilesz), cb.data.dtype )
       tiledata[0,0:((yend-1)%self.tilesz+1),0:((xend-1)%self.tilesz+1)] = cb.data[0,:,:]
       cb.data = tiledata
-   
+
+    # RBTODO remove catamidXYSlice and resise in this file.
     cb.catmaidXYSlice( )
 
     return cb.cmimg
@@ -146,7 +147,6 @@ class SimpleCatmaid:
     cb.catmaidYZSlice( )
 
     return cb.cmimg
-
 
 
   def getTile ( self, webargs ):

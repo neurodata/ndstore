@@ -1351,6 +1351,7 @@ class OCPCADB:
 
         # add it to the output cube
         start3 = time.time()
+  
         outcube.addData_new ( incube, offset ) 
         totaltime3 += time.time()-start3
 

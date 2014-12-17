@@ -255,7 +255,6 @@ def TimeSeriesCutout ( imageargs, proj, db ):
 def xySlice ( imageargs, proj, db ):
   """Return the cube object for an xy plane"""
   
-  #if proj.getDBType() == ocpcaproj.CHANNELS_8bit or proj.getDBType() == ocpcaproj.CHANNELS_16bit or proj.getDBType() == ocpcaproj.TIMESERIES_4d_8bit or proj.getDBType() == ocpcaproj.TIMESERIES_4d_16bit:
   if proj.getDBType() in ocpcaproj.COMPOSITE_DATASETS:
     [ channel, sym, imageargs ] = imageargs.partition ('/')
   else: 
@@ -279,7 +278,7 @@ def xySlice ( imageargs, proj, db ):
   
   # Perform the cutout
   cube = db.cutout ( corner, dim, resolution, channel )
-  
+
   # Window Function - used to limit the range of data purely for viewing purposes
   if window != None or ( endwindow !=0 ):
     # Check which case is calling the window Function and assign the correct value
@@ -298,15 +297,13 @@ def xySlice ( imageargs, proj, db ):
 
 def xyImage ( imageargs, proj, db ):
   """Return an xy plane fileobj.read()"""
+
   cb = xySlice ( imageargs, proj, db )
-#  if proj.getDBType() == ocpcaproj.CHANNELS:
-#    fileobj = tempfile.NamedTemporaryFile()
-#    cb.xySlice ( fileobj.name )
-#  else:
   fileobj = cStringIO.StringIO ( )
   cb.xySlice ( fileobj )
   fileobj.seek(0)
   return fileobj.read()
+
 
 def xzSlice ( imageargs, proj, db ):
   """Return an xz plane cube"""
