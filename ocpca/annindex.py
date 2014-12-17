@@ -55,13 +55,13 @@ class AnnotateIndex:
         return np.load ( fobj )      
       else:
         # cubes are HDF5 files
-        tmpfile = tempfile.NamedTemporaryFile ()
-        tmpfile.write ( idxstr )
-        tmpfile.seek(0)
-        h5 = h5py.File ( tmpfile.name ) 
-
-        # load the numpy array
-        return np.array ( h5['index'] )
+        with closing (tempfile.NamedTemporaryFile ()) as tmpfile:
+          tmpfile.write ( idxstr )
+          tmpfile.seek(0)
+          h5 = h5py.File ( tmpfile.name ) 
+  
+          # load the numpy array
+          return np.array ( h5['index'] )
     else:
       return []
        
@@ -75,16 +75,16 @@ class AnnotateIndex:
       np.save ( fileobj, index )
       self.kvio.putIndex ( entityid, resolution, fileobj.getvalue(), update )
     else:
-      if index.dtype == np.float64:
-        import pdb; pdb.set_trace()
-      tmpfile= tempfile.NamedTemporaryFile ()
-      h5 = h5py.File ( tmpfile.name )
-      h5.create_dataset ( "index", tuple(index.shape), index.dtype,
-                               compression='gzip',  data=index )
-      h5.close()
-      tmpfile.seek(0)
-      self.kvio.putIndex ( entityid, resolution, tmpfile.read(), update )
+#      if index.dtype == np.float64:
+#        import pdb; pdb.set_trace()
 
+      with closing ( tempfile.NamedTemporaryFile () ) as tmpfile:
+        h5 = h5py.File ( tmpfile.name )
+        h5.create_dataset ( "index", tuple(index.shape), index.dtype,
+                                 compression='gzip',  data=index )
+        h5.close()
+        tmpfile.seek(0)
+        self.kvio.putIndex ( entityid, resolution, tmpfile.read(), update )
 
 #
 # Update Index Dense - Updated the annotation database with the given hash index table
@@ -108,13 +108,65 @@ class AnnotateIndex:
 
    #
    #deleteIndex:
-   #   Delete the index for a given annotation id
+   #   Delete the index for a given annotation id for current resolution
    #
-   def deleteIndex(self,annid,resolutions):
+   def deleteIndexResolution(self,annid,resolution):
       """delete the index for a given annid""" 
       
       #delete Index table for each resolution
+      sql = "DELETE FROM " +  self.proj.getIdxTable(resolution)  +  " WHERE annid=" + str(annid)
+      try:
+         self.cursor.execute ( sql )
+      except MySQLdb.Error, e:
+         logger.error("Error deleting the index %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+         raise
+      except:
+         logger.exception("Unknown exception In deleteIndexResolution")
+         raise
+
+
+   #deleteIndex:                                                                                                                                                                                       #   Delete the index for a given annotation id                                                                                                                                                      #                                                                                                                                                                                                 
+   def deleteIndex(self,annid,resolutions):
+      """delete the index for a given annid"""
+
+      #delete Index table for each resolution                                                                                                                                                        
       for res in resolutions:
         self.kvio.deleteIndex(annid,res)
 
-# end AnnotateIndex
+#
+# Update Index - Updated the annotation objectwith the given index
+#                                                                                                                                                                      
+   def updateIndex(self,annid,cubeindex,resolution):
+      """Updated the database index table with the input index hash table"""
+
+      curindex = self.getIndex(annid,resolution,True)
+      
+      if curindex==[]:
+         sql = "INSERT INTO " +  self.proj.getIdxTable(resolution)  +  "( annid, cube) VALUES ( %s, %s)"
+         
+         try:
+            fileobj = cStringIO.StringIO ()
+            np.save ( fileobj, cubeindex )
+            self.cursor.execute ( sql, (annid, fileobj.getvalue()))
+         except MySQLdb.Error, e:
+            logger.warning("Error updating index %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+            raise
+         except BaseException, e:
+            logger.exception("Unknown error when updating index")
+            raise
+
+      else:
+             #Update index to the union of the currentIndex and the updated index                                                                                       
+         newIndex=np.union1d(curindex,cubeindex)
+             #update index in the database                                                                                                                               
+         sql = "UPDATE " + self.proj.getIdxTable(resolution) + " SET cube=(%s) WHERE annid=" + str(annid)
+         try:
+            fileobj = cStringIO.StringIO ()
+            np.save ( fileobj, newIndex )
+            self.cursor.execute ( sql, (fileobj.getvalue()))
+         except MySQLdb.Error, e:
+            logger.warnig("Error updating index %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+            raise
+         except:
+            logger.exception("Unknown exception")
+            raise

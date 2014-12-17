@@ -81,7 +81,9 @@ class OCPCAProject:
     self._readonly = readonly
     self._exceptions = exceptions
     self._resolution = resolution
-    self._kvserver = kvserver
+    #self._kvserver = kvserver
+    # for cassandra
+    self._kvserver = '172.23.253.63'
     self._kvengine = kvengine
     self._propagate = propagate
 

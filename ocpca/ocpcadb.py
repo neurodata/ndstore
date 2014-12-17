@@ -180,7 +180,7 @@ class OCPCADB:
         It is not thread safe.  Need a way to lock the ids table for the 
         transaction to make it safe."""
     
-    with closing ( self.conn.cursor() ) as cursor:
+    with closing(self.conn.cursor()) as cursor:
 
       # Query the current max identifier
       sql = "SELECT max(id) FROM " + str ( self.annoproj.getIDsTbl() )
@@ -208,7 +208,7 @@ class OCPCADB:
        This is it's own txn and should not be called inside another transaction. """
 
 
-    with closing ( self.conn.cursor() ) as cursor:
+    with closing(self.conn.cursor()) as cursor:
     
       # LOCK the table to prevent race conditions on the ID
       sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getIDsTbl() )
@@ -258,7 +258,7 @@ class OCPCADB:
   def setID ( self, annoid ):
     """Set a user specified identifier"""
 
-    with closing ( self.conn.cursor() ) as cursor:
+    with closing(self.conn.cursor()) as cursor:
 
       # LOCK the table to prevent race conditions on the ID
       sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getIDsTbl() )
@@ -290,7 +290,7 @@ class OCPCADB:
   def setBatchID ( self, annoidList ):
     """ Set a user specified identifier """
 
-    with closing ( self.conn.cursor() ) as cursor:
+    with closing(self.conn.cursor()) as cursor:
 
 
       # LOCK the table to prevent race conditions on the ID
@@ -320,7 +320,7 @@ class OCPCADB:
     """Reserve contiguous identifiers.
        This is it's own txn and should not be called inside another transaction. """
     
-    with closing ( self.conn.cursor() ) as cursor:
+    with closing(self.conn.cursor()) as cursor:
 
       # LOCK the table to prevent race conditions on the ID
       sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getIDsTbl() )
@@ -400,15 +400,14 @@ class OCPCADB:
 
       else:
           # cubes are HDF5 files
-          tmpfile = tempfile.NamedTemporaryFile ()
-          tmpfile.write ( cubestr )
-          tmpfile.seek(0)
-          h5 = h5py.File ( tmpfile.name ) 
-
-          # load the numpy array
-          cube.data = np.array ( h5['cuboid'] )
-          h5.close()
-          tmpfile.close()
+          with closing(tempfile.NamedTemporaryFile()) as tmpfile:
+            tmpfile.write ( cubestr )
+            tmpfile.seek(0)
+            h5 = h5py.File ( tmpfile.name ) 
+  
+            # load the numpy array
+            cube.data = np.array ( h5['cuboid'] )
+            h5.close()
 
     return cube
 
@@ -441,16 +440,15 @@ class OCPCADB:
     cubestr = self.ckvio.getCube ( key, resolution, update )
 
     # cubes are HDF5 files
-    tmpfile = tempfile.NamedTemporaryFile ()
-    tmpfile.write ( cubestr )
-    tmpfile.seek(0)
-    h5 = h5py.File ( tmpfile.name ) 
+    with closing (tempfile.NamedTemporaryFile()) as tmpfile:
+      tmpfile.write ( cubestr )
+      tmpfile.seek(0)
+      h5 = h5py.File ( tmpfile.name ) 
 
-    # load the numpy array
-    cube.data = np.array ( h5['cuboid'] )
+      # load the numpy array
+      cube.data = np.array ( h5['cuboid'] )
 
-    h5.close()
-    tmpfile.close()
+      h5.close()
 
     return cube
 
@@ -462,17 +460,16 @@ class OCPCADB:
     if self.NPZ:
       self.kvio.putCube ( zidx, resolution, cube.toNPZ(), not cube.fromZeros() )
     else:
-      tmpfile= tempfile.NamedTemporaryFile ()
-      h5 = h5py.File ( tmpfile.name, driver="core" )
-      import time
-      start = time.time()
-      h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype, compression='gzip',  data=cube.data )
-      h5.close()
-      print "HDF5 Time", time.time() - start
-      tmpfile.seek(0)
+      with closing(tempfile.NamedTemporaryFile()) as tmpfile:
+        h5 = h5py.File ( tmpfile.name, driver="core" )
+        import time
+        start = time.time()
+        h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype, compression='gzip',  data=cube.data )
+        h5.close()
+        print "HDF5 Time", time.time() - start
+        tmpfile.seek(0)
 
-      self.kvio.putCube ( zidx, resolution, tmpfile.read(), not cube.fromZeros() )
-      tmpfile.close()
+        self.kvio.putCube ( zidx, resolution, tmpfile.read(), not cube.fromZeros() )
   
   
   def putCubes ( self, listofidxs, resolution, cube ):
@@ -482,30 +479,15 @@ class OCPCADB:
     if self.NPZ:
       self.kvio.putCubes ( listofidxs, resolution, cube.toNPZ(), not cube.fromZeros() )
     else:
-      tmpfile= tempfile.NamedTemporaryFile ()
-      h5 = h5py.File ( tmpfile.name )
-      h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype, compression='gzip',  data=cube.data )
-      h5.close()
-      tmpfile.seek(0)
+      with closign ( tempfile.NamedTemporaryFile () ) as tmpfile:
+        h5 = h5py.File ( tmpfile.name )
+        h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype, compression='gzip',  data=cube.data )
+        h5.close()
+        tmpfile.seek(0)
 
-      self.kvio.putCubes ( listofidxs, resolution, tmpfile.read(), not cube.fromZeros() )
-      tmpfile.close()
+        self.kvio.putCubes ( listofidxs, resolution, tmpfile.read(), not cube.fromZeros() )
   
   
-  def cputCube ( self, zidx, resolution, cube ):
-    """Store a cube in the annotation database"""
-
-    # Handle the cube format here.  
-    tmpfile= tempfile.NamedTemporaryFile ()
-    h5 = h5py.File ( tmpfile.name )
-    h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype, compression='gzip',  data=cube.data )
-    h5.close()
-    tmpfile.seek(0)
-
-    self.ckvio.putCube ( zidx, resolution, tmpfile.read(), not cube.fromZeros() )
-    tmpfile.close()
-
-
   # GET AND PUT methods for Channel Database
   
   def getChannelCube ( self, key, channel, resolution, update=False ):
@@ -534,8 +516,8 @@ class OCPCADB:
           cube.fromNPZ ( cubestr )
 
       else:
-          # cubes are HDF5 files
-          tmpfile = tempfile.NamedTemporaryFile ()
+        # cubes are HDF5 files
+        with closing(tempfile.NamedTemporaryFile()) as tmpfile:
           tmpfile.write ( cubestr )
           tmpfile.seek(0)
           h5 = h5py.File ( tmpfile.name ) 
@@ -543,7 +525,6 @@ class OCPCADB:
           # load the numpy array
           cube.data = np.array ( h5['cuboid'] )
           h5.close()
-          tmpfile.close()
 
     return cube
   
@@ -568,13 +549,12 @@ class OCPCADB:
       #self.kvio.putChannelCube ( zidx, channel, resolution, cube.toNPZ(), not cube.fromZeros() )
       self.kvio.putChannelCube ( zidx, channel, resolution, cube.toNPZ(), update )
     else:
-      tmpfile= tempfile.NamedTemporaryFile ()
-      h5 = h5py.File ( tmpfile.name, driver='core', backing_store=True )
-      h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype, compression='gzip',  data=cube.data )
-      h5.close()
-      tmpfile.seek(0)
-      self.kvio.putChannelCube ( zidx, channel, resolution, tmpfile.read(), update )
-      tmpfile.close()
+      with closing(tempfile.NamedTemporaryFile()) as tmpfile:
+        h5 = h5py.File ( tmpfile.name, driver='core', backing_store=True )
+        h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype, compression='gzip',  data=cube.data )
+        h5.close()
+        tmpfile.seek(0)
+        self.kvio.putChannelCube ( zidx, channel, resolution, tmpfile.read(), update )
   
   
   # GET AND PUT methods for Timeseries Database
@@ -605,8 +585,8 @@ class OCPCADB:
           cube.fromNPZ ( cubestr )
 
       else:
-          # cubes are HDF5 files
-          tmpfile = tempfile.NamedTemporaryFile ()
+        # cubes are HDF5 files
+        with closing(tempfile.NamedTemporaryFile()) as tmpfile:
           tmpfile.write ( cubestr )
           tmpfile.seek(0)
           h5 = h5py.File ( tmpfile.name ) 
@@ -614,7 +594,6 @@ class OCPCADB:
           # load the numpy array
           cube.data = np.array ( h5['cuboid'] )
           h5.close()
-          tmpfile.close()
 
     return cube
   
@@ -639,34 +618,13 @@ class OCPCADB:
       #self.kvio.putTimeSeriesCube ( zidx, timestamp, resolution, cube.toNPZ(), not cube.fromZeros() )
       self.kvio.putTimeSeriesCube ( zidx, timestamp, resolution, cube.toNPZ(), update )
     else:
-      tmpfile= tempfile.NamedTemporaryFile ()
-      h5 = h5py.File ( tmpfile.name, driver='core', backing_store=True )
-      h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype, compression='gzip',  data=cube.data )
-      h5.close()
-      tmpfile.seek(0)
-      self.kvio.putTimeSeriesCube ( zidx, timestamp, resolution, tmpfile.read(), update )
-      tmpfile.close()
+      with closing(tempfile.NamedTemporaryFile()) as tmpfile:
+        h5 = h5py.File ( tmpfile.name, driver='core', backing_store=True )
+        h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype, compression='gzip',  data=cube.data )
+        h5.close()
+        tmpfile.seek(0)
+        self.kvio.putTimeSeriesCube ( zidx, timestamp, resolution, tmpfile.read(), update )
   
-  
-  # TODO Unwanted Functions. Do these need to go RB?
-
-  def putUnwantedCube ( self, zidx, resolution, cube ):
-    """Store a cube in the annotation database"""
-
-    # Handle the cube format here.  
-    if self.NPZ:
-      self.kvio.putCube ( zidx, resolution, cube.toNPZ(), not cube.fromZeros() )
-    else:
-      tmpfile= tempfile.NamedTemporaryFile ()
-      h5 = h5py.File ( tmpfile.name )
-      h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype, compression='gzip',  data=cube.data )
-      h5.close()
-      tmpfile.seek(0)
-
-      self.kvio.putCube ( zidx, resolution, tmpfile.read(), not cube.fromZeros() )
-      tmpfile.close()
-
-
   def getExceptions ( self, zidx, resolution, annoid ):
     """Load a cube from the annotation database"""
 
@@ -676,16 +634,16 @@ class OCPCADB:
         return np.load(cStringIO.StringIO ( zlib.decompress(excstr)))
       else:
         # cubes are HDF5 files
-        tmpfile = tempfile.NamedTemporaryFile ()
-        tmpfile.write ( excstr )
-        tmpfile.seek(0)
-        h5 = h5py.File ( tmpfile.name ) 
+        with closing(tempfile.NamedTemporaryFile()) as tmpfile:
+          tmpfile.write ( excstr )
+          tmpfile.seek(0)
+          h5 = h5py.File ( tmpfile.name ) 
+  
+          # load the numpy array
+          excs = np.array ( h5['exceptions'] )
+          h5.close()
+          return excs
 
-        # load the numpy array
-        excs = np.array ( h5['exceptions'] )
-        h5.close()
-        tmpfile.close()
-        return excs
     else:
       return []
 
@@ -721,13 +679,12 @@ class OCPCADB:
       excstr = fileobj.getvalue()
       self.kvio.putExceptions ( key, resolution, exid, excstr, update )
     else:
-      tmpfile= tempfile.NamedTemporaryFile ()
-      h5 = h5py.File ( tmpfile.name )
-      h5.create_dataset ( "exceptions", tuple(exceptions.shape), exceptions.dtype, compression='gzip',  data=exceptions )
-      h5.close()
-      tmpfile.seek(0)
-      self.kvio.putExceptions ( key, resolution, exid, tmpfile.read(), update )
-      tmpfile.close()
+      with closing (tempfile.NamedTemporaryFile()) as tmpfile:
+        h5 = h5py.File ( tmpfile.name )
+        h5.create_dataset ( "exceptions", tuple(exceptions.shape), exceptions.dtype, compression='gzip',  data=exceptions )
+        h5.close()
+        tmpfile.seek(0)
+        self.kvio.putExceptions ( key, resolution, exid, tmpfile.read(), update )
 
 
   def removeExceptions ( self, key, resolution, entityid, exceptions ):
@@ -745,17 +702,26 @@ class OCPCADB:
       self.putExceptions ( key, resolution, exid, exlist, True )
 
 
-  def queryRange ( self, lowkey, highkey, resolution ):
-    """ Create a stateful query to a range of values not including the high value. 
-        To be used with getNextCube().Not thread safe (context per object)
-        Also, one cursor only.  Not at multiple resolutions """
+  #
+  # queryRange
+  #
+  def queryRange ( self, lowkey, highkey, resolution, channel=None ):
+    """Create a stateful query to a range of values not including the high value.
+         To be used with getNextCube().
+         Not thread safe (context per object)
+         Also, one cursor only.  Not at multiple resolutions"""
 
     self._qr_cursor = self.conn.cursor ()
     self._qr_resolution = resolution
 
-    # get the block from the database
-    sql = "SELECT zindex, cube FROM " + self.annoproj.getTable(resolution) + " WHERE zindex >= " + str(lowkey) + " AND zindex < " + str(highkey)
-
+    if channel == None:
+      # get the block from the database
+      sql = "SELECT zindex, cube FROM " + self.annoproj.getTable(resolution) + " WHERE zindex >= " + str(lowkey) + " AND zindex < " + str(highkey)
+    else:
+      # or from a channel database
+      channel = ocpcachannel.toID ( channel, self )
+      sql = "SELECT zindex, cube FROM " + self.annoproj.getTable(resolution) + " WHERE channel = " + str(channel) + " AND zindex >= " + str(lowkey) + " AND zindex < " + str(highkey)
+  
     try:
       self._qr_cursor.execute ( sql )
     except MySQLdb.Error, e:
@@ -1361,28 +1327,22 @@ class OCPCADB:
           incube.fromNPZ ( datastring[:] )
           totaltime2 += time.time()-start2
 
-          #RB testing
-#          self.cputCube ( idx, resolution, incube )
-#          newcube = self.cgetCube ( idx, resolution )
-
         else:
           # cubes are HDF5 files
-          tmpfile = tempfile.NamedTemporaryFile ()
-          start5 = time.time()
-          tmpfile.write ( datastring )
-          totaltime5 += time.time() - start5
-          tmpfile.seek(0)
-          start2 = time.time()
-          h5 = h5py.File ( tmpfile.name, driver='core', backing_store=False ) 
-          totaltime2 += time.time()-start2
-          # load the numpy array
-          start6 = time.time()
-          incube.data = np.array ( h5['cuboid'] )
-          totaltime6 += time.time()-start6
+          with closing(tempfile.NamedTemporaryFile()) as tmpfile:
+            start5 = time.time()
+            tmpfile.write ( datastring )
+            totaltime5 += time.time() - start5
+            tmpfile.seek(0)
+            start2 = time.time()
+            h5 = h5py.File ( tmpfile.name, driver='core', backing_store=False ) 
+            totaltime2 += time.time()-start2
+            # load the numpy array
+            start6 = time.time()
+            incube.data = np.array ( h5['cuboid'] )
+            totaltime6 += time.time()-start6
 
-          h5.close()
-
-          tmpfile.close()
+            h5.close()
 
         totaltime4 += time.time()-start4
         # apply exceptions if it's an annotation project
@@ -1495,14 +1455,14 @@ class OCPCADB:
 
           else:
             # cubes are HDF5 files
-            tmpfile = tempfile.NamedTemporaryFile ()
-            tmpfile.write ( datastring )
-            tmpfile.seek(0)
-            h5 = h5py.File ( tmpfile.name, driver='core', backing_store=False ) 
-            # load the numpy array
-            incube.data = np.array ( h5['cuboid'] )
-            h5.close()
-            tmpfile.close()
+            with closing(tempfile.NamedTemporaryFile()) as tmpfile:
+              tmpfile = tempfile.NamedTemporaryFile ()
+              tmpfile.write ( datastring )
+              tmpfile.seek(0)
+              h5 = h5py.File ( tmpfile.name, driver='core', backing_store=False ) 
+              # load the numpy array
+              incube.data = np.array ( h5['cuboid'] )
+              h5.close()
 
           # add it to the output cube
           outcube.addData_new ( incube, offset ) 
@@ -1629,10 +1589,8 @@ class OCPCADB:
 
 
     voxlist = []
-
-    zidxs = self.annoIdx.getIndex(entityid,effectiveres)
-    if type(zidxs[0]) == np.float64:
-      zidxs2 = self.annoIdx.getIndex(entityid,effectiveres)
+    
+    zidxs = self.annoIdx.getIndex(entityid,resolution)
 
     for zidx in zidxs:
 
@@ -2061,50 +2019,66 @@ class OCPCADB:
 
 
   def mergeGlobal(self, ids, mergetype, res):
-     # get the size of the image and cube
+    """Global merge routine.  Converts a list of ids into the merge id at a given resolution.
+       This will collapse all exceptions for the voxels for the merged ids."""
+
+    # get the size of the image and cube
     resolution = int(res)
     # ID to merge annotations into 
     mergeid = ids[0]
- 
-    # PYTODO Check if this is a valid annotation that we are relabeling to
-    if len(self.annoIdx.getIndex(int(mergeid),resolution)) == 0:
-      raise OCPCAError(ids[0] + " not a valid annotation id")
+    
+    #logger.warning("Merging ids  {}".format(ids))
+    
+    # Turned off for now( Will's request)
+    #if len(self.annoIdx.getIndex(int(mergeid),resolution)) == 0:
+    #  raise OCPCAError(ids[0] + " not a valid annotation id. This id does not have paint data")
+    
   
     # Get the list of cubeindexes for the Ramon objects
     listofidxs = set()
-
-    self.kvio.startTxn()
-    try:
-
-      # Do this for all ids. 
-      for annid in ids:
-        listofidxs = set(self.annoIdx.getIndex(annid,resolution))
-        for key in listofidxs:
-          cube = self.getCube (key,resolution)
-          #Update exceptions if exception flag is set ( PJM added 03/31/14)
-          if self.EXCEPT_FLAG:
-            oldexlist = self.getExceptions( key, resolution, annid ) 
-            self.kvio.deleteExceptions ( key, resolution, annid )
-          
-          # Cython optimized function  to relabel data from annid to mergeid
-          mergeCube_cy (cube.data,mergeid,annid ) 
-          self.putCube ( key, resolution,cube)
-          
-        # Delete annotation and all it's meta data from the database
-        # except for the merge annotation
-        if annid != mergeid:
-          try:
-            annotation.deleteAnnotation(annid,self,'')
-          except:
-            logger.warning("Failed to delete annotation {} during merge.".format(annid))
-
-
-    except:
-      self.kvio.rollback()
-      raise
-
-    self.kvio.commit()
-
+    addindex = []
+    #import pdb;pdb.set_trace()
+    # RB!!!! do this for all ids, promoting the exceptions of the merge id
+    for annid in ids:
+      if annid== mergeid:
+        continue
+     # import pdb;pdb.set_trace()
+      curindex= self.annoIdx.getIndex(annid,resolution)
+      addindex =np.union1d(addindex,curindex)
+      listofidxs = set(curindex)
+      for key in listofidxs:
+        cube = self.getCube (key,resolution)
+        #Update exceptions if exception flag is set ( PJM added 03/31/14)
+        if self.EXCEPT_FLAG:
+          oldexlist = self.getExceptions( key, resolution, annid ) 
+        #
+        # RB!!!!! this next line is wrong!  the problem is that
+        #  we are merging all annotations.  So at the end, there
+        #  need to be no exceptions left.  This line will leave
+        #  exceptions with the same value as the annotation.
+        #  Just delete the exceptions
+        #
+        #self.updateExceptions ( key, resolution, mergeid, oldexlist )
+          self.deleteExceptions ( key, resolution, annid )
+        
+        # Cython optimized function  to relabel data from annid to mergeid
+        mergeCube_cy (cube.data,mergeid,annid ) 
+        self.putCube ( key, resolution,cube)
+        
+      # Delete annotation and all it's meta data from the database
+      #
+      # RB!!!!! except for the merge annotation
+      
+      if annid != mergeid:
+        try:
+          annotation.deleteAnnotation(annid,self,'')
+          self.annoIdx.deleteIndexResolution(annid,resolution)
+        except:
+          logger.warning("Failed to delete annotation {} during merge.".format(annid))
+   # import pdb;pdb.set_trace()
+    self.annoIdx.updateIndex(mergeid,addindex,resolution)     
+    self.commit()
+    
     return "Merge complete"
 
   def merge2D(self, ids, mergetype, res,slicenum):
@@ -2192,7 +2166,7 @@ class OCPCADB:
     sql = "SELECT zindex,id,exlist FROM exc{} WHERE zindex in ({})".format(resolution,sqllist)
 
 
-    with closing ( self.conn.cursor() ) as func_cursor:
+    with closing(self.conn.cursor()) as func_cursor:
 
       # this query needs its own cursor
       try:
