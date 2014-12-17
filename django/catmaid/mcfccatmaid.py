@@ -131,9 +131,6 @@ class MCFCCatmaid:
   def cacheMissYZ ( self, resolution, xslice, ytile, ztile ):
     """On a miss. Cutout, return the image and load the cache in a background thread"""
 
-    import pdb; pdb.set_trace()
- 
-  
     # figure out the cutout (limit to max image size)
     ystart = ytile*self.tilesz
     yend = min ((ytile+1)*self.tilesz,self.proj.datasetcfg.imagesz[resolution][1])
