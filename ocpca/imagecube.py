@@ -20,6 +20,12 @@ from cube import Cube
 import ocplib
 from windowcutout import windowCutout
 
+from ocpcaerror import OCPCAError
+
+import logging
+logger=logging.getLogger("ocp")
+
+
 #
 #  ImageCube: manipulate the in-memory data representation of the 3-d cube of data
 #    includes loading, export, read and write routines
@@ -61,6 +67,10 @@ class ImageCube8(Cube):
 
     #vector_func = np.vectorize ( lambda a,b: b if b!=0 else a ) 
     #self.data = vector_func ( self.data, annodata ) 
+
+    if (self.data.dtype != annodata.dtype ):
+      logger.error("Conflicting data types for overwrite")
+      raise OCPCAError ("Conflicting data types for overwrite")
 
     self.data = ocplib.overwriteDense_ctype ( self.data, annodata )
 
@@ -142,6 +152,10 @@ class ImageCube16(Cube):
 
     #vector_func = np.vectorize ( lambda a,b: b if b!=0 else a ) 
     #self.data = vector_func ( self.data, annodata ) 
+
+    if (self.data.dtype != annodata.dtype ):
+      logger.error("Conflicting data types for overwrite")
+      raise OCPCAError ("Conflicting data types for overwrite")
 
     self.data = ocplib.overwriteDense_ctype ( self.data, annodata )
 

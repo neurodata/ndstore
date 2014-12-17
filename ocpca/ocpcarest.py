@@ -679,10 +679,29 @@ def selectPost ( webargs, proj, db, postdata ):
   """Parse the first arg and call the right post service"""
 
   [ service, sym, postargs ] = webargs.partition ('/')
+
   # Don't write to readonly projects
   if proj.getReadOnly()==1:
     logger.warning("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
     raise OCPCAError("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
+
+  # if it's a channel database, pull out the channels
+  # for now we ingest just one channel at a time
+  channel = None
+  if proj.getDBType() in ocpcaproj.CHANNEL_DATASETS:
+   
+    [ chanurl, sym, postargs ] = postargs.partition ('/')
+
+    # make sure that the channels are ints
+    channels = chanurl.split(',')
+
+    chanobj = ocpcachannel.OCPCAChannels ( db )
+    chanids = chanobj.rewriteToInts ( channels )
+    if len(chanids) != 1:
+      raise OCPCAError ("Can only post ot one channel at a time.")
+    else:
+      channel = chanids[0]
+
 
   # choose to overwrite (default), preserve, or make exception lists
   #  when voxels conflict
@@ -699,6 +718,8 @@ def selectPost ( webargs, proj, db, postdata ):
     try:
 
       if service == 'npz':
+
+        # RBTODO multichannel support
 
         # Process the arguments
         try:
@@ -721,7 +742,7 @@ def selectPost ( webargs, proj, db, postdata ):
 
         if proj.getDBType() not in ocpcaproj.ANNOTATION_DATASETS : 
 
-          db.writeCuboid ( corner, resolution, voxarray )
+          db.writeCuboid ( corner, resolution, voxarray, channel )
           # this is just a status
           entityid=0
 
