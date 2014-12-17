@@ -72,12 +72,14 @@ class OCPCAStack:
         #  Round up the zlimit to the next larger
         zlimit = (((slices-1)/zcubedim+1)*zcubedim)/zcubedim 
 
-        for z in range(zlimit):
-          for y in range(ylimit):
-            for x in range(xlimit):
-              for t in range( starttime, endtime+1, 1): 
+        for t in range( starttime, endtime+1, 1): 
+          for z in range(zlimit):
+            for y in range(ylimit):
+              for x in range(xlimit):
 
                 key = ocplib.XYZMorton ( [x,y,z] )
+                print key,t
+                continue
                 #key2 = ocplib.XYZMorton ( [x+1,y+1,z] )
                 # cutout the data at the -1 resolution
                 #olddata1 = db.getTimeSeriesCube( key, t, resolution-1 ).data
@@ -147,13 +149,13 @@ class OCPCAStack:
               newdata = np.zeros ( cubedims[::-1], dtype=olddata.dtype )
 
               for sl in range(zcubedim):
-
+                
                 # Convert each slice to an image
-                  # Convert each slice to an image
-                  if proj.getDBType() in ocpcaproj.DATASETS_16bit:
-                    slimage = Image.frombuffer ( 'I;16', (xcubedim*2,ycubedim*2), olddata[sl,:,:].flatten(), 'raw', 'I;16', 0, 1 )
-                  elif proj.getDBType() in ocpcaproj.DATATSETS_8bit:
-                    slimage = Image.frombuffer ( 'L', (xcubedim*2,ycubedim*2), olddata[sl,:,:].flatten(), 'raw', 'L', 0, 1 )
+                # Convert each slice to an image
+                if proj.getDBType() in ocpcaproj.DATASETS_16bit:
+                  slimage = Image.frombuffer ( 'I;16', (xcubedim*2,ycubedim*2), olddata[sl,:,:].flatten(), 'raw', 'I;16', 0, 1 )
+                elif proj.getDBType() in ocpcaproj.DATATSETS_8bit:
+                  slimage = Image.frombuffer ( 'L', (xcubedim*2,ycubedim*2), olddata[sl,:,:].flatten(), 'raw', 'L', 0, 1 )
 
                 # Resize the image and Put to a new cube
                 newdata[sl,:,:] = np.asarray ( slimage.resize( [xcubedim,ycubedim] ) )

@@ -171,14 +171,14 @@ def main():
   # Check for copy flag
   elif result.dbcopy!=None:
 
-    if ( sqldb.proj.getDBType() == ocpcaproj.IMAGES_8bit or sqldb.proj.getDBType() == ocpcaproj.IMAGES_16bit or sqldb.proj.getDBType() == ocpcaproj.RGB_32bit or sqldb.proj.getDBType() == ocpcaproj.RGB_64bit ):
+    if ( sqldb.proj.getDBType() not in ocpcaproj.CHANNEL_DATASETS ):
         
       sqldb = SQLDatabase ( result.host, result.token, result.location )
       sqldb.dumpImgStack()
       sqldb = SQLDatabase ( result.host, result.dbcopy, result.location )
       sqldb.ingestImageStack()
   
-    elif ( sqldb.proj.getDBType() == ocpcaproj.CHANNELS_8bit or sqldb.proj.getDBType() == ocpcaproj.CHANNELS_16bit ):
+    elif ( sqldb.proj.getDBType() in ocpcaproj.CHANNEL_DATASETS ):
 
       sqldb.dumpChannelStack()
       sqldb.ingestChannelStack()
@@ -188,11 +188,11 @@ def main():
  
     sqldb = SQLDatabase ( result.host, result.token, result.location )
 
-    if ( sqldb.proj.getDBType() == ocpcaproj.IMAGES_8bit or sqldb.proj.getDBType() == ocpcaproj.IMAGES_16bit or sqldb.proj.getDBType() == ocpcaproj.RGB_32bit or sqldb.proj.getDBType() == ocpcaproj.RGB_64bit ):
+    if ( sqldb.proj.getDBType() not in ocpcaproj.CHANNEL_DATASETS + ocpcaproj.ANNOTATION_DATASETS ):
       
       sqldb.dumpImgStack()
     
-    elif ( sqldb.proj.getDBType() == ocpcaproj.CHANNELS_8bit or sqldb.proj.getDBType() == ocpcaproj.CHANNELS_16bit ):
+    elif ( sqldb.proj.getDBType() in ocpcaproj.CHANNEL_DATASETS ):
 
       sqldb.dumpChannelStack()
 
@@ -205,11 +205,11 @@ def main():
     
     sqldb = SQLDatabase ( result.host, result.token, result.location )
     
-    if ( sqldb.proj.getDBType() == ocpcaproj.IMAGES_8bit or sqldb.proj.getDBType() == ocpcaproj.IMAGES_16bit or sqldb.proj.getDBType() == ocpcaproj.RGB_32bit or sqldb.proj.getDBType() == ocpcaproj.RGB_64bit ):
+    if ( sqldb.proj.getDBType() not in ocpcaproj.CHANNEL_DATASETS + ocpcaproj.ANNOTATION_DATASETS ):
       
       sqldb.ingestImageStack()
     
-    elif ( sqldb.proj.getDBType() == ocpcaproj.CHANNELS_8bit or sqldb.proj.getDBType() == ocpcaproj.CHANNELS_16bit ):
+    elif ( sqldb.proj.getDBType() in ocpcaproj.CHANNEL_DATASETS ):
 
       sqldb.ingestChannelStack()
     

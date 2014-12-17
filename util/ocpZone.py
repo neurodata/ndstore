@@ -31,6 +31,7 @@ from django.conf import settings
 
 import OCP.ocppaths
 import ocpcaprivate
+import ocpcaproj
 
 """
   Script to Load Test A Server for Dean's Work Load. \
@@ -198,7 +199,7 @@ def generateURL ( process_num ):
   (xdim, ydim, zdim) = newdims = cubedims
   (ximagesz,yimagesz) = imagesz = info['dataset'].get('imagesize').get('0')
   (startslice,endslice) = info['dataset'].get('slicerange')
-  zcubedim = zcubedim + startslice
+  zcubedim = zcubedim+startslice
   (xoffset,yoffset) = tuple( x + (100*xcubedim)*(process_num-1) for x in result.readImage )
 
   # Reading from different starting points
@@ -225,16 +226,16 @@ def generateURL ( process_num ):
    #   break
 
     # Creating the url
-    if dbtype == IMAGES_8bit or dbtype == IMAGES_16bit or dbtype == RGB_32bit or dbtype == RGB_64bit:
+    if dbtype not in ocpcaproj.CHANNEL_DATASETS:
       url = "http://{}/ocp/ca/{}/{}/{}/{},{}/{},{}/{},{}/".format(result.host,result.token,cutout,resolution,xcubedim,xcubedim+xdim,ycubedim,ycubedim+ydim,zcubedim,zcubedim+zdim )
-    elif dbtype == CHANNELS_8bit or CHANNELS_16bit:
+    elif dbtype in ocpcaproj.CHANNEL_DATASETS:
       channel = info['channels'].items()[0]
-      url = "http://{}/ocp/ca/{}/{}/".format(result.host,result.token,cutout,channel )
+      url = "http://{}/ocp/ca/{}/{}/{}/{},{}/{},{}/{},{}/".format(result.host,result.token,cutout,result.channel,resolution,xcubedim,xcubedim+xdim,ycubedim,ycubedim+ydim,zcubedim,zcubedim+zdim )
     else:
       print "Project is of type {}".format(dbtype)
       sys.exit(0)
     
-    #print url, (xdim,ydim,zdim), mp.current_process()
+    print url, (xdim,ydim,zdim), mp.current_process()
     ReadImage( url )
     xcubedim = xcubedim + xdim
     ycubedim = ycubedim + ydim
@@ -248,6 +249,7 @@ def main():
   parser.add_argument('token', action="store", help='Token')
   parser.add_argument('processes', action="store", type=int, help=' Number of Processes')
   parser.add_argument('--readImage', dest='readImage', action="store", type=int, nargs='*', help='Read Annotations')
+  parser.add_argument('--channel', dest='channel', action="store", type=str, help='Read Annotations')
   parser.add_argument('--readAnno', dest='readAnno', action="store_true", help='Read Annotations')
   parser.add_argument('--postAnno', dest='datalocation', action="store", default=None, help='Post Annotations. Location od HDF5 Files')
   

@@ -22,7 +22,6 @@ import re
 from PIL import Image
 import cv2
 from contextlib import closing
-
 import numpy as np
 
 sys.path += [os.path.abspath('../../django')]
@@ -31,7 +30,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
 from django.conf import settings
 
 import ocpcarest
-import zindex
+import ocplib
 import imagecube
 import ocpcadb
 import ocpcaproj
@@ -40,6 +39,7 @@ class RajuIngest:
 
   def __init__(self, token, path, resolution, channel):
 
+    self.token = token
     self.path = path
     self.resolution = resolution
 
@@ -48,7 +48,7 @@ class RajuIngest:
 
     with closing ( ocpcadb.OCPCADB(self.proj) ) as self.db:
 
-      (self.xcubedim, self.ycubedim, self.zcubedim) = self.proj.datasetcfg.cubedim[ resolution ]
+      (self.xcubedim, self.ycubedim, self.zcubedim) = self.cubedims = self.proj.datasetcfg.cubedim[ resolution ]
       (self.startslice, self.endslice) = self.proj.datasetcfg.slicerange
       self.batchsz = self.zcubedim
       
@@ -83,17 +83,18 @@ class RajuIngest:
           if ( sl + b < self.endslice ):
 
             # raw data
-            filenm = self.path + 'x0.25_unspmask3-0.6_s_{:0>4}'.format(sl+b) + '.tif'
+            #filenm = '{}{}_{:0>4}.tif'.format(self.path, self.token.strip('Affine'), sl+b)
+            filenm = '{}allenAtlasPadded{:0>4}.tif'.format(self.path,  sl+b)
 
             # load the image and check the dimension
             try:
               print "Opening filename: " + filenm
-              #imgdata = cv2.imread(filenm, -1)
-              img = Image.open(filenm, 'r')
-              imgdata = np.asarray ( img )
-              if imgdata == None:
-                  imgdata = np.zeros((self._yimgsz,self._ximgsz))
-              imarray[(sl+b-self.startslice)%self.batchsz,0:imgdata.shape[0],0:imgdata.shape[1]] = imgdata[:,:]
+              imgdata = cv2.imread(filenm, -1)
+              #img = Image.open(filenm, 'r')
+              #imgdata = np.asarray ( img )
+              #if imgdata == None:
+              #    imgdata = np.zeros((self._yimgsz,self._ximgsz))
+              imarray[(sl+b-self.startslice)%self.batchsz,0:imgdata.shape[0],0:imgdata.shape[1]] = imgdata
             except IOError, e:
               print e
           
@@ -105,14 +106,15 @@ class RajuIngest:
     """Transfer the array to the database"""
 
     with closing ( ocpcadb.OCPCADB(self.proj) ) as self.db:
+      
       for y in range ( 0 , self._yimgsz+1, self.ycubedim ):
         for x in range ( 0, self._ximgsz+1, self.xcubedim ):
 
           # zindex
-          mortonidx = zindex.XYZMorton ( [x/self.xcubedim, y/self.ycubedim, (sl-self.startslice)/self.zcubedim] )
+          key = ocplib.XYZMorton ( [x/self.xcubedim, y/self.ycubedim, (sl-self.startslice)/self.zcubedim] )
 
           # Create a channel cube
-          cube = imagecube.ImageCube8 ( [self.xcubedim, self.ycubedim, self.zcubedim] )
+          cube = imagecube.ImageCube16 ( self.cubedims )
           
           xmin = x
           ymin = y
@@ -122,11 +124,13 @@ class RajuIngest:
           zmax = min ( sl + self.zcubedim, self.endslice + 1 )
 
           # data for this key
-          cube.data = imarray[zmin:zmax,ymin:ymax, xmin:xmax]
-          self.db.putChannelCube(mortonidx, channel, self.resolution, cube)
+          cube.data[0:zmax-zmin,0:ymax-ymin,0:xmax-xmin] = imarray[zmin:zmax,ymin:ymax, xmin:xmax]
+          print cube.data.shape
+          #import pdb;pdb.set_trace()
+          self.db.putChannelCube(key, channel, self.resolution, cube)
       
-      print " Commiting at x={}, y={}, z={}".format(x, y, sl)
-      self.db.conn.commit()
+        print " Commiting at x={}, y={}, z={}".format(x, y, sl)
+        self.db.conn.commit()
 
 
 def main():

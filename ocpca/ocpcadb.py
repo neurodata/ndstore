@@ -636,7 +636,8 @@ class OCPCADB:
 
     # Handle the cube format here.  
     if self.NPZ:
-      self.kvio.putTimeSeriesCube ( zidx, timestamp, resolution, cube.toNPZ(), not cube.fromZeros() )
+      #self.kvio.putTimeSeriesCube ( zidx, timestamp, resolution, cube.toNPZ(), not cube.fromZeros() )
+      self.kvio.putTimeSeriesCube ( zidx, timestamp, resolution, cube.toNPZ(), update )
     else:
       tmpfile= tempfile.NamedTemporaryFile ()
       h5 = h5py.File ( tmpfile.name, driver='core', backing_store=True )
