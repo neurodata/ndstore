@@ -169,9 +169,9 @@ class AnnotateCube(Cube):
 
 
   #
-  # Create the specified slice (index) at filename
+  # Create the specified slice (index) 
   #
-  def xySlice ( self, fileobj ):
+  def xyImage ( self ):
 
     zdim,ydim,xdim = self.data.shape
     imagemap = np.zeros ( [ ydim, xdim ], dtype=np.uint32 )
@@ -180,13 +180,12 @@ class AnnotateCube(Cube):
     imagemap = ocplib.recolor_ctype ( self.data.reshape( (imagemap.shape[0], imagemap.shape[1]) ), imagemap )
     #recolor_cy ( self.data.reshape((imagemap.shape[0],imagemap.shape[1])), imagemap )
 
-    outimage = Image.frombuffer ( 'RGBA', (xdim,ydim), imagemap, 'raw', 'RGBA', 0, 1 )
-    outimage.save ( fileobj, "PNG" )
+    return Image.frombuffer ( 'RGBA', (xdim,ydim), imagemap, 'raw', 'RGBA', 0, 1 )
 
   #
-  # Create the specified slice (index) at filename
+  # Create the specified slice (index)
   #
-  def xzSlice ( self, scale, fileobj ):
+  def xzImage ( self, scale ):
 
     zdim,ydim,xdim = self.data.shape
     imagemap = np.zeros ( [ zdim, xdim ], dtype=np.uint32 )
@@ -196,13 +195,13 @@ class AnnotateCube(Cube):
     #recolor_cy ( self.data.reshape((imagemap.shape[0],imagemap.shape[1])), imagemap )
 
     outimage = Image.frombuffer ( 'RGBA', (xdim,zdim), imagemap, 'raw', 'RGBA', 0, 1 )
-    newimage = outimage.resize ( [xdim, int(zdim*scale)] )
-    newimage.save ( fileobj, "PNG" )
+    return outimage.resize ( [xdim, int(zdim*scale)] )
+
 
   #
-  # Create the specified slice (index) at filename
+  # Create the specified slice (index) 
   #
-  def yzSlice ( self, scale, fileobj ):
+  def yzImage ( self, scale ):
 
     zdim,ydim,xdim = self.data.shape
     imagemap = np.zeros ( [ zdim, ydim ], dtype=np.uint32 )
@@ -212,7 +211,7 @@ class AnnotateCube(Cube):
     #recolor_cy ( self.data.reshape((imagemap.shape[0],imagemap.shape[1])), imagemap )
 
     outimage = Image.frombuffer ( 'RGBA', (ydim,zdim), imagemap, 'raw', 'RGBA', 0, 1 )
-    newimage = outimage.resize ( [ydim, int(zdim*scale)] )
+    return  outimage.resize ( [ydim, int(zdim*scale)] )
     newimage.save ( fileobj, "PNG" )
 
   #
