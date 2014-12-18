@@ -101,7 +101,5 @@ class Cube:
       logger.error ("Failed to compress database cube.  Data integrity concern.")
       raise
 
-
-
 # end cube
 

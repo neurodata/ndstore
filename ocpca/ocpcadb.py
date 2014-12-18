@@ -140,7 +140,6 @@ class OCPCADB:
     """Close the cursor if we are not in a transaction"""
 
     if self.cursor == None:
-      print "Cursor close"
       cursor.close()
 
   def closeCursorCommit ( self, cursor ):
@@ -418,41 +417,6 @@ class OCPCADB:
     return self.kvio.getCubes( listofidxs, resolution )
 
 
-  def cgetCube ( self, key, resolution, update=False ):
-    """Load a cube from the annotation database"""
-
-    # get the size of the image and cube
-    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
-
-    # Create a cube object
-    if (self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS):
-      cube = anncube.AnnotateCube ( cubedim )
-    elif (self.annoproj.getDBType() == ocpcaproj.PROBMAP_32bit):
-      cube = probmapcube.ProbMapCube32 ( cubedim )
-    elif (self.annoproj.getDBType() == ocpcaproj.IMAGES_8bit):
-      cube = imagecube.ImageCube8 ( cubedim )
-    elif (self.annoproj.getDBType() == ocpcaproj.IMAGES_16bit):
-      cube = imagecube.ImageCube16 ( cubedim )
-    else:
-      raise OCPCAError ("Unknown project type {}".format(self.annoproj.getDBType()))
-  
-    # get the block from the database
-    cubestr = self.ckvio.getCube ( key, resolution, update )
-
-    # cubes are HDF5 files
-    with closing (tempfile.NamedTemporaryFile()) as tmpfile:
-      tmpfile.write ( cubestr )
-      tmpfile.seek(0)
-      h5 = h5py.File ( tmpfile.name ) 
-
-      # load the numpy array
-      cube.data = np.array ( h5['cuboid'] )
-
-      h5.close()
-
-    return cube
-
-
   def putCube ( self, zidx, resolution, cube, update=False ):
     """ Store a cube in the annotation database """
     
@@ -489,7 +453,6 @@ class OCPCADB:
   
   
   # GET AND PUT methods for Channel Database
-  
   def getChannelCube ( self, key, channel, resolution, update=False ):
     """ Load a cube from the database """
 
@@ -748,7 +711,6 @@ class OCPCADB:
       # decompress the cube
       cube.fromNPZ ( row[1] )
       return [row[0],cube]
-
 
 
   def getAllExceptions ( self, key, resolution ):
@@ -1182,6 +1144,8 @@ class OCPCADB:
   #
   def cutout ( self, corner, dim, resolution, channel=None, zscaling=None, annoids=None ):
     """Extract a cube of arbitrary size.  Need not be aligned."""
+   
+    print "in db.cutout r,c,d ", resolution, corner, dim
 
     # alter query if  (ocpcaproj)._resolution is > resolution
     # if cutout is below resolution, get a smaller cube and scaleup
@@ -1347,10 +1311,12 @@ class OCPCADB:
         # apply exceptions if it's an annotation project
         if annoids!= None and self.annoproj.getDBType() in ocpcaproj.ANNOTATION_DATASETS:
           incube.data = ocplib.filter_ctype_OMP ( incube.data, annoids )
-          self.applyCubeExceptions ( annoids, effresolution, idx, incube )
+          if self.EXCEPT_FLAG:
+            self.applyCubeExceptions ( annoids, effresolution, idx, incube )
 
         # add it to the output cube
         start3 = time.time()
+  
         outcube.addData_new ( incube, offset ) 
         totaltime3 += time.time()-start3
 
@@ -1936,7 +1902,7 @@ class OCPCADB:
   #
   #  Write data that is not integral in cuboids
   #
-  def writeCuboid ( self, corner, resolution, cuboiddata ):
+  def writeCuboid ( self, corner, resolution, cuboiddata, channel=None ):
     """Write an image through the Web service"""
 
     # dim is in xyz, data is in zyxj
@@ -1968,6 +1934,10 @@ class OCPCADB:
       cuboiddtype = np.uint64
     elif self.annoproj.getDBType() == ocpcaproj.PROBMAP_32bit:
       cuboiddtype = np.float32
+    elif self.annoproj.getDBType() == ocpcaproj.CHANNELS_16bit:
+      cuboiddtype = np.uint16
+    elif self.annoproj.getDBType() == ocpcaproj.CHANNELS_8bit:
+      cuboiddtype = np.uint8
 
     databuffer = np.zeros ([znumcubes*zcubedim, ynumcubes*ycubedim, xnumcubes*xcubedim], dtype=cuboiddata.dtype )
     databuffer [ zoffset:zoffset+dim[2], yoffset:yoffset+dim[1], xoffset:xoffset+dim[0] ] = cuboiddata 
@@ -1982,10 +1952,20 @@ class OCPCADB:
 
             key = ocplib.XYZMorton ([x+xstart,y+ystart,z+zstart])
      
-            # probability maps have overwrite semantics
-            cube = self.getCube ( key, resolution, True )
+            # get the cube in question
+            if channel == None:
+              cube = self.getCube ( key, resolution, True )
+            else:
+              cube = self.getChannelCube ( key, channel, resolution, True )
+ 
+            # overwrite the cube
             cube.overwrite ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
-            self.putCube ( key, resolution, cube)
+
+            # update in the database
+            if channel == None:
+              self.putCube ( key, resolution, cube)
+            else:
+              self.putChannelCube ( key, channel, resolution, cube)
 
     except:
       self.kvio.rollback()

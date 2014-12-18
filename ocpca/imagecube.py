@@ -20,6 +20,12 @@ from cube import Cube
 import ocplib
 from windowcutout import windowCutout
 
+from ocpcaerror import OCPCAError
+
+import logging
+logger=logging.getLogger("ocp")
+
+
 #
 #  ImageCube: manipulate the in-memory data representation of the 3-d cube of data
 #    includes loading, export, read and write routines
@@ -62,62 +68,42 @@ class ImageCube8(Cube):
     #vector_func = np.vectorize ( lambda a,b: b if b!=0 else a ) 
     #self.data = vector_func ( self.data, annodata ) 
 
+    if (self.data.dtype != annodata.dtype ):
+      logger.error("Conflicting data types for overwrite")
+      raise OCPCAError ("Conflicting data types for overwrite")
+
     self.data = ocplib.overwriteDense_ctype ( self.data, annodata )
 
 
   #
-  # Create the specified slice (index) at filename
+  # Create the specified slice (index) 
   #
-  def xySlice ( self, fileobj ):
+  def xyImage ( self ):
 
     zdim,ydim,xdim = self.data.shape
-    outimage = Image.frombuffer ( 'L', (xdim,ydim), self.data[0,:,:].flatten(), 'raw', 'L', 0, 1 ) 
-    outimage.save ( fileobj, "PNG" )
-  
+    return Image.frombuffer ( 'L', (xdim,ydim), self.data[0,:,:].flatten(), 'raw', 'L', 0, 1 ) 
 
   #
-  # Create the specified slice (index) at filename
+  # Create the specified slice (index) 
   #
-  def xzSlice ( self, zscale, fileobj  ):
+  def xzImage ( self, zscale ):
 
     zdim,ydim,xdim = self.data.shape
     outimage = Image.frombuffer ( 'L', (xdim,zdim), self.data[:,0,:].flatten(), 'raw', 'L', 0, 1 ) 
     #if the image scales to 0 pixels it don't work
-    newimage = outimage.resize ( [xdim, int(zdim*zscale)] )
-    newimage.save ( fileobj, "PNG" )
+    return outimage.resize ( [xdim, int(zdim*zscale)] )
 
   #
-  # Create the specified slice (index) at filename
+  # Create the specified slice (index) 
   #
-  def yzSlice ( self, zscale, fileobj  ):
+  def yzImage ( self, zscale ):
 
     zdim,ydim,xdim = self.data.shape
     outimage = Image.frombuffer ( 'L', (ydim,zdim), self.data[:,:,0].flatten(), 'raw', 'L', 0, 1 ) 
     #if the image scales to 0 pixels it don't work
-    newimage = outimage.resize ( [ydim, int(zdim*zscale)] )
-    newimage.save ( fileobj, "PNG" )
+    return outimage.resize ( [ydim, int(zdim*zscale)] )
 
 
-  # RB fixed just this one data type
-
-  #
-  # Create a slice for CATMAID
-  #
-  def catmaidXYSlice ( self ):
-    cmtilesz = self.data.shape[1]
-    self.cmimg = Image.frombuffer ( 'L', [cmtilesz,cmtilesz], self.data, 'raw', 'L', 0, 1 )
-
-  def catmaidXZSlice ( self ):
-    cmtilesz = self.data.shape[2]
-    tmpdata = self.data.reshape ( self.data.shape[0], self.data.shape[2] ).copy('C')
-    self.cmimg = Image.frombuffer ( 'L', [cmtilesz,self.data.shape[0]], tmpdata, 'raw', 'L', 0, 1 )
-    self.cmimg = self.cmimg.resize ( [cmtilesz,cmtilesz] )
-
-  def catmaidYZSlice ( self ):
-    cmtilesz = self.data.shape[1]
-    tmpdata = self.data.reshape ( self.data.shape[0], self.data.shape[1] ).copy('C')
-    self.cmimg = Image.frombuffer ( 'L', [cmtilesz,self.data.shape[0]], tmpdata, 'raw', 'L', 0, 1 )
-    self.cmimg = self.cmimg.resize ( [cmtilesz,cmtilesz] )
 
 #
 #  ImageCube16: manipulate the in-memory data representation of the 3-d cube 
@@ -163,55 +149,43 @@ class ImageCube16(Cube):
     #vector_func = np.vectorize ( lambda a,b: b if b!=0 else a ) 
     #self.data = vector_func ( self.data, annodata ) 
 
+    if (self.data.dtype != annodata.dtype ):
+      logger.error("Conflicting data types for overwrite")
+      raise OCPCAError ("Conflicting data types for overwrite")
+
     self.data = ocplib.overwriteDense_ctype ( self.data, annodata )
 
   #
-  # Create the specified slice (index) at filename
+  # Create the specified slice (index) 
   #
-  def xySlice ( self, fileobj ):
+  def xyImage ( self ):
 
     # This works for 16-> conversions
     zdim,ydim,xdim = self.data.shape
     self.data = np.uint8(self.data)
-    outimage = Image.frombuffer ( 'L', (xdim,ydim), self.data[0,:,:].flatten(), 'raw', 'L', 0, 1)
-    #outimage2 = Image.fromarray ( self.data )
-    #outimage = outimage.point(lambda i:i*(1./256)).convert('L')
-    #self.data = np.clip ( self.data, 0, 565)
-    #self.data = (np.uint8)( self.data/(565.0/255) )
-    #outimage = Image.fromarray(self.data[0,:,:])
-    outimage.save ( fileobj, "PNG" )
+    return Image.frombuffer ( 'L', (xdim,ydim), self.data[0,:,:].flatten(), 'raw', 'L', 0, 1)
 
 
   #
-  # Create the specified slice (index) at filename
+  # Create the specified slice (index) 
   #
-  def xzSlice ( self, zscale, fileobj  ):
+  def xzImage ( self, zscale ):
 
     zdim,ydim,xdim = self.data.shape
     self.data = np.uint8(self.data)
     outimage = Image.frombuffer ( 'L', (xdim,zdim), self.data[:,0,:].flatten(), 'raw', 'L', 0, 1)
-    outimage.save ( fileobj, "PNG" )
-
+    return  outimage.resize ( [xdim, int(zdim*zscale)] )
 
   #
-  # Create the specified slice (index) at filename
+  # Create the specified slice (index) 
   #
-  def yzSlice ( self, zscale, fileobj  ):
+  def yzImage ( self, zscale ):
 
     zdim,ydim,xdim = self.data.shape
     self.data = np.uint8(self.data)
     outimage = Image.frombuffer ( 'L', (ydim,zdim), self.data[:,:,0].flatten(), 'raw', 'L', 0, 1)
-    outimage.save ( fileobj, "PNG" )
+    return outimage.resize ( [ydim, int(zdim*zscale)] )
 
-  #
-  # Create a slice for CATMAID
-  #
-  def catmaidSlice ( self ):
-    
-    cmtilesz = self.data.shape[1]
-    windowValue = 546
-    windowCutout ( self.data, windowValue )
-    self.data = Image.frombuffer ( 'L', (cmtilesz,cmtilesz), self.data.flatten(), 'raw', 'L', 0, 1)
 
 # end BrainCube
 
@@ -260,42 +234,33 @@ class ImageCube32(Cube):
     self.data = ocplib.overwriteDense_ctype ( self.data, annodata )
 
   #
-  # Create the specified slice (index) at filename
+  # Create the specified slice (index) 
   #
-  def xySlice ( self, fileobj ):
+  def xyImage ( self ):
 
     zdim,ydim,xdim = self.data.shape
-    outimage = Image.fromarray( self.data[0,:,:], "RGBA")
-    outimage.save ( fileobj, "PNG" )
+    return Image.fromarray( self.data[0,:,:], "RGBA")
 
 
   #
-  # Create the specified slice (index) at filename
+  # Create the specified slice (index) 
   #
-  def xzSlice ( self, zscale, fileobj  ):
+  def xzImage ( self, zscale ):
 
     zdim,ydim,xdim = self.data.shape
     outimage = Image.fromarray( self.data[:,0,:], "RGBA")
-    outimage.save ( fileobj, "PNG" )
+    return outimage.resize ( [xdim, int(zdim*zscale)] )
 
 
   #
-  # Create the specified slice (index) at filename
+  # Create the specified slice (index) 
   #
-  def yzSlice ( self, zscale, fileobj  ):
+  def yzImage ( self, zscale ):
 
     zdim,ydim,xdim = self.data.shape
     outimage = Image.fromarray( self.data[:,:,0], "RGBA")
-    outimage.save ( fileobj, "PNG" )
+    return outimage.resize ( [ydim, int(zdim*zscale)] )
 
-  #
-  # Create a slice for CATMAID
-  #
-  def catmaidSlice ( self ):
-    
-    cmtilesz = self.data.shape[1]
-    self.data = Image.frombuffer ( 'RGBA', (cmtilesz,cmtilesz), self.data.flatten(), 'raw', 'RGBA', 0, 1)
-    #data2 = Image.fromarray( self.data[:,:], "RGBA")
 
   #
   # Convert the uint32 back into 4x8 bit channels
@@ -356,44 +321,35 @@ class ImageCube64(Cube):
     self.data = ocplib.overwriteDense_ctype ( self.data, annodata )
 
   #
-  # Create the specified slice (index) at filename
+  # Create the specified slice (index) 
   #
-  def xySlice ( self, fileobj ):
+  def xyImage ( self ):
 
     channels,ydim,xdim = self.data.shape
     self.extractChannel()
-    outimage = Image.fromarray( self.data, "RGBA")
-    outimage.save ( fileobj, "PNG" )
+    return Image.fromarray( self.data, "RGBA")
 
 
   #
-  # Create the specified slice (index) at filename
+  # Create the specified slice (index) 
   #
-  def xzSlice ( self, zscale, fileobj  ):
+  def xzImage ( self, zscale ):
 
     zdim,ydim,xdim = self.data.shape
     self.extractChannel()
     outimage = Image.fromarray( self.data, "RGBA")
-    outimage.save ( fileobj, "PNG" )
+    return outimage.resize ( [xdim, int(zdim*zscale)] )
 
 
   #
-  # Create the specified slice (index) at filename
+  # Create the specified slice (index) 
   #
-  def yzSlice ( self, zscale, fileobj  ):
+  def yzImage ( self, zscale ):
 
     zdim,ydim,xdim = self.data.shape
     self.extractChannel()
     outimage = Image.fromarray( self.data, "RGBA")
-    outimage.save ( fileobj, "PNG" )
-
-  #
-  # Create a slice for CATMAID
-  #
-  def catmaidSlice ( self ):
-    
-    self.extractChannel()
-    self.data = Image.fromarray( self.data, "RGBA")
+    return outimage.resize ( [ydim, int(zdim*zscale)] )
   
   #
   # Convert the uint32 back into 4x8 bit channels

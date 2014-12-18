@@ -20,6 +20,7 @@ import cStringIO
 from PIL import Image
 import pylibmc
 import time
+import math
 from contextlib import closing
 
 import restargs
@@ -70,10 +71,8 @@ class SimpleCatmaid:
       tiledata = np.zeros((1,self.tilesz,self.tilesz), cb.data.dtype )
       tiledata[0,0:((yend-1)%self.tilesz+1),0:((xend-1)%self.tilesz+1)] = cb.data[0,:,:]
       cb.data = tiledata
-   
-    cb.catmaidXYSlice( )
 
-    return cb.cmimg
+    return cb.xyImage()
 
 
   def cacheMissXZ ( self, resolution, xtile, yslice, ztile ):
@@ -93,8 +92,8 @@ class SimpleCatmaid:
     zoffset = self.proj.datasetcfg.slicerange[0]
     ztilestart = int((ztile*self.tilesz)/scalefactor) + zoffset
     zstart = max ( ztilestart, zoffset ) 
-    ztileend = int(((ztile+1)*self.tilesz)/scalefactor) + zoffset
-    zend = min ( ztileend, self.proj.datasetcfg.slicerange[1] )
+    ztileend = int(math.ceil((ztile+1)*self.tilesz/scalefactor)) + zoffset
+    zend = min ( ztileend, self.proj.datasetcfg.slicerange[1]+1 )
    
     # get an xz image slice
     imageargs = '{}/{},{}/{}/{},{}/'.format(resolution,xstart,xend,yslice,zstart,zend) 
@@ -107,9 +106,7 @@ class SimpleCatmaid:
       tiledata[0:zend-zstart,0,0:((xend-1)%self.tilesz+1)] = cb.data[:,0,:]
       cb.data = tiledata
 
-    cb.catmaidXZSlice( )
-
-    return cb.cmimg
+    return cb.xzImage( scalefactor )
 
 
   def cacheMissYZ ( self, resolution, xslice, ytile, ztile ):
@@ -129,8 +126,8 @@ class SimpleCatmaid:
     zoffset = self.proj.datasetcfg.slicerange[0]
     ztilestart = int((ztile*self.tilesz)/scalefactor) + zoffset
     zstart = max ( ztilestart, zoffset ) 
-    ztileend = int(((ztile+1)*self.tilesz)/scalefactor) + zoffset
-    zend = min ( ztileend, self.proj.datasetcfg.slicerange[1] )
+    ztileend = int(math.ceil((ztile+1)*self.tilesz/scalefactor)) + zoffset
+    zend = min ( ztileend, self.proj.datasetcfg.slicerange[1]+1 )
 
     # get an yz image slice
     imageargs = '{}/{}/{},{}/{},{}/'.format(resolution,xslice,ystart,yend,zstart,zend) 
@@ -143,10 +140,7 @@ class SimpleCatmaid:
       tiledata[0:zend-zstart,0:((yend-1)%self.tilesz+1),0] = cb.data[:,:,0]
       cb.data = tiledata
 
-    cb.catmaidYZSlice( )
-
-    return cb.cmimg
-
+    return cb.yzImage( scalefactor )
 
 
   def getTile ( self, webargs ):
