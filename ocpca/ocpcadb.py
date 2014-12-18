@@ -1264,7 +1264,6 @@ class OCPCADB:
 
     try:
 
-
       if self.annoproj.getDBType() in ocpcaproj.CHANNEL_DATASETS:
         # Convert channel as needed
         channel = ocpcachannel.toID ( channel, self )
@@ -1279,7 +1278,7 @@ class OCPCADB:
       totaltime2 = totaltime3 = totaltime4 = totaltime5 = totaltime6 = 0
       # use the batch generator interface
       for idx, datastring in cuboids:
-
+ 
         #add the query result cube to the bigger cube
         curxyz = ocplib.MortonXYZ(int(idx))
         offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
@@ -2016,12 +2015,10 @@ class OCPCADB:
     # Get the list of cubeindexes for the Ramon objects
     listofidxs = set()
     addindex = []
-    #import pdb;pdb.set_trace()
     # RB!!!! do this for all ids, promoting the exceptions of the merge id
     for annid in ids:
       if annid== mergeid:
         continue
-     # import pdb;pdb.set_trace()
       curindex= self.annoIdx.getIndex(annid,resolution)
       addindex =np.union1d(addindex,curindex)
       listofidxs = set(curindex)
@@ -2054,7 +2051,6 @@ class OCPCADB:
           self.annoIdx.deleteIndexResolution(annid,resolution)
         except:
           logger.warning("Failed to delete annotation {} during merge.".format(annid))
-   # import pdb;pdb.set_trace()
     self.annoIdx.updateIndex(mergeid,addindex,resolution)     
     self.commit()
     
