@@ -94,10 +94,12 @@ class Synaptogram:
     self.resolution=resolution
 
   def construct ( self ):
-
+ 
     # get the spatial parameters of the synaptogram
     hwidth = self.width/2
     [x,y,z] = self.centroid
+    # update for the zoffset
+    z = z - self.proj.datasetcfg.slicerange[0]
 
     # and the database and then call the db function
     with closing ( ocpcadb.OCPCADB(self.proj) ) as db:
@@ -145,7 +147,6 @@ class Synaptogram:
         except KeyError:
           raise Exception ("Reference channel %s not found" % ( refchan ))
 
-        print refdata
         if self.normalize2:
           chmaxval = gchmaxval[refchan]
         else:
