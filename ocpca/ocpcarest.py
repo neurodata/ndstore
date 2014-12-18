@@ -1373,8 +1373,6 @@ def queryAnnoObjects ( webargs, postdata=None ):
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
 
-    annoids = db.getAnnoObjects ( restargs.split('/') )
-
     # We have a cutout as well
     if postdata:
 
