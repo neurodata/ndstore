@@ -1311,7 +1311,8 @@ class OCPCADB:
         # apply exceptions if it's an annotation project
         if annoids!= None and self.annoproj.getDBType() in ocpcaproj.ANNOTATION_DATASETS:
           incube.data = ocplib.filter_ctype_OMP ( incube.data, annoids )
-          self.applyCubeExceptions ( annoids, effresolution, idx, incube )
+          if self.EXCEPT_FLAG:
+            self.applyCubeExceptions ( annoids, effresolution, idx, incube )
 
         # add it to the output cube
         start3 = time.time()

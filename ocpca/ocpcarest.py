@@ -81,6 +81,9 @@ def cutout ( imageargs, proj, db, channels=None ):
   if filterlist != None:
     cube.data = ocplib.filter_ctype_OMP ( cube.data, filterlist )
 
+
+  print np.unique (cube.data)
+
   return cube
 
 #
@@ -257,28 +260,34 @@ def TimeSeriesCutout ( imageargs, proj, db ):
 def imgSlice ( service, imageargs, proj, db ):
   """Return the cube object for an xy plane"""
 
-  #RBTODO need to parse window here
+  #KLTODO need to evaluate window here .. not in cutoutargs
 
   if proj.getDBType() in ocpcaproj.COMPOSITE_DATASETS:
     [ channel, sym, imageargs ] = imageargs.partition ('/')
   else: 
     channel = None
 
-  # Rewrite the imageargs to be a cutout
-  if service == 'xy':
-    p = re.compile("(\d+/\d+,\d+/\d+,\d+/)(\d+)/")
-    m = p.match ( imageargs )
-    cutoutargs = '{}{},{}/'.format(m.group(1),m.group(2),int(m.group(2))+1) 
+  try:
+    # Rewrite the imageargs to be a cutout
+    if service == 'xy':
+      p = re.compile("(\d+/\d+,\d+/\d+,\d+/)(\d+)/")
+      m = p.match ( imageargs )
+      cutoutargs = '{}{},{}/'.format(m.group(1),m.group(2),int(m.group(2))+1) 
 
-  elif service == 'xz':
-    p = re.compile("(\d+/\d+,\d+/)(\d+)(/\d+,\d+)/")
-    m = p.match ( imageargs )
-    cutoutargs = '{}{},{}{}/'.format(m.group(1),m.group(2),int(m.group(2))+1,m.group(3)) 
+    elif service == 'xz':
+      p = re.compile("(\d+/\d+,\d+/)(\d+)(/\d+,\d+)/")
+      m = p.match ( imageargs )
+      cutoutargs = '{}{},{}{}/'.format(m.group(1),m.group(2),int(m.group(2))+1,m.group(3)) 
 
-  elif service == 'yz':
-    p = re.compile("(\d+/)(\d+)(/\d+,\d+/\d+,\d+)/")
-    m = p.match ( imageargs )
-    cutoutargs = '{}{},{}{}/'.format(m.group(1),m.group(2),int(m.group(2))+1,m.group(3)) 
+    elif service == 'yz':
+      p = re.compile("(\d+/)(\d+)(/\d+,\d+/\d+,\d+)/")
+      m = p.match ( imageargs )
+      cutoutargs = '{}{},{}{}/'.format(m.group(1),m.group(2),int(m.group(2))+1,m.group(3)) 
+    else:
+      raise "No such image plane {}".format(service)
+  except Exception, e:
+    logger.warning ("Illegal image arguments={}.  Error={}".format(imageargs,e))
+    raise OCPCAError ("Illegal image arguments={}.  Error={}".format(imageargs,e))
 
 
   # Perform the cutout
@@ -339,12 +348,11 @@ def yzImage ( imageargs, proj, db ):
   fileobj.seek(0)
   return fileobj.read()
 
-
 #
-#  Read individual annotations xyAnno, xzAnno, yzAnno
+#  Read individual annotation image slices xy, xz, yz
 #
-def xyAnno ( imageargs, proj, db ):
-  """Return an xy plane fileobj.read() for a single objects"""
+def imgAnno ( service, imageargs, proj, db ):
+  """Return a plane fileobj.read() for a single objects"""
 
   [ annoidstr, sym, imageargs ] = imageargs.partition('/')
   annoids = [int(x) for x in annoidstr.split(',')]
@@ -360,12 +368,35 @@ def xyAnno ( imageargs, proj, db ):
   else:
     iscompound = False
 
+  try:
+    # Rewrite the imageargs to be a cutout
+    if service == 'xy':
+      p = re.compile("(\d+/\d+,\d+/\d+,\d+/)(\d+)/")
+      m = p.match ( imageargs )
+      cutoutargs = '{}{},{}/'.format(m.group(1),m.group(2),int(m.group(2))+1) 
+
+    elif service == 'xz':
+      p = re.compile("(\d+/\d+,\d+/)(\d+)(/\d+,\d+)/")
+      m = p.match ( imageargs )
+      cutoutargs = '{}{},{}{}/'.format(m.group(1),m.group(2),int(m.group(2))+1,m.group(3)) 
+
+    elif service == 'yz':
+      p = re.compile("(\d+/)(\d+)(/\d+,\d+/\d+,\d+)/")
+      m = p.match ( imageargs )
+      cutoutargs = '{}{},{}{}/'.format(m.group(1),m.group(2),int(m.group(2))+1,m.group(3)) 
+    else:
+      raise "No such image plane {}".format(service)
+  except Exception, e:
+    logger.warning ("Illegal image arguments={}.  Error={}".format(imageargs,e))
+    raise OCPCAError ("Illegal image arguments={}.  Error={}".format(imageargs,e))
+
+
   # Perform argument processing
   try:
     args = restargs.BrainRestArgs ();
-    args.xyArgs ( imageargs, proj.datasetcfg )
+    args.cutoutArgs ( cutoutargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
-    logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
+    logger.warning("REST Arguments %s failed: %s" % (cutoutrags,e))
     raise OCPCAError(e.value)
 
   # Extract the relevant values
@@ -383,104 +414,19 @@ def xyAnno ( imageargs, proj, db ):
     dataids = annoids
     cb = db.annoCutout ( dataids, resolution, corner, dim, None )
 
+  # reshape to 2-d
+  if service=='xy':
+    img = cb.xyImage ( )
+  elif service=='xz':
+    img = cb.xzImage ( proj.datasetcfg.zscale[resolution] )
+  elif service=='yz':
+    img = cb.yzImage (  proj.datasetcfg.zscale[resolution] )
 
-  img = cb.xyImage ( )
   fileobj = cStringIO.StringIO ( )
   img.save ( fileobj, "PNG" )
   fileobj.seek(0)
   return fileobj.read()
 
-
-def xzAnno ( imageargs, proj, db ):
-  """Return an xz plane fileobj.read()"""
-
-  [ annoidstr, sym, imageargs ] = imageargs.partition('/')
-  annoids = [int(x) for x in annoidstr.split(',')]
-
-  # retrieve the annotation 
-  if len(annoids) == 1:
-    anno = db.getAnnotation ( annoids[0] )
-    if anno == None:
-      logger.warning("No annotation found at identifier = %s" % (annoid))
-      raise OCPCAError ("No annotation found at identifier = %s" % (annoid))
-    else:
-      iscompound = True if anno.__class__ in [ annotation.AnnNeuron ] else False; 
-  else:
-    iscompound = False
-
-  # Perform argument processing
-  try:
-    args = restargs.BrainRestArgs ();
-    args.xzArgs ( imageargs, proj.datasetcfg )
-  except restargs.RESTArgsError, e:
-    logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
-    raise OCPCAError(e)
-
-  # Extract the relevant values
-  corner = args.getCorner()
-  dim = args.getDim()
-  resolution = args.getResolution()
-
-  # determine if it is a compound type (NEURON) and get the list of relevant segments
-  if iscompound:
-    # remap the ids for a neuron
-    dataids = db.getChildren ( annoids[0] ) 
-    cb = db.annoCutout ( dataids, resolution, corner, dim, annoids[0] )
-  else:
-    # no remap when not a neuron
-    cb = db.annoCutout ( annoids, resolution, corner, dim, None )
-
-  img = cb.xzImage ( proj.datasetcfg.zscale[resolution] )
-  fileobj = cStringIO.StringIO ( )
-  img.save ( fileobj, "PNG" )
-  fileobj.seek(0)
-  return fileobj.read()
-
-
-def yzAnno ( imageargs, proj, db ):
-  """Return an yz plane fileobj.read()"""
-
-  [ annoidstr, sym, imageargs ] = imageargs.partition('/')
-  annoids = [int(x) for x in annoidstr.split(',')]
-
-  # retrieve the annotation 
-  if len(annoids) == 1:
-    anno = db.getAnnotation ( annoids[0] )
-    if anno == None:
-      logger.warning("No annotation found at identifier = %s" % (annoid))
-      raise OCPCAError ("No annotation found at identifier = %s" % (annoid))
-    else:
-      iscompound = True if anno.__class__ in [ annotation.AnnNeuron ] else False; 
-  else:
-    iscompound = False
-
-  # Perform argument processing
-  try:
-    args = restargs.BrainRestArgs ();
-    args.yzArgs ( imageargs, proj.datasetcfg )
-  except restargs.RESTArgsError, e:
-    logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
-    raise OCPCAError(e)
-
-  # Extract the relevant values
-  corner = args.getCorner()
-  dim = args.getDim()
-  resolution = args.getResolution()
-
-  # determine if it is a compound type (NEURON) and get the list of relevant segments
-  if iscompound:
-    # remap the ids for a neuron
-    dataids = db.getChildren ( annoids[0] ) 
-    cb = db.annoCutout ( dataids, resolution, corner, dim, annoids[0] )
-  else:
-    # no remap when not a neuron
-    cb = db.annoCutout ( annoids, resolution, corner, dim, None )
-
-  img = cb.yzImage ( proj.datasetcfg.zscale[resolution] )
-  fileobj = cStringIO.StringIO ( )
-  img.save ( fileobj, "PNG" )
-  fileobj.seek(0)
-  return fileobj.read()
 
 #
 #  annId
@@ -562,13 +508,13 @@ def selectService ( webargs, proj, db ):
     return listIds ( rangeargs, proj, db )
 
   elif service == 'xyanno':
-    return xyAnno ( rangeargs, proj, db )
+    return imgAnno ( 'xy', rangeargs, proj, db )
 
   elif service == 'xzanno':
-    return xzAnno ( rangeargs, proj, db )
+    return imgAnno ( 'xz', rangeargs, proj, db )
 
   elif service == 'yzanno':
-    return yzAnno ( rangeargs, proj, db )
+    return imgAnno ( 'yz', rangeargs, proj, db )
 
   elif service == 'ts':
     return TimeSeriesCutout ( rangeargs, proj, db )
@@ -1593,23 +1539,32 @@ def chanInfo ( webargs ):
 def mcFalseColor ( webargs ):
   """False color image of multiple channels"""
 
+  #KLTODO need to evaluate window here .. not in cutoutargs
+
   [ token, mcfcstr, service, chanstr, imageargs ] = webargs.split ('/', 4)
 
-  # Rewrite the imageargs to be a cutout
-  if service == 'xy':
-    p = re.compile("(\d+/\d+,\d+/\d+,\d+/)(\d+)/")
-    m = p.match ( imageargs )
-    cutoutargs = '{}{},{}/'.format(m.group(1),m.group(2),int(m.group(2))+1) 
+  try:
+    # Rewrite the imageargs to be a cutout
+    if service == 'xy':
+      p = re.compile("(\d+/\d+,\d+/\d+,\d+/)(\d+)/")
+      m = p.match ( imageargs )
+      cutoutargs = '{}{},{}/'.format(m.group(1),m.group(2),int(m.group(2))+1) 
 
-  elif service == 'xz':
-    p = re.compile("(\d+/\d+,\d+/)(\d+)(/\d+,\d+)/")
-    m = p.match ( imageargs )
-    cutoutargs = '{}{},{}{}/'.format(m.group(1),m.group(2),int(m.group(2))+1,m.group(3)) 
+    elif service == 'xz':
+      p = re.compile("(\d+/\d+,\d+/)(\d+)(/\d+,\d+)/")
+      m = p.match ( imageargs )
+      cutoutargs = '{}{},{}{}/'.format(m.group(1),m.group(2),int(m.group(2))+1,m.group(3)) 
 
-  elif service == 'yz':
-    p = re.compile("(\d+/)(\d+)(/\d+,\d+/\d+,\d+)/")
-    m = p.match ( imageargs )
-    cutoutargs = '{}{},{}{}/'.format(m.group(1),m.group(2),int(m.group(2))+1,m.group(3)) 
+    elif service == 'yz':
+      p = re.compile("(\d+/)(\d+)(/\d+,\d+/\d+,\d+)/")
+      m = p.match ( imageargs )
+      cutoutargs = '{}{},{}{}/'.format(m.group(1),m.group(2),int(m.group(2))+1,m.group(3)) 
+
+    else:
+      raise "No such image plane {}".format(service)
+  except Exception, e:
+    logger.warning ("Illegal image arguments={}.  Error={}".format(imageargs,e))
+    raise OCPCAError ("Illegal image arguments={}.  Error={}".format(imageargs,e))
 
   # split the channel string
   channels = chanstr.split(",")
