@@ -1373,6 +1373,8 @@ def queryAnnoObjects ( webargs, postdata=None ):
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
 
+    annoids = db.getAnnoObjects ( restargs.split('/') )
+
     # We have a cutout as well
     if postdata:
 
@@ -1382,12 +1384,12 @@ def queryAnnoObjects ( webargs, postdata=None ):
 
       # Make a named temporary file for the HDF5
       with closing (tempfile.NamedTemporaryFile()) as tmpfile:
+
         tmpfile.write ( postdata )
         tmpfile.seek(0)
         h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
 
         try:
-  
   
           corner = h5f['XYZOFFSET'][:]
           dim = h5f['CUTOUTSIZE'][:]
