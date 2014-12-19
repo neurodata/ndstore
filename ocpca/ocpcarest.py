@@ -36,6 +36,7 @@ import ocpcachannel
 import h5ann
 import h5projinfo
 import annotation
+import mcfc
 
 from ocpca_cy import assignVoxels_cy
 from ocpca_cy import recolor_cy
@@ -79,6 +80,9 @@ def cutout ( imageargs, proj, db, channels=None ):
   cube = db.cutout ( corner, dim, resolution, channels, zscaling )
   if filterlist != None:
     cube.data = ocplib.filter_ctype_OMP ( cube.data, filterlist )
+
+
+  print np.unique (cube.data)
 
   return cube
 
@@ -170,9 +174,9 @@ def HDF5 ( imageargs, proj, db ):
       chanobj = ocpcachannel.OCPCAChannels ( db )
       chanids = chanobj.rewriteToInts ( channels )
   
+      changrp = fh5out.create_group( "CUTOUT" )
       for i in range(len(chanids)):
         cube = cutout ( imageargs, proj, db, chanids[i] )
-        changrp = fh5out.create_group( "CUTOUT" )
         changrp.create_dataset ( "{}".format(channels[i]), tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data )
     
     elif proj.getDBType() in ocpcaproj.RGB_DATASETS:
@@ -253,100 +257,59 @@ def TimeSeriesCutout ( imageargs, proj, db ):
 #  **Image return a readable png object
 #    where ** is xy, xz, yz
 #
-def xySlice ( imageargs, proj, db ):
+def imgSlice ( service, imageargs, proj, db ):
   """Return the cube object for an xy plane"""
-  
+
+  #KLTODO need to evaluate window here .. not in cutoutargs
+
   if proj.getDBType() in ocpcaproj.COMPOSITE_DATASETS:
     [ channel, sym, imageargs ] = imageargs.partition ('/')
   else: 
     channel = None
 
-  # Perform argument processing
   try:
-    args = restargs.BrainRestArgs ()
-    args.xyArgs ( imageargs, proj.datasetcfg )
-  except restargs.RESTArgsError, e:
-    logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
-    raise OCPCAError(e.value)
+    # Rewrite the imageargs to be a cutout
+    if service == 'xy':
+      p = re.compile("(\d+/\d+,\d+/\d+,\d+/)(\d+)/")
+      m = p.match ( imageargs )
+      cutoutargs = '{}{},{}/'.format(m.group(1),m.group(2),int(m.group(2))+1) 
 
-  # Extract the relevant values
-  corner = args.getCorner()
-  dim = args.getDim()
-  resolution = args.getResolution()
-  filterlist = args.getFilter()
-  window = args.getWindow()
-  (startwindow,endwindow) = proj.datasetcfg.windowrange
-  
+    elif service == 'xz':
+      p = re.compile("(\d+/\d+,\d+/)(\d+)(/\d+,\d+)/")
+      m = p.match ( imageargs )
+      cutoutargs = '{}{},{}{}/'.format(m.group(1),m.group(2),int(m.group(2))+1,m.group(3)) 
+
+    elif service == 'yz':
+      p = re.compile("(\d+/)(\d+)(/\d+,\d+/\d+,\d+)/")
+      m = p.match ( imageargs )
+      cutoutargs = '{}{},{}{}/'.format(m.group(1),m.group(2),int(m.group(2))+1,m.group(3)) 
+    else:
+      raise "No such image plane {}".format(service)
+  except Exception, e:
+    logger.warning ("Illegal image arguments={}.  Error={}".format(imageargs,e))
+    raise OCPCAError ("Illegal image arguments={}.  Error={}".format(imageargs,e))
+
+
   # Perform the cutout
-  cube = db.cutout ( corner, dim, resolution, channel )
+  cb = cutout ( cutoutargs, proj, db, channel )
 
   # Window Function - used to limit the range of data purely for viewing purposes
-  if window != None or ( endwindow !=0 ):
-    # Check which case is calling the window Function and assign the correct value
-    if window == None:
-      window = (startwindow, endwindow)
+  (startwindow,endwindow) = proj.datasetcfg.windowrange
+  if endwindow !=0:
+    window = (startwindow, endwindow)
+    windowCutout ( cb.data, window)
 
-    windowCutout ( cube.data, window)
-  
-  # Filter Function - Eliminate unwanted synapses ids
-  if filterlist != None:
-    # calling the ctype filter function
-    cube.data = ocplib.filter_ctype_OMP( cube.data, filterlist )
-
-  return cube
+  return cb 
 
 
 def xyImage ( imageargs, proj, db ):
   """Return an xy plane fileobj.read()"""
 
-  img = xySlice ( imageargs, proj, db ).xyImage()
+  img = imgSlice ( 'xy', imageargs, proj, db ).xyImage()
   fileobj = cStringIO.StringIO ( )
   img.save ( fileobj, "PNG" )
   fileobj.seek(0)
   return fileobj.read()
-
-
-def xzSlice ( imageargs, proj, db ):
-  """Return an xz plane cube"""
-
-  if proj.getDBType() in ocpcaproj.COMPOSITE_DATASETS:
-    [ channel, sym, imageargs ] = imageargs.partition ('/')
-  else: 
-    channel = None
-
-  # Perform argument processing
-  try:
-    args = restargs.BrainRestArgs ();
-    args.xzArgs ( imageargs, proj.datasetcfg )
-  except restargs.RESTArgsError, e:
-    logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
-    raise OCPCAError(e.value)
-
-  # Extract the relevant values
-  corner = args.getCorner()
-  dim = args.getDim()
-  resolution = args.getResolution()
-  filterlist = args.getFilter()
-  window = args.getWindow()
-  (startwindow,endwindow) = proj.datasetcfg.windowrange
-
-  # Perform the cutout
-  cube = db.cutout ( corner, dim, resolution, channel )
-
-  # Window Function - used to limit the range of data purely for viewing purposes
-  if window != None or ( endwindow !=0 ):
-    # Check which case is calling the window Function and assign the correct value
-    if window == None:
-      window = (startwindow, endwindow)
-
-    windowCutout ( cube.data, window)
-  
-  # Filter Function - Eliminate unwanted synapses ids
-  if filterlist != None:
-    #filterCutout ( cube.data, filterlist )
-    cube.data = ocplib.filter_ctype_OMP( cube.data, filterlist )
-  
-  return cube
 
 
 def xzImage ( imageargs, proj, db ):
@@ -360,55 +323,12 @@ def xzImage ( imageargs, proj, db ):
   else:
     resolution, sym, rest = imageargs.partition("/")
 
-  img = xzSlice ( imageargs, proj, db ).xzImage(proj.datasetcfg.zscale[int(resolution)])
+  img = imgSlice ( 'xz', imageargs, proj, db ).xzImage(proj.datasetcfg.zscale[int(resolution)])
   fileobj = cStringIO.StringIO ( )
   img.save ( fileobj, "PNG" )
   fileobj.seek(0)
   return fileobj.read()
 
-
-def yzSlice ( imageargs, proj, db ):
-  """Return an yz plane as a cube"""
-
-  if proj.getDBType() in ocpcaproj.COMPOSITE_DATASETS:
-    [ channel, sym, imageargs ] = imageargs.partition ('/')
-  else: 
-    channel = None
-
-  # Perform argument processing
-  try:
-    args = restargs.BrainRestArgs ();
-    args.yzArgs ( imageargs, proj.datasetcfg )
-  except restargs.RESTArgsError, e:
-    logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
-    raise OCPCAError(e.value)
-
-  # Extract the relevant values
-  corner = args.getCorner()
-  dim = args.getDim()
-  resolution = args.getResolution()
-  filterlist = args.getFilter()
-  window = args.getWindow()
-  (startwindow,endwindow) = proj.datasetcfg.windowrange
-
-  # Perform the cutout
-  cube = db.cutout ( corner, dim, resolution, channel )
-  
-  # Window Function - used to limit the range of data purely for viewing purposes
-  if window != None or ( endwindow !=0 ):
-    # Check which case is calling the window Function and assign the correct value
-    if window == None:
-      window = (startwindow, endwindow)
-
-    windowCutout ( cube.data, window)
-  
-  # Filter Function - Eliminate unwanted synapses ids
-  if filterlist != None:
-    
-    #filterCutout ( cube.data, filterlist )
-    cube.data = ocplib.filter_ctype_OMP( cube.data, filterlist )
-
-  return cube
 
 
 def yzImage ( imageargs, proj, db ):
@@ -422,18 +342,17 @@ def yzImage ( imageargs, proj, db ):
   else:
     resolution, sym, rest = imageargs.partition("/")
 
-  img = yzSlice ( imageargs, proj, db ).yzImage(proj.datasetcfg.zscale[int(resolution)])
+  img = imgSlice ( 'yz', imageargs, proj, db ).yzImage(proj.datasetcfg.zscale[int(resolution)])
   fileobj = cStringIO.StringIO ( )
   img.save ( fileobj, "PNG" )
   fileobj.seek(0)
   return fileobj.read()
 
-
 #
-#  Read individual annotations xyAnno, xzAnno, yzAnno
+#  Read individual annotation image slices xy, xz, yz
 #
-def xyAnno ( imageargs, proj, db ):
-  """Return an xy plane fileobj.read() for a single objects"""
+def imgAnno ( service, imageargs, proj, db ):
+  """Return a plane fileobj.read() for a single objects"""
 
   [ annoidstr, sym, imageargs ] = imageargs.partition('/')
   annoids = [int(x) for x in annoidstr.split(',')]
@@ -449,12 +368,35 @@ def xyAnno ( imageargs, proj, db ):
   else:
     iscompound = False
 
+  try:
+    # Rewrite the imageargs to be a cutout
+    if service == 'xy':
+      p = re.compile("(\d+/\d+,\d+/\d+,\d+/)(\d+)/")
+      m = p.match ( imageargs )
+      cutoutargs = '{}{},{}/'.format(m.group(1),m.group(2),int(m.group(2))+1) 
+
+    elif service == 'xz':
+      p = re.compile("(\d+/\d+,\d+/)(\d+)(/\d+,\d+)/")
+      m = p.match ( imageargs )
+      cutoutargs = '{}{},{}{}/'.format(m.group(1),m.group(2),int(m.group(2))+1,m.group(3)) 
+
+    elif service == 'yz':
+      p = re.compile("(\d+/)(\d+)(/\d+,\d+/\d+,\d+)/")
+      m = p.match ( imageargs )
+      cutoutargs = '{}{},{}{}/'.format(m.group(1),m.group(2),int(m.group(2))+1,m.group(3)) 
+    else:
+      raise "No such image plane {}".format(service)
+  except Exception, e:
+    logger.warning ("Illegal image arguments={}.  Error={}".format(imageargs,e))
+    raise OCPCAError ("Illegal image arguments={}.  Error={}".format(imageargs,e))
+
+
   # Perform argument processing
   try:
     args = restargs.BrainRestArgs ();
-    args.xyArgs ( imageargs, proj.datasetcfg )
+    args.cutoutArgs ( cutoutargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
-    logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
+    logger.warning("REST Arguments %s failed: %s" % (cutoutrags,e))
     raise OCPCAError(e.value)
 
   # Extract the relevant values
@@ -472,104 +414,19 @@ def xyAnno ( imageargs, proj, db ):
     dataids = annoids
     cb = db.annoCutout ( dataids, resolution, corner, dim, None )
 
+  # reshape to 2-d
+  if service=='xy':
+    img = cb.xyImage ( )
+  elif service=='xz':
+    img = cb.xzImage ( proj.datasetcfg.zscale[resolution] )
+  elif service=='yz':
+    img = cb.yzImage (  proj.datasetcfg.zscale[resolution] )
 
-  img = cb.xyImage ( )
   fileobj = cStringIO.StringIO ( )
   img.save ( fileobj, "PNG" )
   fileobj.seek(0)
   return fileobj.read()
 
-
-def xzAnno ( imageargs, proj, db ):
-  """Return an xz plane fileobj.read()"""
-
-  [ annoidstr, sym, imageargs ] = imageargs.partition('/')
-  annoids = [int(x) for x in annoidstr.split(',')]
-
-  # retrieve the annotation 
-  if len(annoids) == 1:
-    anno = db.getAnnotation ( annoids[0] )
-    if anno == None:
-      logger.warning("No annotation found at identifier = %s" % (annoid))
-      raise OCPCAError ("No annotation found at identifier = %s" % (annoid))
-    else:
-      iscompound = True if anno.__class__ in [ annotation.AnnNeuron ] else False; 
-  else:
-    iscompound = False
-
-  # Perform argument processing
-  try:
-    args = restargs.BrainRestArgs ();
-    args.xzArgs ( imageargs, proj.datasetcfg )
-  except restargs.RESTArgsError, e:
-    logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
-    raise OCPCAError(e)
-
-  # Extract the relevant values
-  corner = args.getCorner()
-  dim = args.getDim()
-  resolution = args.getResolution()
-
-  # determine if it is a compound type (NEURON) and get the list of relevant segments
-  if iscompound:
-    # remap the ids for a neuron
-    dataids = db.getChildren ( annoids[0] ) 
-    cb = db.annoCutout ( dataids, resolution, corner, dim, annoids[0] )
-  else:
-    # no remap when not a neuron
-    cb = db.annoCutout ( annoids, resolution, corner, dim, None )
-
-  img = cb.xzImage ( proj.datasetcfg.zscale[resolution] )
-  fileobj = cStringIO.StringIO ( )
-  img.save ( fileobj, "PNG" )
-  fileobj.seek(0)
-  return fileobj.read()
-
-
-def yzAnno ( imageargs, proj, db ):
-  """Return an yz plane fileobj.read()"""
-
-  [ annoidstr, sym, imageargs ] = imageargs.partition('/')
-  annoids = [int(x) for x in annoidstr.split(',')]
-
-  # retrieve the annotation 
-  if len(annoids) == 1:
-    anno = db.getAnnotation ( annoids[0] )
-    if anno == None:
-      logger.warning("No annotation found at identifier = %s" % (annoid))
-      raise OCPCAError ("No annotation found at identifier = %s" % (annoid))
-    else:
-      iscompound = True if anno.__class__ in [ annotation.AnnNeuron ] else False; 
-  else:
-    iscompound = False
-
-  # Perform argument processing
-  try:
-    args = restargs.BrainRestArgs ();
-    args.yzArgs ( imageargs, proj.datasetcfg )
-  except restargs.RESTArgsError, e:
-    logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
-    raise OCPCAError(e)
-
-  # Extract the relevant values
-  corner = args.getCorner()
-  dim = args.getDim()
-  resolution = args.getResolution()
-
-  # determine if it is a compound type (NEURON) and get the list of relevant segments
-  if iscompound:
-    # remap the ids for a neuron
-    dataids = db.getChildren ( annoids[0] ) 
-    cb = db.annoCutout ( dataids, resolution, corner, dim, annoids[0] )
-  else:
-    # no remap when not a neuron
-    cb = db.annoCutout ( annoids, resolution, corner, dim, None )
-
-  img = cb.yzImage ( proj.datasetcfg.zscale[resolution] )
-  fileobj = cStringIO.StringIO ( )
-  img.save ( fileobj, "PNG" )
-  fileobj.seek(0)
-  return fileobj.read()
 
 #
 #  annId
@@ -651,13 +508,13 @@ def selectService ( webargs, proj, db ):
     return listIds ( rangeargs, proj, db )
 
   elif service == 'xyanno':
-    return xyAnno ( rangeargs, proj, db )
+    return imgAnno ( 'xy', rangeargs, proj, db )
 
   elif service == 'xzanno':
-    return xzAnno ( rangeargs, proj, db )
+    return imgAnno ( 'xz', rangeargs, proj, db )
 
   elif service == 'yzanno':
-    return yzAnno ( rangeargs, proj, db )
+    return imgAnno ( 'yz', rangeargs, proj, db )
 
   elif service == 'ts':
     return TimeSeriesCutout ( rangeargs, proj, db )
@@ -1516,8 +1373,6 @@ def queryAnnoObjects ( webargs, postdata=None ):
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
 
-    annoids = db.getAnnoObjects ( restargs.split('/') )
-
     # We have a cutout as well
     if postdata:
 
@@ -1682,7 +1537,35 @@ def chanInfo ( webargs ):
 def mcFalseColor ( webargs ):
   """False color image of multiple channels"""
 
+  #KLTODO need to evaluate window here .. not in cutoutargs
+
   [ token, mcfcstr, service, chanstr, imageargs ] = webargs.split ('/', 4)
+
+  try:
+    # Rewrite the imageargs to be a cutout
+    if service == 'xy':
+      p = re.compile("(\d+/\d+,\d+/\d+,\d+/)(\d+)/")
+      m = p.match ( imageargs )
+      cutoutargs = '{}{},{}/'.format(m.group(1),m.group(2),int(m.group(2))+1) 
+
+    elif service == 'xz':
+      p = re.compile("(\d+/\d+,\d+/)(\d+)(/\d+,\d+)/")
+      m = p.match ( imageargs )
+      cutoutargs = '{}{},{}{}/'.format(m.group(1),m.group(2),int(m.group(2))+1,m.group(3)) 
+
+    elif service == 'yz':
+      p = re.compile("(\d+/)(\d+)(/\d+,\d+/\d+,\d+)/")
+      m = p.match ( imageargs )
+      cutoutargs = '{}{},{}{}/'.format(m.group(1),m.group(2),int(m.group(2))+1,m.group(3)) 
+
+    else:
+      raise "No such image plane {}".format(service)
+  except Exception, e:
+    logger.warning ("Illegal image arguments={}.  Error={}".format(imageargs,e))
+    raise OCPCAError ("Illegal image arguments={}.  Error={}".format(imageargs,e))
+
+  # split the channel string
+  channels = chanstr.split(",")
 
   # pattern for using contexts to close databases
   # get the project 
@@ -1691,10 +1574,40 @@ def mcFalseColor ( webargs ):
 
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
-    outimage = mcfcPNG ( proj, db,  token, service, chanstr, imageargs )
+
+    mcdata = None
+    for i in range(len(channels)):
+      cb = cutout ( cutoutargs, proj, db, channels[i] )
+      # initialize the multi-channel data by dtype
+      if mcdata == None:
+        mcdata = np.zeros((len(channels),cb.data.shape[0],cb.data.shape[1],cb.data.shape[2]), dtype=cb.data.dtype)
+
+      mcdata[i,:,:,:] = cb.data[:,:,:]
+
+  # reshape to 2-d
+  if service=='xy':
+    mcdata = mcdata.reshape((mcdata.shape[0],mcdata.shape[2],mcdata.shape[3]))
+  elif service=='xz':
+    mcdata = mcdata.reshape((mcdata.shape[0],mcdata.shape[1],mcdata.shape[3]))
+  elif service=='yz':
+    mcdata = mcdata.reshape((mcdata.shape[0],mcdata.shape[1],mcdata.shape[2]))
+
+  # manage the color space
+  # reduction factor.  How to scale data.  16 bit->8bit, or windowed
+  (startwindow,endwindow) = proj.datasetcfg.windowrange
+  if proj.getDBType() == ocpcaproj.CHANNELS_16bit and ( startwindow == endwindow == 0):
+    pass
+#    mcdata = np.uint8(mcdata * 1.0/256)
+  elif proj.getDBType() == ocpcaproj.CHANNELS_16bit and ( endwindow!=0 ):
+    from windowcutout import windowCutout
+    windowCutout ( mcdata, (startwindow, endwindow) )
+
+  # We have an compound array.  Now color it.
+  colors = ('C','M','Y','R','G','B')
+  img =  mcfc.mcfcPNG ( mcdata, colors )
 
   fileobj = cStringIO.StringIO ( )
-  outimage.save ( fileobj, "PNG" )
+  img.save ( fileobj, "PNG" )
 
   fileobj.seek(0)
   return fileobj.read()
@@ -1862,7 +1775,6 @@ def merge ( webargs ):
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
 
-# RBTODO indent for closing
   
     #Check that all ids in the id strings are valid annotation objects
     for curid in ids:
@@ -1883,39 +1795,6 @@ def merge ( webargs ):
       # PYTODO illegal merge (no support if not global)
       assert 0
 
-# RB -- Priya says all the following is invalid
-#    [mergetype, imageargs] = mergetype.split ('/',1)
-#
-#    
-#    if mergetype == "2D":
-#      slicenum = imageargs.strip('/')
-#      return db.merge2D(ids, mergetype, 1, slicenum)
-#  
-#    elif mergetype == "3D":
-#      # 3d merge 
-#      imageargs = "1/"+ imageargs
-#
-#      # Perform argument processing for the bounding box
-#      try:
-#        args = restargs.BrainRestArgs ();
-#        args.mergeArgs ( imageargs, proj.datasetcfg )
-#      except restargs.RESTArgsError, e:
-#        logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
-#        raise OCPCAError(e)
-#      # Extract the relevant values
-#      corner = args.getCorner()
-#      dim = args.getDim()
-#      resolution = args.getResolution()
-#      
-#      # Perform the relabeling
-#      # cube = db.cutout ( corner, dim, resolution, channel )
-#    
-#      # return db.merge3D(ids,corner, dim, resolution)
-#
-#      # PYTODO throw a real error
-#      else:
-#        return "Invalid Merge Type : Select global, 2D or 3D"
-  
   
 def publicTokens ( self ):
   """Return a json formatted list of public tokens"""

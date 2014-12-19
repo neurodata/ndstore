@@ -23,7 +23,11 @@ import h5py
 from PIL import Image, ImageEnhance
 from PIL import ImageOps
 
+from contextlib import closing
+
 import ocpcarest
+import ocpcaproj
+import ocpcadb
 
 
 class Synaptogram:
@@ -47,7 +51,11 @@ class Synaptogram:
     self.emchannels = []
     self.enhance = None
 
-    [ self.db, self.proj, self.projdb ] = ocpcarest.loadDBProj ( self.token )
+    # pattern for using contexts to close databases
+    # get the project 
+    with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+      self.proj = projdb.loadProject ( token )
+
 
   def setReference ( self, refchans ):
     """Modifier to set reference channels. Default value is None."""
@@ -86,28 +94,34 @@ class Synaptogram:
     self.resolution=resolution
 
   def construct ( self ):
-
+ 
     # get the spatial parameters of the synaptogram
     hwidth = self.width/2
     [x,y,z] = self.centroid
+    # update for the zoffset
+    z = z - self.proj.datasetcfg.slicerange[0]
 
-    # if we have a globale normalization request, do a big cutout to get a send of values and then 
-    #  set a maximum value for each channel
-    if self.normalize2:
-      # is a form of normalization
-      self.normalize = True
-      gchmaxval = self.getChannelMax()
+    # and the database and then call the db function
+    with closing ( ocpcadb.OCPCADB(self.proj) ) as db:
 
-    # convert to cutout coordinates
-    corner = [ x-hwidth, y-hwidth, z-hwidth ]
-    dim = [ 2*hwidth+1, 2*hwidth+1, 2*hwidth+1 ] 
+      # if we have a globale normalization request, do a big cutout to get a send of values and then 
+      #  set a maximum value for each channel
+      if self.normalize2:
+        # is a form of normalization
+        self.normalize = True
+        gchmaxval = self.getChannelMax(db)
 
-    chancuboids = {}
-    # get the data region for each channel 
-    for chan in self.channels:
-      try: 
-        chancuboids[chan] = self.db.cutout ( corner, dim, self.resolution, chan )
-      except KeyError:
+      # convert to cutout coordinates
+      corner = [ x-hwidth, y-hwidth, z-hwidth ]
+      dim = [ 2*hwidth+1, 2*hwidth+1, 2*hwidth+1 ] 
+
+      chancuboids = {}
+
+      # get the data region for each channel 
+      for chan in self.channels:
+        try: 
+          chancuboids[chan] = db.cutout ( corner, dim, self.resolution, chan )
+        except KeyError:
           raise Exception ("Cannel %s not found" % ( chan ))
 
 
@@ -133,7 +147,6 @@ class Synaptogram:
         except KeyError:
           raise Exception ("Reference channel %s not found" % ( refchan ))
 
-        print refdata
         if self.normalize2:
           chmaxval = gchmaxval[refchan]
         else:
@@ -220,7 +233,7 @@ class Synaptogram:
     """Accessor function"""
     return self.sog
 
-  def getChannelMax ( self ):
+  def getChannelMax ( self, db ):
     """Helper function to determine the maximum in biggish box around each centroid"""
 
     [x,y,z] = self.centroid
@@ -240,7 +253,7 @@ class Synaptogram:
     # dictionary that stores the maximum value per channel
     gchmaxval={}
     for chan in self.channels:
-      cuboid = self.db.cutout ( corner, dim, self.resolution, chan )
+      cuboid = db.cutout ( corner, dim, self.resolution, chan )
       gchmaxval[chan] = np.max(cuboid.data)
 
     return gchmaxval
