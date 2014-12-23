@@ -50,7 +50,7 @@ def default(request):
   return redirect(get_script_prefix()+'profile', {"user":request.user})
 
 ''' Little welcome message'''
-@login_required
+@login_required(login_url='/ocp/accounts/login/')
 def profile(request):
   try:
     if request.method == 'POST':
@@ -170,7 +170,7 @@ def profile(request):
     return render_to_response('profile.html', { 'projs': projects, 'databases': dbs.iteritems() },context_instance=RequestContext(request))
     
 
-@login_required
+@login_required(login_url='/ocp/accounts/login/')
 def datasets(request):
   
   try:
@@ -216,7 +216,7 @@ def datasets(request):
   #return render_to_response('datasets.html')
 
 
-@login_required
+@login_required(login_url='/ocp/accounts/login/')
 def tokens(request):
   pd = ocpcaproj.OCPCAProjectsDB()  
   try:
@@ -277,7 +277,7 @@ def tokens(request):
 
 
 
-@login_required
+@login_required(login_url='/ocp/accounts/login/')
 def createproject(request):
   
   if request.method == 'POST':
@@ -331,7 +331,7 @@ def createproject(request):
     context = {'form': form}
     return render_to_response('createproject.html',context,context_instance=RequestContext(request))
       
-@login_required
+@login_required(login_url='/ocp/accounts/login/')
 def createdataset(request):
 
   if request.method == 'POST':
@@ -373,7 +373,7 @@ def createdataset(request):
     context = {'form': form}
     return render_to_response('createdataset.html',context,context_instance=RequestContext(request))
 
-@login_required
+@login_required(login_url='/ocp/accounts/login/')
 def updateproject(request):
   
   #ocpcauser = request.user.get_profile
@@ -414,7 +414,7 @@ def updateproject(request):
     context = {'form': form}
     return render_to_response('updateproject.html',context,context_instance=RequestContext(request))
       
-@login_required
+@login_required(login_url='/ocp/accounts/login/')
 def restore(request):
   if request.method == 'POST':
    
