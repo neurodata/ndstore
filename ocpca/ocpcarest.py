@@ -56,9 +56,7 @@ logger=logging.getLogger("ocp")
 #
 
 def cutout ( imageargs, proj, db, channels=None ):
-  """Build the returned cube of data.  This method is called by all
-       of the more basic services to build the data.
-       They then format and refine the output."""
+  """Build the returned cube of data.  This method is called by all of the more basic services to build the data. They then format and refine the output."""
 
   print "in cutout", imageargs
   # Perform argument processing
@@ -78,9 +76,6 @@ def cutout ( imageargs, proj, db, channels=None ):
 
   # Perform the cutout
   cube = db.cutout ( corner, dim, resolution, channels, zscaling )
-  if filterlist != None:
-    cube.data = ocplib.filter_ctype_OMP ( cube.data, filterlist )
-
 
   print np.unique (cube.data)
 
@@ -260,8 +255,6 @@ def TimeSeriesCutout ( imageargs, proj, db ):
 def imgSlice ( service, imageargs, proj, db ):
   """Return the cube object for an xy plane"""
 
-  #KLTODO need to evaluate window here .. not in cutoutargs
-
   if proj.getDBType() in ocpcaproj.COMPOSITE_DATASETS:
     [ channel, sym, imageargs ] = imageargs.partition ('/')
   else: 
@@ -292,6 +285,12 @@ def imgSlice ( service, imageargs, proj, db ):
 
   # Perform the cutout
   cb = cutout ( cutoutargs, proj, db, channel )
+
+  # Filter Function - used to filter
+  result = re.search ("filter/([\d/,]+)/",imageargs)
+  if result != None:
+    filterlist = np.array ( result.group(1).split(','), dtype=np.uint32 )
+    cb.data = ocplib.filter_ctype_OMP ( cb.data, filterlist )
 
   # Window Function - used to limit the range of data purely for viewing purposes
   (startwindow,endwindow) = proj.datasetcfg.windowrange
