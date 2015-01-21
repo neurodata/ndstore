@@ -44,8 +44,7 @@ class ImageCube8(Cube):
     # note that this is self.cubesize (which is transposed) in Cube
     self.data = np.zeros ( self.cubesize, dtype=np.uint8 )
 
-    # variable that describes when a cube is created from zeros
-    #  rather than loaded from another source
+    # variable that describes when a cube is created from zeros rather than loaded from another source
     self._newcube = False
 
   # was the cube created from zeros?

@@ -86,9 +86,9 @@ class MySQLKVIO:
     else:
       cursor = self.txncursor
 
-    sql = "SELECT cube FROM " + self.db.annoproj.getTable(resolution) + " WHERE zindex = " + str(zidx) 
+    sql = "SELECT cube FROM {} WHERE zindex ={}".format( self.db.annoproj.getTable(resolution) ,zidx ) 
     if update==True:
-          sql += " FOR UPDATE"
+      sql += " FOR UPDATE"
 
     try:
       cursor.execute ( sql )
@@ -329,31 +329,29 @@ class MySQLKVIO:
     # we created a cube from zeros
     if not update:
 
-      sql = "INSERT INTO " + self.db.annoproj.getTable(resolution) +  "(zindex, cube) VALUES (%s, %s)"
+      sql = "INSERT INTO {} (zindex, cube) VALUES (%s, %s)".format( self.db.annoproj.getTable(resolution) )
 
       # this uses a cursor defined in the caller (locking context): not beautiful, but needed for locking
       try:
-        cursor.execute ( sql, (zidx,cubestr))
+        cursor.execute ( sql, (zidx,cubestr) )
       except MySQLdb.Error, e:
         logger.error ( "Error inserting cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         raise
       finally:
-        # close the local cursor if not in a transaction
-        # and commit right away
+        # close the local cursor if not in a transaction and commit right away
         if self.txncursor == None:
           cursor.close()
 
     else:
 
-      sql = "UPDATE " + self.db.annoproj.getTable(resolution) + " SET cube=(%s) WHERE zindex=" + str(zidx)
+      sql = "UPDATE {} SET cube=(%s) WHERE zindex={}".format( self.db.annoproj.getTable(resolution), zidx)
       try:
-        cursor.execute ( sql, (cubestr))
+        cursor.execute ( sql, (cubestr) )
       except MySQLdb.Error, e:
         logger.error ( "Error updating data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         raise
       finally:
-        # close the local cursor if not in a transaction
-        # and commit right away
+        # close the local cursor if not in a transaction and commit right away
         if self.txncursor == None:
           cursor.close()
 

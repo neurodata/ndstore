@@ -109,7 +109,7 @@ class OCPAdmin ():
 
     dat = Dataset ( self.loadDataset() )
 
-    sql = "INSERT INTO {0} (dataset, ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale, startwindow, endwindow) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',{5},\'{6}\',\'{7}\',\'{8}\',\'{9}\')".format ( ocpcaprivate.datasets, self.dataset, dat.ximagesize, dat.yimagesize, dat.startslice, dat.endslice, dat.zoomlevels, dat.zscale, dat.startwindow, dat.endwindow )
+    sql = "INSERT INTO {0} (dataset, ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale, startwindow, endwindow, starttime, endtime) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',{5},\'{6}\',\'{7}\',\'{8}\',\'{9}\',\'{10}\',\'{11}\')".format ( ocpcaprivate.datasets, self.dataset, dat.ximagesize, dat.yimagesize, dat.startslice, dat.endslice, dat.zoomlevels, dat.zscale, dat.startwindow, dat.endwindow, dat.starttime, dat.endtime )
 
     try:
       cursor = self.remoteconn.cursor()
@@ -138,7 +138,7 @@ def main():
     ocpadmin.insertDataset()
   else:
     ocpadmin.insertDataset()
-    ocpadmin.loadProject()
+    ocpadmin.insertProject()
 
 
 if __name__ == "__main__":

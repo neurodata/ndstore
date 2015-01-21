@@ -29,6 +29,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
 from django.conf import settings
 
 import ocpcaproj
+import ocpcaprivate
 import ocpcadb
 
 class SQLDatabase:
@@ -39,8 +40,8 @@ class SQLDatabase:
     self.projdb = ocpcaproj.OCPCAProjectsDB()
     self.proj = self.projdb.loadProject ( token )
     self.imgDB = ocpcadb.OCPCADB ( self.proj )
-    self.user = settings.DATABASES.get('default').get('USER')
-    self.password = settings.DATABASES.get('default').get('PASSWORD')
+    self.user = ocpcaprivate.dbuser
+    self.password = ocpcaprivate.dbpasswd
     self.host = host
     self.token = token
     self.location = location
@@ -77,7 +78,7 @@ class SQLDatabase:
 
   
   def copyTable ( self, newDBName ):
-    """ Copy Tables from Database to another"""
+    """ Copy Tables from Database to another """
 
     sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE table_schema='{}'".format( self.token )
 
@@ -189,15 +190,10 @@ def main():
     sqldb = SQLDatabase ( result.host, result.token, result.location )
 
     if ( sqldb.proj.getDBType() not in ocpcaproj.CHANNEL_DATASETS + ocpcaproj.ANNOTATION_DATASETS ):
-      
       sqldb.dumpImgStack()
-    
     elif ( sqldb.proj.getDBType() in ocpcaproj.CHANNEL_DATASETS ):
-
       sqldb.dumpChannelStack()
-
     else:
-      
       sqldb.dumpAnnotationStack()
   
   # Check for ingest flag
@@ -206,15 +202,10 @@ def main():
     sqldb = SQLDatabase ( result.host, result.token, result.location )
     
     if ( sqldb.proj.getDBType() not in ocpcaproj.CHANNEL_DATASETS + ocpcaproj.ANNOTATION_DATASETS ):
-      
       sqldb.ingestImageStack()
-    
     elif ( sqldb.proj.getDBType() in ocpcaproj.CHANNEL_DATASETS ):
-
       sqldb.ingestChannelStack()
-    
     else:
-      
       sqldb.ingestAnnotataionStack()
 
   else:
