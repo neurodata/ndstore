@@ -1737,8 +1737,8 @@ class OCPCADB:
 
     cursor = self.getCursor()
     try:
-      retval = annotation.deleteAnnotation ( annoid, self, cursor, options )
       self.deleteAnnoData ( annoid )
+      retval = annotation.deleteAnnotation ( annoid, self, cursor, options )
     except:
       self.closeCursor( cursor ) 
       raise
@@ -2036,7 +2036,7 @@ class OCPCADB:
         #  Just delete the exceptions
         #
         #self.updateExceptions ( key, resolution, mergeid, oldexlist )
-          self.deleteExceptions ( key, resolution, annid )
+          self.kvio.deleteExceptions ( key, resolution, annid )
         
         # Cython optimized function  to relabel data from annid to mergeid
         mergeCube_cy (cube.data,mergeid,annid ) 
@@ -2053,7 +2053,7 @@ class OCPCADB:
         except:
           logger.warning("Failed to delete annotation {} during merge.".format(annid))
     self.annoIdx.updateIndex(mergeid,addindex,resolution)     
-    self.commit()
+    self.kvio.commit()
     
     return "Merge complete"
 
