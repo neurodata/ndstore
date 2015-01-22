@@ -347,7 +347,7 @@ class MySQLKVIO:
 
       sql = "UPDATE " + self.db.annoproj.getTable(resolution) + " SET cube=(%s) WHERE zindex=" + str(zidx)
       try:
-        cursor.execute ( sql, (cubestr))
+        cursor.execute ( sql, (cubestr,))
       except MySQLdb.Error, e:
         logger.error ( "Error updating data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         raise
@@ -592,7 +592,7 @@ class MySQLKVIO:
       #update index in the database
       sql = "UPDATE " + self.db.annoproj.getIdxTable(resolution) + " SET cube=(%s) WHERE annid=" + str(zidx)
       try:
-         cursor.execute ( sql, (indexstr))
+         cursor.execute ( sql, (indexstr,))
       except MySQLdb.Error, e:
          logger.warnig("Error updating exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
          raise
