@@ -103,8 +103,7 @@ class Annotation:
   def store ( self, cursor, annotype=ANNO_ANNOTATION ):
     """Store the annotation to the annotations database"""
 
-    sql = "INSERT INTO %s VALUES ( %s, %s, %s, %s )"\
-            % ( anno_dbtables['annotation'], self.annid, annotype, self.confidence, self.status )
+    sql = "INSERT INTO {} VALUES ( {}, {}, {}, {} )".format( anno_dbtables['annotation'], self.annid, annotype, self.confidence, self.status )
 
     try:
       cursor.execute(sql)
@@ -122,7 +121,7 @@ class Annotation:
       except:
         raise OCPCAError ( "Improperly formatted key/value csv string:" + kvclause ) 
 
-      sql = "INSERT INTO %s VALUES %s" % ( anno_dbtables['kvpairs'], kvclause )
+      sql = "INSERT INTO {} VALUES {}".format( anno_dbtables['kvpairs'], kvclause )
 
       try:
         cursor.execute(sql)
@@ -195,11 +194,11 @@ class Annotation:
   def delete ( self, cursor ):
     """Delete the annotation from the database"""
 
-    #sql = "DELETE {0},{1} FROM {0},{1} WHERE {0}.annoid = {2} and {1}.annoid = {2}".format ( anno_dbtables['annotation'], anno_dbtables['kvpairs'], self.annid ) 
+    sql = "DELETE {0},{1} FROM {0},{1} WHERE {0}.annoid = {2} and {1}.annoid = {2}".format ( anno_dbtables['annotation'], anno_dbtables['kvpairs'], self.annid ) 
 
-    sql = "DELETE FROM %s WHERE annoid = %s;" % ( anno_dbtables['annotation'], self.annid ) 
+    #sql = "DELETE FROM %s WHERE annoid = %s;" % ( anno_dbtables['annotation'], self.annid ) 
     
-    sql += "DELETE FROM %s WHERE annoid = %s" % ( anno_dbtables['kvpairs'], self.annid )
+    #sql += "DELETE FROM %s WHERE annoid = %s" % ( anno_dbtables['kvpairs'], self.annid )
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
@@ -380,10 +379,9 @@ class AnnSynapse (Annotation):
   def delete ( self, cursor ):
     """Delete the synapse from the database"""
 
-    sql = "DELETE FROM %s WHERE annoid = %s;"\
-            % ( anno_dbtables['synapse'], self.annid );
+    sql = "DELETE FROM {} WHERE annoid ={};".format( anno_dbtables['synapse'], self.annid );
 
-    sql += "DELETE FROM %s WHERE annoid = %s" % ( anno_dbtables['kvpairs'], self.annid )
+    sql += "DELETE FROM {} WHERE annoid ={}".format( anno_dbtables['kvpairs'], self.annid )
 
     try:
       cursor.execute ( sql )
@@ -506,10 +504,9 @@ class AnnSeed (Annotation):
   def delete ( self, cursor ):
     """Delete the seeed from the database"""
 
-    sql = "DELETE FROM %s WHERE annoid = %s;"\
-            % ( anno_dbtables['seed'], self.annid ) 
+    sql = "DELETE FROM {} WHERE annoid ={};".format( anno_dbtables['seed'], self.annid ) 
 
-    sql += "DELETE FROM %s WHERE annoid = %s" % ( anno_dbtables['kvpairs'], self.annid )
+    sql += "DELETE FROM {} WHERE annoid ={}".format( anno_dbtables['kvpairs'], self.annid )
 
     try:
       cursor.execute ( sql )
@@ -592,8 +589,7 @@ class AnnSegment (Annotation):
   def store ( self, cursor ):
     """Store the synapse to the annotations databae"""
 
-    sql = "INSERT INTO %s VALUES ( %s, %s, %s, %s )"\
-            % ( anno_dbtables['segment'], self.annid, self.segmentclass, self.parentseed, self.neuron )
+    sql = "INSERT INTO {} VALUES ( {}, {}, {}, {} )".format( anno_dbtables['segment'], self.annid, self.segmentclass, self.parentseed, self.neuron )
 
     try:
       cursor.execute ( sql )
@@ -669,10 +665,9 @@ class AnnSegment (Annotation):
   def delete ( self, cursor ):
     """Delete the segment from the database"""
 
-    sql = "DELETE FROM %s WHERE annoid = %s;"\
-            % ( anno_dbtables['segment'], self.annid ) 
+    sql = "DELETE FROM {} WHERE annoid ={};".format( anno_dbtables['segment'], self.annid ) 
 
-    sql += "DELETE FROM %s WHERE annoid = %s" % ( anno_dbtables['kvpairs'], self.annid )
+    sql += "DELETE FROM {} WHERE annoid ={}" % ( anno_dbtables['kvpairs'], self.annid )
 
     try:
       cursor.execute ( sql )
@@ -693,6 +688,8 @@ class AnnNeuron (Annotation):
 
   def __init__(self,annodb):
     """Initialize the fields to zero or null"""
+
+    self.segments = []
 
     # Call the base class constructor
     Annotation.__init__(self,annodb)
@@ -715,15 +712,19 @@ class AnnNeuron (Annotation):
     """Accessor by field name"""
 
 #  Make this a query not a field.
-#
-#    if field == 'segments':
-#       return self.querySegments(cursor) 
-#    else:
-    return Annotation.getField(self,field)
+
+    if field == 'segments':
+      return self.querySegments(cursor) 
+    #if field == 'segments':
+    #  return ','.join(str(x) for x in self.segments)
+    else:
+      return Annotation.getField(self,field)
 
   def setField ( self, field, value ):
     """Mutator by field name.  Then need to store the field."""
     
+    if field == 'segments':
+      self.segments = [int(x) for x in value.split(',')]
     Annotation.setField ( self, field, value )
 
 
@@ -731,6 +732,9 @@ class AnnNeuron (Annotation):
     """Store the neuron to the annotations databae"""
 
     # and call store on the base classs
+    # segments: pack into a kv pair
+    if len(self.segments)!=0:
+      self.kvpairs['segments'] = ','.join([str(i) for i in self.segments])
     Annotation.store ( self, cursor, ANNO_NEURON )
 
 
@@ -757,7 +761,7 @@ class AnnNeuron (Annotation):
   def delete ( self, cursor ):
     """Delete the annotation from the database"""
 
-    # and call delete on the base classs
+    # and call delete on the base class
     Annotation.delete ( self, cursor )
 
 
@@ -891,10 +895,9 @@ class AnnOrganelle (Annotation):
   def delete ( self, cursor ):
     """Delete the organelle from the database"""
 
-    sql = "DELETE FROM %s WHERE annoid = %s;"\
-            % ( anno_dbtables['organelle'], self.annid ) 
+    sql = "DELETE FROM {} WHERE annoid ={};".format( anno_dbtables['organelle'], self.annid ) 
 
-    sql += "DELETE FROM %s WHERE annoid = %s" % ( anno_dbtables['kvpairs'], self.annid )
+    sql += "DELETE FROM {} WHERE annoid ={}".format( anno_dbtables['kvpairs'], self.annid )
 
     try:
       cursor.execute ( sql )
