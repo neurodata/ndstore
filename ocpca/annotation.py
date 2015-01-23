@@ -195,11 +195,9 @@ class Annotation:
   def delete ( self, cursor ):
     """Delete the annotation from the database"""
 
-    #sql = "DELETE {0},{1} FROM {0},{1} WHERE {0}.annoid = {2} and {1}.annoid = {2}".format ( anno_dbtables['annotation'], anno_dbtables['kvpairs'], self.annid ) 
-
-    sql = "DELETE FROM %s WHERE annoid = %s;" % ( anno_dbtables['annotation'], self.annid ) 
-    
-    sql += "DELETE FROM %s WHERE annoid = %s" % ( anno_dbtables['kvpairs'], self.annid )
+    sql = "DELETE {0},{1} FROM {0},{1} WHERE {0}.annoid = {2} and {1}.annoid = {2}".format ( anno_dbtables['annotation'], anno_dbtables['kvpairs'], self.annid ) 
+    #sql = "DELETE FROM %s WHERE annoid = %s;" % ( anno_dbtables['annotation'], self.annid ) 
+    #sql += "DELETE FROM %s WHERE annoid = %s;" % ( anno_dbtables['kvpairs'], self.annid )
     try:
       cursor.execute ( sql )
     except MySQLdb.Error, e:
@@ -380,10 +378,9 @@ class AnnSynapse (Annotation):
   def delete ( self, cursor ):
     """Delete the synapse from the database"""
 
-    sql = "DELETE FROM %s WHERE annoid = %s;"\
-            % ( anno_dbtables['synapse'], self.annid );
+    sql = "DELETE FROM {} WHERE annoid ={};".format( anno_dbtables['synapse'], self.annid );
 
-    sql += "DELETE FROM %s WHERE annoid = %s" % ( anno_dbtables['kvpairs'], self.annid )
+    #sql += "DELETE FROM %s WHERE annoid = %s" % ( anno_dbtables['kvpairs'], self.annid )
 
     try:
       cursor.execute ( sql )
@@ -506,10 +503,9 @@ class AnnSeed (Annotation):
   def delete ( self, cursor ):
     """Delete the seeed from the database"""
 
-    sql = "DELETE FROM %s WHERE annoid = %s;"\
-            % ( anno_dbtables['seed'], self.annid ) 
+    sql = "DELETE FROM {} WHERE annoid ={};".format( anno_dbtables['seed'], self.annid ) 
 
-    sql += "DELETE FROM %s WHERE annoid = %s" % ( anno_dbtables['kvpairs'], self.annid )
+    #sql += "DELETE FROM %s WHERE annoid = %s" % ( anno_dbtables['kvpairs'], self.annid )
 
     try:
       cursor.execute ( sql )
@@ -669,10 +665,10 @@ class AnnSegment (Annotation):
   def delete ( self, cursor ):
     """Delete the segment from the database"""
 
-    sql = "DELETE FROM %s WHERE annoid = %s;"\
-            % ( anno_dbtables['segment'], self.annid ) 
-
-    sql += "DELETE FROM %s WHERE annoid = %s" % ( anno_dbtables['kvpairs'], self.annid )
+    #sql = "DELETE {0},{1} FROM {0},{1} WHERE {0}.annoid = {2} and {1}.annoid = {2}".format ( anno_dbtables['segment'], anno_dbtables['kvpairs'], self.annid ) 
+    
+    sql = "DELETE FROM %s WHERE annoid = %s;" % ( anno_dbtables['segment'], self.annid ) 
+    #sql += "DELETE FROM %s WHERE annoid = %s;" % ( anno_dbtables['kvpairs'], self.annid )
 
     try:
       cursor.execute ( sql )
@@ -891,10 +887,9 @@ class AnnOrganelle (Annotation):
   def delete ( self, cursor ):
     """Delete the organelle from the database"""
 
-    sql = "DELETE FROM %s WHERE annoid = %s;"\
-            % ( anno_dbtables['organelle'], self.annid ) 
+    sql = "DELETE FROM {} WHERE annoid ={};".format( anno_dbtables['organelle'], self.annid ) 
 
-    sql += "DELETE FROM %s WHERE annoid = %s" % ( anno_dbtables['kvpairs'], self.annid )
+    #sql += "DELETE FROM %s WHERE annoid = %s" % ( anno_dbtables['kvpairs'], self.annid )
 
     try:
       cursor.execute ( sql )
