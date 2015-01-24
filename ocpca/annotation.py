@@ -576,12 +576,12 @@ class AnnSegment (Annotation):
       self.neuron = value
     elif field == 'synapses':
 #      RBTODO synapses cannot be set in segment class.  replicated from synapse 
-      pass
-#      self.synapses = [int(x) for x in value.split(',')] 
+      #pass
+      self.synapses = [int(x) for x in value.split(',')] 
     elif field == 'organelles':
 #      RBTODO organelles cannot be updated in segment class.  replicated from organelle 
-      pass
-#      self.organelles = [int(x) for x in value.split(',')] 
+      #pass
+      self.organelles = [int(x) for x in value.split(',')] 
     else:
       Annotation.setField ( self, field, value )
 
@@ -713,10 +713,10 @@ class AnnNeuron (Annotation):
 
 #  Make this a query not a field.
 
-    if field == 'segments':
-      return self.querySegments(cursor) 
     #if field == 'segments':
-    #  return ','.join(str(x) for x in self.segments)
+      #return self.querySegments(cursor) 
+    if field == 'segments':
+      return ','.join(str(x) for x in self.segments)
     else:
       return Annotation.getField(self,field)
 
