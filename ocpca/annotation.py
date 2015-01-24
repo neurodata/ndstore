@@ -286,8 +286,7 @@ class AnnSynapse (Annotation):
   def store ( self, cursor ):
     """Store the synapse to the annotations databae"""
 
-    sql = "INSERT INTO %s VALUES ( %s, %s, %s )"\
-            % ( anno_dbtables['synapse'], self.annid, self.synapse_type, self.weight )
+    sql = "INSERT INTO {} VALUES ( {}, {}, {} )".format( anno_dbtables['synapse'], self.annid, self.synapse_type, self.weight )
 
     try:
       cursor.execute ( sql )
@@ -316,8 +315,7 @@ class AnnSynapse (Annotation):
   def update ( self, cursor ):
     """Update the synapse in the annotations databae"""
 
-    sql = "UPDATE %s SET synapse_type=%s, weight=%s WHERE annoid=%s "\
-            % (anno_dbtables['synapse'], self.synapse_type, self.weight, self.annid)
+    sql = "UPDATE {} SET synapse_type={}, weight={} WHERE annoid={} ".format (anno_dbtables['synapse'], self.synapse_type, self.weight, self.annid)
 
     try:
       cursor.execute ( sql )
@@ -666,7 +664,7 @@ class AnnSegment (Annotation):
 
     #sql = "DELETE {0},{1} FROM {0},{1} WHERE {0}.annoid = {2} and {1}.annoid = {2}".format ( anno_dbtables['segment'], anno_dbtables['kvpairs'], self.annid ) 
     
-    sql = "DELETE FROM %s WHERE annoid = %s;" % ( anno_dbtables['segment'], self.annid ) 
+    sql = "DELETE FROM {} WHERE annoid ={};".format( anno_dbtables['segment'], self.annid ) 
     #sql += "DELETE FROM %s WHERE annoid = %s;" % ( anno_dbtables['kvpairs'], self.annid )
 
     try:
@@ -741,6 +739,9 @@ class AnnNeuron (Annotation):
   def update ( self, cursor ):
     """Update the neuron in the annotations databae"""
 
+    # segments: pack into a kv pair
+    if len(self.segments)!=0:
+      self.kvpairs['segments'] = ','.join([str(i) for i in self.segments])
     # and call update on the base classs
     Annotation.updateBase ( self, ANNO_NEURON, cursor )
 
@@ -755,11 +756,23 @@ class AnnNeuron (Annotation):
     if annotype != ANNO_NEURON:
       raise OCPCAError ( "Incompatible annotation type.  Expected NEURON got %s" % annotype )
 
-    self.segments = self.querySegments(cursor)
+    if self.kvpairs.get('segments'):
+      self.segments = [int(i) for i in self.kvpairs['segments'].split(',')]
+      del ( self.kvpairs['segments'] )
+    #self.segments = self.querySegments(cursor)
 
 
   def delete ( self, cursor ):
     """Delete the annotation from the database"""
+
+    sql = "DELETE FROM {} WHERE annoid ={};".format( anno_dbtables['synapse'], self.annid ) 
+    #sql += "DELETE FROM %s WHERE annoid = %s;" % ( anno_dbtables['kvpairs'], self.annid )
+
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      logger.warning ( "Error deleting synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
     # and call delete on the base class
     Annotation.delete ( self, cursor )
