@@ -682,7 +682,7 @@ class MySQLKVIO:
 
     sql = "DELETE FROM {} WHERE zindex ={} AND id ={}".format( table, zidx, annid ) 
     try:
-      self.txncursor.execute ( sql )
+      cursor.execute ( sql )
     except MySQLdb.Error, e:
       logger.error ( "Error deleting exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       if self.txncursor == None:
