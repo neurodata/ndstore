@@ -17,6 +17,7 @@ import array
 import cStringIO
 import tempfile
 import h5py
+import MySQLdb
 
 import zindex
 import ocpcaproj
