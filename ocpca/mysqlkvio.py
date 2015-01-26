@@ -570,10 +570,10 @@ class MySQLKVIO:
 
     if not update:
 
-      sql = "INSERT INTO " +  self.db.annoproj.getIdxTable(resolution)  +  "( annid, cube) VALUES ( %s, %s)"
+      sql = "INSERT INTO {} ( annid, cube) VALUES ( %s, %s )".format( self.db.annoproj.getIdxTable(resolution) )
       
       try:
-         cursor.execute ( sql, (zidx, indexstr))
+         cursor.execute ( sql, (zidx,indexstr) )
       except MySQLdb.Error, e:
          logger.warning("Error updating index %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
          raise
@@ -587,12 +587,12 @@ class MySQLKVIO:
 
     else:
 
-      #update index in the database
-      sql = "UPDATE " + self.db.annoproj.getIdxTable(resolution) + " SET cube=(%s) WHERE annid=" + str(zidx)
+      # update index in the database
+      sql = "UPDATE {} SET cube=(%s) WHERE annid={}".format( self.db.annoproj.getIdxTable(resolution), zidx )
       try:
-         cursor.execute ( sql, (indexstr,))
+         cursor.execute ( sql, (indexstr,) )
       except MySQLdb.Error, e:
-         logger.warnig("Error updating exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+         logger.warning("Error updating exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
          raise
       except:
         logger.exception("Unknown exception")
@@ -616,7 +616,7 @@ class MySQLKVIO:
     else:
       cursor = self.txncursor
 
-    sql = "DELETE FROM " +  self.db.annoproj.getIdxTable(resolution)  +  " WHERE annid=" + str(annid)
+    sql = "DELETE FROM {} WHERE annid={}".format( self.db.annoproj.getIdxTable(resolution), annid )
     
     try:
        cursor.execute ( sql )
