@@ -81,7 +81,9 @@ class CassandraKVIO:
     else:
 
       try:
-        cql = "SELECT zidx, cuboid FROM cuboids WHERE resolution = %s AND zidx in %s" % (resolution, tuple(listofidxs)) 
+        # Converting the listofidxs to INT. This is wrong and needs to be fixed.
+        listofidxs = [ int(i) for i in listofidxs ]
+        cql = "SELECT zidx, cuboid FROM cuboids WHERE resolution ={} AND zidx in {}".format(resolution, tuple(listofidxs)) 
         rows = self.session.execute ( cql )
 
         for row in rows:
