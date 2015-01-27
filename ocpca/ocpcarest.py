@@ -145,6 +145,17 @@ def numpyZip ( imageargs, proj, db ):
   fileobj.seek(0)
   return fileobj.read()
 
+
+def FilterCube ( imageargs, cb ):
+  """ Return a cube with the filtered ids """
+
+  # Filter Function - used to filter
+  result = re.search ("filter/([\d/,]+)/",imageargs)
+  if result != None:
+    filterlist = np.array ( result.group(1).split(','), dtype=np.uint32 )
+    cb.data = ocplib.filter_ctype_OMP ( cb.data, filterlist )
+
+
 #
 #  Return a HDF5 file
 #
@@ -184,6 +195,7 @@ def HDF5 ( imageargs, proj, db ):
       fh5out.create_dataset ( "CUTOUT", tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data )
     else: 
       cube = cutout ( imageargs, proj, db, None )
+      FilterCube (imageargs, cube )
       fh5out.create_dataset ( "CUTOUT", tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data )
   
     fh5out.create_dataset( "DATATYPE", (1,), dtype=np.uint32, data=proj._dbtype )
@@ -287,10 +299,7 @@ def imgSlice ( service, imageargs, proj, db ):
   cb = cutout ( cutoutargs, proj, db, channel )
 
   # Filter Function - used to filter
-  result = re.search ("filter/([\d/,]+)/",imageargs)
-  if result != None:
-    filterlist = np.array ( result.group(1).split(','), dtype=np.uint32 )
-    cb.data = ocplib.filter_ctype_OMP ( cb.data, filterlist )
+  FilterCube ( imageargs, cb )
 
   # Window Function - used to limit the range of data purely for viewing purposes
   (startwindow,endwindow) = proj.datasetcfg.windowrange
