@@ -1606,8 +1606,8 @@ def mcFalseColor ( webargs ):
   # reduction factor.  How to scale data.  16 bit->8bit, or windowed
   (startwindow,endwindow) = proj.datasetcfg.windowrange
   if proj.getDBType() == ocpcaproj.CHANNELS_16bit and ( startwindow == endwindow == 0):
-    pass
-#    mcdata = np.uint8(mcdata * 1.0/256)
+    #pass
+    mcdata = np.uint8(mcdata * 1.0/256)
   elif proj.getDBType() == ocpcaproj.CHANNELS_16bit and ( endwindow!=0 ):
     from windowcutout import windowCutout
     windowCutout ( mcdata, (startwindow, endwindow) )

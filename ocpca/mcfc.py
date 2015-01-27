@@ -35,7 +35,7 @@ def mcfcPNG ( cutout, colors ):
     # First channel is cyan
     if colors[i] == 'C':
       data32 = np.array ( cutout[i,:,:], dtype=np.uint32 )
-      combined_cutout = np.left_shift(data32,8) + np.left_shift(data32,16)
+      combined_cutout += np.left_shift(data32,8) + np.left_shift(data32,16)
     # Second is Magenta
     elif colors[i] == 'M':
       data32 = np.array ( cutout[i,:,:], dtype=np.uint32 )
@@ -63,4 +63,12 @@ def mcfcPNG ( cutout, colors ):
   # Set the alpha channel only for nonzero pixels
   combined_cutout = np.where ( combined_cutout > 0, combined_cutout + 0xFF000000, 0 )
   
-  return Image.frombuffer ( 'RGBA', (cutout.shape[2],cutout.shape[1]), combined_cutout.flatten(), 'raw', 'RGBA', 0, 1 ) 
+  outimage =Image.frombuffer ( 'RGBA', (cutout.shape[2],cutout.shape[1]), combined_cutout.flatten(), 'raw', 'RGBA', 0, 1 ) 
+  
+  # Enhance the image
+  from PIL import ImageEnhance
+  enhancer = ImageEnhance.Brightness(outimage)
+  outimage = enhancer.enhance(4.0)
+  
+  return outimage
+
