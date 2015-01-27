@@ -140,16 +140,39 @@ class AnnotateIndex:
   #
   def updateIndex ( self, entityid, index, resolution ):
     """Updated the database index table with the input index hash table"""
-    
-    if self.NPZ:
-      fileobj = cStringIO.StringIO ()
-      np.save ( fileobj, index )
-      self.kvio.putIndex ( entityid, resolution, fileobj.getvalue(), True )
-    else:
 
-      with closing ( tempfile.NamedTemporaryFile () ) as tmpfile:
-        h5 = h5py.File ( tmpfile.name )
-        h5.create_dataset ( "index", tuple(index.shape), index.dtype, compression='gzip',  data=index )
-        h5.close()
-        tmpfile.seek(0)
-        self.kvio.putIndex ( entityid, resolution, tmpfile.read(), True )
+    curindex = self.getIndex ( entityid, resolution, True )
+
+    if curindex == []:
+        
+        if self.NPZ:
+          fileobj = cStringIO.StringIO ()
+          np.save ( fileobj, index )
+          self.kvio.putIndex ( entityid, resolution, fileobj.getvalue() )
+        else:
+
+          with closing ( tempfile.NamedTemporaryFile () ) as tmpfile:
+            h5 = h5py.File ( tmpfile.name )
+            h5.create_dataset ( "index", tuple(index.shape), index.dtype, compression='gzip',  data=index )
+            h5.close()
+            tmpfile.seek(0)
+            self.kvio.putIndex ( entityid, resolution, tmpfile.read() )
+
+    else :
+        
+        # Update Index to the union of the currentIndex and the updated index
+        newIndex = np.union1d ( curindex, index )
+
+        # Update the index in the database
+        if self.NPZ:
+          fileobj = cStringIO.StringIO ()
+          np.save ( fileobj, newIndex )
+          self.kvio.putIndex ( entityid, resolution, fileobj.getvalue(), True )
+        else:
+
+          with closing ( tempfile.NamedTemporaryFile () ) as tmpfile:
+            h5 = h5py.File ( tmpfile.name )
+            h5.create_dataset ( "index", tuple(index.shape), index.dtype, compression='gzip',  data=index )
+            h5.close()
+            tmpfile.seek(0)
+            self.kvio.putIndex ( entityid, resolution, tmpfile.read(), True )

@@ -2048,8 +2048,9 @@ class OCPCADB:
       
       if annid != mergeid:
         try:
-          annotation.deleteAnnotation(annid,self,'')
-          self.annoIdx.deleteIndexResolution(annid,resolution)
+          self.deleteAnnotation (annid, '' )
+          #self.annoIdx.deleteIndexResolution(annid,resolution)
+          self.annoIdx.deleteIndex(annid,resolution)
         except:
           logger.warning("Failed to delete annotation {} during merge.".format(annid))
     self.annoIdx.updateIndex(mergeid,addindex,resolution)     
