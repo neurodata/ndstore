@@ -73,3 +73,6 @@ int zoomInData ( uint32_t * , uint32_t * , int * , int );
 
 // Declaring the zoomInData function OMP optimized
 int zoomInDataOMP ( uint32_t * , uint32_t * , int * , int );
+
+// Declaring the mergeCube function
+int mergeCube ( uint32_t * , int * , int , int );

@@ -2038,9 +2038,11 @@ class OCPCADB:
         #self.updateExceptions ( key, resolution, mergeid, oldexlist )
           self.kvio.deleteExceptions ( key, resolution, annid )
         
-        # Cython optimized function  to relabel data from annid to mergeid
-        mergeCube_cy (cube.data,mergeid,annid ) 
-        self.putCube ( key, resolution,cube)
+        # Cython optimized function to relabel data from annid to mergeid
+        #mergeCube_cy ( cube.data, mergeid, annid ) 
+        # Ctype optimized version for mergeCube
+        ocplib.mergeCube_ctype ( cube.data, mergeid, annid )
+        self.putCube ( key, resolution, cube )
         
       # Delete annotation and all it's meta data from the database
       #
