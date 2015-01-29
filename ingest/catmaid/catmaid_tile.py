@@ -75,15 +75,18 @@ class CatmaidIngest:
               #if we are at the end of the space, quit
               if ( sl + b <= endslice ):
               
-                filename = '{}{}/{}/{}_{}.jpg'.format(self.tilepath, sl+b, self.resolution, ytile, xtile )
+                filename = '{}z{:0>4}/c{:0>2}r{:0>2}.tif'.format(self.tilepath, sl+b, xtile+1, ytile+1 )
+                #filename = '{}{}/c{:0>3}r{:0>3}.jpg'.format(self.tilepath, sl+b, xtile, ytile )
+                #filename = '{}{}/{}_{}_{}.jpg'.format(self.tilepath, sl+b, ytile, xtile, self.resolution )
+                #filename = '{}{}/{}/{}_{}.jpg'.format(self.tilepath, sl+b, self.resolution, ytile, xtile )
                 #filename = '{}z{:0>4}/c{:0>2}r{:0>2}.tif'.format(self.tilepath, sl+b, ytile+1, xtile+1 )
                 print filename
                 try:
                   # add tile to stack
                   img = Image.open ( filename, 'r' )
-                  slab [b,:,:] = np.asarray ( img )
+                  slab [b,:,:] = np.asarray ( img )[:,:,0]
                 except IOError, e:
-                  #print "Failed to open file %s" % (e)
+                  print "Failed to open file %s" % (e)
                   img = np.zeros((self.tilesz,self.tilesz), dtype=np.uint8)
                   slab [b,:,:] = img
 
