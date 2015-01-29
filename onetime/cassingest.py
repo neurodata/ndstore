@@ -23,7 +23,7 @@ import cStringIO
 from PIL import Image
 import zlib
 import MySQLdb
-from cassandra.cluster import Cluster
+#from cassandra.cluster import Cluster
 
 sys.path += [os.path.abspath('../django')]
 import OCP.settings

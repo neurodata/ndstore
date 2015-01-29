@@ -53,7 +53,6 @@ class ImgStack:
     for  l in range ( startlevel, len(self.proj.datasetcfg.resolutions) ):
 
       # Get the source database sizes
-      import pdb; pdb.set_trace()
       [ximagesz, yimagesz] = self.proj.datasetcfg.imagesz [ l ]
       [xcubedim, ycubedim, zcubedim] = self.proj.datasetcfg.cubedim [ l ]
 
