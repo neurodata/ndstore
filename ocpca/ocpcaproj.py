@@ -400,14 +400,14 @@ class OCPCAProjectsDB:
 
               for i in datasetcfg.resolutions: 
                 newcursor.execute ( "CREATE TABLE res{} ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(i) )
-                newcursor.execute ( "CREATE TABLE raw{} ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(i) )
+                #newcursor.execute ( "CREATE TABLE raw{} ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(i) )
               newconn.commit()
 
             elif dbtype in TIMESERIES_DATASETS :
 
               for i in datasetcfg.resolutions: 
                 newcursor.execute ( "CREATE TABLE res{} ( zindex BIGINT, timestamp INT, cube LONGBLOB, PRIMARY KEY(zindex,timestamp))".format(i) )
-                newcursor.execute ( "CREATE TABLE raw{} ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(i) )
+                #newcursor.execute ( "CREATE TABLE raw{} ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(i) )
                 #newcursor.execute ( "CREATE TABLE timeseries%s ( z INT, y INT, x INT, t INT,  series LONGBLOB, PRIMARY KEY (z,y,x,t))"%i) 
               newconn.commit()
 
