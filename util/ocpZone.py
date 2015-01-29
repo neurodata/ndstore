@@ -155,7 +155,7 @@ def hdf5PostTest ( ):
 
 def imageReadTest ( ):
   """ Load the informatio for the image test """
-  
+
   try:
     url = 'http://{}/ocp/ca/{}/info/'.format( result.host, result.token )
     f = urllib2.urlopen ( url )
@@ -187,6 +187,7 @@ def generateURL ( process_num ):
 
   try:
     url = 'http://{}/ocp/ca/{}/info/'.format( result.host, result.token )
+    print url
     f = urllib2.urlopen ( url )
   except urllib2.urlopen, e:
     print "Error. Project does not exist. {}".format(e)
@@ -248,8 +249,8 @@ def main():
   parser.add_argument('host', action="store", help='HostName')
   parser.add_argument('token', action="store", help='Token')
   parser.add_argument('processes', action="store", type=int, help=' Number of Processes')
-  parser.add_argument('--readImage', dest='readImage', action="store", type=int, nargs='*', help='Read Annotations')
-  parser.add_argument('--channel', dest='channel', action="store", type=str, help='Read Annotations')
+  parser.add_argument('--readImage', dest='readImage', action="store", type=int, nargs='*', help='Read Images')
+  parser.add_argument('--channel', dest='channel', action="store", type=str, help='Read Channel')
   parser.add_argument('--readAnno', dest='readAnno', action="store_true", help='Read Annotations')
   parser.add_argument('--postAnno', dest='datalocation', action="store", default=None, help='Post Annotations. Location od HDF5 Files')
   
