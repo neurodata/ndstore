@@ -62,7 +62,10 @@ def cutout ( imageargs, proj, db, channels=None ):
   # Perform argument processing
   try:
     args = restargs.BrainRestArgs ();
-    args.cutoutArgs ( imageargs, proj.datasetcfg )
+    if proj.getDBType() in ocpcaproj.TIMESERIES_DATASETS:
+      args.cutoutArgs ( imageargs, proj.datasetcfg, channels )
+    else:
+      args.cutoutArgs ( imageargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
     raise OCPCAError(e.value)
@@ -156,6 +159,16 @@ def FilterCube ( imageargs, cb ):
     cb.data = ocplib.filter_ctype_OMP ( cb.data, filterlist )
 
 
+def FilterTimeCube ( imageargs, cb ):
+  """ Return a cube with the filtered ids """
+
+  # Filter Function - used to filter
+  result = re.search ("filter/([\d/,]+)/",imageargs)
+  if result != None:
+    filterlist = np.array ( result.group(1).split(','), dtype=np.uint32 )
+    print "Filter not supported for Time Cubes yet"
+    #cb.data = ocplib.filter_ctype_OMP ( cb.data, filterlist )
+
 #
 #  Return a HDF5 file
 #
@@ -190,8 +203,8 @@ def HDF5 ( imageargs, proj, db ):
       cube.RGBAChannel()
       fh5out.create_dataset ( "CUTOUT", tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data )
     elif proj.getDBType() in ocpcaproj.TIMESERIES_DATASETS:
-      [ chanurl, sym, imageargs ] = imageargs.partition ('/')
-      cube = cutout ( imageargs, proj, db, int(chanurl) )
+      cube = TimeSeriesCutout ( imageargs, proj, db )
+      FilterTimeCube (imageargs, cube )
       fh5out.create_dataset ( "CUTOUT", tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data )
     else: 
       cube = cutout ( imageargs, proj, db, None )
@@ -216,9 +229,7 @@ def HDF5 ( imageargs, proj, db ):
 def TimeSeriesCutout ( imageargs, proj, db ):
   """ Return a web readable HDF5 file """
 
-  # Create an in-memory HDF5 file
-  tmpfile = tempfile.NamedTemporaryFile()
-  fh5out = h5py.File ( tmpfile.name )
+  channels, sym, imageargs = imageargs.partition("/")
 
   try: 
     # if it's a channel database, pull out the channels
@@ -226,7 +237,7 @@ def TimeSeriesCutout ( imageargs, proj, db ):
    
       # Perform argument processing
       args = restargs.BrainRestArgs ()
-      args.tsArgs ( imageargs, proj.datasetcfg )
+      args.cutoutArgs ( imageargs, proj.datasetcfg, channels )
       
       # Extract the relevant values
       corner = args.getCorner()
@@ -234,30 +245,20 @@ def TimeSeriesCutout ( imageargs, proj, db ):
       resolution = args.getResolution()
       timerange = args.getTimeRange()
       filterlist = args.getFilter()
-      window = args.getWindow()
-      (startwindow,endwindow) = proj.datasetcfg.windowrange
 
-      #if proj.getDBType() in ocpcaproj.DATASETS_16bit:
-      #  bigCube = np.empty( ([timerange[1]-timerange[0]]+dim[::-1]), dtype=np.uint16)
-      #elif proj.getDBType() in ocpcaproj.DATASETS_8bit:
-      #  bigCube = np.empty( ([timerange[1]-timerange[0]]+dim[::-1]), dtype=np.uint8)
-      # Perform the cutout
-      #for time in range(0,timerange[1]-timerange[0]):
       cube = db.TimeSeriesCutout ( corner, dim, resolution, timerange )
-        #bigCube[time,] = cube.data
-      fh5out.create_dataset ( "CUTOUT", tuple(cube.data.shape), cube.data.dtype,compression='gzip', data=cube.data )
-      fh5out.create_dataset( "DATATYPE", (1,), dtype=np.uint32, data=proj._dbtype )
+      
+      return cube
+
+      #fh5out.create_dataset ( "CUTOUT", tuple(cube.data.shape), cube.data.dtype,compression='gzip', data=cube.data )
+      #fh5out.create_dataset( "DATATYPE", (1,), dtype=np.uint32, data=proj._dbtype )
 
     else:
       logger.warning("Not a Timeseries Dataset")
 
   except restargs.RESTArgsError, e:
-    logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
+    logger.warning( "REST Arguments {} failed: {}".format(imageargs,e) )
     raise OCPCAError(e.value)
-
-  fh5out.close()
-  tmpfile.seek(0)
-  return tmpfile.read()
 
 
 #
@@ -299,7 +300,10 @@ def imgSlice ( service, imageargs, proj, db ):
   cb = cutout ( cutoutargs, proj, db, channel )
 
   # Filter Function - used to filter
-  FilterCube ( imageargs, cb )
+  if proj.getDBType() in ocpcaproj.TIMESERIES_DATASETS:
+    FilterTimeCube ( imageargs, cb )
+  else:
+    FilterCube ( imageargs, cb )
 
   # Window Function - used to limit the range of data purely for viewing purposes
   (startwindow,endwindow) = proj.datasetcfg.windowrange
@@ -323,9 +327,8 @@ def xyImage ( imageargs, proj, db ):
 def xzImage ( imageargs, proj, db ):
   """Return an xz plane fileobj.read()"""
 
-  # little awkward because we need resolution here
-  # it will be reparse in xzSlice
-  if proj.getDBType() == ocpcaproj.CHANNELS_8bit or proj.getDBType() == ocpcaproj.CHANNELS_16bit:
+  # little awkward because we need resolution here. it will be reparse in xzSlice
+  if proj.getDBType() in ocpcaproj.COMPOSITE_DATASETS:
     channel, sym, rest = imageargs.partition("/")
     resolution, sym, rest = rest.partition("/")
   else:
@@ -342,9 +345,8 @@ def xzImage ( imageargs, proj, db ):
 def yzImage ( imageargs, proj, db ):
   """Return an yz plane fileobj.read()"""
 
-  # little awkward because we need resolution here
-  # it will be reparse in yzSlice
-  if proj.getDBType() == ocpcaproj.CHANNELS_8bit or proj.getDBType() == ocpcaproj.CHANNELS_16bit:
+  # little awkward because we need resolution here. it will be reparse in yzSlice
+  if proj.getDBType() in ocpcaproj.COMPOSITE_DATASETS:
     channel, sym, rest = imageargs.partition("/")
     resolution, sym, rest = rest.partition("/")
   else:
@@ -590,7 +592,7 @@ def selectPost ( webargs, proj, db, postdata ):
           args = restargs.BrainRestArgs ();
           args.cutoutArgs ( postargs, proj.datasetcfg )
         except restargs.RESTArgsError, e:
-          logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
+          logger.warning( "REST Arguments {} failed: {}".format(imageargs,e) )
           raise OCPCAError(e)
 
         corner = args.getCorner()

@@ -62,7 +62,7 @@ class BrainRestArgs:
   #
   #  Process cutout arguments
   #
-  def cutoutArgs ( self, imageargs, datasetcfg ):
+  def cutoutArgs ( self, imageargs, datasetcfg, channels=None ):
     """Process REST arguments for an cutout plane request"""
 
     # expecting an argument of the form /resolution/x1,x2/y1,y2/z1,z2/
@@ -77,7 +77,7 @@ class BrainRestArgs:
        not re.match ('[0-9]+,[0-9]+$', xdimstr) or\
        not re.match ('[0-9]+,[0-9]+$', ydimstr) or\
        not re.match ('[0-9]+,[0-9]+$', zdimstr):
-      raise RESTArgsError ("Non-conforming range arguments %s" % imageargs)
+      raise RESTArgsError ( "Non-conforming range arguments {}".format(imageargs) )
 
     self._resolution = int(resstr)
 
@@ -92,10 +92,26 @@ class BrainRestArgs:
     z1i = int(z1s)
     z2i = int(z2s)
 
+    if channels != None:
+      if re.match ('[0-9]+,[0-9]+$',channels):
+        t1s,t2s = channels.split(',')
+        t1i = int(t1s)
+        t2i = int(t2s)
+        self._time = [t1i,t2i]
+      elif re.match('[0-9]+$',channels):
+        t1i = int(channels)
+        t2i = t1i+1
+      else:
+        raise RESTArgsError ( "Non-conforming time range arguments".format(channels) )
+    else:
+      t1i = 0
+      t2i = t1i + 1
+
+
     # Check arguments for legal values
     try:
-      if not ( datasetcfg.checkCube ( self._resolution, x1i, x2i, y1i, y2i, z1i, z2i )):
-        raise RESTArgsError ( "Illegal range. Image size:" +  str(datasetcfg.imageSize( self._resolution )))
+      if not ( datasetcfg.checkCube ( self._resolution, x1i, x2i, y1i, y2i, z1i, z2i, t1i, t2i )):
+        raise RESTArgsError ( "Illegal range. Image size:{}".format(datasetcfg.imageSize( self._resolution )) )
     except Exception, e:
       # RBTODO make this error better.  How to print good information about e?
       #  it only prints 3, not KeyError 3, whereas print e in the debugger gives good info

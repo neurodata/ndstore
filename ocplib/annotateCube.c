@@ -63,13 +63,13 @@ int annotateCube( uint32_t * data, int dataSize, int * dims, int annid, uint32_t
         // P preserves the existing content
         else if ( conflictopt == 'P' )
         {
-          printf ("Cannot overwrite. Read-Only");
+          //printf ("Cannot overwrite. Read-Only");
           continue;
         }
         // E creates exceptions
         else if ( conflictopt == 'E' )
         {
-          printf ( "Append exceptions" );
+          //printf ( "Append exceptions" );
           exceptionIndex += 1;
           exceptions [exceptionIndex][0] = locations[i][0]-xoffset;
           exceptions [exceptionIndex][1] = locations[i][1]-yoffset;
