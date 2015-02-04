@@ -12,4 +12,10 @@ Major directories include:
   admin -- scripts to manage databases
   scripts -- utilities to build annotation and image stacks
 
+### openconnectome/open-connectome now has a Chat Room on Gitter
+
+@randalburns has just created a chat room. You can visit it here: [https://gitter.im/openconnectome/open-connectome](https://gitter.im/openconnectome/open-connectome?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&content=body_link).
+
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/openconnectome/open-connectome?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=body_badge)
+
 
