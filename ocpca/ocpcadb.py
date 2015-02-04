@@ -94,10 +94,6 @@ class OCPCADB:
     else:
       raise OCPCAError ("Unknown key/value store.  Engine = {}".format(self.annoproj.getKVEngine()))
 
-    # How many slices?
-    [ self.startslice, endslice ] = self.datasetcfg.slicerange
-    self.slices = endslice - self.startslice + 1 
-
     # Connection info for the metadata
     try:
       self.conn = MySQLdb.connect (host = self.annoproj.getDBHost(),
@@ -756,12 +752,6 @@ class OCPCADB:
     # dictionary with the index
     cubeidx = defaultdict(set)
 
-    # convert voxels z coordinate
-    locations[:,2] = locations[:,2] - np.uint32(self.datasetcfg.slicerange[0])
-    # RB  there was a bug here from conflicting types of locations (HDF5 array) and slicerange (L from MySQL query)
-#    if max(locations[:,2]) > self.datasetcfg.slicerange[1]:
-#      logger.error("Bad adjusted locations. Max z slice value {}".format(max(locations[:,2])))
-
     import time
     totaltime2 = totaltime3 = 0
     start = time.time()
@@ -847,7 +837,6 @@ class OCPCADB:
     cubeidx = defaultdict(set)
 
     # convert voxels z coordinate
-    locations[:,2] = locations[:,2] - self.datasetcfg.slicerange[0]
     cubelocs = ocplib.locate_ctype ( np.array(locations, dtype=np.uint32), cubedim )
     #cubelocs2 = cubeLocs_cy ( np.array(locations, dtype=np.uint32), cubedim )
 
@@ -1146,8 +1135,6 @@ class OCPCADB:
   def cutout ( self, corner, dim, resolution, channel=None, zscaling=None, annoids=None ):
     """Extract a cube of arbitrary size.  Need not be aligned."""
    
-    print "in db.cutout r,c,d ", resolution, corner, dim
-
     # alter query if  (ocpcaproj)._resolution is > resolution
     # if cutout is below resolution, get a smaller cube and scaleup
     if self.annoproj.getDBType() in ocpcaproj.ANNOTATION_DATASETS and self.annoproj.getResolution() > resolution:
@@ -1183,11 +1170,8 @@ class OCPCADB:
     ynumcubes = (effcorner[1]+effdim[1]+ycubedim-1)/ycubedim - ystart
     xnumcubes = (effcorner[0]+effdim[0]+xcubedim-1)/xcubedim - xstart
 
-    # RBTODO need to fix this for new I/O interface.  No dbname to getCubes
     # use the requested resolution
-    if zscaling == 'isotropic':
-      dbname = self.annoproj.getIsotropicTable(resolution)
-    elif zscaling == 'nearisotropic' and self.datasetcfg.nearisoscaledown[resolution] > 1:
+    if zscaling == 'nearisotropic' and self.datasetcfg.nearisoscaledown[resolution] > 1:
       dbname = self.annoproj.getNearIsoTable(resolution)
     else:
       dbname = self.annoproj.getTable(effresolution)
@@ -1251,15 +1235,6 @@ class OCPCADB:
 
     # xyz offset stored for later use
     lowxyz = ocplib.MortonXYZ ( listofidxs[0] )
-
-    # Batch query for all cubes
-    # Customize query to the database (include channel or not)
-#    if (self.annoproj.getDBType() == ocpcaproj.CHANNELS_8bit or self.annoproj.getDBType() == ocpcaproj.CHANNELS_16bit):
-#      # Convert channel as needed
-#      channel = ocpcachannel.toID ( channel, self )
-#      self.kvio.getChannelCubes(channel,listofidxs)
-#
-#    else:
     
     self.kvio.startTxn()
 
@@ -1458,8 +1433,8 @@ class OCPCADB:
 
     # convert the voxel into zindex and offsets
     # Round to the nearest larger cube in all dimensions
-    xyzcube = [ voxel[0]/xcubedim, voxel[1]/ycubedim, (voxel[2]-self.startslice)/zcubedim ]
-    xyzoffset =[ voxel[0]%xcubedim, voxel[1]%ycubedim, (voxel[2]-self.startslice)%zcubedim ]
+    xyzcube = [ voxel[0]/xcubedim, voxel[1]/ycubedim, voxel[2]/zcubedim ]
+    xyzoffset =[ voxel[0]%xcubedim, voxel[1]%ycubedim, voxel[2]%zcubedim ]
 
     # Create a cube object
     cube = anncube.AnnotateCube ( cubedim )
@@ -1575,7 +1550,7 @@ class OCPCADB:
       [x,y,z] = ocplib.MortonXYZ(zidx)
       xoffset = x * self.datasetcfg.cubedim[resolution][0] 
       yoffset = y * self.datasetcfg.cubedim[resolution][1] 
-      zoffset = z * self.datasetcfg.cubedim[resolution][2] + self.datasetcfg.slicerange[0]
+      zoffset = z * self.datasetcfg.cubedim[resolution][2] 
 
       # Now add the exception voxels
       if self.EXCEPT_FLAG:
@@ -1633,7 +1608,7 @@ class OCPCADB:
     zmin = min(xyzvals[:,2]) * cubedim[2]
     zmax = (max(xyzvals[:,2])+1) * cubedim[2]
 
-    corner = [ xmin, ymin, zmin+self.startslice ]
+    corner = [ xmin, ymin, zmin ]
     dim = [ xmax-xmin, ymax-ymin, zmax-zmin ]
 
     return (corner,dim)
@@ -1669,7 +1644,7 @@ class OCPCADB:
       # zoom the data if not at the right resolution
       # and translate the zindex to the upper resolution
       (xoff,yoff,zoff) = ocplib.MortonXYZ ( zidx )
-      offset = (xoff*xcubedim, yoff*ycubedim, zoff*zcubedim+self.startslice)
+      offset = (xoff*xcubedim, yoff*ycubedim, zoff*zcubedim)
 
       # if we're zooming, so be it
       if resolution < effectiveres:
@@ -2060,7 +2035,7 @@ class OCPCADB:
     
     return "Merge complete"
 
-  def merge2D(self, ids, mergetype, res,slicenum):
+  def merge2D(self, ids, mergetype, res, slicenum):
     # get the size of the image and cube
     resolution = int(res)
     print ids

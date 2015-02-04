@@ -85,24 +85,28 @@ class BrainRestArgs:
     y1s,y2s = ydimstr.split(',')
     x1s,x2s = xdimstr.split(',')
 
-    x1i = int(x1s)
-    x2i = int(x2s)
-    y1i = int(y1s)
-    y2i = int(y2s)
-    z1i = int(z1s)
-    z2i = int(z2s)
+    # Convert cutout into 0 base in all dimensions
+    (xoffset,yoffset,zoffset) = datasetcfg.offset[self._resolution]
+
+    x1i = int(x1s)-xoffset
+    x2i = int(x2s)-xoffset
+    y1i = int(y1s)-yoffset
+    y2i = int(y2s)-yoffset
+    z1i = int(z1s)-zoffset
+    z2i = int(z2s)-zoffset
+
+    self._corner=[x1i,y1i,z1i]
+    self._dim=[x2i-x1i,y2i-y1i,z2i-z1i ]
 
     # Check arguments for legal values
     try:
-      if not ( datasetcfg.checkCube ( self._resolution, x1i, x2i, y1i, y2i, z1i, z2i )):
-        raise RESTArgsError ( "Illegal range. Image size:" +  str(datasetcfg.imageSize( self._resolution )))
+      if not ( datasetcfg.checkCube ( self._resolution, self._corner, self._dim)):
+        raise RESTArgsError ( "Illegal range. Image size: {} at offset {}".format(str(datasetcfg.imageSize(self._resolution)),str(datasetcfg.offset[self._resolution])))
     except Exception, e:
       # RBTODO make this error better.  How to print good information about e?
       #  it only prints 3, not KeyError 3, whereas print e in the debugger gives good info
       raise RESTArgsError ( "Illegal arguments to cutout.  Check cube failed {}".format(e.value))
 
-    self._corner=[x1i,y1i,z1i-datasetcfg.slicerange[0]]
-    self._dim=[x2i-x1i,y2i-y1i,z2i-z1i ]
 
     # list of identifiers to keep
     result = re.match ("filter/([\d/,]+)/",rest)
@@ -151,6 +155,8 @@ class BrainRestArgs:
     """Process REST arguments for an xy plane request.
        You must have set the resolution prior to calling this function."""
 
+    import pdb; pdb.set_trace()
+
     try:
       [ resstr, xdimstr, ydimstr, zstr, rest ]  = imageargs.split('/',4)
       options = rest.split ( '/' )
@@ -170,24 +176,28 @@ class BrainRestArgs:
     x1s,x2s = xdimstr.split(',')
     y1s,y2s = ydimstr.split(',')
 
-    x1i = int(x1s)
-    x2i = int(x2s)
-    y1i = int(y1s)
-    y2i = int(y2s)
-    z = int(zstr)
+    # Convert cutout into 0 base in all dimensions
+    (xoffset,yoffset,zoffset) = datasetcfg.offset[self._resolution]
+
+    x1i = int(x1s)-xoffset
+    x2i = int(x2s)-xoffset
+    y1i = int(y1s)-yoffset
+    y2i = int(y2s)-yoffset
+    z = int(zstr)-zoffset
+
+    self._corner=[x1i,y1i,z]
+    self._dim=[x2i-x1i,y2i-y1i,1]
+
 
     # Check arguments for legal values
     # Check arguments for legal values
     try:
-      if not ( datasetcfg.checkCube ( self._resolution, x1i, x2i, y1i, y2i, z, z+1 )):
-        raise RESTArgsError ( "Illegal range. Image size:" +  str(datasetcfg.imageSize( self._resolution )))
+      if not ( datasetcfg.checkCube ( self._resolution, self._corner, self.dim )):
+        raise RESTArgsError ( "Illegal range. Image size: {} at offset {}".format(str(datasetcfg.imageSize(self._resolution)),str(datasetcfg.offset[self._resolution])))
     except Exception, e:
       # RBTODO make this error better.  How to print good information about e?
       #  it only prints 3, not KeyError 3, whereas print e in the debugger gives good info
       raise RESTArgsError ( "Illegal arguments to cutout.  Check cube failed {}".format(e))
-
-    self._corner=[x1i,y1i,z-datasetcfg.slicerange[0]]
-    self._dim=[x2i-x1i,y2i-y1i,1]
 
     # list of identifiers to keep
     result = re.match ("filter/([\d/,]+)/",rest)
@@ -226,17 +236,23 @@ class BrainRestArgs:
     x1s,x2s = xdimstr.split(',')
     z1s,z2s = zdimstr.split(',')
 
-    x1i = int(x1s)
-    x2i = int(x2s)
-    y = int(ystr)
-    z1i = int(z1s)
-    z2i = int(z2s)
+    # Convert cutout into 0 base in all dimensions
+    (xoffset,yoffset,zoffset) = datasetcfg.offset[self._resolution]
+
+    x1i = int(x1s)-xoffset
+    x2i = int(x2s)-xoffset
+    y = int(ystr)-yoffset
+    z1i = int(z1s)-zoffset
+    z2i = int(z2s)-zoffset
+
+    self._corner=[x1i,y,z1i]
+    self._dim=[x2i-x1i,1,z2i-z1i]
 
     # Check arguments for legal values
     try:
       if not datasetcfg.checkCube ( self._resolution, x1i, x2i, y, y+1, z1i, z2i )\
          or y >= datasetcfg.imagesz[self._resolution][1]:
-        raise RESTArgsError ( "Illegal range. Image size:" +  str(datasetcfg.imageSize( self._resolution )))
+        raise RESTArgsError ( "Illegal range. Image size: {} at offset {}".format(str(datasetcfg.imageSize(self._resolution)),str(datasetcfg.offset[self._resolution])))
     except Exception, e:
       # RBTODO make this error better.  How to print good information about e?
       #  it only prints 3, not KeyError 3, whereas print e in the debugger gives good info
@@ -293,7 +309,7 @@ class BrainRestArgs:
     try:
       if not datasetcfg.checkCube ( self._resolution, x, x+1, y1i, y2i, z1i, z2i  )\
          or  x >= datasetcfg.imagesz[self._resolution][0]:
-        raise RESTArgsError ( "Illegal range. Image size:" +  str(datasetcfg.imageSize( self._resolution )))
+        raise RESTArgsError ( "Illegal range. Image size: {} at offset {}".format(str(datasetcfg.imageSize(self._resolution)),str(datasetcfg.offset[self._resolution])))
     except Exception, e:
       # RBTODO make this error better.  How to print good information about e?
       #  it only prints 3, not KeyError 3, whereas print e in the debugger gives good info
@@ -354,7 +370,7 @@ class BrainRestArgs:
     # Check arguments for legal values
     try:
       if not datasetcfg.checkTimeSeriesCube ( t1i, t2i, self._resolution, x1i, x2i, y1i, y2i, z1i, z2i  ) :
-        raise RESTArgsError ( "Illegal range. Image size:" +  str(datasetcfg.imageSize( self._resolution )))
+        raise RESTArgsError ( "Illegal range. Image size: {} at offset {}".format(str(datasetcfg.imageSize(self._resolution)),str(datasetcfg.offset[self._resolution])))
     except Exception, e:
       # RBTODO make this error better.  How to print good information about e?
       #  it only prints 3, not KeyError 3, whereas print e in the debugger gives good info
@@ -416,7 +432,7 @@ class BrainRestArgs:
   # Check arguments for legal values
     try:
       if not ( datasetcfg.checkCube ( self._resolution, x1i, x2i, y1i, y2i, z1i, z2i )):
-        raise RESTArgsError ( "Illegal range. Image size:" +  str(datasetcfg.imageSize( self._resolution )))
+        raise RESTArgsError ( "Illegal range. Image size: {} at offset {}".format(str(datasetcfg.imageSize(self._resolution)),str(datasetcfg.offset[self._resolution])))
     except Exception, e:
       raise RESTArgsError ( "Illegal arguments to cutout.  Check cube failed {}".format(e))
     
@@ -454,7 +470,7 @@ def voxel ( imageargs, datasetcfg ):
 
   # Check arguments for legal values
   if not ( datasetcfg.checkCube ( resolution, x, x+1, y, y+1, z, z+1 )):
-    raise RESTArgsError ( "Illegal range. Image size:" +  str(datasetcfg.imageSize( resolution )))
+    raise RESTArgsError ( "Illegal range. Image size: {} at offset {}".format(str(datasetcfg.imageSize(self._resolution)),str(datasetcfg.offset[self._resolution])))
 
   return (resolution, [ x,y,z ])
 

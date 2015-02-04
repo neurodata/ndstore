@@ -65,18 +65,14 @@ def buildAnnoStack ( token ):
     for  l in range ( proj.datasetcfg.resolutions[0], len(proj.datasetcfg.resolutions) ):
 
       # Get the source database sizes
-      [ximagesz, yimagesz] = proj.datasetcfg.imagesz [ l ]
+      [ximagesz, yimagesz, zimagesz] = proj.datasetcfg.imagesz [ l ]
       [xcubedim, ycubedim, zcubedim] = proj.datasetcfg.cubedim [ l ]
-
-      # Get the slices
-      [ startslice, endslice ] = proj.datasetcfg.slicerange
-      slices = endslice - startslice + 1
 
       # Set the limits for iteration on the number of cubes in each dimension
       xlimit = ximagesz / xcubedim
       ylimit = yimagesz / ycubedim
-      #  Round up the zlimit to the next larger
-      zlimit = (((slices-1)/zcubedim+1)*zcubedim)/zcubedim 
+      zlimit = zimagesz / zcubedim
+      # RBISO?? apply offsets
 
       #  Choose constants that work for all resolutions. recall that cube size changes from 128x128x16 to 64*64*64
       outdata = np.zeros ( [ zcubedim*4, ycubedim*2, xcubedim*2 ] )

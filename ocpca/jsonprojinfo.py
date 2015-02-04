@@ -49,13 +49,18 @@ def projdict ( proj ):
 def datasetdict ( dataset ):
 
   dsdict = {}
+  dsdict['zoomlevels'] = dataset.zoomlevels
+  if dataset.scalingoption == ocpcaproj.ZSLICES:
+    dsdict['scaling'] = 'zslices'
+  else:
+    dsdict['scaling'] = 'xyz'
   dsdict['resolutions'] = dataset.resolutions
-  dsdict['slicerange'] = dataset.slicerange
   dsdict['imagesize'] = dataset.imagesz
-  dsdict['zscale'] = dataset.zscale
+  dsdict['offset'] = dataset.offset
+  dsdict['voxelres'] = dataset.voxelres
   dsdict['cube_dimension'] = dataset.cubedim
-  dsdict['isotropic_slicerange'] = dataset.isoslicerange
-  dsdict['neariso_scaledown'] = dataset.nearisoscaledown
+#  dsdict['neariso_scaledown'] = dataset.nearisoscaledown
+# Figure out neariso in new design
   dsdict['windowrange'] = dataset.windowrange
   dsdict['timerange'] = dataset.timerange
 

@@ -58,7 +58,6 @@ logger=logging.getLogger("ocp")
 def cutout ( imageargs, proj, db, channels=None ):
   """Build the returned cube of data.  This method is called by all of the more basic services to build the data. They then format and refine the output."""
 
-  print "in cutout", imageargs
   # Perform argument processing
   try:
     args = restargs.BrainRestArgs ();
@@ -77,9 +76,8 @@ def cutout ( imageargs, proj, db, channels=None ):
   # Perform the cutout
   cube = db.cutout ( corner, dim, resolution, channels, zscaling )
 
-  print np.unique (cube.data)
-
   return cube
+
 
 #
 #  Return a Flat binary file zipped (for Stefan) 
@@ -331,7 +329,8 @@ def xzImage ( imageargs, proj, db ):
   else:
     resolution, sym, rest = imageargs.partition("/")
 
-  img = imgSlice ( 'xz', imageargs, proj, db ).xzImage(proj.datasetcfg.zscale[int(resolution)])
+  zscale = proj.datasetcfg.voxelres[int(resolution)][2]/proj.datasetcfg.voxelres[int(resolution)][1]
+  img = imgSlice ( 'xz', imageargs, proj, db ).xzImage(zscale)
   fileobj = cStringIO.StringIO ( )
   img.save ( fileobj, "PNG" )
   fileobj.seek(0)
@@ -350,7 +349,8 @@ def yzImage ( imageargs, proj, db ):
   else:
     resolution, sym, rest = imageargs.partition("/")
 
-  img = imgSlice ( 'yz', imageargs, proj, db ).yzImage(proj.datasetcfg.zscale[int(resolution)])
+  zscale = proj.datasetcfg.voxelres[int(resolution)][2]/proj.datasetcfg.voxelres[int(resolution)][0]
+  img = imgSlice ( 'yz', imageargs, proj, db ).yzImage(zscale)
   fileobj = cStringIO.StringIO ( )
   img.save ( fileobj, "PNG" )
   fileobj.seek(0)

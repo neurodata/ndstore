@@ -65,6 +65,10 @@ NOT_PROPAGATED = 0
 READONLY_TRUE = 1
 READONLY_FALSE = 0
 
+# SCALING OPTIONS
+ISOTROPIC = 0
+ZSLICES = 1
+
 class OCPCAProject:
   """ Project specific for cutout and annotation data """
 
@@ -178,77 +182,114 @@ class OCPCAProject:
 class OCPCADataset:
   """Configuration for a dataset"""
 
-  def __init__ ( self, ximagesz, yimagesz, startslice, endslice, zoomlevels, zscale, startwindow, endwindow, starttime, endtime ):
+  def __init__ ( self, (ximagesz, yimagesz, zimagesz), (xoffset, yoffset, zoffset), (xvoxelres, yvoxelres, zvoxelres), scalinglevels, scalingoption, startwindow, endwindow, starttime, endtime ):
     """Construct a db configuration from the dataset parameters""" 
 
-    self.slicerange = [ startslice, endslice ]
     self.windowrange = [ startwindow, endwindow ]
     self.timerange = [ starttime, endtime ]
 
-    # istropic slice range is a function of resolution
-    self.isoslicerange = {} 
+    # nearisotropic service for Stephan
     self.nearisoscaledown = {}
 
     self.resolutions = []
     self.cubedim = {}
     self.imagesz = {}
-    self.zscale = {}
+    self.offset = {}
+    self.voxelres = {}
+    self.scalingoption = scalingoption
+    self.zoomlevels = scalinglevels
 
-    for i in range (zoomlevels+1):
+    for i in range (scalinglevels+1):
       """Populate the dictionaries"""
 
       # add this level to the resolutions
       self.resolutions.append( i )
 
-      # set the zscale factor
-      self.zscale[i] = float(zscale)/(2**i)
-
       # choose the cubedim as a function of the zscale
       #  this may need to be changed.  
-      if self.zscale[i] >  0.5:
-        self.cubedim[i] = [128, 128, 16]
-      else: 
+      if scalingoption == ZSLICES:
+        if float(zvoxelres/xvoxelres)/(2**i) >  0.5:
+          self.cubedim[i] = [128, 128, 16]
+        else: 
+          self.cubedim[i] = [64, 64, 64]
+
+        # Make an exception for bock11 data -- just an inconsistency in original ingest
+        if ximagesz == 135424 and i == 5:
+          self.cubedim[i] = [128, 128, 16]
+
+      else:
         self.cubedim[i] = [64, 64, 64]
 
-      # Make an exception for bock11 data -- just an inconsistency in original ingest
-      if ximagesz == 135424 and i == 5:
-        self.cubedim[i] = [128, 128, 16]
 
       # set the image size
       #  the scaled down image rounded up to the nearest cube
       xpixels=((ximagesz-1)/2**i)+1
       ypixels=((yimagesz-1)/2**i)+1
-# RBRM -- don't round up to cubes.  Just pixels.
-#      ximgsz = (((xpixels-1)/self.cubedim[i][0])+1)*self.cubedim[i][0]
-#      yimgsz = (((ypixels-1)/self.cubedim[i][1])+1)*self.cubedim[i][1]
-      self.imagesz[i] = [ xpixels, ypixels ]
-
-      # set the isotropic image size when well defined
-      if self.zscale[i] < 1.0:
-        self.isoslicerange[i] = [ startslice, startslice + int(math.floor((endslice-startslice+1)*self.zscale[i])) ]
-
-        # find the neareat to isotropic value
-        scalepixels = 1/self.zscale[i]
-        if ((math.ceil(scalepixels)-scalepixels)/scalepixels) <= ((scalepixels-math.floor(scalepixels))/scalepixels):
-          self.nearisoscaledown[i] = int(math.ceil(scalepixels))
-        else:
-          self.nearisoscaledown[i] = int(math.floor(scalepixels))
-
+      if scalingoption == ZSLICES:
+        zpixels=zimagesz
       else:
-        self.isoslicerange[i] = self.slicerange
-        self.nearisoscaledown[i] = int(1)
+        zpixels=((zimagesz-1)/2**i)+1
+      self.imagesz[i] = [ xpixels, ypixels, zpixels ]
+
+      # set the offset
+      if xoffset==0:
+        xoffseti = 0
+      else:
+         xoffseti = ((xoffset-1)/2**i)
+      if yoffset==0:
+        yoffseti = 0
+      else:
+         yoffseti = ((yoffset-1)/2**i)
+      if zoffset==0:
+        zoffseti = 0
+      else:
+        if scalingoption == ZSLICES:
+          zoffseti = zoffset
+        else:
+         zoffseti = ((zoffset-1)/2**i)
+
+      self.offset[i] = [ xoffseti, yoffseti, zoffseti ]
+
+      # set the voxelresolution
+      xvoxelresi = xvoxelres*float(2**i)
+      yvoxelresi = yvoxelres*float(2**i)
+      if scalingoption == ZSLICES:
+        zvoxelresi = zvoxelres
+      else:
+        zvoxelresi = zvoxelres/float(2**i)
+
+      self.voxelres[i] = [ xvoxelresi, yvoxelresi, zvoxelresi ]
+
+      #RB need to reconsider nearisotropic for Stefan.....
+#      # set the isotropic image size when well defined
+#      if self.zscale[i] < 1.0:
+#        self.isoslicerange[i] = [ startslice, startslice + int(math.floor((endslice-startslice+1)*self.zscale[i])) ]
+#
+#        # find the neareat to isotropic value
+#        scalepixels = 1/self.zscale[i]
+#        if ((math.ceil(scalepixels)-scalepixels)/scalepixels) <= ((scalepixels-math.floor(scalepixels))/scalepixels):
+#          self.nearisoscaledown[i] = int(math.ceil(scalepixels))
+#        else:
+#          self.nearisoscaledown[i] = int(math.floor(scalepixels))
+#
+#      else:
+#        self.isoslicerange[i] = self.slicerange
+#        self.nearisoscaledown[i] = int(1)
 
   #
   #  Check that the specified arguments are legal
   #
-  def checkCube ( self, resolution, xstart, xend, ystart, yend, zstart, zend ):
+  def checkCube ( self, resolution, corner, dim ):
     """Return true if the specified range of values is inside the cube"""
 
-    [xmax, ymax] = self.imagesz [ resolution ]
+    [xstart, ystart, zstart ] = corner
+    xend = xstart + dim[0]
+    yend = ystart + dim[1]
+    zend = zstart + dim[2]
 
     if (( xstart >= 0 ) and ( xstart < xend) and ( xend <= self.imagesz[resolution][0]) and\
         ( ystart >= 0 ) and ( ystart < yend) and ( yend <= self.imagesz[resolution][1]) and\
-        ( zstart >= self.slicerange[0] ) and ( zstart < zend) and ( zend <= (self.slicerange[1]+1))):
+        ( zstart >= 0 ) and ( zstart < zend) and ( zend <= self.imagesz[resolution][2])): 
       return True
     else:
       return False
@@ -260,11 +301,14 @@ class OCPCADataset:
   def checkTimeSeriesCube ( self, tstart, tend, resolution, xstart, xend, ystart, yend, zstart, zend ):
     """Return true if the specified range of values is inside the timeseries cube"""
 
-    [xmax, ymax] = self.imagesz [ resolution ]
+    [xstart, ystart, zstart ] = corner
+    xend = xstart + dim[0]
+    yend = ystart + dim[1]
+    zend = zstart + dim[2]
 
     if ( ( xstart >= 0 ) and ( xstart < xend) and ( xend <= self.imagesz[resolution][0] ) and\
         ( ystart >= 0 ) and ( ystart < yend) and ( yend <= self.imagesz[resolution][1] ) and\
-        ( zstart >= self.slicerange[0] ) and ( zstart < zend) and ( zend <= (self.slicerange[1]+1) ) and\
+        ( zstart >= 0 ) and ( zstart < zend) and ( zend <= self.imagesz[resolution][2]) and\
         ( tstart >= self.timerange[0] ) and ( tstart < tend ) and ( tend <= (self.timerange[1]+1) ) )  :
       return True
     else:
@@ -275,7 +319,7 @@ class OCPCADataset:
   #  Return the image size
   #
   def imageSize ( self, resolution ):
-    return  [ self.imagesz [resolution], self.slicerange ]
+    return ( self.imagesz [resolution] )
 
 
 class OCPCAProjectsDB:
@@ -325,13 +369,19 @@ class OCPCAProjectsDB:
   #
   # Create a new dataset
   #
-  def newDataset ( self, dsname, ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale, startwindow, endwindow, starttime, endtime ):
+  def newDataset ( self, dsname, imagesz, offset, voxelres, scalinglevels, scalingoption, startwindow, endwindow, starttime, endtime ):
     """ Create a new ocpca dataset """
 
-    sql = "INSERT INTO {0} (dataset, ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale, startwindow, endwindow, starttime, endtime) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',{5},\'{6}\',\'{7}\', \'{8}\',\'{9}\','{10}\','{11}\')".format (\
-       ocpcaprivate.datasets, dsname, ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale, startwindow, endwindow, starttime, endtime )
+    (ximagesz, yimagesz, zimagesz) = imagesz
+    (xoffset, yoffset, zoffset) = offset
+    (xvoxelres, yvoxelres, zvoxelres) = voxelres
+
+    sql = "INSERT INTO {0} (dataset, ximagesize, yimagesize, zimagesize, xoffset, yoffset, zoffset, xvoxelres, yvoxelres, zvoxelres, scalinglevels, scalingoption, startwindow, endwindow, starttime, endtime) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',\'{5}\',\'{6}\',\'{7}\',\'{8}\',\'{9}\',\'{10}\',\'{11}\',\'{12}\',\'{13}\',\'{14}\',\'{15}\',\'{16}\')".format (\
+       ocpcaprivate.datasets, dsname, ximagesz, yimagesz, zimagesz, xoffset, yoffset, zoffset, xvoxelres, yvoxelres, zvoxelres, scalinglevels, scalingoption, startwindow, endwindow, starttime, endtime )
 
     logger.info ( "Creating new dataset. Name %s. SQL=%s" % ( dsname, sql ))
+
+    import pdb; pdb.set_trace()
 
     with closing(self.conn.cursor()) as cursor:
       try:
@@ -352,8 +402,8 @@ class OCPCAProjectsDB:
 
     datasetcfg = self.loadDatasetConfig ( dataset )
 
-    sql = "INSERT INTO {0} (token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions, resolution, public, kvserver, kvengine, propagate) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',{5},\'{6}\',\'{7}\',\'{8}\',\'{9}\',\'{10}\',\'{11}\',\'{12}',\'{13}',\'{14}')".format (\
-       ocpcaprivate.projects, token, openid, dbhost, project, dbtype, dataset, dataurl, int(readonly), int(exceptions), resolution, int(public), kvserver, kvengine, propagate )
+    sql = "INSERT INTO {0} (token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions, resolution, public, kvserver, kvengine, propagate) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',{5},\'{6}\',\'{7}\',\'{8}\',\'{9}\',\'{10}\',\'{11}\',\'{12}\',\'{13}\',\'{14}\')".format (\
+       ocpcaprivate.projects, token, openid, dbhost, project, dbtype, dataset, dataurl, int(readonly), int(exceptions), resolution, int(public), kvserver, kvengine, int(propagate) )
 
     logger.info ( "Creating new project. Host %s. Project %s. SQL=%s" % ( dbhost, project, sql ))
 
@@ -596,8 +646,7 @@ class OCPCAProjectsDB:
 
   def loadDatasetConfig ( self, dataset ):
     """Query the database for the dataset information and build a db configuration"""
-    sql = "SELECT ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale, startwindow, endwindow, starttime, endtime from {} where dataset = \'{}\'".format( ocpcaprivate.datasets, dataset )
-
+    sql = "SELECT ximagesize, yimagesize, zimagesize, xoffset, yoffset, zoffset, xvoxelres, yvoxelres, zvoxelres, scalinglevels, scalingoption, startwindow, endwindow, starttime, endtime from {} where dataset = \'{}\'".format( ocpcaprivate.datasets, dataset )
 
     with closing(self.conn.cursor()) as cursor:
       try:
@@ -615,8 +664,8 @@ class OCPCAProjectsDB:
       logger.warning ( "Dataset %s not found." % ( dataset ))
       raise OCPCAError ( "Dataset %s not found." % ( dataset ))
 
-    [ ximagesz, yimagesz, startslice, endslice, zoomlevels, zscale, startwindow, endwindow, starttime, endtime ] = row
-    return OCPCADataset ( int(ximagesz), int(yimagesz), int(startslice), int(endslice), int(zoomlevels), float(zscale), int(startwindow), int(endwindow), int(starttime), int(endtime) ) 
+    [ ximagesz, yimagesz, zimagesz, xoffset, yoffset, zoffset, xvoxelres, yvoxelres, zvoxelres, scalinglevels, scalingoption, startwindow, endwindow, starttime, endtime ] = row
+    return OCPCADataset ( (int(ximagesz),int(yimagesz),int(zimagesz)), (int(xoffset),int(yoffset),int(zoffset)), (int(xvoxelres),int(yvoxelres),int(zvoxelres)), int(scalinglevels), int(scalingoption), int(startwindow), int(endwindow), int(starttime), int(endtime) ) 
 
 
   #
