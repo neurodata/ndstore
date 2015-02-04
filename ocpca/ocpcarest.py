@@ -520,7 +520,7 @@ def selectService ( webargs, proj, db ):
 #
 def selectPost ( webargs, proj, db, postdata ):
   """Parse the first arg and call the right post service"""
-
+ 
   [ service, sym, postargs ] = webargs.partition ('/')
 
   # Don't write to readonly projects
@@ -629,21 +629,34 @@ def selectPost ( webargs, proj, db, postdata ):
         
       db.commit()
       done=True
+      tmpfile.close()
+      h5f.flush()
+      h5f.close()
 
     # rollback if you catch an error
     except MySQLdb.OperationalError, e:
       logger.warning ("Transaction did not complete. %s" % (e))
       tries += 1
       db.rollback()
+      tmpfile.close()
+      h5f.flush()
+      h5f.close()
       continue
     except MySQLdb.Error, e:
       logger.warning ("POST transaction rollback. %s" % (e))
       db.rollback()
+      tmpfile.close()
+      h5f.flush()
+      h5f.close()
       raise
     except Exception, e:
       logger.exception ("POST transaction rollback. %s" % (e))
       db.rollback()
+      tmpfile.close()
+      h5f.flush()
+      h5f.close()
       raise
+    
 
   return str(entityid)
 
@@ -1226,19 +1239,28 @@ def putAnnotation ( webargs, postdata ):
           logger.warning (" Put Anntotation: Transaction did not complete. %s" % (e))
           tries += 1
           db.rollback()
+          tmpfile.close()
+          h5f.flush()
+          h5f.close()
           continue
         except MySQLdb.Error, e:
           logger.warning ("Put Annotation :Put transaction rollback. %s" % (e))
           db.rollback()
+          tmpfile.close()
+          h5f.flush()
+          h5f.close()
           raise
         except Exception, e:
           logger.exception ("Put Annotation:Put transaction rollback. %s" % (e))
           db.rollback()
+          tmpfile.close()
+          h5f.flush()
+          h5f.close()
           raise
 
         # Commit if there is no error
         db.commit()
-
+        
   finally:
     h5f.close()
     tmpfile.close()
@@ -1605,17 +1627,28 @@ def merge ( webargs ):
   
   # Make ids a numpy array to speed vectorize
   ids = np.array(ids,dtype=np.uint32)
+  # Validate ids . IF ids do not exist raise errors
 
   [ db, proj, projdb ] = loadDBProj ( token )
-  #mergetype = rest
+  
+  #Check that all ids in the id strings are valid annotation objects
+  for curid in ids:
+    obj = db.getAnnotation(curid)
+    if obj == None:
+      logger.warning("Invalid object id {} used in merge".format(curid))
+      raise OCPCAError("Invalid object id used in merge")
+
+
   [mergetype,resolution] = rest.split('/',1)
   if mergetype == "global":
-    if resolution != '':
+    if resolution != "":
       [resolution,extra] = resolution.split('/')
-    return db.mergeGlobal(ids, mergetype, resolution)
+    else:
+      resolution=proj.getResolution()
+    return db.mergeGlobal(ids, mergetype, int(resolution))
   else:
     [mergetype, imageargs] = mergetype.split ('/',1)
-    print mergetype
+
     
     if mergetype == "2D":
       slicenum = imageargs.strip('/')
@@ -1624,7 +1657,7 @@ def merge ( webargs ):
     elif mergetype == "3D":
       # 3d merge 
       imageargs = "1/"+ imageargs
-      print imageargs
+
       # Perform argument processing for the bounding box
       try:
         args = restargs.BrainRestArgs ();
@@ -1636,10 +1669,6 @@ def merge ( webargs ):
       corner = args.getCorner()
       dim = args.getDim()
       resolution = args.getResolution()
-      
-      print corner
-      print dim
-      print resolution
       
       # Perform the relabeling
      # cube = db.cutout ( corner, dim, resolution, channel )
