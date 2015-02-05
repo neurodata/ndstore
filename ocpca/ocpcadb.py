@@ -1400,18 +1400,20 @@ class OCPCADB:
     # xyz offset stored for later use
     lowxyz = ocplib.MortonXYZ ( listofidxs[0] )
 
+    bigCube = np.zeros ( ( (timerange[1]-timerange[0],)+outcube.data.shape ), dtype=outcube.data.dtype)
     self.kvio.startTxn()
 
     try:
 
+      print listofidxs
       for idx in listofidxs:
 
         cuboids = self.kvio.getTimeSeriesColumn (idx, range(timerange[0],timerange[1]), resolution)
         
         # use the batch generator interface
-        for idx, datastring in cuboids:
+        for idx, timestamp, datastring in cuboids:
 
-          #add the query result cube to the bigger cube
+          # add the query result cube to the bigger cube
           curxyz = ocplib.MortonXYZ(int(idx))
           offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
 
@@ -1430,7 +1432,9 @@ class OCPCADB:
               h5.close()
 
           # add it to the output cube
-          outcube.addData_new ( incube, offset ) 
+          outcube.addData_new ( incube, offset )
+          print idx, outcube.data.shape
+          bigCube[timestamp,:,:,:] = outcube.data
 
     except:
       self.kvio.rollback()
@@ -1442,9 +1446,14 @@ class OCPCADB:
     if dim[0] % xcubedim  == 0 and dim[1] % ycubedim  == 0 and dim[2] % zcubedim  == 0 and corner[0] % xcubedim  == 0 and corner[1] % ycubedim  == 0 and corner[2] % zcubedim  == 0:
       pass
     else:
-      outcube.trim ( corner[0]%xcubedim,dim[0],corner[1]%ycubedim,dim[1],corner[2]%zcubedim,dim[2] )
+      xoffset = corner[0]%xcubedim
+      yoffset = corner[1]%ycubedim
+      zoffset = corner[2]%zcubedim
+      bigCube = bigCube[:, zoffset:zoffset+dim[2], yoffset:yoffset+dim[1], xoffset:xoffset+dim[0]]
+      #outcube.trim ( corner[0]%xcubedim,dim[0],corner[1]%ycubedim,dim[1],corner[2]%zcubedim,dim[2] )
 
-    return outcube
+    #return outcube
+    return bigCube
 
   #
   # getVoxel -- return the identifier at a voxel

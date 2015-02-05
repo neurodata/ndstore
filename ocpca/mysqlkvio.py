@@ -287,7 +287,7 @@ class MySQLKVIO:
       cursor = self.txncursor
 
     # RBTODO need to fix this for neariso interfaces
-    sql = "SELECT zindex, cube FROM {} WHERE zindex={} and timestamp in (%s)".format( self.db.annoproj.getTable(resolution), idx )
+    sql = "SELECT zindex,timestamp,cube FROM {} WHERE zindex={} and timestamp in (%s)".format( self.db.annoproj.getTable(resolution), idx )
 
     # creats a %s for each list element
     in_p=', '.join(map(lambda x: '%s', listoftimestamps))

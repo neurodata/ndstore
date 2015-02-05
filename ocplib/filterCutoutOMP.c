@@ -42,6 +42,6 @@ void filterCutoutOMP ( uint32_t * cutout, int cutoutsize, uint32_t * filterlist,
 								cutout[i] = 0;
 				}
 		int ID = omp_get_thread_num();
-		printf("THREAD ID: %d",ID);
+		//printf("THREAD ID: %d",ID);
 		}
 }

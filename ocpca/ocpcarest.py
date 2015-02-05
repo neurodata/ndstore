@@ -78,6 +78,7 @@ def cutout ( imageargs, proj, db, channels=None ):
   zscaling = args.getZScaling()
 
   # Perform the cutout
+  import pdb; pdb.set_trace()
   cube = db.cutout ( corner, dim, resolution, channels, zscaling )
 
   print np.unique (cube.data)
@@ -133,6 +134,11 @@ def numpyZip ( imageargs, proj, db ):
       else:
         cubedata[i,:,:,:] = cutout ( imageargs, proj, db, chanids[i] ).data
 
+  # if it's a timeseries database
+  elif proj.getDBType() in ocpcaproj.TIMESERIES_DATASETS :
+
+    cubedata = TimeSeriesCutout ( imageargs, proj, db )
+  
   # single channel cutout
   else: 
     channel = None
@@ -204,8 +210,8 @@ def HDF5 ( imageargs, proj, db ):
       fh5out.create_dataset ( "CUTOUT", tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data )
     elif proj.getDBType() in ocpcaproj.TIMESERIES_DATASETS:
       cube = TimeSeriesCutout ( imageargs, proj, db )
-      FilterTimeCube (imageargs, cube )
-      fh5out.create_dataset ( "CUTOUT", tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data )
+      #FilterTimeCube ( imageargs, cube )
+      fh5out.create_dataset ( "CUTOUT", tuple(cube.shape), cube.dtype, compression='gzip', data=cube )
     else: 
       cube = cutout ( imageargs, proj, db, None )
       FilterCube (imageargs, cube )
@@ -221,7 +227,40 @@ def HDF5 ( imageargs, proj, db ):
   fh5out.close()
   tmpfile.seek(0)
   return tmpfile.read()
-  
+ 
+
+#
+# Return a Time Kernel
+#
+def TimeKernel ( imageargs, proj, db ):
+  """ Return a time kernel """
+
+   # Create an in-memory HDF5 file
+  tmpfile = tempfile.NamedTemporaryFile()
+  fh5out = h5py.File ( tmpfile.name )
+
+  try:
+    cube = TimeSeriesCutout ( imageargs, proj, db )
+    cutout = np.zeros( cube.data.shape, dtype = cube.data.dtype )
+    dims = cube.data.shape
+    for z in range ( cube.data.shape[0] ):
+      for y in range ( cube.data.shape[1] ):
+        for x in range ( cube.data.shape[2] ):
+          for t in range ( cube.data.shape[3] ):
+            cutout[z,y,x] += cube.data[t,z,y,x]
+        cutout[z,y,x] = cutout[z,y,x]/3
+
+
+    fh5out.create_dataset ( "KERNEL", tuple(cutout.shape), cutout.dtype,compression='gzip', data=cutout )
+    fh5out.create_dataset( "DATATYPE", (1,), dtype=np.uint32, data=proj._dbtype )
+
+  except restargs.RESTArgsError, e:
+    logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
+    raise OCPCAError(e.value)
+
+  fh5out.close()
+  tmpfile.seek(0)
+  return tmpfile.read()
 
 #
 #  Return a Timeseries Cutout as a HDF5 file
@@ -527,7 +566,7 @@ def selectService ( webargs, proj, db ):
     return imgAnno ( 'yz', rangeargs, proj, db )
 
   elif service == 'ts':
-    return TimeSeriesCutout ( rangeargs, proj, db )
+    return TimeKernel ( rangeargs, proj, db )
   
   else:
     logger.warning("An illegal Web GET service was requested %s.  Args %s" % ( service, webargs ))
