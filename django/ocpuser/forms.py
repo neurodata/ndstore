@@ -49,3 +49,22 @@ class UpdateProjectForm(forms.Form):
 #    })
 #    readonly = forms.ChoiceField(choices=[(x, x) for x in range(0, 2)])
 #    exceptions = forms.ChoiceField(choices=[(x, x) for x in range(0, 2)])
+
+
+class dataUserForm( forms.Form):
+     firstname = forms.CharField(max_length=200)
+     lastname = forms.CharField(max_length=200)
+     email = forms.CharField(max_length=800)
+     token = forms.CharField(max_length=200)
+     resolution = forms.IntegerField()
+     CHOICES = (
+         ('npz', 'NPZ'),
+         ('hdf5', 'HDF5'),
+         )
+     format = forms.ChoiceField(choices=CHOICES)
+     xmin=forms.IntegerField()
+     xmax=forms.IntegerField()
+     ymin=forms.IntegerField()
+     ymax=forms.IntegerField()
+     zmin=forms.IntegerField()
+     zmax=forms.IntegerField()
