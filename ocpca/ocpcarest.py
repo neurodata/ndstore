@@ -78,7 +78,6 @@ def cutout ( imageargs, proj, db, channels=None ):
   zscaling = args.getZScaling()
 
   # Perform the cutout
-  import pdb; pdb.set_trace()
   cube = db.cutout ( corner, dim, resolution, channels, zscaling )
 
   print np.unique (cube.data)
