@@ -27,7 +27,6 @@ import OCP.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
 from django.conf import settings
 
-
 import ocpcaproj
 import ocpcadb
 import zindex

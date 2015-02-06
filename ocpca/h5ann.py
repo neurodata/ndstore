@@ -118,8 +118,23 @@ class H5Annotation:
     self.idgrp.create_dataset ( "RESOLUTION", (1,), np.uint32, data=resolution )     
     self.idgrp.create_dataset ( "XYZOFFSET", (3,), np.uint32, data=corner )     
     if volume != None:
-      self.idgrp.create_dataset ( "CUTOUT", volume.shape, np.uint32, data=volume )     
-    
+      self.idgrp.create_dataset ( "CUTOUT", volume.shape, volume.dtype, data=volume )     
+
+  def mkCuboidGroup ( self, resolution ):
+    """Create the group to store cuboids"""
+    self.idgrp.create_dataset ( "RESOLUTION", (1,), np.uint32, data=resolution )     
+    self.cbgrp = self.idgrp.create_group( "CUBOIDS" )
+
+
+  def addCuboid ( self, offset, cbdata ):
+    """Add the cutout  to the HDF5 file"""
+
+    offgrp = self.cbgrp.create_group ( '{}'.format(offset) ) 
+
+    offgrp.create_dataset ( "XYZOFFSET", (3,), np.uint32, data=offset )     
+    offgrp.create_dataset ( "CUBOID", cbdata.shape, cbdata.dtype,  data=cbdata )     
+
+
   def addBoundingBox ( self, resolution, corner, dim ):
     """Add the cutout  to the HDF5 file"""
 
@@ -130,7 +145,7 @@ class H5Annotation:
 
 ############## Converting HDF5 to Annotations
 
-def H5toAnnotation ( key, idgrp ):
+def H5toAnnotation ( key, idgrp, annodb ):
   """Return an annotation constructed from the contents of this HDF5 file"""
 
   # get the annotation type
@@ -146,7 +161,7 @@ def H5toAnnotation ( key, idgrp ):
   if annotype == annotation.ANNO_SEED:
 
     # Create the appropriate annotation type
-    anno = annotation.AnnSeed()
+    anno = annotation.AnnSeed(annodb)
 
     # Load metadata if it exists
     if mdgrp:
@@ -167,7 +182,7 @@ def H5toAnnotation ( key, idgrp ):
   elif annotype == annotation.ANNO_SYNAPSE:
     
     # Create the appropriate annotation type
-    anno = annotation.AnnSynapse()
+    anno = annotation.AnnSynapse(annodb)
 
     # Load metadata if it exists
     if mdgrp:
@@ -188,7 +203,7 @@ def H5toAnnotation ( key, idgrp ):
   elif annotype == annotation.ANNO_SEGMENT:
     
     # Create the appropriate annotation type
-    anno = annotation.AnnSegment()
+    anno = annotation.AnnSegment(annodb)
 
     # Load metadata if it exists
     if mdgrp:
@@ -207,7 +222,7 @@ def H5toAnnotation ( key, idgrp ):
   elif annotype == annotation.ANNO_NEURON:
 
     # Create the appropriate annotation type
-    anno = annotation.AnnNeuron()
+    anno = annotation.AnnNeuron(annodb)
 
     # Load metadata if it exists
     if mdgrp:
@@ -218,7 +233,7 @@ def H5toAnnotation ( key, idgrp ):
   elif annotype == annotation.ANNO_ORGANELLE:
     
     # Create the appropriate annotation type
-    anno = annotation.AnnOrganelle()
+    anno = annotation.AnnOrganelle(annodb)
 
     # Load metadata if it exists
     if mdgrp:
@@ -235,7 +250,7 @@ def H5toAnnotation ( key, idgrp ):
   # No special action if it's a no type
   elif annotype == annotation.ANNO_ANNOTATION:
     # Just create a generic annotation object
-    anno = annotation.Annotation()
+    anno = annotation.Annotation(annodb)
 
   else:
     logger.warning ("Dont support this annotation type yet. Type = %s" % annotype)
@@ -294,6 +309,19 @@ def H5GetVolume ( h5fh ):
       raise OCPCAError("Improperly formatted HDF5 file.  XYZOFFSET define but no CUTOUT.")
   else:
     return None
+
+
+def H5getCuboids ( idgrp ):
+  """Generator function that returns XYZOFFSETS and CUBOIDS"""
+ 
+  cuboidsgrp = idgrp.get("CUBOIDS")
+  for k in cuboidsgrp:
+    corner = np.array(cuboidsgrp[k]["XYZOFFSET"])
+    cuboiddata = np.array(cuboidsgrp[k]['CUBOID'])
+    yield (corner, cuboiddata)
+  
+
+    
 
 ############## Converting Annotation to HDF5 ####################
 
@@ -383,7 +411,7 @@ def NeurontoH5 ( neuron, h5fh ):
   h5neuron = BasetoH5 ( neuron, annotation.ANNO_NEURON, h5fh )
 
   # Lists (as arrays)
-  if ( neuron.segments != [] ):
+  if ( neuron.segments != () ):
     h5neuron.mdgrp.create_dataset ( "SEGMENTS", (len(neuron.segments),), np.uint32, neuron.segments )
 
   return h5neuron
@@ -471,6 +499,3 @@ def h5toCSV ( h5f ):
         csvw.writerow ( [k, idgrp[k][:]] )
 
   return fstring.getvalue()
-
-
-

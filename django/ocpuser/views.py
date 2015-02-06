@@ -35,6 +35,8 @@ from models import ocpDataset
 from forms import CreateProjectForm
 from forms import CreateDatasetForm
 from forms import UpdateProjectForm
+from forms import dataUserForm
+
 from django.core.urlresolvers import get_script_prefix
 import os
 import subprocess
@@ -105,7 +107,6 @@ def profile(request):
         return redirect(updateproject)
       elif 'tokens' in request.POST:
       #View token for the project        
-        #import pdb;pdb.set_trace();
         print "in view tokens"
         projname = (request.POST.get('projname')).strip()
         print projname
@@ -147,7 +148,6 @@ def profile(request):
 
     else:
     # GET Option
-      #import pdb;pdb.set_trace()
       pd = ocpcaproj.OCPCAProjectsDB()
       openid = request.user.username
       databases = pd.getDatabases ( openid)
@@ -159,7 +159,6 @@ def profile(request):
       return render_to_response('profile.html', { 'databases': dbs.iteritems() },context_instance=RequestContext(request))
     
   except OCPCAError, e:
-    #import pdb;pdb.set_trace();
     messages.error(request, e.value)
     pd = ocpcaproj.OCPCAProjectsDB()
     openid = request.user.username
@@ -222,7 +221,6 @@ def datasets(request):
 @login_required(login_url='/ocp/accounts/login/')
 def tokens(request):
   pd = ocpcaproj.OCPCAProjectsDB()  
-  #import pdb;pdb.set_trace();
   try:
     if request.method == 'POST':
       if 'filter' in request.POST:
@@ -283,11 +281,10 @@ def tokens(request):
 
 @login_required(login_url='/ocp/accounts/login/')
 def createproject(request):
-
+  
   if request.method == 'POST':
     if 'CreateProject' in request.POST:
       form = CreateProjectForm(request.POST)
-      #import pdb;pdb.set_trace()
       if form.is_valid():
         token = form.cleaned_data['token']
         host = form.cleaned_data['host']
@@ -295,6 +292,9 @@ def createproject(request):
         project = form.cleaned_data['project']
         dataset = form.cleaned_data['dataset']
         datatype = form.cleaned_data['datatype']
+        kvengine=form.cleaned_data['kvengine']
+        kvserver=form.cleaned_data['kvserver']
+        overlayproject=form.cleaned_data['overlayproject']
         nocreateoption = request.POST.get('nocreate')
         if nocreateoption =="on":
           nocreate = 1
@@ -305,12 +305,14 @@ def createproject(request):
         exceptions = form.cleaned_data['exceptions']
         openid = request.user.username
         resolution =form.cleaned_data['resolution']
+        public =form.cleaned_data['public']
+        propogate =form.cleaned_data['propogate']
         print "Creating a project with:"
         print token, project, dataset, dataurl,readonly, exceptions, openid , resolution
         # Get database info                
         try:
           pd = ocpcaproj.OCPCAProjectsDB()
-          pd.newOCPCAProj ( token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate, int(resolution) )
+          pd.newOCPCAProj ( token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate, int(resolution), int(public),kvserver,kvengine ,propogate)
           #pd.insertTokenDescription ( token, description )
           return redirect(profile)          
         except OCPCAError, e:
@@ -339,7 +341,6 @@ def createdataset(request):
       form = CreateDatasetForm(request.POST)
       if form.is_valid():
         dataset = form.cleaned_data['dataset']
-
         description = form.cleaned_data['description']
         ximagesize = form.cleaned_data['ximagesize']
         yimagesize = form.cleaned_data['yimagesize']
@@ -347,12 +348,15 @@ def createdataset(request):
         endslice = form.cleaned_data['endslice']
         zoomlevels = form.cleaned_data['zoomlevels']
         zscale = form.cleaned_data['zscale']
-
+        startwindow = form.cleaned_data['startwindow']
+        endwindow = form.cleaned_data['endwindow']
+        starttime = form.cleaned_data['starttime']
+        endtime = form.cleaned_data['endtime']
         print "Creating a dataset with:"
         print dataset, ximagesize, yimagesize, startslice,endslice,zoomlevels,zscale
         # Get database info                                                                      
         pd = ocpcaproj.OCPCAProjectsDB()
-        pd.newDataset ( dataset, ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale )        
+        pd.newDataset ( dataset, ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale, startwindow, endwindow ,starttime,endtime)        
 #pd.newOCPCAProj ( token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate )
         #pd.insertTokenDescription ( token, description )
         return redirect(datasets)
@@ -381,7 +385,6 @@ def updateproject(request):
     if 'UpdateProject' in request.POST:
       form = UpdateProjectForm(request.POST)
       if form.is_valid():
-#        import pdb;pdb.set_trace();
         curtoken = form.cleaned_data['currentToken']
         newtoken = form.cleaned_data['newToken']
         description = form.cleaned_data['description']
@@ -471,3 +474,53 @@ def restore(request):
       file_list={}
     context = Context({'form': form, 'flist': file_list})
     return render_to_response('restoreproject.html',context,context_instance=RequestContext(request))
+
+
+def downloaddata(request):
+  
+  try:
+    pd = ocpcaproj.OCPCAProjectsDB()
+    
+    if request.method == 'POST':
+      #import pdb;pdb.set_trace()                                                       
+      form= dataUserForm(request.POST)
+      if form.is_valid():
+        curtoken=request.POST.get('token')
+        if curtoken=="other":
+          curtoken=request.POST.get('other')
+          
+        format = form.cleaned_data['format']
+        resolution = form.cleaned_data['resolution']
+        xmin=form.cleaned_data['xmin']
+        xmax=form.cleaned_data['xmax']
+        ymin=form.cleaned_data['ymin']
+        ymax=form.cleaned_data['ymax']
+        zmin=form.cleaned_data['zmin']
+        zmax=form.cleaned_data['zmax']
+        webargs= curtoken+"/"+format+"/"+str(resolution)+"/"+str(xmin)+","+str(xmax)+"/"+str(ymin)+","+str(ymax)+"/"+str(zmin)+","+str(zmax)+"/"
+          
+        if format=='hdf5':
+          return django.http.HttpResponse(ocpcarest.getCutout(webargs), mimetype="product/hdf5" )
+        elif format=='npz':
+          return django.http.HttpResponse(ocpcarest.getCutout(webargs), mimetype="product/npz" )
+        else:
+          return django.http.HttpResponse(ocpcarest.getCutout(webargs), mimetype="product/zip" )
+          
+      else:
+        return redirect(downloaddata)
+        #return render_to_response('download.html',context_instance=RequestContext(request))
+    else:
+      # Load Download page with public tokens                                           
+      pd = ocpcaproj.OCPCAProjectsDB()
+      form = dataUserForm()
+      tokens = pd.getPublic ()
+      context = {'form': form ,'publictokens': tokens}
+      return render_to_response('download.html',context,context_instance=RequestContext(request))
+      #return render_to_response('download.html', { 'dts': datasets },context_instance=\
+          #         RequestContext(request))                                                                
+  except OCPCAError, e:
+    #return django.http.HttpResponseNotFound(e.value)                                   
+    messages.error(request, e.value)
+    #form = dataUserForm()                                                              
+    tokens = pd.getPublic ()
+    return redirect(downloaddata)

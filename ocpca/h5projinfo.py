@@ -37,6 +37,7 @@ def h5ChannelsInfo ( db, h5f ):
 
 def h5ProjInfo ( proj, h5f ):
   """Populate the HDF5 file with project attributes"""
+  
   projgrp = h5f.create_group ( 'PROJECT' )
   projgrp.create_dataset ( "NAME", (1,), dtype=h5py.special_dtype(vlen=str), data=proj._dbname )
   projgrp.create_dataset ( "HOST", (1,), dtype=h5py.special_dtype(vlen=str), data=proj._dbhost )
@@ -46,6 +47,9 @@ def h5ProjInfo ( proj, h5f ):
   projgrp.create_dataset ( "READONLY", (1,), dtype=bool, data=(False if proj._readonly==0 else True))
   projgrp.create_dataset ( "EXCEPTIONS", (1,), dtype=bool, data=(False if proj._exceptions==0 else True))
   projgrp.create_dataset ( "RESOLUTION", (1,), dtype=np.uint8, data=proj._resolution)
+  #projgrp.create_dataset ( "KNENGINE", (1,), dtype=h5py.special_dtype(vlen=str), data=proj._kvserver )
+  #projgrp.create_dataset ( "KVSERVER", (1,), dtype=h5py.special_dtype(vlen=str), data=proj._kvengine )
+  projgrp.create_dataset ( "PROPAGATE", (1,), dtype=np.uint8, data=proj._propagate)
 
 
 def h5DatasetInfo ( dataset, h5f ):
@@ -66,6 +70,8 @@ def h5DatasetInfo ( dataset, h5f ):
   isgrp = dcfggrp.create_group ( 'ISOTROPIC_SLICERANGE' )
   for k,v, in dataset.isoslicerange.iteritems():
     isgrp.create_dataset ( str(k), data=v )
+  dcfggrp.create_dataset ( "WINDOWRANGE", data=dataset.windowrange )
+  dcfggrp.create_dataset ( "TIMERANGE", data=dataset.timerange )
 
 
 def h5Info ( proj, db, h5f ):

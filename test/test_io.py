@@ -24,12 +24,18 @@ import csv
 import numpy as np
 import zlib
 import pytest
+from contextlib import closing
 
 from pytesthelpers import makeAnno
+
+sys.path += [os.path.abspath('../django')]
+import OCP.settings
+os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
+from django.conf import settings
+
 import ocpcaproj
 
-import ocppaths
-
+import kvengine_to_test
 import site_to_test
 SITE_HOST = site_to_test.site
 
@@ -50,6 +56,7 @@ class ReadParms:
   cutout = None
   tightcutout = False
   boundingbox = False
+  cuboids = False
 
 def readAnno ( params ):
   """Modified version of annoread that takes the following dictionary
@@ -72,6 +79,8 @@ def readAnno ( params ):
     url = "http://%s/ca/%s/%s/cutout/%s/" % (params.baseurl,params.token,params.annids, params.resolution)
   elif params.boundingbox: 
     url = "http://%s/ca/%s/%s/boundingbox/%s/" % (params.baseurl,params.token,params.annids, params.resolution)
+  elif params.cuboids: 
+    url = "http://%s/ca/%s/%s/cuboids/%s/" % (params.baseurl,params.token,params.annids, params.resolution)
   else:
     url = "http://%s/ca/%s/%s/" % (params.baseurl,params.token,params.annids)
 
@@ -277,6 +286,7 @@ class WriteParms:
   exception = False
   overwrite = False
   shave = False
+  cuboids = False
 
 def writeAnno ( params ): 
   """Write an annotation derived from annowrite"""
@@ -299,11 +309,18 @@ def writeAnno ( params ):
     # don't test kvpairs, that's part of test_ramon
     h5ann.addAnno ( anntype, annid, None )
 
+#RBTODO need to implement addCuboids somehow
+#    # craete cuboids from a cutout
+#    if params.cuboids
+#      h5ann.addCuboids ( cutout )
+
+#    elif params.cutout:
     if params.cutout:
       if params.voxels:
         h5ann.addVoxels ( annid, params.cutout )
       else:
         h5ann.addCutout ( annid, params.cutout )
+
 
   # get the file handle
   fileobj = h5ann.getFileObject()
@@ -347,6 +364,20 @@ def countVoxels ( annid, h5 ):
   return 0
 
 
+def countCuboidVoxels ( annid, h5 ):
+  """Count the number of voxels in an HDF5 file for an annotation id"""
+
+  voxsum = 0
+  keys = h5.keys()
+  for k in keys:
+    if int(k) == int(annid):
+      cbgrp = h5[k]['CUBOIDS']
+      for cb in cbgrp.keys():
+        voxsum += len(np.nonzero(np.array(cbgrp[cb]['CUBOID'][:,:,:]))[0])
+
+  return voxsum
+
+
 class TestRW:
 
 # Per method setup/teardown
@@ -357,13 +388,94 @@ class TestRW:
 
   def setup_class(self):
     """Create the unittest database"""
-    
-    self.pd = ocpcaproj.OCPCAProjectsDB()
-    self.pd.newOCPCAProj ( 'unittest_rw', 'test', 'localhost', 'unittest_rw', 2, 'kasthuri11', None, False, True, False, 0 )
+
+    with closing ( ocpcaproj.OCPCAProjectsDB() ) as pd:
+      try: 
+        pd.newOCPCAProj ( 'unittest_rw', 'test', 'localhost', 'unittest_rw', 2, 'kasthuri11', None, False, True, False, 0, 0, kvengine_to_test.kvserver, kvengine_to_test.kvengine, 0 )
+      except:
+        pd.deleteOCPCADB ('unittest_rw')
 
   def teardown_class (self):
     """Destroy the unittest database"""
-    self.pd.deleteOCPCADB ('unittest_rw')
+    with closing ( ocpcaproj.OCPCAProjectsDB() ) as pd:
+      pd.deleteOCPCADB ('unittest_rw')
+
+
+  def test_raw(self):
+    """npz upload/download"""
+
+    rp = ReadParms()
+    wp = WriteParms()
+
+    # read
+    rp.token = "unittest_rw"
+    rp.baseurl = SITE_HOST
+    rp.resolution = 0
+
+    # write
+    wp.token = "unittest_rw"
+    wp.baseurl = SITE_HOST
+    wp.resolution = 0
+
+    # Create an annotation
+    wp.numobjects = 1
+    retval = writeAnno(wp) 
+    assert int(retval) >= 1
+
+    wp.annid = int(retval)
+    wp.resolution = 0
+
+    # upload an npz dense
+#    annodata = np.random.random_integers ( 0, 65535, [ 2, 50, 50 ] )
+    annodata = np.ones ( [ 2, 50, 50 ] ) * random.randint(0,65535)
+
+    url = 'http://%s/ca/%s/npz/%s/%s,%s/%s,%s/%s,%s/' % ( wp.baseurl, wp.token, wp.resolution, 200, 250, 200, 250, 200, 202 )
+
+    # Encode the voxelist as a pickle
+    fileobj = cStringIO.StringIO ()
+    np.save ( fileobj, annodata )
+    cdz = zlib.compress (fileobj.getvalue())
+
+    # Build the post request
+    req = urllib2.Request(url, cdz)
+    response = urllib2.urlopen(req)
+
+    # Get annotation in question
+    f = urllib2.urlopen ( url )
+
+    rawdata = zlib.decompress ( f.read() )
+    fileobj = cStringIO.StringIO ( rawdata )
+    voxarray = np.load ( fileobj )
+
+    # check that the return matches the post
+    assert ( np.array_equal(voxarray, annodata) )
+
+    # now as an HDF5 file
+    url = 'http://%s/ca/%s/hdf5/%s/%s,%s/%s,%s/%s,%s/' % ( wp.baseurl, wp.token, wp.resolution, 200, 250, 200, 250, 300, 302 )
+
+    # Create an in-memory HDF5 file
+    tmpfile = tempfile.NamedTemporaryFile ()
+    fh5out = h5py.File ( tmpfile.name )
+
+    ds = fh5out.create_dataset ( "CUTOUT", tuple(annodata.shape), annodata.dtype, compression='gzip', data=annodata )
+
+    fh5out.close()
+    tmpfile.seek(0)
+
+    # Build the post request
+    req = urllib2.Request(url, tmpfile.read())
+    response = urllib2.urlopen(req)
+
+    # and read it
+    # Read into a temporary file
+    f = urllib2.urlopen ( url )
+    tmpfile = tempfile.NamedTemporaryFile ( )
+    tmpfile.write ( f.read() )
+    tmpfile.seek(0)
+    h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
+  
+    # check that the return matches the post
+    assert ( np.array_equal(np.array(h5f['CUTOUT']), annodata))
 
   def test_batch(self):
     """Batch interface"""
@@ -472,8 +584,6 @@ class TestRW:
     h5r = readAnno(rp)
     assert countVoxels ( retval, h5r ) == 100*100*1
 
-    #TODO read it as a range with cutout
-
     # Write one object as a cutout
     wp.voxels=False
     retval = writeAnno ( wp ) 
@@ -490,6 +600,67 @@ class TestRW:
     rp.tightcutout = True
     h5r = readAnno(rp)
     assert countVoxels ( retval, h5r ) == 100*100*1
+
+
+  def test_cuboids(self):
+    """Cuboids read/write interfaces"""
+
+    rp = ReadParms()
+    wp = WriteParms()
+
+    # variables for all tests
+    # read
+    rp.token = "unittest_rw"
+    rp.baseurl = SITE_HOST
+    rp.resolution = 1
+
+    # write
+    wp.token = "unittest_rw"
+    wp.baseurl = SITE_HOST
+    wp.resolution = 1
+
+
+
+#RBTODO need to remove this stuff and actual add the cuboids to writeAnno
+#    
+#    # now try the cuboids interface
+#    # WRite two small regions
+#    wp.cutout = "1/200,210/200,210/101,102"
+#    retval = writeAnno ( wp ) 
+#    assert int(retval) >= 1
+#
+#    wp.cutout = "1/300,310/300,310/301,302"
+#    wp.update = True
+#    wp.annid = int(retval)
+#    retval = writeAnno ( wp ) 
+#    assert int(retval) == wp.annid
+#
+#    # Read them as an HDF5 file
+#    rp.cuboids = True
+#    rp.annids = int(retval)
+#    rp.voxels = False
+#    h5r = readAnno(rp)
+#    assert ( countCuboidVoxels(rp.annids,h5r) == 200 )
+#
+#    # write the file --- have to do this here. not part of wp
+#    # change the annotation identifier
+#    # RBTODO
+#    # post the HDF5 file
+#    url = "http://%s/ca/%s/" % (wp.baseurl,wp.token )
+#    h5r.tmpfile.seek(0)
+#    # return and file object to be posted
+#    try:
+#      req = urllib2.Request ( url, h5r.tmpfile.read()) 
+#      response = urllib2.urlopen(req)
+#    except urllib2.URLError, e:
+#      assert 0
+#    assert response >= 1
+#    
+#    # Read it back to make sure that it's correct
+#    rp.voxels = True
+#    h5r2 = readAnno(rp)
+#    assert ( countCuboidVoxels(rp.annids,h5r) == 200 )
+
 
   def test_update(self):
     """Updates"""
@@ -636,76 +807,4 @@ class TestRW:
     h5r = readAnno(rp)
     assert countVoxels ( retval, h5r ) == 2*50*50*2
 
-  def test_npz(self):
-    """npz upload/download"""
-
-    rp = ReadParms()
-    wp = WriteParms()
-
-    # read
-    rp.token = "unittest_rw"
-    rp.baseurl = SITE_HOST
-    rp.resolution = 0
-
-    # write
-    wp.token = "unittest_rw"
-    wp.baseurl = SITE_HOST
-    wp.resolution = 0
-
-    # Create an annotation
-    wp.numobjects = 1
-    retval = writeAnno(wp) 
-    assert int(retval) >= 1
-
-    wp.annid = int(retval)
-    wp.resolution = 0
-    
-    voxlist=[]
-
-
-# RBTODO PMTODO reinstate test as npz with a post
-
-# RB defunct npvoxels interface.  only upload through RAMON
-#    # upload an npz voxels list
-#    for k in range (100,102):
-#      for j in range (1000,1050):
-#        for i in range (1000,1050):
-#          voxlist.append ( [ i,j,k ] )
-#
-#    url = 'http://%s/ca/%s/npvoxels/%s/%s/' % ( wp.baseurl, wp.token, int(retval), wp.resolution)
-#
-#    # Encode the voxelist an pickle
-#    fileobj = cStringIO.StringIO ()
-#    np.save ( fileobj, voxlist )
-#
-#    # Build the post request
-#    req = urllib2.Request(url, fileobj.getvalue())
-#    response = urllib2.urlopen(req)
-#
-#    # Check that the combination of write + update sums
-#    rp.annids=int(retval)
-#    rp.voxels = True
-#    h5r = readAnno(rp)
-#    assert countVoxels ( retval, h5r ) == 50*50*2
-
-#    # upload an npz dense
-#    annodata = np.zeros( [ 2, 50, 50 ] )
-#    annodata = annodata + int(retval)
-#
-#    url = 'http://%s/ca/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( wp.baseurl, wp.token, wp.resolution, 200, 250, 200, 250, 200, 202 )
-#
-#    # Encode the voxelist as a pickle
-#    fileobj = cStringIO.StringIO ()
-#    np.save ( fileobj, annodata )
-#    cdz = zlib.compress (fileobj.getvalue())
-#
-#    # Build the post request
-#    req = urllib2.Request(url, cdz)
-#    response = urllib2.urlopen(req)
-#
-#    # Check that the combination of write + update sums
-#    rp.annids=int(retval)
-#    rp.voxels = True
-#    h5r = readAnno(rp)
-#    assert countVoxels ( retval, h5r ) == 2*50*50*2
 

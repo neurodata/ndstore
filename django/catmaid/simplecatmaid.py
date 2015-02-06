@@ -20,6 +20,8 @@ import cStringIO
 from PIL import Image
 import pylibmc
 import time
+import math
+from contextlib import closing
 
 import restargs
 import ocpcadb
@@ -32,10 +34,10 @@ from ocpca_cy import recolor_cy
 
 
 class SimpleCatmaid:
-  """Prefetch CATMAID tiles into MocpcacheDB"""
+  """ Prefetch CATMAID tiles into MocpcacheDB """
 
   def __init__(self):
-    """Bind the mocpcache"""
+    """ Bind the mocpcache """
 
     self.proj = None
     # make the mocpcache connection
@@ -49,8 +51,8 @@ class SimpleCatmaid:
     return 'simple/{}/{}/{}/{}/{}/{}'.format(self.token,self.tilesz,res,xtile,ytile,zslice)
 
 
-  def cacheMiss ( self, resolution, xtile, ytile, zslice ):
-    """On a miss. Cutout, return the image and load the cache in a background thread"""
+  def cacheMissXY ( self, resolution, xtile, ytile, zslice ):
+    """ On a miss. Cutout, return the image and load the cache in a background thread """
 
     # make sure that the tile size is aligned with the cubedim
     if self.tilesz % self.proj.datasetcfg.cubedim[resolution][0] != 0 or self.tilesz % self.proj.datasetcfg.cubedim[resolution][1]:
@@ -64,59 +66,124 @@ class SimpleCatmaid:
 
     # get an xy image slice
     imageargs = '{}/{},{}/{},{}/{}/'.format(resolution,xstart,xend,ystart,yend,zslice) 
-    cb = ocpcarest.xySlice ( imageargs, self.proj, self.db )
+    cb = ocpcarest.imgSlice ( "xy", imageargs, self.proj, self.db )
     if cb.data.shape != (1,self.tilesz,self.tilesz):
-      tiledata = np.zeros((self.tilesz,self.tilesz), cb.data.dtype )
-      tiledata[0:((yend-1)%self.tilesz+1),0:((xend-1)%self.tilesz+1)] = cb.data[0,:,:]
-    else:
-      tiledata = cb.data
+      tiledata = np.zeros((1,self.tilesz,self.tilesz), cb.data.dtype )
+      tiledata[0,0:((yend-1)%self.tilesz+1),0:((xend-1)%self.tilesz+1)] = cb.data[0,:,:]
+      cb.data = tiledata
 
-    # need to make polymorphic for different image types     
-    if tiledata.dtype == np.uint8:
-      outimage = Image.frombuffer ( 'L', (self.tilesz,self.tilesz), tiledata, 'raw', 'L', 0, 1 ) 
-    elif tiledata.dtype == np.uint32:
-      tiledata = tiledata.reshape([self.tilesz,self.tilesz])
-      recolor_cy (tiledata, tiledata)
-      outimage = Image.frombuffer ( 'RGBA', [self.tilesz,self.tilesz], tiledata, 'raw', 'RGBA', 0, 1 )
-    else:
-      #added by PJM to support probmap type.
-      tiledata = np.uint8(tiledata*256)
-      outimage = Image.frombuffer ( 'L', (self.tilesz,self.tilesz), tiledata, 'raw', 'L', 0, 1 ) 
-      #assert 0 
-      # need to fix here and add falsecolor args
+    return cb.xyImage()
 
-    return outimage
+
+  def cacheMissXZ ( self, resolution, xtile, yslice, ztile ):
+    """ On a miss. Cutout, return the image and load the cache in a background thread """
+
+    # make sure that the tile size is aligned with the cubedim
+    if self.tilesz % self.proj.datasetcfg.cubedim[resolution][1] != 0 or self.tilesz % self.proj.datasetcfg.cubedim[resolution][2]:
+      raise("Illegal tile size.  Not aligned")
+
+    # figure out the cutout (limit to max image size)
+    xstart = xtile*self.tilesz
+    xend = min ((xtile+1)*self.tilesz,self.proj.datasetcfg.imagesz[resolution][0])
+
+    # z cutouts need to get rescaled
+    #  we'll map to the closest pixel range and tolerate one pixel error at the boundary
+    scalefactor = self.proj.datasetcfg.zscale[resolution]
+    zoffset = self.proj.datasetcfg.slicerange[0]
+    ztilestart = int((ztile*self.tilesz)/scalefactor) + zoffset
+    zstart = max ( ztilestart, zoffset ) 
+    ztileend = int(math.ceil((ztile+1)*self.tilesz/scalefactor)) + zoffset
+    zend = min ( ztileend, self.proj.datasetcfg.slicerange[1]+1 )
+   
+    # get an xz image slice
+    imageargs = '{}/{},{}/{}/{},{}/'.format(resolution,xstart,xend,yslice,zstart,zend) 
+    cb = ocpcarest.imgSlice ( "xz", imageargs, self.proj, self.db )
+
+    # scale by the appropriate amount
+
+    if cb.data.shape != (ztileend-ztilestart,1,self.tilesz):
+      tiledata = np.zeros((ztileend-ztilestart,1,self.tilesz), cb.data.dtype )
+      tiledata[0:zend-zstart,0,0:((xend-1)%self.tilesz+1)] = cb.data[:,0,:]
+      cb.data = tiledata
+
+    return cb.xzImage( scalefactor )
+
+
+  def cacheMissYZ ( self, resolution, xslice, ytile, ztile ):
+    """ On a miss. Cutout, return the image and load the cache in a background thread """
+
+    # make sure that the tile size is aligned with the cubedim
+    if self.tilesz % self.proj.datasetcfg.cubedim[resolution][1] != 0 or self.tilesz % self.proj.datasetcfg.cubedim[resolution][2]:
+      raise("Illegal tile size.  Not aligned")
+
+    # figure out the cutout (limit to max image size)
+    ystart = ytile*self.tilesz
+    yend = min ((ytile+1)*self.tilesz,self.proj.datasetcfg.imagesz[resolution][1])
+
+    # z cutouts need to get rescaled
+    #  we'll map to the closest pixel range and tolerate one pixel error at the boundary
+    scalefactor = self.proj.datasetcfg.zscale[resolution]
+    zoffset = self.proj.datasetcfg.slicerange[0]
+    ztilestart = int((ztile*self.tilesz)/scalefactor) + zoffset
+    zstart = max ( ztilestart, zoffset ) 
+    ztileend = int(math.ceil((ztile+1)*self.tilesz/scalefactor)) + zoffset
+    zend = min ( ztileend, self.proj.datasetcfg.slicerange[1]+1 )
+
+    # get an yz image slice
+    imageargs = '{}/{}/{},{}/{},{}/'.format(resolution,xslice,ystart,yend,zstart,zend) 
+    cb = ocpcarest.imgSlice ( "yz", imageargs, self.proj, self.db )
+
+    # scale by the appropriate amount
+   
+    if cb.data.shape != (ztileend-ztilestart,self.tilesz,1):
+      tiledata = np.zeros((ztileend-ztilestart,self.tilesz,1), cb.data.dtype )
+      tiledata[0:zend-zstart,0:((yend-1)%self.tilesz+1),0] = cb.data[:,:,0]
+      cb.data = tiledata
+
+    return cb.yzImage( scalefactor )
 
 
   def getTile ( self, webargs ):
-    """Either fetch the file from mocpcache or get a mcfc image"""
-
+    """ Either fetch the file from mocpcache or get a mcfc image """
+    
     # parse the web args
-    self.token, tileszstr, resstr, xtilestr, ytilestr, zslicestr, rest = webargs.split('/',6)
+    self.token, slicetypestr, tileszstr, resstr, xtilestr, ytilestr, zslicestr, rest = webargs.split('/',7)
+    #[ self.db, self.proj, projdb ] = ocpcarest.loadDBProj ( self.token )
 
-    [ self.db, self.proj, projdb ] = ocpcarest.loadDBProj ( self.token )
+    with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+        self.proj = projdb.loadProject ( self.token )
+    
+    with closing ( ocpcadb.OCPCADB(self.proj) ) as self.db:
 
-    # convert args to ints
-    xtile = int(xtilestr)
-    ytile = int(ytilestr)
-    res = int(resstr)
-    # xyslice will modify zslice to the offset
-    zslice = int(zslicestr)
-    self.tilesz = int(tileszstr)
+        # convert args to ints
+        xvalue = int(xtilestr)
+        yvalue = int(ytilestr)
+        res = int(resstr)
+        # xyslice will modify zslice to the offset
+        zvalue = int(zslicestr)
+        self.tilesz = int(tileszstr)
 
-    # mocpcache key
-    mckey = self.buildKey(res,xtile,ytile,zslice)
+        # mocpcache key
+        mckey = self.buildKey(res,xvalue,yvalue,zvalue)
 
-    # do something to sanitize the webargs??
-    # if tile is in mocpcache, return it
-    tile = self.mc.get(mckey)
-    if tile == None:
-      img=self.cacheMiss(res,xtile,ytile,zslice)
-      fobj = cStringIO.StringIO ( )
-      img.save ( fobj, "PNG" )
-      self.mc.set(mckey,fobj.getvalue())
-    else:
-      fobj = cStringIO.StringIO(tile)
+        # do something to sanitize the webargs??
+        # if tile is in mocpcache, return it
+        tile = self.mc.get(mckey)
+        tile = None
+        if tile == None:
+          if slicetypestr == 'xy':
+            img=self.cacheMissXY(res,xvalue,yvalue,zvalue)
+          elif slicetypestr == 'xz':
+            img=self.cacheMissXZ(res,xvalue,yvalue,zvalue)
+          elif slicetypestr == 'yz':
+            img=self.cacheMissYZ(res,xvalue,yvalue,zvalue)
+          else:
+            assert 0 # RBTODO
+          fobj = cStringIO.StringIO ( )
+          img.save ( fobj, "PNG" )
+          self.mc.set(mckey,fobj.getvalue())
+        else:
+          fobj = cStringIO.StringIO(tile)
 
-    fobj.seek(0)
-    return fobj
+        fobj.seek(0)
+        return fobj

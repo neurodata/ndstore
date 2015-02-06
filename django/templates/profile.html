@@ -72,6 +72,8 @@
 		    <th>Project</th>
 		    <th>Type</th>
 		    <th>Description</th>
+		    <th>Propogate</th>
+
 		  </tr>	   
 		  
 		  {% for field in proj %}
@@ -84,19 +86,38 @@
 		      {% elif field.4 == 2%}
 		      <td>ANNOTATION</td>
 		      {% elif field.4 == 3%}
-		      <td>CHANNEL 8bit</td>
+		      <td>CHANNEL 16bit</td>		      
 		      {% elif field.4 == 4%}
-		      <td>CHANNEL 16bit</td>
+		      <td>CHANNEL 8bit</td>		      
 		      {% elif field.4 == 5%}
                       <td>PROBMAP 32bit</td>
 		      {% elif field.4 == 6%}
                       <td>BITMASK</td>
 		      {% elif field.4 == 7%}
                       <td>ANNOTATION 64bit</td>
+		      {% elif field.4 == 8%}
+                      <td>IMAGE 16bit</td>
+		      {% elif field.4 == 9%}
+                      <td>RGB 32bit</td>
+		      {% elif field.4 == 10%}
+                      <td>RGB 64bit</td>
+		      {% elif field.4 == 11%}
+                      <td>TIMESERIES_4d_8bit</td>
+		      {% elif field.4 == 12%}
+                      <td>TIMESERIES_4d_16bit</td>
+
+
 		      {% else %}
 		      <td>OTHER</td>
 		      {% endif %}
 		      <td colspan=50>{{ field.11 }}</td>
+		      {% if field.13 == 0 %}
+                      <td>NOT PROPOGATED</td>
+		      {% elif field.13 == 1%}
+                      <td>UNDER PROPOGATION</td>
+                      {% else %}
+                      <td>PROPOGATED</td>
+		      {% endif %}
 <!--		      <td><button class="btn" id="delete" type="submit" name="delete"> <i class ="icon-trash icon-black"></i>Delete Project</button></td>
 -->
 		      <td><button class="btn" id="backup" type="submit" name="backup"> <i class ="icon-inbox icon-black"></i>Backup Project</button></td>

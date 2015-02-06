@@ -13,10 +13,15 @@
 # limitations under the License.
 
 import argparse
-import empaths
+import os
 import sys
 
-import emcaproj
+sys.path += [os.path.abspath('../django')]
+import OCP.settings
+os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
+from django.conf import settings
+
+import ocpcaproj
 
 def main():
 
@@ -32,7 +37,7 @@ def main():
   result = parser.parse_args()
 
   # Get database info
-  pd = emcaproj.EMCAProjectsDB()
+  pd = ocpcaproj.OCPCAProjectsDB()
 
   pd.newDataset ( result.dsname, result.ximagesize, result.yimagesize, result.startslice, result.endslice, result.zoomlevels, result.zscale )
 

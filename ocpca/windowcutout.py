@@ -12,15 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import numpy as np
+
 #
-# Code to load project paths
+#   windowCutout
+#   Window image cutouts for datasets have low range of pixel values
+#   The following mathematical operation is performed
+#   below minWindow = 0, above maxWindow = 255
+#   outputVal = (inputVal - minWin)* (255/(maxWin - minWin))
 #
-
-import os, sys
-
-OCP_BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".." ))
-OCP_UTIL_PATH = os.path.join(OCP_BASE_PATH, "util" )
-OCP_OCPCA_PATH = os.path.join(OCP_BASE_PATH, "ocpca" )
-
-sys.path += [ OCP_UTIL_PATH, OCP_OCPCA_PATH ]
-
+def windowCutout ( cutout, window ):
+  """Window image cutouts for datasets that have low range of pixel values"""
+  
+  minWin, maxWin = window
+  np.clip( cutout, minWin, maxWin, out=cutout)
+  np.subtract( cutout, minWin, out=cutout)
+  np.multiply( cutout, 255.0/(maxWin-minWin), out=cutout)

@@ -19,14 +19,18 @@ import numpy as np
 import urllib, urllib2
 import cStringIO
 #from PIL import Image
-import cv2
 import zlib
 import MySQLdb
+from PIL import Image
 
-import empaths
-import emcaproj
-import emcachannel
-import emcadb
+sys.path += [os.path.abspath('../django')]
+import OCP.settings
+os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
+from django.conf import settings
+
+import ocpcaproj
+import ocpcachannel
+import ocpcadb
 import zindex
 
 """Construct an image hierarchy up from a given resolution"""
@@ -37,11 +41,11 @@ class ChanStack:
   def __init__(self, token):
     """Load the database and project"""
 
-    projdb = emcaproj.EMCAProjectsDB()
+    projdb = ocpcaproj.OCPCAProjectsDB()
     self.proj = projdb.loadProject ( token )
 
     # Bind the annotation database
-    self.chanDB = emcadb.EMCADB ( self.proj )
+    self.chanDB = ocpcadb.OCPCADB ( self.proj )
 
 
   def buildStack ( self, startlevel ):
@@ -65,10 +69,14 @@ class ChanStack:
 
         # Set the limits for iteration on the number of cubes in each dimension
         # RBTODO These limits may be wrong for even (see channelingest.py)
-        xlimit = ximagesz / xcubedim
-        ylimit = yimagesz / ycubedim
+        import pdb; pdb.set_trace()
+        xlimit = ( (ximagesz-1) / (xcubedim+1) )
+        xlimit = ( ximagesz / xcubedim )
+        ylimit = ( (yimagesz-1) / (ycubedim+1) )
+        ylimit2 = ( yimagesz / ycubedim )
         #  Round up the zlimit to the next larger
         zlimit = (((slices-1)/zcubedim+1)*zcubedim)/zcubedim 
+        ylimit = 16
 
         cursor = self.chanDB.conn.cursor()
 
@@ -78,6 +86,7 @@ class ChanStack:
             for x in range(xlimit):
 
               # cutout the data at the -1 resolution
+              print x,y,z
               olddata = self.chanDB.cutout ( [ x*2*xcubedim, y*2*ycubedim, z*zcubedim ], biggercubedim, l-1, chan ).data
               # target array for the new data (z,y,x) order
               newdata = np.zeros([zcubedim,ycubedim,xcubedim], dtype=np.uint16)
@@ -85,7 +94,9 @@ class ChanStack:
               for sl in range(zcubedim):
 
                 # resize the image
-                newimage = cv2.resize ( olddata[sl,:,:], (xcubedim,ycubedim) ) 
+                #newimage = cv2.resize ( olddata[sl,:,:], (xcubedim,ycubedim) ) 
+                slimage = Image.frombuffer ( 'I;16', (xcubedim*2,ycubedim*2), olddata[sl,:,:].flatten(), 'raw', 'I;16', 0, 1 ) 
+                newimage = slimage.resize ( [xcubedim,ycubedim] )
 
                 # Put to a new cube
                 newdata[sl,:,:] = np.asarray ( newimage )

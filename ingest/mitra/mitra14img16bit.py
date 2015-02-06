@@ -32,24 +32,15 @@ import zindex
 import glob
 import cv2
 
-import pdb
 #
 # ingest the tiff files into the database
 #
 
 """ This file is customized for Mitra's brain image data. \
-    It uses cv2 to read 16bit images and ingtest them in the \
+    It uses cv2 to read 16bit images and ingest them in the \
     OCP stack. Trying to make the script common for both 8-bit \
     and 16-bit
 """
-
-def tiff8bit():
-  """ Read a 8 bit Image """
-  return None
-
-def tiff16bit():
-  """ Read a 16bit Image """
-  return None
 
 def main():
 
@@ -77,7 +68,7 @@ def main():
   # Get a list of the files in the directories
   for sl in range (startslice, endslice+1, batchsz):
 
-    slab = np.zeros ( [ batchsz, yimagesz, ximagesz ], dtype=np.uint16 )
+    slab = np.zeros ( [ batchsz, yimagesz, ximagesz ], dtype=np.uint64 )
 
     for b in range ( batchsz ):
 
@@ -87,16 +78,16 @@ def main():
         try:
           filenm = result.path + '{:0>4}'.format(sl+b) + '.tiff'
           print "Opening filenm" + filenm
-          pdb.set_trace()
-          img = cv2.imread( filenm )
           
-          #img = Image.open (filenm, 'r')
-          #imgdata = np.asarray ( img )
-          #slab[b,:,:] = imgdata[:,:,0]
+          # Returns the image in BGR order. IN 8-bit script PIL returns it in correct order.
+          imgdata = cv2.imread( filenm, -1 )
+          if imgdata != None:
+            slab[b,:,:] = np.left_shift(65535, 48, dtype=np.uint64) | np.left_shift(imgdata[:,:,0], 32, dtype=np.uint64) | np.left_shift(imgdata[:,:,1], 16, dtype=np.uint64) | np.uint64(imgdata[:,:,2])
+          else:
+            slab[b,:,:] = np.zeros( [ yimagesz, ximagesz ], dtype=np.uint64)
         except IOError, e:
+          slab[b,:,:] = np.zeros( [ yimagesz, ximagesz ], dtype=np.uint64)
           print e
-          imgdata = np.zeros((yimagesz, ximagesz), dtype=np.uint16)
-          slab[b,:,:] = imgdata
 
         # the last z offset that we ingest, if the batch ends before batchsz
         endz = b
@@ -105,7 +96,7 @@ def main():
       for x in range ( 0, ximagesz+1, xcubedim ):
 
         mortonidx = zindex.XYZMorton ( [x/xcubedim, y/ycubedim, (sl-startslice)/zcubedim] )
-        cubedata = np.zeros ( [zcubedim, ycubedim, xcubedim], dtype=np.uint8 )
+        cubedata = np.zeros ( [zcubedim, ycubedim, xcubedim], dtype=np.uint64 )
 
         xmin = x
         ymin = y

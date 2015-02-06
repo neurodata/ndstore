@@ -32,14 +32,17 @@ logger=logging.getLogger("ocp")
 def projdict ( proj ):
 
   projdict = {}
-  projdict['dbname']=proj._dbname
-  projdict['host']=proj._dbhost
-  projdict['projecttype']=proj._dbtype
-  projdict['dataset']=proj._dataset
-  projdict['dataurl']=proj._dataurl
-  projdict['readonly']= (False if proj._readonly==0 else True)
-  projdict['exceptions']= (False if proj._exceptions==0 else True)
-  projdict['resolution']=proj._resolution
+  projdict['dbname'] = proj._dbname
+  projdict['host'] = proj._dbhost
+  projdict['projecttype'] = proj._dbtype
+  projdict['dataset'] = proj._dataset
+  projdict['dataurl'] = proj._dataurl
+  projdict['readonly'] = (False if proj._readonly==0 else True)
+  projdict['exceptions'] = (False if proj._exceptions==0 else True)
+  projdict['resolution'] = proj._resolution
+  projdict['kvengine'] = proj._kvengine
+  projdict['kvserver'] = proj._kvserver
+  projdict['propagate'] = proj._propagate
 
   return projdict
 
@@ -53,6 +56,8 @@ def datasetdict ( dataset ):
   dsdict['cube_dimension'] = dataset.cubedim
   dsdict['isotropic_slicerange'] = dataset.isoslicerange
   dsdict['neariso_scaledown'] = dataset.nearisoscaledown
+  dsdict['windowrange'] = dataset.windowrange
+  dsdict['timerange'] = dataset.timerange
 
   return dsdict
 

@@ -37,8 +37,8 @@ import kanno_cy
 # Stuff we make take from a config or the command line in the future
 _xtilesz = 10748
 _ytilesz = 12896
-_startslice = 0
-_endslice = 1850
+_startslice = 1840
+_endslice = 1849
 _prefix = 'Thousands_Bobbysdendrite_404_tb_export_s'
 #_batchsz = 16 
 _batchsz = 16 

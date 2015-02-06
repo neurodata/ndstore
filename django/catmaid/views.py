@@ -60,7 +60,7 @@ def colorcatmaidview (request, webargs):
 # simple per-tile interface
 def simplecatmaidview (request, webargs):
   """Convert a CATMAID request into an cutout."""
-
+  
   try:
     sc = simplecatmaid.SimpleCatmaid()
     imgfobj = sc.getTile(webargs)

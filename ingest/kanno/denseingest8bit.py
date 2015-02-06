@@ -25,18 +25,23 @@ import zlib
 
 import kanno_cy
 
+#
+#  This is for VAST exports that are 8-bit.
+#
 
-"""Ingest Mitra's data."""
-
+"""This file is super-customized for the kasthuri annotations data.
+     Probably the biggest idiosyncracy is the handling of slices.
+     They start at 1 and the database aligns slices 1..16, 17..32, etc.
+     So, we try to ingest in that pattern."""
 
 # Stuff we make take from a config or the command line in the future
-_xtilesz = 3072
-_ytilesz = 2048
-#  Haven't done from 0-1088 
-_startslice = 12
-_endslice = 16
-_prefix = ''
-_batchsz = 2
+_xtilesz = 10748
+_ytilesz = 12896
+_startslice = 1840 
+_endslice = 1849
+_prefix = 'Threecylinders_Synapses_forJHU_export_s'
+#_batchsz = 16 
+_batchsz = 16 
 
 # Shape that we want to ingest into the database.
 #  This should be aligned to the database cube size to perform best.
@@ -47,8 +52,9 @@ _xingestsz = 1024
 
 def main():
 
-  parser = argparse.ArgumentParser(description='Ingest Mitras dataset.')
+  parser = argparse.ArgumentParser(description='Ingest the kasthuri11 dataset annotations.')
   parser.add_argument('token', action="store", help='Token for the annotation project.')
+  parser.add_argument('resolution', action="store", help='Resolution of the ingest data.')
   parser.add_argument('path', action="store", help='Directory with annotation PNG files.')
   
   result = parser.parse_args()
@@ -56,26 +62,29 @@ def main():
   # Get a list of the files in the directories
   for sl in range (_startslice,_endslice+1,_batchsz):
 
-        newdata = np.zeros ( [ _batchsz*3, _ytilesz, _xtilesz ], dtype=np.uint32 )
+        # force the collection of the previous array.
+        newdata = None                   
+        data = None
+        import gc
+        gc.collect()
+
+        newdata = np.zeros ( [ _batchsz, _ytilesz, _xtilesz ], dtype=np.uint32 )
         for b in range ( _batchsz ):
-         for k in (1,2,3): 
+          if ( sl + b <= _endslice ):
 
-          if ( (sl+b)*3 <= _endslice*3 ):
-
-            filenm = result.path + '/' + '{:0>2}'.format(sl+b) + '_' + '{:0>2}'.format(k) + '.jpg'
+            filenm = result.path + '/' + _prefix + '{:0>4}'.format(sl+b) + '.png'
             print filenm
             tileimage = Image.open ( filenm, 'r' )
             imgdata = np.asarray ( tileimage )
 
-            newdata[b*3+(k-1),:,:]  = kanno_cy.pngto32 ( imgdata )
+            newdata[b,:,:] = imgdata
+            print np.unique(imgdata)
 
             # the last z offset that we ingest, if the batch ends before _batchsz
             endz = b
-
-        print np.nonzero(newdata)
-
-        zlow = sl*3
-        zhigh = (sl+b+1)*3
+    
+        zlow = sl+1
+        zhigh = sl+endz+2
         ylow = 0
         yhigh = _ytilesz
         xlow = 0
@@ -94,9 +103,9 @@ def main():
               # check if there's anything to store
               if ( np.count_nonzero(data) != 0 ):
 
-                url = 'http://localhost:8000/annotate/%s/npdense/0/%s,%s/%s,%s/%s,%s/' % ( result.token, x, min(xhigh,x+_xingestsz), y, min(yhigh,y+_yingestsz), z, min(zhigh,z+_zingestsz ))
+                url = 'http://localhost/ocp/ca/%s/npz/%s/%s,%s/%s,%s/%s,%s/' % ( result.token, result.resolution, x, min(xhigh,x+_xingestsz), y, min(yhigh,y+_yingestsz), z, min(zhigh,z+_zingestsz ))
 
-                print url, data.shape
+                print url
 
                 # Encode the voxelist an pickle
                 fileobj = cStringIO.StringIO ()
@@ -108,6 +117,8 @@ def main():
                 req = urllib2.Request(url, cdz)
                 response = urllib2.urlopen(req)
                 the_page = response.read()
+
+        
 
 
 if __name__ == "__main__":

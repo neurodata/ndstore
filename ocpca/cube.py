@@ -56,6 +56,18 @@ class Cube:
             = other.data [:,:,:]
 
   #
+  #  addData -- from another cube to this cube
+  #
+  def addData_new ( self, other, index ):
+    """Add data to a larger cube from a smaller cube"""
+
+    xoffset = index[0]*other.xdim
+    yoffset = index[1]*other.ydim
+    zoffset = index[2]*other.zdim
+
+    np.copyto ( self.data[zoffset:zoffset+other.zdim,yoffset:yoffset+other.ydim,xoffset:xoffset+other.xdim],other.data [:,:,:] )
+  
+  #
   # Trim off the excess data
   #
   def trim ( self, xoffset, xsize, yoffset, ysize, zoffset, zsize ):
@@ -66,9 +78,10 @@ class Cube:
   def fromNPZ ( self, pandz ):
     """Load the cube from a pickled and zipped blob"""
     try:
-      newstr = zlib.decompress ( pandz[:] )
-      newfobj = cStringIO.StringIO ( newstr )
-      self.data = np.load ( newfobj )
+      #newstr = zlib.decompress ( pandz[:] )
+      #newfobj = cStringIO.StringIO ( newstr )
+      #self.data = np.load ( newfobj )
+      self.data = np.load ( cStringIO.StringIO ( zlib.decompress ( pandz[:] ) ) )
     except:
       logger.error ("Failed to decompress database cube.  Data integrity concern.")
       raise
@@ -87,8 +100,6 @@ class Cube:
     except:
       logger.error ("Failed to compress database cube.  Data integrity concern.")
       raise
-
-
 
 # end cube
 

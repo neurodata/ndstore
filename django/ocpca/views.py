@@ -27,6 +27,12 @@ from ocpcaerror import OCPCAError
 import logging
 logger=logging.getLogger("ocp")
 
+
+GET_SLICE_SERVICES = ['xy', 'yz', 'xz']
+GET_ANNO_SERVICES = ['xyanno', 'yzanno', 'xzanno']
+POST_SERVICES = ['hdf5', 'npz', 'hdf5_async', 'propagate']
+
+
 def cutout (request, webargs):
   """Restful URL for all read services to annotation projects"""
 
@@ -36,15 +42,17 @@ def cutout (request, webargs):
   try:
     # GET methods
     if request.method == 'GET':
-      if service=='xy' or service=='yz' or service=='xz':
+      if service in GET_SLICE_SERVICES:
         return django.http.HttpResponse(ocpcarest.getCutout(webargs), mimetype="image/png" )
+      elif service == 'ts':
+        return django.http.HttpResponse(ocpcarest.getCutout(webargs), mimetype="product/hdf5" )
       elif service=='hdf5':
         return django.http.HttpResponse(ocpcarest.getCutout(webargs), mimetype="product/hdf5" )
       elif service=='npz':
         return django.http.HttpResponse(ocpcarest.getCutout(webargs), mimetype="product/npz" )
       elif service=='zip':
         return django.http.HttpResponse(ocpcarest.getCutout(webargs), mimetype="product/zip" )
-      elif service=='xyanno' or service=='yzanno' or service=='xzanno':
+      elif service in GET_ANNO_SERVICES:
         return django.http.HttpResponse(ocpcarest.getCutout(webargs), mimetype="image/png" )
       elif service=='id':
         return django.http.HttpResponse(ocpcarest.getCutout(webargs))
@@ -57,7 +65,7 @@ def cutout (request, webargs):
     # RBTODO control caching?
     # POST methods
     elif request.method == 'POST':
-      if service=='hdf5' or service=='npz':
+      if service in POST_SERVICES:
         django.http.HttpResponse(ocpcarest.putCutout(webargs,request.body))
         return django.http.HttpResponse ("Success", mimetype='text/html')
       else:
@@ -77,15 +85,20 @@ def cutout (request, webargs):
     raise
 
 
-@cache_control(no_cache=True)
+#@cache_control(no_cache=True)
 def annotation (request, webargs):
   """Get put object interface for RAMON objects"""
+
+  [token, sym, service] = webargs.partition('/')
 
   try:
     if request.method == 'GET':
       return django.http.HttpResponse(ocpcarest.getAnnotation(webargs), mimetype="product/hdf5" )
     elif request.method == 'POST':
-      return django.http.HttpResponse(ocpcarest.putAnnotation(webargs,request.body))
+      if service == 'hdf5_async':
+        return django.http.HttpResponse( ocpcarest.putAnnotationAsync(webargs,request.body) )
+      else:
+        return django.http.HttpResponse(ocpcarest.putAnnotation(webargs,request.body))
     elif request.method == 'DELETE':
       ocpcarest.deleteAnnotation(webargs)
       return django.http.HttpResponse ("Success", mimetype='text/html')
@@ -112,24 +125,7 @@ def csv (request, webargs):
   except:
     logger.exception("Unknown exception in csv.")
     raise
-      
-@cache_control(no_cache=True)
-def getObjects ( request, webargs ):
-  """Batch fetch of RAMON objects"""
 
-  try:
-    if request.method == 'GET':
-      raise OCPCAError ( "GET requested. objects Web service requires a POST of a list of identifiers.")
-    elif request.method == 'POST':
-      return django.http.HttpResponse(ocpcarest.getAnnotations(webargs,request.body), mimetype="product/hdf5") 
-    
-  except OCPCAError, e:
-    return django.http.HttpResponseNotFound(e.value)
-  except MySQLdb.Error, e:
-    return django.http.HttpResponseNotFound(e)
-  except:
-    logger.exception("Unknown exception in getObjects.")
-    raise
 
 @cache_control(no_cache=True)
 def queryObjects ( request, webargs ):
@@ -152,7 +148,7 @@ def queryObjects ( request, webargs ):
 
 def catmaid (request, webargs):
   """Convert a CATMAID request into an cutout."""
-
+  
   try:
     catmaidimg = ocpcarest.ocpcacatmaid_legacy(webargs)
 
@@ -283,6 +279,34 @@ def getField (request, webargs):
     return django.http.HttpResponseNotFound(e)
   except:
     logger.exception("Unknown exception in getField.")
+    raise
+
+#@cache_control(no_cache=True)
+def getPropagate (request, webargs):
+  """ Get the value for Propagate field for a given project """
+
+  try:
+    return django.http.HttpResponse(ocpcarest.getPropagate(webargs), mimetype="text/html" )
+  except OCPCAError, e:
+    return django.http.HttpResponseNotFound(e.value)
+  except MySQLdb.Error, e:
+    return django.http.HttpResponseNotFound(e)
+  except:
+    logger.exception("Unknown exception in getPropagate.")
+    raise
+
+def setPropagate (request, webargs):
+  """ Set the value for Propagate field for a given project """
+
+  try:
+    ocpcarest.setPropagate(webargs)
+    return django.http.HttpResponse()
+  except OCPCAError, e:
+    return django.http.HttpResponseNotFound(e.value)
+  except MySQLdb.Error, e:
+    return django.http.HttpResponseNotFound(e)
+  except:
+    logger.exception("Unknown exception in setPropagate.")
     raise
 
 def merge (request, webargs):

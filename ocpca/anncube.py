@@ -19,6 +19,7 @@ from PIL import Image
 import zlib
 
 import zindex
+import ocplib
 from cube import Cube
 
 from ocpca_cy import annotate_cy
@@ -124,15 +125,30 @@ class AnnotateCube(Cube):
   #
   #  Exceptions are uint8 to keep them small.  Max cube size is 256^3.
   #
+  def annotate_ctype ( self, annid, offset, locations, conflictopt ):
+    """Add annotation by a list of locations"""
+
+    try:
+    
+      # the ctype optimized version of this function.
+      self.data, exceptions = ocplib.annotate_ctype( self.data, annid, offset, np.array(locations, dtype=np.uint32), conflictopt )
+
+      return exceptions
+    
+    except IndexError, e:
+      
+      raise OCPCAError ("Voxel list includes out of bounds request.")
+  
   def annotate ( self, annid, offset, locations, conflictopt ):
     """Add annotation by a list of locations"""
 
     try:
-    # the cython optimized version of this function.
+      
+      # the cython optimized version of this function.
       return annotate_cy ( self.data, annid, offset, np.array(locations, dtype=np.uint32), conflictopt )
-#      return self.annotate_nocy ( self.data, annid, offset, np.array(locations, dtype=np.uint32), conflictopt )
+   
     except IndexError, e:
-#      logger.error("Tried to paint a voxel that is out of bounds.  Locations={}".format(locations))
+      
       raise OCPCAError ("Voxel list includes out of bounds request.")
 
 
@@ -141,64 +157,90 @@ class AnnotateCube(Cube):
 
     # the cython optimized version of this function.
     return shave_cy ( self.data, annid, offset, np.array(locations, dtype=np.uint32))
-  
+
+
+  def shave_ctype ( self, annid, offset, locations ):
+    """Remove annotation by a list of locations"""
+
+    # the cython optimized version of this function.
+    self.data , exceptions, zeroed = ocplib.shave_ctype ( self.data, annid, offset, np.array(locations, dtype=np.uint32))
+    
+    return exceptions, zeroed
+
 
   #
-  # Create the specified slice (index) at filename
+  # Create the specified slice (index) 
   #
-  def xySlice ( self, fileobj ):
+  def xyImage ( self ):
 
     zdim,ydim,xdim = self.data.shape
     imagemap = np.zeros ( [ ydim, xdim ], dtype=np.uint32 )
 
     # false color redrawing of the region
-    recolor_cy ( self.data.reshape((imagemap.shape[0],imagemap.shape[1])), imagemap )
+    imagemap = ocplib.recolor_ctype ( self.data.reshape( (imagemap.shape[0], imagemap.shape[1]) ), imagemap )
+    #recolor_cy ( self.data.reshape((imagemap.shape[0],imagemap.shape[1])), imagemap )
 
-    outimage = Image.frombuffer ( 'RGBA', (xdim,ydim), imagemap, 'raw', 'RGBA', 0, 1 )
-    outimage.save ( fileobj, "PNG" )
+    return Image.frombuffer ( 'RGBA', (xdim,ydim), imagemap, 'raw', 'RGBA', 0, 1 )
 
   #
-  # Create the specified slice (index) at filename
+  # Create the specified slice (index)
   #
-  def xzSlice ( self, scale, fileobj ):
+  def xzImage ( self, scale ):
 
     zdim,ydim,xdim = self.data.shape
     imagemap = np.zeros ( [ zdim, xdim ], dtype=np.uint32 )
 
     # false color redrawing of the region
-    recolor_cy ( self.data.reshape((imagemap.shape[0],imagemap.shape[1])), imagemap )
+    imagemap = ocplib.recolor_ctype ( self.data.reshape( (imagemap.shape[0], imagemap.shape[1]) ), imagemap )
+    #recolor_cy ( self.data.reshape((imagemap.shape[0],imagemap.shape[1])), imagemap )
 
     outimage = Image.frombuffer ( 'RGBA', (xdim,zdim), imagemap, 'raw', 'RGBA', 0, 1 )
-    newimage = outimage.resize ( [xdim, int(zdim*scale)] )
-    newimage.save ( fileobj, "PNG" )
+    return outimage.resize ( [xdim, int(zdim*scale)] )
+
 
   #
-  # Create the specified slice (index) at filename
+  # Create the specified slice (index) 
   #
-  def yzSlice ( self, scale, fileobj ):
+  def yzImage ( self, scale ):
 
     zdim,ydim,xdim = self.data.shape
     imagemap = np.zeros ( [ zdim, ydim ], dtype=np.uint32 )
 
     # false color redrawing of the region
-    recolor_cy ( self.data.reshape((imagemap.shape[0],imagemap.shape[1])), imagemap )
+    imagemap = ocplib.recolor_ctype ( self.data.reshape( (imagemap.shape[0], imagemap.shape[1]) ), imagemap )
+    #recolor_cy ( self.data.reshape((imagemap.shape[0],imagemap.shape[1])), imagemap )
 
     outimage = Image.frombuffer ( 'RGBA', (ydim,zdim), imagemap, 'raw', 'RGBA', 0, 1 )
-    newimage = outimage.resize ( [ydim, int(zdim*scale)] )
+    return  outimage.resize ( [ydim, int(zdim*scale)] )
     newimage.save ( fileobj, "PNG" )
+
+  #
+  # Catmaid cutout slice
+  #
+  def catmaidSlice( self ):
+
+    cmtilesz = self.data.shape[0]
+    recolor_cy( self.data, self.data )
+    self.data = Image.frombuffer ( 'L', [cmtilesz,cmtilesz], self.data, 'raw', 'RGBA', 0, 1 )
 
 
   def overwrite ( self, annodata ):
     """Get's a dense voxel region and overwrites all non-zero values"""
 
-    vector_func = np.vectorize ( lambda a,b: b if b!=0 else a ) 
-    self.data = vector_func ( self.data, annodata ) 
+    #vector_func = np.vectorize ( lambda a,b: b if b!=0 else a ) 
+    #test = vector_func ( self.data, annodata )
+    
+    # Is the same as above
+    self.data = ocplib.overwriteDense_ctype ( self.data, annodata )
 
   def preserve ( self, annodata ):
     """Get's a dense voxel region and overwrites all non-zero values"""
 
-    vector_func = np.vectorize ( lambda a,b: b if b!=0 and a==0 else a ) 
-    self.data = vector_func ( self.data, annodata ) 
+    #vector_func = np.vectorize ( lambda a,b: b if b!=0 and a==0 else a ) 
+    #test = vector_func ( self.data, annodata )
+
+    # Is the same as above
+    self.data = ocplib.exceptionDense_ctype ( self.data, annodata )
 
   def exception ( self, annodata ):
     """Get's a dense voxel region and overwrites all non-zero values"""
@@ -208,8 +250,9 @@ class AnnotateCube(Cube):
     exdata = ((self.data-annodata)*self.data*annodata!=0) * annodata 
 
     # then annotate to preserve 
-    vector_func = np.vectorize ( lambda a,b: b if b!=0 and a==0 else a ) 
-    self.data = vector_func ( self.data, annodata ) 
+    #vector_func = np.vectorize ( lambda a,b: b if b!=0 and a==0 else a ) 
+    #test = vector_func ( self.data, annodata ) 
+    self.data = ocplib.exceptionDense_ctype ( self.data, annodata )
 
     # return the list of exceptions ids and the exceptions
     return exdata
@@ -224,21 +267,61 @@ class AnnotateCube(Cube):
     exdata = (self.data != annodata) * annodata
 
     # then shave 
-    vector_func = np.vectorize ( lambda a,b: 0 if b!=0 else a ) 
-    self.data = vector_func ( self.data, shavedata ) 
+    #vector_func = np.vectorize ( lambda a,b: 0 if b!=0 else a ) 
+    #self.data = vector_func ( self.data, shavedata )
+
+    self.data = ocplib.shaveDense_ctype ( self.data, shavedata )
 
     # return the list of exceptions ids and the exceptions
     return exdata
 
-  # placeholder function move and optimize
+  
   def zoomData ( self, factor ):
-    """Cube data zoomed up"""
+    """ Cube data zoomed in """
 
     newdata = np.zeros ( [self.data.shape[0], self.data.shape[1]*(2**factor), self.data.shape[2]*(2**factor)], dtype=np.uint32) 
-
-    zoomData_cy ( self.data, newdata, int(factor) )
+    test = np.zeros ( [self.data.shape[0], self.data.shape[1]*(2**factor), self.data.shape[2]*(2**factor)], dtype=np.uint32) 
+    
+    #import pdb; pdb.set_trace()
+    import time
+    #start = time.time()
+    #zoomData_cy ( self.data, test, int(factor) )
+    #print "Cython", time.time()-start
+    #start = time.time()
+    #ocplib.zoomInData_ctype ( self.data, newdata, int(factor) )
+    #print "Ctype",time.time()-start
+    start = time.time()
+    ocplib.zoomInData_ctype_OMP ( self.data, newdata, int(factor) )
+    print "OMP",time.time()-start
 
     self.data = newdata
+
+  
+  def downScale ( self, factor ):
+    """ Cube data zoomed out """
+
+    #KLTODO write an optimize version in cython
+
+    newdata = np.zeros ( [self.data.shape[0], self.data.shape[1]/(2**factor), self.data.shape[2]/(2**factor)], dtype=np.uint32) 
+    #test = np.zeros ( [self.data.shape[0], self.data.shape[1]/(2**factor), self.data.shape[2]/(2**factor)], dtype=np.uint32) 
+    
+    import time
+    start = time.time()
+    ocplib.zoomOutData_ctype ( self.data, newdata, int(factor) )
+    print "Ctype", time.time()-start
+
+    #start = time.time()
+    #ocplib.zoomOutData_ctype_OMP ( self.data, test, int(factor) )
+    #print "OMP", time.time()-start
+    
+    self.data = newdata
+    
+    # downScale_cy ( self.data, newdata, int(factor) )
+    #for z in range(newdata.shape[0]):
+    #  for y in range(newdata.shape[1]):
+    #    for x in range(newdata.shape[2]):
+    #      test[z,y,x] = self.data[z,y*(2**factor),x*(2**factor)] 
+
 
 # end AnnotateCube
 

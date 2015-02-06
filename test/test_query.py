@@ -22,12 +22,13 @@ import random
 import csv
 import numpy as np
 import pytest
+from contextlib import closing
 
+import ocppaths
 from pytesthelpers import makeAnno
 import ocpcaproj
 
-import ocppaths
-
+import kvengine_to_test
 import site_to_test
 SITE_HOST = site_to_test.site
 
@@ -49,12 +50,16 @@ class TestRamon:
   def setup_class(self):
     """Create the unittest database"""
 
-    self.pd = ocpcaproj.OCPCAProjectsDB()
-    self.pd.newOCPCAProj ( 'unittest', 'test', 'localhost', 'unittest', 2, 'kasthuri11', None, False, True, False, 0 )
+    with closing ( ocpcaproj.OCPCAProjectsDB() ) as pd:
+      try:
+        pd.newOCPCAProj ( 'unittest', 'test', 'localhost', 'unittest', 2, 'kasthuri11', None, False, True, False, 0, False, kvengine_to_test.kvserver, kvengine_to_test.kvengine, 0 )
+      except:
+        pd.deleteOCPCADB ('unittest')
 
   def teardown_class (self):
     """Destroy the unittest database"""
-    self.pd.deleteOCPCADB ('unittest')
+    with closing ( ocpcaproj.OCPCAProjectsDB() ) as pd:
+      pd.deleteOCPCADB ('unittest')
 
 
 

@@ -59,7 +59,7 @@ class OCPCAChannels:
 
       # integers are kept
       if re.match ('^\d+$', chan):
-        outchannels.append(chan)
+        outchannels.append( int(chan) )
       # anything else rewritten
       else:
         outchannels.append(self.getChannelID ( chan ))

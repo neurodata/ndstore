@@ -10,8 +10,6 @@ import OCP.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
 from django.conf import settings
 
-#pdb.set_trace()
-
 import multiprocessing
 
 import ocpcaproj
@@ -75,7 +73,6 @@ class CatmaidIngester:
           
           #if we are at the end of the space, quit
           if zslab*zslices+zstart+zslice > zend:
-            
             break
           
           filename = '{}/{}/{}/{}/{}.jpg'.format(self.prefix,resolution,zslab*zslices+zslice+zstart,ytile,xtile)
@@ -92,7 +89,6 @@ class CatmaidIngester:
             f.write(filename+'\n')
             f.close()
             #raise
-        continue
 
         # here we have continuous cuboid, let's upload it to the database
         corner = [ xtile*self.tilesz, ytile*self.tilesz, zslab*zslices ]
@@ -113,6 +109,7 @@ class CatmaidIngest:
     self.prefix=tilepath
     self.reslimit = reslimit
     self.totalprocs = totalprocs
+    self.token = token
 
   def ingest ( self ):
     """Read the stack and ingest"""
@@ -133,8 +130,12 @@ class CatmaidIngest:
 
       numzslabs = (zend-zstart+1)/zslices + 1
 
+      # Building the iterable
+      sample_iter = [[self.token, self.tilesz, self.prefix, self.reslimit, resolution]]*numzslabs
+      ziterable = zip(sample_iter, range(numzslabs))
+
       p = multiprocessing.Pool(self.totalprocs)
-      p.map ( parallel_ingester, range(numzslabs)  )
+      p.map ( parallel_ingester, ziterable  )
 
 
 #  def run( self,numzslabs, zslices, resolution ):
@@ -150,6 +151,7 @@ class CatmaidIngest:
 #    p.close()
 #    p.join()
 
+>>>>>>> origin/master
 
 
 def main():
