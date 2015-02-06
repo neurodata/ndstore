@@ -50,11 +50,11 @@ def mcfcPNG ( cutout, colors ):
       combined_cutout +=  data32 
     # Fifth is Green
     elif colors[i] == 'G':
-      data32 = np.array ( cb.data, dtype=np.uint32 )
+      data32 = np.array ( cutout[i,:,:], dtype=np.uint32 )
       combined_cutout += np.left_shift(data32,8)
     # Sixth is Blue
     elif colors[i] == 'B':
-      data32 = np.array ( cb.data, dtype=np.uint32 )
+      data32 = np.array ( cutout[i,:,:], dtype=np.uint32 )
       combined_cutout +=  np.left_shift(data32,16) 
     else:
       logger.warning ( "Unsupported color requested:" % (color[i]))
@@ -66,9 +66,9 @@ def mcfcPNG ( cutout, colors ):
   outimage =Image.frombuffer ( 'RGBA', (cutout.shape[2],cutout.shape[1]), combined_cutout.flatten(), 'raw', 'RGBA', 0, 1 ) 
   
   # Enhance the image
-  from PIL import ImageEnhance
-  enhancer = ImageEnhance.Brightness(outimage)
-  outimage = enhancer.enhance(4.0)
+  #from PIL import ImageEnhance
+  #enhancer = ImageEnhance.Brightness(outimage)
+  #outimage = enhancer.enhance(4.0)
   
   return outimage
 
