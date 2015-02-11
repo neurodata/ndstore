@@ -94,7 +94,7 @@ def binZip ( imageargs, proj, db ):
   if proj.getDBType() in ocpcaproj.CHANNEL_DATASETS :
     [ channels, sym, imageargs ] = imageargs.partition ('/')
   else: 
-    channel = None
+    channels = None
 
   cube = cutout ( imageargs, proj, db, channels )
 
@@ -1182,10 +1182,9 @@ def getAnnotations ( webargs, postdata ):
 def putAnnotationAsync ( webargs, postdata ):
   """Put a RAMON object asynchrously as HDF5 by object identifier"""
   
-  #import h5annasync
-  #h5annasync.writeDataSSD( webargs, postdata )
   print "TESTING"
-  #hdf5_new.batchCube( webargs, postdata )
+  import ocpdatastream
+
   
   #[ token, sym, optionsargs ] = webargs.partition ('/')
   #options = optionsargs.split('/')
