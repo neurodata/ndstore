@@ -65,6 +65,10 @@ NOT_PROPAGATED = 0
 READONLY_TRUE = 1
 READONLY_FALSE = 0
 
+# Exception Values
+EXCEPTION_TRUE = 1
+EXCEPTION_FALSE = 0
+
 class OCPCAProject:
   """ Project specific for cutout and annotation data """
 

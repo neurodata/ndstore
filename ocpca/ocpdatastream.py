@@ -18,12 +18,44 @@ import tempfile
 import h5py
 import numpy as np
 import ast
+import json
+import heapq
 
 import ocpcaprivate
 
-HEADER_SIZE  = 500
+HEADER_SIZE = 5000
 
 class OCPDataStream():
+  
+  def __init__ (self):
+    """ Intiliaze the Data Structure """
+
+    self.filelist = []
+    self.indexlist = []
+    self.heap = []
+
+    listFiles = [ f for f in os.listdir(ocpcaprivate.ssd_log_location) if os.path.isfile(ocpcaprivate.ssd_log_location+f) ]
+
+    for filename in listFiles:
+      self.filelist.append(OCPFileWrapper(filename))
+
+    for f in self.filelist:
+      self.indexlist.append(f.getHeader().keys())
+    
+    self.heap = [(row.pop(0),index) for index,row in enumerate(self.indexlist)]
+    heapq.heapify(self.heap)
+
+  def getData ( self ):
+    """ Get the next data in the stream """
+
+    # Implementing a priority queue with a heap using the heapq module
+
+    key, fileindex = heapq.heappop(self.heap)
+    heapq.heappush(self.heap,(self.indexlist[fileindex].pop(0),fileindex))
+    return self.filelist[fileindex].fetch(key)
+
+    
+class OCPFileWrapper():
 
   def __init__ ( self, filename=None ):
     """ Intiliaze the Data Structure """
@@ -37,19 +69,20 @@ class OCPDataStream():
         self.writeHeader()
       else:
         # file exists. Load the header
-        self.fd = open (filename, 'rb+' )
+        self.fd = open (ocpcaprivate.ssd_log_location+filename, 'rb+' )
         self.header = self.getHeader()
     except IOError,e:
       print"File {} does not exist. {}".format(filename, e)
       raise
 
 
-  def insert ( self, key, cuboid ):
+  def insert ( self, key, cuboid, args ):
     """ Insert data into the stream """
     
     # Moving the file pointer to the end of the file
     self.fd.seek(0,2)
-    self.header[key] = ( self.fd.tell(), len(str(cuboid)) )
+    argsjson = json.dumps(args)
+    self.header[key] = ( self.fd.tell(), len(str(cuboid))+len(argsjson), argsjson )
     self.fd.write( cuboid )
     # Updating the header
     self.writeHeader()
@@ -59,9 +92,12 @@ class OCPDataStream():
 
     # Checking if the key exists in the dict
     try:
-      offset, size = self.header.pop(key)
+      offset, size, args = self.header.pop(key)
       self.fd.seek( offset, 0 )
-      return self.fd.read( size )
+      data = self.fd.read( size )
+      if not self.header:
+        self.delete()
+      return data, args
     except KeyError, e:
       print "Key {} does not exist. {}".format(key,e)
       return None
@@ -70,14 +106,15 @@ class OCPDataStream():
     """ Fetch the header in the file """
 
     self.fd.seek(0)
-    return ast.literal_eval( self.fd.read(HEADER_SIZE).strip('\x00') )
+    return json.loads( self.fd.read(HEADER_SIZE).strip('\x00') )
+    #return ast.literal_eval( self.fd.read(HEADER_SIZE).strip('\x00') )
 
   def writeHeader ( self ):
     """ Write the header to file """
 
     # Move the file pointer to head and pad the string with null bytes
     self.fd.seek(0,0)
-    header = str(self.header)
+    header = json.dumps(self.header)
     self.fd.write( header+('\x00'*(HEADER_SIZE-len(header))) )
     print self.fd.tell(),len(str(self.header))
 
@@ -93,14 +130,14 @@ class OCPDataStream():
 
 def main():
 
-  import pdb; pdb.set_trace()
-  d1 = OCPDataStream()
+  d1 = OCPFileWrapper()
   #d1 = DataStream(ocpcaprivate.ssd_log_location+"tmpCtMQZW.hdf5")
-  d1.insert(1,"\x00\xab\xcd\x12\xba")
-  d1.insert(2,"\x12\x11\xcd\x12\xba")
-  #d1.close()
-  data = d1.fetch(1)
-  print data
+  d1.insert(1,"\x00\xab\xcd\x12\xba", "/xy/0,12/0,12/1500/append")
+  d1.insert(2,"\x12\x11\xcd\x12\xba", "/hdf5/0,10/exceptions")
+  d1.close()
+  d2 = OCPDataStream()
+  import pdb; pdb.set_trace()
+  d2.getData()
 
 if __name__ == "__main__":
   main()
