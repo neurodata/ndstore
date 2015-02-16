@@ -32,29 +32,23 @@ from ocpcaerror import OCPCAError
 import logging
 logger=logging.getLogger("ocp")
 
-# dbtype enumerations
-IMAGES_8bit = 1
-ANNOTATIONS = 2
-CHANNELS_16bit = 3
-CHANNELS_8bit = 4
-PROBMAP_32bit = 5
-BITMASK = 6
-ANNOTATIONS_64bit = 7 
-IMAGES_16bit = 8 
-RGB_32bit = 9
-RGB_64bit = 10
-TIMESERIES_4d_8bit = 11
-TIMESERIES_4d_16bit = 12
+OCP_databasetypes = {0:'image',1:'annotation',2:'channel',3:'probmap',4:'timeseries'}
 
 # dbtype groups
-CHANNEL_DATASETS = [ CHANNELS_8bit, CHANNELS_16bit ]
-TIMESERIES_DATASETS = [ TIMESERIES_4d_8bit, TIMESERIES_4d_16bit ]
-ANNOTATION_DATASETS = [ ANNOTATIONS, ANNOTATIONS_64bit ]
-RGB_DATASETS = [ RGB_32bit, RGB_64bit ]
-DATASETS_8bit = [ IMAGES_8bit, CHANNELS_8bit, TIMESERIES_4d_8bit ]
-DATASETS_16bit = [ IMAGES_8bit, CHANNELS_16bit, TIMESERIES_4d_16bit ]
-DATSETS_32bit = [ RGB_32bit, ANNOTATIONS, PROBMAP_32bit ]
-COMPOSITE_DATASETS = CHANNEL_DATASETS + TIMESERIES_DATASETS
+IMAGE_PROJECTS = [ 'image', 'probmap' ]
+CHANNEL_PROJECTS = [ 'channel' ]
+TIMESERIES_PROJECTS = [ 'timeseries' ]
+ANNOTATION_PROJECTS = [ 'annotation' ]
+COMPOSITE_PROJECTS = CHANNEL_PROJECTS + TIMESERIES_PROJECTS
+
+# datatype groups
+DTYPE_uint8 = [ 'uint8' ]
+DTYPE_uint16 = [ 'uint16' ]
+DTPPE_uint32 = [ 'rgb32','uint32' ]
+DTPPE_uint64 = [ 'rgb64' ]
+DTPPE_float32 = [ 'probability' ]
+OCP_dtypetonp = {'uint8':np.uint8,'uint16':np.uint16,'uint32':np.uint32,'rgb32':np.uint32,'rgb64':np.uint64,'probability':np.float32}
+
 
 # Propagated Values
 PROPAGATED = 2
@@ -73,21 +67,20 @@ class OCPCAProject:
   """ Project specific for cutout and annotation data """
 
   # Constructor 
-  def __init__(self, token, dbname, dbhost, dbtype, dataset, dataurl, readonly, exceptions, resolution, kvserver, kvengine, propagate ):
+  def __init__(self, token, dbname, dbhost, dbtype, datatype, dataset, dataurl, readonly, exceptions, resolution, kvserver, kvengine, propagate ):
     """ Initialize the OCPCA Project """
     
     self._token = dbname
     self._dbname = dbname
     self._dbhost = dbhost
     self._dbtype = dbtype
+    self._dtype = datatype
     self._dataset = dataset
     self._dataurl = dataurl
     self._readonly = readonly
     self._exceptions = exceptions
     self._resolution = resolution
-    #self._kvserver = kvserver
-    # for cassandra
-    self._kvserver = '172.23.253.63'
+    self._kvserver = kvserver
     self._kvengine = kvengine
     self._propagate = propagate
 
@@ -99,7 +92,9 @@ class OCPCAProject:
     return self._token
   def getDBHost ( self ):
     return self._dbhost
-  def getDBType ( self ):
+  def getDataType ( self ):
+    return self._dtype
+  def getProjectType ( self ):
     return self._dbtype
   def getDBName ( self ):
     return self._dbname
@@ -111,8 +106,6 @@ class OCPCAProject:
     return self._ids_tbl
   def getExceptions ( self ):
     return self._exceptions
-  def getDBType ( self ):
-    return self._dbtype
   def getReadOnly ( self ):
     return self._readonly
   def getResolution ( self ):
@@ -129,7 +122,7 @@ class OCPCAProject:
     # 0 - Propagated
     # 1 - Under Propagation
     # 2 - UnPropagated
-    if self.getDBType() not in ANNOTATION_DATASETS:
+    if not self.getProjectType() == 'annotation':
       logger.error ( "Cannot set Propagate Value {} for a non-Annotation Project {}".format( value, self._token ) )
       raise OCPCAError ( "Cannot set Propogate Value {} for a non-Annotation Project {}".format( value, self._token ) )
     elif value in [NOT_PROPAGATED]:
@@ -218,7 +211,9 @@ class OCPCADataset:
           self.cubedim[i] = [128, 128, 16]
 
       else:
-        self.cubedim[i] = [64, 64, 64]
+        # RB what should we use as a cubedim?
+        self.cubedim[i] = [128, 128, 16]
+#        self.cubedim[i] = [64, 64, 64]
 
 
       # set the image size
@@ -342,7 +337,7 @@ class OCPCAProjectsDB:
     """ Load the annotation database information based on the token """
 
     # Lookup the information for the database project based on the token
-    sql = "SELECT token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions, resolution , kvserver, kvengine, propagate from {} where token = \'{}\'".format(ocpcaprivate.projects, token)
+    sql = "SELECT token, openid, host, project, dbtype, datatype, dataset, dataurl, readonly, exceptions, resolution , kvserver, kvengine, propagate from {} where token = \'{}\'".format(ocpcaprivate.projects, token)
 
     with closing(self.conn.cursor()) as cursor:
       try:
@@ -358,10 +353,10 @@ class OCPCAProjectsDB:
       logger.warning ( "Project token {} not found.".format( token ))
       raise OCPCAError ( "Project token {} not found.".format( token ))
 
-    [token, openid, host, project, dbtype, dataset, dataurl, readonly, exceptions, resolution, kvserver, kvengine, propagate ] = row
+    [token, openid, host, project, dbtype, datatype, dataset, dataurl, readonly, exceptions, resolution, kvserver, kvengine, propagate ] = row
 
     # Create a project object
-    proj = OCPCAProject ( token, project, host, dbtype, dataset, dataurl, readonly, exceptions, resolution, kvserver, kvengine, propagate ) 
+    proj = OCPCAProject ( token, project, host, dbtype, datatype, dataset, dataurl, readonly, exceptions, resolution, kvserver, kvengine, propagate ) 
     proj.datasetcfg = self.loadDatasetConfig ( dataset )
 
     return proj
@@ -380,8 +375,6 @@ class OCPCAProjectsDB:
        ocpcaprivate.datasets, dsname, ximagesz, yimagesz, zimagesz, xoffset, yoffset, zoffset, xvoxelres, yvoxelres, zvoxelres, scalinglevels, scalingoption, startwindow, endwindow, starttime, endtime )
 
     logger.info ( "Creating new dataset. Name %s. SQL=%s" % ( dsname, sql ))
-
-    import pdb; pdb.set_trace()
 
     with closing(self.conn.cursor()) as cursor:
       try:
@@ -446,14 +439,14 @@ class OCPCAProjectsDB:
           if proj.getKVEngine() == 'MySQL':
 
             # tables for annotations and images
-            if dbtype not in CHANNEL_DATASETS + TIMESERIES_DATASETS :
+            if dbtype not in ['channel','timeseries']:
 
               for i in datasetcfg.resolutions: 
                 newcursor.execute ( "CREATE TABLE res{} ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(i) )
                 #newcursor.execute ( "CREATE TABLE raw{} ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(i) )
               newconn.commit()
 
-            elif dbtype in TIMESERIES_DATASETS :
+            elif dbtype == 'timeseries':
 
               for i in datasetcfg.resolutions: 
                 newcursor.execute ( "CREATE TABLE res{} ( zindex BIGINT, timestamp INT, cube LONGBLOB, PRIMARY KEY(zindex,timestamp))".format(i) )
@@ -462,7 +455,7 @@ class OCPCAProjectsDB:
               newconn.commit()
 
             # tables for channel dbs
-            elif dbtype in CHANNEL_DATASETS :
+            elif dbtype == 'timeseries':
               newcursor.execute ( 'CREATE TABLE channels ( chanstr VARCHAR(255), chanid INT, PRIMARY KEY(chanstr))')
               for i in datasetcfg.resolutions: 
                 newcursor.execute ( "CREATE TABLE res{} ( channel INT, zindex BIGINT, cube LONGBLOB, PRIMARY KEY(channel,zindex) )".format(i) )
@@ -471,7 +464,7 @@ class OCPCAProjectsDB:
           elif proj.getKVEngine() == 'Riak':
 
             rcli = riak.RiakClient(host=proj.getKVServer(), pb_port=8087, protocol='pbc')
-            bucket = rcli.bucket_type("ocp{}".format(proj.getDBType())).bucket(proj.getDBName())
+            bucket = rcli.bucket_type("ocp{}".format(proj.getProjectType())).bucket(proj.getDBName())
             bucket.set_property('allow_mult',False)
 
           elif proj.getKVEngine() == 'Cassandra':
@@ -494,7 +487,7 @@ class OCPCAProjectsDB:
 
 
           # tables specific to annotation projects
-          if dbtype in ANNOTATION_DATASETS :
+          if dbtype == 'annotation': 
 
             newcursor.execute("CREATE TABLE ids ( id BIGINT PRIMARY KEY)")
 
@@ -622,7 +615,7 @@ class OCPCAProjectsDB:
 
       # connect to Riak
       rcli = riak.RiakClient(host=proj.getKVServer(), pb_port=8087, protocol='pbc')
-      bucket = rcli.bucket_type("ocp{}".format(proj.getDBType())).bucket(proj.getDBName())
+      bucket = rcli.bucket_type("ocp{}".format(proj.getProjectType())).bucket(proj.getDBName())
 
       key_list = rcli.get_keys(bucket)
 

@@ -110,7 +110,7 @@ class OCPCADB:
       raise
 
     # create annidx object
-    if (self.annoproj.getDBType() in ocpcaproj.ANNOTATION_DATASETS):
+    if (self.annoproj.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS):
       self.annoIdx = annindex.AnnotateIndex ( self.kvio, self.annoproj )
 
   def close ( self ):
@@ -367,20 +367,20 @@ class OCPCADB:
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
     # Create a cube object
-    if (self.annoproj.getDBType() == ocpcaproj.ANNOTATIONS):
+    if (self.annoproj.getProjectType() == ocpcaproj.ANNOTATIONS):
       cube = anncube.AnnotateCube ( cubedim )
-    elif (self.annoproj.getDBType() == ocpcaproj.PROBMAP_32bit):
+    elif (self.annoproj.getProjectType() == ocpcaproj.PROBMAP_32bit):
       cube = probmapcube.ProbMapCube32 ( cubedim )
-    elif (self.annoproj.getDBType() == ocpcaproj.IMAGES_8bit):
+    elif (self.annoproj.getProjectType() == ocpcaproj.IMAGES_8bit):
       cube = imagecube.ImageCube8 ( cubedim )
-    elif (self.annoproj.getDBType() == ocpcaproj.IMAGES_16bit):
+    elif (self.annoproj.getProjectType() == ocpcaproj.IMAGES_16bit):
       cube = imagecube.ImageCube16 ( cubedim )
-    elif (self.annoproj.getDBType() == ocpcaproj.RGB_32bit):
+    elif (self.annoproj.getProjectType() == ocpcaproj.RGB_32bit):
       cube = imagecube.ImageCube32 ( cubedim )
-    elif (self.annoproj.getDBType() == ocpcaproj.RGB_64bit):
+    elif (self.annoproj.getProjectType() == ocpcaproj.RGB_64bit):
       cube = imagecube.ImageCube64 ( cubedim )
     else:
-      raise OCPCAError ("Unknown project type {}".format(self.annoproj.getDBType()))
+      raise OCPCAError ("Unknown project type {}".format(self.annoproj.getProjectType()))
   
     # get the block from the database
     cubestr = self.kvio.getCube ( key, resolution, update )
@@ -456,12 +456,12 @@ class OCPCADB:
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
     # Create a cube object
-    if self.annoproj.getDBType() == ocpcaproj.CHANNELS_8bit:
+    if self.annoproj.getProjectType() == ocpcaproj.CHANNELS_8bit:
       cube = imagecube.ImageCube8 ( cubedim )
-    elif self.annoproj.getDBType() == ocpcaproj.CHANNELS_16bit:
+    elif self.annoproj.getProjectType() == ocpcaproj.CHANNELS_16bit:
       cube = imagecube.ImageCube16 ( cubedim )
     else:
-      raise OCPCAError ("Unknown project type {}".format(self.annoproj.getDBType()))
+      raise OCPCAError ("Unknown project type {}".format(self.annoproj.getProjectType()))
   
     # get the block from the database
     cubestr = self.kvio.getChannelCube ( key, channel, resolution, update )
@@ -525,12 +525,12 @@ class OCPCADB:
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
     # Create a cube object
-    if self.annoproj.getDBType() == ocpcaproj.TIMESERIES_4d_8bit:
+    if self.annoproj.getProjectType() == ocpcaproj.TIMESERIES_4d_8bit:
       cube = imagecube.ImageCube8 ( cubedim )
-    elif self.annoproj.getDBType() == ocpcaproj.TIMESERIES_4d_16bit:
+    elif self.annoproj.getProjectType() == ocpcaproj.TIMESERIES_4d_16bit:
       cube = imagecube.ImageCube16 ( cubedim )
     else:
-      raise OCPCAError ("Unknown project type {}".format(self.annoproj.getDBType()))
+      raise OCPCAError ("Unknown project type {}".format(self.annoproj.getProjectType()))
   
     # get the block from the database
     cubestr = self.kvio.getTimeSeriesCube ( key, timestamp, resolution, update )
@@ -1134,10 +1134,10 @@ class OCPCADB:
   #
   def cutout ( self, corner, dim, resolution, channel=None, zscaling=None, annoids=None ):
     """Extract a cube of arbitrary size.  Need not be aligned."""
-   
+
     # alter query if  (ocpcaproj)._resolution is > resolution
     # if cutout is below resolution, get a smaller cube and scaleup
-    if self.annoproj.getDBType() in ocpcaproj.ANNOTATION_DATASETS and self.annoproj.getResolution() > resolution:
+    if self.annoproj.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS and self.annoproj.getResolution() > resolution:
 
       #find the effective dimensions of the cutout (where the data is)
       effcorner, effdim, (xpixeloffset,ypixeloffset) = self._zoominCutout ( corner, dim, resolution )
@@ -1146,7 +1146,7 @@ class OCPCADB:
 
     # alter query if  (ocpcaproj)._resolution is < resolution
     # if cutout is above resolution, get a large cube and scaledown
-    elif self.annoproj.getDBType() in ocpcaproj.ANNOTATION_DATASETS and self.annoproj.getResolution() < resolution and self.annoproj.getPropagate() not in [ocpcaproj.PROPAGATED]:  
+    elif self.annoproj.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS and self.annoproj.getResolution() < resolution and self.annoproj.getPropagate() not in [ocpcaproj.PROPAGATED]:  
 
       [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ self.annoproj.getResolution() ] 
       effcorner, effdim = self._zoomoutCutout ( corner, dim, resolution )
@@ -1169,14 +1169,14 @@ class OCPCADB:
     znumcubes = (effcorner[2]+effdim[2]+zcubedim-1)/zcubedim - zstart
     ynumcubes = (effcorner[1]+effdim[1]+ycubedim-1)/ycubedim - ystart
     xnumcubes = (effcorner[0]+effdim[0]+xcubedim-1)/xcubedim - xstart
-
+  
     # use the requested resolution
     if zscaling == 'nearisotropic' and self.datasetcfg.nearisoscaledown[resolution] > 1:
       dbname = self.annoproj.getNearIsoTable(resolution)
     else:
       dbname = self.annoproj.getTable(effresolution)
 
-    if self.annoproj.getDBType() in ocpcaproj.ANNOTATION_DATASETS:
+    if self.annoproj.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS:
 
       # input cube is the database size
       incube = anncube.AnnotateCube ( cubedim )
@@ -1187,35 +1187,35 @@ class OCPCADB:
                                         znumcubes*zcubedim] )
       outcube.zeros()
 
-    elif self.annoproj.getDBType() in ocpcaproj.DATASETS_8bit:
+    elif self.annoproj.getDataType() in ocpcaproj.DTYPE_uint8:
 
       incube = imagecube.ImageCube8 ( cubedim )
       outcube = imagecube.ImageCube8 ( [xnumcubes*xcubedim,\
                                         ynumcubes*ycubedim,\
                                         znumcubes*zcubedim] )
 
-    elif self.annoproj.getDBType() in ocpcaproj.DATASETS_16bit:
+    elif self.annoproj.getDataType() in ocpcaproj.DTYPE_uint16:
       
       incube = imagecube.ImageCube16 ( cubedim )
       outcube = imagecube.ImageCube16 ( [xnumcubes*xcubedim,\
                                         ynumcubes*ycubedim,\
                                         znumcubes*zcubedim] )
 
-    elif (self.annoproj.getDBType() == ocpcaproj.RGB_32bit):
+    elif self.annoproj.getDataType() in ocpcaproj.DTYPE_rgb32:
 
       incube = imagecube.ImageCube32 ( cubedim )
       outcube = imagecube.ImageCube32 ( [xnumcubes*xcubedim,\
                                         ynumcubes*ycubedim,\
                                         znumcubes*zcubedim] )
 
-    elif (self.annoproj.getDBType() == ocpcaproj.RGB_64bit):
+    elif self.annoproj.getDataType() in ocpcaproj.DTYPE_rgb64:
     
       incube = imagecube.ImageCube64 ( cubedim )
       outcube = imagecube.ImageCube64 ( [xnumcubes*xcubedim,\
                                         ynumcubes*ycubedim,\
                                         znumcubes*zcubedim] )
     
-    elif (self.annoproj.getDBType() == ocpcaproj.PROBMAP_32bit):
+    elif self.annoproj.getProjectType() == ocpcaproj.DTYPE_float32:
       
       incube = probmapcube.ProbMapCube32 ( cubedim )
       outcube = probmapcube.ProbMapCube32 ( [xnumcubes*xcubedim,\
@@ -1240,11 +1240,11 @@ class OCPCADB:
 
     try:
 
-      if self.annoproj.getDBType() in ocpcaproj.CHANNEL_DATASETS:
+      if self.annoproj.getProjectType() in ocpcaproj.CHANNEL_PROJECTS:
         # Convert channel as needed
         channel = ocpcachannel.toID ( channel, self )
         cuboids = self.kvio.getChannelCubes(listofidxs,channel,effresolution)
-      elif self.annoproj.getDBType() in ocpcaproj.TIMESERIES_DATASETS:
+      elif self.annoproj.getProjectType() in ocpcaproj.TIMESERIES_PROJECTS:
         cuboids = self.kvio.getTimeSeriesCubes(listofidxs,int(channel),effresolution)
       else:
         cuboids = self.kvio.getCubes(listofidxs,effresolution)
@@ -1284,7 +1284,7 @@ class OCPCADB:
 
         totaltime4 += time.time()-start4
         # apply exceptions if it's an annotation project
-        if annoids!= None and self.annoproj.getDBType() in ocpcaproj.ANNOTATION_DATASETS:
+        if annoids!= None and self.annoproj.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS:
           incube.data = ocplib.filter_ctype_OMP ( incube.data, annoids )
           if self.EXCEPT_FLAG:
             self.applyCubeExceptions ( annoids, effresolution, idx, incube )
@@ -1305,7 +1305,7 @@ class OCPCADB:
     self.kvio.commit()
 
     # if we fetched a smaller cube to zoom, correct the result
-    if self.annoproj.getDBType() in ocpcaproj.ANNOTATION_DATASETS and self.annoproj.getResolution() > resolution:
+    if self.annoproj.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS and self.annoproj.getResolution() > resolution:
 
       outcube.zoomData ( self.annoproj.getResolution()-resolution )
 
@@ -1313,7 +1313,7 @@ class OCPCADB:
       outcube.trim ( corner[0]%(xcubedim*(2**(self.annoproj.getResolution()-resolution)))+xpixeloffset,dim[0], corner[1]%(ycubedim*(2**(self.annoproj.getResolution()-resolution)))+ypixeloffset,dim[1], corner[2]%zcubedim,dim[2] )
 
     # if we fetch a larger cube, downscale it and correct
-    elif self.annoproj.getDBType() in ocpcaproj.ANNOTATION_DATASETS and self.annoproj.getResolution() < resolution and self.annoproj.getPropagate() not in [ocpcaproj.PROPAGATED]:
+    elif self.annoproj.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS and self.annoproj.getResolution() < resolution and self.annoproj.getPropagate() not in [ocpcaproj.PROPAGATED]:
 
       outcube.downScale ( resolution-self.annoproj.getResolution() )
 
@@ -1351,12 +1351,12 @@ class OCPCADB:
     # use the requested resolution
     dbname = self.annoproj.getTable(resolution)
 
-    if self.annoproj.getDBType() in ocpcaproj.DATASETS_8bit:
+    if self.annoproj.getProjectType() in ocpcaproj.DTYPE_uint8:
 
       incube = imagecube.ImageCube8 ( cubedim )
       outcube = imagecube.ImageCube8 ( [xnumcubes*xcubedim, ynumcubes*ycubedim, znumcubes*zcubedim] )
 
-    elif self.annoproj.getDBType() in ocpcaproj.DATASETS_16bit:
+    elif self.annoproj.getProjectType() in ocpcaproj.DTYPE_16bit :
       
       incube = imagecube.ImageCube16 ( cubedim )
       outcube = imagecube.ImageCube16 ( [xnumcubes*xcubedim, ynumcubes*ycubedim, znumcubes*zcubedim] )
@@ -1899,19 +1899,19 @@ class OCPCADB:
     yoffset = corner[1]%ycubedim
     xoffset = corner[0]%xcubedim
     
-    if self.annoproj.getDBType() == ocpcaproj.IMAGES_8bit:
+    if self.annoproj.getProjectType() == ocpcaproj.IMAGES_8bit:
       cuboiddtype = np.uint8  
-    elif self.annoproj.getDBType() == ocpcaproj.IMAGES_16bit:
+    elif self.annoproj.getProjectType() == ocpcaproj.IMAGES_16bit:
       cuboiddtype = np.uint16  
-    elif self.annoproj.getDBType() == ocpcaproj.RGB_32bit:
+    elif self.annoproj.getProjectType() == ocpcaproj.RGB_32bit:
       cuboiddtype = np.uint32
-    elif self.annoproj.getDBType() == ocpcaproj.RGB_64bit:
+    elif self.annoproj.getProjectType() == ocpcaproj.RGB_64bit:
       cuboiddtype = np.uint64
-    elif self.annoproj.getDBType() == ocpcaproj.PROBMAP_32bit:
+    elif self.annoproj.getProjectType() == ocpcaproj.PROBMAP_32bit:
       cuboiddtype = np.float32
-    elif self.annoproj.getDBType() == ocpcaproj.CHANNELS_16bit:
+    elif self.annoproj.getProjectType() == ocpcaproj.CHANNELS_16bit:
       cuboiddtype = np.uint16
-    elif self.annoproj.getDBType() == ocpcaproj.CHANNELS_8bit:
+    elif self.annoproj.getProjectType() == ocpcaproj.CHANNELS_8bit:
       cuboiddtype = np.uint8
 
     databuffer = np.zeros ([znumcubes*zcubedim, ynumcubes*ycubedim, xnumcubes*xcubedim], dtype=cuboiddata.dtype )
@@ -2053,9 +2053,6 @@ class OCPCADB:
      # get the size of the image and cube
     resolution = int(res)
     dbname = self.annoproj.getTable(resolution)
-# No emcaproj.  PYTODO fix this.
-#    if (self.annoproj.getDBType() == emcaproj.ANNOTATIONS):
-#      raise OCPCAError("The project is not  a Annotation project")
     
     # PYTODO Check if this is a valid annotation that we are relabelubg to
     if len(self.annoIdx.getIndex(ids[0],1)) == 0:

@@ -19,26 +19,30 @@ import urllib, urllib2
 from contextlib import closing
 import cStringIO
 import logging
+import MySQLdb
 
 import ocpcaproj
 import ocpcadb
 import ocplib
 from ocpcaerror import OCPCAError
 
+
 from ocpca_cy import addData_cy
 
-"""Construct an annotation hierarchy off of a completed annotation database."""
+"""Construct a hierarchy off of a completed database."""
 
-
-def buildStack ( token ):
+def buildStack ( token, resolution=None ):
   """ Wrapper for the different datatypes """
 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadProject ( token )
   
-    if proj.getDBType() in ocpcaproj.ANNOTATION_DATASETS:
+    import pdb; pdb.set_trace()
+
+    if proj.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS:
+
       try:
-        buildAnnoStack( token )
+        buildAnnoStack( token, resolution )
         proj.setPropagate ( ocpcaproj.PROPAGATED )
         projdb.updatePropagate ( proj )
 
@@ -48,21 +52,32 @@ def buildStack ( token ):
         logger.error ( "Error in propagating the database {}".format(token) )
         raise OCPCAError ( "Error in the propagating the project {}".format(token) )
 
+    elif proj.getProjectType() in ocpcaproj.IMAGE_PROJECTS:
+      #RB todo image project stuff
+      pass
+    elif proj.getProjectType ()in ocpcaproj.COMPOSITE_PROJECTS:
+      pass
     else:
-      logger.warning ( "Build function not supported for this datatype {}".format(ocpcaproj.getDBType()) )
-      raise OCPCAError ( "Build function not supported for this datatype {}".format(ocpcaproj.getDBType()) )
+      logger.warning ( "Build function not supported for this datatype {}".format(ocpcaproj.getProjectType()) )
+      raise OCPCAError ( "Build function not supported for this datatype {}".format(ocpcaproj.getProjectType()) )
 
 
-def buildAnnoStack ( token ):
+def buildAnnoStack ( token, resolution=None ):
   """ Build the hierarchy for annotations """
-  
   
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadProject ( token )
   
   with closing ( ocpcadb.OCPCADB (proj) ) as db:
+
+    import pdb; pdb.set_trace()
+    # pick a resolution
+    if resolution == None:
+      startresolution=proj.getResolution()
+    else:
+      startresolution = resolution
   
-    for  l in range ( proj.datasetcfg.resolutions[0], len(proj.datasetcfg.resolutions) ):
+    for  l in range ( startresolution, len(proj.datasetcfg.resolutions) ):
 
       # Get the source database sizes
       [ximagesz, yimagesz, zimagesz] = proj.datasetcfg.imagesz [ l ]
@@ -72,7 +87,6 @@ def buildAnnoStack ( token ):
       xlimit = ximagesz / xcubedim
       ylimit = yimagesz / ycubedim
       zlimit = zimagesz / zcubedim
-      # RBISO?? apply offsets
 
       #  Choose constants that work for all resolutions. recall that cube size changes from 128x128x16 to 64*64*64
       outdata = np.zeros ( [ zcubedim*4, ycubedim*2, xcubedim*2 ] )

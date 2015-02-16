@@ -72,7 +72,7 @@ def jsonInfo ( proj, db ):
   jsonprojinfo = {}
   jsonprojinfo['dataset'] = datasetdict ( proj.datasetcfg )
   jsonprojinfo['project'] = projdict ( proj )
-  if proj.getDBType() == ocpcaproj.CHANNELS_16bit or proj.getDBType() == ocpcaproj.CHANNELS_8bit:
+  if proj.getProjectType() in ocpcaproj.CHANNEL_PROJECTS:
     jsonprojinfo['channels'] = db.getChannels()
   return json.dumps ( jsonprojinfo, sort_keys=True, indent=4 )
 
@@ -80,7 +80,7 @@ def jsonInfo ( proj, db ):
 def jsonChanInfo ( proj, db ):
   """List of Channels"""
 
-  if proj.getDBType() == ocpcaproj.CHANNELS_16bit or proj.getDBType() == ocpcaproj.CHANNELS_8bit:
+  if proj.getProjectType() in ocpcaproj.CHANNEL_PROJECTS:
     return json.dumps ( db.getChannels(), sort_keys=True, indent=4 )
   else:
     return json.dumps ({})

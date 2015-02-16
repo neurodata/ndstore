@@ -86,7 +86,7 @@ def binZip ( imageargs, proj, db ):
   """Return a web readable Numpy Pickle zipped"""
 
   # if it's a channel database, pull out the channel
-  if proj.getDBType() in ocpcaproj.CHANNEL_DATASETS :
+  if proj.getProjectType() in ocpcaproj.CHANNEL_PROJECTS :
     [ channels, sym, imageargs ] = imageargs.partition ('/')
   else: 
     channel = None
@@ -108,7 +108,7 @@ def numpyZip ( imageargs, proj, db ):
   """Return a web readable Numpy Pickle zipped"""
 
   # if it's a channel database, pull out the channels and return a 4-d numpy array
-  if proj.getDBType() in ocpcaproj.CHANNEL_DATASETS :
+  if proj.getProjectType() in ocpcaproj.CHANNEL_PROJECTS :
 
     [ chanurl, sym, imageargs ] = imageargs.partition ('/')
 
@@ -168,7 +168,7 @@ def HDF5 ( imageargs, proj, db ):
   try: 
   
     # if it's a channel database, pull out the channels
-    if proj.getDBType() in ocpcaproj.CHANNEL_DATASETS:
+    if proj.getProjectType() in ocpcaproj.CHANNEL_PROJECTS:
      
       [ chanurl, sym, imageargs ] = imageargs.partition ('/')
   
@@ -183,11 +183,11 @@ def HDF5 ( imageargs, proj, db ):
         cube = cutout ( imageargs, proj, db, chanids[i] )
         changrp.create_dataset ( "{}".format(channels[i]), tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data )
     
-    elif proj.getDBType() in ocpcaproj.RGB_DATASETS:
+    elif proj.getProjectType() in ocpcaproj.RGB_PROJECTS:
       cube = cutout ( imageargs, proj, db, None)
       cube.RGBAChannel()
       fh5out.create_dataset ( "CUTOUT", tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data )
-    elif proj.getDBType() in ocpcaproj.TIMESERIES_DATASETS:
+    elif proj.getProjectType() in ocpcaproj.TIMESERIES_PROJECTS:
       [ chanurl, sym, imageargs ] = imageargs.partition ('/')
       cube = cutout ( imageargs, proj, db, int(chanurl) )
       fh5out.create_dataset ( "CUTOUT", tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data )
@@ -220,7 +220,7 @@ def TimeSeriesCutout ( imageargs, proj, db ):
 
   try: 
     # if it's a channel database, pull out the channels
-    if proj.getDBType() in ocpcaproj.TIMESERIES_DATASETS:
+    if proj.getProjectType() in ocpcaproj.TIMESERIES_PROJECTS:
    
       # Perform argument processing
       args = restargs.BrainRestArgs ()
@@ -265,7 +265,7 @@ def TimeSeriesCutout ( imageargs, proj, db ):
 def imgSlice ( service, imageargs, proj, db ):
   """Return the cube object for an xy plane"""
 
-  if proj.getDBType() in ocpcaproj.COMPOSITE_DATASETS:
+  if proj.getProjectType() in ocpcaproj.COMPOSITE_PROJECTS:
     [ channel, sym, imageargs ] = imageargs.partition ('/')
   else: 
     channel = None
@@ -323,7 +323,7 @@ def xzImage ( imageargs, proj, db ):
 
   # little awkward because we need resolution here
   # it will be reparse in xzSlice
-  if proj.getDBType() == ocpcaproj.CHANNELS_8bit or proj.getDBType() == ocpcaproj.CHANNELS_16bit:
+  if proj.getProjectType() in ocpcaproj.CHANNEL_PROJECTS :
     channel, sym, rest = imageargs.partition("/")
     resolution, sym, rest = rest.partition("/")
   else:
@@ -343,7 +343,7 @@ def yzImage ( imageargs, proj, db ):
 
   # little awkward because we need resolution here
   # it will be reparse in yzSlice
-  if proj.getDBType() == ocpcaproj.CHANNELS_8bit or proj.getDBType() == ocpcaproj.CHANNELS_16bit:
+  if proj.getProjectType() in ocpcaproj.CHANNEL_PROJECTS:
     channel, sym, rest = imageargs.partition("/")
     resolution, sym, rest = rest.partition("/")
   else:
@@ -552,7 +552,7 @@ def selectPost ( webargs, proj, db, postdata ):
   # if it's a channel database, pull out the channels
   # for now we ingest just one channel at a time
   channel = None
-  if proj.getDBType() in ocpcaproj.CHANNEL_DATASETS:
+  if proj.getProjectType() in ocpcaproj.CHANNEL_PROJECTS:
    
     [ chanurl, sym, postargs ] = postargs.partition ('/')
 
@@ -604,7 +604,7 @@ def selectPost ( webargs, proj, db, postdata ):
         fileobj = cStringIO.StringIO ( rawdata )
         voxarray = np.load ( fileobj )
 
-        if proj.getDBType() not in ocpcaproj.ANNOTATION_DATASETS : 
+        if proj.getProjectType() not in ocpcaproj.ANNOTATION_PROJECTS : 
 
           db.writeCuboid ( corner, resolution, voxarray, channel )
           # this is just a status
@@ -641,7 +641,7 @@ def selectPost ( webargs, proj, db, postdata ):
   
           voxarray = np.array(h5f.get('CUTOUT'))
   
-          if proj.getDBType() not in ocpcaproj.ANNOTATION_DATASETS : 
+          if proj.getProjectType() not in ocpcaproj.ANNOTATION_PROJECTS : 
   
             db.writeCuboid ( corner, resolution, voxarray )
             # this is just a status
@@ -1605,10 +1605,10 @@ def mcFalseColor ( webargs ):
   # manage the color space
   # reduction factor.  How to scale data.  16 bit->8bit, or windowed
   (startwindow,endwindow) = proj.datasetcfg.windowrange
-  if proj.getDBType() == ocpcaproj.CHANNELS_16bit and ( startwindow == endwindow == 0):
+  if proj.getDataType() == ocpcaproj.DTYPE_16bit and ( startwindow == endwindow == 0):
     #pass
     mcdata = np.uint8(mcdata * 1.0/256)
-  elif proj.getDBType() == ocpcaproj.CHANNELS_16bit and ( endwindow!=0 ):
+  elif proj.getDataType() == ocpcaproj.DTYPE_16bit and ( endwindow!=0 ):
     from windowcutout import windowCutout
     windowCutout ( mcdata, (startwindow, endwindow) )
 
@@ -1635,7 +1635,7 @@ def reserve ( webargs ):
 
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
 
-    if proj.getDBType() != ocpcaproj.ANNOTATIONS and proj.getDBType() != ocpcaproj.ANNOTATIONS_64bit: 
+    if proj.getProjectType() != ocpcaproj.ANNOTATIONS and proj.getProjectType() != ocpcaproj.ANNOTATIONS_64bit: 
       raise OCPCAError ("Illegal project type for reserve.")
 
     try:
@@ -1845,7 +1845,7 @@ def exceptions ( webargs, ):
     resolution = args.getResolution()
 
     # check to make sure it's an annotation project
-    if proj.getDBType() not in ocpcaproj.ANNOTATION_DATASETS : 
+    if proj.getProjectType() not in ocpcaproj.ANNOTATION_PROJECTS : 
       logger.warning("Asked for exceptions on project that is not of type ANNOTATIONS")
       raise OCPCAError("Asked for exceptions on project that is not of type ANNOTATIONS")
     elif not proj.getExceptions():
