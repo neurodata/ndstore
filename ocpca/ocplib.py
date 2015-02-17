@@ -248,7 +248,7 @@ def exceptionDense_ctype ( data, annodata ):
 def overwriteDense_ctype ( data, annodata ):
   """ Get a dense voxel region and overwrite all the non-zero values """
 
-  orginal_dtype = data.dtype
+  #orginal_dtype = data.dtype
   data = np.uint32(data)
   annodata = np.uint32(annodata)
   dims = [ i for i in data.shape ]
@@ -257,7 +257,8 @@ def overwriteDense_ctype ( data, annodata ):
 
   ocplib.overwriteDense ( data, annodata, (cp.c_int * len(dims))(*dims) )
 
-  return ( data.reshape(dims).astype(orginal_dtype, copy=False) )
+  return ( data.reshape(dims) )
+  #return ( data.reshape(dims).astype(orginal_dtype, copy=False) )
 
 
 def zoomOutData_ctype ( olddata, newdata, factor ):

@@ -66,9 +66,9 @@ def mcfcPNG ( cutout, colors ):
   outimage =Image.frombuffer ( 'RGBA', (cutout.shape[2],cutout.shape[1]), combined_cutout.flatten(), 'raw', 'RGBA', 0, 1 ) 
   
   # Enhance the image
-  #from PIL import ImageEnhance
-  #enhancer = ImageEnhance.Brightness(outimage)
-  #outimage = enhancer.enhance(4.0)
+  from PIL import ImageEnhance
+  enhancer = ImageEnhance.Brightness(outimage)
+  outimage = enhancer.enhance(4.0)
   
   return outimage
 
