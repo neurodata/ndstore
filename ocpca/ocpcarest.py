@@ -183,7 +183,7 @@ def HDF5 ( imageargs, proj, db ):
         cube = cutout ( imageargs, proj, db, chanids[i] )
         changrp.create_dataset ( "{}".format(channels[i]), tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data )
     
-    elif proj.getProjectType() in ocpcaproj.RGB_PROJECTS:
+    elif proj.getProjectType() in ocpcaproj.IMAGE_PROJECTS and proj.getDataType() in ocpcaproj.DTYPE_uint32:
       cube = cutout ( imageargs, proj, db, None)
       cube.RGBAChannel()
       fh5out.create_dataset ( "CUTOUT", tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data )
@@ -196,7 +196,7 @@ def HDF5 ( imageargs, proj, db ):
       FilterCube (imageargs, cube )
       fh5out.create_dataset ( "CUTOUT", tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data )
   
-    fh5out.create_dataset( "DATATYPE", (1,), dtype=np.uint32, data=proj._dbtype )
+    fh5out.create_dataset( "DATATYPE", (1,), dtype=h5py.special_dtype(vlen=str), data=proj._dbtype )
 
   except:
     fh5out.close()
@@ -628,7 +628,7 @@ def selectPost ( webargs, proj, db, postdata ):
   
         corner = args.getCorner()
         resolution = args.getResolution()
-  
+
         # This is used for ingest only now.  So, overwrite conflict option.
         conflictopt = restargs.conflictOption ( "" )
   
@@ -783,7 +783,8 @@ def getAnnoById ( annoid, h5f, proj, db, dataoption, resolution=None, corner=Non
 
     # again an abstraction problem with corner.
     #  return the corner to cutout arguments space
-    retcorner = [corner[0], corner[1], corner[2]+proj.datasetcfg.slicerange[0]]
+    offset = proj.datasetcfg.offset[resolution]
+    retcorner = [corner[0]+offset[0], corner[1]+offset[1], corner[2]+offset[2]]
     h5anno.addCutout ( resolution, retcorner, cb.data )
 
   elif dataoption==AR_TIGHTCUTOUT:
@@ -1265,6 +1266,7 @@ def putAnnotation ( webargs, postdata ):
               #  Is it voxel data?
               if 'VOXELS' in idgrp:
                 voxels = np.array(idgrp.get('VOXELS'),dtype=np.uint32)
+                voxels = voxels - proj.datasetcfg.offset[resolution]
               else: 
                 voxels = None
   
@@ -1286,6 +1288,7 @@ def putAnnotation ( webargs, postdata ):
   
               # Otherwise this is a shave operation
               elif voxels != None and 'reduce' in options:
+
   
                 # Check that the voxels have a conforming size:
                 if voxels.shape[1] != 3:
@@ -1308,15 +1311,15 @@ def putAnnotation ( webargs, postdata ):
                 #  the zstart in datasetcfg is sometimes offset to make it aligned.
                 #   Probably remove the offset is the best idea.  and align data
                 #    to zero regardless of where it starts.  For now.
-                corner = h5xyzoffset[:] 
-                corner[2] -= proj.datasetcfg.slicerange[0]
+                offset = proj.datasetcfg.offset[resolution]
+                corner = (h5xyzoffset[0]-offset[0],h5xyzoffset[1]-offset[1],h5xyzoffset[2]-offset[2])
   
                 db.annotateEntityDense ( anno.annid, corner, resolution, np.array(cutout), conflictopt )
   
               elif cutout != None and h5xyzoffset != None and 'reduce' in options:
-  
-                corner = h5xyzoffset[:] 
-                corner[2] -= proj.datasetcfg.slicerange[0]
+
+                offset = proj.datasetcfg.offset[resolution]
+                corner = (h5xyzoffset[0]-offset[0],h5xyzoffset[1]-offset[1],h5xyzoffset[2]-offset[2])
   
                 db.shaveEntityDense ( anno.annid, corner, resolution, np.array(cutout))
   
@@ -1399,20 +1402,14 @@ def queryAnnoObjects ( webargs, postdata=None ):
 
         try:
   
-          corner = h5f['XYZOFFSET'][:]
+          offset = proj.datasetcfg.offset[resolution]
+          corner = (h5f['XYZOFFSET'][0]-offset[0],h5f['XYZOFFSET'][1]-offset[1],h5f['XYZOFFSET'][2]-offset[2])
           dim = h5f['CUTOUTSIZE'][:]
           resolution = h5f['RESOLUTION'][0]
   
           if not proj.datasetcfg.checkCube( resolution, corner[0], corner[0]+dim[0], corner[1], corner[1]+dim[1], corner[2], corner[2]+dim[2] ):
             logger.warning ( "Illegal cutout corner=%s, dim=%s" % ( corner, dim))
             raise OCPCAError ( "Illegal cutout corner=%s, dim=%s" % ( corner, dim))
-  
-          # RBFIX this a hack
-          #
-          #  the zstart in datasetcfg is sometimes offset to make it aligned.
-          #   Probably remove the offset is the best idea.  and align data
-          #    to zero regardless of where it starts.  For now.
-          corner[2] -= proj.datasetcfg.slicerange[0]
   
           cutout = db.cutout ( corner, dim, resolution )
           annoids = np.intersect1d ( annoids, np.unique( cutout.data ))
@@ -1635,7 +1632,7 @@ def reserve ( webargs ):
 
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
 
-    if proj.getProjectType() != ocpcaproj.ANNOTATIONS and proj.getProjectType() != ocpcaproj.ANNOTATIONS_64bit: 
+    if proj.getProjectType() not in ocpcaproj.ANNOTATION_PROJECTS:
       raise OCPCAError ("Illegal project type for reserve.")
 
     try:

@@ -279,6 +279,8 @@ def tokens(request):
 
 @login_required(login_url='/ocp/accounts/login/')
 def createproject(request):
+
+# RBTODO update for the new schame
   
   if request.method == 'POST':
     if 'CreateProject' in request.POST:
@@ -310,7 +312,8 @@ def createproject(request):
         # Get database info                
         try:
           pd = ocpcaproj.OCPCAProjectsDB()
-          pd.newOCPCAProj ( token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate, int(resolution), int(public),kvserver,kvengine ,propogate)
+#          pd.newOCPCAProj ( token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate, int(resolution), int(public),kvserver,kvengine ,propogate)
+          pd.newOCPCAProj ( token, openid, host, project, 'annotation', 'uint32', dataset, dataurl, readonly, exceptions , nocreate, int(resolution), int(public),kvserver,kvengine ,propogate)
           #pd.insertTokenDescription ( token, description )
           return redirect(profile)          
         except OCPCAError, e:

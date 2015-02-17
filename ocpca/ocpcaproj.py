@@ -44,9 +44,9 @@ COMPOSITE_PROJECTS = CHANNEL_PROJECTS + TIMESERIES_PROJECTS
 # datatype groups
 DTYPE_uint8 = [ 'uint8' ]
 DTYPE_uint16 = [ 'uint16' ]
-DTPPE_uint32 = [ 'rgb32','uint32' ]
-DTPPE_uint64 = [ 'rgb64' ]
-DTPPE_float32 = [ 'probability' ]
+DTYPE_uint32 = [ 'rgb32','uint32' ]
+DTYPE_uint64 = [ 'rgb64' ]
+DTYPE_float32 = [ 'probability' ]
 OCP_dtypetonp = {'uint8':np.uint8,'uint16':np.uint16,'uint32':np.uint32,'rgb32':np.uint32,'rgb64':np.uint64,'probability':np.float32}
 
 
@@ -390,13 +390,13 @@ class OCPCAProjectsDB:
   #
   # Create a new project (annotation or data)
   #
-  def newOCPCAProj ( self, token, openid, dbhost, project, dbtype, dataset, dataurl, readonly, exceptions, nocreate, resolution, public, kvserver, kvengine, propagate ):
+  def newOCPCAProj ( self, token, openid, dbhost, project, dbtype, datatype, dataset, dataurl, readonly, exceptions, nocreate, resolution, public, kvserver, kvengine, propagate ):
     """ Create a new ocpca project """
 
     datasetcfg = self.loadDatasetConfig ( dataset )
 
-    sql = "INSERT INTO {0} (token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions, resolution, public, kvserver, kvengine, propagate) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',{5},\'{6}\',\'{7}\',\'{8}\',\'{9}\',\'{10}\',\'{11}\',\'{12}\',\'{13}\',\'{14}\')".format (\
-       ocpcaprivate.projects, token, openid, dbhost, project, dbtype, dataset, dataurl, int(readonly), int(exceptions), resolution, int(public), kvserver, kvengine, int(propagate) )
+    sql = "INSERT INTO {0} (token, openid, host, project, dbtype, datatype, dataset, dataurl, readonly, exceptions, resolution, public, kvserver, kvengine, propagate) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',\'{5}\',\'{6}\',\'{7}\',\'{8}\',\'{9}\',\'{10}\',\'{11}\',\'{12}\',\'{13}\',\'{14}\',\'{15}\')".format (\
+       ocpcaprivate.projects, token, openid, dbhost, project, dbtype, datatype, dataset, dataurl, int(readonly), int(exceptions), resolution, int(public), kvserver, kvengine, int(propagate) )
 
     logger.info ( "Creating new project. Host %s. Project %s. SQL=%s" % ( dbhost, project, sql ))
 

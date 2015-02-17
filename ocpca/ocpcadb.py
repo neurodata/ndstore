@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-# RBTODO cuboids upload.  batch i/o with getcubes when possible
+# RBTODO batch i/o with getcubes when possible
 
 import numpy as np
 import cStringIO
@@ -367,17 +366,17 @@ class OCPCADB:
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
     # Create a cube object
-    if (self.annoproj.getProjectType() == ocpcaproj.ANNOTATIONS):
+    if (self.annoproj.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS and self.annoproj.getDataType() in ocpcaproj.DTYPE_uint32):
       cube = anncube.AnnotateCube ( cubedim )
-    elif (self.annoproj.getProjectType() == ocpcaproj.PROBMAP_32bit):
+    elif (self.annoproj.getDataType() == ocpcaproj.DTYPE_float32):
       cube = probmapcube.ProbMapCube32 ( cubedim )
-    elif (self.annoproj.getProjectType() == ocpcaproj.IMAGES_8bit):
+    elif (self.annoproj.getProjectType() == ocpcaproj.DTYPE_uint8):
       cube = imagecube.ImageCube8 ( cubedim )
-    elif (self.annoproj.getProjectType() == ocpcaproj.IMAGES_16bit):
+    elif (self.annoproj.getProjectType() == ocpcaproj.DTYPE_uint16):
       cube = imagecube.ImageCube16 ( cubedim )
-    elif (self.annoproj.getProjectType() == ocpcaproj.RGB_32bit):
+    elif (self.annoproj.getProjectType() in ocpcaproj.IMAGE_PROJECTS and self.annoproj.getDataType() in ocpcaproj.DTYPE_uint32):
       cube = imagecube.ImageCube32 ( cubedim )
-    elif (self.annoproj.getProjectType() == ocpcaproj.RGB_64bit):
+    elif (self.annoproj.getProjectType() in ocpcaproj.IMAGE_PROJECTS and self.annoproj.getDataType() in ocpcaproj.DTYPE_uint64):
       cube = imagecube.ImageCube64 ( cubedim )
     else:
       raise OCPCAError ("Unknown project type {}".format(self.annoproj.getProjectType()))
@@ -875,7 +874,7 @@ class OCPCADB:
         # update the sparse list of exceptions
         if self.EXCEPT_FLAG:
           if len(exceptions) != 0:
-            self.kvio.removeExceptions ( key, resolution, entityid, exceptions )
+            self.removeExceptions ( key, resolution, entityid, exceptions )
 
         self.putCube ( key, resolution, cube)
 
@@ -1057,7 +1056,7 @@ class OCPCADB:
                 # assemble into 3-tuples zyx->xyz
                 exceptions = np.array ( zip(exoffsets[2], exoffsets[1], exoffsets[0]), dtype=np.uint32 )
                 # update the exceptions
-                self.kvio.removeExceptions ( key, resolution, exid, exceptions )
+                self.removeExceptions ( key, resolution, exid, exceptions )
                 # add to the index
                 index_dict[exid].add(key)
 
