@@ -1969,7 +1969,6 @@ class OCPCADB:
  
             # overwrite the cube
             cube.overwrite ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
-
             # update in the database
             if channel == None:
               self.putCube ( key, resolution, cube)

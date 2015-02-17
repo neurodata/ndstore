@@ -23,7 +23,7 @@ void filterCutoutOMP ( uint32_t * cutout, int cutoutsize, uint32_t * filterlist,
 {
 		int i,j;
 		bool equal;
-		printf("MAX THREADS: %d",omp_get_max_threads());
+		//printf("MAX THREADS: %d",omp_get_max_threads());
 #pragma omp parallel num_threads(omp_get_max_threads()) 
 		{
 #pragma omp for private(i,j,equal) schedule(dynamic)
