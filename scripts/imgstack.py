@@ -17,6 +17,7 @@ import sys
 import os
 import numpy as np
 import urllib, urllib2
+import scipy.ndimage.interpolation
 import cStringIO
 from PIL import Image
 import zlib
@@ -45,6 +46,8 @@ class ImgStack:
     # Bind the annotation database
     self.imgDB = ocpcadb.OCPCADB ( self.proj )
 
+    self.scaling = self.proj.datasetcfg.scalingoption
+
 
   def buildStack ( self, startlevel ):
     """Build the hierarchy of images"""
@@ -52,21 +55,24 @@ class ImgStack:
     for  l in range ( startlevel, len(self.proj.datasetcfg.resolutions) ):
 
       # Get the source database sizes
-      [ximagesz, yimagesz] = self.proj.datasetcfg.imagesz [ l ]
+      [ximagesz, yimagesz, zimagesz] = self.proj.datasetcfg.imagesz [ l ]
       [xcubedim, ycubedim, zcubedim] = self.proj.datasetcfg.cubedim [ l ]
 
-      biggercubedim = [xcubedim*2,ycubedim*2,zcubedim]
-
-      # Get the slices
-      [ startslice, endslice ] = self.proj.datasetcfg.slicerange
-      slices = endslice - startslice + 1
+      if self.scaling == ocpcaproj.ZSLICES:
+        xscale = 2
+        yscale = 2
+        zscale = 1
+      elif self.scaling == ocpcaproj.ISOTROPIC:
+        xscale = 2
+        yscale = 2
+        zscale = 2
+      biggercubedim = [xcubedim*xscale,ycubedim*yscale,zcubedim*zscale]
 
       # Set the limits for iteration on the number of cubes in each dimension
       # RBTODO These limits may be wrong for even (see channelingest.py)
       xlimit = ximagesz / xcubedim
       ylimit = yimagesz / ycubedim
-      #  Round up the zlimit to the next larger
-      zlimit = (((slices-1)/zcubedim+1)*zcubedim)/zcubedim 
+      zlimit = zimagesz / zcubedim
 
       cursor = self.imgDB.conn.cursor()
 
@@ -76,14 +82,39 @@ class ImgStack:
           for x in range(xlimit):
 
             # cutout the data at the -1 resolution
-            olddata = self.imgDB.cutout ( [ x*2*xcubedim, y*2*ycubedim, z*zcubedim ], biggercubedim, l-1 ).data
-            # target array for the new data (z,y,x) order
-            newdata = np.zeros([zcubedim,ycubedim,xcubedim], dtype=np.uint8)
+            olddata = self.imgDB.cutout ( [ x*xscale*xcubedim, y*yscale*ycubedim, z*zscale*zcubedim ], biggercubedim, l-1 ).data
+
+            #olddata target array for the new data (z,y,x) order
+            newdata = np.zeros([zcubedim,ycubedim,xcubedim], dtype=olddata.dtype)
 
             for sl in range(zcubedim):
 
-              # Convert each slice to an image
-              slimage = Image.frombuffer ( 'L', (xcubedim*2,ycubedim*2), olddata[sl,:,:].flatten(), 'raw', 'L', 0, 1 )
+              if self.scaling == ocpcaproj.ZSLICES:
+
+                # Convert each slice to an image
+                # 8-bit option
+                if olddata.dtype==np.uint8:
+                  slimage = Image.frombuffer ( 'L', (xcubedim*2,ycubedim*2), olddata[sl,:,:].flatten(), 'raw', 'L', 0, 1 )
+                elif olddata.dtype==np.uint16:
+                  slimage = Image.frombuffer ( 'I;16', (xcubedim*2,ycubedim*2), olddata[sl,:,:].flatten(), 'raw', 'I;16', 0, 1 )
+                elif olddata.dtype==np.float32:
+                  slimage = Image.frombuffer ( 'F', (xcubedim*2,ycubedim*2), olddata[sl,:,:].flatten(), 'raw', 'F', 0, 1 )
+
+              elif self.scaling == ocpcaproj.ISOTROPIC:
+
+                # KLTODO it's probably worth doing a ctypes implementation of the following vectorized function it's slow
+                if olddata.dtype==np.uint8:
+                  vec_func = np.vectorize ( lambda a,b: a if b==0 else (b if a ==0 else np.uint8((a+b)/2))) 
+                  mergedata = vec_func ( olddata[sl*2,:,:], olddata[sl*2+1,:,:] )
+                  slimage = Image.frombuffer ( 'L', (xcubedim*2,ycubedim*2), mergedata.flatten(), 'raw', 'L', 0, 1 )
+                elif olddata.dtype==np.uint16:
+                  vec_func = np.vectorize ( lambda a,b: a if b==0 else (b if a ==0 else np.uint16((a+b)/2))) 
+                  mergedata = vec_func ( olddata[sl*2,:,:], olddata[sl*2+1,:,:] )
+                  slimage = Image.frombuffer ( 'I;16', (xcubedim*2,ycubedim*2), mergedata.flatten(), 'raw', 'I;16', 0, 1 )
+                elif olddata.dtype==np.float32:
+                  vec_func = np.vectorize ( lambda a,b: a if b==0 else (b if a ==0 else np.float32((a+b)/2))) 
+                  mergedata = vec_func ( olddata[sl*2,:,:], olddata[sl*2+1,:,:] )
+                  slimage = Image.frombuffer ( 'F', (xcubedim*2,ycubedim*2), mergedata.flatten(), 'raw', 'F', 0, 1 )
 
               # Resize the image
               newimage = slimage.resize ( [xcubedim,ycubedim] )
@@ -91,11 +122,12 @@ class ImgStack:
               # Put to a new cube
               newdata[sl,:,:] = np.asarray ( newimage )
 
-              # Compress the data
-              outfobj = cStringIO.StringIO ()
-              np.save ( outfobj, newdata )
-              zdataout = zlib.compress (outfobj.getvalue())
-              outfobj.close()
+  
+            # Compress the data
+            outfobj = cStringIO.StringIO ()
+            np.save ( outfobj, newdata )
+            zdataout = zlib.compress (outfobj.getvalue())
+            outfobj.close()
 
             key = zindex.XYZMorton ( [x,y,z] )
             

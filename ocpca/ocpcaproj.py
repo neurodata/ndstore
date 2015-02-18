@@ -198,24 +198,6 @@ class OCPCADataset:
       # add this level to the resolutions
       self.resolutions.append( i )
 
-      # choose the cubedim as a function of the zscale
-      #  this may need to be changed.  
-      if scalingoption == ZSLICES:
-        if float(zvoxelres/xvoxelres)/(2**i) >  0.5:
-          self.cubedim[i] = [128, 128, 16]
-        else: 
-          self.cubedim[i] = [64, 64, 64]
-
-        # Make an exception for bock11 data -- just an inconsistency in original ingest
-        if ximagesz == 135424 and i == 5:
-          self.cubedim[i] = [128, 128, 16]
-
-      else:
-        # RB what should we use as a cubedim?
-        self.cubedim[i] = [128, 128, 16]
-#        self.cubedim[i] = [64, 64, 64]
-
-
       # set the image size
       #  the scaled down image rounded up to the nearest cube
       xpixels=((ximagesz-1)/2**i)+1
@@ -251,9 +233,28 @@ class OCPCADataset:
       if scalingoption == ZSLICES:
         zvoxelresi = zvoxelres
       else:
-        zvoxelresi = zvoxelres/float(2**i)
+        zvoxelresi = zvoxelres*float(2**i)
 
       self.voxelres[i] = [ xvoxelresi, yvoxelresi, zvoxelresi ]
+
+      # choose the cubedim as a function of the zscale
+      #  this may need to be changed.  
+      if scalingoption == ZSLICES:
+        if float(zvoxelres/xvoxelres)/(2**i) >  0.5:
+          self.cubedim[i] = [128, 128, 16]
+        else: 
+          self.cubedim[i] = [64, 64, 64]
+
+        # Make an exception for bock11 data -- just an inconsistency in original ingest
+        if ximagesz == 135424 and i == 5:
+          self.cubedim[i] = [128, 128, 16]
+
+      else:
+        # RB what should we use as a cubedim?
+        self.cubedim[i] = [128, 128, 16]
+#        self.cubedim[i] = [64, 64, 64]
+
+
 
       #RB need to reconsider nearisotropic for Stefan.....
 #      # set the isotropic image size when well defined
