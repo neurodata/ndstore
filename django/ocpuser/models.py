@@ -15,12 +15,37 @@
 from django.db import models
 from django.db.models.signals import post_save
 from django.contrib.auth.models import User
+from django.conf import settings
+# Create your models here.
+class Dataset ( models.Model):
+    dataset = models. CharField(max_length=200, unique=True,verbose_name="Name of the Image dataset")    
+    ximagesize =  models.IntegerField()
+    yimagesize =  models.IntegerField()
 
-class ocpProject ( models.Model):
-    token  =  models. CharField(max_length=200)
+    startslice = models.IntegerField()
+    endslice = models.IntegerField()
+    startwindow = models.IntegerField(default=0)
+    endwindow = models.IntegerField(default=0)
+    starttime = models.IntegerField(default=0)
+    endtime = models.IntegerField(default=0)
+    zoomlevels = models.IntegerField()
+    zscale = models.FloatField()
     description  =  models. CharField(max_length=4096)
-    project  =  models. CharField(max_length=200)
-    dataset  =  models. CharField(max_length=200)
+    
+    class Meta:
+        """ Meta """
+        db_table = u"datasets"
+        managed = True
+       
+    def __unicode__(self):
+        return self.dataset
+
+
+class Project ( models.Model):
+    project_name  =  models. CharField(max_length=200, primary_key=True)
+    project_description  =  models. CharField(max_length=4096, blank=True)
+    #user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    dataset  =  models.ForeignKey(Dataset)
 
     DATATYPE_CHOICES = (
         (1, 'IMAGES'),
@@ -37,23 +62,21 @@ class ocpProject ( models.Model):
         (12,'TIMESERIES_4d_16bit'),
         )
     datatype = models.IntegerField(choices=DATATYPE_CHOICES, default=1)
-    
-
-#    dataurl  =  models. CharField(max_length=200)
+    #    dataurl  =  models. CharField(max_length=200)
     overlayproject = models. CharField(max_length=200,default="None")
-
-    resolution = models.IntegerField(default=0)
-    PUBLIC_CHOICES = (
-        (1, 'Yes'),
-        (0, 'No'),
-        )
-    public =  models.IntegerField(choices=PUBLIC_CHOICES, default=0)
+    OVERLAY_SERVER_CHOICES = (
+        ('openconnecto.me', 'openconnecto.me'),
+        ('braingraph1.cs.jhu.edu', 'braingraph1.cs.jhu.edu'),
+        ('braingraph1dev.cs.jhu.edu', 'braingraph1dev'),
+        ('braingraph2.cs.jhu.edu', 'braingraph2'),
+        ('dsp061.pha.jhu.edu', 'dsp061'),
+        ('dsp062.pha.jhu.edu', 'dsp062'),
+        ('dsp063.pha.jhu.edu', 'dsp063'),
+        
+    )
+    overlayserver =  models.CharField(max_length=200, choices=OVERLAY_SERVER_CHOICES, default='openconnecto.me')
     
-    READONLY_CHOICES = (
-        (1, 'Yes'),
-        (0, 'No'),
-        )
-    readonly =  models.IntegerField(choices=READONLY_CHOICES, default=2)
+    resolution = models.IntegerField(default=0)
 
     EXCEPTION_CHOICES = (
         (1, 'Yes'),
@@ -62,7 +85,8 @@ class ocpProject ( models.Model):
     exceptions =  models.IntegerField(choices=EXCEPTION_CHOICES, default=2)
     HOST_CHOICES = (
         ('localhost', 'localhost'),
-        ('braingraph1.cs.jhu.edu', 'openconnecto.me'),
+        ('openconnecto.me', 'openconnecto.me'),
+        ('braingraph1.cs.jhu.edu', 'braingraph1'),
         ('braingraph1dev.cs.jhu.edu', 'braingraph1dev'),
         ('braingraph2.cs.jhu.edu', 'braingraph2'),
         ('dsp061.pha.jhu.edu', 'dsp061'),
@@ -87,44 +111,44 @@ class ocpProject ( models.Model):
         )
     kvserver =  models.CharField(max_length=255, choices=KVSERVER_CHOICES, default='localhost')
 
-    PROPOGATE_CHOICES = (
-        (0, 'NOT PROPOGATED'),
-        (1, 'UNDER PROPOGATION'),
-        (2, 'PROPOGATED'),
+    PROPAGATE_CHOICES = (
+        (0, 'NOT PROPAGATED'),
+        (1, 'UNDER PROPAGATION'),
+        (2, 'PROPAGATED'),
         )
-    propogate =  models.IntegerField(choices=PROPOGATE_CHOICES, default=0)
-#    NOCREATE_CHOICES = (
- #       (0, 'No'),
- #       (1, 'Yes'),
- #       )
- #   nocreate =  models.IntegerField(choices=NOCREATE_CHOICES, default=0)
+    propagate =  models.IntegerField(choices=PROPAGATE_CHOICES, default=0)
+
 
     class Meta:
         """ Meta """
-        app_label = 'emca'
         db_table = u"projects"
+        managed = True
+
+        
     def __unicode__(self):
-        return self.name
+        return self.project_name
 
-# Create your models here.
-class ocpDataset ( models.Model):
-    dataset  =  models. CharField(max_length=200)    
-    ximagesize =  models.IntegerField()
-    yimagesize =  models.IntegerField()
 
-    startslice = models.IntegerField()
-    endslice = models.IntegerField()
-    startwindow = models.IntegerField(default=0)
-    endwindow = models.IntegerField(default=0)
-    starttime = models.IntegerField(default=0)
-    endtime = models.IntegerField(default=0)
-    zoomlevels = models.IntegerField()
-    zscale = models.FloatField()
-    description  =  models. CharField(max_length=4096)
+class Token ( models.Model):
+    token_name  =  models. CharField(max_length=200, primary_key=True)
+    token_description  =  models. CharField(max_length=4096,blank=True)
+    project  = models.ForeignKey(Project)
+    READONLY_CHOICES = (
+        (1, 'Yes'),
+        (0, 'No'),
+        )
+    readonly =  models.IntegerField(choices=READONLY_CHOICES, default=2)
+    PUBLIC_CHOICES = (
+        (1, 'Yes'),
+        (0, 'No'),
+        )
+    public =  models.IntegerField(choices=PUBLIC_CHOICES, default=2)
+    
     
     class Meta:
         """ Meta """
-        app_label = 'emca'
-        db_table = u"projects"
+         # Required to override the default table name
+        db_table = u"tokens"
+        managed = True
     def __unicode__(self):
-        return self.name
+        return self.token_name

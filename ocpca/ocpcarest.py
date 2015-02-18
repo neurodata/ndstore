@@ -1180,14 +1180,15 @@ def putAnnotationAsync ( webargs, postdata ):
 
 def putAnnotation ( webargs, postdata ):
   """Put a RAMON object as HDF5 by object identifier"""
-
+  
   [ token, sym, optionsargs ] = webargs.partition ('/')
 
   # pattern for using contexts to close databases
   # get the project 
+  
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadProject ( token )
-
+  
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
 

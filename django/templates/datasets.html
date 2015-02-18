@@ -54,10 +54,10 @@
       <div class ="span1"></div>
       <div class ="span10">
 	<table class ="table">
-	  {% for dataset in dts %}
+	  {% for ds in dts %}
 	  
 	  <thead>
-	    <tr class="success"><th>Dataset</th> <th>{{dataset.0}}</th></tr>
+	    <tr class="success"><th>Dataset</th> <th>{{ds.dataset}} ( {{ds.description}} ) </th></tr>
 	  </thead>
 	  <tr>
 	    <td></td>
@@ -78,20 +78,24 @@
 		</tr>	   
 		<form method="post" action = "">
 		  <tr>
-	            <input type="hidden" name="dataset" value={{dataset.0}}>
-                    <td style="width: 15%;">{{ dataset.1 }}</td>
-                    <td>{{ dataset.2 }}</td>
-		    <td>{{ dataset.3 }}</td>
-		    <td>{{ dataset.4 }}</td>
-		    <td>{{ dataset.5 }}</td>
-		    <td>{{ dataset.6 }}</td>
-		    <td>{{ dataset.7 }}</td>
-                    <td>{{ dataset.8 }}</td>
-		    <td>{{ dataset.9 }}</td>
-		    <td>{{ dataset.10 }}</td>
+	            <input type="hidden" name="dataset_name" value={{ds.dataset}}>
+                    <td style="width: 15%;">{{ ds.ximagesize }}</td>
+                    <td>{{ ds.yimagesize }}</td>
+		    <td>{{ ds.startslice }}</td>
+		    <td>{{ ds.endslice }}</td>
+		    <td>{{ ds.zoomlevels }}</td>
+		    <td>{{ ds.zscale }}</td>
+		    <td>{{ ds.startwindow }}</td>
+                    <td>{{ ds.endwindow }}</td>
+		    <td>{{ ds.starttime }}</td>
+		    <td>{{ ds.endtime }}</td>
 
-                    <td><button class="btn" id="delete" type="submit" name="delete"> <i class ="icon-trash icon-black"></i>Delete Dataset</button></td>
+
+
+		    <td><button class="btn" id="delete" type="submit" name="delete" onclick="return confirm('Are you sure you want to delete?')"> <i class ="icon-trash icon-black"></i>Delete Dataset</button></td>
 <!--		    <td><button class="btn" id="viewprojects" type="submit" name="viewprojects"> <i class ="icon-inbox icon-black"></i>View Projects</button></td>-->
+		    <td><button class="btn" id="update" type="submit" name="update"> <i class ="icon-inbox icon-black"></i>Update Dataset</button></td>
+
 		    
 		    
 		</form>

@@ -1,28 +1,265 @@
 {% extends "base.html" %}
 {% comment %}
-Update Project Template
+Create Project Template
 {% endcomment %}
 
 {% block title %}
-    <section>
-        <h2> Update Project Token </h2>
-
-{% endblock %}
+        Update Project
+{% endblock title%}
 {% block content %}
+ <div class="container-fluid">
+   <div class = "row-fluid">
+        <div class ="span12">
 
-       <form action="" method="post" enctype="multipart/form-data">
-         {% csrf_token %}
-         <div align=left>
+	  <div id="header" style="background-color:#4682B4;" align="center">
+	    <h2 style="margin-bottom:0;">UPDATE PROJECT</h2></div>
+	</div>
+   </div>
+ </div>
 
-           <p>{{form.as_p}}</p>
+<form method="post" action="" enctype="multipart/form-data">
+   
+  {{ form.non_field_errors }}
+  <div class="container-fluid">
+    
+  
+      
+     <div class = "row">
+       <div class ="col-md-4"></div>
+       <div class ="col-md-2">
+         <div class="fieldWrapper">
+           {{ form.subject.errors }}
+           <label for="project">Project:</label>
          </div>
-         <div align=left>
-           <p><input name = "UpdateProject" type="submit" value="Update Project"></p>
+       </div>
+       <div class ="col-md-2">
+         {{ form.project_name }}
+       </div>
+       <div class ="col-md-4"></div>
+     </div>
 
-           <div>
-       </form>
+      <div class = "row">
+      <div class ="col-md-4"></div>
+      <div class ="col-md-2">
+        <div class="fieldWrapper">
+          {{ form.subject.errors }}
+          <label for="description">Description</label>
+        </div>
+      </div>
+      <div class ="col-md-2">
+        {{ form.project_description }}
+      </div>
+      <div class ="col-md-4"></div>
+    </div>
 
-    </section>
+     <div class = "row">
+       <div class ="col-md-4"></div>
+       <div class ="col-md-2">
+         <div class="fieldWrapper">
+           {{ form.subject.errors }}
+           <label for="oproject">Overlay Project:</label>
+         </div>
+       </div>
+       <div class ="col-md-2">
+         {{ form.overlayproject }}
+       </div>
+       <div class ="col-md-4"></div>
+     </div>
+
+      <div class = "row">
+       <div class ="col-md-4"></div>
+       <div class ="col-md-2">
+         <div class="fieldWrapper">
+           {{ form.subject.errors }}
+           <label for="overlayserver"> Overlay server</label>
+         </div>
+       </div>
+       <div class ="col-md-2">
+         {{ form.overlayserver }}
+       </div>
+       <div class ="col-md-4"></div>
+     </div>
+
+     <div class = "row">
+       <div class ="col-md-4"></div>
+       <div class ="col-md-2">
+         <div class="fieldWrapper">
+           {{ form.subject.errors }}
+           <label for="dataset">Dataset</label>
+         </div>
+       </div>
+       <div class ="col-md-2">
+         {{ form.dataset }}
+       </div>
+       <div class ="col-md-4"></div>
+     </div>
+
+     <div class = "row">
+       <div class ="col-md-4"></div>
+       <div class ="col-md-2">
+         <div class="fieldWrapper">
+           {{ form.subject.errors }}
+           <label for="datatype">Datatype:</label>
+             </div>
+           </div>
+           <div class ="col-md-2">
+             {{ form.datatype }}
+           </div>
+           <div class ="col-md-4"></div>
+     </div>
+     
+   <!--  <div class = "row-fluid">
+       <div class ="span4"></div>
+       <div class ="span2">
+         <div class="fieldWrapper">
+           {{ form.subject.errors }}
+           <label for="dataurl">Data URL</label>
+         </div>
+       </div>
+       <div class ="span2">
+         {{ form.dataurl }}
+       </div>
+       <div class ="span4"></div>
+     </div>-->
+
+     <div class = "row">
+       <div class ="col-md-4"></div>
+       <div class ="col-md-2">
+         <div class="fieldWrapper">
+           {{ form.subject.errors }}
+           <label for="resolution">Resolution:</label>
+         </div>
+       </div>
+       <div class ="col-md-2">
+         {{ form.resolution }}
+       </div>
+       <div class ="col-md-4"></div>
+     </div>
+
+<!--     <div class = "row">
+       <div class ="col-md-4"></div>
+       <div class ="col-md-2">
+         <div class="fieldWrapper">
+           {{ form.subject.errors }}
+           <label for="readonly">Read Only:</label>
+         </div>
+       </div>
+       <div class ="col-md-2">
+         {{ form.readonly }}
+       </div>
+       <div class ="col-md-4"></div>
+     </div>-->
+     
+     <div class = "row">
+       <div class ="col-md-4"></div>
+       <div class ="col-md-2">
+         <div class="fieldWrapper">
+           {{ form.subject.errors }}
+           <label for="exceptions">Enable Exceptions:</label>
+         </div>
+       </div>
+       <div class ="col-md-2">
+         {{ form.exceptions }}
+       </div>
+       <div class ="col-md-4"></div>
+     </div>
+     
+     <div class = "row">
+       <div class ="col-md-4"></div>
+       <div class ="col-md-2">
+         <div class="fieldWrapper">
+           {{ form.subject.errors }}
+           <label for="exceptions"> Database Host</label>
+         </div>
+       </div>
+       <div class ="col-md-2">
+         {{ form.host }}
+       </div>
+       <div class ="col-md-4"></div>
+     </div>
+
+   <!--   <div class = "row">
+       <div class ="col-md-4"></div>
+       <div class ="col-md-2">
+         <div class="fieldWrapper">
+           {{ form.subject.errors }}
+           <label for="publicl">Public Project:</label>
+         </div>
+       </div>
+       <div class ="col-md-2">
+         {{ form.public }}
+       </div>
+       <div class ="col-md-4"></div>
+     </div>-->
+
+      <div class = "row">
+       <div class ="col-md-4"></div>
+       <div class ="col-md-2">
+         <div class="fieldWrapper">
+           {{ form.subject.errors }}
+           <label for="kvenginelabel"> KV Engine</label>
+         </div>
+       </div>
+       <div class ="col-md-2">
+         {{ form.kvengine }}
+       </div>
+       <div class ="col-md-4"></div>
+     </div>
+
+      <div class = "row">
+       <div class ="col-md-4"></div>
+       <div class ="col-md-2">
+         <div class="fieldWrapper">
+           {{ form.subject.errors }}
+           <label for="kvserverlabel"> KV Server</label>
+         </div>
+       </div>
+       <div class ="col-md-2">
+         {{ form.kvserver }}
+       </div>
+       <div class ="col-md-4"></div>
+     </div>
+
+      <div class = "row">
+       <div class ="col-md-4"></div>
+       <div class ="col-md-2">
+         <div class="fieldWrapper">
+           {{ form.subject.errors }}
+           <label for="propagate">Propagate:</label>
+         </div>
+       </div>
+       <div class ="col-md-2">
+         {{ form.propagate }}
+       </div>
+       <div class ="col-md-4"></div>
+     </div>
+
+
+     <!--<div class = "row">
+       <div class ="col-md-4"></div>
+       <div class ="col-md-2">
+         <div class="fieldWrapper">
+           <input type="checkbox" name="nocreate" id="nocre" value="on"> Link to existing database
+         </div>
+       </div>
+       <div class ="col-md-2">
+         {{ form.nocreate }}
+       </div>
+       <div class ="col-md-4"></div>
+     </div>-->
+
+     
+         
+    <div class = "row">
+      <div class ="col-md-5"></div>
+      <div class ="col-md-3">
+	<p><button class="btn btn-primary" name = "UpdateProject" type="submit">Update Project</button></p>
+        
+      </div>
+      <div class ="col-md-4"></div>
+      
+ </form>
+       
 {% endblock %}
 
 

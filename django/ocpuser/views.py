@@ -20,9 +20,9 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render_to_response
 from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404
 from django.template import RequestContext
-from django.contrib.auth import authenticate, login, logout
-from django.core.urlresolvers import get_script_prefix
+from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.template import Context
 from collections import defaultdict
 from django.contrib import messages
@@ -30,11 +30,12 @@ import ocpcarest
 import ocpcaproj
 import string
 import random
-from models import ocpProject
-from models import ocpDataset
+from models import Project
+from models import Dataset
+from models import Token
 from forms import CreateProjectForm
 from forms import CreateDatasetForm
-from forms import UpdateProjectForm
+from forms import CreateTokenForm
 from django.core.urlresolvers import get_script_prefix
 import os
 import subprocess
@@ -50,111 +51,98 @@ def default(request):
   return redirect(get_script_prefix()+'profile', {"user":request.user})
 
 ''' Little welcome message'''
-@login_required
+@login_required(login_url='/ocp/accounts/login/')
 def profile(request):
   try:
     if request.method == 'POST':
       if 'filter' in request.POST:
-      #FILTER PROJECTS BASED ON INPUT VALUE
+        #FILTER PROJECTS BASED ON INPUT VALUE
         openid = request.user.username
         filteroption = request.POST.get('filteroption')
         filtervalue = (request.POST.get('filtervalue')).strip()
         pd = ocpcaproj.OCPCAProjectsDB()
-        projects = pd.getFilteredProjects ( openid,filteroption,filtervalue )
-        
-        databases = pd.getDatabases ( openid)
+        all_datasets= Dataset.objects.all()
         dbs = defaultdict(list)
-        for db in databases:
-          proj = pd.getFilteredProjs(openid,filteroption,filtervalue,db[0]);
-          dbs[db].append(proj)
-          
-        return render_to_response('profile.html', { 'projs': projects,'databases': dbs.iteritems() },
-                                context_instance=RequestContext(request))
-      elif 'delete' in request.POST:
-      #DELETE PROJECT WITH SPECIFIED TOKEN
+        
+        for db in all_datasets:
+          proj = Project.objects.filter(dataset_id=db.id)
+          if proj:
+            dbs[db.dataset].append(proj)
+          else:
+            dbs[db.dataset].append(None)
+            
+        all_projects = Project.objects.values_list('project_name',flat= True)
+        return render_to_response('profile.html', { 'databases': dbs.iteritems() ,'projects':all_projects },context_instance=RequestContext(request))
 
+
+      elif 'delete' in request.POST:
         pd = ocpcaproj.OCPCAProjectsDB()
         openid = request.user.username
-        
-        project = (request.POST.get('projname')).strip()
-        print " Ready to delete " ,project
-      #token = (request.POST.get('token')).strip()
-       
-        pd.deleteOCPCADatabase(project)
-        # pd.deleteTokenDescription(token)
-        #return redirect(profile)
-      elif 'downloadtoken' in request.POST:
-      #DOWNLOAD TOKEN FILE
-        #      token = (request.POST.get('token')).strip()
-        token = (request.POST.get('roptions')).strip()
-        print token
-        response = HttpResponse(token,content_type='text/html')
-        response['Content-Disposition'] = 'attachment; filename="ocpca.token"'
-        return response
+        project_to_delete = (request.POST.get('projname')).strip()
+                
+        reftokens = Token.objects.filter(project_id=project_to_delete)
+        if reftokens:
+          messages.error(request, 'Project cannot be deleted. PLease delete all tokens for this project first.')
+          return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile')
+        else:
+          proj = Project.objects.filter(project_name=project_to_delete)
+          if proj:
+            #Delete project from the table followed  by the database.
+            #TODO- Check if the model deletion was successful and only then delete the database or should this be the other way around?
+            proj.delete()          
+            pd.deleteOCPCADatabase(project_to_delete)
+            messages.success(request,"Project deleted")
+          else:
+            messages.error( request,"Project not found.")
+            return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile')
+      
       elif 'info' in request.POST:
       #GET PROJECT INFO -----------TODO
         token = (request.POST.get('roptions')).strip()
-      #token = (request.POST.get('token')).strip()+"/projinfo/test"
         return HttpResponse(ocpcarest.projInfo(token), mimetype="product/hdf5" )
+      
       elif 'update' in request.POST:
-      #UPDATE PROJECT TOKEN -- FOLOWUP
-      #token = (request.POST.get('token')).strip()
-        token = (request.POST.get('roptions')).strip()
-        print token
-        request.session["token"] = token
+        project_to_update =(request.POST.get('projname')).strip() 
+        request.session["project_name"] = project_to_update
         return redirect(updateproject)
+      
       elif 'tokens' in request.POST:
-      #View token for the project        
-        print "in view tokens"
         projname = (request.POST.get('projname')).strip()
-        print projname
         request.session["project"] = projname
-        #return render_to_response('token.html',
-       # projname,
-        #                  context_instance=RequestContext(request))
-        return redirect(tokens)
+        return redirect(get_tokens)
 
       elif 'backup' in request.POST:
-      #BACKUP DATABASE
         path = '/data/scratch/ocpbackup/'+ request.user.username
         if not os.path.exists(path):
           os.mkdir( path, 0755 )
-              #subprocess.call('whoami')
-      # Get the database information
+        # Get the database information
         pd = ocpcaproj.OCPCAProjectsDB()
         db = (request.POST.get('projname')).strip()
-              #Open backupfile
         ofile = path +'/'+ db +'.sql'
         outputfile = open(ofile, 'w')
         p = subprocess.Popen(['mysqldump', '-ubrain', '-p88brain88', '--single-transaction', '--opt', db], stdout=outputfile).communicate(None)
-         # return redirect(profile)
         messages.success(request, 'Sucessfully backed up database '+ db)
-        return redirect(profile)
+        return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile')
+
       else:
         # Invalid POST
-        #
-        pd = ocpcaproj.OCPCAProjectsDB()
-        openid = request.user.username
-# projects = pd.getProjects ( openid )
-        projects = pd.getFilteredProjects ( openid ,"","")
-        databases = pd.getDatabases ( openid)
-        dbs = defaultdict(list)
-        for db in databases:
-          proj = pd.getFilteredProjs(openid,"","",db[0]);
-          dbs[db].append(proj)
-        return render_to_response('profile.html', { 'projs': projects, 'databases': dbs.iteritems() },context_instance=RequestContext(request))
+        messages.error(request,"Unrecognized POST")
+        return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile')
 
     else:
-    # GET Option
-      pd = ocpcaproj.OCPCAProjectsDB()
+    # GET Projects
       openid = request.user.username
-      databases = pd.getDatabases ( openid)
+      all_datasets= Dataset.objects.all()
       dbs = defaultdict(list)
-      for db in databases:
-        proj = pd.getFilteredProjs(openid,"","",db[0]);
-        dbs[db].append(proj)
-        
-      return render_to_response('profile.html', { 'databases': dbs.iteritems() },context_instance=RequestContext(request))
+      for db in all_datasets:
+        proj = Project.objects.filter(dataset_id=db.id)
+        if proj:
+          dbs[db.dataset].append(proj)
+        else:
+          dbs[db.dataset].append(None)
+      
+      all_projects = Project.objects.values_list('project_name',flat= True)
+      return render_to_response('profile.html', { 'databases': dbs.iteritems() ,'projects':all_projects },context_instance=RequestContext(request))
     
   except OCPCAError, e:
     messages.error(request, e.value)
@@ -170,54 +158,46 @@ def profile(request):
     return render_to_response('profile.html', { 'projs': projects, 'databases': dbs.iteritems() },context_instance=RequestContext(request))
     
 
-@login_required
-def datasets(request):
-  
+@login_required(login_url='/ocp/accounts/login/')
+def get_datasets(request):
   try:
     pd = ocpcaproj.OCPCAProjectsDB()
-   
     if request.method == 'POST':
       if 'delete' in request.POST:
-        pd = ocpcaproj.OCPCAProjectsDB()
-        openid = request.user.username
-        ds = (request.POST.get('dataset')).strip()
-        pd.deleteDataset(ds)
-        #pd.deleteTokenDescription(token)
-        pd = ocpcaproj.OCPCAProjectsDB()
-        datasets = pd.getDatasets()
-        return render_to_response('datasets.html', { 'dts': datasets },context_instance=RequestContext(request))
-      elif 'viewprojects' in request.POST:
-        pd = ocpcaproj.OCPCAProjectsDB()
-        openid = request.user.username
-        ds = (request.POST.get('dataset')).strip()
-        request.session["project"] = ds
-        filteroption= ""
-        filtervalue = ""
-        dbs = defaultdict(list)
-        proj = pd.getFilteredProjs(openid,filteroption,filtervalue,ds);
-        dbs[ds].append(proj)
-        return redirect(profile)
-        #return render_to_response('profile.html', { 'projs': proj, 'databases':  dbs },context_instance=RequestContext(request))
+        #delete specified dataset
+        ds = (request.POST.get('dataset_name')).strip()
+        ds_to_delete = Dataset.objects.get(dataset=ds)
+        
+        # Check for projects with that dataset
+        proj = Project.objects.filter(dataset_id=ds_to_delete.id)
+        if proj:
+          messages.error(request, 'Dataset cannot be deleted. PLease delete all projects for this dataset first.')
+        else:
+          messages.success(request, 'Dataset Deleted')
+          ds_to_delete.delete()
+        all_datasets = Dataset.objects.all()
+        return render_to_response('datasets.html', { 'dts': all_datasets },context_instance=RequestContext(request))
+      elif 'update' in request.POST:
+        ds = (request.POST.get('dataset_name')).strip()
+        request.session["dataset_name"] = ds
+        return redirect(updatedataset)
+
       else:
-        datasets = pd.getDatasets()
-        return render_to_response('datasets.html', { 'dts': datasets },context_instance=RequestContext(request))
+        #Load datasets
+        all_datasets = Dataset.objects.all()
+        return render_to_response('datasets.html', { 'dts': all_datasets },context_instance=RequestContext(request))
     else:
       # GET datasets
-      pd = ocpcaproj.OCPCAProjectsDB()
-      datasets = pd.getDatasets()
-      return render_to_response('datasets.html', { 'dts': datasets },context_instance=RequestContext(request))
+      all_datasets = Dataset.objects.all()
+      return render_to_response('datasets.html', { 'dts': all_datasets },context_instance=RequestContext(request))
   except OCPCAError, e:
-    #return django.http.HttpResponseNotFound(e.value)
-    datasets = pd.getDatasets()    
+    all_datasets = Dataset.objects.all()
     messages.error(request, e.value)
-    return render_to_response('datasets.html', { 'dts': datasets },context_instance=RequestContext(request))    
+    return render_to_response('datasets.html', { 'dts': all_datasets },context_instance=RequestContext(request))    
 
 
-  #return render_to_response('datasets.html')
-
-
-@login_required
-def tokens(request):
+@login_required(login_url='/ocp/accounts/login/')
+def get_tokens(request):
   pd = ocpcaproj.OCPCAProjectsDB()  
   try:
     if request.method == 'POST':
@@ -231,17 +211,20 @@ def tokens(request):
         return render_to_response('token.html', { 'tokens': projects},
                                   context_instance=RequestContext(request))
       elif 'delete' in request.POST:
-      #DELETE PROJECT WITH SPECIFIED TOKEN
+      #Delete the token from the token table
         openid = request.user.username
-        token = (request.POST.get('token')).strip()
-        print " Ready to delete " ,token
-        pd.deleteOCPCAProj(token)
-         # pd.deleteTokenDescription(token)
-        return redirect(tokens)
+        token_to_delete = (request.POST.get('token')).strip()
+        token = Token.objects.filter(token_name=token_to_delete)
+        if token:
+          token.delete()          
+          messages.success(request,"Token deleted " + token_to_delete)
+        else:
+          messages.error(request,"Unable to delete " + token_to_delete)
+        return redirect(get_tokens)
+
       elif 'downloadtoken' in request.POST:
-      #DOWNLOAD TOKEN FILE
+        #Download the token in a test file
         token = (request.POST.get('token')).strip()
-        print token
         response = HttpResponse(token,content_type='text/html')
         response['Content-Disposition'] = 'attachment; filename="ocpca.token"'
         return response
@@ -251,21 +234,18 @@ def tokens(request):
         print token
         request.session["token"] = token
         return redirect(updateproject)
-      return redirect(tokens)
+      return redirect(get_tokens)
     else:
-      # GET datasets
-      print "reached"
+      # GET tokens for the specified project
       openid = request.user.username
       if "project" in request.session:
         proj = request.session["project"]
-        print proj
-        #del request.session["project"]
-        filteroption="project"
-        projects = pd.getFilteredProjects ( openid ,filteroption,proj)
+        all_tokens = Token.objects.filter(project_id=proj)
       else:
-        proj = ""
-        projects = pd.getFilteredProjects ( openid ,"","")
-      return render_to_response('token.html', { 'tokens': projects, 'database': proj },context_instance=RequestContext(request))
+        proj=""
+        all_tokens = Token.objects.all()
+      #del request.session["project"]
+      return render_to_response('token.html', { 'tokens': all_tokens, 'database': proj },context_instance=RequestContext(request))
     
   except OCPCAError, e:
     #return django.http.HttpResponseNotFound(e.value)
@@ -277,42 +257,41 @@ def tokens(request):
 
 
 
-@login_required
+@login_required(login_url='/ocp/accounts/login/')
 def createproject(request):
   
+  #user= get_user_model()
   if request.method == 'POST':
     if 'CreateProject' in request.POST:
       form = CreateProjectForm(request.POST)
       if form.is_valid():
-        token = form.cleaned_data['token']
-        host = form.cleaned_data['host']
-        description = form.cleaned_data['description']
-        project = form.cleaned_data['project']
+        project = form.cleaned_data['project_name']
+        description = form.cleaned_data['project_description']        
         dataset = form.cleaned_data['dataset']
         datatype = form.cleaned_data['datatype']
+        overlayproject = form.cleaned_data['overlayproject']
+        overlayserver = form.cleaned_data['overlayserver']
+        resolution = form.cleaned_data['resolution']
+        exceptions = form.cleaned_data['exceptions']        
+        host = form.cleaned_data['host']        
         kvengine=form.cleaned_data['kvengine']
         kvserver=form.cleaned_data['kvserver']
-        overlayproject=form.cleaned_data['overlayproject']
+        propagate =form.cleaned_data['propagate']
+        openid = request.user.username
         nocreateoption = request.POST.get('nocreate')
         if nocreateoption =="on":
           nocreate = 1
         else:
           nocreate = 0
-        dataurl = "http://openconnecto.me/ocp"
-        readonly = form.cleaned_data['readonly']
-        exceptions = form.cleaned_data['exceptions']
-        openid = request.user.username
-        resolution =form.cleaned_data['resolution']
-        public =form.cleaned_data['public']
-        propogate =form.cleaned_data['propogate']
-        print "Creating a project with:"
-        print token, project, dataset, dataurl,readonly, exceptions, openid , resolution
+          new_project= form.save()
+        
         # Get database info                
         try:
           pd = ocpcaproj.OCPCAProjectsDB()
-          pd.newOCPCAProj ( token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate, int(resolution), int(public),kvserver,kvengine ,propogate)
-          #pd.insertTokenDescription ( token, description )
-          return redirect(profile)          
+          pd.newOCPCAProjectDB( project, description, dataset, datatype , resolution, exceptions, host, kvserver, kvengine, propagate, nocreate ) 
+          #pd.newOCPCAProj ( token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate, int(resolution), int(public),kvserver,kvengine ,propogate)
+          return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile')
+          
         except OCPCAError, e:
           messages.error(request, e.value)
           return redirect(profile)          
@@ -331,90 +310,146 @@ def createproject(request):
     context = {'form': form}
     return render_to_response('createproject.html',context,context_instance=RequestContext(request))
       
-@login_required
+@login_required(login_url='/ocp/accounts/login/')
 def createdataset(request):
-
   if request.method == 'POST':
     if 'createdataset' in request.POST:
       form = CreateDatasetForm(request.POST)
       if form.is_valid():
-        dataset = form.cleaned_data['dataset']
-        description = form.cleaned_data['description']
-        ximagesize = form.cleaned_data['ximagesize']
-        yimagesize = form.cleaned_data['yimagesize']
-        startslice = form.cleaned_data['startslice']
-        endslice = form.cleaned_data['endslice']
-        zoomlevels = form.cleaned_data['zoomlevels']
-        zscale = form.cleaned_data['zscale']
-        startwindow = form.cleaned_data['startwindow']
-        endwindow = form.cleaned_data['endwindow']
-        starttime = form.cleaned_data['starttime']
-        endtime = form.cleaned_data['endtime']
-        print "Creating a dataset with:"
-        print dataset, ximagesize, yimagesize, startslice,endslice,zoomlevels,zscale
-        # Get database info                                                                      
-        pd = ocpcaproj.OCPCAProjectsDB()
-        pd.newDataset ( dataset, ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale, startwindow, endwindow ,starttime,endtime)        
-#pd.newOCPCAProj ( token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate )
-        #pd.insertTokenDescription ( token, description )
-        return redirect(datasets)
-
+        new_dataset= form.save()
+        return HttpResponseRedirect(get_script_prefix()+'ocpuser/datasets')
       else:
         context = {'form': form}
         print form.errors
         return render_to_response('createdataset.html',context,context_instance=RequestContext(request))
     else:
-      #default                                                                                                                                           
+      #default
       return redirect(datasets)
   else:
     '''Show the Create datasets form'''
-    
     form = CreateDatasetForm()
     context = {'form': form}
     return render_to_response('createdataset.html',context,context_instance=RequestContext(request))
 
-@login_required
-def updateproject(request):
+@login_required(login_url='/ocp/accounts/login/')
+def updatedataset(request):
+  # Get the dataset to update
+  ds = request.session["dataset_name"]
   
-  #ocpcauser = request.user.get_profile
-  #context = {'ocpcauser': ocpcauser}
-  print "In update project view"
   if request.method == 'POST':
-    if 'UpdateProject' in request.POST:
-      form = UpdateProjectForm(request.POST)
+    if 'UpdateDataset' in request.POST:
+      ds_update = get_object_or_404(Dataset,dataset=ds)
+      form = CreateDatasetForm(data= request.POST or None,instance=ds_update)
       if form.is_valid():
-        curtoken = form.cleaned_data['currentToken']
-        newtoken = form.cleaned_data['newToken']
-        description = form.cleaned_data['description']
-        pd = ocpcaproj.OCPCAProjectsDB()
-        pd.updateProject(curtoken,newtoken)
-        pd.updateTokenDescription ( newtoken ,description)
-#pd.newOCPCAProj ( token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate )
-        return redirect(profile)
-       
+        form.save()
+        messages.success(request, 'Sucessfully updated dataset')
+        del request.session["dataset_name"]
+        return HttpResponseRedirect(get_script_prefix()+'ocpuser/datasets')
+      else:
+        #Invalid form
+        context = {'form': form}
+        print form.errors
+        return render_to_response('updatedataset.html',context,context_instance=RequestContext(request))
+    else:
+      #unrecognized option
+      return HttpResponseRedirect(get_script_prefix()+'ocpuser/datasets')
+          
+  else:
+    print "Getting the update form"
+    if "dataset_name" in request.session:
+      ds = request.session["dataset_name"]
+    else:
+      ds = ""
+    ds_to_update = Dataset.objects.select_for_update().filter(dataset=ds)
+    data = {
+      'dataset': ds_to_update[0].dataset,
+      'ximagesize':ds_to_update[0].ximagesize,
+      'yimagesize':ds_to_update[0].yimagesize,
+      'startslice':ds_to_update[0].startslice,
+      'endslice':ds_to_update[0].endslice,
+      'startwindow':ds_to_update[0].startwindow,
+      'endwindow':ds_to_update[0].endwindow,
+      'starttime':ds_to_update[0].starttime,
+      'endtime':ds_to_update[0].endtime,
+      'zoomlevels':ds_to_update[0].zoomlevels,
+      'zscale':ds_to_update[0].zscale,
+      'description':ds_to_update[0].description,
+            }
+    form = CreateDatasetForm(initial=data)
+    context = {'form': form}
+    return render_to_response('updatedataset.html',context,context_instance=RequestContext(request))
+
+@login_required(login_url='/ocp/accounts/login/')
+def updateproject(request):
+  proj_name = request.session["project_name"]
+  if request.method == 'POST':
+    
+    if 'UpdateProject' in request.POST:
+      proj_update = get_object_or_404(Project,project_name=proj_name)
+      form = CreateProjectForm(data= request.POST or None,instance=proj_update)
+      if form.is_valid():
+        form.save()
+        messages.success(request, 'Sucessfully updated project ' + proj_name)
+        del request.session["project_name"]
+        return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile')
+      else:
+        #Invalid form
+        context = {'form': form}
+        print form.errors
+        return render_to_response('updateproject.html',context,context_instance=RequestContext(request))
+    else:
+      #unrecognized option
+      messages.error(request,"Unrecognized Post")
+      return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile')
+      
+  else:
+    #Get: Retrieve project and display update project form.
+    if "project_name" in request.session:
+      proj = request.session["project_name"]
+    else:
+      proj = ""
+    project_to_update = Project.objects.select_for_update().filter(project_name=proj)
+    data = {
+      'project_name': project_to_update[0].project_name,
+      'project_description':project_to_update[0].project_description,
+      'dataset':project_to_update[0].dataset_id,
+      'datatype':project_to_update[0].datatype,
+      'overlayproject':project_to_update[0].overlayproject,
+      'overlayserver':project_to_update[0].overlayserver,
+      'resolution':project_to_update[0].resolution,
+      'exceptions':project_to_update[0].exceptions,
+      'host':project_to_update[0].host,
+      'kvengine':project_to_update[0].kvengine,
+      'kvserver':project_to_update[0].kvserver,
+      'propagate':project_to_update[0].propagate,
+    }
+    form = CreateProjectForm(initial=data)
+    context = {'form': form}
+    return render_to_response('updateproject.html',context,context_instance=RequestContext(request))
+
+
+@login_required(login_url='/ocp/accounts/login/')
+def createtoken(request):
+  if request.method == 'POST':
+    if 'createtoken' in request.POST:
+      form = CreateTokenForm(request.POST)
+      if form.is_valid():
+        new_token= form.save()
+        return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile')
       else:
         context = {'form': form}
         print form.errors
-        return render_to_response('createproject.html',context,context_instance=RequestContext(request))
+        return render_to_response('createtoken.html',context,context_instance=RequestContext(request))
     else:
+      #default                                                                                                                                                          
       return redirect(profile)
-    
   else:
-    print "Getting the update form"
-    #token = (request.POST.get('token')).strip()
-    if "token" in request.session:
-      token = request.session["token"]
-      del request.session["token"]
-    else:
-      token = ""
-    randtoken = ''.join(random.choice(string.ascii_uppercase + string.digits + string.ascii_lowercase) for x in range(64))
-    data = {'currentToken': token ,'newToken': randtoken}
-    #data = {'newToken': randtoken}
-    form = UpdateProjectForm(initial=data)
+    '''Show the Create datasets form'''
+    form = CreateTokenForm()
     context = {'form': form}
-    return render_to_response('updateproject.html',context,context_instance=RequestContext(request))
+    return render_to_response('createtoken.html',context,context_instance=RequestContext(request))
       
-@login_required
+@login_required(login_url='/ocp/accounts/login/')
 def restore(request):
   if request.method == 'POST':
    

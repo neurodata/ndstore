@@ -15,14 +15,16 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.forms import ModelForm
-from models import ocpProject
-from models import ocpDataset
+from django.forms.models import inlineformset_factory
+from models import Project
+from models import Dataset
+from models import Token
 
 
 class CreateProjectForm(ModelForm):
 
     class Meta:
-        model = ocpProject
+        model = Project
         def clean_project(self):
             if 'project' in self.cleaned_data:
                 project = self.cleaned_data['project']
@@ -32,20 +34,19 @@ class CreateProjectForm(ModelForm):
 class CreateDatasetForm(ModelForm):
 
     class Meta:
-        model = ocpDataset
+        model = Dataset
+
+ProjectFormSet = inlineformset_factory(Dataset,Project,extra=1, form=CreateProjectForm)
+
              
-class UpdateProjectForm(forms.Form):
-    currentToken = forms.CharField(label=(u' Current Token'), widget = forms.TextInput(attrs={'readonly':'readonly'}))
-    newToken = forms.CharField(label=(u' New Token'))
-    description = forms.CharField(label=(u' Description'))
-#    host = forms.CharField(label=(u'Host'))
-#    project = forms.CharField(label=(u'Project'))
-#    dataset = forms.CharField(label=(u'Dataset'))
-#    dataurl = forms.CharField(initial='http://',label=(u'Data url'))
-#    resolution = forms.IntegerField(label=(u'Resolution') ,error_messages=\
-#{
-#        "required": "This value cannot be empty.",
-#        "invalid": "Please enter a valid Resolution",
-#    })
-#    readonly = forms.ChoiceField(choices=[(x, x) for x in range(0, 2)])
-#    exceptions = forms.ChoiceField(choices=[(x, x) for x in range(0, 2)])
+class CreateTokenForm(ModelForm):
+
+    class Meta:
+        model = Token
+        def clean_token(self):
+            if 'token_name' in self.cleaned_data:
+                token = self.cleaned_data['token_name']
+                return token 
+            raise forms.ValidationError('Please enter a valid token')
+
+TokenFormSet = inlineformset_factory(Project,Token,extra=1, form=CreateTokenForm)

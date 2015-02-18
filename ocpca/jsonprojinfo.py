@@ -36,7 +36,8 @@ def projdict ( proj ):
   projdict['host'] = proj._dbhost
   projdict['projecttype'] = proj._dbtype
   projdict['dataset'] = proj._dataset
-  projdict['dataurl'] = proj._dataurl
+  projdict['overlayserver'] = proj._overlayserver
+  projdict['overlayproject'] = proj._overlayproject
   projdict['readonly'] = (False if proj._readonly==0 else True)
   projdict['exceptions'] = (False if proj._exceptions==0 else True)
   projdict['resolution'] = proj._resolution
@@ -83,7 +84,7 @@ def jsonChanInfo ( proj, db ):
 
 def publicTokens ( projdb ):
   """List of Public Tokens"""
-
+  
   tokens = projdb.getPublic ()
   import json;
   return json.dumps (tokens, sort_keys=True, indent=4)
