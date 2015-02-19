@@ -49,10 +49,10 @@ class TestRamon:
 
   def setup_class(self):
     """Create the unittest database"""
-#    pytest.set_trace()
+    
     with closing ( ocpcaproj.OCPCAProjectsDB() ) as pd:
       try:
-        pd.newOCPCAProj ( 'unittest','token for unit test', 'test', 'localhost', 'unittest', 'project for unittest', 2, 'kasthuri11','kasthuri11','openconnecto.me', False, True, False, 0, 0, kvengine_to_test.kvserver, kvengine_to_test.kvengine, 0 )
+        pd.newOCPCAProj ( 'unittest','token for unit test', 1 , 'localhost', 'unittest', 'project for unittest', 2, 'kasthuri11','kasthuri11','openconnecto.me', False, True, False, 0, 0, kvengine_to_test.kvserver, kvengine_to_test.kvengine, 0 )
         #pd.newOCPCAProj ( 'unittest', 'test', 'localhost', 'unittest', 2, 'kasthuri11', None, False, True, False, 0, False, kvengine_to_test.kvserver, kvengine_to_test.kvengine, 0 )
       except:
         pd.deleteOCPCADB ('unittest')

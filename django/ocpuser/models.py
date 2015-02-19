@@ -44,7 +44,8 @@ class Dataset ( models.Model):
 class Project ( models.Model):
     project_name  =  models. CharField(max_length=200, primary_key=True)
     project_description  =  models. CharField(max_length=4096, blank=True)
-    #user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    #openid = models.ForeignKey(settings.AUTH_USER_MODEL)
+    user = models.ForeignKey(User)
     dataset  =  models.ForeignKey(Dataset)
 
     DATATYPE_CHOICES = (

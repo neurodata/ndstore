@@ -137,7 +137,7 @@ def profile(request):
       all_datasets= Dataset.objects.all()
       dbs = defaultdict(list)
       for db in all_datasets:
-        proj = Project.objects.filter(dataset_id=db.id)
+        proj = Project.objects.filter(dataset_id=db.id, user_id = request.user)
         if proj:
           dbs[db.dataset].append(proj)
         else:
@@ -287,7 +287,9 @@ def createproject(request):
           nocreate = 1
         else:
           nocreate = 0
-          new_project= form.save()
+        new_project= form.save(commit=False)
+        new_project.user = request.user
+        new_project.save()
         
         # Get database info                
         try:
@@ -309,8 +311,8 @@ def createproject(request):
       return redirect(profile)
   else:
     '''Show the Create projects form'''
-    randtoken = ''.join(random.choice(string.ascii_uppercase + string.digits + string.ascii_lowercase) for x in range(64))
-    form = CreateProjectForm(initial={'token': randtoken})
+    #randtoken = ''.join(random.choice(string.ascii_uppercase + string.digits + string.ascii_lowercase) for x in range(64))
+    form = CreateProjectForm()
     context = {'form': form}
     return render_to_response('createproject.html',context,context_instance=RequestContext(request))
       

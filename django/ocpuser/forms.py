@@ -25,6 +25,7 @@ class CreateProjectForm(ModelForm):
 
     class Meta:
         model = Project
+        exclude = ('user',)
         def clean_project(self):
             if 'project' in self.cleaned_data:
                 project = self.cleaned_data['project']

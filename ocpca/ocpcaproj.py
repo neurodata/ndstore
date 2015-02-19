@@ -446,10 +446,10 @@ class OCPCAProjectsDB:
     #
     # Create a new Project
     #                                                                                                                                                                                             
-  def newProject ( self, project_name, project_description,dataset_id,datatype,overlayproject,overlayserver, resolution, exceptions,host, kvengine,kvserver,propagate ):
+  def newProject ( self, project_name, project_description,userid,dataset_id,datatype,overlayproject,overlayserver, resolution, exceptions,host, kvengine,kvserver,propagate ):
     """ Create a new ocpca Token """
     
-    sql = "INSERT INTO {0} ( project_name, project_description,dataset_id,datatype,overlayproject,overlayserver, resolution, exceptions,host, kvengine,kvserver,propagate ) VALUES (\'{1}\',\'{2}\',{3},{4},\'{5}\',\'{6}\',{7}, {8},\'{9}\',\'{10}\',\'{11}\',{12})".format (ocpcaprivate.projects,  project_name, project_description,dataset_id,datatype,overlayproject,overlayserver, resolution, exceptions,host, kvengine,kvserver,propagate  )
+    sql = "INSERT INTO {0} ( project_name, project_description,user_id,dataset_id,datatype,overlayproject,overlayserver, resolution, exceptions,host, kvengine,kvserver,propagate ) VALUES (\'{1}\',\'{2}\',{3},{4},{5},\'{6}\',\'{7}\',{8}, {9},\'{10}\',\'{11}\',\'{12}\',{13})".format (ocpcaprivate.projects,  project_name, project_description,userid,dataset_id,datatype,overlayproject,overlayserver, resolution, exceptions,host, kvengine,kvserver,propagate  )
 
     logger.info ( "Creating new Project. Name %s. SQL=%s" % ( project_name, sql ))
 
@@ -466,12 +466,12 @@ class OCPCAProjectsDB:
   #
   # Create a new project (annotation or data)
   #
-  def newOCPCAProj ( self, token, token_description, openid, dbhost, project,projectdescription, dbtype, dataset, overlayproject,overlayserver, readonly, exceptions, nocreate, resolution, public, kvserver, kvengine, propagate ):
+  def newOCPCAProj ( self, token, token_description, userid, dbhost, project,projectdescription, dbtype, dataset, overlayproject,overlayserver, readonly, exceptions, nocreate, resolution, public, kvserver, kvengine, propagate ):
     """ Create a new ocpca project """
     
     datasetcfg = self.loadDatasetConfig ( dataset )
     dataset_id= self.loadDatasetID(dataset)
-    self.newProject(project,projectdescription,dataset_id,dbtype,overlayproject,overlayserver,resolution,exceptions,dbhost,kvengine,kvserver,propagate)
+    self.newProject(project,projectdescription,userid,dataset_id,dbtype,overlayproject,overlayserver,resolution,exceptions,dbhost,kvengine,kvserver,propagate)
     self.newToken(token,token_description,project,readonly,public)
     
 
