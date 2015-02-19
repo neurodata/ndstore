@@ -23,6 +23,7 @@ import h5py
 import multiprocessing as mp
 import logging
 
+import ocpcaprivate
 import pdb
 
 """
@@ -57,7 +58,7 @@ def main():
   result = parser.parse_args()
   
   # Eastablishing the connection to the database. For now hardcoded to dsp62
-  db = MySQLdb.connect(host="dsp062.pha.jhu.edu",user="brain",passwd="88brain88",db="MP4")
+  db = MySQLdb.connect(host="dsp062.pha.jhu.edu", user=ocpcaprivate.dbuser, passwd=ocpcaprivate.dbpasswd, db="MP4")
   cur = db.cursor()
   cur.execute("Select annoid from annotations")
   

@@ -39,6 +39,7 @@ class CreateDatasetForm(ModelForm):
 ProjectFormSet = inlineformset_factory(Dataset,Project,extra=1, form=CreateProjectForm)
 
              
+
 class CreateTokenForm(ModelForm):
 
     class Meta:
@@ -50,3 +51,22 @@ class CreateTokenForm(ModelForm):
             raise forms.ValidationError('Please enter a valid token')
 
 TokenFormSet = inlineformset_factory(Project,Token,extra=1, form=CreateTokenForm)
+
+class dataUserForm( forms.Form):
+     firstname = forms.CharField(max_length=200)
+     lastname = forms.CharField(max_length=200)
+     email = forms.CharField(max_length=800)
+     token = forms.CharField(max_length=200)
+     resolution = forms.IntegerField()
+     CHOICES = (
+         ('npz', 'NPZ'),
+         ('hdf5', 'HDF5'),
+         )
+     format = forms.ChoiceField(choices=CHOICES)
+     xmin=forms.IntegerField()
+     xmax=forms.IntegerField()
+     ymin=forms.IntegerField()
+     ymax=forms.IntegerField()
+     zmin=forms.IntegerField()
+     zmax=forms.IntegerField()
+

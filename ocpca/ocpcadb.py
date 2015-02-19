@@ -578,7 +578,8 @@ class OCPCADB:
 
     # Handle the cube format here.  
     if self.NPZ:
-      self.kvio.putTimeSeriesCube ( zidx, timestamp, resolution, cube.toNPZ(), not cube.fromZeros() )
+      #self.kvio.putTimeSeriesCube ( zidx, timestamp, resolution, cube.toNPZ(), not cube.fromZeros() )
+      self.kvio.putTimeSeriesCube ( zidx, timestamp, resolution, cube.toNPZ(), update )
     else:
       with closing(tempfile.NamedTemporaryFile()) as tmpfile:
         h5 = h5py.File ( tmpfile.name, driver='core', backing_store=True )
@@ -1264,7 +1265,6 @@ class OCPCADB:
 
     try:
 
-
       if self.annoproj.getDBType() in ocpcaproj.CHANNEL_DATASETS:
         # Convert channel as needed
         channel = ocpcachannel.toID ( channel, self )
@@ -1279,7 +1279,7 @@ class OCPCADB:
       totaltime2 = totaltime3 = totaltime4 = totaltime5 = totaltime6 = 0
       # use the batch generator interface
       for idx, datastring in cuboids:
-
+ 
         #add the query result cube to the bigger cube
         curxyz = ocplib.MortonXYZ(int(idx))
         offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
@@ -1400,18 +1400,20 @@ class OCPCADB:
     # xyz offset stored for later use
     lowxyz = ocplib.MortonXYZ ( listofidxs[0] )
 
+    bigCube = np.zeros ( ( (timerange[1]-timerange[0],)+outcube.data.shape ), dtype=outcube.data.dtype)
     self.kvio.startTxn()
 
     try:
 
+      print listofidxs
       for idx in listofidxs:
 
         cuboids = self.kvio.getTimeSeriesColumn (idx, range(timerange[0],timerange[1]), resolution)
         
         # use the batch generator interface
-        for idx, datastring in cuboids:
+        for idx, timestamp, datastring in cuboids:
 
-          #add the query result cube to the bigger cube
+          # add the query result cube to the bigger cube
           curxyz = ocplib.MortonXYZ(int(idx))
           offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
 
@@ -1430,7 +1432,9 @@ class OCPCADB:
               h5.close()
 
           # add it to the output cube
-          outcube.addData_new ( incube, offset ) 
+          outcube.addData_new ( incube, offset )
+          print idx, outcube.data.shape
+          bigCube[timestamp,:,:,:] = outcube.data
 
     except:
       self.kvio.rollback()
@@ -1442,9 +1446,14 @@ class OCPCADB:
     if dim[0] % xcubedim  == 0 and dim[1] % ycubedim  == 0 and dim[2] % zcubedim  == 0 and corner[0] % xcubedim  == 0 and corner[1] % ycubedim  == 0 and corner[2] % zcubedim  == 0:
       pass
     else:
-      outcube.trim ( corner[0]%xcubedim,dim[0],corner[1]%ycubedim,dim[1],corner[2]%zcubedim,dim[2] )
+      xoffset = corner[0]%xcubedim
+      yoffset = corner[1]%ycubedim
+      zoffset = corner[2]%zcubedim
+      bigCube = bigCube[:, zoffset:zoffset+dim[2], yoffset:yoffset+dim[1], xoffset:xoffset+dim[0]]
+      #outcube.trim ( corner[0]%xcubedim,dim[0],corner[1]%ycubedim,dim[1],corner[2]%zcubedim,dim[2] )
 
-    return outcube
+    #return outcube
+    return bigCube
 
   #
   # getVoxel -- return the identifier at a voxel
@@ -1737,8 +1746,8 @@ class OCPCADB:
 
     cursor = self.getCursor()
     try:
-      retval = annotation.deleteAnnotation ( annoid, self, cursor, options )
       self.deleteAnnoData ( annoid )
+      retval = annotation.deleteAnnotation ( annoid, self, cursor, options )
     except:
       self.closeCursor( cursor ) 
       raise
@@ -1960,7 +1969,6 @@ class OCPCADB:
  
             # overwrite the cube
             cube.overwrite ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
-
             # update in the database
             if channel == None:
               self.putCube ( key, resolution, cube)
@@ -2016,12 +2024,10 @@ class OCPCADB:
     # Get the list of cubeindexes for the Ramon objects
     listofidxs = set()
     addindex = []
-    #import pdb;pdb.set_trace()
     # RB!!!! do this for all ids, promoting the exceptions of the merge id
     for annid in ids:
       if annid== mergeid:
         continue
-     # import pdb;pdb.set_trace()
       curindex= self.annoIdx.getIndex(annid,resolution)
       addindex =np.union1d(addindex,curindex)
       listofidxs = set(curindex)
@@ -2038,11 +2044,13 @@ class OCPCADB:
         #  Just delete the exceptions
         #
         #self.updateExceptions ( key, resolution, mergeid, oldexlist )
-          self.deleteExceptions ( key, resolution, annid )
+          self.kvio.deleteExceptions ( key, resolution, annid )
         
-        # Cython optimized function  to relabel data from annid to mergeid
-        mergeCube_cy (cube.data,mergeid,annid ) 
-        self.putCube ( key, resolution,cube)
+        # Cython optimized function to relabel data from annid to mergeid
+        #mergeCube_cy ( cube.data, mergeid, annid ) 
+        # Ctype optimized version for mergeCube
+        ocplib.mergeCube_ctype ( cube.data, mergeid, annid )
+        self.putCube ( key, resolution, cube )
         
       # Delete annotation and all it's meta data from the database
       #
@@ -2050,13 +2058,13 @@ class OCPCADB:
       
       if annid != mergeid:
         try:
-          annotation.deleteAnnotation(annid,self,'')
-          self.annoIdx.deleteIndexResolution(annid,resolution)
+          self.deleteAnnotation (annid, '' )
+          #self.annoIdx.deleteIndexResolution(annid,resolution)
+          self.annoIdx.deleteIndex(annid,resolution)
         except:
           logger.warning("Failed to delete annotation {} during merge.".format(annid))
-   # import pdb;pdb.set_trace()
     self.annoIdx.updateIndex(mergeid,addindex,resolution)     
-    self.commit()
+    self.kvio.commit()
     
     return "Merge complete"
 

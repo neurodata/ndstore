@@ -53,6 +53,7 @@ ocplib.zoomOutData.argtypes = [ array_1d_uint32, array_1d_uint32, cp.POINTER(cp.
 ocplib.zoomOutDataOMP.argtypes = [ array_1d_uint32, array_1d_uint32, cp.POINTER(cp.c_int), cp.c_int ]
 ocplib.zoomInData.argtypes = [ array_1d_uint32, array_1d_uint32, cp.POINTER(cp.c_int), cp.c_int ]
 ocplib.zoomInDataOMP.argtypes = [ array_1d_uint32, array_1d_uint32, cp.POINTER(cp.c_int), cp.c_int ]
+ocplib.mergeCube.argtypes = [ array_1d_uint32, cp.POINTER(cp.c_int), cp.c_int, cp.c_int ]
 
 
 # setting the return type of the function in C
@@ -75,6 +76,7 @@ ocplib.zoomOutData.restype = None
 ocplib.zoomOutDataOMP.restype = None
 ocplib.zoomInData.restype = None
 ocplib.zoomInDataOMP.restype = None
+ocplib.mergeCube.restype = None
 
 
 def filter_ctype_OMP ( cutout, filterlist ):
@@ -246,6 +248,7 @@ def exceptionDense_ctype ( data, annodata ):
 def overwriteDense_ctype ( data, annodata ):
   """ Get a dense voxel region and overwrite all the non-zero values """
 
+  #orginal_dtype = data.dtype
   data = np.uint32(data)
   annodata = np.uint32(annodata)
   dims = [ i for i in data.shape ]
@@ -255,6 +258,7 @@ def overwriteDense_ctype ( data, annodata ):
   ocplib.overwriteDense ( data, annodata, (cp.c_int * len(dims))(*dims) )
 
   return ( data.reshape(dims) )
+  #return ( data.reshape(dims).astype(orginal_dtype, copy=False) )
 
 
 def zoomOutData_ctype ( olddata, newdata, factor ):
@@ -303,3 +307,14 @@ def zoomInData_ctype_OMP ( olddata, newdata, factor ):
   ocplib.zoomInDataOMP ( olddata, newdata, (cp.c_int * len(dims))(*dims), cp.c_int(factor) )
 
   return ( newdata.reshape(dims) )
+
+
+def mergeCube_ctype ( data, newid, oldid ):
+  """ Relabel voxels in cube from oldid to newid """
+
+  dims = [ i for i in data.shape ]
+  data = data.ravel()
+
+  ocplib.mergeCube ( data, (cp.c_int * len(dims))(*dims), cp.c_int(newid), cp.c_int(oldid) )
+
+  return ( data.reshape(dims) )

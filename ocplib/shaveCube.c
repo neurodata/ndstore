@@ -49,7 +49,7 @@ void shaveCube( uint32_t * data, int dataSize, int * dims, int annid, uint32_t *
       if ( data [ index ] == annid )
       {
         data [ index ] = 0;
-        printf ( "Append zeroed" );
+        //printf ( "Append zeroed" );
         zeroedIndex += 1;
         exceptions [zeroedIndex][0] = locations[i][0]-xoffset;
         exceptions [zeroedIndex][1] = locations[i][1]-yoffset;
@@ -59,7 +59,7 @@ void shaveCube( uint32_t * data, int dataSize, int * dims, int annid, uint32_t *
       // Already labelled voxels may be in the exceptions list
       else if ( data [ index ] != 0 )
       {
-        printf ( "Append exceptions" );
+        //printf ( "Append exceptions" );
         exceptionIndex += 1;
         exceptions [exceptionIndex][0] = locations[i][0]-xoffset;
         exceptions [exceptionIndex][1] = locations[i][1]-yoffset;

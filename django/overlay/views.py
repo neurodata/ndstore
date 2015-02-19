@@ -44,7 +44,7 @@ def overlayCutout (request, webargs):
   proj = projdb.loadProject ( token )
   
   # RBTODO assuming that the dataset name is the token.  Not the case anymore.
-  dataurl = request.build_absolute_uri( '%s/ocpca/%s/%s' % ( proj.getDataURL(), proj.getDataset(), cutout ))
+  dataurl = request.build_absolute_uri( '{}/ocpca/{}/{}'.format( proj.getDataURL(), proj.getDataset(), cutout ))
   #dataurl = request.build_absolute_uri( '%s%s/ocpca/%s/%s' % ( proj.getDataURL(),request.META.get('SCRIPT_NAME'), proj.getDataset(), cutout ))
 
   # RBTODO can't seen to get WSGIScriptAlias information from apache.  So 
@@ -52,7 +52,7 @@ def overlayCutout (request, webargs):
   #
   #  dev server and production server urls.
   #
-  annourl = request.build_absolute_uri( '%s/ocpca/%s/%s' % ( request.META.get('SCRIPT_NAME'), token, cutout ))
+  annourl = request.build_absolute_uri( '{}/ocpca/{}/{}'.format( request.META.get('SCRIPT_NAME'), token, cutout ))
 #  annourl = request.build_absolute_uri( '/ocpca/%s/%s' % ( token, cutout ))
 
   # Get data 

@@ -22,10 +22,15 @@ from PIL import Image
 import zlib
 import MySQLdb
 
-import empaths
-import emcaproj
-import emcachannel
-import emcadb
+sys.path += [os.path.abspath('../django')]
+import OCP.settings
+os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
+from django.conf import settings
+
+import ocppaths
+import ocpcaproj
+import ocpcachannel
+import ocpcadb
 import zindex
 
 """Construct an image hierarchy up from a given resolution"""
@@ -36,11 +41,11 @@ class ChanStack:
   def __init__(self, token):
     """Load the database and project"""
 
-    projdb = emcaproj.EMCAProjectsDB()
+    projdb = ocpcaproj.OCPCAProjectsDB()
     self.proj = projdb.loadProject ( token )
 
     # Bind the annotation database
-    self.chanDB = emcadb.EMCADB ( self.proj )
+    self.chanDB = ocpcadb.OCPCADB ( self.proj )
 
 
   def buildStack ( self, startlevel ):
@@ -64,8 +69,8 @@ class ChanStack:
 
         # Set the limits for iteration on the number of cubes in each dimension
         # RBTODO These limits may be wrong for even (see channelingest.py)
-        xlimit = ximagesz / xcubedim
-        ylimit = yimagesz / ycubedim
+        xlimit = (ximagesz-1) / xcubedim 
+        ylimit = (yimagesz-1) / ycubedim
         #  Round up the zlimit to the next larger
         zlimit = (((slices-1)/zcubedim+1)*zcubedim)/zcubedim 
 
@@ -76,6 +81,7 @@ class ChanStack:
             self.chanDB.conn.commit()
             for x in range(xlimit):
 
+              print x,y,z
               # cutout the data at the -1 resolution
               olddata = self.chanDB.cutout ( [ x*2*xcubedim, y*2*ycubedim, z*zcubedim ], biggercubedim, l-1, chan ).data
               # target array for the new data (z,y,x) order
@@ -91,8 +97,6 @@ class ChanStack:
 
                 # Put to a new cube
                 newdata[sl,:,:] = np.asarray ( newimage )
-                 
-                import pdb; pdb.set_trace()
 
                 # Compress the data
                 outfobj = cStringIO.StringIO ()

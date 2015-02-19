@@ -86,9 +86,9 @@ class MySQLKVIO:
     else:
       cursor = self.txncursor
 
-    sql = "SELECT cube FROM " + self.db.annoproj.getTable(resolution) + " WHERE zindex = " + str(zidx) 
+    sql = "SELECT cube FROM {} WHERE zindex ={}".format( self.db.annoproj.getTable(resolution) ,zidx ) 
     if update==True:
-          sql += " FOR UPDATE"
+      sql += " FOR UPDATE"
 
     try:
       cursor.execute ( sql )
@@ -287,7 +287,7 @@ class MySQLKVIO:
       cursor = self.txncursor
 
     # RBTODO need to fix this for neariso interfaces
-    sql = "SELECT zindex, cube FROM {} WHERE zindex={} and timestamp in (%s)".format( self.db.annoproj.getTable(resolution), idx )
+    sql = "SELECT zindex,timestamp,cube FROM {} WHERE zindex={} and timestamp in (%s)".format( self.db.annoproj.getTable(resolution), idx )
 
     # creats a %s for each list element
     in_p=', '.join(map(lambda x: '%s', listoftimestamps))
@@ -329,31 +329,29 @@ class MySQLKVIO:
     # we created a cube from zeros
     if not update:
 
-      sql = "INSERT INTO " + self.db.annoproj.getTable(resolution) +  "(zindex, cube) VALUES (%s, %s)"
+      sql = "INSERT INTO {} (zindex, cube) VALUES (%s, %s)".format( self.db.annoproj.getTable(resolution) )
 
       # this uses a cursor defined in the caller (locking context): not beautiful, but needed for locking
       try:
-        cursor.execute ( sql, (zidx,cubestr))
+        cursor.execute ( sql, (zidx,cubestr) )
       except MySQLdb.Error, e:
         logger.error ( "Error inserting cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         raise
       finally:
-        # close the local cursor if not in a transaction
-        # and commit right away
+        # close the local cursor if not in a transaction and commit right away
         if self.txncursor == None:
           cursor.close()
 
     else:
 
-      sql = "UPDATE " + self.db.annoproj.getTable(resolution) + " SET cube=(%s) WHERE zindex=" + str(zidx)
+      sql = "UPDATE {} SET cube=(%s) WHERE zindex={}".format( self.db.annoproj.getTable(resolution), zidx)
       try:
-        cursor.execute ( sql, [cubestr])
+        cursor.execute ( sql, (cubestr,) )
       except MySQLdb.Error, e:
         logger.error ( "Error updating data cube: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         raise
       finally:
-        # close the local cursor if not in a transaction
-        # and commit right away
+        # close the local cursor if not in a transaction and commit right away
         if self.txncursor == None:
           cursor.close()
 
@@ -572,10 +570,10 @@ class MySQLKVIO:
 
     if not update:
 
-      sql = "INSERT INTO " +  self.db.annoproj.getIdxTable(resolution)  +  "( annid, cube) VALUES ( %s, %s)"
+      sql = "INSERT INTO {} ( annid, cube) VALUES ( %s, %s )".format( self.db.annoproj.getIdxTable(resolution) )
       
       try:
-         cursor.execute ( sql, (zidx, indexstr))
+         cursor.execute ( sql, (zidx,indexstr) )
       except MySQLdb.Error, e:
          logger.warning("Error updating index %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
          raise
@@ -589,12 +587,12 @@ class MySQLKVIO:
 
     else:
 
-      #update index in the database
-      sql = "UPDATE " + self.db.annoproj.getIdxTable(resolution) + " SET cube=(%s) WHERE annid=" + str(zidx)
+      # update index in the database
+      sql = "UPDATE {} SET cube=(%s) WHERE annid={}".format( self.db.annoproj.getIdxTable(resolution), zidx )
       try:
-         cursor.execute ( sql, [indexstr])
+         cursor.execute ( sql, (indexstr,) )
       except MySQLdb.Error, e:
-         logger.warnig("Error updating exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+         logger.warning("Error updating exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
          raise
       except:
         logger.exception("Unknown exception")
@@ -618,7 +616,7 @@ class MySQLKVIO:
     else:
       cursor = self.txncursor
 
-    sql = "DELETE FROM " +  self.db.annoproj.getIdxTable(resolution)  +  " WHERE annid=" + str(annid)
+    sql = "DELETE FROM {} WHERE annid={}".format( self.db.annoproj.getIdxTable(resolution), annid )
     
     try:
        cursor.execute ( sql )
@@ -682,9 +680,9 @@ class MySQLKVIO:
 
     table = 'exc'+str(resolution)
 
-    sql = "DELETE FROM " + table + " WHERE zindex = %s AND id = %s" 
+    sql = "DELETE FROM {} WHERE zindex ={} AND id ={}".format( table, zidx, annid ) 
     try:
-      self.txncursor.execute ( sql, (zidx, annid))
+      cursor.execute ( sql )
     except MySQLdb.Error, e:
       logger.error ( "Error deleting exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       if self.txncursor == None:

@@ -14,34 +14,32 @@
 * limitations under the License.
 */
 
+
+/*
+ * Merge Cube Function 
+ * Naive implementation 
+ */
+
 #include<stdio.h>
 #include<stdint.h>
-#include<omp.h>
 #include<stdbool.h>
+#include<stdlib.h>
+#include<string.h>
 
-void filterCutoutOMP ( uint32_t * cutout, int cutoutsize, uint32_t * filterlist, int listsize)
+int mergeCube( uint32_t * data, int * dims, int newid, int oldid )
 {
-		int i,j;
-		bool equal;
-		//printf("MAX THREADS: %d",omp_get_max_threads());
-#pragma omp parallel num_threads(omp_get_max_threads()) 
-		{
-#pragma omp for private(i,j,equal) schedule(dynamic)
-				for ( i=0; i<cutoutsize; i++)
-				{
-						equal = false;
-						for( j=0; j<listsize; j++)
-						{
-								if( cutout[i] == filterlist[j] )
-								{
-										equal = true;
-										break;
-								}
-						}
-						if( !equal || cutout[i] > filterlist[j] )
-								cutout[i] = 0;
-				}
-		int ID = omp_get_thread_num();
-		//printf("THREAD ID: %d",ID);
-		}
+		int i,j,k,index;
+
+    int xdim = dims[0];
+    int ydim = dims[1];
+    int zdim = dims[2];
+
+    for ( k=0; k<zdim; k++ )
+      for ( j=0; j<ydim; j++ )
+        for ( i=0; i<xdim; i++ )
+        {
+          index = i*xdim*ydim + j*xdim + k;
+          if ( data [index] == oldid )
+            data [index] = newid;
+        }
 }

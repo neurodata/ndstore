@@ -66,7 +66,7 @@ class SimpleCatmaid:
 
     # get an xy image slice
     imageargs = '{}/{},{}/{},{}/{}/'.format(resolution,xstart,xend,ystart,yend,zslice) 
-    cb = ocpcarest.xySlice ( imageargs, self.proj, self.db )
+    cb = ocpcarest.imgSlice ( "xy", imageargs, self.proj, self.db )
     if cb.data.shape != (1,self.tilesz,self.tilesz):
       tiledata = np.zeros((1,self.tilesz,self.tilesz), cb.data.dtype )
       tiledata[0,0:((yend-1)%self.tilesz+1),0:((xend-1)%self.tilesz+1)] = cb.data[0,:,:]
@@ -97,7 +97,7 @@ class SimpleCatmaid:
    
     # get an xz image slice
     imageargs = '{}/{},{}/{}/{},{}/'.format(resolution,xstart,xend,yslice,zstart,zend) 
-    cb = ocpcarest.xzSlice ( imageargs, self.proj, self.db )
+    cb = ocpcarest.imgSlice ( "xz", imageargs, self.proj, self.db )
 
     # scale by the appropriate amount
 
@@ -131,7 +131,7 @@ class SimpleCatmaid:
 
     # get an yz image slice
     imageargs = '{}/{}/{},{}/{},{}/'.format(resolution,xslice,ystart,yend,zstart,zend) 
-    cb = ocpcarest.yzSlice ( imageargs, self.proj, self.db )
+    cb = ocpcarest.imgSlice ( "yz", imageargs, self.proj, self.db )
 
     # scale by the appropriate amount
    

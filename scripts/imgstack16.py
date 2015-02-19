@@ -27,7 +27,7 @@ import OCP.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
 from django.conf import settings
 
-
+import ocplib
 import ocpcaproj
 import ocpcadb
 import zindex
@@ -53,7 +53,6 @@ class ImgStack:
     for  l in range ( startlevel, len(self.proj.datasetcfg.resolutions) ):
 
       # Get the source database sizes
-      import pdb; pdb.set_trace()
       [ximagesz, yimagesz] = self.proj.datasetcfg.imagesz [ l ]
       [xcubedim, ycubedim, zcubedim] = self.proj.datasetcfg.cubedim [ l ]
 

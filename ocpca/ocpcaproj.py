@@ -65,8 +65,9 @@ NOT_PROPAGATED = 0
 READONLY_TRUE = 1
 READONLY_FALSE = 0
 
-
-
+# Exception Values
+EXCEPTION_TRUE = 1
+EXCEPTION_FALSE = 0
 
 class OCPCAProject:
   """ Project specific for cutout and annotation data """
@@ -86,9 +87,7 @@ class OCPCAProject:
     self._readonly = readonly
     self._exceptions = exceptions    
     self._dbhost = dbhost
-    #self._kvserver = kvserver
-    # for cassandra
-    self._kvserver = '172.23.253.63'
+    self._kvserver = kvserver
     self._kvengine = kvengine
     self._propagate = propagate
 
@@ -250,14 +249,15 @@ class OCPCADataset:
   #
   #  Check that the specified arguments are legal
   #
-  def checkCube ( self, resolution, xstart, xend, ystart, yend, zstart, zend ):
+  def checkCube ( self, resolution, xstart, xend, ystart, yend, zstart, zend, tstart=0, tend=0 ):
     """Return true if the specified range of values is inside the cube"""
 
     [xmax, ymax] = self.imagesz [ resolution ]
 
-    if (( xstart >= 0 ) and ( xstart < xend) and ( xend <= self.imagesz[resolution][0]) and\
+    if ( ( xstart >= 0 ) and ( xstart < xend) and ( xend <= self.imagesz[resolution][0]) and\
         ( ystart >= 0 ) and ( ystart < yend) and ( yend <= self.imagesz[resolution][1]) and\
-        ( zstart >= self.slicerange[0] ) and ( zstart < zend) and ( zend <= (self.slicerange[1]+1))):
+        ( zstart >= self.slicerange[0] ) and ( zstart < zend) and ( zend <= (self.slicerange[1]+1)) and\
+        ( tstart >= self.timerange[0]) and ( ( tstart < tend ) or tstart==0 and tend==0 ) and ( tend <= (self.timerange[1]+1) ) ):
       return True
     else:
       return False
@@ -284,7 +284,7 @@ class OCPCADataset:
   #  Return the image size
   #
   def imageSize ( self, resolution ):
-    return  [ self.imagesz [resolution], self.slicerange ]
+    return  [ self.imagesz [resolution], self.slicerange, self.timerange ]
 
 
 class OCPCAProjectsDB:
@@ -468,7 +468,7 @@ class OCPCAProjectsDB:
   #
   def newOCPCAProj ( self, token, token_description, openid, dbhost, project,projectdescription, dbtype, dataset, overlayproject,overlayserver, readonly, exceptions, nocreate, resolution, public, kvserver, kvengine, propagate ):
     """ Create a new ocpca project """
-
+    
     datasetcfg = self.loadDatasetConfig ( dataset )
     dataset_id= self.loadDatasetID(dataset)
     self.newProject(project,projectdescription,dataset_id,dbtype,overlayproject,overlayserver,resolution,exceptions,dbhost,kvengine,kvserver,propagate)
@@ -509,14 +509,14 @@ class OCPCAProjectsDB:
 
               for i in datasetcfg.resolutions: 
                 newcursor.execute ( "CREATE TABLE res{} ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(i) )
-                newcursor.execute ( "CREATE TABLE raw{} ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(i) )
+                #newcursor.execute ( "CREATE TABLE raw{} ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(i) )
               newconn.commit()
 
             elif dbtype in TIMESERIES_DATASETS :
 
               for i in datasetcfg.resolutions: 
                 newcursor.execute ( "CREATE TABLE res{} ( zindex BIGINT, timestamp INT, cube LONGBLOB, PRIMARY KEY(zindex,timestamp))".format(i) )
-                newcursor.execute ( "CREATE TABLE raw{} ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(i) )
+                #newcursor.execute ( "CREATE TABLE raw{} ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(i) )
                 #newcursor.execute ( "CREATE TABLE timeseries%s ( z INT, y INT, x INT, t INT,  series LONGBLOB, PRIMARY KEY (z,y,x,t))"%i) 
               newconn.commit()
 
@@ -864,11 +864,11 @@ class OCPCAProjectsDB:
 
   def getTable ( self, resolution ):
     """Return the appropriate table for the specified resolution"""
-    return "res"+str(resolution)
+    return "res{}".format(resolution)
   
   def getIdxTable ( self, resolution ):
     """Return the appropriate Index table for the specified resolution"""
-    return "idx"+str(resolution)
+    return "idx{}".format(resolution)
 
   def loadDatasetConfig ( self, dataset ):
     """Query the database for the dataset information and build a db configuration"""

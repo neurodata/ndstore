@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+{% comment %}
+Download Data Template
+{% endcomment %}
+
+{% block title %}
+Download Data
+{% endblock %}
+
+<head>
+  <style>
+    .blue { background-color:#00F; }
+    div { height: 100px; }
+  </style>
+</head>
+{% block content %}
+<ul>
+  {% for message in messages %}
+  <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+  {% endfor %}
+</ul>
+
+ <div class="container-fluid">
+   <div class = "row-fluid">
+     <div class ="span12">
+       
+       <div id="header" style="background-color:#4682B4;" align="center">
+	 <h2 style="margin-bottom:0;">DOWNLOAD DATA </div>
+     </div>
+   </div>
+   
+ </div>
+
+ <form method="post"  name="frm" action="" enctype="multipart/form-data">
+   {% csrf_token %}
+   {{ form.non_field_errors }}
+   <br></br>
+   
+   <div class="container-fluid">
+     <div class = "row-fluid">
+       <div class ="span1"></div>
+ 
+       <div class ="span10"  style="border: 3px LightSteelBlue solid;" align="center">
+	 <p>
+	   Welcome to the Open Connectome Project data download page. To get started please register.
+           <br>
+	 </p>
+       </div>
+       <div class ="span1"></div>
+     </div>
+   </div>
+
+    
+   <div class="container-fluid" >
+  
+     <div class = "row-fluid"> <div class ="span12"></div></div>
+     <div class = "row-fluid"> <div class ="span12"></div></div>
+     <div class = "row-fluid">
+       <div class ="span3">
+       </div>
+       <div class ="span1">
+	 <div class="fieldWrapper">
+           {{ form.subject.errors }}
+	   <label for="lname">First Name:</label>
+         </div>
+       </div>
+       <div class ="span2">
+         {{ form.firstname }}
+       </div>
+       
+       <div class ="span1">
+         <div class="fieldWrapper">
+           {{ form.subject.errors }}
+           <label for="lname">Last Name:</label>
+         </div>
+       </div>
+       <div class ="span2">
+         {{ form.lastname }}
+       </div>
+       <div class ="span3"></div>
+       
+     </div>
+     
+	 
+     <div class = "row-fluid">
+       <div class ="span3"></div>
+       <div class ="span1">
+	 <div class="fieldWrapper">
+           {{ form.subject.errors }}
+	   <label for="email">Email</label>
+         </div>
+       </div>
+       <div class ="span8">
+         {{ form.email }}
+       </div>
+           
+     </div>
+      
+
+     <div class = "row-fluid"> <div class ="span12"></div></div>
+     <div class = "row-fluid">
+       <div class ="span3"></div>
+           <div class ="span1">
+             <div class="fieldWrapper">
+               {{ form.subject.errors }}
+               <label for="token">Token:</label>
+             </div>
+           </div>
+           <div class ="span5">
+	     <select name="token" onchange="if (this.value=='other'){this.form['other'].style.visibility='visible'}else {this.form['other'].style.visibility='hidden'};">
+	       <option value="" selected="selected">Select...</option>
+	       {% for token in publictokens %}
+               <option value="{{ token }}">{{ token }}</option>
+               {% endfor %}
+	       <option value="other">Other</option>
+	     </select>
+	     
+	     <input type="textbox" name="other" style="visibility:hidden;"/>
+	     
+	     
+	   </div>
+     </div>
+  
+  
+
+
+	 <div class = "row-fluid">
+           <div class ="span3"></div>
+           <div class ="span1">
+             <div class="fieldWrapper">
+               {{ form.subject.errors }}
+               <label for="res">Resolution:</label>
+          </div>
+        </div>
+        <div class ="span2">
+          {{ form.resolution }}
+        </div>
+        <div class ="span4"></div>
+      </div>
+
+	 <div class = "row-fluid">
+           <div class ="span3"></div>
+           <div class ="span1">
+             <div class="fieldWrapper">
+               {{ form.subject.errors }}
+               <label for="format">Format:</label>
+             </div>
+           </div>
+           <div class ="span2">
+             {{ form.format }}
+           </div>
+           <div class ="span4"></div>
+      </div>
+
+      
+      <div class = "row-fluid">
+	<div class ="span3"></div>
+        <div class ="span1">
+            <div class="fieldWrapper">
+	          {{ form.subject.errors }}
+		  <label for="xmin">X Range:</label>
+          </div>
+	    </div>
+        <div class ="span8">
+          {{ form.xmin }} - {{form.xmax}}
+	  </div>
+      </div>
+      
+      
+      <div class = "row-fluid">
+        <div class ="span3"></div>
+	<div class ="span1">
+            <div class="fieldWrapper">
+                  {{ form.subject.errors }}
+                  <label for="ymin">Y Range:</label>
+          </div>
+            </div>
+        <div class ="span8">
+          {{ form.ymin }} - {{form.ymax}}
+          </div>
+      </div>
+
+    
+      <div class = "row-fluid">
+        <div class ="span3"></div>
+	<div class ="span1">
+            <div class="fieldWrapper">
+                  {{ form.subject.errors }}
+                  <label for="xmin">Z Range:</label>
+          </div>
+            </div>
+        <div class ="span8">
+          {{ form.zmin }} - {{form.zmax}}
+          </div>
+      </div>
+
+      <div class = "row-fluid">
+	<div class ="span5"></div>
+	<div class ="span3">
+	  
+       <p><button class="btn btn-primary" name = "getProject" type="submit">Submit</button></p>
+       
+     </div>
+     <div class ="span4"></div>
+     
+   </div>
+
+{% endblock %}
+
+

@@ -29,6 +29,7 @@ def async ( fileName ):
   #tc = tilecache.TileCache ( token, channels )
   #tc.loadData(url)
 
+@celery.task()
 def propagate ( token ):
   """ Propagate the given project for all resolutions """
 
