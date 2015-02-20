@@ -43,7 +43,7 @@ def h5ProjInfo ( proj, h5f ):
   projgrp.create_dataset ( "HOST", (1,), dtype=h5py.special_dtype(vlen=str), data=proj._dbhost )
   projgrp.create_dataset ( "TYPE", (1,), dtype=np.uint32, data=proj._dbtype )
   projgrp.create_dataset ( "DATASET", (1,), dtype=h5py.special_dtype(vlen=str), data=proj._dataset )
-  projgrp.create_dataset ( "DATAURL", (1,), dtype=h5py.special_dtype(vlen=str), data=proj._dataurl )
+  projgrp.create_dataset ( "DATAURL", (1,), dtype=h5py.special_dtype(vlen=str), data=proj._overlayserver )
   projgrp.create_dataset ( "READONLY", (1,), dtype=bool, data=(False if proj._readonly==0 else True))
   projgrp.create_dataset ( "EXCEPTIONS", (1,), dtype=bool, data=(False if proj._exceptions==0 else True))
   projgrp.create_dataset ( "RESOLUTION", (1,), dtype=np.uint8, data=proj._resolution)
