@@ -66,13 +66,13 @@ class Project ( models.Model):
     #    dataurl  =  models. CharField(max_length=200)
     overlayproject = models. CharField(max_length=200,default="None")
     OVERLAY_SERVER_CHOICES = (
-        ('openconnecto.me', 'openconnecto.me'),
-        ('braingraph1.cs.jhu.edu', 'braingraph1.cs.jhu.edu'),
-        ('braingraph1dev.cs.jhu.edu', 'braingraph1dev'),
-        ('braingraph2.cs.jhu.edu', 'braingraph2'),
-        ('dsp061.pha.jhu.edu', 'dsp061'),
-        ('dsp062.pha.jhu.edu', 'dsp062'),
-        ('dsp063.pha.jhu.edu', 'dsp063'),
+        ('http://openconnecto.me/ocp', 'openconnecto.me'),
+        ('http://braingraph1.cs.jhu.edu/ocp', 'braingraph1.cs.jhu.edu'),
+        ('http://braingraph1dev.cs.jhu.edu/ocp', 'braingraph1dev'),
+        ('http://braingraph2.cs.jhu.edu/ocp', 'braingraph2'),
+        ('http://dsp061.pha.jhu.edu/ocp', 'dsp061'),
+        ('http://dsp062.pha.jhu.edu/ocp', 'dsp062'),
+        ('http://dsp063.pha.jhu.edu/ocp', 'dsp063'),
         
     )
     overlayserver =  models.CharField(max_length=200, choices=OVERLAY_SERVER_CHOICES, default='openconnecto.me')
