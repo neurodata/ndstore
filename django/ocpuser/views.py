@@ -96,7 +96,7 @@ def profile(request):
             messages.success(request,"Project deleted")
           else:
             messages.error( request,"Project not found.")
-            return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile')
+          return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile')
       
       elif 'info' in request.POST:
       #GET PROJECT INFO -----------TODO

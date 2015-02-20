@@ -631,15 +631,17 @@ class OCPCAProjectsDB:
     try:
 
       # Make the database unless specified
-      if not nocreate: 
+      if not nocreate:
+        #Set up a new connection because we may be creating a remote database
+        newconn = MySQLdb.connect (host = dbhost, user = ocpcaprivate.dbuser, passwd = ocpcaprivate.dbpasswd )
 
-        with closing(self.conn.cursor()) as cursor:
+        with closing(newconn.cursor()) as cursor:
           try:
             # Make the database and associated ocpca tables
             sql = "CREATE DATABASE {}".format( project )
          
             cursor.execute ( sql )
-            self.conn.commit()
+            newconn.commit()
           except MySQLdb.Error, e:
             logger.error ("Failed to create database for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
             raise OCPCAError ("Failed to create database for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
