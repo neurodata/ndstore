@@ -79,7 +79,7 @@
 		    <th>Host</th>
 		    <th>KVEngine</th>
 		    <th>KVServer</th>
-		    <th>Propogate</th>
+		    <th>Propagate</th>
 		  </tr>	   
 		  
 		  {% for value in dts_projects %} 
@@ -118,7 +118,14 @@
 		      <td>{{ proj.host }}</td>
 		      <td>{{ proj.kvengine }}</td>
 		      <td>{{ proj.kvserver }}</td>
-		      <td>{{ proj.propogate }}</td>
+		      {% if proj.propagate == 0%}
+                      <td>NOT_PROPAGATED</td>
+		      {% elif proj.propagate == 1%}
+		      <td>UNDER PROPAGATION</td>
+		       {% else %}
+		      <td>PROPAGATED</td>
+		      {% endif %}
+		      
 		     
 		      <td><button class="btn" id="delete" type="submit" name="delete"> <i class ="icon-trash icon-black"></i>Delete Project</button></td>
 		      <td><button class="btn" id="update" type="submit" name="update"> <i class ="icon-inbox icon-black"></i>Update Project</button></td>
