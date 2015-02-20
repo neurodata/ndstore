@@ -874,7 +874,7 @@ class OCPCAProjectsDB:
 
   def loadDatasetConfig ( self, dataset ):
     """Query the database for the dataset information and build a db configuration"""
-    sql = "SELECT id,dataset,ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale, startwindow, endwindow, starttime, endtime from {} where dataset = \'{}\'".format( ocpcaprivate.datasets, dataset)
+    sql = "SELECT id,dataset_name,ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale, startwindow, endwindow, starttime, endtime from {} where dataset_name = \'{}\'".format( ocpcaprivate.datasets, dataset)
 
 
     with closing(self.conn.cursor()) as cursor:
@@ -899,7 +899,7 @@ class OCPCAProjectsDB:
  
   def loadDatasetName ( self, dataset_id ):
     """Query the datasets table for the dataset name"""
-    sql = "SELECT dataset from {} where id = \'{}\'".format( ocpcaprivate.datasets, dataset_id)
+    sql = "SELECT dataset_name from {} where id = \'{}\'".format( ocpcaprivate.datasets, dataset_id)
     
     
     with closing(self.conn.cursor()) as cursor:
@@ -924,7 +924,7 @@ class OCPCAProjectsDB:
 
   def loadDatasetID ( self, dataset ):
     """Query the datasets table for the dataset name"""
-    sql = "SELECT id from {} where dataset = \'{}\'".format( ocpcaprivate.datasets, dataset)
+    sql = "SELECT id from {} where dataset_name = \'{}\'".format( ocpcaprivate.datasets, dataset)
     
     with closing(self.conn.cursor()) as cursor:
       try:
@@ -1114,7 +1114,7 @@ class OCPCAProjectsDB:
     #Used for the project management interface
     #PYTODO - Check about function
     # Check if there are any tokens for this dataset    
-    sql = "SELECT * FROM {} WHERE dataset=\'{}\'".format( ocpcaprivate.projects, dataset )
+    sql = "SELECT * FROM {} WHERE dataset_name=\'{}\'".format( ocpcaprivate.projects, dataset )
 
     with closing(self.conn.cursor()) as cursor:
       try:
@@ -1126,7 +1126,7 @@ class OCPCAProjectsDB:
       self.conn.commit()
       row = cursor.fetchone()
       if (row == None):
-        sql = "DELETE FROM {0} WHERE dataset=\'{1}\'".format (ocpcaprivate.datasets,dataset)
+        sql = "DELETE FROM {0} WHERE dataset_name=\'{1}\'".format (ocpcaprivate.datasets,dataset)
         try:
           cursor = self.conn.cursor()
           cursor.execute ( sql )

@@ -38,7 +38,7 @@ class Dataset ( models.Model):
         managed = True
        
     def __unicode__(self):
-        return self.dataset
+        return self.dataset_name
 
 
 class Project ( models.Model):

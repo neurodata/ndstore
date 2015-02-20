@@ -69,9 +69,9 @@ def profile(request):
         for db in all_datasets:
           proj = Project.objects.filter(dataset_id=db.id)
           if proj:
-            dbs[db.dataset].append(proj)
+            dbs[db.dataset_name].append(proj)
           else:
-            dbs[db.dataset].append(None)
+            dbs[db.dataset_name].append(None)
             
         all_projects = Project.objects.values_list('project_name',flat= True)
         return render_to_response('profile.html', { 'databases': dbs.iteritems() ,'projects':all_projects },context_instance=RequestContext(request))
@@ -139,9 +139,9 @@ def profile(request):
       for db in all_datasets:
         proj = Project.objects.filter(dataset_id=db.id, user_id = request.user)
         if proj:
-          dbs[db.dataset].append(proj)
+          dbs[db.dataset_name].append(proj)
         else:
-          dbs[db.dataset].append(None)
+          dbs[db.dataset_name].append(None)
       
       all_projects = Project.objects.values_list('project_name',flat= True)
       return render_to_response('profile.html', { 'databases': dbs.iteritems() ,'projects':all_projects },context_instance=RequestContext(request))
