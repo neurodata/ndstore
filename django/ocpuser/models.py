@@ -18,7 +18,7 @@ from django.contrib.auth.models import User
 from django.conf import settings
 # Create your models here.
 class Dataset ( models.Model):
-    dataset = models. CharField(max_length=200, unique=True,verbose_name="Name of the Image dataset")    
+    dataset_name = models. CharField(max_length=200, unique=True,verbose_name="Name of the Image dataset")    
     ximagesize =  models.IntegerField()
     yimagesize =  models.IntegerField()
 
@@ -30,7 +30,7 @@ class Dataset ( models.Model):
     endtime = models.IntegerField(default=0)
     zoomlevels = models.IntegerField()
     zscale = models.FloatField()
-    description  =  models. CharField(max_length=4096)
+    dataset_description  =  models. CharField(max_length=4096)
     
     class Meta:
         """ Meta """

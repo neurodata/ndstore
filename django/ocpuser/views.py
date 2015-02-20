@@ -170,14 +170,14 @@ def get_datasets(request):
       if 'delete' in request.POST:
         #delete specified dataset
         ds = (request.POST.get('dataset_name')).strip()
-        ds_to_delete = Dataset.objects.get(dataset=ds)
+        ds_to_delete = Dataset.objects.get(dataset_name=ds)
         
         # Check for projects with that dataset
         proj = Project.objects.filter(dataset_id=ds_to_delete.id)
         if proj:
           messages.error(request, 'Dataset cannot be deleted. PLease delete all projects for this dataset first.')
         else:
-          messages.success(request, 'Dataset Deleted')
+          messages.success(request, 'Deleted Dataset ' + ds)
           ds_to_delete.delete()
         all_datasets = Dataset.objects.all()
         return render_to_response('datasets.html', { 'dts': all_datasets },context_instance=RequestContext(request))
@@ -343,7 +343,7 @@ def updatedataset(request):
   ds = request.session["dataset_name"]
   if request.method == 'POST':
     if 'UpdateDataset' in request.POST:
-      ds_update = get_object_or_404(Dataset,dataset=ds)
+      ds_update = get_object_or_404(Dataset,dataset_name=ds)
       form = CreateDatasetForm(data= request.POST or None,instance=ds_update)
       if form.is_valid():
         form.save()
@@ -365,9 +365,9 @@ def updatedataset(request):
       ds = request.session["dataset_name"]
     else:
       ds = ""
-    ds_to_update = Dataset.objects.select_for_update().filter(dataset=ds)
+    ds_to_update = Dataset.objects.select_for_update().filter(dataset_name=ds)
     data = {
-      'dataset': ds_to_update[0].dataset,
+      'dataset_name': ds_to_update[0].dataset_name,
       'ximagesize':ds_to_update[0].ximagesize,
       'yimagesize':ds_to_update[0].yimagesize,
       'startslice':ds_to_update[0].startslice,
@@ -378,7 +378,7 @@ def updatedataset(request):
       'endtime':ds_to_update[0].endtime,
       'zoomlevels':ds_to_update[0].zoomlevels,
       'zscale':ds_to_update[0].zscale,
-      'description':ds_to_update[0].description,
+      'dataset_description':ds_to_update[0].dataset_description,
             }
     form = CreateDatasetForm(initial=data)
     context = {'form': form}

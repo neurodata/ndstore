@@ -380,7 +380,7 @@ class OCPCAProjectsDB:
     # Create a project object                                                                                                                     
     proj = OCPCAProject ("",project_name,project_description, dataset,datatype,overlayproject,overlayserver,resolution,readonly,exceptions,host,kvengine,kvserver, propagate )
      # Lookup the information for the database project based on the token                                                                                             
-    sql = "SELECT dataset from {} where id = \'{}\'".format(ocpcaprivate.datasets, dataset_id)
+    sql = "SELECT dataset_name from {} where id = \'{}\'".format(ocpcaprivate.datasets, dataset_id)
 
     with closing(self.conn.cursor()) as cursor:
       try:
@@ -407,7 +407,7 @@ class OCPCAProjectsDB:
   def newDataset ( self, dsname, ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale, startwindow, endwindow, starttime, endtime ):
     """ Create a new ocpca dataset """
 
-    sql = "INSERT INTO {0} (dataset, ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale, startwindow, endwindow, starttime, endtime) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',{5},\'{6}\',\'{7}\', \'{8}\',\'{9}\','{10}\','{11}\')".format (\
+    sql = "INSERT INTO {0} (dataset_name, ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale, startwindow, endwindow, starttime, endtime) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',{5},\'{6}\',\'{7}\', \'{8}\',\'{9}\','{10}\','{11}\')".format (\
        ocpcaprivate.datasets, dsname, ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale, startwindow, endwindow, starttime, endtime )
 
     logger.info ( "Creating new dataset. Name %s. SQL=%s" % ( dsname, sql ))
@@ -623,7 +623,7 @@ class OCPCAProjectsDB:
   def newOCPCAProjectDB ( self, project, description, dataset, dbtype ,resolution, exceptions, dbhost, kvserver, kvengine, propagate, nocreate ):
     """ Create a new ocpca project """
 
-    datasetcfg = self.loadDatasetConfig ( dataset.dataset )
+    datasetcfg = self.loadDatasetConfig ( dataset.dataset_name )
     
     proj = self.loadProjectDB ( project )
 

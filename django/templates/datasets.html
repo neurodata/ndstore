@@ -57,7 +57,7 @@
 	  {% for ds in dts %}
 	  
 	  <thead>
-	    <tr class="success"><th>Dataset</th> <th>{{ds.dataset}} ( {{ds.description}} ) </th></tr>
+	    <tr class="success"><th>Dataset</th> <th>{{ds.dataset_name}} ( {{ds.dataset_description}} ) </th></tr>
 	  </thead>
 	  <tr>
 	    <td></td>
@@ -78,7 +78,7 @@
 		</tr>	   
 		<form method="post" action = "">
 		  <tr>
-	            <input type="hidden" name="dataset_name" value={{ds.dataset}}>
+	            <input type="hidden" name="dataset_name" value={{ds.dataset_name}}>
                     <td style="width: 15%;">{{ ds.ximagesize }}</td>
                     <td>{{ ds.yimagesize }}</td>
 		    <td>{{ ds.startslice }}</td>
