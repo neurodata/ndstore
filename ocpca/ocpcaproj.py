@@ -344,7 +344,7 @@ class OCPCAProjectsDB:
     [project_name, project_description, dataset_id , datatype, overlayproject,overlayserver, resolution ,exceptions,host, kvengine, kvserver,propagate  ] = row 
     dataset= self.loadDatasetName(dataset_id)
     # Create a project object
-    proj = OCPCAProject ( token, project_name,project_description, dataset,datatype, overlayproject,overlayserver, resolution, readonly, exceptions,host, kvengine, kvserver, propagate ) 
+    proj = OCPCAProject ( token, project_name.strip(),project_description, dataset,datatype, overlayproject,overlayserver, resolution, readonly, exceptions,host, kvengine, kvserver, propagate ) 
     proj.datasetcfg = self.loadDatasetConfig ( dataset )
 
     return proj
