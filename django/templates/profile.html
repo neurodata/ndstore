@@ -66,25 +66,26 @@
 	    <tr>
 	      <td></td>
 	      <td>
+	
+		{% for value in dts_projects %} 
 		<table class="table table-bordered">
-		 
-		  <tr class ="error">
-		    <th>Project</th>
-		    <th>Datatype</th>
-		    <th>Description</th>
-		    <th>Overlay Project</th>
-		    <th>Overlay Server</th>
-		    <th>Resolution</th>
-		    <th>Exceptions</th>
-		    <th>Host</th>
-		    <th>KVEngine</th>
-		    <th>KVServer</th>
-		    <th>Propagate</th>
-		  </tr>	   
-		  
-		  {% for value in dts_projects %} 
+		  {%if value %}
+                  <tr class ="error">
+                    <th>Project</th>
+                    <th>Datatype</th>
+                    <th>Description</th>
+                    <th>Overlay Project</th>
+                    <th>Overlay Server</th>
+                    <th>Resolution</th>
+                    <th>Exceptions</th>
+                    <th>Host</th>
+                    <th>KVEngine</th>
+                    <th>KVServer</th>
+                    <th>Propagate</th>
+                  </tr>
+		  {% endif %}
 		  {% for proj in value %}
-		  		  
+		  		  		  
 		  <form method="post" action = "">
 		    <tr>
 		      <input type="hidden" name="projname" value={{proj.project_name}}>
