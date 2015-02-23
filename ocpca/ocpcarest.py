@@ -345,7 +345,7 @@ def imgSlice ( service, imageargs, proj, db ):
 
   # Window Function - used to limit the range of data purely for viewing purposes
   (startwindow,endwindow) = proj.datasetcfg.windowrange
-  if endwindow !=0:
+  if endwindow != 0:
     window = (startwindow, endwindow)
     windowCutout ( cb.data, window)
 
@@ -1819,7 +1819,7 @@ def merge ( webargs ):
   
   # Make ids a numpy array to speed vectorize
   ids = np.array(ids,dtype=np.uint32)
-  # Validate ids . IF ids do not exist raise errors
+  # Validate ids . If ids do not exist raise errors
 
   # pattern for using contexts to close databases
   # get the project 
@@ -1828,7 +1828,6 @@ def merge ( webargs ):
 
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
-
   
     #Check that all ids in the id strings are valid annotation objects
     for curid in ids:
@@ -1836,7 +1835,6 @@ def merge ( webargs ):
       if obj == None:
         logger.warning("Invalid object id {} used in merge".format(curid))
         raise OCPCAError("Invalid object id used in merge")
-
 
     [mergetype,resolution] = rest.split('/',1)
     if mergetype == "global":
