@@ -18,19 +18,27 @@ from django.conf import settings
 import h5annasync
 import ocpcastack
 
+import logging
+logger = logging.getLogger("ocp")
+
 celery = Celery('tasks', broker='amqp://guest@localhost//')
 
-@celery.task( )
-def async ( fileName ):
-  """ Write the h5py files back to database. """
+#@celery.task( )
+#def async ( fileName ):
+#  """ Write the h5py files back to database. """
+#
+#  try:
+#    5annasync.h5Async( fileName )
+#  except Exception, e:
+#    logger.error("Error in async. {}".format(e))
 
-  h5annasync.h5Async( fileName )
-  #logger.warning ("Fetching url {}".format(url))
-  #tc = tilecache.TileCache ( token, channels )
-  #tc.loadData(url)
 
-@celery.task()
+@celery.task(queue='propagate')
 def propagate ( token ):
   """ Propagate the given project for all resolutions """
 
-  ocpcastack.buildStack ( token )
+  try:
+    ocpcastack.buildStack ( token )
+  except Exception, e:
+    logger.error("Error in propagate. {}".format(e))
+
