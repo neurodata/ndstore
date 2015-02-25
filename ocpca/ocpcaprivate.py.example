@@ -5,4 +5,5 @@ db = 'ocpdjango'
 projects = 'projects'
 datasets = 'datasets'
 tokens='tokens'
-
+# This has to exist
+backuppath='/data2/scratch/ocpbackup'
