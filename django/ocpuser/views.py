@@ -109,7 +109,7 @@ def profile(request):
         return redirect(updateproject)
       
       elif 'tokens' in request.POST:
-        projname = (request.POST.get('projname')).strip()
+        projname=(request.POST.get('projname')).strip()
         request.session["project"] = projname
         return redirect(get_tokens)
 
@@ -235,10 +235,12 @@ def get_tokens(request):
       elif 'update' in request.POST:
       #UPDATE PROJECT TOKEN -- FOLOWUP
         token = (request.POST.get('token')).strip()
-        print token
-        request.session["token"] = token
-        return redirect(updateproject)
-      return redirect(get_tokens)
+        request.session["token_name"] = token
+        return redirect(updatetoken)
+        #return redirect(get_tokens)
+      else:
+        #Unrecognized Option
+        return redirect(get_tokens)
     else:
       # GET tokens for the specified project
       openid = request.user.username
@@ -358,7 +360,6 @@ def updatedataset(request):
     else:
       #unrecognized option
       return HttpResponseRedirect(get_script_prefix()+'ocpuser/datasets')
-          
   else:
     print "Getting the update form"
     if "dataset_name" in request.session:
@@ -383,6 +384,46 @@ def updatedataset(request):
     form = CreateDatasetForm(initial=data)
     context = {'form': form}
     return render_to_response('updatedataset.html',context,context_instance=RequestContext(request))
+
+@login_required(login_url='/ocp/accounts/login/')
+def updatetoken(request):
+  # Get the dataset to update
+  token = request.session["token_name"]
+  if request.method == 'POST':
+    if 'UpdateToken' in request.POST:
+      token_update = get_object_or_404(Token,token_name=token)
+      form = CreateTokenForm(data= request.POST or None,instance=token_update)
+      if form.is_valid():
+        form.save()
+        messages.success(request, 'Sucessfully updated Token')
+        del request.session["token_name"]
+        return HttpResponseRedirect(get_script_prefix()+'ocpuser/token')
+      else:
+        #Invalid form
+        context = {'form': form}
+        print form.errors
+        return render_to_response('updatetoken.html',context,context_instance=RequestContext(request))
+    else:
+      #unrecognized option
+      return HttpResponseRedirect(get_script_prefix()+'ocpuser/token')
+  else:
+    print "Getting the update form"
+    if "token_name" in request.session:
+      token = request.session["token_name"]
+    else:
+      token = ""
+    token_to_update = Token.objects.select_for_update().filter(token_name=token)
+    data = {
+      'token_name': token_to_update[0].token_name,
+      'token_description':token_to_update[0].token_description,
+      'project':token_to_update[0].project_id,
+      'readonly':token_to_update[0].readonly,
+      'public':token_to_update[0].public,
+      
+            }
+    form = CreateTokenForm(initial=data)
+    context = {'form': form}
+    return render_to_response('updatetoken.html',context,context_instance=RequestContext(request))
 
 @login_required(login_url='/ocp/accounts/login/')
 def updateproject(request):

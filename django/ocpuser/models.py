@@ -131,7 +131,7 @@ class Project ( models.Model):
 
 
 class Token ( models.Model):
-    token_name  =  models. CharField(max_length=200, primary_key=True)
+    token_name  =  models. CharField(max_length=200, unique=True)
     token_description  =  models. CharField(max_length=4096,blank=True)
     project  = models.ForeignKey(Project)
     READONLY_CHOICES = (
