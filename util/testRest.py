@@ -51,6 +51,17 @@ def deleteH5 ( host, token, annid ):
     print "Failed URL {}".format(url)
     print "Error {}".format(e)
 
+def postImage ( host, token, filename):
+  """ Sample Dean Test """
+
+  url = 'http://{}/ocpca/{}/hdf5/1/3000,3250/4000,4250/500,505/overwrite/'.format(host,token)
+  try:
+    req = urllib2.Request (url, open(filename).read() )
+    response = urllib2.urlopen(req)
+    print url 
+  except urllib2.URLError, e:
+    print "Failed URL {}".format(url)
+    print "Error {}".format(e)
 
 def main():
   
@@ -59,6 +70,7 @@ def main():
   parser.add_argument('token', action="store", help='Project Token')
   parser.add_argument('--put', dest='datalocation', action="store", default=None, help='Data Folder')
   parser.add_argument('--del', dest='annid', action="store", default=None, help='Data Folder')
+  parser.add_argument('--dean', dest='dean', action="store", default=None, help='Data Folder')
  
   global result
 
@@ -69,6 +81,9 @@ def main():
 
   if result.annid != None:
     deleteH5 ( result.host, result.token, result.annid )
+
+  if result.dean != None:
+    postImage(result.host, result.token, result.dean )
 
 if __name__ == "__main__":
   main()

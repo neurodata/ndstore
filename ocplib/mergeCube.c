@@ -30,15 +30,15 @@ int mergeCube( uint32_t * data, int * dims, int newid, int oldid )
 {
 		int i,j,k,index;
 
-    int xdim = dims[0];
+    int zdim = dims[0];
     int ydim = dims[1];
-    int zdim = dims[2];
+    int xdim = dims[2];
 
     for ( k=0; k<zdim; k++ )
       for ( j=0; j<ydim; j++ )
         for ( i=0; i<xdim; i++ )
         {
-          index = i*xdim*ydim + j*xdim + k;
+          index = (k*xdim*ydim) + (j*xdim) + (i);
           if ( data [index] == oldid )
             data [index] = newid;
         }
