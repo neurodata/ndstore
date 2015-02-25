@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import django.http
-from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponseRedirect
 from django.http import HttpResponse
 from django.contrib.auth.models import User
@@ -26,6 +25,7 @@ from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.template import Context
 from collections import defaultdict
 from django.contrib import messages
+import ocpcaprivate
 import ocpcarest
 import ocpcaproj
 import string
@@ -114,7 +114,7 @@ def profile(request):
         return redirect(get_tokens)
 
       elif 'backup' in request.POST:
-        path = '/data/scratch/ocpbackup/'+ request.user.username
+        path = ocpcaprivate.backuppath + '/' + request.user.username
         if not os.path.exists(path):
           os.mkdir( path, 0755 )
         # Get the database information
@@ -122,7 +122,10 @@ def profile(request):
         db = (request.POST.get('projname')).strip()
         ofile = path +'/'+ db +'.sql'
         outputfile = open(ofile, 'w')
-        p = subprocess.Popen(['mysqldump', '-ubrain', '-p88brain88', '--single-transaction', '--opt', db], stdout=outputfile).communicate(None)
+        dbuser =ocpcaprivate.dbuser
+        passwd =ocpcaprivate.dbpasswd
+
+        p = subprocess.Popen(['mysqldump', '-u'+ dbuser, '-p'+ passwd, '--single-transaction', '--opt', db], stdout=outputfile).communicate(None)
         messages.success(request, 'Sucessfully backed up database '+ db)
         return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile')
 
