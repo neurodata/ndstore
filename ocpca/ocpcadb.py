@@ -1203,6 +1203,8 @@ class OCPCADB:
     # Sort the indexes in Morton order
     listofidxs.sort()
 
+    print listofidxs
+
     # xyz offset stored for later use
     lowxyz = ocplib.MortonXYZ ( listofidxs[0] )
     
