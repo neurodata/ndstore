@@ -111,6 +111,7 @@
 		      <td>{{ proj.overlayproject }}</td>
 		      <td>{{ proj.overlayserver }}</td>
 		      <td>{{ proj.resolution }}</td>
+		      
 		      {% if proj.exceptions == 0%}
                       <td>NO</td>
 		      {% else %}
@@ -118,7 +119,18 @@
 		      {% endif %}
 		      <td>{{ proj.host }}</td>
 		      <td>{{ proj.kvengine }}</td>
-		      <td>{{ proj.kvserver }}</td>
+		      {% if proj.kvserver == 'localhost' %}
+		      <td>Localhost</td>
+		      {% elif proj.kvserver == '172.23.253.61'%}
+                      <td>dsp061</td>
+		      {% elif proj.kvserver == '172.23.253.62'%} 
+                      <td>dsp062</td>
+		      {% elif proj.kvserver == '172.23.253.63' %}
+		      <td>dsp063</td>
+		      {% else %}
+		      <td>OTHER</td>
+		      {% endif %}
+		      
 		      {% if proj.propagate == 0%}
                       <td>NOT_PROPAGATED</td>
 		      {% elif proj.propagate == 1%}
