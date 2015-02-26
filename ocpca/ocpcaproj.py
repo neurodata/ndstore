@@ -98,7 +98,7 @@ class OCPCAProject:
   def getToken ( self ):
     return self._token
   def getDBHost ( self ):
-    return self._dbhost
+      return self._dbhost
   def getDBType ( self ):
     return self._dbtype
   def getDBName ( self ):
@@ -943,84 +943,6 @@ class OCPCAProjectsDB:
     return dataset_id
                     
 
-
-  #
-  # Load the ocpca databse information based on openid
-  #
-  def getFilteredProjects ( self, openid, filterby, filtervalue ):
-    """Load the annotation database information based on the openid"""
-    # Lookup the information for the database project based on the openid
-    #url = "SELECT * from %s where " + filterby
-    #sql = "SELECT * from %s where %s = \'%s\'" % (ocpcaprivate.table, filterby, filtervalue)
-    token_desc = ocpcaprivate.token_description
-    proj_tbl = ocpcaprivate.projects
-    if (filterby == ""):
-      sql = "SELECT * from %s LEFT JOIN %s on %s.token = %s.token where %s.openid = \'%s\' ORDER BY project" % (ocpcaprivate.projects,token_desc,proj_tbl,token_desc,proj_tbl,openid)
-    else:
-      sql = "SELECT * from %s LEFT JOIN %s on %s.token = %s.token where %s.openid = \'%s\' and %s.%s = \'%s\' ORDER BY project" % (ocpcaprivate.projects,token_desc,proj_tbl,token_desc, proj_tbl,openid, proj_tbl,filterby, filtervalue.strip())
-
-    with closing(self.conn.cursor()) as cursor:
-      try:
-        cursor.execute ( sql )
-      except MySQLdb.Error, e:
-         logger.error ("FAILED TO FILTER")
-         raise
-      # get the project information
-     
-      row = cursor.fetchall()
-
-    return row
-
-#*******************************************************************************
-  #
-  # Load the ocpca databse information based on openid and filter options
-  #
-  def getFilteredProjs ( self, openid, filterby, filtervalue,dataset ):
-    """Load the annotation database information based on the openid"""
-    # Lookup the information for the database project based on the openid
-    proj_desc = ocpcaprivate.project_description
-    proj_tbl = ocpcaprivate.projects
-    if (filterby == ""):
-      sql = "SELECT * from %s LEFT JOIN %s on %s.project = %s.project where %s.openid = \'%s\' and %s.dataset = \'%s\'" % (ocpcaprivate.projects,proj_desc,proj_tbl,proj_desc,proj_tbl,openid,proj_tbl,dataset)
-    else:
-      sql = "SELECT * from %s LEFT JOIN %s on %s.project = %s.project where %s.openid = \'%s\' and %s.%s = \'%s\' and %s.dataset =\'%s\'" % (ocpcaprivate.projects,proj_desc,proj_tbl,proj_desc, proj_tbl,openid, proj_tbl,filterby, filtervalue.strip(),proj_tbl,dataset)
-
-    with closing(self.conn.cursor()) as cursor:
-      try:
-        cursor.execute ( sql )
-      except MySQLdb.Error, e:
-         logger.error ("FAILED TO FILTER")
-         raise
-      # get the project information
-
-      row = cursor.fetchall()
-
-    return row
-
-  #
-  # Load Projects created by user ( projadmin)
-  #
-  def getDatabases ( self, openid):
-    """Load the annotation database information based on the openid"""
-    # Lookup the information for the database project based on the openid
-    
-    token_desc = ocpcaprivate.token_description
-    proj_tbl = ocpcaprivate.projects
-
-    sql = "SELECT distinct(dataset) from {} where openid = \'{}\'".format( ocpcaprivate.projects,openid )
-       
-    with closing(self.conn.cursor()) as cursor:
-      try:
-        cursor.execute ( sql )
-      except MySQLdb.Error, e:
-         logger.error ("FAILED TO FILTER")
-         raise
-      # get the project information
-
-      row = cursor.fetchall()
-
-    return row
-
   #
   # Load Projects created by user ( projadmin)
   #
@@ -1041,23 +963,6 @@ class OCPCAProjectsDB:
     return row
 
    
-#******************************************************************************
-
-  #
-  # Update the token for a project
-  #
-  def updateProject ( self, curtoken ,newtoken):
-    """Load the annotation database information based on the openid"""
-    sql = "UPDATE %s SET token = \'%s\' where token = \'%s\'" % (ocpcaprivate.projects, newtoken, curtoken)
-
-    with closing(self.conn.cursor()) as cursor:
-      try:
-        cursor.execute ( sql )
-      except MySQLdb.Error, e:
-         logger.error ("FAILED TO UPDATE")
-         raise
-      self.conn.commit()
-
 
   #
   # Update the propagate  and readonly values for a project
@@ -1081,7 +986,6 @@ class OCPCAProjectsDB:
 
   def deleteOCPCADatabase ( self, project ):
     #Used for the project management interface
-    #PYTODO - Check about function
     # Check if there are any tokens for this database
     sql = "SELECT * FROM {} where project_name = \'{}\'".format(ocpcaprivate.projects, project)
 

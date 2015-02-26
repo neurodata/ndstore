@@ -63,16 +63,23 @@ def profile(request):
         openid = request.user.username
         filteroption = request.POST.get('filteroption')
         filtervalue = (request.POST.get('filtervalue')).strip()
+        
         pd = ocpcaproj.OCPCAProjectsDB()
         all_datasets= Dataset.objects.all()
         dbs = defaultdict(list)
         
         for db in all_datasets:
-          proj = Project.objects.filter(dataset_id=db.id)
+          if filteroption == 'project':
+            proj = Project.objects.filter(dataset_id=db.id,project_name=filtervalue)
+          elif filteroption =='datatype':
+            proj = Project.objects.filter(dataset_id=db.id,datatype=filtervalue)
+          else:
+            proj = Project.objects.filter(dataset_id=db.id)
+            
           if proj:
             dbs[db.dataset_name].append(proj)
-          else:
-            dbs[db.dataset_name].append(None)
+          #else:
+          #  dbs[db.dataset_name].append(None)
             
         all_projects = Project.objects.values_list('project_name',flat= True)
         return render_to_response('profile.html', { 'databases': dbs.iteritems() ,'projects':all_projects },context_instance=RequestContext(request))
@@ -171,7 +178,11 @@ def get_datasets(request):
   try:
     pd = ocpcaproj.OCPCAProjectsDB()
     if request.method == 'POST':
-      if 'delete' in request.POST:
+      if 'filter' in request.POST:
+        filtervalue = (request.POST.get('filtervalue')).strip()
+        all_datasets = Dataset.objects.filter(dataset_name=filtervalue)
+        return render_to_response('datasets.html', { 'dts': all_datasets },context_instance=RequestContext(request))
+      elif 'delete' in request.POST:
         #delete specified dataset
         ds = (request.POST.get('dataset_name')).strip()
         ds_to_delete = Dataset.objects.get(dataset_name=ds)
@@ -206,21 +217,20 @@ def get_datasets(request):
 
 @login_required(login_url='/ocp/accounts/login/')
 def get_tokens(request):
+  openid = request.user.username
   pd = ocpcaproj.OCPCAProjectsDB()  
   try:
     if request.method == 'POST':
       if 'filter' in request.POST:
-      #FILTER PROJECTS BASED ON INPUT VALUE
-        openid = request.user.username
+      #Filter tokens based on an input value
         filteroption = request.POST.get('filteroption')
         filtervalue = (request.POST.get('filtervalue')).strip()
-        pd = ocpcaproj.OCPCAProjectsDB()
-        projects = pd.getFilteredProjects ( openid,filteroption,filtervalue )
-        return render_to_response('token.html', { 'tokens': projects},
-                                  context_instance=RequestContext(request))
+        all_tokens = Token.objects.filter(token_name=filtervalue)
+        proj=""
+        return render_to_response('token.html', { 'tokens': all_tokens, 'database': proj },context_instance=RequestContext(request))
+
       elif 'delete' in request.POST:
       #Delete the token from the token table
-        openid = request.user.username
         token_to_delete = (request.POST.get('token')).strip()
         token = Token.objects.filter(token_name=token_to_delete)
         if token:
@@ -237,13 +247,13 @@ def get_tokens(request):
         response['Content-Disposition'] = 'attachment; filename="ocpca.token"'
         return response
       elif 'update' in request.POST:
-      #UPDATE PROJECT TOKEN -- FOLOWUP
+      #update project token
         token = (request.POST.get('token')).strip()
         request.session["token_name"] = token
         return redirect(updatetoken)
-        #return redirect(get_tokens)
       else:
         #Unrecognized Option
+        messages.error("Invalid request")
         return redirect(get_tokens)
     else:
       # GET tokens for the specified project
