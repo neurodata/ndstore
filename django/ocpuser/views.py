@@ -30,6 +30,7 @@ import ocpcarest
 import ocpcaproj
 import string
 import random
+import MySQLdb
 from models import Project
 from models import Dataset
 from models import Token
@@ -499,44 +500,67 @@ def createtoken(request):
     return render_to_response('createtoken.html',context,context_instance=RequestContext(request))
       
 @login_required(login_url='/ocp/accounts/login/')
-def restore(request):
+def restoreproject(request):
   if request.method == 'POST':
    
     if 'RestoreProject' in request.POST:
       form = CreateProjectForm(request.POST)
       if form.is_valid():
-        token = form.cleaned_data['token']
-        host = "localhost"
-        project = form.cleaned_data['project']
+        project = form.cleaned_data['project_name']
+        description = form.cleaned_data['project_description']        
         dataset = form.cleaned_data['dataset']
         datatype = form.cleaned_data['datatype']
-        
-        dataurl = "http://openconnecto.me/ocp"
-        readonly = form.cleaned_data['readonly']
-        exceptions = form.cleaned_data['exceptions']
-        nocreate = 0
+        overlayproject = form.cleaned_data['overlayproject']
+        overlayserver = form.cleaned_data['overlayserver']
         resolution = form.cleaned_data['resolution']
+        exceptions = form.cleaned_data['exceptions']        
+        dbhost = form.cleaned_data['host']        
+        kvengine=form.cleaned_data['kvengine']
+        kvserver=form.cleaned_data['kvserver']
+        propagate =form.cleaned_data['propagate']
         openid = request.user.username
-        print "Creating a project with:"
-        #       print token, host, project, dataset, dataurl,readonly, exceptions, openid
+        nocreateoption = request.POST.get('nocreate')
+        if nocreateoption =="on":
+          nocreate = 1
+        else:
+          nocreate = 0
+        new_project= form.save(commit=False)
+        new_project.user = request.user
+        new_project.save()
         # Get database info
         pd = ocpcaproj.OCPCAProjectsDB()
-        pd.newOCPCAProj ( token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate ,resolution)
+        
         bkupfile = request.POST.get('backupfile')
-        path = '/data/scratch/ocpbackup/'+ request.user.username + '/' + bkupfile
+        path = ocpcaprivate.backuppath+ '/'+ request.user.username + '/' + bkupfile
         if os.path.exists(path):
           print "File exists"
-          
-        proj= pd.loadProject(token)
-        db=proj.getDBName()
+        else:
+          #TODO - Return error
+          print "Error"
+        proj=pd.loadProjectDB(project)
         
-        user ="brain"
-        password ="88brain88"
-        proc = subprocess.Popen(["mysql", "--user=%s" % user, "--password=%s" % password, db],stdin=subprocess.PIPE,stdout=subprocess.PIPE)
+        
+        #Create the database
+        newconn = MySQLdb.connect (host = dbhost, user = ocpcaprivate.dbuser, passwd = ocpcaprivate.dbpasswd, db=ocpcaprivate.db )
+        newcursor = newconn.cursor()
+        
+        try:
+          sql = "Create database " + project  
+          newcursor.execute(sql)
+        except Exception:
+          print("Database already exists")
+          
+          
+      # close connection just to be sure
+        newcursor.close()
+        dbuser = ocpcaprivate.dbuser
+        passwd = ocpcaprivate.dbpasswd
+      
+        proc = subprocess.Popen(["mysql", "--user=%s" % dbuser, "--password=%s" % passwd, project],stdin=subprocess.PIPE,stdout=subprocess.PIPE)
         proc.communicate(file(path).read())
-        messages.success(request, 'Sucessfully restored database '+ db)
+        messages.success(request, 'Sucessfully restored database '+ project)
         return redirect(profile)
-
+    
       else:
         #Invalid Form
         context = {'form': form}
@@ -549,7 +573,7 @@ def restore(request):
       #GET DATA
     randtoken = ''.join(random.choice(string.ascii_uppercase + string.digits + string.ascii_lowercase) for x in range(64))
     form = CreateProjectForm(initial={'token': randtoken})
-    path = '/data/scratch/ocpbackup/'+ request.user.username
+    path = ocpcaprivate.backuppath +'/'+ request.user.username
     if os.path.exists(path):
       file_list =os.listdir(path)   
     else:
