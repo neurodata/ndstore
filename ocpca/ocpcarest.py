@@ -37,15 +37,11 @@ import h5ann
 import h5projinfo
 import annotation
 import mcfc
-
-from ocpca_cy import assignVoxels_cy
-from ocpca_cy import recolor_cy
-
-from ocpcaerror import OCPCAError
-
 from windowcutout import windowCutout
 import ocplib
 import ocpcaprivate
+
+from ocpcaerror import OCPCAError
 
 import logging
 logger=logging.getLogger("ocp")
