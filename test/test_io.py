@@ -389,8 +389,6 @@ class TestRW:
   def setup_class(self):
     """Create the unittest database"""
 
-    import pdb; pdb.set_trace()
-    
     with closing ( ocpcaproj.OCPCAProjectsDB() ) as pd:
       try: 
         pd.newOCPCAProj ( 'unittest_rw','token for unit test', 1 , 'localhost', 'unittest_rw', 'project for unittest', 'annotation', 'uint32', 'kasthuri11','kasthuri11','openconnecto.me', False, True, False, 0, 0, kvengine_to_test.kvserver, kvengine_to_test.kvengine, 0 )

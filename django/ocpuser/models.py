@@ -18,7 +18,7 @@ from django.contrib.auth.models import User
 from django.conf import settings
 # Create your models here.
 class Dataset ( models.Model):
-    dataset_name = models. CharField(max_length=255, unique=True,verbose_name="Name of the Image dataset")    
+    dataset_name = models. CharField(max_length=255, primary_key=True,verbose_name="Name of the Image dataset")    
     ximagesize =  models.IntegerField()
     yimagesize =  models.IntegerField()
     zimagesize =  models.IntegerField()
@@ -48,7 +48,6 @@ class Dataset ( models.Model):
 class Project ( models.Model):
     project_name  =  models.CharField(max_length=255, primary_key=True)
     project_description  =  models.CharField(max_length=4096, blank=True)
-    #openid = models.ForeignKey(settings.AUTH_USER_MODEL)
     user = models.ForeignKey(User)
     dataset = models.ForeignKey(Dataset)
 
@@ -140,7 +139,7 @@ class Project ( models.Model):
 
 
 class Token ( models.Model):
-    token_name  =  models. CharField(max_length=255, unique=True)
+    token_name = models. CharField(max_length=255, primary_key=True)
     token_description  =  models. CharField(max_length=4096,blank=True)
     project  = models.ForeignKey(Project)
     READONLY_CHOICES = (

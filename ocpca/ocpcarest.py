@@ -214,7 +214,7 @@ def HDF5 ( imageargs, proj, db ):
       FilterCube (imageargs, cube )
       fh5out.create_dataset ( "CUTOUT", tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data )
   
-    fh5out.create_dataset( "DATATYPE", (1,), dtype=h5py.special_dtype(vlen=str), data=proj._dbtype )
+    fh5out.create_dataset( "DATATYPE", (1,), dtype=h5py.special_dtype(vlen=str), data=proj._projecttype )
 
   except:
     fh5out.close()

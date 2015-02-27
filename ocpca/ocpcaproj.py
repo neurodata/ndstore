@@ -60,8 +60,8 @@ READONLY_TRUE = 1
 READONLY_FALSE = 0
 
 # SCALING OPTIONS
-ISOTROPIC = 0
-ZSLICES = 1
+ZSLICES = 0
+ISOTROPIC = 1
 
 # Exception Values
 EXCEPTION_TRUE = 1
@@ -71,7 +71,7 @@ class OCPCAProject:
   """ Project specific for cutout and annotation data """
 
   # Constructor 
-  def __init__(self, token, dbname, dbhost, dbdescription, projecttype, datatype, dataset, dataurl, readonly, exceptions, resolution, kvserver, kvengine, propagate ):
+  def __init__(self, token, dbname, dbhost, dbdescription, projecttype, datatype, dataset, overlayproject, overlayserver, readonly, exceptions, resolution, kvengine, kvserver, propagate ):
     """ Initialize the OCPCA Project """
     
     self._token = token
@@ -87,7 +87,6 @@ class OCPCAProject:
     self._resolution = resolution
     self._readonly = readonly
     self._exceptions = exceptions    
-    self._dbhost = dbhost
     self._kvserver = kvserver
     self._kvengine = kvengine
     self._propagate = propagate
@@ -226,18 +225,18 @@ class OCPCADataset:
       if xoffset==0:
         xoffseti = 0
       else:
-         xoffseti = ((xoffset-1)/2**i)
+         xoffseti = ((xoffset)/2**i)
       if yoffset==0:
         yoffseti = 0
       else:
-         yoffseti = ((yoffset-1)/2**i)
+         yoffseti = ((yoffset)/2**i)
       if zoffset==0:
         zoffseti = 0
       else:
         if scalingoption == ZSLICES:
           zoffseti = zoffset
         else:
-         zoffseti = ((zoffset-1)/2**i)
+         zoffseti = ((zoffset)/2**i)
 
       self.offset[i] = [ xoffseti, yoffseti, zoffseti ]
 
@@ -357,7 +356,7 @@ class OCPCAProjectsDB:
 #RBTODO what's up here???
     # Lookup the information for the database project based on the token
 #    sql = "SELECT token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions, resolution , kvserver, kvengine, propagate from {} where token = \'{}\'".format(ocpcaprivate.projects, token)
-    sql = "SELECT token_name,token_description, project_id, readonly, public from {} where token_name = \'{}\'".format(ocpcaprivate.tokens, token)
+    sql = "SELECT token_name, token_description, project_id, readonly, public from {} where token_name = \'{}\'".format(ocpcaprivate.tokens, token)
 #=======
 #    sql = "SELECT token, openid, host, project, projecttype, datatype, dataset, dataurl, readonly, exceptions, resolution , kvserver, kvengine, propagate from {} where token = \'{}\'".format(ocpcaprivate.projects, token)
 #
@@ -378,7 +377,7 @@ class OCPCAProjectsDB:
 
     [token, token_description, project, readonly, public ] = row
 
-    sql = "SELECT project_name, project_description, dataset_id, projecttype, datatype, overlayproject,overlayserver, resolution ,exceptions,host, kvengine, kvserver,propagate from {} where project_name = \'{}\'".format(ocpcaprivate.projects, project) 
+    sql = "SELECT project_name, project_description, dataset_id, projecttype, datatype, overlayproject, overlayserver, resolution ,exceptions, host, kvengine, kvserver, propagate from {} where project_name = \'{}\'".format(ocpcaprivate.projects, project) 
 
     with closing(self.conn.cursor()) as cursor:
       try:
@@ -394,10 +393,12 @@ class OCPCAProjectsDB:
       logger.warning ( "Project token {} not found.".format( token ))
       raise OCPCAError ( "Project token {} not found.".format( token ))
 
-    [project_name, project_description, dataset_id, projecttype, datatype, overlayproject, overlayserver, resolution ,exceptions,host, kvengine, kvserver,propagate  ] = row 
-    dataset= self.loadDatasetName(dataset_id)
+    [ project_name, project_description, dataset, projecttype, datatype, overlayproject, overlayserver, resolution ,exceptions, host, kvengine, kvserver, propagate ] = row 
+
+
     # Create a project object
-    proj = OCPCAProject ( token, project_name.strip(),project_description, dataset, projecttype, datatype, overlayproject, overlayserver, resolution, readonly, exceptions, host, kvengine, kvserver, propagate ) 
+    proj = OCPCAProject ( token, project_name.strip(), host, project_description, projecttype, datatype, dataset, overlayproject, overlayserver, readonly, exceptions, resolution, kvengine, kvserver, propagate ) 
+
     proj.datasetcfg = self.loadDatasetConfig ( dataset )
 
     return proj
@@ -425,31 +426,13 @@ class OCPCAProjectsDB:
       logger.warning ( "Project {} not found.".format( project ))
       raise OCPCAError ( "Project {} not found.".format( project ))
 
-    [project_name,project_description, dataset_id,datatype,overlayproject,overlayserver,resolution,exceptions,host,kvengine,kvserver,propagate ] = row
-    dataset=self.loadDatasetName(dataset_id)
+    [project_name, project_description, dataset, datatype, overlayproject, overlayserver, resolution, exceptions, host, kvengine, kvserver, propagate ] = row
     
     #todo--not used
     readonly = 0;
     # Create a project object                                                                                                                     
-    proj = OCPCAProject ("",project_name,project_description, dataset, projecttype, datatype, overlayproject, overlayserver, resolution, readonly, exceptions, host, kvengine, kvserver, propagate )
+    proj = OCPCAProject ("", project_name, host, project_description, dataset, projecttype, datatype, overlayproject, overlayserver, resolution, readonly, exceptions, host, kvengine, kvserver, propagate )
      # Lookup the information for the database project based on the token                                                                                             
-    sql = "SELECT dataset_name from {} where id = \'{}\'".format(ocpcaprivate.datasets, dataset_id)
-
-    with closing(self.conn.cursor()) as cursor:
-      try:
-        cursor.execute ( sql )
-        # get the project information                                                                                                                                
-        row= cursor.fetchone()
-      except MySQLdb.Error, e:
-        logger.error ("Could not query ocpca projects database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        raise OCPCAError ("Could not query ocpca projects database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-    # if the project is not found.  error                                                                                                                            
-    if ( row == None ):
-      logger.warning ( "Dataset not found for project {}.".format( project ))
-      raise OCPCAError ( "Dataset not found for project {} .".format( project ))
-    [dataset] = row
-
     proj.datasetcfg = self.loadDatasetConfig ( dataset )
 
     return proj
@@ -474,7 +457,6 @@ class OCPCAProjectsDB:
 
     with closing(self.conn.cursor()) as cursor:
       try:
-        cursor = self.conn.cursor()
         cursor.execute ( sql )
       except MySQLdb.Error, e:
         logger.error ("Could not query ocpca datsets database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
@@ -496,7 +478,7 @@ class OCPCAProjectsDB:
 #   """ Create a new ocpca project """
 #>>>>>> rb-iso
 
-    sql = "INSERT INTO {0} (token_name, token_description, project_id, readonly, public) VALUES (\'{1}\',\'{2}\',\'{3}\',{4},{5})".format (ocpcaprivate.tokens, token_name, token_description,project,readonly,public )
+    sql = "INSERT INTO {0} (token_name, token_description, project_id, readonly, public) VALUES (\'{1}\',\'{2}\',\'{3}\',{4},{5})".format (ocpcaprivate.tokens, token_name, token_description, project, readonly, public )
 
 #<<<<<< HEAD
     logger.info ( "Creating new Token. Name %s. SQL=%s" % ( token_name, sql ))
@@ -507,7 +489,6 @@ class OCPCAProjectsDB:
 
     with closing(self.conn.cursor()) as cursor:
       try:
-        cursor = self.conn.cursor()
         cursor.execute ( sql )
       except MySQLdb.Error, e:
         logger.error ("Could not create new token %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
@@ -518,16 +499,15 @@ class OCPCAProjectsDB:
     #
     # Create a new Project
     #                                                                                                                                                                                             
-  def newProject ( self, project_name, project_description, userid, dataset_id, projecttype, datatype, overlayproject, overlayserver, resolution, exceptions, host, kvengine,kvserver,propagate ):
+  def newProject ( self, project_name, project_description, userid, dataset, projecttype, datatype, overlayproject, overlayserver, resolution, exceptions, host, kvengine, kvserver, propagate ):
     """ Create a new ocpca Token """
-    
-    sql = "INSERT INTO {0} ( project_name, project_description, user_id, dataset_id, projecttype, datatype, overlayproject, overlayserver, resolution, exceptions, host, kvengine, kvserver, propagate ) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',\'{5}\',\'{6}\',\'{7}\',\'{8}\',\'{9}\',\'{10}\',\'{11}\',\'{12}\',\'{13}\')".format( ocpcaprivate.projects, project_name, project_description, userid, dataset_id, datatype, overlayproject, overlayserver, resolution, exceptions, host, kvengine, kvserver, propagate  )
+
+    sql = "INSERT INTO {0} ( project_name, project_description, user_id, dataset_id, projecttype, datatype, overlayproject, overlayserver, resolution, exceptions, host, kvengine, kvserver, propagate ) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',\'{5}\',\'{6}\',\'{7}\',\'{8}\',\'{9}\',\'{10}\',\'{11}\',\'{12}\',\'{13}\',\'{14}\')".format( ocpcaprivate.projects, project_name, project_description, userid, dataset, projecttype, datatype, overlayproject, overlayserver, resolution, int(exceptions), host, kvengine, kvserver, propagate  )
 
     logger.info ( "Creating new Project. Name %s. SQL=%s" % ( project_name, sql ))
 
     with closing(self.conn.cursor()) as cursor:
       try:
-        cursor = self.conn.cursor()
         cursor.execute ( sql )
       except MySQLdb.Error, e:
         logger.error ("Could not create new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
@@ -542,8 +522,7 @@ class OCPCAProjectsDB:
     """ Create a new ocpca project """
     
     datasetcfg = self.loadDatasetConfig ( dataset )
-    dataset_id= self.loadDatasetID(dataset)
-    self.newProject(project, projectdescription, userid, dataset_id, projecttype, datatype, overlayproject, overlayserver, resolution, exceptions, dbhost, kvengine, kvserver, propagate)
+    self.newProject(project, projectdescription, userid, dataset, projecttype, datatype, overlayproject, overlayserver, resolution, exceptions, dbhost, kvengine, kvserver, propagate)
     self.newToken(token, token_description, project, readonly, public)
 
     proj = self.loadProject ( token )
@@ -945,7 +924,7 @@ class OCPCAProjectsDB:
 
   def loadDatasetConfig ( self, dataset ):
     """Query the database for the dataset information and build a db configuration"""
-    sql = "SELECT id, dataset_name, ximagesize, yimagesize, zimagesize, xoffset, yoffset, zoffset, xvoxelres, yvoxelres, zvoxelres, scalinglevels, scalingoption, startwindow, endwindow, starttime, endtime from {} where dataset_name = \'{}\'".format( ocpcaprivate.datasets, dataset )
+    sql = "SELECT dataset_name, ximagesize, yimagesize, zimagesize, xoffset, yoffset, zoffset, xvoxelres, yvoxelres, zvoxelres, scalinglevels, scalingoption, startwindow, endwindow, starttime, endtime from {} where dataset_name = \'{}\'".format( ocpcaprivate.datasets, dataset )
 
     with closing(self.conn.cursor()) as cursor:
       try:
@@ -963,7 +942,8 @@ class OCPCAProjectsDB:
       logger.warning ( "Dataset %s not found." % ( dataset ))
       raise OCPCAError ( "Dataset %s not found." % ( dataset ))
 
-    [ dataset_id, dataset, ximagesz, yimagesz, zimagesz, xoffset, yoffset, zoffset, xvoxelres, yvoxelres, zvoxelres, scalinglevels, scalingoption, startwindow, endwindow, starttime, endtime ] = row
+    [ dataset, ximagesz, yimagesz, zimagesz, xoffset, yoffset, zoffset, xvoxelres, yvoxelres, zvoxelres, scalinglevels, scalingoption, startwindow, endwindow, starttime, endtime ] = row
+
     return OCPCADataset ( (int(ximagesz),int(yimagesz),int(zimagesz)), (int(xoffset),int(yoffset),int(zoffset)), (int(xvoxelres),int(yvoxelres),int(zvoxelres)), int(scalinglevels), int(scalingoption), int(startwindow), int(endwindow), int(starttime), int(endtime) ) 
 
   #
@@ -994,33 +974,12 @@ class OCPCAProjectsDB:
 
     # if the project is not found.  error                                                                                                                                                            
     if ( row == None ):
-      logger.warning ( "Dataset id %s not found." % ( dataset_id ))
-      raise OCPCAError ( "Dataset id  %s not found." % ( dataset_id ))
+      logger.warning ( "Dataset id %s not found." % ( dataset ))
+      raise OCPCAError ( "Dataset id  %s not found." % ( dataset ))
 
     [ dataset ] = row
     return dataset
 
-
-  def loadDatasetID ( self, dataset ):
-    """Query the datasets table for the dataset name"""
-    sql = "SELECT id from {} where dataset_name = \'{}\'".format( ocpcaprivate.datasets, dataset)
-    
-    with closing(self.conn.cursor()) as cursor:
-      try:
-        cursor.execute ( sql )
-      except MySQLdb.Error, e:
-
-        logger.error ("Could not query ocpca datasets database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        raise OCPCAError ("Could not query ocpca datasets database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      row = cursor.fetchone()
-
-    if ( row == None ):
-      logger.warning ( "Dataset id %s not found." % ( dataset_id ))
-      raise OCPCAError ( "Dataset id  %s not found." % ( dataset_id ))
-
-    [ dataset_id ] = row
-    return dataset_id
-                    
 
   #
   # Load Projects created by user ( projadmin)
@@ -1111,7 +1070,6 @@ class OCPCAProjectsDB:
       if (row == None):
         sql = "DELETE FROM {0} WHERE dataset_name=\'{1}\'".format (ocpcaprivate.datasets,dataset)
         try:
-          cursor = self.conn.cursor()
           cursor.execute ( sql )
         except MySQLdb.Error, e:
           conn.rollback()

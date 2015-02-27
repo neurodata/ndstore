@@ -34,7 +34,7 @@ def projdict ( proj ):
   projdict = {}
   projdict['dbname'] = proj._dbname
   projdict['host'] = proj._dbhost
-  projdict['projecttype'] = proj._dbtype
+  projdict['projecttype'] = proj._projecttype
   projdict['dataset'] = proj._dataset
   projdict['overlayserver'] = proj._overlayserver
   projdict['overlayproject'] = proj._overlayproject
