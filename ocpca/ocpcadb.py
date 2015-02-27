@@ -24,7 +24,6 @@ from collections import defaultdict
 import itertools
 from contextlib import closing
 
-import zindex
 import anncube
 import imagecube
 import ocpcaproj

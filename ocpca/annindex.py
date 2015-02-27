@@ -18,7 +18,6 @@ import cStringIO
 import tempfile
 import h5py
 
-import zindex
 import ocpcaproj
 
 import logging

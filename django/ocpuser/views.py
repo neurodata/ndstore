@@ -109,7 +109,7 @@ def profile(request):
       elif 'info' in request.POST:
       #GET PROJECT INFO -----------TODO
         token = (request.POST.get('roptions')).strip()
-        return HttpResponse(ocpcarest.projInfo(token), mimetype="product/hdf5" )
+        return HttpResponse(ocpcarest.projInfo(token), content_type="product/hdf5" )
       
       elif 'update' in request.POST:
         project_to_update =(request.POST.get('projname')).strip() 
@@ -616,11 +616,11 @@ def downloaddata(request):
         webargs= curtoken+"/"+format+"/"+str(resolution)+"/"+str(xmin)+","+str(xmax)+"/"+str(ymin)+","+str(ymax)+"/"+str(zmin)+","+str(zmax)+"/"
           
         if format=='hdf5':
-          return django.http.HttpResponse(ocpcarest.getCutout(webargs), mimetype="product/hdf5" )
+          return django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="product/hdf5" )
         elif format=='npz':
-          return django.http.HttpResponse(ocpcarest.getCutout(webargs), mimetype="product/npz" )
+          return django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="product/npz" )
         else:
-          return django.http.HttpResponse(ocpcarest.getCutout(webargs), mimetype="product/zip" )
+          return django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="product/zip" )
           
       else:
         return redirect(downloaddata)

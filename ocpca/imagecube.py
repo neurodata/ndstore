@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import numpy as np
-import zindex
 from PIL import Image
 
 from cube import Cube
