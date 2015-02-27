@@ -80,7 +80,7 @@ STATICFILES_FINDERS = (
 #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
-
+TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
@@ -130,6 +130,7 @@ INSTALLED_APPS = (
     'registration',
     # KL 10/20/2014 Adding Celery
     'djcelery' , 
+    'ocpuser',
 )
 
 # KL 10/20/2014 Adding Celery
