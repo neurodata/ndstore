@@ -18,19 +18,23 @@ from django.contrib.auth.models import User
 from django.conf import settings
 # Create your models here.
 class Dataset ( models.Model):
-    dataset_name = models. CharField(max_length=200, unique=True,verbose_name="Name of the Image dataset")    
+    dataset_name = models. CharField(max_length=255, unique=True,verbose_name="Name of the Image dataset")    
     ximagesize =  models.IntegerField()
     yimagesize =  models.IntegerField()
-
-    startslice = models.IntegerField()
-    endslice = models.IntegerField()
+    zimagesize =  models.IntegerField()
+    xoffset =  models.IntegerField(default=0)
+    yoffset =  models.IntegerField(default=0)
+    zoffset =  models.IntegerField(default=0)
+    xvoxelres = models.FloatField(default=1.0)
+    yvoxelres = models.FloatField(default=1.0)
+    zvoxelres = models.FloatField(default=1.0)
+    scalinglevels = models.IntegerField(default=0)
+    scalingoptions = models.IntegerField(default=0)
     startwindow = models.IntegerField(default=0)
     endwindow = models.IntegerField(default=0)
     starttime = models.IntegerField(default=0)
     endtime = models.IntegerField(default=0)
-    zoomlevels = models.IntegerField()
-    zscale = models.FloatField()
-    dataset_description  =  models. CharField(max_length=4096)
+    dataset_description = models.CharField(max_length=4096,blank=True)
     
     class Meta:
         """ Meta """
@@ -42,29 +46,34 @@ class Dataset ( models.Model):
 
 
 class Project ( models.Model):
-    project_name  =  models. CharField(max_length=200, primary_key=True)
-    project_description  =  models. CharField(max_length=4096, blank=True)
+    project_name  =  models.CharField(max_length=255, primary_key=True)
+    project_description  =  models.CharField(max_length=4096, blank=True)
     #openid = models.ForeignKey(settings.AUTH_USER_MODEL)
     user = models.ForeignKey(User)
-    dataset  =  models.ForeignKey(Dataset)
+    dataset = models.ForeignKey(Dataset)
+
+    PROJECT_CHOICES = (
+        ('image', 'IMAGES'),
+        ('annotation', 'ANNOTATIONS'),
+        ('channel', 'CHANNELS'),
+        ('probmap', 'PROBABILITY_MAP'),
+        ('rgb', 'RGB'),
+        ('timeseries','TIMESERIES'),
+        )
 
     DATATYPE_CHOICES = (
-        (1, 'IMAGES'),
-        (2, 'ANNOTATIONS'),
-        (3, 'CHANNEL_16bit'),
-        (4, 'CHANNEL_8bit'),
-        (5, 'PROBMAP_32bit'),
-        (6, 'BITMASK'),
-        (7, 'ANNOTATIONS_64bit'),
-        (8, 'IMAGES_16bit'),
-        (9, 'RGB_32bit'),
-        (10, 'RGB_64bit'),
-        (11,'TIMESERIES_4d_8bit'),
-        (12,'TIMESERIES_4d_16bit'),
+        ('uint8', 'uint8'),
+        ('uint16', 'uint16'),
+        ('uint32', 'uint32'),
+        ('uint64', 'uint64'),
+        ('float32', 'float32'),
         )
-    datatype = models.IntegerField(choices=DATATYPE_CHOICES, default=1)
+
+
+    projecttype = models.CharField(max_length=255,choices=PROJECT_CHOICES,default='image')
+    datatype = models.CharField(max_length=255,choices=DATATYPE_CHOICES,default='uint8')
     #    dataurl  =  models. CharField(max_length=200)
-    overlayproject = models. CharField(max_length=200,default="None")
+    overlayproject = models.CharField(max_length=255,default="None")
     OVERLAY_SERVER_CHOICES = (
         ('http://openconnecto.me/ocp', 'openconnecto.me'),
         ('http://braingraph1.cs.jhu.edu/ocp', 'braingraph1.cs.jhu.edu'),
@@ -75,7 +84,7 @@ class Project ( models.Model):
         ('http://dsp063.pha.jhu.edu/ocp', 'dsp063'),
         
     )
-    overlayserver =  models.CharField(max_length=200, choices=OVERLAY_SERVER_CHOICES, default='openconnecto.me')
+    overlayserver =  models.CharField(max_length=255, choices=OVERLAY_SERVER_CHOICES, default='openconnecto.me')
     
     resolution = models.IntegerField(default=0)
 
@@ -95,7 +104,7 @@ class Project ( models.Model):
         ('dsp063.pha.jhu.edu', 'dsp063'),
 
         )
-    host =  models.CharField(max_length=200, choices=HOST_CHOICES, default='localhost')
+    host =  models.CharField(max_length=255, choices=HOST_CHOICES, default='localhost')
     
     KVENGINE_CHOICES = (
         ('MySQL','MySQL'),
@@ -131,7 +140,7 @@ class Project ( models.Model):
 
 
 class Token ( models.Model):
-    token_name  =  models. CharField(max_length=200, unique=True)
+    token_name  =  models. CharField(max_length=255, unique=True)
     token_description  =  models. CharField(max_length=4096,blank=True)
     project  = models.ForeignKey(Project)
     READONLY_CHOICES = (
