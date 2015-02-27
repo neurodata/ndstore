@@ -35,6 +35,8 @@ from models import ocpDataset
 from forms import CreateProjectForm
 from forms import CreateDatasetForm
 from forms import UpdateProjectForm
+from forms import dataUserForm
+
 from django.core.urlresolvers import get_script_prefix
 import os
 import subprocess
@@ -475,3 +477,53 @@ def restore(request):
       file_list={}
     context = Context({'form': form, 'flist': file_list})
     return render_to_response('restoreproject.html',context,context_instance=RequestContext(request))
+
+
+def downloaddata(request):
+  
+  try:
+    pd = ocpcaproj.OCPCAProjectsDB()
+    
+    if request.method == 'POST':
+      #import pdb;pdb.set_trace()                                                       
+      form= dataUserForm(request.POST)
+      if form.is_valid():
+        curtoken=request.POST.get('token')
+        if curtoken=="other":
+          curtoken=request.POST.get('other')
+          
+        format = form.cleaned_data['format']
+        resolution = form.cleaned_data['resolution']
+        xmin=form.cleaned_data['xmin']
+        xmax=form.cleaned_data['xmax']
+        ymin=form.cleaned_data['ymin']
+        ymax=form.cleaned_data['ymax']
+        zmin=form.cleaned_data['zmin']
+        zmax=form.cleaned_data['zmax']
+        webargs= curtoken+"/"+format+"/"+str(resolution)+"/"+str(xmin)+","+str(xmax)+"/"+str(ymin)+","+str(ymax)+"/"+str(zmin)+","+str(zmax)+"/"
+          
+        if format=='hdf5':
+          return django.http.HttpResponse(ocpcarest.getCutout(webargs), mimetype="product/hdf5" )
+        elif format=='npz':
+          return django.http.HttpResponse(ocpcarest.getCutout(webargs), mimetype="product/npz" )
+        else:
+          return django.http.HttpResponse(ocpcarest.getCutout(webargs), mimetype="product/zip" )
+          
+      else:
+        return redirect(downloaddata)
+        #return render_to_response('download.html',context_instance=RequestContext(request))
+    else:
+      # Load Download page with public tokens                                           
+      pd = ocpcaproj.OCPCAProjectsDB()
+      form = dataUserForm()
+      tokens = pd.getPublic ()
+      context = {'form': form ,'publictokens': tokens}
+      return render_to_response('download.html',context,context_instance=RequestContext(request))
+      #return render_to_response('download.html', { 'dts': datasets },context_instance=\
+          #         RequestContext(request))                                                                
+  except OCPCAError, e:
+    #return django.http.HttpResponseNotFound(e.value)                                   
+    messages.error(request, e.value)
+    #form = dataUserForm()                                                              
+    tokens = pd.getPublic ()
+    return redirect(downloaddata)

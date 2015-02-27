@@ -62,7 +62,7 @@ class BrainRestArgs:
   #
   #  Process cutout arguments
   #
-  def cutoutArgs ( self, imageargs, datasetcfg ):
+  def cutoutArgs ( self, imageargs, datasetcfg, channels=None ):
     """Process REST arguments for an cutout plane request"""
 
     # expecting an argument of the form /resolution/x1,x2/y1,y2/z1,z2/
@@ -77,7 +77,7 @@ class BrainRestArgs:
        not re.match ('[0-9]+,[0-9]+$', xdimstr) or\
        not re.match ('[0-9]+,[0-9]+$', ydimstr) or\
        not re.match ('[0-9]+,[0-9]+$', zdimstr):
-      raise RESTArgsError ("Non-conforming range arguments %s" % imageargs)
+      raise RESTArgsError ( "Non-conforming range arguments {}".format(imageargs) )
 
     self._resolution = int(resstr)
 
@@ -97,6 +97,22 @@ class BrainRestArgs:
 
     self._corner=[x1i,y1i,z1i]
     self._dim=[x2i-x1i,y2i-y1i,z2i-z1i ]
+
+    if channels != None:
+      if re.match ('[0-9]+,[0-9]+$',channels):
+        t1s,t2s = channels.split(',')
+        t1i = int(t1s)
+        t2i = int(t2s)
+        self._time = [t1i,t2i]
+      elif re.match('[0-9]+$',channels):
+        t1i = int(channels)
+        t2i = t1i+1
+      else:
+        raise RESTArgsError ( "Non-conforming time range arguments".format(channels) )
+    else:
+      t1i = 0
+      t2i = t1i + 1
+
 
     # Check arguments for legal values
     try:
@@ -135,15 +151,15 @@ class BrainRestArgs:
   #  **Image return a readable png object
   #    where ** is xy, xz, yz
   #
-  def xyArgs ( self, imageargs, datasetcfg ):
-    """Process REST arguments for an xy plane request.
-       You must have set the resolution prior to calling this function."""
+  #def xyArgs ( self, imageargs, datasetcfg ):
+    #"""Process REST arguments for an xy plane request.
+       #You must have set the resolution prior to calling this function."""
 
-    try:
-      [ resstr, xdimstr, ydimstr, zstr, rest ]  = imageargs.split('/',4)
-      options = rest.split ( '/' )
-    except:
-      raise RESTArgsError ( "Incorrect cutout arguments %s" % imageargs )
+    #try:
+      #[ resstr, xdimstr, ydimstr, zstr, rest ]  = imageargs.split('/',4)
+      #options = rest.split ( '/' )
+    #except:
+      #raise RESTArgsError ( "Incorrect cutout arguments %s" % imageargs )
 
 
 
@@ -205,18 +221,6 @@ class BrainRestArgs:
       self._filterlist = np.array(result.group(1).split(','),dtype=np.uint32)
     else:
       self._filterlist = None
-
-    # checking for window
-    result = re.match ("window/([\d/,]+)/",rest)
-    if result != None:
-      self._window = np.array(result.group(1).split(','),dtype=np.uint32)
-    else:
-      self._window = None
-    
-  def xzArgs ( self, imageargs, datasetcfg ):
-    """Process REST arguments for an xz plane request
-       You must have set the resolution prior to calling this function."""
-
     try:
       [ resstr, xdimstr, ystr, zdimstr, rest ]  = imageargs.split('/',4)
       options = rest.split ( '/' )
@@ -318,40 +322,6 @@ class BrainRestArgs:
     self._corner=[x,y1i,z1i-datasetcfg.slicerange[0]]
     self._dim=[1,y2i-y1i,z2i-z1i ]
 
-    # list of identifiers to keep
-    result = re.match ("filter/([\d/,]+)/",rest)
-    if result != None:
-      self._filterlist = np.array(result.group(1).split(','),dtype=np.uint32)
-    else:
-      self._filterlist = None
-
-    # checking for window
-    result = re.match ("window/([\d/,]+)/",rest)
-    if result != None:
-      self._window = np.array(result.group(1).split(','),dtype=np.uint32)
-    else:
-      self._window = None
-    
-  def tsArgs ( self, imageargs, datasetcfg ):
-    """ Process REST arguments for a ts cutout request
-       You must have set the resolution prior to calling this function. """
-
-    try:
-      [ tdimstr, resstr, xdimstr, ydimstr, zdimstr, rest ]  = imageargs.split('/',5)
-      options = rest.split ( '/' )
-    except:
-      raise RESTArgsError ( "Incorrect cutout arguments %s" % imageargs )
-
-    # expecting an argument of the form /t1,t2/resolution/x1,x2/y1,y2/z1,z2/
-    # Check that the arguments are well formatted
-    if not re.match ('[0-9]+,[0-9]+$', tdimstr) or\
-       not re.match ('[0-9]+$', resstr) or\
-       not re.match ('[0-9]+,[0-9]+$', xdimstr) or\
-       not re.match ('[0-9]+,[0-9]+$', ydimstr) or\
-       not re.match ('[0-9]+,[0-9]+$', zdimstr):
-      raise RESTArgsError ("Non-numeric range argument %s" % imageargs)
-
-    self._resolution = int(resstr)
 
     t1s,t2s = tdimstr.split(',')
     x1s,x2s = xdimstr.split(',')
@@ -386,48 +356,6 @@ class BrainRestArgs:
       self._filterlist = np.array(result.group(1).split(','),dtype=np.uint32)
     else:
       self._filterlist = None
-
-    # checking for window
-    result = re.match ("window/([\d/,]+)/",rest)
-    if result != None:
-      self._window = np.array(result.group(1).split(','),dtype=np.uint32)
-    else:
-      self._window = None
-#
-#Process merge arguments
-# global - none
-# 2D - resolution/Slice num
-# 3D - resolution/boundingbox
-#
-  def mergeArgs ( self, imageargs, datasetcfg ):
-    """Process REST arguments for an cutout plane request"""
-    
-  # expecting an argument of the form /resolution/x1,x2/y1,y2/z1,z2/
-    try:
-      [ resstr, xdimstr, ydimstr, zdimstr, rest ]  = imageargs.split('/',4)
-      options = rest.split ( '/' )
-    except:
-      raise RESTArgsError ( "Incorrect merge arguments %s" % imageargs )
-    
-  # Check that the arguments are well formatted
-    if not re.match ('[0-9]+$', resstr) or\
-          not re.match ('[0-9]+,[0-9]+$', xdimstr) or\
-          not re.match ('[0-9]+,[0-9]+$', ydimstr) or\
-          not re.match ('[0-9]+,[0-9]+$', zdimstr):
-      raise RESTArgsError ("Non-conforming range arguments %s" % imageargs)
-    
-    self._resolution = int(resstr)
-    
-    z1s,z2s = zdimstr.split(',')
-    y1s,y2s = ydimstr.split(',')
-    x1s,x2s = xdimstr.split(',')
-    
-    x1i = int(x1s)
-    x2i = int(x2s)
-    y1i = int(y1s)
-    y2i = int(y2s)
-    z1i = int(z1s)
-    z2i = int(z2s)
     
   # Check arguments for legal values
     try:
@@ -435,11 +363,6 @@ class BrainRestArgs:
         raise RESTArgsError ( "Illegal range. Image size: {} at offset {}".format(str(datasetcfg.imageSize(self._resolution)),str(datasetcfg.offset[self._resolution])))
     except Exception, e:
       raise RESTArgsError ( "Illegal arguments to cutout.  Check cube failed {}".format(e))
-    
-    self._corner=[x1i,y1i,z1i-datasetcfg.slicerange[0]]
-    self._dim=[x2i-x1i,y2i-y1i,z2i-z1i ]
-    
-    
 
 
 # Unbound functions  not part of the class object
@@ -500,57 +423,4 @@ def annotationId ( webargs, datasetcfg ):
   rangeargs = webargs.split('/')
   # PYTODO: check validity of annotation id                                      
   return int(rangeargs[0])
-
-#
-#Process merge arguments
-# global - none
-# 2D - resolution/Slice num
-# 3D - resolution/boundingbox
-#
-def mergeArgs ( self, imageargs, datasetcfg ):
-  """Process REST arguments for an cutout plane request"""
-  
-    # expecting an argument of the form /resolution/x1,x2/y1,y2/z1,z2/
-  try:
-    [ resstr, xdimstr, ydimstr, zdimstr, rest ]  = imageargs.split('/',4)
-    options = rest.split ( '/' )
-  except:
-    raise RESTArgsError ( "Incorrect merge arguments %s" % imageargs )
-  
-    # Check that the arguments are well formatted
-  if not re.match ('[0-9]+$', resstr) or\
-        not re.match ('[0-9]+,[0-9]+$', xdimstr) or\
-        not re.match ('[0-9]+,[0-9]+$', ydimstr) or\
-        not re.match ('[0-9]+,[0-9]+$', zdimstr):
-    raise RESTArgsError ("Non-conforming range arguments %s" % imageargs)
-  
-  self._resolution = int(resstr)
-  
-  z1s,z2s = zdimstr.split(',')
-  y1s,y2s = ydimstr.split(',')
-  x1s,x2s = xdimstr.split(',')
-  
-  x1i = int(x1s)
-  x2i = int(x2s)
-  y1i = int(y1s)
-  y2i = int(y2s)
-  z1i = int(z1s)
-  z2i = int(z2s)
-  
-    # Check arguments for legal values
-  try:
-    if not ( datasetcfg.checkCube ( self._resolution, x1i, x2i, y1i, y2i, z1i, z2i )):
-      raise RESTArgsError ( "Illegal range. Image size:" +  str(datasetcfg.imageSize( self._resolution )))
-  except Exception, e:
-    raise RESTArgsError ( "Illegal arguments to cutout.  Check cube failed {}".format(e))
-  
-  self._corner=[x1i,y1i,z1i-datasetcfg.slicerange[0]]
-  self._dim=[x2i-x1i,y2i-y1i,z2i-z1i ]
-  
-    ## list of identifiers to keep
-    #result = re.match ("filter/([\d/,]+)/",rest)
-    #if result != None:
-    #  self._filterlist = np.array(result.group(1).split(','),dtype=np.uint32)
-    #else:
-    #  self._filterlist = None
 

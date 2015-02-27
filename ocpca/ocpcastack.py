@@ -93,6 +93,7 @@ def buildStack ( token, resolution=None ):
     if proj.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS:
 
       try:
+        clearStack(token)
         buildAnnoStack( proj, resolution )
         proj.setPropagate ( ocpcaproj.PROPAGATED )
         projdb.updatePropagate ( proj )
@@ -110,6 +111,36 @@ def buildStack ( token, resolution=None ):
       except MySQLdb.Error, e:
         logger.error ( "Error in building image stack {}".format(token) )
         raise OCPCAError ( "Error in the building image stack {}".format(token) )
+
+
+def clearStack ( token ):
+  """ Clear a OCP stack for a given project """
+
+
+  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+    proj = projdb.loadProject ( token )
+  
+  with closing ( ocpcadb.OCPCADB (proj) ) as db:
+    
+    # Clear the database
+    for l in range(proj.getResolution(), proj.datasetcfg.resolutions[-1]):
+      
+        sql = "TRUNCATE table res{};".format(l+1)
+        sql += "TRUNCATE table raw{};".format(l+1)
+        sql += "TRUNCATE table idx{};".format(l+1)
+        if proj.getExceptions == ocpcaproj.EXCEPTION_TRUE:
+          sql += "TRUNCATE table exec{};".format(l+1)
+
+        try:
+          print sql
+          db.conn.cursor().execute(sql)
+          db.conn.commit()
+        except MySQLdb.Error, e:
+          logger.error ("Error truncating the table. {}".format(e))
+          raise
+        finally:
+          db.conn.cursor().close()
+
 
 #    elif proj.getProjectType ()in ocpcaproj.COMPOSITE_PROJECTS:
 #      buildAnnoStack( proj, resolution )
@@ -159,7 +190,7 @@ def buildAnnoStack ( proj, resolution=None ):
       # Iterate over the cubes in morton order
       for mortonidx in range(0, lastzindex, 64): 
 
-        print "Working on batch {} at {}".format( mortonidx, ocplib.MortonXYZ(mortonidx) )
+        print "Working on batch {} at {}. Resolution {}".format( mortonidx, ocplib.MortonXYZ(mortonidx), l )
         
         # call the range query
         db.queryRange ( mortonidx, mortonidx+64, l );

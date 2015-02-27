@@ -137,7 +137,6 @@ class CassandraKVIO:
       cql = "SELECT exceptions FROM exceptions WHERE resolution = %s AND zidx = %s and annoid=%s"
       row = self.session.execute ( cql, (resolution, zidx, annid ))
     except Exception, e:
-      import pdb; pdb.set_trace()
       raise
 
     if row:

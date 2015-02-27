@@ -222,7 +222,3 @@ class MCFCCatmaid:
 
         fobj.seek(0)
         return fobj
-
-
-
-

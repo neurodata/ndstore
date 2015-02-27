@@ -61,7 +61,10 @@ def cutout ( imageargs, proj, db, channels=None ):
   # Perform argument processing
   try:
     args = restargs.BrainRestArgs ();
-    args.cutoutArgs ( imageargs, proj.datasetcfg )
+    if proj.getProjectType() in ocpcaproj.TIMESERIES_PROJECTS:
+      args.cutoutArgs ( imageargs, proj.datasetcfg, channels )
+    else:
+      args.cutoutArgs ( imageargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
     raise OCPCAError(e.value)
@@ -89,7 +92,7 @@ def binZip ( imageargs, proj, db ):
   if proj.getProjectType() in ocpcaproj.CHANNEL_PROJECTS :
     [ channels, sym, imageargs ] = imageargs.partition ('/')
   else: 
-    channel = None
+    channels = None
 
   cube = cutout ( imageargs, proj, db, channels )
 
@@ -128,6 +131,11 @@ def numpyZip ( imageargs, proj, db ):
       else:
         cubedata[i,:,:,:] = cutout ( imageargs, proj, db, chanids[i] ).data
 
+  # if it's a timeseries database
+  elif proj.getProjectType() in ocpcaproj.TIMESERIES_PROJECTS :
+
+    cubedata = TimeSeriesCutout ( imageargs, proj, db )
+  
   # single channel cutout
   else: 
     channel = None
@@ -153,6 +161,16 @@ def FilterCube ( imageargs, cb ):
     filterlist = np.array ( result.group(1).split(','), dtype=np.uint32 )
     cb.data = ocplib.filter_ctype_OMP ( cb.data, filterlist )
 
+
+def FilterTimeCube ( imageargs, cb ):
+  """ Return a cube with the filtered ids """
+
+  # Filter Function - used to filter
+  result = re.search ("filter/([\d/,]+)/",imageargs)
+  if result != None:
+    filterlist = np.array ( result.group(1).split(','), dtype=np.uint32 )
+    print "Filter not supported for Time Cubes yet"
+    #cb.data = ocplib.filter_ctype_OMP ( cb.data, filterlist )
 
 #
 #  Return a HDF5 file
@@ -188,9 +206,9 @@ def HDF5 ( imageargs, proj, db ):
       cube.RGBAChannel()
       fh5out.create_dataset ( "CUTOUT", tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data )
     elif proj.getProjectType() in ocpcaproj.TIMESERIES_PROJECTS:
-      [ chanurl, sym, imageargs ] = imageargs.partition ('/')
-      cube = cutout ( imageargs, proj, db, int(chanurl) )
-      fh5out.create_dataset ( "CUTOUT", tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data )
+      cube = TimeSeriesCutout ( imageargs, proj, db )
+      #FilterTimeCube ( imageargs, cube )
+      fh5out.create_dataset ( "CUTOUT", tuple(cube.shape), cube.dtype, compression='gzip', data=cube )
     else: 
       cube = cutout ( imageargs, proj, db, None )
       FilterCube (imageargs, cube )
@@ -206,48 +224,32 @@ def HDF5 ( imageargs, proj, db ):
   fh5out.close()
   tmpfile.seek(0)
   return tmpfile.read()
-  
+ 
 
 #
-#  Return a Timeseries Cutout as a HDF5 file
+# Return a Time Kernel
 #
-def TimeSeriesCutout ( imageargs, proj, db ):
-  """ Return a web readable HDF5 file """
+def TimeKernel ( imageargs, proj, db ):
+  """ Return a time kernel """
 
-  # Create an in-memory HDF5 file
+   # Create an in-memory HDF5 file
   tmpfile = tempfile.NamedTemporaryFile()
   fh5out = h5py.File ( tmpfile.name )
 
-  try: 
-    # if it's a channel database, pull out the channels
-    if proj.getProjectType() in ocpcaproj.TIMESERIES_PROJECTS:
-   
-      # Perform argument processing
-      args = restargs.BrainRestArgs ()
-      args.tsArgs ( imageargs, proj.datasetcfg )
-      
-      # Extract the relevant values
-      corner = args.getCorner()
-      dim = args.getDim()
-      resolution = args.getResolution()
-      timerange = args.getTimeRange()
-      filterlist = args.getFilter()
-      window = args.getWindow()
-      (startwindow,endwindow) = proj.datasetcfg.windowrange
+  try:
+    cube = TimeSeriesCutout ( imageargs, proj, db )
+    cutout = np.zeros( cube.data.shape, dtype = cube.data.dtype )
+    dims = cube.data.shape
+    for z in range ( cube.data.shape[0] ):
+      for y in range ( cube.data.shape[1] ):
+        for x in range ( cube.data.shape[2] ):
+          for t in range ( cube.data.shape[3] ):
+            cutout[z,y,x] += cube.data[t,z,y,x]
+        cutout[z,y,x] = cutout[z,y,x]/3
 
-      #if proj.getDBType() in ocpcaproj.DATASETS_16bit:
-      #  bigCube = np.empty( ([timerange[1]-timerange[0]]+dim[::-1]), dtype=np.uint16)
-      #elif proj.getDBType() in ocpcaproj.DATASETS_8bit:
-      #  bigCube = np.empty( ([timerange[1]-timerange[0]]+dim[::-1]), dtype=np.uint8)
-      # Perform the cutout
-      #for time in range(0,timerange[1]-timerange[0]):
-      cube = db.TimeSeriesCutout ( corner, dim, resolution, timerange )
-        #bigCube[time,] = cube.data
-      fh5out.create_dataset ( "CUTOUT", tuple(cube.data.shape), cube.data.dtype,compression='gzip', data=cube.data )
-      fh5out.create_dataset( "DATATYPE", (1,), dtype=np.uint32, data=proj._dbtype )
 
-    else:
-      logger.warning("Not a Timeseries Dataset")
+    fh5out.create_dataset ( "KERNEL", tuple(cutout.shape), cutout.dtype,compression='gzip', data=cutout )
+    fh5out.create_dataset( "DATATYPE", (1,), dtype=np.uint32, data=proj._dbtype )
 
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
@@ -256,6 +258,43 @@ def TimeSeriesCutout ( imageargs, proj, db ):
   fh5out.close()
   tmpfile.seek(0)
   return tmpfile.read()
+
+#
+#  Return a Timeseries Cutout as a HDF5 file
+#
+def TimeSeriesCutout ( imageargs, proj, db ):
+  """ Return a web readable HDF5 file """
+
+  channels, sym, imageargs = imageargs.partition("/")
+
+  try: 
+    # if it's a channel database, pull out the channels
+    if proj.getProjectType() in ocpcaproj.TIMESERIES_PROJECTS:
+   
+      # Perform argument processing
+      args = restargs.BrainRestArgs ()
+      args.cutoutArgs ( imageargs, proj.datasetcfg, channels )
+      
+      # Extract the relevant values
+      corner = args.getCorner()
+      dim = args.getDim()
+      resolution = args.getResolution()
+      timerange = args.getTimeRange()
+      filterlist = args.getFilter()
+
+      cube = db.TimeSeriesCutout ( corner, dim, resolution, timerange )
+      
+      return cube
+
+      #fh5out.create_dataset ( "CUTOUT", tuple(cube.data.shape), cube.data.dtype,compression='gzip', data=cube.data )
+      #fh5out.create_dataset( "DATATYPE", (1,), dtype=np.uint32, data=proj._dbtype )
+
+    else:
+      logger.warning("Not a Timeseries Dataset")
+
+  except restargs.RESTArgsError, e:
+    logger.warning( "REST Arguments {} failed: {}".format(imageargs,e) )
+    raise OCPCAError(e.value)
 
 
 #
@@ -297,11 +336,14 @@ def imgSlice ( service, imageargs, proj, db ):
   cb = cutout ( cutoutargs, proj, db, channel )
 
   # Filter Function - used to filter
-  FilterCube ( imageargs, cb )
+  if proj.getProjectType() in ocpcaproj.TIMESERIES_PROJECTS:
+    FilterTimeCube ( imageargs, cb )
+  else:
+    FilterCube ( imageargs, cb )
 
   # Window Function - used to limit the range of data purely for viewing purposes
   (startwindow,endwindow) = proj.datasetcfg.windowrange
-  if endwindow !=0:
+  if endwindow != 0:
     window = (startwindow, endwindow)
     windowCutout ( cb.data, window)
 
@@ -321,9 +363,8 @@ def xyImage ( imageargs, proj, db ):
 def xzImage ( imageargs, proj, db ):
   """Return an xz plane fileobj.read()"""
 
-  # little awkward because we need resolution here
-  # it will be reparse in xzSlice
-  if proj.getProjectType() in ocpcaproj.CHANNEL_PROJECTS :
+  # little awkward because we need resolution here. it will be reparse in xzSlice
+  if proj.getProjectType() in ocpcaproj.COMPOSITE_PROJECTS:
     channel, sym, rest = imageargs.partition("/")
     resolution, sym, rest = rest.partition("/")
   else:
@@ -341,9 +382,8 @@ def xzImage ( imageargs, proj, db ):
 def yzImage ( imageargs, proj, db ):
   """Return an yz plane fileobj.read()"""
 
-  # little awkward because we need resolution here
-  # it will be reparse in yzSlice
-  if proj.getProjectType() in ocpcaproj.CHANNEL_PROJECTS:
+  # little awkward because we need resolution here. it will be reparse in yzSlice
+  if proj.getProjectType() in ocpcaproj.COMPOSITE_PROJECTS:
     channel, sym, rest = imageargs.partition("/")
     resolution, sym, rest = rest.partition("/")
   else:
@@ -525,7 +565,7 @@ def selectService ( webargs, proj, db ):
     return imgAnno ( 'yz', rangeargs, proj, db )
 
   elif service == 'ts':
-    return TimeSeriesCutout ( rangeargs, proj, db )
+    return TimeKernel ( rangeargs, proj, db )
   
   else:
     logger.warning("An illegal Web GET service was requested %s.  Args %s" % ( service, webargs ))
@@ -590,7 +630,7 @@ def selectPost ( webargs, proj, db, postdata ):
           args = restargs.BrainRestArgs ();
           args.cutoutArgs ( postargs, proj.datasetcfg )
         except restargs.RESTArgsError, e:
-          logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
+          logger.warning( "REST Arguments {} failed: {}".format(imageargs,e) )
           raise OCPCAError(e)
 
         corner = args.getCorner()
@@ -1143,10 +1183,9 @@ def getAnnotations ( webargs, postdata ):
 def putAnnotationAsync ( webargs, postdata ):
   """Put a RAMON object asynchrously as HDF5 by object identifier"""
   
-  #import h5annasync
-  #h5annasync.writeDataSSD( webargs, postdata )
   print "TESTING"
-  #hdf5_new.batchCube( webargs, postdata )
+  import ocpdatastream
+
   
   #[ token, sym, optionsargs ] = webargs.partition ('/')
   #options = optionsargs.split('/')
@@ -1741,17 +1780,22 @@ def setPropagate ( webargs ):
     logger.warning ( "Illegal setPropagate request.  Wrong number of arguments." )
     raise OCPCAError ( "Illegal setPropagate request.  Wrong number of arguments." )
     
-  # pattern for using contexts to close databases. get the project 
+  # pattern for using contexts to close databases. get the project
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadProject ( token )
-    if int(value) == ocpcaproj.UNDER_PROPAGATION:
+    # If the value is to set under propagation
+    if int(value) == ocpcaproj.UNDER_PROPAGATION and proj.getPropagate() != ocpcaproj.UNDER_PROPAGATION:
       proj.setPropagate ( ocpcaproj.UNDER_PROPAGATION )
       projdb.updatePropagate ( proj )
       from ocpca.tasks import propagate
-      propagate ( token )
+      propagate.delay ( token )
     elif int(value) == ocpcaproj.NOT_PROPAGATED:
-      proj.setPropagate ( ocpcaproj.NOT_PROPAGATED )
-      projdb.updatePropagate ( proj )
+      if proj.getPropagate() == ocpcaproj.UNDER_PROPAGATION:
+        logger.warning ( "Cannot set this value. Project is under propagation." )
+        raise OCPCAError ( "Cannot set this value. Project is under propagation. " )
+      else:
+        proj.setPropagate ( ocpcaproj.NOT_PROPAGATED )
+        projdb.updatePropagate ( proj )
     else:
       logger.warning ( "Invalid Value {} for setPropagate".format(value) )
       raise OCPCAError ( "Invalid Value {} for setPropagate".format(value) )
@@ -1772,7 +1816,7 @@ def merge ( webargs ):
   
   # Make ids a numpy array to speed vectorize
   ids = np.array(ids,dtype=np.uint32)
-  # Validate ids . IF ids do not exist raise errors
+  # Validate ids . If ids do not exist raise errors
 
   # pattern for using contexts to close databases
   # get the project 
@@ -1781,7 +1825,6 @@ def merge ( webargs ):
 
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
-
   
     #Check that all ids in the id strings are valid annotation objects
     for curid in ids:
@@ -1789,7 +1832,6 @@ def merge ( webargs ):
       if obj == None:
         logger.warning("Invalid object id {} used in merge".format(curid))
         raise OCPCAError("Invalid object id used in merge")
-
 
     [mergetype,resolution] = rest.split('/',1)
     if mergetype == "global":

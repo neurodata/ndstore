@@ -128,8 +128,13 @@ INSTALLED_APPS = (
     'synaptogram',
     'catmaid',
     'registration',
+    # KL 10/20/2014 Adding Celery
+    'djcelery' , 
 )
 
+# KL 10/20/2014 Adding Celery
+import djcelery
+djcelery.setup_loader()
 
 LOGGING = {
     'version': 1,
@@ -176,3 +181,5 @@ LOGGING = {
         },
     }
 }
+
+CELERYD_PREFETCH_MULTIPLIER = 1

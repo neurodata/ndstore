@@ -50,11 +50,11 @@ def mcfcPNG ( cutout, colors ):
       combined_cutout +=  data32 
     # Fifth is Green
     elif colors[i] == 'G':
-      data32 = np.array ( cb.data, dtype=np.uint32 )
+      data32 = np.array ( cutout[i,:,:], dtype=np.uint32 )
       combined_cutout += np.left_shift(data32,8)
     # Sixth is Blue
     elif colors[i] == 'B':
-      data32 = np.array ( cb.data, dtype=np.uint32 )
+      data32 = np.array ( cutout[i,:,:], dtype=np.uint32 )
       combined_cutout +=  np.left_shift(data32,16) 
     else:
       logger.warning ( "Unsupported color requested:" % (color[i]))

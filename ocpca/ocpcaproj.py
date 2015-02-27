@@ -63,6 +63,10 @@ READONLY_FALSE = 0
 ISOTROPIC = 0
 ZSLICES = 1
 
+# Exception Values
+EXCEPTION_TRUE = 1
+EXCEPTION_FALSE = 0
+
 class OCPCAProject:
   """ Project specific for cutout and annotation data """
 
@@ -275,7 +279,7 @@ class OCPCADataset:
   #
   #  Check that the specified arguments are legal
   #
-  def checkCube ( self, resolution, corner, dim ):
+  def checkCube ( self, resolution, corner, dim, tstart=0, tend=0 ):
     """Return true if the specified range of values is inside the cube"""
 
     [xstart, ystart, zstart ] = corner
@@ -283,9 +287,12 @@ class OCPCADataset:
     yend = ystart + dim[1]
     zend = zstart + dim[2]
 
-    if (( xstart >= 0 ) and ( xstart < xend) and ( xend <= self.imagesz[resolution][0]) and\
+
+    #KLTODO check the timeseries code here.
+    if ( ( xstart >= 0 ) and ( xstart < xend) and ( xend <= self.imagesz[resolution][0]) and\
         ( ystart >= 0 ) and ( ystart < yend) and ( yend <= self.imagesz[resolution][1]) and\
-        ( zstart >= 0 ) and ( zstart < zend) and ( zend <= self.imagesz[resolution][2])): 
+        ( zstart >= 0 ) and ( zstart < zend) and ( zend <= self.imagesz[resolution][2]) and\
+        ( tstart >= self.timerange[0]) and ((tstart < tend) or tstart==0 and tend==0) and (tend <= (self.timerange[1]+1))):
       return True
     else:
       return False
@@ -315,7 +322,7 @@ class OCPCADataset:
   #  Return the image size
   #
   def imageSize ( self, resolution ):
-    return ( self.imagesz [resolution] )
+    return  [ self.imagesz [resolution], self.slicerange, self.timerange ]
 
 
 class OCPCAProjectsDB:
@@ -632,11 +639,11 @@ class OCPCAProjectsDB:
 
   def getTable ( self, resolution ):
     """Return the appropriate table for the specified resolution"""
-    return "res"+str(resolution)
+    return "res{}".format(resolution)
   
   def getIdxTable ( self, resolution ):
     """Return the appropriate Index table for the specified resolution"""
-    return "idx"+str(resolution)
+    return "idx{}".format(resolution)
 
   def loadDatasetConfig ( self, dataset ):
     """Query the database for the dataset information and build a db configuration"""
