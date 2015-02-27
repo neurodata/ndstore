@@ -209,7 +209,11 @@ def buildAnnoStack ( proj, resolution=None ):
           #  Get the base location of this batch
           xyzout = ocplib.MortonXYZ ( mortonidx )
 
-          outcorner = [ xyzout[0]/2*xcubedim, xyzout[1]/2*ycubedim, xyzout[2]*zcubedim ]
+          # adjust to output corner for scale.
+          if scaling == ocpcaproj.ZSLICES:
+            outcorner = [ xyzout[0]*xcubedim/2, xyzout[1]*ycubedim/2, xyzout[2]*zcubedim ]
+          elif scaling == ocpcaproj.ISOTROPIC:
+            outcorner = [ xyzout[0]*xcubedim/2, xyzout[1]*ycubedim/2, xyzout[2]*zcubedim/2 ]
 
           #  Data stored in z,y,x order dims in x,y,z
           outdim = [ outdata.shape[2], outdata.shape[1], outdata.shape[0]]
