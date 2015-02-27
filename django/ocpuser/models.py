@@ -29,7 +29,7 @@ class Dataset ( models.Model):
     yvoxelres = models.FloatField(default=1.0)
     zvoxelres = models.FloatField(default=1.0)
     scalinglevels = models.IntegerField(default=0)
-    scalingoptions = models.IntegerField(default=0)
+    scalingoption = models.IntegerField(default=0)
     startwindow = models.IntegerField(default=0)
     endwindow = models.IntegerField(default=0)
     starttime = models.IntegerField(default=0)

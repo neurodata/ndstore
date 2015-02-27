@@ -20,27 +20,81 @@ from contextlib import closing
 import cStringIO
 import logging
 import MySQLdb
+from PIL import Image
+import zlib
 
 import ocpcaproj
 import ocpcadb
 import ocplib
 from ocpcaerror import OCPCAError
+import zindex
 
-from ocpca_cy import addData_cy
+from ocpca_cy import addDataToZSliceStack_cy
+from ocpca_cy import addDataToIsotropicStack_cy
 
-"""Construct an annotation hierarchy off of a completed annotation database."""
+
+#RBRM testing code
+#
+def getAnnValue ( value00, value01, value10, value11 ):
+  """Determine the annotation value at the next level of the hierarchy from a 2x2"""
+
+  # The following block of code places the majority annotation into value
+  # start with 00
+  value = value00
+
+  # put 01 in if not 00
+  # if they are the same, that's fine
+  if value == 0:
+    value = value01
+
+  if value10 != 0:
+    if value == 0:
+      value = value10
+    # if this value matches a previous it is 2 out of 4
+    elif value10 == value00 or value10 == value01:
+      value = value10
+
+  if value11 != 0:
+    if value == 0:
+      value = value10
+    elif value11==value00 or value11==value01 or value11==value10:
+      value = value11
+
+  return value
 
 
-def buildStack ( token ):
-  """ Wrapper for the different datatypes """
+def addDataToIsotropicStack ( cube, output, offset ):
+    """Add the contribution of the input data to the next level at the given offset in the output cube"""
+
+    for z in range (cube.data.shape[0]/2):
+      for y in range (cube.data.shape[1]/2):
+        for x in range (cube.data.shape[2]/2):
+
+            # not perfect take a value from either slice.  Not a majority over all.
+            # this whole rooutine getAnnValue needs to be replaced.
+            value = getAnnValue (cube.data[z*2,y*2,x*2],cube.data[z*2,y*2,x*2+1],cube.data[z*2,y*2+1,x*2],cube.data[z*2,y*2+1,x*2+1])
+            if value == 0:
+              value = getAnnValue (cube.data[z*2+1,y*2,x*2],cube.data[z*2+1,y*2,x*2+1],cube.data[z*2+1,y*2+1,x*2],cube.data[z*2+1,y*2+1,x*2+1])
+
+            try:
+              output [ z+offset[2], y+offset[1], x+offset[0] ] = value
+            except:
+              import pdb; pdb.set_trace()
+
+
+"""Construct a hierarchy off of a completed database."""
+
+def buildStack ( token, resolution=None ):
+  """Wrapper for the different datatypes """
 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadProject ( token )
   
-    if proj.getDBType() in ocpcaproj.ANNOTATION_DATASETS:
+    if proj.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS:
+
       try:
         clearStack(token)
-        buildAnnoStack( token )
+        buildAnnoStack( proj, resolution )
         proj.setPropagate ( ocpcaproj.PROPAGATED )
         projdb.updatePropagate ( proj )
 
@@ -50,9 +104,14 @@ def buildStack ( token ):
         logger.error ( "Error in propagating the database {}".format(token) )
         raise OCPCAError ( "Error in the propagating the project {}".format(token) )
 
-    else:
-      logger.warning ( "Build function not supported for this datatype {}".format(ocpcaproj.getDBType()) )
-      raise OCPCAError ( "Build function not supported for this datatype {}".format(ocpcaproj.getDBType()) )
+    elif proj.getProjectType() in ocpcaproj.IMAGE_PROJECTS:
+
+      try:
+        buildImageStack( proj, resolution )
+      except MySQLdb.Error, e:
+        logger.error ( "Error in building image stack {}".format(token) )
+        raise OCPCAError ( "Error in the building image stack {}".format(token) )
+
 
 def clearStack ( token ):
   """ Clear a OCP stack for a given project """
@@ -83,33 +142,47 @@ def clearStack ( token ):
           db.conn.cursor().close()
 
 
+#    elif proj.getProjectType ()in ocpcaproj.COMPOSITE_PROJECTS:
+#      buildAnnoStack( proj, resolution )
+#      pass
+#    else:
+#      logger.warning ( "Build function not supported for this datatype {}".format(ocpcaproj.getProjectType()) )
+#      raise OCPCAError ( "Build function not supported for this datatype {}".format(ocpcaproj.getProjectType()) )
 
-def buildAnnoStack ( token ):
+
+def buildAnnoStack ( proj, resolution=None ):
   """ Build the hierarchy for annotations """
   
-  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
-  
   with closing ( ocpcadb.OCPCADB (proj) ) as db:
+
+    # pick a resolution
+    if resolution == None:
+      startresolution=proj.getResolution()
+    else:
+      startresolution = resolution
+
+    scaling = proj.datasetcfg.scalingoption
   
-    for l in range (proj.getResolution(), proj.datasetcfg.resolutions[-1]):
+    for  l in range ( startresolution, len(proj.datasetcfg.resolutions)-1 ):
 
       # Get the source database sizes
-      [ximagesz, yimagesz] = proj.datasetcfg.imagesz [ l ]
+      [ximagesz, yimagesz, zimagesz] = proj.datasetcfg.imagesz [ l ]
       [xcubedim, ycubedim, zcubedim] = proj.datasetcfg.cubedim [ l ]
-
-      # Get the slices
-      [ startslice, endslice ] = proj.datasetcfg.slicerange
-      slices = endslice - startslice + 1
 
       # Set the limits for iteration on the number of cubes in each dimension
       xlimit = ximagesz / xcubedim
       ylimit = yimagesz / ycubedim
-      #  Round up the zlimit to the next larger
-      zlimit = (((slices-1)/zcubedim+1)*zcubedim)/zcubedim 
+      zlimit = zimagesz / zcubedim
 
       #  Choose constants that work for all resolutions. recall that cube size changes from 128x128x16 to 64*64*64
-      outdata = np.zeros ( [ zcubedim*4, ycubedim*2, xcubedim*2 ] )
+      # RBTODO derive dtype from project
+      if scaling == ocpcaproj.ZSLICES:
+        outdata = np.zeros ( [ zcubedim*4, ycubedim*2, xcubedim*2 ], dtype=np.uint32 )
+      elif scaling == ocpcaproj.ISOTROPIC:
+        outdata = np.zeros ( [ zcubedim*2,  ycubedim*2, xcubedim*2 ], dtype=np.uint32 )
+      else:
+        logger.error ( "Invalid scaling option in project = {}".format(scaling) )
+        raise OCPCAError ( "Invalid scaling option in project = {}".format(scaling)) 
 
       # Round up to the top of the range
       lastzindex = (ocplib.XYZMorton([xlimit,ylimit,zlimit])/64+1)*64
@@ -136,16 +209,27 @@ def buildAnnoStack ( token ):
 
           xyz = ocplib.MortonXYZ ( key )
 
-          # Compute the offset in the output data cube 
-          #  we are placing 4x4x4 input blocks into a 2x2x4 cube 
-          offset = [(xyz[0]%4)*(xcubedim/2), (xyz[1]%4)*(ycubedim/2), (xyz[2]%4)*zcubedim]
+          print "res : zindex = ", l, ":", key, ", location", ocplib.MortonXYZ(key)
 
-          print "res : zindex = ", l+1, ":", key, ", location", ocplib.MortonXYZ(key)
+          if scaling == ocpcaproj.ZSLICES:
 
-          # add the contribution of the cube in the hierarchy
-          #self.addData ( cube, outdata, offset )
-          # use the cython version
-          addData_cy ( cube, outdata, offset )
+            # Compute the offset in the output data cube 
+            #  we are placing 4x4x4 input blocks into a 2x2x4 cube 
+            offset = [(xyz[0]%4)*(xcubedim/2), (xyz[1]%4)*(ycubedim/2), (xyz[2]%4)*zcubedim]
+
+            # add the contribution of the cube in the hierarchy
+            #self.addData ( cube, outdata, offset )
+            # use the cython version
+            addDataToZSliceStack_cy ( cube, outdata, offset )
+
+          elif scaling == ocpcaproj.ISOTROPIC:
+
+            # Compute the offset in the output data cube 
+            #  we are placing 4x4x4 input blocks into a 2x2x2 cube 
+            offset = [(xyz[0]%4)*(xcubedim/2), (xyz[1]%4)*(ycubedim/2), (xyz[2]%4)*(zcubedim/2)]
+
+            # use python version for debugging
+            addDataToIsotropicStack ( cube, outdata, offset )
 
           # Get the next value
           [key,cube]  = db.getNextCube ()
@@ -156,7 +240,11 @@ def buildAnnoStack ( token ):
           #  Get the base location of this batch
           xyzout = ocplib.MortonXYZ ( mortonidx )
 
-          outcorner = [ xyzout[0]/2*xcubedim, xyzout[1]/2*ycubedim, xyzout[2]*zcubedim ]
+          # adjust to output corner for scale.
+          if scaling == ocpcaproj.ZSLICES:
+            outcorner = [ xyzout[0]*xcubedim/2, xyzout[1]*ycubedim/2, xyzout[2]*zcubedim ]
+          elif scaling == ocpcaproj.ISOTROPIC:
+            outcorner = [ xyzout[0]*xcubedim/2, xyzout[1]*ycubedim/2, xyzout[2]*zcubedim/2 ]
 
           #  Data stored in z,y,x order dims in x,y,z
           outdim = [ outdata.shape[2], outdata.shape[1], outdata.shape[0]]
@@ -164,6 +252,7 @@ def buildAnnoStack ( token ):
           # Preserve annotations made at the specified level RBTODO fix me
           db.annotateDense ( outcorner, l+1, outdata, 'O' )
           db.conn.commit()
+          print "Committed"
             
           # zero the output buffer
           outdata = np.zeros ([zcubedim*4, ycubedim*2, xcubedim*2])
@@ -171,3 +260,109 @@ def buildAnnoStack ( token ):
         else:
           print "No data in this batch"
     
+
+def buildImageStack ( proj, resolution ):
+  """Build the hierarchy of images"""
+
+  with closing ( ocpcadb.OCPCADB (proj) ) as db:
+
+    # pick a resolution
+    if resolution == None:
+      startresolution=proj.getResolution()
+    else:
+      startresolution = resolution
+
+    scaling = proj.datasetcfg.scalingoption
+
+    for l in range ( startresolution, len(proj.datasetcfg.resolutions)-1 ):
+
+      # Get the source database sizes
+      [ximagesz, yimagesz, zimagesz] = proj.datasetcfg.imagesz [ l+1 ]
+      [xcubedim, ycubedim, zcubedim] = proj.datasetcfg.cubedim [ l+1 ]
+
+      if scaling == ocpcaproj.ZSLICES:
+        xscale = 2
+        yscale = 2
+        zscale = 1
+      elif scaling == ocpcaproj.ISOTROPIC:
+        xscale = 2
+        yscale = 2
+        zscale = 2
+      else:
+        logger.error ( "Invalid scaling option in project = {}".format(scaling) )
+        raise OCPCAError ( "Invalid scaling option in project = {}".format(scaling)) 
+
+      biggercubedim = [xcubedim*xscale,ycubedim*yscale,zcubedim*zscale]
+
+      # Set the limits for iteration on the number of cubes in each dimension
+      # RBTODO These limits may be wrong for even (see channelingest.py)
+      xlimit = ximagesz / xcubedim
+      ylimit = yimagesz / ycubedim
+      zlimit = zimagesz / zcubedim
+
+      cursor = db.conn.cursor()
+
+      for z in range(zlimit):
+        for y in range(ylimit):
+          db.conn.commit()
+          for x in range(xlimit):
+
+            # cutout the data at the resolution
+            olddata = db.cutout ( [ x*xscale*xcubedim, y*yscale*ycubedim, z*zscale*zcubedim ], biggercubedim, l ).data
+
+            #olddata target array for the new data (z,y,x) order
+            newdata = np.zeros([zcubedim,ycubedim,xcubedim], dtype=olddata.dtype)
+
+            for sl in range(zcubedim):
+
+              if scaling == ocpcaproj.ZSLICES:
+
+                # Convert each slice to an image
+                # 8-bit option
+                if olddata.dtype==np.uint8:
+                  slimage = Image.frombuffer ( 'L', (xcubedim*2,ycubedim*2), olddata[sl,:,:].flatten(), 'raw', 'L', 0, 1 )
+                elif olddata.dtype==np.uint16:
+                  slimage = Image.frombuffer ( 'I;16', (xcubedim*2,ycubedim*2), olddata[sl,:,:].flatten(), 'raw', 'I;16', 0, 1 )
+                elif olddata.dtype==np.float32:
+                  slimage = Image.frombuffer ( 'F', (xcubedim*2,ycubedim*2), olddata[sl,:,:].flatten(), 'raw', 'F', 0, 1 )
+
+              elif scaling == ocpcaproj.ISOTROPIC:
+
+                # KLTODO it's probably worth doing a ctypes implementation of the following vectorized function it's slow
+                if olddata.dtype==np.uint8:
+                  vec_func = np.vectorize ( lambda a,b: a if b==0 else (b if a ==0 else np.uint8((a+b)/2))) 
+                  mergedata = vec_func ( olddata[sl*2,:,:], olddata[sl*2+1,:,:] )
+                  slimage = Image.frombuffer ( 'L', (xcubedim*2,ycubedim*2), mergedata.flatten(), 'raw', 'L', 0, 1 )
+                elif olddata.dtype==np.uint16:
+                  vec_func = np.vectorize ( lambda a,b: a if b==0 else (b if a ==0 else np.uint16((a+b)/2))) 
+                  mergedata = vec_func ( olddata[sl*2,:,:], olddata[sl*2+1,:,:] )
+                  slimage = Image.frombuffer ( 'I;16', (xcubedim*2,ycubedim*2), mergedata.flatten(), 'raw', 'I;16', 0, 1 )
+                elif olddata.dtype==np.float32:
+                  vec_func = np.vectorize ( lambda a,b: a if b==0 else (b if a ==0 else np.float32((a+b)/2))) 
+                  mergedata = vec_func ( olddata[sl*2,:,:], olddata[sl*2+1,:,:] )
+                  slimage = Image.frombuffer ( 'F', (xcubedim*2,ycubedim*2), mergedata.flatten(), 'raw', 'F', 0, 1 )
+
+              # Resize the image
+              newimage = slimage.resize ( [xcubedim,ycubedim] )
+
+              # Put to a new cube
+              newdata[sl,:,:] = np.asarray ( newimage )
+
+  
+            # Compress the data
+            outfobj = cStringIO.StringIO ()
+            np.save ( outfobj, newdata )
+            zdataout = zlib.compress (outfobj.getvalue())
+            outfobj.close()
+
+            key = zindex.XYZMorton ( [x,y,z] )
+            
+            # put in the database
+            sql = "INSERT INTO res" + str(l+1) + "(zindex, cube) VALUES (%s, %s)"
+            print sql % (key,"x,y,z=%s,%s,%s"%(x,y,z))
+            try:
+              cursor.execute ( sql, (key,zdataout))
+            except MySQLdb.Error, e:
+              print "Failed insert %d: %s. sql=%s" % (e.args[0], e.args[1], sql)
+
+      db.conn.commit()

@@ -32,29 +32,23 @@ from ocpcaerror import OCPCAError
 import logging
 logger=logging.getLogger("ocp")
 
-# dbtype enumerations
-IMAGES_8bit = 1
-ANNOTATIONS = 2
-CHANNELS_16bit = 3
-CHANNELS_8bit = 4
-PROBMAP_32bit = 5
-BITMASK = 6
-ANNOTATIONS_64bit = 7 
-IMAGES_16bit = 8 
-RGB_32bit = 9
-RGB_64bit = 10
-TIMESERIES_4d_8bit = 11
-TIMESERIES_4d_16bit = 12
+OCP_databasetypes = {0:'image',1:'annotation',2:'channel',3:'probmap',4:'timeseries'}
 
-# dbtype groups
-CHANNEL_DATASETS = [ CHANNELS_8bit, CHANNELS_16bit ]
-TIMESERIES_DATASETS = [ TIMESERIES_4d_8bit, TIMESERIES_4d_16bit ]
-ANNOTATION_DATASETS = [ ANNOTATIONS, ANNOTATIONS_64bit ]
-RGB_DATASETS = [ RGB_32bit, RGB_64bit ]
-DATASETS_8bit = [ IMAGES_8bit, CHANNELS_8bit, TIMESERIES_4d_8bit ]
-DATASETS_16bit = [ IMAGES_8bit, CHANNELS_16bit, TIMESERIES_4d_16bit ]
-DATSETS_32bit = [ RGB_32bit, ANNOTATIONS, PROBMAP_32bit ]
-COMPOSITE_DATASETS = CHANNEL_DATASETS + TIMESERIES_DATASETS
+# projecttype groups
+IMAGE_PROJECTS = [ 'image', 'probmap' ]
+CHANNEL_PROJECTS = [ 'channel' ]
+TIMESERIES_PROJECTS = [ 'timeseries' ]
+ANNOTATION_PROJECTS = [ 'annotation' ]
+COMPOSITE_PROJECTS = CHANNEL_PROJECTS + TIMESERIES_PROJECTS
+
+# datatype groups
+DTYPE_uint8 = [ 'uint8' ]
+DTYPE_uint16 = [ 'uint16' ]
+DTYPE_uint32 = [ 'rgb32','uint32' ]
+DTYPE_uint64 = [ 'rgb64' ]
+DTYPE_float32 = [ 'probability' ]
+OCP_dtypetonp = {'uint8':np.uint8,'uint16':np.uint16,'uint32':np.uint32,'rgb32':np.uint32,'rgb64':np.uint64,'probability':np.float32}
+
 
 # Propagated Values
 PROPAGATED = 2
@@ -65,6 +59,10 @@ NOT_PROPAGATED = 0
 READONLY_TRUE = 1
 READONLY_FALSE = 0
 
+# SCALING OPTIONS
+ISOTROPIC = 0
+ZSLICES = 1
+
 # Exception Values
 EXCEPTION_TRUE = 1
 EXCEPTION_FALSE = 0
@@ -73,14 +71,17 @@ class OCPCAProject:
   """ Project specific for cutout and annotation data """
 
   # Constructor 
-  def __init__(self, token, dbname, dbdescription, dataset, dbtype, overlayproject, overlayserver, resolution, readonly, exceptions, dbhost, kvengine, kvserver, propagate ):
+  def __init__(self, token, dbname, dbhost, dbdescription, projecttype, datatype, dataset, dataurl, readonly, exceptions, resolution, kvserver, kvengine, propagate ):
     """ Initialize the OCPCA Project """
     
     self._token = token
     self._dbname = dbname
     self._dbdescription = dbdescription
+    self._dbhost = dbhost
+    self._projecttype = projecttype
+    self._dtype = datatype
     self._dataset = dataset
-    self._dbtype = dbtype
+    self._projecttype = projecttype
     self._overlayproject = overlayproject
     self._overlayserver = overlayserver
     self._resolution = resolution
@@ -99,8 +100,10 @@ class OCPCAProject:
     return self._token
   def getDBHost ( self ):
       return self._dbhost
-  def getDBType ( self ):
-    return self._dbtype
+  def getDataType ( self ):
+    return self._dtype
+  def getProjectType ( self ):
+    return self._projecttype
   def getDBName ( self ):
     return self._dbname
   def getDataset ( self ):
@@ -114,7 +117,7 @@ class OCPCAProject:
   def getOverlayProject ( self ):
     return self._overlayproject
   def getDBType ( self ):
-    return self._dbtype
+    return self._projecttype
   def getReadOnly ( self ):
     return self._readonly
   def getResolution ( self ):
@@ -131,7 +134,7 @@ class OCPCAProject:
     # 0 - Propagated
     # 1 - Under Propagation
     # 2 - UnPropagated
-    if self.getDBType() not in ANNOTATION_DATASETS:
+    if not self.getProjectType() == 'annotation':
       logger.error ( "Cannot set Propagate Value {} for a non-Annotation Project {}".format( value, self._token ) )
       raise OCPCAError ( "Cannot set Propagate Value {} for a non-Annotation Project {}".format( value, self._token ) )
     elif value in [NOT_PROPAGATED]:
@@ -186,78 +189,120 @@ class OCPCAProject:
 class OCPCADataset:
   """Configuration for a dataset"""
 
-  def __init__ ( self, dataset,ximagesz, yimagesz, startslice, endslice, zoomlevels, zscale, startwindow, endwindow, starttime, endtime ):
+  def __init__ ( self, (ximagesz, yimagesz, zimagesz), (xoffset, yoffset, zoffset), (xvoxelres, yvoxelres, zvoxelres), scalinglevels, scalingoption, startwindow, endwindow, starttime, endtime ):
     """Construct a db configuration from the dataset parameters""" 
-    self.dataset = dataset
-    self.slicerange = [ startslice, endslice ]
+
     self.windowrange = [ startwindow, endwindow ]
     self.timerange = [ starttime, endtime ]
 
-    # istropic slice range is a function of resolution
-    self.isoslicerange = {} 
+    # nearisotropic service for Stephan
     self.nearisoscaledown = {}
 
     self.resolutions = []
     self.cubedim = {}
     self.imagesz = {}
-    self.zscale = {}
+    self.offset = {}
+    self.voxelres = {}
+    self.scalingoption = scalingoption
+    self.zoomlevels = scalinglevels
 
-    for i in range (zoomlevels+1):
+    for i in range (scalinglevels+1):
       """Populate the dictionaries"""
 
       # add this level to the resolutions
       self.resolutions.append( i )
 
-      # set the zscale factor
-      self.zscale[i] = float(zscale)/(2**i)
-
-      # choose the cubedim as a function of the zscale
-      #  this may need to be changed.  
-      if self.zscale[i] >  0.5:
-        self.cubedim[i] = [128, 128, 16]
-      else: 
-        self.cubedim[i] = [64, 64, 64]
-
-      # Make an exception for bock11 data -- just an inconsistency in original ingest
-      if ximagesz == 135424 and i == 5:
-        self.cubedim[i] = [128, 128, 16]
-
       # set the image size
       #  the scaled down image rounded up to the nearest cube
       xpixels=((ximagesz-1)/2**i)+1
       ypixels=((yimagesz-1)/2**i)+1
-# RBRM -- don't round up to cubes.  Just pixels.
-#      ximgsz = (((xpixels-1)/self.cubedim[i][0])+1)*self.cubedim[i][0]
-#      yimgsz = (((ypixels-1)/self.cubedim[i][1])+1)*self.cubedim[i][1]
-      self.imagesz[i] = [ xpixels, ypixels ]
+      if scalingoption == ZSLICES:
+        zpixels=zimagesz
+      else:
+        zpixels=((zimagesz-1)/2**i)+1
+      self.imagesz[i] = [ xpixels, ypixels, zpixels ]
 
-      # set the isotropic image size when well defined
-      if self.zscale[i] < 1.0:
-        self.isoslicerange[i] = [ startslice, startslice + int(math.floor((endslice-startslice+1)*self.zscale[i])) ]
-
-        # find the neareat to isotropic value
-        scalepixels = 1/self.zscale[i]
-        if ((math.ceil(scalepixels)-scalepixels)/scalepixels) <= ((scalepixels-math.floor(scalepixels))/scalepixels):
-          self.nearisoscaledown[i] = int(math.ceil(scalepixels))
+      # set the offset
+      if xoffset==0:
+        xoffseti = 0
+      else:
+         xoffseti = ((xoffset-1)/2**i)
+      if yoffset==0:
+        yoffseti = 0
+      else:
+         yoffseti = ((yoffset-1)/2**i)
+      if zoffset==0:
+        zoffseti = 0
+      else:
+        if scalingoption == ZSLICES:
+          zoffseti = zoffset
         else:
-          self.nearisoscaledown[i] = int(math.floor(scalepixels))
+         zoffseti = ((zoffset-1)/2**i)
+
+      self.offset[i] = [ xoffseti, yoffseti, zoffseti ]
+
+      # set the voxelresolution
+      xvoxelresi = xvoxelres*float(2**i)
+      yvoxelresi = yvoxelres*float(2**i)
+      if scalingoption == ZSLICES:
+        zvoxelresi = zvoxelres
+      else:
+        zvoxelresi = zvoxelres*float(2**i)
+
+      self.voxelres[i] = [ xvoxelresi, yvoxelresi, zvoxelresi ]
+
+      # choose the cubedim as a function of the zscale
+      #  this may need to be changed.  
+      if scalingoption == ZSLICES:
+        if float(zvoxelres/xvoxelres)/(2**i) >  0.5:
+          self.cubedim[i] = [128, 128, 16]
+        else: 
+          self.cubedim[i] = [64, 64, 64]
+
+        # Make an exception for bock11 data -- just an inconsistency in original ingest
+        if ximagesz == 135424 and i == 5:
+          self.cubedim[i] = [128, 128, 16]
 
       else:
-        self.isoslicerange[i] = self.slicerange
-        self.nearisoscaledown[i] = int(1)
+        # RB what should we use as a cubedim?
+        self.cubedim[i] = [128, 128, 16]
+#        self.cubedim[i] = [64, 64, 64]
+
+
+
+      #RB need to reconsider nearisotropic for Stefan.....
+#      # set the isotropic image size when well defined
+#      if self.zscale[i] < 1.0:
+#        self.isoslicerange[i] = [ startslice, startslice + int(math.floor((endslice-startslice+1)*self.zscale[i])) ]
+#
+#        # find the neareat to isotropic value
+#        scalepixels = 1/self.zscale[i]
+#        if ((math.ceil(scalepixels)-scalepixels)/scalepixels) <= ((scalepixels-math.floor(scalepixels))/scalepixels):
+#          self.nearisoscaledown[i] = int(math.ceil(scalepixels))
+#        else:
+#          self.nearisoscaledown[i] = int(math.floor(scalepixels))
+#
+#      else:
+#        self.isoslicerange[i] = self.slicerange
+#        self.nearisoscaledown[i] = int(1)
 
   #
   #  Check that the specified arguments are legal
   #
-  def checkCube ( self, resolution, xstart, xend, ystart, yend, zstart, zend, tstart=0, tend=0 ):
+  def checkCube ( self, resolution, corner, dim, tstart=0, tend=0 ):
     """Return true if the specified range of values is inside the cube"""
 
-    [xmax, ymax] = self.imagesz [ resolution ]
+    [xstart, ystart, zstart ] = corner
+    xend = xstart + dim[0]
+    yend = ystart + dim[1]
+    zend = zstart + dim[2]
 
+
+    #KLTODO check the timeseries code here.
     if ( ( xstart >= 0 ) and ( xstart < xend) and ( xend <= self.imagesz[resolution][0]) and\
         ( ystart >= 0 ) and ( ystart < yend) and ( yend <= self.imagesz[resolution][1]) and\
-        ( zstart >= self.slicerange[0] ) and ( zstart < zend) and ( zend <= (self.slicerange[1]+1)) and\
-        ( tstart >= self.timerange[0]) and ( ( tstart < tend ) or tstart==0 and tend==0 ) and ( tend <= (self.timerange[1]+1) ) ):
+        ( zstart >= 0 ) and ( zstart < zend) and ( zend <= self.imagesz[resolution][2]) and\
+        ( tstart >= self.timerange[0]) and ((tstart < tend) or tstart==0 and tend==0) and (tend <= (self.timerange[1]+1))):
       return True
     else:
       return False
@@ -269,11 +314,14 @@ class OCPCADataset:
   def checkTimeSeriesCube ( self, tstart, tend, resolution, xstart, xend, ystart, yend, zstart, zend ):
     """Return true if the specified range of values is inside the timeseries cube"""
 
-    [xmax, ymax] = self.imagesz [ resolution ]
+    [xstart, ystart, zstart ] = corner
+    xend = xstart + dim[0]
+    yend = ystart + dim[1]
+    zend = zstart + dim[2]
 
     if ( ( xstart >= 0 ) and ( xstart < xend) and ( xend <= self.imagesz[resolution][0] ) and\
         ( ystart >= 0 ) and ( ystart < yend) and ( yend <= self.imagesz[resolution][1] ) and\
-        ( zstart >= self.slicerange[0] ) and ( zstart < zend) and ( zend <= (self.slicerange[1]+1) ) and\
+        ( zstart >= 0 ) and ( zstart < zend) and ( zend <= self.imagesz[resolution][2]) and\
         ( tstart >= self.timerange[0] ) and ( tstart < tend ) and ( tend <= (self.timerange[1]+1) ) )  :
       return True
     else:
@@ -306,9 +354,14 @@ class OCPCAProjectsDB:
   def loadProject ( self, token ):
     """ Load the annotation database information based on the token """
 
+#RBTODO what's up here???
     # Lookup the information for the database project based on the token
 #    sql = "SELECT token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions, resolution , kvserver, kvengine, propagate from {} where token = \'{}\'".format(ocpcaprivate.projects, token)
     sql = "SELECT token_name,token_description, project_id, readonly, public from {} where token_name = \'{}\'".format(ocpcaprivate.tokens, token)
+#=======
+#    sql = "SELECT token, openid, host, project, projecttype, datatype, dataset, dataurl, readonly, exceptions, resolution , kvserver, kvengine, propagate from {} where token = \'{}\'".format(ocpcaprivate.projects, token)
+#
+#>>>>>>> rb-iso
     with closing(self.conn.cursor()) as cursor:
       try:
         cursor.execute ( sql )
@@ -325,7 +378,7 @@ class OCPCAProjectsDB:
 
     [token, token_description, project, readonly, public ] = row
 
-    sql = "SELECT project_name, project_description, dataset_id , datatype, overlayproject,overlayserver, resolution ,exceptions,host, kvengine, kvserver,propagate from {} where project_name = \'{}\'".format(ocpcaprivate.projects, project) 
+    sql = "SELECT project_name, project_description, dataset_id, projecttype, datatype, overlayproject,overlayserver, resolution ,exceptions,host, kvengine, kvserver,propagate from {} where project_name = \'{}\'".format(ocpcaprivate.projects, project) 
 
     with closing(self.conn.cursor()) as cursor:
       try:
@@ -341,10 +394,10 @@ class OCPCAProjectsDB:
       logger.warning ( "Project token {} not found.".format( token ))
       raise OCPCAError ( "Project token {} not found.".format( token ))
 
-    [project_name, project_description, dataset_id , datatype, overlayproject,overlayserver, resolution ,exceptions,host, kvengine, kvserver,propagate  ] = row 
+    [project_name, project_description, dataset_id, projecttype, datatype, overlayproject, overlayserver, resolution ,exceptions,host, kvengine, kvserver,propagate  ] = row 
     dataset= self.loadDatasetName(dataset_id)
     # Create a project object
-    proj = OCPCAProject ( token, project_name.strip(),project_description, dataset,datatype, overlayproject,overlayserver, resolution, readonly, exceptions,host, kvengine, kvserver, propagate ) 
+    proj = OCPCAProject ( token, project_name.strip(),project_description, dataset, projecttype, datatype, overlayproject, overlayserver, resolution, readonly, exceptions, host, kvengine, kvserver, propagate ) 
     proj.datasetcfg = self.loadDatasetConfig ( dataset )
 
     return proj
@@ -378,7 +431,7 @@ class OCPCAProjectsDB:
     #todo--not used
     readonly = 0;
     # Create a project object                                                                                                                     
-    proj = OCPCAProject ("",project_name,project_description, dataset,datatype,overlayproject,overlayserver,resolution,readonly,exceptions,host,kvengine,kvserver, propagate )
+    proj = OCPCAProject ("",project_name,project_description, dataset, projecttype, datatype, overlayproject, overlayserver, resolution, readonly, exceptions, host, kvengine, kvserver, propagate )
      # Lookup the information for the database project based on the token                                                                                             
     sql = "SELECT dataset_name from {} where id = \'{}\'".format(ocpcaprivate.datasets, dataset_id)
 
@@ -404,11 +457,18 @@ class OCPCAProjectsDB:
   #
   # Create a new dataset
   #
-  def newDataset ( self, dsname, ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale, startwindow, endwindow, starttime, endtime ):
+  def newDataset ( self, dsname, imagesz, offset, voxelres, scalinglevels, scalingoption, startwindow, endwindow, starttime, endtime ):
     """ Create a new ocpca dataset """
 
-    sql = "INSERT INTO {0} (dataset_name, ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale, startwindow, endwindow, starttime, endtime) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',{5},\'{6}\',\'{7}\', \'{8}\',\'{9}\','{10}\','{11}\')".format (\
-       ocpcaprivate.datasets, dsname, ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale, startwindow, endwindow, starttime, endtime )
+    sql = "INSERT INTO {0} (dataset_name, ximagesize, yimagesize, xoffset, yoffset, zoffset, xrvoxelres, yvoxelres, zvoxelres, scalinglevels, scalingoption, startwindow, endwindow, starttime, endtime) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',\'{5}\',\'{6}\',\'{7}\',\'{8}\',\'{9}\',\'{10}\',\'{11}\',\'{12}\',\'{13}\',\'{14}\',\'{15}\',\'{16}\')".format (\
+       ocpcaprivate.datasets, dsname, ximagesz, yimagesz, zimagesz, xoffset, yoffset, zoffset, xvoxelres, yvoxelres, zvoxelres, scalinglevels, scalingoption, startwindow, endwindow, starttime, endtime )
+
+    (ximagesz, yimagesz, zimagesz) = imagesz
+    (xoffset, yoffset, zoffset) = offset
+    (xvoxelres, yvoxelres, zvoxelres) = voxelres
+
+#    sql = "INSERT INTO {0} (dataset, ximagesize, yimagesize, zimagesize, xoffset, yoffset, zoffset, xvoxelres, yvoxelres, zvoxelres, scalinglevels, scalingoption, startwindow, endwindow, starttime, endtime) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',\'{5}\',\'{6}\',\'{7}\',\'{8}\',\'{9}\',\'{10}\',\'{11}\',\'{12}\',\'{13}\',\'{14}\',\'{15}\',\'{16}\')".format (\
+#>>>>>>> rb-iso
 
     logger.info ( "Creating new dataset. Name %s. SQL=%s" % ( dsname, sql ))
 
@@ -428,10 +488,22 @@ class OCPCAProjectsDB:
       #                                                                                                                                                                                                  
   def newToken ( self, token_name, token_description, project, readonly, public ):
     """ Create a new ocpca Token """
+#=======
+# #
+# # Create a new project (annotation or data)
+# #
+# def newOCPCAProj ( self, token, openid, dbhost, project, projecttype, datatype, dataset, dataurl, readonly, exceptions, nocreate, resolution, public, kvserver, kvengine, propagate ):
+#   """ Create a new ocpca project """
+#>>>>>> rb-iso
 
     sql = "INSERT INTO {0} (token_name, token_description, project_id, readonly, public) VALUES (\'{1}\',\'{2}\',\'{3}\',{4},{5})".format (ocpcaprivate.tokens, token_name, token_description,project,readonly,public )
 
+#<<<<<< HEAD
     logger.info ( "Creating new Token. Name %s. SQL=%s" % ( token_name, sql ))
+#======
+#   sql = "INSERT INTO {0} (token, openid, host, project, projecttype, datatype, dataset, dataurl, readonly, exceptions, resolution, public, kvserver, kvengine, propagate) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',\'{5}\',\'{6}\',\'{7}\',\'{8}\',\'{9}\',\'{10}\',\'{11}\',\'{12}\',\'{13}\',\'{14}\',\'{15}\')".format (\
+#      ocpcaprivate.projects, token, openid, dbhost, project, projecttype, datatype, dataset, dataurl, int(readonly), int(exceptions), resolution, int(public), kvserver, kvengine, int(propagate) )
+#>>>>>> rb-iso
 
     with closing(self.conn.cursor()) as cursor:
       try:
@@ -446,10 +518,10 @@ class OCPCAProjectsDB:
     #
     # Create a new Project
     #                                                                                                                                                                                             
-  def newProject ( self, project_name, project_description,userid,dataset_id,datatype,overlayproject,overlayserver, resolution, exceptions,host, kvengine,kvserver,propagate ):
+  def newProject ( self, project_name, project_description, userid, dataset_id, projecttype, datatype, overlayproject, overlayserver, resolution, exceptions, host, kvengine,kvserver,propagate ):
     """ Create a new ocpca Token """
     
-    sql = "INSERT INTO {0} ( project_name, project_description,user_id,dataset_id,datatype,overlayproject,overlayserver, resolution, exceptions,host, kvengine,kvserver,propagate ) VALUES (\'{1}\',\'{2}\',{3},{4},{5},\'{6}\',\'{7}\',{8}, {9},\'{10}\',\'{11}\',\'{12}\',{13})".format (ocpcaprivate.projects,  project_name, project_description,userid,dataset_id,datatype,overlayproject,overlayserver, resolution, exceptions,host, kvengine,kvserver,propagate  )
+    sql = "INSERT INTO {0} ( project_name, project_description, user_id, dataset_id, projecttype, datatype, overlayproject, overlayserver, resolution, exceptions, host, kvengine, kvserver, propagate ) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',\'{5}\',\'{6}\',\'{7}\',\'{8}\',\'{9}\',\'{10}\',\'{11}\',\'{12}\',\'{13}\')".format( ocpcaprivate.projects, project_name, project_description, userid, dataset_id, datatype, overlayproject, overlayserver, resolution, exceptions, host, kvengine, kvserver, propagate  )
 
     logger.info ( "Creating new Project. Name %s. SQL=%s" % ( project_name, sql ))
 
@@ -466,14 +538,13 @@ class OCPCAProjectsDB:
   #
   # Create a new project (annotation or data)
   #
-  def newOCPCAProj ( self, token, token_description, userid, dbhost, project,projectdescription, dbtype, dataset, overlayproject,overlayserver, readonly, exceptions, nocreate, resolution, public, kvserver, kvengine, propagate ):
+  def newOCPCAProj ( self, token, token_description, userid, dbhost, project, projectdescription, projecttype, datatype, dataset, overlayproject, overlayserver, readonly, exceptions, nocreate, resolution, public, kvserver, kvengine, propagate ):
     """ Create a new ocpca project """
     
     datasetcfg = self.loadDatasetConfig ( dataset )
     dataset_id= self.loadDatasetID(dataset)
-    self.newProject(project,projectdescription,userid,dataset_id,dbtype,overlayproject,overlayserver,resolution,exceptions,dbhost,kvengine,kvserver,propagate)
-    self.newToken(token,token_description,project,readonly,public)
-    
+    self.newProject(project, projectdescription, userid, dataset_id, projecttype, datatype, overlayproject, overlayserver, resolution, exceptions, dbhost, kvengine, kvserver, propagate)
+    self.newToken(token, token_description, project, readonly, public)
 
     proj = self.loadProject ( token )
 
@@ -505,14 +576,14 @@ class OCPCAProjectsDB:
           if proj.getKVEngine() == 'MySQL':
 
             # tables for annotations and images
-            if dbtype not in CHANNEL_DATASETS + TIMESERIES_DATASETS :
+            if projecttype not in ['channel','timeseries']:
 
               for i in datasetcfg.resolutions: 
                 newcursor.execute ( "CREATE TABLE res{} ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(i) )
                 #newcursor.execute ( "CREATE TABLE raw{} ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(i) )
               newconn.commit()
 
-            elif dbtype in TIMESERIES_DATASETS :
+            elif projecttype == 'timeseries':
 
               for i in datasetcfg.resolutions: 
                 newcursor.execute ( "CREATE TABLE res{} ( zindex BIGINT, timestamp INT, cube LONGBLOB, PRIMARY KEY(zindex,timestamp))".format(i) )
@@ -521,7 +592,7 @@ class OCPCAProjectsDB:
               newconn.commit()
 
             # tables for channel dbs
-            elif dbtype in CHANNEL_DATASETS :
+            elif projecttype == 'timeseries':
               newcursor.execute ( 'CREATE TABLE channels ( chanstr VARCHAR(255), chanid INT, PRIMARY KEY(chanstr))')
               for i in datasetcfg.resolutions: 
                 newcursor.execute ( "CREATE TABLE res{} ( channel INT, zindex BIGINT, cube LONGBLOB, PRIMARY KEY(channel,zindex) )".format(i) )
@@ -530,7 +601,7 @@ class OCPCAProjectsDB:
           elif proj.getKVEngine() == 'Riak':
 
             rcli = riak.RiakClient(host=proj.getKVServer(), pb_port=8087, protocol='pbc')
-            bucket = rcli.bucket_type("ocp{}".format(proj.getDBType())).bucket(proj.getDBName())
+            bucket = rcli.bucket_type("ocp{}".format(proj.getProjectType())).bucket(proj.getDBName())
             bucket.set_property('allow_mult',False)
 
           elif proj.getKVEngine() == 'Cassandra':
@@ -553,7 +624,7 @@ class OCPCAProjectsDB:
 
 
           # tables specific to annotation projects
-          if dbtype in ANNOTATION_DATASETS :
+          if projecttype == 'annotation': 
 
             newcursor.execute("CREATE TABLE ids ( id BIGINT PRIMARY KEY)")
 
@@ -620,7 +691,7 @@ class OCPCAProjectsDB:
   #
   # Create a new project database (annotation or data)
   #
-  def newOCPCAProjectDB ( self, project, description, dataset, dbtype ,resolution, exceptions, dbhost, kvserver, kvengine, propagate, nocreate ):
+  def newOCPCAProjectDB ( self, project, description, dataset, projecttype ,resolution, exceptions, dbhost, kvserver, kvengine, propagate, nocreate ):
     """ Create a new ocpca project """
 
     datasetcfg = self.loadDatasetConfig ( dataset.dataset_name )
@@ -657,14 +728,14 @@ class OCPCAProjectsDB:
           if proj.getKVEngine() == 'MySQL':
 
             # tables for annotations and images
-            if dbtype not in CHANNEL_DATASETS + TIMESERIES_DATASETS :
+            if projecttype not in CHANNEL_DATASETS + TIMESERIES_DATASETS :
 
               for i in datasetcfg.resolutions: 
                 newcursor.execute ( "CREATE TABLE res{} ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(i) )
                 newcursor.execute ( "CREATE TABLE raw{} ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(i) )
               newconn.commit()
 
-            elif dbtype in TIMESERIES_DATASETS :
+            elif projecttype in TIMESERIES_DATASETS :
 
               for i in datasetcfg.resolutions: 
                 newcursor.execute ( "CREATE TABLE res{} ( zindex BIGINT, timestamp INT, cube LONGBLOB, PRIMARY KEY(zindex,timestamp))".format(i) )
@@ -673,7 +744,7 @@ class OCPCAProjectsDB:
               newconn.commit()
 
             # tables for channel dbs
-            elif dbtype in CHANNEL_DATASETS :
+            elif projecttype in CHANNEL_DATASETS :
               newcursor.execute ( 'CREATE TABLE channels ( chanstr VARCHAR(255), chanid INT, PRIMARY KEY(chanstr))')
               for i in datasetcfg.resolutions: 
                 newcursor.execute ( "CREATE TABLE res{} ( channel INT, zindex BIGINT, cube LONGBLOB, PRIMARY KEY(channel,zindex) )".format(i) )
@@ -705,7 +776,7 @@ class OCPCAProjectsDB:
 
 
           # tables specific to annotation projects
-          if dbtype in ANNOTATION_DATASETS :
+          if projecttype in ANNOTATION_DATASETS :
 
             newcursor.execute("CREATE TABLE ids ( id BIGINT PRIMARY KEY)")
 
@@ -850,7 +921,7 @@ class OCPCAProjectsDB:
 
       # connect to Riak
       rcli = riak.RiakClient(host=proj.getKVServer(), pb_port=8087, protocol='pbc')
-      bucket = rcli.bucket_type("ocp{}".format(proj.getDBType())).bucket(proj.getDBName())
+      bucket = rcli.bucket_type("ocp{}".format(proj.getProjectType())).bucket(proj.getDBName())
 
       key_list = rcli.get_keys(bucket)
 
@@ -874,8 +945,7 @@ class OCPCAProjectsDB:
 
   def loadDatasetConfig ( self, dataset ):
     """Query the database for the dataset information and build a db configuration"""
-    sql = "SELECT id,dataset_name,ximagesize, yimagesize, startslice, endslice, zoomlevels, zscale, startwindow, endwindow, starttime, endtime from {} where dataset_name = \'{}\'".format( ocpcaprivate.datasets, dataset)
-
+    sql = "SELECT id, dataset_name, ximagesize, yimagesize, zimagesize, xoffset, yoffset, zoffset, xvoxelres, yvoxelres, zvoxelres, scalinglevels, scalingoption, startwindow, endwindow, starttime, endtime from {} where dataset_name = \'{}\'".format( ocpcaprivate.datasets, dataset )
 
     with closing(self.conn.cursor()) as cursor:
       try:
@@ -893,15 +963,24 @@ class OCPCAProjectsDB:
       logger.warning ( "Dataset %s not found." % ( dataset ))
       raise OCPCAError ( "Dataset %s not found." % ( dataset ))
 
-    [ dataset_id,dataset,ximagesz, yimagesz, startslice, endslice, zoomlevels, zscale, startwindow, endwindow, starttime, endtime ] = row
-    return OCPCADataset ( dataset,int(ximagesz), int(yimagesz), int(startslice), int(endslice), int(zoomlevels), float(zscale), int(startwindow), int(endwindow), int(starttime), int(endtime) )
- 
- 
-  def loadDatasetName ( self, dataset_id ):
-    """Query the datasets table for the dataset name"""
-    sql = "SELECT dataset_name from {} where id = \'{}\'".format( ocpcaprivate.datasets, dataset_id)
-    
-    
+    [ dataset_id, dataset, ximagesz, yimagesz, zimagesz, xoffset, yoffset, zoffset, xvoxelres, yvoxelres, zvoxelres, scalinglevels, scalingoption, startwindow, endwindow, starttime, endtime ] = row
+    return OCPCADataset ( (int(ximagesz),int(yimagesz),int(zimagesz)), (int(xoffset),int(yoffset),int(zoffset)), (int(xvoxelres),int(yvoxelres),int(zvoxelres)), int(scalinglevels), int(scalingoption), int(startwindow), int(endwindow), int(starttime), int(endtime) ) 
+
+  #
+  # Load the ocpca databse information based on openid
+  #
+  def getFilteredProjects ( self, openid, filterby, filtervalue ):
+    """Load the annotation database information based on the openid"""
+    # Lookup the information for the database project based on the openid
+    #url = "SELECT * from %s where " + filterby
+    #sql = "SELECT * from %s where %s = \'%s\'" % (ocpcaprivate.table, filterby, filtervalue)
+    token_desc = ocpcaprivate.token_description
+    proj_tbl = ocpcaprivate.projects
+    if (filterby == ""):
+      sql = "SELECT * from %s LEFT JOIN %s on %s.token = %s.token where %s.openid = \'%s\' ORDER BY project" % (ocpcaprivate.projects,token_desc,proj_tbl,token_desc,proj_tbl,openid)
+    else:
+      sql = "SELECT * from %s LEFT JOIN %s on %s.token = %s.token where %s.openid = \'%s\' and %s.%s = \'%s\' ORDER BY project" % (ocpcaprivate.projects,token_desc,proj_tbl,token_desc, proj_tbl,openid, proj_tbl,filterby, filtervalue.strip())
+
     with closing(self.conn.cursor()) as cursor:
       try:
         cursor.execute ( sql )

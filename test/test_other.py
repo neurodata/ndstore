@@ -45,8 +45,7 @@ class TestOther:
 
     with closing ( ocpcaproj.OCPCAProjectsDB() ) as pd:
       try:
-        pd.newOCPCAProj ( 'pubunittest','token for unit test', 1 , 'localhost', 'pubunittest', 'project for unittest', 2, 'kasthuri11','kasthuri11','openconnecto.me', False, True, False, 0, True, kvengine_to_test.kvserver, kvengine_to_test.kvengine, 0 )
-       # pd.newOCPCAProj ( 'pubunittest', 'test', 'localhost', 'pubunittest', 2, 'kasthuri11', None, False, True, False, 0, True, kvengine_to_test.kvserver, kvengine_to_test.kvengine, 0 )
+        pd.newOCPCAProj ( 'pubunittest','token for unit test', 1 , 'localhost', 'pubunittest', 'project for unittest', 'annotation', 'uint32', 'kasthuri11','kasthuri11','openconnecto.me', False, True, False, 0, True, kvengine_to_test.kvserver, kvengine_to_test.kvengine, 0 )
       except:
         pd.deleteOCPCADB ('pubunittest')
       
@@ -76,8 +75,8 @@ class TestOther:
     
     # reead the json data
     projinfo = json.loads ( f.read() )
-    assert ( projinfo['project']['projecttype'] == 2 )
-    assert ( projinfo['dataset']['slicerange'][1] == 1850 )
+    assert ( projinfo['project']['projecttype'] == 'annotation' )
+    assert ( projinfo['dataset']['offset']['0'][2] == 1 )
 
   def test_reserve ( self ):
     """reserve 1000 ids twice and make sure that the numbers work"""

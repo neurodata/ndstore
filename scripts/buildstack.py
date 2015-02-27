@@ -17,39 +17,28 @@ import sys
 import os
 import numpy as np
 import urllib, urllib2
-import scipy.ndimage.interpolation
 import cStringIO
-from PIL import Image
-import zlib
-import MySQLdb
 
 sys.path += [os.path.abspath('../django')]
 import OCP.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
 from django.conf import settings
 
-import ocpcaproj
-import ocpcadb
-import zindex
+import ocpcastack
 
-"""Construct an image hierarchy up from a given resolution"""
+"""Construct an annotation hierarchy off of a completed annotation database."""
 
 
 def main():
 
-  parser = argparse.ArgumentParser(description='Build an image stack')
-  parser.add_argument('token', action="store", help='Token for the project.')
-  parser.add_argument('resolution', action="store", type=int, help='Start (highest) resolution to build')
+  parser = argparse.ArgumentParser(description='Build a stack of annotations')
+  parser.add_argument('token', action="store", help='Token for the annotation project.')
+  parser.add_argument('resolution', action="store", type=int, help='Start (highest) resolution')
   
   result = parser.parse_args()
 
-  # Create the annotation stack
-  imgstack = ImgStack ( result.token )
-
   # Iterate over the database creating the hierarchy
-  imgstack.buildStack ( result.resolution )
-  
-
+  ocpcastack.buildStack ( result.token, result.resolution )
 
 if __name__ == "__main__":
   main()
