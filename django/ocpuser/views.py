@@ -60,7 +60,7 @@ def profile(request):
     if request.method == 'POST':
       if 'filter' in request.POST:
         #FILTER PROJECTS BASED ON INPUT VALUE
-        openid = request.user.username
+        username = request.user.username
         filteroption = request.POST.get('filteroption')
         filtervalue = (request.POST.get('filtervalue')).strip()
         
@@ -70,11 +70,11 @@ def profile(request):
         
         for db in all_datasets:
           if filteroption == 'project':
-            proj = Project.objects.filter(dataset_id=db.id,project_name=filtervalue)
+            proj = Project.objects.filter(dataset_id=db.dataset_name,project_name=filtervalue)
           elif filteroption =='datatype':
-            proj = Project.objects.filter(dataset_id=db.id,datatype=filtervalue)
+            proj = Project.objects.filter(dataset_id=db.dataset_name,datatype=filtervalue)
           else:
-            proj = Project.objects.filter(dataset_id=db.id)
+            proj = Project.objects.filter(dataset_id=db.dataset_name)
             
           if proj:
             dbs[db.dataset_name].append(proj)
@@ -87,7 +87,7 @@ def profile(request):
 
       elif 'delete' in request.POST:
         pd = ocpcaproj.OCPCAProjectsDB()
-        openid = request.user.username
+        username = request.user.username
         project_to_delete = (request.POST.get('projname')).strip()
                 
         reftokens = Token.objects.filter(project_id=project_to_delete)
@@ -144,11 +144,11 @@ def profile(request):
 
     else:
     # GET Projects
-      openid = request.user.username
+      username = request.user.username
       all_datasets= Dataset.objects.all()
       dbs = defaultdict(list)
       for db in all_datasets:
-        proj = Project.objects.filter(dataset_id=db.id, user_id = request.user)
+        proj = Project.objects.filter(dataset_id=db.dataset_name, user_id = request.user)
         if proj:
           dbs[db.dataset_name].append(proj)
 #        else:
@@ -160,12 +160,12 @@ def profile(request):
   except OCPCAError, e:
     messages.error(request, e.value)
     pd = ocpcaproj.OCPCAProjectsDB()
-    openid = request.user.username
-    projects = pd.getFilteredProjects ( openid ,"","")
-    databases = pd.getDatabases ( openid)
+    username = request.user.username
+    projects = pd.getFilteredProjects ( username ,"","")
+    databases = pd.getDatabases ( username)
     dbs = defaultdict(list)
     for db in databases:
-      proj = pd.getFilteredProjs(openid,"","",db[0]);
+      proj = pd.getFilteredProjs(username,"","",db[0]);
       dbs[db].append(proj)
       
     return render_to_response('profile.html', { 'projs': projects, 'databases': dbs.iteritems() },context_instance=RequestContext(request))
@@ -188,7 +188,7 @@ def get_datasets(request):
         ds_to_delete = Dataset.objects.get(dataset_name=ds)
         
         # Check for projects with that dataset
-        proj = Project.objects.filter(dataset_id=ds_to_delete.id)
+        proj = Project.objects.filter(dataset_id=ds_to_delete.dataset_name)
         if proj:
           messages.error(request, 'Dataset cannot be deleted. PLease delete all projects for this dataset first.')
         else:
@@ -217,7 +217,7 @@ def get_datasets(request):
 
 @login_required(login_url='/ocp/accounts/login/')
 def get_tokens(request):
-  openid = request.user.username
+  username = request.user.username
   pd = ocpcaproj.OCPCAProjectsDB()  
   try:
     if request.method == 'POST':
@@ -257,7 +257,7 @@ def get_tokens(request):
         return redirect(get_tokens)
     else:
       # GET tokens for the specified project
-      openid = request.user.username
+      username = request.user.username
       if "project" in request.session:
         proj = request.session["project"]
         all_tokens = Token.objects.filter(project_id=proj)
@@ -299,7 +299,7 @@ def createproject(request):
         kvengine=form.cleaned_data['kvengine']
         kvserver=form.cleaned_data['kvserver']
         propagate =form.cleaned_data['propagate']
-        openid = request.user.username
+        username = request.user.username
         nocreateoption = request.POST.get('nocreate')
         if nocreateoption =="on":
           nocreate = 1
@@ -315,12 +315,12 @@ def createproject(request):
           pd = ocpcaproj.OCPCAProjectsDB()
 #<<<<<<< HEAD
           pd.newOCPCAProjectDB( project, description, dataset, datatype, resolution, exceptions, host, kvserver, kvengine, propagate, nocreate ) 
-          #pd.newOCPCAProj ( token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate, int(resolution), int(public),kvserver,kvengine ,propogate)
+          #pd.newOCPCAProj ( token, username, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate, int(resolution), int(public),kvserver,kvengine ,propogate)
           return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile')
           
 #=======
-##          pd.newOCPCAProj ( token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate, int(resolution), int(public),kvserver,kvengine ,propogate)
-#          pd.newOCPCAProj ( token, openid, host, project, 'annotation', 'uint32', dataset, dataurl, readonly, exceptions , nocreate, int(resolution), int(public),kvserver,kvengine ,propogate)
+##          pd.newOCPCAProj ( token, username, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate, int(resolution), int(public),kvserver,kvengine ,propogate)
+#          pd.newOCPCAProj ( token, username, host, project, 'annotation', 'uint32', dataset, dataurl, readonly, exceptions , nocreate, int(resolution), int(public),kvserver,kvengine ,propogate)
 #          #pd.insertTokenDescription ( token, description )
 #          return redirect(profile)          
 #>>>>>>> rb-iso
@@ -538,7 +538,7 @@ def restoreproject(request):
         kvengine=form.cleaned_data['kvengine']
         kvserver=form.cleaned_data['kvserver']
         propagate =form.cleaned_data['propagate']
-        openid = request.user.username
+        username = request.user.username
         nocreateoption = request.POST.get('nocreate')
         if nocreateoption =="on":
           nocreate = 1

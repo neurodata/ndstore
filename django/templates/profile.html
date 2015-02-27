@@ -74,14 +74,14 @@
                     <th>Project</th>
                     <th>Datatype</th>
                     <th>Description</th>
-                    <th>Overlay Project</th>
-                    <th>Overlay Server</th>
                     <th>Resolution</th>
                     <th>Exceptions</th>
                     <th>Host</th>
                     <th>KVEngine</th>
                     <th>KVServer</th>
                     <th>Propagate</th>
+                    <th>Overlay Project</th>
+                    <th>Overlay Server</th>
                   </tr>
 		  {% endif %}
 		  {% for proj in value %}
@@ -108,8 +108,6 @@
 		      <td>OTHER</td>
 		      {% endif %}
 		      <td>{{ proj.project_description }}</td>
-		      <td>{{ proj.overlayproject }}</td>
-		      <td>{{ proj.overlayserver }}</td>
 		      <td>{{ proj.resolution }}</td>
 		      
 		      {% if proj.exceptions == 0%}
@@ -138,6 +136,9 @@
 		       {% else %}
 		      <td>PROPAGATED</td>
 		      {% endif %}
+
+		      <td>{{ proj.overlayproject }}</td>
+		      <td>{{ proj.overlayserver }}</td>
 		      
 		     
 		      <td><button class="btn" id="delete" type="submit" name="delete"> <i class ="icon-trash icon-black"></i>Delete Project</button></td>

@@ -18,7 +18,7 @@ from django.contrib.auth.models import User
 from django.conf import settings
 # Create your models here.
 class Dataset ( models.Model):
-    dataset_name = models. CharField(max_length=255, primary_key=True,verbose_name="Name of the Image dataset")    
+    dataset_name = models.CharField(max_length=255, primary_key=True,verbose_name="Name of the Image dataset")    
     ximagesize =  models.IntegerField()
     yimagesize =  models.IntegerField()
     zimagesize =  models.IntegerField()
@@ -28,7 +28,12 @@ class Dataset ( models.Model):
     xvoxelres = models.FloatField(default=1.0)
     yvoxelres = models.FloatField(default=1.0)
     zvoxelres = models.FloatField(default=1.0)
-    scalinglevels = models.IntegerField(default=0)
+
+    SCALING_CHOICES = (
+        (0, 'Z Slices'),
+        (1, 'isotropic'),
+        )
+    scalinglevels = models.IntegerField(default=0, choices=SCALING_CHOICES)
     scalingoption = models.IntegerField(default=0)
     startwindow = models.IntegerField(default=0)
     endwindow = models.IntegerField(default=0)
@@ -71,7 +76,6 @@ class Project ( models.Model):
 
     projecttype = models.CharField(max_length=255,choices=PROJECT_CHOICES,default='image')
     datatype = models.CharField(max_length=255,choices=DATATYPE_CHOICES,default='uint8')
-    #    dataurl  =  models. CharField(max_length=200)
     overlayproject = models.CharField(max_length=255,default="None")
     OVERLAY_SERVER_CHOICES = (
         ('http://openconnecto.me/ocp', 'openconnecto.me'),
@@ -81,6 +85,7 @@ class Project ( models.Model):
         ('http://dsp061.pha.jhu.edu/ocp', 'dsp061'),
         ('http://dsp062.pha.jhu.edu/ocp', 'dsp062'),
         ('http://dsp063.pha.jhu.edu/ocp', 'dsp063'),
+        ('http://localhost:8000', 'Django dev server'),
         
     )
     overlayserver =  models.CharField(max_length=255, choices=OVERLAY_SERVER_CHOICES, default='openconnecto.me')
@@ -139,8 +144,8 @@ class Project ( models.Model):
 
 
 class Token ( models.Model):
-    token_name = models. CharField(max_length=255, primary_key=True)
-    token_description  =  models. CharField(max_length=4096,blank=True)
+    token_name = models.CharField(max_length=255, primary_key=True)
+    token_description  =  models.CharField(max_length=4096,blank=True)
     project  = models.ForeignKey(Project)
     READONLY_CHOICES = (
         (1, 'Yes'),

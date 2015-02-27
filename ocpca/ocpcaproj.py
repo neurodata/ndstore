@@ -410,7 +410,7 @@ class OCPCAProjectsDB:
     """ Load the annotation database information based on the token """
 
     # Lookup the information for the database project based on the token                                                                          
-    sql = "SELECT project_name,project_description, dataset_id,datatype,overlayproject,overlayserver,resolution,exceptions,host,kvengine,kvserver,propagate from {} where project_name = \'{}\'".format(ocpcaprivate.projects, project)
+    sql = "SELECT project_name, project_description, dataset_id, projecttype, datatype, overlayproject, overlayserver, resolution, exceptions, host, kvengine, kvserver, propagate from {} where project_name = \'{}\'".format(ocpcaprivate.projects, project)
 
     with closing(self.conn.cursor()) as cursor:
       try:
@@ -426,7 +426,7 @@ class OCPCAProjectsDB:
       logger.warning ( "Project {} not found.".format( project ))
       raise OCPCAError ( "Project {} not found.".format( project ))
 
-    [project_name, project_description, dataset, datatype, overlayproject, overlayserver, resolution, exceptions, host, kvengine, kvserver, propagate ] = row
+    [project_name, project_description, dataset, projecttype, datatype, overlayproject, overlayserver, resolution, exceptions, host, kvengine, kvserver, propagate ] = row
     
     #todo--not used
     readonly = 0;

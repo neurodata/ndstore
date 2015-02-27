@@ -52,33 +52,6 @@ Create Project Template
       <div class ="col-md-4"></div>
     </div>
 
-     <div class = "row">
-       <div class ="col-md-4"></div>
-       <div class ="col-md-2">
-         <div class="fieldWrapper">
-           {{ form.subject.errors }}
-           <label for="oproject">Overlay Project:</label>
-         </div>
-       </div>
-       <div class ="col-md-2">
-         {{ form.overlayproject }}
-       </div>
-       <div class ="col-md-4"></div>
-     </div>
-
-      <div class = "row">
-       <div class ="col-md-4"></div>
-       <div class ="col-md-2">
-         <div class="fieldWrapper">
-           {{ form.subject.errors }}
-           <label for="overlayserver"> Overlay server</label>
-         </div>
-       </div>
-       <div class ="col-md-2">
-         {{ form.overlayserver }}
-       </div>
-       <div class ="col-md-4"></div>
-     </div>
 
      <div class = "row">
        <div class ="col-md-4"></div>
@@ -94,6 +67,19 @@ Create Project Template
        <div class ="col-md-4"></div>
      </div>
 
+     <div class = "row">
+       <div class ="col-md-4"></div>
+       <div class ="col-md-2">
+         <div class="fieldWrapper">
+           {{ form.subject.errors }}
+           <label for="projecttype">Project Type:</label>
+             </div>
+           </div>
+           <div class ="col-md-2">
+             {{ form.projecttype }}
+           </div>
+           <div class ="col-md-4"></div>
+     </div>
      <div class = "row">
        <div class ="col-md-4"></div>
        <div class ="col-md-2">
@@ -230,6 +216,34 @@ Create Project Template
        </div>
        <div class ="col-md-2">
          {{ form.propagate }}
+       </div>
+       <div class ="col-md-4"></div>
+     </div>
+
+     <div class = "row">
+       <div class ="col-md-4"></div>
+       <div class ="col-md-2">
+         <div class="fieldWrapper">
+           {{ form.subject.errors }}
+           <label for="oproject">Overlay:</label>
+         </div>
+       </div>
+       <div class ="col-md-2">
+         {{ form.overlayproject }}
+       </div>
+       <div class ="col-md-4"></div>
+     </div>
+
+      <div class = "row">
+       <div class ="col-md-4"></div>
+       <div class ="col-md-2">
+         <div class="fieldWrapper">
+           {{ form.subject.errors }}
+           <label for="overlayserver"> Overlay server</label>
+         </div>
+       </div>
+       <div class ="col-md-2">
+         {{ form.overlayserver }}
        </div>
        <div class ="col-md-4"></div>
      </div>
