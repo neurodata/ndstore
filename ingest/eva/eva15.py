@@ -60,7 +60,7 @@ class CatmaidIngest:
       # Ingest in database aligned slabs in the z dimension
       for sl in range( startslice, endslice, batchsz ):
           
-        slab = np.zeros ( [zcubedim, yimagesz, ximagesz], dtype=np.uint16 )
+        slab = np.zeros ( [zcubedim, yimagesz, ximagesz], dtype=np.uint8 )
 
         # over each slice
         for b in range( batchsz ):
@@ -68,15 +68,14 @@ class CatmaidIngest:
           #if we are at the end of the space, quit
           if ( sl + b <= endslice ):
               
-            filename = '{}proj_1_{:0>5}.tif'.format(self.path, sl+b )
+            filename = '{}xbrain_dyer15_slice{:0>4}.tif'.format(self.path, sl+b )
             print filename
             try:
-              import pdb; pdb.set_trace()
               imgdata = cv2.imread(filename,-1)
               slab [b,:,:] = imgdata
             except IOError, e:
               print "Failed to open file %s" % (e)
-              img = np.zeros((yimagesz,ximagesz), dtype=np.uint16)
+              img = np.zeros((yimagesz,ximagesz), dtype=np.uint8)
               slab [b,:,:] = img
 
 
@@ -84,7 +83,7 @@ class CatmaidIngest:
           for x in range ( 0, ximagesz, xcubedim ):
 
             zidx = ocplib.XYZMorton ( [ x/xcubedim, y/ycubedim, (sl-startslice)/zcubedim] )
-            cubedata = np.zeros ( [zcubedim, ycubedim, xcubedim], dtype=np.uint16 )
+            cubedata = np.zeros ( [zcubedim, ycubedim, xcubedim], dtype=np.uint8 )
 
             xmin = x 
             ymin = y 
@@ -99,7 +98,7 @@ class CatmaidIngest:
             cube.data = cubedata
             if np.count_nonzero ( cube.data ) != 0:
               print zidx, ocplib.MortonXYZ(zidx)
-              #db.putCube ( zidx, self.resolution, cube )
+              db.putCube ( zidx, self.resolution, cube )
           print "Commiting at x=%s, y=%s, z=%s" % (x,y,sl)
         db.conn.commit()
 
