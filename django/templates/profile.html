@@ -36,7 +36,7 @@
 	  Search By:
 	  <select name="filteroption">
 	    <option value="project">Project</option>
-	    <option value="datatype">Datatype</option>
+	    <option value="projecttype">Type</option>
 	  </select>
 	  
 	  <input type="text"  name="filtervalue" placeholder="Enter project name">
@@ -72,6 +72,7 @@
 		  {%if value %}
                   <tr class ="error">
                     <th>Project</th>
+                    <th>Project Type</th>
                     <th>Datatype</th>
                     <th>Description</th>
                     <th>Resolution</th>
@@ -88,25 +89,9 @@
 		  		  		  
 		  <form method="post" action = "">
 		    <tr>
-		      <input type="hidden" name="projname" value={{proj.project_name}}>
-		      <td style="width: 15%;">{{ proj.project_name }}</td>
-		      {% if proj.datatype == 1 %}
-		      <td>IMAGE</td>
-		      {% elif proj.datatype == 2%}
-		      <td>ANNOTATION</td>
-		      {% elif proj.datatype == 3%}
-		      <td>CHANNEL 8bit</td>
-		      {% elif proj.datatype == 4%}
-		      <td>CHANNEL 16bit</td>
-		      {% elif proj.datatype == 5%}
-                      <td>PROBMAP 32bit</td>
-		      {% elif proj.datatype == 6%}
-                      <td>BITMASK</td>
-		      {% elif proj.datatype == 7%}
-                      <td>ANNOTATION 64bit</td>
-		      {% else %}
-		      <td>OTHER</td>
-		      {% endif %}
+		      <td>{{ proj.project_name }}</td>
+		      <td>{{ proj.projecttype }}</td>
+		      <td>{{ proj.datatype }}</td>
 		      <td>{{ proj.project_description }}</td>
 		      <td>{{ proj.resolution }}</td>
 		      

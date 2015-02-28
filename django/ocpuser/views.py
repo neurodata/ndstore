@@ -67,7 +67,7 @@ def profile(request):
         pd = ocpcaproj.OCPCAProjectsDB()
         all_datasets= Dataset.objects.all()
         dbs = defaultdict(list)
-        
+
         for db in all_datasets:
           if filteroption == 'project':
             proj = Project.objects.filter(dataset_id=db.dataset_name,project_name=filtervalue)

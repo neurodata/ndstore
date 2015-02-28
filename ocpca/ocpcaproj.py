@@ -431,7 +431,7 @@ class OCPCAProjectsDB:
     #todo--not used
     readonly = 0;
     # Create a project object                                                                                                                     
-    proj = OCPCAProject ("", project_name, host, project_description, dataset, projecttype, datatype, overlayproject, overlayserver, resolution, readonly, exceptions, host, kvengine, kvserver, propagate )
+    proj = OCPCAProject ("", project_name, host, project_description, projecttype, datatype, dataset, overlayproject, overlayserver, readonly, exceptions, resolution, kvengine, kvserver, propagate )
      # Lookup the information for the database project based on the token                                                                                             
     proj.datasetcfg = self.loadDatasetConfig ( dataset )
 
