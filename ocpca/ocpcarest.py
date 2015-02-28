@@ -79,7 +79,7 @@ def cutout ( imageargs, proj, db, channels=None ):
 
   # Perform the cutout
   cube = db.cutout ( corner, dim, resolution, channels, zscaling )
-
+  
   print np.unique (cube.data)
 
   return cube
@@ -348,7 +348,8 @@ def imgSlice ( service, imageargs, proj, db ):
   if endwindow != 0:
     window = (startwindow, endwindow)
     windowCutout ( cb.data, window)
-
+    cb.data = np.uint8(cb.data)
+    
   return cb 
 
 
