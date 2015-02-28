@@ -1146,7 +1146,7 @@ class OCPCADB:
     """Extract a cube of arbitrary size.  Need not be aligned."""
    
     print "in db.cutout r,c,d ", resolution, corner, dim
-
+    
     # alter query if  (ocpcaproj)._resolution is > resolution
     # if cutout is below resolution, get a smaller cube and scaleup
     if self.annoproj.getDBType() in ocpcaproj.ANNOTATION_DATASETS and self.annoproj.getResolution() > resolution:
