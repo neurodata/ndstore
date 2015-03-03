@@ -349,7 +349,7 @@ class OCPCAProjectsDB:
   #
   # Load the ocpca databse information based on the token
   #
-  def loadProject ( self, token ):
+  def loadToken ( self, token ):
     """ Load the annotation database information based on the token """
 
 #RBTODO what's up here???
@@ -402,8 +402,37 @@ class OCPCAProjectsDB:
 
     return proj
 
-  #                                                                                                                                          
-  # Load the ocpca databse information based on the token                                                                                        
+  #
+  # Load the ocpca databse information based on the project
+  #
+  def loadProject ( self, project ):
+    """ Load the annotation database information based on the project """
+
+    sql = "SELECT project_name, project_description, dataset_id, projecttype, datatype, overlayproject, overlayserver, resolution ,exceptions, host, kvengine, kvserver, propagate from {} where project_name = \'{}\'".format(ocpcaprivate.projects, project) 
+
+    with closing(self.conn.cursor()) as cursor:
+      try:
+        cursor.execute ( sql )
+        # get the project information                                                                                                                                                 
+        row= cursor.fetchone()
+      except MySQLdb.Error, e:
+        logger.error ("Could not query ocpca projects database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+        raise OCPCAError ("Could not query ocpca projects database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+        
+        # if the project is not found.  error                                                                                                                                             
+    if ( row == None ):
+      logger.warning ( "Project token {} not found.".format( token ))
+      raise OCPCAError ( "Project token {} not found.".format( token ))
+
+    [ project_name, project_description, dataset, projecttype, datatype, overlayproject, overlayserver, resolution ,exceptions, host, kvengine, kvserver, propagate ] = row 
+
+    # Create a project object
+    proj = OCPCAProject ( "", project_name.strip(), host, project_description, projecttype, datatype, dataset, overlayproject, overlayserver, 0, exceptions, resolution, kvengine, kvserver, propagate ) 
+
+    proj.datasetcfg = self.loadDatasetConfig ( dataset )
+
+    return proj
+
   #
   def loadProjectDB ( self, project ):
     """ Load the annotation database information based on the token """
@@ -507,152 +536,133 @@ class OCPCAProjectsDB:
   #
   def newOCPCAProj ( self, token, token_description, userid, dbhost, project, projectdescription, projecttype, datatype, dataset, overlayproject, overlayserver, readonly, exceptions, nocreate, resolution, public, kvserver, kvengine, propagate ):
     """ Create a new ocpca project """
+    pass
     
-    datasetcfg = self.loadDatasetConfig ( dataset )
-    self.newProject(project, projectdescription, userid, dataset, projecttype, datatype, overlayproject, overlayserver, resolution, exceptions, dbhost, kvengine, kvserver, propagate)
-    self.newToken(token, token_description, project, readonly, public)
+#    self.newProject(project, projectdescription, userid, dataset, projecttype, datatype, overlayproject, overlayserver, resolution, exceptions, dbhost, kvengine, kvserver, propagate)
+#    self.newToken(token, token_description, project, readonly, public)
+#
 
-    proj = self.loadProject ( token )
+  def newOCPCADB ( self, project_name ):
 
-    # Exception block around database creation
+    proj = self.loadProject ( project_name )
+    datasetcfg = self.loadDatasetConfig ( proj.getDataset() )
+
+    with closing(self.conn.cursor()) as cursor:
+      try:
+        # Make the database and associated ocpca tables
+        sql = "CREATE DATABASE {}".format( project_name )
+     
+        cursor.execute ( sql )
+        self.conn.commit()
+      except MySQLdb.Error, e:
+        logger.error ("Failed to create database for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+        raise OCPCAError ("Failed to create database for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    # Connect to the new database
+
+    newconn = MySQLdb.connect (host = proj.getDBHost(), user = ocpcaprivate.dbuser, passwd = ocpcaprivate.dbpasswd, db = project_name )
+    newcursor = newconn.cursor()
+
     try:
 
-      # Make the database unless specified
-      if not nocreate: 
+      if proj.getKVEngine() == 'MySQL':
 
-        with closing(self.conn.cursor()) as cursor:
-          try:
-            # Make the database and associated ocpca tables
-            sql = "CREATE DATABASE {}".format( project )
-         
-            cursor.execute ( sql )
-            self.conn.commit()
-          except MySQLdb.Error, e:
-            logger.error ("Failed to create database for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-            raise OCPCAError ("Failed to create database for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+        # tables for annotations and images
+        if proj.getProjectType() not in ['channel','timeseries']:
 
+          for i in datasetcfg.resolutions: 
+            newcursor.execute ( "CREATE TABLE res{} ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(i) )
+            #newcursor.execute ( "CREATE TABLE raw{} ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(i) )
+          newconn.commit()
 
-        # Connect to the new database
+        elif proj.getProjectType() == 'timeseries':
 
-        newconn = MySQLdb.connect (host = dbhost, user = ocpcaprivate.dbuser, passwd = ocpcaprivate.dbpasswd, db = project )
-        newcursor = newconn.cursor()
+          for i in datasetcfg.resolutions: 
+            newcursor.execute ( "CREATE TABLE res{} ( zindex BIGINT, timestamp INT, cube LONGBLOB, PRIMARY KEY(zindex,timestamp))".format(i) )
+            #newcursor.execute ( "CREATE TABLE raw{} ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(i) )
+            #newcursor.execute ( "CREATE TABLE timeseries%s ( z INT, y INT, x INT, t INT,  series LONGBLOB, PRIMARY KEY (z,y,x,t))"%i) 
+          newconn.commit()
 
+        # tables for channel dbs
+        elif proj.getProjectType() == 'timeseries':
+          newcursor.execute ( 'CREATE TABLE channels ( chanstr VARCHAR(255), chanid INT, PRIMARY KEY(chanstr))')
+          for i in datasetcfg.resolutions: 
+            newcursor.execute ( "CREATE TABLE res{} ( channel INT, zindex BIGINT, cube LONGBLOB, PRIMARY KEY(channel,zindex) )".format(i) )
+          newconn.commit()
+
+      elif proj.getKVEngine() == 'Riak':
+
+        rcli = riak.RiakClient(host=proj.getKVServer(), pb_port=8087, protocol='pbc')
+        bucket = rcli.bucket_type("ocp{}".format(proj.getProjectType())).bucket(proj.getDBName())
+        bucket.set_property('allow_mult',False)
+
+      elif proj.getKVEngine() == 'Cassandra':
+
+        cluster = Cluster( [proj.getKVServer()] )
         try:
+          session = cluster.connect()
 
-          if proj.getKVEngine() == 'MySQL':
-
-            # tables for annotations and images
-            if projecttype not in ['channel','timeseries']:
-
-              for i in datasetcfg.resolutions: 
-                newcursor.execute ( "CREATE TABLE res{} ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(i) )
-                #newcursor.execute ( "CREATE TABLE raw{} ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(i) )
-              newconn.commit()
-
-            elif projecttype == 'timeseries':
-
-              for i in datasetcfg.resolutions: 
-                newcursor.execute ( "CREATE TABLE res{} ( zindex BIGINT, timestamp INT, cube LONGBLOB, PRIMARY KEY(zindex,timestamp))".format(i) )
-                #newcursor.execute ( "CREATE TABLE raw{} ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(i) )
-                #newcursor.execute ( "CREATE TABLE timeseries%s ( z INT, y INT, x INT, t INT,  series LONGBLOB, PRIMARY KEY (z,y,x,t))"%i) 
-              newconn.commit()
-
-            # tables for channel dbs
-            elif projecttype == 'timeseries':
-              newcursor.execute ( 'CREATE TABLE channels ( chanstr VARCHAR(255), chanid INT, PRIMARY KEY(chanstr))')
-              for i in datasetcfg.resolutions: 
-                newcursor.execute ( "CREATE TABLE res{} ( channel INT, zindex BIGINT, cube LONGBLOB, PRIMARY KEY(channel,zindex) )".format(i) )
-              newconn.commit()
-
-          elif proj.getKVEngine() == 'Riak':
-
-            rcli = riak.RiakClient(host=proj.getKVServer(), pb_port=8087, protocol='pbc')
-            bucket = rcli.bucket_type("ocp{}".format(proj.getProjectType())).bucket(proj.getDBName())
-            bucket.set_property('allow_mult',False)
-
-          elif proj.getKVEngine() == 'Cassandra':
-
-            cluster = Cluster( [proj.getKVServer()] )
-            try:
-              session = cluster.connect()
-
-              session.execute ("CREATE KEYSPACE {} WITH REPLICATION = {{ 'class' : 'SimpleStrategy', 'replication_factor' : 1 }}".format(proj.getDBName()), timeout=30)
-              session.execute ( "USE {}".format(proj.getDBName()) )
-              session.execute ( "CREATE table cuboids ( resolution int, zidx bigint, cuboid text, PRIMARY KEY ( resolution, zidx ) )", timeout=30)
-            except Exception, e:
-              raise
-            finally:
-              cluster.shutdown()
-            
-          else:
-            logging.error ("Unknown KV Engine requested: %s" % "RBTODO get name")
-            raise OCPCAError ("Unknown KV Engine requested: %s" % "RBTODO get name")
-
-
-          # tables specific to annotation projects
-          if projecttype == 'annotation': 
-
-            newcursor.execute("CREATE TABLE ids ( id BIGINT PRIMARY KEY)")
-
-            # And the RAMON objects
-            newcursor.execute ( "CREATE TABLE annotations (annoid BIGINT PRIMARY KEY, type INT, confidence FLOAT, status INT)")
-            newcursor.execute ( "CREATE TABLE seeds (annoid BIGINT PRIMARY KEY, parentid BIGINT, sourceid BIGINT, cube_location INT, positionx INT, positiony INT, positionz INT)")
-            newcursor.execute ( "CREATE TABLE synapses (annoid BIGINT PRIMARY KEY, synapse_type INT, weight FLOAT)")
-            newcursor.execute ( "CREATE TABLE segments (annoid BIGINT PRIMARY KEY, segmentclass INT, parentseed INT, neuron INT)")
-            newcursor.execute ( "CREATE TABLE organelles (annoid BIGINT PRIMARY KEY, organelleclass INT, parentseed INT, centroidx INT, centroidy INT, centroidz INT)")
-            newcursor.execute ( "CREATE TABLE kvpairs ( annoid BIGINT, kv_key VARCHAR(255), kv_value VARCHAR(20000), PRIMARY KEY ( annoid, kv_key ))")
-
-            newconn.commit()
-
-            if proj.getKVEngine() == 'MySQL':
-              for i in datasetcfg.resolutions: 
-                if exceptions:
-                  newcursor.execute ( "CREATE TABLE exc%s ( zindex BIGINT, id BIGINT, exlist LONGBLOB, PRIMARY KEY ( zindex, id))" % i )
-                newcursor.execute ( "CREATE TABLE idx%s ( annid BIGINT PRIMARY KEY, cube LONGBLOB )" % i )
-
-              newconn.commit()
-
-            elif proj.getKVEngine() == 'Riak':
-              pass
-
-            elif proj.getKVEngine() == 'Cassandra':
-
-              cluster = Cluster( [proj.getKVServer()] )
-              try:
-                session = cluster.connect()
-                session.execute ( "USE {}".format(proj.getDBName()) )
-                session.execute( "CREATE table exceptions ( resolution int, zidx bigint, annoid bigint, exceptions text, PRIMARY KEY ( resolution, zidx, annoid ) )", timeout=30)
-                session.execute("CREATE table indexes ( resolution int, annoid bigint, cuboids text, PRIMARY KEY ( resolution, annoid ) )", timeout=30)
-              except Exception, e:
-                raise
-              finally:
-                cluster.shutdown()
-
-        except MySQLdb.Error, e:
-          logging.error ("Failed to create tables for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-          raise OCPCAError ("Failed to create tables for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+          session.execute ("CREATE KEYSPACE {} WITH REPLICATION = {{ 'class' : 'SimpleStrategy', 'replication_factor' : 1 }}".format(proj.getDBName()), timeout=30)
+          session.execute ( "USE {}".format(proj.getDBName()) )
+          session.execute ( "CREATE table cuboids ( resolution int, zidx bigint, cuboid text, PRIMARY KEY ( resolution, zidx ) )", timeout=30)
         except Exception, e:
-          raise 
-        finally:
-          newcursor.close()
-          newconn.close()
-
-    # Error, undo the projects table entry
-    except:
-      sql = "DELETE FROM {0} WHERE token=\'{1}\'".format (ocpcaprivate.projects, token)
-
-      logger.info ( "Could not create project database.  Undoing projects insert. Project %s. SQL=%s" % ( project, sql ))
-
-      with closing(self.conn.cursor()) as cursor:
-        try:
-          cursor.execute ( sql )
-          self.conn.commit()
-        except MySQLdb.Error, e:
-          logger.error ("Could not undo insert into ocpca projects database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-          logger.error ("Check project database for project not linked to database.")
           raise
+        finally:
+          cluster.shutdown()
+        
+      else:
+        logging.error ("Unknown KV Engine requested: %s" % "RBTODO get name")
+        raise OCPCAError ("Unknown KV Engine requested: %s" % "RBTODO get name")
 
-        # RBTODO drop tables here?
+
+      # tables specific to annotation projects
+      if proj.getProjectType() == 'annotation': 
+
+        newcursor.execute("CREATE TABLE ids ( id BIGINT PRIMARY KEY)")
+
+        # And the RAMON objects
+        newcursor.execute ( "CREATE TABLE annotations (annoid BIGINT PRIMARY KEY, type INT, confidence FLOAT, status INT)")
+        newcursor.execute ( "CREATE TABLE seeds (annoid BIGINT PRIMARY KEY, parentid BIGINT, sourceid BIGINT, cube_location INT, positionx INT, positiony INT, positionz INT)")
+        newcursor.execute ( "CREATE TABLE synapses (annoid BIGINT PRIMARY KEY, synapse_type INT, weight FLOAT)")
+        newcursor.execute ( "CREATE TABLE segments (annoid BIGINT PRIMARY KEY, segmentclass INT, parentseed INT, neuron INT)")
+        newcursor.execute ( "CREATE TABLE organelles (annoid BIGINT PRIMARY KEY, organelleclass INT, parentseed INT, centroidx INT, centroidy INT, centroidz INT)")
+        newcursor.execute ( "CREATE TABLE kvpairs ( annoid BIGINT, kv_key VARCHAR(255), kv_value VARCHAR(20000), PRIMARY KEY ( annoid, kv_key ))")
+
+        newconn.commit()
+
+        if proj.getKVEngine() == 'MySQL':
+          for i in datasetcfg.resolutions: 
+            if proj.getExceptions():
+              newcursor.execute ( "CREATE TABLE exc%s ( zindex BIGINT, id BIGINT, exlist LONGBLOB, PRIMARY KEY ( zindex, id))" % i )
+            newcursor.execute ( "CREATE TABLE idx%s ( annid BIGINT PRIMARY KEY, cube LONGBLOB )" % i )
+
+          newconn.commit()
+
+        elif proj.getKVEngine() == 'Riak':
+          pass
+
+        elif proj.getKVEngine() == 'Cassandra':
+
+          cluster = Cluster( [proj.getKVServer()] )
+          try:
+            session = cluster.connect()
+            session.execute ( "USE {}".format(proj.getDBName()) )
+            session.execute( "CREATE table exceptions ( resolution int, zidx bigint, annoid bigint, exceptions text, PRIMARY KEY ( resolution, zidx, annoid ) )", timeout=30)
+            session.execute("CREATE table indexes ( resolution int, annoid bigint, cuboids text, PRIMARY KEY ( resolution, annoid ) )", timeout=30)
+          except Exception, e:
+            raise
+          finally:
+            cluster.shutdown()
+
+    except MySQLdb.Error, e:
+      logging.error ("Failed to create tables for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ("Failed to create tables for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+    except Exception, e:
+      raise 
+    finally:
+      newcursor.close()
+      newconn.close()
+
 
   #
   # Create a new project database (annotation or data)
@@ -807,58 +817,10 @@ class OCPCAProjectsDB:
         # RBTODO drop tables here?
 
 
-  def deleteOCPCAToken ( self, token ):
-    """ Delete an existing ocpca project """
-
-    sql = "DELETE FROM {} WHERE token_name=\'{}\'".format( ocpcaprivate.tokens, token ) 
-
-    with closing(self.conn.cursor()) as cursor:
-      try:
-        cursor.execute ( sql )
-      except MySQLdb.Error, e:
-        conn.rollback()
-        logging.error ("Failed to remove project from projects tables %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        raise OCPCAError ("Failed to remove project from projects tables %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-      self.conn.commit()
-
-
-  def deleteOCPCAProj ( self, project ):
-    """ Delete an existing ocpca project """
-
-    sql = "DELETE FROM {} WHERE project_name=\'{}\'".format( ocpcaprivate.projects, project ) 
-
-    with closing(self.conn.cursor()) as cursor:
-      try:
-        cursor.execute ( sql )
-      except MySQLdb.Error, e:
-        conn.rollback()
-        logging.error ("Failed to remove project from projects tables %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        raise OCPCAError ("Failed to remove project from projects tables %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-      self.conn.commit()
-
-
-  def deleteOCPCADB ( self, token ):
-
-    # load the project
-    try:
-
-      proj = self.loadProject ( token )
-      # delete line from projects table and tokens table
-      self.deleteOCPCAToken ( token )
-      self.deleteOCPCAProj ( proj.getDBName() )
-
-    except Exception, e:
-      logger.warning ("Failed to delete project {}".format(e))
-      raise
-      
-
-    #  try to delete the database anyway
-    #  Sometimes weird crashes can get stuff out of sync
+  def deleteOCPCADB ( self, database_name ):
 
     # delete the database
-    sql = "DROP DATABASE " + proj.getDBName()
+    sql = "DROP DATABASE " + database_name
 
     with closing(self.conn.cursor()) as cursor:
       try:
@@ -881,7 +843,6 @@ class OCPCAProjectsDB:
         session.execute ( "DROP KEYSPACE {}".format(proj.getDBName()), timeout=30 )
       finally:
         cluster.shutdown()
-
 
     elif proj.getKVEngine() == 'Riak':
 
@@ -911,6 +872,7 @@ class OCPCAProjectsDB:
 
   def loadDatasetConfig ( self, dataset ):
     """Query the database for the dataset information and build a db configuration"""
+
     sql = "SELECT dataset_name, ximagesize, yimagesize, zimagesize, xoffset, yoffset, zoffset, xvoxelres, yvoxelres, zvoxelres, scalinglevels, scalingoption, startwindow, endwindow, starttime, endtime from {} where dataset_name = \'{}\'".format( ocpcaprivate.datasets, dataset )
 
     with closing(self.conn.cursor()) as cursor:
@@ -1006,65 +968,22 @@ class OCPCAProjectsDB:
 
       self.conn.commit()
 
- 
-
 
   def deleteOCPCADatabase ( self, project ):
-    #Used for the project management interface
-    # Check if there are any tokens for this database
-    sql = "SELECT * FROM {} where project_name = \'{}\'".format(ocpcaprivate.projects, project)
+    """Just delete the database.  All projects data deleted in django model."""
 
-    with closing(self.conn.cursor()) as cursor:
-      try:
-        cursor.execute ( sql )
-      except MySQLdb.Error, e:
-        conn.rollback()
-        logging.error ("Failed to query projects for database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        raise OCPCAError ("Failed to query projects for database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      self.conn.commit()
-      row = cursor.fetchone()
-      
-      if (row == None):
-        # delete the database
-        sql = "DROP DATABASE " + project
+    # delete the database
+    sql = "DROP DATABASE " + project
         
-        try:
-          cursor.execute ( sql )
-        except MySQLdb.Error, e:
-          conn.rollback()
-          logging.error ("Failed to drop project database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-          raise OCPCAError ("Failed to drop project database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        self.conn.commit()
-      else:
-        raise OCPCAError (" Failed to drop project database")
-
-
-  def deleteDataset ( self, dataset ):
-    #Used for the project management interface
-    #PYTODO - Check about function
-    # Check if there are any tokens for this dataset    
-    sql = "SELECT * FROM {} WHERE dataset_name=\'{}\'".format( ocpcaprivate.projects, dataset )
-
     with closing(self.conn.cursor()) as cursor:
       try:
         cursor.execute ( sql )
       except MySQLdb.Error, e:
-        conn.rollback()
-        logging.error ("Failed to query projects for dataset %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        raise OCPCAError ("Failed to query projects for dataset %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+        self.conn.rollback()
+        logging.error ("Failed to drop project database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+        raise OCPCAError ("Failed to drop project database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       self.conn.commit()
-      row = cursor.fetchone()
-      if (row == None):
-        sql = "DELETE FROM {0} WHERE dataset_name=\'{1}\'".format (ocpcaprivate.datasets,dataset)
-        try:
-          cursor.execute ( sql )
-        except MySQLdb.Error, e:
-          conn.rollback()
-          logging.error ("Failed to delete dataset %d : %s. sql=%s" % (e.args[0], e.args[1], sql))
-          raise OCPCAError ("Failed to delete dataset %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        self.conn.commit()
-      else:
-        raise OCPCAError ("Tokens still exists. Failed to drop project database")
+
 
   #
   #  getPublicTokens
