@@ -49,7 +49,6 @@ DTYPE_uint64 = [ 'rgb64' ]
 DTYPE_float32 = [ 'probability' ]
 OCP_dtypetonp = {'uint8':np.uint8,'uint16':np.uint16,'uint32':np.uint32,'rgb32':np.uint32,'rgb64':np.uint64,'probability':np.float32}
 
-
 # Propagated Values
 PROPAGATED = 2
 UNDER_PROPAGATION = 1
@@ -331,7 +330,7 @@ class OCPCADataset:
   #  Return the image size
   #
   def imageSize ( self, resolution ):
-    return  [ self.imagesz [resolution], self.slicerange, self.timerange ]
+    return  [ self.imagesz [resolution], self.timerange ]
 
 
 class OCPCAProjectsDB:
@@ -470,22 +469,10 @@ class OCPCAProjectsDB:
       #                                                                                                                                                                                                  
   def newToken ( self, token_name, token_description, project, readonly, public ):
     """ Create a new ocpca Token """
-#=======
-# #
-# # Create a new project (annotation or data)
-# #
-# def newOCPCAProj ( self, token, openid, dbhost, project, projecttype, datatype, dataset, dataurl, readonly, exceptions, nocreate, resolution, public, kvserver, kvengine, propagate ):
-#   """ Create a new ocpca project """
-#>>>>>> rb-iso
 
     sql = "INSERT INTO {0} (token_name, token_description, project_id, readonly, public) VALUES (\'{1}\',\'{2}\',\'{3}\',{4},{5})".format (ocpcaprivate.tokens, token_name, token_description, project, readonly, public )
 
-#<<<<<< HEAD
     logger.info ( "Creating new Token. Name %s. SQL=%s" % ( token_name, sql ))
-#======
-#   sql = "INSERT INTO {0} (token, openid, host, project, projecttype, datatype, dataset, dataurl, readonly, exceptions, resolution, public, kvserver, kvengine, propagate) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',\'{5}\',\'{6}\',\'{7}\',\'{8}\',\'{9}\',\'{10}\',\'{11}\',\'{12}\',\'{13}\',\'{14}\',\'{15}\')".format (\
-#      ocpcaprivate.projects, token, openid, dbhost, project, projecttype, datatype, dataset, dataurl, int(readonly), int(exceptions), resolution, int(public), kvserver, kvengine, int(propagate) )
-#>>>>>> rb-iso
 
     with closing(self.conn.cursor()) as cursor:
       try:

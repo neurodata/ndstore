@@ -25,12 +25,16 @@ from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.template import Context
 from collections import defaultdict
 from django.contrib import messages
+from django.contrib.auth.models import User
+from django.conf import settings
+
 import ocpcaprivate
 import ocpcarest
 import ocpcaproj
 import string
 import random
 import MySQLdb
+
 from models import Project
 from models import Dataset
 from models import Token
@@ -56,11 +60,12 @@ def default(request):
 ''' Little welcome message'''
 @login_required(login_url='/ocp/accounts/login/')
 def profile(request):
+
   try:
     if request.method == 'POST':
       if 'filter' in request.POST:
         #FILTER PROJECTS BASED ON INPUT VALUE
-        username = request.user.username
+        username = request.user.userid
         filteroption = request.POST.get('filteroption')
         filtervalue = (request.POST.get('filtervalue')).strip()
         
@@ -88,7 +93,7 @@ def profile(request):
       elif 'delete' in request.POST:
         pd = ocpcaproj.OCPCAProjectsDB()
         username = request.user.username
-        project_to_delete = (request.POST.get('projname')).strip()
+        project_to_delete = (request.POST.get('project_name')).strip()
                 
         reftokens = Token.objects.filter(project_id=project_to_delete)
         if reftokens:
@@ -112,12 +117,12 @@ def profile(request):
         return HttpResponse(ocpcarest.projInfo(token), content_type="product/hdf5" )
       
       elif 'update' in request.POST:
-        project_to_update =(request.POST.get('projname')).strip() 
+        project_to_update =(request.POST.get('project_name')).strip() 
         request.session["project_name"] = project_to_update
         return redirect(updateproject)
       
       elif 'tokens' in request.POST:
-        projname=(request.POST.get('projname')).strip()
+        projname=(request.POST.get('project_name')).strip()
         request.session["project"] = projname
         return redirect(get_tokens)
 
@@ -127,7 +132,7 @@ def profile(request):
           os.mkdir( path, 0755 )
         # Get the database information
         pd = ocpcaproj.OCPCAProjectsDB()
-        db = (request.POST.get('projname')).strip()
+        db = (request.POST.get('project_name')).strip()
         ofile = path +'/'+ db +'.sql'
         outputfile = open(ofile, 'w')
         dbuser =ocpcaprivate.dbuser
@@ -274,61 +279,18 @@ def get_tokens(request):
     return render_to_response('datasets.html', { 'dts': datasets },context_instance=RequestContext(request))
 
 
-
-
-
 @login_required(login_url='/ocp/accounts/login/')
 def createproject(request):
 
-# RBTODO update for the new schame
-  
-  #user= get_user_model()
   if request.method == 'POST':
-    if 'CreateProject' in request.POST:
+    if 'createproject' in request.POST:
       form = CreateProjectForm(request.POST)
       if form.is_valid():
-        project = form.cleaned_data['project_name']
-        description = form.cleaned_data['project_description']        
-        dataset = form.cleaned_data['dataset']
-        datatype = form.cleaned_data['datatype']
-        overlayproject = form.cleaned_data['overlayproject']
-        overlayserver = form.cleaned_data['overlayserver']
-        resolution = form.cleaned_data['resolution']
-        exceptions = form.cleaned_data['exceptions']        
-        host = form.cleaned_data['host']        
-        kvengine=form.cleaned_data['kvengine']
-        kvserver=form.cleaned_data['kvserver']
-        propagate =form.cleaned_data['propagate']
-        username = request.user.username
-        nocreateoption = request.POST.get('nocreate')
-        if nocreateoption =="on":
-          nocreate = 1
-        else:
-          nocreate = 0
-        new_project= form.save(commit=False)
-        new_project.user = request.user
+        new_project=form.save(commit=False)
+        new_project.user_id=request.user.id
         new_project.save()
-        
-# RBTODO fix this
-        # Get database info                
-        try:
-          pd = ocpcaproj.OCPCAProjectsDB()
-#<<<<<<< HEAD
-          pd.newOCPCAProjectDB( project, description, dataset, datatype, resolution, exceptions, host, kvserver, kvengine, propagate, nocreate ) 
-          #pd.newOCPCAProj ( token, username, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate, int(resolution), int(public),kvserver,kvengine ,propogate)
-          return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile')
-          
-#=======
-##          pd.newOCPCAProj ( token, username, host, project, datatype, dataset, dataurl, readonly, exceptions , nocreate, int(resolution), int(public),kvserver,kvengine ,propogate)
-#          pd.newOCPCAProj ( token, username, host, project, 'annotation', 'uint32', dataset, dataurl, readonly, exceptions , nocreate, int(resolution), int(public),kvserver,kvengine ,propogate)
-#          #pd.insertTokenDescription ( token, description )
-#          return redirect(profile)          
-#>>>>>>> rb-iso
-        except OCPCAError, e:
-          messages.error(request, e.value)
-          return redirect(profile)          
+        return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile/')
       else:
-        #Invalid Form
         context = {'form': form}
         print form.errors
         return render_to_response('createproject.html',context,context_instance=RequestContext(request))
@@ -336,14 +298,14 @@ def createproject(request):
       #default
       return redirect(profile)
   else:
-    '''Show the Create projects form'''
-    #randtoken = ''.join(random.choice(string.ascii_uppercase + string.digits + string.ascii_lowercase) for x in range(64))
+    '''Show the Create Project form'''
     form = CreateProjectForm()
     context = {'form': form}
     return render_to_response('createproject.html',context,context_instance=RequestContext(request))
       
 @login_required(login_url='/ocp/accounts/login/')
 def createdataset(request):
+
   if request.method == 'POST':
     if 'createdataset' in request.POST:
       form = CreateDatasetForm(request.POST)
@@ -363,8 +325,10 @@ def createdataset(request):
     context = {'form': form}
     return render_to_response('createdataset.html',context,context_instance=RequestContext(request))
 
+
 @login_required(login_url='/ocp/accounts/login/')
 def updatedataset(request):
+
   # Get the dataset to update
   ds = request.session["dataset_name"]
   if request.method == 'POST':
@@ -390,19 +354,24 @@ def updatedataset(request):
       ds = request.session["dataset_name"]
     else:
       ds = ""
-    ds_to_update = Dataset.objects.select_for_update().filter(dataset_name=ds)
+    ds_to_update = Dataset.objects.filter(dataset_name=ds)
     data = {
       'dataset_name': ds_to_update[0].dataset_name,
       'ximagesize':ds_to_update[0].ximagesize,
       'yimagesize':ds_to_update[0].yimagesize,
-      'startslice':ds_to_update[0].startslice,
-      'endslice':ds_to_update[0].endslice,
+      'zimagesize':ds_to_update[0].zimagesize,
+      'xoffset':ds_to_update[0].xoffset,
+      'yoffset':ds_to_update[0].yoffset,
+      'zoffset':ds_to_update[0].zoffset,
+      'xvoxelres':ds_to_update[0].xvoxelres,
+      'yvoxelres':ds_to_update[0].yvoxelres,
+      'zvoxelres':ds_to_update[0].zvoxelres,
+      'scalinglevels':ds_to_update[0].scalinglevels,
+      'scalingoption':ds_to_update[0].scalingoption,
       'startwindow':ds_to_update[0].startwindow,
       'endwindow':ds_to_update[0].endwindow,
       'starttime':ds_to_update[0].starttime,
       'endtime':ds_to_update[0].endtime,
-      'zoomlevels':ds_to_update[0].zoomlevels,
-      'zscale':ds_to_update[0].zscale,
       'dataset_description':ds_to_update[0].dataset_description,
             }
     form = CreateDatasetForm(initial=data)
@@ -411,6 +380,7 @@ def updatedataset(request):
 
 @login_required(login_url='/ocp/accounts/login/')
 def updatetoken(request):
+
   # Get the dataset to update
   token = request.session["token_name"]
   if request.method == 'POST':
@@ -436,7 +406,7 @@ def updatetoken(request):
       token = request.session["token_name"]
     else:
       token = ""
-    token_to_update = Token.objects.select_for_update().filter(token_name=token)
+    token_to_update = Token.objects.filter(token_name=token)
     data = {
       'token_name': token_to_update[0].token_name,
       'token_description':token_to_update[0].token_description,
@@ -478,7 +448,7 @@ def updateproject(request):
       proj = request.session["project_name"]
     else:
       proj = ""
-    project_to_update = Project.objects.select_for_update().filter(project_name=proj)
+    project_to_update = Project.objects.filter(project_name=proj)
     data = {
       'project_name': project_to_update[0].project_name,
       'project_description':project_to_update[0].project_description,
@@ -608,7 +578,6 @@ def downloaddata(request):
     pd = ocpcaproj.OCPCAProjectsDB()
     
     if request.method == 'POST':
-      #import pdb;pdb.set_trace()                                                       
       form= dataUserForm(request.POST)
       if form.is_valid():
         curtoken=request.POST.get('token')

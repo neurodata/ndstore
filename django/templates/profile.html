@@ -123,8 +123,9 @@
 		      {% endif %}
 
 		      <td>{{ proj.overlayproject }}</td>
-		      <td>{{ proj.overlayserver }}</td>
-		      
+		      <td>{{ proj.osverlayserver }}</td>
+
+	        <input type="hidden" name="project_name" value={{proj.project_name}}>
 		     
 		      <td><button class="btn" id="delete" type="submit" name="delete"> <i class ="icon-trash icon-black"></i>Delete Project</button></td>
 		      <td><button class="btn" id="update" type="submit" name="update"> <i class ="icon-inbox icon-black"></i>Update Project</button></td>
@@ -148,21 +149,10 @@
 	<div class ="span1"></div>
     </div>
  </div>
-  
-
 
 </form>
 
-
-
-
-
-
-
-
 </body>
-
-
 
 {% endblock content %}
 
