@@ -91,13 +91,14 @@ def profile(request):
 
 
       elif 'delete' in request.POST:
+        import pdb; pdb.set_trace()
         pd = ocpcaproj.OCPCAProjectsDB()
         username = request.user.username
         project_to_delete = (request.POST.get('project_name')).strip()
                 
         reftokens = Token.objects.filter(project_id=project_to_delete)
         if reftokens:
-          messages.error(request, 'Project cannot be deleted. PLease delete all tokens for this project first.')
+          messages.error(request, 'Project cannot be deleted. Please delete all tokens for this project first.')
           return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile')
         else:
           proj = Project.objects.filter(project_name=project_to_delete)
@@ -421,6 +422,7 @@ def updatetoken(request):
 
 @login_required(login_url='/ocp/accounts/login/')
 def updateproject(request):
+
   proj_name = request.session["project_name"]
   if request.method == 'POST':
     
