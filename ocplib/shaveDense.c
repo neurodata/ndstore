@@ -25,15 +25,11 @@
 
 void shaveDense( uint32_t * data, uint32_t * shavedata ,int * dims )
 {
-		int i;
-    int j;
-    int k;
+		int i,j,k,index;
 
     int xdim = dims[0];
     int ydim = dims[1];
     int zdim = dims[2];
-
-    int index;
     
 		for ( i=0; i<xdim; i++ )
       for ( j=0; j<ydim; j++ )
