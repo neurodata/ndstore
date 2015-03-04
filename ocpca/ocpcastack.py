@@ -87,7 +87,7 @@ def buildStack ( token, resolution=None ):
   """Wrapper for the different datatypes """
 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
   
     if proj.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS:
 
@@ -117,7 +117,7 @@ def clearStack ( token ):
 
 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
   
   with closing ( ocpcadb.OCPCADB (proj) ) as db:
     

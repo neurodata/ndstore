@@ -16,12 +16,15 @@ from pytesthelpers import makeAnno
 sys.path += [os.path.abspath('../django')]
 import OCP.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
-from django.conf import settings
+from django.core.wsgi import get_wsgi_application
+application = get_wsgi_application()
 
 import ocpcaproj
 
 import kvengine_to_test
 import site_to_test
+import makeunitdb
+
 SITE_HOST = site_to_test.site
 
 # Module level setup/teardown
@@ -42,19 +45,11 @@ class TestOther:
 
   def setup_class(self):
     """Create the unittest database"""
-
-    with closing ( ocpcaproj.OCPCAProjectsDB() ) as pd:
-      try:
-        pd.newOCPCAProj ( 'pubunittest','token for unit test', 1 , 'localhost', 'pubunittest', 'project for unittest', 'annotation', 'uint32', 'kasthuri11','kasthuri11','openconnecto.me', False, True, False, 0, True, kvengine_to_test.kvserver, kvengine_to_test.kvengine, 0 )
-      except:
-        pd.deleteOCPCADB ('pubunittest')
-      
+    makeunitdb.createTestDB('pubunittest', public=True)
 
   def teardown_class (self):
     """Destroy the unittest database"""
-    with closing ( ocpcaproj.OCPCAProjectsDB() ) as pd:
-      pd.deleteOCPCADB ('pubunittest')
-
+    makeunitdb.deleteTestDB('pubunittest')
 
   def test_public_tokens (self):
     """Test the function that shows the public tokens"""
@@ -91,5 +86,4 @@ class TestOther:
     assert ( id2-id1==1000 )
     assert ( size1 == size2 == 1000 )
 
-    
-    
+

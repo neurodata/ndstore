@@ -27,6 +27,15 @@ from contextlib import closing
 import ocppaths
 from pytesthelpers import makeAnno
 import ocpcaproj
+import makeunitdb
+
+sys.path += [os.path.abspath('../django')]
+import OCP.settings
+os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
+from django.core.wsgi import get_wsgi_application
+application = get_wsgi_application()
+
+
 
 import kvengine_to_test
 import site_to_test
@@ -49,18 +58,11 @@ class TestRamon:
 
   def setup_class(self):
     """Create the unittest database"""
-    
-    with closing ( ocpcaproj.OCPCAProjectsDB() ) as pd:
-      try:
-        pd.newOCPCAProj ( 'unittest','token for unit test', 1 , 'localhost', 'unittest', 'project for unittest', 'annotation', 'uint32', 'kasthuri11','kasthuri11','openconnecto.me', False, True, False, 0, 0, kvengine_to_test.kvserver, kvengine_to_test.kvengine, 0 )
-      except:
-        pd.deleteOCPCADB ('unittest')
+    makeunitdb.createTestDB('unittest', public=True)
 
   def teardown_class (self):
     """Destroy the unittest database"""
-    with closing ( ocpcaproj.OCPCAProjectsDB() ) as pd:
-      pd.deleteOCPCADB ('unittest')
-
+    makeunitdb.deleteTestDB('unittest')
 
 
   def test_query (self):

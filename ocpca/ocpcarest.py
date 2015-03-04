@@ -733,7 +733,7 @@ def getCutout ( webargs ):
   # pattern for using contexts to close databases
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
@@ -749,7 +749,7 @@ def putCutout ( webargs, postdata ):
   # pattern for using contexts to close databases
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
@@ -896,7 +896,7 @@ def getAnnotation ( webargs ):
   # pattern for using contexts to close databases
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
@@ -1027,7 +1027,7 @@ def getCSV ( webargs ):
   # pattern for using contexts to close databases
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
@@ -1067,7 +1067,7 @@ def getAnnotations ( webargs, postdata ):
   [ db, proj, projdb ] = loadDBProj ( token )
 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
   
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
   
@@ -1196,7 +1196,7 @@ def putAnnotationAsync ( webargs, postdata ):
   # pattern for using contexts to close databases
   # get the project 
   #with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-  #  proj = projdb.loadProject ( token )
+  #  proj = projdb.loadToken ( token )
 
   # Don't write to readonly projects
   #if proj.getReadOnly()==1:
@@ -1232,7 +1232,7 @@ def putAnnotation ( webargs, postdata ):
   # get the project 
   
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
   
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
@@ -1416,7 +1416,7 @@ def queryAnnoObjects ( webargs, postdata=None ):
   # pattern for using contexts to close databases
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
@@ -1466,7 +1466,7 @@ def deleteAnnotation ( webargs ):
   # pattern for using contexts to close databases
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
@@ -1523,7 +1523,7 @@ def jsonInfo ( webargs ):
   # pattern for using contexts to close databases
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
@@ -1539,7 +1539,7 @@ def projInfo ( webargs ):
   # pattern for using contexts to close databases
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
@@ -1568,7 +1568,7 @@ def chanInfo ( webargs ):
   # pattern for using contexts to close databases
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
@@ -1614,7 +1614,7 @@ def mcFalseColor ( webargs ):
   # pattern for using contexts to close databases
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
@@ -1665,7 +1665,7 @@ def reserve ( webargs ):
   # pattern for using contexts to close databases
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
 
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
 
@@ -1696,7 +1696,7 @@ def getField ( webargs ):
   # pattern for using contexts to close databases
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
@@ -1726,7 +1726,7 @@ def setField ( webargs ):
   # pattern for using contexts to close databases
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
@@ -1763,7 +1763,7 @@ def getPropagate ( webargs ):
   # pattern for using contexts to close databases
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
     value = proj.getPropagate()
 
   return value
@@ -1780,7 +1780,7 @@ def setPropagate ( webargs ):
     
   # pattern for using contexts to close databases. get the project
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
     # If the value is to set under propagation
     if int(value) == ocpcaproj.UNDER_PROPAGATION and proj.getPropagate() != ocpcaproj.UNDER_PROPAGATION:
       proj.setPropagate ( ocpcaproj.UNDER_PROPAGATION )
@@ -1819,7 +1819,7 @@ def merge ( webargs ):
   # pattern for using contexts to close databases
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
@@ -1863,7 +1863,7 @@ def exceptions ( webargs, ):
   # pattern for using contexts to close databases
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:

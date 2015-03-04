@@ -57,7 +57,7 @@ def h5Async( fileName ):
 
   token = "kunal_hdf5_test"
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
 
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
 
