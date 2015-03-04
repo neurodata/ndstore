@@ -75,6 +75,5 @@ int annotateCube( uint32_t * data, int dataSize, int * dims, int annid, uint32_t
       }
       
 		}
-    
     return exceptionIndex;
 }
