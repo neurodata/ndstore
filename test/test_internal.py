@@ -48,7 +48,7 @@ def teardown_module(module):
   pass
 
 
-class TestOther:
+class TestInternal:
   """Other interfaces to OCPCA that don't fit into other categories"""
 
   # Per method setup/teardown
@@ -59,45 +59,26 @@ class TestOther:
 
   def setup_class(self):
     """Create the unittest database"""
-    makeunitdb.createTestDB('pubunittest', public=True)
+    makeunitdb.createTestDB('unittest', public=True)
 
   def teardown_class (self):
     """Destroy the unittest database"""
-    makeunitdb.deleteTestDB('pubunittest')
+    makeunitdb.deleteTestDB('unittest')
 
-  def test_public_tokens (self):
-    """Test the function that shows the public tokens"""
+  def test_update_propagate( self ):
+    """Test the internal update propogate function"""
 
-    url =  "http://%s/ca/public_tokens/" % ( SITE_HOST )
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    # and create the database
+    pd = ocpcaproj.OCPCAProjectsDB()
+    proj = pd.loadToken ( 'unittest' )
+    assert ( proj.getReadOnly() == 0 )
+    assert ( proj.getPropagate() == 0 )
+    proj.setPropagate ( 1 )
+    proj.setReadOnly ( 1 )
+    pd.updatePropagate( proj )
+    assert ( proj.getReadOnly() == 1 )
+    assert ( proj.getPropagate() == 1 )
 
-    # reead the json data
-    tokens = json.loads ( f.read() )
-    assert ( "pubunittest" in tokens )
 
-  def test_info(self):
-
-    url =  "http://%s/ca/%s/info/" % ( SITE_HOST, 'pubunittest' )
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
     
-    # reead the json data
-    projinfo = json.loads ( f.read() )
-    assert ( projinfo['project']['projecttype'] == 'annotation' )
-    assert ( projinfo['dataset']['offset']['0'][2] == 1 )
-
-  def test_reserve ( self ):
-    """reserve 1000 ids twice and make sure that the numbers work"""
-  
-    url =  "http://%s/ca/%s/reserve/%s/" % ( SITE_HOST, 'pubunittest', 1000 )
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
-    (id1, size1) = json.loads(f.read())
-    f = urllib2.urlopen ( url )
-    (id2, size2) = json.loads(f.read())
-
-    assert ( id2-id1==1000 )
-    assert ( size1 == size2 == 1000 )
-
 

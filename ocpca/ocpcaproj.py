@@ -579,7 +579,6 @@ class OCPCAProjectsDB:
   #
   def updatePropagate ( self, proj):
     """ """
-    # RBTODO KLTODO 
     pr = Project.objects.get ( project_name=proj.getDBName() )
     tk = Token.objects.get ( token_name=proj.getToken() )
     tk.readonly = proj.getReadOnly()
