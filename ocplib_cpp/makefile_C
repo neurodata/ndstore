@@ -1,5 +1,7 @@
 #m.PHONY : clean
 
+# Make file for Unix Systems
+
 all: clean ocplib.so
 
 ocplib.so : filterCutout.o filterCutoutOMP.o locateCube.o annotateCube.o shaveCube.o mergeCube.o annotateEntityDense.o shaveDense.o exceptionDense.o overwriteDense.o zindex.o recolorCube.o zoomData.o quicksort.o isotropicBuild.o

@@ -27,7 +27,6 @@ import ocpcaproj
 import ocpcadb
 import ocplib
 from ocpcaerror import OCPCAError
-import zindex
 
 from ocpca_cy import addDataToZSliceStack_cy
 from ocpca_cy import addDataToIsotropicStack_cy
@@ -177,9 +176,9 @@ def buildAnnoStack ( proj, resolution=None ):
       #  Choose constants that work for all resolutions. recall that cube size changes from 128x128x16 to 64*64*64
       # RBTODO derive dtype from project
       if scaling == ocpcaproj.ZSLICES:
-        outdata = np.zeros ( [ zcubedim*4, ycubedim*2, xcubedim*2 ], dtype=np.uint32 )
+        outdata = np.zeros ( [ zcubedim*4, ycubedim*2, xcubedim*2 ], dtype=proj.getDataType() )
       elif scaling == ocpcaproj.ISOTROPIC:
-        outdata = np.zeros ( [ zcubedim*2,  ycubedim*2, xcubedim*2 ], dtype=np.uint32 )
+        outdata = np.zeros ( [ zcubedim*2,  ycubedim*2, xcubedim*2 ], dtype=proj.getDataType() )
       else:
         logger.error ( "Invalid scaling option in project = {}".format(scaling) )
         raise OCPCAError ( "Invalid scaling option in project = {}".format(scaling)) 
@@ -311,7 +310,7 @@ def buildImageStack ( proj, resolution ):
             olddata = db.cutout ( [ x*xscale*xcubedim, y*yscale*ycubedim, z*zscale*zcubedim ], biggercubedim, l ).data
 
             #olddata target array for the new data (z,y,x) order
-            newdata = np.zeros([zcubedim,ycubedim,xcubedim], dtype=olddata.dtype)
+            newdata = np.zeros([zcubedim,ycubedim,xcubedim], dtype=proj.getDatatype())
 
             for sl in range(zcubedim):
 
@@ -355,7 +354,7 @@ def buildImageStack ( proj, resolution ):
             zdataout = zlib.compress (outfobj.getvalue())
             outfobj.close()
 
-            key = zindex.XYZMorton ( [x,y,z] )
+            key = ocplib.XYZMorton ( [x,y,z] )
             
             # put in the database
             sql = "INSERT INTO res" + str(l+1) + "(zindex, cube) VALUES (%s, %s)"

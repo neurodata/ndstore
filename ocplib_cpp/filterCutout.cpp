@@ -16,23 +16,34 @@
 
 
 /*
- * Recolor Slice Function 
+ * Filter Cutout Function 
  * Naive implementation 
  */
 
+#include<stdio.h>
 #include<stdint.h>
-#include<omp.h>
+#include<stdbool.h>
 #include<ocplib.h>
 
-void recolorCubeOMP ( uint32_t * cutout, int xdim, int ydim, uint32_t * imagemap, uint32_t * rgbColor)
+void filterCutout( uint32_t * cutout, int cutoutsize, uint32_t * filterlist, int listsize)
 {
 		int i,j;
-#pragma omp parallel num_threads( omp_get_max_threads() )
-    {
-#pragma omp for private(i,j) schedule(dynamic)
-      for ( i=0; i<xdim; i++)
-        for ( j=0; j<ydim; j++)
-          if ( cutout [(i*ydim)+j] != 0 )
-            imagemap [(i*ydim)+j] = rgbColor[ cutout [(i*ydim)+j] % 217 ];
-    }
+		bool equal;
+
+		for ( i=0; i<cutoutsize; i++)
+		{
+				equal = false;
+				for ( j=0; j<listsize; j++)
+				{
+					// Checking if element in cutout exits in filterlist	
+					if( cutout[i] == filterlist[j] )
+					{
+							equal = true;
+							// Using break to exit because it exists in the list
+							break;
+					}
+				}
+				if( !equal )
+						cutout[i] = 0;
+		}
 }

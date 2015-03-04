@@ -65,4 +65,5 @@ void MortonXYZ ( uint64_t morton, uint64_t xyz[3] )
     xyz[2] += ( (zmask & morton) << i) >> 2;
     morton >>= 3;
   }
+
 }
