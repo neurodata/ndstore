@@ -16,7 +16,7 @@
 
 
 /*
- * Recolor Slice Function 
+ * Recolor Cube Function 
  * Naive implementation 
  */
 
@@ -31,8 +31,14 @@ void recolorCubeOMP ( uint32_t * cutout, int xdim, int ydim, uint32_t * imagemap
     {
 #pragma omp for private(i,j) schedule(dynamic)
       for ( i=0; i<xdim; i++)
+      {
         for ( j=0; j<ydim; j++)
+        {
           if ( cutout [(i*ydim)+j] != 0 )
+          {
             imagemap [(i*ydim)+j] = rgbColor[ cutout [(i*ydim)+j] % 217 ];
+          }
+        }
+		  }
     }
 }

@@ -42,6 +42,7 @@ int annotateCube( uint32_t * data, int dataSize, int * dims, int annid, uint32_t
       index = (locations[i][2]-zoffset)*(ydim*zdim) + (locations[i][1]-yoffset)*(zdim) + (locations[i][0]-xoffset);
 
       // Label unlabeled voxels
+      
       if ( data [ index ] == 0 )
       {
         data [ index ] = annid;

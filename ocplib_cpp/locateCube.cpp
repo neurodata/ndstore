@@ -16,23 +16,35 @@
 
 
 /*
- * Recolor Slice Function 
+ * Locate Cube Function 
  * Naive implementation 
  */
 
 #include<stdint.h>
-#include<omp.h>
 #include<ocplib.h>
 
-void recolorCubeOMP ( uint32_t * cutout, int xdim, int ydim, uint32_t * imagemap, uint32_t * rgbColor)
+void locateCube( uint64_t locs[][4], int locsSize, uint32_t locations[][3], int locationsSize, int * dims )
 {
-		int i,j;
-#pragma omp parallel num_threads( omp_get_max_threads() )
-    {
-#pragma omp for private(i,j) schedule(dynamic)
-      for ( i=0; i<xdim; i++)
-        for ( j=0; j<ydim; j++)
-          if ( cutout [(i*ydim)+j] != 0 )
-            imagemap [(i*ydim)+j] = rgbColor[ cutout [(i*ydim)+j] % 217 ];
-    }
+		int i;
+
+    int xdim = dims[0];
+    int ydim = dims[1];
+    int zdim = dims[2];
+
+    uint64_t cubeno[3];
+    
+		for ( i=0; i<locationsSize; i++)
+		{
+      cubeno[0] = locations[i][0]/xdim;
+      cubeno[1] = locations[i][1]/ydim;
+      cubeno[2] = locations[i][2]/zdim;
+
+      uint64_t cubekey = XYZMorton ( cubeno );
+
+      locs[i][0] = cubekey;
+      locs[i][1] = locations[i][0];
+      locs[i][2] = locations[i][1];
+      locs[i][3] = locations[i][2];
+		}
+    
 }

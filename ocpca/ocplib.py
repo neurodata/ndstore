@@ -28,6 +28,8 @@ import rgbColor
 # Load the shared C library using ctype mechanism
 ocplib = npct.load_library("ocplib", OCP.ocppaths.OCP_OCPLIB_PATH) 
 
+array_1d_uint8 = npct.ndpointer(dtype=np.uint8, ndim=1, flags='CONTIGUOUS')
+array_1d_uint16 = npct.ndpointer(dtype=np.uint16, ndim=1, flags='CONTIGUOUS')
 array_1d_uint32 = npct.ndpointer(dtype=np.uint32, ndim=1, flags='CONTIGUOUS')
 array_2d_uint32 = npct.ndpointer(dtype=np.uint32, ndim=2, flags='CONTIGUOUS')
 array_1d_uint64 = npct.ndpointer(dtype=np.uint64, ndim=1, flags='CONTIGUOUS')
@@ -42,7 +44,7 @@ ocplib.locateCube.argtypes = [ array_2d_uint64, cp.c_int, array_2d_uint32, cp.c_
 ocplib.annotateCube.argtypes = [ array_1d_uint32, cp.c_int, cp.POINTER(cp.c_int), cp.c_int, array_1d_uint32, array_2d_uint32, cp.c_int, cp.c_char, array_2d_uint32 ]
 ocplib.XYZMorton.argtypes = [ array_1d_uint64 ]
 ocplib.MortonXYZ.argtypes = [ npct.ctypes.c_int64 , array_1d_uint64 ]
-ocplib.recolorCube.argtypes = [ array_1d_uint32, cp.c_int, cp.c_int, array_1d_uint32, array_1d_uint32 ]
+ocplib.recolorCubeOMP.argtypes = [ array_1d_uint32, cp.c_int, cp.c_int, array_1d_uint32, array_1d_uint32 ]
 ocplib.quicksort.argtypes = [ array_2d_uint64, cp.c_int ]
 ocplib.shaveCube.argtypes = [ array_1d_uint32, cp.c_int, cp.POINTER(cp.c_int), cp.c_int, array_1d_uint32, array_2d_uint32, cp.c_int, array_2d_uint32, cp.c_int, array_2d_uint32 ]
 ocplib.annotateEntityDense.argtypes = [ array_1d_uint32, cp.POINTER(cp.c_int), cp.c_int ]
@@ -54,7 +56,9 @@ ocplib.zoomOutDataOMP.argtypes = [ array_1d_uint32, array_1d_uint32, cp.POINTER(
 ocplib.zoomInData.argtypes = [ array_1d_uint32, array_1d_uint32, cp.POINTER(cp.c_int), cp.c_int ]
 ocplib.zoomInDataOMP.argtypes = [ array_1d_uint32, array_1d_uint32, cp.POINTER(cp.c_int), cp.c_int ]
 ocplib.mergeCube.argtypes = [ array_1d_uint32, cp.POINTER(cp.c_int), cp.c_int, cp.c_int ]
-
+ocplib.isotropicBuild8.argtypes = [ array_1d_uint8, array_1d_uint8, array_1d_uint8, cp.POINTER(cp.c_int) ]
+ocplib.isotropicBuild16.argtypes = [ array_1d_uint16, array_1d_uint16, array_1d_uint16, cp.POINTER(cp.c_int) ]
+ocplib.isotropicBuild32.argtypes = [ array_1d_uint32, array_1d_uint32, array_1d_uint32, cp.POINTER(cp.c_int) ]
 
 # setting the return type of the function in C
 # FORMAT: <library_name>.<function_name>.restype = [ ctype.<argtype> ]
@@ -65,7 +69,7 @@ ocplib.locateCube.restype = None
 ocplib.annotateCube.restype = cp.c_int
 ocplib.XYZMorton.restype = npct.ctypes.c_uint64
 ocplib.MortonXYZ.restype = None
-ocplib.recolorCube.restype = None
+ocplib.recolorCubeOMP.restype = None
 ocplib.quicksort.restype = None
 ocplib.shaveCube.restype = None
 ocplib.annotateEntityDense.restype = None
@@ -77,7 +81,9 @@ ocplib.zoomOutDataOMP.restype = None
 ocplib.zoomInData.restype = None
 ocplib.zoomInDataOMP.restype = None
 ocplib.mergeCube.restype = None
-
+ocplib.isotropicBuild8.restype = None
+ocplib.isotropicBuild16.restype = None
+ocplib.isotropicBuild32.restype = None
 
 def filter_ctype_OMP ( cutout, filterlist ):
   """Remove all annotations in a cutout that do not match the filterlist using OpenMP"""
@@ -166,7 +172,7 @@ def recolor_ctype ( cutout, imagemap ):
   imagemap = imagemap.ravel()
 
   # Calling the c native function
-  ocplib.recolorCube ( cutout.flatten(), cp.c_int(xdim), cp.c_int(ydim), imagemap, np.asarray( rgbColor.rgbcolor,dtype=np.uint32) )
+  ocplib.recolorCubeOMP ( cutout.flatten(), cp.c_int(xdim), cp.c_int(ydim), imagemap, np.asarray( rgbColor.rgbcolor,dtype=np.uint32) )
 
   return imagemap.reshape( (xdim,ydim) )
 
@@ -318,3 +324,15 @@ def mergeCube_ctype ( data, newid, oldid ):
   ocplib.mergeCube ( data, (cp.c_int * len(dims))(*dims), cp.c_int(newid), cp.c_int(oldid) )
 
   return ( data.reshape(dims) )
+
+def isotropicBuild_ctype ( data1, data2, newdata ):
+  """ Merging Data """
+
+  dims = [ i for i in data.shape ]
+  data1 = data1.ravel()
+  data2 = data2.ravel()
+  newdata = np.zeros(len(data1),dtype=data1.dtype)
+
+  ocplib.isotropicBuild32 ( data1, data2, newdata, (cp.c_int * len(dims))(*dims) )
+
+  return ( newdata.reshape(dims) )

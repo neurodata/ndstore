@@ -16,23 +16,27 @@
 
 
 /*
- * Recolor Slice Function 
+ * Merge Cube Function 
  * Naive implementation 
  */
 
 #include<stdint.h>
-#include<omp.h>
 #include<ocplib.h>
 
-void recolorCubeOMP ( uint32_t * cutout, int xdim, int ydim, uint32_t * imagemap, uint32_t * rgbColor)
+void mergeCube( uint32_t * data, int * dims, int newid, int oldid )
 {
-		int i,j;
-#pragma omp parallel num_threads( omp_get_max_threads() )
-    {
-#pragma omp for private(i,j) schedule(dynamic)
-      for ( i=0; i<xdim; i++)
-        for ( j=0; j<ydim; j++)
-          if ( cutout [(i*ydim)+j] != 0 )
-            imagemap [(i*ydim)+j] = rgbColor[ cutout [(i*ydim)+j] % 217 ];
-    }
+		int i,j,k,index;
+
+    int zdim = dims[0];
+    int ydim = dims[1];
+    int xdim = dims[2];
+
+    for ( k=0; k<zdim; k++ )
+      for ( j=0; j<ydim; j++ )
+        for ( i=0; i<xdim; i++ )
+        {
+          index = (k*xdim*ydim) + (j*xdim) + (i);
+          if ( data [index] == oldid )
+            data [index] = newid;
+        }
 }
