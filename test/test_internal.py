@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""  Unit tests that require the OCP stack to be available.
+       All tests in other units should use Web services only.
+"""
+
 import urllib2
 import cStringIO
 import sys

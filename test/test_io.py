@@ -28,13 +28,6 @@ from contextlib import closing
 
 from pytesthelpers import makeAnno
 
-sys.path += [os.path.abspath('../django')]
-import OCP.settings
-os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
-from django.core.wsgi import get_wsgi_application
-application = get_wsgi_application()
-
-import ocpcaproj
 import makeunitdb
 
 import kvengine_to_test

@@ -29,14 +29,6 @@ from pytesthelpers import makeAnno
 import ocpcaproj
 import makeunitdb
 
-sys.path += [os.path.abspath('../django')]
-import OCP.settings
-os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
-from django.core.wsgi import get_wsgi_application
-application = get_wsgi_application()
-
-
-
 import kvengine_to_test
 import site_to_test
 SITE_HOST = site_to_test.site
