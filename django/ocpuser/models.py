@@ -14,12 +14,22 @@
 
 from django.db import models
 from django.db.models.signals import post_save
+from django.template import Context
+from collections import defaultdict
+from django.contrib import messages
 from django.contrib.auth.models import User
 from django.conf import settings
 
 # Create your models here.
 class Dataset ( models.Model):
     dataset_name = models.CharField(max_length=255, primary_key=True,verbose_name="Name of the Image dataset")    
+    dataset_description = models.CharField(max_length=4096,blank=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,blank=True)
+    PUBLIC_CHOICES = (
+        (1, 'Yes'),
+        (0, 'No'),
+        )
+    public =  models.IntegerField(choices=PUBLIC_CHOICES, default=0)
     ximagesize =  models.IntegerField()
     yimagesize =  models.IntegerField()
     zimagesize =  models.IntegerField()
@@ -40,7 +50,6 @@ class Dataset ( models.Model):
     endwindow = models.IntegerField(default=0)
     starttime = models.IntegerField(default=0)
     endtime = models.IntegerField(default=0)
-    dataset_description = models.CharField(max_length=4096,blank=True)
     
     class Meta:
         """ Meta """
@@ -54,7 +63,12 @@ class Dataset ( models.Model):
 class Project ( models.Model):
     project_name  =  models.CharField(max_length=255, primary_key=True)
     project_description  =  models.CharField(max_length=4096, blank=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,blank=True)
+    PUBLIC_CHOICES = (
+        (1, 'Yes'),
+        (0, 'No'),
+        )
+    public =  models.IntegerField(choices=PUBLIC_CHOICES, default=0)
     dataset = models.ForeignKey(Dataset)
 
     PROJECT_CHOICES = (
@@ -138,7 +152,6 @@ class Project ( models.Model):
         """ Meta """
         db_table = u"projects"
         managed = True
-
         
     def __unicode__(self):
         return self.project_name
@@ -147,6 +160,7 @@ class Project ( models.Model):
 class Token ( models.Model):
     token_name = models.CharField(max_length=255, primary_key=True)
     token_description  =  models.CharField(max_length=4096,blank=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,blank=True)
     project  = models.ForeignKey(Project)
     READONLY_CHOICES = (
         (1, 'Yes'),
@@ -157,7 +171,7 @@ class Token ( models.Model):
         (1, 'Yes'),
         (0, 'No'),
         )
-    public =  models.IntegerField(choices=PUBLIC_CHOICES, default=2)
+    public =  models.IntegerField(choices=PUBLIC_CHOICES, default=0)
     
     
     class Meta:

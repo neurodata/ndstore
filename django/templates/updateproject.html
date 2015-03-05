@@ -17,6 +17,9 @@ Create Project Template
    </div>
  </div>
 
+   {{ form.errors }} 
+   {{ form.non_field_errors }} 
+
 <form method="post" action="" enctype="multipart/form-data">
    
   {{ form.non_field_errors }}
@@ -57,28 +60,15 @@ Create Project Template
        <div class ="col-md-2">
          <div class="fieldWrapper">
            {{ form.subject.errors }}
-           <label for="oproject">Overlay Project:</label>
+           <label for="exceptions">Public:</label>
          </div>
        </div>
        <div class ="col-md-2">
-         {{ form.overlayproject }}
+         {{ form.public }}
        </div>
        <div class ="col-md-4"></div>
      </div>
 
-      <div class = "row">
-       <div class ="col-md-4"></div>
-       <div class ="col-md-2">
-         <div class="fieldWrapper">
-           {{ form.subject.errors }}
-           <label for="overlayserver"> Overlay server</label>
-         </div>
-       </div>
-       <div class ="col-md-2">
-         {{ form.overlayserver }}
-       </div>
-       <div class ="col-md-4"></div>
-     </div>
 
      <div class = "row">
        <div class ="col-md-4"></div>
@@ -248,6 +238,34 @@ Create Project Template
        <div class ="col-md-4"></div>
      </div>
 
+     <div class = "row">
+       <div class ="col-md-4"></div>
+       <div class ="col-md-2">
+         <div class="fieldWrapper">
+           {{ form.subject.errors }}
+           <label for="oproject">Overlay Project:</label>
+         </div>
+       </div>
+       <div class ="col-md-2">
+         {{ form.overlayproject }}
+       </div>
+       <div class ="col-md-4"></div>
+     </div>
+
+      <div class = "row">
+       <div class ="col-md-4"></div>
+       <div class ="col-md-2">
+         <div class="fieldWrapper">
+           {{ form.subject.errors }}
+           <label for="overlayserver"> Overlay server</label>
+         </div>
+       </div>
+       <div class ="col-md-2">
+         {{ form.overlayserver }}
+       </div>
+       <div class ="col-md-4"></div>
+     </div>
+
 
      <!--<div class = "row">
        <div class ="col-md-4"></div>
@@ -261,8 +279,6 @@ Create Project Template
        </div>
        <div class ="col-md-4"></div>
      </div>-->
-
-     
          
     <div class = "row">
       <div class ="col-md-5"></div>

@@ -77,10 +77,11 @@
                     <th>Description</th>
                     <th>Resolution</th>
                     <th>Exceptions</th>
+                    <th>Public</th>
                     <th>Host</th>
                     <th>KVEngine</th>
                     <th>KVServer</th>
-                    <th>Propagate</th>
+                    <th>Propagated</th>
                     <th>Overlay Project</th>
                     <th>Overlay Server</th>
                   </tr>
@@ -100,6 +101,11 @@
 		      {% else %}
 		      <td>YES</td>
 		      {% endif %}
+		      {% if proj.public == 0%}
+                      <td>NO</td>
+		      {% else %}
+		      <td>YES</td>
+		      {% endif %}
 		      <td>{{ proj.host }}</td>
 		      <td>{{ proj.kvengine }}</td>
 		      {% if proj.kvserver == 'localhost' %}
@@ -115,11 +121,11 @@
 		      {% endif %}
 		      
 		      {% if proj.propagate == 0%}
-                      <td>NOT_PROPAGATED</td>
+                      <td>NO</td>
 		      {% elif proj.propagate == 1%}
-		      <td>UNDER PROPAGATION</td>
+		      <td>IN PROG</td>
 		       {% else %}
-		      <td>PROPAGATED</td>
+		      <td>YES</td>
 		      {% endif %}
 
 		      <td>{{ proj.overlayproject }}</td>

@@ -70,6 +70,7 @@
 		  <th>X Res (nm)</th>
 		  <th>Y Res (nm)</th>
 		  <th>Z Res (nm)</th>
+		  <th>Public</th>
 		  <th>Scaling Levels</th>
 		  <th>Scaling Option</th>
 		  <th>Start Window</th>
@@ -89,6 +90,11 @@
         <td>{{ ds.xvoxelres }}</td>
         <td>{{ ds.yvoxelres }}</td>
         <td>{{ ds.zvoxelres }}</td>
+        {% if proj.public == 0%}
+                    <td>NO</td>
+        {% else %}
+        <td>YES</td>
+        {% endif %}
 		    <td>{{ ds.scalinglevels }}</td>
 		    <td>{{ ds.scalingoption }}</td>
 		    <td>{{ ds.startwindow }}</td>

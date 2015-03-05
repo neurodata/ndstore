@@ -27,6 +27,9 @@ from collections import defaultdict
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.conf import settings
+from django.forms.models import inlineformset_factory
+import django.forms
+
 
 import ocpcaprivate
 import ocpcarest
@@ -65,29 +68,34 @@ def profile(request):
     if request.method == 'POST':
       if 'filter' in request.POST:
         #FILTER PROJECTS BASED ON INPUT VALUE
-        username = request.user.userid
+        userid = request.user.id
         filteroption = request.POST.get('filteroption')
         filtervalue = (request.POST.get('filtervalue')).strip()
         
         pd = ocpcaproj.OCPCAProjectsDB()
-        all_datasets= Dataset.objects.all()
-        dbs = defaultdict(list)
 
-        for db in all_datasets:
-          if filteroption == 'project':
-            proj = Project.objects.filter(dataset_id=db.dataset_name,project_name=filtervalue)
-          elif filteroption =='datatype':
-            proj = Project.objects.filter(dataset_id=db.dataset_name,datatype=filtervalue)
-          else:
-            proj = Project.objects.filter(dataset_id=db.dataset_name)
-            
+        # get the visible data sets
+        if request.user.is_superuser:
+          visible_datasets=Dataset.objects.all()
+        else:
+          visible_datasets=Dataset.objects.filter(user_id=userid) | Dataset.objects.filter(public=1)
+
+        projs = defaultdict(list)
+
+        dbs = defaultdict(list)
+        for db in visible_datasets:
+          proj = Project.objects.filter(dataset_id=db.dataset_name, user_id=userid) | Project.objects.filter(dataset_id=db.dataset_name, public=1)
           if proj:
             dbs[db.dataset_name].append(proj)
-          #else:
-          #  dbs[db.dataset_name].append(None)
-            
-        all_projects = Project.objects.values_list('project_name',flat= True)
-        return render_to_response('profile.html', { 'databases': dbs.iteritems() ,'projects':all_projects },context_instance=RequestContext(request))
+          else:
+            dbs[db.dataset_name].append(None)
+
+        if request.user.is_superuser:
+          visible_projects = Project.objects.all()
+        else:
+          visible_projects = Project.objects.filter(user_id=userid) | Project.objects.filter(public=1) 
+
+        return render_to_response('profile.html', { 'databases': dbs.iteritems() ,'projects': visible_projects.values_list(flat=True) },context_instance=RequestContext(request))
 
 
       elif 'delete' in request.POST:
@@ -100,13 +108,16 @@ def profile(request):
           messages.error(request, 'Project cannot be deleted. Please delete all tokens for this project first.')
           return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile')
         else:
-          proj = Project.objects.filter(project_name=project_to_delete)
+          proj = Project.objects.get(project_name=project_to_delete)
           if proj:
-            #Delete project from the table followed  by the database.
-            #TODO- Check if the model deletion was successful and only then delete the database or should this be the other way around?
-            proj.delete()          
-            pd.deleteOCPCADatabase(project_to_delete)
-            messages.success(request,"Project deleted")
+            if proj.user_id == request.user.id or request.user.is_superuser:
+
+              #Delete project from the table followed  by the database.
+              pd.deleteOCPCADB(project_to_delete)
+              proj.delete()          
+              messages.success(request,"Project deleted")
+            else:
+              messages.error(request,"Cannot delete.  You are not owner of this project or not superuser.")
           else:
             messages.error( request,"Project not found.")
           return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile')
@@ -149,22 +160,32 @@ def profile(request):
 
     else:
     # GET Projects
-      username = request.user.username
-      all_datasets= Dataset.objects.all()
+      userid = request.user.id
+
+      # get the visible data sets
+      if request.user.is_superuser:
+        visible_datasets=Dataset.objects.all()
+      else:
+        visible_datasets=Dataset.objects.filter(user_id=userid) | Dataset.objects.filter(public=1)
+
       dbs = defaultdict(list)
-      for db in all_datasets:
-        proj = Project.objects.filter(dataset_id=db.dataset_name, user_id = request.user)
+      for db in visible_datasets:
+        proj = Project.objects.filter(dataset_id=db.dataset_name, user_id=userid) | Project.objects.filter(dataset_id=db.dataset_name, public=1)
         if proj:
           dbs[db.dataset_name].append(proj)
         else:
           dbs[db.dataset_name].append(None)
       
-      all_projects = Project.objects.values_list('project_name',flat= True)
-      return render_to_response('profile.html', { 'databases': dbs.iteritems() ,'projects':all_projects },context_instance=RequestContext(request))
+      if request.user.is_superuser:
+        visible_projects = Project.objects.all()
+      else:
+        visible_projects = Project.objects.filter(user_id=userid) | Project.objects.filter(public=1) 
+
+      return render_to_response('profile.html', { 'databases': dbs.iteritems() ,'projects':visible_projects },context_instance=RequestContext(request))
     
   except OCPCAError, e:
 
-    messages.error(request, e.value)
+    messages.error("Unknown exception in administrative interface = {}".format(e)) 
 
     # GET Projects
     username = request.user.username
@@ -182,17 +203,27 @@ def profile(request):
     
 
 @login_required(login_url='/ocp/accounts/login/')
-
 def get_datasets(request):
 
   try:
+
     pd = ocpcaproj.OCPCAProjectsDB()
+
+    userid = request.user.id
+    if request.user.is_superuser:
+      visible_datasets=Dataset.objects.all()
+    else:
+      visible_datasets= Dataset.objects.filter(user_id=userid) | Dataset.objects.filter(public=1)
+
     if request.method == 'POST':
+
       if 'filter' in request.POST:
         filtervalue = (request.POST.get('filtervalue')).strip()
-        all_datasets = Dataset.objects.filter(dataset_name=filtervalue)
-        return render_to_response('datasets.html', { 'dts': all_datasets },context_instance=RequestContext(request))
+        visible_datasets = visible_datasets.filter(dataset_name=filtervalue)
+        return render_to_response('datasets.html', { 'dts': visible_datasets },context_instance=RequestContext(request))
+
       elif 'delete' in request.POST:
+
         #delete specified dataset
         ds = (request.POST.get('dataset_name')).strip()
         ds_to_delete = Dataset.objects.get(dataset_name=ds)
@@ -200,12 +231,21 @@ def get_datasets(request):
         # Check for projects with that dataset
         proj = Project.objects.filter(dataset_id=ds_to_delete.dataset_name)
         if proj:
-          messages.error(request, 'Dataset cannot be deleted. PLease delete all projects for this dataset first.')
+          messages.error(request, 'Dataset cannot be deleted. Please delete all projects for this dataset first.')
         else:
-          messages.success(request, 'Deleted Dataset ' + ds)
-          ds_to_delete.delete()
-        all_datasets = Dataset.objects.all()
-        return render_to_response('datasets.html', { 'dts': all_datasets },context_instance=RequestContext(request))
+          if ds_to_delete.user_id == request.user.id or request.user.is_superuser:
+            ds_to_delete.delete()
+            messages.success(request, 'Deleted Dataset ' + ds)
+          else:
+            messages.error(request,"Cannot delete.  You are not owner of this dataset or not superuser.")
+
+          # refresh to remove deleted
+          if request.user.is_superuser:
+            visible_datasets=Dataset.objects.all()
+          else:
+            visible_datasets=Dataset.objects.filter(user=request.user.id) | Dataset.objects.filter(public=1)
+
+        return render_to_response('datasets.html', { 'dts': visible_datasets },context_instance=RequestContext(request))
       elif 'update' in request.POST:
         ds = (request.POST.get('dataset_name')).strip()
         request.session["dataset_name"] = ds
@@ -213,20 +253,18 @@ def get_datasets(request):
 
       else:
         #Load datasets
-        all_datasets = Dataset.objects.all()
-        return render_to_response('datasets.html', { 'dts': all_datasets },context_instance=RequestContext(request))
+        return render_to_response('datasets.html', { 'dts': visible_datasets },context_instance=RequestContext(request))
+
     else:
       # GET datasets
-      all_datasets = Dataset.objects.all()
-      return render_to_response('datasets.html', { 'dts': all_datasets },context_instance=RequestContext(request))
+      return render_to_response('datasets.html', { 'dts': visible_datasets },context_instance=RequestContext(request))
+
   except OCPCAError, e:
-    all_datasets = Dataset.objects.all()
-    messages.error(request, e.value)
-    return render_to_response('datasets.html', { 'dts': all_datasets },context_instance=RequestContext(request))    
+    messages.error("Unknown exception in administrative interface = {}".format(e)) 
+    return render_to_response('datasets.html', { 'dts': visible_datasets },context_instance=RequestContext(request))    
 
 @login_required(login_url='/ocp/accounts/login/')
 def get_alltokens(request):
-
 
   if 'filter' in request.POST:
     del request.session['filter']
@@ -256,10 +294,13 @@ def get_tokens(request):
       elif 'delete' in request.POST:
       #Delete the token from the token table
         token_to_delete = (request.POST.get('token')).strip()
-        token = Token.objects.filter(token_name=token_to_delete)
+        token = Token.objects.get(token_name=token_to_delete)
         if token:
-          token.delete()          
-          messages.success(request,"Token deleted " + token_to_delete)
+          if token.user_id == request.user.id or request.user.is_superuser:
+            token.delete()          
+            messages.success(request,"Token deleted " + token_to_delete)
+          else:
+            messages.error(request,"Cannot delete.  You are not owner of this token or not superuser.")
         else:
           messages.error(request,"Unable to delete " + token_to_delete)
         return redirect(get_tokens)
@@ -291,13 +332,11 @@ def get_tokens(request):
       else:
         proj=""
         all_tokens = Token.objects.all()
-#      del request.session["project"]
       return render_to_response('token.html', { 'tokens': all_tokens, 'database': proj },context_instance=RequestContext(request))
     
   except OCPCAError, e:
-    #return django.http.HttpResponseNotFound(e.value)
+    messages.error("Unknown exception in administrative interface = {}".format(e)) 
     datasets = pd.getDatasets()
-    messages.error(request, e.value)
     return render_to_response('datasets.html', { 'dts': datasets },context_instance=RequestContext(request))
 
 
@@ -310,16 +349,18 @@ def createproject(request):
 
   if request.method == 'POST':
     if 'createproject' in request.POST:
+
       form = CreateProjectForm(request.POST)
 
-      # add a public field to the project form 
+      # restrict datasets to user visible fields
+      form.fields['dataset'].queryset = Dataset.objects.filter(user_id=request.user.id) | Dataset.objects.filter(public=1)
 
       if form.is_valid():
         new_project=form.save(commit=False)
         new_project.user_id=request.user.id
         new_project.save()
         if 'token' in request.POST:
-          tk = Token ( token_name = new_project.project_name, token_description = 'Default token for public project', project_id=new_project, readonly = 0, public=0 ) 
+          tk = Token ( token_name = new_project.project_name, token_description = 'Default token for public project', project_id=new_project, readonly = 0, public=new_project.public ) 
           tk.save()
         pd.newOCPCADB( new_project.project_name )
         return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile/')
@@ -334,18 +375,25 @@ def createproject(request):
       return redirect(profile)
   else:
     '''Show the Create Project form'''
+
     form = CreateProjectForm()
+
+    # restrict datasets to user visible fields
+    form.fields['dataset'].queryset = Dataset.objects.filter(user_id=request.user.id) | Dataset.objects.filter(public=1)
+
     context = {'form': form}
     return render_to_response('createproject.html',context,context_instance=RequestContext(request))
       
 @login_required(login_url='/ocp/accounts/login/')
 def createdataset(request):
-
+ 
   if request.method == 'POST':
     if 'createdataset' in request.POST:
       form = CreateDatasetForm(request.POST)
       if form.is_valid():
-        new_dataset= form.save()
+        new_dataset=form.save(commit=False)
+        new_dataset.user_id=request.user.id
+        new_dataset.save()
         return HttpResponseRedirect(get_script_prefix()+'ocpuser/datasets')
       else:
         context = {'form': form}
@@ -423,13 +471,17 @@ def updatetoken(request):
       token_update = get_object_or_404(Token,token_name=token)
       form = CreateTokenForm(data=request.POST or None, instance=token_update)
       if form.is_valid():
-        newtoken = form.save()
-        # if you changed the token name, delete old token
-        if newtoken.token_name != token:
+        newtoken = form.save( commit=False )
+        if newtoken.user_id == request.user.id or request.user.is_superuser:
+          # if you changed the token name, delete old token
+          newtoken.save()
+          if newtoken.token_name != token:
             deltoken = Token.objects.filter(token_name=token)
             deltoken.delete()
-        messages.success(request, 'Sucessfully updated Token')
-        del request.session["token_name"]
+          messages.success(request, 'Sucessfully updated Token')
+          del request.session["token_name"]
+        else:
+          messages.error(request,"Cannot update.  You are not owner of this token or not superuser.")
         return HttpResponseRedirect(get_script_prefix()+'ocpuser/token')
       else:
         #Invalid form
@@ -469,17 +521,19 @@ def updateproject(request):
       form = CreateProjectForm(data= request.POST or None,instance=proj_update)
       if form.is_valid():
         newproj = form.save(commit=False)
-        if newproj.project_name != proj_name:
-          raise OCPCAError ("Cannot change the project name.  MySQL cannot rename databases.")
+        if newproj.user_id == request.user.id or request.user.is_superuser:
+          if newproj.project_name != proj_name:
+            messages.error ("Cannot change the project name.  MySQL cannot rename databases.")
+          else:
+            newproj.save()
+            messages.success(request, 'Sucessfully updated project ' + proj_name)
         else:
-          newproj.save()
-        messages.success(request, 'Sucessfully updated project ' + proj_name)
+          messages.error(request,"Cannot update.  You are not owner of this project or not superuser.")
         del request.session["project_name"]
         return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile')
       else:
         #Invalid form
         context = {'form': form}
-        print form.errors
         return render_to_response('updateproject.html',context,context_instance=RequestContext(request))
     else:
       #unrecognized option
@@ -514,11 +568,19 @@ def updateproject(request):
 
 @login_required(login_url='/ocp/accounts/login/')
 def createtoken(request):
+
   if request.method == 'POST':
     if 'createtoken' in request.POST:
+
       form = CreateTokenForm(request.POST)
+
+      # restrict projects to user visible fields
+      form.fields['project'].queryset = Project.objects.filter(user_id=request.user.id) | Project.objects.filter(public=1)
+
       if form.is_valid():
-        new_token= form.save()
+        new_token=form.save(commit=False)
+        new_token.user_id=request.user.id
+        new_token.save()
         return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile')
       else:
         context = {'form': form}
@@ -530,6 +592,10 @@ def createtoken(request):
   else:
     '''Show the Create datasets form'''
     form = CreateTokenForm()
+
+    # restrict projects to user visible fields
+    form.fields['project'].queryset = Project.objects.filter(user_id=request.user.id) | Project.objects.filter(public=1)
+
     context = {'form': form}
     return render_to_response('createtoken.html',context,context_instance=RequestContext(request))
       
@@ -658,8 +724,6 @@ def downloaddata(request):
       #return render_to_response('download.html', { 'dts': datasets },context_instance=\
           #         RequestContext(request))                                                                
   except OCPCAError, e:
-    #return django.http.HttpResponseNotFound(e.value)                                   
-    messages.error(request, e.value)
-    #form = dataUserForm()                                                              
+    messages.error("Unknown exception in administrative interface = {}".format(e)) 
     tokens = pd.getPublic ()
     return redirect(downloaddata)

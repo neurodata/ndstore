@@ -36,24 +36,21 @@ class CreateDatasetForm(ModelForm):
 
     class Meta:
         model = Dataset
-
-ProjectFormSet = inlineformset_factory(Dataset,Project,extra=1, form=CreateProjectForm)
-
-             
+        exclude = ('user',)
 
 class CreateTokenForm(ModelForm):
 
     class Meta:
         model = Token
+        exclude = ('user',)
         def clean_token(self):
             if 'token_name' in self.cleaned_data:
                 token = self.cleaned_data['token_name']
                 return token 
             raise forms.ValidationError('Please enter a valid token')
 
-TokenFormSet = inlineformset_factory(Project,Token,extra=1, form=CreateTokenForm)
-
 class dataUserForm( forms.Form):
+
      firstname = forms.CharField(max_length=200)
      lastname = forms.CharField(max_length=200)
      email = forms.CharField(max_length=800)
