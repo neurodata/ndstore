@@ -61,6 +61,7 @@ ocplib.mergeCube.argtypes = [ array_3d_uint32, cp.POINTER(cp.c_int), cp.c_int, c
 ocplib.isotropicBuild8.argtypes = [ array_1d_uint8, array_1d_uint8, array_1d_uint8, cp.POINTER(cp.c_int) ]
 ocplib.isotropicBuild16.argtypes = [ array_1d_uint16, array_1d_uint16, array_1d_uint16, cp.POINTER(cp.c_int) ]
 ocplib.isotropicBuild32.argtypes = [ array_1d_uint32, array_1d_uint32, array_1d_uint32, cp.POINTER(cp.c_int) ]
+ocplib.addDataZSlice.argtypes = [ array_3d_uint32, array_3d_uint32, cp.POINTER(cp.c_int), cp.POINTER(cp.c_int) ]
 
 # setting the return type of the function in C
 # FORMAT: <library_name>.<function_name>.restype = [ ctype.<argtype> ]
@@ -86,6 +87,7 @@ ocplib.mergeCube.restype = None
 ocplib.isotropicBuild8.restype = None
 ocplib.isotropicBuild16.restype = None
 ocplib.isotropicBuild32.restype = None
+ocplib.addDataZSlice.restype = None
 
 def filter_ctype_OMP ( cutout, filterlist ):
   """Remove all annotations in a cutout that do not match the filterlist using OpenMP"""
@@ -303,3 +305,12 @@ def isotropicBuild_ctype ( data1, data2, newdata ):
   newdata = np.zeros(data1.shape,dtype=data1.dtype)
   ocplib.isotropicBuild32 ( data1, data2, newdata, (cp.c_int * len(dims))(*dims) )
   return ( newdata )
+
+
+def addDataToZSliceStack_ctype ( cube, output, offset ):
+  """Add the contribution of the input data to the next level at the given offset in the output cube"""
+
+  dims = [ i for i in cube.shape ]
+  import pdb; pdb.set_trace()
+  ocplib.addDataZSlice ( cube, output, offset, (cp.c_int * len(dims))(*dims) )
+  return ( output )

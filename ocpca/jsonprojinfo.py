@@ -91,5 +91,4 @@ def publicTokens ( projdb ):
   """List of Public Tokens"""
   
   tokens = projdb.getPublic ()
-  import json;
   return json.dumps (tokens, sort_keys=True, indent=4)

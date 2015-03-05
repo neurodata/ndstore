@@ -24,17 +24,14 @@ import logging
 logger=logging.getLogger("ocp")
 
 #
-#  AnnotateIndex: Maintain the index in the database
+# AnnotateIndex: Maintain the index in the database
 # AUTHOR: Priya Manavalan
+#
 
 class AnnotateIndex:
 
-
-  #
-  # Constructor 
-  #
   def __init__(self,kvio,proj):
-    """Give an active connection.  This puts all index operations in the same transation as the calling db."""
+    """Give an active connection.This puts all index operations in the same transation as the calling db."""
 
     self.proj = proj
     self.kvio = kvio
@@ -45,10 +42,8 @@ class AnnotateIndex:
       self.NPZ = False
    
 
-  #
-  # getIndex -- Retrieve the index for the annotation with id
-  #
   def getIndex ( self, entityid, resolution, update=False ):
+    """Retrieve the index for the annotation with id"""  
     
     idxstr = self.kvio.getIndex ( entityid, resolution, update )
     if idxstr:
@@ -67,10 +62,9 @@ class AnnotateIndex:
     else:
       return []
        
-  #
-  # putIndex -- Write the index for the annotation with id
-  #
+  
   def putIndex ( self, entityid, resolution, index, update=False ):
+    """Write the index for the annotation with id"""
 
     if self.NPZ:
       fileobj = cStringIO.StringIO ()
@@ -85,9 +79,7 @@ class AnnotateIndex:
         tmpfile.seek(0)
         self.kvio.putIndex ( entityid, resolution, tmpfile.read(), update )
 
-  #
-  # Update Index Dense - Updated the annotation database with the given hash index table
-  #
+
   def updateIndexDense(self,index,resolution):
     """Updated the database index table with the input index hash table"""
 
@@ -105,27 +97,14 @@ class AnnotateIndex:
         newIndex=np.union1d(curindex,cubeindex)
         self.putIndex ( key, resolution, newIndex, True )
 
-  #
-  #  deleteIndexResolution - Delete the index for a given annotation id for current resolution
-  #
+  
   def deleteIndexResolution ( self, annid, res ):
     """delete the index for a given annid at the given resolution"""
     
     # delete Index table for each resolution
     self.kvio.deleteIndex(annid,res)
-  #  sql = "DELETE FROM " +  self.proj.getIdxTable(resolution)  +  " WHERE annid=" + str(annid)
-  #  try:
-  #    self.cursor.execute ( sql )
-  #    except MySQLdb.Error, e:
-  #      logger.error("Error deleting the index %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-  #      raise
-  #    except:
-  #      logger.exception("Unknown exception In deleteIndexResolution")
-  #      raise
   
-  #  
-  # Delete the index for a given annotation id
-  #
+  
   def deleteIndex ( self, annid, resolutions ):
     """delete the index for a given annid"""
     
@@ -134,9 +113,6 @@ class AnnotateIndex:
       self.kvio.deleteIndex(annid,res)
 
 
-  #
-  # Update Index - Updated the annotation object with the given index
-  #
   def updateIndex ( self, entityid, index, resolution ):
     """Updated the database index table with the input index hash table"""
 

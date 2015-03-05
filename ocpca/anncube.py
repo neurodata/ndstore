@@ -20,14 +20,9 @@ import zlib
 
 import ocplib
 from cube import Cube
-
-from ocpca_cy import annotate_cy
-from ocpca_cy import shave_cy
-from ocpca_cy import recolor_cy#, recolor64_cy
 from ocpca_cy import zoomData_cy#, zoomData64_cy
 
 from ocpcaerror import OCPCAError 
-
 import logging
 logger=logging.getLogger("ocp")
 
@@ -124,7 +119,7 @@ class AnnotateCube(Cube):
   #
   #  Exceptions are uint8 to keep them small.  Max cube size is 256^3.
   #
-  def annotate_ctype ( self, annid, offset, locations, conflictopt ):
+  def annotate ( self, annid, offset, locations, conflictopt ):
     """Add annotation by a list of locations"""
 
     try:
@@ -137,31 +132,12 @@ class AnnotateCube(Cube):
     except IndexError, e:
       
       raise OCPCAError ("Voxel list includes out of bounds request.")
-  
-  def annotate ( self, annid, offset, locations, conflictopt ):
-    """Add annotation by a list of locations"""
-
-    try:
-      
-      # the cython optimized version of this function.
-      return annotate_cy ( self.data, annid, offset, np.array(locations, dtype=np.uint32), conflictopt )
-   
-    except IndexError, e:
-      
-      raise OCPCAError ("Voxel list includes out of bounds request.")
 
 
   def shave ( self, annid, offset, locations ):
     """Remove annotation by a list of locations"""
 
-    # the cython optimized version of this function.
-    return shave_cy ( self.data, annid, offset, np.array(locations, dtype=np.uint32))
-
-
-  def shave_ctype ( self, annid, offset, locations ):
-    """Remove annotation by a list of locations"""
-
-    # the cython optimized version of this function.
+    # the ctype optimized version of this function.
     self.data , exceptions, zeroed = ocplib.shave_ctype ( self.data, annid, offset, np.array(locations, dtype=np.uint32))
     
     return exceptions, zeroed
@@ -177,7 +153,6 @@ class AnnotateCube(Cube):
 
     # false color redrawing of the region
     imagemap = ocplib.recolor_ctype ( self.data.reshape( (imagemap.shape[0], imagemap.shape[1]) ), imagemap )
-    #recolor_cy ( self.data.reshape((imagemap.shape[0],imagemap.shape[1])), imagemap )
 
     return Image.frombuffer ( 'RGBA', (xdim,ydim), imagemap, 'raw', 'RGBA', 0, 1 )
 
@@ -191,7 +166,6 @@ class AnnotateCube(Cube):
 
     # false color redrawing of the region
     imagemap = ocplib.recolor_ctype ( self.data.reshape( (imagemap.shape[0], imagemap.shape[1]) ), imagemap )
-    #recolor_cy ( self.data.reshape((imagemap.shape[0],imagemap.shape[1])), imagemap )
 
     outimage = Image.frombuffer ( 'RGBA', (xdim,zdim), imagemap, 'raw', 'RGBA', 0, 1 )
     return outimage.resize ( [xdim, int(zdim*scale)] )
@@ -207,7 +181,6 @@ class AnnotateCube(Cube):
 
     # false color redrawing of the region
     imagemap = ocplib.recolor_ctype ( self.data.reshape( (imagemap.shape[0], imagemap.shape[1]) ), imagemap )
-    #recolor_cy ( self.data.reshape((imagemap.shape[0],imagemap.shape[1])), imagemap )
 
     outimage = Image.frombuffer ( 'RGBA', (ydim,zdim), imagemap, 'raw', 'RGBA', 0, 1 )
     return  outimage.resize ( [ydim, int(zdim*scale)] )
@@ -345,7 +318,8 @@ class AnnotateCube64(AnnotateCube):
     """Remove annotation by a list of locations"""
 
     # the cython optimized version of this function.
-    return shave_cy ( self.data, annid, offset, np.array(locations, dtype=np.uint32))
+    self.data , exceptions, zeroed = ocplib.shave_ctype ( self.data, annid, offset, np.array(locations, dtype=np.uint32))
+    return exceptions, zeroed
   
 
   #

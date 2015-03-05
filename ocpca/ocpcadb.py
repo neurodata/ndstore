@@ -15,6 +15,7 @@
 # RBTODO batch i/o with getcubes when possible
 
 import numpy as np
+import sys
 import cStringIO
 import zlib
 import MySQLdb
@@ -36,14 +37,9 @@ import tempfile
 import h5py
 
 from ocpcaerror import OCPCAError
-
-from ocpca_cy import mergeCube_cy
-from ocpca_cy import cubeLocs_cy
-
 import logging
 logger=logging.getLogger("ocp")
 
-import sys
 
 import mysqlkvio
 try:
@@ -747,7 +743,6 @@ class OCPCADB:
     cubeidx = defaultdict(set)
 
     cubelocs = ocplib.locate_ctype ( np.array(locations, dtype=np.uint32), cubedim )
-    #cubelocs = cubeLocs_cy ( np.array(locations, dtype=np.uint32), cubedim )
 
     # sort the arrary, by cubeloc
     cubelocs = ocplib.quicksort ( cubelocs )
@@ -775,7 +770,7 @@ class OCPCADB:
       offset = np.asarray([cubeoff[0]*cubedim[0],cubeoff[1]*cubedim[1],cubeoff[2]*cubedim[2]], dtype = np.uint32)
 
       # add the items
-      exceptions = np.array(cube.annotate_ctype(entityid, offset, voxlist, conflictopt), dtype=np.uint8)
+      exceptions = np.array(cube.annotate(entityid, offset, voxlist, conflictopt), dtype=np.uint8)
       #exceptions = np.array(cube.annotate(entityid, offset, voxlist, conflictopt), dtype=np.uint8)
 
       # update the sparse list of exceptions
@@ -819,7 +814,6 @@ class OCPCADB:
 
     # convert voxels z coordinate
     cubelocs = ocplib.locate_ctype ( np.array(locations, dtype=np.uint32), cubedim )
-    #cubelocs2 = cubeLocs_cy ( np.array(locations, dtype=np.uint32), cubedim )
 
     # sort the arrary, by cubeloc
     cubelocs = ocplib.quicksort ( cubelocs )
@@ -849,7 +843,7 @@ class OCPCADB:
         offset = np.asarray( [cubeoff[0]*cubedim[0],cubeoff[1]*cubedim[1],cubeoff[2]*cubedim[2]], dtype=np.uint32 )
 
         # remove the items
-        exlist, zeroed = cube.shave_ctype (entityid, offset, voxlist)
+        exlist, zeroed = cube.shave (entityid, offset, voxlist)
         # make sure that exceptions are stored as 8 bits
         exceptions = np.array(exlist, dtype=np.uint8)
 
@@ -1968,8 +1962,6 @@ class OCPCADB:
         #  exceptions with the same value as the annotation.
         #  Just delete the exceptions
         #
-        # Cython optimized function to relabel data from annid to mergeid
-        #mergeCube_cy ( cube.data, mergeid, annid ) 
         # Ctype optimized version for mergeCube
         ocplib.mergeCube_ctype ( cube.data, mergeid, annid )
         self.putCube ( key, resolution, cube )

@@ -297,9 +297,10 @@ def buildImageStack ( proj, resolution ):
 
       # Set the limits for iteration on the number of cubes in each dimension
       # RBTODO These limits may be wrong for even (see channelingest.py)
-      xlimit = ximagesz / xcubedim
-      ylimit = yimagesz / ycubedim
-      zlimit = zimagesz / zcubedim
+      xlimit = (ximagesz-1) / xcubedim + 1
+      ylimit = (yimagesz-1) / ycubedim + 1
+      zlimit = (zimgesz-1) / zcubedim + 1
+      #zlimit = zimagesz / zcubedim
 
       cursor = db.conn.cursor()
 
@@ -331,16 +332,19 @@ def buildImageStack ( proj, resolution ):
 
                 # KLTODO it's probably worth doing a ctypes implementation of the following vectorized function it's slow
                 if olddata.dtype==np.uint8:
-                  vec_func = np.vectorize ( lambda a,b: a if b==0 else (b if a ==0 else np.uint8((a+b)/2))) 
-                  mergedata = vec_func ( olddata[sl*2,:,:], olddata[sl*2+1,:,:] )
+                  #vec_func = np.vectorize ( lambda a,b: a if b==0 else (b if a ==0 else np.uint8((a+b)/2))) 
+                  #mergedata = vec_func ( olddata[sl*2,:,:], olddata[sl*2+1,:,:] )
+                  mergedata = ocplib.isotopicBuild_ctype( oldata[sl*2,:,:], olddata[sl*2+1,:,:] )
                   slimage = Image.frombuffer ( 'L', (xcubedim*2,ycubedim*2), mergedata.flatten(), 'raw', 'L', 0, 1 )
                 elif olddata.dtype==np.uint16:
-                  vec_func = np.vectorize ( lambda a,b: a if b==0 else (b if a ==0 else np.uint16((a+b)/2))) 
-                  mergedata = vec_func ( olddata[sl*2,:,:], olddata[sl*2+1,:,:] )
+                  #vec_func = np.vectorize ( lambda a,b: a if b==0 else (b if a ==0 else np.uint16((a+b)/2))) 
+                  #mergedata = vec_func ( olddata[sl*2,:,:], olddata[sl*2+1,:,:] )
+                  mergedata = ocplib.isotopicBuild_ctype( oldata[sl*2,:,:], olddata[sl*2+1,:,:] )
                   slimage = Image.frombuffer ( 'I;16', (xcubedim*2,ycubedim*2), mergedata.flatten(), 'raw', 'I;16', 0, 1 )
                 elif olddata.dtype==np.float32:
-                  vec_func = np.vectorize ( lambda a,b: a if b==0 else (b if a ==0 else np.float32((a+b)/2))) 
-                  mergedata = vec_func ( olddata[sl*2,:,:], olddata[sl*2+1,:,:] )
+                  #vec_func = np.vectorize ( lambda a,b: a if b==0 else (b if a ==0 else np.float32((a+b)/2))) 
+                  #mergedata = vec_func ( olddata[sl*2,:,:], olddata[sl*2+1,:,:] )
+                  mergedata = ocplib.isotopicBuild_ctype( oldata[sl*2,:,:], olddata[sl*2+1,:,:] )
                   slimage = Image.frombuffer ( 'F', (xcubedim*2,ycubedim*2), mergedata.flatten(), 'raw', 'F', 0, 1 )
 
               # Resize the image
