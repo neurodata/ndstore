@@ -121,7 +121,7 @@ class BrainRestArgs:
     except Exception, e:
       # RBTODO make this error better.  How to print good information about e?
       #  it only prints 3, not KeyError 3, whereas print e in the debugger gives good info
-      raise RESTArgsError ( "Illegal arguments to cutout.  Check cube failed {}".format(e.value))
+      raise RESTArgsError ( "Illegal arguments to cutout.  Check cube failed {}".format(e))
 
 
     # list of identifiers to keep
@@ -170,8 +170,6 @@ class BrainRestArgs:
   def xyArgs ( self, imageargs, datasetcfg ):
     """Process REST arguments for an xy plane request.
        You must have set the resolution prior to calling this function."""
-
-    import pdb; pdb.set_trace()
 
     try:
       [ resstr, xdimstr, ydimstr, zstr, rest ]  = imageargs.split('/',4)
@@ -262,7 +260,7 @@ class BrainRestArgs:
       #  it only prints 3, not KeyError 3, whereas print e in the debugger gives good info
       raise RESTArgsError ( "Illegal arguments to cutout.  Check cube failed {}".format(e))
 
-    self._corner=[x1i,y,z1i-datasetcfg.slicerange[0]]
+    self._corner=[x1i,y,z1i]
     self._dim=[x2i-x1i,1,z2i-z1i ]
 
     # list of identifiers to keep
@@ -319,7 +317,7 @@ class BrainRestArgs:
       #  it only prints 3, not KeyError 3, whereas print e in the debugger gives good info
       raise RESTArgsError ( "Illegal arguments to cutout.  Check cube failed {}".format(e))
 
-    self._corner=[x,y1i,z1i-datasetcfg.slicerange[0]]
+    self._corner=[x,y1i,z1i]
     self._dim=[1,y2i-y1i,z2i-z1i ]
 
 
@@ -346,7 +344,7 @@ class BrainRestArgs:
       #  it only prints 3, not KeyError 3, whereas print e in the debugger gives good info
       raise RESTArgsError ( "Illegal arguments to cutout.  Check cube failed {}".format(e))
 
-    self._corner = [x1i,y1i,z1i-datasetcfg.slicerange[0]]
+    self._corner = [x1i,y1i,z1i]
     self._dim = [x2i-x1i,y2i-y1i,z2i-z1i ]
     self._time = [t1i,t2i]
 

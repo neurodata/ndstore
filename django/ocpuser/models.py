@@ -16,6 +16,7 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.contrib.auth.models import User
 from django.conf import settings
+
 # Create your models here.
 class Dataset ( models.Model):
     dataset_name = models.CharField(max_length=255, primary_key=True,verbose_name="Name of the Image dataset")    
@@ -33,8 +34,8 @@ class Dataset ( models.Model):
         (0, 'Z Slices'),
         (1, 'isotropic'),
         )
-    scalinglevels = models.IntegerField(default=0, choices=SCALING_CHOICES)
-    scalingoption = models.IntegerField(default=0)
+    scalingoption = models.IntegerField(default=0, choices=SCALING_CHOICES)
+    scalinglevels = models.IntegerField(default=0)
     startwindow = models.IntegerField(default=0)
     endwindow = models.IntegerField(default=0)
     starttime = models.IntegerField(default=0)
@@ -53,7 +54,7 @@ class Dataset ( models.Model):
 class Project ( models.Model):
     project_name  =  models.CharField(max_length=255, primary_key=True)
     project_description  =  models.CharField(max_length=4096, blank=True)
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
     dataset = models.ForeignKey(Dataset)
 
     PROJECT_CHOICES = (

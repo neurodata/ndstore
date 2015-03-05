@@ -35,7 +35,9 @@ from ocpca_cy import addDataToIsotropicStack_cy
 #RBRM testing code
 #
 def getAnnValue ( value00, value01, value10, value11 ):
-  """Determine the annotation value at the next level of the hierarchy from a 2x2"""
+  """Determine the annotation value at the next level of the hierarchy from a 2x2.
+      take the first non-zero element or take the first repeated element.
+   """
 
   # The following block of code places the majority annotation into value
   # start with 00
@@ -70,7 +72,6 @@ def addDataToIsotropicStack ( cube, output, offset ):
         for x in range (cube.data.shape[2]/2):
 
             # not perfect take a value from either slice.  Not a majority over all.
-            # this whole rooutine getAnnValue needs to be replaced.
             value = getAnnValue (cube.data[z*2,y*2,x*2],cube.data[z*2,y*2,x*2+1],cube.data[z*2,y*2+1,x*2],cube.data[z*2,y*2+1,x*2+1])
             if value == 0:
               value = getAnnValue (cube.data[z*2+1,y*2,x*2],cube.data[z*2+1,y*2,x*2+1],cube.data[z*2+1,y*2+1,x*2],cube.data[z*2+1,y*2+1,x*2+1])
@@ -87,7 +88,7 @@ def buildStack ( token, resolution=None ):
   """Wrapper for the different datatypes """
 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
   
     if proj.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS:
 
@@ -117,7 +118,7 @@ def clearStack ( token ):
 
 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
   
   with closing ( ocpcadb.OCPCADB (proj) ) as db:
     
@@ -248,8 +249,9 @@ def buildAnnoStack ( proj, resolution=None ):
           #  Data stored in z,y,x order dims in x,y,z
           outdim = [ outdata.shape[2], outdata.shape[1], outdata.shape[0]]
 
-          # Preserve annotations made at the specified level RBTODO fix me
-          db.annotateDense ( outcorner, l+1, outdata, 'O' )
+          # Preserve annotations made at the specified level
+          # KL check that the P option preserves annotations?  RB changed from O
+          db.annotateDense ( outcorner, l+1, outdata, 'P' )
           db.conn.commit()
           print "Committed"
             
