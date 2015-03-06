@@ -3,7 +3,7 @@
 all: clean ocplib.so
 
 ocplib.so : filterCutout.o filterCutoutOMP.o locateCube.o annotateCube.o shaveCube.o mergeCube.o annotateEntityDense.o shaveDense.o exceptionDense.o overwriteDense.o zindex.o recolorCube.o zoomData.o quicksort.o isotropicBuild.o addData.o
-	gcc -shared -fopenmp -O3 -o ocplib.so filterCutout.o filterCutoutOMP.o locateCube.o annotateCube.o shaveCube.o mergeCube.o annotateEntityDense.o shaveDense.o exceptionDense.o overwriteDense.o zindex.o recolorCube.o zoomData.o quicksort.o isotropicBuild.o addData.o -I .
+	gcc-4.9 -shared -fopenmp -O3 -o ocplib.so filterCutout.o filterCutoutOMP.o locateCube.o annotateCube.o shaveCube.o mergeCube.o annotateEntityDense.o shaveDense.o exceptionDense.o overwriteDense.o zindex.o recolorCube.o zoomData.o quicksort.o isotropicBuild.o addData.o -I .
 
 filterCutout.o : filterCutout.c
 	gcc-4.9 -c -fPIC -O3 filterCutout.c -o filterCutout.o -I .
@@ -51,7 +51,7 @@ isotropicBuild.o : isotropicBuild.c
 	gcc-4.9 -c -fPIC -O3 isotropicBuild.c -o isotropicBuild.o -I .
 
 addData.o : addData.c
-	gcc -c -fPIC -O3 addData.c -o addData.o -I .
+	gcc-4.9 -c -fPIC -O3 addData.c -o addData.o -I .
 
 test : clean testmain.c 
 	gcc-4.9 -ggdb testmain.c quicksort.c -o test -I .
