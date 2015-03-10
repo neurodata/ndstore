@@ -87,13 +87,14 @@ class SimpleCatmaid:
     xend = min ((xtile+1)*self.tilesz,self.proj.datasetcfg.imagesz[resolution][0])
 
     # z cutouts need to get rescaled
-    #  we'll map to the closest pixel range and tolerate one pixel error at the boundary
-    scalefactor = self.proj.datasetcfg.zscale[resolution]
-    zoffset = self.proj.datasetcfg.slicerange[0]
+    # we'll map to the closest pixel range and tolerate one pixel error at the boundary
+    # Scalefactor = zvoxel / yvoxel
+    scalefactor = self.proj.datasetcfg.voxelres[resolution][2] / self.proj.datasetcfg.voxelres[resolution][1]
+    zoffset = self.proj.datasetcfg.offset[resolution][2]
     ztilestart = int((ztile*self.tilesz)/scalefactor) + zoffset
     zstart = max ( ztilestart, zoffset ) 
     ztileend = int(math.ceil((ztile+1)*self.tilesz/scalefactor)) + zoffset
-    zend = min ( ztileend, self.proj.datasetcfg.slicerange[1]+1 )
+    zend = min ( ztileend, self.proj.datasetcfg.imagesz[resolution][2]+1 )
    
     # get an xz image slice
     imageargs = '{}/{},{}/{}/{},{}/'.format(resolution,xstart,xend,yslice,zstart,zend) 
@@ -121,13 +122,14 @@ class SimpleCatmaid:
     yend = min ((ytile+1)*self.tilesz,self.proj.datasetcfg.imagesz[resolution][1])
 
     # z cutouts need to get rescaled
-    #  we'll map to the closest pixel range and tolerate one pixel error at the boundary
-    scalefactor = self.proj.datasetcfg.zscale[resolution]
-    zoffset = self.proj.datasetcfg.slicerange[0]
+    # we'll map to the closest pixel range and tolerate one pixel error at the boundary
+    # Scalefactor = zvoxel / xvoxel
+    scalefactor = self.proj.datasetcfg.voxelres[resolution][2] / self.proj.datasetcfg.voxelres[resolution][0]
+    zoffset = self.proj.datasetcfg.offset[resolution][2]
     ztilestart = int((ztile*self.tilesz)/scalefactor) + zoffset
     zstart = max ( ztilestart, zoffset ) 
     ztileend = int(math.ceil((ztile+1)*self.tilesz/scalefactor)) + zoffset
-    zend = min ( ztileend, self.proj.datasetcfg.slicerange[1]+1 )
+    zend = min ( ztileend, self.proj.datasetcfg.imagesz[resolution][2]+1 )
 
     # get an yz image slice
     imageargs = '{}/{}/{},{}/{},{}/'.format(resolution,xslice,ystart,yend,zstart,zend) 
