@@ -1316,7 +1316,8 @@ class OCPCADB:
         # add it to the output cube
         start3 = time.time()
   
-        outcube.addData_new ( incube, offset ) 
+        outcube.addData(incube, offset)
+        #outcube.addData_new ( incube, offset ) 
         totaltime3 += time.time()-start3
 
       print "ReadFile:", totaltime2,"TempFile",totaltime5, "Array",totaltime6, "Add Cube", totaltime3, "Combined", totaltime4

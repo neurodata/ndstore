@@ -32,6 +32,10 @@ from ocpcaerror import OCPCAError
 import logging
 logger=logging.getLogger("ocp")
 
+# OCP Version
+OCP_VERSION_NUMBER = 0.6
+SCHEMA_VERSION_NUMBER = 0.6
+
 # dbtype enumerations
 IMAGES_8bit = 1
 ANNOTATIONS = 2
