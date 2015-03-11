@@ -73,6 +73,10 @@ READONLY_FALSE = 0
 EXCEPTION_TRUE = 1
 EXCEPTION_FALSE = 0
 
+# Public Values
+PUBLIC_TRUE = 1
+PUBLIC_FALSE = 0
+
 class OCPCAProject:
   """ Project specific for cutout and annotation data """
 
