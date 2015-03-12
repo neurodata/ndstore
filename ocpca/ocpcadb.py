@@ -1432,9 +1432,9 @@ class OCPCADB:
               h5.close()
 
           # add it to the output cube
-          outcube.addData_new ( incube, offset )
+          outcube.addData ( incube, offset )
           print idx, outcube.data.shape
-          bigCube[timestamp,:,:,:] = outcube.data
+          bigCube[timestamp-timerange[0],:,:,:] = outcube.data
 
     except:
       self.kvio.rollback()
