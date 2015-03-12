@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import numpy as np
-import zindex
 from PIL import Image
 
 from cube import Cube
@@ -161,8 +160,11 @@ class ImageCube16(Cube):
 
     # This works for 16-> conversions
     zdim,ydim,xdim = self.data.shape
-    self.data = np.uint8(self.data)
-    return Image.frombuffer ( 'L', (xdim,ydim), self.data[0,:,:].flatten(), 'raw', 'L', 0, 1)
+    if self.data.dtype == np.uint8:  
+      return Image.frombuffer ( 'L', (xdim,ydim), self.data[0,:,:].flatten(), 'raw', 'L', 0, 1)
+    else:
+      outimage = Image.frombuffer ( 'I;16', (xdim,ydim), self.data[0,:,:].flatten(), 'raw', 'I;16', 0, 1)
+      return outimage.point(lambda i:i*(1./256)).convert('L')
 
 
   #
@@ -171,8 +173,12 @@ class ImageCube16(Cube):
   def xzImage ( self, zscale ):
 
     zdim,ydim,xdim = self.data.shape
-    self.data = np.uint8(self.data)
-    outimage = Image.frombuffer ( 'L', (xdim,zdim), self.data[:,0,:].flatten(), 'raw', 'L', 0, 1)
+    if self.data.dtype == np.uint8:  
+      outimage = Image.frombuffer ( 'L', (xdim,zdim), self.data[:,0,:].flatten(), 'raw', 'L', 0, 1)
+    else:
+      outimage = Image.frombuffer ( 'I;16', (xdim,zdim), self.data[:,0,:].flatten(), 'raw', 'I;16', 0, 1)
+      outimage = outimage.point(lambda i:i*(1./256)).convert('L')
+    
     return  outimage.resize ( [xdim, int(zdim*zscale)] )
 
   #
@@ -181,8 +187,12 @@ class ImageCube16(Cube):
   def yzImage ( self, zscale ):
 
     zdim,ydim,xdim = self.data.shape
-    self.data = np.uint8(self.data)
-    outimage = Image.frombuffer ( 'L', (ydim,zdim), self.data[:,:,0].flatten(), 'raw', 'L', 0, 1)
+    if self.data.dtype == np.uint8:  
+      outimage = Image.frombuffer ( 'L', (ydim,zdim), self.data[:,:,0].flatten(), 'raw', 'L', 0, 1)
+    else:
+      outimage = Image.frombuffer ( 'I;16', (ydim,zdim), self.data[:,:,0].flatten(), 'raw', 'I;16', 0, 1)
+      outimage = outimage.point(lambda i:i*(1./256)).convert('L')
+    
     return outimage.resize ( [ydim, int(zdim*zscale)] )
 
 

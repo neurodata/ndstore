@@ -32,6 +32,10 @@ from ocpcaerror import OCPCAError
 import logging
 logger=logging.getLogger("ocp")
 
+# OCP Version
+OCP_VERSION_NUMBER = 0.6
+SCHEMA_VERSION_NUMBER = 0.6
+
 # dbtype enumerations
 IMAGES_8bit = 1
 ANNOTATIONS = 2
@@ -52,7 +56,7 @@ TIMESERIES_DATASETS = [ TIMESERIES_4d_8bit, TIMESERIES_4d_16bit ]
 ANNOTATION_DATASETS = [ ANNOTATIONS, ANNOTATIONS_64bit ]
 RGB_DATASETS = [ RGB_32bit, RGB_64bit ]
 DATASETS_8bit = [ IMAGES_8bit, CHANNELS_8bit, TIMESERIES_4d_8bit ]
-DATASETS_16bit = [ IMAGES_8bit, CHANNELS_16bit, TIMESERIES_4d_16bit ]
+DATASETS_16bit = [ IMAGES_16bit, CHANNELS_16bit, TIMESERIES_4d_16bit ]
 DATSETS_32bit = [ RGB_32bit, ANNOTATIONS, PROBMAP_32bit ]
 COMPOSITE_DATASETS = CHANNEL_DATASETS + TIMESERIES_DATASETS
 
@@ -69,13 +73,17 @@ READONLY_FALSE = 0
 EXCEPTION_TRUE = 1
 EXCEPTION_FALSE = 0
 
+# Public Values
+PUBLIC_TRUE = 1
+PUBLIC_FALSE = 0
+
 class OCPCAProject:
   """ Project specific for cutout and annotation data """
 
   # Constructor 
   def __init__(self, token, dbname, dbhost, dbtype, dataset, dataurl, readonly, exceptions, resolution, kvserver, kvengine, propagate ):
     """ Initialize the OCPCA Project """
-    
+
     self._token = dbname
     self._dbname = dbname
     self._dbhost = dbhost
@@ -320,7 +328,7 @@ class OCPCAProjectsDB:
     [token, openid, host, project, dbtype, dataset, dataurl, readonly, exceptions, resolution, kvserver, kvengine, propagate ] = row
 
     # Create a project object
-    proj = OCPCAProject ( token, project, host, dbtype, dataset, dataurl, readonly, exceptions, resolution, kvserver, kvengine, propagate ) 
+    proj = OCPCAProject ( token, project, host, int(dbtype), dataset, dataurl, readonly, exceptions, int(resolution), kvserver, kvengine, propagate ) 
     proj.datasetcfg = self.loadDatasetConfig ( dataset )
 
     return proj
@@ -356,7 +364,7 @@ class OCPCAProjectsDB:
     datasetcfg = self.loadDatasetConfig ( dataset )
 
     sql = "INSERT INTO {0} (token, openid, host, project, datatype, dataset, dataurl, readonly, exceptions, resolution, public, kvserver, kvengine, propagate) VALUES (\'{1}\',\'{2}\',\'{3}\',\'{4}\',{5},\'{6}\',\'{7}\',\'{8}\',\'{9}\',\'{10}\',\'{11}\',\'{12}',\'{13}',\'{14}')".format (\
-       ocpcaprivate.projects, token, openid, dbhost, project, dbtype, dataset, dataurl, int(readonly), int(exceptions), resolution, int(public), kvserver, kvengine, propagate )
+       ocpcaprivate.projects, token, openid, dbhost, project, int(dbtype), dataset, dataurl, int(readonly), int(exceptions), int(resolution), int(public), kvserver, kvengine, propagate )
 
     logger.info ( "Creating new project. Host %s. Project %s. SQL=%s" % ( dbhost, project, sql ))
 

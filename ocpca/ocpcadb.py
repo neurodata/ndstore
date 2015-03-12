@@ -24,7 +24,6 @@ from collections import defaultdict
 import itertools
 from contextlib import closing
 
-import zindex
 import anncube
 import imagecube
 import ocpcaproj
@@ -1147,7 +1146,7 @@ class OCPCADB:
     """Extract a cube of arbitrary size.  Need not be aligned."""
    
     print "in db.cutout r,c,d ", resolution, corner, dim
-
+    
     # alter query if  (ocpcaproj)._resolution is > resolution
     # if cutout is below resolution, get a smaller cube and scaleup
     if self.annoproj.getDBType() in ocpcaproj.ANNOTATION_DATASETS and self.annoproj.getResolution() > resolution:
@@ -1311,7 +1310,8 @@ class OCPCADB:
         # add it to the output cube
         start3 = time.time()
   
-        outcube.addData_new ( incube, offset ) 
+        outcube.addData(incube, offset)
+        #outcube.addData_new ( incube, offset ) 
         totaltime3 += time.time()-start3
 
       print "ReadFile:", totaltime2,"TempFile",totaltime5, "Array",totaltime6, "Add Cube", totaltime3, "Combined", totaltime4
