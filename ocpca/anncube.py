@@ -18,7 +18,6 @@ import cStringIO
 from PIL import Image
 import zlib
 
-import zindex
 import ocplib
 from cube import Cube
 

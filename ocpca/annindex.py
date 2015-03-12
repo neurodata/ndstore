@@ -17,7 +17,6 @@ import array
 import cStringIO
 import tempfile
 import h5py
-import MySQLdb
 
 import zindex
 import ocpcaproj
@@ -108,12 +107,13 @@ class AnnotateIndex:
         self.putIndex ( key, resolution, newIndex, True )
 
   #
-  #  deleteIndex - Delete the index for a given annotation id for current resolution
+  #  deleteIndexResolution - Delete the index for a given annotation id for current resolution
   #
-  #def deleteIndexResolution ( self, annid, resolution ):
-  #  """delete the index for a given annid"""
+  def deleteIndexResolution ( self, annid, res ):
+    """delete the index for a given annid at the given resolution"""
     
     # delete Index table for each resolution
+    self.kvio.deleteIndex(annid,res)
   #  sql = "DELETE FROM " +  self.proj.getIdxTable(resolution)  +  " WHERE annid=" + str(annid)
   #  try:
   #    self.cursor.execute ( sql )

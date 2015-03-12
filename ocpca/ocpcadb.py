@@ -24,7 +24,6 @@ from collections import defaultdict
 import itertools
 from contextlib import closing
 
-import zindex
 import anncube
 import imagecube
 import ocpcaproj
@@ -411,10 +410,10 @@ class OCPCADB:
     return cube
 
 
-  def getCubes ( self, listofidxs, resolution ):
+  def getCubes ( self, listofidxs, resolution, neariso=False ):
     """ Return a list of cubes """
-
-    return self.kvio.getCubes( listofidxs, resolution )
+    
+    return self.kvio.getCubes( listofidxs, resolution, neariso )
 
 
   def putCube ( self, zidx, resolution, cube, update=False ):
@@ -1135,7 +1134,7 @@ class OCPCADB:
     # scale the corner to higher resolution
     effcorner = corner[0]*(2**(resolution-self.annoproj.getResolution())), corner[1]*(2**(resolution-self.annoproj.getResolution())), corner[2]
 
-    effdim = dim[0]*(2**(resolution-self.annoproj.getResolution())),dim[0]*(2**(resolution-self.annoproj.getResolution())),dim[2]
+    effdim = dim[0]*(2**(resolution-self.annoproj.getResolution())),dim[1]*(2**(resolution-self.annoproj.getResolution())),dim[2]
 
     return effcorner, effdim 
 
@@ -1147,7 +1146,7 @@ class OCPCADB:
     """Extract a cube of arbitrary size.  Need not be aligned."""
    
     print "in db.cutout r,c,d ", resolution, corner, dim
-
+    
     # alter query if  (ocpcaproj)._resolution is > resolution
     # if cutout is below resolution, get a smaller cube and scaleup
     if self.annoproj.getDBType() in ocpcaproj.ANNOTATION_DATASETS and self.annoproj.getResolution() > resolution:
@@ -1182,15 +1181,6 @@ class OCPCADB:
     znumcubes = (effcorner[2]+effdim[2]+zcubedim-1)/zcubedim - zstart
     ynumcubes = (effcorner[1]+effdim[1]+ycubedim-1)/ycubedim - ystart
     xnumcubes = (effcorner[0]+effdim[0]+xcubedim-1)/xcubedim - xstart
-
-    # RBTODO need to fix this for new I/O interface.  No dbname to getCubes
-    # use the requested resolution
-    if zscaling == 'isotropic':
-      dbname = self.annoproj.getIsotropicTable(resolution)
-    elif zscaling == 'nearisotropic' and self.datasetcfg.nearisoscaledown[resolution] > 1:
-      dbname = self.annoproj.getNearIsoTable(resolution)
-    else:
-      dbname = self.annoproj.getTable(effresolution)
 
     if self.annoproj.getDBType() in ocpcaproj.ANNOTATION_DATASETS:
 
@@ -1248,7 +1238,7 @@ class OCPCADB:
 
     # Sort the indexes in Morton order
     listofidxs.sort()
-
+    
     # xyz offset stored for later use
     lowxyz = ocplib.MortonXYZ ( listofidxs[0] )
 
@@ -1272,7 +1262,10 @@ class OCPCADB:
       elif self.annoproj.getDBType() in ocpcaproj.TIMESERIES_DATASETS:
         cuboids = self.kvio.getTimeSeriesCubes(listofidxs,int(channel),effresolution)
       else:
-        cuboids = self.kvio.getCubes(listofidxs,effresolution)
+        if zscaling == 'nearisotropic' and self.datasetcfg.nearisoscaledown[resolution] > 1:
+          cuboids = self.kvio.getCubes(listofidxs,effresolution,True)
+        else:
+          cuboids = self.kvio.getCubes(listofidxs,effresolution)
       
       import time
       start = time.time()
@@ -1317,7 +1310,8 @@ class OCPCADB:
         # add it to the output cube
         start3 = time.time()
   
-        outcube.addData_new ( incube, offset ) 
+        outcube.addData(incube, offset)
+        #outcube.addData_new ( incube, offset ) 
         totaltime3 += time.time()-start3
 
       print "ReadFile:", totaltime2,"TempFile",totaltime5, "Array",totaltime6, "Add Cube", totaltime3, "Combined", totaltime4
@@ -1372,9 +1366,6 @@ class OCPCADB:
     znumcubes = (corner[2]+dim[2]+zcubedim-1)/zcubedim - zstart
     ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
     xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
-
-    # use the requested resolution
-    dbname = self.annoproj.getTable(resolution)
 
     if self.annoproj.getDBType() in ocpcaproj.DATASETS_8bit:
 
@@ -1432,9 +1423,9 @@ class OCPCADB:
               h5.close()
 
           # add it to the output cube
-          outcube.addData_new ( incube, offset )
+          outcube.addData ( incube, offset )
           print idx, outcube.data.shape
-          bigCube[timestamp,:,:,:] = outcube.data
+          bigCube[timestamp-timerange[0],:,:,:] = outcube.data
 
     except:
       self.kvio.rollback()
@@ -1969,7 +1960,6 @@ class OCPCADB:
  
             # overwrite the cube
             cube.overwrite ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
-
             # update in the database
             if channel == None:
               self.putCube ( key, resolution, cube)
@@ -2015,12 +2005,9 @@ class OCPCADB:
     # ID to merge annotations into 
     mergeid = ids[0]
     
-    #logger.warning("Merging ids  {}".format(ids))
-    
     # Turned off for now( Will's request)
     #if len(self.annoIdx.getIndex(int(mergeid),resolution)) == 0:
     #  raise OCPCAError(ids[0] + " not a valid annotation id. This id does not have paint data")
-    
   
     # Get the list of cubeindexes for the Ramon objects
     listofidxs = set()
@@ -2029,14 +2016,17 @@ class OCPCADB:
     for annid in ids:
       if annid== mergeid:
         continue
-      curindex= self.annoIdx.getIndex(annid,resolution)
-      addindex =np.union1d(addindex,curindex)
+      # Get the Annotation index for that id
+      curindex = self.annoIdx.getIndex(annid,resolution)
+      # Final list of index which has to be updated in idx table
+      addindex = np.union1d(addindex,curindex)
+      # Merge the annotations in the cubes for the current id
       listofidxs = set(curindex)
       for key in listofidxs:
         cube = self.getCube (key,resolution)
-        #Update exceptions if exception flag is set ( PJM added 03/31/14)
         if self.EXCEPT_FLAG:
           oldexlist = self.getExceptions( key, resolution, annid ) 
+          self.kvio.deleteExceptions ( key, resolution, annid )
         #
         # RB!!!!! this next line is wrong!  the problem is that
         #  we are merging all annotations.  So at the end, there
@@ -2044,9 +2034,6 @@ class OCPCADB:
         #  exceptions with the same value as the annotation.
         #  Just delete the exceptions
         #
-        #self.updateExceptions ( key, resolution, mergeid, oldexlist )
-          self.kvio.deleteExceptions ( key, resolution, annid )
-        
         # Cython optimized function to relabel data from annid to mergeid
         #mergeCube_cy ( cube.data, mergeid, annid ) 
         # Ctype optimized version for mergeCube
@@ -2056,18 +2043,19 @@ class OCPCADB:
       # Delete annotation and all it's meta data from the database
       #
       # RB!!!!! except for the merge annotation
-      
       if annid != mergeid:
         try:
+          # reordered because paint data no longer exists
+          #KL TODO Merge for all resolutions and then delete for all of them.
+          self.annoIdx.deleteIndexResolution(annid,resolution)
+          #self.annoIdx.deleteIndex(annid,resolution)
           self.deleteAnnotation (annid, '' )
-          #self.annoIdx.deleteIndexResolution(annid,resolution)
-          self.annoIdx.deleteIndex(annid,resolution)
         except:
           logger.warning("Failed to delete annotation {} during merge.".format(annid))
     self.annoIdx.updateIndex(mergeid,addindex,resolution)     
     self.kvio.commit()
     
-    return "Merge complete"
+    return "Merged Id's {} into {}".format(ids,mergeid)
 
   def merge2D(self, ids, mergetype, res,slicenum):
     # get the size of the image and cube
@@ -2086,7 +2074,6 @@ class OCPCADB:
   def merge3D(self, ids, corner, dim, res):
      # get the size of the image and cube
     resolution = int(res)
-    dbname = self.annoproj.getTable(resolution)
 # No emcaproj.  PYTODO fix this.
 #    if (self.annoproj.getDBType() == emcaproj.ANNOTATIONS):
 #      raise OCPCAError("The project is not  a Annotation project")
@@ -2134,9 +2121,6 @@ class OCPCADB:
     znumcubes = (corner[2]+dim[2]+zcubedim-1)/zcubedim - zstart
     ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
     xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
-
-    dbname = self.annoproj.getTable(resolution)
-
 
     # Build a list of indexes to access                                                                                     
     listofidxs = []

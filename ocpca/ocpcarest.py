@@ -37,15 +37,11 @@ import h5ann
 import h5projinfo
 import annotation
 import mcfc
-
-from ocpca_cy import assignVoxels_cy
-from ocpca_cy import recolor_cy
-
-from ocpcaerror import OCPCAError
-
 from windowcutout import windowCutout
 import ocplib
 import ocpcaprivate
+
+from ocpcaerror import OCPCAError
 
 import logging
 logger=logging.getLogger("ocp")
@@ -79,7 +75,7 @@ def cutout ( imageargs, proj, db, channels=None ):
 
   # Perform the cutout
   cube = db.cutout ( corner, dim, resolution, channels, zscaling )
-
+  
   print np.unique (cube.data)
 
   return cube
@@ -94,7 +90,7 @@ def binZip ( imageargs, proj, db ):
   if proj.getDBType() in ocpcaproj.CHANNEL_DATASETS :
     [ channels, sym, imageargs ] = imageargs.partition ('/')
   else: 
-    channel = None
+    channels = None
 
   cube = cutout ( imageargs, proj, db, channels )
 
@@ -345,10 +341,11 @@ def imgSlice ( service, imageargs, proj, db ):
 
   # Window Function - used to limit the range of data purely for viewing purposes
   (startwindow,endwindow) = proj.datasetcfg.windowrange
-  if endwindow !=0:
+  if endwindow != 0:
     window = (startwindow, endwindow)
     windowCutout ( cb.data, window)
-
+    cb.data = np.uint8(cb.data)
+    
   return cb 
 
 
@@ -1182,10 +1179,9 @@ def getAnnotations ( webargs, postdata ):
 def putAnnotationAsync ( webargs, postdata ):
   """Put a RAMON object asynchrously as HDF5 by object identifier"""
   
-  #import h5annasync
-  #h5annasync.writeDataSSD( webargs, postdata )
   print "TESTING"
-  #hdf5_new.batchCube( webargs, postdata )
+  import ocpdatastream
+
   
   #[ token, sym, optionsargs ] = webargs.partition ('/')
   #options = optionsargs.split('/')
@@ -1784,17 +1780,22 @@ def setPropagate ( webargs ):
     logger.warning ( "Illegal setPropagate request.  Wrong number of arguments." )
     raise OCPCAError ( "Illegal setPropagate request.  Wrong number of arguments." )
     
-  # pattern for using contexts to close databases. get the project 
+  # pattern for using contexts to close databases. get the project
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadProject ( token )
-    if int(value) == ocpcaproj.UNDER_PROPAGATION:
+    # If the value is to set under propagation
+    if int(value) == ocpcaproj.UNDER_PROPAGATION and proj.getPropagate() != ocpcaproj.UNDER_PROPAGATION:
       proj.setPropagate ( ocpcaproj.UNDER_PROPAGATION )
       projdb.updatePropagate ( proj )
       from ocpca.tasks import propagate
-      propagate ( token )
+      propagate.delay ( token )
     elif int(value) == ocpcaproj.NOT_PROPAGATED:
-      proj.setPropagate ( ocpcaproj.NOT_PROPAGATED )
-      projdb.updatePropagate ( proj )
+      if proj.getPropagate() == ocpcaproj.UNDER_PROPAGATION:
+        logger.warning ( "Cannot set this value. Project is under propagation." )
+        raise OCPCAError ( "Cannot set this value. Project is under propagation. " )
+      else:
+        proj.setPropagate ( ocpcaproj.NOT_PROPAGATED )
+        projdb.updatePropagate ( proj )
     else:
       logger.warning ( "Invalid Value {} for setPropagate".format(value) )
       raise OCPCAError ( "Invalid Value {} for setPropagate".format(value) )
@@ -1815,7 +1816,7 @@ def merge ( webargs ):
   
   # Make ids a numpy array to speed vectorize
   ids = np.array(ids,dtype=np.uint32)
-  # Validate ids . IF ids do not exist raise errors
+  # Validate ids . If ids do not exist raise errors
 
   # pattern for using contexts to close databases
   # get the project 
@@ -1824,7 +1825,6 @@ def merge ( webargs ):
 
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
-
   
     #Check that all ids in the id strings are valid annotation objects
     for curid in ids:
@@ -1832,7 +1832,6 @@ def merge ( webargs ):
       if obj == None:
         logger.warning("Invalid object id {} used in merge".format(curid))
         raise OCPCAError("Invalid object id used in merge")
-
 
     [mergetype,resolution] = rest.split('/',1)
     if mergetype == "global":

@@ -19,6 +19,7 @@ import urllib, urllib2
 from contextlib import closing
 import cStringIO
 import logging
+import MySQLdb
 
 import ocpcaproj
 import ocpcadb
@@ -38,6 +39,7 @@ def buildStack ( token ):
   
     if proj.getDBType() in ocpcaproj.ANNOTATION_DATASETS:
       try:
+        clearStack(token)
         buildAnnoStack( token )
         proj.setPropagate ( ocpcaproj.PROPAGATED )
         projdb.updatePropagate ( proj )
@@ -52,17 +54,45 @@ def buildStack ( token ):
       logger.warning ( "Build function not supported for this datatype {}".format(ocpcaproj.getDBType()) )
       raise OCPCAError ( "Build function not supported for this datatype {}".format(ocpcaproj.getDBType()) )
 
+def clearStack ( token ):
+  """ Clear a OCP stack for a given project """
+
+
+  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+    proj = projdb.loadProject ( token )
+  
+  with closing ( ocpcadb.OCPCADB (proj) ) as db:
+    
+    # Clear the database
+    for l in range(proj.getResolution(), proj.datasetcfg.resolutions[-1]):
+      
+        sql = "TRUNCATE table res{};".format(l+1)
+        sql += "TRUNCATE table raw{};".format(l+1)
+        sql += "TRUNCATE table idx{};".format(l+1)
+        if proj.getExceptions == ocpcaproj.EXCEPTION_TRUE:
+          sql += "TRUNCATE table exec{};".format(l+1)
+
+        try:
+          print sql
+          db.conn.cursor().execute(sql)
+          db.conn.commit()
+        except MySQLdb.Error, e:
+          logger.error ("Error truncating the table. {}".format(e))
+          raise
+        finally:
+          db.conn.cursor().close()
+
+
 
 def buildAnnoStack ( token ):
   """ Build the hierarchy for annotations """
-  
   
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadProject ( token )
   
   with closing ( ocpcadb.OCPCADB (proj) ) as db:
   
-    for  l in range ( proj.datasetcfg.resolutions[0], len(proj.datasetcfg.resolutions) ):
+    for l in range (proj.getResolution(), proj.datasetcfg.resolutions[-1]):
 
       # Get the source database sizes
       [ximagesz, yimagesz] = proj.datasetcfg.imagesz [ l ]
@@ -87,7 +117,7 @@ def buildAnnoStack ( token ):
       # Iterate over the cubes in morton order
       for mortonidx in range(0, lastzindex, 64): 
 
-        print "Working on batch {} at {}".format( mortonidx, ocplib.MortonXYZ(mortonidx) )
+        print "Working on batch {} at {}. Resolution {}".format( mortonidx, ocplib.MortonXYZ(mortonidx), l )
         
         # call the range query
         db.queryRange ( mortonidx, mortonidx+64, l );
@@ -110,7 +140,7 @@ def buildAnnoStack ( token ):
           #  we are placing 4x4x4 input blocks into a 2x2x4 cube 
           offset = [(xyz[0]%4)*(xcubedim/2), (xyz[1]%4)*(ycubedim/2), (xyz[2]%4)*zcubedim]
 
-          print "res : zindex = ", l, ":", key, ", location", ocplib.MortonXYZ(key)
+          print "res : zindex = ", l+1, ":", key, ", location", ocplib.MortonXYZ(key)
 
           # add the contribution of the cube in the hierarchy
           #self.addData ( cube, outdata, offset )
