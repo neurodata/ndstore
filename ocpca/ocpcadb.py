@@ -411,10 +411,10 @@ class OCPCADB:
     return cube
 
 
-  def getCubes ( self, listofidxs, resolution ):
+  def getCubes ( self, listofidxs, resolution, neariso=False ):
     """ Return a list of cubes """
-
-    return self.kvio.getCubes( listofidxs, resolution )
+    
+    return self.kvio.getCubes( listofidxs, resolution, neariso )
 
 
   def putCube ( self, zidx, resolution, cube, update=False ):
@@ -1183,15 +1183,6 @@ class OCPCADB:
     ynumcubes = (effcorner[1]+effdim[1]+ycubedim-1)/ycubedim - ystart
     xnumcubes = (effcorner[0]+effdim[0]+xcubedim-1)/xcubedim - xstart
 
-    # RBTODO need to fix this for new I/O interface.  No dbname to getCubes
-    # use the requested resolution
-    if zscaling == 'isotropic':
-      dbname = self.annoproj.getIsotropicTable(resolution)
-    elif zscaling == 'nearisotropic' and self.datasetcfg.nearisoscaledown[resolution] > 1:
-      dbname = self.annoproj.getNearIsoTable(resolution)
-    else:
-      dbname = self.annoproj.getTable(effresolution)
-
     if self.annoproj.getDBType() in ocpcaproj.ANNOTATION_DATASETS:
 
       # input cube is the database size
@@ -1272,7 +1263,10 @@ class OCPCADB:
       elif self.annoproj.getDBType() in ocpcaproj.TIMESERIES_DATASETS:
         cuboids = self.kvio.getTimeSeriesCubes(listofidxs,int(channel),effresolution)
       else:
-        cuboids = self.kvio.getCubes(listofidxs,effresolution)
+        if zscaling == 'nearisotropic' and self.datasetcfg.nearisoscaledown[resolution] > 1:
+          cuboids = self.kvio.getCubes(listofidxs,effresolution,True)
+        else:
+          cuboids = self.kvio.getCubes(listofidxs,effresolution)
       
       import time
       start = time.time()
@@ -1372,9 +1366,6 @@ class OCPCADB:
     znumcubes = (corner[2]+dim[2]+zcubedim-1)/zcubedim - zstart
     ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
     xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
-
-    # use the requested resolution
-    dbname = self.annoproj.getTable(resolution)
 
     if self.annoproj.getDBType() in ocpcaproj.DATASETS_8bit:
 
@@ -2083,7 +2074,6 @@ class OCPCADB:
   def merge3D(self, ids, corner, dim, res):
      # get the size of the image and cube
     resolution = int(res)
-    dbname = self.annoproj.getTable(resolution)
 # No emcaproj.  PYTODO fix this.
 #    if (self.annoproj.getDBType() == emcaproj.ANNOTATIONS):
 #      raise OCPCAError("The project is not  a Annotation project")
@@ -2131,9 +2121,6 @@ class OCPCADB:
     znumcubes = (corner[2]+dim[2]+zcubedim-1)/zcubedim - zstart
     ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
     xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
-
-    dbname = self.annoproj.getTable(resolution)
-
 
     # Build a list of indexes to access                                                                                     
     listofidxs = []
