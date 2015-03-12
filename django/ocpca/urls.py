@@ -35,6 +35,8 @@ urlpatterns = patterns('ocpca.views',
   url(r'(?P<webargs>^\w+/exceptions/[\w,/]*)$', 'exceptions'),
   # get services
   url(r'(?P<webargs>^\w+/(xy|xz|yz|ts|hdf5|npz|zip|id|ids|xyanno||xzanno|yzanno|xytiff|xztiff|yztiff)/[\w,/-]+)$', 'cutout'),
+  # projection services
+  url(r'(?P<webargs>^\w+/(maxproj|minproj)/(xy|xz|yz)/[\w,/-]+)$', 'minmaxProject'),
   # single field interfaces
   url(r'(?P<webargs>^\w+/\d+/getField/[\w,/]*)$', 'getField'),
   url(r'(?P<webargs>^\w+/\d+/setField/[\w\. ,/]*)$', 'setField'),

@@ -336,3 +336,16 @@ def exceptions (request, webargs):
     logger.exception("Unknown exception in exceptions Web service.")
     raise
 
+
+def minmaxProject (request, webargs):
+  """Restful URL for all read services to annotation projects"""
+
+  try:
+    return django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="image/png" )
+  except OCPCAError, e:
+    return django.http.HttpResponseNotFound(e.value)
+  except MySQLdb.Error, e:
+    return django.http.HttpResponseNotFound(e)
+  except:
+    logger.exception("Unknown exception in (min|max) projection Web service.")
+    raise

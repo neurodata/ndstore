@@ -668,7 +668,7 @@ def selectPost ( webargs, proj, db, postdata ):
         # This is used for ingest only now.  So, overwrite conflict option.
         conflictopt = restargs.conflictOption ( "" )
   
-          # Get the HDF5 file.
+        # Get the HDF5 file.
         with closing (tempfile.NamedTemporaryFile ( )) as tmpfile:
 
           tmpfile.write ( postdata )
@@ -1910,3 +1910,34 @@ def exceptions ( webargs, ):
     fh5out.close()
     tmpfile.seek(0)
     return tmpfile.read()
+
+def minmaxProject ( webargs, proj, db ):
+  """Return a minimum or maximum projection across a volume by a specifie plane"""
+
+  import pdb; pdb.set_trace()
+  [ token, sym, plane, sym, cutoutargs ] = webargs.partition ('/')
+
+  # pattern for using contexts to close databases
+  # get the project 
+  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+    proj = projdb.loadToken ( token )
+
+  # and the database and then call the db function
+  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+
+    # if it's a channel database, pull out the channels
+    if proj.getProjectType() in ocpcaproj.CHANNEL_PROJECTS:
+
+      [ chanurl, sym, cutoutargs ] = cutoutargs.partition ('/')
+
+      # make sure that the channels are ints
+      channels = chanurl.split(',')
+      chanobj = ocpcachannel.OCPCAChannels ( db )
+      chanids = chanobj.rewriteToInts ( channels )
+    
+      #RBTODO do it for one channel now, make it multi-channel false color
+      cuboid = cutout ( imageargs, proj, db, chanids[0] )
+
+      # and now do the projection
+ 
+
