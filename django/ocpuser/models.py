@@ -121,7 +121,6 @@ class Project ( models.Model):
         ('dsp061.pha.jhu.edu', 'dsp061'),
         ('dsp062.pha.jhu.edu', 'dsp062'),
         ('dsp063.pha.jhu.edu', 'dsp063'),
-
         )
     host =  models.CharField(max_length=255, choices=HOST_CHOICES, default='localhost')
     
@@ -133,10 +132,14 @@ class Project ( models.Model):
         )
     kvengine =  models.CharField(max_length=255, choices=KVENGINE_CHOICES, default='MySQL')
     KVSERVER_CHOICES = (
-        ('localhost','localhost'),
-        ('172.23.253.61','dsp061'),
-        ('172.23.253.62','dsp062'),
-        ('172.23.253.63','dsp063'),
+        ('localhost', 'localhost'),
+        ('openconnecto.me', 'openconnecto.me'),
+        ('braingraph1.cs.jhu.edu', 'braingraph1'),
+        ('braingraph1dev.cs.jhu.edu', 'braingraph1dev'),
+        ('braingraph2.cs.jhu.edu', 'braingraph2'),
+        ('dsp061.pha.jhu.edu', 'dsp061'),
+        ('dsp062.pha.jhu.edu', 'dsp062'),
+        ('dsp063.pha.jhu.edu', 'dsp063'),
         )
     kvserver =  models.CharField(max_length=255, choices=KVSERVER_CHOICES, default='localhost')
 

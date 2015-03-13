@@ -370,14 +370,20 @@ class OCPCAProjectsDB:
   def loadToken ( self, token_to_load ):
     """ Load the annotation database information based on the token """
 
-    token = Token.objects.get( token_name = token_to_load )
-    project = Project.objects.get ( project_name = token.project_id )
+    try:
 
-    proj = OCPCAProject ( token.token_name, project.project_name.strip(), project.host, project.project_description, project.projecttype, project.datatype, project.dataset_id, project.overlayproject, project.overlayserver, token.readonly, project.exceptions, project.resolution, project.kvengine, project.kvserver, project.propagate ) 
+      token = Token.objects.get( token_name = token_to_load )
+      project = Project.objects.get ( project_name = token.project_id )
 
-    proj.datasetcfg = self.loadDatasetConfig ( project.dataset )
+      proj = OCPCAProject ( token.token_name, project.project_name.strip(), project.host, project.project_description, project.projecttype, project.datatype, project.dataset_id, project.overlayproject, project.overlayserver, token.readonly, project.exceptions, project.resolution, project.kvengine, project.kvserver, project.propagate ) 
 
-    return proj
+      proj.datasetcfg = self.loadDatasetConfig ( project.dataset )
+
+      return proj
+
+    except MySQLdb.Error, e:
+      logger.error ("Failed to load token %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ("Failed to load token %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
 
   #
@@ -439,7 +445,8 @@ class OCPCAProjectsDB:
           newconn.commit()
 
         # tables for channel dbs
-        elif proj.getProjectType() == 'timeseries':
+        elif proj.getProjectType() == 'channel':
+
           newcursor.execute ( 'CREATE TABLE channels ( chanstr VARCHAR(255), chanid INT, PRIMARY KEY(chanstr))')
           for i in datasetcfg.resolutions: 
             newcursor.execute ( "CREATE TABLE res{} ( channel INT, zindex BIGINT, cube LONGBLOB, PRIMARY KEY(channel,zindex) )".format(i) )

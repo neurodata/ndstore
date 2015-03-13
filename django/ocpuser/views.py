@@ -97,6 +97,31 @@ def profile(request):
 
         return render_to_response('profile.html', { 'databases': dbs.iteritems() ,'projects': visible_projects.values_list(flat=True) },context_instance=RequestContext(request))
 
+      elif 'delete_data' in request.POST:
+
+        pd = ocpcaproj.OCPCAProjectsDB()
+        username = request.user.username
+        project_to_delete = (request.POST.get('project_name')).strip()
+                
+        reftokens = Token.objects.filter(project_id=project_to_delete)
+        if reftokens:
+          messages.error(request, 'Project cannot be deleted. Please delete all tokens for this project first.')
+          return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile')
+        else:
+          proj = Project.objects.get(project_name=project_to_delete)
+          if proj:
+            if proj.user_id == request.user.id or request.user.is_superuser:
+              #Delete project from the table followed  by the database.
+              # deleting a project is super dangerous b/c you may delete it out from other tokens.
+              #  on other servers.  So, only delete when it's on the same server for now
+              pd.deleteOCPCADB(project_to_delete)
+              proj.delete()          
+              messages.success(request,"Project deleted")
+            else:
+              messages.error(request,"Cannot delete.  You are not owner of this project or not superuser.")
+          else:
+            messages.error( request,"Project not found.")
+          return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile')
 
       elif 'delete' in request.POST:
         pd = ocpcaproj.OCPCAProjectsDB()
@@ -111,9 +136,11 @@ def profile(request):
           proj = Project.objects.get(project_name=project_to_delete)
           if proj:
             if proj.user_id == request.user.id or request.user.is_superuser:
-
               #Delete project from the table followed  by the database.
-              pd.deleteOCPCADB(project_to_delete)
+              # RBTODO deleting a project is super dangerous b/c you may delete it out from other tokens.
+              #  on other servers.  So, only delete when it's on the same server for now
+              #if proj.getKVServer()==proj.getDBHost():
+              #   pd.deleteOCPCADB(project_to_delete)
               proj.delete()          
               messages.success(request,"Project deleted")
             else:
@@ -359,12 +386,18 @@ def createproject(request):
         new_project=form.save(commit=False)
         new_project.user_id=request.user.id
         new_project.save()
-        if 'token' in request.POST:
-          tk = Token ( token_name = new_project.project_name, token_description = 'Default token for public project', project_id=new_project, readonly = 0, public=new_project.public ) 
-          tk.save()
-        pd.newOCPCADB( new_project.project_name )
-        return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile/')
+        try:
+          # create a database when not linking to an existing databases
+          if not request.POST.get('nocreate') == 'on':
+            pd.newOCPCADB( new_project.project_name )
+          if 'token' in request.POST:
+            tk = Token ( token_name = new_project.project_name, token_description = 'Default token for public project', project_id=new_project, readonly = 0, user_id=request.user.id, public=new_project.public ) 
+            tk.save()
+        except Exception, e:
+          logger.error("Failed to create project.  Error {}".format(e))
+          new_project.delete()
 
+        return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile/')
       else:
         context = {'form': form}
         print form.errors

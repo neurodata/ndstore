@@ -680,7 +680,7 @@ def selectPost ( webargs, proj, db, postdata ):
         # This is used for ingest only now.  So, overwrite conflict option.
         conflictopt = restargs.conflictOption ( "" )
   
-          # Get the HDF5 file.
+        # Get the HDF5 file.
         with closing (tempfile.NamedTemporaryFile ( )) as tmpfile:
 
           tmpfile.write ( postdata )
@@ -1663,10 +1663,10 @@ def mcFalseColor ( webargs ):
   # manage the color space
   # reduction factor.  How to scale data.  16 bit->8bit, or windowed
   (startwindow,endwindow) = proj.datasetcfg.windowrange
-  if proj.getDataType() == ocpcaproj.DTYPE_16bit and ( startwindow == endwindow == 0):
+  if proj.getDataType() == ocpcaproj.DTYPE_uint16 and ( startwindow == endwindow == 0):
     #pass
     mcdata = np.uint8(mcdata * 1.0/256)
-  elif proj.getDataType() == ocpcaproj.DTYPE_16bit and ( endwindow!=0 ):
+  elif proj.getDataType() == ocpcaproj.DTYPE_uint16 and ( endwindow!=0 ):
     from windowcutout import windowCutout
     windowCutout ( mcdata, (startwindow, endwindow) )
 
@@ -1935,3 +1935,59 @@ def exceptions ( webargs, ):
     fh5out.close()
     tmpfile.seek(0)
     return tmpfile.read()
+
+def minmaxProject ( webargs ):
+  """Return a minimum or maximum projection across a volume by a specified plane"""
+
+  import pdb; pdb.set_trace()
+  [ token, minormax, plane, cutoutargs ] = webargs.split ('/',3)
+
+  # pattern for using contexts to close databases
+  # get the project 
+  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+    proj = projdb.loadToken ( token )
+
+  # and the database and then call the db function
+  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+
+    # if it's a channel database, pull out the channels
+    if proj.getProjectType() in ocpcaproj.CHANNEL_PROJECTS:
+
+      [ chanurl, sym, cutoutargs ] = cutoutargs.partition ('/')
+
+      # make sure that the channels are ints
+      channels = chanurl.split(',')
+      chanobj = ocpcachannel.OCPCAChannels ( db )
+      chanids = chanobj.rewriteToInts ( channels )
+    
+      # multi-channel cutout
+      mcdata = None
+      for i in range(len(chanids)):
+        cb = cutout ( cutoutargs, proj, db, chanids[i] )
+
+        # initialize the multi-channel data by dtype
+        if mcdata == None:
+          mcdata = np.zeros((len(chanids),cb.data.shape[0],cb.data.shape[1],cb.data.shape[2]), dtype=cb.data.dtype)
+
+        mcdata[i,:,:,:] = cb.data[:,:,:]
+
+    else:
+
+      cuboid = cutout ( cutoutargs, proj, db )
+      mcdata = cuboid.reshape ((1,cuboid.shape[0],cubdoid.shape[1],cuboid.shape[2]))
+
+    import pdb; pdb.set_trace()
+
+
+    # We have an compound array.  Now color it.
+    colors = ('C','M','Y','R','G','B')
+    img =  mcfc.mcfcPNG ( mcdata, colors )
+
+    fileobj = cStringIO.StringIO ( )
+    img.save ( fileobj, "PNG" )
+
+    fileobj.seek(0)
+    return fileobj.read()
+
+ 
+
