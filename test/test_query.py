@@ -27,6 +27,7 @@ from contextlib import closing
 import ocppaths
 from pytesthelpers import makeAnno
 import ocpcaproj
+import makeunitdb
 
 import kvengine_to_test
 import site_to_test
@@ -49,23 +50,16 @@ class TestRamon:
 
   def setup_class(self):
     """Create the unittest database"""
-
-    with closing ( ocpcaproj.OCPCAProjectsDB() ) as pd:
-      try:
-        pd.newOCPCAProj ( 'unittest', 'test', 'localhost', 'unittest', 2, 'kasthuri11', None, False, True, False, 0, False, kvengine_to_test.kvserver, kvengine_to_test.kvengine, 0 )
-      except:
-        pd.deleteOCPCADB ('unittest')
+    makeunitdb.createTestDB('unittest', public=True)
 
   def teardown_class (self):
     """Destroy the unittest database"""
-    with closing ( ocpcaproj.OCPCAProjectsDB() ) as pd:
-      pd.deleteOCPCADB ('unittest')
-
+    makeunitdb.deleteTestDB('unittest')
 
 
   def test_query (self):
     """Test the function that lists objects of different types."""
-
+    
     # synapse annotations
     anntype = 2
     status = random.randint(0,100)

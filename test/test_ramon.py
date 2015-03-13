@@ -27,15 +27,11 @@ from contextlib import closing
 
 from pytesthelpers import makeAnno
 
-sys.path += [os.path.abspath('../django')]
-import OCP.settings
-os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
-from django.conf import settings
-
 import ocpcaproj
 
 import kvengine_to_test
 import site_to_test
+import makeunitdb
 SITE_HOST = site_to_test.site
 
 
@@ -56,19 +52,11 @@ class TestRamon:
 
   def setup_class(self):
     """Create the unittest database"""
-
-    with closing ( ocpcaproj.OCPCAProjectsDB() ) as pd:
-      try:
-        pd.newOCPCAProj ( 'unittest', 'test', 'localhost', 'unittest', 2, 'kasthuri11', None, False, True, False, 0, False, kvengine_to_test.kvserver, kvengine_to_test.kvengine, 0 )
-      except:
-        pd.deleteOCPCADB ('unittest')
+    makeunitdb.createTestDB('unittest')
 
   def teardown_class (self):
     """Destroy the unittest database"""
-
-    with closing ( ocpcaproj.OCPCAProjectsDB() ) as pd:
-      pd.deleteOCPCADB ('unittest')
-
+    makeunitdb.deleteTestDB('unittest')
 
   def test_anno(self):
     """Upload a minimal and maximal annotation.  Verify fields."""

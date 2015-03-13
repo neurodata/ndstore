@@ -18,8 +18,6 @@ import cStringIO
 from PIL import Image
 import zlib
 
-import zindex
-
 import logging
 logger=logging.getLogger("ocp")
 

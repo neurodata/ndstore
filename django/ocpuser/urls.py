@@ -22,12 +22,16 @@ admin.autodiscover()
 
 urlpatterns = patterns('ocpuser.views',
                        url(r'^profile/$', 'profile'),
-                       url(r'^datasets/$', 'datasets'),
-                       url(r'^token/$', 'tokens'),
+                       url(r'^datasets/$', 'get_datasets'),
+                       url(r'^token/$', 'get_tokens'),
+                       url(r'^alltokens/$', 'get_alltokens'),
                        url(r'^createproject/$', 'createproject'),
                        url(r'^createdataset/$', 'createdataset'),
+                       url(r'^createtoken/$', 'createtoken'),
                        url(r'^updateproject/$', 'updateproject'),
-                       url(r'^restore/$', 'restore'),
+                       url(r'^updatetoken/$', 'updatetoken'),
+                       url(r'^updatedataset/$', 'updatedataset'),
+                       url(r'^restoreproject/$', 'restoreproject'),
                        url(r'^download/$', 'downloaddata'),
                        
 )

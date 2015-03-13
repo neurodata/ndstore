@@ -28,15 +28,11 @@ from contextlib import closing
 
 from pytesthelpers import makeAnno
 
-sys.path += [os.path.abspath('../django')]
-import OCP.settings
-os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
-from django.conf import settings
-
-import ocpcaproj
+import makeunitdb
 
 import kvengine_to_test
 import site_to_test
+import makeunitdb
 SITE_HOST = site_to_test.site
 
 
@@ -388,22 +384,16 @@ class TestRW:
 
   def setup_class(self):
     """Create the unittest database"""
-
-    with closing ( ocpcaproj.OCPCAProjectsDB() ) as pd:
-      try: 
-        pd.newOCPCAProj ( 'unittest_rw', 'test', 'localhost', 'unittest_rw', 2, 'kasthuri11', None, False, True, False, 0, 0, kvengine_to_test.kvserver, kvengine_to_test.kvengine, 0 )
-      except:
-        pd.deleteOCPCADB ('unittest_rw')
+    makeunitdb.createTestDB('unittest_rw')
 
   def teardown_class (self):
     """Destroy the unittest database"""
-    with closing ( ocpcaproj.OCPCAProjectsDB() ) as pd:
-      pd.deleteOCPCADB ('unittest_rw')
+    makeunitdb.deleteTestDB('unittest_rw')
 
 
   def test_raw(self):
     """npz upload/download"""
-
+   
     rp = ReadParms()
     wp = WriteParms()
 
@@ -664,7 +654,7 @@ class TestRW:
 
   def test_update(self):
     """Updates"""
-
+  
     rp = ReadParms()
     wp = WriteParms()
 

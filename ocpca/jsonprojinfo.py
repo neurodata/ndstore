@@ -32,16 +32,17 @@ logger=logging.getLogger("ocp")
 def projdict ( proj ):
 
   projdict = {}
-  projdict['dbname'] = proj._dbname
-  projdict['host'] = proj._dbhost
-  projdict['projecttype'] = proj._dbtype
+  #projdict['dbname'] = proj._dbname
+  #projdict['host'] = proj._dbhost
+  projdict['projecttype'] = proj._projecttype
   projdict['dataset'] = proj._dataset
-  projdict['dataurl'] = proj._dataurl
+  projdict['overlayserver'] = proj._overlayserver
+  projdict['overlayproject'] = proj._overlayproject
   projdict['readonly'] = (False if proj._readonly==0 else True)
   projdict['exceptions'] = (False if proj._exceptions==0 else True)
   projdict['resolution'] = proj._resolution
-  projdict['kvengine'] = proj._kvengine
-  projdict['kvserver'] = proj._kvserver
+  #projdict['kvengine'] = proj._kvengine
+  #projdict['kvserver'] = proj._kvserver
   projdict['propagate'] = proj._propagate
 
   return projdict
@@ -49,13 +50,18 @@ def projdict ( proj ):
 def datasetdict ( dataset ):
 
   dsdict = {}
+  dsdict['zoomlevels'] = dataset.zoomlevels
+  if dataset.scalingoption == ocpcaproj.ZSLICES:
+    dsdict['scaling'] = 'zslices'
+  else:
+    dsdict['scaling'] = 'xyz'
   dsdict['resolutions'] = dataset.resolutions
-  dsdict['slicerange'] = dataset.slicerange
   dsdict['imagesize'] = dataset.imagesz
-  dsdict['zscale'] = dataset.zscale
+  dsdict['offset'] = dataset.offset
+  dsdict['voxelres'] = dataset.voxelres
   dsdict['cube_dimension'] = dataset.cubedim
-  dsdict['isotropic_slicerange'] = dataset.isoslicerange
-  dsdict['neariso_scaledown'] = dataset.nearisoscaledown
+#  dsdict['neariso_scaledown'] = dataset.nearisoscaledown
+# Figure out neariso in new design
   dsdict['windowrange'] = dataset.windowrange
   dsdict['timerange'] = dataset.timerange
 
@@ -76,7 +82,7 @@ def jsonInfo ( proj, db ):
   jsonprojinfo['version'] = version()  
   jsonprojinfo['dataset'] = datasetdict ( proj.datasetcfg )
   jsonprojinfo['project'] = projdict ( proj )
-  if proj.getDBType() == ocpcaproj.CHANNELS_16bit or proj.getDBType() == ocpcaproj.CHANNELS_8bit:
+  if proj.getProjectType() in ocpcaproj.CHANNEL_PROJECTS:
     jsonprojinfo['channels'] = db.getChannels()
   return json.dumps ( jsonprojinfo, sort_keys=True, indent=4 )
 
@@ -84,7 +90,7 @@ def jsonInfo ( proj, db ):
 def jsonChanInfo ( proj, db ):
   """List of Channels"""
 
-  if proj.getDBType() == ocpcaproj.CHANNELS_16bit or proj.getDBType() == ocpcaproj.CHANNELS_8bit:
+  if proj.getProjectType() in ocpcaproj.CHANNEL_PROJECTS:
     return json.dumps ( db.getChannels(), sort_keys=True, indent=4 )
   else:
     return json.dumps ({})
@@ -92,6 +98,6 @@ def jsonChanInfo ( proj, db ):
 
 def publicTokens ( projdb ):
   """List of Public Tokens"""
-
+  
   tokens = projdb.getPublic ()
   return json.dumps (tokens, sort_keys=True, indent=4)

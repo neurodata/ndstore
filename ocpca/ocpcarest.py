@@ -42,7 +42,6 @@ import ocplib
 import ocpcaprivate
 
 from ocpcaerror import OCPCAError
-
 import logging
 logger=logging.getLogger("ocp")
 
@@ -54,11 +53,10 @@ logger=logging.getLogger("ocp")
 def cutout ( imageargs, proj, db, channels=None ):
   """Build the returned cube of data.  This method is called by all of the more basic services to build the data. They then format and refine the output."""
 
-  print "in cutout", imageargs
   # Perform argument processing
   try:
     args = restargs.BrainRestArgs ();
-    if proj.getDBType() in ocpcaproj.TIMESERIES_DATASETS:
+    if proj.getProjectType() in ocpcaproj.TIMESERIES_PROJECTS:
       args.cutoutArgs ( imageargs, proj.datasetcfg, channels )
     else:
       args.cutoutArgs ( imageargs, proj.datasetcfg )
@@ -75,10 +73,9 @@ def cutout ( imageargs, proj, db, channels=None ):
 
   # Perform the cutout
   cube = db.cutout ( corner, dim, resolution, channels, zscaling )
-  
-  print np.unique (cube.data)
 
   return cube
+
 
 #
 #  Return a Flat binary file zipped (for Stefan) 
@@ -87,7 +84,7 @@ def binZip ( imageargs, proj, db ):
   """Return a web readable Numpy Pickle zipped"""
 
   # if it's a channel database, pull out the channel
-  if proj.getDBType() in ocpcaproj.CHANNEL_DATASETS :
+  if proj.getProjectType() in ocpcaproj.CHANNEL_PROJECTS :
     [ channels, sym, imageargs ] = imageargs.partition ('/')
   else: 
     channels = None
@@ -109,7 +106,7 @@ def numpyZip ( imageargs, proj, db ):
   """Return a web readable Numpy Pickle zipped"""
 
   # if it's a channel database, pull out the channels and return a 4-d numpy array
-  if proj.getDBType() in ocpcaproj.CHANNEL_DATASETS :
+  if proj.getProjectType() in ocpcaproj.CHANNEL_PROJECTS :
 
     [ chanurl, sym, imageargs ] = imageargs.partition ('/')
 
@@ -130,7 +127,7 @@ def numpyZip ( imageargs, proj, db ):
         cubedata[i,:,:,:] = cutout ( imageargs, proj, db, chanids[i] ).data
 
   # if it's a timeseries database
-  elif proj.getDBType() in ocpcaproj.TIMESERIES_DATASETS :
+  elif proj.getProjectType() in ocpcaproj.TIMESERIES_PROJECTS :
 
     cubedata = TimeSeriesCutout ( imageargs, proj, db )
   
@@ -184,7 +181,7 @@ def HDF5 ( imageargs, proj, db ):
   try: 
   
     # if it's a channel database, pull out the channels
-    if proj.getDBType() in ocpcaproj.CHANNEL_DATASETS:
+    if proj.getProjectType() in ocpcaproj.CHANNEL_PROJECTS:
      
       [ chanurl, sym, imageargs ] = imageargs.partition ('/')
   
@@ -199,11 +196,11 @@ def HDF5 ( imageargs, proj, db ):
         cube = cutout ( imageargs, proj, db, chanids[i] )
         changrp.create_dataset ( "{}".format(channels[i]), tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data )
     
-    elif proj.getDBType() in ocpcaproj.RGB_DATASETS:
+    elif proj.getProjectType() in ocpcaproj.IMAGE_PROJECTS and proj.getDataType() in ocpcaproj.DTYPE_uint32:
       cube = cutout ( imageargs, proj, db, None)
       cube.RGBAChannel()
       fh5out.create_dataset ( "CUTOUT", tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data )
-    elif proj.getDBType() in ocpcaproj.TIMESERIES_DATASETS:
+    elif proj.getProjectType() in ocpcaproj.TIMESERIES_PROJECTS:
       cube = TimeSeriesCutout ( imageargs, proj, db )
       #FilterTimeCube ( imageargs, cube )
       fh5out.create_dataset ( "CUTOUT", tuple(cube.shape), cube.dtype, compression='gzip', data=cube )
@@ -212,7 +209,7 @@ def HDF5 ( imageargs, proj, db ):
       FilterCube (imageargs, cube )
       fh5out.create_dataset ( "CUTOUT", tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data )
   
-    fh5out.create_dataset( "DATATYPE", (1,), dtype=np.uint32, data=proj._dbtype )
+    fh5out.create_dataset( "DATATYPE", (1,), dtype=h5py.special_dtype(vlen=str), data=proj._projecttype )
 
   except:
     fh5out.close()
@@ -267,7 +264,7 @@ def TimeSeriesCutout ( imageargs, proj, db ):
 
   try: 
     # if it's a channel database, pull out the channels
-    if proj.getDBType() in ocpcaproj.TIMESERIES_DATASETS:
+    if proj.getProjectType() in ocpcaproj.TIMESERIES_PROJECTS:
    
       # Perform argument processing
       args = restargs.BrainRestArgs ()
@@ -302,7 +299,7 @@ def TimeSeriesCutout ( imageargs, proj, db ):
 def imgSlice ( service, imageargs, proj, db ):
   """Return the cube object for an xy plane"""
 
-  if proj.getDBType() in ocpcaproj.COMPOSITE_DATASETS:
+  if proj.getProjectType() in ocpcaproj.COMPOSITE_PROJECTS:
     [ channel, sym, imageargs ] = imageargs.partition ('/')
   else: 
     channel = None
@@ -334,7 +331,7 @@ def imgSlice ( service, imageargs, proj, db ):
   cb = cutout ( cutoutargs, proj, db, channel )
 
   # Filter Function - used to filter
-  if proj.getDBType() in ocpcaproj.TIMESERIES_DATASETS:
+  if proj.getProjectType() in ocpcaproj.TIMESERIES_PROJECTS:
     FilterTimeCube ( imageargs, cb )
   else:
     FilterCube ( imageargs, cb )
@@ -363,13 +360,14 @@ def xzImage ( imageargs, proj, db ):
   """Return an xz plane fileobj.read()"""
 
   # little awkward because we need resolution here. it will be reparse in xzSlice
-  if proj.getDBType() in ocpcaproj.COMPOSITE_DATASETS:
+  if proj.getProjectType() in ocpcaproj.COMPOSITE_PROJECTS:
     channel, sym, rest = imageargs.partition("/")
     resolution, sym, rest = rest.partition("/")
   else:
     resolution, sym, rest = imageargs.partition("/")
 
-  img = imgSlice ( 'xz', imageargs, proj, db ).xzImage(proj.datasetcfg.zscale[int(resolution)])
+  zscale = proj.datasetcfg.voxelres[int(resolution)][2]/proj.datasetcfg.voxelres[int(resolution)][1]
+  img = imgSlice ( 'xz', imageargs, proj, db ).xzImage(zscale)
   fileobj = cStringIO.StringIO ( )
   img.save ( fileobj, "PNG" )
   fileobj.seek(0)
@@ -381,13 +379,14 @@ def yzImage ( imageargs, proj, db ):
   """Return an yz plane fileobj.read()"""
 
   # little awkward because we need resolution here. it will be reparse in yzSlice
-  if proj.getDBType() in ocpcaproj.COMPOSITE_DATASETS:
+  if proj.getProjectType() in ocpcaproj.COMPOSITE_PROJECTS:
     channel, sym, rest = imageargs.partition("/")
     resolution, sym, rest = rest.partition("/")
   else:
     resolution, sym, rest = imageargs.partition("/")
 
-  img = imgSlice ( 'yz', imageargs, proj, db ).yzImage(proj.datasetcfg.zscale[int(resolution)])
+  zscale = proj.datasetcfg.voxelres[int(resolution)][2]/proj.datasetcfg.voxelres[int(resolution)][0]
+  img = imgSlice ( 'yz', imageargs, proj, db ).yzImage(zscale)
   fileobj = cStringIO.StringIO ( )
   img.save ( fileobj, "PNG" )
   fileobj.seek(0)
@@ -589,7 +588,7 @@ def selectPost ( webargs, proj, db, postdata ):
   # if it's a channel database, pull out the channels
   # for now we ingest just one channel at a time
   channel = None
-  if proj.getDBType() in ocpcaproj.CHANNEL_DATASETS:
+  if proj.getProjectType() in ocpcaproj.CHANNEL_PROJECTS:
    
     [ chanurl, sym, postargs ] = postargs.partition ('/')
 
@@ -642,13 +641,13 @@ def selectPost ( webargs, proj, db, postdata ):
         fileobj = cStringIO.StringIO ( rawdata )
         voxarray = np.load ( fileobj )
 
-        if proj.getDBType() in ocpcaproj.SIMPLE_DATASETS: 
+        if proj.getProjectType() in ocpcaproj.IMAGE_PROJECTS : 
 
           db.writeCuboid ( corner, resolution, voxarray, channel )
           # this is just a status
           entityid=0
 
-        elif proj.getDBType() in ocpcaproj.COMPOSITE_DATASETS:
+        elif proj.getProjectType() in ocpcaproj.COMPOSITE_PROJECTS:
 
           if voxarray.shape[0] != len(chanids):
             logger.warning("The npz data has some missing channels")
@@ -661,7 +660,7 @@ def selectPost ( webargs, proj, db, postdata ):
 
         # Choose the verb, get the entity (as needed), and annotate
         # Translates the values directly
-        elif proj.getDBType() in ocpcaproj.ANNOTATION_DATASETS:
+        elif proj.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS:
 
           entityid = db.annotateDense ( corner, resolution, voxarray, conflictopt )
 
@@ -677,7 +676,7 @@ def selectPost ( webargs, proj, db, postdata ):
   
         corner = args.getCorner()
         resolution = args.getResolution()
-  
+
         # This is used for ingest only now.  So, overwrite conflict option.
         conflictopt = restargs.conflictOption ( "" )
   
@@ -689,14 +688,14 @@ def selectPost ( webargs, proj, db, postdata ):
           h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
   
   
-          if proj.getDBType() in ocpcaproj.SIMPLE_DATASETS: 
+          if proj.getProjectType() not in ocpcaproj.IMAGE_PROJECTS : 
   
             voxarray = h5f.get('CUTOUT').value
             db.writeCuboid ( corner, resolution, voxarray )
             # this is just a status
             entityid=0
 
-          elif proj.getDBType() in ocpcaproj.COMPOSITE_DATASETS:
+          elif proj.getProjectType() in ocpcaproj.COMPOSITE_PROJECTS:
 
             for channel,chanid in zip(channels,chanids):
               try:
@@ -710,7 +709,7 @@ def selectPost ( webargs, proj, db, postdata ):
   
           # Choose the verb, get the entity (as needed), and annotate
           # Translates the values directly
-          elif proj.getDBType() in ocpcaproj.ANNOTATION_DATASETS:
+          elif proj.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS:
   
             voxarray = h5f.get('CUTOUT').value
             entityid = db.annotateDense ( corner, resolution, voxarray, conflictopt )
@@ -758,7 +757,7 @@ def getCutout ( webargs ):
   # pattern for using contexts to close databases
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
@@ -774,7 +773,7 @@ def putCutout ( webargs, postdata ):
   # pattern for using contexts to close databases
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
@@ -845,7 +844,8 @@ def getAnnoById ( annoid, h5f, proj, db, dataoption, resolution=None, corner=Non
 
     # again an abstraction problem with corner.
     #  return the corner to cutout arguments space
-    retcorner = [corner[0], corner[1], corner[2]+proj.datasetcfg.slicerange[0]]
+    offset = proj.datasetcfg.offset[resolution]
+    retcorner = [corner[0]+offset[0], corner[1]+offset[1], corner[2]+offset[2]]
     h5anno.addCutout ( resolution, retcorner, cb.data )
 
   elif dataoption==AR_TIGHTCUTOUT:
@@ -920,7 +920,7 @@ def getAnnotation ( webargs ):
   # pattern for using contexts to close databases
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
@@ -1051,7 +1051,7 @@ def getCSV ( webargs ):
   # pattern for using contexts to close databases
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
@@ -1091,7 +1091,7 @@ def getAnnotations ( webargs, postdata ):
   [ db, proj, projdb ] = loadDBProj ( token )
 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
   
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
   
@@ -1220,7 +1220,7 @@ def putAnnotationAsync ( webargs, postdata ):
   # pattern for using contexts to close databases
   # get the project 
   #with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-  #  proj = projdb.loadProject ( token )
+  #  proj = projdb.loadToken ( token )
 
   # Don't write to readonly projects
   #if proj.getReadOnly()==1:
@@ -1249,14 +1249,15 @@ def putAnnotationAsync ( webargs, postdata ):
 
 def putAnnotation ( webargs, postdata ):
   """Put a RAMON object as HDF5 by object identifier"""
-
+  
   [ token, sym, optionsargs ] = webargs.partition ('/')
 
   # pattern for using contexts to close databases
   # get the project 
+  
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
-
+    proj = projdb.loadToken ( token )
+  
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
 
@@ -1326,6 +1327,7 @@ def putAnnotation ( webargs, postdata ):
               #  Is it voxel data?
               if 'VOXELS' in idgrp:
                 voxels = np.array(idgrp.get('VOXELS'),dtype=np.uint32)
+                voxels = voxels - proj.datasetcfg.offset[resolution]
               else: 
                 voxels = None
   
@@ -1347,6 +1349,7 @@ def putAnnotation ( webargs, postdata ):
   
               # Otherwise this is a shave operation
               elif voxels != None and 'reduce' in options:
+
   
                 # Check that the voxels have a conforming size:
                 if voxels.shape[1] != 3:
@@ -1369,15 +1372,15 @@ def putAnnotation ( webargs, postdata ):
                 #  the zstart in datasetcfg is sometimes offset to make it aligned.
                 #   Probably remove the offset is the best idea.  and align data
                 #    to zero regardless of where it starts.  For now.
-                corner = h5xyzoffset[:] 
-                corner[2] -= proj.datasetcfg.slicerange[0]
+                offset = proj.datasetcfg.offset[resolution]
+                corner = (h5xyzoffset[0]-offset[0],h5xyzoffset[1]-offset[1],h5xyzoffset[2]-offset[2])
   
                 db.annotateEntityDense ( anno.annid, corner, resolution, np.array(cutout), conflictopt )
   
               elif cutout != None and h5xyzoffset != None and 'reduce' in options:
-  
-                corner = h5xyzoffset[:] 
-                corner[2] -= proj.datasetcfg.slicerange[0]
+
+                offset = proj.datasetcfg.offset[resolution]
+                corner = (h5xyzoffset[0]-offset[0],h5xyzoffset[1]-offset[1],h5xyzoffset[2]-offset[2])
   
                 db.shaveEntityDense ( anno.annid, corner, resolution, np.array(cutout))
   
@@ -1437,7 +1440,7 @@ def queryAnnoObjects ( webargs, postdata=None ):
   # pattern for using contexts to close databases
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
@@ -1460,20 +1463,14 @@ def queryAnnoObjects ( webargs, postdata=None ):
 
         try:
   
-          corner = h5f['XYZOFFSET'][:]
+          offset = proj.datasetcfg.offset[resolution]
+          corner = (h5f['XYZOFFSET'][0]-offset[0],h5f['XYZOFFSET'][1]-offset[1],h5f['XYZOFFSET'][2]-offset[2])
           dim = h5f['CUTOUTSIZE'][:]
           resolution = h5f['RESOLUTION'][0]
   
           if not proj.datasetcfg.checkCube( resolution, corner[0], corner[0]+dim[0], corner[1], corner[1]+dim[1], corner[2], corner[2]+dim[2] ):
             logger.warning ( "Illegal cutout corner=%s, dim=%s" % ( corner, dim))
             raise OCPCAError ( "Illegal cutout corner=%s, dim=%s" % ( corner, dim))
-  
-          # RBFIX this a hack
-          #
-          #  the zstart in datasetcfg is sometimes offset to make it aligned.
-          #   Probably remove the offset is the best idea.  and align data
-          #    to zero regardless of where it starts.  For now.
-          corner[2] -= proj.datasetcfg.slicerange[0]
   
           cutout = db.cutout ( corner, dim, resolution )
           annoids = np.intersect1d ( annoids, np.unique( cutout.data ))
@@ -1493,7 +1490,7 @@ def deleteAnnotation ( webargs ):
   # pattern for using contexts to close databases
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
@@ -1550,7 +1547,7 @@ def jsonInfo ( webargs ):
   # pattern for using contexts to close databases
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
@@ -1566,7 +1563,7 @@ def projInfo ( webargs ):
   # pattern for using contexts to close databases
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
@@ -1595,7 +1592,7 @@ def chanInfo ( webargs ):
   # pattern for using contexts to close databases
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
@@ -1641,7 +1638,7 @@ def mcFalseColor ( webargs ):
   # pattern for using contexts to close databases
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
@@ -1666,10 +1663,10 @@ def mcFalseColor ( webargs ):
   # manage the color space
   # reduction factor.  How to scale data.  16 bit->8bit, or windowed
   (startwindow,endwindow) = proj.datasetcfg.windowrange
-  if proj.getDBType() == ocpcaproj.CHANNELS_16bit and ( startwindow == endwindow == 0):
+  if proj.getDataType() == ocpcaproj.DTYPE_16bit and ( startwindow == endwindow == 0):
     #pass
     mcdata = np.uint8(mcdata * 1.0/256)
-  elif proj.getDBType() == ocpcaproj.CHANNELS_16bit and ( endwindow!=0 ):
+  elif proj.getDataType() == ocpcaproj.DTYPE_16bit and ( endwindow!=0 ):
     from windowcutout import windowCutout
     windowCutout ( mcdata, (startwindow, endwindow) )
 
@@ -1692,11 +1689,11 @@ def reserve ( webargs ):
   # pattern for using contexts to close databases
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
 
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
 
-    if proj.getDBType() != ocpcaproj.ANNOTATIONS and proj.getDBType() != ocpcaproj.ANNOTATIONS_64bit: 
+    if proj.getProjectType() not in ocpcaproj.ANNOTATION_PROJECTS:
       raise OCPCAError ("Illegal project type for reserve.")
 
     try:
@@ -1723,7 +1720,7 @@ def getField ( webargs ):
   # pattern for using contexts to close databases
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
@@ -1753,7 +1750,7 @@ def setField ( webargs ):
   # pattern for using contexts to close databases
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
@@ -1790,7 +1787,7 @@ def getPropagate ( webargs ):
   # pattern for using contexts to close databases
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
     value = proj.getPropagate()
 
   return value
@@ -1807,7 +1804,7 @@ def setPropagate ( webargs ):
     
   # pattern for using contexts to close databases. get the project
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
     # If the value is to set under propagation
     if int(value) == ocpcaproj.UNDER_PROPAGATION and proj.getPropagate() != ocpcaproj.UNDER_PROPAGATION:
       proj.setPropagate ( ocpcaproj.UNDER_PROPAGATION )
@@ -1846,7 +1843,7 @@ def merge ( webargs ):
   # pattern for using contexts to close databases
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
@@ -1890,7 +1887,7 @@ def exceptions ( webargs, ):
   # pattern for using contexts to close databases
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
@@ -1909,7 +1906,7 @@ def exceptions ( webargs, ):
     resolution = args.getResolution()
 
     # check to make sure it's an annotation project
-    if proj.getDBType() not in ocpcaproj.ANNOTATION_DATASETS : 
+    if proj.getProjectType() not in ocpcaproj.ANNOTATION_PROJECTS : 
       logger.warning("Asked for exceptions on project that is not of type ANNOTATIONS")
       raise OCPCAError("Asked for exceptions on project that is not of type ANNOTATIONS")
     elif not proj.getExceptions():
