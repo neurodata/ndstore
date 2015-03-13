@@ -170,7 +170,7 @@ class MySQLKVIO:
       return row[0]
   
   
-  def getCubes ( self, listofidxs, resolution ):
+  def getCubes ( self, listofidxs, resolution, neariso=False ):
 
     # if in a TxN us the transaction cursor.  Otherwise create one.
     if self.txncursor == None:
@@ -178,8 +178,10 @@ class MySQLKVIO:
     else:
       cursor = self.txncursor
 
-    # RBTODO need to fix this for neariso interfaces
-    sql = "SELECT zindex, cube FROM {} WHERE zindex in (%s)".format( self.db.annoproj.getTable(resolution) ) 
+    if neariso:
+      sql = "SELECT zindex, cube FROM {} WHERE zindex in (%s)".format( self.db.annoproj.getNearIsoTable(resolution) ) 
+    else:
+      sql = "SELECT zindex, cube FROM {} WHERE zindex in (%s)".format( self.db.annoproj.getTable(resolution) ) 
 
     # creats a %s for each list element
     in_p=', '.join(map(lambda x: '%s', listofidxs))

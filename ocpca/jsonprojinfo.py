@@ -67,10 +67,19 @@ def datasetdict ( dataset ):
 
   return dsdict
 
+def version ():
+
+  verdict = {}
+  verdict['ocp'] = ocpcaproj.OCP_VERSION_NUMBER 
+  verdict['schema'] = ocpcaproj.SCHEMA_VERSION_NUMBER
+
+  return verdict
+
 def jsonInfo ( proj, db ):
   """All Project Info"""
 
   jsonprojinfo = {}
+  jsonprojinfo['version'] = version()  
   jsonprojinfo['dataset'] = datasetdict ( proj.datasetcfg )
   jsonprojinfo['project'] = projdict ( proj )
   if proj.getProjectType() in ocpcaproj.CHANNEL_PROJECTS:

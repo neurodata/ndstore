@@ -400,10 +400,10 @@ class OCPCADB:
     return cube
 
 
-  def getCubes ( self, listofidxs, resolution ):
+  def getCubes ( self, listofidxs, resolution, neariso=False ):
     """ Return a list of cubes """
-
-    return self.kvio.getCubes( listofidxs, resolution )
+    
+    return self.kvio.getCubes( listofidxs, resolution, neariso )
 
 
   def putCube ( self, zidx, resolution, cube, update=False ):
@@ -1210,7 +1210,10 @@ class OCPCADB:
       elif self.annoproj.getProjectType() in ocpcaproj.TIMESERIES_PROJECTS:
         cuboids = self.kvio.getTimeSeriesCubes(listofidxs,int(channel),effresolution)
       else:
-        cuboids = self.kvio.getCubes(listofidxs,effresolution)
+        if zscaling == 'nearisotropic' and self.datasetcfg.nearisoscaledown[resolution] > 1:
+          cuboids = self.kvio.getCubes(listofidxs,effresolution,True)
+        else:
+          cuboids = self.kvio.getCubes(listofidxs,effresolution)
       
       # use the batch generator interface
       for idx, datastring in cuboids:
@@ -1240,7 +1243,7 @@ class OCPCADB:
             self.applyCubeExceptions ( annoids, effresolution, idx, incube )
 
         # add it to the output cube
-        outcube.addData_new ( incube, offset ) 
+        outcube.addData ( incube, offset ) 
 
     except:
       self.kvio.rollback()
@@ -1351,9 +1354,9 @@ class OCPCADB:
               h5.close()
 
           # add it to the output cube
-          outcube.addData_new ( incube, offset )
+          outcube.addData ( incube, offset )
           print idx, outcube.data.shape
-          bigCube[timestamp,:,:,:] = outcube.data
+          bigCube[timestamp-timerange[0],:,:,:] = outcube.data
 
     except:
       self.kvio.rollback()
@@ -2045,9 +2048,6 @@ class OCPCADB:
     znumcubes = (corner[2]+dim[2]+zcubedim-1)/zcubedim - zstart
     ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
     xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
-
-    dbname = self.annoproj.getTable(resolution)
-
 
     # Build a list of indexes to access                                                                                     
     listofidxs = []
