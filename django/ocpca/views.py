@@ -339,9 +339,9 @@ def exceptions (request, webargs):
 
 def minmaxProject (request, webargs):
   """Restful URL for all read services to annotation projects"""
-
+ 
   try:
-    return django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="image/png" )
+    return django.http.HttpResponse(ocpcarest.minmaxProject(webargs), content_type="image/png" )
   except OCPCAError, e:
     return django.http.HttpResponseNotFound(e.value)
   except MySQLdb.Error, e:

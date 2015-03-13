@@ -1638,10 +1638,10 @@ def mcFalseColor ( webargs ):
   # manage the color space
   # reduction factor.  How to scale data.  16 bit->8bit, or windowed
   (startwindow,endwindow) = proj.datasetcfg.windowrange
-  if proj.getDataType() == ocpcaproj.DTYPE_16bit and ( startwindow == endwindow == 0):
+  if proj.getDataType() == ocpcaproj.DTYPE_uint16 and ( startwindow == endwindow == 0):
     #pass
     mcdata = np.uint8(mcdata * 1.0/256)
-  elif proj.getDataType() == ocpcaproj.DTYPE_16bit and ( endwindow!=0 ):
+  elif proj.getDataType() == ocpcaproj.DTYPE_uint16 and ( endwindow!=0 ):
     from windowcutout import windowCutout
     windowCutout ( mcdata, (startwindow, endwindow) )
 
@@ -1911,11 +1911,11 @@ def exceptions ( webargs, ):
     tmpfile.seek(0)
     return tmpfile.read()
 
-def minmaxProject ( webargs, proj, db ):
-  """Return a minimum or maximum projection across a volume by a specifie plane"""
+def minmaxProject ( webargs ):
+  """Return a minimum or maximum projection across a volume by a specified plane"""
 
   import pdb; pdb.set_trace()
-  [ token, sym, plane, sym, cutoutargs ] = webargs.partition ('/')
+  [ token, minormax, plane, cutoutargs ] = webargs.split ('/',3)
 
   # pattern for using contexts to close databases
   # get the project 
@@ -1935,9 +1935,34 @@ def minmaxProject ( webargs, proj, db ):
       chanobj = ocpcachannel.OCPCAChannels ( db )
       chanids = chanobj.rewriteToInts ( channels )
     
-      #RBTODO do it for one channel now, make it multi-channel false color
-      cuboid = cutout ( imageargs, proj, db, chanids[0] )
+      # multi-channel cutout
+      mcdata = None
+      for i in range(len(chanids)):
+        cb = cutout ( cutoutargs, proj, db, chanids[i] )
 
-      # and now do the projection
+        # initialize the multi-channel data by dtype
+        if mcdata == None:
+          mcdata = np.zeros((len(chanids),cb.data.shape[0],cb.data.shape[1],cb.data.shape[2]), dtype=cb.data.dtype)
+
+        mcdata[i,:,:,:] = cb.data[:,:,:]
+
+    else:
+
+      cuboid = cutout ( cutoutargs, proj, db )
+      mcdata = cuboid.reshape ((1,cuboid.shape[0],cubdoid.shape[1],cuboid.shape[2]))
+
+    import pdb; pdb.set_trace()
+
+
+    # We have an compound array.  Now color it.
+    colors = ('C','M','Y','R','G','B')
+    img =  mcfc.mcfcPNG ( mcdata, colors )
+
+    fileobj = cStringIO.StringIO ( )
+    img.save ( fileobj, "PNG" )
+
+    fileobj.seek(0)
+    return fileobj.read()
+
  
 
