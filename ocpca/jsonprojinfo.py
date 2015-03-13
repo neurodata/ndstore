@@ -32,8 +32,8 @@ logger=logging.getLogger("ocp")
 def projdict ( proj ):
 
   projdict = {}
-  projdict['dbname'] = proj._dbname
-  projdict['host'] = proj._dbhost
+  #projdict['dbname'] = proj._dbname
+  #projdict['host'] = proj._dbhost
   projdict['projecttype'] = proj._projecttype
   projdict['dataset'] = proj._dataset
   projdict['overlayserver'] = proj._overlayserver
@@ -41,8 +41,8 @@ def projdict ( proj ):
   projdict['readonly'] = (False if proj._readonly==0 else True)
   projdict['exceptions'] = (False if proj._exceptions==0 else True)
   projdict['resolution'] = proj._resolution
-  projdict['kvengine'] = proj._kvengine
-  projdict['kvserver'] = proj._kvserver
+  #projdict['kvengine'] = proj._kvengine
+  #projdict['kvserver'] = proj._kvserver
   projdict['propagate'] = proj._propagate
 
   return projdict
@@ -67,10 +67,19 @@ def datasetdict ( dataset ):
 
   return dsdict
 
+def version ():
+
+  verdict = {}
+  verdict['ocp'] = ocpcaproj.OCP_VERSION_NUMBER 
+  verdict['schema'] = ocpcaproj.SCHEMA_VERSION_NUMBER
+
+  return verdict
+
 def jsonInfo ( proj, db ):
   """All Project Info"""
 
   jsonprojinfo = {}
+  jsonprojinfo['version'] = version()  
   jsonprojinfo['dataset'] = datasetdict ( proj.datasetcfg )
   jsonprojinfo['project'] = projdict ( proj )
   if proj.getProjectType() in ocpcaproj.CHANNEL_PROJECTS:

@@ -42,6 +42,10 @@ from ocpcaerror import OCPCAError
 import logging
 logger=logging.getLogger("ocp")
 
+# OCP Version
+OCP_VERSION_NUMBER = 0.6
+SCHEMA_VERSION_NUMBER = 0.6
+
 OCP_databasetypes = {0:'image',1:'annotation',2:'channel',3:'probmap',4:'timeseries'}
 
 # projecttype groups
@@ -75,6 +79,10 @@ ISOTROPIC = 1
 # Exception Values
 EXCEPTION_TRUE = 1
 EXCEPTION_FALSE = 0
+
+# Public Values
+PUBLIC_TRUE = 1
+PUBLIC_FALSE = 0
 
 class OCPCAProject:
   """ Project specific for cutout and annotation data """

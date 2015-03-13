@@ -66,6 +66,9 @@ def main():
     #  Round up the zlimit to the next larger
     zlimit = (((slices-1)/zcubedim+1)*zcubedim)/zcubedim 
     zscale = int(outproj.datasetcfg.zscale[result.resolution])
+    channel = "Grayscale"
+    
+    outDB.putChannel(channel,1)
 
     for sl in range( startslice, endslice, batchsz ):
 
@@ -75,16 +78,31 @@ def main():
 
         if ( sl + b <= endslice ):
             
-          filename = '{}00-544_000-53_{:0>6}.tif'.format(result.path,(sl+b)*50)
+          filename = '{}00-164_00-152_{:0>6}.tif'.format(result.path,(sl+b)*80)
+          #filename = '{}00-111_000-29_{:0>6}.tif'.format(result.path,(sl+b)*50)
+          #filename = '{}00-199_000000_{:0>6}.tif'.format(result.path,(sl+b)*60)
+          #filename = '{}00-462_000000_{:0>6}.tif'.format(result.path,(sl+b)*50)
+          #filename = '{}00-427_000000_{:0>6}.tif'.format(result.path,(sl+b)*60)
+          #filename = '{}00-222_000000_{:0>6}.tif'.format(result.path,(sl+b)*50)
+          #filename = '{}00-415_000000_{:0>6}.tif'.format(result.path,(sl+b)*50)
+          #filename = '{}00-117_000000_{:0>6}.tif'.format(result.path,(sl+b)*50)
+          #filename = '{}00-298_000000_{:0>6}.tif'.format(result.path,(sl+b)*50)
+          #filename = '{}00-398_000000_{:0>6}.tif'.format(result.path,(sl+b)*60)
+          #filename = '{}00-532_000000_{:0>6}.tif'.format(result.path,(sl+b)*60)
+          #filename = '{}00-199_000000_{:0>6}.tif'.format(result.path,(sl+b)*50)
+          #filename = '{}00-544_000-53_{:0>6}.tif'.format(result.path,(sl+b)*50)
           #imageurl = 'Grayscale/{}/{},{}/{},{}/{}/'.format(result.resolution,0,ximagesz,0,yimagesz,sl+b)
           print "slice {}".format(sl+b)
 
           try:
             #imgdata = ocpcarest.cutout( imageurl, outproj, outDB )
             imgdata = cv2.imread(filename,-1) 
-            img = Image.frombuffer( 'I;16', (imgdata.shape), imgdata.flatten(), 'raw', 'I;16', 0, 1)
-            slab[b,:,:] = np.asarray(img.resize( [ximagesz,yimagesz]))
-            img = None
+            if imgdata != None:
+              img = Image.frombuffer( 'I;16', (imgdata.shape[::-1]), imgdata.flatten(), 'raw', 'I;16', 0, 1)
+              slab[b,:,:] = np.asarray(img.resize( [ximagesz,yimagesz]))
+              img = None
+            else:
+              slab[b,:,:] = np.zeros((yimagesz,ximagesz),dtype=np.uint16)
           except IOError, e:
             print "Failed to get Cutout. {}".format(e)
 
@@ -107,7 +125,7 @@ def main():
           cube.zeros()
           cube.data = cubedata
           if np.count_nonzero ( cube.data) != 0:
-            outDB.putCube ( zidx, result.resolution, cube )
+            outDB.putChannelCube ( zidx, 1, result.resolution, cube )
 
         print "Commiting at x:{},y:{},z{}".format(x,y,sl)
       outDB.conn.commit()
