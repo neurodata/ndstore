@@ -582,7 +582,7 @@ def selectPost ( webargs, proj, db, postdata ):
   [ service, sym, postargs ] = webargs.partition ('/')
 
   # Don't write to readonly projects
-  if proj.getReadOnly()==1:
+  if proj.getReadOnly()==ocpcaproj.READONLY_TRUE:
     logger.warning("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
     raise OCPCAError("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
 
@@ -598,10 +598,11 @@ def selectPost ( webargs, proj, db, postdata ):
 
     chanobj = ocpcachannel.OCPCAChannels ( db )
     chanids = chanobj.rewriteToInts ( channels )
-    if len(chanids) != 1:
-      raise OCPCAError ("Can only post ot one channel at a time.")
-    else:
-      channel = chanids[0]
+
+    #if len(chanids) != 1:
+    #  raise OCPCAError ("Can only post ot one channel at a time.")
+    #else:
+    #  channel = chanids[0]
 
 
   # choose to overwrite (default), preserve, or make exception lists
@@ -641,15 +642,26 @@ def selectPost ( webargs, proj, db, postdata ):
         fileobj = cStringIO.StringIO ( rawdata )
         voxarray = np.load ( fileobj )
 
-        if proj.getDBType() not in ocpcaproj.ANNOTATION_DATASETS : 
+        if proj.getDBType() in ocpcaproj.SIMPLE_DATASETS: 
 
           db.writeCuboid ( corner, resolution, voxarray, channel )
           # this is just a status
           entityid=0
 
+        elif proj.getDBType() in ocpcaproj.COMPOSITE_DATASETS:
+
+          if voxarray.shape[0] != len(chanids):
+            logger.warning("The npz data has some missing channels")
+            raise OCPCAError(e)
+
+          for index, (channel,chanid) in enumerate(zip(channels,chanids)):
+            db.writeCuboid ( corner, resolution, voxarray[index], chanid )
+          # this is just a status
+          entityid=0
+
         # Choose the verb, get the entity (as needed), and annotate
         # Translates the values directly
-        else:
+        elif proj.getDBType() in ocpcaproj.ANNOTATION_DATASETS:
 
           entityid = db.annotateDense ( corner, resolution, voxarray, conflictopt )
 
@@ -676,18 +688,31 @@ def selectPost ( webargs, proj, db, postdata ):
           tmpfile.seek(0)
           h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
   
-          voxarray = np.array(h5f.get('CUTOUT'))
   
-          if proj.getDBType() not in ocpcaproj.ANNOTATION_DATASETS : 
+          if proj.getDBType() in ocpcaproj.SIMPLE_DATASETS: 
   
+            voxarray = h5f.get('CUTOUT').value
             db.writeCuboid ( corner, resolution, voxarray )
+            # this is just a status
+            entityid=0
+
+          elif proj.getDBType() in ocpcaproj.COMPOSITE_DATASETS:
+
+            for channel,chanid in zip(channels,chanids):
+              try:
+                voxarray = h5f.get('CUTOUT').get(channel).value
+              except Exception,e:
+                logger.warning("The hdf5 data has some missing channels")
+                raise OCPCAError(e)
+              db.writeCuboid ( corner, resolution, voxarray, channel=chanid )
             # this is just a status
             entityid=0
   
           # Choose the verb, get the entity (as needed), and annotate
           # Translates the values directly
-          else:
+          elif proj.getDBType() in ocpcaproj.ANNOTATION_DATASETS:
   
+            voxarray = h5f.get('CUTOUT').value
             entityid = db.annotateDense ( corner, resolution, voxarray, conflictopt )
   
           h5f.flush()
