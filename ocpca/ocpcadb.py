@@ -362,11 +362,11 @@ class OCPCADB:
     # Create a cube object
     if (self.annoproj.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS and self.annoproj.getDataType() in ocpcaproj.DTYPE_uint32):
       cube = anncube.AnnotateCube ( cubedim )
-    elif (self.annoproj.getDataType() == ocpcaproj.DTYPE_float32):
+    elif (self.annoproj.getDataType() in ocpcaproj.DTYPE_float32):
       cube = probmapcube.ProbMapCube32 ( cubedim )
-    elif (self.annoproj.getProjectType() == ocpcaproj.DTYPE_uint8):
+    elif (self.annoproj.getDataType() in ocpcaproj.DTYPE_uint8):
       cube = imagecube.ImageCube8 ( cubedim )
-    elif (self.annoproj.getProjectType() == ocpcaproj.DTYPE_uint16):
+    elif (self.annoproj.getDataType() in ocpcaproj.DTYPE_uint16):
       cube = imagecube.ImageCube16 ( cubedim )
     elif (self.annoproj.getProjectType() in ocpcaproj.IMAGE_PROJECTS and self.annoproj.getDataType() in ocpcaproj.DTYPE_uint32):
       cube = imagecube.ImageCube32 ( cubedim )
@@ -1854,21 +1854,6 @@ class OCPCADB:
     zoffset = corner[2]%zcubedim
     yoffset = corner[1]%ycubedim
     xoffset = corner[0]%xcubedim
-    
-    if self.annoproj.getProjectType() == ocpcaproj.IMAGES_8bit:
-      cuboiddtype = np.uint8  
-    elif self.annoproj.getProjectType() == ocpcaproj.IMAGES_16bit:
-      cuboiddtype = np.uint16  
-    elif self.annoproj.getProjectType() == ocpcaproj.RGB_32bit:
-      cuboiddtype = np.uint32
-    elif self.annoproj.getProjectType() == ocpcaproj.RGB_64bit:
-      cuboiddtype = np.uint64
-    elif self.annoproj.getProjectType() == ocpcaproj.PROBMAP_32bit:
-      cuboiddtype = np.float32
-    elif self.annoproj.getProjectType() == ocpcaproj.CHANNELS_16bit:
-      cuboiddtype = np.uint16
-    elif self.annoproj.getProjectType() == ocpcaproj.CHANNELS_8bit:
-      cuboiddtype = np.uint8
 
     databuffer = np.zeros ([znumcubes*zcubedim, ynumcubes*ycubedim, xnumcubes*xcubedim], dtype=cuboiddata.dtype )
     databuffer [ zoffset:zoffset+dim[2], yoffset:yoffset+dim[1], xoffset:xoffset+dim[0] ] = cuboiddata 

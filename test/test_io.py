@@ -28,8 +28,6 @@ from contextlib import closing
 
 from pytesthelpers import makeAnno
 
-import makeunitdb
-
 import kvengine_to_test
 import site_to_test
 import makeunitdb
@@ -416,8 +414,7 @@ class TestRW:
     wp.resolution = 0
 
     # upload an npz dense
-#    annodata = np.random.random_integers ( 0, 65535, [ 2, 50, 50 ] )
-    annodata = np.ones ( [ 2, 50, 50 ] ) * random.randint(0,65535)
+    annodata = np.ones ( [ 2, 50, 50 ],dtype=np.uint32 ) * random.randint(0,65535)
 
     url = 'http://%s/ca/%s/npz/%s/%s,%s/%s,%s/%s,%s/' % ( wp.baseurl, wp.token, wp.resolution, 200, 250, 200, 250, 200, 202 )
 

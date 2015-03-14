@@ -620,8 +620,6 @@ def selectPost ( webargs, proj, db, postdata ):
 
       if service == 'npz':
 
-        # RBTODO multichannel support
-
         # Process the arguments
         try:
           args = restargs.BrainRestArgs ();
@@ -640,6 +638,12 @@ def selectPost ( webargs, proj, db, postdata ):
         rawdata = zlib.decompress ( postdata )
         fileobj = cStringIO.StringIO ( rawdata )
         voxarray = np.load ( fileobj )
+        
+        if voxarray.dtype == ocpcaproj.OCP_dtypetonp.get(proj.getDataType()):
+          pass
+        else:
+          logger.warning("Wrong datatype in POST")
+          raise OCPCAError("Wrong datatype in POST")
 
         if proj.getProjectType() in ocpcaproj.IMAGE_PROJECTS : 
 
@@ -651,7 +655,7 @@ def selectPost ( webargs, proj, db, postdata ):
 
           if voxarray.shape[0] != len(chanids):
             logger.warning("The npz data has some missing channels")
-            raise OCPCAError(e)
+            raise OCPCAError("The npz data has some missing channels")
 
           for index, (channel,chanid) in enumerate(zip(channels,chanids)):
             db.writeCuboid ( corner, resolution, voxarray[index], chanid )
@@ -688,10 +692,14 @@ def selectPost ( webargs, proj, db, postdata ):
           h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
   
   
-          if proj.getProjectType() not in ocpcaproj.IMAGE_PROJECTS : 
+          if proj.getProjectType() in ocpcaproj.IMAGE_PROJECTS : 
   
             voxarray = h5f.get('CUTOUT').value
-            db.writeCuboid ( corner, resolution, voxarray )
+            if voxarray.dtype == ocpcaproj.OCP_dtypetonp.get(proj.getDataType()):
+              db.writeCuboid ( corner, resolution, voxarray )
+            else:
+              logger.warning("Wrong datatype in POST")
+              raise OCPCAError("Wrong datatype in POST")
             # this is just a status
             entityid=0
 
@@ -703,7 +711,11 @@ def selectPost ( webargs, proj, db, postdata ):
               except Exception,e:
                 logger.warning("The hdf5 data has some missing channels")
                 raise OCPCAError(e)
-              db.writeCuboid ( corner, resolution, voxarray, channel=chanid )
+              if voxarray.dtype == ocpcaproj.OCP_dtypetonp.get(proj.getDataType()):
+                db.writeCuboid ( corner, resolution, voxarray, channel=chanid )
+              else:
+                logger.warning("Wrong datatype in POST")
+                raise OCPCAError("Wrong datatype in POST")
             # this is just a status
             entityid=0
   
@@ -712,7 +724,11 @@ def selectPost ( webargs, proj, db, postdata ):
           elif proj.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS:
   
             voxarray = h5f.get('CUTOUT').value
-            entityid = db.annotateDense ( corner, resolution, voxarray, conflictopt )
+            if voxarray.dtype == ocpcaproj.OCP_dtypetonp.get(proj.getDataType()):
+              entityid = db.annotateDense ( corner, resolution, voxarray, conflictopt )
+            else:
+              logger.warning("Wrong datatype in POST")
+              raise OCPCAError("Wrong datatype in POST")
   
           h5f.flush()
           h5f.close()
@@ -739,7 +755,6 @@ def selectPost ( webargs, proj, db, postdata ):
       db.rollback()
       raise
     
-
   return str(entityid)
 
 #

@@ -83,6 +83,3 @@ class TestInternal:
     assert ( proj.getReadOnly() == 1 )
     assert ( proj.getPropagate() == 1 )
 
-
-    
-

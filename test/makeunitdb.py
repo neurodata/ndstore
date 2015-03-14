@@ -31,7 +31,7 @@ import ocpcaproj
 import site_to_test
 import kvengine_to_test
 
-def createTestDB ( projname, public=0 ):
+def createTestDB ( projname, projecttype='annotation', datatype='uint32', public=0 ):
   """Create a unit test data base on the specified sit and name"""
 
   unituser = User.objects.get(username='brain')
@@ -41,7 +41,7 @@ def createTestDB ( projname, public=0 ):
 
 
   # make the project entry
-  pr = Project ( project_name=projname, project_description='Unit test', user=unituser, dataset=ds, projecttype='annotation', datatype='uint32' )
+  pr = Project ( project_name=projname, project_description='Unit test', user=unituser, dataset=ds, projecttype=projecttype, datatype=datatype )
   pr.save()
 
   # and create the database
