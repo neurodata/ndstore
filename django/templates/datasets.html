@@ -6,11 +6,13 @@
 
 
 {% block content %}
+{% if messages %}
 <ul>
         {% for message in messages %}
         <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
         {% endfor %}
       </ul>
+{% endif %}
 
 <form class="form-inline" method="post" action="">
   <div class="container-fluid">
@@ -73,15 +75,13 @@
 		  <th>Public</th>
 		  <th>Scaling Levels</th>
 		  <th>Scaling Option</th>
-		  <th>Start Window</th>
-      <th>End Window</th>
 		  <th>Start Time</th>
 		  <th>End Time</th>
 		</tr>	   
 		<form method="post" action = "">
 		  <tr>
 	      <input type="hidden" name="dataset_name" value={{ds.dataset_name}}>
-        <td style="width: 15%;">{{ ds.ximagesize }}</td>
+        <td>{{ ds.ximagesize }}</td>
         <td>{{ ds.yimagesize }}</td>
         <td>{{ ds.zimagesize }}</td>
         <td>{{ ds.xoffset }}</td>
@@ -97,8 +97,6 @@
         {% endif %}
 		    <td>{{ ds.scalinglevels }}</td>
 		    <td>{{ ds.scalingoption }}</td>
-		    <td>{{ ds.startwindow }}</td>
-        <td>{{ ds.endwindow }}</td>
 		    <td>{{ ds.starttime }}</td>
 		    <td>{{ ds.endtime }}</td>
 

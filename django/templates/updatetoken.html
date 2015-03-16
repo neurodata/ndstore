@@ -27,6 +27,8 @@ Update Token
    {{ form.errors }} 
    {{ form.non_field_errors }} 
 
+ <br>
+
  <div id="form" >
      <form action="" method="post">
        {{ form.non_field_errors }}
@@ -75,18 +77,7 @@ Update Token
 	   </div>
 	   <div class ="col-md-4"></div>
          </div>
-	 
-         <div class = "row">
-           <div class ="col-md-4"></div>
-           <div class ="col-md-2">
-	     <div class="fieldWrapper">
-	       {{ form.subject.errors }}
-	       <label for="readonly">Read only:</label>
-	     </div>
-           </div>
-           <div class ="col-md-2">
-	     {{ form.readonly }}
-	   </div>
+
 	   <div class ="col-md-4"></div>
          </div>
 
@@ -105,11 +96,14 @@ Update Token
          </div>
 	 
 	  
+    <br>
+
 	  <div class = "row">
             <div class ="col-md-5"></div>
             <div class ="col-md-3">
 
-	      <p><button class="btn btn-primary" name = "UpdateToken" type="submit">Update Token</button></p>
+	      <button class="btn btn-primary" name = "UpdateToken" type="submit">Update Token</button>
+	      <button class="btn btn-primary" name = "backtotokens" type="submit">Back to Tokens</button>
 
 	    </div>
             <div class ="col-md-4"></div>
