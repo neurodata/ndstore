@@ -625,7 +625,13 @@ def updatechannel(request):
       return redirect(get_channels)
 
     if pr.user_id == request.user.id or request.user.is_superuser:
-      # if you changed the token name, delete old token
+ 
+      # if setting the default channel, remove previous default
+      if newchannel.default == True:
+        olddefault = Channel.objects.filter(default=True)    
+        for od in olddefault:
+          od.default = False
+          od.save()
       newchannel.save()
       return HttpResponseRedirect(get_script_prefix()+'ocpuser/channels')
     else:
