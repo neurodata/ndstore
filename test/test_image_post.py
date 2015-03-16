@@ -21,6 +21,7 @@ import tempfile
 import random
 
 import makeunitdb
+from params import Params
 import kvengine_to_test
 import site_to_test
 SITE_HOST = site_to_test.site
@@ -45,14 +46,6 @@ SITE_HOST = site_to_test.site
 # test_hdf5_incorrect_datatype - Post hdf5 8-bit data to Channel16 Project. Should throw 404
 # test_hdf5_incorrect_channel - Post hdf5 16-bit data with incorrect channel name. Should throw 404
 # test_hdf5_incorrect_number_channel - Post hdf5 16-bit data with less number of channels. Should throw 404
-
-class Params:
-
-  baseurl = ""
-  token = ""
-  resolution = None
-  channels = None
-  args = None
 
 
 class TestImagePost:

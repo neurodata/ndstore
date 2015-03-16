@@ -1825,7 +1825,9 @@ def setPropagate ( webargs ):
       proj.setPropagate ( ocpcaproj.UNDER_PROPAGATION )
       projdb.updatePropagate ( proj )
       from ocpca.tasks import propagate
-      propagate.delay ( token )
+      import ocpcastack
+      ocpcastack.buildStack(token)
+      #propagate.delay ( token )
     elif int(value) == ocpcaproj.NOT_PROPAGATED:
       if proj.getPropagate() == ocpcaproj.UNDER_PROPAGATION:
         logger.warning ( "Cannot set this value. Project is under propagation." )

@@ -150,10 +150,10 @@ class OCPCAProject:
     # 0 - Propagated
     # 1 - Under Propagation
     # 2 - UnPropagated
-    if not self.getProjectType() == 'annotation':
-      logger.error ( "Cannot set Propagate Value {} for a non-Annotation Project {}".format( value, self._token ) )
-      raise OCPCAError ( "Cannot set Propagate Value {} for a non-Annotation Project {}".format( value, self._token ) )
-    elif value in [NOT_PROPAGATED]:
+    #if not self.getProjectType() == 'annotation':
+    #  logger.error ( "Cannot set Propagate Value {} for a non-Annotation Project {}".format( value, self._token ) )
+    #  raise OCPCAError ( "Cannot set Propagate Value {} for a non-Annotation Project {}".format( value, self._token ) )
+    if value in [NOT_PROPAGATED]:
       self._propagate = value
       self.setReadOnly ( READONLY_FALSE )
     elif value in [UNDER_PROPAGATION,PROPAGATED]:

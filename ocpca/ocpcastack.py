@@ -27,6 +27,8 @@ import ocpcaproj
 import ocpcadb
 import ocplib
 from ocpcaerror import OCPCAError
+import logging
+logger=logging.getLogger("ocp")
 
 from ocpca_cy import addDataToZSliceStack_cy
 from ocpca_cy import addDataToIsotropicStack_cy
@@ -108,7 +110,11 @@ def buildStack ( token, resolution=None ):
 
       try:
         buildImageStack( proj, resolution )
+        proj.setPropagate ( ocpcaproj.PROPAGATED )
+        projdb.updatePropagate ( proj )
       except MySQLdb.Error, e:
+        proj.setPropagate ( ocpcaproj.NOT_PROPAGATED )
+        projdb.updatePropagate ( proj )
         logger.error ( "Error in building image stack {}".format(token) )
         raise OCPCAError ( "Error in the building image stack {}".format(token) )
 
@@ -177,9 +183,9 @@ def buildAnnoStack ( proj, resolution=None ):
       #  Choose constants that work for all resolutions. recall that cube size changes from 128x128x16 to 64*64*64
       # RBTODO derive dtype from project
       if scaling == ocpcaproj.ZSLICES:
-        outdata = np.zeros ( [ zcubedim*4, ycubedim*2, xcubedim*2 ], dtype=proj.getDataType() )
+        outdata = np.zeros ( [ zcubedim*4, ycubedim*2, xcubedim*2 ], dtype=ocpcaproj.OCP_dtypetonp.get(proj.getDataType()) )
       elif scaling == ocpcaproj.ISOTROPIC:
-        outdata = np.zeros ( [ zcubedim*2,  ycubedim*2, xcubedim*2 ], dtype=proj.getDataType() )
+        outdata = np.zeros ( [ zcubedim*2,  ycubedim*2, xcubedim*2 ], dtype=ocpcaproj.OCP_dtypetonp.get(proj.getDataType()) )
       else:
         logger.error ( "Invalid scaling option in project = {}".format(scaling) )
         raise OCPCAError ( "Invalid scaling option in project = {}".format(scaling)) 
@@ -299,7 +305,7 @@ def buildImageStack ( proj, resolution ):
       # RBTODO These limits may be wrong for even (see channelingest.py)
       xlimit = (ximagesz-1) / xcubedim + 1
       ylimit = (yimagesz-1) / ycubedim + 1
-      zlimit = (zimgesz-1) / zcubedim + 1
+      zlimit = (zimagesz-1) / zcubedim + 1
       #zlimit = zimagesz / zcubedim
 
       cursor = db.conn.cursor()
@@ -313,7 +319,7 @@ def buildImageStack ( proj, resolution ):
             olddata = db.cutout ( [ x*xscale*xcubedim, y*yscale*ycubedim, z*zscale*zcubedim ], biggercubedim, l ).data
 
             #olddata target array for the new data (z,y,x) order
-            newdata = np.zeros([zcubedim,ycubedim,xcubedim], dtype=proj.getDatatype())
+            newdata = np.zeros([zcubedim,ycubedim,xcubedim], dtype=ocpcaproj.OCP_dtypetonp.get(proj.getDataType()))
 
             for sl in range(zcubedim):
 
