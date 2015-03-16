@@ -31,6 +31,8 @@ Create New Token
      <form action="" method="post">
        {{ form.non_field_errors }}
 
+    <br>
+
        <div class="container-fluid">
 	 <div class = "row-fluid"> <div class ="span12"></div></div>
 	 
@@ -75,20 +77,6 @@ Create New Token
 	   </div>
 	   <div class ="col-md-4"></div>
          </div>
-	 
-         <div class = "row">
-           <div class ="col-md-4"></div>
-           <div class ="col-md-2">
-	     <div class="fieldWrapper">
-	       {{ form.subject.errors }}
-	       <label for="readonly">Read only:</label>
-	     </div>
-           </div>
-           <div class ="col-md-2">
-	     {{ form.readonly }}
-	   </div>
-	   <div class ="col-md-4"></div>
-         </div>
 
          <div class = "row">
            <div class ="col-md-4"></div>
@@ -104,11 +92,13 @@ Create New Token
 	   <div class ="col-md-4"></div>
          </div>
 	 
+    <br> 
+
 	  <div class = "row">
 	     <div class ="col-md-5"></div>
 	     <div class ="col-md-3">
-  	 <p><button class="btn btn-primary" name = "createtoken" type="submit">Create Token</button></p>
-
+  	     <button class="btn btn-primary" name = "createtoken" type="submit">Create Token</button>
+         <button class="btn btn-primary" id="Back to Tokens" type="submit" name="backtotokens"> <i class ="icon-inbox icon-black"></i>Back to Tokens</button>
 	    </div>
             <div class ="col-md-4"></div>
      </form>  

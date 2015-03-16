@@ -35,6 +35,8 @@ Create New Dataset
        <div class="container-fluid">
 	 <div class = "row-fluid"> <div class ="span12"></div></div>
 	 
+   <br> 
+
 	 <div class = "row">
 	   <div class ="col-md-4"></div>
 	   <div class ="col-md-2 blue">
@@ -48,6 +50,21 @@ Create New Dataset
 	   </div>
 	   <div class ="col-md-4"></div>
 	 </div>
+
+       	  <div class = "row">
+            <div class ="col-md-4"></div>
+            <div class ="col-md-2">
+	      <div class="fieldWrapper">
+		{{ form.subject.errors }}
+		<label for="description">Description:</label>
+	      </div>
+            </div>
+	    <div class ="col-md-2">
+	      {{ form.dataset_description}}
+	    </div>
+            <div class ="col-md-4"></div>
+	  </div>
+	  
 
      <div class = "row">
        <div class ="col-md-4"></div>
@@ -222,35 +239,6 @@ Create New Dataset
            <div class ="col-md-4"></div>
            <div class ="col-md-2">
              <div class="fieldWrapper">
-               {{ form.subject.errors }}
-               <label for="startwindow">Start Window:</label>
-             </div>
-           </div>
-           <div class ="col-md-2">
-             {{ form.startwindow }}
-           </div>
-           <div class ="col-md-4"></div>
-         </div>
-
-	  <div class = "row">
-           <div class ="col-md-4"></div>
-           <div class ="col-md-2">
-             <div class="fieldWrapper">
-               {{ form.subject.errors }}
-               <label for="endwindow">End Window:</label>
-             </div>
-           </div>
-           <div class ="col-md-2">
-             {{ form.endwindow }}
-           </div>
-           <div class ="col-md-4"></div>
-         </div>
-       
-
-	  <div class = "row">
-           <div class ="col-md-4"></div>
-           <div class ="col-md-2">
-             <div class="fieldWrapper">
 	              {{ form.subject.errors }}
                <label for="starttime">Start Time:</label>
              </div>
@@ -275,26 +263,14 @@ Create New Dataset
            <div class ="col-md-4"></div>
          </div>
 
-       	  <div class = "row">
-            <div class ="col-md-4"></div>
-            <div class ="col-md-2">
-	      <div class="fieldWrapper">
-		{{ form.subject.errors }}
-		<label for="description">Description:</label>
-	      </div>
-            </div>
-	    <div class ="col-md-2">
-	      {{ form.dataset_description}}
-	    </div>
-            <div class ="col-md-4"></div>
-	  </div>
-	  
 	  <div class = "row">
             <div class ="col-md-5"></div>
             <div class ="col-md-3">
 
-	      <p><button class="btn btn-primary" name = "UpdateDataset" type="submit">Update Dataset</button></p>
-	      <p><button class="btn btn-primary" name = "backtodatasets" type="submit">Back to Datasets</button></p>
+        <br>
+
+	      <button class="btn btn-primary" name = "UpdateDataset" type="submit">Update Dataset</button>
+	      <button class="btn btn-primary" name = "backtodatasets" type="submit">Back to Datasets</button>
 
 	    </div>
             <div class ="col-md-4"></div>

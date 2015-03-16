@@ -311,6 +311,8 @@ def get_alltokens(request):
 @login_required(login_url='/ocp/accounts/login/')
 def get_channels(request):
 
+  #RBTODO check default for uniqueness
+  #RBTODO make default T/F and prepopulate
   username = request.user.username
   pd = ocpcaproj.OCPCAProjectsDB()  
 
@@ -353,9 +355,15 @@ def get_channels(request):
           del ( request.session["channel_name"] )
         return redirect(updatechannel)
 
+      elif 'backtochannels' in request.POST:
+        return redirect(get_channels)
+
+      elif 'backtoprojects' in request.POST:
+        return redirect(profile)
+
       else:
         #Unrecognized Option
-        messages.error("Invalid request")
+        messages.error(request,"Invalid request")
         return redirect(get_channels)
 
     else:
@@ -420,9 +428,18 @@ def get_tokens(request):
         request.session["token_name"] = token
         return redirect(updatetoken)
 
+      # redirect to add a token
+      elif 'add' in request.POST:
+        # RBTODO prepopulate the project for the token
+        # RBTODO make tokens captive to project button
+        return redirect(createtoken)
+
+      elif 'backtoprojects' in request.POST:
+         return redirect(profile) 
+
       else:
         #Unrecognized Option
-        messages.error("Invalid request")
+        messages.error(request,"Invalid request")
         return redirect(get_tokens)
 
     else:
@@ -466,8 +483,11 @@ def createproject(request):
           if not request.POST.get('nocreate') == 'on':
             pd.newOCPCADB( new_project.project_name )
           if 'token' in request.POST:
-            tk = Token ( token_name = new_project.project_name, token_description = 'Default token for public project', project_id=new_project, readonly = 0, user_id=request.user.id, public=new_project.public ) 
+            tk = Token ( token_name = new_project.project_name, token_description = 'Default token for public project', project_id=new_project, user_id=request.user.id, public=new_project.public ) 
             tk.save()
+
+          ## RBTODO create a default channel
+
         except Exception, e:
           logger.error("Failed to create project.  Error {}".format(e))
           new_project.delete()
@@ -507,9 +527,12 @@ def createdataset(request):
         context = {'form': form}
         print form.errors
         return render_to_response('createdataset.html',context,context_instance=RequestContext(request))
+    elif 'backtodatasets' in request.POST:
+      return redirect(get_datasets)
     else:
       #default
-      return redirect(datasets)
+      messages.error(request,"Unkown POST request.")
+      return redirect(get_datasets)
   else:
     '''Show the Create datasets form'''
     form = CreateDatasetForm()
@@ -537,7 +560,7 @@ def updatedataset(request):
         print form.errors
         return render_to_response('updatedataset.html',context,context_instance=RequestContext(request))
     elif 'backtodatasets' in request.POST:
-      return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile')
+      return HttpResponseRedirect(get_script_prefix()+'ocpuser/datasets')
     else:
       #unrecognized option
       return HttpResponseRedirect(get_script_prefix()+'ocpuser/datasets')
@@ -561,8 +584,6 @@ def updatedataset(request):
       'zvoxelres':ds_to_update[0].zvoxelres,
       'scalinglevels':ds_to_update[0].scalinglevels,
       'scalingoption':ds_to_update[0].scalingoption,
-      'startwindow':ds_to_update[0].startwindow,
-      'endwindow':ds_to_update[0].endwindow,
       'starttime':ds_to_update[0].starttime,
       'endtime':ds_to_update[0].endtime,
       'dataset_description':ds_to_update[0].dataset_description,
@@ -617,8 +638,12 @@ def updatechannel(request):
       channel_to_update = Channel.objects.filter(project_id=pr).filter(channel_name=chname)
       data = {
         'channel_name': channel_to_update[0].channel_name,
+        'channel_type':channel_to_update[0].channel_type,
         'channel_datatype': channel_to_update[0].channel_datatype,
         'channel_description':channel_to_update[0].channel_description,
+        'readonly':channel_to_update[0].readonly,
+        'startwindow':channel_to_update[0].startwindow,
+        'endwindow':channel_to_update[0].endwindow,
         'project': pr
       }
       form = CreateChannelForm(initial=data)
@@ -677,7 +702,6 @@ def updatetoken(request):
       'token_name': token_to_update[0].token_name,
       'token_description':token_to_update[0].token_description,
       'project':token_to_update[0].project_id,
-      'readonly':token_to_update[0].readonly,
       'public':token_to_update[0].public,
     }
     form = CreateTokenForm(initial=data)
@@ -727,15 +751,9 @@ def updateproject(request):
       'project_name': project_to_update[0].project_name,
       'project_description':project_to_update[0].project_description,
       'dataset':project_to_update[0].dataset_id,
-      'datatype':project_to_update[0].datatype,
-      'overlayproject':project_to_update[0].overlayproject,
-      'overlayserver':project_to_update[0].overlayserver,
-      'resolution':project_to_update[0].resolution,
-      'exceptions':project_to_update[0].exceptions,
       'host':project_to_update[0].host,
       'kvengine':project_to_update[0].kvengine,
       'kvserver':project_to_update[0].kvserver,
-      'propagate':project_to_update[0].propagate,
     }
     form = CreateProjectForm(initial=data)
     context = {'form': form}
@@ -761,9 +779,11 @@ def createtoken(request):
         context = {'form': form}
         print form.errors
         return render_to_response('createtoken.html',context,context_instance=RequestContext(request))
+    elif 'backtotokens' in request.POST:
+       return redirect(get_tokens) 
     else:
-      #default                                                                                                                                                          
-      return redirect(profile)
+      messages.error(request,"Unrecognized Post")
+      redirect(get_tokens)
   else:
     '''Show the Create datasets form'''
     form = CreateTokenForm()

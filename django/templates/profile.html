@@ -6,12 +6,13 @@
 
 
 {% block content %}
+{% if messages %}
 <ul>
   {% for message in messages %}
   <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
   {% endfor %}
 </ul>
-
+{% endif %}
 
 <form class="form-inline" method="post" action="">
 
@@ -25,7 +26,6 @@
       </div>
     </div>
   </div>
-  
 
   <div class="container-fluid">
     <div class = "row-fluid">
@@ -36,7 +36,6 @@
 	  Search By:
 	  <select name="filteroption">
 	    <option value="project">Project</option>
-	    <option value="projecttype">Type</option>
 	  </select>
 	  
 	  <input type="text"  name="filtervalue" placeholder="Enter project name">
@@ -75,18 +74,11 @@
           {%if value %}
                   <tr class ="error">
                     <th>Project</th>
-                    <th>Project Type</th>
-                    <th>Datatype</th>
                     <th>Description</th>
-                    <th>Resolution</th>
-                    <th>Exceptions</th>
                     <th>Public</th>
                     <th>Host</th>
-<!--                    <th>KVEngine</th>
-                    <th>KVServer</th> -->
-                    <th>Propagated</th>
-<!--                    <th>Overlay Project</th>
-                    <th>Overlay Server</th> -->
+                    <th>KVEngine</th>
+                    <th>KVServer</th> 
                   </tr>
           {% endif %}
 
@@ -95,16 +87,8 @@
 		  <form method="post" action = "">
 		    <tr>
 		      <td>{{ proj.project_name }}</td>
-		      <td>{{ proj.projecttype }}</td>
-		      <td>{{ proj.datatype }}</td>
 		      <td>{{ proj.project_description }}</td>
-		      <td>{{ proj.resolution }}</td>
 		      
-		      {% if proj.exceptions == 0%}
-                      <td>NO</td>
-		      {% else %}
-		      <td>YES</td>
-		      {% endif %}
 		      {% if proj.public == 0%}
                       <td>NO</td>
 		      {% else %}
@@ -112,7 +96,7 @@
 		      {% endif %}
 		      <td>{{ proj.host }}</td>
 		      <td>{{ proj.kvengine }}</td>
-<!--		      {% if proj.kvserver == 'localhost' %}
+		      {% if proj.kvserver == 'localhost' %}
 		      <td>Localhost</td>
 		      {% elif proj.kvserver == '172.23.253.61'%}
                       <td>dsp061</td>
@@ -123,14 +107,7 @@
 		      {% else %}
 		      <td>OTHER</td>
 		      {% endif %}
--->	      
-		      {% if proj.propagate == 0%}
-                      <td>NO</td>
-		      {% elif proj.propagate == 1%}
-		      <td>IN PROG</td>
-		       {% else %}
-		      <td>YES</td>
-		      {% endif %}
+     
 
 <!--		      <td>{{ proj.overlayproject }}</td>
 		      <td>{{ proj.osverlayserver }}</td>

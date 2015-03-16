@@ -23,6 +23,9 @@ Create Project Template
 <form method="post" action="" enctype="multipart/form-data">
    
   {{ form.non_field_errors }}
+
+  <br>
+
   <div class="container-fluid">
 
      <div class = "row">
@@ -80,96 +83,13 @@ Create Project Template
        </div>
        <div class ="col-md-4"></div>
      </div>
-
-     <div class = "row">
-       <div class ="col-md-4"></div>
-       <div class ="col-md-2">
-         <div class="fieldWrapper">
-           {{ form.subject.errors }}
-           <label for="projecttype">Project Type:</label>
-             </div>
-           </div>
-           <div class ="col-md-2">
-             {{ form.projecttype }}
-           </div>
-           <div class ="col-md-4"></div>
-     </div>
-     <div class = "row">
-       <div class ="col-md-4"></div>
-       <div class ="col-md-2">
-         <div class="fieldWrapper">
-           {{ form.subject.errors }}
-           <label for="datatype">Datatype:</label>
-             </div>
-           </div>
-           <div class ="col-md-2">
-             {{ form.datatype }}
-           </div>
-           <div class ="col-md-4"></div>
-     </div>
-     
-   <!--  <div class = "row-fluid">
-       <div class ="span4"></div>
-       <div class ="span2">
-         <div class="fieldWrapper">
-           {{ form.subject.errors }}
-           <label for="dataurl">Data URL</label>
-         </div>
-       </div>
-       <div class ="span2">
-         {{ form.dataurl }}
-       </div>
-       <div class ="span4"></div>
-     </div>-->
-
-     <div class = "row">
-       <div class ="col-md-4"></div>
-       <div class ="col-md-2">
-         <div class="fieldWrapper">
-           {{ form.subject.errors }}
-           <label for="resolution">Resolution:</label>
-         </div>
-       </div>
-       <div class ="col-md-2">
-         {{ form.resolution }}
-       </div>
-       <div class ="col-md-4"></div>
-     </div>
-
-<!--     <div class = "row">
-       <div class ="col-md-4"></div>
-       <div class ="col-md-2">
-         <div class="fieldWrapper">
-           {{ form.subject.errors }}
-           <label for="readonly">Read Only:</label>
-         </div>
-       </div>
-       <div class ="col-md-2">
-         {{ form.readonly }}
-       </div>
-       <div class ="col-md-4"></div>
-     </div>-->
      
      <div class = "row">
        <div class ="col-md-4"></div>
        <div class ="col-md-2">
          <div class="fieldWrapper">
            {{ form.subject.errors }}
-           <label for="exceptions">Enable Exceptions:</label>
-         </div>
-       </div>
-       <div class ="col-md-2">
-         {{ form.exceptions }}
-       </div>
-       <div class ="col-md-4"></div>
-     </div>
-     
-     <div class = "row">
-       <div class ="col-md-4"></div>
-       <div class ="col-md-2">
-         <div class="fieldWrapper">
-           {{ form.subject.errors }}
-           <label for="exceptions"> Database Host</label>
+           <label for="host"> Database Host</label>
          </div>
        </div>
        <div class ="col-md-2">
@@ -206,48 +126,6 @@ Create Project Template
        <div class ="col-md-4"></div>
      </div>
 
-      <div class = "row">
-       <div class ="col-md-4"></div>
-       <div class ="col-md-2">
-         <div class="fieldWrapper">
-           {{ form.subject.errors }}
-           <label for="propagate">Propagate:</label>
-         </div>
-       </div>
-       <div class ="col-md-2">
-         {{ form.propagate }}
-       </div>
-       <div class ="col-md-4"></div>
-     </div>
-
-     <div class = "row">
-       <div class ="col-md-4"></div>
-       <div class ="col-md-2">
-         <div class="fieldWrapper">
-           {{ form.subject.errors }}
-           <label for="oproject">Overlay:</label>
-         </div>
-       </div>
-       <div class ="col-md-2">
-         {{ form.overlayproject }}
-       </div>
-       <div class ="col-md-4"></div>
-     </div>
-
-      <div class = "row">
-       <div class ="col-md-4"></div>
-       <div class ="col-md-2">
-         <div class="fieldWrapper">
-           {{ form.subject.errors }}
-           <label for="overlayserver"> Overlay server</label>
-         </div>
-       </div>
-       <div class ="col-md-2">
-         {{ form.overlayserver }}
-       </div>
-       <div class ="col-md-4"></div>
-     </div>
-
      <div class = "row">
        <div class ="col-md-4"></div>
        <div class ="col-md-2">
@@ -271,13 +149,15 @@ Create Project Template
        </div>
        <div class ="col-md-4"></div>
      </div>
-
-     
+ 
+    <br>
          
     <div class = "row">
       <div class ="col-md-5"></div>
       <div class ="col-md-3">
-	<p><button class="btn btn-primary" name = "createproject" type="submit">Create New Project</button></p>
+
+	<button class="btn btn-primary" name = "createproject" type="submit">Create New Project</button>
+	<button class="btn btn-primary" name = "backtoprojects" type="submit">Back to Projects</button>
         
       </div>
       <div class ="col-md-4"></div>
