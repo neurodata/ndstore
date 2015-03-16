@@ -41,9 +41,11 @@ import MySQLdb
 from models import Project
 from models import Dataset
 from models import Token
+from models import Channel
 from forms import CreateProjectForm
 from forms import CreateDatasetForm
 from forms import CreateTokenForm
+from forms import CreateChannelForm
 from forms import dataUserForm
 
 from django.core.urlresolvers import get_script_prefix
@@ -164,6 +166,11 @@ def profile(request):
         request.session["project"] = projname
         return redirect(get_tokens)
 
+      elif 'channels' in request.POST:
+        projname=(request.POST.get('project_name')).strip()
+        request.session["project"] = projname
+        return redirect(get_channels)
+
       elif 'backup' in request.POST:
         path = ocpcaprivate.backuppath + '/' + request.user.username
         if not os.path.exists(path):
@@ -212,7 +219,7 @@ def profile(request):
     
   except OCPCAError, e:
 
-    messages.error("Unknown exception in administrative interface = {}".format(e)) 
+    messages.error(request,"Unknown exception in administrative interface = {}".format(e)) 
 
     # GET Projects
     username = request.user.username
@@ -287,7 +294,7 @@ def get_datasets(request):
       return render_to_response('datasets.html', { 'dts': visible_datasets },context_instance=RequestContext(request))
 
   except OCPCAError, e:
-    messages.error("Unknown exception in administrative interface = {}".format(e)) 
+    messages.error(request, "Unknown exception in administrative interface = {}".format(e)) 
     return render_to_response('datasets.html', { 'dts': visible_datasets },context_instance=RequestContext(request))    
 
 @login_required(login_url='/ocp/accounts/login/')
@@ -300,6 +307,74 @@ def get_alltokens(request):
 
   return get_tokens(request)
 
+
+@login_required(login_url='/ocp/accounts/login/')
+def get_channels(request):
+
+  username = request.user.username
+  pd = ocpcaproj.OCPCAProjectsDB()  
+
+  try:
+    if request.method == 'POST':
+      if 'filter' in request.POST:
+      #Filter channels based on an input value
+        filteroption = request.POST.get('filteroption')
+        filtervalue = (request.POST.get('filtervalue')).strip()
+        all_channels = Channel.objects.filter(project_id='TODO').filter(token_name=filtervalue)
+        return render_to_response('channel.html', { 'channels': all_channels, 'project': proj },context_instance=RequestContext(request))
+
+      elif 'delete' in request.POST:
+      #Delete the channel from the project
+ 
+        channel_to_delete = (request.POST.get('channel')).strip()
+        prname = request.session["project"]
+        pr = Project.objects.get(project_name=prname)
+        ch = Channel.objects.get(channel_name=channel_to_delete, project_id=pr )
+        if ch:
+          if pr.user_id == request.user.id or request.user.is_superuser:
+            ch.delete()          
+            messages.success(request,"Channel deleted " + channel_to_delete)
+          else:
+            messages.error(request,"Cannot delete.  You are not owner of this token or not superuser.")
+        else:
+          messages.error(request,"Unable to delete " + channel_to_delete)
+        return redirect(get_channels)
+
+      # update form populated with channel fields
+      elif 'update' in request.POST:
+        channel = (request.POST.get('channel')).strip()
+        request.session["channel_name"] = channel
+        return redirect(updatechannel)
+
+      # add using the update channel form with no initial data
+      elif 'add' in request.POST:
+        # must remove channel_name context to add a new one.  otherwise, it's an update
+        if "channel_name" in request.session:
+          del ( request.session["channel_name"] )
+        return redirect(updatechannel)
+
+      else:
+        #Unrecognized Option
+        messages.error("Invalid request")
+        return redirect(get_channels)
+
+    else:
+      # GET tokens for the specified project
+      username = request.user.username
+      if "project" in request.session:
+        proj = request.session["project"]
+        all_channels = Channel.objects.filter(project_id=proj)
+      else:
+        #Unrecognized Option
+        messages.error("Must have a project context to look at channels.")
+        return redirect(get_channels)
+      print all_channels
+      return render_to_response('channel.html', { 'channels': all_channels, 'project': proj },context_instance=RequestContext(request))
+    
+  except OCPCAError, e:
+    messages.error("Unknown exception in administrative interface = {}".format(e)) 
+    datasets = pd.getDatasets()
+    return render_to_response('profile.html',context,context_instance=RequestContext(request))
  
 
 @login_required(login_url='/ocp/accounts/login/')
@@ -316,7 +391,7 @@ def get_tokens(request):
         filtervalue = (request.POST.get('filtervalue')).strip()
         all_tokens = Token.objects.filter(token_name=filtervalue)
         proj=""
-        return render_to_response('token.html', { 'tokens': all_tokens, 'database': proj },context_instance=RequestContext(request))
+        return render_to_response('token.html', { 'tokens': all_tokens, 'project': proj },context_instance=RequestContext(request))
 
       elif 'delete' in request.POST:
       #Delete the token from the token table
@@ -359,7 +434,7 @@ def get_tokens(request):
       else:
         proj=""
         all_tokens = Token.objects.all()
-      return render_to_response('token.html', { 'tokens': all_tokens, 'database': proj },context_instance=RequestContext(request))
+      return render_to_response('token.html', { 'tokens': all_tokens, 'project': proj },context_instance=RequestContext(request))
     
   except OCPCAError, e:
     messages.error("Unknown exception in administrative interface = {}".format(e)) 
@@ -461,6 +536,8 @@ def updatedataset(request):
         context = {'form': form}
         print form.errors
         return render_to_response('updatedataset.html',context,context_instance=RequestContext(request))
+    elif 'backtodatasets' in request.POST:
+      return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile')
     else:
       #unrecognized option
       return HttpResponseRedirect(get_script_prefix()+'ocpuser/datasets')
@@ -494,6 +571,68 @@ def updatedataset(request):
     context = {'form': form}
     return render_to_response('updatedataset.html',context,context_instance=RequestContext(request))
 
+
+@login_required(login_url='/ocp/accounts/login/')
+def updatechannel(request):
+ 
+  prname = request.session['project']
+  pr = Project.objects.get ( project_name = prname )
+  if request.method == 'POST':
+
+    if 'updatechannel' in request.POST: 
+      chname = request.session["channel_name"]
+      channel_to_update = get_object_or_404(Channel,channel_name=chname,project_id=pr)
+      form = CreateChannelForm(data=request.POST or None, instance=channel_to_update)
+
+      if form.is_valid():
+        newchannel = form.save(commit=False)
+      else:
+        #Invalid form
+        context = {'form': form, 'project': prname}
+        return render_to_response('updatechannel.html', context, context_instance=RequestContext(request))
+
+    elif 'createchannel' in request.POST:
+      form = CreateChannelForm(data=request.POST or None)
+      if form.is_valid():
+        newchannel = form.save( commit=False )
+      else:
+        #Invalid form
+        context = {'form': form, 'project': prname}
+        return render_to_response('createchannel.html', context, context_instance=RequestContext(request))
+    else:
+      #unrecognized option
+      return redirect(get_channels)
+
+    if pr.user_id == request.user.id or request.user.is_superuser:
+      # if you changed the token name, delete old token
+      newchannel.save()
+      return HttpResponseRedirect(get_script_prefix()+'ocpuser/channels')
+    else:
+      messages.error(request,"Cannot update.  You are not owner of this token or not superuser.")
+      return HttpResponseRedirect(get_script_prefix()+'ocpuser/channels')
+
+  else:
+    if "channel_name" in request.session:
+      chname = request.session["channel_name"]
+      channel_to_update = Channel.objects.filter(project_id=pr).filter(channel_name=chname)
+      data = {
+        'channel_name': channel_to_update[0].channel_name,
+        'channel_datatype': channel_to_update[0].channel_datatype,
+        'channel_description':channel_to_update[0].channel_description,
+        'project': pr
+      }
+      form = CreateChannelForm(initial=data)
+      context = {'form': form, 'project': prname }
+      return render_to_response('updatechannel.html', context, context_instance=RequestContext(request))
+    else:
+      data = {
+        'project': pr
+      }
+      form = CreateChannelForm(initial=data)
+      context = {'form': form, 'project': prname }
+      return render_to_response('createchannel.html', context, context_instance=RequestContext(request))
+
+
 @login_required(login_url='/ocp/accounts/login/')
 def updatetoken(request):
 
@@ -521,6 +660,9 @@ def updatetoken(request):
         context = {'form': form}
         print form.errors
         return render_to_response('updatetoken.html',context,context_instance=RequestContext(request))
+    elif 'backtotokens' in request.POST:
+      #unrecognized option
+      return HttpResponseRedirect(get_script_prefix()+'ocpuser/token')
     else:
       #unrecognized option
       return HttpResponseRedirect(get_script_prefix()+'ocpuser/token')
@@ -537,8 +679,7 @@ def updatetoken(request):
       'project':token_to_update[0].project_id,
       'readonly':token_to_update[0].readonly,
       'public':token_to_update[0].public,
-      
-            }
+    }
     form = CreateTokenForm(initial=data)
     context = {'form': form}
     return render_to_response('updatetoken.html',context,context_instance=RequestContext(request))
@@ -568,6 +709,8 @@ def updateproject(request):
         #Invalid form
         context = {'form': form}
         return render_to_response('updateproject.html',context,context_instance=RequestContext(request))
+    elif 'backtoprojects' in request.POST:
+      return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile')
     else:
       #unrecognized option
       messages.error(request,"Unrecognized Post")
@@ -597,7 +740,6 @@ def updateproject(request):
     form = CreateProjectForm(initial=data)
     context = {'form': form}
     return render_to_response('updateproject.html',context,context_instance=RequestContext(request))
-
 
 @login_required(login_url='/ocp/accounts/login/')
 def createtoken(request):
@@ -755,7 +897,7 @@ def downloaddata(request):
       context = {'form': form ,'publictokens': tokens}
       return render_to_response('download.html',context,context_instance=RequestContext(request))
       #return render_to_response('download.html', { 'dts': datasets },context_instance=\
-          #         RequestContext(request))                                                                
+      # RequestContext(request))                                                                
   except OCPCAError, e:
     messages.error("Unknown exception in administrative interface = {}".format(e)) 
     tokens = pd.getPublic ()

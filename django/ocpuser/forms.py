@@ -19,6 +19,7 @@ from django.forms.models import inlineformset_factory
 from models import Project
 from models import Dataset
 from models import Token
+from models import Channel
 
 
 class CreateProjectForm(ModelForm):
@@ -46,6 +47,17 @@ class CreateTokenForm(ModelForm):
         def clean_token(self):
             if 'token_name' in self.cleaned_data:
                 token = self.cleaned_data['token_name']
+                return token 
+            raise forms.ValidationError('Please enter a valid token')
+
+class CreateChannelForm(ModelForm):
+
+    class Meta:
+        model = Channel
+        exclude = ('user',)
+        def clean_channel(self):
+            if 'channel_name' in self.cleaned_data:
+                token = self.cleaned_data['channel_name']
                 return token 
             raise forms.ValidationError('Please enter a valid token')
 

@@ -184,3 +184,26 @@ class Token ( models.Model):
         managed = True
     def __unicode__(self):
         return self.token_name
+
+class Channel ( models.Model):
+
+   project  = models.ForeignKey(Project,blank=True)
+   channel_name = models.CharField(max_length=255)
+   channel_description  =  models.CharField(max_length=4096,blank=True)
+   DATATYPE_CHOICES = (
+        ('uint8', 'uint8'),
+        ('uint16', 'uint16'),
+        ('uint32', 'uint32'),
+        ('uint64', 'uint64'),
+        ('float32', 'float32'),
+        )
+   channel_datatype = models.CharField(max_length=255,choices=DATATYPE_CHOICES)
+   
+   class Meta:
+       """ Meta """
+        # Required to override the default table name
+       db_table = u"channels"
+       managed = True
+       unique_together = ('project', 'channel_name',)
+   def __unicode__(self):
+       return self.channel_name
