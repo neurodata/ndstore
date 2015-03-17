@@ -39,7 +39,6 @@ class Dataset ( models.Model):
     xvoxelres = models.FloatField(default=1.0)
     yvoxelres = models.FloatField(default=1.0)
     zvoxelres = models.FloatField(default=1.0)
-
     SCALING_CHOICES = (
         (0, 'Z Slices'),
         (1, 'isotropic'),
@@ -68,7 +67,6 @@ class Project ( models.Model):
         )
     public =  models.IntegerField(choices=PUBLIC_CHOICES, default=0)
     dataset = models.ForeignKey(Dataset)
-
     HOST_CHOICES = (
       ('localhost', 'localhost'),
       ('openconnecto.me', 'openconnecto.me'),
@@ -80,7 +78,6 @@ class Project ( models.Model):
       ('dsp063.pha.jhu.edu', 'dsp063'),
     )
     host =  models.CharField(max_length=255, choices=HOST_CHOICES, default='localhost')
-
     KVENGINE_CHOICES = (
         ('MySQL','MySQL'),
         ('Cassandra','Cassandra'),
@@ -99,6 +96,10 @@ class Project ( models.Model):
         ('dsp063.pha.jhu.edu', 'dsp063'),
         )
     kvserver =  models.CharField(max_length=255, choices=KVSERVER_CHOICES, default='localhost')
+
+    # Version information -- set automatically
+    ocp_version =  models.CharField(max_length=255, default='0.6')
+    schema_version =  models.CharField(max_length=255, default='0.6')
 
     class Meta:
         """ Meta """
@@ -165,13 +166,12 @@ class Channel ( models.Model):
         (1, 'Yes'),
         (0, 'No'),
         )
-   readonly =  models.IntegerField(choices=READONLY_CHOICES, default=2)
+   readonly =  models.IntegerField(choices=READONLY_CHOICES, default=0)
 
    EXCEPTION_CHOICES = (
        (1, 'Yes'),
        (0, 'No'),
      )
-
    exceptions =  models.IntegerField(choices=EXCEPTION_CHOICES, default=0)
    startwindow = models.IntegerField(default=0)
    endwindow = models.IntegerField(default=0)

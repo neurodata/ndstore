@@ -386,6 +386,7 @@ class TestRW:
 
   def teardown_class (self):
     """Destroy the unittest database"""
+    import pdb; pdb.set_trace()
     makeunitdb.deleteTestDB('unittest_rw')
 
 

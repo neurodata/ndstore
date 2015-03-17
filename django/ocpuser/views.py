@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+# RBTODO createproject doesn't throw an error to the browser
+
 import django.http
 from django.http import HttpResponseRedirect
 from django.http import HttpResponse
@@ -29,7 +32,6 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from django.forms.models import inlineformset_factory
 import django.forms
-
 
 import ocpcaprivate
 import ocpcarest
@@ -172,6 +174,7 @@ def profile(request):
         return redirect(get_channels)
 
       elif 'backup' in request.POST:
+        import pdb; pdb.set_trace()
         path = ocpcaprivate.backuppath + '/' + request.user.username
         if not os.path.exists(path):
           os.mkdir( path, 0755 )
@@ -477,11 +480,13 @@ def createproject(request):
       if form.is_valid():
         new_project=form.save(commit=False)
         new_project.user_id=request.user.id
+        new_project.ocp_version=ocpcaproj.OCP_VERSION
+        new_project.schema_version=ocpcaproj.SCHEMA_VERSION
         new_project.save()
         try:
           # create a database when not linking to an existing databases
           if not request.POST.get('nocreate') == 'on':
-            pd.newOCPCADB( new_project.project_name )
+            pd.newOCPCAProject( new_project.project_name )
           if 'token' in request.POST:
             tk = Token ( token_name = new_project.project_name, token_description = 'Default token for public project', project_id=new_project, user_id=request.user.id, public=new_project.public ) 
             tk.save()
@@ -802,6 +807,9 @@ def createtoken(request):
       
 @login_required(login_url='/ocp/accounts/login/')
 def restoreproject(request):
+
+  import pdb; pdb.set_trace()
+
   if request.method == 'POST':
    
     if 'RestoreProject' in request.POST:

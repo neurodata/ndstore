@@ -17,6 +17,7 @@ import math
 from contextlib import closing
 import os
 import sys
+from contextlib import closing
 
 sys.path += [os.path.abspath('../django')]
 import OCP.settings
@@ -25,6 +26,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
 from ocpuser.models import Project
 from ocpuser.models import Dataset
 from ocpuser.models import Token
+from ocpuser.models import Channel
 
 # need imports to be conditional
 try:
@@ -43,12 +45,13 @@ import logging
 logger=logging.getLogger("ocp")
 
 # OCP Version
-OCP_VERSION_NUMBER = 0.6
-SCHEMA_VERSION_NUMBER = 0.6
+# RB changes to VERSION from VERSION_NUMBER  -- it's not a number.  We'll want A.B.C.D type releases
+OCP_VERSION = '0.6'
+SCHEMA_VERSION = '0.6'
 
-OCP_databasetypes = {0:'image',1:'annotation',2:'channel',3:'probmap',4:'timeseries'}
+OCP_channeltypes = {0:'image',1:'annotation',2:'channel',3:'probmap',4:'timeseries'}
 
-# projecttype groups
+# channeltype groups
 IMAGE_PROJECTS = [ 'image', 'probmap' ]
 CHANNEL_PROJECTS = [ 'channel' ]
 TIMESERIES_PROJECTS = [ 'timeseries' ]
@@ -84,132 +87,16 @@ EXCEPTION_FALSE = 0
 PUBLIC_TRUE = 1
 PUBLIC_FALSE = 0
 
-class OCPCAProject:
-  """ Project specific for cutout and annotation data """
-
-  # Constructor 
-  def __init__(self, token, dbname, dbhost, dbdescription, projecttype, datatype, dataset, overlayproject, overlayserver, readonly, exceptions, resolution, kvengine, kvserver, propagate ):
-    """ Initialize the OCPCA Project """
-    
-    self._token = token
-    self._dbname = dbname
-    self._dbdescription = dbdescription
-    self._dbhost = dbhost
-    self._projecttype = projecttype
-    self._dtype = datatype
-    self._dataset = dataset
-    self._projecttype = projecttype
-    self._overlayproject = overlayproject
-    self._overlayserver = overlayserver
-    self._resolution = resolution
-    self._readonly = readonly
-    self._exceptions = exceptions    
-    self._kvserver = kvserver
-    self._kvengine = kvengine
-    self._propagate = propagate
-
-    # Could add these to configuration.  Probably remove res as tablebase instead
-    self._ids_tbl = "ids"
-
-  # Accessors
-  def getToken ( self ):
-    return self._token
-  def getDBHost ( self ):
-      return self._dbhost
-  def getDataType ( self ):
-    return self._dtype
-  def getProjectType ( self ):
-    return self._projecttype
-  def getDBName ( self ):
-    return self._dbname
-  def getDataset ( self ):
-    return self._dataset
-  def getIDsTbl ( self ):
-    return self._ids_tbl
-  def getExceptions ( self ):
-    return self._exceptions
-  def getOverlayServer ( self ):
-    return self._overlayserver
-  def getOverlayProject ( self ):
-    return self._overlayproject
-  def getDBType ( self ):
-    return self._projecttype
-  def getReadOnly ( self ):
-    return self._readonly
-  def getResolution ( self ):
-    return self._resolution
-  def getKVEngine ( self ):
-    return self._kvengine
-  def getKVServer ( self ):
-    return self._kvserver
-  def getPropagate ( self ):
-    return self._propagate
-
-  # Setters
-  def setPropagate ( self, value ):
-    # 0 - Propagated
-    # 1 - Under Propagation
-    # 2 - UnPropagated
-    #if not self.getProjectType() == 'annotation':
-    #  logger.error ( "Cannot set Propagate Value {} for a non-Annotation Project {}".format( value, self._token ) )
-    #  raise OCPCAError ( "Cannot set Propagate Value {} for a non-Annotation Project {}".format( value, self._token ) )
-    if value in [NOT_PROPAGATED]:
-      self._propagate = value
-      self.setReadOnly ( READONLY_FALSE )
-    elif value in [UNDER_PROPAGATION,PROPAGATED]:
-      self._propagate = value
-      self.setReadOnly ( READONLY_TRUE )
-    else:
-      logger.error ( "Wrong Propagate Value {} for Project {}".format( value, self._token ) )
-      raise OCPCAError ( "Wrong Propagate Value {} for Project {}".format( value, self._token ) )
-    
-  
-  def setReadOnly ( self, value ):
-    # 0 - Readonly
-    # 1 - Not Readonly
-    if value in [READONLY_TRUE,READONLY_FALSE]:
-      self._readonly = value
-    else:
-      logger.error ( "Wrong Readonly Value {} for Project {}".format( value, self._token ) )
-      raise OCPCAError ( "Wrong Readonly Value {} for Project {}".format( value, self._token ) )
-
-
-  def isPropagated ( self ):
-    if self._propagate in [PROPAGATED]:
-      return True
-    else:
-      return False
-
-  # accessors for RB to fix
-  def getDBUser( self ):
-    return ocpcaprivate.dbuser
-  def getDBPasswd( self ):
-    return ocpcaprivate.dbpasswd
-
-  def getTable ( self, resolution ):
-    """Return the appropriate table for the specified resolution"""
-    return "res"+str(resolution)
-
-  def getIsotropicTable ( self, resolution ):
-    """Return the appropriate table for the specified resolution"""
-    return "res"+str(resolution)+"iso"
-
-  def getNearIsoTable ( self, resolution ):
-    """Return the appropriate table for the specified resolution"""
-    return "res"+str(resolution)+"neariso"
-  
-  def getIdxTable ( self, resolution ):
-    """Return the appropriate Index table for the specified resolution"""
-    return "idx"+str(resolution)
+"""While this is not a true inheritance hierarchy from OCPCADataset->OPCPCAProject->OCPCAChannel
+    modeling it as such makes it easier to call things on the channel.  It has dataset properties, etc."""
 
 class OCPCADataset:
   """Configuration for a dataset"""
 
-  def __init__ ( self, (ximagesz, yimagesz, zimagesz), (xoffset, yoffset, zoffset), (xvoxelres, yvoxelres, zvoxelres), scalinglevels, scalingoption, startwindow, endwindow, starttime, endtime ):
+  def __init__ ( self, dataset ):
     """Construct a db configuration from the dataset parameters""" 
-
-    self.windowrange = [ startwindow, endwindow ]
-    self.timerange = [ starttime, endtime ]
+ 
+    self.ds = Dataset.objects.get(dataset_name=dataset)
 
     # nearisotropic service for Stephan
     self.nearisoscaledown = {}
@@ -219,10 +106,11 @@ class OCPCADataset:
     self.imagesz = {}
     self.offset = {}
     self.voxelres = {}
-    self.scalingoption = scalingoption
-    self.zoomlevels = scalinglevels
+    self.scalingoption = self.ds.scalingoption
+    self.scalinglevels = self.ds.scalinglevels
+    self.timerange = (self.ds.starttime, self.ds.endtime)
 
-    for i in range (scalinglevels+1):
+    for i in range (self.ds.scalinglevels+1):
       """Populate the dictionaries"""
 
       # add this level to the resolutions
@@ -230,53 +118,53 @@ class OCPCADataset:
 
       # set the image size
       #  the scaled down image rounded up to the nearest cube
-      xpixels=((ximagesz-1)/2**i)+1
-      ypixels=((yimagesz-1)/2**i)+1
-      if scalingoption == ZSLICES:
-        zpixels=zimagesz
+      xpixels=((self.ds.ximagesize-1)/2**i)+1
+      ypixels=((self.ds.yimagesize-1)/2**i)+1
+      if self.ds.scalingoption == ZSLICES:
+        zpixels=self.ds.zimagesize
       else:
-        zpixels=((zimagesz-1)/2**i)+1
+        zpixels=((self.ds.zimagesz-1)/2**i)+1
       self.imagesz[i] = [ xpixels, ypixels, zpixels ]
 
       # set the offset
-      if xoffset==0:
+      if self.ds.xoffset==0:
         xoffseti = 0
       else:
-         xoffseti = ((xoffset)/2**i)
-      if yoffset==0:
+         xoffseti = ((self.ds.xoffset)/2**i)
+      if self.ds.yoffset==0:
         yoffseti = 0
       else:
-         yoffseti = ((yoffset)/2**i)
-      if zoffset==0:
+         yoffseti = ((self.ds.yoffset)/2**i)
+      if self.ds.zoffset==0:
         zoffseti = 0
       else:
-        if scalingoption == ZSLICES:
-          zoffseti = zoffset
+        if self.ds.scalingoption == ZSLICES:
+          zoffseti = self.ds.zoffset
         else:
-         zoffseti = ((zoffset)/2**i)
+         zoffseti = ((self.ds.zoffset)/2**i)
 
       self.offset[i] = [ xoffseti, yoffseti, zoffseti ]
 
       # set the voxelresolution
-      xvoxelresi = xvoxelres*float(2**i)
-      yvoxelresi = yvoxelres*float(2**i)
-      if scalingoption == ZSLICES:
-        zvoxelresi = zvoxelres
+      xvoxelresi = self.ds.xvoxelres*float(2**i)
+      yvoxelresi = self.ds.yvoxelres*float(2**i)
+      if self.ds.scalingoption == ZSLICES:
+        zvoxelresi = self.ds.zvoxelres
       else:
-        zvoxelresi = zvoxelres*float(2**i)
+        zvoxelresi = self.ds.zvoxelres*float(2**i)
 
       self.voxelres[i] = [ xvoxelresi, yvoxelresi, zvoxelresi ]
 
       # choose the cubedim as a function of the zscale
       #  this may need to be changed.  
-      if scalingoption == ZSLICES:
-        if float(zvoxelres/xvoxelres)/(2**i) >  0.5:
+      if self.ds.scalingoption == ZSLICES:
+        if float(self.ds.zvoxelres/self.ds.xvoxelres)/(2**i) >  0.5:
           self.cubedim[i] = [128, 128, 16]
         else: 
           self.cubedim[i] = [64, 64, 64]
 
         # Make an exception for bock11 data -- just an inconsistency in original ingest
-        if ximagesz == 135424 and i == 5:
+        if self.ds.ximagesize == 135424 and i == 5:
           self.cubedim[i] = [128, 128, 16]
 
       else:
@@ -285,6 +173,8 @@ class OCPCADataset:
 #        self.cubedim[i] = [64, 64, 64]
 
 
+  def getDatasetDescription ( self ):
+    return self.ds.dataset_description
 
       #RB need to reconsider nearisotropic for Stefan.....
 #      # set the isotropic image size when well defined
@@ -342,14 +232,140 @@ class OCPCADataset:
       return True
     else:
       return False
-  
-  
   #
   #  Return the image size
   #
   def imageSize ( self, resolution ):
     return  [ self.imagesz [resolution], self.timerange ]
 
+
+class OCPCAProject:
+
+  def __init__(self,token):
+    self.tk = Token.objects.get(token_name=token)
+    self.pr = Project.objects.get(project_name=self.tk.project_id)
+    self.datasetcfg = OCPCADataset(self.pr.dataset_id)
+
+  # Accessors
+  def getToken ( self ):
+    return self.tk.token_name
+  def getDBHost ( self ):
+      return self.pr.dbhost
+  def getKVEngine ( self ):
+    return self.pr.kvengine
+  def getKVServer ( self ):
+    return self.pr.kvserver
+  def getDBName ( self ):
+    return self.pr.project_name
+  def getProjectName ( self ):
+    return self.pr.project_name
+  def getProjectDescription ( self ):
+    return self.pr.project_description
+  def getOCPVersion ( self ):
+    return self.pr.ocp_version
+  def getSchemaVersion ( self ):
+    return self.pr.schema_version
+
+  def projectChannels ( self ):
+    """Return a generator of Channel Objects""" 
+    chs = Channel.objects.filter(project_id=self.pr)
+    for ch in chs:
+      yield OCPCAChannel(self.tk.token_name, ch.channel_name)
+
+  # Setters
+
+  # accessors for RB to fix
+  def getDBUser( self ):
+    return ocpcaprivate.dbuser
+  def getDBPasswd( self ):
+    return ocpcaprivate.dbpasswd
+
+
+class OCPCAChannel (OCPCAProject):
+
+  def __init__(self, token, channel):
+    """Constructor for a channel. It is a project and then some."""
+    OCPCAProject.__init__(self,token)
+    self.ch = Channel.objects.get(channel_name=channel, project=self.pr)
+
+  def getDataType ( self ):
+    return self.ch.channel_datatype
+  def getChannelName ( self ):
+    return self.ch.channel_name
+  def getChannelType ( self ):
+    return self.ch.channel_type
+  def getChannelDescription ( self ):
+    return self.ch.channel_description
+  def getExceptions ( self ):
+    return self.ch.exceptions
+  def getReadOnly ( self ):
+    return self.ch.readonly
+  def getResolution ( self ):
+    return self.ch.resolution
+  def getWindowRange ( self ):
+    return (self.ch.startwindow,self.ch.endwindow)
+  def getPropagate ( self ):
+    return self.ch.propagate
+
+  def getIDsTbl ( self ):
+    if self.pr.getOCPVersion() == '0.0':
+      return "ids"
+    else:
+      return "{}_ids".format(self.ch.channel_name)
+
+
+  def getTable ( self, resolution ):
+    """Return the appropriate table for the specified resolution"""
+    if self.pr.getOCPVersion() == '0.0':
+      return "res{}".format(resolution)
+    else:
+      return "{}_res{}".format(self.ch.channel_name,resolution)
+
+  def getNearIsoTable ( self, resolution ):
+    """Return the appropriate table for the specified resolution"""
+    if self.pr.getOCPVersion() == '0.0':
+      return "res{}neariso".format(resolution)
+    else:
+      return "{}_res{}neariso".format(self.ch.channel_name,resolution)
+  
+  def getIdxTable ( self, resolution ):
+    """Return the appropriate Index table for the specified resolution"""
+    if self.pr.getOCPVersion() == '0.0':
+      return "idx{}".format(resolution)
+    else:
+      return "{}_idx{}".format(self.ch.channel_name,resolution)
+
+  def setPropagate ( self, value ):
+    # 0 - Propagated
+    # 1 - Under Propagation
+    # 2 - UnPropagated
+    if not self.getChannelType() == 'annotation':
+      logger.error ( "Cannot set Propagate Value {} for a non-Annotation Project {}".format( value, self._token ) )
+      raise OCPCAError ( "Cannot set Propagate Value {} for a non-Annotation Project {}".format( value, self._token ) )
+    elif value in [NOT_PROPAGATED]:
+      self.ch.propagate = value
+      self.setReadOnly ( READONLY_FALSE )
+    elif value in [UNDER_PROPAGATION,PROPAGATED]:
+      self.ch.propagate = value
+      self.setReadOnly ( READONLY_TRUE )
+    else:
+      logger.error ( "Wrong Propagate Value {} for Channel {}".format( value, self.ch.channel_name ) )
+      raise OCPCAError ( "Wrong Propagate Value {} for Project {}".format( value, self.ch.channel_name ) )
+  
+  def setReadOnly ( self, value ):
+    # 0 - Readonly
+    # 1 - Not Readonly
+    if value in [READONLY_TRUE,READONLY_FALSE]:
+      self.ch.readonly = value
+    else:
+      logger.error ( "Wrong Readonly Value {} for Project {}".format( value, self._token ) )
+      raise OCPCAError ( "Wrong Readonly Value {} for Project {}".format( value, self._token ) )
+
+  def isPropagated ( self ):
+    if self.ch.propagate in [PROPAGATED]:
+      return True
+    else:
+      return False
 
 class OCPCAProjectsDB:
   """Database for the annotation and cutout projects"""
@@ -359,58 +375,17 @@ class OCPCAProjectsDB:
 
     self.conn = MySQLdb.connect (host = ocpcaprivate.dbhost, user = ocpcaprivate.dbuser, passwd = ocpcaprivate.dbpasswd, db = ocpcaprivate.db ) 
 
-
   # for context lib closing
   def close (self):
     pass
 
-  #
-  # Load the ocpca databse information based on the token
-  #
-  def loadToken ( self, token_to_load ):
-    """ Load the annotation database information based on the token """
-
-    try:
-
-      token = Token.objects.get( token_name = token_to_load )
-      project = Project.objects.get ( project_name = token.project_id )
-
-      proj = OCPCAProject ( token.token_name, project.project_name.strip(), project.host, project.project_description, project.projecttype, project.datatype, project.dataset_id, project.overlayproject, project.overlayserver, token.readonly, project.exceptions, project.resolution, project.kvengine, project.kvserver, project.propagate ) 
-
-      proj.datasetcfg = self.loadDatasetConfig ( project.dataset )
-
-      return proj
-
-    except MySQLdb.Error, e:
-      logger.error ("Failed to load token %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise OCPCAError ("Failed to load token %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-
-  #
-  # Load the ocpca databse information based on the project
-  #
-  def loadProject ( self, project_arg ):
-    """ Load the annotation database information based on the project """
-
-    proj = Project.objects.get ( project_name = project_arg )
-
-    # Create a project object
-    ocpproj = OCPCAProject ( "", proj.project_name.strip(), proj.host, proj.project_description, proj.projecttype, proj.datatype, proj.dataset, proj.overlayproject, proj.overlayserver, 0, proj.exceptions, proj.resolution, proj.kvengine, proj.kvserver, proj.propagate ) 
-
-    ocpproj.datasetcfg = self.loadDatasetConfig ( ocpproj.getDataset() )
-
-    return ocpproj
-
-    
-
-  def newOCPCADB ( self, project_name ):
-
-    proj = self.loadProject ( project_name )
-    datasetcfg = self.loadDatasetConfig ( proj.getDataset() )
+  def newOCPCAProject ( self, project_name ):
+    """Make the database for a project."""
 
     with closing(self.conn.cursor()) as cursor:
+
       try:
-        # Make the database and associated ocpca tables
+        # Make the database 
         sql = "CREATE DATABASE {}".format( project_name )
      
         cursor.execute ( sql )
@@ -419,119 +394,116 @@ class OCPCAProjectsDB:
         logger.error ("Failed to create database for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         raise OCPCAError ("Failed to create database for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
-    # Connect to the new database
 
-    newconn = MySQLdb.connect (host = proj.getDBHost(), user = ocpcaprivate.dbuser, passwd = ocpcaprivate.dbpasswd, db = project_name )
-    newcursor = newconn.cursor()
+  def newOCPCAChannel ( self, project_name, channel_name ):
+    """Make the tables for a channel."""
 
-    try:
+    pr = Project.objects.get(project_name=project_name)
+    ch = Channel.objects.get(channel_name=channel_name, project_id=project_name)
+    ds = Dataset.objects.get(dataset_name=pr.dataset_id)
 
-      if proj.getKVEngine() == 'MySQL':
+    # Connect to the database
+    with closing (MySQLdb.connect (host = pr.host, user = ocpcaprivate.dbuser, passwd = ocpcaprivate.dbpasswd, db = pr.project_name )) as conn:
+      with closing(conn.cursor()) as cursor:
 
-        # tables for annotations and images
-        if proj.getProjectType() not in ['channel','timeseries']:
-
-          for i in datasetcfg.resolutions: 
-            newcursor.execute ( "CREATE TABLE res{} ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(i) )
-            #newcursor.execute ( "CREATE TABLE raw{} ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(i) )
-          newconn.commit()
-
-        elif proj.getProjectType() == 'timeseries':
-
-          for i in datasetcfg.resolutions: 
-            newcursor.execute ( "CREATE TABLE res{} ( zindex BIGINT, timestamp INT, cube LONGBLOB, PRIMARY KEY(zindex,timestamp))".format(i) )
-            #newcursor.execute ( "CREATE TABLE raw{} ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(i) )
-            #newcursor.execute ( "CREATE TABLE timeseries%s ( z INT, y INT, x INT, t INT,  series LONGBLOB, PRIMARY KEY (z,y,x,t))"%i) 
-          newconn.commit()
-
-        # tables for channel dbs
-        elif proj.getProjectType() == 'channel':
-
-          newcursor.execute ( 'CREATE TABLE channels ( chanstr VARCHAR(255), chanid INT, PRIMARY KEY(chanstr))')
-          for i in datasetcfg.resolutions: 
-            newcursor.execute ( "CREATE TABLE res{} ( channel INT, zindex BIGINT, cube LONGBLOB, PRIMARY KEY(channel,zindex) )".format(i) )
-          newconn.commit()
-
-      elif proj.getKVEngine() == 'Riak':
-
-        rcli = riak.RiakClient(host=proj.getKVServer(), pb_port=8087, protocol='pbc')
-        bucket = rcli.bucket_type("ocp{}".format(proj.getProjectType())).bucket(proj.getDBName())
-        bucket.set_property('allow_mult',False)
-
-      elif proj.getKVEngine() == 'Cassandra':
-
-        cluster = Cluster( [proj.getKVServer()] )
         try:
-          session = cluster.connect()
 
-          session.execute ("CREATE KEYSPACE {} WITH REPLICATION = {{ 'class' : 'SimpleStrategy', 'replication_factor' : 1 }}".format(proj.getDBName()), timeout=30)
-          session.execute ( "USE {}".format(proj.getDBName()) )
-          session.execute ( "CREATE table cuboids ( resolution int, zidx bigint, cuboid text, PRIMARY KEY ( resolution, zidx ) )", timeout=30)
+          if pr.kvengine == 'MySQL':
+
+            if ch.channel_type not in ['timeseries']:
+
+              for i in range(ds.scalinglevels+1): 
+                cursor.execute ( "CREATE TABLE {}_res{} ( chanstr VARCHAR(255), zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(ch.channel_name,i) )
+              conn.commit()
+
+            elif ch.channel_type == 'timeseries':
+
+              for i in range(ds.scalinglevels+1): 
+                cursor.execute ( "CREATE TABLE {}_res{} ( chanstr VARCHAR(255), zindex BIGINT, timestamp INT, cube LONGBLOB, PRIMARY KEY(zindex,timestamp))".format(ch.channel_name,i) )
+              conn.commit()
+
+            else:
+              assert(0) #RBTODO throw a big error
+
+          elif pr.kvengine == 'Riak':
+
+            #RBTODO figure out new schema for Riak
+            rcli = riak.RiakClient(host=proj.getKVServer(), pb_port=8087, protocol='pbc')
+            bucket = rcli.bucket_type("ocp{}".format(proj.getProjectType())).bucket(proj.getDBName())
+            bucket.set_property('allow_mult',False)
+
+          elif pr.kvengine == 'Cassandra':
+
+            #RBTODO figure out new schema for Cassandra
+            cluster = Cluster( [proj.getKVServer()] )
+            try:
+              session = cluster.connect()
+
+              session.execute ("CREATE KEYSPACE {} WITH REPLICATION = {{ 'class' : 'SimpleStrategy', 'replication_factor' : 1 }}".format(proj.getDBName()), timeout=30)
+              session.execute ( "USE {}".format(proj.getDBName()) )
+              session.execute ( "CREATE table cuboids ( resolution int, zidx bigint, cuboid text, PRIMARY KEY ( resolution, zidx ) )", timeout=30)
+            except Exception, e:
+              raise
+            finally:
+              cluster.shutdown()
+            
+          else:
+            logging.error ("Unknown KV Engine requested: %s" % "RBTODO get name")
+            raise OCPCAError ("Unknown KV Engine requested: %s" % "RBTODO get name")
+
+
+          # tables specific to annotation projects
+          if ch.channel_type == 'annotation': 
+
+            cursor.execute("CREATE TABLE {}_ids ( id BIGINT PRIMARY KEY)".format(ch.channel_name))
+
+            # And the RAMON objects
+            cursor.execute ( "CREATE TABLE {}_annotations (annoid BIGINT PRIMARY KEY, type INT, confidence FLOAT, status INT)".format(ch.channel_name))
+            cursor.execute ( "CREATE TABLE {}_seeds (annoid BIGINT PRIMARY KEY, parentid BIGINT, sourceid BIGINT, cube_location INT, positionx INT, positiony INT, positionz INT)".format(ch.channel_name))
+            cursor.execute ( "CREATE TABLE {}_synapses (annoid BIGINT PRIMARY KEY, synapse_type INT, weight FLOAT)".format(ch.channel_name))
+            cursor.execute ( "CREATE TABLE {}_segments (annoid BIGINT PRIMARY KEY, segmentclass INT, parentseed INT, neuron INT)".format(ch.channel_name))
+            cursor.execute ( "CREATE TABLE {}_organelles (annoid BIGINT PRIMARY KEY, organelleclass INT, parentseed INT, centroidx INT, centroidy INT, centroidz INT)".format(ch.channel_name))
+            cursor.execute ( "CREATE TABLE {}_kvpairs ( annoid BIGINT, kv_key VARCHAR(255), kv_value VARCHAR(20000), PRIMARY KEY ( annoid, kv_key ))".format(ch.channel_name))
+
+            conn.commit()
+
+            if pr.kvengine == 'MySQL':
+              for i in range(ds.scalinglevels+1):
+                if ch.exceptions:
+                  cursor.execute ( "CREATE TABLE {}_exc{} ( zindex BIGINT, id BIGINT, exlist LONGBLOB, PRIMARY KEY ( zindex, id))".format(ch.channel_name,i))
+                cursor.execute ( "CREATE TABLE {}_idx{} ( annid BIGINT PRIMARY KEY, cube LONGBLOB )".format(ch.channel_name,i))
+
+              conn.commit()
+
+            elif pr.kvengine == 'Riak':
+              pass
+
+            elif pr.kvengine == 'Cassandra':
+
+              cluster = Cluster( [pr.kvserver] )
+              try:
+                session = cluster.connect()
+                session.execute ( "USE {}".format(pr.project_name))
+                session.execute( "CREATE table exceptions ( resolution int, zidx bigint, annoid bigint, exceptions text, PRIMARY KEY ( resolution, zidx, annoid ) )", timeout=30)
+                session.execute("CREATE table indexes ( resolution int, annoid bigint, cuboids text, PRIMARY KEY ( resolution, annoid ) )", timeout=30)
+              except Exception, e:
+                raise
+              finally:
+                cluster.shutdown()
+
+        except MySQLdb.Error, e:
+          logging.error ("Failed to create tables for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+          raise OCPCAError ("Failed to create tables for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         except Exception, e:
-          raise
-        finally:
-          cluster.shutdown()
-        
-      else:
-        logging.error ("Unknown KV Engine requested: %s" % "RBTODO get name")
-        raise OCPCAError ("Unknown KV Engine requested: %s" % "RBTODO get name")
-
-
-      # tables specific to annotation projects
-      if proj.getProjectType() == 'annotation': 
-
-        newcursor.execute("CREATE TABLE ids ( id BIGINT PRIMARY KEY)")
-
-        # And the RAMON objects
-        newcursor.execute ( "CREATE TABLE annotations (annoid BIGINT PRIMARY KEY, type INT, confidence FLOAT, status INT)")
-        newcursor.execute ( "CREATE TABLE seeds (annoid BIGINT PRIMARY KEY, parentid BIGINT, sourceid BIGINT, cube_location INT, positionx INT, positiony INT, positionz INT)")
-        newcursor.execute ( "CREATE TABLE synapses (annoid BIGINT PRIMARY KEY, synapse_type INT, weight FLOAT)")
-        newcursor.execute ( "CREATE TABLE segments (annoid BIGINT PRIMARY KEY, segmentclass INT, parentseed INT, neuron INT)")
-        newcursor.execute ( "CREATE TABLE organelles (annoid BIGINT PRIMARY KEY, organelleclass INT, parentseed INT, centroidx INT, centroidy INT, centroidz INT)")
-        newcursor.execute ( "CREATE TABLE kvpairs ( annoid BIGINT, kv_key VARCHAR(255), kv_value VARCHAR(20000), PRIMARY KEY ( annoid, kv_key ))")
-
-        newconn.commit()
-
-        if proj.getKVEngine() == 'MySQL':
-          for i in datasetcfg.resolutions: 
-            if proj.getExceptions():
-              newcursor.execute ( "CREATE TABLE exc%s ( zindex BIGINT, id BIGINT, exlist LONGBLOB, PRIMARY KEY ( zindex, id))" % i )
-            newcursor.execute ( "CREATE TABLE idx%s ( annid BIGINT PRIMARY KEY, cube LONGBLOB )" % i )
-
-          newconn.commit()
-
-        elif proj.getKVEngine() == 'Riak':
-          pass
-
-        elif proj.getKVEngine() == 'Cassandra':
-
-          cluster = Cluster( [proj.getKVServer()] )
-          try:
-            session = cluster.connect()
-            session.execute ( "USE {}".format(proj.getDBName()) )
-            session.execute( "CREATE table exceptions ( resolution int, zidx bigint, annoid bigint, exceptions text, PRIMARY KEY ( resolution, zidx, annoid ) )", timeout=30)
-            session.execute("CREATE table indexes ( resolution int, annoid bigint, cuboids text, PRIMARY KEY ( resolution, annoid ) )", timeout=30)
-          except Exception, e:
-            raise
-          finally:
-            cluster.shutdown()
-
-    except MySQLdb.Error, e:
-      logging.error ("Failed to create tables for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise OCPCAError ("Failed to create tables for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-    except Exception, e:
-      raise 
-    finally:
-      newcursor.close()
-      newconn.close()
+          raise 
 
 
   def deleteOCPCADB ( self, proj_name ):
 
-    proj = self.loadProject(proj_name) 
+    pr = Project.objects.get(project_name=proj_name)
 
     # delete the database
-    sql = "DROP DATABASE " + proj.getDBName()
+    sql = "DROP DATABASE " + pr.project_name
 
     with closing(self.conn.cursor()) as cursor:
       try:
@@ -546,19 +518,19 @@ class OCPCAProjectsDB:
     #  try to delete the database anyway
     #  Sometimes weird crashes can get stuff out of sync
 
-    if proj.getKVEngine() == 'Cassandra':
+    if pr.kvengine == 'Cassandra':
 
-      cluster = Cluster( [proj.getKVServer()] )
+      cluster = Cluster( [pr.kvserver] )
       try:
         session = cluster.connect()
-        session.execute ( "DROP KEYSPACE {}".format(proj.getDBName()), timeout=30 )
+        session.execute ( "DROP KEYSPACE {}".format(pr.project_name), timeout=30 )
       finally:
         cluster.shutdown()
 
-    elif proj.getKVEngine() == 'Riak':
+    elif pr.kvengine == 'Riak':
 
       # connect to Riak
-      rcli = riak.RiakClient(host=proj.getKVServer(), pb_port=8087, protocol='pbc')
+      rcli = riak.RiakClient(host=proj.kvserver, pb_port=8087, protocol='pbc')
       bucket = rcli.bucket_type("ocp{}".format(proj.getProjectType())).bucket(proj.getDBName())
 
       key_list = rcli.get_keys(bucket)
@@ -583,11 +555,11 @@ class OCPCAProjectsDB:
 
   def loadDatasetConfig ( self, dataset ):
     """Query the database for the dataset information and build a db configuration"""
+    return OCPCADataset (dataset)
 
-    dataset = Dataset.objects.get ( dataset_name = dataset )
-
-    return OCPCADataset ((dataset.ximagesize, dataset.yimagesize, dataset.zimagesize), (dataset.xoffset, dataset.yoffset, dataset.zoffset), (dataset.xvoxelres, dataset.yvoxelres, dataset.zvoxelres), dataset.scalinglevels, dataset.scalingoption, dataset.startwindow, dataset.endwindow, dataset.starttime, dataset.endtime ) 
-
+  def loadToken ( self, token ):
+    """Query django configuration for a token to bind to a project"""
+    return OCPCAProject (token)
    
   #
   # Update the propagate  and readonly values for a project
