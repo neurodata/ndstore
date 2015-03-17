@@ -62,50 +62,50 @@ except:
 
 class OCPCADB: 
 
-  def __init__ (self, annoproj):
+  def __init__ (self, ocpchannel ):
     """Connect with the brain databases"""
 
-    self.datasetcfg = annoproj.datasetcfg 
-    self.annoproj = annoproj
+    self.datasetcfg = ocpchannel.datasetcfg 
+    self.ocpchannel = ocpchannel
 
     # Are there exceptions?
-    self.EXCEPT_FLAG = self.annoproj.getExceptions()
-    self.KVENGINE = self.annoproj.getKVEngine()
+    self.EXCEPT_FLAG = self.ocpchannel.getExceptions()
+    self.KVENGINE = self.ocpchannel.getKVEngine()
 
     # Choose the I/O engine for key/value data
-    if self.annoproj.getKVEngine() == 'MySQL':
+    if self.ocpchannel.getKVEngine() == 'MySQL':
       import mysqlkvio
       self.kvio = mysqlkvio.MySQLKVIO(self)
       self.NPZ = True
-    elif self.annoproj.getKVEngine() == 'Riak':
+    elif self.ocpchannel.getKVEngine() == 'Riak':
       import riakkvio
       self.kvio = riakkvio.RiakKVIO(self)
       self.NPZ = False
-    elif self.annoproj.getKVEngine() == 'Cassandra':
+    elif self.ocpchannel.getKVEngine() == 'Cassandra':
       import casskvio
       self.kvio = casskvio.CassandraKVIO(self)
       self.NPZ = False
     else:
-      raise OCPCAError ("Unknown key/value store.  Engine = {}".format(self.annoproj.getKVEngine()))
+      raise OCPCAError ("Unknown key/value store.  Engine = {}".format(self.ocpchannel.getKVEngine()))
 
     # Connection info for the metadata
     try:
-      self.conn = MySQLdb.connect (host = self.annoproj.getDBHost(),
-                            user = self.annoproj.getDBUser(),
-                            passwd = self.annoproj.getDBPasswd(),
-                            db = self.annoproj.getDBName())
+      self.conn = MySQLdb.connect (host = self.ocpchannel.getDBHost(),
+                            user = self.ocpchannel.getDBUser(),
+                            passwd = self.ocpchannel.getDBPasswd(),
+                            db = self.ocpchannel.getDBName())
 
       # start with no cursor
       self.cursor = None
 
     except MySQLdb.Error, e:
       self.conn = None
-      logger.error("Failed to connect to database: %s, %s" % (self.annoproj.getDBHost(), self.annoproj.getDBName()))
+      logger.error("Failed to connect to database: %s, %s" % (self.ocpchannel.getDBHost(), self.ocpchannel.getDBName()))
       raise
 
     # create annidx object
-    if (self.annoproj.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS):
-      self.annoIdx = annindex.AnnotateIndex ( self.kvio, self.annoproj )
+    if (self.ocpchannel.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS):
+      self.annoIdx = annindex.AnnotateIndex ( self.kvio, self.ocpchannel )
 
   def close ( self ):
     """Close the connection"""
@@ -171,7 +171,7 @@ class OCPCADB:
     with closing(self.conn.cursor()) as cursor:
 
       # Query the current max identifier
-      sql = "SELECT max(id) FROM " + str ( self.annoproj.getIDsTbl() )
+      sql = "SELECT max(id) FROM " + str ( self.ocpchannel.getIDsTbl() )
       try:
         cursor.execute ( sql )
       except MySQLdb.Error, e:
@@ -199,13 +199,13 @@ class OCPCADB:
     with closing(self.conn.cursor()) as cursor:
     
       # LOCK the table to prevent race conditions on the ID
-      sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getIDsTbl() )
+      sql = "LOCK TABLES %s WRITE" % ( self.ocpchannel.getIDsTbl() )
       try:
 
         cursor.execute ( sql )
 
         # Query the current max identifier
-        sql = "SELECT max(id) FROM " + str ( self.annoproj.getIDsTbl() ) 
+        sql = "SELECT max(id) FROM " + str ( self.ocpchannel.getIDsTbl() ) 
         try:
           cursor.execute ( sql )
         except MySQLdb.Error, e:
@@ -221,7 +221,7 @@ class OCPCADB:
           identifier = int ( row[0] ) + 1
 
         # increment and update query
-        sql = "INSERT INTO " + str(self.annoproj.getIDsTbl()) + " VALUES ( " + str(identifier) + " ) "
+        sql = "INSERT INTO " + str(self.ocpchannel.getIDsTbl()) + " VALUES ( " + str(identifier) + " ) "
         try:
           cursor.execute ( sql )
         except MySQLdb.Error, e:
@@ -249,11 +249,11 @@ class OCPCADB:
     with closing(self.conn.cursor()) as cursor:
 
       # LOCK the table to prevent race conditions on the ID
-      sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getIDsTbl() )
+      sql = "LOCK TABLES %s WRITE" % ( self.ocpchannel.getIDsTbl() )
       try:
 
         # try the insert, get ane exception if it doesn't work
-        sql = "INSERT INTO " + str(self.annoproj.getIDsTbl()) + " VALUES ( " + str(annoid) + " ) "
+        sql = "INSERT INTO " + str(self.ocpchannel.getIDsTbl()) + " VALUES ( " + str(annoid) + " ) "
         try:
           cursor.execute ( sql )
         except MySQLdb.Error, e:
@@ -282,11 +282,11 @@ class OCPCADB:
 
 
       # LOCK the table to prevent race conditions on the ID
-      sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getIDsTbl() )
+      sql = "LOCK TABLES %s WRITE" % ( self.ocpchannel.getIDsTbl() )
       try:
 
         # try the insert, get and if it doesn't work
-        sql = "INSERT INTO {} VALUES ( %s ) ".format( str(self.annoproj.getIDsTbl()) )
+        sql = "INSERT INTO {} VALUES ( %s ) ".format( str(self.ocpchannel.getIDsTbl()) )
         try:
           cursor.executemany ( sql, [str(i) for i in annoidList] )  
         except MySQLdb.Error, e:
@@ -311,13 +311,13 @@ class OCPCADB:
     with closing(self.conn.cursor()) as cursor:
 
       # LOCK the table to prevent race conditions on the ID
-      sql = "LOCK TABLES %s WRITE" % ( self.annoproj.getIDsTbl() )
+      sql = "LOCK TABLES %s WRITE" % ( self.ocpchannel.getIDsTbl() )
       try:
 
         cursor.execute ( sql )
 
         # Query the current max identifier
-        sql = "SELECT max(id) FROM " + str ( self.annoproj.getIDsTbl() ) 
+        sql = "SELECT max(id) FROM " + str ( self.ocpchannel.getIDsTbl() ) 
         try:
           cursor.execute ( sql )
         except MySQLdb.Error, e:
@@ -333,7 +333,7 @@ class OCPCADB:
           identifier = int ( row[0] ) 
 
         # increment and update query
-        sql = "INSERT INTO " + str(self.annoproj.getIDsTbl()) + " VALUES ( " + str(identifier+count) + " ) "
+        sql = "INSERT INTO " + str(self.ocpchannel.getIDsTbl()) + " VALUES ( " + str(identifier+count) + " ) "
         try:
           cursor.execute ( sql )
         except MySQLdb.Error, e:
@@ -360,20 +360,20 @@ class OCPCADB:
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
     # Create a cube object
-    if (self.annoproj.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS and self.annoproj.getDataType() in ocpcaproj.DTYPE_uint32):
+    if (self.ocpchannel.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS and self.ocpchannel.getDataType() in ocpcaproj.DTYPE_uint32):
       cube = anncube.AnnotateCube ( cubedim )
-    elif (self.annoproj.getDataType() == ocpcaproj.DTYPE_float32):
+    elif (self.ocpchannel.getDataType() == ocpcaproj.DTYPE_float32):
       cube = probmapcube.ProbMapCube32 ( cubedim )
-    elif (self.annoproj.getProjectType() == ocpcaproj.DTYPE_uint8):
+    elif (self.ocpchannel.getProjectType() == ocpcaproj.DTYPE_uint8):
       cube = imagecube.ImageCube8 ( cubedim )
-    elif (self.annoproj.getProjectType() == ocpcaproj.DTYPE_uint16):
+    elif (self.ocpchannel.getProjectType() == ocpcaproj.DTYPE_uint16):
       cube = imagecube.ImageCube16 ( cubedim )
-    elif (self.annoproj.getProjectType() in ocpcaproj.IMAGE_PROJECTS and self.annoproj.getDataType() in ocpcaproj.DTYPE_uint32):
+    elif (self.ocpchannel.getProjectType() in ocpcaproj.IMAGE_PROJECTS and self.ocpchannel.getDataType() in ocpcaproj.DTYPE_uint32):
       cube = imagecube.ImageCube32 ( cubedim )
-    elif (self.annoproj.getProjectType() in ocpcaproj.IMAGE_PROJECTS and self.annoproj.getDataType() in ocpcaproj.DTYPE_uint64):
+    elif (self.ocpchannel.getProjectType() in ocpcaproj.IMAGE_PROJECTS and self.ocpchannel.getDataType() in ocpcaproj.DTYPE_uint64):
       cube = imagecube.ImageCube64 ( cubedim )
     else:
-      raise OCPCAError ("Unknown project type {}".format(self.annoproj.getProjectType()))
+      raise OCPCAError ("Unknown project type {}".format(self.ocpchannel.getProjectType()))
   
     # get the block from the database
     cubestr = self.kvio.getCube ( key, resolution, update )
@@ -446,12 +446,12 @@ class OCPCADB:
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
     # Create a cube object
-    if self.annoproj.getProjectType() == ocpcaproj.CHANNELS_8bit:
+    if self.ocpchannel.getProjectType() == ocpcaproj.CHANNELS_8bit:
       cube = imagecube.ImageCube8 ( cubedim )
-    elif self.annoproj.getProjectType() == ocpcaproj.CHANNELS_16bit:
+    elif self.ocpchannel.getProjectType() == ocpcaproj.CHANNELS_16bit:
       cube = imagecube.ImageCube16 ( cubedim )
     else:
-      raise OCPCAError ("Unknown project type {}".format(self.annoproj.getProjectType()))
+      raise OCPCAError ("Unknown project type {}".format(self.ocpchannel.getProjectType()))
   
     # get the block from the database
     cubestr = self.kvio.getChannelCube ( key, channel, resolution, update )
@@ -515,12 +515,12 @@ class OCPCADB:
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
     # Create a cube object
-    if self.annoproj.getProjectType() == ocpcaproj.TIMESERIES_4d_8bit:
+    if self.ocpchannel.getProjectType() == ocpcaproj.TIMESERIES_4d_8bit:
       cube = imagecube.ImageCube8 ( cubedim )
-    elif self.annoproj.getProjectType() == ocpcaproj.TIMESERIES_4d_16bit:
+    elif self.ocpchannel.getProjectType() == ocpcaproj.TIMESERIES_4d_16bit:
       cube = imagecube.ImageCube16 ( cubedim )
     else:
-      raise OCPCAError ("Unknown project type {}".format(self.annoproj.getProjectType()))
+      raise OCPCAError ("Unknown project type {}".format(self.ocpchannel.getProjectType()))
   
     # get the block from the database
     cubestr = self.kvio.getTimeSeriesCube ( key, timestamp, resolution, update )
@@ -665,11 +665,11 @@ class OCPCADB:
 
     if channel == None:
       # get the block from the database
-      sql = "SELECT zindex, cube FROM " + self.annoproj.getTable(resolution) + " WHERE zindex >= " + str(lowkey) + " AND zindex < " + str(highkey)
+      sql = "SELECT zindex, cube FROM " + self.ocpchannel.getTable(resolution) + " WHERE zindex >= " + str(lowkey) + " AND zindex < " + str(highkey)
     else:
       # or from a channel database
       channel = ocpcachannel.toID ( channel, self )
-      sql = "SELECT zindex, cube FROM " + self.annoproj.getTable(resolution) + " WHERE channel = " + str(channel) + " AND zindex >= " + str(lowkey) + " AND zindex < " + str(highkey)
+      sql = "SELECT zindex, cube FROM " + self.ocpchannel.getTable(resolution) + " WHERE channel = " + str(channel) + " AND zindex >= " + str(lowkey) + " AND zindex < " + str(highkey)
   
     try:
       self._qr_cursor.execute ( sql )
@@ -1066,16 +1066,16 @@ class OCPCADB:
     """Scale to a smaller cutout that will be zoomed"""
 
     # scale the corner to lower resolution
-    effcorner = corner[0]/(2**(self.annoproj.getResolution()-resolution)), corner[1]/(2**(self.annoproj.getResolution()-resolution)), corner[2]
+    effcorner = corner[0]/(2**(self.ocpchannel.getResolution()-resolution)), corner[1]/(2**(self.ocpchannel.getResolution()-resolution)), corner[2]
 
     # pixels offset within big range
-    xpixeloffset = corner[0]%(2**(self.annoproj.getResolution()-resolution))
-    ypixeloffset = corner[1]%(2**(self.annoproj.getResolution()-resolution))
+    xpixeloffset = corner[0]%(2**(self.ocpchannel.getResolution()-resolution))
+    ypixeloffset = corner[1]%(2**(self.ocpchannel.getResolution()-resolution))
 
     # get the new dimension, snap up to power of 2
     outcorner = (corner[0]+dim[0],corner[1]+dim[1],corner[2]+dim[2])
 
-    newoutcorner = (outcorner[0]-1)/(2**(self.annoproj.getResolution()-resolution))+1, (outcorner[1]-1)/(2**(self.annoproj.getResolution()-resolution))+1, outcorner[2]
+    newoutcorner = (outcorner[0]-1)/(2**(self.ocpchannel.getResolution()-resolution))+1, (outcorner[1]-1)/(2**(self.ocpchannel.getResolution()-resolution))+1, outcorner[2]
     effdim = (newoutcorner[0]-effcorner[0],newoutcorner[1]-effcorner[1],newoutcorner[2]-effcorner[2])
 
     return effcorner, effdim, (xpixeloffset,ypixeloffset)
@@ -1085,9 +1085,9 @@ class OCPCADB:
     """Scale to a larger cutout that will be shrunk"""
 
     # scale the corner to higher resolution
-    effcorner = corner[0]*(2**(resolution-self.annoproj.getResolution())), corner[1]*(2**(resolution-self.annoproj.getResolution())), corner[2]
+    effcorner = corner[0]*(2**(resolution-self.ocpchannel.getResolution())), corner[1]*(2**(resolution-self.ocpchannel.getResolution())), corner[2]
 
-    effdim = dim[0]*(2**(resolution-self.annoproj.getResolution())),dim[1]*(2**(resolution-self.annoproj.getResolution())),dim[2]
+    effdim = dim[0]*(2**(resolution-self.ocpchannel.getResolution())),dim[1]*(2**(resolution-self.ocpchannel.getResolution())),dim[2]
 
     return effcorner, effdim 
 
@@ -1100,20 +1100,20 @@ class OCPCADB:
 
     # alter query if  (ocpcaproj)._resolution is > resolution
     # if cutout is below resolution, get a smaller cube and scaleup
-    if self.annoproj.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS and self.annoproj.getResolution() > resolution:
+    if self.ocpchannel.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS and self.ocpchannel.getResolution() > resolution:
 
       #find the effective dimensions of the cutout (where the data is)
       effcorner, effdim, (xpixeloffset,ypixeloffset) = self._zoominCutout ( corner, dim, resolution )
-      [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ self.annoproj.getResolution() ] 
-      effresolution = self.annoproj.getResolution()
+      [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ self.ocpchannel.getResolution() ] 
+      effresolution = self.ocpchannel.getResolution()
 
     # alter query if  (ocpcaproj)._resolution is < resolution
     # if cutout is above resolution, get a large cube and scaledown
-    elif self.annoproj.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS and self.annoproj.getResolution() < resolution and self.annoproj.getPropagate() not in [ocpcaproj.PROPAGATED]:  
+    elif self.ocpchannel.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS and self.ocpchannel.getResolution() < resolution and self.ocpchannel.getPropagate() not in [ocpcaproj.PROPAGATED]:  
 
-      [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ self.annoproj.getResolution() ] 
+      [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ self.ocpchannel.getResolution() ] 
       effcorner, effdim = self._zoomoutCutout ( corner, dim, resolution )
-      effresolution = self.annoproj.getResolution()
+      effresolution = self.ocpchannel.getResolution()
 
     # this is the default path when not scaling up the resolution
     else:
@@ -1135,11 +1135,11 @@ class OCPCADB:
   
     # use the requested resolution
     if zscaling == 'nearisotropic' and self.datasetcfg.nearisoscaledown[resolution] > 1:
-      dbname = self.annoproj.getNearIsoTable(resolution)
+      dbname = self.ocpchannel.getNearIsoTable(resolution)
     else:
-      dbname = self.annoproj.getTable(effresolution)
+      dbname = self.ocpchannel.getTable(effresolution)
 
-    if self.annoproj.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS:
+    if self.ocpchannel.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS:
 
       # input cube is the database size
       incube = anncube.AnnotateCube ( cubedim )
@@ -1150,35 +1150,35 @@ class OCPCADB:
                                         znumcubes*zcubedim] )
       outcube.zeros()
 
-    elif self.annoproj.getDataType() in ocpcaproj.DTYPE_uint8:
+    elif self.ocpchannel.getDataType() in ocpcaproj.DTYPE_uint8:
 
       incube = imagecube.ImageCube8 ( cubedim )
       outcube = imagecube.ImageCube8 ( [xnumcubes*xcubedim,\
                                         ynumcubes*ycubedim,\
                                         znumcubes*zcubedim] )
 
-    elif self.annoproj.getDataType() in ocpcaproj.DTYPE_uint16:
+    elif self.ocpchannel.getDataType() in ocpcaproj.DTYPE_uint16:
       
       incube = imagecube.ImageCube16 ( cubedim )
       outcube = imagecube.ImageCube16 ( [xnumcubes*xcubedim,\
                                         ynumcubes*ycubedim,\
                                         znumcubes*zcubedim] )
 
-    elif self.annoproj.getDataType() in ocpcaproj.DTYPE_rgb32:
+    elif self.ocpchannel.getDataType() in ocpcaproj.DTYPE_rgb32:
 
       incube = imagecube.ImageCube32 ( cubedim )
       outcube = imagecube.ImageCube32 ( [xnumcubes*xcubedim,\
                                         ynumcubes*ycubedim,\
                                         znumcubes*zcubedim] )
 
-    elif self.annoproj.getDataType() in ocpcaproj.DTYPE_rgb64:
+    elif self.ocpchannel.getDataType() in ocpcaproj.DTYPE_rgb64:
     
       incube = imagecube.ImageCube64 ( cubedim )
       outcube = imagecube.ImageCube64 ( [xnumcubes*xcubedim,\
                                         ynumcubes*ycubedim,\
                                         znumcubes*zcubedim] )
     
-    elif self.annoproj.getProjectType() == ocpcaproj.DTYPE_float32:
+    elif self.ocpchannel.getProjectType() == ocpcaproj.DTYPE_float32:
       
       incube = probmapcube.ProbMapCube32 ( cubedim )
       outcube = probmapcube.ProbMapCube32 ( [xnumcubes*xcubedim,\
@@ -1203,11 +1203,11 @@ class OCPCADB:
 
     try:
 
-      if self.annoproj.getProjectType() in ocpcaproj.CHANNEL_PROJECTS:
+      if self.ocpchannel.getProjectType() in ocpcaproj.CHANNEL_PROJECTS:
         # Convert channel as needed
         channel = ocpcachannel.toID ( channel, self )
         cuboids = self.kvio.getChannelCubes(listofidxs,channel,effresolution)
-      elif self.annoproj.getProjectType() in ocpcaproj.TIMESERIES_PROJECTS:
+      elif self.ocpchannel.getProjectType() in ocpcaproj.TIMESERIES_PROJECTS:
         cuboids = self.kvio.getTimeSeriesCubes(listofidxs,int(channel),effresolution)
       else:
         if zscaling == 'nearisotropic' and self.datasetcfg.nearisoscaledown[resolution] > 1:
@@ -1237,7 +1237,7 @@ class OCPCADB:
             h5.close()
 
         # apply exceptions if it's an annotation project
-        if annoids!= None and self.annoproj.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS:
+        if annoids!= None and self.ocpchannel.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS:
           incube.data = ocplib.filter_ctype_OMP ( incube.data, annoids )
           if self.EXCEPT_FLAG:
             self.applyCubeExceptions ( annoids, effresolution, idx, incube )
@@ -1252,20 +1252,20 @@ class OCPCADB:
     self.kvio.commit()
 
     # if we fetched a smaller cube to zoom, correct the result
-    if self.annoproj.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS and self.annoproj.getResolution() > resolution:
+    if self.ocpchannel.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS and self.ocpchannel.getResolution() > resolution:
 
-      outcube.zoomData ( self.annoproj.getResolution()-resolution )
+      outcube.zoomData ( self.ocpchannel.getResolution()-resolution )
 
-      # need to trim based on the cube cutout at self.annoproj.getResolution()
-      outcube.trim ( corner[0]%(xcubedim*(2**(self.annoproj.getResolution()-resolution)))+xpixeloffset,dim[0], corner[1]%(ycubedim*(2**(self.annoproj.getResolution()-resolution)))+ypixeloffset,dim[1], corner[2]%zcubedim,dim[2] )
+      # need to trim based on the cube cutout at self.ocpchannel.getResolution()
+      outcube.trim ( corner[0]%(xcubedim*(2**(self.ocpchannel.getResolution()-resolution)))+xpixeloffset,dim[0], corner[1]%(ycubedim*(2**(self.ocpchannel.getResolution()-resolution)))+ypixeloffset,dim[1], corner[2]%zcubedim,dim[2] )
 
     # if we fetch a larger cube, downscale it and correct
-    elif self.annoproj.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS and self.annoproj.getResolution() < resolution and self.annoproj.getPropagate() not in [ocpcaproj.PROPAGATED]:
+    elif self.ocpchannel.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS and self.ocpchannel.getResolution() < resolution and self.ocpchannel.getPropagate() not in [ocpcaproj.PROPAGATED]:
 
-      outcube.downScale ( resolution-self.annoproj.getResolution() )
+      outcube.downScale ( resolution-self.ocpchannel.getResolution() )
 
-      # need to trime based on the cube cutout at self.annoproj.getResolution()
-      outcube.trim ( corner[0]%(xcubedim*(2**(self.annoproj.getResolution()-resolution))),dim[0], corner[1]%(ycubedim*(2**(self.annoproj.getResolution()-resolution))),dim[1], corner[2]%zcubedim,dim[2] )
+      # need to trime based on the cube cutout at self.ocpchannel.getResolution()
+      outcube.trim ( corner[0]%(xcubedim*(2**(self.ocpchannel.getResolution()-resolution))),dim[0], corner[1]%(ycubedim*(2**(self.ocpchannel.getResolution()-resolution))),dim[1], corner[2]%zcubedim,dim[2] )
       
     # need to trim down the array to size
     #  only if the dimensions are not the same
@@ -1296,14 +1296,14 @@ class OCPCADB:
     xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
 
     # use the requested resolution
-    dbname = self.annoproj.getTable(resolution)
+    dbname = self.ocpchannel.getTable(resolution)
 
-    if self.annoproj.getProjectType() in ocpcaproj.DTYPE_uint8:
+    if self.ocpchannel.getProjectType() in ocpcaproj.DTYPE_uint8:
 
       incube = imagecube.ImageCube8 ( cubedim )
       outcube = imagecube.ImageCube8 ( [xnumcubes*xcubedim, ynumcubes*ycubedim, znumcubes*zcubedim] )
 
-    elif self.annoproj.getProjectType() in ocpcaproj.DTYPE_16bit :
+    elif self.ocpchannel.getProjectType() in ocpcaproj.DTYPE_16bit :
       
       incube = imagecube.ImageCube16 ( cubedim )
       outcube = imagecube.ImageCube16 ( [xnumcubes*xcubedim, ynumcubes*ycubedim, znumcubes*zcubedim] )
@@ -1402,7 +1402,7 @@ class OCPCADB:
     cursor = self.getCursor()
 
     # get the block from the database
-    sql = "SELECT cube FROM " + self.annoproj.getTable(resolution) + " WHERE zindex = " + str(mortonidx)
+    sql = "SELECT cube FROM " + self.ocpchannel.getTable(resolution) + " WHERE zindex = " + str(mortonidx)
     try:
       cursor.execute ( sql )
       row=cursor.fetchone()
@@ -1478,8 +1478,8 @@ class OCPCADB:
     resolution = int(res)
     
     #scale to project resolution
-    if self.annoproj.getResolution() > resolution:
-      effectiveres = self.annoproj.getResolution() 
+    if self.ocpchannel.getResolution() > resolution:
+      effectiveres = self.ocpchannel.getResolution() 
     else:
       effectiveres = resolution
 
@@ -1535,8 +1535,8 @@ class OCPCADB:
     resolution = int(res)
 
     # determine the resolution for project information
-    if self.annoproj.getResolution() > resolution:
-      effectiveres = self.annoproj.getResolution() 
+    if self.ocpchannel.getResolution() > resolution:
+      effectiveres = self.ocpchannel.getResolution() 
       scaling = 2**(effectiveres-resolution)
     else:
       effectiveres = resolution
@@ -1577,8 +1577,8 @@ class OCPCADB:
 
     # alter query if  (ocpcaproj)._resolution is > resolution
     # if cutout is below resolution, get a smaller cube and scaleup
-    if self.annoproj.getResolution() > resolution:
-      effectiveres = self.annoproj.getResolution() 
+    if self.ocpchannel.getResolution() > resolution:
+      effectiveres = self.ocpchannel.getResolution() 
     else:
       effectiveres = resolution
 
@@ -1855,19 +1855,19 @@ class OCPCADB:
     yoffset = corner[1]%ycubedim
     xoffset = corner[0]%xcubedim
     
-    if self.annoproj.getProjectType() == ocpcaproj.IMAGES_8bit:
+    if self.ocpchannel.getProjectType() == ocpcaproj.IMAGES_8bit:
       cuboiddtype = np.uint8  
-    elif self.annoproj.getProjectType() == ocpcaproj.IMAGES_16bit:
+    elif self.ocpchannel.getProjectType() == ocpcaproj.IMAGES_16bit:
       cuboiddtype = np.uint16  
-    elif self.annoproj.getProjectType() == ocpcaproj.RGB_32bit:
+    elif self.ocpchannel.getProjectType() == ocpcaproj.RGB_32bit:
       cuboiddtype = np.uint32
-    elif self.annoproj.getProjectType() == ocpcaproj.RGB_64bit:
+    elif self.ocpchannel.getProjectType() == ocpcaproj.RGB_64bit:
       cuboiddtype = np.uint64
-    elif self.annoproj.getProjectType() == ocpcaproj.PROBMAP_32bit:
+    elif self.ocpchannel.getProjectType() == ocpcaproj.PROBMAP_32bit:
       cuboiddtype = np.float32
-    elif self.annoproj.getProjectType() == ocpcaproj.CHANNELS_16bit:
+    elif self.ocpchannel.getProjectType() == ocpcaproj.CHANNELS_16bit:
       cuboiddtype = np.uint16
-    elif self.annoproj.getProjectType() == ocpcaproj.CHANNELS_8bit:
+    elif self.ocpchannel.getProjectType() == ocpcaproj.CHANNELS_8bit:
       cuboiddtype = np.uint8
 
     databuffer = np.zeros ([znumcubes*zcubedim, ynumcubes*ycubedim, xnumcubes*xcubedim], dtype=cuboiddata.dtype )
@@ -2003,7 +2003,7 @@ class OCPCADB:
   def merge3D(self, ids, corner, dim, res):
      # get the size of the image and cube
     resolution = int(res)
-    dbname = self.annoproj.getTable(resolution)
+    dbname = self.ocpchannel.getTable(resolution)
     
     # PYTODO Check if this is a valid annotation that we are relabelubg to
     if len(self.annoIdx.getIndex(ids[0],1)) == 0:

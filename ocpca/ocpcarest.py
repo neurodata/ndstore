@@ -1524,11 +1524,8 @@ def jsonInfo ( webargs ):
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
 
-  # and the database and then call the db function
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
-
     import jsonprojinfo
-    return jsonprojinfo.jsonInfo( proj, db )
+    return jsonprojinfo.jsonInfo( proj )
 
 
 def projInfo ( webargs ):

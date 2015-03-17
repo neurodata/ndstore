@@ -32,25 +32,23 @@ logger=logging.getLogger("ocp")
 def projdict ( proj ):
 
   projdict = {}
+  projdict['name'] = proj.getProjectName()
+  projdict['description'] = proj.getProjectDescription()
+  projdict['version'] = proj.getOCPVersion()
+
+  # These fields are internal
   #projdict['dbname'] = proj._dbname
   #projdict['host'] = proj._dbhost
-  projdict['projecttype'] = proj._projecttype
-  projdict['dataset'] = proj._dataset
-  projdict['overlayserver'] = proj._overlayserver
-  projdict['overlayproject'] = proj._overlayproject
-  projdict['readonly'] = (False if proj._readonly==0 else True)
-  projdict['exceptions'] = (False if proj._exceptions==0 else True)
-  projdict['resolution'] = proj._resolution
+  #projdict['schemaversion'] = proj.getSchemaVersion()
   #projdict['kvengine'] = proj._kvengine
   #projdict['kvserver'] = proj._kvserver
-  projdict['propagate'] = proj._propagate
 
   return projdict
 
 def datasetdict ( dataset ):
 
   dsdict = {}
-  dsdict['zoomlevels'] = dataset.zoomlevels
+  dsdict['scalinglevels'] = dataset.scalinglevels
   if dataset.scalingoption == ocpcaproj.ZSLICES:
     dsdict['scaling'] = 'zslices'
   else:
@@ -62,28 +60,33 @@ def datasetdict ( dataset ):
   dsdict['cube_dimension'] = dataset.cubedim
 #  dsdict['neariso_scaledown'] = dataset.nearisoscaledown
 # Figure out neariso in new design
-  dsdict['windowrange'] = dataset.windowrange
   dsdict['timerange'] = dataset.timerange
+  dsdict['description'] = dataset.getDatasetDescription()
 
   return dsdict
 
-def version ():
+def chandict ( channel ):
+  chandict = {}
+  chandict['channel_type'] = channel.getChannelType()
+  chandict['datatype'] = channel.getDataType()
+  chandict['exceptions'] = channel.getExceptions()
+  chandict['readonly'] = channel.getReadOnly()
+  chandict['resolution'] = channel.getResolution()
+  chandict['propagate'] = channel.getPropagate()
+  chandict['windowrange'] = channel.getWindowRange()
 
-  verdict = {}
-  verdict['ocp'] = ocpcaproj.OCP_VERSION_NUMBER 
-  verdict['schema'] = ocpcaproj.SCHEMA_VERSION_NUMBER
+  return chandict
 
-  return verdict
-
-def jsonInfo ( proj, db ):
+def jsonInfo ( proj ):
   """All Project Info"""
 
   jsonprojinfo = {}
-  jsonprojinfo['version'] = version()  
   jsonprojinfo['dataset'] = datasetdict ( proj.datasetcfg )
   jsonprojinfo['project'] = projdict ( proj )
-  if proj.getProjectType() in ocpcaproj.CHANNEL_PROJECTS:
-    jsonprojinfo['channels'] = db.getChannels()
+  jsonprojinfo['channels'] = {}
+  for ch in proj.projectChannels():
+    jsonprojinfo['channels'][ch.getChannelName()] = chandict ( ch ) 
+
   return json.dumps ( jsonprojinfo, sort_keys=True, indent=4 )
 
 
