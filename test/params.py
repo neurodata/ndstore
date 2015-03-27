@@ -15,6 +15,7 @@
 class Params:
   baseurl = ""
   token = ""
-  resolution = None
-  channels = None
+  resolution = 0
+  channels = []
+  numobjects = 0
   args = None

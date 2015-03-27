@@ -13,9 +13,6 @@
 # limitations under the License.
 
 import urllib2
-import cStringIO
-import sys
-import os
 import re
 import tempfile
 import h5py
@@ -23,70 +20,67 @@ import random
 import csv
 import numpy as np
 import pytest
+import httplib
 from contextlib import closing
 
 from pytesthelpers import makeAnno
 
-import ocpcaproj
-
+from params import Params
 import kvengine_to_test
 import site_to_test
 import makeunitdb
 SITE_HOST = site_to_test.site
 
 
-# Module level setup/teardown
-def setup_module(module):
-  pass
-def teardown_module(module):
-  pass
-
-
 class TestRamon:
 
-  # Per method setup/teardown
-#  def setup_method(self,method):
-#    pass
-#  def teardown_method(self,method):
-#    pass
 
   def setup_class(self):
     """Create the unittest database"""
-    makeunitdb.createTestDB('unittest')
+    makeunitdb.createTestDB('unittest', readonly=0)
 
   def teardown_class (self):
     """Destroy the unittest database"""
     makeunitdb.deleteTestDB('unittest')
 
-  def test_anno(self):
-    """Upload a minimal and maximal annotation.  Verify fields."""
-
-    """Test 1: Create a minimal HDF5 file"""
-    # Create an in-memory HDF5 file
-    tmpfile = tempfile.NamedTemporaryFile()
-    h5fh = h5py.File ( tmpfile.name )
-
-    # Create the top level annotation id namespace
-    idgrp = h5fh.create_group ( str(0) )
-
-    h5fh.flush()
-    tmpfile.seek(0)
-
-    # Build the put URL
-    url = "http://%s/ca/%s/" % ( SITE_HOST, 'unittest')
-
-    # write an object (server creates identifier)
-    req = urllib2.Request ( url, tmpfile.read())
-    response = urllib2.urlopen(req)
-    putid1 = int(response.read())
+  def putAnnotation (self, f, update=False ):
+    """Put the specified Annotation"""
     
+    # Build the put URL
+    if update:
+      url = "http://{}/ca/{}/{}/update/".format(SITE_HOST, 'unittest', 'unit_anno')
+    else:
+      url = "http://{}/ca/{}/{}/".format(SITE_HOST, 'unittest', 'unit_anno')
+    # write an object (server creates identifier)
+    req = urllib2.Request ( url, f.read())
+    response = urllib2.urlopen(req)
+    return int(response.read())
+
+  def getAnnotation (self, putid):
+    """Get the specified Annotation"""
     # retrieve the annotation
-    url = "http://%s/ca/%s/%s/" % ( SITE_HOST, 'unittest', str(putid1))
+    url = "http://{}/ca/{}/{}/{}/".format(SITE_HOST, 'unittest', 'unit_anno', putid)
     f = urllib2.urlopen ( url )
     retfile = tempfile.NamedTemporaryFile ( )
     retfile.write ( f.read() )
     retfile.seek(0)
-    h5ret = h5py.File ( retfile.name, driver='core', backing_store=False )
+    return h5py.File ( retfile.name, driver='core', backing_store=False )
+
+  def test_anno(self):
+    """Upload a minimal and maximal annotation.  Verify fields."""
+
+    """Test 1: Create a minimal HDF5 file"""
+   
+    # Create an in-memory HDF5 file
+    tmpfile = tempfile.NamedTemporaryFile()
+    h5fh = h5py.File ( tmpfile.name )
+    # Create the top level annotation id namespace
+    idgrp = h5fh.create_group ( str(0) )
+    h5fh.flush()
+    tmpfile.seek(0)
+    
+    putid1 = self.putAnnotation(tmpfile)
+    h5ret = self.getAnnotation(putid1)
 
     idgrpret = h5ret.get(str(putid1))
     assert idgrpret
@@ -122,21 +116,8 @@ class TestRamon:
     h5fh.flush()
     tmpfile.seek(0)
 
-    # Build the put URL
-    url = "http://%s/ca/%s/" % ( SITE_HOST, 'unittest')
-
-    # write an object (server creates identifier)
-    req = urllib2.Request ( url, tmpfile.read())
-    response = urllib2.urlopen(req)
-    putid2 = int(response.read())
-
-    # retrieve the annotation
-    url = "http://%s/ca/%s/%s/" % ( SITE_HOST, 'unittest', str(putid2))
-    f = urllib2.urlopen ( url )
-    retfile = tempfile.NamedTemporaryFile ( )
-    retfile.write ( f.read() )
-    retfile.seek(0)
-    h5ret = h5py.File ( retfile.name, driver='core', backing_store=False )
+    putid2 = self.putAnnotation(tmpfile)
+    h5ret = self.getAnnotation(putid2)
 
     idgrpret = h5ret.get(str(putid2))
     assert idgrpret
@@ -181,21 +162,8 @@ class TestRamon:
     h5fh.flush()
     tmpfile.seek(0)
 
-    # Build the put URL
-    url = "http://%s/ca/%s/update/" % ( SITE_HOST, 'unittest')
-
-    # write an object (server creates identifier)
-    req = urllib2.Request ( url, tmpfile.read())
-    response = urllib2.urlopen(req)
-    putid3 = int(response.read())
-
-    # retrieve the annotation
-    url = "http://%s/ca/%s/%s/" % ( SITE_HOST, 'unittest', str(putid3))
-    f = urllib2.urlopen ( url )
-    retfile = tempfile.NamedTemporaryFile ( )
-    retfile.write ( f.read() )
-    retfile.seek(0)
-    h5ret = h5py.File ( tmpfile.name, driver='core', backing_store=False )
+    putid3 = self.putAnnotation(tmpfile, update=True)
+    h5ret = self.getAnnotation(putid3)
 
     idgrpret = h5ret.get(str(putid3))
     assert idgrpret
@@ -206,7 +174,8 @@ class TestRamon:
     assert not idgrpret.get('CUTOUT')
     mdgrpret = idgrpret['METADATA']
     assert mdgrpret
-    assert ( mdgrpret['CONFIDENCE'][0] == ann_confidence )
+    assert ( abs(mdgrpret['CONFIDENCE'][0] - ann_confidence) < 0.0001 )
+    #assert ( mdgrpret['CONFIDENCE'][0] == ann_confidence )
     assert ( mdgrpret['STATUS'][0] == ann_status )
     assert ( mdgrpret['AUTHOR'][:] == ann_author )
 
@@ -215,7 +184,6 @@ class TestRamon:
     # Build the delete URL
 
     # Check if it's an HTTPS conncetion
-    import httplib
 #    m = re.match('http(s?)://(.*)', SITE_HOST)
 #    if m.group(1) == 's':
 #      conn = httplib.HTTPSConnection ( "%s" % ( m.group(2)))
@@ -231,9 +199,9 @@ class TestRamon:
     conn = httplib.HTTPConnection ( base )
 
     if suffix:
-      conn.request ( 'DELETE', '/%s/ca/%s/%s/' % ( suffix, 'unittest', putid3 )) 
+      conn.request ('DELETE', '/{}/ca/{}/{}/{}/'.format(suffix, 'unittest', 'unit_anno', putid3)) 
     else:
-      conn.request ( 'DELETE', '/ca/%s/%s/' % ( 'unittest', putid3 ))
+      conn.request ('DELETE', '/ca/{}/{}/{}/'.format('unittest', 'unit_anno', putid3))
 
     resp = conn.getresponse()
     content=resp.read()
@@ -242,7 +210,7 @@ class TestRamon:
 
     # retrieve the annotation
     # verify that it's not there.
-    url = "http://%s/ca/%s/%s/" % ( SITE_HOST, 'unittest', str(putid3))
+    url = "http://{}/ca/{}/{}/{}/".format(SITE_HOST, 'unittest', 'unit_anno', putid3)
     with pytest.raises(urllib2.HTTPError): 
       urllib2.urlopen ( url )
 
@@ -297,26 +265,6 @@ class TestRamon:
 
 
 
-#
-#  def test_synapse(self):
-#    pass
-#
-#  def test_segment(self):
-#    pass
-#
-#  def test_seed(self):
-#    pass  
-##
-#  def test_neuron(self):
-#    pass
-#
-#  def test_organelle(self):
-#    pass
-#
-#  def test_kvpairs(self):
-#    pass
-#
-#
   def H5AnnotationFile ( self, annotype, annoid ):
     """Create an HDF5 file and populate the fields. Return a file object.
         This is a support routine for all the RAMON tests."""
@@ -420,6 +368,7 @@ class TestRamon:
     tmpfile.close()
     return int (keys[0])
 
+
   def test_updown( self ):
     """Upload all different kinds of annotations and retrieve"""
 
@@ -429,7 +378,7 @@ class TestRamon:
       fobj = self.H5AnnotationFile ( anntype, annoid )
 
       # Build the put URL
-      url = "http://%s/ca/%s/" % ( SITE_HOST, 'unittest')
+      url = "http://{}/ca/{}/{}/".format(SITE_HOST, 'unittest', 'unit_anno')
 
       # write an object (server creates identifier)
       req = urllib2.Request ( url, fobj.read())
@@ -446,265 +395,173 @@ class TestRamon:
       putid2 = int(response.read())
 
       # retrieve both annotations
-      url = "http://%s/ca/%s/%s/" % ( SITE_HOST, 'unittest', str(putid1))
-      f = urllib2.urlopen ( url )
-      getid1 = self.getH5id ( f )
-   
-      assert ( getid1 == putid1 )
+      assert ( putid1 == self.getId(putid1) )
+      assert ( putid2 == self.getId(putid2) )
+  
 
-      url = "http://%s/ca/%s/%s/" % ( SITE_HOST, 'unittest', str(putid2))
-      req = urllib2.Request ( url )
-      f = urllib2.urlopen ( url )
-      getid2 = self.getH5id ( f )
+  def getId ( self, putid ):
+    """Get the annotation at this Id"""
+    url = "http://{}/ca/{}/{}/{}/".format(SITE_HOST, 'unittest', 'unit_anno', putid)
+    f = urllib2.urlopen ( url )
+    return self.getH5id ( f )
+  
+  def getField (self, annid, field):
+    """Get the specified field"""
+    url =  "http://{}/ca/{}/{}/{}/getField/{}/".format(SITE_HOST, 'unittest', 'unit_anno', annid, field)
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    return f
 
-      assert ( getid2 == putid2 )
-
+  def setField ( self, annid, field, value ):
+    """Set the specified field to the value"""
+    url =  "http://{}/ca/{}/{}/{}/setField/{}/{}/".format(SITE_HOST, 'unittest', 'unit_anno', annid, field, value)
+    req = urllib2.Request ( url )
+    f = urllib2.urlopen ( url )
+    return f
+    
 
   def test_fields (self):
     """Test the getField and setField"""
 
     # Make an annotation 
     annid = makeAnno ( 1, SITE_HOST )
-
-    # set the status
+    
+    # Test Status
     status = random.randint (0,100)
-    url =  "http://%s/ca/%s/%s/setField/status/%s/" % ( SITE_HOST, 'unittest',str(annid), status )
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.setField(annid, 'status', status)
     assert f.read()==''
-
-    # get the status
-    url =  "http://%s/ca/%s/%s/getField/status/" % ( SITE_HOST, 'unittest',str(annid))
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.getField( annid, 'status')
     assert status == int(f.read()) 
 
-    # set the confidence
+    # Test confidence
     confidence = random.random ()
-    url =  "http://%s/ca/%s/%s/setField/confidence/%s/" % ( SITE_HOST, 'unittest',str(annid), confidence )
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.setField(annid, 'confidence', confidence)
     assert f.read()==''
-
-    # get the confidence
-    url =  "http://%s/ca/%s/%s/getField/confidence/" % ( SITE_HOST, 'unittest',str(annid))
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.getField(annid, 'confidence')
     assert confidence - float(f.read()) < 0.001
     
-    # get the author
-    url =  "http://%s/ca/%s/%s/getField/author/" % ( SITE_HOST, 'unittest',str(annid))
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    # Test author
+    f = self.getField(annid, 'author')
     assert 'Unit Test' == f.read()
 
     # Make a synapse
     annid = makeAnno ( 2, SITE_HOST )
 
-    # set the type
+    # Test synapse type
     synapse_type = random.randint (0,100)
-    url =  "http://%s/ca/%s/%s/setField/synapse_type/%s/" % ( SITE_HOST, 'unittest',str(annid), synapse_type )
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.setField(annid, 'synapse_type', synapse_type)
     assert f.read()==''
-
-    # get the synapse_type
-    url =  "http://%s/ca/%s/%s/getField/synapse_type/" % ( SITE_HOST, 'unittest',str(annid))
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.getField(annid, 'synapse_type')
     assert synapse_type == int(f.read()) 
 
-    # set the weight
+    # Test the weight
     weight = random.random ()
-    url =  "http://%s/ca/%s/%s/setField/weight/%s/" % ( SITE_HOST, 'unittest',str(annid), weight )
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.setField(annid, 'weight', weight)
     assert f.read()==''
-
-    # get the weight
-    url =  "http://%s/ca/%s/%s/getField/weight/" % ( SITE_HOST, 'unittest',str(annid))
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.getField(annid, 'weight')
     assert weight - float(f.read()) < 0.001
 
-    # check inheritance
+    # Test the inheritance
     # set the status
     status = random.randint (0,100)
-    url =  "http://%s/ca/%s/%s/setField/status/%s/" % ( SITE_HOST, 'unittest',str(annid), status )
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.setField(annid, 'status', status)
     assert f.read()==''
-
-    # get the status
-    url =  "http://%s/ca/%s/%s/getField/status/" % ( SITE_HOST, 'unittest',str(annid))
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.getField( annid, 'status')
     assert status == int(f.read()) 
 
-    
     # Make a seed
     annid = makeAnno ( 3, SITE_HOST )
 
-    # set the parent
+    # Test the parent
     parent = random.randint (0,100)
-    url =  "http://%s/ca/%s/%s/setField/parent/%s/" % ( SITE_HOST, 'unittest',str(annid), parent )
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.setField(annid, 'parent', parent)
     assert f.read()==''
-
-    # get the parent
-    url =  "http://%s/ca/%s/%s/getField/parent/" % ( SITE_HOST, 'unittest',str(annid))
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.getField(annid, 'parent')
     assert parent == int(f.read()) 
 
-    # set the source
+    # Test the source
     source = random.randint (0,100)
-    url =  "http://%s/ca/%s/%s/setField/source/%s/" % ( SITE_HOST, 'unittest',str(annid), source )
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.setField(annid, 'source', source)
     assert f.read()==''
-
-    # get the source
-    url =  "http://%s/ca/%s/%s/getField/source/" % ( SITE_HOST, 'unittest',str(annid))
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.getField(annid, 'source')
     assert source == int(f.read()) 
 
-    # set the cubelocation
+    # Test the cubelocation
     cubelocation = random.randint (0,100)
-    url =  "http://%s/ca/%s/%s/setField/cubelocation/%s/" % ( SITE_HOST, 'unittest',str(annid), cubelocation )
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.setField(annid, 'cubelocation', cubelocation)
     assert f.read()==''
-
-    # get the cubelocation
-    url =  "http://%s/ca/%s/%s/getField/cubelocation/" % ( SITE_HOST, 'unittest',str(annid))
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.getField(annid, 'cubelocation')
     assert cubelocation == int(f.read()) 
 
     # Make a segment
     annid = makeAnno ( 4, SITE_HOST )
 
-    # set the parentseed
+    # Test the parentseed
     parentseed = random.randint (0,100)
-    url =  "http://%s/ca/%s/%s/setField/parentseed/%s/" % ( SITE_HOST, 'unittest',str(annid), parentseed )
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.setField(annid, 'parentseed', parentseed)
     assert f.read()==''
-
-    # get the parentseed
-    url =  "http://%s/ca/%s/%s/getField/parentseed/" % ( SITE_HOST, 'unittest',str(annid))
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.getField(annid, 'parentseed')
     assert parentseed == int(f.read()) 
 
-    # set the segmentclass
+    # Test the segmentclass
     segmentclass = random.randint (0,100)
-    url =  "http://%s/ca/%s/%s/setField/segmentclass/%s/" % ( SITE_HOST, 'unittest',str(annid), segmentclass )
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.setField(annid, 'segmentclass', segmentclass)
     assert f.read()==''
-
-    # get the segmentclass
-    url =  "http://%s/ca/%s/%s/getField/segmentclass/" % ( SITE_HOST, 'unittest',str(annid))
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.getField(annid, 'segmentclass')
     assert segmentclass == int(f.read()) 
 
-    # set the neuron
+    # Test the neuron
     neuron = random.randint (0,100)
-    url =  "http://%s/ca/%s/%s/setField/neuron/%s/" % ( SITE_HOST, 'unittest',str(annid), neuron )
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.setField(annid, 'neuron', neuron)
     assert f.read()==''
-
-    # get the neuron
-    url =  "http://%s/ca/%s/%s/getField/neuron/" % ( SITE_HOST, 'unittest',str(annid))
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.getField(annid, 'neuron')
     assert neuron == int(f.read()) 
 
-    # check inheritance
-    # set the status
+    # Test inheritance
     status = random.randint (0,100)
-    url =  "http://%s/ca/%s/%s/setField/status/%s/" % ( SITE_HOST, 'unittest',str(annid), status )
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.setField(annid, 'status', status)
     assert f.read()==''
-
-    # get the status
-    url =  "http://%s/ca/%s/%s/getField/status/" % ( SITE_HOST, 'unittest',str(annid))
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.getField( annid, 'status')
     assert status == int(f.read()) 
 
     # Make a neuron
     annid = makeAnno ( 5, SITE_HOST )
-
     # no independently set fields
 
-    # check inheritance
-    # set the status
+    # Test inheritance
     status = random.randint (0,100)
-    url =  "http://%s/ca/%s/%s/setField/status/%s/" % ( SITE_HOST, 'unittest',str(annid), status )
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.setField(annid, 'status', status)
     assert f.read()==''
-
-    # get the status
-    url =  "http://%s/ca/%s/%s/getField/status/" % ( SITE_HOST, 'unittest',str(annid))
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.getField( annid, 'status')
     assert status == int(f.read()) 
 
     # Make an organelle 
     annid = makeAnno ( 6, SITE_HOST )
 
-    # set the parentseed
+    # Test the parentseed
     parentseed = random.randint (0,100)
-    url =  "http://%s/ca/%s/%s/setField/parentseed/%s/" % ( SITE_HOST, 'unittest',str(annid), parentseed )
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.setField(annid, 'parentseed', parentseed)
     assert f.read()==''
-
-    # get the parentseed
-    url =  "http://%s/ca/%s/%s/getField/parentseed/" % ( SITE_HOST, 'unittest',str(annid))
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.getField(annid, 'parentseed')
     assert parentseed == int(f.read()) 
 
-    # set the organelleclass
+    # Test the organelleclass
     organelleclass = random.randint (0,100)
-    url =  "http://%s/ca/%s/%s/setField/organelleclass/%s/" % ( SITE_HOST, 'unittest',str(annid), organelleclass )
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.setField(annid, 'organelleclass', organelleclass)
     assert f.read()==''
-
-    # get the organelleclass
-    url =  "http://%s/ca/%s/%s/getField/organelleclass/" % ( SITE_HOST, 'unittest',str(annid))
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.getField(annid, 'organelleclass')
     assert organelleclass == int(f.read()) 
 
-    # check inheritance
-    # set the status
+    # Test inheritance
     status = random.randint (0,100)
-    url =  "http://%s/ca/%s/%s/setField/status/%s/" % ( SITE_HOST, 'unittest',str(annid), status )
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.setField(annid, 'status', status)
     assert f.read()==''
-
-    # get the status
-    url =  "http://%s/ca/%s/%s/getField/status/" % ( SITE_HOST, 'unittest',str(annid))
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.getField( annid, 'status')
     assert status == int(f.read()) 
 
     # TODO error caes.
     #  bad format to a number
-    url =  "http://%s/ca/%s/%s/setField/status/aa/" % ( SITE_HOST, 'unittest',str(annid))
+    url =  "http://{}/ca/{}/{}/{}/setField/status/aa/".format(SITE_HOST, 'unittest', 'unit_anno', annid)
     with pytest.raises(urllib2.HTTPError): 
       req = urllib2.Request ( url )
       f = urllib2.urlopen ( url )
@@ -723,7 +580,7 @@ class TestRamon:
 #      f = urllib2.urlopen ( url )
 
     #  request a missing field
-    url =  "http://%s/ca/%s/%s/getField/othernonesuch/" % ( SITE_HOST, 'unittest',str(annid))
+    url =  "http://{}/ca/{}/{}/{}/getField/othernonesuch/".format(SITE_HOST, 'unittest', 'unit_anno', annid)
     with pytest.raises(urllib2.HTTPError): 
       req = urllib2.Request ( url )
       f = urllib2.urlopen ( url )
@@ -734,43 +591,23 @@ class TestRamon:
     # Make an annotation 
     annid = makeAnno ( 2, SITE_HOST )
 
-    # set the type
+    # Test the synapse type
     synapse_type = random.randint (0,100)
-    url =  "http://%s/ca/%s/%s/setField/synapse_type/%s/" % ( SITE_HOST, 'unittest',str(annid), synapse_type )
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.setField(annid, 'synapse_type', synapse_type)
     assert f.read()==''
-
-    # get the synapse_type
-    url =  "http://%s/ca/%s/%s/getField/synapse_type/" % ( SITE_HOST, 'unittest',str(annid))
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.getField( annid, 'synapse_type')
     assert synapse_type == int(f.read()) 
 
-    # set the weight
+    # Test the weight
     weight = random.random ()
-    url =  "http://%s/ca/%s/%s/setField/weight/%s/" % ( SITE_HOST, 'unittest',str(annid), weight )
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.setField(annid, 'weight', weight)
     assert f.read()==''
-
-    # get the weight
-    url =  "http://%s/ca/%s/%s/getField/weight/" % ( SITE_HOST, 'unittest',str(annid))
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.getField( annid, 'weight')
     assert weight - float(f.read()) < 0.001
 
-    # check inheritance
-    # set the status
+    # Test inheritance
     status = random.randint (0,100)
-    url =  "http://%s/ca/%s/%s/setField/status/%s/" % ( SITE_HOST, 'unittest',str(annid), status )
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.setField(annid, 'status', status)
     assert f.read()==''
-
-    # get the status
-    url =  "http://%s/ca/%s/%s/getField/status/" % ( SITE_HOST, 'unittest',str(annid))
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    f = self.getField( annid, 'status')
     assert status == int(f.read()) 
-

@@ -40,7 +40,7 @@ def makeAnno ( anntype, hosturl ):
   tmpfile.seek(0)
 
   # Build the put URL
-  url = "http://%s/ocpca/%s/" % ( hosturl, 'unittest')
+  url = "http://{}/ocpca/{}/{}/".format(hosturl, 'unittest', 'unit_anno')
 
   # write an object (server creates identifier)
   req = urllib2.Request ( url, tmpfile.read())

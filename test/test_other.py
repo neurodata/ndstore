@@ -13,21 +13,11 @@
 # limitations under the License.
 
 import urllib2
-import cStringIO
-import sys
-import os
-import tempfile
-import h5py
-import random 
-import csv
-import numpy as np
 import pytest
 import json
 from contextlib import closing
 
 from pytesthelpers import makeAnno
-
-import ocpcaproj
 
 import kvengine_to_test
 import site_to_test
@@ -45,12 +35,6 @@ def teardown_module(module):
 class TestOther:
   """Other interfaces to OCPCA that don't fit into other categories"""
 
-  # Per method setup/teardown
-#  def setup_method(self,method):
-#    pass
-#  def teardown_method(self,method):
-#    pass
-
   def setup_class(self):
     """Create the unittest database"""
     makeunitdb.createTestDB('pubunittest', public=True)
@@ -62,7 +46,7 @@ class TestOther:
   def test_public_tokens (self):
     """Test the function that shows the public tokens"""
 
-    url =  "http://%s/ca/public_tokens/" % ( SITE_HOST )
+    url =  "http://{}/ca/public_tokens/".format( SITE_HOST )
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
 
@@ -72,19 +56,20 @@ class TestOther:
 
   def test_info(self):
 
-    url =  "http://%s/ca/%s/info/" % ( SITE_HOST, 'pubunittest' )
+    url =  "http://{}/ca/{}/info/".format( SITE_HOST, 'pubunittest' )
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     
     # reead the json data
     projinfo = json.loads ( f.read() )
-    assert ( projinfo['project']['projecttype'] == 'annotation' )
+    assert ( projinfo['project']['name'] == 'pubunittest' )
+    assert ( projinfo['channels']['unit_anno']['channel_type'] == 'annotation' )
     assert ( projinfo['dataset']['offset']['0'][2] == 1 )
 
   def test_reserve ( self ):
     """reserve 1000 ids twice and make sure that the numbers work"""
   
-    url =  "http://%s/ca/%s/reserve/%s/" % ( SITE_HOST, 'pubunittest', 1000 )
+    url =  "http://{}/ca/{}/{}/reserve/{}/".format( SITE_HOST, 'pubunittest', 'unit_anno', 1000 )
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     (id1, size1) = json.loads(f.read())

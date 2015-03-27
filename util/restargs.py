@@ -59,9 +59,6 @@ class BrainRestArgs:
     return self._zscaling
 
 
-  #
-  #  Process cutout arguments
-  #
   def cutoutArgs ( self, imageargs, datasetcfg, channels=None ):
     """Process REST arguments for an cutout plane request"""
 
@@ -365,9 +362,6 @@ class BrainRestArgs:
 
 # Unbound functions  not part of the class object
 
-#
-#  Process cutout arguments
-#
 def voxel ( imageargs, datasetcfg ):
   """Process REST arguments for a single point"""
 
@@ -390,7 +384,7 @@ def voxel ( imageargs, datasetcfg ):
   z = int(zstr)
 
   # Check arguments for legal values
-  if not ( datasetcfg.checkCube ( resolution, x, x+1, y, y+1, z, z+1 )):
+  if not ( datasetcfg.checkCube ( resolution, [x,y,z], [x+1,y+1,z+1] )):
     raise RESTArgsError ( "Illegal range. Image size: {} at offset {}".format(str(datasetcfg.imageSize(self._resolution)),str(datasetcfg.offset[self._resolution])))
 
   return (resolution, [ x,y,z ])

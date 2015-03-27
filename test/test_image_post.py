@@ -52,7 +52,7 @@ class TestImagePost:
 
   def setup_class(self):
 
-    makeunitdb.createTestDB('unittest_rw', projecttype='image', datatype='uint8' )
+    makeunitdb.createTestDB('unittest_rw', channel_list=['IMAGE','IMAGE2'], channel_type='image', channel_datatype='uint8' )
 
   def teardown_class(self):
 
@@ -64,12 +64,13 @@ class TestImagePost:
     p.token = "unittest_rw"
     p.baseurl = SITE_HOST
     p.resolution = 0
+    p.channels = ['IMAGE','IMAGE2']
     p.args = (3000,3100,4000,4100,500,510)
     
     # upload some image data
-    imagedata = np.ones ( [10,100,100], dtype=np.uint8 ) * random.randint(0,255)
+    imagedata = np.ones ( [2,10,100,100], dtype=np.uint8 ) * random.randint(0,255)
 
-    url = 'http://{}/ca/{}/npz/{}/{},{}/{},{}/{},{}/'.format ( p.baseurl, p.token, p.resolution, *p.args )
+    url = 'http://{}/ca/{}/npz/{}/{}/{},{}/{},{}/{},{}/'.format ( p.baseurl, p.token, ','.join(p.channels), p.resolution, *p.args )
 
     fileobj = cStringIO.StringIO ()
     np.save (fileobj, imagedata)
@@ -94,12 +95,13 @@ class TestImagePost:
     p.token = "unittest_rw"
     p.baseurl = SITE_HOST
     p.resolution = 0
+    p.channel = 'IMAGE'
     p.args = (4000,4100,5000,5100,500,510)
     
     # upload some image data
-    imagedata = np.ones ( [10,100,100], dtype=np.uint16 ) * random.randint(0,255)
+    imagedata = np.ones ( [1,10,100,100], dtype=np.uint16 ) * random.randint(0,255)
 
-    url = 'http://{}/ca/{}/npz/{}/{},{}/{},{}/{},{}/'.format ( p.baseurl, p.token, p.resolution, *p.args )
+    url = 'http://{}/ca/{}/npz/{}/{}/{},{}/{},{}/{},{}/'.format ( p.baseurl, p.token, p.channel, p.resolution, *p.args )
 
     fileobj = cStringIO.StringIO ()
     np.save (fileobj, imagedata)
@@ -119,16 +121,18 @@ class TestImagePost:
     p.token = "unittest_rw"
     p.baseurl = SITE_HOST
     p.resolution = 0
+    p.channels = ['IMAGE','IMAGE2']
     p.args = (2000,2100,4000,4100,500,510)
 
     # upload some image data
     imagedata = np.ones ( [10,100,100], dtype=np.uint8 ) * random.randint(0,255)
 
-    url = 'http://{}/ca/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format ( p.baseurl, p.token, p.resolution, *p.args )
+    url = 'http://{}/ca/{}/hdf5/{}/{}/{},{}/{},{}/{},{}/'.format ( p.baseurl, p.token, ','.join(p.channels), p.resolution, *p.args )
 
     tmpfile = tempfile.NamedTemporaryFile ()
     fh5out = h5py.File ( tmpfile.name )
-    fh5out.create_dataset ( "CUTOUT", tuple(imagedata.shape), imagedata.dtype, compression='gzip', data=imagedata )
+    for channel_name in p.channels:
+      fh5out.create_dataset ( channel_name, tuple(imagedata.shape), imagedata.dtype, compression='gzip', data=imagedata )
     fh5out.close()
     tmpfile.seek(0)
     
@@ -143,7 +147,8 @@ class TestImagePost:
     tmpfile.seek(0)
     h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
 
-    assert ( np.array_equal(h5f.get('CUTOUT').value,imagedata) )
+    for channel_name in p.channels:
+      assert ( np.array_equal(h5f.get(channel_name).get('CUTOUT').value,imagedata) )
 
   def test_hdf5_incorrect_datatype (self):
 
@@ -151,16 +156,20 @@ class TestImagePost:
     p.token = "unittest_rw"
     p.baseurl = SITE_HOST
     p.resolution = 0
+    p.channels = ['IMAGE','IMAGE2']
     p.args = (6000,6100,4000,4100,500,510)
 
     # upload some image data
-    imagedata = np.ones ( [10,100,100], dtype=np.uint16 ) * random.randint(0,255)
+    imagedata = np.empty((2,10,100,100))
+    imagedata[0,:] = np.ones ( [10,100,100], dtype=np.uint8 ) * random.randint(0,255)
+    imagedata[1,:] = np.ones ( [10,100,100], dtype=np.uint16 ) * random.randint(0,255)
 
-    url = 'http://{}/ca/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format ( p.baseurl, p.token, p.resolution, *p.args )
+    url = 'http://{}/ca/{}/hdf5/{}/{}/{},{}/{},{}/{},{}/'.format ( p.baseurl, p.token, ','.join(p.channels), p.resolution, *p.args )
 
     tmpfile = tempfile.NamedTemporaryFile ()
     fh5out = h5py.File ( tmpfile.name )
-    fh5out.create_dataset ( "CUTOUT", tuple(imagedata.shape), imagedata.dtype, compression='gzip', data=imagedata )
+    for idx,channel_name in enumerate(p.channels):
+      fh5out.create_dataset ( channel_name, tuple(imagedata[idx,:].shape), imagedata[idx,:].dtype, compression='gzip', data=imagedata[idx,:] )
     fh5out.close()
     tmpfile.seek(0)
     
@@ -170,47 +179,3 @@ class TestImagePost:
       response = urllib2.urlopen(req)
     except urllib2.HTTPError,e:
       assert (e.code == 404)
-
-'''
-class TestChannelPost:
-
-  def setup_class(self):
-
-    makeunitdb.createTestDB('unittest_rw', projecttype='channel', datatype='npuint8' )
-
-  def teardown_class(self):
-
-    makeunitdb.deleteTestDB('unittest_rw')
-  
-  def test_npz (self):
-
-    p = Params()
-    p.token = "unittest_rw"
-    p.baseurl = SITE_HOST
-    p.resolution = 0
-    p.args = (3000,3100,4000,4100,500,510)
-    p.channels = ('Grayscale','Blue')
-
-    # upload some channel data
-    chandata = np.ones ( [2,10,100,100], dtype=np.uint8 ) * random.randint(0,255)
-
-    url = 'http://{}/ca/{}/npz/{},{}/{}/{},{}/{},{}/{},{}/'.format ( p.baseurl, p.token, *(p.channels+(p.resolution,)+p.args) )
-
-    fileobj = cStringIO.StringIO ()
-    np.save (fileobj, chandata)
-    cdz = zlib.compress (fileobj.getvalue())
-
-    # Build a post request
-    req = urllib2.Request(url,cdz)
-    response = urllib2.urlopen(req)
-
-    # Get the image back
-    f = urllib2.open (f.read())
-    rawdata = zlib.decompress (f.read())
-    fileobj = cStringIO.StringIO (rawdata)
-    voxarray = np.load (fileobj)
-
-    # check that the return matches
-    assert ( np.array_equal(voxarray,chandata) )
-'''
-

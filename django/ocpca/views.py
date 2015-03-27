@@ -21,9 +21,7 @@ import zindex
 import ocpcarest
 import ocpcaproj
 
-# Errors we are going to catch
 from ocpcaerror import OCPCAError
-
 import logging
 logger=logging.getLogger("ocp")
 
@@ -36,27 +34,20 @@ POST_SERVICES = ['hdf5', 'npz', 'hdf5_async', 'propagate']
 def cutout (request, webargs):
   """Restful URL for all read services to annotation projects"""
 
-  [ token , sym, cutoutargs ] = webargs.partition ('/')
-  [ service, sym, rest ] = cutoutargs.partition ('/')
+  [ token, service, cutoutargs ] = webargs.split('/', 2)
 
   try:
     # GET methods
     if request.method == 'GET':
-      if service in GET_SLICE_SERVICES:
+      if service in GET_SLICE_SERVICES+GET_ANNO_SERVICES:
         return django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="image/png" )
-      elif service == 'ts':
-        return django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="product/hdf5" )
-      elif service=='hdf5':
+      elif service in ['ts', 'hdf5']:
         return django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="product/hdf5" )
       elif service=='npz':
         return django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="product/npz" )
       elif service=='zip':
         return django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="product/zip" )
-      elif service in GET_ANNO_SERVICES:
-        return django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="image/png" )
-      elif service=='id':
-        return django.http.HttpResponse(ocpcarest.getCutout(webargs))
-      elif service=='ids':
+      elif service in ['id','ids']:
         return django.http.HttpResponse(ocpcarest.getCutout(webargs))
       else:
         logger.warning ("HTTP Bad request. Could not find service %s" % service )
@@ -88,17 +79,17 @@ def cutout (request, webargs):
 #@cache_control(no_cache=True)
 def annotation (request, webargs):
   """Get put object interface for RAMON objects"""
-
-  [token, sym, service] = webargs.partition('/')
+  
+  [token, channel, rest] = webargs.split('/',2)
 
   try:
     if request.method == 'GET':
       return django.http.HttpResponse(ocpcarest.getAnnotation(webargs), content_type="product/hdf5" )
     elif request.method == 'POST':
-      if service == 'hdf5_async':
-        return django.http.HttpResponse( ocpcarest.putAnnotationAsync(webargs,request.body) )
-      else:
-        return django.http.HttpResponse(ocpcarest.putAnnotation(webargs,request.body))
+      #if service == 'hdf5_async':
+        #return django.http.HttpResponse( ocpcarest.putAnnotationAsync(webargs,request.body) )
+      #else:
+      return django.http.HttpResponse(ocpcarest.putAnnotation(webargs,request.body))
     elif request.method == 'DELETE':
       ocpcarest.deleteAnnotation(webargs)
       return django.http.HttpResponse ("Success", content_type='text/html')

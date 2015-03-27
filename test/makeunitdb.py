@@ -32,7 +32,7 @@ import ocpcaproj
 import site_to_test
 import kvengine_to_test
 
-def createTestDB ( projname, channel_type='annotation', channel_datatype='uint32', public=0, ximagesize=10000, yimagesize=10000, zimagesize=50000, scalingoption=ocpcaproj.ZSLICES, scalinglevels=5 ):
+def createTestDB ( project_name, channel_list=['unit_anno'], channel_type='annotation', channel_datatype='uint32', public=0, ximagesize=10000, yimagesize=10000, zimagesize=50000, scalingoption=ocpcaproj.ZSLICES, scalinglevels=5, readonly=0 ):
   """Create a unit test data base on the specified sit and name"""
 
   unituser = User.objects.get(username='brain')
@@ -44,39 +44,40 @@ def createTestDB ( projname, channel_type='annotation', channel_datatype='uint32
   # RBTODO need to add a window and a project
 
   # make the project entry
-  pr = Project ( project_name=projname, project_description='Unit test', user=unituser, dataset=ds )
+  pr = Project ( project_name=project_name, project_description='Unit test', user=unituser, dataset=ds )
   pr.save()
 
   # and create the database
   pd = ocpcaproj.OCPCAProjectsDB()
 
   # create a token
-  tk = Token ( token_name = projname, user=unituser, token_description = 'Unit test token', project_id=pr, public=public )
+  tk = Token ( token_name = project_name, user=unituser, token_description = 'Unit test token', project_id=pr, public=public )
   tk.save()
 
+  pd.newOCPCAProject( pr.project_name )
   try:
-    ch = Channel ( channel_name="unit_anno", channel_type=channel_type, channel_datatype=channel_datatype, channel_description='Unit test channel', project_id=pr, readonly=0, resolution=0, )
-    ch.save()
+    for channel_name in channel_list:
+      ch = Channel ( channel_name=channel_name, channel_type=channel_type, channel_datatype=channel_datatype, channel_description='Unit test channel', project_id=pr, readonly=readonly, resolution=0, exceptions=1 )
+      ch.save()
+      pd.newOCPCAChannel( pr.project_name, ch.channel_name )
   except Exception, e:
     pass
 
-  channel = ocpcaproj.OCPCAChannel ( projname, "unit_anno" )
-
-  pd.newOCPCAProject( pr.project_name )
-  pd.newOCPCAChannel( pr.project_name, ch.channel_name )
 
 
-def deleteTestDB ( projname ):
+def deleteTestDB ( project_name ):
 
   try:
-    tk = Token.objects.get(token_name=projname)
-    pr = Project.objects.get(project_name=projname)
-    channels = Channel.objects.get(project_id=pr)
+    tk = Token.objects.get(token_name=project_name)
+    pr = Project.objects.get(project_name=project_name)
+    ds = Dataset.objects.get(dataset_name=pr.dataset_id)
+    channel_list = Channel.objects.filter(project_id=pr)
     pd = ocpcaproj.OCPCAProjectsDB()
     pd.deleteOCPCADB ( pr.project_name )
-    for ch in channels:
+    for ch in channel_list:
       ch.delete()
     tk.delete()
     pr.delete()
+    ds.delete()
   except Exception, e:
     pass

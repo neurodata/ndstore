@@ -33,8 +33,6 @@ logger=logging.getLogger("ocp")
 
 class AnnotateCube(Cube):
 
-  # Constructor 
-  #
   #  Express cubesize in [ x,y,z ]
   def __init__(self, cubesize):
     """Create empty array of cubesize"""
@@ -46,14 +44,10 @@ class AnnotateCube(Cube):
     #  rather than loaded from another source
     self._newcube = False
 
-
-  # get the value by x,y,z coordinate
   def getVoxel ( self, voxel ):
     """Return the value at the voxel specified as [x,y,z]"""
     return self.data [ voxel[2], voxel[1], voxel[0] ]
   
-
-  # was the cube created from zeros?
   def fromZeros ( self ):
     """Determine if the cube was created from all zeros?"""
     if self._newcube == True:
@@ -61,53 +55,10 @@ class AnnotateCube(Cube):
     else: 
       return False
 
-  # create an all zeros cube
   def zeros ( self ):
     """Create a cube of all 0"""
     self._newcube = True
     self.data = np.zeros ( self.cubesize, dtype=np.uint32 )
-
-
-  #RB for testing only.
-  def annotate_nocy ( self, data, annid, offset, locations, conflictopt ):
-   """Add annotation by a list of locations"""
-
-   try:
-    xoffset, yoffset, zoffset = offset
-
-    exceptions = []
-
-    # xyz coordinates get stored as zyx to be more
-    #  efficient when converting to images
-    for i in range (len(locations)):
-      voxel = locations[i]
-
-      val = data [ voxel[2]-zoffset, voxel[1]-yoffset, voxel[0]-xoffset ]
-
-      #  label unlabeled voxels
-      if ( data [ voxel[2]-zoffset, voxel[1]-yoffset, voxel[0]-xoffset] == 0 ):
-           data [ voxel[2]-zoffset, voxel[1]-yoffset, voxel[0]-xoffset ] = annid
-
-      # already labelled voxels are exceptions, unless they are the same value
-      elif (data [ voxel[2]-zoffset, voxel[1]-yoffset, voxel[0]-xoffset] != annid ):
-        # O is for overwrite
-        if conflictopt == 'O':
-          data [ voxel[2]-zoffset, voxel[1]-yoffset, voxel[0]-xoffset ] = annid
-        # P preserves the existing content
-        elif conflictopt == 'P':
-          pass
-        # E creates exceptions
-        elif conflictopt == 'E':
-          exceptions.append ([voxel[0]-xoffset, voxel[1]-yoffset, voxel[2]-zoffset])
-        else:
-          print ( "Improper conflict option selected.  Option = ", conflictopt  )
-          assert 0
-
-    return exceptions
-
-   except Exception, e:
-    logger.error("Exception in annotate_nocy %s" % (e))
-    raise
 
 
   # Add annotations
@@ -123,23 +74,16 @@ class AnnotateCube(Cube):
     """Add annotation by a list of locations"""
 
     try:
-    
-      # the ctype optimized version of this function.
       self.data, exceptions = ocplib.annotate_ctype( self.data, annid, offset, np.array(locations, dtype=np.uint32), conflictopt )
-
       return exceptions
-    
     except IndexError, e:
-      
       raise OCPCAError ("Voxel list includes out of bounds request.")
 
 
   def shave ( self, annid, offset, locations ):
     """Remove annotation by a list of locations"""
 
-    # the ctype optimized version of this function.
     self.data , exceptions, zeroed = ocplib.shave_ctype ( self.data, annid, offset, np.array(locations, dtype=np.uint32))
-    
     return exceptions, zeroed
 
 
@@ -184,46 +128,17 @@ class AnnotateCube(Cube):
 
     outimage = Image.frombuffer ( 'RGBA', (ydim,zdim), imagemap, 'raw', 'RGBA', 0, 1 )
     return  outimage.resize ( [ydim, int(zdim*scale)] )
-    newimage.save ( fileobj, "PNG" )
 
-  #
-  # Catmaid cutout slice
-  #
-  def catmaidSlice( self ):
-
-    cmtilesz = self.data.shape[0]
-    recolor_cy( self.data, self.data )
-    self.data = Image.frombuffer ( 'L', [cmtilesz,cmtilesz], self.data, 'raw', 'RGBA', 0, 1 )
-
-
-  def overwrite ( self, annodata ):
-    """Get's a dense voxel region and overwrites all non-zero values"""
-
-    #vector_func = np.vectorize ( lambda a,b: b if b!=0 else a ) 
-    #test = vector_func ( self.data, annodata )
-    
-    # Is the same as above
-    self.data = ocplib.overwriteDense_ctype ( self.data, annodata )
 
   def preserve ( self, annodata ):
     """Get's a dense voxel region and overwrites all non-zero values"""
-
-    #vector_func = np.vectorize ( lambda a,b: b if b!=0 and a==0 else a ) 
-    #test = vector_func ( self.data, annodata )
-
-    # Is the same as above
     self.data = ocplib.exceptionDense_ctype ( self.data, annodata )
 
   def exception ( self, annodata ):
     """Get's a dense voxel region and overwrites all non-zero values"""
 
-    # get all the exceptions
-    # not equal and both annotated
+    # get all the exceptions not equal and both annotated
     exdata = ((self.data-annodata)*self.data*annodata!=0) * annodata 
-
-    # then annotate to preserve 
-    #vector_func = np.vectorize ( lambda a,b: b if b!=0 and a==0 else a ) 
-    #test = vector_func ( self.data, annodata ) 
     self.data = ocplib.exceptionDense_ctype ( self.data, annodata )
 
     # return the list of exceptions ids and the exceptions
@@ -237,14 +152,8 @@ class AnnotateCube(Cube):
 
     # find all shave requests that don't match the dense data
     exdata = (self.data != annodata) * annodata
-
-    # then shave 
-    #vector_func = np.vectorize ( lambda a,b: 0 if b!=0 else a ) 
-    #self.data = vector_func ( self.data, shavedata )
-
     self.data = ocplib.shaveDense_ctype ( self.data, shavedata )
 
-    # return the list of exceptions ids and the exceptions
     return exdata
 
   
@@ -252,47 +161,16 @@ class AnnotateCube(Cube):
     """ Cube data zoomed in """
 
     newdata = np.zeros ( [self.data.shape[0], self.data.shape[1]*(2**factor), self.data.shape[2]*(2**factor)], dtype=np.uint32) 
-    test = np.zeros ( [self.data.shape[0], self.data.shape[1]*(2**factor), self.data.shape[2]*(2**factor)], dtype=np.uint32) 
-    
-    #import pdb; pdb.set_trace()
-    import time
-    #start = time.time()
-    #zoomData_cy ( self.data, test, int(factor) )
-    #print "Cython", time.time()-start
-    #start = time.time()
-    #ocplib.zoomInData_ctype ( self.data, newdata, int(factor) )
-    #print "Ctype",time.time()-start
-    start = time.time()
     ocplib.zoomInData_ctype_OMP ( self.data, newdata, int(factor) )
-    print "OMP",time.time()-start
-
     self.data = newdata
 
   
   def downScale ( self, factor ):
     """ Cube data zoomed out """
 
-    #KLTODO write an optimize version in cython
-
     newdata = np.zeros ( [self.data.shape[0], self.data.shape[1]/(2**factor), self.data.shape[2]/(2**factor)], dtype=np.uint32) 
-    #test = np.zeros ( [self.data.shape[0], self.data.shape[1]/(2**factor), self.data.shape[2]/(2**factor)], dtype=np.uint32) 
-    
-    import time
-    start = time.time()
     ocplib.zoomOutData_ctype ( self.data, newdata, int(factor) )
-    print "Ctype", time.time()-start
-
-    #start = time.time()
-    #ocplib.zoomOutData_ctype_OMP ( self.data, test, int(factor) )
-    #print "OMP", time.time()-start
-    
     self.data = newdata
-    
-    # downScale_cy ( self.data, newdata, int(factor) )
-    #for z in range(newdata.shape[0]):
-    #  for y in range(newdata.shape[1]):
-    #    for x in range(newdata.shape[2]):
-    #      test[z,y,x] = self.data[z,y*(2**factor),x*(2**factor)] 
 
 
 # end AnnotateCube
@@ -420,4 +298,3 @@ class AnnotateCube64(AnnotateCube):
     self.data = newdata
 
 # end AnnotateCube
-

@@ -462,8 +462,6 @@ def get_tokens(request):
     return render_to_response('datasets.html', { 'dts': datasets },context_instance=RequestContext(request))
 
 
-
-
 @login_required(login_url='/ocp/accounts/login/')
 def createproject(request):
 
@@ -603,6 +601,7 @@ def updatechannel(request):
  
   prname = request.session['project']
   pr = Project.objects.get ( project_name = prname )
+  pd = ocpcaproj.OCPCAProjectsDB()
   if request.method == 'POST':
 
     if 'updatechannel' in request.POST: 
@@ -620,7 +619,16 @@ def updatechannel(request):
     elif 'createchannel' in request.POST:
       form = CreateChannelForm(data=request.POST or None)
       if form.is_valid():
-        newchannel = form.save( commit=False )
+        new_channel = form.save( commit=False )
+        new_channel.save()
+        try:
+          # create the tables for the channel
+          pd.newOCPCAChannel( pr.project_name, new_channel.channel_name)
+        except Exception, e:
+          logger.error("Failed to create channel. Error {}".format(e))
+          new_channel.delete()
+        return redirect(get_channels)
+
       else:
         #Invalid form
         context = {'form': form, 'project': prname}

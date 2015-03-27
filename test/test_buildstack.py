@@ -23,59 +23,59 @@ from params import Params
 import site_to_test
 SITE_HOST = site_to_test.site
 
-class TestImageBuild:
+#class TestImageBuild:
   
-  def setup_class(self):
+  #def setup_class(self):
 
-    makeunitdb.createTestDB('unittest_rw', projecttype='image', datatype='uint8', ximagesize=1000, yimagesize=1000, zimagesize=10, scalinglevels=3 )
-    self.p = Params()
-    self.p.token = "unittest_rw"
-    self.p.baseurl = SITE_HOST
-    self.p.resolution = 0
-    self.p.args = (500,600,300,400,1,6)
-    self.imagedata = None
+    #makeunitdb.createTestDB('unittest_rw', channel_type='image', datatype='uint8', ximagesize=1000, yimagesize=1000, zimagesize=10, scalinglevels=3 )
+    #self.p = Params()
+    #self.p.token = "unittest_rw"
+    #self.p.baseurl = SITE_HOST
+    #self.p.resolution = 0
+    #self.p.args = (500,600,300,400,1,6)
+    #self.imagedata = None
 
-  def teardown_class(self):
+  #def teardown_class(self):
 
-    makeunitdb.deleteTestDB('unittest_rw')
+    #makeunitdb.deleteTestDB('unittest_rw')
   
-  def post_image(self):
+  #def post_image(self):
 
-    # upload some image data
-    self.imagedata = np.ones ( [5,100,100], dtype=np.uint8 ) * random.randint(0,255)
+    ## upload some image data
+    #self.imagedata = np.ones ( [5,100,100], dtype=np.uint8 ) * random.randint(0,255)
     
-    url = 'http://{}/ca/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format ( self.p.baseurl, self.p.token, self.p.resolution, *self.p.args )
+    #url = 'http://{}/ca/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format ( self.p.baseurl, self.p.token, self.p.resolution, *self.p.args )
     
-    tmpfile = tempfile.NamedTemporaryFile ()
-    fh5out = h5py.File ( tmpfile.name )
-    fh5out.create_dataset ( "CUTOUT", tuple(self.imagedata.shape), self.imagedata.dtype,compression='gzip', data=self.imagedata )
-    fh5out.close()
-    tmpfile.seek(0)
+    #tmpfile = tempfile.NamedTemporaryFile ()
+    #fh5out = h5py.File ( tmpfile.name )
+    #fh5out.create_dataset ( "CUTOUT", tuple(self.imagedata.shape), self.imagedata.dtype,compression='gzip', data=self.imagedata )
+    #fh5out.close()
+    #tmpfile.seek(0)
      
-    # Build a post request
-    req = urllib2.Request(url,tmpfile.read())
-    response = urllib2.urlopen(req)
+    ## Build a post request
+    #req = urllib2.Request(url,tmpfile.read())
+    #response = urllib2.urlopen(req)
 
-  def test_image_build(self):
+  #def test_image_build(self):
     
-    self.post_image()
-    url_set = 'http://{}/ca/{}/setPropagate/{}/'.format ( self.p.baseurl, self.p.token, makeunitdb.ocpcaproj.UNDER_PROPAGATION )
-    url_get = 'http://{}/ca/{}/getPropagate/'.format ( self.p.baseurl, self.p.token )
+    #self.post_image()
+    #url_set = 'http://{}/ca/{}/setPropagate/{}/'.format ( self.p.baseurl, self.p.token, makeunitdb.ocpcaproj.UNDER_PROPAGATION )
+    #url_get = 'http://{}/ca/{}/getPropagate/'.format ( self.p.baseurl, self.p.token )
 
-    f = urllib2.urlopen(url_set)
-    while (True):
-      req = urllib2.urlopen(url_get)
-      status = int(req.read())
-      print status
-      if status == makeunitdb.ocpcaproj.PROPAGATED:
-        break
+    #f = urllib2.urlopen(url_set)
+    #while (True):
+      #req = urllib2.urlopen(url_get)
+      #status = int(req.read())
+      #print status
+      #if status == makeunitdb.ocpcaproj.PROPAGATED:
+        #break
 
-    url = 'http://{}/ca/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format ( self.p.baseurl, self.p.token, self.p.resolution+1, *(250,300,150,200,1,6) )
-    f = urllib2.urlopen(url)
-    tmpfile = tempfile.NamedTemporaryFile ( )
-    tmpfile.write ( f.read() )
-    tmpfile.seek(0)
-    h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
+    #url = 'http://{}/ca/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format ( self.p.baseurl, self.p.token, self.p.resolution+1, *(250,300,150,200,1,6) )
+    #f = urllib2.urlopen(url)
+    #tmpfile = tempfile.NamedTemporaryFile ( )
+    #tmpfile.write ( f.read() )
+    #tmpfile.seek(0)
+    #h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
     
-    assert ( np.array_equal(h5f.get('CUTOUT').value,self.imagedata[:5,:50,:50]) )
+    #assert ( np.array_equal(h5f.get('CUTOUT').value,self.imagedata[:5,:50,:50]) )
 

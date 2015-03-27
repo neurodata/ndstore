@@ -14,8 +14,6 @@
 
 import urllib2
 import cStringIO
-import sys
-import os
 import tempfile
 import h5py
 import random 
@@ -26,31 +24,18 @@ from contextlib import closing
 
 import ocppaths
 from pytesthelpers import makeAnno
-import ocpcaproj
 import makeunitdb
 
 import kvengine_to_test
 import site_to_test
 SITE_HOST = site_to_test.site
 
-# Module level setup/teardown
-def setup_module(module):
-  pass
-def teardown_module(module):
-  pass
-
 
 class TestRamon:
 
-  # Per method setup/teardown
-#  def setup_method(self,method):
-#    pass
-#  def teardown_method(self,method):
-#    pass
-
   def setup_class(self):
     """Create the unittest database"""
-    makeunitdb.createTestDB('unittest', public=True)
+    makeunitdb.createTestDB('unittest', public=True, readonly=0)
 
   def teardown_class (self):
     """Destroy the unittest database"""
@@ -59,7 +44,7 @@ class TestRamon:
 
   def test_query (self):
     """Test the function that lists objects of different types."""
-    
+
     # synapse annotations
     anntype = 2
     status = random.randint(0,100)
@@ -74,19 +59,19 @@ class TestRamon:
 
       # set some fields in the even annotations
       if i % 2 == 0:
-        url =  "http://%s/ca/%s/%s/setField/status/%s/" % ( SITE_HOST, 'unittest',str(annid), status )
+        url =  "http://{}/ca/{}/{}/{}/setField/status/{}/".format( SITE_HOST, 'unittest', 'unit_anno', annid, status )
         req = urllib2.Request ( url )
         f = urllib2.urlopen ( url )
         assert f.read()==''
 
         # set the confidence
-        url =  "http://%s/ca/%s/%s/setField/confidence/%s/" % ( SITE_HOST, 'unittest',str(annid), confidence )
+        url =  "http://{}/ca/{}/{}/{}/setField/confidence/{}/".format( SITE_HOST, 'unittest', 'unit_anno', annid, confidence )
         req = urllib2.Request ( url )
         f = urllib2.urlopen ( url )
         assert f.read()==''
 
         # set the type
-        url =  "http://%s/ca/%s/%s/setField/synapse_type/%s/" % ( SITE_HOST, 'unittest',str(annid), synapse_type )
+        url =  "http://{}/ca/{}/{}/{}/setField/synapse_type/{}/".format( SITE_HOST, 'unittest', 'unit_anno', annid, synapse_type )
         req = urllib2.Request ( url )
         f = urllib2.urlopen ( url )
         assert f.read()==''
@@ -94,14 +79,14 @@ class TestRamon:
       # set some fields in the even annotations
       if i % 2 == 1:
         # set the confidence
-        url =  "http://%s/ca/%s/%s/setField/confidence/%s/" % ( SITE_HOST, 'unittest',str(annid), 1.0-confidence )
+        url =  "http://{}/ca/{}/{}/{}/setField/confidence/{}/".format( SITE_HOST, 'unittest', 'unit_anno', annid, 1.0-confidence )
         req = urllib2.Request ( url )
         f = urllib2.urlopen ( url )
         assert f.read()==''
 
             
     # check the status 
-    url =  "http://%s/ca/%s/query/status/%s/" % ( SITE_HOST, 'unittest', status )
+    url =  "http://{}/ca/{}/{}/query/status/{}/".format( SITE_HOST, 'unittest', 'unit_anno', status )
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     retfile = tempfile.NamedTemporaryFile ( )
@@ -111,7 +96,7 @@ class TestRamon:
     assert h5ret['ANNOIDS'].shape[0] ==5
 
     # check all the confidence variants 
-    url =  "http://%s/ca/%s/query/confidence/%s/%s/" % ( SITE_HOST, 'unittest', 'lt', 1.0-confidence-0.0001 )
+    url =  "http://{}/ca/{}/{}/query/confidence/{}/{}/".format( SITE_HOST, 'unittest', 'unit_anno', 'lt', 1.0-confidence-0.0001 )
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     retfile = tempfile.NamedTemporaryFile ( )
@@ -120,7 +105,7 @@ class TestRamon:
     h5ret = h5py.File ( retfile.name, driver='core', backing_store=False )
     assert h5ret['ANNOIDS'].shape[0] ==5
 
-    url =  "http://%s/ca/%s/query/confidence/%s/%s/" % ( SITE_HOST, 'unittest', 'gt', confidence+0.00001 )
+    url =  "http://{}/ca/{}/{}/query/confidence/{}/{}/".format( SITE_HOST, 'unittest', 'unit_anno', 'gt', confidence+0.00001 )
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
     retfile = tempfile.NamedTemporaryFile ( )

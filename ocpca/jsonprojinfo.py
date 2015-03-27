@@ -23,12 +23,6 @@ import logging
 logger=logging.getLogger("ocp")
 
 
-#
-# 
-#
-#  part of the projinfo interface. put channel information into a H5 file
-
-
 def projdict ( proj ):
 
   projdict = {}

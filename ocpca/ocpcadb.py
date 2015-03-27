@@ -20,21 +20,21 @@ import cStringIO
 import zlib
 import MySQLdb
 import re
+import tempfile
+import h5py
 from collections import defaultdict
 import itertools
 from contextlib import closing
 
-import anncube
-import imagecube
 import ocpcaproj
 import annotation
 import annindex
+from cube import Cube
 import imagecube
+import anncube
 import probmapcube
 import ocpcachannel
 import ocplib
-import tempfile
-import h5py
 
 from ocpcaerror import OCPCAError
 import logging
@@ -62,50 +62,53 @@ except:
 
 class OCPCADB: 
 
-  def __init__ (self, ocpchannel ):
+  def __init__ (self, proj):
     """Connect with the brain databases"""
 
-    self.datasetcfg = ocpchannel.datasetcfg 
-    self.ocpchannel = ocpchannel
+    self.datasetcfg = proj.datasetcfg 
+    self.proj = proj
 
     # Are there exceptions?
-    self.EXCEPT_FLAG = self.ocpchannel.getExceptions()
-    self.KVENGINE = self.ocpchannel.getKVEngine()
+    #self.EXCEPT_FLAG = self.proj.getExceptions()
+    self.KVENGINE = self.proj.getKVEngine()
 
     # Choose the I/O engine for key/value data
-    if self.ocpchannel.getKVEngine() == 'MySQL':
+    if self.proj.getKVEngine() == 'MySQL':
       import mysqlkvio
       self.kvio = mysqlkvio.MySQLKVIO(self)
       self.NPZ = True
-    elif self.ocpchannel.getKVEngine() == 'Riak':
+    elif self.proj.getKVEngine() == 'Riak':
       import riakkvio
       self.kvio = riakkvio.RiakKVIO(self)
       self.NPZ = False
-    elif self.ocpchannel.getKVEngine() == 'Cassandra':
+    elif self.proj.getKVEngine() == 'Cassandra':
       import casskvio
       self.kvio = casskvio.CassandraKVIO(self)
       self.NPZ = False
     else:
-      raise OCPCAError ("Unknown key/value store.  Engine = {}".format(self.ocpchannel.getKVEngine()))
+      raise OCPCAError ("Unknown key/value store.  Engine = {}".format(self.proj.getKVEngine()))
 
     # Connection info for the metadata
     try:
-      self.conn = MySQLdb.connect (host = self.ocpchannel.getDBHost(),
-                            user = self.ocpchannel.getDBUser(),
-                            passwd = self.ocpchannel.getDBPasswd(),
-                            db = self.ocpchannel.getDBName())
+      self.conn = MySQLdb.connect (host = self.proj.getDBHost(),
+                            user = self.proj.getDBUser(),
+                            passwd = self.proj.getDBPasswd(),
+                            db = self.proj.getDBName())
 
       # start with no cursor
       self.cursor = None
 
     except MySQLdb.Error, e:
       self.conn = None
-      logger.error("Failed to connect to database: %s, %s" % (self.ocpchannel.getDBHost(), self.ocpchannel.getDBName()))
+      logger.error("Failed to connect to database: %s, %s" % (self.proj.getDBHost(), self.proj.getDBName()))
       raise
 
-    # create annidx object
-    if (self.ocpchannel.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS):
-      self.annoIdx = annindex.AnnotateIndex ( self.kvio, self.ocpchannel )
+    #if (self.proj.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS):
+    self.annoIdx = annindex.AnnotateIndex ( self.kvio, self.proj )
+
+  def setChannel ( self, channel_name ):
+    """Switch the channel pointer"""
+    ch = self.proj.getChannelObj(channel_name)
 
   def close ( self ):
     """Close the connection"""
@@ -160,9 +163,6 @@ class OCPCADB:
     self.conn.rollback()
 
 
-  #
-  #  peekID
-  #
   def peekID ( self ):
     """Look at the next ID but don't claim it.  This is an internal interface.
         It is not thread safe.  Need a way to lock the ids table for the 
@@ -171,7 +171,7 @@ class OCPCADB:
     with closing(self.conn.cursor()) as cursor:
 
       # Query the current max identifier
-      sql = "SELECT max(id) FROM " + str ( self.ocpchannel.getIDsTbl() )
+      sql = "SELECT max(id) FROM " + str ( self.proj.getIDsTbl() )
       try:
         cursor.execute ( sql )
       except MySQLdb.Error, e:
@@ -188,28 +188,24 @@ class OCPCADB:
 
       return identifier
 
-  #
-  #  nextIdentifier
-  #
-  def nextID ( self ):
-    """Get an new identifier.
-       This is it's own txn and should not be called inside another transaction. """
 
+  def nextID ( self, ch ):
+    """Get an new identifier. This is it's own txn and should not be called inside another transaction."""
 
     with closing(self.conn.cursor()) as cursor:
     
       # LOCK the table to prevent race conditions on the ID
-      sql = "LOCK TABLES %s WRITE" % ( self.ocpchannel.getIDsTbl() )
+      sql = "LOCK TABLES {} WRITE".format(ch.getIDsTbl())
       try:
 
         cursor.execute ( sql )
 
         # Query the current max identifier
-        sql = "SELECT max(id) FROM " + str ( self.ocpchannel.getIDsTbl() ) 
+        sql = "SELECT max(id) FROM {}".format(ch.getIDsTbl()) 
         try:
           cursor.execute ( sql )
         except MySQLdb.Error, e:
-          logger.error ( "Failed to create annotation identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+          logger.error ( "Failed to create annotation identifier {}: {}. sql={}".format(e.args[0], e.args[1], sql))
           raise
 
         # Here we've queried the highest id successfully    
@@ -221,14 +217,12 @@ class OCPCADB:
           identifier = int ( row[0] ) + 1
 
         # increment and update query
-        sql = "INSERT INTO " + str(self.ocpchannel.getIDsTbl()) + " VALUES ( " + str(identifier) + " ) "
+        sql = "INSERT INTO {} VALUES ({})".format(ch.getIDsTbl(), identifier)
         try:
           cursor.execute ( sql )
         except MySQLdb.Error, e:
-          logger.error ( "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+          logger.error ( "Failed to insert into identifier table: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
           raise
-
-  #RBRM      self.conn.commit()
 
       finally:
         sql = "UNLOCK TABLES" 
@@ -238,29 +232,21 @@ class OCPCADB:
       return identifier
 
 
-  #
-  #  setID
-  # 
-  #  Place the user selected id into the ids table
-  #
-  def setID ( self, annoid ):
-    """Set a user specified identifier"""
+  def setID ( self, ch, annoid ):
+    """Set a user specified identifier in the ids table"""
 
     with closing(self.conn.cursor()) as cursor:
 
       # LOCK the table to prevent race conditions on the ID
-      sql = "LOCK TABLES %s WRITE" % ( self.ocpchannel.getIDsTbl() )
+      sql = "LOCK TABLES {} WRITE".format( ch.getIDsTbl() )
       try:
-
         # try the insert, get ane exception if it doesn't work
-        sql = "INSERT INTO " + str(self.ocpchannel.getIDsTbl()) + " VALUES ( " + str(annoid) + " ) "
+        sql = "INSERT INTO {} VALUES({})".format(ch.getIDsTbl(), annoid)
         try:
           cursor.execute ( sql )
         except MySQLdb.Error, e:
           logger.warning ( "Failed to set identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
           raise
-
-#RBRM        self.conn.commit()
 
       finally:
         sql = "UNLOCK TABLES" 
@@ -280,13 +266,11 @@ class OCPCADB:
 
     with closing(self.conn.cursor()) as cursor:
 
-
       # LOCK the table to prevent race conditions on the ID
-      sql = "LOCK TABLES %s WRITE" % ( self.ocpchannel.getIDsTbl() )
+      sql = "LOCK TABLES {} WRITE".format(self.proj.getIDsTbl())
       try:
-
         # try the insert, get and if it doesn't work
-        sql = "INSERT INTO {} VALUES ( %s ) ".format( str(self.ocpchannel.getIDsTbl()) )
+        sql = "INSERT INTO {} VALUES ( %s ) ".format( str(self.proj.getIDsTbl()) )
         try:
           cursor.executemany ( sql, [str(i) for i in annoidList] )  
         except MySQLdb.Error, e:
@@ -301,23 +285,18 @@ class OCPCADB:
     return annoidList
 
 
-  #
-  #  reserve
-  #
-  def reserve ( self, count ):
-    """Reserve contiguous identifiers.
-       This is it's own txn and should not be called inside another transaction. """
+  def reserve ( self, ch, count ):
+    """Reserve contiguous identifiers. This is it's own txn and should not be called inside another transaction."""
     
     with closing(self.conn.cursor()) as cursor:
 
       # LOCK the table to prevent race conditions on the ID
-      sql = "LOCK TABLES %s WRITE" % ( self.ocpchannel.getIDsTbl() )
+      sql = "LOCK TABLES {} WRITE".format( ch.getIDsTbl() )
       try:
-
         cursor.execute ( sql )
 
         # Query the current max identifier
-        sql = "SELECT max(id) FROM " + str ( self.ocpchannel.getIDsTbl() ) 
+        sql = "SELECT max(id) FROM {}".format( ch.getIDsTbl() ) 
         try:
           cursor.execute ( sql )
         except MySQLdb.Error, e:
@@ -333,7 +312,7 @@ class OCPCADB:
           identifier = int ( row[0] ) 
 
         # increment and update query
-        sql = "INSERT INTO " + str(self.ocpchannel.getIDsTbl()) + " VALUES ( " + str(identifier+count) + " ) "
+        sql = "INSERT INTO {} VALUES ({}) ".format(ch.getIDsTbl(), identifier+count)
         try:
           cursor.execute ( sql )
         except MySQLdb.Error, e:
@@ -353,30 +332,16 @@ class OCPCADB:
 
   # GET and PUT Methods for Image/Annotaion Databases
 
-  def getCube ( self, key, resolution, update=False ):
-    """ Load a cube from the database """
+  def getCube ( self, ch, key, resolution, update=False ):
+    """Load a cube from the database"""
 
     # get the size of the image and cube
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
-    # Create a cube object
-    if (self.ocpchannel.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS and self.ocpchannel.getDataType() in ocpcaproj.DTYPE_uint32):
-      cube = anncube.AnnotateCube ( cubedim )
-    elif (self.annoproj.getDataType() in ocpcaproj.DTYPE_float32):
-      cube = probmapcube.ProbMapCube32 ( cubedim )
-    elif (self.annoproj.getDataType() in ocpcaproj.DTYPE_uint8):
-      cube = imagecube.ImageCube8 ( cubedim )
-    elif (self.annoproj.getDataType() in ocpcaproj.DTYPE_uint16):
-      cube = imagecube.ImageCube16 ( cubedim )
-    elif (self.ocpchannel.getProjectType() in ocpcaproj.IMAGE_PROJECTS and self.ocpchannel.getDataType() in ocpcaproj.DTYPE_uint32):
-      cube = imagecube.ImageCube32 ( cubedim )
-    elif (self.ocpchannel.getProjectType() in ocpcaproj.IMAGE_PROJECTS and self.ocpchannel.getDataType() in ocpcaproj.DTYPE_uint64):
-      cube = imagecube.ImageCube64 ( cubedim )
-    else:
-      raise OCPCAError ("Unknown project type {}".format(self.ocpchannel.getProjectType()))
+    cube = Cube.getCube( cubedim, ch.getChannelType(), ch.getDataType() )
   
     # get the block from the database
-    cubestr = self.kvio.getCube ( key, resolution, update )
+    cubestr = self.kvio.getCube ( ch, key, resolution, update )
 
     if not cubestr:
       cube.zeros()
@@ -400,18 +365,18 @@ class OCPCADB:
     return cube
 
 
-  def getCubes ( self, listofidxs, resolution, neariso=False ):
+  def getCubes ( self, ch, listofidxs, resolution, neariso=False ):
     """ Return a list of cubes """
     
-    return self.kvio.getCubes( listofidxs, resolution, neariso )
+    return self.kvio.getCubes( ch, listofidxs, resolution, neariso )
 
 
-  def putCube ( self, zidx, resolution, cube, update=False ):
+  def putCube ( self, ch, zidx, resolution, cube, update=False ):
     """ Store a cube in the annotation database """
     
     # Handle the cube format here.  
     if self.NPZ:
-      self.kvio.putCube ( zidx, resolution, cube.toNPZ(), not cube.fromZeros() )
+      self.kvio.putCube ( ch, zidx, resolution, cube.toNPZ(), not cube.fromZeros() )
     else:
       with closing(tempfile.NamedTemporaryFile()) as tmpfile:
         h5 = h5py.File ( tmpfile.name, driver="core" )
@@ -419,7 +384,7 @@ class OCPCADB:
         h5.close()
         tmpfile.seek(0)
 
-        self.kvio.putCube ( zidx, resolution, tmpfile.read(), not cube.fromZeros() )
+        self.kvio.putCube ( ch, zidx, resolution, tmpfile.read(), not cube.fromZeros() )
   
   
   def putCubes ( self, listofidxs, resolution, cube ):
@@ -446,12 +411,12 @@ class OCPCADB:
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
     # Create a cube object
-    if self.ocpchannel.getProjectType() == ocpcaproj.CHANNELS_8bit:
+    if self.proj.getChannelType() == ocpcaproj.CHANNELS_8bit:
       cube = imagecube.ImageCube8 ( cubedim )
-    elif self.ocpchannel.getProjectType() == ocpcaproj.CHANNELS_16bit:
+    elif self.proj.getChannelType() == ocpcaproj.CHANNELS_16bit:
       cube = imagecube.ImageCube16 ( cubedim )
     else:
-      raise OCPCAError ("Unknown project type {}".format(self.ocpchannel.getProjectType()))
+      raise OCPCAError ("Unknown project type {}".format(self.proj.getChannelType()))
   
     # get the block from the database
     cubestr = self.kvio.getChannelCube ( key, channel, resolution, update )
@@ -515,12 +480,12 @@ class OCPCADB:
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
     # Create a cube object
-    if self.ocpchannel.getProjectType() == ocpcaproj.TIMESERIES_4d_8bit:
+    if self.proj.getChannelType() == ocpcaproj.TIMESERIES_4d_8bit:
       cube = imagecube.ImageCube8 ( cubedim )
-    elif self.ocpchannel.getProjectType() == ocpcaproj.TIMESERIES_4d_16bit:
+    elif self.proj.getChannelType() == ocpcaproj.TIMESERIES_4d_16bit:
       cube = imagecube.ImageCube16 ( cubedim )
     else:
-      raise OCPCAError ("Unknown project type {}".format(self.ocpchannel.getProjectType()))
+      raise OCPCAError ("Unknown project type {}".format(self.proj.getChannelType()))
   
     # get the block from the database
     cubestr = self.kvio.getTimeSeriesCube ( key, timestamp, resolution, update )
@@ -574,10 +539,10 @@ class OCPCADB:
         tmpfile.seek(0)
         self.kvio.putTimeSeriesCube ( zidx, timestamp, resolution, tmpfile.read(), update )
   
-  def getExceptions ( self, zidx, resolution, annoid ):
+  def getExceptions ( self, ch, zidx, resolution, annoid ):
     """Load a cube from the annotation database"""
 
-    excstr = self.kvio.getExceptions ( zidx, resolution, annoid )
+    excstr = self.kvio.getExceptions ( ch, zidx, resolution, annoid )
     if excstr:
       if self.NPZ:
         return np.load(cStringIO.StringIO ( zlib.decompress(excstr)))
@@ -597,10 +562,10 @@ class OCPCADB:
       return []
 
 
-  def updateExceptions ( self, key, resolution, exid, exceptions, update=False ):
+  def updateExceptions ( self, ch, key, resolution, exid, exceptions, update=False ):
     """Merge new exceptions with existing exceptions"""
 
-    curexlist = self.getExceptions( key, resolution, exid ) 
+    curexlist = self.getExceptions( ch, key, resolution, exid ) 
 
     update = False
 
@@ -613,10 +578,10 @@ class OCPCADB:
     else:
       exlist = exceptions
 
-    self.putExceptions ( key, resolution, exid, exlist, update )
+    self.putExceptions ( ch, key, resolution, exid, exlist, update )
 
 
-  def putExceptions ( self, key, resolution, exid, exceptions, update ):
+  def putExceptions ( self, ch, key, resolution, exid, exceptions, update ):
     """Package the object and transact with kvio"""
 
     exceptions = np.array ( exceptions, dtype=np.uint32 )
@@ -626,20 +591,20 @@ class OCPCADB:
       fileobj = cStringIO.StringIO ()
       np.save ( fileobj, exceptions )
       excstr = fileobj.getvalue()
-      self.kvio.putExceptions ( key, resolution, exid, excstr, update )
+      self.kvio.putExceptions(ch, key, resolution, exid, excstr, update)
     else:
       with closing (tempfile.NamedTemporaryFile()) as tmpfile:
         h5 = h5py.File ( tmpfile.name )
         h5.create_dataset ( "exceptions", tuple(exceptions.shape), exceptions.dtype, compression='gzip',  data=exceptions )
         h5.close()
         tmpfile.seek(0)
-        self.kvio.putExceptions ( key, resolution, exid, tmpfile.read(), update )
+        self.kvio.putExceptions(ch, key, resolution, exid, tmpfile.read(), update)
 
 
-  def removeExceptions ( self, key, resolution, entityid, exceptions ):
+  def removeExceptions ( self, ch, key, resolution, entityid, exceptions ):
     """Remove a list of exceptions. Should be done in a transaction"""
 
-    curexlist = self.getExceptions( key, resolution, entityid ) 
+    curexlist = self.getExceptions(ch, key, resolution, entityid) 
 
     if curexlist != []:
 
@@ -648,7 +613,7 @@ class OCPCADB:
       exlist = oldexlist-newexlist
       exlist = [ ocplib.MortonXYZ ( zidx ) for zidx in exlist ]
 
-      self.putExceptions ( key, resolution, exid, exlist, True )
+      self.putExceptions ( ch, key, resolution, exid, exlist, True )
 
 
   #
@@ -665,11 +630,11 @@ class OCPCADB:
 
     if channel == None:
       # get the block from the database
-      sql = "SELECT zindex, cube FROM " + self.ocpchannel.getTable(resolution) + " WHERE zindex >= " + str(lowkey) + " AND zindex < " + str(highkey)
+      sql = "SELECT zindex, cube FROM " + self.proj.getTable(resolution) + " WHERE zindex >= " + str(lowkey) + " AND zindex < " + str(highkey)
     else:
       # or from a channel database
       channel = ocpcachannel.toID ( channel, self )
-      sql = "SELECT zindex, cube FROM " + self.ocpchannel.getTable(resolution) + " WHERE channel = " + str(channel) + " AND zindex >= " + str(lowkey) + " AND zindex < " + str(highkey)
+      sql = "SELECT zindex, cube FROM " + self.proj.getTable(resolution) + " WHERE channel = " + str(channel) + " AND zindex >= " + str(lowkey) + " AND zindex < " + str(highkey)
   
     try:
       self._qr_cursor.execute ( sql )
@@ -731,7 +696,7 @@ class OCPCADB:
   #
   #  number the voxels and build the exceptions
   #
-  def annotate ( self, entityid, resolution, locations, conflictopt='O' ):
+  def annotate ( self, ch, entityid, resolution, locations, conflictopt='O' ):
     """Label the voxel locations or add as exceptions is the are already labeled."""
 
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
@@ -762,7 +727,7 @@ class OCPCADB:
       #  and the morton key
       key = cubelocs[listoffsets[i],0]
 
-      cube = self.getCube ( key, resolution, True )
+      cube = self.getCube ( ch, key, resolution, True )
 
       # get a voxel offset for the cube
       cubeoff = ocplib.MortonXYZ( key )
@@ -774,17 +739,17 @@ class OCPCADB:
       #exceptions = np.array(cube.annotate(entityid, offset, voxlist, conflictopt), dtype=np.uint8)
 
       # update the sparse list of exceptions
-      if self.EXCEPT_FLAG:
+      if ch.getExceptions() == ocpcaproj.EXCEPTION_TRUE:
         if len(exceptions) != 0:
-          self.updateExceptions ( key, resolution, entityid, exceptions )
+          self.updateExceptions(ch, key, resolution, entityid, exceptions)
 
-      self.putCube ( key, resolution, cube)
+      self.putCube(ch, key, resolution, cube)
 
       # add this cube to the index
       cubeidx[entityid].add(key)
 
     # write it to the database
-    self.annoIdx.updateIndexDense(cubeidx,resolution)
+    self.annoIdx.updateIndexDense(ch, cubeidx, resolution)
     # commit cubes.  not commit controlled with metadata
     self.kvio.commit()
 
@@ -804,7 +769,7 @@ class OCPCADB:
   #
   #  reduce the voxels 
   #
-  def shave ( self, entityid, resolution, locations ):
+  def shave ( self, ch, entityid, resolution, locations ):
     """Label the voxel locations or add as exceptions is the are already labeled."""
 
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
@@ -835,7 +800,7 @@ class OCPCADB:
         #  and the morton key
         key = cubelocs[listoffsets[i],0]
 
-        cube = self.getCube ( key, resolution, True )
+        cube = self.getCube (ch, key, resolution, True)
 
         # get a voxel offset for the cube
         cubeoff = ocplib.MortonXYZ(key)
@@ -848,11 +813,11 @@ class OCPCADB:
         exceptions = np.array(exlist, dtype=np.uint8)
 
         # update the sparse list of exceptions
-        if self.EXCEPT_FLAG:
+        if ch.getExceptions == ocpcaproj.EXCEPTION_TRUE:
           if len(exceptions) != 0:
-            self.removeExceptions ( key, resolution, entityid, exceptions )
+            self.removeExceptions ( ch, key, resolution, entityid, exceptions )
 
-        self.putCube ( key, resolution, cube)
+        self.putCube (ch, key, resolution, cube)
 
         # For now do no index processing when shaving.  Assume there are still some
         #  voxels in the cube???
@@ -869,7 +834,7 @@ class OCPCADB:
   #
   #  Process a cube of data that has been labelled with annotations.
   #
-  def annotateDense ( self, corner, resolution, annodata, conflictopt ):
+  def annotateDense ( self, ch, corner, resolution, annodata, conflictopt ):
     """Process all the annotations in the dense volume"""
 
     index_dict = defaultdict(set)
@@ -906,14 +871,14 @@ class OCPCADB:
           for x in range(xnumcubes):
 
             key = ocplib.XYZMorton ([x+xstart,y+ystart,z+zstart])
-            cube = self.getCube ( key, resolution, True )
+            cube = self.getCube (ch, key, resolution, True)
             
             if conflictopt == 'O':
               cube.overwrite ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
             elif conflictopt == 'P':
               cube.preserve ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
             elif conflictopt == 'E': 
-              if self.EXCEPT_FLAG:
+              if ch.getExceptions() == ocpcaproj.EXCEPTION_TRUE:
                 exdata = cube.exception ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
                 for exid in np.unique ( exdata ):
                   if exid != 0:
@@ -922,7 +887,7 @@ class OCPCADB:
                     # assemble into 3-tuples zyx->xyz
                     exceptions = np.array ( zip(exoffsets[2], exoffsets[1], exoffsets[0]), dtype=np.uint32 )
                     # update the exceptions
-                    self.updateExceptions ( key, resolution, exid, exceptions )
+                    self.updateExceptions ( ch, key, resolution, exid, exceptions )
                     # add to the index
                     index_dict[exid].add(key)
               else:
@@ -932,7 +897,7 @@ class OCPCADB:
               logger.error ( "Unsupported conflict option %s" % conflictopt )
               raise OCPCAError ( "Unsupported conflict option %s" % conflictopt )
             
-            self.putCube ( key, resolution, cube )
+            self.putCube (ch, key, resolution, cube)
 
             #update the index for the cube
             # get the unique elements that are being added to the data
@@ -945,7 +910,7 @@ class OCPCADB:
               del(index_dict[0])
 
       # Update all indexes
-      self.annoIdx.updateIndexDense(index_dict,resolution)
+      self.annoIdx.updateIndexDense(ch, index_dict, resolution)
       # commit cubes.  not commit controlled with metadata
 
     except:
@@ -958,21 +923,21 @@ class OCPCADB:
   #
   #  Called when labeling an entity
   #
-  def annotateEntityDense ( self, entityid, corner, resolution, annodata, conflictopt ):
+  def annotateEntityDense ( self, ch, entityid, corner, resolution, annodata, conflictopt ):
     """Relabel all nonzero pixels to annotation id and call annotateDense"""
 
     #vec_func = np.vectorize ( lambda x: 0 if x == 0 else entityid ) 
     #annodata = vec_func ( annodata )
     annodata = ocplib.annotateEntityDense_ctype ( annodata, entityid )
 
-    return self.annotateDense ( corner, resolution, annodata, conflictopt )
+    return self.annotateDense ( ch, corner, resolution, annodata, conflictopt )
 
   #
   # shaveDense
   #
   #  Reduce the specified annotations 
   #
-  def shaveDense ( self, entityid, corner, resolution, annodata ):
+  def shaveDense ( self, ch, entityid, corner, resolution, annodata ):
     """Process all the annotations in the dense volume"""
 
 
@@ -1010,7 +975,7 @@ class OCPCADB:
           for x in range(xnumcubes):
 
             key = ocplib.XYZMorton ([x+xstart,y+ystart,z+zstart])
-            cube = self.getCube ( key, resolution, True )
+            cube = self.getCube(ch, key, resolution, True)
 
             exdata = cube.shaveDense ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
             for exid in np.unique ( exdata ):
@@ -1024,7 +989,7 @@ class OCPCADB:
                 # add to the index
                 index_dict[exid].add(key)
 
-            self.putCube ( key, resolution, cube)
+            self.putCube(ch, key, resolution, cube)
 
             #update the index for the cube
             # get the unique elements that are being added to the data
@@ -1036,7 +1001,7 @@ class OCPCADB:
             del(index_dict[0])
 
       # Update all indexes
-      self.annoIdx.updateIndexDense(index_dict,resolution)
+      self.annoIdx.updateIndexDense(ch, index_dict, resolution)
 
     except:
       self.kvio.rollback()
@@ -1052,30 +1017,30 @@ class OCPCADB:
   #  Takes a bitmap for an entity and calls denseShave
   #  renumber the annotations to match the entity id.
   #
-  def shaveEntityDense ( self, entityid, corner, resolution, annodata ):
+  def shaveEntityDense ( self, ch, entityid, corner, resolution, annodata ):
     """Process all the annotations in the dense volume"""
 
     # Make shaving a per entity operation
     vec_func = np.vectorize ( lambda x: 0 if x == 0 else entityid ) 
     annodata = vec_func ( annodata )
 
-    self.shaveDense ( entityid, corner, resolution, annodata )
+    self.shaveDense ( ch, entityid, corner, resolution, annodata )
 
 
   def _zoominCutout ( self, corner, dim, resolution ):
     """Scale to a smaller cutout that will be zoomed"""
 
     # scale the corner to lower resolution
-    effcorner = corner[0]/(2**(self.ocpchannel.getResolution()-resolution)), corner[1]/(2**(self.ocpchannel.getResolution()-resolution)), corner[2]
+    effcorner = corner[0]/(2**(self.proj.getResolution()-resolution)), corner[1]/(2**(self.proj.getResolution()-resolution)), corner[2]
 
     # pixels offset within big range
-    xpixeloffset = corner[0]%(2**(self.ocpchannel.getResolution()-resolution))
-    ypixeloffset = corner[1]%(2**(self.ocpchannel.getResolution()-resolution))
+    xpixeloffset = corner[0]%(2**(self.proj.getResolution()-resolution))
+    ypixeloffset = corner[1]%(2**(self.proj.getResolution()-resolution))
 
     # get the new dimension, snap up to power of 2
     outcorner = (corner[0]+dim[0],corner[1]+dim[1],corner[2]+dim[2])
 
-    newoutcorner = (outcorner[0]-1)/(2**(self.ocpchannel.getResolution()-resolution))+1, (outcorner[1]-1)/(2**(self.ocpchannel.getResolution()-resolution))+1, outcorner[2]
+    newoutcorner = (outcorner[0]-1)/(2**(self.proj.getResolution()-resolution))+1, (outcorner[1]-1)/(2**(self.proj.getResolution()-resolution))+1, outcorner[2]
     effdim = (newoutcorner[0]-effcorner[0],newoutcorner[1]-effcorner[1],newoutcorner[2]-effcorner[2])
 
     return effcorner, effdim, (xpixeloffset,ypixeloffset)
@@ -1085,35 +1050,30 @@ class OCPCADB:
     """Scale to a larger cutout that will be shrunk"""
 
     # scale the corner to higher resolution
-    effcorner = corner[0]*(2**(resolution-self.ocpchannel.getResolution())), corner[1]*(2**(resolution-self.ocpchannel.getResolution())), corner[2]
+    effcorner = corner[0]*(2**(resolution-self.proj.getResolution())), corner[1]*(2**(resolution-self.proj.getResolution())), corner[2]
 
-    effdim = dim[0]*(2**(resolution-self.ocpchannel.getResolution())),dim[1]*(2**(resolution-self.ocpchannel.getResolution())),dim[2]
+    effdim = dim[0]*(2**(resolution-self.proj.getResolution())),dim[1]*(2**(resolution-self.proj.getResolution())),dim[2]
 
     return effcorner, effdim 
 
-  #
-  #  Return a cube of data from the database
-  #  Must account for zeros.
-  #
-  def cutout ( self, corner, dim, resolution, channel=None, zscaling=None, annoids=None ):
+
+  def cutout ( self, ch, corner, dim, resolution, zscaling=None, annoids=None ):
     """Extract a cube of arbitrary size.  Need not be aligned."""
 
-    # alter query if  (ocpcaproj)._resolution is > resolution
-    # if cutout is below resolution, get a smaller cube and scaleup
-    if self.ocpchannel.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS and self.ocpchannel.getResolution() > resolution:
+    # alter query if  (ocpcaproj)._resolution is > resolution. if cutout is below resolution, get a smaller cube and scaleup
+    if ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS and ch.getResolution() > resolution:
 
-      #find the effective dimensions of the cutout (where the data is)
+      # find the effective dimensions of the cutout (where the data is)
       effcorner, effdim, (xpixeloffset,ypixeloffset) = self._zoominCutout ( corner, dim, resolution )
-      [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ self.ocpchannel.getResolution() ] 
-      effresolution = self.ocpchannel.getResolution()
+      [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ ch.getResolution() ] 
+      effresolution = ch.getResolution()
 
-    # alter query if  (ocpcaproj)._resolution is < resolution
-    # if cutout is above resolution, get a large cube and scaledown
-    elif self.ocpchannel.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS and self.ocpchannel.getResolution() < resolution and self.ocpchannel.getPropagate() not in [ocpcaproj.PROPAGATED]:  
+    # alter query if  (ocpcaproj)._resolution is < resolution. if cutout is above resolution, get a large cube and scaledown
+    elif ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS and ch.getResolution() < resolution and ch.getPropagate() not in [ocpcaproj.PROPAGATED]:  
 
-      [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ self.ocpchannel.getResolution() ] 
+      [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ ch.getResolution() ] 
       effcorner, effdim = self._zoomoutCutout ( corner, dim, resolution )
-      effresolution = self.ocpchannel.getResolution()
+      effresolution = ch.getResolution()
 
     # this is the default path when not scaling up the resolution
     else:
@@ -1135,55 +1095,13 @@ class OCPCADB:
   
     # use the requested resolution
     if zscaling == 'nearisotropic' and self.datasetcfg.nearisoscaledown[resolution] > 1:
-      dbname = self.ocpchannel.getNearIsoTable(resolution)
+      dbname = ch.getNearIsoTable(resolution)
     else:
-      dbname = self.ocpchannel.getTable(effresolution)
+      dbname = ch.getTable(effresolution)
 
-    if self.ocpchannel.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS:
-
-      # input cube is the database size
-      incube = anncube.AnnotateCube ( cubedim )
-
-      # output cube is as big as was asked for and zero it.
-      outcube = anncube.AnnotateCube ( [xnumcubes*xcubedim,\
-                                        ynumcubes*ycubedim,\
-                                        znumcubes*zcubedim] )
-      outcube.zeros()
-
-    elif self.ocpchannel.getDataType() in ocpcaproj.DTYPE_uint8:
-
-      incube = imagecube.ImageCube8 ( cubedim )
-      outcube = imagecube.ImageCube8 ( [xnumcubes*xcubedim,\
-                                        ynumcubes*ycubedim,\
-                                        znumcubes*zcubedim] )
-
-    elif self.ocpchannel.getDataType() in ocpcaproj.DTYPE_uint16:
-      
-      incube = imagecube.ImageCube16 ( cubedim )
-      outcube = imagecube.ImageCube16 ( [xnumcubes*xcubedim,\
-                                        ynumcubes*ycubedim,\
-                                        znumcubes*zcubedim] )
-
-    elif self.ocpchannel.getDataType() in ocpcaproj.DTYPE_rgb32:
-
-      incube = imagecube.ImageCube32 ( cubedim )
-      outcube = imagecube.ImageCube32 ( [xnumcubes*xcubedim,\
-                                        ynumcubes*ycubedim,\
-                                        znumcubes*zcubedim] )
-
-    elif self.ocpchannel.getDataType() in ocpcaproj.DTYPE_rgb64:
-    
-      incube = imagecube.ImageCube64 ( cubedim )
-      outcube = imagecube.ImageCube64 ( [xnumcubes*xcubedim,\
-                                        ynumcubes*ycubedim,\
-                                        znumcubes*zcubedim] )
-    
-    elif self.ocpchannel.getProjectType() == ocpcaproj.DTYPE_float32:
-      
-      incube = probmapcube.ProbMapCube32 ( cubedim )
-      outcube = probmapcube.ProbMapCube32 ( [xnumcubes*xcubedim,\
-                                        ynumcubes*ycubedim,\
-                                        znumcubes*zcubedim] )
+    import cube
+    incube = Cube.getCube ( cubedim, ch.getChannelType(), ch.getDataType() )
+    outcube = Cube.getCube ( [xnumcubes*xcubedim,ynumcubes*ycubedim,znumcubes*zcubedim], ch.getChannelType(), ch.getDataType() )
                                         
     # Build a list of indexes to access
     listofidxs = []
@@ -1203,17 +1121,13 @@ class OCPCADB:
 
     try:
 
-      if self.ocpchannel.getProjectType() in ocpcaproj.CHANNEL_PROJECTS:
-        # Convert channel as needed
-        channel = ocpcachannel.toID ( channel, self )
-        cuboids = self.kvio.getChannelCubes(listofidxs,channel,effresolution)
-      elif self.ocpchannel.getProjectType() in ocpcaproj.TIMESERIES_PROJECTS:
-        cuboids = self.kvio.getTimeSeriesCubes(listofidxs,int(channel),effresolution)
+      if zscaling == 'nearisotropic' and self.datasetcfg.nearisoscaledown[resolution] > 1:
+        cuboids = self.getCubes(ch, listofidxs, effresolution, True)
       else:
-        if zscaling == 'nearisotropic' and self.datasetcfg.nearisoscaledown[resolution] > 1:
-          cuboids = self.kvio.getCubes(listofidxs,effresolution,True)
-        else:
-          cuboids = self.kvio.getCubes(listofidxs,effresolution)
+        cuboids = self.getCubes(ch, listofidxs, effresolution)
+
+      #elif self.proj.getChannelType() in ocpcaproj.TIMESERIES_PROJECTS:
+        #cuboids = self.kvio.getTimeSeriesCubes(listofidxs,int(channel),effresolution)
       
       # use the batch generator interface
       for idx, datastring in cuboids:
@@ -1237,10 +1151,10 @@ class OCPCADB:
             h5.close()
 
         # apply exceptions if it's an annotation project
-        if annoids!= None and self.ocpchannel.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS:
+        if annoids!= None and ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS:
           incube.data = ocplib.filter_ctype_OMP ( incube.data, annoids )
-          if self.EXCEPT_FLAG:
-            self.applyCubeExceptions ( annoids, effresolution, idx, incube )
+          if ch.getExceptions() == ocpcaproj.EXCEPTION_TRUE:
+            self.applyCubeExceptions ( ch, annoids, effresolution, idx, incube )
 
         # add it to the output cube
         outcube.addData ( incube, offset ) 
@@ -1252,23 +1166,22 @@ class OCPCADB:
     self.kvio.commit()
 
     # if we fetched a smaller cube to zoom, correct the result
-    if self.ocpchannel.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS and self.ocpchannel.getResolution() > resolution:
+    if ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS and ch.getResolution() > resolution:
 
-      outcube.zoomData ( self.ocpchannel.getResolution()-resolution )
+      outcube.zoomData ( ch.getResolution()-resolution )
 
-      # need to trim based on the cube cutout at self.ocpchannel.getResolution()
-      outcube.trim ( corner[0]%(xcubedim*(2**(self.ocpchannel.getResolution()-resolution)))+xpixeloffset,dim[0], corner[1]%(ycubedim*(2**(self.ocpchannel.getResolution()-resolution)))+ypixeloffset,dim[1], corner[2]%zcubedim,dim[2] )
+      # need to trim based on the cube cutout at resolution()
+      outcube.trim ( corner[0]%(xcubedim*(2**(self.proj.getResolution()-resolution)))+xpixeloffset,dim[0], corner[1]%(ycubedim*(2**(ch.getResolution()-resolution)))+ypixeloffset,dim[1], corner[2]%zcubedim,dim[2] )
 
     # if we fetch a larger cube, downscale it and correct
-    elif self.ocpchannel.getProjectType() in ocpcaproj.ANNOTATION_PROJECTS and self.ocpchannel.getResolution() < resolution and self.ocpchannel.getPropagate() not in [ocpcaproj.PROPAGATED]:
+    elif ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS and ch.getResolution() < resolution and ch.getPropagate() not in [ocpcaproj.PROPAGATED]:
 
-      outcube.downScale ( resolution-self.ocpchannel.getResolution() )
+      outcube.downScale (resolution - ch.getResolution())
 
-      # need to trime based on the cube cutout at self.ocpchannel.getResolution()
-      outcube.trim ( corner[0]%(xcubedim*(2**(self.ocpchannel.getResolution()-resolution))),dim[0], corner[1]%(ycubedim*(2**(self.ocpchannel.getResolution()-resolution))),dim[1], corner[2]%zcubedim,dim[2] )
+      # need to trime based on the cube cutout at resolution
+      outcube.trim ( corner[0]%(xcubedim*(2**(ch.getResolution()-resolution))),dim[0], corner[1]%(ycubedim*(2**(ch.getResolution()-resolution))),dim[1], corner[2]%zcubedim,dim[2] )
       
-    # need to trim down the array to size
-    #  only if the dimensions are not the same
+    # need to trim down the array to size only if the dimensions are not the same
     elif dim[0] % xcubedim  == 0 and dim[1] % ycubedim  == 0 and dim[2] % zcubedim  == 0 and corner[0] % xcubedim  == 0 and corner[1] % ycubedim  == 0 and corner[2] % zcubedim  == 0:
       pass
     else:
@@ -1276,10 +1189,7 @@ class OCPCADB:
 
     return outcube
 
-  #
-  #  Return a cube of data from the database
-  #  Must account for zeros.
-  #
+
   def TimeSeriesCutout ( self, corner, dim, resolution, timerange ):
     """Extract a cube of arbitrary size.  Need not be aligned."""
 
@@ -1296,14 +1206,14 @@ class OCPCADB:
     xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
 
     # use the requested resolution
-    dbname = self.ocpchannel.getTable(resolution)
+    dbname = self.proj.getTable(resolution)
 
-    if self.ocpchannel.getProjectType() in ocpcaproj.DTYPE_uint8:
+    if self.proj.getChannelType() in ocpcaproj.DTYPE_uint8:
 
       incube = imagecube.ImageCube8 ( cubedim )
       outcube = imagecube.ImageCube8 ( [xnumcubes*xcubedim, ynumcubes*ycubedim, znumcubes*zcubedim] )
 
-    elif self.ocpchannel.getProjectType() in ocpcaproj.DTYPE_16bit :
+    elif self.proj.getChannelType() in ocpcaproj.DTYPE_16bit :
       
       incube = imagecube.ImageCube16 ( cubedim )
       outcube = imagecube.ImageCube16 ( [xnumcubes*xcubedim, ynumcubes*ycubedim, znumcubes*zcubedim] )
@@ -1377,58 +1287,34 @@ class OCPCADB:
     #return outcube
     return bigCube
 
-  #
-  # getVoxel -- return the identifier at a voxel
-  #
-  #
-  def getVoxel ( self, resolution, voxel ):
+
+  def getVoxel ( self, ch, resolution, voxel ):
     """Return the identifier at a voxel"""
 
     # get the size of the image and cube
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
-    # convert the voxel into zindex and offsets
-    # Round to the nearest larger cube in all dimensions
+    # convert the voxel into zindex and offsets. Round to the nearest larger cube in all dimensions
     xyzcube = [ voxel[0]/xcubedim, voxel[1]/ycubedim, voxel[2]/zcubedim ]
     xyzoffset =[ voxel[0]%xcubedim, voxel[1]%ycubedim, voxel[2]%zcubedim ]
+    key = ocplib.XYZMorton ( xyzcube )
 
-    # Create a cube object
-    cube = anncube.AnnotateCube ( cubedim )
+    cube = self.getCube( ch, key, resolution )
 
-    mortonidx = ocplib.XYZMorton ( xyzcube )
-
-    #RBTODO write a test and fix for kvio
-
-    cursor = self.getCursor()
-
-    # get the block from the database
-    sql = "SELECT cube FROM " + self.ocpchannel.getTable(resolution) + " WHERE zindex = " + str(mortonidx)
-    try:
-      cursor.execute ( sql )
-      row=cursor.fetchone()
-    except MySQLdb.Error, e:
-      logger.warning ( "Error reading annotation data: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise
-    finally:
-      self.closeCursor(cursor)
-
-    # If we can't find a cube, assume it hasn't been written yet
-    if ( row == None ):
-      retval = 0
-    else: 
-      cube.fromNPZ ( row[0] )
-      retval = cube.getVoxel ( xyzoffset )
-
-    return retval
+    if cube is None:
+      return 0
+    else:
+      return cube.getVoxel(xyzoffset)
 
 
   # Alternate to getVolume that returns a annocube
-  def annoCutout ( self, annoids, resolution, corner, dim, remapid=None ):
+  def annoCutout ( self, ch, annoids, resolution, corner, dim, remapid=None ):
     """Fetch a volume cutout with only the specified annotation"""
 
     # cutout is zoom aware
-    cube = self.cutout(corner,dim,resolution, annoids=annoids )
+    cube = self.cutout(ch, corner,dim,resolution, annoids=annoids )
   
+    # KL TODO
     if remapid:
       vec_func = np.vectorize ( lambda x: np.uint32(remapid) if x != 0 else np.uint32(0) ) 
       cube.data = vec_func ( cube.data )
@@ -1472,29 +1358,30 @@ class OCPCADB:
   #
   # getLocations -- return the list of locations associated with an identifier
   #
-  def getLocations ( self, entityid, res ):
+  def getLocations ( self, ch, entityid, res ):
 
     # get the size of the image and cube
     resolution = int(res)
     
     #scale to project resolution
-    if self.ocpchannel.getResolution() > resolution:
-      effectiveres = self.ocpchannel.getResolution() 
+    if ch.getResolution() > resolution:
+      effectiveres = ch.getResolution() 
     else:
       effectiveres = resolution
 
 
     voxlist = []
     
-    zidxs = self.annoIdx.getIndex(entityid,resolution)
+    zidxs = self.annoIdx.getIndex(ch, entityid,resolution)
 
     for zidx in zidxs:
 
       print zidx
 
-      cb = self.getCube (zidx,effectiveres) 
+      cb = self.getCube(ch, zidx,effectiveres) 
 
       # mask out the entries that do not match the annotation id
+      # KL TODO
       vec_func = np.vectorize ( lambda x: entityid if x == entityid else 0 )
       annodata = vec_func ( cb.data )
     
@@ -1509,8 +1396,8 @@ class OCPCADB:
       zoffset = z * self.datasetcfg.cubedim[resolution][2] 
 
       # Now add the exception voxels
-      if self.EXCEPT_FLAG:
-        exceptions = self.getExceptions( zidx, resolution, entityid ) 
+      if ch.getExceptions() ==  ocpcaproj.EXCEPTION_TRUE:
+        exceptions = self.getExceptions( ch, zidx, resolution, entityid ) 
         if exceptions != []:
           voxels = np.append ( voxels.flatten(), exceptions.flatten())
           voxels = voxels.reshape(len(voxels)/3,3)
@@ -1525,18 +1412,15 @@ class OCPCADB:
     return voxlist
 
 
-  #
-  # getBoundingBox -- return a corner and dimension of the bounding box 
-  #   for an annotation using the index.
-  #
-  def getBoundingBox ( self, annids, res ):
+  def getBoundingBox ( self, ch, annids, res ):
+    """Return a corner and dimension of the bounding box for an annotation using the index"""
   
     # get the size of the image and cube
     resolution = int(res)
 
     # determine the resolution for project information
-    if self.ocpchannel.getResolution() > resolution:
-      effectiveres = self.ocpchannel.getResolution() 
+    if ch.getResolution() > resolution:
+      effectiveres = ch.getResolution() 
       scaling = 2**(effectiveres-resolution)
     else:
       effectiveres = resolution
@@ -1545,7 +1429,7 @@ class OCPCADB:
     # all boxes in the indexes
     zidxs=[]
     for annid in annids:
-      zidxs = itertools.chain(zidxs,self.annoIdx.getIndex(annid,effectiveres))
+      zidxs = itertools.chain(zidxs,self.annoIdx.getIndex(ch, annid, effectiveres))
     
     # convert to xyz coordinates
     try:
@@ -1570,30 +1454,31 @@ class OCPCADB:
     return (corner,dim)
 
 
-  def annoCubeOffsets ( self, dataids, resolution, remapid=False ):
+  def annoCubeOffsets ( self, ch, dataids, resolution, remapid=False ):
     """an iterable on the offsets and cubes for an annotation"""
    
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
     # alter query if  (ocpcaproj)._resolution is > resolution
     # if cutout is below resolution, get a smaller cube and scaleup
-    if self.ocpchannel.getResolution() > resolution:
-      effectiveres = self.ocpchannel.getResolution() 
+    if ch.getResolution() > resolution:
+      effectiveres = ch.getResolution() 
     else:
       effectiveres = resolution
 
     zidxs = set()
     for did in dataids:
-      zidxs |= set ( self.annoIdx.getIndex(did,effectiveres))
+      zidxs |= set ( self.annoIdx.getIndex(ch, did,effectiveres))
 
     for zidx in zidxs:
 
       # get the cube and mask out the non annoid values
-      cb = self.getCube (zidx,effectiveres) 
+      cb = self.getCube(ch, zidx, effectiveres) 
       if not remapid:
         cb.data = ocplib.filter_ctype_OMP ( cb.data, dataids )
       else: 
         cb.data = ocplib.filter_ctype_OMP ( cb.data, dataids )
+        # KL TODO
         vec_func = np.vectorize ( lambda x: np.uint32(remapid) if x != 0 else np.uint32(0) ) 
         cb.data = vec_func ( cb.data )
 
@@ -1609,9 +1494,9 @@ class OCPCADB:
 
       # add any exceptions
       # Get exceptions if this DB supports it
-      if self.EXCEPT_FLAG:
+      if ch.getExceptions() == ocpcaproj.EXCEPTION_TRUE:
         for exid in dataids:
-          exceptions = self.getExceptions( zidx, effectiveres, exid ) 
+          exceptions = self.getExceptions(ch, zidx, effectiveres, exid) 
           if exceptions != []:
             if resolution < effectiveres:
                 exceptions = self.zoomVoxels ( exceptions, effectiveres-resolution )
@@ -1625,51 +1510,61 @@ class OCPCADB:
 
       yield (offset,cb.data)
 
-
-
-
   #
   # getAnnotation:  
   #    Look up an annotation, switch on what kind it is, build an HDF5 file and
   #     return it.
-  def getAnnotation ( self, id ):
+  def getAnnotation ( self, ch, annid ):
     """Return a RAMON object by identifier"""
 
     cursor = self.getCursor()
     try:
-      retval = annotation.getAnnotation( id, self, cursor )
-    finally:
-      self.closeCursor ( cursor ) 
+      return annotation.getAnnotation(ch, annid, self, cursor)
+    except:
+      self.closeCursor(cursor) 
+      raise
 
-    return retval
+    self.closeCursorCommit(cursor)
 
-  #
-  # putAnnotation:  
-  #    store an HDF5 annotation to the database
-  def putAnnotation ( self, anno, options='' ):
+
+  def updateAnnotation (self, ch, annid, field, value):
+    """Update a RAMON object by identifier"""
+
+    cursor = self.getCursor()
+    try:
+      anno = self.getAnnotation(ch, annid)
+      if anno is None:
+        logger.warning("No annotation found at identifier = {}".format(annid))
+        raise OCPCAError ("No annotation found at identifier = {}".format(annid))
+      anno.setField(ch, field, value)
+      anno.update(ch, cursor)
+    except:
+      self.closeCursor(cursor) 
+      raise
+    self.closeCursorCommit(cursor)
+
+
+  def putAnnotation ( self, ch, anno, options='' ):
     """store an HDF5 annotation to the database"""
     
     cursor = self.getCursor()
     try:
-      retval = annotation.putAnnotation( anno, self, cursor, options )
+      retval = annotation.putAnnotation(ch, anno, self, cursor, options)
     except:
-      self.closeCursor( cursor ) 
+      self.closeCursor(cursor) 
       raise
 
     self.closeCursorCommit(cursor)
 
     return retval
 
-  #
-  # deleteAnnotation:  
-  #    remove an HDF5 annotation from the database
-  def deleteAnnotation ( self, annoid, options='' ):
+  def deleteAnnotation ( self, ch, annoid, options='' ):
     """delete an HDF5 annotation from the database"""
 
     cursor = self.getCursor()
     try:
-      self.deleteAnnoData ( annoid )
-      retval = annotation.deleteAnnotation ( annoid, self, cursor, options )
+      self.deleteAnnoData ( ch, annoid )
+      retval = annotation.deleteAnnotation ( ch, annoid, self, cursor, options )
     except:
       self.closeCursor( cursor ) 
       raise
@@ -1682,7 +1577,7 @@ class OCPCADB:
   #deleteAnnoData:
   #    Delete the voxel data from the database for annoid 
   #
-  def deleteAnnoData ( self, annoid):
+  def deleteAnnoData ( self, ch, annoid):
 
     resolutions = self.datasetcfg.resolutions
 
@@ -1693,20 +1588,21 @@ class OCPCADB:
       for res in resolutions:
       
         #get the cubes that contain the annotation
-        zidxs = self.annoIdx.getIndex(annoid,res,True)
+        zidxs = self.annoIdx.getIndex(ch, annoid,res,True)
         
         #Delete annotation data
         for key in zidxs:
-          cube = self.getCube ( key, res, True )
+          cube = self.getCube(ch, key, res, True)
+          # KL TODO
           vec_func = np.vectorize ( lambda x: 0 if x == annoid else x )
           cube.data = vec_func ( cube.data )
           # remove the expcetions
-          if self.EXCEPT_FLAG:
-            self.kvio.deleteExceptions ( key, res, annoid )
-          self.putCube ( key, res, cube)
+          if ch.getExceptions == ocpcaproj.EXCEPTION_TRUE:
+            self.kvio.deleteExceptions(ch, key, res, annoid)
+          self.putCube(ch, key, res, cube)
         
       # delete Index
-      self.annoIdx.deleteIndex(annoid,resolutions)
+      self.annoIdx.deleteIndex(ch, annoid,resolutions)
 
     except:
       self.kvio.rollback()
@@ -1715,14 +1611,12 @@ class OCPCADB:
     self.kvio.commit()
 
 
-  #
-  # getChildren
-  def getChildren ( self, annoid ):
+  def getChildren ( self, ch, annoid ):
     """get all the children of the annotation"""
  
     cursor = self.getCursor()
     try:
-      retval = annotation.getChildren ( annoid, self, cursor )
+      retval = annotation.getChildren (ch, annoid, self, cursor)
     finally:
       self.closeCursor ( cursor )
 
@@ -1732,7 +1626,7 @@ class OCPCADB:
   # getAnnoObjects:  
   #    Return a list of annotation object IDs
   #  for now by type and status
-  def getAnnoObjects ( self, args ):
+  def getAnnoObjects ( self, ch, args ):
     """Return a list of annotation object ids that match equality predicates.  
       Legal predicates are currently:
         type
@@ -1746,7 +1640,7 @@ class OCPCADB:
     compfields = ( 'confidence' )
 
     # start of the SQL clause
-    sql = "SELECT annoid FROM " + annotation.anno_dbtables['annotation'] 
+    sql = "SELECT annoid FROM {}".format(ch.getAnnoTable('annotation'))
     clause = ''
     limitclause = ""
 
@@ -1828,16 +1722,11 @@ class OCPCADB:
     return np.array(annoids)
 
 
-  #
-  # writeCuboid
-  #
-  #  Write data that is not integral in cuboids
-  #
-  def writeCuboid ( self, corner, resolution, cuboiddata, channel=None ):
+  def writeCuboid ( self, ch, corner, resolution, cuboiddata ):
     """Write an image through the Web service"""
 
     # dim is in xyz, data is in zyxj
-    dim = [ cuboiddata.shape[2], cuboiddata.shape[1], cuboiddata.shape[0] ]
+    dim = cuboiddata.shape[::-1]
 
     # get the size of the image and cube
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
@@ -1861,26 +1750,16 @@ class OCPCADB:
     self.kvio.startTxn()
  
     try:
-
       for z in range(znumcubes):
         for y in range(ynumcubes):
           for x in range(xnumcubes):
 
             key = ocplib.XYZMorton ([x+xstart,y+ystart,z+zstart])
-     
-            # get the cube in question
-            if channel == None:
-              cube = self.getCube ( key, resolution, True )
-            else:
-              cube = self.getChannelCube ( key, channel, resolution, True )
- 
+            cube = self.getCube ( ch, key, resolution, True )
             # overwrite the cube
             cube.overwrite ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
             # update in the database
-            if channel == None:
-              self.putCube ( key, resolution, cube)
-            else:
-              self.putChannelCube ( key, channel, resolution, cube)
+            self.putCube (ch, key, resolution, cube)
 
     except:
       self.kvio.rollback()
@@ -1889,11 +1768,6 @@ class OCPCADB:
     self.kvio.commit()
 
 
-  #
-  # getChannels
-  #
-  #  query the channels and their identifiers
-  #
   def getChannels ( self ):
     """query the channels and their identifiers"""
 
@@ -1933,16 +1807,16 @@ class OCPCADB:
       if annid== mergeid:
         continue
       # Get the Annotation index for that id
-      curindex = self.annoIdx.getIndex(annid,resolution)
+      curindex = self.annoIdx.getIndex(ch, annid,resolution)
       # Final list of index which has to be updated in idx table
       addindex = np.union1d(addindex,curindex)
       # Merge the annotations in the cubes for the current id
       listofidxs = set(curindex)
       for key in listofidxs:
-        cube = self.getCube (key,resolution)
-        if self.EXCEPT_FLAG:
-          oldexlist = self.getExceptions( key, resolution, annid ) 
-          self.kvio.deleteExceptions ( key, resolution, annid )
+        cube = self.getCube (ch, key,resolution)
+        if ch.getExceptions() == ocpcaproj.EXCEPTION_TRUE:
+          oldexlist = self.getExceptions( ch, key, resolution, annid ) 
+          self.kvio.deleteExceptions ( ch, key, resolution, annid )
         #
         # RB!!!!! this next line is wrong!  the problem is that
         #  we are merging all annotations.  So at the end, there
@@ -1952,7 +1826,7 @@ class OCPCADB:
         #
         # Ctype optimized version for mergeCube
         ocplib.mergeCube_ctype ( cube.data, mergeid, annid )
-        self.putCube ( key, resolution, cube )
+        self.putCube ( ch, key, resolution, cube )
         
       # Delete annotation and all it's meta data from the database
       #
@@ -1961,12 +1835,12 @@ class OCPCADB:
         try:
           # reordered because paint data no longer exists
           #KL TODO Merge for all resolutions and then delete for all of them.
-          self.annoIdx.deleteIndexResolution(annid,resolution)
+          self.annoIdx.deleteIndexResolution(ch, annid,resolution)
           #self.annoIdx.deleteIndex(annid,resolution)
-          self.deleteAnnotation (annid, '' )
+          self.deleteAnnotation (ch, annid, '' )
         except:
           logger.warning("Failed to delete annotation {} during merge.".format(annid))
-    self.annoIdx.updateIndex(mergeid,addindex,resolution)     
+    self.annoIdx.updateIndex(ch, mergeid,addindex,resolution)     
     self.kvio.commit()
     
     return "Merged Id's {} into {}".format(ids,mergeid)
@@ -1988,7 +1862,7 @@ class OCPCADB:
   def merge3D(self, ids, corner, dim, res):
      # get the size of the image and cube
     resolution = int(res)
-    dbname = self.ocpchannel.getTable(resolution)
+    dbname = self.proj.getTable(resolution)
     
     # PYTODO Check if this is a valid annotation that we are relabelubg to
     if len(self.annoIdx.getIndex(ids[0],1)) == 0:

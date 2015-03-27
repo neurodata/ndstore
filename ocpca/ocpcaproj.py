@@ -27,6 +27,7 @@ from ocpuser.models import Project
 from ocpuser.models import Dataset
 from ocpuser.models import Token
 from ocpuser.models import Channel
+import annotation
 
 # need imports to be conditional
 try:
@@ -49,14 +50,12 @@ logger=logging.getLogger("ocp")
 OCP_VERSION = '0.6'
 SCHEMA_VERSION = '0.6'
 
-OCP_channeltypes = {0:'image',1:'annotation',2:'channel',3:'probmap',4:'timeseries'}
+OCP_channeltypes = {0:'image',1:'annotation',2:'probmap',3:'timeseries'}
 
 # channeltype groups
-IMAGE_PROJECTS = [ 'image', 'probmap' ]
-CHANNEL_PROJECTS = [ 'channel' ]
-TIMESERIES_PROJECTS = [ 'timeseries' ]
-ANNOTATION_PROJECTS = [ 'annotation' ]
-COMPOSITE_PROJECTS = CHANNEL_PROJECTS + TIMESERIES_PROJECTS
+IMAGE_CHANNELS = [ 'image', 'probmap' ]
+TIMESERIES_CHANNELS = [ 'timeseries' ]
+ANNOTATION_CHANNELS = [ 'annotation' ]
 
 # datatype groups
 DTYPE_uint8 = [ 'uint8' ]
@@ -98,17 +97,17 @@ class OCPCADataset:
  
     self.ds = Dataset.objects.get(dataset_name=dataset)
 
-    # nearisotropic service for Stephan
-    self.nearisoscaledown = {}
-
     self.resolutions = []
     self.cubedim = {}
     self.imagesz = {}
     self.offset = {}
     self.voxelres = {}
+    self.scale = {}
     self.scalingoption = self.ds.scalingoption
     self.scalinglevels = self.ds.scalinglevels
     self.timerange = (self.ds.starttime, self.ds.endtime)
+    # nearisotropic service for Stephan
+    self.nearisoscaledown = {}
 
     for i in range (self.ds.scalinglevels+1):
       """Populate the dictionaries"""
@@ -127,14 +126,8 @@ class OCPCADataset:
       self.imagesz[i] = [ xpixels, ypixels, zpixels ]
 
       # set the offset
-      if self.ds.xoffset==0:
-        xoffseti = 0
-      else:
-         xoffseti = ((self.ds.xoffset)/2**i)
-      if self.ds.yoffset==0:
-        yoffseti = 0
-      else:
-         yoffseti = ((self.ds.yoffset)/2**i)
+      xoffseti = 0 if self.ds.xoffset==0 else ((self.ds.xoffset)/2**i)
+      yoffseti = 0 if self.ds.yoffset==0 else ((self.ds.yoffset)/2**i)
       if self.ds.zoffset==0:
         zoffseti = 0
       else:
@@ -148,12 +141,10 @@ class OCPCADataset:
       # set the voxelresolution
       xvoxelresi = self.ds.xvoxelres*float(2**i)
       yvoxelresi = self.ds.yvoxelres*float(2**i)
-      if self.ds.scalingoption == ZSLICES:
-        zvoxelresi = self.ds.zvoxelres
-      else:
-        zvoxelresi = self.ds.zvoxelres*float(2**i)
+      zvoxelresi = self.ds.zvoxelres if self.ds.scalingoption == ZSLICES else self.ds.zvoxelres*float(2**i)
 
       self.voxelres[i] = [ xvoxelresi, yvoxelresi, zvoxelresi ]
+      self.scale[i] = { 'xy':xvoxelresi/yvoxelresi , 'yz':zvoxelresi/xvoxelresi, 'xz':zvoxelresi/yvoxelresi }
 
       # choose the cubedim as a function of the zscale
       #  this may need to be changed.  
@@ -166,7 +157,6 @@ class OCPCADataset:
         # Make an exception for bock11 data -- just an inconsistency in original ingest
         if self.ds.ximagesize == 135424 and i == 5:
           self.cubedim[i] = [128, 128, 16]
-
       else:
         # RB what should we use as a cubedim?
         self.cubedim[i] = [128, 128, 16]
@@ -176,25 +166,7 @@ class OCPCADataset:
   def getDatasetDescription ( self ):
     return self.ds.dataset_description
 
-      #RB need to reconsider nearisotropic for Stefan.....
-#      # set the isotropic image size when well defined
-#      if self.zscale[i] < 1.0:
-#        self.isoslicerange[i] = [ startslice, startslice + int(math.floor((endslice-startslice+1)*self.zscale[i])) ]
-#
-#        # find the neareat to isotropic value
-#        scalepixels = 1/self.zscale[i]
-#        if ((math.ceil(scalepixels)-scalepixels)/scalepixels) <= ((scalepixels-math.floor(scalepixels))/scalepixels):
-#          self.nearisoscaledown[i] = int(math.ceil(scalepixels))
-#        else:
-#          self.nearisoscaledown[i] = int(math.floor(scalepixels))
-#
-#      else:
-#        self.isoslicerange[i] = self.slicerange
-#        self.nearisoscaledown[i] = int(1)
 
-  #
-  #  Check that the specified arguments are legal
-  #
   def checkCube ( self, resolution, corner, dim, tstart=0, tend=0 ):
     """Return true if the specified range of values is inside the cube"""
 
@@ -203,8 +175,6 @@ class OCPCADataset:
     yend = ystart + dim[1]
     zend = zstart + dim[2]
 
-
-    #KLTODO check the timeseries code here.
     if ( ( xstart >= 0 ) and ( xstart < xend) and ( xend <= self.imagesz[resolution][0]) and\
         ( ystart >= 0 ) and ( ystart < yend) and ( yend <= self.imagesz[resolution][1]) and\
         ( zstart >= 0 ) and ( zstart < zend) and ( zend <= self.imagesz[resolution][2]) and\
@@ -213,29 +183,8 @@ class OCPCADataset:
     else:
       return False
 
-  
-  #
-  #  Check that the specified arguments are legal
-  #
-  def checkTimeSeriesCube ( self, tstart, tend, resolution, xstart, xend, ystart, yend, zstart, zend ):
-    """Return true if the specified range of values is inside the timeseries cube"""
-
-    [xstart, ystart, zstart ] = corner
-    xend = xstart + dim[0]
-    yend = ystart + dim[1]
-    zend = zstart + dim[2]
-
-    if ( ( xstart >= 0 ) and ( xstart < xend) and ( xend <= self.imagesz[resolution][0] ) and\
-        ( ystart >= 0 ) and ( ystart < yend) and ( yend <= self.imagesz[resolution][1] ) and\
-        ( zstart >= 0 ) and ( zstart < zend) and ( zend <= self.imagesz[resolution][2]) and\
-        ( tstart >= self.timerange[0] ) and ( tstart < tend ) and ( tend <= (self.timerange[1]+1) ) )  :
-      return True
-    else:
-      return False
-  #
-  #  Return the image size
-  #
   def imageSize ( self, resolution ):
+    """Return the image size"""
     return  [ self.imagesz [resolution], self.timerange ]
 
 
@@ -250,7 +199,7 @@ class OCPCAProject:
   def getToken ( self ):
     return self.tk.token_name
   def getDBHost ( self ):
-      return self.pr.dbhost
+      return self.pr.host
   def getKVEngine ( self ):
     return self.pr.kvengine
   def getKVServer ( self ):
@@ -266,13 +215,20 @@ class OCPCAProject:
   def getSchemaVersion ( self ):
     return self.pr.schema_version
 
-  def projectChannels ( self ):
-    """Return a generator of Channel Objects""" 
-    chs = Channel.objects.filter(project_id=self.pr)
+  def projectChannels ( self, channel_list=None ):
+    """Return a generator of Channel Objects"""
+    if channel_list is None:
+      chs = Channel.objects.filter(project_id=self.pr)
+    else:
+      chs = channel_list
     for ch in chs:
-      yield OCPCAChannel(self.tk.token_name, ch.channel_name)
+      yield OCPCAChannel(self, ch.channel_name)
 
-  # Setters
+  def getChannelObj ( self, channel_name=None ):
+    """Returns a object for that channel"""
+    if channel_name is None:
+      channel_name = Channel.objects.get(project_id=self.pr, default=True)
+    return OCPCAChannel(self, channel_name)
 
   # accessors for RB to fix
   def getDBUser( self ):
@@ -281,12 +237,12 @@ class OCPCAProject:
     return ocpcaprivate.dbpasswd
 
 
-class OCPCAChannel (OCPCAProject):
+class OCPCAChannel:
 
-  def __init__(self, token, channel):
+  def __init__(self, proj, channel):
     """Constructor for a channel. It is a project and then some."""
-    OCPCAProject.__init__(self,token)
-    self.ch = Channel.objects.get(channel_name=channel, project=self.pr)
+    self.pr = proj
+    self.ch = Channel.objects.get(channel_name=channel, project=self.pr.getProjectName())
 
   def getDataType ( self ):
     return self.ch.channel_datatype
@@ -313,36 +269,43 @@ class OCPCAChannel (OCPCAProject):
     else:
       return "{}_ids".format(self.ch.channel_name)
 
-
   def getTable ( self, resolution ):
     """Return the appropriate table for the specified resolution"""
     if self.pr.getOCPVersion() == '0.0':
       return "res{}".format(resolution)
     else:
-      return "{}_res{}".format(self.ch.channel_name,resolution)
+      return "{}_res{}".format(self.ch.channel_name, resolution)
 
   def getNearIsoTable ( self, resolution ):
     """Return the appropriate table for the specified resolution"""
     if self.pr.getOCPVersion() == '0.0':
       return "res{}neariso".format(resolution)
     else:
-      return "{}_res{}neariso".format(self.ch.channel_name,resolution)
+      return "{}_res{}neariso".format(self.ch.channel_name, resolution)
   
   def getIdxTable ( self, resolution ):
     """Return the appropriate Index table for the specified resolution"""
     if self.pr.getOCPVersion() == '0.0':
       return "idx{}".format(resolution)
     else:
-      return "{}_idx{}".format(self.ch.channel_name,resolution)
+      return "{}_idx{}".format(self.ch.channel_name, resolution)
+
+  def getAnnoTable ( self, anno_type ):
+    """Return the appropriate table for the specified type"""
+    if self.pr.getOCPVersion() == '0.0':
+      return "{}".format(annotation.anno_dbtables[anno_type])
+    else:
+      return "{}_{}".format(self.ch.channel_name, annotation.anno_dbtables[anno_type])
+
+  def getExceptionsTable ( self, resolution ):
+    """Return the appropiate exceptions table for the specified resolution"""
+    if self.pr.getOCPVersion() == '0.0':
+      return "{exc{}}".format(resolution)
+    else:
+      return "{}_exc{}".format(self.ch.channel_name, resolution)
 
   def setPropagate ( self, value ):
-    # 0 - Propagated
-    # 1 - Under Propagation
-    # 2 - UnPropagated
-    if not self.getChannelType() == 'annotation':
-      logger.error ( "Cannot set Propagate Value {} for a non-Annotation Project {}".format( value, self._token ) )
-      raise OCPCAError ( "Cannot set Propagate Value {} for a non-Annotation Project {}".format( value, self._token ) )
-    elif value in [NOT_PROPAGATED]:
+    if value in [NOT_PROPAGATED]:
       self.ch.propagate = value
       self.setReadOnly ( READONLY_FALSE )
     elif value in [UNDER_PROPAGATION,PROPAGATED]:
@@ -350,16 +313,14 @@ class OCPCAChannel (OCPCAProject):
       self.setReadOnly ( READONLY_TRUE )
     else:
       logger.error ( "Wrong Propagate Value {} for Channel {}".format( value, self.ch.channel_name ) )
-      raise OCPCAError ( "Wrong Propagate Value {} for Project {}".format( value, self.ch.channel_name ) )
+      raise OCPCAError ( "Wrong Propagate Value {} for Channel {}".format( value, self.ch.channel_name ) )
   
   def setReadOnly ( self, value ):
-    # 0 - Readonly
-    # 1 - Not Readonly
     if value in [READONLY_TRUE,READONLY_FALSE]:
       self.ch.readonly = value
     else:
-      logger.error ( "Wrong Readonly Value {} for Project {}".format( value, self._token ) )
-      raise OCPCAError ( "Wrong Readonly Value {} for Project {}".format( value, self._token ) )
+      logger.error ( "Wrong Readonly Value {} for Channel {}".format( value, self.channel_name ) )
+      raise OCPCAError ( "Wrong Readonly Value {} for Channel {}".format( value, self.ch.channel_name ) )
 
   def isPropagated ( self ):
     if self.ch.propagate in [PROPAGATED]:
@@ -368,10 +329,10 @@ class OCPCAChannel (OCPCAProject):
       return False
 
 class OCPCAProjectsDB:
-  """Database for the annotation and cutout projects"""
+  """Database for the projects"""
 
   def __init__(self):
-    """ Create the database connection """
+    """Create the database connection"""
 
     self.conn = MySQLdb.connect (host = ocpcaprivate.dbhost, user = ocpcaprivate.dbuser, passwd = ocpcaprivate.dbpasswd, db = ocpcaprivate.db ) 
 
@@ -391,13 +352,13 @@ class OCPCAProjectsDB:
         cursor.execute ( sql )
         self.conn.commit()
       except MySQLdb.Error, e:
-        logger.error ("Failed to create database for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        raise OCPCAError ("Failed to create database for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+        logger.error ("Failed to create database for new project {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+        raise OCPCAError ("Failed to create database for new project {}: {}. sql={}".format(e.args[0], e.args[1], sql))
 
 
   def newOCPCAChannel ( self, project_name, channel_name ):
     """Make the tables for a channel."""
-
+    
     pr = Project.objects.get(project_name=project_name)
     ch = Channel.objects.get(channel_name=channel_name, project_id=project_name)
     ds = Dataset.objects.get(dataset_name=pr.dataset_id)
@@ -413,13 +374,13 @@ class OCPCAProjectsDB:
             if ch.channel_type not in ['timeseries']:
 
               for i in range(ds.scalinglevels+1): 
-                cursor.execute ( "CREATE TABLE {}_res{} ( chanstr VARCHAR(255), zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(ch.channel_name,i) )
+                cursor.execute ( "CREATE TABLE {}_res{} ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(ch.channel_name,i) )
               conn.commit()
 
             elif ch.channel_type == 'timeseries':
 
               for i in range(ds.scalinglevels+1): 
-                cursor.execute ( "CREATE TABLE {}_res{} ( chanstr VARCHAR(255), zindex BIGINT, timestamp INT, cube LONGBLOB, PRIMARY KEY(zindex,timestamp))".format(ch.channel_name,i) )
+                cursor.execute ( "CREATE TABLE {}_res{} ( zindex BIGINT, timestamp INT, cube LONGBLOB, PRIMARY KEY(zindex,timestamp))".format(ch.channel_name,i) )
               conn.commit()
 
             else:
@@ -503,7 +464,7 @@ class OCPCAProjectsDB:
     pr = Project.objects.get(project_name=proj_name)
 
     # delete the database
-    sql = "DROP DATABASE " + pr.project_name
+    sql = "DROP DATABASE {}".format(pr.project_name)
 
     with closing(self.conn.cursor()) as cursor:
       try:
@@ -561,11 +522,8 @@ class OCPCAProjectsDB:
     """Query django configuration for a token to bind to a project"""
     return OCPCAProject (token)
    
-  #
-  # Update the propagate  and readonly values for a project
-  #
   def updatePropagate ( self, proj):
-    """ """
+    """Update the propagate and readonly values for a project"""
     pr = Project.objects.get ( project_name=proj.getDBName() )
     tk = Token.objects.get ( token_name=proj.getToken() )
     tk.readonly = proj.getReadOnly()
@@ -573,14 +531,8 @@ class OCPCAProjectsDB:
     tk.save()
     pr.save()
 
-  #
-  #  getPublicTokens
-  #
   def getPublic ( self ):
     """ Return a list of public tokens """
 
-    # get public tokens
     tkns = Token.objects.filter(public=1)
-
     return [t.token_name for t in tkns]
-
