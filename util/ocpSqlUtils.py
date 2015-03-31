@@ -20,6 +20,7 @@ import argparse
 import sys
 import os
 import subprocess
+from contextlib import closing
 
 import MySQLdb
 
@@ -27,6 +28,9 @@ sys.path += [os.path.abspath('../django')]
 import OCP.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
 from django.conf import settings
+import django
+django.setup()
+
 
 import ocpcaproj
 import ocpcaprivate
@@ -34,12 +38,16 @@ import ocpcadb
 
 class SQLDatabase:
 
-  def __init__(self, host, token, location):
+  def __init__(self, host, token, channel, location):
     """ Load the database and project """
 
-    self.projdb = ocpcaproj.OCPCAProjectsDB()
-    self.proj = self.projdb.loadProject ( token )
-    self.imgDB = ocpcadb.OCPCADB ( self.proj )
+    with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+      self.proj = projdb.loadToken ( token )
+    self.channels = self.proj.projectChannels()
+    if self.channels is None:
+      print "[ERROR]: No channels!" #ABTODO raise exception? 
+      sys.exit(0)
+
     self.user = ocpcaprivate.dbuser
     self.password = ocpcaprivate.dbpasswd
     self.host = host
@@ -47,6 +55,10 @@ class SQLDatabase:
     self.location = location
     self.starterString = '-u {} -p{} -h {}'.format( self.user, self.password, self.host )
     
+    # get single channel if channel is not None
+    if channel is not None:
+      self.channel = self.proj.getChannelObj(channel_name=channel)
+
     try:
       self.db = MySQLdb.connect ( host = self.host, user = self.user, passwd = self.password, db = self.token ) 
       self.cur = self.db.cursor()    
@@ -92,32 +104,69 @@ class SQLDatabase:
 
     self.db.commit()
 
-  def dumpImgStack( self ):
-    """ Dump an Image Stack """
+  def dumpSingleChannel( self ):
+    """ Dump all resolutions of a single channel (anno, images, etc) """
+    if self.channel.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS:
+      """ dump annotation """
+      for i in range( 0, len(self.proj.datasetcfg.resolutions ) ):
+        # channel tables
+        ch_tables = [self.channel.getIDsTbl(), self.channel.getIdxTable(i)] 
 
+        if self.channel.getExceptions():
+          ch_tables.append(self.channel.getExceptions(i))
+
+        cmd = 'mysqldump {} {} --tables {} > {}{}.{}.sql'.format ( self.starterString, self.token, ' '.join(ch_tables), self.location, self.token, self.channel.getTable(i) )
+        print cmd
+        os.system ( cmd )
+    elif self.channel.getChannelType() in ocpcaproj.IMAGE_CHANNELS:
+      """ dump image """
+      for i in range( 0, len(self.proj.datasetcfg.resolutions ) ):
+        cmd = 'mysqldump {} {} --tables {} > {}{}.{}.sql'.format ( self.starterString, self.token, self.channel.getTable(i), self.location, self.token, self.channel.getTable(i) )
+        print cmd
+        os.system ( cmd )
+    else:
+      errstr = "[ERROR]: Channel type {} is unsupported!".format(self.getChannelType())
+
+  def dumpAllChannels( self ):
+    """ Dump all resolutions for all project channels """
+    for chan in self.channels:
+      if chan.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS:
+        """ dump annotations """ 
+        #TODO probably misssing RAMON object tables
+        for i in range( 0, len(self.proj.datasetcfg.resolutions ) ):
+          # channel tables
+          ch_tables = [chan.getIDsTbl(), chan.getIdxTable(i)] 
+
+          if chan.getExceptions():
+            ch_tables.append(chan.getExceptions(i))
+
+          cmd = 'mysqldump {} {} --tables {} > {}{}.{}.sql'.format ( self.starterString, self.token, ' '.join(ch_tables), self.location, self.token, chan.getTable(i) )
+          print cmd
+          os.system ( cmd )
+      elif chan.getChannelType() in ocpcaproj.IMAGE_CHANNELS:
+        """ dump image """
+        for i in range( 0, len(self.proj.datasetcfg.resolutions ) ):
+          cmd = 'mysqldump {} {} --tables {} > {}{}.{}.sql'.format ( self.starterString, self.token, chan.getTable(i), self.location, self.token, chan.getTable(i) )
+          print cmd
+          os.system ( cmd )
+      else:
+        errstr = "[ERROR]: Channel type {} is unsupported!".format(self.getChannelType())
+
+
+  def ingestSingleChannel( self ):
+    """ Ingest all resolutions of a single channel ( anno, images, etc ) """
     for i in range( 0, len(self.proj.datasetcfg.resolutions ) ):
-
-      cmd = 'mysqldump {} {} --tables res{} > {}{}.res{}.sql'.format ( self.starterString, self.token, i, self.location, self.token, i )
+      cmd = 'mysql {} {} < {}{}.{}.sql'.format ( self.starterString, self.token, self.location, self.token, self.channel.getTable(i) )
       print cmd
       os.system ( cmd )
 
-
-  def dumpAnnotationStack( self ):
-    """ Dump an Annotation Stack """
-
-    cmd = 'mysqldump {} {} > {}{}.sql'.format ( self.starterString, self.token, self.location, self.token )
-    print cmd
-    os.system ( cmd )
-
-  
-  def dumpChannelStack( self ):
-    """ Dump a Channel Stack """
-
-    cmd = 'mysqldump {} {} --tables {} > {}{}.{}.sql'.format ( self.starterString, self.token, 'channels', self.location, self.token, 'channels' )
-    print cmd
-    os.system( cmd )
-    self.dumpImgStack()
-
+  def ingestAllChannels( self ):
+    """ Ingest all resolutions for all project channels """
+    for chan in self.channels:
+      for i in range( 0, len(self.proj.datasetcfg.resolutions ) ):
+        cmd = 'mysql {} {} < {}{}.{}.sql'.format ( self.starterString, self.token, self.location, self.token, chan.getTable(i) )
+        print cmd
+        os.system ( cmd )
 
   def ingestImageStack ( self ):
     """ Ingest an Image Stack """
@@ -152,6 +201,7 @@ def main():
   parser.add_argument('host', action="store", help='HostName where to dump from')
   parser.add_argument('token', action="store", help='Token for the project.')
   parser.add_argument('location', action="store", help='Location where to store the dump[')
+  parser.add_argument('--channel', dest='channel', action='store', default=None, help='Specify a channel (will dump all channels for the project if ignored)')
   parser.add_argument('--dump', dest='dump', action="store_true", help='Dump the database into a sqldump')
   parser.add_argument('--ingest', dest='ingest', action="store_true", help='Ingest the sqldump')
   parser.add_argument('--bigdump', dest='bigdump', help='Dump a big mysql table')
@@ -161,53 +211,41 @@ def main():
   result = parser.parse_args()
   
   if result.bigdump!=None:
-    sqldb = SQLDatabase (  result.host, result.token, result.location )
+    sqldb = SQLDatabase (  result.host, result.token, result.channel, result.location )
     sqldb.dumpBigTable ( result.bigdump ) 
 
   # Check for copy flag
   elif result.dbrename!=None:
-    sqldb = SQLDatabase ( result.host, result.token, result.location )
+    sqldb = SQLDatabase ( result.host, result.token, result.channel, result.location )
     sqldb.copyTable( result.dbrename )
 
   # Check for copy flag
   elif result.dbcopy!=None:
 
-    if ( sqldb.proj.getDBType() not in ocpcaproj.CHANNEL_DATASETS ):
-        
-      sqldb = SQLDatabase ( result.host, result.token, result.location )
-      sqldb.dumpImgStack()
-      sqldb = SQLDatabase ( result.host, result.dbcopy, result.location )
-      sqldb.ingestImageStack()
+    sqldb = SQLDatabase ( result.host, result.token, result.channel, result.location )
+    sqldb.dumpAllChannels()
+    sqldb = SQLDatabase ( result.host, result.dbcopy, result.channel, result.location )
+    sqldb.ingestImageStack() #ABTODO ingest all channels 
   
-    elif ( sqldb.proj.getDBType() in ocpcaproj.CHANNEL_DATASETS ):
-
-      sqldb.dumpChannelStack()
-      sqldb.ingestChannelStack()
   
   # Check for dump flag
   elif result.dump:
  
-    sqldb = SQLDatabase ( result.host, result.token, result.location )
-
-    if ( sqldb.proj.getDBType() not in ocpcaproj.CHANNEL_DATASETS + ocpcaproj.ANNOTATION_DATASETS ):
-      sqldb.dumpImgStack()
-    elif ( sqldb.proj.getDBType() in ocpcaproj.CHANNEL_DATASETS ):
-      sqldb.dumpChannelStack()
+    sqldb = SQLDatabase ( result.host, result.token, result.channel, result.location )
+    if ( result.channel is None ):
+      sqldb.dumpAllChannels()
     else:
-      sqldb.dumpAnnotationStack()
+      sqldb.dumpSingleChannel()
   
   # Check for ingest flag
   elif result.ingest:
     
-    sqldb = SQLDatabase ( result.host, result.token, result.location )
-    
-    if ( sqldb.proj.getDBType() not in ocpcaproj.CHANNEL_DATASETS + ocpcaproj.ANNOTATION_DATASETS ):
-      sqldb.ingestImageStack()
-    elif ( sqldb.proj.getDBType() in ocpcaproj.CHANNEL_DATASETS ):
-      sqldb.ingestChannelStack()
+    sqldb = SQLDatabase ( result.host, result.token, result.channel, result.location )
+    if ( result.channel is None ):
+      sqldb.ingestAllChannels()
     else:
-      sqldb.ingestAnnotataionStack()
-
+      sqldb.ingestSingleChannel()
+    
   else:
 
       print "Error: Use atleast one option"
