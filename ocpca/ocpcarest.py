@@ -1895,7 +1895,7 @@ def minmaxProject ( webargs ):
   # We have an compound array.  Now color it.
   colors = ('C','M','Y','R','G','B')
   colors = ('R','M','Y','R','G','B')
-  img =  mcfc.mcfcPNG ( mcdata, colors, 1.0 )
+  img =  mcfc.mcfcPNG ( mcdata, colors, 2.0 )
 
   fileobj = cStringIO.StringIO ( )
   img.save ( fileobj, "PNG" )
