@@ -1322,7 +1322,7 @@ class OCPCADB:
     return cube
 
   # helper function to apply exceptions
-  def applyCubeExceptions ( self, annoids, resolution, idx, cube ):
+  def applyCubeExceptions ( self, ch, annoids, resolution, idx, cube ):
     """Apply the expcetions to a specified cube and resolution"""
 
     # get the size of the image and cube
@@ -1333,7 +1333,7 @@ class OCPCADB:
     # for the target ids
     for annoid in annoids:
       # apply exceptions
-      exceptions = self.getExceptions( idx, resolution, annoid ) 
+      exceptions = self.getExceptions( ch, idx, resolution, annoid ) 
       for e in exceptions:
         cube.data[e[2],e[1],e[0]]=annoid
 

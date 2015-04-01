@@ -918,7 +918,9 @@ def getAnnotation ( ch, annid, annodb, cursor ):
     raise OCPCAError ( "Error reading id: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
   type = None
-  if sql_result[0] is not None:
+  if sql_result is None:
+    return None
+  else:
     type = int(sql_result[0])
   # switch on the type of annotation
   if type is None:

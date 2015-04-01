@@ -12,18 +12,38 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+List of Tests:
 
-class Params:
-  """Arguments Class"""
+test_image - 12 tests
   
-  def __init__ (self):
-    self.baseurl = ""
-    self.token = ""
-    self.resolution = 0
-    self.channels = []
-    self.num_objects = 1
-    self.args = None
-    self.annoid = 0
-    self.field = None
-    self.value = None
-    self.anntype = 1
+Module : Test_Image_Slice
+1 - test_xy
+2 - test_yz
+3 - test_xz
+4 - test_xy_incorrect
+
+Module : Test_Image_Post
+1 - test_npz 
+2 - test_npz_incorrect_region
+3 - test_npz_incorrect_datatype
+4 - test_hdf5
+5 - test_hdf5_incorrect_region
+6 - test_hdf5_incorrect_datatype
+7 - test_npz_incorrect_channel
+8 - test_hdf5_incorrect_channel
+
+test_info - 3 tests
+
+Module Test_Info - 3 tests
+1 - test_public_tokens
+2 - test_info
+3 - test_projinfo
+
+
+test_propagate - 1 test
+
+Module : Test_Propagate
+1 - test_update_propagate
+
+
+test_query - 

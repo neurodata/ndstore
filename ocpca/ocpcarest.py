@@ -830,7 +830,7 @@ def getAnnotation ( webargs ):
 
     # Split the URL and get the args
     ch = ocpcaproj.OCPCAChannel(proj, channel)
-    args = otherargs.split('/', 2)
+    option_args = otherargs.split('/', 2)
 
     # Make the HDF5 file
     # Create an in-memory HDF5 file
@@ -842,56 +842,55 @@ def getAnnotation ( webargs ):
       db.startTxn ()
      
       # if the first argument is numeric.  it is an annoid
-      if re.match ( '^[\d,]+$', args[0] ): 
+      if re.match ( '^[\d,]+$', option_args[0] ): 
 
-        annoids = map(int, args[0].split(','))
+        annoids = map(int, option_args[0].split(','))
 
         for annoid in annoids: 
 
           # if it's a compoun data type (NEURON) get the list of data ids
           # default is no data
-          if args[1] == '' or args[1] == 'nodata':
+          if option_args[1] == '' or option_args[1] == 'nodata':
             dataoption = AR_NODATA
             getAnnoById ( ch, annoid, h5f, proj, db, dataoption )
     
           # if you want voxels you either requested the resolution id/voxels/resolution
           #  or you get data from the default resolution
-          elif args[1] == 'voxels':
+          elif option_args[1] == 'voxels':
             dataoption = AR_VOXELS
 
             try:
-              [resstr, sym, rest] = args[2].partition('/')
+              [resstr, sym, rest] = option_args[2].partition('/')
               resolution = int(resstr) 
             except:
-              logger.warning ( "Improperly formatted voxel arguments {}".format(args[2]))
-              raise OCPCAError("Improperly formatted voxel arguments {}".format(args[2]))
+              logger.warning ( "Improperly formatted voxel arguments {}".format(option_args[2]))
+              raise OCPCAError("Improperly formatted voxel arguments {}".format(option_args[2]))
 
-    
             getAnnoById ( ch, annoid, h5f, proj, db, dataoption, resolution )
 
           #  or you get data from the default resolution
-          elif args[1] == 'cuboids':
+          elif option_args[1] == 'cuboids':
             dataoption = AR_CUBOIDS
             try:
-              [resstr, sym, rest] = args[2].partition('/')
+              [resstr, sym, rest] = option_args[2].partition('/')
               resolution = int(resstr) 
             except:
-              logger.warning ( "Improperly formatted cuboids arguments {}".format(args[2]))
-              raise OCPCAError("Improperly formatted cuboids arguments {}".format(args[2]))
+              logger.warning ( "Improperly formatted cuboids arguments {}".format(option_args[2]))
+              raise OCPCAError("Improperly formatted cuboids arguments {}".format(option_args[2]))
     
             getAnnoById ( ch, annoid, h5f, proj, db, dataoption, resolution )
     
-          elif args[1] =='cutout':
+          elif option_args[1] =='cutout':
     
             # if there are no args or only resolution, it's a tight cutout request
-            if args[2] == '' or re.match('^\d+[\w\/]*$', args[2]):
+            if option_args[2] == '' or re.match('^\d+[\w\/]*$', option_args[2]):
               dataoption = AR_TIGHTCUTOUT
               try:
-                [resstr, sym, rest] = args[2].partition('/')
+                [resstr, sym, rest] = option_args[2].partition('/')
                 resolution = int(resstr) 
               except:
-                logger.warning ( "Improperly formatted cutout arguments {}".format(args[2]))
-                raise OCPCAError("Improperly formatted cutout arguments {}".format(args[2]))
+                logger.warning ( "Improperly formatted cutout arguments {}".format(option_args[2]))
+                raise OCPCAError("Improperly formatted cutout arguments {}".format(option_args[2]))
 
               getAnnoById ( ch, annoid, h5f, proj, db, dataoption, resolution )
     
@@ -901,7 +900,7 @@ def getAnnotation ( webargs ):
    
               # Perform argument processing
               brargs = restargs.BrainRestArgs ();
-              brargs.cutoutArgs ( args[2], proj.datasetcfg )
+              brargs.cutoutArgs ( option_args[2], proj.datasetcfg )
     
               # Extract the relevant values
               corner = brargs.getCorner()
@@ -910,26 +909,26 @@ def getAnnotation ( webargs ):
     
               getAnnoById ( ch, annoid, h5f, proj, db, dataoption, resolution, corner, dim )
     
-          elif args[1] == 'boundingbox':
+          elif option_args[1] == 'boundingbox':
     
             dataoption = AR_BOUNDINGBOX
             try:
-              [resstr, sym, rest] = args[2].partition('/')
+              [resstr, sym, rest] = option_args[2].partition('/')
               resolution = int(resstr) 
             except:
-              logger.warning ( "Improperly formatted bounding box arguments {}".format(args[2]))
-              raise OCPCAError("Improperly formatted bounding box arguments {}".format(args[2]))
+              logger.warning("Improperly formatted bounding box arguments {}".format(option_args[2]))
+              raise OCPCAError("Improperly formatted bounding box arguments {}".format(option_args[2]))
         
             getAnnoById ( ch, annoid, h5f, proj, db, dataoption, resolution )
     
           else:
-            logger.warning ("Fetch identifier %s.  Error: no such data option %s " % ( annoid, args[1] ))
-            raise OCPCAError ("Fetch identifier %s.  Error: no such data option %s " % ( annoid, args[1] ))
+            logger.warning ("Fetch identifier {}. Error: no such data option {}".format( annoid, option_args[1] ))
+            raise OCPCAError ("Fetch identifier {}. Error: no such data option {}".format( annoid, option_args[1] ))
     
       # the first argument is not numeric.  it is a service other than getAnnotation
       else:
-        logger.warning("Get interface %s requested.  Illegal or not implemented. Args: %s" % ( args[0], webargs ))
-        raise OCPCAError ("Get interface %s requested.  Illegal or not implemented" % ( args[0] ))
+        logger.warning("Get interface {} requested. Illegal or not implemented. Args: {}".format( option_args[0], webargs ))
+        raise OCPCAError ("Get interface {} requested. Illegal or not implemented".format( option_args[0] ))
     
     # Close the file on a error: it won't get closed by the Web server
     except: 
@@ -1440,7 +1439,7 @@ def deleteAnnotation ( webargs ):
 def jsonInfo ( webargs ):
   """Return project information in json format"""
 
-  [ token, projinfoliteral, otherargs ] = webargs.split ('/',2)
+  [ token, projinfoliteral, rest] = webargs.split ('/',2)
 
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
@@ -1451,7 +1450,7 @@ def jsonInfo ( webargs ):
 
 def projInfo ( webargs ):
 
-  [ token, projinfoliteral, otherargs ] = webargs.split ('/',2)
+  [ token, projinfoliteral, rest ] = webargs.split ('/',2)
 
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:

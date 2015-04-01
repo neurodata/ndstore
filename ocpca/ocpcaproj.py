@@ -18,6 +18,7 @@ from contextlib import closing
 import os
 import sys
 from contextlib import closing
+from django.core.exceptions import ObjectDoesNotExist
 
 sys.path += [os.path.abspath('../django')]
 import OCP.settings
@@ -162,6 +163,24 @@ class OCPCADataset:
         self.cubedim[i] = [128, 128, 16]
 #        self.cubedim[i] = [64, 64, 64]
 
+  # Accessors
+  def getDatasetName(self):
+    return self.ds.dataset_name
+  def getResolutions(self):
+    return self.resolutions
+  def getPublic(self):
+    return self.ds.public
+  def getImageSize(self):
+    return self.imagesz
+  def getOffset(self):
+    return self.offset
+  def getVoxelRes(self):
+    return self.voxelres
+  def getCubeDims(self):
+    return self.cubedim
+  def getTimeRange(self):
+    return self.timerange
+
 
   def getDatasetDescription ( self ):
     return self.ds.dataset_description
@@ -239,10 +258,16 @@ class OCPCAProject:
 
 class OCPCAChannel:
 
-  def __init__(self, proj, channel):
+  def __init__(self, proj, channel_name=None):
     """Constructor for a channel. It is a project and then some."""
-    self.pr = proj
-    self.ch = Channel.objects.get(channel_name=channel, project=self.pr.getProjectName())
+    
+    try:
+      self.pr = proj
+      self.ch = Channel.objects.get(channel_name = channel_name, project=self.pr.getProjectName())
+    except ObjectDoesNotExist, e:
+      logger.warning ( "Chanel {} does not exist. {}".format(channel_name, e) )
+      raise OCPCAError ( "Channel {} does not exist".format(channel_name) )
+
 
   def getDataType ( self ):
     return self.ch.channel_datatype
