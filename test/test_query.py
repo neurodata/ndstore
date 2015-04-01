@@ -23,12 +23,6 @@ import numpy as np
 import pytest
 from contextlib import closing
 
-sys.path += [os.path.abspath('../django')]
-import OCP.settings
-os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
-from django.conf import settings
-
-from pytesthelpers import makeAnno
 import makeunitdb
 from params import Params
 from ramon import H5AnnotationFile, setField, getField, queryField, makeAnno
