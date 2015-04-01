@@ -19,7 +19,7 @@ from ocpcaerror import OCPCAError
 import logging
 logger=logging.getLogger("ocp")
 
-def mcfcPNG ( cutout, colors ):
+def mcfcPNG ( cutout, colors, enhancement=4.0 ):
   """False color a multichannel cutout.  Takes a 3-d array and returns a 2-d array 
      that combined all channels based on colors.  
     The inbound channels should be 8-bit, i.e. window them if need be.
@@ -68,7 +68,7 @@ def mcfcPNG ( cutout, colors ):
   # Enhance the image
   from PIL import ImageEnhance
   enhancer = ImageEnhance.Brightness(outimage)
-  outimage = enhancer.enhance(4.0)
+  outimage = enhancer.enhance(enhancement)
   
   return outimage
 

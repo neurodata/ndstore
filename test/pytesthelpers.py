@@ -19,7 +19,10 @@ import tempfile
 import h5py
 import numpy as np
 
-import ocppaths
+sys.path += [os.path.abspath('../django')]
+import OCP.settings
+os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
+from django.conf import settings
 
 def makeAnno ( anntype, hosturl ):
   """Helper make an annotation"""

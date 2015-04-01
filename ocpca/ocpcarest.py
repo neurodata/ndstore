@@ -366,7 +366,6 @@ def imgAnno ( service, chanargs, proj, db ):
   ch = ocpcaproj.OCPCAChannel(proj,channel)
   annoids = [int(x) for x in annoidstr.split(',')]
 
-  import pdb; pdb.set_trace()
   # retrieve the annotation 
   if len(annoids) == 1:
     anno = db.getAnnotation ( ch, annoids[0] )
@@ -1533,8 +1532,15 @@ def mcFalseColor ( webargs ):
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
 
     mcdata = None
+
     for i in range(len(channels)):
-      cb = cutout ( cutoutargs, proj, db, channels[i] )
+
+      channel_name = channels[i]
+
+      ch = ocpcaproj.OCPCAChannel(proj,channel_name)
+      cb = cutout ( cutoutargs, ch, proj, db )
+      FilterCube ( cutoutargs, cb )
+
       # initialize the multi-channel data by dtype
       if mcdata == None:
         mcdata = np.zeros((len(channels),cb.data.shape[0],cb.data.shape[1],cb.data.shape[2]), dtype=cb.data.dtype)
@@ -1551,11 +1557,11 @@ def mcFalseColor ( webargs ):
 
   # manage the color space
   # reduction factor.  How to scale data.  16 bit->8bit, or windowed
-  (startwindow,endwindow) = proj.datasetcfg.windowrange
-  if proj.getDataType() == ocpcaproj.DTYPE_uint16 and ( startwindow == endwindow == 0):
+  (startwindow,endwindow) = ch.getWindowRange()
+  if ch.getDataType() == ocpcaproj.DTYPE_uint16 and ( startwindow == endwindow == 0):
     #pass
     mcdata = np.uint8(mcdata * 1.0/256)
-  elif proj.getDataType() == ocpcaproj.DTYPE_uint16 and ( endwindow!=0 ):
+  elif ch.getDataType() == ocpcaproj.DTYPE_uint16 and ( endwindow!=0 ):
     from windowcutout import windowCutout
     windowCutout ( mcdata, (startwindow, endwindow) )
 
@@ -1799,8 +1805,10 @@ def exceptions ( webargs, ):
 def minmaxProject ( webargs ):
   """Return a minimum or maximum projection across a volume by a specified plane"""
 
-  import pdb; pdb.set_trace()
-  [ token, minormax, plane, cutoutargs ] = webargs.split ('/',3)
+  [ token, minormax, plane, chanstr, cutoutargs ] = webargs.split ('/', 4)
+
+  # split the channel string
+  channels = chanstr.split(",")
 
   # pattern for using contexts to close databases
   # get the project 
@@ -1810,41 +1818,86 @@ def minmaxProject ( webargs ):
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
 
-    # if it's a channel database, pull out the channels
-    if proj.getChannelType() in ocpcaproj.CHANNEL_PROJECTS:
+    mcdata = None
 
-      [ chanurl, sym, cutoutargs ] = cutoutargs.partition ('/')
+    for i in range(len(channels)):
 
-      # make sure that the channels are ints
-      channels = chanurl.split(',')
-      chanobj = ocpcachannel.OCPCAChannels ( db )
-      chanids = chanobj.rewriteToInts ( channels )
-    
-      # multi-channel cutout
-      mcdata = None
-      for i in range(len(chanids)):
-        cb = cutout ( cutoutargs, proj, db, chanids[i] )
+      channel_name = channels[i]
 
-        # initialize the multi-channel data by dtype
+      ch = ocpcaproj.OCPCAChannel(proj,channel_name)
+      cb = cutout ( cutoutargs, ch, proj, db )
+      FilterCube ( cutoutargs, cb )
+
+      # project onto the image plane
+      if plane == 'xy':
+
+        # take the min project or maxproject
+        if minormax == 'maxproj':
+          cbplane = np.amax (cb.data, axis=0)
+        elif minormax == 'minproj':
+          cbplane = np.amin (cb.data, axis=0)
+        else:
+          logger.error("Illegal projection requested.  Projection = {}", minormax)
+          raise OCPCAError("Illegal image plane requested. Projections  = {}", minormax)
+
+        #initiliaze the multi-color array
         if mcdata == None:
-          mcdata = np.zeros((len(chanids),cb.data.shape[0],cb.data.shape[1],cb.data.shape[2]), dtype=cb.data.dtype)
+          mcdata = np.zeros((len(channels),cb.data.shape[1],cb.data.shape[2]), dtype=cb.data.dtype)
 
-        mcdata[i,:,:,:] = cb.data[:,:,:]
+      elif plane == 'xz':
 
-    else:
+        # take the min project or maxproject
+        if minormax == 'maxproj':
+          cbplane = np.amax (cb.data, axis=1)
+        elif minormax == 'minproj':
+          cbplane = np.amin (cb.data, axis=1)
+        else:
+          logger.error("Illegal projection requested.  Projection = {}", minormax)
+          raise OCPCAError("Illegal image plane requested. Projections  = {}", minormax)
 
-      cuboid = cutout ( cutoutargs, proj, db )
-      mcdata = cuboid.reshape ((1,cuboid.shape[0],cubdoid.shape[1],cuboid.shape[2]))
+        #initiliaze the multi-color array
+        if mcdata == None:
+          mcdata = np.zeros((len(channels),cb.data.shape[0],cb.data.shape[2]), dtype=cb.data.dtype)
 
-    import pdb; pdb.set_trace()
+      elif plane == 'yz':
 
+        # take the min project or maxproject
+        if minormax == 'maxproj':
+          cbplane = np.amax (cb.data, axis=2)
+        elif minormax == 'minproj':
+          cbplane = np.amin (cb.data, axis=2)
+        else:
+          logger.error("Illegal projection requested.  Projection = {}", minormax)
+          raise OCPCAError("Illegal image plane requested. Projections  = {}", minormax)
 
-    # We have an compound array.  Now color it.
-    colors = ('C','M','Y','R','G','B')
-    img =  mcfc.mcfcPNG ( mcdata, colors )
+        #initiliaze the multi-color array
+        if mcdata == None:
+          mcdata = np.zeros((len(channels),cb.data.shape[0],cb.data.shape[1]), dtype=cb.data.dtype)
 
-    fileobj = cStringIO.StringIO ( )
-    img.save ( fileobj, "PNG" )
+      else:
+        logger.error("Illegal image plane requested.  Plane = {}", plane)
+        raise OCPCAError("Illegal image plane requested.  Plane = {}", plane)
 
-    fileobj.seek(0)
-    return fileobj.read()
+      # put the plane into the multi-channel array
+      mcdata[i,:,:] = cbplane
+
+  # manage the color space
+  # reduction factor.  How to scale data.  16 bit->8bit, or windowed
+  (startwindow,endwindow) = ch.getWindowRange()
+  if ch.getDataType() == ocpcaproj.DTYPE_uint16 and ( startwindow == endwindow == 0):
+    #pass
+    mcdata = np.uint8(mcdata * 1.0/256)
+  elif ch.getDataType() == ocpcaproj.DTYPE_uint16 and ( endwindow!=0 ):
+    from windowcutout import windowCutout
+    windowCutout ( mcdata, (startwindow, endwindow) )
+
+  # We have an compound array.  Now color it.
+  colors = ('C','M','Y','R','G','B')
+  colors = ('R','M','Y','R','G','B')
+  img =  mcfc.mcfcPNG ( mcdata, colors, 1.0 )
+
+  fileobj = cStringIO.StringIO ( )
+  img.save ( fileobj, "PNG" )
+
+  fileobj.seek(0)
+  return fileobj.read()
