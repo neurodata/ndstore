@@ -93,10 +93,14 @@ PUBLIC_FALSE = 0
 class OCPCADataset:
   """Configuration for a dataset"""
 
-  def __init__ ( self, dataset ):
+  def __init__ ( self, dataset_name ):
     """Construct a db configuration from the dataset parameters""" 
- 
-    self.ds = Dataset.objects.get(dataset_name=dataset)
+    
+    try:
+      self.ds = Dataset.objects.get(dataset_name = dataset_name)
+    except ObjectDoesNotExist, e:
+      logger.warning ( "Dataset {} does not exist. {}".format(dataset_name, e) )
+      raise OCPCAError ( "Dataset {} does not exist".format(dataset_name) )
 
     self.resolutions = []
     self.cubedim = {}
@@ -209,10 +213,14 @@ class OCPCADataset:
 
 class OCPCAProject:
 
-  def __init__(self,token):
-    self.tk = Token.objects.get(token_name=token)
-    self.pr = Project.objects.get(project_name=self.tk.project_id)
-    self.datasetcfg = OCPCADataset(self.pr.dataset_id)
+  def __init__(self, token_name):
+    try:
+      self.tk = Token.objects.get(token_name = token_name)
+      self.pr = Project.objects.get(project_name = self.tk.project_id)
+      self.datasetcfg = OCPCADataset(self.pr.dataset_id)
+    except ObjectDoesNotExist, e:
+      logger.warning ( "Token {} does not exist. {}".format(token_name, e) )
+      raise OCPCAError ( "Token {} does not exist".format(token_name) )
 
   # Accessors
   def getToken ( self ):
@@ -265,9 +273,8 @@ class OCPCAChannel:
       self.pr = proj
       self.ch = Channel.objects.get(channel_name = channel_name, project=self.pr.getProjectName())
     except ObjectDoesNotExist, e:
-      logger.warning ( "Chanel {} does not exist. {}".format(channel_name, e) )
+      logger.warning ( "Channel {} does not exist. {}".format(channel_name, e) )
       raise OCPCAError ( "Channel {} does not exist".format(channel_name) )
-
 
   def getDataType ( self ):
     return self.ch.channel_datatype
@@ -288,7 +295,7 @@ class OCPCAChannel:
   def getPropagate ( self ):
     return self.ch.propagate
 
-  def getIDsTbl ( self ):
+  def getIdsTable ( self ):
     if self.pr.getOCPVersion() == '0.0':
       return "ids"
     else:
@@ -324,10 +331,14 @@ class OCPCAChannel:
 
   def getExceptionsTable ( self, resolution ):
     """Return the appropiate exceptions table for the specified resolution"""
-    if self.pr.getOCPVersion() == '0.0':
-      return "{exc{}}".format(resolution)
+    if self.getExceptions == ocpcaproj.EXCEPTION_TRUE:
+      if self.pr.getOCPVersion() == '0.0':
+        return "exc{}".format(resolution)
+      else:
+        return "{}_exc{}".format(self.ch.channel_name, resolution)
     else:
-      return "{}_exc{}".format(self.ch.channel_name, resolution)
+      logger.warning ( "Exceptions does not exist for the channel {}. {}".format(channel_name, e) )
+      raise OCPCAError ( "Exceptions does not exist for the channel {}.".format(channel_name) )
 
   def setPropagate ( self, value ):
     if value in [NOT_PROPAGATED]:

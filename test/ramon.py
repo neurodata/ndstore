@@ -22,8 +22,6 @@ import pytest
 import httplib
 from contextlib import closing
 
-from pytesthelpers import makeAnno
-
 from params import Params
 from postmethods import putAnnotation, getAnnotation, getURL, postURL
 import kvengine_to_test
