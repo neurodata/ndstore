@@ -331,14 +331,14 @@ class OCPCAChannel:
 
   def getExceptionsTable ( self, resolution ):
     """Return the appropiate exceptions table for the specified resolution"""
-    if self.getExceptions == ocpcaproj.EXCEPTION_TRUE:
-      if self.pr.getOCPVersion() == '0.0':
-        return "exc{}".format(resolution)
-      else:
-        return "{}_exc{}".format(self.ch.channel_name, resolution)
+    #if self.getExceptions == EXCEPTION_TRUE:
+    if self.pr.getOCPVersion() == '0.0':
+      return "exc{}".format(resolution)
     else:
-      logger.warning ( "Exceptions does not exist for the channel {}. {}".format(channel_name, e) )
-      raise OCPCAError ( "Exceptions does not exist for the channel {}.".format(channel_name) )
+      return "{}_exc{}".format(self.ch.channel_name, resolution)
+    #else:
+      #logger.warning ( "Exceptions does not exist for the channel {}".format(self.getChannelName()) )
+      #raise OCPCAError ( "Exceptions does not exist for the channel {}".format(self.getChannelName()) )
 
   def setPropagate ( self, value ):
     if value in [NOT_PROPAGATED]:

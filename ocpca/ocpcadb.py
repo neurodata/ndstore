@@ -171,7 +171,7 @@ class OCPCADB:
     with closing(self.conn.cursor()) as cursor:
 
       # Query the current max identifier
-      sql = "SELECT max(id) FROM " + str ( self.proj.getIDsTbl() )
+      sql = "SELECT max(id) FROM " + str ( self.proj.getIdsTable() )
       try:
         cursor.execute ( sql )
       except MySQLdb.Error, e:
@@ -195,13 +195,13 @@ class OCPCADB:
     with closing(self.conn.cursor()) as cursor:
     
       # LOCK the table to prevent race conditions on the ID
-      sql = "LOCK TABLES {} WRITE".format(ch.getIDsTbl())
+      sql = "LOCK TABLES {} WRITE".format(ch.getIdsTable())
       try:
 
         cursor.execute ( sql )
 
         # Query the current max identifier
-        sql = "SELECT max(id) FROM {}".format(ch.getIDsTbl()) 
+        sql = "SELECT max(id) FROM {}".format(ch.getIdsTable()) 
         try:
           cursor.execute ( sql )
         except MySQLdb.Error, e:
@@ -217,7 +217,7 @@ class OCPCADB:
           identifier = int ( row[0] ) + 1
 
         # increment and update query
-        sql = "INSERT INTO {} VALUES ({})".format(ch.getIDsTbl(), identifier)
+        sql = "INSERT INTO {} VALUES ({})".format(ch.getIdsTable(), identifier)
         try:
           cursor.execute ( sql )
         except MySQLdb.Error, e:
@@ -238,10 +238,10 @@ class OCPCADB:
     with closing(self.conn.cursor()) as cursor:
 
       # LOCK the table to prevent race conditions on the ID
-      sql = "LOCK TABLES {} WRITE".format( ch.getIDsTbl() )
+      sql = "LOCK TABLES {} WRITE".format( ch.getIdsTable() )
       try:
         # try the insert, get ane exception if it doesn't work
-        sql = "INSERT INTO {} VALUES({})".format(ch.getIDsTbl(), annoid)
+        sql = "INSERT INTO {} VALUES({})".format(ch.getIdsTable(), annoid)
         try:
           cursor.execute ( sql )
         except MySQLdb.Error, e:
@@ -267,10 +267,10 @@ class OCPCADB:
     with closing(self.conn.cursor()) as cursor:
 
       # LOCK the table to prevent race conditions on the ID
-      sql = "LOCK TABLES {} WRITE".format(self.proj.getIDsTbl())
+      sql = "LOCK TABLES {} WRITE".format(self.proj.getIdsTable())
       try:
         # try the insert, get and if it doesn't work
-        sql = "INSERT INTO {} VALUES ( %s ) ".format( str(self.proj.getIDsTbl()) )
+        sql = "INSERT INTO {} VALUES ( %s ) ".format( str(self.proj.getIdsTable()) )
         try:
           cursor.executemany ( sql, [str(i) for i in annoidList] )  
         except MySQLdb.Error, e:
@@ -291,12 +291,12 @@ class OCPCADB:
     with closing(self.conn.cursor()) as cursor:
 
       # LOCK the table to prevent race conditions on the ID
-      sql = "LOCK TABLES {} WRITE".format( ch.getIDsTbl() )
+      sql = "LOCK TABLES {} WRITE".format( ch.getIdsTable() )
       try:
         cursor.execute ( sql )
 
         # Query the current max identifier
-        sql = "SELECT max(id) FROM {}".format( ch.getIDsTbl() ) 
+        sql = "SELECT max(id) FROM {}".format( ch.getIdsTable() ) 
         try:
           cursor.execute ( sql )
         except MySQLdb.Error, e:
@@ -312,7 +312,7 @@ class OCPCADB:
           identifier = int ( row[0] ) 
 
         # increment and update query
-        sql = "INSERT INTO {} VALUES ({}) ".format(ch.getIDsTbl(), identifier+count)
+        sql = "INSERT INTO {} VALUES ({}) ".format(ch.getIdsTable(), identifier+count)
         try:
           cursor.execute ( sql )
         except MySQLdb.Error, e:
