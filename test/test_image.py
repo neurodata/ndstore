@@ -62,7 +62,6 @@ class Test_Image_Slice:
     makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type='image', channel_datatype='uint8' )
 
   def teardown_class(self):
-
     makeunitdb.deleteTestDB(p.token)
 
 

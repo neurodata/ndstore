@@ -322,22 +322,22 @@ def get_channels(request):
   try:
     if request.method == 'POST':
       if 'filter' in request.POST:
-      #Filter channels based on an input value
+        # Filter channels based on an input value
         filteroption = request.POST.get('filteroption')
         filtervalue = (request.POST.get('filtervalue')).strip()
         all_channels = Channel.objects.filter(project_id='TODO').filter(token_name=filtervalue)
         return render_to_response('channel.html', { 'channels': all_channels, 'project': proj },context_instance=RequestContext(request))
 
       elif 'delete' in request.POST:
-      #Delete the channel from the project
- 
+        # Delete the channel from the project
         channel_to_delete = (request.POST.get('channel')).strip()
         prname = request.session["project"]
         pr = Project.objects.get(project_name=prname)
         ch = Channel.objects.get(channel_name=channel_to_delete, project_id=pr )
         if ch:
           if pr.user_id == request.user.id or request.user.is_superuser:
-            ch.delete()          
+            ch.delete()
+            pd.deleteOCPCAChannel(pr, ch.channel_name)
             messages.success(request,"Channel deleted " + channel_to_delete)
           else:
             messages.error(request,"Cannot delete.  You are not owner of this token or not superuser.")
@@ -365,7 +365,7 @@ def get_channels(request):
         return redirect(profile)
 
       else:
-        #Unrecognized Option
+        # Unrecognized Option
         messages.error(request,"Invalid request")
         return redirect(get_channels)
 
@@ -376,7 +376,7 @@ def get_channels(request):
         proj = request.session["project"]
         all_channels = Channel.objects.filter(project_id=proj)
       else:
-        #Unrecognized Option
+        # Unrecognized Option
         messages.error("Must have a project context to look at channels.")
         return redirect(get_channels)
       print all_channels
@@ -397,7 +397,7 @@ def get_tokens(request):
   try:
     if request.method == 'POST':
       if 'filter' in request.POST:
-      #Filter tokens based on an input value
+        # Filter tokens based on an input value
         filteroption = request.POST.get('filteroption')
         filtervalue = (request.POST.get('filtervalue')).strip()
         all_tokens = Token.objects.filter(token_name=filtervalue)
@@ -405,7 +405,7 @@ def get_tokens(request):
         return render_to_response('token.html', { 'tokens': all_tokens, 'project': proj },context_instance=RequestContext(request))
 
       elif 'delete' in request.POST:
-      #Delete the token from the token table
+        # Delete the token from the token table
         token_to_delete = (request.POST.get('token')).strip()
         token = Token.objects.get(token_name=token_to_delete)
         if token:
@@ -419,14 +419,14 @@ def get_tokens(request):
         return redirect(get_tokens)
 
       elif 'downloadtoken' in request.POST:
-        #Download the token in a test file
+        # Download the token in a test file
         token = (request.POST.get('token')).strip()
         response = HttpResponse(token,content_type='text/html')
         response['Content-Disposition'] = 'attachment; filename="ocpca.token"'
         return response
 
       elif 'update' in request.POST:
-      #update project token
+        # update project token
         token = (request.POST.get('token')).strip()
         request.session["token_name"] = token
         return redirect(updatetoken)
@@ -441,7 +441,7 @@ def get_tokens(request):
          return redirect(profile) 
 
       else:
-        #Unrecognized Option
+        # Unrecognized Option
         messages.error(request,"Invalid request")
         return redirect(get_tokens)
 
