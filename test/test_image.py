@@ -72,7 +72,7 @@ class Test_Image_Slice:
     image_data = np.ones( [2,1,100,100], dtype=np.uint8 ) * random.randint(0,255)
     response = postNPZ(p, image_data)
 
-    url = "http://{}/ca/{}/xy/{}/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
+    url = "http://{}/ca/{}/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
     f = getURL (url)
 
     slice_data = np.asarray ( Image.open(StringIO(f.read())) )
@@ -85,7 +85,7 @@ class Test_Image_Slice:
     image_data = np.ones( [2,100,100,1], dtype=np.uint8 ) * random.randint(0,255)
     response = postNPZ(p, image_data)
 
-    url = "http://{}/ca/{}/yz/{}/{}/{}/{},{}/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[2], p.args[3], p.args[4], p.args[5])
+    url = "http://{}/ca/{}/{}/yz/{}/{}/{},{}/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[2], p.args[3], p.args[4], p.args[5])
     f = getURL (url)
 
     slice_data = np.asarray ( Image.open(StringIO(f.read())) )
@@ -98,7 +98,7 @@ class Test_Image_Slice:
     image_data = np.ones( [2,100,1,100], dtype=np.uint8 ) * random.randint(0,255)
     response = postNPZ(p, image_data)
 
-    url = "http://{}/ca/{}/xz/{}/{}/{},{}/{}/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[4], p.args[5])
+    url = "http://{}/ca/{}/{}/xz/{}/{},{}/{}/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[4], p.args[5])
     f = getURL (url)
 
     slice_data = np.asarray ( Image.open(StringIO(f.read())) )
@@ -109,7 +109,7 @@ class Test_Image_Slice:
 
     p.args = (11000,11100,4000,4100,200,201)
 
-    url = "http://{}/ca/{}/xy/{}/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
+    url = "http://{}/ca/{}/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
     assert ( 404 == getURL (url) )
 
 

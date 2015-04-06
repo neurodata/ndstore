@@ -412,7 +412,7 @@ class TestRW:
 #    annodata = np.random.random_integers ( 0, 65535, [ 2, 50, 50 ] )
     annodata = np.ones ( [1, 2, 50, 50], dtype=np.uint32 ) * random.randint(0,65535)
 
-    url = 'http://{}/ca/{}/npz/{}/{}/{},{}/{},{}/{},{}/'.format( wp.baseurl, wp.token, wp.channel, wp.resolution, 200, 250, 200, 250, 200, 202 )
+    url = 'http://{}/ca/{}/{}/npz/{}/{},{}/{},{}/{},{}/'.format( wp.baseurl, wp.token, wp.channel, wp.resolution, 200, 250, 200, 250, 200, 202 )
 
     # Encode the voxelist as a pickle
     fileobj = cStringIO.StringIO ()
@@ -435,7 +435,7 @@ class TestRW:
 
     # now as an HDF5 file
     annodata = np.ones ( [2, 50, 50], dtype=np.uint32 ) * random.randint(0,65535)
-    url = 'http://{}/ca/{}/hdf5/{}/{}/{},{}/{},{}/{},{}/'.format( wp.baseurl, wp.token, wp.channel, wp.resolution, 200, 250, 200, 250, 300, 302 )
+    url = 'http://{}/ca/{}/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format( wp.baseurl, wp.token, wp.channel, wp.resolution, 200, 250, 200, 250, 300, 302 )
 
     # Create an in-memory HDF5 file
     tmpfile = tempfile.NamedTemporaryFile ()

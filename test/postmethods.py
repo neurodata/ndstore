@@ -31,7 +31,7 @@ def postNPZ ( p, post_data ):
   """Post data using npz"""
   
   # Build the url and then create a npz object
-  url = 'http://{}/ca/{}/npz/{}/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.    resolution, *p.args )
+  url = 'http://{}/ca/{}/{}/npz/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.    resolution, *p.args )
   fileobj = cStringIO.StringIO ()
   np.save (fileobj, post_data)
   cdz = zlib.compress (fileobj.getvalue())
@@ -49,7 +49,7 @@ def getNPZ ( p ):
   """Get data using npz. Returns a numpy array"""
   
   # Build the url to get the npz object 
-  url = 'http://{}/ca/{}/npz/{}/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.    resolution, *p.args )
+  url = 'http://{}/ca/{}/{}/npz/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.    resolution, *p.args )
   # Get the image back
   f = urllib2.urlopen (url)
   rawdata = zlib.decompress (f.read())
@@ -61,7 +61,7 @@ def postHDF5 ( p, post_data ):
   """Post data using the hdf5"""
 
   # Build the url and then create a hdf5 object
-  url = 'http://{}/ca/{}/hdf5/{}/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+  url = 'http://{}/ca/{}/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
   tmpfile = tempfile.NamedTemporaryFile ()
   fh5out = h5py.File ( tmpfile.name )
   for idx, channel_name in enumerate(p.channels):
@@ -82,7 +82,7 @@ def getHDF5 ( p ):
   """Get data using npz. Returns a hdf5 file"""
 
   # Build the url and then create a hdf5 object
-  url = 'http://{}/ca/{}/hdf5/{}/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+  url = 'http://{}/ca/{}/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
 
   # Get the image back
   f = urllib2.urlopen (url)

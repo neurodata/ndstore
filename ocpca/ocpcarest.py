@@ -98,7 +98,7 @@ def cutout ( imageargs, ch, proj, db ):
 def numpyZip ( chanargs, proj, db ):
   """Return a web readable Numpy Pickle zipped"""
 
-  channels, imageargs = chanargs.split('/',1)
+  [channels, service, imageargs] = chanargs.split('/', 2)
 
   try: 
     channel_list = channels.split(',')
@@ -144,7 +144,7 @@ def HDF5 ( chanargs, proj, db ):
   tmpfile = tempfile.NamedTemporaryFile()
   fh5out = h5py.File ( tmpfile.name, driver='core', backing_store=True )
 
-  channels, imageargs = chanargs.split('/',1)
+  [channels, service, imageargs] = chanargs.split('/', 2)
 
   try: 
     
@@ -266,8 +266,8 @@ def TimeSeriesCutout ( imageargs, proj, db ):
 def imgSlice ( service, chanargs, proj, db ):
   """Return the cube object for an xy plane"""
   
-  channel, imageargs = chanargs.split('/',1)
-  resolution, rest = imageargs.split('/',1)
+  [channel, service, imageargs] = chanargs.split('/', 2)
+  [resolution, rest] = imageargs.split('/',1)
 
   try:
     # Rewrite the imageargs to be a cutout
@@ -362,7 +362,7 @@ def imgSlice ( service, chanargs, proj, db ):
 def imgAnno ( service, chanargs, proj, db ):
   """Return a plane fileobj.read() for a single objects"""
 
-  [ channel, annoidstr, imageargs ] = chanargs.split('/', 2)
+  [channel, service, annoidstr, imageargs] = chanargs.split('/', 3)
   ch = ocpcaproj.OCPCAChannel(proj,channel)
   annoids = [int(x) for x in annoidstr.split(',')]
 
@@ -440,7 +440,7 @@ def imgAnno ( service, chanargs, proj, db ):
 def annId ( chanargs, proj, db ):
   """Return the annotation identifier of a voxel"""
 
-  [channel,imageargs] = chanargs.split('/',1)
+  [channel, service, imageargs] = chanargs.split('/',2)
   ch = ocpcaproj.OCPCAChannel(proj,channel)
   # Perform argument processing
   (resolution, voxel) = restargs.voxel ( imageargs, proj.datasetcfg )
@@ -452,7 +452,7 @@ def annId ( chanargs, proj, db ):
 def listIds ( chanargs, proj, db ):
   """Return the list of annotation identifiers in a region"""
   
-  [channel, imageargs] = chanargs.split('/', 1)
+  [channel, service, imageargs] = chanargs.split('/', 2)
   ch = ocpcaproj.OCPCAChannel(proj,channel)
 
   # Perform argument processing
@@ -483,11 +483,11 @@ def listIds ( chanargs, proj, db ):
 #  appropriate function.  At this point, we have a 
 #  data set and a service.
 #
-def selectService ( service, chanargs, proj, db ):
+def selectService ( service, webargs, proj, db ):
   """Parse the first arg and call service, HDF5, npz, etc."""
   
   if service in ['xy','yz','xz']:
-    return imgSlice ( service, chanargs, proj, db )
+    return imgSlice ( service, webargs, proj, db )
 
   #elif service == 'xz':
     #return xzImage ( imageargs, proj, db)
@@ -496,22 +496,22 @@ def selectService ( service, chanargs, proj, db ):
     #return yzImage ( imageargs, proj, db )
 
   elif service == 'hdf5':
-    return HDF5 ( chanargs, proj, db )
+    return HDF5 ( webargs, proj, db )
 
   elif service in ['npz','zip']:
-    return  numpyZip ( chanargs, proj, db ) 
+    return  numpyZip ( webargs, proj, db ) 
 
   #elif service == 'zip':
     #return  binZip ( args, proj, db ) 
 
   elif service == 'id':
-    return annId ( chanargs, proj, db )
+    return annId ( webargs, proj, db )
   
   elif service == 'ids':
-    return listIds ( chanargs, proj, db )
+    return listIds ( webargs, proj, db )
 
   elif service in ['xzanno', 'yzanno', 'xyanno']:
-    return imgAnno ( service.strip('anno'), chanargs, proj, db )
+    return imgAnno ( service.strip('anno'), webargs, proj, db )
   
   #elif service == 'ts':
     #return TimeKernel ( args, proj, db )
@@ -531,7 +531,7 @@ def selectService ( service, chanargs, proj, db ):
 def selectPost ( webargs, proj, db, postdata ):
   """Parse the first arg and call the right post service"""
 
-  [ service, channel, postargs ] = webargs.split('/', 2)
+  [channel, service, postargs] = webargs.split('/', 2)
 
   # make sure that the channels are ints
   channel_list = channel.split(',')
@@ -658,7 +658,8 @@ def getCutout ( webargs ):
   """Interface to the cutout service for annotations.Load the annotation project and invoke the appropriate dataset."""
 
   #[ token, sym, rangeargs ] = webargs.partition ('/')
-  [ token, service, chanargs ] = webargs.split('/',2)
+  [token, webargs] = webargs.split('/', 1)
+  [channel, service, chanargs] = webargs.split('/', 2)
 
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
@@ -666,7 +667,7 @@ def getCutout ( webargs ):
 
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
-    return selectService ( service, chanargs, proj, db )
+    return selectService ( service, webargs, proj, db )
 
 
 def putCutout ( webargs, postdata ):
