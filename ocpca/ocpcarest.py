@@ -68,7 +68,7 @@ def cutout ( imageargs, ch, proj, db ):
   resolution = args.getResolution()
   filterlist = args.getFilter()
   zscaling = args.getZScaling()
-
+ 
   # Perform the cutout
   cube = db.cutout ( ch, corner, dim, resolution, zscaling )
 

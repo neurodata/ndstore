@@ -44,6 +44,7 @@ from models import Project
 from models import Dataset
 from models import Token
 from models import Channel
+
 from forms import CreateProjectForm
 from forms import CreateDatasetForm
 from forms import CreateTokenForm
@@ -363,6 +364,7 @@ def get_channels(request):
 
       elif 'backtoprojects' in request.POST:
         return redirect(profile)
+
 
       else:
         #Unrecognized Option
