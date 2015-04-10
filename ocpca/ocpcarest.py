@@ -102,7 +102,8 @@ def numpyZip ( chanargs, proj, db ):
 
   try: 
     channel_list = channels.split(',')
-    ch = ocpcaproj.OCPCAChannel(proj,channel_list[0])
+    ch = proj.getChannelObj(channel_list[0])
+    #ch = ocpcaproj.OCPCAChannel(proj,channel_list[0])
 
     if ch.getChannelType() not in ocpcaproj.TIMESERIES_CHANNELS:
       channel_data = cutout ( imageargs, ch, proj, db ).data
@@ -113,7 +114,8 @@ def numpyZip ( chanargs, proj, db ):
         if channel_name == '0':
           continue
         else:
-          ch = ocpcaproj.OCPCAChannel(proj,channel_name)
+          #ch = ocpcaproj.OCPCAChannel(proj,channel_name)
+          ch = proj.getChannelObj(channel_name)
           if ocpcaproj.OCP_dtypetonp[ch.getDataType()] == cubedata.dtype:
             cubedata[idx+1,:,:,:] = cutout ( imageargs, ch, proj, db ).data
           else:
@@ -149,7 +151,8 @@ def HDF5 ( chanargs, proj, db ):
   try: 
     
     for channel_name in channels.split(','):
-      ch = ocpcaproj.OCPCAChannel(proj,channel_name)
+      #ch = ocpcaproj.OCPCAChannel(proj,channel_name)
+      ch = proj.getChannelObj(channel_name)
       cube = cutout ( imageargs, ch, proj, db )
       FilterCube ( imageargs, cube )
       #cube.RGBAChannel()
@@ -293,7 +296,8 @@ def imgSlice ( service, chanargs, proj, db ):
 
 
   # Perform the cutout
-  ch = ocpcaproj.OCPCAChannel(proj, channel)
+  #ch = ocpcaproj.OCPCAChannel(proj, channel)
+  ch = proj.getChannelObj(channel)
   cb = cutout ( cutoutargs, ch, proj, db )
 
   # Filter Function - used to filter
@@ -533,7 +537,7 @@ def selectPost ( webargs, proj, db, postdata ):
 
   [channel, service, postargs] = webargs.split('/', 2)
 
-  # make sure that the channels are ints
+  # Create a list of channels from the comma separated argument
   channel_list = channel.split(',')
 
   # Process the arguments
@@ -569,8 +573,9 @@ def selectPost ( webargs, proj, db, postdata ):
           logger.warning("The npz data has some missing channels")
           raise OCPCAError("The npz data has some missing channels")
       
-        for idx,channel in enumerate(channel_list):
-          ch = ocpcaproj.OCPCAChannel(proj, channel)
+        for idx,channel_name in enumerate(channel_list):
+          ch = proj.getChannelObj(channel_name)
+          #ch = ocpcaproj.OCPCAChannel(proj, channel)
   
           # Don't write to readonly channels
           if ch.getReadOnly() == ocpcaproj.READONLY_TRUE:
@@ -599,8 +604,9 @@ def selectPost ( webargs, proj, db, postdata ):
           tmpfile.seek(0)
           h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
   
-          for channel in channel_list:
-            ch = ocpcaproj.OCPCAChannel(proj, channel)
+          for channel_name in channel_list:
+            ch = proj.getChannelObj(channel_name)
+            #ch = ocpcaproj.OCPCAChannel(proj, channel)
           
             # Don't write to readonly channels
             if ch.getReadOnly() == ocpcaproj.READONLY_TRUE:

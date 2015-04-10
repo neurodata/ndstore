@@ -32,7 +32,7 @@ import ocpcaproj
 import site_to_test
 import kvengine_to_test
 
-def createTestDB ( project_name, channel_list=['unit_anno'], channel_type='annotation', channel_datatype='uint32', public=0, ximagesize=10000, yimagesize=10000, zimagesize=50000, scalingoption=ocpcaproj.ZSLICES, scalinglevels=5, readonly=0 ):
+def createTestDB ( project_name, channel_list=['unit_anno'], channel_type='annotation', channel_datatype='uint32', public=0, ximagesize=10000, yimagesize=10000, zimagesize=50000, scalingoption=ocpcaproj.ZSLICES, scalinglevels=5, readonly=0, default=False, ocp_version=0.6 ):
   """Create a unit test data base on the specified sit and name"""
 
   unituser = User.objects.get(username='brain')
@@ -44,20 +44,20 @@ def createTestDB ( project_name, channel_list=['unit_anno'], channel_type='annot
   # RBTODO need to add a window and a project
 
   # make the project entry
-  pr = Project ( project_name=project_name, project_description='Unit test', user=unituser, dataset=ds )
+  pr = Project (project_name=project_name, project_description='Unit test', user=unituser, dataset=ds, ocp_version=ocp_version)
   pr.save()
 
   # and create the database
   pd = ocpcaproj.OCPCAProjectsDB()
 
   # create a token
-  tk = Token ( token_name = project_name, user=unituser, token_description = 'Unit test token', project_id=pr, public=public )
+  tk = Token (token_name = project_name, user=unituser, token_description = 'Unit test token', project_id=pr, public=public)
   tk.save()
 
   pd.newOCPCAProject( pr.project_name )
   try:
     for channel_name in channel_list:
-      ch = Channel ( channel_name=channel_name, channel_type=channel_type, channel_datatype=channel_datatype, channel_description='Unit test channel', project_id=pr, readonly=readonly, resolution=0, exceptions=1 )
+      ch = Channel ( channel_name=channel_name, channel_type=channel_type, channel_datatype=channel_datatype, channel_description='Unit test channel', project_id=pr, readonly=readonly, resolution=0, exceptions=1, default=default )
       ch.save()
       pd.newOCPCAChannel( pr.project_name, ch.channel_name )
   except Exception, e:
