@@ -8,10 +8,10 @@ body {
     color: #444;
     font: normal 95% Tahoma,sans-serif;
     padding-bottom: 40px;
-    margin: 15px !important; 
+    margin: 20px !important; 
     }
 
-p,code,ul {padding-bottom: 1.2em; line-height: 180%;}
+/*p,code,ul {padding-bottom: 1.2em; line-height: 180%;} */
 
 /*li {list-style: none;}*/
 
@@ -55,7 +55,7 @@ h1,h2,h3 {padding-top: 6px;}
     background: #D9E1E5 url(/static/images/nav.gif);
     border: 1px solid #DFEEF7;
     border-color: #DFEEF7 #CFDEE7;
-    height: 41px;
+    /*height: 41px;*/
     }
 .navigation a {
     background: #D9E1E5 url(/static/images/nav.gif);
@@ -64,8 +64,8 @@ h1,h2,h3 {padding-top: 6px;}
     display: block;
     float: left;
     font: bold 1.1em sans-serif;
-    line-height: 41px;
-    padding: 0 15px;
+    /*line-height: 41px;*/
+    /*padding: 0 15px;*/
     text-decoration: none;
     }
 .navigation a:hover {background-position: left bottom; color: #234;}
