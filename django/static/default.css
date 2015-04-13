@@ -1,11 +1,6 @@
 /* standard elements */
 html {min-height: 100%;}
 
-* {
-    margin: 20;
-    padding: 10;
-    }
-
 a {color: #963;}
 a:hover {color: #C60;}
 
@@ -13,6 +8,7 @@ body {
     color: #444;
     font: normal 95% Tahoma,sans-serif;
     padding-bottom: 40px;
+    margin: 15px !important; 
     }
 
 p,code,ul {padding-bottom: 1.2em; line-height: 180%;}
@@ -41,13 +37,18 @@ code {
 h1,h2,h3 {padding-top: 6px;}
 
 /* structure */
-.container {
+.container-fluid {
     background: #FFF;
     font-size: 1.2em;
     margin: 0 auto;
-    padding: 0 10px 10px;
-    width: 921px; /*Alter this when adding new headers. Remove to fill center*/
+    padding: 0 !important;
+    /*width: 921px; */ /*Alter this when adding new headers. Remove to fill center*/
     }
+
+/* search box */
+.search {
+    padding: 5px;
+}
 
 /* navigation */
 .navigation {
