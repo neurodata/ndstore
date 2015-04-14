@@ -498,8 +498,8 @@ class OCPCAProjectsDB:
                 cluster.shutdown()
 
         except MySQLdb.Error, e:
-          logging.error ("Failed to create tables for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-          raise OCPCAError ("Failed to create tables for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+          logging.error ("Failed to create tables for new project %d: %s." % (e.args[0], e.args[1]))
+          raise OCPCAError ("Failed to create tables for new project %d: %s." % (e.args[0], e.args[1]))
         except Exception, e:
           raise 
 
