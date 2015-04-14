@@ -16,6 +16,7 @@ import django.http
 from django.views.decorators.cache import cache_control
 import MySQLdb
 import cStringIO
+import re
 
 import zindex
 import ocpcarest
@@ -34,7 +35,13 @@ POST_SERVICES = ['hdf5', 'npz', 'hdf5_async', 'propagate']
 def cutout (request, webargs):
   """Restful URL for all read services to annotation projects"""
 
-  [token, channel, service, cutoutargs] = webargs.split('/', 3)
+  if re.match(r"\w+/[\w+,/-]+/(xy|xz|yz|ts|hdf5|npz|zip|id|ids|xyanno|xzanno|yzanno|xytiff|xztiff|yztiff)/[\w,/-]+$", webargs):
+    [token, channel, service, cutoutargs] = webargs.split('/', 3)
+  elif re.match(r"\w+/(xy|xz|yz|ts|hdf5|npz|zip|id|ids|xyanno|xzanno|yzanno|xytiff|xztiff|yztiff)/[\w,/-]+$", webargs):
+    [token, service, cutoutargs] = webargs.split('/', 2)
+    p = re.compile("(\w+)/(xy|xz|yz|ts|hdf5|npz|zip|id|ids|xyanno|xzanno|yzanno|xytiff|xztiff|yztiff)/([\w,/-]+)$")
+    m = p.match(webargs)
+    webargs = '{}/default/{}/{}'.format(m.group(1), m.group(2), m.group(3))
 
   try:
     # GET methods
