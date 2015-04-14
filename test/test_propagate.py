@@ -38,6 +38,7 @@ from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
 import ocpcaproj
+from params import Params
 
 import kvengine_to_test
 import site_to_test
@@ -45,42 +46,36 @@ import makeunitdb
 
 SITE_HOST = site_to_test.site
 
-# Module level setup/teardown
-def setup_module(module):
-  pass
-def teardown_module(module):
-  pass
+# Test_Propagate
+#
+# 1 - test_update_propagate - Test the propagate service set values
+
+p = Params()
+p.token = 'unittest'
+p.channels = ['unit_anno']
 
 
-class TestInternal:
+class Test_Propagate:
   """Other interfaces to OCPCA that don't fit into other categories"""
-
-  # Per method setup/teardown
-#  def setup_method(self,method):
-#    pass
-#  def teardown_method(self,method):
-#    pass
 
   def setup_class(self):
     """Create the unittest database"""
-    makeunitdb.createTestDB('unittest', public=True)
+    makeunitdb.createTestDB(p.token, public=True)
 
   def teardown_class (self):
     """Destroy the unittest database"""
-    makeunitdb.deleteTestDB('unittest')
+    makeunitdb.deleteTestDB(p.token)
 
   def test_update_propagate( self ):
     """Test the internal update propogate function"""
 
     # and create the database
     pd = ocpcaproj.OCPCAProjectsDB()
-    proj = pd.loadToken ( 'unittest' )
-    ch = ocpcaproj.OCPCAChannel(proj, 'unit_anno')
+    proj = pd.loadToken ( p.token )
+    ch = ocpcaproj.OCPCAChannel(proj, p.channels[0])
     assert ( ch.getReadOnly() == 0 )
     assert ( ch.getPropagate() == 0 )
     ch.setPropagate ( 1 )
     ch.setReadOnly ( 1 )
-    #ch.updatePropagate( proj )
     assert ( ch.getReadOnly() == 1 )
     assert ( ch.getPropagate() == 1 )
-

@@ -98,7 +98,7 @@ def cutout ( imageargs, ch, proj, db ):
 def numpyZip ( chanargs, proj, db ):
   """Return a web readable Numpy Pickle zipped"""
 
-  channels, imageargs = chanargs.split('/',1)
+  [channels, service, imageargs] = chanargs.split('/', 2)
 
   try: 
     channel_list = channels.split(',')
@@ -144,7 +144,7 @@ def HDF5 ( chanargs, proj, db ):
   tmpfile = tempfile.NamedTemporaryFile()
   fh5out = h5py.File ( tmpfile.name, driver='core', backing_store=True )
 
-  channels, imageargs = chanargs.split('/',1)
+  [channels, service, imageargs] = chanargs.split('/', 2)
 
   try: 
     
@@ -266,8 +266,8 @@ def TimeSeriesCutout ( imageargs, proj, db ):
 def imgSlice ( service, chanargs, proj, db ):
   """Return the cube object for an xy plane"""
   
-  channel, imageargs = chanargs.split('/',1)
-  resolution, rest = imageargs.split('/',1)
+  [channel, service, imageargs] = chanargs.split('/', 2)
+  [resolution, rest] = imageargs.split('/',1)
 
   try:
     # Rewrite the imageargs to be a cutout
@@ -362,7 +362,7 @@ def imgSlice ( service, chanargs, proj, db ):
 def imgAnno ( service, chanargs, proj, db ):
   """Return a plane fileobj.read() for a single objects"""
 
-  [ channel, annoidstr, imageargs ] = chanargs.split('/', 2)
+  [channel, service, annoidstr, imageargs] = chanargs.split('/', 3)
   ch = ocpcaproj.OCPCAChannel(proj,channel)
   annoids = [int(x) for x in annoidstr.split(',')]
 
@@ -440,7 +440,7 @@ def imgAnno ( service, chanargs, proj, db ):
 def annId ( chanargs, proj, db ):
   """Return the annotation identifier of a voxel"""
 
-  [channel,imageargs] = chanargs.split('/',1)
+  [channel, service, imageargs] = chanargs.split('/',2)
   ch = ocpcaproj.OCPCAChannel(proj,channel)
   # Perform argument processing
   (resolution, voxel) = restargs.voxel ( imageargs, proj.datasetcfg )
@@ -452,7 +452,7 @@ def annId ( chanargs, proj, db ):
 def listIds ( chanargs, proj, db ):
   """Return the list of annotation identifiers in a region"""
   
-  [channel, imageargs] = chanargs.split('/', 1)
+  [channel, service, imageargs] = chanargs.split('/', 2)
   ch = ocpcaproj.OCPCAChannel(proj,channel)
 
   # Perform argument processing
@@ -483,11 +483,11 @@ def listIds ( chanargs, proj, db ):
 #  appropriate function.  At this point, we have a 
 #  data set and a service.
 #
-def selectService ( service, chanargs, proj, db ):
+def selectService ( service, webargs, proj, db ):
   """Parse the first arg and call service, HDF5, npz, etc."""
   
   if service in ['xy','yz','xz']:
-    return imgSlice ( service, chanargs, proj, db )
+    return imgSlice ( service, webargs, proj, db )
 
   #elif service == 'xz':
     #return xzImage ( imageargs, proj, db)
@@ -496,22 +496,22 @@ def selectService ( service, chanargs, proj, db ):
     #return yzImage ( imageargs, proj, db )
 
   elif service == 'hdf5':
-    return HDF5 ( chanargs, proj, db )
+    return HDF5 ( webargs, proj, db )
 
   elif service in ['npz','zip']:
-    return  numpyZip ( chanargs, proj, db ) 
+    return  numpyZip ( webargs, proj, db ) 
 
   #elif service == 'zip':
     #return  binZip ( args, proj, db ) 
 
   elif service == 'id':
-    return annId ( chanargs, proj, db )
+    return annId ( webargs, proj, db )
   
   elif service == 'ids':
-    return listIds ( chanargs, proj, db )
+    return listIds ( webargs, proj, db )
 
   elif service in ['xzanno', 'yzanno', 'xyanno']:
-    return imgAnno ( service.strip('anno'), chanargs, proj, db )
+    return imgAnno ( service.strip('anno'), webargs, proj, db )
   
   #elif service == 'ts':
     #return TimeKernel ( args, proj, db )
@@ -531,7 +531,7 @@ def selectService ( service, chanargs, proj, db ):
 def selectPost ( webargs, proj, db, postdata ):
   """Parse the first arg and call the right post service"""
 
-  [ service, channel, postargs ] = webargs.split('/', 2)
+  [channel, service, postargs] = webargs.split('/', 2)
 
   # make sure that the channels are ints
   channel_list = channel.split(',')
@@ -658,7 +658,8 @@ def getCutout ( webargs ):
   """Interface to the cutout service for annotations.Load the annotation project and invoke the appropriate dataset."""
 
   #[ token, sym, rangeargs ] = webargs.partition ('/')
-  [ token, service, chanargs ] = webargs.split('/',2)
+  [token, webargs] = webargs.split('/', 1)
+  [channel, service, chanargs] = webargs.split('/', 2)
 
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
@@ -666,7 +667,7 @@ def getCutout ( webargs ):
 
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
-    return selectService ( service, chanargs, proj, db )
+    return selectService ( service, webargs, proj, db )
 
 
 def putCutout ( webargs, postdata ):
@@ -829,7 +830,7 @@ def getAnnotation ( webargs ):
 
     # Split the URL and get the args
     ch = ocpcaproj.OCPCAChannel(proj, channel)
-    args = otherargs.split('/', 2)
+    option_args = otherargs.split('/', 2)
 
     # Make the HDF5 file
     # Create an in-memory HDF5 file
@@ -841,56 +842,55 @@ def getAnnotation ( webargs ):
       db.startTxn ()
      
       # if the first argument is numeric.  it is an annoid
-      if re.match ( '^[\d,]+$', args[0] ): 
+      if re.match ( '^[\d,]+$', option_args[0] ): 
 
-        annoids = map(int, args[0].split(','))
+        annoids = map(int, option_args[0].split(','))
 
         for annoid in annoids: 
 
           # if it's a compoun data type (NEURON) get the list of data ids
           # default is no data
-          if args[1] == '' or args[1] == 'nodata':
+          if option_args[1] == '' or option_args[1] == 'nodata':
             dataoption = AR_NODATA
             getAnnoById ( ch, annoid, h5f, proj, db, dataoption )
     
           # if you want voxels you either requested the resolution id/voxels/resolution
           #  or you get data from the default resolution
-          elif args[1] == 'voxels':
+          elif option_args[1] == 'voxels':
             dataoption = AR_VOXELS
 
             try:
-              [resstr, sym, rest] = args[2].partition('/')
+              [resstr, sym, rest] = option_args[2].partition('/')
               resolution = int(resstr) 
             except:
-              logger.warning ( "Improperly formatted voxel arguments {}".format(args[2]))
-              raise OCPCAError("Improperly formatted voxel arguments {}".format(args[2]))
+              logger.warning ( "Improperly formatted voxel arguments {}".format(option_args[2]))
+              raise OCPCAError("Improperly formatted voxel arguments {}".format(option_args[2]))
 
-    
             getAnnoById ( ch, annoid, h5f, proj, db, dataoption, resolution )
 
           #  or you get data from the default resolution
-          elif args[1] == 'cuboids':
+          elif option_args[1] == 'cuboids':
             dataoption = AR_CUBOIDS
             try:
-              [resstr, sym, rest] = args[2].partition('/')
+              [resstr, sym, rest] = option_args[2].partition('/')
               resolution = int(resstr) 
             except:
-              logger.warning ( "Improperly formatted cuboids arguments {}".format(args[2]))
-              raise OCPCAError("Improperly formatted cuboids arguments {}".format(args[2]))
+              logger.warning ( "Improperly formatted cuboids arguments {}".format(option_args[2]))
+              raise OCPCAError("Improperly formatted cuboids arguments {}".format(option_args[2]))
     
             getAnnoById ( ch, annoid, h5f, proj, db, dataoption, resolution )
     
-          elif args[1] =='cutout':
+          elif option_args[1] =='cutout':
     
             # if there are no args or only resolution, it's a tight cutout request
-            if args[2] == '' or re.match('^\d+[\w\/]*$', args[2]):
+            if option_args[2] == '' or re.match('^\d+[\w\/]*$', option_args[2]):
               dataoption = AR_TIGHTCUTOUT
               try:
-                [resstr, sym, rest] = args[2].partition('/')
+                [resstr, sym, rest] = option_args[2].partition('/')
                 resolution = int(resstr) 
               except:
-                logger.warning ( "Improperly formatted cutout arguments {}".format(args[2]))
-                raise OCPCAError("Improperly formatted cutout arguments {}".format(args[2]))
+                logger.warning ( "Improperly formatted cutout arguments {}".format(option_args[2]))
+                raise OCPCAError("Improperly formatted cutout arguments {}".format(option_args[2]))
 
               getAnnoById ( ch, annoid, h5f, proj, db, dataoption, resolution )
     
@@ -900,7 +900,7 @@ def getAnnotation ( webargs ):
    
               # Perform argument processing
               brargs = restargs.BrainRestArgs ();
-              brargs.cutoutArgs ( args[2], proj.datasetcfg )
+              brargs.cutoutArgs ( option_args[2], proj.datasetcfg )
     
               # Extract the relevant values
               corner = brargs.getCorner()
@@ -909,26 +909,26 @@ def getAnnotation ( webargs ):
     
               getAnnoById ( ch, annoid, h5f, proj, db, dataoption, resolution, corner, dim )
     
-          elif args[1] == 'boundingbox':
+          elif option_args[1] == 'boundingbox':
     
             dataoption = AR_BOUNDINGBOX
             try:
-              [resstr, sym, rest] = args[2].partition('/')
+              [resstr, sym, rest] = option_args[2].partition('/')
               resolution = int(resstr) 
             except:
-              logger.warning ( "Improperly formatted bounding box arguments {}".format(args[2]))
-              raise OCPCAError("Improperly formatted bounding box arguments {}".format(args[2]))
+              logger.warning("Improperly formatted bounding box arguments {}".format(option_args[2]))
+              raise OCPCAError("Improperly formatted bounding box arguments {}".format(option_args[2]))
         
             getAnnoById ( ch, annoid, h5f, proj, db, dataoption, resolution )
     
           else:
-            logger.warning ("Fetch identifier %s.  Error: no such data option %s " % ( annoid, args[1] ))
-            raise OCPCAError ("Fetch identifier %s.  Error: no such data option %s " % ( annoid, args[1] ))
+            logger.warning ("Fetch identifier {}. Error: no such data option {}".format( annoid, option_args[1] ))
+            raise OCPCAError ("Fetch identifier {}. Error: no such data option {}".format( annoid, option_args[1] ))
     
       # the first argument is not numeric.  it is a service other than getAnnotation
       else:
-        logger.warning("Get interface %s requested.  Illegal or not implemented. Args: %s" % ( args[0], webargs ))
-        raise OCPCAError ("Get interface %s requested.  Illegal or not implemented" % ( args[0] ))
+        logger.warning("Get interface {} requested. Illegal or not implemented. Args: {}".format( option_args[0], webargs ))
+        raise OCPCAError ("Get interface {} requested. Illegal or not implemented".format( option_args[0] ))
     
     # Close the file on a error: it won't get closed by the Web server
     except: 
@@ -1439,7 +1439,7 @@ def deleteAnnotation ( webargs ):
 def jsonInfo ( webargs ):
   """Return project information in json format"""
 
-  [ token, projinfoliteral, otherargs ] = webargs.split ('/',2)
+  [ token, projinfoliteral, rest] = webargs.split ('/',2)
 
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
@@ -1450,7 +1450,7 @@ def jsonInfo ( webargs ):
 
 def projInfo ( webargs ):
 
-  [ token, projinfoliteral, otherargs ] = webargs.split ('/',2)
+  [ token, projinfoliteral, rest ] = webargs.split ('/',2)
 
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:

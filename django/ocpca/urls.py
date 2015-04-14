@@ -37,12 +37,13 @@ urlpatterns = patterns('ocpca.views',
   url(r'(?P<webargs>^\w+/(minproj|maxproj)/(xy|xz|yz)[\w,/]*)$', 'minmaxProject'),
   # get services
   url(r'(?P<webargs>^\w+/(xy|xz|yz|ts|hdf5|npz|zip|id|ids|xyanno||xzanno|yzanno)/[\w,/-]+)$', 'cutout'),
+  url(r'(?P<webargs>^\w+/[\w+,/-]+/(xy|xz|yz|ts|hdf5|npz|zip|id|ids|xyanno|xzanno)/[\w,/-]+)$', 'cutout'),
   # single field interfaces
   url(r'(?P<webargs>^\w+/\w+/\d+/getField/[\w,/]*)$', 'getField'),
   url(r'(?P<webargs>^\w+/\w+/\d+/setField/[\w\. ,/]*)$', 'setField'),
   # propagate interfaces
-  url(r'(?P<webargs>^\w+/getPropagate/*)$', 'getPropagate'),
-  url(r'(?P<webargs>^\w+/setPropagate/[\d,/]*)$', 'setPropagate'),
+  url(r'(?P<webargs>^\w+/\w+/getPropagate/*)$', 'getPropagate'),
+  url(r'(?P<webargs>^\w+/\w+/setPropagate/[\d,/]*)$', 'setPropagate'),
   # merge annotations
   url(r'(?P<webargs>^\w+/merge/[\w,/]+)$', 'merge'),
   # csv metadata read

@@ -34,7 +34,7 @@ POST_SERVICES = ['hdf5', 'npz', 'hdf5_async', 'propagate']
 def cutout (request, webargs):
   """Restful URL for all read services to annotation projects"""
 
-  [ token, service, cutoutargs ] = webargs.split('/', 2)
+  [token, channel, service, cutoutargs] = webargs.split('/', 3)
 
   try:
     # GET methods

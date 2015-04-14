@@ -18,6 +18,7 @@ from contextlib import closing
 import os
 import sys
 from contextlib import closing
+from django.core.exceptions import ObjectDoesNotExist
 
 sys.path += [os.path.abspath('../django')]
 import OCP.settings
@@ -92,10 +93,14 @@ PUBLIC_FALSE = 0
 class OCPCADataset:
   """Configuration for a dataset"""
 
-  def __init__ ( self, dataset ):
+  def __init__ ( self, dataset_name ):
     """Construct a db configuration from the dataset parameters""" 
- 
-    self.ds = Dataset.objects.get(dataset_name=dataset)
+    
+    try:
+      self.ds = Dataset.objects.get(dataset_name = dataset_name)
+    except ObjectDoesNotExist, e:
+      logger.warning ( "Dataset {} does not exist. {}".format(dataset_name, e) )
+      raise OCPCAError ( "Dataset {} does not exist".format(dataset_name) )
 
     self.resolutions = []
     self.cubedim = {}
@@ -162,10 +167,25 @@ class OCPCADataset:
         self.cubedim[i] = [128, 128, 16]
 #        self.cubedim[i] = [64, 64, 64]
 
-
+  # Accessors
+  def getDatasetName(self):
+    return self.ds.dataset_name
+  def getResolutions(self):
+    return self.resolutions
+  def getPublic(self):
+    return self.ds.public
+  def getImageSize(self):
+    return self.imagesz
+  def getOffset(self):
+    return self.offset
+  def getVoxelRes(self):
+    return self.voxelres
+  def getCubeDims(self):
+    return self.cubedim
+  def getTimeRange(self):
+    return self.timerange
   def getDatasetDescription ( self ):
     return self.ds.dataset_description
-
 
   def checkCube ( self, resolution, corner, dim, tstart=0, tend=0 ):
     """Return true if the specified range of values is inside the cube"""
@@ -190,10 +210,25 @@ class OCPCADataset:
 
 class OCPCAProject:
 
-  def __init__(self,token):
-    self.tk = Token.objects.get(token_name=token)
-    self.pr = Project.objects.get(project_name=self.tk.project_id)
-    self.datasetcfg = OCPCADataset(self.pr.dataset_id)
+  def __init__(self, token_name):
+
+    if isinstance(token_name, str) or isinstance(token_name, unicode):
+      try:
+        self.tk = Token.objects.get(token_name = token_name)
+        self.pr = Project.objects.get(project_name = self.tk.project_id)
+        self.datasetcfg = OCPCADataset(self.pr.dataset_id)
+      except ObjectDoesNotExist, e:
+        logger.warning ( "Token {} does not exist. {}".format(token_name, e) )
+        raise OCPCAError ( "Token {} does not exist".format(token_name) )
+    elif isinstance(token_name, Project):
+      # Constructor for OCPCAProject from Project Name
+      try:
+        self.tk = None
+        self.pr = token_name
+        self.datasetcfg = OCPCADataset(self.pr.dataset_id)
+      except ObjectDoesNotExist, e:
+        logger.warning ( "Token {} does not exist. {}".format(token_name, e) )
+        raise OCPCAError ( "Token {} does not exist".format(token_name) )
 
   # Accessors
   def getToken ( self ):
@@ -239,10 +274,14 @@ class OCPCAProject:
 
 class OCPCAChannel:
 
-  def __init__(self, proj, channel):
+  def __init__(self, proj, channel_name=None):
     """Constructor for a channel. It is a project and then some."""
-    self.pr = proj
-    self.ch = Channel.objects.get(channel_name=channel, project=self.pr.getProjectName())
+    try:
+      self.pr = proj
+      self.ch = Channel.objects.get(channel_name = channel_name, project=self.pr.getProjectName())
+    except ObjectDoesNotExist, e:
+      logger.warning ( "Channel {} does not exist. {}".format(channel_name, e) )
+      raise OCPCAError ( "Channel {} does not exist".format(channel_name) )
 
   def getDataType ( self ):
     return self.ch.channel_datatype
@@ -254,57 +293,61 @@ class OCPCAChannel:
     return self.ch.channel_description
   def getExceptions ( self ):
     return self.ch.exceptions
-  def getReadOnly ( self ):
+  def getReadOnly (self):
     return self.ch.readonly
-  def getResolution ( self ):
+  def getResolution (self):
     return self.ch.resolution
-  def getWindowRange ( self ):
+  def getWindowRange (self):
     return (self.ch.startwindow,self.ch.endwindow)
-  def getPropagate ( self ):
+  def getPropagate (self):
     return self.ch.propagate
 
-  def getIDsTbl ( self ):
+  def getIdsTable (self):
     if self.pr.getOCPVersion() == '0.0':
       return "ids"
     else:
       return "{}_ids".format(self.ch.channel_name)
 
-  def getTable ( self, resolution ):
+  def getTable (self, resolution):
     """Return the appropriate table for the specified resolution"""
     if self.pr.getOCPVersion() == '0.0':
       return "res{}".format(resolution)
     else:
       return "{}_res{}".format(self.ch.channel_name, resolution)
 
-  def getNearIsoTable ( self, resolution ):
+  def getNearIsoTable (self, resolution):
     """Return the appropriate table for the specified resolution"""
     if self.pr.getOCPVersion() == '0.0':
       return "res{}neariso".format(resolution)
     else:
       return "{}_res{}neariso".format(self.ch.channel_name, resolution)
   
-  def getIdxTable ( self, resolution ):
+  def getIdxTable (self, resolution):
     """Return the appropriate Index table for the specified resolution"""
     if self.pr.getOCPVersion() == '0.0':
       return "idx{}".format(resolution)
     else:
       return "{}_idx{}".format(self.ch.channel_name, resolution)
 
-  def getAnnoTable ( self, anno_type ):
+  def getAnnoTable (self, anno_type):
     """Return the appropriate table for the specified type"""
     if self.pr.getOCPVersion() == '0.0':
       return "{}".format(annotation.anno_dbtables[anno_type])
     else:
       return "{}_{}".format(self.ch.channel_name, annotation.anno_dbtables[anno_type])
 
-  def getExceptionsTable ( self, resolution ):
+  def getExceptionsTable (self, resolution):
     """Return the appropiate exceptions table for the specified resolution"""
+    #if self.getExceptions == EXCEPTION_TRUE:
     if self.pr.getOCPVersion() == '0.0':
-      return "{exc{}}".format(resolution)
+      return "exc{}".format(resolution)
     else:
       return "{}_exc{}".format(self.ch.channel_name, resolution)
+    #else:
+      #logger.warning ( "Exceptions does not exist for the channel {}".format(self.getChannelName()) )
+      #raise OCPCAError ( "Exceptions does not exist for the channel {}".format(self.getChannelName()) )
 
-  def setPropagate ( self, value ):
+  def setPropagate (self, value):
     if value in [NOT_PROPAGATED]:
       self.ch.propagate = value
       self.setReadOnly ( READONLY_FALSE )
@@ -315,18 +358,19 @@ class OCPCAChannel:
       logger.error ( "Wrong Propagate Value {} for Channel {}".format( value, self.ch.channel_name ) )
       raise OCPCAError ( "Wrong Propagate Value {} for Channel {}".format( value, self.ch.channel_name ) )
   
-  def setReadOnly ( self, value ):
+  def setReadOnly (self, value):
     if value in [READONLY_TRUE,READONLY_FALSE]:
       self.ch.readonly = value
     else:
       logger.error ( "Wrong Readonly Value {} for Channel {}".format( value, self.channel_name ) )
       raise OCPCAError ( "Wrong Readonly Value {} for Channel {}".format( value, self.ch.channel_name ) )
 
-  def isPropagated ( self ):
+  def isPropagated (self):
     if self.ch.propagate in [PROPAGATED]:
       return True
     else:
       return False
+
 
 class OCPCAProjectsDB:
   """Database for the projects"""
@@ -459,27 +503,28 @@ class OCPCAProjectsDB:
           raise 
 
 
-  def deleteOCPCADB ( self, proj_name ):
+  def deleteOCPCADB (self, project_name):
 
-    pr = Project.objects.get(project_name=proj_name)
+    pr = Project.objects.get(project_name = project_name)
 
-    # delete the database
-    sql = "DROP DATABASE {}".format(pr.project_name)
+    if pr.kvengine == 'MySQL':
+      # delete the database
+      sql = "DROP DATABASE {}".format(pr.project_name)
 
-    with closing(self.conn.cursor()) as cursor:
-      try:
-        cursor.execute ( sql )
-        self.conn.commit()
-      except MySQLdb.Error, e:
-        self.conn.rollback()
-        logger.error ("Failed to drop project database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        raise OCPCAError ("Failed to drop project database %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      with closing(self.conn.cursor()) as cursor:
+        try:
+          cursor.execute ( sql )
+          self.conn.commit()
+        except MySQLdb.Error, e:
+          self.conn.rollback()
+          logger.error ("Failed to drop project database {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+          raise OCPCAError ("Failed to drop project database {}: {}. sql={}".format(e.args[0], e.args[1], sql))
 
 
     #  try to delete the database anyway
     #  Sometimes weird crashes can get stuff out of sync
 
-    if pr.kvengine == 'Cassandra':
+    elif pr.kvengine == 'Cassandra':
 
       cluster = Cluster( [pr.kvserver] )
       try:
@@ -500,19 +545,60 @@ class OCPCAProjectsDB:
         bucket.delete(k)
 
 
-  # accessors for RB to fix
-  def getDBUser( self ):
-    return ocpcaprivate.dbuser
-  def getDBPasswd( self ):
-    return ocpcaprivate.dbpasswd
+  def deleteOCPCAChannel (self, proj, channel_name):
 
-  def getTable ( self, resolution ):
-    """Return the appropriate table for the specified resolution"""
-    return "res{}".format(resolution)
+    pr = OCPCAProject(proj)
+    ch = OCPCAChannel(pr, channel_name)
+    table_list = []
+
+    if ch.getChannelType() in ANNOTATION_CHANNELS:
+      table_list.append(ch.getIdsTable())
+      for key in annotation.anno_dbtables.keys():
+        table_list.append(ch.getAnnoTable(key))
+
+    for i in pr.datasetcfg.getResolutions():
+      table_list.append(ch.getTable(i))
+      if ch.getChannelType() in ANNOTATION_CHANNELS:
+        table_list = table_list + [ch.getIdxTable(i), ch.getExceptionsTable(i)]
+
+    print table_list
+    if pr.getKVEngine() == 'MySQL':
+    
+      try:
+        conn = MySQLdb.connect (host = ocpcaprivate.dbhost, user = ocpcaprivate.dbuser, passwd = ocpcaprivate.dbpasswd, db = pr.getProjectName() ) 
+      # delete the database
+        sql = "DROP TABLES IF EXISTS {}".format(','.join(table_list))
+      
+        with closing(conn.cursor()) as cursor:
+          cursor.execute (sql)
+          conn.commit()
+      except MySQLdb.Error, e:
+        conn.rollback()
+        logger.error ("Failed to drop channel tables {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+        raise OCPCAError ("Failed to drop channel tables {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+    
+    elif pr.getKVEngine() == 'Cassandra':
+      # KL TODO
+      pass
+    
+    elif pr.getKVEngine() == 'Riak':
+      # KL TODO
+      pass
+
+
+  # accessors for RB to fix
+  #def getDBUser( self ):
+    #return ocpcaprivate.dbuser
+  #def getDBPasswd( self ):
+    #return ocpcaprivate.dbpasswd
+
+  #def getTable ( self, resolution ):
+    #"""Return the appropriate table for the specified resolution"""
+    #return "res{}".format(resolution)
   
-  def getIdxTable ( self, resolution ):
-    """Return the appropriate Index table for the specified resolution"""
-    return "idx{}".format(resolution)
+  #def getIdxTable ( self, resolution ):
+    #"""Return the appropriate Index table for the specified resolution"""
+    #return "idx{}".format(resolution)
 
   def loadDatasetConfig ( self, dataset ):
     """Query the database for the dataset information and build a db configuration"""
@@ -522,17 +608,17 @@ class OCPCAProjectsDB:
     """Query django configuration for a token to bind to a project"""
     return OCPCAProject (token)
    
-  def updatePropagate ( self, proj):
-    """Update the propagate and readonly values for a project"""
-    pr = Project.objects.get ( project_name=proj.getDBName() )
-    tk = Token.objects.get ( token_name=proj.getToken() )
-    tk.readonly = proj.getReadOnly()
-    pr.propagate = proj.getPropagate()
-    tk.save()
-    pr.save()
+  #def updatePropagate ( self, proj):
+    #"""Update the propagate and readonly values for a project"""
+    #pr = Project.objects.get ( project_name=proj.getDBName() )
+    #tk = Token.objects.get ( token_name=proj.getToken() )
+    #tk.readonly = proj.getReadOnly()
+    #pr.propagate = proj.getPropagate()
+    #tk.save()
+    #pr.save()
 
   def getPublic ( self ):
     """ Return a list of public tokens """
 
-    tkns = Token.objects.filter(public=1)
+    tkns = Token.objects.filter(public = PUBLIC_TRUE)
     return [t.token_name for t in tkns]
