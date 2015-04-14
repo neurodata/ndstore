@@ -41,7 +41,6 @@ Create New Channel
     </div>
   </div>
 
-
  <div id="form" >
      <form action="" method="post">
 
@@ -204,12 +203,21 @@ Create New Channel
 
     <br>
 
+   {{form.project.as_hidden}}
 
-     </form>  
+	  <div class = "row">
+	    <div class ="col-md-5"></div>
+	    <div class ="col-md-3">
+      	 <button class="btn btn-primary" name = "createchannel" type="submit">Create Channel</button>
+  	     <button class="btn btn-primary" name = "backtochannels" type="submit">Back to Channels</button>
+      </div>
+      <div class ="col-md-4"></div>
+   </div>
 
-    {{form.project.as_hidden}}
+   </form>  
 
- </div>
+
+</div>
 
 {% endblock %}
 

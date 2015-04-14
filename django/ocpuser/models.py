@@ -130,6 +130,7 @@ class Token ( models.Model):
     def __unicode__(self):
         return self.token_name
 
+
 class Channel ( models.Model):
 
    project  = models.ForeignKey(Project,blank=True)
@@ -148,7 +149,6 @@ class Channel ( models.Model):
 
    PROPAGATE_CHOICES = (
         (0, 'NOT PROPAGATED'),
-        (1, 'UNDER PROPAGATION'),
         (2, 'PROPAGATED'),
         )
    propagate =  models.IntegerField(choices=PROPAGATE_CHOICES, default=0)
@@ -183,6 +183,8 @@ class Channel ( models.Model):
        db_table = u"channels"
        managed = True
        unique_together = ('project', 'channel_name',)
+
+
    def __unicode__(self):
        return self.channel_name
 

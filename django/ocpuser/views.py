@@ -175,7 +175,6 @@ def profile(request):
         return redirect(get_channels)
 
       elif 'backup' in request.POST:
-        import pdb; pdb.set_trace()
         path = ocpcaprivate.backuppath + '/' + request.user.username
         if not os.path.exists(path):
           os.mkdir( path, 0755 )
@@ -337,8 +336,8 @@ def get_channels(request):
         ch = Channel.objects.get(channel_name=channel_to_delete, project_id=pr )
         if ch:
           if pr.user_id == request.user.id or request.user.is_superuser:
-            ch.delete()
             pd.deleteOCPCAChannel(pr, ch.channel_name)
+            ch.delete()
             messages.success(request,"Channel deleted " + channel_to_delete)
           else:
             messages.error(request,"Cannot delete.  You are not owner of this token or not superuser.")
@@ -553,17 +552,25 @@ def updatedataset(request):
   if request.method == 'POST':
     if 'UpdateDataset' in request.POST:
       ds_update = get_object_or_404(Dataset,dataset_name=ds)
-      form = CreateDatasetForm(data= request.POST or None,instance=ds_update)
-      if form.is_valid():
-        form.save()
-        messages.success(request, 'Sucessfully updated dataset')
-        del request.session["dataset_name"]
-        return HttpResponseRedirect(get_script_prefix()+'ocpuser/datasets')
+
+      if ds_update.user_id == request.user.id or request.user.is_superuser:
+
+        form = CreateDatasetForm(data= request.POST or None,instance=ds_update)
+        if form.is_valid():
+          form.save()
+          messages.success(request, 'Sucessfully updated dataset')
+          del request.session["dataset_name"]
+          return HttpResponseRedirect(get_script_prefix()+'ocpuser/datasets')
+        else:
+          #Invalid form
+          context = {'form': form}
+          print form.errors
+          return render_to_response('updatedataset.html',context,context_instance=RequestContext(request))
+
       else:
-        #Invalid form
-        context = {'form': form}
-        print form.errors
-        return render_to_response('updatedataset.html',context,context_instance=RequestContext(request))
+        messages.error(request,"Cannot update.  You are not owner of this dataset or not superuser.")
+        return HttpResponseRedirect(get_script_prefix()+'ocpuser/datasets')
+
     elif 'backtodatasets' in request.POST:
       return HttpResponseRedirect(get_script_prefix()+'ocpuser/datasets')
     else:
@@ -600,36 +607,53 @@ def updatedataset(request):
 
 @login_required(login_url='/ocp/accounts/login/')
 def updatechannel(request):
- 
+
   prname = request.session['project']
   pr = Project.objects.get ( project_name = prname )
   pd = ocpcaproj.OCPCAProjectsDB()
   if request.method == 'POST':
 
     if 'updatechannel' in request.POST: 
+
       chname = request.session["channel_name"]
       channel_to_update = get_object_or_404(Channel,channel_name=chname,project_id=pr)
       form = CreateChannelForm(data=request.POST or None, instance=channel_to_update)
 
       if form.is_valid():
         newchannel = form.save(commit=False)
+
       else:
         #Invalid form
         context = {'form': form, 'project': prname}
         return render_to_response('updatechannel.html', context, context_instance=RequestContext(request))
 
     elif 'createchannel' in request.POST:
+
       form = CreateChannelForm(data=request.POST or None)
+
       if form.is_valid():
+
         new_channel = form.save( commit=False )
-        new_channel.save()
-        try:
-          # create the tables for the channel
-          pd.newOCPCAChannel( pr.project_name, new_channel.channel_name)
-        except Exception, e:
-          logger.error("Failed to create channel. Error {}".format(e))
-          new_channel.delete()
-        return redirect(get_channels)
+
+        if pr.user_id == request.user.id or request.user.is_superuser:
+
+          # if there is no default channel, make this default
+          if not Channel.objects.filter(project_id=pr, default=True):
+            new_channel.default = True
+
+          new_channel.save()
+
+          try:
+            # create the tables for the channel
+            pd.newOCPCAChannel( pr.project_name, new_channel.channel_name)
+          except Exception, e:
+            logger.error("Failed to create channel. Error {}".format(e))
+            new_channel.delete()
+          return redirect(get_channels)
+
+        else:
+          messages.error(request,"Cannot update.  You are not owner of this token or not superuser.")
+          return HttpResponseRedirect(get_script_prefix()+'ocpuser/channels')
 
       else:
         #Invalid form
@@ -643,12 +667,18 @@ def updatechannel(request):
  
       # if setting the default channel, remove previous default
       if newchannel.default == True:
-        olddefault = Channel.objects.filter(default=True)    
+        olddefault = Channel.objects.filter(default=True, project_id=pr)    
         for od in olddefault:
           od.default = False
           od.save()
+
+      # if there is no default channel, make this default
+      if not Channel.objects.filter(project_id=pr):
+        newchannel.default = True
+
       newchannel.save()
       return HttpResponseRedirect(get_script_prefix()+'ocpuser/channels')
+
     else:
       messages.error(request,"Cannot update.  You are not owner of this token or not superuser.")
       return HttpResponseRedirect(get_script_prefix()+'ocpuser/channels')
@@ -818,8 +848,6 @@ def createtoken(request):
 @login_required(login_url='/ocp/accounts/login/')
 def restoreproject(request):
 
-  import pdb; pdb.set_trace()
-
   if request.method == 'POST':
    
     if 'RestoreProject' in request.POST:
@@ -900,7 +928,7 @@ def restoreproject(request):
     context = Context({'form': form, 'flist': file_list})
     return render_to_response('restoreproject.html',context,context_instance=RequestContext(request))
 
-
+@login_required(login_url='/ocp/accounts/login/')
 def downloaddata(request):
   
   try:

@@ -33,12 +33,14 @@ ANNO_SEGMENT = 4
 ANNO_NEURON = 5
 ANNO_ORGANELLE = 6
 
+#KLTODO -- where did synseg come from?
+#  This table is not getting created or deleted
 # list of database table names.  Move to annproj?
 anno_dbtables = { 'annotation':'annotations',\
                   'kvpairs':'kvpairs',\
                   'synapse':'synapses',\
                   'segment':'segments',\
-                  'synseg':'synseg',\
+#                  'synseg':'synseg',\
                   'organelle':'organelles',\
                   'seed':'seeds' }
 
