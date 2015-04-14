@@ -471,14 +471,17 @@ def createproject(request):
     if 'createproject' in request.POST:
 
       form = CreateProjectForm(request.POST)
-
+      
       # restrict datasets to user visible fields
       form.fields['dataset'].queryset = Dataset.objects.filter(user_id=request.user.id) | Dataset.objects.filter(public=1)
 
       if form.is_valid():
         new_project=form.save(commit=False)
         new_project.user_id=request.user.id
-        new_project.ocp_version=ocpcaproj.OCP_VERSION
+        if request.POST.get('legacy') == 'yes':
+          new_project.ocp_version='0.0'
+        else:
+          new_project.ocp_version=ocpcaproj.OCP_VERSION
         new_project.schema_version=ocpcaproj.SCHEMA_VERSION
         new_project.save()
         try:
