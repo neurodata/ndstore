@@ -12,12 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from django.shortcuts import render
-from django.shortcuts import redirect
+from django.conf.urls import *
+from ocpuser.views import *
+import django.contrib.auth
 
-from models import VizProject 
-from models import VizLayer 
+# Uncomment the next two lines to enable the admin:                        
+#from django.contrib import admin
+#admin.autodiscover()
 
-def default(request):
-  return redirect('http://google.com')
-	
+urlpatterns = patterns('ocpviz.views',
+                       url(r'^manage/$', 'default'),
+                       #url(r'^profile/$', 'profile'),
+)
