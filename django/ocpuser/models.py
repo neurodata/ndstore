@@ -130,6 +130,7 @@ class Token ( models.Model):
     def __unicode__(self):
         return self.token_name
 
+
 class Channel ( models.Model):
 
    project  = models.ForeignKey(Project,blank=True)
@@ -148,7 +149,6 @@ class Channel ( models.Model):
 
    PROPAGATE_CHOICES = (
         (0, 'NOT PROPAGATED'),
-        (1, 'UNDER PROPAGATION'),
         (2, 'PROPAGATED'),
         )
    propagate =  models.IntegerField(choices=PROPAGATE_CHOICES, default=0)
@@ -183,35 +183,8 @@ class Channel ( models.Model):
        db_table = u"channels"
        managed = True
        unique_together = ('project', 'channel_name',)
+
+
    def __unicode__(self):
        return self.channel_name
 
-
-
-### RBTODO make overlay a separate thing.
-#    overlayproject = models.CharField(max_length=255,default="None")
-#    OVERLAY_SERVER_CHOICES = (
-#        ('http://openconnecto.me/ocp', 'openconnecto.me'),
-#        ('http://braingraph1.cs.jhu.edu/ocp', 'braingraph1.cs.jhu.edu'),
-#        ('http://braingraph1dev.cs.jhu.edu/ocp', 'braingraph1dev'),
-#        ('http://braingraph2.cs.jhu.edu/ocp', 'braingraph2'),
-#        ('http://dsp061.pha.jhu.edu/ocp', 'dsp061'),
-#        ('http://dsp062.pha.jhu.edu/ocp', 'dsp062'),
-#        ('http://dsp063.pha.jhu.edu/ocp', 'dsp063'),
-#        ('http://localhost:8000', 'Django dev server'),
-#        
-#    )
-#    overlayserver =  models.CharField(max_length=255, choices=OVERLAY_SERVER_CHOICES, default='openconnecto.me')
-#    
-#    HOST_CHOICES = (
-#        ('localhost', 'localhost'),
-#        ('openconnecto.me', 'openconnecto.me'),
-#        ('braingraph1.cs.jhu.edu', 'braingraph1'),
-#        ('braingraph1dev.cs.jhu.edu', 'braingraph1dev'),
-#        ('braingraph2.cs.jhu.edu', 'braingraph2'),
-#        ('dsp061.pha.jhu.edu', 'dsp061'),
-#        ('dsp062.pha.jhu.edu', 'dsp062'),
-#        ('dsp063.pha.jhu.edu', 'dsp063'),
-#        )
-#    host =  models.CharField(max_length=255, choices=HOST_CHOICES, default='localhost')
-#    

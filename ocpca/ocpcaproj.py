@@ -259,9 +259,9 @@ class OCPCAProject:
     for ch in chs:
       yield OCPCAChannel(self, ch.channel_name)
 
-  def getChannelObj ( self, channel_name=None ):
+  def getChannelObj ( self, channel_name='default' ):
     """Returns a object for that channel"""
-    if channel_name is None:
+    if channel_name == 'default':
       channel_name = Channel.objects.get(project_id=self.pr, default=True)
     return OCPCAChannel(self, channel_name)
 
@@ -274,7 +274,7 @@ class OCPCAProject:
 
 class OCPCAChannel:
 
-  def __init__(self, proj, channel_name=None):
+  def __init__(self, proj, channel_name = None):
     """Constructor for a channel. It is a project and then some."""
     try:
       self.pr = proj
@@ -474,8 +474,9 @@ class OCPCAProjectsDB:
 
             if pr.kvengine == 'MySQL':
               for i in range(ds.scalinglevels+1):
-                if ch.exceptions:
-                  cursor.execute ( "CREATE TABLE {}_exc{} ( zindex BIGINT, id BIGINT, exlist LONGBLOB, PRIMARY KEY ( zindex, id))".format(ch.channel_name,i))
+                # RB always create the exception tables.....just don't use them if they are not defined
+#                if ch.exceptions:
+                cursor.execute ( "CREATE TABLE {}_exc{} ( zindex BIGINT, id BIGINT, exlist LONGBLOB, PRIMARY KEY ( zindex, id))".format(ch.channel_name,i))
                 cursor.execute ( "CREATE TABLE {}_idx{} ( annid BIGINT PRIMARY KEY, cube LONGBLOB )".format(ch.channel_name,i))
 
               conn.commit()
@@ -497,8 +498,8 @@ class OCPCAProjectsDB:
                 cluster.shutdown()
 
         except MySQLdb.Error, e:
-          logging.error ("Failed to create tables for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-          raise OCPCAError ("Failed to create tables for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+          logging.error ("Failed to create tables for new project %d: %s." % (e.args[0], e.args[1]))
+          raise OCPCAError ("Failed to create tables for new project %d: %s." % (e.args[0], e.args[1]))
         except Exception, e:
           raise 
 

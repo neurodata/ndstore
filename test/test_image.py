@@ -116,11 +116,9 @@ class Test_Image_Slice:
 class Test_Image_Post:
 
   def setup_class(self):
-
     makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type='image', channel_datatype='uint8' )
 
   def teardown_class(self):
-
     makeunitdb.deleteTestDB(p.token)
 
   def test_npz (self):
@@ -202,3 +200,41 @@ class Test_Image_Post:
     image_data = np.ones ( [3,10,100,100], dtype=np.uint8 ) * random.randint(0,255)
     response = postHDF5(p, image_data)
     assert (response.code == 404)
+
+
+class Test_Image_Default:
+
+  def setup_class(self):
+    p.channels = ['IMAGE']
+    makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type='image', channel_datatype='uint8', default=True )
+
+  def teardown_class(self):
+    makeunitdb.deleteTestDB(p.token)
+
+  def test_npz_default_channel (self):
+    """Post npz data with default channel"""
+
+    image_data = np.ones ( [1,10,100,100], dtype=np.uint8 ) * random.randint(0,255)
+    p.channels = None
+    response = postNPZ(p, image_data)
+    assert (response.code == 200)
+    voxarray = getNPZ(p)
+    # check that the return matches
+    assert ( np.array_equal(voxarray,image_data) )
+
+  def test_xy_default_channel (self):
+    """Test the xy slice cutout"""
+
+    p.args = (3000,3100,4000,4100,200,201)
+    image_data = np.ones( [1,1,100,100], dtype=np.uint8 ) * random.randint(0,255)
+    response = postNPZ(p, image_data)
+    assert (response.code == 200)
+    voxarray = getNPZ(p)
+    # check that the return matches
+    assert ( np.array_equal(voxarray,image_data) )
+
+    url = "http://{}/ca/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
+    f = getURL (url)
+
+    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    assert ( np.array_equal(slice_data,image_data[0][0]) )
