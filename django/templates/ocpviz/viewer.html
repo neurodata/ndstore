@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>OCP Viewer: {{ project_name }}</title>
+  {% load staticfiles %}
+  <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+	<link href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+	<style>
+		body {
+			padding: 0;
+			margin: 0;
+		}
+		html, body, #map {
+			height: 100%;
+			width: 100%;
+		}
+		.leaflet-container {
+			background: #000 !important;
+		}
+		.info {
+			padding: 6px 8px;
+			font: 14px/16px Arial, Helvetica, sans-serif;
+			background: white;
+			background: rbga(255,255,255,0.8);
+			box-shadow: 0 0 15px rbga(0,0,0,0.2);
+			border-radius: 5px;
+		}
+		.info h4 {
+			margin: 0 0 5px; 
+			color: #777;
+		}
+	</style>
+	<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <script src="{% static "ocpviz/js/easy-button.js" %}"></script>	
+	</head>
+<body>
+	<div id="map"></div>
+	<script>
+	
+		// for smooth scrolling through z-indices 
+		L.TileLayer.SmoothReload = L.TileLayer.extend({
+
+			_tileOnLoad: function () {
+				var layer = this._layer;
+
+				//Only if we are loading an actual image
+				if (this.src !== L.Util.emptyImageUrl) {
+					L.DomUtil.addClass(this, 'leaflet-tile-loaded');
+					// mark classes by index 
+					L.DomUtil.addClass(this, 'index-' + zindex);
+
+					layer.fire('tileload', {
+						tile: this,
+						url: this.src
+					});
+				}
+
+				layer._tileLoaded();
+			},
+
+			smoothRedraw: function () {
+				if (this._map) {
+					var old_tiles = this._tiles;
+					this._tiles = {};
+					this._tilesToLoad = 0;
+					this._update();
+					this._clearBgBuffer();
+					
+					function unloadTiles() {
+						console.log('unloading tiles');
+						for (key in old_tiles) {
+							this._tileContainer.removeChild(old_tiles[key]);
+						}
+						old_tiles = {};
+					};
+					
+					this.on('load', function () {
+							setTimeout(unloadTiles.bind(this), 300);
+					});
+				}
+				return this;
+			},
+
+			_smoothRemoveTile: function(tile) {
+				this._tileContainer.removeChild(tile);
+			},
+		});
+
+
+		L.tileLayer.SmoothReload = function (url, options) {
+				return new L.TileLayer.SmoothReload(url, options);
+		};
+
+		// project metadata
+		var xmin = 0;	
+		var xmax = 1024;
+		var ymin = 0;
+		var ymax = 1024;
+		var max_res = 3;
+		var zindex = 88;
+
+		// em layer
+		var em = L.tileLayer.SmoothReload('http://openconnecto.me/ocpcatmaid/tilecache/kharris15apical/xy/{zindex}/{y}_{x}_{z}.png', { 
+				zindex: zindex,
+				zoomReverse: true,
+				minZoom: 3,
+				maxZoom: 6,
+				tileSize: 512,
+				noWrap: true,
+				//continuousWorld: true,
+		})
+
+		// annotation layer
+	var anno = L.tileLayer.SmoothReload('http://openconnecto.me/ocpcatmaid/tilecache/kharris15apical_anno/xy/{zindex}/{y}_{x}_{z}.png', { 
+				zindex: zindex,
+				zoomReverse: true,
+				minZoom: 3,
+				maxZoom: 6,
+				tileSize: 512,
+				opacity: 0.3,
+				noWrap: true,
+				//continuousWorld: true,
+		})
+		
+
+
+		// bind it all together
+		var map = L.map('map', {
+			//crs: L.CRS.Simple,
+			layers: [em, anno],
+		});
+		//var southWest = map.unproject(L.point(xmin,ymax+300), max_res); // (0, y-max), zoom
+		//var northEast = map.unproject(L.point(xmax+300,ymin), max_res); // (x-max, 0), zoom
+		var center = map.unproject(L.point(xmax/2, ymax/2), max_res);
+		//map.setMaxBounds(L.latLngBounds(southWest, northEast));
+		map.setView(center, max_res);
+
+		// display some map info
+		var info = L.control();
+		info.options.position = 'topright';
+		info.onAdd = function (map) {
+			this._div = L.DomUtil.create('div', 'info');
+			this.update();
+			return this._div;
+		};
+
+		info.update = function () {
+			this._div.innerHTML = '<h4>Info</h4><b>' + 'kharris15apical' + '</b><br />'
+				+ 'Z Index: ' + zindex;
+		};
+
+		info.addTo(map);
+
+		// layer controls 
+		var emMaps = {
+			"EM": em,
+		}
+
+		var annoMaps = {
+			"Annotations": anno,
+		}
+
+		L.control.layers(emMaps, annoMaps).addTo(map);
+
+		// z-index controls
+		L.easyButton('fa-arrow-up',
+				incZIndex,
+				'Increase Z-Index'
+		);
+		L.easyButton('fa-arrow-down',
+				decZIndex,
+				'Decrease Z-Index'
+		);
+
+		function incZIndex() {
+			var oldzindex = zindex;
+			zindex = zindex + 1;
+			reloadLayers(oldzindex);
+		}
+
+		function decZIndex() {
+			var oldzindex = zindex;
+			zindex = zindex - 1;
+			reloadLayers(oldzindex);
+		}
+
+		function reloadLayers() {
+			map.options.fadeAnimation = false;
+			map.eachLayer( function (layer) {
+					layer.options.zindex = zindex;
+					layer.smoothRedraw();
+			});
+			map.options.fadeAnimation = true;
+			info.update()
+		}
+
+		// get anno id from coordinate
+		// expects a L.point object for point and a number for zoom 
+		function getAnnoId(point, zoom) {
+			//var ocpUrlBase = "http://openconnecto.me/ocp/ca/kharris15apical_anno/id/" + zoom + "/";
+			var ocpUrlBase = "http://borg.cs.jhu.edu/ocp/ca/kharris15apical_anno/id/" + zoom + "/";
+			var cutout = Math.round(point.x) + "/" + Math.round(point.y) + "/" + "88/"; 
+			var ocpUrl = ocpUrlBase.concat(cutout);
+			
+			// store the return data
+			var data = null;
+
+			// make request 
+			var xmlHttp = new XMLHttpRequest();
+			xmlHttp.open( "GET", ocpUrl, false );
+			xmlHttp.send( null );
+
+			return xmlHttp.responseText;
+
+		}
+
+
+		// popup on click (testing get anno id) 
+		var popup = L.popup();
+		function onMapClick(e) {
+			var reqPoint = map.project(e.latlng);	
+			popup
+				.setLatLng(e.latlng)
+				.setContent("You requested anno " + getAnnoId(reqPoint, map.getMaxZoom() - map.getZoom()))
+				.openOn(map);
+		}
+		map.on('click', onMapClick);
+
+	</script>
+</body>
+</html>
+
+
