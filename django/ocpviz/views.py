@@ -14,8 +14,8 @@
 
 from django.shortcuts import render
 from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404
 from django.http import HttpResponse 
-from django.contrib.sites.models import Site
 
 from django.template import RequestContext 
 
@@ -39,8 +39,12 @@ def default(request):
   return redirect('http://google.com')
 
 def viewproject(request, webargs):
-  html = "<html><body>You requested: " + webargs + "</body></html>"
-  context = {'project_name': webargs, 'cur_server': Site.objects.get_current().domain}
+  # query for the project from the db
+  #[project_name, view] = webargs.split('/', 1) 
+  project_name = webargs 
+  project = get_object_or_404(VizProject, pk=project_name) 
+  
+  context = {'project_name': project_name, 'project': project}
   return render(request, 'ocpviz/viewer.html', context)
 
 def query(request, queryargs):
@@ -64,8 +68,3 @@ def query(request, queryargs):
 
   return HttpResponse(r)
 
-
-
-
-
-  # see Site.objects.get_current().domain
