@@ -21,10 +21,15 @@ class VizLayer ( models.Model ):
   layer_name = models.CharField(max_length=255)
   layer_description = models.CharField(max_length=255)
   user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True)
-  
+ 
+  server = models.CharField(max_length=255, default="localhost")
   token = models.CharField(max_length=255)
-  channel = models.CharField(max_length=255)
-  
+  channel = models.CharField(max_length=255, blank=True)
+  # prevent the user from turning off EM data
+  required = models.BooleanField(default=False) 
+
+  def __unicode__(self):
+    return self.layer_name 
 
 class VizProject ( models.Model ):
   project_name = models.CharField(max_length=255, primary_key=True, verbose_name="Name for this visualization project.")
@@ -36,11 +41,8 @@ class VizProject ( models.Model ):
   )
   public = models.IntegerField(choices=PUBLIC_CHOICES, default=0)
   
-  # Primary vizLayer
-  primary_layer = models.ForeignKey(VizLayer, related_name="primary_projects")
-  # all other layers
-  secondary_layers = models.ManyToManyField(VizLayer)
-  
+  layers = models.ManyToManyField(VizLayer, related_name='project')
+
   xmin = models.IntegerField(default=0)
   xmax = models.IntegerField()
   ymin = models.IntegerField(default=0)
@@ -50,5 +52,7 @@ class VizProject ( models.Model ):
  
   minres = models.IntegerField(default=0)
   maxres = models.IntegerField()
+
+  def __unicode__(self):
+    return self.project_name
     
-  

@@ -16,11 +16,8 @@ from django.conf.urls import *
 from ocpuser.views import *
 import django.contrib.auth
 
-# Uncomment the next two lines to enable the admin:                        
-#from django.contrib import admin
-#admin.autodiscover()
-
 urlpatterns = patterns('ocpviz.views',
-                       url(r'^manage/$', 'default'),
-                       #url(r'^profile/$', 'profile'),
+    #url(r'(?P<webargs>^\w+/view/[\w,/]*)$', 'view'),
+    url(r'^manage/$', 'default'),
+    #url(r'^profile/$', 'profile'),
 )
