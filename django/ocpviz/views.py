@@ -14,10 +14,53 @@
 
 from django.shortcuts import render
 from django.shortcuts import redirect
+from django.http import HttpResponse 
+from django.contrib.sites.models import Site
 
 from models import VizProject 
 from models import VizLayer 
 
+import urllib2
+
+VALID_SERVERS = {
+    'localhost':'localhost',
+    'dsp061':'dsp061.pha.jhu.edu',
+    'dsp062':'dsp062.pha.jhu.edu',
+    'dsp063':'dsp063.pha.jhu.edu',
+    'openconnecto.me':'openconnecto.me',
+    'braingraph1':'braingraph1.cs.jhu.edu',
+    'braingraph1dev':'braingraph1dev.cs.jhu.edu',
+    'braingraph2':'braingraph2.cs.jhu.edu',
+    'brainviz1':'brainviz1.cs.jhu.edu',
+    }
 def default(request):
   return redirect('http://google.com')
-	
+
+def viewproject(request, webargs):
+  html = "<html><body>You requested: " + webargs + "</body></html>"
+  context = {'project_name': webargs}
+  return render(request, 'ocpviz/viewer.html', context)
+
+def query(request, queryargs):
+  # redirects a query to the specified server 
+  # expected syntax is:
+  # ocp/ocpviz/query/<<server>>/<<query>> 
+  # e.g. ocp/ocpviz/query/dsp061/ca/kharris15apical/info/
+  [server, oquery] = queryargs.split('/', 1)
+  if server not in VALID_SERVERS.keys():
+    return HttpResponse("Error: Server not valid.")
+
+  # make get request
+  if server == 'localhost':
+    addr = Site.objects.get_current().domain + '/ocp/' + oquery
+  else: 
+    addr = 'http://' + VALID_SERVERS[server] + '/ocp/' + oquery
+  r = urllib2.urlopen(addr)
+
+  return HttpResponse(r)
+
+
+
+
+
+  # see Site.objects.get_current().domain

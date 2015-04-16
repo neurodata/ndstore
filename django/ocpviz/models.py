@@ -21,8 +21,19 @@ class VizLayer ( models.Model ):
   layer_name = models.CharField(max_length=255)
   layer_description = models.CharField(max_length=255)
   user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True)
- 
-  server = models.CharField(max_length=255, default="localhost")
+  
+  SERVER_CHOICES = (
+        ('localhost', 'localhost'),
+        ('brainviz1.cs.jhu.edu', 'brainviz1'),
+        ('openconnecto.me', 'openconnecto.me'),
+        ('braingraph1.cs.jhu.edu', 'braingraph1'),
+        ('braingraph1dev.cs.jhu.edu', 'braingraph1dev'),
+        ('braingraph2.cs.jhu.edu', 'braingraph2'),
+        ('dsp061.pha.jhu.edu', 'dsp061'),
+        ('dsp062.pha.jhu.edu', 'dsp062'),
+        ('dsp063.pha.jhu.edu', 'dsp063'),
+        )  
+  server = models.CharField(max_length=255, choices=SERVER_CHOICES, default="localhost")
   token = models.CharField(max_length=255)
   channel = models.CharField(max_length=255, blank=True)
   # prevent the user from turning off EM data

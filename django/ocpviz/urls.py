@@ -17,7 +17,11 @@ from ocpuser.views import *
 import django.contrib.auth
 
 urlpatterns = patterns('ocpviz.views',
-    #url(r'(?P<webargs>^\w+/view/[\w,/]*)$', 'view'),
+    url(r'(?P<webargs>^\w+)$', 'viewproject'),
+    # for redirecting queries (reqd because of same origin policy)
+    url(r'^query/(?P<queryargs>[\w,/-]+)', 'query'),
+    #'(?P<queryargs>^\w+)$', 'query'),
+    url(r'^$', 'default'),
     url(r'^manage/$', 'default'),
     #url(r'^profile/$', 'profile'),
 )
