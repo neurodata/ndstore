@@ -129,6 +129,7 @@
 		var map = L.map('map', {
 			//crs: L.CRS.Simple,
 			layers: [em, anno],
+			doubleClickZoom: false,
 		});
 		//var southWest = map.unproject(L.point(xmin,ymax+300), max_res); // (0, y-max), zoom
 		//var northEast = map.unproject(L.point(xmax+300,ymin), max_res); // (x-max, 0), zoom
