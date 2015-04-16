@@ -55,7 +55,10 @@ def query(request, queryargs):
     addr = Site.objects.get_current().domain + '/ocp/' + oquery
   else: 
     addr = 'http://' + VALID_SERVERS[server] + '/ocp/' + oquery
-  r = urllib2.urlopen(addr)
+  try:
+    r = urllib2.urlopen(addr)
+  except urllib2.HTTPError, e:
+    r = '[ERROR]: ' + str(e.getcode())
 
   return HttpResponse(r)
 
