@@ -17,6 +17,8 @@ from django.shortcuts import redirect
 from django.http import HttpResponse 
 from django.contrib.sites.models import Site
 
+from django.template import RequestContext 
+
 from models import VizProject 
 from models import VizLayer 
 
@@ -38,7 +40,7 @@ def default(request):
 
 def viewproject(request, webargs):
   html = "<html><body>You requested: " + webargs + "</body></html>"
-  context = {'project_name': webargs}
+  context = {'project_name': webargs, 'cur_server': Site.objects.get_current().domain}
   return render(request, 'ocpviz/viewer.html', context)
 
 def query(request, queryargs):
