@@ -35,6 +35,9 @@ VALID_SERVERS = {
     'braingraph2':'braingraph2.cs.jhu.edu',
     'brainviz1':'brainviz1.cs.jhu.edu',
     }
+
+QUERY_TYPES = ['ANNOS']
+
 def default(request):
   return redirect('http://google.com')
 
@@ -43,8 +46,19 @@ def viewproject(request, webargs):
   #[project_name, view] = webargs.split('/', 1) 
   project_name = webargs 
   project = get_object_or_404(VizProject, pk=project_name) 
-  
-  context = {'project_name': project_name, 'project': project}
+  layers = project.layers.select_related()
+
+  # calculate the lowest resolution xmax and ymax
+  xdownmax = project.xmax / 2**(project.maxres - project.minres)
+  ydownmax = project.ymax / 2**(project.maxres - project.minres) 
+
+  context = {
+      'project_name': project_name, 
+      'project': project,
+      'layers': layers,
+      'xdownmax': xdownmax,
+      'ydownmax': ydownmax,
+  }
   return render(request, 'ocpviz/viewer.html', context)
 
 def query(request, queryargs):

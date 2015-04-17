@@ -34,6 +34,12 @@ class VizLayer ( models.Model ):
         ('dsp063.pha.jhu.edu', 'dsp063'),
         )  
   server = models.CharField(max_length=255, choices=SERVER_CHOICES, default="localhost")
+  
+  LAYER_CHOICES = (
+      ('IMAGES', 'Images'),
+      ('ANNOS', 'Annotations'),
+  )
+  layertype = models.CharField(max_length=255, choices=LAYER_CHOICES)
   token = models.CharField(max_length=255)
   channel = models.CharField(max_length=255, blank=True)
   # prevent the user from turning off EM data

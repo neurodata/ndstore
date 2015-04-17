@@ -1,20 +1,32 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>OCP Viewer: {{ project_name }}</title>
+  <title>ocpviz: viewing {{ project_name }}</title>
   {% load staticfiles %}
+  {# boostrap files #}
+  <link rel="stylesheet" type ="text/css" href="{% static 'css/bootstrap.css' %}" />
+  
+  {# leaflet files #}
   <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
 	<link href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
 	<style>
-		body {
-			padding: 0;
+    body {
+			padding: 50px 0px 0px 0px; /* 50px for navbar */
 			margin: 0;
 		}
 		html, body, #map {
 			height: 100%;
 			width: 100%;
 		}
-		.leaflet-container {
+    .coordinate-nav {
+      width: 50px;
+      display:inline-block;
+    }
+    .has-error .form-control{
+      border-width: 3px;
+      border-color: #FF2D2D !important;
+    }
+    .leaflet-container {
 			background: #000 !important;
 		}
 		.info {
@@ -23,12 +35,32 @@
 			background: white;
 			background: rbga(255,255,255,0.8);
 			box-shadow: 0 0 15px rbga(0,0,0,0.2);
-			border-radius: 5px;
-		}
-		.info h4 {
+			border-radius: 2px;
+		} 
+    .info h4 {
 			margin: 0 0 5px; 
 			color: #777;
-		}
+    }
+    .keyhelp {
+      display: none;
+      background: rgb(34, 34, 34);
+      color: rgb(157, 157, 157);
+      padding-top: 5px;
+      padding-bottom: 5px;
+      padding-left: 10px;
+      padding-right: 10px;
+      border-radius: 2px;
+    }
+    /*
+    .coordinates {
+      position: fixed;
+      margin-left: 110px !important;
+      padding: 5px;
+      background: white;
+      background: rbga(255,255,255,0.8);
+      box-shadow: 0 0 15px rbga(0,0,0,0.2);
+      border-radius: 2px;
+    }*/
 	</style>
 	<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
@@ -36,52 +68,87 @@
   <script src="{% static "ocpviz/js/ocp-leaflet.js" %}"></script>	
 	</head>
 <body>
-	<div id="map"></div>
-	<script>
-		// project metadata
-		var xmin = 0;	
-		var xmax = 1024;
-		var ymin = 0;
-		var ymax = 1024;
-		var max_res = 3;
-		var zindex = 88;
+  <nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="#">ocpviz</a>
+      </div>
+      <ul class="nav navbar-nav">
+        <li><a href="#">Projects</a></li>
+      </ul>
+      <form id="navigate" class="navbar-form navbar-left" role="search" action="">
+        <div class="form-group">
+          <input type="text" id="x" size="5" class="form-control" placeholder="x" aria-describedby="xlabel">
+        </div>
+        <div class="form-group">
+          <input type="text" id="y" size="5" class="form-control" placeholder="y" aria-describedby="ylabel">
+        </div>
+        <div class="form-group">
+          <input type="text" id="z" size="5" class="form-control" placeholder="z" aria-describedby="zlabel"> 
+        </div>
+        <button type="submit" class="btn btn-default">Go</button>
+      </form>
+      <ul class="nav navbar-nav navbar-left">
+        <li id="querybutton" class="active"><a href="#" id="query">Query</a></li>
+        <li><a href="#">Merge</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="#">Help</a></li>
+        <li><a href="#">Manage</a></li>
+        <li><a href="#">Logout</a></li>
+      </ul>
+    </div>
+  </nav>
 
-		// em layer
-		var em = L.tileLayer.SmoothReload('http://openconnecto.me/ocpcatmaid/tilecache/kharris15apical/xy/{zindex}/{y}_{x}_{z}.png', { 
+  <div id="map"></div>
+  <script> 
+    // tool variables
+    var querytool = true; // enabled by default
+    var mergetool = false; // disabled by default
+    
+    // project metadata
+    var xmin = {{ project.xmin }};	
+    var xmax = {{ project.xmax }};
+    var ymin = {{ project.ymin }};
+    var ymax = {{ project.ymax }};
+
+    // downsampled y and x maximum (calculated in view)
+    // TODO this needs to be updated dynamically on zoom... =/
+    var xdownmax = {{ xdownmax }};
+    var ydownmax = {{ ydownmax }};
+    
+    var minres = {{ project.minres }};
+    var maxres = {{ project.maxres }};
+    var zmin = {{ project.zmin }};
+    var zmax = {{ project.zmax }};
+    var zindex = {{ project.zmin }};
+
+    // define layers
+    {% for layer in layers %}
+    var {{ layer.layer_name|cut:" " }} = L.tileLayer.SmoothReload(
+      {# TODO add some if statements here to handle tilecache vs not, channel vs not, type (for opacity) etc #}
+      'http://{{ layer.server }}/ocpcatmaid/tilecache/{{ layer.token }}/xy/{zindex}/{y}_{x}_{z}.png', {
 				zindex: zindex,
 				zoomReverse: true,
 				minZoom: 3,
-				maxZoom: 6,
-				tileSize: 512,
+        maxZoom: 6,
+        tileSize: 512,
+        {% if layer.layertype == 'ANNOS' %}
+        opacity: 0.4,
+        {% endif %}
 				noWrap: true,
-				//continuousWorld: true,
-		})
-
-		// annotation layer
-	var anno = L.tileLayer.SmoothReload('http://openconnecto.me/ocpcatmaid/tilecache/kharris15apical_anno/xy/{zindex}/{y}_{x}_{z}.png', { 
-				zindex: zindex,
-				zoomReverse: true,
-				minZoom: 3,
-				maxZoom: 6,
-				tileSize: 512,
-				opacity: 0.3,
-				noWrap: true,
-				//continuousWorld: true,
-		})
-		
-
-
-		// bind it all together
+    })
+  {% endfor %}
+  
+     // bind it all together
 		var map = L.map('map', {
-			//crs: L.CRS.Simple,
-			layers: [em, anno],
+      layers: [{% spaceless %}
+      {% for layer in layers %}{{ layer.layer_name|cut:" " }}{% if not forloop.last %},{% endif %}{% endfor %}
+      {% endspaceless %}],
 			doubleClickZoom: false,
 		});
-		//var southWest = map.unproject(L.point(xmin,ymax+300), max_res); // (0, y-max), zoom
-		//var northEast = map.unproject(L.point(xmax+300,ymin), max_res); // (x-max, 0), zoom
-		var center = map.unproject(L.point(xmax/2, ymax/2), max_res);
-		//map.setMaxBounds(L.latLngBounds(southWest, northEast));
-		map.setView(center, max_res);
+		var center = map.unproject(L.point(xdownmax/2, ydownmax/2), maxres);
+		map.setView(center, maxres);
 
 		// display some map info
 		var info = L.control();
@@ -93,24 +160,88 @@
 		};
 
 		info.update = function () {
-			this._div.innerHTML = '<h4>Info</h4><b>' + 'kharris15apical' + '</b><br />'
-				+ 'Z Index: ' + zindex;
+      var header = '<h4>Current Project</h4><strong>{{ project.project_name }}</strong><br />';
+      var datainfo = 'x: (' + xmin + ', ' + xdownmax + ')<br />' + 
+        'y: (' + ymin + ', ' + ydownmax + ')<br />' +
+        'z: (' + zmin + ', ' + zmax + ')<br />';
+      var curslice = '<br />Current Slice: ' + zindex;
+      this._div.innerHTML = header + datainfo + curslice;
+			//	+ 'Z Index: ' + zindex;
 		};
 
 		info.addTo(map);
 
-		// layer controls 
-		var emMaps = {
-			"EM": em,
-		}
+    // layer controls
+    var emMaps = {{% spaceless %}
+      {% for layer in layers %}
+        {% if layer.layertype == 'IMAGES' %}
+        "{{ layer.layer_name }}" : {{ layer.layer_name|cut:" " }},
+        {% endif %}
+      {% endfor %}
+    }
+    {% endspaceless %}
 
-		var annoMaps = {
-			"Annotations": anno,
-		}
+    var annoMaps = {{% spaceless %}
+      {% for layer in layers %}
+        {% if layer.layertype == 'ANNOS' %}
+        "{{ layer.layer_name }}" : {{ layer.layer_name|cut:" " }},
+        {% endif %}
+      {% endfor %}
+    }
+    {% endspaceless %}
 
 		L.control.layers(emMaps, annoMaps).addTo(map);
 
-		// z-index controls
+    // navigation 
+    // first, intercept the form 
+    $( "#navigate" ).submit(function( event ) {
+      // clear errors
+      $( "#x" ).parent().removeClass("has-error");
+      $( "#y" ).parent().removeClass("has-error");
+      $( "#z" ).parent().removeClass("has-error");
+      // if a zindex was entered, navigate to that slice 
+      if ( $( "#z" ).val() ) {
+        var z = $( "#z" ).val();
+        if (z <= zmax && z >= zmin) {
+          chgZIndex(z);
+        }
+        else {
+          $( "#z" ).parent().addClass("has-error");
+        }
+      }
+
+      // if a valid (x,y) pair was entered, place a marker
+      if ( $( "#x" ).val() && $( "#y" ).val()) {
+        var x = $( "#x" ).val();
+        var y = $( "#y" ).val();
+
+        // validate
+        if ( x > xdownmax || x < xmin ) {
+          $( "#x" ).parent().addClass("has-error"); 
+        }
+        else if ( y > ydownmax || y < ymin ) {
+          $( "#y" ).parent().addClass("has-error");
+        }
+        else {
+          // pan the map to center on these coordinates
+          var point = L.point(x, y);
+          map.panTo(map.unproject(point));
+          // place a marker
+          // TODO 
+        } 
+      }
+      else {
+        if ( $( "#x" ).val() && !$( "#y" ).val() ) {
+          $( "#y" ).parent().addClass("has-error");
+        }
+        else if ( $( "#y" ).val() && !$( "#x" ).val() ) {
+          $( "#x" ).parent().addClass("has-error");
+        }  
+      } 
+      event.preventDefault();
+    });
+
+		// z-index arrows 
 		L.easyButton('fa-arrow-up',
 				incZIndex,
 				'Increase Z-Index'
@@ -120,13 +251,22 @@
 				'Decrease Z-Index'
 		);
 
+    function chgZIndex(newz) {
+      map.closePopup();
+      var oldzindex = zindex;
+			zindex = parseInt(newz);
+			reloadLayers(oldzindex);
+    }
+
 		function incZIndex() {
-			var oldzindex = zindex;
+      map.closePopup();
+      var oldzindex = zindex;
 			zindex = zindex + 1;
 			reloadLayers(oldzindex);
 		}
 
 		function decZIndex() {
+      map.closePopup();
 			var oldzindex = zindex;
 			zindex = zindex - 1;
 			reloadLayers(oldzindex);
@@ -143,11 +283,10 @@
 		}
 
 		// get anno id from coordinate
-		// expects a L.point object for point and a number for zoom 
+    // expects a L.point object for point and a number for zoom
+    // TODO add a query layer selector 
 		function getAnnoId(point, zoom) {
-			//var ocpUrlBase = "http://openconnecto.me/ocp/ca/kharris15apical_anno/id/" + zoom + "/";
-			//var ocpUrlBase = "http://brainviz1.cs.jhu.edu/ocp/ca/kharris15apical_anno/id/" + zoom + "/";
-      var ocpUrlBase = "http://{{ request.get_host }}/ocp/viz/query/dsp061/ca/kharris15apical_anno/id/" + zoom + "/";
+      var ocpUrlBase = "http://{{ request.get_host }}/ocp/viz/query/localhost/ca/kharris15apical_anno/id/" + zoom + "/";
 			var cutout = Math.round(point.x) + "/" + Math.round(point.y) + "/" + zindex + "/"; 
 			var ocpUrl = ocpUrlBase.concat(cutout);
       // store the return data
@@ -162,20 +301,95 @@
 
 		}
 
-
 		// popup on click (testing get anno id) 
 		var popup = L.popup();
 		function onMapClick(e) {
-			var reqPoint = map.project(e.latlng);	
-			popup
-				.setLatLng(e.latlng)
-				.setContent("You requested anno " + getAnnoId(reqPoint, map.getMaxZoom() - map.getZoom()))
-				.openOn(map);
+      if (querytool) {
+        var reqPoint = map.project(e.latlng);	
+        popup
+          .setLatLng(e.latlng)
+          .setContent("You requested anno " + getAnnoId(reqPoint, map.getMaxZoom() - map.getZoom()))
+          .openOn(map);
+      } 
+      else if (mergetool) {
+        // do something 
+      }
 		}
 		map.on('click', onMapClick);
 
+    // keyboard shortcuts
+    $(document).keypress(function(event) {
+      if ( !$(event.target).is('input')) {
+        console.log(event.which);
+        switch (event.which) {
+          case 104: // h -- help
+            toggleKeyboardHelp();
+            break;
+          case 119: // w -- zindex++
+            incZIndex();
+            break;
+          case 115: // s -- zindex--
+            decZIndex();
+            break;
+          case 97: // a -- zoom out
+            map.zoomOut()
+            break;
+          case 100: // d -- zoom in
+            map.zoomIn()
+            break;
+          default:
+            // do nothing
+
+        }
+      } 
+    });
+    function toggleKeyboardHelp() {
+      if ($( ".keyhelp" ).css("display") == "none") {
+        $( ".keyhelp" ).fadeIn( 1000, function() {
+          // Animation complete
+        });
+      }
+      else {
+        $( ".keyhelp" ).fadeOut( 500, function() {
+          // Animation complete
+        });
+      }
+    } 
+
+    // tools
+    // query tool
+    $( '#query' ).click(function(event) {
+      $( '#querybutton' ).toggleClass('active');
+      querytool = !querytool;
+    });
+
+    // add keyboard help to map
+		var keyhelp = L.control();
+		keyhelp.options.position = 'bottomleft';
+		keyhelp.onAdd = function (map) {
+			this._div = L.DomUtil.create('div', 'keyhelp');
+			this.update();
+			return this._div;
+		};
+
+		keyhelp.update = function () {
+      this._div.innerHTML = 
+      "<h5>Keyboard Shortcuts</h5><ul class='list-unstyled'>" +
+        "<li><kbd>h</kbd> display help</li>" + 
+        "<li><kbd>w</kbd> increase z-index</li>" + 
+        "<li><kbd>a</kbd> zoom out</li>" + 
+        "<li><kbd>s</kbd> decrease z-index</li>" + 
+        "<li><kbd>d</kbd> zoom in</li>" + 
+        "</ul><small>Press <kbd>h</kbd> to close.</small>";
+		};
+    
+    keyhelp.addTo(map);
+
 	</script>
 </body>
+{# jquery and bootstrap js #}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+<script src="{% static "js/bootstrap.min.js" %}"></script>
 </html>
 
 
