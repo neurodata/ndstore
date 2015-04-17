@@ -38,110 +38,97 @@ class BrainRestArgs:
 
   # Accessors to get corner and dimensions
   def getCorner (self):
-    return self._corner
+    return self.corner
 
   def getDim (self):
-   return self._dim
+   return self.dim
    
   def getResolution (self):
-   return self._resolution
+   return self.resolution
 
   def getFilter ( self ):
-    return self._filterlist
+    return self.filterlist
 
   def getWindow ( self ):
-    return self._window
+    return self.window
   
   def getTimeRange ( self ):
-    return self._time
+    return self.time
   
   def getZScaling ( self ):
-    return self._zscaling
+    return self.zscaling
 
 
   def cutoutArgs ( self, imageargs, datasetcfg, channels=None ):
     """Process REST arguments for an cutout plane request"""
 
-    # expecting an argument of the form /resolution/x1,x2/y1,y2/z1,z2/
     try:
-      [ resstr, xdimstr, ydimstr, zdimstr, rest ]  = imageargs.split('/',4)
-      options = rest.split ( '/' )
-    except:
-      raise RESTArgsError ( "Incorrect cutout arguments %s" % imageargs )
+      #p = re.compile("([0-9]+)/([0-9]+),([0-9]+)/([0-9]+),([0-9]+)/([filter|window|iso|neariso]*)(/*)([[0-9]+,]*")
+      
+      # argument of format /resolution/x1,x2/y1,y2/z1,z2/rest/
+      p = re.compile("([0-9]+)/([0-9]+),([0-9]+)/([0-9]+),([0-9]+)/([0-9]+),([0-9]+)([/]*[\w+]*[/]*[\d,+]*[/]*)$")
+      m = p.match(imageargs)
+      
+      [self.resolution, x1, x2, y1, y2, z1, z2] = [int(i) for i in m.groups()[:-1]]
+      rest = m.groups()[-1]
 
-    # Check that the arguments are well formatted
-    if not re.match ('[0-9]+$', resstr) or\
-       not re.match ('[0-9]+,[0-9]+$', xdimstr) or\
-       not re.match ('[0-9]+,[0-9]+$', ydimstr) or\
-       not re.match ('[0-9]+,[0-9]+$', zdimstr):
-      raise RESTArgsError ( "Non-conforming range arguments {}".format(imageargs) )
-
-    self._resolution = int(resstr)
-
-    z1s,z2s = zdimstr.split(',')
-    y1s,y2s = ydimstr.split(',')
-    x1s,x2s = xdimstr.split(',')
+    except Exception, e:
+      raise RESTArgsError("Incorrect cutout arguments {}. {}".format(imageargs, e))
+      raise RESTArgsError("Non-conforming range arguments {}. {}".format(imageargs, e))
 
     # Convert cutout into 0 base in all dimensions
-    (xoffset,yoffset,zoffset) = datasetcfg.offset[self._resolution]
+    (xoffset,yoffset,zoffset) = datasetcfg.getOffset()[self.resolution]
 
-    x1i = int(x1s)-xoffset
-    x2i = int(x2s)-xoffset
-    y1i = int(y1s)-yoffset
-    y2i = int(y2s)-yoffset
-    z1i = int(z1s)-zoffset
-    z2i = int(z2s)-zoffset
+    (x1, x2) = (x1-xoffset, x2-xoffset)
+    (y1, y2) = (y1-yoffset, y2-yoffset)
+    (z1, z2) = (z1-zoffset, z2-zoffset)
+    self.corner = [x1, y1, z1]
+    self.dim = [x2-x1, y2-y1, z2-z1]
 
-    self._corner=[x1i,y1i,z1i]
-    self._dim=[x2i-x1i,y2i-y1i,z2i-z1i ]
-
-    if channels != None:
-      if re.match ('[0-9]+,[0-9]+$',channels):
-        t1s,t2s = channels.split(',')
-        t1i = int(t1s)
-        t2i = int(t2s)
-        self._time = [t1i,t2i]
-      elif re.match('[0-9]+$',channels):
-        t1i = int(channels)
-        t2i = t1i+1
-      else:
-        raise RESTArgsError ( "Non-conforming time range arguments".format(channels) )
-    else:
-      t1i = 0
-      t2i = t1i + 1
+    #if channels != None:
+      #if re.match ('[0-9]+,[0-9]+$',channels):
+        #t1s,t2s = channels.split(',')
+        #t1i = int(t1s)
+        #t2i = int(t2s)
+        #self._time = [t1i,t2i]
+      #elif re.match('[0-9]+$',channels):
+        #t1i = int(channels)
+        #t2i = t1i+1
+      #else:
+        #raise RESTArgsError ( "Non-conforming time range arguments".format(channels) )
+    #else:
+      #t1i = 0
+      #t2i = t1i + 1
 
 
     # Check arguments for legal values
     try:
-      if not ( datasetcfg.checkCube ( self._resolution, self._corner, self._dim)):
-        raise RESTArgsError ( "Illegal range. Image size: {} at offset {}".format(str(datasetcfg.imageSize(self._resolution)),str(datasetcfg.offset[self._resolution])))
+      if not ( datasetcfg.checkCube(self.resolution, self.corner, self.dim) ):
+        raise RESTArgsError ( "Illegal range. Image size: {} at offset {}".format(str(datasetcfg.imageSize(self.resolution)),str(datasetcfg.getOffset()[self.resolution])))
     except Exception, e:
       # RBTODO make this error better.  How to print good information about e?
       #  it only prints 3, not KeyError 3, whereas print e in the debugger gives good info
-      raise RESTArgsError ( "Illegal arguments to cutout.  Check cube failed {}".format(e))
+      raise RESTArgsError ( "Illegal arguments to cutout. Check cube failed {}".format(e))
 
 
     # list of identifiers to keep
-    result = re.match ("filter/([\d/,]+)/",rest)
+    result = re.match ("/filter/([\d/,]+)/", rest)
     if result != None:
-      self._filterlist = np.array(result.group(1).split(','),dtype=np.uint32)
+      self.filterlist = np.array(result.group(1).split(','),dtype=np.uint32)
     else:
-      self._filterlist = None
-
+      self.filterlist = None
     
-
     
     # See if it is an isotropic cutout request
-    
-    self._zscaling = None
-    result = re.match ("iso/",rest)
+    self.zscaling = None
+    result = re.match ("/iso/",rest)
     if result != None:
-      self._zscaling = 'isotropic'
+      self.zscaling = 'isotropic'
      
     # See if it is an integral cutout request
-    result = re.match ("neariso/",rest)
+    result = re.match ("/neariso/",rest)
     if result != None:
-      self._zscaling = 'nearisotropic'
+      self.zscaling = 'nearisotropic'
 
 
   #
@@ -164,200 +151,200 @@ class BrainRestArgs:
   #  **Image return a readable png object
   #    where ** is xy, xz, yz
   #
-  def xyArgs ( self, imageargs, datasetcfg ):
-    """Process REST arguments for an xy plane request.
-       You must have set the resolution prior to calling this function."""
+  #def xyArgs ( self, imageargs, datasetcfg ):
+    #"""Process REST arguments for an xy plane request.
+       #You must have set the resolution prior to calling this function."""
 
-    try:
-      [ resstr, xdimstr, ydimstr, zstr, rest ]  = imageargs.split('/',4)
-      options = rest.split ( '/' )
-    except:
-      raise RESTArgsError ( "Incorrect cutout arguments %s" % imageargs )
+    #try:
+      #[ resstr, xdimstr, ydimstr, zstr, rest ]  = imageargs.split('/',4)
+      #options = rest.split ( '/' )
+    #except:
+      #raise RESTArgsError ( "Incorrect cutout arguments %s" % imageargs )
 
-    # expecting an argument of the form /resolution/x1,x2/y1,y2/z/
-    # Check that the arguments are well formatted
-    if not re.match ('[0-9]+$', resstr) or\
-       not re.match ('[0-9]+,[0-9]+$', xdimstr) or\
-       not re.match ('[0-9]+,[0-9]+$', ydimstr) or\
-       not re.match ('[0-9]+$', zstr):
-      raise RESTArgsError ("Non-numeric range argument %s" % imageargs)
+    ## expecting an argument of the form /resolution/x1,x2/y1,y2/z/
+    ## Check that the arguments are well formatted
+    #if not re.match ('[0-9]+$', resstr) or\
+       #not re.match ('[0-9]+,[0-9]+$', xdimstr) or\
+       #not re.match ('[0-9]+,[0-9]+$', ydimstr) or\
+       #not re.match ('[0-9]+$', zstr):
+      #raise RESTArgsError ("Non-numeric range argument %s" % imageargs)
 
-    self._resolution = int(resstr)
+    #self._resolution = int(resstr)
 
-    x1s,x2s = xdimstr.split(',')
-    y1s,y2s = ydimstr.split(',')
+    #x1s,x2s = xdimstr.split(',')
+    #y1s,y2s = ydimstr.split(',')
 
-    # Convert cutout into 0 base in all dimensions
-    (xoffset,yoffset,zoffset) = datasetcfg.offset[self._resolution]
+    ## Convert cutout into 0 base in all dimensions
+    #(xoffset,yoffset,zoffset) = datasetcfg.offset[self._resolution]
 
-    x1i = int(x1s)-xoffset
-    x2i = int(x2s)-xoffset
-    y1i = int(y1s)-yoffset
-    y2i = int(y2s)-yoffset
-    z = int(zstr)-zoffset
+    #x1i = int(x1s)-xoffset
+    #x2i = int(x2s)-xoffset
+    #y1i = int(y1s)-yoffset
+    #y2i = int(y2s)-yoffset
+    #z = int(zstr)-zoffset
 
-    self._corner=[x1i,y1i,z]
-    self._dim=[x2i-x1i,y2i-y1i,1]
+    #self._corner=[x1i,y1i,z]
+    #self._dim=[x2i-x1i,y2i-y1i,1]
 
 
-    # Check arguments for legal values
-    # Check arguments for legal values
-    try:
-      if not ( datasetcfg.checkCube ( self._resolution, self._corner, self.dim )):
-        raise RESTArgsError ( "Illegal range. Image size: {} at offset {}".format(str(datasetcfg.imageSize(self._resolution)),str(datasetcfg.offset[self._resolution])))
-    except Exception, e:
-      # RBTODO make this error better.  How to print good information about e?
-      #  it only prints 3, not KeyError 3, whereas print e in the debugger gives good info
-      raise RESTArgsError ( "Illegal arguments to cutout.  Check cube failed {}".format(e))
+    ## Check arguments for legal values
+    ## Check arguments for legal values
+    #try:
+      #if not ( datasetcfg.checkCube ( self._resolution, self._corner, self.dim )):
+        #raise RESTArgsError ( "Illegal range. Image size: {} at offset {}".format(str(datasetcfg.imageSize(self._resolution)),str(datasetcfg.offset[self._resolution])))
+    #except Exception, e:
+      ## RBTODO make this error better.  How to print good information about e?
+      ##  it only prints 3, not KeyError 3, whereas print e in the debugger gives good info
+      #raise RESTArgsError ( "Illegal arguments to cutout.  Check cube failed {}".format(e))
 
-    # list of identifiers to keep
-    result = re.match ("filter/([\d/,]+)/",rest)
-    if result != None:
-      self._filterlist = np.array(result.group(1).split(','),dtype=np.uint32)
-    else:
-      self._filterlist = None
-    try:
-      [ resstr, xdimstr, ystr, zdimstr, rest ]  = imageargs.split('/',4)
-      options = rest.split ( '/' )
-    except:
-      raise RESTArgsError ( "Incorrect cutout arguments %s" % imageargs )
+    ## list of identifiers to keep
+    #result = re.match ("filter/([\d/,]+)/",rest)
+    #if result != None:
+      #self._filterlist = np.array(result.group(1).split(','),dtype=np.uint32)
+    #else:
+      #self._filterlist = None
+    #try:
+      #[ resstr, xdimstr, ystr, zdimstr, rest ]  = imageargs.split('/',4)
+      #options = rest.split ( '/' )
+    #except:
+      #raise RESTArgsError ( "Incorrect cutout arguments %s" % imageargs )
 
-    # expecting an argument of the form /resolution/x1,x2/y1,y2/z/
-    # Check that the arguments are well formatted
-    if not re.match ('[0-9]+$', resstr) or\
-       not re.match ('[0-9]+,[0-9]+$', xdimstr) or\
-       not re.match ('[0-9]+$', ystr) or\
-       not re.match ('[0-9]+,[0-9]+$', zdimstr):
-      raise RESTArgsError ("Non-numeric range argument %s" % imageargs)
+    ## expecting an argument of the form /resolution/x1,x2/y1,y2/z/
+    ## Check that the arguments are well formatted
+    #if not re.match ('[0-9]+$', resstr) or\
+       #not re.match ('[0-9]+,[0-9]+$', xdimstr) or\
+       #not re.match ('[0-9]+$', ystr) or\
+       #not re.match ('[0-9]+,[0-9]+$', zdimstr):
+      #raise RESTArgsError ("Non-numeric range argument %s" % imageargs)
 
-    self._resolution = int(resstr)
+    #self._resolution = int(resstr)
 
-    x1s,x2s = xdimstr.split(',')
-    z1s,z2s = zdimstr.split(',')
+    #x1s,x2s = xdimstr.split(',')
+    #z1s,z2s = zdimstr.split(',')
 
-    # Convert cutout into 0 base in all dimensions
-    (xoffset,yoffset,zoffset) = datasetcfg.offset[self._resolution]
+    ## Convert cutout into 0 base in all dimensions
+    #(xoffset,yoffset,zoffset) = datasetcfg.offset[self._resolution]
 
-    x1i = int(x1s)-xoffset
-    x2i = int(x2s)-xoffset
-    y = int(ystr)-yoffset
-    z1i = int(z1s)-zoffset
-    z2i = int(z2s)-zoffset
+    #x1i = int(x1s)-xoffset
+    #x2i = int(x2s)-xoffset
+    #y = int(ystr)-yoffset
+    #z1i = int(z1s)-zoffset
+    #z2i = int(z2s)-zoffset
 
-    self._corner=[x1i,y,z1i]
-    self._dim=[x2i-x1i,1,z2i-z1i]
+    #self._corner=[x1i,y,z1i]
+    #self._dim=[x2i-x1i,1,z2i-z1i]
 
-    # Check arguments for legal values
-    try:
-      if not datasetcfg.checkCube ( self._resolution, x1i, x2i, y, y+1, z1i, z2i )\
-         or y >= datasetcfg.imagesz[self._resolution][1]:
-        raise RESTArgsError ( "Illegal range. Image size: {} at offset {}".format(str(datasetcfg.imageSize(self._resolution)),str(datasetcfg.offset[self._resolution])))
-    except Exception, e:
-      # RBTODO make this error better.  How to print good information about e?
-      #  it only prints 3, not KeyError 3, whereas print e in the debugger gives good info
-      raise RESTArgsError ( "Illegal arguments to cutout.  Check cube failed {}".format(e))
+    ## Check arguments for legal values
+    #try:
+      #if not datasetcfg.checkCube ( self._resolution, x1i, x2i, y, y+1, z1i, z2i )\
+         #or y >= datasetcfg.imagesz[self._resolution][1]:
+        #raise RESTArgsError ( "Illegal range. Image size: {} at offset {}".format(str(datasetcfg.imageSize(self._resolution)),str(datasetcfg.offset[self._resolution])))
+    #except Exception, e:
+      ## RBTODO make this error better.  How to print good information about e?
+      ##  it only prints 3, not KeyError 3, whereas print e in the debugger gives good info
+      #raise RESTArgsError ( "Illegal arguments to cutout.  Check cube failed {}".format(e))
 
-    self._corner=[x1i,y,z1i]
-    self._dim=[x2i-x1i,1,z2i-z1i ]
+    #self._corner=[x1i,y,z1i]
+    #self._dim=[x2i-x1i,1,z2i-z1i ]
 
-    # list of identifiers to keep
-    result = re.match ("filter/([\d/,]+)/",rest)
-    if result != None:
-      self._filterlist = np.array(result.group(1).split(','),dtype=np.uint32)
-    else:
-      self._filterlist = None
+    ## list of identifiers to keep
+    #result = re.match ("filter/([\d/,]+)/",rest)
+    #if result != None:
+      #self._filterlist = np.array(result.group(1).split(','),dtype=np.uint32)
+    #else:
+      #self._filterlist = None
     
-    # checking for window
-    result = re.match ("window/([\d/,]+)/",rest)
-    if result != None:
-      self._window = np.array(result.group(1).split(','),dtype=np.uint32)
-    else:
-      self._window = None
+    ## checking for window
+    #result = re.match ("window/([\d/,]+)/",rest)
+    #if result != None:
+      #self._window = np.array(result.group(1).split(','),dtype=np.uint32)
+    #else:
+      #self._window = None
 
 
-  def yzArgs ( self, imageargs, datasetcfg ):
-    """Process REST arguments for an yz plane request
-       You must have set the resolution prior to calling this function."""
+  #def yzArgs ( self, imageargs, datasetcfg ):
+    #"""Process REST arguments for an yz plane request
+       #You must have set the resolution prior to calling this function."""
 
-    try:
-      [ resstr, xstr, ydimstr, zdimstr, rest ]  = imageargs.split('/',4)
-      options = rest.split ( '/' )
-    except:
-      raise RESTArgsError ( "Incorrect cutout arguments %s" % imageargs )
+    #try:
+      #[ resstr, xstr, ydimstr, zdimstr, rest ]  = imageargs.split('/',4)
+      #options = rest.split ( '/' )
+    #except:
+      #raise RESTArgsError ( "Incorrect cutout arguments %s" % imageargs )
 
-    # expecting an argument of the form /resolution/x/y1,y2/z1,z2/
-    # Check that the arguments are well formatted
-    if not re.match ('[0-9]+$', resstr) or\
-       not re.match ('[0-9]+$', xstr) or\
-       not re.match ('[0-9]+,[0-9]+$', ydimstr) or\
-       not re.match ('[0-9]+,[0-9]+$', zdimstr):
-      raise RESTArgsError ("Non-numeric range argument %s" % imageargs)
+    ## expecting an argument of the form /resolution/x/y1,y2/z1,z2/
+    ## Check that the arguments are well formatted
+    #if not re.match ('[0-9]+$', resstr) or\
+       #not re.match ('[0-9]+$', xstr) or\
+       #not re.match ('[0-9]+,[0-9]+$', ydimstr) or\
+       #not re.match ('[0-9]+,[0-9]+$', zdimstr):
+      #raise RESTArgsError ("Non-numeric range argument %s" % imageargs)
 
-    self._resolution = int(resstr)
+    #self._resolution = int(resstr)
 
-    y1s,y2s = ydimstr.split(',')
-    z1s,z2s = zdimstr.split(',')
+    #y1s,y2s = ydimstr.split(',')
+    #z1s,z2s = zdimstr.split(',')
 
-    x = int(xstr)
-    y1i = int(y1s)
-    y2i = int(y2s)
-    z1i = int(z1s)
-    z2i = int(z2s)
+    #x = int(xstr)
+    #y1i = int(y1s)
+    #y2i = int(y2s)
+    #z1i = int(z1s)
+    #z2i = int(z2s)
 
-    # Check arguments for legal values
-    try:
-      if not datasetcfg.checkCube ( self._resolution, x, x+1, y1i, y2i, z1i, z2i  )\
-         or  x >= datasetcfg.imagesz[self._resolution][0]:
-        raise RESTArgsError ( "Illegal range. Image size: {} at offset {}".format(str(datasetcfg.imageSize(self._resolution)),str(datasetcfg.offset[self._resolution])))
-    except Exception, e:
-      # RBTODO make this error better.  How to print good information about e?
-      #  it only prints 3, not KeyError 3, whereas print e in the debugger gives good info
-      raise RESTArgsError ( "Illegal arguments to cutout.  Check cube failed {}".format(e))
+    ## Check arguments for legal values
+    #try:
+      #if not datasetcfg.checkCube ( self._resolution, x, x+1, y1i, y2i, z1i, z2i  )\
+         #or  x >= datasetcfg.imagesz[self._resolution][0]:
+        #raise RESTArgsError ( "Illegal range. Image size: {} at offset {}".format(str(datasetcfg.imageSize(self._resolution)),str(datasetcfg.offset[self._resolution])))
+    #except Exception, e:
+      ## RBTODO make this error better.  How to print good information about e?
+      ##  it only prints 3, not KeyError 3, whereas print e in the debugger gives good info
+      #raise RESTArgsError ( "Illegal arguments to cutout.  Check cube failed {}".format(e))
 
-    self._corner=[x,y1i,z1i]
-    self._dim=[1,y2i-y1i,z2i-z1i ]
+    #self._corner=[x,y1i,z1i]
+    #self._dim=[1,y2i-y1i,z2i-z1i ]
 
 
-    t1s,t2s = tdimstr.split(',')
-    x1s,x2s = xdimstr.split(',')
-    y1s,y2s = ydimstr.split(',')
-    z1s,z2s = zdimstr.split(',')
+    #t1s,t2s = tdimstr.split(',')
+    #x1s,x2s = xdimstr.split(',')
+    #y1s,y2s = ydimstr.split(',')
+    #z1s,z2s = zdimstr.split(',')
 
-    t1i = int(t1s)
-    t2i = int(t2s)
-    x1i = int(x1s)
-    x2i = int(x2s)
-    y1i = int(y1s)
-    y2i = int(y2s)
-    z1i = int(z1s)
-    z2i = int(z2s)
+    #t1i = int(t1s)
+    #t2i = int(t2s)
+    #x1i = int(x1s)
+    #x2i = int(x2s)
+    #y1i = int(y1s)
+    #y2i = int(y2s)
+    #z1i = int(z1s)
+    #z2i = int(z2s)
 
-    # Check arguments for legal values
-    try:
-      if not datasetcfg.checkTimeSeriesCube ( t1i, t2i, self._resolution, x1i, x2i, y1i, y2i, z1i, z2i  ) :
-        raise RESTArgsError ( "Illegal range. Image size: {} at offset {}".format(str(datasetcfg.imageSize(self._resolution)),str(datasetcfg.offset[self._resolution])))
-    except Exception, e:
-      # RBTODO make this error better.  How to print good information about e?
-      #  it only prints 3, not KeyError 3, whereas print e in the debugger gives good info
-      raise RESTArgsError ( "Illegal arguments to cutout.  Check cube failed {}".format(e))
+    ## Check arguments for legal values
+    #try:
+      #if not datasetcfg.checkTimeSeriesCube ( t1i, t2i, self._resolution, x1i, x2i, y1i, y2i, z1i, z2i  ) :
+        #raise RESTArgsError ( "Illegal range. Image size: {} at offset {}".format(str(datasetcfg.imageSize(self._resolution)),str(datasetcfg.offset[self._resolution])))
+    #except Exception, e:
+      ## RBTODO make this error better.  How to print good information about e?
+      ##  it only prints 3, not KeyError 3, whereas print e in the debugger gives good info
+      #raise RESTArgsError ( "Illegal arguments to cutout.  Check cube failed {}".format(e))
 
-    self._corner = [x1i,y1i,z1i]
-    self._dim = [x2i-x1i,y2i-y1i,z2i-z1i ]
-    self._time = [t1i,t2i]
+    #self._corner = [x1i,y1i,z1i]
+    #self._dim = [x2i-x1i,y2i-y1i,z2i-z1i ]
+    #self._time = [t1i,t2i]
 
-    # list of identifiers to keep
-    result = re.match ("filter/([\d/,]+)/",rest)
-    if result != None:
-      self._filterlist = np.array(result.group(1).split(','),dtype=np.uint32)
-    else:
-      self._filterlist = None
+    ## list of identifiers to keep
+    #result = re.match ("filter/([\d/,]+)/",rest)
+    #if result != None:
+      #self._filterlist = np.array(result.group(1).split(','),dtype=np.uint32)
+    #else:
+      #self._filterlist = None
     
-  # Check arguments for legal values
-    try:
-      if not ( datasetcfg.checkCube ( self._resolution, x1i, x2i, y1i, y2i, z1i, z2i )):
-        raise RESTArgsError ( "Illegal range. Image size: {} at offset {}".format(str(datasetcfg.imageSize(self._resolution)),str(datasetcfg.offset[self._resolution])))
-    except Exception, e:
-      raise RESTArgsError ( "Illegal arguments to cutout.  Check cube failed {}".format(e))
+  ## Check arguments for legal values
+    #try:
+      #if not ( datasetcfg.checkCube ( self._resolution, x1i, x2i, y1i, y2i, z1i, z2i )):
+        #raise RESTArgsError ( "Illegal range. Image size: {} at offset {}".format(str(datasetcfg.imageSize(self._resolution)),str(datasetcfg.offset[self._resolution])))
+    #except Exception, e:
+      #raise RESTArgsError ( "Illegal arguments to cutout.  Check cube failed {}".format(e))
 
 
 # Unbound functions  not part of the class object

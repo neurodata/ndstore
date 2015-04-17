@@ -15,7 +15,6 @@
 # RBTODO batch i/o with getcubes when possible
 
 import numpy as np
-import sys
 import cStringIO
 import zlib
 import MySQLdb

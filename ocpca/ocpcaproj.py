@@ -178,6 +178,8 @@ class OCPCADataset:
     return self.imagesz
   def getOffset(self):
     return self.offset
+  def getScale(self):
+    return self.scale
   def getVoxelRes(self):
     return self.voxelres
   def getCubeDims(self):
@@ -191,9 +193,12 @@ class OCPCADataset:
     """Return true if the specified range of values is inside the cube"""
 
     [xstart, ystart, zstart ] = corner
-    xend = xstart + dim[0]
-    yend = ystart + dim[1]
-    zend = zstart + dim[2]
+    #xend = xstart + dim[0]
+    #yend = ystart + dim[1]
+    #zend = zstart + dim[2]
+
+    from operator import add
+    [xend, yend, zend] = map(add, corner, dim) 
 
     if ( ( xstart >= 0 ) and ( xstart < xend) and ( xend <= self.imagesz[resolution][0]) and\
         ( ystart >= 0 ) and ( ystart < yend) and ( yend <= self.imagesz[resolution][1]) and\
