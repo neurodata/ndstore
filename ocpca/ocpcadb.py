@@ -1026,32 +1026,32 @@ class OCPCADB:
     self.shaveDense ( ch, entityid, corner, resolution, annodata )
 
 
-  def _zoominCutout ( self, corner, dim, resolution ):
+  def _zoominCutout ( self, ch, corner, dim, resolution ):
     """Scale to a smaller cutout that will be zoomed"""
 
     # scale the corner to lower resolution
-    effcorner = corner[0]/(2**(self.proj.getResolution()-resolution)), corner[1]/(2**(self.proj.getResolution()-resolution)), corner[2]
+    effcorner = corner[0]/(2**(ch.getResolution()-resolution)), corner[1]/(2**(ch.getResolution()-resolution)), corner[2]
 
     # pixels offset within big range
-    xpixeloffset = corner[0]%(2**(self.proj.getResolution()-resolution))
-    ypixeloffset = corner[1]%(2**(self.proj.getResolution()-resolution))
+    xpixeloffset = corner[0]%(2**(ch.getResolution()-resolution))
+    ypixeloffset = corner[1]%(2**(ch.getResolution()-resolution))
 
     # get the new dimension, snap up to power of 2
     outcorner = (corner[0]+dim[0],corner[1]+dim[1],corner[2]+dim[2])
 
-    newoutcorner = (outcorner[0]-1)/(2**(self.proj.getResolution()-resolution))+1, (outcorner[1]-1)/(2**(self.proj.getResolution()-resolution))+1, outcorner[2]
+    newoutcorner = (outcorner[0]-1)/(2**(ch.getResolution()-resolution))+1, (outcorner[1]-1)/(2**(ch.getResolution()-resolution))+1, outcorner[2]
     effdim = (newoutcorner[0]-effcorner[0],newoutcorner[1]-effcorner[1],newoutcorner[2]-effcorner[2])
 
     return effcorner, effdim, (xpixeloffset,ypixeloffset)
 
 
-  def _zoomoutCutout ( self, corner, dim, resolution ):
+  def _zoomoutCutout ( self, ch, corner, dim, resolution ):
     """Scale to a larger cutout that will be shrunk"""
 
     # scale the corner to higher resolution
-    effcorner = corner[0]*(2**(resolution-self.proj.getResolution())), corner[1]*(2**(resolution-self.proj.getResolution())), corner[2]
+    effcorner = corner[0]*(2**(resolution-ch.getResolution())), corner[1]*(2**(resolution-ch.getResolution())), corner[2]
 
-    effdim = dim[0]*(2**(resolution-self.proj.getResolution())),dim[1]*(2**(resolution-self.proj.getResolution())),dim[2]
+    effdim = dim[0]*(2**(resolution-ch.getResolution())),dim[1]*(2**(resolution-ch.getResolution())),dim[2]
 
     return effcorner, effdim 
 
@@ -1063,7 +1063,7 @@ class OCPCADB:
     if ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS and ch.getResolution() > resolution:
 
       # find the effective dimensions of the cutout (where the data is)
-      effcorner, effdim, (xpixeloffset,ypixeloffset) = self._zoominCutout ( corner, dim, resolution )
+      effcorner, effdim, (xpixeloffset,ypixeloffset) = self._zoominCutout ( ch, corner, dim, resolution )
       [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ ch.getResolution() ] 
       effresolution = ch.getResolution()
 
@@ -1071,7 +1071,7 @@ class OCPCADB:
     elif ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS and ch.getResolution() < resolution and ch.getPropagate() not in [ocpcaproj.PROPAGATED]:  
 
       [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ ch.getResolution() ] 
-      effcorner, effdim = self._zoomoutCutout ( corner, dim, resolution )
+      effcorner, effdim = self._zoomoutCutout ( ch, corner, dim, resolution )
       effresolution = ch.getResolution()
 
     # this is the default path when not scaling up the resolution
@@ -1170,7 +1170,7 @@ class OCPCADB:
       outcube.zoomData ( ch.getResolution()-resolution )
 
       # need to trim based on the cube cutout at resolution()
-      outcube.trim ( corner[0]%(xcubedim*(2**(self.proj.getResolution()-resolution)))+xpixeloffset,dim[0], corner[1]%(ycubedim*(2**(ch.getResolution()-resolution)))+ypixeloffset,dim[1], corner[2]%zcubedim,dim[2] )
+      outcube.trim ( corner[0]%(xcubedim*(2**(ch.getResolution()-resolution)))+xpixeloffset,dim[0], corner[1]%(ycubedim*(2**(ch.getResolution()-resolution)))+ypixeloffset,dim[1], corner[2]%zcubedim,dim[2] )
 
     # if we fetch a larger cube, downscale it and correct
     elif ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS and ch.getResolution() < resolution and ch.getPropagate() not in [ocpcaproj.PROPAGATED]:

@@ -479,8 +479,9 @@ class OCPCAProjectsDB:
 
             if pr.kvengine == 'MySQL':
               for i in range(ds.scalinglevels+1):
-                if ch.exceptions:
-                  cursor.execute ( "CREATE TABLE {}_exc{} ( zindex BIGINT, id BIGINT, exlist LONGBLOB, PRIMARY KEY ( zindex, id))".format(ch.channel_name,i))
+                # RB always create the exception tables.....just don't use them if they are not defined
+#                if ch.exceptions:
+                cursor.execute ( "CREATE TABLE {}_exc{} ( zindex BIGINT, id BIGINT, exlist LONGBLOB, PRIMARY KEY ( zindex, id))".format(ch.channel_name,i))
                 cursor.execute ( "CREATE TABLE {}_idx{} ( annid BIGINT PRIMARY KEY, cube LONGBLOB )".format(ch.channel_name,i))
 
               conn.commit()
@@ -502,8 +503,8 @@ class OCPCAProjectsDB:
                 cluster.shutdown()
 
         except MySQLdb.Error, e:
-          logging.error ("Failed to create tables for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-          raise OCPCAError ("Failed to create tables for new project %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+          logging.error ("Failed to create tables for new project %d: %s." % (e.args[0], e.args[1]))
+          raise OCPCAError ("Failed to create tables for new project %d: %s." % (e.args[0], e.args[1]))
         except Exception, e:
           raise 
 

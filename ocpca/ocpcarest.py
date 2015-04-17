@@ -72,7 +72,7 @@ def cutout (imageargs, ch, proj, db):
   resolution = args.getResolution()
   filterlist = args.getFilter()
   zscaling = args.getZScaling()
-
+ 
   # Perform the cutout
   cube = db.cutout ( ch, corner, dim, resolution, zscaling )
   if ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS and filterlist is not None:
@@ -1913,7 +1913,7 @@ def minmaxProject ( webargs ):
   # We have an compound array.  Now color it.
   colors = ('C','M','Y','R','G','B')
   colors = ('R','M','Y','R','G','B')
-  img =  mcfc.mcfcPNG ( mcdata, colors, 1.0 )
+  img =  mcfc.mcfcPNG ( mcdata, colors, 2.0 )
 
   fileobj = cStringIO.StringIO ( )
   img.save ( fileobj, "PNG" )
