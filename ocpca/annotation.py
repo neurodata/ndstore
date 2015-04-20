@@ -32,6 +32,8 @@ ANNO_SEED = 3
 ANNO_SEGMENT = 4
 ANNO_NEURON = 5
 ANNO_ORGANELLE = 6
+ANNO_NODE = 7
+ANNO_SKELETON = 8
 
 #KLTODO -- where did synseg come from?
 #  This table is not getting created or deleted
@@ -904,6 +906,144 @@ class AnnOrganelle (Annotation):
     # and call delete on the base classs
     Annotation.delete ( self, ch, cursor )
 
+
+###############  Node  ##################
+
+class AnnNode (Annotation):
+  """Point annotation in a skeleton"""
+
+  def __init__(self,annodb):
+    """Initialize the fields to zero or None"""
+
+    self.nodetype = 0                           # enumerated label
+    self.location = [ None, None, None ]        # xyz coordinate
+    self.parentid = 0                             # parent node
+    self.children = []                             # children
+
+    # Call the base class constructor
+    Annotation.__init__(self,annodb)
+
+  def getField ( self, ch, field ):
+    """Accessor by field name"""
+
+    if field == 'nodetype':
+      return self.nodetype
+    elif field == 'location':
+      return ','.join(str(x) for x in self.centroid)
+    elif field == 'parentid':
+      return self.parentid
+    elif field == 'children':
+      return ','.join(str(x) for x in self.children)
+    else:
+      return Annotation.getField(self, ch, field)
+
+  def setField ( self, ch, field, value ):
+    """Mutator by field name.  Then need to store the field."""
+    
+    if field == 'nodetype':
+      self.nodetype = value
+    elif field == 'location':
+      self.location = [int(x) for x in value.split(',')] 
+      if len(self.centroid) != 3:
+        raise OCPCAError ("Illegal arguments to set field centroid: %s" % value)
+    elif field == 'parentid':
+      self.parentid = value
+    elif field == 'children':
+      self.children = [int(x) for x in value.split(',')] 
+    else:
+      Annotation.setField ( self, ch, field, value )
+
+  def store ( self, ch, cursor ):
+    """Store the synapse to the annotations databae"""
+
+    if self.location == None or np.all(self.location==[None,None,None]):
+      storelocation = [ 'NULL', 'NULL', 'NULL' ]
+    else:
+      storelocation = self.location
+
+    sql = "INSERT INTO %s VALUES ( %s, %s, %s, %s, %s, %s )"\
+            % ( ch.getAnnoTable('node'), self.annid, self.nodetype, self.parentseed,
+              storelocation[0], storelocation[1], storelocation[2] )
+
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      logger.warning ( "Error inserting organelle %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error inserting organelle: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    # seeds: pack into a kv pair
+#    if self.seeds != []:
+    if len(self.seeds)!=0:
+      self.kvpairs['seeds'] = ','.join([str(i) for i in self.seeds])
+
+    # and call store on the base classs
+    Annotation.store ( self, ch, cursor, ANNO_ORGANELLE)
+
+
+  def update ( self, ch, cursor ):
+    """Update the organelle in the annotations database"""
+
+    if self.centroid == None or np.all(self.centroid==[None,None,None]):
+      storecentroid = [ 'NULL', 'NULL', 'NULL' ]
+    else:
+      storecentroid = self.centroid
+
+    sql = "UPDATE %s SET organelleclass=%s, parentseed=%s, centroidx=%s, centroidy=%s, centroidz=%s WHERE annoid=%s "\
+            % (ch.getAnnoTable('organelle'), self.organelleclass, self.parentseed, storecentroid[0], storecentroid[1], storecentroid[2], self.annid)
+
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      logger.warning ( "Error updating organelle %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error updating organelle: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    # seeds: pack into a kv pair
+#    if self.seeds != []:
+    if len(self.seeds)!=0:
+      self.kvpairs['seeds'] = ','.join([str(i) for i in self.seeds])
+
+    # and call update on the base classs
+    Annotation.updateBase ( self, ch, ANNO_ORGANELLE, cursor )
+
+
+  def retrieve ( self, ch, annid, cursor ):
+    """Retrieve the organelle by annid"""
+
+    # Call the base class retrieve
+    annotype = Annotation.retrieve ( self, ch, annid, cursor )
+
+    # verify the annotation object type
+    if annotype != ANNO_ORGANELLE:
+      raise OCPCAError ( "Incompatible annotation type.  Expected ORGANELLE got %s" % annotype )
+
+    sql = "SELECT organelleclass, parentseed, centroidx, centroidy, centroidz FROM %s WHERE annoid = %s" % ( ch.getAnnoTable('organelle'), annid )
+
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      logger.warning ( "Error retrieving organelle %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error retrieving organelle: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    ( self.organelleclass, self.parentseed, self.centroid[0], self.centroid[1], self.centroid[2] ) = cursor.fetchone()
+
+    if self.kvpairs.get('seeds'):
+      self.seeds = [int(i) for i in self.kvpairs['seeds'].split(',')]
+      del ( self.kvpairs['seeds'] )
+
+
+  def delete ( self, ch, cursor ):
+    """Delete the organelle from the database"""
+
+    sql = "DELETE FROM {} WHERE annoid ={};".format( ch.getAnnoTable('organelle'), self.annid ) 
+
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      logger.warning ( "Error deleting organelle %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error deleting organelle: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    # and call delete on the base classs
+    Annotation.delete ( self, ch, cursor )
 
 
 #####################  Get and Put external interfaces  ##########################
