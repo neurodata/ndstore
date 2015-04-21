@@ -166,16 +166,12 @@ def H5toAnnotation ( key, idgrp, annodb ):
     # Load metadata if it exists
     if mdgrp:
       # load the seed specific metadata
-#      if mdgrp.get('PARENT'):
       if 'PARENT' in mdgrp:
         anno.parent = mdgrp['PARENT'][0]
-#      if mdgrp.get('POSITION'):
       if 'POSITION' in mdgrp:
         anno.position = mdgrp['POSITION'][:]
-#      if mdgrp.get('CUBE_LOCATION'):
       if 'CUBE_LOCATION' in mdgrp:
         anno.cubelocation = mdgrp['CUBE_LOCATION'][0]
-#      if mdgrp.get('SOURCE'):
       if 'SOURCE' in mdgrp:
         anno.source = mdgrp['SOURCE'][0] 
 
@@ -187,16 +183,12 @@ def H5toAnnotation ( key, idgrp, annodb ):
     # Load metadata if it exists
     if mdgrp:
       # load the synapse specific metadata
-#      if mdgrp.get('SYNAPSE_TYPE'):
       if 'SYNAPSE_TYPE' in mdgrp:
         anno.synapse_type = mdgrp['SYNAPSE_TYPE'][0]
-#      if mdgrp.get('WEIGHT'):
       if 'WEIGHT' in mdgrp:
         anno.weight = mdgrp['WEIGHT'][0]
-#      if mdgrp.get('SEEDS') and len(mdgrp['SEEDS'])!=0:
       if 'SEEDS' in mdgrp:
         anno.seeds = mdgrp['SEEDS'][:]
-#      if mdgrp.get('SEGMENTS') and len(mdgrp['SEGMENTS'])!=0:
       if 'SEGMENTS' in mdgrp:
         anno.segments = mdgrp['SEGMENTS'] [:]
 
@@ -246,6 +238,40 @@ def H5toAnnotation ( key, idgrp, annodb ):
         anno.seeds = mdgrp['SEEDS'][:]
       if mdgrp.get('CENTROID'):
         anno.centroid = mdgrp['CENTROID'][:]
+
+  elif annotype == annotation.ANNO_NODE:
+    
+    # Create the appropriate annotation type
+    anno = annotation.AnnNode(annodb)
+
+    # Load metadata if it exists
+    if mdgrp:
+      # load the synapse specific metadata
+      if 'NODETYPE' in mdgrp:
+        anno.nodetype = mdgrp['NODETYPE'][0]
+      if 'PARENTID' in mdgrp:
+        anno.parentid = mdgrp['PARENTID'][0]
+      if 'SKELETONID' in mdgrp:
+        anno.skeletonid = mdgrp['SKELETONID'][0]
+      if 'DIAMETER' in mdgrp:
+        anno.diameter = mdgrp['DIAMETER'][0]
+      if mdgrp.get('CHILDREN') and len(mdgrp['CHILDREN'])!=0:
+        anno.children = mdgrp['CHILDREN'][:]
+      if mdgrp.get('LOCATION'):
+        anno.location = mdgrp['LOCATION'][:]
+
+  elif annotype == annotation.ANNO_SKELETON:
+    
+    # Create the appropriate annotation type
+    anno = annotation.AnnSkeleton(annodb)
+
+    # Load metadata if it exists
+    if mdgrp:
+      # load the synapse specific metadata
+      if 'SKELETONTYPE' in mdgrp:
+        anno.skeletontype = mdgrp['SKELETONTYPE'][0]
+      if 'ROOTNODE' in mdgrp:
+        anno.rootnode = mdgrp['ROOTNODE'][0]
 
   # No special action if it's a no type
   elif annotype == annotation.ANNO_ANNOTATION:
@@ -437,6 +463,41 @@ def OrganelletoH5 ( organelle, h5fh ):
   return h5organelle
 
 
+def NodetoH5 ( node, h5fh ):
+  """Convert a node to HDF5"""
+
+  # First create the base object
+  h5node = BasetoH5 ( node, annotation.ANNO_NODE, h5fh )
+
+  # Then customize
+  h5node.mdgrp.create_dataset ( "NODETYPE", (1,), np.uint32, data=node.nodetype )
+  h5node.mdgrp.create_dataset ( "PARENTID", (1,), np.uint32, data=node.parentid )
+  h5node.mdgrp.create_dataset ( "SKELETONID", (1,), np.uint32, data=node.skeletonid )
+  h5node.mdgrp.create_dataset ( "DIAMETER", (1,), np.float, data=node.diameter )
+
+  # Lists (as arrays)
+  if ( node.children != [] ):
+    h5node.mdgrp.create_dataset ( "CHILDREN", (len(node.children),), np.uint32, node.children )
+    
+  if node.location != [None, None, None]:
+    h5node.mdgrp.create_dataset ( "LOCATION", (3,), np.uint32, data=node.location )     
+
+  return h5node
+
+
+def SkeletontoH5 ( skeleton, h5fh ):
+  """Convert a skeleton to HDF5"""
+
+  # First create the base object
+  h5skeleton = BasetoH5 ( skeleton, annotation.ANNO_SKELETON, h5fh )
+
+  # Then customize
+  h5skeleton.mdgrp.create_dataset ( "SKELETONTYPE", (1,), np.uint32, data=skeleton.skeletontype )
+  h5skeleton.mdgrp.create_dataset ( "ROOTNODE", (1,), np.uint32, data=skeleton.rootnode )
+
+  return h5skeleton
+
+
 def AnnotationtoH5 ( anno, h5fh ):
   """Operate polymorphically on annotations"""
 
@@ -450,6 +511,10 @@ def AnnotationtoH5 ( anno, h5fh ):
     return NeurontoH5 ( anno, h5fh )
   if anno.__class__ == annotation.AnnOrganelle:
     return OrganelletoH5 ( anno, h5fh )
+  if anno.__class__ == annotation.AnnNode:
+    return NodetoH5 ( anno, h5fh )
+  if anno.__class__ == annotation.AnnSkeleton:
+    return SkeletontoH5 ( anno, h5fh )
   elif anno.__class__ == annotation.Annotation:
     return BasetoH5 ( anno, annotation.ANNO_ANNOTATION, h5fh )
   else:

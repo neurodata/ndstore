@@ -29,13 +29,16 @@ anno_names = { 1:'ANNO_ANNOTATION',\
                3:'ANNO_SEED',\
                4:'ANNO_SEGMENT',\
                5:'ANNO_NEURON',\
-               6:'ANNO_ORGANELLE' }
+               6:'ANNO_ORGANELLE',\
+               7:'ANNO_NODE',\
+               8:'ANNO_SKELETON' }
 
 def main():
 
   parser = argparse.ArgumentParser(description='Fetch an annotation as an HDF5 file')
   parser.add_argument('baseurl', action="store")
   parser.add_argument('token', action="store")
+  parser.add_argument('channel', action="store")
   parser.add_argument('annids', action="store", help='Annotation IDs (comman sepearted list  to extract')
   parser.add_argument('--voxels', action='store_true', help='Return data as a list of voxels.')
   parser.add_argument('--resolution', type=int, action="store", help='Resolution at which you want the voxels.  Defaults to 0.', default=0)
@@ -49,17 +52,17 @@ def main():
   result = parser.parse_args()
 
   if result.voxels:
-    url = "http://%s/ca/%s/%s/voxels/%s/" % (result.baseurl,result.token,result.annids, result.resolution)
+    url = "http://%s/ca/%s/%s/%s/voxels/%s/" % (result.baseurl,result.token,result.channel,result.annids, result.resolution)
   elif result.cutout != None:
-    url = "http://%s/ca/%s/%s/cutout/%s/" % (result.baseurl,result.token,result.annids, result.cutout)
+    url = "http://%s/ca/%s/%s/%s/cutout/%s/" % (result.baseurl,result.token,result.channel,result.annids, result.cutout)
   elif result.tightcutout: 
-    url = "http://%s/ca/%s/%s/cutout/%s/" % (result.baseurl,result.token,result.annids, result.resolution)
+    url = "http://%s/ca/%s/%s/%s/cutout/%s/" % (result.baseurl,result.token,result.channel,result.annids, result.resolution)
   elif result.boundingbox: 
-    url = "http://%s/ca/%s/%s/boundingbox/%s/" % (result.baseurl,result.token,result.annids, result.resolution)
+    url = "http://%s/ca/%s/%s/%s/boundingbox/%s/" % (result.baseurl,result.token,result.channel,result.annids, result.resolution)
   elif result.cuboids: 
-    url = "http://%s/ca/%s/%s/cuboids/%s/" % (result.baseurl,result.token,result.annids, result.resolution)
+    url = "http://%s/ca/%s/%s/%s/cuboids/%s/" % (result.baseurl,result.token,result.channel,result.annids, result.resolution)
   else:
-    url = "http://%s/ca/%s/%s/" % (result.baseurl,result.token,result.annids)
+    url = "http://%s/ca/%s/%s/%s/" % (result.baseurl,result.token,result.channel,result.annids)
 
   if result.remap:
     url += 'remap/'

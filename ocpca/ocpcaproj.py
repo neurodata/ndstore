@@ -460,6 +460,8 @@ class OCPCAProjectsDB:
           # tables specific to annotation projects
           if ch.channel_type == 'annotation': 
 
+            import pdb; pdb.set_trace()
+
             cursor.execute("CREATE TABLE {}_ids ( id BIGINT PRIMARY KEY)".format(ch.channel_name))
 
             # And the RAMON objects
@@ -468,6 +470,8 @@ class OCPCAProjectsDB:
             cursor.execute ( "CREATE TABLE {}_synapses (annoid BIGINT PRIMARY KEY, synapse_type INT, weight FLOAT)".format(ch.channel_name))
             cursor.execute ( "CREATE TABLE {}_segments (annoid BIGINT PRIMARY KEY, segmentclass INT, parentseed INT, neuron INT)".format(ch.channel_name))
             cursor.execute ( "CREATE TABLE {}_organelles (annoid BIGINT PRIMARY KEY, organelleclass INT, parentseed INT, centroidx INT, centroidy INT, centroidz INT)".format(ch.channel_name))
+            cursor.execute ( "CREATE TABLE {}_nodes (annoid BIGINT PRIMARY KEY, nodetype INT, parentid INT, skeletonid INT, locationx INT, locationy INT, locationz INT, diameter FLOAT)".format(ch.channel_name))
+            cursor.execute ( "CREATE TABLE {}_skeletons (annoid BIGINT PRIMARY KEY, skeletontype INT, rootnode INT)".format(ch.channel_name))
             cursor.execute ( "CREATE TABLE {}_kvpairs ( annoid BIGINT, kv_key VARCHAR(255), kv_value VARCHAR(20000), PRIMARY KEY ( annoid, kv_key ))".format(ch.channel_name))
 
             conn.commit()
