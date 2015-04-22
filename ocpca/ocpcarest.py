@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
 import StringIO
 import tempfile
 import numpy as np
@@ -38,21 +37,26 @@ import h5projinfo
 import jsonprojinfo
 import annotation
 import mcfc
-from windowcutout import windowCutout
 import ocplib
 import ocpcaprivate
+from windowcutout import windowCutout
 
 from ocpcaerror import OCPCAError
 import logging
 logger=logging.getLogger("ocp")
 
-
 #
 #  ocpcarest: RESTful interface to annotations and cutouts
 #
 
-def cutout ( imageargs, ch, proj, db ):
-  """Build the returned cube of data.  This method is called by all of the more basic services to build the data. They then format and refine the output."""
+def cutout (imageargs, ch, proj, db):
+  """Build and Return a cube of data for the specified dimensions. This method is called by all of the more basic services to build the data. They then format and refine the output.
+  
+  :param imageargs: String of arguments passed
+  :param ch: OCPCAChannel object
+  :param proj: OCPCAProject object
+  :param db: OCPCADB object
+  """
 
   # Perform argument processing
   try:
@@ -71,6 +75,11 @@ def cutout ( imageargs, ch, proj, db ):
  
   # Perform the cutout
   cube = db.cutout ( ch, corner, dim, resolution, zscaling )
+  if ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS and filterlist is not None:
+    cube.data = ocplib.filter_ctype_OMP ( cube.data, filterlist )
+  elif filterlist is not None and ch.getChannelType not in ANNOTATION_CHANNELS:
+    raise OCPCAError("Filter only possible for Annotation Channels")
+    logger.warning("Filter only possible for Annotation Channels")
 
   return cube
 
@@ -154,7 +163,6 @@ def HDF5 ( chanargs, proj, db ):
       #ch = ocpcaproj.OCPCAChannel(proj,channel_name)
       ch = proj.getChannelObj(channel_name)
       cube = cutout ( imageargs, ch, proj, db )
-      FilterCube ( imageargs, cube )
       #cube.RGBAChannel()
       changrp = fh5out.create_group( "{}".format(channel_name) )
       changrp.create_dataset ( "CUTOUT", tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data )
@@ -174,23 +182,29 @@ def HDF5 ( chanargs, proj, db ):
   fh5out.close()
   tmpfile.seek(0)
   return tmpfile.read()
- 
 
-def FilterCube ( imageargs, cb ):
-  """ Return a cube with the filtered ids """
 
-  # Filter Function - used to filter
-  result = re.search ("filter/([\d/,]+)/",imageargs)
-  if result != None:
-    filterlist = np.array ( result.group(1).split(','), dtype=np.uint32 )
-    cb.data = ocplib.filter_ctype_OMP ( cb.data, filterlist )
+def window(data, ch, window_range=None ):
+  """Performs a window transformation on the cutout area"""
+
+  if window_range is None:
+    (startwindow,endwindow) = ch.getWindowRange()
+
+  if ch.getChannelType() in ocpcaproj.IMAGE_CHANNELS and ch.getDataType() == ocpcaproj.DTYPE_uint16:
+    if (startwindow == endwindow == 0):
+      return np.uint8(data * 1.0/256)
+    elif endwindow!=0:
+      windowcutout (data, (startwindow,endwindow))
+      return np.uint8(data)
+
+  return data
 
 
 def FilterTimeCube ( imageargs, cb ):
   """ Return a cube with the filtered ids """
 
   # Filter Function - used to filter
-  result = re.search ("filter/([\d/,]+)/",imageargs)
+  result = re.search ("filter/([\d/,]+)/", imageargs)
   if result != None:
     filterlist = np.array ( result.group(1).split(','), dtype=np.uint32 )
     print "Filter not supported for Time Cubes yet"
@@ -262,31 +276,31 @@ def TimeSeriesCutout ( imageargs, proj, db ):
     raise OCPCAError(e.value)
 
 
-#
-#  **Image return a readable png object
-#    where ** is xy, xz, yz
-#
-def imgSlice ( service, chanargs, proj, db ):
-  """Return the cube object for an xy plane"""
-  
-  [channel, service, imageargs] = chanargs.split('/', 2)
-  [resolution, rest] = imageargs.split('/',1)
+def imgSlice ( webargs, proj, db ):
+  """Return the cube object for any plane xy, yz, xz"""
+
+  try:
+    # argument of format channel/service/resolution/cutoutargs
+    p = re.compile("(\w+)/(xy|yz|xz)/(\d+)/([\d+,/]+)")
+    m = p.match(webargs)
+    [channel, service, resolution, imageargs] = [i for i in m.groups()]
+    imageargs = resolution + '/' + imageargs
+  except Exception, e:
+    logger.warning("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
+    raise OCPCAError("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
 
   try:
     # Rewrite the imageargs to be a cutout
     if service == 'xy':
-      p = re.compile("(\d+/\d+,\d+/\d+,\d+/)(\d+)/")
-      m = p.match ( imageargs )
+      m = re.match("(\d+/\d+,\d+/\d+,\d+/)(\d+)/", imageargs)
       cutoutargs = '{}{},{}/'.format(m.group(1),m.group(2),int(m.group(2))+1) 
 
     elif service == 'xz':
-      p = re.compile("(\d+/\d+,\d+/)(\d+)(/\d+,\d+)/")
-      m = p.match ( imageargs )
+      m = re.match("(\d+/\d+,\d+/)(\d+)(/\d+,\d+)/", imageargs)
       cutoutargs = '{}{},{}{}/'.format(m.group(1),m.group(2),int(m.group(2))+1,m.group(3)) 
 
     elif service == 'yz':
-      p = re.compile("(\d+/)(\d+)(/\d+,\d+/\d+,\d+)/")
-      m = p.match ( imageargs )
+      m = re.match("(\d+/)(\d+)(/\d+,\d+/\d+,\d+)/", imageargs)
       cutoutargs = '{}{},{}{}/'.format(m.group(1),m.group(2),int(m.group(2))+1,m.group(3)) 
     else:
       raise "No such image plane {}".format(service)
@@ -296,23 +310,23 @@ def imgSlice ( service, chanargs, proj, db ):
 
 
   # Perform the cutout
-  #ch = ocpcaproj.OCPCAChannel(proj, channel)
   ch = proj.getChannelObj(channel)
-  cb = cutout ( cutoutargs, ch, proj, db )
+  cb = cutout(cutoutargs, ch, proj, db)
+  cb.data = window(cb.data, ch)
 
-  # Filter Function - used to filter
-  if ch.getChannelType() in ocpcaproj.TIMESERIES_CHANNELS:
-    FilterTimeCube ( imageargs, cb )
-  else:
-    FilterCube ( imageargs, cb )
+  return cb
 
-  # Window Function - used to limit the range of data purely for viewing purposes
-  #(startwindow,endwindow) = proj.datasetcfg.windowrange
-  #if endwindow != 0:
-    #window = (startwindow, endwindow)
-    #windowCutout ( cb.data, window)
-    #cb.data = np.uint8(cb.data)
-  
+def imgPNG (proj, webargs, cb):
+  """Return a png object for any plane"""
+    
+  try:
+    # argument of format channel/service/resolution/cutoutargs
+    m = re.match("(\w+)/(xy|yz|xz)/(\d+)/([\d+,/]+)", webargs)
+    [channel, service, resolution, imageargs] = [i for i in m.groups()]
+  except Exception, e:
+    logger.warning("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
+    raise OCPCAError("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
+
   if service == 'xy':
     img = cb.xyImage()
   elif service == 'yz':
@@ -324,6 +338,7 @@ def imgSlice ( service, chanargs, proj, db ):
   img.save ( fileobj, "PNG" )
   fileobj.seek(0)
   return fileobj.read()
+
 
 #def xyImage ( imageargs, proj, db ):
   #"""Return an xy plane fileobj.read()"""
@@ -384,18 +399,15 @@ def imgAnno ( service, chanargs, proj, db ):
   try:
     # Rewrite the imageargs to be a cutout
     if service == 'xy':
-      p = re.compile("(\d+/\d+,\d+/\d+,\d+/)(\d+)/")
-      m = p.match ( imageargs )
+      m = re.match("(\d+/\d+,\d+/\d+,\d+/)(\d+)/", imageargs)
       cutoutargs = '{}{},{}/'.format(m.group(1),m.group(2),int(m.group(2))+1) 
 
     elif service == 'xz':
-      p = re.compile("(\d+/\d+,\d+/)(\d+)(/\d+,\d+)/")
-      m = p.match ( imageargs )
+      m = re.match("(\d+/\d+,\d+/)(\d+)(/\d+,\d+)/", imageargs)
       cutoutargs = '{}{},{}{}/'.format(m.group(1),m.group(2),int(m.group(2))+1,m.group(3)) 
 
     elif service == 'yz':
-      p = re.compile("(\d+/)(\d+)(/\d+,\d+/\d+,\d+)/")
-      m = p.match ( imageargs )
+      m = re.compile("(\d+/)(\d+)(/\d+,\d+/\d+,\d+)/", imageargs)
       cutoutargs = '{}{},{}{}/'.format(m.group(1),m.group(2),int(m.group(2))+1,m.group(3)) 
     else:
       raise "No such image plane {}".format(service)
@@ -491,7 +503,7 @@ def selectService ( service, webargs, proj, db ):
   """Parse the first arg and call service, HDF5, npz, etc."""
   
   if service in ['xy','yz','xz']:
-    return imgSlice ( service, webargs, proj, db )
+    return imgPNG(proj, webargs, imgSlice (webargs, proj, db))
 
   #elif service == 'xz':
     #return xzImage ( imageargs, proj, db)

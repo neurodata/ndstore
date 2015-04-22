@@ -20,7 +20,6 @@ import ocplib
 from windowcutout import windowCutout
 
 from ocpcaerror import OCPCAError
-
 import logging
 logger=logging.getLogger("ocp")
 
