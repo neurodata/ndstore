@@ -253,8 +253,8 @@ def H5toAnnotation ( key, idgrp, annodb ):
         anno.parentid = mdgrp['PARENTID'][0]
       if 'SKELETONID' in mdgrp:
         anno.skeletonid = mdgrp['SKELETONID'][0]
-      if 'DIAMETER' in mdgrp:
-        anno.diameter = mdgrp['DIAMETER'][0]
+      if 'RADIUS' in mdgrp:
+        anno.radius = mdgrp['RADIUS'][0]
       if mdgrp.get('CHILDREN') and len(mdgrp['CHILDREN'])!=0:
         anno.children = mdgrp['CHILDREN'][:]
       if mdgrp.get('LOCATION'):
@@ -471,9 +471,9 @@ def NodetoH5 ( node, h5fh ):
 
   # Then customize
   h5node.mdgrp.create_dataset ( "NODETYPE", (1,), np.uint32, data=node.nodetype )
-  h5node.mdgrp.create_dataset ( "PARENTID", (1,), np.uint32, data=node.parentid )
+  h5node.mdgrp.create_dataset ( "PARENTID", (1,), np.int32, data=node.parentid )
   h5node.mdgrp.create_dataset ( "SKELETONID", (1,), np.uint32, data=node.skeletonid )
-  h5node.mdgrp.create_dataset ( "DIAMETER", (1,), np.float, data=node.diameter )
+  h5node.mdgrp.create_dataset ( "RADIUS", (1,), np.float, data=node.radius )
 
   # Lists (as arrays)
   if ( node.children != [] ):

@@ -27,6 +27,7 @@ from PIL import Image
 import MySQLdb
 import itertools
 from contextlib import closing
+from libtiff import TIFF
 
 import restargs
 import anncube
@@ -176,6 +177,35 @@ def HDF5 ( chanargs, proj, db ):
   return tmpfile.read()
  
 
+def tiff3d ( chanargs, proj, db ):
+  """Return a 3d tiff file"""
+
+  # Create an in-memory HDF5 file
+  tmpfile = tempfile.NamedTemporaryFile()
+  tif = TIFF.open(tmpfile.name, mode='w')
+
+  [channels, service, imageargs] = chanargs.split('/', 2)
+
+  import pdb; pdb.set_trace()
+  try: 
+    
+    for channel_name in channels.split(','):
+      ch = proj.getChannelObj(channel_name)
+      cube = cutout ( imageargs, ch, proj, db )
+      FilterCube ( imageargs, cube )
+
+      tif.write_image(cube.data)
+
+  except:
+    tif.close()
+    tmpfile.close()
+    raise
+
+  tif.close()
+  tmpfile.seek(0)
+  return tmpfile.read()
+ 
+
 def FilterCube ( imageargs, cb ):
   """ Return a cube with the filtered ids """
 
@@ -268,6 +298,8 @@ def TimeSeriesCutout ( imageargs, proj, db ):
 #
 def imgSlice ( service, chanargs, proj, db ):
   """Return the cube object for an xy plane"""
+
+  import pdb; pdb.set_trace()
   
   [channel, service, imageargs] = chanargs.split('/', 2)
   [resolution, rest] = imageargs.split('/',1)
@@ -493,14 +525,11 @@ def selectService ( service, webargs, proj, db ):
   if service in ['xy','yz','xz']:
     return imgSlice ( service, webargs, proj, db )
 
-  #elif service == 'xz':
-    #return xzImage ( imageargs, proj, db)
-
-  #elif service == 'yz':
-    #return yzImage ( imageargs, proj, db )
-
   elif service == 'hdf5':
     return HDF5 ( webargs, proj, db )
+
+  elif service == 'tiff':
+    return tiff3d ( webargs, proj, db )
 
   elif service in ['npz','zip']:
     return  numpyZip ( webargs, proj, db ) 

@@ -35,11 +35,11 @@ POST_SERVICES = ['hdf5', 'npz', 'hdf5_async', 'propagate']
 def cutout (request, webargs):
   """Restful URL for all read services to annotation projects"""
 
-  if re.match(r"\w+/[\w+,/-]+/(xy|xz|yz|ts|hdf5|npz|zip|id|ids|xyanno|xzanno|yzanno|xytiff|xztiff|yztiff)/[\w,/-]+$", webargs):
+  if re.match(r"\w+/[\w+,/-]+/(xy|xz|yz|ts|hdf5|npz|tiff|zip|id|ids|xyanno|xzanno|yzanno)/[\w,/-]+$", webargs):
     [token, channel, service, cutoutargs] = webargs.split('/', 3)
-  elif re.match(r"\w+/(xy|xz|yz|ts|hdf5|npz|zip|id|ids|xyanno|xzanno|yzanno|xytiff|xztiff|yztiff)/[\w,/-]+$", webargs):
+  elif re.match(r"\w+/(xy|xz|yz|ts|hdf5|npz|tiff|zip|id|ids|xyanno|xzanno|yzanno)/[\w,/-]+$", webargs):
     [token, service, cutoutargs] = webargs.split('/', 2)
-    p = re.compile("(\w+)/(xy|xz|yz|ts|hdf5|npz|zip|id|ids|xyanno|xzanno|yzanno|xytiff|xztiff|yztiff)/([\w,/-]+)$")
+    p = re.compile("(\w+)/(xy|xz|yz|ts|hdf5|npz|tiff|zip|id|ids|xyanno|xzanno|yzanno)/([\w,/-]+)$")
     m = p.match(webargs)
     webargs = '{}/default/{}/{}'.format(m.group(1), m.group(2), m.group(3))
 
@@ -52,6 +52,8 @@ def cutout (request, webargs):
         return django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="product/hdf5" )
       elif service=='npz':
         return django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="product/npz" )
+      elif service=='tiff':
+        return django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="image/tiff" )
       elif service=='zip':
         return django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="product/zip" )
       elif service in ['id','ids']:

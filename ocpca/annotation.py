@@ -921,7 +921,7 @@ class AnnNode (Annotation):
     self.skeletonid = 0
     self.location = [ None, None, None ]        # xyz coordinate
     self.parentid = 0                           # parent node
-    self.diameter = 0.0
+    self.radius = 0.0
     self.children = []                          # children
 
     # Call the base class constructor
@@ -938,8 +938,8 @@ class AnnNode (Annotation):
       return self.skeletonid
     elif field == 'parentid':
       return self.parentid
-    elif field == 'diameter':
-      return self.diameter
+    elif field == 'radius':
+      return self.radius
     elif field == 'children':
       return ','.join(str(x) for x in self.children)
     else:
@@ -958,8 +958,8 @@ class AnnNode (Annotation):
       self.parentid = value
     elif field == 'skeletonid':
       self.skeletonid = value
-    elif field == 'diameter':
-      self.diameter = value
+    elif field == 'radius':
+      self.radius = value
     elif field == 'children':
       self.children = [int(x) for x in value.split(',')] 
     else:
@@ -975,7 +975,7 @@ class AnnNode (Annotation):
 
     sql = "INSERT INTO %s VALUES ( %s, %s, %s, %s, %s, %s, %s, %s )"\
             % ( ch.getAnnoTable('node'), self.annid, self.nodetype, self.parentid, self.skeletonid,
-              storelocation[0], storelocation[1], storelocation[2], self.diameter )
+              storelocation[0], storelocation[1], storelocation[2], self.radius )
 
     try:
       cursor.execute ( sql )
@@ -999,8 +999,8 @@ class AnnNode (Annotation):
     else:
       storelocation = self.location
 
-    sql = "UPDATE %s SET nodetype=%s, parentid=%s, locationx=%s, locationy=%s, locationz=%s, diameter=%s WHERE annoid=%s "\
-            % (ch.getAnnoTable('node'), self.nodetype, self.parentid, storelocation[0], storelocation[1], storelocation[2], self.diameter, self.annid)
+    sql = "UPDATE %s SET nodetype=%s, parentid=%s, locationx=%s, locationy=%s, locationz=%s, radius=%s WHERE annoid=%s "\
+            % (ch.getAnnoTable('node'), self.nodetype, self.parentid, storelocation[0], storelocation[1], storelocation[2], self.radius, self.annid)
 
     try:
       cursor.execute ( sql )
@@ -1026,7 +1026,7 @@ class AnnNode (Annotation):
     if annotype != ANNO_NODE:
       raise OCPCAError ( "Incompatible annotation type.  Expected NODE got %s" % annotype )
 
-    sql = "SELECT nodetype, parentid, locationx, locationy, locationz, diameter FROM %s WHERE annoid = %s" % ( ch.getAnnoTable('node'), annid )
+    sql = "SELECT nodetype, parentid, locationx, locationy, locationz, radius FROM %s WHERE annoid = %s" % ( ch.getAnnoTable('node'), annid )
 
     try:
       cursor.execute ( sql )
@@ -1034,7 +1034,7 @@ class AnnNode (Annotation):
       logger.warning ( "Error retrieving node %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
       raise OCPCAError ( "Error retrieving node: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
-    ( self.nodetype, self.parentid, self.location[0], self.location[1], self.location[2], self.diameter ) = cursor.fetchone()
+    ( self.nodetype, self.parentid, self.location[0], self.location[1], self.location[2], self.radius ) = cursor.fetchone()
 
     if self.kvpairs.get('children'):
       self.children = [int(i) for i in self.kvpairs['children'].split(',')]
