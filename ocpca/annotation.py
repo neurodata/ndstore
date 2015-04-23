@@ -15,7 +15,6 @@
 import numpy as np
 import cStringIO
 import MySQLdb
-import sys
 from collections import defaultdict
 
 from ocpcaerror import OCPCAError 
@@ -1124,8 +1123,6 @@ class AnnSkeleton (Annotation):
 
   def retrieve ( self, ch, annid, cursor ):
     """Retrieve the skeleton by annid"""
-
-    import pdb; pdb.set_trace()
 
     # Call the base class retrieve
     annotype = Annotation.retrieve ( self, ch, annid, cursor )

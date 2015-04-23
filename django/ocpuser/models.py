@@ -29,7 +29,7 @@ class Dataset ( models.Model):
         (1, 'Yes'),
         (0, 'No'),
         )
-    public =  models.IntegerField(choices=PUBLIC_CHOICES, default=0)
+    public =  models.IntegerField(choices=PUBLIC_CHOICES)
     ximagesize =  models.IntegerField()
     yimagesize =  models.IntegerField()
     zimagesize =  models.IntegerField()
@@ -43,7 +43,7 @@ class Dataset ( models.Model):
         (0, 'Z Slices'),
         (1, 'isotropic'),
         )
-    scalingoption = models.IntegerField(default=0, choices=SCALING_CHOICES)
+    scalingoption = models.IntegerField(choices=SCALING_CHOICES)
     scalinglevels = models.IntegerField(default=0)
     starttime = models.IntegerField(default=0)
     endtime = models.IntegerField(default=0)
@@ -65,7 +65,7 @@ class Project ( models.Model):
         (1, 'Yes'),
         (0, 'No'),
         )
-    public =  models.IntegerField(choices=PUBLIC_CHOICES, default=0)
+    public =  models.IntegerField(choices=PUBLIC_CHOICES)
     dataset = models.ForeignKey(Dataset)
     HOST_CHOICES = (
       ('localhost', 'localhost'),

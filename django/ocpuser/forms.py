@@ -39,6 +39,17 @@ class CreateDatasetForm(ModelForm):
         model = Dataset
         exclude = ('user',)
 
+class UpdateDatasetForm(ModelForm):
+
+  def __init__(self, *args, **kwargs):
+    initial = kwargs.get('initial', {})
+    initial['material'] = 'Test'
+    kwargs['initial'] = initial
+
+    class Meta:
+        model = Dataset
+        exclude = ('user',)
+
 class CreateTokenForm(ModelForm):
 
     class Meta:
@@ -49,6 +60,7 @@ class CreateTokenForm(ModelForm):
                 token = self.cleaned_data['token_name']
                 return token 
             raise forms.ValidationError('Please enter a valid token')
+
 
 class CreateChannelForm(ModelForm):
 

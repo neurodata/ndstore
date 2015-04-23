@@ -1,6 +1,6 @@
 # Copyright 2014 Open Connectome Project (http://openconnecto.me)
 # 
-# Licensed under the Apache License, Version 2.0 (the "License");
+#Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 # 
@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
 import StringIO
 import tempfile
 import numpy as np
@@ -28,6 +27,7 @@ import MySQLdb
 import itertools
 from contextlib import closing
 from libtiff import TIFF
+from libtiff import TIFFfile, TIFFimage
 
 import restargs
 import anncube
@@ -39,21 +39,26 @@ import h5projinfo
 import jsonprojinfo
 import annotation
 import mcfc
-from windowcutout import windowCutout
 import ocplib
 import ocpcaprivate
+from windowcutout import windowCutout
 
 from ocpcaerror import OCPCAError
 import logging
 logger=logging.getLogger("ocp")
 
-
 #
 #  ocpcarest: RESTful interface to annotations and cutouts
 #
 
-def cutout ( imageargs, ch, proj, db ):
-  """Build the returned cube of data.  This method is called by all of the more basic services to build the data. They then format and refine the output."""
+def cutout (imageargs, ch, proj, db):
+  """Build and Return a cube of data for the specified dimensions. This method is called by all of the more basic services to build the data. They then format and refine the output.
+  
+  :param imageargs: String of arguments passed
+  :param ch: OCPCAChannel object
+  :param proj: OCPCAProject object
+  :param db: OCPCADB object
+  """
 
   # Perform argument processing
   try:
@@ -72,6 +77,11 @@ def cutout ( imageargs, ch, proj, db ):
  
   # Perform the cutout
   cube = db.cutout ( ch, corner, dim, resolution, zscaling )
+  if ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS and filterlist is not None:
+    cube.data = ocplib.filter_ctype_OMP ( cube.data, filterlist )
+  elif filterlist is not None and ch.getChannelType not in ANNOTATION_CHANNELS:
+    raise OCPCAError("Filter only possible for Annotation Channels")
+    logger.warning("Filter only possible for Annotation Channels")
 
   return cube
 
@@ -155,7 +165,6 @@ def HDF5 ( chanargs, proj, db ):
       #ch = ocpcaproj.OCPCAChannel(proj,channel_name)
       ch = proj.getChannelObj(channel_name)
       cube = cutout ( imageargs, ch, proj, db )
-      FilterCube ( imageargs, cube )
       #cube.RGBAChannel()
       changrp = fh5out.create_group( "{}".format(channel_name) )
       changrp.create_dataset ( "CUTOUT", tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data )
@@ -175,26 +184,60 @@ def HDF5 ( chanargs, proj, db ):
   fh5out.close()
   tmpfile.seek(0)
   return tmpfile.read()
- 
+
 
 def tiff3d ( chanargs, proj, db ):
   """Return a 3d tiff file"""
 
-  # Create an in-memory HDF5 file
-  tmpfile = tempfile.NamedTemporaryFile()
-  tif = TIFF.open(tmpfile.name, mode='w')
 
   [channels, service, imageargs] = chanargs.split('/', 2)
 
-  import pdb; pdb.set_trace()
   try: 
-    
+
     for channel_name in channels.split(','):
       ch = proj.getChannelObj(channel_name)
       cube = cutout ( imageargs, ch, proj, db )
       FilterCube ( imageargs, cube )
 
-      tif.write_image(cube.data)
+      tmpfile = tempfile.NamedTemporaryFile()
+      tif = TIFF.open(tmpfile.name, mode='w')
+
+
+      # if it's annotations, recolor
+      if ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS:
+
+        imagemap = np.zeros ( (cube.data.shape[0]*cube.data.shape[1], cube.data.shape[2]), dtype=np.uint32 )
+
+        import pdb; pdb.set_trace()
+
+        # turn it into a 2-d array for recolor -- maybe make a 3-d recolor
+        recolor_cube = ocplib.recolor_ctype( cube.data.reshape((cube.data.shape[0]*cube.data.shape[1], cube.data.shape[2])), imagemap )
+
+        # turn it back into a 4-d array RGBA
+        recolor_cube = recolor_cube.view(dtype=np.uint8).reshape((cube.data.shape[0],cube.data.shape[1],cube.data.shape[2], 4 ))
+
+        for i in range(recolor_cube.shape[0]):
+          tif.write_image(recolor_cube[i,:,:,0:3], write_rgb=True)
+
+        # split out the channels 
+#        red_ar = recolor_cube[:,:,:,0]
+#        grn_ar = recolor_cube[:,:,:,1]
+#        blue_ar = recolor_cube[:,:,:,2]
+#        alpha = recolor_cube[:,:,:,3]
+
+#        # Create an in-memory HDF5 file
+#
+#        tif.SetField('SAMPLESPERPIXEL',3)
+#
+#        for i in range(recolor_cube.shape[0]):
+#          rgbcube = recolor_cube[i,:,:,0:3]
+#          tif.write_image(rgbcube, write_rgb=True)
+#
+#          tifimg = TIFFimage ( rgbcube ) 
+#          tif.write_image(tifimg, write_rgb=True)
+
+      else:
+        tif.write_image(cube.data)
 
   except:
     tif.close()
@@ -216,11 +259,27 @@ def FilterCube ( imageargs, cb ):
     cb.data = ocplib.filter_ctype_OMP ( cb.data, filterlist )
 
 
+def window(data, ch, window_range=None ):
+  """Performs a window transformation on the cutout area"""
+
+  if window_range is None:
+    (startwindow,endwindow) = ch.getWindowRange()
+
+  if ch.getChannelType() in ocpcaproj.IMAGE_CHANNELS and ch.getDataType() == ocpcaproj.DTYPE_uint16:
+    if (startwindow == endwindow == 0):
+      return np.uint8(data * 1.0/256)
+    elif endwindow!=0:
+      windowcutout (data, (startwindow,endwindow))
+      return np.uint8(data)
+
+  return data
+
+
 def FilterTimeCube ( imageargs, cb ):
   """ Return a cube with the filtered ids """
 
   # Filter Function - used to filter
-  result = re.search ("filter/([\d/,]+)/",imageargs)
+  result = re.search ("filter/([\d/,]+)/", imageargs)
   if result != None:
     filterlist = np.array ( result.group(1).split(','), dtype=np.uint32 )
     print "Filter not supported for Time Cubes yet"
@@ -292,33 +351,31 @@ def TimeSeriesCutout ( imageargs, proj, db ):
     raise OCPCAError(e.value)
 
 
-#
-#  **Image return a readable png object
-#    where ** is xy, xz, yz
-#
-def imgSlice ( service, chanargs, proj, db ):
-  """Return the cube object for an xy plane"""
+def imgSlice ( webargs, proj, db ):
+  """Return the cube object for any plane xy, yz, xz"""
 
-  import pdb; pdb.set_trace()
-  
-  [channel, service, imageargs] = chanargs.split('/', 2)
-  [resolution, rest] = imageargs.split('/',1)
+  try:
+    # argument of format channel/service/resolution/cutoutargs
+    p = re.compile("(\w+)/(xy|yz|xz)/(\d+)/([\d+,/]+)")
+    m = p.match(webargs)
+    [channel, service, resolution, imageargs] = [i for i in m.groups()]
+    imageargs = resolution + '/' + imageargs
+  except Exception, e:
+    logger.warning("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
+    raise OCPCAError("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
 
   try:
     # Rewrite the imageargs to be a cutout
     if service == 'xy':
-      p = re.compile("(\d+/\d+,\d+/\d+,\d+/)(\d+)/")
-      m = p.match ( imageargs )
+      m = re.match("(\d+/\d+,\d+/\d+,\d+/)(\d+)/", imageargs)
       cutoutargs = '{}{},{}/'.format(m.group(1),m.group(2),int(m.group(2))+1) 
 
     elif service == 'xz':
-      p = re.compile("(\d+/\d+,\d+/)(\d+)(/\d+,\d+)/")
-      m = p.match ( imageargs )
+      m = re.match("(\d+/\d+,\d+/)(\d+)(/\d+,\d+)/", imageargs)
       cutoutargs = '{}{},{}{}/'.format(m.group(1),m.group(2),int(m.group(2))+1,m.group(3)) 
 
     elif service == 'yz':
-      p = re.compile("(\d+/)(\d+)(/\d+,\d+/\d+,\d+)/")
-      m = p.match ( imageargs )
+      m = re.match("(\d+/)(\d+)(/\d+,\d+/\d+,\d+)/", imageargs)
       cutoutargs = '{}{},{}{}/'.format(m.group(1),m.group(2),int(m.group(2))+1,m.group(3)) 
     else:
       raise "No such image plane {}".format(service)
@@ -328,23 +385,24 @@ def imgSlice ( service, chanargs, proj, db ):
 
 
   # Perform the cutout
-  #ch = ocpcaproj.OCPCAChannel(proj, channel)
   ch = proj.getChannelObj(channel)
-  cb = cutout ( cutoutargs, ch, proj, db )
+  cb = cutout(cutoutargs, ch, proj, db)
+  cb.data = window(cb.data, ch)
 
-  # Filter Function - used to filter
-  if ch.getChannelType() in ocpcaproj.TIMESERIES_CHANNELS:
-    FilterTimeCube ( imageargs, cb )
-  else:
-    FilterCube ( imageargs, cb )
+  return cb
 
-  # Window Function - used to limit the range of data purely for viewing purposes
-  #(startwindow,endwindow) = proj.datasetcfg.windowrange
-  #if endwindow != 0:
-    #window = (startwindow, endwindow)
-    #windowCutout ( cb.data, window)
-    #cb.data = np.uint8(cb.data)
-  
+
+def imgPNG (proj, webargs, cb):
+  """Return a png object for any plane"""
+    
+  try:
+    # argument of format channel/service/resolution/cutoutargs
+    m = re.match("(\w+)/(xy|yz|xz)/(\d+)/([\d+,/]+)", webargs)
+    [channel, service, resolution, imageargs] = [i for i in m.groups()]
+  except Exception, e:
+    logger.warning("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
+    raise OCPCAError("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
+
   if service == 'xy':
     img = cb.xyImage()
   elif service == 'yz':
@@ -357,40 +415,6 @@ def imgSlice ( service, chanargs, proj, db ):
   fileobj.seek(0)
   return fileobj.read()
 
-#def xyImage ( imageargs, proj, db ):
-  #"""Return an xy plane fileobj.read()"""
-
-  #img = imgSlice ( 'xy', imageargs, proj, db ).xyImage()
-  #fileobj = cStringIO.StringIO ( )
-  #img.save ( fileobj, "PNG" )
-  #fileobj.seek(0)
-  #return fileobj.read()
-
-
-#def xzImage ( imageargs, proj, db ):
-  #"""Return an xz plane fileobj.read()"""
-
-  #resolution, rest = imageargs.split('/',1)
-
-  #zscale = proj.datasetcfg.voxelres[int(resolution)][2]/proj.datasetcfg.voxelres[int(resolution)][1]
-  #img = imgSlice ( 'xz', imageargs, proj, db ).xzImage(zscale)
-  #fileobj = cStringIO.StringIO ( )
-  #img.save ( fileobj, "PNG" )
-  #fileobj.seek(0)
-  #return fileobj.read()
-
-
-#def yzImage ( imageargs, proj, db ):
-  #"""Return an yz plane fileobj.read()"""
-
-  #resolution, rest = imageargs.split('/',1)
-
-  #zscale = proj.datasetcfg.voxelres[int(resolution)][2]/proj.datasetcfg.voxelres[int(resolution)][0]
-  #img = imgSlice ( 'yz', imageargs, proj, db ).yzImage(zscale)
-  #fileobj = cStringIO.StringIO ( )
-  #img.save ( fileobj, "PNG" )
-  #fileobj.seek(0)
-  #return fileobj.read()
 
 #
 #  Read individual annotation image slices xy, xz, yz
@@ -416,18 +440,15 @@ def imgAnno ( service, chanargs, proj, db ):
   try:
     # Rewrite the imageargs to be a cutout
     if service == 'xy':
-      p = re.compile("(\d+/\d+,\d+/\d+,\d+/)(\d+)/")
-      m = p.match ( imageargs )
+      m = re.match("(\d+/\d+,\d+/\d+,\d+/)(\d+)/", imageargs)
       cutoutargs = '{}{},{}/'.format(m.group(1),m.group(2),int(m.group(2))+1) 
 
     elif service == 'xz':
-      p = re.compile("(\d+/\d+,\d+/)(\d+)(/\d+,\d+)/")
-      m = p.match ( imageargs )
+      m = re.match("(\d+/\d+,\d+/)(\d+)(/\d+,\d+)/", imageargs)
       cutoutargs = '{}{},{}{}/'.format(m.group(1),m.group(2),int(m.group(2))+1,m.group(3)) 
 
     elif service == 'yz':
-      p = re.compile("(\d+/)(\d+)(/\d+,\d+/\d+,\d+)/")
-      m = p.match ( imageargs )
+      m = re.compile("(\d+/)(\d+)(/\d+,\d+/\d+,\d+)/", imageargs)
       cutoutargs = '{}{},{}{}/'.format(m.group(1),m.group(2),int(m.group(2))+1,m.group(3)) 
     else:
       raise "No such image plane {}".format(service)
@@ -523,7 +544,7 @@ def selectService ( service, webargs, proj, db ):
   """Parse the first arg and call service, HDF5, npz, etc."""
   
   if service in ['xy','yz','xz']:
-    return imgSlice ( service, webargs, proj, db )
+    return imgPNG(proj, webargs, imgSlice (webargs, proj, db))
 
   elif service == 'hdf5':
     return HDF5 ( webargs, proj, db )

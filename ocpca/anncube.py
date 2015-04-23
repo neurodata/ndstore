@@ -26,12 +26,9 @@ from ocpcaerror import OCPCAError
 import logging
 logger=logging.getLogger("ocp")
 
-#
-#  AnnotateCube: manipulate the in-memory data representation of the 3-d cube of data
-#    that contains annotations.  
-#
 
 class AnnotateCube(Cube):
+  """AnnotateCube: manipulate the in-memory data representation of the 3-d cube of data that contains annotations"""
 
   #  Express cubesize in [ x,y,z ]
   def __init__(self, cubesize):
@@ -39,6 +36,7 @@ class AnnotateCube(Cube):
 
     # call the base class constructor
     Cube.__init__( self, cubesize )
+    self.data = np.empty ( self.cubesize, dtype=np.uint32 )
 
     # variable that describes when a cube is created from zeros
     #  rather than loaded from another source
