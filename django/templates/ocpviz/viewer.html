@@ -68,6 +68,27 @@
   <script src="{% static "ocpviz/js/ocp-leaflet.js" %}"></script>	
 	</head>
 <body>
+  {# manage modal TODO #}
+  <div class="modal fade" id="manage" tabindex="-1" role="dialog" aria-labelledby="manageModal" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="manageLabel">Manage Project</h4>
+        </div>
+        <div class="modal-body">
+          ...
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Save changes</button>  
+        </div>
+       </div>
+     </div>
+  </div>
+
+  {# end manage modal #} 
+  
   <nav class="navbar navbar-inverse navbar-fixed-top">
     <div class="container">
       <div class="navbar-header">
@@ -94,7 +115,7 @@
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li><a href="#">Help</a></li>
-        <li><a href="#">Manage</a></li>
+        <li><a href="#" data-toggle="modal" data-target="#manage">Manage</a></li>
         <li><a href="#">Logout</a></li>
       </ul>
     </div>
@@ -284,9 +305,12 @@
 
 		// get anno id from coordinate
     // expects a L.point object for point and a number for zoom
-    // TODO add a query layer selector 
+    // TODO add a query layer selector
+    // TODO if the server is localhost (the query server) that doesnt work
+    // TODO need a way to select the query layer (dropdown?)
+    // TODO get the server from the query layer 
 		function getAnnoId(point, zoom) {
-      var ocpUrlBase = "http://{{ request.get_host }}/ocp/viz/query/localhost/ca/kharris15apical_anno/id/" + zoom + "/";
+      var ocpUrlBase = "http://{{ request.get_host }}/ocp/viz/query/dsp061/ca/kharris15apical_anno/id/" + zoom + "/";
 			var cutout = Math.round(point.x) + "/" + Math.round(point.y) + "/" + zindex + "/"; 
 			var ocpUrl = ocpUrlBase.concat(cutout);
       // store the return data
