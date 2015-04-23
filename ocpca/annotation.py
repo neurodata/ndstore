@@ -15,7 +15,6 @@
 import numpy as np
 import cStringIO
 import MySQLdb
-import sys
 from collections import defaultdict
 
 from ocpcaerror import OCPCAError 

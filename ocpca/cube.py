@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import numpy as np
-import array
 import cStringIO
 from PIL import Image
 import zlib
