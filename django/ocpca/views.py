@@ -49,11 +49,20 @@ def cutout (request, webargs):
       if service in GET_SLICE_SERVICES+GET_ANNO_SERVICES:
         return django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="image/png" )
       elif service in ['ts', 'hdf5']:
-        return django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="product/hdf5" )
+        fname = re.sub ( r',','_', webargs )
+        fname = re.sub ( r'/','-', fname )
+        response['Content-Disposition'] = "attachment; filename={}ocpcutout.h5".format(fname)
+        response = django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="product/hdf5" )
+        return response
       elif service=='npz':
         return django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="product/npz" )
       elif service=='tiff':
-        return django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="image/tiff" )
+        # build a file name from the webarguments
+        fname = re.sub ( r',','_', webargs )
+        fname = re.sub ( r'/','-', fname )
+        response = django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="image/tiff" )
+        response['Content-Disposition'] = "attachment; filename={}ocpcutout.tif".format(fname)
+        return response
       elif service=='zip':
         return django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="product/zip" )
       elif service in ['id','ids']:
@@ -82,6 +91,26 @@ def cutout (request, webargs):
     return django.http.HttpResponseNotFound(e)
   except:
     logger.exception("Unknown exception in getCutout.")
+    raise
+
+
+#@cache_control(no_cache=True)
+def swc (request, webargs):
+  """Get put interface for swc tracing files"""
+  
+  import pdb; pdb.set_trace()
+
+  try:
+    if request.method == 'GET':
+      return django.http.HttpResponse(ocpcarest.getSWC(webargs), content_type="product/hdf5" )
+    elif request.method == 'POST':
+      return django.http.HttpResponse(ocpcarest.putSWC(webargs,request.body))
+  except OCPCAError, e:
+    return django.http.HttpResponseNotFound(e.value)
+  except MySQLdb.Error, e:
+    return django.http.HttpResponseNotFound(e)
+  except:
+    logger.exception("Unknown exception in SWC.")
     raise
 
 

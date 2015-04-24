@@ -73,7 +73,7 @@ class Annotation:
     else:
       db.setID(ch, self.annid)
 
-  def getField ( self, ch, field ):
+  def getField ( self, field ):
     """Accessor by field name"""
 
     if field == 'status':
@@ -88,7 +88,7 @@ class Annotation:
       logger.warning ( "getField: No such field %s" % (field))
       raise OCPCAError ( "getField: No such field %s" % (field))
 
-  def setField ( self, ch, field, value ):
+  def setField ( self, field, value ):
     """Mutator by field name.  Then need to store the field."""
     
     if field == 'status':
@@ -257,7 +257,7 @@ class AnnSynapse (Annotation):
     # Call the base class constructor
     Annotation.__init__(self, annodb)
 
-  def getField ( self, ch, field ):
+  def getField ( self, field ):
     """Accessor by field name"""
 
     if field == 'weight':
@@ -269,9 +269,9 @@ class AnnSynapse (Annotation):
     elif field == 'segments':
       return ','.join(str(x) for x in self.segments)
     else:
-      return Annotation.getField(self, ch, field)
+      return Annotation.getField(self, field)
 
-  def setField ( self, ch, field, value ):
+  def setField ( self, field, value ):
     """Mutator by field name.  Then need to store the field."""
     
     if field == 'weight':
@@ -281,7 +281,7 @@ class AnnSynapse (Annotation):
     elif field == 'seeds':
       self.seeds = [int(x) for x in value.split(',')] 
     else:
-      Annotation.setField ( self, ch, field, value )
+      Annotation.setField ( self, field, value )
 
   def store ( self, ch, cursor ):
     """Store the synapse to the annotations databae"""
@@ -405,7 +405,7 @@ class AnnSeed (Annotation):
     # Call the base class constructor
     Annotation.__init__(self,annodb)
 
-  def getField ( self, ch, field ):
+  def getField ( self, field ):
     """Accessor by field name"""
 
     if field == 'parent':
@@ -417,9 +417,9 @@ class AnnSeed (Annotation):
     elif field == 'source':
       return self.source
     else:
-      return Annotation.getField(self, ch, field)
+      return Annotation.getField(self, field)
 
-  def setField ( self, ch, field, value ):
+  def setField ( self, field, value ):
     """Mutator by field name.  Then need to store the field."""
     
     if field == 'parent':
@@ -433,7 +433,7 @@ class AnnSeed (Annotation):
     elif field == 'source':
       self.source = value
     else:
-      Annotation.setField ( self, ch, field, value )
+      Annotation.setField ( self, field, value )
 
   def store ( self, ch, cursor ):
     """Store thwe seed to the annotations databae"""
@@ -541,7 +541,7 @@ class AnnSegment (Annotation):
     return cursor.fetchall()
 
 
-  def getField ( self, ch, field ):
+  def getField ( self, field ):
     """Accessor by field name"""
 
     if field == 'segmentclass':
@@ -555,9 +555,9 @@ class AnnSegment (Annotation):
     elif field == 'organelles':
       return ','.join(str(x) for x in self.organelles)
     else:
-      return Annotation.getField(self, ch, field)
+      return Annotation.getField(self, field)
 
-  def setField ( self, ch, field, value ):
+  def setField ( self, field, value ):
     """Mutator by field name.  Then need to store the field."""
     
     if field == 'segmentclass':
@@ -575,7 +575,7 @@ class AnnSegment (Annotation):
       #pass
       self.organelles = [int(x) for x in value.split(',')] 
     else:
-      Annotation.setField ( self, ch, field, value )
+      Annotation.setField ( self, field, value )
 
   def store ( self, ch, cursor ):
     """Store the synapse to the annotations databae"""
@@ -696,7 +696,7 @@ class AnnNeuron (Annotation):
     return cursor.fetchall()
 
 
-  def getField ( self, ch, field ):
+  def getField ( self, field ):
     """Accessor by field name"""
 
 #  Make this a query not a field.
@@ -706,14 +706,14 @@ class AnnNeuron (Annotation):
     if field == 'segments':
       return ','.join(str(x) for x in self.segments)
     else:
-      return Annotation.getField(self, ch, field)
+      return Annotation.getField(self, field)
 
-  def setField ( self, ch, field, value ):
+  def setField ( self, field, value ):
     """Mutator by field name.  Then need to store the field."""
     
     if field == 'segments':
       self.segments = [int(x) for x in value.split(',')]
-    Annotation.setField ( self, ch, field, value )
+    Annotation.setField ( self, field, value )
 
 
   def store ( self, ch, cursor ):
@@ -785,7 +785,7 @@ class AnnOrganelle (Annotation):
     # Call the base class constructor
     Annotation.__init__(self,annodb)
 
-  def getField ( self, ch, field ):
+  def getField ( self, field ):
     """Accessor by field name"""
 
     if field == 'organelleclass':
@@ -797,9 +797,9 @@ class AnnOrganelle (Annotation):
     elif field == 'seeds':
       return ','.join(str(x) for x in self.seeds)
     else:
-      return Annotation.getField(self, ch, field)
+      return Annotation.getField(self, field)
 
-  def setField ( self, ch, field, value ):
+  def setField ( self, field, value ):
     """Mutator by field name.  Then need to store the field."""
     
     if field == 'organelleclass':
@@ -813,7 +813,7 @@ class AnnOrganelle (Annotation):
     elif field == 'seeds':
       self.seeds = [int(x) for x in value.split(',')] 
     else:
-      Annotation.setField ( self, ch, field, value )
+      Annotation.setField ( self, field, value )
 
   def store ( self, ch, cursor ):
     """Store the synapse to the annotations databae"""
@@ -918,6 +918,7 @@ class AnnNode (Annotation):
 
     self.nodetype = 0                           # enumerated label
     self.skeletonid = 0
+    self.nodeid = 0
     self.location = [ None, None, None ]        # xyz coordinate
     self.parentid = 0                           # parent node
     self.radius = 0.0
@@ -926,11 +927,13 @@ class AnnNode (Annotation):
     # Call the base class constructor
     Annotation.__init__(self,annodb)
 
-  def getField ( self, ch, field ):
+  def getField ( self, field ):
     """Accessor by field name"""
 
     if field == 'nodetype':
       return self.nodetype
+    elif field == 'nodeid':
+      return self.nodeid
     elif field == 'location':
       return ','.join(str(x) for x in self.location)
     elif field == 'skeletonid':
@@ -942,13 +945,15 @@ class AnnNode (Annotation):
     elif field == 'children':
       return ','.join(str(x) for x in self.children)
     else:
-      return Annotation.getField(self, ch, field)
+      return Annotation.getField(self, field)
 
-  def setField ( self, ch, field, value ):
+  def setField ( self, field, value ):
     """Mutator by field name.  Then need to store the field."""
     
     if field == 'nodetype':
       self.nodetype = value
+    elif field == 'nodeid':
+      self.nodeid = value
     elif field == 'location':
       self.location = [int(x) for x in value.split(',')] 
       if len(self.centroid) != 3:
@@ -962,7 +967,7 @@ class AnnNode (Annotation):
     elif field == 'children':
       self.children = [int(x) for x in value.split(',')] 
     else:
-      Annotation.setField ( self, ch, field, value )
+      Annotation.setField ( self, field, value )
 
   def store ( self, ch, cursor ):
     """Store the node to the annotations database"""
@@ -1069,7 +1074,7 @@ class AnnSkeleton (Annotation):
     # Call the base class constructor
     Annotation.__init__(self,annodb)
 
-  def getField ( self, ch, field ):
+  def getField ( self, field ):
     """Accessor by field name"""
 
     if field == 'skeletontype':
@@ -1077,9 +1082,9 @@ class AnnSkeleton (Annotation):
     elif field == 'rootnode':
       return self.rootnode
     else:
-      return Annotation.getField(self, ch, field)
+      return Annotation.getField(self, field)
 
-  def setField ( self, ch, field, value ):
+  def setField ( self, field, value ):
     """Mutator by field name.  Then need to store the field."""
     
     if field == 'skeletontype':
@@ -1087,7 +1092,7 @@ class AnnSkeleton (Annotation):
     elif field == 'rootnode':
       self.rootnode = value
     else:
-      Annotation.setField ( self, ch, field, value )
+      Annotation.setField ( self, field, value )
 
   def store ( self, ch, cursor ):
     """Store the skeleton to the annotations database"""

@@ -20,6 +20,8 @@ from django.conf.urls import patterns, include, url
 urlpatterns = patterns('ocpca.views',
   # catmaid
   url(r'^catmaid/(?P<webargs>\w+/.*)$', 'catmaid'),
+  # swc -- annotations file get and put
+  url(r'(?P<webargs>^\w+/[\w+,/]*swc/[\w,/]*)$', 'swc'),
   # fetch ids (with predicates)
   url(r'(?P<webargs>^\w+/\w+/query/[\w\.,/]*)$', 'queryObjects'),
   # get project information

@@ -208,8 +208,6 @@ def tiff3d ( chanargs, proj, db ):
 
         imagemap = np.zeros ( (cube.data.shape[0]*cube.data.shape[1], cube.data.shape[2]), dtype=np.uint32 )
 
-        import pdb; pdb.set_trace()
-
         # turn it into a 2-d array for recolor -- maybe make a 3-d recolor
         recolor_cube = ocplib.recolor_ctype( cube.data.reshape((cube.data.shape[0]*cube.data.shape[1], cube.data.shape[2])), imagemap )
 
@@ -1384,6 +1382,78 @@ def putAnnotation ( webargs, postdata ):
       return retstr
   
 
+def putSWC ( webargs, postdata ):
+  """Put an SWC object into RAMON skeleton/tree nodes"""
+    
+  import pdb; pdb.set_trace()
+
+  [token, channel, optionsargs] = webargs.split('/',2)
+
+  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+    proj = projdb.loadToken ( token )
+  
+  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+
+    ch = ocpcaproj.OCPCAChannel(proj, channel)
+    # Don't write to readonly projects
+    if ch.getReadOnly() == ocpcaproj.READONLY_TRUE:
+      logger.warning("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
+      raise OCPCAError("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
+
+    # Create a skeleton
+    skel = annotation.AnnSkeleton ( db )
+
+    # assign an identifier
+    skel.setField('annid', db.nextID(ch))
+    
+    # list of nodes in this skeleton
+    nodelist = []
+
+    # Make a named temporary file for the HDF5
+    with closing (tempfile.NamedTemporaryFile()) as tmpfile:
+
+      tmpfile.write ( postdata )
+      tmpfile.seek(0)
+
+      commentno = 1  # first comment, use as key for kvpairs
+
+
+      with open(tmpfile.name) as fp:
+        for line in fp:
+
+          # Store comments as KV 
+          if re.match ( '^#.*$', line ):
+            skel.kvpairs['comment{}'.format(commentno)] = line
+            commentno += 1
+
+          # otherwise, parse the record according to SWC 
+          # n T x y z R P
+          ( nodeid, nodetype, xpos, ypos, zpos, radius, parentid )  = line.split('\s+')
+          node = annotation.AnnNode() 
+          node.setField ( 'annid', db.nextID() )
+          node.setField ( 'nodeid', nodeid )
+          node.setField ( 'nodetype', nodetype )
+          node.setField ( 'location', (xpos,ypos,zpos) )
+          node.setField ( 'radius', radius )
+          node.setField ( 'parentid', parentid )
+
+          # translate to full resolution
+
+          nodelist.append ( node )
+
+    # now transact with the database
+    db.startTxn()
+
+    skel.store()
+
+    for node in nodelist:
+      node.store()
+
+    db.commit()
+
+
+
+
 #  Return a list of annotation object IDs
 #  for now by type and status
 def queryAnnoObjects ( webargs, postdata=None ):
@@ -1676,7 +1746,7 @@ def getField ( webargs ):
       logger.warning("No annotation found at identifier = {}".format(annoid))
       raise OCPCAError ("No annotation found at identifier = {}".format(annoid))
 
-    return anno.getField(ch, field)
+    return anno.getField(field)
 
 
 def setField ( webargs ):
