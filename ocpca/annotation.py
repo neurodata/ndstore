@@ -98,6 +98,8 @@ class Annotation:
     elif field == 'author':
       self.author = value
     # if we don't recognize the field, store it as a kv pair.
+    elif field == 'annid':
+      self.annid = value
     else: 
       self.kvpairs[field]=value
 #    else:
@@ -935,7 +937,7 @@ class AnnNode (Annotation):
     elif field == 'nodeid':
       return self.nodeid
     elif field == 'location':
-      return ','.join(str(x) for x in self.location)
+      return self.location
     elif field == 'skeletonid':
       return self.skeletonid
     elif field == 'parentid':
@@ -955,8 +957,8 @@ class AnnNode (Annotation):
     elif field == 'nodeid':
       self.nodeid = value
     elif field == 'location':
-      self.location = [int(x) for x in value.split(',')] 
-      if len(self.centroid) != 3:
+      self.location = value
+      if len(self.location) != 3:
         raise OCPCAError ("Illegal arguments to set field centroid: %s" % value)
     elif field == 'parentid':
       self.parentid = value
@@ -977,8 +979,8 @@ class AnnNode (Annotation):
     else:
       storelocation = self.location
 
-    sql = "INSERT INTO %s VALUES ( %s, %s, %s, %s, %s, %s, %s, %s )"\
-            % ( ch.getAnnoTable('node'), self.annid, self.nodetype, self.parentid, self.skeletonid,
+    sql = "INSERT INTO %s VALUES ( %s, %s, %s, %s, %s, %s, %s, %s, %s )"\
+            % ( ch.getAnnoTable('node'), self.skeletonid, self.nodeid, self.annid, self.nodetype, self.parentid, 
               storelocation[0], storelocation[1], storelocation[2], self.radius )
 
     try:

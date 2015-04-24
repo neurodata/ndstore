@@ -98,8 +98,6 @@ def cutout (request, webargs):
 def swc (request, webargs):
   """Get put interface for swc tracing files"""
   
-  import pdb; pdb.set_trace()
-
   try:
     if request.method == 'GET':
       return django.http.HttpResponse(ocpcarest.getSWC(webargs), content_type="product/hdf5" )

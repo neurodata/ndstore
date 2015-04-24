@@ -1385,8 +1385,6 @@ def putAnnotation ( webargs, postdata ):
 def putSWC ( webargs, postdata ):
   """Put an SWC object into RAMON skeleton/tree nodes"""
     
-  import pdb; pdb.set_trace()
-
   [token, channel, optionsargs] = webargs.split('/',2)
 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
@@ -1417,7 +1415,6 @@ def putSWC ( webargs, postdata ):
 
       commentno = 1  # first comment, use as key for kvpairs
 
-
       with open(tmpfile.name) as fp:
         for line in fp:
 
@@ -1425,33 +1422,37 @@ def putSWC ( webargs, postdata ):
           if re.match ( '^#.*$', line ):
             skel.kvpairs['comment{}'.format(commentno)] = line
             commentno += 1
+          else:
 
-          # otherwise, parse the record according to SWC 
-          # n T x y z R P
-          ( nodeid, nodetype, xpos, ypos, zpos, radius, parentid )  = line.split('\s+')
-          node = annotation.AnnNode() 
-          node.setField ( 'annid', db.nextID() )
-          node.setField ( 'nodeid', nodeid )
-          node.setField ( 'nodetype', nodetype )
-          node.setField ( 'location', (xpos,ypos,zpos) )
-          node.setField ( 'radius', radius )
-          node.setField ( 'parentid', parentid )
+            # otherwise, parse the record according to SWC 
+            # n T x y z R P
+            ( nodeid, nodetype, xpos, ypos, zpos, radius, parentid )  = line.split()
+            node = annotation.AnnNode( db ) 
+            node.setField ( 'skeletonid', skel.annid )
+            node.setField ( 'annid', db.nextID(ch) )
+            node.setField ( 'nodeid', nodeid )
+            node.setField ( 'nodetype', nodetype )
+            node.setField ( 'location', (xpos,ypos,zpos) )
+            node.setField ( 'radius', radius )
+            node.setField ( 'parentid', parentid )
 
-          # translate to full resolution
+            # translate to full resolution
 
-          nodelist.append ( node )
+            nodelist.append ( node )
 
     # now transact with the database
     db.startTxn()
+    cursor = db.getCursor()
 
-    skel.store()
-
+    # store the skeleton
+    skel.store( ch, cursor )
+    # store the nodes
     for node in nodelist:
-      node.store()
+      node.store( ch, cursor )
 
     db.commit()
 
-
+    return skel.annid
 
 
 #  Return a list of annotation object IDs
