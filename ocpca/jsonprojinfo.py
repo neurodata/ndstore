@@ -52,8 +52,8 @@ def datasetdict ( dataset ):
   dsdict['offset'] = dataset.offset
   dsdict['voxelres'] = dataset.voxelres
   dsdict['cube_dimension'] = dataset.cubedim
-#  dsdict['neariso_scaledown'] = dataset.nearisoscaledown
-# Figure out neariso in new design
+  # dsdict['neariso_scaledown'] = dataset.nearisoscaledown
+  # Figure out neariso in new design
   dsdict['timerange'] = dataset.timerange
   dsdict['description'] = dataset.getDatasetDescription()
 
