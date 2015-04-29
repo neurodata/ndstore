@@ -42,7 +42,13 @@ QUERY_TYPES = ['ANNOS']
 def default(request):
   return redirect('http://google.com')
 
-def viewproject(request, webargs):
+# View a project dynamically generated based on token (and channel) 
+def tokenview(request, webargs):
+	todo = 1
+
+
+# View a VizProject (pre-prepared project in the database)
+def projectview(request, webargs):
   # query for the project from the db
   #[project_name, view] = webargs.split('/', 1) 
   project_name = webargs 
