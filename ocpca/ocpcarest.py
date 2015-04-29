@@ -76,14 +76,18 @@ def cutout (imageargs, ch, proj, db):
     cube = db.timecutout(ch, corner, dim, resolution, timerange)
   else:
     cube = db.cutout(ch, corner, dim, resolution, zscaling)
-  
+
+  filterCube(ch, cube, filterlist)
+  return cube
+
+def filterCube(ch, cube, filterlist=None):
+  """Call Filter on a cube"""
+
   if ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS and filterlist is not None:
     cube.data = ocplib.filter_ctype_OMP ( cube.data, filterlist )
   elif filterlist is not None and ch.getChannelType not in ANNOTATION_CHANNELS:
     logger.warning("Filter only possible for Annotation Channels")
     raise OCPCAError("Filter only possible for Annotation Channels")
-
-  return cube
 
 def numpyZip ( chanargs, proj, db ):
   """Return a web readable Numpy Pickle zipped"""
@@ -171,99 +175,91 @@ def window(data, ch, window_range=None ):
   """Performs a window transformation on the cutout area"""
 
   if window_range is None:
-    (startwindow,endwindow) = ch.getWindowRange()
+    window_range = ch.getWindowRange()
 
-  if ch.getChannelType() in ocpcaproj.IMAGE_CHANNELS and ch.getDataType() == ocpcaproj.DTYPE_uint16:
+  [startwindow, endwindow] = window_range
+
+  if ch.getChannelType() in ocpcaproj.IMAGE_CHANNELS and ch.getDataType() in ocpcaproj.DTYPE_uint16:
     if (startwindow == endwindow == 0):
       return np.uint8(data * 1.0/256)
     elif endwindow!=0:
-      windowcutout (data, (startwindow,endwindow))
+      windowCutout (data, window_range)
       return np.uint8(data)
 
   return data
 
-def FilterTimeCube ( imageargs, cb ):
-  """ Return a cube with the filtered ids """
+#def TimeKernel ( imageargs, proj, db ):
+  #"""Return a time kernel"""
 
-  # Filter Function - used to filter
-  result = re.search ("filter/([\d/,]+)/", imageargs)
-  if result != None:
-    filterlist = np.array ( result.group(1).split(','), dtype=np.uint32 )
-    print "Filter not supported for Time Cubes yet"
-    #cb.data = ocplib.filter_ctype_OMP ( cb.data, filterlist )
+  ## Create an in-memory HDF5 file
+  #tmpfile = tempfile.NamedTemporaryFile()
+  #fh5out = h5py.File ( tmpfile.name )
 
-def TimeKernel ( imageargs, proj, db ):
-  """Return a time kernel"""
-
-  # Create an in-memory HDF5 file
-  tmpfile = tempfile.NamedTemporaryFile()
-  fh5out = h5py.File ( tmpfile.name )
-
-  try:
-    cube = TimeSeriesCutout ( imageargs, proj, db )
-    cutout = np.zeros( cube.data.shape, dtype = cube.data.dtype )
-    dims = cube.data.shape
-    for z in range ( cube.data.shape[0] ):
-      for y in range ( cube.data.shape[1] ):
-        for x in range ( cube.data.shape[2] ):
-          for t in range ( cube.data.shape[3] ):
-            cutout[z,y,x] += cube.data[t,z,y,x]
-        cutout[z,y,x] = cutout[z,y,x]/3
+  #try:
+    #cube = TimeSeriesCutout ( imageargs, proj, db )
+    #cutout = np.zeros( cube.data.shape, dtype = cube.data.dtype )
+    #dims = cube.data.shape
+    #for z in range ( cube.data.shape[0] ):
+      #for y in range ( cube.data.shape[1] ):
+        #for x in range ( cube.data.shape[2] ):
+          #for t in range ( cube.data.shape[3] ):
+            #cutout[z,y,x] += cube.data[t,z,y,x]
+        #cutout[z,y,x] = cutout[z,y,x]/3
 
 
-    fh5out.create_dataset ( "KERNEL", tuple(cutout.shape), cutout.dtype,compression='gzip', data=cutout )
-    fh5out.create_dataset( "DATATYPE", (1,), dtype=np.uint32, data=proj._dbtype )
+    #fh5out.create_dataset ( "KERNEL", tuple(cutout.shape), cutout.dtype,compression='gzip', data=cutout )
+    #fh5out.create_dataset( "DATATYPE", (1,), dtype=np.uint32, data=proj._dbtype )
 
-  except restargs.RESTArgsError, e:
-    logger.warning("REST Arguments {} failed: {}".format(imageargs,e))
-    raise OCPCAError("REST Arguments {} failed: {}".format(imageargs,e))
+  #except restargs.RESTArgsError, e:
+    #logger.warning("REST Arguments {} failed: {}".format(imageargs,e))
+    #raise OCPCAError("REST Arguments {} failed: {}".format(imageargs,e))
 
-  fh5out.close()
-  tmpfile.seek(0)
-  return tmpfile.read()
+  #fh5out.close()
+  #tmpfile.seek(0)
+  #return tmpfile.read()
 
+#def TimeSeriesCutout ( imageargs, proj, db ):
+  #"""Return a web readable HDF5 file of TimeSeries cutout"""
 
-def TimeSeriesCutout ( imageargs, proj, db ):
-  """Return a web readable HDF5 file of TimeSeries cutout"""
+  #channels, sym, imageargs = imageargs.partition("/")
 
-  channels, sym, imageargs = imageargs.partition("/")
-
-  try: 
-    # if it's a channel database, pull out the channels
-    if proj.getChannelType() in ocpcaproj.TIMESERIES_PROJECTS:
+  #try: 
+    ## if it's a channel database, pull out the channels
+    #if proj.getChannelType() in ocpcaproj.TIMESERIES_PROJECTS:
    
-      # Perform argument processing
-      args = restargs.BrainRestArgs ()
-      args.cutoutArgs ( imageargs, proj.datasetcfg, channels )
+      ## Perform argument processing
+      #args = restargs.BrainRestArgs ()
+      #args.cutoutArgs ( imageargs, proj.datasetcfg, channels )
       
-      # Extract the relevant values
-      corner = args.getCorner()
-      dim = args.getDim()
-      resolution = args.getResolution()
-      timerange = args.getTimeRange()
-      filterlist = args.getFilter()
+      ## Extract the relevant values
+      #corner = args.getCorner()
+      #dim = args.getDim()
+      #resolution = args.getResolution()
+      #timerange = args.getTimeRange()
+      #filterlist = args.getFilter()
 
-      cube = db.TimeSeriesCutout( corner, dim, resolution, timerange)
+      #cube = db.TimeSeriesCutout( corner, dim, resolution, timerange)
       
-      return cube
+      #return cube
 
-      #fh5out.create_dataset ( "CUTOUT", tuple(cube.data.shape), cube.data.dtype,compression='gzip', data=cube.data )
-      #fh5out.create_dataset( "DATATYPE", (1,), dtype=np.uint32, data=proj._dbtype )
+      ##fh5out.create_dataset ( "CUTOUT", tuple(cube.data.shape), cube.data.dtype,compression='gzip', data=cube.data )
+      ##fh5out.create_dataset( "DATATYPE", (1,), dtype=np.uint32, data=proj._dbtype )
 
-    else:
-      logger.warning("Not a Timeseries Dataset")
+    #else:
+      #logger.warning("Not a Timeseries Dataset")
 
-  except restargs.RESTArgsError, e:
-    logger.warning("REST Arguments {} failed: {}".format(imageargs,e))
-    raise OCPCAError("REST Arguments {} failed: {}".format(imageargs,e))
+  #except restargs.RESTArgsError, e:
+    #logger.warning("REST Arguments {} failed: {}".format(imageargs,e))
+    #raise OCPCAError("REST Arguments {} failed: {}".format(imageargs,e))
 
 def imgSlice(webargs, proj, db):
   """Return the cube object for any plane xy, yz, xz"""
-  
+
   try:
     # argument of format channel/service/resolution/cutoutargs
-    m = re.match("(\w+)/(xy|yz|xz)/(\d+)/([\d+,/]+)$", webargs)
-    [channel, service, resolution, imageargs] = [i for i in m.groups()]
+    m = re.match("(\w+)/(xy|yz|xz)/(\d+)/([\d+,/]+)?(window/\d+,\d+/)?$", webargs)
+    [channel, service, resolution, imageargs] = [i for i in m.groups()[:-1]]
+    window_args = m.groups()[-1]
     imageargs = resolution + '/' + imageargs
   except Exception, e:
     logger.warning("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
@@ -300,17 +296,26 @@ def imgSlice(webargs, proj, db):
   # Perform the cutout
   ch = proj.getChannelObj(channel)
   cb = cutout(cutoutargs, ch, proj, db)
-  cb.data = window(cb.data, ch)
 
+  if window_args is not None:
+    try:
+      window_range = [int(i) for i in re.match("window/(\d+),(\d+)/", window_args).groups()]
+    except:
+      logger.warning ("Illegal window arguments={}.  Error={}".format(imageargs,e))
+      raise OCPCAError ("Illegal window arguments={}.  Error={}".format(imageargs,e))
+  else:
+    window_range = None
+  
+  cb.data = window(cb.data, ch, window_range=window_range)
   return cb
 
 def imgPNG(proj, webargs, cb):
   """Return a png object for any plane"""
-    
+  
   try:
     # argument of format channel/service/resolution/cutoutargs
-    m = re.match("(\w+)/(xy|yz|xz)/(\d+)/([\d+,/]+)$", webargs)
-    [channel, service, resolution, imageargs] = [i for i in m.groups()]
+    m = re.match("(\w+)/(xy|yz|xz)/(\d+)/([\d+,/]+)(window/\d+,\d+/)?$", webargs)
+    [channel, service, resolution, imageargs] = [i for i in m.groups()[:-1]]
   except Exception, e:
     logger.warning("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
     raise OCPCAError("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
@@ -439,51 +444,28 @@ def listIds ( chanargs, proj, db ):
   idstr1 = idstr.lstrip('0,')
   return idstr1.rstrip(', ')
 
-#
-#  Select the service that you want.
-#  Truncate this from the arguments and past 
-#  the rest of the RESTful arguments to the 
-#  appropriate function.  At this point, we have a 
-#  data set and a service.
-#
 def selectService ( service, webargs, proj, db ):
-  """Parse the first arg and call service, HDF5, npz, etc."""
+  """Select the service and pass on the arguments to the appropiate function."""
   
   if service in ['xy','yz','xz']:
     return imgPNG(proj, webargs, imgSlice (webargs, proj, db))
-
   elif service == 'hdf5':
     return HDF5(webargs, proj, db)
-
   elif service in ['npz','zip']:
     return  numpyZip ( webargs, proj, db ) 
-
   elif service == 'id':
     return annId ( webargs, proj, db )
-  
   elif service == 'ids':
     return listIds ( webargs, proj, db )
-
   elif service in ['xzanno', 'yzanno', 'xyanno']:
     return imgAnno ( service.strip('anno'), webargs, proj, db )
-  
-  #elif service == 'ts':
-    #return TimeKernel(webargs, proj, db)
-  
   else:
     logger.warning("An illegal Web GET service was requested {}. Args {}".format( service, args ))
     raise OCPCAError ("No such Web service: {}".format(service) )
 
 
-#
-#  Select the service that you want.
-#  Truncate this from the arguments and past 
-#  the rest of the RESTful arguments to the 
-#  appropriate function.  At this point, we have a 
-#  data set and a service.
-#
 def selectPost ( webargs, proj, db, postdata ):
-  """Parse the first arg and call the right post service"""
+  """Identify the service and pass on the arguments to the appropiate service."""
 
   [channel, service, postargs] = webargs.split('/', 2)
 
@@ -1452,95 +1434,96 @@ def chanInfo ( webargs ):
     import jsonprojinfo
     return jsonprojinfo.jsonChanInfo( proj, db )
 
-def mcFalseColor ( webargs ):
-  """False color image of multiple channels"""
+#def mcFalseColor ( webargs ):
+  #"""False color image of multiple channels"""
 
-  #KLTODO need to evaluate window here .. not in cutoutargs
+  ##KLTODO need to evaluate window here .. not in cutoutargs
+  #import pdb; pdb.set_trace()
 
-  [ token, mcfcstr, service, chanstr, imageargs ] = webargs.split ('/', 4)
+  #[ token, mcfcstr, service, chanstr, imageargs ] = webargs.split ('/', 4)
 
-  try:
-    # Rewrite the imageargs to be a cutout
-    if service == 'xy':
-      p = re.compile("(\d+/\d+,\d+/\d+,\d+/)(\d+)/")
-      m = p.match ( imageargs )
-      cutoutargs = '{}{},{}/'.format(m.group(1),m.group(2),int(m.group(2))+1) 
+  #try:
+    ## Rewrite the imageargs to be a cutout
+    #if service == 'xy':
+      #p = re.compile("(\d+/\d+,\d+/\d+,\d+/)(\d+)/")
+      #m = p.match ( imageargs )
+      #cutoutargs = '{}{},{}/'.format(m.group(1),m.group(2),int(m.group(2))+1) 
 
-    elif service == 'xz':
-      p = re.compile("(\d+/\d+,\d+/)(\d+)(/\d+,\d+)/")
-      m = p.match ( imageargs )
-      cutoutargs = '{}{},{}{}/'.format(m.group(1),m.group(2),int(m.group(2))+1,m.group(3)) 
+    #elif service == 'xz':
+      #p = re.compile("(\d+/\d+,\d+/)(\d+)(/\d+,\d+)/")
+      #m = p.match ( imageargs )
+      #cutoutargs = '{}{},{}{}/'.format(m.group(1),m.group(2),int(m.group(2))+1,m.group(3)) 
 
-    elif service == 'yz':
-      p = re.compile("(\d+/)(\d+)(/\d+,\d+/\d+,\d+)/")
-      m = p.match ( imageargs )
-      cutoutargs = '{}{},{}{}/'.format(m.group(1),m.group(2),int(m.group(2))+1,m.group(3)) 
+    #elif service == 'yz':
+      #p = re.compile("(\d+/)(\d+)(/\d+,\d+/\d+,\d+)/")
+      #m = p.match ( imageargs )
+      #cutoutargs = '{}{},{}{}/'.format(m.group(1),m.group(2),int(m.group(2))+1,m.group(3)) 
 
-    else:
-      raise "No such image plane {}".format(service)
-  except Exception, e:
-    logger.warning ("Illegal image arguments={}.  Error={}".format(imageargs,e))
-    raise OCPCAError ("Illegal image arguments={}.  Error={}".format(imageargs,e))
+    #else:
+      #raise "No such image plane {}".format(service)
+  #except Exception, e:
+    #logger.warning ("Illegal image arguments={}.  Error={}".format(imageargs,e))
+    #raise OCPCAError ("Illegal image arguments={}.  Error={}".format(imageargs,e))
 
-  # split the channel string
-  channels = chanstr.split(",")
+  ## split the channel string
+  #channels = chanstr.split(",")
 
-  # pattern for using contexts to close databases
-  # get the project 
-  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadToken ( token )
+  ## pattern for using contexts to close databases
+  ## get the project 
+  #with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+    #proj = projdb.loadToken ( token )
 
-  # and the database and then call the db function
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  ## and the database and then call the db function
+  #with closing ( ocpcadb.OCPCADB(proj) ) as db:
 
-    mcdata = None
+    #mcdata = None
 
-    for i in range(len(channels)):
+    #for i in range(len(channels)):
 
-      channel_name = channels[i]
+      #channel_name = channels[i]
 
-      ch = ocpcaproj.OCPCAChannel(proj,channel_name)
-      cb = cutout ( cutoutargs, ch, proj, db )
-      FilterCube ( cutoutargs, cb )
+      #ch = ocpcaproj.OCPCAChannel(proj,channel_name)
+      #cb = cutout ( cutoutargs, ch, proj, db )
+      #FilterCube ( cutoutargs, cb )
 
-      # initialize the multi-channel data by dtype
-      if mcdata == None:
-        mcdata = np.zeros((len(channels),cb.data.shape[0],cb.data.shape[1],cb.data.shape[2]), dtype=cb.data.dtype)
+      ## initialize the multi-channel data by dtype
+      #if mcdata == None:
+        #mcdata = np.zeros((len(channels),cb.data.shape[0],cb.data.shape[1],cb.data.shape[2]), dtype=cb.data.dtype)
 
-      mcdata[i,:,:,:] = cb.data[:,:,:]
+      #mcdata[i,:,:,:] = cb.data[:,:,:]
 
-  # reshape to 2-d
-  if service=='xy':
-    mcdata = mcdata.reshape((mcdata.shape[0],mcdata.shape[2],mcdata.shape[3]))
-  elif service=='xz':
-    mcdata = mcdata.reshape((mcdata.shape[0],mcdata.shape[1],mcdata.shape[3]))
-  elif service=='yz':
-    mcdata = mcdata.reshape((mcdata.shape[0],mcdata.shape[1],mcdata.shape[2]))
+  ## reshape to 2-d
+  #if service=='xy':
+    #mcdata = mcdata.reshape((mcdata.shape[0],mcdata.shape[2],mcdata.shape[3]))
+  #elif service=='xz':
+    #mcdata = mcdata.reshape((mcdata.shape[0],mcdata.shape[1],mcdata.shape[3]))
+  #elif service=='yz':
+    #mcdata = mcdata.reshape((mcdata.shape[0],mcdata.shape[1],mcdata.shape[2]))
 
-  # manage the color space
-  # reduction factor.  How to scale data.  16 bit->8bit, or windowed
-  (startwindow,endwindow) = ch.getWindowRange()
-  if ch.getDataType() == ocpcaproj.DTYPE_uint16 and ( startwindow == endwindow == 0):
-    #pass
-    mcdata = np.uint8(mcdata * 1.0/256)
-  elif ch.getDataType() == ocpcaproj.DTYPE_uint16 and ( endwindow!=0 ):
-    from windowcutout import windowCutout
-    windowCutout ( mcdata, (startwindow, endwindow) )
+  ## manage the color space
+  ## reduction factor.  How to scale data.  16 bit->8bit, or windowed
+  #(startwindow,endwindow) = ch.getWindowRange()
+  #if ch.getDataType() == ocpcaproj.DTYPE_uint16 and ( startwindow == endwindow == 0):
+    ##pass
+    #mcdata = np.uint8(mcdata * 1.0/256)
+  #elif ch.getDataType() == ocpcaproj.DTYPE_uint16 and ( endwindow!=0 ):
+    #from windowcutout import windowCutout
+    #windowCutout ( mcdata, (startwindow, endwindow) )
 
   # We have an compound array.  Now color it.
-  colors = ('C','M','Y','R','G','B')
-  img =  mcfc.mcfcPNG ( mcdata, colors )
+  #colors = ('C','M','Y','R','G','B')
+  #img =  mcfc.mcfcPNG ( mcdata, colors )
 
-  fileobj = cStringIO.StringIO ( )
-  img.save ( fileobj, "PNG" )
+  #fileobj = cStringIO.StringIO ( )
+  #img.save ( fileobj, "PNG" )
 
-  fileobj.seek(0)
-  return fileobj.read()
+  #fileobj.seek(0)
+  #return fileobj.read()
 
 def reserve ( webargs ):
   """Reserve annotation ids"""
 
-  [ token, channel, reservestr, cnt, other] = webargs.split ('/', 4)
+  [token, channel, reservestr, cnt, other] = webargs.split ('/', 4)
 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
@@ -1597,11 +1580,11 @@ def setField ( webargs ):
     ch = ocpcaproj.OCPCAChannel(proj, channel)
     db.updateAnnotation(ch, annid, field, value)
 
-def getPropagate ( webargs ):
+def getPropagate (webargs):
   """ Return the value of the Propagate field """
   
   try:
-    [ token, service ] = webargs.split ('/',1)
+    [token, service] = webargs.split ('/',1)
   except:
     logger.warning ( "Illegal getPropagate request. Wrong number of arguments." )
     raise OCPCAError ( "Illegal getPropagate request. Wrong number of arguments." )
@@ -1614,11 +1597,11 @@ def getPropagate ( webargs ):
 
   return value
 
-def setPropagate ( webargs ):
+def setPropagate (webargs):
   """ Set the value of the propagate field """
 
   try:
-    [ token, service, value, misc ] = webargs.split ('/',3)
+    [token, service, value, misc] = webargs.split ('/',3)
   except:
     logger.warning ( "Illegal setPropagate request.  Wrong number of arguments." )
     raise OCPCAError ( "Illegal setPropagate request.  Wrong number of arguments." )
@@ -1645,7 +1628,7 @@ def setPropagate ( webargs ):
       logger.warning ( "Invalid Value {} for setPropagate".format(value) )
       raise OCPCAError ( "Invalid Value {} for setPropagate".format(value) )
 
-def merge ( webargs ):
+def merge (webargs):
   """Return a single HDF5 field"""
   
   try:
@@ -1700,7 +1683,7 @@ def publicTokens ( self ):
 def exceptions ( webargs, ):
   """list of multiply defined voxels in a cutout"""
 
-  [ token, exceptliteral, cutoutargs ] = webargs.split ('/',2)
+  [token, exceptliteral, cutoutargs] = webargs.split ('/',2)
 
   # pattern for using contexts to close databases
   # get the project 
