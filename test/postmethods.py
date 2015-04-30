@@ -27,11 +27,13 @@ import makeunitdb
 SITE_HOST = site_to_test.site
 
 
-def postNPZ ( p, post_data ):
+def postNPZ (p, post_data, time=False):
   """Post data using npz"""
   
   # Build the url and then create a npz object
-  if p.channels is not None:
+  if time:
+    url = 'http://{}/ca/{}/{}/npz/{}/{},{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+  elif p.channels is not None:
     url = 'http://{}/ca/{}/{}/npz/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
   elif p.channels is None:
     url = 'http://{}/ca/{}/npz/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
@@ -49,11 +51,13 @@ def postNPZ ( p, post_data ):
     return e
 
 
-def getNPZ ( p ):
+def getNPZ (p, time=False):
   """Get data using npz. Returns a numpy array"""
   
   # Build the url to get the npz object 
-  if p.channels is not None:
+  if time:
+    url = 'http://{}/ca/{}/{}/npz/{}/{},{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+  elif p.channels is not None:
     url = 'http://{}/ca/{}/{}/npz/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
   elif p.channels is None:
     url = 'http://{}/ca/{}/npz/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
@@ -64,11 +68,13 @@ def getNPZ ( p ):
   return np.load (fileobj)
 
 
-def postHDF5 ( p, post_data ):
+def postHDF5 (p, post_data, time=False):
   """Post data using the hdf5"""
 
-  if p.channels is not None:
   # Build the url and then create a hdf5 object
+  if time:
+    url = 'http://{}/ca/{}/{}/hdf5/{}/{},{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+  elif p.channels is not None:
     url = 'http://{}/ca/{}/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
   elif p.channels is None:
     url = 'http://{}/ca/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
@@ -89,11 +95,14 @@ def postHDF5 ( p, post_data ):
     return e
 
 
-def getHDF5 ( p ):
+def getHDF5 (p, time=False):
   """Get data using npz. Returns a hdf5 file"""
 
   # Build the url and then create a hdf5 object
-  url = 'http://{}/ca/{}/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+  if time:
+    url = 'http://{}/ca/{}/{}/hdf5/{}/{},{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+  else:
+    url = 'http://{}/ca/{}/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
 
   # Get the image back
   f = urllib2.urlopen (url)
