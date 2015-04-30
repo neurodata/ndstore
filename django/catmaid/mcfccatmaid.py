@@ -152,7 +152,6 @@ class MCFCCatmaid:
   def getTile ( self, webargs ):
     """Either fetch the file from mocpcache or get a mcfc image"""
 
-    import pdb; pdb.set_trace()
     try:
       # arguments of format /token/channel/slice_type/z/x_y_res.png
       m = re.match("(\w+)/([\w+,[:\w]*]*)/(xy|yz|xz)/(\d+)/(\d+)_(\d+)_(\d+).png", webargs)

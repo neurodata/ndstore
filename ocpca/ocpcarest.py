@@ -154,12 +154,6 @@ def HDF5(chanargs, proj, db):
       #cube.RGBAChannel()
       changrp = fh5out.create_group( "{}".format(channel_name) )
       changrp.create_dataset("CUTOUT", tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data)
-  
-      #elif proj.getChannelType() in ocpcaproj.TIMESERIES_PROJECTS:
-      #cube = TimeSeriesCutout ( imageargs, proj, db )
-      ##FilterTimeCube ( imageargs, cube )
-      #fh5out.create_dataset ( "CUTOUT", tuple(cube.shape), cube.dtype, compression='gzip', data=cube )
-
       changrp.create_dataset( "DATATYPE", (1,), dtype=h5py.special_dtype(vlen=str), data=ch.getChannelType() )
 
   except:
