@@ -15,7 +15,7 @@
 from django.shortcuts import render
 from django.shortcuts import redirect
 from django.shortcuts import get_object_or_404
-from django.http import HttpResponse 
+from django.http import HttpResponse, HttpResponseBadRequest 
 
 from django.template import RequestContext 
 from django.contrib.sites.models import Site
@@ -44,7 +44,34 @@ def default(request):
 
 # View a project dynamically generated based on token (and channel) 
 def tokenview(request, webargs):
-	todo = 1
+  # we expect /ocp/viz/token/channel(s)/res/x/y/z/
+  # res (x,y,z) will center the map at (x,y,z) for a given res  
+  channels = None   
+  [token, restargs] = webargs.split('/', 1)
+  restsplit = restargs.split('/')
+ 
+  if len(restsplit) == 4:
+    # assume no channels, just res/x/y/z/
+    res = int(restsplit[0])
+    x = int(restsplit[1])
+    y = int(restsplit[2])
+    z = int(restsplit[3])
+
+  elif len(restsplit) > 4:
+    # assume channels + res/x/y/z 
+    channels = restsplit[0]
+    x = int(restsplit[1])
+    y = int(restsplit[2])
+    z = int(restsplit[3])
+
+  elif len(restsplit) == 1:
+    # assume just channels
+    channels = restsplit
+  else:
+    # return error 
+    return HttpResponseBadRequest('Error: Invalid REST arguments.')
+
+  return HttpResponse('It worked!') 
 
 
 # View a VizProject (pre-prepared project in the database)
