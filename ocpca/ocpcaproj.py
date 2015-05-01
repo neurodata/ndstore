@@ -304,7 +304,7 @@ class OCPCAChannel:
   def getResolution (self):
     return self.ch.resolution
   def getWindowRange (self):
-    return (self.ch.startwindow,self.ch.endwindow)
+    return [self.ch.startwindow,self.ch.endwindow]
   def getPropagate (self):
     return self.ch.propagate
 

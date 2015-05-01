@@ -141,9 +141,8 @@ class OCPCADB:
       self.conn.commit()
       cursor.close()
 
-
   def commit ( self ):
-    """Commit the transaction.  Moved out of __del__ to make explicit.""" 
+    """Commit the transaction. Moved out of __del__ to make explicit.""" 
 
     self.cursor.close()
     self.conn.commit()
@@ -371,7 +370,7 @@ class OCPCADB:
 
   def putCube(self, ch, zidx, resolution, cube, update=False):
     """ Store a cube in the annotation database """
-    
+   
     # Handle the cube format here.  
     if self.NPZ:
       self.kvio.putCube(ch, zidx, resolution, cube.toNPZ(), not cube.fromZeros())
