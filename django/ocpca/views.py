@@ -35,13 +35,17 @@ POST_SERVICES = ['hdf5', 'npz', 'hdf5_async', 'propagate']
 def cutout (request, webargs):
   """Restful URL for all read services to annotation projects"""
 
-  if re.match(r"\w+/[\w+,/-]+/(xy|xz|yz|ts|hdf5|npz|zip|id|ids|xyanno|xzanno|yzanno|xytiff|xztiff|yztiff)/[\w,/-]+$", webargs):
-    [token, channel, service, cutoutargs] = webargs.split('/', 3)
-  elif re.match(r"\w+/(xy|xz|yz|ts|hdf5|npz|zip|id|ids|xyanno|xzanno|yzanno|xytiff|xztiff|yztiff)/[\w,/-]+$", webargs):
-    [token, service, cutoutargs] = webargs.split('/', 2)
-    p = re.compile("(\w+)/(xy|xz|yz|ts|hdf5|npz|zip|id|ids|xyanno|xzanno|yzanno|xytiff|xztiff|yztiff)/([\w,/-]+)$")
-    m = p.match(webargs)
-    webargs = '{}/default/{}/{}'.format(m.group(1), m.group(2), m.group(3))
+  try:
+    m = re.match(r"(\w+)/(?P<channel>[\w+,/-]+)?/?(xy|xz|yz|ts|hdf5|npz|zip|id|ids|xyanno|xzanno|yzanno|xytiff|xztiff|yztiff)/([\w,/-]+)$", webargs)
+
+    [token, channel, service, cutoutargs] = [i for i in m.groups()]
+
+    if channel is None:
+      webargs = '{}/default/{}/{}'.format(token, service, cutoutargs)
+
+  except Exception, e:
+    logger.warning("Incorrect format for arguments {}. {}".format(webargs, e))
+    raise OCPCAError("Incorrect format for arguments {}. {}".format(webargs, e))
 
   try:
     # GET methods
@@ -57,22 +61,22 @@ def cutout (request, webargs):
       elif service in ['id','ids']:
         return django.http.HttpResponse(ocpcarest.getCutout(webargs))
       else:
-        logger.warning ("HTTP Bad request. Could not find service %s" % service )
-        return django.http.HttpResponseBadRequest ("Could not find service %s" % service )
+        logger.warning("HTTP Bad request. Could not find service {}".format(service))
+        return django.http.HttpResponseBadRequest("Could not find service %s".format(service))
 
     # RBTODO control caching?
     # POST methods
     elif request.method == 'POST':
       if service in POST_SERVICES:
         django.http.HttpResponse(ocpcarest.putCutout(webargs,request.body))
-        return django.http.HttpResponse ("Success", content_type='text/html')
+        return django.http.HttpResponse("Success", content_type='text/html')
       else:
-        logger.warning ("HTTP Bad request. Could not find service %s" % service )
-        return django.http.HttpResponseBadRequest ("Could not find service %s" % service )
+        logger.warning("HTTP Bad request. Could not find service {}".format(service))
+        return django.http.HttpResponseBadRequest("Could not find service {}".format(service))
 
     else:
-      logger.warning ("Invalid HTTP method %s.  Not GET or POST." % request.method )
-      return django.http.HttpResponseBadRequest ("Invalid HTTP method %s.  Not GET or POST." % request.method )
+      logger.warning("Invalid HTTP method {}. Not GET or POST.".format(request.method))
+      return django.http.HttpResponseBadRequest("Invalid HTTP method {}. Not GET or POST.".format(request.method))
 
   except OCPCAError, e:
     return django.http.HttpResponseNotFound(e.value)
@@ -80,7 +84,7 @@ def cutout (request, webargs):
     return django.http.HttpResponseNotFound(e)
   except:
     logger.exception("Unknown exception in getCutout.")
-    raise
+    raise OCPCAError("Unknow exception in getCutout")
 
 
 #@cache_control(no_cache=True)
@@ -105,8 +109,8 @@ def annotation (request, webargs):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except:
-    logger.exception("Unknown exception in annotation.")
-    raise
+    logger.exception("Unknown exception in annotation")
+    raise OCPCAError("Unknown exception in annotation")
 
 
 @cache_control(no_cache=True)
@@ -121,8 +125,8 @@ def csv (request, webargs):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except:
-    logger.exception("Unknown exception in csv.")
-    raise
+    logger.exception("Unknown exception in csv")
+    raise OCPCAError("Unknown exception in csv")
 
 
 @cache_control(no_cache=True)
@@ -140,8 +144,8 @@ def queryObjects ( request, webargs ):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except:
-    logger.exception("Unknown exception in listObjects.")
-    raise
+    logger.exception("Unknown exception in listObjects")
+    raise OCPCAError("Unknown exception in listObjects")
 
 
 def catmaid (request, webargs):
@@ -160,8 +164,8 @@ def catmaid (request, webargs):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except:
-    logger.exception("Unknown exception in catmaid %s.", e)
-    raise
+    logger.exception("Unknown exception in catmaid {}.".format(e))
+    raise OCPCAError("Unknown exception in catmaid {}.".format(e))
 
 
 @cache_control(no_cache=True)
@@ -174,8 +178,8 @@ def publictokens (request, webargs):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except:
-    logger.exception("Unknown exception in publictokens.")
-    raise
+    logger.exception("Unknown exception in publictokens")
+    raise OCPCAError("Unknown exception in publictokens")
 
 
 @cache_control(no_cache=True)
@@ -189,8 +193,8 @@ def jsoninfo (request, webargs):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except:
-    logger.exception("Unknown exception in jsoninfo.")
-    raise
+    logger.exception("Unknown exception in jsoninfo")
+    raise OCPCAError("Unknown exception in jsoninfo")
 
 @cache_control(no_cache=True)
 def projinfo (request, webargs):
@@ -203,9 +207,8 @@ def projinfo (request, webargs):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except:
-    logger.exception("Unknown exception in projInfo.")
-    raise
-
+    logger.exception("Unknown exception in projInfo")
+    raise OCPCAError("Unknown exception in projInfo")
 
 @cache_control(no_cache=True)
 def chaninfo (request, webargs):
@@ -218,8 +221,8 @@ def chaninfo (request, webargs):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except:
-    logger.exception("Unknown exception in chanInfo.")
-    raise
+    logger.exception("Unknown exception in chanInfo")
+    raise OCPCAError("Unknown exception in chanInfo")
 
 
 def mcFalseColor (request, webargs):
@@ -232,8 +235,8 @@ def mcFalseColor (request, webargs):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except:
-    logger.exception("Unknown exception in mcFalseColor.")
-    raise
+    logger.exception("Unknown exception in mcFalseColor")
+    raise OCPCAError("Unknown exception in mcFalseColor")
 
 @cache_control(no_cache=True)
 def reserve (request, webargs):
@@ -246,9 +249,8 @@ def reserve (request, webargs):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except:
-    logger.exception("Unknown exception in reserve.")
-    raise
-
+    logger.exception("Unknown exception in reserve")
+    raise OCPCAError("Unknown exception in reserve")
 
 def setField (request, webargs):
   """Set an individual RAMON field for an object"""
@@ -261,9 +263,8 @@ def setField (request, webargs):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except:
-    logger.exception("Unknown exception in setField.")
-    raise
-
+    logger.exception("Unknown exception in setField")
+    raise OCPCAError("Unknown exception in setField")
 
 @cache_control(no_cache=True)
 def getField (request, webargs):
@@ -276,8 +277,8 @@ def getField (request, webargs):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except:
-    logger.exception("Unknown exception in getField.")
-    raise
+    logger.exception("Unknown exception in getField")
+    raise OCPCAError("Unknown exception in getField")
 
 #@cache_control(no_cache=True)
 def getPropagate (request, webargs):
@@ -290,8 +291,8 @@ def getPropagate (request, webargs):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except:
-    logger.exception("Unknown exception in getPropagate.")
-    raise
+    logger.exception("Unknown exception in getPropagate")
+    raise OCPCAError("Unknown exception in getPropagate")
 
 def setPropagate (request, webargs):
   """ Set the value for Propagate field for a given project """
@@ -304,8 +305,8 @@ def setPropagate (request, webargs):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except:
-    logger.exception("Unknown exception in setPropagate.")
-    raise
+    logger.exception("Unknown exception in setPropagate")
+    raise OCPCAError("Unknown exception in setPropagate")
 
 def merge (request, webargs):
   """Merge annotation objects"""
@@ -317,9 +318,8 @@ def merge (request, webargs):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except:
-    logger.exception("Unknown exception in global Merge.")
-    raise
-
+    logger.exception("Unknown exception in global Merge")
+    raise OCPCAError("Unknown exception in global Merge")
 
 def exceptions (request, webargs):
   """Return a list of multiply labeled pixels in a cutout region"""
@@ -331,9 +331,8 @@ def exceptions (request, webargs):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except:
-    logger.exception("Unknown exception in exceptions Web service.")
-    raise
-
+    logger.exception("Unknown exception in exceptions Web service")
+    raise OCPCAError("Unknown exception in exceptions Web service")
 
 def minmaxProject (request, webargs):
   """Restful URL for all read services to annotation projects"""
@@ -345,5 +344,5 @@ def minmaxProject (request, webargs):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except:
-    logger.exception("Unknown exception in (min|max) projection Web service.")
-    raise
+    logger.exception("Unknown exception in (min|max) projection Web service")
+    raise OCPCAError("Unknown exception in (min|max) projection Web service")
