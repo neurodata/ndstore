@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import re
+import numpy as np
 import cStringIO
 from PIL import Image
 import pylibmc
@@ -152,7 +153,7 @@ class SimpleCatmaid:
       p = re.compile("(\w+)/([\w+,]*?)/(xy|yz|xz|)/(\d+)/(\d+)_(\d+)_(\d+).png")
       m = p.match(webargs)
       [self.token, self.channel, slice_type] = [i for i in m.groups()[:3]]
-      [ztile, xtile, ytile, res] = [int(i) for i in m.groups()[3:]]
+      [ztile, ytile, xtile, res] = [int(i) for i in m.groups()[3:]]
     except Exception, e:
       logger.warning("Incorrect arguments give for getTile {}. {}".format(webargs, e))
       raise OCPCAError("Incorrect arguments given for getTile {}. {}".format(webargs, e))
