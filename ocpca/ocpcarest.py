@@ -151,7 +151,7 @@ def HDF5(chanargs, proj, db):
     for channel_name in channels.split(','):
       ch = proj.getChannelObj(channel_name)
       cube = cutout(imageargs, ch, proj, db)
-      #cube.RGBAChannel()
+      cube.RGBAChannel()
       changrp = fh5out.create_group( "{}".format(channel_name) )
       changrp.create_dataset("CUTOUT", tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data)
       changrp.create_dataset( "DATATYPE", (1,), dtype=h5py.special_dtype(vlen=str), data=ch.getChannelType() )

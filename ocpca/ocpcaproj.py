@@ -516,6 +516,7 @@ class OCPCAProjectsDB:
           cursor.execute(sql)
           self.conn.commit()
         except MySQLdb.Error, e:
+          # Skipping the error if the database does not exist
           if e.args[0] == 1008:
             logger.warning("Database {} does not exist".format(pr.project_name))
             pass
@@ -578,10 +579,14 @@ class OCPCAProjectsDB:
           cursor.execute (sql)
           conn.commit()
       except MySQLdb.Error, e:
-        conn.rollback()
-        logger.error ("Failed to drop channel tables {}: {}. sql={}".format(e.args[0], e.args[1], sql))
-        raise OCPCAError ("Failed to drop channel tables {}: {}. sql={}".format(e.args[0], e.args[1], sql))
-    
+        # Skipping the error if the table does not exist
+        if e.args[0] == 1051:
+          pass
+        else:
+          conn.rollback()
+          logger.error ("Failed to drop channel tables {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+          raise OCPCAError ("Failed to drop channel tables {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+      
     elif pr.getKVEngine() == 'Cassandra':
       # KL TODO
       pass
