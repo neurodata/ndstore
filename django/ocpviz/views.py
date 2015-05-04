@@ -107,7 +107,10 @@ def tokenview(request, webargs):
     tmp_layer.server = request.META['HTTP_HOST'];
     tmp_layer.tilecache = False  
     layers.append(tmp_layer)
+
   # package data for the template
+  xdownmax = (dataset.ximagesize - dataset.xoffset)/(2**dataset.scalinglevels)
+  ydownmax = (dataset.yimagesize - dataset.yoffset)/(2**dataset.scalinglevels)
   context = {
       'layers': layers,
       'project_name': token.token_name,
@@ -118,6 +121,8 @@ def tokenview(request, webargs):
       'yoffset': dataset.yoffset,
       'zoffset': dataset.zoffset,
       'res': dataset.scalinglevels,
+      'xdownmax': xdownmax,
+      'ydownmax': ydownmax,
       'starttime': dataset.starttime,
       'endtime': dataset.endtime,
   }

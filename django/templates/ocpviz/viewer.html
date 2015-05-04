@@ -183,7 +183,8 @@
       {% endspaceless %}],
 			doubleClickZoom: false,
     });
-		var center = map.unproject(L.point(xmax/2, ymax/2), maxres);
+    
+    var center = map.unproject(L.point({{ xdownmax }}/2, {{ ydownmax }}/2), maxres);
 		map.setView(center, maxres);
 
 		// display some map info
