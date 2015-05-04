@@ -127,39 +127,54 @@
     var querytool = true; // enabled by default
     var mergetool = false; // disabled by default
     
-    // project metadata
-    var xmin = {{ project.xmin }};	
-    var xmax = {{ project.xmax }};
-    var ymin = {{ project.ymin }};
-    var ymax = {{ project.ymax }};
+    // dataset info 
+    var xmin = {{ xoffset }};	
+    var xmax = {{ xsize }};
+    var ymin = {{ yoffset }};
+    var ymax = {{ ysize }};
 
-    // downsampled y and x maximum (calculated in view)
-    // TODO this needs to be updated dynamically on zoom... =/
-    var xdownmax = {{ xdownmax }};
-    var ydownmax = {{ ydownmax }};
-    
-    var minres = {{ project.minres }};
-    var maxres = {{ project.maxres }};
-    var zmin = {{ project.zmin }};
-    var zmax = {{ project.zmax }};
-    var zindex = {{ project.zmin }};
+    // we assume all projects start at res 0 
+    // this is pretty safe, since the default display is zoomed all the way out
+    var minres = 0;
+    var maxres = {{ res }};
+    var zmin = {{ zoffset }};
+    var zmax = {{ zsize }};
+    // set zindex to some default (we pick the lowest slice)  
+    var zindex = {{ zoffset }};
 
     // define layers
     {% for layer in layers %}
-    var {{ layer.layer_name|cut:" " }} = L.tileLayer.SmoothReload(
-      {# TODO add some if statements here to handle tilecache vs not, channel vs not, type (for opacity) etc #}
-      'http://{{ layer.server }}/ocpcatmaid/tilecache/{{ layer.token }}/xy/{zindex}/{y}_{x}_{z}.png', {
-				zindex: zindex,
-				zoomReverse: true,
-				minZoom: 3,
-        maxZoom: 6,
-        tileSize: 512,
-        {% if layer.layertype == 'ANNOS' %}
-        opacity: 0.4,
-        {% endif %}
-				noWrap: true,
-    })
-  {% endfor %}
+      {# setup the URL #} 
+      
+      {% if layer.channel %}
+        var webtoken = '{{ layer.token }}/{{ layer.channel.channel_name }}'; 
+      {% else %}
+        var webtoken = '{{ layer.token }}';
+      {% endif %}
+
+      {% if layer.tilecache %} 
+          var url = 'http://{{ layer.server }}/ocpcatmaid/tilecache/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
+      {% else %}
+          var url = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
+      {% endif %}
+        
+      console.log(url);    
+      
+      {# add the layer #}  
+      var {{ layer.layer_name|cut:" " }} = L.tileLayer.SmoothReload(
+        url,
+        {
+          zindex: zindex,
+          zoomReverse: true,
+          minZoom: 3,
+          maxZoom: 6,
+          tileSize: 512,
+          {% if layer.layertype == 'ANNOS' %}
+          opacity: 0.4,
+          {% endif %}
+          noWrap: true,
+        })
+    {% endfor %}
   
      // bind it all together
 		var map = L.map('map', {
@@ -167,8 +182,8 @@
       {% for layer in layers %}{{ layer.layer_name|cut:" " }}{% if not forloop.last %},{% endif %}{% endfor %}
       {% endspaceless %}],
 			doubleClickZoom: false,
-		});
-		var center = map.unproject(L.point(xdownmax/2, ydownmax/2), maxres);
+    });
+		var center = map.unproject(L.point(xmax/2, ymax/2), maxres);
 		map.setView(center, maxres);
 
 		// display some map info
@@ -181,9 +196,9 @@
 		};
 
 		info.update = function () {
-      var header = '<h4>Current Project</h4><strong>{{ project.project_name }}</strong><br />';
-      var datainfo = 'x: (' + xmin + ', ' + xdownmax + ')<br />' + 
-        'y: (' + ymin + ', ' + ydownmax + ')<br />' +
+      var header = '<h4>Current Project</h4><strong>{{ project_name }}</strong><br />';
+      var datainfo = 'x: (' + xmin + ', ' + xmax + ')<br />' + 
+        'y: (' + ymin + ', ' + ymax + ')<br />' +
         'z: (' + zmin + ', ' + zmax + ')<br />';
       var curslice = '<br />Current Slice: ' + zindex;
       this._div.innerHTML = header + datainfo + curslice;

@@ -23,6 +23,12 @@ from django.contrib.sites.models import Site
 from models import VizProject 
 from models import VizLayer 
 
+from ocpuser.models import Dataset
+from ocpuser.models import Project
+from ocpuser.models import Token
+from ocpuser.models import Channel
+
+
 import urllib2
 
 VALID_SERVERS = {
@@ -46,32 +52,76 @@ def default(request):
 def tokenview(request, webargs):
   # we expect /ocp/viz/token/channel(s)/res/x/y/z/
   # res (x,y,z) will center the map at (x,y,z) for a given res  
-  channels = None   
-  [token, restargs] = webargs.split('/', 1)
+  channels_str = None   
+  channels = None 
+  [token_str, restargs] = webargs.split('/', 1)
   restsplit = restargs.split('/')
- 
-  if len(restsplit) == 4:
+  
+  if len(restsplit) == 5:
     # assume no channels, just res/x/y/z/
     res = int(restsplit[0])
     x = int(restsplit[1])
     y = int(restsplit[2])
     z = int(restsplit[3])
 
-  elif len(restsplit) > 4:
+  elif len(restsplit) > 5:
     # assume channels + res/x/y/z 
     channels = restsplit[0]
     x = int(restsplit[1])
     y = int(restsplit[2])
     z = int(restsplit[3])
 
-  elif len(restsplit) == 1:
+  elif len(restsplit) == 2:
     # assume just channels
-    channels = restsplit
+    channels_str = restsplit
+  elif len(restsplit) == 1:
+    # do nothing
+    channels_str = None 
   else:
     # return error 
     return HttpResponseBadRequest('Error: Invalid REST arguments.')
+  
+  # get data from ocpuser 
+  token = get_object_or_404(Token, pk=token_str)
+  project = Project.objects.get(pk=token.project_id)
+  dataset = Dataset.objects.get(pk=project.dataset) 
+  if (channels_str is not None) and (len(channels_str[0]) > 0):
+    channels = []
+    for channel_str in channels_str:
+      if len(channel_str) > 0:
+        channels.append(get_object_or_404(Channel, channel_name=channel_str, project=token.project)
+) 
 
-  return HttpResponse('It worked!') 
+  layers = []
+  # we convert the channels to layers here 
+  if channels is None:
+    # assume default channel, single layer called by the token
+    # get the default channel
+    channel = get_object_or_404(Channel, project=token.project, default=True)
+    tmp_layer = VizLayer()
+    tmp_layer.layer_name = token.token_name + '_' + channel.channel_name
+    tmp_layer.layer_description = token.token_description 
+    tmp_layer.layertype = channel.channel_type
+    tmp_layer.token = token.token_name
+    tmp_layer.channel = channel     
+    tmp_layer.server = request.META['HTTP_HOST'];
+    tmp_layer.tilecache = False  
+    layers.append(tmp_layer)
+  # package data for the template
+  context = {
+      'layers': layers,
+      'project_name': token.token_name,
+      'xsize': dataset.ximagesize,
+      'ysize': dataset.yimagesize,
+      'zsize': dataset.zimagesize,
+      'xoffset': dataset.xoffset,
+      'yoffset': dataset.yoffset,
+      'zoffset': dataset.zoffset,
+      'res': dataset.scalinglevels,
+      'starttime': dataset.starttime,
+      'endtime': dataset.endtime,
+  }
+  return render(request, 'ocpviz/viewer.html', context)
 
 
 # View a VizProject (pre-prepared project in the database)

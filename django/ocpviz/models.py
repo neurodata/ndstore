@@ -36,14 +36,19 @@ class VizLayer ( models.Model ):
   server = models.CharField(max_length=255, choices=SERVER_CHOICES, default="localhost")
   
   LAYER_CHOICES = (
-      ('IMAGES', 'Images'),
-      ('ANNOS', 'Annotations'),
+    ('image', 'IMAGES'),
+    ('annotation', 'ANNOTATIONS'),
+    ('probmap', 'PROBABILITY_MAP'),
+    ('rgb', 'RGB'),
+    ('timeseries','TIMESERIES'),
   )
   layertype = models.CharField(max_length=255, choices=LAYER_CHOICES)
   token = models.CharField(max_length=255)
   channel = models.CharField(max_length=255, blank=True)
   # prevent the user from turning off EM data
   required = models.BooleanField(default=False) 
+  # do we want to use the tilecache or ocpcatmaid? (default ocpcatmaid)  
+  tilecache = models.BooleanField(default=False) 
 
   def __unicode__(self):
     return self.layer_name 
@@ -52,6 +57,7 @@ class VizProject ( models.Model ):
   project_name = models.CharField(max_length=255, primary_key=True, verbose_name="Name for this visualization project.")
   project_description = models.CharField(max_length=4096, blank=True)
   user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True)
+  # AB TODO if private, require login 
   PUBLIC_CHOICES = (
       (1, 'Yes'),
       (0, 'No'),
@@ -59,6 +65,7 @@ class VizProject ( models.Model ):
   public = models.IntegerField(choices=PUBLIC_CHOICES, default=0)
   
   layers = models.ManyToManyField(VizLayer, related_name='project')
+
 
   xmin = models.IntegerField(default=0)
   xmax = models.IntegerField()
