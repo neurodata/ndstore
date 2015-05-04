@@ -17,8 +17,8 @@ from ocpuser.views import *
 import django.contrib.auth
 
 urlpatterns = patterns('ocpviz.views',
-    url(r'(?P<webargs>[\w,/-]+)$', 'tokenview'),
     url(r'^project/(?P<webargs>[\w,/-]+)', 'projectview'),
+    url(r'(?P<webargs>[\w,/-]+)$', 'tokenview'),
     # for redirecting queries (reqd because of same origin policy)
     url(r'^query/(?P<queryargs>[\w,/-]+)', 'query'),
     #'(?P<queryargs>^\w+)$', 'query'),

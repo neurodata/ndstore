@@ -142,11 +142,19 @@ def projectview(request, webargs):
   ydownmax = project.ymax / 2**(project.maxres - project.minres) 
 
   context = {
-      'project_name': project_name, 
-      'project': project,
       'layers': layers,
+      'project_name': project_name,
+      'xsize': project.xmax,
+      'ysize': project.ymax,
+      'zsize': project.zmax,
+      'xoffset': project.xmin,
+      'yoffset': project.ymin,
+      'zoffset': project.zmin,
+      'res': project.maxres,
       'xdownmax': xdownmax,
       'ydownmax': ydownmax,
+      'starttime': 0,
+      'endtime': 0,
   }
   return render(request, 'ocpviz/viewer.html', context)
 
