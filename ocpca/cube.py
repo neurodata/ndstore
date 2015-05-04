@@ -93,9 +93,14 @@ class Cube:
       raise OCPCAError ("Conflicting data types for overwrite")
     self.data = ocplib.overwriteDense_ctype ( self.data, writedata )
   
-  def RGBAChannel():
-    """return a RGBAChannel Method definition"""
+  def RGBAChannel(self):
+    """Return a RGBAChannel Method definition"""
     pass
+
+  def isNotZeros(self):
+    """Check if the cube has any data"""
+    return np.any(self.data)
+
 
   # factory method for cube
   @staticmethod

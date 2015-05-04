@@ -370,35 +370,20 @@ class OCPCADB:
 
   def putCube(self, ch, zidx, resolution, cube, update=False):
     """ Store a cube in the annotation database """
-   
-    # Handle the cube format here.  
-    if self.NPZ:
-      self.kvio.putCube(ch, zidx, resolution, cube.toNPZ(), not cube.fromZeros())
-    else:
-      with closing(tempfile.NamedTemporaryFile()) as tmpfile:
-        h5 = h5py.File ( tmpfile.name, driver="core" )
-        h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype, compression='gzip',  data=cube.data )
-        h5.close()
-        tmpfile.seek(0)
-
-        self.kvio.putCube(ch, zidx, resolution, tmpfile.read(), not cube.fromZeros())
   
-  
-  #def putCubes ( self, listofidxs, resolution, cube ):
-    #""" Store a cube in the annotation database. Does not work currently. """
+    if cube.isNotZeros():
+      # Handle the cube format here.  
+      if self.NPZ:
+        self.kvio.putCube(ch, zidx, resolution, cube.toNPZ(), not cube.fromZeros())
+      else:
+        with closing(tempfile.NamedTemporaryFile()) as tmpfile:
+          h5 = h5py.File ( tmpfile.name, driver="core" )
+          h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype, compression='gzip',  data=cube.data )
+          h5.close()
+          tmpfile.seek(0)
 
-    ## Handle the cube format here.  
-    #if self.NPZ:
-      #self.kvio.putCubes ( listofidxs, resolution, cube.toNPZ(), not cube.fromZeros() )
-    #else:
-      #with closign ( tempfile.NamedTemporaryFile () ) as tmpfile:
-        #h5 = h5py.File ( tmpfile.name )
-        #h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype, compression='gzip',  data=cube.data )
-        #h5.close()
-        #tmpfile.seek(0)
-
-        #self.kvio.putCubes ( listofidxs, resolution, tmpfile.read(), not cube.fromZeros() )
-  
+          self.kvio.putCube(ch, zidx, resolution, tmpfile.read(), not cube.fromZeros())
+    
   
   # GET AND PUT methods for Timeseries Database
   
@@ -434,12 +419,6 @@ class OCPCADB:
     return cube
   
   
-  #def getTimeCubes(self, ch, listofidxs, timestamp, resolution):
-    #"""Return a list of timeseries cubes"""
-
-    #return self.kvio.getTimeCubes(ch, listofidxs, timsestamp, resolution)
-  
-  
   def getTimeCubes(self, ch, idx, listoftimestamps, resolution):
     """ Return a column of timeseries cubes. Better at I/O """
 
@@ -449,16 +428,17 @@ class OCPCADB:
   def putTimeCube(self, ch, zidx, timestamp, resolution, cube, update=False):
     """Store a cube in the annotation database"""
 
-    # Handle the cube format here.  
-    if self.NPZ:
-      self.kvio.putTimeCube(ch, zidx, timestamp, resolution, cube.toNPZ(), update)
-    else:
-      with closing(tempfile.NamedTemporaryFile()) as tmpfile:
-        h5 = h5py.File ( tmpfile.name, driver='core', backing_store=True )
-        h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype, compression='gzip',  data=cube.data )
-        h5.close()
-        tmpfile.seek(0)
-        self.kvio.putTimeSeriesCube ( zidx, timestamp, resolution, tmpfile.read(), update )
+    if cube.isNotZeros():
+      # Handle the cube format here.  
+      if self.NPZ:
+        self.kvio.putTimeCube(ch, zidx, timestamp, resolution, cube.toNPZ(), update)
+      else:
+        with closing(tempfile.NamedTemporaryFile()) as tmpfile:
+          h5 = h5py.File ( tmpfile.name, driver='core', backing_store=True )
+          h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype, compression='gzip',  data=cube.data )
+          h5.close()
+          tmpfile.seek(0)
+          self.kvio.putTimeSeriesCube ( zidx, timestamp, resolution, tmpfile.read(), update )
   
   def getExceptions ( self, ch, zidx, resolution, annoid ):
     """Load a cube from the annotation database"""
@@ -611,12 +591,6 @@ class OCPCADB:
       return excs
 
 
-
-  #
-  # annotate
-  #
-  #  number the voxels and build the exceptions
-  #
   def annotate ( self, ch, entityid, resolution, locations, conflictopt='O' ):
     """Label the voxel locations or add as exceptions is the are already labeled."""
 
@@ -681,7 +655,6 @@ class OCPCADB:
   def putCubeSSD ( key, reolution, cube ):
     """ Write the cube to SSD's """
     print "HELLO"
-
 
 
 
