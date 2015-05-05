@@ -166,8 +166,8 @@
         {
           zindex: zindex,
           zoomReverse: true,
-          minZoom: 3,
-          maxZoom: 6,
+          minZoom: maxres,
+          maxZoom: maxres + maxres,
           tileSize: 512,
           {% if layer.layertype == 'annotation' %}
           opacity: 0.4,
