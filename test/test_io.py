@@ -791,4 +791,3 @@ class TestRW:
     h5r = readAnno(rp)
     assert countVoxels ( retval, h5r ) == 2*50*50*2
 
-
