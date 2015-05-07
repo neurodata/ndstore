@@ -96,8 +96,11 @@ def tokenview(request, webargs):
   # we convert the channels to layers here 
   if channels is None:
     # assume default channel, single layer called by the token
-    # get the default channel
+    # get the default channel and add it to channels
     channel = get_object_or_404(Channel, project=token.project, default=True)
+    channels.append(channel) 
+  # convert all channels to layers 
+  for channel in channels:
     tmp_layer = VizLayer()
     tmp_layer.layer_name = token.token_name + '_' + channel.channel_name
     tmp_layer.layer_description = token.token_description 
