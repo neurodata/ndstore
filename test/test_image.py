@@ -51,11 +51,11 @@ p = Params()
 p.token = "unittest_rw"
 p.resolution = 0
 p.channels = ['IMAGE1', 'IMAGE2']
+p.window = [0,500]
 #p.args = (3000,3100,4000,4100,500,510)
 
 
 class Test_Image_Slice:
-
 
   def setup_class(self):
 
@@ -112,6 +112,45 @@ class Test_Image_Slice:
     url = "http://{}/ca/{}/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
     assert ( 404 == getURL (url) )
 
+
+class Test_Image_Window:
+
+  def setup_class(self):
+    makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type='image', channel_datatype='uint16', window=p.window, default=True)
+
+  def teardown_class(self):
+    makeunitdb.deleteTestDB(p.token)
+
+  def test_window_default(self):
+    "Test the window functionality"
+
+    p.args = (3000,3100,4000,4100,200,201)
+    image_data = np.ones([2,1,100,100], dtype=np.uint16) * 2000
+    response = postNPZ(p, image_data)
+
+    url = "http://{}/ca/{}/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
+    f = getURL (url)
+
+    from windowcutout import windowCutout
+    windowCutout(image_data, p.window)
+    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    assert ( np.array_equal(slice_data,image_data[0][0]) )
+  
+  def test_window_args(self):
+    "Test the window functionality"
+
+    p.args = (3000,3100,4000,4100,200,201)
+    p.window = [0,1500]
+    image_data = np.ones([2,1,100,100], dtype=np.uint16) * 2000
+    response = postNPZ(p, image_data)
+
+    url = "http://{}/ca/{}/{}/xy/{}/{},{}/{},{}/{}/window/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], *p.window)
+    f = getURL (url)
+
+    from windowcutout import windowCutout
+    windowCutout(image_data, p.window)
+    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    assert ( np.array_equal(slice_data,image_data[0][0]) )
 
 class Test_Image_Post:
 
@@ -201,16 +240,15 @@ class Test_Image_Post:
     response = postHDF5(p, image_data)
     assert (response.code == 404)
 
-
 class Test_Image_Default:
 
   def setup_class(self):
     p.channels = ['IMAGE']
-    makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type='image', channel_datatype='uint8', default=True )
+    makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type='image', channel_datatype='uint8', default=True)
 
   def teardown_class(self):
     makeunitdb.deleteTestDB(p.token)
-
+  
   def test_npz_default_channel (self):
     """Post npz data with default channel"""
 
@@ -238,3 +276,4 @@ class Test_Image_Default:
 
     slice_data = np.asarray ( Image.open(StringIO(f.read())) )
     assert ( np.array_equal(slice_data,image_data[0][0]) )
+

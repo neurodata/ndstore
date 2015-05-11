@@ -22,7 +22,7 @@ from models import Token
 from models import Channel
 
 
-class CreateProjectForm(ModelForm):
+class ProjectForm(ModelForm):
 
     class Meta:
         model = Project
@@ -33,24 +33,13 @@ class CreateProjectForm(ModelForm):
                 return project
             raise forms.ValidationError('Please enter a valid project')
 
-class CreateDatasetForm(ModelForm):
+class DatasetForm(ModelForm):
 
     class Meta:
         model = Dataset
         exclude = ('user',)
 
-class UpdateDatasetForm(ModelForm):
-
-  def __init__(self, *args, **kwargs):
-    initial = kwargs.get('initial', {})
-    initial['material'] = 'Test'
-    kwargs['initial'] = initial
-
-    class Meta:
-        model = Dataset
-        exclude = ('user',)
-
-class CreateTokenForm(ModelForm):
+class TokenForm(ModelForm):
 
     class Meta:
         model = Token
@@ -61,12 +50,11 @@ class CreateTokenForm(ModelForm):
                 return token 
             raise forms.ValidationError('Please enter a valid token')
 
-
-class CreateChannelForm(ModelForm):
+class ChannelForm(ModelForm):
 
     class Meta:
         model = Channel
-        exclude = ('user',)
+        exclude = ('user', 'channel_type', 'channel_datatype')
         def clean_channel(self):
             if 'channel_name' in self.cleaned_data:
                 token = self.cleaned_data['channel_name']

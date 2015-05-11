@@ -127,7 +127,7 @@ class OCPCADataset:
       if self.ds.scalingoption == ZSLICES:
         zpixels=self.ds.zimagesize
       else:
-        zpixels=((self.ds.zimagesz-1)/2**i)+1
+        zpixels=((self.ds.zimagesize-1)/2**i)+1
       self.imagesz[i] = [ xpixels, ypixels, zpixels ]
 
       # set the offset
@@ -189,13 +189,11 @@ class OCPCADataset:
   def getDatasetDescription ( self ):
     return self.ds.dataset_description
 
-  def checkCube ( self, resolution, corner, dim, tstart=0, tend=0 ):
+  def checkCube (self, resolution, corner, dim, timeargs):
     """Return true if the specified range of values is inside the cube"""
 
     [xstart, ystart, zstart ] = corner
-    #xend = xstart + dim[0]
-    #yend = ystart + dim[1]
-    #zend = zstart + dim[2]
+    [tstart, tend] = timeargs
 
     from operator import add
     [xend, yend, zend] = map(add, corner, dim) 
@@ -303,7 +301,7 @@ class OCPCAChannel:
   def getResolution (self):
     return self.ch.resolution
   def getWindowRange (self):
-    return (self.ch.startwindow,self.ch.endwindow)
+    return [self.ch.startwindow,self.ch.endwindow]
   def getPropagate (self):
     return self.ch.propagate
 
@@ -343,14 +341,10 @@ class OCPCAChannel:
 
   def getExceptionsTable (self, resolution):
     """Return the appropiate exceptions table for the specified resolution"""
-    #if self.getExceptions == EXCEPTION_TRUE:
     if self.pr.getOCPVersion() == '0.0':
       return "exc{}".format(resolution)
     else:
       return "{}_exc{}".format(self.ch.channel_name, resolution)
-    #else:
-      #logger.warning ( "Exceptions does not exist for the channel {}".format(self.getChannelName()) )
-      #raise OCPCAError ( "Exceptions does not exist for the channel {}".format(self.getChannelName()) )
 
   def setPropagate (self, value):
     if value in [NOT_PROPAGATED]:
@@ -523,12 +517,17 @@ class OCPCAProjectsDB:
 
       with closing(self.conn.cursor()) as cursor:
         try:
-          cursor.execute ( sql )
+          cursor.execute(sql)
           self.conn.commit()
         except MySQLdb.Error, e:
-          self.conn.rollback()
-          logger.error ("Failed to drop project database {}: {}. sql={}".format(e.args[0], e.args[1], sql))
-          raise OCPCAError ("Failed to drop project database {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+          # Skipping the error if the database does not exist
+          if e.args[0] == 1008:
+            logger.warning("Database {} does not exist".format(pr.project_name))
+            pass
+          else:
+            self.conn.rollback()
+            logger.error ("Failed to drop project database {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+            raise OCPCAError ("Failed to drop project database {}: {}. sql={}".format(e.args[0], e.args[1], sql))
 
 
     #  try to delete the database anyway
@@ -556,6 +555,7 @@ class OCPCAProjectsDB:
 
 
   def deleteOCPCAChannel (self, proj, channel_name):
+    """Delete the tables for this channel"""
 
     pr = OCPCAProject(proj)
     ch = OCPCAChannel(pr, channel_name)
@@ -576,17 +576,21 @@ class OCPCAProjectsDB:
     
       try:
         conn = MySQLdb.connect (host = ocpcaprivate.dbhost, user = ocpcaprivate.dbuser, passwd = ocpcaprivate.dbpasswd, db = pr.getProjectName() ) 
-      # delete the database
+        # delete the tables for this channel
         sql = "DROP TABLES IF EXISTS {}".format(','.join(table_list))
       
         with closing(conn.cursor()) as cursor:
           cursor.execute (sql)
           conn.commit()
       except MySQLdb.Error, e:
-        conn.rollback()
-        logger.error ("Failed to drop channel tables {}: {}. sql={}".format(e.args[0], e.args[1], sql))
-        raise OCPCAError ("Failed to drop channel tables {}: {}. sql={}".format(e.args[0], e.args[1], sql))
-    
+        # Skipping the error if the table does not exist
+        if e.args[0] == 1051:
+          pass
+        else:
+          conn.rollback()
+          logger.error ("Failed to drop channel tables {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+          raise OCPCAError ("Failed to drop channel tables {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+      
     elif pr.getKVEngine() == 'Cassandra':
       # KL TODO
       pass
@@ -595,21 +599,6 @@ class OCPCAProjectsDB:
       # KL TODO
       pass
 
-
-  # accessors for RB to fix
-  #def getDBUser( self ):
-    #return ocpcaprivate.dbuser
-  #def getDBPasswd( self ):
-    #return ocpcaprivate.dbpasswd
-
-  #def getTable ( self, resolution ):
-    #"""Return the appropriate table for the specified resolution"""
-    #return "res{}".format(resolution)
-  
-  #def getIdxTable ( self, resolution ):
-    #"""Return the appropriate Index table for the specified resolution"""
-    #return "idx{}".format(resolution)
-
   def loadDatasetConfig ( self, dataset ):
     """Query the database for the dataset information and build a db configuration"""
     return OCPCADataset (dataset)
@@ -617,15 +606,6 @@ class OCPCAProjectsDB:
   def loadToken ( self, token ):
     """Query django configuration for a token to bind to a project"""
     return OCPCAProject (token)
-   
-  #def updatePropagate ( self, proj):
-    #"""Update the propagate and readonly values for a project"""
-    #pr = Project.objects.get ( project_name=proj.getDBName() )
-    #tk = Token.objects.get ( token_name=proj.getToken() )
-    #tk.readonly = proj.getReadOnly()
-    #pr.propagate = proj.getPropagate()
-    #tk.save()
-    #pr.save()
 
   def getPublic ( self ):
     """ Return a list of public tokens """

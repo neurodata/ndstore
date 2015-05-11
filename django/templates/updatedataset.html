@@ -27,6 +27,7 @@ Create New Dataset
    {{ form.errors }} 
    {{ form.non_field_errors }} 
 
+<p><font color='red'> WARNING Editing some fields may be dangerous!! </font>  Specifically, if you change the scaling option or voxel resolution, you may render existing data unusable.  The physical layout of the databases depends upon these factors.  It is generally safe to change the voxel resolution in minor ways or if you keep the ratio of values the same.   If you change the image size or start/end time, you may have existing data that you can no longer access.  It is safe to change all fields if you have not created projects that use this dataset. </p>
 
  <div id="form" >
      <form action="" method="post">
@@ -64,23 +65,21 @@ Create New Dataset
 	    </div>
             <div class ="col-md-4"></div>
 	  </div>
+
+	  <div class = "row">
+      <div class ="col-md-4"></div>
+      <div class ="col-md-2">
+        <div class="fieldWrapper">
+    		{{ form.subject.errors }}
+		    <label for="ispublic">Public:</label>
+	      </div>
+      </div>
+      <div class ="col-md-2">
+	      {{ form.ispublic }}
+	    </div>
+	    <div class ="col-md-4"></div>
+    </div>
 	  
-
-     <div class = "row">
-       <div class ="col-md-4"></div>
-       <div class ="col-md-2">
-         <div class="fieldWrapper">
-           {{ form.subject.errors }}
-           <label for="exceptions">Public:</label>
-         </div>
-       </div>
-       <div class ="col-md-2">
-         {{ form.public }}
-       </div>
-       <div class ="col-md-4"></div>
-     </div>
-
-       
 	 <div class = "row">
            <div class ="col-md-4"></div>
            <div class ="col-md-2">
@@ -170,7 +169,7 @@ Create New Dataset
            <div class ="col-md-2">
 	     <div class="fieldWrapper">
 	       {{ form.subject.errors }}
-	       <label for="xvoxelres">X Voxel Resolution:</label>
+	       <label for="xvoxelres"><font color="red">X Voxel Resolution:</font></label>
 	     </div>
            </div>
            <div class ="col-md-2">
@@ -184,7 +183,7 @@ Create New Dataset
            <div class ="col-md-2">
        	     <div class="fieldWrapper">
 	       {{ form.subject.errors }}
-	       <label for="yvoxelres">Y Voxel Resolution:</label>
+	       <label for="yvoxelres"><font color="red">Y Voxel Resolution:</font></label>
 	     </div>
            </div>
            <div class ="col-md-2">
@@ -198,7 +197,7 @@ Create New Dataset
            <div class ="col-md-2">
        	     <div class="fieldWrapper">
 	       {{ form.subject.errors }}
-	       <label for="zvoxelres">Z Voxel Resolution:</label>
+	       <label for="zvoxelres"><font color="red">Z Voxel Resolution:</font></label>
 	     </div>
            </div>
            <div class ="col-md-2">
@@ -226,7 +225,7 @@ Create New Dataset
             <div class ="col-md-2">
        	      <div class="fieldWrapper">
 		{{ form.subject.errors }}
-		<label for="scalingoption">Scaling Option:</label>
+		<label for="scalingoption"><font color="red">Scaling Option:</font></label>
 	      </div>
             </div>
             <div class ="col-md-2">

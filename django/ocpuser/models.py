@@ -25,11 +25,11 @@ class Dataset ( models.Model):
     dataset_name = models.CharField(max_length=255, primary_key=True,verbose_name="Name of the Image dataset")    
     dataset_description = models.CharField(max_length=4096,blank=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL,blank=True)
-    PUBLIC_CHOICES = (
-        (1, 'Yes'),
-        (0, 'No'),
-        )
-    public =  models.IntegerField(choices=PUBLIC_CHOICES)
+    ISPUBLIC_CHOICES = (
+        (0, 'Private'),
+        (1, 'Public'),
+    )
+    ispublic =  models.IntegerField(default=0, choices=ISPUBLIC_CHOICES)
     ximagesize =  models.IntegerField()
     yimagesize =  models.IntegerField()
     zimagesize =  models.IntegerField()
@@ -41,9 +41,9 @@ class Dataset ( models.Model):
     zvoxelres = models.FloatField(default=1.0)
     SCALING_CHOICES = (
         (0, 'Z Slices'),
-        (1, 'isotropic'),
-        )
-    scalingoption = models.IntegerField(choices=SCALING_CHOICES)
+        (1, 'Isotropic'),
+    )
+    scalingoption = models.IntegerField(default=0, choices=SCALING_CHOICES)
     scalinglevels = models.IntegerField(default=0)
     starttime = models.IntegerField(default=0)
     endtime = models.IntegerField(default=0)
@@ -61,11 +61,11 @@ class Project ( models.Model):
     project_name  =  models.CharField(max_length=255, primary_key=True)
     project_description  =  models.CharField(max_length=4096, blank=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL,blank=True)
-    PUBLIC_CHOICES = (
-        (1, 'Yes'),
-        (0, 'No'),
-        )
-    public =  models.IntegerField(choices=PUBLIC_CHOICES)
+    ISPUBLIC_CHOICES = (
+        (0, 'Private'),
+        (1, 'Public'),
+    )
+    ispublic =  models.IntegerField(default=0, choices=ISPUBLIC_CHOICES)
     dataset = models.ForeignKey(Dataset)
     HOST_CHOICES = (
       ('localhost', 'localhost'),
@@ -115,11 +115,11 @@ class Token ( models.Model):
     token_description  =  models.CharField(max_length=4096,blank=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL,blank=True)
     project  = models.ForeignKey(Project)
-    PUBLIC_CHOICES = (
-        (1, 'Yes'),
-        (0, 'No'),
-        )
-    public =  models.IntegerField(choices=PUBLIC_CHOICES, default=0)
+    ISPUBLIC_CHOICES = (
+        (0, 'Private'),
+        (1, 'Public'),
+    )
+    ispublic =  models.IntegerField(default=0, choices=ISPUBLIC_CHOICES)
     
     
     class Meta:
