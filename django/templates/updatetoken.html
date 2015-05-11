@@ -64,37 +64,21 @@ Update Token
 	   <div class ="col-md-4"></div>
          </div>
 
+    {{ form.project.ashidden }}
+
 	 <div class = "row">
-           <div class ="col-md-4"></div>
-           <div class ="col-md-2">
-       	     <div class="fieldWrapper">
-	       {{ form.subject.errors }}
-	       <label for="project">Project:</label>
-	     </div>
-           </div>
-           <div class ="col-md-2">
-	     {{ form.project }}
-	   </div>
-	   <div class ="col-md-4"></div>
-         </div>
-
-	   <div class ="col-md-4"></div>
-         </div>
-
-         <div class = "row">
            <div class ="col-md-4"></div>
            <div class ="col-md-2">
 	     <div class="fieldWrapper">
 	       {{ form.subject.errors }}
-	       <label for="public">Public:</label>
+	       <label for="ispublic">Public</label>
 	     </div>
            </div>
            <div class ="col-md-2">
-	     {{ form.public }}
+	     {{ form.ispublic }}
 	   </div>
-	   <div class ="span4"></div>
+	   <div class ="col-md-4"></div>
          </div>
-	 
 	  
     <br>
 

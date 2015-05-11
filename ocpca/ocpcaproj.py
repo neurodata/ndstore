@@ -127,7 +127,7 @@ class OCPCADataset:
       if self.ds.scalingoption == ZSLICES:
         zpixels=self.ds.zimagesize
       else:
-        zpixels=((self.ds.zimagesz-1)/2**i)+1
+        zpixels=((self.ds.zimagesize-1)/2**i)+1
       self.imagesz[i] = [ xpixels, ypixels, zpixels ]
 
       # set the offset
