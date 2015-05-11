@@ -82,6 +82,8 @@ class Annotation:
       return self.confidence
     elif field == 'author':
       return self.author
+    elif field =='annid':
+      return self.annid
     elif self.kvpairs.get(field):
       return self.kvpairs[field]
     else:
@@ -123,7 +125,7 @@ class Annotation:
   
     if len(self.kvpairs) != 0:
       try:
-        kvclause = ','.join(['(' + str(self.annid) +',\'' + k + '\',\'' + v +'\')' for (k,v) in self.kvpairs.iteritems()])  
+        kvclause = ','.join(['(' + str(self.annid) +',\'' + str(k) + '\',\'' + str(v) +'\')' for (k,v) in self.kvpairs.iteritems()])  
       except:
         raise OCPCAError ( "Improperly formatted key/value csv string:" + kvclause ) 
 

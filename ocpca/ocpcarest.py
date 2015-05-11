@@ -41,6 +41,7 @@ import annotation
 import mcfc
 import ocplib
 import ocpcaprivate
+import ocpcaskel
 from windowcutout import windowCutout
 
 from ocpcaerror import OCPCAError
@@ -1380,7 +1381,29 @@ def putAnnotation ( webargs, postdata ):
   
       # return the identifier
       return retstr
+
+
+def getSWC ( webargs ):
+  """Return an SWC object generated from Skeletons/Nodes"""
+    
+  [token, channel, swcstring, skeletons, rest] = webargs.split('/',3)
+
+  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+    proj = projdb.loadToken ( token )
   
+  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+
+    ch = ocpcaproj.OCPCAChannel(proj, channel)
+
+    # Make a named temporary file for the SWC
+    with closing (tempfile.NamedTemporaryFile()) as tmpfile:
+
+      ocpcaskel.querySWC ( tmpfile, ch, db, proj, skelids=None )
+
+      tmpfile.seek(0)
+      return tmpfile.read()
+
+ 
 
 def putSWC ( webargs, postdata ):
   """Put an SWC object into RAMON skeleton/tree nodes"""
@@ -1398,61 +1421,19 @@ def putSWC ( webargs, postdata ):
       logger.warning("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
       raise OCPCAError("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
 
-    # Create a skeleton
-    skel = annotation.AnnSkeleton ( db )
-
-    # assign an identifier
-    skel.setField('annid', db.nextID(ch))
-    
-    # list of nodes in this skeleton
-    nodelist = []
-
     # Make a named temporary file for the HDF5
     with closing (tempfile.NamedTemporaryFile()) as tmpfile:
 
       tmpfile.write ( postdata )
       tmpfile.seek(0)
 
-      commentno = 1  # first comment, use as key for kvpairs
+      with closing (open(tmpfile.name)) as fp:
 
-      with open(tmpfile.name) as fp:
-        for line in fp:
+        # Parse the swc file into skeletons
+        swc_skels = ocpcaskel.ingestSWC ( fp, ch, db )
 
-          # Store comments as KV 
-          if re.match ( '^#.*$', line ):
-            skel.kvpairs['comment{}'.format(commentno)] = line
-            commentno += 1
-          else:
+        return swc_skels
 
-            # otherwise, parse the record according to SWC 
-            # n T x y z R P
-            ( nodeid, nodetype, xpos, ypos, zpos, radius, parentid )  = line.split()
-            node = annotation.AnnNode( db ) 
-            node.setField ( 'skeletonid', skel.annid )
-            node.setField ( 'annid', db.nextID(ch) )
-            node.setField ( 'nodeid', nodeid )
-            node.setField ( 'nodetype', nodetype )
-            node.setField ( 'location', (xpos,ypos,zpos) )
-            node.setField ( 'radius', radius )
-            node.setField ( 'parentid', parentid )
-
-            # translate to full resolution
-
-            nodelist.append ( node )
-
-    # now transact with the database
-    db.startTxn()
-    cursor = db.getCursor()
-
-    # store the skeleton
-    skel.store( ch, cursor )
-    # store the nodes
-    for node in nodelist:
-      node.store( ch, cursor )
-
-    db.commit()
-
-    return skel.annid
 
 
 #  Return a list of annotation object IDs
