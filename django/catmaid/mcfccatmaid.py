@@ -73,8 +73,7 @@ class MCFCCatmaid:
         tiledata = np.zeros((len(self.channel_list), cutout.data.shape[0], self.tilesz, self.tilesz), dtype=cutout.data.dtype)
 
       tiledata[index, 0, 0:((yend-1)%self.tilesz+1), 0:((xend-1)%self.tilesz+1)] = cutout.data[0, :, :]
-
-    tiledata = ocpcarest.window(tiledata, ch)
+      tiledata[index,:] = ocpcarest.window(tiledata[index,:], ch)
     
     # We have an compound array.  Now color it.
     return mcfc.mcfcPNG (tiledata.reshape((tiledata.shape[0],tiledata.shape[2],tiledata.shape[3])), self.colors)

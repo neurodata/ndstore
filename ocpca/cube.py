@@ -93,16 +93,26 @@ class Cube:
       raise OCPCAError ("Conflicting data types for overwrite")
     self.data = ocplib.overwriteDense_ctype ( self.data, writedata )
   
-  def RGBAChannel():
-    """return a RGBAChannel Method definition"""
+  def RGBAChannel(self):
+    """Return a RGBAChannel Method definition"""
     pass
+
+  def isNotZeros(self):
+    """Check if the cube has any data"""
+    return np.any(self.data)
+
 
   # factory method for cube
   @staticmethod
-  def getCube( cubedim, channeltype, datatype ):
+  def getCube(cubedim, channel_type, datatype, timerange=None):
 
-    if channeltype in ocpcaproj.ANNOTATION_CHANNELS and datatype in ocpcaproj.DTYPE_uint32:
+    if channel_type in ocpcaproj.ANNOTATION_CHANNELS and datatype in ocpcaproj.DTYPE_uint32:
       return anncube.AnnotateCube (cubedim)
+    elif channel_type in ocpcaproj.TIMESERIES_CHANNELS and timerange is not None:
+      if datatype in ocpcaproj.DTYPE_uint8:
+        return timecube.TimeCube8(cubedim, timerange)
+      elif datatype in ocpcaproj.DTYPE_uint16:
+        return timecube.TimeCube16(cubedim, timerange)
     elif datatype in ocpcaproj.DTYPE_uint8:
       return imagecube.ImageCube8 (cubedim)
     elif datatype in ocpcaproj.DTYPE_uint16:
@@ -122,3 +132,4 @@ class Cube:
 import imagecube
 import anncube
 import probmapcube
+import timecube

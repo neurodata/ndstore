@@ -32,12 +32,12 @@ import ocpcaproj
 import site_to_test
 import kvengine_to_test
 
-def createTestDB ( project_name, channel_list=['unit_anno'], channel_type='annotation', channel_datatype='uint32', public=0, ximagesize=10000, yimagesize=10000, zimagesize=50000, scalingoption=ocpcaproj.ZSLICES, scalinglevels=5, readonly=0, default=False, ocp_version=0.6 ):
+def createTestDB ( project_name, channel_list=['unit_anno'], channel_type='annotation', channel_datatype='uint32', public=0, ximagesize=10000, yimagesize=10000, zimagesize=50000, scalingoption=ocpcaproj.ZSLICES, scalinglevels=5, readonly=0, window=[0,0], time=[0,0], default=False, ocp_version=0.6 ):
   """Create a unit test data base on the specified sit and name"""
 
   unituser = User.objects.get(username='brain')
 
-  ds = Dataset ( dataset_name="unittest", user=unituser, ximagesize=ximagesize, yimagesize=yimagesize, zimagesize=zimagesize,  xoffset=0, yoffset=0, zoffset=1, xvoxelres=4.0, yvoxelres=4.0, zvoxelres=3.0, scalingoption=scalingoption, scalinglevels=scalinglevels, starttime=0, endtime=0, dataset_description="Unit test" ) 
+  ds = Dataset ( dataset_name="unittest", user=unituser, ximagesize=ximagesize, yimagesize=yimagesize, zimagesize=zimagesize,  xoffset=0, yoffset=0, zoffset=1, xvoxelres=4.0, yvoxelres=4.0, zvoxelres=3.0, scalingoption=scalingoption, scalinglevels=scalinglevels, starttime=time[0], endtime=time[1], dataset_description="Unit test" ) 
   ds.save()
 
 
@@ -57,12 +57,11 @@ def createTestDB ( project_name, channel_list=['unit_anno'], channel_type='annot
   pd.newOCPCAProject( pr.project_name )
   try:
     for channel_name in channel_list:
-      ch = Channel ( channel_name=channel_name, channel_type=channel_type, channel_datatype=channel_datatype, channel_description='Unit test channel', project_id=pr, readonly=readonly, resolution=0, exceptions=1, default=default )
+      ch = Channel (channel_name=channel_name, channel_type=channel_type, channel_datatype=channel_datatype, channel_description='Unit test channel', project_id=pr, readonly=readonly, resolution=0, exceptions=1,startwindow=window[0], endwindow=window[1], default=default)
       ch.save()
-      pd.newOCPCAChannel( pr.project_name, ch.channel_name )
+      pd.newOCPCAChannel(pr.project_name, ch.channel_name)
   except Exception, e:
     pass
-
 
 
 def deleteTestDB ( project_name ):

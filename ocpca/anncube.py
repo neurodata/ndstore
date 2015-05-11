@@ -36,9 +36,8 @@ class AnnotateCube(Cube):
 
     # call the base class constructor
     Cube.__init__( self, cubesize )
-
-    # variable that describes when a cube is created from zeros
-    #  rather than loaded from another source
+    self.data = np.zeros(self.cubesize, dtype=np.uint32)
+    # variable that describes when a cube is created from zeros rather than loaded from another source
     self._newcube = False
 
   def getVoxel ( self, voxel ):
@@ -172,9 +171,19 @@ class AnnotateCube(Cube):
 
 # end AnnotateCube
 
-class AnnotateCube64(AnnotateCube):
+class AnnotateCube64(Cube):
 
+  #  Express cubesize in [ x,y,z ]
+  def __init__(self, cubesize):
+    """Create empty array of cubesize"""
+
+    # call the base class constructor
+    Cube.__init__( self, cubesize )
+    self.data = np.zeros(self.cubesize, dtype=np.uint64)
+    # variable that describes when a cube is created from zeros rather than loaded from another source
+    self._newcube = False
   # was the cube created from zeros?
+  
   def fromZeros ( self ):
     """Determine if the cube was created from all zeros?"""
     if self._newcube == True:
@@ -186,7 +195,7 @@ class AnnotateCube64(AnnotateCube):
   def zeros ( self ):
     """Create a cube of all 0"""
     self._newcube = True
-    self.data = np.zeros ( self.cubesize, dtype=np.uint64 )
+    self.data = np.zeros (self.cubesize, dtype=np.uint64)
 
 
   def shave ( self, annid, offset, locations ):

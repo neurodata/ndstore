@@ -168,9 +168,11 @@ class ImageCube32(Cube):
     Cube.__init__(self,cubesize)
     # note that this is self.cubesize (which is transposed) in Cube
     self.data = np.zeros ( self.cubesize, dtype=np.uint32 )
+    # variable that describes when a cube is created from zeros rather than loaded from another source
+    self._newcube = False
 
   def fromZeros ( self ):
-    """Determine if the cube was created from all zeros?"""
+    """Determine if the cube was created from all zeros"""
     if self._newcube == True:
       return True
     else: 
@@ -240,6 +242,8 @@ class ImageCube64(Cube):
     Cube.__init__(self,cubesize)
     # note that this is self.cubesize (which is transposed) in Cube
     self.data = np.zeros ( self.cubesize, dtype=np.uint64 )
+    # variable that describes when a cube is created from zeros rather than loaded from another source
+    self._newcube = False
 
   def fromZeros ( self ):
     """Determine if the cube was created from all zeros?"""
