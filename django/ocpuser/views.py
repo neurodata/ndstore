@@ -83,7 +83,7 @@ def profile(request):
         if request.user.is_superuser:
           visible_datasets=Dataset.objects.all()
         else:
-          visible_datasets=Dataset.objects.filter(user_id=userid) | Dataset.objects.filter(ispublic=1)
+          visible_datasets=Dataset.objects.filter(user_id=userid) | Dataset.objects.filter(public=1)
 
         visible_datasets.sort()
 
@@ -92,7 +92,7 @@ def profile(request):
         dbs = defaultdict(list)
 
         for db in visible_datasets:
-          proj = Project.objects.filter(dataset_id=db.dataset_name, user_id=userid) | Project.objects.filter(dataset_id=db.dataset_name, ispublic=1)
+          proj = Project.objects.filter(dataset_id=db.dataset_name, user_id=userid) | Project.objects.filter(dataset_id=db.dataset_name, public=1)
           if proj:
             dbs[db.dataset_name].append(proj)
           else:
@@ -101,7 +101,7 @@ def profile(request):
         if request.user.is_superuser:
           visible_projects = Project.objects.all()
         else:
-          visible_projects = Project.objects.filter(user_id=userid) | Project.objects.filter(ispublic=1) 
+          visible_projects = Project.objects.filter(user_id=userid) | Project.objects.filter(public=1) 
 
         return render_to_response('profile.html', { 'databases': dbs.iteritems() ,'projects': visible_projects.values_list(flat=True) },context_instance=RequestContext(request))
 
@@ -206,12 +206,12 @@ def profile(request):
       if request.user.is_superuser:
         visible_datasets=Dataset.objects.all()
       else:
-        visible_datasets=Dataset.objects.filter(user_id=userid) | Dataset.objects.filter(ispublic=1)
+        visible_datasets=Dataset.objects.filter(user_id=userid) | Dataset.objects.filter(public=1)
 
       dbs = defaultdict(list)
     
       for db in visible_datasets:
-        proj = Project.objects.filter(dataset_id=db.dataset_name, user_id=userid) | Project.objects.filter(dataset_id=db.dataset_name, ispublic=1)
+        proj = Project.objects.filter(dataset_id=db.dataset_name, user_id=userid) | Project.objects.filter(dataset_id=db.dataset_name, public=1)
         if proj:
           dbs[db.dataset_name].append(proj)
         else:
@@ -220,7 +220,7 @@ def profile(request):
       if request.user.is_superuser:
         visible_projects = Project.objects.all()
       else:
-        visible_projects = Project.objects.filter(user_id=userid) | Project.objects.filter(ispublic=1) 
+        visible_projects = Project.objects.filter(user_id=userid) | Project.objects.filter(public=1) 
 
       return render_to_response('profile.html', { 'databases': sorted(dbs.iteritems()) ,'projects':visible_projects },context_instance=RequestContext(request))
     
@@ -254,7 +254,7 @@ def get_datasets(request):
     if request.user.is_superuser:
       visible_datasets=Dataset.objects.all()
     else:
-      visible_datasets= Dataset.objects.filter(user_id=userid) | Dataset.objects.filter(ispublic=1)
+      visible_datasets= Dataset.objects.filter(user_id=userid) | Dataset.objects.filter(public=1)
 
     if request.method == 'POST':
 
@@ -284,7 +284,7 @@ def get_datasets(request):
           if request.user.is_superuser:
             visible_datasets=Dataset.objects.all()
           else:
-            visible_datasets=Dataset.objects.filter(user=request.user.id) | Dataset.objects.filter(ispublic=1)
+            visible_datasets=Dataset.objects.filter(user=request.user.id) | Dataset.objects.filter(public=1)
 
         return render_to_response('datasets.html', { 'dts': visible_datasets },context_instance=RequestContext(request))
       elif 'update' in request.POST:
@@ -478,7 +478,7 @@ def createproject(request):
       form = ProjectForm(request.POST)
       
       # restrict datasets to user visible fields
-      form.fields['dataset'].queryset = Dataset.objects.filter(user_id=request.user.id) | Dataset.objects.filter(ispublic=1)
+      form.fields['dataset'].queryset = Dataset.objects.filter(user_id=request.user.id) | Dataset.objects.filter(public=1)
 
       if form.is_valid():
         new_project=form.save(commit=False)
@@ -494,7 +494,7 @@ def createproject(request):
           if not request.POST.get('nocreate') == 'on':
             pd.newOCPCAProject( new_project.project_name )
           if 'token' in request.POST:
-            tk = Token ( token_name = new_project.project_name, token_description = 'Default token for public project', project_id=new_project, user_id=request.user.id, ispublic=new_project.ispublic ) 
+            tk = Token ( token_name = new_project.project_name, token_description = 'Default token for public project', project_id=new_project, user_id=request.user.id, public=new_project.public ) 
             tk.save()
 
           ## RBTODO create a default channel
@@ -518,7 +518,7 @@ def createproject(request):
     form = ProjectForm()
 
     # restrict datasets to user visible fields
-    form.fields['dataset'].queryset = Dataset.objects.filter(user_id=request.user.id) | Dataset.objects.filter(ispublic=1)
+    form.fields['dataset'].queryset = Dataset.objects.filter(user_id=request.user.id) | Dataset.objects.filter(public=1)
 
     context = {'form': form}
     return render_to_response('createproject.html',context,context_instance=RequestContext(request))
@@ -598,7 +598,7 @@ def updatedataset(request):
       'xoffset':ds_to_update[0].xoffset,
       'yoffset':ds_to_update[0].yoffset,
       'zoffset':ds_to_update[0].zoffset,
-      'ispublic':ds_to_update[0].ispublic,
+      'public':ds_to_update[0].public,
       'xvoxelres':ds_to_update[0].xvoxelres,
       'yvoxelres':ds_to_update[0].yvoxelres,
       'zvoxelres':ds_to_update[0].zvoxelres,
@@ -797,7 +797,7 @@ def updatetoken(request):
       'token_name': token_to_update[0].token_name,
       'token_description':token_to_update[0].token_description,
       'project':token_to_update[0].project_id,
-      'ispublic':token_to_update[0].ispublic,
+      'public':token_to_update[0].public,
     }
     form = TokenForm(initial=data)
     context = {'form': form}
@@ -846,7 +846,7 @@ def updateproject(request):
       'project_name': project_to_update[0].project_name,
       'project_description':project_to_update[0].project_description,
       'dataset':project_to_update[0].dataset_id,
-      'ispublic':project_to_update[0].ispublic,
+      'public':project_to_update[0].public,
       'host':project_to_update[0].host,
       'kvengine':project_to_update[0].kvengine,
       'kvserver':project_to_update[0].kvserver,
@@ -864,7 +864,7 @@ def createtoken(request):
       form = TokenForm(request.POST)
 
       # restrict projects to user visible fields
-      form.fields['project'].queryset = Project.objects.filter(user_id=request.user.id) | Project.objects.filter(ispublic=1)
+      form.fields['project'].queryset = Project.objects.filter(user_id=request.user.id) | Project.objects.filter(public=1)
 
       if form.is_valid():
         new_token=form.save(commit=False)
@@ -885,7 +885,7 @@ def createtoken(request):
     form = TokenForm()
 
     # restrict projects to user visible fields
-    form.fields['project'].queryset = Project.objects.filter(user_id=request.user.id) | Project.objects.filter(ispublic=1)
+    form.fields['project'].queryset = Project.objects.filter(user_id=request.user.id) | Project.objects.filter(public=1)
 
     context = {'form': form}
     return render_to_response('createtoken.html',context,context_instance=RequestContext(request))

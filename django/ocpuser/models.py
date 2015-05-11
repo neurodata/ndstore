@@ -29,7 +29,7 @@ class Dataset ( models.Model):
         (0, 'Private'),
         (1, 'Public'),
     )
-    ispublic =  models.IntegerField(default=0, choices=ISPUBLIC_CHOICES)
+    public =  models.IntegerField(default=0, choices=ISPUBLIC_CHOICES)
     ximagesize =  models.IntegerField()
     yimagesize =  models.IntegerField()
     zimagesize =  models.IntegerField()
@@ -65,7 +65,7 @@ class Project ( models.Model):
         (0, 'Private'),
         (1, 'Public'),
     )
-    ispublic =  models.IntegerField(default=0, choices=ISPUBLIC_CHOICES)
+    public =  models.IntegerField(default=0, choices=ISPUBLIC_CHOICES)
     dataset = models.ForeignKey(Dataset)
     HOST_CHOICES = (
       ('localhost', 'localhost'),
@@ -119,7 +119,7 @@ class Token ( models.Model):
         (0, 'Private'),
         (1, 'Public'),
     )
-    ispublic =  models.IntegerField(default=0, choices=ISPUBLIC_CHOICES)
+    public =  models.IntegerField(default=0, choices=ISPUBLIC_CHOICES)
     
     
     class Meta:
