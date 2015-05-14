@@ -239,6 +239,7 @@ def imgSlice(webargs, proj, db):
   cb.data = window(cb.data, ch, window_range=window_range)
   return cb
 
+
 def imgPNG(proj, webargs, cb):
   """Return a png object for any plane"""
   
@@ -251,6 +252,7 @@ def imgPNG(proj, webargs, cb):
     raise OCPCAError("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
 
   if service == 'xy':
+    import pdb; pdb.set_trace()
     img = cb.xyImage()
   elif service == 'yz':
     img = cb.yzImage(proj.datasetcfg.scale[int(resolution)][service])
@@ -261,6 +263,7 @@ def imgPNG(proj, webargs, cb):
   img.save ( fileobj, "PNG" )
   fileobj.seek(0)
   return fileobj.read()
+
 
 def imgAnno ( service, chanargs, proj, db ):
   """Return a plane fileobj.read() for a single objects"""

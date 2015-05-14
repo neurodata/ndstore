@@ -646,25 +646,25 @@ def updatechannel(request):
         # populate the channel type and data type from choices
         combo = request.POST.get('channelcombo')
         if combo=='i:8':
-          new_channel.channel_type='IMAGES'
+          new_channel.channel_type='image'
           new_channel.channel_datatype='uint8'
         elif combo=='i:16':
-          new_channel.channel_type='IMAGES'
+          new_channel.channel_type='image'
           new_channel.channel_datatype='uint16'
         elif combo=='i:32':
-          new_channel.channel_type='RGB'
+          new_channel.channel_type='rgb'
           new_channel.channel_datatype='uint32'
         elif combo=='a:32':
-          new_channel.channel_type='ANNOTATIONS'
+          new_channel.channel_type='annotation'
           new_channel.channel_datatype='uint32'
         elif combo=='p:32':
-          new_channel.channel_type='PROBABILITY_MAPS'
+          new_channel.channel_type='probmap'
           new_channel.channel_datatype='float32'
         elif combo=='t:8':
-          new_channel.channel_type='TIMESERIES'
+          new_channel.channel_type='timeseries'
           new_channel.channel_datatype='uint8'
         elif combo=='t:16':
-          new_channel.channel_type='TIMESERIES'
+          new_channel.channel_type='timeseries'
           new_channel.channel_datatype='uint16'
         else:
           logger.error("Illegal channel combination requested: {}.".format(combo))
