@@ -459,8 +459,6 @@ class OCPCAProjectsDB:
           # tables specific to annotation projects
           if ch.channel_type == 'annotation': 
 
-            import pdb; pdb.set_trace()
-
             cursor.execute("CREATE TABLE {}_ids ( id BIGINT PRIMARY KEY)".format(ch.channel_name))
 
             # And the RAMON objects
