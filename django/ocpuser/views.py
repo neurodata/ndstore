@@ -689,7 +689,7 @@ def updatechannel(request):
               messages.error(request,"Failed to create channel. {}".format(e))
               new_channel.delete()
 
-          return redirect(get_channels)
+          return HttpResponseRedirect(get_script_prefix()+'ocpuser/channels')
 
         else:
           messages.error(request,"Cannot update.  You are not owner of this token or not superuser.")
