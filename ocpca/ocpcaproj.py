@@ -304,6 +304,8 @@ class OCPCAChannel:
     return [self.ch.startwindow,self.ch.endwindow]
   def getPropagate (self):
     return self.ch.propagate
+  def isDefault (self):
+    return self.ch.default 
 
   def getIdsTable (self):
     if self.pr.getOCPVersion() == '0.0':
@@ -369,7 +371,6 @@ class OCPCAChannel:
       return True
     else:
       return False
-
 
 class OCPCAProjectsDB:
   """Database for the projects"""

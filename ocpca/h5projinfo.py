@@ -69,9 +69,10 @@ def h5ChannelInfo (proj, h5f):
     changrp.create_dataset("TYPE", (1,), dtype=h5py.special_dtype(vlen=str), data=ch.getChannelType())
     changrp.create_dataset("DATATYPE", (1,), dtype=h5py.special_dtype(vlen=str), data=ch.getDataType())
     changrp.create_dataset("RESOLUTION", (1,), dtype=np.uint8, data=ch.getResolution())
-    #changrp.create_dataset ("READONLY", (1,), dtype=bool, data=(False if ch.getReadOnly() == ocpcaproj.READONLY_FALSE else True))
-    #changrp.create_dataset("EXCEPTIONS"), (1,), dtype=bool, data=(False if ch.getExceptions() == ocpcaproj.EXCEPTION_FALSE else True)
+    changrp.create_dataset ("READONLY", (1,), dtype=bool, data=(False if ch.getReadOnly() == ocpcaproj.READONLY_FALSE else True))
+    changrp.create_dataset("EXCEPTIONS", (1,), dtype=bool, data=(False if ch.getExceptions() == ocpcaproj.EXCEPTION_FALSE else True))
     changrp.create_dataset("PROPAGATE", (1,), dtype=np.uint8, data=ch.getPropagate())
+    changrp.create_dataset("DEFAULT", (1,), dtype=bool, data=ch.isDefault())
     changrp.create_dataset("WINDOWRANGE", data=ch.getWindowRange())
 
 
