@@ -501,8 +501,10 @@ def selectPost ( webargs, proj, db, postdata ):
                 raise OCPCAError("Wrong datatype in POST")
             
             elif ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS:
-  
-              voxarray = h5f.get(ch.getChannelName()).value
+              #import pdb; pdb.set_trace() 
+              dsetName = '{}/CUTOUT'.format(ch.getChannelName())
+              voxarray = h5f.get(dsetName).value
+              #voxarray = h5f.get(ch.getChannelName()).value
               if voxarray.dtype == ch.getDataType():
                 entityid = db.annotateDense ( ch, corner, resolution, voxarray, conflictopt )
               else:
