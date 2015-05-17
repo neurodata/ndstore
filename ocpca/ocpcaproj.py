@@ -352,9 +352,12 @@ class OCPCAChannel:
     if value in [NOT_PROPAGATED]:
       self.ch.propagate = value
       self.setReadOnly ( READONLY_FALSE )
+      self.ch.save()
     elif value in [UNDER_PROPAGATION,PROPAGATED]:
       self.ch.propagate = value
       self.setReadOnly ( READONLY_TRUE )
+      self.ch.save()
+
     else:
       logger.error ( "Wrong Propagate Value {} for Channel {}".format( value, self.ch.channel_name ) )
       raise OCPCAError ( "Wrong Propagate Value {} for Channel {}".format( value, self.ch.channel_name ) )
@@ -362,6 +365,7 @@ class OCPCAChannel:
   def setReadOnly (self, value):
     if value in [READONLY_TRUE,READONLY_FALSE]:
       self.ch.readonly = value
+      self.ch.save()
     else:
       logger.error ( "Wrong Readonly Value {} for Channel {}".format( value, self.channel_name ) )
       raise OCPCAError ( "Wrong Readonly Value {} for Channel {}".format( value, self.ch.channel_name ) )
