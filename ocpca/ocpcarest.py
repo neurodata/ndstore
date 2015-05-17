@@ -1429,7 +1429,7 @@ def getPropagate (webargs):
   """ Return the value of the Propagate field """
   
   try:
-    [token, service] = webargs.split ('/',1)
+    [token, channel, service] = webargs.split ('/',2)
   except:
     logger.warning ( "Illegal getPropagate request. Wrong number of arguments." )
     raise OCPCAError ( "Illegal getPropagate request. Wrong number of arguments." )
@@ -1438,7 +1438,8 @@ def getPropagate (webargs):
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
-    value = proj.getPropagate()
+    ch = ocpcaproj.OCPCAChannel(proj, channel)
+    value = ch.getPropagate()
 
   return value
 
@@ -1446,7 +1447,7 @@ def setPropagate (webargs):
   """ Set the value of the propagate field """
 
   try:
-    [token, service, value, misc] = webargs.split ('/',3)
+    [token, channel, service, value, misc] = webargs.split ('/',4)
   except:
     logger.warning ( "Illegal setPropagate request.  Wrong number of arguments." )
     raise OCPCAError ( "Illegal setPropagate request.  Wrong number of arguments." )
@@ -1454,21 +1455,23 @@ def setPropagate (webargs):
   # pattern for using contexts to close databases. get the project
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
+    ch = ocpcaproj.OCPCAChannel(proj, channel)
     # If the value is to set under propagation
-    if int(value) == ocpcaproj.UNDER_PROPAGATION and proj.getPropagate() != ocpcaproj.UNDER_PROPAGATION:
-      proj.setPropagate ( ocpcaproj.UNDER_PROPAGATION )
-      projdb.updatePropagate ( proj )
+    if int(value) == ocpcaproj.UNDER_PROPAGATION and ch.getPropagate() != ocpcaproj.UNDER_PROPAGATION:
+      ch.setPropagate ( ocpcaproj.UNDER_PROPAGATION )
+      #KL TODO is this deprecated? 
+      #projdb.updatePropagate ( proj )
       from ocpca.tasks import propagate
       import ocpcastack
       ocpcastack.buildStack(token)
       #propagate.delay ( token )
     elif int(value) == ocpcaproj.NOT_PROPAGATED:
-      if proj.getPropagate() == ocpcaproj.UNDER_PROPAGATION:
+      if ch.getPropagate() == ocpcaproj.UNDER_PROPAGATION:
         logger.warning ( "Cannot set this value. Project is under propagation." )
         raise OCPCAError ( "Cannot set this value. Project is under propagation. " )
       else:
-        proj.setPropagate ( ocpcaproj.NOT_PROPAGATED )
-        projdb.updatePropagate ( proj )
+        ch.setPropagate ( ocpcaproj.NOT_PROPAGATED )
+        #projdb.updatePropagate ( proj )
     else:
       logger.warning ( "Invalid Value {} for setPropagate".format(value) )
       raise OCPCAError ( "Invalid Value {} for setPropagate".format(value) )
