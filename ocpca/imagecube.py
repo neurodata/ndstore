@@ -334,7 +334,8 @@ class ImageCube64(Cube):
   #
   def xyImage ( self ):
 
-    channels,ydim,xdim = self.data.shape
+#RB I think this does nothing
+#    channels,ydim,xdim = self.data.shape
     self.extractChannel()
     return Image.fromarray( self.data, "RGBA")
 
