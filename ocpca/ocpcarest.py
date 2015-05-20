@@ -154,7 +154,8 @@ def HDF5(chanargs, proj, db):
       cube.RGBAChannel()
       changrp = fh5out.create_group( "{}".format(channel_name) )
       changrp.create_dataset("CUTOUT", tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data)
-      changrp.create_dataset( "DATATYPE", (1,), dtype=h5py.special_dtype(vlen=str), data=ch.getChannelType() )
+      changrp.create_dataset( "DBTYPE", (1,), dtype=h5py.special_dtype(vlen=str), data=ch.getChannelType() )
+      changrp.create_dataset( "DATATYPE", (1,), dtype=h5py.special_dtype(vlen=str), data=ch.getDataType() )
 
   except:
     fh5out.close()
@@ -488,6 +489,7 @@ def selectPost ( webargs, proj, db, postdata ):
                 entityid=0
               else:
                 logger.warning("Wrong datatype in POST")
+                logger.warning("Received datatype " + str(voxarray.dtype))
                 raise OCPCAError("Wrong datatype in POST")
 
             elif ch.getChannelType() in ocpcaproj.TIMESERIES_CHANNELS:
@@ -501,8 +503,10 @@ def selectPost ( webargs, proj, db, postdata ):
                 raise OCPCAError("Wrong datatype in POST")
             
             elif ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS:
-  
-              voxarray = h5f.get(ch.getChannelName()).value
+              #import pdb; pdb.set_trace() 
+              dsetName = '{}/CUTOUT'.format(ch.getChannelName())
+              voxarray = h5f.get(dsetName).value
+              #voxarray = h5f.get(ch.getChannelName()).value
               if voxarray.dtype == ch.getDataType():
                 entityid = db.annotateDense ( ch, corner, resolution, voxarray, conflictopt )
               else:
