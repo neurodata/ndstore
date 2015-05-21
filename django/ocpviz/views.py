@@ -73,7 +73,7 @@ def tokenview(request, webargs):
 
   elif len(restsplit) == 2:
     # assume just channels
-    channels_str = restsplit
+    channels_str = restsplit[0].split(',')
   elif len(restsplit) == 1:
     # do nothing
     channels_str = None 
