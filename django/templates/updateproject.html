@@ -25,7 +25,11 @@ Create Project Template
   {{ form.non_field_errors }}
   <div class="container-fluid">
     
-     <br>
+
+     <p> <font color="red"> NOTICE: Many project fields cannot be updated!!!</font> Changing these fields would modify 
+physical properties of the database.  If you need to change these fields, please create a new project. 
+  You are allowed to change the key/value server and the host server, although this is not recommended.  
+This would be necessary when changing a hostname. </p>  
       
      <div class = "row">
        <div class ="col-md-4"></div>
@@ -69,27 +73,14 @@ Create Project Template
        <div class ="col-md-4"></div>
      </div>
 
+     {{ form.dataset.ashidden }}
 
      <div class = "row">
        <div class ="col-md-4"></div>
        <div class ="col-md-2">
          <div class="fieldWrapper">
            {{ form.subject.errors }}
-           <label for="dataset">Dataset</label>
-         </div>
-       </div>
-       <div class ="col-md-2">
-         {{ form.dataset }}
-       </div>
-       <div class ="col-md-4"></div>
-     </div>
-
-     <div class = "row">
-       <div class ="col-md-4"></div>
-       <div class ="col-md-2">
-         <div class="fieldWrapper">
-           {{ form.subject.errors }}
-           <label for="exceptions"> Database Host</label>
+           <label for="exceptions"><font color="red"> Database Host</font></label>
          </div>
        </div>
        <div class ="col-md-2">
@@ -98,26 +89,14 @@ Create Project Template
        <div class ="col-md-4"></div>
      </div>
 
-      <div class = "row">
-       <div class ="col-md-4"></div>
-       <div class ="col-md-2">
-         <div class="fieldWrapper">
-           {{ form.subject.errors }}
-           <label for="kvenginelabel"> KV Engine</label>
-         </div>
-       </div>
-       <div class ="col-md-2">
-         {{ form.kvengine }}
-       </div>
-       <div class ="col-md-4"></div>
-     </div>
+     {{ form.kvengine.ashidden }}
 
       <div class = "row">
        <div class ="col-md-4"></div>
        <div class ="col-md-2">
          <div class="fieldWrapper">
            {{ form.subject.errors }}
-           <label for="kvserverlabel"> KV Server</label>
+           <label for="kvserverlabel"> <font color="red">KV Server</font></label>
          </div>
        </div>
        <div class ="col-md-2">
