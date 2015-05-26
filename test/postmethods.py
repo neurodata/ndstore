@@ -82,7 +82,10 @@ def postHDF5 (p, post_data, time=False):
   tmpfile = tempfile.NamedTemporaryFile ()
   fh5out = h5py.File ( tmpfile.name )
   for idx, channel_name in enumerate(p.channels):
-    fh5out.create_dataset ( channel_name, tuple(post_data[idx,:].shape), post_data[idx,:].dtype, compression='gzip', data=post_data[idx,:] )
+    chan_grp = fh5out.create_group(channel_name)
+    chan_grp.create_dataset("CUTOUT", tuple(post_data[idx,:].shape), post_data[idx,:].dtype, compression='gzip', data=post_data[idx,:])
+    chan_grp.create_dataset("CHANNELTYPE", (1,), dtype=h5py.special_dtype(vlen=str), data=p.channel_type)
+    chan_grp.create_dataset("DATATYPE", (1,), dtype=h5py.special_dtype(vlen=str), data=p.datatype)
   fh5out.close()
   tmpfile.seek(0)
   

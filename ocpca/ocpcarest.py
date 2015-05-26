@@ -154,7 +154,8 @@ def HDF5(chanargs, proj, db):
       cube.RGBAChannel()
       changrp = fh5out.create_group( "{}".format(channel_name) )
       changrp.create_dataset("CUTOUT", tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data)
-      changrp.create_dataset( "DATATYPE", (1,), dtype=h5py.special_dtype(vlen=str), data=ch.getChannelType() )
+      changrp.create_dataset("CHANNELTYPE", (1,), dtype=h5py.special_dtype(vlen=str), data=ch.getChannelType())
+      changrp.create_dataset("DATATYPE", (1,), dtype=h5py.special_dtype(vlen=str), data=ch.getDataType())
 
   except:
     fh5out.close()
@@ -453,11 +454,11 @@ def selectPost ( webargs, proj, db, postdata ):
             
           if ch.getChannelType() in ocpcaproj.IMAGE_CHANNELS:
             db.writeCuboid ( ch, corner, resolution, voxarray[idx,:] )
-            entityid=0
+            entityid = 0
 
           elif ch.getChannelType() in ocpcaproj.TIMESERIES_CHANNELS:
             db.writeTimeCuboid(ch, corner, resolution, timerange, voxarray[idx,:])
-            entityid=0
+            entityid = 0
           
           elif ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS:
             entityid = db.annotateDense(ch, corner, resolution, voxarray[idx,:], conflictopt)
@@ -473,64 +474,57 @@ def selectPost ( webargs, proj, db, postdata ):
   
           for channel_name in channel_list:
             ch = proj.getChannelObj(channel_name)
-            #ch = ocpcaproj.OCPCAChannel(proj, channel)
+            voxarray = h5f.get(ch.getChannelName())['CUTOUT'].value
+            h5_datatype = h5f.get(ch.getChannelName())['DATATYPE'].value[0]
+            h5_channeltype = h5f.get(ch.getChannelName())['CHANNELTYPE'].value[0]
+
+            # Checking the datatype of the voxarray
+            if ch.getDataType() != h5_datatype or voxarray.dtype != ocpcaproj.OCP_dtypetonp[ch.getDataType()]:
+              logger.warning("Channel datatype {} in the HDF5 file does not match with the {} in the database.".format(h5_datatype, ch.getDataType()))
+              raise OCPCAError("Channel datatype {} in the HDF5 file does not match with the {} in the database.".format(h5_datatype, ch.getDataType()))
+
+            if ch.getChannelType() != h5_channeltype:
+              logger.warning("Channel type {} in HDF5 file does not match with the {} in the database.".format(h5_channeltype, ch.getChannelType()))
+              raise OCPCAError("Channel type {} in HDF5 file does not match with the {} in the database.".format(h5_channeltype, ch.getChannelType()))
           
             # Don't write to readonly channels
             if ch.getReadOnly() == ocpcaproj.READONLY_TRUE:
               logger.warning("Attempt to write to read only project {}".format(proj.getDBName()))
               raise OCPCAError("Attempt to write to read only project {}".format(proj.getDBName()))
             
-            if ch.getChannelType() in ocpcaproj.IMAGE_CHANNELS : 
-  
-              voxarray = h5f.get(ch.getChannelName()).value
-              if voxarray.dtype == ocpcaproj.OCP_dtypetonp[ch.getDataType()]:
-                db.writeCuboid (ch, corner, resolution, voxarray)
-                entityid=0
-              else:
-                logger.warning("Wrong datatype in POST")
-                raise OCPCAError("Wrong datatype in POST")
+            if ch.getChannelType() in ocpcaproj.IMAGE_CHANNELS: 
+              db.writeCuboid (ch, corner, resolution, voxarray)
+              entityid = 0
 
             elif ch.getChannelType() in ocpcaproj.TIMESERIES_CHANNELS:
-
-              voxarray = h5f.get(ch.getChannelName()).value
-              if voxarray.dtype == ocpcaproj.OCP_dtypetonp[ch.getDataType()]:
-                db.writeTimeCuboid (ch, corner, resolution, timerange, voxarray)
-                entityid=0
-              else:
-                logger.warning("Wrong datatype in POST")
-                raise OCPCAError("Wrong datatype in POST")
+              db.writeTimeCuboid (ch, corner, resolution, timerange, voxarray)
+              entityid = 0
             
             elif ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS:
-  
-              voxarray = h5f.get(ch.getChannelName()).value
-              if voxarray.dtype == ch.getDataType():
-                entityid = db.annotateDense ( ch, corner, resolution, voxarray, conflictopt )
-              else:
-                logger.warning("Wrong datatype in POST")
-                raise OCPCAError("Wrong datatype in POST")
+              entityid = db.annotateDense ( ch, corner, resolution, voxarray, conflictopt )
   
           h5f.flush()
           h5f.close()
       
       else:
-        logger.warning("An illegal Web POST service was requested: %s.  Args %s" % ( service, webargs ))
-        raise OCPCAError ("No such Web service: %s" % service )
+        logger.warning("An illegal Web POST service was requested: {}. Args {}".format(service, webargs))
+        raise OCPCAError("An illegal Web POST service was requested: {}. Args {}".format(service, webargs))
         
       db.commit()
-      done=True
+      done = True
 
     # rollback if you catch an error
     except MySQLdb.OperationalError, e:
-      logger.warning ("Transaction did not complete. %s" % (e))
+      logger.warning("Transaction did not complete. {}".format(e))
       tries += 1
       db.rollback()
       continue
     except MySQLdb.Error, e:
-      logger.warning ("POST transaction rollback. %s" % (e))
+      logger.warning("POST transaction rollback. {}".format(e))
       db.rollback()
       raise
     except Exception, e:
-      logger.exception ("POST transaction rollback. %s" % (e))
+      logger.exception("POST transaction rollback. {}".format(e))
       db.rollback()
       raise
     
