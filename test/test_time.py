@@ -52,6 +52,8 @@ p.token = "unittest_rw"
 p.resolution = 0
 p.channels = ['TIME1', 'TIME2']
 p.time = [0,100]
+p.channel_type = "timeseries"
+p.datatype = "uint8"
 
 #p.args = (3000,3100,4000,4100,500,510)
 
@@ -61,7 +63,7 @@ class Test_Image_Slice:
 
   def setup_class(self):
 
-    makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type='timeseries', channel_datatype='uint8', time=p.time)
+    makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype, time=p.time)
 
   def teardown_class(self):
     makeunitdb.deleteTestDB(p.token)
@@ -118,7 +120,7 @@ class Test_Image_Slice:
 class Test_Image_Post:
 
   def setup_class(self):
-    makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type='timeseries', channel_datatype='uint8', time=p.time )
+    makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype, time=p.time )
 
   def teardown_class(self):
     makeunitdb.deleteTestDB(p.token)
