@@ -45,10 +45,10 @@ from models import Dataset
 from models import Token
 from models import Channel
 
-from forms import CreateProjectForm
-from forms import CreateDatasetForm
-from forms import CreateTokenForm
-from forms import CreateChannelForm
+from forms import ProjectForm
+from forms import DatasetForm
+from forms import TokenForm
+from forms import ChannelForm
 from forms import dataUserForm
 
 from django.core.urlresolvers import get_script_prefix
@@ -85,9 +85,12 @@ def profile(request):
         else:
           visible_datasets=Dataset.objects.filter(user_id=userid) | Dataset.objects.filter(public=1)
 
+        visible_datasets.sort()
+
         projs = defaultdict(list)
 
         dbs = defaultdict(list)
+
         for db in visible_datasets:
           proj = Project.objects.filter(dataset_id=db.dataset_name, user_id=userid) | Project.objects.filter(dataset_id=db.dataset_name, public=1)
           if proj:
@@ -206,6 +209,7 @@ def profile(request):
         visible_datasets=Dataset.objects.filter(user_id=userid) | Dataset.objects.filter(public=1)
 
       dbs = defaultdict(list)
+    
       for db in visible_datasets:
         proj = Project.objects.filter(dataset_id=db.dataset_name, user_id=userid) | Project.objects.filter(dataset_id=db.dataset_name, public=1)
         if proj:
@@ -218,7 +222,7 @@ def profile(request):
       else:
         visible_projects = Project.objects.filter(user_id=userid) | Project.objects.filter(public=1) 
 
-      return render_to_response('profile.html', { 'databases': dbs.iteritems() ,'projects':visible_projects },context_instance=RequestContext(request))
+      return render_to_response('profile.html', { 'databases': sorted(dbs.iteritems()) ,'projects':visible_projects },context_instance=RequestContext(request))
     
   except OCPCAError, e:
 
@@ -471,7 +475,7 @@ def createproject(request):
   if request.method == 'POST':
     if 'createproject' in request.POST:
 
-      form = CreateProjectForm(request.POST)
+      form = ProjectForm(request.POST)
       
       # restrict datasets to user visible fields
       form.fields['dataset'].queryset = Dataset.objects.filter(user_id=request.user.id) | Dataset.objects.filter(public=1)
@@ -511,7 +515,7 @@ def createproject(request):
   else:
     '''Show the Create Project form'''
 
-    form = CreateProjectForm()
+    form = ProjectForm()
 
     # restrict datasets to user visible fields
     form.fields['dataset'].queryset = Dataset.objects.filter(user_id=request.user.id) | Dataset.objects.filter(public=1)
@@ -524,7 +528,7 @@ def createdataset(request):
  
   if request.method == 'POST':
     if 'createdataset' in request.POST:
-      form = CreateDatasetForm(request.POST)
+      form = DatasetForm(request.POST)
       if form.is_valid():
         new_dataset=form.save(commit=False)
         new_dataset.user_id=request.user.id
@@ -542,7 +546,7 @@ def createdataset(request):
       return redirect(get_datasets)
   else:
     '''Show the Create datasets form'''
-    form = CreateDatasetForm()
+    form = DatasetForm()
     context = {'form': form}
     return render_to_response('createdataset.html',context,context_instance=RequestContext(request))
 
@@ -558,7 +562,7 @@ def updatedataset(request):
 
       if ds_update.user_id == request.user.id or request.user.is_superuser:
 
-        form = CreateDatasetForm(data= request.POST or None,instance=ds_update)
+        form = DatasetForm(data=request.POST or None,instance=ds_update)
         if form.is_valid():
           form.save()
           messages.success(request, 'Sucessfully updated dataset')
@@ -594,6 +598,7 @@ def updatedataset(request):
       'xoffset':ds_to_update[0].xoffset,
       'yoffset':ds_to_update[0].yoffset,
       'zoffset':ds_to_update[0].zoffset,
+      'public':ds_to_update[0].public,
       'xvoxelres':ds_to_update[0].xvoxelres,
       'yvoxelres':ds_to_update[0].yvoxelres,
       'zvoxelres':ds_to_update[0].zvoxelres,
@@ -603,7 +608,7 @@ def updatedataset(request):
       'endtime':ds_to_update[0].endtime,
       'dataset_description':ds_to_update[0].dataset_description,
             }
-    form = CreateDatasetForm(initial=data)
+    form = DatasetForm(initial=data)
     context = {'form': form}
     return render_to_response('updatedataset.html',context,context_instance=RequestContext(request))
 
@@ -620,7 +625,7 @@ def updatechannel(request):
 
       chname = request.session["channel_name"]
       channel_to_update = get_object_or_404(Channel,channel_name=chname,project_id=pr)
-      form = CreateChannelForm(data=request.POST or None, instance=channel_to_update)
+      form = ChannelForm(data=request.POST or None, instance=channel_to_update)
 
       if form.is_valid():
         newchannel = form.save(commit=False)
@@ -632,11 +637,39 @@ def updatechannel(request):
 
     elif 'createchannel' in request.POST:
 
-      form = CreateChannelForm(data=request.POST or None)
+      form = ChannelForm(data=request.POST or None)
 
       if form.is_valid():
 
         new_channel = form.save( commit=False )
+
+        # populate the channel type and data type from choices
+        combo = request.POST.get('channelcombo')
+        if combo=='i:8':
+          new_channel.channel_type='IMAGES'
+          new_channel.channel_datatype='uint8'
+        elif combo=='i:16':
+          new_channel.channel_type='IMAGES'
+          new_channel.channel_datatype='uint16'
+        elif combo=='i:32':
+          new_channel.channel_type='RGB'
+          new_channel.channel_datatype='uint32'
+        elif combo=='a:32':
+          new_channel.channel_type='ANNOTATIONS'
+          new_channel.channel_datatype='uint32'
+        elif combo=='p:32':
+          new_channel.channel_type='PROBABILITY_MAPS'
+          new_channel.channel_datatype='float32'
+        elif combo=='t:8':
+          new_channel.channel_type='TIMESERIES'
+          new_channel.channel_datatype='uint8'
+        elif combo=='t:16':
+          new_channel.channel_type='TIMESERIES'
+          new_channel.channel_datatype='uint16'
+        else:
+          logger.error("Illegal channel combination requested: {}.".format(combo))
+          messages.error(request,"Illegal channel combination requested or none selected.")
+          return HttpResponseRedirect(get_script_prefix()+'ocpuser/channels')
 
         if pr.user_id == request.user.id or request.user.is_superuser:
 
@@ -646,13 +679,17 @@ def updatechannel(request):
 
           new_channel.save()
 
-          try:
-            # create the tables for the channel
-            pd.newOCPCAChannel( pr.project_name, new_channel.channel_name)
-          except Exception, e:
-            logger.error("Failed to create channel. Error {}".format(e))
-            new_channel.delete()
-          return redirect(get_channels)
+          if not request.POST.get('nocreate') == 'on':
+
+            try:
+              # create the tables for the channel
+              pd.newOCPCAChannel( pr.project_name, new_channel.channel_name)
+            except Exception, e:
+              logger.error("Failed to create channel. Error {}".format(e))
+              messages.error(request,"Failed to create channel. {}".format(e))
+              new_channel.delete()
+
+          return HttpResponseRedirect(get_script_prefix()+'ocpuser/channels')
 
         else:
           messages.error(request,"Cannot update.  You are not owner of this token or not superuser.")
@@ -662,6 +699,7 @@ def updatechannel(request):
         #Invalid form
         context = {'form': form, 'project': prname}
         return render_to_response('createchannel.html', context, context_instance=RequestContext(request))
+
     else:
       #unrecognized option
       return redirect(get_channels)
@@ -696,18 +734,21 @@ def updatechannel(request):
         'channel_datatype': channel_to_update[0].channel_datatype,
         'channel_description':channel_to_update[0].channel_description,
         'readonly':channel_to_update[0].readonly,
+        'default':channel_to_update[0].default,
+        'exceptions':channel_to_update[0].exceptions,
+        'propagate':channel_to_update[0].propagate,
         'startwindow':channel_to_update[0].startwindow,
         'endwindow':channel_to_update[0].endwindow,
         'project': pr
       }
-      form = CreateChannelForm(initial=data)
+      form = ChannelForm(initial=data)
       context = {'form': form, 'project': prname }
       return render_to_response('updatechannel.html', context, context_instance=RequestContext(request))
     else:
       data = {
         'project': pr
       }
-      form = CreateChannelForm(initial=data)
+      form = ChannelForm(initial=data)
       context = {'form': form, 'project': prname }
       return render_to_response('createchannel.html', context, context_instance=RequestContext(request))
 
@@ -720,7 +761,7 @@ def updatetoken(request):
   if request.method == 'POST':
     if 'UpdateToken' in request.POST:
       token_update = get_object_or_404(Token,token_name=token)
-      form = CreateTokenForm(data=request.POST or None, instance=token_update)
+      form = TokenForm(data=request.POST or None, instance=token_update)
       if form.is_valid():
         newtoken = form.save( commit=False )
         if newtoken.user_id == request.user.id or request.user.is_superuser:
@@ -758,7 +799,7 @@ def updatetoken(request):
       'project':token_to_update[0].project_id,
       'public':token_to_update[0].public,
     }
-    form = CreateTokenForm(initial=data)
+    form = TokenForm(initial=data)
     context = {'form': form}
     return render_to_response('updatetoken.html',context,context_instance=RequestContext(request))
 
@@ -770,7 +811,7 @@ def updateproject(request):
     
     if 'UpdateProject' in request.POST:
       proj_update = get_object_or_404(Project,project_name=proj_name)
-      form = CreateProjectForm(data= request.POST or None,instance=proj_update)
+      form = ProjectForm(data= request.POST or None,instance=proj_update)
       if form.is_valid():
         newproj = form.save(commit=False)
         if newproj.user_id == request.user.id or request.user.is_superuser:
@@ -805,11 +846,12 @@ def updateproject(request):
       'project_name': project_to_update[0].project_name,
       'project_description':project_to_update[0].project_description,
       'dataset':project_to_update[0].dataset_id,
+      'public':project_to_update[0].public,
       'host':project_to_update[0].host,
       'kvengine':project_to_update[0].kvengine,
       'kvserver':project_to_update[0].kvserver,
     }
-    form = CreateProjectForm(initial=data)
+    form = ProjectForm(initial=data)
     context = {'form': form}
     return render_to_response('updateproject.html',context,context_instance=RequestContext(request))
 
@@ -819,7 +861,7 @@ def createtoken(request):
   if request.method == 'POST':
     if 'createtoken' in request.POST:
 
-      form = CreateTokenForm(request.POST)
+      form = TokenForm(request.POST)
 
       # restrict projects to user visible fields
       form.fields['project'].queryset = Project.objects.filter(user_id=request.user.id) | Project.objects.filter(public=1)
@@ -840,7 +882,7 @@ def createtoken(request):
       redirect(get_tokens)
   else:
     '''Show the Create datasets form'''
-    form = CreateTokenForm()
+    form = TokenForm()
 
     # restrict projects to user visible fields
     form.fields['project'].queryset = Project.objects.filter(user_id=request.user.id) | Project.objects.filter(public=1)
@@ -854,7 +896,7 @@ def restoreproject(request):
   if request.method == 'POST':
    
     if 'RestoreProject' in request.POST:
-      form = CreateProjectForm(request.POST)
+      form = ProjectForm(request.POST)
       if form.is_valid():
         project = form.cleaned_data['project_name']
         description = form.cleaned_data['project_description']        
@@ -922,7 +964,7 @@ def restoreproject(request):
   else:        
       #GET DATA
     randtoken = ''.join(random.choice(string.ascii_uppercase + string.digits + string.ascii_lowercase) for x in range(64))
-    form = CreateProjectForm(initial={'token': randtoken})
+    form = ProjectForm(initial={'token': randtoken})
     path = ocpcaprivate.backuppath +'/'+ request.user.username
     if os.path.exists(path):
       file_list =os.listdir(path)   

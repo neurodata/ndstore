@@ -60,34 +60,6 @@ Create New Channel
 	   <div class ="col-md-4"></div>
 	 </div>
 
-   <div class = "row">
-     <div class ="col-md-4"></div>
-     <div class ="col-md-2">
-       <div class="fieldWrapper">
-           {{ form.subject.errors }}
-         <label for="projecttype">Channel Type:</label>
-       </div>
-     </div>
-      <div class ="col-md-2">
-        {{ form.channel_type }}
-      </div>
-      <div class ="col-md-4"></div>
-    </div>
-
-	 <div class = "row">
-	   <div class ="col-md-4"></div>
-	   <div class ="col-md-2 blue">
-	     <div class="fieldWrapper">
-	       {{ form.subject.errors }}
-	       <label for="channel_datatype">Datatype:</label>
-	     </div>
-	   </div>
-	   <div class ="col-md-2">
-	     {{ form.channel_datatype }}
-	   </div>
-	   <div class ="col-md-4"></div>
-	 </div>
-       
 	 <div class = "row">
            <div class ="col-md-4"></div>
            <div class ="col-md-2">
@@ -101,6 +73,31 @@ Create New Channel
 	   </div>
 	   <div class ="col-md-4"></div>
          </div>
+
+   <div class = "row">
+     <div class ="col-md-4"></div>
+     <div class ="col-md-2">
+       <div class="fieldWrapper">
+           {{ form.subject.errors }}
+         <label for="projecttype">Channel Type:</label>
+       </div>
+     </div>
+      <div class ="col-md-2">
+      <select name="channelcombo" id="channelcombo" required>
+        <option value="i:8">Images (8-bit)</option>
+        <option value="i:16">Images (16-bit)</option>
+        <option value="i:32">Images (RGB)</option>
+        <option value="a:32">Annotations</option>
+        <option value="p:32">Probability Map</option>
+        <option value="i:8">Time Series (8-bit)</option>
+        <option value="i:16">Time Series (16-bit)</option>
+      </select>
+      </div>
+      <div class ="col-md-4"></div>
+    </div>
+
+    {{form.channel_type.ashidden}}
+    {{form.channel_datatype.ashidden}}
 
      <div class = "row">
            <div class ="col-md-4"></div>
@@ -121,7 +118,7 @@ Create New Channel
        <div class ="col-md-2">
          <div class="fieldWrapper">
            {{ form.subject.errors }}
-           <label for="resolution">Resolution:</label>
+           <label for="resolution">Resolution (for annotations):</label>
          </div>
        </div>
        <div class ="col-md-2">
@@ -136,7 +133,7 @@ Create New Channel
        <div class ="col-md-2">
          <div class="fieldWrapper">
            {{ form.subject.errors }}
-           <label for="exceptions">Enable Exceptions:</label>
+           <label for="exceptions">Exceptions (for annotations):</label>
          </div>
        </div>
        <div class ="col-md-2">
@@ -145,20 +142,6 @@ Create New Channel
        <div class ="col-md-4"></div>
      </div>
 
-      <div class = "row">
-       <div class ="col-md-4"></div>
-       <div class ="col-md-2">
-         <div class="fieldWrapper">
-           {{ form.subject.errors }}
-           <label for="propagate">Propagate:</label>
-         </div>
-       </div>
-       <div class ="col-md-2">
-         {{ form.propagate }}
-       </div>
-       <div class ="col-md-4"></div>
-     </div>
-	 
     <div class = "row">
            <div class ="col-md-4"></div>
            <div class ="col-md-2">
@@ -200,6 +183,35 @@ Create New Channel
            </div>
            <div class ="col-md-4"></div>
          </div>
+
+    <div class = "row">
+           <div class ="col-md-4"></div>
+           <div class ="col-md-2">
+             <div class="fieldWrapper">
+               {{ form.subject.errors }}
+               <label for="endwindow">Link to Existing Channel:</label>
+             </div>
+           </div>
+           <div class ="col-md-2">
+           <input type="checkbox" name="nocreate" id="nocre" value="on"> 
+           </div>
+           <div class ="col-md-4"></div>
+         </div>
+
+      <div class = "row">
+       <div class ="col-md-4"></div>
+       <div class ="col-md-2">
+         <div class="fieldWrapper">
+           {{ form.subject.errors }}
+           <label for="propagate">If existing, is it propagated?</label>
+         </div>
+       </div>
+       <div class ="col-md-2">
+         {{ form.propagate }}
+       </div>
+       <div class ="col-md-4"></div>
+     </div>
+	 
 
     <br>
 

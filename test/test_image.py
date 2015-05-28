@@ -52,6 +52,8 @@ p.token = "unittest_rw"
 p.resolution = 0
 p.channels = ['IMAGE1', 'IMAGE2']
 p.window = [0,500]
+p.channel_type = "image"
+p.datatype = "uint8"
 #p.args = (3000,3100,4000,4100,500,510)
 
 
@@ -59,7 +61,7 @@ class Test_Image_Slice:
 
   def setup_class(self):
 
-    makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type='image', channel_datatype='uint8' )
+    makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype)
 
   def teardown_class(self):
     makeunitdb.deleteTestDB(p.token)
@@ -116,7 +118,9 @@ class Test_Image_Slice:
 class Test_Image_Window:
 
   def setup_class(self):
-    makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type='image', channel_datatype='uint16', window=p.window, default=True)
+    # Testing a different datatype now
+    p.datatype = "uint16"
+    makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype, window=p.window, default=True)
 
   def teardown_class(self):
     makeunitdb.deleteTestDB(p.token)
@@ -152,10 +156,12 @@ class Test_Image_Window:
     slice_data = np.asarray ( Image.open(StringIO(f.read())) )
     assert ( np.array_equal(slice_data,image_data[0][0]) )
 
+
 class Test_Image_Post:
 
   def setup_class(self):
-    makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type='image', channel_datatype='uint8' )
+    p.datatype = "uint8"
+    makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype)
 
   def teardown_class(self):
     makeunitdb.deleteTestDB(p.token)
@@ -240,11 +246,12 @@ class Test_Image_Post:
     response = postHDF5(p, image_data)
     assert (response.code == 404)
 
+
 class Test_Image_Default:
 
   def setup_class(self):
     p.channels = ['IMAGE']
-    makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type='image', channel_datatype='uint8', default=True)
+    makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype, default=True)
 
   def teardown_class(self):
     makeunitdb.deleteTestDB(p.token)
