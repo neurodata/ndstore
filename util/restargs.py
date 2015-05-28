@@ -71,7 +71,9 @@ class BrainRestArgs:
 
     except Exception, e:
       raise RESTArgsError("Incorrect cutout arguments {}. {}".format(imageargs, e))
-      raise RESTArgsError("Non-conforming range arguments {}. {}".format(imageargs, e))
+
+    if self.resolution not in datasetcfg.getResolutions():
+      raise RESTArgsError("Illegal scaling level {}".format(imageargs))
 
     # Convert cutout into 0 base in all dimensions
     (xoffset,yoffset,zoffset) = datasetcfg.getOffset()[self.resolution]

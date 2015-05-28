@@ -25,6 +25,7 @@
     </div>
   </div>
 
+<!---
   <div class="container-fluid">
     <div class = "row-fluid">
       <div class ="span3"></div>
@@ -43,6 +44,8 @@
       </div>
     </div>
   </div>
+
+--->
 
 </form>
 <body>
@@ -72,7 +75,7 @@
 		  <th>X Res (nm)</th>
 		  <th>Y Res (nm)</th>
 		  <th>Z Res (nm)</th>
-		  <th>Public</th>
+		  <th>Public or Private </th>
 		  <th>Scaling Levels</th>
 		  <th>Scaling Option</th>
 		  <th>Start Time</th>
@@ -90,13 +93,19 @@
         <td>{{ ds.xvoxelres }}</td>
         <td>{{ ds.yvoxelres }}</td>
         <td>{{ ds.zvoxelres }}</td>
-        {% if proj.public == 0%}
-                    <td>NO</td>
+		    {{ ds.public.ashidden }}
+        {% if ds.public == 0%}
+          <td>Private</td>
         {% else %}
-        <td>YES</td>
+          <td>Public</td>
         {% endif %}
 		    <td>{{ ds.scalinglevels }}</td>
-		    <td>{{ ds.scalingoption }}</td>
+		    {{ ds.scalingoption.ashidden }}
+        {% if ds.scalingoption == 0%}
+          <td>Z Slices</td>
+        {% else %}
+          <td>Isotropic</td>
+        {% endif %}
 		    <td>{{ ds.starttime }}</td>
 		    <td>{{ ds.endtime }}</td>
 
