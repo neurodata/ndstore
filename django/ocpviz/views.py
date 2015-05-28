@@ -102,7 +102,7 @@ def tokenview(request, webargs):
   # convert all channels to layers 
   for channel in channels:
     tmp_layer = VizLayer()
-    tmp_layer.layer_name = token.token_name + '_' + channel.channel_name
+    tmp_layer.layer_name = channel.channel_name
     tmp_layer.layer_description = token.token_description 
     tmp_layer.layertype = channel.channel_type
     tmp_layer.token = token.token_name
