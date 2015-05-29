@@ -49,6 +49,16 @@ class VizLayer ( models.Model ):
   required = models.BooleanField(default=False) 
   # do we want to use the tilecache or ocpcatmaid? (default ocpcatmaid)  
   tilecache = models.BooleanField(default=False) 
+  # for mcfc cutout 
+  COLOR_CHOICES = (
+      ('C', 'cyan'),
+      ('M', 'magenta'),
+      ('Y', 'yellow'),
+      ('R', 'red'),
+      ('G', 'green'),
+      ('B', 'blue'), 
+  )
+  color = models.CharField(max_length=255, choices=COLOR_CHOICES, blank=True)
 
   def __unicode__(self):
     return self.layer_name 

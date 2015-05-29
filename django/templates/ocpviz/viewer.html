@@ -195,7 +195,10 @@
       {# setup the URL #} 
       
       {% if layer.channel %}
-        var webtoken = '{{ layer.token }}/{{ layer.channel.channel_name }}'; 
+        var webtoken = '{{ layer.token }}/{{ layer.channel.channel_name }}';
+        {% if layer.color %}
+          webtoken = webtoken + ':{{layer.color}}';
+        {% endif %}
       {% else %}
         var webtoken = '{{ layer.token }}';
       {% endif %}
@@ -203,7 +206,11 @@
       {% if layer.tilecache %} 
           var url = 'http://{{ layer.server }}/ocpcatmaid/tilecache/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
       {% else %}
+        {% if layer.color %}
+          var url = 'http://{{ layer.server }}/ocp/catmaid/mcfc/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
+        {% else %}  
           var url = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
+        {% endif %}
       {% endif %}
         
       console.log(url);    

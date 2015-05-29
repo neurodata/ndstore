@@ -85,7 +85,6 @@ def tokenview(request, webargs):
     channels_str = restsplit[0].split(',')
   elif len(restsplit) == 1:
     # all channels (get from project)
-    # AB TODO 
     channels_str = None 
   else:
     # return error 
@@ -97,21 +96,29 @@ def tokenview(request, webargs):
   dataset = Dataset.objects.get(pk=project.dataset) 
   if (channels_str is not None) and (len(channels_str[0]) > 0):
     channels = []
+    channel_colors = {}
     for channel_str in channels_str:
       if len(channel_str) > 0:
-        channels.append(get_object_or_404(Channel, channel_name=channel_str, project=token.project))
-  """
+        if len(channel_str.split(':')) > 1: 
+          channels.append(get_object_or_404(Channel, channel_name=channel_str.split(':')[0], project=token.project))
+          channel_colors[channel_str.split(':')[0]] = channel_str.split(':')[1]
+        else:
+          channels.append(get_object_or_404(Channel, channel_name=channel_str, project=token.project))
   else:
     # get all channels for projects
-    channels = Channel.objects.get(project=project)
-  """
+    channels = Channel.objects.filter(project=project)
+  
   layers = []
   # we convert the channels to layers here 
+  """
+  # AB Note: I decided it would be better to get all channels than just the default
+  # channel. But it is up for discussion. 
   if channels is None:
     # assume default channel, single layer called by the token
     # get the default channel and add it to channels
     channel = get_object_or_404(Channel, project=token.project, default=True)
     channels.append(channel) 
+  """
   # convert all channels to layers 
   for channel in channels:
     tmp_layer = VizLayer()
@@ -121,7 +128,9 @@ def tokenview(request, webargs):
     tmp_layer.token = token.token_name
     tmp_layer.channel = channel     
     tmp_layer.server = request.META['HTTP_HOST'];
-    tmp_layer.tilecache = False  
+    tmp_layer.tilecache = False 
+    if channel.channel_name in channel_colors.keys():
+      tmp_layer.color = channel_colors[channel.channel_name].upper()
     layers.append(tmp_layer)
 
   # package data for the template
