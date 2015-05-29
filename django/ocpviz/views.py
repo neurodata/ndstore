@@ -56,26 +56,36 @@ def tokenview(request, webargs):
   channels = None 
   [token_str, restargs] = webargs.split('/', 1)
   restsplit = restargs.split('/')
-  
+  # initialize these variables, which will be passed to the template
+  x = None
+  y = None
+  z = None
+  res = None
+  marker = False 
+
   if len(restsplit) == 5:
     # assume no channels, just res/x/y/z/
     res = int(restsplit[0])
     x = int(restsplit[1])
     y = int(restsplit[2])
     z = int(restsplit[3])
+    marker = True 
 
   elif len(restsplit) > 5:
     # assume channels + res/x/y/z 
-    channels = restsplit[0]
-    x = int(restsplit[1])
-    y = int(restsplit[2])
-    z = int(restsplit[3])
+    channels_str = restsplit[0].split(',')
+    res = int(restsplit[1])
+    x = int(restsplit[2])
+    y = int(restsplit[3])
+    z = int(restsplit[4])
+    marker = True 
 
   elif len(restsplit) == 2:
     # assume just channels
     channels_str = restsplit[0].split(',')
   elif len(restsplit) == 1:
-    # do nothing
+    # all channels (get from project)
+    # AB TODO 
     channels_str = None 
   else:
     # return error 
@@ -89,9 +99,12 @@ def tokenview(request, webargs):
     channels = []
     for channel_str in channels_str:
       if len(channel_str) > 0:
-        channels.append(get_object_or_404(Channel, channel_name=channel_str, project=token.project)
-) 
-
+        channels.append(get_object_or_404(Channel, channel_name=channel_str, project=token.project))
+  """
+  else:
+    # get all channels for projects
+    channels = Channel.objects.get(project=project)
+  """
   layers = []
   # we convert the channels to layers here 
   if channels is None:
@@ -114,6 +127,16 @@ def tokenview(request, webargs):
   # package data for the template
   xdownmax = (dataset.ximagesize - dataset.xoffset)/(2**dataset.scalinglevels)
   ydownmax = (dataset.yimagesize - dataset.yoffset)/(2**dataset.scalinglevels)
+  # center the map on the image, if no other coordinate is specified  
+  if x is None:
+    x = xdownmax/2
+  if y is None:
+    y = ydownmax/2
+  if z is None:
+    z = dataset.zoffset
+  if res is None:
+    res = dataset.scalinglevels 
+  
   context = {
       'layers': layers,
       'project_name': token.token_name,
@@ -128,6 +151,11 @@ def tokenview(request, webargs):
       'ydownmax': ydownmax,
       'starttime': dataset.starttime,
       'endtime': dataset.endtime,
+      'resstart': res,
+      'xstart': x,
+      'ystart': y,
+      'zstart': z,
+      'marker': marker,
   }
   return render(request, 'ocpviz/viewer.html', context)
 

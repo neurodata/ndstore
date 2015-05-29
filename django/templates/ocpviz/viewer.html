@@ -156,7 +156,7 @@
     var zmin = {{ zoffset }};
     var zmax = {{ zsize }};
     // set zindex to some default (we pick the lowest slice)  
-    var zindex = {{ zoffset }};
+    var zindex = {{ zstart }};
 
     // define layers
     {% for layer in layers %}
@@ -200,8 +200,13 @@
 			doubleClickZoom: false,
     });
     
-    var center = map.unproject(L.point({{ xdownmax }}/2, {{ ydownmax }}/2), maxres);
+    var center = map.unproject(L.point({{ xstart }}, {{ ystart }}), {{ resstart }});
 		map.setView(center, maxres);
+
+    {% if marker == True %}
+      // add a marker to the center 
+      L.marker(center).addTo(map);
+    {% endif %}
 
 		// display some map info
 		var info = L.control();
@@ -237,28 +242,6 @@
 		};
 
 		info.addTo(map);
-
-    // layer controls
-    // TODO rebuild this with sliders 
-  //  var emMaps = {{% spaceless %}
-  //    {% for layer in layers %}
-  //      {% if layer.layertype == 'IMAGES' %}
-  //      "{{ layer.layer_name }}" : {{ layer.layer_name|cut:" " }},
-  //      {% endif %}
-  //    {% endfor %}
-  //  }
-  //  {% endspaceless %}
-
-  //  var annoMaps = {{% spaceless %}
-  //    {% for layer in layers %}
-  //      {% if layer.layertype == 'ANNOS' %}
-  //      "{{ layer.layer_name }}" : {{ layer.layer_name|cut:" " }},
-  //      {% endif %}
-  //    {% endfor %}
-  //  }
-  //  {% endspaceless %}
-
-	//	L.control.layers(emMaps, annoMaps).addTo(map);
 
     // navigation 
     // first, intercept the form 
