@@ -19,7 +19,7 @@ def genGraphFromPaint ( synproj, synch, syndb, segproj, segch, segdb ):
 
   # here is an example of getting data from a channel
   syn_cube = syndb.cutout(synch,(100,100,10),(10,10,10),0)
-  seg_cube = syndb.cutout(synch,(100,100,10),(10,10,10),0)
+  seg_cube = segdb.cutout(synch,(100,100,10),(10,10,10),0)
 
   """ How to build a graph?????
 
@@ -28,6 +28,9 @@ def genGraphFromPaint ( synproj, synch, syndb, segproj, segch, segdb ):
      only access segments for cubes in which there are synapses???
   """
 
+  # AETODO iterate over the database by doing large cutouts (db.cutout) in aligned regions.......
+  # extract alignment information from syn_proj
+  #   preferable by Morton order??
   
   
   import pdb; pdb.set_trace()
