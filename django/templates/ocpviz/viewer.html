@@ -127,7 +127,6 @@
       </form>
       <ul class="nav navbar-nav navbar-left">
         <li id="querybutton" class="active"><a href="#" id="query">Query</a></li>
-        <li><a href="#">Merge</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li><a href="#">Help</a></li>
@@ -141,7 +140,6 @@
   <script> 
     // tool variables
     var querytool = false; // disabled by default
-    var mergetool = false; // disabled by default
     
     // dataset info 
     var xmin = {{ xoffset }};	
@@ -246,39 +244,34 @@
     // navigation 
     // first, intercept the form 
     $( "#navigate" ).submit(function( event ) {
+      event.preventDefault();
       // clear errors
       $( "#x" ).parent().removeClass("has-error");
       $( "#y" ).parent().removeClass("has-error");
       $( "#z" ).parent().removeClass("has-error");
-      // if a zindex was entered, navigate to that slice 
-      if ( $( "#z" ).val() ) {
-        var z = $( "#z" ).val();
-        if (z <= zmax && z >= zmin) {
-          chgZIndex(z);
-        }
-        else {
-          $( "#z" ).parent().addClass("has-error");
-        }
-      }
 
-      // if a valid (x,y) pair was entered, place a marker
+      // if a valid (x,y) pair was entered, pan and place a marker
+      // note, need to pan before changing slices 
       if ( $( "#x" ).val() && $( "#y" ).val()) {
         var x = $( "#x" ).val();
         var y = $( "#y" ).val();
 
-        // validate
-        if ( x > xdownmax || x < xmin ) {
+        // validate 
+        if ( x > xmax || x < xmin ) {
           $( "#x" ).parent().addClass("has-error"); 
         }
-        else if ( y > ydownmax || y < ymin ) {
+        else if ( y > ymax || y < ymin ) {
           $( "#y" ).parent().addClass("has-error");
         }
         else {
           // pan the map to center on these coordinates
+          console.log('placing marker');
           var point = L.point(x, y);
-          map.panTo(map.unproject(point));
+          var projpoint = map.unproject(point, 2*maxres - map.getZoom());
+
+          map.panTo(projpoint);
           // place a marker
-          // TODO 
+          L.marker(projpoint).addTo(map); 
         } 
       }
       else {
@@ -289,7 +282,17 @@
           $( "#x" ).parent().addClass("has-error");
         }  
       } 
-      event.preventDefault();
+      // if a zindex was entered, navigate to that slice 
+      if ( $( "#z" ).val() ) {
+        var z = $( "#z" ).val();
+        if (z <= zmax && z >= zmin) {
+          chgZIndex(z);
+        }
+        else {
+          $( "#z" ).parent().addClass("has-error");
+        }
+      }
+     
     });
 
 		// z-index arrows 
@@ -365,9 +368,6 @@
           .setContent("You requested anno " + getAnnoId(reqPoint, map.getMaxZoom() - map.getZoom()))
           .openOn(map);
       } 
-      else if (mergetool) {
-        // do something 
-      }
 		}
 		map.on('click', onMapClick);
 
