@@ -113,6 +113,35 @@
             </table>
             The order of the channels in the URL is the order channels will be displayed on the map. For an annotation project with underlying EM data, you would want to specify <code>/em,annos/</code>, and not <code>/annos,em/</code>. Otherwise, your annotation layer will be hidden by the EM layer. 
             <h4>False Coloring (color masks)</h4>
+            <p>Some channels can be masked with a false color by adding a color argument to the URL. Color arguments are added after the channel name in the following format:<br /><code>channel1:B</code><br />Support colors are:</p>
+
+            <table class="table table-condensed">
+              <tr>
+                <td><strong>C</strong></td>
+                <td>cyan</td>
+              </tr>
+              <tr>
+                <td><strong>M</strong></td>
+                <td>magenta</td>
+              </tr>
+              <tr>
+                <td><strong>Y</strong></td>
+                <td>yellow</td>
+              </tr>
+              <tr>
+                <td><strong>R</strong></td>
+                <td>red</td>
+              </tr>
+              <tr>
+                <td><strong>G</strong></td>
+                <td>green</td>
+              </tr>
+              <tr>
+                <td><strong>B</strong></td>
+                <td>blue</td>
+              </tr>
+            </table>
+            <p class="text-danger">Note: Color codes in the URL must match the character above, but are not case sensitive.</p> 
           <h3>Tools</h3>
             <h4>Navigation</h4>
             <p>On the left side of the screen, the <kbd>+</kbd> and <kbd>-</kbd> buttons allow you to zoom in and out on the map. Zooming unloads the current resolution, and then loads the next resolution stored in the OCP spatial database.</p>
