@@ -54,6 +54,7 @@ def tokenview(request, webargs):
   # res (x,y,z) will center the map at (x,y,z) for a given res  
   channels_str = None   
   channels = None 
+  channel_colors = {}
   [token_str, restargs] = webargs.split('/', 1)
   restsplit = restargs.split('/')
   # initialize these variables, which will be passed to the template
@@ -96,7 +97,6 @@ def tokenview(request, webargs):
   dataset = Dataset.objects.get(pk=project.dataset) 
   if (channels_str is not None) and (len(channels_str[0]) > 0):
     channels = []
-    channel_colors = {}
     for channel_str in channels_str:
       if len(channel_str) > 0:
         if len(channel_str.split(':')) > 1: 
