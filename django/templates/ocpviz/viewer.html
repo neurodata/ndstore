@@ -5,7 +5,10 @@
   {% load staticfiles %}
   {# boostrap files #}
   <link rel="stylesheet" type ="text/css" href="{% static 'css/bootstrap.css' %}" />
-  
+
+  {# jquery UI #}
+  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
+
   {# leaflet files #}
   <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
 	<link href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
@@ -30,13 +33,25 @@
 			background: #000 !important;
 		}
 		.info {
-			padding: 6px 8px;
+      padding: 8px 8px;
+      width: 300px;
 			font: 14px/16px Arial, Helvetica, sans-serif;
 			background: white;
 			background: rbga(255,255,255,0.8);
 			box-shadow: 0 0 15px rbga(0,0,0,0.2);
 			border-radius: 2px;
-		} 
+    }
+    .info-layer-name {
+      float: left;
+      width: 35%;
+      padding-top: 5px;
+      padding-left: 10px;
+    }
+    #opacity-control > span {
+      float: right;
+      width: 60%;
+      margin: 5px;
+    }
     .info h4 {
 			margin: 0 0 5px; 
 			color: #777;
@@ -51,6 +66,7 @@
       padding-right: 10px;
       border-radius: 2px;
     }
+
     /*
     .coordinates {
       position: fixed;
@@ -124,7 +140,7 @@
   <div id="map"></div>
   <script> 
     // tool variables
-    var querytool = true; // enabled by default
+    var querytool = false; // disabled by default
     var mergetool = false; // disabled by default
     
     // dataset info 
@@ -192,18 +208,31 @@
 		info.options.position = 'topright';
 		info.onAdd = function (map) {
 			this._div = L.DomUtil.create('div', 'info');
-			this.update();
+      var header = '<h4>{{ project_name }}</h4>';
+      var datainfo = '<div id="opacity-control">{% spaceless %}
+        {% for layer in layers %}
+          <div class="info-layer-name"><a href="#">{{ layer.layer_name|cut:" " }}</a></div>
+          <span>{{ layer.layer_name|cut:" " }}</span><br />
+        {% endfor %}
+        {% endspaceless %}</div>';
+      //var datainfo = '<div id="slider"></div>';
+      var curslice = '<br /><div id="zindex">z-index: ' + zindex + "</div>";
+      this._div.innerHTML = header + datainfo + curslice;
 			return this._div;
 		};
 
 		info.update = function () {
-      var header = '<h4>{{ project_name }}</h4>';
-      var datainfo = 'TODO put sliders here'
+      
+      $( "#zindex" ).replaceWith( "<div id='zindex'>z-index: " + zindex + "</div>" );
+      //var header = '<h4>{{ project_name }}</h4>';
+      //var datainfo = '<div id="slider"></div>';
+      //var datainfo = '{% spaceless %}{% endspaceless %}
+
       //var datainfo = 'x: (' + xmin + ', ' + xmax + ')<br />' + 
       //  'y: (' + ymin + ', ' + ymax + ')<br />' +
       //  'z: (' + zmin + ', ' + zmax + ')<br />';
-      var curslice = '<br />z-index: ' + zindex;
-      this._div.innerHTML = header + datainfo + curslice;
+      //var curslice = '<br />z-index: ' + zindex;
+      //this._div.innerHTML = header + datainfo + curslice;
 			//	+ 'Z Index: ' + zindex;
 		};
 
@@ -427,11 +456,30 @@
     
     keyhelp.addTo(map);
 
-	</script>
+    {# jquery slider (opacity controls) #}
+    $(function() {
+      $( "#opacity-control > span" ).each(function() {
+        var layer = $( this ).text(); // TODO parse value here too
+        $( this ).empty().slider({
+          min: 0,
+          max: 100,
+          value: eval(layer).options.opacity*100,
+          slide: function ( event, ui ) { 
+              eval(layer).setOpacity(ui.value/100);
+            },
+          start: function ( event, ui ) { map.dragging.disable(); },
+          stop: function ( event, ui ) { map.dragging.enable(); }, 
+        });
+      });
+    });// sliders
+  </script>
 </body>
 {# jquery and bootstrap js #}
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 <script src="{% static "js/bootstrap.min.js" %}"></script>
+{# jquery ui (for slider) #}
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+
 </html>
 
 
