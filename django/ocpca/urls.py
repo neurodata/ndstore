@@ -41,8 +41,8 @@ urlpatterns = patterns('ocpca.views',
   url(r'(?P<webargs>^\w+/\w+/\d+/getField/[\w,/]*)$', 'getField'),
   url(r'(?P<webargs>^\w+/\w+/\d+/setField/[\w\. ,/]*)$', 'setField'),
   # propagate interfaces
-  url(r'(?P<webargs>^\w+/\w+/getPropagate/*)$', 'getPropagate'),
-  url(r'(?P<webargs>^\w+/\w+/setPropagate/[\d,/]*)$', 'setPropagate'),
+  url(r'(?P<webargs>^\w+/[\w+,]+/getPropagate/)$', 'getPropagate'),
+  url(r'(?P<webargs>^\w+/[\w+,]+/setPropagate/[\d+,]+/)$', 'setPropagate'),
   # merge annotations
   url(r'(?P<webargs>^\w+/merge/[\w,/]+)$', 'merge'),
   # csv metadata read
