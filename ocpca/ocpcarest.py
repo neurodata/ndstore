@@ -1124,7 +1124,6 @@ def putAnnotation ( webargs, postdata ):
               # Otherwise this is a shave operation
               elif voxels != None and 'reduce' in options:
 
-  
                 # Check that the voxels have a conforming size:
                 if voxels.shape[1] != 3:
                   logger.warning ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
