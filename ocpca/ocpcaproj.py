@@ -152,8 +152,10 @@ class OCPCADataset:
       self.scale[i] = { 'xy':xvoxelresi/yvoxelresi , 'yz':zvoxelresi/xvoxelresi, 'xz':zvoxelresi/yvoxelresi }
 
       # choose the cubedim as a function of the zscale
-      #  this may need to be changed.  
+      #self.cubedim[i] = [128, 128, 16]
+      # this may need to be changed.  
       if self.ds.scalingoption == ZSLICES:
+        self.cubedim[i] = [128, 128, 16]
         if float(self.ds.zvoxelres/self.ds.xvoxelres)/(2**i) >  0.5:
           self.cubedim[i] = [128, 128, 16]
         else: 
@@ -165,7 +167,6 @@ class OCPCADataset:
       else:
         # RB what should we use as a cubedim?
         self.cubedim[i] = [128, 128, 16]
-#        self.cubedim[i] = [64, 64, 64]
 
   # Accessors
   def getDatasetName(self):
