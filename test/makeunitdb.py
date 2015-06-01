@@ -37,7 +37,7 @@ def createTestDB ( project_name, channel_list=['unit_anno'], channel_type='annot
 
   unituser = User.objects.get(username='brain')
 
-  ds = Dataset ( dataset_name="unittest", user=unituser, ximagesize=ximagesize, yimagesize=yimagesize, zimagesize=zimagesize,  xoffset=0, yoffset=0, zoffset=0, xvoxelres=4.0, yvoxelres=4.0, zvoxelres=3.0, scalingoption=scalingoption, scalinglevels=scalinglevels, starttime=time[0], endtime=time[1], dataset_description="Unit test" ) 
+  ds = Dataset ( dataset_name="unittest", user=unituser, ximagesize=ximagesize, yimagesize=yimagesize, zimagesize=zimagesize,  xoffset=0, yoffset=0, zoffset=1, xvoxelres=4.0, yvoxelres=4.0, zvoxelres=3.0, scalingoption=scalingoption, scalinglevels=scalinglevels, starttime=time[0], endtime=time[1], dataset_description="Unit test" ) 
   ds.save()
 
 
