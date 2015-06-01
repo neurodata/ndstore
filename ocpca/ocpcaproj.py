@@ -264,7 +264,7 @@ class OCPCAProject:
 
   def getChannelObj ( self, channel_name='default' ):
     """Returns a object for that channel"""
-    if channel_name == 'default':
+    if channel_name == 'default' or channel_name == 'parent':
       channel_name = Channel.objects.get(project_id=self.pr, default=True)
     return OCPCAChannel(self, channel_name)
 

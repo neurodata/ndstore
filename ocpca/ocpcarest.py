@@ -252,7 +252,6 @@ def imgPNG(proj, webargs, cb):
     raise OCPCAError("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
 
   if service == 'xy':
-    import pdb; pdb.set_trace()
     img = cb.xyImage()
   elif service == 'yz':
     img = cb.yzImage(proj.datasetcfg.scale[int(resolution)][service])

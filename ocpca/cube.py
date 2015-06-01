@@ -106,7 +106,6 @@ class Cube:
   @staticmethod
   def getCube(cubedim, channel_type, datatype, timerange=None):
 
-    import pdb; pdb.set_trace()
     if channel_type in ocpcaproj.ANNOTATION_CHANNELS and datatype in ocpcaproj.DTYPE_uint32:
       return anncube.AnnotateCube (cubedim)
     elif channel_type in ocpcaproj.TIMESERIES_CHANNELS and timerange is not None:
