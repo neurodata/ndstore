@@ -114,7 +114,7 @@ class Test_Anno_Propagate():
     
     # Posting some data at res0 to propagate
     p.args = (200,300,200,300,4,5)
-    p.args = (0,1000,0,1000,0,10)
+    p.args = (0,1000,0,1000,1,11)
     image_data = np.ones( [1,10,1000,1000], dtype=np.uint32) * random.randint(255,65535)
     response = postNPZ(p, image_data)
 
