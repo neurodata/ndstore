@@ -60,7 +60,7 @@ def getAnnValue ( value00, value01, value10, value11 ):
 
   if value11 != 0:
     if value == 0:
-      value = value11
+      value = value10
     elif value11==value00 or value11==value01 or value11==value10:
       value = value11
 
@@ -166,9 +166,10 @@ def buildAnnoStack ( proj, ch, res=None ):
 
       #  Choose constants that work for all resolutions. recall that cube size changes from 128x128x16 to 64*64*64
       if scaling == ocpcaproj.ZSLICES:
-        outdata = np.zeros ( [ zcubedim*4, ycubedim*2, xcubedim*2 ], dtype=ocpcaproj.OCP_dtypetonp.get(ch.getDataType()) )
+        outdata = np.zeros ( [ zcubedim*4, ycubedim*2, xcubedim*2 ], dtype=ocpcaproj.OCP_dtypetonp.get(ch.getDataType()))
+        outdata2 = np.zeros ( [ zcubedim*4, ycubedim*2, xcubedim*2 ], dtype=ocpcaproj.OCP_dtypetonp.get(ch.getDataType()))
       elif scaling == ocpcaproj.ISOTROPIC:
-        outdata = np.zeros ( [ zcubedim*2,  ycubedim*2, xcubedim*2 ], dtype=ocpcaproj.OCP_dtypetonp.get(ch.getDataType()) )
+        outdata = np.zeros ( [ zcubedim*2,  ycubedim*2, xcubedim*2 ], dtype=ocpcaproj.OCP_dtypetonp.get(ch.getDataType()))
       else:
         logger.error ( "Invalid scaling option in project = {}".format(scaling) )
         raise OCPCAError ( "Invalid scaling option in project = {}".format(scaling)) 
@@ -196,9 +197,11 @@ def buildAnnoStack ( proj, ch, res=None ):
             offset = [(xyz[0]%4)*(xcubedim/2), (xyz[1]%4)*(ycubedim/2), (xyz[2]%4)*zcubedim]
 
             # add the contribution of the cube in the hierarchy
-            #self.addData ( cube, outdata, offset )
-            # use the cython version
-            addDataToZSliceStack_cy(cube, outdata, offset)
+            #addDataToZSliceStack_cy(cube, outdata, offset)
+            addDataToZSliceStack(cube, outdata, offset)
+            #ocplib.addDataToZSliceStack_ctype(cube, outdata, offset)
+            #if np.array_equal(outdata, outdata2) is False:
+              #import pdb; pdb.set_trace()
 
           elif scaling == ocpcaproj.ISOTROPIC:
 
@@ -209,26 +212,36 @@ def buildAnnoStack ( proj, ch, res=None ):
             # use python version for debugging
             addDataToIsotropicStack(cube, outdata, offset)
 
-          #  Get the base location of this batch
-          xyzout = ocplib.MortonXYZ (mortonidx)
+        #  Get the base location of this batch
+        xyzout = ocplib.MortonXYZ (mortonidx)
 
-          # adjust to output corner for scale.
-          if scaling == ocpcaproj.ZSLICES:
-            outcorner = [ xyzout[0]*xcubedim/2, xyzout[1]*ycubedim/2, xyzout[2]*zcubedim ]
-          elif scaling == ocpcaproj.ISOTROPIC:
-            outcorner = [ xyzout[0]*xcubedim/2, xyzout[1]*ycubedim/2, xyzout[2]*zcubedim/2 ]
+        # adjust to output corner for scale.
+        if scaling == ocpcaproj.ZSLICES:
+          outcorner = [ xyzout[0]*xcubedim/2, xyzout[1]*ycubedim/2, xyzout[2]*zcubedim ]
+        elif scaling == ocpcaproj.ISOTROPIC:
+          outcorner = [ xyzout[0]*xcubedim/2, xyzout[1]*ycubedim/2, xyzout[2]*zcubedim/2 ]
 
-          #  Data stored in z,y,x order dims in x,y,z
-          outdim = outdata.shape[::-1]
+        #  Data stored in z,y,x order dims in x,y,z
+        outdim = outdata.shape[::-1]
 
-          # Preserve annotations made at the specified level
-          # KL check that the P option preserves annotations?  RB changed from O
-          db.annotateDense(ch, outcorner, cur_res, outdata, 'O')
-          print np.unique(outdata)
-          db.conn.commit()
-            
-          # zero the output buffer
-          outdata = np.zeros ([zcubedim*4, ycubedim*2, xcubedim*2])
+        # Preserve annotations made at the specified level
+        # KL check that the P option preserves annotations?  RB changed from O
+        db.annotateDense(ch, outcorner, cur_res, outdata, 'O')
+        db.conn.commit()
+          
+        # zero the output buffer
+        outdata = np.zeros ([zcubedim*4, ycubedim*2, xcubedim*2], dtype=ocpcaproj.OCP_dtypetonp.get(ch.getDataType()))
+
+def addDataToZSliceStack( cube, output, offset ):
+  """Add the contribution of the input data to the next level at the given offset in the output cube"""
+  for z in range (cube.data.shape[0]):
+    for y in range (cube.data.shape[1]/2):
+      for x in range (cube.data.shape[2]/2):
+        try:
+          value = getAnnValue (cube.data[z,y*2,x*2],cube.data[z,y*2,x*2+1],cube.data[z,y*2+1,x*2],cube.data[z,y*2+1,x*2+1])
+          output [ z+offset[2], y+offset[1], x+offset[0] ] = value
+        except Exception, e:
+          import pdb; pdb.set_trace()
 
 
 def buildImageStack(proj, ch, res=None):

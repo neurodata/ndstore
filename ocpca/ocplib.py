@@ -310,7 +310,6 @@ def isotropicBuild_ctype ( data1, data2, newdata ):
 def addDataToZSliceStack_ctype ( cube, output, offset ):
   """Add the contribution of the input data to the next level at the given offset in the output cube"""
 
-  dims = [ i for i in cube.shape ]
-  import pdb; pdb.set_trace()
-  ocplib.addDataZSlice ( cube, output, offset, (cp.c_int * len(dims))(*dims) )
+  dims = [ i for i in cube.data.shape ]
+  ocplib.addDataZSlice ( cube.data, output, (cp.c_int * len(offset))(*offset), (cp.c_int * len(dims))(*dims) )
   return ( output )

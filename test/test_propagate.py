@@ -103,7 +103,7 @@ class Test_Anno_Propagate():
   
   def setup_class(self):
     """Create the unittest database"""
-    makeunitdb.createTestDB(p.token, public=True, channel_list=p.channels, ximagesize=1000, yimagesize=1000, zimagesize=10)
+    makeunitdb.createTestDB(p.token, public=True, channel_list=p.channels, ximagesize=1000, yimagesize=1000, zimagesize=16)
 
   def teardown_class (self):
     """Destroy the unittest database"""
@@ -114,7 +114,8 @@ class Test_Anno_Propagate():
     
     # Posting some data at res0 to propagate
     p.args = (200,300,200,300,4,5)
-    image_data = np.ones( [1,1,100,100], dtype=np.uint32) * random.randint(255,65535)
+    p.args = (0,1000,0,1000,0,10)
+    image_data = np.ones( [1,10,1000,1000], dtype=np.uint32) * random.randint(255,65535)
     response = postNPZ(p, image_data)
 
     voxarray = getNPZ(p)
@@ -134,19 +135,12 @@ class Test_Anno_Propagate():
     value = int(f.read())
     assert(value == ocpcaproj.PROPAGATED)
 
-    # Checking at res0
-    url = "http://{}/ca/{}/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
-    f = getURL(url)
-    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
-    #assert ( np.array_equal(slice_data,image_data[0][0]) )
-
     import pdb; pdb.set_trace()
     # Checking at res1
     p.args = (100,150,100,150,4,5)
-    url = "http://{}/ca/{}/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution+1, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
-    f = getURL(url)
-    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
-    assert ( np.array_equal(slice_data, image_data[0][0][:50,:50]) )
+    p.resolution = 1
+    voxarray = getNPZ(p)
+    assert ( np.array_equal(voxarray[0][0], image_data[0][0][:50,:50]) )
 
 
   #def test_internal_propagate(self):
