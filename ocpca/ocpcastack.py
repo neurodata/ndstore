@@ -165,7 +165,6 @@ def buildAnnoStack ( proj, ch, res=None ):
         outdata = np.zeros ( [ zcubedim*4, ycubedim*2, xcubedim*2 ], dtype=ocpcaproj.OCP_dtypetonp.get(ch.getDataType()))
       elif scaling == ocpcaproj.ISOTROPIC:
         outdata = np.zeros ( [ zcubedim*2,  ycubedim*2, xcubedim*2 ], dtype=ocpcaproj.OCP_dtypetonp.get(ch.getDataType()))
-        outdata2 = np.zeros ( [ zcubedim*2, ycubedim*2, xcubedim*2 ], dtype=ocpcaproj.OCP_dtypetonp.get(ch.getDataType()))
       else:
         logger.error ( "Invalid scaling option in project = {}".format(scaling) )
         raise OCPCAError ( "Invalid scaling option in project = {}".format(scaling)) 
@@ -222,7 +221,6 @@ def buildAnnoStack ( proj, ch, res=None ):
           
         # zero the output buffer
         outdata = np.zeros ([zcubedim*4, ycubedim*2, xcubedim*2], dtype=ocpcaproj.OCP_dtypetonp.get(ch.getDataType()))
-        outdata2 = np.zeros ([zcubedim*4, ycubedim*2, xcubedim*2], dtype=ocpcaproj.OCP_dtypetonp.get(ch.getDataType()))
 
 
 def buildImageStack(proj, ch, res=None):
@@ -258,7 +256,6 @@ def buildImageStack(proj, ch, res=None):
       ylimit = (yimagesz-1) / ycubedim + 1
       zlimit = (zimagesz-1) / zcubedim + 1
 
-
       for z in range(zlimit):
         for y in range(ylimit):
           for x in range(xlimit):
@@ -274,11 +271,7 @@ def buildImageStack(proj, ch, res=None):
               if scaling == ocpcaproj.ZSLICES:
                 data = olddata[sl,:,:]
               elif scaling == ocpcaproj.ISOTROPIC:
-                #vec_func = np.vectorize ( lambda a,b: a if b==0 else (b if a ==0 else np.uint8((a+b)/2))) 
-                #data = vec_func ( olddata[sl*2,:,:], olddata[sl*2+1,:,:] )
                 data = ocplib.isotropicBuild_ctype(olddata[sl*2,:,:], olddata[sl*2+1,:,:])
-                #if np.array_equal(data, data2) is False:
-                  #import pdb; pdb.set_trace()
 
               # Convert each slice to an image
               # 8-bit int option
@@ -290,6 +283,8 @@ def buildImageStack(proj, ch, res=None):
               # 32-bit float option
               elif olddata.dtype == np.float32:
                 slimage = Image.frombuffer ( 'F', (xcubedim*2,ycubedim*2), data.flatten(), 'raw', 'F', 0, 1 )
+              elif oldata.dtype == np.uint32:
+                slimage = Image.fromarray( data, "RGBA" )
               # KL TODO Add support for 32bit and 64bit RGBA data
 
               # Resize the image and put in the new cube array

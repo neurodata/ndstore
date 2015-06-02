@@ -183,34 +183,25 @@ class ImageCube32(Cube):
     self._newcube = True
     self.data = np.zeros ( self.cubesize, dtype=np.uint32 )
 
-  #
-  # Create the specified slice (index) 
-  #
   def xyImage ( self ):
+    """Create the specified slice (index)"""
 
     zdim,ydim,xdim = self.data.shape
     return Image.fromarray( self.data[0,:,:], "RGBA")
 
-
-  #
-  # Create the specified slice (index) 
-  #
   def xzImage ( self, zscale ):
+    """Create the specified slice (index)"""
 
     zdim,ydim,xdim = self.data.shape
     outimage = Image.fromarray( self.data[:,0,:], "RGBA")
     return outimage.resize ( [xdim, int(zdim*zscale)] )
 
-
-  #
-  # Create the specified slice (index) 
-  #
   def yzImage ( self, zscale ):
+    """Create the specified slice (index)"""
 
     zdim,ydim,xdim = self.data.shape
     outimage = Image.fromarray( self.data[:,:,0], "RGBA")
     return outimage.resize ( [ydim, int(zdim*zscale)] )
-
 
   def RGBAChannel ( self ):
     """Convert the uint32 back into 4x8 bit channels"""
@@ -260,8 +251,6 @@ class ImageCube64(Cube):
   def xyImage ( self ):
     """Create xy slice"""
 
-#RB I think this does nothing
-#    channels,ydim,xdim = self.data.shape
     self.extractChannel()
     return Image.fromarray( self.data, "RGBA")
 

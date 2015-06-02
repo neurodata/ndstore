@@ -37,6 +37,7 @@ array_2d_uint32 = npct.ndpointer(dtype=np.uint32, ndim=2, flags='C_CONTIGUOUS')
 array_3d_uint32 = npct.ndpointer(dtype=np.uint32, ndim=3, flags='C_CONTIGUOUS')
 array_1d_uint64 = npct.ndpointer(dtype=np.uint64, ndim=1, flags='C_CONTIGUOUS')
 array_2d_uint64 = npct.ndpointer(dtype=np.uint64, ndim=2, flags='C_CONTIGUOUS')
+array_2d_float32 = npct.ndpointer(dtype=np.float32, ndim=2, flags='C_CONTIGUOUS')
 
 
 # defining the parameter types of the functions in C
@@ -61,8 +62,9 @@ ocplib.zoomInData.argtypes = [ array_3d_uint32, array_3d_uint32, cp.POINTER(cp.c
 ocplib.zoomInDataOMP.argtypes = [ array_3d_uint32, array_3d_uint32, cp.POINTER(cp.c_int), cp.c_int ]
 ocplib.mergeCube.argtypes = [ array_3d_uint32, cp.POINTER(cp.c_int), cp.c_int, cp.c_int ]
 ocplib.isotropicBuild8.argtypes = [ array_2d_uint8, array_2d_uint8, array_2d_uint8, cp.POINTER(cp.c_int) ]
-ocplib.isotropicBuild16.argtypes = [ array_2d_uint16, array_2d_uint16, array_1d_uint16, cp.POINTER(cp.c_int) ]
-ocplib.isotropicBuild32.argtypes = [ array_2d_uint32, array_2d_uint32, array_1d_uint32, cp.POINTER(cp.c_int) ]
+ocplib.isotropicBuild16.argtypes = [ array_2d_uint16, array_2d_uint16, array_2d_uint16, cp.POINTER(cp.c_int) ]
+ocplib.isotropicBuild32.argtypes = [ array_2d_uint32, array_2d_uint32, array_2d_uint32, cp.POINTER(cp.c_int) ]
+ocplib.isotropicBuildF32.argtypes = [ array_2d_float32, array_2d_float32, array_2d_float32, cp.POINTER(cp.c_int) ]
 ocplib.addDataZSlice.argtypes = [ array_3d_uint32, array_3d_uint32, cp.POINTER(cp.c_int), cp.POINTER(cp.c_int) ]
 ocplib.addDataIsotropic.argtypes = [ array_3d_uint32, array_3d_uint32, cp.POINTER(cp.c_int), cp.POINTER(cp.c_int) ]
 
@@ -90,6 +92,7 @@ ocplib.mergeCube.restype = None
 ocplib.isotropicBuild8.restype = None
 ocplib.isotropicBuild16.restype = None
 ocplib.isotropicBuild32.restype = None
+ocplib.isotropicBuildF32.restype = None
 ocplib.addDataZSlice.restype = None
 ocplib.addDataIsotropic.restype = None
 
@@ -293,7 +296,6 @@ def zoomInData_ctype_OMP ( olddata, newdata, factor ):
   ocplib.zoomInDataOMP ( olddata, newdata, (cp.c_int * len(dims))(*dims), cp.c_int(factor) )
   return ( newdata )
 
-
 def mergeCube_ctype ( data, newid, oldid ):
   """ Relabel voxels in cube from oldid to newid """
 
@@ -312,6 +314,8 @@ def isotropicBuild_ctype ( data1, data2 ):
     ocplib.isotropicBuild8 ( data1, data2, newdata, (cp.c_int * len(dims))(*dims) )
   elif data1.dtype == np.uint16:
     ocplib.isotropicBuild16 ( data1, data2, newdata, (cp.c_int * len(dims))(*dims) )
+  elif data1.dtype == np.float32:
+    ocplib.isotropicBuildF32 ( data1, data2, newdata, (cp.c_int * len(dims))(*dims) )
   else:
     raise 
   return ( newdata )
