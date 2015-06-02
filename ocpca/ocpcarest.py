@@ -1421,8 +1421,6 @@ def setField ( webargs ):
 def getPropagate (webargs):
   """ Return the value of the Propagate field """
 
-  import pdb; pdb.set_trace()
-  
   # input in the format token/channel_list/getPropagate/
   try:
     (token, channel_list) = re.match("(\w+)/([\w+,]+)/getPropagate/$", webargs).groups()

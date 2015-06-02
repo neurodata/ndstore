@@ -78,11 +78,7 @@ def addDataToIsotropicStack ( cube, output, offset ):
             value = getAnnValue (cube.data[z*2,y*2,x*2],cube.data[z*2,y*2,x*2+1],cube.data[z*2,y*2+1,x*2],cube.data[z*2,y*2+1,x*2+1])
             if value == 0:
               value = getAnnValue (cube.data[z*2+1,y*2,x*2],cube.data[z*2+1,y*2,x*2+1],cube.data[z*2+1,y*2+1,x*2],cube.data[z*2+1,y*2+1,x*2+1])
-
-            try:
-              output [ z+offset[2], y+offset[1], x+offset[0] ] = value
-            except:
-              import pdb; pdb.set_trace()
+            output [ z+offset[2], y+offset[1], x+offset[0] ] = value
 
 
 """Construct a hierarchy off of a completed database."""
@@ -156,8 +152,8 @@ def buildAnnoStack ( proj, ch, res=None ):
     for cur_res in range(res, high_res+1):
 
       # Get the source database sizes
-      [[ximagesz, yimagesz, zimagesz], timerange] = proj.datasetcfg.imageSize(cur_res)
-      [xcubedim, ycubedim, zcubedim] = cubedim = proj.datasetcfg.getCubeDims()[cur_res]
+      [[ximagesz, yimagesz, zimagesz], timerange] = proj.datasetcfg.imageSize(cur_res-1)
+      [xcubedim, ycubedim, zcubedim] = cubedim = proj.datasetcfg.getCubeDims()[cur_res-1]
 
       # Set the limits for iteration on the number of cubes in each dimension
       xlimit = (ximagesz-1) / xcubedim + 1
@@ -167,9 +163,9 @@ def buildAnnoStack ( proj, ch, res=None ):
       #  Choose constants that work for all resolutions. recall that cube size changes from 128x128x16 to 64*64*64
       if scaling == ocpcaproj.ZSLICES:
         outdata = np.zeros ( [ zcubedim*4, ycubedim*2, xcubedim*2 ], dtype=ocpcaproj.OCP_dtypetonp.get(ch.getDataType()))
-        outdata2 = np.zeros ( [ zcubedim*4, ycubedim*2, xcubedim*2 ], dtype=ocpcaproj.OCP_dtypetonp.get(ch.getDataType()))
       elif scaling == ocpcaproj.ISOTROPIC:
         outdata = np.zeros ( [ zcubedim*2,  ycubedim*2, xcubedim*2 ], dtype=ocpcaproj.OCP_dtypetonp.get(ch.getDataType()))
+        outdata2 = np.zeros ( [ zcubedim*2, ycubedim*2, xcubedim*2 ], dtype=ocpcaproj.OCP_dtypetonp.get(ch.getDataType()))
       else:
         logger.error ( "Invalid scaling option in project = {}".format(scaling) )
         raise OCPCAError ( "Invalid scaling option in project = {}".format(scaling)) 
@@ -195,13 +191,8 @@ def buildAnnoStack ( proj, ch, res=None ):
             # Compute the offset in the output data cube 
             #  we are placing 4x4x4 input blocks into a 2x2x4 cube 
             offset = [(xyz[0]%4)*(xcubedim/2), (xyz[1]%4)*(ycubedim/2), (xyz[2]%4)*zcubedim]
-
             # add the contribution of the cube in the hierarchy
-            #addDataToZSliceStack_cy(cube, outdata, offset)
-            addDataToZSliceStack(cube, outdata, offset)
-            #ocplib.addDataToZSliceStack_ctype(cube, outdata, offset)
-            #if np.array_equal(outdata, outdata2) is False:
-              #import pdb; pdb.set_trace()
+            ocplib.addDataToZSliceStack_ctype(cube, outdata, offset)
 
           elif scaling == ocpcaproj.ISOTROPIC:
 
@@ -210,7 +201,7 @@ def buildAnnoStack ( proj, ch, res=None ):
             offset = [(xyz[0]%4)*(xcubedim/2), (xyz[1]%4)*(ycubedim/2), (xyz[2]%4)*(zcubedim/2)]
 
             # use python version for debugging
-            addDataToIsotropicStack(cube, outdata, offset)
+            ocplib.addDataToIsotropicStack_ctype(cube, outdata, offset)
 
         #  Get the base location of this batch
         xyzout = ocplib.MortonXYZ (mortonidx)
@@ -231,19 +222,7 @@ def buildAnnoStack ( proj, ch, res=None ):
           
         # zero the output buffer
         outdata = np.zeros ([zcubedim*4, ycubedim*2, xcubedim*2], dtype=ocpcaproj.OCP_dtypetonp.get(ch.getDataType()))
-
-def addDataToZSliceStack( cube, output, offset ):
-  """Add the contribution of the input data to the next level at the given offset in the output cube"""
-
-  import pdb; pdb.set_trace()
-  for z in range (cube.data.shape[0]):
-    for y in range (cube.data.shape[1]/2):
-      for x in range (cube.data.shape[2]/2):
-        try:
-          value = getAnnValue (cube.data[z,y*2,x*2],cube.data[z,y*2,x*2+1],cube.data[z,y*2+1,x*2],cube.data[z,y*2+1,x*2+1])
-          output [ z+offset[2], y+offset[1], x+offset[0] ] = value
-        except Exception, e:
-          import pdb; pdb.set_trace()
+        outdata2 = np.zeros ([zcubedim*4, ycubedim*2, xcubedim*2], dtype=ocpcaproj.OCP_dtypetonp.get(ch.getDataType()))
 
 
 def buildImageStack(proj, ch, res=None):
@@ -296,19 +275,22 @@ def buildImageStack(proj, ch, res=None):
                 data = olddata[sl,:,:]
               elif scaling == ocpcaproj.ISOTROPIC:
                 #vec_func = np.vectorize ( lambda a,b: a if b==0 else (b if a ==0 else np.uint8((a+b)/2))) 
-                #mergedata = vec_func ( olddata[sl*2,:,:], olddata[sl*2+1,:,:] )
-                data = ocplib.isotopicBuild_ctype(oldata[sl*2,:,:], olddata[sl*2+1,:,:])
+                #data = vec_func ( olddata[sl*2,:,:], olddata[sl*2+1,:,:] )
+                data = ocplib.isotropicBuild_ctype(olddata[sl*2,:,:], olddata[sl*2+1,:,:])
+                #if np.array_equal(data, data2) is False:
+                  #import pdb; pdb.set_trace()
 
               # Convert each slice to an image
               # 8-bit int option
               if olddata.dtype == np.uint8:
-                slimage = Image.frombuffer('L', (xcubedim*2,ycubedim*2), olddata[sl,:,:].flatten(), 'raw', 'L', 0, 1)
+                slimage = Image.frombuffer('L', (xcubedim*2,ycubedim*2), data.flatten(), 'raw', 'L', 0, 1)
               # 16-bit int option
               elif olddata.dtype == np.uint16:
-                slimage = Image.frombuffer('I;16', (xcubedim*2,ycubedim*2), olddata[sl,:,:].flatten(), 'raw', 'I;16', 0, 1)
+                slimage = Image.frombuffer('I;16', (xcubedim*2,ycubedim*2), data.flatten(), 'raw', 'I;16', 0, 1)
               # 32-bit float option
               elif olddata.dtype == np.float32:
-                slimage = Image.frombuffer ( 'F', (xcubedim*2,ycubedim*2), olddata[sl,:,:].flatten(), 'raw', 'F', 0, 1 )
+                slimage = Image.frombuffer ( 'F', (xcubedim*2,ycubedim*2), data.flatten(), 'raw', 'F', 0, 1 )
+              # KL TODO Add support for 32bit and 64bit RGBA data
 
               # Resize the image and put in the new cube array
               newdata[sl, :, :] = np.asarray(slimage.resize([xcubedim,ycubedim]))
