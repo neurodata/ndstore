@@ -12,38 +12,122 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+########################################
 List of Tests:
+########################################
 
-test_image - 12 tests
+Run this command to list all tests:
+  py.test --collect-only
+
+########################################
+test_image - 16 tests
+########################################
   
-Module : Test_Image_Slice
-1 - test_xy
-2 - test_yz
-3 - test_xz
-4 - test_xy_incorrect
+  A - Module : Test_Image_Slice
+    1 - test_xy
+    2 - test_yz
+    3 - test_xz
+    4 - test_xy_incorrect
 
-Module : Test_Image_Post
-1 - test_npz 
-2 - test_npz_incorrect_region
-3 - test_npz_incorrect_datatype
-4 - test_hdf5
-5 - test_hdf5_incorrect_region
-6 - test_hdf5_incorrect_datatype
-7 - test_npz_incorrect_channel
-8 - test_hdf5_incorrect_channel
+  B - Module : Test_Image_Window
+    1 - test_window_default
+    2 - test_window_args
+  
+  C - Module : Test_Image_Post
+    1 - test_npz 
+    2 - test_npz_incorrect_region
+    3 - test_npz_incorrect_datatype
+    4 - test_hdf5
+    5 - test_hdf5_incorrect_region
+    6 - test_hdf5_incorrect_datatype
+    7 - test_npz_incorrect_channel
+    8 - test_hdf5_incorrect_channel
 
-test_info - 3 tests
+  D - Module : Test_Image_Default
+    1 - test_npz_default_channel
+    2 - test_xy_default_channel
 
-Module Test_Info - 3 tests
-1 - test_public_tokens
-2 - test_info
-3 - test_projinfo
+########################################
+test_info - 4 tests
+########################################
 
+  A - Module Test_Info
+    1 - test_public_tokens
+    2 - test_info
+    3 - test_projinfo
+    4 - test_reserve
 
-test_propagate - 1 test
+########################################
+test_io.py - 6 tests
+########################################
+  
+  A - Module TestRW
+    1 - test_raw
+    2 - test_batch
+    3 - test_rw
+    4 - test_cuboids
+    5 - test_update
+    6 - test_dataonly
 
-Module : Test_Propagate
-1 - test_update_propagate
+########################################
+test_propagate - 4 test
+########################################
 
+  A - Module : Test_Image_Zslice_Propagate
+    1 - test_web_propagate
 
-test_query - 
+  B - Module : Test_Image_Isotropic_Propagate
+    2 - test_web_propagate
+  
+  C - Module : Test_Anno_Zslice_Propagate
+    3 - test_web_propagate
+  
+  D - Module : Test_Anno_Isotropic_Propagate
+    4 - test_web_propagate
+
+########################################
+test_query.py - 1 test
+########################################
+  
+  A - Module : Test_Ramon
+    1 - test_query_objects
+
+########################################
+test_ramon.py - 12 tests
+########################################
+  
+  A - Module : Test_Ramon
+    1 - test_anno_minmal
+    2 - test_anno_full
+    3 - test_anno_update
+    4 - test_anno_delete
+    5 - test_anno_upload
+    6 - test_annotation_field
+    7 - test_synapse_field
+    8 - test_seed_field
+    9 - test_segment_field
+    10 - test_neuron_field
+    11 - test_organelle_field
+    12 - test_wrong_field
+
+########################################
+test_time.py - 12 tests
+########################################
+  
+  A - Module : Test_Image_Slice
+    1 - test_xy
+    2 - test_yz
+    3 - test_xz
+  B - Module : Test_Image_Post
+    1 - test_npz
+    2 - test_npz_incorrect_region
+    3 - test_npz_incorrect_datatype
+    4 - test_npz_incorrect_timesize
+    5 - test_hdf5
+    6 - test_hdf5_incorrect_region
+    7 - test_hdf5_incorrect_datatype
+    8 - test_npz_incorrect_channel
+    9 - test_hdf5_incorrect_channel
+
+########################################
+########################################
