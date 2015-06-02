@@ -152,7 +152,7 @@ class Test_Anno_Isotropic_Propagate():
   
   def setup_class(self):
     """Create the unittest database"""
-    makeunitdb.createTestDB(p.token, public=True, channel_list=p.channels, ximagesize=1000, yimagesize=1000, zimagesize=64, scalingoption=ocpcaproj.ISOTROPIC)
+    makeunitdb.createTestDB(p.token, public=True, channel_list=p.channels, ximagesize=1000, yimagesize=1000, zimagesize=128, scalingoption=ocpcaproj.ISOTROPIC)
 
   def teardown_class (self):
     """Destroy the unittest database"""
@@ -162,11 +162,11 @@ class Test_Anno_Isotropic_Propagate():
     """Test the web update propogate function"""
     
     # Posting some data at res0 to propagate
-    p.args = (200,300,200,300,4,5)
-    image_data = np.ones( [1,1,100,100], dtype=np.uint32) * random.randint(255,65535)
+    p.args = (200,300,200,300,32,64)
+    p.resolution=0
+    image_data = np.ones( [1,32,100,100], dtype=np.uint32) * random.randint(255,65535)
     response = postNPZ(p, image_data)
 
-    import pdb; pdb.set_trace()
     voxarray = getNPZ(p)
     # check that the return matches
     assert ( np.array_equal(voxarray,image_data) )
@@ -185,16 +185,28 @@ class Test_Anno_Isotropic_Propagate():
     assert(value == ocpcaproj.PROPAGATED)
 
     # Checking at res1
-    p.args = (100,150,100,150,4,5)
+    p.args = (100,150,100,150,16,32)
     p.resolution = 1
     voxarray = getNPZ(p)
     assert ( np.array_equal(voxarray[0][0], image_data[0][0][:50,:50]) )
 
-    # Checking at res5
-    p.args = (7,9,7,9,4,5)
-    p.resolution = 5
+    # Checking at res2
+    p.args = (50,75,50,75,8,16)
+    p.resolution = 2
     voxarray = getNPZ(p)
-    assert ( np.array_equal(voxarray[0][0], image_data[0][0][:2,:2]) )
+    assert ( np.array_equal(voxarray[0][0], image_data[0][0][:25,:25]) )
+    
+    # Checking at res3
+    p.args = (25,37,25,37,4,8)
+    p.resolution = 3
+    voxarray = getNPZ(p)
+    assert ( np.array_equal(voxarray[0][0], image_data[0][0][:12,:12]) )
+
+    # Checking at res4
+    p.args = (13,19,13,19,2,4)
+    p.resolution = 4
+    voxarray = getNPZ(p)
+    assert ( np.array_equal(voxarray[0][0], image_data[0][0][:6,:6]) )
   #def test_internal_propagate(self):
     #"""Test the internal update propogate function"""
 

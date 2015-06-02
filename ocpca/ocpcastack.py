@@ -78,11 +78,7 @@ def addDataToIsotropicStack ( cube, output, offset ):
             value = getAnnValue (cube.data[z*2,y*2,x*2],cube.data[z*2,y*2,x*2+1],cube.data[z*2,y*2+1,x*2],cube.data[z*2,y*2+1,x*2+1])
             if value == 0:
               value = getAnnValue (cube.data[z*2+1,y*2,x*2],cube.data[z*2+1,y*2,x*2+1],cube.data[z*2+1,y*2+1,x*2],cube.data[z*2+1,y*2+1,x*2+1])
-
-            try:
-              output [ z+offset[2], y+offset[1], x+offset[0] ] = value
-            except:
-              import pdb; pdb.set_trace()
+            output [ z+offset[2], y+offset[1], x+offset[0] ] = value
 
 
 """Construct a hierarchy off of a completed database."""
@@ -205,11 +201,7 @@ def buildAnnoStack ( proj, ch, res=None ):
             offset = [(xyz[0]%4)*(xcubedim/2), (xyz[1]%4)*(ycubedim/2), (xyz[2]%4)*(zcubedim/2)]
 
             # use python version for debugging
-            addDataToIsotropicStack(cube, outdata, offset)
-            addDataToIsotropicStack_ctype(cube, outdata2, offset)
-
-            if np.array_equal(outdata, outdata2) is False:
-              import pdb; pdb.set_trace()
+            ocplib.addDataToIsotropicStack_ctype(cube, outdata, offset)
 
         #  Get the base location of this batch
         xyzout = ocplib.MortonXYZ (mortonidx)
