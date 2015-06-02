@@ -234,6 +234,8 @@ def buildAnnoStack ( proj, ch, res=None ):
 
 def addDataToZSliceStack( cube, output, offset ):
   """Add the contribution of the input data to the next level at the given offset in the output cube"""
+
+  import pdb; pdb.set_trace()
   for z in range (cube.data.shape[0]):
     for y in range (cube.data.shape[1]/2):
       for x in range (cube.data.shape[2]/2):
