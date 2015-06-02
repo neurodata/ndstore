@@ -32,7 +32,7 @@ import ocpcaproj
 import site_to_test
 import kvengine_to_test
 
-def createTestDB ( project_name, channel_list=['unit_anno'], channel_type='annotation', channel_datatype='uint32', public=0, ximagesize=10000, yimagesize=10000, zimagesize=50000, scalingoption=ocpcaproj.ZSLICES, scalinglevels=5, readonly=0, window=[0,0], time=[0,0], default=False, ocp_version=0.6 ):
+def createTestDB ( project_name, channel_list=['unit_anno'], channel_type='annotation', channel_datatype='uint32', public=0, ximagesize=10000, yimagesize=10000, zimagesize=1000, scalingoption=ocpcaproj.ZSLICES, scalinglevels=5, readonly=0, window=[0,0], time=[0,0], default=False, ocp_version=0.6 ):
   """Create a unit test data base on the specified sit and name"""
 
   unituser = User.objects.get(username='brain')

@@ -152,8 +152,10 @@ class OCPCADataset:
       self.scale[i] = { 'xy':xvoxelresi/yvoxelresi , 'yz':zvoxelresi/xvoxelresi, 'xz':zvoxelresi/yvoxelresi }
 
       # choose the cubedim as a function of the zscale
-      #  this may need to be changed.  
+      #self.cubedim[i] = [128, 128, 16]
+      # this may need to be changed.  
       if self.ds.scalingoption == ZSLICES:
+        self.cubedim[i] = [128, 128, 16]
         if float(self.ds.zvoxelres/self.ds.xvoxelres)/(2**i) >  0.5:
           self.cubedim[i] = [128, 128, 16]
         else: 
@@ -165,7 +167,6 @@ class OCPCADataset:
       else:
         # RB what should we use as a cubedim?
         self.cubedim[i] = [128, 128, 16]
-#        self.cubedim[i] = [64, 64, 64]
 
   # Accessors
   def getDatasetName(self):
@@ -304,6 +305,8 @@ class OCPCAChannel:
     return [self.ch.startwindow,self.ch.endwindow]
   def getPropagate (self):
     return self.ch.propagate
+  def isDefault (self):
+    return self.ch.default 
 
   def getIdsTable (self):
     if self.pr.getOCPVersion() == '0.0':
@@ -350,9 +353,11 @@ class OCPCAChannel:
     if value in [NOT_PROPAGATED]:
       self.ch.propagate = value
       self.setReadOnly ( READONLY_FALSE )
+      self.ch.save()
     elif value in [UNDER_PROPAGATION,PROPAGATED]:
       self.ch.propagate = value
       self.setReadOnly ( READONLY_TRUE )
+      self.ch.save()
     else:
       logger.error ( "Wrong Propagate Value {} for Channel {}".format( value, self.ch.channel_name ) )
       raise OCPCAError ( "Wrong Propagate Value {} for Channel {}".format( value, self.ch.channel_name ) )
@@ -369,7 +374,6 @@ class OCPCAChannel:
       return True
     else:
       return False
-
 
 class OCPCAProjectsDB:
   """Database for the projects"""

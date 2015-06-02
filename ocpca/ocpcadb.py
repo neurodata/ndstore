@@ -371,7 +371,10 @@ class OCPCADB:
   def putCube(self, ch, zidx, resolution, cube, update=False):
     """ Store a cube in the annotation database """
   
-    if cube.isNotZeros():
+    #if cube.isNotZeros():
+    #  RB the above line of code is broken.  We need to write 0s to the database when shaving annotations.
+    #  they overwrite existing non-zero annotations.
+    if True:
       # Handle the cube format here.  
       if self.NPZ:
         self.kvio.putCube(ch, zidx, resolution, cube.toNPZ(), not cube.fromZeros())

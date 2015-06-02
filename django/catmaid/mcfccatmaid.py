@@ -156,7 +156,7 @@ class MCFCCatmaid:
       # arguments of format /token/channel/slice_type/z/x_y_res.png
       m = re.match("(\w+)/([\w+,[:\w]*]*)/(xy|yz|xz)/(\d+)/(\d+)_(\d+)_(\d+).png", webargs)
       [self.token, channels, slice_type] = [i for i in m.groups()[:3]]
-      [ztile, xtile, ytile, res] = [int(i) for i in m.groups()[3:]]
+      [ztile, ytile, xtile, res] = [int(i) for i in m.groups()[3:]]
 
       #self.channel_list, self.colors = zip(*[i.groups() for i in map(re.compile("(\w+):(\w+)").match, re.split(',', channels))])
 
