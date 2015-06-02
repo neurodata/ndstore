@@ -62,6 +62,7 @@ ocplib.isotropicBuild8.argtypes = [ array_1d_uint8, array_1d_uint8, array_1d_uin
 ocplib.isotropicBuild16.argtypes = [ array_1d_uint16, array_1d_uint16, array_1d_uint16, cp.POINTER(cp.c_int) ]
 ocplib.isotropicBuild32.argtypes = [ array_1d_uint32, array_1d_uint32, array_1d_uint32, cp.POINTER(cp.c_int) ]
 ocplib.addDataZSlice.argtypes = [ array_3d_uint32, array_3d_uint32, cp.POINTER(cp.c_int), cp.POINTER(cp.c_int) ]
+ocplib.addDataIsotropic.argtypes = [ array_3d_uint32, array_3d_uint32, cp.POINTER(cp.c_int), cp.POINTER(cp.c_int) ]
 
 # setting the return type of the function in C
 # FORMAT: <library_name>.<function_name>.restype = [ ctype.<argtype> ]
@@ -88,6 +89,7 @@ ocplib.isotropicBuild8.restype = None
 ocplib.isotropicBuild16.restype = None
 ocplib.isotropicBuild32.restype = None
 ocplib.addDataZSlice.restype = None
+ocplib.addDataIsotropic.restype = None
 
 def filter_ctype_OMP ( cutout, filterlist ):
   """Remove all annotations in a cutout that do not match the filterlist using OpenMP"""
@@ -298,12 +300,19 @@ def mergeCube_ctype ( data, newid, oldid ):
   return ( data )
 
 
-def isotropicBuild_ctype ( data1, data2, newdata ):
-  """ Merging Data """
+#def isotropicBuild_ctype ( data1, data2, newdata ):
+  #""" Merging Data """
 
-  dims = [ i for i in data.shape ]
-  newdata = np.zeros(data1.shape,dtype=data1.dtype)
-  ocplib.isotropicBuild32 ( data1, data2, newdata, (cp.c_int * len(dims))(*dims) )
+  #dims = [ i for i in data.shape ]
+  #newdata = np.zeros(data1.shape,dtype=data1.dtype)
+  #ocplib.isotropicBuild32 ( data1, data2, newdata, (cp.c_int * len(dims))(*dims) )
+  #return ( newdata )
+
+def isotropicBuild_ctype ( cube, output, offset ):
+  """Add the contribution of the input data to the next level at the given offset in the output cube"""
+
+  dims = [ i for i in cube.data.shape ]
+  ocplib.addDataIsotropic ( cube.data, output, (cp.c_int * len(offset))(*offset), (cp.c_int * len(dims))(*dims) )
   return ( newdata )
 
 
@@ -312,4 +321,4 @@ def addDataToZSliceStack_ctype ( cube, output, offset ):
 
   dims = [ i for i in cube.data.shape ]
   ocplib.addDataZSlice ( cube.data, output, (cp.c_int * len(offset))(*offset), (cp.c_int * len(dims))(*dims) )
-  return ( output )
+  #return ( output )

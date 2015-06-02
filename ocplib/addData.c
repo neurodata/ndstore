@@ -58,22 +58,16 @@ void addDataZSlice ( uint32_t * cube, uint32_t * output, int * offset, int * dim
   int ydim = dims[1];
   int xdim = dims[2];
 
-  uint32_t value;
-
   for ( i=0; i<zdim; i++ )
-    for ( j=0; j<ydim/2; j++ )
-      for ( k=0; k<xdim/2; k++ )
+    for ( j=0; j<(ydim/2); j++ )
+      for ( k=0; k<(xdim/2); k++ )
       {
         int index1 = (i*ydim*xdim)+(j*2*xdim)+(k*2);
         int index2 = (i*ydim*xdim)+(j*2*xdim)+(k*2+1);
         int index3 = (i*ydim*xdim)+((j*2+1)*xdim)+(k*2);
         int index4 = (i*ydim*xdim)+((j*2+1)*xdim)+(k*2+1);
-        int output_index = ((i+offset[2])*ydim*xdim) + ((j+offset[1])*xdim) + (k+offset[0]);
-        printf("%d,%d,%d\n", index3-index1, index4-index2, output_index);
-        /*output[output_index] = getAnnValue ( cube[index1], cube[index2], cube[index3], cube[index4] );*/
-        /*value = getAnnValue( cube[i][j*2][k*2], cube[i][j*2][k*2+1], cube[i][j*2+1][k*2], cube[i][j*2+1][k*2+1]);*/
-        /*output[i+offset[2]][j+offset[1]][k+offset[0]] = value;*/
-
+        int output_index = ( (i+offset[2]) *ydim*xdim*2*2 ) + ( (j+offset[1]) *xdim*2 ) + (k+offset[0]);
+        output[output_index] = getAnnValue ( cube[index1], cube[index2], cube[index3], cube[index4] );
       }
 }
 
@@ -88,10 +82,27 @@ void addDataIsotropic ( uint32_t * cube, uint32_t * output, int * offset, int * 
   int ydim = dims[1];
   int xdim = dims[2];
 
+  uint32_t value;
+
   for ( i=0; i<zdim/2; i++ )
-    for ( j=0; j<ydim/2; j++ )
-      for ( k=0; k<xdim/2; k++ )
+    for ( j=0; j<(ydim/2); j++ )
+      for ( k=0; k<(xdim/2); k++ )
       {
-        continue;
+        int index1 = (i*ydim*xdim)+(j*2*xdim)+(k*2);
+        int index2 = (i*ydim*xdim)+(j*2*xdim)+(k*2+1);
+        int index3 = (i*ydim*xdim)+((j*2+1)*xdim)+(k*2);
+        int index4 = (i*ydim*xdim)+((j*2+1)*xdim)+(k*2+1);
+        value = getAnnValue ( cube[index1], cube[index2], cube[index3], cube[index4] );
+
+        if ( value == 0 )
+        {
+          index1 = ((i*2+1)*ydim*xdim)+(j*2*xdim)+(k*2);
+          index2 = ((i*2+1)*ydim*xdim)+(j*2*xdim)+(k*2+1);
+          index3 = ((i*2+1)*ydim*xdim)+((j*2+1)*xdim)+(k*2);
+          index4 = ((i*2+1)*ydim*xdim)+((j*2+1)*xdim)+(k*2+1);
+          value = getAnnValue ( cube[index1], cube[index2], cube[index3], cube[index4] );
+        }
+        int output_index = ( (i+offset[2]) *ydim*xdim*2*2 ) + ( (j+offset[1]) *xdim*2 ) + (k+offset[0]);
+        output[output_index] = getAnnValue ( cube[index1], cube[index2], cube[index3], cube[index4] );
       }
 }

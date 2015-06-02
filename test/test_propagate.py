@@ -98,7 +98,7 @@ class Test_Image_Propagate:
     assert ( np.array_equal(slice_data, image_data[0][0][:2,:2]) )
 
 
-class Test_Anno_Propagate():
+class Test_Anno_Zslice_Propagate():
   """Test annotation propagation"""
   
   def setup_class(self):
@@ -114,10 +114,59 @@ class Test_Anno_Propagate():
     
     # Posting some data at res0 to propagate
     p.args = (200,300,200,300,4,5)
-    p.args = (0,1000,0,1000,1,11)
-    image_data = np.ones( [1,10,1000,1000], dtype=np.uint32) * random.randint(255,65535)
+    image_data = np.ones( [1,1,100,100], dtype=np.uint32) * random.randint(255,65535)
     response = postNPZ(p, image_data)
 
+    voxarray = getNPZ(p)
+    # check that the return matches
+    assert ( np.array_equal(voxarray,image_data) )
+
+    # Check if the project is not propagated
+    f = getURL("http://{}/ca/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
+    value = int(f.read())
+    assert(value == ocpcaproj.NOT_PROPAGATED)
+
+    # Start propagating
+    f = getURL("http://{}/ca/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), ocpcaproj.UNDER_PROPAGATION))
+
+    # Checking if the PROPGATED value is set correctly
+    f = getURL("http://{}/ca/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
+    value = int(f.read())
+    assert(value == ocpcaproj.PROPAGATED)
+
+    # Checking at res1
+    p.args = (100,150,100,150,4,5)
+    p.resolution = 1
+    voxarray = getNPZ(p)
+    assert ( np.array_equal(voxarray[0][0], image_data[0][0][:50,:50]) )
+
+    # Checking at res5
+    p.args = (7,9,7,9,4,5)
+    p.resolution = 5
+    voxarray = getNPZ(p)
+    assert ( np.array_equal(voxarray[0][0], image_data[0][0][:2,:2]) )
+
+
+class Test_Anno_Isotropic_Propagate():
+  """Test annotation propagation"""
+  
+  def setup_class(self):
+    """Create the unittest database"""
+    makeunitdb.createTestDB(p.token, public=True, channel_list=p.channels, ximagesize=1000, yimagesize=1000, zimagesize=64, scalingoption=ocpcaproj.ISOTROPIC)
+
+  def teardown_class (self):
+    """Destroy the unittest database"""
+    makeunitdb.deleteTestDB(p.token)
+
+  def test_web_propagate(self):
+    """Test the web update propogate function"""
+    
+    # Posting some data at res0 to propagate
+    p.args = (200,300,200,300,4,5)
+    image_data = np.ones( [1,1,100,100], dtype=np.uint32) * random.randint(255,65535)
+    response = postNPZ(p, image_data)
+
+    import pdb; pdb.set_trace()
     voxarray = getNPZ(p)
     # check that the return matches
     assert ( np.array_equal(voxarray,image_data) )
@@ -135,14 +184,17 @@ class Test_Anno_Propagate():
     value = int(f.read())
     assert(value == ocpcaproj.PROPAGATED)
 
-    import pdb; pdb.set_trace()
     # Checking at res1
     p.args = (100,150,100,150,4,5)
     p.resolution = 1
     voxarray = getNPZ(p)
     assert ( np.array_equal(voxarray[0][0], image_data[0][0][:50,:50]) )
 
-
+    # Checking at res5
+    p.args = (7,9,7,9,4,5)
+    p.resolution = 5
+    voxarray = getNPZ(p)
+    assert ( np.array_equal(voxarray[0][0], image_data[0][0][:2,:2]) )
   #def test_internal_propagate(self):
     #"""Test the internal update propogate function"""
 
