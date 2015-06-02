@@ -275,19 +275,22 @@ def buildImageStack(proj, ch, res=None):
                 data = olddata[sl,:,:]
               elif scaling == ocpcaproj.ISOTROPIC:
                 #vec_func = np.vectorize ( lambda a,b: a if b==0 else (b if a ==0 else np.uint8((a+b)/2))) 
-                #mergedata = vec_func ( olddata[sl*2,:,:], olddata[sl*2+1,:,:] )
-                data = ocplib.isotopicBuild_ctype(oldata[sl*2,:,:], olddata[sl*2+1,:,:])
+                #data = vec_func ( olddata[sl*2,:,:], olddata[sl*2+1,:,:] )
+                data = ocplib.isotropicBuild_ctype(olddata[sl*2,:,:], olddata[sl*2+1,:,:])
+                #if np.array_equal(data, data2) is False:
+                  #import pdb; pdb.set_trace()
 
               # Convert each slice to an image
               # 8-bit int option
               if olddata.dtype == np.uint8:
-                slimage = Image.frombuffer('L', (xcubedim*2,ycubedim*2), olddata[sl,:,:].flatten(), 'raw', 'L', 0, 1)
+                slimage = Image.frombuffer('L', (xcubedim*2,ycubedim*2), data.flatten(), 'raw', 'L', 0, 1)
               # 16-bit int option
               elif olddata.dtype == np.uint16:
-                slimage = Image.frombuffer('I;16', (xcubedim*2,ycubedim*2), olddata[sl,:,:].flatten(), 'raw', 'I;16', 0, 1)
+                slimage = Image.frombuffer('I;16', (xcubedim*2,ycubedim*2), data.flatten(), 'raw', 'I;16', 0, 1)
               # 32-bit float option
               elif olddata.dtype == np.float32:
-                slimage = Image.frombuffer ( 'F', (xcubedim*2,ycubedim*2), olddata[sl,:,:].flatten(), 'raw', 'F', 0, 1 )
+                slimage = Image.frombuffer ( 'F', (xcubedim*2,ycubedim*2), data.flatten(), 'raw', 'F', 0, 1 )
+              # KL TODO Add support for 32bit and 64bit RGBA data
 
               # Resize the image and put in the new cube array
               newdata[sl, :, :] = np.asarray(slimage.resize([xcubedim,ycubedim]))

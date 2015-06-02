@@ -25,68 +25,62 @@
 
 void isotropicBuild32( uint32_t * data1, uint32_t * data2, uint32_t * newdata, int * dims )
 {
-		int i,j,k,index;
+		int i,j,index;
 
-    int zdim = dims[0];
-    int ydim = dims[1];
-    int xdim = dims[2];
+    int ydim = dims[0];
+    int xdim = dims[1];
 
-    for ( k=0; k<zdim; k++ )
-      for ( j=0; j<ydim; j++ )
-        for ( i=0; i<xdim; i++ )
-        {
-          index = (k*xdim*ydim) + (j*xdim) + (i);
-          if ( data2 [index] == 0 )
-            newdata[index] = data1[index];
-          else if (data1[index] == 0)
-            newdata[index] = data2[index];
-          else
-            newdata[index] = (data1[index]+data2[index])/2;
-        }
+    for ( j=0; j<ydim; j++ )
+      for ( i=0; i<xdim; i++ )
+      {
+        index = (j*xdim) + (i);
+        if ( data2 [index] == 0 )
+          newdata[index] = data1[index];
+        else if (data1[index] == 0)
+          newdata[index] = data2[index];
+        else
+          newdata[index] = (data1[index]+data2[index])/2;
+      }
 }
 
 
 void isotropicBuild16( uint16_t * data1, uint16_t * data2, uint16_t * newdata, int * dims )
 {
-		int i,j,k,index;
+		int i,j,index;
 
-    int zdim = dims[0];
-    int ydim = dims[1];
-    int xdim = dims[2];
+    int ydim = dims[0];
+    int xdim = dims[1];
 
-    for ( k=0; k<zdim; k++ )
-      for ( j=0; j<ydim; j++ )
-        for ( i=0; i<xdim; i++ )
-        {
-          index = (k*xdim*ydim) + (j*xdim) + (i);
-          if ( data2 [index] == 0 )
-            newdata[index] = data1[index];
-          else if (data1[index] == 0)
-            newdata[index] = data2[index];
-          else
-            newdata[index] = (data1[index]+data2[index])/2;
-        }
+    for ( j=0; j<ydim; j++ )
+      for ( i=0; i<xdim; i++ )
+      {
+        index = (j*xdim) + (i);
+        if ( data2 [index] == 0 )
+          newdata[index] = data1[index];
+        else if (data1[index] == 0)
+          newdata[index] = data2[index];
+        else
+          newdata[index] = (data1[index]+data2[index])/2;
+      }
 }
 
 
 void isotropicBuild8( uint8_t * data1, uint8_t * data2, uint8_t * newdata, int * dims )
 {
-		int i,j,k,index;
+		int i,j,index;
 
-    int zdim = dims[0];
-    int ydim = dims[1];
-    int xdim = dims[2];
+    int ydim = dims[0];
+    int xdim = dims[1];
 
-    for ( k=0; k<zdim; k++ )
-      for ( j=0; j<ydim; j++ )
-        for ( i=0; i<xdim; i++ )
-        {
-          index = (k*xdim*ydim) + (j*xdim) + (i);
-          if ( data2 [index] == 0 )
-            newdata[index] = data1[index];
-          else if (data1[index] == 0)
-            newdata[index] = data2[index];
-          else
-            newdata[index] = (data1[index]+data2[index])/2;
-        }
+    for ( j=0; j<ydim; j++ )
+      for ( i=0; i<xdim; i++ )
+      {
+        index = (j*xdim) + (i);
+        if ( data2 [index] == 0 )
+          newdata[index] = data1[index];
+        else if ( data1[index] == 0 )
+          newdata[index] = data2[index];
+        else
+          newdata[index] = (data1[index]+data2[index])/2;
+      }
 }
