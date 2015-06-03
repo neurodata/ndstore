@@ -405,6 +405,8 @@ class OCPCAProjectsDB:
 
   def newOCPCAChannel ( self, project_name, channel_name ):
     """Make the tables for a channel."""
+
+    import pdb; pdb.set_trace()
     
     pr = Project.objects.get(project_name=project_name)
     ch = Channel.objects.get(channel_name=channel_name, project_id=project_name)
