@@ -168,7 +168,7 @@ class SimpleCatmaid:
 
         # if tile is in mocpcache, return it
         tile = self.mc.get(mckey)
-        
+       
         if tile == None:
           if slice_type == 'xy':
             img = self.cacheMissXY(res, xtile, ytile, ztile)
