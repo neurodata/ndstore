@@ -63,8 +63,8 @@ DTYPE_uint8 = [ 'uint8' ]
 DTYPE_uint16 = [ 'uint16' ]
 DTYPE_uint32 = [ 'rgb32','uint32' ]
 DTYPE_uint64 = [ 'rgb64' ]
-DTYPE_float32 = [ 'probability' ]
-OCP_dtypetonp = {'uint8':np.uint8,'uint16':np.uint16,'uint32':np.uint32,'rgb32':np.uint32,'rgb64':np.uint64,'probability':np.float32}
+DTYPE_float32 = [ 'float32' ]
+OCP_dtypetonp = {'uint8':np.uint8,'uint16':np.uint16,'uint32':np.uint32,'rgb32':np.uint32,'rgb64':np.uint64,'float32':np.float32}
 
 # Propagated Values
 PROPAGATED = 2
