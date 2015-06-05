@@ -1,23 +1,23 @@
-=== Configuration Information for OCP ===
+### Configuration Information for OCP 
 
-** Python dependencies **
+##### Python dependencies 
 
 pip install -r pip.frozen
 
 
-** Configuration files **  
+##### Configuration files
 
 You need to create the following files from the example files in the same directories.
   * open-connectome/django/OCP/settings.py
   * open-connectome/django/OCP/settings_secret.py
 
-** MySQL **
+##### MySQL 
 
 List of commands needed to configure the database for mysql
 
   * Create brain user as MySQL root
     
-    ```
+    ```mysql
     create user 'brain'@'localhost' identified by 'password_here';
     grant all privileges on *.* to 'brain'@'localhost' with grant option;
 
@@ -27,11 +27,11 @@ List of commands needed to configure the database for mysql
 
   * Create the database ocpdjango
     
-    ```
+    ```mysql
     create database ocpdjango;
     ```
 
-** Nginx **
+##### Nginx
 
   * default
     OCP configuration for /etc/nginx/sites-enabled/default
@@ -39,7 +39,7 @@ List of commands needed to configure the database for mysql
   * ocp.ini
     uWSGI configuration file in /etc/uwsgi/apps-enabled/
 
-** Celery **
+##### Celery
   
   * async.conf
     OCP configuration for /etc/supervisor/
