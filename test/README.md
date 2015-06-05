@@ -17,7 +17,8 @@
     ```
 
 ## List of Tests:
-* test_image - 16 tests
+
+###### * test_image - 16 tests
   
   - Module : Test_Image_Slice
     1. test_xy
@@ -51,97 +52,82 @@
     3. test_projinfo
     4. test_reserve
 
-########################################
-test_io.py - 6 tests
-########################################
+* test_io.py - 6 tests
   
-  A - Module TestRW
-    1 - test_raw
-    2 - test_batch
-    3 - test_rw
-    4 - test_cuboids
-    5 - test_update
-    6 - test_dataonly
+  - Module : TestRW
+    1. test_raw
+    2. test_batch
+    3. test_rw
+    4. test_cuboids
+    5. test_update
+    6. test_dataonly
 
-########################################
-test_probability.py - 12 tests
-########################################
+* test_probability.py - 12 tests
 
-  A - Module : Test_Probability_Slice
-    1 - test_xy
-    2 - test_yz
-    3 - test_xz
-    4 - test_xy_incorrect
+  - Module : Test_Probability_Slice
+    1. test_xy
+    2. test_yz
+    3. test_xz
+    4. test_xy_incorrect
   
-  B - Module : Test_Probability_Post
-    1 - test_npz
-    2 - test_npz_incorrect_region
-    3 - test_npz_incorrect_datatype
-    4 - test_hdf5
-    5 - test_hdf5_incorrect_region
-    6 - test_hdf5_incorrect_datatype
-    7 - test_npz_incorrect_channel
-    8 - test_hdf5_incorrect_channel
+  - Module : Test_Probability_Post
+    1. test_npz
+    2. test_npz_incorrect_region
+    3. test_npz_incorrect_datatype
+    4. test_hdf5
+    5. test_hdf5_incorrect_region
+    6. test_hdf5_incorrect_datatype
+    7. test_npz_incorrect_channel
+    8. test_hdf5_incorrect_channel
 
-########################################
-test_propagate - 4 test
-########################################
+* test_propagate - 4 test
 
-A - Module : Test_Image_Zslice_Propagate
-  1 - test_web_propagate
+  - Module : Test_Image_Zslice_Propagate
+    1. test_web_propagate
 
-B - Module : Test_Image_Isotropic_Propagate
-  2 - test_web_propagate
+  - Module : Test_Image_Isotropic_Propagate
+    1. test_web_propagate
 
-C - Module : Test_Anno_Zslice_Propagate
-  3 - test_web_propagate
+  - Module : Test_Anno_Zslice_Propagate
+    1. test_web_propagate
 
-D - Module : Test_Anno_Isotropic_Propagate
-  4 - test_web_propagate
+  - Module : Test_Anno_Isotropic_Propagate
+    1. test_web_propagate
 
-########################################
-test_query.py - 1 test
-########################################
+* test_query.py - 1 test
 
-A - Module : Test_Ramon
-  1 - test_query_objects
+  - Module : Test_Ramon
+  1. test_query_objects
 
-########################################
-test_ramon.py - 12 tests
-########################################
+* test_ramon.py - 12 tests
 
-  A - Module : Test_Ramon
-    1 - test_anno_minmal
-    2 - test_anno_full
-    3 - test_anno_update
-    4 - test_anno_delete
-    5 - test_anno_upload
-    6 - test_annotation_field
-    7 - test_synapse_field
-    8 - test_seed_field
-    9 - test_segment_field
-    10 - test_neuron_field
-    11 - test_organelle_field
-    12 - test_wrong_field
+  - Module : Test_Ramon
+    1. test_anno_minmal
+    2. test_anno_full
+    3. test_anno_update
+    4. test_anno_delete
+    5. test_anno_upload
+    6. test_annotation_field
+    7. test_synapse_field
+    8. test_seed_field
+    9. test_segment_field
+    10. test_neuron_field
+    11. test_organelle_field
+    12. test_wrong_field
 
-########################################
-test_time.py - 12 tests
-########################################
+* test_time.py - 12 tests
   
-  A - Module : Test_Image_Slice
-    1 - test_xy
-    2 - test_yz
-    3 - test_xz
-  B - Module : Test_Image_Post
-    1 - test_npz
-    2 - test_npz_incorrect_region
-    3 - test_npz_incorrect_datatype
-    4 - test_npz_incorrect_timesize
-    5 - test_hdf5
-    6 - test_hdf5_incorrect_region
-    7 - test_hdf5_incorrect_datatype
-    8 - test_npz_incorrect_channel
-    9 - test_hdf5_incorrect_channel
-
-########################################
-########################################
+  - Module : Test_Image_Slice
+    1. test_xy
+    2. test_yz
+    3. test_xz
+  - Module : Test_Image_Post
+    1. test_npz
+    2. test_npz_incorrect_region
+    3. test_npz_incorrect_datatype
+    4. test_npz_incorrect_timesize
+    5. test_hdf5
+    6. test_hdf5_incorrect_region
+    7. test_hdf5_incorrect_datatype
+    8. test_npz_incorrect_channel
+    9. test_hdf5_incorrect_channel
