@@ -20,7 +20,6 @@ import zlib
 
 import ocplib
 from cube import Cube
-from ocpca_cy import zoomData_cy#, zoomData64_cy
 
 from ocpcaerror import OCPCAError 
 import logging
@@ -201,7 +200,6 @@ class AnnotateCube64(Cube):
   def shave ( self, annid, offset, locations ):
     """Remove annotation by a list of locations"""
 
-    # the cython optimized version of this function.
     self.data , exceptions, zeroed = ocplib.shave_ctype ( self.data, annid, offset, np.array(locations, dtype=np.uint32))
     return exceptions, zeroed
   
@@ -215,7 +213,7 @@ class AnnotateCube64(Cube):
     imagemap = np.zeros ( [ ydim, xdim ], dtype=np.uint32 )
 
     # false color redrawing of the region
-#    recolor64_cy ( self.data.reshape((imagemap.shape[0],imagemap.shape[1])), imagemap )
+    ocplib.recolor64_ctype ( self.data.reshape((imagemap.shape[0],imagemap.shape[1])), imagemap )
 
     outimage = Image.frombuffer ( 'RGBA', (xdim,ydim), imagemap, 'raw', 'RGBA', 0, 1 )
     outimage.save ( fileobj, "PNG" )
@@ -229,7 +227,7 @@ class AnnotateCube64(Cube):
     imagemap = np.zeros ( [ zdim, xdim ], dtype=np.uint32 )
 
     # false color redrawing of the region
-#    recolor64_cy ( self.data.reshape((imagemap.shape[0],imagemap.shape[1])), imagemap )
+    ocplib.recolor64_ctype ( self.data.reshape((imagemap.shape[0],imagemap.shape[1])), imagemap )
 
     outimage = Image.frombuffer ( 'RGBA', (xdim,zdim), imagemap, 'raw', 'RGBA', 0, 1 )
     newimage = outimage.resize ( [xdim, int(zdim*scale)] )
@@ -244,7 +242,7 @@ class AnnotateCube64(Cube):
     imagemap = np.zeros ( [ zdim, ydim ], dtype=np.uint32 )
 
     # false color redrawing of the region
-#    recolor64_cy ( self.data.reshape((imagemap.shape[0],imagemap.shape[1])), imagemap )
+    ocplib.recolor64_ctype ( self.data.reshape((imagemap.shape[0],imagemap.shape[1])), imagemap )
 
     outimage = Image.frombuffer ( 'RGBA', (ydim,zdim), imagemap, 'raw', 'RGBA', 0, 1 )
     newimage = outimage.resize ( [ydim, int(zdim*scale)] )
@@ -299,7 +297,7 @@ class AnnotateCube64(Cube):
 
     newdata = np.zeros ( [self.data.shape[0], self.data.shape[1]*(2**factor), self.data.shape[2]*(2**factor)], dtype=np.uint63) 
 
-    #zoomData64_cy ( self.data, newdata, int(factor) )
+    ocplib.zoomData64_ctype ( self.data, newdata, int(factor) )
 
     self.data = newdata
 

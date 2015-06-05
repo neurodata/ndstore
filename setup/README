@@ -1,18 +1,28 @@
-
 === Configuration Information for OCP ===
 
-  ** Python dependencies **
+** Python dependencies **
 
-    pip install -r pip.frozen
+  pip install -r pip.frozen
 
 
-  ** Configuration files **  
-  
-    You need to create the following files from the example files in the same directories.
-      open-connectome/django/OCP/settings.py
-      open-connectome/django/OCP/settings_secret.py
-      open-connectome/ocpca/ocpcaprivate.py
+** Configuration files **  
 
-  ** mysql **
+  You need to create the following files from the example files in the same directories.
+    open-connectome/django/OCP/settings.py
+    open-connectome/django/OCP/settings_secret.py
 
-    List of commands needed to configure the database for mysql
+** mysql **
+
+  List of commands needed to configure the database for mysql
+
+    * Create brain user as MySQL root
+
+      create user 'brain'@'localhost' identified by 'password_here';
+      grant all privileges on *.* to 'brain'@'localhost' with grant option;
+
+      create user 'brain'@'%' identified by 'password_here';
+      grant all privileges on *.* to 'brain'@'%' with grant option;
+
+    * Create the database ocpdjango
+      
+      create database ocpdjango;

@@ -186,6 +186,16 @@ def recolor_ctype ( cutout, imagemap ):
   ocplib.recolorCubeOMP ( cutout, cp.c_int(xdim), cp.c_int(ydim), imagemap, np.asarray( rgbColor.rgbcolor,dtype=np.uint32) )
   return imagemap
 
+def recolor64_ctype ( cutout, imagemap ):
+  """ Annotation recoloring function """
+  
+  xdim, ydim = cutout.shape
+  if not cutout.flags['C_CONTIGUOUS']:
+    cutout = np.ascontiguousarray(cutout,dtype=np.uint32)
+  # Calling the c native function
+  ocplib.recolor64CubeOMP ( cutout, cp.c_int(xdim), cp.c_int(ydim), imagemap, np.asarray( rgbColor.rgbcolor,dtype=np.uint32) )
+  return imagemap
+
 def quicksort ( locs ):
   """ Sort the cube on Morton Id """
 
@@ -272,6 +282,12 @@ def zoomOutData_ctype ( olddata, newdata, factor ):
   ocplib.zoomOutData ( olddata, newdata, (cp.c_int * len(dims))(*dims), cp.c_int(factor) )
   return ( newdata )
 
+def zoomOutData64_ctype ( olddata, newdata, factor ):
+  """ Add the contribution of the input data to the next level at the given offset in the output cube """
+
+  dims = [ i for i in newdata.shape ]
+  ocplib.zoomOutData64 ( olddata, newdata, (cp.c_int * len(dims))(*dims), cp.c_int(factor) )
+  return ( newdata )
 
 def zoomOutData_ctype_OMP ( olddata, newdata, factor ):
   """ Add the contribution of the input data to the next level at the given offset in the output cube """
