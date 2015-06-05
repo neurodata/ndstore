@@ -1,61 +1,55 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+## Tests Help
+  * Run this command to run all tests
+    ```
+    py.test
+    ```
+  * Run a particular test
+    ```
+    py.test <test_name>.py
+    ```
+  * Run a particular test module
+    ```
+    py.test <test_name>.py::<test_module>
+    ```
+  * Run this command to list all tests:
+    ```
+    py.test --collect-only
+    ```
 
-########################################
-List of Tests:
-########################################
-
-Run this command to list all tests:
-  py.test --collect-only
-
-########################################
-test_image - 16 tests
-########################################
+## List of Tests:
+* test_image - 16 tests
   
-  A - Module : Test_Image_Slice
-    1 - test_xy
-    2 - test_yz
-    3 - test_xz
-    4 - test_xy_incorrect
+  - Module : Test_Image_Slice
+    1. test_xy
+    2. test_yz
+    3. test_xz
+    4. test_xy_incorrect
 
-  B - Module : Test_Image_Window
-    1 - test_window_default
-    2 - test_window_args
+  - Module : Test_Image_Window
+    1. test_window_default
+    2. test_window_args
   
-  C - Module : Test_Image_Post
-    1 - test_npz 
-    2 - test_npz_incorrect_region
-    3 - test_npz_incorrect_datatype
-    4 - test_hdf5
-    5 - test_hdf5_incorrect_region
-    6 - test_hdf5_incorrect_datatype
-    7 - test_npz_incorrect_channel
-    8 - test_hdf5_incorrect_channel
+  - Module : Test_Image_Post
+    1. test_npz 
+    2. test_npz_incorrect_region
+    3. test_npz_incorrect_datatype
+    4. test_hdf5
+    5. test_hdf5_incorrect_region
+    6. test_hdf5_incorrect_datatype
+    7. test_npz_incorrect_channel
+    8. test_hdf5_incorrect_channel
 
-  D - Module : Test_Image_Default
-    1 - test_npz_default_channel
-    2 - test_xy_default_channel
+  - Module : Test_Image_Default
+    1. test_npz_default_channel
+    2. test_xy_default_channel
 
-########################################
-test_info - 4 tests
-########################################
+* test_info - 4 tests
 
-  A - Module Test_Info
-    1 - test_public_tokens
-    2 - test_info
-    3 - test_projinfo
-    4 - test_reserve
+  - Module Test_Info
+    1. test_public_tokens
+    2. test_info
+    3. test_projinfo
+    4. test_reserve
 
 ########################################
 test_io.py - 6 tests
