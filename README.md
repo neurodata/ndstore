@@ -1,4 +1,4 @@
-Scalable database cluster for the spatial analysis and annotation of high-throughput brain imaging data called Open Connectome Project Web Services. [Visit ocp.me](ocp.me)
+Scalable database cluster for the spatial analysis and annotation of high-throughput brain imaging data called Open Connectome Project Web Services. [Visit ocp.me](http://ocp.me)
 
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/openconnectome/open-connectome?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=body_badge)
 
