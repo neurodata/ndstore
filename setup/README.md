@@ -4,7 +4,6 @@
 
 pip install -r pip.frozen
 
-
 ##### Configuration files
 
 You need to create the following files from the example files in the same directories.
@@ -17,7 +16,7 @@ List of commands needed to configure the database for mysql
 
   * Create brain user as MySQL root
     
-    ```mysql
+    ```sql
     create user 'brain'@'localhost' identified by 'password_here';
     grant all privileges on *.* to 'brain'@'localhost' with grant option;
 
@@ -27,7 +26,7 @@ List of commands needed to configure the database for mysql
 
   * Create the database ocpdjango
     
-    ```mysql
+    ```sql
     create database ocpdjango;
     ```
 

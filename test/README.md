@@ -18,7 +18,7 @@
 
 ## List of Tests:
 
-###### * test_image - 16 tests
+* test_image - 16 tests
   
   - Module : Test_Image_Slice
     1. test_xy
