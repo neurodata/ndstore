@@ -24,7 +24,7 @@ from django.conf import settings
 class Dataset ( models.Model):
     dataset_name = models.CharField(max_length=255, primary_key=True,verbose_name="Name of the Image dataset")    
     dataset_description = models.CharField(max_length=4096,blank=True)
-    user = models.OneToOneField(settings.AUTH_USER_MODEL)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
     ISPUBLIC_CHOICES = (
         (0, 'Private'),
         (1, 'Public'),
@@ -60,7 +60,7 @@ class Dataset ( models.Model):
 class Project ( models.Model):
     project_name  =  models.CharField(max_length=255, primary_key=True)
     project_description  =  models.CharField(max_length=4096, blank=True)
-    user = models.OneToOneField(settings.AUTH_USER_MODEL)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
     ISPUBLIC_CHOICES = (
         (0, 'Private'),
         (1, 'Public'),
@@ -113,7 +113,7 @@ class Project ( models.Model):
 class Token ( models.Model):
     token_name = models.CharField(max_length=255, primary_key=True)
     token_description  =  models.CharField(max_length=4096,blank=True)
-    user = models.OneToOneField(settings.AUTH_USER_MODEL)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
     project  = models.ForeignKey(Project)
     ISPUBLIC_CHOICES = (
         (0, 'Private'),
