@@ -34,6 +34,7 @@ urlpatterns = patterns('ocpuser.views',
                        url(r'^updatetoken/$', 'updateToken'),
                        url(r'^updatechannel/$', 'updateChannel'),
                        url(r'^updatedataset/$', 'updateDataset'),
+                       url(r'^backupproject/$', 'backupProject'),
                        url(r'^restoreproject/$', 'restoreProject'),
                        url(r'^download/$', 'downloadData'),
 )

@@ -48,6 +48,7 @@ from forms import ProjectForm
 from forms import DatasetForm
 from forms import TokenForm
 from forms import ChannelForm
+from forms import BackupForm
 from forms import dataUserForm
 
 from django.core.urlresolvers import get_script_prefix
@@ -177,9 +178,10 @@ def getProjects(request):
         return redirect(getChannels)
 
       elif 'backup' in request.POST:
+        projname=(request.POST.get('project_name')).strip()
+        request.session["project"] = projname
+        return redirect(backupProject)
  
-        pass
-
 
 
 
@@ -896,6 +898,48 @@ def createToken(request):
 
     context = {'form': form}
     return render_to_response('createtoken.html',context,context_instance=RequestContext(request))
+
+
+@login_required(login_url='/ocp/accounts/login/')
+def backupProject(request):
+  """Backup some or all channels of a project"""
+
+  # perform a backup
+  if request.method == 'POST':
+
+    if 'backup' in request.POST:
+      pass
+
+    # synchronous
+
+    # asynchronous
+
+    elif 'backtoprojects' in request.POST:
+      return redirect(getProjects)
+
+
+  # show the backup page
+  else:
+    """show the backup form"""
+
+    # bind the project
+    prname = request.session["project"]
+    pr = Project.objects.get(project_name=prname)
+
+    # get all channel choices
+    channels = Channel.objects.filter(project_id=pr) 
+
+    data = {
+      'project': pr,
+    }
+    form = BackupForm(initial=data)
+
+    # restrict datasets to user visible fields
+    form.fields['channel'].queryset = channels
+
+    context = {'form': form, 'project': prname, 'channels': channels }
+    return render_to_response('backup.html', context, context_instance=RequestContext(request))
+
       
 @login_required(login_url='/ocp/accounts/login/')
 def restoreProject(request):
