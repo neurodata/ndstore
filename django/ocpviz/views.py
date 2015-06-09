@@ -209,7 +209,8 @@ def query(request, queryargs):
 
   # make get request
   if server == 'localhost':
-    addr = Site.objects.get_current().domain + '/ocp/' + oquery
+    #addr = Site.objects.get_current().domain + '/ocp/' + oquery
+    addr = 'http://' + request.META['HTTP_HOST'] + '/ocp/' + oquery 
   else: 
     addr = 'http://' + VALID_SERVERS[server] + '/ocp/' + oquery
   try:
