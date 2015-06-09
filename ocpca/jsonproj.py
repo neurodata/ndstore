@@ -35,30 +35,78 @@ def createProject(webargsi, post_data):
   ds = extractDatasetDict(dataset_dict)
   pr, tk = extractProjectDict(project_dict)
   ch_list = []
-  for channel_dict in channels:
+  for channel_name, value in channels.iteritems():
+    channel_dict = channels[channel_name]
     ch_list.append(extractChanneltDict(channel_dict))
 
   try:
-    ds.save()
-    pr.dataset = ds.dataset_name
-    pr.save()
-    tk.project = pr.project_name
-    tk.save()
+    # Setting the user_ids to brain for now
+    ds.user_id = 1
+    pr.user_id = 1
+    tk.user_id = 1
+    
+    # Checking if the posted dataset already exists
+    # Setting the foreign key for dataset
+    if Dataset.objects.filter(dataset_name = ds.dataset_name).exists():
+      stored_ds = Dataset.objects.get(dataset_name = ds.dataset_name)
+      if compareModelObjects(stored_ds, ds): 
+        pr.dataset_id = stored_ds.dataset_name
+      else:
+        print "Dataset name already exists"
+        raise
+    else:
+      ds.save()
+      pr.dataset_id = ds.dataset_name
+
+    # Checking if the posted project already exists
+    # Setting the foreign key for project
+    if Project.objects.filter(project_name = pr.project_name).exists():
+      stored_pr = Project.objects.get(project_name = pr.project_name)
+      # Checking if the existing project is same as the posted one
+      if compareModelObjects(stored_pr, pr):
+        if Token.objects.filter(token_name = tk.token_name).exists():
+          stored_tk = Token.objects.get(token_name = tk.token_name)
+          tk.project_id = stored_pr.project_name
+          # Checking if the existing token is same as the posted one
+          if compareModelObjects(stored_tk, tk):
+            pass
+          else:
+            print "Token name already exists"
+            raise
+        else:
+          tk.project_id = stored_pr.project_name
+          tk.save()
+      else:
+        print "Project name already exists"
+        raise
+    else:
+      pr.save()
+      tk.project_id = pr.project_name
+      tk.save()
+
+    # Iterating over channel list to store channels
     for (ch, data_url,file_name) in ch_list:
-      ch.project = pr.project_name
-      ch.save()
+      ch.project_id = pr.project_name
+      ch.user_id = 1
+      # Checking if the channel already exists or not
+      if not Channel.objects.filter(channel_name = ch.channel_name, project = pr.project_name).exists():
+        ch.save()
+      else:
+        print "Channel already exists"
+        raise
+      
       # KL TODO call the ingest function here
+    
+    return_json = "SUCCESS"
   except Exception, e:
     print "Error saving models"
-    raise
+    return_json = "FAILED"
 
-    print "Sending back"
-    return 0
+  return json.dumps(return_json)
 
 def extractDatasetDict(ds_dict):
   """Generate a dataset object from the JSON flle"""
 
-  import pdb; pdb.set_trace()
   ds = Dataset();
   
   try:
@@ -69,16 +117,16 @@ def extractDatasetDict(ds_dict):
     print "Missing required fields"
     raise
 
-    if 'offset' in ds_dict:
-      [ds.xoffset, ds.yoffset, ds.zoffset] = ds_dict['offset']
-    if 'timerange' in ds_dict:
-      [ds.starttime, ds.endtime] = ds_dict['timerange']
-    if 'scaling' in ds_dict:
-      ds.scalingoption = ds_dict['scaling']
-    if 'scalinglevels' in ds_dict:
-      ds.scalinglevels = ds_dict['scalinglevels']
-    else:
-      ds.scalinglevels = computeScalingLevels(imagesize)
+  if 'offset' in ds_dict:
+    [ds.xoffset, ds.yoffset, ds.zoffset] = ds_dict['offset']
+  if 'timerange' in ds_dict:
+    [ds.starttime, ds.endtime] = ds_dict['timerange']
+  if 'scaling' in ds_dict:
+    ds.scalingoption = ds_dict['scaling']
+  if 'scalinglevels' in ds_dict:
+    ds.scalinglevels = ds_dict['scalinglevels']
+  else:
+    ds.scalinglevels = computeScalingLevels(imagesize)
 
   return ds
   
@@ -110,13 +158,9 @@ def extractProjectDict(pr_dict):
   if 'token_name' in pr_dict:
     tk.token_name = pr_dict['token_name']
   else:
-    tk.token_name = pr_dict['token_name']
-
-  project_dict['project_name'] = project_name
-  if token_name is not None:
-    project_dict['token_name'] = project_name if token_name == '' else token_name
-  if public is not None:
-    project_dict['public'] = public
+    tk.token_name = pr_dict['project_name']
+  if 'public' in pr_dict:
+    tk.token_name = pr_dict['public']
   return pr, tk
 
 def extractChanneltDict(ch_dict):
@@ -124,23 +168,23 @@ def extractChanneltDict(ch_dict):
 
   ch = Channel()
   try:
-    ch.channel_name = channel_dict['channel_name']
-    ch.datatype =  channel_dict['datatype']
-    ch.channel_type = channel_dict['channel_type']
+    ch.channel_name = ch_dict['channel_name']
+    ch.channel_datatype =  ch_dict['datatype']
+    ch.channel_type = ch_dict['channel_type']
+    data_url = ch_dict['data_url']
+    file_name = ch_dict['file_name']
   except Exception, e:
     print "Missing requried fields"
     raise
     
-  if exceptions in ch_dict:
-    ch.exceptions = channel_dict['exceptions']
-  if resolution in ch_dict:
-    ch.resolution = channel_dict['resolution']
-  if windowrange in ch_dict:
-    ch.startwindow, ch.endwindow = channel_dict['windowrange']
-  if readonly in ch_dict:
-    ch.readonly = channel_dict['readonly']
-  data_url = channel_dict['data_url']
-  file_name = channel_dict['file_name']
+  if 'exceptions' in ch_dict:
+    ch.exceptions = ch_dict['exceptions']
+  if 'resolution' in ch_dict:
+    ch.resolution = ch_dict['resolution']
+  if 'windowrange' in ch_dict:
+    ch.startwindow, ch.endwindow = ch_dict['windowrange']
+  if 'readonly' in ch_dict:
+    ch.readonly = ch_dict['readonly']
 
   return (ch, data_url, file_name)
 
@@ -183,7 +227,7 @@ def createChannelDict(channel_name, datatype, channel_type, data_url, file_name,
   channel_dict = {}
   channel_dict['channel_name'] = channel_name
   channel_dict['datatype'] = datatype
-  channel_dict['channel_type'] = data_url
+  channel_dict['channel_type'] = channel_type
   if exceptions is not None:
     channel_dict['exceptions'] = exceptions
   if resolution is not None:
@@ -209,28 +253,15 @@ def createProjectDict(project_name, token_name='', public=0):
     project_dict['public'] = public
   return project_dict
 
-#def main():
 
-  #parser = argparse.ArgumentParser(description="Test generation script for OCP JSON file. By default this will print the basic file in ocp.JSON")
-  #parser.add_argument('--output_file', action='store', type=str, default='ocp.JSON', help='Name of output file')
-  #parser.add_argument('--complete', dest='complete', action='store_true', help='Argument for detailed JSON which is not basic')
-  #result = parser.parse_args()
+def compareModelObjects(obj1, obj2, excluded_keys=['_state']):
+  """Compare two model objects"""
 
-  #try:
-    #f = open(result.output_file, 'w')
-
-    #if not result.complete:
-      #basic_example = (([100,100,100],[1.0,1.0,5.0],None,None,None,None), ('sample_project_1',None,None), {'sample_channel_1':('sample_channel_1', 'uint8', 'image', 'sample_data_url', 'sample_filename',None,None,None,None)})
-      #f.write(ocpJson(*basic_example))
-
-    #else:
-      #dataset = ([100,100,100],[1.0,1.0,5.0],[0,0,1],[0,100],5)
-      #project = ('sample_project_1',)
-      #channels = {'sample_channel_1':('sample_channel_1','uint8', 'image','sample_data_url', 'sample_filename',None,None,None,None), 'sample_channel_2':('sample_channel_2', 'uint16', 'time', 'sample_data_url2', 'sample_filename2',None,None,[100,500])}
-      #complete_example = (dataset, project, channels)
-      #f.write(ocpJson(*complete_example))
-  #except Exception, e:
-    #print "Error. {}".format(e)
-    #raise
-  #finally:
-    #f.close()
+  for key, value in obj1.__dict__.items():
+    if key in excluded_keys:
+      continue
+    if obj2.__dict__[key] == value:
+      pass
+    else:
+      return False
+  return True
