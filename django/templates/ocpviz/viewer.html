@@ -413,7 +413,7 @@
     // TODO need a way to select the query layer (dropdown?)
     // TODO get the server from the query layer 
 		function getAnnoId(point, zoom) {
-      var ocpUrlBase = "http://{{ request.get_host }}/ocp/viz/query/localhost/ca/kharris15apical_anno/id/" + zoom + "/";
+      var ocpUrlBase = "http://{{ request.get_host }}/ocp/viz/query/localhost/ca/kharris15apical/annos/id/" + zoom + "/";
 			var cutout = Math.round(point.x) + "/" + Math.round(point.y) + "/" + zindex + "/"; 
 			var ocpUrl = ocpUrlBase.concat(cutout);
       // store the return data
