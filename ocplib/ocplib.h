@@ -81,6 +81,7 @@ void mergeCube ( uint32_t * , int * , int , int );
 void isotropicBuild32 ( uint32_t * , uint32_t * , uint32_t * , int * );
 void isotropicBuild16 ( uint16_t * , uint16_t * , uint16_t * , int * );
 void isotropicBuild8 ( uint8_t * , uint8_t * , uint8_t * , int * );
+void isotropicBuildF32 ( float * , float * , float * , int * );
 
 // Declaring the addDataZSlice function
 void addDataZslice ( uint32_t * , uint32_t *, int * , int * );

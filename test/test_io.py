@@ -441,7 +441,10 @@ class TestRW:
     tmpfile = tempfile.NamedTemporaryFile ()
     fh5out = h5py.File ( tmpfile.name )
 
-    ds = fh5out.create_dataset ( wp.channel, tuple(annodata.shape), annodata.dtype, compression='gzip', data=annodata )
+    grp = fh5out.create_group ( wp.channel )
+    grp.create_dataset ( 'CUTOUT', tuple(annodata.shape), annodata.dtype, compression='gzip', data=annodata )
+    grp.create_dataset("DATATYPE", (1,), dtype=h5py.special_dtype(vlen=str), data='uint32')
+    grp.create_dataset("CHANNELTYPE", (1,), dtype=h5py.special_dtype(vlen=str), data='annotation')
 
     fh5out.close()
     tmpfile.seek(0)

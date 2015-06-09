@@ -18,9 +18,8 @@ import MySQLdb
 import cStringIO
 import re
 
-import zindex
 import ocpcarest
-import ocpcaproj
+import jsonproj
 
 from ocpcaerror import OCPCAError
 import logging
@@ -87,7 +86,7 @@ def cutout (request, webargs):
     raise OCPCAError("Unknow exception in getCutout")
 
 
-#@cache_control(no_cache=True)
+@cache_control(no_cache=True)
 def annotation (request, webargs):
   """Get put object interface for RAMON objects"""
   
@@ -280,7 +279,7 @@ def getField (request, webargs):
     logger.exception("Unknown exception in getField")
     raise OCPCAError("Unknown exception in getField")
 
-#@cache_control(no_cache=True)
+@cache_control(no_cache=True)
 def getPropagate (request, webargs):
   """ Get the value for Propagate field for a given project """
 
@@ -334,6 +333,7 @@ def exceptions (request, webargs):
     logger.exception("Unknown exception in exceptions Web service")
     raise OCPCAError("Unknown exception in exceptions Web service")
 
+@cache_control(no_cache=True)
 def minmaxProject (request, webargs):
   """Restful URL for all read services to annotation projects"""
  
@@ -346,3 +346,14 @@ def minmaxProject (request, webargs):
   except:
     logger.exception("Unknown exception in (min|max) projection Web service")
     raise OCPCAError("Unknown exception in (min|max) projection Web service")
+
+def jsonProject(request, webargs):
+  """RESTful URL for creating a project using a JSON file"""
+
+  try:
+    return django.http.HttpResponse(jsonproj.createProject(webargs, request.body), content_type="application/json")
+  except OCPCAError, e:
+    return django.http.HttpResponseNotFound()
+  except:
+    logger.exception("Unknown exception in jsonProject Web service")
+    raise OCPCAError("Unknown exception in jsonProject Web service")

@@ -1,14 +1,14 @@
 Configuration information for nginx
 
-  ** default
+** default
 
-     OCP configuration for /etc/nginx/sites-enabled/default
+   OCP configuration for /etc/nginx/sites-enabled/default
 
-  ** ocp.ini
- 
-    uWSGI configuration file in /etc/uwsgi/apps-enabled/
+** ocp.ini
 
-  ** packages -- to install nginx on ubuntu
+  uWSGI configuration file in /etc/uwsgi/apps-enabled/
+
+** packages -- to install nginx on ubuntu
 
 Commands to restart services
 

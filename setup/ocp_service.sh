@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright 2014 Open Connectome Project (http://openconnecto.me)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,38 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-List of Tests:
+# Script to restart services in OCP
 
-test_image - 12 tests
-  
-Module : Test_Image_Slice
-1 - test_xy
-2 - test_yz
-3 - test_xz
-4 - test_xy_incorrect
+if [ $1 == "-h" ]; then
+  echo "Usage: service(all | nginx) command(start | stop | restart)"
+    exit 0
+fi
 
-Module : Test_Image_Post
-1 - test_npz 
-2 - test_npz_incorrect_region
-3 - test_npz_incorrect_datatype
-4 - test_hdf5
-5 - test_hdf5_incorrect_region
-6 - test_hdf5_incorrect_datatype
-7 - test_npz_incorrect_channel
-8 - test_hdf5_incorrect_channel
+if [ $1 == "all" ]; then
+  declare -a service_arr=("nginx" "uwsgi" "celery" "supervisor" "rabbitmq-server")
+elif [ $1 == "nginx" ]; then
+  declare -a service_arr=("nginx" "uwsgi")
+else
+  echo "Incorrect service",$1
+fi
 
-test_info - 3 tests
-
-Module Test_Info - 3 tests
-1 - test_public_tokens
-2 - test_info
-3 - test_projinfo
-
-
-test_propagate - 1 test
-
-Module : Test_Propagate
-1 - test_update_propagate
-
-
-test_query - 
+for service in "${service_arr[@]}"
+do
+  sudo service $service $2
+done

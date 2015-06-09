@@ -38,7 +38,6 @@ import jsonprojinfo
 import annotation
 import mcfc
 import ocplib
-import ocpcaprivate
 from windowcutout import windowCutout
 
 from ocpcaerror import OCPCAError
@@ -57,7 +56,7 @@ def cutout (imageargs, ch, proj, db):
 
   # Perform argument processing
   try:
-    args = restargs.BrainRestArgs ();
+    args = restargs.BrainRestArgs ()
     args.cutoutArgs(imageargs, proj.datasetcfg)
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments {} failed: {}".format(imageargs,e))
@@ -984,46 +983,6 @@ def putAnnotationAsync ( webargs, postdata ):
   print "TESTING"
   import ocpdatastream
 
-  
-  #[ token, sym, optionsargs ] = webargs.partition ('/')
-  #options = optionsargs.split('/')
-
-  #import anydbm
-  #import time
-  #any_db = anydbm.open( ocpcaprivate.ssd_log_location+ocpcaprivate.bsd_name, 'c', 0777)
-
-  #print "Wrting Data to SSD"
-
-  # pattern for using contexts to close databases
-  # get the project 
-  #with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-  #  proj = projdb.loadToken ( token )
-
-  # Don't write to readonly projects
-  #if proj.getReadOnly()==1:
-  #  logger.warning("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
-  #  raise OCPCAError("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
-  #(fd,filename) = tempfile.mkstemp(suffix=".hdf5", prefix=token, dir=ocpcaprivate.ssd_log_location)
-  #os.close(fd)
-  #try:
-  #  fd = os.open(filename ,os.O_CREAT | os.O_WRONLY | os.O_NOATIME | os.O_SYNC )
-  #  os.write ( fd, postdata )
-  #  os.close( fd )
-  #  metadata = ( token, time.time(), optionsargs )
-  #  any_db[ str(filename) ] = "{}".format( metadata )
-  #except Exception, e:
-  #  print e
-  
-  #from ocpca.tasks import async
-
-  #async.delay( filename )
-  #async.apply_async(countdown=5)
-
-  # TODO KL - celery to rewrite data
-  #import h5annasync
-  #h5annasync.h5Async( token, optionsargs )
-
-
 def putAnnotation ( webargs, postdata ):
   """Put a RAMON object as HDF5 by object identifier"""
     
@@ -1124,7 +1083,6 @@ def putAnnotation ( webargs, postdata ):
               # Otherwise this is a shave operation
               elif voxels != None and 'reduce' in options:
 
-  
                 # Check that the voxels have a conforming size:
                 if voxels.shape[1] != 3:
                   logger.warning ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
@@ -1421,54 +1379,59 @@ def setField ( webargs ):
 
 def getPropagate (webargs):
   """ Return the value of the Propagate field """
-  
+
+  # input in the format token/channel_list/getPropagate/
   try:
-    [token, channel, service] = webargs.split ('/',2)
-  except:
-    logger.warning ( "Illegal getPropagate request. Wrong number of arguments." )
-    raise OCPCAError ( "Illegal getPropagate request. Wrong number of arguments." )
+    (token, channel_list) = re.match("(\w+)/([\w+,]+)/getPropagate/$", webargs).groups()
+  except Exception, e:
+    logger.warning("Illegal getPropagate request. Wrong format {}. {}".format(webargs,e))
+    raise OCPCAError("Illegal getPropagate request. Wrong format {}. {}".format(webargs, e))
 
   # pattern for using contexts to close databases
-  # get the project 
-  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadToken ( token )
-    ch = ocpcaproj.OCPCAChannel(proj, channel)
-    value = ch.getPropagate()
+  with closing(ocpcaproj.OCPCAProjectsDB()) as projdb:
+    proj = projdb.loadToken(token)
+    value_list = []
+    
+    for channel_name in channel_list.split(','):
+      ch = proj.getChannelObj(channel_name)
+      value_list.append(ch.getPropagate())
 
-  return value
+  return ','.join(str(i) for i in value_list)
 
-def setPropagate (webargs):
-  """ Set the value of the propagate field """
+def setPropagate(webargs):
+  """Set the value of the propagate field"""
 
+  # input in the format token/channel_list/setPropagate/value/
   try:
-    [token, channel, service, value, misc] = webargs.split ('/',4)
+    (token, channel_list, value_list) = re.match("(\w+)/([\w+,]+)/setPropagate/([\d+,]+)/$", webargs).groups()
   except:
-    logger.warning ( "Illegal setPropagate request.  Wrong number of arguments." )
-    raise OCPCAError ( "Illegal setPropagate request.  Wrong number of arguments." )
+    logger.warning("Illegal setPropagate request. Wrong format {}. {}".format(webargs, e))
+    raise OCPCAError("Illegal setPropagate request. Wrong format {}. {}".format(webargs, e))
     
   # pattern for using contexts to close databases. get the project
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadToken ( token )
-    ch = ocpcaproj.OCPCAChannel(proj, channel)
-    # If the value is to set under propagation
-    if int(value) == ocpcaproj.UNDER_PROPAGATION and ch.getPropagate() != ocpcaproj.UNDER_PROPAGATION:
-      ch.setPropagate ( ocpcaproj.UNDER_PROPAGATION )
-      #KL TODO is this deprecated? 
-      #projdb.updatePropagate ( proj )
-      from ocpca.tasks import propagate
-      import ocpcastack
-      ocpcastack.buildStack(token)
-      #propagate.delay ( token )
-    elif int(value) == ocpcaproj.NOT_PROPAGATED:
-      if ch.getPropagate() == ocpcaproj.UNDER_PROPAGATION:
-        logger.warning ( "Cannot set this value. Project is under propagation." )
-        raise OCPCAError ( "Cannot set this value. Project is under propagation. " )
+    proj = projdb.loadToken(token)
+    
+    for channel_name in channel_list.split(','):
+      ch = proj.getChannelObj(channel_name)
+
+      value = value_list[0]
+      # If the value is to set under propagation
+      if int(value) == ocpcaproj.UNDER_PROPAGATION and ch.getPropagate() != ocpcaproj.UNDER_PROPAGATION:
+        ch.setPropagate(ocpcaproj.UNDER_PROPAGATION)
+        #from ocpca.tasks import propagate
+        import ocpcastack
+        ocpcastack.buildStack(token, channel_name)
+        #propagate.delay ( token )
+      elif int(value) == ocpcaproj.NOT_PROPAGATED:
+        if ch.getPropagate() == ocpcaproj.UNDER_PROPAGATION:
+          logger.warning("Cannot set this value. Project is under propagation.")
+          raise OCPCAError("Cannot set this value. Project is under propagation.")
+        else:
+          ch.setPropagate(ocpcaproj.NOT_PROPAGATED)
       else:
-        ch.setPropagate ( ocpcaproj.NOT_PROPAGATED )
-        #projdb.updatePropagate ( proj )
-    else:
-      logger.warning ( "Invalid Value {} for setPropagate".format(value) )
-      raise OCPCAError ( "Invalid Value {} for setPropagate".format(value) )
+        logger.warning("Invalid Value {} for setPropagate".format(value))
+        raise OCPCAError("Invalid Value {} for setPropagate".format(value))
 
 def merge (webargs):
   """Return a single HDF5 field"""
