@@ -1,6 +1,8 @@
 ; uWSGI instance configuration for OCP
 [uwsgi]
-processes = 5
+processes = 4
 chdir = /home/randal/open-connectome/django
 socket = /run/uwsgi/app/ocp/socket
 wsgi-file = /home/randal/open-connectome/django/OCP/wsgi.py
+logto = /var/log/uwsgi/ocp.log
+virtualenv = /home/randal/.virtualenvs/ocp/
