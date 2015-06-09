@@ -190,7 +190,7 @@ class OCPCADataset:
   def getDatasetDescription ( self ):
     return self.ds.dataset_description
 
-  def checkCube (self, resolution, corner, dim, timeargs):
+  def checkCube (self, resolution, corner, dim, timeargs=[0,0]):
     """Return true if the specified range of values is inside the cube"""
 
     [xstart, ystart, zstart ] = corner
