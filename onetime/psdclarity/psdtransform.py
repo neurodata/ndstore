@@ -78,7 +78,8 @@ def main():
 
         if ( sl + b <= endslice ):
             
-          filename = '{}00-164_00-152_{:0>6}.tif'.format(result.path,(sl+b)*80)
+          filename = '{}{}_{:0>4}.tif'.format(result.path,result.outtoken.strip('Iso'),(sl+b))
+          #filename = '{}00-164_00-152_{:0>6}.tif'.format(result.path,(sl+b)*80)
           #filename = '{}00-111_000-29_{:0>6}.tif'.format(result.path,(sl+b)*50)
           #filename = '{}00-199_000000_{:0>6}.tif'.format(result.path,(sl+b)*60)
           #filename = '{}00-462_000000_{:0>6}.tif'.format(result.path,(sl+b)*50)
@@ -95,12 +96,9 @@ def main():
           print "slice {}".format(sl+b)
 
           try:
-            #imgdata = ocpcarest.cutout( imageurl, outproj, outDB )
-            imgdata = cv2.imread(filename,-1) 
+            imgdata = cv2.imread(filename,-1)
             if imgdata != None:
-              img = Image.frombuffer( 'I;16', (imgdata.shape[::-1]), imgdata.flatten(), 'raw', 'I;16', 0, 1)
-              slab[b,:,:] = np.asarray(img.resize( [ximagesz,yimagesz]))
-              img = None
+              slab[b,:,:] = imgdata
             else:
               slab[b,:,:] = np.zeros((yimagesz,ximagesz),dtype=np.uint16)
           except IOError, e:

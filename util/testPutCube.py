@@ -52,10 +52,10 @@ def ingest ( token, resolution ):
       db.conn.commit()
       c = db.getCube ( zidx, resolution )
       print c.data
-      cube2 = imagecube.ImageCube16 ( cubedims )
-      cube2.data = np.zeros( cubedims, dtype=np.uint8 )
-      db.putCube ( zidx, resolution, cube2, True )
-      db.conn.commit()
+      #cube2 = imagecube.ImageCube16 ( cubedims )
+      #cube2.data = np.zeros( cubedims, dtype=np.uint8 )
+      #db.putCube ( zidx, resolution, cube2, True )
+      #db.conn.commit()
       c = db.getCube ( zidx, resolution )
       import pdb; pdb.set_trace()
       print c.data

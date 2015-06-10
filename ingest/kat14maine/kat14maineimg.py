@@ -92,7 +92,7 @@ def main():
       for x in range ( 0, ximagesz+1, xcubedim ):
 
         mortonidx = zindex.XYZMorton ( [x/xcubedim, y/ycubedim, (sl-startslice)/zcubedim] )
-        cubedata = np.zeros ( [zcubedim, ycubedim, xcubedim], dtype=np.uint8 )
+        cubedata = np.zeros ( [xcubedim, ycubedim, zcubedim], dtype=np.uint8 )
 
         xmin = x
         ymin = y

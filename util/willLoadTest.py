@@ -28,11 +28,14 @@ import time
 def postH5(filename):
   """ Post a HDF5 File """
   # Creating the url
-  #url = 'http://{}/ocpca/{}/hdf5/'.format( result.host, result.token )
-  url = 'http://{}/ocpca/{}/hdf5_async'.format( result.host, result.token )
+  url = 'http://{}/ocpca/{}/2'.format( result.host, result.token )
+  #url = 'http://{}/ocpca/{}/delete'.format( result.host, result.token )
+  #url = 'http://{}/ocpca/{}/update/overwrite/'.format( result.host, result.token )
+  #url = 'http://{}/ocpca/{}/hdf5_async'.format( result.host, result.token )
   # Opening the url and verifying if it connects or else exit the program
   try:
     req = urllib2.Request ( url, open(filename).read() )
+    req.get_method = lambda: 'DELETE'
     start = time.time()
     response = urllib2.urlopen(req)
     end = time.time()
