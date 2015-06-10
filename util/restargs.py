@@ -120,34 +120,21 @@ class BrainRestArgs:
       self.zscaling = 'nearisotropic'
 
 
-# Unbound functions  not part of the class object
-
 def voxel ( imageargs, datasetcfg ):
   """Process REST arguments for a single point"""
-
+  
   try:
-    [ resstr, xstr, ystr, zstr, rest ]  = imageargs.split('/',4)
+    # argument of format /resolution/x/y1,y2/z1,z2/
+    m = re.match("(\w+)/(\w+)/(\w+)/(\w+)/", imageargs)
+    [res, x, y, z]  = [int(i) for i in m.groups()]
   except:
-    raise RESTArgsError ("Bad arguments to voxel %s" % imageargs)
-
-  # expecting an argument of the form /resolution/x/y1,y2/z1,z2/
-  # Check that the arguments are well formatted
-  if not re.match ('[0-9]+$', resstr) or\
-     not re.match ('[0-9]+$', xstr) or\
-     not re.match ('[0-9]+$', ystr) or\
-     not re.match ('[0-9]+$', zstr):
-    raise RESTArgsError ("Non-numeric range argument %s" % imageargs)
-
-  resolution = int(resstr)
-  x = int(xstr)
-  y = int(ystr)
-  z = int(zstr)
+    raise RESTArgsError ("Bad arguments to voxel {}".format(imageargs))
 
   # Check arguments for legal values
-  if not ( datasetcfg.checkCube ( resolution, [x,y,z], [x+1,y+1,z+1] )):
-    raise RESTArgsError ( "Illegal range. Image size: {} at offset {}".format(str(datasetcfg.imageSize(self._resolution)),str(datasetcfg.offset[self._resolution])))
+  if not ( datasetcfg.checkCube ( res, [x,y,z], [1,1,1] )):
+    raise RESTArgsError( "Illegal range. Image size: {} at offset {}".format(datasetcfg.imageSize(res),datasetcfg.offset[res]) )
 
-  return (resolution, [ x,y,z ])
+  return (res, [ x,y,z ])
 
 
 #

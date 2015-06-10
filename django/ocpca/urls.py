@@ -51,4 +51,6 @@ urlpatterns = patterns('ocpca.views',
   url(r'(?P<webargs>^\w+/mcfc/[\w,/-]+)$', 'mcFalseColor'),
   # HDF5 interfaces
   url(r'(?P<webargs>^\w+/\w+/[\d+/]?[\w,/]*)$', 'annotation'),
+  # JSON interfaces
+  url(r'(?P<webargs>^json/)$', 'jsonProject'),
 )

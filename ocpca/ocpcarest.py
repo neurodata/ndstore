@@ -38,7 +38,6 @@ import jsonprojinfo
 import annotation
 import mcfc
 import ocplib
-import ocpcaprivate
 from windowcutout import windowCutout
 
 from ocpcaerror import OCPCAError
@@ -57,7 +56,7 @@ def cutout (imageargs, ch, proj, db):
 
   # Perform argument processing
   try:
-    args = restargs.BrainRestArgs ();
+    args = restargs.BrainRestArgs ()
     args.cutoutArgs(imageargs, proj.datasetcfg)
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments {} failed: {}".format(imageargs,e))
@@ -983,46 +982,6 @@ def putAnnotationAsync ( webargs, postdata ):
   
   print "TESTING"
   import ocpdatastream
-
-  
-  #[ token, sym, optionsargs ] = webargs.partition ('/')
-  #options = optionsargs.split('/')
-
-  #import anydbm
-  #import time
-  #any_db = anydbm.open( ocpcaprivate.ssd_log_location+ocpcaprivate.bsd_name, 'c', 0777)
-
-  #print "Wrting Data to SSD"
-
-  # pattern for using contexts to close databases
-  # get the project 
-  #with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-  #  proj = projdb.loadToken ( token )
-
-  # Don't write to readonly projects
-  #if proj.getReadOnly()==1:
-  #  logger.warning("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
-  #  raise OCPCAError("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
-  #(fd,filename) = tempfile.mkstemp(suffix=".hdf5", prefix=token, dir=ocpcaprivate.ssd_log_location)
-  #os.close(fd)
-  #try:
-  #  fd = os.open(filename ,os.O_CREAT | os.O_WRONLY | os.O_NOATIME | os.O_SYNC )
-  #  os.write ( fd, postdata )
-  #  os.close( fd )
-  #  metadata = ( token, time.time(), optionsargs )
-  #  any_db[ str(filename) ] = "{}".format( metadata )
-  #except Exception, e:
-  #  print e
-  
-  #from ocpca.tasks import async
-
-  #async.delay( filename )
-  #async.apply_async(countdown=5)
-
-  # TODO KL - celery to rewrite data
-  #import h5annasync
-  #h5annasync.h5Async( token, optionsargs )
-
 
 def putAnnotation ( webargs, postdata ):
   """Put a RAMON object as HDF5 by object identifier"""

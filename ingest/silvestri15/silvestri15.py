@@ -67,7 +67,9 @@ def main():
         if (slice_number + b <= zimagesz):
           try:
             # reading the raw data
-            file_name = "{}full_{:0>6}.tif".format(result.path, slice_number + b + result.offset)
+            file_name = "{}042460_132760_{:0>6}.tif".format(result.path, (slice_number + b)*4 + result.offset)
+            # silvestri15
+            #file_name = "{}full_{:0>6}.tif".format(result.path, slice_number + b + result.offset)
             print "Open filename {}".format(file_name)
             slab[b,:,:] = np.asarray(Image.open(file_name, 'r'))
           except IOError, e:
@@ -89,7 +91,8 @@ def main():
           zmax = min(slice_number+zcubedim, zimagesz+1)
 
           cube.data[0:zmax-zmin,0:ymax-ymin,0:xmax-xmin] = slab[zmin:zmax, ymin:ymax, xmin:xmax]
-          db.putCube(ch, zidx, result.resolution, cube, update=True)
+          if cube.isNotZeros():
+            db.putCube(ch, zidx, result.resolution, cube, update=True)
           
 if __name__ == "__main__":
   main()

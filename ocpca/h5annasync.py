@@ -34,7 +34,6 @@ import annotation
 import ocpcarest
 import ocpcaproj
 import ocpcadb
-import ocpcaprivate
 
 from ocpcaerror import OCPCAError
 
@@ -44,7 +43,8 @@ logger=logging.getLogger("ocp")
 def h5Async( fileName ):
   """ Write h5py files back to database """
 
-  any_db = anydbm.open( ocpcaprivate.ssd_log_location+ocpcaprivate.bsd_name, 'c' )
+  #any_db = anydbm.open( ocpcaprivate.ssd_log_location+ocpcaprivate.bsd_name, 'c' )
+  any_db = None
   import time
   import pdb; pdb.set_trace()
 
