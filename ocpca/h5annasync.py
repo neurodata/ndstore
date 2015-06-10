@@ -33,8 +33,6 @@ import annotation
 import ocpcarest
 import ocpcaproj
 import ocpcadb
-import ocpcaprivate
-import datastream
 
 from ocpcaerror import OCPCAError
 
@@ -45,9 +43,13 @@ def writeDataSSD( webargs, postdata ):
   """ Write hdf5 files to SSD """
 
   [ token, sym, optionsargs ] = webargs.partition ('/')
+  #any_db = anydbm.open( ocpcaprivate.ssd_log_location+ocpcaprivate.bsd_name, 'c' )
+  any_db = None
+  import time
+  import pdb; pdb.set_trace()
 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadProject ( token )
+    proj = projdb.loadToken ( token )
 
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
 
@@ -146,4 +148,44 @@ def writeDataSSD( webargs, postdata ):
     finally:
       h5f.close()
       tmpfile.close()
+            conflictopt = 'O'
 
+          # the zstart in datasetcfg is sometimes offset to make it aligned.
+          # Probably remove the offset is the best idea and align the data to zero regardless of where it starts.
+          # for now.
+
+          corner = h5xyzoffset[:]
+          # RBISO?? apply offsets?
+
+          db.annotateEntityDense ( anno.annid, corner, resolution, np.array(cutout), conflictopt )
+
+        elif cutout != None and h5xyzoffset != None and 'reduce' in options:
+
+          corner = h5xyzoffset[:]
+          # RBISO?? apply offsets?
+
+        elif cutout != None or h5xyzoffset !=None:
+          #TODO this is a loggable error
+          pass
+
+        # only add the identifier if you commit
+        if not 'dataonly' in options and not 'reduce' in options:
+          retvals.append ( anno.annid )
+
+        os.remove( fileName )
+
+        # Here with no error is successful
+        print " Done successfully :", anno.annid
+        print time.time()-start
+
+      except MySQLdb.OperationalError, e:
+        logger.warning ( "Put Annotation: Transaction did not complete. {}".format(e) )
+        continue
+      except MySQLdb.Error, e:
+        logger.warning ( "Put Annotation: Put transaction rollback. {}".format(e) )
+        rsybaise
+      except OSError , e:
+        logger.warning ( "Cannot unlink file from system. {}".format(e) )
+      except Exception, e:
+        logger.warning ( "Put Annotation: Put transaction rollback. {}".format(e) )
+        raise

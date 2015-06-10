@@ -59,8 +59,6 @@ class AerospikeKVIO:
   def getCube ( self, zidx, resolution, update ):
     """Retrieve a cube from the database by token, resolution, and zidx"""
 
-    import pdb; pdb.set_trace()
-
     askey = ( "ocp", self.db.annoproj.getDBName(), str(resolution)+"_"+str(zidx) )
 
     (retkey, asmd, asvalue) = self.ascli.get ( askey )
@@ -71,8 +69,6 @@ class AerospikeKVIO:
 
 
   def getCubes ( self, listofidxs, resolution ):
-
-    import pdb; pdb.set_trace()
 
     if len(listofidxs)==1:
       yield listofidxs[0], self.ascli.get ( self.db.annoproj.getTable(resolution) + ":img:" + str(resolution)  + ":" + str(zidx))
@@ -89,7 +85,6 @@ class AerospikeKVIO:
   def putCube ( self, zidx, resolution, cubestr, update ):
     """Store a cube from the annotation database"""
 
-    import pdb; pdb.set_trace()
     askey = ( "ocp", self.db.annoproj.getDBName(), str(resolution)+"_"+str(zidx) )
     self.ascli.put ( askey, {'cuboid':cubestr} ) 
 

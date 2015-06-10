@@ -59,46 +59,51 @@ class ProbMapCube32(Cube):
   #
   # Create the specified slice (index) at filename
   #
-  def xySlice ( self, fileobj ):
+  def xyImage ( self ):
+
+    zdim,ydim,xdim = self.data.shape
 
     # translate the 0-1 map down to to 256 value
     imgdata = np.uint8(self.data*256)
 
-    zdim,ydim,xdim = self.data.shape
-
-    # convert the data into a RG heatmap
+    # convert the data into a red heatmap
     rgbdata = np.zeros ( [ydim,xdim,3], dtype=np.uint8 )
     rgbdata[:,:,0] = imgdata[0,:,:]
-#    rgbdata[:,:,1] = (256 - imgdata[0,:,:])%256
 
-    outimage = Image.frombuffer ( 'RGB', (xdim,ydim), rgbdata, 'raw', 'RGB', 0, 1 )
-    outimage.save ( fileobj, "PNG" )
+    return Image.frombuffer ( 'RGB', (xdim,ydim), rgbdata, 'raw', 'RGB', 0, 1 )
 
 
-  #
-  # Create the specified slice (index) at filename
-  #
-  def xzSlice ( self, zscale, fileobj  ):
 
-    # translate the 0-1 map down to to 256 value
-    imgdata = np.uint8(self.data*256)
-
-    zdim,ydim,xdim = self.data.shape
-    outimage = Image.frombuffer ( 'L', (xdim,zdim), imgdata[:,0,:].flatten(), 'raw', 'L', 0, 1 ) 
-    #if the image scales to 0 pixels it don't work
-    newimage = outimage.resize ( [xdim, int(zdim*zscale)] )
-    newimage.save ( fileobj, "PNG" )
 
   #
   # Create the specified slice (index) at filename
   #
-  def yzSlice ( self, zscale, fileobj  ):
+  def xzImage ( self, zscale  ):
+
+    zdim,ydim,xdim = self.data.shape
 
     # translate the 0-1 map down to to 256 value
     imgdata = np.uint8(self.data*256)
 
+    # convert the data into a red heatmap
+    rgbdata = np.zeros ( [zdim,xdim,3], dtype=np.uint8 )
+    rgbdata[:,:,0] = imgdata[:,0,:]
+
+    return Image.frombuffer ( 'RGB', (xdim,zdim), rgbdata, 'raw', 'RGB', 0, 1 ).resize([xdim, int(zdim*zscale)])
+
+  #
+  # Create the specified slice (index) at filename
+  #
+  def yzImage ( self, zscale ):
+
     zdim,ydim,xdim = self.data.shape
-    outimage = Image.frombuffer ( 'L', (ydim,zdim), imgdata[:,:,0].flatten(), 'raw', 'L', 0, 1 ) 
-    #if the image scales to 0 pixels it don't work
-    newimage = outimage.resize ( [ydim, int(zdim*zscale)] )
-    newimage.save ( fileobj, "PNG" )
+
+    # translate the 0-1 map down to to 256 value
+    imgdata = np.uint8(self.data*256)
+
+    # convert the data into a red heatmap
+    rgbdata = np.zeros ( [zdim,ydim,3], dtype=np.uint8 )
+    rgbdata[:,:,0] = imgdata[:,:,0]
+
+    return Image.frombuffer ( 'RGB', (ydim,zdim), rgbdata, 'raw', 'RGB', 0, 1 ).resize([ydim, int(zdim*zscale)])
+

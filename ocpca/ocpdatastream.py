@@ -21,7 +21,6 @@ import ast
 import json
 import heapq
 
-import ocpcaprivate
 
 HEADER_SIZE = 5000
 
@@ -34,7 +33,8 @@ class OCPDataStream():
     self.indexlist = []
     self.heap = []
 
-    listFiles = [ f for f in os.listdir(ocpcaprivate.ssd_log_location) if os.path.isfile(ocpcaprivate.ssd_log_location+f) ]
+    #listFiles = [ f for f in os.listdir(ocpcaprivate.ssd_log_location) if os.path.isfile(ocpcaprivate.ssd_log_location+f) ]
+    listFiles = []
 
     for filename in listFiles:
       self.filelist.append(OCPFileWrapper(filename))
@@ -64,12 +64,13 @@ class OCPFileWrapper():
     try:
       if filename == None:
         # File does not exist. Create a new file, intialize the header and write it
-        self.fd = tempfile.NamedTemporaryFile ( mode= 'w+b', bufsize =-1, suffix='.hdf5', dir=ocpcaprivate.ssd_log_location, delete=False )
+        #self.fd = tempfile.NamedTemporaryFile ( mode= 'w+b', bufsize =-1, suffix='.hdf5', dir=ocpcaprivate.ssd_log_location, delete=False )
+        self.fd = None
         self.header = dict()
         self.writeHeader()
       else:
         # file exists. Load the header
-        self.fd = open (ocpcaprivate.ssd_log_location+filename, 'rb+' )
+        #self.fd = open (ocpcaprivate.ssd_log_location+filename, 'rb+' )
         self.header = self.getHeader()
     except IOError,e:
       print"File {} does not exist. {}".format(filename, e)
