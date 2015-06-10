@@ -22,7 +22,7 @@ from django.conf.urls import patterns, include, url
 urlpatterns = patterns('catmaid.views',
   # mcfc
   url(r'^mcfc/(?P<webargs>.*)$', 'mcfccatmaidview'),
-  url(r'^color/(?P<webargs>.*)$', 'colorcatmaidview'),
+  #url(r'^color/(?P<webargs>.*)$', 'colorcatmaidview'),
   url(r'^(?P<webargs>.*)$', 'simplecatmaidview'),
   # catmaid
 )
