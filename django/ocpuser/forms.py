@@ -20,6 +20,7 @@ from models import Project
 from models import Dataset
 from models import Token
 from models import Channel
+from models import Backup
 
 
 class ProjectForm(ModelForm):
@@ -59,7 +60,14 @@ class ChannelForm(ModelForm):
             if 'channel_name' in self.cleaned_data:
                 token = self.cleaned_data['channel_name']
                 return token 
-            raise forms.ValidationError('Please enter a valid token')
+            raise forms.ValidationError('Please enter a valid channel')
+
+class BackupForm(ModelForm):
+
+    class Meta:
+        model = Backup 
+        exclude = ('user', 'backup_time', 'status', 'backup_uri')
+
 
 class dataUserForm( forms.Form):
 

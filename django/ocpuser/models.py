@@ -188,3 +188,23 @@ class Channel ( models.Model):
    def __unicode__(self):
        return self.channel_name
 
+
+class Backup (models.Model):
+
+   project  = models.ForeignKey(Project)
+   backup_time = models.DateTimeField(auto_now=True)
+   backup_description = models.CharField(max_length=4096,blank=True)
+   backup_uri = models.CharField(max_length=255)
+   user = models.ForeignKey(settings.AUTH_USER_MODEL,blank=True)
+   STATUS_CHOICES = (
+        (0, 'IN PROGRESS'),
+        (1, 'DONE'),
+        )
+   status =  models.IntegerField(choices=STATUS_CHOICES, default=0)
+
+   class Meta:
+       """ Meta """
+        # Required to override the default table name
+       db_table = u"backups"
+       managed = True
+       unique_together = ('project', 'backup_time',)
