@@ -1,3 +1,4 @@
+#############
 # OCP Files #
 #############
 
@@ -13,6 +14,7 @@ kanno_cy.c
 ocpca_cy.c
 cython/zindex/zindex.c
 
+###################
 # Compiled source #
 ###################
 *.pyc
@@ -24,6 +26,12 @@ cython/zindex/zindex.c
 *.a
 *.log
 
+##############
+# Data Files #
+##############
+*.h5
+
+######################
 # OS Generated Files #
 ######################
 .DS_Store
