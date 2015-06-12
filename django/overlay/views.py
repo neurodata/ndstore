@@ -57,7 +57,7 @@ def overlayImage (request, webargs):
   # and that the channels exist
  
   # get the first image
-  url = 'http://{}/ocp/ca/{}/{}/{}/{}'.format(server1,token1,plane,channel1,cutout) 
+  url = 'http://{}/ocp/ca/{}/{}/{}/{}'.format(server1,token1,channel1,plane,cutout) 
   try:
     f = urllib2.urlopen ( url )
   except urllib2.URLError, e:
@@ -67,7 +67,7 @@ def overlayImage (request, webargs):
   img1 = Image.open(fobj) 
    
   # get the second image
-  url = 'http://{}/ocp/ca/{}/{}/{}/{}'.format(server2,token2,plane,channel2,cutout) 
+  url = 'http://{}/ocp/ca/{}/{}/{}/{}'.format(server2,token2,channel2,plane,cutout) 
   try:
     f = urllib2.urlopen ( url )
   except urllib2.URLError, e:
