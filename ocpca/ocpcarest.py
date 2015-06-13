@@ -187,10 +187,18 @@ def imgSlice(webargs, proj, db):
 
   try:
     # argument of format channel/service/resolution/cutoutargs
-    m = re.match("(\w+)/(xy|yz|xz)/(\d+)/([\d+,/]+)?(window/\d+,\d+/)?$", webargs)
+    # cutoutargs can be window|filter/value,value/
+    m = re.match("(\w+)/(xy|yz|xz)/(\d+)/([\d+,/]+)?(window/\d+,\d+/|filter/\d+,\d+/)?$", webargs)
     [channel, service, resolution, imageargs] = [i for i in m.groups()[:-1]]
-    window_args = m.groups()[-1]
     imageargs = resolution + '/' + imageargs
+    extra_args = m.groups()[-1]
+    filter_args = None
+    window_args = None
+    if extra_args is not None:
+      if re.match("window/\d+,\d+/$", extra_args):
+        window_args = extra_args
+      elif re.match("filter/\d+,\d+/$", extra_args):
+        filter_args = extra_args
   except Exception, e:
     logger.warning("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
     raise OCPCAError("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
@@ -225,14 +233,14 @@ def imgSlice(webargs, proj, db):
 
   # Perform the cutout
   ch = proj.getChannelObj(channel)
-  cb = cutout(cutoutargs, ch, proj, db)
+  cb = cutout(cutoutargs + (filter_args if filter_args else ""), ch, proj, db)
 
   if window_args is not None:
     try:
       window_range = [int(i) for i in re.match("window/(\d+),(\d+)/", window_args).groups()]
     except:
-      logger.warning ("Illegal window arguments={}.  Error={}".format(imageargs,e))
-      raise OCPCAError ("Illegal window arguments={}.  Error={}".format(imageargs,e))
+      logger.warning ("Illegal window arguments={}. Error={}".format(imageargs,e))
+      raise OCPCAError ("Illegal window arguments={}. Error={}".format(imageargs,e))
   else:
     window_range = None
   
@@ -244,7 +252,8 @@ def imgPNG(proj, webargs, cb):
   
   try:
     # argument of format channel/service/resolution/cutoutargs
-    m = re.match("(\w+)/(xy|yz|xz)/(\d+)/([\d+,/]+)(window/\d+,\d+/)?$", webargs)
+    # cutoutargs can be window|filter/value,value/
+    m = re.match("(\w+)/(xy|yz|xz)/(\d+)/([\d+,/]+)(window/\d+,\d+/|filter/\d+,\d+/)?$", webargs)
     [channel, service, resolution, imageargs] = [i for i in m.groups()[:-1]]
   except Exception, e:
     logger.warning("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
@@ -390,8 +399,8 @@ def selectService ( service, webargs, proj, db ):
   elif service in ['xzanno', 'yzanno', 'xyanno']:
     return imgAnno ( service.strip('anno'), webargs, proj, db )
   else:
-    logger.warning("An illegal Web GET service was requested {}. Args {}".format( service, args ))
-    raise OCPCAError ("No such Web service: {}".format(service) )
+    logger.warning("An illegal Web GET service was requested {}. Args {}".format(service, webargs))
+    raise OCPCAError("An illegal Web GET service was requested {}. Args {}".format(service, webargs))
 
 
 def selectPost ( webargs, proj, db, postdata ):
@@ -612,7 +621,7 @@ def getAnnoById ( ch, annoid, h5f, proj, db, dataoption, resolution=None, corner
     h5anno.addVoxels ( resolution,  allvoxels )
 
   # support list of IDs to filter cutout
-  elif dataoption==AR_CUTOUT:
+  elif dataoption == AR_CUTOUT:
 
     # cutout the data with the and remap for neurons.
     if anno.__class__ in [ annotation.AnnNeuron ] and dataoption != AR_NODATA:
@@ -1162,7 +1171,7 @@ def queryAnnoObjects ( webargs, postdata=None ):
   """Return a list of anno ids restricted by equality predicates. Equalities are alternating in field/value in the url."""
 
   try:
-    m = re.match("(\w+)/(\w+)/query/(.*)/$", webargs)
+    m = re.match("(\w+)/(\w+)/query/(.*)/?$", webargs)
     [token, channel, restargs] = [i for i in m.groups()]
   except Exception, e:
     logger.warning("Wrong arguments {}. {}".format(webargs, e))
@@ -1194,7 +1203,6 @@ def queryAnnoObjects ( webargs, postdata=None ):
           corner = map(sub, h5f['XYZOFFSET'], offset)
           dim = h5f['CUTOUTSIZE'][:]
   
-          import pdb; pdb.set_trace()
           if not proj.datasetcfg.checkCube(resolution, corner, dim):
             logger.warning("Illegal cutout corner={}, dim={}".format(corner, dim))
             raise OCPCAError("Illegal cutout corner={}, dim={}".format( corner, dim))
@@ -1442,9 +1450,10 @@ def setPropagate(webargs):
 
 def merge (webargs):
   """Return a single HDF5 field"""
-  
+ 
+  import pdb; pdb.set_trace()
   try:
-    [token, service, relabelids, rest] = webargs.split ('/',3)
+    [token, channel, service, relabelids, rest] = webargs.split ('/',4)
   except:
     logger.warning("Illegal globalMerge request.  Wrong number of arguments.")
     raise OCPCAError("Illegal globalMerber request.  Wrong number of arguments.")
