@@ -1209,7 +1209,7 @@ def queryAnnoObjects ( webargs, postdata=None ):
   
           cutout = db.cutout(ch, corner, dim, resolution)
           
-          # KL TODO On same lines as filer. Not yet complete. Called annoidIntersect()
+          # KL TODO On same lines as filter. Not yet complete. Called annoidIntersect()
 
           # Check if cutout as any non zeros values
           if cutout.isNotZeros():
