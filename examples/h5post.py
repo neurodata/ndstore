@@ -39,11 +39,11 @@ def main():
   h5fh = h5py.File ( result.h5file )
 
   if result.preserve:  
-    url = 'http://%s/ca/%s/preserve/' % ( result.baseurl, result.token )
+    url = 'http://{}/ca/{}/preserve/'.format( result.baseurl, result.token )
   elif result.exception:  
-    url = 'http://%s/ca/%s/exception/' % ( result.baseurl, result.token )
+    url = 'http://{}/ca/{}/exception/'.format( result.baseurl, result.token )
   else:
-    url = 'http://%s/ca/%s/' % ( result.baseurl, result.token )
+    url = 'http://{}/ca/{}/'.format( result.baseurl, result.token )
 
   if result.update:
     url+='update/'
@@ -51,8 +51,6 @@ def main():
   if result.dataonly:
     url+='dataonly/'
   
- # print url
-
   try:
     req = urllib2.Request ( url, open(result.h5file).read() )
     response = urllib2.urlopen(req)
@@ -64,12 +62,5 @@ def main():
   print response.read()
 
 
-#  the_page = response.read()
- # print "Success with id %s" % the_page
-
 if __name__ == "__main__":
   main()
-
-
-
-
