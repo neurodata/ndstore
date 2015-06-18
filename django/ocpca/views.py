@@ -61,7 +61,7 @@ def cutout (request, webargs):
         return django.http.HttpResponse(ocpcarest.getCutout(webargs))
       else:
         logger.warning("HTTP Bad request. Could not find service {}".format(service))
-        return django.http.HttpResponseBadRequest("Could not find service %s".format(service))
+        return django.http.HttpResponseBadRequest("Could not find service {}".format(service))
 
     # RBTODO control caching?
     # POST methods
@@ -85,8 +85,6 @@ def cutout (request, webargs):
     logger.exception("Unknown exception in getCutout.")
     raise OCPCAError("Unknow exception in getCutout")
 
-
-@cache_control(no_cache=True)
 def annotation (request, webargs):
   """Get put object interface for RAMON objects"""
   
@@ -112,7 +110,7 @@ def annotation (request, webargs):
     raise OCPCAError("Unknown exception in annotation")
 
 
-@cache_control(no_cache=True)
+#@cache_control(no_cache=True)
 def csv (request, webargs):
   """Get (not yet put) csv interface for RAMON objects"""
 
@@ -128,7 +126,7 @@ def csv (request, webargs):
     raise OCPCAError("Unknown exception in csv")
 
 
-@cache_control(no_cache=True)
+#@cache_control(no_cache=True)
 def queryObjects ( request, webargs ):
   """Return a list of objects matching predicates and cutout"""
 
@@ -167,7 +165,7 @@ def catmaid (request, webargs):
     raise OCPCAError("Unknown exception in catmaid {}.".format(e))
 
 
-@cache_control(no_cache=True)
+#@cache_control(no_cache=True)
 def publictokens (request, webargs):
   """Return list of public tokens"""
   try:  
@@ -181,7 +179,7 @@ def publictokens (request, webargs):
     raise OCPCAError("Unknown exception in publictokens")
 
 
-@cache_control(no_cache=True)
+#@cache_control(no_cache=True)
 def jsoninfo (request, webargs):
   """Return project and dataset configuration information"""
 
@@ -195,7 +193,7 @@ def jsoninfo (request, webargs):
     logger.exception("Unknown exception in jsoninfo")
     raise OCPCAError("Unknown exception in jsoninfo")
 
-@cache_control(no_cache=True)
+#@cache_control(no_cache=True)
 def projinfo (request, webargs):
   """Return project and dataset configuration information"""
   
@@ -209,19 +207,19 @@ def projinfo (request, webargs):
     logger.exception("Unknown exception in projInfo")
     raise OCPCAError("Unknown exception in projInfo")
 
-@cache_control(no_cache=True)
-def chaninfo (request, webargs):
-  """Return channel information"""
+#@cache_control(no_cache=True)
+#def chaninfo (request, webargs):
+  #"""Return channel information"""
 
-  try:  
-    return django.http.HttpResponse(ocpcarest.chanInfo(webargs), content_type="application/json" )
-  except OCPCAError, e:
-    return django.http.HttpResponseNotFound(e.value)
-  except MySQLdb.Error, e:
-    return django.http.HttpResponseNotFound(e)
-  except:
-    logger.exception("Unknown exception in chanInfo")
-    raise OCPCAError("Unknown exception in chanInfo")
+  #try:  
+    #return django.http.HttpResponse(ocpcarest.chanInfo(webargs), content_type="application/json" )
+  #except OCPCAError, e:
+    #return django.http.HttpResponseNotFound(e.value)
+  #except MySQLdb.Error, e:
+    #return django.http.HttpResponseNotFound(e)
+  #except:
+    #logger.exception("Unknown exception in chanInfo")
+    #raise OCPCAError("Unknown exception in chanInfo")
 
 
 def mcFalseColor (request, webargs):
@@ -237,7 +235,7 @@ def mcFalseColor (request, webargs):
     logger.exception("Unknown exception in mcFalseColor")
     raise OCPCAError("Unknown exception in mcFalseColor")
 
-@cache_control(no_cache=True)
+#@cache_control(no_cache=True)
 def reserve (request, webargs):
   """Preallocate a range of ids to an application."""
 
@@ -265,7 +263,7 @@ def setField (request, webargs):
     logger.exception("Unknown exception in setField")
     raise OCPCAError("Unknown exception in setField")
 
-@cache_control(no_cache=True)
+#@cache_control(no_cache=True)
 def getField (request, webargs):
   """Get an individual RAMON field for an object"""
 
@@ -279,7 +277,7 @@ def getField (request, webargs):
     logger.exception("Unknown exception in getField")
     raise OCPCAError("Unknown exception in getField")
 
-@cache_control(no_cache=True)
+#@cache_control(no_cache=True)
 def getPropagate (request, webargs):
   """ Get the value for Propagate field for a given project """
 
@@ -333,7 +331,7 @@ def exceptions (request, webargs):
     logger.exception("Unknown exception in exceptions Web service")
     raise OCPCAError("Unknown exception in exceptions Web service")
 
-@cache_control(no_cache=True)
+#@cache_control(no_cache=True)
 def minmaxProject (request, webargs):
   """Restful URL for all read services to annotation projects"""
  
