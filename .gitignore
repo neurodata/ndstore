@@ -30,6 +30,7 @@ cython/zindex/zindex.c
 # Data Files #
 ##############
 *.h5
+*.JSON
 
 ######################
 # OS Generated Files #
