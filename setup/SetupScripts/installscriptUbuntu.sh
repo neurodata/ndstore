@@ -26,4 +26,5 @@ else
     	echo -n "Please add the packages later manually."
 fi
 
-echo -n "test"
+
+
