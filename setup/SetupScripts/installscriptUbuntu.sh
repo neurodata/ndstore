@@ -1,23 +1,13 @@
 #!/bin/bash
 echo -n "Install script should be placed in the open-connectome folder. "
-sudo apt-get install Python-pip
-sudo apt-get install git
-sudo apt-get install mysql-server
-sudo apt-get install python-mysqldb
-sudo apt-get install libmysqld-dev
-sudo apt-get install python-dev
-sudo apt-get install liblapack-dev
-sudo apt-get install gfortran
-sudo apt-get install libmemcached-dev
-sudo apt-get install Libhdf5-dev
-sudo apt-get install python-pytest
+sudo apt-get install Python-pip mysql-server python-mysqldb libmysqld-dev python-dev liblapack-dev gfortran libmemcached-dev Libhdf5-dev python-pytest
 
 echo -n "Do you wish to create a virtual enviroment (Named OCPServer) (y/n)?" 
 read answerenv
 
 if echo "$answerenv" | grep -iq "^y" ;then
 	sudo apt-get install python-virtualenv
-	virtualenv /home/OCPServer
+	sudo virtualenv /home/OCPServer
 	source OCPServer/bin/activate
 else
     	echo -n "Please note it is easier to install django and other packages in a virtual enviroment."
