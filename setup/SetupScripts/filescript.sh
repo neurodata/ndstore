@@ -27,15 +27,14 @@ fi
 
 
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
-        cp /ocplib/makefile_LINUX /ocplib/makefile
-	make -C /ocplib/
+        cp ocplib/makefile_LINUX ocplib/makefile
+	make -C ocplib/
 elif [[ "$OSTYPE" == "darwin"* ]]; then
-        cp /ocplib/makefile_MAC /ocplib/makefile
-	make -C /ocplib/
+        cp ocplib/makefile_MAC ocplib/makefile
+	make -C ocplib/
 elif [[ "$OSTYPE" == "cygwin" ]]; then
         # POSIX compatibility layer and Linux environment emulation for Windows
-	cp /ocplib/makefile_LINUX /ocplib/makefile
-	make -C /ocplib/
+	echo -n "Unsupported Type"
 elif [[ "$OSTYPE" == "msys" ]]; then
         # Lightweight shell and GNU utilities compiled for Windows (part of MinGW)
 	echo -n "Unsupported Type"
@@ -51,8 +50,8 @@ else
 fi
 
 
-python cython/Ocpca_cy/setup.py install
-python cython/Zindex/setup.py install
+python cython/ocpca_cy/setup.py install
+python cython/zindex/setup.py install
 
 
 
