@@ -69,10 +69,3 @@ subprocess.call([command,"-p","--output="+outputfile,"--append","python",filenam
 
 #1024 x 1024 x 64
 subprocess.call([command,"-p","--output="+outputfile,"--append","python",filename,baseurl,dataset,token,resolution,str(xlow),str(xlow+xoffset*8),str(ylow),str(ylow+yoffset*8),str(zlow),str(zlow+zoffset*16)])
-
-
-
-
-
-
-
