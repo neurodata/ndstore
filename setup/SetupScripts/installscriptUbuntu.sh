@@ -12,7 +12,19 @@ sudo apt-get install libmemcached-dev
 sudo apt-get install Libhdf5-dev
 sudo apt-get install python-pytest
 
-echo -n "Do you wish to install the python packages through pip (y/n)? Note that doing this in a virtual enviroment instead is recommended." 
+echo -n "Do you wish to create a virtual enviroment (Named OCPServer) (y/n)?" 
+read answerenv
+
+if echo "$answerenv" | grep -iq "^y" ;then
+	sudo apt-get install python-virtualenv
+	virtualenv /home/OCPServer
+	source OCPServer/bin/activate
+else
+    	echo -n "Please note it is easier to install django and other packages in a virtual enviroment."
+fi
+
+
+echo -n "Do you wish to install the python packages through pip (y/n)?" 
 read answer
 if echo "$answer" | grep -iq "^y" ;then
     	pip install numpy
@@ -34,7 +46,7 @@ if echo "$answer" | grep -iq "^y" ;then
 	pip install uWSGI
 
 else
-    	echo -n "Please add the packages later manually or while in virtualenv."
+    	echo -n "Please add the packages later manually."
 fi
 
 echo -n "test"
