@@ -119,6 +119,16 @@ def main():
       'res': 1,
       'exceptions': 0,
       })
+  # Propagate Test Channel
+  channels.append({
+      'name': 'apiUnitTestPropagate',
+      'desc': 'Propagate Unit Test Channel',
+      'type': 'annotation',
+      'datatype': 'uint32',
+      'propagate': 2,
+      'res': 1,
+      'exceptions': 1,
+      })
 
   cp.createProject(project)
   for channel in channels:
