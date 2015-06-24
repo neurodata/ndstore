@@ -53,7 +53,7 @@ def cutout (imageargs, ch, proj, db):
   :param proj: OCPCAProject object
   :param db: OCPCADB object
   """
-
+  
   # Perform argument processing
   try:
     args = restargs.BrainRestArgs ()
@@ -188,7 +188,7 @@ def imgSlice(webargs, proj, db):
   try:
     # argument of format channel/service/resolution/cutoutargs
     # cutoutargs can be window|filter/value,value/
-    m = re.match("(\w+)/(xy|yz|xz)/(\d+)/([\d+,/]+)?(window/\d+,\d+/|filter/\d+,\d+/)?$", webargs)
+    m = re.match("(\w+)/(xy|yz|xz)/(\d+)/([\d+,/]+)?(window/\d+,\d+/|filter/[\d+,]+/)?$", webargs)
     [channel, service, resolution, imageargs] = [i for i in m.groups()[:-1]]
     imageargs = resolution + '/' + imageargs
     extra_args = m.groups()[-1]
@@ -197,8 +197,10 @@ def imgSlice(webargs, proj, db):
     if extra_args is not None:
       if re.match("window/\d+,\d+/$", extra_args):
         window_args = extra_args
-      elif re.match("filter/\d+,\d+/$", extra_args):
+      elif re.match("filter/[\d+,]+/$", extra_args):
         filter_args = extra_args
+      else:
+        raise
   except Exception, e:
     logger.warning("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
     raise OCPCAError("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
@@ -253,7 +255,7 @@ def imgPNG(proj, webargs, cb):
   try:
     # argument of format channel/service/resolution/cutoutargs
     # cutoutargs can be window|filter/value,value/
-    m = re.match("(\w+)/(xy|yz|xz)/(\d+)/([\d+,/]+)(window/\d+,\d+/|filter/\d+,\d+/)?$", webargs)
+    m = re.match("(\w+)/(xy|yz|xz)/(\d+)/([\d+,/]+)(window/\d+,\d+/|filter/[\d+,]+/)?$", webargs)
     [channel, service, resolution, imageargs] = [i for i in m.groups()[:-1]]
   except Exception, e:
     logger.warning("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
