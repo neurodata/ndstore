@@ -32,6 +32,7 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from django.forms.models import inlineformset_factory
 import django.forms
+from datetime import datetime
 
 import ocpcarest
 import ocpcaproj
@@ -486,8 +487,9 @@ def createProject(request):
 
       form = ProjectForm(request.POST)
       
-      # restrict datasets to user visible fields
-      form.fields['dataset'].queryset = Dataset.objects.filter(user_id=request.user.id) | Dataset.objects.filter(public=1)
+# RBRM I think this is not right.  Omit and delete by 8/1.   6/9/15
+#      # restrict datasets to user visible fields
+#      form.fields['dataset'].queryset = Dataset.objects.filter(user_id=request.user.id) | Dataset.objects.filter(public=1)
 
       if form.is_valid():
         new_project=form.save(commit=False)
@@ -907,8 +909,93 @@ def backupProject(request):
   # perform a backup
   if request.method == 'POST':
 
+    import pdb; pdb.set_trace()
+
     if 'backup' in request.POST:
-      pass
+
+      form = BackupForm(request.POST)
+
+      if not form.is_valid():
+
+        # bind the project
+        prname = request.session["project"]
+
+        context = {'form': form, 'project': prname}
+        return render_to_response('backup.html',context,context_instance=RequestContext(request))
+
+      else:
+
+        new_backup=form.save(commit=False)
+
+        # backup to the local file system 
+        if new_backup.protocol == 'local':
+
+          # Get the database information
+          pd = ocpcaproj.OCPCAProjectsDB()
+          db = (request.POST.get('project')).strip()
+
+          channel = request.POST.get('channel').strip()
+          if (channel==None or channel=='') and request.POST.get('allchans') == 'on':
+            channel ='all'
+          else:
+            pass #RBTODO error  
+
+          import pdb; pdb.set_trace()
+          #RB restart here
+          upath = '{}/{}'.format(settings.BACKUP_PATH,request.user.username)
+          ppath = '{}/{}'.format(upath,db)
+          fpath = '{}/{}'.format(ppath,channel)
+          if not os.path.exists(upath):
+            os.mkdir( upath, 0755 )
+          if not os.path.exists(ppath):
+            os.mkdir( ppath, 0755 )
+          if not os.path.exists(fpath):
+            os.mkdir( fpath, 0755 )
+
+          ofile = '{}/{}.sql'.format(fpath,datetime.now().isoformat())
+          outputfile = open(ofile, 'w')
+          dbuser = settings.DATABASES['default']['USER']
+          passwd = settings.DATABASES['default']['PASSWORD']
+
+          # backup now
+          if request.POST.get('async')==0:
+
+            # if all tables were requested
+            if request.POST.get('allchans') == 'on':
+              cmd = ['mysqldump', '-u'+ dbuser, '-p'+ passwd, '--single-transaction', '--opt', db]
+            # just the channel
+            else:
+              cmd = ['mysqldump', '-u'+ dbuser, '-p'+ passwd, '--single-transaction', '--opt', db]
+
+
+              # get a list of the tables for the channel
+              tables = db.getChannelTables ( ch )
+              for t in tables:
+                cmd.append(t)
+
+              p = subprocess.Popen(cmd, stdout=outputfile).communicate(None)
+
+            messages.success(request, 'Sucessfully backed up database '+ db)
+            return HttpResponseRedirect(get_script_prefix()+'ocpuser/projects')
+
+          # in the background
+          else:
+            # farm this out to celery
+            pass
+
+        elif new_backup.protocol == 's3':
+          pass
+
+        else:
+          #RBTODO unknown protocol error
+          pass
+
+      
+
+      
+
+      
+
 
     # synchronous
 

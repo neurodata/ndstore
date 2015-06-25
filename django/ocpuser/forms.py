@@ -66,7 +66,7 @@ class BackupForm(ModelForm):
 
     class Meta:
         model = Backup
-        exclude = ('datetimestamp', 'status' )
+        exclude = ('datetimestamp', 'status')
 
 class dataUserForm( forms.Form):
 

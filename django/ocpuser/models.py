@@ -194,7 +194,7 @@ class Backup ( models.Model):
   project  = models.ForeignKey(Project)
  
   # can specific a channel or can be all channels
-  channel = models.ForeignKey(Channel, blank=True)
+  channel = models.ForeignKey(Channel, blank=True, null=True)
 
   # can specific a resolution or all resolutions
   # resolution 
@@ -206,7 +206,7 @@ class Backup ( models.Model):
   )
   protocol = models.CharField(max_length=255,choices=PROTOCOL_CHOICES)
 
-  description  =  models.CharField(max_length=4096,blank=True)
+  description  =  models.CharField(max_length=4096, default="")
 
   datetimestamp = models.DateTimeField ( auto_now_add = True ) 
 
