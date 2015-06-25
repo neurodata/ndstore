@@ -1,0 +1,364 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>manno Functions &mdash; manno v1.1.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/ocp_favicon.ico"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="manno v1.1.0 documentation" href="../index.html"/>
+        <link rel="prev" title="Basic Usage" href="../tutorials/basic_usage.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+
+        
+          <a href="../index.html" class="icon icon-home"> manno
+        
+
+        
+          
+          <img src="../_static/ocp_main.png" class="logo" />
+        
+        </a>
+
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <p class="caption"><span class="caption-text">Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../sphinx/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sphinx/local_config.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sphinx/ocp.html">OCP</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../sphinx/ocp.html#contributing">Contributing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../sphinx/ocp.html#style-guides">Style Guides</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../sphinx/ocp.html#ocp-support-forums">OCP Support Forums</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../sphinx/faq.html">Frequently Asked Questions (FAQ)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/basic_usage.html">Basic Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/basic_usage.html#protocol">Protocol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/basic_usage.html#usage-notes">Usage Notes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/basic_usage.html#example">Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/basic_usage.html#validation">Validation</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Further Reading</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">manno Functions</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://gitter.im/openconnectome/manno">Gitter chatroom</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://groups.google.com/forum/#!forum/ocp-support/">Mailing List</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/openconnectome/manno">Github repo</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/openconnectome/manno/releases/">Release Notes</a></li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">manno</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+    <li>manno Functions</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/api/functions.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <div class="section" id="module-code">
+<span id="manno-functions"></span><h1>manno Functions<a class="headerlink" href="#module-code" title="Permalink to this headline">¶</a></h1>
+<p>Utilities needed to emulate Python&#8217;s interactive interpreter.</p>
+<dl class="class">
+<dt id="code.InteractiveInterpreter">
+<em class="property">class </em><code class="descclassname">code.</code><code class="descname">InteractiveInterpreter</code><span class="sig-paren">(</span><em>locals=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/code.html#InteractiveInterpreter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#code.InteractiveInterpreter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for InteractiveConsole.</p>
+<p>This class deals with parsing and interpreter state (the user&#8217;s
+namespace); it doesn&#8217;t deal with input buffering or prompting or
+input file naming (the filename is always passed in explicitly).</p>
+<dl class="method">
+<dt id="code.InteractiveInterpreter.runcode">
+<code class="descname">runcode</code><span class="sig-paren">(</span><em>code</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/code.html#InteractiveInterpreter.runcode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#code.InteractiveInterpreter.runcode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute a code object.</p>
+<p>When an exception occurs, self.showtraceback() is called to
+display a traceback.  All exceptions are caught except
+SystemExit, which is reraised.</p>
+<p>A note about KeyboardInterrupt: this exception may occur
+elsewhere in this code, and may not always be caught.  The
+caller should be prepared to deal with it.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="code.InteractiveInterpreter.runsource">
+<code class="descname">runsource</code><span class="sig-paren">(</span><em>source</em>, <em>filename='&lt;input&gt;'</em>, <em>symbol='single'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/code.html#InteractiveInterpreter.runsource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#code.InteractiveInterpreter.runsource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compile and run some source in the interpreter.</p>
+<p>Arguments are as for compile_command().</p>
+<p>One several things can happen:</p>
+<p>1) The input is incorrect; compile_command() raised an
+exception (SyntaxError or OverflowError).  A syntax traceback
+will be printed by calling the showsyntaxerror() method.</p>
+<p>2) The input is incomplete, and more input is required;
+compile_command() returned None.  Nothing happens.</p>
+<p>3) The input is complete; compile_command() returned a code
+object.  The code is executed by calling self.runcode() (which
+also handles run-time exceptions, except for SystemExit).</p>
+<p>The return value is True in case 2, False in the other cases (unless
+an exception is raised).  The return value can be used to
+decide whether to use sys.ps1 or sys.ps2 to prompt the next
+line.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="code.InteractiveInterpreter.showsyntaxerror">
+<code class="descname">showsyntaxerror</code><span class="sig-paren">(</span><em>filename=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/code.html#InteractiveInterpreter.showsyntaxerror"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#code.InteractiveInterpreter.showsyntaxerror" title="Permalink to this definition">¶</a></dt>
+<dd><p>Display the syntax error that just occurred.</p>
+<p>This doesn&#8217;t display a stack trace because there isn&#8217;t one.</p>
+<p>If a filename is given, it is stuffed in the exception instead
+of what was there before (because Python&#8217;s parser always uses
+&#8220;&lt;string&gt;&#8221; when reading from a string).</p>
+<p>The output is written by self.write(), below.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="code.InteractiveInterpreter.showtraceback">
+<code class="descname">showtraceback</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/code.html#InteractiveInterpreter.showtraceback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#code.InteractiveInterpreter.showtraceback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Display the exception that just occurred.</p>
+<p>We remove the first stack item because it is our own code.</p>
+<p>The output is written by self.write(), below.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="code.InteractiveInterpreter.write">
+<code class="descname">write</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/code.html#InteractiveInterpreter.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#code.InteractiveInterpreter.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write a string.</p>
+<p>The base implementation writes to sys.stderr; a subclass may
+replace this with a different implementation.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="code.InteractiveConsole">
+<em class="property">class </em><code class="descclassname">code.</code><code class="descname">InteractiveConsole</code><span class="sig-paren">(</span><em>locals=None</em>, <em>filename='&lt;console&gt;'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/code.html#InteractiveConsole"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#code.InteractiveConsole" title="Permalink to this definition">¶</a></dt>
+<dd><p>Closely emulate the behavior of the interactive Python interpreter.</p>
+<p>This class builds on InteractiveInterpreter and adds prompting
+using the familiar sys.ps1 and sys.ps2, and input buffering.</p>
+<dl class="method">
+<dt id="code.InteractiveConsole.interact">
+<code class="descname">interact</code><span class="sig-paren">(</span><em>banner=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/code.html#InteractiveConsole.interact"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#code.InteractiveConsole.interact" title="Permalink to this definition">¶</a></dt>
+<dd><p>Closely emulate the interactive Python console.</p>
+<p>The optional banner argument specify the banner to print
+before the first interaction; by default it prints a banner
+similar to the one printed by the real Python interpreter,
+followed by the current class name in parentheses (so as not
+to confuse this with the real interpreter &#8211; since it&#8217;s so
+close!).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="code.InteractiveConsole.push">
+<code class="descname">push</code><span class="sig-paren">(</span><em>line</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/code.html#InteractiveConsole.push"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#code.InteractiveConsole.push" title="Permalink to this definition">¶</a></dt>
+<dd><p>Push a line to the interpreter.</p>
+<p>The line should not have a trailing newline; it may have
+internal newlines.  The line is appended to a buffer and the
+interpreter&#8217;s runsource() method is called with the
+concatenated contents of the buffer as source.  If this
+indicates that the command was executed or invalid, the buffer
+is reset; otherwise, the command is incomplete, and the buffer
+is left as it was after the line was appended.  The return
+value is 1 if more input is required, 0 if the line was dealt
+with in some way (this is the same as runsource()).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="code.InteractiveConsole.raw_input">
+<code class="descname">raw_input</code><span class="sig-paren">(</span><em>prompt=''</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/code.html#InteractiveConsole.raw_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#code.InteractiveConsole.raw_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write a prompt and read a line.</p>
+<p>The returned line does not include the trailing newline.
+When the user enters the EOF key sequence, EOFError is raised.</p>
+<p>The base implementation uses the built-in function
+raw_input(); a subclass may replace this with a different
+implementation.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="code.InteractiveConsole.resetbuffer">
+<code class="descname">resetbuffer</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/code.html#InteractiveConsole.resetbuffer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#code.InteractiveConsole.resetbuffer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the input buffer.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="code.interact">
+<code class="descclassname">code.</code><code class="descname">interact</code><span class="sig-paren">(</span><em>banner=None</em>, <em>readfunc=None</em>, <em>local=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/code.html#interact"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#code.interact" title="Permalink to this definition">¶</a></dt>
+<dd><p>Closely emulate the interactive Python interpreter.</p>
+<p>This is a backwards compatible interface to the InteractiveConsole
+class.  When readfunc is not specified, it attempts to import the
+readline module to enable GNU readline if it is available.</p>
+<p>Arguments (all optional, all default to None):</p>
+<p>banner &#8211; passed to InteractiveConsole.interact()
+readfunc &#8211; if not None, replaces InteractiveConsole.raw_input()
+local &#8211; passed to InteractiveInterpreter.__init__()</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="code.compile_command">
+<code class="descclassname">code.</code><code class="descname">compile_command</code><span class="sig-paren">(</span><em>source</em>, <em>filename='&lt;input&gt;'</em>, <em>symbol='single'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/codeop.html#compile_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#code.compile_command" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compile a command and determine whether it is incomplete.</p>
+<p>Arguments:</p>
+<p>source &#8211; the source string; may contain n characters
+filename &#8211; optional filename from which source was read; default</p>
+<blockquote>
+<div>&#8220;&lt;input&gt;&#8221;</div></blockquote>
+<p>symbol &#8211; optional grammar start symbol; &#8220;single&#8221; (default) or &#8220;eval&#8221;</p>
+<p>Return value / exceptions raised:</p>
+<ul class="simple">
+<li>Return a code object if the command is complete and valid</li>
+<li>Return None if the command is incomplete</li>
+<li>Raise SyntaxError, ValueError or OverflowError if the command is a
+syntax error (OverflowError and ValueError can be produced by
+malformed literals).</li>
+</ul>
+</dd></dl>
+
+<p><em>For questions on these functions, please contact Will Gray Roncal at wgr&#64;jhu.edu</em></p>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="../tutorials/basic_usage.html" class="btn btn-neutral" title="Basic Usage" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Open Connectome Project.
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'v1.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

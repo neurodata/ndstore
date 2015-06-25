@@ -1,0 +1,242 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta content="Official documentation for manno:  Manual Annotation Protocol for the Open Connectome Project" name="description" />
+<meta content="annotation, tracing, neuroscience, object detection" name="keywords" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>manno &mdash; manno v1.1.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="_static/ocp_favicon.ico"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="manno v1.1.0 documentation" href="#"/>
+        <link rel="next" title="Introduction" href="sphinx/introduction.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+
+        
+          <a href="#" class="icon icon-home"> manno
+        
+
+        
+          
+          <img src="_static/ocp_main.png" class="logo" />
+        
+        </a>
+
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <p class="caption"><span class="caption-text">Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="sphinx/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sphinx/local_config.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sphinx/ocp.html">OCP</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sphinx/ocp.html#contributing">Contributing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sphinx/ocp.html#style-guides">Style Guides</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sphinx/ocp.html#ocp-support-forums">OCP Support Forums</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="sphinx/faq.html">Frequently Asked Questions (FAQ)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/basic_usage.html">Basic Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/basic_usage.html#protocol">Protocol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/basic_usage.html#usage-notes">Usage Notes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/basic_usage.html#example">Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/basic_usage.html#validation">Validation</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Further Reading</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api/functions.html">manno Functions</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://gitter.im/openconnectome/manno">Gitter chatroom</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://groups.google.com/forum/#!forum/ocp-support/">Mailing List</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/openconnectome/manno">Github repo</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/openconnectome/manno/releases/">Release Notes</a></li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="#">manno</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="#">Docs</a> &raquo;</li>
+      
+    <li>manno</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/index.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <h1>manno:  A Lightweight Annotation Protocol for the Open Connectome Project using ITK-Snap and CAJAL </h1>
+<br><p>manno provides a protocol for creating Open Connectome Project compatible manual annotations, leveraging <a class="reference external" href="http://www.itksnap.org/">ITK Snap</a>.  This tool allows users to quickly create and upload annotations to the Open Connectome Project for science, machine learning, and other applications.  This protocol uses the NIFTI format as a method to exchange data; other tools such as MRIStudio may also be able to use this protocol (but have not been extensively tested).</p>
+<div class="figure align-center">
+<a class="reference internal image-reference" href="_images/manno_itk_example.jpg"><img alt="_images/manno_itk_example.jpg" src="_images/manno_itk_example.jpg" style="width: 300px;" /></a>
+</div>
+<div>
+  <img style="width:30px;height:30px;vertical-align:middle">
+  <span style=""></span>
+  <IMG SRC="_static/GitHub.png" height="50" width="50"> <a href="https://github.com/openconnectome/manno/zipball/master"> [ZIP]   </a>
+  <a image="_static/GitHub.png" href="https://github.com/openconnectome/manno/tarball/master">[TAR.GZ] </a></p>
+</div><div class="sidebar">
+<p class="first sidebar-title">manno Contact Us</p>
+<p class="last">If you have questions about manno, or have data to analyze, let us know:  <a class="reference external" href="mailto:ocp-support&#37;&#52;&#48;googlegroups&#46;com">ocp-support<span>&#64;</span>googlegroups<span>&#46;</span>com</a></p>
+</div>
+<div class="toctree-wrapper compound" id="documentation">
+<p class="caption"><span class="caption-text">Documentation</span><a class="headerlink" href="#documentation" title="Permalink to this toctree">¶</a></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="sphinx/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sphinx/local_config.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sphinx/ocp.html">OCP</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sphinx/faq.html">Frequently Asked Questions (FAQ)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/basic_usage.html">Basic Usage</a></li>
+</ul>
+</div>
+<div class="toctree-wrapper compound" id="further-reading">
+<p class="caption"><span class="caption-text">Further Reading</span><a class="headerlink" href="#further-reading" title="Permalink to this toctree">¶</a></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api/functions.html">manno Functions</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://gitter.im/openconnectome/manno">Gitter chatroom</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://groups.google.com/forum/#!forum/ocp-support/">Mailing List</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/openconnectome/manno">Github repo</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/openconnectome/manno/releases/">Release Notes</a></li>
+</ul>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="sphinx/introduction.html" class="btn btn-neutral float-right" title="Introduction" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Open Connectome Project.
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'v1.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
