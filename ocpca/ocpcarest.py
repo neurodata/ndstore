@@ -1381,9 +1381,9 @@ def getField ( webargs ):
 
 def setField ( webargs ):
   """Assign a single HDF5 field"""
-
+  
   try:
-    m = re.match("(\w+)/(\w+)/setField/(\d+)/(\w+)/(\w+|[\d+.]+)/$", webargs)
+    m = re.match("(\w+)/(\w+)/setField/(\d+)/(\w+)/(\w+|[\d+,.]+)/$", webargs)
     [token, channel, annid, field, value] = [i for i in m.groups()]
   except:
     logger.warning("Illegal setField request. Wrong number of arguments.")

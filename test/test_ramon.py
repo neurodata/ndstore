@@ -272,6 +272,11 @@ class Test_Ramon:
     f = getField(p, 'status')
     assert status == int(f.read()) 
 
+    # Test the seeds
+    seeds = [random.randint(0,100), random.randint(0,100), random.randint(0,100)]
+    f = setField(p, 'seeds', ','.join([str(i) for i in seeds]))
+    f = getField(p, 'seeds')
+    assert ','.join([str(i) for i in seeds]) == f.read()
 
   def test_seed_field (self):
     """Upload a seed and test it's fields"""
@@ -296,6 +301,12 @@ class Test_Ramon:
     f = setField(p, 'cubelocation', cubelocation)
     f = getField(p, 'cubelocation')
     assert cubelocation == int(f.read()) 
+    
+    # Test the position
+    position = [random.randint (0,100), random.randint(0,100), random.randint(0,100)]
+    f = setField(p, 'position', ','.join([str(i) for i in position]))
+    f = getField(p, 'position')
+    assert ','.join([str(i) for i in position]) == f.read()
 
 
   def test_segment_field (self):
@@ -327,6 +338,12 @@ class Test_Ramon:
     f = setField(p, 'status', status)
     f = getField(p, 'status')
     assert status == int(f.read()) 
+    
+    # Test the synapses
+    synapses = [random.randint(0,100), random.randint(0,100), random.randint(0,100)]
+    f = setField(p, 'synapses', ','.join([str(i) for i in synapses]))
+    f = getField(p, 'synapses')
+    assert ','.join([str(i) for i in synapses]) == f.read()
 
 
   def test_neuron_field (self):
@@ -341,6 +358,11 @@ class Test_Ramon:
     f = getField(p, 'status')
     assert status == int(f.read()) 
 
+    # Test segments
+    status = [random.randint (0,100), random.randint(0,100), random.randint(0,100)]
+    f = setField(p, 'segments', ",".join([str(i) for i in status]))
+    f = getField(p, 'segments')
+    assert ",".join([str(i) for i in status]) == f.read()
 
   def test_organelle_field (self):
     """Upload an organelle and test it's fields"""
@@ -366,6 +388,11 @@ class Test_Ramon:
     f = getField(p, 'status')
     assert status == int(f.read()) 
 
+    # Test the seeds
+    seeds = [random.randint(0,100), random.randint(0,100), random.randint(0,100)]
+    f = setField(p, 'seeds', ','.join([str(i) for i in seeds]))
+    f = getField(p, 'seeds')
+    assert ','.join([str(i) for i in seeds]) == f.read()
 
   def test_wrong_field ( self ):
    
