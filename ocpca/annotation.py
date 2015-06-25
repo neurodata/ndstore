@@ -526,7 +526,7 @@ class AnnSegment (Annotation):
     self.parentseed = 0              # seed that started this segment
     self.neuron = 0                  # add a neuron field
     self.synapses = []               # synapses connected to this segment
-    self.organelles = []             # organells associated with this segment
+    self.organelles = []             # organelles associated with this segment
 
     # Call the base class constructor
     Annotation.__init__(self,annodb)
@@ -923,9 +923,11 @@ class AnnNode (Annotation):
     self.nodetype = 0                           # enumerated label
     self.skeletonid = 0
     self.nodeid = 0
+    # RBTODO make these floats for SWC and MRIStudio
     self.location = [ None, None, None ]        # xyz coordinate
     self.parentid = 0                           # parent node
     self.radius = 0.0
+    #RBTODO do we want to keep children 
     self.children = []                          # children
 
     # Call the base class constructor
