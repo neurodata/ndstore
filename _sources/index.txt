@@ -6,10 +6,12 @@
 
 .. raw:: html
 
-	<h1>manno:  A Lightweight Annotation Protocol for the Open Connectome Project using ITK-Snap and CAJAL </h1>
+	<h1>Open Connectome Project Web Services: Scalable database cluster for the spatial analysis and annotation of high-throughput brain imaging data</h1>
 	<br>
 
-Scalable database cluster for the spatial analysis and annotation of high-throughput brain imaging data
+OCP provides a scalable database cluster for the spatial analysis and annotation of high-throughput brain imaging data for 3-d electron microscopy image stacks, time-series and multi-channel data. The system is designed primarily for workloads that build connectomes---neural connectivity maps of the brain---using the parallel execution of computer vision algorithms on high-performance compute clusters. These services and open-science data sets are publicly available at ocp.me.
+
+The system design inherits much from NoSQL scale-out and data-intensive computing architectures. We distribute data to cluster nodes by partitioning a spatial index. We direct I/O to different systems---reads to parallel disk arrays and writes to solid-state storage---to avoid I/O interference and maximize throughput. All programming interfaces are RESTful Web services, which are simple and stateless, improving scalability and usability. We include a performance evaluation of the production system, highlighting the effectiveness of spatial data organization.
 
 .. figure:: images/manno_itk_example.jpg
     :width: 300px
@@ -21,7 +23,7 @@ Scalable database cluster for the spatial analysis and annotation of high-throug
   <div>
     <img style="width:30px;height:30px;vertical-align:middle">
     <span style=""></span>
-    <IMG SRC="_static/GitHub.png" height="50" width="50"> <a href="https://github.com/openconnectome/manno/zipball/master"> [ZIP]   </a>  
+    <IMG SRC="_static/GitHub.png" height="50" width="50"> <a href="https://github.com/openconnectome/open-connectome/zipball/master"> [ZIP]   </a>  
     <a image="_static/GitHub.png" href="https://github.com/openconnectome/open-connectome/tarball/master">[TAR.GZ] </a></p>
   </div>
 
@@ -51,4 +53,5 @@ Scalable database cluster for the spatial analysis and annotation of high-throug
    Release Notes <https://github.com/openconnectome/open-connectome/releases/>
 
 .. If you use OCP or its data derivatives, please cite:
-..   W Gray Roncal, ZH Koterba, D Mhembere, DM Kleissas, JT Vogelstein, R Burns, AR Bowles, DK Donavos, S Ryman, RE Jung, L Wu, V Calhoun, RJ Vogelstein. MIGRAINE: MRI Graph Reliability Analysis and Inference for Connectomics. GlobalSIP, 2013 `arXiv <http://arxiv.org/abs/1312.4875>`_ `bibtex <http://openconnecto.me/data/public/MR/MIGRAINE_v1_0/migraine.bib>`_
+..   W Gray Roncal, ZH Koterba, D Mhembere, DM Kleissas, JT Vogelstein, R Burns, AR Bowles, DK Donavos, S Ryman, RE Jung, L Wu, V Calhoun, RJ Vogelstein. MIGRAINE: MRI Graph Reliability Analysis and Inference for Connectomics. GlobalSIP, 2013 `arXiv <http://arxiv.org/abs/1312.4875>`_ `bibtex <http://openconnecto.me/data/public/MR/MIGRAINE_v1_0/migraine.bib>`
+..   Randal Burns, Kunal Lillaney, Daniel R. Berger, Logan Grosenick, Karl Deisseroth, R. Clay Reid, William Gray Roncal, Priya Manavalan, Davi D. Bock, Narayanan Kasthuri, Michael Kazhdan, Stephen J. Smith, Dean Kleissas, Eric Perlman, Kwanghun Chung, Nicholas C. Weiler, Jeff Lichtman, Alexander S. Szalay, Joshua T. Vogelstein, and R. Jacob Vogelstein. 2013. The open connectome project data cluster: scalable analysis and vision for high-throughput neuroscience
