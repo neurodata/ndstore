@@ -52,6 +52,6 @@ The system design inherits much from NoSQL scale-out and data-intensive computin
    Github repo <https://github.com/openconnectome/open-connectome>
    Release Notes <https://github.com/openconnectome/open-connectome/releases/>
 
-.. If you use OCP or its data derivatives, please cite:
-..   W Gray Roncal, ZH Koterba, D Mhembere, DM Kleissas, JT Vogelstein, R Burns, AR Bowles, DK Donavos, S Ryman, RE Jung, L Wu, V Calhoun, RJ Vogelstein. MIGRAINE: MRI Graph Reliability Analysis and Inference for Connectomics. GlobalSIP, 2013 `arXiv <http://arxiv.org/abs/1312.4875>`_ `bibtex <http://openconnecto.me/data/public/MR/MIGRAINE_v1_0/migraine.bib>`
-..   Randal Burns, Kunal Lillaney, Daniel R. Berger, Logan Grosenick, Karl Deisseroth, R. Clay Reid, William Gray Roncal, Priya Manavalan, Davi D. Bock, Narayanan Kasthuri, Michael Kazhdan, Stephen J. Smith, Dean Kleissas, Eric Perlman, Kwanghun Chung, Nicholas C. Weiler, Jeff Lichtman, Alexander S. Szalay, Joshua T. Vogelstein, and R. Jacob Vogelstein. 2013. The open connectome project data cluster: scalable analysis and vision for high-throughput neuroscience
+If you use OCP or its data derivatives, please cite:
+  R Burns, K Lillaney, E Perlman, P Manavalan, JT Vogelstein (2015). ocp v0.7. Zenodo. 10.5281/zenodo.15974 `zenodo <https://zenodo.org/record/15974?ln=en#.VYyl-XUVhBc>`_ `bibtex <https://zenodo.org/record/15974?ln=en#.VYyjE3UVhBc>`_
+  R Burns, K Lillaney, D R Berger, L Grosenick, K Deisseroth, R C Reid, W Gray Roncal, P Manavalan, D D Bock, N Kasthuri, M Kazhdan, S J Smith, D Kleissas, E Perlman, K Chung, N C Weiler, J Lichtman, A S Szalay, J T Vogelstein, and R J Vogelstein. The open connectome project data cluster: scalable analysis and vision for high-throughput neuroscience. SSDBM, 2013 `acm <http://dl.acm.org/citation.cfm?id=2484870>_ `bibtex <http://dl.acm.org/citation.cfm?id=2484870>_
