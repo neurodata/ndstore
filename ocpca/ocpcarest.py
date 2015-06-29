@@ -54,7 +54,6 @@ logger=logging.getLogger("ocp")
 def cutout ( imageargs, proj, db, channels=None ):
   """Build the returned cube of data.  This method is called by all of the more basic services to build the data. They then format and refine the output."""
 
-  print "in cutout", imageargs
   # Perform argument processing
   try:
     args = restargs.BrainRestArgs ();
@@ -75,8 +74,6 @@ def cutout ( imageargs, proj, db, channels=None ):
 
   # Perform the cutout
   cube = db.cutout ( corner, dim, resolution, channels, zscaling )
-  
-  print np.unique (cube.data)
 
   return cube
 
