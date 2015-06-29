@@ -1,14 +1,14 @@
 #!/bin/bash
-echo -n "Are you on the master branch or any other branch not up to date with kl-d7?" 
+echo -n "Are you on a branch not up to date with kl-d7?" 
 read answer
 if echo "$answer" | grep -iq "^y" ;then
-    	cp ocpca/ocpcaprivate.py.example ocpcaprivate.py
-	cp django/OCP/settings_secret.py.example settings_secret.py
-	cp django/OCP/settings.py.example settings.py
+    	cp ocpca/ocpcaprivate.py.example ocpca/ocpcaprivate.py
+	cp django/OCP/settings_secret.py.example django/OCP/settings_secret.py
+	cp django/OCP/settings.py.example django/OCP/settings.py
 
 else
-    	cp django/OCP/settings_secret.py.example settings_secret.py
-	cp django/OCP/settings.py.example settings.py
+    	cp django/OCP/settings_secret.py.example django/OCP/settings_secret.py
+	cp django/OCP/settings.py.example django/OCP/settings.py
 	
 fi
 
