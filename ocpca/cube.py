@@ -82,6 +82,8 @@ class Cube:
       #newfobj = cStringIO.StringIO ( newstr )
       #self.data = np.load ( newfobj )
       self.data = np.load ( cStringIO.StringIO ( zlib.decompress ( pandz[:] ) ) )
+      self.zdim, self.ydim, self.xdim = self.data.shape
+
     except:
       logger.error ("Failed to decompress database cube.  Data integrity concern.")
       raise
