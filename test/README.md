@@ -135,3 +135,5 @@
 * tests to add
   1. Test filter for image slices
   2. Test neurons, segments and synapses
+  3. Test filter for anno
+  4. Test anno Paint I/O interfaces
