@@ -13,7 +13,7 @@ OCP provides a scalable database cluster for the spatial analysis and annotation
 
 The system design inherits much from NoSQL scale-out and data-intensive computing architectures. We distribute data to cluster nodes by partitioning a spatial index. We direct I/O to different systems---reads to parallel disk arrays and writes to solid-state storage---to avoid I/O interference and maximize throughput. All programming interfaces are RESTful Web services, which are simple and stateless, improving scalability and usability. We include a performance evaluation of the production system, highlighting the effectiveness of spatial data organization.
 
-.. figure:: images/manno_itk_example.jpg
+.. figure:: images/ocp_example.jpg
     :width: 300px
     :align: center
 
@@ -55,4 +55,4 @@ The system design inherits much from NoSQL scale-out and data-intensive computin
 If you use OCP or its data derivatives, please cite:
   R Burns, K Lillaney, E Perlman, P Manavalan, JT Vogelstein (2015). ocp v0.7. Zenodo. 10.5281/zenodo.15974 `zenodo <https://zenodo.org/record/15974?ln=en#.VYyl-XUVhBc>`_ `bibtex <https://zenodo.org/record/15974?ln=en#.VYyjE3UVhBc>`_
   
-  R Burns, K Lillaney, D R Berger, L Grosenick, K Deisseroth, R C Reid, W Gray Roncal, P Manavalan, D D Bock, N Kasthuri, M Kazhdan, S J Smith, D Kleissas, E Perlman, K Chung, N C Weiler, J Lichtman, A S Szalay, J T Vogelstein, and R J Vogelstein. The open connectome project data cluster: scalable analysis and vision for high-throughput neuroscience. SSDBM, 2013 `acm <http://dl.acm.org/citation.cfm?id=2484870>_ `bibtex <http://dl.acm.org/citation.cfm?id=2484870>_
+  R Burns, K Lillaney, D R Berger, L Grosenick, K Deisseroth, R C Reid, W Gray Roncal, P Manavalan, D D Bock, N Kasthuri, M Kazhdan, S J Smith, D Kleissas, E Perlman, K Chung, N C Weiler, J Lichtman, A S Szalay, J T Vogelstein, and R J Vogelstein. The open connectome project data cluster: scalable analysis and vision for high-throughput neuroscience. SSDBM, 2013 `acm <http://dl.acm.org/citation.cfm?id=2484870>`_ `bibtex <http://dl.acm.org/citation.cfm?id=2484870>`_
