@@ -70,6 +70,9 @@
       width: 60%;
       margin: 5px;
     }
+    #blendmode { 
+      float: left;
+    }
     .info h4 {
 			margin: 0 0 5px; 
 			color: #777;
@@ -213,6 +216,7 @@
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li><a href="#" data-toggle="modal" data-target="#help">Help</a></li>
+        <li><a href="#" id="collapseinfo">Toggle Info</a></li>
       </ul>
     </div>
   </nav>
@@ -299,7 +303,7 @@
 		info.options.position = 'topright';
 		info.onAdd = function (map) {
 			this._div = L.DomUtil.create('div', 'info');
-      var header = '<h4>{{ project_name }}</h4>';
+      var header = '<h4>{{ project_name }}</h4><br />';
       var datainfo = '<div id="opacity-control">{% spaceless %}
         {% for layer in layers %}
         <div class="info-layer-name"><a href="#">{{ layer.layer_name|cut:" " }}</a></div>
@@ -321,7 +325,7 @@
         {% endspaceless %}</div>';
       //var datainfo = '<div id="slider"></div>';
       var curslice = '<br /><div id="zindex">z-index: ' + zindex + "</div>";
-      var blendmode = '<br /><div id="blendmode">Blend Mode: <select name="blendmode"><option value="normal">Normal</option><option value="multiply">Multiply</option><option value="Screen">Screen</option><option value="overlay">Overlay</option><option value="darken">Darken</option><option value="lighten">Ligten</option><option value="color-dodge">Color Dodge</option><option value="color-burn">Color Burn</option><option value="exclusion">Exclusion</option><option value="difference">Difference</option><option value="hue">Hue</option><option value="saturation">Saturation</option><option value="color">Color</option><option value="luminosity">Luminosity</option></select></div>'
+      var blendmode = '<br /><div id="blendmode">Blend Mode: <select name="blendmode"><option value="normal">Normal</option><option value="multiply">Multiply</option><option value="Screen">Screen</option><option value="overlay">Overlay</option><option value="darken">Darken</option><option value="lighten">Ligten</option><option value="color-dodge">Color Dodge</option><option value="color-burn">Color Burn</option><option value="exclusion">Exclusion</option><option value="difference">Difference</option><option value="hue">Hue</option><option value="saturation">Saturation</option><option value="color">Color</option><option value="luminosity">Luminosity</option></select></div><span style="float: right;"><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/blend-mode" target="_blank"><i class="fa fa-info-circle"></i></a></span>'
       this._div.innerHTML = header + datainfo + curslice + blendmode;
 			return this._div;
 		};
@@ -609,7 +613,11 @@
       });
     }); // blend mode 
 
-
+    $(function() {
+      $( "#collapseinfo" ).click(function() {
+        $( ".info" ).toggle( "slow" )
+      });
+    });
   </script>
 </body>
 {# jquery and bootstrap js #}
