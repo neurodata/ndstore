@@ -1,5 +1,36 @@
 // for smooth scrolling through z-indices 
-L.TileLayer.SmoothReload = L.TileLayer.extend({
+// TODO
+// Implement blend mode, fix other modes for safari and fx 
+//
+L.TileLayer.OCPLayer = L.TileLayer.extend({
+
+	options: {
+		minZoom: 0,
+		maxZoom: 18,
+		tileSize: 256,
+		subdomains: 'abc',
+		errorTileUrl: '',
+		attribution: '',
+		zoomOffset: 0,
+		opacity: 1,
+    /* begin ocpviz added */
+    brightness: 100,
+    contrast: 100,
+    /* end ocpviz added */
+		/*
+		maxNativeZoom: null,
+		zIndex: null,
+		tms: false,
+		continuousWorld: false,
+		noWrap: false,
+		zoomReverse: false,
+		detectRetina: false,
+		reuseTiles: false,
+		bounds: false,
+		*/
+		unloadInvisibleTiles: L.Browser.mobile,
+		updateWhenIdle: L.Browser.mobile
+	},
 
   _tileOnLoad: function () {
     var layer = this._layer;
@@ -45,11 +76,63 @@ L.TileLayer.SmoothReload = L.TileLayer.extend({
   _smoothRemoveTile: function(tile) {
     this._tileContainer.removeChild(tile);
   },
+	
+  setBrightness: function (brightness) {
+		this.options.brightness = brightness;
+
+		if (this._map) {
+			this._updateBrightness();
+		}
+
+		return this;
+	},
+
+  _updateBrightness: function () { 
+    L.DomUtil.setBrightnessContrast(this._container, this.options.brightness, this.options.contrast);
+  },
+  
+  setContrast: function (contrast) {
+		this.options.contrast = contrast;
+
+		if (this._map) {
+			this._updateContrast();
+		}
+
+		return this;
+	},
+  
+  _updateContrast: function () { 
+    L.DomUtil.setBrightnessContrast(this._container, this.options.brightness, this.options.contrast);
+
+  },
+
+  setBlendMode: function (blendmode) {
+    if (this._map) {
+      L.DomUtil.setBlendMode(this._container, blendmode);
+    }
+    return this;
+  },
+
 });
 
+// add updateBrightness and updateContrast methods
+// TODO support for Fx
+L.extend(L.DomUtil, {
+  setBrightnessContrast: function(el, brightness, contrast) {
+    if ('filter' in el.style) {
+      el.style.setProperty('-webkit-filter', 'brightness(' + brightness + '%) ' + 'contrast(' + contrast + '%)')
+    }
+  },
+  setBlendMode: function(el, mode) {
+    // TODO validate this somehow? 
+    console.log(el.style);
+    el.style.setProperty('mix-blend-mode', mode);
+  },
+ 
+});
 
-L.tileLayer.SmoothReload = function (url, options) {
-    return new L.TileLayer.SmoothReload(url, options);
+L.tileLayer.OCPLayer = function (url, options) {
+    return new L.TileLayer.OCPLayer(url, options);
 };
 
 
