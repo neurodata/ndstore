@@ -18,7 +18,6 @@ import MySQLdb
 import cStringIO
 import re
 
-import zindex
 import ocpcarest
 import ocpcaproj
 

@@ -31,17 +31,15 @@ ANNO_SEED = 3
 ANNO_SEGMENT = 4
 ANNO_NEURON = 5
 ANNO_ORGANELLE = 6
-ANNO_NODE = 7
+ANNO_POINT = 7
 ANNO_SKELETON = 8
 
-#KLTODO -- where did synseg come from?
 #  This table is not getting created or deleted
 # list of database table names.  Move to annproj?
 anno_dbtables = { 'annotation':'annotations',\
                   'kvpairs':'kvpairs',\
                   'synapse':'synapses',\
                   'segment':'segments',\
-#                  'synseg':'synseg',\
                   'organelle':'organelles',\
                   'seed':'seeds',\
                   'node':'nodes',\
@@ -247,6 +245,8 @@ class Annotation:
 
 ###############  Synapse  ##################
 
+#RBTODO add centroid to synapse
+#RBTODO get rid of seed and generalize to point
 class AnnSynapse (Annotation):
   """Metadata specific to synapses"""
 
@@ -531,18 +531,20 @@ class AnnSegment (Annotation):
     # Call the base class constructor
     Annotation.__init__(self,annodb)
 
-  def querySynapses ( self, ch, cursor ):
-    """Query the synseg database to resolve"""
 
-    sql = "SELECT synapse FROM {} WHERE segment={}".format( getAnnoTable('synseg'),self.annid)
-
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ( "Error querying synapses %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise OCPCAError ( "Error querying synapses %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-    return cursor.fetchall()
+# RBTODO get synapses from segments.
+#  def querySynapses ( self, ch, cursor ):
+#    """Query the synseg database to resolve"""
+#
+#    sql = "SELECT synapse FROM {} WHERE segment={}".format( getAnnoTable('synseg'),self.annid)
+#
+#    try:
+#      cursor.execute ( sql )
+#    except MySQLdb.Error, e:
+#      logger.warning ( "Error querying synapses %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+#      raise OCPCAError ( "Error querying synapses %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+#
+#    return cursor.fetchall()
 
 
   def getField ( self, field ):
@@ -915,14 +917,14 @@ class AnnOrganelle (Annotation):
 ###############  Node  ##################
 
 class AnnNode (Annotation):
-  """Point annotation in a skeleton"""
+  """Point annotation (sometimes in a skeleton)"""
 
   def __init__(self,annodb):
     """Initialize the fields to zero or None"""
 
-    self.nodetype = 0                           # enumerated label
+    self.pointtype = 0                           # enumerated label
     self.skeletonid = 0
-    self.nodeid = 0
+    self.pointid = 0
     # RBTODO make these floats for SWC and MRIStudio
     self.location = [ None, None, None ]        # xyz coordinate
     self.parentid = 0                           # parent node
@@ -1069,7 +1071,7 @@ class AnnNode (Annotation):
 ###############  Skeleton  ##################
 
 class AnnSkeleton (Annotation):
-  """Point annotation in a skeleton"""
+  """Skeleton annotation"""
 
   def __init__(self,annodb):
     """Initialize the fields to zero or None"""
