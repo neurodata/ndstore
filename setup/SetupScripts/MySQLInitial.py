@@ -14,10 +14,24 @@
 
 import MySQLdb
 
+# Edit the following: 
+# user - MySQL admin user (can be root)
+# pass - MySQL admin user password
+# password_here - the password for user(in this case brain) specified in the settings_secret.py file
+
 # Assuming ocpdjango (from settings_secret.py)
 
 db = MySQLdb.connect("localhost","user","pass")
 cursor = db.cursor()
-cursor.execute("create database ocpdjango")
+
+# Create database for OCP
+cursor.execute("create database ocpdjango;")
+
+# Create users for OCP
+cursor.execute("create user 'brain'@'localhost' identified by 'password_here';")
+cursor.execute("grant all privileges on *.* to 'brain'@'localhost' with grant option;")
+
+cursor.execute("create user 'brain'@'%' identified by 'password_here';")
+cursor.execute("grant all privileges on *.* to 'brain'@'%' with grant option;")
 
 db.close()

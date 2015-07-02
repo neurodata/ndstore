@@ -24,7 +24,7 @@ if echo "$answer" | grep -iq "^y" ;then
 	pip install numpy 
 	pip install Scipy ez_setup
 	pip install Fipy Django Django-registration Django-celery MySQL-python turbogears --allow-external PEAK-Rules --allow-unverified PEAK-Rules 
-	pip install Django-registration-redux Cython H5py Pillow Cheetah Registration Pylibmc uWSGI --allow-external PEAK-Rules --allow-unverified PEAK-Rules 
+	pip install Django-registration-redux Cython H5py Pillow Cheetah Registration Pylibmc uWSGI --allow-external PEAK-Rules --allow-unverified PEAK-Rules igraph
 
 else
     	echo -n "Please add the packages later manually."
