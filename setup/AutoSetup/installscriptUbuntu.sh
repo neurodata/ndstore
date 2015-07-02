@@ -10,7 +10,7 @@ sudo debconf-set-selections <<< 'mysql-server mysql-server/root_password passwor
 sudo debconf-set-selections <<< 'mysql-server mysql-server/root_password_again password '$MySQLPass
 sudo apt-get -y install mysql-server
 
-sudo apt-get install Python-pip python-mysqldb libmysqld-dev python-dev liblapack-dev gfortran libmemcached-dev Libhdf5-dev python-pytest python-virtualenv
+sudo apt-get -y install Python-pip python-mysqldb libmysqld-dev python-dev liblapack-dev gfortran libmemcached-dev Libhdf5-dev python-pytest python-virtualenv
 
 # Setup and install packages to the virtual enviroment
 virtualenv ../OCPServer
@@ -47,7 +47,7 @@ fi
 
 
 # Set up Mysql server values
-python MySQLInitial.py MySQLPass BrainPass
+python MySQLInitial.py $MySQLPass $BrainPass
 
 
 
