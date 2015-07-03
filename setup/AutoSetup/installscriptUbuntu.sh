@@ -36,9 +36,24 @@ virtualenv ../OCPServer
 source ../OCPServer/bin/activate
 pip install setuptools
 pip install numpy 
-pip install Scipy ez_setup
-pip install Fipy Django Django-registration Django-celery MySQL-python turbogears --allow-external PEAK-Rules --allow-unverified PEAK-Rules 
-pip install Django-registration-redux Cython H5py Pillow Cheetah Registration Pylibmc uWSGI --allow-external PEAK-Rules --allow-unverified PEAK-Rules igraph
+pip install Scipy 
+pip install ez_setup
+pip install Fipy 
+pip install Django 
+pip install Django-registration 
+pip install Django-celery 
+pip install MySQL-python 
+pip install turbogears --allow-external PEAK-Rules --allow-unverified PEAK-Rules 
+pip install Django-registration-redux 
+pip install Cython 
+pip install H5py 
+pip install Pillow 
+pip install Cheetah 
+pip install Registration 
+pip install Pylibmc 
+pip install uWSGI --allow-external PEAK-Rules --allow-unverified PEAK-Rules 
+pip install igraph
+pip install pytest
 
 # Setup the files needed for first run of the server
 
