@@ -1,21 +1,35 @@
 #!/bin/bash
+# -m MySQLPass and -b BrainPass
 
-if [ $EUID != 0 ]; then
-	sudo "$0" "$@"
-	exit $?
+MySQLPass=
+BrainPass=
+
+while getopts “:m:b:” OPTION
+do
+     case $OPTION in
+         m)
+             MySQLPass=$OPTARG
+             ;;
+         b)
+             BrainPass=$OPTARG
+             ;;
+         ?)
+             echo -n "Must enter passwords for MySQL server and brain user with arguements -m MySQLPass and -b BrainPass"
+             exit 1
+             ;;
+     esac
+done
+
+if [[ -z $MySQLPass ]] || [[ -z $BrainPass ]]
+then
+     echo -n "Must enter passwords for MySQL server and brain user with arguements -m MySQLPass and -b BrainPass"
+     exit 1
 fi
 
 # Install basic pacakges
 echo -n "Install script should be placed in the open-connectome folder. "
 
-MySQLPass='your_password'
-BrainPass=''
-
-debconf-set-selections <<< 'mysql-server mysql-server/root_password password '$MySQLPass
-debconf-set-selections <<< 'mysql-server mysql-server/root_password_again password '$MySQLPass
-apt-get -y install mysql-server
-
-apt-get -y install Python-pip python-mysqldb libmysqld-dev python-dev liblapack-dev gfortran libmemcached-dev Libhdf5-dev python-pytest python-virtualenv
+./SudoInstalls.sh $MySQLPass $BrainPass
 
 # Setup and install packages to the virtual enviroment
 virtualenv ../OCPServer
@@ -30,11 +44,6 @@ pip install Django-registration-redux Cython H5py Pillow Cheetah Registration Py
 
 cp django/OCP/settings_secret.py.example django/OCP/settings_secret.py
 cp django/OCP/settings.py.example django/OCP/settings.py
-
-mkdir /var/log/ocp
-chown www-data:www-data /var/log/ocp
-touch /var/log/ocp/ocp.log
-chmod 777 /var/log/ocp/ocp.log
 
 
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
