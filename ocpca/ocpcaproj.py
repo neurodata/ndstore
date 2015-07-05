@@ -155,6 +155,7 @@ class OCPCADataset:
       #self.cubedim[i] = [128, 128, 16]
       # this may need to be changed.  
       if self.ds.scalingoption == ZSLICES:
+        #self.cubedim[i] = [128, 128, 16]
         self.cubedim[i] = [128, 128, 16]
         if float(self.ds.zvoxelres/self.ds.xvoxelres)/(2**i) >  0.5:
           self.cubedim[i] = [128, 128, 16]
