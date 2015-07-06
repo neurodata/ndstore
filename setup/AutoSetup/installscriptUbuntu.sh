@@ -35,23 +35,23 @@ echo -n "Install script should be placed in the open-connectome folder. "
 virtualenv ../OCPServer
 source ../OCPServer/bin/activate
 pip install setuptools
-pip install numpy 
-pip install Scipy 
+pip install numpy
+pip install Scipy
 pip install ez_setup
-pip install Fipy 
-pip install Django 
-pip install Django-registration 
-pip install Django-celery 
-pip install MySQL-python 
-pip install turbogears --allow-external PEAK-Rules --allow-unverified PEAK-Rules 
-pip install Django-registration-redux 
-pip install Cython 
-pip install H5py 
-pip install Pillow 
-pip install Cheetah 
-pip install Registration 
-pip install Pylibmc 
-pip install uWSGI --allow-external PEAK-Rules --allow-unverified PEAK-Rules 
+pip install Fipy
+pip install Django
+pip install Django-registration
+pip install Django-celery
+pip install MySQL-python
+pip install turbogears --allow-external PEAK-Rules --allow-unverified PEAK-Rules
+pip install Django-registration-redux
+pip install Cython
+pip install H5py
+pip install Pillow
+pip install Cheetah
+pip install Registration
+pip install Pylibmc
+pip install uWSGI --allow-external PEAK-Rules --allow-unverified PEAK-Rules
 pip install igraph
 pip install pytest
 
@@ -78,7 +78,4 @@ fi
 # Set up Mysql server values
 python MySQLInitial.py $MySQLPass $BrainPass
 
-
-
-
-
+echo -n "Remember to edit the settings.py and settings_secret.py files in django/OCP before running the server using the virtual enviroment."
