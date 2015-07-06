@@ -84,7 +84,7 @@ def main():
   cp = CAJALProject()
 
   project = {
-      'name': 'ApiUnitTests',
+      'name': 'apiUnitTests',
       'dataset': 'kasthuri11',
       }
 
