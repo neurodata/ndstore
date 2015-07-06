@@ -34,13 +34,13 @@ def mcfcPNG (cutout, colors, enhancement=4.0):
     
     data32 = np.array (cutout[i,:], dtype=np.uint32)
 
-    # First channel is cyan
+    # First is Cyan
     if colors[i] == 'C':
       combined_cutout += np.left_shift(data32,8) + np.left_shift(data32,16)
     # Second is Magenta
     elif colors[i] == 'M':
       combined_cutout +=  np.left_shift(data32,16) + data32 
-    # THird is yellow
+    # Third is Yellow
     elif colors[i] == 'Y':  
       combined_cutout +=  np.left_shift(data32,8) + data32 
     # Fourth is Red

@@ -99,7 +99,7 @@ class OCPCADB:
 
     except MySQLdb.Error, e:
       self.conn = None
-      logger.error("Failed to connect to database: %s, %s" % (self.proj.getDBHost(), self.proj.getDBName()))
+      logger.error("Failed to connect to database: {}, {}".format(self.proj.getDBHost(), self.proj.getDBName()))
       raise
 
     #if (self.proj.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS):
@@ -173,7 +173,7 @@ class OCPCADB:
       try:
         cursor.execute ( sql )
       except MySQLdb.Error, e:
-        logger.warning ("Problem retrieving identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+        logger.warning ("Problem retrieving identifier {}: {}. sql={}".format(e.args[0], e.args[1], sql))
         raise
 
       # Here we've queried the highest id successfully    
@@ -243,7 +243,7 @@ class OCPCADB:
         try:
           cursor.execute ( sql )
         except MySQLdb.Error, e:
-          logger.warning ( "Failed to set identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+          logger.warning ( "Failed to set identifier table: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
           raise
 
       finally:
@@ -272,7 +272,7 @@ class OCPCADB:
         try:
           cursor.executemany ( sql, [str(i) for i in annoidList] )  
         except MySQLdb.Error, e:
-          logger.warning ( "Failed to set identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+          logger.warning ( "Failed to set identifier table: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
           raise
 
       finally:
@@ -298,7 +298,7 @@ class OCPCADB:
         try:
           cursor.execute ( sql )
         except MySQLdb.Error, e:
-          logger.error ( "Failed to create annotation identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+          logger.error ( "Failed to create annotation identifier {}: {}. sql={}".format(e.args[0], e.args[1], sql))
           raise
 
         # Here we've queried the highest id successfully    
@@ -314,11 +314,11 @@ class OCPCADB:
         try:
           cursor.execute ( sql )
         except MySQLdb.Error, e:
-          logger.error ( "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+          logger.error ( "Failed to insert into identifier table: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
           raise
 
       except Exception, e:
-        logger.error ( "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+        logger.error ( "Failed to insert into identifier table: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
 
       finally:
         sql = "UNLOCK TABLES" 
@@ -371,7 +371,10 @@ class OCPCADB:
   def putCube(self, ch, zidx, resolution, cube, update=False):
     """ Store a cube in the annotation database """
   
-    if cube.isNotZeros():
+    #if cube.isNotZeros():
+    #  RB the above line of code is broken.  We need to write 0s to the database when shaving annotations.
+    #  they overwrite existing non-zero annotations.
+    if True:
       # Handle the cube format here.  
       if self.NPZ:
         self.kvio.putCube(ch, zidx, resolution, cube.toNPZ(), not cube.fromZeros())

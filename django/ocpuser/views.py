@@ -33,7 +33,6 @@ from django.conf import settings
 from django.forms.models import inlineformset_factory
 import django.forms
 
-import ocpcaprivate
 import ocpcarest
 import ocpcaproj
 import string
@@ -178,7 +177,7 @@ def profile(request):
         return redirect(get_channels)
 
       elif 'backup' in request.POST:
-        path = ocpcaprivate.backuppath + '/' + request.user.username
+        path = settings.BACKUP_PATH + '/' + request.user.username
         if not os.path.exists(path):
           os.mkdir( path, 0755 )
         # Get the database information
@@ -186,8 +185,8 @@ def profile(request):
         db = (request.POST.get('project_name')).strip()
         ofile = path +'/'+ db +'.sql'
         outputfile = open(ofile, 'w')
-        dbuser =ocpcaprivate.dbuser
-        passwd =ocpcaprivate.dbpasswd
+        dbuser = settings.DATABASES['default']['USER']
+        passwd = settings.DATABASES['default']['PASSWORD']
 
         p = subprocess.Popen(['mysqldump', '-u'+ dbuser, '-p'+ passwd, '--single-transaction', '--opt', db], stdout=outputfile).communicate(None)
         messages.success(request, 'Sucessfully backed up database '+ db)
@@ -646,25 +645,25 @@ def updatechannel(request):
         # populate the channel type and data type from choices
         combo = request.POST.get('channelcombo')
         if combo=='i:8':
-          new_channel.channel_type='IMAGES'
+          new_channel.channel_type='image'
           new_channel.channel_datatype='uint8'
         elif combo=='i:16':
-          new_channel.channel_type='IMAGES'
+          new_channel.channel_type='image'
           new_channel.channel_datatype='uint16'
         elif combo=='i:32':
-          new_channel.channel_type='RGB'
+          new_channel.channel_type='rgb'
           new_channel.channel_datatype='uint32'
         elif combo=='a:32':
-          new_channel.channel_type='ANNOTATIONS'
+          new_channel.channel_type='annotation'
           new_channel.channel_datatype='uint32'
         elif combo=='p:32':
-          new_channel.channel_type='PROBABILITY_MAPS'
+          new_channel.channel_type='probmap'
           new_channel.channel_datatype='float32'
         elif combo=='t:8':
-          new_channel.channel_type='TIMESERIES'
+          new_channel.channel_type='timeseries'
           new_channel.channel_datatype='uint8'
         elif combo=='t:16':
-          new_channel.channel_type='TIMESERIES'
+          new_channel.channel_type='timeseries'
           new_channel.channel_datatype='uint16'
         else:
           logger.error("Illegal channel combination requested: {}.".format(combo))
@@ -689,7 +688,7 @@ def updatechannel(request):
               messages.error(request,"Failed to create channel. {}".format(e))
               new_channel.delete()
 
-          return redirect(get_channels)
+          return HttpResponseRedirect(get_script_prefix()+'ocpuser/channels')
 
         else:
           messages.error(request,"Cannot update.  You are not owner of this token or not superuser.")
@@ -924,7 +923,7 @@ def restoreproject(request):
         pd = ocpcaproj.OCPCAProjectsDB()
         
         bkupfile = request.POST.get('backupfile')
-        path = ocpcaprivate.backuppath+ '/'+ request.user.username + '/' + bkupfile
+        path = settings.BACKUP_PATH + '/'+ request.user.username + '/' + bkupfile
         if os.path.exists(path):
           print "File exists"
         else:
@@ -933,8 +932,8 @@ def restoreproject(request):
         proj=pd.loadProjectDB(project)
         
         
-        #Create the database
-        newconn = MySQLdb.connect (host = dbhost, user = ocpcaprivate.dbuser, passwd = ocpcaprivate.dbpasswd, db=ocpcaprivate.db )
+        # Create the database
+        newconn = MySQLdb.connect (host = dbhost, user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = settings.DATABASES['default']['NAME'] )
         newcursor = newconn.cursor()
         
         try:
@@ -946,8 +945,8 @@ def restoreproject(request):
           
       # close connection just to be sure
         newcursor.close()
-        dbuser = ocpcaprivate.dbuser
-        passwd = ocpcaprivate.dbpasswd
+        dbuser = settings.DATABASES['default']['USER']
+        passwd = settings.DATABASES['default']['PASSWORD']
       
         proc = subprocess.Popen(["mysql", "--user=%s" % dbuser, "--password=%s" % passwd, project],stdin=subprocess.PIPE,stdout=subprocess.PIPE)
         proc.communicate(file(path).read())
@@ -966,7 +965,7 @@ def restoreproject(request):
       #GET DATA
     randtoken = ''.join(random.choice(string.ascii_uppercase + string.digits + string.ascii_lowercase) for x in range(64))
     form = ProjectForm(initial={'token': randtoken})
-    path = ocpcaprivate.backuppath +'/'+ request.user.username
+    path = settings.BACKUP_PATH +'/'+ request.user.username
     if os.path.exists(path):
       file_list =os.listdir(path)   
     else:

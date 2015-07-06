@@ -82,7 +82,10 @@ def postHDF5 (p, post_data, time=False):
   tmpfile = tempfile.NamedTemporaryFile ()
   fh5out = h5py.File ( tmpfile.name )
   for idx, channel_name in enumerate(p.channels):
-    fh5out.create_dataset ( channel_name, tuple(post_data[idx,:].shape), post_data[idx,:].dtype, compression='gzip', data=post_data[idx,:] )
+    chan_grp = fh5out.create_group(channel_name)
+    chan_grp.create_dataset("CUTOUT", tuple(post_data[idx,:].shape), post_data[idx,:].dtype, compression='gzip', data=post_data[idx,:])
+    chan_grp.create_dataset("CHANNELTYPE", (1,), dtype=h5py.special_dtype(vlen=str), data=p.channel_type)
+    chan_grp.create_dataset("DATATYPE", (1,), dtype=h5py.special_dtype(vlen=str), data=p.datatype)
   fh5out.close()
   tmpfile.seek(0)
   
@@ -100,16 +103,16 @@ def getHDF5 (p, time=False):
 
   # Build the url and then create a hdf5 object
   if time:
-    url = 'http://{}/ca/{}/{}/hdf5/{}/{},{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+    url = 'http://{}/ca/{}/{}/hdf5/{}/{},{}/{},{}/{},{}/{},{}/'.format(SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
   else:
-    url = 'http://{}/ca/{}/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+    url = 'http://{}/ca/{}/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format(SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args)
 
   # Get the image back
   f = urllib2.urlopen (url)
-  tmpfile = tempfile.NamedTemporaryFile ( )
-  tmpfile.write ( f.read() )
+  tmpfile = tempfile.NamedTemporaryFile()
+  tmpfile.write(f.read())
   tmpfile.seek(0)
-  h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
+  h5f = h5py.File(tmpfile.name, driver='core', backing_store=False)
 
   return h5f
 

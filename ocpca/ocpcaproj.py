@@ -18,11 +18,13 @@ from contextlib import closing
 import os
 import sys
 from contextlib import closing
-from django.core.exceptions import ObjectDoesNotExist
 
-sys.path += [os.path.abspath('../django')]
-import OCP.settings
-os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
+from django.core.exceptions import ObjectDoesNotExist
+from django.conf import settings
+
+#sys.path += [os.path.abspath('../django')]
+#import OCP.settings
+#os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
 
 from ocpuser.models import Project
 from ocpuser.models import Dataset
@@ -40,14 +42,12 @@ try:
 except:
    pass
 
-import ocpcaprivate
 from ocpcaerror import OCPCAError
 
 import logging
 logger=logging.getLogger("ocp")
 
 # OCP Version
-# RB changes to VERSION from VERSION_NUMBER  -- it's not a number.  We'll want A.B.C.D type releases
 OCP_VERSION = '0.6'
 SCHEMA_VERSION = '0.6'
 
@@ -63,8 +63,8 @@ DTYPE_uint8 = [ 'uint8' ]
 DTYPE_uint16 = [ 'uint16' ]
 DTYPE_uint32 = [ 'rgb32','uint32' ]
 DTYPE_uint64 = [ 'rgb64' ]
-DTYPE_float32 = [ 'probability' ]
-OCP_dtypetonp = {'uint8':np.uint8,'uint16':np.uint16,'uint32':np.uint32,'rgb32':np.uint32,'rgb64':np.uint64,'probability':np.float32}
+DTYPE_float32 = [ 'float32' ]
+OCP_dtypetonp = {'uint8':np.uint8,'uint16':np.uint16,'uint32':np.uint32,'rgb32':np.uint32,'rgb64':np.uint64,'float32':np.float32}
 
 # Propagated Values
 PROPAGATED = 2
@@ -152,8 +152,10 @@ class OCPCADataset:
       self.scale[i] = { 'xy':xvoxelresi/yvoxelresi , 'yz':zvoxelresi/xvoxelresi, 'xz':zvoxelresi/yvoxelresi }
 
       # choose the cubedim as a function of the zscale
-      #  this may need to be changed.  
+      #self.cubedim[i] = [128, 128, 16]
+      # this may need to be changed.  
       if self.ds.scalingoption == ZSLICES:
+        self.cubedim[i] = [128, 128, 16]
         if float(self.ds.zvoxelres/self.ds.xvoxelres)/(2**i) >  0.5:
           self.cubedim[i] = [128, 128, 16]
         else: 
@@ -165,7 +167,6 @@ class OCPCADataset:
       else:
         # RB what should we use as a cubedim?
         self.cubedim[i] = [128, 128, 16]
-#        self.cubedim[i] = [64, 64, 64]
 
   # Accessors
   def getDatasetName(self):
@@ -268,11 +269,10 @@ class OCPCAProject:
       channel_name = Channel.objects.get(project_id=self.pr, default=True)
     return OCPCAChannel(self, channel_name)
 
-  # accessors for RB to fix
   def getDBUser( self ):
-    return ocpcaprivate.dbuser
+    return settings.DATABASES['default']['USER']
   def getDBPasswd( self ):
-    return ocpcaprivate.dbpasswd
+    return settings.DATABASES['default']['PASSWORD']
 
 
 class OCPCAChannel:
@@ -304,6 +304,8 @@ class OCPCAChannel:
     return [self.ch.startwindow,self.ch.endwindow]
   def getPropagate (self):
     return self.ch.propagate
+  def isDefault (self):
+    return self.ch.default 
 
   def getIdsTable (self):
     if self.pr.getOCPVersion() == '0.0':
@@ -350,9 +352,11 @@ class OCPCAChannel:
     if value in [NOT_PROPAGATED]:
       self.ch.propagate = value
       self.setReadOnly ( READONLY_FALSE )
+      self.ch.save()
     elif value in [UNDER_PROPAGATION,PROPAGATED]:
       self.ch.propagate = value
       self.setReadOnly ( READONLY_TRUE )
+      self.ch.save()
     else:
       logger.error ( "Wrong Propagate Value {} for Channel {}".format( value, self.ch.channel_name ) )
       raise OCPCAError ( "Wrong Propagate Value {} for Channel {}".format( value, self.ch.channel_name ) )
@@ -370,14 +374,13 @@ class OCPCAChannel:
     else:
       return False
 
-
 class OCPCAProjectsDB:
   """Database for the projects"""
 
   def __init__(self):
     """Create the database connection"""
 
-    self.conn = MySQLdb.connect (host = ocpcaprivate.dbhost, user = ocpcaprivate.dbuser, passwd = ocpcaprivate.dbpasswd, db = ocpcaprivate.db ) 
+    self.conn = MySQLdb.connect (host = settings.DATABASES['default']['HOST'], user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = settings.DATABASES['default']['NAME']) 
 
   # for context lib closing
   def close (self):
@@ -407,7 +410,7 @@ class OCPCAProjectsDB:
     ds = Dataset.objects.get(dataset_name=pr.dataset_id)
 
     # Connect to the database
-    with closing (MySQLdb.connect (host = pr.host, user = ocpcaprivate.dbuser, passwd = ocpcaprivate.dbpasswd, db = pr.project_name )) as conn:
+    with closing (MySQLdb.connect (host = pr.host, user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = pr.project_name )) as conn:
       with closing(conn.cursor()) as cursor:
 
         try:
@@ -573,7 +576,7 @@ class OCPCAProjectsDB:
     if pr.getKVEngine() == 'MySQL':
     
       try:
-        conn = MySQLdb.connect (host = ocpcaprivate.dbhost, user = ocpcaprivate.dbuser, passwd = ocpcaprivate.dbpasswd, db = pr.getProjectName() ) 
+        conn = MySQLdb.connect (host = settings.DATABASES['default']['HOST'], user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = pr.getProjectName() ) 
         # delete the tables for this channel
         sql = "DROP TABLES IF EXISTS {}".format(','.join(table_list))
       

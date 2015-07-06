@@ -19,7 +19,6 @@ import cStringIO
 import re
 
 import ocpcarest
-import ocpcaproj
 
 from ocpcaerror import OCPCAError
 import logging

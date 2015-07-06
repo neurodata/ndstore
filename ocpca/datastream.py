@@ -4,15 +4,13 @@ import tempfile
 import h5py
 import numpy as np
 
-import ocpcaprivate
-
 class DataStream():
 
   def __init__ ( self, filename=None ):
     """ Intiliaze the Data Structure """
 
     if filename==None:
-      self.fd = tempfile.NamedTemporaryFile( 'w+b', bufsize=-1, suffix=".hdf5", dir=ocpcaprivate.ssd_log_location, delete="False" )
+      #self.fd = tempfile.NamedTemporaryFile( 'w+b', bufsize=-1, suffix=".hdf5", dir=ocpcaprivate.ssd_log_location, delete="False" )
       self.fd.close()
     else:
       self.fd = open('filename', 'rb+')

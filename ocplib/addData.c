@@ -25,9 +25,9 @@
 
 // Determine the annotation value at the next level of the hierarchy from a 2x2
 
-int getAnnValue ( uint32_t value00, uint32_t value01, uint32_t value10, uint32_t value11 )
+uint32_t getAnnValue ( uint32_t value00, uint32_t value01, uint32_t value10, uint32_t value11 )
 {
-  int value = value00;
+  uint32_t value = value00;
 
   if ( value == 0 )
     value = value01;
@@ -39,9 +39,9 @@ int getAnnValue ( uint32_t value00, uint32_t value01, uint32_t value10, uint32_t
       value = value10;
 
   if ( value11 != 0 )
-    if ( value ==0 )
+    if ( value == 0 )
       value = value10;
-    else if ( value11==value00 || value11==value01 || value11==value10 )
+    else if ( value11 == value00 || value11 == value01 || value11 == value10 )
       value = value11;
 
   return value;
@@ -54,20 +54,20 @@ void addDataZSlice ( uint32_t * cube, uint32_t * output, int * offset, int * dim
 {
   int i,j,k;
 
-  int xdim = dims[0];
+  int zdim = dims[0];
   int ydim = dims[1];
-  int zdim = dims[2];
+  int xdim = dims[2];
 
   for ( i=0; i<zdim; i++ )
-    for ( j=0; j<ydim/2; j++ )
-      for ( k=0; k<xdim/2; k++ )
+    for ( j=0; j<(ydim/2); j++ )
+      for ( k=0; k<(xdim/2); k++ )
       {
         int index1 = (i*ydim*xdim)+(j*2*xdim)+(k*2);
         int index2 = (i*ydim*xdim)+(j*2*xdim)+(k*2+1);
-        int index3 = (i*ydim*xdim)+(j*2*xdim+1)+(k*2);
-        int index4 = (i*ydim*xdim)+(j*2*xdim+1)+(k*2+1);
-        int outputindex = (i*ydim*xdim+offset[2])+(j*xdim+offset[1])+(k+offset[0]);
-        output[outputindex] = getAnnValue ( cube[index1], cube[index2], cube[index3], cube[index4] );
+        int index3 = (i*ydim*xdim)+((j*2+1)*xdim)+(k*2);
+        int index4 = (i*ydim*xdim)+((j*2+1)*xdim)+(k*2+1);
+        int output_index = ( (i+offset[2]) *ydim*xdim*2*2 ) + ( (j+offset[1]) *xdim*2 ) + (k+offset[0]);
+        output[output_index] = getAnnValue ( cube[index1], cube[index2], cube[index3], cube[index4] );
       }
 }
 
@@ -78,14 +78,31 @@ void addDataIsotropic ( uint32_t * cube, uint32_t * output, int * offset, int * 
 {
   int i,j,k;
 
-  int xdim = dims[0];
+  int zdim = dims[0];
   int ydim = dims[1];
-  int zdim = dims[2];
+  int xdim = dims[2];
+
+  uint32_t value;
 
   for ( i=0; i<zdim/2; i++ )
-    for ( j=0; j<ydim/2; j++ )
-      for ( k=0; k<xdim/2; k++ )
+    for ( j=0; j<(ydim/2); j++ )
+      for ( k=0; k<(xdim/2); k++ )
       {
-        continue;
+        int index1 = (i*ydim*xdim)+(j*2*xdim)+(k*2);
+        int index2 = (i*ydim*xdim)+(j*2*xdim)+(k*2+1);
+        int index3 = (i*ydim*xdim)+((j*2+1)*xdim)+(k*2);
+        int index4 = (i*ydim*xdim)+((j*2+1)*xdim)+(k*2+1);
+        value = getAnnValue ( cube[index1], cube[index2], cube[index3], cube[index4] );
+
+        if ( value == 0 )
+        {
+          index1 = ((i*2+1)*ydim*xdim)+(j*2*xdim)+(k*2);
+          index2 = ((i*2+1)*ydim*xdim)+(j*2*xdim)+(k*2+1);
+          index3 = ((i*2+1)*ydim*xdim)+((j*2+1)*xdim)+(k*2);
+          index4 = ((i*2+1)*ydim*xdim)+((j*2+1)*xdim)+(k*2+1);
+          value = getAnnValue ( cube[index1], cube[index2], cube[index3], cube[index4] );
+        }
+        int output_index = ( (i+offset[2]) *ydim*xdim*2*2 ) + ( (j+offset[1]) *xdim*2 ) + (k+offset[0]);
+        output[output_index] = getAnnValue ( cube[index1], cube[index2], cube[index3], cube[index4] );
       }
 }

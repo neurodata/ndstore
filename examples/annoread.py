@@ -52,15 +52,15 @@ def main():
   result = parser.parse_args()
 
   if result.voxels:
-    url = "http://%s/ca/%s/%s/%s/voxels/%s/" % (result.baseurl,result.token,result.channel,result.annids, result.resolution)
+    url = "http://%s/ca/%s/%s/%s/voxels/%s/" % (result.baseurl,result.token,result.channel,result.annids,result.resolution)
   elif result.cutout != None:
-    url = "http://%s/ca/%s/%s/%s/cutout/%s/" % (result.baseurl,result.token,result.channel,result.annids, result.cutout)
+    url = "http://%s/ca/%s/%s/%s/cutout/%s/" % (result.baseurl,result.token,result.channel,result.annids,result.cutout)
   elif result.tightcutout: 
-    url = "http://%s/ca/%s/%s/%s/cutout/%s/" % (result.baseurl,result.token,result.channel,result.annids, result.resolution)
+    url = "http://%s/ca/%s/%s/%s/cutout/%s/" % (result.baseurl,result.token,result.channel,result.annids,result.resolution)
   elif result.boundingbox: 
-    url = "http://%s/ca/%s/%s/%s/boundingbox/%s/" % (result.baseurl,result.token,result.channel,result.annids, result.resolution)
+    url = "http://%s/ca/%s/%s/%s/boundingbox/%s/" % (result.baseurl,result.token,result.channel,result.annids,result.resolution)
   elif result.cuboids: 
-    url = "http://%s/ca/%s/%s/%s/cuboids/%s/" % (result.baseurl,result.token,result.channel,result.annids, result.resolution)
+    url = "http://%s/ca/%s/%s/%s/cuboids/%s/" % (result.baseurl,result.token,result.channel,result.annids,result.resolution)
   else:
     url = "http://%s/ca/%s/%s/%s/" % (result.baseurl,result.token,result.channel,result.annids)
 

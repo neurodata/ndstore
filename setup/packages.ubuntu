@@ -9,3 +9,5 @@ libevent-dev
 memcached 
 libmemcached-dev
 gfortran
+nginx
+libblas-dev
