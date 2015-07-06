@@ -644,7 +644,7 @@ def updateChannel(request):
       else:
         #Invalid form
         context = {'form': form, 'project': prname}
-        return render_to_response('updatedhannel.html', context, context_instance=RequestContext(request))
+        return render_to_response('updatechannel.html', context, context_instance=RequestContext(request))
 
     elif 'createchannel' in request.POST:
 
@@ -755,7 +755,7 @@ def updateChannel(request):
       }
       form = ChannelForm(initial=data)
       context = {'form': form, 'project': prname }
-      return render_to_response('updatedhannel.html', context, context_instance=RequestContext(request))
+      return render_to_response('updatechannel.html', context, context_instance=RequestContext(request))
     else:
       data = {
         'project': pr

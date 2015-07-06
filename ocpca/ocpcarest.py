@@ -172,8 +172,6 @@ def HDF5(chanargs, proj, db):
 def postTiff3d ( channel, postargs, proj, db, postdata ):
   """Upload a tiff to the database"""
 
-  import pdb; pdb.set_trace()
-
   # get the channel
   ch = proj.getChannelObj(channel)
   if ch.getDataType() in ocpcaproj.DTYPE_uint8:
@@ -352,7 +350,6 @@ def imgSlice(webargs, proj, db):
     logger.warning ("Illegal image arguments={}.  Error={}".format(imageargs,e))
     raise OCPCAError ("Illegal image arguments={}.  Error={}".format(imageargs,e))
 
-  import pdb; pdb.set_trace()
   # Perform the cutout
   ch = proj.getChannelObj(channel)
   cb = cutout(cutoutargs, ch, proj, db)
