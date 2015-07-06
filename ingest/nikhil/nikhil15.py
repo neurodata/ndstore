@@ -67,10 +67,8 @@ class CatmaidIngest:
           #if we are at the end of the space, quit
           if ( sl + b <= endslice ):
               
-            filename = '{}dyer15_3_maskimg_{:0>4}.tif'.format(self.path, sl+b)
-            #filename = '{}proj_2_{:0>5}.tif'.format(self.path, sl+b)
-            #filename = '{}{}_maskimg_{:0>4}.tif'.format(self.path, self.token, sl+b)
-            #filename = '{}xbrain_dyer15_slice{:0>4}.tif'.format(self.path, sl+b )
+            filename = '{}{:0>3}____z{}.0.tif'.format(self.path, sl+b, (sl+b-1)*25)
+            #filename = '{}{:0>4}____z{}.0.tif'.format(self.path, sl+b, (sl+b-1)*25)
             print filename
             try:
               img = Image.open(filename,'r')

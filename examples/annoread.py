@@ -29,7 +29,9 @@ anno_names = { 1:'ANNO_ANNOTATION',\
                3:'ANNO_SEED',\
                4:'ANNO_SEGMENT',\
                5:'ANNO_NEURON',\
-               6:'ANNO_ORGANELLE' }
+               6:'ANNO_ORGANELLE',\
+               7:'ANNO_NODE',\
+               8:'ANNO_SKELETON' }
 
 def main():
 
