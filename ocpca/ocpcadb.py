@@ -1022,7 +1022,7 @@ class OCPCADB:
 
       # use the batch generator interface
       for idx, datastring in cuboids:
- 
+
         #add the query result cube to the bigger cube
         curxyz = ocplib.MortonXYZ(int(idx))
         offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
@@ -1055,6 +1055,9 @@ class OCPCADB:
       raise
 
     self.kvio.commit()
+
+    print np.unique(outcube.data)
+    import pdb; pdb.set_trace()
 
     # if we fetched a smaller cube to zoom, correct the result
     if ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS and ch.getResolution() > resolution:

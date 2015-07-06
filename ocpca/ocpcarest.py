@@ -171,6 +171,8 @@ def HDF5(chanargs, proj, db):
 def postTiff3d ( channel, postargs, proj, db, postdata ):
   """Upload a tiff to the database"""
 
+  import pdb; pdb.set_trace()
+
   # get the channel
   ch = proj.getChannelObj(channel)
   if ch.getDataType() in ocpcaproj.DTYPE_uint8:
@@ -178,7 +180,6 @@ def postTiff3d ( channel, postargs, proj, db, postdata ):
   elif ch.getDataType() in ocpcaproj.DTYPE_uint16:
     datatype=np.uint16
   elif ch.getDataType() in ocpcaproj.DTYPE_uint32:
-    import pdb; pdb.set_trace()
     datatype=np.uint32
   else:
     logger.error("Unsupported data type for TIFF3d post. {}".format(ch.getDataType())) 
@@ -192,6 +193,7 @@ def postTiff3d ( channel, postargs, proj, db, postdata ):
   yoff = int(yoffstr)-projoffset[1]
   zoff = int(zoffstr)-projoffset[2]
 
+  # RBTODO check that the offsets are legal
 
   # read the tiff data into a cuboid
   with closing (tempfile.NamedTemporaryFile()) as tmpfile:
@@ -349,6 +351,7 @@ def imgSlice(webargs, proj, db):
     logger.warning ("Illegal image arguments={}.  Error={}".format(imageargs,e))
     raise OCPCAError ("Illegal image arguments={}.  Error={}".format(imageargs,e))
 
+  import pdb; pdb.set_trace()
   # Perform the cutout
   ch = proj.getChannelObj(channel)
   cb = cutout(cutoutargs, ch, proj, db)
@@ -1710,6 +1713,7 @@ def merge (webargs):
       # PYTODO illegal merge (no support if not global)
       assert 0
   
+
 def publicTokens ( self ):
   """Return a json formatted list of public tokens"""
   
