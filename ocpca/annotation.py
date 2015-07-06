@@ -31,7 +31,7 @@ ANNO_SEED = 3
 ANNO_SEGMENT = 4
 ANNO_NEURON = 5
 ANNO_ORGANELLE = 6
-ANNO_POINT = 7
+ANNO_NODE = 7
 ANNO_SKELETON = 8
 
 #  This table is not getting created or deleted

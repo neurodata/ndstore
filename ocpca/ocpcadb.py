@@ -1059,9 +1059,6 @@ class OCPCADB:
 
     self.kvio.commit()
 
-    print np.unique(outcube.data)
-    import pdb; pdb.set_trace()
-
     # if we fetched a smaller cube to zoom, correct the result
     if ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS and ch.getResolution() > resolution:
 
@@ -1414,7 +1411,7 @@ class OCPCADB:
       if anno is None:
         logger.warning("No annotation found at identifier = {}".format(annid))
         raise OCPCAError ("No annotation found at identifier = {}".format(annid))
-      anno.setField(ch, field, value)
+      anno.setField(field, value)
       anno.update(ch, cursor)
     except:
       self.closeCursor(cursor) 

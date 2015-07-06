@@ -53,8 +53,8 @@ def cutout (request, webargs):
       elif service in ['ts', 'hdf5']:
         fname = re.sub ( r',','_', webargs )
         fname = re.sub ( r'/','-', fname )
-        response['Content-Disposition'] = "attachment; filename={}ocpcutout.h5".format(fname)
         response = django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="product/hdf5" )
+        response['Content-Disposition'] = "attachment; filename={}ocpcutout.h5".format(fname)
         return response
       elif service=='npz':
         return django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="product/npz" )
@@ -93,7 +93,7 @@ def cutout (request, webargs):
     return django.http.HttpResponseNotFound(e)
   except Exception, e:
     logger.exception("Unknown exception in getCutout.")
-    raise OCPCAError("Unknow exception in getCutout")
+    raise OCPCAError("Unknown exception in getCutout")
 
 
 #@cache_control(no_cache=True)

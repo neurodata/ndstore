@@ -591,14 +591,12 @@ def selectPost ( webargs, proj, db, postdata ):
             
           if ch.getChannelType() in ocpcaproj.IMAGE_CHANNELS:
             db.writeCuboid ( ch, corner, resolution, voxarray[idx,:] )
-            entityid = 0
 
           elif ch.getChannelType() in ocpcaproj.TIMESERIES_CHANNELS:
             db.writeTimeCuboid(ch, corner, resolution, timerange, voxarray[idx,:])
-            entityid = 0
           
           elif ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS:
-            entityid = db.annotateDense(ch, corner, resolution, voxarray[idx,:], conflictopt)
+            db.annotateDense(ch, corner, resolution, voxarray[idx,:], conflictopt)
 
       elif service == 'hdf5':
   
@@ -631,14 +629,12 @@ def selectPost ( webargs, proj, db, postdata ):
             
             if ch.getChannelType() in ocpcaproj.IMAGE_CHANNELS: 
               db.writeCuboid (ch, corner, resolution, voxarray)
-              entityid = 0
 
             elif ch.getChannelType() in ocpcaproj.TIMESERIES_CHANNELS:
               db.writeTimeCuboid (ch, corner, resolution, timerange, voxarray)
-              entityid = 0
             
             elif ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS:
-              entityid = db.annotateDense ( ch, corner, resolution, voxarray, conflictopt )
+              db.annotateDense ( ch, corner, resolution, voxarray, conflictopt )
   
           h5f.flush()
           h5f.close()
@@ -664,8 +660,6 @@ def selectPost ( webargs, proj, db, postdata ):
       logger.exception("POST transaction rollback. {}".format(e))
       db.rollback()
       raise
-    
-  return str(entityid)
 
 
 def getCutout ( webargs ):
