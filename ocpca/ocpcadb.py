@@ -371,10 +371,10 @@ class OCPCADB:
   def putCube(self, ch, zidx, resolution, cube, update=False):
     """ Store a cube in the annotation database """
   
-    #if cube.isNotZeros():
+    #if cube.isNotZeros() and ch.getChannelType() not in ocpcaproj.ANNOTATION_CHANNELS:
+    if True:
     #  RB the above line of code is broken.  We need to write 0s to the database when shaving annotations.
     #  they overwrite existing non-zero annotations.
-    if True:
       # Handle the cube format here.  
       if self.NPZ:
         self.kvio.putCube(ch, zidx, resolution, cube.toNPZ(), not cube.fromZeros())
@@ -1689,7 +1689,7 @@ class OCPCADB:
     self.kvio.commit()
 
 
-  def mergeGlobal(self, ids, mergetype, res):
+  def mergeGlobal(self, ch, ids, mergetype, res):
     """Global merge routine.  Converts a list of ids into the merge id at a given resolution.
        This will collapse all exceptions for the voxels for the merged ids."""
 
@@ -1707,7 +1707,7 @@ class OCPCADB:
     addindex = []
     # RB!!!! do this for all ids, promoting the exceptions of the merge id
     for annid in ids:
-      if annid== mergeid:
+      if annid == mergeid:
         continue
       # Get the Annotation index for that id
       curindex = self.annoIdx.getIndex(ch, annid,resolution)
@@ -1746,7 +1746,7 @@ class OCPCADB:
     self.annoIdx.updateIndex(ch, mergeid,addindex,resolution)     
     self.kvio.commit()
     
-    return "Merged Id's {} into {}".format(ids,mergeid)
+    return "Merged Id's {} into {}".format(ids, mergeid)
 
   def merge2D(self, ids, mergetype, res, slicenum):
     # get the size of the image and cube

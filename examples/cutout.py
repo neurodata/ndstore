@@ -29,13 +29,13 @@ def main():
 
   result = parser.parse_args()
 
-  url = 'http://%s/ca/%s/npz/%s/' % ( result.baseurl, result.token, result.cutout )
+  url = 'http://{}/ca/{}/npz/{}/'.format( result.baseurl, result.token, result.cutout )
 
   # Get cube in question
   try:
     f = urllib2.urlopen ( url )
   except urllib2.URLError, e:
-    print "Failed %s.  Exception %s." % (url,e) 
+    print "Failed {}. Exception {}.".format(url, e) 
     sys.exit(-1)
 
   zdata = f.read ()
@@ -51,7 +51,3 @@ def main():
 
 if __name__ == "__main__":
   main()
-
-
-
-

@@ -131,3 +131,9 @@
     7. test_hdf5_incorrect_datatype
     8. test_npz_incorrect_channel
     9. test_hdf5_incorrect_channel
+
+* tests to add
+  1. Test filter for image slices
+  2. Test neurons, segments and synapses
+  3. Test filter for anno
+  4. Test anno Paint I/O interfaces

@@ -30,9 +30,10 @@ def ocpJson(dataset, project, channel_list):
 
   return json.dumps(ocp_dict, sort_keys=True, indent=4)
 
-def datasetDict(imagesize, voxelres, offset=[0,0,0], timerange=[0,0], scalinglevels=0, scaling=0):
+def datasetDict(dataset_name, imagesize, voxelres, offset=[0,0,0], timerange=[0,0], scalinglevels=0, scaling=0):
   """Generate the dataset dictionary"""
   dataset_dict = {}
+  dataset_dict['dataset_name'] = dataset_name
   dataset_dict['imagesize'] = imagesize
   dataset_dict['voxelres'] = voxelres
   if offset is not None:
@@ -84,11 +85,11 @@ def main():
     f = open(result.output_file, 'w')
 
     if not result.complete:
-      basic_example = (([100,100,100],[1.0,1.0,5.0],None,None,None,None), ('sample_project_1',None,None), {'sample_channel_1':('sample_channel_1', 'uint8', 'image', 'sample_data_url', 'sample_filename',None,None,None,None)})
+      basic_example = (('dataset_simple',[100,100,100],[1.0,1.0,5.0],None,None,None,None), ('sample_project_1',None,None), {'sample_channel_1':('sample_channel_1', 'uint8', 'image', 'sample_data_url', 'sample_filename',None,None,None,None)})
       f.write(ocpJson(*basic_example))
 
     else:
-      dataset = ([100,100,100],[1.0,1.0,5.0],[0,0,1],[0,100],5)
+      dataset = ('dataset_complete',[100,100,100],[1.0,1.0,5.0],[0,0,1],[0,100],5)
       project = ('sample_project_1',)
       channels = {'sample_channel_1':('sample_channel_1','uint8', 'image','sample_data_url', 'sample_filename',None,None,None,None), 'sample_channel_2':('sample_channel_2', 'uint16', 'time', 'sample_data_url2', 'sample_filename2',None,None,[100,500])}
       complete_example = (dataset, project, channels)

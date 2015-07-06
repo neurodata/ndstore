@@ -407,7 +407,7 @@ def NeurontoH5 ( neuron, h5fh ):
   h5neuron = BasetoH5 ( neuron, annotation.ANNO_NEURON, h5fh )
 
   # Lists (as arrays)
-  if ( neuron.segments != () ):
+  if ( neuron.segments != [] ):
     h5neuron.mdgrp.create_dataset ( "SEGMENTS", (len(neuron.segments),), np.uint32, neuron.segments )
 
   return h5neuron
