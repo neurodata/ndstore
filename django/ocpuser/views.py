@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-# RBTODO createproject doesn't throw an error to the browser
+# RBTODO createProject doesn't throw an error to the browser
 
 import django.http
 from django.http import HttpResponseRedirect
@@ -32,6 +32,7 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from django.forms.models import inlineformset_factory
 import django.forms
+from datetime import datetime
 
 import ocpcarest
 import ocpcaproj
@@ -48,6 +49,7 @@ from forms import ProjectForm
 from forms import DatasetForm
 from forms import TokenForm
 from forms import ChannelForm
+from forms import BackupForm
 from forms import dataUserForm
 
 from django.core.urlresolvers import get_script_prefix
@@ -60,13 +62,13 @@ logger=logging.getLogger("ocp")
 
 # Helpers
 
-''' Base url just redirects to welcome'''
+''' Base url redirects to projects page'''
 def default(request):
-  return redirect(get_script_prefix()+'profile', {"user":request.user})
+  return redirect(get_script_prefix()+'projects', {"user":request.user})
 
 ''' Little welcome message'''
 @login_required(login_url='/ocp/accounts/login/')
-def profile(request):
+def getProjects(request):
 
   try:
     if request.method == 'POST':
@@ -102,7 +104,7 @@ def profile(request):
         else:
           visible_projects = Project.objects.filter(user_id=userid) | Project.objects.filter(public=1) 
 
-        return render_to_response('profile.html', { 'databases': dbs.iteritems() ,'projects': visible_projects.values_list(flat=True) },context_instance=RequestContext(request))
+        return render_to_response('projects.html', { 'databases': dbs.iteritems() ,'projects': visible_projects.values_list(flat=True) },context_instance=RequestContext(request))
 
       elif 'delete_data' in request.POST:
 
@@ -113,7 +115,7 @@ def profile(request):
         reftokens = Token.objects.filter(project_id=project_to_delete)
         if reftokens:
           messages.error(request, 'Project cannot be deleted. Please delete all tokens for this project first.')
-          return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile')
+          return HttpResponseRedirect(get_script_prefix()+'ocpuser/projects')
         else:
           proj = Project.objects.get(project_name=project_to_delete)
           if proj:
@@ -128,7 +130,7 @@ def profile(request):
               messages.error(request,"Cannot delete.  You are not owner of this project or not superuser.")
           else:
             messages.error( request,"Project not found.")
-          return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile')
+          return HttpResponseRedirect(get_script_prefix()+'ocpuser/projects')
 
       elif 'delete' in request.POST:
         pd = ocpcaproj.OCPCAProjectsDB()
@@ -138,7 +140,7 @@ def profile(request):
         reftokens = Token.objects.filter(project_id=project_to_delete)
         if reftokens:
           messages.error(request, 'Project cannot be deleted. Please delete all tokens for this project first.')
-          return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile')
+          return HttpResponseRedirect(get_script_prefix()+'ocpuser/projects')
         else:
           proj = Project.objects.get(project_name=project_to_delete)
           if proj:
@@ -154,7 +156,7 @@ def profile(request):
               messages.error(request,"Cannot delete.  You are not owner of this project or not superuser.")
           else:
             messages.error( request,"Project not found.")
-          return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile')
+          return HttpResponseRedirect(get_script_prefix()+'ocpuser/projects')
       
       elif 'info' in request.POST:
       #GET PROJECT INFO -----------TODO
@@ -164,38 +166,47 @@ def profile(request):
       elif 'update' in request.POST:
         project_to_update =(request.POST.get('project_name')).strip() 
         request.session["project_name"] = project_to_update
-        return redirect(updateproject)
+        return redirect(updateProject)
       
       elif 'tokens' in request.POST:
         projname=(request.POST.get('project_name')).strip()
         request.session["project"] = projname
-        return redirect(get_tokens)
+        return redirect(getTokens)
 
       elif 'channels' in request.POST:
         projname=(request.POST.get('project_name')).strip()
         request.session["project"] = projname
-        return redirect(get_channels)
+        return redirect(getChannels)
 
       elif 'backup' in request.POST:
-        path = settings.BACKUP_PATH + '/' + request.user.username
-        if not os.path.exists(path):
-          os.mkdir( path, 0755 )
-        # Get the database information
-        pd = ocpcaproj.OCPCAProjectsDB()
-        db = (request.POST.get('project_name')).strip()
-        ofile = path +'/'+ db +'.sql'
-        outputfile = open(ofile, 'w')
-        dbuser = settings.DATABASES['default']['USER']
-        passwd = settings.DATABASES['default']['PASSWORD']
+        projname=(request.POST.get('project_name')).strip()
+        request.session["project"] = projname
+        return redirect(backupProject)
+ 
 
-        p = subprocess.Popen(['mysqldump', '-u'+ dbuser, '-p'+ passwd, '--single-transaction', '--opt', db], stdout=outputfile).communicate(None)
-        messages.success(request, 'Sucessfully backed up database '+ db)
-        return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile')
+
+
+# RB old backup code
+#
+#        path = settings.BACKUP_PATH + '/' + request.user.username
+#        if not os.path.exists(path):
+#          os.mkdir( path, 0755 )
+#        # Get the database information
+#        pd = ocpcaproj.OCPCAProjectsDB()
+#        db = (request.POST.get('project_name')).strip()
+#        ofile = path +'/'+ db +'.sql'
+#        outputfile = open(ofile, 'w')
+#        dbuser = settings.DATABASES['default']['USER']
+#        passwd = settings.DATABASES['default']['PASSWORD']
+#
+#        p = subprocess.Popen(['mysqldump', '-u'+ dbuser, '-p'+ passwd, '--single-transaction', '--opt', db], stdout=outputfile).communicate(None)
+#        messages.success(request, 'Sucessfully backed up database '+ db)
+#        return HttpResponseRedirect(get_script_prefix()+'ocpuser/projects')
 
       else:
         # Invalid POST
         messages.error(request,"Unrecognized POST")
-        return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile')
+        return HttpResponseRedirect(get_script_prefix()+'ocpuser/projects')
 
     else:
     # GET Projects
@@ -221,7 +232,7 @@ def profile(request):
       else:
         visible_projects = Project.objects.filter(user_id=userid) | Project.objects.filter(public=1) 
 
-      return render_to_response('profile.html', { 'databases': sorted(dbs.iteritems()) ,'projects':visible_projects },context_instance=RequestContext(request))
+      return render_to_response('projects.html', { 'databases': sorted(dbs.iteritems()) ,'projects':visible_projects },context_instance=RequestContext(request))
     
   except OCPCAError, e:
 
@@ -239,11 +250,11 @@ def profile(request):
         dbs[db.dataset_name].append(None)
     
     all_projects = Project.objects.values_list('project_name',flat= True)
-    return render_to_response('profile.html', { 'databases': dbs.iteritems() ,'projects':all_projects },context_instance=RequestContext(request))
+    return render_to_response('projects.html', { 'databases': dbs.iteritems() ,'projects':all_projects },context_instance=RequestContext(request))
     
 
 @login_required(login_url='/ocp/accounts/login/')
-def get_datasets(request):
+def getDatasets(request):
 
   try:
 
@@ -289,7 +300,7 @@ def get_datasets(request):
       elif 'update' in request.POST:
         ds = (request.POST.get('dataset_name')).strip()
         request.session["dataset_name"] = ds
-        return redirect(updatedataset)
+        return redirect(updateDataset)
 
       else:
         #Load datasets
@@ -304,18 +315,18 @@ def get_datasets(request):
     return render_to_response('datasets.html', { 'dts': visible_datasets },context_instance=RequestContext(request))    
 
 @login_required(login_url='/ocp/accounts/login/')
-def get_alltokens(request):
+def getAllTokens(request):
 
   if 'filter' in request.POST:
     del request.session['filter']
   if 'project' in request.session:
     del request.session['project']
 
-  return get_tokens(request)
+  return getTokens(request)
 
 
 @login_required(login_url='/ocp/accounts/login/')
-def get_channels(request):
+def getChannels(request):
 
   #RBTODO check default for uniqueness
   #RBTODO make default T/F and prepopulate
@@ -329,7 +340,7 @@ def get_channels(request):
         filteroption = request.POST.get('filteroption')
         filtervalue = (request.POST.get('filtervalue')).strip()
         all_channels = Channel.objects.filter(project_id='TODO').filter(token_name=filtervalue)
-        return render_to_response('channel.html', { 'channels': all_channels, 'project': proj },context_instance=RequestContext(request))
+        return render_to_response('channels.html', { 'channels': all_channels, 'project': proj },context_instance=RequestContext(request))
 
       elif 'delete' in request.POST:
         # Delete the channel from the project
@@ -346,32 +357,32 @@ def get_channels(request):
             messages.error(request,"Cannot delete.  You are not owner of this token or not superuser.")
         else:
           messages.error(request,"Unable to delete " + channel_to_delete)
-        return redirect(get_channels)
+        return redirect(getChannels)
 
       # update form populated with channel fields
       elif 'update' in request.POST:
         channel = (request.POST.get('channel')).strip()
         request.session["channel_name"] = channel
-        return redirect(updatechannel)
+        return redirect(updateChannel)
 
       # add using the update channel form with no initial data
       elif 'add' in request.POST:
         # must remove channel_name context to add a new one.  otherwise, it's an update
         if "channel_name" in request.session:
           del ( request.session["channel_name"] )
-        return redirect(updatechannel)
+        return redirect(updateChannel)
 
       elif 'backtochannels' in request.POST:
-        return redirect(get_channels)
+        return redirect(getChannels)
 
       elif 'backtoprojects' in request.POST:
-        return redirect(profile)
+        return redirect(getProjects)
 
 
       else:
         # Unrecognized Option
         messages.error(request,"Invalid request")
-        return redirect(get_channels)
+        return redirect(getChannels)
 
     else:
       # GET tokens for the specified project
@@ -382,18 +393,18 @@ def get_channels(request):
       else:
         # Unrecognized Option
         messages.error("Must have a project context to look at channels.")
-        return redirect(get_channels)
+        return redirect(getChannels)
       print all_channels
-      return render_to_response('channel.html', { 'channels': all_channels, 'project': proj },context_instance=RequestContext(request))
+      return render_to_response('channels.html', { 'channels': all_channels, 'project': proj },context_instance=RequestContext(request))
     
   except OCPCAError, e:
     messages.error("Unknown exception in administrative interface = {}".format(e)) 
     datasets = pd.getDatasets()
-    return render_to_response('profile.html',context,context_instance=RequestContext(request))
+    return render_to_response('projects.html',context,context_instance=RequestContext(request))
  
 
 @login_required(login_url='/ocp/accounts/login/')
-def get_tokens(request):
+def getTokens(request):
 
   username = request.user.username
   pd = ocpcaproj.OCPCAProjectsDB()  
@@ -406,7 +417,7 @@ def get_tokens(request):
         filtervalue = (request.POST.get('filtervalue')).strip()
         all_tokens = Token.objects.filter(token_name=filtervalue)
         proj=""
-        return render_to_response('token.html', { 'tokens': all_tokens, 'project': proj },context_instance=RequestContext(request))
+        return render_to_response('tokens.html', { 'tokens': all_tokens, 'project': proj },context_instance=RequestContext(request))
 
       elif 'delete' in request.POST:
         # Delete the token from the token table
@@ -420,7 +431,7 @@ def get_tokens(request):
             messages.error(request,"Cannot delete.  You are not owner of this token or not superuser.")
         else:
           messages.error(request,"Unable to delete " + token_to_delete)
-        return redirect(get_tokens)
+        return redirect(getTokens)
 
       elif 'downloadtoken' in request.POST:
         # Download the token in a test file
@@ -433,21 +444,21 @@ def get_tokens(request):
         # update project token
         token = (request.POST.get('token')).strip()
         request.session["token_name"] = token
-        return redirect(updatetoken)
+        return redirect(updateToken)
 
       # redirect to add a token
       elif 'add' in request.POST:
         # RBTODO prepopulate the project for the token
         # RBTODO make tokens captive to project button
-        return redirect(createtoken)
+        return redirect(createToken)
 
       elif 'backtoprojects' in request.POST:
-         return redirect(profile) 
+         return redirect(getProjects) 
 
       else:
         # Unrecognized Option
         messages.error(request,"Invalid request")
-        return redirect(get_tokens)
+        return redirect(getTokens)
 
     else:
       # GET tokens for the specified project
@@ -458,7 +469,7 @@ def get_tokens(request):
       else:
         proj=""
         all_tokens = Token.objects.all()
-      return render_to_response('token.html', { 'tokens': all_tokens, 'project': proj },context_instance=RequestContext(request))
+      return render_to_response('tokens.html', { 'tokens': all_tokens, 'project': proj },context_instance=RequestContext(request))
     
   except OCPCAError, e:
     messages.error("Unknown exception in administrative interface = {}".format(e)) 
@@ -467,7 +478,7 @@ def get_tokens(request):
 
 
 @login_required(login_url='/ocp/accounts/login/')
-def createproject(request):
+def createProject(request):
 
   pd = ocpcaproj.OCPCAProjectsDB()  
 
@@ -476,8 +487,9 @@ def createproject(request):
 
       form = ProjectForm(request.POST)
       
-      # restrict datasets to user visible fields
-      form.fields['dataset'].queryset = Dataset.objects.filter(user_id=request.user.id) | Dataset.objects.filter(public=1)
+# RBRM I think this is not right.  Omit and delete by 8/1.   6/9/15
+#      # restrict datasets to user visible fields
+#      form.fields['dataset'].queryset = Dataset.objects.filter(user_id=request.user.id) | Dataset.objects.filter(public=1)
 
       if form.is_valid():
         new_project=form.save(commit=False)
@@ -502,7 +514,7 @@ def createproject(request):
           logger.error("Failed to create project.  Error {}".format(e))
           new_project.delete()
 
-        return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile/')
+        return HttpResponseRedirect(get_script_prefix()+'ocpuser/projects/')
       else:
         context = {'form': form}
         print form.errors
@@ -510,7 +522,7 @@ def createproject(request):
 
     else:
       #default
-      return redirect(profile)
+      return redirect(getProjects)
   else:
     '''Show the Create Project form'''
 
@@ -523,7 +535,7 @@ def createproject(request):
     return render_to_response('createproject.html',context,context_instance=RequestContext(request))
       
 @login_required(login_url='/ocp/accounts/login/')
-def createdataset(request):
+def createDataset(request):
  
   if request.method == 'POST':
     if 'createdataset' in request.POST:
@@ -538,11 +550,11 @@ def createdataset(request):
         print form.errors
         return render_to_response('createdataset.html',context,context_instance=RequestContext(request))
     elif 'backtodatasets' in request.POST:
-      return redirect(get_datasets)
+      return redirect(getDatasets)
     else:
       #default
       messages.error(request,"Unkown POST request.")
-      return redirect(get_datasets)
+      return redirect(getDatasets)
   else:
     '''Show the Create datasets form'''
     form = DatasetForm()
@@ -551,12 +563,12 @@ def createdataset(request):
 
 
 @login_required(login_url='/ocp/accounts/login/')
-def updatedataset(request):
+def updateDataset(request):
 
   # Get the dataset to update
   ds = request.session["dataset_name"]
   if request.method == 'POST':
-    if 'UpdateDataset' in request.POST:
+    if 'updatedataset' in request.POST:
       ds_update = get_object_or_404(Dataset,dataset_name=ds)
 
       if ds_update.user_id == request.user.id or request.user.is_superuser:
@@ -613,14 +625,14 @@ def updatedataset(request):
 
 
 @login_required(login_url='/ocp/accounts/login/')
-def updatechannel(request):
+def updateChannel(request):
 
   prname = request.session['project']
   pr = Project.objects.get ( project_name = prname )
   pd = ocpcaproj.OCPCAProjectsDB()
   if request.method == 'POST':
 
-    if 'updatechannel' in request.POST: 
+    if 'updateChannel' in request.POST: 
 
       chname = request.session["channel_name"]
       channel_to_update = get_object_or_404(Channel,channel_name=chname,project_id=pr)
@@ -701,7 +713,7 @@ def updatechannel(request):
 
     else:
       #unrecognized option
-      return redirect(get_channels)
+      return redirect(getChannels)
 
     if pr.user_id == request.user.id or request.user.is_superuser:
  
@@ -733,6 +745,7 @@ def updatechannel(request):
         'channel_datatype': channel_to_update[0].channel_datatype,
         'channel_description':channel_to_update[0].channel_description,
         'readonly':channel_to_update[0].readonly,
+        'resolution':channel_to_update[0].resolution,
         'default':channel_to_update[0].default,
         'exceptions':channel_to_update[0].exceptions,
         'propagate':channel_to_update[0].propagate,
@@ -753,12 +766,12 @@ def updatechannel(request):
 
 
 @login_required(login_url='/ocp/accounts/login/')
-def updatetoken(request):
+def updateToken(request):
 
   # Get the dataset to update
   token = request.session["token_name"]
   if request.method == 'POST':
-    if 'UpdateToken' in request.POST:
+    if 'updatetoken' in request.POST:
       token_update = get_object_or_404(Token,token_name=token)
       form = TokenForm(data=request.POST or None, instance=token_update)
       if form.is_valid():
@@ -803,7 +816,7 @@ def updatetoken(request):
     return render_to_response('updatetoken.html',context,context_instance=RequestContext(request))
 
 @login_required(login_url='/ocp/accounts/login/')
-def updateproject(request):
+def updateProject(request):
 
   proj_name = request.session["project_name"]
   if request.method == 'POST':
@@ -822,17 +835,17 @@ def updateproject(request):
         else:
           messages.error(request,"Cannot update.  You are not owner of this project or not superuser.")
         del request.session["project_name"]
-        return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile')
+        return HttpResponseRedirect(get_script_prefix()+'ocpuser/projects')
       else:
         #Invalid form
         context = {'form': form}
         return render_to_response('updateproject.html',context,context_instance=RequestContext(request))
     elif 'backtoprojects' in request.POST:
-      return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile')
+      return HttpResponseRedirect(get_script_prefix()+'ocpuser/projects')
     else:
       #unrecognized option
       messages.error(request,"Unrecognized Post")
-      return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile')
+      return HttpResponseRedirect(get_script_prefix()+'ocpuser/pojects')
       
   else:
     #Get: Retrieve project and display update project form.
@@ -855,7 +868,7 @@ def updateproject(request):
     return render_to_response('updateproject.html',context,context_instance=RequestContext(request))
 
 @login_required(login_url='/ocp/accounts/login/')
-def createtoken(request):
+def createToken(request):
 
   if request.method == 'POST':
     if 'createtoken' in request.POST:
@@ -869,16 +882,16 @@ def createtoken(request):
         new_token=form.save(commit=False)
         new_token.user_id=request.user.id
         new_token.save()
-        return HttpResponseRedirect(get_script_prefix()+'ocpuser/profile')
+        return HttpResponseRedirect(get_script_prefix()+'ocpuser/projects')
       else:
         context = {'form': form}
         print form.errors
         return render_to_response('createtoken.html',context,context_instance=RequestContext(request))
     elif 'backtotokens' in request.POST:
-       return redirect(get_tokens) 
+       return redirect(getTokens) 
     else:
       messages.error(request,"Unrecognized Post")
-      redirect(get_tokens)
+      redirect(getTokens)
   else:
     '''Show the Create datasets form'''
     form = TokenForm()
@@ -888,9 +901,136 @@ def createtoken(request):
 
     context = {'form': form}
     return render_to_response('createtoken.html',context,context_instance=RequestContext(request))
+
+
+@login_required(login_url='/ocp/accounts/login/')
+def backupProject(request):
+  """Backup some or all channels of a project"""
+
+  # perform a backup
+  if request.method == 'POST':
+
+    import pdb; pdb.set_trace()
+
+    if 'backup' in request.POST:
+
+      form = BackupForm(request.POST)
+
+      if not form.is_valid():
+
+        # bind the project
+        prname = request.session["project"]
+
+        context = {'form': form, 'project': prname}
+        return render_to_response('backup.html',context,context_instance=RequestContext(request))
+
+      else:
+
+        new_backup=form.save(commit=False)
+
+        # backup to the local file system 
+        if new_backup.protocol == 'local':
+
+          # Get the database information
+          pd = ocpcaproj.OCPCAProjectsDB()
+          db = (request.POST.get('project')).strip()
+
+          channel = request.POST.get('channel').strip()
+          if (channel==None or channel=='') and request.POST.get('allchans') == 'on':
+            channel ='all'
+          else:
+            pass #RBTODO error  
+
+          import pdb; pdb.set_trace()
+          #RB restart here
+          upath = '{}/{}'.format(settings.BACKUP_PATH,request.user.username)
+          ppath = '{}/{}'.format(upath,db)
+          fpath = '{}/{}'.format(ppath,channel)
+          if not os.path.exists(upath):
+            os.mkdir( upath, 0755 )
+          if not os.path.exists(ppath):
+            os.mkdir( ppath, 0755 )
+          if not os.path.exists(fpath):
+            os.mkdir( fpath, 0755 )
+
+          ofile = '{}/{}.sql'.format(fpath,datetime.now().isoformat())
+          outputfile = open(ofile, 'w')
+          dbuser = settings.DATABASES['default']['USER']
+          passwd = settings.DATABASES['default']['PASSWORD']
+
+          # backup now
+          if request.POST.get('async')==0:
+
+            # if all tables were requested
+            if request.POST.get('allchans') == 'on':
+              cmd = ['mysqldump', '-u'+ dbuser, '-p'+ passwd, '--single-transaction', '--opt', db]
+            # just the channel
+            else:
+              cmd = ['mysqldump', '-u'+ dbuser, '-p'+ passwd, '--single-transaction', '--opt', db]
+
+
+              # get a list of the tables for the channel
+              tables = db.getChannelTables ( ch )
+              for t in tables:
+                cmd.append(t)
+
+              p = subprocess.Popen(cmd, stdout=outputfile).communicate(None)
+
+            messages.success(request, 'Sucessfully backed up database '+ db)
+            return HttpResponseRedirect(get_script_prefix()+'ocpuser/projects')
+
+          # in the background
+          else:
+            # farm this out to celery
+            pass
+
+        elif new_backup.protocol == 's3':
+          pass
+
+        else:
+          #RBTODO unknown protocol error
+          pass
+
+      
+
+      
+
+      
+
+
+    # synchronous
+
+    # asynchronous
+
+    elif 'backtoprojects' in request.POST:
+      return redirect(getProjects)
+
+
+  # show the backup page
+  else:
+    """show the backup form"""
+
+    # bind the project
+    prname = request.session["project"]
+    pr = Project.objects.get(project_name=prname)
+
+    # get all channel choices
+    channels = Channel.objects.filter(project_id=pr) 
+
+    data = {
+      'project': pr,
+    }
+    form = BackupForm(initial=data)
+
+    # restrict datasets to user visible fields
+    form.fields['channel'].queryset = channels
+
+    context = {'form': form, 'project': prname, 'channels': channels }
+    return render_to_response('backup.html', context, context_instance=RequestContext(request))
+
       
 @login_required(login_url='/ocp/accounts/login/')
-def restoreproject(request):
+def restoreProject(request):
 
   if request.method == 'POST':
    
@@ -950,16 +1090,16 @@ def restoreproject(request):
         proc = subprocess.Popen(["mysql", "--user=%s" % dbuser, "--password=%s" % passwd, project],stdin=subprocess.PIPE,stdout=subprocess.PIPE)
         proc.communicate(file(path).read())
         messages.success(request, 'Sucessfully restored database '+ project)
-        return redirect(profile)
+        return redirect(getProjects)
     
       else:
         #Invalid Form
         context = {'form': form}
         print form.errors
-        return render_to_response('profile.html',context,context_instance=RequestContext(request))
+        return render_to_response('projects.html',context,context_instance=RequestContext(request))
     else:
-      #Invalid post - redirect to profile for now
-      return redirect(profile)
+      #Invalid post - redirect to projects for now
+      return redirect(getProjects)
   else:        
       #GET DATA
     randtoken = ''.join(random.choice(string.ascii_uppercase + string.digits + string.ascii_lowercase) for x in range(64))
@@ -970,10 +1110,11 @@ def restoreproject(request):
     else:
       file_list={}
     context = Context({'form': form, 'flist': file_list})
-    return render_to_response('restoreproject.html',context,context_instance=RequestContext(request))
+    return render_to_response('restoreProject.html',context,context_instance=RequestContext(request))
+
 
 @login_required(login_url='/ocp/accounts/login/')
-def downloaddata(request):
+def downloadData(request):
   
   try:
     pd = ocpcaproj.OCPCAProjectsDB()

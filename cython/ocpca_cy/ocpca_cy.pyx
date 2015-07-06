@@ -12,9 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# setup ocplib
+import sys
+sys.path.append('../../ocplib')
+
 import numpy as np
 cimport numpy as np
-import zindex
+import ocplib 
 
 DTYPE = np.uint32
 ctypedef np.uint32_t DTYPE_t
@@ -397,7 +401,8 @@ def cubeLocs_cy ( np.ndarray[np.uint32_t, ndim=2] locations, cubedim ):
   for i in range(len(locations)):
     loc = locations[i]
     cubeno = loc[0]/cubedim[0], loc[1]/cubedim[1], loc[2]/cubedim[2]
-    cubekey = zindex.XYZMorton(cubeno)
+#    cubekey = zindex.XYZMorton(cubeno)
+    cubekey = ocplib.XYZMorton(cubeno)
     cubelocs[i]=[cubekey,loc[0],loc[1],loc[2]]
 
   return cubelocs

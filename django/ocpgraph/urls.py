@@ -12,6 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#site='localhost/ocp'
-#site='localhost:8080/ocp'
-site='localhost:8000'
+from django.conf.urls import patterns, include, url
+
+# Uncomment the next two lines to enable the admin:
+#from django.contrib import admin
+#admin.autodiscover()
+
+
+urlpatterns = patterns('ocpgraph.views',
+   url(r'(?P<webargs>^.*)$', 'buildGraph'),
+#  url(r'^admin/', include(admin.site.urls)),
+)

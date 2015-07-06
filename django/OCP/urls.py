@@ -28,6 +28,7 @@ base_urlpatterns = patterns('',
     url(r'^accounts/', include('registration.backends.default.urls')),
     url(r'^ocpuser/', include('ocpuser.urls')),
     url(r'^viz/', include('ocpviz.urls')),
+    url(r'^ocpgraph/', include('ocpgraph.urls')),
 )
 
 urlpatterns = patterns('', 

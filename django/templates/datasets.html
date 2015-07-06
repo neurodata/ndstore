@@ -93,14 +93,12 @@
         <td>{{ ds.xvoxelres }}</td>
         <td>{{ ds.yvoxelres }}</td>
         <td>{{ ds.zvoxelres }}</td>
-		    {{ ds.public.ashidden }}
         {% if ds.public == 0%}
           <td>Private</td>
         {% else %}
           <td>Public</td>
         {% endif %}
 		    <td>{{ ds.scalinglevels }}</td>
-		    {{ ds.scalingoption.ashidden }}
         {% if ds.scalingoption == 0%}
           <td>Z Slices</td>
         {% else %}
