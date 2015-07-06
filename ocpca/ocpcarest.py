@@ -57,7 +57,7 @@ def cutout (imageargs, ch, proj, db):
   :param proj: OCPCAProject object
   :param db: OCPCADB object
   """
-
+  
   # Perform argument processing
   try:
     args = restargs.BrainRestArgs ()
@@ -314,10 +314,20 @@ def imgSlice(webargs, proj, db):
 
   try:
     # argument of format channel/service/resolution/cutoutargs
-    m = re.match("(\w+)/(xy|yz|xz)/(\d+)/([\d+,/]+)?(window/\d+,\d+/)?$", webargs)
+    # cutoutargs can be window|filter/value,value/
+    m = re.match("(\w+)/(xy|yz|xz)/(\d+)/([\d+,/]+)?(window/\d+,\d+/|filter/[\d+,]+/)?$", webargs)
     [channel, service, resolution, imageargs] = [i for i in m.groups()[:-1]]
-    window_args = m.groups()[-1]
     imageargs = resolution + '/' + imageargs
+    extra_args = m.groups()[-1]
+    filter_args = None
+    window_args = None
+    if extra_args is not None:
+      if re.match("window/\d+,\d+/$", extra_args):
+        window_args = extra_args
+      elif re.match("filter/[\d+,]+/$", extra_args):
+        filter_args = extra_args
+      else:
+        raise
   except Exception, e:
     logger.warning("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
     raise OCPCAError("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
@@ -352,14 +362,14 @@ def imgSlice(webargs, proj, db):
 
   # Perform the cutout
   ch = proj.getChannelObj(channel)
-  cb = cutout(cutoutargs, ch, proj, db)
+  cb = cutout(cutoutargs + (filter_args if filter_args else ""), ch, proj, db)
 
   if window_args is not None:
     try:
       window_range = [int(i) for i in re.match("window/(\d+),(\d+)/", window_args).groups()]
     except:
-      logger.warning ("Illegal window arguments={}.  Error={}".format(imageargs,e))
-      raise OCPCAError ("Illegal window arguments={}.  Error={}".format(imageargs,e))
+      logger.warning ("Illegal window arguments={}. Error={}".format(imageargs,e))
+      raise OCPCAError ("Illegal window arguments={}. Error={}".format(imageargs,e))
   else:
     window_range = None
   
@@ -372,7 +382,8 @@ def imgPNG (proj, webargs, cb):
   
   try:
     # argument of format channel/service/resolution/cutoutargs
-    m = re.match("(\w+)/(xy|yz|xz)/(\d+)/([\d+,/]+)(window/\d+,\d+/)?$", webargs)
+    # cutoutargs can be window|filter/value,value/
+    m = re.match("(\w+)/(xy|yz|xz)/(\d+)/([\d+,/]+)(window/\d+,\d+/|filter/[\d+,]+/)?$", webargs)
     [channel, service, resolution, imageargs] = [i for i in m.groups()[:-1]]
   except Exception, e:
     logger.warning("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
@@ -524,8 +535,8 @@ def selectService ( service, webargs, proj, db ):
   elif service in ['xzanno', 'yzanno', 'xyanno']:
     return imgAnno ( service.strip('anno'), webargs, proj, db )
   else:
-    logger.warning("An illegal Web GET service was requested {}. Args {}".format( service, args ))
-    raise OCPCAError ("No such Web service: {}".format(service) )
+    logger.warning("An illegal Web GET service was requested {}. Args {}".format(service, webargs))
+    raise OCPCAError("An illegal Web GET service was requested {}. Args {}".format(service, webargs))
 
 
 def selectPost ( webargs, proj, db, postdata ):
@@ -744,7 +755,7 @@ def getAnnoById ( ch, annoid, h5f, proj, db, dataoption, resolution=None, corner
     h5anno.addVoxels ( resolution,  allvoxels )
 
   # support list of IDs to filter cutout
-  elif dataoption==AR_CUTOUT:
+  elif dataoption == AR_CUTOUT:
 
     # cutout the data with the and remap for neurons.
     if anno.__class__ in [ annotation.AnnNeuron ] and dataoption != AR_NODATA:
@@ -1156,11 +1167,11 @@ def putAnnotation ( webargs, postdata ):
           idgrp = h5f.get(k)
   
           # Convert HDF5 to annotation
-          anno = h5ann.H5toAnnotation ( k, idgrp, db )
+          anno = h5ann.H5toAnnotation(k, idgrp, db)
   
           # set the identifier (separate transaction)
           if not ('update' in options or 'dataonly' in options or 'reduce' in options):
-            anno.setID ( ch, db )
+            anno.setID(ch, db)
   
           # start a transaction: get mysql out of line at a time mode
           db.startTxn ()
@@ -1180,9 +1191,8 @@ def putAnnotation ( webargs, postdata ):
                 raise OCPCAError ("Illegal combination of options. Cannot use udpate and dataonly together")
   
               elif not 'dataonly' in options and not 'reduce' in options:
-  
                 # Put into the database
-                db.putAnnotation ( ch, anno, options )
+                db.putAnnotation(ch, anno, options)
   
               #  Get the resolution if it's specified
               if 'RESOLUTION' in idgrp:
@@ -1348,11 +1358,14 @@ def putSWC ( webargs, postdata ):
 #  Return a list of annotation object IDs
 #  for now by type and status
 def queryAnnoObjects ( webargs, postdata=None ):
-  """ Return a list of anno ids restricted by equality predicates.
-      Equalities are alternating in field/value in the url.
-  """
+  """Return a list of anno ids restricted by equality predicates. Equalities are alternating in field/value in the url."""
 
-  [ token, channel, query ,restargs ] = webargs.split ('/', 3)
+  try:
+    m = re.match("(\w+)/(\w+)/query/(.*)/?$", webargs)
+    [token, channel, restargs] = [i for i in m.groups()]
+  except Exception, e:
+    logger.warning("Wrong arguments {}. {}".format(webargs, e))
+    raise OCPCAError("Wrong arguments {}. {}".format(webargs, e))
 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
@@ -1364,9 +1377,7 @@ def queryAnnoObjects ( webargs, postdata=None ):
     # We have a cutout as well
     if postdata:
 
-    # RB this is a brute force implementation.  This probably needs to be
-    #  optimized to use several different execution strategies based on the
-    #  cutout size and the number of objects.
+      # RB TODO this is a brute force implementation. This probably needs to be optimized to use several different execution strategies based on the cutout size and the number of objects.
 
       # Make a named temporary file for the HDF5
       with closing (tempfile.NamedTemporaryFile()) as tmpfile:
@@ -1376,24 +1387,30 @@ def queryAnnoObjects ( webargs, postdata=None ):
         h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
 
         try:
-  
-          offset = proj.datasetcfg.offset[resolution]
-          corner = (h5f['XYZOFFSET'][0]-offset[0],h5f['XYZOFFSET'][1]-offset[1],h5f['XYZOFFSET'][2]-offset[2])
-          dim = h5f['CUTOUTSIZE'][:]
           resolution = h5f['RESOLUTION'][0]
+          offset = proj.datasetcfg.offset[resolution]
+          from operator import sub
+          corner = map(sub, h5f['XYZOFFSET'], offset)
+          dim = h5f['CUTOUTSIZE'][:]
   
-          if not proj.datasetcfg.checkCube( resolution, corner[0], corner[0]+dim[0], corner[1], corner[1]+dim[1], corner[2], corner[2]+dim[2] ):
-            logger.warning ( "Illegal cutout corner=%s, dim=%s" % ( corner, dim))
-            raise OCPCAError ( "Illegal cutout corner=%s, dim=%s" % ( corner, dim))
+          if not proj.datasetcfg.checkCube(resolution, corner, dim):
+            logger.warning("Illegal cutout corner={}, dim={}".format(corner, dim))
+            raise OCPCAError("Illegal cutout corner={}, dim={}".format( corner, dim))
   
-          cutout = db.cutout ( ch, corner, dim, resolution )
-          annoids = np.intersect1d ( annoids, np.unique( cutout.data ))
+          cutout = db.cutout(ch, corner, dim, resolution)
+          
+          # KL TODO On same lines as filter. Not yet complete. Called annoidIntersect()
+
+          # Check if cutout as any non zeros values
+          if cutout.isNotZeros():
+            annoids = np.intersect1d(annoids, np.unique(cutout.data))
+          else:
+            annoids = np.asarray([], dtype=np.uint32)
   
         finally:
-  
           h5f.close()
   
-    return h5ann.PackageIDs ( annoids ) 
+    return h5ann.PackageIDs(annoids) 
 
 
 def deleteAnnotation ( webargs ):
@@ -1531,7 +1548,8 @@ def getField ( webargs ):
   """Return a single HDF5 field"""
 
   try:
-    [token, channel, annid, verb, field, rest] = webargs.split ('/',5)
+    m = re.match("(\w+)/(\w+)/getField/(\d+)/(\w+)/$", webargs)
+    [token, channel, annid, field] = [i for i in m.groups()]
   except:
     logger.warning("Illegal getField request.  Wrong number of arguments.")
     raise OCPCAError("Illegal getField request.  Wrong number of arguments.")
@@ -1544,19 +1562,20 @@ def getField ( webargs ):
     anno = db.getAnnotation(ch, annid)
 
     if anno is None:
-      logger.warning("No annotation found at identifier = {}".format(annoid))
-      raise OCPCAError ("No annotation found at identifier = {}".format(annoid))
+      logger.warning("No annotation found at identifier = {}".format(annid))
+      raise OCPCAError ("No annotation found at identifier = {}".format(annid))
 
     return anno.getField(field)
 
 def setField ( webargs ):
   """Assign a single HDF5 field"""
-
+  
   try:
-    [token, channel, annid, verb, field, value, rest] = webargs.split ('/',6)
+    m = re.match("(\w+)/(\w+)/setField/(\d+)/(\w+)/(\w+|[\d+,.]+)/$", webargs)
+    [token, channel, annid, field, value] = [i for i in m.groups()]
   except:
-    logger.warning("Illegal getField request.  Wrong number of arguments.")
-    raise OCPCAError("Illegal getField request.  Wrong number of arguments.")
+    logger.warning("Illegal setField request. Wrong number of arguments.")
+    raise OCPCAError("Illegal setField request. Wrong number of arguments.")
     
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
@@ -1623,44 +1642,46 @@ def setPropagate(webargs):
 
 def merge (webargs):
   """Return a single HDF5 field"""
-  
+ 
   try:
-    [token, service, relabelids, rest] = webargs.split ('/',3)
+    m = re.match("(\w+)/(\w+)/merge/([\d+,]+)/(\w+/\d+|/d+)/$", webargs)
+    #m = re.match("(\w+)/(\w+)/merge/([\d+,]+)/([\w+,/]+)/$", webargs)
+    [token, channel_name, relabel_ids, rest_args] = [i for i in m.groups()]
   except:
-    logger.warning("Illegal globalMerge request.  Wrong number of arguments.")
-    raise OCPCAError("Illegal globalMerber request.  Wrong number of arguments.")
+    logger.warning("Illegal globalMerge request. Wrong number of arguments.")
+    raise OCPCAError("Illegal globalMerber request. Wrong number of arguments.")
   
   # get the ids from the list of ids and store it in a list vairable
-  ids = relabelids.split(',')
+  ids = relabel_ids.split(',')
   last_id = len(ids)-1
   ids[last_id] = ids[last_id].replace("/","")
   
   # Make ids a numpy array to speed vectorize
-  ids = np.array(ids,dtype=np.uint32)
-  # Validate ids . If ids do not exist raise errors
+  ids = np.array(ids, dtype=np.uint32)
+  # Validate ids. If ids do not exist raise errors
 
-  # pattern for using contexts to close databases
-  # get the project 
+  # pattern for using contexts to close databases, get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
   
+    ch = proj.getChannelObj(channel_name)
     #Check that all ids in the id strings are valid annotation objects
     for curid in ids:
-      obj = db.getAnnotation(curid)
+      obj = db.getAnnotation(ch, curid)
       if obj == None:
         logger.warning("Invalid object id {} used in merge".format(curid))
         raise OCPCAError("Invalid object id used in merge")
 
-    [mergetype,resolution] = rest.split('/',1)
-    if mergetype == "global":
-      if resolution != "":
-        [resolution,extra] = resolution.split('/')
-      else:
-        resolution=proj.getResolution()
-      return db.mergeGlobal(ids, mergetype, int(resolution))
+    m = re.match("global/(\d+)", rest_args)
+    if m.group(1) is not None:
+      resolution= int(m.group(1))
+      return db.mergeGlobal(ch, ids, 'global', int(resolution))
+    elif re.match("global/", rest_args) is not None:
+      resolution = proj.getResolution()
+      return db.mergeGlobal(ch, ids, 'global', int(resolution))
     else:
       # PYTODO illegal merge (no support if not global)
       assert 0

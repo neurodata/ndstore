@@ -347,3 +347,15 @@ def addDataToZSliceStack_ctype ( cube, output, offset ):
 
   dims = [ i for i in cube.data.shape ]
   ocplib.addDataZSlice ( cube.data, output, (cp.c_int * len(offset))(*offset), (cp.c_int * len(dims))(*dims) )
+
+#def annoidIntersect_ctype_OMP(cutout, annoid_list):
+  #"""Remove all annotations in a cutout that do not match the filterlist using OpenMP"""
+  
+  ## get a copy of the iterator as a 1-D array
+  #cutout = cutout.ravel()
+  #annoid_list = np.asarray(annoid_list, dtype=np.uint32)
+  
+  ## Calling the C openmp funtion 
+  #ocplib.annoidIntersectOMP(cutout, cp.c_int(len(cutout)), np.sort(annoid_list), cp.c_int(len(annoid_list)))
+  
+  #return cutout.reshape( cutout_shape )

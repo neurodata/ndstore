@@ -18,7 +18,7 @@ import cStringIO
 
 import mcfccatmaid
 import simplecatmaid
-import colorcatmaid
+#import colorcatmaid
 
 # Errors we are going to catch
 from ocpcaerror import OCPCAError
@@ -43,19 +43,19 @@ def mcfccatmaidview (request, webargs):
     raise
 
 # single-channel choose the color
-def colorcatmaidview (request, webargs):
-  """single-channel choose the color"""
+#def colorcatmaidview (request, webargs):
+  #"""single-channel choose the color"""
 
-  try:
-    cc = colorcatmaid.ColorCatmaid()
-    imgfobj = cc.getTile(webargs)
-    return django.http.HttpResponse(imgfobj.read(), content_type="image/png")
+  #try:
+    #cc = colorcatmaid.ColorCatmaid()
+    #imgfobj = cc.getTile(webargs)
+    #return django.http.HttpResponse(imgfobj.read(), content_type="image/png")
 
-  except OCPCAError, e:
-    return django.http.HttpResponseNotFound(e)
-  except Exception, e:
-    logger.exception("Unknown exception in colorcatmaidview: %s" % e )
-    raise
+  #except OCPCAError, e:
+    #return django.http.HttpResponseNotFound(e)
+  #except Exception, e:
+    #logger.exception("Unknown exception in colorcatmaidview: %s" % e )
+    #raise
 
 # simple per-tile interface
 def simplecatmaidview (request, webargs):
