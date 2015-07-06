@@ -604,7 +604,6 @@ class OCPCADB:
 
     # dictionary with the index
     cubeidx = defaultdict(set)
-
     cubelocs = ocplib.locate_ctype ( np.array(locations, dtype=np.uint32), cubedim )
 
     # sort the arrary, by cubeloc

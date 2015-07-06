@@ -69,6 +69,8 @@ class Cube:
     """Load the cube from a pickled and zipped blob"""
     try:
       self.data = np.load ( cStringIO.StringIO ( zlib.decompress ( pandz[:] ) ) )
+      self.zdim, self.ydim, self.xdim = self.data.shape
+
     except:
       logger.error ("Failed to decompress database cube.  Data integrity concern.")
       raise
