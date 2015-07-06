@@ -168,56 +168,108 @@ def HDF5(chanargs, proj, db):
   tmpfile.seek(0)
   return tmpfile.read()
 
+def postTiff3d ( channel, postargs, proj, db, postdata ):
+  """Upload a tiff to the database"""
+
+  # get the channel
+  ch = proj.getChannelObj(channel)
+  if ch.getDataType() in ocpcaproj.DTYPE_uint8:
+    datatype=np.uint8
+  elif ch.getDataType() in ocpcaproj.DTYPE_uint16:
+    datatype=np.uint16
+  elif ch.getDataType() in ocpcaproj.DTYPE_uint32:
+    import pdb; pdb.set_trace()
+    datatype=np.uint32
+  else:
+    logger.error("Unsupported data type for TIFF3d post. {}".format(ch.getDataType())) 
+    raise OCPCAError ("Unsupported data type for TIFF3d post. {}".format(ch.getDataType())) 
+
+  # parse the args
+  resstr, xoffstr, yoffstr, zoffstr, rest = postargs.split('/',4)
+  resolution = int(resstr)
+  projoffset = proj.datasetcfg.offset[resolution]
+  xoff = int(xoffstr)-projoffset[0]
+  yoff = int(yoffstr)-projoffset[1]
+  zoff = int(zoffstr)-projoffset[2]
+
+
+  # read the tiff data into a cuboid
+  with closing (tempfile.NamedTemporaryFile()) as tmpfile:
+    tmpfile.write( postdata )
+    tmpfile.seek(0)
+    tif = TIFF.open(tmpfile.name)
+
+    # get tiff metadata
+    image_width = tif.GetField("ImageWidth")
+    image_length = tif.GetField("ImageLength")
+
+    # get a z batch -- how many slices per cube
+    zbatch = proj.datasetcfg.cubedim[resolution][0]
+
+    db.startTxn()
+
+    dircount = 0
+    dataar = None
+    # read each one at a time
+    for image in tif.iter_images():
+
+      # allocate a batch every cubesize
+      if dircount % zbatch == 0:
+        dataarray = np.zeros((zbatch,image_length,image_width),dtype=datatype)
+
+      dataarray[dircount%zbatch,:,:] = image
+
+      dircount += 1
+
+      # if we have a full batch go ahead and ingest
+      if dircount % zbatch == 0:
+        corner = ( xoff, yoff, zoff+dircount-zbatch )
+        db.writeCuboid (ch, corner, resolution, dataarray)
+
+    # ingest any remaining data
+    corner = ( xoff, yoff, zoff+dircount-(dircount%zbatch) )
+    db.writeCuboid (ch, corner, resolution, dataarray[0:(dircount%zbatch),:,:])
+
+    db.commit()
+
+
 def tiff3d ( chanargs, proj, db ):
   """Return a 3d tiff file"""
 
-
   [channels, service, imageargs] = chanargs.split('/', 2)
+
+  # create a temporary tif file
+  tmpfile = tempfile.NamedTemporaryFile()
+  tif = TIFF.open(tmpfile.name, mode='w')
 
   try: 
 
     for channel_name in channels.split(','):
+
       ch = proj.getChannelObj(channel_name)
       cube = cutout ( imageargs, ch, proj, db )
       FilterCube ( imageargs, cube )
 
-      tmpfile = tempfile.NamedTemporaryFile()
-      tif = TIFF.open(tmpfile.name, mode='w')
 
+# RB -- I think this is a cutout format.  So, let's not recolor.
 
-      # if it's annotations, recolor
-      if ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS:
-
-        imagemap = np.zeros ( (cube.data.shape[0]*cube.data.shape[1], cube.data.shape[2]), dtype=np.uint32 )
-
-        # turn it into a 2-d array for recolor -- maybe make a 3-d recolor
-        recolor_cube = ocplib.recolor_ctype( cube.data.reshape((cube.data.shape[0]*cube.data.shape[1], cube.data.shape[2])), imagemap )
-
-        # turn it back into a 4-d array RGBA
-        recolor_cube = recolor_cube.view(dtype=np.uint8).reshape((cube.data.shape[0],cube.data.shape[1],cube.data.shape[2], 4 ))
-
-        for i in range(recolor_cube.shape[0]):
-          tif.write_image(recolor_cube[i,:,:,0:3], write_rgb=True)
-
-        # split out the channels 
-#        red_ar = recolor_cube[:,:,:,0]
-#        grn_ar = recolor_cube[:,:,:,1]
-#        blue_ar = recolor_cube[:,:,:,2]
-#        alpha = recolor_cube[:,:,:,3]
-
-#        # Create an in-memory HDF5 file
+#      # if it's annotations, recolor
+#      if ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS:
 #
-#        tif.SetField('SAMPLESPERPIXEL',3)
+#        imagemap = np.zeros ( (cube.data.shape[0]*cube.data.shape[1], cube.data.shape[2]), dtype=np.uint32 )
+#
+#        # turn it into a 2-d array for recolor -- maybe make a 3-d recolor
+#        recolor_cube = ocplib.recolor_ctype( cube.data.reshape((cube.data.shape[0]*cube.data.shape[1], cube.data.shape[2])), imagemap )
+#
+#        # turn it back into a 4-d array RGBA
+#        recolor_cube = recolor_cube.view(dtype=np.uint8).reshape((cube.data.shape[0],cube.data.shape[1],cube.data.shape[2], 4 ))
 #
 #        for i in range(recolor_cube.shape[0]):
-#          rgbcube = recolor_cube[i,:,:,0:3]
-#          tif.write_image(rgbcube, write_rgb=True)
+#          tif.write_image(recolor_cube[i,:,:,0:3], write_rgb=True)
 #
-#          tifimg = TIFFimage ( rgbcube ) 
-#          tif.write_image(tifimg, write_rgb=True)
+#      else:
 
-      else:
-        tif.write_image(cube.data)
+      tif.write_image(cube.data)
 
   except:
     tif.close()
@@ -479,6 +531,10 @@ def selectPost ( webargs, proj, db, postdata ):
   """Identify the service and pass on the arguments to the appropiate service."""
 
   [channel, service, postargs] = webargs.split('/', 2)
+
+  # if it's a 3d tiff treat differently.  No cutout args.
+  if service == 'tiff':
+    return postTiff3d ( channel, postargs, proj, db, postdata )
 
   # Create a list of channels from the comma separated argument
   channel_list = channel.split(',')

@@ -28,7 +28,7 @@ logger=logging.getLogger("ocp")
 
 GET_SLICE_SERVICES = ['xy', 'yz', 'xz']
 GET_ANNO_SERVICES = ['xyanno', 'yzanno', 'xzanno']
-POST_SERVICES = ['hdf5', 'npz', 'hdf5_async', 'propagate']
+POST_SERVICES = ['hdf5', 'npz', 'hdf5_async', 'propagate', 'tiff']
 
 
 def cutout (request, webargs):
@@ -92,7 +92,7 @@ def cutout (request, webargs):
     return django.http.HttpResponseNotFound(e.value)
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
-  except:
+  except Exception, e:
     logger.exception("Unknown exception in getCutout.")
     raise OCPCAError("Unknow exception in getCutout")
 
