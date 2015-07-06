@@ -36,7 +36,8 @@ class Cube:
 
     # cubesize is in z,y,x for interactions with tile/image data
     self.zdim, self.ydim, self.xdim = self.cubesize = [ cubesize[2],cubesize[1],cubesize[0] ]
-    self.data = np.empty ( self.cubesize )
+    # RB this next line is not typed and produces floats.  Cube needs to be created in the derived classes
+#    self.data = np.empty ( self.cubesize )
 
 
   def addData ( self, other, index ):

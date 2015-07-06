@@ -13,4 +13,5 @@
 # limitations under the License.
 
 #site='localhost/ocp'
+#site='localhost:8080/ocp'
 site='localhost:8000'

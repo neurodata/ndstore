@@ -8,4 +8,5 @@ wsgi-file = /var/www/open-connectome/django/OCP/wsgi.py
 uid = www-data
 gid = wwww-data
 module = ocp
+; virtualenv = /home/randal/.virtualenvs/ocp/
 logto = /var/log/uwsgi/ocp.log

@@ -130,6 +130,33 @@ class H5Anno:
       mdgrp.create_dataset ( "SEEDS", (len(org_seeds),), np.uint32, org_seeds )
       mdgrp.create_dataset ( "CENTROID", (3,), np.uint32, data=org_centroid )
 
+    # Node
+    elif annotype == 7:
+
+      node_nodetype = random.randint(1,9)
+      node_skeletonid = random.randint(1,9)
+      node_parentid = random.randint(1,100000)
+      node_location = [ random.randint(1,10000) for x in range(3) ]
+      node_children = [ random.randint(1,10000) for x in range(5) ]
+      node_diameter = random.random()
+
+      mdgrp.create_dataset ( "NODETYPE", (1,), np.uint32, data=node_nodetype )
+      mdgrp.create_dataset ( "SKELETONID", (1,), np.uint32, data=node_skeletonid )
+      mdgrp.create_dataset ( "PARENTID", (1,), np.uint32, data=node_parentid )
+      mdgrp.create_dataset ( "LOCATION", (3,), np.uint32, data=node_location )
+      mdgrp.create_dataset ( "CHILDREN", (5,), np.uint32, data=node_children )
+      mdgrp.create_dataset ( "DIAMETER", (1,), np.float, data=node_diameter )
+
+    # Skeleton
+    elif annotype == 8:
+
+      skel_skeltype = random.randint(1,9)
+      skel_rootnode = random.randint(1,100000)
+
+      mdgrp.create_dataset ( "SKELETONTYPE", (1,), np.uint32, data=skel_skeltype )
+      mdgrp.create_dataset ( "ROOTNODE", (1,), np.uint32, data=skel_rootnode )
+
+
   def getFileObject(self):
     """Return a file object to be posted to a URL"""
     self.h5fh.flush()
@@ -201,6 +228,7 @@ def main():
   parser = argparse.ArgumentParser(description='Write an annotation object.')
   parser.add_argument('baseurl', action="store")
   parser.add_argument('token', action="store")
+  parser.add_argument('channel', action="store")
   parser.add_argument('--anntype', action="store", type=int, default=1)
   parser.add_argument('--annid', action="store", type=int, help='Annotation ID to extract', default=0)
   parser.add_argument('--update', action='store_true', help='Update an existing annotation.')
@@ -245,11 +273,11 @@ def main():
 
   # Build the put URL
   if result.update:
-    url = "http://%s/ca/%s/update/" % ( result.baseurl, result.token)
+    url = "http://%s/ca/%s/%s/update/" % ( result.baseurl, result.token, result.channel)
   elif result.dataonly:
-    url = "http://%s/ca/%s/dataonly/" % ( result.baseurl, result.token)
+    url = "http://%s/ca/%s/%s/dataonly/" % ( result.baseurl, result.token, result.channel)
   else:
-    url = "http://%s/ca/%s/" % ( result.baseurl, result.token)
+    url = "http://%s/ca/%s/%s/" % ( result.baseurl, result.token, result.channel)
 
   if result.preserve:  
     url += 'preserve/'

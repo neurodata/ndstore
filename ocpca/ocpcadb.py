@@ -1022,7 +1022,7 @@ class OCPCADB:
 
       # use the batch generator interface
       for idx, datastring in cuboids:
- 
+
         #add the query result cube to the bigger cube
         curxyz = ocplib.MortonXYZ(int(idx))
         offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
@@ -1413,7 +1413,7 @@ class OCPCADB:
       if anno is None:
         logger.warning("No annotation found at identifier = {}".format(annid))
         raise OCPCAError ("No annotation found at identifier = {}".format(annid))
-      anno.setField(ch, field, value)
+      anno.setField(field, value)
       anno.update(ch, cursor)
     except:
       self.closeCursor(cursor) 
@@ -1795,7 +1795,6 @@ class OCPCADB:
       print "updateIndex"
 
     return "Merge 3D"
-
 
   def exceptionsCutout ( self, corner, dim, resolution ):
     """Return a list of exceptions in the specified region.

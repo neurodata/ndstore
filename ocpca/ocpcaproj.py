@@ -471,13 +471,15 @@ class OCPCAProjectsDB:
             cursor.execute ( "CREATE TABLE {}_synapses (annoid BIGINT PRIMARY KEY, synapse_type INT, weight FLOAT)".format(ch.channel_name))
             cursor.execute ( "CREATE TABLE {}_segments (annoid BIGINT PRIMARY KEY, segmentclass INT, parentseed INT, neuron INT)".format(ch.channel_name))
             cursor.execute ( "CREATE TABLE {}_organelles (annoid BIGINT PRIMARY KEY, organelleclass INT, parentseed INT, centroidx INT, centroidy INT, centroidz INT)".format(ch.channel_name))
+            cursor.execute ( "CREATE TABLE {}_nodes (skeletonid BIGINT, nodeid BIGINT, annoid BIGINT, nodetype INT, parentid BIGINT, locationx INT, locationy INT, locationz INT, radius FLOAT, PRIMARY KEY ( skeletonid, nodeid ))".format(ch.channel_name))
+            cursor.execute ( "CREATE TABLE {}_skeletons (annoid BIGINT PRIMARY KEY, skeletontype INT, rootnode INT)".format(ch.channel_name))
             cursor.execute ( "CREATE TABLE {}_kvpairs ( annoid BIGINT, kv_key VARCHAR(255), kv_value VARCHAR(20000), PRIMARY KEY ( annoid, kv_key ))".format(ch.channel_name))
 
             conn.commit()
 
             if pr.kvengine == 'MySQL':
               for i in range(ds.scalinglevels+1):
-                # RB always create the exception tables.....just don't use them if they are not defined
+                # RB always create the exception tables.....just don't use them if the project doesn't want them.
 #                if ch.exceptions:
                 cursor.execute ( "CREATE TABLE {}_exc{} ( zindex BIGINT, id BIGINT, exlist LONGBLOB, PRIMARY KEY ( zindex, id))".format(ch.channel_name,i))
                 cursor.execute ( "CREATE TABLE {}_idx{} ( annid BIGINT PRIMARY KEY, cube LONGBLOB )".format(ch.channel_name,i))
