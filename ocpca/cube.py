@@ -91,7 +91,7 @@ class Cube:
     if (self.data.dtype != writedata.dtype ):
       logger.error("Conflicting data types for overwrite")
       raise OCPCAError ("Conflicting data types for overwrite")
-    self.data = ocplib.overwriteDense_ctype ( self.data, writedata )
+    self.data = ocplib.overwriteDense_ctype(self.data, writedata)
   
   def RGBAChannel(self):
     """Return a RGBAChannel Method definition"""

@@ -737,23 +737,20 @@ class OCPCADB:
     index_dict = defaultdict(set)
 
     # dim is in xyz, data is in zyxj
-    dim = [ annodata.shape[2], annodata.shape[1], annodata.shape[0] ]
+    dim = annodata.shape[::-1]
 
     # get the size of the image and cube
-    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
+    [xcubedim, ycubedim, zcubedim] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
     # Round to the nearest larger cube in all dimensions
-    zstart = corner[2]/zcubedim
-    ystart = corner[1]/ycubedim
-    xstart = corner[0]/xcubedim
+    from operator import div, mod
+    start = [xstart, ystart, zstart] = map(div, corner, cubedim)
 
     znumcubes = (corner[2]+dim[2]+zcubedim-1)/zcubedim - zstart
     ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
     xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
 
-    zoffset = corner[2]%zcubedim
-    yoffset = corner[1]%ycubedim
-    xoffset = corner[0]%xcubedim
+    offset = [xoffset, yoffset, zoffset] = map(mod, corner, cubedim)
 
     databuffer = np.zeros ([znumcubes*zcubedim, ynumcubes*ycubedim, xnumcubes*xcubedim], dtype=np.uint32 )
     databuffer [ zoffset:zoffset+dim[2], yoffset:yoffset+dim[1], xoffset:xoffset+dim[0] ] = annodata 
@@ -1167,11 +1164,16 @@ class OCPCADB:
     """Return the identifier at a voxel"""
 
     # get the size of the image and cube
-    [xcubedim, ycubedim, zcubedim] = cubedim = self.datasetcfg.cubedim [ resolution ] 
+    [xcubedim, ycubedim, zcubedim] = cubedim = self.datasetcfg.cubedim[resolution]
+    [xoffset, yoffset, zoffset] = offset = self.datasetcfg.offset[resolution]
 
     # convert the voxel into zindex and offsets. Round to the nearest larger cube in all dimensions
-    xyzcube = [ voxel[0]/xcubedim, voxel[1]/ycubedim, voxel[2]/zcubedim ]
-    xyzoffset =[ voxel[0]%xcubedim, voxel[1]%ycubedim, voxel[2]%zcubedim ]
+    from operator import div, mod, sub
+    voxel = map(sub, voxel, offset)
+    xyzcube = map(div, voxel, cubedim)
+    xyzoffset = map(mod, voxel, cubedim)
+    #xyzcube = [ voxel[0]/xcubedim, voxel[1]/ycubedim, voxel[2]/zcubedim ]
+    #xyzoffset =[ voxel[0]%xcubedim, voxel[1]%ycubedim, voxel[2]%zcubedim ]
     key = ocplib.XYZMorton ( xyzcube )
 
     cube = self.getCube(ch, key, resolution)
