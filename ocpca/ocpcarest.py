@@ -40,7 +40,6 @@ import jsonprojinfo
 import annotation
 import mcfc
 import ocplib
-import ocpcaprivate
 import ocpcaskel
 from windowcutout import windowCutout
 
