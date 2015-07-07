@@ -49,13 +49,7 @@ logger=logging.getLogger("ocp")
 
 
 def cutout (imageargs, ch, proj, db):
-  """Build and Return a cube of data for the specified dimensions. This method is called by all of the more basic services to build the data. They then format and refine the output.
-  
-  :param imageargs: String of arguments passed
-  :param ch: OCPCAChannel object
-  :param proj: OCPCAProject object
-  :param db: OCPCADB object
-  """
+  """Build and Return a cube of data for the specified dimensions. This method is called by all of the more basic services to build the data. They then format and refine the output. """
   
   # Perform argument processing
   try:

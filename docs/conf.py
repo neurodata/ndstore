@@ -20,21 +20,11 @@ import shlex
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
-sys.path.insert(0, os.getenv('manno_HOME'))
-#import packages.utils.setup
-#import packages.dtipreproc.extract_b0
-#import packages.dtipreproc.parse_b
-#import packages.tractography.tensor_gen
-#import packages.tractography.fiber_gen
-#import packages.tractography.fiber_convert
-#import mrcap.gengraph
-#import docs.scripts.bet
-#import docs.scripts.eddycorrect
-#import docs.scripts.flirt
-#import docs.scripts.manno
-#import docs.scripts.manno_registration
-#import docs.scripts.manno_diffusion
-#import packages.utils.graphml2mat
+sys.path += [os.path.abspath('../django')]
+import OCP.settings
+os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
+from django.conf import settings
+import ocpca
 
 # -- General configuration ------------------------------------------------
 
