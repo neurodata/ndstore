@@ -1,8 +1,8 @@
-Basic Usage
+Data API's
 ***********
 
 HDF5 Cutouts
---------
+------------
 
 .. http:post:: (string:server_name)/ca/(string:token_name)/(string:channel_name)/hdf5/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
    
@@ -31,10 +31,18 @@ HDF5 Cutouts
    :param min_time: Minimum value in the timerange. *Optional*. Only used for timeseries channels.
    :type min_time: int
    :param max_time: Maximum value in the timerange. *Optional*. Only used for timeseries channels.
+   :type max_time: int
     
    :form CUTOUT: HDF5 group, Post data
    :form CHANNELTYPE: HDF5 group, Channel type(image, annotation, probmap, timeseries)
    :form DATATYPE: HDF5 group, Data type(uint8, uint16, uint32, rgb32, rgb64, float32)
+
+   :statuscode 200: No error
+   :statuscode 404: Error in the syntax or file format
+
+.. code-block:: python
+
+   function post_hdf5_example()
 
 .. http:get:: (string:server_name)/ca/(string:token_name)/(string:channel_name)/hdf5/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
    
@@ -63,48 +71,108 @@ HDF5 Cutouts
    :param min_time: Minimum value in the timerange. *Optional*. Only used for timeseries channels.
    :type min_time: int
    :param max_time: Maximum value in the timerange. *Optional*. Only used for timeseries channels.
+   :type max_time: int
     
    :form CUTOUT: HDF5 group, Post data
    :form CHANNELTYPE: HDF5 group, Channel type(image, annotation, probmap, timeseries)
    :form DATATYPE: HDF5 group, Data type(uint8, uint16, uint32, rgb32, rgb64, float32)
 
+   :statuscode 200: No error
+   :statuscode 404: Error in the syntax or file format
    
-.. code-block:: matlab
+.. code-block:: python
 
-  function run_manno_example()
-  % Mananno Example 
-  % manno starter to demonstrate protocol functionality.  All required inputs
-  % are hardcoded for this demo.  Paths are hardcoded for Linux/Mac.
-  % 
-  % The result of this run can be viewed in a webbrowser using the following
-  % URL: http://braingraph1dev.cs.jhu.edu/ocp/overlay/0.7/temp2/xy/1/5472,5972/8712,9212/1031/
-  %
-  % **Author**
-  %
-  % W. Gray Roncal
+   function post_hdf5_example()
 
-  %% test_query
-  xstart = 5472;
-  xstop = xstart + 512;
-  ystart = 8712;
-  ystop = ystart + 512;
-  zstart = 1020;
-  zstop = zstart + 16;
+Image Slice Cutouts
+-------------------
 
-  resolution = 1;
+.. http:get:: (string:server_name)/ca/(string:token_name)/(string:channel_name)/xy/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:z_slice)/(int:time_slice)/
+   
+   :synopsis: Get a XY Slice Cutout
 
-  query = OCPQuery;
-  query.setType(eOCPQueryType.imageDense);
-  query.setCutoutArgs([xstart, xstop],[ystart,ystop],[zstart,zstop],resolution);
+   :param server_name: Server Name in OCP. In the general case this is ocp.me.
+   :type server_name: string
+   :param token_name: Token Name in OCP.
+   :type token_name: string
+   :param channel_name: Channel Name in OCP. *Optional*. If missing will use default channel for the token.
+   :type channel_name: string
+   :param resolution: Resolution for the data
+   :type resolution: int
+   :param min_x: Minimum value in the xrange
+   :type min_x: int
+   :param max_x: Maximum value in the xrange
+   :type max_x: int
+   :param min_y: Minimum value in the yrange
+   :type min_y: int
+   :param max_y: Maximum value in the yrange
+   :type max_y: int
+   :param z_slice: Z-slice value
+   :type z_slice: int
+   :param time_slice: Minimum value in the timerange. *Optional*. Only used for timeseries channels.
+   :type time_slice: int
+    
+   :statuscode 200: No error
+   :statuscode 404: Error in the syntax or file format
 
-  %% Servers and tokens - alter appropriately
-  server = 'openconnecto.me';
-  token = 'kasthuri11cc';
+.. http:get:: (string:server_name)/ca/(string:token_name)/(string:channel_name)/xz/(int:resolution)/(int:min_x),(int:max_x)/(int:y_slice)/(int:min_z),(int:max_z)/(int:time_slice/
+   
+   :synopsis: Get a HDF5 file from the server
 
-  serverUp = 'braingraph1dev.cs.jhu.edu';
-  tokenUp = 'temp2';
+   :param server_name: Server Name in OCP. In the general case this is ocp.me.
+   :type server_name: string
+   :param token_name: Token Name in OCP.
+   :type token_name: string
+   :param channel_name: Channel Name in OCP. *Optional*. If missing will use default channel for the token.
+   :type channel_name: string
+   :param resolution: Resolution for the data
+   :type resolution: int
+   :param min_x: Minimum value in the xrange
+   :type min_x: int
+   :param max_x: Maximum value in the xrange
+   :type max_x: int
+   :param y_slice: Y-slice value
+   :type y_slice: int
+   :param min_z: Minimum value in the zrange
+   :type min_z: int
+   :param max_z: Maximum value in the zrange
+   :type max_z: int
+   :param time_slice: Minimum value in the timerange. *Optional*. Only used for timeseries channels.
+   :type time_slice: int
 
-  %% Run manno
-  manno_getImage(server,token,'../data/queryFileTest','../data/testitk.nii',0)
-  % Manual annotation step happens here
-  manno_putAnno(serverUp,tokenUp,'../data/queryFileTest','../data/exampleAnno.nii.gz','RAMONOrganelle', 1,0)
+   :statuscode 200: No error
+   :statuscode 404: Error in the syntax or file format
+
+.. http:get:: (string:server_name)/ca/(string:token_name)/(string:channel_name)/yz/(int:resolution)/(int:x_slice)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:time_slice)/
+   
+   :synopsis: Get a HDF5 file from the server
+
+   :param server_name: Server Name in OCP. In the general case this is ocp.me.
+   :type server_name: string
+   :param token_name: Token Name in OCP.
+   :type token_name: string
+   :param channel_name: Channel Name in OCP. *Optional*. If missing will use default channel for the token.
+   :type channel_name: string
+   :param resolution: Resolution for the data
+   :type resolution: int
+   :param x_slice: X-slice value
+   :type x_slice: int
+   :param min_y: Minimum value in the yrange
+   :type min_y: int
+   :param max_y: Maximum value in the yrange
+   :type max_y: int
+   :param min_z: Minimum value in the zrange
+   :type min_z: int
+   :param max_z: Maximum value in the zrange
+   :type max_z: int
+   :param min_time: Minimum value in the timerange. *Optional*. Only used for timeseries channels.
+   :type min_time: int
+   :param max_time: Maximum value in the timerange. *Optional*. Only used for timeseries channels.
+   :type max_time: int
+    
+   :form CUTOUT: HDF5 group, Post data
+   :form CHANNELTYPE: HDF5 group, Channel type(image, annotation, probmap, timeseries)
+   :form DATATYPE: HDF5 group, Data type(uint8, uint16, uint32, rgb32, rgb64, float32)
+
+   :statuscode 200: No error
+   :statuscode 404: Error in the syntax or file format

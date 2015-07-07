@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Basic Usage &mdash; open-connetome v0.7.0 documentation</title>
+  <title>Data API’s &mdash; open-connetome v0.7.0 documentation</title>
   
 
   
@@ -87,8 +87,9 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../sphinx/faq.html">Frequently Asked Questions (FAQ)</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Basic Usage</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Data API&#8217;s</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#hdf5-cutouts">HDF5 Cutouts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#image-slice-cutouts">Image Slice Cutouts</a></li>
 </ul>
 </li>
 </ul>
@@ -123,7 +124,7 @@
   <ul class="wy-breadcrumbs">
     <li><a href="../index.html">Docs</a> &raquo;</li>
       
-    <li>Basic Usage</li>
+    <li>Data API&#8217;s</li>
       <li class="wy-breadcrumbs-aside">
         
           
@@ -136,8 +137,8 @@
 </div>
           <div role="main" class="document">
             
-  <div class="section" id="basic-usage">
-<h1>Basic Usage<a class="headerlink" href="#basic-usage" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="data-api-s">
+<h1>Data API&#8217;s<a class="headerlink" href="#data-api-s" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="hdf5-cutouts">
 <h2>HDF5 Cutouts<a class="headerlink" href="#hdf5-cutouts" title="Permalink to this headline">¶</a></h2>
 <dl class="post">
@@ -162,15 +163,21 @@
 <li><strong>min_z</strong> (<em>int</em>) &#8211; Minimum value in the zrange</li>
 <li><strong>max_z</strong> (<em>int</em>) &#8211; Maximum value in the zrange</li>
 <li><strong>min_time</strong> (<em>int</em>) &#8211; Minimum value in the timerange. <em>Optional</em>. Only used for timeseries channels.</li>
-<li><strong>max_time</strong> &#8211; Maximum value in the timerange. <em>Optional</em>. Only used for timeseries channels.</li>
+<li><strong>max_time</strong> (<em>int</em>) &#8211; Maximum value in the timerange. <em>Optional</em>. Only used for timeseries channels.</li>
 </ul>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name" colspan="2">Form Parameters:</th></tr>
-<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><ul class="first last simple">
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
 <li><strong>CUTOUT</strong> &#8211; HDF5 group, Post data</li>
 <li><strong>CHANNELTYPE</strong> &#8211; HDF5 group, Channel type(image, annotation, probmap, timeseries)</li>
 <li><strong>DATATYPE</strong> &#8211; HDF5 group, Data type(uint8, uint16, uint32, rgb32, rgb64, float32)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; No error</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; Error in the syntax or file format</li>
 </ul>
 </td>
 </tr>
@@ -178,6 +185,9 @@
 </table>
 </dd></dl>
 
+<div class="highlight-python"><div class="highlight"><pre><span class="n">function</span> <span class="n">post_hdf5_example</span><span class="p">()</span>
+</pre></div>
+</div>
 <dl class="get">
 <dt id="get-(string-server_name)-ca-(string-token_name)-(string-channel_name)-hdf5-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-min_time),(int-max_time)-">
 <code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/hdf5/</code><span class="sig-paren">(</span><em class="property">int: </em><em>resolution</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_x</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_x</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_y</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_y</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_z</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_z</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_time</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_time</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#get-(string-server_name)-ca-(string-token_name)-(string-channel_name)-hdf5-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-min_time),(int-max_time)-" title="Permalink to this definition">¶</a></dt>
@@ -200,15 +210,21 @@
 <li><strong>min_z</strong> (<em>int</em>) &#8211; Minimum value in the zrange</li>
 <li><strong>max_z</strong> (<em>int</em>) &#8211; Maximum value in the zrange</li>
 <li><strong>min_time</strong> (<em>int</em>) &#8211; Minimum value in the timerange. <em>Optional</em>. Only used for timeseries channels.</li>
-<li><strong>max_time</strong> &#8211; Maximum value in the timerange. <em>Optional</em>. Only used for timeseries channels.</li>
+<li><strong>max_time</strong> (<em>int</em>) &#8211; Maximum value in the timerange. <em>Optional</em>. Only used for timeseries channels.</li>
 </ul>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name" colspan="2">Form Parameters:</th></tr>
-<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><ul class="first last simple">
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
 <li><strong>CUTOUT</strong> &#8211; HDF5 group, Post data</li>
 <li><strong>CHANNELTYPE</strong> &#8211; HDF5 group, Channel type(image, annotation, probmap, timeseries)</li>
 <li><strong>DATATYPE</strong> &#8211; HDF5 group, Data type(uint8, uint16, uint32, rgb32, rgb64, float32)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; No error</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; Error in the syntax or file format</li>
 </ul>
 </td>
 </tr>
@@ -216,45 +232,123 @@
 </table>
 </dd></dl>
 
-<div class="highlight-matlab"><div class="highlight"><pre><span class="k">function</span><span class="w"> </span><span class="nf">run_manno_example</span><span class="p">()</span><span class="w"></span>
-<span class="c">% Mananno Example</span>
-<span class="c">% manno starter to demonstrate protocol functionality.  All required inputs</span>
-<span class="c">% are hardcoded for this demo.  Paths are hardcoded for Linux/Mac.</span>
-<span class="c">%</span>
-<span class="c">% The result of this run can be viewed in a webbrowser using the following</span>
-<span class="c">% URL: http://braingraph1dev.cs.jhu.edu/ocp/overlay/0.7/temp2/xy/1/5472,5972/8712,9212/1031/</span>
-<span class="c">%</span>
-<span class="c">% **Author**</span>
-<span class="c">%</span>
-<span class="c">% W. Gray Roncal</span>
-
-<span class="c">%% test_query</span>
-<span class="n">xstart</span> <span class="p">=</span> <span class="mi">5472</span><span class="p">;</span>
-<span class="n">xstop</span> <span class="p">=</span> <span class="n">xstart</span> <span class="o">+</span> <span class="mi">512</span><span class="p">;</span>
-<span class="n">ystart</span> <span class="p">=</span> <span class="mi">8712</span><span class="p">;</span>
-<span class="n">ystop</span> <span class="p">=</span> <span class="n">ystart</span> <span class="o">+</span> <span class="mi">512</span><span class="p">;</span>
-<span class="n">zstart</span> <span class="p">=</span> <span class="mi">1020</span><span class="p">;</span>
-<span class="n">zstop</span> <span class="p">=</span> <span class="n">zstart</span> <span class="o">+</span> <span class="mi">16</span><span class="p">;</span>
-
-<span class="n">resolution</span> <span class="p">=</span> <span class="mi">1</span><span class="p">;</span>
-
-<span class="n">query</span> <span class="p">=</span> <span class="n">OCPQuery</span><span class="p">;</span>
-<span class="n">query</span><span class="p">.</span><span class="n">setType</span><span class="p">(</span><span class="n">eOCPQueryType</span><span class="p">.</span><span class="n">imageDense</span><span class="p">);</span>
-<span class="n">query</span><span class="p">.</span><span class="n">setCutoutArgs</span><span class="p">([</span><span class="n">xstart</span><span class="p">,</span> <span class="n">xstop</span><span class="p">],[</span><span class="n">ystart</span><span class="p">,</span><span class="n">ystop</span><span class="p">],[</span><span class="n">zstart</span><span class="p">,</span><span class="n">zstop</span><span class="p">],</span><span class="n">resolution</span><span class="p">);</span>
-
-<span class="c">%% Servers and tokens - alter appropriately</span>
-<span class="n">server</span> <span class="p">=</span> <span class="s">&#39;openconnecto.me&#39;</span><span class="p">;</span>
-<span class="n">token</span> <span class="p">=</span> <span class="s">&#39;kasthuri11cc&#39;</span><span class="p">;</span>
-
-<span class="n">serverUp</span> <span class="p">=</span> <span class="s">&#39;braingraph1dev.cs.jhu.edu&#39;</span><span class="p">;</span>
-<span class="n">tokenUp</span> <span class="p">=</span> <span class="s">&#39;temp2&#39;</span><span class="p">;</span>
-
-<span class="c">%% Run manno</span>
-<span class="n">manno_getImage</span><span class="p">(</span><span class="n">server</span><span class="p">,</span><span class="n">token</span><span class="p">,</span><span class="s">&#39;../data/queryFileTest&#39;</span><span class="p">,</span><span class="s">&#39;../data/testitk.nii&#39;</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
-<span class="c">% Manual annotation step happens here</span>
-<span class="n">manno_putAnno</span><span class="p">(</span><span class="n">serverUp</span><span class="p">,</span><span class="n">tokenUp</span><span class="p">,</span><span class="s">&#39;../data/queryFileTest&#39;</span><span class="p">,</span><span class="s">&#39;../data/exampleAnno.nii.gz&#39;</span><span class="p">,</span><span class="s">&#39;RAMONOrganelle&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">function</span> <span class="n">post_hdf5_example</span><span class="p">()</span>
 </pre></div>
 </div>
+</div>
+<div class="section" id="image-slice-cutouts">
+<h2>Image Slice Cutouts<a class="headerlink" href="#image-slice-cutouts" title="Permalink to this headline">¶</a></h2>
+<dl class="get">
+<dt id="get-(string-server_name)-ca-(string-token_name)-(string-channel_name)-xy-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-z_slice)-(int-time_slice)-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/xy/</code><span class="sig-paren">(</span><em class="property">int: </em><em>resolution</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_x</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_x</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_y</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_y</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>z_slice</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>time_slice</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#get-(string-server_name)-ca-(string-token_name)-(string-channel_name)-xy-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-z_slice)-(int-time_slice)-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Get a XY Slice Cutout</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in OCP. In the general case this is ocp.me.</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; Token Name in OCP.</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; Channel Name in OCP. <em>Optional</em>. If missing will use default channel for the token.</li>
+<li><strong>resolution</strong> (<em>int</em>) &#8211; Resolution for the data</li>
+<li><strong>min_x</strong> (<em>int</em>) &#8211; Minimum value in the xrange</li>
+<li><strong>max_x</strong> (<em>int</em>) &#8211; Maximum value in the xrange</li>
+<li><strong>min_y</strong> (<em>int</em>) &#8211; Minimum value in the yrange</li>
+<li><strong>max_y</strong> (<em>int</em>) &#8211; Maximum value in the yrange</li>
+<li><strong>z_slice</strong> (<em>int</em>) &#8211; Z-slice value</li>
+<li><strong>time_slice</strong> (<em>int</em>) &#8211; Minimum value in the timerange. <em>Optional</em>. Only used for timeseries channels.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; No error</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; Error in the syntax or file format</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="get">
+<dt id="get-(string-server_name)-ca-(string-token_name)-(string-channel_name)-xz-(int-resolution)-(int-min_x),(int-max_x)-(int-y_slice)-(int-min_z),(int-max_z)-(int-time_slice-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/xz/</code><span class="sig-paren">(</span><em class="property">int: </em><em>resolution</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_x</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_x</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>y_slice</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_z</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_z</em><span class="sig-paren">)</span><code class="descname">/(int:time_slice/</code><a class="headerlink" href="#get-(string-server_name)-ca-(string-token_name)-(string-channel_name)-xz-(int-resolution)-(int-min_x),(int-max_x)-(int-y_slice)-(int-min_z),(int-max_z)-(int-time_slice-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Get a HDF5 file from the server</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in OCP. In the general case this is ocp.me.</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; Token Name in OCP.</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; Channel Name in OCP. <em>Optional</em>. If missing will use default channel for the token.</li>
+<li><strong>resolution</strong> (<em>int</em>) &#8211; Resolution for the data</li>
+<li><strong>min_x</strong> (<em>int</em>) &#8211; Minimum value in the xrange</li>
+<li><strong>max_x</strong> (<em>int</em>) &#8211; Maximum value in the xrange</li>
+<li><strong>y_slice</strong> (<em>int</em>) &#8211; Y-slice value</li>
+<li><strong>min_z</strong> (<em>int</em>) &#8211; Minimum value in the zrange</li>
+<li><strong>max_z</strong> (<em>int</em>) &#8211; Maximum value in the zrange</li>
+<li><strong>time_slice</strong> (<em>int</em>) &#8211; Minimum value in the timerange. <em>Optional</em>. Only used for timeseries channels.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; No error</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; Error in the syntax or file format</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="get">
+<dt id="get-(string-server_name)-ca-(string-token_name)-(string-channel_name)-yz-(int-resolution)-(int-x_slice)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-time_slice)-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/yz/</code><span class="sig-paren">(</span><em class="property">int: </em><em>resolution</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>x_slice</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_y</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_y</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_z</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_z</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>time_slice</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#get-(string-server_name)-ca-(string-token_name)-(string-channel_name)-yz-(int-resolution)-(int-x_slice)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-time_slice)-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Get a HDF5 file from the server</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in OCP. In the general case this is ocp.me.</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; Token Name in OCP.</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; Channel Name in OCP. <em>Optional</em>. If missing will use default channel for the token.</li>
+<li><strong>resolution</strong> (<em>int</em>) &#8211; Resolution for the data</li>
+<li><strong>x_slice</strong> (<em>int</em>) &#8211; X-slice value</li>
+<li><strong>min_y</strong> (<em>int</em>) &#8211; Minimum value in the yrange</li>
+<li><strong>max_y</strong> (<em>int</em>) &#8211; Maximum value in the yrange</li>
+<li><strong>min_z</strong> (<em>int</em>) &#8211; Minimum value in the zrange</li>
+<li><strong>max_z</strong> (<em>int</em>) &#8211; Maximum value in the zrange</li>
+<li><strong>min_time</strong> (<em>int</em>) &#8211; Minimum value in the timerange. <em>Optional</em>. Only used for timeseries channels.</li>
+<li><strong>max_time</strong> (<em>int</em>) &#8211; Maximum value in the timerange. <em>Optional</em>. Only used for timeseries channels.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Form Parameters:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
+<li><strong>CUTOUT</strong> &#8211; HDF5 group, Post data</li>
+<li><strong>CHANNELTYPE</strong> &#8211; HDF5 group, Channel type(image, annotation, probmap, timeseries)</li>
+<li><strong>DATATYPE</strong> &#8211; HDF5 group, Data type(uint8, uint16, uint32, rgb32, rgb64, float32)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; No error</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; Error in the syntax or file format</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </div>
 </div>
 
