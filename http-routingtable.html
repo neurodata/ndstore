@@ -8,12 +8,12 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Overview: module code &mdash; open-connetome v0.7.0 documentation</title>
+  <title>HTTP Routing Table &mdash; open-connetome v0.7.0 documentation</title>
   
 
   
   
-    <link rel="shortcut icon" href="../_static/ocp_favicon.ico"/>
+    <link rel="shortcut icon" href="_static/ocp_favicon.ico"/>
   
 
   
@@ -26,13 +26,20 @@
 
   
   
-    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   
 
   
 
   
-    <link rel="top" title="open-connetome v0.7.0 documentation" href="../index.html"/> 
+    <link rel="top" title="open-connetome v0.7.0 documentation" href="index.html"/>
+ 
+
+    <script type="text/javascript">
+      DOCUMENTATION_OPTIONS.COLLAPSE_INDEX = true;
+    </script>
+
+
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -49,18 +56,18 @@
         
 
         
-          <a href="../index.html" class="icon icon-home"> open-connetome
+          <a href="index.html" class="icon icon-home"> open-connetome
         
 
         
           
-          <img src="../_static/ocp_main.png" class="logo" />
+          <img src="_static/ocp_main.png" class="logo" />
         
         </a>
 
         
 <div role="search">
-  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
@@ -76,23 +83,23 @@
           
               <p class="caption"><span class="caption-text">Documentation</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../sphinx/introduction.html">Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sphinx/local_config.html">Configuration</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sphinx/ocp.html">OCP</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../sphinx/ocp.html#contributing">Contributing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../sphinx/ocp.html#style-guides">Style Guides</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../sphinx/ocp.html#ocp-support-forums">OCP Support Forums</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sphinx/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sphinx/local_config.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sphinx/ocp.html">OCP</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sphinx/ocp.html#contributing">Contributing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sphinx/ocp.html#style-guides">Style Guides</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sphinx/ocp.html#ocp-support-forums">OCP Support Forums</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../sphinx/faq.html">Frequently Asked Questions (FAQ)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/basic_usage.html">Basic Usage</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials/basic_usage.html#hdf5-cutouts">HDF5 Cutouts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sphinx/faq.html">Frequently Asked Questions (FAQ)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/basic_usage.html">Basic Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/basic_usage.html#hdf5-cutouts">HDF5 Cutouts</a></li>
 </ul>
 </li>
 </ul>
 <p class="caption"><span class="caption-text">Further Reading</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../api/functions.html">open-connectome Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/functions.html">open-connectome Functions</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://gitter.im/openconnectome/open-connectome">Gitter chatroom</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://groups.google.com/forum/#!forum/ocp-support/">Mailing List</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/openconnectome/open-connectome">Github repo</a></li>
@@ -110,7 +117,7 @@
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
         <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="../index.html">open-connetome</a>
+        <a href="index.html">open-connetome</a>
       </nav>
 
 
@@ -119,9 +126,9 @@
         <div class="rst-content">
           <div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
-    <li><a href="../index.html">Docs</a> &raquo;</li>
+    <li><a href="index.html">Docs</a> &raquo;</li>
       
-    <li>Overview: module code</li>
+    <li></li>
       <li class="wy-breadcrumbs-aside">
         
           
@@ -132,10 +139,24 @@
 </div>
           <div role="main" class="document">
             
-  <h1>All modules for which code is available</h1>
-<ul><li><a href="code.html">code</a></li>
-<li><a href="codeop.html">codeop</a></li>
-</ul>
+
+   <h1>HTTP Routing Table</h1>
+
+   <div class="modindex-jumpbox">
+   <a href="#cap-/(string:server_name)"><strong>/(string:server_name)</strong></a>
+   </div>
+
+   <table class="indextable modindextable" cellspacing="0" cellpadding="2">
+     <tr class="pcap"><td></td><td>&nbsp;</td><td></td></tr>
+     <tr class="cap" id="cap-/(string:server_name)"><td></td><td>
+       <strong>/(string:server_name)</strong></td><td></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="tutorials/basic_usage.html#get-(string-server_name)-ca-(string-token)-(string-channel)-hdf5-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)"><code class="xref">GET (string:server_name)/ca/(string:token)/(string:channel)/hdf5/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)</code></a></td><td>
+       <em></em></td></tr>
+   </table>
+
 
           </div>
           <footer>
@@ -165,22 +186,22 @@
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../',
+            URL_ROOT:'./',
             VERSION:'v0.7.0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
         };
     </script>
-      <script type="text/javascript" src="../_static/jquery.js"></script>
-      <script type="text/javascript" src="../_static/underscore.js"></script>
-      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
 
   
 
   
   
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
+    <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
   

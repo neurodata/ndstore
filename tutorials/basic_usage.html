@@ -88,10 +88,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../sphinx/faq.html">Frequently Asked Questions (FAQ)</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">Basic Usage</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#protocol">Protocol</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#usage-notes">Usage Notes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#example">Example</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#validation">Validation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hdf5-cutouts">HDF5 Cutouts</a></li>
 </ul>
 </li>
 </ul>
@@ -141,29 +138,25 @@
             
   <div class="section" id="basic-usage">
 <h1>Basic Usage<a class="headerlink" href="#basic-usage" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="protocol">
-<h2>Protocol<a class="headerlink" href="#protocol" title="Permalink to this headline">¶</a></h2>
-<ul class="simple">
-<li>Identify a region of interest in OCP, and note the data server, token, resolution, and coordinates</li>
-<li>Create a query, using the instructions for CAJAL</li>
-<li>Run <em>manno_getImage.m</em> to generate an image volume suitable for annotation in ITK Snap</li>
-<li>Annotate: Once the data has been formatted for ITK Snap, the user should open the ITK SNAP application and load in the NIFTI data saved during the data acquisition step. Then using the brush tool, annotate the data as desired. Users can choose to use separate colors for each annotation or rely on a connected component post-processing step to identify each object (best for sparse data)</li>
-<li>Save Segmentation Image: (ITK Snap Menu &gt; Segmentation &gt; Save Segmentation Image). Choose a name that you will be able to easily correlate to its appropriate volume image volume.</li>
-<li>Run <em>manno_putAnno.m</em>, specifying the server, token, annotation file, and query used to download the underlying image. Users may choose to run a simple connected component post-processing step to break each group of connected pixels (3D) into a separate ID. More complicated post-processing should be done outside of the tool, with the result uploaded using the ocp_upload_dense.m function (see CAJAL documentation).</li>
+<div class="section" id="hdf5-cutouts">
+<h2>HDF5 Cutouts<a class="headerlink" href="#hdf5-cutouts" title="Permalink to this headline">¶</a></h2>
+<dl class="get">
+<dt id="get-(string-server_name)-ca-(string-token)-(string-channel)-hdf5-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel</em><span class="sig-paren">)</span><code class="descname">/hdf5/</code><span class="sig-paren">(</span><em class="property">int: </em><em>resolution</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_x</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_x</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_y</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_y</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_z</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_z</em><span class="sig-paren">)</span><a class="headerlink" href="#get-(string-server_name)-ca-(string-token)-(string-channel)-hdf5-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)" title="Permalink to this definition">¶</a></dt>
+<dd><p>Post a HDF5 file to the server</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in OCP. In the general case this is ocp.me.</li>
 </ul>
-</div>
-<div class="section" id="usage-notes">
-<h2>Usage Notes<a class="headerlink" href="#usage-notes" title="Permalink to this headline">¶</a></h2>
-<ul class="simple">
-<li>For more information on painting annotations, please follow the steps outlined <a class="reference external" href="http://www.itksnap.org/pmwiki/pmwiki.php?n=Documentation.TutorialSectionManualSegmentation">here</a>.</li>
-<li>Currently, only single channel 8-bit image data is supported</li>
-<li>ITK-Snap is compatible with a variety of input data formats; the most straightforward is NIFTI, a general purpose neuroimaging format. On laptops or smaller workstations, only a small portion of a slice/volume should be truthed at a time for memory reasons.</li>
-<li><em>run_manno_example.m</em> provides a minimal working example to use as a starting point.</li>
-</ul>
-</div>
-<div class="section" id="example">
-<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
-<p>The following code demonstrates the manno protocol.  A few mitochondria have been labeled as an example.  The example script should take approximately 10 seconds to complete.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <div class="highlight-matlab"><div class="highlight"><pre><span class="k">function</span><span class="w"> </span><span class="nf">run_manno_example</span><span class="p">()</span><span class="w"></span>
 <span class="c">% Mananno Example</span>
 <span class="c">% manno starter to demonstrate protocol functionality.  All required inputs</span>
@@ -202,15 +195,6 @@
 <span class="c">% Manual annotation step happens here</span>
 <span class="n">manno_putAnno</span><span class="p">(</span><span class="n">serverUp</span><span class="p">,</span><span class="n">tokenUp</span><span class="p">,</span><span class="s">&#39;../data/queryFileTest&#39;</span><span class="p">,</span><span class="s">&#39;../data/exampleAnno.nii.gz&#39;</span><span class="p">,</span><span class="s">&#39;RAMONOrganelle&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
 </pre></div>
-</div>
-</div>
-<div class="section" id="validation">
-<h2>Validation<a class="headerlink" href="#validation" title="Permalink to this headline">¶</a></h2>
-<p>The result of the example script can be accessed using the following link:
-<a class="reference external" href="http://braingraph1dev.cs.jhu.edu/ocp/overlay/0.7/temp2/xy/1/5472,5972/8712,9212/1031/">http://braingraph1dev.cs.jhu.edu/ocp/overlay/0.7/temp2/xy/1/5472,5972/8712,9212/1031/</a></p>
-<p>Note that the server and token pair listed here are public and other data may be pre-existing.</p>
-<div class="figure">
-<img alt="../_images/manno_example_result.png" src="../_images/manno_example_result.png" />
 </div>
 </div>
 </div>
