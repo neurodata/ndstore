@@ -44,7 +44,7 @@ class MySQLKVIO:
 
     except MySQLdb.Error, e:
       self.conn = None
-      logger.error("Failed to connect to database: {}, {}".format(db.ocpchannel.getDBHost(), db.ocpchannel.getDBName()))
+      logger.error("Failed to connect to database: {}, {}".format(self.db.proj.getDBHost(), self.db.proj.getDBName()))
       raise
 
     # start with no cursor
