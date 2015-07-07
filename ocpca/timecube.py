@@ -96,13 +96,14 @@ class TimeCube8(Cube):
 class TimeCube16(Cube):
 
   # Constructor 
-  def __init__(self, cubesize=[64,64,64]):
+  def __init__(self, cubesize=[64,64,64], timerange=[0,0]):
     """Create empty array of cubesize"""
 
     # call the base class constructor
     Cube.__init__(self,cubesize)
     # note that this is self.cubesize (which is transposed) in Cube
-    self.data = np.zeros ( self.cubesize, dtype=np.uint16 )
+    self.timerange = timerange
+    self.data = np.zeros ([self.timerange[1]-self.timerange[0]]+self.cubesize, dtype=np.uint16)
 
     # variable that describes when a cube is created from zeros
     #  rather than loaded from another source
