@@ -141,8 +141,8 @@
 <div class="section" id="hdf5-cutouts">
 <h2>HDF5 Cutouts<a class="headerlink" href="#hdf5-cutouts" title="Permalink to this headline">¶</a></h2>
 <dl class="post">
-<dt id="post-(string-server_name)-ca-(string-token_name)-(string-channel_name)-hdf5-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)">
-<code class="descname">POST </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/hdf5/</code><span class="sig-paren">(</span><em class="property">int: </em><em>resolution</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_x</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_x</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_y</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_y</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_z</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_z</em><span class="sig-paren">)</span><a class="headerlink" href="#post-(string-server_name)-ca-(string-token_name)-(string-channel_name)-hdf5-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)" title="Permalink to this definition">¶</a></dt>
+<dt id="post-(string-server_name)-ca-(string-token_name)-(string-channel_name)-hdf5-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-min_time),(int-max_time)-">
+<code class="descname">POST </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/hdf5/</code><span class="sig-paren">(</span><em class="property">int: </em><em>resolution</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_x</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_x</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_y</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_y</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_z</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_z</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_time</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_time</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#post-(string-server_name)-ca-(string-token_name)-(string-channel_name)-hdf5-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-min_time),(int-max_time)-" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -153,18 +153,62 @@
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in OCP. In the general case this is ocp.me.</li>
 <li><strong>token_name</strong> (<em>string</em>) &#8211; Token Name in OCP.</li>
-<li><strong>channel_name</strong> (<em>string</em>) &#8211; Channel Name in OCP. This channel should be present for the token_name above.</li>
-<li><strong>resolution</strong> &#8211; Resolution for the data</li>
-<li><strong>resolution</strong> &#8211; int</li>
-<li><strong>min_x</strong> &#8211; Minimum value in the xrange</li>
-<li><strong>min_x</strong> &#8211; int</li>
-<li><strong>max_x</strong> &#8211; Maximum value in the xrange</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; Channel Name in OCP. <em>Optional</em>. If missing will use default channel for the token.</li>
+<li><strong>resolution</strong> (<em>int</em>) &#8211; Resolution for the data</li>
+<li><strong>min_x</strong> (<em>int</em>) &#8211; Minimum value in the xrange</li>
+<li><strong>max_x</strong> (<em>int</em>) &#8211; Maximum value in the xrange</li>
+<li><strong>min_y</strong> (<em>int</em>) &#8211; Minimum value in the yrange</li>
+<li><strong>max_y</strong> (<em>int</em>) &#8211; Maximum value in the yrange</li>
+<li><strong>min_z</strong> (<em>int</em>) &#8211; Minimum value in the zrange</li>
+<li><strong>max_z</strong> (<em>int</em>) &#8211; Maximum value in the zrange</li>
+<li><strong>min_time</strong> (<em>int</em>) &#8211; Minimum value in the timerange. <em>Optional</em>. Only used for timeseries channels.</li>
+<li><strong>max_time</strong> &#8211; Maximum value in the timerange. <em>Optional</em>. Only used for timeseries channels.</li>
 </ul>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name" colspan="2">Form Parameters:</th></tr>
 <tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><ul class="first last simple">
-<li><strong>hdf5_file</strong> &#8211; HDF5 File containing the data</li>
+<li><strong>CUTOUT</strong> &#8211; HDF5 group, Post data</li>
+<li><strong>CHANNELTYPE</strong> &#8211; HDF5 group, Channel type(image, annotation, probmap, timeseries)</li>
+<li><strong>DATATYPE</strong> &#8211; HDF5 group, Data type(uint8, uint16, uint32, rgb32, rgb64, float32)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="get">
+<dt id="get-(string-server_name)-ca-(string-token_name)-(string-channel_name)-hdf5-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-min_time),(int-max_time)-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/hdf5/</code><span class="sig-paren">(</span><em class="property">int: </em><em>resolution</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_x</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_x</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_y</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_y</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_z</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_z</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_time</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_time</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#get-(string-server_name)-ca-(string-token_name)-(string-channel_name)-hdf5-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-min_time),(int-max_time)-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Get a HDF5 file from the server</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in OCP. In the general case this is ocp.me.</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; Token Name in OCP.</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; Channel Name in OCP. <em>Optional</em>. If missing will use default channel for the token.</li>
+<li><strong>resolution</strong> (<em>int</em>) &#8211; Resolution for the data</li>
+<li><strong>min_x</strong> (<em>int</em>) &#8211; Minimum value in the xrange</li>
+<li><strong>max_x</strong> (<em>int</em>) &#8211; Maximum value in the xrange</li>
+<li><strong>min_y</strong> (<em>int</em>) &#8211; Minimum value in the yrange</li>
+<li><strong>max_y</strong> (<em>int</em>) &#8211; Maximum value in the yrange</li>
+<li><strong>min_z</strong> (<em>int</em>) &#8211; Minimum value in the zrange</li>
+<li><strong>max_z</strong> (<em>int</em>) &#8211; Maximum value in the zrange</li>
+<li><strong>min_time</strong> (<em>int</em>) &#8211; Minimum value in the timerange. <em>Optional</em>. Only used for timeseries channels.</li>
+<li><strong>max_time</strong> &#8211; Maximum value in the timerange. <em>Optional</em>. Only used for timeseries channels.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Form Parameters:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><ul class="first last simple">
+<li><strong>CUTOUT</strong> &#8211; HDF5 group, Post data</li>
+<li><strong>CHANNELTYPE</strong> &#8211; HDF5 group, Channel type(image, annotation, probmap, timeseries)</li>
+<li><strong>DATATYPE</strong> &#8211; HDF5 group, Data type(uint8, uint16, uint32, rgb32, rgb64, float32)</li>
 </ul>
 </td>
 </tr>
