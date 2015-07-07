@@ -1,76 +1,185 @@
-Basic Usage
+Data API's
 ***********
 
-Protocol
---------
+HDF5 Cutouts
+============
 
-- Identify a region of interest in OCP, and note the data server, token, resolution, and coordinates
-- Create a query, using the instructions for CAJAL
-- Run *manno_getImage.m* to generate an image volume suitable for annotation in ITK Snap
-- Annotate: Once the data has been formatted for ITK Snap, the user should open the ITK SNAP application and load in the NIFTI data saved during the data acquisition step. Then using the brush tool, annotate the data as desired. Users can choose to use separate colors for each annotation or rely on a connected component post-processing step to identify each object (best for sparse data)
-- Save Segmentation Image: (ITK Snap Menu > Segmentation > Save Segmentation Image). Choose a name that you will be able to easily correlate to its appropriate volume image volume.
-- Run *manno_putAnno.m*, specifying the server, token, annotation file, and query used to download the underlying image. Users may choose to run a simple connected component post-processing step to break each group of connected pixels (3D) into a separate ID. More complicated post-processing should be done outside of the tool, with the result uploaded using the ocp_upload_dense.m function (see CAJAL documentation).
+POST Request
+------------
 
-Usage Notes
------------
+.. http:post:: (string:server_name)/ca/(string:token_name)/(string:channel_name)/hdf5/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
+   
+   :synopsis: Post a HDF5 file to the server
 
-- For more information on painting annotations, please follow the steps outlined `here <http://www.itksnap.org/pmwiki/pmwiki.php?n=Documentation.TutorialSectionManualSegmentation>`_.
-- Currently, only single channel 8-bit image data is supported
-- ITK-Snap is compatible with a variety of input data formats; the most straightforward is NIFTI, a general purpose neuroimaging format. On laptops or smaller workstations, only a small portion of a slice/volume should be truthed at a time for memory reasons.
-- *run_manno_example.m* provides a minimal working example to use as a starting point.
+   :param server_name: Server Name in OCP. In the general case this is ocp.me.
+   :type server_name: string
+   :param token_name: Token Name in OCP.
+   :type token_name: string
+   :param channel_name: Channel Name in OCP. *Optional*. If missing will use default channel for the token.
+   :type channel_name: string
+   :param resolution: Resolution for the data
+   :type resolution: int
+   :param min_x: Minimum value in the xrange
+   :type min_x: int
+   :param max_x: Maximum value in the xrange
+   :type max_x: int
+   :param min_y: Minimum value in the yrange
+   :type min_y: int
+   :param max_y: Maximum value in the yrange
+   :type max_y: int
+   :param min_z: Minimum value in the zrange
+   :type min_z: int
+   :param max_z: Maximum value in the zrange
+   :type max_z: int
+   :param min_time: Minimum value in the timerange. *Optional*. Only used for timeseries channels.
+   :type min_time: int
+   :param max_time: Maximum value in the timerange. *Optional*. Only used for timeseries channels.
+   :type max_time: int
+    
+   :form CUTOUT: HDF5 group, Post data
+   :form CHANNELTYPE: HDF5 group, Channel type(image, annotation, probmap, timeseries)
+   :form DATATYPE: HDF5 group, Data type(uint8, uint16, uint32, rgb32, rgb64, float32)
 
-Example
--------
+   :statuscode 200: No error
+   :statuscode 404: Error in the syntax or file format
 
-The following code demonstrates the manno protocol.  A few mitochondria have been labeled as an example.  The example script should take approximately 10 seconds to complete.
-
-.. code-block:: matlab
-
-  function run_manno_example()
-  % Mananno Example 
-  % manno starter to demonstrate protocol functionality.  All required inputs
-  % are hardcoded for this demo.  Paths are hardcoded for Linux/Mac.
-  % 
-  % The result of this run can be viewed in a webbrowser using the following
-  % URL: http://braingraph1dev.cs.jhu.edu/ocp/overlay/0.7/temp2/xy/1/5472,5972/8712,9212/1031/
-  %
-  % **Author**
-  %
-  % W. Gray Roncal
-
-  %% test_query
-  xstart = 5472;
-  xstop = xstart + 512;
-  ystart = 8712;
-  ystop = ystart + 512;
-  zstart = 1020;
-  zstop = zstart + 16;
-
-  resolution = 1;
-
-  query = OCPQuery;
-  query.setType(eOCPQueryType.imageDense);
-  query.setCutoutArgs([xstart, xstop],[ystart,ystop],[zstart,zstop],resolution);
-
-  %% Servers and tokens - alter appropriately
-  server = 'openconnecto.me';
-  token = 'kasthuri11cc';
-
-  serverUp = 'braingraph1dev.cs.jhu.edu';
-  tokenUp = 'temp2';
-
-  %% Run manno
-  manno_getImage(server,token,'../data/queryFileTest','../data/testitk.nii',0)
-  % Manual annotation step happens here
-  manno_putAnno(serverUp,tokenUp,'../data/queryFileTest','../data/exampleAnno.nii.gz','RAMONOrganelle', 1,0)
+.. gist:: https://gist.github.com/kunallillaney/19b78e5a83611edf7808
 
 
-Validation
-----------
+GET Request
+------------
 
-The result of the example script can be accessed using the following link:
-http://braingraph1dev.cs.jhu.edu/ocp/overlay/0.7/temp2/xy/1/5472,5972/8712,9212/1031/
+.. http:get:: (string:server_name)/ca/(string:token_name)/(string:channel_name)/hdf5/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
+   
+   :synopsis: Get a HDF5 file from the server
 
-Note that the server and token pair listed here are public and other data may be pre-existing.  
+   :param server_name: Server Name in OCP. In the general case this is ocp.me.
+   :type server_name: string
+   :param token_name: Token Name in OCP.
+   :type token_name: string
+   :param channel_name: Channel Name in OCP. *Optional*. If missing will use default channel for the token.
+   :type channel_name: string
+   :param resolution: Resolution for the data
+   :type resolution: int
+   :param min_x: Minimum value in the xrange
+   :type min_x: int
+   :param max_x: Maximum value in the xrange
+   :type max_x: int
+   :param min_y: Minimum value in the yrange
+   :type min_y: int
+   :param max_y: Maximum value in the yrange
+   :type max_y: int
+   :param min_z: Minimum value in the zrange
+   :type min_z: int
+   :param max_z: Maximum value in the zrange
+   :type max_z: int
+   :param min_time: Minimum value in the timerange. *Optional*. Only used for timeseries channels.
+   :type min_time: int
+   :param max_time: Maximum value in the timerange. *Optional*. Only used for timeseries channels.
+   :type max_time: int
+    
+   :form CUTOUT: HDF5 group, Post data
+   :form CHANNELTYPE: HDF5 group, Channel type(image, annotation, probmap, timeseries)
+   :form DATATYPE: HDF5 group, Data type(uint8, uint16, uint32, rgb32, rgb64, float32)
 
-.. figure:: ../images/manno_example_result.png
+   :statuscode 200: No error
+   :statuscode 404: Error in the syntax or file format
+  
+.. gist:: https://gist.github.com/kunallillaney/19b78e5a83611edf7808
+
+
+Image Slice Cutouts
+-------------------
+
+.. http:get:: (string:server_name)/ca/(string:token_name)/(string:channel_name)/xy/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:z_slice)/(int:time_slice)/
+   
+   :synopsis: Get a XY Slice Cutout
+
+   :param server_name: Server Name in OCP. In the general case this is ocp.me.
+   :type server_name: string
+   :param token_name: Token Name in OCP.
+   :type token_name: string
+   :param channel_name: Channel Name in OCP. *Optional*. If missing will use default channel for the token.
+   :type channel_name: string
+   :param resolution: Resolution for the data
+   :type resolution: int
+   :param min_x: Minimum value in the xrange
+   :type min_x: int
+   :param max_x: Maximum value in the xrange
+   :type max_x: int
+   :param min_y: Minimum value in the yrange
+   :type min_y: int
+   :param max_y: Maximum value in the yrange
+   :type max_y: int
+   :param z_slice: Z-slice value
+   :type z_slice: int
+   :param time_slice: Minimum value in the timerange. *Optional*. Only used for timeseries channels.
+   :type time_slice: int
+    
+   :statuscode 200: No error
+   :statuscode 404: Error in the syntax or file format
+
+.. gist:: https://gist.github.com/19b78e5a83611edf7808.git
+
+
+.. http:get:: (string:server_name)/ca/(string:token_name)/(string:channel_name)/xz/(int:resolution)/(int:min_x),(int:max_x)/(int:y_slice)/(int:min_z),(int:max_z)/(int:time_slice/
+   
+   :synopsis: Get a HDF5 file from the server
+
+   :param server_name: Server Name in OCP. In the general case this is ocp.me.
+   :type server_name: string
+   :param token_name: Token Name in OCP.
+   :type token_name: string
+   :param channel_name: Channel Name in OCP. *Optional*. If missing will use default channel for the token.
+   :type channel_name: string
+   :param resolution: Resolution for the data
+   :type resolution: int
+   :param min_x: Minimum value in the xrange
+   :type min_x: int
+   :param max_x: Maximum value in the xrange
+   :type max_x: int
+   :param y_slice: Y-slice value
+   :type y_slice: int
+   :param min_z: Minimum value in the zrange
+   :type min_z: int
+   :param max_z: Maximum value in the zrange
+   :type max_z: int
+   :param time_slice: Minimum value in the timerange. *Optional*. Only used for timeseries channels.
+   :type time_slice: int
+
+   :statuscode 200: No error
+   :statuscode 404: Error in the syntax or file format
+
+.. http:get:: (string:server_name)/ca/(string:token_name)/(string:channel_name)/yz/(int:resolution)/(int:x_slice)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:time_slice)/
+   
+   :synopsis: Get a HDF5 file from the server
+
+   :param server_name: Server Name in OCP. In the general case this is ocp.me.
+   :type server_name: string
+   :param token_name: Token Name in OCP.
+   :type token_name: string
+   :param channel_name: Channel Name in OCP. *Optional*. If missing will use default channel for the token.
+   :type channel_name: string
+   :param resolution: Resolution for the data
+   :type resolution: int
+   :param x_slice: X-slice value
+   :type x_slice: int
+   :param min_y: Minimum value in the yrange
+   :type min_y: int
+   :param max_y: Maximum value in the yrange
+   :type max_y: int
+   :param min_z: Minimum value in the zrange
+   :type min_z: int
+   :param max_z: Maximum value in the zrange
+   :type max_z: int
+   :param min_time: Minimum value in the timerange. *Optional*. Only used for timeseries channels.
+   :type min_time: int
+   :param max_time: Maximum value in the timerange. *Optional*. Only used for timeseries channels.
+   :type max_time: int
+    
+   :form CUTOUT: HDF5 group, Post data
+   :form CHANNELTYPE: HDF5 group, Channel type(image, annotation, probmap, timeseries)
+   :form DATATYPE: HDF5 group, Data type(uint8, uint16, uint32, rgb32, rgb64, float32)
+
+   :statuscode 200: No error
+   :statuscode 404: Error in the syntax or file format
