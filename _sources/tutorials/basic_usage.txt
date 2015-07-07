@@ -4,12 +4,24 @@ Basic Usage
 HDF5 Cutouts
 --------
 
-.. http:get:: (string:server_name)/ca/(string:token)/(string:channel)/hdf5/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)
+.. http:post:: (string:server_name)/ca/(string:token_name)/(string:channel_name)/hdf5/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)
    
-   Post a HDF5 file to the server
+   :synopsis: Post a HDF5 file to the server
 
    :param server_name: Server Name in OCP. In the general case this is ocp.me.
-   :type server_name: string 
+   :type server_name: string
+   :param token_name: Token Name in OCP.
+   :type token_name: string
+   :param channel_name: Channel Name in OCP. This channel should be present for the token_name above.
+   :type channel_name: string
+   :param resolution: Resolution for the data
+   :param resolution: int
+   :param min_x: Minimum value in the xrange
+   :param min_x: int
+   :param max_x: Maximum value in the xrange
+    
+   :form hdf5_file: HDF5 File containing the data
+
 
 .. code-block:: matlab
 
