@@ -96,24 +96,33 @@ class TimeCube8(Cube):
 class TimeCube16(Cube):
 
   # Constructor 
-  def __init__(self, cubesize=[64,64,64]):
+  def __init__(self, cubesize=[64,64,64], timerange=[0,0]):
     """Create empty array of cubesize"""
 
     # call the base class constructor
     Cube.__init__(self,cubesize)
     # note that this is self.cubesize (which is transposed) in Cube
-    self.data = np.zeros ( self.cubesize, dtype=np.uint16 )
+    self.timerange = timerange
+    self.data = np.zeros ([self.timerange[1]-self.timerange[0]]+self.cubesize, dtype=np.uint16)
 
     # variable that describes when a cube is created from zeros
     #  rather than loaded from another source
     self._newcube = False
 
-  def fromZeros ( self ):
-    """Determine if the cube was created from all zeros?"""
-    if self._newcube == True:
-      return True
-    else: 
-      return False
+  
+  def addData(self, other, index, time):
+    """Add data to a larger cube from a smaller cube"""
+
+    xoffset = index[0]*other.xdim
+    yoffset = index[1]*other.ydim     
+    zoffset = index[2]*other.zdim
+    
+    self.data [ time-self.timerange[0], zoffset:zoffset+other.zdim, yoffset:yoffset+other.ydim, xoffset:xoffset+other.xdim]\
+        = other.data [:,:,:]
+
+  def trim(self, xoffset, xsize, yoffset, ysize, zoffset, zsize):
+    """Trim off the excess data"""
+    self.data = self.data[:, zoffset:zoffset+zsize, yoffset:yoffset+ysize, xoffset:xoffset+xsize]
 
   def zeros ( self ):
     """Create a cube of all 0"""
@@ -123,21 +132,21 @@ class TimeCube16(Cube):
   def xyImage ( self ):
     """Create xy slice"""
     # This works for 16-> conversions
-    zdim,ydim,xdim = self.data.shape
+    zdim,ydim,xdim = self.data.shape[1:]
     if self.data.dtype == np.uint8:  
-      return Image.frombuffer ( 'L', (xdim,ydim), self.data[0,:,:].flatten(), 'raw', 'L', 0, 1)
+      return Image.frombuffer ( 'L', (xdim,ydim), self.data[0,0,:,:].flatten(), 'raw', 'L', 0, 1)
     else:
-      outimage = Image.frombuffer ( 'I;16', (xdim,ydim), self.data[0,:,:].flatten(), 'raw', 'I;16', 0, 1)
+      outimage = Image.frombuffer ( 'I;16', (xdim,ydim), self.data[0,0,:,:].flatten(), 'raw', 'I;16', 0, 1)
       return outimage.point(lambda i:i*(1./256)).convert('L')
 
 
   def xzImage ( self, zscale ):
     """Create xz slice"""
-    zdim,ydim,xdim = self.data.shape
+    zdim,ydim,xdim = self.data.shape[1:]
     if self.data.dtype == np.uint8:  
-      outimage = Image.frombuffer ( 'L', (xdim,zdim), self.data[:,0,:].flatten(), 'raw', 'L', 0, 1)
+      outimage = Image.frombuffer ( 'L', (xdim,zdim), self.data[0,:,0,:].flatten(), 'raw', 'L', 0, 1)
     else:
-      outimage = Image.frombuffer ( 'I;16', (xdim,zdim), self.data[:,0,:].flatten(), 'raw', 'I;16', 0, 1)
+      outimage = Image.frombuffer ( 'I;16', (xdim,zdim), self.data[0,:,0,:].flatten(), 'raw', 'I;16', 0, 1)
       outimage = outimage.point(lambda i:i*(1./256)).convert('L')
     
     return  outimage.resize ( [xdim, int(zdim*zscale)] )
@@ -145,11 +154,11 @@ class TimeCube16(Cube):
 
   def yzImage ( self, zscale ):
     """Create yz slice"""
-    zdim,ydim,xdim = self.data.shape
+    zdim,ydim,xdim = self.data.shape[1:]
     if self.data.dtype == np.uint8:  
-      outimage = Image.frombuffer ( 'L', (ydim,zdim), self.data[:,:,0].flatten(), 'raw', 'L', 0, 1)
+      outimage = Image.frombuffer ( 'L', (ydim,zdim), self.data[0,:,:,0].flatten(), 'raw', 'L', 0, 1)
     else:
-      outimage = Image.frombuffer ( 'I;16', (ydim,zdim), self.data[:,:,0].flatten(), 'raw', 'I;16', 0, 1)
+      outimage = Image.frombuffer ( 'I;16', (ydim,zdim), self.data[0,:,:,0].flatten(), 'raw', 'I;16', 0, 1)
       outimage = outimage.point(lambda i:i*(1./256)).convert('L')
     
     return outimage.resize ( [ydim, int(zdim*zscale)] )

@@ -1,7 +1,7 @@
 open-connectome Functions
-**********************
+*************************
 
-.. automodule:: code
+.. automodule:: ocpca
    :members:
 
 

@@ -152,9 +152,6 @@ def conflictOption  ( imageargs ):
     else:
       return 'O'
 
-#                                                                                
-#  Process annotation id for queries                                             
-#                                                                               \
                                                                                  
 def annotationId ( webargs, datasetcfg ):
   """Process REST arguments for a single"""
@@ -162,4 +159,3 @@ def annotationId ( webargs, datasetcfg ):
   rangeargs = webargs.split('/')
   # PYTODO: check validity of annotation id                                      
   return int(rangeargs[0])
-

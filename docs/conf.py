@@ -20,7 +20,7 @@ import shlex
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
-#sys.path.insert(0, os.getenv('manno_HOME'))
+sys.path.insert(0, os.getenv('manno_HOME'))
 #import packages.utils.setup
 #import packages.dtipreproc.extract_b0
 #import packages.dtipreproc.parse_b
@@ -53,7 +53,8 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx.ext.pngmath',
     'sphinx.ext.viewcode',
-    'sphinxcontrib.httpdomain'
+    'sphinxcontrib.httpdomain',
+    'sphinxcontrib.gist',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
