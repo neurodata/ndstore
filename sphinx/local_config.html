@@ -82,14 +82,27 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ocp.html">OCP</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="ocp.html#contributing">Contributing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ocp.html#style-guides">Style Guides</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ocp.html#ocp-support-forums">OCP Support Forums</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions (FAQ)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/basic_usage.html">Data API&#8217;s</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials/basic_usage.html#hdf5-cutouts">HDF5 Cutouts</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials/basic_usage.html#image-slice-cutouts">Image Slice Cutouts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/data_api.html">Data API&#8217;s</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_api.html#hdf5-service">HDF5 Service</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/data_api.html#post">POST</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/data_api.html#get">GET</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_api.html#numpy-service">Numpy Service</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/data_api.html#id1">POST</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/data_api.html#id2">GET</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_api.html#image-slice-service">Image Slice Service</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/data_api.html#get-xy-slice-cutout">GET XY Slice Cutout</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/data_api.html#get-xz-slice-cutout">GET XZ Slice Cutout</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/data_api.html#get-yz-slice-cutout">GET YZ Slice Cutout</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -139,12 +152,12 @@
             
   <div class="section" id="configuration">
 <h1>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h1>
-<p>In order to use this software, follow these steps:</p>
+<p>You can install open-connectome and configure using the install script:</p>
 <blockquote>
 <div><ul class="simple">
 <li>uAlex script</li>
-<li>MySQL/Cassandra</li>
-<li>nginx</li>
+<li>MySQL/Cassandra/Riak</li>
+<li>Nginx Setting, Celery Setting, RabbitMq Server</li>
 <li>KL TODO</li>
 </ul>
 </div></blockquote>
