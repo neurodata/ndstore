@@ -132,21 +132,21 @@ class TimeCube16(Cube):
   def xyImage ( self ):
     """Create xy slice"""
     # This works for 16-> conversions
-    zdim,ydim,xdim = self.data.shape
+    zdim,ydim,xdim = self.data.shape[1:]
     if self.data.dtype == np.uint8:  
-      return Image.frombuffer ( 'L', (xdim,ydim), self.data[0,:,:].flatten(), 'raw', 'L', 0, 1)
+      return Image.frombuffer ( 'L', (xdim,ydim), self.data[0,0,:,:].flatten(), 'raw', 'L', 0, 1)
     else:
-      outimage = Image.frombuffer ( 'I;16', (xdim,ydim), self.data[0,:,:].flatten(), 'raw', 'I;16', 0, 1)
+      outimage = Image.frombuffer ( 'I;16', (xdim,ydim), self.data[0,0,:,:].flatten(), 'raw', 'I;16', 0, 1)
       return outimage.point(lambda i:i*(1./256)).convert('L')
 
 
   def xzImage ( self, zscale ):
     """Create xz slice"""
-    zdim,ydim,xdim = self.data.shape
+    zdim,ydim,xdim = self.data.shape[1:]
     if self.data.dtype == np.uint8:  
-      outimage = Image.frombuffer ( 'L', (xdim,zdim), self.data[:,0,:].flatten(), 'raw', 'L', 0, 1)
+      outimage = Image.frombuffer ( 'L', (xdim,zdim), self.data[0,:,0,:].flatten(), 'raw', 'L', 0, 1)
     else:
-      outimage = Image.frombuffer ( 'I;16', (xdim,zdim), self.data[:,0,:].flatten(), 'raw', 'I;16', 0, 1)
+      outimage = Image.frombuffer ( 'I;16', (xdim,zdim), self.data[0,:,0,:].flatten(), 'raw', 'I;16', 0, 1)
       outimage = outimage.point(lambda i:i*(1./256)).convert('L')
     
     return  outimage.resize ( [xdim, int(zdim*zscale)] )
@@ -154,11 +154,11 @@ class TimeCube16(Cube):
 
   def yzImage ( self, zscale ):
     """Create yz slice"""
-    zdim,ydim,xdim = self.data.shape
+    zdim,ydim,xdim = self.data.shape[1:]
     if self.data.dtype == np.uint8:  
-      outimage = Image.frombuffer ( 'L', (ydim,zdim), self.data[:,:,0].flatten(), 'raw', 'L', 0, 1)
+      outimage = Image.frombuffer ( 'L', (ydim,zdim), self.data[0,:,:,0].flatten(), 'raw', 'L', 0, 1)
     else:
-      outimage = Image.frombuffer ( 'I;16', (ydim,zdim), self.data[:,:,0].flatten(), 'raw', 'I;16', 0, 1)
+      outimage = Image.frombuffer ( 'I;16', (ydim,zdim), self.data[0,:,:,0].flatten(), 'raw', 'I;16', 0, 1)
       outimage = outimage.point(lambda i:i*(1./256)).convert('L')
     
     return outimage.resize ( [ydim, int(zdim*zscale)] )
