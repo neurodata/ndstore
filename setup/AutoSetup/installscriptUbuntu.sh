@@ -54,6 +54,7 @@ pip install Pylibmc
 pip install uWSGI --allow-external PEAK-Rules --allow-unverified PEAK-Rules
 pip install igraph
 pip install pytest
+pip install networkx
 
 # Setup the files needed for first run of the server
 
