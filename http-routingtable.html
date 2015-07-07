@@ -87,16 +87,25 @@
 <li class="toctree-l1"><a class="reference internal" href="sphinx/local_config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sphinx/ocp.html">OCP</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="sphinx/ocp.html#contributing">Contributing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="sphinx/ocp.html#style-guides">Style Guides</a></li>
 <li class="toctree-l2"><a class="reference internal" href="sphinx/ocp.html#ocp-support-forums">OCP Support Forums</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="sphinx/faq.html">Frequently Asked Questions (FAQ)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorials/basic_usage.html">Data API&#8217;s</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tutorials/basic_usage.html#hdf5-cutouts">HDF5 Cutouts</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="tutorials/basic_usage.html#post-request">POST Request</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorials/basic_usage.html#get-request">GET Request</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorials/basic_usage.html#image-slice-cutouts">Image Slice Cutouts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/data_api.html">Data API&#8217;s</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/data_api.html#hdf5-service">HDF5 Service</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/data_api.html#post">POST</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/data_api.html#get">GET</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/data_api.html#numpy-service">Numpy Service</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/data_api.html#id1">POST</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/data_api.html#id2">GET</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/data_api.html#image-slice-service">Image Slice Service</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/data_api.html#get-xy-slice-cutout">GET XY Slice Cutout</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/data_api.html#get-xz-slice-cutout">GET XZ Slice Cutout</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/data_api.html#get-yz-slice-cutout">GET YZ Slice Cutout</a></li>
 </ul>
 </li>
 </ul>
@@ -158,27 +167,37 @@
      <tr>
        <td></td>
        <td>
-       <a href="tutorials/basic_usage.html#get-(string-server_name)-ca-(string-token_name)-(string-channel_name)-hdf5-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-min_time),(int-max_time)-"><code class="xref">GET (string:server_name)/ca/(string:token_name)/(string:channel_name)/hdf5/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/</code></a></td><td>
+       <a href="api/data_api.html#get-(string-server_name)-ca-(string-token_name)-(string-channel_name)-hdf5-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-min_time),(int-max_time)-"><code class="xref">GET (string:server_name)/ca/(string:token_name)/(string:channel_name)/hdf5/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="tutorials/basic_usage.html#get-(string-server_name)-ca-(string-token_name)-(string-channel_name)-xy-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-z_slice)-(int-time_slice)-"><code class="xref">GET (string:server_name)/ca/(string:token_name)/(string:channel_name)/xy/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:z_slice)/(int:time_slice)/</code></a></td><td>
+       <a href="api/data_api.html#get-(string-server_name)-ca-(string-token_name)-(string-channel_name)-npz-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-min_time),(int-max_time)-"><code class="xref">GET (string:server_name)/ca/(string:token_name)/(string:channel_name)/npz/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="tutorials/basic_usage.html#get-(string-server_name)-ca-(string-token_name)-(string-channel_name)-xz-(int-resolution)-(int-min_x),(int-max_x)-(int-y_slice)-(int-min_z),(int-max_z)-(int-time_slice-"><code class="xref">GET (string:server_name)/ca/(string:token_name)/(string:channel_name)/xz/(int:resolution)/(int:min_x),(int:max_x)/(int:y_slice)/(int:min_z),(int:max_z)/(int:time_slice/</code></a></td><td>
+       <a href="api/data_api.html#get-(string-server_name)-ca-(string-token_name)-(string-channel_name)-xy-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-z_slice)-(int-time_slice)-"><code class="xref">GET (string:server_name)/ca/(string:token_name)/(string:channel_name)/xy/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:z_slice)/(int:time_slice)/</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="tutorials/basic_usage.html#get-(string-server_name)-ca-(string-token_name)-(string-channel_name)-yz-(int-resolution)-(int-x_slice)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-time_slice)-"><code class="xref">GET (string:server_name)/ca/(string:token_name)/(string:channel_name)/yz/(int:resolution)/(int:x_slice)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:time_slice)/</code></a></td><td>
+       <a href="api/data_api.html#get-(string-server_name)-ca-(string-token_name)-(string-channel_name)-xz-(int-resolution)-(int-min_x),(int-max_x)-(int-y_slice)-(int-min_z),(int-max_z)-(int-time_slice-"><code class="xref">GET (string:server_name)/ca/(string:token_name)/(string:channel_name)/xz/(int:resolution)/(int:min_x),(int:max_x)/(int:y_slice)/(int:min_z),(int:max_z)/(int:time_slice/</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="tutorials/basic_usage.html#post-(string-server_name)-ca-(string-token_name)-(string-channel_name)-hdf5-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-min_time),(int-max_time)-"><code class="xref">POST (string:server_name)/ca/(string:token_name)/(string:channel_name)/hdf5/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/</code></a></td><td>
+       <a href="api/data_api.html#get-(string-server_name)-ca-(string-token_name)-(string-channel_name)-yz-(int-resolution)-(int-x_slice)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-time_slice)-"><code class="xref">GET (string:server_name)/ca/(string:token_name)/(string:channel_name)/yz/(int:resolution)/(int:x_slice)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:time_slice)/</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="api/data_api.html#post-(string-server_name)-ca-(string-token_name)-(string-channel_name)-hdf5-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-min_time),(int-max_time)-"><code class="xref">POST (string:server_name)/ca/(string:token_name)/(string:channel_name)/hdf5/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="api/data_api.html#post-(string-server_name)-ca-(string-token_name)-(string-channel_name)-npz-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-min_time),(int-max_time)-"><code class="xref">POST (string:server_name)/ca/(string:token_name)/(string:channel_name)/npz/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/</code></a></td><td>
        <em></em></td></tr>
    </table>
 

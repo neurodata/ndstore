@@ -83,16 +83,25 @@
 <li class="toctree-l1"><a class="reference internal" href="sphinx/local_config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sphinx/ocp.html">OCP</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="sphinx/ocp.html#contributing">Contributing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="sphinx/ocp.html#style-guides">Style Guides</a></li>
 <li class="toctree-l2"><a class="reference internal" href="sphinx/ocp.html#ocp-support-forums">OCP Support Forums</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="sphinx/faq.html">Frequently Asked Questions (FAQ)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorials/basic_usage.html">Data API&#8217;s</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tutorials/basic_usage.html#hdf5-cutouts">HDF5 Cutouts</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="tutorials/basic_usage.html#post-request">POST Request</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorials/basic_usage.html#get-request">GET Request</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorials/basic_usage.html#image-slice-cutouts">Image Slice Cutouts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/data_api.html">Data API&#8217;s</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/data_api.html#hdf5-service">HDF5 Service</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/data_api.html#post">POST</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/data_api.html#get">GET</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/data_api.html#numpy-service">Numpy Service</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/data_api.html#id1">POST</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/data_api.html#id2">GET</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/data_api.html#image-slice-service">Image Slice Service</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/data_api.html#get-xy-slice-cutout">GET XY Slice Cutout</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/data_api.html#get-xz-slice-cutout">GET XZ Slice Cutout</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/data_api.html#get-yz-slice-cutout">GET YZ Slice Cutout</a></li>
 </ul>
 </li>
 </ul>
@@ -146,7 +155,7 @@
 <br><p>OCP provides a scalable database cluster for the spatial analysis and annotation of high-throughput brain imaging data for 3-d electron microscopy image stacks, time-series and multi-channel data. The system is designed primarily for workloads that build connectomes&#8212;neural connectivity maps of the brain&#8212;using the parallel execution of computer vision algorithms on high-performance compute clusters. These services and open-science data sets are publicly available at ocp.me.</p>
 <p>The system design inherits much from NoSQL scale-out and data-intensive computing architectures. We distribute data to cluster nodes by partitioning a spatial index. We direct I/O to different systems&#8212;reads to parallel disk arrays and writes to solid-state storage&#8212;to avoid I/O interference and maximize throughput. All programming interfaces are RESTful Web services, which are simple and stateless, improving scalability and usability. We include a performance evaluation of the production system, highlighting the effectiveness of spatial data organization.</p>
 <div class="figure align-center">
-<a class="reference internal image-reference" href="_images/ocp_example.png"><img alt="_images/ocp_example.png" src="_images/ocp_example.png" style="width: 300px;" /></a>
+<a class="reference internal image-reference" href="_images/ocp_example.png"><img alt="_images/ocp_example.png" src="_images/ocp_example.png" style="width: 500px;" /></a>
 </div>
 <div>
   <img style="width:30px;height:30px;vertical-align:middle">
@@ -164,7 +173,7 @@
 <li class="toctree-l1"><a class="reference internal" href="sphinx/local_config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sphinx/ocp.html">OCP</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sphinx/faq.html">Frequently Asked Questions (FAQ)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorials/basic_usage.html">Data API&#8217;s</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/data_api.html">Data API&#8217;s</a></li>
 </ul>
 </div>
 <div class="toctree-wrapper compound" id="further-reading">
