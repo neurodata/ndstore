@@ -109,12 +109,20 @@ class TimeCube16(Cube):
     #  rather than loaded from another source
     self._newcube = False
 
-  def fromZeros ( self ):
-    """Determine if the cube was created from all zeros?"""
-    if self._newcube == True:
-      return True
-    else: 
-      return False
+  
+  def addData(self, other, index, time):
+    """Add data to a larger cube from a smaller cube"""
+
+    xoffset = index[0]*other.xdim
+    yoffset = index[1]*other.ydim     
+    zoffset = index[2]*other.zdim
+    
+    self.data [ time-self.timerange[0], zoffset:zoffset+other.zdim, yoffset:yoffset+other.ydim, xoffset:xoffset+other.xdim]\
+        = other.data [:,:,:]
+
+  def trim(self, xoffset, xsize, yoffset, ysize, zoffset, zsize):
+    """Trim off the excess data"""
+    self.data = self.data[:, zoffset:zoffset+zsize, yoffset:yoffset+ysize, xoffset:xoffset+xsize]
 
   def zeros ( self ):
     """Create a cube of all 0"""
