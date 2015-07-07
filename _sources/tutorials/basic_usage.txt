@@ -80,9 +80,8 @@ HDF5 Cutouts
    :statuscode 200: No error
    :statuscode 404: Error in the syntax or file format
    
-.. code-block:: python
+.. gist:: https://gist.github.com/19b78e5a83611edf7808.git
 
-   function post_hdf5_example()
 
 Image Slice Cutouts
 -------------------
