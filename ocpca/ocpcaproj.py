@@ -48,8 +48,8 @@ import logging
 logger=logging.getLogger("ocp")
 
 # OCP Version
-OCP_VERSION = '0.6'
-SCHEMA_VERSION = '0.6'
+OCP_VERSION = '0.7'
+SCHEMA_VERSION = '0.7'
 
 OCP_channeltypes = {0:'image',1:'annotation',2:'probmap',3:'timeseries'}
 
