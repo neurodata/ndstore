@@ -20,6 +20,8 @@ from django.conf.urls import patterns, include, url
 urlpatterns = patterns('ocpca.views',
   # catmaid
   url(r'^catmaid/(?P<webargs>\w+/.*)$', 'catmaid'),
+  # swc -- annotations file get and put
+  url(r'(?P<webargs>^\w+/[\w+,/]*swc/[\w,/]*)$', 'swc'),
   # fetch ids (with predicates)
   url(r'(?P<webargs>^\w+/\w+/query/[\w\.,/]*)$', 'queryObjects'),
   # get project information
@@ -36,7 +38,7 @@ urlpatterns = patterns('ocpca.views',
   # projection services
   url(r'(?P<webargs>^\w+/(minproj|maxproj)/(xy|xz|yz)[\w,/]*)$', 'minmaxProject'),
   # get services
-  url(r'(?P<webargs>^\w+/[\w+,/]*(xy|xz|yz|ts|hdf5|npz|zip|id|ids|xyanno|xzanno|yzanno)/[\w,/-]+)$', 'cutout'),
+  url(r'(?P<webargs>^\w+/[\w+,/]*(xy|xz|yz|ts|hdf5|tiff|npz|zip|id|ids|xyanno|xzanno|yzanno)/[\w,/-]+)$', 'cutout'),
   # single field interfaces
   url(r'(?P<webargs>^\w+/\w+/\d+/getField/[\w,/]*)$', 'getField'),
   url(r'(?P<webargs>^\w+/\w+/\d+/setField/[\w\. ,/]*)$', 'setField'),

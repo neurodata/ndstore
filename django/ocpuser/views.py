@@ -734,6 +734,7 @@ def updatechannel(request):
         'channel_datatype': channel_to_update[0].channel_datatype,
         'channel_description':channel_to_update[0].channel_description,
         'readonly':channel_to_update[0].readonly,
+        'resolution':channel_to_update[0].resolution,
         'default':channel_to_update[0].default,
         'exceptions':channel_to_update[0].exceptions,
         'propagate':channel_to_update[0].propagate,

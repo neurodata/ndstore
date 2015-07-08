@@ -1794,7 +1794,6 @@ class OCPCADB:
 
     return "Merge 3D"
 
-
   def exceptionsCutout ( self, corner, dim, resolution ):
     """Return a list of exceptions in the specified region.
         Will return a np.array of shape x,y,z,id1,...,idn where n is the longest exception list"""

@@ -31,17 +31,19 @@ ANNO_SEED = 3
 ANNO_SEGMENT = 4
 ANNO_NEURON = 5
 ANNO_ORGANELLE = 6
+ANNO_NODE = 7
+ANNO_SKELETON = 8
 
-#KLTODO -- where did synseg come from?
 #  This table is not getting created or deleted
 # list of database table names.  Move to annproj?
 anno_dbtables = { 'annotation':'annotations',\
                   'kvpairs':'kvpairs',\
                   'synapse':'synapses',\
                   'segment':'segments',\
-#                  'synseg':'synseg',\
                   'organelle':'organelles',\
-                  'seed':'seeds' }
+                  'seed':'seeds',\
+                  'node':'nodes',\
+                  'skeleton':'skeletons' }
 
 
 ###############  Annotation  ##################
@@ -69,7 +71,7 @@ class Annotation:
     else:
       db.setID(ch, self.annid)
 
-  def getField ( self, ch, field ):
+  def getField ( self, field ):
     """Accessor by field name"""
 
     if field == 'status':
@@ -78,13 +80,15 @@ class Annotation:
       return self.confidence
     elif field == 'author':
       return self.author
+    elif field =='annid':
+      return self.annid
     elif self.kvpairs.get(field):
       return self.kvpairs[field]
     else:
       logger.warning ( "getField: No such field %s" % (field))
       raise OCPCAError ( "getField: No such field %s" % (field))
 
-  def setField ( self, ch, field, value ):
+  def setField ( self, field, value ):
     """Mutator by field name.  Then need to store the field."""
     
     if field == 'status':
@@ -94,6 +98,8 @@ class Annotation:
     elif field == 'author':
       self.author = value
     # if we don't recognize the field, store it as a kv pair.
+    elif field == 'annid':
+      self.annid = value
     else: 
       self.kvpairs[field]=value
 #    else:
@@ -117,7 +123,7 @@ class Annotation:
   
     if len(self.kvpairs) != 0:
       try:
-        kvclause = ','.join(['(' + str(self.annid) +',\'' + k + '\',\'' + v +'\')' for (k,v) in self.kvpairs.iteritems()])  
+        kvclause = ','.join(['(' + str(self.annid) +',\'' + str(k) + '\',\'' + str(v) +'\')' for (k,v) in self.kvpairs.iteritems()])  
       except:
         raise OCPCAError ( "Improperly formatted key/value csv string:" + kvclause ) 
 
@@ -239,6 +245,8 @@ class Annotation:
 
 ###############  Synapse  ##################
 
+#RBTODO add centroid to synapse
+#RBTODO get rid of seed and generalize to point
 class AnnSynapse (Annotation):
   """Metadata specific to synapses"""
 
@@ -253,7 +261,7 @@ class AnnSynapse (Annotation):
     # Call the base class constructor
     Annotation.__init__(self, annodb)
 
-  def getField ( self, ch, field ):
+  def getField ( self, field ):
     """Accessor by field name"""
 
     if field == 'weight':
@@ -265,9 +273,9 @@ class AnnSynapse (Annotation):
     elif field == 'segments':
       return ','.join(str(x) for x in self.segments)
     else:
-      return Annotation.getField(self, ch, field)
+      return Annotation.getField(self, field)
 
-  def setField ( self, ch, field, value ):
+  def setField ( self, field, value ):
     """Mutator by field name.  Then need to store the field."""
     
     if field == 'weight':
@@ -277,7 +285,7 @@ class AnnSynapse (Annotation):
     elif field == 'seeds':
       self.seeds = [int(x) for x in value.split(',')] 
     else:
-      Annotation.setField ( self, ch, field, value )
+      Annotation.setField ( self, field, value )
 
   def store ( self, ch, cursor ):
     """Store the synapse to the annotations databae"""
@@ -401,7 +409,7 @@ class AnnSeed (Annotation):
     # Call the base class constructor
     Annotation.__init__(self,annodb)
 
-  def getField ( self, ch, field ):
+  def getField ( self, field ):
     """Accessor by field name"""
 
     if field == 'parent':
@@ -413,9 +421,9 @@ class AnnSeed (Annotation):
     elif field == 'source':
       return self.source
     else:
-      return Annotation.getField(self, ch, field)
+      return Annotation.getField(self, field)
 
-  def setField ( self, ch, field, value ):
+  def setField ( self, field, value ):
     """Mutator by field name.  Then need to store the field."""
     
     if field == 'parent':
@@ -429,7 +437,7 @@ class AnnSeed (Annotation):
     elif field == 'source':
       self.source = value
     else:
-      Annotation.setField ( self, ch, field, value )
+      Annotation.setField ( self, field, value )
 
   def store ( self, ch, cursor ):
     """Store thwe seed to the annotations databae"""
@@ -518,26 +526,28 @@ class AnnSegment (Annotation):
     self.parentseed = 0              # seed that started this segment
     self.neuron = 0                  # add a neuron field
     self.synapses = []               # synapses connected to this segment
-    self.organelles = []             # organells associated with this segment
+    self.organelles = []             # organelles associated with this segment
 
     # Call the base class constructor
     Annotation.__init__(self,annodb)
 
-  def querySynapses ( self, ch, cursor ):
-    """Query the synseg database to resolve"""
 
-    sql = "SELECT synapse FROM {} WHERE segment={}".format( getAnnoTable('synseg'),self.annid)
+# RBTODO get synapses from segments.
+#  def querySynapses ( self, ch, cursor ):
+#    """Query the synseg database to resolve"""
+#
+#    sql = "SELECT synapse FROM {} WHERE segment={}".format( getAnnoTable('synseg'),self.annid)
+#
+#    try:
+#      cursor.execute ( sql )
+#    except MySQLdb.Error, e:
+#      logger.warning ( "Error querying synapses %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+#      raise OCPCAError ( "Error querying synapses %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+#
+#    return cursor.fetchall()
 
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ( "Error querying synapses %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise OCPCAError ( "Error querying synapses %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
-    return cursor.fetchall()
-
-
-  def getField ( self, ch, field ):
+  def getField ( self, field ):
     """Accessor by field name"""
 
     if field == 'segmentclass':
@@ -551,9 +561,9 @@ class AnnSegment (Annotation):
     elif field == 'organelles':
       return ','.join(str(x) for x in self.organelles)
     else:
-      return Annotation.getField(self, ch, field)
+      return Annotation.getField(self, field)
 
-  def setField ( self, ch, field, value ):
+  def setField ( self, field, value ):
     """Mutator by field name.  Then need to store the field."""
     
     if field == 'segmentclass':
@@ -571,7 +581,7 @@ class AnnSegment (Annotation):
       #pass
       self.organelles = [int(x) for x in value.split(',')] 
     else:
-      Annotation.setField ( self, ch, field, value )
+      Annotation.setField ( self, field, value )
 
   def store ( self, ch, cursor ):
     """Store the synapse to the annotations databae"""
@@ -692,7 +702,7 @@ class AnnNeuron (Annotation):
     return cursor.fetchall()
 
 
-  def getField ( self, ch, field ):
+  def getField ( self, field ):
     """Accessor by field name"""
 
 #  Make this a query not a field.
@@ -702,14 +712,14 @@ class AnnNeuron (Annotation):
     if field == 'segments':
       return ','.join(str(x) for x in self.segments)
     else:
-      return Annotation.getField(self, ch, field)
+      return Annotation.getField(self, field)
 
-  def setField ( self, ch, field, value ):
+  def setField ( self, field, value ):
     """Mutator by field name.  Then need to store the field."""
     
     if field == 'segments':
       self.segments = [int(x) for x in value.split(',')]
-    Annotation.setField ( self, ch, field, value )
+    Annotation.setField ( self, field, value )
 
 
   def store ( self, ch, cursor ):
@@ -781,7 +791,7 @@ class AnnOrganelle (Annotation):
     # Call the base class constructor
     Annotation.__init__(self,annodb)
 
-  def getField ( self, ch, field ):
+  def getField ( self, field ):
     """Accessor by field name"""
 
     if field == 'organelleclass':
@@ -793,9 +803,9 @@ class AnnOrganelle (Annotation):
     elif field == 'seeds':
       return ','.join(str(x) for x in self.seeds)
     else:
-      return Annotation.getField(self, ch, field)
+      return Annotation.getField(self, field)
 
-  def setField ( self, ch, field, value ):
+  def setField ( self, field, value ):
     """Mutator by field name.  Then need to store the field."""
     
     if field == 'organelleclass':
@@ -809,7 +819,7 @@ class AnnOrganelle (Annotation):
     elif field == 'seeds':
       self.seeds = [int(x) for x in value.split(',')] 
     else:
-      Annotation.setField ( self, ch, field, value )
+      Annotation.setField ( self, field, value )
 
   def store ( self, ch, cursor ):
     """Store the synapse to the annotations databae"""
@@ -904,6 +914,257 @@ class AnnOrganelle (Annotation):
     Annotation.delete ( self, ch, cursor )
 
 
+###############  Node  ##################
+
+class AnnNode (Annotation):
+  """Point annotation (sometimes in a skeleton)"""
+
+  def __init__(self,annodb):
+    """Initialize the fields to zero or None"""
+
+    self.pointtype = 0                           # enumerated label
+    self.skeletonid = 0
+    self.pointid = 0
+    # RBTODO make these floats for SWC and MRIStudio
+    self.location = [ None, None, None ]        # xyz coordinate
+    self.parentid = 0                           # parent node
+    self.radius = 0.0
+    #RBTODO do we want to keep children 
+    self.children = []                          # children
+
+    # Call the base class constructor
+    Annotation.__init__(self,annodb)
+
+  def getField ( self, field ):
+    """Accessor by field name"""
+
+    if field == 'nodetype':
+      return self.nodetype
+    elif field == 'location':
+      return self.location
+    elif field == 'skeletonid':
+      return self.skeletonid
+    elif field == 'parentid':
+      return self.parentid
+    elif field == 'radius':
+      return self.radius
+    elif field == 'children':
+      return ','.join(str(x) for x in self.children)
+    else:
+      return Annotation.getField(self, field)
+
+  def setField ( self, field, value ):
+    """Mutator by field name.  Then need to store the field."""
+    
+    if field == 'nodetype':
+      self.nodetype = value
+    elif field == 'location':
+      self.location = value
+      if len(self.location) != 3:
+        raise OCPCAError ("Illegal arguments to set field centroid: %s" % value)
+    elif field == 'parentid':
+      self.parentid = value
+    elif field == 'skeletonid':
+      self.skeletonid = value
+    elif field == 'radius':
+      self.radius = value
+    elif field == 'children':
+      self.children = [int(x) for x in value.split(',')] 
+    else:
+      Annotation.setField ( self, field, value )
+
+  def store ( self, ch, cursor ):
+    """Store the node to the annotations database"""
+
+    if self.location == None or np.all(self.location==[None,None,None]):
+      storelocation = [ 'NULL', 'NULL', 'NULL' ]
+    else:
+      storelocation = self.location
+
+    sql = "INSERT INTO %s VALUES ( %s, %s, %s, %s, %s, %s, %s, %s )"\
+            % ( ch.getAnnoTable('node'), self.annid, self.skeletonid, self.nodetype, self.parentid, 
+              storelocation[0], storelocation[1], storelocation[2], self.radius )
+
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      logger.warning ( "Error inserting node %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error inserting node: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    # children : pack into a kv pair
+    if len(self.children)!=0:
+      self.kvpairs['children'] = ','.join([str(i) for i in self.children])
+
+    # and call store on the base classs
+    Annotation.store ( self, ch, cursor, ANNO_NODE)
+
+
+  def update ( self, ch, cursor ):
+    """Update the node in the annotations database"""
+
+    if self.location == None or np.all(self.location==[None,None,None]):
+      storelocation = [ 'NULL', 'NULL', 'NULL' ]
+    else:
+      storelocation = self.location
+
+    sql = "UPDATE %s SET nodetype=%s, parentid=%s, locationx=%s, locationy=%s, locationz=%s, radius=%s WHERE annoid=%s "\
+            % (ch.getAnnoTable('node'), self.nodetype, self.parentid, storelocation[0], storelocation[1], storelocation[2], self.radius, self.annid)
+
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      logger.warning ( "Error updating node %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error updating node: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    # children: pack into a kv pair
+    if len(self.children)!=0:
+      self.kvpairs['children'] = ','.join([str(i) for i in self.children])
+
+    # and call update on the base classs
+    Annotation.updateBase ( self, ch, ANNO_NODE, cursor )
+
+
+  def retrieve ( self, ch, annid, cursor ):
+    """Retrieve the node by annid"""
+
+    # Call the base class retrieve
+    annotype = Annotation.retrieve ( self, ch, annid, cursor )
+
+    # verify the annotation object type
+    if annotype != ANNO_NODE:
+      raise OCPCAError ( "Incompatible annotation type.  Expected NODE got %s" % annotype )
+
+    sql = "SELECT nodetype, parentid, locationx, locationy, locationz, radius FROM %s WHERE annoid = %s" % ( ch.getAnnoTable('node'), annid )
+
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      logger.warning ( "Error retrieving node %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error retrieving node: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    ( self.nodetype, self.parentid, self.location[0], self.location[1], self.location[2], self.radius ) = cursor.fetchone()
+
+    if self.kvpairs.get('children'):
+      self.children = [int(i) for i in self.kvpairs['children'].split(',')]
+      del ( self.kvpairs['children'] )
+
+
+  def delete ( self, ch, cursor ):
+    """Delete the node from the database"""
+
+    sql = "DELETE FROM {} WHERE annoid ={};".format( ch.getAnnoTable('node'), self.annid ) 
+
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      logger.warning ( "Error deleting node %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error deleting node: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    # and call delete on the base classs
+    Annotation.delete ( self, ch, cursor )
+
+
+###############  Skeleton  ##################
+
+class AnnSkeleton (Annotation):
+  """Skeleton annotation"""
+
+  def __init__(self,annodb):
+    """Initialize the fields to zero or None"""
+
+    self.skeletontype = 0                          # enumerated label
+    self.rootnode = 0                              # children
+
+    # Call the base class constructor
+    Annotation.__init__(self,annodb)
+
+  def getField ( self, field ):
+    """Accessor by field name"""
+
+    if field == 'skeletontype':
+      return self.skeletontype
+    elif field == 'rootnode':
+      return self.rootnode
+    else:
+      return Annotation.getField(self, field)
+
+  def setField ( self, field, value ):
+    """Mutator by field name.  Then need to store the field."""
+    
+    if field == 'skeletontype':
+      self.skeletontype = value
+    elif field == 'rootnode':
+      self.rootnode = value
+    else:
+      Annotation.setField ( self, field, value )
+
+  def store ( self, ch, cursor ):
+    """Store the skeleton to the annotations database"""
+
+    sql = "INSERT INTO %s VALUES ( %s, %s, %s )"\
+            % ( ch.getAnnoTable('skeleton'), self.annid, self.skeletontype, self.rootnode )
+
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      logger.warning ( "Error inserting skeleton %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error inserting skeleton: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    # and call store on the base classs
+    Annotation.store ( self, ch, cursor, ANNO_SKELETON)
+
+
+  def update ( self, ch, cursor ):
+    """Update the skeleton in the annotations database"""
+
+    sql = "UPDATE %s SET skeletontype=%s, rootnode=%s, WHERE annoid=%s "\
+            % (ch.getAnnoTable('skeleton'), self.skeletontype, self.rootnode, self.annid)
+
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      logger.warning ( "Error updating skeleton %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error updating skeleton: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    # and call update on the base classs
+    Annotation.updateBase ( self, ch, ANNO_NODE, cursor )
+
+
+  def retrieve ( self, ch, annid, cursor ):
+    """Retrieve the skeleton by annid"""
+
+    # Call the base class retrieve
+    annotype = Annotation.retrieve ( self, ch, annid, cursor )
+
+    # verify the annotation object type
+    if annotype != ANNO_SKELETON:
+      raise OCPCAError ( "Incompatible annotation type.  Expected SKELETON got %s" % annotype )
+
+    sql = "SELECT skeletontype, rootnode FROM %s WHERE annoid = %s" % ( ch.getAnnoTable('skeleton'), annid )
+
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      logger.warning ( "Error retrieving skeleton %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error retrieving skeleton: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    ( self.skeletontype, self.rootnode ) = cursor.fetchone()
+
+
+  def delete ( self, ch, cursor ):
+    """Delete the node from the database"""
+
+    sql = "DELETE FROM {} WHERE annoid ={};".format( ch.getAnnoTable('skeleton'), self.annid ) 
+
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      logger.warning ( "Error deleting skeleton %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error deleting skeleton: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    # and call delete on the base classs
+    Annotation.delete ( self, ch, cursor )
+
 
 #####################  Get and Put external interfaces  ##########################
 
@@ -936,6 +1197,10 @@ def getAnnotation ( ch, annid, annodb, cursor ):
     anno = AnnNeuron(annodb)
   elif type == ANNO_ORGANELLE:
     anno = AnnOrganelle(annodb)
+  elif type == ANNO_NODE:
+    anno = AnnNode(annodb)
+  elif type == ANNO_SKELETON:
+    anno = AnnSkeleton(annodb)
   elif type == ANNO_ANNOTATION:
     anno = Annotation(annodb)
   else:
