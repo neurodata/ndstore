@@ -101,6 +101,8 @@ def filter_ctype_OMP ( cutout, filterlist ):
   
   # get a copy of the iterator as a 1-D array
   cutout_shape = cutout.shape
+  # Temp Fix
+  cutout = np.asarray(cutout, dtype=np.uint32)
   cutout = cutout.ravel()
   filterlist = np.asarray(filterlist, dtype=np.uint32)
   
@@ -184,6 +186,16 @@ def recolor_ctype ( cutout, imagemap ):
     cutout = np.ascontiguousarray(cutout,dtype=np.uint32)
   # Calling the c native function
   ocplib.recolorCubeOMP ( cutout, cp.c_int(xdim), cp.c_int(ydim), imagemap, np.asarray( rgbColor.rgbcolor,dtype=np.uint32) )
+  return imagemap
+
+def recolor64_ctype ( cutout, imagemap ):
+  """ Annotation recoloring function """
+  
+  xdim, ydim = cutout.shape
+  if not cutout.flags['C_CONTIGUOUS']:
+    cutout = np.ascontiguousarray(cutout,dtype=np.uint32)
+  # Calling the c native function
+  ocplib.recolor64CubeOMP ( cutout, cp.c_int(xdim), cp.c_int(ydim), imagemap, np.asarray( rgbColor.rgbcolor,dtype=np.uint32) )
   return imagemap
 
 def quicksort ( locs ):
@@ -272,6 +284,12 @@ def zoomOutData_ctype ( olddata, newdata, factor ):
   ocplib.zoomOutData ( olddata, newdata, (cp.c_int * len(dims))(*dims), cp.c_int(factor) )
   return ( newdata )
 
+def zoomOutData64_ctype ( olddata, newdata, factor ):
+  """ Add the contribution of the input data to the next level at the given offset in the output cube """
+
+  dims = [ i for i in newdata.shape ]
+  ocplib.zoomOutData64 ( olddata, newdata, (cp.c_int * len(dims))(*dims), cp.c_int(factor) )
+  return ( newdata )
 
 def zoomOutData_ctype_OMP ( olddata, newdata, factor ):
   """ Add the contribution of the input data to the next level at the given offset in the output cube """
@@ -331,3 +349,15 @@ def addDataToZSliceStack_ctype ( cube, output, offset ):
 
   dims = [ i for i in cube.data.shape ]
   ocplib.addDataZSlice ( cube.data, output, (cp.c_int * len(offset))(*offset), (cp.c_int * len(dims))(*dims) )
+
+#def annoidIntersect_ctype_OMP(cutout, annoid_list):
+  #"""Remove all annotations in a cutout that do not match the filterlist using OpenMP"""
+  
+  ## get a copy of the iterator as a 1-D array
+  #cutout = cutout.ravel()
+  #annoid_list = np.asarray(annoid_list, dtype=np.uint32)
+  
+  ## Calling the C openmp funtion 
+  #ocplib.annoidIntersectOMP(cutout, cp.c_int(len(cutout)), np.sort(annoid_list), cp.c_int(len(annoid_list)))
+  
+  #return cutout.reshape( cutout_shape )

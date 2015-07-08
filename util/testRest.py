@@ -31,15 +31,13 @@ def postH5 ( host, token, filename ):
     response = urllib2.urlopen(req)
     print url 
   except urllib2.URLError, e:
-    print "Failed URL {}".format(url)
-    print "Error {}".format(e)
+    print "Failed URL {}, Error {}".format(url, e)
 
-
-def deleteH5 ( host, token, annid ):
+def deleteH5(host, token, channel, annid):
   """ Delete an Annotation """
   
   # Creating the url
-  url = 'http://{}/ocpca/{}/{}'.format( host, token, annid )
+  url = 'http://{}/ocpca/{}/{}/{}/'.format(host, token, channel, annid)
   
   # Opening the url and verifying if it connects or else exit the program
   try:
@@ -48,42 +46,57 @@ def deleteH5 ( host, token, annid ):
     response = urllib2.urlopen(req)
     print url 
   except urllib2.URLError, e:
-    print "Failed URL {}".format(url)
-    print "Error {}".format(e)
+    print "Failed URL {}, Error {}".format(url, e)
 
-def postImage ( host, token, filename):
+def postImage (host, token, channel, filename):
   """ Sample Dean Test """
 
-  url = 'http://{}/ocpca/{}/hdf5/1/3000,3250/4000,4250/500,505/overwrite/'.format(host,token)
+  url = 'http://{}/ocpca/{}/{}/hdf5/1/3000,3250/4000,4250/500,505/overwrite/'.format(host, token, channel)
   try:
     req = urllib2.Request (url, open(filename).read() )
     response = urllib2.urlopen(req)
     print url 
   except urllib2.URLError, e:
-    print "Failed URL {}".format(url)
-    print "Error {}".format(e)
+    print "Failed URL {}, Error {}".format(url, e)
+
+def postObject(host, token, channel, filename):
+  """Sample Object Post"""
+  
+  url = 'http://{}/ocpca/{}/{}/query/status/0/type/2/'.format(host, token, channel)
+  # Opening the url and verifying if it connects or else exit the program
+  try:
+    req = urllib2.Request(url, open(filename).read())
+    response = urllib2.urlopen(req)
+    print url 
+  except urllib2.URLError, e:
+    print "Failed URL {}, Error {}".format(url, e)
 
 def main():
   
   parser = argparse.ArgumentParser(description="Run the Load Test script")
   parser.add_argument('host', action="store", help='HostName')
   parser.add_argument('token', action="store", help='Project Token')
+  parser.add_argument('channel', action="store", help='Project Token')
   parser.add_argument('--put', dest='datalocation', action="store", default=None, help='Data Folder')
   parser.add_argument('--del', dest='annid', action="store", default=None, help='Data Folder')
   parser.add_argument('--dean', dest='dean', action="store", default=None, help='Data Folder')
+  parser.add_argument('--query', dest='query_location', action="store", default=None, help='Data Folder')
  
   global result
 
   result = parser.parse_args()
 
   if result.datalocation != None:
-    postH5 ( result.host, result.token, result.datalocation )
+    postH5(result.host, result.token, result.channel, result.datalocation)
 
   if result.annid != None:
-    deleteH5 ( result.host, result.token, result.annid )
+    deleteH5(result.host, result.token, result.channel, result.annid)
 
   if result.dean != None:
-    postImage(result.host, result.token, result.dean )
+    postImage(result.host, result.token, result.channel, result.dean)
+
+  if result.query_location != None:
+    postObject(result.host, result.token, result.channel, result.query_location)
 
 if __name__ == "__main__":
   main()

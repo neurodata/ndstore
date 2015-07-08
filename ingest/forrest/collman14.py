@@ -39,7 +39,7 @@ import ocpcadb
 import zindex
 import imagecube
 
-import proteins_collman15 as proteins
+import proteins_collman14 as proteins
 
 class ChessboardIngest:
 
@@ -54,7 +54,7 @@ class ChessboardIngest:
     (self._ximgsz, self._yimgsz) = self.proj.datasetcfg.imagesz[resolution]
     (self.startslice, self.endslice) = self.proj.datasetcfg.slicerange
 
-    (self.ximagesz, self.yimagesz) = (6306,4518)
+    (self.ximagesz, self.yimagesz) = (9888,7936)
     self.batchsz = self.proj.datasetcfg.cubedim[resolution][2]
 
     self.alldirs = os.listdir ( path )
@@ -115,7 +115,8 @@ class ChessboardIngest:
             imarray = np.zeros ( [self.batchsz,self.yimagesz,self.ximagesz], dtype=np.uint8 )
 
           # open the slice file and ingest
-          filenm = self.path + '{}/{}_{:0>2}.tif'.format(pdir,pdir,sl)
+          #filenm = self.path + '{}/{}_{:0>2}.tif'.format(pdir,pdir,sl)
+          filenm = self.path + '{}/{}-{:0>3}_tile-000dcon.tif'.format(pdir,pdir,sl)
 
           print filenm
           # load the image and check the dimension

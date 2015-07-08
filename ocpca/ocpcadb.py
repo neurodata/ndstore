@@ -99,7 +99,7 @@ class OCPCADB:
 
     except MySQLdb.Error, e:
       self.conn = None
-      logger.error("Failed to connect to database: %s, %s" % (self.proj.getDBHost(), self.proj.getDBName()))
+      logger.error("Failed to connect to database: {}, {}".format(self.proj.getDBHost(), self.proj.getDBName()))
       raise
 
     #if (self.proj.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS):
@@ -173,7 +173,7 @@ class OCPCADB:
       try:
         cursor.execute ( sql )
       except MySQLdb.Error, e:
-        logger.warning ("Problem retrieving identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+        logger.warning ("Problem retrieving identifier {}: {}. sql={}".format(e.args[0], e.args[1], sql))
         raise
 
       # Here we've queried the highest id successfully    
@@ -243,7 +243,7 @@ class OCPCADB:
         try:
           cursor.execute ( sql )
         except MySQLdb.Error, e:
-          logger.warning ( "Failed to set identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+          logger.warning ( "Failed to set identifier table: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
           raise
 
       finally:
@@ -272,7 +272,7 @@ class OCPCADB:
         try:
           cursor.executemany ( sql, [str(i) for i in annoidList] )  
         except MySQLdb.Error, e:
-          logger.warning ( "Failed to set identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+          logger.warning ( "Failed to set identifier table: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
           raise
 
       finally:
@@ -298,7 +298,7 @@ class OCPCADB:
         try:
           cursor.execute ( sql )
         except MySQLdb.Error, e:
-          logger.error ( "Failed to create annotation identifier %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+          logger.error ( "Failed to create annotation identifier {}: {}. sql={}".format(e.args[0], e.args[1], sql))
           raise
 
         # Here we've queried the highest id successfully    
@@ -314,11 +314,11 @@ class OCPCADB:
         try:
           cursor.execute ( sql )
         except MySQLdb.Error, e:
-          logger.error ( "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+          logger.error ( "Failed to insert into identifier table: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
           raise
 
       except Exception, e:
-        logger.error ( "Failed to insert into identifier table: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+        logger.error ( "Failed to insert into identifier table: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
 
       finally:
         sql = "UNLOCK TABLES" 
@@ -371,10 +371,10 @@ class OCPCADB:
   def putCube(self, ch, zidx, resolution, cube, update=False):
     """ Store a cube in the annotation database """
   
-    #if cube.isNotZeros():
+    #if cube.isNotZeros() and ch.getChannelType() not in ocpcaproj.ANNOTATION_CHANNELS:
+    if True:
     #  RB the above line of code is broken.  We need to write 0s to the database when shaving annotations.
     #  they overwrite existing non-zero annotations.
-    if True:
       # Handle the cube format here.  
       if self.NPZ:
         self.kvio.putCube(ch, zidx, resolution, cube.toNPZ(), not cube.fromZeros())
@@ -604,7 +604,6 @@ class OCPCADB:
 
     # dictionary with the index
     cubeidx = defaultdict(set)
-
     cubelocs = ocplib.locate_ctype ( np.array(locations, dtype=np.uint32), cubedim )
 
     # sort the arrary, by cubeloc
@@ -737,23 +736,20 @@ class OCPCADB:
     index_dict = defaultdict(set)
 
     # dim is in xyz, data is in zyxj
-    dim = [ annodata.shape[2], annodata.shape[1], annodata.shape[0] ]
+    dim = annodata.shape[::-1]
 
     # get the size of the image and cube
-    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
+    [xcubedim, ycubedim, zcubedim] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
     # Round to the nearest larger cube in all dimensions
-    zstart = corner[2]/zcubedim
-    ystart = corner[1]/ycubedim
-    xstart = corner[0]/xcubedim
+    from operator import div, mod
+    start = [xstart, ystart, zstart] = map(div, corner, cubedim)
 
     znumcubes = (corner[2]+dim[2]+zcubedim-1)/zcubedim - zstart
     ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
     xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
 
-    zoffset = corner[2]%zcubedim
-    yoffset = corner[1]%ycubedim
-    xoffset = corner[0]%xcubedim
+    offset = [xoffset, yoffset, zoffset] = map(mod, corner, cubedim)
 
     databuffer = np.zeros ([znumcubes*zcubedim, ynumcubes*ycubedim, xnumcubes*xcubedim], dtype=np.uint32 )
     databuffer [ zoffset:zoffset+dim[2], yoffset:yoffset+dim[1], xoffset:xoffset+dim[0] ] = annodata 
@@ -1025,7 +1021,7 @@ class OCPCADB:
 
       # use the batch generator interface
       for idx, datastring in cuboids:
- 
+
         #add the query result cube to the bigger cube
         curxyz = ocplib.MortonXYZ(int(idx))
         offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
@@ -1167,11 +1163,16 @@ class OCPCADB:
     """Return the identifier at a voxel"""
 
     # get the size of the image and cube
-    [xcubedim, ycubedim, zcubedim] = cubedim = self.datasetcfg.cubedim [ resolution ] 
+    [xcubedim, ycubedim, zcubedim] = cubedim = self.datasetcfg.cubedim[resolution]
+    [xoffset, yoffset, zoffset] = offset = self.datasetcfg.offset[resolution]
 
     # convert the voxel into zindex and offsets. Round to the nearest larger cube in all dimensions
-    xyzcube = [ voxel[0]/xcubedim, voxel[1]/ycubedim, voxel[2]/zcubedim ]
-    xyzoffset =[ voxel[0]%xcubedim, voxel[1]%ycubedim, voxel[2]%zcubedim ]
+    from operator import div, mod, sub
+    voxel = map(sub, voxel, offset)
+    xyzcube = map(div, voxel, cubedim)
+    xyzoffset = map(mod, voxel, cubedim)
+    #xyzcube = [ voxel[0]/xcubedim, voxel[1]/ycubedim, voxel[2]/zcubedim ]
+    #xyzoffset =[ voxel[0]%xcubedim, voxel[1]%ycubedim, voxel[2]%zcubedim ]
     key = ocplib.XYZMorton ( xyzcube )
 
     cube = self.getCube(ch, key, resolution)
@@ -1411,7 +1412,7 @@ class OCPCADB:
       if anno is None:
         logger.warning("No annotation found at identifier = {}".format(annid))
         raise OCPCAError ("No annotation found at identifier = {}".format(annid))
-      anno.setField(ch, field, value)
+      anno.setField(field, value)
       anno.update(ch, cursor)
     except:
       self.closeCursor(cursor) 
@@ -1689,7 +1690,7 @@ class OCPCADB:
     self.kvio.commit()
 
 
-  def mergeGlobal(self, ids, mergetype, res):
+  def mergeGlobal(self, ch, ids, mergetype, res):
     """Global merge routine.  Converts a list of ids into the merge id at a given resolution.
        This will collapse all exceptions for the voxels for the merged ids."""
 
@@ -1707,7 +1708,7 @@ class OCPCADB:
     addindex = []
     # RB!!!! do this for all ids, promoting the exceptions of the merge id
     for annid in ids:
-      if annid== mergeid:
+      if annid == mergeid:
         continue
       # Get the Annotation index for that id
       curindex = self.annoIdx.getIndex(ch, annid,resolution)
@@ -1746,7 +1747,7 @@ class OCPCADB:
     self.annoIdx.updateIndex(ch, mergeid,addindex,resolution)     
     self.kvio.commit()
     
-    return "Merged Id's {} into {}".format(ids,mergeid)
+    return "Merged Id's {} into {}".format(ids, mergeid)
 
   def merge2D(self, ids, mergetype, res, slicenum):
     # get the size of the image and cube

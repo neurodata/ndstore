@@ -186,14 +186,14 @@ def getId ( p ):
 def getField (p, field):
   """Get the specified field"""
   
-  url =  "http://{}/ca/{}/{}/{}/getField/{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid, field)
+  url =  "http://{}/ca/{}/{}/getField/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid, field)
   return getURL( url )
 
 
 def setField (p, field, value):
   """Set the specified field to the value"""
    
-  url =  "http://{}/ca/{}/{}/{}/setField/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid, field, value)
+  url =  "http://{}/ca/{}/{}/setField/{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid, field, value)
   assert ( getURL(url).read() == '')
 
 

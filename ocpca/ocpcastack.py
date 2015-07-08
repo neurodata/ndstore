@@ -27,58 +27,10 @@ from cube import Cube
 import ocpcaproj
 import ocpcadb
 import ocplib
+import annotation
 from ocpcaerror import OCPCAError
 import logging
 logger=logging.getLogger("ocp")
-
-from ocpca_cy import addDataToZSliceStack_cy
-from ocpca_cy import addDataToIsotropicStack_cy
-
-
-#RBRM testing code
-#
-def getAnnValue ( value00, value01, value10, value11 ):
-  """Determine the annotation value at the next level of the hierarchy from a 2x2.
-      take the first non-zero element or take the first repeated element.
-   """
-
-  # The following block of code places the majority annotation into value
-  # start with 00
-  value = value00
-
-  # put 01 in if not 00
-  # if they are the same, that's fine
-  if value == 0:
-    value = value01
-
-  if value10 != 0:
-    if value == 0:
-      value = value10
-    # if this value matches a previous it is 2 out of 4
-    elif value10 == value00 or value10 == value01:
-      value = value10
-
-  if value11 != 0:
-    if value == 0:
-      value = value10
-    elif value11==value00 or value11==value01 or value11==value10:
-      value = value11
-
-  return value
-
-
-def addDataToIsotropicStack ( cube, output, offset ):
-    """Add the contribution of the input data to the next level at the given offset in the output cube"""
-
-    for z in range (cube.data.shape[0]/2):
-      for y in range (cube.data.shape[1]/2):
-        for x in range (cube.data.shape[2]/2):
-
-            # not perfect take a value from either slice.  Not a majority over all.
-            value = getAnnValue (cube.data[z*2,y*2,x*2],cube.data[z*2,y*2,x*2+1],cube.data[z*2,y*2+1,x*2],cube.data[z*2,y*2+1,x*2+1])
-            if value == 0:
-              value = getAnnValue (cube.data[z*2+1,y*2,x*2],cube.data[z*2+1,y*2,x*2+1],cube.data[z*2+1,y*2+1,x*2],cube.data[z*2+1,y*2+1,x*2+1])
-            output [ z+offset[2], y+offset[1], x+offset[0] ] = value
 
 
 """Construct a hierarchy off of a completed database."""
@@ -93,7 +45,7 @@ def buildStack(token, channel_name, resolution=None):
     try:
      
       if ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS:
-        #clearStack(token)
+        clearStack(proj, ch, resolution)
         buildAnnoStack(proj, ch, resolution)
       elif ch.getChannelType() in ocpcaproj.IMAGE_CHANNELS:
         buildImageStack(proj, ch, resolution)
@@ -109,32 +61,43 @@ def buildStack(token, channel_name, resolution=None):
       raise OCPCAError("Error in the building image stack {}".format(token))
 
 
-def clearStack ( token ):
+def clearStack (proj, ch, res=None):
   """ Clear a OCP stack for a given project """
 
-  with closing(ocpcaproj.OCPCAProjectsDB()) as projdb:
-    proj = projdb.loadToken(token)
-  
   with closing(ocpcadb.OCPCADB(proj)) as db:
     
-    # Clear the database
-    for l in range(proj.getResolution(), proj.datasetcfg.resolutions[-1]):
-      
-        sql = "TRUNCATE table res{};".format(l+1)
-        sql += "TRUNCATE table raw{};".format(l+1)
-        sql += "TRUNCATE table idx{};".format(l+1)
-        if proj.getExceptions == ocpcaproj.EXCEPTION_TRUE:
-          sql += "TRUNCATE table exec{};".format(l+1)
+    # pick a resolution
+    if res is None:
+      res = 1
+    
+    high_res = proj.datasetcfg.scalinglevels
+    list_of_tables = []
+    sql = ""
+   
+    # Creating a list of all tables to clear
+    list_of_tables.append(ch.getIdsTable())
+    for cur_res in range(res, high_res):
+      list_of_tables.append(ch.getTable(cur_res))
+      list_of_tables.append(ch.getNearIsoTable(cur_res))
+      list_of_tables.append(ch.getIdxTable(cur_res))
+      list_of_tables.append(ch.getExceptionsTable(cur_res))
 
-        try:
-          print sql
-          db.conn.cursor().execute(sql)
-          db.conn.commit()
-        except MySQLdb.Error, e:
-          logger.error ("Error truncating the table. {}".format(e))
-          raise
-        finally:
-          db.conn.cursor().close()
+    for anno_type in annotation.anno_dbtables.keys():
+      list_of_tables.append(ch.getAnnoTable(anno_type))
+
+    # Creating the sql query to execute
+    for table_name in list_of_tables:
+      sql += "TRUNCATE table {};".format(table_name)
+    
+    # Executing the query to clear the tables
+    try:
+      db.conn.cursor().execute(sql)
+      db.conn.commit()
+    except MySQLdb.Error, e:
+      logger.error ("Error truncating the table. {}".format(e))
+      raise
+    finally:
+      db.conn.cursor().close()
 
 
 def buildAnnoStack ( proj, ch, res=None ):

@@ -21,7 +21,6 @@ import numpy as np
 from PIL import Image
 import zlib
 from contextlib import closing
-import cv2
 
 sys.path += [os.path.abspath('../../django')]
 import OCP.settings
@@ -68,11 +67,14 @@ class CatmaidIngest:
           #if we are at the end of the space, quit
           if ( sl + b <= endslice ):
               
-            filename = '{}xbrain_dyer15_slice{:0>4}.tif'.format(self.path, sl+b )
+            filename = '{}dyer15_3_maskimg_{:0>4}.tif'.format(self.path, sl+b)
+            #filename = '{}proj_2_{:0>5}.tif'.format(self.path, sl+b)
+            #filename = '{}{}_maskimg_{:0>4}.tif'.format(self.path, self.token, sl+b)
+            #filename = '{}xbrain_dyer15_slice{:0>4}.tif'.format(self.path, sl+b )
             print filename
             try:
-              imgdata = cv2.imread(filename,-1)
-              slab [b,:,:] = imgdata
+              img = Image.open(filename,'r')
+              slab [b,:,:] = np.asarray(img)
             except IOError, e:
               print "Failed to open file %s" % (e)
               img = np.zeros((yimagesz,ximagesz), dtype=np.uint8)

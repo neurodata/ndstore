@@ -1,2 +1,0 @@
-# to get this to build on MacOSX with clang
-ARCHFLAGS=-Wno-error=unused-command-line-argument-hard-error-in-future python setup.py install

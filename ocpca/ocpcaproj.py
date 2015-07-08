@@ -18,11 +18,13 @@ from contextlib import closing
 import os
 import sys
 from contextlib import closing
-from django.core.exceptions import ObjectDoesNotExist
 
-sys.path += [os.path.abspath('../django')]
-import OCP.settings
-os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
+from django.core.exceptions import ObjectDoesNotExist
+from django.conf import settings
+
+#sys.path += [os.path.abspath('../django')]
+#import OCP.settings
+#os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
 
 from ocpuser.models import Project
 from ocpuser.models import Dataset
@@ -40,16 +42,14 @@ try:
 except:
    pass
 
-import ocpcaprivate
 from ocpcaerror import OCPCAError
 
 import logging
 logger=logging.getLogger("ocp")
 
 # OCP Version
-# RB changes to VERSION from VERSION_NUMBER  -- it's not a number.  We'll want A.B.C.D type releases
-OCP_VERSION = '0.6'
-SCHEMA_VERSION = '0.6'
+OCP_VERSION = '0.7'
+SCHEMA_VERSION = '0.7'
 
 OCP_channeltypes = {0:'image',1:'annotation',2:'probmap',3:'timeseries'}
 
@@ -155,6 +155,7 @@ class OCPCADataset:
       #self.cubedim[i] = [128, 128, 16]
       # this may need to be changed.  
       if self.ds.scalingoption == ZSLICES:
+        #self.cubedim[i] = [128, 128, 16]
         self.cubedim[i] = [128, 128, 16]
         if float(self.ds.zvoxelres/self.ds.xvoxelres)/(2**i) >  0.5:
           self.cubedim[i] = [128, 128, 16]
@@ -190,7 +191,7 @@ class OCPCADataset:
   def getDatasetDescription ( self ):
     return self.ds.dataset_description
 
-  def checkCube (self, resolution, corner, dim, timeargs):
+  def checkCube (self, resolution, corner, dim, timeargs=[0,0]):
     """Return true if the specified range of values is inside the cube"""
 
     [xstart, ystart, zstart ] = corner
@@ -269,11 +270,10 @@ class OCPCAProject:
       channel_name = Channel.objects.get(project_id=self.pr, default=True)
     return OCPCAChannel(self, channel_name)
 
-  # accessors for RB to fix
   def getDBUser( self ):
-    return ocpcaprivate.dbuser
+    return settings.DATABASES['default']['USER']
   def getDBPasswd( self ):
-    return ocpcaprivate.dbpasswd
+    return settings.DATABASES['default']['PASSWORD']
 
 
 class OCPCAChannel:
@@ -381,7 +381,7 @@ class OCPCAProjectsDB:
   def __init__(self):
     """Create the database connection"""
 
-    self.conn = MySQLdb.connect (host = ocpcaprivate.dbhost, user = ocpcaprivate.dbuser, passwd = ocpcaprivate.dbpasswd, db = ocpcaprivate.db ) 
+    self.conn = MySQLdb.connect (host = settings.DATABASES['default']['HOST'], user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = settings.DATABASES['default']['NAME']) 
 
   # for context lib closing
   def close (self):
@@ -411,7 +411,7 @@ class OCPCAProjectsDB:
     ds = Dataset.objects.get(dataset_name=pr.dataset_id)
 
     # Connect to the database
-    with closing (MySQLdb.connect (host = pr.host, user = ocpcaprivate.dbuser, passwd = ocpcaprivate.dbpasswd, db = pr.project_name )) as conn:
+    with closing (MySQLdb.connect (host = pr.host, user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = pr.project_name )) as conn:
       with closing(conn.cursor()) as cursor:
 
         try:
@@ -577,7 +577,7 @@ class OCPCAProjectsDB:
     if pr.getKVEngine() == 'MySQL':
     
       try:
-        conn = MySQLdb.connect (host = ocpcaprivate.dbhost, user = ocpcaprivate.dbuser, passwd = ocpcaprivate.dbpasswd, db = pr.getProjectName() ) 
+        conn = MySQLdb.connect (host = settings.DATABASES['default']['HOST'], user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = pr.getProjectName() ) 
         # delete the tables for this channel
         sql = "DROP TABLES IF EXISTS {}".format(','.join(table_list))
       
