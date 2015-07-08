@@ -110,7 +110,8 @@ def numpyZip ( chanargs, proj, db ):
     channel_data = cutout( imageargs, ch, proj, db ).data
     cubedata = np.zeros ( (len(channel_list),)+channel_data.shape, dtype=channel_data.dtype )
     cubedata[0,:] = channel_data
-    
+
+    # if one channel convert 3-d to 4-d array
     for idx,channel_name in enumerate(channel_list[1:]):
       if channel_name == '0':
         continue
@@ -530,6 +531,8 @@ def selectService ( service, webargs, proj, db ):
 def selectPost ( webargs, proj, db, postdata ):
   """Identify the service and pass on the arguments to the appropiate service."""
 
+  import pdb; pdb.set_trace()
+
   [channel, service, postargs] = webargs.split('/', 2)
 
   # if it's a 3d tiff treat differently.  No cutout args.
@@ -582,9 +585,7 @@ def selectPost ( webargs, proj, db, postdata ):
             logger.warning("Attempt to write to read only project {}".format(proj.getDBName()))
             raise OCPCAError("Attempt to write to read only project {}".format(proj.getDBName()))
        
-          if voxarray.dtype == ocpcaproj.OCP_dtypetonp[ch.getDataType()]:
-            pass
-          else:
+          if not voxarray.dtype == ocpcaproj.OCP_dtypetonp[ch.getDataType()]:
             logger.warning("Wrong datatype in POST")
             raise OCPCAError("Wrong datatype in POST")
             
@@ -670,8 +671,6 @@ def selectPost ( webargs, proj, db, postdata ):
       logger.exception ("POST transaction rollback. %s" % (e))
       db.rollback()
       raise
-    
-  return str(entityid)
 
 
 def getCutout ( webargs ):
