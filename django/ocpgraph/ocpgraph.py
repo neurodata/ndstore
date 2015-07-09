@@ -16,7 +16,7 @@ import MySQLdb
 import numpy as np
 import networkx as nx
 
-def getSynapses(BrainPass,project,channel,graphType=graphml,Xmin=0,Xmax=0,Ymin=0,Ymax=0,Zmin=0,Zmax=0):
+def genGraphRAMON(database,project,channel,graphType=graphml,Xmin=0,Xmax=0,Ymin=0,Ymax=0,Zmin=0,Zmax=0,BrainPass=""):
     cubeRestrictions  = Xmin + Xmax + Ymin + Ymax + Zmin + Zmax
 
     db = MySQLdb.connect("localhost","brain",BrainPass)
@@ -28,6 +28,7 @@ def getSynapses(BrainPass,project,channel,graphType=graphml,Xmin=0,Xmax=0,Ymin=0
     matrix = cursor.fetchall()
     synapses = np.empty(shape=(len(matrix),2))
 
+    #AE TODO Change to re.match?
     for i in range(len(matrix)):
     	#Get raw from matrix
     	rawstring = (matrix[i])[0]
@@ -38,7 +39,7 @@ def getSynapses(BrainPass,project,channel,graphType=graphml,Xmin=0,Xmax=0,Ymin=0
 
     #If restrictions are present clean the data
     if cubeRestrictions != 0:
-        idslist = #AE TODO Edit and add this in ASAP 
+        idslist = #AE TODO Edit and add this in ASAP
         mask1 = np.in1d(synapses[:,0],idslist)
         mask2 = np.in1d(synapses[:,1],idslist)
         mask = [any(t) for t in zip(mask1, mask2)]
@@ -68,6 +69,3 @@ def getSynapses(BrainPass,project,channel,graphType=graphml,Xmin=0,Xmax=0,Ymin=0
     else:
         print "Graph type not recognized, exporting as a graphml"
         nx.write_graphml(outputGraph, project + "_" + channel + ".graphml")
-
-
-getSynapses("")
