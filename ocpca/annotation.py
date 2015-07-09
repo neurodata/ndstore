@@ -940,8 +940,6 @@ class AnnNode (Annotation):
 
     if field == 'nodetype':
       return self.nodetype
-    elif field == 'nodeid':
-      return self.nodeid
     elif field == 'location':
       return self.location
     elif field == 'skeletonid':
@@ -960,8 +958,6 @@ class AnnNode (Annotation):
     
     if field == 'nodetype':
       self.nodetype = value
-    elif field == 'nodeid':
-      self.nodeid = value
     elif field == 'location':
       self.location = value
       if len(self.location) != 3:
@@ -985,8 +981,8 @@ class AnnNode (Annotation):
     else:
       storelocation = self.location
 
-    sql = "INSERT INTO %s VALUES ( %s, %s, %s, %s, %s, %s, %s, %s, %s )"\
-            % ( ch.getAnnoTable('node'), self.skeletonid, self.nodeid, self.annid, self.nodetype, self.parentid, 
+    sql = "INSERT INTO %s VALUES ( %s, %s, %s, %s, %s, %s, %s, %s )"\
+            % ( ch.getAnnoTable('node'), self.annid, self.skeletonid, self.nodetype, self.parentid, 
               storelocation[0], storelocation[1], storelocation[2], self.radius )
 
     try:

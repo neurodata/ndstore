@@ -24,66 +24,104 @@ def ingestSWC ( swcfile, ch, db ):
 
   # dictionary of skeletons by parent node id
   skels = {}
-  # dictionary that tracks the previously seen roots
-  noderoot = {}
 
   # list of nodes in the swc file.
-  nodelist=[]
+  nodes={}
 
-  # comment in the 
+  # comment in the swcfiles
   comments = []
 
-  for line in swcfile:
+  try:
 
-    # Store comments as KV 
-    if re.match ( '^#.*$', line ):
-      comments.append(line)
-    else:
+    # number of ids to create.  do them all at once.
+    idsneeded = 0
 
-      # otherwise, parse the record according to SWC 
-      # n T x y z R P
-      ( nodeid, nodetype, xpos, ypos, zpos, radius, parentid )  = line.split()
+    # first pass of the file
+    for line in swcfile:
 
-      # first check if it is a duplicate node
+      # find how many ids we need
+      if not re.match ( '^#.*$', line ):
 
-      # if it's a root node create a new skeleton
-      if int(parentid) == -1: 
+        # otherwise, parse the record according to SWC 
+        # n T x y z R P
+        ( swcnodeidstr, nodetype, xpos, ypos, zpos, radius, swcparentidstr )  = line.split()
+        swcnodeid = int(swcnodeidstr)
+        swcparentid = int(swcparentidstr)
 
-        # Create a skeleton
-        skels[nodeid] = annotation.AnnSkeleton ( db )
-        # assign an identifier
-        skels[nodeid].setField('annid', db.nextID(ch))
+        if swcparentid == -1:
+          idsneeded += 2
+        else:
+          idsneeded += 1
 
-        # set the node root to itself
-        noderoot[nodeid] = nodeid
+    # reserve ids
+    lowid = db.reserve ( ch, idsneeded )
 
+    # reset file pointer for second pass
+    swcfile.seek(0)
+
+    # second pass to ingest the field
+    for line in swcfile:
+  
+      # Store comments as KV 
+      if re.match ( '^#.*$', line ):
+        comments.append(line)
       else:
 
-        # update the noderoot dictionary
-        noderoot[nodeid]=noderoot[parentid]
+        # otherwise, parse the record according to SWC 
+        # n T x y z R P
+        ( swcnodeidstr, nodetype, xpos, ypos, zpos, radius, swcparentidstr )  = line.split()
+        swcnodeid = int(swcnodeidstr)
+        swcparentid = int(swcparentidstr)
 
-      # create a node
-      node = annotation.AnnNode( db ) 
-      node.setField ( 'skeletonid', skels[noderoot[nodeid]].annid )
-      node.setField ( 'annid', db.nextID(ch) )
-      node.setField ( 'nodetype', nodetype )
-      node.setField ( 'location', (xpos,ypos,zpos) )
-      node.setField ( 'radius', radius )
-      node.setField ( 'parentid', parentid )
+        # create a node
+        node = annotation.AnnNode( db ) 
 
-      nodelist.append(node)
+        node.setField ( 'annid', lowid )
+        lowid += 1
+        node.setField ( 'nodetype', nodetype )
+        node.setField ( 'location', (xpos,ypos,zpos) )
+        node.setField ( 'radius', radius )
+        if swcparentid == -1:
+          node.setField ( 'parentid', -1 )
+        else:
+          node.setField ( 'parentid', nodes[swcparentid].getField('annid'))
 
-      # set the skeleton rootnode to the nodes
-      if int(parentid) == -1:
-        skels[nodeid].setField('rootnode', node.getField('annid'))
+        nodes[swcnodeid] = node
 
+        # if it's a root node create a new skeleton
+        if swcparentid == -1: 
+
+          # Create a skeleton
+          skels[swcnodeid] = annotation.AnnSkeleton ( db )
+
+          # assign an identifier
+          skels[swcnodeid].setField('annid', lowid)
+
+          # assign sekeleton id for the node
+          node.setField ( 'skeletonid', lowid )
+
+          # increment the id
+          lowid += 1
+
+        else:
+
+          # set to skelton id of parent
+          node.setField ( 'skeletonid', nodes[swcparentid].getField('skeletonid') )
+
+  except Exception, e:
+    import pdb; pdb.set_trace()
+    raise
+
+  print "Build all skeletons, Starting DB txn."
+
+  import pdb; pdb.set_trace()
 
   # having parsed the whole file, send to DB in a transaction
   db.startTxn()
   cursor = db.getCursor()
 
   # store the skeletons
-  for (nodeid, skel) in skels.iteritems():
+  for (skelid, skel) in skels.iteritems():
 
     # add comments to each skeleton KV pair
     commentno = 0
@@ -93,8 +131,10 @@ def ingestSWC ( swcfile, ch, db ):
 
     skel.store( ch, cursor )
 
+  import pdb; pdb.set_trace()
+
   # store the nodes
-  for node in nodelist:
+  for (nodeid,node) in nodes.iteritems():
     node.store( ch, cursor )
 
   db.commit()
