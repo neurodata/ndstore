@@ -55,6 +55,10 @@ pip install uWSGI --allow-external PEAK-Rules --allow-unverified PEAK-Rules
 pip install igraph
 pip install pytest
 pip install networkx
+pip install docutils
+pip install posix-ipc
+pip install pycparser
+
 
 # Setup the files needed for first run of the server
 
