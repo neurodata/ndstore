@@ -126,7 +126,8 @@ def tokenview(request, webargs):
     tmp_layer.layer_description = token.token_description 
     tmp_layer.layertype = channel.channel_type
     tmp_layer.token = token.token_name
-    tmp_layer.channel = channel     
+    #tmp_layer.channel = channel     
+    tmp_layer.channel = channel.channel_name   
     tmp_layer.server = request.META['HTTP_HOST'];
     tmp_layer.tilecache = False 
     if channel.channel_name in channel_colors.keys():
@@ -171,15 +172,29 @@ def tokenview(request, webargs):
 
 # View a VizProject (pre-prepared project in the database)
 def projectview(request, webargs):
+  # AB TODO match this to above (better) 
   # query for the project from the db
   #[project_name, view] = webargs.split('/', 1) 
   project_name = webargs 
   project = get_object_or_404(VizProject, pk=project_name) 
   layers = project.layers.select_related()
-
+  
   # calculate the lowest resolution xmax and ymax
   xdownmax = project.xmax / 2**(project.maxres - project.minres)
   ydownmax = project.ymax / 2**(project.maxres - project.minres) 
+  
+  x = None
+  y = None
+  z = None
+
+  if x is None:
+    x = xdownmax/2
+  if y is None:
+    y = ydownmax/2
+  if z is None:
+    z = project.zmin
+  
+  marker = False 
 
   context = {
       'layers': layers,
@@ -187,14 +202,18 @@ def projectview(request, webargs):
       'xsize': project.xmax,
       'ysize': project.ymax,
       'zsize': project.zmax,
+      'zstart': project.zmin,
       'xoffset': project.xmin,
       'yoffset': project.ymin,
       'zoffset': project.zmin,
       'res': project.maxres,
-      'xdownmax': xdownmax,
-      'ydownmax': ydownmax,
-      'starttime': 0,
-      'endtime': 0,
+      'resstart': project.maxres,
+      'xstart': x,
+      'ystart': y,
+      'zstart': z,
+      'starttime': project.starttime,
+      'endtime': project.endtime,
+      'marker': marker,
   }
   return render(request, 'ocpviz/viewer.html', context)
 

@@ -246,7 +246,7 @@
       {# setup the URL #} 
       
       {% if layer.channel %}
-        var webtoken = '{{ layer.token }}/{{ layer.channel.channel_name }}';
+        var webtoken = '{{ layer.token }}/{{ layer.channel }}';
         {% if layer.color %}
           webtoken = webtoken + ':{{layer.color}}';
         {% endif %}

@@ -83,7 +83,10 @@ class VizProject ( models.Model ):
   ymax = models.IntegerField()
   zmin = models.IntegerField(default=0)
   zmax = models.IntegerField()
- 
+
+  starttime = models.IntegerField(default=0)
+  endtime = models.IntegerField(default=0)
+
   minres = models.IntegerField(default=0)
   maxres = models.IntegerField()
 
