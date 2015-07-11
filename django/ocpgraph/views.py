@@ -83,5 +83,5 @@ def buildGraph (request, webargs):
           ocpgraph.genGraphRAMON (syndb, synproj, synch, graphType)
       elif arguementType==3:
           ocpgraph.genGraphRAMON (syndb, synproj, synch, graphType, Xmin, Xmax, Ymin, Ymax, Zmin, Zmax)
-      else
+      #else
           #AE TODO Throw some exception?

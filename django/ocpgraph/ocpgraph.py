@@ -16,7 +16,7 @@ import MySQLdb
 import numpy as np
 import networkx as nx
 
-def genGraphRAMON(database,project,channel,graphType=graphml,Xmin=0,Xmax=0,Ymin=0,Ymax=0,Zmin=0,Zmax=0,BrainPass=""):
+def genGraphRAMON(database,project,channel,graphType='graphml',Xmin=0,Xmax=0,Ymin=0,Ymax=0,Zmin=0,Zmax=0,BrainPass=""):
     cubeRestrictions  = Xmin + Xmax + Ymin + Ymax + Zmin + Zmax
 
     db = MySQLdb.connect("localhost","brain",BrainPass)
@@ -39,7 +39,7 @@ def genGraphRAMON(database,project,channel,graphType=graphml,Xmin=0,Xmax=0,Ymin=
 
     #If restrictions are present clean the data
     if cubeRestrictions != 0:
-        idslist = #AE TODO Edit and add this in ASAP
+        #idslist = #AE TODO Edit and add this in ASAP
         mask1 = np.in1d(synapses[:,0],idslist)
         mask2 = np.in1d(synapses[:,1],idslist)
         mask = [any(t) for t in zip(mask1, mask2)]
