@@ -137,7 +137,6 @@ def main():
   d1.insert(2,"\x12\x11\xcd\x12\xba", "/hdf5/0,10/exceptions")
   d1.close()
   d2 = OCPDataStream()
-  import pdb; pdb.set_trace()
   d2.getData()
 
 if __name__ == "__main__":
