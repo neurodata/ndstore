@@ -42,7 +42,6 @@
 			border-radius: 2px;
     }
     .info-layer-name {
-      /*float: left;*/
       width: 90%;
       padding-top: 10px;
       padding-left: 10px;
@@ -53,8 +52,6 @@
       padding-top: 2px;
       padding-left: 15px;
     }
-   /* #opacity-control > .brightness 
-    #opacity-control > .opacity { */
     #slider > .brightness  {
       float: right;
       width: 60%;
@@ -87,17 +84,6 @@
       padding-right: 10px;
       border-radius: 2px;
     }
-
-    /*
-    .coordinates {
-      position: fixed;
-      margin-left: 110px !important;
-      padding: 5px;
-      background: white;
-      background: rbga(255,255,255,0.8);
-      box-shadow: 0 0 15px rbga(0,0,0,0.2);
-      border-radius: 2px;
-    }*/
 	</style>
 	<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
@@ -105,121 +91,10 @@
   <script src="{% static "ocpviz/js/ocp-leaflet.js" %}"></script>	
 	</head>
 <body>
-  {# help modal #}
-  <div class="modal fade" id="help" tabindex="-1" role="dialog" aria-labelledby="helpModal" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" id="helpLabel">ocpviz help</h4>
-        </div>
-        <div class="modal-body">
-          <h2>Welcome to ocpviz!</h2>
-            <p>ocpviz is a web tool for viewing datasets stored using Open Connectome Project (OCP) software. All OCP datatypes are supported. ocpviz also supports data interaction, included object querying for annotation layers and the ability to place markers and share their locations with collaborators. We also support keyboard shortcuts for navigation, layer opacity controls, and false coloring.</p>
-          <h3>URLs</h3>
-            <p>The primary way to access a project in ocpviz is by entering a token in the URL. ocpviz uses the following URL format: <br /><code>/viz/token/channel1,channel2/res/x/y/z/</code></p>
-            <table class="table table-condensed">
-              <tr>
-                <td><samp>token</samp></td>
-                <td>The token associated with the OCP project.</td>
-              </tr>
-              <tr>
-                <td><samp>channelN</samp></td>
-                <td>A comma separated list of channels. If no channels are included, all channels for a given project will automatically be added to the viewing session.</td>
-              </tr>
-              <tr>
-                <td><samp>x, y, z, res</samp></td>
-                <td>Similar to an OCP cutout, these arguments center the map at the coordinator <samp>(x, y, z)</samp> for a given resolution <samp>(res)</samp>.<p class="bg-danger">Note: When specifying an initial center, all four arguments must be specified!</p></td>
-              </tr>
-            </table>
-            The order of the channels in the URL is the order channels will be displayed on the map. For an annotation project with underlying EM data, you would want to specify <code>/em,annos/</code>, and not <code>/annos,em/</code>. Otherwise, your annotation layer will be hidden by the EM layer. 
-            <h4>False Coloring (color masks)</h4>
-            <p>Some channels can be masked with a false color by adding a color argument to the URL. Color arguments are added after the channel name in the following format:<br /><code>channel1:B</code><br />Support colors are:</p>
 
-            <table class="table table-condensed">
-              <tr>
-                <td><strong>C</strong></td>
-                <td>cyan</td>
-              </tr>
-              <tr>
-                <td><strong>M</strong></td>
-                <td>magenta</td>
-              </tr>
-              <tr>
-                <td><strong>Y</strong></td>
-                <td>yellow</td>
-              </tr>
-              <tr>
-                <td><strong>R</strong></td>
-                <td>red</td>
-              </tr>
-              <tr>
-                <td><strong>G</strong></td>
-                <td>green</td>
-              </tr>
-              <tr>
-                <td><strong>B</strong></td>
-                <td>blue</td>
-              </tr>
-            </table>
-            <p class="text-danger">Note: Color codes in the URL must match the character above, but are not case sensitive.</p> 
-          <h3>Tools</h3>
-            <h4>Navigation</h4>
-            <p>On the left side of the screen, the <kbd>+</kbd> and <kbd>-</kbd> buttons allow you to zoom in and out on the map. Zooming unloads the current resolution, and then loads the next resolution stored in the OCP spatial database.</p>
-            <p>The <strong>up</strong> and <strong>down</strong> arrows (left) allow you to navigate in z-space.</p>
-            <p>The <strong>navigation form</strong> in the navbar allows you to center the map on a given coordinate (x,y,z). Centering will also place a marker at that coordinate. You can also use the navbar to pan only in (x, y), or to jump to a given z slice.</p>
-            <h4>Interaction</h4>
-            <p>The <strong>Query</strong> tool enables or disables the query system. When enabled, clicking on a location in the map will query the OCP database for the object ID at that location. Note that you must have an annotation channel loaded for the query tool to operate.</p>
-            <p>The <strong>Markers</strong> dropdown controls markers on the image, and allows for adding a marker, clearing all markers, or getting a list of markers with their coordinates.</p>
-          <h3>Keyboard Shortcuts</h3>
-          For a list of keyboard shortcuts, press the <kbd>h</kbd> key. 
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        </div>
-       </div>
-     </div>
-  </div>
+  {% include "ocpviz/help.html" %}
 
-  {# end help modal #} 
-  
-  <nav class="navbar navbar-inverse navbar-fixed-top">
-    <div class="container">
-      <div class="navbar-header">
-        <a class="navbar-brand" href="#">ocpviz</a>
-      </div>
-      <ul class="nav navbar-nav">
-        <li><a href="#">Projects</a></li>
-      </ul>
-      <form id="navigate" class="navbar-form navbar-left" role="search" action="">
-        <div class="form-group">
-          <input type="text" id="x" size="5" class="form-control" placeholder="x" aria-describedby="xlabel">
-        </div>
-        <div class="form-group">
-          <input type="text" id="y" size="5" class="form-control" placeholder="y" aria-describedby="ylabel">
-        </div>
-        <div class="form-group">
-          <input type="text" id="z" size="5" class="form-control" placeholder="z" aria-describedby="zlabel"> 
-        </div>
-        <button type="submit" class="btn btn-default">Go</button>
-      </form>
-      <ul class="nav navbar-nav navbar-left">
-        <li id="querybutton"><a href="#" id="query">Query</a></li>
-        <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Markers<span class="caret"></span></a>
-          <ul class="dropdown-menu" role="menu">
-            <li><a href="#" id="addmarker">Add Marker</a></li>
-            <li><a href="#" id="clearmarkers">Clear All</a></li>
-            <li><a href="#" id="listmarkers">Get List</a></li>
-          </ul>
-        </li>
-      </ul>
-      <ul class="nav navbar-nav navbar-right">
-        <li><a href="#" data-toggle="modal" data-target="#help">Help</a></li>
-        <li><a href="#" id="collapseinfo">Toggle Info</a></li>
-      </ul>
-    </div>
-  </nav>
+  {% include "ocpviz/nav.html" %}
 
   <div id="map"></div>
   <script> 
