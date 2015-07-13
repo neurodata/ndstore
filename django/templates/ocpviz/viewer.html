@@ -148,6 +148,8 @@
       {% else %}
         {% if layer.color %}
           var url = 'http://{{ layer.server }}/ocp/catmaid/mcfc/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
+        {% elif layer.layertype == 'timeseries' %}
+        var url = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/{{ starttime }}/{zindex}/{y}_{x}_{z}.png';
         {% else %}  
           var url = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
         {% endif %}
