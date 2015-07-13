@@ -149,7 +149,7 @@
         {% if layer.color %}
           var url = 'http://{{ layer.server }}/ocp/catmaid/mcfc/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
         {% elif layer.layertype == 'timeseries' %}
-        var url = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/{{ starttime }}/{zindex}/{y}_{x}_{z}.png';
+          var url = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/{{ starttime }}/{zindex}/{y}_{x}_{z}.png';
         {% else %}  
           var url = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
         {% endif %}
@@ -538,9 +538,17 @@
       $( "#forward" ).click(function() {
         {% for layer in layers %}
         {% if layer.layertype == "timeseries" %}
-          if ({{ layer.layer_name|cut:" " }} + 1 <= {{ endtime }}) {
-            {{ layer.layer_name|cut:" " }}.options.curtime += 1;
-            var newUrl = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/' + {{ layer.layer_name|cut:" " }}.options.curtime  + '/{zindex}/{y}_{x}_{z}.png'; 
+          var curTime = parseInt({{ layer.layer_name|cut:" " }}.options.curtime);
+          if (curTime + 1 <= parseInt({{ endtime }})) {
+            var newTime = curTime + 1;
+            {{ layer.layer_name|cut:" " }}.options.curtime = newTime;
+            var newTimeStr = newTime.toString();
+            {% if layer.tilecache %}
+              var newUrl = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png'; 
+            {% else %}
+            var newUrl = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png';
+            {% endif %}  
+            console.log(newUrl);
             {{ layer.layer_name|cut:" " }}.setUrl(newUrl);
             console.log({{ layer.layer_name|cut:" " }}.options.curtime);
           };
