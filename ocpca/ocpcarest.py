@@ -1618,10 +1618,10 @@ def setPropagate(webargs):
       # If the value is to set under propagation
       if int(value) == ocpcaproj.UNDER_PROPAGATION and ch.getPropagate() != ocpcaproj.UNDER_PROPAGATION:
         ch.setPropagate(ocpcaproj.UNDER_PROPAGATION)
-        #from ocpca.tasks import propagate
-        import ocpcastack
-        ocpcastack.buildStack(token, channel_name)
-        #propagate.delay ( token )
+        from ocpca.tasks import propagate
+        propagate.delay(token, channel_name)
+        #import ocpcastack
+        #ocpcastack.buildStack(token, channel_name)
       elif int(value) == ocpcaproj.NOT_PROPAGATED:
         if ch.getPropagate() == ocpcaproj.UNDER_PROPAGATION:
           logger.warning("Cannot set this value. Project is under propagation.")

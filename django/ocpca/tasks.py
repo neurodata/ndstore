@@ -34,11 +34,10 @@ celery = Celery('tasks', broker='amqp://guest@localhost//')
 
 
 @celery.task(queue='propagate')
-def propagate ( token ):
-  """ Propagate the given project for all resolutions """
+def propagate (token, channle_name):
+  """Propagate the given project for all resolutions"""
 
   try:
-    ocpcastack.buildStack ( token )
+    ocpcastack.buildStack (token,channle_name)
   except Exception, e:
     logger.error("Error in propagate. {}".format(e))
-
