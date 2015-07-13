@@ -168,13 +168,13 @@ class SimpleCatmaid:
 
   def getTile ( self, webargs ):
     """Fetch the file from mocpcache or get a cutout from the database"""
-   
+  
     try:
       # argument of format token/channel/slice_type/z/x_y_res.png
       p = re.compile("(\w+)/([\w+,]*?)/(xy|yz|xz|)/(\d+/)?(\d+)/(\d+)_(\d+)_(\d+).png")
       m = p.match(webargs)
       [self.token, self.channel, slice_type] = [i for i in m.groups()[:3]]
-      [timetile, ztile, ytile, xtile, res] = [int(i.strip('/')) for i in m.groups()[3:]]
+      [timetile, ztile, ytile, xtile, res] = [int(i.strip('/')) if i is not None else None for i in m.groups()[3:]]
     except Exception, e:
       logger.warning("Incorrect arguments give for getTile {}. {}".format(webargs, e))
       raise OCPCAError("Incorrect arguments given for getTile {}. {}".format(webargs, e))
