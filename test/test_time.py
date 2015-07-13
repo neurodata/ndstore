@@ -216,6 +216,67 @@ class Test_Image_Post:
     response = postHDF5(p, image_data, time=True)
     assert (response.code == 404)
 
+class Test_Time_Simple_Catmaid:
+
+  def setup_class(self):
+    makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype, time=p.time)
+
+  def teardown_class(self):
+    makeunitdb.deleteTestDB(p.token)
+
+  def test_xy_tile(self):
+    """Test a simple xy tile fetch"""
+   
+    p.args = (3072,3584,4096,4608,200,201,50,52)
+    # have to use a constant here for memcache purposes
+    image_data = np.ones([2,2,1,512,512], dtype=np.uint8) * 130
+    response = postNPZ(p, image_data, time=True)
+    
+    voxarray = getNPZ(p, time=True)
+    # check that the return matches
+    assert ( np.array_equal(voxarray, image_data) )
+    
+    url = "http://{}/catmaid/{}/{}/xy/{}/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[6], p.args[4], p.args[2]/512, p.args[0]/512, p.resolution)
+    f = getURL (url)
+
+    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    assert ( np.array_equal(slice_data, image_data[0][0][0]) )
+
+  def test_yz (self):
+    """Test a simple yz slice fetch"""
+
+    p.args = (3072,3584,4096,4608,200,201,10,12)
+    # have to use a constant here for memcache purposes
+    image_data = np.ones([2,2,1,512,512], dtype=np.uint8) * 130
+    response = postNPZ(p, image_data, time=True)
+    
+    voxarray = getNPZ(p, time=True)
+    # check that the return matches
+    assert ( np.array_equal(voxarray, image_data) )
+
+    url = "http://{}/catmaid/{}/{}/yz/{}/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[6], p.args[4], p.args[2]/512, p.args[0]/512, p.resolution)
+    f = getURL (url)
+
+    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    assert ( np.array_equal(slice_data, image_data[0][0][0]) )
+  
+  def test_xz (self):
+    """Test a simple xz slice fetch"""
+
+    p.args = (3072,3584,4096,4608,200,201,80,82)
+    # have to use a constant here for memcache purposes
+    image_data = np.ones([2,2,1,512,512], dtype=np.uint8) * 130
+    response = postNPZ(p, image_data, time=True)
+    
+    voxarray = getNPZ(p, time=True)
+    # check that the return matches
+    assert ( np.array_equal(voxarray, image_data) )
+
+    url = "http://{}/catmaid/{}/{}/xz/{}/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[6], p.args[4], p.args[2]/512, p.args[0]/512, p.resolution)
+    f = getURL (url)
+
+    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    assert ( np.array_equal(slice_data, image_data[0][0][0]) )
 
 #class Test_Image_Default:
 

@@ -140,7 +140,7 @@ class Test_Image_Simple_Catmaid:
     slice_data = np.asarray ( Image.open(StringIO(f.read())) )
     assert ( np.array_equal(slice_data, image_data[0][0]) )
 
-  def test_yz (self):
+  def test_yz_tile (self):
     """Test a simple yz slice fetch"""
 
     p.args = (3072,3584,4096,4608,200,201)
@@ -158,7 +158,7 @@ class Test_Image_Simple_Catmaid:
     slice_data = np.asarray ( Image.open(StringIO(f.read())) )
     assert ( np.array_equal(slice_data, image_data[0][0]) )
   
-  def test_xz (self):
+  def test_xz_tile (self):
     """Test a simple xz slice fetch"""
 
     p.args = (3072,3584,4096,4608,200,201)

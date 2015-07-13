@@ -30,6 +30,14 @@
     1. test_window_default
     2. test_window_args
   
+  - Module : Test_Image_Simple_Catmaid
+    1. test_xy_tile
+    2. test_yz_tile
+    3. test_xz_tile
+
+  - Module : Test_Image_Mcfc_Catmaid
+    1. test_xy_tile
+  
   - Module : Test_Image_Post
     1. test_npz 
     2. test_npz_incorrect_region
@@ -121,6 +129,7 @@
     1. test_xy
     2. test_yz
     3. test_xz
+  
   - Module : Test_Image_Post
     1. test_npz
     2. test_npz_incorrect_region
@@ -131,6 +140,11 @@
     7. test_hdf5_incorrect_datatype
     8. test_npz_incorrect_channel
     9. test_hdf5_incorrect_channel
+
+  - Module : Test_Time_Simple_Catmaid
+    1. test_xy_tile
+    2. test_yz_tile
+    3. test_xz_tile
 
 * tests to add
   1. Test filter for image slices
