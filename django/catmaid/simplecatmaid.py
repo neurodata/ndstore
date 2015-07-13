@@ -74,10 +74,11 @@ class SimpleCatmaid:
       imageargs = '{}/{}/{}/{},{}/{},{}/{}/{}/'.format(self.channel, 'xy', res, xstart, xend, ystart, yend, ztile,timetile)
     cb = ocpcarest.imgSlice(imageargs, self.proj, self.db)
     if cb.data.shape != (1, self.tilesz, self.tilesz) and cb.data.shape != (1, 1, self.tilesz, self.tilesz):
-      tiledata = np.zeros((1, self.tilesz, self.tilesz), cb.data.dtype )
       if timetile is None:
+        tiledata = np.zeros((1, self.tilesz, self.tilesz), cb.data.dtype )
         tiledata[0, 0:((yend-1)%self.tilesz+1), 0:((xend-1)%self.tilesz+1)] = cb.data[0,:,:]
       else:
+        tiledata = np.zeros((1, 1, self.tilesz, self.tilesz), cb.data.dtype )
         tiledata[0, 0, 0:((yend-1)%self.tilesz+1), 0:((xend-1)%self.tilesz+1)] = cb.data[0, 0, :, :]
       cb.data = tiledata
 
