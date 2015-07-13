@@ -74,10 +74,11 @@ class SimpleCatmaid:
       imageargs = '{}/{}/{}/{},{}/{},{}/{}/{}/'.format(self.channel, 'xy', res, xstart, xend, ystart, yend, ztile,timetile)
     cb = ocpcarest.imgSlice(imageargs, self.proj, self.db)
     if cb.data.shape != (1, self.tilesz, self.tilesz) and cb.data.shape != (1, 1, self.tilesz, self.tilesz):
-      tiledata = np.zeros((1, self.tilesz, self.tilesz), cb.data.dtype )
       if timetile is None:
+        tiledata = np.zeros((1, self.tilesz, self.tilesz), cb.data.dtype )
         tiledata[0, 0:((yend-1)%self.tilesz+1), 0:((xend-1)%self.tilesz+1)] = cb.data[0,:,:]
       else:
+        tiledata = np.zeros((1, 1, self.tilesz, self.tilesz), cb.data.dtype )
         tiledata[0, 0, 0:((yend-1)%self.tilesz+1), 0:((xend-1)%self.tilesz+1)] = cb.data[0, 0, :, :]
       cb.data = tiledata
 
@@ -168,13 +169,13 @@ class SimpleCatmaid:
 
   def getTile ( self, webargs ):
     """Fetch the file from mocpcache or get a cutout from the database"""
-   
+  
     try:
       # argument of format token/channel/slice_type/z/x_y_res.png
       p = re.compile("(\w+)/([\w+,]*?)/(xy|yz|xz|)/(\d+/)?(\d+)/(\d+)_(\d+)_(\d+).png")
       m = p.match(webargs)
       [self.token, self.channel, slice_type] = [i for i in m.groups()[:3]]
-      [timetile, ztile, ytile, xtile, res] = [int(i.strip('/')) for i in m.groups()[3:]]
+      [timetile, ztile, ytile, xtile, res] = [int(i.strip('/')) if i is not None else None for i in m.groups()[3:]]
     except Exception, e:
       logger.warning("Incorrect arguments give for getTile {}. {}".format(webargs, e))
       raise OCPCAError("Incorrect arguments given for getTile {}. {}".format(webargs, e))
