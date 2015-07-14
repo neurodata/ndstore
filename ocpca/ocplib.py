@@ -32,6 +32,7 @@ array_1d_uint8 = npct.ndpointer(dtype=np.uint8, ndim=1, flags='C_CONTIGUOUS')
 array_2d_uint8 = npct.ndpointer(dtype=np.uint8, ndim=2, flags='C_CONTIGUOUS')
 array_1d_uint16 = npct.ndpointer(dtype=np.uint16, ndim=1, flags='C_CONTIGUOUS')
 array_2d_uint16 = npct.ndpointer(dtype=np.uint16, ndim=2, flags='C_CONTIGUOUS')
+array_3d_uint16 = npct.ndpointer(dtype=np.uint16, ndim=3, flags='C_CONTIGUOUS')
 array_1d_uint32 = npct.ndpointer(dtype=np.uint32, ndim=1, flags='C_CONTIGUOUS')
 array_2d_uint32 = npct.ndpointer(dtype=np.uint32, ndim=2, flags='C_CONTIGUOUS')
 array_3d_uint32 = npct.ndpointer(dtype=np.uint32, ndim=3, flags='C_CONTIGUOUS')
@@ -60,6 +61,7 @@ ocplib.zoomOutData.argtypes = [ array_3d_uint32, array_3d_uint32, cp.POINTER(cp.
 ocplib.zoomOutDataOMP.argtypes = [ array_3d_uint32, array_3d_uint32, cp.POINTER(cp.c_int), cp.c_int ]
 ocplib.zoomInData.argtypes = [ array_3d_uint32, array_3d_uint32, cp.POINTER(cp.c_int), cp.c_int ]
 ocplib.zoomInDataOMP.argtypes = [ array_3d_uint32, array_3d_uint32, cp.POINTER(cp.c_int), cp.c_int ]
+ocplib.zoomInDataOMP16.argtypes = [ array_3d_uint16, array_3d_uint16, cp.POINTER(cp.c_int), cp.c_int ]
 ocplib.mergeCube.argtypes = [ array_3d_uint32, cp.POINTER(cp.c_int), cp.c_int, cp.c_int ]
 ocplib.isotropicBuild8.argtypes = [ array_2d_uint8, array_2d_uint8, array_2d_uint8, cp.POINTER(cp.c_int) ]
 ocplib.isotropicBuild16.argtypes = [ array_2d_uint16, array_2d_uint16, array_2d_uint16, cp.POINTER(cp.c_int) ]
@@ -88,6 +90,7 @@ ocplib.zoomOutData.restype = None
 ocplib.zoomOutDataOMP.restype = None
 ocplib.zoomInData.restype = None
 ocplib.zoomInDataOMP.restype = None
+ocplib.zoomInDataOMP16.restype = None
 ocplib.mergeCube.restype = None
 ocplib.isotropicBuild8.restype = None
 ocplib.isotropicBuild16.restype = None
@@ -306,12 +309,19 @@ def zoomInData_ctype ( olddata, newdata, factor ):
   ocplib.zoomInData ( olddata, newdata, (cp.c_int * len(dims))(*dims), cp.c_int(factor) )
   return ( newdata )
 
-
 def zoomInData_ctype_OMP ( olddata, newdata, factor ):
   """ Add the contribution of the input data to the next level at the given offset in the output cube """
 
   dims = [ i for i in newdata.shape ]
   ocplib.zoomInDataOMP ( olddata, newdata, (cp.c_int * len(dims))(*dims), cp.c_int(factor) )
+  return ( newdata )
+
+
+def zoomInData_ctype_OMP16 ( olddata, newdata, factor ):
+  """ Add the contribution of the input data to the next level at the given offset in the output cube """
+
+  dims = [ i for i in newdata.shape ]
+  ocplib.zoomInDataOMP16 ( olddata, newdata, (cp.c_int * len(dims))(*dims), cp.c_int(factor) )
   return ( newdata )
 
 def mergeCube_ctype ( data, newid, oldid ):

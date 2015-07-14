@@ -35,11 +35,10 @@ def zoomIn(old_data, scaling):
   return new_data
 
 # AB TODO -- zoomInData is made for uint32_t only. Write templated version? 
-def cZoomIn(old_data, res):
-  scaling = 2**res
-
+def cZoomIn(old_data, factor):
+  scaling = 2**factor
   new_data = np.zeros ( [old_data.shape[0], old_data.shape[1]*(scaling), old_data.shape[2]*(scaling)], dtype=np.uint16)
-  ocplib.zoomInData_ctype_OMP ( old_data, new_data, int(res) )
+  ocplib.zoomInData_ctype_OMP16 ( old_data, new_data, int(factor) )
   return new_data 
 
 def buildStack(token, channel, res, base_res):
@@ -70,8 +69,9 @@ def buildStack(token, channel, res, base_res):
           # cutout data
           old_data = db.cutout( ch, [x*xcubedim, y*ycubedim, z*zcubedim], cubedim, base_res ).data
 
-          new_data = zoomIn(old_data, scaling)
-          
+          #new_data = zoomIn(old_data, scaling)
+          new_data = cZoomIn(old_data, base_res-res)
+
           newzsize = new_data.shape[0] / newcubedim[2] #old_data.shape[0]
           newysize = new_data.shape[1] / newcubedim[1] #old_data.shape[1]
           newxsize = new_data.shape[2] / newcubedim[0] #old_data.shape[2]

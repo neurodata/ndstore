@@ -74,6 +74,9 @@ void zoomInData ( uint32_t * , uint32_t * , int * , int );
 // Declaring the zoomInData function OMP optimized
 void zoomInDataOMP ( uint32_t * , uint32_t * , int * , int );
 
+// Declaring the zoomInData function OMP optimized for 16 bit images
+void zoomInDataOMP16 ( uint16_t * , uint16_t * , int * , int );
+
 // Declaring the mergeCube function
 void mergeCube ( uint32_t * , int * , int , int );
 
