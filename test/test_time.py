@@ -219,6 +219,7 @@ class Test_Image_Post:
 class Test_Time_Simple_Catmaid:
 
   def setup_class(self):
+    p.channels = ['TIME1', 'TIME2']
     makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype, time=p.time)
 
   def teardown_class(self):

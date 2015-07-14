@@ -101,6 +101,7 @@ class CatmaidIngest:
               db.putCube ( zidx, self.resolution, cube )
           print "Commiting at x=%s, y=%s, z=%s" % (x,y,sl)
         db.conn.commit()
+        slab = None
 
 
 def main():
