@@ -73,7 +73,7 @@ class Project ( models.Model):
     ('dsp062.pha.jhu.edu', 'dsp062'),
     ('dsp063.pha.jhu.edu', 'dsp063'),
   )
-  host =  models.CharField(max_length=255, choices=HOST_CHOICES, default='dsp061.pha.jhu.edu')
+  host =  models.CharField(max_length=255, choices=HOST_CHOICES, default='localhost')
   KVENGINE_CHOICES = (
     ('MySQL','MySQL'),
     ('Cassandra','Cassandra'),
