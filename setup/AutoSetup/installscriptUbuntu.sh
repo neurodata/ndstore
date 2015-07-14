@@ -58,6 +58,7 @@ pip install networkx
 pip install docutils
 pip install posix-ipc
 pip install pycparser
+pip install libtiff
 
 
 # Setup the files needed for first run of the server

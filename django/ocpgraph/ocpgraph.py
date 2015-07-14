@@ -15,8 +15,58 @@
 import MySQLdb
 import numpy as np
 import networkx as nx
+import h5py
+import re
+from contextlib import closing
 
-def genGraphRAMON(database,project,channel,graphType=graphml,Xmin=0,Xmax=0,Ymin=0,Ymax=0,Zmin=0,Zmax=0,BrainPass=""):
+import restargs
+import ocpcadb
+import ocpcaproj
+import h5ann
+import ocplib
+
+from ocpcaerror import OCPCAError
+import logging
+logger=logging.getLogger("ocp")
+
+def getAnnoIds ( token, channel, Xmin,Xmax,Ymin,Ymax,Zmin,Zmax):
+  """Return a list of anno ids restricted by equality predicates. Equalities are alternating in field/value in the url."""
+
+  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+    proj = projdb.loadToken ( token )
+    
+  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+    ch = ocpcaproj.OCPCAChannel(proj,channel)
+
+  resolution = ch.getResolution()
+  mins = (Xmin, Ymin, Zmin)
+  maxs = (Xmax, Ymax, Zmax)
+  offset = proj.datasetcfg.offset[resolution]
+  from operator import sub
+  corner = map(sub, mins, offset)
+  dim = map(sub, maxs, mins)
+
+  if not proj.datasetcfg.checkCube(resolution, corner, dim):
+    logger.warning("Illegal cutout corner={}, dim={}".format(corner, dim))
+    raise OCPCAError("Illegal cutout corner={}, dim={}".format( corner, dim))
+
+  cutout = db.cutout(ch, corner, dim, resolution)
+
+      # Check if cutout as any non zeros values
+  if cutout.isNotZeros():
+    annoids = np.intersect1d(annoids, np.unique(cutout.data))
+  else:
+    annoids = np.asarray([], dtype=np.uint32)
+
+
+  return h5ann.PackageIDs(annoids)
+
+
+print type(getAnnoIds("test_graph_syn", "test_graph_syn", 1,2,2,3,4,5))
+
+
+
+def genGraphRAMON(database,project,channel,graphType="graphml",Xmin=0,Xmax=0,Ymin=0,Ymax=0,Zmin=0,Zmax=0,BrainPass=""):
     cubeRestrictions  = Xmin + Xmax + Ymin + Ymax + Zmin + Zmax
 
     db = MySQLdb.connect("localhost","brain",BrainPass)
@@ -28,7 +78,6 @@ def genGraphRAMON(database,project,channel,graphType=graphml,Xmin=0,Xmax=0,Ymin=
     matrix = cursor.fetchall()
     synapses = np.empty(shape=(len(matrix),2))
 
-    #AE TODO Change to re.match?
     for i in range(len(matrix)):
     	#Get raw from matrix
     	rawstring = (matrix[i])[0]
@@ -39,7 +88,9 @@ def genGraphRAMON(database,project,channel,graphType=graphml,Xmin=0,Xmax=0,Ymin=
 
     #If restrictions are present clean the data
     if cubeRestrictions != 0:
-        idslist = #AE TODO Edit and add this in ASAP
+
+
+        #idslist = AE TODO Edit and add this in ASAP
         mask1 = np.in1d(synapses[:,0],idslist)
         mask2 = np.in1d(synapses[:,1],idslist)
         mask = [any(t) for t in zip(mask1, mask2)]
