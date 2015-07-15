@@ -116,10 +116,11 @@ class SimpleCatmaid:
     # scale by the appropriate amount
 
     if cb.data.shape != (ztileend-ztilestart,1,self.tilesz) and cb.data.shape != (1, ztileend-ztilestart,1,self.tilesz):
-      tiledata = np.zeros((ztileend-ztilestart,1,self.tilesz), cb.data.dtype )
       if timetile is None:
+        tiledata = np.zeros((ztileend-ztilestart,1,self.tilesz), cb.data.dtype )
         tiledata[0,0:zend-zstart,0,0:((xend-1)%self.tilesz+1)] = cb.data[0,:,0,:]
       else:
+        tiledata = np.zeros((1,ztileend-ztilestart,1,self.tilesz), cb.data.dtype )
         tiledata[0,0:zend-zstart,0,0:((xend-1)%self.tilesz+1)] = cb.data[0,:,0,:]
       cb.data = tiledata
 
@@ -157,10 +158,11 @@ class SimpleCatmaid:
     # scale by the appropriate amount
    
     if cb.data.shape != (ztileend-ztilestart,self.tilesz,1) and cb.data.shape != (1,ztileend-ztilestart,self.tilesz,1):
-      tiledata = np.zeros((ztileend-ztilestart,self.tilesz,1), cb.data.dtype )
       if timetile is None:
+        tiledata = np.zeros((ztileend-ztilestart,self.tilesz,1), cb.data.dtype )
         tiledata[0:zend-zstart,0:((yend-1)%self.tilesz+1),0] = cb.data[:,:,0]
       else:
+        tiledata = np.zeros((1,ztileend-ztilestart,self.tilesz,1), cb.data.dtype )
         tiledata[0, 0:zend-zstart,0:((yend-1)%self.tilesz+1),0] = cb.data[0,:,:,0]
       cb.data = tiledata
 

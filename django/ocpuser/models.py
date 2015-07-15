@@ -68,11 +68,7 @@ class Project ( models.Model):
   public =  models.IntegerField(default=0, choices=ISPUBLIC_CHOICES)
   dataset = models.ForeignKey(Dataset)
   HOST_CHOICES = (
-    ('localhost', 'localhost'),
-    ('openconnecto.me', 'openconnecto.me'),
-    ('braingraph1.cs.jhu.edu', 'braingraph1'),
-    ('braingraph1dev.cs.jhu.edu', 'braingraph1dev'),
-    ('braingraph2.cs.jhu.edu', 'braingraph2'),
+    ('dsp061.pha.jhu.edu', 'default'),
     ('dsp061.pha.jhu.edu', 'dsp061'),
     ('dsp062.pha.jhu.edu', 'dsp062'),
     ('dsp063.pha.jhu.edu', 'dsp063'),
@@ -85,11 +81,7 @@ class Project ( models.Model):
   )
   kvengine =  models.CharField(max_length=255, choices=KVENGINE_CHOICES, default='MySQL')
   KVSERVER_CHOICES = (
-    ('localhost', 'localhost'),
-    ('openconnecto.me', 'openconnecto.me'),
-    ('braingraph1.cs.jhu.edu', 'braingraph1'),
-    ('braingraph1dev.cs.jhu.edu', 'braingraph1dev'),
-    ('braingraph2.cs.jhu.edu', 'braingraph2'),
+    ('dsp061.pha.jhu.edu', 'default'),
     ('dsp061.pha.jhu.edu', 'dsp061'),
     ('dsp062.pha.jhu.edu', 'dsp062'),
     ('dsp063.pha.jhu.edu', 'dsp063'),

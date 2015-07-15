@@ -294,7 +294,7 @@ def window(data, ch, window_range=None ):
 
   [startwindow, endwindow] = window_range
 
-  if ch.getChannelType() in ocpcaproj.IMAGE_CHANNELS and ch.getDataType() in ocpcaproj.DTYPE_uint16:
+  if ch.getDataType() in ocpcaproj.DTYPE_uint16:
     if (startwindow == endwindow == 0):
       return np.uint8(data * 1.0/256)
     elif endwindow!=0:
@@ -1767,8 +1767,10 @@ def minmaxProject ( webargs ):
       channel_name = channels[i]
 
       ch = ocpcaproj.OCPCAChannel(proj,channel_name)
-      cb = cutout ( cutoutargs, ch, proj, db )
-      FilterCube ( cutoutargs, cb )
+      cb = cutout (cutoutargs, ch, proj, db)
+      FilterCube (cutoutargs, cb)
+
+      # KL TODO Make this cleaner
 
       # project onto the image plane
       if plane == 'xy':
@@ -1824,15 +1826,8 @@ def minmaxProject ( webargs ):
       mcdata[i,:,:] = cbplane
 
   # manage the color space
-  # reduction factor.  How to scale data.  16 bit->8bit, or windowed
-  (startwindow,endwindow) = ch.getWindowRange()
-  if ch.getDataType() == ocpcaproj.DTYPE_uint16 and ( startwindow == endwindow == 0):
-    #pass
-    mcdata = np.uint8(mcdata * 1.0/256)
-  elif ch.getDataType() == ocpcaproj.DTYPE_uint16 and ( endwindow!=0 ):
-    from windowcutout import windowCutout
-    windowCutout ( mcdata, (startwindow, endwindow) )
-
+  mcdata = window(mcdata, ch)
+  
   # We have an compound array.  Now color it.
   colors = ('C','M','Y','R','G','B')
   colors = ('R','M','Y','R','G','B')

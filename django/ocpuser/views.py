@@ -512,12 +512,11 @@ def createProject(request):
 
         except Exception, e:
           logger.error("Failed to create project.  Error {}".format(e))
-          new_project.delete()
+          messages.error(request,"Failed to create project Error {}".format(e))
 
         return HttpResponseRedirect(get_script_prefix()+'ocpuser/projects/')
       else:
         context = {'form': form}
-        print form.errors
         return render_to_response('createproject.html',context,context_instance=RequestContext(request))
 
     else:

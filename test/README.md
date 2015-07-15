@@ -145,6 +145,10 @@
     1. test_xy_tile
     2. test_yz_tile
     3. test_xz_tile
+  
+  - Module : Test_Image_Window
+    1. test_window_default
+    2. test_window_args
 
 * tests to add
   1. Test filter for image slices

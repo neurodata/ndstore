@@ -54,6 +54,7 @@ p.channels = ['TIME1', 'TIME2']
 p.time = [0,100]
 p.channel_type = "timeseries"
 p.datatype = "uint8"
+p.window = [0,500]
 
 #p.args = (3000,3100,4000,4100,500,510)
 
@@ -219,6 +220,7 @@ class Test_Image_Post:
 class Test_Time_Simple_Catmaid:
 
   def setup_class(self):
+    p.channels = ['TIME1', 'TIME2']
     makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype, time=p.time)
 
   def teardown_class(self):
@@ -277,6 +279,48 @@ class Test_Time_Simple_Catmaid:
 
     slice_data = np.asarray ( Image.open(StringIO(f.read())) )
     assert ( np.array_equal(slice_data, image_data[0][0][0]) )
+
+class Test_Time_Window:
+
+  def setup_class(self):
+    # Testing a different datatype now
+    p.datatype = "uint16"
+    makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype, time=p.time, window=p.window, default=True)
+
+  def teardown_class(self):
+    makeunitdb.deleteTestDB(p.token)
+
+  def test_window_default(self):
+    "Test the window functionality"
+
+    p.args = (3000,3100,4000,4100,200,201,50,52)
+    image_data = np.ones([2,2,1,100,100], dtype=np.uint16) * 2000
+    response = postNPZ(p, image_data, time=True)
+
+    url = "http://{}/ca/{}/{}/xy/{}/{},{}/{},{}/{}/{}".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[6])
+    f = getURL (url)
+
+    from windowcutout import windowCutout
+    windowCutout(image_data, p.window)
+    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    assert ( np.array_equal(slice_data,image_data[0][0][0]) )
+  
+  def test_window_args(self):
+    "Test the window functionality"
+
+    p.args = (3000,3100,4000,4100,200,201,20,22)
+    p.window = [0,1500]
+    image_data = np.ones([2,2,1,100,100], dtype=np.uint16) * 2000
+    response = postNPZ(p, image_data, time=True)
+
+    url = "http://{}/ca/{}/{}/xy/{}/{},{}/{},{}/{}/{}/window/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[6], *p.window)
+    f = getURL (url)
+
+    from windowcutout import windowCutout
+    windowCutout(image_data, p.window)
+    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    assert ( np.array_equal(slice_data,image_data[0][0][0]) )
+
 
 #class Test_Image_Default:
 
