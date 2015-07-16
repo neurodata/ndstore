@@ -632,7 +632,7 @@ def updateChannel(request):
   pd = ocpcaproj.OCPCAProjectsDB()
   if request.method == 'POST':
 
-    if 'updateChannel' in request.POST: 
+    if 'updatechannel' in request.POST: 
 
       chname = request.session["channel_name"]
       channel_to_update = get_object_or_404(Channel,channel_name=chname,project_id=pr)
@@ -910,8 +910,6 @@ def backupProject(request):
   # perform a backup
   if request.method == 'POST':
 
-    import pdb; pdb.set_trace()
-
     if 'backup' in request.POST:
 
       form = BackupForm(request.POST)
@@ -935,13 +933,13 @@ def backupProject(request):
           pd = ocpcaproj.OCPCAProjectsDB()
           db = (request.POST.get('project')).strip()
 
+          # RBTODO channel is not bound correctly?
           channel = request.POST.get('channel').strip()
-          if (channel==None or channel=='') and request.POST.get('allchans') == 'on':
+          if request.POST.get('allchans') == 'on':
             channel ='all'
           else:
             pass #RBTODO error  
 
-          import pdb; pdb.set_trace()
           #RB restart here
           upath = '{}/{}'.format(settings.BACKUP_PATH,request.user.username)
           ppath = '{}/{}'.format(upath,db)
@@ -959,7 +957,7 @@ def backupProject(request):
           passwd = settings.DATABASES['default']['PASSWORD']
 
           # backup now
-          if request.POST.get('async')==0:
+          if not request.POST.get('async'):
 
             # if all tables were requested
             if request.POST.get('allchans') == 'on':
@@ -974,7 +972,7 @@ def backupProject(request):
               for t in tables:
                 cmd.append(t)
 
-              p = subprocess.Popen(cmd, stdout=outputfile).communicate(None)
+            p = subprocess.Popen(cmd, stdout=outputfile).communicate(None)
 
             messages.success(request, 'Sucessfully backed up database '+ db)
             return HttpResponseRedirect(get_script_prefix()+'ocpuser/projects')

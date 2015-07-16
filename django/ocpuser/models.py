@@ -176,6 +176,7 @@ class Channel ( models.Model):
   startwindow = models.IntegerField(default=0)
   endwindow = models.IntegerField(default=0)
   default = models.BooleanField(default=False)
+  header = models.CharField(max_length=8192, default='', blank=True)
   
   class Meta:
     """ Meta """
@@ -226,3 +227,21 @@ class Backup ( models.Model):
 
   def __unicode__(self):
     return self.description
+
+
+class NIFTIHeader ( models.Model):
+
+  channel  = models.ForeignKey(Channel,primary_key=True)
+  # all headers are 384 bytes for now.  
+  header = models.BinaryField(max_length=1024)
+  affine = models.BinaryField(max_length=1024)
+  
+  class Meta:
+    """ Meta """
+    # Required to override the default table name
+    db_table = u"nifti_header"
+    managed = True
+
+  def __unicode__(self):
+    return self.header
+

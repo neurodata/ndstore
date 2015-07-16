@@ -20,6 +20,8 @@ from django.conf.urls import patterns, include, url
 urlpatterns = patterns('ocpca.views',
   # catmaid
   url(r'^catmaid/(?P<webargs>\w+/.*)$', 'catmaid'),
+  # nifti -- volumetric 3-d and 4-d
+  url(r'(?P<webargs>^\w+/[\w+,/]*nii/[\w,/]*)$', 'nifti'),
   # swc -- annotations file get and put
   url(r'(?P<webargs>^\w+/[\w+,/]*swc/[\w,/]*)$', 'swc'),
   # fetch ids (with predicates)
