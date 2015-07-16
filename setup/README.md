@@ -46,7 +46,7 @@ List of commands needed to configure the database for mysql
     OCP configuration for /etc/supervisor/
 
 
-### MACOS Installtion
+### MACOS Installation
 
 ##### clone the repository and make a virtual env if you want
   ```
