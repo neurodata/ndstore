@@ -25,7 +25,6 @@ import ocpcadb
 import ocpcaproj
 import h5ann
 import ocplib
-import pdb
 
 from ocpcaerror import OCPCAError
 import logging
@@ -33,13 +32,12 @@ logger=logging.getLogger("ocp")
 
 def getAnnoIds ( proj, ch, Xmin,Xmax,Ymin,Ymax,Zmin,Zmax):
   """Return a list of anno ids restricted by equality predicates. Equalities are alternating in field/value in the url."""
-  pdb.set_trace()
+
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( proj.getToken() )
 
   db = ( ocpcadb.OCPCADB(proj) )
 
-  pdb.set_trace()
   resolution = ch.getResolution()
   mins = (int(Xmin), int(Ymin), int(Zmin))
   maxs = (int(Xmax), int(Ymax), int(Zmax))
@@ -87,9 +85,8 @@ def genGraphRAMON(database,project,channel,graphType="graphml",Xmin=0,Xmax=0,Ymi
 
     #If restrictions are present clean the data
     if cubeRestrictions != 0:
-
-
         idslist = getAnnoIds ( project, channel, Xmin,Xmax,Ymin,Ymax,Zmin,Zmax)
+
         mask1 = np.in1d(synapses[:,0],idslist)
         mask2 = np.in1d(synapses[:,1],idslist)
         mask = [any(t) for t in zip(mask1, mask2)]

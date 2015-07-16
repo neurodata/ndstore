@@ -1,0 +1,21 @@
+
+# Create brain user as MySQL root
+
+mysql -u root
+
+# in mysql
+
+create user 'brain'@'localhost' identified by 'password_here';
+grant all privileges on *.* to 'brain'@'localhost' with grant option;
+
+create user 'brain'@'%' identified by 'password_here';
+grant all privileges on *.* to 'brain'@'%' with grant option;
+
+# Then as brain user create a database
+
+mysql -u brain -ppassword_here
+
+# in mysql
+create database ocpdjango;  
+
+

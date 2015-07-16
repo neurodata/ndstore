@@ -30,6 +30,14 @@
     1. test_window_default
     2. test_window_args
   
+  - Module : Test_Image_Simple_Catmaid
+    1. test_xy_tile
+    2. test_yz_tile
+    3. test_xz_tile
+
+  - Module : Test_Image_Mcfc_Catmaid
+    1. test_xy_tile
+  
   - Module : Test_Image_Post
     1. test_npz 
     2. test_npz_incorrect_region
@@ -121,6 +129,7 @@
     1. test_xy
     2. test_yz
     3. test_xz
+  
   - Module : Test_Image_Post
     1. test_npz
     2. test_npz_incorrect_region
@@ -132,8 +141,18 @@
     8. test_npz_incorrect_channel
     9. test_hdf5_incorrect_channel
 
+  - Module : Test_Time_Simple_Catmaid
+    1. test_xy_tile
+    2. test_yz_tile
+    3. test_xz_tile
+  
+  - Module : Test_Image_Window
+    1. test_window_default
+    2. test_window_args
+
 * tests to add
   1. Test filter for image slices
   2. Test neurons, segments and synapses
   3. Test filter for anno
   4. Test anno Paint I/O interfaces
+  5. Test 16-bit Timeseries Data

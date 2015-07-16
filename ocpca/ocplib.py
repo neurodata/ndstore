@@ -101,6 +101,8 @@ def filter_ctype_OMP ( cutout, filterlist ):
   
   # get a copy of the iterator as a 1-D array
   cutout_shape = cutout.shape
+  # Temp Fix
+  cutout = np.asarray(cutout, dtype=np.uint32)
   cutout = cutout.ravel()
   filterlist = np.asarray(filterlist, dtype=np.uint32)
   

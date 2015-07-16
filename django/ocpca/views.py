@@ -28,15 +28,14 @@ logger=logging.getLogger("ocp")
 
 GET_SLICE_SERVICES = ['xy', 'yz', 'xz']
 GET_ANNO_SERVICES = ['xyanno', 'yzanno', 'xzanno']
-POST_SERVICES = ['hdf5', 'npz', 'hdf5_async', 'propagate']
+POST_SERVICES = ['hdf5', 'npz', 'hdf5_async', 'propagate', 'tiff']
 
 
 def cutout (request, webargs):
   """Restful URL for all read services to annotation projects"""
 
   try:
-    m = re.match(r"(\w+)/(?P<channel>[\w+,/-]+)?/?(xy|xz|yz|hdf5|npz|zip|id|ids|xyanno|xzanno|yzanno|xytiff|xztiff|yztiff)/([\w,/-]+)$", webargs)
-
+    m = re.match(r"(\w+)/(?P<channel>[\w+,/-]+)?/?(xy|xz|yz|tiff|hdf5|npz|zip|id|ids|xyanno|xzanno|yzanno)/([\w,/-]+)$", webargs)
     [token, channel, service, cutoutargs] = [i for i in m.groups()]
 
     if channel is None:
@@ -52,9 +51,20 @@ def cutout (request, webargs):
       if service in GET_SLICE_SERVICES+GET_ANNO_SERVICES:
         return django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="image/png" )
       elif service in ['ts', 'hdf5']:
-        return django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="product/hdf5" )
+        fname = re.sub ( r',','_', webargs )
+        fname = re.sub ( r'/','-', fname )
+        response = django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="product/hdf5" )
+        response['Content-Disposition'] = "attachment; filename={}ocpcutout.h5".format(fname)
+        return response
       elif service=='npz':
         return django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="product/npz" )
+      elif service=='tiff':
+        # build a file name from the webarguments
+        fname = re.sub ( r',','_', webargs )
+        fname = re.sub ( r'/','-', fname )
+        response = django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="image/tiff" )
+        response['Content-Disposition'] = "attachment; filename={}ocpcutout.tif".format(fname)
+        return response
       elif service=='zip':
         return django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="product/zip" )
       elif service in ['id','ids']:
@@ -81,9 +91,27 @@ def cutout (request, webargs):
     return django.http.HttpResponseNotFound(e.value)
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
-  except:
+  except Exception, e:
     logger.exception("Unknown exception in getCutout.")
-    raise OCPCAError("Unknow exception in getCutout")
+    raise OCPCAError("Unknown exception in getCutout")
+
+
+#@cache_control(no_cache=True)
+def swc (request, webargs):
+  """Get put interface for swc tracing files"""
+  
+  try:
+    if request.method == 'GET':
+      return django.http.HttpResponse(ocpcarest.getSWC(webargs), content_type="product/hdf5" )
+    elif request.method == 'POST':
+      return django.http.HttpResponse(ocpcarest.putSWC(webargs,request.body))
+  except OCPCAError, e:
+    return django.http.HttpResponseNotFound(e.value)
+  except MySQLdb.Error, e:
+    return django.http.HttpResponseNotFound(e)
+  except:
+    logger.exception("Unknown exception in SWC.")
+    raise
 
 def annotation (request, webargs):
   """Get put object interface for RAMON objects"""

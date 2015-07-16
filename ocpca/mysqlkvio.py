@@ -44,7 +44,7 @@ class MySQLKVIO:
 
     except MySQLdb.Error, e:
       self.conn = None
-      logger.error("Failed to connect to database: {}, {}".format(db.ocpchannel.getDBHost(), db.ocpchannel.getDBName()))
+      logger.error("Failed to connect to database: {}, {}".format(self.db.proj.getDBHost(), self.db.proj.getDBName()))
       raise
 
     # start with no cursor
@@ -176,41 +176,6 @@ class MySQLKVIO:
       if self.txncursor is None:
         cursor.close()
 
-
-  #def getTimeCubes(self, ch, listofidxs, timestamp, resolution):
-
-    ## if in a TxN us the transaction cursor.  Otherwise create one.
-    #if self.txncursor == None:
-      #cursor = self.conn.cursor()
-    #else:
-      #cursor = self.txncursor
-
-    #sql = "SELECT zindex, cube FROM {} WHERE timestamp={} and zindex in (%s)".format( ch.getTable(resolution), timestamp )
-
-    ## creats a %s for each list element
-    #in_p=', '.join(map(lambda x: '%s', listofidxs))
-    ## replace the single %s with the in_p string
-    #sql = sql % in_p
-
-    #try:
-      #rc = cursor.execute(sql, listofidxs)
-    
-      ## Get the objects and add to the cube
-      #while ( True ):
-        #try: 
-          #retval = cursor.fetchone() 
-        #except:
-          #break
-        #if retval != None:
-          #yield ( retval )
-        #else:
-          #return
- 
-    #finally:
-      ## close the local cursor if not in a transaction
-      #if self.txncursor == None:
-        #cursor.close()
-  
   
   def getTimeCubes(self, ch, idx, listoftimestamps, resolution):
 
@@ -287,34 +252,6 @@ class MySQLKVIO:
     # commit if not in a txn
     if self.txncursor is None:
       self.conn.commit()
-
-
-  #def putChannel ( self, channelstr, channelid ):
-    #""" Store a channel in the channels database """
-
-    ## if in a TxN us the transaction cursor.  Otherwise create one.
-    #if self.txncursor == None:
-      #cursor = self.conn.cursor()
-    #else:
-      #cursor = self.txncursor
-
-    #sql = "INSERT INTO channels (chanstr,chanid) VALUES (%s,%s)"
-
-    ## this uses a cursor defined in the caller (locking context): not beautiful, but needed for locking
-    #try:
-      #cursor.execute ( sql, (channelstr, str(channelid)) )
-    #except MySQLdb.Error, e:
-      #logger.error ( "Error inserting cube: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
-      #raise
-    #finally:
-      ## close the local cursor if not in a transaction
-      ## and commit right away
-      #if self.txncursor == None:
-        #cursor.close()
-  
-    ## commit if not in a txn
-    #if self.txncursor == None:
-      #self.conn.commit()
 
 
   def putTimeCube(self, ch, zidx, timestamp, resolution, cubestr, update=False):

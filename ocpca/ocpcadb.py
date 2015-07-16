@@ -604,7 +604,6 @@ class OCPCADB:
 
     # dictionary with the index
     cubeidx = defaultdict(set)
-
     cubelocs = ocplib.locate_ctype ( np.array(locations, dtype=np.uint32), cubedim )
 
     # sort the arrary, by cubeloc
@@ -737,23 +736,20 @@ class OCPCADB:
     index_dict = defaultdict(set)
 
     # dim is in xyz, data is in zyxj
-    dim = [ annodata.shape[2], annodata.shape[1], annodata.shape[0] ]
+    dim = annodata.shape[::-1]
 
     # get the size of the image and cube
-    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
+    [xcubedim, ycubedim, zcubedim] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
     # Round to the nearest larger cube in all dimensions
-    zstart = corner[2]/zcubedim
-    ystart = corner[1]/ycubedim
-    xstart = corner[0]/xcubedim
+    from operator import div, mod
+    start = [xstart, ystart, zstart] = map(div, corner, cubedim)
 
     znumcubes = (corner[2]+dim[2]+zcubedim-1)/zcubedim - zstart
     ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
     xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
 
-    zoffset = corner[2]%zcubedim
-    yoffset = corner[1]%ycubedim
-    xoffset = corner[0]%xcubedim
+    offset = [xoffset, yoffset, zoffset] = map(mod, corner, cubedim)
 
     databuffer = np.zeros ([znumcubes*zcubedim, ynumcubes*ycubedim, xnumcubes*xcubedim], dtype=np.uint32 )
     databuffer [ zoffset:zoffset+dim[2], yoffset:yoffset+dim[1], xoffset:xoffset+dim[0] ] = annodata 
@@ -1025,7 +1021,7 @@ class OCPCADB:
 
       # use the batch generator interface
       for idx, datastring in cuboids:
- 
+
         #add the query result cube to the bigger cube
         curxyz = ocplib.MortonXYZ(int(idx))
         offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
@@ -1167,11 +1163,16 @@ class OCPCADB:
     """Return the identifier at a voxel"""
 
     # get the size of the image and cube
-    [xcubedim, ycubedim, zcubedim] = cubedim = self.datasetcfg.cubedim [ resolution ] 
+    [xcubedim, ycubedim, zcubedim] = cubedim = self.datasetcfg.cubedim[resolution]
+    [xoffset, yoffset, zoffset] = offset = self.datasetcfg.offset[resolution]
 
     # convert the voxel into zindex and offsets. Round to the nearest larger cube in all dimensions
-    xyzcube = [ voxel[0]/xcubedim, voxel[1]/ycubedim, voxel[2]/zcubedim ]
-    xyzoffset =[ voxel[0]%xcubedim, voxel[1]%ycubedim, voxel[2]%zcubedim ]
+    from operator import div, mod, sub
+    voxel = map(sub, voxel, offset)
+    xyzcube = map(div, voxel, cubedim)
+    xyzoffset = map(mod, voxel, cubedim)
+    #xyzcube = [ voxel[0]/xcubedim, voxel[1]/ycubedim, voxel[2]/zcubedim ]
+    #xyzoffset =[ voxel[0]%xcubedim, voxel[1]%ycubedim, voxel[2]%zcubedim ]
     key = ocplib.XYZMorton ( xyzcube )
 
     cube = self.getCube(ch, key, resolution)
@@ -1411,7 +1412,7 @@ class OCPCADB:
       if anno is None:
         logger.warning("No annotation found at identifier = {}".format(annid))
         raise OCPCAError ("No annotation found at identifier = {}".format(annid))
-      anno.setField(ch, field, value)
+      anno.setField(field, value)
       anno.update(ch, cursor)
     except:
       self.closeCursor(cursor) 
@@ -1793,7 +1794,6 @@ class OCPCADB:
       print "updateIndex"
 
     return "Merge 3D"
-
 
   def exceptionsCutout ( self, corner, dim, resolution ):
     """Return a list of exceptions in the specified region.

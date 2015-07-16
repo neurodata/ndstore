@@ -14,9 +14,14 @@ OCP provides a scalable database cluster for the spatial analysis and annotation
 The system design inherits much from NoSQL scale-out and data-intensive computing architectures. We distribute data to cluster nodes by partitioning a spatial index. We direct I/O to different systems---reads to parallel disk arrays and writes to solid-state storage---to avoid I/O interference and maximize throughput. All programming interfaces are RESTful Web services, which are simple and stateless, improving scalability and usability. We include a performance evaluation of the production system, highlighting the effectiveness of spatial data organization.
 
 .. figure:: images/ocp_example.png
-    :width: 300px
+    :height: 500px  
+    :width: 1000px
     :align: center
+    :alt: Spatially Registered Databases in the Open Connectome Project. 
+    
+    Spatially Registered Databases in the Open Connectome Project   
 
+    Electron microscopy images of a mouse somatosensory cortex (left), a probability map output by a computer vision algorithm that detects membranes (center), and an annotation database that describes axons and dendrites (right).
 
 .. raw:: html
  
@@ -27,7 +32,6 @@ The system design inherits much from NoSQL scale-out and data-intensive computin
     <a image="_static/GitHub.png" href="https://github.com/openconnectome/open-connectome/tarball/master">[TAR.GZ] </a></p>
   </div>
 
-
 .. sidebar:: OCP Contact Us 
    
    If you have questions about OCP, or have data to store, please let us know:  ocp-support@googlegroups.com
@@ -37,10 +41,14 @@ The system design inherits much from NoSQL scale-out and data-intensive computin
    :caption: Documentation
 
    sphinx/introduction
-   sphinx/local_config
-   sphinx/ocp
+   sphinx/config
    sphinx/faq
-   tutorials/basic_usage
+   api/ocp_types
+   api/info_api
+   api/public_api
+   api/data_api
+   api/ramon_api
+   api/propagate_api
 
 .. toctree::
    :maxdepth: 1

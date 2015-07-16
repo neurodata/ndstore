@@ -48,8 +48,8 @@ import logging
 logger=logging.getLogger("ocp")
 
 # OCP Version
-OCP_VERSION = '0.6'
-SCHEMA_VERSION = '0.6'
+OCP_VERSION = '0.7'
+SCHEMA_VERSION = '0.7'
 
 OCP_channeltypes = {0:'image',1:'annotation',2:'probmap',3:'timeseries'}
 
@@ -397,7 +397,10 @@ class OCPCAProjectsDB:
   def newOCPCAProject ( self, project_name ):
     """Make the database for a project."""
 
-    with closing(self.conn.cursor()) as cursor:
+    pr = Project.objects.get(project_name=project_name)
+    
+    with closing(MySQLdb.connect (host = pr.host, user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'])) as conn:
+      with closing(conn.cursor()) as cursor:
 
       try:
         # Make the database
@@ -478,13 +481,15 @@ class OCPCAProjectsDB:
             cursor.execute ( "CREATE TABLE {}_synapses (annoid BIGINT PRIMARY KEY, synapse_type INT, weight FLOAT)".format(ch.channel_name))
             cursor.execute ( "CREATE TABLE {}_segments (annoid BIGINT PRIMARY KEY, segmentclass INT, parentseed INT, neuron INT)".format(ch.channel_name))
             cursor.execute ( "CREATE TABLE {}_organelles (annoid BIGINT PRIMARY KEY, organelleclass INT, parentseed INT, centroidx INT, centroidy INT, centroidz INT)".format(ch.channel_name))
+            cursor.execute ( "CREATE TABLE {}_nodes ( annoid BIGINT PRIMARY KEY, skeletonid BIGINT, nodetype INT, parentid BIGINT, locationx FLOAT, locationy FLOAT, locationz FLOAT, radius FLOAT )".format(ch.channel_name))
+            cursor.execute ( "CREATE TABLE {}_skeletons (annoid BIGINT PRIMARY KEY, skeletontype INT, rootnode INT)".format(ch.channel_name))
             cursor.execute ( "CREATE TABLE {}_kvpairs ( annoid BIGINT, kv_key VARCHAR(255), kv_value VARCHAR(20000), PRIMARY KEY ( annoid, kv_key ))".format(ch.channel_name))
 
             conn.commit()
 
             if pr.kvengine == 'MySQL':
               for i in range(ds.scalinglevels+1):
-                # RB always create the exception tables.....just don't use them if they are not defined
+                # RB always create the exception tables.....just don't use them if the project doesn't want them.
 #                if ch.exceptions:
                 cursor.execute ( "CREATE TABLE {}_exc{} ( zindex BIGINT, id BIGINT, exlist LONGBLOB, PRIMARY KEY ( zindex, id))".format(ch.channel_name,i))
                 cursor.execute ( "CREATE TABLE {}_idx{} ( annid BIGINT PRIMARY KEY, cube LONGBLOB )".format(ch.channel_name,i))
@@ -519,22 +524,23 @@ class OCPCAProjectsDB:
     pr = Project.objects.get(project_name = project_name)
 
     if pr.kvengine == 'MySQL':
-      # delete the database
-      sql = "DROP DATABASE {}".format(pr.project_name)
+      with closing(MySQLdb.connect (host = pr.host, user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'])) as conn:
+        with closing(conn.cursor()) as cursor:
+        # delete the database
+          sql = "DROP DATABASE {}".format(pr.project_name)
 
-      with closing(self.conn.cursor()) as cursor:
-        try:
-          cursor.execute(sql)
-          self.conn.commit()
-        except MySQLdb.Error, e:
-          # Skipping the error if the database does not exist
-          if e.args[0] == 1008:
-            logger.warning("Database {} does not exist".format(pr.project_name))
-            pass
-          else:
-            self.conn.rollback()
-            logger.error ("Failed to drop project database {}: {}. sql={}".format(e.args[0], e.args[1], sql))
-            raise OCPCAError ("Failed to drop project database {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+          try:
+            cursor.execute(sql)
+            conn.commit()
+          except MySQLdb.Error, e:
+            # Skipping the error if the database does not exist
+            if e.args[0] == 1008:
+              logger.warning("Database {} does not exist".format(pr.project_name))
+              pass
+            else:
+              conn.rollback()
+              logger.error ("Failed to drop project database {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+              raise OCPCAError ("Failed to drop project database {}: {}. sql={}".format(e.args[0], e.args[1], sql))
 
 
     #  try to delete the database anyway
@@ -583,6 +589,7 @@ class OCPCAProjectsDB:
 
       try:
         conn = MySQLdb.connect (host = settings.DATABASES['default']['HOST'], user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = pr.getProjectName() )
+
         # delete the tables for this channel
         sql = "DROP TABLES IF EXISTS {}".format(','.join(table_list))
 

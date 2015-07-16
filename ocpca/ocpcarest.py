@@ -1,6 +1,6 @@
 # Copyright 2014 Open Connectome Project (http://openconnecto.me)
 # 
-# Licensed under the Apache License, Version 2.0 (the "License");
+#Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 # 
@@ -26,6 +26,8 @@ from PIL import Image
 import MySQLdb
 import itertools
 from contextlib import closing
+from libtiff import TIFF
+from libtiff import TIFFfile, TIFFimage
 
 import restargs
 import anncube
@@ -38,6 +40,7 @@ import jsonprojinfo
 import annotation
 import mcfc
 import ocplib
+import ocpcaskel
 from windowcutout import windowCutout
 
 from ocpcaerror import OCPCAError
@@ -46,13 +49,7 @@ logger=logging.getLogger("ocp")
 
 
 def cutout (imageargs, ch, proj, db):
-  """Build and Return a cube of data for the specified dimensions. This method is called by all of the more basic services to build the data. They then format and refine the output.
-  
-  :param imageargs: String of arguments passed
-  :param ch: OCPCAChannel object
-  :param proj: OCPCAProject object
-  :param db: OCPCADB object
-  """
+  """Build and Return a cube of data for the specified dimensions. This method is called by all of the more basic services to build the data. They then format and refine the output. """
   
   # Perform argument processing
   try:
@@ -106,7 +103,8 @@ def numpyZip ( chanargs, proj, db ):
     channel_data = cutout( imageargs, ch, proj, db ).data
     cubedata = np.zeros ( (len(channel_list),)+channel_data.shape, dtype=channel_data.dtype )
     cubedata[0,:] = channel_data
-    
+
+    # if one channel convert 3-d to 4-d array
     for idx,channel_name in enumerate(channel_list[1:]):
       if channel_name == '0':
         continue
@@ -165,6 +163,129 @@ def HDF5(chanargs, proj, db):
   tmpfile.seek(0)
   return tmpfile.read()
 
+def postTiff3d ( channel, postargs, proj, db, postdata ):
+  """Upload a tiff to the database"""
+
+  # get the channel
+  ch = proj.getChannelObj(channel)
+  if ch.getDataType() in ocpcaproj.DTYPE_uint8:
+    datatype=np.uint8
+  elif ch.getDataType() in ocpcaproj.DTYPE_uint16:
+    datatype=np.uint16
+  elif ch.getDataType() in ocpcaproj.DTYPE_uint32:
+    datatype=np.uint32
+  else:
+    logger.error("Unsupported data type for TIFF3d post. {}".format(ch.getDataType())) 
+    raise OCPCAError ("Unsupported data type for TIFF3d post. {}".format(ch.getDataType())) 
+
+  # parse the args
+  resstr, xoffstr, yoffstr, zoffstr, rest = postargs.split('/',4)
+  resolution = int(resstr)
+  projoffset = proj.datasetcfg.offset[resolution]
+  xoff = int(xoffstr)-projoffset[0]
+  yoff = int(yoffstr)-projoffset[1]
+  zoff = int(zoffstr)-projoffset[2]
+
+  # RBTODO check that the offsets are legal
+
+  # read the tiff data into a cuboid
+  with closing (tempfile.NamedTemporaryFile()) as tmpfile:
+    tmpfile.write( postdata )
+    tmpfile.seek(0)
+    tif = TIFF.open(tmpfile.name)
+
+    # get tiff metadata
+    image_width = tif.GetField("ImageWidth")
+    image_length = tif.GetField("ImageLength")
+
+    # get a z batch -- how many slices per cube
+    zbatch = proj.datasetcfg.cubedim[resolution][0]
+
+    db.startTxn()
+
+    dircount = 0
+    dataar = None
+    # read each one at a time
+    for image in tif.iter_images():
+
+      # allocate a batch every cubesize
+      if dircount % zbatch == 0:
+        dataarray = np.zeros((zbatch,image_length,image_width),dtype=datatype)
+
+      dataarray[dircount%zbatch,:,:] = image
+
+      dircount += 1
+
+      # if we have a full batch go ahead and ingest
+      if dircount % zbatch == 0:
+        corner = ( xoff, yoff, zoff+dircount-zbatch )
+        db.writeCuboid (ch, corner, resolution, dataarray)
+
+    # ingest any remaining data
+    corner = ( xoff, yoff, zoff+dircount-(dircount%zbatch) )
+    db.writeCuboid (ch, corner, resolution, dataarray[0:(dircount%zbatch),:,:])
+
+    db.commit()
+
+
+def tiff3d ( chanargs, proj, db ):
+  """Return a 3d tiff file"""
+
+  [channels, service, imageargs] = chanargs.split('/', 2)
+
+  # create a temporary tif file
+  tmpfile = tempfile.NamedTemporaryFile()
+  tif = TIFF.open(tmpfile.name, mode='w')
+
+  try: 
+
+    for channel_name in channels.split(','):
+
+      ch = proj.getChannelObj(channel_name)
+      cube = cutout ( imageargs, ch, proj, db )
+      FilterCube ( imageargs, cube )
+
+
+# RB -- I think this is a cutout format.  So, let's not recolor.
+
+#      # if it's annotations, recolor
+#      if ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS:
+#
+#        imagemap = np.zeros ( (cube.data.shape[0]*cube.data.shape[1], cube.data.shape[2]), dtype=np.uint32 )
+#
+#        # turn it into a 2-d array for recolor -- maybe make a 3-d recolor
+#        recolor_cube = ocplib.recolor_ctype( cube.data.reshape((cube.data.shape[0]*cube.data.shape[1], cube.data.shape[2])), imagemap )
+#
+#        # turn it back into a 4-d array RGBA
+#        recolor_cube = recolor_cube.view(dtype=np.uint8).reshape((cube.data.shape[0],cube.data.shape[1],cube.data.shape[2], 4 ))
+#
+#        for i in range(recolor_cube.shape[0]):
+#          tif.write_image(recolor_cube[i,:,:,0:3], write_rgb=True)
+#
+#      else:
+
+      tif.write_image(cube.data)
+
+  except:
+    tif.close()
+    tmpfile.close()
+    raise
+
+  tif.close()
+  tmpfile.seek(0)
+  return tmpfile.read()
+ 
+
+def FilterCube ( imageargs, cb ):
+  """ Return a cube with the filtered ids """
+
+  # Filter Function - used to filter
+  result = re.search ("filter/([\d/,]+)/",imageargs)
+  if result != None:
+    filterlist = np.array ( result.group(1).split(','), dtype=np.uint32 )
+    cb.data = ocplib.filter_ctype_OMP ( cb.data, filterlist )
+
+
 def window(data, ch, window_range=None ):
   """Performs a window transformation on the cutout area"""
 
@@ -173,7 +294,7 @@ def window(data, ch, window_range=None ):
 
   [startwindow, endwindow] = window_range
 
-  if ch.getChannelType() in ocpcaproj.IMAGE_CHANNELS and ch.getDataType() in ocpcaproj.DTYPE_uint16:
+  if ch.getDataType() in ocpcaproj.DTYPE_uint16:
     if (startwindow == endwindow == 0):
       return np.uint8(data * 1.0/256)
     elif endwindow!=0:
@@ -249,7 +370,8 @@ def imgSlice(webargs, proj, db):
   cb.data = window(cb.data, ch, window_range=window_range)
   return cb
 
-def imgPNG(proj, webargs, cb):
+
+def imgPNG (proj, webargs, cb):
   """Return a png object for any plane"""
   
   try:
@@ -273,6 +395,10 @@ def imgPNG(proj, webargs, cb):
   fileobj.seek(0)
   return fileobj.read()
 
+
+#
+#  Read individual annotation image slices xy, xz, yz
+#
 def imgAnno ( service, chanargs, proj, db ):
   """Return a plane fileobj.read() for a single objects"""
 
@@ -391,7 +517,9 @@ def selectService ( service, webargs, proj, db ):
   if service in ['xy','yz','xz']:
     return imgPNG(proj, webargs, imgSlice (webargs, proj, db))
   elif service == 'hdf5':
-    return HDF5(webargs, proj, db)
+    return HDF5 ( webargs, proj, db )
+  elif service == 'tiff':
+    return tiff3d ( webargs, proj, db )
   elif service in ['npz','zip']:
     return  numpyZip ( webargs, proj, db ) 
   elif service == 'id':
@@ -409,6 +537,10 @@ def selectPost ( webargs, proj, db, postdata ):
   """Identify the service and pass on the arguments to the appropiate service."""
 
   [channel, service, postargs] = webargs.split('/', 2)
+
+  # if it's a 3d tiff treat differently.  No cutout args.
+  if service == 'tiff':
+    return postTiff3d ( channel, postargs, proj, db, postdata )
 
   # Create a list of channels from the comma separated argument
   channel_list = channel.split(',')
@@ -456,22 +588,18 @@ def selectPost ( webargs, proj, db, postdata ):
             logger.warning("Attempt to write to read only project {}".format(proj.getDBName()))
             raise OCPCAError("Attempt to write to read only project {}".format(proj.getDBName()))
        
-          if voxarray.dtype == ocpcaproj.OCP_dtypetonp[ch.getDataType()]:
-            pass
-          else:
+          if not voxarray.dtype == ocpcaproj.OCP_dtypetonp[ch.getDataType()]:
             logger.warning("Wrong datatype in POST")
             raise OCPCAError("Wrong datatype in POST")
             
           if ch.getChannelType() in ocpcaproj.IMAGE_CHANNELS:
             db.writeCuboid ( ch, corner, resolution, voxarray[idx,:] )
-            entityid = 0
 
           elif ch.getChannelType() in ocpcaproj.TIMESERIES_CHANNELS:
             db.writeTimeCuboid(ch, corner, resolution, timerange, voxarray[idx,:])
-            entityid = 0
           
           elif ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS:
-            entityid = db.annotateDense(ch, corner, resolution, voxarray[idx,:], conflictopt)
+            db.annotateDense(ch, corner, resolution, voxarray[idx,:], conflictopt)
 
       elif service == 'hdf5':
   
@@ -504,14 +632,12 @@ def selectPost ( webargs, proj, db, postdata ):
             
             if ch.getChannelType() in ocpcaproj.IMAGE_CHANNELS: 
               db.writeCuboid (ch, corner, resolution, voxarray)
-              entityid = 0
 
             elif ch.getChannelType() in ocpcaproj.TIMESERIES_CHANNELS:
               db.writeTimeCuboid (ch, corner, resolution, timerange, voxarray)
-              entityid = 0
             
             elif ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS:
-              entityid = db.annotateDense ( ch, corner, resolution, voxarray, conflictopt )
+              db.annotateDense ( ch, corner, resolution, voxarray, conflictopt )
   
           h5f.flush()
           h5f.close()
@@ -537,8 +663,6 @@ def selectPost ( webargs, proj, db, postdata ):
       logger.exception("POST transaction rollback. {}".format(e))
       db.rollback()
       raise
-    
-  return str(entityid)
 
 
 def getCutout ( webargs ):
@@ -1168,7 +1292,63 @@ def putAnnotation ( webargs, postdata ):
   
       # return the identifier
       return retstr
+
+
+def getSWC ( webargs ):
+  """Return an SWC object generated from Skeletons/Nodes"""
+    
+  [token, channel, swcstring, skeletons, rest] = webargs.split('/',3)
+
+  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+    proj = projdb.loadToken ( token )
   
+  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+
+    ch = ocpcaproj.OCPCAChannel(proj, channel)
+
+    # Make a named temporary file for the SWC
+    with closing (tempfile.NamedTemporaryFile()) as tmpfile:
+
+      ocpcaskel.querySWC ( tmpfile, ch, db, proj, skelids=None )
+
+      tmpfile.seek(0)
+      return tmpfile.read()
+
+ 
+
+def putSWC ( webargs, postdata ):
+  """Put an SWC object into RAMON skeleton/tree nodes"""
+
+  [token, channel, optionsargs] = webargs.split('/',2)
+
+  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+    proj = projdb.loadToken ( token )
+  
+  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+
+    ch = ocpcaproj.OCPCAChannel(proj, channel)
+    # Don't write to readonly projects
+    if ch.getReadOnly() == ocpcaproj.READONLY_TRUE:
+      logger.warning("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
+      raise OCPCAError("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
+
+    # Make a named temporary file for the HDF5
+    with closing (tempfile.NamedTemporaryFile()) as tmpfile:
+
+      tmpfile.write ( postdata )
+      tmpfile.seek(0)
+
+      with closing (open(tmpfile.name)) as fp:
+
+        # Parse the swc file into skeletons
+        swc_skels = ocpcaskel.ingestSWC ( fp, ch, db )
+
+        return swc_skels
+
+
+
+#  Return a list of annotation object IDs
+#  for now by type and status
 def queryAnnoObjects ( webargs, postdata=None ):
   """Return a list of anno ids restricted by equality predicates. Equalities are alternating in field/value in the url."""
 
@@ -1377,7 +1557,7 @@ def getField ( webargs ):
       logger.warning("No annotation found at identifier = {}".format(annid))
       raise OCPCAError ("No annotation found at identifier = {}".format(annid))
 
-    return anno.getField(ch, field)
+    return anno.getField(field)
 
 def setField ( webargs ):
   """Assign a single HDF5 field"""
@@ -1438,10 +1618,10 @@ def setPropagate(webargs):
       # If the value is to set under propagation
       if int(value) == ocpcaproj.UNDER_PROPAGATION and ch.getPropagate() != ocpcaproj.UNDER_PROPAGATION:
         ch.setPropagate(ocpcaproj.UNDER_PROPAGATION)
-        #from ocpca.tasks import propagate
-        import ocpcastack
-        ocpcastack.buildStack(token, channel_name)
-        #propagate.delay ( token )
+        from ocpca.tasks import propagate
+        propagate.delay(token, channel_name)
+        #import ocpcastack
+        #ocpcastack.buildStack(token, channel_name)
       elif int(value) == ocpcaproj.NOT_PROPAGATED:
         if ch.getPropagate() == ocpcaproj.UNDER_PROPAGATION:
           logger.warning("Cannot set this value. Project is under propagation.")
@@ -1498,6 +1678,7 @@ def merge (webargs):
       # PYTODO illegal merge (no support if not global)
       assert 0
   
+
 def publicTokens ( self ):
   """Return a json formatted list of public tokens"""
   
@@ -1586,8 +1767,10 @@ def minmaxProject ( webargs ):
       channel_name = channels[i]
 
       ch = ocpcaproj.OCPCAChannel(proj,channel_name)
-      cb = cutout ( cutoutargs, ch, proj, db )
-      FilterCube ( cutoutargs, cb )
+      cb = cutout (cutoutargs, ch, proj, db)
+      FilterCube (cutoutargs, cb)
+
+      # KL TODO Make this cleaner
 
       # project onto the image plane
       if plane == 'xy':
@@ -1643,15 +1826,8 @@ def minmaxProject ( webargs ):
       mcdata[i,:,:] = cbplane
 
   # manage the color space
-  # reduction factor.  How to scale data.  16 bit->8bit, or windowed
-  (startwindow,endwindow) = ch.getWindowRange()
-  if ch.getDataType() == ocpcaproj.DTYPE_uint16 and ( startwindow == endwindow == 0):
-    #pass
-    mcdata = np.uint8(mcdata * 1.0/256)
-  elif ch.getDataType() == ocpcaproj.DTYPE_uint16 and ( endwindow!=0 ):
-    from windowcutout import windowCutout
-    windowCutout ( mcdata, (startwindow, endwindow) )
-
+  mcdata = window(mcdata, ch)
+  
   # We have an compound array.  Now color it.
   colors = ('C','M','Y','R','G','B')
   colors = ('R','M','Y','R','G','B')

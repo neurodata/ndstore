@@ -46,7 +46,6 @@ def h5Async( fileName ):
   #any_db = anydbm.open( ocpcaprivate.ssd_log_location+ocpcaprivate.bsd_name, 'c' )
   any_db = None
   import time
-  import pdb; pdb.set_trace()
 
   fileName = "/ssdata/kunal_hdf5_testTm7DmL.hdf5"
 
