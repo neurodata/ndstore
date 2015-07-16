@@ -1,9 +1,9 @@
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -94,8 +94,8 @@ class OCPCADataset:
   """Configuration for a dataset"""
 
   def __init__ ( self, dataset_name ):
-    """Construct a db configuration from the dataset parameters""" 
-    
+    """Construct a db configuration from the dataset parameters"""
+
     try:
       self.ds = Dataset.objects.get(dataset_name = dataset_name)
     except ObjectDoesNotExist, e:
@@ -153,13 +153,13 @@ class OCPCADataset:
 
       # choose the cubedim as a function of the zscale
       #self.cubedim[i] = [128, 128, 16]
-      # this may need to be changed.  
+      # this may need to be changed.
       if self.ds.scalingoption == ZSLICES:
         #self.cubedim[i] = [128, 128, 16]
         self.cubedim[i] = [128, 128, 16]
         if float(self.ds.zvoxelres/self.ds.xvoxelres)/(2**i) >  0.5:
           self.cubedim[i] = [128, 128, 16]
-        else: 
+        else:
           self.cubedim[i] = [64, 64, 64]
 
         # Make an exception for bock11 data -- just an inconsistency in original ingest
@@ -198,7 +198,7 @@ class OCPCADataset:
     [tstart, tend] = timeargs
 
     from operator import add
-    [xend, yend, zend] = map(add, corner, dim) 
+    [xend, yend, zend] = map(add, corner, dim)
 
     if ( ( xstart >= 0 ) and ( xstart < xend) and ( xend <= self.imagesz[resolution][0]) and\
         ( ystart >= 0 ) and ( ystart < yend) and ( yend <= self.imagesz[resolution][1]) and\
@@ -306,7 +306,7 @@ class OCPCAChannel:
   def getPropagate (self):
     return self.ch.propagate
   def isDefault (self):
-    return self.ch.default 
+    return self.ch.default
 
   def getIdsTable (self):
     if self.pr.getOCPVersion() == '0.0':
@@ -327,13 +327,20 @@ class OCPCAChannel:
       return "res{}neariso".format(resolution)
     else:
       return "{}_res{}neariso".format(self.ch.channel_name, resolution)
-  
+
   def getIdxTable (self, resolution):
     """Return the appropriate Index table for the specified resolution"""
     if self.pr.getOCPVersion() == '0.0':
       return "idx{}".format(resolution)
     else:
       return "{}_idx{}".format(self.ch.channel_name, resolution)
+
+  def getKVTable (self, resolution):
+    """Return the appropriate KvPairs for the specified resolution"""
+    if self.pr.getOCPVersion() == '0.0':
+      return "kvpairs{}".format(resolution)
+    else:
+      return "{}_kvpairs{}".format(self.ch.channel_name, resolution)
 
   def getAnnoTable (self, anno_type):
     """Return the appropriate table for the specified type"""
@@ -361,7 +368,7 @@ class OCPCAChannel:
     else:
       logger.error ( "Wrong Propagate Value {} for Channel {}".format( value, self.ch.channel_name ) )
       raise OCPCAError ( "Wrong Propagate Value {} for Channel {}".format( value, self.ch.channel_name ) )
-  
+
   def setReadOnly (self, value):
     if value in [READONLY_TRUE,READONLY_FALSE]:
       self.ch.readonly = value
@@ -381,7 +388,7 @@ class OCPCAProjectsDB:
   def __init__(self):
     """Create the database connection"""
 
-    self.conn = MySQLdb.connect (host = settings.DATABASES['default']['HOST'], user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = settings.DATABASES['default']['NAME']) 
+    self.conn = MySQLdb.connect (host = settings.DATABASES['default']['HOST'], user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = settings.DATABASES['default']['NAME'])
 
   # for context lib closing
   def close (self):
@@ -393,9 +400,9 @@ class OCPCAProjectsDB:
     with closing(self.conn.cursor()) as cursor:
 
       try:
-        # Make the database 
+        # Make the database
         sql = "CREATE DATABASE {}".format( project_name )
-     
+
         cursor.execute ( sql )
         self.conn.commit()
       except MySQLdb.Error, e:
@@ -405,7 +412,7 @@ class OCPCAProjectsDB:
 
   def newOCPCAChannel ( self, project_name, channel_name ):
     """Make the tables for a channel."""
-    
+
     pr = Project.objects.get(project_name=project_name)
     ch = Channel.objects.get(channel_name=channel_name, project_id=project_name)
     ds = Dataset.objects.get(dataset_name=pr.dataset_id)
@@ -420,13 +427,13 @@ class OCPCAProjectsDB:
 
             if ch.channel_type not in ['timeseries']:
 
-              for i in range(ds.scalinglevels+1): 
+              for i in range(ds.scalinglevels+1):
                 cursor.execute ( "CREATE TABLE {}_res{} ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(ch.channel_name,i) )
               conn.commit()
 
             elif ch.channel_type == 'timeseries':
 
-              for i in range(ds.scalinglevels+1): 
+              for i in range(ds.scalinglevels+1):
                 cursor.execute ( "CREATE TABLE {}_res{} ( zindex BIGINT, timestamp INT, cube LONGBLOB, PRIMARY KEY(zindex,timestamp))".format(ch.channel_name,i) )
               conn.commit()
 
@@ -454,14 +461,14 @@ class OCPCAProjectsDB:
               raise
             finally:
               cluster.shutdown()
-            
+
           else:
             logging.error ("Unknown KV Engine requested: %s" % "RBTODO get name")
             raise OCPCAError ("Unknown KV Engine requested: %s" % "RBTODO get name")
 
 
           # tables specific to annotation projects
-          if ch.channel_type == 'annotation': 
+          if ch.channel_type == 'annotation':
 
             cursor.execute("CREATE TABLE {}_ids ( id BIGINT PRIMARY KEY)".format(ch.channel_name))
 
@@ -504,7 +511,7 @@ class OCPCAProjectsDB:
           logging.error ("Failed to create tables for new project {}: {}. sql={}".format(e.args[0], e.args[1], sql))
           raise OCPCAError ("Failed to create tables for new project {}: {}. sql={}".format(e.args[0], e.args[1], sql))
         except Exception, e:
-          raise 
+          raise
 
 
   def deleteOCPCADB (self, project_name):
@@ -573,12 +580,12 @@ class OCPCAProjectsDB:
 
     print table_list
     if pr.getKVEngine() == 'MySQL':
-    
+
       try:
-        conn = MySQLdb.connect (host = settings.DATABASES['default']['HOST'], user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = pr.getProjectName() ) 
+        conn = MySQLdb.connect (host = settings.DATABASES['default']['HOST'], user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = pr.getProjectName() )
         # delete the tables for this channel
         sql = "DROP TABLES IF EXISTS {}".format(','.join(table_list))
-      
+
         with closing(conn.cursor()) as cursor:
           cursor.execute (sql)
           conn.commit()
@@ -590,11 +597,11 @@ class OCPCAProjectsDB:
           conn.rollback()
           logger.error ("Failed to drop channel tables {}: {}. sql={}".format(e.args[0], e.args[1], sql))
           raise OCPCAError ("Failed to drop channel tables {}: {}. sql={}".format(e.args[0], e.args[1], sql))
-      
+
     elif pr.getKVEngine() == 'Cassandra':
       # KL TODO
       pass
-    
+
     elif pr.getKVEngine() == 'Riak':
       # KL TODO
       pass

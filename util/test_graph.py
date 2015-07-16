@@ -14,9 +14,12 @@
 
 import urllib2
 
-token = 'test_token'
-channel = 'test_channel'
-graphtype = 'test'
+#print type(getAnnoIds("test_graph_syn", "test_graph_syn", 1,2,2,3,4,5))
+
+
+token = 'test_graph_syn'
+channel = 'test_graph_syn'
+graphtype = 'graphml'
 
 url = 'http://{}/ocpgraph/{}/{}/{}/'.format('localhost:8000', token, channel, graphtype)
 try:

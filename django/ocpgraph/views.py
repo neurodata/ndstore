@@ -36,35 +36,35 @@ import logging
 logger=logging.getLogger("ocp")
 
 def buildGraph (request, webargs):
-  """Take two channels and build a graph out of the paint alone, i.e. use no RAMON information
-      First channel is full of segments.
-      Second channel is full of synapses."""
-
   #Indicated which type of arguements to return/send
   arguementType=0
 
   try:
     # argument of format /token/channel/Arguments
     #Tries each of the possible 3 entries
-    m = re.match("(\w+)/(\w+)/$", webargs)
-    if type(m) != 'NoneType':
+    #ocpgraph/test_graph_syn/test_graph_syn/pajek/5472/6496/8712/9736/1000/1100/
+
+    if re.match("(\w+)/(\w+)/$", webargs) is not None:
+        m = re.match("(\w+)/(\w+)/$", webargs)
         [syntoken, synchan_name] = [i for i in m.groups()]
         arguementType=1
-
-    m = re.match("(\w+)/(\w+)/(\w+)/$", webargs)
-    if type(m) != 'NoneType':
+    elif re.match("(\w+)/(\w+)/(\w+)/$", webargs) is not None:
+        m = re.match("(\w+)/(\w+)/(\w+)/$", webargs)
         [syntoken, synchan_name, graphType] = [i for i in m.groups()]
         arguementType=2
-
-    m = re.match("(\w+)/(\w+)/(\w+)/(d+),(d+)/(d+),(d+)/(d+),(d+)/$", webargs)
-    if type(m) != 'NoneType':
-        m = re.match("(\w+)/(\w+)/(\w+)/(d+),(d+)/(d+),(d+)/(d+),(d+)/$", webargs)
+    elif re.match("(\w+)/(\w+)/(\w+)/(\d+)/(\d+)/(\d+)/(\d+)/(\d+)/(\d+)/$", webargs) is not None:
+        m = re.match("(\w+)/(\w+)/(\w+)/(\d+)/(\d+)/(\d+)/(\d+)/(\d+)/(\d+)/$", webargs)
         [syntoken, synchan_name, graphType, Xmin,Xmax,Ymin,Ymax,Zmin,Zmax] = [i for i in m.groups()]
         arguementType=3
+    else:
+        pdb.set_trace()
+        logger.warning("Arguments not in the correct format")
+        raise OCPCAError("Arguments not in the correct format")
+
 
   except Exception, e:
-    logger.warning("Arguments not in the correct format {}. {}".format(chanargs, e))
-    raise OCPCAError("Arguments not in the correct format {}. {}".format(chanargs, e))
+    logger.warning("Arguments not in the correct format")
+    raise OCPCAError("Arguments not in the correct format")
 
   # get the project
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
