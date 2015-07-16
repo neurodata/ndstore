@@ -48,7 +48,7 @@ SITE_HOST = site_to_test.site
 
 
 p = Params()
-p.token = "unittest_rw"
+p.token = 'unittest'
 p.resolution = 0
 p.channels = ['IMAGE1', 'IMAGE2']
 p.window = [0,500]

@@ -137,3 +137,4 @@
   2. Test neurons, segments and synapses
   3. Test filter for anno
   4. Test anno Paint I/O interfaces
+  5. Test 16-bit Timeseries Data

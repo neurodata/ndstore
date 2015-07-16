@@ -69,6 +69,8 @@ class Cube:
     """Load the cube from a pickled and zipped blob"""
     try:
       self.data = np.load ( cStringIO.StringIO ( zlib.decompress ( pandz[:] ) ) )
+      self.zdim, self.ydim, self.xdim = self.data.shape
+
     except:
       logger.error ("Failed to decompress database cube.  Data integrity concern.")
       raise
@@ -92,7 +94,7 @@ class Cube:
     if (self.data.dtype != writedata.dtype ):
       logger.error("Conflicting data types for overwrite")
       raise OCPCAError ("Conflicting data types for overwrite")
-    self.data = ocplib.overwriteDense_ctype ( self.data, writedata )
+    self.data = ocplib.overwriteDense_ctype(self.data, writedata)
   
   def RGBAChannel(self):
     """Return a RGBAChannel Method definition"""

@@ -48,8 +48,8 @@ import logging
 logger=logging.getLogger("ocp")
 
 # OCP Version
-OCP_VERSION = '0.6'
-SCHEMA_VERSION = '0.6'
+OCP_VERSION = '0.7'
+SCHEMA_VERSION = '0.7'
 
 OCP_channeltypes = {0:'image',1:'annotation',2:'probmap',3:'timeseries'}
 
@@ -407,7 +407,7 @@ class OCPCAProjectsDB:
 
   def newOCPCAChannel ( self, project_name, channel_name ):
     """Make the tables for a channel."""
-    
+
     pr = Project.objects.get(project_name=project_name)
     ch = Channel.objects.get(channel_name=channel_name, project_id=project_name)
     ds = Dataset.objects.get(dataset_name=pr.dataset_id)
@@ -473,7 +473,7 @@ class OCPCAProjectsDB:
             cursor.execute ( "CREATE TABLE {}_synapses (annoid BIGINT PRIMARY KEY, synapse_type INT, weight FLOAT)".format(ch.channel_name))
             cursor.execute ( "CREATE TABLE {}_segments (annoid BIGINT PRIMARY KEY, segmentclass INT, parentseed INT, neuron INT)".format(ch.channel_name))
             cursor.execute ( "CREATE TABLE {}_organelles (annoid BIGINT PRIMARY KEY, organelleclass INT, parentseed INT, centroidx INT, centroidy INT, centroidz INT)".format(ch.channel_name))
-            cursor.execute ( "CREATE TABLE {}_nodes (skeletonid BIGINT, nodeid BIGINT, annoid BIGINT, nodetype INT, parentid BIGINT, locationx INT, locationy INT, locationz INT, radius FLOAT, PRIMARY KEY ( skeletonid, nodeid ))".format(ch.channel_name))
+            cursor.execute ( "CREATE TABLE {}_nodes ( annoid BIGINT PRIMARY KEY, skeletonid BIGINT, nodetype INT, parentid BIGINT, locationx FLOAT, locationy FLOAT, locationz FLOAT, radius FLOAT )".format(ch.channel_name))
             cursor.execute ( "CREATE TABLE {}_skeletons (annoid BIGINT PRIMARY KEY, skeletontype INT, rootnode INT)".format(ch.channel_name))
             cursor.execute ( "CREATE TABLE {}_kvpairs ( annoid BIGINT, kv_key VARCHAR(255), kv_value VARCHAR(20000), PRIMARY KEY ( annoid, kv_key ))".format(ch.channel_name))
 
