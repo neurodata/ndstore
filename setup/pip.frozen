@@ -11,7 +11,6 @@ CherryPy==3.8.0
 configobj==5.0.6
 cryptography==0.9.3
 Cython==0.22.1
-cython-accelerator-for-processing-voxels-lists==0.0.0
 decorator==3.4.2
 DecoratorTools==1.8
 Django==1.8.3
@@ -26,19 +25,16 @@ Genshi==0.7
 h5py==2.5.0
 idna==2.0
 ipaddress==1.0.13
-kasthur11-annotation-accelerators==0.0.0
 kombu==3.0.26
 libtiff==0.4.0
 Markdown==2.6.2
 meld3==1.0.2
 MySQL-python==1.2.5
-networkx==1.10rc2
 numpy==1.9.2
 Paste==2.0.2
 PasteDeploy==1.5.2
 PasteScript==2.0.2
 ## FIXME: could not find svn URL in dependency_links for this package:
-PEAK-Rules===0.5a1.dev-r2713
 PIL==1.1.7
 Pillow==2.9.0
 posix-ipc==1.0.0
