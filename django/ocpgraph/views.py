@@ -35,6 +35,25 @@ import ocpgraph
 import logging
 logger=logging.getLogger("ocp")
 
+import tempfile
+import tarfile
+import zipfile
+import os
+
+def getResponse( filename ):
+    output = tarfile.open('GeneratedGraph.tar', mode='w')
+    try:
+        out.add(filename)
+    except Exception, e:
+      logger.warning("Unable to write to tar")
+      raise OCPCAError("Unable to write to tar")
+    finally:
+        out.close()
+    response = HttpResponse(mimetype='application/x-gzip')
+    response['Content-Disposition'] = 'attachment; filename=download.tar.gz'
+    return response
+
+
 def buildGraph (request, webargs):
   #Indicated which type of arguements to return/send
   arguementType=0
@@ -76,12 +95,12 @@ def buildGraph (request, webargs):
       # open the segment channel and the synapse channel
       synch = synproj.getChannelObj(synchan_name)
       #AETODO verify that they are both annotation channels
-
       if arguementType==1:
-          ocpgraph.genGraphRAMON (syndb, synproj, synch)
+          return getResponse(ocpgraph.genGraphRAMON (syndb, synproj, synch))
       elif arguementType==2:
-          ocpgraph.genGraphRAMON (syndb, synproj, synch, graphType)
+          return getResponse(ocpgraph.genGraphRAMON (syndb, synproj, synch, graphType))
       elif arguementType==3:
-          ocpgraph.genGraphRAMON (syndb, synproj, synch, graphType, Xmin, Xmax, Ymin, Ymax, Zmin, Zmax)
-      #else
-          #AE TODO Throw some exception?
+          return getResponse(ocpgraph.genGraphRAMON (syndb, synproj, synch, graphType, Xmin, Xmax, Ymin, Ymax, Zmin, Zmax))
+      else:
+          logger.warning("Unable to return file")
+          raise OCPCAError("Unable to return file")
