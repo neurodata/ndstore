@@ -49,6 +49,7 @@ The system design inherits much from NoSQL scale-out and data-intensive computin
    api/data_api
    api/ramon_api
    api/propagate_api
+   api/overlay_api
 
 .. toctree::
    :maxdepth: 1
