@@ -60,7 +60,6 @@ L.TileLayer.OCPLayer = L.TileLayer.extend({
       this._clearBgBuffer();
       
       function unloadTiles() {
-        //console.log('unloading tiles');
         for (key in old_tiles) {
           this._tileContainer.removeChild(old_tiles[key]);
         }

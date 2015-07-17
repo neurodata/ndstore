@@ -596,7 +596,7 @@
     var play; 
     $(function() {
       $( "#play" ).click(function() {
-        play = setTimeout(function() { timeStepForward(); }, 3000); // 3 seconds 
+        play = setInterval(function() { timeStepForward(); }, 3000); // 3 seconds 
       });
     });
     $(function() {
