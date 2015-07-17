@@ -562,10 +562,7 @@
       });
     });
   </script>
-  {% for layer in layers %}
-  {% ifchanged %}
-  {% else %}
-  {% if layer.layertype == 'timeseries' %}
+  {% if timeseries == True %}
 
   <footer class="footer">
     <div class="container">
@@ -605,8 +602,6 @@
     </div>
   </footer>
   {% endif %}
-  {% endifchanged %}
-  {% endfor %}
 </body>
 {# jquery and bootstrap js #}
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>

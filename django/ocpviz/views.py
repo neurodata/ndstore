@@ -28,7 +28,6 @@ from ocpuser.models import Project
 from ocpuser.models import Token
 from ocpuser.models import Channel
 
-
 import urllib2
 
 VALID_SERVERS = {
@@ -109,6 +108,7 @@ def tokenview(request, webargs):
     channels = Channel.objects.filter(project=project)
   
   layers = []
+  timeseries = False # should we display timeseries controls? 
   # we convert the channels to layers here 
   """
   # AB Note: I decided it would be better to get all channels than just the default
@@ -124,6 +124,8 @@ def tokenview(request, webargs):
     tmp_layer = VizLayer()
     tmp_layer.layer_name = channel.channel_name
     tmp_layer.layer_description = token.token_description 
+    if channel.channel_type == 'timeseries':
+      timeseries = True 
     tmp_layer.layertype = channel.channel_type
     tmp_layer.token = token.token_name
     #tmp_layer.channel = channel     
@@ -166,6 +168,7 @@ def tokenview(request, webargs):
       'ystart': y,
       'zstart': z,
       'marker': marker,
+      'timeseries': timeseries,
   }
   return render(request, 'ocpviz/viewer.html', context)
 
@@ -178,7 +181,13 @@ def projectview(request, webargs):
   project_name = webargs 
   project = get_object_or_404(VizProject, pk=project_name) 
   layers = project.layers.select_related()
-  
+ 
+  timeseries = False
+  for layer in layers:
+    if layer.layertype == 'timeseries':
+      timeseries = True
+      break
+
   # calculate the lowest resolution xmax and ymax
   xdownmax = project.xmax / 2**(project.maxres - project.minres)
   ydownmax = project.ymax / 2**(project.maxres - project.minres) 
@@ -214,6 +223,7 @@ def projectview(request, webargs):
       'starttime': project.starttime,
       'endtime': project.endtime,
       'marker': marker,
+      'timeseries': timeseries,
   }
   return render(request, 'ocpviz/viewer.html', context)
 
