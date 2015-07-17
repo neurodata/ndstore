@@ -284,7 +284,7 @@ class MySQLKVIO:
 
       sql = "UPDATE {} SET cube=(%s) WHERE (zindex,timestamp)=({},{})".format(ch.getTable(resolution), zidx, timestamp)
       try:
-        cursor.execute (sql, (cubestr))
+        cursor.execute (sql, [cubestr])
       except MySQLdb.Error, e:
         logger.error ( "Error updating data cube: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
         raise
