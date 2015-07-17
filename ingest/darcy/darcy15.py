@@ -74,7 +74,7 @@ def main():
       try:
         # reading the raw data
         imgdata = np.asarray(img, dtype=np.uint16)
-        slab[iteration_number%16,:,:] = imgdata
+        slab[iteration_number%zcubedim,:,:] = imgdata
       except IOError, e:
         print e
         imgdata = np.zeros((yimagesz, ximagesz), dtype=np.uint32)
