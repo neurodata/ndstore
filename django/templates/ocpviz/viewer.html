@@ -514,53 +514,119 @@
     });
 
     // timeseries functions  
+ 
+    
+    //function chgZIndex(newz) {
+    //  map.closePopup();
+    //  var oldzindex = zindex;
+		//	zindex = parseInt(newz);
+		//	reloadLayers(oldzindex);
+    //}
+
+		function timeStepForward() {
+      map.closePopup();
+      {% for layer in layers %}
+      {% if layer.layertype == "timeseries" %}
+        var curTime = parseInt({{ layer.layer_name|cut:" " }}.options.curtime);
+        if (curTime + 1 <= parseInt({{ endtime }})) {
+          var newTime = curTime + 1;
+          {{ layer.layer_name|cut:" " }}.options.curtime = newTime;
+          var newTimeStr = newTime.toString();
+          {% if layer.tilecache %}
+            var newUrl = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png'; 
+          {% else %}
+          var newUrl = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png';
+          {% endif %}  
+          {{ layer.layer_name|cut:" " }}.setUrl(newUrl);
+        }
+      {% endif %}
+      {% endfor %}
+		}
+
+		function timeStepBack() {
+      map.closePopup();
+      {% for layer in layers %}
+      {% if layer.layertype == "timeseries" %}
+        var curTime = parseInt({{ layer.layer_name|cut:" " }}.options.curtime);
+        if (curTime - 1 >= parseInt({{ starttime }})) {
+          var newTime = curTime - 1;
+          {{ layer.layer_name|cut:" " }}.options.curtime = newTime;
+          var newTimeStr = newTime.toString();
+          {% if layer.tilecache %}
+            var newUrl = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png'; 
+          {% else %}
+          var newUrl = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png';
+          {% endif %}  
+          {{ layer.layer_name|cut:" " }}.setUrl(newUrl);
+          }
+      {% endif %}
+      {% endfor %}
+		}
+    
+    function timeBeginning() {
+      map.closePopup();
+      {% for layer in layers %}
+      {% if layer.layertype == "timeseries" %}
+        var newTimeStr = {{ starttime }};
+        {% if layer.tilecache %}
+            var newUrl = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png'; 
+        {% else %}
+        var newUrl = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png';
+        {% endif %}  
+        {{ layer.layer_name|cut:" " }}.setUrl(newUrl);
+      {% endif %}
+      {% endfor %}
+    }
+    
+    function timeEnd() {
+      map.closePopup();
+      {% for layer in layers %}
+      {% if layer.layertype == "timeseries" %}
+        var newTimeStr = {{ endtime }};
+        {% if layer.tilecache %}
+            var newUrl = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png'; 
+          {% else %}
+          var newUrl = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png';
+          {% endif %}  
+          {{ layer.layer_name|cut:" " }}.setUrl(newUrl);
+      {% endif %}
+      {% endfor %}
+		}
+
+    var play; 
     $(function() {
       $( "#play" ).click(function() {
-        console.log('play');
+        play = setTimeout(function() { timeStepForward(); }, 3000); // 3 seconds 
       });
     });
     $(function() {
       $( "#pause" ).click(function() {
-        console.log('pause');
+        clearTimeout(play);
       });
     });
     $(function() {
       $( "#beginning" ).click(function() {
-        console.log('beginning');
+        timeBeginning();
       });
     });
     $(function() {
       $( "#end" ).click(function() {
-        console.log('end');
+        timeEnd();
       });
     });
     $(function() {
       $( "#forward" ).click(function() {
-        {% for layer in layers %}
-        {% if layer.layertype == "timeseries" %}
-          var curTime = parseInt({{ layer.layer_name|cut:" " }}.options.curtime);
-          if (curTime + 1 <= parseInt({{ endtime }})) {
-            var newTime = curTime + 1;
-            {{ layer.layer_name|cut:" " }}.options.curtime = newTime;
-            var newTimeStr = newTime.toString();
-            {% if layer.tilecache %}
-              var newUrl = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png'; 
-            {% else %}
-            var newUrl = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png';
-            {% endif %}  
-            console.log(newUrl);
-            {{ layer.layer_name|cut:" " }}.setUrl(newUrl);
-            console.log({{ layer.layer_name|cut:" " }}.options.curtime);
-          };
-        {% endif %}
-        {% endfor %}
+        timeStepForward();
       });
     });
     $(function() {
       $( "#back" ).click(function() {
-        console.log('back');
+        timeStepForward();
       });
     });
+
+  
+  
   </script>
   {% if timeseries == True %}
 
