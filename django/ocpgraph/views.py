@@ -16,7 +16,9 @@ from django.shortcuts import render
 
 # Create your views here.
 
-import django.http
+from django.http import HttpResponse
+from django.core.files.base import ContentFile
+from django.core.servers.basehttp import FileWrapper
 import numpy as np
 import urllib2
 import json
@@ -41,17 +43,22 @@ import zipfile
 import os
 
 def getResponse( filename ):
-    output = tarfile.open('GeneratedGraph.tar', mode='w')
+
+    output = tarfile.open('GeneratedGraph.tar.gz', mode='w')
     try:
-        out.add(filename)
+        output.add(filename)
     except Exception, e:
       logger.warning("Unable to write to tar")
       raise OCPCAError("Unable to write to tar")
     finally:
-        out.close()
-    response = HttpResponse(mimetype='application/x-gzip')
-    response['Content-Disposition'] = 'attachment; filename=download.tar.gz'
+        output.close()
+    
+    wrapper = FileWrapper(file("GeneratedGraph.tar.gz"))
+    response     = HttpResponse(wrapper,'application/x-gzip')
+    response['Content-Length'] = 5
+    response['Content-Disposition'] = 'attachment; filename="GeneratedGraph.tar.gz"'
     return response
+
 
 
 def buildGraph (request, webargs):
