@@ -49,13 +49,13 @@ List of commands needed to configure the database for mysql
 ### MACOS Installation
 
 ##### clone the repository and make a virtual env if you want
-  ```
+  ```sh
   git clone git@github.com:openconnectome/open-connectome.git
   mkvirtualenv ocp
   ```
 
 ##### install and configure mysql & memcache. Follow the instructions as ubuntu
-  ```
+  ```sh
   cd ~/open-connectome/setup/mysql
   ```
 
