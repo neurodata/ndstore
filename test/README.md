@@ -1,18 +1,18 @@
 ## Tests Help
   * Run this command to run all tests
-    ```
+    ```sh
     py.test
     ```
   * Run a particular test
-    ```
+    ```sh
     py.test <test_name>.py
     ```
   * Run a particular test module
-    ```
+    ```sh
     py.test <test_name>.py::<test_module>
     ```
   * Run this command to list all tests:
-    ```
+    ```sh
     py.test --collect-only
     ```
 
