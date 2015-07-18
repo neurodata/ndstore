@@ -21,6 +21,7 @@ from PIL import Image
 from StringIO import StringIO
 
 import makeunitdb
+from ocptype import IMAGE, FLOAT32
 from params import Params
 from postmethods import postNPZ, getNPZ, getHDF5, postHDF5, getURL
 import kvengine_to_test
@@ -48,12 +49,12 @@ SITE_HOST = site_to_test.site
 
 
 p = Params()
-p.token = "unittest_rw"
+p.token = 'unittest'
 p.resolution = 0
 p.channels = ['CHAN1', 'CHAN2']
 p.window = [0,500]
-p.channel_type = "image"
-p.datatype = "float32"
+p.channel_type = IMAGE
+p.datatype = FLOAT32
 #p.args = (3000,3100,4000,4100,500,510)
 
 

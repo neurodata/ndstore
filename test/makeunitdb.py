@@ -29,11 +29,11 @@ from ocpuser.models import Token
 from ocpuser.models import Channel
 
 import ocpcaproj
-from ocptype import ZSLICES
+from ocptype import ZSLICES, ANNOTATION, READONLY_FALSE, UINT32, OCP_VERSION
 import site_to_test
 import kvengine_to_test
 
-def createTestDB ( project_name, channel_list=['unit_anno'], channel_type='annotation', channel_datatype='uint32', public=0, ximagesize=10000, yimagesize=10000, zimagesize=1000, scalingoption=ZSLICES, scalinglevels=5, readonly=0, window=[0,0], time=[0,0], default=False, ocp_version=0.6 ):
+def createTestDB ( project_name, channel_list=['unit_anno'], channel_type=ANNOTATION, channel_datatype=UINT32, public=0, ximagesize=10000, yimagesize=10000, zimagesize=1000, scalingoption=ZSLICES, scalinglevels=5, readonly=READONLY_FALSE, window=[0,0], time=[0,0], default=False, ocp_version=OCP_VERSION ):
   """Create a unit test data base on the specified sit and name"""
   
   unituser = User.objects.get(username='brain')

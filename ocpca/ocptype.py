@@ -16,7 +16,7 @@ import numpy as np
 
 # OCP_CONSTANTS
 IMAGE = 'image'
-ANNOTATION = 'anno'
+ANNOTATION = 'annotation'
 TIMESERIES = 'timeseries'
 UINT8 = 'uint8'
 UINT16 = 'uint16'
