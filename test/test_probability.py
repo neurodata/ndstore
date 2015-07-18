@@ -52,7 +52,7 @@ p.token = "unittest_rw"
 p.resolution = 0
 p.channels = ['CHAN1', 'CHAN2']
 p.window = [0,500]
-p.channel_type = "probmap"
+p.channel_type = "image"
 p.datatype = "float32"
 #p.args = (3000,3100,4000,4100,500,510)
 

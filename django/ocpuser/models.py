@@ -20,6 +20,8 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.conf import settings
 
+from ocptype import IMAGE, ANNOTATION, TIMESERIES, UINT8, UINT16, UINT32, UINT64, FLOAT32, READONLY_TRUE, READONLY_FALSE, ZSLICES, ISOTROPIC, PUBLIC_TRUE, PUBLIC_FALSE, PROPAGATED, NOT_PROPAGATED, EXCEPTION_TRUE, EXCEPTION_FALSE
+
 # Create your models here.
 class Dataset ( models.Model):
    dataset_name = models.CharField(max_length=255, primary_key=True,verbose_name="Name of the Image dataset")    
@@ -40,10 +42,10 @@ class Dataset ( models.Model):
    yvoxelres = models.FloatField(default=1.0)
    zvoxelres = models.FloatField(default=1.0)
    SCALING_CHOICES = (
-     (0, 'Z Slices'),
-     (1, 'Isotropic'),
+     (ZSLICES, 'Z Slices'),
+     (ISOTROPIC, 'Isotropic'),
    )
-   scalingoption = models.IntegerField(default=0, choices=SCALING_CHOICES)
+   scalingoption = models.IntegerField(default=ZSLICES, choices=SCALING_CHOICES)
    scalinglevels = models.IntegerField(default=0)
    starttime = models.IntegerField(default=0)
    endtime = models.IntegerField(default=0)
@@ -62,8 +64,8 @@ class Project ( models.Model):
   project_description  =  models.CharField(max_length=4096, blank=True)
   user = models.ForeignKey(settings.AUTH_USER_MODEL)
   ISPUBLIC_CHOICES = (
-    (0, 'Private'),
-    (1, 'Public'),
+    (PUBLIC_FALSE, 'Private'),
+    (PUBLIC_TRUE, 'Public'),
   )
   public =  models.IntegerField(default=0, choices=ISPUBLIC_CHOICES)
   dataset = models.ForeignKey(Dataset)
@@ -87,7 +89,7 @@ class Project ( models.Model):
     ('dsp062.pha.jhu.edu', 'dsp062'),
     ('dsp063.pha.jhu.edu', 'dsp063'),
   )
-  kvserver =  models.CharField(max_length=255, choices=KVSERVER_CHOICES, default='localhost')
+  kvserver =  models.CharField(max_length=255, choices=KVSERVER_CHOICES, default='dsp061.pha.jhu.edu')
 
   # Version information -- set automatically
   ocp_version =  models.CharField(max_length=255, default='0.6')
@@ -130,42 +132,40 @@ class Channel ( models.Model):
   channel_name = models.CharField(max_length=255)
   channel_description  =  models.CharField(max_length=4096,blank=True)
   CHANNELTYPE_CHOICES = (
-    ('image', 'IMAGES'),
-    ('annotation', 'ANNOTATIONS'),
-    ('probmap', 'PROBABILITY_MAP'),
-    ('rgb', 'RGB'),
-    ('timeseries','TIMESERIES'),
+    (IMAGE, 'IMAGES'),
+    (ANNOTATION, 'ANNOTATIONS'),
+    (TIMESERIES,'TIMESERIES'),
   )
-  channel_type = models.CharField(max_length=255,choices=CHANNELTYPE_CHOICES)
+  channel_type = models.CharField(max_length=255, choices=CHANNELTYPE_CHOICES)
 
   resolution = models.IntegerField(default=0)
 
   PROPAGATE_CHOICES = (
-    (0, 'NOT PROPAGATED'),
-    (2, 'PROPAGATED'),
+    (NOT_PROPAGATED, 'NOT PROPAGATED'),
+    (PROPAGATED, 'PROPAGATED'),
   )
-  propagate =  models.IntegerField(choices=PROPAGATE_CHOICES, default=0)
+  propagate =  models.IntegerField(choices=PROPAGATE_CHOICES, default=NOT_PROPAGATED)
 
   DATATYPE_CHOICES = (
-    ('uint8', 'uint8'),
-    ('uint16', 'uint16'),
-    ('uint32', 'uint32'),
-    ('uint64', 'uint64'),
-    ('float32', 'float32'),
+    (UINT8, 'uint8'),
+    (UINT16, 'uint16'),
+    (UINT32, 'uint32'),
+    (UINT64, 'uint64'),
+    (FLOAT32, 'float32'),
   )
-  channel_datatype = models.CharField(max_length=255,choices=DATATYPE_CHOICES)
+  channel_datatype = models.CharField(max_length=255, choices=DATATYPE_CHOICES)
 
   READONLY_CHOICES = (
-    (1, 'Yes'),
-    (0, 'No'),
+    (READONLY_TRUE, 'Yes'),
+    (READONLY_FALSE, 'No'),
   )
-  readonly =  models.IntegerField(choices=READONLY_CHOICES, default=0)
+  readonly =  models.IntegerField(choices=READONLY_CHOICES, default=READONLY_TRUE)
 
   EXCEPTION_CHOICES = (
-    (1, 'Yes'),
-    (0, 'No'),
+    (EXCEPTION_TRUE, 'Yes'),
+    (EXCEPTION_FALSE, 'No'),
   )
-  exceptions =  models.IntegerField(choices=EXCEPTION_CHOICES, default=0)
+  exceptions =  models.IntegerField(choices=EXCEPTION_CHOICES, default=EXCEPTION_FALSE)
   startwindow = models.IntegerField(default=0)
   endwindow = models.IntegerField(default=0)
   default = models.BooleanField(default=False)

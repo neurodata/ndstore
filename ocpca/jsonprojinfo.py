@@ -17,7 +17,7 @@ import numpy as np
 import json
 
 import ocpcadb
-import ocpcaproj
+from ocptype import ZSLICES
 
 import logging
 logger=logging.getLogger("ocp")
@@ -43,7 +43,7 @@ def datasetdict ( dataset ):
 
   dsdict = {}
   dsdict['scalinglevels'] = dataset.scalinglevels
-  if dataset.scalingoption == ocpcaproj.ZSLICES:
+  if dataset.scalingoption == ZSLICES:
     dsdict['scaling'] = 'zslices'
   else:
     dsdict['scaling'] = 'xyz'
@@ -84,13 +84,13 @@ def jsonInfo ( proj ):
   return json.dumps ( jsonprojinfo, sort_keys=True, indent=4 )
 
 
-def jsonChanInfo ( proj, db ):
-  """List of Channels"""
+#def jsonChanInfo ( proj, db ):
+  #"""List of Channels"""
 
-  if proj.getProjectType() in ocpcaproj.CHANNEL_PROJECTS:
-    return json.dumps ( db.getChannels(), sort_keys=True, indent=4 )
-  else:
-    return json.dumps ({})
+  #if proj.getProjectType() in ocpcaproj.CHANNEL_PROJECTS:
+    #return json.dumps ( db.getChannels(), sort_keys=True, indent=4 )
+  #else:
+    #return json.dumps ({})
 
 
 def publicTokens ( projdb ):

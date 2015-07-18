@@ -34,11 +34,13 @@ from django.forms.models import inlineformset_factory
 import django.forms
 from datetime import datetime
 
-import ocpcarest
-import ocpcaproj
 import string
 import random
 import MySQLdb
+
+import ocpcarest
+import ocpcaproj
+from ocptype import IMAGE, ANNOTATION, TIMESERIES, UINT8, UINT16, UINT32, UINT64, FLOAT32 
 
 from models import Project
 from models import Dataset
@@ -656,26 +658,29 @@ def updateChannel(request):
         # populate the channel type and data type from choices
         combo = request.POST.get('channelcombo')
         if combo=='i:8':
-          new_channel.channel_type='image'
-          new_channel.channel_datatype='uint8'
+          new_channel.channel_type = IMAGE
+          new_channel.channel_datatype = UINT8
         elif combo=='i:16':
-          new_channel.channel_type='image'
-          new_channel.channel_datatype='uint16'
+          new_channel.channel_type = IMAGE
+          new_channel.channel_datatype = UINT16
         elif combo=='i:32':
-          new_channel.channel_type='rgb'
-          new_channel.channel_datatype='uint32'
+          new_channel.channel_type = IMAGE
+          new_channel.channel_datatype = UINT32
         elif combo=='a:32':
-          new_channel.channel_type='annotation'
-          new_channel.channel_datatype='uint32'
-        elif combo=='p:32':
-          new_channel.channel_type='probmap'
-          new_channel.channel_datatype='float32'
+          new_channel.channel_type = ANNOTATION
+          new_channel.channel_datatype = UINT32
+        elif combo=='f:32':
+          new_channel.channel_type = IMAGE
+          new_channel.channel_datatype = FLOAT32
         elif combo=='t:8':
-          new_channel.channel_type='timeseries'
-          new_channel.channel_datatype='uint8'
+          new_channel.channel_type = TIMESERIES
+          new_channel.channel_datatype = UINT8
         elif combo=='t:16':
-          new_channel.channel_type='timeseries'
-          new_channel.channel_datatype='uint16'
+          new_channel.channel_type = TIMESERIES
+          new_channel.channel_datatype = UINT16
+        elif combo=='t:32':
+          new_channel.channel_type = TIMESERIES
+          new_channel.channel_datatype = FLOAT32
         else:
           logger.error("Illegal channel combination requested: {}.".format(combo))
           messages.error(request,"Illegal channel combination requested or none selected.")
