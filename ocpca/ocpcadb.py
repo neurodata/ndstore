@@ -25,15 +25,14 @@ from collections import defaultdict
 import itertools
 from contextlib import closing
 
-import ocpcaproj
 import annotation
 import annindex
 from cube import Cube
 import imagecube
 import anncube
-import probmapcube
 import ocpcachannel
 import ocplib
+from ocptype import ANNOTATION_CHANNELS, EXCEPTION_TRUE, PROPAGATED
 
 from ocpcaerror import OCPCAError
 import logging
@@ -50,14 +49,9 @@ try:
 except:
   pass
 
-
-################################################################################
-#
-#  class: OCPCADB
-#
-#  Manipulate/create/read from the Morton-order cube store
-#
-################################################################################
+"""
+  Manipulate/create/read from the Morton-order cube store
+"""
 
 class OCPCADB: 
 
@@ -371,7 +365,7 @@ class OCPCADB:
   def putCube(self, ch, zidx, resolution, cube, update=False):
     """ Store a cube in the annotation database """
   
-    #if cube.isNotZeros() and ch.getChannelType() not in ocpcaproj.ANNOTATION_CHANNELS:
+    #if cube.isNotZeros() and ch.getChannelType() not in ANNOTATION_CHANNELS:
     if True:
     #  RB the above line of code is broken.  We need to write 0s to the database when shaving annotations.
     #  they overwrite existing non-zero annotations.
@@ -636,7 +630,7 @@ class OCPCADB:
       #exceptions = np.array(cube.annotate(entityid, offset, voxlist, conflictopt), dtype=np.uint8)
 
       # update the sparse list of exceptions
-      if ch.getExceptions() == ocpcaproj.EXCEPTION_TRUE:
+      if ch.getExceptions() == EXCEPTION_TRUE:
         if len(exceptions) != 0:
           self.updateExceptions(ch, key, resolution, entityid, exceptions)
 
@@ -709,7 +703,7 @@ class OCPCADB:
         exceptions = np.array(exlist, dtype=np.uint8)
 
         # update the sparse list of exceptions
-        if ch.getExceptions == ocpcaproj.EXCEPTION_TRUE:
+        if ch.getExceptions == EXCEPTION_TRUE:
           if len(exceptions) != 0:
             self.removeExceptions ( ch, key, resolution, entityid, exceptions )
 
@@ -771,7 +765,7 @@ class OCPCADB:
             elif conflictopt == 'P':
               cube.preserve ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
             elif conflictopt == 'E': 
-              if ch.getExceptions() == ocpcaproj.EXCEPTION_TRUE:
+              if ch.getExceptions() == EXCEPTION_TRUE:
                 exdata = cube.exception ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
                 for exid in np.unique ( exdata ):
                   if exid != 0:
@@ -953,16 +947,16 @@ class OCPCADB:
   def cutout ( self, ch, corner, dim, resolution, zscaling=None, annoids=None ):
     """Extract a cube of arbitrary size.  Need not be aligned."""
 
-    # alter query if  (ocpcaproj)._resolution is > resolution. if cutout is below resolution, get a smaller cube and scaleup
-    if ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS and ch.getResolution() > resolution:
+    # if cutout is below resolution, get a smaller cube and scaleup
+    if ch.getChannelType() in ANNOTATION_CHANNELS and ch.getResolution() > resolution:
 
       # find the effective dimensions of the cutout (where the data is)
       effcorner, effdim, (xpixeloffset,ypixeloffset) = self._zoominCutout ( ch, corner, dim, resolution )
       [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ ch.getResolution() ] 
       effresolution = ch.getResolution()
 
-    # alter query if  (ocpcaproj)._resolution is < resolution. if cutout is above resolution, get a large cube and scaledown
-    elif ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS and ch.getResolution() < resolution and ch.getPropagate() not in [ocpcaproj.PROPAGATED]:  
+    # if cutout is above resolution, get a large cube and scaledown
+    elif ch.getChannelType() in ANNOTATION_CHANNELS and ch.getResolution() < resolution and ch.getPropagate() not in [PROPAGATED]:  
 
       [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ ch.getResolution() ] 
       effcorner, effdim = self._zoomoutCutout ( ch, corner, dim, resolution )
@@ -1041,9 +1035,9 @@ class OCPCADB:
             h5.close()
 
         # apply exceptions if it's an annotation project
-        if annoids!= None and ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS:
+        if annoids!= None and ch.getChannelType() in ANNOTATION_CHANNELS:
           incube.data = ocplib.filter_ctype_OMP ( incube.data, annoids )
-          if ch.getExceptions() == ocpcaproj.EXCEPTION_TRUE:
+          if ch.getExceptions() == EXCEPTION_TRUE:
             self.applyCubeExceptions ( ch, annoids, effresolution, idx, incube )
 
         # add it to the output cube
@@ -1056,7 +1050,7 @@ class OCPCADB:
     self.kvio.commit()
 
     # if we fetched a smaller cube to zoom, correct the result
-    if ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS and ch.getResolution() > resolution:
+    if ch.getChannelType() in ANNOTATION_CHANNELS and ch.getResolution() > resolution:
 
       outcube.zoomData ( ch.getResolution()-resolution )
 
@@ -1064,7 +1058,7 @@ class OCPCADB:
       outcube.trim ( corner[0]%(xcubedim*(2**(ch.getResolution()-resolution)))+xpixeloffset,dim[0], corner[1]%(ycubedim*(2**(ch.getResolution()-resolution)))+ypixeloffset,dim[1], corner[2]%zcubedim,dim[2] )
 
     # if we fetch a larger cube, downscale it and correct
-    elif ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS and ch.getResolution() < resolution and ch.getPropagate() not in [ocpcaproj.PROPAGATED]:
+    elif ch.getChannelType() in ANNOTATION_CHANNELS and ch.getResolution() < resolution and ch.getPropagate() not in [PROPAGATED]:
 
       outcube.downScale (resolution - ch.getResolution())
 
@@ -1272,7 +1266,7 @@ class OCPCADB:
       zoffset = z * self.datasetcfg.cubedim[resolution][2] 
 
       # Now add the exception voxels
-      if ch.getExceptions() ==  ocpcaproj.EXCEPTION_TRUE:
+      if ch.getExceptions() ==  EXCEPTION_TRUE:
         exceptions = self.getExceptions( ch, zidx, resolution, entityid ) 
         if exceptions != []:
           voxels = np.append ( voxels.flatten(), exceptions.flatten())
@@ -1335,7 +1329,6 @@ class OCPCADB:
    
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
-    # alter query if  (ocpcaproj)._resolution is > resolution
     # if cutout is below resolution, get a smaller cube and scaleup
     if ch.getResolution() > resolution:
       effectiveres = ch.getResolution() 
@@ -1370,7 +1363,7 @@ class OCPCADB:
 
       # add any exceptions
       # Get exceptions if this DB supports it
-      if ch.getExceptions() == ocpcaproj.EXCEPTION_TRUE:
+      if ch.getExceptions() == EXCEPTION_TRUE:
         for exid in dataids:
           exceptions = self.getExceptions(ch, zidx, effectiveres, exid) 
           if exceptions != []:
@@ -1473,7 +1466,7 @@ class OCPCADB:
           vec_func = np.vectorize ( lambda x: 0 if x == annoid else x )
           cube.data = vec_func ( cube.data )
           # remove the expcetions
-          if ch.getExceptions == ocpcaproj.EXCEPTION_TRUE:
+          if ch.getExceptions == EXCEPTION_TRUE:
             self.kvio.deleteExceptions(ch, key, res, annoid)
           self.putCube(ch, key, res, cube)
         
@@ -1718,7 +1711,7 @@ class OCPCADB:
       listofidxs = set(curindex)
       for key in listofidxs:
         cube = self.getCube (ch, key,resolution)
-        if ch.getExceptions() == ocpcaproj.EXCEPTION_TRUE:
+        if ch.getExceptions() == EXCEPTION_TRUE:
           oldexlist = self.getExceptions( ch, key, resolution, annid ) 
           self.kvio.deleteExceptions ( ch, key, resolution, annid )
         #

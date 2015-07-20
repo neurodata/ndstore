@@ -24,13 +24,6 @@ import logging
 logger=logging.getLogger("ocp")
 
 
-#
-#  ImageCube: manipulate the in-memory data representation of the 3-d cube of data
-#    includes loading, export, read and write routines
-#
-#  All the interfaces to this class are in x,y,z order
-#  Cube data goes in z,y,x order this is compatible with images and more efficient?
-#
 class ImageCube8(Cube):
 
   def __init__(self, cubesize=[64,64,64]):
@@ -77,15 +70,6 @@ class ImageCube8(Cube):
 
 
 
-#
-#  ImageCube16: manipulate the in-memory data representation of the 3-d cube 
-#    includes loading, export, read and write routines
-#
-#  This sub-class is for 16 bit data 
-#
-#  All the interfaces to this class are in x,y,z order
-#  Cube data goes in z,y,x order this is compatible with images and more efficient?
-#
 class ImageCube16(Cube):
 
   # Constructor 
@@ -148,17 +132,6 @@ class ImageCube16(Cube):
     return outimage.resize ( [ydim, int(zdim*zscale)] )
 
 
-# end BrainCube
-
-#
-#  ImageCube32: manipulate the in-memory data representation of the 3-d cube 
-#    includes loading, export, read and write routines
-#
-#  This sub-class is for 32 bit data. The data is 4x8bit RGBA channels.
-#
-#  All the interfaces to this class are in x,y,z order
-#  Cube data goes in z,y,x order this is compatible with images and more efficient?
-#
 class ImageCube32(Cube):
 
   def __init__(self, cubesize=[64,64,64]):
@@ -215,18 +188,9 @@ class ImageCube32(Cube):
     self.data = newcube
 
 
-#
-#  ImageCube64: manipulate the in-memory data representation of the 3-d cube 
-#    includes loading, export, read and write routines
-#
-#  This sub-class is for 64 bit data. The data is 4x8bit RGBA channels.
-#
-#  All the interfaces to this class are in x,y,z order
-#  Cube data goes in z,y,x order this is compatible with images and more efficient?
-#
 class ImageCube64(Cube):
 
-  def __init__(self, cubesize=[64,64,64]):
+  def __init__(self, cubesize=[128,128,16]):
     """Create empty array of cubesize"""
 
     # call the base class constructor
@@ -291,3 +255,76 @@ class ImageCube64(Cube):
     newcube[2,:,:,:] = np.uint16 ( np.right_shift( self.data, 32) & 0xffff )
     newcube[3,:,:,:] = np.uint16 ( np.right_shift (self.data, 48) )
     self.data = newcube
+
+
+class ImageCubeFloat32(Cube):
+
+  # Constructor 
+  def __init__(self, cubesize=[128,128,16]):
+    """Create empty array of cubesize"""
+
+    # call the base class constructor
+    Cube.__init__(self,cubesize)
+    # note that this is self.cubesize (which is transposed) in Cube
+    self.data = np.zeros ( self.cubesize, dtype=np.float32 )
+
+  # was the cube created from zeros?
+  def fromZeros ( self ):
+    """Determine if the cube was created from all zeros?"""
+    if self._newcube == True:
+      return True
+    else: 
+      return False
+
+  # create an all zeros cube
+  def zeros ( self ):
+    """Create a cube of all 0"""
+    self._newcube = True
+    self.data = np.zeros ( self.cubesize, dtype=np.float32 )
+
+  def overwrite ( self, annodata ):
+    """Get's a dense voxel region and overwrites all non-zero values"""
+
+    vector_func = np.vectorize ( lambda a,b: b if b!=0.0 else a ) 
+    self.data = vector_func ( self.data, annodata ) 
+
+  
+  def xyImage ( self ):
+    """Create xy slice"""
+    zdim,ydim,xdim = self.data.shape
+
+    # translate the 0-1 map down to to 256 value
+    imgdata = np.uint8(self.data*256)
+
+    # convert the data into a red heatmap
+    rgbdata = np.zeros ( [ydim,xdim,3], dtype=np.uint8 )
+    rgbdata[:,:,0] = imgdata[0,:,:]
+
+    return Image.frombuffer ( 'RGB', (xdim,ydim), rgbdata, 'raw', 'RGB', 0, 1 )
+
+
+  def xzImage ( self, zscale  ):
+    """Create xz slice"""
+    zdim,ydim,xdim = self.data.shape
+
+    # translate the 0-1 map down to to 256 value
+    imgdata = np.uint8(self.data*256)
+
+    # convert the data into a red heatmap
+    rgbdata = np.zeros ( [zdim,xdim,3], dtype=np.uint8 )
+    rgbdata[:,:,0] = imgdata[:,0,:]
+
+    return Image.frombuffer ( 'RGB', (xdim,zdim), rgbdata, 'raw', 'RGB', 0, 1 ).resize([xdim, int(zdim*zscale)])
+
+  def yzImage ( self, zscale ):
+    """Create yz slice"""
+    zdim,ydim,xdim = self.data.shape
+
+    # translate the 0-1 map down to to 256 value
+    imgdata = np.uint8(self.data*256)
+
+    # convert the data into a red heatmap
+    rgbdata = np.zeros ( [zdim,ydim,3], dtype=np.uint8 )
+    rgbdata[:,:,0] = imgdata[:,:,0]
+
+    return Image.frombuffer ( 'RGB', (ydim,zdim), rgbdata, 'raw', 'RGB', 0, 1 ).resize([ydim, int(zdim*zscale)])

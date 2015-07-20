@@ -33,7 +33,7 @@ from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
 from postmethods import getURL, postNPZ, getNPZ
-import ocpcaproj
+from ocptype import PROPAGATED, NOT_PROPAGATED, UNDER_PROPAGATION, ISOTROPIC
 from params import Params
 import kvengine_to_test
 import site_to_test
@@ -74,15 +74,15 @@ class Test_Image_Zslice_Propagate:
     # Check if the project is not proagated
     f = getURL("http://{}/ca/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
     value = int(f.read())
-    assert(value == ocpcaproj.NOT_PROPAGATED)
+    assert(value == NOT_PROPAGATED)
 
     # Start propagating
-    f = getURL("http://{}/ca/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), ocpcaproj.UNDER_PROPAGATION))
+    f = getURL("http://{}/ca/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), UNDER_PROPAGATION))
     time.sleep(10)
     # Checking if the PROPGATED value is set correctly
     f = getURL("http://{}/ca/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
     value = int(f.read())
-    assert(value == ocpcaproj.PROPAGATED)
+    assert(value == PROPAGATED)
     
     # Checking at res1
     p.args = (100,150,100,150,4,5)
@@ -103,7 +103,7 @@ class Test_Image_Isotropic_Propagate:
 
   def setup_class(self):
     """Create the unittest database"""
-    makeunitdb.createTestDB(p.token, public=True, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype, ximagesize=1000, yimagesize=1000, zimagesize=128, scalingoption=ocpcaproj.ISOTROPIC)
+    makeunitdb.createTestDB(p.token, public=True, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype, ximagesize=1000, yimagesize=1000, zimagesize=128, scalingoption=ISOTROPIC)
 
   def teardown_class (self):
     """Destroy the unittest database"""
@@ -120,16 +120,16 @@ class Test_Image_Isotropic_Propagate:
     # Check if the project is not proagated
     f = getURL("http://{}/ca/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
     value = int(f.read())
-    assert(value == ocpcaproj.NOT_PROPAGATED)
+    assert(value == NOT_PROPAGATED)
 
     # Start propagating
-    f = getURL("http://{}/ca/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), ocpcaproj.UNDER_PROPAGATION))
+    f = getURL("http://{}/ca/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), UNDER_PROPAGATION))
 
     # Checking if the PROPGATED value is set correctly
     time.sleep(10)
     f = getURL("http://{}/ca/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
     value = int(f.read())
-    assert(value == ocpcaproj.PROPAGATED)
+    assert(value == PROPAGATED)
 
     # Checking at res1
     p.args = (100,150,100,150,16,32)
@@ -182,16 +182,16 @@ class Test_Anno_Zslice_Propagate():
     # Check if the project is not propagated
     f = getURL("http://{}/ca/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
     value = int(f.read())
-    assert(value == ocpcaproj.NOT_PROPAGATED)
+    assert(value == NOT_PROPAGATED)
 
     # Start propagating
-    f = getURL("http://{}/ca/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), ocpcaproj.UNDER_PROPAGATION))
+    f = getURL("http://{}/ca/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), UNDER_PROPAGATION))
 
     # Checking if the PROPGATED value is set correctly
     time.sleep(30)
     f = getURL("http://{}/ca/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
     value = int(f.read())
-    assert(value == ocpcaproj.PROPAGATED)
+    assert(value == PROPAGATED)
 
     # Checking at res1
     p.args = (100,150,100,150,4,5)
@@ -211,7 +211,7 @@ class Test_Anno_Isotropic_Propagate():
   
   def setup_class(self):
     """Create the unittest database"""
-    makeunitdb.createTestDB(p.token, public=True, channel_list=p.channels, ximagesize=1000, yimagesize=1000, zimagesize=128, scalingoption=ocpcaproj.ISOTROPIC)
+    makeunitdb.createTestDB(p.token, public=True, channel_list=p.channels, ximagesize=1000, yimagesize=1000, zimagesize=128, scalingoption=ISOTROPIC)
 
   def teardown_class (self):
     """Destroy the unittest database"""
@@ -233,16 +233,16 @@ class Test_Anno_Isotropic_Propagate():
     # Check if the project is not proagated
     f = getURL("http://{}/ca/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
     value = int(f.read())
-    assert(value == ocpcaproj.NOT_PROPAGATED)
+    assert(value == NOT_PROPAGATED)
 
     # Start propagating
-    f = getURL("http://{}/ca/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), ocpcaproj.UNDER_PROPAGATION))
+    f = getURL("http://{}/ca/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), UNDER_PROPAGATION))
 
     # Checking if the PROPGATED value is set correctly
     time.sleep(30)
     f = getURL("http://{}/ca/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
     value = int(f.read())
-    assert(value == ocpcaproj.PROPAGATED)
+    assert(value == PROPAGATED)
 
     # Checking at res1
     p.args = (100,150,100,150,16,32)

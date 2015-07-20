@@ -31,6 +31,7 @@ from ocpuser.models import Dataset
 from ocpuser.models import Token
 from ocpuser.models import Channel
 import annotation
+from ocptype import IMAGE_CHANNELS, ZSLICES, ISOTROPIC, READONLY_TRUE, READONLY_FALSE, PUBLIC_TRUE, NOT_PROPAGATED, UNDER_PROPAGATION, PROPAGATED
 
 # need imports to be conditional
 try:
@@ -47,45 +48,6 @@ from ocpcaerror import OCPCAError
 import logging
 logger=logging.getLogger("ocp")
 
-# OCP Version
-OCP_VERSION = '0.7'
-SCHEMA_VERSION = '0.7'
-
-OCP_channeltypes = {0:'image',1:'annotation',2:'probmap',3:'timeseries'}
-
-# channeltype groups
-IMAGE_CHANNELS = [ 'image', 'probmap' ]
-TIMESERIES_CHANNELS = [ 'timeseries' ]
-ANNOTATION_CHANNELS = [ 'annotation' ]
-
-# datatype groups
-DTYPE_uint8 = [ 'uint8' ]
-DTYPE_uint16 = [ 'uint16' ]
-DTYPE_uint32 = [ 'rgb32','uint32' ]
-DTYPE_uint64 = [ 'rgb64' ]
-DTYPE_float32 = [ 'float32' ]
-OCP_dtypetonp = {'uint8':np.uint8,'uint16':np.uint16,'uint32':np.uint32,'rgb32':np.uint32,'rgb64':np.uint64,'float32':np.float32}
-
-# Propagated Values
-PROPAGATED = 2
-UNDER_PROPAGATION = 1
-NOT_PROPAGATED = 0
-
-# ReadOnly Values
-READONLY_TRUE = 1
-READONLY_FALSE = 0
-
-# SCALING OPTIONS
-ZSLICES = 0
-ISOTROPIC = 1
-
-# Exception Values
-EXCEPTION_TRUE = 1
-EXCEPTION_FALSE = 0
-
-# Public Values
-PUBLIC_TRUE = 1
-PUBLIC_FALSE = 0
 
 """While this is not a true inheritance hierarchy from OCPCADataset->OPCPCAProject->OCPCAChannel
     modeling it as such makes it easier to call things on the channel.  It has dataset properties, etc."""

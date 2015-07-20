@@ -21,6 +21,7 @@ from PIL import Image
 from StringIO import StringIO
 
 import makeunitdb
+from ocptype import IMAGE, UINT8, UINT16
 from params import Params
 from postmethods import postNPZ, getNPZ, getHDF5, postHDF5, getURL
 import kvengine_to_test
@@ -52,8 +53,8 @@ p.token = 'unittest'
 p.resolution = 0
 p.channels = ['IMAGE1', 'IMAGE2']
 p.window = [0,500]
-p.channel_type = "image"
-p.datatype = "uint8"
+p.channel_type = IMAGE
+p.datatype = UINT8
 #p.args = (3000,3100,4000,4100,500,510)
 
 
@@ -206,7 +207,7 @@ class Test_Image_Window:
 
   def setup_class(self):
     # Testing a different datatype now
-    p.datatype = "uint16"
+    p.datatype = UINT16
     makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype, window=p.window, default=True)
 
   def teardown_class(self):
@@ -247,7 +248,7 @@ class Test_Image_Window:
 class Test_Image_Post:
 
   def setup_class(self):
-    p.datatype = "uint8"
+    p.datatype = UINT8
     makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype)
 
   def teardown_class(self):
@@ -370,4 +371,3 @@ class Test_Image_Default:
 
     slice_data = np.asarray ( Image.open(StringIO(f.read())) )
     assert ( np.array_equal(slice_data,image_data[0][0]) )
-

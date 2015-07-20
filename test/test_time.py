@@ -21,6 +21,7 @@ from PIL import Image
 from StringIO import StringIO
 
 import makeunitdb
+from ocptype import TIMESERIES, UINT8, UINT16
 from params import Params
 from postmethods import postNPZ, getNPZ, getHDF5, postHDF5, getURL
 import kvengine_to_test
@@ -48,12 +49,12 @@ SITE_HOST = site_to_test.site
 
 
 p = Params()
-p.token = "unittest_rw"
+p.token = 'unittest'
 p.resolution = 0
 p.channels = ['TIME1', 'TIME2']
 p.time = [0,100]
-p.channel_type = "timeseries"
-p.datatype = "uint8"
+p.channel_type = TIMESERIES
+p.datatype = UINT8
 p.window = [0,500]
 
 #p.args = (3000,3100,4000,4100,500,510)
@@ -284,7 +285,7 @@ class Test_Time_Window:
 
   def setup_class(self):
     # Testing a different datatype now
-    p.datatype = "uint16"
+    p.datatype = UINT16
     makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype, time=p.time, window=p.window, default=True)
 
   def teardown_class(self):

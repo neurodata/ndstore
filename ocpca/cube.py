@@ -17,8 +17,8 @@ import cStringIO
 from PIL import Image
 import zlib
 
-import ocpcaproj
 import ocplib
+from ocptype import ANNOTATION_CHANNELS, TIMESERIES_CHANNELS, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, DTYPE_uint64, DTYPE_float32
 
 import logging
 logger=logging.getLogger("ocp")
@@ -109,23 +109,25 @@ class Cube:
   @staticmethod
   def getCube(cubedim, channel_type, datatype, timerange=None):
 
-    if channel_type in ocpcaproj.ANNOTATION_CHANNELS and datatype in ocpcaproj.DTYPE_uint32:
+    if channel_type in ANNOTATION_CHANNELS and datatype in DTYPE_uint32:
       return anncube.AnnotateCube (cubedim)
-    elif channel_type in ocpcaproj.TIMESERIES_CHANNELS and timerange is not None:
-      if datatype in ocpcaproj.DTYPE_uint8:
+    elif channel_type in TIMESERIES_CHANNELS and timerange is not None:
+      if datatype in DTYPE_uint8:
         return timecube.TimeCube8(cubedim, timerange)
-      elif datatype in ocpcaproj.DTYPE_uint16:
+      elif datatype in DTYPE_uint16:
         return timecube.TimeCube16(cubedim, timerange)
-    elif datatype in ocpcaproj.DTYPE_uint8:
+      elif datatype in DTYPE_float32:
+        return timecube.TimeCubeFloat32(cubedim, timerange)
+    elif datatype in DTYPE_uint8:
       return imagecube.ImageCube8 (cubedim)
-    elif datatype in ocpcaproj.DTYPE_uint16:
+    elif datatype in DTYPE_uint16:
       return imagecube.ImageCube16 (cubedim)
-    elif datatype in ocpcaproj.DTYPE_uint32:
+    elif datatype in DTYPE_uint32:
       return imagecube.ImageCube32 (cubedim)
-    elif datatype in ocpcaproj.DTYPE_uint64:
+    elif datatype in DTYPE_uint64:
       return imagecube.ImageCube64 (cubedim)
-    elif datatype in ocpcaproj.DTYPE_float32:
-      return probmapcube.ProbMapCube32 (cubedim)
+    elif datatype in DTYPE_float32:
+      return imagecube.ImageCubeFloat32 (cubedim)
     else:
       return Cube(cubedim)
 
@@ -134,5 +136,4 @@ class Cube:
 
 import imagecube
 import anncube
-import probmapcube
 import timecube

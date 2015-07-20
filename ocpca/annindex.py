@@ -18,8 +18,6 @@ import cStringIO
 import tempfile
 import h5py
 
-import ocpcaproj
-
 import logging
 logger=logging.getLogger("ocp")
 

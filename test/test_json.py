@@ -24,6 +24,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
 #from django.core.wsgi import get_wsgi_application
 #application = get_wsgi_application()
 
+from ocptype import IMAGE, UINT8
 from params import Params
 from jsonproj import createJson
 from postmethods import getURL, postURL
@@ -36,8 +37,8 @@ p = Params()
 p.token = 'unittest'
 p.resolution = 0
 p.channels = ['CHAN1', 'CHAN2']
-p.channel_type = 'image'
-p.datatype = 'uint8'
+p.channel_type = IMAGE
+p.datatype = UINT8
 p.dataset = 'unittest_ds'
 
 class Test_Json():
