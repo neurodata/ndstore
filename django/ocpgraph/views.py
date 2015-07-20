@@ -52,7 +52,7 @@ def getResponse( filename ):
       raise OCPCAError("Unable to write to tar")
     finally:
         output.close()
-    
+
     wrapper = FileWrapper(file("GeneratedGraph.tar.gz"))
     response     = HttpResponse(wrapper,'application/x-gzip')
     response['Content-Length'] = 5
@@ -69,6 +69,8 @@ def buildGraph (request, webargs):
     # argument of format /token/channel/Arguments
     #Tries each of the possible 3 entries
     #ocpgraph/test_graph_syn/test_graph_syn/pajek/5472/6496/8712/9736/1000/1100/
+    #http://127.0.0.1:8000/ocp/ocpgraph/GraphAnno/synanno/
+    #
 
     if re.match("(\w+)/(\w+)/$", webargs) is not None:
         m = re.match("(\w+)/(\w+)/$", webargs)
@@ -84,13 +86,13 @@ def buildGraph (request, webargs):
         arguementType=3
     else:
         pdb.set_trace()
-        logger.warning("Arguments not in the correct format")
-        raise OCPCAError("Arguments not in the correct format")
+        logger.warning("Arguments not in the correct format: /token/channel/Arguments")
+        raise OCPCAError("Arguments not in the correct format: /token/channel/Arguments")
 
 
   except Exception, e:
-    logger.warning("Arguments not in the correct format")
-    raise OCPCAError("Arguments not in the correct format")
+    logger.warning("Arguments not in the correct format: /token/channel/Arguments")
+    raise OCPCAError("Arguments not in the correct format: /token/channel/Arguments")
 
   # get the project
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:

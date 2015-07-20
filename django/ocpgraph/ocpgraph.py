@@ -34,7 +34,7 @@ def getAnnoIds ( proj, ch, Xmin,Xmax,Ymin,Ymax,Zmin,Zmax):
   """Return a list of anno ids restricted by equality predicates. Equalities are alternating in field/value in the url."""
 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-    proj = projdb.loadToken ( proj.getToken() )
+      proj = projdb.loadToken ( proj.getToken() )
 
   db = ( ocpcadb.OCPCADB(proj) )
 
@@ -49,19 +49,19 @@ def getAnnoIds ( proj, ch, Xmin,Xmax,Ymin,Ymax,Zmin,Zmax):
 
 
   if not proj.datasetcfg.checkCube(resolution, corner, dim):
-    logger.warning("Illegal cutout corner={}, dim={}".format(corner, dim))
-    raise OCPCAError("Illegal cutout corner={}, dim={}".format( corner, dim))
+      logger.warning("Illegal cutout corner={}, dim={}".format(corner, dim))
+      raise OCPCAError("Illegal cutout corner={}, dim={}".format( corner, dim))
 
   cutout = db.cutout(ch, corner, dim, resolution)
 
       # Check if cutout as any non zeros values
   if cutout.isNotZeros():
-    annoids = np.intersect1d(annoids, np.unique(cutout.data))
+      annoids = np.intersect1d(annoids, np.unique(cutout.data))
   else:
-    annoids = np.asarray([], dtype=np.uint32)
+      annoids = np.asarray([], dtype=np.uint32)
 
 
-  return h5ann.PackageIDs(annoids)
+  return annoids
 
 
 
@@ -69,10 +69,24 @@ def genGraphRAMON(database,project,channel,graphType="graphml",Xmin=0,Xmax=0,Ymi
     cubeRestrictions  = Xmin + Xmax + Ymin + Ymax + Zmin + Zmax
 
     conn = MySQLdb.connect (host = settings.DATABASES['default']['HOST'], user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = project.getProjectName() )
-    with closing(conn.cursor()) as cursor:
-      cursor.execute(("select kv_value from {} where kv_key = 'synapse_segments';").format(channel.getKVTable("")))
-      matrix = cursor.fetchall()
+    import pdb; pdb.set_trace()
+    matrix = []
+    if cubeRestrictions != 0:
+        idslist = getAnnoIds ( project, channel, Xmin,Xmax,Ymin,Ymax,Zmin,Zmax)
+        if not idslist:
+            logger.warning("Area specified is empty")
+            raise OCPCAError("Area specified is empty")
 
+        with closing(conn.cursor()) as cursor:
+            for i in range(len(idslist)):
+                cursor.execute(("select kv_value from {} where kv_key = 'synapse_segments' and annoid = {};").format(channel.getKVTable(""), idslist(i)))
+                matrix.append(cursor.fetchall())
+    else:
+        with closing(conn.cursor()) as cursor:
+            cursor.execute(("select kv_value from {} where kv_key = 'synapse_segments';").format(channel.getKVTable("")))
+            matrix = cursor.fetchall()
+
+    pdb.set_trace()
     synapses = np.empty(shape=(len(matrix),2))
 
     for i in range(len(matrix)):
@@ -82,15 +96,6 @@ def genGraphRAMON(database,project,channel,graphType="graphml",Xmin=0,Xmax=0,Ymi
 
     	#Split and cast the raw string
     	synapses[i] = [int((splitString[0].split(":"))[0]), int((splitString[1].split(":"))[0])]
-
-    #If restrictions are present clean the data
-    if cubeRestrictions != 0:
-        idslist = getAnnoIds ( project, channel, Xmin,Xmax,Ymin,Ymax,Zmin,Zmax)
-
-        mask1 = np.in1d(synapses[:,0],idslist)
-        mask2 = np.in1d(synapses[:,1],idslist)
-        mask = [any(t) for t in zip(mask1, mask2)]
-        synapses = synapses[mask]
 
     #Create and export graph
     print synapses
