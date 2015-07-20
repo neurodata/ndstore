@@ -1296,8 +1296,8 @@ def putAnnotation ( webargs, postdata ):
 
 def getSWC ( webargs ):
   """Return an SWC object generated from Skeletons/Nodes"""
-    
-  [token, channel, swcstring, skeletons, rest] = webargs.split('/',3)
+   
+  [token, channel, swcstring, skeletons, rest] = webargs.split('/', 4)
 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
