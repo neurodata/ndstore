@@ -297,7 +297,7 @@ def window(data, ch, window_range=None ):
 
   if ch.getDataType() in DTYPE_uint16:
     if (startwindow == endwindow == 0):
-      return np.uint8(data * 1.0/256)
+      return data
     elif endwindow!=0:
       windowCutout (data, window_range)
       return np.uint8(data)
