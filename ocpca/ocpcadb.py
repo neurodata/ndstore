@@ -340,7 +340,8 @@ class OCPCADB:
       # Handle the cube format here.  
       if self.NPZ:
           # decompress the cube
-          cube.fromNPZ ( cubestr )
+          #cube.fromNPZ ( cubestr )
+          cube.fromBlosc ( cubestr )
 
       else:
           # cubes are HDF5 files
@@ -401,7 +402,8 @@ class OCPCADB:
       # Handle the cube format here.  
       if self.NPZ:
           # decompress the cube
-          cube.fromNPZ(cubestr)
+          #cube.fromNPZ(cubestr)
+          cube.fromBlosc(cubestr)
 
       else:
         # cubes are HDF5 files
@@ -429,7 +431,8 @@ class OCPCADB:
     if cube.isNotZeros():
       # Handle the cube format here.  
       if self.NPZ:
-        self.kvio.putTimeCube(ch, zidx, timestamp, resolution, cube.toNPZ(), update)
+        #self.kvio.putTimeCube(ch, zidx, timestamp, resolution, cube.toNPZ(), update)
+        self.kvio.putTimeCube(ch, zidx, timestamp, resolution, cube.toBlosc(), update)
       else:
         with closing(tempfile.NamedTemporaryFile()) as tmpfile:
           h5 = h5py.File ( tmpfile.name, driver='core', backing_store=True )
