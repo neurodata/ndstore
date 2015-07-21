@@ -40,7 +40,7 @@ import MySQLdb
 
 import ocpcarest
 import ocpcaproj
-from ocptype import IMAGE, ANNOTATION, TIMESERIES, UINT8, UINT16, UINT32, UINT64, FLOAT32 
+from ocptype import IMAGE, ANNOTATION, TIMESERIES, UINT8, UINT16, UINT32, UINT64, FLOAT32, OCP_VERSION, SCHEMA_VERSION 
 
 from models import Project
 from models import Dataset
@@ -499,8 +499,8 @@ def createProject(request):
         if request.POST.get('legacy') == 'yes':
           new_project.ocp_version='0.0'
         else:
-          new_project.ocp_version=ocpcaproj.OCP_VERSION
-        new_project.schema_version=ocpcaproj.SCHEMA_VERSION
+          new_project.ocp_version=OCP_VERSION
+        new_project.schema_version=SCHEMA_VERSION
         new_project.save()
         try:
           # create a database when not linking to an existing databases

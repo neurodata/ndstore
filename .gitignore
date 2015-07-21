@@ -2,16 +2,12 @@
 # OCP Files #
 #############
 
-*private.py
-web/django/EMOCP/settings.py
-settings.py
+ocpcaprivate.py
 settings_secret.py
-settings_bkup.py
-godown.py
 npzToPNGs.py
 activation_email.txt
-kanno_cy.c
-ocpca_cy.c
+cython/kanno_cy/kanno_cy.c
+cython/ocpca_cy/ocpca_cy.c
 cython/zindex/zindex.c
 
 ###################
