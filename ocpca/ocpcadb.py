@@ -23,6 +23,7 @@ import tempfile
 import h5py
 from collections import defaultdict
 import itertools
+import blosc
 from contextlib import closing
 
 import annotation
@@ -444,10 +445,12 @@ class OCPCADB:
   def getExceptions ( self, ch, zidx, resolution, annoid ):
     """Load a cube from the annotation database"""
 
+    import pdb; pdb.set_trace()
     excstr = self.kvio.getExceptions ( ch, zidx, resolution, annoid )
     if excstr:
       if self.NPZ:
-        return np.load(cStringIO.StringIO ( zlib.decompress(excstr)))
+        #return np.load(cStringIO.StringIO ( zlib.decompress(excstr)))
+        return blosc.unpack_array(excstr)
       else:
         # cubes are HDF5 files
         with closing(tempfile.NamedTemporaryFile()) as tmpfile:
@@ -490,9 +493,10 @@ class OCPCADB:
 
     #RBMAYBE make exceptions zipped in a future incompatible version??
     if self.NPZ:
-      fileobj = cStringIO.StringIO ()
-      np.save ( fileobj, exceptions )
-      excstr = fileobj.getvalue()
+      #fileobj = cStringIO.StringIO ()
+      #np.save ( fileobj, exceptions )
+      #excstr = fileobj.getvalue()
+      excstr = blosc.pack_array(exceptions)
       self.kvio.putExceptions(ch, key, resolution, exid, excstr, update)
     else:
       with closing (tempfile.NamedTemporaryFile()) as tmpfile:
@@ -563,7 +567,8 @@ class OCPCADB:
       return [None,None]
     else: 
       # decompress the cube
-      cube.fromNPZ ( row[1] )
+      #cube.fromNPZ ( row[1] )
+      cube.fromBlosc ( row[1] )
       return [row[0],cube]
 
 
@@ -1039,7 +1044,8 @@ class OCPCADB:
         offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
 
         if self.NPZ:
-          incube.fromNPZ ( datastring[:] )
+          #incube.fromNPZ ( datastring[:] )
+          incube.fromBlosc ( datastring[:] )
 
         else:
           # cubes are HDF5 files
@@ -1140,7 +1146,8 @@ class OCPCADB:
           offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
 
           if self.NPZ:
-            incube.fromNPZ(datastring[:])
+            #incube.fromNPZ(datastring[:])
+            incube.fromBlosc(datastring[:])
 
           else:
             # cubes are HDF5 files

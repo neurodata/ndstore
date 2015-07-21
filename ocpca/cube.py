@@ -16,6 +16,7 @@ import numpy as np
 import cStringIO
 from PIL import Image
 import zlib
+import blosc
 
 import ocplib
 from ocptype import ANNOTATION_CHANNELS, TIMESERIES_CHANNELS, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, DTYPE_uint64, DTYPE_float32
@@ -93,7 +94,6 @@ class Cube:
     """Pack the object"""
     try:
       # Create the compressed cube
-      import blosc
       return blosc.pack_array(self.data) 
     except:
       logger.error ("Failed to compress database cube.  Data integrity concern.")
