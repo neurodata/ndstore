@@ -1,11 +1,11 @@
 # Copyright 2014 Open Connectome Project (http://openconnecto.me)
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,7 +15,7 @@
 import re
 import tempfile
 import h5py
-import random 
+import random
 import csv
 import numpy as np
 import pytest
@@ -67,12 +67,12 @@ def H5AnnotationFile ( annotype, annoid, kv=None ):
   if kv!= None:
     [ k, sym, v ] = kv.partition(':')
     kvpairs[k]=v
-     
+
     # Turn our dictionary into a csv file
     fstring = cStringIO.StringIO()
     csvw = csv.writer(fstring, delimiter=',')
     csvw.writerows([r for r in kvpairs.iteritems()])
-     
+
     # User-defined metadata
     mdgrp.create_dataset ( "KVPAIRS", (1,), dtype=h5py.special_dtype(vlen=str), data=fstring.getvalue())
 
@@ -99,12 +99,12 @@ def H5AnnotationFile ( annotype, annoid, kv=None ):
 
     mdgrp.create_dataset ( "PARENT", (1,), np.uint32, data=seed_parent )
     mdgrp.create_dataset ( "CUBE_LOCATION", (1,), np.uint32, data=seed_cubelocation )
-    mdgrp.create_dataset ( "SOURCE", (1,), np.uint32, data=seed_source )    
+    mdgrp.create_dataset ( "SOURCE", (1,), np.uint32, data=seed_source )
     mdgrp.create_dataset ( "POSITION", (3,), np.uint32, data=seed_position )
 
   # Segment
   elif annotype == 4:
-     
+
     seg_parentseed = random.randint(1,100000)
     seg_segmentclass = random.randint(1,9)
     seg_neuron = random.randint(1,100000)
@@ -172,54 +172,54 @@ def makeAnno ( p, anntype ):
   tmpfile.seek(0)
 
   p.annoid =  putAnnotation (p, tmpfile)
-  
+
   tmpfile.close()
 
 
 def getId ( p ):
   """Get the annotation at this Id"""
-  
+
   url = "http://{}/ca/{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid)
   return getH5id ( getURL(url) )
 
 
 def getField (p, field):
   """Get the specified field"""
-  
+
   url =  "http://{}/ca/{}/{}/getField/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid, field)
   return getURL( url )
 
 
 def setField (p, field, value):
   """Set the specified field to the value"""
-   
+
   url =  "http://{}/ca/{}/{}/setField/{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid, field, value)
   assert ( getURL(url).read() == '')
 
 
 def queryField (p, field, value):
   """Get the specified query to the value"""
-   
+
   url =  "http://{}/ca/{}/{}/query/{}/{}/".format(SITE_HOST, p.token, p.channels[0], field, value)
   f = getURL(url)
   tmpfile = tempfile.NamedTemporaryFile ( )
   tmpfile.write ( f.read() )
   tmpfile.seek(0)
   h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
-  
+
   return h5f
 
 def annoHelper ( p, voxels=False, cutout=False ):
 
   for i in range(p.num_objects):
-    
+
     # either anonymous annotations ids
     if p.annoid == 0:
       p.annoid = 'noid.'+str(i)
     # or a sequence starting from p.annoid
     else:
       p.annoid = p.annoid + 1
-      
+
       # if mutliple objects and no type, insert random object types
       if p.anntype == 1 and p.num_objects > 1 and not (p.field == 'voxels') and not (p.field == 'cutout'):
         p.anntype = random.randint(1,6)
@@ -242,17 +242,17 @@ def addVoxels( p, f ):
   h5f = h5py.File ( f.name )
   ( xlow, xhigh, ylow, yhigh, zlow, zhigh ) = p.args
   voxlist=[]
-  
+
   for k in range (zlow,zhigh):
     for j in range (ylow,yhigh):
       for i in range (xlow,xhigh):
         voxlist.append ( [ i,j,k ] )
-  
+
   idgrp = h5f[str(p.annoid)]
   # make annid 0 if it's not an integer
   if not isinstance(p.annoid,int):
     p.annoid = 0
-  
+
   idgrp.create_dataset ( "ANNOTATION_ID", (1,), np.uint32, data = p.annoid )
   idgrp.create_dataset ( "RESOLUTION", (1,), np.uint32, data = p.resolution )
   idgrp.create_dataset ( "VOXELS", (len(voxlist),3), np.uint32, data=voxlist )
@@ -266,7 +266,7 @@ def addCutout(p, f):
   h5f = h5py.File ( f.name )
   ( xlow, xhigh, ylow, yhigh, zlow, zhigh ) = p.args
   anndata = np.ones ( [ zhigh-zlow, yhigh-ylow, xhigh-xlow ], dtype=np.uint32 )
-  
+
   idgrp = self.h5fh[str(annid)]
   idgrp.create_dataset ( "RESOLUTION", (1,), np.uint32, data=resolution )
   idgrp.create_dataset ( "XYZOFFSET", (3,), dtype = np.uint32, data=[xlow,ylow,zlow] )
@@ -281,23 +281,77 @@ def countVoxels (p, h5):
   for k in h5.keys():
     if int(k) == p.annoid:
       idgrp = h5.get(k)
-      if idgrp.get('VOXELS'): 
-        return len(idgrp['VOXELS'][:]) 
+      if idgrp.get('VOXELS'):
+        return len(idgrp['VOXELS'][:])
       elif idgrp.get('CUTOUT') and idgrp.get('XYZOFFSET'):
         return len(np.nonzero(np.array(idgrp['CUTOUT'][:,:,:]))[0])
-  
+
   return 0
 
 
 def countCuboidVoxels (p, h5):
   """Count the number of voxels in an HDF5 file for an annotation id"""
-  
+
   voxsum = 0
-  
+
   for k in h5.keys():
     if int(k) == p.annoid:
       cbgrp = h5[k]['CUBOIDS']
       for cb in cbgrp.keys():
         voxsum += len(np.nonzero(np.array(cbgrp[cb]['CUBOID'][:,:,:]))[0])
-  
+
   return voxsum
+
+def createSpecificSynapse (annoid, syn_segments, cutout):
+
+    # Create an in-memory HDF5 file
+    tmpfile = tempfile.NamedTemporaryFile()
+    h5fh = h5py.File ( tmpfile.name )
+
+    # Create the top level annotation id namespace
+    idgrp = h5fh.create_group ( str(annoid) )
+
+    # Annotation type
+    idgrp.create_dataset ( "ANNOTATION_TYPE", (1,), np.uint32, data=2 )
+
+    # Create a metadata group
+    mdgrp = idgrp.create_group ( "METADATA" )
+
+    # now lets add a bunch of random values for the specific annotation type
+    ann_status = random.randint(0,4)
+    ann_confidence = random.random()
+    ann_author = 'randal'
+
+    # Set Annotation specific metadata
+    mdgrp.create_dataset ( "STATUS", (1,), np.uint32, data=ann_status )
+    mdgrp.create_dataset ( "CONFIDENCE", (1,), np.float, data=ann_confidence )
+    mdgrp.create_dataset ( "AUTHOR", (1,), dtype=h5py.special_dtype(vlen=str), data=ann_author )
+
+    syn_weight = random.random()*1000.0
+    syn_synapse_type = random.randint(1,9)
+
+    [ resstr, xstr, ystr, zstr ] = cutout.split('/')
+    ( xlowstr, xhighstr ) = xstr.split(',')
+    ( ylowstr, yhighstr ) = ystr.split(',')
+    ( zlowstr, zhighstr ) = zstr.split(',')
+
+    resolution = int(resstr)
+    xlow = int(xlowstr)
+    xhigh = int(xhighstr)
+    ylow = int(ylowstr)
+    yhigh = int(yhighstr)
+    zlow = int(zlowstr)
+    zhigh = int(zhighstr)
+
+    anndata = np.ones ( [ zhigh-zlow, yhigh-ylow, xhigh-xlow ] )
+
+    mdgrp.create_dataset ( "WEIGHT", (1,), np.float, data=syn_weight )
+    mdgrp.create_dataset ( "SYNAPSE_TYPE", (1,), np.uint32, data=syn_synapse_type )
+    mdgrp.create_dataset ( "SEGMENTS", (len(syn_segments),2), np.uint32, data=syn_segments)
+    idgrp.create_dataset ( "RESOLUTION", (1,), np.uint32, data=resolution )
+    idgrp.create_dataset ( "XYZOFFSET", (3,), np.uint32, data=[0,0,0] )
+    idgrp.create_dataset ( "CUTOUT", anndata.shape, np.uint32, data=anndata )
+
+    h5fh.flush()
+    tmpfile.seek(0)
+    return tmpfile

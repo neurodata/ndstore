@@ -69,7 +69,7 @@ def genGraphRAMON(database,project,channel,graphType="graphml",Xmin=0,Xmax=0,Ymi
     cubeRestrictions  = Xmin + Xmax + Ymin + Ymax + Zmin + Zmax
 
     conn = MySQLdb.connect (host = settings.DATABASES['default']['HOST'], user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = project.getProjectName() )
-    import pdb; pdb.set_trace()
+
     matrix = []
     if cubeRestrictions != 0:
         idslist = getAnnoIds ( project, channel, Xmin,Xmax,Ymin,Ymax,Zmin,Zmax)
@@ -86,19 +86,29 @@ def genGraphRAMON(database,project,channel,graphType="graphml",Xmin=0,Xmax=0,Ymi
             cursor.execute(("select kv_value from {} where kv_key = 'synapse_segments';").format(channel.getKVTable("")))
             matrix = cursor.fetchall()
 
-    pdb.set_trace()
     synapses = np.empty(shape=(len(matrix),2))
+    rawstring = (matrix[0])[0]
+    splitString = rawstring.split(",")
 
-    for i in range(len(matrix)):
-    	#Get raw from matrix
-    	rawstring = (matrix[i])[0]
-    	splitString = rawstring.split(",")
+    if len(splitString)==2:
+        #For kv pairs with 127:0, 13:0 (for example)
+        for i in range(len(matrix)):
+        	#Get raw from matrix
+        	rawstring = (matrix[i])[0]
+        	splitString = rawstring.split(",")
 
-    	#Split and cast the raw string
-    	synapses[i] = [int((splitString[0].split(":"))[0]), int((splitString[1].split(":"))[0])]
+        	#Split and cast the raw string
+        	synapses[i] = [int((splitString[0].split(":"))[0]), int((splitString[1].split(":"))[0])]
+    else:
+        #for kv pairs with just 4:5
+        for i in range(len(matrix)):
+        	#Get raw from matrix
+        	rawstring = (matrix[i])[0]
+        	#Split and cast the raw string
+        	synapses[i] = rawstring.split(":")
+
 
     #Create and export graph
-    print synapses
     outputGraph = nx.Graph()
     outputGraph.add_edges_from(synapses)
 

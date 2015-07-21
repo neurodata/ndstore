@@ -22,25 +22,30 @@ import os, sys
 import numpy as np
 import pytest
 from contextlib import closing
+import networkx as nx
 
 import makeunitdb
 from params import Params
-from ramon import H5AnnotationFile, setField, getField, queryField, makeAnno
+from ramon import H5AnnotationFile, setField, getField, queryField, makeAnno, createSpecificSynapse
 from postmethods import putAnnotation, getAnnotation, getURL, postURL
 #from postmethods import setURL
 import kvengine_to_test
 import site_to_test
+#from ocpgraph import genGraphRAMON
 SITE_HOST = site_to_test.site
 
 p = Params()
-p.token = 'graphtest'
-p.channels = ['syn_anno']
+p.token = 'unittest_gg'
+p.resolution = 0
+p.channels = ['unit_anno']
+p.database = 'unittest_gg'
+p.project = ['unittest_gg']
 
 class Test_GraphGen:
 
   def setup_class(self):
     """Create the unittest database"""
-    makeunitdb.createTestDB('graphAnnoTest', public=True, readonly=0)
+    makeunitdb.createTestDB(p.database, public=True, readonly=0)
 
     cutout1 = "0/1,3/1,3/0,2"
     cutout2 = "0/1,3/4,6/2,5"
@@ -50,80 +55,47 @@ class Test_GraphGen:
     #annoid1 = 1
     #ect.
 
-    syn_segments1 = [7, 3]
-    syn_segments2 = [7, 12]
-    syn_segments3 = [3, 9]
-    syn_segments4 = [5, 12]
+    syn_segments1 = [[7, 3],]
+    syn_segments2 = [[7, 12],]
+    syn_segments3 = [[3, 9],]
+    syn_segments4 = [[5, 12],]
 
-    f = create_Synapse(1, syn_segments1, cutout1)
+    f = createSpecificSynapse(1, syn_segments1, cutout1)
     putid = putAnnotation(p, f)
-    f = create_Synapse(2, syn_segments2, cutout2)
+    f = createSpecificSynapse(2, syn_segments2, cutout2)
     putid = putAnnotation(p, f)
-    f = create_Synapse(3, syn_segments3, cutout3)
+    f = createSpecificSynapse(3, syn_segments3, cutout3)
     putid = putAnnotation(p, f)
-    f = create_Synapse(4, syn_segments4, cutout4)
+    f = createSpecificSynapse(4, syn_segments4, cutout4)
     putid = putAnnotation(p, f)
 
   def teardown_class (self):
     """Destroy the unittest database"""
-    makeunitdb.deleteTestDB('graphAnnoTest')
+    makeunitdb.deleteTestDB(p.database)
 
-  def create_Synapse (annoid, syn_segments, cutout):
+  def test_checkTotal(self):
+    """Test the original/non-specific dataset"""
+    syn_segments = [[7, 3],[7, 12],[3, 9],[5, 12]]
+    truthGraph = nx.Graph()
+    truthGraph.add_edges_from(syn_segments)
 
-      # Create an in-memory HDF5 file
-      tmpfile = tempfile.NamedTemporaryFile()
-      h5fh = h5py.File ( tmpfile.name )
+    url = 'http://{}/ocpgraph/{}/{}/'.format( SITE_HOST, p.token, p.channels[0])
+    graphFile = urllib2.urlopen ( url )
 
-      # Create the top level annotation id namespace
-      idgrp = h5fh.create_group ( str(annoid) )
+    outputGraph = nx.read_graphml("../django/unittest_gg_unit_anno.graphml")
+    assert(nx.is_isomorphic(outputGraph, truthGraph))
 
-      # Annotation type
-      idgrp.create_dataset ( "ANNOTATION_TYPE", (1,), np.uint32, data=annotype )
+  def test_checkType(self):
+    """Test the export to different data types"""
+    syn_segments = [[7, 3],[7, 12],[3, 9],[5, 12]]
+    truthGraph = nx.Graph()
+    truthGraph.add_edges_from(syn_segments)
 
-      # Create a metadata group
-      mdgrp = idgrp.create_group ( "METADATA" )
+    url = 'http://{}/ocpgraph/{}/{}/{}/'.format( SITE_HOST, p.token, p.channels[0], 'adjlist')
+    graphFile = urllib2.urlopen ( url )
 
-      # now lets add a bunch of random values for the specific annotation type
-      ann_status = random.randint(0,4)
-      ann_confidence = random.random()
-      ann_author = 'alex'
+    outputGraph = nx.read_adjlist("../django/unittest_gg_unit_anno.adjlist")
+    assert(nx.is_isomorphic(outputGraph, truthGraph))
 
-      # Set Annotation specific metadata
-      mdgrp.create_dataset ( "STATUS", (1,), np.uint32, data=ann_status )
-      mdgrp.create_dataset ( "CONFIDENCE", (1,), np.float, data=ann_confidence )
-      mdgrp.create_dataset ( "AUTHOR", (1,), dtype=h5py.special_dtype(vlen=str), data=ann_author )
-
-      syn_weight = random.random()*1000.0
-      syn_synapse_type = random.randint(1,9)
-      syn_seeds = [ random.randint(1,1000) for x in range(syn_segments) ]
-
-
-      [ resstr, xstr, ystr, zstr ] = cutout.split('/')
-      ( xlowstr, xhighstr ) = xstr.split(',')
-      ( ylowstr, yhighstr ) = ystr.split(',')
-      ( zlowstr, zhighstr ) = zstr.split(',')
-
-      resolution = int(resstr)
-      xlow = int(xlowstr)
-      xhigh = int(xhighstr)
-      ylow = int(ylowstr)
-      yhigh = int(yhighstr)
-      zlow = int(zlowstr)
-      zhigh = int(zhighstr)
-
-      anndata = np.ones ( [ zhigh-zlow, yhigh-ylow, xhigh-xlow ] )
-
-      mdgrp.create_dataset ( "WEIGHT", (1,), np.float, data=syn_weight )
-      mdgrp.create_dataset ( "SYNAPSE_TYPE", (1,), np.uint32, data=syn_synapse_type )
-      mdgrp.create_dataset ( "SEEDS", (len(syn_seeds),), np.uint32, data=syn_seeds )
-      mdgrp.create_dataset ( "SEGMENTS", (len(syn_segments),2), np.uint32, data=syn_segments)
-      idgrp.create_dataset ( "RESOLUTION", (1,), np.uint32, data=resolution )
-      idgrp.create_dataset ( "XYZOFFSET", (3,), np.uint32, data=[0,0,0] )
-      idgrp.create_dataset ( "CUTOUT", anndata.shape, np.uint32, data=anndata )
-
-      h5fh.flush()
-      tmpfile.seek(0)
-
-  def test_checkTotal():
-     """Test the original/non-specific dataset"""
-     assert(3==3)
+  def test_checkCutout(self):
+    """Test the cutout arguement of graphgen"""
