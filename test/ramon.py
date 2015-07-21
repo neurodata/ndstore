@@ -344,12 +344,12 @@ def createSpecificSynapse (annoid, syn_segments, cutout):
     zhigh = int(zhighstr)
 
     anndata = np.ones ( [ zhigh-zlow, yhigh-ylow, xhigh-xlow ] )
-
+    #import pdb; pdb.set_trace()
     mdgrp.create_dataset ( "WEIGHT", (1,), np.float, data=syn_weight )
     mdgrp.create_dataset ( "SYNAPSE_TYPE", (1,), np.uint32, data=syn_synapse_type )
     mdgrp.create_dataset ( "SEGMENTS", (len(syn_segments),2), np.uint32, data=syn_segments)
     idgrp.create_dataset ( "RESOLUTION", (1,), np.uint32, data=resolution )
-    idgrp.create_dataset ( "XYZOFFSET", (3,), np.uint32, data=[0,0,0] )
+    idgrp.create_dataset ( "XYZOFFSET", (3,), np.uint32, data=[xlow,ylow,zlow] )
     idgrp.create_dataset ( "CUTOUT", anndata.shape, np.uint32, data=anndata )
 
     h5fh.flush()

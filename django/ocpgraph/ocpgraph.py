@@ -43,10 +43,9 @@ def getAnnoIds ( proj, ch, Xmin,Xmax,Ymin,Ymax,Zmin,Zmax):
   maxs = (int(Xmax), int(Ymax), int(Zmax))
   offset = proj.datasetcfg.offset[resolution]
   from operator import sub
-  corner = map(sub, mins, offset)
+  #corner = map(sub, mins, offset)
+  corner = mins
   dim = map(sub, maxs, mins)
-
-
 
   if not proj.datasetcfg.checkCube(resolution, corner, dim):
       logger.warning("Illegal cutout corner={}, dim={}".format(corner, dim))
@@ -56,31 +55,34 @@ def getAnnoIds ( proj, ch, Xmin,Xmax,Ymin,Ymax,Zmin,Zmax):
 
       # Check if cutout as any non zeros values
   if cutout.isNotZeros():
-      annoids = np.intersect1d(annoids, np.unique(cutout.data))
+      annoids = np.unique(cutout.data)
   else:
       annoids = np.asarray([], dtype=np.uint32)
 
 
-  return annoids
+  #listIds ( chanargs, proj, db )
+
+  return annoids[1:]
 
 
 
 def genGraphRAMON(database,project,channel,graphType="graphml",Xmin=0,Xmax=0,Ymin=0,Ymax=0,Zmin=0,Zmax=0,):
-    cubeRestrictions  = Xmin + Xmax + Ymin + Ymax + Zmin + Zmax
+    cubeRestrictions  = int(Xmin) + int(Xmax) + int(Ymin) + int(Ymax) + int(Zmin) + int(Zmax)
 
     conn = MySQLdb.connect (host = settings.DATABASES['default']['HOST'], user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = project.getProjectName() )
 
     matrix = []
+    
     if cubeRestrictions != 0:
         idslist = getAnnoIds ( project, channel, Xmin,Xmax,Ymin,Ymax,Zmin,Zmax)
-        if not idslist:
+        if (idslist.size)==0:
             logger.warning("Area specified is empty")
             raise OCPCAError("Area specified is empty")
 
         with closing(conn.cursor()) as cursor:
-            for i in range(len(idslist)):
-                cursor.execute(("select kv_value from {} where kv_key = 'synapse_segments' and annoid = {};").format(channel.getKVTable(""), idslist(i)))
-                matrix.append(cursor.fetchall())
+            for i in range(idslist.size):
+                cursor.execute(("select kv_value from {} where kv_key = 'synapse_segments' and annoid = {};").format(channel.getKVTable(""), idslist[i]))
+                matrix.append(cursor.fetchall()[0])
     else:
         with closing(conn.cursor()) as cursor:
             cursor.execute(("select kv_value from {} where kv_key = 'synapse_segments';").format(channel.getKVTable("")))
