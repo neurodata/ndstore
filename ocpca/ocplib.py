@@ -67,6 +67,7 @@ ocplib.isotropicBuild32.argtypes = [ array_2d_uint32, array_2d_uint32, array_2d_
 ocplib.isotropicBuildF32.argtypes = [ array_2d_float32, array_2d_float32, array_2d_float32, cp.POINTER(cp.c_int) ]
 ocplib.addDataZSlice.argtypes = [ array_3d_uint32, array_3d_uint32, cp.POINTER(cp.c_int), cp.POINTER(cp.c_int) ]
 ocplib.addDataIsotropic.argtypes = [ array_3d_uint32, array_3d_uint32, cp.POINTER(cp.c_int), cp.POINTER(cp.c_int) ]
+ocplib.unique.argtypes = [ array_1d_uint32, array_1d_uint32, cp.c_int ]
 
 # setting the return type of the function in C
 # FORMAT: <library_name>.<function_name>.restype = [ ctype.<argtype> ]
@@ -95,6 +96,7 @@ ocplib.isotropicBuild32.restype = None
 ocplib.isotropicBuildF32.restype = None
 ocplib.addDataZSlice.restype = None
 ocplib.addDataIsotropic.restype = None
+ocplib.unique.restype = cp.c_int
 
 def filter_ctype_OMP ( cutout, filterlist ):
   """Remove all annotations in a cutout that do not match the filterlist using OpenMP"""
@@ -349,6 +351,15 @@ def addDataToZSliceStack_ctype ( cube, output, offset ):
 
   dims = [ i for i in cube.data.shape ]
   ocplib.addDataZSlice ( cube.data, output, (cp.c_int * len(offset))(*offset), (cp.c_int * len(dims))(*dims) )
+
+def unique ( data ):
+  """Return the unqiue elements in the array"""
+
+  data = data.ravel()
+  unique_array = np.zeros(len(data), dtype=data.dtype)
+  unique_length = ocplib.unique ( data, unique_array, cp.c_int(len(data)) )
+
+  return unique_array[:unique_length]
 
 #def annoidIntersect_ctype_OMP(cutout, annoid_list):
   #"""Remove all annotations in a cutout that do not match the filterlist using OpenMP"""

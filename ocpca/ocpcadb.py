@@ -371,7 +371,8 @@ class OCPCADB:
     #  they overwrite existing non-zero annotations.
       # Handle the cube format here.  
       if self.NPZ:
-        self.kvio.putCube(ch, zidx, resolution, cube.toNPZ(), not cube.fromZeros())
+        #self.kvio.putCube(ch, zidx, resolution, cube.toNPZ(), not cube.fromZeros())
+        self.kvio.putCube(ch, zidx, resolution, cube.toBlosc(), not cube.fromZeros())
       else:
         with closing(tempfile.NamedTemporaryFile()) as tmpfile:
           h5 = h5py.File ( tmpfile.name, driver="core" )
@@ -726,7 +727,12 @@ class OCPCADB:
   #
   def annotateDense ( self, ch, corner, resolution, annodata, conflictopt ):
     """Process all the annotations in the dense volume"""
-
+    
+    import time
+    total_time = 0
+    total_time2 = 0
+    total_time3 = 0
+    total_time4 = 0
     index_dict = defaultdict(set)
 
     # dim is in xyz, data is in zyxj
@@ -758,10 +764,14 @@ class OCPCADB:
           for x in range(xnumcubes):
 
             key = ocplib.XYZMorton ([x+xstart,y+ystart,z+zstart])
+            start = time.time()
             cube = self.getCube (ch, key, resolution, True)
+            total_time3 += time.time()-start
             
             if conflictopt == 'O':
+              start = time.time()
               cube.overwrite ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
+              total_time4 += time.time()-start
             elif conflictopt == 'P':
               cube.preserve ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
             elif conflictopt == 'E': 
@@ -784,11 +794,15 @@ class OCPCADB:
               logger.error ( "Unsupported conflict option %s" % conflictopt )
               raise OCPCAError ( "Unsupported conflict option %s" % conflictopt )
             
+            start = time.time()
             self.putCube (ch, key, resolution, cube)
+            total_time += time.time()-start
 
-            #update the index for the cube
+            # update the index for the cube
             # get the unique elements that are being added to the data
+            start = time.time()
             uniqueels = np.unique ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
+            total_time2 += time.time()-start
             for el in uniqueels:
               index_dict[el].add(key) 
 
@@ -804,6 +818,7 @@ class OCPCADB:
       self.kvio.rollback()
       raise
     
+    print "Write", total_time, "Unique", total_time2, "Read", total_time3, "overwrite", total_time4
     self.kvio.commit()
 
 
