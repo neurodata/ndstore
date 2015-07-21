@@ -16,36 +16,41 @@
 
 
 /*
- * Naive Quick Sort Implementation in C 
+ * Unique Function 
+ * Naive implementation 
  */
 
 #include<stdint.h>
 #include<stdlib.h>
 #include<ocplib.h>
 
-// cmpFunc for QuickSort
-
-int cmpFunc ( const void * pa, const void * pb )
+int cmpFunc32 ( const void * pa, const void * pb )
 {
-  const uint64_t (*a)[4] = (const uint64_t(*)[4] )pa;
-  const uint64_t (*b)[4] = (const uint64_t(*)[4] )pb;
-  
-  if ( (*a)[0] == (*b)[0] )
-    if ( (*a)[1] == (*b)[1] )
-      if ( (*a)[2] == (*b)[2] )
-        return (*a)[3] - (*b)[3];
-      else
-        return (*a)[2] - (*b)[2];
-    else
-      return (*a)[1] - (*b)[1];
-  else
-    return (*a)[0] - (*b)[0];
+  return ( *(const uint32_t*)pa - *(const uint32_t*)pb );
 }
 
 // Naive Implementation of Quicksort
 
-void quicksort ( uint64_t locs[][4], int locsSize )
+void quicksort32 ( uint32_t * data, int dataSize )
 {
-  qsort ( locs , locsSize, 4*sizeof(uint64_t), cmpFunc );
+  qsort ( data , dataSize, sizeof(uint32_t), cmpFunc32 );
 }
 
+
+int unique( uint32_t * data, uint32_t * unique_array, int dataSize )
+{
+  int i,index=0;
+  
+  quicksort32 ( data, dataSize );
+  
+  for ( i=0; i<dataSize; i++ )
+  {
+    while ( i<dataSize-1 && data[i] == data[i+1] )
+      i++;
+   
+    unique_array[index] = data[i];
+    index++;
+  }
+
+  return index;
+}
