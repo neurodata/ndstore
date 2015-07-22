@@ -53,14 +53,10 @@ def getAnnoIds ( proj, ch, Xmin,Xmax,Ymin,Ymax,Zmin,Zmax):
 
   cutout = db.cutout(ch, corner, dim, resolution)
 
-      # Check if cutout as any non zeros values
   if cutout.isNotZeros():
       annoids = np.unique(cutout.data)
   else:
       annoids = np.asarray([], dtype=np.uint32)
-
-
-  #listIds ( chanargs, proj, db )
 
   return annoids[1:]
 
@@ -72,7 +68,7 @@ def genGraphRAMON(database,project,channel,graphType="graphml",Xmin=0,Xmax=0,Ymi
     conn = MySQLdb.connect (host = settings.DATABASES['default']['HOST'], user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = project.getProjectName() )
 
     matrix = []
-    
+
     if cubeRestrictions != 0:
         idslist = getAnnoIds ( project, channel, Xmin,Xmax,Ymin,Ymax,Zmin,Zmax)
         if (idslist.size)==0:

@@ -53,19 +53,10 @@ class Test_GraphGen:
     cutout3 = "0/4,6/2,5/5,7"
     cutout4 = "0/6,8/5,9/2,4"
 
-    #annoid1 = 1
-    #ect.
-
     syn_segments1 = [[7, 3],]
     syn_segments2 = [[7, 4],]
     syn_segments3 = [[3, 9],]
     syn_segments4 = [[5, 4],]
-
-
-    #makeAnno(2,1)
-    #makeAnno(2,2)
-    #makeAnno(2,3)
-    #makeAnno(2,4)
 
     f1 = createSpecificSynapse(1, syn_segments1, cutout1)
     putid = putAnnotation(p, f1)
@@ -76,11 +67,10 @@ class Test_GraphGen:
     f4 = createSpecificSynapse(4, syn_segments4, cutout4)
     putid = putAnnotation(p, f4)
 
-    #np.unique(db.cutout(ch, [0,0,0], [10,10,10], resolution).data)
-
   def teardown_class (self):
     """Destroy the unittest database"""
     makeunitdb.deleteTestDB(p.database)
+    os.remove("../django/GeneratedGraph.tar.gz")
 
   def test_checkTotal(self):
     """Test the original/non-specific dataset"""
@@ -92,6 +82,7 @@ class Test_GraphGen:
     graphFile = urllib2.urlopen ( url )
 
     outputGraph = nx.read_graphml("../django/unittest_gg_unit_anno.graphml")
+    os.remove("../django/unittest_gg_unit_anno.graphml")
     assert(nx.is_isomorphic(outputGraph, truthGraph))
 
   def test_checkType(self):
@@ -104,6 +95,7 @@ class Test_GraphGen:
     graphFile = urllib2.urlopen ( url )
 
     outputGraph = nx.read_adjlist("../django/unittest_gg_unit_anno.adjlist")
+    os.remove("../django/unittest_gg_unit_anno.adjlist")
     assert(nx.is_isomorphic(outputGraph, truthGraph))
 
   def test_checkCutout(self):
@@ -116,6 +108,23 @@ class Test_GraphGen:
     graphFile = urllib2.urlopen ( url )
 
     outputGraph = nx.read_graphml("../django/unittest_gg_unit_anno.graphml")
+    os.remove("../django/unittest_gg_unit_anno.graphml")
     assert(nx.is_isomorphic(outputGraph, truthGraph))
 
- 
+  def test_ErrorHandling(self):
+
+    """Invalid graphtype"""
+    syn_segments = [[7, 3],[7, 12],[3, 9],[5, 12]]
+    truthGraph = nx.Graph()
+    truthGraph.add_edges_from(syn_segments)
+
+    url = 'http://{}/ocpgraph/{}/{}/{}/'.format( SITE_HOST, p.token, p.channels[0], 'foograph')
+    graphFile = urllib2.urlopen ( url )
+
+    outputGraph = nx.read_graphml("../django/unittest_gg_unit_anno.graphml")
+    os.remove("../django/unittest_gg_unit_anno.graphml")
+    assert(nx.is_isomorphic(outputGraph, truthGraph))
+
+    """Invalid token"""
+    url = 'http://{}/ocpgraph/{}/{}/{}/{}/{}/{}/{}/{}/{}/'.format( SITE_HOST, 'foo', p.channels[0], 'graphml', 0, 7, 0, 7, 0, 7)
+    assert (getURL(url)==500)
