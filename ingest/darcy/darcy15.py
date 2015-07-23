@@ -1,11 +1,11 @@
 # Copyright 2014 Open Connectome Project (http://openconnecto.me)
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,6 +22,7 @@ from PIL import Image
 import cStringIO
 import zlib
 import libtiff
+import tifffile
 
 sys.path.append(os.path.abspath('../../django'))
 import OCP.settings
@@ -47,7 +48,7 @@ def main():
   parser.add_argument('resolution', action="store", type=int, help='Resolution of data')
 
   result = parser.parse_args()
-  
+
   # Load a database
   with closing (ocpcaproj.OCPCAProjectsDB()) as projdb:
     proj = projdb.loadToken(result.token)
@@ -61,16 +62,15 @@ def main():
     [xoffset, yoffset, zoffset] = proj.datasetcfg.getOffset()[result.resolution]
 
     file_name = "{}".format(result.path)
-    tif_file = libtiff.TIFF.open(file_name, mode='r')
-    iteration_number = 0
+    tif_file = tifffile.imread(file_name)
     slice_number = 0
     # Get a list of the files in the directories
-    
-    for img in tif_file.iter_images():
-      
+
+    for iteration_number in range(starttime, endtime):
+
       if iteration_number % zcubedim == 0:
         slab = np.zeros([zcubedim, yimagesz, ximagesz ], dtype=np.uint16)
-        
+
       try:
         # reading the raw data
         imgdata = np.asarray(img, dtype=np.uint16)
@@ -100,6 +100,6 @@ def main():
 
             cube.data[0:zmax-zmin,0:ymax-ymin,0:xmax-xmin] = slab[zmin:zmax, ymin:ymax, xmin:xmax]
             db.putTimeCube(ch, zidx, iteration_number, result.resolution, cube, update=False)
-            
+
 if __name__ == "__main__":
   main()
