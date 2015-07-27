@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import pdb
 
 import argparse
 import sys
@@ -21,7 +22,7 @@ import numpy as np
 from PIL import Image
 import cStringIO
 import zlib
-from contextlib import closing
+import tifffile
 
 sys.path.append(os.path.abspath('../../django'))
 import OCP.settings
@@ -39,25 +40,31 @@ import ocpcaproj
 import ocplib
 
 dataset_name = 'kristina15'
+token_name = "kristina15"
 
 
 class Ingest_Data:
 
   def __init__(self, path, resolution):
+    print "In initialization"
     """ Load image stack into OCP, creating tokens and channels as needed """
 
     self.dataset_name = dataset_name
     self.dataset = Dataset.objects.get(dataset_name=self.dataset_name)
+    self.token = token_name
 
     self.project_name = 'kristina15'  # needed for creating channels
     # contains the names for each of the channels in this folder
-    self.channels = []
+    channels_names = ["5HT1A_6th"]
+    # for i in range(len(test)):
+    #    channels_names.append(test[i].split('.')[0])
+    self.channels = channels_names
 
     self.resolution = resolution
     self.path = path  # path to the aligned folder?
 
     # set the project name based on the path
-    self.project_name = self.path.split('/')[-1][:-4].replace('-', '_')
+    #self.project_name = self.path.split('/')[-1][:-4].replace('-', '_')
     # create the project, default token (same as project), and channels
     self.createProject()
     for chnum, channel in enumerate(self.channels):
@@ -100,6 +107,8 @@ class Ingest_Data:
           new_project.project_name), project_id=new_project, public=0, user=new_project.user)
       tk.save()
 
+      self.token = token_name
+
   def createChannel(self, name, chnum):
     """ create the channels """
 
@@ -131,70 +140,91 @@ class Ingest_Data:
 
   def ingest(self):
     """ Read image stack and ingest """
-
+    channel = self.channels
     # Load a database
     with closing(ocpcaproj.OCPCAProjectsDB()) as projdb:
-      proj = projdb.loadToken(result.token)
+      proj = projdb.loadToken(self.token)
 
-    with closing(ocpcadb.OCPCADB(proj)) as db:
+    for chnum in range(len(channel)):
+      with closing(ocpcadb.OCPCADB(proj)) as db:
 
-      ch = proj.getChannelObj(result.channel)
+        ch = proj.getChannelObj(channel[chnum])
       # get the dataset configuration
-      [[ximagesz, yimagesz, zimagesz],
-       (starttime, endtime)] = proj.datasetcfg.imageSize(result.resolution)
-      [xcubedim, ycubedim, zcubedim] = cubedim = proj.datasetcfg.getCubeDims()[
-          result.resolution]
-      [xoffset, yoffset, zoffset] = proj.datasetcfg.getOffset()[
-          result.resolution]
+        [[ximagesz, yimagesz, zimagesz],
+         (starttime, endtime)] = proj.datasetcfg.imageSize(self.resolution)
+        [xcubedim, ycubedim, zcubedim] = cubedim = proj.datasetcfg.getCubeDims()[
+            self.resolution]
+        [xoffset, yoffset, zoffset] = proj.datasetcfg.getOffset()[
+            self.resolution]
 
       # Get a list of the files in the directories
-      for slice_number in range(zoffset, zimagesz + 1, zcubedim):
-        slab = np.zeros([zcubedim, yimagesz, ximagesz], dtype=np.uint32)
-        for b in range(zcubedim):
-          if (slice_number + b <= zimagesz):
-            try:
-              # reading the raw data
-              file_name = "{}.tif".format(result.path, slice_number + b)
-              print "Open filename {}".format(file_name)
-              img = Image.open(file_name, 'r').convert("RGBA")
-              imgdata = np.asarray(img)
-              slab[b, :, :] = np.left_shift(imgdata[:, :, 3], 24, dtype=np.uint32) | np.left_shift(
-                  imgdata[:, :, 2], 16, dtype=np.uint32) | np.left_shift(imgdata[:, :, 1], 8, dtype=np.uint32) | np.uint32(imgdata[:, :, 0])
-            except IOError, e:
-              print e
-              imgdata = np.zeros((yimagesz, ximagesz), dtype=np.uint32)
-              slab[b, :, :] = imgdata
 
-        for y in range(0, yimagesz + 1, ycubedim):
-          for x in range(0, ximagesz + 1, xcubedim):
+        file_name = "{}{}.tif".format(self.path, channel[chnum])
+        print "Open filename {}".format(file_name)
+        #inputcube = (tiffile(file_name)).asarray()
+        """
+        img = Image.open(file_name, 'r').convert("RGBA")
+        imgdata = np.asarray(img)
+        with TiffFile('5HT1A_6th.tif') as tif:
+        images = tif.asarray()
+        np.unique(images)
+        """
+        imgdata = tifffile.imread(file_name)
 
-            # Getting a Cube id and ingesting the data one cube at a time
-            zidx = ocplib.XYZMorton(
-                [x / xcubedim, y / ycubedim, (slice_number - zoffset) / zcubedim])
-            cube = Cube.getCube(cubedim, ch.getChannelType(), ch.getDataType())
-            cube.zeros()
+        for slice_number in range(zoffset, zimagesz + 1, zcubedim):
+          slab = np.zeros([zcubedim, yimagesz, ximagesz], dtype=np.uint32)
+          for b in range(zcubedim):
+            if (slice_number + b <= zimagesz):
 
-            xmin = x
-            ymin = y
-            xmax = min(ximagesz, x + xcubedim)
-            ymax = min(yimagesz, y + ycubedim)
-            zmin = 0
-            zmax = min(slice_number + zcubedim, zimagesz + 1)
+              #pdb.set_trace()
+              if (slice_number + b) < zimagesz:
 
-            cube.data[0:zmax - zmin, 0:ymax - ymin,
-                      0:xmax - xmin] = slab[zmin:zmax, ymin:ymax, xmin:xmax]
-            db.putCube(ch, zidx, result.resolution, cube, update=True)
+                  slab[b, :, :] = imgdata[(slice_number + b), :, :]
+              else:
+                  pdb.set_trace()
+                  imgdata = np.zeros((yimagesz, ximagesz), dtype=np.uint32)
+                  slab[b, :, :] = imgdata
+              """
+              try:
+                # reading the raw data
+
+              except IOError, e:
+                pdb.set_trace()
+                print e
+              """
+
+          for y in range(0, yimagesz + 1, ycubedim):
+            for x in range(0, ximagesz + 1, xcubedim):
+
+              # Getting a Cube id and ingesting the data one cube at a time
+              zidx = ocplib.XYZMorton(
+                  [x / xcubedim, y / ycubedim, (slice_number - zoffset) / zcubedim])
+              cube = Cube.getCube(
+                  cubedim, ch.getChannelType(), ch.getDataType())
+              cube.zeros()
+
+              xmin = x
+              ymin = y
+              xmax = min(ximagesz, x + xcubedim)
+              ymax = min(yimagesz, y + ycubedim)
+              zmin = 0
+              zmax = min(slice_number + zcubedim, zimagesz + 1)
+
+              cube.data[0:zmax - zmin, 0:ymax - ymin,
+                        0:xmax - xmin] = slab[zmin:zmax, ymin:ymax, xmin:xmax]
+              db.putCube(ch, zidx, self.resolution, cube, update=True)
 
 
 def main():
 
   parser = argparse.ArgumentParser(description='Ingest the TIFF data')
   parser.add_argument(
-      'path', action="store", type=str, help='Directory with the image files')
+      "path", action="store", type=str, help='Directory with the image files')
   parser.add_argument(
-      'res', action="store", type=int, help='Resolution of data')
-
-  result = parser.parse_args(result.path, result.res)
+      "res", action="store", type=int, help='Resolution of data')
+  print "In main"
+  args = parser.parse_args()
+  kristina = Ingest_Data(args.path, args.res)
 
 
 if __name__ == "__main__":
