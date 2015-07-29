@@ -17,6 +17,7 @@ import array
 import cStringIO
 import tempfile
 import h5py
+import blosc
 
 import logging
 logger=logging.getLogger("ocp")
@@ -46,8 +47,9 @@ class AnnotateIndex:
     idxstr = self.kvio.getIndex(ch, entityid, resolution, update)
     if idxstr:
       if self.NPZ:
-        fobj = cStringIO.StringIO ( idxstr )
-        return np.load ( fobj )      
+        #fobj = cStringIO.StringIO ( idxstr )
+        #return np.load ( fobj )
+        return blosc.unpack_array(idxstr)
       else:
         # cubes are HDF5 files
         with closing (tempfile.NamedTemporaryFile ()) as tmpfile:
@@ -65,9 +67,10 @@ class AnnotateIndex:
     """Write the index for the annotation with id"""
 
     if self.NPZ:
-      fileobj = cStringIO.StringIO ()
-      np.save ( fileobj, index )
-      self.kvio.putIndex(ch, entityid, resolution, fileobj.getvalue(), update)
+      #fileobj = cStringIO.StringIO ()
+      #np.save ( fileobj, index )
+      #self.kvio.putIndex(ch, entityid, resolution, fileobj.getvalue(), update)
+      self.kvio.putIndex(ch, entityid, resolution, blosc.pack_array(index), update)
     else:
 
       with closing ( tempfile.NamedTemporaryFile () ) as tmpfile:
@@ -92,7 +95,7 @@ class AnnotateIndex:
             
       else:
         # Update index to the union of the currentIndex and the updated index
-        newIndex=np.union1d(curindex,cubeindex)
+        newIndex=np.union1d(curindex, cubeindex)
         self.putIndex(ch, key, resolution, newIndex, True)
 
   
@@ -119,9 +122,10 @@ class AnnotateIndex:
     if curindex == []:
         
         if self.NPZ:
-          fileobj = cStringIO.StringIO ()
-          np.save ( fileobj, index )
-          self.kvio.putIndex(ch, entityid, resolution, fileobj.getvalue())
+          #fileobj = cStringIO.StringIO ()
+          #np.save ( fileobj, index )
+          #self.kvio.putIndex(ch, entityid, resolution, fileobj.getvalue())
+          self.kvio.putIndex(ch, entityid, resolution, blosc.pack_array(index))
         else:
 
           with closing ( tempfile.NamedTemporaryFile () ) as tmpfile:
@@ -138,9 +142,10 @@ class AnnotateIndex:
 
         # Update the index in the database
         if self.NPZ:
-          fileobj = cStringIO.StringIO ()
-          np.save ( fileobj, newIndex )
-          self.kvio.putIndex(ch, entityid, resolution, fileobj.getvalue(), True)
+          #fileobj = cStringIO.StringIO ()
+          #np.save ( fileobj, newIndex )
+          #self.kvio.putIndex(ch, entityid, resolution, fileobj.getvalue(), True)
+          self.kvio.putIndex(ch, entityid, resolution, blosc.pack_array(newIndex), True)
         else:
 
           with closing ( tempfile.NamedTemporaryFile () ) as tmpfile:
