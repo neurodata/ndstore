@@ -22,6 +22,7 @@ from PIL import Image
 import cStringIO
 import zlib
 import libtiff
+import tifffile
 
 sys.path.append(os.path.abspath('../../django'))
 import OCP.settings
@@ -61,17 +62,15 @@ def main():
     [xoffset, yoffset, zoffset] = proj.datasetcfg.getOffset()[result.resolution]
 
     file_name = "{}".format(result.path)
-    tif_file = libtiff.TIFF.open(file_name, mode='r')
-    iteration_number = 0
+    tif_file = tifffile.imread(file_name)
     slice_number = 0
     # Get a list of the files in the directories
     
-    for img in tif_file.iter_images():
+    for iteration_number in range(starttime, endtime):
       
-      slab = np.zeros([zcubedim, yimagesz, ximagesz ], dtype=np.uint16)
-        
-      slab[slice_number,:,:] = img
-
+      slab = np.zeros([zcubedim, yimagesz, ximagesz], dtype=np.uint16)
+      import pdb; pdb.set_trace()  
+      slab[slice_number,:,:] = tif_file[iteration_number,:,:]
 
       for y in range ( 0, yimagesz+1, ycubedim ):
         for x in range ( 0, ximagesz+1, xcubedim ):
@@ -90,8 +89,6 @@ def main():
 
           cube.data[0:zmax-zmin,0:ymax-ymin,0:xmax-xmin] = slab[zmin:zmax, ymin:ymax, xmin:xmax]
           db.putTimeCube(ch, zidx, iteration_number, result.resolution, cube, update=False)
-    
-      iteration_number += 1
             
 if __name__ == "__main__":
   main()
