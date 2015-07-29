@@ -71,38 +71,38 @@ class OCPCADB:
       import mysqlkvio
       self.kvio = mysqlkvio.MySQLKVIO(self)
       self.NPZ = True
+      # Connection info for the metadata
+      try:
+        self.conn = MySQLdb.connect (host = self.proj.getDBHost(), user = self.proj.getDBUser(), passwd = self.proj.getDBPasswd(), db = self.proj.getDBName())
+        # start with no cursor
+        self.cursor = None
+      except MySQLdb.Error, e:
+        self.conn = None
+        logger.error("Failed to connect to database: {}, {}".format(self.proj.getDBHost(), self.proj.getDBName()))
+    
     elif self.proj.getKVEngine() == 'Riak':
       import riakkvio
+      self.conn = None
+      self.cursor = None
       self.kvio = riakkvio.RiakKVIO(self)
-      self.NPZ = False
+      self.NPZ = True
+    
     elif self.proj.getKVEngine() == 'Cassandra':
       import casskvio
-      self.kvio = casskvio.CassandraKVIO(self)
-      self.NPZ = False
-    else:
-      raise OCPCAError ("Unknown key/value store.  Engine = {}".format(self.proj.getKVEngine()))
-
-    # Connection info for the metadata
-    try:
-      self.conn = MySQLdb.connect (host = self.proj.getDBHost(),
-                            user = self.proj.getDBUser(),
-                            passwd = self.proj.getDBPasswd(),
-                            db = self.proj.getDBName())
-
-      # start with no cursor
-      self.cursor = None
-
-    except MySQLdb.Error, e:
       self.conn = None
-      logger.error("Failed to connect to database: {}, {}".format(self.proj.getDBHost(), self.proj.getDBName()))
-      raise
+      self.cursor = None
+      self.kvio = casskvio.CassandraKVIO(self)
+      self.NPZ = True
+    else:
+      raise OCPCAError ("Unknown key/value store. Engine = {}".format(self.proj.getKVEngine()))
 
     #if (self.proj.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS):
-    self.annoIdx = annindex.AnnotateIndex ( self.kvio, self.proj )
 
   def setChannel ( self, channel_name ):
     """Switch the channel pointer"""
     ch = self.proj.getChannelObj(channel_name)
+    if ch.getChannelType() == ANNOTATION_CHANNELS:
+      self.annoIdx = annindex.AnnotateIndex ( self.kvio, self.proj )
 
   def close ( self ):
     """Close the connection"""
@@ -118,7 +118,7 @@ class OCPCADB:
   def getCursor ( self ):
     """If we are in a transaction, return the cursor, otherwise make one"""
 
-    if self.cursor == None:
+    if self.cursor is None:
       return self.conn.cursor()
     else:
       return self.cursor
@@ -126,34 +126,37 @@ class OCPCADB:
   def closeCursor ( self, cursor ):
     """Close the cursor if we are not in a transaction"""
 
-    if self.cursor == None:
+    if self.cursor is None:
       cursor.close()
 
   def closeCursorCommit ( self, cursor ):
     """Close the cursor if we are not in a transaction"""
 
-    if self.cursor == None:
+    if self.cursor is None:
       self.conn.commit()
       cursor.close()
 
   def commit ( self ):
     """Commit the transaction. Moved out of __del__ to make explicit.""" 
 
-    self.cursor.close()
-    self.conn.commit()
+    if self.cursor is not None:
+      self.cursor.close()
+      self.conn.commit()
 
   def startTxn ( self ):
     """Start a transaction.  Ensure database is in multi-statement mode."""
 
-    self.cursor = self.conn.cursor()
-    sql = "START TRANSACTION"
-    self.cursor.execute ( sql )
+    if self.conn is not None:
+      self.cursor = self.conn.cursor()
+      sql = "START TRANSACTION"
+      self.cursor.execute ( sql )
 
   def rollback ( self ):
     """Rollback the transaction.  To be called on exceptions."""
 
-    self.cursor.close()
-    self.conn.rollback()
+    if self.cursor is not None:
+      self.cursor.close()
+      self.conn.rollback()
 
 
   def peekID ( self ):
