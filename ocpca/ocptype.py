@@ -23,7 +23,9 @@ UINT16 = 'uint16'
 UINT32 = 'uint32'
 UINT64 = 'uint64'
 FLOAT32 = 'float32'
-
+MYSQL = 'MySQL'
+CASSANDRA = 'Cassandra'
+RIAK = 'riak'
 
 # OCP Version
 OCP_VERSION = '0.7'
