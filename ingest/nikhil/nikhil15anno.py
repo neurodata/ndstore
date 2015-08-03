@@ -67,8 +67,7 @@ class NikhilIngest:
           #if we are at the end of the space, quit
           if ( sl + b <= endslice ):
               
-            filename = '{}{:0>3}____z{}.0.tif'.format(self.path, sl+b, (sl+b-1)*25)
-            #filename = '{}{:0>4}____z{}.0.tif'.format(self.path, sl+b, (sl+b-1)*25)
+            filename = '{}{:0>3}.tif'.format(self.path, sl+b)
             print filename
             try:
               img = Image.open(filename,'r')
@@ -98,7 +97,7 @@ class NikhilIngest:
             cube.data = cubedata
             if np.count_nonzero ( cube.data ) != 0:
               print zidx, ocplib.MortonXYZ(zidx)
-              db.putCube ( zidx, self.resolution, cube )
+              db.annotateDense ( zidx, self.resolution, cube )
           print "Commiting at x=%s, y=%s, z=%s" % (x,y,sl)
         db.conn.commit()
         slab = None

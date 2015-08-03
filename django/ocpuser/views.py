@@ -631,7 +631,7 @@ def updateChannel(request):
   pd = ocpcaproj.OCPCAProjectsDB()
   if request.method == 'POST':
 
-    if 'updateChannel' in request.POST: 
+    if 'updatechannel' in request.POST: 
 
       chname = request.session["channel_name"]
       channel_to_update = get_object_or_404(Channel,channel_name=chname,project_id=pr)

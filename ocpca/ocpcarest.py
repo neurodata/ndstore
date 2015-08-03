@@ -296,7 +296,7 @@ def window(data, ch, window_range=None ):
 
   if ch.getDataType() in ocpcaproj.DTYPE_uint16:
     if (startwindow == endwindow == 0):
-      return np.uint8(data * 1.0/256)
+      return data
     elif endwindow!=0:
       windowCutout (data, window_range)
       return np.uint8(data)
@@ -1296,8 +1296,8 @@ def putAnnotation ( webargs, postdata ):
 
 def getSWC ( webargs ):
   """Return an SWC object generated from Skeletons/Nodes"""
-    
-  [token, channel, swcstring, skeletons, rest] = webargs.split('/',3)
+   
+  [token, channel, swcstring, skeletons, rest] = webargs.split('/', 4)
 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
