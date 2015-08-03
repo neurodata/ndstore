@@ -286,7 +286,7 @@
           // pan the map to center on these coordinates
           console.log('placing marker');
           var point = L.point(x, y);
-          var projpoint = map.unproject(point, 2*maxres - map.getZoom());
+          var projpoint = map.unproject(point); //, 2*maxres - map.getZoom());
 
           map.panTo(projpoint);
           // place a marker
