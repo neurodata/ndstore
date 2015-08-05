@@ -22,16 +22,12 @@ from contextlib import closing
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 
-#sys.path += [os.path.abspath('../django')]
-#import OCP.settings
-#os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
-
 from ocpuser.models import Project
 from ocpuser.models import Dataset
 from ocpuser.models import Token
 from ocpuser.models import Channel
 import annotation
-from ocptype import IMAGE_CHANNELS, ZSLICES, ISOTROPIC, READONLY_TRUE, READONLY_FALSE, PUBLIC_TRUE, NOT_PROPAGATED, UNDER_PROPAGATION, PROPAGATED
+from ocptype import IMAGE_CHANNELS, ANNOTATION_CHANNELS, ZSLICES, ISOTROPIC, READONLY_TRUE, READONLY_FALSE, PUBLIC_TRUE, NOT_PROPAGATED, UNDER_PROPAGATION, PROPAGATED, IMAGE, ANNOTATION, TIMESERIES, MYSQL, CASSANDRA, RIAK
 
 # need imports to be conditional
 try:
@@ -281,7 +277,10 @@ class OCPCAChannel:
     if self.pr.getOCPVersion() == '0.0':
       return "res{}".format(resolution)
     else:
-      return "{}_res{}".format(self.ch.channel_name, resolution)
+      if self.pr.getKVEngine() == MYSQL:
+        return "{}_res{}".format(self.ch.channel_name, resolution)
+      elif self.pr.getKVEngine() == CASSANDRA:
+        return "{}_{}".format(self.ch.channel_name, 'cuboids')
 
   def getNearIsoTable (self, resolution):
     """Return the appropriate table for the specified resolution"""
@@ -302,7 +301,10 @@ class OCPCAChannel:
     if self.pr.getOCPVersion() == '0.0':
       return "idx{}".format(resolution)
     else:
-      return "{}_idx{}".format(self.ch.channel_name, resolution)
+      if self.pr.getKVEngine() == MYSQL:
+        return "{}_idx{}".format(self.ch.channel_name, resolution)
+      elif self.pr.getKVEngine() == CASSANDRA:
+        return "{}_{}".format(self.ch.channel_name, 'indexes')
 
   def getAnnoTable (self, anno_type):
     """Return the appropriate table for the specified type"""
@@ -361,18 +363,32 @@ class OCPCAProjectsDB:
 
     pr = Project.objects.get(project_name=project_name)
     
-    with closing(MySQLdb.connect (host = pr.host, user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'])) as conn:
-      with closing(conn.cursor()) as cursor:
+    if pr.kvengine == MYSQL:
+      with closing(MySQLdb.connect (host = pr.host , user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'])) as conn:
+        with closing(conn.cursor()) as cursor:
 
-        try:
-          # Make the database 
-          sql = "CREATE DATABASE {}".format( project_name )
-       
-          cursor.execute ( sql )
-          conn.commit()
-        except MySQLdb.Error, e:
-          logger.error ("Failed to create database for new project {}: {}. sql={}".format(e.args[0], e.args[1], sql))
-          raise OCPCAError ("Failed to create database for new project {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+          try:
+            # Make the database 
+            sql = "CREATE DATABASE {}".format(pr.project_name)
+         
+            cursor.execute ( sql )
+            conn.commit()
+          except MySQLdb.Error, e:
+            logger.error ("Failed to create database for new project {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+            raise OCPCAError ("Failed to create database for new project {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+    
+    elif pr.kvengine == CASSANDRA:
+      
+      try:
+        cluster = Cluster([pr.kvserver])
+        session = cluster.connect()
+        session.execute ("CREATE KEYSPACE {} WITH REPLICATION = {{ 'class' : 'SimpleStrategy', 'replication_factor' : 1 }}".format(pr.project_name), timeout=30)
+      except Exception, e:
+        pr.delete()
+        logger.error("Failed to create namespace for new project {}".format(project_name))
+        raise OCPCAError("Failed to create namespace for new project {}".format(project_name))
+      finally:
+        session.shutdown()
 
 
   def newOCPCAChannel ( self, project_name, channel_name ):
@@ -383,109 +399,78 @@ class OCPCAProjectsDB:
     ds = Dataset.objects.get(dataset_name=pr.dataset_id)
 
     # Connect to the database
-    with closing (MySQLdb.connect (host = pr.host, user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = pr.project_name )) as conn:
-      with closing(conn.cursor()) as cursor:
 
-        try:
-
-          if pr.kvengine == 'MySQL':
-
-            if ch.channel_type not in ['timeseries']:
-
+    if pr.kvengine == MYSQL:
+      with closing (MySQLdb.connect(host = pr.host, user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = pr.project_name)) as conn:
+        with closing(conn.cursor()) as cursor:
+          
+          try:
+            # tables specific to all other non time data
+            if ch.channel_type not in [TIMESERIES]:
               for i in range(ds.scalinglevels+1): 
                 cursor.execute ( "CREATE TABLE {}_res{} ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(ch.channel_name,i) )
-              conn.commit()
-
-            elif ch.channel_type == 'timeseries':
-
+            # tables specific to timeseries data
+            elif ch.channel_type == TIMESERIES:
               for i in range(ds.scalinglevels+1): 
                 cursor.execute ( "CREATE TABLE {}_res{} ( zindex BIGINT, timestamp INT, cube LONGBLOB, PRIMARY KEY(zindex,timestamp))".format(ch.channel_name,i) )
-              conn.commit()
-
             else:
-              assert(0) #RBTODO throw a big error
-
-          elif pr.kvengine == 'Riak':
-
-            #RBTODO figure out new schema for Riak
-            rcli = riak.RiakClient(host=proj.getKVServer(), pb_port=8087, protocol='pbc')
-            bucket = rcli.bucket_type("ocp{}".format(proj.getProjectType())).bucket(proj.getDBName())
-            bucket.set_property('allow_mult',False)
-
-          elif pr.kvengine == 'Cassandra':
-
-            #RBTODO figure out new schema for Cassandra
-            cluster = Cluster( [proj.getKVServer()] )
-            try:
-              session = cluster.connect()
-
-              session.execute ("CREATE KEYSPACE {} WITH REPLICATION = {{ 'class' : 'SimpleStrategy', 'replication_factor' : 1 }}".format(proj.getDBName()), timeout=30)
-              session.execute ( "USE {}".format(proj.getDBName()) )
-              session.execute ( "CREATE table cuboids ( resolution int, zidx bigint, cuboid text, PRIMARY KEY ( resolution, zidx ) )", timeout=30)
-            except Exception, e:
-              raise
-            finally:
-              cluster.shutdown()
+              raise OCPCAError("Channel type {} does not exist".format(ch.channel_type()))
             
-          else:
-            logging.error ("Unknown KV Engine requested: %s" % "RBTODO get name")
-            raise OCPCAError ("Unknown KV Engine requested: %s" % "RBTODO get name")
-
-
-          # tables specific to annotation projects
-          if ch.channel_type == 'annotation': 
-
-            cursor.execute("CREATE TABLE {}_ids ( id BIGINT PRIMARY KEY)".format(ch.channel_name))
-
-            # And the RAMON objects
-            cursor.execute ( "CREATE TABLE {}_annotations (annoid BIGINT PRIMARY KEY, type INT, confidence FLOAT, status INT)".format(ch.channel_name))
-            cursor.execute ( "CREATE TABLE {}_seeds (annoid BIGINT PRIMARY KEY, parentid BIGINT, sourceid BIGINT, cube_location INT, positionx INT, positiony INT, positionz INT)".format(ch.channel_name))
-            cursor.execute ( "CREATE TABLE {}_synapses (annoid BIGINT PRIMARY KEY, synapse_type INT, weight FLOAT)".format(ch.channel_name))
-            cursor.execute ( "CREATE TABLE {}_segments (annoid BIGINT PRIMARY KEY, segmentclass INT, parentseed INT, neuron INT)".format(ch.channel_name))
-            cursor.execute ( "CREATE TABLE {}_organelles (annoid BIGINT PRIMARY KEY, organelleclass INT, parentseed INT, centroidx INT, centroidy INT, centroidz INT)".format(ch.channel_name))
-            cursor.execute ( "CREATE TABLE {}_nodes ( annoid BIGINT PRIMARY KEY, skeletonid BIGINT, nodetype INT, parentid BIGINT, locationx FLOAT, locationy FLOAT, locationz FLOAT, radius FLOAT )".format(ch.channel_name))
-            cursor.execute ( "CREATE TABLE {}_skeletons (annoid BIGINT PRIMARY KEY, skeletontype INT, rootnode INT)".format(ch.channel_name))
-            cursor.execute ( "CREATE TABLE {}_kvpairs ( annoid BIGINT, kv_key VARCHAR(255), kv_value VARCHAR(20000), PRIMARY KEY ( annoid, kv_key ))".format(ch.channel_name))
-
-            conn.commit()
-
-            if pr.kvengine == 'MySQL':
+            # tables specific to annotation projects
+            import pdb; pdb.set_trace()
+            if ch.channel_type == ANNOTATION: 
+              cursor.execute("CREATE TABLE {}_ids ( id BIGINT PRIMARY KEY)".format(ch.channel_name))
+              # And the RAMON objects
+              cursor.execute ( "CREATE TABLE {}_annotations (annoid BIGINT PRIMARY KEY, type INT, confidence FLOAT, status INT)".format(ch.channel_name))
+              cursor.execute ( "CREATE TABLE {}_seeds (annoid BIGINT PRIMARY KEY, parentid BIGINT, sourceid BIGINT, cube_location INT, positionx INT, positiony INT, positionz INT)".format(ch.channel_name))
+              cursor.execute ( "CREATE TABLE {}_synapses (annoid BIGINT PRIMARY KEY, synapse_type INT, weight FLOAT)".format(ch.channel_name))
+              cursor.execute ( "CREATE TABLE {}_segments (annoid BIGINT PRIMARY KEY, segmentclass INT, parentseed INT, neuron INT)".format(ch.channel_name))
+              cursor.execute ( "CREATE TABLE {}_organelles (annoid BIGINT PRIMARY KEY, organelleclass INT, parentseed INT, centroidx INT, centroidy INT, centroidz INT)".format(ch.channel_name))
+              cursor.execute ( "CREATE TABLE {}_nodes ( annoid BIGINT PRIMARY KEY, skeletonid BIGINT, nodetype INT, parentid BIGINT, locationx FLOAT, locationy FLOAT, locationz FLOAT, radius FLOAT )".format(ch.channel_name))
+              cursor.execute ( "CREATE TABLE {}_skeletons (annoid BIGINT PRIMARY KEY, skeletontype INT, rootnode INT)".format(ch.channel_name))
+              cursor.execute ( "CREATE TABLE {}_kvpairs ( annoid BIGINT, kv_key VARCHAR(255), kv_value VARCHAR(20000), PRIMARY KEY ( annoid, kv_key ))".format(ch.channel_name))
               for i in range(ds.scalinglevels+1):
-                # RB always create the exception tables.....just don't use them if the project doesn't want them.
-#                if ch.exceptions:
                 cursor.execute ( "CREATE TABLE {}_exc{} ( zindex BIGINT, id BIGINT, exlist LONGBLOB, PRIMARY KEY ( zindex, id))".format(ch.channel_name,i))
                 cursor.execute ( "CREATE TABLE {}_idx{} ( annid BIGINT PRIMARY KEY, cube LONGBLOB )".format(ch.channel_name,i))
+           
+            # Commiting at the end
+            conn.commit()
+          except MySQLdb.Error, e:
+            ch.delete()
+            logging.error ("Failed to create tables for new project {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+            raise OCPCAError ("Failed to create tables for new project {}: {}. sql={}".format(e.args[0], e.args[1], sql))
 
-              conn.commit()
+    elif pr.kvengine == RIAK:
+      #RBTODO figure out new schema for Riak
+      rcli = riak.RiakClient(host=pr.kvserver, pb_port=8087, protocol='pbc')
+      bucket = rcli.bucket_type("ocp{}".format(proj.getProjectType())).bucket(proj.getDBName())
+      bucket.set_property('allow_mult',False)
 
-            elif pr.kvengine == 'Riak':
-              pass
-
-            elif pr.kvengine == 'Cassandra':
-
-              cluster = Cluster( [pr.kvserver] )
-              try:
-                session = cluster.connect()
-                session.execute ( "USE {}".format(pr.project_name))
-                session.execute( "CREATE table exceptions ( resolution int, zidx bigint, annoid bigint, exceptions text, PRIMARY KEY ( resolution, zidx, annoid ) )", timeout=30)
-                session.execute("CREATE table indexes ( resolution int, annoid bigint, cuboids text, PRIMARY KEY ( resolution, annoid ) )", timeout=30)
-              except Exception, e:
-                raise
-              finally:
-                cluster.shutdown()
-
-        except MySQLdb.Error, e:
-          logging.error ("Failed to create tables for new project {}: {}. sql={}".format(e.args[0], e.args[1], sql))
-          raise OCPCAError ("Failed to create tables for new project {}: {}. sql={}".format(e.args[0], e.args[1], sql))
-        except Exception, e:
-          raise 
+    elif pr.kvengine == CASSANDRA:
+      try:
+        if ch.channel_type not in [TIMESERIES]:
+          cluster = Cluster([pr.kvserver])
+          session = cluster.connect(pr.project_name)
+          session.execute ( "CREATE table {}_cuboids ( resolution int, zidx bigint, cuboid text, PRIMARY KEY ( resolution, zidx ) )".format(ch.channel_name), timeout=30)
+        #session.execute( "CREATE table exceptions ( resolution int, zidx bigint, annoid bigint, exceptions text, PRIMARY KEY ( resolution, zidx, annoid ) )", timeout=30)
+        #session.execute("CREATE table indexes ( resolution int, annoid bigint, cuboids text, PRIMARY KEY ( resolution, annoid ) )", timeout=30)
+      except Exception, e:
+        ch.delete()
+        logging.error("Failed to create table for channel {}".format(channel_name))
+        raise OCPCAError("Failed to create table for channel {}".format(channel_name))
+      finally:
+        session.shutdown()
+      
+    else:
+      logging.error ("Unknown KV Engine requested: {}".format("RBTODO get name"))
+      raise OCPCAError ("Unknown KV Engine requested: {}".format("RBTODO get name"))
 
 
   def deleteOCPCADB (self, project_name):
 
     pr = Project.objects.get(project_name = project_name)
 
-    if pr.kvengine == 'MySQL':
+    if pr.kvengine == MYSQL:
       with closing(MySQLdb.connect (host = pr.host, user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'])) as conn:
         with closing(conn.cursor()) as cursor:
         # delete the database
@@ -505,20 +490,18 @@ class OCPCAProjectsDB:
               raise OCPCAError ("Failed to drop project database {}: {}. sql={}".format(e.args[0], e.args[1], sql))
 
 
-    #  try to delete the database anyway
-    #  Sometimes weird crashes can get stuff out of sync
-
-    elif pr.kvengine == 'Cassandra':
-
-      cluster = Cluster( [pr.kvserver] )
+    elif pr.kvengine == CASSANDRA:
       try:
+        cluster = Cluster( [pr.kvserver] )
         session = cluster.connect()
         session.execute ( "DROP KEYSPACE {}".format(pr.project_name), timeout=30 )
+      except Exception, e:
+        logger.warning("Keyspace {} does not exist".format(pr.project_name))
+        pass
       finally:
         cluster.shutdown()
 
-    elif pr.kvengine == 'Riak':
-
+    elif pr.kvengine == RIAK:
       # connect to Riak
       rcli = riak.RiakClient(host=proj.kvserver, pb_port=8087, protocol='pbc')
       bucket = rcli.bucket_type("ocp{}".format(proj.getProjectType())).bucket(proj.getDBName())
@@ -547,8 +530,7 @@ class OCPCAProjectsDB:
         table_list = table_list + [ch.getIdxTable(i), ch.getExceptionsTable(i)]
 
     print table_list
-    if pr.getKVEngine() == 'MySQL':
-      
+    if pr.getKVEngine() == MYSQL:
       try:
         conn = MySQLdb.connect (host = pr.getDBHost(), user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = pr.getProjectName() ) 
         # delete the tables for this channel
@@ -566,11 +548,11 @@ class OCPCAProjectsDB:
           logger.error ("Failed to drop channel tables {}: {}. sql={}".format(e.args[0], e.args[1], sql))
           raise OCPCAError ("Failed to drop channel tables {}: {}. sql={}".format(e.args[0], e.args[1], sql))
       
-    elif pr.getKVEngine() == 'Cassandra':
+    elif pr.getKVEngine() == CASSANDRA:
       # KL TODO
       pass
     
-    elif pr.getKVEngine() == 'Riak':
+    elif pr.getKVEngine() == RIAK:
       # KL TODO
       pass
 

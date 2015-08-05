@@ -414,7 +414,7 @@ class MySQLKVIO:
     else:
       cursor = self.txncursor
 
-    #get the block from the database                                            
+    # get the block from the database                                            
     sql = "SELECT cube FROM {} WHERE annid = {}".format( ch.getIdxTable(resolution), annid )
     if update:
       sql += " FOR UPDATE"

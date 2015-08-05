@@ -68,38 +68,27 @@ def main():
 
     for iteration_number in range(starttime, endtime):
 
-      if iteration_number % zcubedim == 0:
-        slab = np.zeros([zcubedim, yimagesz, ximagesz ], dtype=np.uint16)
+      slab = np.zeros([zcubedim, yimagesz, ximagesz], dtype=np.uint16)
+      import pdb; pdb.set_trace()  
+      slab[slice_number,:,:] = tif_file[iteration_number,:,:]
 
-      try:
-        # reading the raw data
-        imgdata = np.asarray(img, dtype=np.uint16)
-        slab[iteration_number%zcubedim,:,:] = imgdata
-      except IOError, e:
-        print e
-        imgdata = np.zeros((yimagesz, ximagesz), dtype=np.uint32)
-        slab[b,:,:] = imgdata
+      for y in range ( 0, yimagesz+1, ycubedim ):
+        for x in range ( 0, ximagesz+1, xcubedim ):
 
-      iteration_number += 1
+          # Getting a Cube id and ingesting the data one cube at a time
+          zidx = ocplib.XYZMorton ( [x/xcubedim, y/ycubedim, (slice_number-zoffset)/zcubedim] )
+          cube = Cube.getCube(cubedim, ch.getChannelType(), ch.getDataType(), timerange=[0,1])
+          cube.zeros()
 
-      if iteration_number % zcubedim == 0:
-        for y in range ( 0, yimagesz+1, ycubedim ):
-          for x in range ( 0, ximagesz+1, xcubedim ):
+          xmin = x
+          ymin = y
+          xmax = min ( ximagesz, x+xcubedim )
+          ymax = min ( yimagesz, y+ycubedim )
+          zmin = 0
+          zmax = min(slice_number+zcubedim, zimagesz+1)
 
-            # Getting a Cube id and ingesting the data one cube at a time
-            zidx = ocplib.XYZMorton ( [x/xcubedim, y/ycubedim, (slice_number-zoffset)/zcubedim] )
-            cube = Cube.getCube(cubedim, ch.getChannelType(), ch.getDataType(), timerange=[0,1])
-            cube.zeros()
-
-            xmin = x
-            ymin = y
-            xmax = min ( ximagesz, x+xcubedim )
-            ymax = min ( yimagesz, y+ycubedim )
-            zmin = 0
-            zmax = min(slice_number+zcubedim, zimagesz+1)
-
-            cube.data[0:zmax-zmin,0:ymax-ymin,0:xmax-xmin] = slab[zmin:zmax, ymin:ymax, xmin:xmax]
-            db.putTimeCube(ch, zidx, iteration_number, result.resolution, cube, update=False)
-
+          cube.data[0:zmax-zmin,0:ymax-ymin,0:xmax-xmin] = slab[zmin:zmax, ymin:ymax, xmin:xmax]
+          db.putTimeCube(ch, zidx, iteration_number, result.resolution, cube, update=False)
+            
 if __name__ == "__main__":
   main()

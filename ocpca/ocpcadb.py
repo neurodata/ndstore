@@ -23,6 +23,7 @@ import tempfile
 import h5py
 from collections import defaultdict
 import itertools
+import blosc
 from contextlib import closing
 
 import annotation
@@ -70,38 +71,38 @@ class OCPCADB:
       import mysqlkvio
       self.kvio = mysqlkvio.MySQLKVIO(self)
       self.NPZ = True
+      # Connection info for the metadata
+      try:
+        self.conn = MySQLdb.connect (host = self.proj.getDBHost(), user = self.proj.getDBUser(), passwd = self.proj.getDBPasswd(), db = self.proj.getDBName())
+        # start with no cursor
+        self.cursor = None
+      except MySQLdb.Error, e:
+        self.conn = None
+        logger.error("Failed to connect to database: {}, {}".format(self.proj.getDBHost(), self.proj.getDBName()))
+    
     elif self.proj.getKVEngine() == 'Riak':
       import riakkvio
+      self.conn = None
+      self.cursor = None
       self.kvio = riakkvio.RiakKVIO(self)
-      self.NPZ = False
+      self.NPZ = True
+    
     elif self.proj.getKVEngine() == 'Cassandra':
       import casskvio
-      self.kvio = casskvio.CassandraKVIO(self)
-      self.NPZ = False
-    else:
-      raise OCPCAError ("Unknown key/value store.  Engine = {}".format(self.proj.getKVEngine()))
-
-    # Connection info for the metadata
-    try:
-      self.conn = MySQLdb.connect (host = self.proj.getDBHost(),
-                            user = self.proj.getDBUser(),
-                            passwd = self.proj.getDBPasswd(),
-                            db = self.proj.getDBName())
-
-      # start with no cursor
-      self.cursor = None
-
-    except MySQLdb.Error, e:
       self.conn = None
-      logger.error("Failed to connect to database: {}, {}".format(self.proj.getDBHost(), self.proj.getDBName()))
-      raise
+      self.cursor = None
+      self.kvio = casskvio.CassandraKVIO(self)
+      self.NPZ = True
+    else:
+      raise OCPCAError ("Unknown key/value store. Engine = {}".format(self.proj.getKVEngine()))
 
     #if (self.proj.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS):
-    self.annoIdx = annindex.AnnotateIndex ( self.kvio, self.proj )
 
   def setChannel ( self, channel_name ):
     """Switch the channel pointer"""
     ch = self.proj.getChannelObj(channel_name)
+    if ch.getChannelType() == ANNOTATION_CHANNELS:
+      self.annoIdx = annindex.AnnotateIndex ( self.kvio, self.proj )
 
   def close ( self ):
     """Close the connection"""
@@ -117,7 +118,7 @@ class OCPCADB:
   def getCursor ( self ):
     """If we are in a transaction, return the cursor, otherwise make one"""
 
-    if self.cursor == None:
+    if self.cursor is None:
       return self.conn.cursor()
     else:
       return self.cursor
@@ -125,34 +126,37 @@ class OCPCADB:
   def closeCursor ( self, cursor ):
     """Close the cursor if we are not in a transaction"""
 
-    if self.cursor == None:
+    if self.cursor is None:
       cursor.close()
 
   def closeCursorCommit ( self, cursor ):
     """Close the cursor if we are not in a transaction"""
 
-    if self.cursor == None:
+    if self.cursor is None:
       self.conn.commit()
       cursor.close()
 
   def commit ( self ):
     """Commit the transaction. Moved out of __del__ to make explicit.""" 
 
-    self.cursor.close()
-    self.conn.commit()
+    if self.cursor is not None:
+      self.cursor.close()
+      self.conn.commit()
 
   def startTxn ( self ):
     """Start a transaction.  Ensure database is in multi-statement mode."""
 
-    self.cursor = self.conn.cursor()
-    sql = "START TRANSACTION"
-    self.cursor.execute ( sql )
+    if self.conn is not None:
+      self.cursor = self.conn.cursor()
+      sql = "START TRANSACTION"
+      self.cursor.execute ( sql )
 
   def rollback ( self ):
     """Rollback the transaction.  To be called on exceptions."""
 
-    self.cursor.close()
-    self.conn.rollback()
+    if self.cursor is not None:
+      self.cursor.close()
+      self.conn.rollback()
 
 
   def peekID ( self ):
@@ -340,7 +344,8 @@ class OCPCADB:
       # Handle the cube format here.  
       if self.NPZ:
           # decompress the cube
-          cube.fromNPZ ( cubestr )
+          #cube.fromNPZ ( cubestr )
+          cube.fromBlosc ( cubestr )
 
       else:
           # cubes are HDF5 files
@@ -371,7 +376,8 @@ class OCPCADB:
     #  they overwrite existing non-zero annotations.
       # Handle the cube format here.  
       if self.NPZ:
-        self.kvio.putCube(ch, zidx, resolution, cube.toNPZ(), not cube.fromZeros())
+        #self.kvio.putCube(ch, zidx, resolution, cube.toNPZ(), not cube.fromZeros())
+        self.kvio.putCube(ch, zidx, resolution, cube.toBlosc(), not cube.fromZeros())
       else:
         with closing(tempfile.NamedTemporaryFile()) as tmpfile:
           h5 = h5py.File ( tmpfile.name, driver="core" )
@@ -400,7 +406,8 @@ class OCPCADB:
       # Handle the cube format here.  
       if self.NPZ:
           # decompress the cube
-          cube.fromNPZ(cubestr)
+          #cube.fromNPZ(cubestr)
+          cube.fromBlosc(cubestr)
 
       else:
         # cubes are HDF5 files
@@ -428,7 +435,8 @@ class OCPCADB:
     if cube.isNotZeros():
       # Handle the cube format here.  
       if self.NPZ:
-        self.kvio.putTimeCube(ch, zidx, timestamp, resolution, cube.toNPZ(), update)
+        #self.kvio.putTimeCube(ch, zidx, timestamp, resolution, cube.toNPZ(), update)
+        self.kvio.putTimeCube(ch, zidx, timestamp, resolution, cube.toBlosc(), update)
       else:
         with closing(tempfile.NamedTemporaryFile()) as tmpfile:
           h5 = h5py.File ( tmpfile.name, driver='core', backing_store=True )
@@ -440,10 +448,12 @@ class OCPCADB:
   def getExceptions ( self, ch, zidx, resolution, annoid ):
     """Load a cube from the annotation database"""
 
+    import pdb; pdb.set_trace()
     excstr = self.kvio.getExceptions ( ch, zidx, resolution, annoid )
     if excstr:
       if self.NPZ:
-        return np.load(cStringIO.StringIO ( zlib.decompress(excstr)))
+        #return np.load(cStringIO.StringIO ( zlib.decompress(excstr)))
+        return blosc.unpack_array(excstr)
       else:
         # cubes are HDF5 files
         with closing(tempfile.NamedTemporaryFile()) as tmpfile:
@@ -486,9 +496,10 @@ class OCPCADB:
 
     #RBMAYBE make exceptions zipped in a future incompatible version??
     if self.NPZ:
-      fileobj = cStringIO.StringIO ()
-      np.save ( fileobj, exceptions )
-      excstr = fileobj.getvalue()
+      #fileobj = cStringIO.StringIO ()
+      #np.save ( fileobj, exceptions )
+      #excstr = fileobj.getvalue()
+      excstr = blosc.pack_array(exceptions)
       self.kvio.putExceptions(ch, key, resolution, exid, excstr, update)
     else:
       with closing (tempfile.NamedTemporaryFile()) as tmpfile:
@@ -559,7 +570,8 @@ class OCPCADB:
       return [None,None]
     else: 
       # decompress the cube
-      cube.fromNPZ ( row[1] )
+      #cube.fromNPZ ( row[1] )
+      cube.fromBlosc ( row[1] )
       return [row[0],cube]
 
 
@@ -726,7 +738,12 @@ class OCPCADB:
   #
   def annotateDense ( self, ch, corner, resolution, annodata, conflictopt ):
     """Process all the annotations in the dense volume"""
-
+    
+    import time
+    total_time = 0
+    total_time2 = 0
+    total_time3 = 0
+    total_time4 = 0
     index_dict = defaultdict(set)
 
     # dim is in xyz, data is in zyxj
@@ -758,10 +775,14 @@ class OCPCADB:
           for x in range(xnumcubes):
 
             key = ocplib.XYZMorton ([x+xstart,y+ystart,z+zstart])
+            start = time.time()
             cube = self.getCube (ch, key, resolution, True)
+            total_time3 += time.time()-start
             
             if conflictopt == 'O':
+              start = time.time()
               cube.overwrite ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
+              total_time4 += time.time()-start
             elif conflictopt == 'P':
               cube.preserve ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
             elif conflictopt == 'E': 
@@ -784,11 +805,15 @@ class OCPCADB:
               logger.error ( "Unsupported conflict option %s" % conflictopt )
               raise OCPCAError ( "Unsupported conflict option %s" % conflictopt )
             
+            start = time.time()
             self.putCube (ch, key, resolution, cube)
+            total_time += time.time()-start
 
-            #update the index for the cube
+            # update the index for the cube
             # get the unique elements that are being added to the data
+            start = time.time()
             uniqueels = np.unique ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
+            total_time2 += time.time()-start
             for el in uniqueels:
               index_dict[el].add(key) 
 
@@ -804,6 +829,7 @@ class OCPCADB:
       self.kvio.rollback()
       raise
     
+    print "Write", total_time, "Unique", total_time2, "Read", total_time3, "overwrite", total_time4
     self.kvio.commit()
 
 
@@ -1021,7 +1047,8 @@ class OCPCADB:
         offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
 
         if self.NPZ:
-          incube.fromNPZ ( datastring[:] )
+          #incube.fromNPZ ( datastring[:] )
+          incube.fromBlosc ( datastring[:] )
 
         else:
           # cubes are HDF5 files
@@ -1122,7 +1149,8 @@ class OCPCADB:
           offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
 
           if self.NPZ:
-            incube.fromNPZ(datastring[:])
+            #incube.fromNPZ(datastring[:])
+            incube.fromBlosc(datastring[:])
 
           else:
             # cubes are HDF5 files

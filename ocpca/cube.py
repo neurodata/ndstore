@@ -16,6 +16,7 @@ import numpy as np
 import cStringIO
 from PIL import Image
 import zlib
+import blosc
 
 import ocplib
 from ocptype import ANNOTATION_CHANNELS, TIMESERIES_CHANNELS, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, DTYPE_uint64, DTYPE_float32
@@ -89,6 +90,27 @@ class Cube:
       logger.error ("Failed to compress database cube.  Data integrity concern.")
       raise
  
+  def toBlosc ( self ):
+    """Pack the object"""
+    try:
+      # Create the compressed cube
+      return blosc.pack_array(self.data) 
+    except:
+      logger.error ("Failed to compress database cube.  Data integrity concern.")
+      raise
+  
+  def fromBlosc ( self, pandz ):
+    """Load the cube from a pickled and zipped blob"""
+    try:
+      self.data = blosc.unpack_array(pandz[:])
+      self.zdim, self.ydim, self.xdim = self.data.shape
+
+    except:
+      logger.error ("Failed to decompress database cube.  Data integrity concern.")
+      raise
+
+    self._newcube = False
+  
   def overwrite ( self, writedata ):
     """Get's a dense voxel region and overwrites all non-zero values"""
     if (self.data.dtype != writedata.dtype ):

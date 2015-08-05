@@ -643,7 +643,7 @@ def updateChannel(request):
         newchannel = form.save(commit=False)
 
       else:
-        #Invalid form
+        # Invalid form
         context = {'form': form, 'project': prname}
         return render_to_response('updatechannel.html', context, context_instance=RequestContext(request))
 
