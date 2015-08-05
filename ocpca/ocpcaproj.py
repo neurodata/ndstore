@@ -410,7 +410,6 @@ class OCPCAProjectsDB:
               raise OCPCAError("Channel type {} does not exist".format(ch.channel_type()))
             
             # tables specific to annotation projects
-            import pdb; pdb.set_trace()
             if ch.channel_type == ANNOTATION: 
               cursor.execute("CREATE TABLE {}_ids ( id BIGINT PRIMARY KEY)".format(ch.channel_name))
               # And the RAMON objects

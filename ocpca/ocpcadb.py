@@ -448,7 +448,6 @@ class OCPCADB:
   def getExceptions ( self, ch, zidx, resolution, annoid ):
     """Load a cube from the annotation database"""
 
-    import pdb; pdb.set_trace()
     excstr = self.kvio.getExceptions ( ch, zidx, resolution, annoid )
     if excstr:
       if self.NPZ:
