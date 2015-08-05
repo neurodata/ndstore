@@ -64,7 +64,6 @@ pip install libtiff
 # Setup the files needed for first run of the server
 
 cp django/OCP/settings_secret.py.example django/OCP/settings_secret.py
-cp django/OCP/settings.py.example django/OCP/settings.py
 
 
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
