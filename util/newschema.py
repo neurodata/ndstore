@@ -74,11 +74,11 @@ class exportSchema:
             #ds.save()
           except Exception, e:
             raise
-        elif self.table_name = 'projects':
+        elif self.table_name == 'projects':
           try:
             ds = Dataset.objects.get(dataset_name=row['dataset'])
             pr = Project (project_name=row['project'], project_description=row['project'], dataset=ds, user=user, ocp_version='0.0', host=row['host'], kvengine=row['kvengine'], kvserver=row['kvserver'])
-            ch = Channel (channel_name=, channel_description=, channel_type=, channel_datatype=, project_id=pr, resolution=row['resolution'], exceptions=row['exceptions'], startwindow=0, endwindow=0)
+            ch = Channel (channel_name="", channel_description="", channel_type="", channel_datatype="", project_id=pr, resolution=row['resolution'], exceptions=row['exceptions'], startwindow=0, endwindow=0)
           except Exception, e:
             raise
     
