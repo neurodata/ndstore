@@ -33,76 +33,6 @@ import ocpcarest
 import ocpcaproj
 import ocpcadb
 
-
-class NikhilIngest:
-
-  def __init__( self, token, resolution,path ):
-    """Load the stack into an OCP database"""
-
-    self.token = token
-    self.path = path
-    self.resolution = resolution
-"""
-  def ingest ( self ):
-    #Read the stack and ingest
-
-    with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-      proj = projdb.loadProject ( self.token )
-
-    with closing ( ocpcadb.OCPCADB (proj) ) as db:
-
-      (startslice, endslice) = proj.datasetcfg.slicerange
-      (xcubedim, ycubedim, zcubedim) = cubedims = proj.datasetcfg.cubedim[self.resolution]
-      (ximagesz, yimagesz) = proj.datasetcfg.imagesz[self.resolution]
-      batchsz = zcubedim
-
-      # Ingest in database aligned slabs in the z dimension
-      for sl in range( startslice, endslice, batchsz ):
-
-        slab = np.zeros ( [zcubedim, yimagesz, ximagesz], dtype=np.uint8 )
-
-        # over each slice
-        for b in range( batchsz ):
-
-          #if we are at the end of the space, quit
-          if ( sl + b <= endslice ):
-
-            filename = '{}{:0>3}.tif'.format(self.path, sl+b)
-            print filename
-            try:
-              img = Image.open(filename,'r')
-              slab [b,:,:] = np.asarray(img)
-            except IOError, e:
-              print "Failed to open file %s" % (e)
-              img = np.zeros((yimagesz,ximagesz), dtype=np.uint8)
-              slab [b,:,:] = img
-
-
-        for y in range ( 0, yimagesz, ycubedim ):
-          for x in range ( 0, ximagesz, xcubedim ):
-
-            zidx = ocplib.XYZMorton ( [ x/xcubedim, y/ycubedim, (sl-startslice)/zcubedim] )
-            cubedata = np.zeros ( [zcubedim, ycubedim, xcubedim], dtype=np.uint8 )
-
-            xmin = x
-            ymin = y
-            xmax = ( min(ximagesz-1, x+xcubedim-1) ) + 1
-            ymax = ( min(yimagesz-1, y+ycubedim-1) ) + 1
-            zmin = 0
-            zmax = min(sl+zcubedim,endslice)
-
-            cubedata[0:zmax-zmin,0:ymax-ymin,0:xmax-xmin] = slab[zmin:zmax,ymin:ymax,xmin:xmax]
-            cube = imagecube.ImageCube16 ( cubedims )
-            cube.zeros()
-            cube.data = cubedata
-            if np.count_nonzero ( cube.data ) != 0:
-              print zidx, ocplib.MortonXYZ(zidx)
-              db.annotateDense ( zidx, self.resolution, cube )
-          print "Commiting at x=%s, y=%s, z=%s" % (x,y,sl)
-        db.conn.commit()
-        slab = None
-"""
-
 class NikhilIngest:
 
   def __init__(self, path, resolution, token_name):
@@ -163,13 +93,11 @@ class NikhilIngest:
     new_channel.channel_name = channel_name
     new_channel.channel_description = channel_name
     new_channel.channel_type = 'annotation'
+    new_channel.channel_datatype = 'unit32'
     new_channel.resolution = self.resolution
     new_channel.propagate = 0
-    """TODO CONFIRM THIS IS TRUE VVVVVVVV"""
     new_channel.readonly = 0
     new_channel.exceptions = 0
-    new_channel.startwindow = 0
-    new_channel.endwindow = END_WINDOWS[index]
     new_channel.save()
 
     try:

@@ -59,6 +59,7 @@ pip install docutils
 pip install posix-ipc
 pip install pycparser
 pip install libtiff
+pip install blosc
 
 
 # Setup the files needed for first run of the server
