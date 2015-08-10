@@ -12,13 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import urllib2
 import json
+import requests
+
+from django.conf import settings
 
 import ocpcaproj
 from ocpuser.models import Project
 from ocpuser.models import Dataset
 from ocpuser.models import Token
 from ocpuser.models import Channel
+
 
 def createProject(webargsi, post_data):
   """Create a project using a JSON file"""
@@ -28,6 +33,7 @@ def createProject(webargsi, post_data):
     dataset_dict = ocp_dict['dataset']
     project_dict = ocp_dict['project']
     channels = ocp_dict['channels']
+    metadata_dict = ocp_dict['metadata']
   except Exception, e:
     print "Missing requred fields"
     raise
@@ -37,7 +43,7 @@ def createProject(webargsi, post_data):
   ch_list = []
   for channel_name, value in channels.iteritems():
     channel_dict = channels[channel_name]
-    ch_list.append(extractChanneltDict(channel_dict))
+    ch_list.append(extractChannelDict(channel_dict))
 
   try:
     # Setting the user_ids to brain for now
@@ -97,12 +103,32 @@ def createProject(webargsi, post_data):
       
       # KL TODO call the ingest function here
     
+    # Posting to LIMS system
+    postMetadataDict(metadata_dict, pr.project_name)
+
     return_json = "SUCCESS"
   except Exception, e:
+    # KL TODO Delete data from the LIMS systems
     print "Error saving models"
     return_json = "FAILED"
 
   return json.dumps(return_json)
+
+
+def postMetadataDict(metadata_dict, project_name):
+  """Post metdata to the LIMS system"""
+
+  try:
+    url = 'http://{}/lims/{}/'.format(settings.LIMS_SERVER, project_name)
+    #headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+    #r = requests.post(url, data=json.dumps(lims_dict), headers=headers)
+    req = urllib2.Request(url, json.dumps(metadata_dict))
+    req.add_header('Content-Type', 'application/json')
+    response = urllib2.urlopen(req)
+  except urllib2.URLError, e:
+    print "Failed URL {}".format(url)
+    pass
+
 
 def extractDatasetDict(ds_dict):
   """Generate a dataset object from the JSON flle"""
@@ -163,7 +189,7 @@ def extractProjectDict(pr_dict):
     tk.token_name = pr_dict['public']
   return pr, tk
 
-def extractChanneltDict(ch_dict):
+def extractChannelDict(ch_dict):
   """Generate a channel object from the JSON flle"""
 
   ch = Channel()
@@ -188,7 +214,7 @@ def extractChanneltDict(ch_dict):
 
   return (ch, data_url, file_name)
 
-def createJson(dataset, project, channel_list):
+def createJson(dataset, project, channel_list, metadata={}):
   """Genarate OCP json object"""
   
   ocp_dict = {}
@@ -197,7 +223,8 @@ def createJson(dataset, project, channel_list):
   ocp_dict['channels'] = {}
   for channel_name, value in channel_list.iteritems():
     ocp_dict['channels'][channel_name] = createChannelDict(*value)
-
+  
+  ocp_dict['metadata'] = metadata
   return json.dumps(ocp_dict, sort_keys=True, indent=4)
 
 def createDatasetDict(dataset_name, imagesize, voxelres, offset=[0,0,0], timerange=[0,0], scalinglevels=0, scaling=0):

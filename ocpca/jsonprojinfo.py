@@ -15,6 +15,8 @@
 
 import numpy as np
 import json
+import urllib2
+from django.conf import settings
 
 import ocpcadb
 from ocptype import ZSLICES
@@ -71,7 +73,7 @@ def chandict ( channel ):
 
   return chandict
 
-def jsonInfo ( proj ):
+def jsonInfo (proj):
   """All Project Info"""
 
   jsonprojinfo = {}
@@ -80,18 +82,22 @@ def jsonInfo ( proj ):
   jsonprojinfo['channels'] = {}
   for ch in proj.projectChannels():
     jsonprojinfo['channels'][ch.getChannelName()] = chandict ( ch ) 
-
+  
+  jsonprojinfo['metadata'] = metadatadict( proj )
   return json.dumps ( jsonprojinfo, sort_keys=True, indent=4 )
 
 
-#def jsonChanInfo ( proj, db ):
-  #"""List of Channels"""
-
-  #if proj.getProjectType() in ocpcaproj.CHANNEL_PROJECTS:
-    #return json.dumps ( db.getChannels(), sort_keys=True, indent=4 )
-  #else:
-    #return json.dumps ({})
-
+def metadatadict( proj ):
+  """Metadata Info"""
+  
+  try:
+    url = 'http://{}/lims/{}/'.format(settings.LIMS_SERVER, proj.getProjectName())
+    req = urllib2.Request(url)
+    response = urllib2.urlopen(req)
+    return json.loads(response.read())
+  except urllib2.URLError, e:
+    print "Failed URL {}".format(url)
+    return {}
 
 def publicTokens ( projdb ):
   """List of Public Tokens"""

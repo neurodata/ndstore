@@ -1475,7 +1475,7 @@ def jsonInfo ( webargs ):
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
 
-    return jsonprojinfo.jsonInfo( proj )
+    return jsonprojinfo.jsonInfo(proj)
 
 
 def projInfo ( webargs ):

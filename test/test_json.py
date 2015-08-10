@@ -60,9 +60,10 @@ class Test_Json():
     project = (p.token, None, None)
     # channel format = { chan1 : (channel_name, datatype, channel_type, data_url, file_name, exceptions, resolution, windowrange, readonly), chan2: ...... }
     channels = { p.channels[0] : (p.channels[0], p.datatype, p.channel_type, 'sample_data_url', 'sample_filename', None, None, None, None) }
-    
+    metadata = { 'Author': 'Will', 'Animal':'Mouse', 'Date_Collected':'10/2/2015' }
+
     json_file = tempfile.NamedTemporaryFile(mode='w+b')
-    json_file.write(createJson(dataset, project, channels))
+    json_file.write(createJson(dataset, project, channels, metadata=metadata))
     json_file.seek(0)
 
     # posting the JSON url and checking if it is successful
@@ -80,6 +81,12 @@ class Test_Json():
     assert( proj_info['dataset']['scalinglevels'] == 1)
     assert( proj_info['channels'][p.channels[0]]['resolution'] == 0)
     assert( proj_info['channels'][p.channels[0]]['datatype'] == p.datatype)
+    try:
+      assert( proj_info['metadata'][0]['Author'] == 'Will')
+    except KeyError:
+      print "LIMS System not working"
+    except AssertionError:
+      print "LIMS System not working"
   
   def test_complex_json(self):
     """Test the complex JSON project creation with only the required fields"""

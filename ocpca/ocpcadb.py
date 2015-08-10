@@ -97,12 +97,7 @@ class OCPCADB:
       raise OCPCAError ("Unknown key/value store. Engine = {}".format(self.proj.getKVEngine()))
 
     #if (self.proj.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS):
-
-  def setChannel ( self, channel_name ):
-    """Switch the channel pointer"""
-    ch = self.proj.getChannelObj(channel_name)
-    if ch.getChannelType() == ANNOTATION_CHANNELS:
-      self.annoIdx = annindex.AnnotateIndex ( self.kvio, self.proj )
+    self.annoIdx = annindex.AnnotateIndex ( self.kvio, self.proj )
 
   def close ( self ):
     """Close the connection"""
@@ -344,8 +339,8 @@ class OCPCADB:
       # Handle the cube format here.  
       if self.NPZ:
           # decompress the cube
-          #cube.fromNPZ ( cubestr )
-          cube.fromBlosc ( cubestr )
+          cube.fromNPZ ( cubestr )
+          #cube.fromBlosc ( cubestr )
 
       else:
           # cubes are HDF5 files
@@ -376,8 +371,8 @@ class OCPCADB:
     #  they overwrite existing non-zero annotations.
       # Handle the cube format here.  
       if self.NPZ:
-        #self.kvio.putCube(ch, zidx, resolution, cube.toNPZ(), not cube.fromZeros())
-        self.kvio.putCube(ch, zidx, resolution, cube.toBlosc(), not cube.fromZeros())
+        self.kvio.putCube(ch, zidx, resolution, cube.toNPZ(), not cube.fromZeros())
+        #self.kvio.putCube(ch, zidx, resolution, cube.toBlosc(), not cube.fromZeros())
       else:
         with closing(tempfile.NamedTemporaryFile()) as tmpfile:
           h5 = h5py.File ( tmpfile.name, driver="core" )
@@ -406,8 +401,8 @@ class OCPCADB:
       # Handle the cube format here.  
       if self.NPZ:
           # decompress the cube
-          #cube.fromNPZ(cubestr)
-          cube.fromBlosc(cubestr)
+          cube.fromNPZ(cubestr)
+          #cube.fromBlosc(cubestr)
 
       else:
         # cubes are HDF5 files
@@ -435,8 +430,8 @@ class OCPCADB:
     if cube.isNotZeros():
       # Handle the cube format here.  
       if self.NPZ:
-        #self.kvio.putTimeCube(ch, zidx, timestamp, resolution, cube.toNPZ(), update)
-        self.kvio.putTimeCube(ch, zidx, timestamp, resolution, cube.toBlosc(), update)
+        self.kvio.putTimeCube(ch, zidx, timestamp, resolution, cube.toNPZ(), update)
+        #self.kvio.putTimeCube(ch, zidx, timestamp, resolution, cube.toBlosc(), update)
       else:
         with closing(tempfile.NamedTemporaryFile()) as tmpfile:
           h5 = h5py.File ( tmpfile.name, driver='core', backing_store=True )
@@ -451,8 +446,8 @@ class OCPCADB:
     excstr = self.kvio.getExceptions ( ch, zidx, resolution, annoid )
     if excstr:
       if self.NPZ:
-        #return np.load(cStringIO.StringIO ( zlib.decompress(excstr)))
-        return blosc.unpack_array(excstr)
+        return np.load(cStringIO.StringIO ( zlib.decompress(excstr)))
+        #return blosc.unpack_array(excstr)
       else:
         # cubes are HDF5 files
         with closing(tempfile.NamedTemporaryFile()) as tmpfile:
@@ -495,10 +490,10 @@ class OCPCADB:
 
     #RBMAYBE make exceptions zipped in a future incompatible version??
     if self.NPZ:
-      #fileobj = cStringIO.StringIO ()
-      #np.save ( fileobj, exceptions )
-      #excstr = fileobj.getvalue()
-      excstr = blosc.pack_array(exceptions)
+      fileobj = cStringIO.StringIO ()
+      np.save ( fileobj, exceptions )
+      excstr = fileobj.getvalue()
+      #excstr = blosc.pack_array(exceptions)
       self.kvio.putExceptions(ch, key, resolution, exid, excstr, update)
     else:
       with closing (tempfile.NamedTemporaryFile()) as tmpfile:
@@ -569,8 +564,8 @@ class OCPCADB:
       return [None,None]
     else: 
       # decompress the cube
-      #cube.fromNPZ ( row[1] )
-      cube.fromBlosc ( row[1] )
+      cube.fromNPZ ( row[1] )
+      #cube.fromBlosc ( row[1] )
       return [row[0],cube]
 
 
@@ -1046,8 +1041,8 @@ class OCPCADB:
         offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
 
         if self.NPZ:
-          #incube.fromNPZ ( datastring[:] )
-          incube.fromBlosc ( datastring[:] )
+          incube.fromNPZ ( datastring[:] )
+          #incube.fromBlosc ( datastring[:] )
 
         else:
           # cubes are HDF5 files
@@ -1148,8 +1143,8 @@ class OCPCADB:
           offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
 
           if self.NPZ:
-            #incube.fromNPZ(datastring[:])
-            incube.fromBlosc(datastring[:])
+            incube.fromNPZ(datastring[:])
+            #incube.fromBlosc(datastring[:])
 
           else:
             # cubes are HDF5 files
