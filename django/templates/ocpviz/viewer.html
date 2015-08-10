@@ -284,13 +284,12 @@
         }
         else {
           // pan the map to center on these coordinates
-          console.log('placing marker');
           var point = L.point(x, y);
           var projpoint = map.unproject(point); //, 2*maxres - map.getZoom());
 
           map.panTo(projpoint);
           // place a marker
-          L.marker(projpoint).addTo(map); 
+          //L.marker(projpoint).addTo(map); 
         } 
       }
       else {
@@ -312,6 +311,17 @@
         }
       }
      
+    });
+    
+    $( "#addmarkercenter" ).click(function( event ) {
+      // place a marker at the current map center 
+      var center = map.getCenter();
+      var point = map.project(center);
+      var marker_options = {
+        title: point.x + " " + point.y,
+      }
+      // TODO keep track of markers by storing in an array
+      L.marker(center, marker_options).addTo(map); 
     });
 
 		// z-index arrows 
