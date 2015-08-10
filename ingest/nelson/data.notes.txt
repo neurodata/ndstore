@@ -1,0 +1,51 @@
+Description of the data, extracted from a mail thread with Mike Economo:
+
+*** File format
+In the octtree, the tif in the root directory:
+
+/nobackup/mousebrainmicro/2014-11-24-Stitch1/
+
+represents the entire imaged volume.  The tifs in each subdirectory represent 1/8 of that volume (half along each dimension).  If one thinks about the name of the directory (minus 1) as a binary number, we get:
+
+1 = [0 0 0]
+2 = [0 0 1]
+3 = [0 1 0]
+4 = [0 1 1]
+5 = [1 0 0]
+...
+
+These are also the positions of each subvolume in z,y,x.  So 4 would cover the intervals [0.0 0.5], [0.5 1.0], [0.5 1.0] in z,y,x of the full imaged volume.   This pattern is repeated at each subdivision of the tree.  So, for 411123, the origin of the tile is at:
+
+[z y x] = 0.5*[0 1 1] + 0.25*[0 0 0] +0.125*[0 0 0] + 0.0625*[0 0 0] + 0.03125*[0 0 1] + 0.015625*[0 1 0] = [0 0.5156 0.5313]
+
+The extent of the tile in each dimension is 0.015625 of the full volume (2^-6).  This can be converted to other coordinate systems as necessary (voxels, physical units, etc.).  
+
+The dimensions of the full imaged volume, if one were to combine all of the highest-resolution tifs (the leaves of the tree), is:
+
+[637, 403, 223]*(2^6) = [40768, 25792, 14272]  in [x, y, z]
+
+The dimensions of every tif in the tree is [637, 403, 223], and there are 6 levels.  So, to convert to voxels, one would multiply the origin of tile #411123 in normalized coordinates by these dimensions and get [21660 13298 0].  The extent is:
+
+[40768, 25792, 14272] /(2^-6) = [637, 403, 223]
+
+which is, of course, the size of each tile.
+
+
+*** transform.txt file:
+The transform.txt specifies the tile origin and voxel size.  They are both in nanometers.  Voxel size should be something like 1000x250x250 for that dataset.
+  
+The transform.txt in each directory defines the transform between the pixel positions in each associated tif and the coordinate system of the stages on the microscope.  In particular, the six numbers represent the pixel dimensions, in nm, and the location of the (0,0,0) pixel in stage space (also, nm).  They don't necessarily need to be used for anything.
+
+
+*** Levels (for viewing data)
+0 is green, 1 is red (or even better - magenta).
+
+You can use the following for scaling:
+
+Channel 0:
+Black level - 13200
+White level - 32000
+
+Channel 1:
+Black level - 11200
+White level - 30000
