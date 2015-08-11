@@ -7,7 +7,7 @@ RAMON Field Service
 setField
 --------
 
-.. http:get:: (string:server_name)/ca/(string:token_name)/(string:channel_name)/setField/(string:ramon_field)/(string/int/float:ramon_value)
+.. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/setField/(string:ramon_field)/(string/int/float:ramon_value)
    
    :synopsis: Set the value of the RAMON field for the specified channel
 
@@ -28,7 +28,7 @@ setField
 getField
 --------
 
-.. http:get:: (string:server_name)/ca/(string:token_name)/(string:channel_name)/getField/(string:ramon_field)/
+.. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/getField/(string:ramon_field)/
    
    :synopsis: Set the value of the RAMON field for the specified channel
 
