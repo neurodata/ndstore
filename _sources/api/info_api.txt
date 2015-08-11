@@ -273,3 +273,17 @@ GET
 
    :statuscode 200: No error
    :statuscode 404: Error in the syntax or file format
+   
+   **Example Request**:
+   
+   .. sourcecode:: http
+      
+      GET /ocp/ca/kasthuri11/projinfo/ HTTP/1.1
+      Host: ocp.me
+
+   **Example Response**:
+
+   .. sourcecode:: http
+      
+      HTTP/1.1 200 OK
+      Content-Type: application/hdf5

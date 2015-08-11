@@ -4,6 +4,8 @@ Data API's
 HDF5 Service
 ============
 
+.. _hdf5-post:
+
 POST
 ----
 
@@ -45,6 +47,7 @@ POST
 
 .. gist:: https://gist.github.com/kunallillaney/19b78e5a83611edf7808
 
+.. _hdf5-get:
 
 GET
 ----
@@ -90,12 +93,14 @@ GET
 Numpy Service
 =============
 
+.. _numpy-post:
+
 POST
 ----
 
 .. http:post:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/npz/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
    
-   :synopsis: Post a Numpy file to the server
+   :synopsis: Post a 3D/4D region of data for of a specified channel,resolution and bounds in the numpy array format.
 
    :param server_name: Server Name in OCP. In the general case this is ocp.me.
    :type server_name: string
@@ -129,13 +134,14 @@ POST
 
 .. gist:: https://gist.github.com/kunallillaney/19b78e5a83611edf7808
 
+.. _numpy-get:
 
 GET
 ----
 
 .. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/npz/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
    
-   :synopsis: Get a Numpy file from the server
+   :synopsis: Download a 3D/4D region of data for of a specified channel,resolution and bounds in the numpy array format. You can load this data into python using the numpy library for anaylsis.
 
    :param server_name: Server Name in OCP. In the general case this is ocp.me.
    :type server_name: string
@@ -173,12 +179,14 @@ GET
 Image Slice Service
 ===================
 
+.. _slice-xy:
+
 GET XY Slice Cutout
 -------------------
 
 .. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/xy/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:z_slice)/(int:time_slice)/
    
-   :synopsis: Get a XY Slice Cutout
+   :synopsis: Download a single image of a specified canonical plane, XY, and specified channel,resolution and bounds. Your browser can load these images.
 
    :param server_name: Server Name in OCP. In the general case this is ocp.me.
    :type server_name: string
@@ -203,16 +211,35 @@ GET XY Slice Cutout
     
    :statuscode 200: No error
    :statuscode 404: Error in the syntax or file format
+   
+   **Example Request**:
+   
+   .. sourcecode:: http
+      
+      GET /ocp/ca/kasthuri11/image/xy/0/9000,9500/12000,12500/50/ HTTP/1.1
+      Host: ocp.me
 
-.. gist:: https://gist.github.com/19b78e5a83611edf7808.git
+   **Example Response**:
 
+   .. sourcecode:: http
+      
+      HTTP/1.1 200 OK
+      Content-Type: image/tiff
+
+.. figure:: ../images/slice_xy.png
+    :align: center
+    :width: 500px
+    :height: 500px
+
+
+.. _slice-xz:
 
 GET XZ Slice Cutout
 -------------------
 
 .. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/xz/(int:resolution)/(int:min_x),(int:max_x)/(int:y_slice)/(int:min_z),(int:max_z)/(int:time_slice/
    
-   :synopsis: Get a HDF5 file from the server
+   :synopsis: Download a single image of a specified canonical plane, XZ, and specified channel,resolution and bounds. Your browser can load these images.
 
    :param server_name: Server Name in OCP. In the general case this is ocp.me.
    :type server_name: string
@@ -238,12 +265,33 @@ GET XZ Slice Cutout
    :statuscode 200: No error
    :statuscode 404: Error in the syntax or file format
 
+   **Example Request**:
+   
+   .. sourcecode:: http
+      
+      GET /ocp/ca/kasthuri11/image/xz/0/9000,9500/12000/50,250/ HTTP/1.1
+      Host: ocp.me
+
+   **Example Response**:
+
+   .. sourcecode:: http
+      
+      HTTP/1.1 200 OK
+      Content-Type: image/tiff
+
+.. figure:: ../images/slice_xz.png
+    :align: center
+    :width: 500px
+    :height: 200px
+
+.. _slice-yz:
+
 GET YZ Slice Cutout
 -------------------
 
 .. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/yz/(int:resolution)/(int:x_slice)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:time_slice)/
    
-   :synopsis: Get a HDF5 file from the server
+   :synopsis: Download a single image of a specified canonical plane, YZ, and specified channel,resolution and bounds. Your browser can load these images.
 
    :param server_name: Server Name in OCP. In the general case this is ocp.me.
    :type server_name: string
@@ -274,3 +322,22 @@ GET YZ Slice Cutout
 
    :statuscode 200: No error
    :statuscode 404: Error in the syntax or file format
+   
+   **Example Request**:
+   
+   .. sourcecode:: http
+      
+      GET /ocp/ca/kasthuri11/image/yz/0/9000/12000,12500/50,250/ HTTP/1.1
+      Host: ocp.me
+
+   **Example Response**:
+
+   .. sourcecode:: http
+      
+      HTTP/1.1 200 OK
+      Content-Type: image/tiff
+
+.. figure:: ../images/slice_yz.png
+    :align: center
+    :width: 500px
+    :height: 200px

@@ -110,8 +110,8 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="data_api.html#numpy-service">Numpy Service</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="data_api.html#id1">POST</a></li>
-<li class="toctree-l3"><a class="reference internal" href="data_api.html#id2">GET</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_api.html#numpy-post">POST</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_api.html#numpy-get">GET</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="data_api.html#image-slice-service">Image Slice Service</a><ul>
@@ -504,6 +504,16 @@ Content-Type: application/json
 </tr>
 </tbody>
 </table>
+<p><strong>Example Request</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span class="nf">GET</span> <span class="nn">/ocp/ca/kasthuri11/projinfo/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">ocp.me</span>
+</pre></div>
+</div>
+<p><strong>Example Response</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/hdf5</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
