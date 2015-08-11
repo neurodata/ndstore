@@ -1,12 +1,14 @@
 Propagate API's
 ***************
 
+.. _propagate-get:
+
 getPropagate
 ------------
 
-.. http:get:: (string:server_name)/ca/(string:token_name)/(string:channel_name)/getPropagate/
-   
-   :synopsis: Get the propagation state of the channel
+.. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/getPropagate/
+
+   :synopsis: Get the :ref:`propagation<ocp-propagation>` state of the channel.
 
    :param server_name: Server Name in OCP. In the general case this is ocp.me.
    :type server_name: string
@@ -18,12 +20,14 @@ getPropagate
    :statuscode 200: No error
    :statuscode 404: Error in the syntax or file format
 
+.. _propagate-set:
+
 setPropagate
 ------------
 
-.. http:get:: (string:server_name)/ca/(string:token_name)/(string:channel_name)/setPropagate/(int:propagate_value)/
+.. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/setPropagate/(int:propagate_value)/
 
-   :synopsis: Set the propagation state of the channel
+   :synopsis: Set the :ref:`propagation<ocp-propagation>` state of the channel.
 
    :param server_name: Server Name in OCP. In the general case this is ocp.me.
    :type server_name: string

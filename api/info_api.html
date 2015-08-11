@@ -84,7 +84,7 @@
 <li class="toctree-l1"><a class="reference internal" href="ocp_types.html">OCP Types</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="ocp_types.html#channel-types">Channel Types</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ocp_types.html#data-types">Data Types</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ocp_types.html#propagated-values">Propagated Values</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ocp_types.html#propagation-service">Propagation Service</a></li>
 </ul>
 </li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">Project Info API&#8217;s</a><ul>
@@ -207,10 +207,10 @@
 <div class="section" id="json-service">
 <h2>JSON Service<a class="headerlink" href="#json-service" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="get">
-<h3>GET<a class="headerlink" href="#get" title="Permalink to this headline">¶</a></h3>
+<span id="json-get"></span><h3>GET<a class="headerlink" href="#get" title="Permalink to this headline">¶</a></h3>
 <dl class="get">
-<dt id="get-(string-server_name)-ca-(string-token_name)-info-">
-<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/info/</code><a class="headerlink" href="#get-(string-server_name)-ca-(string-token_name)-info-" title="Permalink to this definition">¶</a></dt>
+<dt id="get-(string-server_name)-ocp-ca-(string-token_name)-info-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/info/</code><a class="headerlink" href="#get-(string-server_name)-ocp-ca-(string-token_name)-info-" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -232,14 +232,199 @@
 </tr>
 </tbody>
 </table>
+<p><strong>Example Request</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span class="nf">GET</span> <span class="nn">/ocp/ca/kasthuri11/info/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">ocp.me</span>
+</pre></div>
+</div>
+<p><strong>Example Response</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/json</span>
+
+
+<span class="p">{</span>
+    <span class="nt">&quot;dataset&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;cube_dimension&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;0&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="mi">128</span><span class="p">,</span>
+                <span class="mi">128</span><span class="p">,</span>
+                <span class="mi">16</span>
+            <span class="p">],</span>
+            <span class="nt">&quot;1&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="mi">128</span><span class="p">,</span>
+                <span class="mi">128</span><span class="p">,</span>
+                <span class="mi">16</span>
+            <span class="p">],</span>
+            <span class="nt">&quot;2&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="mi">128</span><span class="p">,</span>
+                <span class="mi">128</span><span class="p">,</span>
+                <span class="mi">16</span>
+            <span class="p">],</span>
+            <span class="nt">&quot;3&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="mi">128</span><span class="p">,</span>
+                <span class="mi">128</span><span class="p">,</span>
+                <span class="mi">16</span>
+            <span class="p">],</span>
+            <span class="nt">&quot;4&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="mi">128</span><span class="p">,</span>
+                <span class="mi">128</span><span class="p">,</span>
+                <span class="mi">16</span>
+            <span class="p">],</span>
+            <span class="nt">&quot;5&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="mi">64</span><span class="p">,</span>
+                <span class="mi">64</span><span class="p">,</span>
+                <span class="mi">64</span>
+            <span class="p">],</span>
+            <span class="nt">&quot;6&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="mi">64</span><span class="p">,</span>
+                <span class="mi">64</span><span class="p">,</span>
+                <span class="mi">64</span>
+            <span class="p">],</span>
+            <span class="nt">&quot;7&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="mi">64</span><span class="p">,</span>
+                <span class="mi">64</span><span class="p">,</span>
+                <span class="mi">64</span>
+            <span class="p">]</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;imagesize&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;0&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="mi">21504</span><span class="p">,</span>
+                <span class="mi">26624</span>
+            <span class="p">],</span>
+            <span class="nt">&quot;1&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="mi">10752</span><span class="p">,</span>
+                <span class="mi">13312</span>
+            <span class="p">],</span>
+            <span class="nt">&quot;2&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="mi">5376</span><span class="p">,</span>
+                <span class="mi">6656</span>
+            <span class="p">],</span>
+            <span class="nt">&quot;3&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="mi">2688</span><span class="p">,</span>
+                <span class="mi">3328</span>
+            <span class="p">],</span>
+            <span class="nt">&quot;4&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="mi">1344</span><span class="p">,</span>
+                <span class="mi">1664</span>
+            <span class="p">],</span>
+            <span class="nt">&quot;5&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="mi">672</span><span class="p">,</span>
+                <span class="mi">832</span>
+            <span class="p">],</span>
+            <span class="nt">&quot;6&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="mi">336</span><span class="p">,</span>
+                <span class="mi">416</span>
+            <span class="p">],</span>
+            <span class="nt">&quot;7&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="mi">168</span><span class="p">,</span>
+                <span class="mi">208</span>
+            <span class="p">]</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;isotropic_slicerange&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;0&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="mi">1</span><span class="p">,</span>
+                <span class="mi">1850</span>
+            <span class="p">],</span>
+            <span class="nt">&quot;1&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="mi">1</span><span class="p">,</span>
+                <span class="mi">1850</span>
+            <span class="p">],</span>
+            <span class="nt">&quot;2&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="mi">1</span><span class="p">,</span>
+                <span class="mi">1850</span>
+            <span class="p">],</span>
+            <span class="nt">&quot;3&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="mi">1</span><span class="p">,</span>
+                <span class="mi">1850</span>
+            <span class="p">],</span>
+            <span class="nt">&quot;4&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="mi">1</span><span class="p">,</span>
+                <span class="mi">1157</span>
+            <span class="p">],</span>
+            <span class="nt">&quot;5&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="mi">1</span><span class="p">,</span>
+                <span class="mi">579</span>
+            <span class="p">],</span>
+            <span class="nt">&quot;6&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="mi">1</span><span class="p">,</span>
+                <span class="mi">290</span>
+            <span class="p">],</span>
+            <span class="nt">&quot;7&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="mi">1</span><span class="p">,</span>
+                <span class="mi">145</span>
+            <span class="p">]</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;neariso_scaledown&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;0&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="nt">&quot;1&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="nt">&quot;2&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="nt">&quot;3&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="nt">&quot;4&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="nt">&quot;5&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+            <span class="nt">&quot;6&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
+            <span class="nt">&quot;7&quot;</span><span class="p">:</span> <span class="mi">13</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;resolutions&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="mi">0</span><span class="p">,</span>
+            <span class="mi">1</span><span class="p">,</span>
+            <span class="mi">2</span><span class="p">,</span>
+            <span class="mi">3</span><span class="p">,</span>
+            <span class="mi">4</span><span class="p">,</span>
+            <span class="mi">5</span><span class="p">,</span>
+            <span class="mi">6</span><span class="p">,</span>
+            <span class="mi">7</span>
+        <span class="p">],</span>
+        <span class="nt">&quot;slicerange&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="mi">1</span><span class="p">,</span>
+            <span class="mi">1850</span>
+        <span class="p">],</span>
+        <span class="nt">&quot;timerange&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="mi">0</span><span class="p">,</span>
+            <span class="mi">0</span>
+        <span class="p">],</span>
+        <span class="nt">&quot;windowrange&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="mi">0</span><span class="p">,</span>
+            <span class="mi">0</span>
+        <span class="p">],</span>
+        <span class="nt">&quot;zscale&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;0&quot;</span><span class="p">:</span> <span class="mf">10.0</span><span class="p">,</span>
+            <span class="nt">&quot;1&quot;</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span>
+            <span class="nt">&quot;2&quot;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">,</span>
+            <span class="nt">&quot;3&quot;</span><span class="p">:</span> <span class="mf">1.25</span><span class="p">,</span>
+            <span class="nt">&quot;4&quot;</span><span class="p">:</span> <span class="mf">0.625</span><span class="p">,</span>
+            <span class="nt">&quot;5&quot;</span><span class="p">:</span> <span class="mf">0.3125</span><span class="p">,</span>
+            <span class="nt">&quot;6&quot;</span><span class="p">:</span> <span class="mf">0.15625</span><span class="p">,</span>
+            <span class="nt">&quot;7&quot;</span><span class="p">:</span> <span class="mf">0.078125</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;project&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;dataset&quot;</span><span class="p">:</span> <span class="s2">&quot;kasthuri11&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;dataurl&quot;</span><span class="p">:</span> <span class="s2">&quot;http://openconnecto.me/ocp&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;dbname&quot;</span><span class="p">:</span> <span class="s2">&quot;kasthuri11&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;exceptions&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+        <span class="nt">&quot;host&quot;</span><span class="p">:</span> <span class="s2">&quot;dsp061.pha.jhu.edu&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;kvengine&quot;</span><span class="p">:</span> <span class="s2">&quot;MySQL&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;kvserver&quot;</span><span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;projecttype&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="nt">&quot;propagate&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="nt">&quot;readonly&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+        <span class="nt">&quot;resolution&quot;</span><span class="p">:</span> <span class="mi">0</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;version&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;ocp&quot;</span><span class="p">:</span> <span class="mf">0.6</span><span class="p">,</span>
+        <span class="nt">&quot;schema&quot;</span><span class="p">:</span> <span class="mf">0.6</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
-<script src="https://gist.github.com/kunallillaney/19b78e5a83611edf7808.js">&nbsp;</script></div>
+</div>
 <div class="section" id="post">
-<h3>POST<a class="headerlink" href="#post" title="Permalink to this headline">¶</a></h3>
+<span id="json-post"></span><h3>POST<a class="headerlink" href="#post" title="Permalink to this headline">¶</a></h3>
 <dl class="get">
-<dt id="get-(string-server_name)-ca-json-">
-<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ca/json/</code><a class="headerlink" href="#get-(string-server_name)-ca-json-" title="Permalink to this definition">¶</a></dt>
+<dt id="get-(string-server_name)-ocp-ca-json-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/ca/json/</code><a class="headerlink" href="#get-(string-server_name)-ocp-ca-json-" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -266,17 +451,38 @@
 </tr>
 </tbody>
 </table>
+<p><strong>Example Request</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre>GET /ocp/ca/json/ HTTP/1.1
+Host: ocp.me
+Content-Type: application/json
+
+{
+  dataset
+  project
+  metadata
+}
+</pre></div>
+</div>
+<p><strong>Example Response</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre>HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  SUCCESS
+}
+</pre></div>
+</div>
 </dd></dl>
 
-<script src="https://gist.github.com/kunallillaney/19b78e5a83611edf7808.js">&nbsp;</script></div>
+</div>
 </div>
 <div class="section" id="hdf5-service">
-<h2>HDF5 Service<a class="headerlink" href="#hdf5-service" title="Permalink to this headline">¶</a></h2>
+<span id="hdf5-get"></span><h2>HDF5 Service<a class="headerlink" href="#hdf5-service" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="id1">
 <h3>GET<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <dl class="get">
-<dt id="get-(string-server_name)-ca-(string-token_name)-projinfo-">
-<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/projinfo/</code><a class="headerlink" href="#get-(string-server_name)-ca-(string-token_name)-projinfo-" title="Permalink to this definition">¶</a></dt>
+<dt id="get-(string-server_name)-ocp-ca-(string-token_name)-projinfo-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/projinfo/</code><a class="headerlink" href="#get-(string-server_name)-ocp-ca-(string-token_name)-projinfo-" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -300,7 +506,7 @@
 </table>
 </dd></dl>
 
-<script src="https://gist.github.com/kunallillaney/19b78e5a83611edf7808.js">&nbsp;</script></div>
+</div>
 </div>
 </div>
 

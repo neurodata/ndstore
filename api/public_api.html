@@ -84,7 +84,7 @@
 <li class="toctree-l1"><a class="reference internal" href="ocp_types.html">OCP Types</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="ocp_types.html#channel-types">Channel Types</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ocp_types.html#data-types">Data Types</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ocp_types.html#propagated-values">Propagated Values</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ocp_types.html#propagation-service">Propagation Service</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="info_api.html">Project Info API&#8217;s</a><ul>
@@ -205,15 +205,15 @@
   <div class="section" id="public-token-api-s">
 <h1>Public Token API&#8217;s<a class="headerlink" href="#public-token-api-s" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="get">
-<h2>GET<a class="headerlink" href="#get" title="Permalink to this headline">¶</a></h2>
+<span id="public-get"></span><h2>GET<a class="headerlink" href="#get" title="Permalink to this headline">¶</a></h2>
 <dl class="get">
-<dt id="get-(string-server_name)-ca-public_tokens-">
-<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ca/public_tokens/</code><a class="headerlink" href="#get-(string-server_name)-ca-public_tokens-" title="Permalink to this definition">¶</a></dt>
+<dt id="get-(string-server_name)-ocp-ca-public_tokens-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/ca/public_tokens/</code><a class="headerlink" href="#get-(string-server_name)-ocp-ca-public_tokens-" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Get project information from the server</p>
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Get a list of all publicly avaliable tokens from the server. These tokens can be used to GET and PUT data to the server. These tokens can also be used to access <a class="reference internal" href="info_api.html#json-get"><span>project information</span></a></p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
@@ -229,6 +229,27 @@
 </tr>
 </tbody>
 </table>
+<p><strong>Example Request</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span class="nf">GET</span> <span class="nn">/ocp/ca/public_tokens</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">ocp.me</span>
+</pre></div>
+</div>
+<p><strong>Example Response</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/json</span>
+
+<span class="p">[</span>
+  <span class="s2">&quot;bock11&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;Ex10R55&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;Ex12R75&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;Ex12R76&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;Ex13R51&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;Ex14R58&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;kasthuri11&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;takemura13&quot;</span>
+<span class="p">]</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>

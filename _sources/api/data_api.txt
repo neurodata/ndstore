@@ -7,7 +7,7 @@ HDF5 Service
 POST
 ----
 
-.. http:post:: (string:server_name)/ca/(string:token_name)/(string:channel_name)/hdf5/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
+.. http:post:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/hdf5/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
    
    :synopsis: Post a HDF5 file to the server
 
@@ -49,7 +49,7 @@ POST
 GET
 ----
 
-.. http:get:: (string:server_name)/ca/(string:token_name)/(string:channel_name)/hdf5/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
+.. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/hdf5/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
    
    :synopsis: Get a HDF5 file from the server
 
@@ -93,7 +93,7 @@ Numpy Service
 POST
 ----
 
-.. http:post:: (string:server_name)/ca/(string:token_name)/(string:channel_name)/npz/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
+.. http:post:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/npz/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
    
    :synopsis: Post a Numpy file to the server
 
@@ -133,7 +133,7 @@ POST
 GET
 ----
 
-.. http:get:: (string:server_name)/ca/(string:token_name)/(string:channel_name)/npz/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
+.. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/npz/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
    
    :synopsis: Get a Numpy file from the server
 
@@ -176,7 +176,7 @@ Image Slice Service
 GET XY Slice Cutout
 -------------------
 
-.. http:get:: (string:server_name)/ca/(string:token_name)/(string:channel_name)/xy/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:z_slice)/(int:time_slice)/
+.. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/xy/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:z_slice)/(int:time_slice)/
    
    :synopsis: Get a XY Slice Cutout
 
@@ -210,7 +210,7 @@ GET XY Slice Cutout
 GET XZ Slice Cutout
 -------------------
 
-.. http:get:: (string:server_name)/ca/(string:token_name)/(string:channel_name)/xz/(int:resolution)/(int:min_x),(int:max_x)/(int:y_slice)/(int:min_z),(int:max_z)/(int:time_slice/
+.. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/xz/(int:resolution)/(int:min_x),(int:max_x)/(int:y_slice)/(int:min_z),(int:max_z)/(int:time_slice/
    
    :synopsis: Get a HDF5 file from the server
 
@@ -241,7 +241,7 @@ GET XZ Slice Cutout
 GET YZ Slice Cutout
 -------------------
 
-.. http:get:: (string:server_name)/ca/(string:token_name)/(string:channel_name)/yz/(int:resolution)/(int:x_slice)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:time_slice)/
+.. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/yz/(int:resolution)/(int:x_slice)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:time_slice)/
    
    :synopsis: Get a HDF5 file from the server
 

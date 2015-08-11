@@ -84,7 +84,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="">OCP Types</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#channel-types">Channel Types</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#data-types">Data Types</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#propagated-values">Propagated Values</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#propagation-service">Propagation Service</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="info_api.html">Project Info API&#8217;s</a><ul>
@@ -205,7 +205,8 @@
   <div class="section" id="ocp-types">
 <h1>OCP Types<a class="headerlink" href="#ocp-types" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="channel-types">
-<h2>Channel Types<a class="headerlink" href="#channel-types" title="Permalink to this headline">¶</a></h2>
+<span id="ocp-channeltype"></span><h2>Channel Types<a class="headerlink" href="#channel-types" title="Permalink to this headline">¶</a></h2>
+<p>OCP supports three channel types mentioned below.</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="61%" />
@@ -220,20 +221,17 @@
 <tr class="row-even"><td>Image</td>
 <td>image</td>
 </tr>
-<tr class="row-odd"><td>Probability Maps</td>
-<td>probmap</td>
-</tr>
-<tr class="row-even"><td>Timeseries</td>
+<tr class="row-odd"><td>Timeseries</td>
 <td>timseries</td>
 </tr>
-<tr class="row-odd"><td>Annotation</td>
+<tr class="row-even"><td>Annotation</td>
 <td>annnotation</td>
 </tr>
 </tbody>
 </table>
 </div>
 <div class="section" id="data-types">
-<h2>Data Types<a class="headerlink" href="#data-types" title="Permalink to this headline">¶</a></h2>
+<span id="ocp-datatype"></span><h2>Data Types<a class="headerlink" href="#data-types" title="Permalink to this headline">¶</a></h2>
 <table border="1" class="docutils">
 <colgroup>
 <col width="60%" />
@@ -266,8 +264,10 @@
 </tbody>
 </table>
 </div>
-<div class="section" id="propagated-values">
-<h2>Propagated Values<a class="headerlink" href="#propagated-values" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="propagation-service">
+<span id="ocp-propagation"></span><h2>Propagation Service<a class="headerlink" href="#propagation-service" title="Permalink to this headline">¶</a></h2>
+<p>OCP allows only downsampling of data via a service called Propagation. This service does not upsample your data. You can post to a specific resolution and call on the <a class="reference internal" href="propagate_api.html#propagate-set"><span>set propagation service</span></a> to downsample your data in the background. When your data is under propagation, the project is locked and you cannot post data to it. This is done to maintain the consistency of data across different resolutions. You can check the status of your project via the <a class="reference internal" href="propagate_api.html#propagate-get"><span>get propagation service</span></a>. Both these services return values which have signfies something. You can use the value reference table below to idenitfy the propgation state of your project.
+<em>WARNING: It make take quite a while for propagation of some projects which are big. Please be patient.</em></p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="66%" />
