@@ -10,8 +10,10 @@
   <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
 
   {# leaflet files #}
-  <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
-	<link href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'ocpviz/leaflet/leaflet.css' %}" /> 
+
+  {# buttons, buttons, buttons #} 
+  <link href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
   <style>
     body {
 			padding: 50px 0px 0px 0px; /* 50px for navbar */
@@ -94,7 +96,8 @@
     /*  background-color: #333; */
     }
 	</style>
-	<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+
+  <script src="{% static 'ocpviz/leaflet/leaflet.js' %}"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
   <script src="{% static "ocpviz/js/easy-button.js" %}"></script>	
   <script src="{% static "ocpviz/js/ocp-leaflet.js" %}"></script>	
