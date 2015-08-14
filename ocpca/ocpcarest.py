@@ -1322,7 +1322,7 @@ def getNIFTI ( webargs ):
       pass
 
     # Make a named temporary file for the SWC
-    with closing (tempfile.NamedTemporaryFile()) as tmpfile:
+    with closing (tempfile.NamedTemporaryFile(suffix='.nii')) as tmpfile:
 
       ocpcanifti.queryNIFTI ( tmpfile, ch, db, proj, resolution )
 

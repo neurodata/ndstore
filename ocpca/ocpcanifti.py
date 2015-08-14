@@ -106,15 +106,21 @@ def queryNIFTI ( tmpfile, ch, db, proj, resolution ):
 
     # retrieve the data
     cuboid = db.cutout ( ch, (0,0,0), proj.datasetcfg.imagesz[resolution], resolution ) 
+
     # transpose to nii's xyz format
     niidata = cuboid.data.transpose()
+
+    # work on nifti 3d only for now
+    # coerce the data type 
+    niidata = np.array(niidata, dtype='<i2')
 
     # assemble the header and the data
     # create a nii file
     nii = nibabel.Nifti1Image(niidata, affine=naffine, header=nheader ) 
 
+    # this adds a suffix
     # save to the tmpfile
-    nii.to_filename(tmpfile.name)
+    nibabel.save ( nii, tmpfile.name )
 
   except Exception, e:
     logger.error("Failed to build nii file.  Error {}".format(e))

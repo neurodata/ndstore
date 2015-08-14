@@ -146,6 +146,8 @@ def querySWC ( swcfile, ch, db, proj, skelids=None ):
   """Query the list of skelids (skeletons) and populate an open file swcfile
      with lines of swc data."""
 
+  import pdb; pdb.set_trace()
+
   try:
 
     cursor = db.getCursor()
