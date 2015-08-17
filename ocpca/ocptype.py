@@ -18,6 +18,7 @@ import numpy as np
 IMAGE = 'image'
 ANNOTATION = 'annotation'
 TIMESERIES = 'timeseries'
+OLDCHANNEL = 'oldchannel'
 UINT8 = 'uint8'
 UINT16 = 'uint16'
 UINT32 = 'uint32'
@@ -31,10 +32,10 @@ RIAK = 'riak'
 OCP_VERSION = '0.7'
 SCHEMA_VERSION = '0.7'
 
-OCP_channeltypes = {0:IMAGE,1:ANNOTATION,2:TIMESERIES}
+OCP_channeltypes = {0:IMAGE,1:ANNOTATION,2:TIMESERIES,3:OLDCHANNEL}
 
 # channeltype groups
-IMAGE_CHANNELS = [ IMAGE ]
+IMAGE_CHANNELS = [ IMAGE, OLDCHANNEL ]
 TIMESERIES_CHANNELS = [ TIMESERIES ]
 ANNOTATION_CHANNELS = [ ANNOTATION ]
 
