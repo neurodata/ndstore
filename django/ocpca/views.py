@@ -33,7 +33,7 @@ POST_SERVICES = ['hdf5', 'npz', 'hdf5_async', 'propagate', 'tiff']
 
 def cutout (request, webargs):
   """Restful URL for all read services to annotation projects"""
-
+  
   try:
     m = re.match(r"(\w+)/(?P<channel>[\w+,/-]+)?/?(xy|xz|yz|tiff|hdf5|npz|zip|id|ids|xyanno|xzanno|yzanno)/([\w,/-]+)$", webargs)
     [token, channel, service, cutoutargs] = [i for i in m.groups()]

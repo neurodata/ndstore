@@ -37,10 +37,7 @@ class MySQLKVIO:
     
     # Connection info 
     try:
-      self.conn = MySQLdb.connect (host = self.db.proj.getDBHost(),
-                            user = self.db.proj.getDBUser(),
-                            passwd = self.db.proj.getDBPasswd(),
-                            db = self.db.proj.getDBName())
+      self.conn = MySQLdb.connect (host = self.db.proj.getDBHost(), user = self.db.proj.getDBUser(), passwd = self.db.proj.getDBPasswd(), db = self.db.proj.getDBName())
 
     except MySQLdb.Error, e:
       self.conn = None
