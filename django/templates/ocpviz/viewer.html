@@ -196,11 +196,6 @@
     var center = map.unproject(L.point({{ xstart }}, {{ ystart }}), {{ resstart }});
 		map.setView(center, maxres);
 
-    {% if marker == True %}
-      // add a marker to the center 
-      L.marker(center).addTo(map);
-    {% endif %}
-
 		// display some map info
 		var info = L.control();
 		info.options.position = 'topright';
@@ -329,9 +324,30 @@
       var marker_options = {
         title: point.x + " " + point.y,
       }
-      // TODO keep track of markers by storing in an array
-      markers.push(L.marker(center, marker_options).addTo(map)); 
+
+      // keep track of markers by storing in an array
+      markers.push(L.marker(center, marker_options).addTo(map));
+      
+      // get current url
+      var markerUrlRaw = 'http://{{ request.get_host }}{{ request.path }}';
+      console.log(markerUrlRaw.split("/", 8));
+      var markerUrlArr = markerUrlRaw.split("/", 8);
+      var curZoom = map.getMaxZoom() - map.getZoom(); 
+      var markerUrl = 'http://' + markerUrlArr[2] + "/" + markerUrlArr[3] + "/" + markerUrlArr[4] + "/" + markerUrlArr[5] + "/" + markerUrlArr[6] + "/" + curZoom + "/" + Math.round(point.x) + "/" + Math.round(point.y) + "/" + zindex + "/";
+
+      var popup_options = {
+        maxWidth: 750,
+      }
+      
+      markers[markers.length - 1].bindPopup('<a href="' + markerUrl + '">' + markerUrl + '</a>', popup_options);
     });
+    
+    {% if marker == True %}
+      // add a marker to the center 
+      //L.marker(center).addTo(map);
+      $( "#addmarkercenter" ).trigger('click');
+    {% endif %}
+
 
     $( "#clearmarkers" ).click(function( event ) {
       var index;
