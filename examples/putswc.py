@@ -30,6 +30,9 @@ def main():
 
   result = parser.parse_args()
 
+  import proxy
+  proxy.setHandler()
+
   url = 'http://%s/ca/%s/%s/swc/%s/' % ( result.baseurl, result.token, result.channel, result.resolution )
 
   print url

@@ -37,6 +37,9 @@ def main():
   # open the file name as a tiff file
   fh = open ( result.filename )
 
+  import proxy
+  proxy.setHandler()
+
   # Get cube in question
   try:
     f = urllib2.urlopen ( url, fh.read() )

@@ -1332,7 +1332,7 @@ def getNIFTI ( webargs ):
 
 def putNIFTI ( webargs, postdata ):
   """Put an SWC object into RAMON skeleton/tree nodes"""
-    
+
   [token, channel, optionsargs] = webargs.split('/',2)
 
   # RBTODO check if there is a channel?  Make one if there isn't?
