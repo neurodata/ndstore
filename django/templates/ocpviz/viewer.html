@@ -115,7 +115,10 @@
     var querylayer = 'none'; 
     var querytoken = 'none'; 
     var querychannel = 'none'; 
-      
+
+    // marker array
+    var markers = [];
+
     // dataset info 
     var xmin = {{ xoffset }};	
     var xmax = {{ xsize }};
@@ -327,7 +330,16 @@
         title: point.x + " " + point.y,
       }
       // TODO keep track of markers by storing in an array
-      L.marker(center, marker_options).addTo(map); 
+      markers.push(L.marker(center, marker_options).addTo(map)); 
+    });
+
+    $( "#clearmarkers" ).click(function( event ) {
+      var index;
+      for (index = 0; index < markers.length; index++) {
+        //console.log(markers[index]);
+        map.removeLayer(markers[index]);
+        
+      }
     });
 
 		// z-index arrows 
