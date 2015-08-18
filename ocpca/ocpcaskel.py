@@ -109,12 +109,10 @@ def ingestSWC ( swcfile, ch, db ):
           node.setField ( 'skeletonid', nodes[swcparentid].getField('skeletonid') )
 
   except Exception, e:
-    import pdb; pdb.set_trace()
     raise
 
   print "Build all skeletons, Starting DB txn."
 
-  import pdb; pdb.set_trace()
 
   # having parsed the whole file, send to DB in a transaction
   db.startTxn()
@@ -131,7 +129,6 @@ def ingestSWC ( swcfile, ch, db ):
 
     skel.store( ch, cursor )
 
-  import pdb; pdb.set_trace()
 
   # store the nodes
   for (nodeid,node) in nodes.iteritems():

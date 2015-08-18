@@ -392,17 +392,20 @@ class OCPCAProjectsDB:
   def newOCPCAProject ( self, project_name ):
     """Make the database for a project."""
 
-    with closing(self.conn.cursor()) as cursor:
+    pr = Project.objects.get(project_name=project_name)
+    
+    with closing(MySQLdb.connect (host = pr.host, user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'])) as conn:
+      with closing(conn.cursor()) as cursor:
 
-      try:
-        # Make the database 
-        sql = "CREATE DATABASE {}".format( project_name )
-     
-        cursor.execute ( sql )
-        self.conn.commit()
-      except MySQLdb.Error, e:
-        logger.error ("Failed to create database for new project {}: {}. sql={}".format(e.args[0], e.args[1], sql))
-        raise OCPCAError ("Failed to create database for new project {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+        try:
+          # Make the database 
+          sql = "CREATE DATABASE {}".format( project_name )
+       
+          cursor.execute ( sql )
+          conn.commit()
+        except MySQLdb.Error, e:
+          logger.error ("Failed to create database for new project {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+          raise OCPCAError ("Failed to create database for new project {}: {}. sql={}".format(e.args[0], e.args[1], sql))
 
 
   def newOCPCAChannel ( self, project_name, channel_name ):
@@ -516,22 +519,23 @@ class OCPCAProjectsDB:
     pr = Project.objects.get(project_name = project_name)
 
     if pr.kvengine == 'MySQL':
-      # delete the database
-      sql = "DROP DATABASE {}".format(pr.project_name)
+      with closing(MySQLdb.connect (host = pr.host, user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'])) as conn:
+        with closing(conn.cursor()) as cursor:
+        # delete the database
+          sql = "DROP DATABASE {}".format(pr.project_name)
 
-      with closing(self.conn.cursor()) as cursor:
-        try:
-          cursor.execute(sql)
-          self.conn.commit()
-        except MySQLdb.Error, e:
-          # Skipping the error if the database does not exist
-          if e.args[0] == 1008:
-            logger.warning("Database {} does not exist".format(pr.project_name))
-            pass
-          else:
-            self.conn.rollback()
-            logger.error ("Failed to drop project database {}: {}. sql={}".format(e.args[0], e.args[1], sql))
-            raise OCPCAError ("Failed to drop project database {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+          try:
+            cursor.execute(sql)
+            conn.commit()
+          except MySQLdb.Error, e:
+            # Skipping the error if the database does not exist
+            if e.args[0] == 1008:
+              logger.warning("Database {} does not exist".format(pr.project_name))
+              pass
+            else:
+              conn.rollback()
+              logger.error ("Failed to drop project database {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+              raise OCPCAError ("Failed to drop project database {}: {}. sql={}".format(e.args[0], e.args[1], sql))
 
 
     #  try to delete the database anyway
@@ -577,9 +581,9 @@ class OCPCAProjectsDB:
 
     print table_list
     if pr.getKVEngine() == 'MySQL':
-    
+      
       try:
-        conn = MySQLdb.connect (host = settings.DATABASES['default']['HOST'], user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = pr.getProjectName() ) 
+        conn = MySQLdb.connect (host = pr.getDBHost(), user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = pr.getProjectName() ) 
         # delete the tables for this channel
         sql = "DROP TABLES IF EXISTS {}".format(','.join(table_list))
       
