@@ -4,7 +4,10 @@
 
 ##### Python dependencies 
 
-pip install -r pip.frozen
+# The frozen file sucks. We work with all 
+#pip install -r pip.frozen
+
+pip install numpy scipy django django-registration-redux django-celery mysql-python pytest pillow pylibmc posix_ipc networkx
 
 ##### Configuration files
 
