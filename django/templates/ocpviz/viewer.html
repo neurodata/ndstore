@@ -112,7 +112,10 @@
   <script> 
     // tool variables
     var querytool = false; // disabled by default
-    
+    var querylayer = 'none'; 
+    var querytoken = 'none'; 
+    var querychannel = 'none'; 
+      
     // dataset info 
     var xmin = {{ xoffset }};	
     var xmax = {{ xsize }};
@@ -371,12 +374,9 @@
 
 		// get anno id from coordinate
     // expects a L.point object for point and a number for zoom
-    // TODO add a query layer selector
     // TODO if the server is localhost (the query server) that doesnt work
-    // TODO need a way to select the query layer (dropdown?)
-    // TODO get the server from the query layer 
 		function getAnnoId(point, zoom) {
-      var ocpUrlBase = "http://{{ request.get_host }}/ocp/viz/query/localhost/ca/kharris15apical/annos/id/" + zoom + "/";
+      var ocpUrlBase = "http://{{ request.get_host }}/ocp/viz/query/localhost/ca/" + querytoken + "/" + querychannel + "/id/" + zoom + "/";
 			var cutout = Math.round(point.x) + "/" + Math.round(point.y) + "/" + zindex + "/"; 
 			var ocpUrl = ocpUrlBase.concat(cutout);
       // store the return data
@@ -445,14 +445,37 @@
 
     // tools
     // query tool
-    $( '#query' ).click(function(event) {
-      $( '#querybutton' ).toggleClass('active');
-      querytool = !querytool;
-    });
-    //$( '#clearmarkers' ).click(function(event) {
-    // TODO need to either store markers in a global array or as a layer 
-    //});
 
+    // disable querying 
+    $( '#query_none' ).click(function(event) {
+      if (querytool) {
+        $( '#query_' + querylayer + '_check' ).css("visibility","hidden");
+        $( '#query_none_check' ).css("visibility","");
+        querytool = false;
+        querylayer = 'none';
+        querytoken = 'none';
+        querychannel = 'none';
+      }
+    });
+
+    {% for layer in layers %}
+    {% if layer.layertype == 'annotation' %}
+    $( '#query_{{ layer.token }}_{{ layer.channel }}' ).click(function(event) {
+    //$( '#querybutton' ).toggleClass('active');
+      var curlayer = "{{ layer.token }}_{{ layer.channel }}";
+      if (querylayer != curlayer) {
+        console.log('Updating ' + querylayer + ' to ' + curlayer);
+        $( '#query_' + querylayer + '_check' ).css("visibility","hidden");
+        $( '#query_{{ layer.token }}_{{ layer.channel }}_check' ).css("visibility","");
+        querylayer = curlayer; 
+        querytoken = '{{ layer.token }}';
+        querychannel = '{{ layer.channel }}';
+        querytool = true;
+      }
+    });
+    {% endif %}
+    {% endfor %}
+    
     // TODO clicking on a marker pops up coordinates 
 
     // add keyboard help to map
