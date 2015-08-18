@@ -4,7 +4,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" id="helpLabel">ocpviz help</h4>
+          <h4 class="modal-title" id="helpLabel">help <span class="small">(ocpviz v0.1)</span></h4>
         </div>
         <div class="modal-body">
           <h2>Welcome to ocpviz!</h2>
@@ -62,8 +62,10 @@
             <p>The <strong>up</strong> and <strong>down</strong> arrows (left) allow you to navigate in z-space.</p>
             <p>The <strong>navigation form</strong> in the navbar allows you to center the map on a given coordinate (x,y,z). Centering will also place a marker at that coordinate. You can also use the navbar to pan only in (x, y), or to jump to a given z slice.</p>
             <h4>Interaction</h4>
-            <p>The <strong>Query</strong> tool enables or disables the query system. When enabled, clicking on a location in the map will query the OCP database for the object ID at that location. Note that you must have an annotation channel loaded for the query tool to operate.</p>
-            <p>The <strong>Markers</strong> dropdown controls markers on the image, and allows for adding a marker, clearing all markers, or getting a list of markers with their coordinates.</p>
+            <p>The <strong>Query</strong> dropdown allows the user to enable or disable the query system, and specify an annotation token / channel to query. When enabled, clicking on a location in the map will query the OCP database for the object ID at that location. Note that you must have an annotation channel loaded for the query tool to operate.</p>
+            <p>The <strong>Markers</strong> dropdown controls markers on the image, and allows for adding a marker, clearing all markers, or getting a list of markers with their coordinates. Clicking on a marker creates a popup with a URL to that markers current location on the map.</p>
+            <p class="text-danger">Note: Markers currently persist across Z slices. Clicking on a marker will send that markers location for the current Z slice.</p> 
+          
           <h3>Keyboard Shortcuts</h3>
           For a list of keyboard shortcuts, press the <kbd>h</kbd> key. 
         </div>
