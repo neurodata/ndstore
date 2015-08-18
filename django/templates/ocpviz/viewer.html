@@ -248,6 +248,7 @@
     // update current coordinates in nav box
 
     function coordinatesUpdate() {
+      console.log("Running update");
       $( "#x" ).parent().removeClass("has-error");
       $( "#y" ).parent().removeClass("has-error");
       $( "#z" ).parent().removeClass("has-error");
@@ -391,12 +392,20 @@
 
 		function reloadLayers() {
 			map.options.fadeAnimation = false;
-			map.eachLayer( function (layer) {
-					layer.options.zindex = zindex;
-					layer.smoothRedraw();
-			});
-			map.options.fadeAnimation = true;
-      info.update();
+      // can't use map.eachLayer because it includes popups
+      //map.eachLayer( function (layer) {
+      //    console.log(layer);
+      //    layer.options.zindex = zindex;
+			//		layer.smoothRedraw();
+      //});
+    
+      {% for layer in layers %}
+      {{ layer.layer_name|cut:" " }}.options.zindex = zindex;
+      {{ layer.layer_name|cut:" " }}.smoothRedraw();
+      {% endfor %} 
+    
+      map.options.fadeAnimation = true;
+      //info.update();
       coordinatesUpdate();
 		}
 
