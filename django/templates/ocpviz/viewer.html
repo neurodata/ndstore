@@ -323,7 +323,7 @@
       var center = map.getCenter();
       var point = map.project(center);
       var marker_options = {
-        title: point.x + " " + point.y,
+        title: point.x + " " + point.y + " " + zindex,
       }
 
       // keep track of markers by storing in an array
@@ -349,6 +349,37 @@
       $( "#addmarkercenter" ).trigger('click');
     {% endif %}
 
+    function markerOnClick(event) {
+      // place a marker at the click 
+           
+      var point = map.project(event.latlng);
+      var marker_options = {
+        title: point.x + " " + point.y + " " + zindex,
+      }
+
+      // keep track of markers by storing in an array
+      markers.push(L.marker(event.latlng, marker_options).addTo(map));
+
+      // get current url
+      var markerUrlRaw = 'http://{{ request.get_host }}{{ request.path }}';
+      var markerUrlArr = markerUrlRaw.split("/", 8);
+      var curZoom = map.getMaxZoom() - map.getZoom(); 
+      var markerUrl = 'http://' + markerUrlArr[2] + "/" + markerUrlArr[3] + "/" + markerUrlArr[4] + "/" + markerUrlArr[5] + "/" + markerUrlArr[6] + "/" + curZoom + "/" + Math.round(point.x) + "/" + Math.round(point.y) + "/" + zindex + "/";
+      var popup_options = {
+        maxWidth: 750,
+      }
+
+      markers[markers.length - 1].bindPopup('<a href="' + markerUrl + '">' + markerUrl + '</a>', popup_options);
+      map.off('click', markerOnClick);
+      // turn query tool back on 
+      map.on('click', onMapClick);
+    };
+    
+    $( "#addmarkermouse" ).click(function( event ) {
+      map.on('click', markerOnClick);
+      // turn off query tool
+      map.off('click', onMapClick);
+    });
 
     $( "#clearmarkers" ).click(function( event ) {
       var index;
