@@ -88,7 +88,7 @@ class MySQLKVIO:
     sql = "SELECT chanid from channels where chanstr=%s"
 
     try:
-      cursor.execute ( sql, ch.getChannelName() )
+      cursor.execute ( sql, [ch.getChannelName()] )
       row = cursor.fetchone()
     except MySQLdb.Error, e:
       logger.error ( "Failed to retrieve data cube: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
