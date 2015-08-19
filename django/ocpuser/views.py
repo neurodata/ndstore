@@ -914,8 +914,6 @@ def backupProject(request):
   # perform a backup
   if request.method == 'POST':
 
-    import pdb; pdb.set_trace()
-
     if 'backup' in request.POST:
 
       form = BackupForm(request.POST)
@@ -945,7 +943,6 @@ def backupProject(request):
           else:
             pass #RBTODO error  
 
-          import pdb; pdb.set_trace()
           #RB restart here
           upath = '{}/{}'.format(settings.BACKUP_PATH,request.user.username)
           ppath = '{}/{}'.format(upath,db)
