@@ -33,7 +33,7 @@ from ocpuser.models import Dataset
 from django.contrib.auth.models import User
 
 
-DATATYPE = { 1:['image','uint8'], 2:['annotation','uint32'], 3:['image','uint16'], 4:['image','uint8'], 5:['image','uint32'], 6:['image','uint8'], 7:['annotation','uint64'], 8:['image','uint16'], 9:['image','uint32'], 10:['image','uint64'], 11:['timeseries','uint8'], 12:['timeseries','uint16'] }
+DATATYPE = { 1:['image','uint8'], 2:['annotation','uint32'], 3:['oldchannel','uint16'], 4:['oldchannel','uint8'], 5:['image','uint32'], 6:['image','uint8'], 7:['annotation','uint64'], 8:['image','uint16'], 9:['image','uint32'], 10:['image','uint64'], 11:['timeseries','uint8'], 12:['timeseries','uint16'] }
 
 class exportSchema:
 
@@ -85,8 +85,14 @@ class exportSchema:
             pr,pr_status = Project.objects.update_or_create(project_name=row['project'], project_description=row['project'], dataset=ds, user=user, ocp_version='0.0', host=row['host'], kvengine=row['kvengine'], kvserver=row['kvserver'])
             [channel_type, channel_datatype] = DATATYPE[int(row['datatype'])]
             #ch,ch_status = Channel.objects.update_or_create(channel_name=channel_type, channel_description=channel_type, channel_type=channel_type, channel_datatype=channel_datatype, project_id=pr, resolution=row['resolution'], exceptions=row['exceptions'], startwindow=0, endwindow=0, default="1", readonly=row['readonly'], propagate=row['propagate'])
-            updated_values = { 'channel_description':channel_type, 'channel_type':channel_type, 'channel_datatype':channel_datatype, 'resolution':row['resolution'], 'exceptions':row['exceptions'], 'startwindow':0, 'endwindow':0, 'default':"1", 'readonly':row['readonly'], 'propagate':row['propagate']}
-            ch, ch_status = Channel.objects.update_or_create(channel_name=channel_type, project_id=pr, defaults=updated_values)
+            if DATATYPE[int(row['datatype'])] in [3,4]:
+              # delete the old channel
+
+              # iterate over channel names and create channels
+              
+            else:
+              updated_values = { 'channel_description':channel_type, 'channel_type':channel_type, 'channel_datatype':channel_datatype, 'resolution':row['resolution'], 'exceptions':row['exceptions'], 'startwindow':0, 'endwindow':0, 'default':"1", 'readonly':row['readonly'], 'propagate':row['propagate']}
+              ch, ch_status = Channel.objects.update_or_create(channel_name=channel_type, project_id=pr, defaults=updated_values)
             tk,tk_status = Token.objects.update_or_create(token_name=row['token'], token_description=row['token'], user=user, project_id=pr, public=row['public'])
             pr.save()
             ch.save()
