@@ -30,13 +30,11 @@ libtiff==0.4.0
 Markdown==2.6.2
 meld3==1.0.2
 MySQL-python==1.2.5
-networkx==1.10rc2
 numpy==1.9.2
 Paste==2.0.2
 PasteDeploy==1.5.2
 PasteScript==2.0.2
 ## FIXME: could not find svn URL in dependency_links for this package:
-PEAK-Rules===0.5a1.dev-r2713
 PIL==1.1.7
 Pillow==2.9.0
 posix-ipc==1.0.0

@@ -288,6 +288,13 @@ class OCPCAChannel:
       return "res{}neariso".format(resolution)
     else:
       return "{}_res{}neariso".format(self.ch.channel_name, resolution)
+
+  def getKVTable (self, resolution):
+    """Return the appropriate KvPairs for the specified resolution"""
+    if self.pr.getOCPVersion() == '0.0':
+      return "kvpairs{}".format(resolution)
+    else:
+      return "{}_kvpairs{}".format(self.ch.channel_name, resolution)
   
   def getIdxTable (self, resolution):
     """Return the appropriate Index table for the specified resolution"""

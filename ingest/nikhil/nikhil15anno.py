@@ -1,11 +1,11 @@
 # Copyright 2014 Open Connectome Project (http://openconnecto.me)
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,10 +22,15 @@ from PIL import Image
 import zlib
 from contextlib import closing
 
+
 sys.path += [os.path.abspath('../../django')]
 import OCP.settings
+#settings.configure()
 os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
 from django.conf import settings
+import django
+django.setup()
+
 
 import imagecube
 import ocplib
@@ -33,74 +38,77 @@ import ocpcarest
 import ocpcaproj
 import ocpcadb
 
-
 class NikhilIngest:
 
-  def __init__( self, token, resolution,path ):
-    """Load the stack into an OCP database"""
+  def __init__(self, path, resolution, token_name, channel_name):
+    print "In initialization"
+    """ Load image stack into OCP, creating tokens and channels as needed """
 
-    self.token = token
-    self.path = path
+    self.token = token_name
     self.resolution = resolution
+    self.path = path
 
-  def ingest ( self ):
-    """Read the stack and ingest"""
+    with closing (ocpcaproj.OCPCAProjectsDB()) as projdb:
+      self.proj = projdb.loadToken(self.token)
+      self.channel_name = channel_name
 
-    with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-      proj = projdb.loadProject ( self.token )
+      #channel_name = (min(glob.glob("{}*.tif".format(self.path)))).strip("0001.tif")
+      #self.max_slice = int(((max(glob.glob("{}*.tif".format(path)))).strip(channel_name + "_")).strip(".tif"))
+      #self.createChannel(channel_name)
+      self.ingest()
 
-    with closing ( ocpcadb.OCPCADB (proj) ) as db:
+  def ingest(self):
+    """ Read image stack and ingest """
 
-      (startslice, endslice) = proj.datasetcfg.slicerange
-      (xcubedim, ycubedim, zcubedim) = cubedims = proj.datasetcfg.cubedim[self.resolution]
-      (ximagesz, yimagesz) = proj.datasetcfg.imagesz[self.resolution]
-      batchsz = zcubedim
+    # Load a database
+    with closing(ocpcaproj.OCPCAProjectsDB()) as projdb:
+      proj = projdb.loadToken(self.token)
 
-      # Ingest in database aligned slabs in the z dimension
-      for sl in range( startslice, endslice, batchsz ):
-          
-        slab = np.zeros ( [zcubedim, yimagesz, ximagesz], dtype=np.uint8 )
+    with closing(ocpcadb.OCPCADB(proj)) as db:
 
-        # over each slice
-        for b in range( batchsz ):
-            
-          #if we are at the end of the space, quit
-          if ( sl + b <= endslice ):
-              
-            filename = '{}{:0>3}.tif'.format(self.path, sl+b)
-            print filename
-            try:
-              img = Image.open(filename,'r')
-              slab [b,:,:] = np.asarray(img)
-            except IOError, e:
-              print "Failed to open file %s" % (e)
-              img = np.zeros((yimagesz,ximagesz), dtype=np.uint8)
-              slab [b,:,:] = img
+      ch = proj.getChannelObj(self.channel_name)
+      # get the dataset configuration
+      [[ximagesz, yimagesz, zimagesz], (starttime, endtime)] = proj.datasetcfg.imageSize(self.resolution)
+      [xcubedim, ycubedim, zcubedim] = cubedim = proj.datasetcfg.getCubeDims()[self.resolution]
+      [xoffset, yoffset, zoffset] = proj.datasetcfg.getOffset()[self.resolution]
+
+      # Get a list of the files in the directories
 
 
-        for y in range ( 0, yimagesz, ycubedim ):
-          for x in range ( 0, ximagesz, xcubedim ):
+      for slice_number in range(zoffset, ximagesz, zcubedim):
+	import pdb; pdb.set_trace()
+        slab = np.zeros([zcubedim, yimagesz, ximagesz], dtype=np.uint32)
 
-            zidx = ocplib.XYZMorton ( [ x/xcubedim, y/ycubedim, (sl-startslice)/zcubedim] )
-            cubedata = np.zeros ( [zcubedim, ycubedim, xcubedim], dtype=np.uint8 )
 
-            xmin = x 
-            ymin = y 
-            xmax = ( min(ximagesz-1, x+xcubedim-1) ) + 1
-            ymax = ( min(yimagesz-1, y+ycubedim-1) ) + 1
-            zmin = 0
-            zmax = min(sl+zcubedim,endslice)
+        for b in range(zcubedim):
+          file_name = "{}{}_{}.tif".format(self.path, channel_name, sl+b)
+          print "Open filename {}".format(file_name)
 
-            cubedata[0:zmax-zmin,0:ymax-ymin,0:xmax-xmin] = slab[zmin:zmax,ymin:ymax,xmin:xmax]
-            cube = imagecube.ImageCube16 ( cubedims )
+          try:
+            img = Image.open(file_name,'r')
+            slab [b,:,:] = np.asarray(img)
+          except IOError, e:
+            print "Failed to open file %s" % (e)
+            img = np.zeros((yimagesz,ximagesz), dtype=np.uint8)
+            slab [b,:,:] = img
+
+        for y in range(0, yimagesz + 1, ycubedim):
+          for x in range(0, ximagesz + 1, xcubedim):
+
+            # Getting a Cube id and ingesting the data one cube at a time
+            zidx = ocplib.XYZMorton([x / xcubedim, y / ycubedim, (slice_number - zoffset) / zcubedim])
+            cube = Cube.getCube(cubedim, ch.getChannelType(), ch.getDataType())
             cube.zeros()
-            cube.data = cubedata
-            if np.count_nonzero ( cube.data ) != 0:
-              print zidx, ocplib.MortonXYZ(zidx)
-              db.annotateDense ( zidx, self.resolution, cube )
-          print "Commiting at x=%s, y=%s, z=%s" % (x,y,sl)
-        db.conn.commit()
-        slab = None
+
+            xmin = x
+            ymin = y
+            xmax = min(ximagesz, x + xcubedim)
+            ymax = min(yimagesz, y + ycubedim)
+            zmin = 0
+            zmax = min(slice_number + zcubedim, zimagesz + 1)
+
+            cube.data[0:zmax - zmin, 0:ymax - ymin, 0:xmax - xmin] = slab[zmin:zmax, ymin:ymax, xmin:xmax]
+            db.annotateDense ( zidx, self.resolution, cube )
 
 
 def main():
@@ -109,13 +117,12 @@ def main():
   parser.add_argument('token', action="store")
   parser.add_argument('resolution', action="store", type=int)
   parser.add_argument('path', action="store")
+  parser.add_argument('channel_name', action="store")
 
   result = parser.parse_args()
 
-  ci = CatmaidIngest ( result.token, result.resolution, result.path )
-  ci.ingest()
-
+  ni = NikhilIngest (result.path, result.resolution, result.token, result.channel_name)
+  ni.ingest()
 
 if __name__ == "__main__":
   main()
-
