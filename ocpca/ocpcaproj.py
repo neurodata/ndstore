@@ -336,6 +336,7 @@ class OCPCAChannel:
   def setReadOnly (self, value):
     if value in [READONLY_TRUE,READONLY_FALSE]:
       self.ch.readonly = value
+      self.ch.save()
     else:
       logger.error ( "Wrong Readonly Value {} for Channel {}".format( value, self.channel_name ) )
       raise OCPCAError ( "Wrong Readonly Value {} for Channel {}".format( value, self.ch.channel_name ) )

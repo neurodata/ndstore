@@ -32,7 +32,7 @@ array_1d_uint8 = npct.ndpointer(dtype=np.uint8, ndim=1, flags='C_CONTIGUOUS')
 array_2d_uint8 = npct.ndpointer(dtype=np.uint8, ndim=2, flags='C_CONTIGUOUS')
 array_1d_uint16 = npct.ndpointer(dtype=np.uint16, ndim=1, flags='C_CONTIGUOUS')
 array_2d_uint16 = npct.ndpointer(dtype=np.uint16, ndim=2, flags='C_CONTIGUOUS')
-array_3d_uint16 = npct.ndpointer(dtype=np.uint16, ndim=2, flags='C_CONTIGUOUS')
+array_3d_uint16 = npct.ndpointer(dtype=np.uint16, ndim=3, flags='C_CONTIGUOUS')
 array_1d_uint32 = npct.ndpointer(dtype=np.uint32, ndim=1, flags='C_CONTIGUOUS')
 array_2d_uint32 = npct.ndpointer(dtype=np.uint32, ndim=2, flags='C_CONTIGUOUS')
 array_3d_uint32 = npct.ndpointer(dtype=np.uint32, ndim=3, flags='C_CONTIGUOUS')
@@ -310,7 +310,6 @@ def zoomInData_ctype ( olddata, newdata, factor ):
   dims = [ i for i in newdata.shape ]
   ocplib.zoomInData ( olddata, newdata, (cp.c_int * len(dims))(*dims), cp.c_int(factor) )
   return ( newdata )
-
 
 def zoomInData_ctype_OMP ( olddata, newdata, factor ):
   """ Add the contribution of the input data to the next level at the given offset in the output cube """

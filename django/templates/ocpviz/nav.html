@@ -1,0 +1,51 @@
+  {% load staticfiles %}
+
+  <nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="#"><img src="{% static "ocpviz/img/ocp_thumb.png" %}" /></a>
+        <a class="navbar-brand" href="#">ocpviz</a>
+      </div>
+      <ul class="nav navbar-nav">
+        <li><a href="#">Projects</a></li>
+      </ul>
+      <form id="navigate" class="navbar-form navbar-left" role="search" action="">
+        <div class="form-group">
+          <input type="text" id="x" size="5" class="form-control" placeholder="x" aria-describedby="xlabel">
+        </div>
+        <div class="form-group">
+          <input type="text" id="y" size="5" class="form-control" placeholder="y" aria-describedby="ylabel">
+        </div>
+        <div class="form-group">
+          <input type="text" id="z" size="5" class="form-control" placeholder="z" aria-describedby="zlabel"> 
+        </div>
+        <button type="submit" class="btn btn-default">Go</button>
+      </form>
+      <ul class="nav navbar-nav navbar-left">
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Query<span class="caret"></span></a>
+          <ul class="dropdown-menu" role="menu">
+            <li><a href="#" id="query_none"><i class="fa fa-check" id="query_none_check"></i><span style="padding-left: 10px;">None</span></a></li>
+            {% for layer in layers %}
+            {% if layer.layertype == 'annotation' %}
+            <li><a href="#" id="query_{{ layer.token }}_{{ layer.channel }}"><i class="fa fa-check" style="visibility: hidden;" id="query_{{ layer.token }}_{{ layer.channel }}_check"></i><span style="padding-left: 10px;">{{ layer.token }} / {{ layer.channel }}</span></a></li>
+            {% endif %}
+            {% endfor %}
+          </ul>
+        </li>
+
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Markers<span class="caret"></span></a>
+          <ul class="dropdown-menu" role="menu">
+            <li><a href="#" id="addmarkercenter">Add Marker (to current center)</a></li>
+            <li><a href="#" id="addmarkermouse">Add Marker (with mouse click)</a></li>
+            <li><a href="#" id="clearmarkers">Clear All Markers</a></li>
+          </ul>
+        </li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="#" data-toggle="modal" data-target="#help">Help</a></li>
+        <li><a href="#" id="collapseinfo">Toggle Controls</a></li>
+      </ul>
+    </div>
+  </nav>
