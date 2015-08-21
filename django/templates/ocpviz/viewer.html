@@ -134,6 +134,18 @@
     // set zindex to some default (we pick the lowest slice)  
     var zindex = {{ zstart }};
 
+     // create the map first 
+		var map = L.map('map', {
+			doubleClickZoom: false,
+    });
+
+    // get bounds
+    var southWest = map.unproject([0, ymax], {{ resstart }});
+    var northEast = map.unproject([xmax, 0], {{ resstart }});
+    var maxBounds = new L.LatLngBounds(southWest, northEast);
+    //console.log(southWest);
+    //console.log(northEast);
+
     // define layers
     {% for layer in layers %}
       {# setup the URL #} 
@@ -165,7 +177,7 @@
       {% endif %}
         
       console.log(url);    
-      
+
       {# add the layer #}  
       var {{ layer.layer_name|cut:" " }} = L.tileLayer.OCPLayer(
         url,
@@ -181,18 +193,13 @@
           {% if layer.layertype == 'timeseries' %}
           curtime: {{ starttime }},
           {% endif %}
-          noWrap: true,
-        })
+          //noWrap: true,
+          continuousWorld: true,
+          //bounds: maxBounds,
+        }).addTo(map);
     {% endfor %}
   
-     // bind it all together
-		var map = L.map('map', {
-      layers: [{% spaceless %}
-      {% for layer in layers %}{{ layer.layer_name|cut:" " }}{% if not forloop.last %},{% endif %}{% endfor %}
-      {% endspaceless %}],
-			doubleClickZoom: false,
-    });
-    
+    // set the initial view 
     var center = map.unproject(L.point({{ xstart }}, {{ ystart }}), {{ resstart }});
 		map.setView(center, maxres);
 
