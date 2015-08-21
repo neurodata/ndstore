@@ -248,7 +248,6 @@
     // update current coordinates in nav box
 
     function coordinatesUpdate() {
-      console.log("Running update");
       $( "#x" ).parent().removeClass("has-error");
       $( "#y" ).parent().removeClass("has-error");
       $( "#z" ).parent().removeClass("has-error");
@@ -331,7 +330,6 @@
       
       // get current url
       var markerUrlRaw = 'http://{{ request.get_host }}{{ request.path }}';
-      console.log(markerUrlRaw.split("/", 8));
       var markerUrlArr = markerUrlRaw.split("/", 8);
       var curZoom = map.getMaxZoom() - map.getZoom(); 
       var markerUrl = 'http://' + markerUrlArr[2] + "/" + markerUrlArr[3] + "/" + markerUrlArr[4] + "/" + markerUrlArr[5] + "/" + markerUrlArr[6] + "/" + curZoom + "/" + Math.round(point.x) + "/" + Math.round(point.y) + "/" + zindex + "/";
@@ -384,7 +382,6 @@
     $( "#clearmarkers" ).click(function( event ) {
       var index;
       for (index = 0; index < markers.length; index++) {
-        //console.log(markers[index]);
         map.removeLayer(markers[index]);
         
       }
