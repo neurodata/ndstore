@@ -27,6 +27,7 @@ import MySQLdb
 import itertools
 from contextlib import closing
 from libtiff import TIFF
+from operator import sub
 from libtiff import TIFFfile, TIFFimage
 
 import restargs
@@ -805,8 +806,7 @@ def getAnnoById ( ch, annoid, h5f, proj, db, dataoption, resolution=None, corner
       # don't need to remap single annotations
       cb = db.annoCutout(ch, dataids,resolution,corner,dim,None)
 
-    # again an abstraction problem with corner.
-    #  return the corner to cutout arguments space
+    # again an abstraction problem with corner. return the corner to cutout arguments space
     offset = proj.datasetcfg.offset[resolution]
     retcorner = [corner[0]+offset[0], corner[1]+offset[1], corner[2]+offset[2]]
     h5anno.addCutout ( resolution, retcorner, cb.data )
@@ -1161,15 +1161,10 @@ def getAnnotations ( webargs, postdata ):
     tmpoutfile.seek(0)
     return tmpoutfile.read()
 
-def putAnnotationAsync ( webargs, postdata ):
-  """Put a RAMON object asynchrously as HDF5 by object identifier"""
-  
-  print "TESTING"
-  import ocpdatastream
 
 def putAnnotation ( webargs, postdata ):
   """Put a RAMON object as HDF5 by object identifier"""
-    
+  
   [token, channel, optionsargs] = webargs.split('/',2)
 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
@@ -1224,8 +1219,8 @@ def putAnnotation ( webargs, postdata ):
             try:
   
               if anno.__class__ in [ annotation.AnnNeuron, annotation.AnnSeed ] and ( idgrp.get('VOXELS') or idgrp.get('CUTOUT')):
-                logger.warning ("Cannot write to annotation type %s" % (anno.__class__))
-                raise OCPCAError ("Cannot write to annotation type %s" % (anno.__class__))
+                logger.warning ("Cannot write to annotation type {}".format(anno.__class__))
+                raise OCPCAError ("Cannot write to annotation type {}".format(anno.__class__))
   
               if 'update' in options and 'dataonly' in options:
                 logger.warning ("Illegal combination of options. Cannot use udpate and dataonly together")
@@ -1288,14 +1283,14 @@ def putAnnotation ( webargs, postdata ):
                 #   Probably remove the offset is the best idea.  and align data
                 #    to zero regardless of where it starts.  For now.
                 offset = proj.datasetcfg.offset[resolution]
-                corner = (h5xyzoffset[0]-offset[0],h5xyzoffset[1]-offset[1],h5xyzoffset[2]-offset[2])
-  
+                corner = map(sub, h5xyzoffset, offset)
+                
                 db.annotateEntityDense ( ch, anno.annid, corner, resolution, np.array(cutout), conflictopt )
   
               elif cutout != None and h5xyzoffset != None and 'reduce' in options:
 
                 offset = proj.datasetcfg.offset[resolution]
-                corner = (h5xyzoffset[0]-offset[0],h5xyzoffset[1]-offset[1],h5xyzoffset[2]-offset[2])
+                corner = map(sub, h5xyzoffset,offset)
   
                 db.shaveEntityDense ( ch, anno.annid, corner, resolution, np.array(cutout))
   
@@ -1430,7 +1425,6 @@ def queryAnnoObjects ( webargs, postdata=None ):
         try:
           resolution = h5f['RESOLUTION'][0]
           offset = proj.datasetcfg.offset[resolution]
-          from operator import sub
           corner = map(sub, h5f['XYZOFFSET'], offset)
           dim = h5f['CUTOUTSIZE'][:]
   
