@@ -14,20 +14,11 @@
 
 from __future__ import absolute_import
 
-from celery import task
+import os
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'OCP.settings')
 from django.conf import settings
+from celery import Celery
 
-import h5annasync
-import ocpcastack
-
-import logging
-logger = logging.getLogger("ocp")
-
-@task(queue='propagate')
-def propagate (token, channle_name):
-  """Propagate the given project for all resolutions"""
-
-  try:
-    ocpcastack.buildStack (token,channle_name)
-  except Exception, e:
-    logger.error("Error in propagate. {}".format(e))
+app = Celery('ocp')
+app.config_from_object('django.conf:settings')
+app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
