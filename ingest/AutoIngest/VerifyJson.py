@@ -33,7 +33,11 @@ def main():
   with open('ocp.JSON') as df:
       data = json.load(df)
 
-  assert(VerifyPath(data, path))
+  #assert(VerifyPath(data, path))
+  VerifyPath(data, path)
+
+def VerifyDataset(path):
+  
 
 def VerifyPath(data, path):
   token_name = data["project"]["token_name"]
@@ -45,8 +49,13 @@ def VerifyPath(data, path):
       for i in len(channel_names):
           for j in xrange(timerange[0], timerange[1]+1):
               #Test for tifs or such? Currently test for just not empty
-              work_path =
-              assert()
+              work_path = "{}/{}/{}/time{}/".format(path, token_name, channel_names[i], j)
+              assert((not os.listdir(work_path)))
+  else:
+      for n in len(channel_names):
+        #Test for tifs or such? Currently test for just not empty
+        work_path = "{}/{}/{}/".format(path, token_name, channel_names[n])
+        assert((not os.listdir(work_path)))
 
 
 if __name__ == "__main__":

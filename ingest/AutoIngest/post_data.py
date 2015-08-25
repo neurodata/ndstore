@@ -39,14 +39,14 @@ def post_hdf5 (token_name, host_name = 'ocp.me'):
   image_data = np.ones([2,2,100,100], dtype=np.uint8) * random.randint(0,255)
   # Specify your channel_list here. There should be at least one channel in this list
   channel_list = ['Grayscale', 'Blue']
-  
+
   # Here we fill in the post args. They have xyz order
   # post_args = (resolution, xmin, xmax, ymin, ymax, zmin, zmxax)
   # Here I post the 10x10x2 cube to of data to 3000,3010/4000,4010/500,502 volume
   # Best practice is to post data in the multiples of 128,128,16\
   # The order of the args is resolution, xmin, xmax, ymin, ymax, zmin, zmax, tmin, tmax.
   post_args = (0, 3000, 3100, 4100, 4200, 500, 502)
-  
+
   # Create a temp file
   tmp_file = tempfile.NamedTemporaryFile()
   # Create a hdf5 file. Set the data to imageData
@@ -58,7 +58,7 @@ def post_hdf5 (token_name, host_name = 'ocp.me'):
    # You can find more information about them at this link http://ocp.me/open-connectome/api/ocp_types.html
    changrp.create_dataset("CHANNELTYPE", (1,), dtype=h5py.special_dtype(vlen=str), data='image')
    changrp.create_dataset("DATATYPE", (1,), dtype=h5py.special_dtype(vlen=str), data='uint8')
-  
+
   f5out.close()
   tmp_file.seek(0)
 
@@ -71,13 +71,13 @@ def post_hdf5 (token_name, host_name = 'ocp.me'):
 
 def post_npz (token_name, host_name='ocp.me'):
   """Post a npz file"""
-  
+
   # Here I create a 10x10x2 cube of Image data. The order which post data is zyx
   # The data in image_data[0] is the 1st channel, image_data[1] is the 2nd channel and so on
   image_data = np.ones([2,2,100,100], dtype=np.uint8) * random.randint(0,255)
   # Specify your channel_list here. There should be at least one channel in this list
   channel_list = ['Grayscale', 'Blue']
- 
+
   # Here we fill in the post args. They have xyz order
   # post_args = (resolution, xmin, xmax, ymin, ymax, zmin, zmxax)
   # Here I post the 10x10x2 cube to of data to 3000,3010/4000,4010/500,502 volume
@@ -88,7 +88,7 @@ def post_npz (token_name, host_name='ocp.me'):
   fileobj = cStringIO.StringIO ()
   np.save (fileobj, image_data)
   cdz = zlib.compress (fileobj.getvalue())
-  
+
   # Creating the url. The arguments here are the region you want to post the data to
   # IMPORTANT : You can only post to a project which is NOT read-only. Do ensure that when you create a token, it is not set to read-only.
   url = 'http://{}/ocpca/{}/{}/npz/{}/{},{}/{},{}/{},{}/'.format(host_name, token_name, ','.join(channel_list), *post_args)
@@ -98,7 +98,7 @@ def post_npz (token_name, host_name='ocp.me'):
 
 def post_url (url, data):
  """Opening the url and verifying if it connects or else exit the program"""
- 
+
  try:
    req = urllib2.Request ( url, data )
    print "POST : {}".format(url)
@@ -109,13 +109,13 @@ def post_url (url, data):
 
 def main():
   """Test Main Fucntion"""
-  
+
   parser = argparse.ArgumentParser(description="Example script for OCP HDF5 and numpy posts.")
   parser.add_argument('token_name', action='store', type=str, help='Name of token')
   parser.add_argument('--host', dest='host_name', action='store', type=str, default=None, help='Server HostName')
 
   result = parser.parse_args()
-  
+
   post_npz(result.token_name, host_name=result.host_name)
   post_hdf5(result.token_name, host_name=result.host_name)
 
