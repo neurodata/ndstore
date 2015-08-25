@@ -665,7 +665,8 @@
           {% else %}
           var newUrl = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png';
           {% endif %}  
-          {{ "layer_"|add:layer.layer_name|cut:" " }}.setUrl(newUrl);
+          {{ "layer_"|add:layer.layer_name|cut:" " }}.setUrl(newUrl, true);
+          {{ "layer_"|add:layer.layer_name|cut:" " }}.smoothRedraw();
         }
       {% endif %}
       {% endfor %}
@@ -685,7 +686,8 @@
           {% else %}
           var newUrl = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png';
           {% endif %}  
-          {{ "layer_"|add:layer.layer_name|cut:" " }}.setUrl(newUrl);
+          {{ "layer_"|add:layer.layer_name|cut:" " }}.setUrl(newUrl, true);
+          {{ "layer_"|add:layer.layer_name|cut:" " }}.smoothRedraw();
           }
       {% endif %}
       {% endfor %}
@@ -701,7 +703,8 @@
         {% else %}
         var newUrl = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png';
         {% endif %}  
-        {{ "layer_"|add:layer.layer_name|cut:" " }}.setUrl(newUrl);
+        {{ "layer_"|add:layer.layer_name|cut:" " }}.setUrl(newUrl, true);
+        {{ "layer_"|add:layer.layer_name|cut:" " }}.smoothRedraw();
       {% endif %}
       {% endfor %}
     }
@@ -716,7 +719,8 @@
           {% else %}
           var newUrl = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png';
           {% endif %}  
-          {{ "layer_"|add:layer.layer_name|cut:" " }}.setUrl(newUrl);
+          {{ "layer_"|add:layer.layer_name|cut:" " }}.setUrl(newUrl, true);
+          {{ "layer_"|add:layer.layer_name|cut:" " }}.smoothRedraw();
       {% endif %}
       {% endfor %}
 		}
