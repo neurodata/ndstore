@@ -25,6 +25,7 @@ from collections import defaultdict
 import itertools
 import blosc
 from contextlib import closing
+from operator import add, sub, div, mod
 
 import annotation
 import annindex
@@ -97,12 +98,7 @@ class OCPCADB:
       raise OCPCAError ("Unknown key/value store. Engine = {}".format(self.proj.getKVEngine()))
 
     #if (self.proj.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS):
-
-  def setChannel ( self, channel_name ):
-    """Switch the channel pointer"""
-    ch = self.proj.getChannelObj(channel_name)
-    if ch.getChannelType() == ANNOTATION_CHANNELS:
-      self.annoIdx = annindex.AnnotateIndex ( self.kvio, self.proj )
+    self.annoIdx = annindex.AnnotateIndex ( self.kvio, self.proj )
 
   def close ( self ):
     """Close the connection"""
@@ -344,8 +340,8 @@ class OCPCADB:
       # Handle the cube format here.  
       if self.NPZ:
           # decompress the cube
-          #cube.fromNPZ ( cubestr )
-          cube.fromBlosc ( cubestr )
+          cube.fromNPZ ( cubestr )
+          #cube.fromBlosc ( cubestr )
 
       else:
           # cubes are HDF5 files
@@ -376,8 +372,8 @@ class OCPCADB:
     #  they overwrite existing non-zero annotations.
       # Handle the cube format here.  
       if self.NPZ:
-        #self.kvio.putCube(ch, zidx, resolution, cube.toNPZ(), not cube.fromZeros())
-        self.kvio.putCube(ch, zidx, resolution, cube.toBlosc(), not cube.fromZeros())
+        self.kvio.putCube(ch, zidx, resolution, cube.toNPZ(), not cube.fromZeros())
+        #self.kvio.putCube(ch, zidx, resolution, cube.toBlosc(), not cube.fromZeros())
       else:
         with closing(tempfile.NamedTemporaryFile()) as tmpfile:
           h5 = h5py.File ( tmpfile.name, driver="core" )
@@ -406,8 +402,8 @@ class OCPCADB:
       # Handle the cube format here.  
       if self.NPZ:
           # decompress the cube
-          #cube.fromNPZ(cubestr)
-          cube.fromBlosc(cubestr)
+          cube.fromNPZ(cubestr)
+          #cube.fromBlosc(cubestr)
 
       else:
         # cubes are HDF5 files
@@ -435,8 +431,8 @@ class OCPCADB:
     if cube.isNotZeros():
       # Handle the cube format here.  
       if self.NPZ:
-        #self.kvio.putTimeCube(ch, zidx, timestamp, resolution, cube.toNPZ(), update)
-        self.kvio.putTimeCube(ch, zidx, timestamp, resolution, cube.toBlosc(), update)
+        self.kvio.putTimeCube(ch, zidx, timestamp, resolution, cube.toNPZ(), update)
+        #self.kvio.putTimeCube(ch, zidx, timestamp, resolution, cube.toBlosc(), update)
       else:
         with closing(tempfile.NamedTemporaryFile()) as tmpfile:
           h5 = h5py.File ( tmpfile.name, driver='core', backing_store=True )
@@ -451,8 +447,8 @@ class OCPCADB:
     excstr = self.kvio.getExceptions ( ch, zidx, resolution, annoid )
     if excstr:
       if self.NPZ:
-        #return np.load(cStringIO.StringIO ( zlib.decompress(excstr)))
-        return blosc.unpack_array(excstr)
+        return np.load(cStringIO.StringIO ( zlib.decompress(excstr)))
+        #return blosc.unpack_array(excstr)
       else:
         # cubes are HDF5 files
         with closing(tempfile.NamedTemporaryFile()) as tmpfile:
@@ -495,10 +491,10 @@ class OCPCADB:
 
     #RBMAYBE make exceptions zipped in a future incompatible version??
     if self.NPZ:
-      #fileobj = cStringIO.StringIO ()
-      #np.save ( fileobj, exceptions )
-      #excstr = fileobj.getvalue()
-      excstr = blosc.pack_array(exceptions)
+      fileobj = cStringIO.StringIO ()
+      np.save ( fileobj, exceptions )
+      excstr = fileobj.getvalue()
+      #excstr = blosc.pack_array(exceptions)
       self.kvio.putExceptions(ch, key, resolution, exid, excstr, update)
     else:
       with closing (tempfile.NamedTemporaryFile()) as tmpfile:
@@ -569,8 +565,8 @@ class OCPCADB:
       return [None,None]
     else: 
       # decompress the cube
-      #cube.fromNPZ ( row[1] )
-      cube.fromBlosc ( row[1] )
+      cube.fromNPZ ( row[1] )
+      #cube.fromBlosc ( row[1] )
       return [row[0],cube]
 
 
@@ -737,12 +733,7 @@ class OCPCADB:
   #
   def annotateDense ( self, ch, corner, resolution, annodata, conflictopt ):
     """Process all the annotations in the dense volume"""
-    
-    import time
-    total_time = 0
-    total_time2 = 0
-    total_time3 = 0
-    total_time4 = 0
+   
     index_dict = defaultdict(set)
 
     # dim is in xyz, data is in zyxj
@@ -752,7 +743,6 @@ class OCPCADB:
     [xcubedim, ycubedim, zcubedim] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
     # Round to the nearest larger cube in all dimensions
-    from operator import div, mod
     start = [xstart, ystart, zstart] = map(div, corner, cubedim)
 
     znumcubes = (corner[2]+dim[2]+zcubedim-1)/zcubedim - zstart
@@ -774,14 +764,10 @@ class OCPCADB:
           for x in range(xnumcubes):
 
             key = ocplib.XYZMorton ([x+xstart,y+ystart,z+zstart])
-            start = time.time()
             cube = self.getCube (ch, key, resolution, True)
-            total_time3 += time.time()-start
             
             if conflictopt == 'O':
-              start = time.time()
               cube.overwrite ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
-              total_time4 += time.time()-start
             elif conflictopt == 'P':
               cube.preserve ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
             elif conflictopt == 'E': 
@@ -804,15 +790,11 @@ class OCPCADB:
               logger.error ( "Unsupported conflict option %s" % conflictopt )
               raise OCPCAError ( "Unsupported conflict option %s" % conflictopt )
             
-            start = time.time()
             self.putCube (ch, key, resolution, cube)
-            total_time += time.time()-start
 
             # update the index for the cube
             # get the unique elements that are being added to the data
-            start = time.time()
             uniqueels = np.unique ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
-            total_time2 += time.time()-start
             for el in uniqueels:
               index_dict[el].add(key) 
 
@@ -828,7 +810,6 @@ class OCPCADB:
       self.kvio.rollback()
       raise
     
-    print "Write", total_time, "Unique", total_time2, "Read", total_time3, "overwrite", total_time4
     self.kvio.commit()
 
 
@@ -1046,8 +1027,8 @@ class OCPCADB:
         offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
 
         if self.NPZ:
-          #incube.fromNPZ ( datastring[:] )
-          incube.fromBlosc ( datastring[:] )
+          incube.fromNPZ ( datastring[:] )
+          #incube.fromBlosc ( datastring[:] )
 
         else:
           # cubes are HDF5 files
@@ -1148,8 +1129,8 @@ class OCPCADB:
           offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
 
           if self.NPZ:
-            #incube.fromNPZ(datastring[:])
-            incube.fromBlosc(datastring[:])
+            incube.fromNPZ(datastring[:])
+            #incube.fromBlosc(datastring[:])
 
           else:
             # cubes are HDF5 files
@@ -1182,13 +1163,12 @@ class OCPCADB:
 
   def getVoxel ( self, ch, resolution, voxel ):
     """Return the identifier at a voxel"""
-
+    
     # get the size of the image and cube
     [xcubedim, ycubedim, zcubedim] = cubedim = self.datasetcfg.cubedim[resolution]
     [xoffset, yoffset, zoffset] = offset = self.datasetcfg.offset[resolution]
 
     # convert the voxel into zindex and offsets. Round to the nearest larger cube in all dimensions
-    from operator import div, mod, sub
     voxel = map(sub, voxel, offset)
     xyzcube = map(div, voxel, cubedim)
     xyzoffset = map(mod, voxel, cubedim)
@@ -1378,8 +1358,7 @@ class OCPCADB:
         vec_func = np.vectorize ( lambda x: np.uint32(remapid) if x != 0 else np.uint32(0) ) 
         cb.data = vec_func ( cb.data )
 
-      # zoom the data if not at the right resolution
-      # and translate the zindex to the upper resolution
+      # zoom the data if not at the right resolution and translate the zindex to the upper resolution
       (xoff,yoff,zoff) = ocplib.MortonXYZ ( zidx )
       offset = (xoff*xcubedim, yoff*ycubedim, zoff*zcubedim)
 

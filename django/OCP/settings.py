@@ -29,6 +29,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+FORCE_SCRIPT_NAME = '/ocp'
 
 # Application definition
 
@@ -72,6 +73,10 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.core.context_processors.i18n',
+                'django.core.context_processors.media',
+                'django.core.context_processors.static',
+                'django.core.context_processors.tz',
             ],
         },
     },
@@ -183,5 +188,8 @@ LOGGING = {
 BROKER_URL = 'amqp://guest@localhost'
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
-CELERY_ACCEPT_CONTENT=['json']
+CELERY_ACCEPT_CONTENT=['json', 'pickle']
 CELERYD_PREFETCH_MULTIPLIER = 1
+
+# LIMS Server Settings
+LIMS_SERVER = 'cortex.cs.jhu.edu'

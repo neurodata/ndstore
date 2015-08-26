@@ -85,7 +85,6 @@ def buildGraph (request, webargs):
         [syntoken, synchan_name, graphType, Xmin,Xmax,Ymin,Ymax,Zmin,Zmax] = [i for i in m.groups()]
         arguementType=3
     else:
-        pdb.set_trace()
         logger.warning("Arguments not in the correct format: /token/channel/Arguments")
         raise OCPCAError("Arguments not in the correct format: /token/channel/Arguments")
 

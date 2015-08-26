@@ -188,7 +188,7 @@ class SimpleCatmaid:
     with closing ( ocpcadb.OCPCADB(self.proj) ) as self.db:
 
         # mocpcache key
-        mckey = self.buildKey(res, xtile, ytile, ztile, timetile=None)
+        mckey = self.buildKey(res, xtile, ytile, ztile, timetile=timetile)
 
         # if tile is in mocpcache, return it
         tile = self.mc.get(mckey)
