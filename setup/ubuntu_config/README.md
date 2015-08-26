@@ -6,6 +6,7 @@ Configuration information for nginx
 
 ** ocp.ini
 
+  uWSGI configuration file in /etc/uwsgi/vassals/
   uWSGI configuration file in /etc/uwsgi/apps-enabled/
 
 ** packages -- to install nginx on ubuntu
