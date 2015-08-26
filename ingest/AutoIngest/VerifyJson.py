@@ -22,7 +22,7 @@
 
 import json
 import os
-from postmethods import getURL, postURL
+from postmethods import getURL
 SITE_HOST = localhost
 
 def main():
@@ -41,11 +41,19 @@ def main():
 
 
 def VerifyDataset(data):
-  dbinfo = getURL("http://{}/ocp/ca/{}/info/".format(SITE_HOST, data["project"]["token_name"]))
+  try:
+    token = data["project"]["token_name"]
+  except:
+    token = data["project"]["project_name"]
+
+  f = getURL("http://{}/ocp/ca/{}/info/".format(SITE_HOST, token))
+  dbinfo = json.loads(f.read())
   assert(dbinfo["dataset"]["dataset_name"]==data["dataset"]["dataset_name"])
   assert(dbinfo["dataset"]["imagesize"]==data["dataset"]["imagesize"])
   assert(dbinfo["dataset"]["voxelres"]==data["dataset"]["voxelres"])
-  assert(dbinfo[])
+
+  if (data["channel"]["channel_type"]=="timeseries"):
+    assert(dbinfo["dataset"]["timerange"]==data["dataset"]["timerange"])
 
 def VerifyPath(data, path):
   #Insert try and catch blocks
@@ -70,7 +78,7 @@ def VerifyPath(data, path):
         work_path = "{}/{}/{}/".format(path, token_name, channel_names[n])
         assert((not os.listdir(work_path)))
 
-def Put
+def PutData(data):
 
 if __name__ == "__main__":
   main()
