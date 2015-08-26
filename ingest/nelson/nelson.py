@@ -72,8 +72,8 @@ class MouseStack:
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('--data', default='/nobackup/mousebrainmicro/2014-11-24-Stitch1/', help='Data directory')
-  parser.add_argument('--globalsize', nargs=3, type=int, metavar=('X', 'Y', 'Z'), help='Total size of mosaic', default=[40768, 25792, 14272])
-  parser.add_argument('--tilesize', nargs=3, type=int, metavar=('X', 'Y', 'Z'), help='Size of tif tiles', default=[637, 403, 223])
+  parser.add_argument('--globalsize', nargs=3, type=int, metavar=('X', 'Y', 'Z'), help='Total size of mosaic', default=[43520, 38656, 16384])
+  parser.add_argument('--tilesize', nargs=3, type=int, metavar=('X', 'Y', 'Z'), help='Size of tif tiles', default=[680, 604, 256])
   parser.add_argument('--channels', nargs='+', type=int, help="Channels to processs", default=[0, 1])
   parser.add_argument('--slices', nargs='+', type=int, default=None, help="Specific Z-slab to process [Default: (all)]")
   parser.add_argument('--scales', nargs='+', type=int, default=[0], help="Scales to generate [Default: (all)]")
@@ -118,10 +118,9 @@ def main():
           for bigrow in range(stack.globalsize[1] // (stack.tilesize[1]*tiles_per_row*2**scale)):
               for bigcol in range(stack.globalsize[0] // (stack.tilesize[0]*tiles_per_col*2**scale)):
                   for channel in args.channels:
-                      slabdata = np.zeros([223,403*tiles_per_row,637*tiles_per_row], dtype=np.uint16)
+                      slabdata = np.zeros([256, 604*tiles_per_row, 680*tiles_per_row], dtype=np.uint16)
                       for smallrow in range(tiles_per_row):
                           for smallcol in range(tiles_per_col):
-            
                                   #filename = '/nobackup/mousebrainmicro/2014-11-24-Stitch1/5/8/3/1/8/5/default.%d.tif' % channel
                                   col = (bigcol*tiles_per_col + smallcol) * stack.tilesize[0]
                                   row = (bigrow*tiles_per_row + smallrow) * stack.tilesize[1]
@@ -158,7 +157,6 @@ def main():
 
 
                       # Export tiles to disk
-
                       # Is there any data?  Skip if not..
                       if not slabdata.any():
                           print("No data in slab!  Skipping output.")
