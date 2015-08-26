@@ -34,12 +34,13 @@ def main():
       data = json.load(df)
 
   #assert(VerifyPath(data, path))
-  VerifyPath(data, path)
+  VerifyPat(data, path)
 
 def VerifyDataset(path):
-  
+
 
 def VerifyPath(data, path):
+  #Insert try and catch blocks
   token_name = data["project"]["token_name"]
   channel_names = data["channels"].keys()
   channel_type = data["channel"]["channel_type"]
@@ -57,6 +58,7 @@ def VerifyPath(data, path):
         work_path = "{}/{}/{}/".format(path, token_name, channel_names[n])
         assert((not os.listdir(work_path)))
 
+def Put
 
 if __name__ == "__main__":
   main()
