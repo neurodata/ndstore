@@ -36,16 +36,25 @@ def main():
       data = json.load(df)
 
   #assert(VerifyPath(data, path))
+  VerifyDataset(data)
   VerifyPath(data, path)
 
-def VerifyDataset(path):
-  dbinfo = getURL("http://{}/ca/{}/info/".format(SITE_HOST, data["project"]["token_name"]))
-  assert(dbinfo["dataset_name"]==)
+
+def VerifyDataset(data):
+  dbinfo = getURL("http://{}/ocp/ca/{}/info/".format(SITE_HOST, data["project"]["token_name"]))
+  assert(dbinfo["dataset"]["dataset_name"]==data["dataset"]["dataset_name"])
+  assert(dbinfo["dataset"]["imagesize"]==data["dataset"]["imagesize"])
+  assert(dbinfo["dataset"]["voxelres"]==data["dataset"]["voxelres"])
+  assert(dbinfo[])
 
 def VerifyPath(data, path):
   #Insert try and catch blocks
-  token_name = data["project"]["token_name"]
-  channel_names = data["channels"].keys()
+  try:
+    token_name = data["project"]["token_name"]
+  except:
+    token_name = data["project"]["project_name"]
+
+  channel_names = data["channels"]["channel_names"].keys()
   channel_type = data["channel"]["channel_type"]
 
   if (channel_type=="timeseries"):

@@ -29,7 +29,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-FORCE_SCRIPT_NAME = '/ocp'
+FORCE_SCRIPT_NAME = ''
 
 # Application definition
 
