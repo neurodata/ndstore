@@ -22,6 +22,8 @@
 
 import json
 import os
+from postmethods import getURL, postURL
+SITE_HOST = localhost
 
 def main():
 
@@ -34,10 +36,11 @@ def main():
       data = json.load(df)
 
   #assert(VerifyPath(data, path))
-  VerifyPat(data, path)
+  VerifyPath(data, path)
 
 def VerifyDataset(path):
-
+  dbinfo = getURL("http://{}/ca/{}/info/".format(SITE_HOST, data["project"]["token_name"]))
+  assert(dbinfo["dataset_name"]==)
 
 def VerifyPath(data, path):
   #Insert try and catch blocks
