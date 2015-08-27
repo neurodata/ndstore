@@ -1341,10 +1341,10 @@ class OCPCADB:
       effectiveres = ch.getResolution() 
     else:
       effectiveres = resolution
-
+    
     zidxs = set()
     for did in dataids:
-      zidxs |= set ( self.annoIdx.getIndex(ch, did,effectiveres))
+      zidxs |= set ( self.annoIdx.getIndex(ch, did, effectiveres))
 
     for zidx in zidxs:
 

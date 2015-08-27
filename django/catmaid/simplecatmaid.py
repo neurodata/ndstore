@@ -88,7 +88,6 @@ class SimpleCatmaid:
   def cacheMissXZ(self, res, xtile, ytile, ztile, timetile=None):
     """On a miss. Cutout, return the image and load the cache in a background thread"""
     
-    import pdb; pdb.set_trace()
     # make sure that the tile size is aligned with the cubedim
     if self.tilesz % self.proj.datasetcfg.cubedim[res][1] != 0 or self.tilesz % self.proj.datasetcfg.cubedim[res][2]:
       raise("Illegal tile size.  Not aligned")

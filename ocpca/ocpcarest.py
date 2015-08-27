@@ -758,7 +758,7 @@ AR_CUBOIDS = 5
 
 def getAnnoById ( ch, annoid, h5f, proj, db, dataoption, resolution=None, corner=None, dim=None ): 
   """Retrieve the annotation and put it in the HDF5 file."""
-
+  
   # retrieve the annotation 
   anno = db.getAnnotation ( ch, annoid )
   if anno == None:
@@ -801,10 +801,10 @@ def getAnnoById ( ch, annoid, h5f, proj, db, dataoption, resolution=None, corner
 
     # cutout the data with the and remap for neurons.
     if anno.__class__ in [ annotation.AnnNeuron ] and dataoption != AR_NODATA:
-      cb = db.annoCutout(ch, dataids,resolution,corner,dim,annoid)
+      cb = db.annoCutout(ch, dataids, resolution, corner, dim, annoid)
     else:
       # don't need to remap single annotations
-      cb = db.annoCutout(ch, dataids,resolution,corner,dim,None)
+      cb = db.annoCutout(ch, dataids, resolution, corner, dim, None)
 
     # again an abstraction problem with corner. return the corner to cutout arguments space
     offset = proj.datasetcfg.offset[resolution]
@@ -843,7 +843,10 @@ def getAnnoById ( ch, annoid, h5f, proj, db, dataoption, resolution=None, corner
         datacuboid = np.zeros ( (bbdim[2],bbdim[1],bbdim[0]), dtype=cbdata.dtype )
 
       datacuboid [ offset[2]-bbcorner[2]:offset[2]-bbcorner[2]+cbdata.shape[0], offset[1]-bbcorner[1]:offset[1]-bbcorner[1]+cbdata.shape[1], offset[0]-bbcorner[0]:offset[0]-bbcorner[0]+cbdata.shape[2] ]  = cbdata
-
+   
+    from operator import add
+    ds_offset = proj.datasetcfg.offset[resolution]
+    bbcorner = map(add, bbcorner, ds_offset)
     h5anno.addCutout ( resolution, bbcorner, datacuboid )
 
   elif dataoption==AR_BOUNDINGBOX:
