@@ -47,9 +47,9 @@ class AnnotateIndex:
     idxstr = self.kvio.getIndex(ch, entityid, resolution, update)
     if idxstr:
       if self.NPZ:
-        #fobj = cStringIO.StringIO ( idxstr )
-        #return np.load ( fobj )
-        return blosc.unpack_array(idxstr)
+        fobj = cStringIO.StringIO ( idxstr )
+        return np.load ( fobj )
+        #return blosc.unpack_array(idxstr)
       else:
         # cubes are HDF5 files
         with closing (tempfile.NamedTemporaryFile ()) as tmpfile:
@@ -67,10 +67,10 @@ class AnnotateIndex:
     """Write the index for the annotation with id"""
 
     if self.NPZ:
-      #fileobj = cStringIO.StringIO ()
-      #np.save ( fileobj, index )
-      #self.kvio.putIndex(ch, entityid, resolution, fileobj.getvalue(), update)
-      self.kvio.putIndex(ch, entityid, resolution, blosc.pack_array(index), update)
+      fileobj = cStringIO.StringIO ()
+      np.save ( fileobj, index )
+      self.kvio.putIndex(ch, entityid, resolution, fileobj.getvalue(), update)
+      #self.kvio.putIndex(ch, entityid, resolution, blosc.pack_array(index), update)
     else:
 
       with closing ( tempfile.NamedTemporaryFile () ) as tmpfile:
@@ -122,10 +122,10 @@ class AnnotateIndex:
     if curindex == []:
         
         if self.NPZ:
-          #fileobj = cStringIO.StringIO ()
-          #np.save ( fileobj, index )
-          #self.kvio.putIndex(ch, entityid, resolution, fileobj.getvalue())
-          self.kvio.putIndex(ch, entityid, resolution, blosc.pack_array(index))
+          fileobj = cStringIO.StringIO ()
+          np.save ( fileobj, index )
+          self.kvio.putIndex(ch, entityid, resolution, fileobj.getvalue())
+          #self.kvio.putIndex(ch, entityid, resolution, blosc.pack_array(index))
         else:
 
           with closing ( tempfile.NamedTemporaryFile () ) as tmpfile:
@@ -142,10 +142,10 @@ class AnnotateIndex:
 
         # Update the index in the database
         if self.NPZ:
-          #fileobj = cStringIO.StringIO ()
-          #np.save ( fileobj, newIndex )
-          #self.kvio.putIndex(ch, entityid, resolution, fileobj.getvalue(), True)
-          self.kvio.putIndex(ch, entityid, resolution, blosc.pack_array(newIndex), True)
+          fileobj = cStringIO.StringIO ()
+          np.save ( fileobj, newIndex )
+          self.kvio.putIndex(ch, entityid, resolution, fileobj.getvalue(), True)
+          #self.kvio.putIndex(ch, entityid, resolution, blosc.pack_array(newIndex), True)
         else:
 
           with closing ( tempfile.NamedTemporaryFile () ) as tmpfile:

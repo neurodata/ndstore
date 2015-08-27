@@ -118,7 +118,7 @@ class SimpleCatmaid:
     if cb.data.shape != (ztileend-ztilestart,1,self.tilesz) and cb.data.shape != (1, ztileend-ztilestart,1,self.tilesz):
       if timetile is None:
         tiledata = np.zeros((ztileend-ztilestart,1,self.tilesz), cb.data.dtype )
-        tiledata[0,0:zend-zstart,0,0:((xend-1)%self.tilesz+1)] = cb.data[0,:,0,:]
+        tiledata[0:zend-zstart,0,0:((xend-1)%self.tilesz+1)] = cb.data[:,0,:]
       else:
         tiledata = np.zeros((1,ztileend-ztilestart,1,self.tilesz), cb.data.dtype )
         tiledata[0,0:zend-zstart,0,0:((xend-1)%self.tilesz+1)] = cb.data[0,:,0,:]
@@ -192,7 +192,7 @@ class SimpleCatmaid:
 
         # if tile is in mocpcache, return it
         tile = self.mc.get(mckey)
-       
+        
         if tile == None:
           if slice_type == 'xy':
             img = self.cacheMissXY(res, xtile, ytile, ztile, timetile=timetile)
