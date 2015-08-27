@@ -27,28 +27,27 @@ import networkx as nx
 import time
 
 import makeunitdb
+from ocptype import ANNOTATION, UINT32
 from params import Params
 from ramon import H5AnnotationFile, setField, getField, queryField, makeAnno, createSpecificSynapse
 from postmethods import putAnnotation, getAnnotation, getURL, postURL
-#from postmethods import setURL
 import kvengine_to_test
 import site_to_test
 #from ocpgraph import genGraphRAMON
 SITE_HOST = site_to_test.site
 
 p = Params()
-p.token = 'unittest_gg'
+p.token = 'unittest'
 p.resolution = 0
-p.channels = ['unit_anno']
-p.database = 'unittest_gg'
-p.project = ['unittest_gg']
-
+p.channels = ['ANNO1']
+p.channel_type = ANNOTATION
+p.datatype = UINT32
 
 class Test_GraphGen:
 
   def setup_class(self):
     """Create the unittest database"""
-    makeunitdb.createTestDB(p.database, public=True, readonly=0)
+    makeunitdb.createTestDB(p.token, channel_list=p.channels, public=True, readonly=0)
 
     cutout1 = "0/2,5/1,3/0,2"
     cutout2 = "0/1,3/4,6/2,5"
@@ -71,7 +70,7 @@ class Test_GraphGen:
 
   def teardown_class(self):
     """Destroy the unittest database"""
-    makeunitdb.deleteTestDB(p.database)
+    makeunitdb.deleteTestDB(p.token)
     os.remove("../django/GeneratedGraph.tar.gz")
 
   def test_checkTotal(self):
