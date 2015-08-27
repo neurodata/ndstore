@@ -47,6 +47,7 @@ INSTALLED_APPS = (
     'registration',
     'ocpuser',
     'djcelery',
+    'ocpviz',
 )
 
 MIDDLEWARE_CLASSES = (
