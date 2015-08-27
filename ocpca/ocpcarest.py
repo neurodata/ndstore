@@ -27,7 +27,7 @@ import MySQLdb
 import itertools
 from contextlib import closing
 from libtiff import TIFF
-from operator import sub
+from operator import sub, add
 from libtiff import TIFFfile, TIFFimage
 
 import restargs
@@ -844,9 +844,8 @@ def getAnnoById ( ch, annoid, h5f, proj, db, dataoption, resolution=None, corner
 
       datacuboid [ offset[2]-bbcorner[2]:offset[2]-bbcorner[2]+cbdata.shape[0], offset[1]-bbcorner[1]:offset[1]-bbcorner[1]+cbdata.shape[1], offset[0]-bbcorner[0]:offset[0]-bbcorner[0]+cbdata.shape[2] ]  = cbdata
    
-    from operator import add
-    ds_offset = proj.datasetcfg.offset[resolution]
-    bbcorner = map(add, bbcorner, ds_offset)
+    offset = proj.datasetcfg.offset[resolution]
+    bbcorner = map(add, bbcorner, offset)
     h5anno.addCutout ( resolution, bbcorner, datacuboid )
 
   elif dataoption==AR_BOUNDINGBOX:
