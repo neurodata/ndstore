@@ -71,7 +71,7 @@ class Test_GraphGen:
   def teardown_class(self):
     """Destroy the unittest database"""
     makeunitdb.deleteTestDB(p.token)
-    os.remove("../django/GeneratedGraph.tar.gz")
+    os.remove("/tmp/GeneratedGraph.tar.gz")
 
   def test_checkTotal(self):
     """Test the original/non-specific dataset"""
@@ -82,8 +82,8 @@ class Test_GraphGen:
     url = 'http://{}/ocpgraph/{}/{}/'.format(SITE_HOST, p.token, p.channels[0])
     graphFile = urllib2.urlopen(url)
 
-    outputGraph = nx.read_graphml("../django/unittest_gg_unit_anno.graphml")
-    os.remove("../django/unittest_gg_unit_anno.graphml")
+    outputGraph = nx.read_graphml(("/tmp/{}_{}.graphml").format(p.token, p.channels[0]))
+    os.remove(("/tmp/{}_{}.graphml").format(p.token, p.channels[0]))
     assert(nx.is_isomorphic(outputGraph, truthGraph))
 
   def test_checkType(self):
@@ -96,8 +96,8 @@ class Test_GraphGen:
         SITE_HOST, p.token, p.channels[0], 'adjlist')
     graphFile = urllib2.urlopen(url)
 
-    outputGraph = nx.read_adjlist("../django/unittest_gg_unit_anno.adjlist")
-    os.remove("../django/unittest_gg_unit_anno.adjlist")
+    outputGraph = nx.read_adjlist(("/tmp/{}_{}.adjlist").format(p.token, p.channels[0]))
+    os.remove(("/tmp/{}_{}.adjlist").format(p.token, p.channels[0]))
     assert(nx.is_isomorphic(outputGraph, truthGraph))
 
   def test_checkCutout(self):
@@ -110,8 +110,8 @@ class Test_GraphGen:
         SITE_HOST, p.token, p.channels[0], 'graphml', 0, 7, 0, 8, 1, 4)
     graphFile = urllib2.urlopen(url)
 
-    outputGraph = nx.read_graphml("../django/unittest_gg_unit_anno.graphml")
-    os.remove("../django/unittest_gg_unit_anno.graphml")
+    outputGraph = nx.read_graphml(("/tmp/{}_{}.graphml").format(p.token, p.channels[0]))
+    os.remove(("/tmp/{}_{}.graphml").format(p.token, p.channels[0]))
     assert(nx.is_isomorphic(outputGraph, truthGraph))
 
   def test_ErrorHandling(self):
@@ -124,8 +124,8 @@ class Test_GraphGen:
         SITE_HOST, p.token, p.channels[0], 'foograph')
     graphFile = urllib2.urlopen(url)
 
-    outputGraph = nx.read_graphml("../django/unittest_gg_unit_anno.graphml")
-    os.remove("../django/unittest_gg_unit_anno.graphml")
+    outputGraph = nx.read_graphml(("/tmp/{}_{}.graphml").format(p.token, p.channels[0]))
+    os.remove(("/tmp/{}_{}.graphml").format(p.token, p.channels[0]))
     assert(nx.is_isomorphic(outputGraph, truthGraph))
 
     """Invalid token"""
