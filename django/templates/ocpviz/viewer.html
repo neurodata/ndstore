@@ -139,10 +139,9 @@
     var ymin = {{ yoffset }};
     var ymax = {{ ysize }};
 
-    // we assume all projects start at res 0 
-    // this is pretty safe, since the default display is zoomed all the way out
-    var minres = 0;
-    var maxres = {{ res }};
+    var minres = {{ minres }};
+    var maxres = {{ maxres }};
+    var res = {{ res }};
     var zmin = {{ zoffset }};
     var zmax = {{ zsize }};
     // set zindex to some default (we pick the lowest slice)  
@@ -152,13 +151,6 @@
 		var map = L.map('map', {
 			doubleClickZoom: false,
     });
-
-    // get bounds
-    var southWest = map.unproject([0, ymax], {{ resstart }});
-    var northEast = map.unproject([xmax, 0], {{ resstart }});
-    var maxBounds = new L.LatLngBounds(southWest, northEast);
-    //console.log(southWest);
-    //console.log(northEast);
 
     // define layers
     {% for layer in layers %}
@@ -209,13 +201,12 @@
           {% endif %}
           //noWrap: true,
           continuousWorld: true,
-          //bounds: maxBounds,
         }).addTo(map);
     {% endfor %}
   
     // set the initial view 
-    var center = map.unproject(L.point({{ xstart }}, {{ ystart }}), {{ resstart }});
-		map.setView(center, maxres);
+    var center = map.unproject(L.point({{ xstart }}, {{ ystart }}), maxres + maxres - res);
+		map.setView(center, maxres + maxres - res);
 
 		// display some map info
 		var info = L.control();
