@@ -84,6 +84,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="">OCP Types</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#channel-types">Channel Types</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#data-types">Data Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#possible-combination-of-channel-types-and-data-types">Possible Combination of Channel Types and Data Types</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#propagation-service">Propagation Service</a></li>
 </ul>
 </li>
@@ -206,7 +207,7 @@
 <h1>OCP Types<a class="headerlink" href="#ocp-types" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="channel-types">
 <span id="ocp-channeltype"></span><h2>Channel Types<a class="headerlink" href="#channel-types" title="Permalink to this headline">¶</a></h2>
-<p>OCP supports three channel types mentioned below.</p>
+<p>Channels in OCP are individual entites inside projects. You can have mulitple same and different channels inside the same project. Each channel has it&#8217;s unique properties. For example, annotation  channels allow your to store annotation paint data and metadata using RAMON. Image channels allow you to store image data which is 3-dimenisonal in xyz dimensions. Timeseries channels allow you to store time data which is 4-dimenisonal in xyz+time dimensions.</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="61%" />
@@ -232,6 +233,7 @@
 </div>
 <div class="section" id="data-types">
 <span id="ocp-datatype"></span><h2>Data Types<a class="headerlink" href="#data-types" title="Permalink to this headline">¶</a></h2>
+<p>Each channel has an associated datatype. The datatype of the channel represent the type of data stored in that channel. For example, an image channel which has 8-bit data will be of the datatype uint8. A probablity map which has floating point data will be of the type float32.</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="60%" />
@@ -260,6 +262,32 @@
 </tr>
 <tr class="row-odd"><td>32-bit Float</td>
 <td>float32</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="possible-combination-of-channel-types-and-data-types">
+<span id="ocp-combo"></span><h2>Possible Combination of Channel Types and Data Types<a class="headerlink" href="#possible-combination-of-channel-types-and-data-types" title="Permalink to this headline">¶</a></h2>
+<p>OCP allows certain set combinations of the above mentioned channel type and data types. The combinations mentioned below.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="75%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Channel Type</th>
+<th class="head">Possible Data Types</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Image</td>
+<td>uint8, uint16, uint32, uint64, float32</td>
+</tr>
+<tr class="row-odd"><td>Timeseries</td>
+<td>uint8, uint16, float32</td>
+</tr>
+<tr class="row-even"><td>Annotation</td>
+<td>uint32, uint64</td>
 </tr>
 </tbody>
 </table>

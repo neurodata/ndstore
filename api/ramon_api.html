@@ -84,6 +84,7 @@
 <li class="toctree-l1"><a class="reference internal" href="ocp_types.html">OCP Types</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="ocp_types.html#channel-types">Channel Types</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ocp_types.html#data-types">Data Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ocp_types.html#possible-combination-of-channel-types-and-data-types">Possible Combination of Channel Types and Data Types</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ocp_types.html#propagation-service">Propagation Service</a></li>
 </ul>
 </li>
@@ -280,9 +281,67 @@
 <h2>Annotation Service<a class="headerlink" href="#annotation-service" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="id1">
 <h3>GET<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<dl class="get">
+<dt id="get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-(int-annotation_id)-(string-option_args)-(int-resolution)-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>annotation_id</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>option_args</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>resolution</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-(int-annotation_id)-(string-option_args)-(int-resolution)-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Get an annotation to the server</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in OCP. In the general case this is ocp.me.</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; Token Name in OCP.</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; Channel Name in OCP. <em>Optional</em>. If missing will use default channel for the token.</li>
+<li><strong>annotation_id</strong> (<em>int</em>) &#8211; Id of the annotation to be cut from the database.</li>
+<li><strong>options_args</strong> &#8211; <em>Optional Arguments</em>. This can be overwrite, preserve, exception.</li>
+<li><strong>resolution</strong> (<em>int</em>) &#8211; Resolution for the annotation</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; No error</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; Error in the syntax or file format</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </div>
 <div class="section" id="post">
 <h3>POST<a class="headerlink" href="#post" title="Permalink to this headline">¶</a></h3>
+<dl class="post">
+<dt id="post-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-(string-option_args)-">
+<code class="descname">POST </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>option_args</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#post-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-(string-option_args)-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Post an annotation to the server</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in OCP. In the general case this is ocp.me.</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; Token Name in OCP.</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; Channel Name in OCP. <em>Optional</em>. If missing will use default channel for the token.</li>
+<li><strong>options_args</strong> &#8211; <em>Optional Arguments</em>. This can be overwrite, preserve, exception.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; No error</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; Error in the syntax or file format</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </div>
 </div>
 <div class="section" id="merge-service">

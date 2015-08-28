@@ -6,7 +6,7 @@ OCP Types
 Channel Types
 =============
 
-OCP supports three channel types mentioned below.
+Channels in OCP are individual entites inside projects. You can have mulitple same and different channels inside the same project. Each channel has it's unique properties. For example, annotation  channels allow your to store annotation paint data and metadata using RAMON. Image channels allow you to store image data which is 3-dimenisonal in xyz dimensions. Timeseries channels allow you to store time data which is 4-dimenisonal in xyz+time dimensions.
 
 =================   ==========
 Channel Type        OCP Value
@@ -21,6 +21,8 @@ Annotation          annnotation
 Data Types
 ==========
 
+Each channel has an associated datatype. The datatype of the channel represent the type of data stored in that channel. For example, an image channel which has 8-bit data will be of the datatype uint8. A probablity map which has floating point data will be of the type float32.
+
 ===============     ==========
 Data Type           OCP Value
 ===============     ==========
@@ -31,6 +33,21 @@ Data Type           OCP Value
 64-bit RGBA         rgb64
 32-bit Float        float32
 ===============     ==========
+
+.. _ocp-combo:
+
+Possible Combination of Channel Types and Data Types
+=====================================================
+
+OCP allows certain set combinations of the above mentioned channel type and data types. The combinations mentioned below.
+
+=============       =======================================
+Channel Type        Possible Data Types
+=============       =======================================
+Image               uint8, uint16, uint32, uint64, float32
+Timeseries          uint8, uint16, float32
+Annotation          uint32, uint64
+=============       =======================================
 
 .. _ocp-propagation:
 
