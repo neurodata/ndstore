@@ -17,6 +17,7 @@ import h5py
 import cStringIO
 import zlib
 import tempfile
+import blosc
 import numpy as np
 
 from params import Params
@@ -66,6 +67,41 @@ def getNPZ (p, time=False):
   rawdata = zlib.decompress (f.read())
   fileobj = cStringIO.StringIO (rawdata)
   return np.load (fileobj)
+
+
+def postBlosc (p, post_data, time=False):
+  """Post data using npz"""
+  
+  # Build the url and then create a npz object
+  if time:
+    url = 'http://{}/ca/{}/{}/blosc/{}/{},{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+  elif p.channels is not None:
+    url = 'http://{}/ca/{}/{}/blosc/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+  elif p.channels is None:
+    url = 'http://{}/ca/{}/blosc/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
+
+  try:
+    # Build a post request
+    req = urllib2.Request(url,blosc.pack_array(post_data))
+    response = urllib2.urlopen(req)
+    return response
+  except urllib2.HTTPError,e:
+    return e
+
+
+def getBlosc (p, time=False):
+  """Get data using npz. Returns a numpy array"""
+  
+  # Build the url to get the npz object 
+  if time:
+    url = 'http://{}/ca/{}/{}/blosc/{}/{},{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+  elif p.channels is not None:
+    url = 'http://{}/ca/{}/{}/blosc/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+  elif p.channels is None:
+    url = 'http://{}/ca/{}/blosc/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
+  # Get the image back
+  f = urllib2.urlopen (url)
+  return blosc.unpack_array(f.read())
 
 
 def postHDF5 (p, post_data, time=False):

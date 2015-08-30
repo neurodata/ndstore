@@ -50,11 +50,17 @@ def cutout (request, webargs):
     if request.method == 'GET':
       if service in GET_SLICE_SERVICES+GET_ANNO_SERVICES:
         return django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="image/png" )
-      elif service in ['ts', 'hdf5']:
+      elif service in ['hdf5']:
         fname = re.sub ( r',','_', webargs )
         fname = re.sub ( r'/','-', fname )
         response = django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="product/hdf5" )
         response['Content-Disposition'] = "attachment; filename={}ocpcutout.h5".format(fname)
+        return response
+      elif service in ['blosc']:
+        fname = re.sub ( r',','_', webargs )
+        fname = re.sub ( r'/','-', fname )
+        response = django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="product/blosc" )
+        response['Content-Disposition'] = "attachment; filename={}ocpcutout.blosc".format(fname)
         return response
       elif service=='npz':
         return django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="product/npz" )

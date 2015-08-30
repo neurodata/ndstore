@@ -22,10 +22,6 @@ import blosc
 import logging
 logger=logging.getLogger("ocp")
 
-#
-# AnnotateIndex: Maintain the index in the database
-# AUTHOR: Priya Manavalan
-#
 
 class AnnotateIndex:
 
@@ -36,7 +32,7 @@ class AnnotateIndex:
     self.kvio = kvio
 
     if self.proj.getKVEngine() == 'MySQL':
-      self.NPZ = True
+      self.NPZ = False
     else: 
       self.NPZ = False
    
@@ -49,16 +45,8 @@ class AnnotateIndex:
       if self.NPZ:
         fobj = cStringIO.StringIO ( idxstr )
         return np.load ( fobj )
-        #return blosc.unpack_array(idxstr)
       else:
-        # cubes are HDF5 files
-        with closing (tempfile.NamedTemporaryFile ()) as tmpfile:
-          tmpfile.write ( idxstr )
-          tmpfile.seek(0)
-          h5 = h5py.File ( tmpfile.name ) 
-  
-          # load the numpy array
-          return np.array ( h5['index'] )
+        return blosc.unpack_array(idxstr)
     else:
       return []
        
@@ -70,32 +58,24 @@ class AnnotateIndex:
       fileobj = cStringIO.StringIO ()
       np.save ( fileobj, index )
       self.kvio.putIndex(ch, entityid, resolution, fileobj.getvalue(), update)
-      #self.kvio.putIndex(ch, entityid, resolution, blosc.pack_array(index), update)
     else:
-
-      with closing ( tempfile.NamedTemporaryFile () ) as tmpfile:
-        h5 = h5py.File ( tmpfile.name )
-        h5.create_dataset ( "index", tuple(index.shape), index.dtype,compression='gzip',  data=index )
-        h5.close()
-        tmpfile.seek(0)
-        self.kvio.putIndex(ch, entityid, resolution, tmpfile.read(), update)
-
+      self.kvio.putIndex(ch, entityid, resolution, blosc.pack_array(index), update)
 
   def updateIndexDense(self, ch, index,resolution):
     """Updated the database index table with the input index hash table"""
 
     for key, value in index.iteritems():
       cubelist = list(value)
-      cubeindex=np.array(cubelist, dtype=np.uint64)
+      cubeindex = np.array(cubelist, dtype=np.uint64)
           
       curindex = self.getIndex(ch, key,resolution,True)
          
-      if curindex==[]:
+      if curindex == []:
         self.putIndex(ch, key, resolution, cubeindex, False)
             
       else:
         # Update index to the union of the currentIndex and the updated index
-        newIndex=np.union1d(curindex, cubeindex)
+        newIndex = np.union1d(curindex, cubeindex)
         self.putIndex(ch, key, resolution, newIndex, True)
 
   
@@ -121,36 +101,22 @@ class AnnotateIndex:
 
     if curindex == []:
         
-        if self.NPZ:
-          fileobj = cStringIO.StringIO ()
-          np.save ( fileobj, index )
-          self.kvio.putIndex(ch, entityid, resolution, fileobj.getvalue())
-          #self.kvio.putIndex(ch, entityid, resolution, blosc.pack_array(index))
-        else:
-
-          with closing ( tempfile.NamedTemporaryFile () ) as tmpfile:
-            h5 = h5py.File ( tmpfile.name )
-            h5.create_dataset ( "index", tuple(index.shape), index.dtype, compression='gzip',  data=index )
-            h5.close()
-            tmpfile.seek(0)
-            self.kvio.putIndex(ch, entityid, resolution, tmpfile.read())
+      if self.NPZ:
+        fileobj = cStringIO.StringIO ()
+        np.save ( fileobj, index )
+        self.kvio.putIndex(ch, entityid, resolution, fileobj.getvalue())
+      else:
+        self.kvio.putIndex(ch, entityid, resolution, blosc.pack_array(index))
 
     else :
         
-        # Update Index to the union of the currentIndex and the updated index
-        newIndex = np.union1d(curindex, index)
+      # Update Index to the union of the currentIndex and the updated index
+      newIndex = np.union1d(curindex, index)
 
-        # Update the index in the database
-        if self.NPZ:
-          fileobj = cStringIO.StringIO ()
-          np.save ( fileobj, newIndex )
-          self.kvio.putIndex(ch, entityid, resolution, fileobj.getvalue(), True)
-          #self.kvio.putIndex(ch, entityid, resolution, blosc.pack_array(newIndex), True)
-        else:
-
-          with closing ( tempfile.NamedTemporaryFile () ) as tmpfile:
-            h5 = h5py.File ( tmpfile.name )
-            h5.create_dataset ( "index", tuple(index.shape), index.dtype, compression='gzip',  data=index )
-            h5.close()
-            tmpfile.seek(0)
-            self.kvio.putIndex(ch, entityid, resolution, tmpfile.read(), True)
+      # Update the index in the database
+      if self.NPZ:
+        fileobj = cStringIO.StringIO ()
+        np.save ( fileobj, newIndex )
+        self.kvio.putIndex(ch, entityid, resolution, fileobj.getvalue(), True)
+      else:
+        self.kvio.putIndex(ch, entityid, resolution, blosc.pack_array(newIndex), True)

@@ -150,6 +150,12 @@
     1. test_window_default
     2. test_window_args
 
+* test_blosc.py - 2 tests
+
+  - Module : Test_Blosc
+    1. test_get_blosc
+    2. test_post_blosc
+
 * tests to add
   1. Test filter for image slices
   2. Test neurons, segments and synapses
