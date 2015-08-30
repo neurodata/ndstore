@@ -614,7 +614,7 @@ class MySQLKVIO:
 
       sql = "INSERT INTO {} (zindex, id, exlist) VALUES (%s, %s, %s)".format( ch.getExceptionsTable(resolution) )
       try:
-        cursor.execute ( sql, (zidx, annid, zlib.compress(excstr)))
+        cursor.execute ( sql, (zidx, annid, excstr))
       except MySQLdb.Error, e:
         logger.error ( "Error inserting exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         if self.txncursor is None:

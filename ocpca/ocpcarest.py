@@ -615,20 +615,22 @@ def selectPost ( webargs, proj, db, postdata ):
 
     try:
 
-      if service == 'npz':
+      if service in ['npz', 'blosc']:
 
         # get the data out of the compressed blob
-        rawdata = zlib.decompress ( postdata )
-        fileobj = cStringIO.StringIO ( rawdata )
-        voxarray = np.load ( fileobj )
+        if service == 'npz':
+          rawdata = zlib.decompress ( postdata )
+          fileobj = cStringIO.StringIO ( rawdata )
+          voxarray = np.load ( fileobj )
+        elif service == 'blosc':
+          voxarray = blosc.unpack_array(postdata)
         
         if voxarray.shape[0] != len(channel_list):
-          logger.warning("The npz data has some missing channels")
-          raise OCPCAError("The npz data has some missing channels")
+          logger.warning("The data has some missing channels")
+          raise OCPCAError("The data has some missing channels")
       
         for idx,channel_name in enumerate(channel_list):
           ch = proj.getChannelObj(channel_name)
-          #ch = ocpcaproj.OCPCAChannel(proj, channel)
   
           # Don't write to readonly channels
           if ch.getReadOnly() == READONLY_TRUE:
@@ -647,7 +649,7 @@ def selectPost ( webargs, proj, db, postdata ):
           
           elif ch.getChannelType() in ANNOTATION_CHANNELS:
             db.annotateDense(ch, corner, resolution, voxarray[idx,:], conflictopt)
-
+      
       elif service == 'hdf5':
   
         # Get the HDF5 file.
