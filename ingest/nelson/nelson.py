@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 import os
 import math
 import argparse
@@ -20,11 +18,11 @@ class MouseStack:
     self.channels = channels
 
     # Maximum directory depth (number of levels in the scale pyramid)
-    self.max_depth = int(math.ceil(math.log2(max(
+    self.max_depth = int(math.ceil(math.log(max(
                             self.globalsize[0]/self.tilesize[0],
                             self.globalsize[1]/self.tilesize[1],
                             self.globalsize[2]/self.tilesize[2]
-                        ))))
+                        ),2)))
 
   def toBitString(self, i, depth=None):
     """Generate a bitstring for 'i' for up to self.max_depth bytes."""
