@@ -18,8 +18,6 @@ import numpy as np
 import marshal
 import h5py
 import cPickle
-import msgpack
-import msgpack_numpy as m
 import timeit
 import zlib
 import cStringIO
@@ -27,6 +25,10 @@ import tempfile
 import blosc
 import time
 import math
+
+import matplotlib.pyplot as plt
+import matplotlib.lines as mlines
+from matplotlib.backends.backend_pdf import PdfPages
 
 BASE_SIZE = 512
 Z_SIZE = 16
@@ -40,11 +42,13 @@ blosc_ds_values = []
 numpy_ss_values = []
 hdf5_ss_values = []
 blosc_ss_values = []
+x_axis_values = []
 
 print "-----SERIALIZATION TIME-----"
-for i in range(0, 1, 1):
+for i in range(0, 4, 1):
 
   CUBE_VALUE = int(BASE_SIZE*math.pow(2,i))
+  x_axis_values.append(CUBE_VALUE)
   print "SIZE:{}".format(CUBE_VALUE)
   data = np.asarray(range(CUBE_VALUE*CUBE_VALUE*Z_SIZE), dtype=np.uint32).reshape(CUBE_VALUE,CUBE_VALUE,Z_SIZE)
   
@@ -91,6 +95,105 @@ for i in range(0, 1, 1):
   test = blosc.unpack_array(test)
   blosc_ds_values.append(time.time()-start)
 
+
+# opening a pdf file
+pp = PdfPages('time_serialization.pdf')
+
+# Time Serlization Graph
+
+# plot values
+plt.figure(figsize=(10,10))
+plt.plot(x_axis_values, numpy_ts_values, color='green', marker='o')
+plt.plot(x_axis_values, hdf5_ts_values, color='blue', marker='^')
+plt.plot(x_axis_values, blosc_ts_values, color='red', marker='s')
+
+# configure x-axis
+plt.xlim(0,5500)
+plt.xticks(x_axis_values)
+
+# configure y-xis
+plt.ylim(0,int(max(numpy_ts_values+hdf5_ts_values+blosc_ts_values))+50)
+plt.yticks(range(0,int(max(numpy_ts_values+hdf5_ts_values+blosc_ts_values))+50,50))
+
+# axis lables
+plt.xlabel('Cube Sizes')
+plt.ylabel('Time(seconds)')
+
+# legend
+numpy_line = mlines.Line2D([], [], color='green', marker='o', label='Numpy')
+hdf5_line = mlines.Line2D([], [], color='blue', marker='^', label='HDF5')
+blosc_line = mlines.Line2D([], [], color='red', marker='s', label='Blosc')
+plt.legend(handles=[numpy_line, hdf5_line, blosc_line])
+
+# title
+plt.title("Serialization Times")
+
+# show the graph
+#plt.show()
+
+# save the plot to file
+pp.savefig()
+
+# Size serialization graph
+
+numpy_ss_values = [x/(1024*1024) for x in numpy_ss_values]
+hdf5_ss_values = [x/(1024*1024) for x in hdf5_ss_values]
+blosc_ss_values = [x/(1024*1024) for x in blosc_ss_values]
+
+# plot the values
+plt.figure(figsize=(10,10))
+plt.plot(x_axis_values, numpy_ss_values, color='green', marker='o')
+plt.plot(x_axis_values, hdf5_ss_values, color='blue', marker='^')
+plt.plot(x_axis_values, blosc_ss_values, color='red', marker='s')
+
+# configure x-axis
+plt.xlim(0,5500)
+plt.xticks(x_axis_values)
+
+# configure y-xis
+plt.ylim(0,1000)
+plt.yticks(range(0,int(max(numpy_ss_values+hdf5_ss_values+blosc_ss_values))+100,100))
+
+# axis lables
+plt.xlabel('Cube Sizes')
+plt.ylabel('Size(MB\'s)')
+plt.legend(handles=[numpy_line, hdf5_line, blosc_line])
+
+# title
+plt.title("Serialization Sizes")
+
+# save the plot to file
+pp.savefig()
+
+# Time deserialzation graph
+
+# plot the values
+plt.figure(figsize=(10,10))
+plt.plot(x_axis_values, numpy_ds_values, color='green', marker='o')
+plt.plot(x_axis_values, hdf5_ds_values, color='blue', marker='^')
+plt.plot(x_axis_values, blosc_ds_values, color='red', marker='s')
+
+# configure x-axis
+plt.xlim(0,5500)
+plt.xticks(x_axis_values)
+
+# configure y-xis
+plt.ylim(0,int(max(numpy_ds_values+hdf5_ds_values+blosc_ds_values))+50)
+plt.yticks(range(0,int(max(numpy_ds_values+hdf5_ds_values+blosc_ds_values))+50,50))
+
+# axis lables
+plt.xlabel('Cube Sizes')
+plt.ylabel('Time(seconds)')
+plt.legend(handles=[numpy_line, hdf5_line, blosc_line])
+
+# title
+plt.title("DeSerialization Times")
+
+# save the plot to file
+pp.savefig()
+
+# close the file
+pp.close()
 
 ######################################################################################################
 
