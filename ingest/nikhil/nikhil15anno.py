@@ -31,12 +31,12 @@ from django.conf import settings
 import django
 django.setup()
 
-
 import imagecube
 import ocplib
 import ocpcarest
 import ocpcaproj
 import ocpcadb
+from cube import Cube
 
 class NikhilIngest:
 
@@ -51,10 +51,6 @@ class NikhilIngest:
     with closing (ocpcaproj.OCPCAProjectsDB()) as projdb:
       self.proj = projdb.loadToken(self.token)
       self.channel_name = channel_name
-
-      #channel_name = (min(glob.glob("{}*.tif".format(self.path)))).strip("0001.tif")
-      #self.max_slice = int(((max(glob.glob("{}*.tif".format(path)))).strip(channel_name + "_")).strip(".tif"))
-      #self.createChannel(channel_name)
       self.ingest()
 
   def ingest(self):
@@ -73,15 +69,12 @@ class NikhilIngest:
       [xoffset, yoffset, zoffset] = proj.datasetcfg.getOffset()[self.resolution]
 
       # Get a list of the files in the directories
-
-
+      
       for slice_number in range(zoffset, ximagesz, zcubedim):
-	import pdb; pdb.set_trace()
         slab = np.zeros([zcubedim, yimagesz, ximagesz], dtype=np.uint32)
 
-
         for b in range(zcubedim):
-          file_name = "{}{}_{}.tif".format(self.path, channel_name, sl+b)
+          file_name = "{}{}{:0>4}.tif".format(self.path, self.token, slice_number+b)
           print "Open filename {}".format(file_name)
 
           try:
@@ -108,7 +101,10 @@ class NikhilIngest:
             zmax = min(slice_number + zcubedim, zimagesz + 1)
 
             cube.data[0:zmax - zmin, 0:ymax - ymin, 0:xmax - xmin] = slab[zmin:zmax, ymin:ymax, xmin:xmax]
-            db.annotateDense ( zidx, self.resolution, cube )
+            from operator import sub
+            corner = map(sub, [x,y,slice_number], [xoffset,yoffset,zoffset])
+            print corner
+            db.annotateDense ( ch, corner, self.resolution, cube.data, 'O' )
 
 
 def main():
