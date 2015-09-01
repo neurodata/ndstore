@@ -248,14 +248,24 @@ class MySQLKVIO:
   def putCubes ( self, ch, listofidxs, resolution, listofcubes, update=False):
     """Store multiple cubes into the database"""
 
-    sql = "INSERT INTO {} (zindex,cube) VALUES (%s,%s)".format(ch.getTable(resolution))
+    # if in a TxN us the transaction cursor.  Otherwise create one.
+    if self.txncursor is None:
+      cursor = self.conn.cursor()
+    else:
+      cursor = self.txncursor
+    
+    sql = "REPLACE INTO {} (zindex,cube) VALUES (%s,%s)".format(ch.getTable(resolution))
+    #sql = "INSERT INTO {} (zindex,cube) VALUES (%s,%s)".format(ch.getTable(resolution))
 
     try:
       cursor.executemany(sql, zip(listofidxs, listofcubes))
     except MySQLdb.Error, e:
       logger.error ( "Error inserting cube: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
       raise
-
+    finally:
+      # close the local cursor if not in a transaction and commit right away
+      if self.txncursor is None:
+        cursor.close()
   
   def putCube ( self, ch, zidx, resolution, cubestr, update=False ):
     """Store a cube from the annotation database"""

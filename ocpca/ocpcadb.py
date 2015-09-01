@@ -353,7 +353,7 @@ class OCPCADB:
   def putCubes(self, ch, listofidxs, resolution, listofcubes, update=False):
     """Insert a list of cubes"""
 
-    return self.kvio.putCubes(ch, listofidxs, resolution, listofcubes, not Cube.fromZeros())
+    return self.kvio.putCubes(ch, listofidxs, resolution, listofcubes, update)
 
   def putCube(self, ch, zidx, resolution, cube, update=False):
     """ Store a cube in the annotation database """
@@ -1491,7 +1491,6 @@ class OCPCADB:
   def writeCuboids(self, ch, corner, resolution, cuboiddata):
     """Write an arbitary size data to the database"""
    
-    import pdb; pdb.set_trace()
     # dim is in xyz, data is in zyx order
     dim = cuboiddata.shape[::-1]
     
@@ -1524,7 +1523,7 @@ class OCPCADB:
 
             listofidxs.append(ocplib.XYZMorton ([x+xstart,y+ystart,z+zstart]))
             incube.data = databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ]
-            listofcubes.append(incube)
+            listofcubes.append(incube.toBlosc())
 
       self.putCubes(ch, listofidxs, resolution, listofcubes, update=False)
 

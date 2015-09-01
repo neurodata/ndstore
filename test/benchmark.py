@@ -23,6 +23,7 @@ import urllib2
 import zlib
 import cStringIO
 import blosc
+import time
 
 sys.path += [os.path.abspath('../django/')]
 import OCP.settings
@@ -34,36 +35,31 @@ from params import Params
 p = Params()
 p.token = "blaze"
 p.resolution = 0
-p.channels = ['anno']
+p.channels = ['blaze']
 p.window = [0,0]
-p.channel_type = "annotation"
+p.channel_type = "image"
 p.datatype = "uint32"
 SIZE = 2048
-ZSIZE = 108
+ZSIZE = 16
 
-def Benchmark(zidx):
+def generateURL(zidx):
   """Run the Benchmark."""
 
   i = zidx
   [x,y,z] = MortonXYZ(i)
   p.args = (x*SIZE, (x+1)*SIZE, y*SIZE, (y+1)*SIZE, z*ZSIZE, (z+1)*ZSIZE)
   image_data = np.ones([1,ZSIZE,SIZE,SIZE], dtype=np.uint32) * random.randint(0,255)
-  import time
-  start = time.time()
-  PostBlosc(p, image_data)
-  #PostHDF5(p, image_data)
-  #PostNPZ(p, image_data)
-  #print time.time()-start
+  return postBlosc(p, image_data)
 
-def PostBlosc(p, post_data):
+def postBlosc(p, post_data):
   """Post data using the blosc interface"""
 
   # Build the url and then create a hdf5 object
   url = 'http://{}/{}/{}/blosc/{}/{},{}/{},{}/{},{}/'.format(SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args)
-  postURL(url, blosc.pack_array(post_data))
+  return (url, blosc.pack_array(post_data))
 
 
-def PostHDF5 (p, post_data):
+def postHDF5 (p, post_data):
   """Post data using the hdf5 interface"""
 
   # Build the url and then create a hdf5 object
@@ -78,11 +74,9 @@ def PostHDF5 (p, post_data):
     chan_grp.create_dataset("DATATYPE", (1,), dtype=h5py.special_dtype(vlen=str), data=p.datatype)
   fh5out.close()
   tmpfile.seek(0)
-  
-  postURL(url, tmpfile.read())
-  tmpfile.close()
+  return (url, tmpfile.read()) 
 
-def PostNPZ (p, post_data):
+def postNPZ (p, post_data):
   """Post data using the npz interface"""
   
   # Build the url and then create a npz object
@@ -91,8 +85,11 @@ def PostNPZ (p, post_data):
   fileobj = cStringIO.StringIO ()
   np.save (fileobj, post_data)
   cdz = zlib.compress (fileobj.getvalue())
-  
-  postURL(url, cdz)
+  return (url, cdz)
+
+def postURLHelper(args):
+  """Wrapper around postURL for mulitple arguments"""
+  postURL(*args)
 
 def postURL(url, post_data):
   """Post data"""
@@ -100,8 +97,7 @@ def postURL(url, post_data):
   try:
     # Build a post request
     req = urllib2.Request(url, post_data)
-    import time
-    start = time.time()
+    start = time.time() 
     response = urllib2.urlopen(req)
     print time.time()-start
     return response
@@ -122,11 +118,13 @@ def main():
   SITE_HOST = result.host
   zidx_list = range(result.number_iterations)
   random.shuffle(zidx_list)
-  import time
+  post_list = []
+  for zidx in zidx_list:
+    post_list.append(generateURL(zidx))
   from multiprocessing import Pool
   pool = Pool(result.number_processes)
   start = time.time()
-  pool.map(Benchmark, zidx_list)
+  pool.map(postURLHelper, post_list)
   print time.time() - start
 
 if __name__ == '__main__':
