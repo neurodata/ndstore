@@ -350,6 +350,10 @@ class OCPCADB:
     
     return self.kvio.getCubes(ch, listofidxs, resolution, neariso)
 
+  def putCubes(self, ch, listofidxs, resolution, listofcubes, update=False):
+    """Insert a list of cubes"""
+
+    return self.kvio.putCubes(ch, listofidxs, resolution, listofcubes, not Cube.fromZeros())
 
   def putCube(self, ch, zidx, resolution, cube, update=False):
     """ Store a cube in the annotation database """
@@ -1484,6 +1488,51 @@ class OCPCADB:
 
     return np.array(annoids)
 
+  def writeCuboids(self, ch, corner, resolution, cuboiddata):
+    """Write an arbitary size data to the database"""
+   
+    import pdb; pdb.set_trace()
+    # dim is in xyz, data is in zyx order
+    dim = cuboiddata.shape[::-1]
+    
+    # get the size of the image and cube
+    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
+    
+    # Round to the nearest larger cube in all dimensions
+    start = [xstart, ystart, zstart] = map(div, corner, cubedim)
+
+    znumcubes = (corner[2]+dim[2]+zcubedim-1)/zcubedim - zstart
+    ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
+    xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
+
+    offset = [xoffset, yoffset, zoffset] = map(mod, corner, cubedim)
+    
+    databuffer = np.zeros ([znumcubes*zcubedim, ynumcubes*ycubedim, xnumcubes*xcubedim], dtype=cuboiddata.dtype )
+    databuffer [ zoffset:zoffset+dim[2], yoffset:yoffset+dim[1], xoffset:xoffset+dim[0] ] = cuboiddata 
+
+    incube = Cube.getCube ( cubedim, ch.getChannelType(), ch.getDataType() )
+    
+    self.kvio.startTxn()
+    
+    listofidxs = []
+    listofcubes = []
+
+    try:
+      for z in range(znumcubes):
+        for y in range(ynumcubes):
+          for x in range(xnumcubes):
+
+            listofidxs.append(ocplib.XYZMorton ([x+xstart,y+ystart,z+zstart]))
+            incube.data = databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ]
+            listofcubes.append(incube)
+
+      self.putCubes(ch, listofidxs, resolution, listofcubes, update=False)
+
+    except:
+      self.kvio.rollback()
+      raise
+
+    self.kvio.commit()
 
   def writeCuboid(self, ch, corner, resolution, cuboiddata):
     """Write an image through the Web service"""
@@ -1495,17 +1544,19 @@ class OCPCADB:
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
     # Round to the nearest larger cube in all dimensions
-    zstart = corner[2]/zcubedim
-    ystart = corner[1]/ycubedim
-    xstart = corner[0]/xcubedim
+    start = [xstart, ystart, zstart] = map(div, corner, cubedim)
+    #zstart = corner[2]/zcubedim
+    #ystart = corner[1]/ycubedim
+    #xstart = corner[0]/xcubedim
 
     znumcubes = (corner[2]+dim[2]+zcubedim-1)/zcubedim - zstart
     ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
     xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
 
-    zoffset = corner[2]%zcubedim
-    yoffset = corner[1]%ycubedim
-    xoffset = corner[0]%xcubedim
+    offset = [xoffset, yoffset, zoffset] = map(mod, corner, cubedim)
+    #zoffset = corner[2]%zcubedim
+    #yoffset = corner[1]%ycubedim
+    #xoffset = corner[0]%xcubedim
 
     databuffer = np.zeros ([znumcubes*zcubedim, ynumcubes*ycubedim, xnumcubes*xcubedim], dtype=cuboiddata.dtype )
     databuffer [ zoffset:zoffset+dim[2], yoffset:yoffset+dim[1], xoffset:xoffset+dim[0] ] = cuboiddata 

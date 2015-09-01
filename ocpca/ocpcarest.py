@@ -682,7 +682,7 @@ def selectPost ( webargs, proj, db, postdata ):
             raise OCPCAError("Wrong datatype in POST")
             
           if ch.getChannelType() in IMAGE_CHANNELS:
-            db.writeCuboid ( ch, corner, resolution, voxarray[idx,:] )
+            db.writeCuboids ( ch, corner, resolution, voxarray[idx,:] )
 
           elif ch.getChannelType() in TIMESERIES_CHANNELS:
             db.writeTimeCuboid(ch, corner, resolution, timerange, voxarray[idx,:])
