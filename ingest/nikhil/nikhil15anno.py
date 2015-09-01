@@ -70,7 +70,7 @@ class NikhilIngest:
 
       # Get a list of the files in the directories
       
-      for slice_number in range(zoffset, ximagesz, zcubedim):
+      for slice_number in range(zoffset, zimagesz, zcubedim):
         slab = np.zeros([zcubedim, yimagesz, ximagesz], dtype=np.uint32)
 
         for b in range(zcubedim):
@@ -103,8 +103,9 @@ class NikhilIngest:
             cube.data[0:zmax - zmin, 0:ymax - ymin, 0:xmax - xmin] = slab[zmin:zmax, ymin:ymax, xmin:xmax]
             from operator import sub
             corner = map(sub, [x,y,slice_number], [xoffset,yoffset,zoffset])
-            print corner
-            db.annotateDense ( ch, corner, self.resolution, cube.data, 'O' )
+            if cube.data.any():
+              db.annotateDense ( ch, corner, self.resolution, cube.data, 'O' )
+            
 
 
 def main():
