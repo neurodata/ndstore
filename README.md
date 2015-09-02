@@ -1,7 +1,7 @@
 Scalable database cluster for the spatial analysis and annotation of high-throughput brain imaging data called Open Connectome Project Web Services.
 
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/openconnectome/open-connectome?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=body_badge)
-[![Neurodata.io](https://img.shields.io/badge/Visit-ocp.me-ff69b4.svg)](http://neurodata.io/)
+[![Neurodata.io](https://img.shields.io/badge/Visit-neurodata.io-ff69b4.svg)](http://neurodata.io/)
 [![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.19972.svg)](http://dx.doi.org/10.5281/zenodo.19972)
 [![Hex.pm](https://img.shields.io/hexpm/l/plug.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 [![Docs](https://img.shields.io/badge/Docs-latest-brightgreen.svg)](http://docs.neurodata.io/open-connectome/)
