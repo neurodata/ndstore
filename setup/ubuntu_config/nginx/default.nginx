@@ -1,6 +1,6 @@
 # ocp wsgi
 upstream ocp-wsgi {
-  server unix:///run/uwsgi/app/ocp/socket;
+  server unix:///var/run/uwsgi/app/ocp/socket;
 }
 
 # place the following block in your server clause
@@ -17,6 +17,12 @@ server {
     uwsgi_buffers 4096 64k;
   }
   
+  location /static {
+    alias         /var/www/open-connectome/django/tempaltes/static/;
+    autoindex     on;
+    allow         all;
+  }
+
   ...
   
 }

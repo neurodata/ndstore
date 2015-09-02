@@ -1462,7 +1462,7 @@ class OCPCADB:
             clause += '%s %s %s' % ( field, op, val )
 
 
-          #RBTODO key/value fields?
+          #RB TODO key/value fields?
 
           else:
             raise OCPCAError ( "Illegal field in URL: %s" % (field) )
