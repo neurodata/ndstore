@@ -44,7 +44,7 @@ import os
 
 def getResponse( filename ):
 
-    output = tarfile.open('GeneratedGraph.tar.gz', mode='w')
+    output = tarfile.open('/tmp/GeneratedGraph.tar.gz', mode='w')
     try:
         output.add(filename)
     except Exception, e:
@@ -53,7 +53,7 @@ def getResponse( filename ):
     finally:
         output.close()
 
-    wrapper = FileWrapper(file("GeneratedGraph.tar.gz"))
+    wrapper = FileWrapper(file("/tmp/GeneratedGraph.tar.gz"))
     response     = HttpResponse(wrapper,'application/x-gzip')
     response['Content-Length'] = 5
     response['Content-Disposition'] = 'attachment; filename="GeneratedGraph.tar.gz"'
