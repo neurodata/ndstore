@@ -1515,7 +1515,7 @@ def deleteAnnotation ( webargs ):
 
     # if the first argument is numeric.  it is an annoid
     if re.match ( '^[\d,]+$', args[0] ): 
-      annoids = map(int, args[0].split(','))
+      annoids = map(np.uint32, args[0].split(','))
     # if not..this is not a well-formed delete request
     else:
       logger.warning ("Delete did not specify a legal object identifier = %s" % args[0] )

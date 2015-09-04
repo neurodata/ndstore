@@ -1345,7 +1345,7 @@ class OCPCADB:
   #    Delete the voxel data from the database for annoid 
   #
   def deleteAnnoData ( self, ch, annoid):
-
+    
     resolutions = self.datasetcfg.resolutions
 
     self.kvio.startTxn()
@@ -1361,7 +1361,7 @@ class OCPCADB:
         for key in zidxs:
           cube = self.getCube(ch, key, res, True)
           # KL TODO
-          vec_func = np.vectorize ( lambda x: 0 if x == annoid else x )
+          vec_func = np.vectorize ( lambda x: np.uint32(0) if x == annoid else x )
           cube.data = vec_func ( cube.data )
           # remove the expcetions
           if ch.getExceptions == EXCEPTION_TRUE:
