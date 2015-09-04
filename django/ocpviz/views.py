@@ -234,32 +234,32 @@ def projectview(request, webargs):
       break
 
   # calculate the lowest resolution xmax and ymax
-  xdownmax = (project.xmax - project.xmin)/(2**project.maxres)
-  ydownmax = (project.ymax - project.ymin)/(2**project.maxres)
+  xdownmax = (project.ximagesize - project.xoffset)/(2**project.scalinglevels)
+  ydownmax = (project.yimagesize - project.yoffset)/(2**project.scalinglevels)
   
   if x is None:
     x = xdownmax/2
   if y is None:
     y = ydownmax/2
   if z is None:
-    z = project.zmin
+    z = project.zoffset
   if res is None:
-    res = project.maxres 
+    res = project.scalinglevels 
   
   context = {
       'layers': layers,
       'project_name': project_name,
-      'xsize': project.xmax,
-      'ysize': project.ymax,
-      'zsize': project.zmax,
-      'zstart': project.zmin,
-      'xoffset': project.xmin,
-      'yoffset': project.ymin,
-      'zoffset': project.zmin,
-      'maxres': project.maxres,
+      'xsize': project.ximagesize,
+      'ysize': project.yimagesize,
+      'zsize': project.zimagesize,
+      'zstart': project.zoffset,
+      'xoffset': project.xoffset,
+      'yoffset': project.yoffset,
+      'zoffset': project.zoffset ,
+      'maxres': project.scalinglevels,
       'minres':0,
       'res': res, 
-      'resstart': project.maxres,
+      'resstart': project.scalinglevels,
       'xstart': x,
       'ystart': y,
       'zstart': z,
