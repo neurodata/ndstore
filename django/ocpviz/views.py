@@ -210,8 +210,8 @@ def projectview(request, webargs):
   z = None
   res = None
   marker = False
-
-  if len(restsplit) == 4:
+  
+  if len(restsplit) == 5:
     #  res/x/y/z/ args 
     res = int(restsplit[0])
     x = int(restsplit[1])
