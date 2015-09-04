@@ -216,7 +216,7 @@
       var header = '<h4>{{ project_name }}</h4><br />';
       var datainfo = '<div id="opacity-control">{% spaceless %}
         {% for layer in layers %}
-        <div class="info-layer-name"><a href="#">{{ "layer_"|add:layer.layer_name|cut:" " }}</a></div>
+        <div class="info-layer-name"><a href="#">{{ layer.layer_name|cut:" " }}</a></div>
         <div class="info-opacity-control-name">Opacity</div>
         <div id="slider">
         <span class="opacity">{{ "layer_"|add:layer.layer_name|cut:" " }}</span>
