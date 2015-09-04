@@ -219,9 +219,9 @@ def projectview(request, webargs):
     z = int(restsplit[3])
     marker = True 
 
-  else:
-    # return error 
-    return HttpResponseBadRequest('Error: Invalid REST arguments.')
+  #else:
+  #  # return error 
+  #  return HttpResponseBadRequest('Error: Invalid REST arguments.')
   
   # query for the project from the db
   project = get_object_or_404(VizProject, pk=project_name) 
@@ -235,7 +235,7 @@ def projectview(request, webargs):
 
   # calculate the lowest resolution xmax and ymax
   xdownmax = (project.xmax - project.xmin)/(2**project.maxres)
-  xdownmax = (project.ymax - project.ymin)/(2**project.maxres)
+  ydownmax = (project.ymax - project.ymin)/(2**project.maxres)
   
   if x is None:
     x = xdownmax/2
