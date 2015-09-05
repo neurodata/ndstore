@@ -80,18 +80,18 @@ class OCPCADataset:
 
       # set the image size
       #  the scaled down image rounded up to the nearest cube
-      xpixels=((self.ds.ximagesize-1)/2**i)+1
-      ypixels=((self.ds.yimagesize-1)/2**i)+1
+      xpixels = ((self.ds.ximagesize-1)/2**i)+1
+      ypixels = ((self.ds.yimagesize-1)/2**i)+1
       if self.ds.scalingoption == ZSLICES:
-        zpixels=self.ds.zimagesize
+        zpixels = self.ds.zimagesize
       else:
-        zpixels=((self.ds.zimagesize-1)/2**i)+1
+        zpixels = ((self.ds.zimagesize-1)/2**i)+1
       self.imagesz[i] = [ xpixels, ypixels, zpixels ]
 
       # set the offset
       xoffseti = 0 if self.ds.xoffset==0 else ((self.ds.xoffset)/2**i)
       yoffseti = 0 if self.ds.yoffset==0 else ((self.ds.yoffset)/2**i)
-      if self.ds.zoffset==0:
+      if self.ds.zoffset == 0:
         zoffseti = 0
       else:
         if self.ds.scalingoption == ZSLICES:
@@ -108,7 +108,7 @@ class OCPCADataset:
 
       self.voxelres[i] = [ xvoxelresi, yvoxelresi, zvoxelresi ]
       self.scale[i] = { 'xy':xvoxelresi/yvoxelresi , 'yz':zvoxelresi/xvoxelresi, 'xz':zvoxelresi/yvoxelresi }
-
+      
       # choose the cubedim as a function of the zscale
       #self.cubedim[i] = [128, 128, 16]
       # this may need to be changed.  
@@ -126,6 +126,15 @@ class OCPCADataset:
       else:
         # RB what should we use as a cubedim?
         self.cubedim[i] = [128, 128, 16]
+      
+      if self.scale[i]['xz'] < 1.0:
+        scalepixels = 1/self.scale[i]['xz']
+        if ((math.ceil(scalepixels)-scalepixels)/scalepixels) <= ((scalepixels-math.floor(scalepixels))/scalepixels):
+          self.nearisoscaledown[i] = int(math.ceil(scalepixels))
+        else:
+          self.nearisoscaledown[i] = int(math.floor(scalepixels))
+      else:
+        self.nearisoscaledown[i] = int(1)
 
   # Accessors
   def getDatasetName(self):
