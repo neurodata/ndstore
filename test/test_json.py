@@ -139,7 +139,7 @@ class Test_Project_Json():
     assert('FAILED' == response)
 
 
-class Test_Channel_Json():
+class Test_Create_Channel_Json():
 
   def setup_class(self):
     """Setup Parameters"""
@@ -150,7 +150,7 @@ class Test_Channel_Json():
     """Teardown Parameters"""
     makeunitdb.deleteTestDB(p.token)
   
-  def test_basic_json(self):
+  def test_create_json(self):
     """Test the basic JSON project creation with only the required fields"""
     
     p.channels = ['CHAN1', 'CHAN2'] 
@@ -201,3 +201,34 @@ class Test_Channel_Json():
     ## posting the JSON url and checking if it is successful
     #response = json.loads(postURL("http://{}/ca/json/".format(SITE_HOST), json_file).read())
     #assert('FAILED' == response)
+
+class Test_Delete_Channel_Json():
+
+  def setup_class(self):
+    """Setup Parameters"""
+    makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype)
+
+  def teardown_class(self):
+    """Teardown Parameters"""
+    makeunitdb.deleteTestDB(p.token)
+  
+  def test_single_channel_json(self):
+    """Test the basic JSON project creation with only the required fields"""
+    
+    ocp_dict = { 'channels' : (p.channels[1],) }
+
+    json_file = tempfile.NamedTemporaryFile(mode='w+b')
+    json_file.write(json.dumps(ocp_dict, sort_keys=True, indent=4))
+    json_file.seek(0)
+
+    # posting the JSON url and checking if it is successful
+    response = json.loads(postURL("http://{}/ca/{}/deletechannel/".format(SITE_HOST, p.token), json_file).read())
+    assert('SUCCESS' == response)
+
+    # fetching the JSON info
+    f = getURL("http://{}/ca/{}/info/".format(SITE_HOST, p.token))
+
+    # read the JSON file
+    proj_info = json.loads(f.read())
+    assert( proj_info['project']['name'] == p.token )
+    assert( proj_info['channels'][p.channels[0]]['resolution'] == 0)

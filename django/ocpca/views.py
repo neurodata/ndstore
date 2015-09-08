@@ -394,3 +394,14 @@ def createChannel(request, webargs):
   except:
     logger.exception("Unknown exception in jsonProject Web service")
     raise OCPCAError("Unknown exception in jsonProject Web service")
+
+def deleteChannel(request, webargs):
+  """RESTful URL for deleting a list of channels using a JSON file"""
+
+  try:
+    return django.http.HttpResponse(jsonproj.deleteChannel(webargs, request.body), content_type="application/json")
+  except OCPCAError, e:
+    return django.http.HttpResponseNotFound()
+  except:
+    logger.exception("Unknown exception in jsonProject Web service")
+    raise OCPCAError("Unknown exception in jsonProject Web service")
