@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import re
 import urllib2
 import json
 import requests
@@ -23,9 +24,10 @@ from ocpuser.models import Project
 from ocpuser.models import Dataset
 from ocpuser.models import Token
 from ocpuser.models import Channel
+from ocpuser.models import User
 
 
-def createProject(webargsi, post_data):
+def createProject(webargs, post_data):
   """Create a project using a JSON file"""
 
   ocp_dict = json.loads(post_data)
@@ -114,6 +116,58 @@ def createProject(webargsi, post_data):
 
   return json.dumps(return_json)
 
+def createChannel(webargs, post_data):
+  """Create a project using a JSON file"""
+
+  # Get the token and load the project
+  try:
+    m = re.match("(\w+)/createchannel/$", webargs)
+    token_name = m.group(1)
+  except Exception, e:
+    print "Error in URL format"
+    raise
+  
+  ocp_dict = json.loads(post_data)
+  try:
+    channels = ocp_dict['channels']
+  except Exception, e:
+    print "Missing requred fields"
+    raise
+  
+  tk = Token.objects.get(token_name=token_name)
+  ur = User.objects.get(id=tk.user_id)
+  pr = Project.objects.get(project_name=tk.project_id)
+
+  ch_list = []
+  for channel_name, value in channels.iteritems():
+    channel_dict = channels[channel_name]
+    ch_list.append(extractChannelDict(channel_dict))
+
+  try:
+    # Setting the user_ids to brain for now
+    # KL TODO get the user for the project from token
+    
+    # Iterating over channel list to store channels
+    for (ch, data_url,file_name) in ch_list:
+      ch.project_id = pr.project_name
+      ch.user_id = tk.user_id
+      # Checking if the channel already exists or not
+      if not Channel.objects.filter(channel_name = ch.channel_name, project = pr.project_name).exists():
+        ch.save()
+        # Create channel database using the ocpcaproj interface
+        pd = ocpcaproj.OCPCAProjectsDB()
+        pd.newOCPCAChannel(pr.project_name, ch.channel_name)
+      else:
+        print "Channel already exists"
+        raise
+      
+    return_json = "SUCCESS"
+  except Exception, e:
+    # KL TODO Delete data from the LIMS systems
+    print "Error saving models"
+    return_json = "FAILED"
+
+  return json.dumps(return_json)
 
 def postMetadataDict(metadata_dict, project_name):
   """Post metdata to the LIMS system"""
@@ -214,17 +268,19 @@ def extractChannelDict(ch_dict):
 
   return (ch, data_url, file_name)
 
-def createJson(dataset, project, channel_list, metadata={}):
+def createJson(dataset, project, channel_list, metadata={}, channel_only=False):
   """Genarate OCP json object"""
   
   ocp_dict = {}
-  ocp_dict['dataset'] = createDatasetDict(*dataset)
-  ocp_dict['project'] = createProjectDict(*project)
   ocp_dict['channels'] = {}
+  if not channel_only:
+    ocp_dict['dataset'] = createDatasetDict(*dataset)
+    ocp_dict['project'] = createProjectDict(*project)
+    ocp_dict['metadata'] = metadata
+  
   for channel_name, value in channel_list.iteritems():
     ocp_dict['channels'][channel_name] = createChannelDict(*value)
   
-  ocp_dict['metadata'] = metadata
   return json.dumps(ocp_dict, sort_keys=True, indent=4)
 
 def createDatasetDict(dataset_name, imagesize, voxelres, offset=[0,0,0], timerange=[0,0], scalinglevels=0, scaling=0):
