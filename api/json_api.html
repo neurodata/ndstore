@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Propagate API’s &mdash; open-connetome v0.7.0 documentation</title>
+  <title>JSON API’s &mdash; open-connetome v0.7.0 documentation</title>
   
 
   
@@ -33,8 +33,8 @@
 
   
     <link rel="top" title="open-connetome v0.7.0 documentation" href="../index.html"/>
-        <link rel="next" title="JSON API’s" href="json_api.html"/>
-        <link rel="prev" title="RAMON API’s" href="ramon_api.html"/> 
+        <link rel="next" title="Overlay API’s" href="overlay_api.html"/>
+        <link rel="prev" title="Propagate API’s" href="propagate_api.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -144,15 +144,15 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Propagate API&#8217;s</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#getpropagate">getPropagate</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#setpropagate">setPropagate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="propagate_api.html">Propagate API&#8217;s</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="propagate_api.html#getpropagate">getPropagate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="propagate_api.html#setpropagate">setPropagate</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="json_api.html">JSON API&#8217;s</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="json_api.html#createchannel">createChannel</a></li>
-<li class="toctree-l2"><a class="reference internal" href="json_api.html#deletechannel">deleteChannel</a></li>
-<li class="toctree-l2"><a class="reference internal" href="json_api.html#createproject">createProject</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">JSON API&#8217;s</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#createchannel">createChannel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#deletechannel">deleteChannel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#createproject">createProject</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="overlay_api.html">Overlay API&#8217;s</a><ul>
@@ -196,11 +196,11 @@
   <ul class="wy-breadcrumbs">
     <li><a href="../index.html">Docs</a> &raquo;</li>
       
-    <li>Propagate API&#8217;s</li>
+    <li>JSON API&#8217;s</li>
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="../_sources/api/propagate_api.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/api/json_api.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -209,24 +209,23 @@
 </div>
           <div role="main" class="document">
             
-  <div class="section" id="propagate-api-s">
-<h1>Propagate API&#8217;s<a class="headerlink" href="#propagate-api-s" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="getpropagate">
-<span id="propagate-get"></span><h2>getPropagate<a class="headerlink" href="#getpropagate" title="Permalink to this headline">¶</a></h2>
+  <div class="section" id="json-api-s">
+<h1>JSON API&#8217;s<a class="headerlink" href="#json-api-s" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="createchannel">
+<span id="json-createchannel"></span><h2>createChannel<a class="headerlink" href="#createchannel" title="Permalink to this headline">¶</a></h2>
 <dl class="get">
-<dt id="get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-getPropagate-">
-<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/getPropagate/</code><a class="headerlink" href="#get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-getPropagate-" title="Permalink to this definition">¶</a></dt>
+<dt id="get-(string-server_name)-ocp-ca-(string-token_name)-createChannel-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/createChannel/</code><a class="headerlink" href="#get-(string-server_name)-ocp-ca-(string-token_name)-createChannel-" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Get the <a class="reference internal" href="ocp_types.html#ocp-propagation"><span>propagation</span></a> state of the channel.</p>
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Create a list of channels for an existing project using the project token and JSON file.</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in OCP. In the general case this is openconnecto.me.</li>
 <li><strong>token_name</strong> (<em>string</em>) &#8211; Token Name in OCP.</li>
-<li><strong>channel_name</strong> (<em>string</em>) &#8211; Channel Name in OCP. <em>Optional</em>. If missing will use default channel for the token.</li>
 </ul>
 </td>
 </tr>
@@ -238,31 +237,116 @@
 </tr>
 </tbody>
 </table>
+<p><strong>Example Request</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span class="nf">POST</span> <span class="nn">/ocp/ca/test_kat1/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">HOST</span><span class="o">:</span> <span class="l">openconnecto.me</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/json</span>
+
+<span class="p">{</span>
+  <span class="nt">&quot;channels&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;CHAN1&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;channel_name&quot;</span><span class="p">:</span> <span class="s2">&quot;CHAN1&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;channel_type&quot;</span><span class="p">:</span> <span class="s2">&quot;image&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;datatype&quot;</span><span class="p">:</span> <span class="s2">&quot;uint8&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;readonly&quot;</span><span class="p">:</span> <span class="mi">0</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;CHAN2&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;channel_name&quot;</span><span class="p">:</span> <span class="s2">&quot;CHAN2&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;channel_type&quot;</span><span class="p">:</span> <span class="s2">&quot;image&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;datatype&quot;</span><span class="p">:</span> <span class="s2">&quot;uint8&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;readonly&quot;</span><span class="p">:</span> <span class="mi">0</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Example Response</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/json</span>
+
+<span class="p">{</span>
+  <span class="nt">&quot;SUCCESS&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
-<div class="section" id="setpropagate">
-<span id="propagate-set"></span><h2>setPropagate<a class="headerlink" href="#setpropagate" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="deletechannel">
+<span id="json-deletechannel"></span><h2>deleteChannel<a class="headerlink" href="#deletechannel" title="Permalink to this headline">¶</a></h2>
 <dl class="get">
-<dt id="get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-setPropagate-(int-propagate_value)-">
-<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/setPropagate/</code><span class="sig-paren">(</span><em class="property">int: </em><em>propagate_value</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-setPropagate-(int-propagate_value)-" title="Permalink to this definition">¶</a></dt>
+<dt id="get-(string-server_name)-ocp-ca-(string-token_name)-deleteChannel-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/deleteChannel/</code><a class="headerlink" href="#get-(string-server_name)-ocp-ca-(string-token_name)-deleteChannel-" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Set the <a class="reference internal" href="ocp_types.html#ocp-propagation"><span>propagation</span></a> state of the channel.</p>
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Delete a list of channels for an existing project using the project token and a JSON file.</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in OCP. In the general case this is openconnecto.me.</li>
 <li><strong>token_name</strong> (<em>string</em>) &#8211; Token Name in OCP.</li>
-<li><strong>channel_name</strong> (<em>string</em>) &#8211; Channel Name in OCP. <em>Optional</em>. If missing will use default channel for the token.</li>
-<li><strong>propagate_value</strong> &#8211; 0,1,2</li>
-<li><strong>propagate_value</strong> &#8211; int</li>
 </ul>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; No error</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; Error in the syntax or file format</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example Request</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span class="nf">POST</span> <span class="nn">/ocp/ca/test_kat1/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">HOST</span><span class="o">:</span> <span class="l">openconnecto.me</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/json</span>
+
+<span class="p">{</span>
+  <span class="nt">&quot;channels&quot;</span><span class="p">:</span> <span class="p">[</span>
+             <span class="s2">&quot;CHAN2&quot;</span><span class="p">,</span>
+             <span class="s2">&quot;CHAN3&quot;</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Example Response</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/json</span>
+
+<span class="p">{</span>
+  <span class="nt">&quot;SUCCESS&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="createproject">
+<span id="json-createproject"></span><h2>createProject<a class="headerlink" href="#createproject" title="Permalink to this headline">¶</a></h2>
+<dl class="get">
+<dt id="get-(string-server_name)-ocp-ca-createProject-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/ca/createProject/</code><a class="headerlink" href="#get-(string-server_name)-ocp-ca-createProject-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Create a dataset, project and channels with a JSON file.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in OCP. In the general case this is openconnecto.me.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Form Parameters:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
+<li><strong>JSON</strong> &#8211; Look at the Tech Sheet</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
 <li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; No error</li>
 <li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; Error in the syntax or file format</li>
 </ul>
@@ -281,10 +365,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="json_api.html" class="btn btn-neutral float-right" title="JSON API’s" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="overlay_api.html" class="btn btn-neutral float-right" title="Overlay API’s" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="ramon_api.html" class="btn btn-neutral" title="RAMON API’s" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="propagate_api.html" class="btn btn-neutral" title="Propagate API’s" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

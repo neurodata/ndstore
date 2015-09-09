@@ -10,7 +10,7 @@ getPropagate
 
    :synopsis: Get the :ref:`propagation<ocp-propagation>` state of the channel.
 
-   :param server_name: Server Name in OCP. In the general case this is ocp.me.
+   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
    :type server_name: string
    :param token_name: Token Name in OCP.
    :type token_name: string
@@ -29,7 +29,7 @@ setPropagate
 
    :synopsis: Set the :ref:`propagation<ocp-propagation>` state of the channel.
 
-   :param server_name: Server Name in OCP. In the general case this is ocp.me.
+   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
    :type server_name: string
    :param token_name: Token Name in OCP.
    :type token_name: string
