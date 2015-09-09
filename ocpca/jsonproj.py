@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import re
 import urllib2
 import json
 import requests
@@ -23,9 +24,10 @@ from ocpuser.models import Project
 from ocpuser.models import Dataset
 from ocpuser.models import Token
 from ocpuser.models import Channel
+from ocpuser.models import User
 
 
-def createProject(webargsi, post_data):
+def createProject(webargs, post_data):
   """Create a project using a JSON file"""
 
   ocp_dict = json.loads(post_data)
@@ -114,6 +116,95 @@ def createProject(webargsi, post_data):
 
   return json.dumps(return_json)
 
+def createChannel(webargs, post_data):
+  """Create a list of channels using a JSON file"""
+
+  # Get the token and load the project
+  try:
+    m = re.match("(\w+)/createchannel/$", webargs)
+    token_name = m.group(1)
+  except Exception, e:
+    print "Error in URL format"
+    raise
+  
+  ocp_dict = json.loads(post_data)
+  try:
+    channels = ocp_dict['channels']
+  except Exception, e:
+    print "Missing requred fields"
+    raise
+  
+  tk = Token.objects.get(token_name=token_name)
+  ur = User.objects.get(id=tk.user_id)
+  pr = Project.objects.get(project_name=tk.project_id)
+
+  ch_list = []
+  for channel_name, value in channels.iteritems():
+    channel_dict = channels[channel_name]
+    ch_list.append(extractChannelDict(channel_dict))
+
+  try:
+    # Iterating over channel list to store channels
+    for (ch, data_url,file_name) in ch_list:
+      ch.project_id = pr.project_name
+      # Setting the user_ids based on token user_id
+      ch.user_id = tk.user_id
+      # Checking if the channel already exists or not
+      if not Channel.objects.filter(channel_name = ch.channel_name, project = pr.project_name).exists():
+        ch.save()
+        # Create channel database using the ocpcaproj interface
+        pd = ocpcaproj.OCPCAProjectsDB()
+        pd.newOCPCAChannel(pr.project_name, ch.channel_name)
+      else:
+        print "Channel already exists"
+        raise
+    # return the JSON file with success
+    return_json = "SUCCESS"
+  except Exception, e:
+    print "Error saving models"
+    # return the JSON file with failed
+    return_json = "FAILED"
+
+  return json.dumps(return_json)
+
+def deleteChannel(webargs, post_data):
+  """Delete a list of channels using a JSON file"""
+
+  # Get the token and load the project
+  try:
+    m = re.match("(\w+)/deletechannel/$", webargs)
+    token_name = m.group(1)
+  except Exception, e:
+    print "Error in URL format"
+    raise
+  
+  ocp_dict = json.loads(post_data)
+  try:
+    channels = ocp_dict['channels']
+  except Exception, e:
+    print "Missing requred fields"
+    raise
+  
+  tk = Token.objects.get(token_name=token_name)
+  ur = User.objects.get(id=tk.user_id)
+  pr = Project.objects.get(project_name=tk.project_id)
+
+  try:
+    # Iterating over channel list to store channels
+    for channel_name in channels:
+      # Checking if the channel already exists or not
+      if Channel.objects.get(channel_name = channel_name, project = pr.project_name):
+        ch = Channel.objects.get(channel_name = channel_name, project = pr.project_name)
+        # delete channel table using the ocpcaproj interface
+        pd = ocpcaproj.OCPCAProjectsDB()
+        pd.deleteOCPCAChannel(pr.project_name, ch.channel_name)
+        ch.delete()
+    return_json = "SUCCESS"
+  except Exception, e:
+    print "Error saving models"
+    return_json = "FAILED"
+
+  return json.dumps(return_json)
 
 def postMetadataDict(metadata_dict, project_name):
   """Post metdata to the LIMS system"""
@@ -214,17 +305,136 @@ def extractChannelDict(ch_dict):
 
   return (ch, data_url, file_name)
 
-def createJson(dataset, project, channel_list, metadata={}):
+def createJson(dataset, project, channel_list, metadata={}, channel_only=False):
   """Genarate OCP json object"""
   
   ocp_dict = {}
-  ocp_dict['dataset'] = createDatasetDict(*dataset)
-  ocp_dict['project'] = createProjectDict(*project)
   ocp_dict['channels'] = {}
+  if not channel_only:
+    ocp_dict['dataset'] = createDatasetDict(*dataset)
+    ocp_dict['project'] = createProjectDict(*project)
+    ocp_dict['metadata'] = metadata
+  
   for channel_name, value in channel_list.iteritems():
     ocp_dict['channels'][channel_name] = createChannelDict(*value)
   
-  ocp_dict['metadata'] = metadata
+  return json.dumps(ocp_dict, sort_keys=True, indent=4)
+
+def createDatasetDict(dataset_name, imagesize, voxelres, offset=[0,0,0], timerange=[0,0], scalinglevels=0, scaling=0):
+  """Generate the dataset dictionary"""
+
+def postMetadataDict(metadata_dict, project_name):
+  """Post metdata to the LIMS system"""
+
+  try:
+    url = 'http://{}/lims/{}/'.format(settings.LIMS_SERVER, project_name)
+    #headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+    #r = requests.post(url, data=json.dumps(lims_dict), headers=headers)
+    req = urllib2.Request(url, json.dumps(metadata_dict))
+    req.add_header('Content-Type', 'application/json')
+    response = urllib2.urlopen(req)
+  except urllib2.URLError, e:
+    print "Failed URL {}".format(url)
+    pass
+
+
+def extractDatasetDict(ds_dict):
+  """Generate a dataset object from the JSON flle"""
+
+  ds = Dataset();
+  
+  try:
+    ds.dataset_name = ds_dict['dataset_name']
+    imagesize = [ds.ximagesize, ds.yimagesize, ds.zimagesize] = ds_dict['imagesize']
+    [ds.xvoxelres, ds.yvoxelres, ds.zvoxelres] = ds_dict['voxelres']
+  except Exception, e:
+    print "Missing required fields"
+    raise
+
+  if 'offset' in ds_dict:
+    [ds.xoffset, ds.yoffset, ds.zoffset] = ds_dict['offset']
+  if 'timerange' in ds_dict:
+    [ds.starttime, ds.endtime] = ds_dict['timerange']
+  if 'scaling' in ds_dict:
+    ds.scalingoption = ds_dict['scaling']
+  if 'scalinglevels' in ds_dict:
+    ds.scalinglevels = ds_dict['scalinglevels']
+  else:
+    ds.scalinglevels = computeScalingLevels(imagesize)
+
+  return ds
+  
+def computeScalingLevels(imagesize):
+  """Dynamically decide the scaling levels"""
+
+  ximagesz, yimagesz, zimagesz = imagesize
+  scalinglevels = 0
+  # When both x and y dimensions are below 1000 or one is below 100 then stop
+  while (ximagesz>1000 or yimagesz>1000) and ximagesz>500 and yimagesz>500:
+    ximagesz = ximagesz / 2
+    yimagesz = yimagesz / 2
+    scalinglevels += 1
+
+  return scalinglevels
+
+def extractProjectDict(pr_dict):
+  """Generate a project object from the JSON flle"""
+
+  pr = Project()
+  tk = Token()
+
+  try:
+    pr.project_name = pr_dict['project_name']
+  except Exception, e:
+    print "Missing required fields"
+    raise
+
+  if 'token_name' in pr_dict:
+    tk.token_name = pr_dict['token_name']
+  else:
+    tk.token_name = pr_dict['project_name']
+  if 'public' in pr_dict:
+    tk.token_name = pr_dict['public']
+  return pr, tk
+
+def extractChannelDict(ch_dict):
+  """Generate a channel object from the JSON flle"""
+
+  ch = Channel()
+  try:
+    ch.channel_name = ch_dict['channel_name']
+    ch.channel_datatype =  ch_dict['datatype']
+    ch.channel_type = ch_dict['channel_type']
+    data_url = ch_dict['data_url']
+    file_name = ch_dict['file_name']
+  except Exception, e:
+    print "Missing requried fields"
+    raise
+    
+  if 'exceptions' in ch_dict:
+    ch.exceptions = ch_dict['exceptions']
+  if 'resolution' in ch_dict:
+    ch.resolution = ch_dict['resolution']
+  if 'windowrange' in ch_dict:
+    ch.startwindow, ch.endwindow = ch_dict['windowrange']
+  if 'readonly' in ch_dict:
+    ch.readonly = ch_dict['readonly']
+
+  return (ch, data_url, file_name)
+
+def createJson(dataset, project, channel_list, metadata={}, channel_only=False):
+  """Genarate OCP json object"""
+  
+  ocp_dict = {}
+  ocp_dict['channels'] = {}
+  if not channel_only:
+    ocp_dict['dataset'] = createDatasetDict(*dataset)
+    ocp_dict['project'] = createProjectDict(*project)
+    ocp_dict['metadata'] = metadata
+  
+  for channel_name, value in channel_list.iteritems():
+    ocp_dict['channels'][channel_name] = createChannelDict(*value)
+  
   return json.dumps(ocp_dict, sort_keys=True, indent=4)
 
 def createDatasetDict(dataset_name, imagesize, voxelres, offset=[0,0,0], timerange=[0,0], scalinglevels=0, scaling=0):

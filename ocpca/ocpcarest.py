@@ -726,10 +726,7 @@ def selectPost ( webargs, proj, db, postdata ):
               db.writeTimeCuboid (ch, corner, resolution, timerange, voxarray)
             
             elif ch.getChannelType() in ANNOTATION_CHANNELS:
-              import time
-              start = time.time()
               db.annotateDense ( ch, corner, resolution, voxarray, conflictopt )
-              print time.time()-start
   
           h5f.flush()
           h5f.close()

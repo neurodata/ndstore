@@ -24,10 +24,10 @@ import logging
 logger = logging.getLogger("ocp")
 
 @task(queue='propagate')
-def propagate (token, channle_name):
+def propagate (token, channel_name):
   """Propagate the given project for all resolutions"""
 
   try:
-    ocpcastack.buildStack (token,channle_name)
+    ocpcastack.buildStack (token,channel_name)
   except Exception, e:
     logger.error("Error in propagate. {}".format(e))
