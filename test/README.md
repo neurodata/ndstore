@@ -150,6 +150,26 @@
     1. test_window_default
     2. test_window_args
 
+* test_json.py - 6 tests
+  
+  - Module : Test_Project_Json
+    1. test_basic_json
+    2. test_complex_json
+    3. test_error_json
+  - Module : Test_Create_Channel_Json
+    1. test_create_json
+    2. test_error_json
+  - Module : Test_Delete_Channel_Json
+    1. test_single_channel_json
+
+* test_graphgen.py - 4 tests
+  
+  - Module : Test_GraphGen
+    1. test_checkTotal
+    2. test_checkType
+    3. test_checkCutout
+    4. test_ErrorHandling
+
 * tests to add
   1. Test filter for image slices
   2. Test neurons, segments and synapses
