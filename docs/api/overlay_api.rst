@@ -11,15 +11,15 @@ GET XY Slice Cutout
    
    :synopsis: Get a XY Slice Cutout
 
-   :param host_server_name: Host Server Name in OCP. In the general case this is ocp.me.
+   :param host_server_name: Host Server Name in OCP. In the general case this is openconnecto.me.
    :type host_server_name: string
-   :param first_server_name: First Server Name in OCP. In the general case this is ocp.me.
+   :param first_server_name: First Server Name in OCP. In the general case this is openconnecto.me.
    :type first_server_name: string
    :param first_token_name: First Token Name in OCP.
    :type first_token_name: string
    :param first_channel_name: First Channel Name in OCP. *Optional*. If missing will use default channel for the token.
    :type first_channel_name: string
-   :param second_server_name: Second Server Name in OCP. In the general case this is ocp.me.
+   :param second_server_name: Second Server Name in OCP. In the general case this is openconnecto.me.
    :type second_server_name: string
    :param second_token_name: Second Token Name in OCP.
    :type second_token_name: string
@@ -51,15 +51,15 @@ GET XZ Slice Cutout
    
    :synopsis: Get an overlay XZ slice cutout
 
-   :param host_server_name: Host Server Name in OCP. In the general case this is ocp.me.
+   :param host_server_name: Host Server Name in OCP. In the general case this is openconnecto.me.
    :type host_server_name: string
-   :param first_server_name: First Server Name in OCP. In the general case this is ocp.me.
+   :param first_server_name: First Server Name in OCP. In the general case this is openconnecto.me.
    :type first_server_name: string
    :param first_token_name: First Token Name in OCP.
    :type first_token_name: string
    :param first_channel_name: First Channel Name in OCP. *Optional*. If missing will use default channel for the token.
    :type first_channel_name: string
-   :param second_server_name: Second Server Name in OCP. In the general case this is ocp.me.
+   :param second_server_name: Second Server Name in OCP. In the general case this is openconnecto.me.
    :type second_server_name: string
    :param second_token_name: Second Token Name in OCP.
    :type second_token_name: string
@@ -90,15 +90,15 @@ GET YZ Slice Cutout
    
    :synopsis: Get an overlay YZ slice cutout
 
-   :param host_server_name: Host Server Name in OCP. In the general case this is ocp.me.
+   :param host_server_name: Host Server Name in OCP. In the general case this is openconnecto.me.
    :type host_server_name: string
-   :param first_server_name: First Server Name in OCP. In the general case this is ocp.me.
+   :param first_server_name: First Server Name in OCP. In the general case this is openconnecto.me.
    :type first_server_name: string
    :param first_token_name: First Token Name in OCP.
    :type first_token_name: string
    :param first_channel_name: First Channel Name in OCP. *Optional*. If missing will use default channel for the token.
    :type first_channel_name: string
-   :param second_server_name: Second Server Name in OCP. In the general case this is ocp.me.
+   :param second_server_name: Second Server Name in OCP. In the general case this is openconnecto.me.
    :type second_server_name: string
    :param second_token_name: Second Token Name in OCP.
    :type second_token_name: string
