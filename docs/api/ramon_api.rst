@@ -11,7 +11,7 @@ setField
    
    :synopsis: Set the value of the RAMON field for the specified channel
 
-   :param server_name: Server Name in OCP. In the general case this is ocp.me.
+   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
    :type server_name: string
    :param token_name: Token Name in OCP.
    :type token_name: string
@@ -32,7 +32,7 @@ getField
    
    :synopsis: Set the value of the RAMON field for the specified channel
 
-   :param server_name: Server Name in OCP. In the general case this is ocp.me.
+   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
    :type server_name: string
    :param token_name: Token Name in OCP.
    :type token_name: string
@@ -60,7 +60,7 @@ GET
    
    :synopsis: Get an annotation to the server
 
-   :param server_name: Server Name in OCP. In the general case this is ocp.me.
+   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
    :type server_name: string
    :param token_name: Token Name in OCP.
    :type token_name: string
@@ -83,7 +83,7 @@ POST
    
    :synopsis: Post an annotation to the server
 
-   :param server_name: Server Name in OCP. In the general case this is ocp.me.
+   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
    :type server_name: string
    :param token_name: Token Name in OCP.
    :type token_name: string

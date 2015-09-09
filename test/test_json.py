@@ -67,7 +67,7 @@ class Test_Project_Json():
     json_file.seek(0)
 
     # posting the JSON url and checking if it is successful
-    response = json.loads(postURL("http://{}/ca/json/".format(SITE_HOST), json_file).read())
+    response = json.loads(postURL("http://{}/ca/createProject/".format(SITE_HOST), json_file).read())
     assert('SUCCESS' == response)
 
     # fetching the JSON info
@@ -103,7 +103,7 @@ class Test_Project_Json():
     json_file.seek(0)
 
     # posting the JSON url and checking if it is successful
-    response = json.loads(postURL("http://{}/ca/json/".format(SITE_HOST), json_file).read())
+    response = json.loads(postURL("http://{}/ca/createProject/".format(SITE_HOST), json_file).read())
     assert('SUCCESS' == response)
 
     # fetching the JSON info
@@ -135,7 +135,7 @@ class Test_Project_Json():
     json_file.seek(0)
 
     # posting the JSON url and checking if it is successful
-    response = json.loads(postURL("http://{}/ca/json/".format(SITE_HOST), json_file).read())
+    response = json.loads(postURL("http://{}/ca/createProject/".format(SITE_HOST), json_file).read())
     assert('FAILED' == response)
 
 
@@ -166,7 +166,7 @@ class Test_Create_Channel_Json():
     json_file.seek(0)
 
     # posting the JSON url and checking if it is successful
-    response = json.loads(postURL("http://{}/ca/{}/createchannel/".format(SITE_HOST, p.token), json_file).read())
+    response = json.loads(postURL("http://{}/ca/{}/createChannel/".format(SITE_HOST, p.token), json_file).read())
     assert('SUCCESS' == response)
 
     # fetching the JSON info
@@ -206,7 +206,7 @@ class Test_Create_Channel_Json():
     json_file.seek(0)
 
     # posting the JSON url and checking if it is successful
-    response = json.loads(postURL("http://{}/ca/{}/createchannel/".format(SITE_HOST, p.token), json_file).read())
+    response = json.loads(postURL("http://{}/ca/{}/createChannel/".format(SITE_HOST, p.token), json_file).read())
     assert('FAILED' == response)
 
 class Test_Delete_Channel_Json():
@@ -229,7 +229,7 @@ class Test_Delete_Channel_Json():
     json_file.seek(0)
 
     # posting the JSON url and checking if it is successful
-    response = json.loads(postURL("http://{}/ca/{}/deletechannel/".format(SITE_HOST, p.token), json_file).read())
+    response = json.loads(postURL("http://{}/ca/{}/deleteChannel/".format(SITE_HOST, p.token), json_file).read())
     assert('SUCCESS' == response)
 
     # fetching the JSON info

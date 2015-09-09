@@ -121,7 +121,7 @@ def createChannel(webargs, post_data):
 
   # Get the token and load the project
   try:
-    m = re.match("(\w+)/createchannel/$", webargs)
+    m = re.match("(\w+)/createChannel/$", webargs)
     token_name = m.group(1)
   except Exception, e:
     print "Error in URL format"
@@ -172,7 +172,7 @@ def deleteChannel(webargs, post_data):
 
   # Get the token and load the project
   try:
-    m = re.match("(\w+)/deletechannel/$", webargs)
+    m = re.match("(\w+)/deleteChannel/$", webargs)
     token_name = m.group(1)
   except Exception, e:
     print "Error in URL format"
