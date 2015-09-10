@@ -93,7 +93,7 @@ def createProject(webargs, post_data):
       tk.save()
 
     # Iterating over channel list to store channels
-    for (ch, data_url,file_name) in ch_list:
+    for (ch, data_url, file_name) in ch_list:
       ch.project_id = pr.project_name
       ch.user_id = 1
       # Checking if the channel already exists or not
@@ -121,7 +121,7 @@ def createChannel(webargs, post_data):
 
   # Get the token and load the project
   try:
-    m = re.match("(\w+)/createchannel/$", webargs)
+    m = re.match("(\w+)/createChannel/$", webargs)
     token_name = m.group(1)
   except Exception, e:
     print "Error in URL format"
@@ -141,23 +141,23 @@ def createChannel(webargs, post_data):
   ch_list = []
   for channel_name, value in channels.iteritems():
     channel_dict = channels[channel_name]
-    ch_list.append(extractChannelDict(channel_dict))
-
+    ch_list.append(extractChannelDict(channel_dict, channel_only=True))
+  
   try:
+    # First iterating over the channel list to check if all the channels don't exist
+    for ch in ch_list:
+      if Channel.objects.filter(channel_name = ch.channel_name, project = pr.project_name).exists():
+        print "Channel already exists"
+        raise
     # Iterating over channel list to store channels
-    for (ch, data_url,file_name) in ch_list:
+    for ch in ch_list:
       ch.project_id = pr.project_name
       # Setting the user_ids based on token user_id
       ch.user_id = tk.user_id
-      # Checking if the channel already exists or not
-      if not Channel.objects.filter(channel_name = ch.channel_name, project = pr.project_name).exists():
-        ch.save()
-        # Create channel database using the ocpcaproj interface
-        pd = ocpcaproj.OCPCAProjectsDB()
-        pd.newOCPCAChannel(pr.project_name, ch.channel_name)
-      else:
-        print "Channel already exists"
-        raise
+      ch.save()
+      # Create channel database using the ocpcaproj interface
+      pd = ocpcaproj.OCPCAProjectsDB()
+      pd.newOCPCAChannel(pr.project_name, ch.channel_name)
     # return the JSON file with success
     return_json = "SUCCESS"
   except Exception, e:
@@ -172,7 +172,7 @@ def deleteChannel(webargs, post_data):
 
   # Get the token and load the project
   try:
-    m = re.match("(\w+)/deletechannel/$", webargs)
+    m = re.match("(\w+)/deleteChannel/$", webargs)
     token_name = m.group(1)
   except Exception, e:
     print "Error in URL format"
@@ -280,16 +280,18 @@ def extractProjectDict(pr_dict):
     tk.token_name = pr_dict['public']
   return pr, tk
 
-def extractChannelDict(ch_dict):
+def extractChannelDict(ch_dict, channel_only=False):
   """Generate a channel object from the JSON flle"""
 
   ch = Channel()
   try:
+    #ch.pk = ch_dict['channel_name']
     ch.channel_name = ch_dict['channel_name']
     ch.channel_datatype =  ch_dict['datatype']
     ch.channel_type = ch_dict['channel_type']
-    data_url = ch_dict['data_url']
-    file_name = ch_dict['file_name']
+    if not channel_only:
+      data_url = ch_dict['data_url']
+      file_name = ch_dict['file_name']
   except Exception, e:
     print "Missing requried fields"
     raise
@@ -303,7 +305,10 @@ def extractChannelDict(ch_dict):
   if 'readonly' in ch_dict:
     ch.readonly = ch_dict['readonly']
 
-  return (ch, data_url, file_name)
+  if not channel_only:
+    return (ch, data_url, file_name)
+  else:
+    return ch
 
 def createJson(dataset, project, channel_list, metadata={}, channel_only=False):
   """Genarate OCP json object"""
@@ -316,6 +321,7 @@ def createJson(dataset, project, channel_list, metadata={}, channel_only=False):
     ocp_dict['metadata'] = metadata
   
   for channel_name, value in channel_list.iteritems():
+    value = value + (channel_only,)
     ocp_dict['channels'][channel_name] = createChannelDict(*value)
   
   return json.dumps(ocp_dict, sort_keys=True, indent=4)
@@ -397,30 +403,30 @@ def extractProjectDict(pr_dict):
     tk.token_name = pr_dict['public']
   return pr, tk
 
-def extractChannelDict(ch_dict):
-  """Generate a channel object from the JSON flle"""
+#def extractChannelDict(ch_dict):
+  #"""Generate a channel object from the JSON flle"""
 
-  ch = Channel()
-  try:
-    ch.channel_name = ch_dict['channel_name']
-    ch.channel_datatype =  ch_dict['datatype']
-    ch.channel_type = ch_dict['channel_type']
-    data_url = ch_dict['data_url']
-    file_name = ch_dict['file_name']
-  except Exception, e:
-    print "Missing requried fields"
-    raise
+  #ch = Channel()
+  #try:
+    #ch.channel_name = ch_dict['channel_name']
+    #ch.channel_datatype =  ch_dict['datatype']
+    #ch.channel_type = ch_dict['channel_type']
+    #data_url = ch_dict['data_url']
+    #file_name = ch_dict['file_name']
+  #except Exception, e:
+    #print "Missing requried fields"
+    #raise
     
-  if 'exceptions' in ch_dict:
-    ch.exceptions = ch_dict['exceptions']
-  if 'resolution' in ch_dict:
-    ch.resolution = ch_dict['resolution']
-  if 'windowrange' in ch_dict:
-    ch.startwindow, ch.endwindow = ch_dict['windowrange']
-  if 'readonly' in ch_dict:
-    ch.readonly = ch_dict['readonly']
+  #if 'exceptions' in ch_dict:
+    #ch.exceptions = ch_dict['exceptions']
+  #if 'resolution' in ch_dict:
+    #ch.resolution = ch_dict['resolution']
+  #if 'windowrange' in ch_dict:
+    #ch.startwindow, ch.endwindow = ch_dict['windowrange']
+  #if 'readonly' in ch_dict:
+    #ch.readonly = ch_dict['readonly']
 
-  return (ch, data_url, file_name)
+  #return (ch, data_url, file_name)
 
 def createJson(dataset, project, channel_list, metadata={}, channel_only=False):
   """Genarate OCP json object"""
@@ -456,7 +462,7 @@ def createDatasetDict(dataset_name, imagesize, voxelres, offset=[0,0,0], timeran
     dataset_dict['scaling'] = scaling
   return dataset_dict
 
-def createChannelDict(channel_name, datatype, channel_type, data_url, file_name, exceptions=0, resolution=0, windowrange=[0,0], readonly=0):
+def createChannelDict(channel_name, datatype, channel_type, data_url, file_name, exceptions=0, resolution=0, windowrange=[0,0], readonly=0, channel_only=False):
   """Genearte the project dictionary"""
   
   # channel format = (channel_name, datatype, channel_type, data_url, file_name, exceptions, resolution, windowrange, readonly)
@@ -473,8 +479,9 @@ def createChannelDict(channel_name, datatype, channel_type, data_url, file_name,
     channel_dict['windowrange'] = windowrange
   if readonly is not None:
     channel_dict['readonly'] = readonly
-  channel_dict['data_url'] = data_url
-  channel_dict['file_name'] = file_name
+  if not channel_only:
+    channel_dict['data_url'] = data_url
+    channel_dict['file_name'] = file_name
   return channel_dict
 
 def createProjectDict(project_name, token_name='', public=0):

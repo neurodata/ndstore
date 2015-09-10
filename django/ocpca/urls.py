@@ -30,8 +30,8 @@ urlpatterns = patterns('ocpca.views',
   # get public tokens 
   url(r'(?P<webargs>^public_tokens/)$', 'publictokens'),
   # Create/Delete channel interfaces
-  url(r'(?P<webargs>^\w+/createchannel/)$', 'createChannel'),
-  url(r'(?P<webargs>^\w+/deletechannel/)$', 'deleteChannel'),
+  url(r'(?P<webargs>^\w+/createChannel/)$', 'createChannel'),
+  url(r'(?P<webargs>^\w+/deleteChannel/)$', 'deleteChannel'),
   # get channel information
   #url(r'(?P<webargs>^\w+/chaninfo/[\w,/]*)$', 'chaninfo'),
   # reserve identifiers for annotation projects
@@ -57,5 +57,5 @@ urlpatterns = patterns('ocpca.views',
   # HDF5 interfaces
   url(r'(?P<webargs>^\w+/\w+/[\d+/]?[\w,/]*)$', 'annotation'),
   # JSON interfaces
-  url(r'(?P<webargs>^json/)$', 'jsonProject'),
+  url(r'(?P<webargs>^createProject/)$', 'jsonProject'),
 )

@@ -13,7 +13,7 @@ POST
    
    :synopsis: Post a HDF5 file to the server
 
-   :param server_name: Server Name in OCP. In the general case this is ocp.me.
+   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
    :type server_name: string
    :param token_name: Token Name in OCP.
    :type token_name: string
@@ -56,7 +56,7 @@ GET
    
    :synopsis: Get a HDF5 file from the server
 
-   :param server_name: Server Name in OCP. In the general case this is ocp.me.
+   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
    :type server_name: string
    :param token_name: Token Name in OCP.
    :type token_name: string
@@ -102,7 +102,7 @@ POST
    
    :synopsis: Post a 3D/4D region of data for of a specified channel,resolution and bounds in the numpy array format.
 
-   :param server_name: Server Name in OCP. In the general case this is ocp.me.
+   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
    :type server_name: string
    :param token_name: Token Name in OCP.
    :type token_name: string
@@ -143,7 +143,7 @@ GET
    
    :synopsis: Download a 3D/4D region of data for of a specified channel,resolution and bounds in the numpy array format. You can load this data into python using the numpy library for anaylsis.
 
-   :param server_name: Server Name in OCP. In the general case this is ocp.me.
+   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
    :type server_name: string
    :param token_name: Token Name in OCP.
    :type token_name: string
@@ -188,7 +188,7 @@ GET XY Slice Cutout
    
    :synopsis: Download a single image of a specified canonical plane, XY, and specified channel,resolution and bounds. Your browser can load these images.
 
-   :param server_name: Server Name in OCP. In the general case this is ocp.me.
+   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
    :type server_name: string
    :param token_name: Token Name in OCP.
    :type token_name: string
@@ -217,7 +217,7 @@ GET XY Slice Cutout
    .. sourcecode:: http
       
       GET /ocp/ca/kasthuri11/image/xy/0/9000,9500/12000,12500/50/ HTTP/1.1
-      Host: ocp.me
+      Host: openconnecto.me
 
    **Example Response**:
 
@@ -241,7 +241,7 @@ GET XZ Slice Cutout
    
    :synopsis: Download a single image of a specified canonical plane, XZ, and specified channel,resolution and bounds. Your browser can load these images.
 
-   :param server_name: Server Name in OCP. In the general case this is ocp.me.
+   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
    :type server_name: string
    :param token_name: Token Name in OCP.
    :type token_name: string
@@ -270,7 +270,7 @@ GET XZ Slice Cutout
    .. sourcecode:: http
       
       GET /ocp/ca/kasthuri11/image/xz/0/9000,9500/12000/50,250/ HTTP/1.1
-      Host: ocp.me
+      Host: openconnecto.me
 
    **Example Response**:
 
@@ -293,7 +293,7 @@ GET YZ Slice Cutout
    
    :synopsis: Download a single image of a specified canonical plane, YZ, and specified channel,resolution and bounds. Your browser can load these images.
 
-   :param server_name: Server Name in OCP. In the general case this is ocp.me.
+   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
    :type server_name: string
    :param token_name: Token Name in OCP.
    :type token_name: string
@@ -328,7 +328,7 @@ GET YZ Slice Cutout
    .. sourcecode:: http
       
       GET /ocp/ca/kasthuri11/image/yz/0/9000/12000,12500/50,250/ HTTP/1.1
-      Host: ocp.me
+      Host: openconnecto.me
 
    **Example Response**:
 
