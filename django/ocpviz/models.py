@@ -44,9 +44,7 @@ class VizLayer ( models.Model ):
   )
   layertype = models.CharField(max_length=255, choices=LAYER_CHOICES)
   token = models.CharField(max_length=255)
-  channel = models.CharField(max_length=255, blank=True)
-  # prevent the user from turning off EM data
-  required = models.BooleanField(default=False) 
+  channel = models.CharField(max_length=255)
   # do we want to use the tilecache or ocpcatmaid? (default ocpcatmaid)  
   tilecache = models.BooleanField(default=False) 
   # for mcfc cutout 
@@ -77,18 +75,18 @@ class VizProject ( models.Model ):
   layers = models.ManyToManyField(VizLayer, related_name='project')
 
 
-  xmin = models.IntegerField(default=0)
-  xmax = models.IntegerField()
-  ymin = models.IntegerField(default=0)
-  ymax = models.IntegerField()
-  zmin = models.IntegerField(default=0)
-  zmax = models.IntegerField()
+  xoffset = models.IntegerField(default=0)
+  ximagesize = models.IntegerField()
+  yoffset = models.IntegerField(default=0)
+  yimagesize = models.IntegerField()
+  zoffset = models.IntegerField(default=0)
+  zimagesize = models.IntegerField()
 
   starttime = models.IntegerField(default=0)
   endtime = models.IntegerField(default=0)
 
   minres = models.IntegerField(default=0)
-  maxres = models.IntegerField()
+  scalinglevels = models.IntegerField()
 
   def __unicode__(self):
     return self.project_name

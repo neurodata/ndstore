@@ -19,6 +19,12 @@
         <div class="form-group">
           <input type="text" id="z" size="5" class="form-control" placeholder="z" aria-describedby="zlabel"> 
         </div>
+        {% if timeseries == True %}
+        <div class="form-group">
+          <label for="timestep"><i class="fa fa-clock-o fa-lg fa-inverse"></i></label>
+          <input type="text" id="timestep" size="5" class="form-control" placeholder="time" aria-describedby="timestep"> 
+        </div>
+        {% endif %}
         <button type="submit" class="btn btn-default">Go</button>
       </form>
       <ul class="nav navbar-nav navbar-left">

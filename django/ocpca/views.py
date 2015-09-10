@@ -77,7 +77,7 @@ def cutout (request, webargs):
     # POST methods
     elif request.method == 'POST':
       if service in POST_SERVICES:
-        django.http.HttpResponse(ocpcarest.putCutout(webargs,request.body))
+        django.http.HttpResponse(ocpcarest.putCutout(webargs, request.body))
         return django.http.HttpResponse("Success", content_type='text/html')
       else:
         logger.warning("HTTP Bad request. Could not find service {}".format(service))
@@ -378,6 +378,28 @@ def jsonProject(request, webargs):
 
   try:
     return django.http.HttpResponse(jsonproj.createProject(webargs, request.body), content_type="application/json")
+  except OCPCAError, e:
+    return django.http.HttpResponseNotFound()
+  except:
+    logger.exception("Unknown exception in jsonProject Web service")
+    raise OCPCAError("Unknown exception in jsonProject Web service")
+
+def createChannel(request, webargs):
+  """RESTful URL for creating a list of channels using a JSON file"""
+
+  try:
+    return django.http.HttpResponse(jsonproj.createChannel(webargs, request.body), content_type="application/json")
+  except OCPCAError, e:
+    return django.http.HttpResponseNotFound()
+  except:
+    logger.exception("Unknown exception in jsonProject Web service")
+    raise OCPCAError("Unknown exception in jsonProject Web service")
+
+def deleteChannel(request, webargs):
+  """RESTful URL for deleting a list of channels using a JSON file"""
+
+  try:
+    return django.http.HttpResponse(jsonproj.deleteChannel(webargs, request.body), content_type="application/json")
   except OCPCAError, e:
     return django.http.HttpResponseNotFound()
   except:

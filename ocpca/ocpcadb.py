@@ -32,7 +32,6 @@ import annindex
 from cube import Cube
 import imagecube
 import anncube
-import ocpcachannel
 import ocplib
 from ocptype import ANNOTATION_CHANNELS, EXCEPTION_TRUE, PROPAGATED
 
@@ -520,33 +519,6 @@ class OCPCADB:
       self.putExceptions ( ch, key, resolution, exid, exlist, True )
 
 
-  #
-  # queryRange
-  #
-  def queryRange ( self, lowkey, highkey, resolution, channel=None ):
-    """Create a stateful query to a range of values not including the high value.
-         To be used with getNextCube().
-         Not thread safe (context per object)
-         Also, one cursor only.  Not at multiple resolutions"""
-
-    self._qr_cursor = self.conn.cursor ()
-    self._qr_resolution = resolution
-
-    if channel == None:
-      # get the block from the database
-      sql = "SELECT zindex, cube FROM " + self.proj.getTable(resolution) + " WHERE zindex >= " + str(lowkey) + " AND zindex < " + str(highkey)
-    else:
-      # or from a channel database
-      channel = ocpcachannel.toID ( channel, self )
-      sql = "SELECT zindex, cube FROM " + self.proj.getTable(resolution) + " WHERE channel = " + str(channel) + " AND zindex >= " + str(lowkey) + " AND zindex < " + str(highkey)
-  
-    try:
-      self._qr_cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.error ( "Failed to retrieve data cube : %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise
-
-  
   def getNextCube ( self ):
     """ Retrieve the next cube in a queryRange. Not thread safe (context per object) """
 
@@ -1253,8 +1225,6 @@ class OCPCADB:
 
     for zidx in zidxs:
 
-      print zidx
-
       cb = self.getCube(ch, zidx,effectiveres) 
 
       # mask out the entries that do not match the annotation id
@@ -1268,9 +1238,9 @@ class OCPCADB:
 
       # Get cube offset information
       [x,y,z] = ocplib.MortonXYZ(zidx)
-      xoffset = x * self.datasetcfg.cubedim[resolution][0] 
-      yoffset = y * self.datasetcfg.cubedim[resolution][1] 
-      zoffset = z * self.datasetcfg.cubedim[resolution][2] 
+      xoffset = x * self.datasetcfg.cubedim[resolution][0] + self.datasetcfg.offset[resolution][0] 
+      yoffset = y * self.datasetcfg.cubedim[resolution][1] + self.datasetcfg.offset[resolution][1]
+      zoffset = z * self.datasetcfg.cubedim[resolution][2] + self.datasetcfg.offset[resolution][2]
 
       # Now add the exception voxels
       if ch.getExceptions() ==  EXCEPTION_TRUE:
@@ -1453,7 +1423,7 @@ class OCPCADB:
   #    Delete the voxel data from the database for annoid 
   #
   def deleteAnnoData ( self, ch, annoid):
-
+    
     resolutions = self.datasetcfg.resolutions
 
     self.kvio.startTxn()
@@ -1469,7 +1439,7 @@ class OCPCADB:
         for key in zidxs:
           cube = self.getCube(ch, key, res, True)
           # KL TODO
-          vec_func = np.vectorize ( lambda x: 0 if x == annoid else x )
+          vec_func = np.vectorize ( lambda x: np.uint32(0) if x == annoid else x )
           cube.data = vec_func ( cube.data )
           # remove the expcetions
           if ch.getExceptions == EXCEPTION_TRUE:

@@ -139,10 +139,9 @@
     var ymin = {{ yoffset }};
     var ymax = {{ ysize }};
 
-    // we assume all projects start at res 0 
-    // this is pretty safe, since the default display is zoomed all the way out
-    var minres = 0;
-    var maxres = {{ res }};
+    var minres = {{ minres }};
+    var maxres = {{ maxres }};
+    var res = {{ res }};
     var zmin = {{ zoffset }};
     var zmax = {{ zsize }};
     // set zindex to some default (we pick the lowest slice)  
@@ -152,13 +151,6 @@
 		var map = L.map('map', {
 			doubleClickZoom: false,
     });
-
-    // get bounds
-    var southWest = map.unproject([0, ymax], {{ resstart }});
-    var northEast = map.unproject([xmax, 0], {{ resstart }});
-    var maxBounds = new L.LatLngBounds(southWest, northEast);
-    //console.log(southWest);
-    //console.log(northEast);
 
     // define layers
     {% for layer in layers %}
@@ -209,13 +201,12 @@
           {% endif %}
           //noWrap: true,
           continuousWorld: true,
-          //bounds: maxBounds,
         }).addTo(map);
     {% endfor %}
   
     // set the initial view 
-    var center = map.unproject(L.point({{ xstart }}, {{ ystart }}), {{ resstart }});
-		map.setView(center, maxres);
+    var center = map.unproject(L.point({{ xstart }}, {{ ystart }}), maxres + maxres - res);
+		map.setView(center, maxres + maxres - res);
 
 		// display some map info
 		var info = L.control();
@@ -225,7 +216,7 @@
       var header = '<h4>{{ project_name }}</h4><br />';
       var datainfo = '<div id="opacity-control">{% spaceless %}
         {% for layer in layers %}
-        <div class="info-layer-name"><a href="#">{{ "layer_"|add:layer.layer_name|cut:" " }}</a></div>
+        <div class="info-layer-name"><a href="#">{{ layer.layer_name|cut:" " }}</a></div>
         <div class="info-opacity-control-name">Opacity</div>
         <div id="slider">
         <span class="opacity">{{ "layer_"|add:layer.layer_name|cut:" " }}</span>
@@ -242,8 +233,6 @@
         </div><br />
         {% endfor %}
         {% endspaceless %}</div>';
-      //var datainfo = '<div id="slider"></div>';
-      //var curslice = '<br /><div id="zindex">z-index: ' + zindex + "</div>";
       var blendmode = '<br /><div id="blendmode">Blend Mode: <select name="blendmode"><option value="normal">Normal</option><option value="multiply">Multiply</option><option value="Screen">Screen</option><option value="overlay">Overlay</option><option value="darken">Darken</option><option value="lighten">Ligten</option><option value="color-dodge">Color Dodge</option><option value="color-burn">Color Burn</option><option value="exclusion">Exclusion</option><option value="difference">Difference</option><option value="hue">Hue</option><option value="saturation">Saturation</option><option value="color">Color</option><option value="luminosity">Luminosity</option></select></div><span style="float: right; padding-top: 5px;"><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/blend-mode" target="_blank"><i class="fa fa-info-circle fa-lg"></i></a></span>'
       {% if timeseries == True %}
       var playdelay = '<br /><div id="playdelay">Play Delay (sec): <input class="playdelay-input" type="number" step="any" min="0" max="100" value="1" /></div><span style="float: right; padding-top: 5px;"><a class="playdelay-submit" href="#"><i class="fa fa-clone fa-lg"></i></a></span>';
@@ -281,8 +270,8 @@
       var res = map.getMaxZoom() - map.getZoom();
       var coordinates = map.project(center);
 
-      $( "#x" ).val(coordinates.x);
-      $( "#y" ).val(coordinates.y);
+      $( "#x" ).val(Math.round(coordinates.x));
+      $( "#y" ).val(Math.round(coordinates.y));
       $( "#z" ).val(zindex);
     };
     coordinatesUpdate();
@@ -340,7 +329,11 @@
           $( "#z" ).parent().addClass("has-error");
         }
       }
-     
+      
+      // handle timestep if timeseries
+      {% if timeseries == True %}
+        loadTimeStep( $( "#timestep" ).val() ); 
+      {% endif %}
     });
     
     $( "#addmarkercenter" ).click(function( event ) {
@@ -431,18 +424,30 @@
     }
 
 		function incZIndex() {
-      map.closePopup();
+      map.closePopup();    
       var oldzindex = zindex;
-			zindex = zindex + 1;
-			reloadLayers(oldzindex);
+      if ((zindex + 1) > zmax) {
+        $( "#z" ).parent().addClass("has-error");
+      }
+      else {
+        $( "#z" ).parent().removeClass("has-error");
+        zindex = zindex + 1;
+        reloadLayers(oldzindex);
+      }
 		}
 
 		function decZIndex() {
       map.closePopup();
-			var oldzindex = zindex;
-			zindex = zindex - 1;
-			reloadLayers(oldzindex);
-		}
+      var oldzindex = zindex;
+      if ((zindex - 1) < zmin) {
+        $( "#z" ).parent().addClass("has-error");
+      }
+      else {
+        $( "#z" ).parent().removeClass("has-error");
+        zindex = zindex - 1;
+        reloadLayers(oldzindex);
+      }
+    }
 
 		function reloadLayers() {
 			map.options.fadeAnimation = false;
@@ -669,21 +674,42 @@
     });
 
     // timeseries functions  
- 
     
-    //function chgZIndex(newz) {
-    //  map.closePopup();
-    //  var oldzindex = zindex;
-		//	zindex = parseInt(newz);
-		//	reloadLayers(oldzindex);
-    //}
+    
+    
+    function loadTimeStep(newTime) {
+      map.closePopup();
+      if (newTime < {{ starttime }}) {
+        $( "#timestep" ).parent().addClass("has-error");
+      }
+      else if (newTime > {{ endtime }}) {
+        $( "#timestep" ).parent().addClass("has-error");
+      }
+      else {
+        $( "#timestep" ).parent().removeClass("has-error");
+        {% for layer in layers %}
+        {% if layer.layertype == "timeseries" %}
+          {{ "layer_"|add:layer.layer_name|cut:" " }}.options.curtime = newTime;
+          var newTimeStr = newTime.toString();
+          {% if layer.tilecache %}
+            var newUrl = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png'; 
+          {% else %}
+          var newUrl = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png';
+          {% endif %}  
+          {{ "layer_"|add:layer.layer_name|cut:" " }}.setUrl(newUrl, true);
+          {{ "layer_"|add:layer.layer_name|cut:" " }}.smoothRedraw();
+        {% endif %}
+        {% endfor %}
+      }
+    } 
 
-		function timeStepForward() {
+    function timeStepForward() {
       map.closePopup();
       {% for layer in layers %}
       {% if layer.layertype == "timeseries" %}
         var curTime = parseInt({{ "layer_"|add:layer.layer_name|cut:" " }}.options.curtime);
         if (curTime + 1 <= parseInt({{ endtime }})) {
+          $( "#timestep" ).parent().removeClass("has-error"); 
           var newTime = curTime + 1;
           {{ "layer_"|add:layer.layer_name|cut:" " }}.options.curtime = newTime;
           var newTimeStr = newTime.toString();
@@ -695,8 +721,13 @@
           {{ "layer_"|add:layer.layer_name|cut:" " }}.setUrl(newUrl, true);
           {{ "layer_"|add:layer.layer_name|cut:" " }}.smoothRedraw();
         }
+        else {
+          $( "#timestep" ).parent().addClass("has-error"); 
+        }
       {% endif %}
       {% endfor %}
+      // update timestep box 
+      $( "#timestep" ).val(newTimeStr);
 		}
 
 		function timeStepBack() {
@@ -705,6 +736,7 @@
       {% if layer.layertype == "timeseries" %}
         var curTime = parseInt({{ "layer_"|add:layer.layer_name|cut:" " }}.options.curtime);
         if (curTime - 1 >= parseInt({{ starttime }})) {
+          $( "#timestep" ).parent().removeClass("has-error"); 
           var newTime = curTime - 1;
           {{ "layer_"|add:layer.layer_name|cut:" " }}.options.curtime = newTime;
           var newTimeStr = newTime.toString();
@@ -715,9 +747,14 @@
           {% endif %}  
           {{ "layer_"|add:layer.layer_name|cut:" " }}.setUrl(newUrl, true);
           {{ "layer_"|add:layer.layer_name|cut:" " }}.smoothRedraw();
-          }
+        }
+        else {
+          $( "#timestep" ).parent().addClass("has-error"); 
+        }
       {% endif %}
       {% endfor %}
+      // update timestep box 
+      $( "#timestep" ).val(newTimeStr);
 		}
     
     function timeBeginning() {
@@ -725,6 +762,7 @@
       {% for layer in layers %}
       {% if layer.layertype == "timeseries" %}
         var newTimeStr = {{ starttime }};
+        {{ "layer_"|add:layer.layer_name|cut:" " }}.options.curtime = newTimeStr;
         {% if layer.tilecache %}
             var newUrl = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png'; 
         {% else %}
@@ -734,6 +772,8 @@
         {{ "layer_"|add:layer.layer_name|cut:" " }}.smoothRedraw();
       {% endif %}
       {% endfor %}
+      // update timestep box 
+      $( "#timestep" ).val(newTimeStr);
     }
     
     function timeEnd() {
@@ -741,6 +781,7 @@
       {% for layer in layers %}
       {% if layer.layertype == "timeseries" %}
         var newTimeStr = {{ endtime }};
+        {{ "layer_"|add:layer.layer_name|cut:" " }}.options.curtime = newTimeStr;
         {% if layer.tilecache %}
             var newUrl = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png'; 
           {% else %}
@@ -750,6 +791,8 @@
           {{ "layer_"|add:layer.layer_name|cut:" " }}.smoothRedraw();
       {% endif %}
       {% endfor %}
+      // update timestep box 
+      $( "#timestep" ).val(newTimeStr);
 		}
 
     var play; 

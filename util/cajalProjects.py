@@ -102,8 +102,8 @@ def main():
   # Probmap Test Channel
   channels.append({
       'name': 'apiUnitTestKasthuriProb',
-      'desc': 'Probmap Unit Test Channel',
-      'type': 'probmap',
+      'desc': 'Probmap Unit Test Channel (now of type image)',
+      'type': 'image',
       'datatype': 'float32',
       'propagate': 2,
       'res': 1,

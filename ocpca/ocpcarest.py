@@ -27,7 +27,7 @@ import MySQLdb
 import itertools
 from contextlib import closing
 from libtiff import TIFF
-from operator import sub
+from operator import sub, add
 from libtiff import TIFFfile, TIFFimage
 
 import restargs
@@ -684,10 +684,7 @@ def selectPost ( webargs, proj, db, postdata ):
               db.writeTimeCuboid (ch, corner, resolution, timerange, voxarray)
             
             elif ch.getChannelType() in ANNOTATION_CHANNELS:
-              import time
-              start = time.time()
               db.annotateDense ( ch, corner, resolution, voxarray, conflictopt )
-              print time.time()-start
   
           h5f.flush()
           h5f.close()
@@ -844,9 +841,8 @@ def getAnnoById ( ch, annoid, h5f, proj, db, dataoption, resolution=None, corner
 
       datacuboid [ offset[2]-bbcorner[2]:offset[2]-bbcorner[2]+cbdata.shape[0], offset[1]-bbcorner[1]:offset[1]-bbcorner[1]+cbdata.shape[1], offset[0]-bbcorner[0]:offset[0]-bbcorner[0]+cbdata.shape[2] ]  = cbdata
    
-    from operator import add
-    ds_offset = proj.datasetcfg.offset[resolution]
-    bbcorner = map(add, bbcorner, ds_offset)
+    offset = proj.datasetcfg.offset[resolution]
+    bbcorner = map(add, bbcorner, offset)
     h5anno.addCutout ( resolution, bbcorner, datacuboid )
 
   elif dataoption==AR_BOUNDINGBOX:
@@ -1474,7 +1470,7 @@ def deleteAnnotation ( webargs ):
 
     # if the first argument is numeric.  it is an annoid
     if re.match ( '^[\d,]+$', args[0] ): 
-      annoids = map(int, args[0].split(','))
+      annoids = map(np.uint32, args[0].split(','))
     # if not..this is not a well-formed delete request
     else:
       logger.warning ("Delete did not specify a legal object identifier = %s" % args[0] )

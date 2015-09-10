@@ -13,7 +13,7 @@ GET
    
    :synopsis: Get project information from the server
 
-   :param server_name: Server Name in OCP. In the general case this is ocp.me.
+   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
    :type server_name: string
    :param token_name: Token Name in OCP.
    :type token_name: string
@@ -26,7 +26,7 @@ GET
    .. sourcecode:: http
       
       GET /ocp/ca/kasthuri11/info/ HTTP/1.1
-      Host: ocp.me
+      Host: openconnecto.me
 
    **Example Response**:
 
@@ -220,7 +220,7 @@ POST
    
    :synopsis: Get a HDF5 file from the server
 
-   :param server_name: Server Name in OCP. In the general case this is ocp.me.
+   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
    :type server_name: string
     
    :form JSON: Look at the Tech Sheet
@@ -233,7 +233,7 @@ POST
    .. sourcecode:: http
       
       GET /ocp/ca/json/ HTTP/1.1
-      Host: ocp.me
+      Host: openconnecto.me
       Content-Type: application/json
 
       {
@@ -266,7 +266,7 @@ GET
    
    :synopsis: Post a Numpy file to the server
 
-   :param server_name: Server Name in OCP. In the general case this is ocp.me.
+   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
    :type server_name: string
    :param token_name: Token Name in OCP.
    :type token_name: string
@@ -279,7 +279,7 @@ GET
    .. sourcecode:: http
       
       GET /ocp/ca/kasthuri11/projinfo/ HTTP/1.1
-      Host: ocp.me
+      Host: openconnecto.me
 
    **Example Response**:
 
