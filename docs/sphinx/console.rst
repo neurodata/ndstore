@@ -56,12 +56,13 @@ Navigate to the datasets drop down menu and select create dataset. Fill in the a
 Data Fields
 +++++++++++
 
-=========================  ==============================================================================================================================================================
-Data Field                 Description
-=========================  ==============================================================================================================================================================
-
-Dataset Name               The name of the data set you are uploading (Good practice is lastname and year).
-Description                A description of the data being uploaded, good things to include may be species and the location of where the images are from. 
++-------------------------+----------------------------------------------------------------------------------+
+| Data Field              | Description                                                                      | 
++-------------------------+----------------------------------------------------------------------------------+
+| Dataset Name            | The name of the data set you are uploading (Good practice is lastname and year). |
++-------------------------+----------------------------------------------------------------------------------+
+| Description             | A description of the data being uploaded, good things to include may be species   and the location of where the images are from. 
++-------------------------+
 X, Y, Z Image Size         This is the size of the X, Y, or Z plane 
 X, Y, Z Offset             Amount to offset the X, Y, or Z plane 
 PUBLIC                     Whether or not the template (not the data) is viewable by everyone using OCP 
@@ -70,7 +71,7 @@ Scaling Options            0 - Normal, 1 - Isotropic
 X, Y, Z Voxel Resolution   This is the resolution of the data in each plane 
 Start/End Time             For 4D data this is the start or end time, for any data that is not 4D leave the values at the default 0 
 
-=========================  ==============================================================================================================================================================
+========================= ============================================================
 
 Project Creation Tutorial
 =========================
@@ -148,13 +149,3 @@ Project                    The project to use.
 Public                     Whether or the not the token is publicly viewable, which then allows people to access the channels of your project.
 
 =========================  ==============================================================================================================================================================
-
-
-
-
-
-
-
-
-
-
