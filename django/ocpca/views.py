@@ -122,7 +122,10 @@ def swc (request, webargs):
   
   try:
     if request.method == 'GET':
-      return django.http.HttpResponse(ocpcarest.getSWC(webargs), content_type="product/swc" )
+      fname = "".join([x if x.isalnum() else "_" for x in webargs])
+      response = django.http.HttpResponse(ocpcarest.getSWC(webargs), content_type="product/swc" )
+      response['Content-Disposition'] = "attachment; filename={}.swc".format(fname)
+      return response
     elif request.method == 'POST':
       return django.http.HttpResponse(ocpcarest.putSWC(webargs,request.body))
   except OCPCAError, e:

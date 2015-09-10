@@ -1270,3 +1270,26 @@ def getChildren ( ch, annid, annodb, cursor ):
     return np.array ( seglist, dtype=np.uint32 ).flatten()
 
 
+def nodesBySkeleton ( ch, skels, annodb, cursor ):
+  """a generator to return all nodes in a set of skeletons"""
+
+  if skels==None:
+    sql = "SELECT annoid, nodetype, locationx, locationy, locationz, radius, parentid FROM %s" % ( ch.getAnnoTable('node'))
+
+    try:
+      cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      cursor.close()
+      logger.warning ( "Error querying nodes: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise OCPCAError ( "Error querying nodes: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    # Get the objects and add to the cube
+    while ( True ):
+      try:
+        retval = cursor.fetchone()
+      except:
+        break
+      if retval is not None:
+        yield ( retval )
+      else:
+        return

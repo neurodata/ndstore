@@ -1331,7 +1331,7 @@ def getNIFTI ( webargs ):
 
 
 def putNIFTI ( webargs, postdata ):
-  """Put an SWC object into RAMON skeleton/tree nodes"""
+  """Put a NIFTI object as an image"""
     
   [token, channel, optionsargs] = webargs.split('/',2)
 
@@ -1368,7 +1368,8 @@ def putNIFTI ( webargs, postdata ):
 def getSWC ( webargs ):
   """Return an SWC object generated from Skeletons/Nodes"""
     
-  [token, channel, swcstring, skeletons, rest] = webargs.split('/',3)
+
+  [token, channel, swcstring, rest] = webargs.split('/',3)
 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
