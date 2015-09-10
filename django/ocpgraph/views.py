@@ -1,11 +1,11 @@
 # Copyright 2014 Open Connectome Project (http://openconnecto.me)
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -40,36 +40,48 @@ def buildGraph (request, webargs):
       First channel is full of segments.
       Second channel is full of synapses."""
 
+  #Indicated which type of arguements to return/send
+  arguementType=0
+
   try:
-    # argument of format token/channel/token/channel
-    m = re.match("(\w+)/(\w+)/(\w+)/(\w+)/$", webargs)
-    [segtoken, segchan_name, syntoken, synchan_name] = [i for i in m.groups()]
+    # argument of format /token/channel/Arguments
+    #Tries each of the possible 3 entries
+    m = re.match("(\w+)/(\w+)/$", webargs)
+    if type(m) != 'NoneType':
+        [syntoken, synchan_name] = [i for i in m.groups()]
+        arguementType=1
+
+    m = re.match("(\w+)/(\w+)/(\w+)/$", webargs)
+    if type(m) != 'NoneType':
+        [syntoken, synchan_name, graphType] = [i for i in m.groups()]
+        arguementType=2
+
+    m = re.match("(\w+)/(\w+)/(\w+)/(d+),(d+)/(d+),(d+)/(d+),(d+)/$", webargs)
+    if type(m) != 'NoneType':
+        m = re.match("(\w+)/(\w+)/(\w+)/(d+),(d+)/(d+),(d+)/(d+),(d+)/$", webargs)
+        [syntoken, synchan_name, graphType, Xmin,Xmax,Ymin,Ymax,Zmin,Zmax] = [i for i in m.groups()]
+        arguementType=3
+
   except Exception, e:
     logger.warning("Arguments not in the correct format {}. {}".format(chanargs, e))
     raise OCPCAError("Arguments not in the correct format {}. {}".format(chanargs, e))
 
-  # get the project 
+  # get the project
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
 
-    segproj = projdb.loadToken ( segtoken )
     synproj = projdb.loadToken ( syntoken )
-
-    #AETODO verify that they are from the same dataset 
 
   # and the database and then call the db function
   with closing ( ocpcadb.OCPCADB(synproj) ) as syndb:
-    with closing ( ocpcadb.OCPCADB(segproj) ) as segdb:
-
       # open the segment channel and the synapse channel
-      segch = segproj.getChannelObj(segchan_name)
       synch = synproj.getChannelObj(synchan_name)
-
       #AETODO verify that they are both annotation channels
 
-      # AETODO hop off point for graph generation code....
-      ocpgraph.genGraphFromPaint ( segproj, segch, segdb, synproj, synch, syndb )
-
-
-
-# def buildGraph2 ....
-# another version that builds a graph out of a single project with ramon objects
+      if arguementType==1:
+          ocpgraph.genGraphRAMON (syndb, synproj, synch)
+      elif arguementType==2:
+          ocpgraph.genGraphRAMON (syndb, synproj, synch, graphType)
+      elif arguementType==3:
+          ocpgraph.genGraphRAMON (syndb, synproj, synch, graphType, Xmin, Xmax, Ymin, Ymax, Zmin, Zmax)
+      #else
+          #AE TODO Throw some exception?

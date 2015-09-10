@@ -54,6 +54,7 @@ p.channels = ['TIME1', 'TIME2']
 p.time = [0,100]
 p.channel_type = "timeseries"
 p.datatype = "uint8"
+p.window = [0,500]
 
 #p.args = (3000,3100,4000,4100,500,510)
 
@@ -215,6 +216,110 @@ class Test_Image_Post:
     image_data = np.ones ( [3,2,10,100,100], dtype=np.uint8 ) * random.randint(0,255)
     response = postHDF5(p, image_data, time=True)
     assert (response.code == 404)
+
+class Test_Time_Simple_Catmaid:
+
+  def setup_class(self):
+    p.channels = ['TIME1', 'TIME2']
+    makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype, time=p.time)
+
+  def teardown_class(self):
+    makeunitdb.deleteTestDB(p.token)
+
+  def test_xy_tile(self):
+    """Test a simple xy tile fetch"""
+   
+    p.args = (3072,3584,4096,4608,200,201,50,52)
+    # have to use a constant here for memcache purposes
+    image_data = np.ones([2,2,1,512,512], dtype=np.uint8) * 130
+    response = postNPZ(p, image_data, time=True)
+    
+    voxarray = getNPZ(p, time=True)
+    # check that the return matches
+    assert ( np.array_equal(voxarray, image_data) )
+    
+    url = "http://{}/catmaid/{}/{}/xy/{}/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[6], p.args[4], p.args[2]/512, p.args[0]/512, p.resolution)
+    f = getURL (url)
+
+    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    assert ( np.array_equal(slice_data, image_data[0][0][0]) )
+
+  def test_yz (self):
+    """Test a simple yz slice fetch"""
+
+    p.args = (3072,3584,4096,4608,200,201,10,12)
+    # have to use a constant here for memcache purposes
+    image_data = np.ones([2,2,1,512,512], dtype=np.uint8) * 130
+    response = postNPZ(p, image_data, time=True)
+    
+    voxarray = getNPZ(p, time=True)
+    # check that the return matches
+    assert ( np.array_equal(voxarray, image_data) )
+
+    url = "http://{}/catmaid/{}/{}/yz/{}/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[6], p.args[4], p.args[2]/512, p.args[0]/512, p.resolution)
+    f = getURL (url)
+
+    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    assert ( np.array_equal(slice_data, image_data[0][0][0]) )
+  
+  def test_xz (self):
+    """Test a simple xz slice fetch"""
+
+    p.args = (3072,3584,4096,4608,200,201,80,82)
+    # have to use a constant here for memcache purposes
+    image_data = np.ones([2,2,1,512,512], dtype=np.uint8) * 130
+    response = postNPZ(p, image_data, time=True)
+    
+    voxarray = getNPZ(p, time=True)
+    # check that the return matches
+    assert ( np.array_equal(voxarray, image_data) )
+
+    url = "http://{}/catmaid/{}/{}/xz/{}/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[6], p.args[4], p.args[2]/512, p.args[0]/512, p.resolution)
+    f = getURL (url)
+
+    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    assert ( np.array_equal(slice_data, image_data[0][0][0]) )
+
+class Test_Time_Window:
+
+  def setup_class(self):
+    # Testing a different datatype now
+    p.datatype = "uint16"
+    makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype, time=p.time, window=p.window, default=True)
+
+  def teardown_class(self):
+    makeunitdb.deleteTestDB(p.token)
+
+  def test_window_default(self):
+    "Test the window functionality"
+
+    p.args = (3000,3100,4000,4100,200,201,50,52)
+    image_data = np.ones([2,2,1,100,100], dtype=np.uint16) * 2000
+    response = postNPZ(p, image_data, time=True)
+
+    url = "http://{}/ca/{}/{}/xy/{}/{},{}/{},{}/{}/{}".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[6])
+    f = getURL (url)
+
+    from windowcutout import windowCutout
+    windowCutout(image_data, p.window)
+    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    assert ( np.array_equal(slice_data,image_data[0][0][0]) )
+  
+  def test_window_args(self):
+    "Test the window functionality"
+
+    p.args = (3000,3100,4000,4100,200,201,20,22)
+    p.window = [0,1500]
+    image_data = np.ones([2,2,1,100,100], dtype=np.uint16) * 2000
+    response = postNPZ(p, image_data, time=True)
+
+    url = "http://{}/ca/{}/{}/xy/{}/{},{}/{},{}/{}/{}/window/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[6], *p.window)
+    f = getURL (url)
+
+    from windowcutout import windowCutout
+    windowCutout(image_data, p.window)
+    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    assert ( np.array_equal(slice_data,image_data[0][0][0]) )
 
 
 #class Test_Image_Default:

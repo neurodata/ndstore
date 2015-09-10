@@ -13,13 +13,14 @@
 # limitations under the License.
 
 """  Unit tests that require the OCP stack to be available.
-       All tests in other units should use Web services only.
+     All tests in other units should use Web services only.
 """
 
 import sys
 import os
 import random 
 import csv
+import time
 import numpy as np
 from PIL import Image
 from StringIO import StringIO
@@ -77,12 +78,12 @@ class Test_Image_Zslice_Propagate:
 
     # Start propagating
     f = getURL("http://{}/ca/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), ocpcaproj.UNDER_PROPAGATION))
-
+    time.sleep(10)
     # Checking if the PROPGATED value is set correctly
     f = getURL("http://{}/ca/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
     value = int(f.read())
     assert(value == ocpcaproj.PROPAGATED)
-
+    
     # Checking at res1
     p.args = (100,150,100,150,4,5)
     url = "http://{}/ca/{}/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution+1, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
@@ -125,6 +126,7 @@ class Test_Image_Isotropic_Propagate:
     f = getURL("http://{}/ca/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), ocpcaproj.UNDER_PROPAGATION))
 
     # Checking if the PROPGATED value is set correctly
+    time.sleep(10)
     f = getURL("http://{}/ca/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
     value = int(f.read())
     assert(value == ocpcaproj.PROPAGATED)
@@ -186,6 +188,7 @@ class Test_Anno_Zslice_Propagate():
     f = getURL("http://{}/ca/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), ocpcaproj.UNDER_PROPAGATION))
 
     # Checking if the PROPGATED value is set correctly
+    time.sleep(30)
     f = getURL("http://{}/ca/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
     value = int(f.read())
     assert(value == ocpcaproj.PROPAGATED)
@@ -236,6 +239,7 @@ class Test_Anno_Isotropic_Propagate():
     f = getURL("http://{}/ca/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), ocpcaproj.UNDER_PROPAGATION))
 
     # Checking if the PROPGATED value is set correctly
+    time.sleep(30)
     f = getURL("http://{}/ca/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
     value = int(f.read())
     assert(value == ocpcaproj.PROPAGATED)

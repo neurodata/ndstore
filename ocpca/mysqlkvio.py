@@ -37,10 +37,7 @@ class MySQLKVIO:
     
     # Connection info 
     try:
-      self.conn = MySQLdb.connect (host = self.db.proj.getDBHost(),
-                            user = self.db.proj.getDBUser(),
-                            passwd = self.db.proj.getDBPasswd(),
-                            db = self.db.proj.getDBName())
+      self.conn = MySQLdb.connect (host = self.db.proj.getDBHost(), user = self.db.proj.getDBUser(), passwd = self.db.proj.getDBPasswd(), db = self.db.proj.getDBName())
 
     except MySQLdb.Error, e:
       self.conn = None
@@ -284,7 +281,7 @@ class MySQLKVIO:
 
       sql = "UPDATE {} SET cube=(%s) WHERE (zindex,timestamp)=({},{})".format(ch.getTable(resolution), zidx, timestamp)
       try:
-        cursor.execute (sql, (cubestr))
+        cursor.execute (sql, [cubestr])
       except MySQLdb.Error, e:
         logger.error ( "Error updating data cube: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
         raise
