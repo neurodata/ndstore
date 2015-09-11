@@ -61,17 +61,22 @@ Data Fields
 +-------------------------+----------------------------------------------------------------------------------+
 | Dataset Name            | The name of the data set you are uploading (Good practice is lastname and year). |
 +-------------------------+----------------------------------------------------------------------------------+
-| Description             | A description of the data being uploaded, good things to include may be species   and the location of where the images are from. 
-+-------------------------+
-X, Y, Z Image Size         This is the size of the X, Y, or Z plane 
-X, Y, Z Offset             Amount to offset the X, Y, or Z plane 
-PUBLIC                     Whether or not the template (not the data) is viewable by everyone using OCP 
-Scaling Level              Sets the resolution level for the dataset (every additional number results in the resolution being halved). 
-Scaling Options            0 - Normal, 1 - Isotropic 
-X, Y, Z Voxel Resolution   This is the resolution of the data in each plane 
-Start/End Time             For 4D data this is the start or end time, for any data that is not 4D leave the values at the default 0 
-
-========================= ============================================================
+| Description             | A description of the data being uploaded, good things to include may be species and the location of where the images are from. |
++-------------------------+----------------------------------------------------------------------------------+
+|X, Y, Z Image Size       | This is the size of the X, Y, or Z plane |
++-------------------------+----------------------------------------------------------------------------------+
+|X, Y, Z Offset           | Amount to offset the X, Y, or Z plane |
++-------------------------+----------------------------------------------------------------------------------+
+|PUBLIC                   | Whether or not the template (not the data) is viewable by everyone using OCP |
++-------------------------+----------------------------------------------------------------------------------+
+|Scaling Level            | Sets the resolution level for the dataset.|
++-------------------------+----------------------------------------------------------------------------------+
+|Scaling Options          | 0 - Normal, 1 - Isotropic |
++-------------------------+----------------------------------------------------------------------------------+
+|X, Y, Z Voxel Resolution | This is the resolution of the data in each plane |
++-------------------------+----------------------------------------------------------------------------------+
+|Start/End Time           | For 4D data this is the start or end time, otherwise leave blank.|
++-------------------------+----------------------------------------------------------------------------------+
 
 Project Creation Tutorial
 =========================
@@ -85,21 +90,27 @@ To manage a project navigate to the projects dropdown menu and select view proje
 Data Fields
 +++++++++++
 
-=========================  ==============================================================================================================================================================
-Data Field                 Description
-=========================  ==============================================================================================================================================================
-
-Project Name               The is the name of the project.
-Description                The description of the project. 
-Public                     Whether or not the template is view-able to the public  
-Dataset                    The dataset to be used by the project 
-Database Host              Select which server you want the data to be stored on (This will be eliminated soon in favor of a new storage system). It is recommended you use the default. 
-KV Engine                  The method of storing data (This will be eliminated soon as OCP moves to using cassandra exclusively).
-KV Server                  This field will be removed soon, use the default.
-Link to Existing Database  Use this option if the project is already present on OCP servers
-Create a Default Token     Creates a default token for the project. 
-
-=========================  ==============================================================================================================================================================
++--------------------------+----------------------------------------------------------------------------------+
+|Data Field                |Description                                                                       |
++--------------------------+----------------------------------------------------------------------------------+
+|Project                   | The is the name of the project |
++--------------------------+----------------------------------------------------------------------------------+
+|Description               | The description of the project |
++--------------------------+----------------------------------------------------------------------------------+
+|Public                    | Whether or not the template is viewable to the public |
++--------------------------+----------------------------------------------------------------------------------+
+|Dataset                   | The dataset to be used by the project |
++--------------------------+----------------------------------------------------------------------------------+
+|Database Host             | It is recommended you use the default. |
++--------------------------+----------------------------------------------------------------------------------+
+|KV Engine                 | The method of storing data (Recommended use of default) |
++--------------------------+----------------------------------------------------------------------------------+
+|KV Server                 | This field will be removed soon, use the default. |
++--------------------------+----------------------------------------------------------------------------------+
+|Link to Existing Database | Use this option if the project is already present on OCP servers |
++--------------------------+----------------------------------------------------------------------------------+
+|Create a Default Token    | Creates a default token for the project. | 
++--------------------------+----------------------------------------------------------------------------------+
 
 
 Channel Creation Tutorial
