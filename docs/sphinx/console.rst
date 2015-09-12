@@ -27,9 +27,32 @@ Overview
 ++++++++
 Datasets contain all the current image/time datasets that the public has access to or any that have been created by the user. 
 
-Tutorial
-++++++++
 Dataset Creation Tutorial
++++++++++++++++++++++++++
+
+Navigate to the datasets drop down menu and select create dataset. Fill in the appropriate data fields for each line (a full explanation of each can be found below). Click create data set and you should be re-directed to the data set main page, where you will now see a new data set with the data you selected. To use the data set create a new project/token.
+
++-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
+| Data Field              | Description                                                                                                                    | 
++-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
+| Dataset Name            | The name of the data set you are uploading (Good practice is lastname and year).                                               |
++-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
+| Description             | A description of the data being uploaded, good things to include may be species and the location of where the images are from. |
++-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
+|X, Y, Z Image Size       | This is the size of the X, Y and Z plane.                                                                                      |
++-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
+|X, Y, Z Offset           | Amount to offset in the X, Y and Z plane.                                                                                      |
++-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
+|PUBLIC                   | Whether or not the template (not the data) is viewable by everyone using OCP.                                                  |
++-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
+|Scaling Level            | Sets the resolution level for the dataset.                                                                                     |
++-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
+|Scaling Options          | 0 - Normal, 1 - Isotropic.                                                                                                     |
++-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
+|X, Y, Z Voxel Resolution | This is the resolution of the data in X, Y and Z plane.                                                                        |
++-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
+|Start/End Time           | For timeseries data, these are the values of start time and end time. Use the default option if you don't have timeseries data.|
++-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
 
 Projects
 ========
@@ -39,134 +62,97 @@ Overview
 Projects are what allow a user to access datasets as well as manipulate them in various ways, such as adding annotations of viewing datasets at a much lower resolution. Projects are organized into tokens and channels. Tokens allow a user, or many users, to access the project. Channels are the various data that are accessible by a certain project. For example a user might create a dataset and then wish to annotate it. The user would create a project and add (at least) two channels, one with annotation data and one with image data. Following this the user would create a token to allow themselves access to the project.
 There also are cases where the user may wish to modify aspects of a project, whether that is the token or the channel. For example after doing the annotations in the above example a user may wish to share the annotations with the public, in which case they would modify the project to be public. However, to prevent data from getting modified unintentionally the user should also modify the channels to be read-only so data cannot be tampered with.
 
-Tutorials
-+++++++++
-
 Project Creation Tutorial
-Channel Creation Tutorial
-Token Creation Tutorial
++++++++++++++++++++++++++
 
-Dataset Creation Tutorial
-=========================
-
-Creating Dataset
-++++++++++++++++
-Navigate to the datasets drop down menu and select create dataset. Fill in the appropriate data fields for each line (a full explanation of each can be found below). Click create data set and you should be re-directed to the data set main page, where you will now see a new data set with the data you selected. To use the data set create a new project/token.
-
-Data Fields
-+++++++++++
-
-+-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-| Data Field              | Description                                                                                                                    | 
-+-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-| Dataset Name            | The name of the data set you are uploading (Good practice is lastname and year). |
-+-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-| Description             | A description of the data being uploaded, good things to include may be species and the location of where the images are from. |
-+-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-|X, Y, Z Image Size       | This is the size of the X, Y, or Z plane |
-+-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-|X, Y, Z Offset           | Amount to offset the X, Y, or Z plane |
-+-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-|PUBLIC                   | Whether or not the template (not the data) is viewable by everyone using OCP |
-+-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-|Scaling Level            | Sets the resolution level for the dataset.|
-+-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-|Scaling Options          | 0 - Normal, 1 - Isotropic |
-+-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-|X, Y, Z Voxel Resolution | This is the resolution of the data in each plane |
-+-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-|Start/End Time           | For 4D data this is the start or end time, otherwise leave blank.                                                              |
-+-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-
-Project Creation Tutorial
-=========================
-
-Creating/Managing a Project
-+++++++++++++++++++++++++++
 To create a project navigate to the datasets drop down menu and select create dataset. Fill in the appropriate data fields for each line (a full explanation of each can be found below). Click create data set and you should be re-directed to the data set main page, where you will now see a new data set with the data you selected. To use the data set create a new project/token.
 
 To manage a project navigate to the projects dropdown menu and select view projects. To the right of the project you wish to modify select Update/Details and change the fields as desired.
 
-Data Fields
-+++++++++++
-
 +--------------------------+----------------------------------------------------------------------------------+
 |Data Field                | Description                                                                      |
 +--------------------------+----------------------------------------------------------------------------------+
-|Project                   | The is the name of the project |
+|Project                   | The name of the project.                                                         |
 +--------------------------+----------------------------------------------------------------------------------+
-|Description               | The description of the project |
+|Description               | The description of the project.                                                  |
 +--------------------------+----------------------------------------------------------------------------------+
-|Public                    | Whether or not the template is viewable to the public |
+|Public                    | Whether or not the template is viewable to the public.                           |
 +--------------------------+----------------------------------------------------------------------------------+
-|Dataset                   | The dataset to be used by the project |
+|Dataset                   | The dataset to be used by the project.                                           |
 +--------------------------+----------------------------------------------------------------------------------+
-|Database Host             | It is recommended you use the default. |
+|Database Host             | The database host to store the project. Use the default option.                  |
 +--------------------------+----------------------------------------------------------------------------------+
-|KV Engine                 | The method of storing data (Recommended use of default) |
+|KV Engine                 | The KV engine used to store the project. Use the default option.                 |
 +--------------------------+----------------------------------------------------------------------------------+
-|KV Server                 | This field will be removed soon, use the default. |
+|KV Server                 | This is the KV key-server. Use the default option.                               |
 +--------------------------+----------------------------------------------------------------------------------+
-|Link to Existing Database | Use this option if the project is already present on OCP servers |
+|Link to Existing Database | Use this option if the project database is already present on OCP servers.       |
 +--------------------------+----------------------------------------------------------------------------------+
-|Create a Default Token    | Creates a default token for the project. | 
+|Create a Default Token    | Creates a default token for the project.                                         | 
 +--------------------------+----------------------------------------------------------------------------------+
 
+Channels
+========
+
+Overview
+++++++++
+
+TODO AE
 
 Channel Creation Tutorial
-=========================
++++++++++++++++++++++++++
 
-Creating/Managing a Channel
-+++++++++++++++++++++++++++
 If you have not created a project yet follow this tutorial. Then navigate to the projects drop down menu and select projects. Select the project you wish to create a channel for and select channel, then add channel. 
 
 To modify a channel select the Update button in the channels menu.
 
-Data Fields
-+++++++++++
-
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
 | Data Field              | Description                                                                                                                    | 
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-|Channel Name             | Name of the Channel. |
+|Channel Name             | Name of the Channel.                                                                                                           |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-|Channel Type             | The kind of channel being created. |
+|Channel Type             | The channel type you want to create. Refer to :ref:`Channel Types<ocp-channeltype>` for more details.                          |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-|Datatype                 | The data type being used by the channel.|
+|Datatype                 | The data type of the channel you want to create. Refer to :ref:`Data Types<ocp-datatype>` for more details.                    |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-|Description              | A description of the channel, usually containing data type and channel type information |
+|Description              | A description of the channel, usually contains user description of the channel.                                                |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-|Read Only                | Whether or not the channel will allow modification |
+|Read Only                | Whether or not you can modify the data existing in the channel.                                                                |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-|Resolution               | The resolution of the data |
+|Resolution               | The base resolution of the data you want to store in this channel.                                                             |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-|Enable Exceptions        |    |
+|Enable Exceptions        | Enable exceptions for an annotation channel. Use the default option.                                                           |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-|Propagate                | The status of propagation of the data |
+|Propagate                | The status of propagation level of the channel. Refer to :ref:`Propagation<ocp-propagation>` for more details.                 |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-|Start Window             | The lowest pixel value (defaults to 0)|
+|Start Window             | The lowest pixel value (defaults to 0)                                                                                         |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-|End Window               | The highest pixel value (defaults to 65536). |
+|End Window               | The highest pixel value (defaults to 65536).                                                                                   |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-|Set as Default Channel   |        |
+|Set as Default Channel   | Set the current channel to be the default channel in the project. By default the first channel is the default channel.         |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-=========================  ==============================================================================================================================================================
+
+Token
+=====
+
+Overview
+++++++++
+
+TODO AE
 
 Token Creation Tutorial
-=========================
++++++++++++++++++++++++
 
-Creating/Managing a Channel
-+++++++++++++++++++++++++++
 If you have not created a project yet follow this tutorial. Then navigate to the projects drop down menu and select projects. Select the project you wish to create another token for and select tokens, then add token. To modify the token navigate to the tokens sub-menu again and select the modify option on the token you wish to edit. 
 
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
 | Data Field              | Description                                                                                                                    | 
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-|Token                    | Name of the token |
+|Token                    | Name of the token.                                                                                                             |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-|Description              | A description of the token |
+|Description              | A user description of the token.                                                                                               |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-|Project                  | The project to use |
+|Project                  | The project to associate this token to. There can multiple tokens connected to the same project.                               |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-|Public                   | Whether or the not the token is publicly viewable, which then allows people to access the channels of your project |
+|Public                   | Whether or the not the token is publicly viewable, which then allows people to access the channels of your project.            |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
