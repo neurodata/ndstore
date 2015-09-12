@@ -1,0 +1,510 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Adminstrator Console &mdash; open-connetome v0.7.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/ocp_favicon.ico"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="open-connetome v0.7.0 documentation" href="../index.html"/>
+        <link rel="next" title="Configuration" href="config.html"/>
+        <link rel="prev" title="Introduction" href="introduction.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+
+        
+          <a href="../index.html" class="icon icon-home"> open-connetome
+        
+
+        
+          
+          <img src="../_static/ocp_main.png" class="logo" />
+        
+        </a>
+
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <p class="caption"><span class="caption-text">Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Adminstrator Console</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#quickstart">QuickStart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#datasets">Datasets</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataset-creation-tutorial">Dataset Creation Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#projects">Projects</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id2">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#project-creation-tutorial">Project Creation Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#channels">Channels</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id3">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#channel-creation-tutorial">Channel Creation Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#token">Token</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id4">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#token-creation-tutorial">Token Creation Tutorial</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions (FAQ)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/ocp_types.html">OCP Types</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../api/ocp_types.html#channel-types">Channel Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/ocp_types.html#data-types">Data Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/ocp_types.html#possible-combination-of-channel-types-and-data-types">Possible Combination of Channel Types and Data Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/ocp_types.html#propagation-service">Propagation Service</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api/info_api.html">Project Info API&#8217;s</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../api/info_api.html#json-service">JSON Service</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/info_api.html#get">GET</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/info_api.html#post">POST</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/info_api.html#hdf5-service">HDF5 Service</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/info_api.html#id1">GET</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api/public_api.html">Public Token API&#8217;s</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../api/public_api.html#get">GET</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api/data_api.html">Data API&#8217;s</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_api.html#hdf5-service">HDF5 Service</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/data_api.html#post">POST</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/data_api.html#get">GET</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_api.html#numpy-service">Numpy Service</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/data_api.html#numpy-post">POST</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/data_api.html#numpy-get">GET</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_api.html#image-slice-service">Image Slice Service</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/data_api.html#get-xy-slice-cutout">GET XY Slice Cutout</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/data_api.html#get-xz-slice-cutout">GET XZ Slice Cutout</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/data_api.html#get-yz-slice-cutout">GET YZ Slice Cutout</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api/ramon_api.html">RAMON API&#8217;s</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../api/ramon_api.html#ramon-field-service">RAMON Field Service</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/ramon_api.html#setfield">setField</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/ramon_api.html#getfield">getField</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/ramon_api.html#query-object-service">Query Object Service</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/ramon_api.html#get">GET</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/ramon_api.html#annotation-service">Annotation Service</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/ramon_api.html#id1">GET</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/ramon_api.html#post">POST</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/ramon_api.html#merge-service">Merge Service</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/ramon_api.html#id2">GET</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api/propagate_api.html">Propagate API&#8217;s</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../api/propagate_api.html#getpropagate">getPropagate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/propagate_api.html#setpropagate">setPropagate</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api/json_api.html">JSON API&#8217;s</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../api/json_api.html#createchannel">createChannel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/json_api.html#deletechannel">deleteChannel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/json_api.html#createproject">createProject</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api/overlay_api.html">Overlay API&#8217;s</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../api/overlay_api.html#cutut-service">Cutut Service</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/overlay_api.html#get-xy-slice-cutout">GET XY Slice Cutout</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/overlay_api.html#get-xz-slice-cutout">GET XZ Slice Cutout</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/overlay_api.html#get-yz-slice-cutout">GET YZ Slice Cutout</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Further Reading</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/functions.html">open-connectome Functions</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://gitter.im/openconnectome/open-connectome">Gitter chatroom</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://groups.google.com/forum/#!forum/ocp-support/">Mailing List</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/openconnectome/open-connectome">Github repo</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/openconnectome/open-connectome/releases/">Release Notes</a></li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">open-connetome</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+    <li>Adminstrator Console</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/sphinx/console.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <div class="section" id="adminstrator-console">
+<h1>Adminstrator Console<a class="headerlink" href="#adminstrator-console" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="quickstart">
+<h2>QuickStart<a class="headerlink" href="#quickstart" title="Permalink to this headline">¶</a></h2>
+<p>To upload an image volume: Create a dataset with appropriate names/field values. Then, create a project from that dataset, with a channel of the image type that is being uploaded. Finally, create a token to access the project and use that token to upload the image data. The tutorials to do each of these steps is available below. Scripts for automated upload are available for python and Cajal (formerly ocpMatlab).</p>
+<p>To upload annotation data: Using the existing project with the relevant image data create a channel of the annotation type that is being uploaded. Finally, create a token to access the project and use that token to upload the annotation data. The tutorials to do each of these steps is available below. More information on general annotation upload and download is available here.</p>
+</div>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>The Console allows data to be uploaded and downloaded to OCP as well as access other services within OCP. Data in OCP is organized into datasets and projects, see below for a more extensive description of each. The diagram below shows how the overall service is organized;</p>
+<div class="figure align-center">
+<a class="reference internal image-reference" href="../_images/ocpservicediagram.png"><img alt="../_images/ocpservicediagram.png" src="../_images/ocpservicediagram.png" style="width: 500px; height: 200px;" /></a>
+</div>
+<p>Datasets are present on the OCP server and are accessed through projects. These datasets can hold multiple types of data, including image, annotation, ect. When a specific type of data needs to be accessed in a dataset (via the project), say for example 8-bit image data, a channel is created in the project for that specific datatype. The project (and in turn the channels and the dataset) is accessible by a token, which serves as an access point for anyone that has the token.</p>
+</div>
+<div class="section" id="datasets">
+<h2>Datasets<a class="headerlink" href="#datasets" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h3>Overview<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>Datasets contain all the current image/time datasets that the public has access to or any that have been created by the user.</p>
+</div>
+<div class="section" id="dataset-creation-tutorial">
+<h3>Dataset Creation Tutorial<a class="headerlink" href="#dataset-creation-tutorial" title="Permalink to this headline">¶</a></h3>
+<p>Navigate to the datasets drop down menu and select create dataset. Fill in the appropriate data fields for each line (a full explanation of each can be found below). Click create data set and you should be re-directed to the data set main page, where you will now see a new data set with the data you selected. To use the data set create a new project/token.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="16%" />
+<col width="84%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Data Field</td>
+<td>Description</td>
+</tr>
+<tr class="row-even"><td>Dataset Name</td>
+<td>The name of the data set you are uploading (Good practice is lastname and year).</td>
+</tr>
+<tr class="row-odd"><td>Description</td>
+<td>A description of the data being uploaded, good things to include may be species and the location of where the images are from.</td>
+</tr>
+<tr class="row-even"><td>X, Y, Z Image Size</td>
+<td>This is the size of the X, Y and Z plane.</td>
+</tr>
+<tr class="row-odd"><td>X, Y, Z Offset</td>
+<td>Amount to offset in the X, Y and Z plane.</td>
+</tr>
+<tr class="row-even"><td>PUBLIC</td>
+<td>Whether or not the template (not the data) is viewable by everyone using OCP.</td>
+</tr>
+<tr class="row-odd"><td>Scaling Level</td>
+<td>Sets the resolution level for the dataset.</td>
+</tr>
+<tr class="row-even"><td>Scaling Options</td>
+<td>0 - Normal, 1 - Isotropic.</td>
+</tr>
+<tr class="row-odd"><td>X, Y, Z Voxel Resolution</td>
+<td>This is the resolution of the data in X, Y and Z plane.</td>
+</tr>
+<tr class="row-even"><td>Start/End Time</td>
+<td>For timeseries data, these are the values of start time and end time. Use the default option if you don&#8217;t have timeseries data.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="projects">
+<h2>Projects<a class="headerlink" href="#projects" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id2">
+<h3>Overview<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p>Projects are what allow a user to access datasets as well as manipulate them in various ways, such as adding annotations of viewing datasets at a much lower resolution. Projects are organized into tokens and channels. Tokens allow a user, or many users, to access the project. Channels are the various data that are accessible by a certain project. For example a user might create a dataset and then wish to annotate it. The user would create a project and add (at least) two channels, one with annotation data and one with image data. Following this the user would create a token to allow themselves access to the project.
+There also are cases where the user may wish to modify aspects of a project, whether that is the token or the channel. For example after doing the annotations in the above example a user may wish to share the annotations with the public, in which case they would modify the project to be public. However, to prevent data from getting modified unintentionally the user should also modify the channels to be read-only so data cannot be tampered with.</p>
+</div>
+<div class="section" id="project-creation-tutorial">
+<h3>Project Creation Tutorial<a class="headerlink" href="#project-creation-tutorial" title="Permalink to this headline">¶</a></h3>
+<p>To create a project navigate to the datasets drop down menu and select create dataset. Fill in the appropriate data fields for each line (a full explanation of each can be found below). Click create data set and you should be re-directed to the data set main page, where you will now see a new data set with the data you selected. To use the data set create a new project/token.</p>
+<p>To manage a project navigate to the projects dropdown menu and select view projects. To the right of the project you wish to modify select Update/Details and change the fields as desired.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="24%" />
+<col width="76%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Data Field</td>
+<td>Description</td>
+</tr>
+<tr class="row-even"><td>Project</td>
+<td>The name of the project.</td>
+</tr>
+<tr class="row-odd"><td>Description</td>
+<td>The description of the project.</td>
+</tr>
+<tr class="row-even"><td>Public</td>
+<td>Whether or not the template is viewable to the public.</td>
+</tr>
+<tr class="row-odd"><td>Dataset</td>
+<td>The dataset to be used by the project.</td>
+</tr>
+<tr class="row-even"><td>Database Host</td>
+<td>The database host to store the project. Use the default option.</td>
+</tr>
+<tr class="row-odd"><td>KV Engine</td>
+<td>The KV engine used to store the project. Use the default option.</td>
+</tr>
+<tr class="row-even"><td>KV Server</td>
+<td>This is the KV key-server. Use the default option.</td>
+</tr>
+<tr class="row-odd"><td>Link to Existing Database</td>
+<td>Use this option if the project database is already present on OCP servers.</td>
+</tr>
+<tr class="row-even"><td>Create a Default Token</td>
+<td>Creates a default token for the project.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="channels">
+<h2>Channels<a class="headerlink" href="#channels" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id3">
+<h3>Overview<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p>TODO AE</p>
+</div>
+<div class="section" id="channel-creation-tutorial">
+<h3>Channel Creation Tutorial<a class="headerlink" href="#channel-creation-tutorial" title="Permalink to this headline">¶</a></h3>
+<p>If you have not created a project yet follow this tutorial. Then navigate to the projects drop down menu and select projects. Select the project you wish to create a channel for and select channel, then add channel.</p>
+<p>To modify a channel select the Update button in the channels menu.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="16%" />
+<col width="84%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Data Field</td>
+<td>Description</td>
+</tr>
+<tr class="row-even"><td>Channel Name</td>
+<td>Name of the Channel.</td>
+</tr>
+<tr class="row-odd"><td>Channel Type</td>
+<td>The channel type you want to create. Refer to <a class="reference internal" href="../api/ocp_types.html#ocp-channeltype"><span>Channel Types</span></a> for more details.</td>
+</tr>
+<tr class="row-even"><td>Datatype</td>
+<td>The data type of the channel you want to create. Refer to <a class="reference internal" href="../api/ocp_types.html#ocp-datatype"><span>Data Types</span></a> for more details.</td>
+</tr>
+<tr class="row-odd"><td>Description</td>
+<td>A description of the channel, usually contains user description of the channel.</td>
+</tr>
+<tr class="row-even"><td>Read Only</td>
+<td>Whether or not you can modify the data existing in the channel.</td>
+</tr>
+<tr class="row-odd"><td>Resolution</td>
+<td>The base resolution of the data you want to store in this channel.</td>
+</tr>
+<tr class="row-even"><td>Enable Exceptions</td>
+<td>Enable exceptions for an annotation channel. Use the default option.</td>
+</tr>
+<tr class="row-odd"><td>Propagate</td>
+<td>The status of propagation level of the channel. Refer to <a class="reference internal" href="../api/ocp_types.html#ocp-propagation"><span>Propagation</span></a> for more details.</td>
+</tr>
+<tr class="row-even"><td>Start Window</td>
+<td>The lowest pixel value (defaults to 0)</td>
+</tr>
+<tr class="row-odd"><td>End Window</td>
+<td>The highest pixel value (defaults to 65536).</td>
+</tr>
+<tr class="row-even"><td>Set as Default Channel</td>
+<td>Set the current channel to be the default channel in the project. By default the first channel is the default channel.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="token">
+<h2>Token<a class="headerlink" href="#token" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id4">
+<h3>Overview<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<p>TODO AE</p>
+</div>
+<div class="section" id="token-creation-tutorial">
+<h3>Token Creation Tutorial<a class="headerlink" href="#token-creation-tutorial" title="Permalink to this headline">¶</a></h3>
+<p>If you have not created a project yet follow this tutorial. Then navigate to the projects drop down menu and select projects. Select the project you wish to create another token for and select tokens, then add token. To modify the token navigate to the tokens sub-menu again and select the modify option on the token you wish to edit.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="16%" />
+<col width="84%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Data Field</td>
+<td>Description</td>
+</tr>
+<tr class="row-even"><td>Token</td>
+<td>Name of the token.</td>
+</tr>
+<tr class="row-odd"><td>Description</td>
+<td>A user description of the token.</td>
+</tr>
+<tr class="row-even"><td>Project</td>
+<td>The project to associate this token to. There can multiple tokens connected to the same project.</td>
+</tr>
+<tr class="row-odd"><td>Public</td>
+<td>Whether or the not the token is publicly viewable, which then allows people to access the channels of your project.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="config.html" class="btn btn-neutral float-right" title="Configuration" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="introduction.html" class="btn btn-neutral" title="Introduction" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Open Connectome Project.
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'v0.7.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
