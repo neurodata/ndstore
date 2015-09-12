@@ -35,7 +35,7 @@ from params import Params
 p = Params()
 p.token = "blaze"
 p.resolution = 0
-p.channels = ['blaze']
+p.channels = ['image']
 p.window = [0,0]
 p.channel_type = "image"
 p.datatype = "uint32"
