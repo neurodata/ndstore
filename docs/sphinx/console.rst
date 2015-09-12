@@ -97,7 +97,7 @@ Channels
 Overview
 ++++++++
 
-TODO AE
+Channels are way of accessing specific data, such as image, annotation, time-series, ect., in a particular project. They by default can be enabled to be read-only which allows the data to be publicly viewable (with a public token), but not edited. 
 
 Channel Creation Tutorial
 +++++++++++++++++++++++++
@@ -138,7 +138,7 @@ Token
 Overview
 ++++++++
 
-TODO AE
+A token is an accessor to get to your projects, and in turn your datasets. It can be public or private, which allows you to let other people see the token (so data can be publicly accesssed).
 
 Token Creation Tutorial
 +++++++++++++++++++++++
