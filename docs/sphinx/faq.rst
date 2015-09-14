@@ -11,6 +11,10 @@ This project is part of the `Open Connectome Project <openconnecto.me/>`_.  The 
 
 **How do I get started?**
 
+To learn how to naviagte the web console please visit our `console <sphinx/console>`_ page.
+
+**How do I install OCP?**
+
 Please begin with the `configuration <sphinx/config>`_ page, which should get you up and running in no time.
 
 **How do I contribute my data to OCP?**

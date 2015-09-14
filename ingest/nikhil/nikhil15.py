@@ -1,11 +1,11 @@
 # Copyright 2014 Open Connectome Project (http://openconnecto.me)
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,8 +33,9 @@ import ocpcarest
 import ocpcaproj
 import ocpcadb
 
+END_WINDOWS = []
 
-class NikhilIngest:
+class CatmaidIngest:
 
   def __init__( self, token, resolution,path ):
     """Load the stack into an OCP database"""
@@ -58,15 +59,15 @@ class NikhilIngest:
 
       # Ingest in database aligned slabs in the z dimension
       for sl in range( startslice, endslice, batchsz ):
-          
+
         slab = np.zeros ( [zcubedim, yimagesz, ximagesz], dtype=np.uint8 )
 
         # over each slice
         for b in range( batchsz ):
-            
+
           #if we are at the end of the space, quit
           if ( sl + b <= endslice ):
-              
+
             filename = '{}{:0>3}____z{}.0.tif'.format(self.path, sl+b, (sl+b-1)*25)
             #filename = '{}{:0>4}____z{}.0.tif'.format(self.path, sl+b, (sl+b-1)*25)
             print filename
@@ -85,8 +86,8 @@ class NikhilIngest:
             zidx = ocplib.XYZMorton ( [ x/xcubedim, y/ycubedim, (sl-startslice)/zcubedim] )
             cubedata = np.zeros ( [zcubedim, ycubedim, xcubedim], dtype=np.uint8 )
 
-            xmin = x 
-            ymin = y 
+            xmin = x
+            ymin = y
             xmax = ( min(ximagesz-1, x+xcubedim-1) ) + 1
             ymax = ( min(yimagesz-1, y+ycubedim-1) ) + 1
             zmin = 0
@@ -103,7 +104,6 @@ class NikhilIngest:
         db.conn.commit()
         slab = None
 
-
 def main():
 
   parser = argparse.ArgumentParser(description='Ingest a OCP stack')
@@ -116,7 +116,5 @@ def main():
   ci = CatmaidIngest ( result.token, result.resolution, result.path )
   ci.ingest()
 
-
 if __name__ == "__main__":
   main()
-

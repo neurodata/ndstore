@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ocpviz: viewing {{ project_name }}</title>
+  {% load staticfiles %}
+  {# boostrap files #}
+  <link rel="stylesheet" type ="text/css" href="{% static 'css/bootstrap.css' %}" />
+
+  {# jquery UI #}
+  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
+
+  {# leaflet files #}
+  <link rel="stylesheet" href="{% static 'ocpviz/leaflet/leaflet.css' %}" /> 
+
+  {# buttons, buttons, buttons #} 
+  {# old FA: <link href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet"> #}
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+  <style>
+    body {
+			padding: 50px 0px 0px 0px; /* 50px for navbar */
+      margin: 0;
+		}
+		html, body, #map {
+			height: 100%;
+      width: 100%;
+		}
+    .coordinate-nav {
+      width: 50px;
+      display:inline-block;
+    }
+    .has-error .form-control{
+      border-width: 3px;
+      border-color: #FF2D2D !important;
+    }
+    .leaflet-container {
+			background: #000 !important;
+		}
+		.info {
+      padding: 8px 8px;
+      width: 300px;
+			font: 14px/16px Arial, Helvetica, sans-serif;
+			background: white;
+			background: rbga(255,255,255,0.8);
+			box-shadow: 0 0 15px rbga(0,0,0,0.2);
+			border-radius: 2px;
+    }
+    .info-layer-name {
+      width: 90%;
+      padding-top: 10px;
+      padding-left: 10px;
+    }
+    .info-opacity-control-name {
+      float: left;
+      width: 35%;
+      padding-top: 2px;
+      padding-left: 15px;
+    }
+    #slider > .brightness  {
+      float: right;
+      width: 60%;
+      margin: 5px;
+    }
+    #slider > .contrast  {
+      float: right;
+      width: 60%;
+      margin: 5px;
+    }
+    #slider > .opacity {
+      float: right;
+      width: 60%;
+      margin: 5px;
+    }
+    #blendmode { 
+      float: left;
+      padding-top: 5px;
+      padding-bottom: 5px;
+    }
+    #playdelay { 
+      float: left;
+      padding-top: 5px;
+      padding-bottom: 5px;
+    }
+    .playdelay-input {
+      width: 75px;
+    }
+    .info h4 {
+			margin: 0 0 5px; 
+			color: #777;
+    }
+    .keyhelp {
+      display: none;
+      background: rgb(34, 34, 34);
+      color: rgb(157, 157, 157);
+      padding-top: 5px;
+      padding-bottom: 5px;
+      padding-left: 10px;
+      padding-right: 10px;
+      border-radius: 2px;
+    }
+    .footer {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      margin-bottom: 20px;
+      padding: 10px;
+    /*  height: 55px;*/
+    /*  background-color: #333; */
+    }
+	</style>
+
+  <script src="{% static 'ocpviz/leaflet/leaflet.js' %}"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <script src="{% static "ocpviz/js/easy-button.js" %}"></script>	
+  <script src="{% static "ocpviz/js/ocp-leaflet.js" %}"></script>	
+	</head>
+<body>
+
+  {% include "ocpviz/help.html" %}
+
+  {% include "ocpviz/nav.html" %}
+
+  <div id="map"></div>
+  <script> 
+    // tool variables
+    var querytool = false; // disabled by default
+    var querylayer = 'none'; 
+    var querytoken = 'none'; 
+    var querychannel = 'none'; 
+
+    // timeseries globals
+    var playdelay = 1;
+
+    // marker array
+    var markers = [];
+
+    // dataset info 
+    var xmin = {{ xoffset }};	
+    var xmax = {{ xsize }};
+    var ymin = {{ yoffset }};
+    var ymax = {{ ysize }};
+
+    var minres = {{ minres }};
+    var maxres = {{ maxres }};
+    var res = {{ res }};
+    var zmin = {{ zoffset }};
+    var zmax = {{ zsize }};
+    // set zindex to some default (we pick the lowest slice)  
+    var zindex = {{ zstart }};
+
+     // create the map first 
+		var map = L.map('map', {
+			doubleClickZoom: false,
+    });
+
+    // define layers
+    {% for layer in layers %}
+      {# setup the URL #} 
+      
+      {% if layer.channel %}
+        var webtoken = '{{ layer.token }}/{{ layer.channel }}';
+        {% if layer.color %}
+          webtoken = webtoken + ':{{layer.color}}';
+        {% endif %}
+      {% else %}
+        var webtoken = '{{ layer.token }}';
+      {% endif %}
+
+      {% if layer.tilecache %} 
+        {% if layer.layertype == 'timeseries' %}
+          var url = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/{{ starttime }}/{zindex}/{y}_{x}_{z}.png'; 
+        {% else %}
+          var url = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
+        {% endif %}
+        
+      {% else %}
+        {% if layer.color %}
+          var url = 'http://{{ layer.server }}/ocp/catmaid/mcfc/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
+        {% elif layer.layertype == 'timeseries' %}
+          var url = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/{{ starttime }}/{zindex}/{y}_{x}_{z}.png';
+        {% else %}  
+          var url = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
+        {% endif %}
+      {% endif %}
+        
+      console.log(url);    
+
+      {# add the layer #}  
+      var {{ "layer_"|add:layer.layer_name|cut:" " }} = L.tileLayer.OCPLayer(
+        url,
+        {
+          zindex: zindex,
+          zoomReverse: true,
+          minZoom: maxres,
+          maxZoom: maxres + maxres,
+          tileSize: 512,
+          {% if layer.layertype == 'annotation' %}
+          opacity: 0.4,
+          {% endif %}
+          {% if layer.layertype == 'timeseries' %}
+          curtime: {{ starttime }},
+          {% endif %}
+          //noWrap: true,
+          continuousWorld: true,
+        }).addTo(map);
+    {% endfor %}
+  
+    // set the initial view 
+    var center = map.unproject(L.point({{ xstart }}, {{ ystart }}), maxres + maxres - res);
+		map.setView(center, maxres + maxres - res);
+
+		// display some map info
+		var info = L.control();
+		info.options.position = 'topright';
+		info.onAdd = function (map) {
+			this._div = L.DomUtil.create('div', 'info');
+      var header = '<h4>{{ project_name }}</h4><br />';
+      var datainfo = '<div id="opacity-control">{% spaceless %}
+        {% for layer in layers %}
+        <div class="info-layer-name"><a href="#">{{ layer.layer_name|cut:" " }}</a></div>
+        <div class="info-opacity-control-name">Opacity</div>
+        <div id="slider">
+        <span class="opacity">{{ "layer_"|add:layer.layer_name|cut:" " }}</span>
+        </div><br />
+      
+        <div class="info-opacity-control-name">Brightness</div>
+        <div id="slider">
+          <span class="brightness">{{ "layer_"|add:layer.layer_name|cut:" " }}</span>
+        </div><br />
+        
+        <div class="info-opacity-control-name">Contrast</div>
+        <div id="slider">
+          <span class="contrast">{{ "layer_"|add:layer.layer_name|cut:" " }}</span>
+        </div><br />
+        {% endfor %}
+        {% endspaceless %}</div>';
+      var blendmode = '<br /><div id="blendmode">Blend Mode: <select name="blendmode"><option value="normal">Normal</option><option value="multiply">Multiply</option><option value="Screen">Screen</option><option value="overlay">Overlay</option><option value="darken">Darken</option><option value="lighten">Ligten</option><option value="color-dodge">Color Dodge</option><option value="color-burn">Color Burn</option><option value="exclusion">Exclusion</option><option value="difference">Difference</option><option value="hue">Hue</option><option value="saturation">Saturation</option><option value="color">Color</option><option value="luminosity">Luminosity</option></select></div><span style="float: right; padding-top: 5px;"><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/blend-mode" target="_blank"><i class="fa fa-info-circle fa-lg"></i></a></span>'
+      {% if timeseries == True %}
+      var playdelay = '<br /><div id="playdelay">Play Delay (sec): <input class="playdelay-input" type="number" step="any" min="0" max="100" value="1" /></div><span style="float: right; padding-top: 5px;"><a class="playdelay-submit" href="#"><i class="fa fa-clone fa-lg"></i></a></span>';
+      {% else %}
+      var playdelay = '';
+      {% endif %}
+      this._div.innerHTML = header + datainfo + blendmode + playdelay;
+			return this._div;
+		};
+
+    info.update = function () {
+      
+      //$( "#zindex" ).replaceWith( "<div id='zindex'>z-index: " + zindex + "</div>" );
+      //var header = '<h4>{{ project_name }}</h4>';
+      //var datainfo = '<div id="slider"></div>';
+      //var datainfo = '{% spaceless %}{% endspaceless %}
+
+      //var datainfo = 'x: (' + xmin + ', ' + xmax + ')<br />' + 
+      //  'y: (' + ymin + ', ' + ymax + ')<br />' +
+      //  'z: (' + zmin + ', ' + zmax + ')<br />';
+      //var curslice = '<br />z-index: ' + zindex;
+      //this._div.innerHTML = header + datainfo + curslice;
+			//	+ 'Z Index: ' + zindex;
+		};
+
+		info.addTo(map);
+
+    // update current coordinates in nav box
+
+    function coordinatesUpdate() {
+      $( "#x" ).parent().removeClass("has-error");
+      $( "#y" ).parent().removeClass("has-error");
+      $( "#z" ).parent().removeClass("has-error");
+      var center = map.getCenter();
+      var res = map.getMaxZoom() - map.getZoom();
+      var coordinates = map.project(center);
+
+      $( "#x" ).val(Math.round(coordinates.x));
+      $( "#y" ).val(Math.round(coordinates.y));
+      $( "#z" ).val(zindex);
+    };
+    coordinatesUpdate();
+    // update coordinates on pan, zoom, and load
+    map.on('drag', coordinatesUpdate);
+    map.on('zoomend', coordinatesUpdate);
+
+    // navigation 
+    // first, intercept the form 
+    $( "#navigate" ).submit(function( event ) {
+      event.preventDefault();
+      // clear errors
+      $( "#x" ).parent().removeClass("has-error");
+      $( "#y" ).parent().removeClass("has-error");
+      $( "#z" ).parent().removeClass("has-error");
+
+      // if a valid (x,y) pair was entered, pan and place a marker
+      // note, need to pan before changing slices 
+      if ( $( "#x" ).val() && $( "#y" ).val()) {
+        var x = $( "#x" ).val();
+        var y = $( "#y" ).val();
+
+        // validate 
+        if ( x > xmax || x < xmin ) {
+          $( "#x" ).parent().addClass("has-error"); 
+        }
+        else if ( y > ymax || y < ymin ) {
+          $( "#y" ).parent().addClass("has-error");
+        }
+        else {
+          // pan the map to center on these coordinates
+          var point = L.point(x, y);
+          var projpoint = map.unproject(point); //, 2*maxres - map.getZoom());
+
+          map.panTo(projpoint);
+          // place a marker
+          //L.marker(projpoint).addTo(map); 
+        } 
+      }
+      else {
+        if ( $( "#x" ).val() && !$( "#y" ).val() ) {
+          $( "#y" ).parent().addClass("has-error");
+        }
+        else if ( $( "#y" ).val() && !$( "#x" ).val() ) {
+          $( "#x" ).parent().addClass("has-error");
+        }  
+      } 
+      // if a zindex was entered, navigate to that slice 
+      if ( $( "#z" ).val() ) {
+        var z = $( "#z" ).val();
+        if (z <= zmax && z >= zmin) {
+          chgZIndex(z);
+        }
+        else {
+          $( "#z" ).parent().addClass("has-error");
+        }
+      }
+      
+      // handle timestep if timeseries
+      {% if timeseries == True %}
+        loadTimeStep( $( "#timestep" ).val() ); 
+      {% endif %}
+    });
+    
+    $( "#addmarkercenter" ).click(function( event ) {
+      // place a marker at the current map center 
+      var center = map.getCenter();
+      var point = map.project(center);
+      var marker_options = {
+        title: point.x + " " + point.y + " " + zindex,
+      }
+
+      // keep track of markers by storing in an array
+      markers.push(L.marker(center, marker_options).addTo(map));
+      
+      // get current url
+      var markerUrlRaw = 'http://{{ request.get_host }}{{ request.path }}';
+      var markerUrlArr = markerUrlRaw.split("/", 8);
+      var curZoom = map.getMaxZoom() - map.getZoom(); 
+      var markerUrl = 'http://' + markerUrlArr[2] + "/" + markerUrlArr[3] + "/" + markerUrlArr[4] + "/" + markerUrlArr[5] + "/" + markerUrlArr[6] + "/" + curZoom + "/" + Math.round(point.x) + "/" + Math.round(point.y) + "/" + zindex + "/";
+
+      var popup_options = {
+        maxWidth: 750,
+      }
+      
+      markers[markers.length - 1].bindPopup('<a href="' + markerUrl + '">' + markerUrl + '</a>', popup_options);
+    });
+    
+    {% if marker == True %}
+      // add a marker to the center 
+      //L.marker(center).addTo(map);
+      $( "#addmarkercenter" ).trigger('click');
+    {% endif %}
+
+    function markerOnClick(event) {
+      // place a marker at the click 
+           
+      var point = map.project(event.latlng);
+      var marker_options = {
+        title: point.x + " " + point.y + " " + zindex,
+      }
+
+      // keep track of markers by storing in an array
+      markers.push(L.marker(event.latlng, marker_options).addTo(map));
+
+      // get current url
+      var markerUrlRaw = 'http://{{ request.get_host }}{{ request.path }}';
+      var markerUrlArr = markerUrlRaw.split("/", 8);
+      var curZoom = map.getMaxZoom() - map.getZoom(); 
+      var markerUrl = 'http://' + markerUrlArr[2] + "/" + markerUrlArr[3] + "/" + markerUrlArr[4] + "/" + markerUrlArr[5] + "/" + markerUrlArr[6] + "/" + curZoom + "/" + Math.round(point.x) + "/" + Math.round(point.y) + "/" + zindex + "/";
+      var popup_options = {
+        maxWidth: 750,
+      }
+
+      markers[markers.length - 1].bindPopup('<a href="' + markerUrl + '">' + markerUrl + '</a>', popup_options);
+      map.off('click', markerOnClick);
+      // turn query tool back on 
+      map.on('click', onMapClick);
+    };
+    
+    $( "#addmarkermouse" ).click(function( event ) {
+      map.on('click', markerOnClick);
+      // turn off query tool
+      map.off('click', onMapClick);
+    });
+
+    $( "#clearmarkers" ).click(function( event ) {
+      var index;
+      for (index = 0; index < markers.length; index++) {
+        map.removeLayer(markers[index]);
+        
+      }
+    });
+
+		// z-index arrows 
+		L.easyButton('fa-arrow-up',
+				incZIndex,
+				'Increase Z-Index'
+		);
+		L.easyButton('fa-arrow-down',
+				decZIndex,
+				'Decrease Z-Index'
+		);
+
+    function chgZIndex(newz) {
+      map.closePopup();
+      var oldzindex = zindex;
+			zindex = parseInt(newz);
+			reloadLayers(oldzindex);
+    }
+
+		function incZIndex() {
+      map.closePopup();    
+      var oldzindex = zindex;
+      if ((zindex + 1) > zmax) {
+        $( "#z" ).parent().addClass("has-error");
+      }
+      else {
+        $( "#z" ).parent().removeClass("has-error");
+        zindex = zindex + 1;
+        reloadLayers(oldzindex);
+      }
+		}
+
+		function decZIndex() {
+      map.closePopup();
+      var oldzindex = zindex;
+      if ((zindex - 1) < zmin) {
+        $( "#z" ).parent().addClass("has-error");
+      }
+      else {
+        $( "#z" ).parent().removeClass("has-error");
+        zindex = zindex - 1;
+        reloadLayers(oldzindex);
+      }
+    }
+
+		function reloadLayers() {
+			map.options.fadeAnimation = false;
+      // can't use map.eachLayer because it includes popups
+      //map.eachLayer( function (layer) {
+      //    console.log(layer);
+      //    layer.options.zindex = zindex;
+			//		layer.smoothRedraw();
+      //});
+    
+      {% for layer in layers %}
+      {{ "layer_"|add:layer.layer_name|cut:" " }}.options.zindex = zindex;
+      {{ "layer_"|add:layer.layer_name|cut:" " }}.smoothRedraw();
+      {% endfor %} 
+    
+      map.options.fadeAnimation = true;
+      //info.update();
+      coordinatesUpdate();
+		}
+
+		// get anno id from coordinate
+    // expects a L.point object for point and a number for zoom
+    // TODO if the server is localhost (the query server) that doesnt work
+		function getAnnoId(point, zoom) {
+      var ocpUrlBase = "http://{{ request.get_host }}/ocp/viz/query/localhost/ca/" + querytoken + "/" + querychannel + "/id/" + zoom + "/";
+			var cutout = Math.round(point.x) + "/" + Math.round(point.y) + "/" + zindex + "/"; 
+			var ocpUrl = ocpUrlBase.concat(cutout);
+      // store the return data
+			var data = null;
+
+			// make request 
+			var xmlHttp = new XMLHttpRequest();
+			xmlHttp.open( "GET", ocpUrl, false );
+			xmlHttp.send( null );
+
+			return xmlHttp.responseText;
+
+		}
+
+		// popup on click (testing get anno id) 
+		var popup = L.popup();
+		function onMapClick(e) {
+      if (querytool) {
+        var reqPoint = map.project(e.latlng);	
+        popup
+          .setLatLng(e.latlng)
+          .setContent("You requested anno " + getAnnoId(reqPoint, map.getMaxZoom() - map.getZoom()))
+          .openOn(map);
+      } 
+		}
+		map.on('click', onMapClick);
+
+    // keyboard shortcuts
+    $(document).keypress(function(event) {
+      if ( !$(event.target).is('input')) {
+        console.log(event.which);
+        switch (event.which) {
+          case 104: // h -- help
+            toggleKeyboardHelp();
+            break;
+          case 119: // w -- zindex++
+            incZIndex();
+            break;
+          case 115: // s -- zindex--
+            decZIndex();
+            break;
+          case 97: // a -- zoom out
+            map.zoomOut()
+            break;
+          case 100: // d -- zoom in
+            map.zoomIn()
+            break;
+          default:
+            // do nothing
+
+        }
+      } 
+    });
+    function toggleKeyboardHelp() {
+      if ($( ".keyhelp" ).css("display") == "none") {
+        $( ".keyhelp" ).fadeIn( 1000, function() {
+          // Animation complete
+        });
+      }
+      else {
+        $( ".keyhelp" ).fadeOut( 500, function() {
+          // Animation complete
+        });
+      }
+    } 
+
+    // tools
+    // query tool
+
+    // disable querying 
+    $( '#query_none' ).click(function(event) {
+      if (querytool) {
+        $( '#query_' + querylayer + '_check' ).css("visibility","hidden");
+        $( '#query_none_check' ).css("visibility","");
+        querytool = false;
+        querylayer = 'none';
+        querytoken = 'none';
+        querychannel = 'none';
+      }
+    });
+
+    {% for layer in layers %}
+    {% if layer.layertype == 'annotation' %}
+    $( '#query_{{ layer.token }}_{{ layer.channel }}' ).click(function(event) {
+    //$( '#querybutton' ).toggleClass('active');
+      var curlayer = "{{ layer.token }}_{{ layer.channel }}";
+      if (querylayer != curlayer) {
+        console.log('Updating ' + querylayer + ' to ' + curlayer);
+        $( '#query_' + querylayer + '_check' ).css("visibility","hidden");
+        $( '#query_{{ layer.token }}_{{ layer.channel }}_check' ).css("visibility","");
+        querylayer = curlayer; 
+        querytoken = '{{ layer.token }}';
+        querychannel = '{{ layer.channel }}';
+        querytool = true;
+      }
+    });
+    {% endif %}
+    {% endfor %}
+    
+    // TODO clicking on a marker pops up coordinates 
+
+    // add keyboard help to map
+		var keyhelp = L.control();
+		keyhelp.options.position = 'bottomleft';
+		keyhelp.onAdd = function (map) {
+			this._div = L.DomUtil.create('div', 'keyhelp');
+			this.update();
+			return this._div;
+		};
+
+		keyhelp.update = function () {
+      this._div.innerHTML = 
+      "<h5>Keyboard Shortcuts</h5><ul class='list-unstyled'>" +
+        "<li><kbd>h</kbd> display help</li>" + 
+        "<li><kbd>w</kbd> increase z-index</li>" + 
+        "<li><kbd>a</kbd> zoom out</li>" + 
+        "<li><kbd>s</kbd> decrease z-index</li>" + 
+        "<li><kbd>d</kbd> zoom in</li>" + 
+        "</ul><small>Press <kbd>h</kbd> to close.</small>";
+		};
+    
+    keyhelp.addTo(map);
+
+    {# jquery slider (opacity controls) #}
+    $(function() {
+      $( "#slider > .brightness" ).each(function() {
+        var layer = $( this ).text(); 
+        $( this ).empty().slider({
+          min: 0,
+          max: 200,
+          value: 100,
+          slide: function ( event, ui ) { 
+            eval(layer).setBrightness(ui.value);
+            console.log(ui.value);
+            },
+          start: function ( event, ui ) { map.dragging.disable(); },
+          stop: function ( event, ui ) { map.dragging.enable(); }, 
+        });
+      });
+    });// sliders -- brightness
+    $(function() {
+      $( "#slider > .contrast" ).each(function() {
+        var layer = $( this ).text(); 
+        $( this ).empty().slider({
+          min: 0,
+          max: 200,
+          value: 100,
+          slide: function ( event, ui ) { 
+              eval(layer).setContrast(ui.value);
+            },
+          start: function ( event, ui ) { map.dragging.disable(); },
+          stop: function ( event, ui ) { map.dragging.enable(); }, 
+        });
+      });
+    });// sliders -- contrast
+    $(function() {
+      $( "#slider > .opacity" ).each(function() {
+        var layer = $( this ).text(); 
+        $( this ).empty().slider({
+          min: 0,
+          max: 100,
+          value: eval(layer).options.opacity*100,
+          slide: function ( event, ui ) { 
+              eval(layer).setOpacity(ui.value/100);
+            },
+          start: function ( event, ui ) { map.dragging.disable(); },
+          stop: function ( event, ui ) { map.dragging.enable(); }, 
+        });
+      });
+    });// sliders -- opacity
+    
+    // blend mode
+    $(function() {
+      $('#blendmode').change(function(e) {
+        var changed = $(e.target);
+
+        if (changed.is('select[name="blendmode"]')) {
+          //console.log(changed.val());
+          {% for layer in layers %}
+            console.log({{ "layer_"|add:layer.layer_name|cut:" " }});
+            eval({{ "layer_"|add:layer.layer_name|cut:" " }}).setBlendMode(changed.val());
+          {% endfor %}  
+        }
+      });
+    }); // blend mode 
+    
+    // play delay
+    $(function() {
+      $('.playdelay-submit').click(function(e) {
+        var val = $('.playdelay-input').val();
+        playdelay = val;
+      });
+    }); // play delay 
+
+    $(function() {
+      $( "#collapseinfo" ).click(function() {
+        $( ".info" ).toggle( "slow" )
+      });
+    });
+
+    // timeseries functions  
+    
+    
+    
+    function loadTimeStep(newTime) {
+      map.closePopup();
+      if (newTime < {{ starttime }}) {
+        $( "#timestep" ).parent().addClass("has-error");
+      }
+      else if (newTime > {{ endtime }}) {
+        $( "#timestep" ).parent().addClass("has-error");
+      }
+      else {
+        $( "#timestep" ).parent().removeClass("has-error");
+        {% for layer in layers %}
+        {% if layer.layertype == "timeseries" %}
+          {{ "layer_"|add:layer.layer_name|cut:" " }}.options.curtime = newTime;
+          var newTimeStr = newTime.toString();
+          {% if layer.tilecache %}
+            var newUrl = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png'; 
+          {% else %}
+          var newUrl = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png';
+          {% endif %}  
+          {{ "layer_"|add:layer.layer_name|cut:" " }}.setUrl(newUrl, true);
+          {{ "layer_"|add:layer.layer_name|cut:" " }}.smoothRedraw();
+        {% endif %}
+        {% endfor %}
+      }
+    } 
+
+    function timeStepForward() {
+      map.closePopup();
+      {% for layer in layers %}
+      {% if layer.layertype == "timeseries" %}
+        var curTime = parseInt({{ "layer_"|add:layer.layer_name|cut:" " }}.options.curtime);
+        if (curTime + 1 <= parseInt({{ endtime }})) {
+          $( "#timestep" ).parent().removeClass("has-error"); 
+          var newTime = curTime + 1;
+          {{ "layer_"|add:layer.layer_name|cut:" " }}.options.curtime = newTime;
+          var newTimeStr = newTime.toString();
+          {% if layer.tilecache %}
+            var newUrl = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png'; 
+          {% else %}
+          var newUrl = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png';
+          {% endif %}  
+          {{ "layer_"|add:layer.layer_name|cut:" " }}.setUrl(newUrl, true);
+          {{ "layer_"|add:layer.layer_name|cut:" " }}.smoothRedraw();
+        }
+        else {
+          $( "#timestep" ).parent().addClass("has-error"); 
+        }
+      {% endif %}
+      {% endfor %}
+      // update timestep box 
+      $( "#timestep" ).val(newTimeStr);
+		}
+
+		function timeStepBack() {
+      map.closePopup();
+      {% for layer in layers %}
+      {% if layer.layertype == "timeseries" %}
+        var curTime = parseInt({{ "layer_"|add:layer.layer_name|cut:" " }}.options.curtime);
+        if (curTime - 1 >= parseInt({{ starttime }})) {
+          $( "#timestep" ).parent().removeClass("has-error"); 
+          var newTime = curTime - 1;
+          {{ "layer_"|add:layer.layer_name|cut:" " }}.options.curtime = newTime;
+          var newTimeStr = newTime.toString();
+          {% if layer.tilecache %}
+            var newUrl = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png'; 
+          {% else %}
+          var newUrl = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png';
+          {% endif %}  
+          {{ "layer_"|add:layer.layer_name|cut:" " }}.setUrl(newUrl, true);
+          {{ "layer_"|add:layer.layer_name|cut:" " }}.smoothRedraw();
+        }
+        else {
+          $( "#timestep" ).parent().addClass("has-error"); 
+        }
+      {% endif %}
+      {% endfor %}
+      // update timestep box 
+      $( "#timestep" ).val(newTimeStr);
+		}
+    
+    function timeBeginning() {
+      map.closePopup();
+      {% for layer in layers %}
+      {% if layer.layertype == "timeseries" %}
+        var newTimeStr = {{ starttime }};
+        {{ "layer_"|add:layer.layer_name|cut:" " }}.options.curtime = newTimeStr;
+        {% if layer.tilecache %}
+            var newUrl = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png'; 
+        {% else %}
+        var newUrl = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png';
+        {% endif %}  
+        {{ "layer_"|add:layer.layer_name|cut:" " }}.setUrl(newUrl, true);
+        {{ "layer_"|add:layer.layer_name|cut:" " }}.smoothRedraw();
+      {% endif %}
+      {% endfor %}
+      // update timestep box 
+      $( "#timestep" ).val(newTimeStr);
+    }
+    
+    function timeEnd() {
+      map.closePopup();
+      {% for layer in layers %}
+      {% if layer.layertype == "timeseries" %}
+        var newTimeStr = {{ endtime }};
+        {{ "layer_"|add:layer.layer_name|cut:" " }}.options.curtime = newTimeStr;
+        {% if layer.tilecache %}
+            var newUrl = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png'; 
+          {% else %}
+          var newUrl = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png';
+          {% endif %}  
+          {{ "layer_"|add:layer.layer_name|cut:" " }}.setUrl(newUrl, true);
+          {{ "layer_"|add:layer.layer_name|cut:" " }}.smoothRedraw();
+      {% endif %}
+      {% endfor %}
+      // update timestep box 
+      $( "#timestep" ).val(newTimeStr);
+		}
+
+    var play; 
+    $(function() {
+      $( "#play" ).click(function() {
+        play = setInterval(function() { timeStepForward(); }, 1000*playdelay); // 1 second default 
+      });
+    });
+    $(function() {
+      $( "#pause" ).click(function() {
+        clearTimeout(play);
+      });
+    });
+    $(function() {
+      $( "#beginning" ).click(function() {
+        timeBeginning();
+      });
+    });
+    $(function() {
+      $( "#end" ).click(function() {
+        timeEnd();
+      });
+    });
+    $(function() {
+      $( "#forward" ).click(function() {
+        timeStepForward();
+      });
+    });
+    $(function() {
+      $( "#back" ).click(function() {
+        timeStepBack();
+      });
+    });
+
+  
+  
+  </script>
+  {% if timeseries == True %}
+
+  <footer class="footer">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <span class="fa-stack fa-lg">
+            <i class="fa fa-square fa-inverse fa-stack-2x"></i>
+            <a href="#" id="beginning"><i class="fa fa-backward fa-stack-1x"></i></a>
+          </span>
+          
+          <span class="fa-stack fa-lg">
+            <i class="fa fa-square fa-inverse fa-stack-2x"></i>
+            <a href="#" id="back"><i class="fa fa-step-backward fa-stack-1x"></i></a>
+          </span>
+          
+          <span class="fa-stack fa-lg">
+            <i class="fa fa-square fa-inverse fa-stack-2x"></i>
+            <a href="#" id="play"><i class="fa fa-play fa-stack-1x"></i></a>
+          </span>
+          
+          <span class="fa-stack fa-lg">
+            <i class="fa fa-square fa-inverse fa-stack-2x"></i>
+            <a href="#" id="pause"><i class="fa fa-pause fa-stack-1x"></i></a>
+          </span>
+          
+          <span class="fa-stack fa-lg">
+            <i class="fa fa-square fa-inverse fa-stack-2x"></i>
+            <a href="#" id="forward"><i class="fa fa-step-forward fa-stack-1x"></i></a>
+          </span>
+          
+          <span class="fa-stack fa-lg">
+            <i class="fa fa-square fa-inverse fa-stack-2x"></i>
+            <a href="#" id="end"><i class="fa fa-forward fa-stack-1x"></i></a>
+          </span>
+        </div>
+      </div>
+    </div>
+  </footer>
+  {% endif %}
+</body>
+{# jquery and bootstrap js #}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+<script src="{% static "js/bootstrap.min.js" %}"></script>
+{# jquery ui (for slider) #}
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+{# jquery ui on mobile #}
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+
+</html>
+
+

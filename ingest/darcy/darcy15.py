@@ -1,11 +1,11 @@
 # Copyright 2014 Open Connectome Project (http://openconnecto.me)
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -48,7 +48,7 @@ def main():
   parser.add_argument('resolution', action="store", type=int, help='Resolution of data')
 
   result = parser.parse_args()
-  
+
   # Load a database
   with closing (ocpcaproj.OCPCAProjectsDB()) as projdb:
     proj = projdb.loadToken(result.token)
@@ -65,9 +65,9 @@ def main():
     tif_file = tifffile.imread(file_name)
     slice_number = 0
     # Get a list of the files in the directories
-    
+
     for iteration_number in range(starttime, endtime):
-      
+
       slab = np.zeros([zcubedim, yimagesz, ximagesz], dtype=np.uint16)
       import pdb; pdb.set_trace()  
       slab[slice_number,:,:] = tif_file[iteration_number,:,:]

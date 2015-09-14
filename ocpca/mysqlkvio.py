@@ -20,6 +20,8 @@ import re
 from collections import defaultdict
 import itertools
 
+from ocptype import OLDCHANNEL
+
 import logging
 logger=logging.getLogger("ocp")
 
@@ -74,6 +76,33 @@ class MySQLKVIO:
       self.txncursor.close()
       self.txncursor = None
 
+  def getChannelId(self, ch):
+    """Retrieve the channel id for the oldchannel database"""
+    
+    # if in a TxN us the transaction cursor.  Otherwise create one.
+    if self.txncursor is None:
+      cursor = self.conn.cursor()
+    else:
+      cursor = self.txncursor
+   
+    sql = "SELECT chanid from channels where chanstr=%s"
+
+    try:
+      cursor.execute ( sql, [ch.getChannelName()] )
+      row = cursor.fetchone()
+    except MySQLdb.Error, e:
+      logger.error ( "Failed to retrieve data cube: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+      raise
+    finally:
+      # close the local cursor if not in a transaction
+      if self.txncursor is None:
+        cursor.close()
+    
+    if row is None:
+      return None
+    else: 
+      return row[0]
+
   def getCube(self, ch, zidx, resolution, update=False):
     """Retrieve a cube from the database by token, resolution, and zidx"""
 
@@ -83,7 +112,11 @@ class MySQLKVIO:
     else:
       cursor = self.txncursor
 
-    sql = "SELECT cube FROM {} WHERE zindex ={}".format(ch.getTable(resolution), zidx) 
+    if ch.getChannelType() == OLDCHANNEL:
+      channel_id = self.getChannelId(ch)
+      sql = "SELECT cube FROM {} WHERE (channel,zindex) = ({},{})".format(ch.getTable(resolution), channel_id, zidx)
+    else:
+      sql = "SELECT cube FROM {} WHERE zindex={}".format(ch.getTable(resolution), zidx) 
     if update:
       sql += " FOR UPDATE"
 
@@ -144,10 +177,14 @@ class MySQLKVIO:
     else:
       cursor = self.txncursor
 
-    if neariso:
-      sql = "SELECT zindex, cube FROM {} WHERE zindex in (%s)".format( ch.getNearIsoTable(resolution) ) 
+    if ch.getChannelType() == OLDCHANNEL:
+      channel_id = self.getChannelId(ch)
+      sql = "SELECT zindex,cube FROM {} where channel={} and zindex in (%s)".format( ch.getTable(resolution), channel_id)
     else:
-      sql = "SELECT zindex, cube FROM {} WHERE zindex in (%s)".format( ch.getTable(resolution) ) 
+      if neariso:
+        sql = "SELECT zindex, cube FROM {} WHERE zindex in (%s)".format( ch.getNearIsoTable(resolution) ) 
+      else:
+        sql = "SELECT zindex, cube FROM {} WHERE zindex in (%s)".format( ch.getTable(resolution) ) 
 
     # creats a %s for each list element
     in_p=', '.join(map(lambda x: '%s', listofidxs))
@@ -411,7 +448,7 @@ class MySQLKVIO:
     else:
       cursor = self.txncursor
 
-    #get the block from the database                                            
+    # get the block from the database                                            
     sql = "SELECT cube FROM {} WHERE annid = {}".format( ch.getIdxTable(resolution), annid )
     if update:
       sql += " FOR UPDATE"

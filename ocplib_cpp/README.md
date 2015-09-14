@@ -3,14 +3,14 @@
 #### Makefile help
 
 * Make all implementation
-  ```shell
+  ```sh
   make all
   ```
 * Make test for testing the C implementations
-  ```shell
+  ```sh
   make test
   ```
 * Removes all compiled files
-  ```shell
+  ```sh
   make clean
   ```

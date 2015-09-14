@@ -41,6 +41,7 @@ The system design inherits much from NoSQL scale-out and data-intensive computin
    :caption: Documentation
 
    sphinx/introduction
+   sphinx/console
    sphinx/config
    sphinx/faq
    api/ocp_types
@@ -49,7 +50,9 @@ The system design inherits much from NoSQL scale-out and data-intensive computin
    api/data_api
    api/ramon_api
    api/propagate_api
+   api/json_api
    api/overlay_api
+   api/graphgen_api
 
 .. toctree::
    :maxdepth: 1

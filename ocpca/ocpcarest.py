@@ -27,6 +27,7 @@ import MySQLdb
 import itertools
 from contextlib import closing
 from libtiff import TIFF
+from operator import sub, add
 from libtiff import TIFFfile, TIFFimage
 
 import restargs
@@ -43,6 +44,7 @@ import ocplib
 import ocpcaskel
 import ocpcanifti
 from windowcutout import windowCutout
+from ocptype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, ANNOTATION_CHANNELS, NOT_PROPAGATED, UNDER_PROPAGATION, OCP_dtypetonp, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, READONLY_TRUE
 
 from ocpcaerror import OCPCAError
 import logging
@@ -69,7 +71,7 @@ def cutout (imageargs, ch, proj, db):
   timerange = args.getTimeRange()
  
   # Perform the cutout
-  if ch.getChannelType() in ocpcaproj.TIMESERIES_CHANNELS:
+  if ch.getChannelType() in TIMESERIES_CHANNELS:
     cube = db.timecutout(ch, corner, dim, resolution, timerange)
   else:
     cube = db.cutout(ch, corner, dim, resolution, zscaling)
@@ -80,7 +82,7 @@ def cutout (imageargs, ch, proj, db):
 def filterCube(ch, cube, filterlist=None):
   """Call Filter on a cube"""
 
-  if ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS and filterlist is not None:
+  if ch.getChannelType() in ANNOTATION_CHANNELS and filterlist is not None:
     cube.data = ocplib.filter_ctype_OMP ( cube.data, filterlist )
   elif filterlist is not None and ch.getChannelType not in ANNOTATION_CHANNELS:
     logger.warning("Filter only possible for Annotation Channels")
@@ -111,7 +113,7 @@ def numpyZip ( chanargs, proj, db ):
         continue
       else:
         ch = proj.getChannelObj(channel_name)
-        if ocpcaproj.OCP_dtypetonp[ch.getDataType()] == cubedata.dtype:
+        if OCP_dtypetonp[ch.getDataType()] == cubedata.dtype:
           cubedata[idx+1,:] = cutout(imageargs, ch, proj, db).data
         else:
           raise OCPCAError("The npz cutout can only contain cutouts of one single Channel Type.")
@@ -129,6 +131,49 @@ def numpyZip ( chanargs, proj, db ):
 
   except Exception,e:
     raise OCPCAError("{}".format(e))
+
+def binZip ( chanargs, proj, db ):
+  """Return a web readable Numpy Pickle zipped"""
+
+  try:
+    # argument of format channel/service/imageargs
+    m = re.match("([\w+,]+)/(\w+)/([\w+,/-]+)$", chanargs)
+    [channels, service, imageargs] = [i for i in m.groups()]
+  except Exception, e:
+    logger.warning("Arguments not in the correct format {}. {}".format(chanargs, e))
+    raise OCPCAError("Arguments not in the correct format {}. {}".format(chanargs, e))
+
+  try: 
+    channel_list = channels.split(',')
+    ch = proj.getChannelObj(channel_list[0])
+
+    channel_data = cutout( imageargs, ch, proj, db ).data
+    cubedata = np.zeros ( (len(channel_list),)+channel_data.shape, dtype=channel_data.dtype )
+    cubedata[0,:] = channel_data
+
+    # if one channel convert 3-d to 4-d array
+    for idx,channel_name in enumerate(channel_list[1:]):
+      if channel_name == '0':
+        continue
+      else:
+        ch = proj.getChannelObj(channel_name)
+        if OCP_dtypetonp[ch.getDataType()] == cubedata.dtype:
+          cubedata[idx+1,:] = cutout(imageargs, ch, proj, db).data
+        else:
+          raise OCPCAError("The npz cutout can only contain cutouts of one single Channel Type.")
+
+    
+    # Create the compressed cube
+    cdz = zlib.compress (cubedata.tostring()) 
+
+    # Package the object as a Web readable file handle
+    fileobj = cStringIO.StringIO(cdz)
+    fileobj.seek(0)
+    return fileobj.read()
+
+  except Exception,e:
+    raise OCPCAError("{}".format(e))
+
 
 def HDF5(chanargs, proj, db):
   """Return a web readable HDF5 file"""
@@ -169,11 +214,11 @@ def postTiff3d ( channel, postargs, proj, db, postdata ):
 
   # get the channel
   ch = proj.getChannelObj(channel)
-  if ch.getDataType() in ocpcaproj.DTYPE_uint8:
+  if ch.getDataType() in DTYPE_uint8:
     datatype=np.uint8
-  elif ch.getDataType() in ocpcaproj.DTYPE_uint16:
+  elif ch.getDataType() in DTYPE_uint16:
     datatype=np.uint16
-  elif ch.getDataType() in ocpcaproj.DTYPE_uint32:
+  elif ch.getDataType() in DTYPE_uint32:
     datatype=np.uint32
   else:
     logger.error("Unsupported data type for TIFF3d post. {}".format(ch.getDataType())) 
@@ -295,7 +340,7 @@ def window(data, ch, window_range=None ):
 
   [startwindow, endwindow] = window_range
 
-  if ch.getDataType() in ocpcaproj.DTYPE_uint16:
+  if ch.getDataType() in DTYPE_uint16:
     if (startwindow == endwindow == 0):
       return data
     elif endwindow!=0:
@@ -521,8 +566,10 @@ def selectService ( service, webargs, proj, db ):
     return HDF5 ( webargs, proj, db )
   elif service == 'tiff':
     return tiff3d ( webargs, proj, db )
-  elif service in ['npz','zip']:
+  elif service in ['npz']:
     return  numpyZip ( webargs, proj, db ) 
+  elif service in ['zip']:
+    return  binZip ( webargs, proj, db ) 
   elif service == 'id':
     return annId ( webargs, proj, db )
   elif service == 'ids':
@@ -585,21 +632,21 @@ def selectPost ( webargs, proj, db, postdata ):
           #ch = ocpcaproj.OCPCAChannel(proj, channel)
   
           # Don't write to readonly channels
-          if ch.getReadOnly() == ocpcaproj.READONLY_TRUE:
+          if ch.getReadOnly() == READONLY_TRUE:
             logger.warning("Attempt to write to read only project {}".format(proj.getDBName()))
             raise OCPCAError("Attempt to write to read only project {}".format(proj.getDBName()))
        
-          if not voxarray.dtype == ocpcaproj.OCP_dtypetonp[ch.getDataType()]:
+          if not voxarray.dtype == OCP_dtypetonp[ch.getDataType()]:
             logger.warning("Wrong datatype in POST")
             raise OCPCAError("Wrong datatype in POST")
             
-          if ch.getChannelType() in ocpcaproj.IMAGE_CHANNELS:
+          if ch.getChannelType() in IMAGE_CHANNELS:
             db.writeCuboid ( ch, corner, resolution, voxarray[idx,:] )
 
-          elif ch.getChannelType() in ocpcaproj.TIMESERIES_CHANNELS:
+          elif ch.getChannelType() in TIMESERIES_CHANNELS:
             db.writeTimeCuboid(ch, corner, resolution, timerange, voxarray[idx,:])
           
-          elif ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS:
+          elif ch.getChannelType() in ANNOTATION_CHANNELS:
             db.annotateDense(ch, corner, resolution, voxarray[idx,:], conflictopt)
 
       elif service == 'hdf5':
@@ -618,7 +665,7 @@ def selectPost ( webargs, proj, db, postdata ):
             h5_channeltype = h5f.get(ch.getChannelName())['CHANNELTYPE'].value[0]
 
             # Checking the datatype of the voxarray
-            if ch.getDataType() != h5_datatype or voxarray.dtype != ocpcaproj.OCP_dtypetonp[ch.getDataType()]:
+            if ch.getDataType() != h5_datatype or voxarray.dtype != OCP_dtypetonp[ch.getDataType()]:
               logger.warning("Channel datatype {} in the HDF5 file does not match with the {} in the database.".format(h5_datatype, ch.getDataType()))
               raise OCPCAError("Channel datatype {} in the HDF5 file does not match with the {} in the database.".format(h5_datatype, ch.getDataType()))
 
@@ -627,17 +674,17 @@ def selectPost ( webargs, proj, db, postdata ):
               raise OCPCAError("Channel type {} in HDF5 file does not match with the {} in the database.".format(h5_channeltype, ch.getChannelType()))
           
             # Don't write to readonly channels
-            if ch.getReadOnly() == ocpcaproj.READONLY_TRUE:
+            if ch.getReadOnly() == READONLY_TRUE:
               logger.warning("Attempt to write to read only project {}".format(proj.getDBName()))
               raise OCPCAError("Attempt to write to read only project {}".format(proj.getDBName()))
             
-            if ch.getChannelType() in ocpcaproj.IMAGE_CHANNELS: 
+            if ch.getChannelType() in IMAGE_CHANNELS: 
               db.writeCuboid (ch, corner, resolution, voxarray)
 
-            elif ch.getChannelType() in ocpcaproj.TIMESERIES_CHANNELS:
+            elif ch.getChannelType() in TIMESERIES_CHANNELS:
               db.writeTimeCuboid (ch, corner, resolution, timerange, voxarray)
             
-            elif ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS:
+            elif ch.getChannelType() in ANNOTATION_CHANNELS:
               db.annotateDense ( ch, corner, resolution, voxarray, conflictopt )
   
           h5f.flush()
@@ -709,7 +756,7 @@ AR_CUBOIDS = 5
 
 def getAnnoById ( ch, annoid, h5f, proj, db, dataoption, resolution=None, corner=None, dim=None ): 
   """Retrieve the annotation and put it in the HDF5 file."""
-
+  
   # retrieve the annotation 
   anno = db.getAnnotation ( ch, annoid )
   if anno == None:
@@ -752,13 +799,12 @@ def getAnnoById ( ch, annoid, h5f, proj, db, dataoption, resolution=None, corner
 
     # cutout the data with the and remap for neurons.
     if anno.__class__ in [ annotation.AnnNeuron ] and dataoption != AR_NODATA:
-      cb = db.annoCutout(ch, dataids,resolution,corner,dim,annoid)
+      cb = db.annoCutout(ch, dataids, resolution, corner, dim, annoid)
     else:
       # don't need to remap single annotations
-      cb = db.annoCutout(ch, dataids,resolution,corner,dim,None)
+      cb = db.annoCutout(ch, dataids, resolution, corner, dim, None)
 
-    # again an abstraction problem with corner.
-    #  return the corner to cutout arguments space
+    # again an abstraction problem with corner. return the corner to cutout arguments space
     offset = proj.datasetcfg.offset[resolution]
     retcorner = [corner[0]+offset[0], corner[1]+offset[1], corner[2]+offset[2]]
     h5anno.addCutout ( resolution, retcorner, cb.data )
@@ -795,7 +841,9 @@ def getAnnoById ( ch, annoid, h5f, proj, db, dataoption, resolution=None, corner
         datacuboid = np.zeros ( (bbdim[2],bbdim[1],bbdim[0]), dtype=cbdata.dtype )
 
       datacuboid [ offset[2]-bbcorner[2]:offset[2]-bbcorner[2]+cbdata.shape[0], offset[1]-bbcorner[1]:offset[1]-bbcorner[1]+cbdata.shape[1], offset[0]-bbcorner[0]:offset[0]-bbcorner[0]+cbdata.shape[2] ]  = cbdata
-
+   
+    offset = proj.datasetcfg.offset[resolution]
+    bbcorner = map(add, bbcorner, offset)
     h5anno.addCutout ( resolution, bbcorner, datacuboid )
 
   elif dataoption==AR_BOUNDINGBOX:
@@ -1113,15 +1161,10 @@ def getAnnotations ( webargs, postdata ):
     tmpoutfile.seek(0)
     return tmpoutfile.read()
 
-def putAnnotationAsync ( webargs, postdata ):
-  """Put a RAMON object asynchrously as HDF5 by object identifier"""
-  
-  print "TESTING"
-  import ocpdatastream
 
 def putAnnotation ( webargs, postdata ):
   """Put a RAMON object as HDF5 by object identifier"""
-    
+  
   [token, channel, optionsargs] = webargs.split('/',2)
 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
@@ -1131,7 +1174,7 @@ def putAnnotation ( webargs, postdata ):
 
     ch = ocpcaproj.OCPCAChannel(proj, channel)
     # Don't write to readonly projects
-    if ch.getReadOnly() == ocpcaproj.READONLY_TRUE:
+    if ch.getReadOnly() == READONLY_TRUE:
       logger.warning("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
       raise OCPCAError("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
 
@@ -1176,8 +1219,8 @@ def putAnnotation ( webargs, postdata ):
             try:
   
               if anno.__class__ in [ annotation.AnnNeuron, annotation.AnnSeed ] and ( idgrp.get('VOXELS') or idgrp.get('CUTOUT')):
-                logger.warning ("Cannot write to annotation type %s" % (anno.__class__))
-                raise OCPCAError ("Cannot write to annotation type %s" % (anno.__class__))
+                logger.warning ("Cannot write to annotation type {}".format(anno.__class__))
+                raise OCPCAError ("Cannot write to annotation type {}".format(anno.__class__))
   
               if 'update' in options and 'dataonly' in options:
                 logger.warning ("Illegal combination of options. Cannot use udpate and dataonly together")
@@ -1240,14 +1283,14 @@ def putAnnotation ( webargs, postdata ):
                 #   Probably remove the offset is the best idea.  and align data
                 #    to zero regardless of where it starts.  For now.
                 offset = proj.datasetcfg.offset[resolution]
-                corner = (h5xyzoffset[0]-offset[0],h5xyzoffset[1]-offset[1],h5xyzoffset[2]-offset[2])
-  
+                corner = map(sub, h5xyzoffset, offset)
+                
                 db.annotateEntityDense ( ch, anno.annid, corner, resolution, np.array(cutout), conflictopt )
   
               elif cutout != None and h5xyzoffset != None and 'reduce' in options:
 
                 offset = proj.datasetcfg.offset[resolution]
-                corner = (h5xyzoffset[0]-offset[0],h5xyzoffset[1]-offset[1],h5xyzoffset[2]-offset[2])
+                corner = map(sub, h5xyzoffset,offset)
   
                 db.shaveEntityDense ( ch, anno.annid, corner, resolution, np.array(cutout))
   
@@ -1399,7 +1442,7 @@ def putSWC ( webargs, postdata ):
 
     ch = ocpcaproj.OCPCAChannel(proj, channel)
     # Don't write to readonly projects
-    if ch.getReadOnly() == ocpcaproj.READONLY_TRUE:
+    if ch.getReadOnly() == READONLY_TRUE:
       logger.warning("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
       raise OCPCAError("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
 
@@ -1450,7 +1493,6 @@ def queryAnnoObjects ( webargs, postdata=None ):
         try:
           resolution = h5f['RESOLUTION'][0]
           offset = proj.datasetcfg.offset[resolution]
-          from operator import sub
           corner = map(sub, h5f['XYZOFFSET'], offset)
           dim = h5f['CUTOUTSIZE'][:]
   
@@ -1488,7 +1530,7 @@ def deleteAnnotation ( webargs ):
   
     ch = ocpcaproj.OCPCAChannel(proj, channel)
     # Don't write to readonly projects              
-    if ch.getReadOnly() == ocpcaproj.READONLY_TRUE:
+    if ch.getReadOnly() == READONLY_TRUE:
       logger.warning("Attempt to delete from a read only project. {}: {}".format(ch.getChannelName(),webargs))
       raise OCPCAError("Attempt to delete from a  read only project. {}: {}".format(ch.getChannelName(),webargs))
 
@@ -1497,7 +1539,7 @@ def deleteAnnotation ( webargs ):
 
     # if the first argument is numeric.  it is an annoid
     if re.match ( '^[\d,]+$', args[0] ): 
-      annoids = map(int, args[0].split(','))
+      annoids = map(np.uint32, args[0].split(','))
     # if not..this is not a well-formed delete request
     else:
       logger.warning ("Delete did not specify a legal object identifier = %s" % args[0] )
@@ -1540,7 +1582,7 @@ def jsonInfo ( webargs ):
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
 
-    return jsonprojinfo.jsonInfo( proj )
+    return jsonprojinfo.jsonInfo(proj)
 
 
 def projInfo ( webargs ):
@@ -1594,7 +1636,7 @@ def reserve ( webargs ):
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
 
     ch = ocpcaproj.OCPCAChannel(proj,channel)
-    if ch.getChannelType() not in ocpcaproj.ANNOTATION_CHANNELS:
+    if ch.getChannelType() not in ANNOTATION_CHANNELS:
       raise OCPCAError ("Illegal project type for reserve.")
 
     try:
@@ -1685,18 +1727,18 @@ def setPropagate(webargs):
 
       value = value_list[0]
       # If the value is to set under propagation
-      if int(value) == ocpcaproj.UNDER_PROPAGATION and ch.getPropagate() != ocpcaproj.UNDER_PROPAGATION:
-        ch.setPropagate(ocpcaproj.UNDER_PROPAGATION)
+      if int(value) == UNDER_PROPAGATION and ch.getPropagate() != UNDER_PROPAGATION:
+        ch.setPropagate(UNDER_PROPAGATION)
         from ocpca.tasks import propagate
         propagate.delay(token, channel_name)
         #import ocpcastack
         #ocpcastack.buildStack(token, channel_name)
-      elif int(value) == ocpcaproj.NOT_PROPAGATED:
-        if ch.getPropagate() == ocpcaproj.UNDER_PROPAGATION:
+      elif int(value) == NOT_PROPAGATED:
+        if ch.getPropagate() == UNDER_PROPAGATION:
           logger.warning("Cannot set this value. Project is under propagation.")
           raise OCPCAError("Cannot set this value. Project is under propagation.")
         else:
-          ch.setPropagate(ocpcaproj.NOT_PROPAGATED)
+          ch.setPropagate(NOT_PROPAGATED)
       else:
         logger.warning("Invalid Value {} for setPropagate".format(value))
         raise OCPCAError("Invalid Value {} for setPropagate".format(value))
@@ -1774,7 +1816,7 @@ def exceptions ( webargs, ):
       args = restargs.BrainRestArgs ();
       args.cutoutArgs ( cutoutargs, proj.datasetcfg )
     except restargs.RESTArgsError, e:
-      logger.warning("REST Arguments %s failed: %s" % (webargs,e))
+      logger.warning("REST Arguments {} failed: {}".format(webargs,e))
       raise OCPCAError(e)
 
     # Extract the relevant values
@@ -1783,7 +1825,7 @@ def exceptions ( webargs, ):
     resolution = args.getResolution()
 
     # check to make sure it's an annotation project
-    if proj.getChannelType() not in ocpcaproj.ANNOTATION_PROJECTS : 
+    if proj.getChannelType() not in ANNOTATION_PROJECTS : 
       logger.warning("Asked for exceptions on project that is not of type ANNOTATIONS")
       raise OCPCAError("Asked for exceptions on project that is not of type ANNOTATIONS")
     elif not proj.getExceptions():

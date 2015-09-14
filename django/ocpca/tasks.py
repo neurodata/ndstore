@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from celery import Celery
+from __future__ import absolute_import
+
+from celery import task
 from django.conf import settings
 
 import h5annasync
@@ -21,23 +23,11 @@ import ocpcastack
 import logging
 logger = logging.getLogger("ocp")
 
-celery = Celery('tasks', broker='amqp://guest@localhost//')
-
-#@celery.task( )
-#def async ( fileName ):
-#  """ Write the h5py files back to database. """
-#
-#  try:
-#    5annasync.h5Async( fileName )
-#  except Exception, e:
-#    logger.error("Error in async. {}".format(e))
-
-
-@celery.task(queue='propagate')
-def propagate (token, channle_name):
+@task(queue='propagate')
+def propagate (token, channel_name):
   """Propagate the given project for all resolutions"""
 
   try:
-    ocpcastack.buildStack (token,channle_name)
+    ocpcastack.buildStack (token,channel_name)
   except Exception, e:
     logger.error("Error in propagate. {}".format(e))
