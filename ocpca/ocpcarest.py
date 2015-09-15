@@ -1358,7 +1358,7 @@ def getNIFTI ( webargs ):
 
     ch = ocpcaproj.OCPCAChannel(proj, channel)
 
-    # Make a named temporary file for the SWC
+    # Make a named temporary file for the nii file
     with closing (tempfile.NamedTemporaryFile(suffix='.nii')) as tmpfile:
 
       ocpcanifti.queryNIFTI ( tmpfile, ch, db, proj, resolution )
