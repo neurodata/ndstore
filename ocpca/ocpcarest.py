@@ -1343,13 +1343,6 @@ def getNIFTI ( webargs ):
     
   [token, channel, optionsargs] = webargs.split('/',2)
 
-  # check if there's a resolution
-  m = re.match ( '(d+)', optionsargs )
-  if m:
-    resolution = int(m.group(1))
-  else:
-    resolution = 0
-
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
 
     proj = projdb.loadToken ( token )
@@ -1361,7 +1354,7 @@ def getNIFTI ( webargs ):
     # Make a named temporary file for the nii file
     with closing (tempfile.NamedTemporaryFile(suffix='.nii')) as tmpfile:
 
-      ocpcanifti.queryNIFTI ( tmpfile, ch, db, proj, resolution )
+      ocpcanifti.queryNIFTI ( tmpfile, ch, db, proj )
 
       tmpfile.seek(0)
       return tmpfile.read()
@@ -1373,13 +1366,6 @@ def putNIFTI ( webargs, postdata ):
   [token, channel, optionsargs] = webargs.split('/',2)
 
   # RBTODO check if there is a channel?  Make one if there isn't?
-
-  # check if there's a resolution
-  m = re.match ( '(d+)', optionsargs )
-  if m:
-    resolution = int(m.group(1))
-  else:
-    resolution = 0
 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
@@ -1399,7 +1385,7 @@ def putNIFTI ( webargs, postdata ):
       tmpfile.seek(0)
 
       # ingest the nifti file
-      ocpcanifti.ingestNIFTI ( tmpfile.name, ch, db, proj, resolution )
+      ocpcanifti.ingestNIFTI ( tmpfile.name, ch, db, proj )
 
 
 def getSWC ( webargs ):

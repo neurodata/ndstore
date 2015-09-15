@@ -18,7 +18,7 @@ import numpy as np
 import cStringIO
 import pickle
 
-from ocptype import READONLY_TRUE, OCP_dtypetonp, IMAGE_CHANNELS, TIMESERIES_CHANNELS, 
+from ocptype import READONLY_TRUE, OCP_dtypetonp, IMAGE_CHANNELS, TIMESERIES_CHANNELS
 
 from django.conf import settings
 from ocpuser.models import Channel
@@ -29,7 +29,7 @@ import logging
 logger=logging.getLogger("ocp")
 
 
-def ingestNIFTI ( niftifname, ch, db, proj, resolution ):
+def ingestNIFTI ( niftifname, ch, db, proj ):
   """Ingest the nifti file into a database. 
         No cutout arguments.  Must be an entire channel."""     
 
@@ -44,9 +44,9 @@ def ingestNIFTI ( niftifname, ch, db, proj, resolution ):
     nifti_data = np.uint16(nifti_data.reshape([1]+list(nifti_data.shape)))
 
     # check that the data is the right shape
-    if nifti_data.shape[1:] != tuple(proj.datasetcfg.imagesz[resolution]):
-      logger.warning("Data shape {} does not match dataset shape {}.".format(nifti_data.shape, proj.datasetcfg.imagesz[resolution]))
-      raise OCPCAError("Data shape {} does not match dataset shape {}.".format(nifti_data.shape, proj.datasetcfg.imagesz[resolution]))
+    if nifti_data.shape[1:] != tuple(proj.datasetcfg.imagesz[0]):
+      logger.warning("Data shape {} does not match dataset shape {}.".format(nifti_data.shape, proj.datasetcfg.imagesz[0]))
+      raise OCPCAError("Data shape {} does not match dataset shape {}.".format(nifti_data.shape, proj.datasetcfg.imagesz[0]))
 
   elif len(nifti_data.shape) == 4:
 
@@ -55,10 +55,9 @@ def ingestNIFTI ( niftifname, ch, db, proj, resolution ):
     nifti_data = np.uint16(nifti_data.reshape([1]+list(nifti_data.shape)))
 
     # check that the data is the right shape
-    if nifti_data.shape[1:3] != tuple(proj.datasetcfg.imagesz[resolution]) or nifti_data.shape[4] != proj.datasetcfg.endtime - proj.datasetcfg.starttime:
-      logger.warning("Data shape {} does not match dataset shape {}.".format(nifti_data.shape, proj.datasetcfg.imagesz[resolution]))
-      raise OCPCAError("Data shape {} does not match dataset shape {}.".format(nifti_data.shape, proj.datasetcfg.imagesz[resolution]))
-
+    if nifti_data.shape[1:3] != tuple(proj.datasetcfg.imagesz[0]) or nifti_data.shape[4] != proj.datasetcfg.endtime - proj.datasetcfg.starttime:
+      logger.warning("Data shape {} does not match dataset shape {}.".format(nifti_data.shape, proj.datasetcfg.imagesz[0]))
+      raise OCPCAError("Data shape {} does not match dataset shape {}.".format(nifti_data.shape, proj.datasetcfg.imagesz[0]))
 
   # Don't write to readonly channels
   if ch.getReadOnly() == READONLY_TRUE:
@@ -80,10 +79,10 @@ def ingestNIFTI ( niftifname, ch, db, proj, resolution ):
   nh.affine = pickle.dumps(nifti_img.affine)
 
   if ch.getChannelType() in IMAGE_CHANNELS:
-    db.writeCuboid ( ch, (0,0,0), resolution, nifti_data )
+    db.writeCuboid ( ch, (0,0,0), 0, nifti_data )
 
   elif ch.getChannelType() in TIMESERIES_CHANNELS:
-    db.writeTimeCuboid(ch, corner, resolution, timerange, nifti_data)
+    db.writeTimeCuboid(ch, corner, 0, timerange, nifti_data)
 
   else:
     logger.warning("Writing to a channel with an incompatible data type. {}" % (ch.getChannelType()))
@@ -93,8 +92,8 @@ def ingestNIFTI ( niftifname, ch, db, proj, resolution ):
   nh.save()
 
 
-def queryNIFTI ( tmpfile, ch, db, proj, resolution ):
-  """ Return a NII file that contains the entire DB at a resolution """
+def queryNIFTI ( tmpfile, ch, db, proj ):
+  """ Return a NII file that contains the entire DB"""
 
   try:
 
@@ -112,7 +111,7 @@ def queryNIFTI ( tmpfile, ch, db, proj, resolution ):
       nheader = None
 
     # retrieve the data
-    cuboid = db.cutout ( ch, (0,0,0), proj.datasetcfg.imagesz[resolution], resolution ) 
+    cuboid = db.cutout ( ch, (0,0,0), proj.datasetcfg.imagesz[0], 0 ) 
 
     # transpose to nii's xyz format
     niidata = cuboid.data.transpose()

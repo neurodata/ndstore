@@ -25,12 +25,10 @@ def main():
   parser.add_argument('token', action="store" )
   parser.add_argument('channel', action="store" )
   parser.add_argument('filename', action="store" )
-  # assume no hierarchy, unless specified
-  parser.add_argument('--resolution', action="store", type=int, default=0 )
 
   result = parser.parse_args()
 
-  url = 'http://%s/ca/%s/%s/nii/%s/' % ( result.baseurl, result.token, result.channel, result.resolution )
+  url = 'http://%s/ca/%s/%s/nii/' % ( result.baseurl, result.token, result.channel )
 
   print url
 
