@@ -15,9 +15,11 @@
 
 import numpy as np
 import json
+import urllib2
+from django.conf import settings
 
 import ocpcadb
-import ocpcaproj
+from ocptype import ZSLICES
 
 import logging
 logger=logging.getLogger("ocp")
@@ -43,7 +45,7 @@ def datasetdict ( dataset ):
 
   dsdict = {}
   dsdict['scalinglevels'] = dataset.scalinglevels
-  if dataset.scalingoption == ocpcaproj.ZSLICES:
+  if dataset.scalingoption == ZSLICES:
     dsdict['scaling'] = 'zslices'
   else:
     dsdict['scaling'] = 'xyz'
@@ -52,7 +54,7 @@ def datasetdict ( dataset ):
   dsdict['offset'] = dataset.offset
   dsdict['voxelres'] = dataset.voxelres
   dsdict['cube_dimension'] = dataset.cubedim
-  # dsdict['neariso_scaledown'] = dataset.nearisoscaledown
+  dsdict['neariso_scaledown'] = dataset.nearisoscaledown
   # Figure out neariso in new design
   dsdict['timerange'] = dataset.timerange
   dsdict['description'] = dataset.getDatasetDescription()
@@ -71,7 +73,7 @@ def chandict ( channel ):
 
   return chandict
 
-def jsonInfo ( proj ):
+def jsonInfo (proj):
   """All Project Info"""
 
   jsonprojinfo = {}
@@ -80,18 +82,22 @@ def jsonInfo ( proj ):
   jsonprojinfo['channels'] = {}
   for ch in proj.projectChannels():
     jsonprojinfo['channels'][ch.getChannelName()] = chandict ( ch ) 
-
+  
+  jsonprojinfo['metadata'] = metadatadict( proj )
   return json.dumps ( jsonprojinfo, sort_keys=True, indent=4 )
 
 
-def jsonChanInfo ( proj, db ):
-  """List of Channels"""
-
-  if proj.getProjectType() in ocpcaproj.CHANNEL_PROJECTS:
-    return json.dumps ( db.getChannels(), sort_keys=True, indent=4 )
-  else:
-    return json.dumps ({})
-
+def metadatadict( proj ):
+  """Metadata Info"""
+  
+  try:
+    url = 'http://{}/lims/{}/'.format(settings.LIMS_SERVER, proj.getProjectName())
+    req = urllib2.Request(url)
+    response = urllib2.urlopen(req)
+    return json.loads(response.read())
+  except urllib2.URLError, e:
+    print "Failed URL {}".format(url)
+    return {}
 
 def publicTokens ( projdb ):
   """List of Public Tokens"""

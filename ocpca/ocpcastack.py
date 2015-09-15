@@ -24,10 +24,12 @@ from PIL import Image
 import zlib
 
 from cube import Cube
-import ocpcaproj
 import ocpcadb
+from ocpcaproj import OCPCAProjectsDB
 import ocplib
 import annotation
+from ocptype import ZSLICES, ISOTROPIC, ANNOTATION_CHANNELS, IMAGE_CHANNELS, TIMESERIES_CHANNELS, PROPAGATED, NOT_PROPAGATED, OCP_dtypetonp
+
 from ocpcaerror import OCPCAError
 import logging
 logger=logging.getLogger("ocp")
@@ -38,24 +40,24 @@ logger=logging.getLogger("ocp")
 def buildStack(token, channel_name, resolution=None):
   """Wrapper for the different datatypes """
 
-  with closing(ocpcaproj.OCPCAProjectsDB()) as projdb:
+  with closing(OCPCAProjectsDB()) as projdb:
     proj = projdb.loadToken(token)
     ch = proj.getChannelObj(channel_name)
  
     try:
      
-      if ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS:
+      if ch.getChannelType() in ANNOTATION_CHANNELS:
         clearStack(proj, ch, resolution)
         buildAnnoStack(proj, ch, resolution)
-      elif ch.getChannelType() in ocpcaproj.IMAGE_CHANNELS:
+      elif ch.getChannelType() in IMAGE_CHANNELS:
         buildImageStack(proj, ch, resolution)
-      elif ch.getChannelType() in ocpcaproj.TIMESERIES_CHANNELS:
+      elif ch.getChannelType() in TIMESERIES_CHANNELS:
         print "Not Supported"
     
-      ch.setPropagate(ocpcaproj.PROPAGATED)
+      ch.setPropagate(PROPAGATED)
 
     except MySQLdb.Error, e:
-      proj.setPropagate(ocpcaproj.NOT_PROPAGATED)
+      proj.setPropagate(NOT_PROPAGATED)
       projdb.updatePropagate(proj)
       logger.error("Error in building image stack {}".format(token))
       raise OCPCAError("Error in the building image stack {}".format(token))
@@ -124,10 +126,10 @@ def buildAnnoStack ( proj, ch, res=None ):
       zlimit = (zimagesz-1) / zcubedim + 1
 
       #  Choose constants that work for all resolutions. recall that cube size changes from 128x128x16 to 64*64*64
-      if scaling == ocpcaproj.ZSLICES:
-        outdata = np.zeros ( [ zcubedim*4, ycubedim*2, xcubedim*2 ], dtype=ocpcaproj.OCP_dtypetonp.get(ch.getDataType()))
-      elif scaling == ocpcaproj.ISOTROPIC:
-        outdata = np.zeros ( [ zcubedim*2,  ycubedim*2, xcubedim*2 ], dtype=ocpcaproj.OCP_dtypetonp.get(ch.getDataType()))
+      if scaling == ZSLICES:
+        outdata = np.zeros ( [ zcubedim*4, ycubedim*2, xcubedim*2 ], dtype=OCP_dtypetonp.get(ch.getDataType()))
+      elif scaling == ISOTROPIC:
+        outdata = np.zeros ( [ zcubedim*2,  ycubedim*2, xcubedim*2 ], dtype=OCP_dtypetonp.get(ch.getDataType()))
       else:
         logger.error ( "Invalid scaling option in project = {}".format(scaling) )
         raise OCPCAError ( "Invalid scaling option in project = {}".format(scaling)) 
@@ -148,7 +150,7 @@ def buildAnnoStack ( proj, ch, res=None ):
           xyz = ocplib.MortonXYZ(idx)
           cube.fromNPZ(datastring)
 
-          if scaling == ocpcaproj.ZSLICES:
+          if scaling == ZSLICES:
 
             # Compute the offset in the output data cube 
             #  we are placing 4x4x4 input blocks into a 2x2x4 cube 
@@ -156,7 +158,7 @@ def buildAnnoStack ( proj, ch, res=None ):
             # add the contribution of the cube in the hierarchy
             ocplib.addDataToZSliceStack_ctype(cube, outdata, offset)
 
-          elif scaling == ocpcaproj.ISOTROPIC:
+          elif scaling == ISOTROPIC:
 
             # Compute the offset in the output data cube 
             #  we are placing 4x4x4 input blocks into a 2x2x2 cube 
@@ -169,9 +171,9 @@ def buildAnnoStack ( proj, ch, res=None ):
         xyzout = ocplib.MortonXYZ (mortonidx)
 
         # adjust to output corner for scale.
-        if scaling == ocpcaproj.ZSLICES:
+        if scaling == ZSLICES:
           outcorner = [ xyzout[0]*xcubedim/2, xyzout[1]*ycubedim/2, xyzout[2]*zcubedim ]
-        elif scaling == ocpcaproj.ISOTROPIC:
+        elif scaling == ISOTROPIC:
           outcorner = [ xyzout[0]*xcubedim/2, xyzout[1]*ycubedim/2, xyzout[2]*zcubedim/2 ]
 
         #  Data stored in z,y,x order dims in x,y,z
@@ -183,7 +185,7 @@ def buildAnnoStack ( proj, ch, res=None ):
         db.conn.commit()
           
         # zero the output buffer
-        outdata = np.zeros ([zcubedim*4, ycubedim*2, xcubedim*2], dtype=ocpcaproj.OCP_dtypetonp.get(ch.getDataType()))
+        outdata = np.zeros ([zcubedim*4, ycubedim*2, xcubedim*2], dtype=OCP_dtypetonp.get(ch.getDataType()))
 
 
 def buildImageStack(proj, ch, res=None):
@@ -204,9 +206,9 @@ def buildImageStack(proj, ch, res=None):
       [[ximagesz, yimagesz, zimagesz], timerange] = proj.datasetcfg.imageSize(cur_res)
       [xcubedim, ycubedim, zcubedim] = cubedim = proj.datasetcfg.getCubeDims()[cur_res]
 
-      if scaling == ocpcaproj.ZSLICES:
+      if scaling == ZSLICES:
         (xscale, yscale, zscale) = (2, 2, 1)
-      elif scaling == ocpcaproj.ISOTROPIC:
+      elif scaling == ISOTROPIC:
         (xscale, yscale, zscale) = (2, 2, 2)
       else:
         logger.error("Invalid scaling option in project = {}".format(scaling))
@@ -227,13 +229,13 @@ def buildImageStack(proj, ch, res=None):
             olddata = db.cutout(ch, [x*xscale*xcubedim, y*yscale*ycubedim, z*zscale*zcubedim ], biggercubedim, cur_res-1).data
 
             #olddata target array for the new data (z,y,x) order
-            newdata = np.zeros([zcubedim,ycubedim,xcubedim], dtype=ocpcaproj.OCP_dtypetonp.get(ch.getDataType()))
+            newdata = np.zeros([zcubedim,ycubedim,xcubedim], dtype=OCP_dtypetonp.get(ch.getDataType()))
 
             for sl in range(zcubedim):
 
-              if scaling == ocpcaproj.ZSLICES:
+              if scaling == ZSLICES:
                 data = olddata[sl,:,:]
-              elif scaling == ocpcaproj.ISOTROPIC:
+              elif scaling == ISOTROPIC:
                 data = ocplib.isotropicBuild_ctype(olddata[sl*2,:,:], olddata[sl*2+1,:,:])
 
               # Convert each slice to an image

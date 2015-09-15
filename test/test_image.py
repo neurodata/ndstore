@@ -21,6 +21,7 @@ from PIL import Image
 from StringIO import StringIO
 
 import makeunitdb
+from ocptype import IMAGE, UINT8, UINT16
 from params import Params
 from postmethods import postNPZ, getNPZ, getHDF5, postHDF5, getURL
 import kvengine_to_test
@@ -52,8 +53,9 @@ p.token = 'unittest'
 p.resolution = 0
 p.channels = ['IMAGE1', 'IMAGE2']
 p.window = [0,500]
-p.channel_type = "image"
-p.datatype = "uint8"
+p.channel_type = IMAGE
+p.datatype = UINT8
+p.voxel = [4.0,4.0,3.0]
 #p.args = (3000,3100,4000,4100,500,510)
 
 
@@ -117,7 +119,7 @@ class Test_Image_Slice:
 class Test_Image_Simple_Catmaid:
 
   def setup_class(self):
-    makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype, window=p.window, default=True)
+    makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype, xvoxelres=p.voxel[0], yvoxelres=p.voxel[1], zvoxelres=p.voxel[2], window=p.window, default=True)
 
   def teardown_class(self):
     makeunitdb.deleteTestDB(p.token)
@@ -143,38 +145,40 @@ class Test_Image_Simple_Catmaid:
   def test_yz_tile (self):
     """Test a simple yz slice fetch"""
 
-    p.args = (3072,3584,4096,4608,200,201)
+    p.args = (3072,3073,4096,4608,1,513)
     # have to use a constant here for memcache purposes
-    image_data = np.ones([2,1,512,512], dtype=np.uint8) * 130
+    image_data = np.ones([2,512,512,1], dtype=np.uint8) * 130
     response = postNPZ(p, image_data)
     
     voxarray = getNPZ(p)
     # check that the return matches
     assert ( np.array_equal(voxarray, image_data) )
 
-    url = "http://{}/catmaid/{}/{}/yz/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[4], p.args[2]/512, p.args[0]/512, p.resolution)
+    url = "http://{}/catmaid/{}/{}/yz/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[4]/512, p.args[2]/512, p.args[0], p.resolution)
     f = getURL (url)
 
+    scale_range = 512*p.voxel[2]/p.voxel[1]
     slice_data = np.asarray ( Image.open(StringIO(f.read())) )
-    assert ( np.array_equal(slice_data, image_data[0][0]) )
+    assert ( np.array_equal(slice_data[:scale_range,:], image_data[0,:scale_range,:,0] ))
   
   def test_xz_tile (self):
     """Test a simple xz slice fetch"""
 
-    p.args = (3072,3584,4096,4608,200,201)
+    p.args = (3072,3584,4096,4097,1,513)
     # have to use a constant here for memcache purposes
-    image_data = np.ones([2,1,512,512], dtype=np.uint8) * 130
+    image_data = np.ones([2,512,1,512], dtype=np.uint8) * 130
     response = postNPZ(p, image_data)
     
     voxarray = getNPZ(p)
     # check that the return matches
     assert ( np.array_equal(voxarray, image_data) )
 
-    url = "http://{}/catmaid/{}/{}/xz/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[4], p.args[2]/512, p.args[0]/512, p.resolution)
+    url = "http://{}/catmaid/{}/{}/xz/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[4]/512, p.args[2], p.args[0]/512, p.resolution)
     f = getURL (url)
 
+    scale_range = 512*p.voxel[2]/p.voxel[0]
     slice_data = np.asarray ( Image.open(StringIO(f.read())) )
-    assert ( np.array_equal(slice_data, image_data[0][0]) )
+    assert ( np.array_equal(slice_data[:scale_range,:], image_data[0,:scale_range,0,:]) )
 
 class Test_Image_Mcfc_Catmaid:
 
@@ -206,7 +210,7 @@ class Test_Image_Window:
 
   def setup_class(self):
     # Testing a different datatype now
-    p.datatype = "uint16"
+    p.datatype = UINT16
     makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype, window=p.window, default=True)
 
   def teardown_class(self):
@@ -247,7 +251,7 @@ class Test_Image_Window:
 class Test_Image_Post:
 
   def setup_class(self):
-    p.datatype = "uint8"
+    p.datatype = UINT8
     makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype)
 
   def teardown_class(self):
@@ -370,4 +374,3 @@ class Test_Image_Default:
 
     slice_data = np.asarray ( Image.open(StringIO(f.read())) )
     assert ( np.array_equal(slice_data,image_data[0][0]) )
-

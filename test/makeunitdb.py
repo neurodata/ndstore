@@ -29,22 +29,23 @@ from ocpuser.models import Token
 from ocpuser.models import Channel
 
 import ocpcaproj
+from ocptype import ZSLICES, ANNOTATION, READONLY_FALSE, UINT32, OCP_VERSION, MYSQL, CASSANDRA, RIAK
 import site_to_test
 import kvengine_to_test
 
-def createTestDB ( project_name, channel_list=['unit_anno'], channel_type='annotation', channel_datatype='uint32', public=0, ximagesize=10000, yimagesize=10000, zimagesize=1000, scalingoption=ocpcaproj.ZSLICES, scalinglevels=5, readonly=0, window=[0,0], time=[0,0], default=False, ocp_version=0.6 ):
+def createTestDB ( project_name, channel_list=['unit_anno'], channel_type=ANNOTATION, channel_datatype=UINT32, public=0, ximagesize=10000, yimagesize=10000, zimagesize=1000, xvoxelres=4.0, yvoxelres=4.0, zvoxelres=3.0, scalingoption=ZSLICES, scalinglevels=5, readonly=READONLY_FALSE, window=[0,0], time=[0,0], default=False, ocp_version=OCP_VERSION ):
   """Create a unit test data base on the specified sit and name"""
   
   unituser = User.objects.get(username='brain')
 
-  ds = Dataset ( dataset_name="unittest", user=unituser, ximagesize=ximagesize, yimagesize=yimagesize, zimagesize=zimagesize,  xoffset=0, yoffset=0, zoffset=1, xvoxelres=4.0, yvoxelres=4.0, zvoxelres=3.0, scalingoption=scalingoption, scalinglevels=scalinglevels, starttime=time[0], endtime=time[1], dataset_description="Unit test" ) 
+  ds = Dataset ( dataset_name="unittest", user=unituser, ximagesize=ximagesize, yimagesize=yimagesize, zimagesize=zimagesize,  xoffset=0, yoffset=0, zoffset=1, xvoxelres=xvoxelres, yvoxelres=yvoxelres, zvoxelres=zvoxelres, scalingoption=scalingoption, scalinglevels=scalinglevels, starttime=time[0], endtime=time[1], dataset_description="Unit test" ) 
   ds.save()
 
 
   # RBTODO need to add a window and a project
 
   # make the project entry
-  pr = Project (project_name=project_name, project_description='Unit test', user=unituser, dataset=ds, ocp_version=ocp_version)
+  pr = Project (project_name=project_name, project_description='Unit test', user=unituser, dataset=ds, ocp_version=ocp_version, kvengine=kvengine_to_test.kvengine, kvserver=kvengine_to_test.kvserver)
   pr.save()
 
   # and create the database

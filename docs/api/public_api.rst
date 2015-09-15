@@ -1,15 +1,42 @@
 Public Token API's
 ******************
 
+.. _public-get:
+
 GET
 ----
 
-.. http:get:: (string:server_name)/ca/public_tokens/
+.. http:get:: (string:server_name)/ocp/ca/public_tokens/
    
-   :synopsis: Get project information from the server
+   :synopsis: Get a list of all publicly avaliable tokens from the server. These tokens can be used to GET and PUT data to the server. These tokens can also be used to access :ref:`project information<json-get>`
 
-   :param server_name: Server Name in OCP. In the general case this is ocp.me.
+   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
    :type server_name: string
 
    :statuscode 200: No error
    :statuscode 404: Error in the syntax or file format
+    
+   **Example Request**:
+   
+   .. sourcecode:: http
+      
+      GET /ocp/ca/public_tokens HTTP/1.1
+      Host: openconnecto.me
+
+   **Example Response**:
+
+   .. sourcecode:: http
+      
+      HTTP/1.1 200 OK
+      Content-Type: application/json
+      
+      [
+        "bock11", 
+        "Ex10R55", 
+        "Ex12R75", 
+        "Ex12R76", 
+        "Ex13R51", 
+        "Ex14R58", 
+        "kasthuri11", 
+        "takemura13"
+      ]

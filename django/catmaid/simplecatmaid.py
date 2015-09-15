@@ -47,11 +47,11 @@ class SimpleCatmaid:
     pass
 
 
-  def buildKey (self, res, xtile, ytile, ztile, timetile=None):
+  def buildKey (self, res, slice_type, xtile, ytile, ztile, timetile=None):
     if timetile is None:
-      return 'simple/{}/{}/{}/{}/{}/{}'.format(self.token, self.channel, res, xtile, ytile, ztile)
+      return 'simple/{}/{}/{}/{}/{}/{}/{}'.format(self.token, self.channel, slice_type, res, xtile, ytile, ztile)
     else:
-      return 'simple/{}/{}/{}/{}/{}/{}/{}'.format(self.token, self.channel, res, xtile, ytile, ztile, timetile)
+      return 'simple/{}/{}/{}/{}/{}/{}/{}/{}'.format(self.token, self.channel, slice_type, res, xtile, ytile, ztile, timetile)
 
 
   def cacheMissXY (self, res, xtile, ytile, ztile, timetile=None):
@@ -71,7 +71,7 @@ class SimpleCatmaid:
     if timetile is None:
       imageargs = '{}/{}/{}/{},{}/{},{}/{}/'.format(self.channel, 'xy', res, xstart, xend, ystart, yend, ztile)
     else:
-      imageargs = '{}/{}/{}/{},{}/{},{}/{}/{}/'.format(self.channel, 'xy', res, xstart, xend, ystart, yend, ztile,timetile)
+      imageargs = '{}/{}/{}/{},{}/{},{}/{}/{}/'.format(self.channel, 'xy', res, xstart, xend, ystart, yend, ztile, timetile)
     cb = ocpcarest.imgSlice(imageargs, self.proj, self.db)
     if cb.data.shape != (1, self.tilesz, self.tilesz) and cb.data.shape != (1, 1, self.tilesz, self.tilesz):
       if timetile is None:
@@ -87,7 +87,7 @@ class SimpleCatmaid:
 
   def cacheMissXZ(self, res, xtile, ytile, ztile, timetile=None):
     """On a miss. Cutout, return the image and load the cache in a background thread"""
-
+    
     # make sure that the tile size is aligned with the cubedim
     if self.tilesz % self.proj.datasetcfg.cubedim[res][1] != 0 or self.tilesz % self.proj.datasetcfg.cubedim[res][2]:
       raise("Illegal tile size.  Not aligned")
@@ -118,7 +118,7 @@ class SimpleCatmaid:
     if cb.data.shape != (ztileend-ztilestart,1,self.tilesz) and cb.data.shape != (1, ztileend-ztilestart,1,self.tilesz):
       if timetile is None:
         tiledata = np.zeros((ztileend-ztilestart,1,self.tilesz), cb.data.dtype )
-        tiledata[0,0:zend-zstart,0,0:((xend-1)%self.tilesz+1)] = cb.data[0,:,0,:]
+        tiledata[0:zend-zstart,0,0:((xend-1)%self.tilesz+1)] = cb.data[:,0,:]
       else:
         tiledata = np.zeros((1,ztileend-ztilestart,1,self.tilesz), cb.data.dtype )
         tiledata[0,0:zend-zstart,0,0:((xend-1)%self.tilesz+1)] = cb.data[0,:,0,:]
@@ -188,11 +188,11 @@ class SimpleCatmaid:
     with closing ( ocpcadb.OCPCADB(self.proj) ) as self.db:
 
         # mocpcache key
-        mckey = self.buildKey(res, xtile, ytile, ztile, timetile=None)
+        mckey = self.buildKey(res, slice_type, xtile, ytile, ztile, timetile=timetile)
 
         # if tile is in mocpcache, return it
         tile = self.mc.get(mckey)
-       
+        
         if tile == None:
           if slice_type == 'xy':
             img = self.cacheMissXY(res, xtile, ytile, ztile, timetile=timetile)

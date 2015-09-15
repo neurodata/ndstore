@@ -62,7 +62,7 @@ def mcfcPNG (cutout, colors, enhancement=4.0):
   
   # Enhance the image
   from PIL import ImageEnhance
-  enhancer = ImageEnhance.Brightness(outimage)
-  outimage = enhancer.enhance(enhancement)
+  #enhancer = ImageEnhance.Brightness(outimage)
+  #outimage = enhancer.enhance(enhancement)
   
   return outimage

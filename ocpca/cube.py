@@ -16,9 +16,10 @@ import numpy as np
 import cStringIO
 from PIL import Image
 import zlib
+import blosc
 
-import ocpcaproj
 import ocplib
+from ocptype import ANNOTATION_CHANNELS, TIMESERIES_CHANNELS, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, DTYPE_uint64, DTYPE_float32
 
 import logging
 logger=logging.getLogger("ocp")
@@ -89,6 +90,27 @@ class Cube:
       logger.error ("Failed to compress database cube.  Data integrity concern.")
       raise
  
+  def toBlosc ( self ):
+    """Pack the object"""
+    try:
+      # Create the compressed cube
+      return blosc.pack_array(self.data) 
+    except:
+      logger.error ("Failed to compress database cube.  Data integrity concern.")
+      raise
+  
+  def fromBlosc ( self, pandz ):
+    """Load the cube from a pickled and zipped blob"""
+    try:
+      self.data = blosc.unpack_array(pandz[:])
+      self.zdim, self.ydim, self.xdim = self.data.shape
+
+    except:
+      logger.error ("Failed to decompress database cube.  Data integrity concern.")
+      raise
+
+    self._newcube = False
+  
   def overwrite ( self, writedata ):
     """Get's a dense voxel region and overwrites all non-zero values"""
     if (self.data.dtype != writedata.dtype ):
@@ -109,23 +131,25 @@ class Cube:
   @staticmethod
   def getCube(cubedim, channel_type, datatype, timerange=None):
 
-    if channel_type in ocpcaproj.ANNOTATION_CHANNELS and datatype in ocpcaproj.DTYPE_uint32:
+    if channel_type in ANNOTATION_CHANNELS and datatype in DTYPE_uint32:
       return anncube.AnnotateCube (cubedim)
-    elif channel_type in ocpcaproj.TIMESERIES_CHANNELS and timerange is not None:
-      if datatype in ocpcaproj.DTYPE_uint8:
+    elif channel_type in TIMESERIES_CHANNELS and timerange is not None:
+      if datatype in DTYPE_uint8:
         return timecube.TimeCube8(cubedim, timerange)
-      elif datatype in ocpcaproj.DTYPE_uint16:
+      elif datatype in DTYPE_uint16:
         return timecube.TimeCube16(cubedim, timerange)
-    elif datatype in ocpcaproj.DTYPE_uint8:
+      elif datatype in DTYPE_float32:
+        return timecube.TimeCubeFloat32(cubedim, timerange)
+    elif datatype in DTYPE_uint8:
       return imagecube.ImageCube8 (cubedim)
-    elif datatype in ocpcaproj.DTYPE_uint16:
+    elif datatype in DTYPE_uint16:
       return imagecube.ImageCube16 (cubedim)
-    elif datatype in ocpcaproj.DTYPE_uint32:
+    elif datatype in DTYPE_uint32:
       return imagecube.ImageCube32 (cubedim)
-    elif datatype in ocpcaproj.DTYPE_uint64:
+    elif datatype in DTYPE_uint64:
       return imagecube.ImageCube64 (cubedim)
-    elif datatype in ocpcaproj.DTYPE_float32:
-      return probmapcube.ProbMapCube32 (cubedim)
+    elif datatype in DTYPE_float32:
+      return imagecube.ImageCubeFloat32 (cubedim)
     else:
       return Cube(cubedim)
 
@@ -134,5 +158,4 @@ class Cube:
 
 import imagecube
 import anncube
-import probmapcube
 import timecube

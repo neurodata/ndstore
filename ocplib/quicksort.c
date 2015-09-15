@@ -16,7 +16,7 @@
 
 
 /*
- * Quick Sort Implementation in C using OpenMP 
+ * Naive Quick Sort Implementation in C 
  */
 
 #include<stdint.h>
@@ -46,7 +46,6 @@ int cmpFunc ( const void * pa, const void * pb )
 
 void quicksort ( uint64_t locs[][4], int locsSize )
 {
-  int i;
   qsort ( locs , locsSize, 4*sizeof(uint64_t), cmpFunc );
 }
 

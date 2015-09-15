@@ -72,7 +72,8 @@ void zoomOutDataOMP ( uint32_t * , uint32_t * , int * , int );
 void zoomInData ( uint32_t * , uint32_t * , int * , int );
 
 // Declaring the zoomInData function OMP optimized
-void zoomInDataOMP ( uint32_t * , uint32_t * , int * , int );
+void zoomInDataOMP16 ( uint16_t * , uint16_t * , int * , int );
+void zoomInDataOMP32 ( uint32_t * , uint32_t * , int * , int );
 
 // Declaring the mergeCube function
 void mergeCube ( uint32_t * , int * , int , int );
@@ -88,3 +89,6 @@ void addDataZslice ( uint32_t * , uint32_t *, int * , int * );
 
 // Declaring the addDataZSlice function
 void addDataIsotropic ( uint32_t * , uint32_t *, int * , int * );
+
+// Declaring the unique function
+int unique ( uint32_t *, uint32_t *, int );

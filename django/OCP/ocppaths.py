@@ -22,6 +22,7 @@ OCP_BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.." 
 OCP_UTIL_PATH = os.path.join(OCP_BASE_PATH, "util" )
 OCP_OCPCA_PATH = os.path.join(OCP_BASE_PATH, "ocpca" )
 OCP_OCPLIB_PATH = os.path.join(OCP_BASE_PATH, "ocplib" )
+OCP_DJANGO_PATH = os.path.join(OCP_BASE_PATH, "django" )
 
-sys.path += [ OCP_UTIL_PATH, OCP_OCPCA_PATH, OCP_OCPLIB_PATH ]
+sys.path += [ OCP_UTIL_PATH, OCP_OCPCA_PATH, OCP_OCPLIB_PATH, OCP_DJANGO_PATH ]
 

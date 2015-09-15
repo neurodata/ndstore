@@ -23,10 +23,6 @@ import tempfile
 import h5py
 from cassandra.cluster import Cluster
 
-"""Helpers function to do cube I/O in across multiple DBs.
-    This file is aerospike
-    This uses the state and methods of ocpcadb"""
-
 class CassandraKVIO:
 
   def __init__ ( self, db ):
@@ -35,9 +31,8 @@ class CassandraKVIO:
     self.db = db
 
     # connect to cassandra
-    # maybe have multiple names in self.kVENginge todo
-    self.cluster = Cluster( [db.annoproj.getKVServer()] )
-    self.session = self.cluster.connect(db.annoproj.getDBName())
+    self.cluster = Cluster( [self.db.proj.getKVServer()] )
+    self.session = self.cluster.connect(self.db.proj.getDBName())
 
   def close ( self ):
     """Close the connection"""
@@ -57,12 +52,12 @@ class CassandraKVIO:
     pass
     
 
-  def getCube ( self, zidx, resolution, update ):
+  def getCube(self, ch, zidx, resolution, update=False):
     """Retrieve a cube from the database by token, resolution, and zidx"""
 
     try:
-      cql = "SELECT cuboid FROM cuboids WHERE resolution = %s AND zidx = %s"
-      row = self.session.execute ( cql, (resolution, zidx ))
+      cql = "SELECT cuboid FROM {} WHERE resolution = {} AND zidx = {}".format(ch.getTable(resolution), resolution, zidx)
+      row = self.session.execute(cql)
 
       if row:
         return row[0].cuboid.decode('hex')
@@ -72,18 +67,18 @@ class CassandraKVIO:
       pass
 
 
-  def getCubes ( self, listofidxs, resolution ):
+  def getCubes(self, ch, listofidxs, resolution, neariso=False):
 
     # weird pythonism for tuples of length 1 they print as (1,) and don't parse
     # just get the cube
-    if len(listofidxs)==1:
-      yield listofidxs[0], self.getCube(listofidxs[0], resolution, False)
+    if len(listofidxs) == 1:
+      yield listofidxs[0], self.getCube(ch, listofidxs[0], resolution, False)
     else:
 
       try:
         # Converting the listofidxs to INT. This is wrong and needs to be fixed.
         listofidxs = [ int(i) for i in listofidxs ]
-        cql = "SELECT zidx, cuboid FROM cuboids WHERE resolution ={} AND zidx in {}".format(resolution, tuple(listofidxs)) 
+        cql = "SELECT zidx, cuboid FROM {} WHERE resolution ={} AND zidx in {}".format(ch.getTable(resolution), resolution, tuple(listofidxs)) 
         rows = self.session.execute ( cql )
 
         for row in rows:
@@ -92,45 +87,41 @@ class CassandraKVIO:
       except Exception, e:
         raise
 
-  #
-  # putCube
-  #
-  def putCube ( self, zidx, resolution, cubestr, udpate ):
+  def putCube ( self, ch, zidx, resolution, cubestr, update=False ):
     """Store a cube from the annotation database"""
 
     try:
-      cql = "INSERT INTO cuboids ( resolution, zidx, cuboid ) VALUES ( %s, %s, %s )"
-      self.session.execute ( cql, ( resolution, zidx, cubestr.encode('hex')))
+      cql = "INSERT INTO {} ( resolution, zidx, cuboid ) VALUES ( {}, %s, %s )".format(ch.getTable(resolution), resolution)
+      self.session.execute ( cql, (zidx, cubestr.encode('hex')))
     except Exception, e:
       pass
 
 
-  def getIndex ( self, annid, resolution, update ):
-    """Fetch index routine.  Update is irrelevant for KV clients"""
+  def getIndex ( self, ch, annid, resolution, update=False ):
+    """Fetch index routine. Update is irrelevant for KV clients"""
 
-    cql = "SELECT cuboids FROM indexes WHERE annoid=%s and resolution=%s" 
-    row = self.session.execute ( cql, (annid, resolution ))
+    cql = "SELECT cuboids FROM {} WHERE annoid={} and resolution={}".format(ch.getIdxTable(resolution),annoid, resolution) 
+    row = self.session.execute (cql)
 
     if row:
       return row[0].cuboids.decode('hex')
     else:
       return None
 
-  # RBTODO change name from cuboids to indexes
-  def putIndex ( self, annid, resolution, indexstr, update ):
-    """MySQL put index routine"""
+  def putIndex ( self, ch, annid, resolution, indexstr, update ):
+    """Cassandra put index routine"""
     
-    cql = "INSERT INTO indexes ( resolution, annoid, cuboids ) VALUES ( %s, %s, %s )"
-    self.session.execute ( cql, ( resolution, annid, indexstr.encode('hex')))
+    cql = "INSERT INTO {} ( resolution, annoid, cuboids ) VALUES ( {}, {}, {} )".format(ch.getIdxTable(resolution), resolution, annid, indexstr.encode('hex'))
+    self.session.execute(cql)
 
-  def deleteIndex ( self, annid, resolution ):
-    """MySQL update index routine"""
+  def deleteIndex ( self, ch, annid, resolution ):
+    """Cassandra update index routine"""
 
-    cql = "DELETE FROM indexes where annoid=%s and resolution=%s"
-    self.session.execute ( cql, ( annid, resolution))
+    cql = "DELETE FROM {} where annoid={} and resolution={}".format(ch.getIdxTable(resolution), annid, resolution)
+    self.session.execute(cql)
 
 
-  def getExceptions ( self, zidx, resolution, annid ):
+  def getExceptions ( self, ch, zidx, resolution, annid ):
     """Retrieve exceptions from the database by token, resolution, and zidx"""
 
     try:
@@ -144,17 +135,15 @@ class CassandraKVIO:
     else:
       return None
 
-  def putExceptions ( self, zidx, resolution, annid, excstr, update=False ):
+  def putExceptions ( self, ch, zidx, resolution, annid, excstr, update=False ):
     """Store exceptions in the annotation database"""
 
     cql = "INSERT INTO exceptions ( resolution, zidx, annoid, exceptions ) VALUES ( %s, %s, %s, %s )"
     self.session.execute ( cql, ( resolution, zidx, annid, excstr.encode('hex')))
 
 
-  def deleteExceptions ( self, zidx, resolution, annid ):
+  def deleteExceptions ( self, ch, zidx, resolution, annid ):
     """Delete a list of exceptions for this cuboid"""
 
     cql = "DELETE FROM exceptions WHERE resolution = %s AND zidx = %s AND annoid = %s"
     self.session.execute ( cql, ( resolution, zidx, annid))
-
-
