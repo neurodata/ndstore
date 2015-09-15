@@ -18,7 +18,7 @@ import numpy as np
 import cStringIO
 import pickle
 
-import ocpcaproj
+from ocptype import READONLY_TRUE, OCP_dtypetonp, IMAGE_CHANNELS, TIMESERIES_CHANNELS, 
 
 from django.conf import settings
 from ocpuser.models import Channel
@@ -61,11 +61,11 @@ def ingestNIFTI ( niftifname, ch, db, proj, resolution ):
 
 
   # Don't write to readonly channels
-  if ch.getReadOnly() == ocpcaproj.READONLY_TRUE:
+  if ch.getReadOnly() == READONLY_TRUE:
     logger.warning("Attempt to write to read only project {}".format(proj.getDBName()))
     raise OCPCAError("Attempt to write to read only project {}".format(proj.getDBName()))
 
-  if not nifti_data.dtype == ocpcaproj.OCP_dtypetonp[ch.getDataType()]:
+  if not nifti_data.dtype == OCP_dtypetonp[ch.getDataType()]:
     logger.warning("Wrong datatype in POST")
     raise OCPCAError("Wrong datatype in POST")
 
@@ -79,10 +79,10 @@ def ingestNIFTI ( niftifname, ch, db, proj, resolution ):
   # dump the affine transform 
   nh.affine = pickle.dumps(nifti_img.affine)
 
-  if ch.getChannelType() in ocpcaproj.IMAGE_CHANNELS:
+  if ch.getChannelType() in IMAGE_CHANNELS:
     db.writeCuboid ( ch, (0,0,0), resolution, nifti_data )
 
-  elif ch.getChannelType() in ocpcaproj.TIMESERIES_CHANNELS:
+  elif ch.getChannelType() in TIMESERIES_CHANNELS:
     db.writeTimeCuboid(ch, corner, resolution, timerange, nifti_data)
 
   else:
