@@ -1315,12 +1315,6 @@ def getNIFTI ( webargs ):
 
     ch = ocpcaproj.OCPCAChannel(proj, channel)
 
-    if ch.getChannelType() in ocpcaproj.TIMESERIES_CHANNELS:
-      #if proj.
-      pass
-    else:
-      pass
-
     # Make a named temporary file for the SWC
     with closing (tempfile.NamedTemporaryFile(suffix='.nii')) as tmpfile:
 

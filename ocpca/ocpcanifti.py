@@ -99,10 +99,17 @@ def queryNIFTI ( tmpfile, ch, db, proj, resolution ):
   try:
 
     # get the header in a fileobj
-    nmodel = NIFTIHeader.objects.get(channel_id=ch.getChannelModel().id)
+    try:
+      nmodel = NIFTIHeader.objects.get(channel_id=ch.getChannelModel().id)
 
-    naffine = pickle.loads(nmodel.affine)
-    nheader = pickle.loads(nmodel.header)
+      naffine = pickle.loads(nmodel.affine)
+      nheader = pickle.loads(nmodel.header)
+
+    except:
+
+    # when there's no header info, insert a blank header
+      naffine = None
+      nheader = None
 
     # retrieve the data
     cuboid = db.cutout ( ch, (0,0,0), proj.datasetcfg.imagesz[resolution], resolution ) 
