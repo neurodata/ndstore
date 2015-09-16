@@ -70,7 +70,7 @@ class OCPCADB:
     if self.proj.getKVEngine() == 'MySQL':
       import mysqlkvio
       self.kvio = mysqlkvio.MySQLKVIO(self)
-      self.NPZ = False
+      self.NPZ = True
       # Connection info for the metadata
       try:
         self.conn = MySQLdb.connect (host = self.proj.getDBHost(), user = self.proj.getDBUser(), passwd = self.proj.getDBPasswd(), db = self.proj.getDBName())
