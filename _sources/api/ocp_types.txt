@@ -29,8 +29,8 @@ Data Type           OCP Value
 8-bit Integer       uint8
 16-bit Integer      uint16
 32-bit Integer      uint32
-32-bit RGBA         rgb32
-64-bit RGBA         rgb64
+32-bit RGBA         uint32
+64-bit RGBA         uint64
 32-bit Float        float32
 ===============     ==========
 
@@ -44,7 +44,7 @@ OCP allows certain set combinations of the above mentioned channel type and data
 =============       =======================================
 Channel Type        Possible Data Types
 =============       =======================================
-Image               uint8, uint16, rgb32, rgb64, float32
+Image               uint8, uint16, uint32, uint64, float32
 Timeseries          uint8, uint16, float32
 Annotation          uint32, uint64
 =============       =======================================
