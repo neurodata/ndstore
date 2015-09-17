@@ -44,7 +44,7 @@ OCP allows certain set combinations of the above mentioned channel type and data
 =============       =======================================
 Channel Type        Possible Data Types
 =============       =======================================
-Image               uint8, uint16, uint32, uint64, float32
+Image               uint8, uint16, rgb32, rgb64, float32
 Timeseries          uint8, uint16, float32
 Annotation          uint32, uint64
 =============       =======================================
