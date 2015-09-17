@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Propagate API’s &mdash; open-connetome v0.7.0 documentation</title>
+  <title>Tile API’s &mdash; open-connetome v0.7.0 documentation</title>
   
 
   
@@ -33,8 +33,8 @@
 
   
     <link rel="top" title="open-connetome v0.7.0 documentation" href="../index.html"/>
-        <link rel="next" title="JSON API’s" href="json_api.html"/>
-        <link rel="prev" title="RAMON API’s" href="ramon_api.html"/> 
+        <link rel="next" title="GrahpGen API’s" href="graphgen_api.html"/>
+        <link rel="prev" title="Overlay API’s" href="overlay_api.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -169,9 +169,9 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Propagate API&#8217;s</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#getpropagate">getPropagate</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#setpropagate">setPropagate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="propagate_api.html">Propagate API&#8217;s</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="propagate_api.html#getpropagate">getPropagate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="propagate_api.html#setpropagate">setPropagate</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="json_api.html">JSON API&#8217;s</a><ul>
@@ -189,9 +189,9 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="tile_api.html">Tile API&#8217;s</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tile_api.html#getsimpletile">getSimpleTile</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tile_api.html#getmcfctile">getMcfcTile</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Tile API&#8217;s</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#getsimpletile">getSimpleTile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#getmcfctile">getMcfcTile</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="graphgen_api.html">GrahpGen API&#8217;s</a><ul>
@@ -238,11 +238,11 @@
   <ul class="wy-breadcrumbs">
     <li><a href="../index.html">Docs</a> &raquo;</li>
       
-    <li>Propagate API&#8217;s</li>
+    <li>Tile API&#8217;s</li>
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="../_sources/api/propagate_api.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/api/tile_api.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -251,24 +251,31 @@
 </div>
           <div role="main" class="document">
             
-  <div class="section" id="propagate-api-s">
-<h1>Propagate API&#8217;s<a class="headerlink" href="#propagate-api-s" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="getpropagate">
-<span id="propagate-get"></span><h2>getPropagate<a class="headerlink" href="#getpropagate" title="Permalink to this headline">¶</a></h2>
+  <div class="section" id="tile-api-s">
+<h1>Tile API&#8217;s<a class="headerlink" href="#tile-api-s" title="Permalink to this headline">¶</a></h1>
+<p>You can also view the <a class="reference external" href="http://docs.neurodata.io/ocptilecache/api/tilecache_api.html">Tilecache API&#8217;s</a> which work similarly for <a class="reference external" href="http://docs.neurodata.io/ocptilecache/index.html">ocptilecache</a>.</p>
+<div class="section" id="getsimpletile">
+<h2>getSimpleTile<a class="headerlink" href="#getsimpletile" title="Permalink to this headline">¶</a></h2>
 <dl class="get">
-<dt id="get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-getPropagate-">
-<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/getPropagate/</code><a class="headerlink" href="#get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-getPropagate-" title="Permalink to this definition">¶</a></dt>
+<dt id="get-(string-server_name)-ocp-catmaid-(string-token_name)-(string-channel_name)-(string-slice_type)-(int-time)-(int-zvalue)-(int-ytile)_(int-xtile)_(int-resolution).png">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/catmaid/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>slice_type</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>time</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>zvalue</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>ytile</em><span class="sig-paren">)</span><code class="descname">_</code><span class="sig-paren">(</span><em class="property">int: </em><em>xtile</em><span class="sig-paren">)</span><code class="descname">_</code><span class="sig-paren">(</span><em class="property">int: </em><em>resolution</em><span class="sig-paren">)</span><code class="descname">.png</code><a class="headerlink" href="#get-(string-server_name)-ocp-catmaid-(string-token_name)-(string-channel_name)-(string-slice_type)-(int-time)-(int-zvalue)-(int-ytile)_(int-xtile)_(int-resolution).png" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Get the <a class="reference internal" href="ocp_types.html#ocp-propagation"><span>propagation</span></a> state of the channel.</p>
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Get a 512x512 tile from the tilecache</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in OCP. In the general case this is openconnecto.me.</li>
 <li><strong>token_name</strong> (<em>string</em>) &#8211; Token Name in OCP.</li>
-<li><strong>channel_name</strong> (<em>string</em>) &#8211; Channel Name in OCP. <em>Optional</em>. If missing will use default channel for the token.</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; Channel Name in OCP.</li>
+<li><strong>slice_type</strong> (<em>string</em>) &#8211; Type of Slice cutout. Can be xy/yz/xz</li>
+<li><strong>time</strong> (<em>int</em>) &#8211; Time value. <em>Optional</em>. Only possible in timeseries datasets.</li>
+<li><strong>zvalue</strong> (<em>int</em>) &#8211; Zslice value.</li>
+<li><strong>ytile</strong> (<em>int</em>) &#8211; Y-Tile value. Each tile is 512x512.</li>
+<li><strong>xtile</strong> (<em>int</em>) &#8211; X-Tile value. Each tile is 512x512.</li>
+<li><strong>resolution</strong> (<em>int</em>) &#8211; Resolution value.</li>
 </ul>
 </td>
 </tr>
@@ -280,27 +287,45 @@
 </tr>
 </tbody>
 </table>
-</dd></dl>
-
+<p><strong>Example Request</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span class="nf">GET</span>  <span class="nn">/ocp/catmaid/kasthuri11/image/xy/1/1_1_4.png</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">openconnecto.me</span>
+</pre></div>
 </div>
-<div class="section" id="setpropagate">
-<span id="propagate-set"></span><h2>setPropagate<a class="headerlink" href="#setpropagate" title="Permalink to this headline">¶</a></h2>
+<p><strong>Example Response</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/png</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<div class="figure align-center">
+<a class="reference internal image-reference" href="../_images/simple_image_tile.png"><img alt="../_images/simple_image_tile.png" src="../_images/simple_image_tile.png" style="width: 512px; height: 512px;" /></a>
+</div>
+</div>
+<div class="section" id="getmcfctile">
+<h2>getMcfcTile<a class="headerlink" href="#getmcfctile" title="Permalink to this headline">¶</a></h2>
 <dl class="get">
-<dt id="get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-setPropagate-(int-propagate_value)-">
-<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/setPropagate/</code><span class="sig-paren">(</span><em class="property">int: </em><em>propagate_value</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-setPropagate-(int-propagate_value)-" title="Permalink to this definition">¶</a></dt>
+<dt id="get-(string-server_name)-ocp-catmaid-mcfc-(string-token_name)-(string-channel_name)-(string-color_name)-(string-slice_type)-(int-time)-(int-zvalue)-(int-ytile)_(int-xtile)_(int-resolution).png">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/catmaid/mcfc/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">:</code><span class="sig-paren">(</span><em class="property">string: </em><em>color_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>slice_type</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>time</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>zvalue</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>ytile</em><span class="sig-paren">)</span><code class="descname">_</code><span class="sig-paren">(</span><em class="property">int: </em><em>xtile</em><span class="sig-paren">)</span><code class="descname">_</code><span class="sig-paren">(</span><em class="property">int: </em><em>resolution</em><span class="sig-paren">)</span><code class="descname">.png</code><a class="headerlink" href="#get-(string-server_name)-ocp-catmaid-mcfc-(string-token_name)-(string-channel_name)-(string-color_name)-(string-slice_type)-(int-time)-(int-zvalue)-(int-ytile)_(int-xtile)_(int-resolution).png" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Set the <a class="reference internal" href="ocp_types.html#ocp-propagation"><span>propagation</span></a> state of the channel.</p>
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Get a 512x512 tile from the tilecache</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in OCP. In the general case this is openconnecto.me.</li>
 <li><strong>token_name</strong> (<em>string</em>) &#8211; Token Name in OCP.</li>
-<li><strong>channel_name</strong> (<em>string</em>) &#8211; Channel Name in OCP. <em>Optional</em>. If missing will use default channel for the token.</li>
-<li><strong>propagate_value</strong> &#8211; 0,1,2</li>
-<li><strong>propagate_value</strong> &#8211; int</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; Channel Name in OCP.</li>
+<li><strong>color_name</strong> (<em>string</em>) &#8211; Color Name. Can be &#8216;C/M/Y/R/G/B&#8217;. <em>Optional</em> If Missing will default to &#8220;CMYRGB&#8221;.</li>
+<li><strong>slice_type</strong> (<em>string</em>) &#8211; Type of Slice cutout. Can be xy/yz/xz</li>
+<li><strong>time</strong> (<em>int</em>) &#8211; Time value. <em>Optional</em>. Only possible in timeseries datasets.</li>
+<li><strong>zvalue</strong> (<em>int</em>) &#8211; Zslice value.</li>
+<li><strong>ytile</strong> (<em>int</em>) &#8211; Y-Tile value. Each tile is 512x512.</li>
+<li><strong>xtile</strong> (<em>int</em>) &#8211; X-Tile value. Each tile is 512x512.</li>
+<li><strong>resolution</strong> (<em>int</em>) &#8211; Resolution value.</li>
 </ul>
 </td>
 </tr>
@@ -312,8 +337,21 @@
 </tr>
 </tbody>
 </table>
+<p><strong>Example Request</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span class="nf">GET</span>  <span class="nn">/ocp/catmaid/mcfc/Thy1eYFPBrain10/Grayscale/xy/500/0_0_3.png</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">openconnecto.me</span>
+</pre></div>
+</div>
+<p><strong>Example Response</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/png</span>
+</pre></div>
+</div>
 </dd></dl>
 
+<div class="figure align-center">
+<a class="reference internal image-reference" href="../_images/mcfc_image_tile.png"><img alt="../_images/mcfc_image_tile.png" src="../_images/mcfc_image_tile.png" style="width: 512px; height: 512px;" /></a>
+</div>
 </div>
 </div>
 
@@ -323,10 +361,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="json_api.html" class="btn btn-neutral float-right" title="JSON API’s" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="graphgen_api.html" class="btn btn-neutral float-right" title="GrahpGen API’s" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="ramon_api.html" class="btn btn-neutral" title="RAMON API’s" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="overlay_api.html" class="btn btn-neutral" title="Overlay API’s" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
