@@ -35,10 +35,9 @@ def main():
 
   result = parser.parse_args()
 
-  import proxy
-  proxy.setHandler()
-
   url = 'http://%s/ca/%s/%s/tiff/%s/%s/%s/%s/' % ( result.baseurl, result.token, result.channel, result.resolution, result.xoffset, result.yoffset, result.zoffset )
+
+  print url
 
   # open the file name as a tiff file
   fh = open ( result.filename )
