@@ -4,9 +4,14 @@ Adminstrator Console
 QuickStart
 ==========
 
-To upload an image volume: Create a dataset with appropriate names/field values. Then, create a project from that dataset, with a channel of the image type that is being uploaded. Finally, create a token to access the project and use that token to upload the image data. The tutorials to do each of these steps is available below. Scripts for automated upload are available for ndio (Python) and CAJAL (formerly ocpMatlab).
+Uploading Images
+++++++++++++++++
+Create a dataset with appropriate names/field values. Then, create a project from that dataset, with a channel of the image type that is being uploaded. Finally, create a token to access the project and use that token to upload the image data. The tutorials to do each of these steps is available below. Scripts for automated upload are available for `ndio <http://docs.neurodata.io/open-connectome/api/data_api.html/>`_ (Python) and `CAJAL <http://docs.neurodata.io/nddocs/exchange/cajal.html/>`_ (formerly ocpMatlab).
 
-To upload annotation data: Using the existing project with the relevant image data create a channel of the annotation type that is being uploaded. Finally, create a token to access the project and use that token to upload the annotation data. The tutorials to do each of these steps is available below. More information on general annotation upload and download is available here.
+Uploading Annotations
++++++++++++++++++++++
+
+Using the existing project with the relevant image data create a channel of the annotation type that is being uploaded. Finally, create a token to access the project and use that token to upload the annotation data. The tutorials to do each of these steps is available below.
 
 Overview
 ========
