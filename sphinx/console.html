@@ -80,7 +80,11 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">Adminstrator Console</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#quickstart">QuickStart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#quickstart">QuickStart</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#uploading-images">Uploading Images</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#uploading-annotations">Uploading Annotations</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#datasets">Datasets</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id1">Overview</a></li>
@@ -255,16 +259,22 @@
 <h1>Adminstrator Console<a class="headerlink" href="#adminstrator-console" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="quickstart">
 <h2>QuickStart<a class="headerlink" href="#quickstart" title="Permalink to this headline">¶</a></h2>
-<p>To upload an image volume: Create a dataset with appropriate names/field values. Then, create a project from that dataset, with a channel of the image type that is being uploaded. Finally, create a token to access the project and use that token to upload the image data. The tutorials to do each of these steps is available below. Scripts for automated upload are available for python and Cajal (formerly ocpMatlab).</p>
-<p>To upload annotation data: Using the existing project with the relevant image data create a channel of the annotation type that is being uploaded. Finally, create a token to access the project and use that token to upload the annotation data. The tutorials to do each of these steps is available below. More information on general annotation upload and download is available here.</p>
+<div class="section" id="uploading-images">
+<h3>Uploading Images<a class="headerlink" href="#uploading-images" title="Permalink to this headline">¶</a></h3>
+<p>Create a dataset with appropriate names/field values. Then, create a project from that dataset, with a channel of the image type that is being uploaded. Finally, create a token to access the project and use that token to upload the image data. The tutorials to do each of these steps is available below. Scripts for automated upload are available for <a class="reference external" href="http://docs.neurodata.io/open-connectome/api/data_api.html/">ndio</a> (Python) and <a class="reference external" href="http://docs.neurodata.io/nddocs/exchange/cajal.html/">CAJAL</a> (formerly ocpMatlab).</p>
+</div>
+<div class="section" id="uploading-annotations">
+<h3>Uploading Annotations<a class="headerlink" href="#uploading-annotations" title="Permalink to this headline">¶</a></h3>
+<p>Using the existing project with the relevant image data create a channel of the annotation type that is being uploaded. Finally, create a token to access the project and use that token to upload the annotation data. The tutorials to do each of these steps is available below.</p>
+</div>
 </div>
 <div class="section" id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
-<p>The Console allows data to be uploaded and downloaded to OCP as well as access other services within OCP. Data in OCP is organized into datasets and projects, see below for a more extensive description of each. The diagram below shows how the overall service is organized;</p>
+<p><a class="reference external" href="http://openconnecto.me/ocp/ocpuser/profile/">The Console</a> allows data to be uploaded and downloaded to OCP as well as access other services within OCP. Data in OCP is organized into datasets and projects, see below for a more extensive description of each. The diagram below shows how the overall service is organized;</p>
 <div class="figure align-center">
 <a class="reference internal image-reference" href="../_images/ocpservicediagram.png"><img alt="../_images/ocpservicediagram.png" src="../_images/ocpservicediagram.png" style="width: 500px; height: 200px;" /></a>
 </div>
-<p>Datasets are present on the OCP server and are accessed through projects. These datasets can hold multiple types of data, including image, annotation, ect. When a specific type of data needs to be accessed in a dataset (via the project), say for example 8-bit image data, a channel is created in the project for that specific datatype. The project (and in turn the channels and the dataset) is accessible by a token, which serves as an access point for anyone that has the token.</p>
+<p>Datasets are present on the OCP server and are accessed through projects. These datasets can hold multiple types of data, including image, annotation, etc. When a specific type of data needs to be accessed in a dataset (via the project), say for example 8-bit image data, a channel is created in the project for that specific datatype. The project (and in turn the channels and the dataset) is accessible by a token, which serves as an access point for anyone that has the token.</p>
 </div>
 <div class="section" id="datasets">
 <h2>Datasets<a class="headerlink" href="#datasets" title="Permalink to this headline">¶</a></h2>
@@ -285,7 +295,7 @@
 <td>Description</td>
 </tr>
 <tr class="row-even"><td>Dataset Name</td>
-<td>The name of the data set you are uploading (Good practice is lastname and year).</td>
+<td>The name of the data set you are uploading (good practice is lastname and year such as bock11).</td>
 </tr>
 <tr class="row-odd"><td>Description</td>
 <td>A description of the data being uploaded, good things to include may be species and the location of where the images are from.</td>
@@ -324,12 +334,12 @@ There also are cases where the user may wish to modify aspects of a project, whe
 </div>
 <div class="section" id="project-creation-tutorial">
 <h3>Project Creation Tutorial<a class="headerlink" href="#project-creation-tutorial" title="Permalink to this headline">¶</a></h3>
-<p>To create a project navigate to the datasets drop down menu and select create dataset. Fill in the appropriate data fields for each line (a full explanation of each can be found below). Click create data set and you should be re-directed to the data set main page, where you will now see a new data set with the data you selected. To use the data set create a new project/token.</p>
+<p>If you have not already created a dataset follow the tutorial here <a class="reference internal" href="#datasets">Datasets</a>). To create a project navigate to the projects drop down menu and select create project. Fill in the appropriate fields, an explanation of each of which you can see below. Click create data set and you should be re-directed to the data set main page, where you will now see a new data set with the data you selected. To use the data set create a new project/token.</p>
 <p>To manage a project navigate to the projects dropdown menu and select view projects. To the right of the project you wish to modify select Update/Details and change the fields as desired.</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="24%" />
-<col width="76%" />
+<col width="23%" />
+<col width="77%" />
 </colgroup>
 <tbody valign="top">
 <tr class="row-odd"><td>Data Field</td>
@@ -342,10 +352,10 @@ There also are cases where the user may wish to modify aspects of a project, whe
 <td>The description of the project.</td>
 </tr>
 <tr class="row-even"><td>Public</td>
-<td>Whether or not the template is viewable to the public.</td>
+<td>Whether or not the template is viewable to the public (to make private select private).</td>
 </tr>
 <tr class="row-odd"><td>Dataset</td>
-<td>The dataset to be used by the project.</td>
+<td>The name of the dataset to be used by the project.</td>
 </tr>
 <tr class="row-even"><td>Database Host</td>
 <td>The database host to store the project. Use the default option.</td>
@@ -370,56 +380,12 @@ There also are cases where the user may wish to modify aspects of a project, whe
 <h2>Channels<a class="headerlink" href="#channels" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="id3">
 <h3>Overview<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
-<p>Channels are way of accessing specific data, such as image, annotation, time-series, ect., in a particular project. They by default can be enabled to be read-only which allows the data to be publicly viewable (with a public token), but not edited.</p>
+<p>Channels are way of accessing specific data, such as image, annotation, time-series, etc., in a particular project. They by default can be enabled to be read-only which allows the data to be publicly viewable (with a public token), but not edited.</p>
 </div>
 <div class="section" id="channel-creation-tutorial">
 <h3>Channel Creation Tutorial<a class="headerlink" href="#channel-creation-tutorial" title="Permalink to this headline">¶</a></h3>
-<p>If you have not created a project yet follow this tutorial. Then navigate to the projects drop down menu and select projects. Select the project you wish to create a channel for and select channel, then add channel.</p>
+<p>If you have not created a project yet follow the above tutorial in <a class="reference internal" href="#projects">Projects</a>. Then navigate to the projects drop down menu and select projects. Select the project you wish to create a channel for and select channel, then add channel.</p>
 <p>To modify a channel select the Update button in the channels menu.</p>
-<table border="1" class="docutils">
-<colgroup>
-<col width="16%" />
-<col width="84%" />
-</colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td>Data Field</td>
-<td>Description</td>
-</tr>
-<tr class="row-even"><td>Channel Name</td>
-<td>Name of the Channel.</td>
-</tr>
-<tr class="row-odd"><td>Channel Type</td>
-<td>The channel type you want to create. Refer to <a class="reference internal" href="../api/ocp_types.html#ocp-channeltype"><span>Channel Types</span></a> for more details.</td>
-</tr>
-<tr class="row-even"><td>Datatype</td>
-<td>The data type of the channel you want to create. Refer to <a class="reference internal" href="../api/ocp_types.html#ocp-datatype"><span>Data Types</span></a> for more details.</td>
-</tr>
-<tr class="row-odd"><td>Description</td>
-<td>A description of the channel, usually contains user description of the channel.</td>
-</tr>
-<tr class="row-even"><td>Read Only</td>
-<td>Whether or not you can modify the data existing in the channel.</td>
-</tr>
-<tr class="row-odd"><td>Resolution</td>
-<td>The base resolution of the data you want to store in this channel.</td>
-</tr>
-<tr class="row-even"><td>Enable Exceptions</td>
-<td>Enable exceptions for an annotation channel. Use the default option.</td>
-</tr>
-<tr class="row-odd"><td>Propagate</td>
-<td>The status of propagation level of the channel. Refer to <a class="reference internal" href="../api/ocp_types.html#ocp-propagation"><span>Propagation</span></a> for more details.</td>
-</tr>
-<tr class="row-even"><td>Start Window</td>
-<td>The lowest pixel value (defaults to 0)</td>
-</tr>
-<tr class="row-odd"><td>End Window</td>
-<td>The highest pixel value (defaults to 65536).</td>
-</tr>
-<tr class="row-even"><td>Set as Default Channel</td>
-<td>Set the current channel to be the default channel in the project. By default the first channel is the default channel.</td>
-</tr>
-</tbody>
-</table>
 </div>
 </div>
 <div class="section" id="token">
@@ -430,7 +396,7 @@ There also are cases where the user may wish to modify aspects of a project, whe
 </div>
 <div class="section" id="token-creation-tutorial">
 <h3>Token Creation Tutorial<a class="headerlink" href="#token-creation-tutorial" title="Permalink to this headline">¶</a></h3>
-<p>If you have not created a project yet follow this tutorial. Then navigate to the projects drop down menu and select projects. Select the project you wish to create another token for and select tokens, then add token. To modify the token navigate to the tokens sub-menu again and select the modify option on the token you wish to edit.</p>
+<p>If you have not created a project yet follow the above tutorial in <a class="reference internal" href="#projects">Projects</a>. Then navigate to the projects drop down menu and select projects. Select the project you wish to create another token for and select tokens, then add token. To modify the token navigate to the tokens sub-menu again and select the modify option on the token you wish to edit.</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="16%" />
