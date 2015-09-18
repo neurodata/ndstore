@@ -40,7 +40,7 @@ Navigate to the datasets drop down menu and select create dataset. Fill in the a
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
 | Data Field              | Description                                                                                                                    | 
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-| Dataset Name            | The name of the data set you are uploading (good practice is lastname and year such as bock11).                                               |
+| Dataset Name            | The name of the data set you are uploading (good practice is lastname and year such as bock11).                                |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
 | Description             | A description of the data being uploaded, good things to include may be species and the location of where the images are from. |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
@@ -74,27 +74,27 @@ If you have not already created a dataset follow the tutorial here `Datasets`_).
 
 To manage a project navigate to the projects dropdown menu and select view projects. To the right of the project you wish to modify select Update/Details and change the fields as desired.
 
-+--------------------------+----------------------------------------------------------------------------------+
-|Data Field                | Description                                                                      |
-+--------------------------+----------------------------------------------------------------------------------+
-|Project                   | The name of the project.                                                         |
-+--------------------------+----------------------------------------------------------------------------------+
-|Description               | The description of the project.                                                  |
-+--------------------------+----------------------------------------------------------------------------------+
-|Public                    | Whether or not the template is viewable to the public (to make private select private).                           |
-+--------------------------+----------------------------------------------------------------------------------+
-|Dataset                   | The name of the dataset to be used by the project.                                           |
-+--------------------------+----------------------------------------------------------------------------------+
-|Database Host             | The database host to store the project. Use the default option.                  |
-+--------------------------+----------------------------------------------------------------------------------+
-|KV Engine                 | The KV engine used to store the project. Use the default option.                 |
-+--------------------------+----------------------------------------------------------------------------------+
-|KV Server                 | This is the KV key-server. Use the default option.                               |
-+--------------------------+----------------------------------------------------------------------------------+
-|Link to Existing Database | Use this option if the project database is already present on OCP servers.       |
-+--------------------------+----------------------------------------------------------------------------------+
-|Create a Default Token    | Creates a default token for the project.                                         | 
-+--------------------------+----------------------------------------------------------------------------------+
++--------------------------+-----------------------------------------------------------------------------------------+
+|Data Field                | Description                                                                             |
++--------------------------+-----------------------------------------------------------------------------------------+
+|Project                   | The name of the project.                                                                |
++--------------------------+-----------------------------------------------------------------------------------------+
+|Description               | The description of the project.                                                         |
++--------------------------+-----------------------------------------------------------------------------------------+
+|Public                    | Whether or not the template is viewable to the public (to make private select private). |
++--------------------------+-----------------------------------------------------------------------------------------+
+|Dataset                   | The name of the dataset to be used by the project.                                      |
++--------------------------+-----------------------------------------------------------------------------------------+
+|Database Host             | The database host to store the project. Use the default option.                         |
++--------------------------+-----------------------------------------------------------------------------------------+
+|KV Engine                 | The KV engine used to store the project. Use the default option.                        |
++--------------------------+-----------------------------------------------------------------------------------------+
+|KV Server                 | This is the KV key-server. Use the default option.                                      |
++--------------------------+-----------------------------------------------------------------------------------------+
+|Link to Existing Database | Use this option if the project database is already present on OCP servers.              |
++--------------------------+-----------------------------------------------------------------------------------------+
+|Create a Default Token    | Creates a default token for the project.                                                | 
++--------------------------+-----------------------------------------------------------------------------------------+
 
 Channels
 ========
