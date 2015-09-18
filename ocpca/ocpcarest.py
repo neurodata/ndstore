@@ -43,6 +43,7 @@ import annotation
 import mcfc
 import ocplib
 import ocpcaskel
+import ocpcanifti
 from windowcutout import windowCutout
 from ocptype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, ANNOTATION_CHANNELS, NOT_PROPAGATED, UNDER_PROPAGATION, OCP_dtypetonp, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, READONLY_TRUE
 
@@ -1378,11 +1379,61 @@ def putAnnotation ( webargs, postdata ):
       # return the identifier
       return retstr
 
+def getNIFTI ( webargs ):
+  """Return the entire channel as a NIFTI file.
+     Limited to 2Gig"""
+    
+  [token, channel, optionsargs] = webargs.split('/',2)
+
+  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+
+    proj = projdb.loadToken ( token )
+  
+  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+
+    ch = ocpcaproj.OCPCAChannel(proj, channel)
+
+    # Make a named temporary file for the nii file
+    with closing (tempfile.NamedTemporaryFile(suffix='.nii')) as tmpfile:
+
+      ocpcanifti.queryNIFTI ( tmpfile, ch, db, proj )
+
+      tmpfile.seek(0)
+      return tmpfile.read()
+
+
+def putNIFTI ( webargs, postdata ):
+  """Put a NIFTI object as an image"""
+    
+  [token, channel, optionsargs] = webargs.split('/',2)
+
+  # RBTODO check if there is a channel?  Make one if there isn't?
+
+  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+    proj = projdb.loadToken ( token )
+  
+  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+
+    ch = ocpcaproj.OCPCAChannel(proj, channel)
+    # Don't write to readonly projects
+    if ch.getReadOnly() == ocpcaproj.READONLY_TRUE:
+      logger.warning("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
+      raise OCPCAError("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
+
+    # Make a named temporary file 
+    with closing (tempfile.NamedTemporaryFile(suffix='.nii')) as tmpfile:
+
+      tmpfile.write ( postdata )
+      tmpfile.seek(0)
+
+      # ingest the nifti file
+      ocpcanifti.ingestNIFTI ( tmpfile.name, ch, db, proj )
+
 
 def getSWC ( webargs ):
   """Return an SWC object generated from Skeletons/Nodes"""
-   
-  [token, channel, swcstring, skeletons, rest] = webargs.split('/', 4)
+
+  [token, channel, swcstring, rest] = webargs.split('/',3)
 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
@@ -1423,12 +1474,10 @@ def putSWC ( webargs, postdata ):
       tmpfile.write ( postdata )
       tmpfile.seek(0)
 
-      with closing (open(tmpfile.name)) as fp:
+      # Parse the swc file into skeletons
+      swc_skels = ocpcaskel.ingestSWC ( tmpfile, ch, db )
 
-        # Parse the swc file into skeletons
-        swc_skels = ocpcaskel.ingestSWC ( fp, ch, db )
-
-        return swc_skels
+      return swc_skels
 
 
 

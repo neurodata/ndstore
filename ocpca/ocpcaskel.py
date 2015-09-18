@@ -109,10 +109,8 @@ def ingestSWC ( swcfile, ch, db ):
           node.setField ( 'skeletonid', nodes[swcparentid].getField('skeletonid') )
 
   except Exception, e:
-    raise
-
-  print "Build all skeletons, Starting DB txn."
-
+    logger.warning("Failed to put SWC file {}".format(e))
+    raise OCPCAError("Failed to put SWC file {}".format(e))
 
   # having parsed the whole file, send to DB in a transaction
   db.startTxn()
@@ -128,7 +126,6 @@ def ingestSWC ( swcfile, ch, db ):
       commentno += 1
 
     skel.store( ch, cursor )
-
 
   # store the nodes
   for (nodeid,node) in nodes.iteritems():
@@ -150,9 +147,9 @@ def querySWC ( swcfile, ch, db, proj, skelids=None ):
 
     # write out metadata about where this came from
     # OCP version number and schema number
-    f.write('# OCP (Open Connectome Project) Version {} Schema {}'.format(proj.getOCPVersion(),proj.getSchemaVersion()))
+    swcfile.write('# OCP (Open Connectome Project) Version {} Schema {}\n'.format(proj.getOCPVersion(),proj.getSchemaVersion()))
     # OCP project and channel
-    f.write('# Project {} Channel {}'.format(proj.getProjectName(),ch.getChannelName()))
+    swcfile.write('# Project {} Channel {}\n'.format(proj.getProjectName(),ch.getChannelName()))
 
     # get a skeleton for metadata and populate the comments field
     if skelids != None and len(skelids)==0:
@@ -164,26 +161,29 @@ def querySWC ( swcfile, ch, db, proj, skelids=None ):
       for (k,v) in skel.getKVPairs():
         # match a comment
         if re.match ( "^#.*", v ):
-          fwrite(v)
+          swcfile.write(v)
         else:
-          fwrite("# {} {}".format(k,v))
+          swcfile.write("# {} {}".format(k,v))
       
-    nodegen = db.queryNodes ( skelids )
+    nodegen = annotation.nodesBySkeleton ( ch, skelids, db, cursor )
+
     # iterate over all nodes
     for node in nodegen: 
-      skeletonid = node.getField ( 'skeletonid' )
-      annid = node.getField ( 'annid' ) 
-      nodetype = node.getField ( 'nodetype')
-      (xpos,ypos,zpos) = node.getField ( 'location')
-      radius = node.getField ( 'radius')
-      parentid = node.getField ( 'parentid')
+      (annid, nodetype, xpos, ypos, zpos, radius, parentid) = node
 
-    # write an node in swc
-    # n T x y z R P
-#    fwrite ( "{} {} {} {} {} {} {} {}".format ( annid, nodetype,  ,,,,, parentid ))
+#      skeletonid = node.getField ( 'skeletonid' )
+#      annid = node.getField ( 'annid' ) 
+#      nodetype = node.getField ( 'nodetype')
+#      (xpos,ypos,zpos) = node.getField ( 'location')
+#      radius = node.getField ( 'radius')
+#      parentid = node.getField ( 'parentid')
+
+      # write an node in swc
+      # n T x y z R P
+      swcfile.write ( "{} {} {} {} {} {} {}\n".format ( annid, nodetype, xpos, ypos, zpos, radius, parentid ))
 
     db.commit()
 
   finally:
-    db.closeCursor()
+    db.closeCursor(cursor)
 

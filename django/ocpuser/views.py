@@ -937,8 +937,9 @@ def backupProject(request):
           pd = ocpcaproj.OCPCAProjectsDB()
           db = (request.POST.get('project')).strip()
 
+          # RBTODO channel is not bound correctly?
           channel = request.POST.get('channel').strip()
-          if (channel==None or channel=='') and request.POST.get('allchans') == 'on':
+          if request.POST.get('allchans') == 'on':
             channel ='all'
           else:
             pass #RBTODO error  
@@ -960,7 +961,7 @@ def backupProject(request):
           passwd = settings.DATABASES['default']['PASSWORD']
 
           # backup now
-          if request.POST.get('async')==0:
+          if not request.POST.get('async'):
 
             # if all tables were requested
             if request.POST.get('allchans') == 'on':
@@ -975,7 +976,7 @@ def backupProject(request):
               for t in tables:
                 cmd.append(t)
 
-              p = subprocess.Popen(cmd, stdout=outputfile).communicate(None)
+            p = subprocess.Popen(cmd, stdout=outputfile).communicate(None)
 
             messages.success(request, 'Sucessfully backed up database '+ db)
             return HttpResponseRedirect(get_script_prefix()+'ocpuser/projects')

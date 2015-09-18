@@ -101,6 +101,26 @@ def cutout (request, webargs):
     logger.exception("Unknown exception in getCutout.")
     raise OCPCAError("Unknown exception in getCutout")
 
+#@cache_control(no_cache=True)
+def nifti (request, webargs):
+  """Get put interface for nifti files"""
+
+  try:
+    if request.method == 'GET':
+      fname = "".join([x if x.isalnum() else "_" for x in webargs])
+      response = django.http.HttpResponse(ocpcarest.getNIFTI(webargs), content_type="product/nii" )
+      response['Content-Disposition'] = "attachment; filename={}.nii".format(fname)
+      return response
+    elif request.method == 'POST':
+      return django.http.HttpResponse(ocpcarest.putNIFTI(webargs,request.body))
+  except OCPCAError, e:
+    return django.http.HttpResponseNotFound(e.value)
+  except MySQLdb.Error, e:
+    return django.http.HttpResponseNotFound(e)
+  except:
+    logger.exception("Unknown exception in NIFTI.")
+    raise
+
 
 #@cache_control(no_cache=True)
 def swc (request, webargs):
@@ -108,7 +128,10 @@ def swc (request, webargs):
   
   try:
     if request.method == 'GET':
-      return django.http.HttpResponse(ocpcarest.getSWC(webargs), content_type="product/hdf5" )
+      fname = "".join([x if x.isalnum() else "_" for x in webargs])
+      response = django.http.HttpResponse(ocpcarest.getSWC(webargs), content_type="product/swc" )
+      response['Content-Disposition'] = "attachment; filename={}.swc".format(fname)
+      return response
     elif request.method == 'POST':
       return django.http.HttpResponse(ocpcarest.putSWC(webargs,request.body))
   except OCPCAError, e:

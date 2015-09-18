@@ -254,6 +254,8 @@ class OCPCAChannel:
       logger.warning ( "Channel {} does not exist. {}".format(channel_name, e) )
       raise OCPCAError ( "Channel {} does not exist".format(channel_name) )
 
+  def getChannelModel ( self ):
+    return Channel.objects.get(channel_name=self.ch.channel_name, project=self.pr.getProjectName())
   def getDataType ( self ):
     return self.ch.channel_datatype
   def getChannelName ( self ):
