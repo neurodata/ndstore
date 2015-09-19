@@ -120,17 +120,17 @@ To modify a channel select the Update button in the channels menu.
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
 |Datatype                 | The data type of the channel you want to create. Refer to :ref:`Data Types<ocp-datatype>` for more details.                    |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-|Description              | A description of the channel, usually contains relevent information for the user (who is using it, data stored there, etc.).                                   |
+|Description              | A description of the channel, usually contains relevent information for the user (who is using it, data stored there, etc.).   |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-|Read Only                | Whether or not you can modify the data existing in the channel (yes - read only, no - read and write).                                     |
+|Read Only                | Whether or not you can modify the data existing in the channel (yes - read only, no - read and write).                         |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-|Resolution               | The base resolution of the data you want to store in this channel(defaults to 0 which is the highest resolution). Resolution is a measure of the pixel count for an image and for each level increase the count decreases by 2^n.              |
+|Resolution               | The resolution of the data being stored (defaults to 0 which is the highest resolution, each level reduces pixels by 2^n).     |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
 |Enable Exceptions        | Enable exceptions for an annotation channel. Use the default option.                                                           |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
 |Propagate                | The status of propagation level of the channel. Refer to :ref:`Propagation<ocp-propagation>` for more details.                 |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-|Start Window             | The lowest pixel intensity value (defaults to 0)                                                                                         |
+|Start Window             | The lowest pixel intensity value (defaults to 0)                                                                               |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
 |End Window               | The highest pixel value (defaults to 65536).                                                                                   |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+

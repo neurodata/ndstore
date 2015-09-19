@@ -386,6 +386,50 @@ There also are cases where the user may wish to modify aspects of a project, whe
 <h3>Channel Creation Tutorial<a class="headerlink" href="#channel-creation-tutorial" title="Permalink to this headline">¶</a></h3>
 <p>If you have not created a project yet follow the above tutorial in <a class="reference internal" href="#projects">Projects</a>. Then navigate to the projects drop down menu and select projects. Select the project you wish to create a channel for and select channel, then add channel.</p>
 <p>To modify a channel select the Update button in the channels menu.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="16%" />
+<col width="84%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Data Field</td>
+<td>Description</td>
+</tr>
+<tr class="row-even"><td>Channel Name</td>
+<td>Name of the Channel.</td>
+</tr>
+<tr class="row-odd"><td>Channel Type</td>
+<td>The channel type you want to create. Refer to <a class="reference internal" href="../api/ocp_types.html#ocp-channeltype"><span>Channel Types</span></a> for more details.</td>
+</tr>
+<tr class="row-even"><td>Datatype</td>
+<td>The data type of the channel you want to create. Refer to <a class="reference internal" href="../api/ocp_types.html#ocp-datatype"><span>Data Types</span></a> for more details.</td>
+</tr>
+<tr class="row-odd"><td>Description</td>
+<td>A description of the channel, usually contains relevent information for the user (who is using it, data stored there, etc.).</td>
+</tr>
+<tr class="row-even"><td>Read Only</td>
+<td>Whether or not you can modify the data existing in the channel (yes - read only, no - read and write).</td>
+</tr>
+<tr class="row-odd"><td>Resolution</td>
+<td>The resolution of the data being stored (defaults to 0 which is the highest resolution, each level reduces pixels by 2^n).</td>
+</tr>
+<tr class="row-even"><td>Enable Exceptions</td>
+<td>Enable exceptions for an annotation channel. Use the default option.</td>
+</tr>
+<tr class="row-odd"><td>Propagate</td>
+<td>The status of propagation level of the channel. Refer to <a class="reference internal" href="../api/ocp_types.html#ocp-propagation"><span>Propagation</span></a> for more details.</td>
+</tr>
+<tr class="row-even"><td>Start Window</td>
+<td>The lowest pixel intensity value (defaults to 0)</td>
+</tr>
+<tr class="row-odd"><td>End Window</td>
+<td>The highest pixel value (defaults to 65536).</td>
+</tr>
+<tr class="row-even"><td>Set as Default Channel</td>
+<td>Set the current channel to be the default channel in the project. By default the first channel is the default channel.</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <div class="section" id="token">
