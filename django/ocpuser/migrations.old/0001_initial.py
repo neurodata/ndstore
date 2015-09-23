@@ -13,30 +13,16 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Backup',
-            fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('protocol', models.CharField(max_length=255, choices=[(b'local', b'file system'), (b's3', b'Amazon S3')])),
-                ('description', models.CharField(default=b'', max_length=4096)),
-                ('datetimestamp', models.DateTimeField(auto_now_add=True)),
-                ('status', models.IntegerField(default=0, choices=[(0, b'Done'), (1, b'Processing'), (2, b'Failed')])),
-            ],
-            options={
-                'db_table': 'backups',
-                'managed': True,
-            },
-        ),
-        migrations.CreateModel(
             name='Channel',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('channel_name', models.CharField(max_length=255)),
                 ('channel_description', models.CharField(max_length=4096, blank=True)),
-                ('channel_type', models.CharField(max_length=255, choices=[(b'image', b'IMAGES'), (b'annotation', b'ANNOTATIONS'), (b'timeseries', b'TIMESERIES')])),
+                ('channel_type', models.CharField(max_length=255, choices=[(b'image', b'IMAGES'), (b'annotation', b'ANNOTATIONS'), (b'probmap', b'PROBABILITY_MAP'), (b'rgb', b'RGB'), (b'timeseries', b'TIMESERIES')])),
                 ('resolution', models.IntegerField(default=0)),
                 ('propagate', models.IntegerField(default=0, choices=[(0, b'NOT PROPAGATED'), (2, b'PROPAGATED')])),
                 ('channel_datatype', models.CharField(max_length=255, choices=[(b'uint8', b'uint8'), (b'uint16', b'uint16'), (b'uint32', b'uint32'), (b'uint64', b'uint64'), (b'float32', b'float32')])),
-                ('readonly', models.IntegerField(default=1, choices=[(1, b'Yes'), (0, b'No')])),
+                ('readonly', models.IntegerField(default=0, choices=[(1, b'Yes'), (0, b'No')])),
                 ('exceptions', models.IntegerField(default=0, choices=[(1, b'Yes'), (0, b'No')])),
                 ('startwindow', models.IntegerField(default=0)),
                 ('endwindow', models.IntegerField(default=0)),
@@ -66,7 +52,7 @@ class Migration(migrations.Migration):
                 ('scalinglevels', models.IntegerField(default=0)),
                 ('starttime', models.IntegerField(default=0)),
                 ('endtime', models.IntegerField(default=0)),
-                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL, blank=True)),
             ],
             options={
                 'db_table': 'datasets',
@@ -79,13 +65,13 @@ class Migration(migrations.Migration):
                 ('project_name', models.CharField(max_length=255, serialize=False, primary_key=True)),
                 ('project_description', models.CharField(max_length=4096, blank=True)),
                 ('public', models.IntegerField(default=0, choices=[(0, b'Private'), (1, b'Public')])),
-                ('host', models.CharField(default=b'localhost', max_length=255, choices=[(b'dsp061.pha.jhu.edu', b'default'), (b'dsp061.pha.jhu.edu', b'dsp061'), (b'dsp062.pha.jhu.edu', b'dsp062'), (b'dsp063.pha.jhu.edu', b'dsp063'), (b'localhost', b'localhost')])),
+                ('host', models.CharField(default=b'localhost', max_length=255, choices=[(b'localhost', b'localhost'), (b'openconnecto.me', b'openconnecto.me'), (b'braingraph1.cs.jhu.edu', b'braingraph1'), (b'braingraph1dev.cs.jhu.edu', b'braingraph1dev'), (b'braingraph2.cs.jhu.edu', b'braingraph2'), (b'dsp061.pha.jhu.edu', b'dsp061'), (b'dsp062.pha.jhu.edu', b'dsp062'), (b'dsp063.pha.jhu.edu', b'dsp063')])),
                 ('kvengine', models.CharField(default=b'MySQL', max_length=255, choices=[(b'MySQL', b'MySQL'), (b'Cassandra', b'Cassandra'), (b'Riak', b'Riak')])),
-                ('kvserver', models.CharField(default=b'dsp061.pha.jhu.edu', max_length=255, choices=[(b'dsp061.pha.jhu.edu', b'default'), (b'dsp061.pha.jhu.edu', b'dsp061'), (b'dsp062.pha.jhu.edu', b'dsp062'), (b'dsp063.pha.jhu.edu', b'dsp063'), (b'localhost', b'localhost')])),
+                ('kvserver', models.CharField(default=b'localhost', max_length=255, choices=[(b'localhost', b'localhost'), (b'openconnecto.me', b'openconnecto.me'), (b'braingraph1.cs.jhu.edu', b'braingraph1'), (b'braingraph1dev.cs.jhu.edu', b'braingraph1dev'), (b'braingraph2.cs.jhu.edu', b'braingraph2'), (b'dsp061.pha.jhu.edu', b'dsp061'), (b'dsp062.pha.jhu.edu', b'dsp062'), (b'dsp063.pha.jhu.edu', b'dsp063')])),
                 ('ocp_version', models.CharField(default=b'0.6', max_length=255)),
                 ('schema_version', models.CharField(default=b'0.6', max_length=255)),
                 ('dataset', models.ForeignKey(to='ocpuser.Dataset')),
-                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL, blank=True)),
             ],
             options={
                 'db_table': 'projects',
@@ -99,7 +85,7 @@ class Migration(migrations.Migration):
                 ('token_description', models.CharField(max_length=4096, blank=True)),
                 ('public', models.IntegerField(default=0, choices=[(0, b'Private'), (1, b'Public')])),
                 ('project', models.ForeignKey(to='ocpuser.Project')),
-                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL, blank=True)),
             ],
             options={
                 'db_table': 'tokens',
@@ -109,24 +95,10 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='channel',
             name='project',
-            field=models.ForeignKey(to='ocpuser.Project'),
-        ),
-        migrations.AddField(
-            model_name='backup',
-            name='channel',
-            field=models.ForeignKey(blank=True, to='ocpuser.Channel', null=True),
-        ),
-        migrations.AddField(
-            model_name='backup',
-            name='project',
-            field=models.ForeignKey(to='ocpuser.Project'),
+            field=models.ForeignKey(to='ocpuser.Project', blank=True),
         ),
         migrations.AlterUniqueTogether(
             name='channel',
             unique_together=set([('project', 'channel_name')]),
-        ),
-        migrations.AlterUniqueTogether(
-            name='backup',
-            unique_together=set([('project', 'datetimestamp')]),
         ),
     ]
