@@ -46,14 +46,18 @@ class IngestData:
     self.file_type = 'tif'
     # do something here to identify which type of data this is
     self.ingestImageStack()
+    # self.ingestCatmaidStack()
 
-  def fetchData(self, slice_list):
+  def fetchData(self, slice_list, time_value):
     """Fetch the next set of data from a remote source and place it locally"""
     
     # data is a TIF stack
     for slice_number in slice_list:
       try:
-        url = '{}{}/{}'.format(self.data_url, self.token, self.generateFileName(slice_number))
+        if time_value is None:
+          url = '{}{}/{}/{}/{}'.format(self.data_url, self.token, self.channel, time_value, self.generateFileName(slice_number))
+        else:
+          url = '{}{}/{}/{}'.format(self.data_url, self.token, self.channel, self.generateFileName(slice_number))
         urllib.urlretrieve('{}'.format(url), self.path+self.generateFileName(slice_number))
       except Exception, e:
         print "Failed to fetch url {}. File does not exist.".format(url)
@@ -162,7 +166,11 @@ class IngestData:
         for slice_number in range (zoffset, zimagesz+1, zcubedim):
           slab = np.zeros([zcubedim, yimagesz, ximagesz ], dtype=np.uint8)
           # fetch 16 slices at a time
-          self.fetchData(range(slice_number,slice_number+zcubedim) if slice_number+zcubedim<=zimagesz else range(slice_number,zimagesz))
+          if ch.getChannelType() in TIMESERIES_CHANNELS:
+            time_value = timestamp
+          else:
+            time_value = None
+          self.fetchData(range(slice_number,slice_number+zcubedim) if slice_number+zcubedim<=zimagesz else range(slice_number,zimagesz), time_value=time_value)
           for b in range(zcubedim):
             if (slice_number + b <= zimagesz):
               try:
