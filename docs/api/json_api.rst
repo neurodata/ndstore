@@ -1,12 +1,12 @@
 JSON API's
-***************
+**********
 
 .. _json-createchannel:
 
 createChannel
 -------------
   
-.. http:get:: (string:server_name)/ocp/ca/(string:token_name)/createChannel/
+.. http:post:: (string:server_name)/ocp/ca/(string:token_name)/createChannel/
 
    :synopsis: Create a list of channels for an existing project using the project token and JSON file.
 
@@ -59,7 +59,7 @@ createChannel
 deleteChannel
 -------------
 
-.. http:get:: (string:server_name)/ocp/ca/(string:token_name)/deleteChannel/
+.. http:post:: (string:server_name)/ocp/ca/(string:token_name)/deleteChannel/
 
    :synopsis: Delete a list of channels for an existing project using the project token and a JSON file.
 
@@ -102,7 +102,7 @@ deleteChannel
 createProject
 -------------
 
-.. http:get:: (string:server_name)/ocp/ca/createProject/
+.. http:post:: (string:server_name)/ocp/ca/createProject/
 
    :synopsis: Create a dataset, project and channels with a JSON file.
    
