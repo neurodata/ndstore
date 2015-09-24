@@ -1391,7 +1391,7 @@ def putNIFTI ( webargs, postdata ):
 def getSWC ( webargs ):
   """Return an SWC object generated from Skeletons/Nodes"""
 
-  [token, channel, swcstring, rest] = webargs.split('/',3)
+  [token, channel, resolution, swcstring, rest] = webargs.split('/',4)
 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
@@ -1403,7 +1403,7 @@ def getSWC ( webargs ):
     # Make a named temporary file for the SWC
     with closing (tempfile.NamedTemporaryFile()) as tmpfile:
 
-      ocpcaskel.querySWC ( tmpfile, ch, db, proj, skelids=None )
+      ocpcaskel.querySWC ( res, tmpfile, ch, db, proj, skelids=None )
 
       tmpfile.seek(0)
       return tmpfile.read()
@@ -1413,7 +1413,7 @@ def getSWC ( webargs ):
 def putSWC ( webargs, postdata ):
   """Put an SWC object into RAMON skeleton/tree nodes"""
 
-  [token, channel, optionsargs] = webargs.split('/',2)
+  [token, channel, resolution, optionsargs] = webargs.split('/',3)
 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
@@ -1433,7 +1433,7 @@ def putSWC ( webargs, postdata ):
       tmpfile.seek(0)
 
       # Parse the swc file into skeletons
-      swc_skels = ocpcaskel.ingestSWC ( tmpfile, ch, db )
+      swc_skels = ocpcaskel.ingestSWC ( resolution, tmpfile, ch, db )
 
       return swc_skels
 
