@@ -402,7 +402,7 @@ def minmaxProject (request, webargs):
     logger.exception("Unknown exception in (min|max) projection Web service")
     raise OCPCAError("Unknown exception in (min|max) projection Web service")
 
-def jsonProject(request, webargs):
+def createProject(request, webargs):
   """RESTful URL for creating a project using a JSON file"""
 
   try:

@@ -20,6 +20,7 @@ import requests
 from django.conf import settings
 
 import ocpcaproj
+from ocpcaingest import IngestData
 from ocpuser.models import Project
 from ocpuser.models import Dataset
 from ocpuser.models import Token
@@ -91,6 +92,8 @@ def createProject(webargs, post_data):
       pr.save()
       tk.project_id = pr.project_name
       tk.save()
+      pd = ocpcaproj.OCPCAProjectsDB()
+      pd.newOCPCAProject(pr.project_name)
 
     # Iterating over channel list to store channels
     for (ch, data_url, file_name) in ch_list:
@@ -99,11 +102,16 @@ def createProject(webargs, post_data):
       # Checking if the channel already exists or not
       if not Channel.objects.filter(channel_name = ch.channel_name, project = pr.project_name).exists():
         ch.save()
+        pd.newOCPCAChannel(pr.project_name, ch.channel_name)
       else:
         print "Channel already exists"
         raise
       
-      # KL TODO call the ingest function here
+      # KL TODO Call the celery worker here
+      from ocpca.tasks import ingest
+      ingest(tk.token_name, ch.channel_name, ch.resolution, data_url)
+      # ingest_data = IngestData(tk.token_name, ch.channel_name, ch.resolution, data_url)
+      # ingest_data.ingest()
     
     # Posting to LIMS system
     postMetadataDict(metadata_dict, pr.project_name)
@@ -111,6 +119,12 @@ def createProject(webargs, post_data):
     return_json = "SUCCESS"
   except Exception, e:
     # KL TODO Delete data from the LIMS systems
+    try:
+      pd
+    except NameError:
+      pd = ocpcaproj.OCPCAProjectsDB()
+    if pr is not None:
+      pd.deleteOCPCADB(pr.project_name)
     print "Error saving models"
     return_json = "FAILED"
 
