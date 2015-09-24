@@ -17,7 +17,7 @@ import re
 import annotation
 
       
-def ingestSWC ( swcfile, ch, db ):
+def ingestSWC ( res, swcfile, ch, db ):
   """Ingest the SWC file into a database.  This will involve:
         parsing out separate connected components as skeletons
         deduplicating nodes (for Vaa3d) """     
@@ -47,6 +47,8 @@ def ingestSWC ( swcfile, ch, db ):
         ( swcnodeidstr, nodetype, xpos, ypos, zpos, radius, swcparentidstr )  = line.split()
         swcnodeid = int(swcnodeidstr)
         swcparentid = int(swcparentidstr)
+
+        (xpos, ypos, zpos) = (xpos, ypos, zpos)*(2**res) 
 
         if swcparentid == -1:
           idsneeded += 2
@@ -136,7 +138,7 @@ def ingestSWC ( swcfile, ch, db ):
   return [ x.annid for (i,x) in skels.iteritems() ]
 
 
-def querySWC ( swcfile, ch, db, proj, skelids=None ):
+def querySWC ( res, swcfile, ch, db, proj, skelids=None ):
   """Query the list of skelids (skeletons) and populate an open file swcfile
      with lines of swc data."""
 
@@ -170,6 +172,8 @@ def querySWC ( swcfile, ch, db, proj, skelids=None ):
     # iterate over all nodes
     for node in nodegen: 
       (annid, nodetype, xpos, ypos, zpos, radius, parentid) = node
+
+      (xpos, ypos, zpos) = (xpos, ypos, zpos)/(2**res)
 
 #      skeletonid = node.getField ( 'skeletonid' )
 #      annid = node.getField ( 'annid' ) 
