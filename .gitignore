@@ -3,6 +3,7 @@
 #############
 
 ocpcaprivate.py
+settings.py
 settings_secret.py
 npzToPNGs.py
 activation_email.txt

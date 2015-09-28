@@ -85,14 +85,14 @@ class OCPCADB:
       self.conn = None
       self.cursor = None
       self.kvio = riakkvio.RiakKVIO(self)
-      self.NPZ = True
+      self.NPZ = False
     
     elif self.proj.getKVEngine() == 'Cassandra':
       import casskvio
       self.conn = None
       self.cursor = None
       self.kvio = casskvio.CassandraKVIO(self)
-      self.NPZ = True
+      self.NPZ = False
     else:
       raise OCPCAError ("Unknown key/value store. Engine = {}".format(self.proj.getKVEngine()))
 
@@ -336,22 +336,11 @@ class OCPCADB:
     if not cubestr:
       cube.zeros()
     else:
-      # Handle the cube format here.  
+      # Handle the cube format here and decompress the cube
       if self.NPZ:
-          # decompress the cube
-          cube.fromNPZ ( cubestr )
-          #cube.fromBlosc ( cubestr )
-
+        cube.fromNPZ ( cubestr )
       else:
-          # cubes are HDF5 files
-          with closing(tempfile.NamedTemporaryFile()) as tmpfile:
-            tmpfile.write(cubestr)
-            tmpfile.seek(0)
-            h5 = h5py.File(tmpfile.name) 
-  
-            # load the numpy array
-            cube.data = np.array(h5['cuboid'])
-            h5.close()
+        cube.fromBlosc ( cubestr )
 
     return cube
 
@@ -361,27 +350,20 @@ class OCPCADB:
     
     return self.kvio.getCubes(ch, listofidxs, resolution, neariso)
 
+  def putCubes(self, ch, listofidxs, resolution, listofcubes, update=False):
+    """Insert a list of cubes"""
+
+    return self.kvio.putCubes(ch, listofidxs, resolution, listofcubes, update)
 
   def putCube(self, ch, zidx, resolution, cube, update=False):
     """ Store a cube in the annotation database """
   
-    #if cube.isNotZeros() and ch.getChannelType() not in ANNOTATION_CHANNELS:
-    if True:
-    #  RB the above line of code is broken.  We need to write 0s to the database when shaving annotations.
-    #  they overwrite existing non-zero annotations.
-      # Handle the cube format here.  
-      if self.NPZ:
-        self.kvio.putCube(ch, zidx, resolution, cube.toNPZ(), not cube.fromZeros())
-        #self.kvio.putCube(ch, zidx, resolution, cube.toBlosc(), not cube.fromZeros())
-      else:
-        with closing(tempfile.NamedTemporaryFile()) as tmpfile:
-          h5 = h5py.File ( tmpfile.name, driver="core" )
-          h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype, compression='gzip',  data=cube.data )
-          h5.close()
-          tmpfile.seek(0)
-
-          self.kvio.putCube(ch, zidx, resolution, tmpfile.read(), not cube.fromZeros())
-    
+    # Handle the cube format here.  
+    if self.NPZ:
+      self.kvio.putCube(ch, zidx, resolution, cube.toNPZ(), not cube.fromZeros())
+    else:
+      self.kvio.putCube(ch, zidx, resolution, cube.toBlosc(), not cube.fromZeros())
+  
   
   # GET AND PUT methods for Timeseries Database
   
@@ -398,22 +380,11 @@ class OCPCADB:
     if not cubestr:
       cube.zeros()
     else:
-      # Handle the cube format here.  
+      # Handle the cube format here and decompress the cube
       if self.NPZ:
-          # decompress the cube
-          cube.fromNPZ(cubestr)
-          #cube.fromBlosc(cubestr)
-
+        cube.fromNPZ(cubestr)
       else:
-        # cubes are HDF5 files
-        with closing(tempfile.NamedTemporaryFile()) as tmpfile:
-          tmpfile.write(cubestr)
-          tmpfile.seek(0)
-          h5 = h5py.File(tmpfile.name) 
-
-          # load the numpy array
-          cube.data = np.array(h5['cuboid'])
-          h5.close()
+        cube.fromBlosc(cubestr)
 
     return cube
   
@@ -431,14 +402,8 @@ class OCPCADB:
       # Handle the cube format here.  
       if self.NPZ:
         self.kvio.putTimeCube(ch, zidx, timestamp, resolution, cube.toNPZ(), update)
-        #self.kvio.putTimeCube(ch, zidx, timestamp, resolution, cube.toBlosc(), update)
       else:
-        with closing(tempfile.NamedTemporaryFile()) as tmpfile:
-          h5 = h5py.File ( tmpfile.name, driver='core', backing_store=True )
-          h5.create_dataset ( "cuboid", tuple(cube.data.shape), cube.data.dtype, compression='gzip',  data=cube.data )
-          h5.close()
-          tmpfile.seek(0)
-          self.kvio.putTimeSeriesCube ( zidx, timestamp, resolution, tmpfile.read(), update )
+        self.kvio.putTimeCube(ch, zidx, timestamp, resolution, cube.toBlosc(), update)
   
   def getExceptions ( self, ch, zidx, resolution, annoid ):
     """Load a cube from the annotation database"""
@@ -447,18 +412,8 @@ class OCPCADB:
     if excstr:
       if self.NPZ:
         return np.load(cStringIO.StringIO ( zlib.decompress(excstr)))
-        #return blosc.unpack_array(excstr)
       else:
-        # cubes are HDF5 files
-        with closing(tempfile.NamedTemporaryFile()) as tmpfile:
-          tmpfile.write ( excstr )
-          tmpfile.seek(0)
-          h5 = h5py.File ( tmpfile.name ) 
-  
-          # load the numpy array
-          excs = np.array ( h5['exceptions'] )
-          h5.close()
-          return excs
+        return blosc.unpack_array(excstr)
 
     else:
       return []
@@ -485,7 +440,7 @@ class OCPCADB:
 
   def putExceptions ( self, ch, key, resolution, exid, exceptions, update ):
     """Package the object and transact with kvio"""
-
+    
     exceptions = np.array ( exceptions, dtype=np.uint32 )
 
     #RBMAYBE make exceptions zipped in a future incompatible version??
@@ -493,15 +448,9 @@ class OCPCADB:
       fileobj = cStringIO.StringIO ()
       np.save ( fileobj, exceptions )
       excstr = fileobj.getvalue()
-      #excstr = blosc.pack_array(exceptions)
-      self.kvio.putExceptions(ch, key, resolution, exid, excstr, update)
+      self.kvio.putExceptions(ch, key, resolution, exid, zlib.compress(excstr), update)
     else:
-      with closing (tempfile.NamedTemporaryFile()) as tmpfile:
-        h5 = h5py.File ( tmpfile.name )
-        h5.create_dataset ( "exceptions", tuple(exceptions.shape), exceptions.dtype, compression='gzip',  data=exceptions )
-        h5.close()
-        tmpfile.seek(0)
-        self.kvio.putExceptions(ch, key, resolution, exid, tmpfile.read(), update)
+      self.kvio.putExceptions(ch, key, resolution, exid, blosc.pack_array(exceptions), update)
 
 
   def removeExceptions ( self, ch, key, resolution, entityid, exceptions ):
@@ -537,8 +486,10 @@ class OCPCADB:
       return [None,None]
     else: 
       # decompress the cube
-      cube.fromNPZ ( row[1] )
-      #cube.fromBlosc ( row[1] )
+      if self.NPZ:
+        cube.fromNPZ ( row[1] )
+      else:
+        cube.fromBlosc ( row[1] )
       return [row[0],cube]
 
 
@@ -622,15 +573,6 @@ class OCPCADB:
     self.annoIdx.updateIndexDense(ch, cubeidx, resolution)
     # commit cubes.  not commit controlled with metadata
     self.kvio.commit()
-
-
-  #
-  # putCubeSSD
-  # 
-  def putCubeSSD ( key, reolution, cube ):
-    """ Write the cube to SSD's """
-    print "HELLO"
-
 
 
   #
@@ -1000,18 +942,8 @@ class OCPCADB:
 
         if self.NPZ:
           incube.fromNPZ ( datastring[:] )
-          #incube.fromBlosc ( datastring[:] )
-
         else:
-          # cubes are HDF5 files
-          with closing(tempfile.NamedTemporaryFile()) as tmpfile:
-            tmpfile.write ( datastring )
-            tmpfile.seek(0)
-            h5 = h5py.File ( tmpfile.name, driver='core', backing_store=False ) 
-            # load the numpy array
-            incube.data = np.array ( h5['cuboid'] )
-
-            h5.close()
+          incube.fromBlosc ( datastring[:] )
 
         # apply exceptions if it's an annotation project
         if annoids!= None and ch.getChannelType() in ANNOTATION_CHANNELS:
@@ -1102,18 +1034,8 @@ class OCPCADB:
 
           if self.NPZ:
             incube.fromNPZ(datastring[:])
-            #incube.fromBlosc(datastring[:])
-
           else:
-            # cubes are HDF5 files
-            with closing(tempfile.NamedTemporaryFile()) as tmpfile:
-              tmpfile = tempfile.NamedTemporaryFile ()
-              tmpfile.write ( datastring )
-              tmpfile.seek(0)
-              h5 = h5py.File ( tmpfile.name, driver='core', backing_store=False ) 
-              # load the numpy array
-              incube.data = np.array ( h5['cuboid'] )
-              h5.close()
+            incube.fromBlosc(datastring[:])
           
           # add it to the output cube
           outcube.addData(incube, offset, timestamp)
@@ -1540,7 +1462,7 @@ class OCPCADB:
             clause += '%s %s %s' % ( field, op, val )
 
 
-          #RBTODO key/value fields?
+          #RB TODO key/value fields?
 
           else:
             raise OCPCAError ( "Illegal field in URL: %s" % (field) )
@@ -1566,6 +1488,50 @@ class OCPCADB:
 
     return np.array(annoids)
 
+  def writeCuboids(self, ch, corner, resolution, cuboiddata):
+    """Write an arbitary size data to the database"""
+   
+    # dim is in xyz, data is in zyx order
+    dim = cuboiddata.shape[::-1]
+    
+    # get the size of the image and cube
+    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
+    
+    # Round to the nearest larger cube in all dimensions
+    start = [xstart, ystart, zstart] = map(div, corner, cubedim)
+
+    znumcubes = (corner[2]+dim[2]+zcubedim-1)/zcubedim - zstart
+    ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
+    xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
+
+    offset = [xoffset, yoffset, zoffset] = map(mod, corner, cubedim)
+    
+    databuffer = np.zeros ([znumcubes*zcubedim, ynumcubes*ycubedim, xnumcubes*xcubedim], dtype=cuboiddata.dtype )
+    databuffer [ zoffset:zoffset+dim[2], yoffset:yoffset+dim[1], xoffset:xoffset+dim[0] ] = cuboiddata 
+
+    incube = Cube.getCube ( cubedim, ch.getChannelType(), ch.getDataType() )
+    
+    self.kvio.startTxn()
+    
+    listofidxs = []
+    listofcubes = []
+
+    try:
+      for z in range(znumcubes):
+        for y in range(ynumcubes):
+          for x in range(xnumcubes):
+
+            listofidxs.append(ocplib.XYZMorton ([x+xstart,y+ystart,z+zstart]))
+            incube.data = databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ]
+            listofcubes.append(incube.toBlosc())
+
+      self.putCubes(ch, listofidxs, resolution, listofcubes, update=False)
+
+    except:
+      self.kvio.rollback()
+      raise
+
+    self.kvio.commit()
 
   def writeCuboid(self, ch, corner, resolution, cuboiddata):
     """Write an image through the Web service"""
@@ -1577,17 +1543,19 @@ class OCPCADB:
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
     # Round to the nearest larger cube in all dimensions
-    zstart = corner[2]/zcubedim
-    ystart = corner[1]/ycubedim
-    xstart = corner[0]/xcubedim
+    start = [xstart, ystart, zstart] = map(div, corner, cubedim)
+    #zstart = corner[2]/zcubedim
+    #ystart = corner[1]/ycubedim
+    #xstart = corner[0]/xcubedim
 
     znumcubes = (corner[2]+dim[2]+zcubedim-1)/zcubedim - zstart
     ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
     xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
 
-    zoffset = corner[2]%zcubedim
-    yoffset = corner[1]%ycubedim
-    xoffset = corner[0]%xcubedim
+    offset = [xoffset, yoffset, zoffset] = map(mod, corner, cubedim)
+    #zoffset = corner[2]%zcubedim
+    #yoffset = corner[1]%ycubedim
+    #xoffset = corner[0]%xcubedim
 
     databuffer = np.zeros ([znumcubes*zcubedim, ynumcubes*ycubedim, xnumcubes*xcubedim], dtype=cuboiddata.dtype )
     databuffer [ zoffset:zoffset+dim[2], yoffset:yoffset+dim[1], xoffset:xoffset+dim[0] ] = cuboiddata 

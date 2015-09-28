@@ -22,6 +22,7 @@ import cStringIO
 import csv
 import re
 import json
+import blosc
 from PIL import Image
 import MySQLdb
 import itertools
@@ -128,6 +129,43 @@ def numpyZip ( chanargs, proj, db ):
     fileobj = cStringIO.StringIO(cdz)
     fileobj.seek(0)
     return fileobj.read()
+
+  except Exception,e:
+    raise OCPCAError("{}".format(e))
+
+def BLOSC ( chanargs, proj, db ):
+  """Return a web readable blosc file"""
+
+  try:
+    # argument of format channel/service/imageargs
+    m = re.match("([\w+,]+)/(\w+)/([\w+,/-]+)$", chanargs)
+    [channels, service, imageargs] = [i for i in m.groups()]
+  except Exception, e:
+    logger.warning("Arguments not in the correct format {}. {}".format(chanargs, e))
+    raise OCPCAError("Arguments not in the correct format {}. {}".format(chanargs, e))
+
+  try: 
+    channel_list = channels.split(',')
+    ch = proj.getChannelObj(channel_list[0])
+
+    channel_data = cutout( imageargs, ch, proj, db ).data
+    cubedata = np.zeros ( (len(channel_list),)+channel_data.shape, dtype=channel_data.dtype )
+    cubedata[0,:] = channel_data
+
+    # if one channel convert 3-d to 4-d array
+    for idx,channel_name in enumerate(channel_list[1:]):
+      if channel_name == '0':
+        continue
+      else:
+        ch = proj.getChannelObj(channel_name)
+        if OCP_dtypetonp[ch.getDataType()] == cubedata.dtype:
+          cubedata[idx+1,:] = cutout(imageargs, ch, proj, db).data
+        else:
+          raise OCPCAError("The npz cutout can only contain cutouts of one single Channel Type.")
+
+    
+    # Create the compressed cube
+    return blosc.pack_array(cubedata)
 
   except Exception,e:
     raise OCPCAError("{}".format(e))
@@ -568,6 +606,8 @@ def selectService ( service, webargs, proj, db ):
     return tiff3d ( webargs, proj, db )
   elif service in ['npz']:
     return  numpyZip ( webargs, proj, db ) 
+  elif service in ['blosc']:
+    return  BLOSC ( webargs, proj, db ) 
   elif service in ['zip']:
     return  binZip ( webargs, proj, db ) 
   elif service == 'id':
@@ -616,20 +656,22 @@ def selectPost ( webargs, proj, db, postdata ):
 
     try:
 
-      if service == 'npz':
+      if service in ['npz', 'blosc']:
 
         # get the data out of the compressed blob
-        rawdata = zlib.decompress ( postdata )
-        fileobj = cStringIO.StringIO ( rawdata )
-        voxarray = np.load ( fileobj )
+        if service == 'npz':
+          rawdata = zlib.decompress ( postdata )
+          fileobj = cStringIO.StringIO ( rawdata )
+          voxarray = np.load ( fileobj )
+        elif service == 'blosc':
+          voxarray = blosc.unpack_array(postdata)
         
         if voxarray.shape[0] != len(channel_list):
-          logger.warning("The npz data has some missing channels")
-          raise OCPCAError("The npz data has some missing channels")
+          logger.warning("The data has some missing channels")
+          raise OCPCAError("The data has some missing channels")
       
         for idx,channel_name in enumerate(channel_list):
           ch = proj.getChannelObj(channel_name)
-          #ch = ocpcaproj.OCPCAChannel(proj, channel)
   
           # Don't write to readonly channels
           if ch.getReadOnly() == READONLY_TRUE:
@@ -648,7 +690,7 @@ def selectPost ( webargs, proj, db, postdata ):
           
           elif ch.getChannelType() in ANNOTATION_CHANNELS:
             db.annotateDense(ch, corner, resolution, voxarray[idx,:], conflictopt)
-
+      
       elif service == 'hdf5':
   
         # Get the HDF5 file.
