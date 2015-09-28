@@ -16,14 +16,14 @@ Using the existing project with the relevant image data create a channel of the 
 Overview
 ========
 
-`The Console <http://openconnecto.me/ocp/ocpuser/profile/>`_ allows data to be uploaded and downloaded to OCP as well as access other services within OCP. Data in OCP is organized into datasets and projects, see below for a more extensive description of each. The diagram below shows how the overall service is organized;
+`The Console <http://openconnecto.me/ocp/ocpuser/profile/>`_ allows data to be uploaded and downloaded to NeuroData as well as access other services within Neurodata. Data in Neurodata is organized into datasets and projects, see below for a more extensive description of each. The diagram below shows how the overall service is organized.
 
 .. figure:: ../images/ocpservicediagram.png
 	:align: center 
 	:width: 500
 	:height: 200
 	
-Datasets are present on the OCP server and are accessed through projects. These datasets can hold multiple types of data, including image, annotation, etc. When a specific type of data needs to be accessed in a dataset (via the project), say for example 8-bit image data, a channel is created in the project for that specific datatype. The project (and in turn the channels and the dataset) is accessible by a token, which serves as an access point for anyone that has the token. 
+Datasets are present on the Neurodata server and are accessed through projects. These datasets can hold multiple types of data, including image, annotation, etc. When a specific type of data needs to be accessed in a dataset (via the project), say for example 8-bit image data, a channel is created in the project for that specific datatype. The project (and in turn the channels and the dataset) is accessible by a token, which serves as an access point for anyone that has the token. 
 
 Datasets
 ========
@@ -44,11 +44,11 @@ Navigate to the datasets drop down menu and select create dataset. Fill in the a
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
 | Description             | A description of the data being uploaded, good things to include may be species and the location of where the images are from. |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-|X, Y, Z Image Size       | This is the size of the X, Y and Z plane.                                                                                      |
+|X, Y, Z Image Size       | This is the size of the X, Y and Z plane in pixels                                                                             |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-|X, Y, Z Offset           | Amount to offset in the X, Y and Z plane.                                                                                      |
+|X, Y, Z Offset           | Amount to offset in the X, Y and Z plane in pixels                                                                             |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-|PUBLIC                   | Whether or not the template (not the data) is viewable by everyone using OCP.                                                  |
+|PUBLIC                   | Whether or not the template (not the data) is viewable by everyone using Neurodata (can select public or private).             |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
 |Scaling Level            | Sets the resolution level for the dataset.                                                                                     |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
@@ -91,7 +91,7 @@ To manage a project navigate to the projects dropdown menu and select view proje
 +--------------------------+-----------------------------------------------------------------------------------------+
 |KV Server                 | This is the KV key-server. Use the default option.                                      |
 +--------------------------+-----------------------------------------------------------------------------------------+
-|Link to Existing Database | Use this option if the project database is already present on OCP servers.              |
+|Link to Existing Database | Use this option if the project database is already present on Neurodata servers.        |
 +--------------------------+-----------------------------------------------------------------------------------------+
 |Create a Default Token    | Creates a default token for the project.                                                | 
 +--------------------------+-----------------------------------------------------------------------------------------+
