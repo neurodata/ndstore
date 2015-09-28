@@ -23,23 +23,25 @@
 import json
 import os
 from postmethods import getURL
+import requests
 SITE_HOST = localhost
 
 def main():
 
   parser = argparse.ArgumentParser(description="By default this script will verify the given json file and then generate a post data link")
-  parser.add_argument('--path', action='store', type=str, default='', help='Location of project files')
-  parser.add_argument('--jsonfile', action='store', type=str, default='ocp.JSON', help='Filename of json')
+  parser.add_argument('--path', action='store', type=str, help='Location of project files')
+  parser.add_argument('--jsonfile', action='store', type=str, help='Filename of json')
   result = parser.parse_args()
 
-  with open('ocp.JSON') as df:
+  with open(result.jsonfile) as df:
       data = json.load(df)
 
   #assert(VerifyPath(data, path))
-  VerifyDataset(data)
+  #VerifyDataset(data)
   VerifyPath(data, path)
+  PutData(result.path, result.jsonfile)
 
-
+"""
 def VerifyDataset(data):
   try:
     token = data["project"]["token_name"]
@@ -54,6 +56,7 @@ def VerifyDataset(data):
 
   if (data["channel"]["channel_type"]=="timeseries"):
     assert(dbinfo["dataset"]["timerange"]==data["dataset"]["timerange"])
+"""
 
 def VerifyPath(data, path):
   #Insert try and catch blocks
@@ -78,7 +81,14 @@ def VerifyPath(data, path):
         work_path = "{}/{}/{}/".format(path, token_name, channel_names[n])
         assert((not os.listdir(work_path)))
 
-def PutData(data):
+def PutData(path, name):
+  #try to cURL data to the server
+  URLPath = "{}/ocp/ca/createProject/".format(SITE_HOST)
+  try:
+      r = requests.post(URLPath, data=("{}{}".format(path, name)))
+  except:
+      print "Error in accessing JSON file, please double check name and path."
+
 
 if __name__ == "__main__":
   main()
