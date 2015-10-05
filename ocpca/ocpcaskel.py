@@ -16,6 +16,12 @@ import re
 
 import annotation
 
+from ocptype import ISOTROPIC
+
+from ocpcaerror import OCPCAError
+import logging
+logger=logging.getLogger("ocp")
+
       
 def ingestSWC ( res, swcfile, ch, db ):
   """Ingest the SWC file into a database.  This will involve:
@@ -48,8 +54,6 @@ def ingestSWC ( res, swcfile, ch, db ):
         swcnodeid = int(swcnodeidstr)
         swcparentid = int(swcparentidstr)
 
-        (xpos, ypos, zpos) = (xpos, ypos, zpos)*(2**res) 
-
         if swcparentid == -1:
           idsneeded += 2
         else:
@@ -74,6 +78,15 @@ def ingestSWC ( res, swcfile, ch, db ):
         ( swcnodeidstr, nodetype, xpos, ypos, zpos, radius, swcparentidstr )  = line.split()
         swcnodeid = int(swcnodeidstr)
         swcparentid = int(swcparentidstr)
+
+        # scale points to resolution 
+        xpos = float(xpos)*(2**res) 
+        ypos = float(ypos)*(2**res) 
+        # check for isotropic
+        if db.datasetcfg.scalingoption == ISOTROPIC:
+          zpos = float(zpos)*(2**res) 
+        else:
+          zpos = float(zpos)
 
         # create a node
         node = annotation.AnnNode( db ) 
@@ -171,16 +184,15 @@ def querySWC ( res, swcfile, ch, db, proj, skelids=None ):
 
     # iterate over all nodes
     for node in nodegen: 
+
       (annid, nodetype, xpos, ypos, zpos, radius, parentid) = node
 
-      (xpos, ypos, zpos) = (xpos, ypos, zpos)/(2**res)
-
-#      skeletonid = node.getField ( 'skeletonid' )
-#      annid = node.getField ( 'annid' ) 
-#      nodetype = node.getField ( 'nodetype')
-#      (xpos,ypos,zpos) = node.getField ( 'location')
-#      radius = node.getField ( 'radius')
-#      parentid = node.getField ( 'parentid')
+      # scale points to resolution 
+      xpos = xpos/(2**res) 
+      ypos = ypos/(2**res) 
+      # check for isotropic
+      if db.datasetcfg.scalingoption == ISOTROPIC:
+        zpos = zpos/(2**res) 
 
       # write an node in swc
       # n T x y z R P

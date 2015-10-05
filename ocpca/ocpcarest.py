@@ -209,6 +209,7 @@ def HDF5(chanargs, proj, db):
   tmpfile.seek(0)
   return tmpfile.read()
 
+
 def postTiff3d ( channel, postargs, proj, db, postdata ):
   """Upload a tiff to the database"""
 
@@ -1391,7 +1392,8 @@ def putNIFTI ( webargs, postdata ):
 def getSWC ( webargs ):
   """Return an SWC object generated from Skeletons/Nodes"""
 
-  [token, channel, resolution, swcstring, rest] = webargs.split('/',4)
+  [token, channel, service, resstr, rest] = webargs.split('/',4)
+  resolution = int(resstr)
 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
@@ -1403,7 +1405,7 @@ def getSWC ( webargs ):
     # Make a named temporary file for the SWC
     with closing (tempfile.NamedTemporaryFile()) as tmpfile:
 
-      ocpcaskel.querySWC ( res, tmpfile, ch, db, proj, skelids=None )
+      ocpcaskel.querySWC ( resolution, tmpfile, ch, db, proj, skelids=None )
 
       tmpfile.seek(0)
       return tmpfile.read()
@@ -1413,7 +1415,8 @@ def getSWC ( webargs ):
 def putSWC ( webargs, postdata ):
   """Put an SWC object into RAMON skeleton/tree nodes"""
 
-  [token, channel, resolution, optionsargs] = webargs.split('/',3)
+  [token, channel, service, resstr, optionsargs] = webargs.split('/',4)
+  resolution = int(resstr)
 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
