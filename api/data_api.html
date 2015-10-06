@@ -150,6 +150,10 @@
 <li class="toctree-l3"><a class="reference internal" href="#get-yz-slice-cutout">GET YZ Slice Cutout</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#jpeg-service">JPEG Service</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#jpeg-get">GET</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="ramon_api.html">RAMON API&#8217;s</a><ul>
@@ -196,6 +200,7 @@
 <li class="toctree-l1"><a class="reference internal" href="tile_api.html">Tile API&#8217;s</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="tile_api.html#getsimpletile">getSimpleTile</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tile_api.html#getmcfctile">getMcfcTile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tile_api.html#getvikingtile">getVikingTile</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="graphgen_api.html">GrahpGen API&#8217;s</a><ul>
@@ -606,6 +611,59 @@
 
 <div class="figure align-center">
 <a class="reference internal image-reference" href="../_images/slice_yz.png"><img alt="../_images/slice_yz.png" src="../_images/slice_yz.png" style="width: 500px; height: 200px;" /></a>
+</div>
+</div>
+</div>
+<div class="section" id="jpeg-service">
+<h2>JPEG Service<a class="headerlink" href="#jpeg-service" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="jpeg-get">
+<span id="id3"></span><h3>GET<a class="headerlink" href="#jpeg-get" title="Permalink to this headline">¶</a></h3>
+<dl class="get">
+<dt id="get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-jpeg-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/jpeg/</code><span class="sig-paren">(</span><em class="property">int: </em><em>resolution</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_x</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_x</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_y</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_y</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_z</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_z</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-jpeg-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Get a jpeg file from the server</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in OCP. In the general case this is openconnecto.me.</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; Token Name in OCP.</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; Channel Name in OCP. <em>Optional</em>. If missing will use default channel for the token.</li>
+<li><strong>resolution</strong> (<em>int</em>) &#8211; Resolution for the data</li>
+<li><strong>min_x</strong> (<em>int</em>) &#8211; Minimum value in the xrange</li>
+<li><strong>max_x</strong> (<em>int</em>) &#8211; Maximum value in the xrange</li>
+<li><strong>min_y</strong> (<em>int</em>) &#8211; Minimum value in the yrange</li>
+<li><strong>max_y</strong> (<em>int</em>) &#8211; Maximum value in the yrange</li>
+<li><strong>min_z</strong> (<em>int</em>) &#8211; Minimum value in the zrange</li>
+<li><strong>max_z</strong> (<em>int</em>) &#8211; Maximum value in the zrange</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; No error</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; Error in the syntax or file format</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example Request</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span class="nf">GET</span> <span class="nn">/ocp/ca/kasthuri11/image/jpeg/0/5000,5500/5000,5500/150,152/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">openconnecto.me</span>
+</pre></div>
+</div>
+<p><strong>Example Response</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">image/jpeg</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<div class="figure align-center">
+<a class="reference internal image-reference" href="../_images/slice_jpeg.jpg"><img alt="../_images/slice_jpeg.jpg" src="../_images/slice_jpeg.jpg" style="width: 500px; height: 1000px;" /></a>
 </div>
 </div>
 </div>
