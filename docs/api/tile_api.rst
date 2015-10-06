@@ -110,7 +110,7 @@ getMcfcTile
 getVikingTile
 -------------
 
-.. http:get:: (string:server_name)/ocp/catmaid/viking/(string:token_name)/volume/(string:channel_name)/(int:resolution)/X(int:xtile)_Y(int:xtile)_Z(int:zvalue)
+.. http:get:: (string:server_name)/ocp/catmaid/viking/(string:token_name)/volume/(string:channel_name)/(int:resolution)/X(int:xtile)_Y(int:xtile)_Z(int:zvalue).png
    
    :synopsis: Get a 512x512 tile from the database
 
@@ -136,7 +136,7 @@ getVikingTile
    
    .. sourcecode:: http
    
-      GET  /ocp/catmaid/viking/kasthuri11/volume/image/4/X1_Y1_Z10 HTTP/1.1
+      GET  /ocp/catmaid/viking/kasthuri11/volume/image/4/X1_Y1_Z10.png HTTP/1.1
       Host: openconnecto.me
    
    **Example Response**:
