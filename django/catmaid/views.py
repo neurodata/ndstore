@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
 import re
 import django.http
 from django.views.decorators.cache import cache_control
@@ -87,7 +88,10 @@ def simplevikingview (request, webargs):
 
     sc = simplecatmaid.SimpleCatmaid()
     imgfobj = sc.getTile(webargs)
-    return django.http.HttpResponse(imgfobj.read(), content_type="image/png")
+    response = django.http.HttpResponse(imgfobj.read(), content_type="image/png")
+    imgfobj.seek(0)
+    response['Content-length'] = sys.getsizeof(imgfobj.read())
+    return response
 
   except OCPCAError, e:
     return django.http.HttpResponseNotFound(e)
