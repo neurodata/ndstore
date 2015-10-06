@@ -179,6 +179,11 @@
     1. test_get_blosc
     2. test_post_blosc
 
+* test_jpeg.py - 2 tests
+
+  - Module : Test_Jpeg
+    1. test_get_jpeg
+
 * tests to add
   1. Test filter for image slices
   2. Test neurons, segments and synapses
