@@ -18,7 +18,7 @@
 
 ## List of Tests:
 
-* test_image - 16 tests
+* test_image - 21 tests
   
   - Module : Test_Image_Slice
     1. test_xy
@@ -51,6 +51,9 @@
   - Module : Test_Image_Default
     1. test_npz_default_channel
     2. test_xy_default_channel
+  
+  - Module : Test_Image_Simple_Catmaid
+    1. test_xy_tile
 
 * test_info - 4 tests
 
@@ -123,7 +126,7 @@
     11. test_organelle_field
     12. test_wrong_field
 
-* test_time.py - 12 tests
+* test_time.py - 17 tests
   
   - Module : Test_Image_Slice
     1. test_xy
