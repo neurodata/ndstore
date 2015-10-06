@@ -196,6 +196,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="">Tile API&#8217;s</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#getsimpletile">getSimpleTile</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#getmcfctile">getMcfcTile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#getvikingtile">getVikingTile</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="graphgen_api.html">GrahpGen API&#8217;s</a><ul>
@@ -259,7 +260,7 @@
 <h1>Tile API&#8217;s<a class="headerlink" href="#tile-api-s" title="Permalink to this headline">¶</a></h1>
 <p>You can also view the <a class="reference external" href="http://docs.neurodata.io/ocptilecache/api/tilecache_api.html">Tilecache API&#8217;s</a> which work similarly for <a class="reference external" href="http://docs.neurodata.io/ocptilecache/index.html">ocptilecache</a>.</p>
 <div class="section" id="getsimpletile">
-<h2>getSimpleTile<a class="headerlink" href="#getsimpletile" title="Permalink to this headline">¶</a></h2>
+<span id="simple-tile"></span><h2>getSimpleTile<a class="headerlink" href="#getsimpletile" title="Permalink to this headline">¶</a></h2>
 <dl class="get">
 <dt id="get-(string-server_name)-ocp-catmaid-(string-token_name)-(string-channel_name)-(string-slice_type)-(int-time)-(int-zvalue)-(int-ytile)_(int-xtile)_(int-resolution).png">
 <code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/catmaid/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>slice_type</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>time</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>zvalue</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>ytile</em><span class="sig-paren">)</span><code class="descname">_</code><span class="sig-paren">(</span><em class="property">int: </em><em>xtile</em><span class="sig-paren">)</span><code class="descname">_</code><span class="sig-paren">(</span><em class="property">int: </em><em>resolution</em><span class="sig-paren">)</span><code class="descname">.png</code><a class="headerlink" href="#get-(string-server_name)-ocp-catmaid-(string-token_name)-(string-channel_name)-(string-slice_type)-(int-time)-(int-zvalue)-(int-ytile)_(int-xtile)_(int-resolution).png" title="Permalink to this definition">¶</a></dt>
@@ -267,7 +268,7 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Get a 512x512 tile from the tilecache</p>
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Get a 512x512 tile from the database</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
@@ -308,7 +309,7 @@
 </div>
 </div>
 <div class="section" id="getmcfctile">
-<h2>getMcfcTile<a class="headerlink" href="#getmcfctile" title="Permalink to this headline">¶</a></h2>
+<span id="mcfc-tile"></span><h2>getMcfcTile<a class="headerlink" href="#getmcfctile" title="Permalink to this headline">¶</a></h2>
 <dl class="get">
 <dt id="get-(string-server_name)-ocp-catmaid-mcfc-(string-token_name)-(string-channel_name)-(string-color_name)-(string-slice_type)-(int-time)-(int-zvalue)-(int-ytile)_(int-xtile)_(int-resolution).png">
 <code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/catmaid/mcfc/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">:</code><span class="sig-paren">(</span><em class="property">string: </em><em>color_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>slice_type</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>time</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>zvalue</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>ytile</em><span class="sig-paren">)</span><code class="descname">_</code><span class="sig-paren">(</span><em class="property">int: </em><em>xtile</em><span class="sig-paren">)</span><code class="descname">_</code><span class="sig-paren">(</span><em class="property">int: </em><em>resolution</em><span class="sig-paren">)</span><code class="descname">.png</code><a class="headerlink" href="#get-(string-server_name)-ocp-catmaid-mcfc-(string-token_name)-(string-channel_name)-(string-color_name)-(string-slice_type)-(int-time)-(int-zvalue)-(int-ytile)_(int-xtile)_(int-resolution).png" title="Permalink to this definition">¶</a></dt>
@@ -316,7 +317,7 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Get a 512x512 tile from the tilecache</p>
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Get a 512x512 tile from the database</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
@@ -355,6 +356,53 @@
 
 <div class="figure align-center">
 <a class="reference internal image-reference" href="../_images/mcfc_image_tile.png"><img alt="../_images/mcfc_image_tile.png" src="../_images/mcfc_image_tile.png" style="width: 512px; height: 512px;" /></a>
+</div>
+</div>
+<div class="section" id="getvikingtile">
+<span id="viking-tile"></span><h2>getVikingTile<a class="headerlink" href="#getvikingtile" title="Permalink to this headline">¶</a></h2>
+<dl class="get">
+<dt id="get-(string-server_name)-ocp-catmaid-viking-(string-token_name)-volume-(string-channel_name)-(int-resolution)-X(int-xtile)_Y(int-xtile)_Z(int-zvalue)">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/catmaid/viking/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/volume/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>resolution</em><span class="sig-paren">)</span><code class="descname">/X</code><span class="sig-paren">(</span><em class="property">int: </em><em>xtile</em><span class="sig-paren">)</span><code class="descname">_Y</code><span class="sig-paren">(</span><em class="property">int: </em><em>xtile</em><span class="sig-paren">)</span><code class="descname">_Z</code><span class="sig-paren">(</span><em class="property">int: </em><em>zvalue</em><span class="sig-paren">)</span><a class="headerlink" href="#get-(string-server_name)-ocp-catmaid-viking-(string-token_name)-volume-(string-channel_name)-(int-resolution)-X(int-xtile)_Y(int-xtile)_Z(int-zvalue)" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Get a 512x512 tile from the database</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in OCP. In the general case this is openconnecto.me.</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; Token Name in OCP.</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; Channel Name in OCP.</li>
+<li><strong>resolution</strong> (<em>int</em>) &#8211; Resolution value.</li>
+<li><strong>xtile</strong> (<em>int</em>) &#8211; X-Tile value. Each tile is 512x512.</li>
+<li><strong>ytile</strong> (<em>int</em>) &#8211; Y-Tile value. Each tile is 512x512.</li>
+<li><strong>zvalue</strong> (<em>int</em>) &#8211; Zslice value.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; No error</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; Error in the syntax or file format</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example Request</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span class="nf">GET</span>  <span class="nn">/ocp/catmaid/viking/kasthuri11/volume/image/4/1_1_1.png</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">openconnecto.me</span>
+</pre></div>
+</div>
+<p><strong>Example Response</strong>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/png</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<div class="figure align-center">
+<a class="reference internal image-reference" href="../_images/simple_image_tile.png"><img alt="../_images/simple_image_tile.png" src="../_images/simple_image_tile.png" style="width: 512px; height: 512px;" /></a>
 </div>
 </div>
 </div>
