@@ -136,7 +136,7 @@ getVikingTile
    
    .. sourcecode:: http
    
-      GET  /ocp/catmaid/viking/kasthuri11/volume/image/4/1_1_1.png HTTP/1.1
+      GET  /ocp/catmaid/viking/kasthuri11/volume/image/4/X1_Y1_Z10 HTTP/1.1
       Host: openconnecto.me
    
    **Example Response**:
@@ -146,7 +146,7 @@ getVikingTile
       HTTP/1.1 200 OK
       Content-Type: application/png
 
-.. figure:: ../images/simple_image_tile.png
+.. figure:: ../images/viking_image_tile.png
     :align: center
     :width: 512px
     :height: 512px
