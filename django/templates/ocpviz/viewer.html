@@ -153,55 +153,113 @@
     });
 
     // define layers
+
+    // load image layers first 
     {% for layer in layers %}
+      {% if layer.layertype != 'annotation' %}
       {# setup the URL #} 
       
-      {% if layer.channel %}
-        var webtoken = '{{ layer.token }}/{{ layer.channel }}';
-        {% if layer.color %}
-          webtoken = webtoken + ':{{layer.color}}';
-        {% endif %}
-      {% else %}
-        var webtoken = '{{ layer.token }}';
-      {% endif %}
-
-      {% if layer.tilecache %} 
-        {% if layer.layertype == 'timeseries' %}
-          var url = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/{{ starttime }}/{zindex}/{y}_{x}_{z}.png'; 
+        {% if layer.channel %}
+          var webtoken = '{{ layer.token }}/{{ layer.channel }}';
+          {% if layer.color %}
+            webtoken = webtoken + ':{{layer.color}}';
+          {% endif %}
         {% else %}
-          var url = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
+          var webtoken = '{{ layer.token }}';
         {% endif %}
-        
-      {% else %}
-        {% if layer.color %}
-          var url = 'http://{{ layer.server }}/ocp/catmaid/mcfc/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
-        {% elif layer.layertype == 'timeseries' %}
-          var url = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/{{ starttime }}/{zindex}/{y}_{x}_{z}.png';
-        {% else %}  
-          var url = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
-        {% endif %}
-      {% endif %}
-        
-      console.log(url);    
 
-      {# add the layer #}  
-      var {{ "layer_"|add:layer.layer_name|cut:" " }} = L.tileLayer.OCPLayer(
-        url,
-        {
-          zindex: zindex,
-          zoomReverse: true,
-          minZoom: maxres,
-          maxZoom: maxres + maxres,
-          tileSize: 512,
-          {% if layer.layertype == 'annotation' %}
-          opacity: 0.4,
-          {% endif %}
+        {% if layer.tilecache %} 
           {% if layer.layertype == 'timeseries' %}
-          curtime: {{ starttime }},
+            var url = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/{{ starttime }}/{zindex}/{y}_{x}_{z}.png'; 
+          {% else %}
+            var url = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
           {% endif %}
-          //noWrap: true,
-          continuousWorld: true,
-        }).addTo(map);
+          
+        {% else %}
+          {% if layer.color %}
+            var url = 'http://{{ layer.server }}/ocp/catmaid/mcfc/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
+          {% elif layer.layertype == 'timeseries' %}
+            var url = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/{{ starttime }}/{zindex}/{y}_{x}_{z}.png';
+          {% else %}  
+            var url = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
+          {% endif %}
+        {% endif %}
+          
+        console.log(url);    
+
+        {# add the layer #}  
+        var {{ "layer_"|add:layer.layer_name|cut:" " }} = L.tileLayer.OCPLayer(
+          url,
+          {
+            zindex: zindex,
+            zoomReverse: true,
+            minZoom: maxres,
+            maxZoom: maxres + maxres,
+            tileSize: 512,
+            {% if layer.layertype == 'annotation' %}
+            opacity: 0.4,
+            {% endif %}
+            {% if layer.layertype == 'timeseries' %}
+            curtime: {{ starttime }},
+            {% endif %}
+            //noWrap: true,
+            continuousWorld: true,
+          }).addTo(map);
+        {% endif %}
+    {% endfor %}
+    
+    // now load annotations 
+    {% for layer in layers %}
+      {% if layer.layertype == 'annotation' %}
+      {# setup the URL #} 
+      
+        {% if layer.channel %}
+          var webtoken = '{{ layer.token }}/{{ layer.channel }}';
+          {% if layer.color %}
+            webtoken = webtoken + ':{{layer.color}}';
+          {% endif %}
+        {% else %}
+          var webtoken = '{{ layer.token }}';
+        {% endif %}
+
+        {% if layer.tilecache %} 
+          {% if layer.layertype == 'timeseries' %}
+            var url = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/{{ starttime }}/{zindex}/{y}_{x}_{z}.png'; 
+          {% else %}
+            var url = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
+          {% endif %}
+          
+        {% else %}
+          {% if layer.color %}
+            var url = 'http://{{ layer.server }}/ocp/catmaid/mcfc/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
+          {% elif layer.layertype == 'timeseries' %}
+            var url = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/{{ starttime }}/{zindex}/{y}_{x}_{z}.png';
+          {% else %}  
+            var url = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
+          {% endif %}
+        {% endif %}
+          
+        console.log(url);    
+
+        {# add the layer #}  
+        var {{ "layer_"|add:layer.layer_name|cut:" " }} = L.tileLayer.OCPLayer(
+          url,
+          {
+            zindex: zindex,
+            zoomReverse: true,
+            minZoom: maxres,
+            maxZoom: maxres + maxres,
+            tileSize: 512,
+            {% if layer.layertype == 'annotation' %}
+            opacity: 0.4,
+            {% endif %}
+            {% if layer.layertype == 'timeseries' %}
+            curtime: {{ starttime }},
+            {% endif %}
+            //noWrap: true,
+            continuousWorld: true,
+          }).addTo(map);
+        {% endif %}
     {% endfor %}
   
     // set the initial view 
