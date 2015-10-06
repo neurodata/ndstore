@@ -165,7 +165,8 @@ def JPEG ( chanargs, proj, db ):
           raise OCPCAError("The npz cutout can only contain cutouts of one single Channel Type.")
 
     xdim, ydim, zdim = cubedata[0,:,:,:].shape[::-1]
-    cubedata = np.swapaxes(cubedata[0,:,:,:], 0,2).reshape(xdim, ydim*zdim)
+    #cubedata = np.swapaxes(cubedata[0,:,:,:], 0,2).reshape(xdim*zdim, ydim)
+    cubedata = cubedata[0,:,:,:].reshape(xdim*zdim, ydim)
 
     img = Image.fromarray(cubedata)
     fileobj = cStringIO.StringIO ()

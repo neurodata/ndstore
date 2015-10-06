@@ -64,5 +64,5 @@ class Test_Jpeg:
     data = getURL(url).read()
     posted_data = np.asarray( Image.open(cStringIO.StringIO(data)) )
 
-    image_data = np.swapaxes(image_data[0,:,:,:],0,2).reshape(100,1000)
+    image_data = image_data[0,:,:,:].reshape(1000,100)
     assert ( np.array_equal(image_data,posted_data) )
