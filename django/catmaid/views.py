@@ -79,7 +79,7 @@ def simplevikingview (request, webargs):
  
   try:
     # argument of format token/volume/channel/resolution/Xtile_Ytile_Ztile
-    m = re.match(r'(\w+)/volume/(\w+)/(\d+)/X(\d+)_Y(\d+)_Z(\d+)$', webargs)
+    m = re.match(r'(\w+)/volume/(\w+)/(\d+)/X(\d+)_Y(\d+)_Z(\d+).png$', webargs)
     [token, channel, resolution, xtile, ytile, ztile] = [i for i in m.groups()]
 
     # rewriting args here into catmaid format token/channel/slice_type/z/x_y_res.png

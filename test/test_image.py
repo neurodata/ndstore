@@ -226,7 +226,7 @@ class Test_Image_Simple_Viking:
     # check that the return matches
     assert ( np.array_equal(voxarray, image_data) )
     
-    url = "http://{}/catmaid/viking/{}/volume/{}/{}/X{}_Y{}_Z{}".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[2]/512, p.args[0]/512, p.args[4])
+    url = "http://{}/catmaid/viking/{}/volume/{}/{}/X{}_Y{}_Z{}.png".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[2]/512, p.args[0]/512, p.args[4])
     f = getURL (url)
 
     slice_data = np.asarray ( Image.open(StringIO(f.read())) )
