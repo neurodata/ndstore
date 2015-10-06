@@ -29,6 +29,7 @@ from ocpuser.models import Token
 from ocpuser.models import Channel
 
 import urllib2
+import json
 
 VALID_SERVERS = {
     'localhost':'localhost',
@@ -291,4 +292,73 @@ def query(request, queryargs):
     r = '[ERROR]: ' + str(e.getcode())
 
   return HttpResponse(r)
+
+def projinfo(request, queryargs):
+  # gets the projinfo from ocp 
+  # expected syntax is:
+  # ocp/ocpviz/projinfo/<<server>>/<<token>>/ 
+  # e.g. ocp/ocpviz/projinfo/dsp061/projinfo/kharris15apical/
+  [server, token_raw] = queryargs.split('/', 1)
+  token = token_raw.split('/')[0]
+  if server not in VALID_SERVERS.keys():
+    return HttpResponse("Error: Server not valid.")
+
+  # make get request
+
+  if server == 'localhost':
+    #addr = Site.objects.get_current().domain + '/ocp/' + oquery
+    addr = 'http://' + request.META['HTTP_HOST'] + '/ocp/ca/' + token + '/info/' 
+  else: 
+    addr = 'http://' + VALID_SERVERS[server] + '/ocp/ca/' + token + '/info/'
+  try:
+    r = urllib2.urlopen(addr)
+  except urllib2.HTTPError, e:
+    r = '[ERROR]: ' + str(e.getcode())
+
+  jsoninfo = json.loads(r.read())
+
+  # name, description
+  html = '<strong>{}</strong><p>{}</p>'.format( jsoninfo['project']['name'], jsoninfo['project']['description'] )
+
+  # channel info
+  html += '<strong>Channels</strong><br />'
+  for channel in jsoninfo['channels']:
+    tmphtml = '{}<br /><ul><li>{} ({})</li>'.format( channel, jsoninfo['channels'][channel]['channel_type'], jsoninfo['channels'][channel]['datatype'] )
+    
+    if jsoninfo['channels'][channel]['windowrange'][1] > 0: 
+      tmphtml += '<li>Window (Intensity) Range: {}, {}</li><li>'.format( jsoninfo['channels'][channel]['windowrange'][0], jsoninfo['channels'][channel]['windowrange'][1])
+    
+    tmphtml += '<li>Default Resolution: {}</li>'.format(jsoninfo['channels'][channel]['resolution'])
+    
+    tmphtml += '</ul>'
+
+    html += tmphtml;
+  
+  # metadata
+  if len(jsoninfo['metadata'].keys()) == 0:
+    html += '<p>No metadata for this project.</p>'
+  else:
+    html += '<p>Metadata support coming soon</p>'
+
+  # dataset
+  html += '<strong>Dataset Parameters</strong><br />'
+
+  # x,y,z coords at res 0 
+  html += '<em>Base Imagesize</em><ul>'
+  html += '<li><strong>x: </strong> {}, {}</li>'.format( jsoninfo['dataset']['offset']['0'][0], jsoninfo['dataset']['imagesize']['0'][0] )
+  html += '<li><strong>y: </strong> {}, {}</li>'.format( jsoninfo['dataset']['offset']['0'][1], jsoninfo['dataset']['imagesize']['0'][1] )
+  html += '<li><strong>z: </strong> {}, {}</li>'.format( jsoninfo['dataset']['offset']['0'][2], jsoninfo['dataset']['imagesize']['0'][2] )
+  html += '</ul>'
+
+  # number of resolutions 
+  html += '<em>Resolutions:</em> '
+  for resolution in jsoninfo['dataset']['resolutions']:
+    html += '{} '.format(resolution)
+
+  # timerange
+  if (jsoninfo['dataset']['timerange'][1] > 0):
+    html += '<em>Timerange: </em>{}, {}'.format( jsoninfo['dataset']['timerange'][0], jsoninfo['dataset']['timerange'][1] )
+
+
+  return HttpResponse(html)
 

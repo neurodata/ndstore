@@ -35,7 +35,7 @@
     .leaflet-container {
 			background: #000 !important;
 		}
-		.info {
+		.controls, .queryres, .projinfo {
       padding: 8px 8px;
       width: 300px;
 			font: 14px/16px Arial, Helvetica, sans-serif;
@@ -44,12 +44,15 @@
 			box-shadow: 0 0 15px rbga(0,0,0,0.2);
 			border-radius: 2px;
     }
-    .info-layer-name {
+    .projinfo, .queryres {
+      display: none;
+    }
+    .controls-layer-name {
       width: 90%;
       padding-top: 10px;
       padding-left: 10px;
     }
-    .info-opacity-control-name {
+    .controls-opacity-control-name {
       float: left;
       width: 35%;
       padding-top: 2px;
@@ -83,7 +86,7 @@
     .playdelay-input {
       width: 75px;
     }
-    .info h4 {
+    .controls, .projinfo, .queryres h4 {
 			margin: 0 0 5px; 
 			color: #777;
     }
@@ -266,26 +269,48 @@
     var center = map.unproject(L.point({{ xstart }}, {{ ystart }}), maxres + maxres - res);
 		map.setView(center, maxres + maxres - res);
 
-		// display some map info
-		var info = L.control();
-		info.options.position = 'topright';
-		info.onAdd = function (map) {
-			this._div = L.DomUtil.create('div', 'info');
-      var header = '<h4>{{ project_name }}</h4><br />';
+    // display query result 
+    var queryres = L.control();
+    queryres.options.position = 'topright';
+    queryres.onAdd = function (map) {
+      this._div = L.DomUtil.create('div', 'queryres');
+      var header = '<h4>Query Result</h4>';
+      this._div.innerHTML = header;
+      return this._div;
+    };
+		queryres.addTo(map);
+
+    // display project info
+    var projinfo = L.control();
+    projinfo.options.position = 'topright';
+    projinfo.onAdd = function (map) {
+      this._div = L.DomUtil.create('div', 'projinfo');
+      var header = '<h4>{{ project_name}} Info</h4>';
+      this._div.innerHTML = header + getProjInfo();
+			return this._div;
+    };
+		projinfo.addTo(map);
+
+		// display some map controls
+		var controls = L.control();
+    controls.options.position = 'topright';
+    controls.onAdd = function (map) {
+			this._div = L.DomUtil.create('div', 'controls');
+      var header = '<h4>Control Panel</h4><br />';
       var datainfo = '<div id="opacity-control">{% spaceless %}
         {% for layer in layers %}
-        <div class="info-layer-name"><a href="#">{{ layer.layer_name|cut:" " }}</a></div>
-        <div class="info-opacity-control-name">Opacity</div>
+        <div class="controls-layer-name"><a href="#">{{ layer.layer_name|cut:" " }}</a></div>
+        <div class="controls-opacity-control-name">Opacity</div>
         <div id="slider">
         <span class="opacity">{{ "layer_"|add:layer.layer_name|cut:" " }}</span>
         </div><br />
       
-        <div class="info-opacity-control-name">Brightness</div>
+        <div class="controls-opacity-control-name">Brightness</div>
         <div id="slider">
           <span class="brightness">{{ "layer_"|add:layer.layer_name|cut:" " }}</span>
         </div><br />
         
-        <div class="info-opacity-control-name">Contrast</div>
+        <div class="controls-opacity-control-name">Contrast</div>
         <div id="slider">
           <span class="contrast">{{ "layer_"|add:layer.layer_name|cut:" " }}</span>
         </div><br />
@@ -301,22 +326,7 @@
 			return this._div;
 		};
 
-    info.update = function () {
-      
-      //$( "#zindex" ).replaceWith( "<div id='zindex'>z-index: " + zindex + "</div>" );
-      //var header = '<h4>{{ project_name }}</h4>';
-      //var datainfo = '<div id="slider"></div>';
-      //var datainfo = '{% spaceless %}{% endspaceless %}
-
-      //var datainfo = 'x: (' + xmin + ', ' + xmax + ')<br />' + 
-      //  'y: (' + ymin + ', ' + ymax + ')<br />' +
-      //  'z: (' + zmin + ', ' + zmax + ')<br />';
-      //var curslice = '<br />z-index: ' + zindex;
-      //this._div.innerHTML = header + datainfo + curslice;
-			//	+ 'Z Index: ' + zindex;
-		};
-
-		info.addTo(map);
+		controls.addTo(map);
 
     // update current coordinates in nav box
 
@@ -522,7 +532,6 @@
       {% endfor %} 
     
       map.options.fadeAnimation = true;
-      //info.update();
       coordinatesUpdate();
 		}
 
@@ -539,6 +548,22 @@
 			// make request 
 			var xmlHttp = new XMLHttpRequest();
 			xmlHttp.open( "GET", ocpUrl, false );
+			xmlHttp.send( null );
+
+			return xmlHttp.responseText;
+
+		}
+    
+    function getProjInfo() {
+      // we use the token from the first layer (for now)   
+      var infoToken = "{{ layers.0.token }}"; 
+      var infoUrl = "http://{{ request.get_host }}/ocp/viz/projinfo/localhost/" + infoToken + "/";
+      // store the return data
+			var data = null;
+
+			// make request 
+			var xmlHttp = new XMLHttpRequest();
+			xmlHttp.open( "GET", infoUrl, false );
 			xmlHttp.send( null );
 
 			return xmlHttp.responseText;
@@ -725,16 +750,28 @@
       });
     }); // play delay 
 
+    // toggle the controls window  
     $(function() {
-      $( "#collapseinfo" ).click(function() {
-        $( ".info" ).toggle( "slow" )
+      $( "#togglecontrols" ).click(function() {
+        $( ".controls" ).toggle( "slow" )
+      });
+    });
+
+    // toggle the queryinfo window 
+    $(function() {
+      $( "#togglequeryres" ).click(function() {
+        $( ".queryres" ).toggle( "slow" )
+      });
+    });
+
+    // toggle the projinfo window 
+    $(function() {
+      $( "#toggleprojinfo" ).click(function() {
+        $( ".projinfo" ).toggle( "slow" )
       });
     });
 
     // timeseries functions  
-    
-    
-    
     function loadTimeStep(newTime) {
       map.closePopup();
       if (newTime < {{ starttime }}) {
