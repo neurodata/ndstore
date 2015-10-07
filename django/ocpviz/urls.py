@@ -24,6 +24,8 @@ urlpatterns = patterns('ocpviz.views',
     url(r'^query/(?P<queryargs>[\w,/-]+)', 'query'),
     # for getting the projinfo json information from ocp
     url(r'^projinfo/(?P<queryargs>[\w,/-]+)', 'projinfo'),
+    # validate token/channel/server
+    url(r'^validate/(?P<webargs>[\w,/-]+)', 'validate'),
     url(r'^$', 'default'),
     url(r'^manage/$', 'default'),
     # for displaying ocpviz projects 

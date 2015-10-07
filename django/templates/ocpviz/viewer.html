@@ -86,6 +86,15 @@
     .playdelay-input {
       width: 75px;
     }
+    #add_data_link { 
+      float: left;
+      padding-top: 5px;
+      padding-bottom: 5px;
+    }
+    .remove-layer {
+      padding-right: 5px;
+      padding-top: 3px;
+    }
     .controls, .projinfo, .queryres h4 {
 			margin: 0 0 5px; 
 			color: #777;
@@ -118,9 +127,13 @@
 	</head>
 <body>
 
+
+  {# Modal Code Includes #}
   {% include "ocpviz/help.html" %}
 
   {% include "ocpviz/nav.html" %}
+  
+  {% include "ocpviz/add_data.html" %}
 
   <div id="map"></div>
   <script> 
@@ -299,7 +312,8 @@
       var header = '<h4>Control Panel</h4><br />';
       var datainfo = '<div id="opacity-control">{% spaceless %}
         {% for layer in layers %}
-        <div class="controls-layer-name"><a href="#">{{ layer.layer_name|cut:" " }}</a></div>
+        <div class="controls-{{ "layer_"|add:layer.layer_name|cut:" " }}">
+        <div class="controls-layer-name"><a href="#" class="remove-layer {{ "layer_"|add:layer.layer_name|cut:" " }}" ><i class="fa fa-times-circle"></i></a><a href="#">{{ layer.layer_name|cut:" " }}</a></div>
         <div class="controls-opacity-control-name">Opacity</div>
         <div id="slider">
         <span class="opacity">{{ "layer_"|add:layer.layer_name|cut:" " }}</span>
@@ -314,6 +328,7 @@
         <div id="slider">
           <span class="contrast">{{ "layer_"|add:layer.layer_name|cut:" " }}</span>
         </div><br />
+        </div>
         {% endfor %}
         {% endspaceless %}</div>';
       var blendmode = '<br /><div id="blendmode">Blend Mode: <select name="blendmode"><option value="normal">Normal</option><option value="multiply">Multiply</option><option value="Screen">Screen</option><option value="overlay">Overlay</option><option value="darken">Darken</option><option value="lighten">Ligten</option><option value="color-dodge">Color Dodge</option><option value="color-burn">Color Burn</option><option value="exclusion">Exclusion</option><option value="difference">Difference</option><option value="hue">Hue</option><option value="saturation">Saturation</option><option value="color">Color</option><option value="luminosity">Luminosity</option></select></div><span style="float: right; padding-top: 5px;"><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/blend-mode" target="_blank"><i class="fa fa-info-circle fa-lg"></i></a></span>'
@@ -322,7 +337,9 @@
       {% else %}
       var playdelay = '';
       {% endif %}
-      this._div.innerHTML = header + datainfo + blendmode + playdelay;
+
+      var add_data = '<br /><div id="add_data_link"><a href="#" data-toggle="modal" data-target="#add_data">Add Data to Current View</a></div>'
+      this._div.innerHTML = header + datainfo + blendmode + playdelay + add_data;
 			return this._div;
 		};
 
@@ -749,6 +766,18 @@
         playdelay = val;
       });
     }); // play delay 
+    
+    // remove a layer 
+    $(function() {
+      $( ".remove-layer" ).click(function() {
+        var class_arr = this.className.split(' ');
+        var layer_name = $.trim(class_arr[1]);
+        // remove layer from the map  
+        map.removeLayer( eval(layer_name) );
+        // remove layer from control panel
+        $( ".controls-" + layer_name ).remove(); 
+      });
+    });
 
     // toggle the controls window  
     $(function() {

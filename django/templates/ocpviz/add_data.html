@@ -1,0 +1,98 @@
+  {# add data (channel) modal #}
+  <div class="modal fade" id="add_data" tabindex="-1" role="dialog" aria-labelledby="add_dataModal" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="add_dataLabel">Add Data to Current View</h4>
+        </div>
+        <div class="modal-body">
+          <p>Use the form below to add a additional layer to the current view. Layers can be removed by using the <i class="fa fa-times-circle"></i> next to the layer name in the <em>Control Panel</em>.</p>
+          <div class="alert alert-danger" role="alert">
+            <p><em>Note:</em> Adding timeseries data using this form is currently <strong>not</strong> supported!</p>
+          </div>
+          <form id="add_data_form">
+            <div class="form-group">
+              <label for="tokenName">Token</label>
+              <input name="tokenName" type="text" class="form-control" id="tokenName" placeholder="(e.g. Kasthuri11)">
+            </div>
+            <div class="form-group">
+              <label for="channelName">Channel</label>
+              <input name="channelName" type="text" class="form-control" id="channelName" placeholder="(optional: will use default channel if not specified)">
+            </div>
+            <div class="form-group">
+              <label for="serverName">Server</label>
+              <div id="serverSelect">
+              <select name="servers" class="form-control" id="serverName">
+                <option value="http://openconnecto.me">openconnecto.me</option>
+                <option value="http://dsp061.pha.jhu.edu">dsp061</option>
+                <option value="http://dsp062.pha.jhu.edu">dsp062</option>
+                <option value="http://dsp063.pha.jhu.edu">dsp063</option>
+                <option value="other">other</option>
+              </select>
+              </div>
+            </div>
+              <script> 
+              $(function() {
+                $('#serverSelect').change(function(e) {
+                  var changed = $(e.target);
+
+                  var html = '<div class="form-group"><label for="serverNameOther">Server Name</label><input name="serverNameOther" type="text" class="form-control" id="serverNameOther" placeholder="(e.g. http://openconnecto.me )"></div>';
+                  if (changed.is('select[name="servers"]')) {
+                    if (changed.val() == 'other') {
+                      changed.parent().after(html);
+                    }
+                  }
+                });
+              });  
+            </script>
+            <button type="submit" class="btn btn-primary">Add Data</button>
+            </form>
+          </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+       </div>
+     </div>
+  </div>
+
+  <script>
+    // intercept form submission, validate url, and add to map 
+    $(function() {
+      $( '#add_data_form' ).submit(function(e) {
+        e.preventDefault();
+
+        var urlBase = "http://{{ request.get_host }}/ocp/viz/validate/";
+
+        var $inputs = $('#add_data_form :input');
+        var values = {};
+        $inputs.each(function() {
+          values[this.name] = $(this).val();
+        });
+
+        var token = values['tokenName'];
+        var channel = values['channelName'];
+        var server = values['servers'];
+        if (server == 'other') {
+          server = values['serverNameOther']
+        }
+
+        var args = token + "/" + channel + "/" + server + "/";
+        var url = urlBase.concat(args);
+        console.log(url);
+        // make request (using jquery)
+        var jqxhr = $.ajax({
+          url: url,
+          type: 'GET',
+          success: function(response) {
+            alert( "success: " + response );
+          }
+        })
+        .fail(function(response) {
+          alert( "error: " + response.responseText  );
+        });
+      });
+    });
+  </script>
+  {# end help modal #} 
+

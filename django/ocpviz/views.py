@@ -373,4 +373,28 @@ def projinfo(request, queryargs):
 
   return HttpResponse(html)
 
+def validate(request, webargs):
+  # redirects a query to the specified server 
+  # expected syntax is:
+  # ocp/ocpviz/query/<<server>>/<<query>> 
+  # e.g. ocp/ocpviz/query/dsp061/ca/kharris15apical/info/
+  [token, channel, server] = webargs.split('/', 2)
+  
+  return HttpResponse('valid'); 
+  return HttpResponseBadRequest('INVALID!!!!!!!!!!!!');
+
+  import pdb; pdb.set_trace()
+
+  # make get request
+  if server == 'localhost':
+    #addr = Site.objects.get_current().domain + '/ocp/' + oquery
+    addr = 'http://' + request.META['HTTP_HOST'] + '/ocp/' + oquery 
+  else: 
+    addr = 'http://' + VALID_SERVERS[server] + '/ocp/' + oquery
+  try:
+    r = urllib2.urlopen(addr)
+  except urllib2.HTTPError, e:
+    r = '[ERROR]: ' + str(e.getcode())
+
+  return HttpResponse(r)
 
