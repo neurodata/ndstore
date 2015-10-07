@@ -167,8 +167,14 @@ def JPEG ( chanargs, proj, db ):
     xdim, ydim, zdim = cubedata[0,:,:,:].shape[::-1]
     #cubedata = np.swapaxes(cubedata[0,:,:,:], 0,2).reshape(xdim*zdim, ydim)
     cubedata = cubedata[0,:,:,:].reshape(xdim*zdim, ydim)
-
-    img = Image.fromarray(cubedata)
+    
+    if ch.getDataType() in DTYPE_uint16:
+      img = Image.fromarray(cubedata, mode='I;16')
+      img = img.point(lambda i:i*(1./256)).convert('L')
+    elif ch.getDataType() in DTYPE_uint32:
+      img = Image.fromarray(cubedata, mode='RGBA')
+    else:
+      img = Image.fromarray(cubedata)
     fileobj = cStringIO.StringIO ()
     img.save ( fileobj, "JPEG" )
 
