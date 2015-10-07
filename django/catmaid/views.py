@@ -29,7 +29,6 @@ import logging
 logger=logging.getLogger("ocp")
 
 
-# multi-channel false color
 def mcfccatmaidview (request, webargs):
   """multi-channel false color"""
 
@@ -44,22 +43,6 @@ def mcfccatmaidview (request, webargs):
     logger.exception("Unknown exception in mcfccatmaidview: {}".format(e) )
     raise
 
-# single-channel choose the color
-#def colorcatmaidview (request, webargs):
-  #"""single-channel choose the color"""
-
-  #try:
-    #cc = colorcatmaid.ColorCatmaid()
-    #imgfobj = cc.getTile(webargs)
-    #return django.http.HttpResponse(imgfobj.read(), content_type="image/png")
-
-  #except OCPCAError, e:
-    #return django.http.HttpResponseNotFound(e)
-  #except Exception, e:
-    #logger.exception("Unknown exception in colorcatmaidview: %s" % e )
-    #raise
-
-# simple per-tile interface
 def simplecatmaidview (request, webargs):
   """Convert a CATMAID request into an cutout."""
   
@@ -74,10 +57,9 @@ def simplecatmaidview (request, webargs):
     logger.exception("Unknown exception in simplecatmaidview: {}".format(e) )
     raise
 
-# simple per-tile interface
 def simplevikingview (request, webargs):
   """Convert a Viking request into a simple catmaid cutout."""
- 
+  
   try:
     # argument of format token/volume/channel/resolution/Xtile_Ytile_Ztile
     m = re.match(r'(\w+)/volume/(\w+)/(\d+)/X(\d+)_Y(\d+)_Z(\d+).png$', webargs)

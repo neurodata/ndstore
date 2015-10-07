@@ -29,6 +29,7 @@ urlpatterns = patterns('ocpca.views',
   # get project information
   url(r'(?P<webargs>^\w+/projinfo/[\w,/]*)$', 'projinfo'),
   url(r'(?P<webargs>^\w+/info/[\w,/]*)$', 'jsoninfo'),
+  url(r'(?P<webargs>^\w+/volume.vikingxml)$', 'xmlinfo'),
   # get public tokens 
   url(r'(?P<webargs>^public_tokens/)$', 'publictokens'),
   # Create/Delete channel interfaces

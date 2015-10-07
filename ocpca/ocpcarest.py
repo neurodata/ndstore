@@ -1660,6 +1660,23 @@ def jsonInfo ( webargs ):
 
     return jsonprojinfo.jsonInfo(proj)
 
+def xmlInfo ( webargs ):
+  """Return project information in json format"""
+
+  try:
+    # match the format /token/volume.vikingxml
+    m = re.match(r'(\w+)/volume.vikingxml', webargs)
+    token = m.group(1)
+  except Exception, e:
+    print "Bad URL {}".format(webargs)
+    raise
+  
+  # get the project 
+  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+    proj = projdb.loadToken ( token )
+
+    return jsonprojinfo.xmlInfo(token, proj)
+
 
 def projInfo ( webargs ):
 

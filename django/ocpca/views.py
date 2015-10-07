@@ -256,6 +256,19 @@ def jsoninfo (request, webargs):
     logger.exception("Unknown exception in jsoninfo")
     raise OCPCAError("Unknown exception in jsoninfo")
 
+def xmlinfo (request, webargs):
+  """Return project and dataset configuration information"""
+
+  try:  
+    return django.http.HttpResponse(ocpcarest.xmlInfo(webargs), content_type="application/xml" )
+  except OCPCAError, e:
+    return django.http.HttpResponseNotFound(e.value)
+  except MySQLdb.Error, e:
+    return django.http.HttpResponseNotFound(e)
+  except:
+    logger.exception("Unknown exception in xmlinfo")
+    raise OCPCAError("Unknown exception in xmlinfo")
+
 #@cache_control(no_cache=True)
 def projinfo (request, webargs):
   """Return project and dataset configuration information"""

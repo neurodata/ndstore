@@ -18,6 +18,7 @@ import json
 import h5py
 import tempfile
 from contextlib import closing
+from lxml import etree
 
 from pytesthelpers import makeAnno
 
@@ -37,7 +38,7 @@ SITE_HOST = site_to_test.site
 # 4 - test_reserve - Test the reserve tokens interface
 
 p = Params()
-p.token = 'pubunittest'
+p.token = 'unittest'
 p.channels = ['unit_anno']
 
 class Test_Info:
@@ -86,7 +87,15 @@ class Test_Info:
     assert (str(h5f['CHANNELS'][p.channels[0]]['TYPE'].value[0]) == 'annotation')
     assert (str(h5f['PROJECT']['NAME'].value[0]) == p.token)
     assert (h5f['DATASET']['OFFSET']['0'][2] == 1)
+  
+  def test_xmlinfo (self):
+    """Test the projinfo query"""
 
+    f = getURL("http://{}/ca/{}/volume.vikingxml".format(SITE_HOST, p.token))
+
+    xmlinfo = etree.XML(f.read())
+    assert( xmlinfo.values()[2] == p.token )
+    assert( xmlinfo.values()[3] == '1000' )
 
   def test_reserve ( self ):
     """Reserve 1000 ids twice and make sure that the numbers work"""

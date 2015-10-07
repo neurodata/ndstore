@@ -55,12 +55,13 @@
   - Module : Test_Image_Simple_Catmaid
     1. test_xy_tile
 
-* test_info - 4 tests
+* test_info - 5 tests
 
   - Module Test_Info
     1. test_public_tokens
     2. test_info
     3. test_projinfo
+    4. testxmlinfo
     4. test_reserve
 
 * test_io.py - 6 tests
