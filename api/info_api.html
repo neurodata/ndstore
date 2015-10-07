@@ -150,6 +150,10 @@
 <li class="toctree-l3"><a class="reference internal" href="data_api.html#get-yz-slice-cutout">GET YZ Slice Cutout</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="data_api.html#jpeg-service">JPEG Service</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data_api.html#jpeg-get">GET</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="ramon_api.html">RAMON API&#8217;s</a><ul>
@@ -196,6 +200,7 @@
 <li class="toctree-l1"><a class="reference internal" href="tile_api.html">Tile API&#8217;s</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="tile_api.html#getsimpletile">getSimpleTile</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tile_api.html#getmcfctile">getMcfcTile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tile_api.html#getvikingtile">getVikingTile</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="graphgen_api.html">GrahpGen API&#8217;s</a><ul>
@@ -291,183 +296,228 @@
 </pre></div>
 </div>
 <p><strong>Example Response</strong>:</p>
-<div class="highlight-http"><div class="highlight"><pre><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
-<span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/json</span>
+<div class="highlight-http"><div class="highlight"><pre>  HTTP/1.1 200 OK
+  Content-Type: application/json
 
-
-<span class="p">{</span>
-    <span class="nt">&quot;dataset&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="nt">&quot;cube_dimension&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="nt">&quot;0&quot;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="mi">128</span><span class="p">,</span>
-                <span class="mi">128</span><span class="p">,</span>
-                <span class="mi">16</span>
-            <span class="p">],</span>
-            <span class="nt">&quot;1&quot;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="mi">128</span><span class="p">,</span>
-                <span class="mi">128</span><span class="p">,</span>
-                <span class="mi">16</span>
-            <span class="p">],</span>
-            <span class="nt">&quot;2&quot;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="mi">128</span><span class="p">,</span>
-                <span class="mi">128</span><span class="p">,</span>
-                <span class="mi">16</span>
-            <span class="p">],</span>
-            <span class="nt">&quot;3&quot;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="mi">128</span><span class="p">,</span>
-                <span class="mi">128</span><span class="p">,</span>
-                <span class="mi">16</span>
-            <span class="p">],</span>
-            <span class="nt">&quot;4&quot;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="mi">128</span><span class="p">,</span>
-                <span class="mi">128</span><span class="p">,</span>
-                <span class="mi">16</span>
-            <span class="p">],</span>
-            <span class="nt">&quot;5&quot;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="mi">64</span><span class="p">,</span>
-                <span class="mi">64</span><span class="p">,</span>
-                <span class="mi">64</span>
-            <span class="p">],</span>
-            <span class="nt">&quot;6&quot;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="mi">64</span><span class="p">,</span>
-                <span class="mi">64</span><span class="p">,</span>
-                <span class="mi">64</span>
-            <span class="p">],</span>
-            <span class="nt">&quot;7&quot;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="mi">64</span><span class="p">,</span>
-                <span class="mi">64</span><span class="p">,</span>
-                <span class="mi">64</span>
-            <span class="p">]</span>
-        <span class="p">},</span>
-        <span class="nt">&quot;imagesize&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="nt">&quot;0&quot;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="mi">21504</span><span class="p">,</span>
-                <span class="mi">26624</span>
-            <span class="p">],</span>
-            <span class="nt">&quot;1&quot;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="mi">10752</span><span class="p">,</span>
-                <span class="mi">13312</span>
-            <span class="p">],</span>
-            <span class="nt">&quot;2&quot;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="mi">5376</span><span class="p">,</span>
-                <span class="mi">6656</span>
-            <span class="p">],</span>
-            <span class="nt">&quot;3&quot;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="mi">2688</span><span class="p">,</span>
-                <span class="mi">3328</span>
-            <span class="p">],</span>
-            <span class="nt">&quot;4&quot;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="mi">1344</span><span class="p">,</span>
-                <span class="mi">1664</span>
-            <span class="p">],</span>
-            <span class="nt">&quot;5&quot;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="mi">672</span><span class="p">,</span>
-                <span class="mi">832</span>
-            <span class="p">],</span>
-            <span class="nt">&quot;6&quot;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="mi">336</span><span class="p">,</span>
-                <span class="mi">416</span>
-            <span class="p">],</span>
-            <span class="nt">&quot;7&quot;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="mi">168</span><span class="p">,</span>
-                <span class="mi">208</span>
-            <span class="p">]</span>
-        <span class="p">},</span>
-        <span class="nt">&quot;isotropic_slicerange&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="nt">&quot;0&quot;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="mi">1</span><span class="p">,</span>
-                <span class="mi">1850</span>
-            <span class="p">],</span>
-            <span class="nt">&quot;1&quot;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="mi">1</span><span class="p">,</span>
-                <span class="mi">1850</span>
-            <span class="p">],</span>
-            <span class="nt">&quot;2&quot;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="mi">1</span><span class="p">,</span>
-                <span class="mi">1850</span>
-            <span class="p">],</span>
-            <span class="nt">&quot;3&quot;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="mi">1</span><span class="p">,</span>
-                <span class="mi">1850</span>
-            <span class="p">],</span>
-            <span class="nt">&quot;4&quot;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="mi">1</span><span class="p">,</span>
-                <span class="mi">1157</span>
-            <span class="p">],</span>
-            <span class="nt">&quot;5&quot;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="mi">1</span><span class="p">,</span>
-                <span class="mi">579</span>
-            <span class="p">],</span>
-            <span class="nt">&quot;6&quot;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="mi">1</span><span class="p">,</span>
-                <span class="mi">290</span>
-            <span class="p">],</span>
-            <span class="nt">&quot;7&quot;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="mi">1</span><span class="p">,</span>
-                <span class="mi">145</span>
-            <span class="p">]</span>
-        <span class="p">},</span>
-        <span class="nt">&quot;neariso_scaledown&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="nt">&quot;0&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-            <span class="nt">&quot;1&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-            <span class="nt">&quot;2&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-            <span class="nt">&quot;3&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-            <span class="nt">&quot;4&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
-            <span class="nt">&quot;5&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
-            <span class="nt">&quot;6&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
-            <span class="nt">&quot;7&quot;</span><span class="p">:</span> <span class="mi">13</span>
-        <span class="p">},</span>
-        <span class="nt">&quot;resolutions&quot;</span><span class="p">:</span> <span class="p">[</span>
-            <span class="mi">0</span><span class="p">,</span>
-            <span class="mi">1</span><span class="p">,</span>
-            <span class="mi">2</span><span class="p">,</span>
-            <span class="mi">3</span><span class="p">,</span>
-            <span class="mi">4</span><span class="p">,</span>
-            <span class="mi">5</span><span class="p">,</span>
-            <span class="mi">6</span><span class="p">,</span>
-            <span class="mi">7</span>
-        <span class="p">],</span>
-        <span class="nt">&quot;slicerange&quot;</span><span class="p">:</span> <span class="p">[</span>
-            <span class="mi">1</span><span class="p">,</span>
-            <span class="mi">1850</span>
-        <span class="p">],</span>
-        <span class="nt">&quot;timerange&quot;</span><span class="p">:</span> <span class="p">[</span>
-            <span class="mi">0</span><span class="p">,</span>
-            <span class="mi">0</span>
-        <span class="p">],</span>
-        <span class="nt">&quot;windowrange&quot;</span><span class="p">:</span> <span class="p">[</span>
-            <span class="mi">0</span><span class="p">,</span>
-            <span class="mi">0</span>
-        <span class="p">],</span>
-        <span class="nt">&quot;zscale&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="nt">&quot;0&quot;</span><span class="p">:</span> <span class="mf">10.0</span><span class="p">,</span>
-            <span class="nt">&quot;1&quot;</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span>
-            <span class="nt">&quot;2&quot;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">,</span>
-            <span class="nt">&quot;3&quot;</span><span class="p">:</span> <span class="mf">1.25</span><span class="p">,</span>
-            <span class="nt">&quot;4&quot;</span><span class="p">:</span> <span class="mf">0.625</span><span class="p">,</span>
-            <span class="nt">&quot;5&quot;</span><span class="p">:</span> <span class="mf">0.3125</span><span class="p">,</span>
-            <span class="nt">&quot;6&quot;</span><span class="p">:</span> <span class="mf">0.15625</span><span class="p">,</span>
-            <span class="nt">&quot;7&quot;</span><span class="p">:</span> <span class="mf">0.078125</span>
-        <span class="p">}</span>
-    <span class="p">},</span>
-    <span class="nt">&quot;project&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="nt">&quot;dataset&quot;</span><span class="p">:</span> <span class="s2">&quot;kasthuri11&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;dataurl&quot;</span><span class="p">:</span> <span class="s2">&quot;http://openconnecto.me/ocp&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;dbname&quot;</span><span class="p">:</span> <span class="s2">&quot;kasthuri11&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;exceptions&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-        <span class="nt">&quot;host&quot;</span><span class="p">:</span> <span class="s2">&quot;dsp061.pha.jhu.edu&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;kvengine&quot;</span><span class="p">:</span> <span class="s2">&quot;MySQL&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;kvserver&quot;</span><span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;projecttype&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-        <span class="nt">&quot;propagate&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
-        <span class="nt">&quot;readonly&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-        <span class="nt">&quot;resolution&quot;</span><span class="p">:</span> <span class="mi">0</span>
-    <span class="p">},</span>
-    <span class="nt">&quot;version&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="nt">&quot;ocp&quot;</span><span class="p">:</span> <span class="mf">0.6</span><span class="p">,</span>
-        <span class="nt">&quot;schema&quot;</span><span class="p">:</span> <span class="mf">0.6</span>
-    <span class="p">}</span>
-<span class="p">}</span>
+{
+    &quot;channels&quot;: {
+        &quot;image&quot;: {
+            &quot;channel_type&quot;: &quot;image&quot;,
+            &quot;datatype&quot;: &quot;uint8&quot;,
+            &quot;exceptions&quot;: 0,
+            &quot;propagate&quot;: 2,
+            &quot;readonly&quot;: 1,
+            &quot;resolution&quot;: 0,
+            &quot;windowrange&quot;: [
+                0,
+                0
+            ]
+        }
+    },
+    &quot;dataset&quot;: {
+        &quot;cube_dimension&quot;: {
+            &quot;0&quot;: [
+                128,
+                128,
+                16
+            ],
+            &quot;1&quot;: [
+                128,
+                128,
+                16
+            ],
+            &quot;2&quot;: [
+                128,
+                128,
+                16
+            ],
+            &quot;3&quot;: [
+                128,
+                128,
+                16
+            ],
+            &quot;4&quot;: [
+                128,
+                128,
+                16
+            ],
+            &quot;5&quot;: [
+                64,
+                64,
+                64
+            ],
+            &quot;6&quot;: [
+                64,
+                64,
+                64
+            ],
+            &quot;7&quot;: [
+                64,
+                64,
+                64
+            ]
+        },
+        &quot;description&quot;: &quot;kasthuri11&quot;,
+        &quot;imagesize&quot;: {
+            &quot;0&quot;: [
+                21504,
+                26624,
+                1850
+            ],
+            &quot;1&quot;: [
+                10752,
+                13312,
+                1850
+            ],
+            &quot;2&quot;: [
+                5376,
+                6656,
+                1850
+            ],
+            &quot;3&quot;: [
+                2688,
+                3328,
+                1850
+            ],
+            &quot;4&quot;: [
+                1344,
+                1664,
+                1850
+            ],
+            &quot;5&quot;: [
+                672,
+                832,
+                1850
+            ],
+            &quot;6&quot;: [
+                336,
+                416,
+                1850
+            ],
+            &quot;7&quot;: [
+                168,
+                208,
+                1850
+            ]
+        },
+        &quot;neariso_scaledown&quot;: {
+            &quot;0&quot;: 1,
+            &quot;1&quot;: 1,
+            &quot;2&quot;: 1,
+            &quot;3&quot;: 1,
+            &quot;4&quot;: 2,
+            &quot;5&quot;: 3,
+            &quot;6&quot;: 6,
+            &quot;7&quot;: 13
+        },
+        &quot;offset&quot;: {
+            &quot;0&quot;: [
+                0,
+                0,
+                1
+            ],
+            &quot;1&quot;: [
+                0,
+                0,
+                1
+            ],
+            &quot;2&quot;: [
+                0,
+                0,
+                1
+            ],
+            &quot;3&quot;: [
+                0,
+                0,
+                1
+            ],
+            &quot;4&quot;: [
+                0,
+                0,
+                1
+            ],
+            &quot;5&quot;: [
+                0,
+                0,
+                1
+            ],
+            &quot;6&quot;: [
+                0,
+                0,
+                1
+            ],
+            &quot;7&quot;: [
+                0,
+                0,
+                1
+            ]
+        },
+        &quot;resolutions&quot;: [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+        ],
+        &quot;scaling&quot;: &quot;zslices&quot;,
+        &quot;scalinglevels&quot;: 7,
+        &quot;timerange&quot;: [
+            0,
+            0
+        ],
+        &quot;voxelres&quot;: {
+            &quot;0&quot;: [
+                1.0,
+                1.0,
+                10.0
+            ],
+            &quot;1&quot;: [
+                2.0,
+                2.0,
+                10.0
+            ],
+            &quot;2&quot;: [
+                4.0,
+                4.0,
+                10.0
+            ],
+            &quot;3&quot;: [
+                8.0,
+                8.0,
+                10.0
+            ],
+            &quot;4&quot;: [
+                16.0,
+                16.0,
+                10.0
+            ],
+            &quot;5&quot;: [
+                32.0,
+                32.0,
+                10.0
+            ],
+            &quot;6&quot;: [
+                64.0,
+                64.0,
+                10.0
+            ],
+            &quot;7&quot;: [
+                128.0,
+                128.0,
+                10.0
+            ]
+        }
+    },
+    &quot;metadata&quot;: {},
+    &quot;project&quot;: {
+        &quot;description&quot;: &quot;kasthuri11&quot;,
+        &quot;name&quot;: &quot;kasthuri11&quot;,
+        &quot;version&quot;: &quot;0.0&quot;
+    }
+}
 </pre></div>
 </div>
 </dd></dl>
