@@ -17,13 +17,17 @@ from ocpuser.views import *
 import django.contrib.auth
 
 urlpatterns = patterns('ocpviz.views',
-    url(r'^project/(?P<webargs>[\w:,/-]+)', 'projectview'),
+    # data views
+    url(r'^dataview/(?P<webargs>[\w:,/-]+)', 'dataview'),
+    url(r'^public/$', 'dataviewsPublic'),
     # for redirecting queries (reqd because of same origin policy)
     url(r'^query/(?P<queryargs>[\w,/-]+)', 'query'),
+    # for getting the projinfo json information from ocp
     url(r'^projinfo/(?P<queryargs>[\w,/-]+)', 'projinfo'),
-    url(r'(?P<webargs>[\w:,/-]+)$', 'tokenview'),
-    #'(?P<queryargs>^\w+)$', 'query'),
     url(r'^$', 'default'),
     url(r'^manage/$', 'default'),
-    #url(r'^profile/$', 'profile'),
+    # for displaying ocpviz projects 
+    # NOTE: this must be last (because of the tokenview view)
+    url(r'^project/(?P<webargs>[\w:,/-]+)', 'projectview'),
+    url(r'(?P<webargs>[\w:,/-]+)$', 'tokenview'),
 )

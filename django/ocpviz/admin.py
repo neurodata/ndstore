@@ -14,7 +14,7 @@ class DataViewItemInline(admin.TabularInline):
   extra = 2
 
 class DataViewAdmin(admin.ModelAdmin):
-  list_display = ('dataview_name', 'dataview_desc', 'public')
+  list_display = ('name', 'desc', 'token', 'public')
   exclude = ('items',)
   inlines = [
       DataViewItemInline,
@@ -23,7 +23,7 @@ class DataViewAdmin(admin.ModelAdmin):
 admin.site.register(DataView, DataViewAdmin)
 
 class DataViewItemAdmin(admin.ModelAdmin):
-  list_display = ('item_name', 'vizproject')
+  list_display = ('name', 'vizproject')
 
 admin.site.register(DataViewItem, DataViewItemAdmin)
 

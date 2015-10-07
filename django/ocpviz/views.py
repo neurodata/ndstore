@@ -271,6 +271,16 @@ def projectview(request, webargs):
   }
   return render(request, 'ocpviz/viewer.html', context)
 
+
+def dataview(request, webargs):
+  """ display the given dataview """
+  """ ocp/ocpviz/dataview/<<dataview name>> """
+
+
+def dataviewsPublic(request):
+  """ display a list of all public dataviews """
+  return redirect('http://google.com')
+
 def query(request, queryargs):
   # redirects a query to the specified server 
   # expected syntax is:
@@ -302,7 +312,7 @@ def projinfo(request, queryargs):
   token = token_raw.split('/')[0]
   if server not in VALID_SERVERS.keys():
     return HttpResponse("Error: Server not valid.")
-
+  
   # make get request
 
   if server == 'localhost':
@@ -314,6 +324,7 @@ def projinfo(request, queryargs):
     r = urllib2.urlopen(addr)
   except urllib2.HTTPError, e:
     r = '[ERROR]: ' + str(e.getcode())
+    return HttpResponse(r) 
 
   jsoninfo = json.loads(r.read())
 
@@ -361,4 +372,5 @@ def projinfo(request, queryargs):
 
 
   return HttpResponse(html)
+
 
