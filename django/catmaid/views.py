@@ -83,14 +83,13 @@ def simplevikingview (request, webargs):
     m = re.match(r'(\w+)/volume/(\w+)/(\d+)/X(\d+)_Y(\d+)_Z(\d+).png$', webargs)
     [token, channel, resolution, xtile, ytile, ztile] = [i for i in m.groups()]
 
-    # rewriting args here into catmaid format token/channel/slice_type/z/x_y_res.png
-    webargs = '{}/{}/xy/{}/{}_{}_{}.png'.format(token, channel, ztile, xtile, ytile, resolution)
+    # rewriting args here into catmaid format token/channel/slice_type/z/y_x_res.png
+    webargs = '{}/{}/xy/{}/{}_{}_{}.png'.format(token, channel, ztile, ytile, xtile, resolution)
 
     sc = simplecatmaid.SimpleCatmaid()
     imgfobj = sc.getTile(webargs)
     response = django.http.HttpResponse(imgfobj.read(), content_type="image/png")
-    imgfobj.seek(0)
-    response['Content-length'] = sys.getsizeof(imgfobj.read())
+    response['content-length'] = len(response.content)
     return response
 
   except OCPCAError, e:

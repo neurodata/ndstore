@@ -173,7 +173,7 @@ class SimpleCatmaid:
     """Fetch the file from mocpcache or get a cutout from the database"""
   
     try:
-      # argument of format token/channel/slice_type/z/x_y_res.png
+      # argument of format token/channel/slice_type/z/y_x_res.png
       p = re.compile("(\w+)/([\w+,]*?)/(xy|yz|xz|)/(\d+/)?(\d+)/(\d+)_(\d+)_(\d+).png")
       m = p.match(webargs)
       [self.token, self.channel, slice_type] = [i for i in m.groups()[:3]]
