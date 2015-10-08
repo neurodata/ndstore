@@ -140,7 +140,7 @@ class OCPCADataset:
         self.nearisoscaledown[i] = int(1)
       
       self.neariso_imagesz[i] = [ xpixels, ypixels, zpixels/self.nearisoscaledown[i] ]
-      self.neariso_voxelres[i] = [ xvoxelresi, yvoxelresi, zvoxelresi/self.nearisoscaledown[i] ]
+      self.neariso_voxelres[i] = [ xvoxelresi, yvoxelresi, zvoxelresi*self.nearisoscaledown[i] ]
       self.neariso_offset[i] = [ float(xoffseti), float(yoffseti), float(zoffseti)/self.nearisoscaledown[i] ]
 
 
