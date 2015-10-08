@@ -379,22 +379,29 @@ def validate(request, webargs):
   # ocp/ocpviz/query/<<server>>/<<query>> 
   # e.g. ocp/ocpviz/query/dsp061/ca/kharris15apical/info/
   [token, channel, server] = webargs.split('/', 2)
-  
-  return HttpResponse('valid'); 
-  return HttpResponseBadRequest('INVALID!!!!!!!!!!!!');
+ 
+  # TODO handle null token (error), null channel (use default)
+  # probably will need to just assume null channel, won't be able to differentiate
 
-  import pdb; pdb.set_trace()
+  # strip the trailing / from the server name 
+  server = server.strip('/') 
 
-  # make get request
-  if server == 'localhost':
-    #addr = Site.objects.get_current().domain + '/ocp/' + oquery
-    addr = 'http://' + request.META['HTTP_HOST'] + '/ocp/' + oquery 
-  else: 
-    addr = 'http://' + VALID_SERVERS[server] + '/ocp/' + oquery
-  try:
+  # get the proj info for this token 
+  addr = 'http://{}/ocp/ca/{}/info/'.format(server, token) 
+
+  try: 
     r = urllib2.urlopen(addr)
   except urllib2.HTTPError, e:
-    r = '[ERROR]: ' + str(e.getcode())
+    return HttpResponseBadRequest(str(e.getcode()))
 
-  return HttpResponse(r)
+  # if we get a response, check to see the channel exists
 
+  rjson = json.loads(r.read())
+  for proj_channel in rjson['channels']:
+    print proj_channel 
+    if channel == proj_channel:
+      return HttpResponse('Valid')
+
+
+  return HttpResponseBadRequest('Channel not found for project {} on server {}'.format(token, server))
+  

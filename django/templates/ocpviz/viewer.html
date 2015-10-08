@@ -109,6 +109,9 @@
       padding-right: 10px;
       border-radius: 2px;
     }
+    .add_data_info {
+      padding-top: 10px;
+    }
     .footer {
       position: absolute;
       bottom: 0;
@@ -695,7 +698,6 @@
 		};
     
     keyhelp.addTo(map);
-
     {# jquery slider (opacity controls) #}
     $(function() {
       $( "#slider > .brightness" ).each(function() {
@@ -728,6 +730,7 @@
         });
       });
     });// sliders -- contrast
+    // sliders -- opacity 
     $(function() {
       $( "#slider > .opacity" ).each(function() {
         var layer = $( this ).text(); 
@@ -743,7 +746,7 @@
         });
       });
     });// sliders -- opacity
-    
+
     // blend mode
     $(function() {
       $('#blendmode').change(function(e) {
