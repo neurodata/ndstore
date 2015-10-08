@@ -539,18 +539,12 @@
 
 		function reloadLayers() {
 			map.options.fadeAnimation = false;
-      // can't use map.eachLayer because it includes popups
-      //map.eachLayer( function (layer) {
-      //    console.log(layer);
-      //    layer.options.zindex = zindex;
-			//		layer.smoothRedraw();
-      //});
-    
-      {% for layer in layers %}
-      {{ "layer_"|add:layer.layer_name|cut:" " }}.options.zindex = zindex;
-      {{ "layer_"|add:layer.layer_name|cut:" " }}.smoothRedraw();
-      {% endfor %} 
-    
+      map.eachLayer( function (layer) {
+        if ( layer.hasOwnProperty('_url') ) {
+          layer.options.zindex = zindex;
+					layer.smoothRedraw();
+        }
+      });
       map.options.fadeAnimation = true;
       coordinatesUpdate();
 		}
@@ -699,6 +693,7 @@
     
     keyhelp.addTo(map);
     {# jquery slider (opacity controls) #}
+    // brightness controls 
     $(function() {
       $( "#slider > .brightness" ).each(function() {
         var layer = $( this ).text(); 
@@ -772,9 +767,11 @@
     
     // remove a layer 
     $(function() {
-      $( ".remove-layer" ).click(function() {
+      $( "#opacity-control" ).on( "click", ".remove-layer", function() {
+        console.log('click');
         var class_arr = this.className.split(' ');
         var layer_name = $.trim(class_arr[1]);
+        console.log('Removing ' + layer_name);
         // remove layer from the map  
         map.removeLayer( eval(layer_name) );
         // remove layer from control panel

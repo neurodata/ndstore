@@ -122,8 +122,27 @@
               start: function ( event, ui ) { map.dragging.disable(); },
               stop: function ( event, ui ) { map.dragging.enable(); }, 
             });
-
-            // TODO need to run slider code for brightness and contrast
+            $( ".controls-layer_" + token + "_" + channel  ).children( "#slider" ).children( ".contrast" ).empty().slider({
+              min: 0,
+              max: 200,
+              value: 100,
+              slide: function ( event, ui ) { 
+                  eval(window['layer_' + token + '_' + channel]).setContrast(ui.value);
+                },
+              start: function ( event, ui ) { map.dragging.disable(); },
+              stop: function ( event, ui ) { map.dragging.enable(); }, 
+            });
+            $( ".controls-layer_" + token + "_" + channel  ).children( "#slider" ).children( ".brightness" ).empty().slider({
+              min: 0,
+              max: 200,
+              value: 100,
+              slide: function ( event, ui ) { 
+                eval(window['layer_' + token + '_' + channel]).setBrightness(ui.value);
+                console.log(ui.value);
+                },
+              start: function ( event, ui ) { map.dragging.disable(); },
+              stop: function ( event, ui ) { map.dragging.enable(); }, 
+            });
 
             var html = '<div class="bg-info"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span><span class="sr-only">Success:</span> Added new layer for channel ' + channel + '.';
             $( '.add_data_info' ).append(html);
