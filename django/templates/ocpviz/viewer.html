@@ -154,15 +154,15 @@
 
     // dataset info 
     var xmin = {{ xoffset }};	
-    var xmax = {{ xsize }};
+    var xmax = {{ xsize }} + {{ xoffset }} - 1;
     var ymin = {{ yoffset }};
-    var ymax = {{ ysize }};
+    var ymax = {{ ysize }} + {{ yoffset }} - 1;
 
     var minres = {{ minres }};
     var maxres = {{ maxres }};
     var res = {{ res }};
     var zmin = {{ zoffset }};
-    var zmax = {{ zsize }};
+    var zmax = {{ zsize }} + {{ zoffset }} - 1; 
     // set zindex to some default (we pick the lowest slice)  
     var zindex = {{ zstart }};
 

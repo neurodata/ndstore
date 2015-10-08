@@ -35,7 +35,7 @@ def cutout (request, webargs):
   """Restful URL for all read services to annotation projects"""
   
   try:
-    m = re.match(r"(\w+)/(?P<channel>[\w+,/-]+)?/?(xy|xz|yz|tiff|hdf5|blosc|npz|zip|id|ids|xyanno|xzanno|yzanno)/([\w,/-]+)$", webargs)
+    m = re.match(r"(\w+)/(?P<channel>[\w+,/-]+)?/?(xy|xz|yz|tiff|hdf5|jpeg|blosc|npz|zip|id|ids|xyanno|xzanno|yzanno)/([\w,/-]+)$", webargs)
     [token, channel, service, cutoutargs] = [i for i in m.groups()]
 
     if channel is None:
@@ -62,16 +62,22 @@ def cutout (request, webargs):
         response = django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="product/blosc" )
         response['Content-Disposition'] = "attachment; filename={}ocpcutout.blosc".format(fname)
         return response
-      elif service=='npz':
+      elif service in ['jpeg']:
+        fname = re.sub ( r',','_', webargs )
+        fname = re.sub ( r'/','-', fname )
+        response = django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="product/jpeg" )
+        response['Content-Disposition'] = "attachment; filename={}ocpcutout.jpeg".format(fname)
+        return response
+      elif service in ['npz']:
         return django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="product/npz" )
-      elif service=='tiff':
+      elif service in ['tiff']:
         # build a file name from the webarguments
         fname = re.sub ( r',','_', webargs )
         fname = re.sub ( r'/','-', fname )
         response = django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="image/tiff" )
         response['Content-Disposition'] = "attachment; filename={}ocpcutout.tif".format(fname)
         return response
-      elif service=='zip':
+      elif service in ['zip']:
         return django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="product/zip" )
       elif service in ['id','ids']:
         return django.http.HttpResponse(ocpcarest.getCutout(webargs))
@@ -249,6 +255,19 @@ def jsoninfo (request, webargs):
   except:
     logger.exception("Unknown exception in jsoninfo")
     raise OCPCAError("Unknown exception in jsoninfo")
+
+def xmlinfo (request, webargs):
+  """Return project and dataset configuration information"""
+
+  try:  
+    return django.http.HttpResponse(ocpcarest.xmlInfo(webargs), content_type="application/xml" )
+  except OCPCAError, e:
+    return django.http.HttpResponseNotFound(e.value)
+  except MySQLdb.Error, e:
+    return django.http.HttpResponseNotFound(e)
+  except:
+    logger.exception("Unknown exception in xmlinfo")
+    raise OCPCAError("Unknown exception in xmlinfo")
 
 #@cache_control(no_cache=True)
 def projinfo (request, webargs):

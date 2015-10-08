@@ -341,3 +341,58 @@ GET YZ Slice Cutout
     :align: center
     :width: 500px
     :height: 200px
+
+JPEG Service
+============
+ 
+.. _jpeg-get:
+
+GET
+----
+
+.. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/jpeg/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/
+   
+   :synopsis: Get a jpeg file from the server
+
+   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
+   :type server_name: string
+   :param token_name: Token Name in OCP.
+   :type token_name: string
+   :param channel_name: Channel Name in OCP. *Optional*. If missing will use default channel for the token.
+   :type channel_name: string
+   :param resolution: Resolution for the data
+   :type resolution: int
+   :param min_x: Minimum value in the xrange
+   :type min_x: int
+   :param max_x: Maximum value in the xrange
+   :type max_x: int
+   :param min_y: Minimum value in the yrange
+   :type min_y: int
+   :param max_y: Maximum value in the yrange
+   :type max_y: int
+   :param min_z: Minimum value in the zrange
+   :type min_z: int
+   :param max_z: Maximum value in the zrange
+   :type max_z: int
+    
+   :statuscode 200: No error
+   :statuscode 404: Error in the syntax or file format
+   
+   **Example Request**:
+   
+   .. sourcecode:: http
+      
+      GET /ocp/ca/kasthuri11/image/jpeg/0/5000,5500/5000,5500/150,152/ HTTP/1.1
+      Host: openconnecto.me
+
+   **Example Response**:
+
+   .. sourcecode:: http
+      
+      HTTP/1.1 200 OK
+      Content-Type: image/jpeg
+
+.. figure:: ../images/slice_jpeg.jpg
+    :align: center
+    :width: 500px
+    :height: 1000px

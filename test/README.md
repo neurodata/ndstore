@@ -55,12 +55,13 @@
   - Module : Test_Image_Simple_Catmaid
     1. test_xy_tile
 
-* test_info - 4 tests
+* test_info - 5 tests
 
   - Module Test_Info
     1. test_public_tokens
     2. test_info
     3. test_projinfo
+    4. testxmlinfo
     4. test_reserve
 
 * test_io.py - 6 tests
@@ -178,6 +179,11 @@
   - Module : Test_Blosc
     1. test_get_blosc
     2. test_post_blosc
+
+* test_jpeg.py - 2 tests
+
+  - Module : Test_Jpeg
+    1. test_get_jpeg
 
 * tests to add
   1. Test filter for image slices
