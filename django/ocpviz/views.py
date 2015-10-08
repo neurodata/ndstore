@@ -380,8 +380,10 @@ def validate(request, webargs):
   # e.g. ocp/ocpviz/query/dsp061/ca/kharris15apical/info/
   [token, channel, server] = webargs.split('/', 2)
  
-  # TODO handle null token (error), null channel (use default)
-  # probably will need to just assume null channel, won't be able to differentiate
+  if (token == ''):
+    return HttpResponseBadRequest('Missing Token Value')
+  if (channel == ''):
+    return HttpResponseBadRequest('Missing Channel Value')
 
   # strip the trailing / from the server name 
   server = server.strip('/') 
