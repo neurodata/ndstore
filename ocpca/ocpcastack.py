@@ -279,4 +279,4 @@ def buildImageStack(proj, ch, res=None):
               if ch.getChannelType() not in TIMESERIES_CHANNELS:
                 db.putCube(ch, zidx, cur_res, cube, update=True)
               else:
-                db.putTimeCube(ch, zidx, ts, cur_res, cube, update=True)
+                db.putTimeCube(ch, zidx, ts, cur_res, cube, update=False)
