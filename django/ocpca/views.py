@@ -157,6 +157,7 @@ def annotation (request, webargs):
       if rest.split('/')[1] == 'json':
         return django.http.HttpResponse(ocpcarest.getAnnotation(webargs), content_type="application/json" )
       else:
+        # return hdf5 
         return django.http.HttpResponse(ocpcarest.getAnnotation(webargs), content_type="product/hdf5" )
     elif request.method == 'POST':
       #if service == 'hdf5_async':
