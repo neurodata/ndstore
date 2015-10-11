@@ -33,7 +33,6 @@ POST_SERVICES = ['hdf5', 'npz', 'hdf5_async', 'propagate', 'tiff', 'blosc']
 
 def cutout (request, webargs):
   """Restful URL for all read services to annotation projects"""
-  
   try:
     m = re.match(r"(\w+)/(?P<channel>[\w+,/-]+)?/?(xy|xz|yz|tiff|hdf5|jpeg|blosc|npz|zip|id|ids|xyanno|xzanno|yzanno)/([\w,/-]+)$", webargs)
     [token, channel, service, cutoutargs] = [i for i in m.groups()]
@@ -150,12 +149,15 @@ def swc (request, webargs):
 
 def annotation (request, webargs):
   """Get put object interface for RAMON objects"""
-  
   [token, channel, rest] = webargs.split('/',2)
-
+  
   try:
     if request.method == 'GET':
-      return django.http.HttpResponse(ocpcarest.getAnnotation(webargs), content_type="product/hdf5" )
+      # check for json vs hdf5 
+      if rest.split('/')[1] == 'json':
+        return django.http.HttpResponse(ocpcarest.getAnnotation(webargs), content_type="application/json" )
+      else:
+        return django.http.HttpResponse(ocpcarest.getAnnotation(webargs), content_type="product/hdf5" )
     elif request.method == 'POST':
       #if service == 'hdf5_async':
         #return django.http.HttpResponse( ocpcarest.putAnnotationAsync(webargs,request.body) )
