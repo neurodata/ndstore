@@ -131,12 +131,16 @@
 <body>
 
 
-  {# Modal Code Includes #}
+  {# Begin Modal Code Includes #}
   {% include "ocpviz/help.html" %}
 
   {% include "ocpviz/nav.html" %}
   
   {% include "ocpviz/add_data.html" %}
+  
+  {% include "ocpviz/dataview.html" %}
+
+  {# End Modal Code Includes #}
 
   <div id="map"></div>
   <script> 
@@ -994,6 +998,16 @@
     </div>
   </footer>
   {% endif %}
+
+  {# after generating the main UI, open dataview, etc #}
+  {% if dataview %} 
+    <script>
+      $(window).load(function() {
+        $( '#displayDataview' ).modal('show');
+      });
+    </script>
+  {% endif %}
+  
 </body>
 {# jquery and bootstrap js #}
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
