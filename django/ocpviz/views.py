@@ -271,11 +271,37 @@ def projectview(request, webargs):
   }
   return render(request, 'ocpviz/viewer.html', context)
 
+def getDataview(request, webargs):
+  """ get the info from the dataview from the db and return it for the modal """
 
 def dataview(request, webargs):
   """ display the given dataview """
   """ ocp/ocpviz/dataview/<<dataview name>> """
-
+  # TODO get dataview name from webargs 
+  context = {
+      'layers': None,
+      'project_name': None,
+      'xsize': 0,
+      'ysize': 0,
+      'zsize': 0,
+      'xoffset': 0,
+      'yoffset': 0,
+      'zoffset': 0,
+      'res': 0,
+      'xdownmax': 0,
+      'ydownmax': 0,
+      'starttime': 0,
+      'endtime': 0,
+      'maxres': 0,
+      'minres':0,
+      'xstart': 0,
+      'ystart': 0,
+      'zstart': 0,
+      'marker': 0,
+      'timeseries': False,
+      'dataview': 'test',
+      }
+  return render(request, 'ocpviz/viewer.html', context) 
 
 def dataviewsPublic(request):
   """ display a list of all public dataviews """
