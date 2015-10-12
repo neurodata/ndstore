@@ -71,6 +71,9 @@ class OCPCADataset:
     self.timerange = (self.ds.starttime, self.ds.endtime)
     # nearisotropic service for Stephan
     self.nearisoscaledown = {}
+    self.neariso_voxelres = {}
+    self.neariso_imagesz = {}
+    self.neariso_offset = {}
 
     for i in range (self.ds.scalinglevels+1):
       """Populate the dictionaries"""
@@ -135,6 +138,11 @@ class OCPCADataset:
           self.nearisoscaledown[i] = int(math.floor(scalepixels))
       else:
         self.nearisoscaledown[i] = int(1)
+      
+      self.neariso_imagesz[i] = [ xpixels, ypixels, zpixels/self.nearisoscaledown[i] ]
+      self.neariso_voxelres[i] = [ xvoxelresi, yvoxelresi, zvoxelresi*self.nearisoscaledown[i] ]
+      self.neariso_offset[i] = [ float(xoffseti), float(yoffseti), float(zoffseti)/self.nearisoscaledown[i] ]
+
 
   # Accessors
   def getDatasetName(self):
