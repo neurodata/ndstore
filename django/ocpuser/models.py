@@ -76,7 +76,7 @@ class Project ( models.Model):
     ('dsp063.pha.jhu.edu', 'dsp063'),
     ('localhost', 'Debug'),
   )
-  host =  models.CharField(max_length=255, choices=HOST_CHOICES, default='dsp061.pha.jhu.edu')
+  host =  models.CharField(max_length=255, choices=HOST_CHOICES, default='localhost')
   KVENGINE_CHOICES = (
     ('MySQL','MySQL'),
     ('Cassandra','Cassandra'),
@@ -90,7 +90,7 @@ class Project ( models.Model):
     ('dsp063.pha.jhu.edu', 'dsp063'),
     ('localhost', 'Debug'),
   )
-  kvserver =  models.CharField(max_length=255, choices=KVSERVER_CHOICES, default='dsp061.pha.jhu.edu')
+  kvserver =  models.CharField(max_length=255, choices=KVSERVER_CHOICES, default='localhost')
 
   # Version information -- set automatically
   ocp_version =  models.CharField(max_length=255, default='0.6')
