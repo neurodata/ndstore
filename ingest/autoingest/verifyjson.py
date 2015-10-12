@@ -20,6 +20,7 @@
 # Check data values in dataset
 # Generate put command
 
+import requests
 import json
 import os
 from postmethods import getURL
@@ -74,12 +75,14 @@ def VerifyPath(data, path):
           for j in xrange(timerange[0], timerange[1]+1):
               #Test for tifs or such? Currently test for just not empty
               work_path = "{}/{}/{}/time{}/".format(path, token_name, channel_names[i], j)
-              assert((not os.listdir(work_path)))
+              resp = requests.head(work_path)
+              assert(resp.status_code == 200)
   else:
       for n in len(channel_names):
         #Test for tifs or such? Currently test for just not empty
         work_path = "{}/{}/{}/".format(path, token_name, channel_names[n])
-        assert((not os.listdir(work_path)))
+        resp = requests.head(work_path)
+        assert(resp.status_code == 200)
 
 def PutData(path, name):
   #try to cURL data to the server
