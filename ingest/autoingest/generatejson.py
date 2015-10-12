@@ -23,12 +23,12 @@ import os
 import requests
 SITE_HOST = "http://joy.cs.jhu.edu:8000/"
 
-def ocpJson(dataset, project, channel_list):
+def ocpJson(dataset, project, channel_list, metadata):
   """Genarate OCP json object"""
   ocp_dict = {}
   ocp_dict['dataset'] = datasetDict(*dataset)
   ocp_dict['project'] = projectDict(*project)
-  ocp_dict['metadata'] = {}
+  ocp_dict['metadata'] = metadata
   ocp_dict['channels'] = {}
   for channel_name, value in channel_list.iteritems():
     ocp_dict['channels'][channel_name] = channelDict(*value)
@@ -146,6 +146,7 @@ def main():
   token_name='hausser15'          #(type=str, default='', help='Token Name. User Defined')
   public=0              #(type=int, default=0, help='Make your project publicly visible')
   
+  metadata=            #(type=Any, default='', help='Any metadata as appropriate from the LIMS schema')
 
   result = parser.parse_args()
 
@@ -154,8 +155,9 @@ def main():
     dataset = (dataset_name, imagesize, voxelres, offset, timerange, scalinglevels, scaling)
     project = (project_name, None, None)
     channels = {channel_name:(channel_name, datatype, channel_type, data_url, file_format, file_type, exceptions, resolution, windowrange, readonly)}
-    complete_example = (dataset, project, channels)
+    complete_example = (dataset, project, channels, metadata)
     data = ocpJson(*complete_example)
+    f.write(data)
     
     VerifyPath(json.loads(data))
     PutData(data)
