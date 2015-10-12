@@ -21,13 +21,14 @@ import argparse
 import requests
 import os
 import requests
-SITE_HOST = "http://joy.cs.jhu.edu/"
+SITE_HOST = "http://joy.cs.jhu.edu:8000/"
 
 def ocpJson(dataset, project, channel_list):
   """Genarate OCP json object"""
   ocp_dict = {}
   ocp_dict['dataset'] = datasetDict(*dataset)
   ocp_dict['project'] = projectDict(*project)
+  ocp_dict['metadata'] = {}
   ocp_dict['channels'] = {}
   for channel_name, value in channel_list.iteritems():
     ocp_dict['channels'][channel_name] = channelDict(*value)
@@ -50,7 +51,7 @@ def datasetDict(dataset_name, imagesize, voxelres, offset=[0,0,0], timerange=[0,
     dataset_dict['scaling'] = scaling
   return dataset_dict
 
-def channelDict(channel_name, datatype, channel_type, data_url, file_name, exceptions=0, resolution=0, windowrange=[0,0], readonly=0):
+def channelDict(channel_name, datatype, channel_type, data_url, file_format, file_type, exceptions=0, resolution=0, windowrange=[0,0], readonly=0):
   """Genearte the project dictionary"""
   channel_dict = {}
   channel_dict['channel_name'] = channel_name
@@ -65,7 +66,8 @@ def channelDict(channel_name, datatype, channel_type, data_url, file_name, excep
   if readonly is not None:
     channel_dict['readonly'] = readonly
   channel_dict['data_url'] = data_url
-  channel_dict['file_name'] = file_name
+  channel_dict['file_format'] = file_format
+  channel_dict['file_type'] = file_type
   return channel_dict
 
 def projectDict(project_name, token_name='', public=0):
@@ -108,9 +110,8 @@ def VerifyPath(data):
 
 def PutData(data):
   #try to post data to the server
-  URLPath = "{}ocp/ca/createProject/".format(SITE_HOST)
+  URLPath = "{}ca/createProject/".format(SITE_HOST)
   try:
-      
       r = requests.post(URLPath, data=data)
   except:
       print "Error in accessing JSON file, please double check name and path."
@@ -122,42 +123,41 @@ def main():
   parser.add_argument('--path', action='store', type=str, help='Location of project files')
   result = parser.parse_args()
   
-  dataset_name=        #(type=str, help='Name of Dataset')
-  imagesize=           #(type=int[], help='Image size (X,Y,Z)')
-  voxelres=            #(type=float[], help='Voxel resolution (X,Y,Z) - In nanometers')
-  offset=              #(type=int[], default=[0, 0, 0], help='Image Offset in X,Y,Z')
-  timerange=           #(type=int[], default=[0, 0], help='Time Dimensions')
-  scalinglevels=       #(type=int, default=0, help='Required Scaling levels/ Zoom out levels')
-  scaling=             #(type=int, default=0, help='Type of Scaling - Isotropic or Normal')
+  dataset_name='hausser15'        #(type=str, help='Name of Dataset')
+  imagesize=(512,512,9000)           #(type=int[], help='Image size (X,Y,Z)')
+  voxelres=(1.0,1.0,1.0)            #(type=float[], help='Voxel resolution (X,Y,Z) - In nanometers')
+  offset=(0,0,0)              #(type=int[], default=[0, 0, 0], help='Image Offset in X,Y,Z')
+  timerange=(0,0)           #(type=int[], default=[0, 0], help='Time Dimensions')
+  scalinglevels=0       #(type=int, default=0, help='Required Scaling levels/ Zoom out levels')
+  scaling=0             #(type=int, default=0, help='Type of Scaling - Isotropic or Normal')
 
-  channel_name=        #(type=str, help='Name of Channel. Has to be unique in the same project. User Defined.')
-  datatype=            #(type=str, help='Channel Datatype')
-  channel_type=        #(type=str, help='Type of channel - Image, Annotation. Timeseries, Probability-Maps')
-  exceptions=          #(type=int, default=0, help='Exceptions')
-  resolution=          #(type=int, default=0, help='Start Resolution')
-  windowrange=         #(type=int[], default=[0, 0], help='Window clamp function for 16-bit channels with low max value of pixels')
-  readonly=            #(type=int, default=0, help='Read-only Channel or Not. You can remotely post to channel if it is not readonly and overwrite data')
-  data_url=            #(type=str, help='This url points to the root directory of the files. Dropbox is not an acceptable HTTP Server.')
-  file_format=         #(type=str, help='This is overal the file format type. For now we support only Slice stacks and CATMAID tiles.')
-  file_type=           #(type=str, help='This is the specific file format type (tiff, tif, png))
+  channel_name='drifting_gratings_0'        #(type=str, help='Name of Channel. Has to be unique in the same project. User Defined.')
+  datatype='uint16'            #(type=str, help='Channel Datatype')
+  channel_type='image'        #(type=str, help='Type of channel - Image, Annotation. Timeseries, Probability-Maps')
+  exceptions=0          #(type=int, default=0, help='Exceptions')
+  resolution=0          #(type=int, default=0, help='Start Resolution')
+  windowrange=(0,0)         #(type=int[], default=[0, 0], help='Window clamp function for 16-bit channels with low max value of pixels')
+  readonly=0            #(type=int, default=0, help='Read-only Channel or Not. You can remotely post to channel if it is not readonly and overwrite data')
+  data_url= 'http://braingraph1dev.cs.jhu.edu//data/scratch/ualex/codeneuro/hausser_lab/series_0/tiffs/'           #(type=str, help='This url points to the root directory of the files. Dropbox is not an acceptable HTTP Server.')
+  file_format='SLICE'         #(type=str, help='This is overal the file format type. For now we support only Slice stacks and CATMAID tiles.')
+  file_type='tiff'           #(type=str, help='This is the specific file format type (tiff, tif, png))
 
-  project_name=        #(type=str, help='Name of Project. Has to be unique in OCP. User Defined')
-  token_name=          #(type=str, default='', help='Token Name. User Defined')
-  public=              #(type=int, default=0, help='Make your project publicly visible')
+  project_name='hausser15'        #(type=str, help='Name of Project. Has to be unique in OCP. User Defined')
+  token_name='hausser15'          #(type=str, default='', help='Token Name. User Defined')
+  public=0              #(type=int, default=0, help='Make your project publicly visible')
   
 
   result = parser.parse_args()
 
   try:
     f = open(result.output_file, 'w')
-    dataset = datasetDict(dataset_name, imagesize, voxelres, offset, timerange, scalinglevels, scaling)
-    project = (project_name)
-    channels = {channel_name:(channel_name, datatype, channel_type, data_url, file_name, exceptions, resolution, windowrange, readonly))}
+    dataset = (dataset_name, imagesize, voxelres, offset, timerange, scalinglevels, scaling)
+    project = (project_name, None, None)
+    channels = {channel_name:(channel_name, datatype, channel_type, data_url, file_format, file_type, exceptions, resolution, windowrange, readonly)}
     complete_example = (dataset, project, channels)
     data = ocpJson(*complete_example)
-    f.write(outputjson)
     
-    VerifyPath(data)
+    VerifyPath(json.loads(data))
     PutData(data)
 
   except Exception, e:
@@ -166,7 +166,6 @@ def main():
   finally:
     f.close()
 
-  
 
 if __name__ == "__main__":
   main()
