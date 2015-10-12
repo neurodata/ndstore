@@ -329,10 +329,46 @@ def query(request, queryargs):
 
   return HttpResponse(r)
 
+def ramoninfo(request, webargs):
+  # gets ramon info json from OCP
+  # expected syntax is:
+  # ocp/viz/ramoninfo/<<server>>/<<token>>/<<channel>>/<<id>>/
+
+  [server, token, channel, objids] = webargs.split('/', 3)
+  objids = objids.strip('/')
+  if server not in VALID_SERVERS.keys():
+    return HttpResponse("Error: Server not valid.")
+
+  if server == 'localhost':
+    addr = 'http://{}/ocp/ca/{}/{}/{}/json/'.format( request.META['HTTP_HOST'], token, channel, objids )
+  else: 
+    addr = 'http://{}/ocp/ca/{}/{}/{}/json/'.format( VALID_SERVERS[server], token, channel, objids )
+  try:
+    r = urllib2.urlopen(addr)
+  except urllib2.HTTPError, e:
+    if e.getcode() == 404:
+      return HttpResponse('No RAMON Object for annotation.')
+    else:
+      r = '[ERROR]: ' + str(e.getcode())
+      return HttpResponse(r) 
+
+  html = ''
+
+  ramonjson = json.loads(r.read())
+  
+  for obj in objids.split(','):
+    if obj not in ramonjson.keys():
+      continue
+
+    html += '<strong>{} {}</strong>'.format( ramonjson[obj]['type'], obj )
+    html += '<ul><li>author: {}</li><li>neuron: {}</li><li>confidence: {}</li></ul>'.format( ramonjson[obj]['metadata']['author'], ramonjson[obj]['metadata']['neuron'], ramonjson[obj]['metadata']['confidence'] )
+  
+  return HttpResponse(html)
+
 def projinfo(request, queryargs):
   # gets the projinfo from ocp 
   # expected syntax is:
-  # ocp/ocpviz/projinfo/<<server>>/<<token>>/ 
+  # ocp/viz/projinfo/<<server>>/<<token>>/ 
   # e.g. ocp/ocpviz/projinfo/dsp061/projinfo/kharris15apical/
   [server, token_raw] = queryargs.split('/', 1)
   token = token_raw.split('/')[0]

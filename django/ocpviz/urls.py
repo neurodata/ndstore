@@ -15,6 +15,7 @@
 from django.conf.urls import *
 from ocpuser.views import *
 import django.contrib.auth
+  # ocp/viz/ramoninfo/<<server>>/<<token>>/<<channel>>/<<id>>/
 
 urlpatterns = patterns('ocpviz.views',
     # data views
@@ -24,6 +25,8 @@ urlpatterns = patterns('ocpviz.views',
     url(r'^query/(?P<queryargs>[\w,/-]+)', 'query'),
     # for getting the projinfo json information from ocp
     url(r'^projinfo/(?P<queryargs>[\w,/-]+)', 'projinfo'),
+    # for getting the ramon json information from ocp
+    url(r'^ramoninfo/(?P<webargs>[\w,/-]+)', 'ramoninfo'),
     # validate token/channel/server
     url(r'^validate/(?P<webargs>[\w,\.,/-]+)', 'validate'),
     url(r'^$', 'default'),

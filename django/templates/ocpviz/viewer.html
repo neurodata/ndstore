@@ -294,11 +294,21 @@
     queryres.options.position = 'topright';
     queryres.onAdd = function (map) {
       this._div = L.DomUtil.create('div', 'queryres');
-      var header = '<h4>Query Result</h4>';
-      this._div.innerHTML = header;
+      var header = '<div class="closequery" style="float:right;"><a id="closequerybox" href="#"><i class="fa fa-times fa-lg"></a></i></div><h4>Query Result</h4>';
+      var querybody = '<div class="querybody"></div>';
+      this._div.innerHTML = header + querybody;
       return this._div;
     };
 		queryres.addTo(map);
+
+    // disable (and then re-enable) clicking on mouseover
+    queryres.getContainer().addEventListener('mouseover', function() {
+      map.off('click', onMapClick);
+    });
+
+    queryres.getContainer().addEventListener('mouseout', function() {
+      map.on('click', onMapClick);
+    });
 
     // display project info
     var projinfo = L.control();
@@ -310,6 +320,16 @@
 			return this._div;
     };
 		projinfo.addTo(map);
+    
+    // disable (and then re-enable) clicking on mouseover
+    projinfo.getContainer().addEventListener('mouseover', function() {
+      map.off('click', onMapClick);
+    });
+
+    projinfo.getContainer().addEventListener('mouseout', function() {
+      map.on('click', onMapClick);
+    });
+
 
 		// display some map controls
 		var controls = L.control();
@@ -351,6 +371,16 @@
 		};
 
 		controls.addTo(map);
+    
+    // disable (and then re-enable) clicking on mouseover
+    controls.getContainer().addEventListener('mouseover', function() {
+      map.off('click', onMapClick);
+    });
+
+    controls.getContainer().addEventListener('mouseout', function() {
+      map.on('click', onMapClick);
+    });
+
 
     // update current coordinates in nav box
 
@@ -572,6 +602,42 @@
 
 		}
     
+    function getRamonInfo(point, zoom) {
+      // get the id of the object at that location 
+      objid = getAnnoId(point, zoom);
+      console.log("obj: " + parseInt(objid));
+      
+      if (parseInt(objid) == 0) {
+        return "No RAMON object here.";
+      }
+      
+      // AB TODO set this based on the project 
+      var queryserver = "localhost"; 
+      // string for return 
+      var objstr = 'ID: ' + objid;
+      
+      var ramonUrl = "http://{{ request.get_host }}/ocp/viz/ramoninfo/" + queryserver + "/" + querytoken + "/" + querychannel + "/" + objid + "/";
+      console.log(ramonUrl);    
+      // make request (using jquery)
+      var jqxhr = $.ajax({
+        url: ramonUrl,
+        type: 'GET',
+        success: function(response) { 
+          console.log(response);
+          $( ".querybody" ).empty();
+          $( ".querybody" ).append(response);
+          $( ".queryres" ).show("slow");
+          },
+        })
+        .fail(function(response) {
+          console.log('failure');
+          objstr = 'Failed to retrieve RAMON obj.';
+        });
+      console.log(objstr); 
+      return objstr;
+          
+    }
+    
     function getProjInfo() {
       // we use the token from the first layer (for now)   
       var infoToken = "{{ layers.0.token }}"; 
@@ -588,14 +654,14 @@
 
 		}
 
-		// popup on click (testing get anno id) 
+		// popup on click (querytool)  
 		var popup = L.popup();
 		function onMapClick(e) {
       if (querytool) {
         var reqPoint = map.project(e.latlng);	
         popup
           .setLatLng(e.latlng)
-          .setContent("You requested anno " + getAnnoId(reqPoint, map.getMaxZoom() - map.getZoom()))
+          .setContent( getRamonInfo(reqPoint, map.getMaxZoom() - map.getZoom()) )
           .openOn(map);
       } 
 		}
@@ -768,7 +834,7 @@
         playdelay = val;
       });
     }); // play delay 
-    
+
     // remove a layer 
     $(function() {
       $( "#opacity-control" ).on( "click", ".remove-layer", function() {
@@ -790,10 +856,10 @@
       });
     });
 
-    // toggle the queryinfo window 
+    // close the queryinfo window 
     $(function() {
-      $( "#togglequeryres" ).click(function() {
-        $( ".queryres" ).toggle( "slow" )
+      $( "#closequerybox" ).click(function() {
+        $( ".queryres" ).hide( "slow" );
       });
     });
 
