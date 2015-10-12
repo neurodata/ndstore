@@ -23,9 +23,10 @@
 import requests
 import json
 import os
-from postmethods import getURL
+import argparse
+#from postmethods import getURL
 import requests
-SITE_HOST = localhost
+#SITE_HOST = localhost
 
 def main():
 
@@ -37,52 +38,34 @@ def main():
   with open(result.jsonfile) as df:
       data = json.load(df)
 
-  #assert(VerifyPath(data, path))
-  #VerifyDataset(data)
-  VerifyPath(data, path)
-  PutData(result.path, result.jsonfile)
+  VerifyPath(data)
+  #PutData(result.path, result.jsonfile)
 
-"""
-def VerifyDataset(data):
-  try:
-    token = data["project"]["token_name"]
-  except:
-    token = data["project"]["project_name"]
-
-  f = getURL("http://{}/ocp/ca/{}/info/".format(SITE_HOST, token))
-  dbinfo = json.loads(f.read())
-  assert(dbinfo["dataset"]["dataset_name"]==data["dataset"]["dataset_name"])
-  assert(dbinfo["dataset"]["imagesize"]==data["dataset"]["imagesize"])
-  assert(dbinfo["dataset"]["voxelres"]==data["dataset"]["voxelres"])
-
-  if (data["channel"]["channel_type"]=="timeseries"):
-    assert(dbinfo["dataset"]["timerange"]==data["dataset"]["timerange"])
-"""
-
-def VerifyPath(data, path):
+def VerifyPath(data):
   #Insert try and catch blocks
   try:
     token_name = data["project"]["token_name"]
   except:
     token_name = data["project"]["project_name"]
 
-  channel_names = data["channels"]["channel_names"].keys()
-  channel_type = data["channel"]["channel_type"]
+  channel_names = data["channels"].keys()
 
-  if (channel_type=="timeseries"):
+  for i in range(0,len(channel_names)):
+    channel_type = data["channels"][channel_names[i]]["channel_type"]
+    path = data["channels"][channel_names[i]]["data_url"]
+
+    if (channel_type=="timeseries"):
       timerange = data["dataset"]["timerange"]
-      for i in len(channel_names):
-          for j in xrange(timerange[0], timerange[1]+1):
-              #Test for tifs or such? Currently test for just not empty
-              work_path = "{}/{}/{}/time{}/".format(path, token_name, channel_names[i], j)
-              resp = requests.head(work_path)
-              assert(resp.status_code == 200)
-  else:
-      for n in len(channel_names):
+      for j in xrange(timerange[0], timerange[1]+1):
         #Test for tifs or such? Currently test for just not empty
-        work_path = "{}/{}/{}/".format(path, token_name, channel_names[n])
+        work_path = "http://{}{}/{}/time{}/".format(path, token_name, channel_names[i], j)
         resp = requests.head(work_path)
         assert(resp.status_code == 200)
+    else:
+      #Test for tifs or such? Currently test for just not empty
+      work_path = "http://{}{}/{}/".format(path, token_name, channel_names[i])
+      resp = requests.head(work_path)
+      assert(resp.status_code == 200)
 
 def PutData(path, name):
   #try to cURL data to the server
