@@ -133,6 +133,58 @@ def numpyZip ( chanargs, proj, db ):
   except Exception,e:
     raise OCPCAError("{}".format(e))
 
+
+def JPEG ( chanargs, proj, db ):
+  """Return a web readable JPEG File"""
+
+  try:
+    # argument of format channel/service/imageargs
+    m = re.match("([\w+,]+)/(\w+)/([\w+,/-]+)$", chanargs)
+    [channels, service, imageargs] = [i for i in m.groups()]
+  except Exception, e:
+    logger.warning("Arguments not in the correct format {}. {}".format(chanargs, e))
+    raise OCPCAError("Arguments not in the correct format {}. {}".format(chanargs, e))
+
+  try: 
+    channel_list = channels.split(',')
+    ch = proj.getChannelObj(channel_list[0])
+
+    channel_data = cutout( imageargs, ch, proj, db ).data
+    cubedata = np.zeros ( (len(channel_list),)+channel_data.shape, dtype=channel_data.dtype )
+    cubedata[0,:] = channel_data
+
+    # if one channel convert 3-d to 4-d array
+    for idx,channel_name in enumerate(channel_list[1:]):
+      if channel_name == '0':
+        continue
+      else:
+        ch = proj.getChannelObj(channel_name)
+        if OCP_dtypetonp[ch.getDataType()] == cubedata.dtype:
+          cubedata[idx+1,:] = cutout(imageargs, ch, proj, db).data
+        else:
+          raise OCPCAError("The npz cutout can only contain cutouts of one single Channel Type.")
+
+    xdim, ydim, zdim = cubedata[0,:,:,:].shape[::-1]
+    #cubedata = np.swapaxes(cubedata[0,:,:,:], 0,2).reshape(xdim*zdim, ydim)
+    cubedata = cubedata[0,:,:,:].reshape(xdim*zdim, ydim)
+    
+    if ch.getDataType() in DTYPE_uint16:
+      img = Image.fromarray(cubedata, mode='I;16')
+      img = img.point(lambda i:i*(1./256)).convert('L')
+    elif ch.getDataType() in DTYPE_uint32:
+      img = Image.fromarray(cubedata, mode='RGBA')
+    else:
+      img = Image.fromarray(cubedata)
+    fileobj = cStringIO.StringIO ()
+    img.save ( fileobj, "JPEG" )
+
+    fileobj.seek(0)
+    return fileobj.read()
+
+  except Exception,e:
+    raise OCPCAError("{}".format(e))
+
+
 def BLOSC ( chanargs, proj, db ):
   """Return a web readable blosc file"""
 
@@ -608,6 +660,8 @@ def selectService ( service, webargs, proj, db ):
     return  numpyZip ( webargs, proj, db ) 
   elif service in ['blosc']:
     return  BLOSC ( webargs, proj, db ) 
+  elif service in ['jpeg']:
+    return JPEG ( webargs, proj, db )
   elif service in ['zip']:
     return  binZip ( webargs, proj, db ) 
   elif service == 'id':
@@ -1433,7 +1487,7 @@ def putNIFTI ( webargs, postdata ):
 def getSWC ( webargs ):
   """Return an SWC object generated from Skeletons/Nodes"""
 
-  [token, channel, swcstring, rest] = webargs.split('/',3)
+  [token, channel, resolution, swcstring, rest] = webargs.split('/',4)
 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
@@ -1445,7 +1499,7 @@ def getSWC ( webargs ):
     # Make a named temporary file for the SWC
     with closing (tempfile.NamedTemporaryFile()) as tmpfile:
 
-      ocpcaskel.querySWC ( tmpfile, ch, db, proj, skelids=None )
+      ocpcaskel.querySWC ( res, tmpfile, ch, db, proj, skelids=None )
 
       tmpfile.seek(0)
       return tmpfile.read()
@@ -1455,7 +1509,7 @@ def getSWC ( webargs ):
 def putSWC ( webargs, postdata ):
   """Put an SWC object into RAMON skeleton/tree nodes"""
 
-  [token, channel, optionsargs] = webargs.split('/',2)
+  [token, channel, resolution, optionsargs] = webargs.split('/',3)
 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
@@ -1475,7 +1529,7 @@ def putSWC ( webargs, postdata ):
       tmpfile.seek(0)
 
       # Parse the swc file into skeletons
-      swc_skels = ocpcaskel.ingestSWC ( tmpfile, ch, db )
+      swc_skels = ocpcaskel.ingestSWC ( resolution, tmpfile, ch, db )
 
       return swc_skels
 
@@ -1605,6 +1659,23 @@ def jsonInfo ( webargs ):
     proj = projdb.loadToken ( token )
 
     return jsonprojinfo.jsonInfo(proj)
+
+def xmlInfo ( webargs ):
+  """Return project information in json format"""
+
+  try:
+    # match the format /token/volume.vikingxml
+    m = re.match(r'(\w+)/volume.vikingxml', webargs)
+    token = m.group(1)
+  except Exception, e:
+    print "Bad URL {}".format(webargs)
+    raise
+  
+  # get the project 
+  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+    proj = projdb.loadToken ( token )
+
+    return jsonprojinfo.xmlInfo(token, proj)
 
 
 def projInfo ( webargs ):

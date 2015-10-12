@@ -52,6 +52,8 @@ def buildStack(token, channel_name, resolution=None):
       elif ch.getChannelType() in IMAGE_CHANNELS:
         buildImageStack(proj, ch, resolution)
       elif ch.getChannelType() in TIMESERIES_CHANNELS:
+        buildImageStack(proj, ch, resolution)
+      else:
         print "Not Supported"
     
       ch.setPropagate(PROPAGATED)
@@ -190,7 +192,7 @@ def buildAnnoStack ( proj, ch, res=None ):
 
 def buildImageStack(proj, ch, res=None):
   """Build the hierarchy of images"""
-
+  
   with closing(ocpcadb.OCPCADB(proj)) as db:
 
     # pick a resolution
@@ -221,43 +223,60 @@ def buildImageStack(proj, ch, res=None):
       ylimit = (yimagesz-1) / ycubedim + 1
       zlimit = (zimagesz-1) / zcubedim + 1
 
-      for z in range(zlimit):
-        for y in range(ylimit):
-          for x in range(xlimit):
+      # Iterating over time
+      for ts in range(timerange[0], timerange[1]+1, 1):
+        # Iterating over zslice
+        for z in range(zlimit):
+          # Iterating over y
+          for y in range(ylimit):
+            # Iterating over x
+            for x in range(xlimit):
 
-            # cutout the data at the resolution
-            olddata = db.cutout(ch, [x*xscale*xcubedim, y*yscale*ycubedim, z*zscale*zcubedim ], biggercubedim, cur_res-1).data
+              # cutout the data at the resolution
+              if ch.getChannelType() not in TIMESERIES_CHANNELS:
+                olddata = db.cutout(ch, [x*xscale*xcubedim, y*yscale*ycubedim, z*zscale*zcubedim ], biggercubedim, cur_res-1).data
+              else:
+                olddata = db.timecutout(ch, [x*xscale*xcubedim, y*yscale*ycubedim, z*zscale*zcubedim ], biggercubedim, cur_res-1, [ts,ts+1]).data
+                olddata = olddata[0,:,:,:]
 
-            #olddata target array for the new data (z,y,x) order
-            newdata = np.zeros([zcubedim,ycubedim,xcubedim], dtype=OCP_dtypetonp.get(ch.getDataType()))
+              #olddata target array for the new data (z,y,x) order
+              newdata = np.zeros([zcubedim,ycubedim,xcubedim], dtype=OCP_dtypetonp.get(ch.getDataType()))
 
-            for sl in range(zcubedim):
+              for sl in range(zcubedim):
 
-              if scaling == ZSLICES:
-                data = olddata[sl,:,:]
-              elif scaling == ISOTROPIC:
-                data = ocplib.isotropicBuild_ctype(olddata[sl*2,:,:], olddata[sl*2+1,:,:])
+                if scaling == ZSLICES:
+                  data = olddata[sl,:,:]
+                elif scaling == ISOTROPIC:
+                  data = ocplib.isotropicBuild_ctype(olddata[sl*2,:,:], olddata[sl*2+1,:,:])
 
-              # Convert each slice to an image
-              # 8-bit int option
-              if olddata.dtype == np.uint8:
-                slimage = Image.frombuffer('L', (xcubedim*2,ycubedim*2), data.flatten(), 'raw', 'L', 0, 1)
-              # 16-bit int option
-              elif olddata.dtype == np.uint16:
-                slimage = Image.frombuffer('I;16', (xcubedim*2,ycubedim*2), data.flatten(), 'raw', 'I;16', 0, 1)
-              # 32-bit float option
-              elif olddata.dtype == np.float32:
-                slimage = Image.frombuffer ( 'F', (xcubedim*2,ycubedim*2), data.flatten(), 'raw', 'F', 0, 1 )
-              elif oldata.dtype == np.uint32:
-                slimage = Image.fromarray( data, "RGBA" )
-              # KL TODO Add support for 32bit and 64bit RGBA data
+                # Convert each slice to an image
+                # 8-bit int option
+                if olddata.dtype == np.uint8:
+                  slimage = Image.frombuffer('L', (xcubedim*2,ycubedim*2), data.flatten(), 'raw', 'L', 0, 1)
+                # 16-bit int option
+                elif olddata.dtype == np.uint16:
+                  slimage = Image.frombuffer('I;16', (xcubedim*2,ycubedim*2), data.flatten(), 'raw', 'I;16', 0, 1)
+                # 32-bit float option
+                elif olddata.dtype == np.float32:
+                  slimage = Image.frombuffer ( 'F', (xcubedim*2,ycubedim*2), data.flatten(), 'raw', 'F', 0, 1 )
+                # 32 bit RGBA data
+                elif olddata.dtype == np.uint32:
+                  slimage = Image.fromarray( data, "RGBA" )
+                # KL TODO Add support for 32bit and 64bit RGBA data
 
-              # Resize the image and put in the new cube array
-              newdata[sl, :, :] = np.asarray(slimage.resize([xcubedim,ycubedim]))
+                # Resize the image and put in the new cube array
+                if olddata.dtype != np.uint32:
+                  newdata[sl, :, :] = np.asarray(slimage.resize([xcubedim,ycubedim]))
+                else:
+                  tempdata = np.asarray(slimage.resize([xcubedim, ycubedim]))
+                  newdata[sl,:,:] = np.left_shift(tempdata[:,:,3], 24, dtype=np.uint32) | np.left_shift(tempdata[:,:,2], 16, dtype=np.uint32) | np.left_shift(tempdata[:,:,1], 8, dtype=np.uint32) | np.uint32(tempdata[:,:,0])
 
-            zidx = ocplib.XYZMorton ([x,y,z])
-            cube = Cube.getCube(cubedim, ch.getChannelType(), ch.getDataType())
-            cube.zeros()
+              zidx = ocplib.XYZMorton ([x,y,z])
+              cube = Cube.getCube(cubedim, ch.getChannelType(), ch.getDataType())
+              cube.zeros()
 
-            cube.data = newdata
-            db.putCube(ch, zidx, cur_res, cube, update=True)
+              cube.data = newdata
+              if ch.getChannelType() not in TIMESERIES_CHANNELS:
+                db.putCube(ch, zidx, cur_res, cube, update=True)
+              else:
+                db.putTimeCube(ch, zidx, ts, cur_res, cube, update=False)

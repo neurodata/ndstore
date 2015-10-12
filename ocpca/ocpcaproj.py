@@ -27,7 +27,7 @@ from ocpuser.models import Dataset
 from ocpuser.models import Token
 from ocpuser.models import Channel
 import annotation
-from ocptype import IMAGE_CHANNELS, ANNOTATION_CHANNELS, ZSLICES, ISOTROPIC, READONLY_TRUE, READONLY_FALSE, PUBLIC_TRUE, NOT_PROPAGATED, UNDER_PROPAGATION, PROPAGATED, IMAGE, ANNOTATION, TIMESERIES, MYSQL, CASSANDRA, RIAK
+from ocptype import IMAGE_CHANNELS, ANNOTATION_CHANNELS, ZSLICES, ISOTROPIC, READONLY_TRUE, READONLY_FALSE, PUBLIC_TRUE, NOT_PROPAGATED, UNDER_PROPAGATION, PROPAGATED, IMAGE, ANNOTATION, TIMESERIES, MYSQL, CASSANDRA, RIAK, OCP_servermap
 
 # need imports to be conditional
 try:
@@ -71,6 +71,9 @@ class OCPCADataset:
     self.timerange = (self.ds.starttime, self.ds.endtime)
     # nearisotropic service for Stephan
     self.nearisoscaledown = {}
+    self.neariso_voxelres = {}
+    self.neariso_imagesz = {}
+    self.neariso_offset = {}
 
     for i in range (self.ds.scalinglevels+1):
       """Populate the dictionaries"""
@@ -135,6 +138,11 @@ class OCPCADataset:
           self.nearisoscaledown[i] = int(math.floor(scalepixels))
       else:
         self.nearisoscaledown[i] = int(1)
+      
+      self.neariso_imagesz[i] = [ xpixels, ypixels, zpixels/self.nearisoscaledown[i] ]
+      self.neariso_voxelres[i] = [ xvoxelresi, yvoxelresi, zvoxelresi*self.nearisoscaledown[i] ]
+      self.neariso_offset[i] = [ float(xoffseti), float(yoffseti), float(zoffseti)/self.nearisoscaledown[i] ]
+
 
   # Accessors
   def getDatasetName(self):
@@ -374,7 +382,7 @@ class OCPCAProjectsDB:
     """Make the database for a project."""
 
     pr = Project.objects.get(project_name=project_name)
-    
+
     if pr.kvengine == MYSQL:
       with closing(MySQLdb.connect (host = pr.host , user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'])) as conn:
         with closing(conn.cursor()) as cursor:
@@ -392,7 +400,8 @@ class OCPCAProjectsDB:
     elif pr.kvengine == CASSANDRA:
       
       try:
-        cluster = Cluster([pr.kvserver])
+        server_address = OCP_servermap[pr.kvserver]
+        cluster = Cluster([server_address])
         session = cluster.connect()
         session.execute ("CREATE KEYSPACE {} WITH REPLICATION = {{ 'class' : 'SimpleStrategy', 'replication_factor' : 1 }}".format(pr.project_name), timeout=30)
       except Exception, e:

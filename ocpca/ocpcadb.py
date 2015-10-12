@@ -357,7 +357,7 @@ class OCPCADB:
 
   def putCube(self, ch, zidx, resolution, cube, update=False):
     """ Store a cube in the annotation database """
-  
+    
     # Handle the cube format here.  
     if self.NPZ:
       self.kvio.putCube(ch, zidx, resolution, cube.toNPZ(), not cube.fromZeros())
@@ -939,7 +939,7 @@ class OCPCADB:
         #add the query result cube to the bigger cube
         curxyz = ocplib.MortonXYZ(int(idx))
         offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
-
+        
         if self.NPZ:
           incube.fromNPZ ( datastring[:] )
         else:

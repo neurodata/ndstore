@@ -159,8 +159,8 @@ def tokenview(request, webargs):
     layers.append(tmp_layer)
 
   # package data for the template
-  xdownmax = (dataset.ximagesize - dataset.xoffset)/(2**dataset.scalinglevels)
-  ydownmax = (dataset.yimagesize - dataset.yoffset)/(2**dataset.scalinglevels)
+  xdownmax = (dataset.ximagesize + dataset.xoffset - 1)/(2**dataset.scalinglevels)
+  ydownmax = (dataset.yimagesize + dataset.yoffset - 1)/(2**dataset.scalinglevels)
   # center the map on the image, if no other coordinate is specified  
   if x is None:
     x = xdownmax/2
@@ -234,8 +234,8 @@ def projectview(request, webargs):
       break
 
   # calculate the lowest resolution xmax and ymax
-  xdownmax = (project.ximagesize - project.xoffset)/(2**project.scalinglevels)
-  ydownmax = (project.yimagesize - project.yoffset)/(2**project.scalinglevels)
+  xdownmax = (project.ximagesize + project.xoffset - 1)/(2**project.scalinglevels)
+  ydownmax = (project.yimagesize + project.yoffset - 1)/(2**project.scalinglevels)
   
   if x is None:
     x = xdownmax/2
