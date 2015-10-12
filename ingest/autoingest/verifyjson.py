@@ -24,7 +24,6 @@ import requests
 import json
 import os
 import argparse
-#from postmethods import getURL
 import requests
 SITE_HOST = "http://braingraph1dev.cs.jhu.edu/"
 
@@ -39,7 +38,7 @@ def main():
       data = json.load(df)
 
   VerifyPath(data)
-  #PutData(result.jsonfile)
+  PutData(data)
 
 def VerifyPath(data):
   #Insert try and catch blocks
@@ -69,11 +68,11 @@ def VerifyPath(data):
       assert(resp.status_code == 200)
 
 
-def PutData(name):
+def PutData(data):
   #try to post data to the server
   URLPath = "{}ocp/ca/createProject/".format(SITE_HOST)
   try:
-      r = requests.post(URLPath, data=("{}".format(name)))
+      r = requests.post(URLPath, data=data)
   except:
       print "Error in accessing JSON file, please double check name and path."
 

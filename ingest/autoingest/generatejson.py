@@ -18,6 +18,10 @@
 
 import json
 import argparse
+import requests
+import os
+import requests
+SITE_HOST = "http://joy.cs.jhu.edu/"
 
 def ocpJson(dataset, project, channel_list):
   """Genarate OCP json object"""
@@ -74,59 +78,95 @@ def projectDict(project_name, token_name='', public=0):
     project_dict['public'] = public
   return project_dict
 
+def VerifyPath(data):
+  #Insert try and catch blocks
+  try:
+    token_name = data["project"]["token_name"]
+  except:
+    token_name = data["project"]["project_name"]
+
+  channel_names = data["channels"].keys()
+
+  for i in range(0,len(channel_names)):
+    channel_type = data["channels"][channel_names[i]]["channel_type"]
+    path = data["channels"][channel_names[i]]["data_url"]
+
+    if (channel_type=="timeseries"):
+      timerange = data["dataset"]["timerange"]
+      for j in xrange(timerange[0], timerange[1]+1):
+        #Test for tifs or such? Currently test for just not empty
+        work_path = "{}{}/{}/time{}/".format(path, token_name, channel_names[i], j)
+        resp = requests.head(work_path)
+        assert(resp.status_code == 200)
+    else:
+      #Test for tifs or such? Currently test for just not empty
+      work_path = "{}{}/{}/".format(path, token_name, channel_names[i])
+      resp = requests.head(work_path)
+      print(work_path)
+      assert(resp.status_code == 200)
+
+
+def PutData(data):
+  #try to post data to the server
+  URLPath = "{}ocp/ca/createProject/".format(SITE_HOST)
+  try:
+      
+      r = requests.post(URLPath, data=data)
+  except:
+      print "Error in accessing JSON file, please double check name and path."
+
 def main():
 
   parser = argparse.ArgumentParser(description="Test generation script for OCP JSON file. By default this will print the basic file in ocp.JSON")
   parser.add_argument('--output_file', action='store', type=str, default='ocp.JSON', help='Name of output file')
-  parser.add_argument('--Manual', dest='complete', action='store_true', help='Argument for detailed JSON which is not basic')
-  parser.add_argument('--Path', action='store', type=str, default='', help='Path of the token')
+  parser.add_argument('--path', action='store', type=str, help='Location of project files')
+  result = parser.parse_args()
+  
+  dataset_name=        #(type=str, help='Name of Dataset')
+  imagesize=           #(type=int[], help='Image size (X,Y,Z)')
+  voxelres=            #(type=float[], help='Voxel resolution (X,Y,Z) - In nanometers')
+  offset=              #(type=int[], default=[0, 0, 0], help='Image Offset in X,Y,Z')
+  timerange=           #(type=int[], default=[0, 0], help='Time Dimensions')
+  scalinglevels=       #(type=int, default=0, help='Required Scaling levels/ Zoom out levels')
+  scaling=             #(type=int, default=0, help='Type of Scaling - Isotropic or Normal')
 
-  """
-  parser.add_argument('--dataset_name', action='store', type=str, help='Name of Dataset')
-  parser.add_argument('--imagesize', action='store', type=int[], help='Image size (X,Y,Z)')
-  parser.add_argument('--voxelres', action='store', type=float[], help='Voxel resolution (X,Y,Z) - In nanometers')
-  parser.add_argument('--offset', action='store', type=int[], default=[0, 0, 0], help='Image Offset in X,Y,Z')
-  parser.add_argument('--timerange', action='store', type=int[], default=[0, 0], help='Time Dimensions')
-  parser.add_argument('--scalinglevels', action='store', type=int, default=0, help='Required Scaling levels/ Zoom out levels')
-  parser.add_argument('--scaling', action='store', type=int, default=0, help='Type of Scaling - Isotropic or Normal')
+  channel_name=        #(type=str, help='Name of Channel. Has to be unique in the same project. User Defined.')
+  datatype=            #(type=str, help='Channel Datatype')
+  channel_type=        #(type=str, help='Type of channel - Image, Annotation. Timeseries, Probability-Maps')
+  exceptions=          #(type=int, default=0, help='Exceptions')
+  resolution=          #(type=int, default=0, help='Start Resolution')
+  windowrange=         #(type=int[], default=[0, 0], help='Window clamp function for 16-bit channels with low max value of pixels')
+  readonly=            #(type=int, default=0, help='Read-only Channel or Not. You can remotely post to channel if it is not readonly and overwrite data')
+  data_url=            #(type=str, help='This url points to the root directory of the files. Dropbox is not an acceptable HTTP Server.')
+  file_format=         #(type=str, help='This is overal the file format type. For now we support only Slice stacks and CATMAID tiles.')
+  file_type=           #(type=str, help='This is the specific file format type (tiff, tif, png))
 
-  parser.add_argument('--channel_name', action='store', type=str, help='Name of Channel. Has to be unique in the same project. User Defined.')
-  parser.add_argument('--datatype', action='store', type=str, help='Channel Datatype')
-  parser.add_argument('--channel_type', action='store', type=str, help='Type of channel - Image, Annotation. Timeseries, Probability-Maps')
-  parser.add_argument('--exceptions', action='store', type=int, default=0, help='Exceptions')
-  parser.add_argument('--resolution', action='store', type=int, default=0, help='Start Resolution')
-  parser.add_argument('--windowrange', action='store', type=int[], default=[0, 0], help='Window clamp function for 16-bit channels with low max value of pixels')
-  parser.add_argument('--readonly', action='store', type=int, default=0, help='Read-only Channel or Not. You can remotely post to channel if it is not readonly and overwrite data')
-  parser.add_argument('--data_url', action='store', type=str, help='This url points to the root directory of the files. Dropbox is not an acceptable HTTP Server.')
-  parser.add_argument('--file_format', action='store', type=str, help='This is the file format type. For now we support only Slice stacks and CATMAID tiles.')
+  project_name=        #(type=str, help='Name of Project. Has to be unique in OCP. User Defined')
+  token_name=          #(type=str, default='', help='Token Name. User Defined')
+  public=              #(type=int, default=0, help='Make your project publicly visible')
+  
 
-  parser.add_argument('--project_name', action='store', type=str, help='Name of Project. Has to be unique in OCP. User Defined')
-  parser.add_argument('--token_name', action='store', type=str, default='', help='Token Name. User Defined')
-  parser.add_argument('--public', action='store', type=int, default=0, help='Make your project publicly visible')
-  """
   result = parser.parse_args()
 
   try:
     f = open(result.output_file, 'w')
-
-    if result.Manual:
-      dataset = ('dataset_complete',[100,100,100],[1.0,1.0,5.0],[0,0,1],[0,100],5)
-      project = ('sample_project_1',)
-      channels = {'sample_channel_1':('sample_channel_1','uint8','image','sample_data_url', 'sample_filename',None,None,None,None), 'sample_channel_2':('sample_channel_2', 'uint16', 'time', 'sample_data_url2', 'sample_filename2',None,None,[100,500]), 'sample_channel_3':('sample_channel_3', 'unit32', 'annotation', 'sample_data_url3', 'sample_filename3',1,0,None)}
-      complete_example = (dataset, project, channels)
-      f.write(ocpJson(*complete_example))
-    else:
-      if !(result.Path == ''):
-        token_name = ((result.path).split("/"))[-1]
-        channel_name, datatype,
-
-
+    dataset = datasetDict(dataset_name, imagesize, voxelres, offset, timerange, scalinglevels, scaling)
+    project = (project_name)
+    channels = {channel_name:(channel_name, datatype, channel_type, data_url, file_name, exceptions, resolution, windowrange, readonly))}
+    complete_example = (dataset, project, channels)
+    data = ocpJson(*complete_example)
+    f.write(outputjson)
+    
+    VerifyPath(data)
+    PutData(data)
 
   except Exception, e:
     print "Error. {}".format(e)
     raise
   finally:
     f.close()
+
+  
 
 if __name__ == "__main__":
   main()
