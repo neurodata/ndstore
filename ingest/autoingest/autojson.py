@@ -86,29 +86,6 @@ def main():
   parser.add_argument('--Path', action='store', type=str, default='', help='Path of the token')
   parser.add_argument('--time_series', dest='time', action='store_true', help='Wether or not the data is time series')
 
-  """
-  parser.add_argument('--dataset_name', action='store', type=str, help='Name of Dataset')
-  parser.add_argument('--imagesize', action='store', type=int[], help='Image size (X,Y,Z)')
-  parser.add_argument('--voxelres', action='store', type=float[], help='Voxel resolution (X,Y,Z) - In nanometers')
-  parser.add_argument('--offset', action='store', type=int[], default=[0, 0, 0], help='Image Offset in X,Y,Z')
-  parser.add_argument('--timerange', action='store', type=int[], default=[0, 0], help='Time Dimensions')
-  parser.add_argument('--scalinglevels', action='store', type=int, default=0, help='Required Scaling levels/ Zoom out levels')
-  parser.add_argument('--scaling', action='store', type=int, default=0, help='Type of Scaling - Isotropic or Normal')
-
-  parser.add_argument('--channel_name', action='store', type=str, help='Name of Channel. Has to be unique in the same project. User Defined.')
-  parser.add_argument('--datatype', action='store', type=str, help='Channel Datatype')
-  parser.add_argument('--channel_type', action='store', type=str, help='Type of channel - Image, Annotation. Timeseries, Probability-Maps')
-  parser.add_argument('--exceptions', action='store', type=int, default=0, help='Exceptions')
-  parser.add_argument('--resolution', action='store', type=int, default=0, help='Start Resolution')
-  parser.add_argument('--windowrange', action='store', type=int[], default=[0, 0], help='Window clamp function for 16-bit channels with low max value of pixels')
-  parser.add_argument('--readonly', action='store', type=int, default=0, help='Read-only Channel or Not. You can remotely post to channel if it is not readonly and overwrite data')
-  parser.add_argument('--data_url', action='store', type=str, help='This url points to the root directory of the files. Dropbox is not an acceptable HTTP Server.')
-  parser.add_argument('--file_format', action='store', type=str, help='This is the file format type. For now we support only Slice stacks and CATMAID tiles.')
-
-  parser.add_argument('--project_name', action='store', type=str, help='Name of Project. Has to be unique in OCP. User Defined')
-  parser.add_argument('--token_name', action='store', type=str, default='', help='Token Name. User Defined')
-  parser.add_argument('--public', action='store', type=int, default=0, help='Make your project publicly visible')
-  """
   result = parser.parse_args()
 
   try:

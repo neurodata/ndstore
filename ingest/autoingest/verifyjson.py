@@ -26,7 +26,7 @@ import os
 import argparse
 #from postmethods import getURL
 import requests
-#SITE_HOST = localhost
+SITE_HOST = "http://braingraph1dev.cs.jhu.edu/"
 
 def main():
 
@@ -39,7 +39,7 @@ def main():
       data = json.load(df)
 
   VerifyPath(data)
-  #PutData(result.path, result.jsonfile)
+  #PutData(result.jsonfile)
 
 def VerifyPath(data):
   #Insert try and catch blocks
@@ -58,20 +58,22 @@ def VerifyPath(data):
       timerange = data["dataset"]["timerange"]
       for j in xrange(timerange[0], timerange[1]+1):
         #Test for tifs or such? Currently test for just not empty
-        work_path = "http://{}{}/{}/time{}/".format(path, token_name, channel_names[i], j)
+        work_path = "{}{}/{}/time{}/".format(path, token_name, channel_names[i], j)
         resp = requests.head(work_path)
         assert(resp.status_code == 200)
     else:
       #Test for tifs or such? Currently test for just not empty
-      work_path = "http://{}{}/{}/".format(path, token_name, channel_names[i])
+      work_path = "{}{}/{}/".format(path, token_name, channel_names[i])
       resp = requests.head(work_path)
+      print(work_path)
       assert(resp.status_code == 200)
 
-def PutData(path, name):
-  #try to cURL data to the server
-  URLPath = "{}/ocp/ca/createProject/".format(SITE_HOST)
+
+def PutData(name):
+  #try to post data to the server
+  URLPath = "{}ocp/ca/createProject/".format(SITE_HOST)
   try:
-      r = requests.post(URLPath, data=("{}{}".format(path, name)))
+      r = requests.post(URLPath, data=("{}".format(name)))
   except:
       print "Error in accessing JSON file, please double check name and path."
 
