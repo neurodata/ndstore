@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}
+     Backups 
+{% endblock title %}
+
+
+{% block content %}
+{% if messages %}
+<ul>
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+      </ul>
+{% endif %}
+
+<form class="form-inline" method="post" action="">
+  <div class="container-fluid">
+    <div class = "row-fluid">
+      <div class ="span12">
+	
+	<div id="header" style="background-color:#4682B4;" align="center">  
+	  <h2 style="margin-bottom:0;">BACKUPS</h2></div>
+      </div>
+    </div>
+  </div>
+</form>
+
+
+<body>
+  <form method="post" action="">
+    <div class="container-fluid">
+      <div class = "row-fluid">
+      <div class ="span1"></div>
+        <div class ="span11">  
+
+   {{ form.errors }} 
+   {{ form.non_field_errors }} 
+
+          <table class ="table">
+          <thead>
+            <tr class="success"><th>Project</th> <th>{{project}}</th></tr>
+          </thead>
+
+          <tr>
+            <td></td>
+            <td>
+
+            {% if not backups %}
+ 
+              <b>No Backups defined! </b>
+            
+            {% else %}
+
+              <table class="table table-bordered">
+
+              <tr class ="error">
+                <th>Description</th>
+                <th>Channel(s)</th>
+                <th>DateTime</th>
+                <th>Protocol</th>
+                <th>Status</th>
+              </tr>	   
+
+              {% for bu in backups %}
+
+              <form method="post" action = "">
+              <tr>
+                <td style="width:15%;">{{ bu.backup_description }}</td>
+                <td>{{ bu.datetimestamp }}</td>
+                <td>{{ bu.channel }}</td>
+                <td>{{ bu.protocol }}</td>
+		            {% if bu.status.readonly == 0 %}
+                    <td>Done</td>
+                {% elif bu.status == 1 %}
+                    <td>In Process</td>
+                {% elif bu.status == 2 %}
+                    <td>Failed</td>
+                {% else %}
+                    <td>Unknown! Seek Help</td>
+                {% endif %}
+
+                <input type="hidden" name="project" value={{project}}>
+
+                <td><button class="btn" id="delete" type="submit" name="delete" onclick="return confirm('Are you sure you want to delete?')"> <i class ="icon-trash icon-black"></i>Delete</button></td>
+              </tr>
+              </form>
+
+              {% endfor %}
+
+              </table>
+            
+            {% endif %}
+
+            </td>
+          </tr>
+          </table>
+
+<!--- Now the new backup form --->
+
+ <div id="form" >
+   <form action="" method="post">
+
+       {{ form.non_field_errors }}
+
+	 <div class = "row">
+           <div class ="col-md-4"></div>
+           <div class ="col-md-2">
+	     <div class="fieldWrapper">
+	       {{ form.subject.errors }}
+	       <label for="description">Description:</label>
+	     </div>
+           </div>
+           <div class ="col-md-2">
+	     {{ form.description }}
+	   </div>
+	   <div class ="col-md-4"></div>
+   </div>
+
+	 <div class = "row">
+	   <div class ="col-md-4"></div>
+	   <div class ="col-md-2 blue">
+	     <div class="fieldWrapper">
+	       {{ form.subject.errors }}
+	       <label for="protocol">Protocol:</label>
+	     </div>
+	   </div>
+	   <div class ="col-md-2">
+	     {{ form.protocol }}
+	   </div>
+	   <div class ="col-md-4"></div>
+	 </div>
+
+
+   <div class = "row">
+     <div class ="col-md-4"></div>
+     <div class ="col-md-2">
+       <div class="fieldWrapper">
+           {{ form.subject.errors }}
+         <label for="channel">Channel:</label>
+       </div>
+     </div>
+	   <div class ="col-md-2">
+	     {{ form.channel }}
+	   </div>
+	   <div class ="col-md-4"></div>
+	 </div>
+
+    <div class = "row">
+           <div class ="col-md-4"></div>
+           <div class ="col-md-2">
+             <div class="fieldWrapper">
+               {{ form.subject.errors }}
+               <label for="asynch">Perform Backup in Background?</label>
+             </div>
+           </div>
+           <div class ="col-md-2">
+           <input type="checkbox" name="asynch" id="asynch" value='on'> 
+           </div>
+           <div class ="col-md-4"></div>
+         </div>
+
+    <div class = "row">
+           <div class ="col-md-4"></div>
+           <div class ="col-md-2">
+             <div class="fieldWrapper">
+               {{ form.subject.errors }}
+               <label for="allchans">Backup all Channels:</label>
+             </div>
+           </div>
+           <div class ="col-md-2">
+           <input type="checkbox" name="allchans" id="allchans" value='on'> 
+           </div>
+           <div class ="col-md-4"></div>
+         </div>
+
+   {{form.project.as_hidden}}
+
+           <div align=center>
+            <button class="btn btn-primary" id="backup" type="submit" name="backup"> <i class ="icon-inbox icon-black"></i>Backup</button>
+            <button class="btn btn-primary" id="backtoprojects" type="submit" name="backtoprojects"> <i class ="icon-inbox icon-black"></i>Return to Projects</button>
+           </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</body>
+
+{% endblock content %}
+
+
+
+
