@@ -548,7 +548,6 @@ def createDataset(request):
         return HttpResponseRedirect(get_script_prefix()+'ocpuser/datasets')
       else:
         context = {'form': form}
-        print form.errors
         return render_to_response('createdataset.html',context,context_instance=RequestContext(request))
     elif 'backtodatasets' in request.POST:
       return redirect(getDatasets)
@@ -583,7 +582,6 @@ def updateDataset(request):
         else:
           #Invalid form
           context = {'form': form}
-          print form.errors
           return render_to_response('updatedataset.html',context,context_instance=RequestContext(request))
 
       else:
@@ -646,6 +644,20 @@ def updateChannel(request):
         # Invalid form
         context = {'form': form, 'project': prname}
         return render_to_response('updatechannel.html', context, context_instance=RequestContext(request))
+
+    elif 'propagatechannel' in request.POST:
+
+      chname = request.session["channel_name"]
+      channel_to_update = get_object_or_404(Channel,channel_name=chname,project_id=pr)
+      form = ChannelForm(data=request.POST or None, instance=channel_to_update)
+
+      # KLTODO/RBTODO add propagate to the UI
+#      messages.error(request,"Propagate not yet implemented in self-admin UI.")
+#      return HttpResponseRedirect(get_script_prefix()+'ocpuser/channels')
+
+      context = {'form': form, 'project': prname}
+      form.add_error(None,[u"Propagate not yet implemented in self-admin UI."])
+      return render_to_response('updatechannel.html', context, context_instance=RequestContext(request))
 
     elif 'createchannel' in request.POST:
 
@@ -794,7 +806,6 @@ def updateToken(request):
       else:
         #Invalid form
         context = {'form': form}
-        print form.errors
         return render_to_response('updatetoken.html',context,context_instance=RequestContext(request))
     elif 'backtotokens' in request.POST:
       #unrecognized option
@@ -889,7 +900,6 @@ def createToken(request):
         return HttpResponseRedirect(get_script_prefix()+'ocpuser/projects')
       else:
         context = {'form': form}
-        print form.errors
         return render_to_response('createtoken.html',context,context_instance=RequestContext(request))
     elif 'backtotokens' in request.POST:
        return redirect(getTokens) 
@@ -1097,7 +1107,6 @@ def restoreProject(request):
       else:
         #Invalid Form
         context = {'form': form}
-        print form.errors
         return render_to_response('projects.html',context,context_instance=RequestContext(request))
     else:
       #Invalid post - redirect to projects for now
