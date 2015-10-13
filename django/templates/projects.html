@@ -6,146 +6,130 @@ Projects
 
 
 {% block content %}
-{% if messages %}
-<ul>
-  {% for message in messages %}
-  <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-  {% endfor %}
-</ul>
-{% endif %}
 
-<form class="form-inline" method="post" action="">
+  {% if messages %}
+    <ul>
+    {% for message in messages %}
+      <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
 
-  
-  <div class="container-fluid">
-    <div class = "row-fluid">
-      
-      <div class ="span12">
-	<div id="header" style="background-color:#4682B4;" align="center">  
-	  <h2 style="margin-bottom:0;">PROJECTS</h2></div>
+  <form class="form-inline" method="post" action="">
+    
+    <div class="container-fluid">
+      <div class = "row-fluid">
+        <div class ="span12">
+          <div id="header" style="background-color:#4682B4;" align="center">  
+            <h2 style="margin-bottom:0;">PROJECTS</h2>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
 
-<!---
-  <div class="container-fluid">
-    <div class = "row-fluid">
-      <div class ="span3"></div>
-      <div class ="span6">
-	<div id="content" class="search" style="background-color:#F5F6CE;float:left;">
-	  
-	  Search By:
-	  <select name="filteroption">
-	    <option value="project">Project</option>
-	  </select>
-	  
-	  <input type="text"  name="filtervalue" placeholder="Enter project name">
-	  <button type="submit" class= "btn" name ="filter">Search Projects </button>
-	  
-	</div>
-	<div class ="span3"></div>
+  </form> 
+
+  <form method="post" action="">
+   
+    <div class="container-fluid">
+      <div class = "row-fluid">
+        <div class ="span1"></div>
+        <div class ="span10">
+        <table class ="table">
+
+          {% for dataset, dts_projects in databases %}
+        
+          <thead>
+            <tr class="success"><th>Dataset</th> <th>{{dataset}}</th></tr>
+          </thead>
+          <tr>
+            <td></td>
+            <td>
+
+            {% for value in dts_projects %} 
+
+            <table class="table table-bordered">
+
+              {%if value %}
+
+              <tr class ="error">
+                <th>Project</th>
+                <th>Description</th>
+                <th>Public</th>
+                <th>Host</th>
+                <th>KVEngine</th>
+                <th>KVServer</th> 
+              </tr>
+
+              {% endif %}
+
+              {% for proj in value %}
+                      
+              <form method="post" action = "">
+              <tr>
+                <td>{{ proj.project_name }}</td>
+                <td>{{ proj.project_description }}</td>
+              
+                {% if proj.public == 0%}
+                  <td>NO</td>
+                {% else %}
+                  <td>YES</td>
+                {% endif %}
+
+                <td>{{ proj.host }}</td>
+                <td>{{ proj.kvengine }}</td>
+
+                {% if proj.kvserver == 'localhost' %}
+                <td>Localhost</td>
+                {% elif proj.kvserver == '172.23.253.61'%}
+                 <td>dsp061</td>
+                {% elif proj.kvserver == '172.23.253.62'%} 
+                  <td>dsp062</td>
+                {% elif proj.kvserver == '172.23.253.63' %}
+                  <td>dsp063</td>
+                {% else %}
+                  <td>OTHER</td>
+                {% endif %}
+         
+
+                <input type="hidden" name="project_name" value={{proj.project_name}}>
+               
+                <td><button class="btn" id="tokens" type="submit" name="tokens"> <i class ="icon-inbox icon-black"></i>Tokens</button></td>
+                <td><button class="btn" id="channels" type="submit" name="channels"> <i class ="icon-trash icon-black"></i>Channels</button></td>
+                <td><button class="btn" id="update" type="submit" name="update"> <i class ="icon-inbox icon-black"></i>Update/Details</button></td>
+                <td><button class="btn" id="delete" type="submit" name="delete" onclick="return confirm('Are you sure you want to delete? This unlinks the project, but does not Delete Data.  Use Delete Data to do both.')"> <i class ="icon-trash icon-black"></i>Unlink</button></td>
+                <td><button class="btn" id="delete_data" type="submit" name="delete_data" onclick="return confirm('Are you sure you want to delete data and remove project?')"> <i class ="icon-trash icon-black"></i>Delete</button></td>
+                <td><button class="btn" id="backup" type="submit" name="backup" <i class ="icon-inbox icon-black"></i>Backup</button></td>
+
+              </form>
+
+              {% endfor %}         
+
+
+#RBTOD align from here
+
+          {% empty %}
+
+          <li>No Projects Available!</li>
+
+          {% endfor %}         
+
+        </table></td>
+        </tr>
+          {% empty %}
+          <li>No Projects Available!</li>
+          {% endfor %}
+    
+        </table>
+        </div>
+      <div class ="span1"></div>
       </div>
     </div>
-  </div>
---->
 
-</form> 
+  </form>
 
-<body>
+  </body>
 
-<form method="post" action="">
- 
- <div class="container-fluid">
-    <div class = "row-fluid">
-      	<div class ="span1"></div>
-	<div class ="span10">
-	  <table class ="table">
-	    {% for dataset, dts_projects in databases %}
-	    
-	    <thead>
-	      <tr class="success"><th>Dataset</th> <th>{{dataset}}</th></tr>
-	    </thead>
- 	    <tr>
-	      <td></td>
-	      <td>
-
-        {% for value in dts_projects %} 
-
-        <table class="table table-bordered">
-
-          {%if value %}
-                  <tr class ="error">
-                    <th>Project</th>
-                    <th>Description</th>
-                    <th>Public</th>
-                    <th>Host</th>
-                    <th>KVEngine</th>
-                    <th>KVServer</th> 
-                  </tr>
-          {% endif %}
-
-          {% for proj in value %}
-		  		  		  
-		  <form method="post" action = "">
-		    <tr>
-		      <td>{{ proj.project_name }}</td>
-		      <td>{{ proj.project_description }}</td>
-		      
-		      {% if proj.public == 0%}
-                      <td>NO</td>
-		      {% else %}
-		      <td>YES</td>
-		      {% endif %}
-		      <td>{{ proj.host }}</td>
-		      <td>{{ proj.kvengine }}</td>
-		      {% if proj.kvserver == 'localhost' %}
-		      <td>Localhost</td>
-		      {% elif proj.kvserver == '172.23.253.61'%}
-                      <td>dsp061</td>
-		      {% elif proj.kvserver == '172.23.253.62'%} 
-                      <td>dsp062</td>
-		      {% elif proj.kvserver == '172.23.253.63' %}
-		      <td>dsp063</td>
-		      {% else %}
-		      <td>OTHER</td>
-		      {% endif %}
-     
-
-<!--		      <td>{{ proj.overlayproject }}</td>
-		      <td>{{ proj.osverlayserver }}</td>
--->
-
-	        <input type="hidden" name="project_name" value={{proj.project_name}}>
-		     
-		      <td><button class="btn" id="tokens" type="submit" name="tokens"> <i class ="icon-inbox icon-black"></i>Tokens</button></td>
-		      <td><button class="btn" id="channels" type="submit" name="channels"> <i class ="icon-trash icon-black"></i>Channels</button></td>
-		      <td><button class="btn" id="update" type="submit" name="update"> <i class ="icon-inbox icon-black"></i>Update/Details</button></td>
-		      <td><button class="btn" id="delete" type="submit" name="delete" onclick="return confirm('Are you sure you want to delete? This unlinks the project, but does not Delete Data.  Use Delete Data to do both.')"> <i class ="icon-trash icon-black"></i>Unlink</button></td>
-		      <td><button class="btn" id="delete_data" type="submit" name="delete_data" onclick="return confirm('Are you sure you want to delete data and remove project?')"> <i class ="icon-trash icon-black"></i>Delete</button></td>
-		      <td><button class="btn" id="backup" type="submit" name="backup" <i class ="icon-inbox icon-black"></i>Backup</button></td>
-		  </form>
-		  {% endfor %}         
-		  
-
-		  {% empty %}
-		  <li>No Projects Available!</li>
-		  {% endfor %}         
-	      </table></td>
-	    </tr>
-	    {% empty %}
-	    <li>No Projects Available!</li>
-	    {% endfor %}
-	
-	  </table>
-	</div>
-	<div class ="span1"></div>
-    </div>
- </div>
-
-</form>
-
-</body>
-
-{% endblock content %}
+  {% endblock content %}
 
 
