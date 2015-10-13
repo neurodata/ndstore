@@ -197,3 +197,7 @@ LIMS_SERVER = 'cortex.cs.jhu.edu'
 
 # Automated Ingest
 TEMP_INGEST_PATH = '/data/scratch/'
+
+# registration settings
+ACCOUNT_ACTIVATION_DAYS = 7 # One-week activation window; you may, of course, use a different value.
+REGISTRATION_AUTO_LOGIN = True # Automatically log the user in.
