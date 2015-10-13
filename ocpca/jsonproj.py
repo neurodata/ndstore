@@ -96,7 +96,7 @@ def createProject(webargs, post_data):
       pd.newOCPCAProject(pr.project_name)
 
     # Iterating over channel list to store channels
-    for (ch, data_url, file_name) in ch_list:
+    for (ch, data_url, file_format, file_type) in ch_list:
       ch.project_id = pr.project_name
       ch.user_id = 1
       # Checking if the channel already exists or not
@@ -109,7 +109,8 @@ def createProject(webargs, post_data):
       
       # KL TODO Call the celery worker here
       from ocpca.tasks import ingest
-      ingest(tk.token_name, ch.channel_name, ch.resolution, data_url)
+      # ingest(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
+      ingest.delay(tk.token_name, ch.channel_name, ch.resolution, data_url)
       # ingest_data = IngestData(tk.token_name, ch.channel_name, ch.resolution, data_url)
       # ingest_data.ingest()
     
@@ -305,7 +306,8 @@ def extractChannelDict(ch_dict, channel_only=False):
     ch.channel_type = ch_dict['channel_type']
     if not channel_only:
       data_url = ch_dict['data_url']
-      file_name = ch_dict['file_name']
+      file_format = ch_dict['file_format']
+      file_type = ch_dict['file_type']
   except Exception, e:
     print "Missing requried fields"
     raise
@@ -320,7 +322,7 @@ def extractChannelDict(ch_dict, channel_only=False):
     ch.readonly = ch_dict['readonly']
 
   if not channel_only:
-    return (ch, data_url, file_name)
+    return (ch, data_url, file_format, file_type)
   else:
     return ch
 
@@ -476,10 +478,10 @@ def createDatasetDict(dataset_name, imagesize, voxelres, offset=[0,0,0], timeran
     dataset_dict['scaling'] = scaling
   return dataset_dict
 
-def createChannelDict(channel_name, datatype, channel_type, data_url, file_name, exceptions=0, resolution=0, windowrange=[0,0], readonly=0, channel_only=False):
+def createChannelDict(channel_name, datatype, channel_type, data_url, file_format, file_type, exceptions=0, resolution=0, windowrange=[0,0], readonly=0, channel_only=False):
   """Genearte the project dictionary"""
   
-  # channel format = (channel_name, datatype, channel_type, data_url, file_name, exceptions, resolution, windowrange, readonly)
+  # channel format = (channel_name, datatype, channel_type, data_url, file_type, file_format, exceptions, resolution, windowrange, readonly)
   
   channel_dict = {}
   channel_dict['channel_name'] = channel_name
@@ -495,7 +497,8 @@ def createChannelDict(channel_name, datatype, channel_type, data_url, file_name,
     channel_dict['readonly'] = readonly
   if not channel_only:
     channel_dict['data_url'] = data_url
-    channel_dict['file_name'] = file_name
+    channel_dict['file_format'] = file_format
+    channel_dict['file_type'] = file_type
   return channel_dict
 
 def createProjectDict(project_name, token_name='', public=0):

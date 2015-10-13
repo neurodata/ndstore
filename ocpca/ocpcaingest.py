@@ -23,7 +23,7 @@ django.setup()
 from django.conf import settings
 
 from cube import Cube
-from ocptype import TIMESERIES_CHANNELS, IMAGE_CHANNELS
+from ocptype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, OCP_dtypetonp
 import ocpcarest
 import ocpcadb
 import ocpcaproj
@@ -31,22 +31,27 @@ import ocplib
 
 class IngestData:
 
-  def __init__(self, token, channel, resolution, data_url):
+  def __init__(self, token, channel, resolution, data_url, file_format, file_type):
 
     self.token = token
     self.channel = channel
     self.resolution = resolution
     self.data_url = data_url
     self.path = settings.TEMP_INGEST_PATH
+    # identify which type of data this is
+    self.file_format = file_format
+    # set the file_type
+    self.file_type = file_type
 
   def ingest(self):
     """Identify the data style and ingest accordingly"""
     
-    # set the file_type
-    self.file_type = 'tif'
-    # do something here to identify which type of data this is
-    self.ingestImageStack()
-    # self.ingestCatmaidStack()
+    if self.file_format in ['SLICE']:
+      self.ingestImageStack()
+    elif self.file_format in ['CATMAID']:
+      self.ingestCatmaidStack()
+    else:
+      raise "Format {} not supported.".format(self.file_format)
 
   def fetchData(self, slice_list, time_value):
     """Fetch the next set of data from a remote source and place it locally"""
@@ -54,7 +59,7 @@ class IngestData:
     # data is a TIF stack
     for slice_number in slice_list:
       try:
-        if time_value is None:
+        if time_value is not None:
           url = '{}{}/{}/{}/{}'.format(self.data_url, self.token, self.channel, time_value, self.generateFileName(slice_number))
         else:
           url = '{}{}/{}/{}'.format(self.data_url, self.token, self.channel, self.generateFileName(slice_number))
@@ -164,7 +169,7 @@ class IngestData:
       # Get a list of the files in the directories
       for timestamp in range(starttime, endtime+1):
         for slice_number in range (zoffset, zimagesz+1, zcubedim):
-          slab = np.zeros([zcubedim, yimagesz, ximagesz ], dtype=np.uint8)
+          slab = np.zeros([zcubedim, yimagesz, ximagesz ], dtype=OCP_dtypetonp.get(ch.getDataType()))
           # fetch 16 slices at a time
           if ch.getChannelType() in TIMESERIES_CHANNELS:
             time_value = timestamp
