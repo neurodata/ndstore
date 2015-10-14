@@ -1,0 +1,65 @@
+  {# data view modal #}
+  <div class="modal fade" id="displayDataview" tabindex="-1" role="dialog" aria-labelledby="displayDataviewModal" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="dataviewTitle">Data View</h4>
+        </div>
+        <div class="modal-body">
+          <p>Use the form below to add a additional layer to the current view. Layers can be removed by using the <i class="fa fa-times-circle"></i> next to the layer name in the <em>Control Panel</em>.</p>
+          <div class="alert alert-danger" role="alert">
+            <p><span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span> 
+            <span class="sr-only">Error:</span>
+            <em>Note:</em> Adding timeseries data using this form is currently <strong>not</strong> supported!</p>
+          </div>
+          <form id="add_data_form">
+            <div class="form-group">
+              <label for="tokenName">Token</label>
+              <input name="tokenName" type="text" class="form-control" id="tokenName" placeholder="(e.g. Kasthuri11)">
+            </div>
+            <div class="form-group">
+              <label for="channelName">Channel</label>
+              <input name="channelName" type="text" class="form-control" id="channelName" placeholder="(e.g. image)">
+            </div>
+            <div class="form-group">
+              <label for="serverName">Server</label>
+              <div id="serverSelect">
+              <select name="servers" class="form-control" id="serverName">
+                <option value="http://openconnecto.me">openconnecto.me</option>
+                <option value="http://dsp061.pha.jhu.edu">dsp061</option>
+                <option value="http://dsp062.pha.jhu.edu">dsp062</option>
+                <option value="http://dsp063.pha.jhu.edu">dsp063</option>
+                <option value="other">other</option>
+              </select>
+              </div>
+            </div>
+              <script> 
+              $(function() {
+                $('#serverSelect').change(function(e) {
+                  var changed = $(e.target);
+
+                  var html = '<div class="form-group"><label for="serverNameOther">Server Name</label><input name="serverNameOther" type="text" class="form-control" id="serverNameOther" placeholder="(e.g. http://openconnecto.me )"></div>';
+                  if (changed.is('select[name="servers"]')) {
+                    if (changed.val() == 'other') {
+                      changed.parent().after(html);
+                    }
+                  }
+                });
+              });  
+            </script>
+            <button type="submit" class="btn btn-primary">Add Data</button>
+          </form>
+          <div class="add_data_info">
+
+          </div>
+          </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+       </div>
+     </div>
+  </div>
+
+  {# end dataview modal #} 
+
