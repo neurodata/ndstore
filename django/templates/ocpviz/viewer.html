@@ -38,7 +38,8 @@
 		.controls, .queryres, .projinfo {
       padding: 8px 8px;
       width: 300px;
-			font: 14px/16px Arial, Helvetica, sans-serif;
+      /*font: 14px/16px Arial, Helvetica, sans-serif;*/
+      font-size: 14px/16px;
 			background: white;
 			background: rbga(255,255,255,0.8);
 			box-shadow: 0 0 15px rbga(0,0,0,0.2);
@@ -315,7 +316,7 @@
     projinfo.options.position = 'topright';
     projinfo.onAdd = function (map) {
       this._div = L.DomUtil.create('div', 'projinfo');
-      var header = '<h4>{{ project_name}} Info</h4>';
+      var header = '<h4>Current Project Info</h4>';
       this._div.innerHTML = header + getProjInfo();
 			return this._div;
     };

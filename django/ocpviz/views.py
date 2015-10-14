@@ -360,9 +360,9 @@ def ramoninfo(request, webargs):
     if obj not in ramonjson.keys():
       continue
 
-    html += '<strong>{} {}</strong>'.format( ramonjson[obj]['type'], obj )
-    html += '<ul><li>author: {}</li><li>neuron: {}</li><li>confidence: {}</li></ul>'.format( ramonjson[obj]['metadata']['author'], ramonjson[obj]['metadata']['neuron'], ramonjson[obj]['metadata']['confidence'] )
-  
+    html += '<h5>{} #{}</h5>'.format( ramonjson[obj]['type'], obj )
+    html += '<table class="table table-condensed"><tr><td>author</td><td>{}</td></tr><tr><td>neuron</td><td>{}</td></tr><tr><td>confidence:</td><td>{}</td></tr></table>'.format( ramonjson[obj]['metadata']['author'], ramonjson[obj]['metadata']['neuron'], ramonjson[obj]['metadata']['confidence'] )
+
   return HttpResponse(html)
 
 def projinfo(request, queryargs):
