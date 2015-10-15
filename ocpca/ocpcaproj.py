@@ -10,13 +10,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+import sys
+import math
 import MySQLdb
 import h5py
 import numpy as np
-import math
-from contextlib import closing
-import os
-import sys
 from contextlib import closing
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -40,7 +39,6 @@ except:
    pass
 
 from ocpcaerror import OCPCAError
-
 import logging
 logger=logging.getLogger("ocp")
 
@@ -340,11 +338,11 @@ class OCPCAChannel:
       return "{}_exc{}".format(self.ch.channel_name, resolution)
 
   def setPropagate (self, value):
-    if value in [NOT_PROPAGATED]:
+    if value in [NOT_PROPAGATED, PROPAGATED]:
       self.ch.propagate = value
       self.setReadOnly ( READONLY_FALSE )
       self.ch.save()
-    elif value in [UNDER_PROPAGATION,PROPAGATED]:
+    elif value in [UNDER_PROPAGATION]:
       self.ch.propagate = value
       self.setReadOnly ( READONLY_TRUE )
       self.ch.save()
@@ -353,7 +351,7 @@ class OCPCAChannel:
       raise OCPCAError ( "Wrong Propagate Value {} for Channel {}".format( value, self.ch.channel_name ) )
   
   def setReadOnly (self, value):
-    if value in [READONLY_TRUE,READONLY_FALSE]:
+    if value in [READONLY_TRUE, READONLY_FALSE]:
       self.ch.readonly = value
       self.ch.save()
     else:

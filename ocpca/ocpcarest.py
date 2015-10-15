@@ -47,7 +47,7 @@ import ocplib
 import ocpcaskel
 import ocpcanifti
 from windowcutout import windowCutout
-from ocptype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, ANNOTATION_CHANNELS, NOT_PROPAGATED, UNDER_PROPAGATION, OCP_dtypetonp, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, READONLY_TRUE
+from ocptype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, ANNOTATION_CHANNELS, NOT_PROPAGATED, UNDER_PROPAGATION, PROPAGATED, OCP_dtypetonp, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, READONLY_TRUE, READONLY_FALSE
 
 from ocpcaerror import OCPCAError
 import logging
@@ -1842,6 +1842,7 @@ def setPropagate(webargs):
   """Set the value of the propagate field"""
 
   # input in the format token/channel_list/setPropagate/value/
+  # here value = {NOT_PROPAGATED, UNDER_PROPAGATION} not {PROPAGATED}
   try:
     (token, channel_list, value_list) = re.match("(\w+)/([\w+,]+)/setPropagate/([\d+,]+)/$", webargs).groups()
   except:
@@ -1854,21 +1855,37 @@ def setPropagate(webargs):
     
     for channel_name in channel_list.split(','):
       ch = proj.getChannelObj(channel_name)
-
+      
       value = value_list[0]
-      # If the value is to set under propagation
-      if int(value) == UNDER_PROPAGATION and ch.getPropagate() != UNDER_PROPAGATION:
-        ch.setPropagate(UNDER_PROPAGATION)
-        from ocpca.tasks import propagate
-        propagate.delay(token, channel_name)
-        #import ocpcastack
-        #ocpcastack.buildStack(token, channel_name)
+      # If the value is to be set under propagation and the project is not under propagation
+      if int(value) == UNDER_PROPAGATION and ch.getPropagate() == NOT_PROPAGATED:
+        # and is not read only
+        if ch.getReadOnly() == READONLY_FALSE:
+          ch.setPropagate(UNDER_PROPAGATION)
+          from ocpca.tasks import propagate
+          # then call propagate
+          # propagate(token, channel_name)
+          propagate.delay(token, channel_name)
+        else:
+          logger.warning("Cannot Propagate this project. It is set to Read Only.")
+          raise OCPCAError("Cannot Propagate this project. It is set to Read Only.")
+      # if the project is Propagated already you can set it to under propagation
+      elif int(value) == UNDER_PROPAGATION and ch.getPropagate() == PROPAGATED:
+        logger.warning("Cannot propagate a project which is propagated. Set to Not Propagated first.")
+        raise OCPCAError("Cannot propagate a project which is propagated. Set to Not Propagated first.")
+      # If the value to be set is not propagated
       elif int(value) == NOT_PROPAGATED:
+        # and the project is under propagation then throw an error
         if ch.getPropagate() == UNDER_PROPAGATION:
           logger.warning("Cannot set this value. Project is under propagation.")
           raise OCPCAError("Cannot set this value. Project is under propagation.")
+        # and the project is already propagated and set read only then throw error
+        elif ch.getPropagate() == PROPAGATED and ch.getReadOnly == READONLY_TRUE:
+          logger.warning("Cannot set this Project to unpropagated. Project is Read only")
+          raise OCPCAError("Cannot set this Project to unpropagated. Project is Read only")
         else:
           ch.setPropagate(NOT_PROPAGATED)
+      # cannot set a project to propagated via the RESTful interface
       else:
         logger.warning("Invalid Value {} for setPropagate".format(value))
         raise OCPCAError("Invalid Value {} for setPropagate".format(value))
