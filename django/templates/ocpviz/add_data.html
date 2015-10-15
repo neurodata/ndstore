@@ -1,0 +1,159 @@
+  {# add data (channel) modal #}
+  <div class="modal fade" id="add_data" tabindex="-1" role="dialog" aria-labelledby="add_dataModal" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="add_dataLabel">Add Data to Current View</h4>
+        </div>
+        <div class="modal-body">
+          <p>Use the form below to add a additional layer to the current view. Layers can be removed by using the <i class="fa fa-times-circle"></i> next to the layer name in the <em>Control Panel</em>.</p>
+          <div class="alert alert-danger" role="alert">
+            <p><span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span> 
+            <span class="sr-only">Error:</span>
+            <em>Note:</em> Adding timeseries data using this form is currently <strong>not</strong> supported!</p>
+          </div>
+          <form id="add_data_form">
+            <div class="form-group">
+              <label for="tokenName">Token</label>
+              <input name="tokenName" type="text" class="form-control" id="tokenName" placeholder="(e.g. Kasthuri11)">
+            </div>
+            <div class="form-group">
+              <label for="channelName">Channel</label>
+              <input name="channelName" type="text" class="form-control" id="channelName" placeholder="(e.g. image)">
+            </div>
+            <div class="form-group">
+              <label for="serverName">Server</label>
+              <div id="serverSelect">
+              <select name="servers" class="form-control" id="serverName">
+                <option value="http://openconnecto.me">openconnecto.me</option>
+                <option value="http://dsp061.pha.jhu.edu">dsp061</option>
+                <option value="http://dsp062.pha.jhu.edu">dsp062</option>
+                <option value="http://dsp063.pha.jhu.edu">dsp063</option>
+                <option value="other">other</option>
+              </select>
+              </div>
+            </div>
+              <script> 
+              $(function() {
+                $('#serverSelect').change(function(e) {
+                  var changed = $(e.target);
+
+                  var html = '<div class="form-group"><label for="serverNameOther">Server Name</label><input name="serverNameOther" type="text" class="form-control" id="serverNameOther" placeholder="(e.g. http://openconnecto.me )"></div>';
+                  if (changed.is('select[name="servers"]')) {
+                    if (changed.val() == 'other') {
+                      changed.parent().after(html);
+                    }
+                  }
+                });
+              });  
+            </script>
+            <button type="submit" class="btn btn-primary">Add Data</button>
+          </form>
+          <div class="add_data_info">
+
+          </div>
+          </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+       </div>
+     </div>
+  </div>
+
+  <script>
+    // intercept form submission, validate url, and add to map 
+    $(function() {
+      $( '#add_data_form' ).submit(function(e) {
+        e.preventDefault();
+        // clear previous info / errors 
+        $( '.add_data_info' ).empty();
+
+        var urlBase = "http://{{ request.get_host }}/ocp/viz/validate/";
+
+        var $inputs = $('#add_data_form :input');
+        var values = {};
+        $inputs.each(function() {
+          values[this.name] = $(this).val();
+        });
+
+        var token = values['tokenName'];
+        var channel = values['channelName'];
+        var server = values['servers'];
+        if (server == 'other') {
+          server = values['serverNameOther']
+        }
+
+        // remove http:// from the server string
+        server = server.substring(7);
+        console.log(server); 
+        var args = token + "/" + channel + "/" + server + "/";
+        var url = urlBase.concat(args);
+        console.log(url);
+        // make request (using jquery)
+        var jqxhr = $.ajax({
+          url: url,
+          type: 'GET',
+          success: function(response) {
+            var url = 'http://' + server + '/ocp/catmaid/' + token + '/' + channel + '/xy/{zindex}/{y}_{x}_{z}.png';
+            
+            window['layer_' + token + '_' + channel] = L.tileLayer.OCPLayer(
+              url,
+            {
+              zindex: zindex,
+              zoomReverse: true,
+              minZoom: maxres,
+              maxZoom: maxres + maxres,
+              tileSize: 512,
+              //noWrap: true,
+              continuousWorld: true,
+            }).addTo(map);
+            var control_html = '<div class="controls-' + 'layer_' + token + '_' + channel + '"><div class="controls-layer-name"><a href="#" class="remove-layer ' + 'layer_' + token + '_' + channel + '"><i class="fa fa-times-circle"></i></a><a href="#">' + token + '_' + channel + '</a></div><div class="controls-opacity-control-name">Opacity</div><div id="slider"><span class="opacity">'+ 'layer_' + token + '_' + channel + '</span></div><br /><div class="controls-opacity-control-name">Brightness</div><div id="slider"><span class="brightness">' + 'layer_' + token + '_' + channel + '</span></div><br /><div class="controls-opacity-control-name">Contrast</div><div id="slider"><span class="contrast">' + 'layer_' + token + '_' + channel + '</span></div><br /></div>';
+            $( '#opacity-control' ).append(control_html);
+
+
+            $( ".controls-layer_" + token + "_" + channel  ).children( "#slider" ).children( ".opacity" ).empty().slider({
+              min: 0,
+              max: 100,
+              value: eval(window['layer_' + token + '_' + channel]).options.opacity*100,
+              slide: function ( event, ui ) { 
+                  eval(window['layer_' + token + '_' + channel]).setOpacity(ui.value/100);
+                },
+              start: function ( event, ui ) { map.dragging.disable(); },
+              stop: function ( event, ui ) { map.dragging.enable(); }, 
+            });
+            $( ".controls-layer_" + token + "_" + channel  ).children( "#slider" ).children( ".contrast" ).empty().slider({
+              min: 0,
+              max: 200,
+              value: 100,
+              slide: function ( event, ui ) { 
+                  eval(window['layer_' + token + '_' + channel]).setContrast(ui.value);
+                },
+              start: function ( event, ui ) { map.dragging.disable(); },
+              stop: function ( event, ui ) { map.dragging.enable(); }, 
+            });
+            $( ".controls-layer_" + token + "_" + channel  ).children( "#slider" ).children( ".brightness" ).empty().slider({
+              min: 0,
+              max: 200,
+              value: 100,
+              slide: function ( event, ui ) { 
+                eval(window['layer_' + token + '_' + channel]).setBrightness(ui.value);
+                console.log(ui.value);
+                },
+              start: function ( event, ui ) { map.dragging.disable(); },
+              stop: function ( event, ui ) { map.dragging.enable(); }, 
+            });
+
+            var html = '<div class="bg-info"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span><span class="sr-only">Success:</span> Added new layer for channel ' + channel + '.';
+            $( '.add_data_info' ).append(html);
+          },
+        })
+        .fail(function(response) {
+          var html = '<div class="alert alert-success" role="alert"><span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span><span class="sr-only">Error:</span> Server Error Code: ' + response.status + '<br /> (did you forget the http:// ?)</div>';
+          $( '.add_data_info' ).append(html);
+        });
+      });
+    });
+  </script>
+  {# end help modal #} 
+

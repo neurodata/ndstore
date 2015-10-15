@@ -30,6 +30,7 @@ from contextlib import closing
 from libtiff import TIFF
 from operator import sub, add
 from libtiff import TIFFfile, TIFFimage
+import json 
 
 import restargs
 import anncube
@@ -37,6 +38,7 @@ import ocpcadb
 import ocpcaproj
 import ocpcachannel
 import h5ann
+import jsonann 
 import h5projinfo
 import jsonprojinfo
 import annotation
@@ -850,6 +852,20 @@ AR_TIGHTCUTOUT = 3
 AR_BOUNDINGBOX = 4
 AR_CUBOIDS = 5
 
+def getAnnoJSONById ( ch, annoid, proj, db ):
+  """ Retrieve the annotation and return it as a serialized json string """
+
+  # retrieve the annotation
+  anno = db.getAnnotation ( ch, annoid ) 
+  if anno == None:
+    logger.warning("No annotation found at identifier = %s" % (annoid))
+    raise OCPCAError ("No annotation found at identifier = %s" % (annoid))
+
+  # create the JSONanno obj
+  jsonanno = jsonann.AnnotationtoJSON ( anno )
+
+  # return data
+  return jsonanno.toJSON() 
 
 def getAnnoById ( ch, annoid, h5f, proj, db, dataoption, resolution=None, corner=None, dim=None ): 
   """Retrieve the annotation and put it in the HDF5 file."""
@@ -987,6 +1003,27 @@ def getAnnotation ( webargs ):
     # Split the URL and get the args
     ch = ocpcaproj.OCPCAChannel(proj, channel)
     option_args = otherargs.split('/', 2)
+
+    # AB Added 20151011 
+    # Check to see if this is a JSON request, and if so return the JSON objects 
+    # otherwise, continue with returning the HDF5 data
+    if option_args[1] == 'json':
+      jsonstr = ''
+      try:
+        db.startTxn()
+        if re.match ( '^[\d,]+$', option_args[0] ): 
+          annoids = map(int, option_args[0].split(','))
+          for annoid in annoids: 
+            jsonstr += getAnnoJSONById ( ch, annoid, proj, db )
+
+      except: 
+        db.rollback()
+        raise
+
+      db.commit()
+      return jsonstr 
+
+    # not a json request, continue with building and returning HDF5 file 
 
     # Make the HDF5 file
     # Create an in-memory HDF5 file

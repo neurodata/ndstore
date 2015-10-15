@@ -20,65 +20,62 @@
 # Check data values in dataset
 # Generate put command
 
+import requests
 import json
 import os
-from postmethods import getURL
-SITE_HOST = localhost
+import argparse
+import requests
+SITE_HOST = "http://braingraph1dev.cs.jhu.edu/"
 
 def main():
 
   parser = argparse.ArgumentParser(description="By default this script will verify the given json file and then generate a post data link")
-  parser.add_argument('--path', action='store', type=str, default='', help='Location of project files')
-  parser.add_argument('--jsonfile', action='store', type=str, default='ocp.JSON', help='Filename of json')
+  parser.add_argument('--path', action='store', type=str, help='Location of project files')
+  parser.add_argument('--jsonfile', action='store', type=str, help='Filename of json')
   result = parser.parse_args()
 
-  with open('ocp.JSON') as df:
+  with open(result.jsonfile) as df:
       data = json.load(df)
 
-  #assert(VerifyPath(data, path))
-  VerifyDataset(data)
-  VerifyPath(data, path)
+  VerifyPath(data)
+  PutData(data)
 
-
-def VerifyDataset(data):
-  try:
-    token = data["project"]["token_name"]
-  except:
-    token = data["project"]["project_name"]
-
-  f = getURL("http://{}/ocp/ca/{}/info/".format(SITE_HOST, token))
-  dbinfo = json.loads(f.read())
-  assert(dbinfo["dataset"]["dataset_name"]==data["dataset"]["dataset_name"])
-  assert(dbinfo["dataset"]["imagesize"]==data["dataset"]["imagesize"])
-  assert(dbinfo["dataset"]["voxelres"]==data["dataset"]["voxelres"])
-
-  if (data["channel"]["channel_type"]=="timeseries"):
-    assert(dbinfo["dataset"]["timerange"]==data["dataset"]["timerange"])
-
-def VerifyPath(data, path):
+def VerifyPath(data):
   #Insert try and catch blocks
   try:
     token_name = data["project"]["token_name"]
   except:
     token_name = data["project"]["project_name"]
 
-  channel_names = data["channels"]["channel_names"].keys()
-  channel_type = data["channel"]["channel_type"]
+  channel_names = data["channels"].keys()
 
-  if (channel_type=="timeseries"):
+  for i in range(0,len(channel_names)):
+    channel_type = data["channels"][channel_names[i]]["channel_type"]
+    path = data["channels"][channel_names[i]]["data_url"]
+
+    if (channel_type=="timeseries"):
       timerange = data["dataset"]["timerange"]
-      for i in len(channel_names):
-          for j in xrange(timerange[0], timerange[1]+1):
-              #Test for tifs or such? Currently test for just not empty
-              work_path = "{}/{}/{}/time{}/".format(path, token_name, channel_names[i], j)
-              assert((not os.listdir(work_path)))
-  else:
-      for n in len(channel_names):
+      for j in xrange(timerange[0], timerange[1]+1):
         #Test for tifs or such? Currently test for just not empty
-        work_path = "{}/{}/{}/".format(path, token_name, channel_names[n])
-        assert((not os.listdir(work_path)))
+        work_path = "{}{}/{}/time{}/".format(path, token_name, channel_names[i], j)
+        resp = requests.head(work_path)
+        assert(resp.status_code == 200)
+    else:
+      #Test for tifs or such? Currently test for just not empty
+      work_path = "{}{}/{}/".format(path, token_name, channel_names[i])
+      resp = requests.head(work_path)
+      print(work_path)
+      assert(resp.status_code == 200)
+
 
 def PutData(data):
+  #try to post data to the server
+  URLPath = "{}ocp/ca/createProject/".format(SITE_HOST)
+  try:
+      r = requests.post(URLPath, data=data)
+  except:
+      print "Error in accessing JSON file, please double check name and path."
+
 
 if __name__ == "__main__":
   main()
