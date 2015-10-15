@@ -16,6 +16,10 @@
   {# old FA: <link href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet"> #}
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
   <style>
+    body {
+      padding: 50px 0px 0px 0px; /* 50px for navbar */
+      margin: 0;
+    }
 		html, body, #map {
 			height: 100%;
       width: 100%;
@@ -28,27 +32,24 @@
 			background: #000 !important;
     }
     /* hide controls and navbar for mobile */
-    .controls, .queryres, .projinfo, .navbar {
-      display: none;
-    }
-    @media (min-width: 768px) {
-      .controls, .queryres, .projinfo {
-        padding: 8px 8px;
-        width: 300px;
-        /*font: 14px/16px Arial, Helvetica, sans-serif;*/
-        font-size: 13px !important;
-        background: white;
-        background: rbga(255,255,255,0.8);
-        box-shadow: 0 0 15px rbga(0,0,0,0.2);
-        border-radius: 2px;
-      }
-      .navbar {
-        display: block;
+    @media only screen and (max-width: 768px), only screen and (max-device-width: 768px) {
+      .controls, .queryres, .projinfo, .navbar {
+        display: none;
       }
       body {
-        padding: 50px 0px 0px 0px; /* 50px for navbar */
+        padding: 0px 0px 0px 0px; /* 50px for navbar */
         margin: 0;
       }
+    }
+    .controls, .queryres, .projinfo {
+      padding: 8px 8px;
+      width: 300px;
+      /*font: 14px/16px Arial, Helvetica, sans-serif;*/
+      font-size: 13px !important;
+      background: white;
+      background: rbga(255,255,255,0.8);
+      box-shadow: 0 0 15px rbga(0,0,0,0.2);
+      border-radius: 2px;
     }
     .projinfo, .queryres {
       display: none;
