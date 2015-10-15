@@ -7,20 +7,20 @@
 
 {% block content %}
 {% if messages %}
-<ul>
-        {% for message in messages %}
-        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-        {% endfor %}
-      </ul>
+  <ul>
+  {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+  {% endfor %}
+  </ul>
 {% endif %}
 
 <form class="form-inline" method="post" action="">
   <div class="container-fluid">
     <div class = "row-fluid">
       <div class ="span12">
-	
-	<div id="header" style="background-color:#4682B4;" align="center">  
-	  <h2 style="margin-bottom:0;">BACKUPS</h2></div>
+	      <div id="header" style="background-color:#4682B4;" align="center">  
+	        <h2 style="margin-bottom:0;">BACKUPS</h2>
+        </div>
       </div>
     </div>
   </div>
@@ -34,8 +34,8 @@
       <div class ="span1"></div>
         <div class ="span11">  
 
-   {{ form.errors }} 
-   {{ form.non_field_errors }} 
+          {{ form.errors }} 
+          {{ form.non_field_errors }} 
 
           <table class ="table">
           <thead>
@@ -58,7 +58,7 @@
                 <th>Description</th>
                 <th>Channel(s)</th>
                 <th>DateTime</th>
-                <th>Protocol</th>
+<!---                <th>Protocol</th> --->
                 <th>Status</th>
               </tr>	   
 
@@ -70,7 +70,7 @@
                 <td>{{ bu.datetimestamp }}</td>
                 <td>{{ bu.channel }}</td>
                 <td>{{ bu.protocol }}</td>
-		            {% if bu.status.readonly == 0 %}
+		            {% if bu.status== 0 %}
                     <td>Done</td>
                 {% elif bu.status == 1 %}
                     <td>In Process</td>
@@ -95,29 +95,33 @@
             </td>
           </tr>
           </table>
+        </div>
+      </div>
+    </div>
+  </form>
 
 <!--- Now the new backup form --->
 
- <div id="form" >
+   <div id="form" >
    <form action="" method="post">
 
-       {{ form.non_field_errors }}
+    {{ form.non_field_errors }}
 
-	 <div class = "row">
-           <div class ="col-md-4"></div>
-           <div class ="col-md-2">
-	     <div class="fieldWrapper">
-	       {{ form.subject.errors }}
-	       <label for="description">Description:</label>
-	     </div>
-           </div>
-           <div class ="col-md-2">
-	     {{ form.description }}
-	   </div>
-	   <div class ="col-md-4"></div>
-   </div>
+    <div class = "row">
+      <div class ="col-md-4"></div>
+      <div class ="col-md-2">
+        <div class="fieldWrapper">
+          {{ form.subject.errors }}
+          <label for="description">Description:</label>
+        </div>
+      </div>
+      <div class ="col-md-2">
+        {{ form.description }}
+      </div>
+      <div class ="col-md-4"></div>
+    </div>
 
-	 <div class = "row">
+   <div class = "row">
 	   <div class ="col-md-4"></div>
 	   <div class ="col-md-2 blue">
 	     <div class="fieldWrapper">

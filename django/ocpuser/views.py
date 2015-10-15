@@ -629,6 +629,7 @@ def updateChannel(request):
   prname = request.session['project']
   pr = Project.objects.get ( project_name = prname )
   pd = ocpcaproj.OCPCAProjectsDB()
+
   if request.method == 'POST':
 
     if 'updatechannel' in request.POST: 
@@ -885,6 +886,9 @@ def updateProject(request):
 @login_required(login_url='/ocp/accounts/login/')
 def createToken(request):
 
+  prname = request.session['project']
+  pr = Project.objects.get ( project_name = prname )
+
   if request.method == 'POST':
     if 'createtoken' in request.POST:
 
@@ -908,18 +912,20 @@ def createToken(request):
       redirect(getTokens)
   else:
     '''Show the Create datasets form'''
-    form = TokenForm()
 
-    # restrict projects to user visible fields
-    form.fields['project'].queryset = Project.objects.filter(user_id=request.user.id) | Project.objects.filter(public=1)
-
-    context = {'form': form}
+    data = {
+      'project': pr
+    }
+    form = TokenForm( initial = data )
+    context = {'form': form, 'project': prname }
     return render_to_response('createtoken.html',context,context_instance=RequestContext(request))
 
 
 @login_required(login_url='/ocp/accounts/login/')
 def backupProject(request):
   """Backup some or all channels of a project"""
+  
+  import pdb; pdb.set_trace()
 
   # perform a backup
   if request.method == 'POST':

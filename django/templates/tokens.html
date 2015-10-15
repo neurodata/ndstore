@@ -6,45 +6,27 @@
 
 {% block content %}
 
-{% if messages %}
-<ul>
-  {% for message in messages %}
-  <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-  {% endfor %}
-</ul>
-{% endif %}
+  {% if messages %}
+  <ul>
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
 
-<form class="form-inline" method="post" action="">
-  <div class="container-fluid">
-    <div class = "row-fluid">
-      <div class ="span12">
-        <div id="header" style="background-color:#4682B4;" align="center">  
-          <h2 style="margin-bottom:0;">TOKENS</h2>
+  <form class="form-inline" method="post" action="">
+    <div class="container-fluid">
+      <div class = "row-fluid">
+        <div class ="span12">
+          <div id="header" style="background-color:#4682B4;" align="center">  
+            <h2 style="margin-bottom:0;">TOKENS</h2>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  </form>
 
-<!---  <div class="container-fluid">
-    <div class = "row-fluid">
-      <div class ="span3"></div>
-        <div class ="span6">
-      .  <div id="content" style="background-color:#F5F6CE;float:left;">
-          Search by:
-          <select name="filteroption">
-            <option value="Channel">Channel</option>
-          select>
-          <input type="text"  name="filtervalue" placeholder="Enter Channel Value">
-          <button type="submit" class= "btn" name ="filter">Search Channels</button>
-  	    </div>
-      	<div class ="span3"></div>
-      </div>
-    </div>
-  </div>
-</form>
---->
 
-<body>
   <form method="post" action="">
     <div class="container-fluid">
       <div class = "row-fluid">
@@ -109,7 +91,6 @@
       </div>
     </div>
   </form>
-</body>
 
 {% endblock content %}
 

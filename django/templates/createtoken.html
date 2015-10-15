@@ -26,10 +26,25 @@ Create New Token
     </div>
   </div>
 
+  <div class="container-fluid">
+    <div class = "row-fluid">
+    <div class ="span1"></div>
+      <div class ="span11">  
+        <table class ="table">
+        <thead>
+          <tr class="success"><th>Project</th> <th>{{project}}</th></tr>
+        </thead>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <div id="form" >
   <form action="" method="post">
 
     {{ form.non_field_errors }}
+
+    {{form.project.as_hidden}}
 
     <br>
 
@@ -57,20 +72,6 @@ Create New Token
       </div>
       <div class ="col-md-2">
 	      {{ form.token_description }}
-	    </div>
-	    <div class ="col-md-4"></div>
-    </div>
-
-	  <div class = "row">
-      <div class ="col-md-4"></div>
-      <div class ="col-md-2">
-        <div class="fieldWrapper">
-	        {{ form.subject.errors }}
-	        <label for="project">Project:</label>
-	      </div>
-      </div>
-      <div class ="col-md-2">
-	      {{ form.project }}
 	    </div>
 	    <div class ="col-md-4"></div>
     </div>

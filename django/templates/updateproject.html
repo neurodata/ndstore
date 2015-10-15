@@ -62,7 +62,7 @@ This would be necessary when changing a hostname. </p>
       <div class ="col-md-2">
         <div class="fieldWrapper">
           {{ form.subject.errors }}
-          <label for="exceptions">Public:</label>
+          <label for="public">Public:</label>
         </div>
       </div>
       <div class ="col-md-2">
@@ -78,7 +78,7 @@ This would be necessary when changing a hostname. </p>
       <div class ="col-md-2">
         <div class="fieldWrapper">
           {{ form.subject.errors }}
-          <label for="exceptions"><font color="red"> Database Host</font></label>
+          <label for="host"><font color="red"> Database Host</font></label>
         </div>
       </div>
       <div class ="col-md-2">
@@ -87,14 +87,13 @@ This would be necessary when changing a hostname. </p>
       <div class ="col-md-4"></div>
     </div>
 
-    {{ form.kvengine.as_hidden }}
 
     <div class = "row">
       <div class ="col-md-4"></div>
       <div class ="col-md-2">
         <div class="fieldWrapper">
           {{ form.subject.errors }}
-          <label for="kvserverlabel"> <font color="red">KV Server</font></label>
+          <label for="kvserver"> <font color="red">KV Server</font></label>
         </div>
       </div>
       <div class ="col-md-2">
