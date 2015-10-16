@@ -17,33 +17,39 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
   <style>
     body {
-			padding: 50px 0px 0px 0px; /* 50px for navbar */
+      padding: 50px 0px 0px 0px; /* 50px for navbar */
       margin: 0;
-		}
+    }
 		html, body, #map {
 			height: 100%;
       width: 100%;
 		}
-    .coordinate-nav {
-      width: 50px;
-      display:inline-block;
-    }
     .has-error .form-control{
       border-width: 3px;
       border-color: #FF2D2D !important;
     }
     .leaflet-container {
 			background: #000 !important;
-		}
-		.controls, .queryres, .projinfo {
+    }
+    /* hide controls and navbar for mobile */
+    @media only screen and (max-width: 768px), only screen and (max-device-width: 768px) {
+      .controls, .queryres, .projinfo, .navbar {
+        display: none;
+      }
+      body {
+        padding: 0px 0px 0px 0px; /* 50px for navbar */
+        margin: 0;
+      }
+    }
+    .controls, .queryres, .projinfo {
       padding: 8px 8px;
       width: 300px;
       /*font: 14px/16px Arial, Helvetica, sans-serif;*/
       font-size: 13px !important;
-			background: white;
-			background: rbga(255,255,255,0.8);
-			box-shadow: 0 0 15px rbga(0,0,0,0.2);
-			border-radius: 2px;
+      background: white;
+      background: rbga(255,255,255,0.8);
+      box-shadow: 0 0 15px rbga(0,0,0,0.2);
+      border-radius: 2px;
     }
     .projinfo, .queryres {
       display: none;
