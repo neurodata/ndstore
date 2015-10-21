@@ -149,11 +149,6 @@ def getProjects(request):
           proj = Project.objects.get(project_name=project_to_delete)
           if proj:
             if proj.user_id == request.user.id or request.user.is_superuser:
-              #Delete project from the table followed  by the database.
-              # RBTODO deleting a project is super dangerous b/c you may delete it out from other tokens.
-              #  on other servers.  So, only delete when it's on the same server for now
-              #if proj.getKVServer()==proj.getDBHost():
-              #   pd.deleteOCPCADB(project_to_delete)
               proj.delete()          
               messages.success(request,"Project deleted")
             else:
@@ -163,7 +158,7 @@ def getProjects(request):
           return HttpResponseRedirect(get_script_prefix()+'ocpuser/projects')
       
       elif 'info' in request.POST:
-      #GET PROJECT INFO -----------TODO
+      #GET PROJECT INFO -----------
         token = (request.POST.get('roptions')).strip()
         return HttpResponse(ocpcarest.projInfo(token), content_type="product/hdf5" )
       
@@ -317,14 +312,8 @@ def getChannels(request):
 
   try:
     if request.method == 'POST':
-      if 'filter' in request.POST:
-        # Filter channels based on an input value
-        filteroption = request.POST.get('filteroption')
-        filtervalue = (request.POST.get('filtervalue')).strip()
-        all_channels = Channel.objects.filter(project_id='TODO').filter(token_name=filtervalue)
-        return render_to_response('channels.html', { 'channels': all_channels, 'project': proj },context_instance=RequestContext(request))
 
-      elif 'delete' in request.POST:
+      if 'delete' in request.POST:
         # Delete the channel from the project
         channel_to_delete = (request.POST.get('channel')).strip()
         prname = request.session["project"]
@@ -430,8 +419,6 @@ def getTokens(request):
 
       # redirect to add a token
       elif 'add' in request.POST:
-        # RBTODO prepopulate the project for the token
-        # RBTODO make tokens captive to project button
         return redirect(createToken)
 
       elif 'backtoprojects' in request.POST:
@@ -969,13 +956,12 @@ def backupProject(request):
             dbname = (request.POST.get('project')).strip()
             pr = Project.objects.get(project_name=prname)
 
-            # RBTODO channel is not bound correctly?
             if request.POST.get('allchans') == 'on':
               channel ='all'
             elif new_backup.channel != None:
               channel = new_backup.channel.channel_name
             else:
-              raise # RBTODO error
+              raise  OCPCAError ("Cannot backup specified channel {}".format(new_backup.channel)
               
             #RB restart here
             upath = '{}/{}'.format(settings.BACKUP_PATH,request.user.username)
