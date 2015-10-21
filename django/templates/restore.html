@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}
+Restore Project or Channel
+{% endblock title%}
+
+{% block content %}
+
+  <div class="container-fluid">
+	  <div class = "row-fluid">
+      <div class ="span12">
+	      <div id="header" style="background-color:#4682B4;" align="center">
+          <h2 style="margin-bottom:0;">RESTORE BACKUP FILE {{filename}}</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    <div class = "row-fluid">
+    <div class ="span1"></div>
+      <div class ="span11">  
+        <table class ="table">
+        <thead>
+          <tr class="success"><th>As New Project</th> </tr>
+        </thead>
+        </table>
+      </div>
+    </div>
+  </div>
+	  
+  <form method="post" action="" enctype="multipart/form-data">
+
+  
+  <p><font color="red"> WARNING!! </font> These fields are prepopulated with the name of the project and description when 
+the backup was taken.  If you are restoring to the same machine, you need to pick a new project name.  All other 
+properties of the project will be inherited from the backed up project.
+
+
+    {% csrf_token %}  
+     
+    {{ pform.errors }}
+
+    <div class = "row">
+      <div class ="col-md-4"></div>
+      <div class ="col-md-2">
+        <div class="fieldWrapper">
+          {{ pform.subject.errors }}
+          <label for="project">Project:</label>
+        </div>
+      </div>
+      <div class ="col-md-2">
+        {{ pform.project_name }}
+      </div>
+      <div class ="col-md-4"></div>
+    </div>
+
+    <div class = "row">
+      <div class ="col-md-4"></div>
+      <div class ="col-md-2">
+        <div class="fieldWrapper">
+          {{ pform.subject.errors }}
+          <label for="description">Description</label>
+        </div>
+      </div>
+      <div class ="col-md-2">
+        {{ pform.project_description }}
+      </div>
+      <div class ="col-md-4"></div>
+    </div>
+
+    <div class = "row">
+      <div class ="col-md-4"></div>
+      <div class ="col-md-2">
+	      <div class="fieldWrapper">
+	        {{ pform.subject.errors }}
+	        <label for="public">Public:</label>
+	      </div>
+      </div>
+      <div class ="col-md-2">
+	      {{ pform.public }}
+	    </div>
+	    <div class ="col-md-4"></div>
+    </div>
+
+<?---    { if mysql } --->
+
+    <div class = "row">
+      <div class ="col-md-4"></div>
+      <div class ="col-md-2">
+        <div class="fieldWrapper">
+          {{ pform.subject.errors }}
+          <label for="host"> Database Host</label>
+        </div>
+      </div>
+      <div class ="col-md-2">
+        {{ pform.host }}
+      </div>
+      <div class ="col-md-4"></div>
+    </div>
+
+    <div class = "row">
+      <div class ="col-md-4"></div>
+      <div class ="col-md-2">
+        <div class="fieldWrapper">
+          <input type="checkbox" name="token" id='token' value="on"> Create a default token </input>
+        </div>
+      </div>
+      <div class ="col-md-2">
+      </div>
+      <div class ="col-md-4"></div>
+    </div>
+
+    <input type="hidden" name="buid" value={{buid}}>
+
+    <br>
+         
+    <div class = "row">
+      <div class ="col-md-5"></div>
+      <div class ="col-md-3">
+        <button class="btn btn-primary" name = "createproject" type="submit">Create New Project</button>
+        <button class="btn btn-primary" name = "backtoprojects" type="submit">Back to Projects</button>
+      </div>
+      <div class ="col-md-4"></div>
+    </div>
+  </form>
+
+  <br>
+
+  {% if cform %}
+
+  <div class="container-fluid">
+    <div class = "row-fluid">
+    <div class ="span1"></div>
+      <div class ="span11">  
+        <table class ="table">
+        <thead>
+          <tr class="success"><th>As Channel in Existing Project </th> </tr>
+        </thead>
+        </table>
+      </div>
+    </div>
+  </div>
+	  
+	  
+  <form method="post" action="" enctype="multipart/form-data">
+
+  <p><font color="red"> Notice: </font> The project field shows compatible projects that (1) the user can access and (2) 
+use the same dataset.  If the project is not available, it failed one of these criteria.
+
+    {% csrf_token %}  
+     
+    {{ cform.errors }}
+
+    <div class = "row">
+      <div class ="col-md-4"></div>
+      <div class ="col-md-2">
+        <div class="fieldWrapper">
+          {{ cform.subject.errors }}
+          <label for="projecttype">Project:</label>
+        </div>
+      </div>
+      <div class ="col-md-2">
+        <select name="cproject" id="cproject" required>
+          {% for proj in cprojects %} 
+            <option {{ proj.project_name }} {% if proj.project_name == project_name %} selected {%endif%}> {{ proj.project_name }}</option>
+          {% endfor %}  
+        </select>
+      </div>
+      <div class ="col-md-4"></div>
+    </div>
+
+    <div class = "row">
+      <div class ="col-md-4"></div>
+      <div class ="col-md-2">
+        <div class="fieldWrapper">
+          {{ cform.subject.errors }}
+          <label for="channel_name">Channel Name:</label>
+        </div>
+      </div>
+      <div class ="col-md-2">
+        {{ cform.channel_name }}
+      </div>
+      <div class ="col-md-4"></div>
+    </div>
+     
+    <div class = "row">
+      <div class ="col-md-4"></div>
+      <div class ="col-md-2">
+        <div class="fieldWrapper">
+          {{ cform.subject.errors }}
+          <label for="channel_description">Channel Description</label>
+        </div>
+      </div>
+      <div class ="col-md-2">
+        {{ cform.channel_description }}
+      </div>
+      <div class ="col-md-4"></div>
+    </div>
+
+    <input type="hidden" name="buid" value={{buid}}>
+
+    <br>
+
+    <div class = "row">
+      <div class ="col-md-5"></div>
+      <div class ="col-md-3">
+        <button class="btn btn-primary" name = "createchannel" type="submit">Create Channel</button>
+        <button class="btn btn-primary" name = "backtoprojects" type="submit">Back to Projects</button>
+      </div>
+      <div class ="col-md-4"></div>
+    </div>
+
+  </form>
+
+  {% endif %}
+
+{% endblock %}
+
+

@@ -30,7 +30,6 @@ from contextlib import closing
 from libtiff import TIFF
 from operator import sub, add
 from libtiff import TIFFfile, TIFFimage
-import json 
 
 import restargs
 import anncube

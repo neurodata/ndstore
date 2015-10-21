@@ -35,7 +35,6 @@
         <div class ="span11">  
 
           {{ form.errors }} 
-          {{ form.non_field_errors }} 
 
           <table class ="table">
           <thead>
@@ -56,8 +55,8 @@
 
               <tr class ="error">
                 <th>Description</th>
-                <th>Channel(s)</th>
                 <th>DateTime</th>
+                <th>Channel(s)</th>
 <!---                <th>Protocol</th> --->
                 <th>Status</th>
               </tr>	   
@@ -66,11 +65,15 @@
 
               <form method="post" action = "">
               <tr>
-                <td style="width:15%;">{{ bu.backup_description }}</td>
+                <td style="width:15%;">{{ bu.description }}</td>
                 <td>{{ bu.datetimestamp }}</td>
-                <td>{{ bu.channel }}</td>
-                <td>{{ bu.protocol }}</td>
-		            {% if bu.status== 0 %}
+                {% if bu.channel == NULL %}
+                    <td>ALL</td>
+                {% else %}
+                  <td>{{ bu.channel }}</td>
+                {% endif %} 
+<!---                <td>{{ bu.protocol }}</td> --->
+		            {% if bu.status == 0 %}
                     <td>Done</td>
                 {% elif bu.status == 1 %}
                     <td>In Process</td>
@@ -78,9 +81,11 @@
                     <td>Failed</td>
                 {% else %}
                     <td>Unknown! Seek Help</td>
-                {% endif %}
+                {% endif %} 
 
-                <input type="hidden" name="project" value={{project}}>
+                <input type="hidden" name="backupid" value={{bu.backup_id}}>
+
+                <td><button class="btn" id="restore" type="submit" name="restore" <i class ="icon-trash icon-black"></i>Restore</button></td>
 
                 <td><button class="btn" id="delete" type="submit" name="delete" onclick="return confirm('Are you sure you want to delete?')"> <i class ="icon-trash icon-black"></i>Delete</button></td>
               </tr>
@@ -102,10 +107,10 @@
 
 <!--- Now the new backup form --->
 
-   <div id="form" >
-   <form action="" method="post">
+  <div id="form" >
+  <form action="" method="post">
 
-    {{ form.non_field_errors }}
+    {{ form.errors }} 
 
     <div class = "row">
       <div class ="col-md-4"></div>
@@ -121,6 +126,7 @@
       <div class ="col-md-4"></div>
     </div>
 
+<!---    not yet implemented
    <div class = "row">
 	   <div class ="col-md-4"></div>
 	   <div class ="col-md-2 blue">
@@ -134,7 +140,7 @@
 	   </div>
 	   <div class ="col-md-4"></div>
 	 </div>
-
+--->
 
    <div class = "row">
      <div class ="col-md-4"></div>
@@ -155,11 +161,11 @@
            <div class ="col-md-2">
              <div class="fieldWrapper">
                {{ form.subject.errors }}
-               <label for="asynch">Perform Backup in Background?</label>
+               <label for="async">Perform Backup in Background?</label>
              </div>
            </div>
            <div class ="col-md-2">
-           <input type="checkbox" name="asynch" id="asynch" value='on'> 
+           <input type="checkbox" name="async" id="async" value='on'> 
            </div>
            <div class ="col-md-4"></div>
          </div>
@@ -180,6 +186,8 @@
 
    {{form.project.as_hidden}}
 
+    <br>
+     
            <div align=center>
             <button class="btn btn-primary" id="backup" type="submit" name="backup"> <i class ="icon-inbox icon-black"></i>Backup</button>
             <button class="btn btn-primary" id="backtoprojects" type="submit" name="backtoprojects"> <i class ="icon-inbox icon-black"></i>Return to Projects</button>

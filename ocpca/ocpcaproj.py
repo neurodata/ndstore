@@ -190,7 +190,7 @@ class OCPCADataset:
 
 class OCPCAProject:
 
-  def __init__(self, token_name):
+  def __init__(self, token_name ) :
 
     if isinstance(token_name, str) or isinstance(token_name, unicode):
       try:
@@ -457,8 +457,8 @@ class OCPCAProjectsDB:
             conn.commit()
           except MySQLdb.Error, e:
             ch.delete()
-            logging.error ("Failed to create tables for new project {}: {}. sql={}".format(e.args[0], e.args[1], sql))
-            raise OCPCAError ("Failed to create tables for new project {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+            logging.error ("Failed to create tables for new project {}: {}.".format(e.args[0], e.args[1]))
+            raise OCPCAError ("Failed to create tables for new project {}: {}.".format(e.args[0], e.args[1]))
 
     elif pr.kvengine == RIAK:
       #RBTODO figure out new schema for Riak
