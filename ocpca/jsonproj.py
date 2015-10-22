@@ -109,8 +109,8 @@ def createProject(webargs, post_data):
       
       # KL TODO Call the celery worker here
       from ocpca.tasks import ingest
-      # ingest(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
-      ingest.delay(tk.token_name, ch.channel_name, ch.resolution, data_url)
+      #ingest(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
+      ingest.delay(tk.token_name, ch.channel_name, ch.resolution, data_urli, file_format, file_type)
       # ingest_data = IngestData(tk.token_name, ch.channel_name, ch.resolution, data_url)
       # ingest_data.ingest()
     
