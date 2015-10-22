@@ -78,7 +78,11 @@
                 {% elif bu.status == 1 %}
                     <td>In Process</td>
                 {% elif bu.status == 2 %}
-                    <td>Failed</td>
+                    <td>Backup Failed</td>
+                {% elif bu.status == 3 %}
+                    <td>Restoring</td>
+                {% elif bu.status == 3 %}
+                    <td>Restore Failed</td>
                 {% else %}
                     <td>Unknown! Seek Help</td>
                 {% endif %} 

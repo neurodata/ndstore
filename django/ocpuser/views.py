@@ -961,7 +961,7 @@ def backupProject(request):
             elif new_backup.channel != None:
               channel = new_backup.channel.channel_name
             else:
-              raise  OCPCAError ("Cannot backup specified channel {}".format(new_backup.channel)
+              raise  OCPCAError ("Cannot backup specified channel {}".format(new_backup.channel))
               
             #RB restart here
             upath = '{}/{}'.format(settings.BACKUP_PATH,request.user.username)
@@ -1013,29 +1013,28 @@ def backupProject(request):
             if request.POST.get('async'):
 
               outputfile = open(ofile, 'w') 
-              print ' '.join(cmd)
               p = subprocess.Popen(cmd, stdout=outputfile)
 
               new_backup.status = 1
               new_backup.protocol = 'MySQL'
               new_backup.save()
 
-              messages.success(request, 'Sucessfully started backup in background'+ dbname)
+              messages.success(request, 'Initiated backup in background.  Project: {}'.format(dbname))
 
               # create a thread to monitor 
               import threading
               t = threading.Thread ( target=_monitorBackup, args=(p,new_backup,outputfile) )
-              print "starting thread"
               t.start()
               return HttpResponseRedirect(get_script_prefix()+'ocpuser/backupproject')
 
             else:
 
               with closing (open(ofile, 'w')) as outputfile:
-                print ' '.join(cmd)
-                rc = subprocess.Popen(cmd, stdout=outputfile).communicate(None).returncode
- 
-                if rc:
+
+                po = subprocess.Popen(cmd, stdout=outputfile)
+                po.communicate(None)
+                rc = po.returncode
+                if rc<0:
                   raise OCPCAError("Backup process failed. Status = {}".format(rc))
 
               new_backup.status = 0
@@ -1070,13 +1069,17 @@ def backupProject(request):
 
         #delete the files
         cmd = ['rm', bu_to_delete.filename ]
-        rc = subprocess.Popen(cmd).communicate(None).returncode
-        if rc:
+        po = subprocess.Popen(cmd)
+        po.communicate(None)
+        rc = po.returncode
+        if rc<0:
           raise OCPCAError("Failed to delete backup file. Status = {}".format(rc))
 
         cmd = ['rm', bu_to_delete.jsonfile ]
-        rc = subprocess.Popen(cmd).communicate(None).returncode
-        if rc:
+        po = subprocess.Popen(cmd)
+        po.communicate(None)
+        rc = po.returncode
+        if rc<0:
           raise OCPCAError("Failed to delete backup metadata file. Status = {}".format(rc))
 
         # remove the backup record
@@ -1157,13 +1160,34 @@ def restoreProject ( request ):
         # upload the backup file to the database
         inputfile = open ( bu.filename )
         cmd = ['mysql', '-u'+ dbuser, '-p'+ passwd, '-h', newproj.host, newproj.project_name ]
-        print ' '.join(cmd)
-        rc = subprocess.Popen(cmd, stdin=inputfile).communicate(None).returncode
-        if rc:
-          raise OCPCAError("Failed to backup file. Status = {}".format(rc))
+
+        #synchronously or asynchrnously 
+        if request.POST.get('async'):
+
+          po_process = subprocess.Popen(cmd, stdin=inputfile)
+
+          # indicate that we are restoring.
+          bu.status = 3
+          bu.save()
+
+          messages.success(request, 'Initiated restore in background')
+
+          # create a thread to monitor 
+          import threading
+          t = threading.Thread ( target=_monitorRestore, args=(po_process,newproj,bu,inputfile) )
+          t.start()
+          return HttpResponseRedirect(get_script_prefix()+'ocpuser/backupproject')
+
+        else:
+          po = subprocess.Popen(cmd)
+          po.communicate(None)
+          rc = po.returncode
+          if rc<0:
+            raise OCPCAError("Failed to backup file. Status = {}".format(rc))
 
         # Having restored the database, add the channels, project and token
         newproj.save()
+        inputfile.close()
 
         # default token?
         if 'token' in request.POST:
@@ -1199,74 +1223,24 @@ def restoreProject ( request ):
       if 'createchannel' in request.POST:
         """Add new channel to existing project"""
 
-        bu = Backup.objects.get ( backup_id=request.POST.get("buid") )
-        pr = Project.objects.get ( project_name=request.POST.get("cproject") )
-        ds = Dataset.objects.get ( dataset_name=pr.dataset_id )
+        #synchronously or asynchrnously 
+        if request.POST.get('casync'):
 
-        jfp = open ( bu.jsonfile ) 
-        projmd = json.load ( jfp )
+          # set the in process backup state
+          bu = Backup.objects.get ( backup_id=request.POST.get("buid") )
+          bu.status=3
+          bu.save()
+          print "Save here in web thread Value = {}".format(bu.status)
 
-        # old channel name in backup
-        oldchnm = bu.channel.channel_name
-        oldch = projmd['channels'][bu.channel.channel_name]
-        # new channel name specified in form
-        chnm = request.POST.get("channel_name") 
+          # create a thread to monitor 
+          import threading
+          t = threading.Thread ( target=_restoreOneChannel, args=(request,) )
+          t.start()
+          return HttpResponseRedirect(get_script_prefix()+'ocpuser/backupproject')
 
-        ch = Channel()
-        ch.project = pr
-        ch.channel_name = chnm
-        ch.channel_description = request.POST.get("channel_description")
-        ch.channel_type = oldch['channel_type']
-        ch.channel_datatype = oldch['datatype']
-        ch.resolution = oldch['resolution']
-        ch.propagate = oldch['propagate']
-        ch.readonly = oldch['readonly']
-        ch.exceptions = oldch['exceptions']
-        ch.startwindow = oldch['windowrange'][0]
-        ch.endwindow = oldch['windowrange'][1]
+        else:
 
-        # with the project and the channels, restore the channel
-        dbuser = settings.DATABASES['default']['USER']
-        passwd = settings.DATABASES['default']['PASSWORD']
-
-        with closing(MySQLdb.connect (host = pr.host, user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'])) as newconn:
-          with closing ( newconn.cursor() ) as newcursor:
-
-            # create a temporary table to house the restore
-            dbname = pr.project_name+''.join(random.choice(string.lowercase) for x in range(20))
-            sql = "CREATE DATABASE {}".format(dbname)
-
-            newcursor.execute(sql)
-
-            # restore the database to temporary table
-            inputfile = open ( bu.filename )
-            cmd = ['mysql', '-u'+ dbuser, '-p'+ passwd, '-h', pr.host, dbname ]
-            subprocess.Popen(cmd, stdin=inputfile).communicate(None)
-
-            # loop through the tables copying to new channel names.
-            # all channel tables have a common prefix with underscore
-            sql = "SHOW TABLES in {}".format(dbname)
-
-            newcursor.execute(sql)
-            tables = newcursor.fetchall()
-
-            for tbl in tables:
-    
-              # Change the prefix from old channel name to new channel name
-              newtbl = re.sub ('^{}'.format(oldchnm),'{}'.format(chnm), tbl[0])
-
-              # create a channel in the target db 
-              sql = 'CREATE table {}.{} SELECT * FROM {}.{}'.format(pr.project_name,newtbl,dbname,tbl[0])
-              newcursor.execute(sql)
-
-            # drop temp database
-            sql = 'DROP DATABASE {}'.format(dbname)
-            newcursor.execute(sql)
-
-        messages.success(request, 'Sucessfully restored channel: {} to project: {}  '.format(ch.channel_name, ch.project))
-
-        # having restored the db, save the channel
-        ch.save()
+          _restoreOneChannel ( request )
 
         return redirect(getProjects)
 
@@ -1309,14 +1283,94 @@ def restoreProject ( request ):
     messages.error(request, "Exception in administrative interface = {}".format(e)) 
     return redirect(get_script_prefix()+'ocpuser/projects', {"user":request.user})
 
+
+def _restoreOneChannel ( request ):
+  """Restore on channel.  This can be called directly or in a thread for async"""
+
+  bu = Backup.objects.get ( backup_id=request.POST.get("buid") )
+  pr = Project.objects.get ( project_name=request.POST.get("cproject") )
+  ds = Dataset.objects.get ( dataset_name=pr.dataset_id )
+
+  jfp = open ( bu.jsonfile ) 
+  projmd = json.load ( jfp )
+
+  # old channel name in backup
+  oldchnm = bu.channel.channel_name
+  oldch = projmd['channels'][bu.channel.channel_name]
+  # new channel name specified in form
+  chnm = request.POST.get("channel_name") 
+
+  ch = Channel()
+  ch.project = pr
+  ch.channel_name = chnm
+  ch.channel_description = request.POST.get("channel_description")
+  ch.channel_type = oldch['channel_type']
+  ch.channel_datatype = oldch['datatype']
+  ch.resolution = oldch['resolution']
+  ch.propagate = oldch['propagate']
+  ch.readonly = oldch['readonly']
+  ch.exceptions = oldch['exceptions']
+  ch.startwindow = oldch['windowrange'][0]
+  ch.endwindow = oldch['windowrange'][1]
+
+  # with the project and the channels, restore the channel
+  dbuser = settings.DATABASES['default']['USER']
+  passwd = settings.DATABASES['default']['PASSWORD']
+
+  with closing(MySQLdb.connect (host = pr.host, user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'])) as newconn:
+    with closing ( newconn.cursor() ) as newcursor:
+
+      # create a temporary table to house the restore
+      dbname = pr.project_name+''.join(random.choice(string.lowercase) for x in range(20))
+      sql = "CREATE DATABASE {}".format(dbname)
+
+      newcursor.execute(sql)
+
+      # restore the database to temporary table
+      inputfile = open ( bu.filename )
+      cmd = ['mysql', '-u'+ dbuser, '-p'+ passwd, '-h', pr.host, dbname ]
+      subprocess.Popen(cmd, stdin=inputfile).communicate(None)
+
+      # loop through the tables copying to new channel names.
+      # all channel tables have a common prefix with underscore
+      sql = "SHOW TABLES in {}".format(dbname)
+
+      newcursor.execute(sql)
+      tables = newcursor.fetchall()
+
+      for tbl in tables:
+
+        # Change the prefix from old channel name to new channel name
+        newtbl = re.sub ('^{}'.format(oldchnm),'{}'.format(chnm), tbl[0])
+
+        # create a channel in the target db 
+        sql = 'CREATE table {}.{} SELECT * FROM {}.{}'.format(pr.project_name,newtbl,dbname,tbl[0])
+        newcursor.execute(sql)
+
+      # drop temp database
+      sql = 'DROP DATABASE {}'.format(dbname)
+      newcursor.execute(sql)
+
+  messages.success(request, 'Sucessfully restored channel: {} to project: {}  '.format(ch.channel_name, ch.project))
+
+  # if it was async, clear the restoring state oon the backup
+  if request.POST.get('casync'):
+    bu.status=0
+    bu.save()
+
+  # having restored the db, save the channel
+  ch.save()
+
+
 def _monitorBackup ( popen_process, backup_model, fh ):
   """Track the state of the backup subprocess and update the required field"""
 
   # wait for the process to finish
-  rc = popen_process.communicate(None).returncode
+  popen_process.communicate(None)
+  rc = popen_process.returncode
 
   # backup failed  
-  if rc:
+  if rc<0:
     backup_model.status = 2
   else:
     # update the state
@@ -1325,6 +1379,23 @@ def _monitorBackup ( popen_process, backup_model, fh ):
 
   fh.close()
 
+def _monitorRestore ( popen_process, project_model, backup_model, fh ):
+  """Track the state of the restore subprocess and update the required field"""
+
+  # wait for the process to finish
+  popen_process.communicate(None)
+  rc = popen_process.returncode
+
+  # backup failed  
+  if rc<0:
+    backup_model.status = 5
+  else:
+    # update the state
+    backup_model.status = 0
+  backup_model.save()
+  project_model.save()
+
+  fh.close()
 
 @login_required(login_url='/ocp/accounts/login/')
 def downloadData(request):
