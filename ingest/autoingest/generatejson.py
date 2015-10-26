@@ -21,7 +21,7 @@ import argparse
 import requests
 import os
 import requests
-SITE_HOST = "http://joy.cs.jhu.edu:8000/"
+SITE_HOST = ""
 
 def ocpJson(dataset, project, channel_list, metadata):
   """Genarate OCP json object"""
@@ -138,7 +138,7 @@ def main():
   resolution=0          #(type=int, default=0, help='Start Resolution')
   windowrange=(0,0)         #(type=int[], default=[0, 0], help='Window clamp function for 16-bit channels with low max value of pixels')
   readonly=0            #(type=int, default=0, help='Read-only Channel or Not. You can remotely post to channel if it is not readonly and overwrite data')
-  data_url= 'http://braingraph1dev.cs.jhu.edu//data/scratch/ualex/codeneuro/hausser_lab/series_0/tiffs/'           #(type=str, help='This url points to the root directory of the files. Dropbox is not an acceptable HTTP Server.')
+  data_url= ''           #(type=str, help='This url points to the root directory of the files. Dropbox is not an acceptable HTTP Server.')
   file_format='SLICE'         #(type=str, help='This is overal the file format type. For now we support only Slice stacks and CATMAID tiles.')
   file_type='tiff'           #(type=str, help='This is the specific file format type (tiff, tif, png))
 
