@@ -28,14 +28,13 @@ logger=logging.getLogger("ocp")
 
 GET_SLICE_SERVICES = ['xy', 'yz', 'xz']
 GET_ANNO_SERVICES = ['xyanno', 'yzanno', 'xzanno']
-POST_SERVICES = ['hdf5', 'npz', 'hdf5_async', 'propagate', 'tiff']
+POST_SERVICES = ['hdf5', 'npz', 'hdf5_async', 'propagate', 'tiff', 'blosc']
 
 
 def cutout (request, webargs):
   """Restful URL for all read services to annotation projects"""
-  
   try:
-    m = re.match(r"(\w+)/(?P<channel>[\w+,/-]+)?/?(xy|xz|yz|tiff|hdf5|npz|zip|id|ids|xyanno|xzanno|yzanno)/([\w,/-]+)$", webargs)
+    m = re.match(r"(\w+)/(?P<channel>[\w+,/-]+)?/?(xy|xz|yz|tiff|hdf5|jpeg|blosc|npz|zip|id|ids|xyanno|xzanno|yzanno)/([\w,/-]+)$", webargs)
     [token, channel, service, cutoutargs] = [i for i in m.groups()]
 
     if channel is None:
@@ -50,22 +49,34 @@ def cutout (request, webargs):
     if request.method == 'GET':
       if service in GET_SLICE_SERVICES+GET_ANNO_SERVICES:
         return django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="image/png" )
-      elif service in ['ts', 'hdf5']:
+      elif service in ['hdf5']:
         fname = re.sub ( r',','_', webargs )
         fname = re.sub ( r'/','-', fname )
         response = django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="product/hdf5" )
         response['Content-Disposition'] = "attachment; filename={}ocpcutout.h5".format(fname)
         return response
-      elif service=='npz':
+      elif service in ['blosc']:
+        fname = re.sub ( r',','_', webargs )
+        fname = re.sub ( r'/','-', fname )
+        response = django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="product/blosc" )
+        response['Content-Disposition'] = "attachment; filename={}ocpcutout.blosc".format(fname)
+        return response
+      elif service in ['jpeg']:
+        fname = re.sub ( r',','_', webargs )
+        fname = re.sub ( r'/','-', fname )
+        response = django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="product/jpeg" )
+        response['Content-Disposition'] = "attachment; filename={}ocpcutout.jpeg".format(fname)
+        return response
+      elif service in ['npz']:
         return django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="product/npz" )
-      elif service=='tiff':
+      elif service in ['tiff']:
         # build a file name from the webarguments
         fname = re.sub ( r',','_', webargs )
         fname = re.sub ( r'/','-', fname )
         response = django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="image/tiff" )
         response['Content-Disposition'] = "attachment; filename={}ocpcutout.tif".format(fname)
         return response
-      elif service=='zip':
+      elif service in ['zip']:
         return django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="product/zip" )
       elif service in ['id','ids']:
         return django.http.HttpResponse(ocpcarest.getCutout(webargs))
@@ -138,12 +149,16 @@ def swc (request, webargs):
 
 def annotation (request, webargs):
   """Get put object interface for RAMON objects"""
-  
   [token, channel, rest] = webargs.split('/',2)
-
+  
   try:
     if request.method == 'GET':
-      return django.http.HttpResponse(ocpcarest.getAnnotation(webargs), content_type="product/hdf5" )
+      # check for json vs hdf5 
+      if rest.split('/')[1] == 'json':
+        return django.http.HttpResponse(ocpcarest.getAnnotation(webargs), content_type="application/json" )
+      else:
+        # return hdf5 
+        return django.http.HttpResponse(ocpcarest.getAnnotation(webargs), content_type="product/hdf5" )
     elif request.method == 'POST':
       #if service == 'hdf5_async':
         #return django.http.HttpResponse( ocpcarest.putAnnotationAsync(webargs,request.body) )
@@ -243,6 +258,19 @@ def jsoninfo (request, webargs):
   except:
     logger.exception("Unknown exception in jsoninfo")
     raise OCPCAError("Unknown exception in jsoninfo")
+
+def xmlinfo (request, webargs):
+  """Return project and dataset configuration information"""
+
+  try:  
+    return django.http.HttpResponse(ocpcarest.xmlInfo(webargs), content_type="application/xml" )
+  except OCPCAError, e:
+    return django.http.HttpResponseNotFound(e.value)
+  except MySQLdb.Error, e:
+    return django.http.HttpResponseNotFound(e)
+  except:
+    logger.exception("Unknown exception in xmlinfo")
+    raise OCPCAError("Unknown exception in xmlinfo")
 
 #@cache_control(no_cache=True)
 def projinfo (request, webargs):
@@ -396,7 +424,7 @@ def minmaxProject (request, webargs):
     logger.exception("Unknown exception in (min|max) projection Web service")
     raise OCPCAError("Unknown exception in (min|max) projection Web service")
 
-def jsonProject(request, webargs):
+def createProject(request, webargs):
   """RESTful URL for creating a project using a JSON file"""
 
   try:

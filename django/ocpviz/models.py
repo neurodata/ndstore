@@ -90,4 +90,38 @@ class VizProject ( models.Model ):
 
   def __unicode__(self):
     return self.project_name
-    
+   
+class DataViewItem ( models.Model ):
+  name = models.CharField(max_length=255, verbose_name="An item attached to a particular dataview.")
+  desc_int = models.CharField(max_length=255, verbose_name="An internal description for this item. The external description will be the project description.")
+  user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True)
+  
+  # link to the vizproject 
+  vizproject = models.ForeignKey(VizLayer)
+ 
+  # optional fields to allow a user to define a different starting position 
+  xstart = models.IntegerField(default=0)
+  ystart = models.IntegerField(default=0)
+  zstart = models.IntegerField(default=0)
+
+  marker_start = models.BooleanField(default=False)
+
+  thumbnail_img = models.ImageField(upload_to='ocpviz/thumbnails/')  
+  thumbnail_url = models.CharField(max_length=255, default='') 
+
+  def __unicode__(self):
+    return self.item_name 
+
+class DataView ( models.Model ):
+  name = models.CharField(max_length=255, primary_key=True, verbose_name="Long name for this data view.")
+  desc = models.CharField(max_length=255)
+  token = models.CharField(max_length=255, verbose_name="The identifier / access name for this dataview (appears in ocp/ocpviz/dataview/<<token>>/)")
+  user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True)
+
+  items = models.ManyToManyField(DataViewItem, related_name='dataview')
+
+  public = models.BooleanField(default=False)
+
+  def __unicode__(self):
+    return self.dataview_name
+

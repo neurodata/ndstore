@@ -74,16 +74,18 @@ class NikhilIngest:
         slab = np.zeros([zcubedim, yimagesz, ximagesz], dtype=np.uint32)
 
         for b in range(zcubedim):
-          file_name = "{}{}{:0>4}.tif".format(self.path, self.token, slice_number+b)
-          print "Open filename {}".format(file_name)
+          
+          if (slice_number + b <= zimagesz):
+            file_name = "{}{}{:0>4}.tif".format(self.path, self.token, slice_number+b)
+            print "Open filename {}".format(file_name)
 
-          try:
-            img = Image.open(file_name,'r')
-            slab [b,:,:] = np.asarray(img)
-          except IOError, e:
-            print "Failed to open file %s" % (e)
-            img = np.zeros((yimagesz,ximagesz), dtype=np.uint8)
-            slab [b,:,:] = img
+            try:
+              img = Image.open(file_name,'r')
+              slab [b,:,:] = np.asarray(img)
+            except IOError, e:
+              print "Failed to open file %s" % (e)
+              img = np.zeros((yimagesz,ximagesz), dtype=np.uint8)
+              slab [b,:,:] = img
 
         for y in range(0, yimagesz + 1, ycubedim):
           for x in range(0, ximagesz + 1, xcubedim):

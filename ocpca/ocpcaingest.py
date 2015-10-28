@@ -14,13 +14,16 @@
 
 import sys
 import os
+import urllib
 from contextlib import closing
 import numpy as np
+from PIL import Image
 import django
 django.setup()
 from django.conf import settings
 
 from cube import Cube
+from ocptype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, OCP_dtypetonp
 import ocpcarest
 import ocpcadb
 import ocpcaproj
@@ -28,35 +31,58 @@ import ocplib
 
 class IngestData:
 
-  def __init__(token, channel, resolution, data_url, data_regex):
+  def __init__(self, token, channel, resolution, data_url, file_format, file_type):
 
     self.token = token
     self.channel = channel
     self.resolution = resolution
     self.data_url = data_url
+    self.path = settings.TEMP_INGEST_PATH
+    # identify which type of data this is
+    self.file_format = file_format
+    # set the file_type
+    self.file_type = file_type
 
-  def identifyData():
-    """Identify the data"""
+  def ingest(self):
+    """Identify the data style and ingest accordingly"""
     
-    # do something with data_regex here to identify
-    
-    # set the regex and file_type
-    self.regex = ""
-    self.file_type = ""
-    pass
+    if self.file_format in ['SLICE']:
+      self.ingestImageStack()
+    elif self.file_format in ['CATMAID']:
+      self.ingestCatmaidStack()
+    else:
+      raise "Format {} not supported.".format(self.file_format)
 
-  def fetchData(filename_list):
+  def fetchData(self, slice_list, time_value):
     """Fetch the next set of data from a remote source and place it locally"""
-
-
+    
     # data is a TIF stack
-    for file_name in filename_list:
+    for slice_number in slice_list:
       try:
-        urllib.urlretrieve('{}{}'.format(self.data_url, file_name), settings.TMP_INGEST_PATH+file_name)
+        if time_value is not None:
+          url = '{}{}/{}/{}/{}'.format(self.data_url, self.token, self.channel, time_value, self.generateFileName(slice_number))
+        else:
+          url = '{}{}/{}/{}'.format(self.data_url, self.token, self.channel, self.generateFileName(slice_number))
+        urllib.urlretrieve('{}'.format(url), self.path+self.generateFileName(slice_number))
       except Exception, e:
-        print "Failed to fetch url. File does not exist."
+        print "Failed to fetch url {}. File does not exist.".format(url)
+ 
+  def cleanData(self, slice_list):
+    """Remove the slices at the local store"""
 
-  def ingestCatmaidStack():
+    for slice_number in slice_list:
+      try:
+        os.remove('{}{}'.format(self.path, self.generateFileName(slice_number)))
+      except OSError:
+        print "File {} not found".format(self.generateFileName(slice_number))
+
+
+  def generateFileName(self, slice_number):
+    """Generate a file name given the slice_number"""
+
+    return '{:0>4}.{}'.format(slice_number, self.file_type)
+
+  def ingestCatmaidStack(self):
     """Ingest a CATMAID tile stack"""
 
     # Load a database
@@ -71,10 +97,10 @@ class IngestData:
       [xcubedim,ycubedim,zcubedim] = cubedim = proj.datasetcfg.getCubeDims()[self.resolution]
       [xoffset, yoffset, zoffset] = proj.datasetcfg.getOffset()[self.resolution]
 
-      if ch.getChannelType() in ocpcaproj.TIMESERIES_CHANNELS and starttime=0 and endtime=0:
+      if ch.getChannelType() in TIMESERIES_CHANNELS and (starttime == 0 and endtime == 0):
         pass
       else:
-        print "Timeseries Data cannot timerange (0,0)"
+        print "Timeseries Data cannot have timerange (0,0)"
         raise
       
       num_xtiles = ximagesz / tilesz
@@ -121,7 +147,7 @@ class IngestData:
                   else:
                     db.putTimeCube(ch, zidx, timestamp, self.resolution, cube, update=True)
 
-  def ingestImageStack():
+  def ingestImageStack(self):
     """Ingest a TIF image stack"""
 
     # Load a database
@@ -136,27 +162,31 @@ class IngestData:
       [xcubedim, ycubedim, zcubedim] = cubedim = proj.datasetcfg.getCubeDims()[self.resolution]
       [xoffset, yoffset, zoffset] = proj.datasetcfg.getOffset()[self.resolution]
       
-      if ch.getChannelType() in ocpcaproj.TIMESERIES_CHANNELS and starttime=0 and endtime=0:
-        pass
-      else:
-        print "Timeseries Data cannot timerange (0,0)"
+      if ch.getChannelType() in TIMESERIES_CHANNELS and (starttime == 0 and endtime == 0):
+        print "Timeseries Data cannot have timerange (0,0)"
         raise
 
       # Get a list of the files in the directories
       for timestamp in range(starttime, endtime+1):
         for slice_number in range (zoffset, zimagesz+1, zcubedim):
-          slab = np.zeros([zcubedim, yimagesz, ximagesz ], dtype=np.uint8)
+          slab = np.zeros([zcubedim, yimagesz, ximagesz ], dtype=OCP_dtypetonp.get(ch.getDataType()))
+          # fetch 16 slices at a time
+          if ch.getChannelType() in TIMESERIES_CHANNELS:
+            time_value = timestamp
+          else:
+            time_value = None
+          self.fetchData(range(slice_number,slice_number+zcubedim) if slice_number+zcubedim<=zimagesz else range(slice_number,zimagesz), time_value=time_value)
           for b in range(zcubedim):
             if (slice_number + b <= zimagesz):
               try:
                 # reading the raw data
-                file_name = "{}{}{:0>6}.{}".format(self.path, self.regex (slice_number + b), self.file_type )
+                file_name = "{}{}".format(self.path, self.generateFileName(slice_number+b))
                 print "Open filename {}".format(file_name)
                 slab[b,:,:] = np.asarray(Image.open(file_name, 'r'))
               except IOError, e:
                 print e
                 slab[b,:,:] = np.zeros((yimagesz, ximagesz), dtype=np.uint32)
-
+          
           for y in range ( 0, yimagesz+1, ycubedim ):
             for x in range ( 0, ximagesz+1, xcubedim ):
 
@@ -173,7 +203,16 @@ class IngestData:
 
               cube.data[0:zmax-zmin,0:ymax-ymin,0:xmax-xmin] = slab[zmin:zmax, ymin:ymax, xmin:xmax]
               if cube.isNotZeros():
-                if ch.getChannelType() not in ocpcaproj.TIMESERIES_CHANNELS:
+                if ch.getChannelType() not in TIMESERIES_CHANNELS:
                   db.putCube(ch, zidx, self.resolution, cube, update=True)
                 else:
                   db.putTimeCube(ch, zidx, timestamp, self.resolution, cube, update=True)
+          
+          # clean up the slices fetched
+          self.cleanData(range(slice_number,slice_number+zcubedim) if slice_number+zcubedim<=zimagesz else range(slice_number,zimagesz))
+
+def main():
+  """Testing"""
+
+if __name__ == '__main__':
+  main()

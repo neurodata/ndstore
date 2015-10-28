@@ -29,6 +29,7 @@ urlpatterns = patterns('ocpca.views',
   # get project information
   url(r'(?P<webargs>^\w+/projinfo/[\w,/]*)$', 'projinfo'),
   url(r'(?P<webargs>^\w+/info/[\w,/]*)$', 'jsoninfo'),
+  url(r'(?P<webargs>^\w+/volume.vikingxml)$', 'xmlinfo'),
   # get public tokens 
   url(r'(?P<webargs>^public_tokens/)$', 'publictokens'),
   # Create/Delete channel interfaces
@@ -43,7 +44,7 @@ urlpatterns = patterns('ocpca.views',
   # projection services
   url(r'(?P<webargs>^\w+/(minproj|maxproj)/(xy|xz|yz)[\w,/]*)$', 'minmaxProject'),
   # get services
-  url(r'(?P<webargs>^\w+/[\w+,/]*(xy|xz|yz|tiff|hdf5|npz|zip|id|ids|xyanno|xzanno|yzanno)/[\w,/-]+)$', 'cutout'),
+  url(r'(?P<webargs>^\w+/[\w+,/]*(xy|xz|yz|tiff|hdf5|blosc|jpeg|npz|zip|id|ids|xyanno|xzanno|yzanno)/[\w,/-]+)$', 'cutout'),
   # single field interfaces
   url(r'(?P<webargs>^\w+/\w+/getField/\d+/[\w+,/]*)$', 'getField'),
   url(r'(?P<webargs>^\w+/\w+/setField/\d+/[\w+,./]*)$', 'setField'),
@@ -59,5 +60,5 @@ urlpatterns = patterns('ocpca.views',
   # HDF5 interfaces
   url(r'(?P<webargs>^\w+/\w+/[\d+/]?[\w,/]*)$', 'annotation'),
   # JSON interfaces
-  url(r'(?P<webargs>^createProject/)$', 'jsonProject'),
+  url(r'(?P<webargs>^createProject/)$', 'createProject'),
 )

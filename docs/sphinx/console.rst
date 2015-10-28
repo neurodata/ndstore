@@ -4,21 +4,26 @@ Adminstrator Console
 QuickStart
 ==========
 
-To upload an image volume: Create a dataset with appropriate names/field values. Then, create a project from that dataset, with a channel of the image type that is being uploaded. Finally, create a token to access the project and use that token to upload the image data. The tutorials to do each of these steps is available below. Scripts for automated upload are available for python and Cajal (formerly ocpMatlab).
+Uploading Images
+++++++++++++++++
+Create a dataset with appropriate names/field values. Then, create a project from that dataset, with a channel of the image type that is being uploaded. Finally, create a token to access the project and use that token to upload the image data. The tutorials to do each of these steps is available below. Scripts for automated upload are available for `ndio <http://docs.neurodata.io/open-connectome/api/data_api.html/>`_ (Python) and `CAJAL <http://docs.neurodata.io/nddocs/exchange/cajal.html/>`_ (formerly ocpMatlab).
 
-To upload annotation data: Using the existing project with the relevant image data create a channel of the annotation type that is being uploaded. Finally, create a token to access the project and use that token to upload the annotation data. The tutorials to do each of these steps is available below. More information on general annotation upload and download is available here.
+Uploading Annotations
++++++++++++++++++++++
+
+Using the existing project with the relevant image data create a channel of the annotation type that is being uploaded. Finally, create a token to access the project and use that token to upload the annotation data. The tutorials to do each of these steps is available below.
 
 Overview
 ========
 
-The Console allows data to be uploaded and downloaded to OCP as well as access other services within OCP. Data in OCP is organized into datasets and projects, see below for a more extensive description of each. The diagram below shows how the overall service is organized;
+`The Console <http://openconnecto.me/ocp/ocpuser/profile/>`_ allows data to be uploaded and downloaded to NeuroData as well as access other services within Neurodata. Data in Neurodata is organized into datasets and projects, see below for a more extensive description of each. The diagram below shows how the overall service is organized.
 
 .. figure:: ../images/ocpservicediagram.png
 	:align: center 
 	:width: 500
 	:height: 200
 	
-Datasets are present on the OCP server and are accessed through projects. These datasets can hold multiple types of data, including image, annotation, ect. When a specific type of data needs to be accessed in a dataset (via the project), say for example 8-bit image data, a channel is created in the project for that specific datatype. The project (and in turn the channels and the dataset) is accessible by a token, which serves as an access point for anyone that has the token. 
+Datasets are present on the Neurodata server and are accessed through projects. These datasets can hold multiple types of data, including image, annotation, etc. When a specific type of data needs to be accessed in a dataset (via the project), say for example 8-bit image data, a channel is created in the project for that specific datatype. The project (and in turn the channels and the dataset) is accessible by a token, which serves as an access point for anyone that has the token. 
 
 Datasets
 ========
@@ -35,15 +40,15 @@ Navigate to the datasets drop down menu and select create dataset. Fill in the a
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
 | Data Field              | Description                                                                                                                    | 
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-| Dataset Name            | The name of the data set you are uploading (Good practice is lastname and year).                                               |
+| Dataset Name            | The name of the data set you are uploading (good practice is lastname and year such as bock11).                                |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
 | Description             | A description of the data being uploaded, good things to include may be species and the location of where the images are from. |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-|X, Y, Z Image Size       | This is the size of the X, Y and Z plane.                                                                                      |
+|X, Y, Z Image Size       | This is the size of the X, Y and Z plane in pixels                                                                             |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-|X, Y, Z Offset           | Amount to offset in the X, Y and Z plane.                                                                                      |
+|X, Y, Z Offset           | Amount to offset in the X, Y and Z plane in pixels                                                                             |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-|PUBLIC                   | Whether or not the template (not the data) is viewable by everyone using OCP.                                                  |
+|PUBLIC                   | Whether or not the template (not the data) is viewable by everyone using Neurodata (can select public or private).             |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
 |Scaling Level            | Sets the resolution level for the dataset.                                                                                     |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
@@ -65,31 +70,31 @@ There also are cases where the user may wish to modify aspects of a project, whe
 Project Creation Tutorial
 +++++++++++++++++++++++++
 
-To create a project navigate to the datasets drop down menu and select create dataset. Fill in the appropriate data fields for each line (a full explanation of each can be found below). Click create data set and you should be re-directed to the data set main page, where you will now see a new data set with the data you selected. To use the data set create a new project/token.
+If you have not already created a dataset follow the tutorial here `Datasets`_). To create a project navigate to the projects drop down menu and select create project. Fill in the appropriate fields, an explanation of each of which you can see below. Click create data set and you should be re-directed to the data set main page, where you will now see a new data set with the data you selected. To use the data set create a new project/token.
 
 To manage a project navigate to the projects dropdown menu and select view projects. To the right of the project you wish to modify select Update/Details and change the fields as desired.
 
-+--------------------------+----------------------------------------------------------------------------------+
-|Data Field                | Description                                                                      |
-+--------------------------+----------------------------------------------------------------------------------+
-|Project                   | The name of the project.                                                         |
-+--------------------------+----------------------------------------------------------------------------------+
-|Description               | The description of the project.                                                  |
-+--------------------------+----------------------------------------------------------------------------------+
-|Public                    | Whether or not the template is viewable to the public.                           |
-+--------------------------+----------------------------------------------------------------------------------+
-|Dataset                   | The dataset to be used by the project.                                           |
-+--------------------------+----------------------------------------------------------------------------------+
-|Database Host             | The database host to store the project. Use the default option.                  |
-+--------------------------+----------------------------------------------------------------------------------+
-|KV Engine                 | The KV engine used to store the project. Use the default option.                 |
-+--------------------------+----------------------------------------------------------------------------------+
-|KV Server                 | This is the KV key-server. Use the default option.                               |
-+--------------------------+----------------------------------------------------------------------------------+
-|Link to Existing Database | Use this option if the project database is already present on OCP servers.       |
-+--------------------------+----------------------------------------------------------------------------------+
-|Create a Default Token    | Creates a default token for the project.                                         | 
-+--------------------------+----------------------------------------------------------------------------------+
++--------------------------+-----------------------------------------------------------------------------------------+
+|Data Field                | Description                                                                             |
++--------------------------+-----------------------------------------------------------------------------------------+
+|Project                   | The name of the project.                                                                |
++--------------------------+-----------------------------------------------------------------------------------------+
+|Description               | The description of the project.                                                         |
++--------------------------+-----------------------------------------------------------------------------------------+
+|Public                    | Whether or not the template is viewable to the public (to make private select private). |
++--------------------------+-----------------------------------------------------------------------------------------+
+|Dataset                   | The name of the dataset to be used by the project.                                      |
++--------------------------+-----------------------------------------------------------------------------------------+
+|Database Host             | The database host to store the project. Use the default option.                         |
++--------------------------+-----------------------------------------------------------------------------------------+
+|KV Engine                 | The KV engine used to store the project. Use the default option.                        |
++--------------------------+-----------------------------------------------------------------------------------------+
+|KV Server                 | This is the KV key-server. Use the default option.                                      |
++--------------------------+-----------------------------------------------------------------------------------------+
+|Link to Existing Database | Use this option if the project database is already present on Neurodata servers.        |
++--------------------------+-----------------------------------------------------------------------------------------+
+|Create a Default Token    | Creates a default token for the project.                                                | 
++--------------------------+-----------------------------------------------------------------------------------------+
 
 Channels
 ========
@@ -97,12 +102,12 @@ Channels
 Overview
 ++++++++
 
-Channels are way of accessing specific data, such as image, annotation, time-series, ect., in a particular project. They by default can be enabled to be read-only which allows the data to be publicly viewable (with a public token), but not edited. 
+Channels are way of accessing specific data, such as image, annotation, time-series, etc., in a particular project. They by default can be enabled to be read-only which allows the data to be publicly viewable (with a public token), but not edited. 
 
 Channel Creation Tutorial
 +++++++++++++++++++++++++
 
-If you have not created a project yet follow this tutorial. Then navigate to the projects drop down menu and select projects. Select the project you wish to create a channel for and select channel, then add channel. 
+If you have not created a project yet follow the above tutorial in `Projects`_. Then navigate to the projects drop down menu and select projects. Select the project you wish to create a channel for and select channel, then add channel. 
 
 To modify a channel select the Update button in the channels menu.
 
@@ -115,17 +120,17 @@ To modify a channel select the Update button in the channels menu.
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
 |Datatype                 | The data type of the channel you want to create. Refer to :ref:`Data Types<ocp-datatype>` for more details.                    |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-|Description              | A description of the channel, usually contains user description of the channel.                                                |
+|Description              | A description of the channel, usually contains relevent information for the user (who is using it, data stored there, etc.).   |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-|Read Only                | Whether or not you can modify the data existing in the channel.                                                                |
+|Read Only                | Whether or not you can modify the data existing in the channel (yes - read only, no - read and write).                         |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-|Resolution               | The base resolution of the data you want to store in this channel.                                                             |
+|Resolution               | The resolution of the data being stored (defaults to 0 which is the highest resolution, each level reduces pixels by 2^n).     |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
 |Enable Exceptions        | Enable exceptions for an annotation channel. Use the default option.                                                           |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
 |Propagate                | The status of propagation level of the channel. Refer to :ref:`Propagation<ocp-propagation>` for more details.                 |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-|Start Window             | The lowest pixel value (defaults to 0)                                                                                         |
+|Start Window             | The lowest pixel intensity value (defaults to 0)                                                                               |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
 |End Window               | The highest pixel value (defaults to 65536).                                                                                   |
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
@@ -143,7 +148,7 @@ A token is an accessor to get to your projects, and in turn your datasets. It ca
 Token Creation Tutorial
 +++++++++++++++++++++++
 
-If you have not created a project yet follow this tutorial. Then navigate to the projects drop down menu and select projects. Select the project you wish to create another token for and select tokens, then add token. To modify the token navigate to the tokens sub-menu again and select the modify option on the token you wish to edit. 
+If you have not created a project yet follow the above tutorial in `Projects`_. Then navigate to the projects drop down menu and select projects. Select the project you wish to create another token for and select tokens, then add token. To modify the token navigate to the tokens sub-menu again and select the modify option on the token you wish to edit. 
 
 +-------------------------+--------------------------------------------------------------------------------------------------------------------------------+
 | Data Field              | Description                                                                                                                    | 

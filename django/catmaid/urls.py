@@ -20,6 +20,8 @@ from django.conf.urls import patterns, include, url
 
 # already have the ^catmaid stripped off
 urlpatterns = patterns('catmaid.views',
+  # viking
+  url(r'^viking/(?P<webargs>.*)$', 'simplevikingview'),
   # mcfc
   url(r'^mcfc/(?P<webargs>.*)$', 'mcfccatmaidview'),
   #url(r'^color/(?P<webargs>.*)$', 'colorcatmaidview'),

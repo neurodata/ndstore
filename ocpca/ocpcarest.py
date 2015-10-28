@@ -22,6 +22,7 @@ import cStringIO
 import csv
 import re
 import json
+import blosc
 from PIL import Image
 import MySQLdb
 import itertools
@@ -29,6 +30,7 @@ from contextlib import closing
 from libtiff import TIFF
 from operator import sub, add
 from libtiff import TIFFfile, TIFFimage
+import json 
 
 import restargs
 import anncube
@@ -36,6 +38,7 @@ import ocpcadb
 import ocpcaproj
 import ocpcachannel
 import h5ann
+import jsonann 
 import h5projinfo
 import jsonprojinfo
 import annotation
@@ -128,6 +131,95 @@ def numpyZip ( chanargs, proj, db ):
     fileobj = cStringIO.StringIO(cdz)
     fileobj.seek(0)
     return fileobj.read()
+
+  except Exception,e:
+    raise OCPCAError("{}".format(e))
+
+
+def JPEG ( chanargs, proj, db ):
+  """Return a web readable JPEG File"""
+
+  try:
+    # argument of format channel/service/imageargs
+    m = re.match("([\w+,]+)/(\w+)/([\w+,/-]+)$", chanargs)
+    [channels, service, imageargs] = [i for i in m.groups()]
+  except Exception, e:
+    logger.warning("Arguments not in the correct format {}. {}".format(chanargs, e))
+    raise OCPCAError("Arguments not in the correct format {}. {}".format(chanargs, e))
+
+  try: 
+    channel_list = channels.split(',')
+    ch = proj.getChannelObj(channel_list[0])
+
+    channel_data = cutout( imageargs, ch, proj, db ).data
+    cubedata = np.zeros ( (len(channel_list),)+channel_data.shape, dtype=channel_data.dtype )
+    cubedata[0,:] = channel_data
+
+    # if one channel convert 3-d to 4-d array
+    for idx,channel_name in enumerate(channel_list[1:]):
+      if channel_name == '0':
+        continue
+      else:
+        ch = proj.getChannelObj(channel_name)
+        if OCP_dtypetonp[ch.getDataType()] == cubedata.dtype:
+          cubedata[idx+1,:] = cutout(imageargs, ch, proj, db).data
+        else:
+          raise OCPCAError("The npz cutout can only contain cutouts of one single Channel Type.")
+
+    xdim, ydim, zdim = cubedata[0,:,:,:].shape[::-1]
+    #cubedata = np.swapaxes(cubedata[0,:,:,:], 0,2).reshape(xdim*zdim, ydim)
+    cubedata = cubedata[0,:,:,:].reshape(xdim*zdim, ydim)
+    
+    if ch.getDataType() in DTYPE_uint16:
+      img = Image.fromarray(cubedata, mode='I;16')
+      img = img.point(lambda i:i*(1./256)).convert('L')
+    elif ch.getDataType() in DTYPE_uint32:
+      img = Image.fromarray(cubedata, mode='RGBA')
+    else:
+      img = Image.fromarray(cubedata)
+    fileobj = cStringIO.StringIO ()
+    img.save ( fileobj, "JPEG" )
+
+    fileobj.seek(0)
+    return fileobj.read()
+
+  except Exception,e:
+    raise OCPCAError("{}".format(e))
+
+
+def BLOSC ( chanargs, proj, db ):
+  """Return a web readable blosc file"""
+
+  try:
+    # argument of format channel/service/imageargs
+    m = re.match("([\w+,]+)/(\w+)/([\w+,/-]+)$", chanargs)
+    [channels, service, imageargs] = [i for i in m.groups()]
+  except Exception, e:
+    logger.warning("Arguments not in the correct format {}. {}".format(chanargs, e))
+    raise OCPCAError("Arguments not in the correct format {}. {}".format(chanargs, e))
+
+  try: 
+    channel_list = channels.split(',')
+    ch = proj.getChannelObj(channel_list[0])
+
+    channel_data = cutout( imageargs, ch, proj, db ).data
+    cubedata = np.zeros ( (len(channel_list),)+channel_data.shape, dtype=channel_data.dtype )
+    cubedata[0,:] = channel_data
+
+    # if one channel convert 3-d to 4-d array
+    for idx,channel_name in enumerate(channel_list[1:]):
+      if channel_name == '0':
+        continue
+      else:
+        ch = proj.getChannelObj(channel_name)
+        if OCP_dtypetonp[ch.getDataType()] == cubedata.dtype:
+          cubedata[idx+1,:] = cutout(imageargs, ch, proj, db).data
+        else:
+          raise OCPCAError("The npz cutout can only contain cutouts of one single Channel Type.")
+
+    
+    # Create the compressed cube
+    return blosc.pack_array(cubedata)
 
   except Exception,e:
     raise OCPCAError("{}".format(e))
@@ -569,6 +661,10 @@ def selectService ( service, webargs, proj, db ):
     return tiff3d ( webargs, proj, db )
   elif service in ['npz']:
     return  numpyZip ( webargs, proj, db ) 
+  elif service in ['blosc']:
+    return  BLOSC ( webargs, proj, db ) 
+  elif service in ['jpeg']:
+    return JPEG ( webargs, proj, db )
   elif service in ['zip']:
     return  binZip ( webargs, proj, db ) 
   elif service == 'id':
@@ -617,20 +713,22 @@ def selectPost ( webargs, proj, db, postdata ):
 
     try:
 
-      if service == 'npz':
+      if service in ['npz', 'blosc']:
 
         # get the data out of the compressed blob
-        rawdata = zlib.decompress ( postdata )
-        fileobj = cStringIO.StringIO ( rawdata )
-        voxarray = np.load ( fileobj )
+        if service == 'npz':
+          rawdata = zlib.decompress ( postdata )
+          fileobj = cStringIO.StringIO ( rawdata )
+          voxarray = np.load ( fileobj )
+        elif service == 'blosc':
+          voxarray = blosc.unpack_array(postdata)
         
         if voxarray.shape[0] != len(channel_list):
-          logger.warning("The npz data has some missing channels")
-          raise OCPCAError("The npz data has some missing channels")
+          logger.warning("The data has some missing channels")
+          raise OCPCAError("The data has some missing channels")
       
         for idx,channel_name in enumerate(channel_list):
           ch = proj.getChannelObj(channel_name)
-          #ch = ocpcaproj.OCPCAChannel(proj, channel)
   
           # Don't write to readonly channels
           if ch.getReadOnly() == READONLY_TRUE:
@@ -649,7 +747,7 @@ def selectPost ( webargs, proj, db, postdata ):
           
           elif ch.getChannelType() in ANNOTATION_CHANNELS:
             db.annotateDense(ch, corner, resolution, voxarray[idx,:], conflictopt)
-
+      
       elif service == 'hdf5':
   
         # Get the HDF5 file.
@@ -754,6 +852,20 @@ AR_TIGHTCUTOUT = 3
 AR_BOUNDINGBOX = 4
 AR_CUBOIDS = 5
 
+def getAnnoJSONById ( ch, annoid, proj, db ):
+  """ Retrieve the annotation and return it as a serialized json string """
+
+  # retrieve the annotation
+  anno = db.getAnnotation ( ch, annoid ) 
+  if anno == None:
+    logger.warning("No annotation found at identifier = %s" % (annoid))
+    raise OCPCAError ("No annotation found at identifier = %s" % (annoid))
+
+  # create the JSONanno obj
+  jsonanno = jsonann.AnnotationtoJSON ( anno )
+
+  # return data
+  return jsonanno.toJSON() 
 
 def getAnnoById ( ch, annoid, h5f, proj, db, dataoption, resolution=None, corner=None, dim=None ): 
   """Retrieve the annotation and put it in the HDF5 file."""
@@ -891,6 +1003,27 @@ def getAnnotation ( webargs ):
     # Split the URL and get the args
     ch = ocpcaproj.OCPCAChannel(proj, channel)
     option_args = otherargs.split('/', 2)
+
+    # AB Added 20151011 
+    # Check to see if this is a JSON request, and if so return the JSON objects 
+    # otherwise, continue with returning the HDF5 data
+    if option_args[1] == 'json':
+      jsonstr = ''
+      try:
+        db.startTxn()
+        if re.match ( '^[\d,]+$', option_args[0] ): 
+          annoids = map(int, option_args[0].split(','))
+          for annoid in annoids: 
+            jsonstr += getAnnoJSONById ( ch, annoid, proj, db )
+
+      except: 
+        db.rollback()
+        raise
+
+      db.commit()
+      return jsonstr 
+
+    # not a json request, continue with building and returning HDF5 file 
 
     # Make the HDF5 file
     # Create an in-memory HDF5 file
@@ -1564,8 +1697,25 @@ def jsonInfo ( webargs ):
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
-
+    
     return jsonprojinfo.jsonInfo(proj)
+
+def xmlInfo ( webargs ):
+  """Return project information in json format"""
+
+  try:
+    # match the format /token/volume.vikingxml
+    m = re.match(r'(\w+)/volume.vikingxml', webargs)
+    token = m.group(1)
+  except Exception, e:
+    print "Bad URL {}".format(webargs)
+    raise
+  
+  # get the project 
+  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+    proj = projdb.loadToken ( token )
+
+    return jsonprojinfo.xmlInfo(token, proj)
 
 
 def projInfo ( webargs ):

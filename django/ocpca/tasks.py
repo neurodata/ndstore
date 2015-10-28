@@ -19,6 +19,7 @@ from django.conf import settings
 
 import h5annasync
 import ocpcastack
+from ocpcaingest import IngestData
 
 import logging
 logger = logging.getLogger("ocp")
@@ -31,3 +32,13 @@ def propagate (token, channel_name):
     ocpcastack.buildStack (token,channel_name)
   except Exception, e:
     logger.error("Error in propagate. {}".format(e))
+
+@task(queue='ingest')
+def ingest (token_name, channel_name, resolution, data_url, file_format, file_type):
+  """Call the remote ingest function here"""
+
+  try:
+    ingest_data = IngestData(token_name, channel_name, resolution, data_url, file_format, file_type)
+    ingest_data.ingest()
+  except Exception, e:
+    logger.error("Error in ingest. {}".format(e))

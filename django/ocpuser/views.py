@@ -548,7 +548,6 @@ def createDataset(request):
         return HttpResponseRedirect(get_script_prefix()+'ocpuser/datasets')
       else:
         context = {'form': form}
-        print form.errors
         return render_to_response('createdataset.html',context,context_instance=RequestContext(request))
     elif 'backtodatasets' in request.POST:
       return redirect(getDatasets)
@@ -583,7 +582,6 @@ def updateDataset(request):
         else:
           #Invalid form
           context = {'form': form}
-          print form.errors
           return render_to_response('updatedataset.html',context,context_instance=RequestContext(request))
 
       else:
@@ -631,6 +629,7 @@ def updateChannel(request):
   prname = request.session['project']
   pr = Project.objects.get ( project_name = prname )
   pd = ocpcaproj.OCPCAProjectsDB()
+
   if request.method == 'POST':
 
     if 'updatechannel' in request.POST: 
@@ -646,6 +645,20 @@ def updateChannel(request):
         # Invalid form
         context = {'form': form, 'project': prname}
         return render_to_response('updatechannel.html', context, context_instance=RequestContext(request))
+
+    elif 'propagatechannel' in request.POST:
+
+      chname = request.session["channel_name"]
+      channel_to_update = get_object_or_404(Channel,channel_name=chname,project_id=pr)
+      form = ChannelForm(data=request.POST or None, instance=channel_to_update)
+
+      # KLTODO/RBTODO add propagate to the UI
+#      messages.error(request,"Propagate not yet implemented in self-admin UI.")
+#      return HttpResponseRedirect(get_script_prefix()+'ocpuser/channels')
+
+      context = {'form': form, 'project': prname}
+      form.add_error(None,[u"Propagate not yet implemented in self-admin UI."])
+      return render_to_response('updatechannel.html', context, context_instance=RequestContext(request))
 
     elif 'createchannel' in request.POST:
 
@@ -794,7 +807,6 @@ def updateToken(request):
       else:
         #Invalid form
         context = {'form': form}
-        print form.errors
         return render_to_response('updatetoken.html',context,context_instance=RequestContext(request))
     elif 'backtotokens' in request.POST:
       #unrecognized option
@@ -874,6 +886,9 @@ def updateProject(request):
 @login_required(login_url='/ocp/accounts/login/')
 def createToken(request):
 
+  prname = request.session['project']
+  pr = Project.objects.get ( project_name = prname )
+
   if request.method == 'POST':
     if 'createtoken' in request.POST:
 
@@ -889,7 +904,6 @@ def createToken(request):
         return HttpResponseRedirect(get_script_prefix()+'ocpuser/projects')
       else:
         context = {'form': form}
-        print form.errors
         return render_to_response('createtoken.html',context,context_instance=RequestContext(request))
     elif 'backtotokens' in request.POST:
        return redirect(getTokens) 
@@ -898,18 +912,20 @@ def createToken(request):
       redirect(getTokens)
   else:
     '''Show the Create datasets form'''
-    form = TokenForm()
 
-    # restrict projects to user visible fields
-    form.fields['project'].queryset = Project.objects.filter(user_id=request.user.id) | Project.objects.filter(public=1)
-
-    context = {'form': form}
+    data = {
+      'project': pr
+    }
+    form = TokenForm( initial = data )
+    context = {'form': form, 'project': prname }
     return render_to_response('createtoken.html',context,context_instance=RequestContext(request))
 
 
 @login_required(login_url='/ocp/accounts/login/')
 def backupProject(request):
   """Backup some or all channels of a project"""
+  
+  import pdb; pdb.set_trace()
 
   # perform a backup
   if request.method == 'POST':
@@ -1097,7 +1113,6 @@ def restoreProject(request):
       else:
         #Invalid Form
         context = {'form': form}
-        print form.errors
         return render_to_response('projects.html',context,context_instance=RequestContext(request))
     else:
       #Invalid post - redirect to projects for now
