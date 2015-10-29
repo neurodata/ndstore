@@ -68,7 +68,7 @@ class Test_Project_Json():
     json_file.seek(0)
 
     # posting the JSON url and checking if it is successful
-    response = json.loads(postURL("http://{}/ca/createProject/".format(SITE_HOST), json_file).read())
+    response = json.loads(postURL("http://{}/ca/autoIngest/".format(SITE_HOST), json_file).read())
     assert('SUCCESS' == response)
 
     # fetching the JSON info
@@ -105,7 +105,7 @@ class Test_Project_Json():
     json_file.seek(0)
 
     # posting the JSON url and checking if it is successful
-    response = json.loads(postURL("http://{}/ca/createProject/".format(SITE_HOST), json_file).read())
+    response = json.loads(postURL("http://{}/ca/autoIngest/".format(SITE_HOST), json_file).read())
     assert('SUCCESS' == response)
 
     # fetching the JSON info
@@ -137,7 +137,7 @@ class Test_Project_Json():
     json_file.seek(0)
 
     # posting the JSON url and checking if it is successful
-    response = json.loads(postURL("http://{}/ca/createProject/".format(SITE_HOST), json_file).read())
+    response = json.loads(postURL("http://{}/ca/autoIngest/".format(SITE_HOST), json_file).read())
     assert('FAILED' == response)
 
 

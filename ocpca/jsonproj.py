@@ -29,9 +29,9 @@ from ocpuser.models import Channel
 from ocpuser.models import User
 
 
-def createProject(webargs, post_data):
+def autoIngest(webargs, post_data):
   """Create a project using a JSON file"""
-
+  
   ocp_dict = json.loads(post_data)
   try:
     dataset_dict = ocp_dict['dataset']
@@ -110,7 +110,7 @@ def createProject(webargs, post_data):
       
       from ocpca.tasks import ingest
       #ingest(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
-      ingest.delay(tk.token_name, ch.channel_name, ch.resolution, data_urli, file_format, file_type)
+      ingest.delay(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
     
     # Posting to LIMS system
     postMetadataDict(metadata_dict, pr.project_name)
