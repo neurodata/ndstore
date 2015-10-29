@@ -3,19 +3,14 @@
 <!DOCTYPE html >
 <html>
 
-
 <head>
-    <link rel="stylesheet" type ="text/css" href="{% static 'default.css' %}" />
-    <link rel="stylesheet" type ="text/css" href="{% static 'css/bootstrap.css' %}" />
-    <title>{% block title %}Open Connectome Project Admin {% endblock %}</title>
-
-    <a href="http://openconnecto.me" target="_blank" align="center"><img src="{% static 'images/ocplogo.png' %}" border="0" /></a>
-
+  <link rel="stylesheet" type ="text/css" href="{% static 'default.css' %}" />
+  <link rel="stylesheet" type ="text/css" href="{% static 'css/bootstrap.css' %}" />
+  <title>{% block title %}Open Connectome Project Admin {% endblock %}</title>
+  <a href="http://openconnecto.me" target="_blank" align="center"><img src="{% static 'images/ocplogo.png' %}" border="0" /></a>
 </head>
 
-
 <body>
-
 
   <div id="header" align ="right">
     {% block header %}
@@ -26,7 +21,6 @@
    
     <nav class="navbar navbar-default">
     <div class="container-fluid">
-	
 
       <!-- Collect the nav links, forms, and other content for toggling -->
       <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
@@ -74,6 +68,7 @@
 	  
 	  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 	  <script src = "/static/js/bootstrap.js"></script>  
+  </div>
 	  
-	</body>
+</body>
 

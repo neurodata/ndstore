@@ -75,6 +75,7 @@ def chandict ( channel ):
   chandict['resolution'] = channel.getResolution()
   chandict['propagate'] = channel.getPropagate()
   chandict['windowrange'] = channel.getWindowRange()
+  chandict['description'] = channel.getChannelDescription()
 
   return chandict
 

@@ -160,7 +160,7 @@ class Channel ( models.Model):
     (READONLY_TRUE, 'Yes'),
     (READONLY_FALSE, 'No'),
   )
-  readonly =  models.IntegerField(choices=READONLY_CHOICES, default=READONLY_TRUE)
+  readonly =  models.IntegerField(choices=READONLY_CHOICES, default=READONLY_FALSE)
 
   EXCEPTION_CHOICES = (
     (EXCEPTION_TRUE, 'Yes'),
@@ -179,27 +179,26 @@ class Channel ( models.Model):
     managed = True
     unique_together = ('project', 'channel_name',)
 
-
   def __unicode__(self):
     return self.channel_name
 
-
 class Backup ( models.Model):
+
+  backup_id = models.AutoField(primary_key=True)
 
   project  = models.ForeignKey(Project)
  
   # can specific a channel or can be all channels
   channel = models.ForeignKey(Channel, blank=True, null=True)
 
-  # can specific a resolution or all resolutions
-  # resolution 
-  # TBD
-
   PROTOCOL_CHOICES = (
     ('local', 'file system'),
     ('s3', 'Amazon S3'),
   )
   protocol = models.CharField(max_length=255,choices=PROTOCOL_CHOICES)
+
+  filename   =  models.CharField(max_length=4096)
+  jsonfile   =  models.CharField(max_length=4096)
 
   description  =  models.CharField(max_length=4096, default="")
 

@@ -13,25 +13,25 @@ Create New Channel
     div { height: 100px; }
   </style>
 </head>
-{% block content %}
- <div class="container-fluid">
-   <div class = "row-fluid">
-        <div class ="span12">
-       
-       <div id="header" style="background-color:#4682B4;" align="center">
-	 <h2 style="margin-bottom:0;">CREATE NEW CHANNEL </div>
-     </div>
-   </div>
- </div>
 
-   {{ form.errors }} 
-   {{ form.non_field_errors }} 
+{% block content %}
+
+  <div class="container-fluid">
+    <div class = "row-fluid">
+      <div class ="span12">
+        <div id="header" style="background-color:#4682B4;" align="center">
+      	  <h2 style="margin-bottom:0;">CREATE NEW CHANNEL</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {{ form.errors }} 
 
   <div class="container-fluid">
     <div class = "row-fluid">
     <div class ="span1"></div>
       <div class ="span11">  
-
         <table class ="table">
         <thead>
           <tr class="success"><th>Project</th> <th>{{project}}</th></tr>
@@ -41,57 +41,55 @@ Create New Channel
     </div>
   </div>
 
- <div id="form" >
-     <form action="" method="post">
+  <div id="form" >
+  <form action="" method="post">
 
-       {{ form.non_field_errors }}
-	 
-	 <div class = "row">
-	   <div class ="col-md-4"></div>
-	   <div class ="col-md-2 blue">
-	     <div class="fieldWrapper">
-	       {{ form.subject.errors }}
-	       <label for="channel_name">Channel Name:</label>
-	     </div>
-	   </div>
-	   <div class ="col-md-2">
-	     {{ form.channel_name }}
-	   </div>
-	   <div class ="col-md-4"></div>
-	 </div>
+	  <div class = "row">
+	    <div class ="col-md-4"></div>
+	    <div class ="col-md-2 blue">
+	      <div class="fieldWrapper">
+	        {{ form.subject.errors }}
+	        <label for="channel_name">Channel Name:</label>
+	      </div>
+	    </div>
+	    <div class ="col-md-2">
+	      {{ form.channel_name }}
+	    </div>
+      <div class ="col-md-4"></div>
+	  </div>
 
-	 <div class = "row">
-           <div class ="col-md-4"></div>
-           <div class ="col-md-2">
-	     <div class="fieldWrapper">
-	       {{ form.subject.errors }}
-	       <label for="description">Description:</label>
-	     </div>
-           </div>
-           <div class ="col-md-2">
-	     {{ form.channel_description }}
-	   </div>
-	   <div class ="col-md-4"></div>
-         </div>
-
-   <div class = "row">
-     <div class ="col-md-4"></div>
-     <div class ="col-md-2">
-       <div class="fieldWrapper">
-           {{ form.subject.errors }}
-         <label for="projecttype">Channel Type:</label>
-       </div>
-     </div>
+	  <div class = "row">
+      <div class ="col-md-4"></div>
       <div class ="col-md-2">
-      <select name="channelcombo" id="channelcombo" required>
-        <option value="i:8">Images (8-bit)</option>
-        <option value="i:16">Images (16-bit)</option>
-        <option value="i:32">Images (RGB)</option>
-        <option value="a:32">Annotations</option>
-        <option value="f:32">Probability Map</option>
-        <option value="t:8">Time Series (8-bit)</option>
-        <option value="t:16">Time Series (16-bit)</option>
-      </select>
+	      <div class="fieldWrapper">
+	        {{ form.subject.errors }}
+	        <label for="description">Description:</label>
+	      </div>
+      </div>
+      <div class ="col-md-2">
+	      {{ form.channel_description }}
+	    </div>
+	    <div class ="col-md-4"></div>
+    </div>
+
+    <div class = "row">
+      <div class ="col-md-4"></div>
+      <div class ="col-md-2">
+        <div class="fieldWrapper">
+          {{ form.subject.errors }}
+          <label for="projecttype">Channel Type:</label>
+        </div>
+      </div>
+      <div class ="col-md-2">
+        <select name="channelcombo" id="channelcombo" required>
+          <option value="i:8">Images (8-bit)</option>
+          <option value="i:16">Images (16-bit)</option>
+          <option value="i:32">Images (RGB)</option>
+          <option value="a:32">Annotations</option>
+          <option value="f:32">Probability Map</option>
+          <option value="t:8">Time Series (8-bit)</option>
+          <option value="t:16">Time Series (16-bit)</option>
+        </select>
       </div>
       <div class ="col-md-4"></div>
     </div>
@@ -99,123 +97,121 @@ Create New Channel
     {{form.channel_type.as_hidden}}
     {{form.channel_datatype.as_hidden}}
 
-     <div class = "row">
-           <div class ="col-md-4"></div>
-           <div class ="col-md-2">
-	     <div class="fieldWrapper">
-	       {{ form.subject.errors }}
-	       <label for="readonly">Read only:</label>
-	     </div>
-           </div>
-           <div class ="col-md-2">
-	     {{ form.readonly }}
-	   </div>
-       <div class ="col-md-4"></div>
-     </div>
-
-     <div class = "row">
-       <div class ="col-md-4"></div>
-       <div class ="col-md-2">
-         <div class="fieldWrapper">
-           {{ form.subject.errors }}
-           <label for="resolution">Resolution (for annotations):</label>
-         </div>
-       </div>
-       <div class ="col-md-2">
-         {{ form.resolution }}
-       </div>
-       <div class ="col-md-4"></div>
-     </div>
-    
-
-     <div class = "row">
-       <div class ="col-md-4"></div>
-       <div class ="col-md-2">
-         <div class="fieldWrapper">
-           {{ form.subject.errors }}
-           <label for="exceptions">Exceptions (for annotations):</label>
-         </div>
-       </div>
-       <div class ="col-md-2">
-         {{ form.exceptions }}
-       </div>
-       <div class ="col-md-4"></div>
-     </div>
+    <div class = "row">
+      <div class ="col-md-4"></div>
+      <div class ="col-md-2">
+	      <div class="fieldWrapper">
+	        {{ form.subject.errors }}
+	        <label for="readonly">Read only:</label>
+	      </div>
+      </div>
+      <div class ="col-md-2">
+	      {{ form.readonly }}
+	    </div>
+      <div class ="col-md-4"></div>
+    </div>
 
     <div class = "row">
-           <div class ="col-md-4"></div>
-           <div class ="col-md-2">
-             <div class="fieldWrapper">
-               {{ form.subject.errors }}
-               <label for="startwindow">Start Window:</label>
-             </div>
-           </div>
-           <div class ="col-md-2">
-             {{ form.startwindow }}
-           </div>
-           <div class ="col-md-4"></div>
-         </div>
+      <div class ="col-md-4"></div>
+      <div class ="col-md-2">
+        <div class="fieldWrapper">
+          {{ form.subject.errors }}
+          <label for="resolution">Resolution (for annotations):</label>
+        </div>
+      </div>
+      <div class ="col-md-2">
+        {{ form.resolution }}
+      </div>
+      <div class ="col-md-4"></div>
+    </div>
 
     <div class = "row">
-           <div class ="col-md-4"></div>
-           <div class ="col-md-2">
-             <div class="fieldWrapper">
-               {{ form.subject.errors }}
-               <label for="endwindow">End Window:</label>
-             </div>
-           </div>
-           <div class ="col-md-2">
-             {{ form.endwindow }}
-           </div>
-           <div class ="col-md-4"></div>
-         </div>
+      <div class ="col-md-4"></div>
+      <div class ="col-md-2">
+        <div class="fieldWrapper">
+          {{ form.subject.errors }}
+          <label for="exceptions">Exceptions (for annotations):</label>
+        </div>
+      </div>
+      <div class ="col-md-2">
+        {{ form.exceptions }}
+      </div>
+      <div class ="col-md-4"></div>
+    </div>
 
     <div class = "row">
-           <div class ="col-md-4"></div>
-           <div class ="col-md-2">
-             <div class="fieldWrapper">
-               {{ form.subject.errors }}
-               <label for="endwindow">Set as Default Channel:</label>
-             </div>
-           </div>
-           <div class ="col-md-2">
-             {{ form.default }}
-           </div>
-           <div class ="col-md-4"></div>
-         </div>
+      <div class ="col-md-4"></div>
+      <div class ="col-md-2">
+        <div class="fieldWrapper">
+          {{ form.subject.errors }}
+           <label for="startwindow">Start Window:</label>
+        </div>
+      </div>
+      <div class ="col-md-2">
+        {{ form.startwindow }}
+      </div>
+      <div class ="col-md-4"></div>
+    </div>
 
     <div class = "row">
-           <div class ="col-md-4"></div>
-           <div class ="col-md-2">
-             <div class="fieldWrapper">
-               {{ form.subject.errors }}
-               <label for="endwindow">Link to Existing Channel:</label>
-             </div>
-           </div>
-           <div class ="col-md-2">
-           <input type="checkbox" name="nocreate" id="nocre" value="on"> 
-           </div>
-           <div class ="col-md-4"></div>
-         </div>
+      <div class ="col-md-4"></div>
+      <div class ="col-md-2">
+        <div class="fieldWrapper">
+          {{ form.subject.errors }}
+          <label for="endwindow">End Window:</label>
+        </div>
+      </div>
+      <div class ="col-md-2">
+        {{ form.endwindow }}
+      </div>
+      <div class ="col-md-4"></div>
+    </div>
 
-      <div class = "row">
-       <div class ="col-md-4"></div>
-       <div class ="col-md-2">
-         <div class="fieldWrapper">
-           {{ form.subject.errors }}
-           <label for="propagate">If existing, is it propagated?</label>
-         </div>
-       </div>
-       <div class ="col-md-2">
-         {{ form.propagate }}
-       </div>
-       <div class ="col-md-4"></div>
-     </div>
-	 
+    <div class = "row">
+      <div class ="col-md-4"></div>
+      <div class ="col-md-2">
+        <div class="fieldWrapper">
+          {{ form.subject.errors }}
+          <label for="endwindow">Set as Default Channel:</label>
+        </div>
+      </div>
+      <div class ="col-md-2">
+        {{ form.default }}
+      </div>
+      <div class ="col-md-4"></div>
+    </div>
+
+    <div class = "row">
+      <div class ="col-md-4"></div>
+      <div class ="col-md-2">
+        <div class="fieldWrapper">
+          {{ form.subject.errors }}
+          <label for="endwindow">Link to Existing Channel:</label>
+        </div>
+      </div>
+      <div class ="col-md-2">
+        <input type="checkbox" name="nocreate" id="nocre" value="on"> 
+      </div>
+      <div class ="col-md-4"></div>
+    </div>
+
+    <div class = "row">
+      <div class ="col-md-4"></div>
+      <div class ="col-md-2">
+        <div class="fieldWrapper">
+          {{ form.subject.errors }}
+          <label for="propagate">If existing, is it propagated?</label>
+        </div>
+      </div>
+      <div class ="col-md-2">
+        {{ form.propagate }}
+      </div>
+      <div class ="col-md-4"></div>
+    </div>
 
     <br>
 
-   {{form.project.as_hidden}}
+    {{form.project.as_hidden}}
 
 	  <div class = "row">
 	    <div class ="col-md-5"></div>
@@ -224,13 +220,10 @@ Create New Channel
   	     <button class="btn btn-primary" name = "backtochannels" type="submit">Back to Channels</button>
       </div>
       <div class ="col-md-4"></div>
-   </div>
+    </div>
 
-   </form>  
-
-
-</div>
+  </form>  
+  </div>
 
 {% endblock %}
-
 
