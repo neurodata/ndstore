@@ -1498,8 +1498,6 @@ def putNIFTI ( webargs, postdata ):
     
   [token, channel, optionsargs] = webargs.split('/',2)
 
-  # RBTODO check if there is a channel?  Make one if there isn't?
-
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
   
@@ -1511,14 +1509,28 @@ def putNIFTI ( webargs, postdata ):
       logger.warning("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
       raise OCPCAError("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
 
-    # Make a named temporary file 
-    with closing (tempfile.NamedTemporaryFile(suffix='.nii')) as tmpfile:
+    # check the magic number -- is it a gz file?
+    if postdata[0] == '\x1f' and postdata[1] ==  '\x8b':
 
-      tmpfile.write ( postdata )
-      tmpfile.seek(0)
+      # Make a named temporary file 
+      with closing (tempfile.NamedTemporaryFile(suffix='.nii.gz')) as tmpfile:
 
-      # ingest the nifti file
-      ocpcanifti.ingestNIFTI ( tmpfile.name, ch, db, proj )
+        tmpfile.write ( postdata )
+        tmpfile.seek(0)
+
+        # ingest the nifti file
+        ocpcanifti.ingestNIFTI ( tmpfile.name, ch, db, proj )
+    
+    else:
+
+      # Make a named temporary file 
+      with closing (tempfile.NamedTemporaryFile(suffix='.nii')) as tmpfile:
+
+        tmpfile.write ( postdata )
+        tmpfile.seek(0)
+
+        # ingest the nifti file
+        ocpcanifti.ingestNIFTI ( tmpfile.name, ch, db, proj )
 
 
 def getSWC ( webargs ):

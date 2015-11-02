@@ -1143,7 +1143,7 @@ class OCPCADB:
 
     voxlist = []
     
-    zidxs = self.annoIdx.getIndex(ch, entityid,resolution)
+    zidxs = self.annoIdx.getIndex(ch,entityid,resolution)
 
     for zidx in zidxs:
 
