@@ -10,6 +10,7 @@ activation_email.txt
 cython/kanno_cy/kanno_cy.c
 cython/ocpca_cy/ocpca_cy.c
 cython/zindex/zindex.c
+test/.cache
 
 ###################
 # Compiled source #

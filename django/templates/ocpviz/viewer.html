@@ -17,39 +17,49 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
   <style>
     body {
-			padding: 50px 0px 0px 0px; /* 50px for navbar */
+      padding: 50px 0px 0px 0px; /* 50px for navbar */
       margin: 0;
-		}
+    }
 		html, body, #map {
 			height: 100%;
       width: 100%;
 		}
-    .coordinate-nav {
-      width: 50px;
-      display:inline-block;
-    }
     .has-error .form-control{
       border-width: 3px;
       border-color: #FF2D2D !important;
     }
     .leaflet-container {
 			background: #000 !important;
-		}
-		.info {
+    }
+    /* hide controls and navbar for mobile */
+    @media only screen and (max-width: 768px), only screen and (max-device-width: 768px) {
+      .controls, .queryres, .projinfo, .navbar {
+        display: none;
+      }
+      body {
+        padding: 0px 0px 0px 0px; /* 50px for navbar */
+        margin: 0;
+      }
+    }
+    .controls, .queryres, .projinfo {
       padding: 8px 8px;
       width: 300px;
-			font: 14px/16px Arial, Helvetica, sans-serif;
-			background: white;
-			background: rbga(255,255,255,0.8);
-			box-shadow: 0 0 15px rbga(0,0,0,0.2);
-			border-radius: 2px;
+      /*font: 14px/16px Arial, Helvetica, sans-serif;*/
+      font-size: 13px !important;
+      background: white;
+      background: rbga(255,255,255,0.8);
+      box-shadow: 0 0 15px rbga(0,0,0,0.2);
+      border-radius: 2px;
     }
-    .info-layer-name {
+    .projinfo, .queryres {
+      display: none;
+    }
+    .controls-layer-name {
       width: 90%;
       padding-top: 10px;
       padding-left: 10px;
     }
-    .info-opacity-control-name {
+    .controls-opacity-control-name {
       float: left;
       width: 35%;
       padding-top: 2px;
@@ -83,7 +93,16 @@
     .playdelay-input {
       width: 75px;
     }
-    .info h4 {
+    #add_data_link { 
+      float: left;
+      padding-top: 5px;
+      padding-bottom: 5px;
+    }
+    .remove-layer {
+      padding-right: 5px;
+      padding-top: 3px;
+    }
+    .controls, .projinfo, .queryres h4 {
 			margin: 0 0 5px; 
 			color: #777;
     }
@@ -96,6 +115,9 @@
       padding-left: 10px;
       padding-right: 10px;
       border-radius: 2px;
+    }
+    .add_data_info {
+      padding-top: 10px;
     }
     .footer {
       position: absolute;
@@ -115,9 +137,17 @@
 	</head>
 <body>
 
+
+  {# Begin Modal Code Includes #}
   {% include "ocpviz/help.html" %}
 
   {% include "ocpviz/nav.html" %}
+  
+  {% include "ocpviz/add_data.html" %}
+  
+  {% include "ocpviz/dataview.html" %}
+
+  {# End Modal Code Includes #}
 
   <div id="map"></div>
   <script> 
@@ -153,84 +183,186 @@
     });
 
     // define layers
+
+    // load image layers first 
     {% for layer in layers %}
+      {% if layer.layertype != 'annotation' %}
       {# setup the URL #} 
       
-      {% if layer.channel %}
-        var webtoken = '{{ layer.token }}/{{ layer.channel }}';
-        {% if layer.color %}
-          webtoken = webtoken + ':{{layer.color}}';
-        {% endif %}
-      {% else %}
-        var webtoken = '{{ layer.token }}';
-      {% endif %}
-
-      {% if layer.tilecache %} 
-        {% if layer.layertype == 'timeseries' %}
-          var url = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/{{ starttime }}/{zindex}/{y}_{x}_{z}.png'; 
+        {% if layer.channel %}
+          var webtoken = '{{ layer.token }}/{{ layer.channel }}';
+          {% if layer.color %}
+            webtoken = webtoken + ':{{layer.color}}';
+          {% endif %}
         {% else %}
-          var url = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
+          var webtoken = '{{ layer.token }}';
         {% endif %}
-        
-      {% else %}
-        {% if layer.color %}
-          var url = 'http://{{ layer.server }}/ocp/catmaid/mcfc/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
-        {% elif layer.layertype == 'timeseries' %}
-          var url = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/{{ starttime }}/{zindex}/{y}_{x}_{z}.png';
-        {% else %}  
-          var url = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
-        {% endif %}
-      {% endif %}
-        
-      console.log(url);    
 
-      {# add the layer #}  
-      var {{ "layer_"|add:layer.layer_name|cut:" " }} = L.tileLayer.OCPLayer(
-        url,
-        {
-          zindex: zindex,
-          zoomReverse: true,
-          minZoom: maxres,
-          maxZoom: maxres + maxres,
-          tileSize: 512,
-          {% if layer.layertype == 'annotation' %}
-          opacity: 0.4,
-          {% endif %}
+        {% if layer.tilecache %} 
           {% if layer.layertype == 'timeseries' %}
-          curtime: {{ starttime }},
+            var url = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/{{ starttime }}/{zindex}/{y}_{x}_{z}.png'; 
+          {% else %}
+            var url = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
           {% endif %}
-          //noWrap: true,
-          continuousWorld: true,
-        }).addTo(map);
+          
+        {% else %}
+          {% if layer.color %}
+            var url = 'http://{{ layer.server }}/ocp/catmaid/mcfc/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
+          {% elif layer.layertype == 'timeseries' %}
+            var url = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/{{ starttime }}/{zindex}/{y}_{x}_{z}.png';
+          {% else %}  
+            var url = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
+          {% endif %}
+        {% endif %}
+          
+        console.log(url);    
+
+        {# add the layer #}  
+        var {{ "layer_"|add:layer.layer_name|cut:" " }} = L.tileLayer.OCPLayer(
+          url,
+          {
+            zindex: zindex,
+            zoomReverse: true,
+            minZoom: maxres,
+            maxZoom: maxres + maxres,
+            tileSize: 512,
+            {% if layer.layertype == 'annotation' %}
+            opacity: 0.4,
+            {% endif %}
+            {% if layer.layertype == 'timeseries' %}
+            curtime: {{ starttime }},
+            {% endif %}
+            //noWrap: true,
+            continuousWorld: true,
+          }).addTo(map);
+        {% endif %}
+    {% endfor %}
+    
+    // now load annotations 
+    {% for layer in layers %}
+      {% if layer.layertype == 'annotation' %}
+      {# setup the URL #} 
+      
+        {% if layer.channel %}
+          var webtoken = '{{ layer.token }}/{{ layer.channel }}';
+          {% if layer.color %}
+            webtoken = webtoken + ':{{layer.color}}';
+          {% endif %}
+        {% else %}
+          var webtoken = '{{ layer.token }}';
+        {% endif %}
+
+        {% if layer.tilecache %} 
+          {% if layer.layertype == 'timeseries' %}
+            var url = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/{{ starttime }}/{zindex}/{y}_{x}_{z}.png'; 
+          {% else %}
+            var url = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
+          {% endif %}
+          
+        {% else %}
+          {% if layer.color %}
+            var url = 'http://{{ layer.server }}/ocp/catmaid/mcfc/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
+          {% elif layer.layertype == 'timeseries' %}
+            var url = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/{{ starttime }}/{zindex}/{y}_{x}_{z}.png';
+          {% else %}  
+            var url = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
+          {% endif %}
+        {% endif %}
+          
+        console.log(url);    
+
+        {# add the layer #}  
+        var {{ "layer_"|add:layer.layer_name|cut:" " }} = L.tileLayer.OCPLayer(
+          url,
+          {
+            zindex: zindex,
+            zoomReverse: true,
+            minZoom: maxres,
+            maxZoom: maxres + maxres,
+            tileSize: 512,
+            {% if layer.layertype == 'annotation' %}
+            opacity: 0.4,
+            {% endif %}
+            {% if layer.layertype == 'timeseries' %}
+            curtime: {{ starttime }},
+            {% endif %}
+            //noWrap: true,
+            continuousWorld: true,
+          }).addTo(map);
+        {% endif %}
     {% endfor %}
   
     // set the initial view 
     var center = map.unproject(L.point({{ xstart }}, {{ ystart }}), maxres + maxres - res);
 		map.setView(center, maxres + maxres - res);
 
-		// display some map info
-		var info = L.control();
-		info.options.position = 'topright';
-		info.onAdd = function (map) {
-			this._div = L.DomUtil.create('div', 'info');
-      var header = '<h4>{{ project_name }}</h4><br />';
+    // display query result 
+    var queryres = L.control();
+    queryres.options.position = 'topright';
+    queryres.onAdd = function (map) {
+      this._div = L.DomUtil.create('div', 'queryres');
+      var header = '<div class="closequery" style="float:right;"><a id="closequerybox" href="#"><i class="fa fa-times fa-lg"></a></i></div><h4>Query Result</h4>';
+      var querybody = '<div class="querybody"></div>';
+      this._div.innerHTML = header + querybody;
+      return this._div;
+    };
+		queryres.addTo(map);
+
+    // disable (and then re-enable) clicking on mouseover
+    queryres.getContainer().addEventListener('mouseover', function() {
+      map.off('click', onMapClick);
+    });
+
+    queryres.getContainer().addEventListener('mouseout', function() {
+      map.on('click', onMapClick);
+    });
+
+    // display project info
+    var projinfo = L.control();
+    projinfo.options.position = 'topright';
+    projinfo.onAdd = function (map) {
+      this._div = L.DomUtil.create('div', 'projinfo');
+      var header = '<h4>Current Project Info</h4>';
+      this._div.innerHTML = header + getProjInfo();
+			return this._div;
+    };
+		projinfo.addTo(map);
+    
+    // disable (and then re-enable) clicking on mouseover
+    projinfo.getContainer().addEventListener('mouseover', function() {
+      map.off('click', onMapClick);
+    });
+
+    projinfo.getContainer().addEventListener('mouseout', function() {
+      map.on('click', onMapClick);
+    });
+
+
+		// display some map controls
+		var controls = L.control();
+    controls.options.position = 'topright';
+    controls.onAdd = function (map) {
+			this._div = L.DomUtil.create('div', 'controls');
+      var header = '<h4>Control Panel</h4><br />';
       var datainfo = '<div id="opacity-control">{% spaceless %}
         {% for layer in layers %}
-        <div class="info-layer-name"><a href="#">{{ layer.layer_name|cut:" " }}</a></div>
-        <div class="info-opacity-control-name">Opacity</div>
+        <div class="controls-{{ "layer_"|add:layer.layer_name|cut:" " }}">
+        <div class="controls-layer-name"><a href="#" class="remove-layer {{ "layer_"|add:layer.layer_name|cut:" " }}" ><i class="fa fa-times-circle"></i></a><a href="#">{{ layer.layer_name|cut:" " }}</a></div>
+        <div class="controls-opacity-control-name">Opacity</div>
         <div id="slider">
         <span class="opacity">{{ "layer_"|add:layer.layer_name|cut:" " }}</span>
         </div><br />
       
-        <div class="info-opacity-control-name">Brightness</div>
+        <div class="controls-opacity-control-name">Brightness</div>
         <div id="slider">
           <span class="brightness">{{ "layer_"|add:layer.layer_name|cut:" " }}</span>
         </div><br />
         
-        <div class="info-opacity-control-name">Contrast</div>
+        <div class="controls-opacity-control-name">Contrast</div>
         <div id="slider">
           <span class="contrast">{{ "layer_"|add:layer.layer_name|cut:" " }}</span>
         </div><br />
+        </div>
         {% endfor %}
         {% endspaceless %}</div>';
       var blendmode = '<br /><div id="blendmode">Blend Mode: <select name="blendmode"><option value="normal">Normal</option><option value="multiply">Multiply</option><option value="Screen">Screen</option><option value="overlay">Overlay</option><option value="darken">Darken</option><option value="lighten">Ligten</option><option value="color-dodge">Color Dodge</option><option value="color-burn">Color Burn</option><option value="exclusion">Exclusion</option><option value="difference">Difference</option><option value="hue">Hue</option><option value="saturation">Saturation</option><option value="color">Color</option><option value="luminosity">Luminosity</option></select></div><span style="float: right; padding-top: 5px;"><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/blend-mode" target="_blank"><i class="fa fa-info-circle fa-lg"></i></a></span>'
@@ -239,26 +371,23 @@
       {% else %}
       var playdelay = '';
       {% endif %}
-      this._div.innerHTML = header + datainfo + blendmode + playdelay;
+
+      var add_data = '<br /><div id="add_data_link"><a href="#" data-toggle="modal" data-target="#add_data">Add Data to Current View</a></div>'
+      this._div.innerHTML = header + datainfo + blendmode + playdelay + add_data;
 			return this._div;
 		};
 
-    info.update = function () {
-      
-      //$( "#zindex" ).replaceWith( "<div id='zindex'>z-index: " + zindex + "</div>" );
-      //var header = '<h4>{{ project_name }}</h4>';
-      //var datainfo = '<div id="slider"></div>';
-      //var datainfo = '{% spaceless %}{% endspaceless %}
+		controls.addTo(map);
+    
+    // disable (and then re-enable) clicking on mouseover
+    controls.getContainer().addEventListener('mouseover', function() {
+      map.off('click', onMapClick);
+    });
 
-      //var datainfo = 'x: (' + xmin + ', ' + xmax + ')<br />' + 
-      //  'y: (' + ymin + ', ' + ymax + ')<br />' +
-      //  'z: (' + zmin + ', ' + zmax + ')<br />';
-      //var curslice = '<br />z-index: ' + zindex;
-      //this._div.innerHTML = header + datainfo + curslice;
-			//	+ 'Z Index: ' + zindex;
-		};
+    controls.getContainer().addEventListener('mouseout', function() {
+      map.on('click', onMapClick);
+    });
 
-		info.addTo(map);
 
     // update current coordinates in nav box
 
@@ -451,20 +580,13 @@
 
 		function reloadLayers() {
 			map.options.fadeAnimation = false;
-      // can't use map.eachLayer because it includes popups
-      //map.eachLayer( function (layer) {
-      //    console.log(layer);
-      //    layer.options.zindex = zindex;
-			//		layer.smoothRedraw();
-      //});
-    
-      {% for layer in layers %}
-      {{ "layer_"|add:layer.layer_name|cut:" " }}.options.zindex = zindex;
-      {{ "layer_"|add:layer.layer_name|cut:" " }}.smoothRedraw();
-      {% endfor %} 
-    
+      map.eachLayer( function (layer) {
+        if ( layer.hasOwnProperty('_url') ) {
+          layer.options.zindex = zindex;
+					layer.smoothRedraw();
+        }
+      });
       map.options.fadeAnimation = true;
-      //info.update();
       coordinatesUpdate();
 		}
 
@@ -486,15 +608,67 @@
 			return xmlHttp.responseText;
 
 		}
+    
+    function getRamonInfo(point, zoom) {
+      // get the id of the object at that location 
+      objid = getAnnoId(point, zoom);
+      console.log("obj: " + parseInt(objid));
+      
+      if (parseInt(objid) == 0) {
+        return "No RAMON object here.";
+      }
+      
+      // AB TODO set this based on the project 
+      var queryserver = "localhost"; 
+      // string for return 
+      var objstr = 'ID: ' + objid;
+      
+      var ramonUrl = "http://{{ request.get_host }}/ocp/viz/ramoninfo/" + queryserver + "/" + querytoken + "/" + querychannel + "/" + objid + "/";
+      console.log(ramonUrl);    
+      // make request (using jquery)
+      var jqxhr = $.ajax({
+        url: ramonUrl,
+        type: 'GET',
+        success: function(response) { 
+          console.log(response);
+          $( ".querybody" ).empty();
+          $( ".querybody" ).append(response);
+          $( ".queryres" ).show("slow");
+          },
+        })
+        .fail(function(response) {
+          console.log('failure');
+          objstr = 'Failed to retrieve RAMON obj.';
+        });
+      console.log(objstr); 
+      return objstr;
+          
+    }
+    
+    function getProjInfo() {
+      // we use the token from the first layer (for now)   
+      var infoToken = "{{ layers.0.token }}"; 
+      var infoUrl = "http://{{ request.get_host }}/ocp/viz/projinfo/localhost/" + infoToken + "/";
+      // store the return data
+			var data = null;
 
-		// popup on click (testing get anno id) 
+			// make request 
+			var xmlHttp = new XMLHttpRequest();
+			xmlHttp.open( "GET", infoUrl, false );
+			xmlHttp.send( null );
+
+			return xmlHttp.responseText;
+
+		}
+
+		// popup on click (querytool)  
 		var popup = L.popup();
 		function onMapClick(e) {
       if (querytool) {
         var reqPoint = map.project(e.latlng);	
         popup
           .setLatLng(e.latlng)
-          .setContent("You requested anno " + getAnnoId(reqPoint, map.getMaxZoom() - map.getZoom()))
+          .setContent( getRamonInfo(reqPoint, map.getMaxZoom() - map.getZoom()) )
           .openOn(map);
       } 
 		}
@@ -595,8 +769,8 @@
 		};
     
     keyhelp.addTo(map);
-
     {# jquery slider (opacity controls) #}
+    // brightness controls 
     $(function() {
       $( "#slider > .brightness" ).each(function() {
         var layer = $( this ).text(); 
@@ -628,6 +802,7 @@
         });
       });
     });// sliders -- contrast
+    // sliders -- opacity 
     $(function() {
       $( "#slider > .opacity" ).each(function() {
         var layer = $( this ).text(); 
@@ -643,7 +818,7 @@
         });
       });
     });// sliders -- opacity
-    
+
     // blend mode
     $(function() {
       $('#blendmode').change(function(e) {
@@ -667,16 +842,42 @@
       });
     }); // play delay 
 
+    // remove a layer 
     $(function() {
-      $( "#collapseinfo" ).click(function() {
-        $( ".info" ).toggle( "slow" )
+      $( "#opacity-control" ).on( "click", ".remove-layer", function() {
+        console.log('click');
+        var class_arr = this.className.split(' ');
+        var layer_name = $.trim(class_arr[1]);
+        console.log('Removing ' + layer_name);
+        // remove layer from the map  
+        map.removeLayer( eval(layer_name) );
+        // remove layer from control panel
+        $( ".controls-" + layer_name ).remove(); 
+      });
+    });
+
+    // toggle the controls window  
+    $(function() {
+      $( "#togglecontrols" ).click(function() {
+        $( ".controls" ).toggle( "slow" )
+      });
+    });
+
+    // close the queryinfo window 
+    $(function() {
+      $( "#closequerybox" ).click(function() {
+        $( ".queryres" ).hide( "slow" );
+      });
+    });
+
+    // toggle the projinfo window 
+    $(function() {
+      $( "#toggleprojinfo" ).click(function() {
+        $( ".projinfo" ).toggle( "slow" )
       });
     });
 
     // timeseries functions  
-    
-    
-    
     function loadTimeStep(newTime) {
       map.closePopup();
       if (newTime < {{ starttime }}) {
@@ -870,6 +1071,16 @@
     </div>
   </footer>
   {% endif %}
+
+  {# after generating the main UI, open dataview, etc #}
+  {% if dataview %} 
+    <script>
+      $(window).load(function() {
+        $( '#displayDataview' ).modal('show');
+      });
+    </script>
+  {% endif %}
+  
 </body>
 {# jquery and bootstrap js #}
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>

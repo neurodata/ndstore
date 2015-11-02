@@ -75,6 +75,7 @@ def chandict ( channel ):
   chandict['resolution'] = channel.getResolution()
   chandict['propagate'] = channel.getPropagate()
   chandict['windowrange'] = channel.getWindowRange()
+  chandict['description'] = channel.getChannelDescription()
 
   return chandict
 
@@ -116,7 +117,7 @@ def metadatadict( proj ):
   """Metadata Info"""
   
   try:
-    url = 'http://{}/lims/{}/'.format(settings.LIMS_SERVER, proj.getProjectName())
+    url = 'http://{}/api/metadata/get/{}/'.format(settings.LIMS_SERVER, proj.getProjectName())
     req = urllib2.Request(url)
     response = urllib2.urlopen(req)
     return json.loads(response.read())

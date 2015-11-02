@@ -4,7 +4,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" id="helpLabel">help <span class="small">(ocpviz v0.1)</span></h4>
+          <h4 class="modal-title" id="helpLabel">help <span class="small">(ocpviz v0.2)</span></h4>
         </div>
         <div class="modal-body">
           <h2>Welcome to ocpviz!</h2>
@@ -25,7 +25,7 @@
                 <td>Similar to an OCP cutout, these arguments center the map at the coordinator <samp>(x, y, z)</samp> for a given resolution <samp>(res)</samp>.<p class="bg-danger">Note: When specifying an initial center, all four arguments must be specified!</p></td>
               </tr>
             </table>
-            The order of the channels in the URL is the order channels will be displayed on the map. For an annotation project with underlying EM data, you would want to specify <code>/em,annos/</code>, and not <code>/annos,em/</code>. Otherwise, your annotation layer will be hidden by the EM layer. 
+            The order of the channels in the URL is the order channels will be displayed on the map. However, all annotation channels will be loaded before all image channels, so that annotations are always overlaid on images. 
             <h4>False Coloring (color masks)</h4>
             <p>Some channels can be masked with a false color by adding a color argument to the URL. Color arguments are added after the channel name in the following format:<br /><code>channel1:B</code><br />Support colors are:</p>
 
@@ -55,16 +55,46 @@
                 <td>blue</td>
               </tr>
             </table>
-            <p class="text-danger">Note: Color codes in the URL must match the character above, but are not case sensitive.</p> 
+            <p class="text-danger"><i class="fa fa-info-circle" style="padding-right: 5px;"></i>Color codes in the URL must match the character above, but are not case sensitive.</p> 
           <h3>Tools</h3>
             <h4>Navigation</h4>
             <p>On the left side of the screen, the <kbd>+</kbd> and <kbd>-</kbd> buttons allow you to zoom in and out on the map. Zooming unloads the current resolution, and then loads the next resolution stored in the OCP spatial database.</p>
             <p>The <strong>up</strong> and <strong>down</strong> arrows (left) allow you to navigate in z-space.</p>
             <p>The <strong>navigation form</strong> in the navbar allows you to center the map on a given coordinate (x,y,z). You can then place a marker at that coordinate with the <strong>Markers</strong> dropdown (see below). You can also use the navbar to pan only in (x, y), or to jump to a given z slice.</p>
+            <h4>Time Series</h4>
+            <p><strong>Time Series</strong> datasets add a fourth box to the navigation bar to allow the user to jump directly to a given time step. Navigation controls for time series data are also displayed at the bottom of the screen. Controls for time series data are as follows:</p>
+
+            <table class="table table-condensed">
+              <tr>
+                <td><i class="fa fa-backward"></i></td>
+                <td>step to first (farthest backward) time step</td>
+              </tr>
+              <tr>
+                <td><i class="fa fa-step-backward"></i></td>
+                <td>step backwards one time step</td>
+              </tr>
+              <tr>
+                <td><i class="fa fa-play"></i></td>
+                <td>advance forward one time step every [<em>play delay</em>] seconds </td>
+              </tr>
+              <tr>
+                <td><i class="fa fa-pause"></i></td>
+                <td>stop automatically advancing forward</td>
+              </tr>
+              <tr>
+                <td><i class="fa fa-step-forward"></i></td>
+                <td>step forwards one time step</td>
+              </tr>
+              <tr>
+                <td><i class="fa fa-forward"></i></td>
+                <td>step for last (farthest forward) time step</td>
+              </tr>
+            </table>
+            <p>The <i class="fa fa-play"></i> button automatically advances forward in time every <em>play delay</em> seconds. The play delay can be changed by entering a new value in the box at the bottom of the control panel. Make sure to press the <i class="fa fa-clone"></i> button after entering a new value to ensure it is saved.</p> 
             <h4>Interaction</h4>
             <p>The <strong>Query</strong> dropdown allows the user to enable or disable the query system, and specify an annotation token / channel to query. When enabled, clicking on a location in the map will query the OCP database for the object ID at that location. Note that you must have an annotation channel loaded for the query tool to operate.</p>
             <p>The <strong>Markers</strong> dropdown controls markers on the map, allowng the user to add a marker (either at the current map center or with a mouse click) and clear all markers. Clicking on a marker creates a popup with a URL to that marker's current location on the map.</p>
-            <p class="text-danger">Note: Markers currently persist across Z slices. Clicking on a marker will send that markers location for the current Z slice.</p> 
+            <p class="text-danger"><i class="fa fa-info-circle" style="padding-right: 5px;"></i>Markers currently persist across Z slices. Clicking on a marker will send that markers location for the current Z slice.</p> 
           
           <h3>Keyboard Shortcuts</h3>
           For a list of keyboard shortcuts, press the <kbd>h</kbd> key. 

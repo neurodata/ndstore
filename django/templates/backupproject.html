@@ -1,129 +1,115 @@
 {% extends "base.html" %}
 
 {% block title %}
-Backup Project 
+  Backup Project 
 {% endblock title %}
 
 
 {% block content %}
 {% if messages %}
-<ul>
-        {% for message in messages %}
-        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-        {% endfor %}
-      </ul>
+  <ul>
+  {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+  {% endfor %}
+  </ul>
 {% endif %}
 
-<form class="form-inline" method="post" action="">
-  <div class="container-fluid">
-    <div class = "row-fluid">
-      <div class ="span12">
-	
-	<div id="header" style="background-color:#4682B4;" align="center">  
-	  <h2 style="margin-bottom:0;">Project {{project}}  </h2></div>
+  <form class="form-inline" method="post" action="">
+    <div class="container-fluid">
+      <div class = "row-fluid">
+        <div class ="span12">
+          <div id="header" style="background-color:#4682B4;" align="center">  
+            <h2 style="margin-bottom:0;">Project {{project}}</h2>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
+  </form>
 
-</form>
+  <form method="post" action="">
+    <div class="container-fluid">
+      <div class = "row-fluid">
+        <div class ="span1"></div>
+        <div class ="span10">
+          <table class ="table">
+            <tr>
+              <td></td>
+              <td>
+                <table class="table table-bordered">
+                  <tr class ="error">
+                    <th>Date/Time</th>
+                    <th>Description</th>
+                    <th>URI</th>
+                    <th>Status</th>
+                  </tr>	   
 
-<body>
+                  {% for bu in backups %}
 
-<form method="post" action="">
-  <div class="container-fluid">
-    <div class = "row-fluid">
-      <div class ="span1"></div>
-      <div class ="span10">
-	<table class ="table">
+                  <form method="post" action = "">
+                    <tr>
+                      <input type="hidden" name="dataset_name" value={{ds.dataset_name}}>
+                      <td>{{ bu.backup_time }}</td>
+                      <td>{{ bu.backup_description }}</td>
+                      <td>{{ bu.backup_uri }}</td>
+                      {% if bu.status == 0%}
+                        <td>In Progess</td>
+                      {% else %}
+                        <td>Complete</td>
+                      {% endif %}
+                      <td><button class="btn" id="delete" type="submit" name="delete" onclick="return confirm('Are you sure you want to delete?')"> <i class ="icon-trash icon-black"></i>Delete Backup</button></td>
+                    </tr>
+                  </form>
 
-	  <tr>
-	    <td></td>
-	    <td>
+                  {% empty %}
+                  <li>No Backups Available!</li>
+                  {% endfor %}      
+              </table>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </form>
 
-    <table class="table table-bordered">
-		<tr class ="error">
-		  <th>Date/Time</th>
-		  <th>Description</th>
-		  <th>URI</th>
-		  <th>Status</th>
-		</tr>	   
+  <form action="" method="post">
 
-	  {% for bu in backups %}
+    {{ form.non_field_errors }}
+     
+    <div class = "row">
+      <div class ="col-md-4"></div>
+      <div class ="col-md-2 blue">
+        <div class="fieldWrapper">
+          {{ form.subject.errors }}
+          <label for="channel_name">Backup Description:</label>
+        </div>
+      </div>
+      <div class ="col-md-2">
+        {{ form.backup_description }}
+      </div>
+      <div class ="col-md-4"></div>
+    </div>
 
-		<form method="post" action = "">
-		  <tr>
-	      <input type="hidden" name="dataset_name" value={{ds.dataset_name}}>
-        <td>{{ bu.backup_time }}</td>
-        <td>{{ bu.backup_description }}</td>
-        <td>{{ bu.backup_uri }}</td>
-        {% if bu.status == 0%}
-          <td>In Progess</td>
-        {% else %}
-          <td>Complete</td>
-        {% endif %}
-
-		    <td><button class="btn" id="delete" type="submit" name="delete" onclick="return confirm('Are you sure you want to delete?')"> <i class ="icon-trash icon-black"></i>Delete Backup</button></td>
-      </tr>
-		</form>
-
-	  {% empty %}
-	  <li>No Backups Available!</li>
-	  {% endfor %}      
-
-    </table></td>
-	</table>
-
-    <form action="" method="post">
-
-       {{ form.non_field_errors }}
-	 
-	 <div class = "row">
-	   <div class ="col-md-4"></div>
-	   <div class ="col-md-2 blue">
-	     <div class="fieldWrapper">
-	       {{ form.subject.errors }}
-	       <label for="channel_name">Backup Description:</label>
-	     </div>
-	   </div>
-	   <div class ="col-md-2">
-	     {{ form.backup_description }}
-	   </div>
-   <div class ="col-md-4"></div>
-   </div>
-
-   {{form.project.as_hidden}}
+     {{form.project.as_hidden}}
 
     <div class = "row">
-           <div class ="col-md-4"></div>
-           <div class ="col-md-2">
-             <div class="fieldWrapper">
-               {{ form.subject.errors }}
-               <label for="endwindow">Backup in background?</label>
-             </div>
-           </div>
-           <div class ="col-md-2">
-           <input type="checkbox" name="background" id="background" value="on"> 
-           </div>
-           <div class ="col-md-4"></div>
-         </div>
+      <div class ="col-md-4"></div>
+      <div class ="col-md-2">
+        <div class="fieldWrapper">
+          {{ form.subject.errors }}
+          <label for="endwindow">Backup in background?</label>
+        </div>
+      </div>
+      <div class ="col-md-2">
+        <input type="checkbox" name="background" id="background" value="on"> 
+      </div>
+      <div class ="col-md-4"></div>
+    </div>
 
-	   <div class ="col-md-4"></div>
-
-     <button class="btn btn-primary" id="backup" type="submit" name="backup"> <i class ="icon-inbox icon-black"></i>Create Backup</button>
-     <button class="btn btn-primary" id="backtoprojects" type="submit" name="backtoprojects"> <i class ="icon-inbox icon-black"></i>Back to Projects</button>
-	 </div>
-   </form>
-
-
-
-  </div>
-  <div class ="span1"></div>
-  </div>
-  </div>
-
-</form>
-
-</body>
+    <div class ="col-md-4"></div>
+      <button class="btn btn-primary" id="backup" type="submit" name="backup"> <i class ="icon-inbox icon-black"></i>Create Backup</button>
+      <button class="btn btn-primary" id="backtoprojects" type="submit" name="backtoprojects"> <i class ="icon-inbox icon-black"></i>Back to Projects</button>
+    </div>
+  </form>
 
 {% endblock content %}
 

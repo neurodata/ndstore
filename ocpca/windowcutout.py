@@ -27,4 +27,4 @@ def windowCutout ( cutout, window ):
   [minWin, maxWin] = window
   np.clip( cutout, minWin, maxWin, out=cutout)
   np.subtract( cutout, minWin, out=cutout)
-  np.multiply( cutout, np.uint16(255.0/(maxWin-minWin)), out=cutout)
+  np.multiply( cutout, 255.0/(maxWin-minWin), out=cutout)

@@ -18,12 +18,14 @@ import urllib
 from contextlib import closing
 import numpy as np
 from PIL import Image
+from operator import sub
+
 import django
 django.setup()
 from django.conf import settings
 
 from cube import Cube
-from ocptype import TIMESERIES_CHANNELS, IMAGE_CHANNELS
+from ocptype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, ANNOTATION_CHANNELS, OCP_dtypetonp, UINT8, UINT16, UINT32
 import ocpcarest
 import ocpcadb
 import ocpcaproj
@@ -31,22 +33,27 @@ import ocplib
 
 class IngestData:
 
-  def __init__(self, token, channel, resolution, data_url):
+  def __init__(self, token, channel, resolution, data_url, file_format, file_type):
 
     self.token = token
     self.channel = channel
     self.resolution = resolution
     self.data_url = data_url
     self.path = settings.TEMP_INGEST_PATH
+    # identify which type of data this is
+    self.file_format = file_format
+    # set the file_type
+    self.file_type = file_type
 
   def ingest(self):
     """Identify the data style and ingest accordingly"""
     
-    # set the file_type
-    self.file_type = 'tif'
-    # do something here to identify which type of data this is
-    self.ingestImageStack()
-    # self.ingestCatmaidStack()
+    if self.file_format in ['SLICE']:
+      self.ingestImageStack()
+    elif self.file_format in ['CATMAID']:
+      self.ingestCatmaidStack()
+    else:
+      raise "Format {} not supported.".format(self.file_format)
 
   def fetchData(self, slice_list, time_value):
     """Fetch the next set of data from a remote source and place it locally"""
@@ -54,7 +61,7 @@ class IngestData:
     # data is a TIF stack
     for slice_number in slice_list:
       try:
-        if time_value is None:
+        if time_value is not None:
           url = '{}{}/{}/{}/{}'.format(self.data_url, self.token, self.channel, time_value, self.generateFileName(slice_number))
         else:
           url = '{}{}/{}/{}'.format(self.data_url, self.token, self.channel, self.generateFileName(slice_number))
@@ -164,7 +171,7 @@ class IngestData:
       # Get a list of the files in the directories
       for timestamp in range(starttime, endtime+1):
         for slice_number in range (zoffset, zimagesz+1, zcubedim):
-          slab = np.zeros([zcubedim, yimagesz, ximagesz ], dtype=np.uint8)
+          slab = np.zeros([zcubedim, yimagesz, ximagesz ], dtype=OCP_dtypetonp.get(ch.getDataType()))
           # fetch 16 slices at a time
           if ch.getChannelType() in TIMESERIES_CHANNELS:
             time_value = timestamp
@@ -177,7 +184,16 @@ class IngestData:
                 # reading the raw data
                 file_name = "{}{}".format(self.path, self.generateFileName(slice_number+b))
                 print "Open filename {}".format(file_name)
-                slab[b,:,:] = np.asarray(Image.open(file_name, 'r'))
+                image_data = np.asarray(Image.open(file_name, 'r'))
+                if ch.getDataType() in [UINT8, UINT16] and ch.getChannelType() in IMAGE_CHANNELS:
+                  slab[b,:,:] = image_data
+                elif ch.getDataType() in [UINT32] and ch.getChannelType() in IMAGE_CHANNELS:
+                  slab[b,:,:] = np.left_shift(image_data[:,:,3], 24, dtype=np.uint32) | np.left_shift(image_data[:,:,2], 16, dtype=np.uint32) | np.left_shift(image_data[:,:,1], 8, dtype=np.uint32) | np.uint32(image_data[:,:,0])
+                elif ch.getChannelType() in ANNOTATION_CHANNELS:
+                  slab[b,:,:] = image_data
+                else:
+                  print "Do not ingest this data yet"
+                  raise
               except IOError, e:
                 print e
                 slab[b,:,:] = np.zeros((yimagesz, ximagesz), dtype=np.uint32)
@@ -198,10 +214,16 @@ class IngestData:
 
               cube.data[0:zmax-zmin,0:ymax-ymin,0:xmax-xmin] = slab[zmin:zmax, ymin:ymax, xmin:xmax]
               if cube.isNotZeros():
-                if ch.getChannelType() not in TIMESERIES_CHANNELS:
+                if ch.getChannelType() in IMAGE_CHANNELS:
                   db.putCube(ch, zidx, self.resolution, cube, update=True)
-                else:
+                elif ch.getChannelType() in TIMESERIES_CHANNELS:
                   db.putTimeCube(ch, zidx, timestamp, self.resolution, cube, update=True)
+                elif ch.getChannelType() in ANNOTATION_CHANNELS:
+                  corner = map(sub, [x,y,slice_number], [xoffset,yoffset,zoffset])
+                  db.annotateDense(ch, corner, self.resolution, cube.data, 'O')
+                else:
+                  print "Channel type not supported"
+                  raise
           
           # clean up the slices fetched
           self.cleanData(range(slice_number,slice_number+zcubedim) if slice_number+zcubedim<=zimagesz else range(slice_number,zimagesz))

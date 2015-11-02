@@ -33,7 +33,6 @@ POST_SERVICES = ['hdf5', 'npz', 'hdf5_async', 'propagate', 'tiff', 'blosc']
 
 def cutout (request, webargs):
   """Restful URL for all read services to annotation projects"""
-  
   try:
     m = re.match(r"(\w+)/(?P<channel>[\w+,/-]+)?/?(xy|xz|yz|tiff|hdf5|jpeg|blosc|npz|zip|id|ids|xyanno|xzanno|yzanno)/([\w,/-]+)$", webargs)
     [token, channel, service, cutoutargs] = [i for i in m.groups()]
@@ -150,12 +149,16 @@ def swc (request, webargs):
 
 def annotation (request, webargs):
   """Get put object interface for RAMON objects"""
-  
   [token, channel, rest] = webargs.split('/',2)
-
+  
   try:
     if request.method == 'GET':
-      return django.http.HttpResponse(ocpcarest.getAnnotation(webargs), content_type="product/hdf5" )
+      # check for json vs hdf5 
+      if rest.split('/')[1] == 'json':
+        return django.http.HttpResponse(ocpcarest.getAnnotation(webargs), content_type="application/json" )
+      else:
+        # return hdf5 
+        return django.http.HttpResponse(ocpcarest.getAnnotation(webargs), content_type="product/hdf5" )
     elif request.method == 'POST':
       #if service == 'hdf5_async':
         #return django.http.HttpResponse( ocpcarest.putAnnotationAsync(webargs,request.body) )
@@ -421,11 +424,11 @@ def minmaxProject (request, webargs):
     logger.exception("Unknown exception in (min|max) projection Web service")
     raise OCPCAError("Unknown exception in (min|max) projection Web service")
 
-def createProject(request, webargs):
+def autoIngest(request, webargs):
   """RESTful URL for creating a project using a JSON file"""
 
   try:
-    return django.http.HttpResponse(jsonproj.createProject(webargs, request.body), content_type="application/json")
+    return django.http.HttpResponse(jsonproj.autoIngest(webargs, request.body), content_type="application/json")
   except OCPCAError, e:
     return django.http.HttpResponseNotFound()
   except:

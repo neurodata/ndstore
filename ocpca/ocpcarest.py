@@ -37,6 +37,7 @@ import ocpcadb
 import ocpcaproj
 import ocpcachannel
 import h5ann
+import jsonann 
 import h5projinfo
 import jsonprojinfo
 import annotation
@@ -45,7 +46,7 @@ import ocplib
 import ocpcaskel
 import ocpcanifti
 from windowcutout import windowCutout
-from ocptype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, ANNOTATION_CHANNELS, NOT_PROPAGATED, UNDER_PROPAGATION, OCP_dtypetonp, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, READONLY_TRUE
+from ocptype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, ANNOTATION_CHANNELS, NOT_PROPAGATED, UNDER_PROPAGATION, PROPAGATED, OCP_dtypetonp, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, READONLY_TRUE, READONLY_FALSE
 
 from ocpcaerror import OCPCAError
 import logging
@@ -298,6 +299,7 @@ def HDF5(chanargs, proj, db):
   fh5out.close()
   tmpfile.seek(0)
   return tmpfile.read()
+
 
 def postTiff3d ( channel, postargs, proj, db, postdata ):
   """Upload a tiff to the database"""
@@ -849,6 +851,20 @@ AR_TIGHTCUTOUT = 3
 AR_BOUNDINGBOX = 4
 AR_CUBOIDS = 5
 
+def getAnnoJSONById ( ch, annoid, proj, db ):
+  """ Retrieve the annotation and return it as a serialized json string """
+
+  # retrieve the annotation
+  anno = db.getAnnotation ( ch, annoid ) 
+  if anno == None:
+    logger.warning("No annotation found at identifier = %s" % (annoid))
+    raise OCPCAError ("No annotation found at identifier = %s" % (annoid))
+
+  # create the JSONanno obj
+  jsonanno = jsonann.AnnotationtoJSON ( anno )
+
+  # return data
+  return jsonanno.toJSON() 
 
 def getAnnoById ( ch, annoid, h5f, proj, db, dataoption, resolution=None, corner=None, dim=None ): 
   """Retrieve the annotation and put it in the HDF5 file."""
@@ -986,6 +1002,27 @@ def getAnnotation ( webargs ):
     # Split the URL and get the args
     ch = ocpcaproj.OCPCAChannel(proj, channel)
     option_args = otherargs.split('/', 2)
+
+    # AB Added 20151011 
+    # Check to see if this is a JSON request, and if so return the JSON objects 
+    # otherwise, continue with returning the HDF5 data
+    if option_args[1] == 'json':
+      jsonstr = ''
+      try:
+        db.startTxn()
+        if re.match ( '^[\d,]+$', option_args[0] ): 
+          annoids = map(int, option_args[0].split(','))
+          for annoid in annoids: 
+            jsonstr += getAnnoJSONById ( ch, annoid, proj, db )
+
+      except: 
+        db.rollback()
+        raise
+
+      db.commit()
+      return jsonstr 
+
+    # not a json request, continue with building and returning HDF5 file 
 
     # Make the HDF5 file
     # Create an in-memory HDF5 file
@@ -1487,7 +1524,8 @@ def putNIFTI ( webargs, postdata ):
 def getSWC ( webargs ):
   """Return an SWC object generated from Skeletons/Nodes"""
 
-  [token, channel, resolution, swcstring, rest] = webargs.split('/',4)
+  [token, channel, service, resstr, rest] = webargs.split('/',4)
+  resolution = int(resstr)
 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
@@ -1499,7 +1537,7 @@ def getSWC ( webargs ):
     # Make a named temporary file for the SWC
     with closing (tempfile.NamedTemporaryFile()) as tmpfile:
 
-      ocpcaskel.querySWC ( res, tmpfile, ch, db, proj, skelids=None )
+      ocpcaskel.querySWC ( resolution, tmpfile, ch, db, proj, skelids=None )
 
       tmpfile.seek(0)
       return tmpfile.read()
@@ -1509,7 +1547,8 @@ def getSWC ( webargs ):
 def putSWC ( webargs, postdata ):
   """Put an SWC object into RAMON skeleton/tree nodes"""
 
-  [token, channel, resolution, optionsargs] = webargs.split('/',3)
+  [token, channel, service, resstr, optionsargs] = webargs.split('/',4)
+  resolution = int(resstr)
 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
@@ -1657,7 +1696,7 @@ def jsonInfo ( webargs ):
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
-
+    
     return jsonprojinfo.jsonInfo(proj)
 
 def xmlInfo ( webargs ):
@@ -1805,6 +1844,7 @@ def setPropagate(webargs):
   """Set the value of the propagate field"""
 
   # input in the format token/channel_list/setPropagate/value/
+  # here value = {NOT_PROPAGATED, UNDER_PROPAGATION} not {PROPAGATED}
   try:
     (token, channel_list, value_list) = re.match("(\w+)/([\w+,]+)/setPropagate/([\d+,]+)/$", webargs).groups()
   except:
@@ -1817,21 +1857,37 @@ def setPropagate(webargs):
     
     for channel_name in channel_list.split(','):
       ch = proj.getChannelObj(channel_name)
-
+      
       value = value_list[0]
-      # If the value is to set under propagation
-      if int(value) == UNDER_PROPAGATION and ch.getPropagate() != UNDER_PROPAGATION:
-        ch.setPropagate(UNDER_PROPAGATION)
-        from ocpca.tasks import propagate
-        propagate.delay(token, channel_name)
-        #import ocpcastack
-        #ocpcastack.buildStack(token, channel_name)
+      # If the value is to be set under propagation and the project is not under propagation
+      if int(value) == UNDER_PROPAGATION and ch.getPropagate() == NOT_PROPAGATED:
+        # and is not read only
+        if ch.getReadOnly() == READONLY_FALSE:
+          ch.setPropagate(UNDER_PROPAGATION)
+          from ocpca.tasks import propagate
+          # then call propagate
+          # propagate(token, channel_name)
+          propagate.delay(token, channel_name)
+        else:
+          logger.warning("Cannot Propagate this project. It is set to Read Only.")
+          raise OCPCAError("Cannot Propagate this project. It is set to Read Only.")
+      # if the project is Propagated already you can set it to under propagation
+      elif int(value) == UNDER_PROPAGATION and ch.getPropagate() == PROPAGATED:
+        logger.warning("Cannot propagate a project which is propagated. Set to Not Propagated first.")
+        raise OCPCAError("Cannot propagate a project which is propagated. Set to Not Propagated first.")
+      # If the value to be set is not propagated
       elif int(value) == NOT_PROPAGATED:
+        # and the project is under propagation then throw an error
         if ch.getPropagate() == UNDER_PROPAGATION:
           logger.warning("Cannot set this value. Project is under propagation.")
           raise OCPCAError("Cannot set this value. Project is under propagation.")
+        # and the project is already propagated and set read only then throw error
+        elif ch.getPropagate() == PROPAGATED and ch.getReadOnly == READONLY_TRUE:
+          logger.warning("Cannot set this Project to unpropagated. Project is Read only")
+          raise OCPCAError("Cannot set this Project to unpropagated. Project is Read only")
         else:
           ch.setPropagate(NOT_PROPAGATED)
+      # cannot set a project to propagated via the RESTful interface
       else:
         logger.warning("Invalid Value {} for setPropagate".format(value))
         raise OCPCAError("Invalid Value {} for setPropagate".format(value))

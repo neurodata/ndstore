@@ -66,7 +66,9 @@ class BackupForm(ModelForm):
 
     class Meta:
         model = Backup
-        exclude = ('datetimestamp', 'status')
+        # add protocol back in when you implement S3
+        exclude = ('datetimestamp', 'status', 'protocol', 'filename', 'jsonfile')
+
 
 class dataUserForm( forms.Form):
 
