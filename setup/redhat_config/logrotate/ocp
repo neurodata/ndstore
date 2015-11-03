@@ -1,0 +1,7 @@
+/var/log/ocp/*.log {
+  daily
+  missingok
+  compress
+  create 777 nginx nginx
+  rotate 1
+}
