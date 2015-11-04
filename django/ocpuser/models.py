@@ -74,7 +74,7 @@ class Project ( models.Model):
     ('dsp061.pha.jhu.edu', 'dsp061'),
     ('dsp062.pha.jhu.edu', 'dsp062'),
     ('dsp063.pha.jhu.edu', 'dsp063'),
-    ('localhost', 'localhost'),
+    ('localhost', 'Debug'),
   )
   host =  models.CharField(max_length=255, choices=HOST_CHOICES, default='localhost')
   KVENGINE_CHOICES = (
@@ -88,9 +88,9 @@ class Project ( models.Model):
     ('dsp061.pha.jhu.edu', 'dsp061'),
     ('dsp062.pha.jhu.edu', 'dsp062'),
     ('dsp063.pha.jhu.edu', 'dsp063'),
-    ('localhost', 'localhost'),
+    ('localhost', 'Debug'),
   )
-  kvserver =  models.CharField(max_length=255, choices=KVSERVER_CHOICES, default='dsp061.pha.jhu.edu')
+  kvserver =  models.CharField(max_length=255, choices=KVSERVER_CHOICES, default='localhost')
 
   # Version information -- set automatically
   ocp_version =  models.CharField(max_length=255, default='0.6')
@@ -160,7 +160,7 @@ class Channel ( models.Model):
     (READONLY_TRUE, 'Yes'),
     (READONLY_FALSE, 'No'),
   )
-  readonly =  models.IntegerField(choices=READONLY_CHOICES, default=READONLY_TRUE)
+  readonly =  models.IntegerField(choices=READONLY_CHOICES, default=READONLY_FALSE)
 
   EXCEPTION_CHOICES = (
     (EXCEPTION_TRUE, 'Yes'),
@@ -170,6 +170,7 @@ class Channel ( models.Model):
   startwindow = models.IntegerField(default=0)
   endwindow = models.IntegerField(default=0)
   default = models.BooleanField(default=False)
+  header = models.CharField(max_length=8192, default='', blank=True)
   
   class Meta:
     """ Meta """
@@ -178,27 +179,26 @@ class Channel ( models.Model):
     managed = True
     unique_together = ('project', 'channel_name',)
 
-
   def __unicode__(self):
     return self.channel_name
 
-
 class Backup ( models.Model):
+
+  backup_id = models.AutoField(primary_key=True)
 
   project  = models.ForeignKey(Project)
  
   # can specific a channel or can be all channels
   channel = models.ForeignKey(Channel, blank=True, null=True)
 
-  # can specific a resolution or all resolutions
-  # resolution 
-  # TBD
-
   PROTOCOL_CHOICES = (
     ('local', 'file system'),
     ('s3', 'Amazon S3'),
   )
   protocol = models.CharField(max_length=255,choices=PROTOCOL_CHOICES)
+
+  filename   =  models.CharField(max_length=4096)
+  jsonfile   =  models.CharField(max_length=4096)
 
   description  =  models.CharField(max_length=4096, default="")
 
@@ -220,3 +220,21 @@ class Backup ( models.Model):
 
   def __unicode__(self):
     return self.description
+
+
+class NIFTIHeader ( models.Model):
+
+  channel  = models.ForeignKey(Channel,primary_key=True)
+  # all headers are 384 bytes for now.  
+  header = models.BinaryField(max_length=1024)
+  affine = models.BinaryField(max_length=1024)
+  
+  class Meta:
+    """ Meta """
+    # Required to override the default table name
+    db_table = u"nifti_header"
+    managed = True
+
+  def __unicode__(self):
+    return self.header
+

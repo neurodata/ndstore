@@ -31,12 +31,25 @@ GET
    **Example Response**:
 
    .. sourcecode:: http
-      
+
       HTTP/1.1 200 OK
       Content-Type: application/json
-      
-     
+
       {
+          "channels": {
+              "image": {
+                  "channel_type": "image", 
+                  "datatype": "uint8", 
+                  "exceptions": 0, 
+                  "propagate": 2, 
+                  "readonly": 1, 
+                  "resolution": 0, 
+                  "windowrange": [
+                      0, 
+                      0
+                  ]
+              }
+          }, 
           "dataset": {
               "cube_dimension": {
                   "0": [
@@ -80,72 +93,47 @@ GET
                       64
                   ]
               }, 
+              "description": "kasthuri11", 
               "imagesize": {
                   "0": [
                       21504, 
-                      26624
+                      26624, 
+                      1850
                   ], 
                   "1": [
                       10752, 
-                      13312
+                      13312, 
+                      1850
                   ], 
                   "2": [
                       5376, 
-                      6656
+                      6656, 
+                      1850
                   ], 
                   "3": [
                       2688, 
-                      3328
+                      3328, 
+                      1850
                   ], 
                   "4": [
                       1344, 
-                      1664
+                      1664, 
+                      1850
                   ], 
                   "5": [
                       672, 
-                      832
+                      832, 
+                      1850
                   ], 
                   "6": [
                       336, 
-                      416
+                      416, 
+                      1850
                   ], 
                   "7": [
                       168, 
-                      208
-                  ]
-              }, 
-              "isotropic_slicerange": {
-                  "0": [
-                      1, 
+                      208, 
                       1850
-                  ], 
-                  "1": [
-                      1, 
-                      1850
-                  ], 
-                  "2": [
-                      1, 
-                      1850
-                  ], 
-                  "3": [
-                      1, 
-                      1850
-                  ], 
-                  "4": [
-                      1, 
-                      1157
-                  ], 
-                  "5": [
-                      1, 
-                      579
-                  ], 
-                  "6": [
-                      1, 
-                      290
-                  ], 
-                  "7": [
-                      1, 
-                      145
                   ]
               }, 
               "neariso_scaledown": {
@@ -158,6 +146,48 @@ GET
                   "6": 6, 
                   "7": 13
               }, 
+              "offset": {
+                  "0": [
+                      0, 
+                      0, 
+                      1
+                  ], 
+                  "1": [
+                      0, 
+                      0, 
+                      1
+                  ], 
+                  "2": [
+                      0, 
+                      0, 
+                      1
+                  ], 
+                  "3": [
+                      0, 
+                      0, 
+                      1
+                  ], 
+                  "4": [
+                      0, 
+                      0, 
+                      1
+                  ], 
+                  "5": [
+                      0, 
+                      0, 
+                      1
+                  ], 
+                  "6": [
+                      0, 
+                      0, 
+                      1
+                  ], 
+                  "7": [
+                      0, 
+                      0, 
+                      1
+                  ]
+              }, 
               "resolutions": [
                   0, 
                   1, 
@@ -168,45 +198,60 @@ GET
                   6, 
                   7
               ], 
-              "slicerange": [
-                  1, 
-                  1850
-              ], 
+              "scaling": "zslices", 
+              "scalinglevels": 7, 
               "timerange": [
                   0, 
                   0
               ], 
-              "windowrange": [
-                  0, 
-                  0
-              ], 
-              "zscale": {
-                  "0": 10.0, 
-                  "1": 5.0, 
-                  "2": 2.5, 
-                  "3": 1.25, 
-                  "4": 0.625, 
-                  "5": 0.3125, 
-                  "6": 0.15625, 
-                  "7": 0.078125
+              "voxelres": {
+                  "0": [
+                      1.0, 
+                      1.0, 
+                      10.0
+                  ], 
+                  "1": [
+                      2.0, 
+                      2.0, 
+                      10.0
+                  ], 
+                  "2": [
+                      4.0, 
+                      4.0, 
+                      10.0
+                  ], 
+                  "3": [
+                      8.0, 
+                      8.0, 
+                      10.0
+                  ], 
+                  "4": [
+                      16.0, 
+                      16.0, 
+                      10.0
+                  ], 
+                  "5": [
+                      32.0, 
+                      32.0, 
+                      10.0
+                  ], 
+                  "6": [
+                      64.0, 
+                      64.0, 
+                      10.0
+                  ], 
+                  "7": [
+                      128.0, 
+                      128.0, 
+                      10.0
+                  ]
               }
           }, 
+          "metadata": {}, 
           "project": {
-              "dataset": "kasthuri11", 
-              "dataurl": "http://openconnecto.me/ocp", 
-              "dbname": "kasthuri11", 
-              "exceptions": false, 
-              "host": "dsp061.pha.jhu.edu", 
-              "kvengine": "MySQL", 
-              "kvserver": "localhost", 
-              "projecttype": 1, 
-              "propagate": 2, 
-              "readonly": true, 
-              "resolution": 0
-          }, 
-          "version": {
-              "ocp": 0.6, 
-              "schema": 0.6
+              "description": "kasthuri11", 
+              "name": "kasthuri11", 
+              "version": "0.0"
           }
       }
 

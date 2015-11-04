@@ -7,11 +7,15 @@ New questions should be asked on  `our support pages <ocp-support@googlegroups.c
 
 **What is this project?**
 
-This project is part of the `Open Connectome Project <openconnecto.me/>`_.  The following information applies across our projects.
+This project is part of the `Open Connectome Project <http://neurodata.io>`_.  The following information applies across our projects.
 
 **How do I get started?**
 
-Please begin with the `configuration <sphinx/config>`_ page, which should get you up and running in no time.
+To learn how to naviagte the web console please visit our `console <console>`_ page.
+
+**How do I install OCP?**
+
+Please begin with the `configuration <config>`_ page, which should get you up and running in no time.
 
 **How do I contribute my data to OCP?**
 

@@ -29,11 +29,11 @@ from ocpuser.models import Token
 from ocpuser.models import Channel
 
 import ocpcaproj
-from ocptype import ZSLICES, ANNOTATION, READONLY_FALSE, UINT32, OCP_VERSION, MYSQL, CASSANDRA, RIAK
+from ocptype import ZSLICES, ANNOTATION, NOT_PROPAGATED, READONLY_FALSE, UINT32, OCP_VERSION, MYSQL, CASSANDRA, RIAK
 import site_to_test
 import kvengine_to_test
 
-def createTestDB ( project_name, channel_list=['unit_anno'], channel_type=ANNOTATION, channel_datatype=UINT32, public=0, ximagesize=10000, yimagesize=10000, zimagesize=1000, xvoxelres=4.0, yvoxelres=4.0, zvoxelres=3.0, scalingoption=ZSLICES, scalinglevels=5, readonly=READONLY_FALSE, window=[0,0], time=[0,0], default=False, ocp_version=OCP_VERSION ):
+def createTestDB ( project_name, channel_list=['unit_anno'], channel_type=ANNOTATION, channel_datatype=UINT32, public=0, ximagesize=10000, yimagesize=10000, zimagesize=1000, xvoxelres=4.0, yvoxelres=4.0, zvoxelres=3.0, scalingoption=ZSLICES, scalinglevels=5, readonly=READONLY_FALSE, propagate=NOT_PROPAGATED, window=[0,0], time=[0,0], default=False, ocp_version=OCP_VERSION ):
   """Create a unit test data base on the specified sit and name"""
   
   unituser = User.objects.get(username='brain')
@@ -58,7 +58,7 @@ def createTestDB ( project_name, channel_list=['unit_anno'], channel_type=ANNOTA
   pd.newOCPCAProject( pr.project_name )
   try:
     for channel_name in channel_list:
-      ch = Channel (channel_name=channel_name, channel_type=channel_type, channel_datatype=channel_datatype, channel_description='Unit test channel', project_id=pr, readonly=readonly, resolution=0, exceptions=1,startwindow=window[0], endwindow=window[1], default=default)
+      ch = Channel (channel_name=channel_name, channel_type=channel_type, channel_datatype=channel_datatype, channel_description='Unit test channel', project_id=pr, readonly=readonly, propagate=propagate, resolution=0, exceptions=1,startwindow=window[0], endwindow=window[1], default=default)
       ch.save()
       pd.newOCPCAChannel(pr.project_name, ch.channel_name)
   except Exception, e:

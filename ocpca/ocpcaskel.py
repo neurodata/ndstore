@@ -16,8 +16,14 @@ import re
 
 import annotation
 
+from ocptype import ISOTROPIC
+
+from ocpcaerror import OCPCAError
+import logging
+logger=logging.getLogger("ocp")
+
       
-def ingestSWC ( swcfile, ch, db ):
+def ingestSWC ( res, swcfile, ch, db ):
   """Ingest the SWC file into a database.  This will involve:
         parsing out separate connected components as skeletons
         deduplicating nodes (for Vaa3d) """     
@@ -73,6 +79,15 @@ def ingestSWC ( swcfile, ch, db ):
         swcnodeid = int(swcnodeidstr)
         swcparentid = int(swcparentidstr)
 
+        # scale points to resolution 
+        xpos = float(xpos)*(2**res) 
+        ypos = float(ypos)*(2**res) 
+        # check for isotropic
+        if db.datasetcfg.scalingoption == ISOTROPIC:
+          zpos = float(zpos)*(2**res) 
+        else:
+          zpos = float(zpos)
+
         # create a node
         node = annotation.AnnNode( db ) 
 
@@ -109,10 +124,8 @@ def ingestSWC ( swcfile, ch, db ):
           node.setField ( 'skeletonid', nodes[swcparentid].getField('skeletonid') )
 
   except Exception, e:
-    raise
-
-  print "Build all skeletons, Starting DB txn."
-
+    logger.warning("Failed to put SWC file {}".format(e))
+    raise OCPCAError("Failed to put SWC file {}".format(e))
 
   # having parsed the whole file, send to DB in a transaction
   db.startTxn()
@@ -129,7 +142,6 @@ def ingestSWC ( swcfile, ch, db ):
 
     skel.store( ch, cursor )
 
-
   # store the nodes
   for (nodeid,node) in nodes.iteritems():
     node.store( ch, cursor )
@@ -139,7 +151,7 @@ def ingestSWC ( swcfile, ch, db ):
   return [ x.annid for (i,x) in skels.iteritems() ]
 
 
-def querySWC ( swcfile, ch, db, proj, skelids=None ):
+def querySWC ( res, swcfile, ch, db, proj, skelids=None ):
   """Query the list of skelids (skeletons) and populate an open file swcfile
      with lines of swc data."""
 
@@ -150,9 +162,9 @@ def querySWC ( swcfile, ch, db, proj, skelids=None ):
 
     # write out metadata about where this came from
     # OCP version number and schema number
-    f.write('# OCP (Open Connectome Project) Version {} Schema {}'.format(proj.getOCPVersion(),proj.getSchemaVersion()))
+    swcfile.write('# OCP (Open Connectome Project) Version {} Schema {}\n'.format(proj.getOCPVersion(),proj.getSchemaVersion()))
     # OCP project and channel
-    f.write('# Project {} Channel {}'.format(proj.getProjectName(),ch.getChannelName()))
+    swcfile.write('# Project {} Channel {}\n'.format(proj.getProjectName(),ch.getChannelName()))
 
     # get a skeleton for metadata and populate the comments field
     if skelids != None and len(skelids)==0:
@@ -164,26 +176,30 @@ def querySWC ( swcfile, ch, db, proj, skelids=None ):
       for (k,v) in skel.getKVPairs():
         # match a comment
         if re.match ( "^#.*", v ):
-          fwrite(v)
+          swcfile.write(v)
         else:
-          fwrite("# {} {}".format(k,v))
+          swcfile.write("# {} {}".format(k,v))
       
-    nodegen = db.queryNodes ( skelids )
+    nodegen = annotation.nodesBySkeleton ( ch, skelids, db, cursor )
+
     # iterate over all nodes
     for node in nodegen: 
-      skeletonid = node.getField ( 'skeletonid' )
-      annid = node.getField ( 'annid' ) 
-      nodetype = node.getField ( 'nodetype')
-      (xpos,ypos,zpos) = node.getField ( 'location')
-      radius = node.getField ( 'radius')
-      parentid = node.getField ( 'parentid')
 
-    # write an node in swc
-    # n T x y z R P
-#    fwrite ( "{} {} {} {} {} {} {} {}".format ( annid, nodetype,  ,,,,, parentid ))
+      (annid, nodetype, xpos, ypos, zpos, radius, parentid) = node
+
+      # scale points to resolution 
+      xpos = xpos/(2**res) 
+      ypos = ypos/(2**res) 
+      # check for isotropic
+      if db.datasetcfg.scalingoption == ISOTROPIC:
+        zpos = zpos/(2**res) 
+
+      # write an node in swc
+      # n T x y z R P
+      swcfile.write ( "{} {} {} {} {} {} {}\n".format ( annid, nodetype, xpos, ypos, zpos, radius, parentid ))
 
     db.commit()
 
   finally:
-    db.closeCursor()
+    db.closeCursor(cursor)
 

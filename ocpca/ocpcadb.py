@@ -70,7 +70,7 @@ class OCPCADB:
     if self.proj.getKVEngine() == 'MySQL':
       import mysqlkvio
       self.kvio = mysqlkvio.MySQLKVIO(self)
-      self.NPZ = False
+      self.NPZ = True
       # Connection info for the metadata
       try:
         self.conn = MySQLdb.connect (host = self.proj.getDBHost(), user = self.proj.getDBUser(), passwd = self.proj.getDBPasswd(), db = self.proj.getDBName())
@@ -357,7 +357,7 @@ class OCPCADB:
 
   def putCube(self, ch, zidx, resolution, cube, update=False):
     """ Store a cube in the annotation database """
-  
+    
     # Handle the cube format here.  
     if self.NPZ:
       self.kvio.putCube(ch, zidx, resolution, cube.toNPZ(), not cube.fromZeros())
@@ -939,7 +939,7 @@ class OCPCADB:
         #add the query result cube to the bigger cube
         curxyz = ocplib.MortonXYZ(int(idx))
         offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
-
+        
         if self.NPZ:
           incube.fromNPZ ( datastring[:] )
         else:
@@ -1143,7 +1143,7 @@ class OCPCADB:
 
     voxlist = []
     
-    zidxs = self.annoIdx.getIndex(ch, entityid,resolution)
+    zidxs = self.annoIdx.getIndex(ch,entityid,resolution)
 
     for zidx in zidxs:
 
@@ -1823,3 +1823,4 @@ class OCPCADB:
       exoutput = None
 
     return exoutput
+

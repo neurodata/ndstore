@@ -47,6 +47,9 @@ DTYPE_uint64 = [ UINT64 ]
 DTYPE_float32 = [ FLOAT32 ]
 OCP_dtypetonp = {UINT8:np.uint8, UINT16:np.uint16, UINT32:np.uint32, UINT64:np.uint64, FLOAT32:np.float32}
 
+# Server Map
+OCP_servermap = {'dsp061.pha.jhu.edu':'172.23.253.61', 'dsp062.pha.jhu.edu':'172.23.253.62', 'dsp063.pha.jhu.edu':'172.23.253.63', 'localhost':'localhost'}
+
 # Propagated Values
 PROPAGATED = 2
 UNDER_PROPAGATION = 1

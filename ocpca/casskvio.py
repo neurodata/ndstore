@@ -33,6 +33,7 @@ class CassandraKVIO:
     # connect to cassandra
     self.cluster = Cluster( [self.db.proj.getKVServer()] )
     self.session = self.cluster.connect(self.db.proj.getDBName())
+    self.session.default_timeout = 60
 
   def close ( self ):
     """Close the connection"""
@@ -72,7 +73,11 @@ class CassandraKVIO:
     # weird pythonism for tuples of length 1 they print as (1,) and don't parse
     # just get the cube
     if len(listofidxs) == 1:
-      yield listofidxs[0], self.getCube(ch, listofidxs[0], resolution, False)
+      data = self.getCube(ch, listofidxs[0], resolution, False)
+      if data is None:
+        return
+      else:
+        yield listofidxs[0], None
     else:
 
       try:
@@ -80,7 +85,7 @@ class CassandraKVIO:
         listofidxs = [ int(i) for i in listofidxs ]
         cql = "SELECT zidx, cuboid FROM {} WHERE resolution ={} AND zidx in {}".format(ch.getTable(resolution), resolution, tuple(listofidxs)) 
         rows = self.session.execute ( cql )
-
+        
         for row in rows:
           yield (row.zidx, row.cuboid.decode('hex'))
 

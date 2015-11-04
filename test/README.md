@@ -18,7 +18,7 @@
 
 ## List of Tests:
 
-* test_image - 16 tests
+* test_image - 21 tests
   
   - Module : Test_Image_Slice
     1. test_xy
@@ -51,13 +51,17 @@
   - Module : Test_Image_Default
     1. test_npz_default_channel
     2. test_xy_default_channel
+  
+  - Module : Test_Image_Simple_Catmaid
+    1. test_xy_tile
 
-* test_info - 4 tests
+* test_info - 5 tests
 
   - Module Test_Info
     1. test_public_tokens
     2. test_info
     3. test_projinfo
+    4. testxmlinfo
     4. test_reserve
 
 * test_io.py - 6 tests
@@ -88,11 +92,17 @@
     7. test_npz_incorrect_channel
     8. test_hdf5_incorrect_channel
 
-* test_propagate - 4 test
+* test_propagate - 6 test
 
   - Module : Test_Image_Zslice_Propagate
     1. test_web_propagate
 
+  - Module : Test_Image_Readonly_Propagate
+    1. test_web_propagate
+  
+  - Module : Test_Image_Propagated_Propagate
+    1. test_web_propagate
+  
   - Module : Test_Image_Isotropic_Propagate
     1. test_web_propagate
 
@@ -123,7 +133,7 @@
     11. test_organelle_field
     12. test_wrong_field
 
-* test_time.py - 12 tests
+* test_time.py - 17 tests
   
   - Module : Test_Image_Slice
     1. test_xy
@@ -175,6 +185,11 @@
   - Module : Test_Blosc
     1. test_get_blosc
     2. test_post_blosc
+
+* test_jpeg.py - 2 tests
+
+  - Module : Test_Jpeg
+    1. test_get_jpeg
 
 * tests to add
   1. Test filter for image slices

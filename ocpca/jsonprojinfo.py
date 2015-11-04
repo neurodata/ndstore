@@ -16,6 +16,7 @@
 import numpy as np
 import json
 import urllib2
+from lxml import etree
 from django.conf import settings
 
 import ocpcadb
@@ -54,7 +55,11 @@ def datasetdict ( dataset ):
   dsdict['offset'] = dataset.offset
   dsdict['voxelres'] = dataset.voxelres
   dsdict['cube_dimension'] = dataset.cubedim
+  # Stephan projinfo
   dsdict['neariso_scaledown'] = dataset.nearisoscaledown
+  dsdict['neariso_offset'] = dataset.neariso_offset
+  dsdict['neariso_voxelres'] = dataset.neariso_voxelres
+  dsdict['neariso_imagesize'] = dataset.neariso_imagesz
   # Figure out neariso in new design
   dsdict['timerange'] = dataset.timerange
   dsdict['description'] = dataset.getDatasetDescription()
@@ -70,6 +75,7 @@ def chandict ( channel ):
   chandict['resolution'] = channel.getResolution()
   chandict['propagate'] = channel.getPropagate()
   chandict['windowrange'] = channel.getWindowRange()
+  chandict['description'] = channel.getChannelDescription()
 
   return chandict
 
@@ -86,12 +92,32 @@ def jsonInfo (proj):
   jsonprojinfo['metadata'] = metadatadict( proj )
   return json.dumps ( jsonprojinfo, sort_keys=True, indent=4 )
 
+def xmlInfo (token, proj):
+  """All Project Info"""
+  
+  jsonprojinfo = {}
+  jsonprojinfo['dataset'] = datasetdict ( proj.datasetcfg )
+  jsonprojinfo['project'] = projdict ( proj )
+  jsonprojinfo['channels'] = {}
+  for ch in proj.projectChannels():
+    jsonprojinfo['channels'][ch.getChannelName()] = chandict ( ch ) 
+  jsonprojinfo['metadata'] = metadatadict( proj )
+  
+  root = etree.Element('Volume', InputChecksum="", host="http://openconnecto.me/ocptilecache/tilecache/viking/", name=token, num_sections=str(jsonprojinfo['dataset']['imagesize'][0][2]), num_stos="0", path="http://openconnecto.me/ocptilecache/tilecache/viking/")
+  etree.SubElement(root, 'Scale', UnitsOfMeasure="nm", UnitsPerPixel=str(jsonprojinfo['dataset']['voxelres'][0][0]/jsonprojinfo['dataset']['voxelres'][0][1]))
+  tileserver_element = etree.SubElement(root, 'OCPTileServer', CoordSpaceName="volume", host="http://openconnecto.me/ocptilecache/tilecache/viking/", FilePrefix="", FilePostfix=".png", TileXDim="512", TileYDim="512", GridXdim=str(jsonprojinfo['dataset']['imagesize'][0][0]/512), GridYDim=str(jsonprojinfo['dataset']['imagesize'][0][1]/512), MaxLevel=str(jsonprojinfo['dataset']["resolutions"][-1]))
+  for channel_name in jsonprojinfo['channels'].keys():
+    etree.SubElement(tileserver_element, "Channel", Name=channel_name, Path=channel_name, Datatype=jsonprojinfo['channels'][channel_name]['datatype'])
+  for slice_number in range(jsonprojinfo['dataset']['offset'][0][2], jsonprojinfo['dataset']['offset'][0][2]+jsonprojinfo['dataset']['imagesize'][0][2]):
+    etree.SubElement(root, "Section", Number="{}".format(slice_number))
+  
+  return etree.tostring(root)
 
 def metadatadict( proj ):
   """Metadata Info"""
   
   try:
-    url = 'http://{}/lims/{}/'.format(settings.LIMS_SERVER, proj.getProjectName())
+    url = 'http://{}/api/metadata/get/{}/'.format(settings.LIMS_SERVER, proj.getProjectName())
     req = urllib2.Request(url)
     response = urllib2.urlopen(req)
     return json.loads(response.read())

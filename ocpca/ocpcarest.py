@@ -37,14 +37,16 @@ import ocpcadb
 import ocpcaproj
 import ocpcachannel
 import h5ann
+import jsonann 
 import h5projinfo
 import jsonprojinfo
 import annotation
 import mcfc
 import ocplib
 import ocpcaskel
+import ocpcanifti
 from windowcutout import windowCutout
-from ocptype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, ANNOTATION_CHANNELS, NOT_PROPAGATED, UNDER_PROPAGATION, OCP_dtypetonp, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, READONLY_TRUE
+from ocptype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, ANNOTATION_CHANNELS, NOT_PROPAGATED, UNDER_PROPAGATION, PROPAGATED, OCP_dtypetonp, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, READONLY_TRUE, READONLY_FALSE
 
 from ocpcaerror import OCPCAError
 import logging
@@ -131,6 +133,58 @@ def numpyZip ( chanargs, proj, db ):
 
   except Exception,e:
     raise OCPCAError("{}".format(e))
+
+
+def JPEG ( chanargs, proj, db ):
+  """Return a web readable JPEG File"""
+
+  try:
+    # argument of format channel/service/imageargs
+    m = re.match("([\w+,]+)/(\w+)/([\w+,/-]+)$", chanargs)
+    [channels, service, imageargs] = [i for i in m.groups()]
+  except Exception, e:
+    logger.warning("Arguments not in the correct format {}. {}".format(chanargs, e))
+    raise OCPCAError("Arguments not in the correct format {}. {}".format(chanargs, e))
+
+  try: 
+    channel_list = channels.split(',')
+    ch = proj.getChannelObj(channel_list[0])
+
+    channel_data = cutout( imageargs, ch, proj, db ).data
+    cubedata = np.zeros ( (len(channel_list),)+channel_data.shape, dtype=channel_data.dtype )
+    cubedata[0,:] = channel_data
+
+    # if one channel convert 3-d to 4-d array
+    for idx,channel_name in enumerate(channel_list[1:]):
+      if channel_name == '0':
+        continue
+      else:
+        ch = proj.getChannelObj(channel_name)
+        if OCP_dtypetonp[ch.getDataType()] == cubedata.dtype:
+          cubedata[idx+1,:] = cutout(imageargs, ch, proj, db).data
+        else:
+          raise OCPCAError("The npz cutout can only contain cutouts of one single Channel Type.")
+
+    xdim, ydim, zdim = cubedata[0,:,:,:].shape[::-1]
+    #cubedata = np.swapaxes(cubedata[0,:,:,:], 0,2).reshape(xdim*zdim, ydim)
+    cubedata = cubedata[0,:,:,:].reshape(xdim*zdim, ydim)
+    
+    if ch.getDataType() in DTYPE_uint16:
+      img = Image.fromarray(cubedata, mode='I;16')
+      img = img.point(lambda i:i*(1./256)).convert('L')
+    elif ch.getDataType() in DTYPE_uint32:
+      img = Image.fromarray(cubedata, mode='RGBA')
+    else:
+      img = Image.fromarray(cubedata)
+    fileobj = cStringIO.StringIO ()
+    img.save ( fileobj, "JPEG" )
+
+    fileobj.seek(0)
+    return fileobj.read()
+
+  except Exception,e:
+    raise OCPCAError("{}".format(e))
+
 
 def BLOSC ( chanargs, proj, db ):
   """Return a web readable blosc file"""
@@ -245,6 +299,7 @@ def HDF5(chanargs, proj, db):
   fh5out.close()
   tmpfile.seek(0)
   return tmpfile.read()
+
 
 def postTiff3d ( channel, postargs, proj, db, postdata ):
   """Upload a tiff to the database"""
@@ -607,6 +662,8 @@ def selectService ( service, webargs, proj, db ):
     return  numpyZip ( webargs, proj, db ) 
   elif service in ['blosc']:
     return  BLOSC ( webargs, proj, db ) 
+  elif service in ['jpeg']:
+    return JPEG ( webargs, proj, db )
   elif service in ['zip']:
     return  binZip ( webargs, proj, db ) 
   elif service == 'id':
@@ -682,7 +739,7 @@ def selectPost ( webargs, proj, db, postdata ):
             raise OCPCAError("Wrong datatype in POST")
             
           if ch.getChannelType() in IMAGE_CHANNELS:
-            db.writeCuboids ( ch, corner, resolution, voxarray[idx,:] )
+            db.writeCuboid ( ch, corner, resolution, voxarray[idx,:] )
 
           elif ch.getChannelType() in TIMESERIES_CHANNELS:
             db.writeTimeCuboid(ch, corner, resolution, timerange, voxarray[idx,:])
@@ -794,6 +851,20 @@ AR_TIGHTCUTOUT = 3
 AR_BOUNDINGBOX = 4
 AR_CUBOIDS = 5
 
+def getAnnoJSONById ( ch, annoid, proj, db ):
+  """ Retrieve the annotation and return it as a serialized json string """
+
+  # retrieve the annotation
+  anno = db.getAnnotation ( ch, annoid ) 
+  if anno == None:
+    logger.warning("No annotation found at identifier = %s" % (annoid))
+    raise OCPCAError ("No annotation found at identifier = %s" % (annoid))
+
+  # create the JSONanno obj
+  jsonanno = jsonann.AnnotationtoJSON ( anno )
+
+  # return data
+  return jsonanno.toJSON() 
 
 def getAnnoById ( ch, annoid, h5f, proj, db, dataoption, resolution=None, corner=None, dim=None ): 
   """Retrieve the annotation and put it in the HDF5 file."""
@@ -931,6 +1002,27 @@ def getAnnotation ( webargs ):
     # Split the URL and get the args
     ch = ocpcaproj.OCPCAChannel(proj, channel)
     option_args = otherargs.split('/', 2)
+
+    # AB Added 20151011 
+    # Check to see if this is a JSON request, and if so return the JSON objects 
+    # otherwise, continue with returning the HDF5 data
+    if option_args[1] == 'json':
+      jsonstr = ''
+      try:
+        db.startTxn()
+        if re.match ( '^[\d,]+$', option_args[0] ): 
+          annoids = map(int, option_args[0].split(','))
+          for annoid in annoids: 
+            jsonstr += getAnnoJSONById ( ch, annoid, proj, db )
+
+      except: 
+        db.rollback()
+        raise
+
+      db.commit()
+      return jsonstr 
+
+    # not a json request, continue with building and returning HDF5 file 
 
     # Make the HDF5 file
     # Create an in-memory HDF5 file
@@ -1378,11 +1470,74 @@ def putAnnotation ( webargs, postdata ):
       # return the identifier
       return retstr
 
+def getNIFTI ( webargs ):
+  """Return the entire channel as a NIFTI file.
+     Limited to 2Gig"""
+    
+  [token, channel, optionsargs] = webargs.split('/',2)
+
+  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+
+    proj = projdb.loadToken ( token )
+  
+  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+
+    ch = ocpcaproj.OCPCAChannel(proj, channel)
+
+    # Make a named temporary file for the nii file
+    with closing (tempfile.NamedTemporaryFile(suffix='.nii')) as tmpfile:
+
+      ocpcanifti.queryNIFTI ( tmpfile, ch, db, proj )
+
+      tmpfile.seek(0)
+      return tmpfile.read()
+
+
+def putNIFTI ( webargs, postdata ):
+  """Put a NIFTI object as an image"""
+    
+  [token, channel, optionsargs] = webargs.split('/',2)
+
+  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+    proj = projdb.loadToken ( token )
+  
+  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+
+    ch = ocpcaproj.OCPCAChannel(proj, channel)
+    # Don't write to readonly projects
+    if ch.getReadOnly() == ocpcaproj.READONLY_TRUE:
+      logger.warning("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
+      raise OCPCAError("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
+
+    # check the magic number -- is it a gz file?
+    if postdata[0] == '\x1f' and postdata[1] ==  '\x8b':
+
+      # Make a named temporary file 
+      with closing (tempfile.NamedTemporaryFile(suffix='.nii.gz')) as tmpfile:
+
+        tmpfile.write ( postdata )
+        tmpfile.seek(0)
+
+        # ingest the nifti file
+        ocpcanifti.ingestNIFTI ( tmpfile.name, ch, db, proj )
+    
+    else:
+
+      # Make a named temporary file 
+      with closing (tempfile.NamedTemporaryFile(suffix='.nii')) as tmpfile:
+
+        tmpfile.write ( postdata )
+        tmpfile.seek(0)
+
+        # ingest the nifti file
+        ocpcanifti.ingestNIFTI ( tmpfile.name, ch, db, proj )
+
 
 def getSWC ( webargs ):
   """Return an SWC object generated from Skeletons/Nodes"""
-   
-  [token, channel, swcstring, skeletons, rest] = webargs.split('/', 4)
+
+  [token, channel, service, resstr, rest] = webargs.split('/',4)
+  resolution = int(resstr)
 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
@@ -1394,7 +1549,7 @@ def getSWC ( webargs ):
     # Make a named temporary file for the SWC
     with closing (tempfile.NamedTemporaryFile()) as tmpfile:
 
-      ocpcaskel.querySWC ( tmpfile, ch, db, proj, skelids=None )
+      ocpcaskel.querySWC ( resolution, tmpfile, ch, db, proj, skelids=None )
 
       tmpfile.seek(0)
       return tmpfile.read()
@@ -1404,7 +1559,8 @@ def getSWC ( webargs ):
 def putSWC ( webargs, postdata ):
   """Put an SWC object into RAMON skeleton/tree nodes"""
 
-  [token, channel, optionsargs] = webargs.split('/',2)
+  [token, channel, service, resstr, optionsargs] = webargs.split('/',4)
+  resolution = int(resstr)
 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
@@ -1423,12 +1579,10 @@ def putSWC ( webargs, postdata ):
       tmpfile.write ( postdata )
       tmpfile.seek(0)
 
-      with closing (open(tmpfile.name)) as fp:
+      # Parse the swc file into skeletons
+      swc_skels = ocpcaskel.ingestSWC ( resolution, tmpfile, ch, db )
 
-        # Parse the swc file into skeletons
-        swc_skels = ocpcaskel.ingestSWC ( fp, ch, db )
-
-        return swc_skels
+      return swc_skels
 
 
 
@@ -1554,8 +1708,25 @@ def jsonInfo ( webargs ):
   # get the project 
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
-
+    
     return jsonprojinfo.jsonInfo(proj)
+
+def xmlInfo ( webargs ):
+  """Return project information in json format"""
+
+  try:
+    # match the format /token/volume.vikingxml
+    m = re.match(r'(\w+)/volume.vikingxml', webargs)
+    token = m.group(1)
+  except Exception, e:
+    print "Bad URL {}".format(webargs)
+    raise
+  
+  # get the project 
+  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+    proj = projdb.loadToken ( token )
+
+    return jsonprojinfo.xmlInfo(token, proj)
 
 
 def projInfo ( webargs ):
@@ -1685,6 +1856,7 @@ def setPropagate(webargs):
   """Set the value of the propagate field"""
 
   # input in the format token/channel_list/setPropagate/value/
+  # here value = {NOT_PROPAGATED, UNDER_PROPAGATION} not {PROPAGATED}
   try:
     (token, channel_list, value_list) = re.match("(\w+)/([\w+,]+)/setPropagate/([\d+,]+)/$", webargs).groups()
   except:
@@ -1697,21 +1869,37 @@ def setPropagate(webargs):
     
     for channel_name in channel_list.split(','):
       ch = proj.getChannelObj(channel_name)
-
+      
       value = value_list[0]
-      # If the value is to set under propagation
-      if int(value) == UNDER_PROPAGATION and ch.getPropagate() != UNDER_PROPAGATION:
-        ch.setPropagate(UNDER_PROPAGATION)
-        from ocpca.tasks import propagate
-        propagate.delay(token, channel_name)
-        #import ocpcastack
-        #ocpcastack.buildStack(token, channel_name)
+      # If the value is to be set under propagation and the project is not under propagation
+      if int(value) == UNDER_PROPAGATION and ch.getPropagate() == NOT_PROPAGATED:
+        # and is not read only
+        if ch.getReadOnly() == READONLY_FALSE:
+          ch.setPropagate(UNDER_PROPAGATION)
+          from ocpca.tasks import propagate
+          # then call propagate
+          # propagate(token, channel_name)
+          propagate.delay(token, channel_name)
+        else:
+          logger.warning("Cannot Propagate this project. It is set to Read Only.")
+          raise OCPCAError("Cannot Propagate this project. It is set to Read Only.")
+      # if the project is Propagated already you can set it to under propagation
+      elif int(value) == UNDER_PROPAGATION and ch.getPropagate() == PROPAGATED:
+        logger.warning("Cannot propagate a project which is propagated. Set to Not Propagated first.")
+        raise OCPCAError("Cannot propagate a project which is propagated. Set to Not Propagated first.")
+      # If the value to be set is not propagated
       elif int(value) == NOT_PROPAGATED:
+        # and the project is under propagation then throw an error
         if ch.getPropagate() == UNDER_PROPAGATION:
           logger.warning("Cannot set this value. Project is under propagation.")
           raise OCPCAError("Cannot set this value. Project is under propagation.")
+        # and the project is already propagated and set read only then throw error
+        elif ch.getPropagate() == PROPAGATED and ch.getReadOnly == READONLY_TRUE:
+          logger.warning("Cannot set this Project to unpropagated. Project is Read only")
+          raise OCPCAError("Cannot set this Project to unpropagated. Project is Read only")
         else:
           ch.setPropagate(NOT_PROPAGATED)
+      # cannot set a project to propagated via the RESTful interface
       else:
         logger.warning("Invalid Value {} for setPropagate".format(value))
         raise OCPCAError("Invalid Value {} for setPropagate".format(value))

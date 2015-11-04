@@ -10,13 +10,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+import sys
+import math
 import MySQLdb
 import h5py
 import numpy as np
-import math
-from contextlib import closing
-import os
-import sys
 from contextlib import closing
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -27,7 +26,7 @@ from ocpuser.models import Dataset
 from ocpuser.models import Token
 from ocpuser.models import Channel
 import annotation
-from ocptype import IMAGE_CHANNELS, ANNOTATION_CHANNELS, ZSLICES, ISOTROPIC, READONLY_TRUE, READONLY_FALSE, PUBLIC_TRUE, NOT_PROPAGATED, UNDER_PROPAGATION, PROPAGATED, IMAGE, ANNOTATION, TIMESERIES, MYSQL, CASSANDRA, RIAK
+from ocptype import IMAGE_CHANNELS, ANNOTATION_CHANNELS, ZSLICES, ISOTROPIC, READONLY_TRUE, READONLY_FALSE, PUBLIC_TRUE, NOT_PROPAGATED, UNDER_PROPAGATION, PROPAGATED, IMAGE, ANNOTATION, TIMESERIES, MYSQL, CASSANDRA, RIAK, OCP_servermap
 
 # need imports to be conditional
 try:
@@ -40,7 +39,6 @@ except:
    pass
 
 from ocpcaerror import OCPCAError
-
 import logging
 logger=logging.getLogger("ocp")
 
@@ -71,6 +69,9 @@ class OCPCADataset:
     self.timerange = (self.ds.starttime, self.ds.endtime)
     # nearisotropic service for Stephan
     self.nearisoscaledown = {}
+    self.neariso_voxelres = {}
+    self.neariso_imagesz = {}
+    self.neariso_offset = {}
 
     for i in range (self.ds.scalinglevels+1):
       """Populate the dictionaries"""
@@ -135,6 +136,11 @@ class OCPCADataset:
           self.nearisoscaledown[i] = int(math.floor(scalepixels))
       else:
         self.nearisoscaledown[i] = int(1)
+      
+      self.neariso_imagesz[i] = [ xpixels, ypixels, zpixels/self.nearisoscaledown[i] ]
+      self.neariso_voxelres[i] = [ xvoxelresi, yvoxelresi, zvoxelresi*self.nearisoscaledown[i] ]
+      self.neariso_offset[i] = [ float(xoffseti), float(yoffseti), float(zoffseti)/self.nearisoscaledown[i] ]
+
 
   # Accessors
   def getDatasetName(self):
@@ -182,7 +188,7 @@ class OCPCADataset:
 
 class OCPCAProject:
 
-  def __init__(self, token_name):
+  def __init__(self, token_name ) :
 
     if isinstance(token_name, str) or isinstance(token_name, unicode):
       try:
@@ -254,6 +260,8 @@ class OCPCAChannel:
       logger.warning ( "Channel {} does not exist. {}".format(channel_name, e) )
       raise OCPCAError ( "Channel {} does not exist".format(channel_name) )
 
+  def getChannelModel ( self ):
+    return Channel.objects.get(channel_name=self.ch.channel_name, project=self.pr.getProjectName())
   def getDataType ( self ):
     return self.ch.channel_datatype
   def getChannelName ( self ):
@@ -330,11 +338,11 @@ class OCPCAChannel:
       return "{}_exc{}".format(self.ch.channel_name, resolution)
 
   def setPropagate (self, value):
-    if value in [NOT_PROPAGATED]:
+    if value in [NOT_PROPAGATED, PROPAGATED]:
       self.ch.propagate = value
       self.setReadOnly ( READONLY_FALSE )
       self.ch.save()
-    elif value in [UNDER_PROPAGATION,PROPAGATED]:
+    elif value in [UNDER_PROPAGATION]:
       self.ch.propagate = value
       self.setReadOnly ( READONLY_TRUE )
       self.ch.save()
@@ -343,7 +351,7 @@ class OCPCAChannel:
       raise OCPCAError ( "Wrong Propagate Value {} for Channel {}".format( value, self.ch.channel_name ) )
   
   def setReadOnly (self, value):
-    if value in [READONLY_TRUE,READONLY_FALSE]:
+    if value in [READONLY_TRUE, READONLY_FALSE]:
       self.ch.readonly = value
       self.ch.save()
     else:
@@ -372,7 +380,7 @@ class OCPCAProjectsDB:
     """Make the database for a project."""
 
     pr = Project.objects.get(project_name=project_name)
-    
+
     if pr.kvengine == MYSQL:
       with closing(MySQLdb.connect (host = pr.host , user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'])) as conn:
         with closing(conn.cursor()) as cursor:
@@ -390,7 +398,8 @@ class OCPCAProjectsDB:
     elif pr.kvengine == CASSANDRA:
       
       try:
-        cluster = Cluster([pr.kvserver])
+        server_address = OCP_servermap[pr.kvserver]
+        cluster = Cluster([server_address])
         session = cluster.connect()
         session.execute ("CREATE KEYSPACE {} WITH REPLICATION = {{ 'class' : 'SimpleStrategy', 'replication_factor' : 1 }}".format(pr.project_name), timeout=30)
       except Exception, e:
@@ -446,8 +455,8 @@ class OCPCAProjectsDB:
             conn.commit()
           except MySQLdb.Error, e:
             ch.delete()
-            logging.error ("Failed to create tables for new project {}: {}. sql={}".format(e.args[0], e.args[1], sql))
-            raise OCPCAError ("Failed to create tables for new project {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+            logging.error ("Failed to create tables for new project {}: {}.".format(e.args[0], e.args[1]))
+            raise OCPCAError ("Failed to create tables for new project {}: {}.".format(e.args[0], e.args[1]))
 
     elif pr.kvengine == RIAK:
       #RBTODO figure out new schema for Riak

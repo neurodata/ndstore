@@ -32,7 +32,7 @@ class AnnotateIndex:
     self.kvio = kvio
 
     if self.proj.getKVEngine() == 'MySQL':
-      self.NPZ = False
+      self.NPZ = True
     else: 
       self.NPZ = False
    
@@ -67,7 +67,7 @@ class AnnotateIndex:
     for key, value in index.iteritems():
       cubelist = list(value)
       cubeindex = np.array(cubelist, dtype=np.uint64)
-          
+      
       curindex = self.getIndex(ch, key,resolution,True)
          
       if curindex == []:
