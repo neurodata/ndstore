@@ -91,7 +91,7 @@ GET
 .. gist:: https://gist.github.com/kunallillaney/19b78e5a83611edf7808
 
 Blosc Service
-============+
+=============
 
 .. _blosc-post:
 
