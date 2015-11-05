@@ -114,19 +114,19 @@ class OCPCADataset:
       #self.cubedim[i] = [128, 128, 16]
       # this may need to be changed.  
       if self.ds.scalingoption == ZSLICES:
+        self.cubedim[i] = [512, 512, 16]
         #self.cubedim[i] = [128, 128, 16]
-        self.cubedim[i] = [128, 128, 16]
-        if float(self.ds.zvoxelres/self.ds.xvoxelres)/(2**i) >  0.5:
-          self.cubedim[i] = [128, 128, 16]
-        else: 
-          self.cubedim[i] = [64, 64, 64]
+        #if float(self.ds.zvoxelres/self.ds.xvoxelres)/(2**i) >  0.5:
+          #self.cubedim[i] = [128, 128, 16]
+        #else: 
+          #self.cubedim[i] = [64, 64, 64]
 
         # Make an exception for bock11 data -- just an inconsistency in original ingest
         if self.ds.ximagesize == 135424 and i == 5:
           self.cubedim[i] = [128, 128, 16]
       else:
         # RB what should we use as a cubedim?
-        self.cubedim[i] = [128, 128, 16]
+        self.cubedim[i] = [512, 512, 16]
       
       if self.scale[i]['xz'] < 1.0:
         scalepixels = 1/self.scale[i]['xz']
@@ -401,7 +401,10 @@ class OCPCAProjectsDB:
         server_address = OCP_servermap[pr.kvserver]
         cluster = Cluster([server_address])
         session = cluster.connect()
-        session.execute ("CREATE KEYSPACE {} WITH REPLICATION = {{ 'class' : 'SimpleStrategy', 'replication_factor' : 1 }}".format(pr.project_name), timeout=30)
+        if server_address == 'localhost':  
+          session.execute ("CREATE KEYSPACE {} WITH REPLICATION = {{ 'class' : 'SimpleStrategy', 'replication_factor' : 0 }}".format(pr.project_name), timeout=30)
+        else:
+          session.execute ("CREATE KEYSPACE {} WITH REPLICATION = {{ 'class' : 'SimpleStrategy', 'replication_factor' : 1 }}".format(pr.project_name), timeout=30)
       except Exception, e:
         pr.delete()
         logger.error("Failed to create namespace for new project {}".format(project_name))
