@@ -4,7 +4,7 @@ Project Info API's
 JSON Service
 ============
 
-.. _json-get:
+.. _jsoninfo-get:
 
 GET
 ----
@@ -256,7 +256,7 @@ GET
       }
 
 
-.. _json-post:
+.. _jsoninfo-post:
 
 POST
 ----
@@ -299,7 +299,7 @@ POST
       }
 
 
-.. _hdf5-get:
+.. _hdf5info-get:
 
 HDF5 Service
 =============
