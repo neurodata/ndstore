@@ -110,6 +110,46 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../sphinx/config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sphinx/faq.html">Frequently Asked Questions (FAQ)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sphinx/dictionary.html">Explanation Of Terms</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../sphinx/dictionary.html#assumptions">Assumptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../sphinx/dictionary.html#dataset-and-related-terms">Dataset and Related Terms</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#dataset-name">Dataset Name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#image-size">Image Size</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#voxel-resolution">Voxel Resolution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#offset">Offset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#time-range">Time Range</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#scaling-levels">Scaling Levels</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#scaling">Scaling</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../sphinx/dictionary.html#channel-and-related-terms">Channel and Related Terms</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#channel-name">Channel Name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#data-type">Data Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#channel-type">Channel Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#exceptions">Exceptions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#resolution">Resolution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#window-range">Window Range</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#read-only">Read Only</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#data-url">Data URL</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#file-format">File Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#file-type">File Type</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../sphinx/dictionary.html#project-and-related-terms">Project and Related Terms</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#project-name">Project Name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#token-name">Token Name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#public">Public</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../sphinx/dictionary.html#token">Token</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../sphinx/ingesting.html">How to Ingest Data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../sphinx/ingesting.html#prepping-the-data">Prepping The Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../sphinx/ingesting.html#uploading">Uploading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../sphinx/ingesting.html#unsupported-image-types">Unsupported Image Types</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="ocp_types.html">OCP Types</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="ocp_types.html#channel-types">Channel Types</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ocp_types.html#data-types">Data Types</a></li>
@@ -137,6 +177,8 @@
 <li class="toctree-l2"><a class="reference internal" href="data_api.html#hdf5-service">HDF5 Service</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="data_api.html#post">POST</a></li>
 <li class="toctree-l3"><a class="reference internal" href="data_api.html#get">GET</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_api.html#blosc-post">POST</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_api.html#blosc-get">GET</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="data_api.html#numpy-service">Numpy Service</a><ul>
@@ -148,6 +190,10 @@
 <li class="toctree-l3"><a class="reference internal" href="data_api.html#get-xy-slice-cutout">GET XY Slice Cutout</a></li>
 <li class="toctree-l3"><a class="reference internal" href="data_api.html#get-xz-slice-cutout">GET XZ Slice Cutout</a></li>
 <li class="toctree-l3"><a class="reference internal" href="data_api.html#get-yz-slice-cutout">GET YZ Slice Cutout</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="data_api.html#jpeg-service">JPEG Service</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data_api.html#jpeg-get">GET</a></li>
 </ul>
 </li>
 </ul>
@@ -181,7 +227,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="">JSON API&#8217;s</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#createchannel">createChannel</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#deletechannel">deleteChannel</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#createproject">createProject</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#autoingest">autoIngest</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="overlay_api.html">Overlay API&#8217;s</a><ul>
@@ -196,6 +242,7 @@
 <li class="toctree-l1"><a class="reference internal" href="tile_api.html">Tile API&#8217;s</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="tile_api.html#getsimpletile">getSimpleTile</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tile_api.html#getmcfctile">getMcfcTile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tile_api.html#getvikingtile">getVikingTile</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="graphgen_api.html">GrahpGen API&#8217;s</a><ul>
@@ -369,11 +416,11 @@
 </dd></dl>
 
 </div>
-<div class="section" id="createproject">
-<span id="json-createproject"></span><h2>createProject<a class="headerlink" href="#createproject" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="autoingest">
+<span id="json-autoingest"></span><h2>autoIngest<a class="headerlink" href="#autoingest" title="Permalink to this headline">¶</a></h2>
 <dl class="post">
-<dt id="post-(string-server_name)-ocp-ca-createProject-">
-<code class="descname">POST </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/ca/createProject/</code><a class="headerlink" href="#post-(string-server_name)-ocp-ca-createProject-" title="Permalink to this definition">¶</a></dt>
+<dt id="post-(string-server_name)-ocp-ca-autoIngest-">
+<code class="descname">POST </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/ca/autoIngest/</code><a class="headerlink" href="#post-(string-server_name)-ocp-ca-autoIngest-" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />

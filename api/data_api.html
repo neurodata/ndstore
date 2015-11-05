@@ -110,6 +110,46 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../sphinx/config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sphinx/faq.html">Frequently Asked Questions (FAQ)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sphinx/dictionary.html">Explanation Of Terms</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../sphinx/dictionary.html#assumptions">Assumptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../sphinx/dictionary.html#dataset-and-related-terms">Dataset and Related Terms</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#dataset-name">Dataset Name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#image-size">Image Size</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#voxel-resolution">Voxel Resolution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#offset">Offset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#time-range">Time Range</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#scaling-levels">Scaling Levels</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#scaling">Scaling</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../sphinx/dictionary.html#channel-and-related-terms">Channel and Related Terms</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#channel-name">Channel Name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#data-type">Data Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#channel-type">Channel Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#exceptions">Exceptions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#resolution">Resolution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#window-range">Window Range</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#read-only">Read Only</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#data-url">Data URL</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#file-format">File Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#file-type">File Type</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../sphinx/dictionary.html#project-and-related-terms">Project and Related Terms</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#project-name">Project Name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#token-name">Token Name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sphinx/dictionary.html#public">Public</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../sphinx/dictionary.html#token">Token</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../sphinx/ingesting.html">How to Ingest Data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../sphinx/ingesting.html#prepping-the-data">Prepping The Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../sphinx/ingesting.html#uploading">Uploading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../sphinx/ingesting.html#unsupported-image-types">Unsupported Image Types</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="ocp_types.html">OCP Types</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="ocp_types.html#channel-types">Channel Types</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ocp_types.html#data-types">Data Types</a></li>
@@ -137,6 +177,8 @@
 <li class="toctree-l2"><a class="reference internal" href="#hdf5-service">HDF5 Service</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#post">POST</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#get">GET</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#blosc-post">POST</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#blosc-get">GET</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#numpy-service">Numpy Service</a><ul>
@@ -185,7 +227,7 @@
 <li class="toctree-l1"><a class="reference internal" href="json_api.html">JSON API&#8217;s</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="json_api.html#createchannel">createChannel</a></li>
 <li class="toctree-l2"><a class="reference internal" href="json_api.html#deletechannel">deleteChannel</a></li>
-<li class="toctree-l2"><a class="reference internal" href="json_api.html#createproject">createProject</a></li>
+<li class="toctree-l2"><a class="reference internal" href="json_api.html#autoingest">autoIngest</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="overlay_api.html">Overlay API&#8217;s</a><ul>
@@ -357,12 +399,92 @@
 </table>
 </dd></dl>
 
-<script src="https://gist.github.com/kunallillaney/19b78e5a83611edf7808.js">&nbsp;</script></div>
+<script src="https://gist.github.com/kunallillaney/19b78e5a83611edf7808.js">&nbsp;</script><p>Blosc Service
+============+</p>
+</div>
+<div class="section" id="blosc-post">
+<span id="id1"></span><h3>POST<a class="headerlink" href="#blosc-post" title="Permalink to this headline">¶</a></h3>
+<dl class="post">
+<dt id="post-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-blosc-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-min_time),(int-max_time)-">
+<code class="descname">POST </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/blosc/</code><span class="sig-paren">(</span><em class="property">int: </em><em>resolution</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_x</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_x</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_y</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_y</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_z</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_z</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_time</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_time</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#post-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-blosc-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-min_time),(int-max_time)-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Post a Blosc file to the server</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in OCP. In the general case this is openconnecto.me.</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; Token Name in OCP.</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; Channel Name in OCP. <em>Optional</em>. If missing will use default channel for the token.</li>
+<li><strong>resolution</strong> (<em>int</em>) &#8211; Resolution for the data</li>
+<li><strong>min_x</strong> (<em>int</em>) &#8211; Minimum value in the xrange</li>
+<li><strong>max_x</strong> (<em>int</em>) &#8211; Maximum value in the xrange</li>
+<li><strong>min_y</strong> (<em>int</em>) &#8211; Minimum value in the yrange</li>
+<li><strong>max_y</strong> (<em>int</em>) &#8211; Maximum value in the yrange</li>
+<li><strong>min_z</strong> (<em>int</em>) &#8211; Minimum value in the zrange</li>
+<li><strong>max_z</strong> (<em>int</em>) &#8211; Maximum value in the zrange</li>
+<li><strong>min_time</strong> (<em>int</em>) &#8211; Minimum value in the timerange. <em>Optional</em>. Only used for timeseries channels.</li>
+<li><strong>max_time</strong> (<em>int</em>) &#8211; Maximum value in the timerange. <em>Optional</em>. Only used for timeseries channels.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; No error</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; Error in the syntax or file format</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="blosc-get">
+<span id="id2"></span><h3>GET<a class="headerlink" href="#blosc-get" title="Permalink to this headline">¶</a></h3>
+<dl class="get">
+<dt id="get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-blosc-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-min_time),(int-max_time)-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/blosc/</code><span class="sig-paren">(</span><em class="property">int: </em><em>resolution</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_x</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_x</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_y</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_y</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_z</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_z</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_time</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_time</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-blosc-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-min_time),(int-max_time)-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Get a Blosc file from the server</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in OCP. In the general case this is openconnecto.me.</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; Token Name in OCP.</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; Channel Name in OCP. <em>Optional</em>. If missing will use default channel for the token.</li>
+<li><strong>resolution</strong> (<em>int</em>) &#8211; Resolution for the data</li>
+<li><strong>min_x</strong> (<em>int</em>) &#8211; Minimum value in the xrange</li>
+<li><strong>max_x</strong> (<em>int</em>) &#8211; Maximum value in the xrange</li>
+<li><strong>min_y</strong> (<em>int</em>) &#8211; Minimum value in the yrange</li>
+<li><strong>max_y</strong> (<em>int</em>) &#8211; Maximum value in the yrange</li>
+<li><strong>min_z</strong> (<em>int</em>) &#8211; Minimum value in the zrange</li>
+<li><strong>max_z</strong> (<em>int</em>) &#8211; Maximum value in the zrange</li>
+<li><strong>min_time</strong> (<em>int</em>) &#8211; Minimum value in the timerange. <em>Optional</em>. Only used for timeseries channels.</li>
+<li><strong>max_time</strong> (<em>int</em>) &#8211; Maximum value in the timerange. <em>Optional</em>. Only used for timeseries channels.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; No error</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; Error in the syntax or file format</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
 </div>
 <div class="section" id="numpy-service">
 <h2>Numpy Service<a class="headerlink" href="#numpy-service" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="numpy-post">
-<span id="id1"></span><h3>POST<a class="headerlink" href="#numpy-post" title="Permalink to this headline">¶</a></h3>
+<span id="id3"></span><h3>POST<a class="headerlink" href="#numpy-post" title="Permalink to this headline">¶</a></h3>
 <dl class="post">
 <dt id="post-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-npz-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-min_time),(int-max_time)-">
 <code class="descname">POST </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/npz/</code><span class="sig-paren">(</span><em class="property">int: </em><em>resolution</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_x</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_x</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_y</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_y</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_z</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_z</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_time</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_time</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#post-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-npz-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-min_time),(int-max_time)-" title="Permalink to this definition">¶</a></dt>
@@ -407,7 +529,7 @@
 
 <script src="https://gist.github.com/kunallillaney/19b78e5a83611edf7808.js">&nbsp;</script></div>
 <div class="section" id="numpy-get">
-<span id="id2"></span><h3>GET<a class="headerlink" href="#numpy-get" title="Permalink to this headline">¶</a></h3>
+<span id="id4"></span><h3>GET<a class="headerlink" href="#numpy-get" title="Permalink to this headline">¶</a></h3>
 <dl class="get">
 <dt id="get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-npz-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-min_time),(int-max_time)-">
 <code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/npz/</code><span class="sig-paren">(</span><em class="property">int: </em><em>resolution</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_x</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_x</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_y</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_y</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_z</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_z</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_time</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_time</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-npz-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-min_time),(int-max_time)-" title="Permalink to this definition">¶</a></dt>
@@ -617,7 +739,7 @@
 <div class="section" id="jpeg-service">
 <h2>JPEG Service<a class="headerlink" href="#jpeg-service" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="jpeg-get">
-<span id="id3"></span><h3>GET<a class="headerlink" href="#jpeg-get" title="Permalink to this headline">¶</a></h3>
+<span id="id5"></span><h3>GET<a class="headerlink" href="#jpeg-get" title="Permalink to this headline">¶</a></h3>
 <dl class="get">
 <dt id="get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-jpeg-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-">
 <code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/jpeg/</code><span class="sig-paren">(</span><em class="property">int: </em><em>resolution</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_x</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_x</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_y</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_y</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">int: </em><em>min_z</em><span class="sig-paren">)</span><code class="descname">,</code><span class="sig-paren">(</span><em class="property">int: </em><em>max_z</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-jpeg-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-" title="Permalink to this definition">¶</a></dt>

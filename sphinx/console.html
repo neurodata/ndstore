@@ -110,6 +110,46 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions (FAQ)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dictionary.html">Explanation Of Terms</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dictionary.html#assumptions">Assumptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dictionary.html#dataset-and-related-terms">Dataset and Related Terms</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="dictionary.html#dataset-name">Dataset Name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dictionary.html#image-size">Image Size</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dictionary.html#voxel-resolution">Voxel Resolution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dictionary.html#offset">Offset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dictionary.html#time-range">Time Range</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dictionary.html#scaling-levels">Scaling Levels</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dictionary.html#scaling">Scaling</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dictionary.html#channel-and-related-terms">Channel and Related Terms</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="dictionary.html#channel-name">Channel Name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dictionary.html#data-type">Data Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dictionary.html#channel-type">Channel Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dictionary.html#exceptions">Exceptions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dictionary.html#resolution">Resolution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dictionary.html#window-range">Window Range</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dictionary.html#read-only">Read Only</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dictionary.html#data-url">Data URL</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dictionary.html#file-format">File Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dictionary.html#file-type">File Type</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dictionary.html#project-and-related-terms">Project and Related Terms</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="dictionary.html#project-name">Project Name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dictionary.html#token-name">Token Name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dictionary.html#public">Public</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dictionary.html#token">Token</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ingesting.html">How to Ingest Data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ingesting.html#prepping-the-data">Prepping The Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ingesting.html#uploading">Uploading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ingesting.html#unsupported-image-types">Unsupported Image Types</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="../api/ocp_types.html">OCP Types</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../api/ocp_types.html#channel-types">Channel Types</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/ocp_types.html#data-types">Data Types</a></li>
@@ -137,6 +177,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../api/data_api.html#hdf5-service">HDF5 Service</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../api/data_api.html#post">POST</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../api/data_api.html#get">GET</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/data_api.html#blosc-post">POST</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/data_api.html#blosc-get">GET</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../api/data_api.html#numpy-service">Numpy Service</a><ul>
@@ -148,6 +190,10 @@
 <li class="toctree-l3"><a class="reference internal" href="../api/data_api.html#get-xy-slice-cutout">GET XY Slice Cutout</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../api/data_api.html#get-xz-slice-cutout">GET XZ Slice Cutout</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../api/data_api.html#get-yz-slice-cutout">GET YZ Slice Cutout</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_api.html#jpeg-service">JPEG Service</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/data_api.html#jpeg-get">GET</a></li>
 </ul>
 </li>
 </ul>
@@ -181,7 +227,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../api/json_api.html">JSON API&#8217;s</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../api/json_api.html#createchannel">createChannel</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/json_api.html#deletechannel">deleteChannel</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../api/json_api.html#createproject">createProject</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/json_api.html#autoingest">autoIngest</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../api/overlay_api.html">Overlay API&#8217;s</a><ul>
@@ -196,6 +242,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../api/tile_api.html">Tile API&#8217;s</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../api/tile_api.html#getsimpletile">getSimpleTile</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/tile_api.html#getmcfctile">getMcfcTile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/tile_api.html#getvikingtile">getVikingTile</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../api/graphgen_api.html">GrahpGen API&#8217;s</a><ul>
@@ -270,11 +317,11 @@
 </div>
 <div class="section" id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="http://openconnecto.me/ocp/ocpuser/profile/">The Console</a> allows data to be uploaded and downloaded to OCP as well as access other services within OCP. Data in OCP is organized into datasets and projects, see below for a more extensive description of each. The diagram below shows how the overall service is organized;</p>
+<p><a class="reference external" href="http://openconnecto.me/ocp/ocpuser/profile/">The Console</a> allows data to be uploaded and downloaded to NeuroData as well as access other services within Neurodata. Data in Neurodata is organized into datasets and projects, see below for a more extensive description of each. The diagram below shows how the overall service is organized.</p>
 <div class="figure align-center">
 <a class="reference internal image-reference" href="../_images/ocpservicediagram.png"><img alt="../_images/ocpservicediagram.png" src="../_images/ocpservicediagram.png" style="width: 500px; height: 200px;" /></a>
 </div>
-<p>Datasets are present on the OCP server and are accessed through projects. These datasets can hold multiple types of data, including image, annotation, etc. When a specific type of data needs to be accessed in a dataset (via the project), say for example 8-bit image data, a channel is created in the project for that specific datatype. The project (and in turn the channels and the dataset) is accessible by a token, which serves as an access point for anyone that has the token.</p>
+<p>Datasets are present on the Neurodata server and are accessed through projects. These datasets can hold multiple types of data, including image, annotation, etc. When a specific type of data needs to be accessed in a dataset (via the project), say for example 8-bit image data, a channel is created in the project for that specific datatype. The project (and in turn the channels and the dataset) is accessible by a token, which serves as an access point for anyone that has the token.</p>
 </div>
 <div class="section" id="datasets">
 <h2>Datasets<a class="headerlink" href="#datasets" title="Permalink to this headline">¶</a></h2>
@@ -301,13 +348,13 @@
 <td>A description of the data being uploaded, good things to include may be species and the location of where the images are from.</td>
 </tr>
 <tr class="row-even"><td>X, Y, Z Image Size</td>
-<td>This is the size of the X, Y and Z plane.</td>
+<td>This is the size of the X, Y and Z plane in pixels</td>
 </tr>
 <tr class="row-odd"><td>X, Y, Z Offset</td>
-<td>Amount to offset in the X, Y and Z plane.</td>
+<td>Amount to offset in the X, Y and Z plane in pixels</td>
 </tr>
 <tr class="row-even"><td>PUBLIC</td>
-<td>Whether or not the template (not the data) is viewable by everyone using OCP.</td>
+<td>Whether or not the template (not the data) is viewable by everyone using Neurodata (can select public or private).</td>
 </tr>
 <tr class="row-odd"><td>Scaling Level</td>
 <td>Sets the resolution level for the dataset.</td>
@@ -367,7 +414,7 @@ There also are cases where the user may wish to modify aspects of a project, whe
 <td>This is the KV key-server. Use the default option.</td>
 </tr>
 <tr class="row-odd"><td>Link to Existing Database</td>
-<td>Use this option if the project database is already present on OCP servers.</td>
+<td>Use this option if the project database is already present on Neurodata servers.</td>
 </tr>
 <tr class="row-even"><td>Create a Default Token</td>
 <td>Creates a default token for the project.</td>

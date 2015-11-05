@@ -97,12 +97,12 @@ deleteChannel
         "SUCCESS"
       }
 
-.. _json-createproject:
+.. _json-autoingest:
 
-createProject
--------------
+autoIngest
+----------
 
-.. http:post:: (string:server_name)/ocp/ca/createProject/
+.. http:post:: (string:server_name)/ocp/ca/autoIngest/
 
    :synopsis: Create a dataset, project and channels with a JSON file.
    

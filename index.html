@@ -111,6 +111,46 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="sphinx/config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sphinx/faq.html">Frequently Asked Questions (FAQ)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sphinx/dictionary.html">Explanation Of Terms</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sphinx/dictionary.html#assumptions">Assumptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sphinx/dictionary.html#dataset-and-related-terms">Dataset and Related Terms</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="sphinx/dictionary.html#dataset-name">Dataset Name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sphinx/dictionary.html#image-size">Image Size</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sphinx/dictionary.html#voxel-resolution">Voxel Resolution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sphinx/dictionary.html#offset">Offset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sphinx/dictionary.html#time-range">Time Range</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sphinx/dictionary.html#scaling-levels">Scaling Levels</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sphinx/dictionary.html#scaling">Scaling</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="sphinx/dictionary.html#channel-and-related-terms">Channel and Related Terms</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="sphinx/dictionary.html#channel-name">Channel Name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sphinx/dictionary.html#data-type">Data Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sphinx/dictionary.html#channel-type">Channel Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sphinx/dictionary.html#exceptions">Exceptions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sphinx/dictionary.html#resolution">Resolution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sphinx/dictionary.html#window-range">Window Range</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sphinx/dictionary.html#read-only">Read Only</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sphinx/dictionary.html#data-url">Data URL</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sphinx/dictionary.html#file-format">File Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sphinx/dictionary.html#file-type">File Type</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="sphinx/dictionary.html#project-and-related-terms">Project and Related Terms</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="sphinx/dictionary.html#project-name">Project Name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sphinx/dictionary.html#token-name">Token Name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sphinx/dictionary.html#public">Public</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="sphinx/dictionary.html#token">Token</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="sphinx/ingesting.html">How to Ingest Data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sphinx/ingesting.html#prepping-the-data">Prepping The Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sphinx/ingesting.html#uploading">Uploading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sphinx/ingesting.html#unsupported-image-types">Unsupported Image Types</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="api/ocp_types.html">OCP Types</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="api/ocp_types.html#channel-types">Channel Types</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/ocp_types.html#data-types">Data Types</a></li>
@@ -138,6 +178,8 @@
 <li class="toctree-l2"><a class="reference internal" href="api/data_api.html#hdf5-service">HDF5 Service</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="api/data_api.html#post">POST</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/data_api.html#get">GET</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/data_api.html#blosc-post">POST</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/data_api.html#blosc-get">GET</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="api/data_api.html#numpy-service">Numpy Service</a><ul>
@@ -186,7 +228,7 @@
 <li class="toctree-l1"><a class="reference internal" href="api/json_api.html">JSON API&#8217;s</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="api/json_api.html#createchannel">createChannel</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/json_api.html#deletechannel">deleteChannel</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/json_api.html#createproject">createProject</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/json_api.html#autoingest">autoIngest</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="api/overlay_api.html">Overlay API&#8217;s</a><ul>
@@ -286,6 +328,8 @@ Electron microscopy images of a mouse somatosensory cortex (left), a probability
 <li class="toctree-l1"><a class="reference internal" href="sphinx/console.html">Adminstrator Console</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sphinx/config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sphinx/faq.html">Frequently Asked Questions (FAQ)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sphinx/dictionary.html">Explanation Of Terms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sphinx/ingesting.html">How to Ingest Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/ocp_types.html">OCP Types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/info_api.html">Project Info API&#8217;s</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/public_api.html">Public Token API&#8217;s</a></li>

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Configuration &mdash; open-connetome v0.7.0 documentation</title>
+  <title>Explanation Of Terms &mdash; open-connetome v0.7.0 documentation</title>
   
 
   
@@ -33,8 +33,8 @@
 
   
     <link rel="top" title="open-connetome v0.7.0 documentation" href="../index.html"/>
-        <link rel="next" title="Frequently Asked Questions (FAQ)" href="faq.html"/>
-        <link rel="prev" title="Adminstrator Console" href="console.html"/> 
+        <link rel="next" title="How to Ingest Data" href="ingesting.html"/>
+        <link rel="prev" title="Frequently Asked Questions (FAQ)" href="faq.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -108,40 +108,40 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions (FAQ)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="dictionary.html">Explanation Of Terms</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="dictionary.html#assumptions">Assumptions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dictionary.html#dataset-and-related-terms">Dataset and Related Terms</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="dictionary.html#dataset-name">Dataset Name</a></li>
-<li class="toctree-l3"><a class="reference internal" href="dictionary.html#image-size">Image Size</a></li>
-<li class="toctree-l3"><a class="reference internal" href="dictionary.html#voxel-resolution">Voxel Resolution</a></li>
-<li class="toctree-l3"><a class="reference internal" href="dictionary.html#offset">Offset</a></li>
-<li class="toctree-l3"><a class="reference internal" href="dictionary.html#time-range">Time Range</a></li>
-<li class="toctree-l3"><a class="reference internal" href="dictionary.html#scaling-levels">Scaling Levels</a></li>
-<li class="toctree-l3"><a class="reference internal" href="dictionary.html#scaling">Scaling</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Explanation Of Terms</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#assumptions">Assumptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dataset-and-related-terms">Dataset and Related Terms</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dataset-name">Dataset Name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#image-size">Image Size</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#voxel-resolution">Voxel Resolution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#offset">Offset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#time-range">Time Range</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#scaling-levels">Scaling Levels</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#scaling">Scaling</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="dictionary.html#channel-and-related-terms">Channel and Related Terms</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="dictionary.html#channel-name">Channel Name</a></li>
-<li class="toctree-l3"><a class="reference internal" href="dictionary.html#data-type">Data Type</a></li>
-<li class="toctree-l3"><a class="reference internal" href="dictionary.html#channel-type">Channel Type</a></li>
-<li class="toctree-l3"><a class="reference internal" href="dictionary.html#exceptions">Exceptions</a></li>
-<li class="toctree-l3"><a class="reference internal" href="dictionary.html#resolution">Resolution</a></li>
-<li class="toctree-l3"><a class="reference internal" href="dictionary.html#window-range">Window Range</a></li>
-<li class="toctree-l3"><a class="reference internal" href="dictionary.html#read-only">Read Only</a></li>
-<li class="toctree-l3"><a class="reference internal" href="dictionary.html#data-url">Data URL</a></li>
-<li class="toctree-l3"><a class="reference internal" href="dictionary.html#file-format">File Format</a></li>
-<li class="toctree-l3"><a class="reference internal" href="dictionary.html#file-type">File Type</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#channel-and-related-terms">Channel and Related Terms</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#channel-name">Channel Name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#data-type">Data Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#channel-type">Channel Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#exceptions">Exceptions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#resolution">Resolution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#window-range">Window Range</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#read-only">Read Only</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#data-url">Data URL</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#file-format">File Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#file-type">File Type</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="dictionary.html#project-and-related-terms">Project and Related Terms</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="dictionary.html#project-name">Project Name</a></li>
-<li class="toctree-l3"><a class="reference internal" href="dictionary.html#token-name">Token Name</a></li>
-<li class="toctree-l3"><a class="reference internal" href="dictionary.html#public">Public</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#project-and-related-terms">Project and Related Terms</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#project-name">Project Name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#token-name">Token Name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#public">Public</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="dictionary.html#token">Token</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#token">Token</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="ingesting.html">How to Ingest Data</a><ul>
@@ -289,11 +289,11 @@
   <ul class="wy-breadcrumbs">
     <li><a href="../index.html">Docs</a> &raquo;</li>
       
-    <li>Configuration</li>
+    <li>Explanation Of Terms</li>
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="../_sources/sphinx/config.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/sphinx/dictionary.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -302,17 +302,108 @@
 </div>
           <div role="main" class="document">
             
-  <div class="section" id="configuration">
-<h1>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h1>
-<p>You can install open-connectome and configure using the install script:</p>
-<blockquote>
-<div><ul class="simple">
-<li>uAlex script</li>
-<li>MySQL/Cassandra/Riak</li>
-<li>Nginx Setting, Celery Setting, RabbitMq Server</li>
-<li>KL TODO</li>
-</ul>
-</div></blockquote>
+  <div class="section" id="explanation-of-terms">
+<h1>Explanation Of Terms<a class="headerlink" href="#explanation-of-terms" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="assumptions">
+<h2>Assumptions<a class="headerlink" href="#assumptions" title="Permalink to this headline">¶</a></h2>
+<p>The assumption is that the person reading has no experience with our service before this point, but has a sufficient knowledge of basic imaging terms, as in they understand what a pixel is. Second, this document is written primarily for neuro-scientists to become acquainted with what our service can do/does. Finally, it is assumed that the person reading this has sufficient knowledge of how imaging works to know that the image sizes for a given research effort must be consistent.</p>
+</div>
+<div class="section" id="dataset-and-related-terms">
+<h2>Dataset and Related Terms<a class="headerlink" href="#dataset-and-related-terms" title="Permalink to this headline">¶</a></h2>
+<p>A dataset is the basic unit of how data is organized, it contains all of the data of a particular research effort. For example if the data being uploaded is image data of a human cortex that has been annotated, the dataset is where the image and annotation data are stored. Within the dataset there are channel objects, which hold individual types and instances of data (more information below) such as a particular series of annotations. Datasets are accessed indirectly through projects (more information below), as projects access the channels in a dataset.</p>
+<div class="section" id="dataset-name">
+<h3>Dataset Name<a class="headerlink" href="#dataset-name" title="Permalink to this headline">¶</a></h3>
+<p>Dataset Name is the overarching name of the research effort. Standard naming convention is to do LabName_PublicationYear or LeadResearcher_CurrentYear.</p>
+</div>
+<div class="section" id="image-size">
+<h3>Image Size<a class="headerlink" href="#image-size" title="Permalink to this headline">¶</a></h3>
+<p>Image size is the pixel count dimensions of the data. For example is the data is stored as a series of 100, 2100x2000 pixel TIFF images, the dimensions are (2100, 2000, 100).</p>
+</div>
+<div class="section" id="voxel-resolution">
+<h3>Voxel Resolution<a class="headerlink" href="#voxel-resolution" title="Permalink to this headline">¶</a></h3>
+<p>Voxel Resolution is the number of voxels per unit pixel.</p>
+</div>
+<div class="section" id="offset">
+<h3>Offset<a class="headerlink" href="#offset" title="Permalink to this headline">¶</a></h3>
+<p>(Optional) If your data is not well aligned and there is &#8220;excess&#8221; image data you do not wish to examine, but are present in your images, offset is how you specify where your actual image starts. Offset is provided a pixel coordinate offset from origin which specifies the &#8220;actual&#8221; origin of the image.</p>
+</div>
+<div class="section" id="time-range">
+<h3>Time Range<a class="headerlink" href="#time-range" title="Permalink to this headline">¶</a></h3>
+<p>(Optional) Time Range is a parameter to support storage of Time Series data, so the value of the tuple is a 0 to X range of how many images over time were taken, e.g. (0, 600).</p>
+</div>
+<div class="section" id="scaling-levels">
+<h3>Scaling Levels<a class="headerlink" href="#scaling-levels" title="Permalink to this headline">¶</a></h3>
+<p>(Optional)  Scaling levels is the number of levels the data is scalable to (how many zoom levels are present in the data). The highest resolution of the data is at scaling level 0, and for each level up the data is down sampled byt half (per slice).</p>
+</div>
+<div class="section" id="scaling">
+<h3>Scaling<a class="headerlink" href="#scaling" title="Permalink to this headline">¶</a></h3>
+<p>(Optional) Scaling is the orientation of the data being stored, 0 corresponds to a Z-slice orientation (as in a collection of tiff images in which each tiff is a slice on the z plane) and 1 corresponds to an isotropic orientation (in which each slice is a slice on the y plane).</p>
+</div>
+</div>
+<div class="section" id="channel-and-related-terms">
+<h2>Channel and Related Terms<a class="headerlink" href="#channel-and-related-terms" title="Permalink to this headline">¶</a></h2>
+<p>Channels are a particular set/series of data in a given research effort. In the above example of the human cortex image and annotation data there are multiple channels; the image channel, truth annotation channel (if it exists), and perhaps some annotation channels with different annotation algorithms. There is no limit on types of channels per dataset/project, meaning that if the data has multiple sets of different images from the same type of data (e.g. multiple mouse cortices on different drugs) that is supported.</p>
+<div class="section" id="channel-name">
+<h3>Channel Name<a class="headerlink" href="#channel-name" title="Permalink to this headline">¶</a></h3>
+<p>Channel Name is the specific name of a specific series of data. Standard naming convention is to do ImageType_IterationNumber or Name_SubProjectName.</p>
+</div>
+<div class="section" id="data-type">
+<h3>Data Type<a class="headerlink" href="#data-type" title="Permalink to this headline">¶</a></h3>
+<p>The data type is the storage method of data in the channel. It can be uint8, uint16, uint32, uint64, or float32.</p>
+</div>
+<div class="section" id="channel-type">
+<h3>Channel Type<a class="headerlink" href="#channel-type" title="Permalink to this headline">¶</a></h3>
+<p>The channel type is the kind of data being stored in the channel. It can be image, annotation, probmap (probability map), or timeseries.</p>
+</div>
+<div class="section" id="exceptions">
+<h3>Exceptions<a class="headerlink" href="#exceptions" title="Permalink to this headline">¶</a></h3>
+<p>(Optional) Exceptions is an option to enable the possibility for annotations to contradict each other (assign different values to the same point). 0 means false, 1 means true.</p>
+</div>
+<div class="section" id="resolution">
+<h3>Resolution<a class="headerlink" href="#resolution" title="Permalink to this headline">¶</a></h3>
+<p>(Optional) Resolution is the starting resolution of the data being uploaded to the channel.</p>
+</div>
+<div class="section" id="window-range">
+<h3>Window Range<a class="headerlink" href="#window-range" title="Permalink to this headline">¶</a></h3>
+<p>(Optional) Window range is the maximum and minimum pixel values for a particular image. This is used so that the image can be displayed in a readable way for viewing through RESTful calls.</p>
+</div>
+<div class="section" id="read-only">
+<h3>Read Only<a class="headerlink" href="#read-only" title="Permalink to this headline">¶</a></h3>
+<p>(Optional) This option allows the user to control if, after the initial data commit, the channel is read-only. Generally this is suggested with data that will be publicly viewable. 1 means enable read-only, 0 means disable read-only.</p>
+</div>
+<div class="section" id="data-url">
+<h3>Data URL<a class="headerlink" href="#data-url" title="Permalink to this headline">¶</a></h3>
+<p>Data URL is the location of where your data to be uploaded is located (E.g. <a class="reference external" href="http://ExampleServer.University.edu/MyData/UploadData/">http://ExampleServer.University.edu/MyData/UploadData/</a>). The data must be http accessible (accessible from our servers) so storage systems like s3, dropbox, and others that require authentication keys are not accepted.</p>
+</div>
+<div class="section" id="file-format">
+<h3>File Format<a class="headerlink" href="#file-format" title="Permalink to this headline">¶</a></h3>
+<p>File format refers to the overarching kind of data, as in slices (normal image data) or catmaid (tile-based).</p>
+</div>
+<div class="section" id="file-type">
+<h3>File Type<a class="headerlink" href="#file-type" title="Permalink to this headline">¶</a></h3>
+<p>File type refers to the specific type of file that the data is stored in, as in, tiff, png, or tif.</p>
+</div>
+</div>
+<div class="section" id="project-and-related-terms">
+<h2>Project and Related Terms<a class="headerlink" href="#project-and-related-terms" title="Permalink to this headline">¶</a></h2>
+<p>A project enables channel creation, deletion, and access. Generally they are used to organize data into groups and control access to the data being modified. For example if the research effort is divided into multiple subsections and you wish some data to be publicly viewable, but other data to be private projects are a way to control the access in this way. In the same vein, projects also allow you to control who has read/write access to what data, since different users could have different projects in the same dataset.</p>
+<div class="section" id="project-name">
+<h3>Project Name<a class="headerlink" href="#project-name" title="Permalink to this headline">¶</a></h3>
+<p>Project name is the specific project within a dataset&#8217;s name. If there is only one project associated with a dataset then standard convention is to name the project the same as its associated dataset.</p>
+</div>
+<div class="section" id="token-name">
+<h3>Token Name<a class="headerlink" href="#token-name" title="Permalink to this headline">¶</a></h3>
+<p>(Optional) The token name is the default token. If you do not wish to specify one, a default one will be created for you with the same name as the project name. However, if the project is private you must specify a token.</p>
+</div>
+<div class="section" id="public">
+<h3>Public<a class="headerlink" href="#public" title="Permalink to this headline">¶</a></h3>
+<p>(Optional) This option allows users to specify if they want the project/channels to be publicly viewable/search-able.</p>
+</div>
+</div>
+<div class="section" id="token">
+<h2>Token<a class="headerlink" href="#token" title="Permalink to this headline">¶</a></h2>
+<p>A token is how a unique key that accesses a specific project. When creating a project you must have at least one token that is used to access the project. There can be multiple tokens for a single project, with each being used to track who has access. Tokens are used in the API&#8217;s (python and Matlab) to get project data.</p>
+</div>
 </div>
 
 
@@ -321,10 +412,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="faq.html" class="btn btn-neutral float-right" title="Frequently Asked Questions (FAQ)" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="ingesting.html" class="btn btn-neutral float-right" title="How to Ingest Data" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="console.html" class="btn btn-neutral" title="Adminstrator Console" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="faq.html" class="btn btn-neutral" title="Frequently Asked Questions (FAQ)" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

@@ -8,7 +8,7 @@ GET
 
 .. http:get:: (string:server_name)/ocp/ca/public_tokens/
    
-   :synopsis: Get a list of all publicly avaliable tokens from the server. These tokens can be used to GET and PUT data to the server. These tokens can also be used to access :ref:`project information<json-get>`
+   :synopsis: Get a list of all publicly avaliable tokens from the server. These tokens can be used to GET and PUT data to the server. These tokens can also be used to access :ref:`project information<jsoninfo-get>`
 
    :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
    :type server_name: string
