@@ -18,7 +18,7 @@ import numpy as np
 import cStringIO
 import pickle
 
-from ocptype import READONLY_TRUE, OCP_dtypetonp, IMAGE_CHANNELS, TIMESERIES_CHANNELS
+from ocptype import READONLY_TRUE, OCP_dtypetonp, IMAGE_CHANNELS, TIMESERIES_CHANNELS, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, DTYPE_float32
 
 from django.conf import settings
 from ocpuser.models import Channel
@@ -41,7 +41,14 @@ def ingestNIFTI ( niftifname, ch, db, proj ):
 
     # reshape the nifti data to include a channel dimension
     nifti_data = nifti_data.transpose()
-    nifti_data = np.uint16(nifti_data.reshape([1]+list(nifti_data.shape)))
+    
+    if ch.getDataType() in DTYPE_uint16:   
+      nifti_data = np.uint16(nifti_data.reshape([1]+list(nifti_data.shape)))
+    elif ch.getDataType() in DTYPE_float32:
+      nifti_data = np.float32(nifti_data.reshape([1]+list(nifti_data.shape)))
+    else:
+      logger.warning("Illegal data type for NIFTI service. Type={}".format(ch.getDataType()))
+      raise OCPCAError("Illegal data type for NIFTI service. Type={}".format(ch.getDataType()))
 
     # check that the data is the right shape
     if nifti_data.shape[1:] != tuple(proj.datasetcfg.imagesz[0]):
@@ -52,7 +59,7 @@ def ingestNIFTI ( niftifname, ch, db, proj ):
 
     # reshape the nifti data to include a channel dimension
     nifti_data = nifti_data.transpose()
-    nifti_data = np.uint16(nifti_data.reshape([1]+list(nifti_data.shape)))
+    nifti_data = nifti_data.reshape([1]+list(nifti_data.shape))
 
     # check that the data is the right shape
     if nifti_data.shape[1:3] != tuple(proj.datasetcfg.imagesz[0]) or nifti_data.shape[4] != proj.datasetcfg.endtime - proj.datasetcfg.starttime:
@@ -77,7 +84,7 @@ def ingestNIFTI ( niftifname, ch, db, proj ):
 
   # dump the affine transform 
   nh.affine = pickle.dumps(nifti_img.affine)
-
+ 
   if ch.getChannelType() in IMAGE_CHANNELS:
     db.writeCuboid ( ch, (0,0,0), 0, nifti_data )
 
@@ -99,6 +106,7 @@ def queryNIFTI ( tmpfile, ch, db, proj ):
 
     # get the header in a fileobj
     try:
+
       nmodel = NIFTIHeader.objects.get(channel_id=ch.getChannelModel().id)
 
       naffine = pickle.loads(nmodel.affine)
@@ -106,7 +114,7 @@ def queryNIFTI ( tmpfile, ch, db, proj ):
 
     except:
 
-    # when there's no header info, insert a blank header
+      # when there's no header info, insert a blank header
       naffine = None
       nheader = None
 
@@ -118,7 +126,8 @@ def queryNIFTI ( tmpfile, ch, db, proj ):
 
     # work on nifti 3d only for now
     # coerce the data type 
-    niidata = np.array(niidata, dtype='<i2')
+    if ch.getDataType() in DTYPE_uint16:   
+      niidata = np.array(niidata, dtype='<i2')
 
     # assemble the header and the data
     # create a nii file

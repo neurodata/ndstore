@@ -1,0 +1,7 @@
+/var/log/celery/*.log {
+  daily
+  missingok
+  compress
+  create 644 root root
+  rotate 1
+}
