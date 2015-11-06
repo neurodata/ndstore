@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Data Model &mdash; open-connetome v0.7.0 documentation</title>
+  <title>Data Model &mdash; open-connectome v0.7.0 documentation</title>
   
 
   
@@ -32,9 +32,9 @@
   
 
   
-    <link rel="top" title="open-connetome v0.7.0 documentation" href="../index.html"/>
-        <link rel="next" title="How to Ingest Data" href="ingesting.html"/>
-        <link rel="prev" title="Frequently Asked Questions (FAQ)" href="faq.html"/> 
+    <link rel="top" title="open-connectome v0.7.0 documentation" href="../index.html"/>
+        <link rel="next" title="Adminstrator Console" href="console.html"/>
+        <link rel="prev" title="Introduction" href="introduction.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -51,7 +51,7 @@
         
 
         
-          <a href="../index.html" class="icon icon-home"> open-connetome
+          <a href="../index.html" class="icon icon-home"> open-connectome
         
 
         
@@ -79,6 +79,15 @@
               <p class="caption"><span class="caption-text">Documentation</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Data Model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#assumptions">Assumptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dataset-attributes">Dataset Attributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#project-attributes">Project Attributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#channel-attributes">Channel Attributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#token">Token</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="console.html">Adminstrator Console</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="console.html#faq">FAQ</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="console.html#how-do-i-create-a-dataset">How Do I Create a Dataset?</a></li>
@@ -87,41 +96,6 @@
 <li class="toctree-l3"><a class="reference internal" href="console.html#how-do-i-create-a-token">How Do I Create a Token?</a></li>
 </ul>
 </li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
-<li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions (FAQ)</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Data Model</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#assumptions">Assumptions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#dataset-and-related-terms">Dataset and Related Terms</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#dataset-name">Dataset Name</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#image-size">Image Size</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#voxel-resolution">Voxel Resolution</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#offset">Offset</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#time-range">Time Range</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#scaling-levels">Scaling Levels</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#channel-and-related-terms">Channel and Related Terms</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#channel-name">Channel Name</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#data-type">Data Type</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#channel-type">Channel Type</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#exceptions">Exceptions</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#resolution">Resolution</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#window-range">Window Range</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#read-only">Read Only</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#file-format">File Format</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#file-type">File Type</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#project-and-related-terms">Project and Related Terms</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#project-name">Project Name</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#token-name">Token Name</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#public">Public</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#token">Token</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="ingesting.html">How to Ingest Data</a><ul>
@@ -138,6 +112,8 @@
 <li class="toctree-l2"><a class="reference internal" href="ingesting.html#unsupported-image-types">Unsupported Image Types</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions (FAQ)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api/ocp_types.html">OCP Types</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../api/ocp_types.html#channel-types">Channel Types</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/ocp_types.html#data-types">Data Types</a></li>
@@ -269,7 +245,7 @@
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
         <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="../index.html">open-connetome</a>
+        <a href="../index.html">open-connectome</a>
       </nav>
 
 
@@ -297,106 +273,371 @@
 <h1>Data Model<a class="headerlink" href="#data-model" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="assumptions">
 <span id="datamodel"></span><h2>Assumptions<a class="headerlink" href="#assumptions" title="Permalink to this headline">¶</a></h2>
-<p>The assumption is that the person reading has no experience with our service before this point, but has a sufficient knowledge of basic imaging terms, as in they understand what a pixel is. Second, this document is written primarily for neuro-scientists to become acquainted with what our service can do or does. Finally, it is assumed that the person reading this has sufficient knowledge of how imaging works to know that the image sizes for a given research effort must be consistent.</p>
+<p>The assumption is that the person reading has no experience with our service before this point, but has a sufficient knowledge of basic imaging terms, as in they understand what a pixel is. Second, this document is written primarily for neuroscientists to become acquainted with what our service can do or does. Finally, it is assumed that the person reading this has sufficient knowledge of how imaging works to know that the image sizes for a given research effort must be consistent.</p>
 </div>
 <div class="section" id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
-<p>Data in Neurodata is organized into datasets and projects, see below for a more extensive description of each. The first figure below shows a simple example for a use case in the data model, the second shows a more likely/complex example of the data model.</p>
+<p>Our data model for image datasets is composed of the following components:
+Dataset: containing metadata required to efficiently store, visualize, and analyze data for a set of projects; it effectively defines the dataspace
+Project: is a database storing a collection of channels
+Token: a name for a project, a project can have multiple tokens, each with different permissions (eg, read vs. write)
+Channel: is a collection of tables, including the actual images, as well as metadata</p>
+<p>To understand the relationship between the above 4 different components of the data model, consider the following example. We collect a large multi-modal MRI dataset, and registered each image into MNI152 space. The dataset would contain the details of MNI152 (number of voxels, resolution, etc.). Each subject gets her own project. For the first subject, let’s create a token pointing to that project called “Subject1”, and let’s give that token write access.</p>
+<p>Each channel for this project corresponds to a different modality. For example, the T1 image might be the first channel, called “T1”. So, to access that channel, we pair the token with the channel name: ‘Subject1T1’. The T1 channel happens to be a 3D image stack. Let’s say we also got an fMRI scan from that subject, also co-registered to MNI152 space. We can then make another channel called ‘fMRI’ containing all the fMRI data and metadata. Note that this is actually 3D+time data, which is no problem to store within a given channel. Finally, assume we also have Diffusion MRI data associated with that subject. So, we can generate another channel called “DTI” to store that data and metadata. Although DTI data is not typically thought of as time-series data, it is 4D, so we could store it as a time-series channel.</p>
+<p>Now, imagine from the DTI data, we created a fractional anisotropy map. We could make a new channel, called “FA”, and put it there. Similarly, imagine from the fMRI we created a general linear model, we could again create a new channel, “GLM”, and put the coefficients in there.</p>
+<p>The advantage of having a data model is that all of the data and metadata can be captured and stored together, which makes visualization, analysis, and reproducibility much simpler.</p>
 <div class="figure align-center">
 <a class="reference internal image-reference" href="../_images/datamodel_simple.png"><img alt="../_images/datamodel_simple.png" src="../_images/datamodel_simple.png" style="width: 500px; height: 200px;" /></a>
 </div>
 <div class="figure align-center">
 <a class="reference internal image-reference" href="../_images/datamodel_complex.png"><img alt="../_images/datamodel_complex.png" src="../_images/datamodel_complex.png" style="width: 800px; height: 400px;" /></a>
 </div>
-<p>Datasets are essentially templates for projects, they hold data that should be consistent across the projects that are present in a dataset. Datasets can template multiple projects or one project, and they hold the data values enumerated below. Projects hold the actual data being stored, in the form of channels. Channels hold the data enumerted below (as well as the actual data itself). Each project contains one or many channels in addition to the data enumerated below. Projects are accessed through tokens.</p>
 </div>
-<div class="section" id="dataset-and-related-terms">
-<h2>Dataset and Related Terms<a class="headerlink" href="#dataset-and-related-terms" title="Permalink to this headline">¶</a></h2>
-<p>A dataset is the basic unit of how data is organized, it contains all of the data of a particular research effort. For example if the data being uploaded is image data of a human cortex that has been annotated, the dataset is where the image and annotation data are stored. Within the dataset there are channel objects, which hold individual types and instances of data (more information below) such as a particular series of annotations. Datasets are accessed indirectly through projects (more information below), as projects access the channels in a dataset.</p>
-<div class="section" id="dataset-name">
-<h3>Dataset Name<a class="headerlink" href="#dataset-name" title="Permalink to this headline">¶</a></h3>
-<p>Dataset Name is the overarching name of the research effort. Standard naming convention is to do LabName_PublicationYear or LeadResearcher_CurrentYear.</p>
+<div class="section" id="dataset-attributes">
+<h2>Dataset Attributes<a class="headerlink" href="#dataset-attributes" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<code class="descname">Dataset Name</code></dt>
+<dd><p>Dataset Name is the overarching name of the research effort. Standard naming convention is to do LabNamePublicationYear or LeadResearcherCurrentYear.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">AlphaNumeric</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Default:</th><td class="field-body">None</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Example:</th><td class="field-body">kasthuri11</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descname">Image Size</code></dt>
+<dd><p>Image size is the pixel count dimensions of the data. For example is the data is stored as a series of 100 slices each 2100x2000 pixel TIFF images, the X,Y,Z dimensions are (2100, 2000, 100).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">[INT,INT,INT]</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Default:</th><td class="field-body">None</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Example:</th><td class="field-body">[2100,2000,100]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descname">Voxel Resolution</code></dt>
+<dd><blockquote>
+<div>Voxel Resolution is the number of voxels per unit pixel. We store X,Y,Z voxel resolution separately.</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">[FLOAT,FLOAT,FLOAT]</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Default:</th><td class="field-body">[0.0,0.0,0.0]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="Offset">
+<code class="descname">Offset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Offset" title="Permalink to this definition">¶</a></dt>
+<dd><p>If your data is not well aligned and there is &#8220;excess&#8221; image data you do not wish to examine, but are present in your images, offset is how you specify where your actual image starts. Offset is provided a pixel coordinate offset from origin which specifies the &#8220;actual&#8221; origin of the image. The offset is for X,Y,Z dimensions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">[INT,INT,INT]</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Default:</th><td class="field-body">[0,0,0]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descname">Time Range</code></dt>
+<dd><p>Time Range is a parameter to support storage of Time Series data, so the value of the tuple is a 0 to X range of how many images over time were taken. It takes 2 inputs timeStepStart and timeStepStop.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">[INT,INT]</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Default:</th><td class="field-body">[0,0]</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Example:</th><td class="field-body">[0,600]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descname">Scaling Levels</code></dt>
+<dd><p>Scaling levels is the number of levels the data is scalable to (how many zoom levels are present in the data). The highest resolution of the data is at scaling level 0, and for each level up the data is down sampled by half (per slice).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">INT</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Default:</th><td class="field-body">0</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descname">Scaling Choices</code></dt>
+<dd><p>Scaling choices // uAlex TODO.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">{Z Slices, Isotropic}</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Default:</th><td class="field-body">Z Slices</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </div>
-<div class="section" id="image-size">
-<h3>Image Size<a class="headerlink" href="#image-size" title="Permalink to this headline">¶</a></h3>
-<p>Image size is the pixel count dimensions of the data. For example is the data is stored as a series of 100, 2100x2000 pixel TIFF images, the X,Y,Z dimensions are (2100, 2000, 100).</p>
+<div class="section" id="project-attributes">
+<h2>Project Attributes<a class="headerlink" href="#project-attributes" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<code class="descname">Project Name</code></dt>
+<dd><p>Project name is the specific project within a dataset&#8217;s name. If there is only one project associated with a dataset then standard convention is to name the project the same as its associated dataset.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">AlphaNumeric</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Default:</th><td class="field-body">None</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Example:</th><td class="field-body">kashturi11</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="Public">
+<code class="descname">Public</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Public" title="Permalink to this definition">¶</a></dt>
+<dd><p>This option allows users to specify if they want the project/channels to be publicly viewable/search-able.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">{TRUE, FALSE}</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Default:</th><td class="field-body">FALSE</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="Host">
+<code class="descname">Host</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Host" title="Permalink to this definition">¶</a></dt>
+<dd><p>//TODO uAlex</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descname">KV Engine</code></dt>
+<dd><p>//TODO uAlex</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descname">KV Server</code></dt>
+<dd><p>//TODO KV Server</p>
+</dd></dl>
+
 </div>
-<div class="section" id="voxel-resolution">
-<h3>Voxel Resolution<a class="headerlink" href="#voxel-resolution" title="Permalink to this headline">¶</a></h3>
-<p>Voxel Resolution is the number of voxels per unit pixel. We store X,Y,Z voxel resolution separately.</p>
-</div>
-<div class="section" id="offset">
-<h3>Offset<a class="headerlink" href="#offset" title="Permalink to this headline">¶</a></h3>
-<p>(Optional) If your data is not well aligned and there is &#8220;excess&#8221; image data you do not wish to examine, but are present in your images, offset is how you specify where your actual image starts. Offset is provided a pixel coordinate offset from origin which specifies the &#8220;actual&#8221; origin of the image.</p>
-</div>
-<div class="section" id="time-range">
-<h3>Time Range<a class="headerlink" href="#time-range" title="Permalink to this headline">¶</a></h3>
-<p>(Optional) Time Range is a parameter to support storage of Time Series data, so the value of the tuple is a 0 to X range of how many images over time were taken, e.g. (0, 600).</p>
-</div>
-<div class="section" id="scaling-levels">
-<h3>Scaling Levels<a class="headerlink" href="#scaling-levels" title="Permalink to this headline">¶</a></h3>
-<p>(Optional)  Scaling levels is the number of levels the data is scalable to (how many zoom levels are present in the data). The highest resolution of the data is at scaling level 0, and for each level up the data is down sampled by half (per slice).</p>
-</div>
-</div>
-<div class="section" id="channel-and-related-terms">
-<h2>Channel and Related Terms<a class="headerlink" href="#channel-and-related-terms" title="Permalink to this headline">¶</a></h2>
-<p>Channels are a particular set or series of data in a given research effort. In the above example of the human cortex image and annotation data there are multiple channels; the image channel, truth annotation channel (if it exists), and perhaps some annotation channels with different annotation algorithms. There is no limit on types of channels per project, meaning that if the data has multiple sets of different images from the same type of data (e.g. multiple mouse cortices on different drugs) that is supported.</p>
-<div class="section" id="channel-name">
-<h3>Channel Name<a class="headerlink" href="#channel-name" title="Permalink to this headline">¶</a></h3>
-<p>Channel Name is the specific name of a specific series of data. Standard naming convention is to do ImageType_IterationNumber or Name_SubProjectName.</p>
-</div>
-<div class="section" id="data-type">
-<h3>Data Type<a class="headerlink" href="#data-type" title="Permalink to this headline">¶</a></h3>
-<p>The data type is the storage method of data in the channel. It can be uint8, uint16, uint32, uint64, or float32. // Alex TODO Point to OCPtype</p>
-</div>
-<div class="section" id="channel-type">
-<h3>Channel Type<a class="headerlink" href="#channel-type" title="Permalink to this headline">¶</a></h3>
-<p>The channel type is the kind of data being stored in the channel. It can be image, annotation, probmap (probability map), or timeseries. // Alex TODO Point to OCPtype</p>
-</div>
-<div class="section" id="exceptions">
-<h3>Exceptions<a class="headerlink" href="#exceptions" title="Permalink to this headline">¶</a></h3>
-<p>(Optional) Exceptions is an option to enable the possibility for annotations to contradict each other (assign different values to the same point).</p>
-</div>
-<div class="section" id="resolution">
-<h3>Resolution<a class="headerlink" href="#resolution" title="Permalink to this headline">¶</a></h3>
-<p>(Optional) Resolution is the starting resolution of the data being uploaded to the channel.</p>
-</div>
-<div class="section" id="window-range">
-<h3>Window Range<a class="headerlink" href="#window-range" title="Permalink to this headline">¶</a></h3>
-<p>(Optional) Window range is the maximum and minimum pixel values for a particular image. This is used so that the image can be displayed in a readable way for viewing through RESTful calls.</p>
-</div>
-<div class="section" id="read-only">
-<h3>Read Only<a class="headerlink" href="#read-only" title="Permalink to this headline">¶</a></h3>
-<p>(Optional) This option allows the user to control if, after the initial data commit, the channel is read-only. Generally this is suggested with data that will be publicly viewable.</p>
-</div>
-<div class="section" id="file-format">
-<h3>File Format<a class="headerlink" href="#file-format" title="Permalink to this headline">¶</a></h3>
-<p>File format refers to the overarching kind of data, as in slices (normal image data) or catmaid (tile-based).</p>
-</div>
-<div class="section" id="file-type">
-<h3>File Type<a class="headerlink" href="#file-type" title="Permalink to this headline">¶</a></h3>
-<p>File type refers to the specific type of file that the data is stored in, as in, tiff, png, or tif.</p>
-</div>
-</div>
-<div class="section" id="project-and-related-terms">
-<h2>Project and Related Terms<a class="headerlink" href="#project-and-related-terms" title="Permalink to this headline">¶</a></h2>
-<p>A project enables channel creation, deletion, and access. Generally they are used to organize data into groups and control access to the data being modified. For example if the research effort is divided into multiple subsections and you wish some data to be publicly viewable, but other data to be private projects are a way to control the access in this way. In the same vein, projects also allow you to control who has read/write access to what data, since different users could have different projects in the same dataset.</p>
-<div class="section" id="project-name">
-<h3>Project Name<a class="headerlink" href="#project-name" title="Permalink to this headline">¶</a></h3>
-<p>Project name is the specific project within a dataset&#8217;s name. If there is only one project associated with a dataset then standard convention is to name the project the same as its associated dataset.</p>
-</div>
-<div class="section" id="token-name">
-<h3>Token Name<a class="headerlink" href="#token-name" title="Permalink to this headline">¶</a></h3>
-<p>(Optional) The token name is the default token. If you do not wish to specify one, a default one will be created for you with the same name as the project name. However, if the project is private you must specify a token.</p>
-</div>
-<div class="section" id="public">
-<h3>Public<a class="headerlink" href="#public" title="Permalink to this headline">¶</a></h3>
-<p>(Optional) This option allows users to specify if they want the project/channels to be publicly viewable/search-able.</p>
-</div>
+<div class="section" id="channel-attributes">
+<h2>Channel Attributes<a class="headerlink" href="#channel-attributes" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<code class="descname">Channel Name</code></dt>
+<dd><p>Channel Name is the specific name of a specific series of data. Standard naming convention is to do ImageTypeIterationNumber or NameSubProjectName.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">AlphaNumeric</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Default:</th><td class="field-body">None</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Example:</th><td class="field-body">image1</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descname">Data Type</code></dt>
+<dd><p>The data type is the storage method of data in the channel. It can be uint8, uint16, uint32, uint64, or float32. // uAlex TODO Point to OCPtype</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">{uint8, uint16, uint32, uint64, float32}</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Default:</th><td class="field-body">None</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descname">Channel Type</code></dt>
+<dd><p>The channel type is the kind of data being stored in the channel. It can be image, annotation, or timeseries. // uAlex TODO Point to OCPtype</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">{image, annotation, timeseries}</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Default:</th><td class="field-body">None</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="Exceptions">
+<code class="descname">Exceptions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Exceptions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Exceptions is an option to enable the possibility for annotations to contradict each other (assign different values to the same point).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">{TRUE,FALSE}</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Default:</th><td class="field-body">TRUE</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="Resolution">
+<code class="descname">Resolution</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Resolution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resolution is the starting resolution of the data being uploaded to the channel.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">INT</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Default:</th><td class="field-body">0</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descname">Window Range</code></dt>
+<dd><p>Window range is the maximum and minimum pixel values for a particular image. This is used so that the image can be displayed in a readable way for viewing through RESTful calls.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">[INT,INT]</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Default:</th><td class="field-body">[0,0]</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Example:</th><td class="field-body">[0,1100]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descname">Read Only</code></dt>
+<dd><p>This option allows the user to control if, after the initial data commit, the channel is read-only. Generally this is suggested with data that will be publicly viewable.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">{TRUE,FALSE}</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Default:</th><td class="field-body">TRUE</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="Propagated">
+<code class="descname">Propagated</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Propagated" title="Permalink to this definition">¶</a></dt>
+<dd><p>//TODO uAlex
+:Type: {PROPAGATED, NOT PROPAGATED}
+:Default: NOT PROPAGATED</p>
+</dd></dl>
+
 </div>
 <div class="section" id="token">
 <h2>Token<a class="headerlink" href="#token" title="Permalink to this headline">¶</a></h2>
-<p>A token is how a unique key that accesses a specific project. When creating a project you must have at least one token that is used to access the project. There can be multiple tokens for a single project, with each being used to track who has access. Tokens are used in the API&#8217;s (python and Matlab) to get project data.</p>
+<dl class="function">
+<dt>
+<code class="descname">Token Name</code></dt>
+<dd><p>The token name is the default token. If you do not wish to specify one, a default one will be created for you with the same name as the project name. However, if the project is private you must specify a token.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">AlphaNumeric</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Default:</th><td class="field-body">None</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Example:</th><td class="field-body">kashturi11</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descname">Public</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>//TODO uAlex</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">{TRUE, FALSE}</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Default:</th><td class="field-body">FALSE</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<p>// uAlex We do not need these.
+File Format
+File format refers to the overarching kind of data, as in slices (normal image data) or catmaid (tile-based).</p>
+<p>File Type
+File type refers to the specific type of file that the data is stored in, as in, tiff, png, or tif.</p>
 </div>
 </div>
 
@@ -406,10 +647,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="ingesting.html" class="btn btn-neutral float-right" title="How to Ingest Data" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="console.html" class="btn btn-neutral float-right" title="Adminstrator Console" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="faq.html" class="btn btn-neutral" title="Frequently Asked Questions (FAQ)" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="introduction.html" class="btn btn-neutral" title="Introduction" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

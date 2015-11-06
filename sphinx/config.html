@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Configuration &mdash; open-connetome v0.7.0 documentation</title>
+  <title>Configuration &mdash; open-connectome v0.7.0 documentation</title>
   
 
   
@@ -32,9 +32,9 @@
   
 
   
-    <link rel="top" title="open-connetome v0.7.0 documentation" href="../index.html"/>
+    <link rel="top" title="open-connectome v0.7.0 documentation" href="../index.html"/>
         <link rel="next" title="Frequently Asked Questions (FAQ)" href="faq.html"/>
-        <link rel="prev" title="Adminstrator Console" href="console.html"/> 
+        <link rel="prev" title="How to Ingest Data" href="ingesting.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -51,7 +51,7 @@
         
 
         
-          <a href="../index.html" class="icon icon-home"> open-connetome
+          <a href="../index.html" class="icon icon-home"> open-connectome
         
 
         
@@ -79,6 +79,15 @@
               <p class="caption"><span class="caption-text">Documentation</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="datamodel.html">Data Model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="datamodel.html#assumptions">Assumptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datamodel.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datamodel.html#dataset-attributes">Dataset Attributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datamodel.html#project-attributes">Project Attributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datamodel.html#channel-attributes">Channel Attributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datamodel.html#token">Token</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="console.html">Adminstrator Console</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="console.html#faq">FAQ</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="console.html#how-do-i-create-a-dataset">How Do I Create a Dataset?</a></li>
@@ -87,41 +96,6 @@
 <li class="toctree-l3"><a class="reference internal" href="console.html#how-do-i-create-a-token">How Do I Create a Token?</a></li>
 </ul>
 </li>
-</ul>
-</li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Configuration</a></li>
-<li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions (FAQ)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="datamodel.html">Data Model</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="datamodel.html#assumptions">Assumptions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="datamodel.html#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="datamodel.html#dataset-and-related-terms">Dataset and Related Terms</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="datamodel.html#dataset-name">Dataset Name</a></li>
-<li class="toctree-l3"><a class="reference internal" href="datamodel.html#image-size">Image Size</a></li>
-<li class="toctree-l3"><a class="reference internal" href="datamodel.html#voxel-resolution">Voxel Resolution</a></li>
-<li class="toctree-l3"><a class="reference internal" href="datamodel.html#offset">Offset</a></li>
-<li class="toctree-l3"><a class="reference internal" href="datamodel.html#time-range">Time Range</a></li>
-<li class="toctree-l3"><a class="reference internal" href="datamodel.html#scaling-levels">Scaling Levels</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="datamodel.html#channel-and-related-terms">Channel and Related Terms</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="datamodel.html#channel-name">Channel Name</a></li>
-<li class="toctree-l3"><a class="reference internal" href="datamodel.html#data-type">Data Type</a></li>
-<li class="toctree-l3"><a class="reference internal" href="datamodel.html#channel-type">Channel Type</a></li>
-<li class="toctree-l3"><a class="reference internal" href="datamodel.html#exceptions">Exceptions</a></li>
-<li class="toctree-l3"><a class="reference internal" href="datamodel.html#resolution">Resolution</a></li>
-<li class="toctree-l3"><a class="reference internal" href="datamodel.html#window-range">Window Range</a></li>
-<li class="toctree-l3"><a class="reference internal" href="datamodel.html#read-only">Read Only</a></li>
-<li class="toctree-l3"><a class="reference internal" href="datamodel.html#file-format">File Format</a></li>
-<li class="toctree-l3"><a class="reference internal" href="datamodel.html#file-type">File Type</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="datamodel.html#project-and-related-terms">Project and Related Terms</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="datamodel.html#project-name">Project Name</a></li>
-<li class="toctree-l3"><a class="reference internal" href="datamodel.html#token-name">Token Name</a></li>
-<li class="toctree-l3"><a class="reference internal" href="datamodel.html#public">Public</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="datamodel.html#token">Token</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="ingesting.html">How to Ingest Data</a><ul>
@@ -138,6 +112,8 @@
 <li class="toctree-l2"><a class="reference internal" href="ingesting.html#unsupported-image-types">Unsupported Image Types</a></li>
 </ul>
 </li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions (FAQ)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api/ocp_types.html">OCP Types</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../api/ocp_types.html#channel-types">Channel Types</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/ocp_types.html#data-types">Data Types</a></li>
@@ -269,7 +245,7 @@
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
         <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="../index.html">open-connetome</a>
+        <a href="../index.html">open-connectome</a>
       </nav>
 
 
@@ -315,7 +291,7 @@
         <a href="faq.html" class="btn btn-neutral float-right" title="Frequently Asked Questions (FAQ)" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="console.html" class="btn btn-neutral" title="Adminstrator Console" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="ingesting.html" class="btn btn-neutral" title="How to Ingest Data" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
