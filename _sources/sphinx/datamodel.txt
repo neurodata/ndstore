@@ -62,7 +62,7 @@ Dataset Attributes
    :Type: [FLOAT,FLOAT,FLOAT]
    :Default: [0.0,0.0,0.0]
 
-.. function:: Offset
+.. function:: Offset Value
 
    If your data is not well aligned and there is "excess" image data you do not wish to examine, but are present in your images, offset is how you specify where your actual image starts. Offset is provided a pixel coordinate offset from origin which specifies the "actual" origin of the image. The offset is for X,Y,Z dimensions.
 
@@ -102,14 +102,14 @@ Project Attributes
    :Default: None
    :Example: kashturi11
 
-.. function:: Public
+.. function:: Public Project
 
    This option allows users to specify if they want the project/channels to be publicly viewable/search-able.
 
    :Type: {TRUE, FALSE}
    :Default: FALSE
 
-.. function:: Host
+.. function:: Host Server
 
    //TODO uAlex
 
@@ -146,14 +146,14 @@ Channel Attributes
    :Type: {image, annotation, timeseries}
    :Default: None
 
-.. function:: Exceptions
+.. function:: Exception Enabled
 
    Exceptions is an option to enable the possibility for annotations to contradict each other (assign different values to the same point).
 
    :Type: {TRUE,FALSE}
    :Default: TRUE
 
-.. function:: Resolution
+.. function:: Base Resolution
 
    Resolution is the starting resolution of the data being uploaded to the channel.
 
@@ -175,7 +175,7 @@ Channel Attributes
    :Type: {TRUE,FALSE}
    :Default: TRUE
 
-.. function:: Propagated
+.. function:: Propagated Status
 
     //TODO uAlex
     :Type: {PROPAGATED, NOT PROPAGATED}
@@ -192,7 +192,7 @@ Token
    :Default: None
    :Example: kashturi11
 
-.. function:: Public
+.. function:: Public Token
 
    //TODO uAlex
    
