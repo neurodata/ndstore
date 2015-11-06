@@ -6,12 +6,24 @@ Data Model
 Assumptions
 ===========
 
-The assumption is that the person reading has no experience with our service before this point, but has a sufficient knowledge of basic imaging terms, as in they understand what a pixel is. Second, this document is written primarily for neuro-scientists to become acquainted with what our service can do or does. Finally, it is assumed that the person reading this has sufficient knowledge of how imaging works to know that the image sizes for a given research effort must be consistent.
+The assumption is that the person reading has no experience with our service before this point, but has a sufficient knowledge of basic imaging terms, as in they understand what a pixel is. Second, this document is written primarily for neuroscientists to become acquainted with what our service can do or does. Finally, it is assumed that the person reading this has sufficient knowledge of how imaging works to know that the image sizes for a given research effort must be consistent.
 
 Overview
 ========
 
-Data in Neurodata is organized into datasets and projects, see below for a more extensive description of each. The first figure below shows a simple example for a use case in the data model, the second shows a more likely/complex example of the data model.
+Our data model for image datasets is composed of the following components:
+Dataset: containing metadata required to efficiently store, visualize, and analyze data for a set of projects; it effectively defines the dataspace
+Project: is a database storing a collection of channels
+Token: a name for a project, a project can have multiple tokens, each with different permissions (eg, read vs. write)
+Channel: is a collection of tables, including the actual images, as well as metadata
+
+To understand the relationship between the above 4 different components of the data model, consider the following example. We collect a large multi-modal MRI dataset, and registered each image into MNI152 space. The dataset would contain the details of MNI152 (number of voxels, resolution, etc.). Each subject gets her own project. For the first subject, let’s create a token pointing to that project called “Subject1”, and let’s give that token write access.
+
+Each channel for this project corresponds to a different modality. For example, the T1 image might be the first channel, called “T1”. So, to access that channel, we pair the token with the channel name: ‘\Subject1\T1\’. The T1 channel happens to be a 3D image stack. Let’s say we also got an fMRI scan from that subject, also co-registered to MNI152 space. We can then make another channel called ‘fMRI’ containing all the fMRI data and metadata. Note that this is actually 3D+time data, which is no problem to store within a given channel. Finally, assume we also have Diffusion MRI data associated with that subject. So, we can generate another channel called “DTI” to store that data and metadata. Although DTI data is not typically thought of as time-series data, it is 4D, so we could store it as a time-series channel.
+
+Now, imagine from the DTI data, we created a fractional anisotropy map. We could make a new channel, called “FA”, and put it there. Similarly, imagine from the fMRI we created a general linear model, we could again create a new channel, “GLM”, and put the coefficients in there.
+
+The advantage of having a data model is that all of the data and metadata can be captured and stored together, which makes visualization, analysis, and reproducibility much simpler.
 
 .. figure:: ../images/datamodel_simple.png
 	:align: center
@@ -23,114 +35,174 @@ Data in Neurodata is organized into datasets and projects, see below for a more 
 	:width: 800
 	:height: 400
 
-Datasets are essentially templates for projects, they hold data that should be consistent across the projects that are present in a dataset. Datasets can template multiple projects or one project, and they hold the data values enumerated below. Projects hold the actual data being stored, in the form of channels. Channels hold the data enumerted below (as well as the actual data itself). Each project contains one or many channels in addition to the data enumerated below. Projects are accessed through tokens.
 
+Dataset Attributes
+==================
 
-Dataset and Related Terms
-=========================
+.. function:: Dataset Name
+    
+   Dataset Name is the overarching name of the research effort. Standard naming convention is to do LabNamePublicationYear or LeadResearcherCurrentYear.
 
-A dataset is the basic unit of how data is organized, it contains all of the data of a particular research effort. For example if the data being uploaded is image data of a human cortex that has been annotated, the dataset is where the image and annotation data are stored. Within the dataset there are channel objects, which hold individual types and instances of data (more information below) such as a particular series of annotations. Datasets are accessed indirectly through projects (more information below), as projects access the channels in a dataset.
+   :Type: AlphaNumeric
+   :Default: None
+   :Example: kasthuri11
 
-Dataset Name
-++++++++++++
-Dataset Name is the overarching name of the research effort. Standard naming convention is to do LabName\_PublicationYear or LeadResearcher\_CurrentYear.
+.. function:: Image Size
 
-Image Size
-++++++++++
+   Image size is the pixel count dimensions of the data. For example is the data is stored as a series of 100 slices each 2100x2000 pixel TIFF images, the X,Y,Z dimensions are (2100, 2000, 100).
+   
+   :Type: [INT,INT,INT]
+   :Default: None
+   :Example: [2100,2000,100]
 
-Image size is the pixel count dimensions of the data. For example is the data is stored as a series of 100, 2100x2000 pixel TIFF images, the X,Y,Z dimensions are (2100, 2000, 100).
+.. function:: Voxel Resolution
 
-Voxel Resolution
-++++++++++++++++
+    Voxel Resolution is the number of voxels per unit pixel. We store X,Y,Z voxel resolution separately.
 
-Voxel Resolution is the number of voxels per unit pixel. We store X,Y,Z voxel resolution separately.
+   :Type: [FLOAT,FLOAT,FLOAT]
+   :Default: [0.0,0.0,0.0]
 
-Offset
-++++++
+.. function:: Offset
 
-(Optional) If your data is not well aligned and there is "excess" image data you do not wish to examine, but are present in your images, offset is how you specify where your actual image starts. Offset is provided a pixel coordinate offset from origin which specifies the "actual" origin of the image.
+   If your data is not well aligned and there is "excess" image data you do not wish to examine, but are present in your images, offset is how you specify where your actual image starts. Offset is provided a pixel coordinate offset from origin which specifies the "actual" origin of the image. The offset is for X,Y,Z dimensions.
 
-Time Range
-++++++++++
+   :Type: [INT,INT,INT]
+   :Default: [0,0,0]
 
-(Optional) Time Range is a parameter to support storage of Time Series data, so the value of the tuple is a 0 to X range of how many images over time were taken, e.g. (0, 600).
+.. function:: Time Range
 
-Scaling Levels
-++++++++++++++
+   Time Range is a parameter to support storage of Time Series data, so the value of the tuple is a 0 to X range of how many images over time were taken. It takes 2 inputs timeStepStart and timeStepStop.
 
-(Optional)  Scaling levels is the number of levels the data is scalable to (how many zoom levels are present in the data). The highest resolution of the data is at scaling level 0, and for each level up the data is down sampled by half (per slice).
+   :Type: [INT,INT]
+   :Default: [0,0]
+   :Example: [0,600]
 
-Channel and Related Terms
-=========================
+.. function:: Scaling Levels
 
-Channels are a particular set or series of data in a given research effort. In the above example of the human cortex image and annotation data there are multiple channels; the image channel, truth annotation channel (if it exists), and perhaps some annotation channels with different annotation algorithms. There is no limit on types of channels per project, meaning that if the data has multiple sets of different images from the same type of data (e.g. multiple mouse cortices on different drugs) that is supported.
+   Scaling levels is the number of levels the data is scalable to (how many zoom levels are present in the data). The highest resolution of the data is at scaling level 0, and for each level up the data is down sampled by half (per slice).
 
-Channel Name
-++++++++++++
+   :Type: INT
+   :Default: 0
 
-Channel Name is the specific name of a specific series of data. Standard naming convention is to do ImageType\_IterationNumber or Name\_SubProjectName.
+.. function:: Scaling Choices
 
-Data Type
-+++++++++
+   Scaling choices // uAlex TODO.
 
-The data type is the storage method of data in the channel. It can be uint8, uint16, uint32, uint64, or float32. // Alex TODO Point to OCPtype
+   :Type: {Z Slices, Isotropic}
+   :Default: Z Slices
 
-Channel Type
-++++++++++++
+Project Attributes
+==================
 
-The channel type is the kind of data being stored in the channel. It can be image, annotation, probmap (probability map), or timeseries. // Alex TODO Point to OCPtype
+.. function:: Project Name
 
-Exceptions
-++++++++++
+   Project name is the specific project within a dataset's name. If there is only one project associated with a dataset then standard convention is to name the project the same as its associated dataset.
 
-(Optional) Exceptions is an option to enable the possibility for annotations to contradict each other (assign different values to the same point).
+   :Type: AlphaNumeric
+   :Default: None
+   :Example: kashturi11
 
-Resolution
-++++++++++
+.. function:: Public
 
-(Optional) Resolution is the starting resolution of the data being uploaded to the channel.
+   This option allows users to specify if they want the project/channels to be publicly viewable/search-able.
 
-Window Range
-++++++++++++
+   :Type: {TRUE, FALSE}
+   :Default: FALSE
 
-(Optional) Window range is the maximum and minimum pixel values for a particular image. This is used so that the image can be displayed in a readable way for viewing through RESTful calls.
+.. function:: Host
 
-Read Only
-+++++++++
+   //TODO uAlex
 
-(Optional) This option allows the user to control if, after the initial data commit, the channel is read-only. Generally this is suggested with data that will be publicly viewable.
+.. function:: KV Engine
 
-File Format
-+++++++++++
+   //TODO uAlex
 
-File format refers to the overarching kind of data, as in slices (normal image data) or catmaid (tile-based).
+.. function:: KV Server
 
-File Type
-+++++++++
+   //TODO KV Server
 
-File type refers to the specific type of file that the data is stored in, as in, tiff, png, or tif.
+Channel Attributes
+==================
 
-Project and Related Terms
-=========================
+.. function:: Channel Name
 
-A project enables channel creation, deletion, and access. Generally they are used to organize data into groups and control access to the data being modified. For example if the research effort is divided into multiple subsections and you wish some data to be publicly viewable, but other data to be private projects are a way to control the access in this way. In the same vein, projects also allow you to control who has read/write access to what data, since different users could have different projects in the same dataset.
+   Channel Name is the specific name of a specific series of data. Standard naming convention is to do ImageTypeIterationNumber or NameSubProjectName.
 
-Project Name
-++++++++++++
+   :Type: AlphaNumeric
+   :Default: None
+   :Example: image1
 
-Project name is the specific project within a dataset's name. If there is only one project associated with a dataset then standard convention is to name the project the same as its associated dataset.
+.. function:: Data Type
 
-Token Name
-++++++++++
+   The data type is the storage method of data in the channel. It can be uint8, uint16, uint32, uint64, or float32. // uAlex TODO Point to OCPtype
 
-(Optional) The token name is the default token. If you do not wish to specify one, a default one will be created for you with the same name as the project name. However, if the project is private you must specify a token.
+   :Type: {uint8, uint16, uint32, uint64, float32}
+   :Default: None
 
-Public
-++++++
+.. function:: Channel Type
 
-(Optional) This option allows users to specify if they want the project/channels to be publicly viewable/search-able.
+   The channel type is the kind of data being stored in the channel. It can be image, annotation, or timeseries. // uAlex TODO Point to OCPtype
+
+   :Type: {image, annotation, timeseries}
+   :Default: None
+
+.. function:: Exceptions
+
+   Exceptions is an option to enable the possibility for annotations to contradict each other (assign different values to the same point).
+
+   :Type: {TRUE,FALSE}
+   :Default: TRUE
+
+.. function:: Resolution
+
+   Resolution is the starting resolution of the data being uploaded to the channel.
+
+   :Type: INT
+   :Default: 0
+
+.. function:: Window Range
+
+   Window range is the maximum and minimum pixel values for a particular image. This is used so that the image can be displayed in a readable way for viewing through RESTful calls.
+   
+   :Type: [INT,INT]
+   :Default: [0,0]
+   :Example: [0,1100]
+
+.. function:: Read Only
+
+   This option allows the user to control if, after the initial data commit, the channel is read-only. Generally this is suggested with data that will be publicly viewable.
+
+   :Type: {TRUE,FALSE}
+   :Default: TRUE
+
+.. function:: Propagated
+
+    //TODO uAlex
+    :Type: {PROPAGATED, NOT PROPAGATED}
+    :Default: NOT PROPAGATED
 
 Token
 =====
 
-A token is how a unique key that accesses a specific project. When creating a project you must have at least one token that is used to access the project. There can be multiple tokens for a single project, with each being used to track who has access. Tokens are used in the API's (python and Matlab) to get project data.
+.. function:: Token Name
+
+   The token name is the default token. If you do not wish to specify one, a default one will be created for you with the same name as the project name. However, if the project is private you must specify a token.
+   
+   :Type: AlphaNumeric
+   :Default: None
+   :Example: kashturi11
+
+.. function:: Public
+
+   //TODO uAlex
+   
+   :Type: {TRUE, FALSE}
+   :Default: FALSE
+
+
+// uAlex We do not need these.
+File Format
+File format refers to the overarching kind of data, as in slices (normal image data) or catmaid (tile-based).
+
+File Type
+File type refers to the specific type of file that the data is stored in, as in, tiff, png, or tif.
