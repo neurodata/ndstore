@@ -44,7 +44,7 @@ The system design inherits much from NoSQL scale-out and data-intensive computin
    sphinx/console
    sphinx/config
    sphinx/faq
-   sphinx/dictionary
+   sphinx/datamodel
    sphinx/ingesting
    api/ocp_types
    api/info_api
