@@ -362,7 +362,7 @@
 <li><strong>token_name</strong> (<em>string</em>) &#8211; Token Name in OCP.</li>
 <li><strong>channel_name</strong> (<em>string</em>) &#8211; Channel Name in OCP. <em>Optional</em>. If missing will use default channel for the token.</li>
 <li><strong>annotation_id</strong> (<em>int</em>) &#8211; Id of the annotation to be cut from the database.</li>
-<li><strong>options_args</strong> &#8211; <em>Optional Arguments</em>. This can be overwrite, preserve, exception.</li>
+<li><strong>options_args</strong> (<em>string</em>) &#8211; <em>Optional Arguments</em>. This can be overwrite, preserve, exception.</li>
 <li><strong>resolution</strong> (<em>int</em>) &#8211; Resolution for the annotation</li>
 </ul>
 </td>
@@ -394,7 +394,7 @@
 <li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in OCP. In the general case this is openconnecto.me.</li>
 <li><strong>token_name</strong> (<em>string</em>) &#8211; Token Name in OCP.</li>
 <li><strong>channel_name</strong> (<em>string</em>) &#8211; Channel Name in OCP. <em>Optional</em>. If missing will use default channel for the token.</li>
-<li><strong>options_args</strong> &#8211; <em>Optional Arguments</em>. This can be overwrite, preserve, exception.</li>
+<li><strong>options_args</strong> (<em>string</em>) &#8211; <em>Optional Arguments</em>. This can be overwrite, preserve, exception.</li>
 </ul>
 </td>
 </tr>
@@ -414,6 +414,35 @@
 <h2>Merge Service<a class="headerlink" href="#merge-service" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="id2">
 <h3>GET<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<dl class="post">
+<dt id="post-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-merge-(string-listofids)-(string-option_args)-">
+<code class="descname">POST </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/ca/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/merge/</code><span class="sig-paren">(</span><em class="property">string: </em><em>listofids</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>option_args</em><span class="sig-paren">)</span><code class="descname">/</code><a class="headerlink" href="#post-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-merge-(string-listofids)-(string-option_args)-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Post an annotation to the server</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in OCP. In the general case this is openconnecto.me.</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; Token Name in OCP.</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; Channel Name in OCP. <em>Optional</em>. If missing will use default channel for the token.</li>
+<li><strong>options_args</strong> (<em>string</em>) &#8211; <em>Optional Arguments</em>. This can be overwrite, preserve, exception.</li>
+<li><strong>listofids</strong> (<em>string</em>) &#8211; Comma separated list of ids</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; No error</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; Error in the syntax or file format</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </div>
 </div>
 </div>
