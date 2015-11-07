@@ -1906,7 +1906,8 @@ def setPropagate(webargs):
 
 def merge (webargs):
   """Return a single HDF5 field"""
- 
+  
+  # accepting the format token/channel_name/merge/listofids/[global]
   try:
     m = re.match("(\w+)/(\w+)/merge/([\d+,]+)/(\w+/\d+|/d+)/$", webargs)
     #m = re.match("(\w+)/(\w+)/merge/([\d+,]+)/([\w+,/]+)/$", webargs)
@@ -1932,7 +1933,7 @@ def merge (webargs):
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
   
     ch = proj.getChannelObj(channel_name)
-    #Check that all ids in the id strings are valid annotation objects
+    # Check that all ids in the id strings are valid annotation objects
     for curid in ids:
       obj = db.getAnnotation(ch, curid)
       if obj == None:
