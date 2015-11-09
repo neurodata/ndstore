@@ -34,7 +34,7 @@
   
     <link rel="top" title="open-connectome v0.7.0 documentation" href="../index.html"/>
         <link rel="next" title="Configuration" href="config.html"/>
-        <link rel="prev" title="Adminstrator Console" href="console.html"/> 
+        <link rel="prev" title="Administrator Console" href="console.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -88,14 +88,16 @@
 <li class="toctree-l2"><a class="reference internal" href="datamodel.html#token">Token</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="console.html">Adminstrator Console</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="console.html#faq">FAQ</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="console.html#how-do-i-create-a-dataset">How Do I Create a Dataset?</a></li>
-<li class="toctree-l3"><a class="reference internal" href="console.html#how-do-i-create-a-project">How Do I Create a Project?</a></li>
-<li class="toctree-l3"><a class="reference internal" href="console.html#how-do-i-create-a-channel">How Do I Create a Channel?</a></li>
-<li class="toctree-l3"><a class="reference internal" href="console.html#how-do-i-create-a-token">How Do I Create a Token?</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="console.html">Administrator Console</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="console.html#how-do-i-access-the-console">How Do I Access the Console?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="console.html#how-do-i-create-a-dataset">How Do I Create a Dataset?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="console.html#how-do-i-update-an-existing-dataset">How Do I Update an Existing Dataset?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="console.html#how-do-i-create-a-project">How Do I Create a Project?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="console.html#how-do-i-update-an-existing-project">How Do I Update an Existing Project?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="console.html#how-do-i-create-a-channel">How Do I Create a Channel?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="console.html#how-do-i-update-an-existing-channel">How Do I Update an Existing Channel?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="console.html#how-do-i-create-a-token">How Do I Create a Token?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="console.html#id1">How Do I Create a Token?</a></li>
 </ul>
 </li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">How to Ingest Data</a><ul>
@@ -275,8 +277,18 @@
 <h2>Prepping The Data<a class="headerlink" href="#prepping-the-data" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="explanation">
 <h3>Explanation<a class="headerlink" href="#explanation" title="Permalink to this headline">¶</a></h3>
-<p>There are two important components to how data should be organized before uploading to the service. First is file hierarchy (how the folders holding data should be organized) which is as follows; all channel specific data is saved in a folder with the name of the channel. For example if you have image data of two mouse cortices, one cortex would be stored in an image channel Cortex1. So, all the data from that imaging would be stored in a folder named Cortex1. In the case of time series data each channel folder should contain sub-folders time0, time1, time2, ..., timeN, each of which contains the image data for that specific time slot. All the channel folders should be stored inside a folder named the same as the token name.</p>
-<p>Second is how the files themselves are organized. Currently the auto-ingest service only supports tiff, tif, and png files. The files should be organized such that there is a tiff/png/tif for each Z-slice, with each named the slice number up to 4 digits. For example if there was a imaging set with 405 image slices in tif form, the image channel folder(s) should have files labeled 0000.tif through 0404.tiff.</p>
+<p>There are two important components to how data should be organized before
+uploading to the service. First is file hierarchy (how the folders holding
+data should be organized) which is as follows; all channel specific data
+is saved in a folder with the name of the channel. For example if you have
+image data of two mouse cortices, one cortex would be stored in an image
+channel Cortex1. So, all the data from that imaging would be stored in a
+folder named Cortex1. In the case of time series data each channel folder
+should contain sub-folders time0, time1, time2, ..., timeN, each of which
+contains the image data for that specific time slot. All the channel
+folders should be stored inside a folder named the same as the token name.</p>
+<p>Second is how the files themselves are organized. Currently the auto-ingest
+service only supports tiff, tif, and png files. The files should be organized such that there is a tiff/png/tif for each Z-slice, with each named the slice number up to 4 digits. For example if there was a imaging set with 405 image slices in tif form, the image channel folder(s) should have files labeled 0000.tif through 0404.tif. Files must not have a prefix or suffix to the number of the slice.</p>
 </div>
 <div class="section" id="quick-guide">
 <h3>Quick Guide<a class="headerlink" href="#quick-guide" title="Permalink to this headline">¶</a></h3>
@@ -287,7 +299,7 @@
 <h2>Uploading<a class="headerlink" href="#uploading" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="id1">
 <h3>Explanation<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
-<p>This section will initially address how to upload one channels worth of material. Located in the autoingest folder in the ingest folder of open-connectome is a file named generatejson.py (<a class="reference external" href="https://github.com/openconnectome/open-connectome">https://github.com/openconnectome/open-connectome</a>\/blob/master/ingest/autoingest/generatejson.py). To upload your data edit the hard-coded values in the code to reflect your data, being sure to specify that you are trying to put data to <a class="reference external" href="http://openconnecto.me">http://openconnecto.me</a> and your DataURL is http accessible (if it is not the script will fail). Once the script has run you do not need to maintain a connection to the script.</p>
+<p>This section will initially address how to upload one channels worth of material. Located in the auto-ingest folder in the ingest folder of open-connectome is a file named generatejson.py (<a class="reference external" href="https://github.com/openconnectome/open-connectome/blob/master/ingest/autoingest/generatejson.py">https://github.com/openconnectome/open-connectome/blob/master/ingest/autoingest/generatejson.py</a>). To upload your data edit the hard-coded values in the code to reflect your data, being sure to specify that you are trying to put data to <a class="reference external" href="http://openconnecto.me">http://openconnecto.me</a> and your DataURL is http accessible (if it is not the script will fail). Once the script has run you do not need to maintain a connection to the script.</p>
 </div>
 <div class="section" id="id2">
 <h3>Quick Guide<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
@@ -309,7 +321,7 @@
         <a href="config.html" class="btn btn-neutral float-right" title="Configuration" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="console.html" class="btn btn-neutral" title="Adminstrator Console" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="console.html" class="btn btn-neutral" title="Administrator Console" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

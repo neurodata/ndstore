@@ -33,7 +33,7 @@
 
   
     <link rel="top" title="open-connectome v0.7.0 documentation" href="../index.html"/>
-        <link rel="next" title="Adminstrator Console" href="console.html"/>
+        <link rel="next" title="Administrator Console" href="console.html"/>
         <link rel="prev" title="Introduction" href="introduction.html"/> 
 
   
@@ -88,14 +88,16 @@
 <li class="toctree-l2"><a class="reference internal" href="#token">Token</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="console.html">Adminstrator Console</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="console.html#faq">FAQ</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="console.html#how-do-i-create-a-dataset">How Do I Create a Dataset?</a></li>
-<li class="toctree-l3"><a class="reference internal" href="console.html#how-do-i-create-a-project">How Do I Create a Project?</a></li>
-<li class="toctree-l3"><a class="reference internal" href="console.html#how-do-i-create-a-channel">How Do I Create a Channel?</a></li>
-<li class="toctree-l3"><a class="reference internal" href="console.html#how-do-i-create-a-token">How Do I Create a Token?</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="console.html">Administrator Console</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="console.html#how-do-i-access-the-console">How Do I Access the Console?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="console.html#how-do-i-create-a-dataset">How Do I Create a Dataset?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="console.html#how-do-i-update-an-existing-dataset">How Do I Update an Existing Dataset?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="console.html#how-do-i-create-a-project">How Do I Create a Project?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="console.html#how-do-i-update-an-existing-project">How Do I Update an Existing Project?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="console.html#how-do-i-create-a-channel">How Do I Create a Channel?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="console.html#how-do-i-update-an-existing-channel">How Do I Update an Existing Channel?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="console.html#how-do-i-create-a-token">How Do I Create a Token?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="console.html#id1">How Do I Create a Token?</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="ingesting.html">How to Ingest Data</a><ul>
@@ -286,11 +288,13 @@ Channel: is a collection of tables, including the actual images, as well as meta
 <p>Each channel for this project corresponds to a different modality. For example, the T1 image might be the first channel, called “T1”. So, to access that channel, we pair the token with the channel name: ‘Subject1T1’. The T1 channel happens to be a 3D image stack. Let’s say we also got an fMRI scan from that subject, also co-registered to MNI152 space. We can then make another channel called ‘fMRI’ containing all the fMRI data and metadata. Note that this is actually 3D+time data, which is no problem to store within a given channel. Finally, assume we also have Diffusion MRI data associated with that subject. So, we can generate another channel called “DTI” to store that data and metadata. Although DTI data is not typically thought of as time-series data, it is 4D, so we could store it as a time-series channel.</p>
 <p>Now, imagine from the DTI data, we created a fractional anisotropy map. We could make a new channel, called “FA”, and put it there. Similarly, imagine from the fMRI we created a general linear model, we could again create a new channel, “GLM”, and put the coefficients in there.</p>
 <p>The advantage of having a data model is that all of the data and metadata can be captured and stored together, which makes visualization, analysis, and reproducibility much simpler.</p>
-<div class="figure align-center">
+<div class="figure align-center" id="id1">
 <a class="reference internal image-reference" href="../_images/datamodel_simple.png"><img alt="../_images/datamodel_simple.png" src="../_images/datamodel_simple.png" style="width: 500px; height: 200px;" /></a>
+<p class="caption"><span class="caption-text">This is a simple example of the data model, consisting of one example of each component.</span></p>
 </div>
-<div class="figure align-center">
+<div class="figure align-center" id="id2">
 <a class="reference internal image-reference" href="../_images/datamodel_complex.png"><img alt="../_images/datamodel_complex.png" src="../_images/datamodel_complex.png" style="width: 800px; height: 400px;" /></a>
+<p class="caption"><span class="caption-text">This is a complex example of the data model, consisteing of multiple projects, tokens, and databases.</span></p>
 </div>
 </div>
 <div class="section" id="dataset-attributes">
@@ -385,7 +389,7 @@ Channel: is a collection of tables, including the actual images, as well as meta
 <dl class="function">
 <dt>
 <code class="descname">Scaling Levels</code></dt>
-<dd><p>Scaling levels is the number of levels the data is scalable to (how many zoom levels are present in the data). The highest resolution of the data is at scaling level 0, and for each level up the data is down sampled by half (per slice).</p>
+<dd><p>Scaling levels is the number of levels the data is scalable to (how many zoom levels are present in the data). The highest resolution of the data is at scaling level 0, and for each level up the data is down sampled by 2x2 (per slice). To learn more about the sampling service used, visit the :ref:&#8217;the propagation &lt;ocp-propagation&gt;&#8217; service page.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -401,7 +405,7 @@ Channel: is a collection of tables, including the actual images, as well as meta
 <dl class="function">
 <dt>
 <code class="descname">Scaling Choices</code></dt>
-<dd><p>Scaling choices // uAlex TODO.</p>
+<dd><p>Scaling is the orientation of the data being stored, Z Slices corresponds to a Z-slice orientation (as in a collection of tiff images in which each tiff is a slice on the z plane) and Isotropic corresponds to an isotropic orientation (in which each tiff is a slice on the y plane).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -454,19 +458,49 @@ Channel: is a collection of tables, including the actual images, as well as meta
 <dl class="function">
 <dt>
 <code class="descname">Host Server</code></dt>
-<dd><p>//TODO uAlex</p>
+<dd><p>This option allows users to specify which server their data is being stored on, this is relevent only to users that are trying to link to existing databases on a particular server.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">AlphaNumeric</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Default:</th><td class="field-body">default</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt>
 <code class="descname">KV Engine</code></dt>
-<dd><p>//TODO uAlex</p>
+<dd><p>This option allows users to specify what engine their KV data should be store in, this is not relevent for most users. //TODO uAlex - Double check</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">AlphaNumeric</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Default:</th><td class="field-body">default</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt>
 <code class="descname">KV Server</code></dt>
-<dd><p>//TODO KV Server</p>
+<dd><p>This option allows users to specify what server their KV data should be store on, this is not relevent for most users. //TODO uAlex - Double check</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">AlphaNumeric</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Default:</th><td class="field-body">default</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
@@ -493,7 +527,7 @@ Channel: is a collection of tables, including the actual images, as well as meta
 <dl class="function">
 <dt>
 <code class="descname">Data Type</code></dt>
-<dd><p>The data type is the storage method of data in the channel. It can be uint8, uint16, uint32, uint64, or float32. // uAlex TODO Point to OCPtype</p>
+<dd><p>The data type is the storage method of data in the channel. It can be uint8, uint16, uint32, uint64, or float32. If you wish to learn more about our supported data types visit <a class="reference internal" href="../api/ocp_types.html#ocp-datatype"><span>the OCP datatypes page.</span></a></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -509,7 +543,7 @@ Channel: is a collection of tables, including the actual images, as well as meta
 <dl class="function">
 <dt>
 <code class="descname">Channel Type</code></dt>
-<dd><p>The channel type is the kind of data being stored in the channel. It can be image, annotation, or timeseries. // uAlex TODO Point to OCPtype</p>
+<dd><p>The channel type is the kind of data being stored in the channel. It can be image, annotation, or timeseries. If you wish to learn more about our supported channel types visit <a class="reference internal" href="../api/ocp_types.html#ocp-channeltype"><span>the OCP datatypes page.</span></a></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -591,9 +625,17 @@ Channel: is a collection of tables, including the actual images, as well as meta
 <dl class="function">
 <dt>
 <code class="descname">Propagated Status</code></dt>
-<dd><p>//TODO uAlex
-:Type: {PROPAGATED, NOT PROPAGATED}
-:Default: NOT PROPAGATED</p>
+<dd><p>The propagation status enumerates to the user what the current state of the propagation service is for the current project. To learn more about the propagation service vist :ref:&#8217;the documentation. &lt;ocp-propagation&gt;&#8217;</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">{PROPAGATED, NOT PROPAGATED}</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Default:</th><td class="field-body">NOT PROPAGATED</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
@@ -620,7 +662,7 @@ Channel: is a collection of tables, including the actual images, as well as meta
 <dl class="function">
 <dt>
 <code class="descname">Public Token</code></dt>
-<dd><p>//TODO uAlex</p>
+<dd><p>Public tokens are search-able by anyone using the service through the console page, private (not public) tokens are not.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -633,11 +675,6 @@ Channel: is a collection of tables, including the actual images, as well as meta
 </table>
 </dd></dl>
 
-<p>// uAlex We do not need these.
-File Format
-File format refers to the overarching kind of data, as in slices (normal image data) or catmaid (tile-based).</p>
-<p>File Type
-File type refers to the specific type of file that the data is stored in, as in, tiff, png, or tif.</p>
 </div>
 </div>
 
@@ -647,7 +684,7 @@ File type refers to the specific type of file that the data is stored in, as in,
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="console.html" class="btn btn-neutral float-right" title="Adminstrator Console" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="console.html" class="btn btn-neutral float-right" title="Administrator Console" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="introduction.html" class="btn btn-neutral" title="Introduction" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>

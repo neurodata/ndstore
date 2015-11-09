@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Adminstrator Console &mdash; open-connectome v0.7.0 documentation</title>
+  <title>Administrator Console &mdash; open-connectome v0.7.0 documentation</title>
   
 
   
@@ -88,14 +88,16 @@
 <li class="toctree-l2"><a class="reference internal" href="datamodel.html#token">Token</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Adminstrator Console</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#faq">FAQ</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#how-do-i-create-a-dataset">How Do I Create a Dataset?</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#how-do-i-create-a-project">How Do I Create a Project?</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#how-do-i-create-a-channel">How Do I Create a Channel?</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#how-do-i-create-a-token">How Do I Create a Token?</a></li>
-</ul>
-</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Administrator Console</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-access-the-console">How Do I Access the Console?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-create-a-dataset">How Do I Create a Dataset?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-update-an-existing-dataset">How Do I Update an Existing Dataset?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-create-a-project">How Do I Create a Project?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-update-an-existing-project">How Do I Update an Existing Project?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-create-a-channel">How Do I Create a Channel?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-update-an-existing-channel">How Do I Update an Existing Channel?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-create-a-token">How Do I Create a Token?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id1">How Do I Create a Token?</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="ingesting.html">How to Ingest Data</a><ul>
@@ -256,7 +258,7 @@
   <ul class="wy-breadcrumbs">
     <li><a href="../index.html">Docs</a> &raquo;</li>
       
-    <li>Adminstrator Console</li>
+    <li>Administrator Console</li>
       <li class="wy-breadcrumbs-aside">
         
           
@@ -269,46 +271,70 @@
 </div>
           <div role="main" class="document">
             
-  <div class="section" id="adminstrator-console">
-<h1>Adminstrator Console<a class="headerlink" href="#adminstrator-console" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="faq">
-<h2>FAQ<a class="headerlink" href="#faq" title="Permalink to this headline">¶</a></h2>
+  <div class="section" id="administrator-console">
+<h1>Administrator Console<a class="headerlink" href="#administrator-console" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="how-do-i-access-the-console">
+<h2>How Do I Access the Console?<a class="headerlink" href="#how-do-i-access-the-console" title="Permalink to this headline">¶</a></h2>
+<p>Navigate to <a class="reference external" href="http://openconnecto.me/ocp/ocp/accounts/login/">http://openconnecto.me/ocp/ocp/accounts/login/</a> and if you do not have an account select the register option below the sign in box. Once you create an account log into the console and you will be taken to the main page.</p>
+</div>
 <div class="section" id="how-do-i-create-a-dataset">
-<h3>How Do I Create a Dataset?<a class="headerlink" href="#how-do-i-create-a-dataset" title="Permalink to this headline">¶</a></h3>
+<h2>How Do I Create a Dataset?<a class="headerlink" href="#how-do-i-create-a-dataset" title="Permalink to this headline">¶</a></h2>
 <p>Navigate to the datasets drop down menu and select create dataset. Fill in the
 appropriate data fields for each line (a full explanation of each can be found
-in the data model). Click create data set and you should be re-directed to
-the data set main page, where you will now see a new data set with the data
-you selected. To use the data set create a new project/token.</p>
+in :ref:&#8217;the data model &lt;datamodel&gt;&#8217;). Click create dataset and you should be re-directed to
+the dataset main page, where you will now see a new dataset with the data
+you inputted. To use the dataset create a new project/token.</p>
+</div>
+<div class="section" id="how-do-i-update-an-existing-dataset">
+<h2>How Do I Update an Existing Dataset?<a class="headerlink" href="#how-do-i-update-an-existing-dataset" title="Permalink to this headline">¶</a></h2>
+<p>To update a dataset navigate to the datasets drop-down menu and select view datasets.
+To the right of the name of the dataset you wish to modify select &#8220;Update Dataset&#8221;
+and change the fields as desired. Warning, editing some of the fields of a dataset can
+cause data to become unusable, it is preferable for to create a new project if the
+parameters of your dataset change.</p>
 </div>
 <div class="section" id="how-do-i-create-a-project">
-<h3>How Do I Create a Project?<a class="headerlink" href="#how-do-i-create-a-project" title="Permalink to this headline">¶</a></h3>
+<h2>How Do I Create a Project?<a class="headerlink" href="#how-do-i-create-a-project" title="Permalink to this headline">¶</a></h2>
 <p>If you have not already created a dataset follow the tutorial here <a class="reference internal" href="#how-do-i-create-a-dataset">How Do I Create a Dataset?</a>).
 To create a project navigate to the projects drop down menu and select create project.
-Fill in the appropriate fields, an explanation of each of which you can see below.
-Click create data set and you should be re-directed to the data set main page,
-where you will now see a new data set with the data you selected. To use the
-data set create a new project/token.</p>
-<p>To manage a project navigate to the projects dropdown menu and select view projects.
-To the right of the project you wish to modify select Update/Details and change
-the fields as desired.</p>
+Fill in the appropriate fields, an explanation of each of which you can see in :ref:&#8217;the data model &lt;datamodel&gt;&#8217;. Click create project and you should be re-directed to the project main page,
+where you will now see a new project with the data you selected.</p>
+</div>
+<div class="section" id="how-do-i-update-an-existing-project">
+<h2>How Do I Update an Existing Project?<a class="headerlink" href="#how-do-i-update-an-existing-project" title="Permalink to this headline">¶</a></h2>
+<p>To update a project navigate to the projects drop-down menu and select view projects.
+To the right of the name of the project you wish to modify select &#8220;Update/Details&#8221;
+and change the fields as desired. Warning, editing some of the fields of a project can
+cause data to become unusable, it is preferable for to create a new project if the
+parameters of your project change.</p>
 </div>
 <div class="section" id="how-do-i-create-a-channel">
-<h3>How Do I Create a Channel?<a class="headerlink" href="#how-do-i-create-a-channel" title="Permalink to this headline">¶</a></h3>
+<h2>How Do I Create a Channel?<a class="headerlink" href="#how-do-i-create-a-channel" title="Permalink to this headline">¶</a></h2>
 <p>If you have not created a project yet follow the above tutorial in <a class="reference internal" href="#how-do-i-create-a-project">How Do I Create a Project?</a>.
 Then navigate to the projects drop down menu and select projects. Select the
-project you wish to create a channel for and select channel, then add channel.</p>
-<p>To modify a channel select the Update button in the channels menu. Note that to
-rename  a channel it is better to delete the channel and re-upload data.</p>
+project you wish to create a channel for and select channel, then add channel.
+Fill in the appropriate fields, an explanation of each of which you can see in
+:ref:&#8217;the data model &lt;datamodel&gt;&#8217;. Click create channel and you should be re-directed
+to the project&#8217;s channel page, where you will now see a new channel in the project.</p>
+</div>
+<div class="section" id="how-do-i-update-an-existing-channel">
+<h2>How Do I Update an Existing Channel?<a class="headerlink" href="#how-do-i-update-an-existing-channel" title="Permalink to this headline">¶</a></h2>
+<p>To update a channel navigate to the channels menu to the right of the project name.
+To the right of the name of the channel you wish to modify select &#8220;Update&#8221;
+and change the fields as desired. Warning, editing some of the fields of a channel can
+cause data to become unusable, it is preferable for to create a new channel if the
+parameters of your channel change.</p>
 </div>
 <div class="section" id="how-do-i-create-a-token">
-<h3>How Do I Create a Token?<a class="headerlink" href="#how-do-i-create-a-token" title="Permalink to this headline">¶</a></h3>
+<h2>How Do I Create a Token?<a class="headerlink" href="#how-do-i-create-a-token" title="Permalink to this headline">¶</a></h2>
 <p>If you have not created a project yet follow the above tutorial in <a class="reference internal" href="#how-do-i-create-a-project">How Do I Create a Project?</a>.
 Then navigate to the projects drop down menu and select projects. Select the
-project you wish to create another token for and select tokens, then add token.
-To modify the token navigate to the tokens sub-menu again and select the modify
-option on the token you wish to edit.</p>
+project you wish to create another token for and select tokens, then add token.</p>
 </div>
+<div class="section" id="id1">
+<h2>How Do I Create a Token?<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p>To modify the token navigate to the tokens sub-menu in the project menu and select the
+&#8220;Update&#8221; option on the token you wish to edit.</p>
 </div>
 </div>
 

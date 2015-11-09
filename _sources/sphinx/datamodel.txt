@@ -26,21 +26,26 @@ Now, imagine from the DTI data, we created a fractional anisotropy map. We could
 The advantage of having a data model is that all of the data and metadata can be captured and stored together, which makes visualization, analysis, and reproducibility much simpler.
 
 .. figure:: ../images/datamodel_simple.png
-	:align: center
-	:width: 500
-	:height: 200
+    :width: 500px
+    :height: 200px
+    :align: center
+	
+    This is a simple example of the data model, consisting of one example of each component.
+
 
 .. figure:: ../images/datamodel_complex.png
-	:align: center
-	:width: 800
-	:height: 400
+    :width: 800px
+    :height: 400px
+    :align: center
+	
+    This is a complex example of the data model, consisteing of multiple projects, tokens, and databases.
 
 
 Dataset Attributes
 ==================
 
 .. function:: Dataset Name
-    
+
    Dataset Name is the overarching name of the research effort. Standard naming convention is to do LabNamePublicationYear or LeadResearcherCurrentYear.
 
    :Type: AlphaNumeric
@@ -50,7 +55,7 @@ Dataset Attributes
 .. function:: Image Size
 
    Image size is the pixel count dimensions of the data. For example is the data is stored as a series of 100 slices each 2100x2000 pixel TIFF images, the X,Y,Z dimensions are (2100, 2000, 100).
-   
+
    :Type: [INT,INT,INT]
    :Default: None
    :Example: [2100,2000,100]
@@ -79,14 +84,14 @@ Dataset Attributes
 
 .. function:: Scaling Levels
 
-   Scaling levels is the number of levels the data is scalable to (how many zoom levels are present in the data). The highest resolution of the data is at scaling level 0, and for each level up the data is down sampled by half (per slice).
+   Scaling levels is the number of levels the data is scalable to (how many zoom levels are present in the data). The highest resolution of the data is at scaling level 0, and for each level up the data is down sampled by 2x2 (per slice). To learn more about the sampling service used, visit the :ref:'the propagation <ocp-propagation>' service page.
 
    :Type: INT
    :Default: 0
 
 .. function:: Scaling Choices
 
-   Scaling choices // uAlex TODO.
+   Scaling is the orientation of the data being stored, Z Slices corresponds to a Z-slice orientation (as in a collection of tiff images in which each tiff is a slice on the z plane) and Isotropic corresponds to an isotropic orientation (in which each tiff is a slice on the y plane).
 
    :Type: {Z Slices, Isotropic}
    :Default: Z Slices
@@ -111,15 +116,24 @@ Project Attributes
 
 .. function:: Host Server
 
-   //TODO uAlex
+   This option allows users to specify which server their data is being stored on, this is relevent only to users that are trying to link to existing databases on a particular server.
+
+   :Type: AlphaNumeric
+   :Default: default
 
 .. function:: KV Engine
 
-   //TODO uAlex
+   This option allows users to specify what engine their KV data should be store in, this is not relevent for most users. //TODO uAlex - Double check
+
+   :Type: AlphaNumeric
+   :Default: default
 
 .. function:: KV Server
 
-   //TODO KV Server
+   This option allows users to specify what server their KV data should be store on, this is not relevent for most users. //TODO uAlex - Double check
+
+   :Type: AlphaNumeric
+   :Default: default
 
 Channel Attributes
 ==================
@@ -134,14 +148,14 @@ Channel Attributes
 
 .. function:: Data Type
 
-   The data type is the storage method of data in the channel. It can be uint8, uint16, uint32, uint64, or float32. // uAlex TODO Point to OCPtype
+   The data type is the storage method of data in the channel. It can be uint8, uint16, uint32, uint64, or float32. If you wish to learn more about our supported data types visit :ref:`the OCP datatypes page. <ocp-datatype>`
 
    :Type: {uint8, uint16, uint32, uint64, float32}
    :Default: None
 
 .. function:: Channel Type
 
-   The channel type is the kind of data being stored in the channel. It can be image, annotation, or timeseries. // uAlex TODO Point to OCPtype
+   The channel type is the kind of data being stored in the channel. It can be image, annotation, or timeseries. If you wish to learn more about our supported channel types visit :ref:`the OCP datatypes page. <ocp-channeltype>`
 
    :Type: {image, annotation, timeseries}
    :Default: None
@@ -163,7 +177,7 @@ Channel Attributes
 .. function:: Window Range
 
    Window range is the maximum and minimum pixel values for a particular image. This is used so that the image can be displayed in a readable way for viewing through RESTful calls.
-   
+
    :Type: [INT,INT]
    :Default: [0,0]
    :Example: [0,1100]
@@ -177,9 +191,10 @@ Channel Attributes
 
 .. function:: Propagated Status
 
-    //TODO uAlex
-    :Type: {PROPAGATED, NOT PROPAGATED}
-    :Default: NOT PROPAGATED
+   The propagation status enumerates to the user what the current state of the propagation service is for the current project. To learn more about the propagation service vist :ref:'the documentation. <ocp-propagation>'
+
+   :Type: {PROPAGATED, NOT PROPAGATED}
+   :Default: NOT PROPAGATED
 
 Token
 =====
@@ -187,22 +202,14 @@ Token
 .. function:: Token Name
 
    The token name is the default token. If you do not wish to specify one, a default one will be created for you with the same name as the project name. However, if the project is private you must specify a token.
-   
+
    :Type: AlphaNumeric
    :Default: None
    :Example: kashturi11
 
 .. function:: Public Token
 
-   //TODO uAlex
-   
+   Public tokens are search-able by anyone using the service through the console page, private (not public) tokens are not.
+
    :Type: {TRUE, FALSE}
    :Default: FALSE
-
-
-// uAlex We do not need these.
-File Format
-File format refers to the overarching kind of data, as in slices (normal image data) or catmaid (tile-based).
-
-File Type
-File type refers to the specific type of file that the data is stored in, as in, tiff, png, or tif.
