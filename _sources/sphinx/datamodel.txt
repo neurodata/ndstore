@@ -118,22 +118,22 @@ Project Attributes
 
    This option allows users to specify which server their data is being stored on, this is relevent only to users that are trying to link to existing databases on a particular server.
 
-   :Type: AlphaNumeric
-   :Default: default
+   :Type: {Default, Debug}
+   :Default: Default
 
 .. function:: KV Engine
 
    This option allows users to specify what engine their KV data should be store in, this is not relevent for most users. //TODO uAlex - Double check
 
-   :Type: AlphaNumeric
-   :Default: default
+   :Type: {MySQL, Cassndara, Riak}
+   :Default: MySQL
 
 .. function:: KV Server
 
    This option allows users to specify what server their KV data should be store on, this is not relevent for most users. //TODO uAlex - Double check
 
-   :Type: AlphaNumeric
-   :Default: default
+   :Type: {Default, Debug}
+   :Default: Default
 
 Channel Attributes
 ==================

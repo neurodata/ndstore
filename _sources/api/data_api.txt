@@ -13,11 +13,11 @@ POST
    
    :synopsis: Post a HDF5 file to the server
 
-   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
    :type server_name: string
-   :param token_name: Token Name in OCP.
+   :param token_name: Token Name in NeuroData.
    :type token_name: string
-   :param channel_name: Channel Name in OCP. *Optional*. If missing will use default channel for the token.
+   :param channel_name: Channel Name in NeuroData. *Optional*. If missing will use default channel for the token.
    :type channel_name: string
    :param resolution: Resolution for the data
    :type resolution: int
@@ -56,11 +56,11 @@ GET
    
    :synopsis: Get a HDF5 file from the server
 
-   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
    :type server_name: string
-   :param token_name: Token Name in OCP.
+   :param token_name: Token Name in NeuroData.
    :type token_name: string
-   :param channel_name: Channel Name in OCP. *Optional*. If missing will use default channel for the token.
+   :param channel_name: Channel Name in NeuroData. *Optional*. If missing will use default channel for the token.
    :type channel_name: string
    :param resolution: Resolution for the data
    :type resolution: int
@@ -103,11 +103,11 @@ POST
    
    :synopsis: Post a Blosc file to the server
 
-   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
    :type server_name: string
-   :param token_name: Token Name in OCP.
+   :param token_name: Token Name in NeuroData.
    :type token_name: string
-   :param channel_name: Channel Name in OCP. *Optional*. If missing will use default channel for the token.
+   :param channel_name: Channel Name in NeuroData. *Optional*. If missing will use default channel for the token.
    :type channel_name: string
    :param resolution: Resolution for the data
    :type resolution: int
@@ -140,11 +140,11 @@ GET
    
    :synopsis: Get a Blosc file from the server
 
-   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
    :type server_name: string
-   :param token_name: Token Name in OCP.
+   :param token_name: Token Name in NeuroData.
    :type token_name: string
-   :param channel_name: Channel Name in OCP. *Optional*. If missing will use default channel for the token.
+   :param channel_name: Channel Name in NeuroData. *Optional*. If missing will use default channel for the token.
    :type channel_name: string
    :param resolution: Resolution for the data
    :type resolution: int
@@ -179,13 +179,13 @@ POST
 
 .. http:post:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/npz/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
    
-   :synopsis: Post a 3D/4D region of data for of a specified channel,resolution and bounds in the numpy array format.
+   :synopsis: Post a 3D/4D region of data for of a specified channel, resolution and bounds in the numpy array format.
 
-   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
    :type server_name: string
-   :param token_name: Token Name in OCP.
+   :param token_name: Token Name in NeuroData.
    :type token_name: string
-   :param channel_name: Channel Name in OCP. *Optional*. If missing will use default channel for the token.
+   :param channel_name: Channel Name in NeuroData. *Optional*. If missing will use default channel for the token.
    :type channel_name: string
    :param resolution: Resolution for the data
    :type resolution: int
@@ -220,7 +220,7 @@ GET
 
 .. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/npz/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
    
-   :synopsis: Download a 3D/4D region of data for of a specified channel,resolution and bounds in the numpy array format. You can load this data into python using the numpy library for anaylsis.
+   :synopsis: Download a 3D/4D region of data for of a specified channel, resolution and bounds in the numpy array format. You can load this data into python using the numpy library for anaylsis.
 
    :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
    :type server_name: string
@@ -265,7 +265,7 @@ GET XY Slice Cutout
 
 .. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/xy/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:z_slice)/(int:time_slice)/
    
-   :synopsis: Download a single image of a specified canonical plane, XY, and specified channel,resolution and bounds. Your browser can load these images.
+   :synopsis: Download a single image of a specified canonical plane, XY, and specified channel, resolution and bounds. Your browser can load these images.
 
    :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
    :type server_name: string
@@ -318,13 +318,13 @@ GET XZ Slice Cutout
 
 .. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/xz/(int:resolution)/(int:min_x),(int:max_x)/(int:y_slice)/(int:min_z),(int:max_z)/(int:time_slice/
    
-   :synopsis: Download a single image of a specified canonical plane, XZ, and specified channel,resolution and bounds. Your browser can load these images.
+   :synopsis: Download a single image of a specified canonical plane, XZ, and specified channel, resolution and bounds. Your browser can load these images.
 
-   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
    :type server_name: string
-   :param token_name: Token Name in OCP.
+   :param token_name: Token Name in NeuroData.
    :type token_name: string
-   :param channel_name: Channel Name in OCP. *Optional*. If missing will use default channel for the token.
+   :param channel_name: Channel Name in NeuroData. *Optional*. If missing will use default channel for the token.
    :type channel_name: string
    :param resolution: Resolution for the data
    :type resolution: int
@@ -370,13 +370,13 @@ GET YZ Slice Cutout
 
 .. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/yz/(int:resolution)/(int:x_slice)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:time_slice)/
    
-   :synopsis: Download a single image of a specified canonical plane, YZ, and specified channel,resolution and bounds. Your browser can load these images.
+   :synopsis: Download a single image of a specified canonical plane, YZ, and specified channel, resolution and bounds. Your browser can load these images.
 
-   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
    :type server_name: string
-   :param token_name: Token Name in OCP.
+   :param token_name: Token Name in NeuroData.
    :type token_name: string
-   :param channel_name: Channel Name in OCP. *Optional*. If missing will use default channel for the token.
+   :param channel_name: Channel Name in NeuroData. *Optional*. If missing will use default channel for the token.
    :type channel_name: string
    :param resolution: Resolution for the data
    :type resolution: int
@@ -421,8 +421,8 @@ GET YZ Slice Cutout
     :width: 500px
     :height: 200px
 
-JPEG Service
-============
+JPEG Stack Service for KNOSSOS
+==============================
  
 .. _jpeg-get:
 
@@ -431,13 +431,13 @@ GET
 
 .. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/jpeg/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/
    
-   :synopsis: Get a jpeg file from the server
+   :synopsis: Get a jpeg stack from the server in KNOSSOS format.
 
-   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
    :type server_name: string
-   :param token_name: Token Name in OCP.
+   :param token_name: Token Name in NeuroData.
    :type token_name: string
-   :param channel_name: Channel Name in OCP. *Optional*. If missing will use default channel for the token.
+   :param channel_name: Channel Name in NeuroData. *Optional*. If missing will use default channel for the token.
    :type channel_name: string
    :param resolution: Resolution for the data
    :type resolution: int

@@ -121,20 +121,19 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="sphinx/config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sphinx/faq.html">Frequently Asked Questions (FAQ)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api/ocp_types.html">OCP Types</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="api/ocp_types.html">NeuroData Types</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="api/ocp_types.html#channel-types">Channel Types</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/ocp_types.html#data-types">Data Types</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/ocp_types.html#possible-combination-of-channel-types-and-data-types">Possible Combination of Channel Types and Data Types</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/ocp_types.html#propagation-service">Propagation Service</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="api/info_api.html">Project Info API&#8217;s</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="api/info_api.html#json-service">JSON Service</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/info_api.html#json-informatio-service">JSON Informatio Service</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="api/info_api.html#get">GET</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/info_api.html#post">POST</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="api/info_api.html#hdf5-service">HDF5 Service</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/info_api.html#hdf5-information-service">HDF5 Information Service</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="api/info_api.html#id1">GET</a></li>
 </ul>
 </li>
@@ -166,13 +165,13 @@
 <li class="toctree-l3"><a class="reference internal" href="api/data_api.html#get-yz-slice-cutout">GET YZ Slice Cutout</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="api/data_api.html#jpeg-service">JPEG Service</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/data_api.html#jpeg-stack-service-for-knossos">JPEG Stack Service for KNOSSOS</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="api/data_api.html#jpeg-get">GET</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="api/ramon_api.html">RAMON API&#8217;s</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="api/ramon_api.html">RAMON API</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="api/ramon_api.html#ramon-field-service">RAMON Field Service</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="api/ramon_api.html#setfield">setField</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/ramon_api.html#getfield">getField</a></li>
@@ -194,8 +193,11 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="api/propagate_api.html">Propagate API&#8217;s</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="api/propagate_api.html#getpropagate">getPropagate</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/propagate_api.html#setpropagate">setPropagate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/propagate_api.html#propagation-service">Propagation Service</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/propagate_api.html#getpropagate">getPropagate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/propagate_api.html#setpropagate">setPropagate</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="api/json_api.html">JSON API&#8217;s</a><ul>
@@ -327,7 +329,7 @@
      <tr>
        <td></td>
        <td>
-       <a href="api/swc_api.html#get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-getPropagate-"><code class="xref">GET (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/getPropagate/</code></a></td><td>
+       <a href="api/propagate_api.html#get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-getPropagate-"><code class="xref">GET (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/getPropagate/</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
@@ -338,6 +340,11 @@
        <td></td>
        <td>
        <a href="api/data_api.html#get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-jpeg-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-"><code class="xref">GET (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/jpeg/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="api/ramon_api.html#get-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-merge-(string-listofids)-(string-option_args)-"><code class="xref">GET (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/merge/(string:listofids)/(string:option_args)/</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
@@ -382,11 +389,6 @@
      <tr>
        <td></td>
        <td>
-       <a href="api/info_api.html#get-(string-server_name)-ocp-ca-json-"><code class="xref">GET (string:server_name)/ocp/ca/json/</code></a></td><td>
-       <em></em></td></tr>
-     <tr>
-       <td></td>
-       <td>
        <a href="api/public_api.html#get-(string-server_name)-ocp-ca-public_tokens-"><code class="xref">GET (string:server_name)/ocp/ca/public_tokens/</code></a></td><td>
        <em></em></td></tr>
      <tr>
@@ -422,11 +424,6 @@
      <tr>
        <td></td>
        <td>
-       <a href="api/ramon_api.html#post-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-merge-(string-listofids)-(string-option_args)-"><code class="xref">POST (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/merge/(string:listofids)/(string:option_args)/</code></a></td><td>
-       <em></em></td></tr>
-     <tr>
-       <td></td>
-       <td>
        <a href="api/data_api.html#post-(string-server_name)-ocp-ca-(string-token_name)-(string-channel_name)-npz-(int-resolution)-(int-min_x),(int-max_x)-(int-min_y),(int-max_y)-(int-min_z),(int-max_z)-(int-min_time),(int-max_time)-"><code class="xref">POST (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/npz/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/</code></a></td><td>
        <em></em></td></tr>
      <tr>
@@ -443,6 +440,11 @@
        <td></td>
        <td>
        <a href="api/json_api.html#post-(string-server_name)-ocp-ca-autoIngest-"><code class="xref">POST (string:server_name)/ocp/ca/autoIngest/</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="api/info_api.html#post-(string-server_name)-ocp-ca-json-"><code class="xref">POST (string:server_name)/ocp/ca/json/</code></a></td><td>
        <em></em></td></tr>
    </table>
 

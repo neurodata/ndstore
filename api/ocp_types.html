@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>OCP Types &mdash; open-connectome v0.7.0 documentation</title>
+  <title>NeuroData Types &mdash; open-connectome v0.7.0 documentation</title>
   
 
   
@@ -88,14 +88,16 @@
 <li class="toctree-l2"><a class="reference internal" href="../sphinx/datamodel.html#token">Token</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../sphinx/console.html">Adminstrator Console</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../sphinx/console.html#faq">FAQ</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../sphinx/console.html#how-do-i-create-a-dataset">How Do I Create a Dataset?</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../sphinx/console.html#how-do-i-create-a-project">How Do I Create a Project?</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../sphinx/console.html#how-do-i-create-a-channel">How Do I Create a Channel?</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../sphinx/console.html#how-do-i-create-a-token">How Do I Create a Token?</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="../sphinx/console.html">Administrator Console</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../sphinx/console.html#how-do-i-access-the-console">How Do I Access the Console?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../sphinx/console.html#how-do-i-create-a-dataset">How Do I Create a Dataset?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../sphinx/console.html#how-do-i-update-an-existing-dataset">How Do I Update an Existing Dataset?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../sphinx/console.html#how-do-i-create-a-project">How Do I Create a Project?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../sphinx/console.html#how-do-i-update-an-existing-project">How Do I Update an Existing Project?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../sphinx/console.html#how-do-i-create-a-channel">How Do I Create a Channel?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../sphinx/console.html#how-do-i-update-an-existing-channel">How Do I Update an Existing Channel?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../sphinx/console.html#how-do-i-create-a-token">How Do I Create a Token?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../sphinx/console.html#id1">How Do I Create a Token?</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../sphinx/ingesting.html">How to Ingest Data</a><ul>
@@ -114,20 +116,19 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../sphinx/config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sphinx/faq.html">Frequently Asked Questions (FAQ)</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">OCP Types</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="">NeuroData Types</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#channel-types">Channel Types</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#data-types">Data Types</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#possible-combination-of-channel-types-and-data-types">Possible Combination of Channel Types and Data Types</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#propagation-service">Propagation Service</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="info_api.html">Project Info API&#8217;s</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="info_api.html#json-service">JSON Service</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="info_api.html#json-informatio-service">JSON Informatio Service</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="info_api.html#get">GET</a></li>
 <li class="toctree-l3"><a class="reference internal" href="info_api.html#post">POST</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="info_api.html#hdf5-service">HDF5 Service</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="info_api.html#hdf5-information-service">HDF5 Information Service</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="info_api.html#id1">GET</a></li>
 </ul>
 </li>
@@ -159,13 +160,13 @@
 <li class="toctree-l3"><a class="reference internal" href="data_api.html#get-yz-slice-cutout">GET YZ Slice Cutout</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="data_api.html#jpeg-service">JPEG Service</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="data_api.html#jpeg-stack-service-for-knossos">JPEG Stack Service for KNOSSOS</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="data_api.html#jpeg-get">GET</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="ramon_api.html">RAMON API&#8217;s</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="ramon_api.html">RAMON API</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="ramon_api.html#ramon-field-service">RAMON Field Service</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="ramon_api.html#setfield">setField</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ramon_api.html#getfield">getField</a></li>
@@ -187,8 +188,11 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="propagate_api.html">Propagate API&#8217;s</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="propagate_api.html#getpropagate">getPropagate</a></li>
-<li class="toctree-l2"><a class="reference internal" href="propagate_api.html#setpropagate">setPropagate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="propagate_api.html#propagation-service">Propagation Service</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="propagate_api.html#getpropagate">getPropagate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="propagate_api.html#setpropagate">setPropagate</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="json_api.html">JSON API&#8217;s</a><ul>
@@ -256,7 +260,7 @@
   <ul class="wy-breadcrumbs">
     <li><a href="../index.html">Docs</a> &raquo;</li>
       
-    <li>OCP Types</li>
+    <li>NeuroData Types</li>
       <li class="wy-breadcrumbs-aside">
         
           
@@ -269,19 +273,19 @@
 </div>
           <div role="main" class="document">
             
-  <div class="section" id="ocp-types">
-<h1>OCP Types<a class="headerlink" href="#ocp-types" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="neurodata-types">
+<h1>NeuroData Types<a class="headerlink" href="#neurodata-types" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="channel-types">
 <span id="ocp-channeltype"></span><h2>Channel Types<a class="headerlink" href="#channel-types" title="Permalink to this headline">¶</a></h2>
-<p>Channels in OCP are individual entites inside projects. You can have mulitple same and different channels inside the same project. Each channel has it&#8217;s unique properties. For example, annotation  channels allow your to store annotation paint data and metadata using RAMON. Image channels allow you to store image data which is 3-dimenisonal in xyz dimensions. Timeseries channels allow you to store time data which is 4-dimenisonal in xyz+time dimensions.</p>
+<p>Channels in NeuroData are individual entites inside projects. You can have multiple same and different channel types inside the same project. Each channel has its unique properties. For example, annotation  channels allow your to store annotation paint data and metadata using RAMON. Image channels allow you to store image data which is 3-dimenisonal in xyz dimensions. Timeseries channels allow you to store time data which is 4-dimenisonal in xyz+time dimensions.</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="61%" />
-<col width="39%" />
+<col width="53%" />
+<col width="47%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Channel Type</th>
-<th class="head">OCP Value</th>
+<th class="head">NeuroData Value</th>
 </tr>
 </thead>
 <tbody valign="top">
@@ -302,12 +306,12 @@
 <p>Each channel has an associated datatype. The datatype of the channel represent the type of data stored in that channel. For example, an image channel which has 8-bit data will be of the datatype uint8. A probablity map which has floating point data will be of the type float32.</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="60%" />
-<col width="40%" />
+<col width="50%" />
+<col width="50%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Data Type</th>
-<th class="head">OCP Value</th>
+<th class="head">NeuroData Value</th>
 </tr>
 </thead>
 <tbody valign="top">
@@ -334,7 +338,7 @@
 </div>
 <div class="section" id="possible-combination-of-channel-types-and-data-types">
 <span id="ocp-combo"></span><h2>Possible Combination of Channel Types and Data Types<a class="headerlink" href="#possible-combination-of-channel-types-and-data-types" title="Permalink to this headline">¶</a></h2>
-<p>OCP allows certain set combinations of the above mentioned channel type and data types. The combinations mentioned below.</p>
+<p>NeuroData allows certain set combinations of the above mentioned channel type and data types. We support the following combinations.</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="25%" />
@@ -354,33 +358,6 @@
 </tr>
 <tr class="row-even"><td>Annotation</td>
 <td>uint32, uint64</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="section" id="propagation-service">
-<span id="ocp-propagation"></span><h2>Propagation Service<a class="headerlink" href="#propagation-service" title="Permalink to this headline">¶</a></h2>
-<p>OCP allows only downsampling of data via a service called Propagation. This service does not upsample your data. You can post to a specific resolution and call on the <a class="reference internal" href="propagate_api.html#propagate-set"><span>set propagation service</span></a> to downsample your data in the background. When your data is under propagation, the project is locked and you cannot post data to it. This is done to maintain the consistency of data across different resolutions. You can check the status of your project via the <a class="reference internal" href="propagate_api.html#propagate-get"><span>get propagation service</span></a>. Both these services return values which have signfies something. You can use the value reference table below to idenitfy the propgation state of your project.
-<em>WARNING: It make take quite a while for propagation of some projects which are big. Please be patient.</em></p>
-<table border="1" class="docutils">
-<colgroup>
-<col width="66%" />
-<col width="34%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Propagation Value</th>
-<th class="head">OCP Value</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td>Not Propagated</td>
-<td>0</td>
-</tr>
-<tr class="row-odd"><td>Under Propagation</td>
-<td>1</td>
-</tr>
-<tr class="row-even"><td>Propagated</td>
-<td>2</td>
 </tr>
 </tbody>
 </table>
