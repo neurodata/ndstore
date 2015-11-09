@@ -26,17 +26,19 @@ Now, imagine from the DTI data, we created a fractional anisotropy map. We could
 The advantage of having a data model is that all of the data and metadata can be captured and stored together, which makes visualization, analysis, and reproducibility much simpler.
 
 .. figure:: ../images/datamodel_simple.png
-	:align: center
-	:width: 500
-	:height: 200
-	This is a simple example of the data model, consisting of one example of each component.
+    :width: 500px
+    :height: 200px
+    :align: center
+	
+    This is a simple example of the data model, consisting of one example of each component.
 
 
 .. figure:: ../images/datamodel_complex.png
-	:align: center
-	:width: 800
-	:height: 400
-	This is a complex example of the data model, consisteing of multiple projects, tokens, and databases.
+    :width: 800px
+    :height: 400px
+    :align: center
+	
+    This is a complex example of the data model, consisteing of multiple projects, tokens, and databases.
 
 
 Dataset Attributes
@@ -89,10 +91,7 @@ Dataset Attributes
 
 .. function:: Scaling Choices
 
-   (Optional) Scaling is the orientation of the data being stored, Z Slices corresponds to
-a Z-slice orientation (as in a collection of tiff images in which each tiff is a slice
-on the z plane) and Isotropic corresponds to an isotropic orientation (in which each
-tiff is a slice on the y plane).
+   Scaling is the orientation of the data being stored, Z Slices corresponds to a Z-slice orientation (as in a collection of tiff images in which each tiff is a slice on the z plane) and Isotropic corresponds to an isotropic orientation (in which each tiff is a slice on the y plane).
 
    :Type: {Z Slices, Isotropic}
    :Default: Z Slices
@@ -124,16 +123,14 @@ Project Attributes
 
 .. function:: KV Engine
 
-   This option allows users to specify what engine their KV data should be store in, this is not relevent for most users.
-//TODO uAlex - Double check
+   This option allows users to specify what engine their KV data should be store in, this is not relevent for most users. //TODO uAlex - Double check
 
    :Type: AlphaNumeric
    :Default: default
 
 .. function:: KV Server
 
-   This option allows users to specify what server their KV data should be store on, this is not relevent for most users.
-//TODO uAlex - Double check
+   This option allows users to specify what server their KV data should be store on, this is not relevent for most users. //TODO uAlex - Double check
 
    :Type: AlphaNumeric
    :Default: default
