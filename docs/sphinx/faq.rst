@@ -1,33 +1,33 @@
 Frequently Asked Questions (FAQ)
 ********************************
 
-This page will be updated to reflect commonly asked questions to provide a common reference point for questions and answers.  Users may also wish to search for answers on the general `OCP Support mailing list <https://groups.google.com/forum/#!forum/ocp-support>`_ archives.
+This page will be updated to reflect commonly asked questions to provide a common reference point for questions and answers.  Users may also wish to search for answers on the general `NeuroData Support mailing list <https://groups.google.com/forum/#!forum/ocp-support>`_ archives.
 
 New questions should be asked on  `our support pages <ocp-support@googlegroups.com>`_.
 
 **What is this project?**
 
-This project is part of the `Open Connectome Project <http://neurodata.io>`_.  The following information applies across our projects.
+This project is part of `NeuroData <http://neurodata.io>`_.  The following information applies across our projects.
 
 **How do I get started?**
 
-To learn how to navigate the web console please visit our `console <console>`_ page.
+To learn how to navigate the web console please visit our `console <console>`_ page. //TODO uAlex Check if this link works.
 
-**How do I install OCP?**
+**How do I install NeuroData?**
 
 Please begin with the `configuration <config>`_ page, which should get you up and running in no time.
 
-**How do I contribute my data to OCP?**
+**How do I contribute my data to NeuroData?**
 
-Please visit our JSON spec page.
+Please visit our `<>`_ page, which will help you with mulitple options. //TODO uAlex Point to How to ingest page.
 
-**How do I contribute code to OCP?**
+**How do I contribute code to NeuroData?**
 
 This project is under active development.  To contribute new functionality or extend the project, either get in touch with us directly, or clone our git repo and issue a pull request. Prior to contributing, checkout our dev branches to see if some of your suggestions are already being implemented. To issue a pull request, head over to our repository and select the pull requests option on the righthand side, then issue a new pull request.
 
 **How do I view my data?**
 
-Please visit our OCPviz page.
+Please visit our NeuroDataViz page.
 
 **Is there a support forum?**
 
