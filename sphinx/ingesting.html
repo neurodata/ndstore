@@ -101,14 +101,10 @@
 </ul>
 </li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">How to Ingest Data</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#prepping-the-data">Prepping The Data</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#explanation">Explanation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#quick-guide">Quick Guide</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="#prepping-the-data">Prepping The Data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#uploading">Uploading</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id1">Explanation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id2">Quick Guide</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#explanation-of-additional-terms">Explanation of Additional Terms</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#unsupported-image-types">Unsupported Image Types</a></li>
@@ -277,26 +273,124 @@
 <h1>How to Ingest Data<a class="headerlink" href="#how-to-ingest-data" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="prepping-the-data">
 <h2>Prepping The Data<a class="headerlink" href="#prepping-the-data" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="explanation">
-<h3>Explanation<a class="headerlink" href="#explanation" title="Permalink to this headline">¶</a></h3>
 <p>There are two important components to how data should be organized before uploading to the service. First is file hierarchy (how the folders holding data should be organized) which is as follows; all channel specific data is saved in a folder with the name of the channel. For example if you have image data of two mouse cortices, one cortex would be stored in an image channel Cortex1. So, all the data from that imaging would be stored in a folder named Cortex1. In the case of time series data each channel folder should contain sub-folders time0, time1, time2, ..., timeN, each of which contains the image data for that specific time slot. All the channel folders should be stored inside a folder named the same as the token name.</p>
-<p>Second is how the files themselves are organized. Currently the auto-ingest
-service only supports tiff, tif, and png files. The files should be organized such that there is a tiff/png/tif for each Z-slice, with each named the slice number up to 4 digits. For example if there was a imaging set with 405 image slices in tif form, the image channel folder(s) should have files labeled 0000.tif through 0404.tif. Files must not have a prefix or suffix to the number of the slice.</p>
-</div>
-<div class="section" id="quick-guide">
-<h3>Quick Guide<a class="headerlink" href="#quick-guide" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference external" href="https://docs.google.com/spreadsheets/d/17psi6GfyjPeXQmwl-wNNu8KOpHuYuArX2YqB3IWKgVI/edit?pli=1">https://docs.google.com/spreadsheets/d/17psi6GfyjPeXQmwl-wNNu8KOpHuYuArX2YqB3IWKgVI/edit?pli=1</a></p>
+<p>Second is how the files themselves are organized. Currently the auto-ingest service only supports tiff, tif, and png files. The files should be organized such that there is a tiff/png/tif for each Z-slice, with each named the slice number up to 4 digits. For example if there was a imaging set with 405 image slices in tif form, the image channel folder(s) should have files labeled 0000.tif through 0404.tif. Files must not have a prefix or suffix to the number of the slice.</p>
+<div class="figure align-center" id="id1">
+<a class="reference internal image-reference" href="../_images/ingesting_directory.png"><img alt="../_images/ingesting_directory.png" src="../_images/ingesting_directory.png" style="width: 450px; height: 550px;" /></a>
+<p class="caption"><span class="caption-text">This figure illustrated visually how the data should be organized for ingest.</span></p>
 </div>
 </div>
 <div class="section" id="uploading">
 <h2>Uploading<a class="headerlink" href="#uploading" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id1">
-<h3>Explanation<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
-<p>This section will initially address how to upload one channels worth of material. Located in the auto-ingest folder in the ingest folder of open-connectome is a file named generatejson.py (<a class="reference external" href="https://github.com/openconnectome/open-connectome/blob/master/ingest/autoingest/generatejson.py">https://github.com/openconnectome/open-connectome/blob/master/ingest/autoingest/generatejson.py</a>). To upload your data edit the hard-coded values in the code to reflect your data, being sure to specify that you are trying to put data to <a class="reference external" href="http://openconnecto.me">http://openconnecto.me</a> and your DataURL is http accessible (if it is not the script will fail). Once the script has run you do not need to maintain a connection to the script.</p>
+<div class="section" id="overview">
+<h3>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h3>
+<p>This section will initially address how to upload one channels worth of material. Located in the auto-ingest folder in the ingest folder of open-connectome is a file named generatejson.py (<a class="reference external" href="https://github.com/openconnectome/open-connectome/blob/master/ingest/autoingest/generatejson.py">https://github.com/openconnectome/open-connectome/blob/master/ingest/autoingest/generatejson.py</a>). To upload your data edit the hard-coded values in the code to reflect your data, being sure to specify that you are trying to put data to <a class="reference external" href="http://openconnecto.me">http://openconnecto.me</a> and your DataURL is http accessible (if it is not the script will fail). Once the script has run you do not need to maintain a connection to the script. The script can be run simply by calling &#8220;python generatejson.py&#8221; on the script.</p>
 </div>
-<div class="section" id="id2">
-<h3>Quick Guide<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference external" href="https://docs.google.com/spreadsheets/d/17psi6GfyjPeXQmwl-wNNu8KOpHuYuArX2YqB3IWKgVI/edit?pli=1">https://docs.google.com/spreadsheets/d/17psi6GfyjPeXQmwl-wNNu8KOpHuYuArX2YqB3IWKgVI/edit?pli=1</a></p>
+<div class="section" id="explanation-of-additional-terms">
+<h3>Explanation of Additional Terms<a class="headerlink" href="#explanation-of-additional-terms" title="Permalink to this headline">¶</a></h3>
+<p>The :ref:&#8217;data model &lt;datamodel&gt;&#8217; holds an explanation of the majority of the terms encountered when editing the generatejson.py script, however some extra terms that are not enumerated in that explanation are included here.</p>
+<dl class="function">
+<dt id="Scaling">
+<code class="descname">Scaling</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Scaling" title="Permalink to this definition">¶</a></dt>
+<dd><p>Scaling is the orientation of the data being stored, 0 corresponds to a Z-slice orientation (as in a collection of tiff images in which each tiff is a slice on the z plane) and 1 corresponds to an isotropic orientation (in which each tiff is a slice on the y plane).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">INT</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Default:</th><td class="field-body">1</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="Exceptions">
+<code class="descname">Exceptions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Exceptions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Exceptions is an option to enable the possibility for annotations to contradict each other (assign different values to the same point). 1 corresponds to True, 0 corresponds to False.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">INT</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Default:</th><td class="field-body">0</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descname">Read Only</code></dt>
+<dd><p>This option allows the user to control if, after the initial data commit, the channel is read-only. Generally this is suggested with data that will be publicly viewable. 1 corresponds to True, 0 corresponds to False.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">INT</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Default:</th><td class="field-body">0</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descname">Data URL</code></dt>
+<dd><p>This url points to the root directory of the files. Dropbox (or any data requiring authentication to download such as s3) is not an acceptable HTTP Server.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">AlphaNumeric</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Default:</th><td class="field-body">None</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Example:</th><td class="field-body"><a class="reference external" href="http://ExampleServer.University.edu/MyData/UploadData/">http://ExampleServer.University.edu/MyData/UploadData/</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descname">File Format</code></dt>
+<dd><p>File format refers to the overarching kind of data, as in slices (normal image data) or catmaid (tile-based).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">{SLICE, CATMAID}</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Default:</th><td class="field-body">None</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Example:</th><td class="field-body">SLICE</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descname">File Type</code></dt>
+<dd><p>File type refers to the specific type of file that the data is stored in, as in, tiff , png, or tif.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">AlphaNumeric</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Default:</th><td class="field-body">None</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Example:</th><td class="field-body">tiff</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </div>
 </div>
 <div class="section" id="unsupported-image-types">

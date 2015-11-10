@@ -101,14 +101,10 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="ingesting.html">How to Ingest Data</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="ingesting.html#prepping-the-data">Prepping The Data</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="ingesting.html#explanation">Explanation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ingesting.html#quick-guide">Quick Guide</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="ingesting.html#prepping-the-data">Prepping The Data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ingesting.html#uploading">Uploading</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="ingesting.html#id1">Explanation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ingesting.html#id2">Quick Guide</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ingesting.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ingesting.html#explanation-of-additional-terms">Explanation of Additional Terms</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="ingesting.html#unsupported-image-types">Unsupported Image Types</a></li>
@@ -407,7 +403,7 @@ Channel: is a collection of tables, including the actual images, as well as meta
 <dl class="function">
 <dt>
 <code class="descname">Scaling Choices</code></dt>
-<dd><p>Scaling is the orientation of the data being stored, Z Slices corresponds to a Z-slice orientation (as in a collection of tiff images in which each tiff is a slice on the z plane) and Isotropic corresponds to an isotropic orientation (in which each tiff is a slice on the y plane).</p>
+<dd><p>Scaling Choices represent the orientation of the data being stored, Z Slices corresponds to a Z-slice orientation (as in a collection of tiff images in which each tiff is a slice on the z plane) and Isotropic corresponds to an isotropic orientation (in which each tiff is a slice on the y plane).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -465,9 +461,9 @@ Channel: is a collection of tables, including the actual images, as well as meta
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">{Default, Debug}</td>
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">AlphaNumeric</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Default:</th><td class="field-body">Default</td>
+<tr class="field-even field"><th class="field-name">Default:</th><td class="field-body">default</td>
 </tr>
 </tbody>
 </table>
@@ -476,14 +472,14 @@ Channel: is a collection of tables, including the actual images, as well as meta
 <dl class="function">
 <dt>
 <code class="descname">KV Engine</code></dt>
-<dd><p>This option allows users to specify what engine their KV data should be store in, this is not relevent for most users. //TODO uAlex - Double check</p>
+<dd><p>This option allows users to specify what engine their KV data should be store in, this is not relevant for most users.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">{MySQL, Cassndara, Riak}</td>
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">AlphaNumeric</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Default:</th><td class="field-body">MySQL</td>
+<tr class="field-even field"><th class="field-name">Default:</th><td class="field-body">default</td>
 </tr>
 </tbody>
 </table>
@@ -492,14 +488,14 @@ Channel: is a collection of tables, including the actual images, as well as meta
 <dl class="function">
 <dt>
 <code class="descname">KV Server</code></dt>
-<dd><p>This option allows users to specify what server their KV data should be store on, this is not relevent for most users. //TODO uAlex - Double check</p>
+<dd><p>This option allows users to specify what server their KV data should be store on, this is not relevant for most users.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">{Default, Debug}</td>
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">AlphaNumeric</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Default:</th><td class="field-body">Default</td>
+<tr class="field-even field"><th class="field-name">Default:</th><td class="field-body">default</td>
 </tr>
 </tbody>
 </table>
