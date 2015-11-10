@@ -11,7 +11,7 @@ POST
 
 .. http:post:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/hdf5/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
    
-   :synopsis: Post a HDF5 file to the server
+   :synopsis: Post a 3D/4D region of data for a single channel or multiple channels in HDF5 file format to the server. Form parameters describe the datasets within the HDF5 file.
 
    :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
    :type server_name: string
@@ -54,7 +54,7 @@ GET
 
 .. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/hdf5/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
    
-   :synopsis: Get a HDF5 file from the server
+   :synopsis: Get a 3D/4D region of data for a single channel or multiple channels in HDF5 file format from the server. Form parameters describe the datsets within the HDF5 file.
 
    :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
    :type server_name: string
@@ -88,7 +88,6 @@ GET
    :statuscode 200: No error
    :statuscode 404: Error in the syntax or file format
   
-.. gist:: https://gist.github.com/kunallillaney/19b78e5a83611edf7808
 
 
 Blosc Service
@@ -101,7 +100,7 @@ POST
 
 .. http:post:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/blosc/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
    
-   :synopsis: Post a Blosc file to the server
+   :synopsis: Post a 3D/4D region of data for of a specified channel, resolution and bounds in blosc compression format.
 
    :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
    :type server_name: string
@@ -138,7 +137,7 @@ GET
 
 .. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/blosc/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
    
-   :synopsis: Get a Blosc file from the server
+   :synopsis: Get a 3D/4D region of data for of a specified channel, resolution and bounds in the blosc compression format.
 
    :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
    :type server_name: string
@@ -252,8 +251,6 @@ GET
    :statuscode 200: No error
    :statuscode 404: Error in the syntax or file format
   
-.. gist:: https://gist.github.com/kunallillaney/19b78e5a83611edf7808
-
 
 Image Slice Service
 ===================

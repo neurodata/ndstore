@@ -3,7 +3,7 @@ Frequently Asked Questions (FAQ)
 
 This page will be updated to reflect commonly asked questions to provide a common reference point for questions and answers.  Users may also wish to search for answers on the general `NeuroData Support mailing list <https://groups.google.com/forum/#!forum/ocp-support>`_ archives.
 
-New questions should be asked on  `our support pages <ocp-support@googlegroups.com>`_.
+New questions should be asked on  `our support pages <support@neurodata.io>`_.
 
 **What is this project?**
 
@@ -11,7 +11,7 @@ This project is part of `NeuroData <http://neurodata.io>`_.  The following infor
 
 **How do I get started?**
 
-To learn how to navigate the web console please visit our `console <console>`_ page. //TODO uAlex Check if this link works.
+To learn how to navigate the web console please visit our `Adminstrator Console <console>`_ page.
 
 **How do I install NeuroData?**
 
@@ -19,7 +19,7 @@ Please begin with the `configuration <config>`_ page, which should get you up an
 
 **How do I contribute my data to NeuroData?**
 
-Please visit our `<>`_ page, which will help you with mulitple options. //TODO uAlex Point to How to ingest page.
+Please visit our `How to Ingest Data <ingesting>`_ page, which will help you with mulitple options.
 
 **How do I contribute code to NeuroData?**
 
@@ -31,4 +31,4 @@ Please visit our NeuroDataViz page.
 
 **Is there a support forum?**
 
-Information on making a support request and archived questions and answers may be found `here <https://groups.google.com/forum/#!forum/ocp-support/>`_.
+Information on making a support request and archived questions and answers may be found `here <https://groups.google.com/a/neurodata.io/forum/#!forum/support>`_.

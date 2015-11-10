@@ -1,5 +1,5 @@
 Administrator Console
-********************
+*********************
 
 How Do I Access the Console?
 ============================
