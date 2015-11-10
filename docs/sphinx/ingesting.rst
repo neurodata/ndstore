@@ -21,7 +21,7 @@ Uploading
 Overview
 ++++++++
 
-This section will initially address how to upload one channels worth of material. Located in the auto-ingest folder in the ingest folder of open-connectome is a file named generatejson.py (https://github.com/openconnectome/open-connectome/blob/master/ingest/autoingest/generatejson.py). To upload your data edit the hard-coded values in the code to reflect your data, being sure to specify that you are trying to put data to http://openconnecto.me and your DataURL is http accessible (if it is not the script will fail). Once the script has run you do not need to maintain a connection to the script. you can run the script simply by calling "python generatejson.py" on the script.
+This section will initially address how to upload one channels worth of material. Located in the auto-ingest folder in the ingest folder of open-connectome is a file named generatejson.py (https://github.com/openconnectome/open-connectome/blob/master/ingest/autoingest/generatejson.py). To upload your data edit the hard-coded values in the code to reflect your data, being sure to specify that you are trying to put data to http://openconnecto.me and your DataURL is http accessible (if it is not the script will fail). Once the script has run you do not need to maintain a connection to the script. The script can be run simply by calling "python generatejson.py" on the script.
 
 Explanation of Additional Terms
 +++++++++++++++++++++++++++++++
