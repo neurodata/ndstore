@@ -121,7 +121,6 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="">Project Info API&#8217;s</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#json-informatio-service">JSON Informatio Service</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#get">GET</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#post">POST</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#hdf5-information-service">HDF5 Information Service</a><ul>
@@ -527,61 +526,6 @@
         <span class="nt">&quot;version&quot;</span><span class="p">:</span> <span class="s2">&quot;0.0&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
-</pre></div>
-</div>
-</dd></dl>
-
-</div>
-<div class="section" id="post">
-<span id="jsoninfo-post"></span><h3>POST<a class="headerlink" href="#post" title="Permalink to this headline">¶</a></h3>
-<dl class="post">
-<dt id="post-(string-server_name)-ocp-ca-json-">
-<code class="descname">POST </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/ca/json/</code><a class="headerlink" href="#post-(string-server_name)-ocp-ca-json-" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Get a HDF5 file from the server</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>server_name</strong> (<em>string</em>) &#8211; Server Name in NeuroData. In the general case this is openconnecto.me.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name" colspan="2">Form Parameters:</th></tr>
-<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
-<li><strong>JSON</strong> &#8211; Look at the Tech Sheet</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
-<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; No error</li>
-<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; Error in the syntax or file format</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Example Request</strong>:</p>
-<div class="highlight-http"><div class="highlight"><pre>GET /ocp/ca/json/ HTTP/1.1
-Host: openconnecto.me
-Content-Type: application/json
-
-{
-  dataset
-  project
-  metadata
-}
-</pre></div>
-</div>
-<p><strong>Example Response</strong>:</p>
-<div class="highlight-http"><div class="highlight"><pre>HTTP/1.1 200 OK
-Content-Type: application/json
-
-{
-  SUCCESS
-}
 </pre></div>
 </div>
 </dd></dl>
