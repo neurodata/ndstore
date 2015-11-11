@@ -118,9 +118,12 @@ def PutData(data):
 
 def main():
 
+  """
+  Edit the below values, type and default information can be found on the ingesting page of the ndio docs page.
+  """
+
   parser = argparse.ArgumentParser(description="Test generation script for OCP JSON file. By default this will print the basic file in ocp.JSON")
   parser.add_argument('--output_file', action='store', type=str, default='ocp.JSON', help='Name of output file')
-  parser.add_argument('--path', action='store', type=str, help='Location of project files')
   result = parser.parse_args()
 
   dataset_name=''        #(type=str, help='Name of Dataset')

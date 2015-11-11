@@ -1,5 +1,5 @@
-RAMON API's
-***********
+RAMON API
+*********
 
 RAMON Field Service
 ===================
@@ -58,7 +58,7 @@ GET
 
 .. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/(int:annotation_id)/(string:option_args)/(int:resolution)/
    
-   :synopsis: Get an annotation to the server
+   :synopsis: Get an annotation from the server
 
    :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
    :type server_name: string
@@ -101,9 +101,9 @@ Merge Service
 GET
 ---
 
-.. http:post:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/merge/(string:listofids)/(string:option_args)/
+.. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/merge/(string:listofids)/(string:option_args)/
    
-   :synopsis: Post an annotation to the server
+   :synopsis: Merge two annotation ids on the server.
 
    :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
    :type server_name: string
