@@ -10,9 +10,9 @@ createChannel
 
    :synopsis: Create a list of channels for an existing project using the project token and JSON file.
 
-   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
    :type server_name: string
-   :param token_name: Token Name in OCP.
+   :param token_name: Token Name in NeuroData.
    :type token_name: string
 
    :statuscode 200: No error
@@ -63,9 +63,9 @@ deleteChannel
 
    :synopsis: Delete a list of channels for an existing project using the project token and a JSON file.
 
-   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
    :type server_name: string
-   :param token_name: Token Name in OCP.
+   :param token_name: Token Name in NeuroData.
    :type token_name: string
   
    :statuscode 200: No error
@@ -106,10 +106,35 @@ autoIngest
 
    :synopsis: Create a dataset, project and channels with a JSON file.
    
-   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
    :type server_name: string
    
    :form JSON: Look at the Tech Sheet
 
    :statuscode 200: No error
    :statuscode 404: Error in the syntax or file format
+   
+   **Example Request**:
+   
+   .. sourcecode:: http
+      
+      GET /ocp/ca/json/ HTTP/1.1
+      Host: openconnecto.me
+      Content-Type: application/json
+
+      {
+        dataset
+        project
+        metadata
+      }
+
+   **Example Response**:
+
+   .. sourcecode:: http
+      
+      HTTP/1.1 200 OK
+      Content-Type: application/json
+
+      { 
+        SUCCESS 
+      }
