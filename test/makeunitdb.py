@@ -29,7 +29,7 @@ from ocpuser.models import Token
 from ocpuser.models import Channel
 
 import ocpcaproj
-from ocptype import ZSLICES, ANNOTATION, READONLY_FALSE, UINT32, OCP_VERSION, MYSQL, CASSANDRA, RIAK
+from ndtype import ZSLICES, ANNOTATION, READONLY_FALSE, UINT32, OCP_VERSION, MYSQL, CASSANDRA, RIAK
 import site_to_test
 import kvengine_to_test
 

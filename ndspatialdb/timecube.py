@@ -16,8 +16,6 @@ import numpy as np
 from PIL import Image
 
 from cube import Cube
-import ocplib
-from windowcutout import windowCutout
 
 from ocpcaerror import OCPCAError
 import logging

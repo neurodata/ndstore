@@ -18,8 +18,8 @@ from PIL import Image
 import zlib
 import blosc
 
-import ocplib
-from ocptype import ANNOTATION_CHANNELS, TIMESERIES_CHANNELS, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, DTYPE_uint64, DTYPE_float32
+import ndlib
+from ndtype import ANNOTATION_CHANNELS, TIMESERIES_CHANNELS, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, DTYPE_uint64, DTYPE_float32
 
 import logging
 logger=logging.getLogger("ocp")
@@ -116,7 +116,7 @@ class Cube:
     if (self.data.dtype != writedata.dtype ):
       logger.error("Conflicting data types for overwrite")
       raise OCPCAError ("Conflicting data types for overwrite")
-    self.data = ocplib.overwriteDense_ctype(self.data, writedata)
+    self.data = ndlib.overwriteDense_ctype(self.data, writedata)
   
   def RGBAChannel(self):
     """Return a RGBAChannel Method definition"""

@@ -12,15 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import numpy as np
-import cStringIO
-import zlib
-import MySQLdb
-import re
-from collections import defaultdict
-import itertools
-import tempfile
-import h5py
 from cassandra.cluster import Cluster
 
 class CassandraKVIO:

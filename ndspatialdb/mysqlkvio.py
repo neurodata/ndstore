@@ -12,22 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import numpy as np
-import cStringIO
-import zlib
 import MySQLdb
-import re
-from collections import defaultdict
-import itertools
 
-from ocptype import OLDCHANNEL
+from ndtype import OLDCHANNEL
 
 import logging
 logger=logging.getLogger("ocp")
 
-
-"""Helpers function to do cube I/O in across multiple DBs.
-    This uses the state and methods of ocpcadb"""
 
 class MySQLKVIO:
 
@@ -540,7 +531,7 @@ class MySQLKVIO:
 
       sql = "UPDATE {} SET exlist=(%s) WHERE zindex=%s AND id=%s".format( ch.getExceptionsTable(resolution) )
       try:
-        cursor.execute ( sql, (zlib.compress(excstr),zidx,annid))
+        cursor.execute ( sql, (excstr,zidx,annid))
       except MySQLdb.Error, e:
         logger.error ( "Error updating exceptions %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
         if self.txncursor is None:

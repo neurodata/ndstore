@@ -12,20 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import numpy as np
-import cStringIO
-import zlib
-import MySQLdb
-import re
-from collections import defaultdict
-import itertools
-import tempfile
-import h5py
 import riak
 
-"""Helpers function to do cube I/O in across multiple DBs.
-    This file is aerospike
-    This uses the state and methods of ocpcadb"""
 
 class RiakKVIO:
 
