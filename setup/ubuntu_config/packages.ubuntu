@@ -11,3 +11,6 @@ libmemcached-dev
 gfortran
 nginx
 libblas-dev
+libxslt1-dev
+libxml2-dev
+libtiff

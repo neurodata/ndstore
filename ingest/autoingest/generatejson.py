@@ -21,7 +21,7 @@ import argparse
 import requests
 import os
 import requests
-SITE_HOST = "http://joy.cs.jhu.edu:8000/"
+SITE_HOST = ""
 
 def ocpJson(dataset, project, channel_list, metadata):
   """Genarate OCP json object"""
@@ -110,7 +110,7 @@ def VerifyPath(data):
 
 def PutData(data):
   #try to post data to the server
-  URLPath = "{}ca/createProject/".format(SITE_HOST)
+  URLPath = "{}ca/autoIngest/".format(SITE_HOST)
   try:
       r = requests.post(URLPath, data=data)
   except:
@@ -118,35 +118,38 @@ def PutData(data):
 
 def main():
 
+  """
+  Edit the below values, type and default information can be found on the ingesting page of the ndio docs page.
+  """
+
   parser = argparse.ArgumentParser(description="Test generation script for OCP JSON file. By default this will print the basic file in ocp.JSON")
   parser.add_argument('--output_file', action='store', type=str, default='ocp.JSON', help='Name of output file')
-  parser.add_argument('--path', action='store', type=str, help='Location of project files')
   result = parser.parse_args()
-  
-  dataset_name='hausser15'        #(type=str, help='Name of Dataset')
-  imagesize=(512,512,9000)           #(type=int[], help='Image size (X,Y,Z)')
-  voxelres=(1.0,1.0,1.0)            #(type=float[], help='Voxel resolution (X,Y,Z) - In nanometers')
+
+  dataset_name=''        #(type=str, help='Name of Dataset')
+  imagesize=(0,0,0)           #(type=int[], help='Image size (X,Y,Z)')
+  voxelres=(0,0,0)            #(type=float[], help='Voxel resolution (X,Y,Z) - In nanometers')
   offset=(0,0,0)              #(type=int[], default=[0, 0, 0], help='Image Offset in X,Y,Z')
   timerange=(0,0)           #(type=int[], default=[0, 0], help='Time Dimensions')
   scalinglevels=0       #(type=int, default=0, help='Required Scaling levels/ Zoom out levels')
   scaling=0             #(type=int, default=0, help='Type of Scaling - Isotropic or Normal')
 
-  channel_name='drifting_gratings_0'        #(type=str, help='Name of Channel. Has to be unique in the same project. User Defined.')
-  datatype='uint16'            #(type=str, help='Channel Datatype')
-  channel_type='image'        #(type=str, help='Type of channel - Image, Annotation. Timeseries, Probability-Maps')
+  channel_name=''        #(type=str, help='Name of Channel. Has to be unique in the same project. User Defined.')
+  datatype=''            #(type=str, help='Channel Datatype')
+  channel_type=''        #(type=str, help='Type of channel - Image, Annotation. Timeseries, Probability-Maps')
   exceptions=0          #(type=int, default=0, help='Exceptions')
   resolution=0          #(type=int, default=0, help='Start Resolution')
   windowrange=(0,0)         #(type=int[], default=[0, 0], help='Window clamp function for 16-bit channels with low max value of pixels')
   readonly=0            #(type=int, default=0, help='Read-only Channel or Not. You can remotely post to channel if it is not readonly and overwrite data')
-  data_url= 'http://braingraph1dev.cs.jhu.edu//data/scratch/ualex/codeneuro/hausser_lab/series_0/tiffs/'           #(type=str, help='This url points to the root directory of the files. Dropbox is not an acceptable HTTP Server.')
-  file_format='SLICE'         #(type=str, help='This is overal the file format type. For now we support only Slice stacks and CATMAID tiles.')
-  file_type='tiff'           #(type=str, help='This is the specific file format type (tiff, tif, png))
+  data_url= ''           #(type=str, help='This url points to the root directory of the files. Dropbox is not an acceptable HTTP Server.')
+  file_format=''         #(type=str, help='This is overal the file format type. For now we support only Slice stacks and CATMAID tiles.')
+  file_type=''           #(type=str, help='This is the specific file format type (tiff, tif, png))
 
-  project_name='hausser15'        #(type=str, help='Name of Project. Has to be unique in OCP. User Defined')
-  token_name='hausser15'          #(type=str, default='', help='Token Name. User Defined')
+  project_name=''        #(type=str, help='Name of Project. Has to be unique in OCP. User Defined')
+  token_name=''          #(type=str, default='', help='Token Name. User Defined')
   public=0              #(type=int, default=0, help='Make your project publicly visible')
-  
-  metadata=            #(type=Any, default='', help='Any metadata as appropriate from the LIMS schema')
+
+  metadata=""            #(type=Any, default='', help='Any metadata as appropriate from the LIMS schema')
 
   result = parser.parse_args()
 
@@ -158,7 +161,7 @@ def main():
     complete_example = (dataset, project, channels, metadata)
     data = ocpJson(*complete_example)
     f.write(data)
-    
+
     VerifyPath(json.loads(data))
     PutData(data)
 

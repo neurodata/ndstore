@@ -33,6 +33,7 @@ class CassandraKVIO:
     # connect to cassandra
     self.cluster = Cluster( [self.db.proj.getKVServer()] )
     self.session = self.cluster.connect(self.db.proj.getDBName())
+    self.session.default_timeout = 120
 
   def close ( self ):
     """Close the connection"""

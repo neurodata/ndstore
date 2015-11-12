@@ -424,11 +424,11 @@ def minmaxProject (request, webargs):
     logger.exception("Unknown exception in (min|max) projection Web service")
     raise OCPCAError("Unknown exception in (min|max) projection Web service")
 
-def createProject(request, webargs):
+def autoIngest(request, webargs):
   """RESTful URL for creating a project using a JSON file"""
 
   try:
-    return django.http.HttpResponse(jsonproj.createProject(webargs, request.body), content_type="application/json")
+    return django.http.HttpResponse(jsonproj.autoIngest(webargs, request.body), content_type="application/json")
   except OCPCAError, e:
     return django.http.HttpResponseNotFound()
   except:

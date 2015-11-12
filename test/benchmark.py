@@ -39,7 +39,7 @@ p.channels = ['image']
 p.window = [0,0]
 p.channel_type = "image"
 p.datatype = "uint32"
-SIZE = 2048
+SIZE = 1024
 ZSIZE = 16
 
 def generateURL(zidx):
@@ -50,6 +50,11 @@ def generateURL(zidx):
   p.args = (x*SIZE, (x+1)*SIZE, y*SIZE, (y+1)*SIZE, z*ZSIZE, (z+1)*ZSIZE)
   image_data = np.ones([1,ZSIZE,SIZE,SIZE], dtype=np.uint32) * random.randint(0,255)
   return postBlosc(p, image_data)
+
+def generateURL2(zidx):
+  [x,y,z] = MortonXYZ(zidx)
+  p.args = (x*SIZE, (x+1)*SIZE, y*SIZE, (y+1)*SIZE, z*ZSIZE, (z+1)*ZSIZE)
+  return 'http://{}/{}/{}/blosc/{}/{},{}/{},{}/{},{}/'.format(SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args)
 
 def postBlosc(p, post_data):
   """Post data using the blosc interface"""
@@ -101,7 +106,20 @@ def postURL(url, post_data):
     response = urllib2.urlopen(req)
     print time.time()-start
     return response
-  except urllib2.HTTPError,e:
+  except urllib2.HTTPError, e:
+    return e
+
+def getURL(url):
+  """Get data"""
+
+  try:
+    # Build a get request
+    req = urllib2.Request(url)
+    start = time.time()
+    response = urllib2.urlopen(req)
+    print time.time()-start
+    return response.read()
+  except urllib2.HTTPError, e:
     return e
 
 def main():
@@ -126,6 +144,9 @@ def main():
   start = time.time()
   pool.map(postURLHelper, post_list)
   print time.time() - start
+
+  # KL TODO insert get data here
+  getURL(generateURL2(zidx_list[0]))
 
 if __name__ == '__main__':
   main()

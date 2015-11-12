@@ -18,12 +18,14 @@ import urllib
 from contextlib import closing
 import numpy as np
 from PIL import Image
+from operator import sub
+
 import django
 django.setup()
 from django.conf import settings
 
 from cube import Cube
-from ocptype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, OCP_dtypetonp
+from ocptype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, ANNOTATION_CHANNELS, OCP_dtypetonp, UINT8, UINT16, UINT32
 import ocpcarest
 import ocpcadb
 import ocpcaproj
@@ -182,7 +184,18 @@ class IngestData:
                 # reading the raw data
                 file_name = "{}{}".format(self.path, self.generateFileName(slice_number+b))
                 print "Open filename {}".format(file_name)
-                slab[b,:,:] = np.asarray(Image.open(file_name, 'r'))
+                if ch.getDataType() in [UINT8, UINT16] and ch.getChannelType() in IMAGE_CHANNELS:
+                  image_data = np.asarray(Image.open(file_name, 'r'))
+                  slab[b,:,:] = image_data
+                elif ch.getDataType() in [UINT32] and ch.getChannelType() in IMAGE_CHANNELS:
+                  image_data = np.asarray(Image.open(file_name, 'r').convert('RGBA'))
+                  slab[b,:,:] = np.left_shift(image_data[:,:,3], 24, dtype=np.uint32) | np.left_shift(image_data[:,:,2], 16, dtype=np.uint32) | np.left_shift(image_data[:,:,1], 8, dtype=np.uint32) | np.uint32(image_data[:,:,0])
+                elif ch.getChannelType() in ANNOTATION_CHANNELS:
+                  image_data = np.asarray(Image.open(file_name, 'r'))
+                  slab[b,:,:] = image_data
+                else:
+                  print "Do not ingest this data yet"
+                  raise
               except IOError, e:
                 print e
                 slab[b,:,:] = np.zeros((yimagesz, ximagesz), dtype=np.uint32)
@@ -203,10 +216,16 @@ class IngestData:
 
               cube.data[0:zmax-zmin,0:ymax-ymin,0:xmax-xmin] = slab[zmin:zmax, ymin:ymax, xmin:xmax]
               if cube.isNotZeros():
-                if ch.getChannelType() not in TIMESERIES_CHANNELS:
+                if ch.getChannelType() in IMAGE_CHANNELS:
                   db.putCube(ch, zidx, self.resolution, cube, update=True)
-                else:
+                elif ch.getChannelType() in TIMESERIES_CHANNELS:
                   db.putTimeCube(ch, zidx, timestamp, self.resolution, cube, update=True)
+                elif ch.getChannelType() in ANNOTATION_CHANNELS:
+                  corner = map(sub, [x,y,slice_number], [xoffset,yoffset,zoffset])
+                  db.annotateDense(ch, corner, self.resolution, cube.data, 'O')
+                else:
+                  print "Channel type not supported"
+                  raise
           
           # clean up the slices fetched
           self.cleanData(range(slice_number,slice_number+zcubedim) if slice_number+zcubedim<=zimagesz else range(slice_number,zimagesz))

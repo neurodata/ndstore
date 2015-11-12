@@ -68,7 +68,7 @@ class Test_Project_Json():
     json_file.seek(0)
 
     # posting the JSON url and checking if it is successful
-    response = json.loads(postURL("http://{}/ca/createProject/".format(SITE_HOST), json_file).read())
+    response = json.loads(postURL("http://{}/ca/autoIngest/".format(SITE_HOST), json_file).read())
     assert('SUCCESS' == response)
 
     # fetching the JSON info
@@ -105,7 +105,7 @@ class Test_Project_Json():
     json_file.seek(0)
 
     # posting the JSON url and checking if it is successful
-    response = json.loads(postURL("http://{}/ca/createProject/".format(SITE_HOST), json_file).read())
+    response = json.loads(postURL("http://{}/ca/autoIngest/".format(SITE_HOST), json_file).read())
     assert('SUCCESS' == response)
 
     # fetching the JSON info
@@ -137,7 +137,7 @@ class Test_Project_Json():
     json_file.seek(0)
 
     # posting the JSON url and checking if it is successful
-    response = json.loads(postURL("http://{}/ca/createProject/".format(SITE_HOST), json_file).read())
+    response = json.loads(postURL("http://{}/ca/autoIngest/".format(SITE_HOST), json_file).read())
     assert('FAILED' == response)
 
 
@@ -161,7 +161,7 @@ class Test_Create_Channel_Json():
     # project format = (project_name, token_name, public)
     project = (p.token, None, None)
     # channel format = { chan1 : (channel_name, datatype, channel_type, data_url, file_name, exceptions, resolution, windowrange, readonly), chan2: ...... }
-    channels = { p.channels[0] : (p.channels[0], p.datatype, p.channel_type, 'sample_data_url', 'sample_filename', None, None, None, 0), p.channels[1] : (p.channels[1], p.datatype, p.channel_type, 'sample_data_url', 'sample_filename', None, None, None, 0),  }
+    channels = { p.channels[0] : (p.channels[0], p.datatype, p.channel_type, 'sample_data_url', 'sample_filename', 'tif', None, None, None, 0), p.channels[1] : (p.channels[1], p.datatype, p.channel_type, 'sample_data_url', 'sample_filename', 'tif', None, None, None, 0),  }
 
     json_file = tempfile.NamedTemporaryFile(mode='w+b')
     json_file.write(createJson(dataset, project, channels, channel_only=True))
@@ -201,7 +201,7 @@ class Test_Create_Channel_Json():
     # project format = (project_name, token_name, public)
     project = (p.token, None, None)
     # channel format = { chan1 : (channel_name, datatype, channel_type, data_url, file_name, exceptions, resolution, windowrange, readonly), chan2: ...... }
-    channels = { p.channels[1] : (p.channels[1], p.datatype, p.channel_type, 'sample_data_url', 'sample_filename', None, None, None, None) }
+    channels = { p.channels[1] : (p.channels[1], p.datatype, p.channel_type, 'sample_data_url', 'sample_filename', 'tif', None, None, None, None) }
     
     json_file = tempfile.NamedTemporaryFile(mode='w+b')
     json_file.write(createJson(dataset, project, channels, channel_only=True))

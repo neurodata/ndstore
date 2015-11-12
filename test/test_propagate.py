@@ -33,7 +33,7 @@ from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
 from postmethods import getURL, postNPZ, getNPZ
-from ocptype import PROPAGATED, NOT_PROPAGATED, UNDER_PROPAGATION, ISOTROPIC
+from ocptype import PROPAGATED, NOT_PROPAGATED, UNDER_PROPAGATION, ISOTROPIC, READONLY_TRUE, READONLY_FALSE
 from params import Params
 import kvengine_to_test
 import site_to_test
@@ -97,6 +97,69 @@ class Test_Image_Zslice_Propagate:
     f = getURL(url)
     slice_data = np.asarray ( Image.open(StringIO(f.read())) )
     assert ( np.array_equal(slice_data, image_data[0][0][:2,:2]) )
+
+class Test_Image_Readonly_Propagate:
+  """Test image propagation"""
+
+  def setup_class(self):
+    """Create the unittest database"""
+    makeunitdb.createTestDB(p.token, public=True, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype, ximagesize=1000, yimagesize=1000, zimagesize=10, readonly=READONLY_TRUE)
+
+  def teardown_class (self):
+    """Destroy the unittest database"""
+    makeunitdb.deleteTestDB(p.token)
+
+  def test_web_propagate(self):
+    """Test the web update propogate function"""
+
+    # Posting some data at res0 to propagate
+    p.args = (200,300,200,300,4,5)
+    image_data = np.ones( [1,1,100,100], dtype=np.uint8) * random.randint(0,255)
+    response = postNPZ(p, image_data)
+    # check that it cannot post to a readonly channle
+    assert(response.code == 404)
+
+    # Check if the project is not proagated
+    f = getURL("http://{}/ca/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
+    value = int(f.read())
+    assert(value == NOT_PROPAGATED)
+    
+    # check that it cannot start propagating a readonly channel
+    assert (getURL("http://{}/ca/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), UNDER_PROPAGATION)) == 404 )
+    # check that it cannot mark a channel as propagated
+    assert (getURL("http://{}/ca/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), PROPAGATED)) == 404 )
+
+class Test_Image_Propagated_Propagate:
+  """Test image propagation"""
+
+  def setup_class(self):
+    """Create the unittest database"""
+    makeunitdb.createTestDB(p.token, public=True, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype, ximagesize=1000, yimagesize=1000, zimagesize=10, readonly=READONLY_FALSE ,propagate=PROPAGATED)
+
+  def teardown_class (self):
+    """Destroy the unittest database"""
+    makeunitdb.deleteTestDB(p.token)
+
+  def test_web_propagate(self):
+    """Test the web update propogate function"""
+
+    # Posting some data at res0 to propagate
+    p.args = (200,300,200,300,4,5)
+    image_data = np.ones( [1,1,100,100], dtype=np.uint8) * random.randint(0,255)
+    response = postNPZ(p, image_data)
+
+    # Check if the project is not proagated
+    f = getURL("http://{}/ca/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
+    value = int(f.read())
+    assert(value == PROPAGATED)
+    
+    # check that it cannot start propagating a channel which is already propagated
+    assert (getURL("http://{}/ca/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), UNDER_PROPAGATION)) == 404 )
+    f = getURL("http://{}/ca/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), NOT_PROPAGATED))
+    # can set to not propagated
+    f = getURL("http://{}/ca/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
+    value = int(f.read())
+    assert(value == NOT_PROPAGATED)
 
 class Test_Image_Isotropic_Propagate:
   """Test image propagation"""

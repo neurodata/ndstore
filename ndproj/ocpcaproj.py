@@ -10,13 +10,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+import sys
+import math
 import MySQLdb
 import h5py
 import numpy as np
-import math
-from contextlib import closing
-import os
-import sys
 from contextlib import closing
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -40,7 +39,6 @@ except:
    pass
 
 from ocpcaerror import OCPCAError
-
 import logging
 logger=logging.getLogger("ocp")
 
@@ -116,7 +114,7 @@ class OCPCADataset:
       #self.cubedim[i] = [128, 128, 16]
       # this may need to be changed.  
       if self.ds.scalingoption == ZSLICES:
-        #self.cubedim[i] = [128, 128, 16]
+        #self.cubedim[i] = [512, 512, 16]
         self.cubedim[i] = [128, 128, 16]
         if float(self.ds.zvoxelres/self.ds.xvoxelres)/(2**i) >  0.5:
           self.cubedim[i] = [128, 128, 16]
@@ -128,7 +126,7 @@ class OCPCADataset:
           self.cubedim[i] = [128, 128, 16]
       else:
         # RB what should we use as a cubedim?
-        self.cubedim[i] = [128, 128, 16]
+        self.cubedim[i] = [512, 512, 16]
       
       if self.scale[i]['xz'] < 1.0:
         scalepixels = 1/self.scale[i]['xz']
@@ -340,11 +338,11 @@ class OCPCAChannel:
       return "{}_exc{}".format(self.ch.channel_name, resolution)
 
   def setPropagate (self, value):
-    if value in [NOT_PROPAGATED]:
+    if value in [NOT_PROPAGATED, PROPAGATED]:
       self.ch.propagate = value
       self.setReadOnly ( READONLY_FALSE )
       self.ch.save()
-    elif value in [UNDER_PROPAGATION,PROPAGATED]:
+    elif value in [UNDER_PROPAGATION]:
       self.ch.propagate = value
       self.setReadOnly ( READONLY_TRUE )
       self.ch.save()
@@ -353,7 +351,7 @@ class OCPCAChannel:
       raise OCPCAError ( "Wrong Propagate Value {} for Channel {}".format( value, self.ch.channel_name ) )
   
   def setReadOnly (self, value):
-    if value in [READONLY_TRUE,READONLY_FALSE]:
+    if value in [READONLY_TRUE, READONLY_FALSE]:
       self.ch.readonly = value
       self.ch.save()
     else:
@@ -403,7 +401,10 @@ class OCPCAProjectsDB:
         server_address = OCP_servermap[pr.kvserver]
         cluster = Cluster([server_address])
         session = cluster.connect()
-        session.execute ("CREATE KEYSPACE {} WITH REPLICATION = {{ 'class' : 'SimpleStrategy', 'replication_factor' : 1 }}".format(pr.project_name), timeout=30)
+        if server_address == 'localhost':  
+          session.execute ("CREATE KEYSPACE {} WITH REPLICATION = {{ 'class' : 'SimpleStrategy', 'replication_factor' : 0 }}".format(pr.project_name), timeout=30)
+        else:
+          session.execute ("CREATE KEYSPACE {} WITH REPLICATION = {{ 'class' : 'SimpleStrategy', 'replication_factor' : 1 }}".format(pr.project_name), timeout=30)
       except Exception, e:
         pr.delete()
         logger.error("Failed to create namespace for new project {}".format(project_name))

@@ -92,11 +92,17 @@
     7. test_npz_incorrect_channel
     8. test_hdf5_incorrect_channel
 
-* test_propagate - 4 test
+* test_propagate - 6 test
 
   - Module : Test_Image_Zslice_Propagate
     1. test_web_propagate
 
+  - Module : Test_Image_Readonly_Propagate
+    1. test_web_propagate
+  
+  - Module : Test_Image_Propagated_Propagate
+    1. test_web_propagate
+  
   - Module : Test_Image_Isotropic_Propagate
     1. test_web_propagate
 
