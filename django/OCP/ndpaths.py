@@ -18,11 +18,13 @@
 
 import os, sys
 
-OCP_BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.." ))
-OCP_UTIL_PATH = os.path.join(OCP_BASE_PATH, "util" )
-OCP_OCPCA_PATH = os.path.join(OCP_BASE_PATH, "ocpca" )
-OCP_OCPLIB_PATH = os.path.join(OCP_BASE_PATH, "ocplib" )
-OCP_DJANGO_PATH = os.path.join(OCP_BASE_PATH, "django" )
+ND_BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.." ))
+ND_UTIL_PATH = os.path.join(ND_BASE_PATH, "util" )
+ND_PROJ_PATH = os.path.join(ND_BASE_PATH, "ndproj" )
+ND_WEBSERVICE_PATH = os.path.join(ND_BASE_PATH, "webservices" )
+ND_SPATIALDB_PATH = os.path.join(ND_BASE_PATH, "ndspatialdb" )
+ND_RAMON_PATH = os.path.join(ND_BASE_PATH, "ramon" )
+ND_LIB_PATH = os.path.join(ND_BASE_PATH, "ndlib" )
+ND_DJANGO_PATH = os.path.join(ND_BASE_PATH, "django" )
 
-sys.path += [ OCP_UTIL_PATH, OCP_OCPCA_PATH, OCP_OCPLIB_PATH, OCP_DJANGO_PATH ]
-
+sys.path += [ ND_UTIL_PATH, ND_PROJ_PATH, ND_WEBSERVICE_PATH, ND_SPATIALDB_PATH, ND_RAMON_PATH, ND_LIB_PATH, ND_DJANGO_PATH ]

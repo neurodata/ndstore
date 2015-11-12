@@ -35,4 +35,3 @@ urlpatterns = patterns('',
     url('^', include(base_urlpatterns)), # maintains unprefixed URLs
     url('^ocp/', include(base_urlpatterns)),
 )
-

@@ -1,0 +1,3 @@
+[submodule "ndlib"]
+	path = ndlib
+	url = https://github.com/openconnectome/ndlib.git
