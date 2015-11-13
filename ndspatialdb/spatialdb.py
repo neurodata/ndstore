@@ -15,15 +15,12 @@
 import numpy as np
 import cStringIO
 import zlib
-import MySQLdb
-import re
-import tempfile
-import h5py
 from collections import defaultdict
 import itertools
 import blosc
 from contextlib import closing
 from operator import add, sub, div, mod
+import MySQLdb
 
 import annindex
 from cube import Cube
@@ -149,14 +146,6 @@ class SPATIALDB:
     else:
       self.kvio.putCube(ch, zidx, timestamp, resolution, cube.toBlosc(), not cube.fromZeros())
   
-  
-  # GET AND PUT methods for Timeseries Database
-  
-  # def getTimeCubes(self, ch, idx, listoftimestamps, resolution):
-    # """ Return a column of timeseries cubes. Better at I/O """
-
-    # return self.kvio.getTimeCubes(ch, idx, listoftimestamps, resolution)
-
 
   def getExceptions ( self, ch, zidx, resolution, annoid ):
     """Load a cube from the annotation database"""
@@ -276,11 +265,6 @@ class SPATIALDB:
     self.kvio.commit()
 
 
-  #
-  # shave
-  #
-  #  reduce the voxels 
-  #
   def shave ( self, ch, entityid, resolution, locations ):
     """Label the voxel locations or add as exceptions is the are already labeled."""
 
@@ -341,11 +325,6 @@ class SPATIALDB:
     self.kvio.commit()
 
 
-  #
-  # annotateDense
-  #
-  #  Process a cube of data that has been labelled with annotations.
-  #
   def annotateDense ( self, ch, corner, resolution, annodata, conflictopt ):
     """Process all the annotations in the dense volume"""
    
@@ -428,9 +407,6 @@ class SPATIALDB:
     self.kvio.commit()
 
 
-  #
-  #  Called when labeling an entity
-  #
   def annotateEntityDense ( self, ch, entityid, corner, resolution, annodata, conflictopt ):
     """Relabel all nonzero pixels to annotation id and call annotateDense"""
 
@@ -440,11 +416,7 @@ class SPATIALDB:
 
     return self.annotateDense ( ch, corner, resolution, annodata, conflictopt )
 
-  #
-  # shaveDense
-  #
-  #  Reduce the specified annotations 
-  #
+  
   def shaveDense ( self, ch, entityid, corner, resolution, annodata ):
     """Process all the annotations in the dense volume"""
 
@@ -519,14 +491,8 @@ class SPATIALDB:
     self.kvio.commit()
 
 
-  #
-  # shaveEntityDense
-  #
-  #  Takes a bitmap for an entity and calls denseShave
-  #  renumber the annotations to match the entity id.
-  #
   def shaveEntityDense ( self, ch, entityid, corner, resolution, annodata ):
-    """Process all the annotations in the dense volume"""
+    """Takes a bitmap for an entity and calls denseShave. Renumber the annotations to match the entity id"""
 
     # Make shaving a per entity operation
     vec_func = np.vectorize ( lambda x: 0 if x == 0 else entityid ) 
@@ -705,76 +671,6 @@ class SPATIALDB:
       outcube.trim ( corner[0]%xcubedim,dim[0],corner[1]%ycubedim,dim[1],corner[2]%zcubedim,dim[2] )
 
     return outcube
-
-
-  # def timecutout(self, ch, corner, dim, resolution, timerange):
-    # """Extract a cube of arbitrary size.  Need not be aligned."""
-
-    # # get the size of the image and cube
-    # [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
-
-    # # Round to the nearest larger cube in all dimensions
-    # zstart = corner[2]/zcubedim
-    # ystart = corner[1]/ycubedim
-    # xstart = corner[0]/xcubedim
-
-    # znumcubes = (corner[2]+dim[2]+zcubedim-1)/zcubedim - zstart
-    # ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
-    # xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
-
-    # # use the requested resolution
-    # import cube
-    # incube = Cube.getCube ( cubedim, ch.getChannelType(), ch.getDataType() )
-    # outcube = Cube.getCube([xnumcubes*xcubedim,ynumcubes*ycubedim,znumcubes*zcubedim], ch.getChannelType(), ch.getDataType(), timerange=timerange)
-
-    # # Build a list of indexes to access
-    # listofidxs = []
-    # for z in range (znumcubes):
-      # for y in range (ynumcubes):
-        # for x in range (xnumcubes):
-          # mortonidx = ndlib.XYZMorton([x+xstart, y+ystart, z+zstart])
-          # listofidxs.append(mortonidx)
-
-    # # Sort the indexes in Morton order
-    # listofidxs.sort()
-
-    # # xyz offset stored for later use
-    # lowxyz = ndlib.MortonXYZ(listofidxs[0])
-
-    # self.kvio.startTxn()
-
-    # try:
-      # for idx in listofidxs:
-        # cuboids = self.getCubes(ch, idx, range(timerange[0],timerange[1]), resolution)
-        
-        # # use the batch generator interface
-        # for idx, timestamp, datastring in cuboids:
-
-          # # add the query result cube to the bigger cube
-          # curxyz = ndlib.MortonXYZ(int(idx))
-          # offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
-
-          # if self.NPZ:
-            # incube.fromNPZ(datastring[:])
-          # else:
-            # incube.fromBlosc(datastring[:])
-          
-          # # add it to the output cube
-          # outcube.addData(incube, offset, timestamp)
-
-    # except:
-      # self.kvio.rollback()
-      # raise
-
-    # self.kvio.commit()
-
-    # # need to trim down the array to size only if the dimensions are not the same
-    # if dim[0] % xcubedim  == 0 and dim[1] % ycubedim  == 0 and dim[2] % zcubedim  == 0 and corner[0] % xcubedim  == 0 and corner[1] % ycubedim  == 0 and corner[2] % zcubedim  == 0:
-      # pass
-    # else:
-      # outcube.trim ( corner[0]%xcubedim,dim[0],corner[1]%ycubedim,dim[1],corner[2]%zcubedim,dim[2] )
-
-    # return outcube
 
 
   def getVoxel ( self, ch, resolution, voxel ):

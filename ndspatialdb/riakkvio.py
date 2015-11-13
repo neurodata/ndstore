@@ -68,9 +68,6 @@ class RiakKVIO:
     except Exception, e:
       raise
 
-  #
-  # putCube
-  #
   def putCube ( self, zidx, resolution, cubestr, udpate ):
     """Store a cube from the annotation database"""
 

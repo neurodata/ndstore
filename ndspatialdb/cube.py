@@ -13,21 +13,22 @@
 # limitations under the License.
 
 import numpy as np
-import cStringIO
-from PIL import Image
 import zlib
+import cStringIO
 import blosc
+from PIL import Image
 
 import ndlib
 from ndtype import ANNOTATION_CHANNELS, TIMESERIES_CHANNELS, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, DTYPE_uint64, DTYPE_float32
 
+from ndsperror import NDSPError
 import logging
 logger=logging.getLogger("ocp")
 
-#
-#  AnnotateCube: manipulate the in-memory data representation of the 3-d cube of data
-#    that contains annotations.  
-#
+"""
+.. module:: Cube
+    :synopsis: Manipulate the in-memory data representation of the 3-d cube of data that contains annotations.  
+"""
 
 class Cube:
 

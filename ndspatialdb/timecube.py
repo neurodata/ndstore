@@ -17,7 +17,7 @@ from PIL import Image
 
 from cube import Cube
 
-from ocpcaerror import OCPCAError
+from ndsperror import NDSPError
 import logging
 logger=logging.getLogger("ocp")
 
