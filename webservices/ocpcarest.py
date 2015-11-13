@@ -46,7 +46,7 @@ import ndlib
 import ocpcaskel
 import ocpcanifti
 from windowcutout import windowCutout
-from ndtype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, ANNOTATION_CHANNELS, NOT_PROPAGATED, UNDER_PROPAGATION, OCP_dtypetonp, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, READONLY_TRUE
+from ndtype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, ANNOTATION_CHANNELS, NOT_PROPAGATED, UNDER_PROPAGATION, PROPAGATED, OCP_dtypetonp, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, READONLY_TRUE, READONLY_FALSE
 
 from ocpcaerror import OCPCAError
 import logging
@@ -339,7 +339,6 @@ def postTiff3d ( channel, postargs, proj, db, postdata ):
     # get a z batch -- how many slices per cube
     zbatch = proj.datasetcfg.cubedim[resolution][0]
 
-    db.startTxn()
 
     dircount = 0
     dataar = None
@@ -362,8 +361,6 @@ def postTiff3d ( channel, postargs, proj, db, postdata ):
     # ingest any remaining data
     corner = ( xoff, yoff, zoff+dircount-(dircount%zbatch) )
     db.writeCuboid (ch, corner, resolution, dataarray[0:(dircount%zbatch),:,:])
-
-    db.commit()
 
 
 def tiff3d ( chanargs, proj, db ):
@@ -703,7 +700,6 @@ def selectPost ( webargs, proj, db, postdata ):
   conflictopt = restargs.conflictOption ( "" )
 
   # Bind the annotation database
-  db.startTxn()
 
   tries = 0
   done = False
@@ -731,8 +727,8 @@ def selectPost ( webargs, proj, db, postdata ):
   
           # Don't write to readonly channels
           if ch.getReadOnly() == READONLY_TRUE:
-            logger.warning("Attempt to write to read only project {}".format(proj.getDBName()))
-            raise OCPCAError("Attempt to write to read only project {}".format(proj.getDBName()))
+            logger.warning("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+            raise OCPCAError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
        
           if not voxarray.dtype == OCP_dtypetonp[ch.getDataType()]:
             logger.warning("Wrong datatype in POST")
@@ -773,8 +769,8 @@ def selectPost ( webargs, proj, db, postdata ):
           
             # Don't write to readonly channels
             if ch.getReadOnly() == READONLY_TRUE:
-              logger.warning("Attempt to write to read only project {}".format(proj.getDBName()))
-              raise OCPCAError("Attempt to write to read only project {}".format(proj.getDBName()))
+              logger.warning("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+              raise OCPCAError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
             
             if ch.getChannelType() in IMAGE_CHANNELS: 
               db.writeCuboid (ch, corner, resolution, voxarray)
@@ -792,22 +788,18 @@ def selectPost ( webargs, proj, db, postdata ):
         logger.warning("An illegal Web POST service was requested: {}. Args {}".format(service, webargs))
         raise OCPCAError("An illegal Web POST service was requested: {}. Args {}".format(service, webargs))
         
-      db.commit()
       done = True
 
     # rollback if you catch an error
     except MySQLdb.OperationalError, e:
       logger.warning("Transaction did not complete. {}".format(e))
       tries += 1
-      db.rollback()
       continue
     except MySQLdb.Error, e:
       logger.warning("POST transaction rollback. {}".format(e))
-      db.rollback()
       raise
     except Exception, e:
       logger.exception("POST transaction rollback. {}".format(e))
-      db.rollback()
       raise
 
 
@@ -1009,17 +1001,14 @@ def getAnnotation ( webargs ):
     if option_args[1] == 'json':
       jsonstr = ''
       try:
-        db.startTxn()
         if re.match ( '^[\d,]+$', option_args[0] ): 
           annoids = map(int, option_args[0].split(','))
           for annoid in annoids: 
             jsonstr += getAnnoJSONById ( ch, annoid, proj, db )
 
       except: 
-        db.rollback()
         raise
 
-      db.commit()
       return jsonstr 
 
     # not a json request, continue with building and returning HDF5 file 
@@ -1031,8 +1020,6 @@ def getAnnotation ( webargs ):
  
     try: 
  
-      db.startTxn ()
-     
       # if the first argument is numeric.  it is an annoid
       if re.match ( '^[\d,]+$', option_args[0] ): 
 
@@ -1124,14 +1111,12 @@ def getAnnotation ( webargs ):
     
     # Close the file on a error: it won't get closed by the Web server
     except: 
-      db.rollback()
       h5f.close()
       raise
 
     # Close the HDF5 file always
     h5f.flush()
     h5f.close()
-    db.commit()
  
     # Return the HDF5 file
     tmpfile.seek(0)
@@ -1306,10 +1291,11 @@ def putAnnotation ( webargs, postdata ):
   with closing ( spatialdb.SPATIALDB(proj) ) as db:
 
     ch = ocpcaproj.OCPCAChannel(proj, channel)
-    # Don't write to readonly projects
+    
+    # Don't write to readonly channels
     if ch.getReadOnly() == READONLY_TRUE:
-      logger.warning("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
-      raise OCPCAError("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
+      logger.warning("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+      raise OCPCAError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
 
     # return string of id values
     retvals = [] 
@@ -1343,7 +1329,6 @@ def putAnnotation ( webargs, postdata ):
             anno.setID(ch, db)
   
           # start a transaction: get mysql out of line at a time mode
-          db.startTxn ()
   
           tries = 0 
           done = False
@@ -1448,19 +1433,15 @@ def putAnnotation ( webargs, postdata ):
             except MySQLdb.OperationalError, e:
               logger.warning (" Put Anntotation: Transaction did not complete. %s" % (e))
               tries += 1
-              db.rollback()
               continue
             except MySQLdb.Error, e:
               logger.warning ("Put Annotation: Put transaction rollback. %s" % (e))
-              db.rollback()
               raise
             except Exception, e:
               logger.exception ("Put Annotation:Put transaction rollback. %s" % (e))
-              db.rollback()
               raise
   
             # Commit if there is no error
-            db.commit()
   
       finally:
         h5f.close()
@@ -1504,10 +1485,11 @@ def putNIFTI ( webargs, postdata ):
   with closing ( spatialdb.SPATIALDB(proj) ) as db:
 
     ch = ocpcaproj.OCPCAChannel(proj, channel)
-    # Don't write to readonly projects
-    if ch.getReadOnly() == ocpcaproj.READONLY_TRUE:
-      logger.warning("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
-      raise OCPCAError("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
+    
+    # Don't write to readonly channels
+    if ch.getReadOnly() == READONLY_TRUE:
+      logger.warning("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+      raise OCPCAError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
 
     # check the magic number -- is it a gz file?
     if postdata[0] == '\x1f' and postdata[1] ==  '\x8b':
@@ -1568,10 +1550,11 @@ def putSWC ( webargs, postdata ):
   with closing ( spatialdb.SPATIALDB(proj) ) as db:
 
     ch = ocpcaproj.OCPCAChannel(proj, channel)
-    # Don't write to readonly projects
+    
+    # Don't write to readonly channels
     if ch.getReadOnly() == READONLY_TRUE:
-      logger.warning("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
-      raise OCPCAError("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
+      logger.warning("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+      raise OCPCAError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
 
     # Make a named temporary file for the HDF5
     with closing (tempfile.NamedTemporaryFile()) as tmpfile:
@@ -1656,10 +1639,11 @@ def deleteAnnotation ( webargs ):
   with closing ( spatialdb.SPATIALDB(proj) ) as db:
   
     ch = ocpcaproj.OCPCAChannel(proj, channel)
-    # Don't write to readonly projects              
+    
+    # Don't write to readonly channels
     if ch.getReadOnly() == READONLY_TRUE:
-      logger.warning("Attempt to delete from a read only project. {}: {}".format(ch.getChannelName(),webargs))
-      raise OCPCAError("Attempt to delete from a  read only project. {}: {}".format(ch.getChannelName(),webargs))
+      logger.warning("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+      raise OCPCAError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
 
     # Split the URL and get the args
     args = otherargs.split('/', 2)
@@ -1674,7 +1658,6 @@ def deleteAnnotation ( webargs ):
 
     for annoid in annoids: 
 
-      db.startTxn()
       tries = 0
       done = False
       while not done and tries < 5:
@@ -1686,18 +1669,13 @@ def deleteAnnotation ( webargs ):
         except MySQLdb.OperationalError, e:
           logger.warning ("Transaction did not complete. %s" % (e))
           tries += 1
-          db.rollback()
           continue
         except MySQLdb.Error, e:
           logger.warning ("Put transaction rollback. %s" % (e))
-          db.rollback()
           raise
         except Exception, e:
           logger.exception ("Put transaction rollback. %s" % (e))
-          db.rollback()
           raise
-
-        db.commit()
 
 
 def jsonInfo ( webargs ):
@@ -1821,14 +1799,20 @@ def setField ( webargs ):
     m = re.match("(\w+)/(\w+)/setField/(\d+)/(\w+)/(\w+|[\d+,.]+)/$", webargs)
     [token, channel, annid, field, value] = [i for i in m.groups()]
   except:
-    logger.warning("Illegal setField request. Wrong number of arguments.")
-    raise OCPCAError("Illegal setField request. Wrong number of arguments.")
+    logger.warning("Illegal setField request. Wrong number of arguments. Web Args: {}".format(webargs))
+    raise OCPCAError("Illegal setField request. Wrong number of arguments. Web Args:{}".format(webargs))
     
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
 
   with closing ( spatialdb.SPATIALDB(proj) ) as db:
     ch = ocpcaproj.OCPCAChannel(proj, channel)
+    
+    # Don't write to readonly channels
+    if ch.getReadOnly() == READONLY_TRUE:
+      logger.warning("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+      raise OCPCAError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+    
     db.updateAnnotation(ch, annid, field, value)
 
 def getPropagate (webargs):
@@ -1856,6 +1840,7 @@ def setPropagate(webargs):
   """Set the value of the propagate field"""
 
   # input in the format token/channel_list/setPropagate/value/
+  # here value = {NOT_PROPAGATED, UNDER_PROPAGATION} not {PROPAGATED}
   try:
     (token, channel_list, value_list) = re.match("(\w+)/([\w+,]+)/setPropagate/([\d+,]+)/$", webargs).groups()
   except:
@@ -1868,28 +1853,45 @@ def setPropagate(webargs):
     
     for channel_name in channel_list.split(','):
       ch = proj.getChannelObj(channel_name)
-
+      
       value = value_list[0]
-      # If the value is to set under propagation
-      if int(value) == UNDER_PROPAGATION and ch.getPropagate() != UNDER_PROPAGATION:
-        ch.setPropagate(UNDER_PROPAGATION)
-        from ocpca.tasks import propagate
-        propagate.delay(token, channel_name)
-        #import ocpcastack
-        #ocpcastack.buildStack(token, channel_name)
+      # If the value is to be set under propagation and the project is not under propagation
+      if int(value) == UNDER_PROPAGATION and ch.getPropagate() == NOT_PROPAGATED:
+        # and is not read only
+        if ch.getReadOnly() == READONLY_FALSE:
+          ch.setPropagate(UNDER_PROPAGATION)
+          from ocpca.tasks import propagate
+          # then call propagate
+          # propagate(token, channel_name)
+          propagate.delay(token, channel_name)
+        else:
+          logger.warning("Cannot Propagate this project. It is set to Read Only.")
+          raise OCPCAError("Cannot Propagate this project. It is set to Read Only.")
+      # if the project is Propagated already you can set it to under propagation
+      elif int(value) == UNDER_PROPAGATION and ch.getPropagate() == PROPAGATED:
+        logger.warning("Cannot propagate a project which is propagated. Set to Not Propagated first.")
+        raise OCPCAError("Cannot propagate a project which is propagated. Set to Not Propagated first.")
+      # If the value to be set is not propagated
       elif int(value) == NOT_PROPAGATED:
+        # and the project is under propagation then throw an error
         if ch.getPropagate() == UNDER_PROPAGATION:
           logger.warning("Cannot set this value. Project is under propagation.")
           raise OCPCAError("Cannot set this value. Project is under propagation.")
+        # and the project is already propagated and set read only then throw error
+        elif ch.getPropagate() == PROPAGATED and ch.getReadOnly == READONLY_TRUE:
+          logger.warning("Cannot set this Project to unpropagated. Project is Read only")
+          raise OCPCAError("Cannot set this Project to unpropagated. Project is Read only")
         else:
           ch.setPropagate(NOT_PROPAGATED)
+      # cannot set a project to propagated via the RESTful interface
       else:
         logger.warning("Invalid Value {} for setPropagate".format(value))
         raise OCPCAError("Invalid Value {} for setPropagate".format(value))
 
 def merge (webargs):
   """Return a single HDF5 field"""
- 
+  
+  # accepting the format token/channel_name/merge/listofids/[global]
   try:
     m = re.match("(\w+)/(\w+)/merge/([\d+,]+)/(\w+/\d+|/d+)/$", webargs)
     #m = re.match("(\w+)/(\w+)/merge/([\d+,]+)/([\w+,/]+)/$", webargs)
@@ -1915,7 +1917,7 @@ def merge (webargs):
   with closing ( spatialdb.SPATIALDB(proj) ) as db:
   
     ch = proj.getChannelObj(channel_name)
-    #Check that all ids in the id strings are valid annotation objects
+    # Check that all ids in the id strings are valid annotation objects
     for curid in ids:
       obj = db.getAnnotation(ch, curid)
       if obj == None:

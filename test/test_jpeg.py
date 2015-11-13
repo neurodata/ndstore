@@ -21,7 +21,7 @@ from PIL import Image
 import cStringIO
 
 import makeunitdb
-from ocptype import IMAGE, UINT8, UINT16
+from ndtype import IMAGE, UINT8, UINT16
 from params import Params
 from postmethods import postNPZ, getNPZ, getHDF5, postHDF5, getURL, postBlosc, getBlosc
 import kvengine_to_test

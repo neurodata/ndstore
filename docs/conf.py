@@ -63,7 +63,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'open-connetome'
+project = u'open-connectome'
 copyright = u'2015, Open Connectome Project'
 author = u'OCP'
 

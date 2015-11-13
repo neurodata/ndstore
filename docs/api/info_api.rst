@@ -1,21 +1,21 @@
 Project Info API's
 ******************
 
-JSON Service
-============
+JSON Informatio Service
+=======================
 
-.. _json-get:
+.. _jsoninfo-get:
 
 GET
 ----
 
 .. http:get:: (string:server_name)/ocp/ca/(string:token_name)/info/
    
-   :synopsis: Get project information from the server
+   :synopsis: Get all metadata associated with a project that the specified token refers to, including metadata for the dataset it points to, as well as each channel it contains in JSON format.
 
-   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
    :type server_name: string
-   :param token_name: Token Name in OCP.
+   :param token_name: Token Name in NeuroData.
    :type token_name: string
 
    :statuscode 200: No error
@@ -256,64 +256,21 @@ GET
       }
 
 
-.. _json-post:
+.. _hdf5info-get:
 
-POST
-----
-
-.. http:get:: (string:server_name)/ocp/ca/json/
-   
-   :synopsis: Get a HDF5 file from the server
-
-   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
-   :type server_name: string
-    
-   :form JSON: Look at the Tech Sheet
-
-   :statuscode 200: No error
-   :statuscode 404: Error in the syntax or file format
- 
-   **Example Request**:
-   
-   .. sourcecode:: http
-      
-      GET /ocp/ca/json/ HTTP/1.1
-      Host: openconnecto.me
-      Content-Type: application/json
-
-      {
-        dataset
-        project
-        metadata
-      }
-
-   **Example Response**:
-
-   .. sourcecode:: http
-      
-      HTTP/1.1 200 OK
-      Content-Type: application/json
-
-      { 
-        SUCCESS 
-      }
-
-
-.. _hdf5-get:
-
-HDF5 Service
-=============
+HDF5 Information Service
+========================
 
 GET
 ----
 
 .. http:get:: (string:server_name)/ocp/ca/(string:token_name)/projinfo/
    
-   :synopsis: Post a Numpy file to the server
+   :synopsis: Get all metadata associated with a project that the specified token refers to, including metadata for the dataset it points to, as well as each channel it contains in HDF5 format.
 
-   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
    :type server_name: string
-   :param token_name: Token Name in OCP.
+   :param token_name: Token Name in NeuroData.
    :type token_name: string
 
    :statuscode 200: No error

@@ -1,5 +1,5 @@
-RAMON API's
-***********
+RAMON API
+*********
 
 RAMON Field Service
 ===================
@@ -58,7 +58,7 @@ GET
 
 .. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/(int:annotation_id)/(string:option_args)/(int:resolution)/
    
-   :synopsis: Get an annotation to the server
+   :synopsis: Get an annotation from the server
 
    :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
    :type server_name: string
@@ -69,7 +69,7 @@ GET
    :param annotation_id: Id of the annotation to be cut from the database.
    :type annotation_id: int
    :param options_args: *Optional Arguments*. This can be overwrite, preserve, exception.
-   :type ramon_field: string
+   :type options_args: string
    :param resolution: Resolution for the annotation
    :type resolution: int
 
@@ -90,7 +90,7 @@ POST
    :param channel_name: Channel Name in OCP. *Optional*. If missing will use default channel for the token.
    :type channel_name: string
    :param options_args: *Optional Arguments*. This can be overwrite, preserve, exception.
-   :type ramon_field: string
+   :type options_args: string
 
    :statuscode 200: No error
    :statuscode 404: Error in the syntax or file format
@@ -100,3 +100,21 @@ Merge Service
 
 GET
 ---
+
+.. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/merge/(string:listofids)/(string:option_args)/
+   
+   :synopsis: Merge two annotation ids on the server.
+
+   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
+   :type server_name: string
+   :param token_name: Token Name in OCP.
+   :type token_name: string
+   :param channel_name: Channel Name in OCP. *Optional*. If missing will use default channel for the token.
+   :type channel_name: string
+   :param options_args: *Optional Arguments*. This can be overwrite, preserve, exception.
+   :type options_args: string
+   :param listofids: Comma separated list of ids
+   :type listofids: string
+
+   :statuscode 200: No error
+   :statuscode 404: Error in the syntax or file format

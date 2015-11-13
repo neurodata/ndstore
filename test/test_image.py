@@ -21,7 +21,7 @@ from PIL import Image
 from StringIO import StringIO
 
 import makeunitdb
-from ocptype import IMAGE, UINT8, UINT16
+from ndtype import IMAGE, UINT8, UINT16
 from params import Params
 from postmethods import postNPZ, getNPZ, getHDF5, postHDF5, getURL, postBlosc, getBlosc
 import kvengine_to_test
@@ -217,7 +217,7 @@ class Test_Image_Simple_Viking:
   def test_xy_tile(self):
     """Test a simple xy tile fetch"""
    
-    p.args = (3072,3584,4096,4608,200,201)
+    p.args = (1536,2048,4096,4608,200,201)
     # have to use a constant here for memcache purposes
     image_data = np.ones([2,1,512,512], dtype=np.uint8) * 130
     response = postNPZ(p, image_data)
@@ -226,7 +226,7 @@ class Test_Image_Simple_Viking:
     # check that the return matches
     assert ( np.array_equal(voxarray, image_data) )
     
-    url = "http://{}/catmaid/viking/{}/volume/{}/{}/X{}_Y{}_Z{}.png".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[2]/512, p.args[0]/512, p.args[4])
+    url = "http://{}/catmaid/viking/{}/volume/{}/{}/X{}_Y{}_Z{}.png".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0]/512, p.args[2]/512, p.args[4])
     f = getURL (url)
     
     slice_data = np.asarray ( Image.open(StringIO(f.read())) )

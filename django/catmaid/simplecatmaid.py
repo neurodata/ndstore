@@ -22,7 +22,7 @@ from contextlib import closing
 import django
 
 import restargs
-import ocpcadb
+import spatialdb
 import ocpcaproj
 import ocpcarest
 
@@ -185,7 +185,7 @@ class SimpleCatmaid:
     with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
         self.proj = projdb.loadToken(self.token)
     
-    with closing ( ocpcadb.OCPCADB(self.proj) ) as self.db:
+    with closing ( spatialdb.SPATIALDB(self.proj) ) as self.db:
 
         # mocpcache key
         mckey = self.buildKey(res, slice_type, xtile, ytile, ztile, timetile=timetile)

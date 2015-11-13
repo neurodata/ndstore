@@ -21,7 +21,7 @@ from PIL import Image
 from StringIO import StringIO
 
 import makeunitdb
-from ocptype import TIMESERIES, UINT8, UINT16
+from ndtype import TIMESERIES, UINT8, UINT16
 from params import Params
 from postmethods import postNPZ, getNPZ, getHDF5, postHDF5, getURL
 import kvengine_to_test
