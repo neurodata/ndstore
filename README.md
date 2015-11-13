@@ -21,3 +21,4 @@ Major directories include:
   * cython -- cython acclerations for the service
   * scripts -- utilities to build annotation and image stacks
   * onetime -- misc scripts for the service
+  * NOTE: git submodule init and git submodule update
