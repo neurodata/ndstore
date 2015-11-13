@@ -19,9 +19,9 @@ from cube import Cube
 import ocplib
 from windowcutout import windowCutout
 
-from ocpcaerror import OCPCAError
+from spdberror import SPDBError
 import logging
-logger=logging.getLogger("ocp")
+logger=logging.getLogger("neurodata")
 
 
 class TimeCube8(Cube):

@@ -21,9 +21,9 @@ import zlib
 import ocplib
 from cube import Cube
 
-from ocpcaerror import OCPCAError 
+from ndsperror import NDSPError 
 import logging
-logger=logging.getLogger("ocp")
+logger=logging.getLogger("neurodata")
 
 
 class AnnotateCube(Cube):
@@ -72,7 +72,7 @@ class AnnotateCube(Cube):
       self.data, exceptions = ocplib.annotate_ctype( self.data, annid, offset, np.array(locations, dtype=np.uint32), conflictopt )
       return exceptions
     except IndexError, e:
-      raise OCPCAError ("Voxel list includes out of bounds request.")
+      raise NDSPError ("Voxel list includes out of bounds request.")
 
 
   def shave ( self, annid, offset, locations ):

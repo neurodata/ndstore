@@ -38,10 +38,10 @@ import MySQLdb
 import json
 import re
 
-import ocpcarest
-import ocpcaproj
+import ndwsrest
+import ndproj
 import jsonprojinfo
-from ocptype import IMAGE, ANNOTATION, TIMESERIES, UINT8, UINT16, UINT32, UINT64, FLOAT32, OCP_VERSION, SCHEMA_VERSION 
+from ndtype import IMAGE, ANNOTATION, TIMESERIES, UINT8, UINT16, UINT32, UINT64, FLOAT32, ND_VERSION, SCHEMA_VERSION 
 
 from models import Project
 from models import Dataset
@@ -59,19 +59,19 @@ from forms import dataUserForm
 from django.core.urlresolvers import get_script_prefix
 import os
 import subprocess
-from ocpcaerror import OCPCAError
+from ndwserror import NDWSError
 
 import logging
-logger=logging.getLogger("ocp")
+logger=logging.getLogger("neurodata")
 
 # Helpers
 
 ''' Base url redirects to projects page'''
 def default(request):
-  return redirect(get_script_prefix()+'ocpuser/projects', {"user":request.user})
+  return redirect(get_script_prefix()+'nduser/projects', {"user":request.user})
 
 ''' Little welcome message'''
-@login_required(login_url='/ocp/accounts/login/')
+@login_required(login_url='/nd/accounts/login/')
 def getProjects(request):
 
   try:
@@ -82,7 +82,7 @@ def getProjects(request):
         filteroption = request.POST.get('filteroption')
         filtervalue = (request.POST.get('filtervalue')).strip()
         
-        pd = ocpcaproj.OCPCAProjectsDB()
+        pd = ndproj.NDProjectsDB()
 
         # get the visible data sets
         if request.user.is_superuser:
@@ -112,14 +112,14 @@ def getProjects(request):
 
       elif 'delete_data' in request.POST:
 
-        pd = ocpcaproj.OCPCAProjectsDB()
+        pd = ndproj.NDProjectsDB()
         username = request.user.username
         project_to_delete = (request.POST.get('project_name')).strip()
                 
         reftokens = Token.objects.filter(project_id=project_to_delete)
         if reftokens:
           messages.error(request, 'Project cannot be deleted. Please delete all tokens for this project first.')
-          return HttpResponseRedirect(get_script_prefix()+'ocpuser/projects')
+          return HttpResponseRedirect(get_script_prefix()+'nduser/projects')
         else:
           proj = Project.objects.get(project_name=project_to_delete)
           if proj:
@@ -127,24 +127,24 @@ def getProjects(request):
               #Delete project from the table followed  by the database.
               # deleting a project is super dangerous b/c you may delete it out from other tokens.
               #  on other servers.  So, only delete when it's on the same server for now
-              pd.deleteOCPCADB(project_to_delete)
+              pd.deleteNDDB(project_to_delete)
               proj.delete()          
               messages.success(request,"Project deleted")
             else:
               messages.error(request,"Cannot delete.  You are not owner of this project or not superuser.")
           else:
             messages.error( request,"Project not found.")
-          return HttpResponseRedirect(get_script_prefix()+'ocpuser/projects')
+          return HttpResponseRedirect(get_script_prefix()+'nduser/projects')
 
       elif 'delete' in request.POST:
-        pd = ocpcaproj.OCPCAProjectsDB()
+        pd = ndproj.NDProjectsDB()
         username = request.user.username
         project_to_delete = (request.POST.get('project_name')).strip()
                 
         reftokens = Token.objects.filter(project_id=project_to_delete)
         if reftokens:
           messages.error(request, 'Project cannot be deleted. Please delete all tokens for this project first.')
-          return HttpResponseRedirect(get_script_prefix()+'ocpuser/projects')
+          return HttpResponseRedirect(get_script_prefix()+'nduser/projects')
         else:
           proj = Project.objects.get(project_name=project_to_delete)
           if proj:
@@ -155,12 +155,12 @@ def getProjects(request):
               messages.error(request,"Cannot delete.  You are not owner of this project or not superuser.")
           else:
             messages.error( request,"Project not found.")
-          return HttpResponseRedirect(get_script_prefix()+'ocpuser/projects')
+          return HttpResponseRedirect(get_script_prefix()+'nduser/projects')
       
       elif 'info' in request.POST:
       #GET PROJECT INFO -----------
         token = (request.POST.get('roptions')).strip()
-        return HttpResponse(ocpcarest.projInfo(token), content_type="product/hdf5" )
+        return HttpResponse(ndrest.projInfo(token), content_type="product/hdf5" )
       
       elif 'update' in request.POST:
         project_to_update =(request.POST.get('project_name')).strip() 
@@ -185,7 +185,7 @@ def getProjects(request):
       else:
         # Invalid POST
         messages.error(request,"Unrecognized POST")
-        return HttpResponseRedirect(get_script_prefix()+'ocpuser/projects')
+        return HttpResponseRedirect(get_script_prefix()+'nduser/projects')
 
     else:
     # GET Projects
@@ -213,7 +213,7 @@ def getProjects(request):
 
       return render_to_response('projects.html', { 'databases': sorted(dbs.iteritems()) ,'projects':visible_projects },context_instance=RequestContext(request))
     
-  except OCPCAError, e:
+  except NDWSError, e:
 
     messages.error(request,"Exception in administrative interface = {}".format(e)) 
 
@@ -232,12 +232,12 @@ def getProjects(request):
     return render_to_response('projects.html', { 'databases': dbs.iteritems() ,'projects':all_projects },context_instance=RequestContext(request))
     
 
-@login_required(login_url='/ocp/accounts/login/')
+@login_required(login_url='/nd/accounts/login/')
 def getDatasets(request):
 
   try:
 
-    pd = ocpcaproj.OCPCAProjectsDB()
+    pd = ndproj.NDProjectsDB()
 
     userid = request.user.id
     if request.user.is_superuser:
@@ -289,11 +289,11 @@ def getDatasets(request):
       # GET datasets
       return render_to_response('datasets.html', { 'dts': visible_datasets },context_instance=RequestContext(request))
 
-  except OCPCAError, e:
+  except NDWSError, e:
     messages.error(request, "Exception in administrative interface = {}".format(e)) 
     return render_to_response('datasets.html', { 'dts': visible_datasets },context_instance=RequestContext(request))    
 
-@login_required(login_url='/ocp/accounts/login/')
+@login_required(login_url='/nd/accounts/login/')
 def getAllTokens(request):
 
   if 'filter' in request.POST:
@@ -304,11 +304,11 @@ def getAllTokens(request):
   return getTokens(request)
 
 
-@login_required(login_url='/ocp/accounts/login/')
+@login_required(login_url='/nd/accounts/login/')
 def getChannels(request):
 
   username = request.user.username
-  pd = ocpcaproj.OCPCAProjectsDB()  
+  pd = ndproj.NDProjectsDB()  
 
   try:
     if request.method == 'POST':
@@ -321,7 +321,7 @@ def getChannels(request):
         ch = Channel.objects.get(channel_name=channel_to_delete, project_id=pr )
         if ch:
           if pr.user_id == request.user.id or request.user.is_superuser:
-            pd.deleteOCPCAChannel(pr, ch.channel_name)
+            pd.deleteNDChannel(pr, ch.channel_name)
             ch.delete()
             messages.success(request,"Channel deleted " + channel_to_delete)
           else:
@@ -368,17 +368,17 @@ def getChannels(request):
       print all_channels
       return render_to_response('channels.html', { 'channels': all_channels, 'project': proj },context_instance=RequestContext(request))
     
-  except OCPCAError, e:
+  except NDWSError, e:
     messages.error(request, "Exception in administrative interface = {}".format(e)) 
     datasets = pd.getDatasets()
     return render_to_response('projects.html',context,context_instance=RequestContext(request))
  
 
-@login_required(login_url='/ocp/accounts/login/')
+@login_required(login_url='/nd/accounts/login/')
 def getTokens(request):
 
   username = request.user.username
-  pd = ocpcaproj.OCPCAProjectsDB()  
+  pd = ndproj.NDProjectsDB()  
 
   try:
     if request.method == 'POST':
@@ -408,7 +408,7 @@ def getTokens(request):
         # Download the token in a test file
         token = (request.POST.get('token')).strip()
         response = HttpResponse(token,content_type='text/html')
-        response['Content-Disposition'] = 'attachment; filename="ocpca.token"'
+        response['Content-Disposition'] = 'attachment; filename="nd.token"'
         return response
 
       elif 'update' in request.POST:
@@ -440,17 +440,17 @@ def getTokens(request):
         all_tokens = Token.objects.all()
       return render_to_response('tokens.html', { 'tokens': all_tokens, 'project': proj },context_instance=RequestContext(request))
     
-  except OCPCAError, e:
+  except NDWSError, e:
     messages.error(request, "Exception in administrative interface = {}".format(e)) 
     datasets = pd.getDatasets()
     return render_to_response('datasets.html', { 'dts': datasets },context_instance=RequestContext(request))
 
 
-@login_required(login_url='/ocp/accounts/login/')
+@login_required(login_url='/nd/accounts/login/')
 def createProject(request):
 
   try:
-    pd = ocpcaproj.OCPCAProjectsDB()  
+    pd = ndproj.NDProjectsDB()  
 
     if request.method == 'POST':
       if 'createproject' in request.POST:
@@ -461,15 +461,15 @@ def createProject(request):
           new_project=form.save(commit=False)
           new_project.user_id=request.user.id
           if request.POST.get('legacy') == 'yes':
-            new_project.ocp_version='0.0'
+            new_project.nd_version='0.0'
           else:
-            new_project.ocp_version=OCP_VERSION
+            new_project.nd_version=ND_VERSION
           new_project.schema_version=SCHEMA_VERSION
           new_project.save()
           try:
             # create a database when not linking to an existing databases
             if not request.POST.get('nocreate') == 'on':
-              pd.newOCPCAProject( new_project.project_name )
+              pd.newNDProject( new_project.project_name )
             if 'token' in request.POST:
               tk = Token ( token_name = new_project.project_name, token_description = 'Default token for public project', project_id=new_project, user_id=request.user.id, public=new_project.public ) 
               tk.save()
@@ -478,7 +478,7 @@ def createProject(request):
             logger.error("Failed to create project.  Error {}".format(e))
             messages.error(request,"Failed to create project Error {}".format(e))
 
-          return HttpResponseRedirect(get_script_prefix()+'ocpuser/projects/')
+          return HttpResponseRedirect(get_script_prefix()+'nduser/projects/')
         else:
           context = {'form': form}
           return render_to_response('createproject.html',context,context_instance=RequestContext(request))
@@ -500,10 +500,10 @@ def createProject(request):
 
   except Exception, e:
     messages.error(request, "Exception in administrative interface = {}".format(e)) 
-    return HttpResponseRedirect(get_script_prefix()+'ocpuser/projects/')
+    return HttpResponseRedirect(get_script_prefix()+'nduser/projects/')
 
       
-@login_required(login_url='/ocp/accounts/login/')
+@login_required(login_url='/nd/accounts/login/')
 def createDataset(request):
  
   try:
@@ -514,7 +514,7 @@ def createDataset(request):
           new_dataset=form.save(commit=False)
           new_dataset.user_id=request.user.id
           new_dataset.save()
-          return HttpResponseRedirect(get_script_prefix()+'ocpuser/datasets')
+          return HttpResponseRedirect(get_script_prefix()+'nduser/datasets')
         else:
           context = {'form': form}
           return render_to_response('createdataset.html',context,context_instance=RequestContext(request))
@@ -536,7 +536,7 @@ def createDataset(request):
     return render_to_response('datasets.html', { 'dts': datasets },context_instance=RequestContext(request))
 
 
-@login_required(login_url='/ocp/accounts/login/')
+@login_required(login_url='/nd/accounts/login/')
 def updateDataset(request):
 
   try:
@@ -553,7 +553,7 @@ def updateDataset(request):
             form.save()
             messages.success(request, 'Sucessfully updated dataset')
             del request.session["dataset_name"]
-            return HttpResponseRedirect(get_script_prefix()+'ocpuser/datasets')
+            return HttpResponseRedirect(get_script_prefix()+'nduser/datasets')
           else:
             #Invalid form
             context = {'form': form}
@@ -561,13 +561,13 @@ def updateDataset(request):
 
         else:
           messages.error(request,"Cannot update.  You are not owner of this dataset or not superuser.")
-          return HttpResponseRedirect(get_script_prefix()+'ocpuser/datasets')
+          return HttpResponseRedirect(get_script_prefix()+'nduser/datasets')
 
       elif 'backtodatasets' in request.POST:
-        return HttpResponseRedirect(get_script_prefix()+'ocpuser/datasets')
+        return HttpResponseRedirect(get_script_prefix()+'nduser/datasets')
       else:
         #unrecognized option
-        return HttpResponseRedirect(get_script_prefix()+'ocpuser/datasets')
+        return HttpResponseRedirect(get_script_prefix()+'nduser/datasets')
     else:
       print "Getting the update form"
       if "dataset_name" in request.session:
@@ -603,13 +603,13 @@ def updateDataset(request):
     return render_to_response('datasets.html', { 'dts': datasets },context_instance=RequestContext(request))
 
 
-@login_required(login_url='/ocp/accounts/login/')
+@login_required(login_url='/nd/accounts/login/')
 def updateChannel(request):
 
   try:
     prname = request.session['project']
     pr = Project.objects.get ( project_name = prname )
-    pd = ocpcaproj.OCPCAProjectsDB()
+    pd = ndproj.NDProjectsDB()
 
     if request.method == 'POST':
 
@@ -635,7 +635,7 @@ def updateChannel(request):
 
         # KLTODO/RBTODO add propagate to the UI
   #      messages.error(request,"Propagate not yet implemented in self-admin UI.")
-  #      return HttpResponseRedirect(get_script_prefix()+'ocpuser/channels')
+  #      return HttpResponseRedirect(get_script_prefix()+'nduser/channels')
 
         context = {'form': form, 'project': prname}
         form.add_error(None,[u"Propagate not yet implemented in self-admin UI."])
@@ -678,7 +678,7 @@ def updateChannel(request):
           else:
             logger.error("Illegal channel combination requested: {}.".format(combo))
             messages.error(request,"Illegal channel combination requested or none selected.")
-            return HttpResponseRedirect(get_script_prefix()+'ocpuser/channels')
+            return HttpResponseRedirect(get_script_prefix()+'nduser/channels')
 
           if pr.user_id == request.user.id or request.user.is_superuser:
 
@@ -692,17 +692,17 @@ def updateChannel(request):
 
               try:
                 # create the tables for the channel
-                pd.newOCPCAChannel( pr.project_name, new_channel.channel_name)
+                pd.newNDChannel( pr.project_name, new_channel.channel_name)
               except Exception, e:
                 logger.error("Failed to create channel. Error {}".format(e))
                 messages.error(request,"Failed to create channel. {}".format(e))
                 new_channel.delete()
 
-            return HttpResponseRedirect(get_script_prefix()+'ocpuser/channels')
+            return HttpResponseRedirect(get_script_prefix()+'nduser/channels')
 
           else:
             messages.error(request,"Cannot update.  You are not owner of this token or not superuser.")
-            return HttpResponseRedirect(get_script_prefix()+'ocpuser/channels')
+            return HttpResponseRedirect(get_script_prefix()+'nduser/channels')
 
         else:
           #Invalid form
@@ -727,11 +727,11 @@ def updateChannel(request):
           newchannel.default = True
 
         newchannel.save()
-        return HttpResponseRedirect(get_script_prefix()+'ocpuser/channels')
+        return HttpResponseRedirect(get_script_prefix()+'nduser/channels')
 
       else:
         messages.error(request,"Cannot update.  You are not owner of this token or not superuser.")
-        return HttpResponseRedirect(get_script_prefix()+'ocpuser/channels')
+        return HttpResponseRedirect(get_script_prefix()+'nduser/channels')
 
     else:
       if "channel_name" in request.session:
@@ -767,7 +767,7 @@ def updateChannel(request):
     return redirect(get_script_prefix()+'projects', {"user":request.user})
 
 
-@login_required(login_url='/ocp/accounts/login/')
+@login_required(login_url='/nd/accounts/login/')
 def updateToken(request):
 
   try:
@@ -789,17 +789,17 @@ def updateToken(request):
             del request.session["token_name"]
           else:
             messages.error(request,"Cannot update.  You are not owner of this token or not superuser.")
-          return HttpResponseRedirect(get_script_prefix()+'ocpuser/token')
+          return HttpResponseRedirect(get_script_prefix()+'nduser/token')
         else:
           #Invalid form
           context = {'form': form}
           return render_to_response('updatetoken.html',context,context_instance=RequestContext(request))
       elif 'backtotokens' in request.POST:
         #unrecognized option
-        return HttpResponseRedirect(get_script_prefix()+'ocpuser/token')
+        return HttpResponseRedirect(get_script_prefix()+'nduser/token')
       else:
         #unrecognized option
-        return HttpResponseRedirect(get_script_prefix()+'ocpuser/token')
+        return HttpResponseRedirect(get_script_prefix()+'nduser/token')
     else:
       print "Getting the update form"
       if "token_name" in request.session:
@@ -822,7 +822,7 @@ def updateToken(request):
     return redirect(get_script_prefix()+'projects', {"user":request.user})
 
 
-@login_required(login_url='/ocp/accounts/login/')
+@login_required(login_url='/nd/accounts/login/')
 def updateProject(request):
 
   try:
@@ -843,17 +843,17 @@ def updateProject(request):
           else:
             messages.error(request,"Cannot update.  You are not owner of this project or not superuser.")
           del request.session["project_name"]
-          return HttpResponseRedirect(get_script_prefix()+'ocpuser/projects')
+          return HttpResponseRedirect(get_script_prefix()+'nduser/projects')
         else:
           #Invalid form
           context = {'form': form}
           return render_to_response('updateproject.html',context,context_instance=RequestContext(request))
       elif 'backtoprojects' in request.POST:
-        return HttpResponseRedirect(get_script_prefix()+'ocpuser/projects')
+        return HttpResponseRedirect(get_script_prefix()+'nduser/projects')
       else:
         #unrecognized option
         messages.error(request,"Unrecognized Post")
-        return HttpResponseRedirect(get_script_prefix()+'ocpuser/pojects')
+        return HttpResponseRedirect(get_script_prefix()+'nduser/pojects')
         
     else:
       #Get: Retrieve project and display update project form.
@@ -879,7 +879,7 @@ def updateProject(request):
     messages.error(request, "Exception in administrative interface = {}".format(e)) 
     return redirect(get_script_prefix()+'projects', {"user":request.user})
 
-@login_required(login_url='/ocp/accounts/login/')
+@login_required(login_url='/nd/accounts/login/')
 def createToken(request):
 
   try:
@@ -898,7 +898,7 @@ def createToken(request):
           new_token=form.save(commit=False)
           new_token.user_id=request.user.id
           new_token.save()
-          return HttpResponseRedirect(get_script_prefix()+'ocpuser/projects')
+          return HttpResponseRedirect(get_script_prefix()+'nduser/projects')
         else:
           context = {'form': form}
           return render_to_response('createtoken.html',context,context_instance=RequestContext(request))
@@ -919,11 +919,11 @@ def createToken(request):
 
   except Exception, e:
     messages.error(request, "Exception in administrative interface = {}".format(e)) 
-    return redirect(get_script_prefix()+'ocpuser/projects', {"user":request.user})
+    return redirect(get_script_prefix()+'nduser/projects', {"user":request.user})
 
 
 
-@login_required(login_url='/ocp/accounts/login/')
+@login_required(login_url='/nd/accounts/login/')
 def backupProject(request):
   """Backup some or all channels of a project"""
 
@@ -961,7 +961,7 @@ def backupProject(request):
             elif new_backup.channel != None:
               channel = new_backup.channel.channel_name
             else:
-              raise  OCPCAError ("Cannot backup specified channel {}".format(new_backup.channel))
+              raise  NDWSError ("Cannot backup specified channel {}".format(new_backup.channel))
               
             #RB restart here
             upath = '{}/{}'.format(settings.BACKUP_PATH,request.user.username)
@@ -988,7 +988,7 @@ def backupProject(request):
             new_backup.jsonfile = jfile
 
             with closing ( open(jfile, 'w')) as jsonfp:
-              with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+              with closing ( ndproj.NDProjectsDB() ) as projdb:
                 proj = projdb.loadToken ( pr )
                 jsonfp.write ( jsonprojinfo.jsonInfo(proj) )
 
@@ -1025,7 +1025,7 @@ def backupProject(request):
               import threading
               t = threading.Thread ( target=_monitorBackup, args=(p,new_backup,outputfile) )
               t.start()
-              return HttpResponseRedirect(get_script_prefix()+'ocpuser/backupproject')
+              return HttpResponseRedirect(get_script_prefix()+'nduser/backupproject')
 
             else:
 
@@ -1035,19 +1035,19 @@ def backupProject(request):
                 po.communicate(None)
                 rc = po.returncode
                 if rc<0:
-                  raise OCPCAError("Backup process failed. Status = {}".format(rc))
+                  raise NDWSError("Backup process failed. Status = {}".format(rc))
 
               new_backup.status = 0
               new_backup.protocol = 'MySQL'
               new_backup.save()
 
               messages.success(request, 'Sucessfully backed up database '+ dbname)
-              return HttpResponseRedirect(get_script_prefix()+'ocpuser/projects')
+              return HttpResponseRedirect(get_script_prefix()+'nduser/projects')
 
           elif new_backup.protocol == 's3':
-            raise OCPCAError ("Unimplemented backup protocol: s3")
+            raise NDWSError ("Unimplemented backup protocol: s3")
           else:
-            raise OCPCAError ("Unkown protocol {}".format(new_backup.protocol))
+            raise NDWSError ("Unkown protocol {}".format(new_backup.protocol))
 
       elif 'restore' in request.POST:
         request.session["backupid"] = (request.POST.get('backupid')).strip()
@@ -1073,19 +1073,19 @@ def backupProject(request):
         po.communicate(None)
         rc = po.returncode
         if rc<0:
-          raise OCPCAError("Failed to delete backup file. Status = {}".format(rc))
+          raise NDWSError("Failed to delete backup file. Status = {}".format(rc))
 
         cmd = ['rm', bu_to_delete.jsonfile ]
         po = subprocess.Popen(cmd)
         po.communicate(None)
         rc = po.returncode
         if rc<0:
-          raise OCPCAError("Failed to delete backup metadata file. Status = {}".format(rc))
+          raise NDWSError("Failed to delete backup metadata file. Status = {}".format(rc))
 
         # remove the backup record
         bu_to_delete.delete()
 
-        return HttpResponseRedirect(get_script_prefix()+'ocpuser/backupproject')
+        return HttpResponseRedirect(get_script_prefix()+'nduser/backupproject')
 
     # show the backup page
     else:
@@ -1114,10 +1114,10 @@ def backupProject(request):
 
   except Exception, e:
     messages.error(request, "Exception in administrative interface = {}".format(e)) 
-    return redirect(get_script_prefix()+'ocpuser/projects', {"user":request.user})
+    return redirect(get_script_prefix()+'nduser/projects', {"user":request.user})
 
 
-@login_required(login_url='/ocp/accounts/login/')
+@login_required(login_url='/nd/accounts/login/')
 def restoreProject ( request ):
 
   try:
@@ -1176,14 +1176,14 @@ def restoreProject ( request ):
           import threading
           t = threading.Thread ( target=_monitorRestore, args=(po_process,newproj,bu,inputfile) )
           t.start()
-          return HttpResponseRedirect(get_script_prefix()+'ocpuser/backupproject')
+          return HttpResponseRedirect(get_script_prefix()+'nduser/backupproject')
 
         else:
           po = subprocess.Popen(cmd)
           po.communicate(None)
           rc = po.returncode
           if rc<0:
-            raise OCPCAError("Failed to backup file. Status = {}".format(rc))
+            raise NDWSError("Failed to backup file. Status = {}".format(rc))
 
         # Having restored the database, add the channels, project and token
         newproj.save()
@@ -1236,7 +1236,7 @@ def restoreProject ( request ):
           import threading
           t = threading.Thread ( target=_restoreOneChannel, args=(request,) )
           t.start()
-          return HttpResponseRedirect(get_script_prefix()+'ocpuser/backupproject')
+          return HttpResponseRedirect(get_script_prefix()+'nduser/backupproject')
 
         else:
 
@@ -1249,7 +1249,7 @@ def restoreProject ( request ):
         return redirect(getProjects)
 
       else: 
-        raise OCPCAError ( "Bad post option.  Contact OCP support." )
+        raise NDWSError ( "Bad post option.  Contact NeuroData support." )
 
     else:
       """Show the restore form"""
@@ -1281,7 +1281,7 @@ def restoreProject ( request ):
 
   except Exception, e:
     messages.error(request, "Exception in administrative interface = {}".format(e)) 
-    return redirect(get_script_prefix()+'ocpuser/projects', {"user":request.user})
+    return redirect(get_script_prefix()+'nduser/projects', {"user":request.user})
 
 
 def _restoreOneChannel ( request ):
@@ -1397,11 +1397,11 @@ def _monitorRestore ( popen_process, project_model, backup_model, fh ):
 
   fh.close()
 
-@login_required(login_url='/ocp/accounts/login/')
+@login_required(login_url='/nd/accounts/login/')
 def downloadData(request):
   
   try:
-    pd = ocpcaproj.OCPCAProjectsDB()
+    pd = ndproj.NDProjectsDB()
     
     if request.method == 'POST':
       form= dataUserForm(request.POST)
@@ -1421,25 +1421,25 @@ def downloadData(request):
         webargs= curtoken+"/"+format+"/"+str(resolution)+"/"+str(xmin)+","+str(xmax)+"/"+str(ymin)+","+str(ymax)+"/"+str(zmin)+","+str(zmax)+"/"
           
         if format=='hdf5':
-          return django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="product/hdf5" )
+          return django.http.HttpResponse(ndrest.getCutout(webargs), content_type="product/hdf5" )
         elif format=='npz':
-          return django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="product/npz" )
+          return django.http.HttpResponse(ndrest.getCutout(webargs), content_type="product/npz" )
         else:
-          return django.http.HttpResponse(ocpcarest.getCutout(webargs), content_type="product/zip" )
+          return django.http.HttpResponse(ndrest.getCutout(webargs), content_type="product/zip" )
           
       else:
         return redirect(downloaddata)
         #return render_to_response('download.html',context_instance=RequestContext(request))
     else:
       # Load Download page with public tokens                                           
-      pd = ocpcaproj.OCPCAProjectsDB()
+      pd = ndproj.NDProjectsDB()
       form = dataUserForm()
       tokens = pd.getPublic ()
       context = {'form': form ,'publictokens': tokens}
       return render_to_response('download.html',context,context_instance=RequestContext(request))
       #return render_to_response('download.html', { 'dts': datasets },context_instance=\
       # RequestContext(request))                                                                
-  except OCPCAError, e:
+  except NDWSError, e:
     messages.error(request, "Exception in administrative interface = {}".format(e)) 
     tokens = pd.getPublic ()
     return redirect(downloaddata)

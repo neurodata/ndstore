@@ -20,14 +20,14 @@ import re
 from collections import defaultdict
 import itertools
 
-from ocptype import OLDCHANNEL
+from ndtype import OLDCHANNEL
 
 import logging
-logger=logging.getLogger("ocp")
+logger=logging.getLogger("neurodata")
 
 
 """Helpers function to do cube I/O in across multiple DBs.
-    This uses the state and methods of ocpcadb"""
+    This uses the state and methods of spdb"""
 
 class MySQLKVIO:
 

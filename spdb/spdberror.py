@@ -12,17 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#
-# Code to load project paths
-#
+class SPDBError (Exception):
+  """General spatial database error"""
+  
+  def __init__(self, value):
+    self.value = value
 
-import os, sys
-
-OCP_BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.." ))
-OCP_UTIL_PATH = os.path.join(OCP_BASE_PATH, "util" )
-OCP_OCPCA_PATH = os.path.join(OCP_BASE_PATH, "ocpca" )
-OCP_OCPLIB_PATH = os.path.join(OCP_BASE_PATH, "ocplib" )
-OCP_DJANGO_PATH = os.path.join(OCP_BASE_PATH, "django" )
-
-sys.path += [ OCP_UTIL_PATH, OCP_OCPCA_PATH, OCP_OCPLIB_PATH, OCP_DJANGO_PATH ]
-
+  def __str__(self):
+    return repr(self.value)

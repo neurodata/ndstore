@@ -15,8 +15,10 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Backup',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('backup_id', models.AutoField(serialize=False, primary_key=True)),
                 ('protocol', models.CharField(max_length=255, choices=[(b'local', b'file system'), (b's3', b'Amazon S3')])),
+                ('filename', models.CharField(max_length=4096)),
+                ('jsonfile', models.CharField(max_length=4096)),
                 ('description', models.CharField(default=b'', max_length=4096)),
                 ('datetimestamp', models.DateTimeField(auto_now_add=True)),
                 ('status', models.IntegerField(default=0, choices=[(0, b'Done'), (1, b'Processing'), (2, b'Failed')])),
@@ -36,11 +38,12 @@ class Migration(migrations.Migration):
                 ('resolution', models.IntegerField(default=0)),
                 ('propagate', models.IntegerField(default=0, choices=[(0, b'NOT PROPAGATED'), (2, b'PROPAGATED')])),
                 ('channel_datatype', models.CharField(max_length=255, choices=[(b'uint8', b'uint8'), (b'uint16', b'uint16'), (b'uint32', b'uint32'), (b'uint64', b'uint64'), (b'float32', b'float32')])),
-                ('readonly', models.IntegerField(default=1, choices=[(1, b'Yes'), (0, b'No')])),
+                ('readonly', models.IntegerField(default=0, choices=[(1, b'Yes'), (0, b'No')])),
                 ('exceptions', models.IntegerField(default=0, choices=[(1, b'Yes'), (0, b'No')])),
                 ('startwindow', models.IntegerField(default=0)),
                 ('endwindow', models.IntegerField(default=0)),
                 ('default', models.BooleanField(default=False)),
+                ('header', models.CharField(default=b'', max_length=8192, blank=True)),
             ],
             options={
                 'db_table': 'channels',
@@ -79,12 +82,12 @@ class Migration(migrations.Migration):
                 ('project_name', models.CharField(max_length=255, serialize=False, primary_key=True)),
                 ('project_description', models.CharField(max_length=4096, blank=True)),
                 ('public', models.IntegerField(default=0, choices=[(0, b'Private'), (1, b'Public')])),
-                ('host', models.CharField(default=b'localhost', max_length=255, choices=[(b'dsp061.pha.jhu.edu', b'default'), (b'dsp061.pha.jhu.edu', b'dsp061'), (b'dsp062.pha.jhu.edu', b'dsp062'), (b'dsp063.pha.jhu.edu', b'dsp063'), (b'localhost', b'localhost')])),
+                ('host', models.CharField(default=b'localhost', max_length=255, choices=[(b'dsp061.pha.jhu.edu', b'default'), (b'dsp061.pha.jhu.edu', b'dsp061'), (b'dsp062.pha.jhu.edu', b'dsp062'), (b'dsp063.pha.jhu.edu', b'dsp063'), (b'localhost', b'Debug')])),
                 ('kvengine', models.CharField(default=b'MySQL', max_length=255, choices=[(b'MySQL', b'MySQL'), (b'Cassandra', b'Cassandra'), (b'Riak', b'Riak')])),
-                ('kvserver', models.CharField(default=b'dsp061.pha.jhu.edu', max_length=255, choices=[(b'dsp061.pha.jhu.edu', b'default'), (b'dsp061.pha.jhu.edu', b'dsp061'), (b'dsp062.pha.jhu.edu', b'dsp062'), (b'dsp063.pha.jhu.edu', b'dsp063'), (b'localhost', b'localhost')])),
-                ('ocp_version', models.CharField(default=b'0.6', max_length=255)),
+                ('kvserver', models.CharField(default=b'localhost', max_length=255, choices=[(b'dsp061.pha.jhu.edu', b'default'), (b'dsp061.pha.jhu.edu', b'dsp061'), (b'dsp062.pha.jhu.edu', b'dsp062'), (b'dsp063.pha.jhu.edu', b'dsp063'), (b'localhost', b'Debug')])),
+                ('nd_version', models.CharField(default=b'0.6', max_length=255)),
                 ('schema_version', models.CharField(default=b'0.6', max_length=255)),
-                ('dataset', models.ForeignKey(to='ocpuser.Dataset')),
+                ('dataset', models.ForeignKey(to='nduser.Dataset')),
                 ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
             ],
             options={
@@ -98,7 +101,7 @@ class Migration(migrations.Migration):
                 ('token_name', models.CharField(max_length=255, serialize=False, primary_key=True)),
                 ('token_description', models.CharField(max_length=4096, blank=True)),
                 ('public', models.IntegerField(default=0, choices=[(0, b'Private'), (1, b'Public')])),
-                ('project', models.ForeignKey(to='ocpuser.Project')),
+                ('project', models.ForeignKey(to='nduser.Project')),
                 ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
             ],
             options={
@@ -106,20 +109,32 @@ class Migration(migrations.Migration):
                 'managed': True,
             },
         ),
+        migrations.CreateModel(
+            name='NIFTIHeader',
+            fields=[
+                ('channel', models.OneToOneField(primary_key=True, serialize=False, to='nduser.Channel')),
+                ('header', models.BinaryField(max_length=1024)),
+                ('affine', models.BinaryField(max_length=1024)),
+            ],
+            options={
+                'db_table': 'nifti_header',
+                'managed': True,
+            },
+        ),
         migrations.AddField(
             model_name='channel',
             name='project',
-            field=models.ForeignKey(to='ocpuser.Project'),
+            field=models.ForeignKey(to='nduser.Project'),
         ),
         migrations.AddField(
             model_name='backup',
             name='channel',
-            field=models.ForeignKey(blank=True, to='ocpuser.Channel', null=True),
+            field=models.ForeignKey(blank=True, to='nduser.Channel', null=True),
         ),
         migrations.AddField(
             model_name='backup',
             name='project',
-            field=models.ForeignKey(to='ocpuser.Project'),
+            field=models.ForeignKey(to='nduser.Project'),
         ),
         migrations.AlterUniqueTogether(
             name='channel',

@@ -25,7 +25,7 @@ import riak
 
 """Helpers function to do cube I/O in across multiple DBs.
     This file is aerospike
-    This uses the state and methods of ocpcadb"""
+    This uses the state and methods of spdb"""
 
 class RiakKVIO:
 
@@ -36,7 +36,7 @@ class RiakKVIO:
 
     # connect to cassandra
     self.rcli = riak.RiakClient(host=db.annoproj.getKVServer(), pb_port=8087, protocol='pbc')
-    self.bucket = self.rcli.bucket_type("ocp{}".format(db.annoproj.getDBType())).bucket(db.annoproj.getDBName())
+    self.bucket = self.rcli.bucket_type("spdb{}".format(db.annoproj.getDBType())).bucket(db.annoproj.getDBName())
 
   def close ( self ):
     """Close the connection"""

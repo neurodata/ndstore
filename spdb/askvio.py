@@ -24,7 +24,7 @@ import aerospike
 
 """Helpers function to do cube I/O in across multiple DBs.
     This file is aerospike
-    This uses the state and methods of ocpcadb"""
+    This uses the state and methods of spdb"""
 
 class AerospikeKVIO:
 
@@ -59,7 +59,7 @@ class AerospikeKVIO:
   def getCube ( self, zidx, resolution, update ):
     """Retrieve a cube from the database by token, resolution, and zidx"""
 
-    askey = ( "ocp", self.db.annoproj.getDBName(), str(resolution)+"_"+str(zidx) )
+    askey = ( "spdb", self.db.annoproj.getDBName(), str(resolution)+"_"+str(zidx) )
 
     (retkey, asmd, asvalue) = self.ascli.get ( askey )
     if asvalue != None:
@@ -85,7 +85,7 @@ class AerospikeKVIO:
   def putCube ( self, zidx, resolution, cubestr, update ):
     """Store a cube from the annotation database"""
 
-    askey = ( "ocp", self.db.annoproj.getDBName(), str(resolution)+"_"+str(zidx) )
+    askey = ( "spdb", self.db.annoproj.getDBName(), str(resolution)+"_"+str(zidx) )
     self.ascli.put ( askey, {'cuboid':cubestr} ) 
 
 

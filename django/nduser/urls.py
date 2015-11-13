@@ -13,14 +13,14 @@
 # limitations under the License.
 
 from django.conf.urls import *
-from ocpuser.views import *
+from nduser.views import *
 import django.contrib.auth
 
 # Uncomment the next two lines to enable the admin:                        
 from django.contrib import admin
 admin.autodiscover()
 
-urlpatterns = patterns('ocpuser.views',
+urlpatterns = patterns('nduser.views',
                        url(r'^profile/$', 'getProjects'),
                        url(r'^projects/$', 'getProjects'),
                        url(r'^datasets/$', 'getDatasets'),

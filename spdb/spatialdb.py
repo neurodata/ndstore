@@ -30,11 +30,11 @@ from cube import Cube
 import imagecube
 import anncube
 import ocplib
-from ocptype import ANNOTATION_CHANNELS, EXCEPTION_TRUE, PROPAGATED
+from ndtype import ANNOTATION_CHANNELS, EXCEPTION_TRUE, PROPAGATED
 
-from ndsperror import NDSpError
+from spdberror import SPDBError
 import logging
-logger=logging.getLogger("ocp")
+logger=logging.getLogger("neurodata")
 
 import mysqlkvio
 try:
@@ -50,7 +50,7 @@ except:
   Manipulate/create/read from the Morton-order cube store
 """
 
-class OCPCADB: 
+class SpatialDB: 
 
   def __init__ (self, proj):
     """Connect with the brain databases"""
@@ -89,7 +89,7 @@ class OCPCADB:
       self.kvio = casskvio.CassandraKVIO(self)
       self.NPZ = False
     else:
-      raise OCPCAError ("Unknown key/value store. Engine = {}".format(self.proj.getKVEngine()))
+      raise SPDBError ("Unknown key/value store. Engine = {}".format(self.proj.getKVEngine()))
 
     self.annoIdx = annindex.AnnotateIndex ( self.kvio, self.proj )
 
@@ -426,10 +426,10 @@ class OCPCADB:
                     index_dict[exid].add(key)
               else:
                 logger.error("No exceptions for this project.")
-                raise OCPCAError ( "No exceptions for this project.")
+                raise SPDBError ( "No exceptions for this project.")
             else:
               logger.error ( "Unsupported conflict option %s" % conflictopt )
-              raise OCPCAError ( "Unsupported conflict option %s" % conflictopt )
+              raise SPDBError ( "Unsupported conflict option %s" % conflictopt )
             
             self.putCube (ch, key, resolution, cube)
 

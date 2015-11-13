@@ -19,9 +19,9 @@ from cube import Cube
 import ocplib
 from windowcutout import windowCutout
 
-from ocpcaerror import OCPCAError
+from ndsperror import NDSPError 
 import logging
-logger=logging.getLogger("ocp")
+logger=logging.getLogger("neurodata")
 
 
 class ImageCube8(Cube):

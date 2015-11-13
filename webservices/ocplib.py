@@ -16,7 +16,7 @@ import ctypes as cp
 import numpy as np
 import numpy.ctypeslib as npct
 import os
-import OCP.ocppaths
+import ND.ndpaths
 import rgbColor
 
 #
@@ -26,7 +26,7 @@ import rgbColor
 # Getting the directory path
 #ocpdlibpath = os.path.join(OCP.ocppaths.OCP_OCPCA_PATH,"../ocplib")
 # Load the shared C library using ctype mechanism
-ocplib = npct.load_library("ocplib", OCP.ocppaths.OCP_OCPLIB_PATH) 
+ocplib = npct.load_library("ocplib", ND.ndpaths.ND_NDLIB_PATH) 
 
 array_1d_uint8 = npct.ndpointer(dtype=np.uint8, ndim=1, flags='C_CONTIGUOUS')
 array_2d_uint8 = npct.ndpointer(dtype=np.uint8, ndim=2, flags='C_CONTIGUOUS')

@@ -19,10 +19,11 @@ import zlib
 import blosc
 
 import ocplib
-from ocptype import ANNOTATION_CHANNELS, TIMESERIES_CHANNELS, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, DTYPE_uint64, DTYPE_float32
+from ndtype import ANNOTATION_CHANNELS, TIMESERIES_CHANNELS, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, DTYPE_uint64, DTYPE_float32
 
+from ndsperror import NDSPError 
 import logging
-logger=logging.getLogger("ocp")
+logger=logging.getLogger("neurodata")
 
 #
 #  AnnotateCube: manipulate the in-memory data representation of the 3-d cube of data
@@ -115,7 +116,7 @@ class Cube:
     """Get's a dense voxel region and overwrites all non-zero values"""
     if (self.data.dtype != writedata.dtype ):
       logger.error("Conflicting data types for overwrite")
-      raise OCPCAError ("Conflicting data types for overwrite")
+      raise NDSPError ("Conflicting data types for overwrite")
     self.data = ocplib.overwriteDense_ctype(self.data, writedata)
   
   def RGBAChannel(self):

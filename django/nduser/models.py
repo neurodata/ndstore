@@ -20,7 +20,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.conf import settings
 
-from ocptype import IMAGE, ANNOTATION, TIMESERIES, UINT8, UINT16, UINT32, UINT64, FLOAT32, READONLY_TRUE, READONLY_FALSE, ZSLICES, ISOTROPIC, PUBLIC_TRUE, PUBLIC_FALSE, PROPAGATED, NOT_PROPAGATED, EXCEPTION_TRUE, EXCEPTION_FALSE
+from ndtype import IMAGE, ANNOTATION, TIMESERIES, UINT8, UINT16, UINT32, UINT64, FLOAT32, READONLY_TRUE, READONLY_FALSE, ZSLICES, ISOTROPIC, PUBLIC_TRUE, PUBLIC_FALSE, PROPAGATED, NOT_PROPAGATED, EXCEPTION_TRUE, EXCEPTION_FALSE
 
 # Create your models here.
 class Dataset ( models.Model):
@@ -93,7 +93,7 @@ class Project ( models.Model):
   kvserver =  models.CharField(max_length=255, choices=KVSERVER_CHOICES, default='localhost')
 
   # Version information -- set automatically
-  ocp_version =  models.CharField(max_length=255, default='0.6')
+  nd_version =  models.CharField(max_length=255, default='0.6')
   schema_version =  models.CharField(max_length=255, default='0.6')
 
   class Meta:
@@ -224,7 +224,7 @@ class Backup ( models.Model):
 
 class NIFTIHeader ( models.Model):
 
-  channel  = models.ForeignKey(Channel,primary_key=True)
+  channel  = models.OneToOneField(Channel,primary_key=True)
   # all headers are 384 bytes for now.  
   header = models.BinaryField(max_length=1024)
   affine = models.BinaryField(max_length=1024)

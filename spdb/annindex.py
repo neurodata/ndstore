@@ -20,7 +20,7 @@ import h5py
 import blosc
 
 import logging
-logger=logging.getLogger("ocp")
+logger=logging.getLogger("neurodata")
 
 
 class AnnotateIndex:

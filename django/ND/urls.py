@@ -19,20 +19,23 @@ from django.contrib import admin
 admin.autodiscover()
 
 base_urlpatterns = patterns('',
-    url(r'^ocpca/', include('ocpca.urls')),
-    url(r'^ca/', include('ocpca.urls')),
+    url(r'^ocpca/', include('spdb.urls')),    # legacy RB
+    url(r'^ca/', include('spdb.urls')),       # legacy RB
+    url(r'^sd/', include('spdb.urls')),
     url(r'^overlay/', include('overlay.urls')),
     url(r'^catmaid/', include('catmaid.urls')),
     url(r'^synaptogram/', include('synaptogram.urls')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^accounts/', include('registration.backends.default.urls')),
-    url(r'^ocpuser/', include('ocpuser.urls')),
-    url(r'^viz/', include('ocpviz.urls')),
-    url(r'^ocpgraph/', include('ocpgraph.urls')),
+    url(r'^ocpuser/', include('nduser.urls')),  # legacy RB
+    url(r'^nduser/', include('nduser.urls')),  
+    url(r'^viz/', include('ocpviz.urls')),  # ABTODO
+    url(r'^ocpgraph/', include('ocpgraph.urls')), #??TODO
 )
 
 urlpatterns = patterns('', 
     url('^', include(base_urlpatterns)), # maintains unprefixed URLs
     url('^ocp/', include(base_urlpatterns)),
+    url('^nd/', include(base_urlpatterns)),
 )
 

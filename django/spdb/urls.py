@@ -17,7 +17,7 @@ from django.conf.urls import patterns, include, url
 # Uncomment the next two lines to enable the admin:
 #from django.contrib import admin
 #admin.autodiscover()
-urlpatterns = patterns('ocpca.views',
+urlpatterns = patterns('spdb.views',
   # catmaid
   url(r'^catmaid/(?P<webargs>\w+/.*)$', 'catmaid'),
   # nifti -- volumetric 3-d and 4-d

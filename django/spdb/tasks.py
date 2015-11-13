@@ -18,18 +18,18 @@ from celery import task
 from django.conf import settings
 
 import h5annasync
-import ocpcastack
-from ocpcaingest import IngestData
+import ndstack
+from ndingest import IngestData
 
 import logging
-logger = logging.getLogger("ocp")
+logger = logging.getLogger("neurodata")
 
 @task(queue='propagate')
 def propagate (token, channel_name):
   """Propagate the given project for all resolutions"""
 
   try:
-    ocpcastack.buildStack (token,channel_name)
+    ndstack.buildStack (token,channel_name)
   except Exception, e:
     logger.error("Error in propagate. {}".format(e))
 
