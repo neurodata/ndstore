@@ -16,7 +16,7 @@ import re
 
 import annotation
 
-from ocptype import ISOTROPIC
+from ndtype import ISOTROPIC
 
 from ocpcaerror import OCPCAError
 import logging

@@ -13,22 +13,29 @@
 # limitations under the License.
 
 import numpy as np
-import cStringIO
-from PIL import Image
 import zlib
+import cStringIO
 import blosc
+from PIL import Image
 
+<<<<<<< HEAD:spdb/cube.py
 import ocplib
 from ndtype import ANNOTATION_CHANNELS, TIMESERIES_CHANNELS, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, DTYPE_uint64, DTYPE_float32
 
 from ndsperror import NDSPError 
+=======
+import ndlib
+from ndtype import ANNOTATION_CHANNELS, TIMESERIES_CHANNELS, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, DTYPE_uint64, DTYPE_float32
+
+from ndsperror import NDSPError
+>>>>>>> 3f4ffac13751b8e8b41d2a73c98c21ada7638347:ndspatialdb/cube.py
 import logging
 logger=logging.getLogger("neurodata")
 
-#
-#  AnnotateCube: manipulate the in-memory data representation of the 3-d cube of data
-#    that contains annotations.  
-#
+"""
+.. module:: Cube
+    :synopsis: Manipulate the in-memory data representation of the 3-d cube of data that contains annotations.  
+"""
 
 class Cube:
 
@@ -116,8 +123,13 @@ class Cube:
     """Get's a dense voxel region and overwrites all non-zero values"""
     if (self.data.dtype != writedata.dtype ):
       logger.error("Conflicting data types for overwrite")
+<<<<<<< HEAD:spdb/cube.py
       raise NDSPError ("Conflicting data types for overwrite")
     self.data = ocplib.overwriteDense_ctype(self.data, writedata)
+=======
+      raise OCPCAError ("Conflicting data types for overwrite")
+    self.data = ndlib.overwriteDense_ctype(self.data, writedata)
+>>>>>>> 3f4ffac13751b8e8b41d2a73c98c21ada7638347:ndspatialdb/cube.py
   
   def RGBAChannel(self):
     """Return a RGBAChannel Method definition"""

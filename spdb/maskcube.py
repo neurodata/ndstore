@@ -17,13 +17,16 @@ from PIL import Image
 
 from cube import Cube
 
-#
-#  BitMapCube: manipulate the in-memory data representation of the 3-d cube of data
-#    includes loading, export, read and write routines
-#
-#  All the interfaces to this class are in x,y,z order
-#  Cube data goes in z,y,x order this is compatible with images and more efficient?
-#
+from ndsperror import NDSPError
+import logging
+logger=logging.getLogger("ocp")
+
+"""
+.. module:: maskcube
+    :synopsis: Manipulate the in-memory data representation of the 3-d cube of data includes loading, export, read and write routines.
+    All the interfaces to this class are in x,y,z order. Cube data goes in z,y,x order this is compatible with images and more efficient?
+"""
+
 class MaskCube(Cube):
 
   # Constructor 

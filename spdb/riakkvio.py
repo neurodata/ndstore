@@ -12,20 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import numpy as np
-import cStringIO
-import zlib
-import MySQLdb
-import re
-from collections import defaultdict
-import itertools
-import tempfile
-import h5py
 import riak
 
+<<<<<<< HEAD:spdb/riakkvio.py
 """Helpers function to do cube I/O in across multiple DBs.
     This file is aerospike
     This uses the state and methods of spdb"""
+=======
+>>>>>>> 3f4ffac13751b8e8b41d2a73c98c21ada7638347:ndspatialdb/riakkvio.py
 
 class RiakKVIO:
 
@@ -80,9 +74,6 @@ class RiakKVIO:
     except Exception, e:
       raise
 
-  #
-  # putCube
-  #
   def putCube ( self, zidx, resolution, cubestr, udpate ):
     """Store a cube from the annotation database"""
 

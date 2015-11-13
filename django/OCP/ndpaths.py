@@ -20,11 +20,8 @@ import os, sys
 
 ND_BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.." ))
 ND_UTIL_PATH = os.path.join(ND_BASE_PATH, "util" )
-ND_WS_PATH = os.path.join(ND_BASE_PATH, "webservices" )
-ND_SPDB_PATH = os.path.join(ND_BASE_PATH, "spdb" )
-# KLTODO going to rename this to nd lib? in the future
-ND_RAMON_PATH = os.path.join(ND_BASE_PATH, "ramon" )
-ND_LIB_PATH = os.path.join(ND_BASE_PATH, "ndlib" )
+ND_WEBSERVICE_PATH = os.path.join(ND_BASE_PATH, "webservices" )
+ND_SPATIALDB_PATH = os.path.join(ND_BASE_PATH, "ndspatialdb" )
 ND_DJANGO_PATH = os.path.join(ND_BASE_PATH, "django" )
 
-sys.path += [ ND_UTIL_PATH, ND_WS_PATH, ND_SPDB_PATH, ND_NDLIB_PATH, ND_DJANGO_PATH ]
+sys.path += [ ND_UTIL_PATH, ND_PROJ_PATH, ND_WEBSERVICE_PATH, ND_SPATIALDB_PATH, ND_RAMON_PATH, ND_LIB_PATH, ND_DJANGO_PATH ]

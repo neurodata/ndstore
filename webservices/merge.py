@@ -39,7 +39,7 @@
         #  Just delete the exceptions
         #
         # Ctype optimized version for mergeCube
-        ocplib.mergeCube_ctype ( cube.data, mergeid, annid )
+        ndlib.mergeCube_ctype ( cube.data, mergeid, annid )
         self.putCube ( ch, key, resolution, cube )
         
       # Delete annotation and all it's meta data from the database
@@ -126,7 +126,7 @@
     for z in range ( znumcubes ):
       for y in range ( ynumcubes ):
         for x in range ( xnumcubes ):
-          mortonidx = ocplib.XYZMorton ( [x+xstart, y+ystart, z+zstart] )
+          mortonidx = ndlib.XYZMorton ( [x+xstart, y+ystart, z+zstart] )
           listofidxs.append ( mortonidx )
 
     # Sort the indexes in Morton order
@@ -164,7 +164,7 @@
           prevzindex = cuboidzindex
           # data for the current cube
           cube = self.getCube ( cuboidzindex, resolution )
-          [ xcube, ycube, zcube ] = ocplib.MortonXYZ ( cuboidzindex )
+          [ xcube, ycube, zcube ] = ndlib.MortonXYZ ( cuboidzindex )
           xcubeoff =xcube*xcubedim
           ycubeoff =ycube*ycubedim
           zcubeoff =zcube*zcubedim

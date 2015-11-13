@@ -21,7 +21,7 @@ import math
 from contextlib import closing
 
 import restargs
-import ocpcadb
+import spatialdb
 import ocpcaproj
 import ocpcarest
 import mcfc
@@ -179,7 +179,7 @@ class MCFCCatmaid:
     with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
       self.proj = projdb.loadToken ( self.token )
 
-    with closing ( ocpcadb.OCPCADB(self.proj) ) as self.db:
+    with closing ( spatialdb.SPATIALDB(self.proj) ) as self.db:
       
       # mocpcache key
       mckey = self.buildKey(res, xtile, ytile, ztile)

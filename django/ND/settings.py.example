@@ -13,7 +13,11 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 import settings_secret
+<<<<<<< HEAD:django/ND/settings.py.example
 from ndpaths import NDWS_DJANGO_PATH
+=======
+from ndpaths import ND_DJANGO_PATH
+>>>>>>> 3f4ffac13751b8e8b41d2a73c98c21ada7638347:django/OCP/settings.py.example
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -66,7 +70,11 @@ ROOT_URLCONF = 'NDWS.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
+<<<<<<< HEAD:django/ND/settings.py.example
         'DIRS': [os.path.join(NDWS_DJANGO_PATH, 'templates/')],
+=======
+        'DIRS': [os.path.join(ND_DJANGO_PATH, 'templates/')],
+>>>>>>> 3f4ffac13751b8e8b41d2a73c98c21ada7638347:django/OCP/settings.py.example
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -123,11 +131,19 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 # Absolute path to the directory static files should be collected to.
+<<<<<<< HEAD:django/ND/settings.py.example
 STATIC_ROOT = os.path.join(NDWS_DJANGO_PATH, 'templates/static')
 
 # Additional locations of static files
 STATICFILES_DIRS = (
   os.path.join(NDWS_DJANGO_PATH, "static/"),
+=======
+STATIC_ROOT = os.path.join(ND_DJANGO_PATH, 'templates/static')
+
+# Additional locations of static files
+STATICFILES_DIRS = (
+  os.path.join(ND_DJANGO_PATH, "static/"),
+>>>>>>> 3f4ffac13751b8e8b41d2a73c98c21ada7638347:django/OCP/settings.py.example
 )
 
 # List of finder classes that know how to find static files in various locations.

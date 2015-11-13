@@ -12,20 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import numpy as np
-import cStringIO
-import zlib
-import MySQLdb
-import re
-from collections import defaultdict
-import itertools
-
 import aerospike
 
+<<<<<<< HEAD:spdb/askvio.py
 """Helpers function to do cube I/O in across multiple DBs.
     This file is aerospike
     This uses the state and methods of spdb"""
 
+=======
+>>>>>>> 3f4ffac13751b8e8b41d2a73c98c21ada7638347:ndspatialdb/askvio.py
 class AerospikeKVIO:
 
   def __init__ ( self, db ):

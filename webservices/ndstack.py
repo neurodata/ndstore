@@ -24,11 +24,11 @@ from PIL import Image
 import zlib
 
 from cube import Cube
-import ocpcadb
+import spatialdb
 from ocpcaproj import OCPCAProjectsDB
-import ocplib
+import ndlib
 import annotation
-from ocptype import ZSLICES, ISOTROPIC, ANNOTATION_CHANNELS, IMAGE_CHANNELS, TIMESERIES_CHANNELS, PROPAGATED, NOT_PROPAGATED, OCP_dtypetonp
+from ndtype import ZSLICES, ISOTROPIC, ANNOTATION_CHANNELS, IMAGE_CHANNELS, TIMESERIES_CHANNELS, PROPAGATED, NOT_PROPAGATED, OCP_dtypetonp
 
 from ocpcaerror import OCPCAError
 import logging
@@ -68,7 +68,7 @@ def buildStack(token, channel_name, resolution=None):
 def clearStack (proj, ch, res=None):
   """ Clear a OCP stack for a given project """
 
-  with closing(ocpcadb.OCPCADB(proj)) as db:
+  with closing(spatialdb.SPATIALDB(proj)) as db:
     
     # pick a resolution
     if res is None:
@@ -107,7 +107,7 @@ def clearStack (proj, ch, res=None):
 def buildAnnoStack ( proj, ch, res=None ):
   """Build the hierarchy for annotations"""
   
-  with closing(ocpcadb.OCPCADB (proj)) as db:
+  with closing(spatialdb.SPATIALDB (proj)) as db:
 
     # pick a resolution
     if res is None:
@@ -137,7 +137,7 @@ def buildAnnoStack ( proj, ch, res=None ):
         raise OCPCAError ( "Invalid scaling option in project = {}".format(scaling)) 
 
       # Round up to the top of the range
-      lastzindex = (ocplib.XYZMorton([xlimit,ylimit,zlimit])/64+1)*64
+      lastzindex = (ndlib.XYZMorton([xlimit,ylimit,zlimit])/64+1)*64
 
       # Iterate over the cubes in morton order
       for mortonidx in range(0, lastzindex, 64): 
@@ -149,7 +149,7 @@ def buildAnnoStack ( proj, ch, res=None ):
         # get the first cube
         for idx, datastring in cuboids:
 
-          xyz = ocplib.MortonXYZ(idx)
+          xyz = ndlib.MortonXYZ(idx)
           cube.fromNPZ(datastring)
 
           if scaling == ZSLICES:
@@ -158,7 +158,7 @@ def buildAnnoStack ( proj, ch, res=None ):
             #  we are placing 4x4x4 input blocks into a 2x2x4 cube 
             offset = [(xyz[0]%4)*(xcubedim/2), (xyz[1]%4)*(ycubedim/2), (xyz[2]%4)*zcubedim]
             # add the contribution of the cube in the hierarchy
-            ocplib.addDataToZSliceStack_ctype(cube, outdata, offset)
+            ndlib.addDataToZSliceStack_ctype(cube, outdata, offset)
 
           elif scaling == ISOTROPIC:
 
@@ -167,10 +167,10 @@ def buildAnnoStack ( proj, ch, res=None ):
             offset = [(xyz[0]%4)*(xcubedim/2), (xyz[1]%4)*(ycubedim/2), (xyz[2]%4)*(zcubedim/2)]
 
             # use python version for debugging
-            ocplib.addDataToIsotropicStack_ctype(cube, outdata, offset)
+            ndlib.addDataToIsotropicStack_ctype(cube, outdata, offset)
 
         #  Get the base location of this batch
-        xyzout = ocplib.MortonXYZ (mortonidx)
+        xyzout = ndlib.MortonXYZ (mortonidx)
 
         # adjust to output corner for scale.
         if scaling == ZSLICES:
@@ -193,7 +193,7 @@ def buildAnnoStack ( proj, ch, res=None ):
 def buildImageStack(proj, ch, res=None):
   """Build the hierarchy of images"""
   
-  with closing(ocpcadb.OCPCADB(proj)) as db:
+  with closing(spatialdb.SPATIALDB(proj)) as db:
 
     # pick a resolution
     if res is None:
@@ -247,7 +247,7 @@ def buildImageStack(proj, ch, res=None):
                 if scaling == ZSLICES:
                   data = olddata[sl,:,:]
                 elif scaling == ISOTROPIC:
-                  data = ocplib.isotropicBuild_ctype(olddata[sl*2,:,:], olddata[sl*2+1,:,:])
+                  data = ndlib.isotropicBuild_ctype(olddata[sl*2,:,:], olddata[sl*2+1,:,:])
 
                 # Convert each slice to an image
                 # 8-bit int option
@@ -271,7 +271,7 @@ def buildImageStack(proj, ch, res=None):
                   tempdata = np.asarray(slimage.resize([xcubedim, ycubedim]))
                   newdata[sl,:,:] = np.left_shift(tempdata[:,:,3], 24, dtype=np.uint32) | np.left_shift(tempdata[:,:,2], 16, dtype=np.uint32) | np.left_shift(tempdata[:,:,1], 8, dtype=np.uint32) | np.uint32(tempdata[:,:,0])
 
-              zidx = ocplib.XYZMorton ([x,y,z])
+              zidx = ndlib.XYZMorton ([x,y,z])
               cube = Cube.getCube(cubedim, ch.getChannelType(), ch.getDataType())
               cube.zeros()
 

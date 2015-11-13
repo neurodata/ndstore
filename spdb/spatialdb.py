@@ -15,24 +15,28 @@
 import numpy as np
 import cStringIO
 import zlib
-import MySQLdb
-import re
-import tempfile
-import h5py
 from collections import defaultdict
 import itertools
 import blosc
 from contextlib import closing
 from operator import add, sub, div, mod
+import MySQLdb
 
 import annindex
 from cube import Cube
 import imagecube
 import anncube
+<<<<<<< HEAD:spdb/spatialdb.py
 import ocplib
 from ndtype import ANNOTATION_CHANNELS, EXCEPTION_TRUE, PROPAGATED
 
 from spdberror import SPDBError
+=======
+import ndlib
+from ndtype import ANNOTATION_CHANNELS, TIMESERIES_CHANNELS, EXCEPTION_TRUE, PROPAGATED
+
+from ndsperror import NDSPError
+>>>>>>> 3f4ffac13751b8e8b41d2a73c98c21ada7638347:ndspatialdb/spatialdb.py
 import logging
 logger=logging.getLogger("neurodata")
 
@@ -47,10 +51,17 @@ except:
   pass
 
 """
-  Manipulate/create/read from the Morton-order cube store
+.. module:: spatialdb
+    :synopsis: Manipulate/create/read from the Morton-order cube store
+
+.. moduleauthor:: Kunal Lillaney <lillaney@jhu.edu>
 """
 
+<<<<<<< HEAD:spdb/spatialdb.py
 class SpatialDB: 
+=======
+class SPATIALDB: 
+>>>>>>> 3f4ffac13751b8e8b41d2a73c98c21ada7638347:ndspatialdb/spatialdb.py
 
   def __init__ (self, proj):
     """Connect with the brain databases"""
@@ -100,8 +111,8 @@ class SpatialDB:
     self.kvio.close()
 
 
-  # GET and PUT Methods for Image/Annotaion/Probmap Tables
-  def getCube(self, ch, zidx, resolution, update=False):
+  # GET Method
+  def getCube(self, ch, zidx, resolution, timestamp=None, update=False):
     """Load a cube from the database"""
 
     # get the size of the image and cube
@@ -109,7 +120,7 @@ class SpatialDB:
     cube = Cube.getCube(cubedim, ch.getChannelType(), ch.getDataType())
   
     # get the block from the database
-    cubestr = self.kvio.getCube(ch, zidx, resolution, update)
+    cubestr = self.kvio.getCube(ch, zidx, timestamp, resolution, update)
 
     if not cubestr:
       cube.zeros()
@@ -123,65 +134,28 @@ class SpatialDB:
     return cube
 
 
-  def getCubes(self, ch, listofidxs, resolution, neariso=False):
+  def getCubes(self, ch, listofidxs, resolution, listoftimestamps=None, neariso=False):
     """Return a list of cubes"""
     
-    return self.kvio.getCubes(ch, listofidxs, resolution, neariso)
+    if listoftimestamps is None:
+      return self.kvio.getCubes(ch, listofidxs, resolution, neariso)
+    else:
+      return self.kvio.getTimeCubes(ch, listofidxs, listoftimestamps, resolution)
 
   def putCubes(self, ch, listofidxs, resolution, listofcubes, update=False):
     """Insert a list of cubes"""
 
     return self.kvio.putCubes(ch, listofidxs, resolution, listofcubes, update)
 
-  def putCube(self, ch, zidx, resolution, cube, update=False):
+  # PUT Method
+  def putCube(self, ch, zidx, resolution, cube, timestamp=None, update=False):
     """ Store a cube in the annotation database """
     
     # Handle the cube format here.  
     if self.NPZ:
-      self.kvio.putCube(ch, zidx, resolution, cube.toNPZ(), not cube.fromZeros())
+      self.kvio.putCube(ch, zidx, timestamp, resolution, cube.toNPZ(), not cube.fromZeros())
     else:
-      self.kvio.putCube(ch, zidx, resolution, cube.toBlosc(), not cube.fromZeros())
-  
-  
-  # GET AND PUT methods for Timeseries Database
-  
-  def getTimeCube(self, ch, zidx, timestamp, resolution, update=False):
-    """Load a time cube from the database"""
-
-    # get the size of the image and cube
-    [xcubedim, ycubedim, zcubedim] = cubedim = self.datasetcfg.cubedim[resolution] 
-    cube = Cube.getCube(cubedim, ch.getChannelType(), ch.getDataType())
-
-    # get the block from the database
-    cubestr = self.kvio.getTimeCube(ch, zidx, timestamp, resolution, update)
-
-    if not cubestr:
-      cube.zeros()
-    else:
-      # Handle the cube format here and decompress the cube
-      if self.NPZ:
-        cube.fromNPZ(cubestr)
-      else:
-        cube.fromBlosc(cubestr)
-
-    return cube
-  
-  
-  def getTimeCubes(self, ch, idx, listoftimestamps, resolution):
-    """ Return a column of timeseries cubes. Better at I/O """
-
-    return self.kvio.getTimeCubes(ch, idx, listoftimestamps, resolution)
-
-  
-  def putTimeCube(self, ch, zidx, timestamp, resolution, cube, update=False):
-    """Store a cube in the annotation database"""
-
-    if cube.isNotZeros():
-      # Handle the cube format here.  
-      if self.NPZ:
-        self.kvio.putTimeCube(ch, zidx, timestamp, resolution, cube.toNPZ(), update)
-      else:
-        self.kvio.putTimeCube(ch, zidx, timestamp, resolution, cube.toBlosc(), update)
+      self.kvio.putCube(ch, zidx, timestamp, resolution, cube.toBlosc(), not cube.fromZeros())
   
 
   def getExceptions ( self, ch, zidx, resolution, annoid ):
@@ -205,10 +179,10 @@ class SpatialDB:
     update = False
 
     if curexlist!=[]:
-      oldexlist = [ ocplib.XYZMorton ( trpl ) for trpl in curexlist ]
-      newexlist = [ ocplib.XYZMorton ( trpl ) for trpl in exceptions ]
+      oldexlist = [ ndlib.XYZMorton ( trpl ) for trpl in curexlist ]
+      newexlist = [ ndlib.XYZMorton ( trpl ) for trpl in exceptions ]
       exlist = set(newexlist + oldexlist)
-      exlist = [ ocplib.MortonXYZ ( zidx ) for zidx in exlist ]
+      exlist = [ ndlib.MortonXYZ ( zidx ) for zidx in exlist ]
       update = True
     else:
       exlist = exceptions
@@ -237,10 +211,10 @@ class SpatialDB:
 
     if curexlist != []:
 
-      oldexlist = set([ ocplib.XYZMorton ( trpl ) for trpl in curexlist ])
-      newexlist = set([ ocplib.XYZMorton ( trpl ) for trpl in exceptions ])
+      oldexlist = set([ ndlib.XYZMorton ( trpl ) for trpl in curexlist ])
+      newexlist = set([ ndlib.XYZMorton ( trpl ) for trpl in exceptions ])
       exlist = oldexlist-newexlist
-      exlist = [ ocplib.MortonXYZ ( zidx ) for zidx in exlist ]
+      exlist = [ ndlib.MortonXYZ ( zidx ) for zidx in exlist ]
 
       self.putExceptions ( ch, key, resolution, exid, exlist, True )
 
@@ -255,10 +229,10 @@ class SpatialDB:
 
     # dictionary with the index
     cubeidx = defaultdict(set)
-    cubelocs = ocplib.locate_ctype ( np.array(locations, dtype=np.uint32), cubedim )
+    cubelocs = ndlib.locate_ctype ( np.array(locations, dtype=np.uint32), cubedim )
 
     # sort the arrary, by cubeloc
-    cubelocs = ocplib.quicksort ( cubelocs )
+    cubelocs = ndlib.quicksort ( cubelocs )
     #cubelocs2.view('u4,u4,u4,u4').sort(order=['f0'], axis=0)
 
     # get the nonzero element offsets 
@@ -278,7 +252,7 @@ class SpatialDB:
       cube = self.getCube ( ch, key, resolution, True )
 
       # get a voxel offset for the cube
-      cubeoff = ocplib.MortonXYZ( key )
+      cubeoff = ndlib.MortonXYZ( key )
       #cubeoff = zindex.MortonXYZ(key)
       offset = np.asarray([cubeoff[0]*cubedim[0],cubeoff[1]*cubedim[1],cubeoff[2]*cubedim[2]], dtype = np.uint32)
 
@@ -302,11 +276,6 @@ class SpatialDB:
     self.kvio.commit()
 
 
-  #
-  # shave
-  #
-  #  reduce the voxels 
-  #
   def shave ( self, ch, entityid, resolution, locations ):
     """Label the voxel locations or add as exceptions is the are already labeled."""
 
@@ -316,10 +285,10 @@ class SpatialDB:
     cubeidx = defaultdict(set)
 
     # convert voxels z coordinate
-    cubelocs = ocplib.locate_ctype ( np.array(locations, dtype=np.uint32), cubedim )
+    cubelocs = ndlib.locate_ctype ( np.array(locations, dtype=np.uint32), cubedim )
 
     # sort the arrary, by cubeloc
-    cubelocs = ocplib.quicksort ( cubelocs )
+    cubelocs = ndlib.quicksort ( cubelocs )
     #cubelocs.view('u4,u4,u4,u4').sort(order=['f0'], axis=0)
 
     # get the nonzero element offsets 
@@ -341,7 +310,7 @@ class SpatialDB:
         cube = self.getCube (ch, key, resolution, True)
 
         # get a voxel offset for the cube
-        cubeoff = ocplib.MortonXYZ(key)
+        cubeoff = ndlib.MortonXYZ(key)
         #cubeoff2 = zindex.MortonXYZ(key)
         offset = np.asarray( [cubeoff[0]*cubedim[0],cubeoff[1]*cubedim[1],cubeoff[2]*cubedim[2]], dtype=np.uint32 )
 
@@ -367,11 +336,6 @@ class SpatialDB:
     self.kvio.commit()
 
 
-  #
-  # annotateDense
-  #
-  #  Process a cube of data that has been labelled with annotations.
-  #
   def annotateDense ( self, ch, corner, resolution, annodata, conflictopt ):
     """Process all the annotations in the dense volume"""
    
@@ -404,7 +368,7 @@ class SpatialDB:
         for y in range(ynumcubes):
           for x in range(xnumcubes):
 
-            key = ocplib.XYZMorton ([x+xstart,y+ystart,z+zstart])
+            key = ndlib.XYZMorton ([x+xstart,y+ystart,z+zstart])
             cube = self.getCube (ch, key, resolution, True)
             
             if conflictopt == 'O':
@@ -454,23 +418,16 @@ class SpatialDB:
     self.kvio.commit()
 
 
-  #
-  #  Called when labeling an entity
-  #
   def annotateEntityDense ( self, ch, entityid, corner, resolution, annodata, conflictopt ):
     """Relabel all nonzero pixels to annotation id and call annotateDense"""
 
     #vec_func = np.vectorize ( lambda x: 0 if x == 0 else entityid ) 
     #annodata = vec_func ( annodata )
-    annodata = ocplib.annotateEntityDense_ctype ( annodata, entityid )
+    annodata = ndlib.annotateEntityDense_ctype ( annodata, entityid )
 
     return self.annotateDense ( ch, corner, resolution, annodata, conflictopt )
 
-  #
-  # shaveDense
-  #
-  #  Reduce the specified annotations 
-  #
+  
   def shaveDense ( self, ch, entityid, corner, resolution, annodata ):
     """Process all the annotations in the dense volume"""
 
@@ -508,7 +465,7 @@ class SpatialDB:
         for y in range(ynumcubes):
           for x in range(xnumcubes):
 
-            key = ocplib.XYZMorton ([x+xstart,y+ystart,z+zstart])
+            key = ndlib.XYZMorton ([x+xstart,y+ystart,z+zstart])
             cube = self.getCube(ch, key, resolution, True)
 
             exdata = cube.shaveDense ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
@@ -545,14 +502,8 @@ class SpatialDB:
     self.kvio.commit()
 
 
-  #
-  # shaveEntityDense
-  #
-  #  Takes a bitmap for an entity and calls denseShave
-  #  renumber the annotations to match the entity id.
-  #
   def shaveEntityDense ( self, ch, entityid, corner, resolution, annodata ):
-    """Process all the annotations in the dense volume"""
+    """Takes a bitmap for an entity and calls denseShave. Renumber the annotations to match the entity id"""
 
     # Make shaving a per entity operation
     vec_func = np.vectorize ( lambda x: 0 if x == 0 else entityid ) 
@@ -591,7 +542,7 @@ class SpatialDB:
     return effcorner, effdim 
 
 
-  def cutout ( self, ch, corner, dim, resolution, zscaling=None, annoids=None ):
+  def cutout ( self, ch, corner, dim, resolution, timerange=None, zscaling=None, annoids=None ):
     """Extract a cube of arbitrary size.  Need not be aligned."""
 
     # if cutout is below resolution, get a smaller cube and scaleup
@@ -635,51 +586,72 @@ class SpatialDB:
 
     import cube
     incube = Cube.getCube ( cubedim, ch.getChannelType(), ch.getDataType() )
-    outcube = Cube.getCube([xnumcubes*xcubedim,ynumcubes*ycubedim,znumcubes*zcubedim], ch.getChannelType(), ch.getDataType())
+    outcube = Cube.getCube([xnumcubes*xcubedim,ynumcubes*ycubedim,znumcubes*zcubedim], ch.getChannelType(), ch.getDataType(), timerange=timerange)
                                         
     # Build a list of indexes to access
     listofidxs = []
     for z in range ( znumcubes ):
       for y in range ( ynumcubes ):
         for x in range ( xnumcubes ):
-          mortonidx = ocplib.XYZMorton ( [x+xstart, y+ystart, z+zstart] )
+          mortonidx = ndlib.XYZMorton ( [x+xstart, y+ystart, z+zstart] )
           listofidxs.append ( mortonidx )
 
     # Sort the indexes in Morton order
     listofidxs.sort()
     
     # xyz offset stored for later use
-    lowxyz = ocplib.MortonXYZ ( listofidxs[0] )
+    lowxyz = ndlib.MortonXYZ ( listofidxs[0] )
     
     self.kvio.startTxn()
 
     try:
+      
+      # checking for timeseries data and doing an optimized cutout here in timeseries column
+      if ch.getChannelType() in TIMESERIES_CHANNELS:
+        for idx in listofidxs:
+          cuboids = self.getCubes(ch, idx, resolution, range(timerange[0],timerange[1]))
+          
+          # use the batch generator interface
+          for idx, timestamp, datastring in cuboids:
 
-      if zscaling == 'nearisotropic' and self.datasetcfg.nearisoscaledown[resolution] > 1:
-        cuboids = self.getCubes(ch, listofidxs, effresolution, True)
+            # add the query result cube to the bigger cube
+            curxyz = ndlib.MortonXYZ(int(idx))
+            offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
+
+            if self.NPZ:
+              incube.fromNPZ(datastring[:])
+            else:
+              incube.fromBlosc(datastring[:])
+            
+            # add it to the output cube
+            outcube.addData(incube, offset, timestamp)
+      
       else:
-        cuboids = self.getCubes(ch, listofidxs, effresolution)
-
-      # use the batch generator interface
-      for idx, datastring in cuboids:
-
-        #add the query result cube to the bigger cube
-        curxyz = ocplib.MortonXYZ(int(idx))
-        offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
-        
-        if self.NPZ:
-          incube.fromNPZ ( datastring[:] )
+        if zscaling == 'nearisotropic' and self.datasetcfg.nearisoscaledown[resolution] > 1:
+          cuboids = self.getCubes(ch, listofidxs, effresolution, True)
         else:
-          incube.fromBlosc ( datastring[:] )
+          cuboids = self.getCubes(ch, listofidxs, effresolution)
 
-        # apply exceptions if it's an annotation project
-        if annoids!= None and ch.getChannelType() in ANNOTATION_CHANNELS:
-          incube.data = ocplib.filter_ctype_OMP ( incube.data, annoids )
-          if ch.getExceptions() == EXCEPTION_TRUE:
-            self.applyCubeExceptions ( ch, annoids, effresolution, idx, incube )
+        # use the batch generator interface
+        for idx, datastring in cuboids:
 
-        # add it to the output cube
-        outcube.addData ( incube, offset ) 
+          #add the query result cube to the bigger cube
+          curxyz = ndlib.MortonXYZ(int(idx))
+          offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
+          
+          if self.NPZ:
+            incube.fromNPZ ( datastring[:] )
+          else:
+            incube.fromBlosc ( datastring[:] )
+
+          # apply exceptions if it's an annotation project
+          if annoids!= None and ch.getChannelType() in ANNOTATION_CHANNELS:
+            incube.data = ndlib.filter_ctype_OMP ( incube.data, annoids )
+            if ch.getExceptions() == EXCEPTION_TRUE:
+              self.applyCubeExceptions ( ch, annoids, effresolution, idx, incube )
+
+          # add it to the output cube
+          outcube.addData ( incube, offset ) 
 
     except:
       self.kvio.rollback()
@@ -712,76 +684,6 @@ class SpatialDB:
     return outcube
 
 
-  def timecutout(self, ch, corner, dim, resolution, timerange):
-    """Extract a cube of arbitrary size.  Need not be aligned."""
-
-    # get the size of the image and cube
-    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
-
-    # Round to the nearest larger cube in all dimensions
-    zstart = corner[2]/zcubedim
-    ystart = corner[1]/ycubedim
-    xstart = corner[0]/xcubedim
-
-    znumcubes = (corner[2]+dim[2]+zcubedim-1)/zcubedim - zstart
-    ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
-    xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
-
-    # use the requested resolution
-    import cube
-    incube = Cube.getCube ( cubedim, ch.getChannelType(), ch.getDataType() )
-    outcube = Cube.getCube([xnumcubes*xcubedim,ynumcubes*ycubedim,znumcubes*zcubedim], ch.getChannelType(), ch.getDataType(), timerange=timerange)
-
-    # Build a list of indexes to access
-    listofidxs = []
-    for z in range (znumcubes):
-      for y in range (ynumcubes):
-        for x in range (xnumcubes):
-          mortonidx = ocplib.XYZMorton([x+xstart, y+ystart, z+zstart])
-          listofidxs.append(mortonidx)
-
-    # Sort the indexes in Morton order
-    listofidxs.sort()
-
-    # xyz offset stored for later use
-    lowxyz = ocplib.MortonXYZ(listofidxs[0])
-
-    self.kvio.startTxn()
-
-    try:
-      for idx in listofidxs:
-        cuboids = self.getTimeCubes(ch, idx, range(timerange[0],timerange[1]), resolution)
-        
-        # use the batch generator interface
-        for idx, timestamp, datastring in cuboids:
-
-          # add the query result cube to the bigger cube
-          curxyz = ocplib.MortonXYZ(int(idx))
-          offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
-
-          if self.NPZ:
-            incube.fromNPZ(datastring[:])
-          else:
-            incube.fromBlosc(datastring[:])
-          
-          # add it to the output cube
-          outcube.addData(incube, offset, timestamp)
-
-    except:
-      self.kvio.rollback()
-      raise
-
-    self.kvio.commit()
-
-    # need to trim down the array to size only if the dimensions are not the same
-    if dim[0] % xcubedim  == 0 and dim[1] % ycubedim  == 0 and dim[2] % zcubedim  == 0 and corner[0] % xcubedim  == 0 and corner[1] % ycubedim  == 0 and corner[2] % zcubedim  == 0:
-      pass
-    else:
-      outcube.trim ( corner[0]%xcubedim,dim[0],corner[1]%ycubedim,dim[1],corner[2]%zcubedim,dim[2] )
-
-    return outcube
-
-
   def getVoxel ( self, ch, resolution, voxel ):
     """Return the identifier at a voxel"""
     
@@ -795,7 +697,7 @@ class SpatialDB:
     xyzoffset = map(mod, voxel, cubedim)
     #xyzcube = [ voxel[0]/xcubedim, voxel[1]/ycubedim, voxel[2]/zcubedim ]
     #xyzoffset =[ voxel[0]%xcubedim, voxel[1]%ycubedim, voxel[2]%zcubedim ]
-    key = ocplib.XYZMorton ( xyzcube )
+    key = ndlib.XYZMorton ( xyzcube )
 
     cube = self.getCube(ch, key, resolution)
 
@@ -805,15 +707,13 @@ class SpatialDB:
       return cube.getVoxel(xyzoffset)
 
 
-
-  # helper function to apply exceptions
   def applyCubeExceptions ( self, ch, annoids, resolution, idx, cube ):
     """Apply the expcetions to a specified cube and resolution"""
 
     # get the size of the image and cube
     [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
   
-    (x,y,z) = ocplib.MortonXYZ ( idx )
+    (x,y,z) = ndlib.MortonXYZ ( idx )
 
     # for the target ids
     for annoid in annoids:
@@ -822,9 +722,7 @@ class SpatialDB:
       for e in exceptions:
         cube.data[e[2],e[1],e[0]]=annoid
 
-  #
-  #  zoomVoxels
-  #
+  
   def zoomVoxels ( self, voxels, resgap ):
     """Convert voxels from one resolution to another based 
        on a positive number of hierarcy levels.
@@ -840,10 +738,8 @@ class SpatialDB:
     return newvoxels
 
 
-  #
-  # getLocations -- return the list of locations associated with an identifier
-  #
   def getLocations ( self, ch, entityid, res ):
+    """Return the list of locations associated with an identifier"""
 
     # get the size of the image and cube
     resolution = int(res)
@@ -873,7 +769,7 @@ class SpatialDB:
       voxels = np.array(zip(offsets[2], offsets[1], offsets[0]), dtype=np.uint32)
 
       # Get cube offset information
-      [x,y,z] = ocplib.MortonXYZ(zidx)
+      [x,y,z] = ndlib.MortonXYZ(zidx)
       xoffset = x * self.datasetcfg.cubedim[resolution][0] + self.datasetcfg.offset[resolution][0] 
       yoffset = y * self.datasetcfg.cubedim[resolution][1] + self.datasetcfg.offset[resolution][1]
       zoffset = z * self.datasetcfg.cubedim[resolution][2] + self.datasetcfg.offset[resolution][2]
@@ -916,7 +812,7 @@ class SpatialDB:
     
     # convert to xyz coordinates
     try:
-      xyzvals = np.array ( [ ocplib.MortonXYZ(zidx) for zidx in zidxs ], dtype=np.uint32 )
+      xyzvals = np.array ( [ ndlib.MortonXYZ(zidx) for zidx in zidxs ], dtype=np.uint32 )
     # if there's nothing in the chain, the array creation will fail
     except:
       return None, None
@@ -957,15 +853,15 @@ class SpatialDB:
       # get the cube and mask out the non annoid values
       cb = self.getCube(ch, zidx, effectiveres) 
       if not remapid:
-        cb.data = ocplib.filter_ctype_OMP ( cb.data, dataids )
+        cb.data = ndlib.filter_ctype_OMP ( cb.data, dataids )
       else: 
-        cb.data = ocplib.filter_ctype_OMP ( cb.data, dataids )
+        cb.data = ndlib.filter_ctype_OMP ( cb.data, dataids )
         # KL TODO
         vec_func = np.vectorize ( lambda x: np.uint32(remapid) if x != 0 else np.uint32(0) ) 
         cb.data = vec_func ( cb.data )
 
       # zoom the data if not at the right resolution and translate the zindex to the upper resolution
-      (xoff,yoff,zoff) = ocplib.MortonXYZ ( zidx )
+      (xoff,yoff,zoff) = ndlib.MortonXYZ ( zidx )
       offset = (xoff*xcubedim, yoff*ycubedim, zoff*zcubedim)
 
       # if we're zooming, so be it
@@ -992,11 +888,8 @@ class SpatialDB:
       yield (offset,cb.data)
 
   
-  #
-  #deleteAnnoData:
-  #    Delete the voxel data from the database for annoid 
-  #
   def deleteAnnoData ( self, ch, annoid):
+    """Delete the voxel data from the database for Annotation Id"""
     
     resolutions = self.datasetcfg.resolutions
 
@@ -1030,7 +923,7 @@ class SpatialDB:
     self.kvio.commit()
 
 
-  def writeCuboids(self, ch, corner, resolution, cuboiddata):
+  def writeCuboids(self, ch, corner, resolution, cuboiddata, timerange=None):
     """Write an arbitary size data to the database"""
    
     # dim is in xyz, data is in zyx order
@@ -1063,7 +956,7 @@ class SpatialDB:
         for y in range(ynumcubes):
           for x in range(xnumcubes):
 
-            listofidxs.append(ocplib.XYZMorton ([x+xstart,y+ystart,z+zstart]))
+            listofidxs.append(ndlib.XYZMorton ([x+xstart,y+ystart,z+zstart]))
             incube.data = databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ]
             listofcubes.append(incube.toBlosc())
 
@@ -1075,96 +968,79 @@ class SpatialDB:
 
     self.kvio.commit()
 
-  def writeCuboid(self, ch, corner, resolution, cuboiddata):
-    """Write an image through the Web service"""
+  def writeCuboid(self, ch, corner, resolution, cuboiddata, timerange=[0,0]):
+    """
+    Write a 3D/4D volume to the key-value store.
 
+    :param ch: Channel to write data to
+    :type ch: Class Channel
+    :param corner: Starting corner to write to
+    :type corner: array-like or one-dimensional list of int
+    :param resolution: Resolution to write at
+    :type resolution: int
+    :param cuboiddata: Data to be written
+    :type cuboiddata: Multi-dimensional numpy array
+    :type timerange: one-dimensional list of int
+    :param timerange: Range of time. Defaults to None
+
+    :returns: None
+    """
+    
     # dim is in xyz, data is in zyx order
-    dim = cuboiddata.shape[::-1]
+    if timerange == [0,0]:
+      dim = cuboiddata.shape[::-1]
+    else:
+      dim = cuboiddata.shape[::-1][:-1]
 
     # get the size of the image and cube
-    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
+    [xcubedim, ycubedim, zcubedim] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
     # Round to the nearest larger cube in all dimensions
     start = [xstart, ystart, zstart] = map(div, corner, cubedim)
-    #zstart = corner[2]/zcubedim
-    #ystart = corner[1]/ycubedim
-    #xstart = corner[0]/xcubedim
 
     znumcubes = (corner[2]+dim[2]+zcubedim-1)/zcubedim - zstart
     ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
     xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
 
     offset = [xoffset, yoffset, zoffset] = map(mod, corner, cubedim)
-    #zoffset = corner[2]%zcubedim
-    #yoffset = corner[1]%ycubedim
-    #xoffset = corner[0]%xcubedim
+    
+    if timerange == [0,0]:
+      databuffer = np.zeros ([znumcubes*zcubedim, ynumcubes*ycubedim, xnumcubes*xcubedim], dtype=cuboiddata.dtype )
+      databuffer [ zoffset:zoffset+dim[2], yoffset:yoffset+dim[1], xoffset:xoffset+dim[0] ] = cuboiddata 
+    else:
+      databuffer = np.zeros([timerange[1]-timerange[0]]+[znumcubes*zcubedim, ynumcubes*ycubedim, xnumcubes*xcubedim], dtype=cuboiddata.dtype )
+      databuffer[:, zoffset:zoffset+dim[2], yoffset:yoffset+dim[1], xoffset:xoffset+dim[0]] = cuboiddata 
 
-    databuffer = np.zeros ([znumcubes*zcubedim, ynumcubes*ycubedim, xnumcubes*xcubedim], dtype=cuboiddata.dtype )
-    databuffer [ zoffset:zoffset+dim[2], yoffset:yoffset+dim[1], xoffset:xoffset+dim[0] ] = cuboiddata 
-
-    self.kvio.startTxn()
- 
-    try:
-      for z in range(znumcubes):
-        for y in range(ynumcubes):
-          for x in range(xnumcubes):
-
-            key = ocplib.XYZMorton ([x+xstart,y+ystart,z+zstart])
-            cube = self.getCube (ch, key, resolution, update=True)
-            # overwrite the cube
-            cube.overwrite ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
-            # update in the database
-            self.putCube (ch, key, resolution, cube)
-
-    except:
-      self.kvio.rollback()
-      raise
-
-    self.kvio.commit()
-
-  def writeTimeCuboid(self, ch, corner, resolution, timerange, cuboiddata):
-    """Write an image through the Web service"""
-
-    # dim is in xyz, data is in zyx order
-    dim = cuboiddata.shape[::-1][:-1]
-
-    # get the size of the image and cube
-    [xcubedim, ycubedim, zcubedim] = cubedim = self.datasetcfg.cubedim [ resolution ] 
-
-    # Round to the nearest larger cube in all dimensions
-    zstart = corner[2]/zcubedim
-    ystart = corner[1]/ycubedim
-    xstart = corner[0]/xcubedim
-
-    znumcubes = (corner[2]+dim[2]+zcubedim-1)/zcubedim - zstart
-    ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
-    xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
-
-    zoffset = corner[2]%zcubedim
-    yoffset = corner[1]%ycubedim
-    xoffset = corner[0]%xcubedim
-
-    databuffer = np.zeros([timerange[1]-timerange[0]]+[znumcubes*zcubedim, ynumcubes*ycubedim, xnumcubes*xcubedim], dtype=cuboiddata.dtype )
-    databuffer[:, zoffset:zoffset+dim[2], yoffset:yoffset+dim[1], xoffset:xoffset+dim[0]] = cuboiddata 
 
     self.kvio.startTxn()
- 
+    
     try:
-      for z in range(znumcubes):
-        for y in range(ynumcubes):
-          for x in range(xnumcubes):
-            for timestamp in range(timerange[0], timerange[1], 1):
+      if timerange == [0,0]:
+        for z in range(znumcubes):
+          for y in range(ynumcubes):
+            for x in range(xnumcubes):
 
-              zidx = ocplib.XYZMorton([x+xstart,y+ystart,z+zstart])
-              cube = self.getTimeCube(ch, zidx, timestamp, resolution, update=True)
+              key = ndlib.XYZMorton ([x+xstart,y+ystart,z+zstart])
+              cube = self.getCube (ch, key, resolution, update=True)
               # overwrite the cube
-              cube.overwrite(databuffer[timestamp-timerange[0], z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim])
+              cube.overwrite ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
               # update in the database
-              self.putTimeCube(ch, zidx, timestamp, resolution, cube)
+              self.putCube (ch, key, resolution, cube)
+      else:
+        for z in range(znumcubes):
+          for y in range(ynumcubes):
+            for x in range(xnumcubes):
+              for timestamp in range(timerange[0], timerange[1], 1):
+
+                zidx = ndlib.XYZMorton([x+xstart,y+ystart,z+zstart])
+                cube = self.getCube(ch, zidx, resolution, timestamp, update=True)
+                # overwrite the cube
+                cube.overwrite(databuffer[timestamp-timerange[0], z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim])
+                # update in the database
+                self.putCube(ch, zidx, resolution, cube, timestamp)
 
     except:
       self.kvio.rollback()
       raise
 
     self.kvio.commit()
-

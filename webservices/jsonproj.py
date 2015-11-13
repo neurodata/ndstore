@@ -21,7 +21,7 @@ from django.conf import settings
 
 import ocpcaproj
 from ocpcaingest import IngestData
-from ocptype import READONLY_FALSE
+from ndtype import READONLY_FALSE
 from ocpuser.models import Project
 from ocpuser.models import Dataset
 from ocpuser.models import Token

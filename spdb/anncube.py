@@ -18,7 +18,7 @@ import cStringIO
 from PIL import Image
 import zlib
 
-import ocplib
+import ndlib
 from cube import Cube
 
 from ndsperror import NDSPError 
@@ -69,7 +69,7 @@ class AnnotateCube(Cube):
     """Add annotation by a list of locations"""
 
     try:
-      self.data, exceptions = ocplib.annotate_ctype( self.data, annid, offset, np.array(locations, dtype=np.uint32), conflictopt )
+      self.data, exceptions = ndlib.annotate_ctype( self.data, annid, offset, np.array(locations, dtype=np.uint32), conflictopt )
       return exceptions
     except IndexError, e:
       raise NDSPError ("Voxel list includes out of bounds request.")
@@ -78,7 +78,7 @@ class AnnotateCube(Cube):
   def shave ( self, annid, offset, locations ):
     """Remove annotation by a list of locations"""
 
-    self.data , exceptions, zeroed = ocplib.shave_ctype ( self.data, annid, offset, np.array(locations, dtype=np.uint32))
+    self.data , exceptions, zeroed = ndlib.shave_ctype ( self.data, annid, offset, np.array(locations, dtype=np.uint32))
     return exceptions, zeroed
 
 
@@ -91,7 +91,7 @@ class AnnotateCube(Cube):
     imagemap = np.zeros ( [ ydim, xdim ], dtype=np.uint32 )
 
     # false color redrawing of the region
-    imagemap = ocplib.recolor_ctype ( self.data.reshape( (imagemap.shape[0], imagemap.shape[1]) ), imagemap )
+    imagemap = ndlib.recolor_ctype ( self.data.reshape( (imagemap.shape[0], imagemap.shape[1]) ), imagemap )
 
     return Image.frombuffer ( 'RGBA', (xdim,ydim), imagemap, 'raw', 'RGBA', 0, 1 )
 
@@ -104,7 +104,7 @@ class AnnotateCube(Cube):
     imagemap = np.zeros ( [ zdim, xdim ], dtype=np.uint32 )
 
     # false color redrawing of the region
-    imagemap = ocplib.recolor_ctype ( self.data.reshape( (imagemap.shape[0], imagemap.shape[1]) ), imagemap )
+    imagemap = ndlib.recolor_ctype ( self.data.reshape( (imagemap.shape[0], imagemap.shape[1]) ), imagemap )
 
     outimage = Image.frombuffer ( 'RGBA', (xdim,zdim), imagemap, 'raw', 'RGBA', 0, 1 )
     return outimage.resize ( [xdim, int(zdim*scale)] )
@@ -119,7 +119,7 @@ class AnnotateCube(Cube):
     imagemap = np.zeros ( [ zdim, ydim ], dtype=np.uint32 )
 
     # false color redrawing of the region
-    imagemap = ocplib.recolor_ctype ( self.data.reshape( (imagemap.shape[0], imagemap.shape[1]) ), imagemap )
+    imagemap = ndlib.recolor_ctype ( self.data.reshape( (imagemap.shape[0], imagemap.shape[1]) ), imagemap )
 
     outimage = Image.frombuffer ( 'RGBA', (ydim,zdim), imagemap, 'raw', 'RGBA', 0, 1 )
     return  outimage.resize ( [ydim, int(zdim*scale)] )
@@ -127,14 +127,14 @@ class AnnotateCube(Cube):
 
   def preserve ( self, annodata ):
     """Get's a dense voxel region and overwrites all non-zero values"""
-    self.data = ocplib.exceptionDense_ctype ( self.data, annodata )
+    self.data = ndlib.exceptionDense_ctype ( self.data, annodata )
 
   def exception ( self, annodata ):
     """Get's a dense voxel region and overwrites all non-zero values"""
 
     # get all the exceptions not equal and both annotated
     exdata = ((self.data-annodata)*self.data*annodata!=0) * annodata 
-    self.data = ocplib.exceptionDense_ctype ( self.data, annodata )
+    self.data = ndlib.exceptionDense_ctype ( self.data, annodata )
 
     # return the list of exceptions ids and the exceptions
     return exdata
@@ -147,7 +147,7 @@ class AnnotateCube(Cube):
 
     # find all shave requests that don't match the dense data
     exdata = (self.data != annodata) * annodata
-    self.data = ocplib.shaveDense_ctype ( self.data, shavedata )
+    self.data = ndlib.shaveDense_ctype ( self.data, shavedata )
 
     return exdata
 
@@ -156,7 +156,7 @@ class AnnotateCube(Cube):
     """ Cube data zoomed in """
 
     newdata = np.zeros ( [self.data.shape[0], self.data.shape[1]*(2**factor), self.data.shape[2]*(2**factor)], dtype=np.uint32) 
-    ocplib.zoomInData_ctype_OMP ( self.data, newdata, int(factor) )
+    ndlib.zoomInData_ctype_OMP ( self.data, newdata, int(factor) )
     self.data = newdata
 
   
@@ -164,7 +164,7 @@ class AnnotateCube(Cube):
     """ Cube data zoomed out """
 
     newdata = np.zeros ( [self.data.shape[0], self.data.shape[1]/(2**factor), self.data.shape[2]/(2**factor)], dtype=np.uint32) 
-    ocplib.zoomOutData_ctype ( self.data, newdata, int(factor) )
+    ndlib.zoomOutData_ctype ( self.data, newdata, int(factor) )
     self.data = newdata
 
 
@@ -200,7 +200,7 @@ class AnnotateCube64(Cube):
   def shave ( self, annid, offset, locations ):
     """Remove annotation by a list of locations"""
 
-    self.data , exceptions, zeroed = ocplib.shave_ctype ( self.data, annid, offset, np.array(locations, dtype=np.uint32))
+    self.data , exceptions, zeroed = ndlib.shave_ctype ( self.data, annid, offset, np.array(locations, dtype=np.uint32))
     return exceptions, zeroed
   
 
@@ -213,7 +213,7 @@ class AnnotateCube64(Cube):
     imagemap = np.zeros ( [ ydim, xdim ], dtype=np.uint32 )
 
     # false color redrawing of the region
-    ocplib.recolor64_ctype ( self.data.reshape((imagemap.shape[0],imagemap.shape[1])), imagemap )
+    ndlib.recolor64_ctype ( self.data.reshape((imagemap.shape[0],imagemap.shape[1])), imagemap )
 
     outimage = Image.frombuffer ( 'RGBA', (xdim,ydim), imagemap, 'raw', 'RGBA', 0, 1 )
     outimage.save ( fileobj, "PNG" )
@@ -227,7 +227,7 @@ class AnnotateCube64(Cube):
     imagemap = np.zeros ( [ zdim, xdim ], dtype=np.uint32 )
 
     # false color redrawing of the region
-    ocplib.recolor64_ctype ( self.data.reshape((imagemap.shape[0],imagemap.shape[1])), imagemap )
+    ndlib.recolor64_ctype ( self.data.reshape((imagemap.shape[0],imagemap.shape[1])), imagemap )
 
     outimage = Image.frombuffer ( 'RGBA', (xdim,zdim), imagemap, 'raw', 'RGBA', 0, 1 )
     newimage = outimage.resize ( [xdim, int(zdim*scale)] )
@@ -242,7 +242,7 @@ class AnnotateCube64(Cube):
     imagemap = np.zeros ( [ zdim, ydim ], dtype=np.uint32 )
 
     # false color redrawing of the region
-    ocplib.recolor64_ctype ( self.data.reshape((imagemap.shape[0],imagemap.shape[1])), imagemap )
+    ndlib.recolor64_ctype ( self.data.reshape((imagemap.shape[0],imagemap.shape[1])), imagemap )
 
     outimage = Image.frombuffer ( 'RGBA', (ydim,zdim), imagemap, 'raw', 'RGBA', 0, 1 )
     newimage = outimage.resize ( [ydim, int(zdim*scale)] )
@@ -297,7 +297,7 @@ class AnnotateCube64(Cube):
 
     newdata = np.zeros ( [self.data.shape[0], self.data.shape[1]*(2**factor), self.data.shape[2]*(2**factor)], dtype=np.uint63) 
 
-    ocplib.zoomData64_ctype ( self.data, newdata, int(factor) )
+    ndlib.zoomData64_ctype ( self.data, newdata, int(factor) )
 
     self.data = newdata
 

@@ -33,7 +33,7 @@ from libtiff import TIFFfile, TIFFimage
 
 import restargs
 import anncube
-import ocpcadb
+import spatialdb
 import ocpcaproj
 import ocpcachannel
 import h5ann
@@ -42,11 +42,11 @@ import h5projinfo
 import jsonprojinfo
 import annotation
 import mcfc
-import ocplib
+import ndlib
 import ocpcaskel
 import ocpcanifti
 from windowcutout import windowCutout
-from ocptype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, ANNOTATION_CHANNELS, NOT_PROPAGATED, UNDER_PROPAGATION, PROPAGATED, OCP_dtypetonp, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, READONLY_TRUE, READONLY_FALSE
+from ndtype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, ANNOTATION_CHANNELS, NOT_PROPAGATED, UNDER_PROPAGATION, PROPAGATED, OCP_dtypetonp, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, READONLY_TRUE, READONLY_FALSE
 
 from ocpcaerror import OCPCAError
 import logging
@@ -74,9 +74,9 @@ def cutout (imageargs, ch, proj, db):
  
   # Perform the cutout
   if ch.getChannelType() in TIMESERIES_CHANNELS:
-    cube = db.timecutout(ch, corner, dim, resolution, timerange)
+    cube = db.cutout(ch, corner, dim, resolution, timerange=timerange)
   else:
-    cube = db.cutout(ch, corner, dim, resolution, zscaling)
+    cube = db.cutout(ch, corner, dim, resolution, zscaling=zscaling)
 
   filterCube(ch, cube, filterlist)
   return cube
@@ -85,7 +85,7 @@ def filterCube(ch, cube, filterlist=None):
   """Call Filter on a cube"""
 
   if ch.getChannelType() in ANNOTATION_CHANNELS and filterlist is not None:
-    cube.data = ocplib.filter_ctype_OMP ( cube.data, filterlist )
+    cube.data = ndlib.filter_ctype_OMP ( cube.data, filterlist )
   elif filterlist is not None and ch.getChannelType not in ANNOTATION_CHANNELS:
     logger.warning("Filter only possible for Annotation Channels")
     raise OCPCAError("Filter only possible for Annotation Channels")
@@ -339,7 +339,6 @@ def postTiff3d ( channel, postargs, proj, db, postdata ):
     # get a z batch -- how many slices per cube
     zbatch = proj.datasetcfg.cubedim[resolution][0]
 
-    db.startTxn()
 
     dircount = 0
     dataar = None
@@ -362,8 +361,6 @@ def postTiff3d ( channel, postargs, proj, db, postdata ):
     # ingest any remaining data
     corner = ( xoff, yoff, zoff+dircount-(dircount%zbatch) )
     db.writeCuboid (ch, corner, resolution, dataarray[0:(dircount%zbatch),:,:])
-
-    db.commit()
 
 
 def tiff3d ( chanargs, proj, db ):
@@ -392,7 +389,7 @@ def tiff3d ( chanargs, proj, db ):
 #        imagemap = np.zeros ( (cube.data.shape[0]*cube.data.shape[1], cube.data.shape[2]), dtype=np.uint32 )
 #
 #        # turn it into a 2-d array for recolor -- maybe make a 3-d recolor
-#        recolor_cube = ocplib.recolor_ctype( cube.data.reshape((cube.data.shape[0]*cube.data.shape[1], cube.data.shape[2])), imagemap )
+#        recolor_cube = ndlib.recolor_ctype( cube.data.reshape((cube.data.shape[0]*cube.data.shape[1], cube.data.shape[2])), imagemap )
 #
 #        # turn it back into a 4-d array RGBA
 #        recolor_cube = recolor_cube.view(dtype=np.uint8).reshape((cube.data.shape[0],cube.data.shape[1],cube.data.shape[2], 4 ))
@@ -421,7 +418,7 @@ def FilterCube ( imageargs, cb ):
   result = re.search ("filter/([\d/,]+)/",imageargs)
   if result != None:
     filterlist = np.array ( result.group(1).split(','), dtype=np.uint32 )
-    cb.data = ocplib.filter_ctype_OMP ( cb.data, filterlist )
+    cb.data = ndlib.filter_ctype_OMP ( cb.data, filterlist )
 
 
 def window(data, ch, window_range=None ):
@@ -703,7 +700,6 @@ def selectPost ( webargs, proj, db, postdata ):
   conflictopt = restargs.conflictOption ( "" )
 
   # Bind the annotation database
-  db.startTxn()
 
   tries = 0
   done = False
@@ -738,11 +734,11 @@ def selectPost ( webargs, proj, db, postdata ):
             logger.warning("Wrong datatype in POST")
             raise OCPCAError("Wrong datatype in POST")
             
-          if ch.getChannelType() in IMAGE_CHANNELS:
-            db.writeCuboid ( ch, corner, resolution, voxarray[idx,:] )
+          if ch.getChannelType() in IMAGE_CHANNELS + TIMESERIES_CHANNELS:
+            db.writeCuboid ( ch, corner, resolution, voxarray[idx,:], timerange )
 
-          elif ch.getChannelType() in TIMESERIES_CHANNELS:
-            db.writeTimeCuboid(ch, corner, resolution, timerange, voxarray[idx,:])
+          # elif ch.getChannelType() in TIMESERIES_CHANNELS:
+            # db.writeTimeCuboid(ch, corner, resolution, timerange, voxarray[idx,:])
           
           elif ch.getChannelType() in ANNOTATION_CHANNELS:
             db.annotateDense(ch, corner, resolution, voxarray[idx,:], conflictopt)
@@ -776,11 +772,11 @@ def selectPost ( webargs, proj, db, postdata ):
               logger.warning("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
               raise OCPCAError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
             
-            if ch.getChannelType() in IMAGE_CHANNELS: 
-              db.writeCuboid (ch, corner, resolution, voxarray)
+            if ch.getChannelType() in IMAGE_CHANNELS + TIMESERIES_CHANNELS : 
+              db.writeCuboid (ch, corner, resolution, voxarray, timerange)
 
-            elif ch.getChannelType() in TIMESERIES_CHANNELS:
-              db.writeTimeCuboid (ch, corner, resolution, timerange, voxarray)
+            # elif ch.getChannelType() in TIMESERIES_CHANNELS:
+              # db.writeTimeCuboid (ch, corner, resolution, timerange, voxarray)
             
             elif ch.getChannelType() in ANNOTATION_CHANNELS:
               db.annotateDense ( ch, corner, resolution, voxarray, conflictopt )
@@ -792,22 +788,18 @@ def selectPost ( webargs, proj, db, postdata ):
         logger.warning("An illegal Web POST service was requested: {}. Args {}".format(service, webargs))
         raise OCPCAError("An illegal Web POST service was requested: {}. Args {}".format(service, webargs))
         
-      db.commit()
       done = True
 
     # rollback if you catch an error
     except MySQLdb.OperationalError, e:
       logger.warning("Transaction did not complete. {}".format(e))
       tries += 1
-      db.rollback()
       continue
     except MySQLdb.Error, e:
       logger.warning("POST transaction rollback. {}".format(e))
-      db.rollback()
       raise
     except Exception, e:
       logger.exception("POST transaction rollback. {}".format(e))
-      db.rollback()
       raise
 
 
@@ -823,7 +815,7 @@ def getCutout ( webargs ):
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
     return selectService ( service, webargs, proj, db )
 
 
@@ -836,7 +828,7 @@ def putCutout ( webargs, postdata ):
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
     return selectPost ( rangeargs, proj, db, postdata )
 
 
@@ -997,7 +989,7 @@ def getAnnotation ( webargs ):
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
 
     # Split the URL and get the args
     ch = ocpcaproj.OCPCAChannel(proj, channel)
@@ -1009,17 +1001,14 @@ def getAnnotation ( webargs ):
     if option_args[1] == 'json':
       jsonstr = ''
       try:
-        db.startTxn()
         if re.match ( '^[\d,]+$', option_args[0] ): 
           annoids = map(int, option_args[0].split(','))
           for annoid in annoids: 
             jsonstr += getAnnoJSONById ( ch, annoid, proj, db )
 
       except: 
-        db.rollback()
         raise
 
-      db.commit()
       return jsonstr 
 
     # not a json request, continue with building and returning HDF5 file 
@@ -1031,8 +1020,6 @@ def getAnnotation ( webargs ):
  
     try: 
  
-      db.startTxn ()
-     
       # if the first argument is numeric.  it is an annoid
       if re.match ( '^[\d,]+$', option_args[0] ): 
 
@@ -1124,14 +1111,12 @@ def getAnnotation ( webargs ):
     
     # Close the file on a error: it won't get closed by the Web server
     except: 
-      db.rollback()
       h5f.close()
       raise
 
     # Close the HDF5 file always
     h5f.flush()
     h5f.close()
-    db.commit()
  
     # Return the HDF5 file
     tmpfile.seek(0)
@@ -1148,7 +1133,7 @@ def getCSV ( webargs ):
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
 
     # Make the HDF5 file
     # Create an in-memory HDF5 file
@@ -1186,7 +1171,7 @@ def getAnnotations ( webargs, postdata ):
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
   
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
   
     # Read the post data HDF5 and get a list of identifiers
     tmpinfile = tempfile.NamedTemporaryFile ( )
@@ -1303,7 +1288,7 @@ def putAnnotation ( webargs, postdata ):
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
   
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
 
     ch = ocpcaproj.OCPCAChannel(proj, channel)
     
@@ -1344,7 +1329,6 @@ def putAnnotation ( webargs, postdata ):
             anno.setID(ch, db)
   
           # start a transaction: get mysql out of line at a time mode
-          db.startTxn ()
   
           tries = 0 
           done = False
@@ -1449,19 +1433,15 @@ def putAnnotation ( webargs, postdata ):
             except MySQLdb.OperationalError, e:
               logger.warning (" Put Anntotation: Transaction did not complete. %s" % (e))
               tries += 1
-              db.rollback()
               continue
             except MySQLdb.Error, e:
               logger.warning ("Put Annotation: Put transaction rollback. %s" % (e))
-              db.rollback()
               raise
             except Exception, e:
               logger.exception ("Put Annotation:Put transaction rollback. %s" % (e))
-              db.rollback()
               raise
   
             # Commit if there is no error
-            db.commit()
   
       finally:
         h5f.close()
@@ -1481,7 +1461,7 @@ def getNIFTI ( webargs ):
 
     proj = projdb.loadToken ( token )
   
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
 
     ch = ocpcaproj.OCPCAChannel(proj, channel)
 
@@ -1502,7 +1482,7 @@ def putNIFTI ( webargs, postdata ):
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
   
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
 
     ch = ocpcaproj.OCPCAChannel(proj, channel)
     
@@ -1544,7 +1524,7 @@ def getSWC ( webargs ):
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
   
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
 
     ch = ocpcaproj.OCPCAChannel(proj, channel)
 
@@ -1567,7 +1547,7 @@ def putSWC ( webargs, postdata ):
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
   
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
 
     ch = ocpcaproj.OCPCAChannel(proj, channel)
     
@@ -1604,7 +1584,7 @@ def queryAnnoObjects ( webargs, postdata=None ):
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
 
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
     ch = ocpcaproj.OCPCAChannel(proj,channel)
     annoids = db.getAnnoObjects(ch, restargs.split('/'))
 
@@ -1656,7 +1636,7 @@ def deleteAnnotation ( webargs ):
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
   
     ch = ocpcaproj.OCPCAChannel(proj, channel)
     
@@ -1678,7 +1658,6 @@ def deleteAnnotation ( webargs ):
 
     for annoid in annoids: 
 
-      db.startTxn()
       tries = 0
       done = False
       while not done and tries < 5:
@@ -1690,18 +1669,13 @@ def deleteAnnotation ( webargs ):
         except MySQLdb.OperationalError, e:
           logger.warning ("Transaction did not complete. %s" % (e))
           tries += 1
-          db.rollback()
           continue
         except MySQLdb.Error, e:
           logger.warning ("Put transaction rollback. %s" % (e))
-          db.rollback()
           raise
         except Exception, e:
           logger.exception ("Put transaction rollback. %s" % (e))
-          db.rollback()
           raise
-
-        db.commit()
 
 
 def jsonInfo ( webargs ):
@@ -1742,7 +1716,7 @@ def projInfo ( webargs ):
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
 
     # Create an in-memory HDF5 file
     tmpfile = tempfile.NamedTemporaryFile ()
@@ -1768,7 +1742,7 @@ def chanInfo ( webargs ):
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
     import jsonprojinfo
     return jsonprojinfo.jsonChanInfo( proj, db )
 
@@ -1781,7 +1755,7 @@ def reserve ( webargs ):
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
 
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
 
     ch = ocpcaproj.OCPCAChannel(proj,channel)
     if ch.getChannelType() not in ANNOTATION_CHANNELS:
@@ -1808,7 +1782,7 @@ def getField ( webargs ):
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
 
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
     ch = ocpcaproj.OCPCAChannel(proj, channel)
     anno = db.getAnnotation(ch, annid)
 
@@ -1831,7 +1805,7 @@ def setField ( webargs ):
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
 
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
     ch = ocpcaproj.OCPCAChannel(proj, channel)
     
     # Don't write to readonly channels
@@ -1940,7 +1914,7 @@ def merge (webargs):
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
   
     ch = proj.getChannelObj(channel_name)
     # Check that all ids in the id strings are valid annotation objects
@@ -1981,7 +1955,7 @@ def exceptions ( webargs, ):
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
 
     # Perform argument processing
     try:
@@ -2041,7 +2015,7 @@ def minmaxProject ( webargs ):
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
 
     mcdata = None
 

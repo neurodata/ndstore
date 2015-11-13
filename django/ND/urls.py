@@ -38,4 +38,3 @@ urlpatterns = patterns('',
     url('^ocp/', include(base_urlpatterns)),
     url('^nd/', include(base_urlpatterns)),
 )
-
