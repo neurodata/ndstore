@@ -74,9 +74,9 @@ def cutout (imageargs, ch, proj, db):
  
   # Perform the cutout
   if ch.getChannelType() in TIMESERIES_CHANNELS:
-    cube = db.timecutout(ch, corner, dim, resolution, timerange)
+    cube = db.cutout(ch, corner, dim, resolution, timerange=timerange)
   else:
-    cube = db.cutout(ch, corner, dim, resolution, zscaling)
+    cube = db.cutout(ch, corner, dim, resolution, zscaling=zscaling)
 
   filterCube(ch, cube, filterlist)
   return cube

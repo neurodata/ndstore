@@ -30,7 +30,7 @@ from cube import Cube
 import imagecube
 import anncube
 import ndlib
-from ndtype import ANNOTATION_CHANNELS, EXCEPTION_TRUE, PROPAGATED
+from ndtype import ANNOTATION_CHANNELS, TIMESERIES_CHANNELS, EXCEPTION_TRUE, PROPAGATED
 
 from ndsperror import NDSPError
 import logging
@@ -100,8 +100,8 @@ class SPATIALDB:
     self.kvio.close()
 
 
-  # GET and PUT Methods for Image/Annotaion/Probmap Tables
-  def getCube(self, ch, zidx, resolution, update=False):
+  # GET Method
+  def getCube(self, ch, zidx, resolution, timestamp=None, update=False):
     """Load a cube from the database"""
 
     # get the size of the image and cube
@@ -109,7 +109,7 @@ class SPATIALDB:
     cube = Cube.getCube(cubedim, ch.getChannelType(), ch.getDataType())
   
     # get the block from the database
-    cubestr = self.kvio.getCube(ch, zidx, resolution, update)
+    cubestr = self.kvio.getCube(ch, zidx, timestamp, resolution, update)
 
     if not cubestr:
       cube.zeros()
@@ -123,66 +123,37 @@ class SPATIALDB:
     return cube
 
 
-  def getCubes(self, ch, listofidxs, resolution, neariso=False):
+  def getCubes(self, ch, listofidxs, resolution, listoftimestamps=None, neariso=False):
     """Return a list of cubes"""
     
-    return self.kvio.getCubes(ch, listofidxs, resolution, neariso)
+    if listoftimestamps is None:
+      return self.kvio.getCubes(ch, listofidxs, resolution, neariso)
+    else:
+      return self.kvio.getTimeCubes(ch, listofidxs, listoftimestamps, resolution)
 
   def putCubes(self, ch, listofidxs, resolution, listofcubes, update=False):
     """Insert a list of cubes"""
 
     return self.kvio.putCubes(ch, listofidxs, resolution, listofcubes, update)
 
-  def putCube(self, ch, zidx, resolution, cube, update=False):
+  # PUT Method
+  def putCube(self, ch, zidx, resolution, cube, timestamp=None, update=False):
     """ Store a cube in the annotation database """
     
     # Handle the cube format here.  
     if self.NPZ:
-      self.kvio.putCube(ch, zidx, resolution, cube.toNPZ(), not cube.fromZeros())
+      self.kvio.putCube(ch, zidx, timestamp, resolution, cube.toNPZ(), not cube.fromZeros())
     else:
-      self.kvio.putCube(ch, zidx, resolution, cube.toBlosc(), not cube.fromZeros())
+      self.kvio.putCube(ch, zidx, timestamp, resolution, cube.toBlosc(), not cube.fromZeros())
   
   
   # GET AND PUT methods for Timeseries Database
   
-  def getTimeCube(self, ch, zidx, timestamp, resolution, update=False):
-    """Load a time cube from the database"""
+  # def getTimeCubes(self, ch, idx, listoftimestamps, resolution):
+    # """ Return a column of timeseries cubes. Better at I/O """
 
-    # get the size of the image and cube
-    [xcubedim, ycubedim, zcubedim] = cubedim = self.datasetcfg.cubedim[resolution] 
-    cube = Cube.getCube(cubedim, ch.getChannelType(), ch.getDataType())
+    # return self.kvio.getTimeCubes(ch, idx, listoftimestamps, resolution)
 
-    # get the block from the database
-    cubestr = self.kvio.getTimeCube(ch, zidx, timestamp, resolution, update)
-
-    if not cubestr:
-      cube.zeros()
-    else:
-      # Handle the cube format here and decompress the cube
-      if self.NPZ:
-        cube.fromNPZ(cubestr)
-      else:
-        cube.fromBlosc(cubestr)
-
-    return cube
-  
-  
-  def getTimeCubes(self, ch, idx, listoftimestamps, resolution):
-    """ Return a column of timeseries cubes. Better at I/O """
-
-    return self.kvio.getTimeCubes(ch, idx, listoftimestamps, resolution)
-
-  
-  def putTimeCube(self, ch, zidx, timestamp, resolution, cube, update=False):
-    """Store a cube in the annotation database"""
-
-    if cube.isNotZeros():
-      # Handle the cube format here.  
-      if self.NPZ:
-        self.kvio.putTimeCube(ch, zidx, timestamp, resolution, cube.toNPZ(), update)
-      else:
-        self.kvio.putTimeCube(ch, zidx, timestamp, resolution, cube.toBlosc(), update)
-  
 
   def getExceptions ( self, ch, zidx, resolution, annoid ):
     """Load a cube from the annotation database"""
@@ -591,7 +562,7 @@ class SPATIALDB:
     return effcorner, effdim 
 
 
-  def cutout ( self, ch, corner, dim, resolution, zscaling=None, annoids=None ):
+  def cutout ( self, ch, corner, dim, resolution, timerange=None, zscaling=None, annoids=None ):
     """Extract a cube of arbitrary size.  Need not be aligned."""
 
     # if cutout is below resolution, get a smaller cube and scaleup
@@ -635,7 +606,7 @@ class SPATIALDB:
 
     import cube
     incube = Cube.getCube ( cubedim, ch.getChannelType(), ch.getDataType() )
-    outcube = Cube.getCube([xnumcubes*xcubedim,ynumcubes*ycubedim,znumcubes*zcubedim], ch.getChannelType(), ch.getDataType())
+    outcube = Cube.getCube([xnumcubes*xcubedim,ynumcubes*ycubedim,znumcubes*zcubedim], ch.getChannelType(), ch.getDataType(), timerange=timerange)
                                         
     # Build a list of indexes to access
     listofidxs = []
@@ -654,32 +625,53 @@ class SPATIALDB:
     self.kvio.startTxn()
 
     try:
+      
+      # checking for timeseries data and doing an optimized cutout here in timeseries column
+      if ch.getChannelType() in TIMESERIES_CHANNELS:
+        for idx in listofidxs:
+          cuboids = self.getCubes(ch, idx, resolution, range(timerange[0],timerange[1]))
+          
+          # use the batch generator interface
+          for idx, timestamp, datastring in cuboids:
 
-      if zscaling == 'nearisotropic' and self.datasetcfg.nearisoscaledown[resolution] > 1:
-        cuboids = self.getCubes(ch, listofidxs, effresolution, True)
+            # add the query result cube to the bigger cube
+            curxyz = ndlib.MortonXYZ(int(idx))
+            offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
+
+            if self.NPZ:
+              incube.fromNPZ(datastring[:])
+            else:
+              incube.fromBlosc(datastring[:])
+            
+            # add it to the output cube
+            outcube.addData(incube, offset, timestamp)
+      
       else:
-        cuboids = self.getCubes(ch, listofidxs, effresolution)
-
-      # use the batch generator interface
-      for idx, datastring in cuboids:
-
-        #add the query result cube to the bigger cube
-        curxyz = ndlib.MortonXYZ(int(idx))
-        offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
-        
-        if self.NPZ:
-          incube.fromNPZ ( datastring[:] )
+        if zscaling == 'nearisotropic' and self.datasetcfg.nearisoscaledown[resolution] > 1:
+          cuboids = self.getCubes(ch, listofidxs, effresolution, True)
         else:
-          incube.fromBlosc ( datastring[:] )
+          cuboids = self.getCubes(ch, listofidxs, effresolution)
 
-        # apply exceptions if it's an annotation project
-        if annoids!= None and ch.getChannelType() in ANNOTATION_CHANNELS:
-          incube.data = ndlib.filter_ctype_OMP ( incube.data, annoids )
-          if ch.getExceptions() == EXCEPTION_TRUE:
-            self.applyCubeExceptions ( ch, annoids, effresolution, idx, incube )
+        # use the batch generator interface
+        for idx, datastring in cuboids:
 
-        # add it to the output cube
-        outcube.addData ( incube, offset ) 
+          #add the query result cube to the bigger cube
+          curxyz = ndlib.MortonXYZ(int(idx))
+          offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
+          
+          if self.NPZ:
+            incube.fromNPZ ( datastring[:] )
+          else:
+            incube.fromBlosc ( datastring[:] )
+
+          # apply exceptions if it's an annotation project
+          if annoids!= None and ch.getChannelType() in ANNOTATION_CHANNELS:
+            incube.data = ndlib.filter_ctype_OMP ( incube.data, annoids )
+            if ch.getExceptions() == EXCEPTION_TRUE:
+              self.applyCubeExceptions ( ch, annoids, effresolution, idx, incube )
+
+          # add it to the output cube
+          outcube.addData ( incube, offset ) 
 
     except:
       self.kvio.rollback()
@@ -750,7 +742,7 @@ class SPATIALDB:
 
     try:
       for idx in listofidxs:
-        cuboids = self.getTimeCubes(ch, idx, range(timerange[0],timerange[1]), resolution)
+        cuboids = self.getCubes(ch, idx, range(timerange[0],timerange[1]), resolution)
         
         # use the batch generator interface
         for idx, timestamp, datastring in cuboids:
@@ -1156,11 +1148,11 @@ class SPATIALDB:
             for timestamp in range(timerange[0], timerange[1], 1):
 
               zidx = ndlib.XYZMorton([x+xstart,y+ystart,z+zstart])
-              cube = self.getTimeCube(ch, zidx, timestamp, resolution, update=True)
+              cube = self.getCube(ch, zidx, resolution, timestamp, update=True)
               # overwrite the cube
               cube.overwrite(databuffer[timestamp-timerange[0], z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim])
               # update in the database
-              self.putTimeCube(ch, zidx, timestamp, resolution, cube)
+              self.putCube(ch, zidx, resolution, cube, timestamp)
 
     except:
       self.kvio.rollback()

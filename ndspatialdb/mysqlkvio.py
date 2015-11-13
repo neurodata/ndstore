@@ -94,7 +94,7 @@ class MySQLKVIO:
     else: 
       return row[0]
 
-  def getCube(self, ch, zidx, resolution, update=False):
+  def getCube(self, ch, zidx, timestamp, resolution, update=False):
     """Retrieve a cube from the database by token, resolution, and zidx"""
 
     # if in a TxN us the transaction cursor.  Otherwise create one.
@@ -102,12 +102,15 @@ class MySQLKVIO:
       cursor = self.conn.cursor()
     else:
       cursor = self.txncursor
-
-    if ch.getChannelType() == OLDCHANNEL:
-      channel_id = self.getChannelId(ch)
-      sql = "SELECT cube FROM {} WHERE (channel,zindex) = ({},{})".format(ch.getTable(resolution), channel_id, zidx)
+    
+    if timestamp is None:
+      if ch.getChannelType() == OLDCHANNEL:
+        channel_id = self.getChannelId(ch)
+        sql = "SELECT cube FROM {} WHERE (channel,zindex) = ({},{})".format(ch.getTable(resolution), channel_id, zidx)
+      else:
+        sql = "SELECT cube FROM {} WHERE zindex={}".format(ch.getTable(resolution), zidx)
     else:
-      sql = "SELECT cube FROM {} WHERE zindex={}".format(ch.getTable(resolution), zidx) 
+      sql = "SELECT cube FROM {} WHERE (zindex,timestamp) = ({},{})".format(ch.getTable(resolution), zidx, timestamp)
     if update:
       sql += " FOR UPDATE"
 
@@ -128,37 +131,6 @@ class MySQLKVIO:
     else: 
       return row[0]
 
-  
-  def getTimeCube(self, ch, zidx, timestamp, resolution, update=False):
-    """Retrieve a cube from the TimeSeries database by token, resolution, timestamp and zidx"""
-
-    # if in a TxN us the transaction cursor.  Otherwise create one.
-    if self.txncursor is None:
-      cursor = self.conn.cursor()
-    else:
-      cursor = self.txncursor
-
-    sql = "SELECT cube FROM {} WHERE (zindex,timestamp) = ({},{})".format(ch.getTable(resolution), zidx, timestamp)
-    if update:
-          sql += " FOR UPDATE"
-
-    try:
-      cursor.execute(sql)
-      row = cursor.fetchone()
-    except MySQLdb.Error, e:
-      logger.error("Failed to retrieve data cube: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
-      raise
-    finally:
-      # close the local cursor if not in a transaction
-      if self.txncursor is None:
-        cursor.close()
-
-    # If we can't find a cube, assume it hasn't been written yet
-    if row is None:
-      return None
-    else: 
-      return row[0]
-  
   
   def getCubes(self, ch, listofidxs, resolution, neariso=False):
 
@@ -258,7 +230,7 @@ class MySQLKVIO:
       if self.txncursor is None:
         cursor.close()
   
-  def putCube ( self, ch, zidx, resolution, cubestr, update=False ):
+  def putCube ( self, ch, zidx, timestamp, resolution, cubestr, update=False ):
     """Store a cube from the annotation database"""
 
     # if in a TxN us the transaction cursor.  Otherwise create one.
@@ -269,11 +241,17 @@ class MySQLKVIO:
 
     # we created a cube from zeros
     if not update:
-      sql = "INSERT INTO {} (zindex, cube) VALUES (%s, %s)".format( ch.getTable(resolution) )
+      if timestamp is None:
+        sql = "INSERT INTO {} (zindex, cube) VALUES (%s, %s)".format( ch.getTable(resolution) )
+      else:
+        sql = "INSERT INTO {} (zindex, timestamp, cube) VALUES (%s, %s, %s)".format(ch.getTable(resolution))
 
       # this uses a cursor defined in the caller (locking context): not beautiful, but needed for locking
       try:
-        cursor.execute ( sql, (zidx,cubestr) )
+        if timestamp is None:
+          cursor.execute ( sql, (zidx,cubestr) )
+        else:
+          cursor.execute ( sql, (zidx, timestamp, cubestr) ) 
       except MySQLdb.Error, e:
         logger.error ( "Error inserting cube: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
         raise
@@ -283,8 +261,10 @@ class MySQLKVIO:
           cursor.close()
 
     else:
-
-      sql = "UPDATE {} SET cube=(%s) WHERE zindex={}".format( ch.getTable(resolution), zidx)
+      if timestamp is None:
+        sql = "UPDATE {} SET cube=(%s) WHERE zindex={}".format( ch.getTable(resolution), zidx)
+      else:
+        sql = "UPDATE {} SET cube=(%s) WHERE (zindex,timestamp)=({},{})".format(ch.getTable(resolution), zidx, timestamp)
       try:
         cursor.execute ( sql, (cubestr,) )
       except MySQLdb.Error, e:
@@ -299,50 +279,6 @@ class MySQLKVIO:
     if self.txncursor is None:
       self.conn.commit()
 
-
-  def putTimeCube(self, ch, zidx, timestamp, resolution, cubestr, update=False):
-    """Store a cube from the timeseries database"""
-
-    # if in a TxN us the transaction cursor.  Otherwise create one.
-    if self.txncursor is None:
-      cursor = self.conn.cursor()
-    else:
-      cursor = self.txncursor
-
-    # we created a cube from zeros
-    if not update:
-
-      sql = "INSERT INTO {} (zindex, timestamp, cube) VALUES (%s, %s, %s)".format(ch.getTable(resolution))
-
-      # this uses a cursor defined in the caller (locking context): not beautiful, but needed for locking
-      try:
-        cursor.execute ( sql, (zidx,timestamp,cubestr))
-      except MySQLdb.Error, e:
-        logger.error ( "Error inserting cube: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
-        raise
-      finally:
-        # close the local cursor if not in a transaction
-        # and commit right away
-        if self.txncursor is None:
-          cursor.close()
-
-    else:
-
-      sql = "UPDATE {} SET cube=(%s) WHERE (zindex,timestamp)=({},{})".format(ch.getTable(resolution), zidx, timestamp)
-      try:
-        cursor.execute (sql, [cubestr])
-      except MySQLdb.Error, e:
-        logger.error ( "Error updating data cube: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
-        raise
-      finally:
-        # close the local cursor if not in a transaction
-        # and commit right away
-        if self.txncursor is None:
-          cursor.close()
-
-    # commit if not in a txn
-    if self.txncursor is None:
-      self.conn.commit()
 
   def getIndex ( self, ch, annid, resolution, update ):
     """MySQL fetch index routine"""
