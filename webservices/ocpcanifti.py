@@ -18,7 +18,7 @@ import numpy as np
 import cStringIO
 import pickle
 
-from ocptype import READONLY_TRUE, OCP_dtypetonp, IMAGE_CHANNELS, TIMESERIES_CHANNELS, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, DTYPE_float32
+from ndtype import READONLY_TRUE, OCP_dtypetonp, IMAGE_CHANNELS, TIMESERIES_CHANNELS, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, DTYPE_float32
 
 from django.conf import settings
 from ocpuser.models import Channel

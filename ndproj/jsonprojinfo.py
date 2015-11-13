@@ -19,8 +19,7 @@ import urllib2
 from lxml import etree
 from django.conf import settings
 
-import ocpcadb
-from ocptype import ZSLICES
+from ndtype import ZSLICES
 
 import logging
 logger=logging.getLogger("ocp")

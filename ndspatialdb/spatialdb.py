@@ -32,7 +32,7 @@ import anncube
 import ndlib
 from ndtype import ANNOTATION_CHANNELS, EXCEPTION_TRUE, PROPAGATED
 
-from ndsperror import NDSpError
+from ndsperror import NDSPError
 import logging
 logger=logging.getLogger("ocp")
 
@@ -50,7 +50,7 @@ except:
   Manipulate/create/read from the Morton-order cube store
 """
 
-class OCPCADB: 
+class SPATIALDB: 
 
   def __init__ (self, proj):
     """Connect with the brain databases"""

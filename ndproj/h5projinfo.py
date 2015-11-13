@@ -16,8 +16,7 @@
 import h5py
 import numpy as np
 
-import ocpcadb
-from ocptype import READONLY_FALSE, EXCEPTION_FALSE
+from ndtype import READONLY_FALSE, EXCEPTION_FALSE
 
 import logging
 logger=logging.getLogger("ocp")

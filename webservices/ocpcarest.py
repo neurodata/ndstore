@@ -33,7 +33,7 @@ from libtiff import TIFFfile, TIFFimage
 
 import restargs
 import anncube
-import ocpcadb
+import spatialdb
 import ocpcaproj
 import ocpcachannel
 import h5ann
@@ -42,7 +42,7 @@ import h5projinfo
 import jsonprojinfo
 import annotation
 import mcfc
-import ocplib
+import ndlib
 import ocpcaskel
 import ocpcanifti
 from windowcutout import windowCutout
@@ -85,7 +85,7 @@ def filterCube(ch, cube, filterlist=None):
   """Call Filter on a cube"""
 
   if ch.getChannelType() in ANNOTATION_CHANNELS and filterlist is not None:
-    cube.data = ocplib.filter_ctype_OMP ( cube.data, filterlist )
+    cube.data = ndlib.filter_ctype_OMP ( cube.data, filterlist )
   elif filterlist is not None and ch.getChannelType not in ANNOTATION_CHANNELS:
     logger.warning("Filter only possible for Annotation Channels")
     raise OCPCAError("Filter only possible for Annotation Channels")
@@ -392,7 +392,7 @@ def tiff3d ( chanargs, proj, db ):
 #        imagemap = np.zeros ( (cube.data.shape[0]*cube.data.shape[1], cube.data.shape[2]), dtype=np.uint32 )
 #
 #        # turn it into a 2-d array for recolor -- maybe make a 3-d recolor
-#        recolor_cube = ocplib.recolor_ctype( cube.data.reshape((cube.data.shape[0]*cube.data.shape[1], cube.data.shape[2])), imagemap )
+#        recolor_cube = ndlib.recolor_ctype( cube.data.reshape((cube.data.shape[0]*cube.data.shape[1], cube.data.shape[2])), imagemap )
 #
 #        # turn it back into a 4-d array RGBA
 #        recolor_cube = recolor_cube.view(dtype=np.uint8).reshape((cube.data.shape[0],cube.data.shape[1],cube.data.shape[2], 4 ))
@@ -421,7 +421,7 @@ def FilterCube ( imageargs, cb ):
   result = re.search ("filter/([\d/,]+)/",imageargs)
   if result != None:
     filterlist = np.array ( result.group(1).split(','), dtype=np.uint32 )
-    cb.data = ocplib.filter_ctype_OMP ( cb.data, filterlist )
+    cb.data = ndlib.filter_ctype_OMP ( cb.data, filterlist )
 
 
 def window(data, ch, window_range=None ):
@@ -823,7 +823,7 @@ def getCutout ( webargs ):
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
     return selectService ( service, webargs, proj, db )
 
 
@@ -836,7 +836,7 @@ def putCutout ( webargs, postdata ):
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
     return selectPost ( rangeargs, proj, db, postdata )
 
 
@@ -997,7 +997,7 @@ def getAnnotation ( webargs ):
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
 
     # Split the URL and get the args
     ch = ocpcaproj.OCPCAChannel(proj, channel)
@@ -1148,7 +1148,7 @@ def getCSV ( webargs ):
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
 
     # Make the HDF5 file
     # Create an in-memory HDF5 file
@@ -1186,7 +1186,7 @@ def getAnnotations ( webargs, postdata ):
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
   
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
   
     # Read the post data HDF5 and get a list of identifiers
     tmpinfile = tempfile.NamedTemporaryFile ( )
@@ -1303,7 +1303,7 @@ def putAnnotation ( webargs, postdata ):
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
   
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
 
     ch = ocpcaproj.OCPCAChannel(proj, channel)
     # Don't write to readonly projects
@@ -1480,7 +1480,7 @@ def getNIFTI ( webargs ):
 
     proj = projdb.loadToken ( token )
   
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
 
     ch = ocpcaproj.OCPCAChannel(proj, channel)
 
@@ -1501,7 +1501,7 @@ def putNIFTI ( webargs, postdata ):
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
   
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
 
     ch = ocpcaproj.OCPCAChannel(proj, channel)
     # Don't write to readonly projects
@@ -1542,7 +1542,7 @@ def getSWC ( webargs ):
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
   
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
 
     ch = ocpcaproj.OCPCAChannel(proj, channel)
 
@@ -1565,7 +1565,7 @@ def putSWC ( webargs, postdata ):
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
   
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
 
     ch = ocpcaproj.OCPCAChannel(proj, channel)
     # Don't write to readonly projects
@@ -1601,7 +1601,7 @@ def queryAnnoObjects ( webargs, postdata=None ):
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
 
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
     ch = ocpcaproj.OCPCAChannel(proj,channel)
     annoids = db.getAnnoObjects(ch, restargs.split('/'))
 
@@ -1653,7 +1653,7 @@ def deleteAnnotation ( webargs ):
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
   
     ch = ocpcaproj.OCPCAChannel(proj, channel)
     # Don't write to readonly projects              
@@ -1738,7 +1738,7 @@ def projInfo ( webargs ):
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
 
     # Create an in-memory HDF5 file
     tmpfile = tempfile.NamedTemporaryFile ()
@@ -1764,7 +1764,7 @@ def chanInfo ( webargs ):
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
     import jsonprojinfo
     return jsonprojinfo.jsonChanInfo( proj, db )
 
@@ -1777,7 +1777,7 @@ def reserve ( webargs ):
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
 
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
 
     ch = ocpcaproj.OCPCAChannel(proj,channel)
     if ch.getChannelType() not in ANNOTATION_CHANNELS:
@@ -1804,7 +1804,7 @@ def getField ( webargs ):
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
 
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
     ch = ocpcaproj.OCPCAChannel(proj, channel)
     anno = db.getAnnotation(ch, annid)
 
@@ -1827,7 +1827,7 @@ def setField ( webargs ):
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
 
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
     ch = ocpcaproj.OCPCAChannel(proj, channel)
     db.updateAnnotation(ch, annid, field, value)
 
@@ -1912,7 +1912,7 @@ def merge (webargs):
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
   
     ch = proj.getChannelObj(channel_name)
     #Check that all ids in the id strings are valid annotation objects
@@ -1953,7 +1953,7 @@ def exceptions ( webargs, ):
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
 
     # Perform argument processing
     try:
@@ -2013,7 +2013,7 @@ def minmaxProject ( webargs ):
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( ocpcadb.OCPCADB(proj) ) as db:
+  with closing ( spatialdb.SPATIALDB(proj) ) as db:
 
     mcdata = None
 

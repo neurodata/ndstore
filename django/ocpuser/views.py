@@ -41,7 +41,7 @@ import re
 import ocpcarest
 import ocpcaproj
 import jsonprojinfo
-from ocptype import IMAGE, ANNOTATION, TIMESERIES, UINT8, UINT16, UINT32, UINT64, FLOAT32, OCP_VERSION, SCHEMA_VERSION 
+from ndtype import IMAGE, ANNOTATION, TIMESERIES, UINT8, UINT16, UINT32, UINT64, FLOAT32, OCP_VERSION, SCHEMA_VERSION 
 
 from models import Project
 from models import Dataset
