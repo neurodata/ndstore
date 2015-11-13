@@ -27,7 +27,7 @@ import networkx as nx
 import time
 
 import makeunitdb
-from ocptype import ANNOTATION, UINT32
+from ndtype import ANNOTATION, UINT32
 from params import Params
 from ramon import H5AnnotationFile, setField, getField, queryField, makeAnno, createSpecificSynapse
 from postmethods import putAnnotation, getAnnotation, getURL, postURL

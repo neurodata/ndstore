@@ -47,7 +47,10 @@ except:
   pass
 
 """
-  Manipulate/create/read from the Morton-order cube store
+.. module:: spatialdb
+    :synopsis: Manipulate/create/read from the Morton-order cube store
+
+.. moduleauthor:: Kunal Lillaney <lillaney@jhu.edu>
 """
 
 class SPATIALDB: 
@@ -704,74 +707,74 @@ class SPATIALDB:
     return outcube
 
 
-  def timecutout(self, ch, corner, dim, resolution, timerange):
-    """Extract a cube of arbitrary size.  Need not be aligned."""
+  # def timecutout(self, ch, corner, dim, resolution, timerange):
+    # """Extract a cube of arbitrary size.  Need not be aligned."""
 
-    # get the size of the image and cube
-    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
+    # # get the size of the image and cube
+    # [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
-    # Round to the nearest larger cube in all dimensions
-    zstart = corner[2]/zcubedim
-    ystart = corner[1]/ycubedim
-    xstart = corner[0]/xcubedim
+    # # Round to the nearest larger cube in all dimensions
+    # zstart = corner[2]/zcubedim
+    # ystart = corner[1]/ycubedim
+    # xstart = corner[0]/xcubedim
 
-    znumcubes = (corner[2]+dim[2]+zcubedim-1)/zcubedim - zstart
-    ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
-    xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
+    # znumcubes = (corner[2]+dim[2]+zcubedim-1)/zcubedim - zstart
+    # ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
+    # xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
 
-    # use the requested resolution
-    import cube
-    incube = Cube.getCube ( cubedim, ch.getChannelType(), ch.getDataType() )
-    outcube = Cube.getCube([xnumcubes*xcubedim,ynumcubes*ycubedim,znumcubes*zcubedim], ch.getChannelType(), ch.getDataType(), timerange=timerange)
+    # # use the requested resolution
+    # import cube
+    # incube = Cube.getCube ( cubedim, ch.getChannelType(), ch.getDataType() )
+    # outcube = Cube.getCube([xnumcubes*xcubedim,ynumcubes*ycubedim,znumcubes*zcubedim], ch.getChannelType(), ch.getDataType(), timerange=timerange)
 
-    # Build a list of indexes to access
-    listofidxs = []
-    for z in range (znumcubes):
-      for y in range (ynumcubes):
-        for x in range (xnumcubes):
-          mortonidx = ndlib.XYZMorton([x+xstart, y+ystart, z+zstart])
-          listofidxs.append(mortonidx)
+    # # Build a list of indexes to access
+    # listofidxs = []
+    # for z in range (znumcubes):
+      # for y in range (ynumcubes):
+        # for x in range (xnumcubes):
+          # mortonidx = ndlib.XYZMorton([x+xstart, y+ystart, z+zstart])
+          # listofidxs.append(mortonidx)
 
-    # Sort the indexes in Morton order
-    listofidxs.sort()
+    # # Sort the indexes in Morton order
+    # listofidxs.sort()
 
-    # xyz offset stored for later use
-    lowxyz = ndlib.MortonXYZ(listofidxs[0])
+    # # xyz offset stored for later use
+    # lowxyz = ndlib.MortonXYZ(listofidxs[0])
 
-    self.kvio.startTxn()
+    # self.kvio.startTxn()
 
-    try:
-      for idx in listofidxs:
-        cuboids = self.getCubes(ch, idx, range(timerange[0],timerange[1]), resolution)
+    # try:
+      # for idx in listofidxs:
+        # cuboids = self.getCubes(ch, idx, range(timerange[0],timerange[1]), resolution)
         
-        # use the batch generator interface
-        for idx, timestamp, datastring in cuboids:
+        # # use the batch generator interface
+        # for idx, timestamp, datastring in cuboids:
 
-          # add the query result cube to the bigger cube
-          curxyz = ndlib.MortonXYZ(int(idx))
-          offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
+          # # add the query result cube to the bigger cube
+          # curxyz = ndlib.MortonXYZ(int(idx))
+          # offset = [ curxyz[0]-lowxyz[0], curxyz[1]-lowxyz[1], curxyz[2]-lowxyz[2] ]
 
-          if self.NPZ:
-            incube.fromNPZ(datastring[:])
-          else:
-            incube.fromBlosc(datastring[:])
+          # if self.NPZ:
+            # incube.fromNPZ(datastring[:])
+          # else:
+            # incube.fromBlosc(datastring[:])
           
-          # add it to the output cube
-          outcube.addData(incube, offset, timestamp)
+          # # add it to the output cube
+          # outcube.addData(incube, offset, timestamp)
 
-    except:
-      self.kvio.rollback()
-      raise
+    # except:
+      # self.kvio.rollback()
+      # raise
 
-    self.kvio.commit()
+    # self.kvio.commit()
 
-    # need to trim down the array to size only if the dimensions are not the same
-    if dim[0] % xcubedim  == 0 and dim[1] % ycubedim  == 0 and dim[2] % zcubedim  == 0 and corner[0] % xcubedim  == 0 and corner[1] % ycubedim  == 0 and corner[2] % zcubedim  == 0:
-      pass
-    else:
-      outcube.trim ( corner[0]%xcubedim,dim[0],corner[1]%ycubedim,dim[1],corner[2]%zcubedim,dim[2] )
+    # # need to trim down the array to size only if the dimensions are not the same
+    # if dim[0] % xcubedim  == 0 and dim[1] % ycubedim  == 0 and dim[2] % zcubedim  == 0 and corner[0] % xcubedim  == 0 and corner[1] % ycubedim  == 0 and corner[2] % zcubedim  == 0:
+      # pass
+    # else:
+      # outcube.trim ( corner[0]%xcubedim,dim[0],corner[1]%ycubedim,dim[1],corner[2]%zcubedim,dim[2] )
 
-    return outcube
+    # return outcube
 
 
   def getVoxel ( self, ch, resolution, voxel ):
@@ -797,8 +800,6 @@ class SPATIALDB:
       return cube.getVoxel(xyzoffset)
 
 
-
-  # helper function to apply exceptions
   def applyCubeExceptions ( self, ch, annoids, resolution, idx, cube ):
     """Apply the expcetions to a specified cube and resolution"""
 
@@ -814,9 +815,7 @@ class SPATIALDB:
       for e in exceptions:
         cube.data[e[2],e[1],e[0]]=annoid
 
-  #
-  #  zoomVoxels
-  #
+  
   def zoomVoxels ( self, voxels, resgap ):
     """Convert voxels from one resolution to another based 
        on a positive number of hierarcy levels.
@@ -832,10 +831,8 @@ class SPATIALDB:
     return newvoxels
 
 
-  #
-  # getLocations -- return the list of locations associated with an identifier
-  #
   def getLocations ( self, ch, entityid, res ):
+    """Return the list of locations associated with an identifier"""
 
     # get the size of the image and cube
     resolution = int(res)
@@ -984,11 +981,8 @@ class SPATIALDB:
       yield (offset,cb.data)
 
   
-  #
-  #deleteAnnoData:
-  #    Delete the voxel data from the database for annoid 
-  #
   def deleteAnnoData ( self, ch, annoid):
+    """Delete the voxel data from the database for Annotation Id"""
     
     resolutions = self.datasetcfg.resolutions
 
@@ -1022,7 +1016,7 @@ class SPATIALDB:
     self.kvio.commit()
 
 
-  def writeCuboids(self, ch, corner, resolution, cuboiddata):
+  def writeCuboids(self, ch, corner, resolution, cuboiddata, timerange=None):
     """Write an arbitary size data to the database"""
    
     # dim is in xyz, data is in zyx order
@@ -1067,92 +1061,76 @@ class SPATIALDB:
 
     self.kvio.commit()
 
-  def writeCuboid(self, ch, corner, resolution, cuboiddata):
-    """Write an image through the Web service"""
+  def writeCuboid(self, ch, corner, resolution, cuboiddata, timerange=[0,0]):
+    """
+    Write a 3D/4D volume to the key-value store.
 
+    :param ch: Channel to write data to
+    :type ch: Class Channel
+    :param corner: Starting corner to write to
+    :type corner: array-like or one-dimensional list of int
+    :param resolution: Resolution to write at
+    :type resolution: int
+    :param cuboiddata: Data to be written
+    :type cuboiddata: Multi-dimensional numpy array
+    :type timerange: one-dimensional list of int
+    :param timerange: Range of time. Defaults to None
+
+    :returns: None
+    """
+    
     # dim is in xyz, data is in zyx order
-    dim = cuboiddata.shape[::-1]
+    if timerange == [0,0]:
+      dim = cuboiddata.shape[::-1]
+    else:
+      dim = cuboiddata.shape[::-1][:-1]
 
     # get the size of the image and cube
-    [ xcubedim, ycubedim, zcubedim ] = cubedim = self.datasetcfg.cubedim [ resolution ] 
+    [xcubedim, ycubedim, zcubedim] = cubedim = self.datasetcfg.cubedim [ resolution ] 
 
     # Round to the nearest larger cube in all dimensions
     start = [xstart, ystart, zstart] = map(div, corner, cubedim)
-    #zstart = corner[2]/zcubedim
-    #ystart = corner[1]/ycubedim
-    #xstart = corner[0]/xcubedim
 
     znumcubes = (corner[2]+dim[2]+zcubedim-1)/zcubedim - zstart
     ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
     xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
 
     offset = [xoffset, yoffset, zoffset] = map(mod, corner, cubedim)
-    #zoffset = corner[2]%zcubedim
-    #yoffset = corner[1]%ycubedim
-    #xoffset = corner[0]%xcubedim
+    
+    if timerange == [0,0]:
+      databuffer = np.zeros ([znumcubes*zcubedim, ynumcubes*ycubedim, xnumcubes*xcubedim], dtype=cuboiddata.dtype )
+      databuffer [ zoffset:zoffset+dim[2], yoffset:yoffset+dim[1], xoffset:xoffset+dim[0] ] = cuboiddata 
+    else:
+      databuffer = np.zeros([timerange[1]-timerange[0]]+[znumcubes*zcubedim, ynumcubes*ycubedim, xnumcubes*xcubedim], dtype=cuboiddata.dtype )
+      databuffer[:, zoffset:zoffset+dim[2], yoffset:yoffset+dim[1], xoffset:xoffset+dim[0]] = cuboiddata 
 
-    databuffer = np.zeros ([znumcubes*zcubedim, ynumcubes*ycubedim, xnumcubes*xcubedim], dtype=cuboiddata.dtype )
-    databuffer [ zoffset:zoffset+dim[2], yoffset:yoffset+dim[1], xoffset:xoffset+dim[0] ] = cuboiddata 
-
-    self.kvio.startTxn()
- 
-    try:
-      for z in range(znumcubes):
-        for y in range(ynumcubes):
-          for x in range(xnumcubes):
-
-            key = ndlib.XYZMorton ([x+xstart,y+ystart,z+zstart])
-            cube = self.getCube (ch, key, resolution, update=True)
-            # overwrite the cube
-            cube.overwrite ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
-            # update in the database
-            self.putCube (ch, key, resolution, cube)
-
-    except:
-      self.kvio.rollback()
-      raise
-
-    self.kvio.commit()
-
-  def writeTimeCuboid(self, ch, corner, resolution, timerange, cuboiddata):
-    """Write an image through the Web service"""
-
-    # dim is in xyz, data is in zyx order
-    dim = cuboiddata.shape[::-1][:-1]
-
-    # get the size of the image and cube
-    [xcubedim, ycubedim, zcubedim] = cubedim = self.datasetcfg.cubedim [ resolution ] 
-
-    # Round to the nearest larger cube in all dimensions
-    zstart = corner[2]/zcubedim
-    ystart = corner[1]/ycubedim
-    xstart = corner[0]/xcubedim
-
-    znumcubes = (corner[2]+dim[2]+zcubedim-1)/zcubedim - zstart
-    ynumcubes = (corner[1]+dim[1]+ycubedim-1)/ycubedim - ystart
-    xnumcubes = (corner[0]+dim[0]+xcubedim-1)/xcubedim - xstart
-
-    zoffset = corner[2]%zcubedim
-    yoffset = corner[1]%ycubedim
-    xoffset = corner[0]%xcubedim
-
-    databuffer = np.zeros([timerange[1]-timerange[0]]+[znumcubes*zcubedim, ynumcubes*ycubedim, xnumcubes*xcubedim], dtype=cuboiddata.dtype )
-    databuffer[:, zoffset:zoffset+dim[2], yoffset:yoffset+dim[1], xoffset:xoffset+dim[0]] = cuboiddata 
 
     self.kvio.startTxn()
- 
+    
     try:
-      for z in range(znumcubes):
-        for y in range(ynumcubes):
-          for x in range(xnumcubes):
-            for timestamp in range(timerange[0], timerange[1], 1):
+      if timerange == [0,0]:
+        for z in range(znumcubes):
+          for y in range(ynumcubes):
+            for x in range(xnumcubes):
 
-              zidx = ndlib.XYZMorton([x+xstart,y+ystart,z+zstart])
-              cube = self.getCube(ch, zidx, resolution, timestamp, update=True)
+              key = ndlib.XYZMorton ([x+xstart,y+ystart,z+zstart])
+              cube = self.getCube (ch, key, resolution, update=True)
               # overwrite the cube
-              cube.overwrite(databuffer[timestamp-timerange[0], z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim])
+              cube.overwrite ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
               # update in the database
-              self.putCube(ch, zidx, resolution, cube, timestamp)
+              self.putCube (ch, key, resolution, cube)
+      else:
+        for z in range(znumcubes):
+          for y in range(ynumcubes):
+            for x in range(xnumcubes):
+              for timestamp in range(timerange[0], timerange[1], 1):
+
+                zidx = ndlib.XYZMorton([x+xstart,y+ystart,z+zstart])
+                cube = self.getCube(ch, zidx, resolution, timestamp, update=True)
+                # overwrite the cube
+                cube.overwrite(databuffer[timestamp-timerange[0], z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim])
+                # update in the database
+                self.putCube(ch, zidx, resolution, cube, timestamp)
 
     except:
       self.kvio.rollback()

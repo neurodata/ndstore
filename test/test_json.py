@@ -24,7 +24,7 @@ sys.path += [os.path.abspath('../django')]
 import OCP.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
 
-from ocptype import IMAGE, UINT8
+from ndtype import IMAGE, UINT8
 from params import Params
 from jsonproj import createJson
 from postmethods import getURL, postURL, postNPZ, getNPZ

@@ -734,11 +734,11 @@ def selectPost ( webargs, proj, db, postdata ):
             logger.warning("Wrong datatype in POST")
             raise OCPCAError("Wrong datatype in POST")
             
-          if ch.getChannelType() in IMAGE_CHANNELS:
-            db.writeCuboid ( ch, corner, resolution, voxarray[idx,:] )
+          if ch.getChannelType() in IMAGE_CHANNELS + TIMESERIES_CHANNELS:
+            db.writeCuboid ( ch, corner, resolution, voxarray[idx,:], timerange )
 
-          elif ch.getChannelType() in TIMESERIES_CHANNELS:
-            db.writeTimeCuboid(ch, corner, resolution, timerange, voxarray[idx,:])
+          # elif ch.getChannelType() in TIMESERIES_CHANNELS:
+            # db.writeTimeCuboid(ch, corner, resolution, timerange, voxarray[idx,:])
           
           elif ch.getChannelType() in ANNOTATION_CHANNELS:
             db.annotateDense(ch, corner, resolution, voxarray[idx,:], conflictopt)
@@ -772,11 +772,11 @@ def selectPost ( webargs, proj, db, postdata ):
               logger.warning("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
               raise OCPCAError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
             
-            if ch.getChannelType() in IMAGE_CHANNELS: 
-              db.writeCuboid (ch, corner, resolution, voxarray)
+            if ch.getChannelType() in IMAGE_CHANNELS + TIMESERIES_CHANNELS : 
+              db.writeCuboid (ch, corner, resolution, voxarray, timerange)
 
-            elif ch.getChannelType() in TIMESERIES_CHANNELS:
-              db.writeTimeCuboid (ch, corner, resolution, timerange, voxarray)
+            # elif ch.getChannelType() in TIMESERIES_CHANNELS:
+              # db.writeTimeCuboid (ch, corner, resolution, timerange, voxarray)
             
             elif ch.getChannelType() in ANNOTATION_CHANNELS:
               db.annotateDense ( ch, corner, resolution, voxarray, conflictopt )
