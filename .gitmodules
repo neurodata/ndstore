@@ -1,3 +1,4 @@
 [submodule "ndlib"]
 	path = ndlib
-	url = https://github.com/openconnectome/ndlib.git
+	;url = https://github.com/openconnectome/ndlib.git
+	url = git@github.com:openconnectome/ndlib.git
