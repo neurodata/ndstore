@@ -22,7 +22,7 @@ from django.conf import settings
 from ndtype import ZSLICES
 
 import logging
-logger=logging.getLogger("ocp")
+logger=logging.getLogger("neurodata")
 
 
 def projdict ( proj ):
@@ -30,7 +30,7 @@ def projdict ( proj ):
   projdict = {}
   projdict['name'] = proj.getProjectName()
   projdict['description'] = proj.getProjectDescription()
-  projdict['version'] = proj.getOCPVersion()
+  projdict['version'] = proj.getNDVersion()
 
   # These fields are internal
   #projdict['dbname'] = proj._dbname

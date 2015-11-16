@@ -26,10 +26,10 @@ import blosc
 import time
 
 sys.path += [os.path.abspath('../django/')]
-import OCP.settings
+import ND.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'ocpblaze.settings'
 
-from ocplib import MortonXYZ
+from ndlib import MortonXYZ
 from params import Params
 
 p = Params()

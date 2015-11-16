@@ -30,7 +30,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
 from django.conf import settings
 
 import ocpcaproj
-import ocplib
+import ndlib
 import ocpcarest
 import ocpcadb
 import imagecube
@@ -109,7 +109,7 @@ def main():
       for y in range ( 0, yimagesz+1, ycubedim ):
         for x in range ( 0, ximagesz+1, xcubedim ):
 
-          zidx = ocplib.XYZMorton ( [x/xcubedim,y/ycubedim,(sl-startslice)/zcubedim] )
+          zidx = ndlib.XYZMorton ( [x/xcubedim,y/ycubedim,(sl-startslice)/zcubedim] )
           cubedata = np.zeros ( (zcubedim,ycubedim,xcubedim), dtype=np.uint16 )
 
           xmin = x 

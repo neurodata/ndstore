@@ -28,7 +28,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
 from django.conf import settings
 
 import imagecube
-import ocplib
+import ndlib
 import ocpcarest
 import ocpcaproj
 import ocpcadb

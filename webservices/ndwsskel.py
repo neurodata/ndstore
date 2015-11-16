@@ -18,9 +18,9 @@ import annotation
 
 from ndtype import ISOTROPIC
 
-from ocpcaerror import OCPCAError
+from ndwserror import NDWSError
 import logging
-logger=logging.getLogger("ocp")
+logger=logging.getLogger("neurodata")
 
       
 def ingestSWC ( res, swcfile, ch, db ):
@@ -125,7 +125,7 @@ def ingestSWC ( res, swcfile, ch, db ):
 
   except Exception, e:
     logger.warning("Failed to put SWC file {}".format(e))
-    raise OCPCAError("Failed to put SWC file {}".format(e))
+    raise NDWSError("Failed to put SWC file {}".format(e))
 
   # having parsed the whole file, send to DB in a transaction
   db.startTxn()
@@ -161,9 +161,9 @@ def querySWC ( res, swcfile, ch, db, proj, skelids=None ):
     db.startTxn()
 
     # write out metadata about where this came from
-    # OCP version number and schema number
-    swcfile.write('# OCP (Open Connectome Project) Version {} Schema {}\n'.format(proj.getOCPVersion(),proj.getSchemaVersion()))
-    # OCP project and channel
+    # ND version number and schema number
+    swcfile.write('# ND (NeuroData) Version {} Schema {}\n'.format(proj.getNDVersion(),proj.getSchemaVersion()))
+    # ND project and channel
     swcfile.write('# Project {} Channel {}\n'.format(proj.getProjectName(),ch.getChannelName()))
 
     # get a skeleton for metadata and populate the comments field

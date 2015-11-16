@@ -30,7 +30,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
 from django.conf import settings
 
 import ocpcarest
-import ocplib
+import ndlib
 import imagecube
 import ocpcadb
 import ocpcaproj
@@ -111,7 +111,7 @@ class RajuIngest:
         for x in range ( 0, self._ximgsz+1, self.xcubedim ):
 
           # zindex
-          key = ocplib.XYZMorton ( [x/self.xcubedim, y/self.ycubedim, (sl-self.startslice)/self.zcubedim] )
+          key = ndlib.XYZMorton ( [x/self.xcubedim, y/self.ycubedim, (sl-self.startslice)/self.zcubedim] )
 
           # Create a channel cube
           cube = imagecube.ImageCube16 ( self.cubedims )

@@ -24,7 +24,7 @@ import cStringIO
 
 from django.conf import settings
 
-from ocpcaerror import OCPCAError
+from ndwserror import NDWSError
 
 import logging
 logger=logging.getLogger("ocp")
@@ -42,7 +42,7 @@ def overlayImage (request, webargs):
   try:
     f = urllib2.urlopen ( url )
   except urllib2.URLError, e:
-    raise OCPCAError("Web service error. URL {}. Error {}.".format(url,e))
+    raise NDWSError("Web service error. URL {}. Error {}.".format(url,e))
   layer1info = json.loads ( f.read() )
 
   # Get the info for project 2
@@ -50,7 +50,7 @@ def overlayImage (request, webargs):
   try:
     f = urllib2.urlopen ( url )
   except urllib2.URLError, e:
-    raise OCPCAError ( "Web service error. URL {}. Error {}.".format(url,e))
+    raise NDWSError ( "Web service error. URL {}. Error {}.".format(url,e))
   layer2info = json.loads ( f.read() )
 
   # Do some checking to make sure that are compatible based on the same datasets
@@ -61,7 +61,7 @@ def overlayImage (request, webargs):
   try:
     f = urllib2.urlopen ( url )
   except urllib2.URLError, e:
-    raise OCPCAError ( "Web service error. URL {}.  Error {}.".format(url,e))
+    raise NDWSError ( "Web service error. URL {}.  Error {}.".format(url,e))
 
   fobj = cStringIO.StringIO ( f.read() )
   img1 = Image.open(fobj) 
@@ -71,7 +71,7 @@ def overlayImage (request, webargs):
   try:
     f = urllib2.urlopen ( url )
   except urllib2.URLError, e:
-    raise OCPCAError ( "Web service error. URL {}.  Error {}.".format(url,e))
+    raise NDWSError ( "Web service error. URL {}.  Error {}.".format(url,e))
 
   fobj = cStringIO.StringIO ( f.read() )
   img2 = Image.open(fobj) 

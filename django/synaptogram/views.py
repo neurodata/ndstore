@@ -22,8 +22,8 @@ import zlib
 import cStringIO
 import re
 
-import ocpcaproj
-import ocpcarest
+import ndproj
+import ndwsrest
 import synaptogram
 
 

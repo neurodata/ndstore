@@ -17,11 +17,7 @@ from PIL import Image
 
 from cube import Cube
 
-<<<<<<< HEAD:spdb/timecube.py
-from spdberror import SPDBError
-=======
-from ndsperror import NDSPError
->>>>>>> 3f4ffac13751b8e8b41d2a73c98c21ada7638347:ndspatialdb/timecube.py
+from spatialdberror import SpatialDBError
 import logging
 logger=logging.getLogger("neurodata")
 

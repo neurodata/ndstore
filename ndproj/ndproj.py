@@ -21,12 +21,12 @@ from contextlib import closing
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 
-from ocpuser.models import Project
-from ocpuser.models import Dataset
-from ocpuser.models import Token
-from ocpuser.models import Channel
+from nduser.models import Project
+from nduser.models import Dataset
+from nduser.models import Token
+from nduser.models import Channel
 import annotation
-from ndtype import IMAGE_CHANNELS, ANNOTATION_CHANNELS, ZSLICES, ISOTROPIC, READONLY_TRUE, READONLY_FALSE, PUBLIC_TRUE, NOT_PROPAGATED, UNDER_PROPAGATION, PROPAGATED, IMAGE, ANNOTATION, TIMESERIES, MYSQL, CASSANDRA, RIAK, OCP_servermap
+from ndtype import IMAGE_CHANNELS, ANNOTATION_CHANNELS, ZSLICES, ISOTROPIC, READONLY_TRUE, READONLY_FALSE, PUBLIC_TRUE, NOT_PROPAGATED, UNDER_PROPAGATION, PROPAGATED, IMAGE, ANNOTATION, TIMESERIES, MYSQL, CASSANDRA, RIAK, ND_servermap
 
 # need imports to be conditional
 try:
@@ -38,15 +38,15 @@ try:
 except:
    pass
 
-from ocpcaerror import OCPCAError
+from ndwserror import NDWSError
 import logging
-logger=logging.getLogger("ocp")
+logger=logging.getLogger("neurodata")
 
 
-"""While this is not a true inheritance hierarchy from OCPCADataset->OPCPCAProject->OCPCAChannel
+"""While this is not a true inheritance hierarchy from NDDataset->OPCPCAProject->NDChannel
     modeling it as such makes it easier to call things on the channel.  It has dataset properties, etc."""
 
-class OCPCADataset:
+class NDDataset:
   """Configuration for a dataset"""
 
   def __init__ ( self, dataset_name ):
@@ -56,7 +56,7 @@ class OCPCADataset:
       self.ds = Dataset.objects.get(dataset_name = dataset_name)
     except ObjectDoesNotExist, e:
       logger.warning ( "Dataset {} does not exist. {}".format(dataset_name, e) )
-      raise OCPCAError ( "Dataset {} does not exist".format(dataset_name) )
+      raise NDWSError ( "Dataset {} does not exist".format(dataset_name) )
 
     self.resolutions = []
     self.cubedim = {}
@@ -186,7 +186,7 @@ class OCPCADataset:
     return  [ self.imagesz [resolution], self.timerange ]
 
 
-class OCPCAProject:
+class NDProject:
 
   def __init__(self, token_name ) :
 
@@ -194,19 +194,19 @@ class OCPCAProject:
       try:
         self.tk = Token.objects.get(token_name = token_name)
         self.pr = Project.objects.get(project_name = self.tk.project_id)
-        self.datasetcfg = OCPCADataset(self.pr.dataset_id)
+        self.datasetcfg = NDDataset(self.pr.dataset_id)
       except ObjectDoesNotExist, e:
         logger.warning ( "Token {} does not exist. {}".format(token_name, e) )
-        raise OCPCAError ( "Token {} does not exist".format(token_name) )
+        raise NDWSError ( "Token {} does not exist".format(token_name) )
     elif isinstance(token_name, Project):
-      # Constructor for OCPCAProject from Project Name
+      # Constructor for NDProject from Project Name
       try:
         self.tk = None
         self.pr = token_name
-        self.datasetcfg = OCPCADataset(self.pr.dataset_id)
+        self.datasetcfg = NDDataset(self.pr.dataset_id)
       except ObjectDoesNotExist, e:
         logger.warning ( "Token {} does not exist. {}".format(token_name, e) )
-        raise OCPCAError ( "Token {} does not exist".format(token_name) )
+        raise NDWSError ( "Token {} does not exist".format(token_name) )
 
   # Accessors
   def getToken ( self ):
@@ -223,8 +223,8 @@ class OCPCAProject:
     return self.pr.project_name
   def getProjectDescription ( self ):
     return self.pr.project_description
-  def getOCPVersion ( self ):
-    return self.pr.ocp_version
+  def getNDVersion ( self ):
+    return self.pr.nd_version
   def getSchemaVersion ( self ):
     return self.pr.schema_version
 
@@ -235,13 +235,13 @@ class OCPCAProject:
     else:
       chs = channel_list
     for ch in chs:
-      yield OCPCAChannel(self, ch.channel_name)
+      yield NDChannel(self, ch.channel_name)
 
   def getChannelObj ( self, channel_name='default' ):
     """Returns a object for that channel"""
     if channel_name == 'default':
       channel_name = Channel.objects.get(project_id=self.pr, default=True)
-    return OCPCAChannel(self, channel_name)
+    return NDChannel(self, channel_name)
 
   def getDBUser( self ):
     return settings.DATABASES['default']['USER']
@@ -249,7 +249,7 @@ class OCPCAProject:
     return settings.DATABASES['default']['PASSWORD']
 
 
-class OCPCAChannel:
+class NDChannel:
 
   def __init__(self, proj, channel_name = None):
     """Constructor for a channel. It is a project and then some."""
@@ -258,7 +258,7 @@ class OCPCAChannel:
       self.ch = Channel.objects.get(channel_name = channel_name, project=self.pr.getProjectName())
     except ObjectDoesNotExist, e:
       logger.warning ( "Channel {} does not exist. {}".format(channel_name, e) )
-      raise OCPCAError ( "Channel {} does not exist".format(channel_name) )
+      raise NDWSError ( "Channel {} does not exist".format(channel_name) )
 
   def getChannelModel ( self ):
     return Channel.objects.get(channel_name=self.ch.channel_name, project=self.pr.getProjectName())
@@ -284,14 +284,14 @@ class OCPCAChannel:
     return self.ch.default 
 
   def getIdsTable (self):
-    if self.pr.getOCPVersion() == '0.0':
+    if self.pr.getNDVersion() == '0.0':
       return "ids"
     else:
       return "{}_ids".format(self.ch.channel_name)
 
   def getTable (self, resolution):
     """Return the appropriate table for the specified resolution"""
-    if self.pr.getOCPVersion() == '0.0':
+    if self.pr.getNDVersion() == '0.0':
       return "res{}".format(resolution)
     else:
       if self.pr.getKVEngine() == MYSQL:
@@ -301,21 +301,21 @@ class OCPCAChannel:
 
   def getNearIsoTable (self, resolution):
     """Return the appropriate table for the specified resolution"""
-    if self.pr.getOCPVersion() == '0.0':
+    if self.pr.getNDVersion() == '0.0':
       return "res{}neariso".format(resolution)
     else:
       return "{}_res{}neariso".format(self.ch.channel_name, resolution)
 
   def getKVTable (self, resolution):
     """Return the appropriate KvPairs for the specified resolution"""
-    if self.pr.getOCPVersion() == '0.0':
+    if self.pr.getNDVersion() == '0.0':
       return "kvpairs{}".format(resolution)
     else:
       return "{}_kvpairs{}".format(self.ch.channel_name, resolution)
   
   def getIdxTable (self, resolution):
     """Return the appropriate Index table for the specified resolution"""
-    if self.pr.getOCPVersion() == '0.0':
+    if self.pr.getNDVersion() == '0.0':
       return "idx{}".format(resolution)
     else:
       if self.pr.getKVEngine() == MYSQL:
@@ -325,14 +325,14 @@ class OCPCAChannel:
 
   def getAnnoTable (self, anno_type):
     """Return the appropriate table for the specified type"""
-    if self.pr.getOCPVersion() == '0.0':
+    if self.pr.getNDVersion() == '0.0':
       return "{}".format(annotation.anno_dbtables[anno_type])
     else:
       return "{}_{}".format(self.ch.channel_name, annotation.anno_dbtables[anno_type])
 
   def getExceptionsTable (self, resolution):
     """Return the appropiate exceptions table for the specified resolution"""
-    if self.pr.getOCPVersion() == '0.0':
+    if self.pr.getNDVersion() == '0.0':
       return "exc{}".format(resolution)
     else:
       return "{}_exc{}".format(self.ch.channel_name, resolution)
@@ -348,7 +348,7 @@ class OCPCAChannel:
       self.ch.save()
     else:
       logger.error ( "Wrong Propagate Value {} for Channel {}".format( value, self.ch.channel_name ) )
-      raise OCPCAError ( "Wrong Propagate Value {} for Channel {}".format( value, self.ch.channel_name ) )
+      raise NDWSError ( "Wrong Propagate Value {} for Channel {}".format( value, self.ch.channel_name ) )
   
   def setReadOnly (self, value):
     if value in [READONLY_TRUE, READONLY_FALSE]:
@@ -356,7 +356,7 @@ class OCPCAChannel:
       self.ch.save()
     else:
       logger.error ( "Wrong Readonly Value {} for Channel {}".format( value, self.channel_name ) )
-      raise OCPCAError ( "Wrong Readonly Value {} for Channel {}".format( value, self.ch.channel_name ) )
+      raise NDWSError ( "Wrong Readonly Value {} for Channel {}".format( value, self.ch.channel_name ) )
 
   def isPropagated (self):
     if self.ch.propagate in [PROPAGATED]:
@@ -364,7 +364,7 @@ class OCPCAChannel:
     else:
       return False
 
-class OCPCAProjectsDB:
+class NDProjectsDB:
   """Database for the projects"""
 
   def __init__(self):
@@ -376,7 +376,7 @@ class OCPCAProjectsDB:
   def close (self):
     pass
 
-  def newOCPCAProject ( self, project_name ):
+  def newNDProject ( self, project_name ):
     """Make the database for a project."""
 
     pr = Project.objects.get(project_name=project_name)
@@ -393,12 +393,12 @@ class OCPCAProjectsDB:
             conn.commit()
           except MySQLdb.Error, e:
             logger.error ("Failed to create database for new project {}: {}. sql={}".format(e.args[0], e.args[1], sql))
-            raise OCPCAError ("Failed to create database for new project {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+            raise NDWSError ("Failed to create database for new project {}: {}. sql={}".format(e.args[0], e.args[1], sql))
     
     elif pr.kvengine == CASSANDRA:
       
       try:
-        server_address = OCP_servermap[pr.kvserver]
+        server_address = ND_servermap[pr.kvserver]
         cluster = Cluster([server_address])
         session = cluster.connect()
         if server_address == 'localhost':  
@@ -408,12 +408,12 @@ class OCPCAProjectsDB:
       except Exception, e:
         pr.delete()
         logger.error("Failed to create namespace for new project {}".format(project_name))
-        raise OCPCAError("Failed to create namespace for new project {}".format(project_name))
+        raise NDWSError("Failed to create namespace for new project {}".format(project_name))
       finally:
         session.shutdown()
 
 
-  def newOCPCAChannel ( self, project_name, channel_name ):
+  def newNDChannel ( self, project_name, channel_name ):
     """Make the tables for a channel."""
 
     pr = Project.objects.get(project_name=project_name)
@@ -436,7 +436,7 @@ class OCPCAProjectsDB:
               for i in range(ds.scalinglevels+1): 
                 cursor.execute ( "CREATE TABLE {}_res{} ( zindex BIGINT, timestamp INT, cube LONGBLOB, PRIMARY KEY(zindex,timestamp))".format(ch.channel_name,i) )
             else:
-              raise OCPCAError("Channel type {} does not exist".format(ch.channel_type()))
+              raise NDWSError("Channel type {} does not exist".format(ch.channel_type()))
             
             # tables specific to annotation projects
             if ch.channel_type == ANNOTATION: 
@@ -459,12 +459,12 @@ class OCPCAProjectsDB:
           except MySQLdb.Error, e:
             ch.delete()
             logging.error ("Failed to create tables for new project {}: {}.".format(e.args[0], e.args[1]))
-            raise OCPCAError ("Failed to create tables for new project {}: {}.".format(e.args[0], e.args[1]))
+            raise NDWSError ("Failed to create tables for new project {}: {}.".format(e.args[0], e.args[1]))
 
     elif pr.kvengine == RIAK:
       #RBTODO figure out new schema for Riak
       rcli = riak.RiakClient(host=pr.kvserver, pb_port=8087, protocol='pbc')
-      bucket = rcli.bucket_type("ocp{}".format(proj.getProjectType())).bucket(proj.getDBName())
+      bucket = rcli.bucket_type("nd{}".format(proj.getProjectType())).bucket(proj.getDBName())
       bucket.set_property('allow_mult',False)
 
     elif pr.kvengine == CASSANDRA:
@@ -478,16 +478,16 @@ class OCPCAProjectsDB:
       except Exception, e:
         ch.delete()
         logging.error("Failed to create table for channel {}".format(channel_name))
-        raise OCPCAError("Failed to create table for channel {}".format(channel_name))
+        raise NDWSError("Failed to create table for channel {}".format(channel_name))
       finally:
         session.shutdown()
       
     else:
       logging.error ("Unknown KV Engine requested: {}".format("RBTODO get name"))
-      raise OCPCAError ("Unknown KV Engine requested: {}".format("RBTODO get name"))
+      raise NDWSError ("Unknown KV Engine requested: {}".format("RBTODO get name"))
 
 
-  def deleteOCPCADB (self, project_name):
+  def deleteNDDB (self, project_name):
 
     pr = Project.objects.get(project_name = project_name)
 
@@ -508,7 +508,7 @@ class OCPCAProjectsDB:
             else:
               conn.rollback()
               logger.error ("Failed to drop project database {}: {}. sql={}".format(e.args[0], e.args[1], sql))
-              raise OCPCAError ("Failed to drop project database {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+              raise NDWSError ("Failed to drop project database {}: {}. sql={}".format(e.args[0], e.args[1], sql))
 
 
     elif pr.kvengine == CASSANDRA:
@@ -525,7 +525,7 @@ class OCPCAProjectsDB:
     elif pr.kvengine == RIAK:
       # connect to Riak
       rcli = riak.RiakClient(host=proj.kvserver, pb_port=8087, protocol='pbc')
-      bucket = rcli.bucket_type("ocp{}".format(proj.getProjectType())).bucket(proj.getDBName())
+      bucket = rcli.bucket_type("nd{}".format(proj.getProjectType())).bucket(proj.getDBName())
 
       key_list = rcli.get_keys(bucket)
 
@@ -533,11 +533,11 @@ class OCPCAProjectsDB:
         bucket.delete(k)
 
 
-  def deleteOCPCAChannel (self, proj, channel_name):
+  def deleteNDChannel (self, proj, channel_name):
     """Delete the tables for this channel"""
 
-    pr = OCPCAProject(proj)
-    ch = OCPCAChannel(pr, channel_name)
+    pr = NDProject(proj)
+    ch = NDChannel(pr, channel_name)
     table_list = []
 
     if ch.getChannelType() in ANNOTATION_CHANNELS:
@@ -567,7 +567,7 @@ class OCPCAProjectsDB:
         else:
           conn.rollback()
           logger.error ("Failed to drop channel tables {}: {}. sql={}".format(e.args[0], e.args[1], sql))
-          raise OCPCAError ("Failed to drop channel tables {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+          raise NDWSError ("Failed to drop channel tables {}: {}. sql={}".format(e.args[0], e.args[1], sql))
       
     elif pr.getKVEngine() == CASSANDRA:
       # KL TODO
@@ -579,11 +579,11 @@ class OCPCAProjectsDB:
 
   def loadDatasetConfig ( self, dataset ):
     """Query the database for the dataset information and build a db configuration"""
-    return OCPCADataset (dataset)
+    return NDDataset (dataset)
 
   def loadToken ( self, token ):
     """Query django configuration for a token to bind to a project"""
-    return OCPCAProject (token)
+    return NDProject (token)
 
   def getPublic ( self ):
     """ Return a list of public tokens """

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-class SPDBError (Exception):
+class SpatialDBError (Exception):
   """General spatial database error"""
   
   def __init__(self, value):

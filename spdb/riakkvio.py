@@ -14,12 +14,9 @@
 
 import riak
 
-<<<<<<< HEAD:spdb/riakkvio.py
 """Helpers function to do cube I/O in across multiple DBs.
     This file is aerospike
-    This uses the state and methods of spdb"""
-=======
->>>>>>> 3f4ffac13751b8e8b41d2a73c98c21ada7638347:ndspatialdb/riakkvio.py
+    This uses the state and methods of spatialdb"""
 
 class RiakKVIO:
 
@@ -30,7 +27,7 @@ class RiakKVIO:
 
     # connect to cassandra
     self.rcli = riak.RiakClient(host=db.annoproj.getKVServer(), pb_port=8087, protocol='pbc')
-    self.bucket = self.rcli.bucket_type("spdb{}".format(db.annoproj.getDBType())).bucket(db.annoproj.getDBName())
+    self.bucket = self.rcli.bucket_type("ndspatial{}".format(db.annoproj.getDBType())).bucket(db.annoproj.getDBName())
 
   def close ( self ):
     """Close the connection"""

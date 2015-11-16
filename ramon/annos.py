@@ -93,7 +93,7 @@
           val = it.next()
           if not re.match('^\d+$',val): 
             logger.warning ( "Limit needs an integer. Illegal value:%s" % (field,val) )
-            raise OCPCAError ( "Limit needs an integer. Illegal value:%s" % (field,val) )
+            raise NDWSError ( "Limit needs an integer. Illegal value:%s" % (field,val) )
 
           limitclause = " LIMIT %s " % (val)
 
@@ -108,7 +108,7 @@
             val = it.next()
             if not re.match('^\w+$',val): 
               logger.warning ( "For field %s. Illegal value:%s" % (field,val) )
-              raise OCPCAError ( "For field %s. Illegal value:%s" % (field,val) )
+              raise NDWSError ( "For field %s. Illegal value:%s" % (field,val) )
 
             clause += '%s = %s' % ( field, val )
 
@@ -121,19 +121,19 @@
               op = ' > '
             else:
               logger.warning ( "Not a comparison operator: %s" % (opstr) )
-              raise OCPCAError ( "Not a comparison operator: %s" % (opstr) )
+              raise NDWSError ( "Not a comparison operator: %s" % (opstr) )
 
             val = it.next()
             if not re.match('^[\d\.]+$',val): 
               logger.warning ( "For field %s. Illegal value:%s" % (field,val) )
-              raise OCPCAError ( "For field %s. Illegal value:%s" % (field,val) )
+              raise NDWSError ( "For field %s. Illegal value:%s" % (field,val) )
             clause += '%s %s %s' % ( field, op, val )
 
 
           #RB TODO key/value fields?
 
           else:
-            raise OCPCAError ( "Illegal field in URL: %s" % (field) )
+            raise NDWSError ( "Illegal field in URL: %s" % (field) )
 
         field = it.next()
 
@@ -182,7 +182,7 @@
       anno = self.getAnnotation(ch, annid)
       if anno is None:
         logger.warning("No annotation found at identifier = {}".format(annid))
-        raise OCPCAError ("No annotation found at identifier = {}".format(annid))
+        raise NDWSError ("No annotation found at identifier = {}".format(annid))
       anno.setField(field, value)
       anno.update(ch, cursor)
     except:
@@ -211,7 +211,6 @@
     cursor = self.getCursor()
     try:
       self.deleteAnnoData ( ch, annoid )
-      retval = annotation.deleteAnnotation ( ch, annoid, self, cursor, options )
     except:
       self.closeCursor( cursor ) 
       raise
@@ -238,7 +237,7 @@ q
       row = cursor.fetchone ()
     except MySQLdb.Error, e:
       logger.warning ("Error reading Id: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
-      #raise OCPCAError ("Error reading Id: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+      #raise NDWSError ("Error reading Id: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
       raise
     except BaseException, e:
       logger.exception("Unknown exception")
@@ -272,7 +271,7 @@ q
       row = cursor.fetchone ()
     except MySQLdb.Error, e:
       logger.warning ("Error reading Id: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
-      #raise OCPCAError ("Error reading Id: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+      #raise NDWSError ("Error reading Id: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
       raise
     except BaseException, e:
       logger.exception("Unknown exception")

@@ -18,15 +18,15 @@ import numpy as np
 import cStringIO
 import pickle
 
-from ndtype import READONLY_TRUE, OCP_dtypetonp, IMAGE_CHANNELS, TIMESERIES_CHANNELS, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, DTYPE_float32
+from ndtype import READONLY_TRUE, ND_dtypetonp, IMAGE_CHANNELS, TIMESERIES_CHANNELS, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, DTYPE_float32
 
 from django.conf import settings
-from ocpuser.models import Channel
-from ocpuser.models import NIFTIHeader
+from nduser.models import Channel
+from nduser.models import NIFTIHeader
 
-from ocpcaerror import OCPCAError
+from ndwserror import NDWSError
 import logging
-logger=logging.getLogger("ocp")
+logger=logging.getLogger("neurodata")
 
 
 def ingestNIFTI ( niftifname, ch, db, proj ):
@@ -48,12 +48,12 @@ def ingestNIFTI ( niftifname, ch, db, proj ):
       nifti_data = np.float32(nifti_data.reshape([1]+list(nifti_data.shape)))
     else:
       logger.warning("Illegal data type for NIFTI service. Type={}".format(ch.getDataType()))
-      raise OCPCAError("Illegal data type for NIFTI service. Type={}".format(ch.getDataType()))
+      raise NDWSError("Illegal data type for NIFTI service. Type={}".format(ch.getDataType()))
 
     # check that the data is the right shape
     if nifti_data.shape[1:] != tuple(proj.datasetcfg.imagesz[0]):
       logger.warning("Data shape {} does not match dataset shape {}.".format(nifti_data.shape, proj.datasetcfg.imagesz[0]))
-      raise OCPCAError("Data shape {} does not match dataset shape {}.".format(nifti_data.shape, proj.datasetcfg.imagesz[0]))
+      raise NDWSError("Data shape {} does not match dataset shape {}.".format(nifti_data.shape, proj.datasetcfg.imagesz[0]))
 
   elif len(nifti_data.shape) == 4:
 
@@ -64,16 +64,16 @@ def ingestNIFTI ( niftifname, ch, db, proj ):
     # check that the data is the right shape
     if nifti_data.shape[1:3] != tuple(proj.datasetcfg.imagesz[0]) or nifti_data.shape[4] != proj.datasetcfg.endtime - proj.datasetcfg.starttime:
       logger.warning("Data shape {} does not match dataset shape {}.".format(nifti_data.shape, proj.datasetcfg.imagesz[0]))
-      raise OCPCAError("Data shape {} does not match dataset shape {}.".format(nifti_data.shape, proj.datasetcfg.imagesz[0]))
+      raise NDWSError("Data shape {} does not match dataset shape {}.".format(nifti_data.shape, proj.datasetcfg.imagesz[0]))
 
   # Don't write to readonly channels
   if ch.getReadOnly() == READONLY_TRUE:
     logger.warning("Attempt to write to read only project {}".format(proj.getDBName()))
-    raise OCPCAError("Attempt to write to read only project {}".format(proj.getDBName()))
+    raise NDWSError("Attempt to write to read only project {}".format(proj.getDBName()))
 
-  if not nifti_data.dtype == OCP_dtypetonp[ch.getDataType()]:
+  if not nifti_data.dtype == ND_dtypetonp[ch.getDataType()]:
     logger.warning("Wrong datatype in POST")
-    raise OCPCAError("Wrong datatype in POST")
+    raise NDWSError("Wrong datatype in POST")
 
   # create the model and populate
   nh = NIFTIHeader()
@@ -93,7 +93,7 @@ def ingestNIFTI ( niftifname, ch, db, proj ):
 
   else:
     logger.warning("Writing to a channel with an incompatible data type. {}" % (ch.getChannelType()))
-    raise OCPCAError ("Writing to a channel with an incompatible data type. {}" % (ch.getChannelType()))
+    raise NDWSError ("Writing to a channel with an incompatible data type. {}" % (ch.getChannelType()))
 
   # save the header if the data was written
   nh.save()

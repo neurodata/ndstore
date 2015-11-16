@@ -26,17 +26,12 @@ import annindex
 from cube import Cube
 import imagecube
 import anncube
-<<<<<<< HEAD:spdb/spatialdb.py
-import ocplib
-from ndtype import ANNOTATION_CHANNELS, EXCEPTION_TRUE, PROPAGATED
 
-from spdberror import SPDBError
-=======
 import ndlib
 from ndtype import ANNOTATION_CHANNELS, TIMESERIES_CHANNELS, EXCEPTION_TRUE, PROPAGATED
 
-from ndsperror import NDSPError
->>>>>>> 3f4ffac13751b8e8b41d2a73c98c21ada7638347:ndspatialdb/spatialdb.py
+from spatialdberror import SpatialDBError
+
 import logging
 logger=logging.getLogger("neurodata")
 
@@ -57,11 +52,7 @@ except:
 .. moduleauthor:: Kunal Lillaney <lillaney@jhu.edu>
 """
 
-<<<<<<< HEAD:spdb/spatialdb.py
 class SpatialDB: 
-=======
-class SPATIALDB: 
->>>>>>> 3f4ffac13751b8e8b41d2a73c98c21ada7638347:ndspatialdb/spatialdb.py
 
   def __init__ (self, proj):
     """Connect with the brain databases"""
@@ -77,14 +68,6 @@ class SPATIALDB:
     if self.proj.getKVEngine() == 'MySQL':
       self.kvio = mysqlkvio.MySQLKVIO(self)
       self.NPZ = True
-      # Connection info for the metadata
-      try:
-        self.conn = MySQLdb.connect (host = self.proj.getDBHost(), user = self.proj.getDBUser(), passwd = self.proj.getDBPasswd(), db = self.proj.getDBName())
-        # start with no cursor
-        self.cursor = None
-      except MySQLdb.Error, e:
-        self.conn = None
-        logger.error("Failed to connect to database: {}, {}".format(self.proj.getDBHost(), self.proj.getDBName()))
     
     elif self.proj.getKVEngine() == 'Riak':
       import riakkvio
@@ -100,14 +83,13 @@ class SPATIALDB:
       self.kvio = casskvio.CassandraKVIO(self)
       self.NPZ = False
     else:
-      raise SPDBError ("Unknown key/value store. Engine = {}".format(self.proj.getKVEngine()))
+      raise SpatialDBError ("Unknown key/value store. Engine = {}".format(self.proj.getKVEngine()))
 
     self.annoIdx = annindex.AnnotateIndex ( self.kvio, self.proj )
 
   def close ( self ):
     """Close the connection"""
-    if self.conn:
-      self.conn.close()
+
     self.kvio.close()
 
 
@@ -390,10 +372,10 @@ class SPATIALDB:
                     index_dict[exid].add(key)
               else:
                 logger.error("No exceptions for this project.")
-                raise SPDBError ( "No exceptions for this project.")
+                raise SpatialDBError ( "No exceptions for this project.")
             else:
               logger.error ( "Unsupported conflict option %s" % conflictopt )
-              raise SPDBError ( "Unsupported conflict option %s" % conflictopt )
+              raise SpatialDBError ( "Unsupported conflict option %s" % conflictopt )
             
             self.putCube (ch, key, resolution, cube)
 
@@ -682,6 +664,20 @@ class SPATIALDB:
       outcube.trim ( corner[0]%xcubedim,dim[0],corner[1]%ycubedim,dim[1],corner[2]%zcubedim,dim[2] )
 
     return outcube
+
+  # Alternate to getVolume that returns a annocube
+  def annoCutout ( self, ch, annoids, resolution, corner, dim, remapid=None ):
+    """Fetch a volume cutout with only the specified annotation"""
+
+    # cutout is zoom aware
+    cube = self.cutout(ch, corner,dim,resolution, annoids=annoids )
+  
+    # KL TODO
+    if remapid:
+      vec_func = np.vectorize ( lambda x: np.uint32(remapid) if x != 0 else np.uint32(0) ) 
+      cube.data = vec_func ( cube.data )
+
+    return cube
 
 
   def getVoxel ( self, ch, resolution, voxel ):
@@ -1044,3 +1040,5 @@ class SPATIALDB:
       raise
 
     self.kvio.commit()
+
+

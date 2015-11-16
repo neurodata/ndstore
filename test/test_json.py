@@ -21,8 +21,8 @@ import numpy as np
 import random
 
 sys.path += [os.path.abspath('../django')]
-import OCP.settings
-os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
+import ND.settings
+os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
 
 from ndtype import IMAGE, UINT8
 from params import Params
@@ -68,11 +68,11 @@ class Test_Project_Json():
     json_file.seek(0)
 
     # posting the JSON url and checking if it is successful
-    response = json.loads(postURL("http://{}/ca/autoIngest/".format(SITE_HOST), json_file).read())
+    response = json.loads(postURL("http://{}/sd/autoIngest/".format(SITE_HOST), json_file).read())
     assert('SUCCESS' == response)
 
     # fetching the JSON info
-    f = getURL("http://{}/ca/{}/info/".format(SITE_HOST, p.token))
+    f = getURL("http://{}/sd/{}/info/".format(SITE_HOST, p.token))
 
     # read the JSON file
     proj_info = json.loads(f.read())
@@ -105,11 +105,11 @@ class Test_Project_Json():
     json_file.seek(0)
 
     # posting the JSON url and checking if it is successful
-    response = json.loads(postURL("http://{}/ca/autoIngest/".format(SITE_HOST), json_file).read())
+    response = json.loads(postURL("http://{}/sd/autoIngest/".format(SITE_HOST), json_file).read())
     assert('SUCCESS' == response)
 
     # fetching the JSON info
-    f = getURL("http://{}/ca/{}/info/".format(SITE_HOST, p.token))
+    f = getURL("http://{}/sd/{}/info/".format(SITE_HOST, p.token))
 
     # read the JSON file
     proj_info = json.loads(f.read())
@@ -137,7 +137,7 @@ class Test_Project_Json():
     json_file.seek(0)
 
     # posting the JSON url and checking if it is successful
-    response = json.loads(postURL("http://{}/ca/autoIngest/".format(SITE_HOST), json_file).read())
+    response = json.loads(postURL("http://{}/sd/autoIngest/".format(SITE_HOST), json_file).read())
     assert('FAILED' == response)
 
 
@@ -168,11 +168,11 @@ class Test_Create_Channel_Json():
     json_file.seek(0)
 
     # posting the JSON url and checking if it is successful
-    response = json.loads(postURL("http://{}/ca/{}/createChannel/".format(SITE_HOST, p.token), json_file).read())
+    response = json.loads(postURL("http://{}/sd/{}/createChannel/".format(SITE_HOST, p.token), json_file).read())
     assert('SUCCESS' == response)
 
     # fetching the JSON info
-    f = getURL("http://{}/ca/{}/info/".format(SITE_HOST, p.token))
+    f = getURL("http://{}/sd/{}/info/".format(SITE_HOST, p.token))
 
     # read the JSON file
     proj_info = json.loads(f.read())
@@ -208,7 +208,7 @@ class Test_Create_Channel_Json():
     json_file.seek(0)
 
     # posting the JSON url and checking if it is successful
-    response = json.loads(postURL("http://{}/ca/{}/createChannel/".format(SITE_HOST, p.token), json_file).read())
+    response = json.loads(postURL("http://{}/sd/{}/createChannel/".format(SITE_HOST, p.token), json_file).read())
     assert('FAILED' == response)
 
 class Test_Delete_Channel_Json():
@@ -231,11 +231,11 @@ class Test_Delete_Channel_Json():
     json_file.seek(0)
 
     # posting the JSON url and checking if it is successful
-    response = json.loads(postURL("http://{}/ca/{}/deleteChannel/".format(SITE_HOST, p.token), json_file).read())
+    response = json.loads(postURL("http://{}/sd/{}/deleteChannel/".format(SITE_HOST, p.token), json_file).read())
     assert('SUCCESS' == response)
 
     # fetching the JSON info
-    f = getURL("http://{}/ca/{}/info/".format(SITE_HOST, p.token))
+    f = getURL("http://{}/sd/{}/info/".format(SITE_HOST, p.token))
 
     # read the JSON file
     proj_info = json.loads(f.read())

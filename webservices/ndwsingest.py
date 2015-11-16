@@ -25,10 +25,10 @@ django.setup()
 from django.conf import settings
 
 from cube import Cube
-from ndtype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, ANNOTATION_CHANNELS, OCP_dtypetonp, UINT8, UINT16, UINT32
-import ocpcarest
+from ndtype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, ANNOTATION_CHANNELS, ND_dtypetonp, UINT8, UINT16, UINT32
+import ndwsrest
 import spatialdb
-import ocpcaproj
+import ndproj
 import ndlib
 
 class IngestData:
@@ -88,10 +88,10 @@ class IngestData:
     """Ingest a CATMAID tile stack"""
 
     # Load a database
-    with closing (ocpcaproj.OCPCAProjectsDB()) as projdb:
+    with closing (ndproj.NDProjectsDB()) as projdb:
       proj = projdb.loadToken(self.token)
 
-    with closing (spatialdb.SPATIALDB(proj)) as db:
+    with closing (spatialdb.SpatialDB(proj)) as db:
 
       ch = proj.getChannelObj(self.channel)
       # get the dataset configuration
@@ -153,10 +153,10 @@ class IngestData:
     """Ingest a TIF image stack"""
 
     # Load a database
-    with closing (ocpcaproj.OCPCAProjectsDB()) as projdb:
+    with closing (ndproj.NDProjectsDB()) as projdb:
       proj = projdb.loadToken(self.token)
 
-    with closing (spatialdb.SPATIALDB(proj)) as db:
+    with closing (spatialdb.SpatialDB(proj)) as db:
 
       ch = proj.getChannelObj(self.channel)
       # get the dataset configuration
@@ -171,7 +171,7 @@ class IngestData:
       # Get a list of the files in the directories
       for timestamp in range(starttime, endtime+1):
         for slice_number in range (zoffset, zimagesz+1, zcubedim):
-          slab = np.zeros([zcubedim, yimagesz, ximagesz ], dtype=OCP_dtypetonp.get(ch.getDataType()))
+          slab = np.zeros([zcubedim, yimagesz, ximagesz ], dtype=ND_dtypetonp.get(ch.getDataType()))
           # fetch 16 slices at a time
           if ch.getChannelType() in TIMESERIES_CHANNELS:
             time_value = timestamp

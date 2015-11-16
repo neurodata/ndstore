@@ -22,8 +22,8 @@ import random
 import h5py
 
 sys.path += [os.path.abspath('../django')]
-import OCP.settings
-os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
+import ND.settings
+os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
 
 from params import Params
 from postmethods import getURL, postURL, putAnnotation
@@ -77,7 +77,7 @@ class Test_Annotation_Json():
     p.annoid = putAnnotation(p, tmpfile)
     
     # fetching the JSON info
-    f = getURL("http://{}/ca/{}/{}/{}/json/".format(SITE_HOST, p.token, p.channels[0], ann_annoid))
+    f = getURL("http://{}/sd/{}/{}/{}/json/".format(SITE_HOST, p.token, p.channels[0], ann_annoid))
 
     # read the JSON file
     ann_info = json.loads(f.read())
@@ -91,7 +91,7 @@ class Test_Annotation_Json():
 
     ann_annoid = str(13);
     # fetching the JSON info
-    f = getURL("http://{}/ca/{}/{}/{}/json/".format(SITE_HOST, p.token, p.channels, ann_annoid))
+    f = getURL("http://{}/sd/{}/{}/{}/json/".format(SITE_HOST, p.token, p.channels, ann_annoid))
     
     assert(f == 404)
 

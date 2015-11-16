@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-class NDSPError (Exception):
+class NDWSError (Exception):
   """General annotation error"""
   
   def __init__(self, value):

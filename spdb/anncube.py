@@ -21,7 +21,7 @@ import zlib
 import ndlib
 from cube import Cube
 
-from ndsperror import NDSPError 
+from spatialdberror import SpatialDBError 
 import logging
 logger=logging.getLogger("neurodata")
 
@@ -72,7 +72,7 @@ class AnnotateCube(Cube):
       self.data, exceptions = ndlib.annotate_ctype( self.data, annid, offset, np.array(locations, dtype=np.uint32), conflictopt )
       return exceptions
     except IndexError, e:
-      raise NDSPError ("Voxel list includes out of bounds request.")
+      raise SpatialDBError ("Voxel list includes out of bounds request.")
 
 
   def shave ( self, annid, offset, locations ):

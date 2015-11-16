@@ -97,7 +97,7 @@ class Test_Ramon:
 # Not implemented yet.
 
     # check the synapse_type 
-#    url =  "http://%s/ca/%s/query/synapse_type/%s/" % ( SITE_HOST, 'unittest', synapse_type )
+#    url =  "http://%s/sd/%s/query/synapse_type/%s/" % ( SITE_HOST, 'unittest', synapse_type )
 #    req = urllib2.Request ( url )
 #    f = urllib2.urlopen ( url )
 #    retfile = tempfile.NamedTemporaryFile ( )
@@ -107,7 +107,7 @@ class Test_Ramon:
 #    assert h5ret['ANNOIDS'].shape[0] ==5
 #
 #    # check the synapse_weight 
-#    url =  "http://%s/ca/%s/query/synapse_weight/%s/%s/" % ( SITE_HOST, 'unittest', 'gt', confidence-0.00001 )
+#    url =  "http://%s/sd/%s/query/synapse_weight/%s/%s/" % ( SITE_HOST, 'unittest', 'gt', confidence-0.00001 )
 #    req = urllib2.Request ( url )
 #    f = urllib2.urlopen ( url )
 #    retfile = tempfile.NamedTemporaryFile ( )

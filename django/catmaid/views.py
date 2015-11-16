@@ -23,7 +23,7 @@ import simplecatmaid
 #import colorcatmaid
 
 # Errors we are going to catch
-from ocpcaerror import OCPCAError
+from ndwserror import NDWSError
 
 import logging
 logger=logging.getLogger("ocp")
@@ -37,7 +37,7 @@ def mcfccatmaidview (request, webargs):
     imgfobj = mc.getTile(webargs)
     return django.http.HttpResponse(imgfobj.read(), content_type="image/png")
 
-  except OCPCAError, e:
+  except NDWSError, e:
     return django.http.HttpResponseNotFound(e)
   except Exception, e:
     logger.exception("Unknown exception in mcfccatmaidview: {}".format(e) )
@@ -51,7 +51,7 @@ def simplecatmaidview (request, webargs):
     imgfobj = sc.getTile(webargs)
     return django.http.HttpResponse(imgfobj.read(), content_type="image/png")
 
-  except OCPCAError, e:
+  except NDWSError, e:
     return django.http.HttpResponseNotFound(e)
   except Exception, e:
     logger.exception("Unknown exception in simplecatmaidview: {}".format(e) )
@@ -74,7 +74,7 @@ def simplevikingview (request, webargs):
     response['content-length'] = len(response.content)
     return response
 
-  except OCPCAError, e:
+  except NDWSError, e:
     return django.http.HttpResponseNotFound(e)
   except Exception, e:
     logger.exception("Unknown exception in simplecatmaidview: {}".format(e) )

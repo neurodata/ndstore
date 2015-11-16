@@ -19,25 +19,24 @@ import requests
 
 from django.conf import settings
 
-import ocpcaproj
-from ocpcaingest import IngestData
+import ndproj
+from ndwsingest import IngestData
 from ndtype import READONLY_FALSE
-from ocpuser.models import Project
-from ocpuser.models import Dataset
-from ocpuser.models import Token
-from ocpuser.models import Channel
-from ocpuser.models import User
-
+from nduser.models import Project
+from nduser.models import Dataset
+from nduser.models import Token
+from nduser.models import Channel
+from nduser.models import User
 
 def autoIngest(webargs, post_data):
   """Create a project using a JSON file"""
   
-  ocp_dict = json.loads(post_data)
+  nd_dict = json.loads(post_data)
   try:
-    dataset_dict = ocp_dict['dataset']
-    project_dict = ocp_dict['project']
-    channels = ocp_dict['channels']
-    metadata_dict = ocp_dict['metadata']
+    dataset_dict = nd_dict['dataset']
+    project_dict = nd_dict['project']
+    channels = nd_dict['channels']
+    metadata_dict = nd_dict['metadata']
   except Exception, e:
     print "Missing requred fields"
     raise
@@ -93,8 +92,8 @@ def autoIngest(webargs, post_data):
       pr.save()
       tk.project_id = pr.project_name
       tk.save()
-      pd = ocpcaproj.OCPCAProjectsDB()
-      pd.newOCPCAProject(pr.project_name)
+      pd = ndproj.NDProjectsDB()
+      pd.newNDProject(pr.project_name)
 
     # Iterating over channel list to store channels
     for (ch, data_url, file_format, file_type) in ch_list:
@@ -103,12 +102,12 @@ def autoIngest(webargs, post_data):
       # Checking if the channel already exists or not
       if not Channel.objects.filter(channel_name = ch.channel_name, project = pr.project_name).exists():
         ch.save()
-        pd.newOCPCAChannel(pr.project_name, ch.channel_name)
+        pd.newNDChannel(pr.project_name, ch.channel_name)
       else:
         print "Channel already exists"
         raise
       
-      from ocpca.tasks import ingest
+      from nd.tasks import ingest
       #ingest(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
       ingest.delay(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
     
@@ -121,9 +120,9 @@ def autoIngest(webargs, post_data):
     try:
       pd
     except NameError:
-      pd = ocpcaproj.OCPCAProjectsDB()
+      pd = ndproj.NDProjectsDB()
     if pr is not None:
-      pd.deleteOCPCADB(pr.project_name)
+      pd.deleteNDDB(pr.project_name)
     print "Error saving models"
     return_json = "FAILED"
 
@@ -140,9 +139,9 @@ def createChannel(webargs, post_data):
     print "Error in URL format"
     raise
   
-  ocp_dict = json.loads(post_data)
+  nd_dict = json.loads(post_data)
   try:
-    channels = ocp_dict['channels']
+    channels = nd_dict['channels']
   except Exception, e:
     print "Missing requred fields"
     raise
@@ -168,9 +167,9 @@ def createChannel(webargs, post_data):
       # Setting the user_ids based on token user_id
       ch.user_id = tk.user_id
       ch.save()
-      # Create channel database using the ocpcaproj interface
-      pd = ocpcaproj.OCPCAProjectsDB()
-      pd.newOCPCAChannel(pr.project_name, ch.channel_name)
+      # Create channel database using the ndproj interface
+      pd = ndproj.NDProjectsDB()
+      pd.newNDChannel(pr.project_name, ch.channel_name)
     # return the JSON file with success
     return_json = "SUCCESS"
   except Exception, e:
@@ -191,9 +190,9 @@ def deleteChannel(webargs, post_data):
     print "Error in URL format"
     raise
   
-  ocp_dict = json.loads(post_data)
+  nd_dict = json.loads(post_data)
   try:
-    channels = ocp_dict['channels']
+    channels = nd_dict['channels']
   except Exception, e:
     print "Missing requred fields"
     raise
@@ -210,9 +209,9 @@ def deleteChannel(webargs, post_data):
         ch = Channel.objects.get(channel_name = channel_name, project = pr.project_name)
         # Checking if channel is readonly or not
         if ch.readonly == READONLY_FALSE:
-          # delete channel table using the ocpcaproj interface
-          pd = ocpcaproj.OCPCAProjectsDB()
-          pd.deleteOCPCAChannel(pr.project_name, ch.channel_name)
+          # delete channel table using the ndproj interface
+          pd = ndproj.NDProjectsDB()
+          pd.deleteNDChannel(pr.project_name, ch.channel_name)
           ch.delete()
     return_json = "SUCCESS"
   except Exception, e:
@@ -325,20 +324,20 @@ def extractChannelDict(ch_dict, channel_only=False):
     return ch
 
 def createJson(dataset, project, channel_list, metadata={}, channel_only=False):
-  """Genarate OCP json object"""
+  """Genarate ND json object"""
   
-  ocp_dict = {}
-  ocp_dict['channels'] = {}
+  nd_dict = {}
+  nd_dict['channels'] = {}
   if not channel_only:
-    ocp_dict['dataset'] = createDatasetDict(*dataset)
-    ocp_dict['project'] = createProjectDict(*project)
-    ocp_dict['metadata'] = metadata
+    nd_dict['dataset'] = createDatasetDict(*dataset)
+    nd_dict['project'] = createProjectDict(*project)
+    nd_dict['metadata'] = metadata
   
   for channel_name, value in channel_list.iteritems():
     value = value + (channel_only,)
-    ocp_dict['channels'][channel_name] = createChannelDict(*value)
+    nd_dict['channels'][channel_name] = createChannelDict(*value)
   
-  return json.dumps(ocp_dict, sort_keys=True, indent=4)
+  return json.dumps(nd_dict, sort_keys=True, indent=4)
 
 def createDatasetDict(dataset_name, imagesize, voxelres, offset=[0,0,0], timerange=[0,0], scalinglevels=0, scaling=0):
   """Generate the dataset dictionary"""
@@ -417,19 +416,19 @@ def extractProjectDict(pr_dict):
 
 
 def createJson(dataset, project, channel_list, metadata={}, channel_only=False):
-  """Genarate OCP json object"""
+  """Genarate ND json object"""
   
-  ocp_dict = {}
-  ocp_dict['channels'] = {}
+  nd_dict = {}
+  nd_dict['channels'] = {}
   if not channel_only:
-    ocp_dict['dataset'] = createDatasetDict(*dataset)
-    ocp_dict['project'] = createProjectDict(*project)
-    ocp_dict['metadata'] = metadata
+    nd_dict['dataset'] = createDatasetDict(*dataset)
+    nd_dict['project'] = createProjectDict(*project)
+    nd_dict['metadata'] = metadata
   
   for channel_name, value in channel_list.iteritems():
-    ocp_dict['channels'][channel_name] = createChannelDict(*value)
+    nd_dict['channels'][channel_name] = createChannelDict(*value)
   
-  return json.dumps(ocp_dict, sort_keys=True, indent=4)
+  return json.dumps(nd_dict, sort_keys=True, indent=4)
 
 def createDatasetDict(dataset_name, imagesize, voxelres, offset=[0,0,0], timerange=[0,0], scalinglevels=0, scaling=0):
   """Generate the dataset dictionary"""

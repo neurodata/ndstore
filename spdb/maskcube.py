@@ -17,7 +17,7 @@ from PIL import Image
 
 from cube import Cube
 
-from ndsperror import NDSPError
+from spatialdberror import SpatialDBError
 import logging
 logger=logging.getLogger("ocp")
 

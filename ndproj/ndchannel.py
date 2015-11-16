@@ -15,9 +15,9 @@
 
 import re
 
-from ocpcaerror import OCPCAError
+from ndwserror import NDWSError
 import logging
-logger=logging.getLogger("ocp")
+logger=logging.getLogger("neurodata")
 
 
 #
@@ -26,7 +26,7 @@ logger=logging.getLogger("ocp")
 #    convert from numerals to integers and back
 #
 
-class OCPCAChannels:
+class NDChannels:
 
   def __init__( self, db ):
     """Do nothing on init.  Load the channels lazily"""
@@ -45,7 +45,7 @@ class OCPCAChannels:
       return self.chanmap[chanstr]
     except:
       logger.error("Did not find channel %s" % (chanstr))
-      raise OCPCAError("Did not find channel %s" % (chanstr))
+      raise NDWSError("Did not find channel %s" % (chanstr))
 
 
   def rewriteToInts ( self, channels ):
@@ -65,7 +65,7 @@ class OCPCAChannels:
 
     return outchannels
 
-# end OCPCAChannel
+# end NDChannel
 
 def toID ( channel, db ):
   """Convert a single channel to an identifier"""
@@ -74,5 +74,5 @@ def toID ( channel, db ):
   if type(channel)==int or type(channel)==long or re.match ('^\d+$', channel):
     return channel
   else:
-    ocpcachans = OCPCAChannels( db )
-    return ocpcachans.getChannelID ( channel )
+    ndchans = NDChannels( db )
+    return ndchans.getChannelID ( channel )

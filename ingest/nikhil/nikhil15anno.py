@@ -32,7 +32,7 @@ import django
 django.setup()
 
 import imagecube
-import ocplib
+import ndlib
 import ocpcarest
 import ocpcaproj
 import ocpcadb
@@ -91,7 +91,7 @@ class NikhilIngest:
           for x in range(0, ximagesz + 1, xcubedim):
 
             # Getting a Cube id and ingesting the data one cube at a time
-            zidx = ocplib.XYZMorton([x / xcubedim, y / ycubedim, (slice_number - zoffset) / zcubedim])
+            zidx = ndlib.XYZMorton([x / xcubedim, y / ycubedim, (slice_number - zoffset) / zcubedim])
             cube = Cube.getCube(cubedim, ch.getChannelType(), ch.getDataType())
             cube.zeros()
 

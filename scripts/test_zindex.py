@@ -24,15 +24,15 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
 from django.conf import settings
 
 import zindex
-import ocplib
+import ndlib
 
 print zindex.MortonXYZ(831488)
 
 dims = (10234,9703,11009)
 print "DIMENSIONS:", dims
-key = ocplib.XYZMorton(dims)
+key = ndlib.XYZMorton(dims)
 print "KEY:",key
-print "WHAT WE GET BACK:", ocplib.MortonXYZ(key)
+print "WHAT WE GET BACK:", ndlib.MortonXYZ(key)
 
 print "DIMENSIONS:", dims
 key = zindex.XYZMorton(dims)

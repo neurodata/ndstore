@@ -60,7 +60,7 @@ class Test_Jpeg:
     image_data = np.ones( [2,10,100,100], dtype=np.uint8 ) * random.randint(0,255)
     response = postNPZ(p, image_data)
     
-    url = "http://{}/ca/{}/{}/jpeg/{}/{},{}/{},{}/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[5])
+    url = "http://{}/sd/{}/{}/jpeg/{}/{},{}/{},{}/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[5])
     data = getURL(url).read()
     posted_data = np.asarray( Image.open(cStringIO.StringIO(data)) )
 

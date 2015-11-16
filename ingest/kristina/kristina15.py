@@ -36,7 +36,7 @@ from cube import Cube
 import ocpcarest
 import ocpcadb
 import ocpcaproj
-import ocplib
+import ndlib
 
 END_WINDOWS = [18603, 19194, 16383, 17391, 18317, 17573, 16383, 18480, 18848, 18711, 18441, 17956, 16383, 18051, 17806, 18893, 19261, 17562, 20017, 18504, 17043, 18083, 17875, 16383]
 
@@ -156,7 +156,7 @@ class Ingest_Data:
           for x in range(0, ximagesz + 1, xcubedim):
 
             # Getting a Cube id and ingesting the data one cube at a time
-            zidx = ocplib.XYZMorton([x / xcubedim, y / ycubedim, (slice_number - zoffset) / zcubedim])
+            zidx = ndlib.XYZMorton([x / xcubedim, y / ycubedim, (slice_number - zoffset) / zcubedim])
             cube = Cube.getCube(cubedim, ch.getChannelType(), ch.getDataType())
             cube.zeros()
 

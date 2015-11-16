@@ -16,7 +16,7 @@ import django
 django.setup()
 
 from cube import Cube 
-import ocplib
+import ndlib
 import ocpcarest
 import ocpcaproj
 import ocpcadb
@@ -38,7 +38,7 @@ def zoomIn(old_data, scaling):
 def cZoomIn(old_data, factor):
   scaling = 2**factor
   new_data = np.zeros ( [old_data.shape[0], old_data.shape[1]*(scaling), old_data.shape[2]*(scaling)], dtype=np.uint16)
-  ocplib.zoomInData_ctype_OMP ( old_data, new_data, int(factor) )
+  ndlib.zoomInData_ctype_OMP ( old_data, new_data, int(factor) )
   return new_data 
 
 def buildStack(token, channel, res, base_res):
@@ -80,7 +80,7 @@ def buildStack(token, channel, res, base_res):
             for y2 in range(newysize):
               for x2 in range(newxsize):
                 #print "{} {} {}".format(x*newxsize+x2,y*newysize+y2,z*newzsize+z2)
-                zidx = ocplib.XYZMorton([x*newxsize+x2, y*newysize+y2, z*newzsize+z2])
+                zidx = ndlib.XYZMorton([x*newxsize+x2, y*newysize+y2, z*newzsize+z2])
                 cube = Cube.getCube(newcubedim, ch.getChannelType(), ch.getDataType())
                 cube.zeros()
                 cube.data = new_data[z2*newcubedim[2]:(z2+1)*newcubedim[2], y2*newcubedim[1]:(y2+1)*newcubedim[1], x2*newcubedim[0]:(x2+1)*newcubedim[0]]

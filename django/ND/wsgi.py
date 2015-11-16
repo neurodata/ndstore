@@ -31,18 +31,8 @@ import os
 import sys
 from django.core.wsgi import get_wsgi_application
 
-<<<<<<< HEAD:django/ND/wsgi.py
 sys.path += [  os.path.abspath(os.path.join(os.path.dirname(__file__), ".." ))]
 
-#RB Test
-#os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ND.settings")
-
 os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
-=======
-# sys.path += [  os.path.abspath(os.path.join(os.path.dirname(__file__), ".." ))]
-
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "OCP.settings")
-# os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
->>>>>>> 3f4ffac13751b8e8b41d2a73c98c21ada7638347:django/OCP/wsgi.py
 
 application = get_wsgi_application()

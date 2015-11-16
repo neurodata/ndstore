@@ -25,9 +25,9 @@ from PIL import ImageOps
 
 from contextlib import closing
 
-import ocpcarest
-import ocpcaproj
-import ocpcadb
+import ndwsrest
+import ndproj
+import spdb
 
 
 class Synaptogram:
@@ -53,7 +53,7 @@ class Synaptogram:
 
     # pattern for using contexts to close databases
     # get the project 
-    with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+    with closing ( ndproj.NDProjectsDB() ) as projdb:
       self.proj = projdb.loadProject ( token )
 
 
@@ -102,7 +102,7 @@ class Synaptogram:
     z = z - self.proj.datasetcfg.slicerange[0]
 
     # and the database and then call the db function
-    with closing ( ocpcadb.OCPCADB(self.proj) ) as db:
+    with closing ( nddb.NDDB(self.proj) ) as db:
 
       # if we have a globale normalization request, do a big cutout to get a send of values and then 
       #  set a maximum value for each channel

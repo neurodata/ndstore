@@ -23,9 +23,9 @@ import re
 
 import annotation
 
-from ocpcaerror import OCPCAError
+from ndwserror import NDWSError
 import logging
-logger=logging.getLogger("ocp")
+logger=logging.getLogger("neurodata")
 
 #
 #  class to define the HDF5 format of annotations.
@@ -276,7 +276,7 @@ def H5toAnnotation ( key, idgrp, annodb ):
 
   else:
     logger.warning ("Dont support this annotation type yet. Type = %s" % annotype)
-    raise OCPCAError ("Dont support this annotation type yet. Type = %s" % annotype)
+    raise NDWSError ("Dont support this annotation type yet. Type = %s" % annotype)
 
   # now load the annotation common fields
   if re.match("^\d+$", key):
@@ -328,7 +328,7 @@ def H5GetVolume ( h5fh ):
       return (idgrp['XYZOFFSET'], idgrp['CUTOUT'])
     else:
       logger.warning("Improperly formatted HDF5 file.  XYZOFFSET define but no CUTOUT.")
-      raise OCPCAError("Improperly formatted HDF5 file.  XYZOFFSET define but no CUTOUT.")
+      raise NDWSError("Improperly formatted HDF5 file.  XYZOFFSET define but no CUTOUT.")
   else:
     return None
 
@@ -515,7 +515,7 @@ def AnnotationtoH5 ( anno, h5fh ):
     return BasetoH5 ( anno, annotation.ANNO_ANNOTATION, h5fh )
   else:
     logger.warning ("(AnnotationtoH5) Does not support this annotation type yet. Type = %s" % anno.__class__)
-    raise OCPCAError ("(AnnotationtoH5) Does not support this annotation type yet. Type = %s" % anno.__class__)
+    raise NDWSError ("(AnnotationtoH5) Does not support this annotation type yet. Type = %s" % anno.__class__)
 
 
 

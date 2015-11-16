@@ -14,13 +14,10 @@
 
 import aerospike
 
-<<<<<<< HEAD:spdb/askvio.py
 """Helpers function to do cube I/O in across multiple DBs.
     This file is aerospike
-    This uses the state and methods of spdb"""
+    This uses the state and methods of spatialdb"""
 
-=======
->>>>>>> 3f4ffac13751b8e8b41d2a73c98c21ada7638347:ndspatialdb/askvio.py
 class AerospikeKVIO:
 
   def __init__ ( self, db ):
@@ -54,7 +51,7 @@ class AerospikeKVIO:
   def getCube ( self, zidx, resolution, update ):
     """Retrieve a cube from the database by token, resolution, and zidx"""
 
-    askey = ( "spdb", self.db.annoproj.getDBName(), str(resolution)+"_"+str(zidx) )
+    askey = ( "neurodata", self.db.annoproj.getDBName(), str(resolution)+"_"+str(zidx) )
 
     (retkey, asmd, asvalue) = self.ascli.get ( askey )
     if asvalue != None:
@@ -80,7 +77,7 @@ class AerospikeKVIO:
   def putCube ( self, zidx, resolution, cubestr, update ):
     """Store a cube from the annotation database"""
 
-    askey = ( "spdb", self.db.annoproj.getDBName(), str(resolution)+"_"+str(zidx) )
+    askey = ( "ndspatial", self.db.annoproj.getDBName(), str(resolution)+"_"+str(zidx) )
     self.ascli.put ( askey, {'cuboid':cubestr} ) 
 
 

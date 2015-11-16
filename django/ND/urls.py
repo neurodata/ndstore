@@ -29,8 +29,8 @@ base_urlpatterns = patterns('',
     url(r'^accounts/', include('registration.backends.default.urls')),
     url(r'^ocpuser/', include('nduser.urls')),  # legacy RB
     url(r'^nduser/', include('nduser.urls')),  
-    url(r'^viz/', include('ocpviz.urls')),  # ABTODO
-    url(r'^ocpgraph/', include('ocpgraph.urls')), #??TODO
+#    url(r'^viz/', include('ocpviz.urls')),  # ABTODO
+#    url(r'^ocpgraph/', include('ocpgraph.urls')), #??TODO
 )
 
 urlpatterns = patterns('', 

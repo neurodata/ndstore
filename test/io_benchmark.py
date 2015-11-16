@@ -29,10 +29,10 @@ from operator import add, sub, mul
 from functools import reduce
 
 sys.path += [os.path.abspath('../django/')]
-import OCP.settings
+import ND.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'ocpblaze.settings'
 
-from ocplib import MortonXYZ
+from ndlib import MortonXYZ
 
 def getURL(url):
   """Get data"""
@@ -81,7 +81,7 @@ class BenchmarkTest:
     """Get the project info"""
 
     # Build the url
-    url = 'http://{}/ca/{}/info/'.format(self.host, self.token)
+    url = 'http://{}/sd/{}/info/'.format(self.host, self.token)
     f = getURL(url)
     info = json.loads(f.read())
     self.dim = info['dataset']['cube_dimension'][self.resolution]
@@ -92,7 +92,7 @@ class BenchmarkTest:
     """Post data using the blosc interface"""
 
     # Build the url
-    url = 'http://{}/ca/{}/{}/blosc/{}/{},{}/{},{}/{},{}/'.format(self.host, self.token, ','.join(self.channels), self.resolution, *range_args)
+    url = 'http://{}/sd/{}/{}/blosc/{}/{},{}/{},{}/{},{}/'.format(self.host, self.token, ','.join(self.channels), self.resolution, *range_args)
     # print url
     getURL(url)
 

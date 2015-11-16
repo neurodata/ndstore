@@ -28,7 +28,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
 from django.conf import settings
 
 import imagecube
-import ocplib
+import ndlib
 import ocpcarest
 import ocpcaproj
 import ocpcadb
@@ -94,7 +94,7 @@ class CatmaidIngest:
             for y in range ( ytile*self.tilesz, (ytile+1)*self.tilesz, ycubedim ):
               for x in range ( xtile*self.tilesz, (xtile+1)*self.tilesz, xcubedim ):
 
-                zidx = ocplib.XYZMorton ( [ x/xcubedim, y/ycubedim, (sl-startslice)/zcubedim] )
+                zidx = ndlib.XYZMorton ( [ x/xcubedim, y/ycubedim, (sl-startslice)/zcubedim] )
                 cubedata = np.zeros ( [zcubedim, ycubedim, xcubedim], dtype=np.uint8 )
 
                 xmin = x % self.tilesz

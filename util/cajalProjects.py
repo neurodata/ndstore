@@ -16,7 +16,7 @@ from ocpuser.models import *
 import ocpcarest
 import ocpcadb
 import ocpcaproj
-import ocplib
+import ndlib
 
 class CAJALProject( ):
   

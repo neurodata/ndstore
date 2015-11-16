@@ -28,7 +28,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
 from django.conf import settings
 
 import imagecube
-import ocplib
+import ndlib
 import ocpcarest
 import ocpcaproj
 import ocpcadb
@@ -83,7 +83,7 @@ class CatmaidIngest:
         for y in range ( 0, yimagesz, ycubedim ):
           for x in range ( 0, ximagesz, xcubedim ):
 
-            zidx = ocplib.XYZMorton ( [ x/xcubedim, y/ycubedim, (sl-startslice)/zcubedim] )
+            zidx = ndlib.XYZMorton ( [ x/xcubedim, y/ycubedim, (sl-startslice)/zcubedim] )
             cubedata = np.zeros ( [zcubedim, ycubedim, xcubedim], dtype=np.uint8 )
 
             xmin = x
@@ -98,7 +98,7 @@ class CatmaidIngest:
             cube.zeros()
             cube.data = cubedata
             if np.count_nonzero ( cube.data ) != 0:
-              print zidx, ocplib.MortonXYZ(zidx)
+              print zidx, ndlib.MortonXYZ(zidx)
               db.putCube ( zidx, self.resolution, cube )
           print "Commiting at x=%s, y=%s, z=%s" % (x,y,sl)
         db.conn.commit()

@@ -179,28 +179,28 @@ def makeAnno ( p, anntype ):
 def getId ( p ):
   """Get the annotation at this Id"""
 
-  url = "http://{}/ca/{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid)
+  url = "http://{}/sd/{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid)
   return getH5id ( getURL(url) )
 
 
 def getField (p, field):
   """Get the specified field"""
 
-  url =  "http://{}/ca/{}/{}/getField/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid, field)
+  url =  "http://{}/sd/{}/{}/getField/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid, field)
   return getURL( url )
 
 
 def setField (p, field, value):
   """Set the specified field to the value"""
 
-  url =  "http://{}/ca/{}/{}/setField/{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid, field, value)
+  url =  "http://{}/sd/{}/{}/setField/{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid, field, value)
   assert ( getURL(url).read() == '')
 
 
 def queryField (p, field, value):
   """Get the specified query to the value"""
 
-  url =  "http://{}/ca/{}/{}/query/{}/{}/".format(SITE_HOST, p.token, p.channels[0], field, value)
+  url =  "http://{}/sd/{}/{}/query/{}/{}/".format(SITE_HOST, p.token, p.channels[0], field, value)
   f = getURL(url)
   tmpfile = tempfile.NamedTemporaryFile ( )
   tmpfile.write ( f.read() )

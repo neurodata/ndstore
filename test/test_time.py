@@ -79,7 +79,7 @@ class Test_Image_Slice:
     time_data = np.ones( [2,2,1,100,100], dtype=np.uint8 ) * random.randint(0,255)
     response = postNPZ(p, time_data, time=True)
 
-    url = "http://{}/ca/{}/{}/xy/{}/{},{}/{},{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[6])
+    url = "http://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[6])
     f = getURL (url)
 
     slice_data = np.asarray ( Image.open(StringIO(f.read())) )
@@ -92,7 +92,7 @@ class Test_Image_Slice:
     image_data = np.ones( [2,1,100,100,1], dtype=np.uint8 ) * random.randint(0,255)
     response = postNPZ(p, image_data, time=True)
 
-    url = "http://{}/ca/{}/{}/yz/{}/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[2], p.args[3], p.args[4], p.args[5], p.args[6])
+    url = "http://{}/sd/{}/{}/yz/{}/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[2], p.args[3], p.args[4], p.args[5], p.args[6])
     f = getURL (url)
 
     slice_data = np.asarray ( Image.open(StringIO(f.read())) )
@@ -105,7 +105,7 @@ class Test_Image_Slice:
     image_data = np.ones( [2,1,100,1,100], dtype=np.uint8 ) * random.randint(0,255)
     response = postNPZ(p, image_data, time=True)
 
-    url = "http://{}/ca/{}/{}/xz/{}/{},{}/{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[4], p.args[5], p.args[6])
+    url = "http://{}/sd/{}/{}/xz/{}/{},{}/{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[4], p.args[5], p.args[6])
     f = getURL (url)
 
     slice_data = np.asarray ( Image.open(StringIO(f.read())) )
@@ -116,7 +116,7 @@ class Test_Image_Slice:
 
     #p.args = (11000,11100,4000,4100,200,201)
 
-    #url = "http://{}/ca/{}/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
+    #url = "http://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
     #assert ( 404 == getURL (url) )
 
 
@@ -301,7 +301,7 @@ class Test_Time_Window:
     image_data = np.ones([2,2,1,100,100], dtype=np.uint16) * 2000
     response = postNPZ(p, image_data, time=True)
 
-    url = "http://{}/ca/{}/{}/xy/{}/{},{}/{},{}/{}/{}".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[6])
+    url = "http://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/{}".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[6])
     f = getURL (url)
 
     from windowcutout import windowCutout
@@ -317,7 +317,7 @@ class Test_Time_Window:
     image_data = np.ones([2,2,1,100,100], dtype=np.uint16) * 2000
     response = postNPZ(p, image_data, time=True)
 
-    url = "http://{}/ca/{}/{}/xy/{}/{},{}/{},{}/{}/{}/window/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[6], *p.window)
+    url = "http://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/{}/window/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[6], *p.window)
     f = getURL (url)
 
     from windowcutout import windowCutout
@@ -357,7 +357,7 @@ class Test_Time_Window:
     ## check that the return matches
     #assert ( np.array_equal(voxarray,image_data) )
 
-    #url = "http://{}/ca/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
+    #url = "http://{}/sd/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
     #f = getURL (url)
 
     #slice_data = np.asarray ( Image.open(StringIO(f.read())) )

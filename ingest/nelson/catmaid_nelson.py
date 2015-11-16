@@ -31,7 +31,7 @@ django.setup()
 import ocpcaproj
 import ocpcadb
 import ocpcarest
-import ocplib
+import ndlib
 from cube import Cube
 
 
@@ -94,7 +94,7 @@ class CatmaidIngest:
             for x in range (0, ximagesz+1, xcubedim):
               
               # getting the cube id and ingesting the data one cube at a time
-              zidx = ocplib.XYZMorton ([x/xcubedim, y/ycubedim, (slice_number)/zcubedim])
+              zidx = ndlib.XYZMorton ([x/xcubedim, y/ycubedim, (slice_number)/zcubedim])
               cube = Cube.getCube(cubedim, ch.getChannelType(), ch.getDataType())
               cube.zeros()
 

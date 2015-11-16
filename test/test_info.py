@@ -42,7 +42,7 @@ p.token = 'unittest'
 p.channels = ['unit_anno']
 
 class Test_Info:
-  """Other interfaces to OCPCA that don't fit into other categories"""
+  """Other interfaces to NDCA that don't fit into other categories"""
 
   def setup_class(self):
     """Create the unittest database"""
@@ -55,7 +55,7 @@ class Test_Info:
   def test_public_tokens (self):
     """Test the function that shows the public tokens"""
 
-    f =  getURL("http://{}/ca/public_tokens/".format( SITE_HOST ))
+    f =  getURL("http://{}/sd/public_tokens/".format( SITE_HOST ))
 
     # read the json data
     tokens = json.loads ( f.read() )
@@ -64,7 +64,7 @@ class Test_Info:
   def test_info(self):
     """Test the info query"""
 
-    f = getURL("http://{}/ca/{}/info/".format(SITE_HOST, p.token))
+    f = getURL("http://{}/sd/{}/info/".format(SITE_HOST, p.token))
     
     # read the json data
     projinfo = json.loads ( f.read() )
@@ -76,7 +76,7 @@ class Test_Info:
   def test_projinfo (self):
     """Test the projinfo query"""
 
-    f = getURL("http://{}/ca/{}/projinfo/".format(SITE_HOST, p.token))
+    f = getURL("http://{}/sd/{}/projinfo/".format(SITE_HOST, p.token))
 
     # read the hdf5 file
     tmpfile = tempfile.NamedTemporaryFile ()
@@ -91,7 +91,7 @@ class Test_Info:
   def test_xmlinfo (self):
     """Test the projinfo query"""
 
-    f = getURL("http://{}/ca/{}/volume.vikingxml".format(SITE_HOST, p.token))
+    f = getURL("http://{}/sd/{}/volume.vikingxml".format(SITE_HOST, p.token))
 
     xmlinfo = etree.XML(f.read())
     assert( xmlinfo.values()[2] == p.token )
@@ -100,7 +100,7 @@ class Test_Info:
   def test_reserve ( self ):
     """Reserve 1000 ids twice and make sure that the numbers work"""
   
-    url =  "http://{}/ca/{}/{}/reserve/{}/".format( SITE_HOST, p.token, p.channels[0], 1000 )
+    url =  "http://{}/sd/{}/{}/reserve/{}/".format( SITE_HOST, p.token, p.channels[0], 1000 )
     f = getURL ( url )
     (id1, size1) = json.loads(f.read())
     f = getURL ( url )

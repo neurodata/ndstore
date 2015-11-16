@@ -186,9 +186,9 @@ class Test_Ramon:
     conn = httplib.HTTPConnection ( base )
 
     if suffix:
-      conn.request ('DELETE', '/{}/ca/{}/{}/{}/'.format(suffix, 'unittest', 'unit_anno', p.annoid)) 
+      conn.request ('DELETE', '/{}/sd/{}/{}/{}/'.format(suffix, 'unittest', 'unit_anno', p.annoid)) 
     else:
-      conn.request ('DELETE', '/ca/{}/{}/{}/'.format('unittest', 'unit_anno', p.annoid))
+      conn.request ('DELETE', '/sd/{}/{}/{}/'.format('unittest', 'unit_anno', p.annoid))
 
     resp = conn.getresponse()
     content=resp.read()
@@ -197,7 +197,7 @@ class Test_Ramon:
 
     # retrieve the annotation
     # verify that it's not there.
-    url = "http://{}/ca/{}/{}/{}/".format(SITE_HOST, 'unittest', 'unit_anno', p.annoid)
+    url = "http://{}/sd/{}/{}/{}/".format(SITE_HOST, 'unittest', 'unit_anno', p.annoid)
     with pytest.raises(urllib2.HTTPError): 
       urllib2.urlopen ( url )
 
@@ -418,20 +418,20 @@ class Test_Ramon:
     assert status == int(f.read())
     
     #  bad format to a number
-    url =  "http://{}/ca/{}/{}/{}/setField/status/aa/".format(SITE_HOST, 'unittest', 'unit_anno', p.annoid)
+    url =  "http://{}/sd/{}/{}/{}/setField/status/aa/".format(SITE_HOST, 'unittest', 'unit_anno', p.annoid)
     with pytest.raises(urllib2.HTTPError): 
       req = urllib2.Request ( url )
       f = urllib2.urlopen ( url )
     
     #  request a missing field
-    url =  "http://{}/ca/{}/{}/{}/getField/othernonesuch/".format(SITE_HOST, 'unittest', 'unit_anno', p.annoid)
+    url =  "http://{}/sd/{}/{}/{}/getField/othernonesuch/".format(SITE_HOST, 'unittest', 'unit_anno', p.annoid)
     with pytest.raises(urllib2.HTTPError): 
       req = urllib2.Request ( url )
       f = urllib2.urlopen ( url )
 
 # RBTODO add tests key/value and compound fields.
     #  assign a field for a wrong annotation type
-#    url =  "http://%s/ca/%s/%s/setField/segmentclass/2/" % ( SITE_HOST, 'unittest',str(annid))
+#    url =  "http://%s/sd/%s/%s/setField/segmentclass/2/" % ( SITE_HOST, 'unittest',str(annid))
 #    with pytest.raises(urllib2.HTTPError): 
 #      req = urllib2.Request ( url )
 #      f = urllib2.urlopen ( url )
@@ -461,7 +461,7 @@ class Test_Ramon:
 #
 #    # Now put an empty file
 #    # Build the put URL
-#    url = "http://%s/ca/%s/" % ( SITE_HOST, 'unittest')
+#    url = "http://%s/sd/%s/" % ( SITE_HOST, 'unittest')
 #
 #    # write an object (server creates identifier)
 #    req = urllib2.Request ( url, tmpfile.read())
@@ -470,7 +470,7 @@ class Test_Ramon:
 #
 #    # now read and verify
 #    # retrieve the annotation
-#    url = "http://%s/ca/%s/%s/" % ( SITE_HOST, 'unittest', str(putid))
+#    url = "http://%s/sd/%s/%s/" % ( SITE_HOST, 'unittest', str(putid))
 #    f = urllib2.urlopen ( url )
 #    retfile = tempfile.NamedTemporaryFile ( )
 #    retfile.write ( f.read() )

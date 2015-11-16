@@ -27,7 +27,7 @@ class ProjectForm(ModelForm):
 
     class Meta:
         model = Project
-        exclude = ('user','ocp_version','schema_version')
+        exclude = ('user','nd_version','schema_version')
         def clean_project(self):
             if 'project' in self.cleaned_data:
                 project = self.cleaned_data['project']

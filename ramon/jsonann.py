@@ -23,9 +23,9 @@ import json
 
 import annotation
 
-from ocpcaerror import OCPCAError
+from ndwserror import NDWSError
 import logging
-logger=logging.getLogger("ocp")
+logger=logging.getLogger("neurodata")
 
 #
 #  class to define the HDF5 format of annotations.
@@ -266,5 +266,5 @@ def AnnotationtoJSON ( anno ):
     return BasetoJSON ( anno, annotation.ANNO_ANNOTATION )
   else:
     logger.warning ("(AnnotationtoJSON) Does not support this annotation type yet. Type = %s" % anno.__class__)
-    raise OCPCAError ("(AnnotationtoJSON) Does not support this annotation type yet. Type = %s" % anno.__class__)
+    raise NDWSError ("(AnnotationtoJSON) Does not support this annotation type yet. Type = %s" % anno.__class__)
   

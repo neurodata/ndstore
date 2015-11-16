@@ -19,7 +19,7 @@ import numpy as np
 from ndtype import READONLY_FALSE, EXCEPTION_FALSE
 
 import logging
-logger=logging.getLogger("ocp")
+logger=logging.getLogger("neurodata")
 
 
 def h5ProjInfo ( proj, h5f ):
@@ -28,7 +28,7 @@ def h5ProjInfo ( proj, h5f ):
   projgrp = h5f.create_group ( 'PROJECT' )
   projgrp.create_dataset("NAME", (1,), dtype=h5py.special_dtype(vlen=str), data=proj.getProjectName())
   projgrp.create_dataset("HOST", (1,), dtype=h5py.special_dtype(vlen=str), data=proj.getDBHost())
-  projgrp.create_dataset("OCP_VERSION", (1,), dtype=h5py.special_dtype(vlen=str), data=proj.getOCPVersion())
+  projgrp.create_dataset("ND_VERSION", (1,), dtype=h5py.special_dtype(vlen=str), data=proj.getNDVersion())
   projgrp.create_dataset("SCHEMA_VERSION", (1,), dtype=h5py.special_dtype(vlen=str), data=proj.getSchemaVersion())
   #projgrp.create_dataset ( "DATAURL", (1,), dtype=h5py.special_dtype(vlen=str), data=proj._overlayserver )
   #projgrp.create_dataset ( "KNENGINE", (1,), dtype=h5py.special_dtype(vlen=str), data=proj._kvserver )

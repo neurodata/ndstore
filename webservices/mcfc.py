@@ -15,9 +15,9 @@
 import numpy as np
 from PIL import Image
 
-from ocpcaerror import OCPCAError
+from ndwserror import NDWSError
 import logging
-logger=logging.getLogger("ocp")
+logger=logging.getLogger("neurodata")
 
 def mcfcPNG (cutout, colors, enhancement=4.0):
   """False color a multichannel cutout.  Takes a 3-d array and returns a 2-d array 
@@ -54,7 +54,7 @@ def mcfcPNG (cutout, colors, enhancement=4.0):
       combined_cutout +=  np.left_shift(data32,16) 
     else:
       logger.warning ("Unsupported color requested: {}".format(color[i]))
-      raise OCPCAError ("Unsupported color requested: {}".format(color[i]))
+      raise NDWSError ("Unsupported color requested: {}".format(color[i]))
 
   # Set the alpha channel only for nonzero pixels
   combined_cutout = np.where (combined_cutout > 0, combined_cutout + 0xFF000000, 0)

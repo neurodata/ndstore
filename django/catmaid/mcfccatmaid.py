@@ -22,19 +22,19 @@ from contextlib import closing
 
 import restargs
 import spatialdb
-import ocpcaproj
-import ocpcarest
+import ndproj
+import ndwsrest
 import mcfc
 
-from ocpcaerror import OCPCAError
+from ndwserror import NDWSError
 import logging
 logger=logging.getLogger("ocp")
 
 class MCFCCatmaid:
-  """Prefetch CATMAID tiles into MocpcacheDB"""
+  """Prefetch CATMAID tiles into MndcheDB"""
 
   def __init__(self):
-    """Bind the mocpcache"""
+    """Bind the mndche"""
 
     self.proj = None
     self.db = None
@@ -42,7 +42,7 @@ class MCFCCatmaid:
     self.tilesz = 512
     self.colors = ('C','M','Y','R','G','B')
     self.channel_list = None
-    # make the mocpcache connection
+    # make the mndche connection
     self.mc = pylibmc.Client(["127.0.0.1"], binary=True,behaviors={"tcp_nodelay":True,"ketama": True})
 
   def __del__(self):
@@ -67,13 +67,13 @@ class MCFCCatmaid:
     tiledata = None
     for index, channel_name in enumerate(self.channel_list):
       ch = self.proj.getChannelObj(channel_name)
-      cutout = ocpcarest.cutout(imageargs, ch, self.proj, self.db)
+      cutout = ndwsrest.cutout(imageargs, ch, self.proj, self.db)
       # initialize the tiledata by type
       if tiledata == None:
         tiledata = np.zeros((len(self.channel_list), cutout.data.shape[0], self.tilesz, self.tilesz), dtype=cutout.data.dtype)
 
       tiledata[index, 0, 0:((yend-1)%self.tilesz+1), 0:((xend-1)%self.tilesz+1)] = cutout.data[0, :, :]
-      tiledata[index,:] = ocpcarest.window(tiledata[index,:], ch)
+      tiledata[index,:] = ndwsrest.window(tiledata[index,:], ch)
     
     # We have an compound array.  Now color it.
     return mcfc.mcfcPNG (tiledata.reshape((tiledata.shape[0],tiledata.shape[2],tiledata.shape[3])), self.colors)
@@ -101,13 +101,13 @@ class MCFCCatmaid:
     tiledata = None
     for index,channel_name in enumerate(self.channel_list):
       ch = self.proj.getChannelObj(channel_name)
-      cutout = ocpcarest.cutout(imageargs, ch, self.proj, self.db)
+      cutout = ndwsrest.cutout(imageargs, ch, self.proj, self.db)
       # initialize the tiledata by type
       if tiledata == None:
         tiledata = np.zeros((len(self.channel_list), zend-zstart, cutout.data.shape[1], self.tilesz), dtype=cutout.data.dtype)
       tiledata[index, 0:zend-zstart, 0, 0:((xend-1)%self.tilesz+1)] = cutout.data[:, 0, :]
       
-    tiledata = ocpcarest.window(tiledata, ch)
+    tiledata = ndwsrest.window(tiledata, ch)
 
     # We have an compound array.  Now color it.
     img = mcfc.mcfcPNG (tiledata.reshape((tiledata.shape[0],tiledata.shape[1],tiledata.shape[3])), self.colors)
@@ -135,14 +135,14 @@ class MCFCCatmaid:
     tiledata = None
     for index,channel_name in enumerate(self.channel_list):
       ch = self.proj.getChannelObj(channel_name)
-      cutout = ocpcarest.cutout(imageargs, ch, self.proj, self.db)
+      cutout = ndwsrest.cutout(imageargs, ch, self.proj, self.db)
       # initialize the tiledata by type
       if tiledata == None:
         tiledata = np.zeros((len(self.channel_list), ztileend-ztilestart, self.tilesz, cutout.data.shape[2]), dtype=cutout.data.dtype)
 
       tiledata[index, 0:zend-zstart, 0:((yend-1)%self.tilesz+1), 0] = cutout.data[:, :, 0]
 
-    tiledata = ocpcarest.window(tiledata, ch)
+    tiledata = ndwsrest.window(tiledata, ch)
 
     # We have an compound array. Now color it.
     img = mcfc.mcfcPNG(tiledata.reshape((tiledata.shape[0],tiledata.shape[1],tiledata.shape[2])), self.colors)
@@ -150,7 +150,7 @@ class MCFCCatmaid:
 
 
   def getTile ( self, webargs ):
-    """Either fetch the file from mocpcache or get a mcfc image"""
+    """Either fetch the file from mndche or get a mcfc image"""
 
     try:
       # arguments of format /token/channel/slice_type/z/x_y_res.png
@@ -169,22 +169,22 @@ class MCFCCatmaid:
           self.colors = [ b if a is u'' else a for a,b in zip(colors, self.colors)]
       except Exception, e:
         logger.warning("Incorrect channel formst for getTile {}. {}".format(channels, e))
-        raise OCPCAError("Incorrect channel format for getTile {}. {}".format(channels, e))
+        raise NDWSError("Incorrect channel format for getTile {}. {}".format(channels, e))
       
       #self.colors = [] 
     except Exception, e:
       logger.warning("Incorrect arguments for getTile {}. {}".format(webargs, e))
-      raise OCPCAError("Incorrect arguments for getTile {}. {}".format(webargs, e))
+      raise NDWSError("Incorrect arguments for getTile {}. {}".format(webargs, e))
 
-    with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+    with closing ( ndproj.NDProjectsDB() ) as projdb:
       self.proj = projdb.loadToken ( self.token )
 
     with closing ( spatialdb.SPATIALDB(self.proj) ) as self.db:
       
-      # mocpcache key
+      # mndche key
       mckey = self.buildKey(res, xtile, ytile, ztile)
 
-      # if tile is in mocpcache, return it
+      # if tile is in mndche, return it
       tile = self.mc.get(mckey)
       
       if tile == None:
@@ -197,7 +197,7 @@ class MCFCCatmaid:
           img = self.cacheMissYZ(res, xtile, ytile, ztile)
         else:
           logger.warning ("Requested illegal image plance {}. Should be xy, xz, yz.".format(slice_type))
-          raise OCPCAError ("Requested illegal image plance {}. Should be xy, xz, yz.".format(slice_type))
+          raise NDWSError ("Requested illegal image plance {}. Should be xy, xz, yz.".format(slice_type))
         
         fobj = cStringIO.StringIO ( )
         img.save ( fobj, "PNG" )

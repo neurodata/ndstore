@@ -20,12 +20,9 @@ import logging
 logger=logging.getLogger("neurodata")
 
 
-<<<<<<< HEAD:spdb/mysqlkvio.py
 """Helpers function to do cube I/O in across multiple DBs.
-    This uses the state and methods of spdb"""
+    This uses the state and methods of spatialdb"""
 
-=======
->>>>>>> 3f4ffac13751b8e8b41d2a73c98c21ada7638347:ndspatialdb/mysqlkvio.py
 class MySQLKVIO:
 
   def __init__ ( self, db ):

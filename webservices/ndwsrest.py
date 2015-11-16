@@ -34,8 +34,9 @@ from libtiff import TIFFfile, TIFFimage
 import restargs
 import anncube
 import spatialdb
-import ocpcaproj
-import ocpcachannel
+import ramondb
+import ndproj
+import ndchannel
 import h5ann
 import jsonann 
 import h5projinfo
@@ -43,14 +44,14 @@ import jsonprojinfo
 import annotation
 import mcfc
 import ndlib
-import ocpcaskel
-import ocpcanifti
+import ndwsskel
+import ndwsnifti
 from windowcutout import windowCutout
-from ndtype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, ANNOTATION_CHANNELS, NOT_PROPAGATED, UNDER_PROPAGATION, PROPAGATED, OCP_dtypetonp, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, READONLY_TRUE, READONLY_FALSE
+from ndtype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, ANNOTATION_CHANNELS, NOT_PROPAGATED, UNDER_PROPAGATION, PROPAGATED, ND_dtypetonp, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, READONLY_TRUE, READONLY_FALSE
 
-from ocpcaerror import OCPCAError
+from ndwserror import NDWSError
 import logging
-logger=logging.getLogger("ocp")
+logger=logging.getLogger("neurodata")
 
 
 def cutout (imageargs, ch, proj, db):
@@ -62,7 +63,7 @@ def cutout (imageargs, ch, proj, db):
     args.cutoutArgs(imageargs, proj.datasetcfg)
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments {} failed: {}".format(imageargs,e))
-    raise OCPCAError(e.value)
+    raise NDWSError(e.value)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -88,7 +89,7 @@ def filterCube(ch, cube, filterlist=None):
     cube.data = ndlib.filter_ctype_OMP ( cube.data, filterlist )
   elif filterlist is not None and ch.getChannelType not in ANNOTATION_CHANNELS:
     logger.warning("Filter only possible for Annotation Channels")
-    raise OCPCAError("Filter only possible for Annotation Channels")
+    raise NDWSError("Filter only possible for Annotation Channels")
 
 def numpyZip ( chanargs, proj, db ):
   """Return a web readable Numpy Pickle zipped"""
@@ -99,7 +100,7 @@ def numpyZip ( chanargs, proj, db ):
     [channels, service, imageargs] = [i for i in m.groups()]
   except Exception, e:
     logger.warning("Arguments not in the correct format {}. {}".format(chanargs, e))
-    raise OCPCAError("Arguments not in the correct format {}. {}".format(chanargs, e))
+    raise NDWSError("Arguments not in the correct format {}. {}".format(chanargs, e))
 
   try: 
     channel_list = channels.split(',')
@@ -115,10 +116,10 @@ def numpyZip ( chanargs, proj, db ):
         continue
       else:
         ch = proj.getChannelObj(channel_name)
-        if OCP_dtypetonp[ch.getDataType()] == cubedata.dtype:
+        if ND_dtypetonp[ch.getDataType()] == cubedata.dtype:
           cubedata[idx+1,:] = cutout(imageargs, ch, proj, db).data
         else:
-          raise OCPCAError("The npz cutout can only contain cutouts of one single Channel Type.")
+          raise NDWSError("The npz cutout can only contain cutouts of one single Channel Type.")
 
     
     # Create the compressed cube
@@ -132,7 +133,7 @@ def numpyZip ( chanargs, proj, db ):
     return fileobj.read()
 
   except Exception,e:
-    raise OCPCAError("{}".format(e))
+    raise NDWSError("{}".format(e))
 
 
 def JPEG ( chanargs, proj, db ):
@@ -144,7 +145,7 @@ def JPEG ( chanargs, proj, db ):
     [channels, service, imageargs] = [i for i in m.groups()]
   except Exception, e:
     logger.warning("Arguments not in the correct format {}. {}".format(chanargs, e))
-    raise OCPCAError("Arguments not in the correct format {}. {}".format(chanargs, e))
+    raise NDWSError("Arguments not in the correct format {}. {}".format(chanargs, e))
 
   try: 
     channel_list = channels.split(',')
@@ -160,10 +161,10 @@ def JPEG ( chanargs, proj, db ):
         continue
       else:
         ch = proj.getChannelObj(channel_name)
-        if OCP_dtypetonp[ch.getDataType()] == cubedata.dtype:
+        if ND_dtypetonp[ch.getDataType()] == cubedata.dtype:
           cubedata[idx+1,:] = cutout(imageargs, ch, proj, db).data
         else:
-          raise OCPCAError("The npz cutout can only contain cutouts of one single Channel Type.")
+          raise NDWSError("The npz cutout can only contain cutouts of one single Channel Type.")
 
     xdim, ydim, zdim = cubedata[0,:,:,:].shape[::-1]
     #cubedata = np.swapaxes(cubedata[0,:,:,:], 0,2).reshape(xdim*zdim, ydim)
@@ -183,7 +184,7 @@ def JPEG ( chanargs, proj, db ):
     return fileobj.read()
 
   except Exception,e:
-    raise OCPCAError("{}".format(e))
+    raise NDWSError("{}".format(e))
 
 
 def BLOSC ( chanargs, proj, db ):
@@ -195,7 +196,7 @@ def BLOSC ( chanargs, proj, db ):
     [channels, service, imageargs] = [i for i in m.groups()]
   except Exception, e:
     logger.warning("Arguments not in the correct format {}. {}".format(chanargs, e))
-    raise OCPCAError("Arguments not in the correct format {}. {}".format(chanargs, e))
+    raise NDWSError("Arguments not in the correct format {}. {}".format(chanargs, e))
 
   try: 
     channel_list = channels.split(',')
@@ -211,17 +212,17 @@ def BLOSC ( chanargs, proj, db ):
         continue
       else:
         ch = proj.getChannelObj(channel_name)
-        if OCP_dtypetonp[ch.getDataType()] == cubedata.dtype:
+        if ND_dtypetonp[ch.getDataType()] == cubedata.dtype:
           cubedata[idx+1,:] = cutout(imageargs, ch, proj, db).data
         else:
-          raise OCPCAError("The npz cutout can only contain cutouts of one single Channel Type.")
+          raise NDWSError("The npz cutout can only contain cutouts of one single Channel Type.")
 
     
     # Create the compressed cube
     return blosc.pack_array(cubedata)
 
   except Exception,e:
-    raise OCPCAError("{}".format(e))
+    raise NDWSError("{}".format(e))
 
 def binZip ( chanargs, proj, db ):
   """Return a web readable Numpy Pickle zipped"""
@@ -232,7 +233,7 @@ def binZip ( chanargs, proj, db ):
     [channels, service, imageargs] = [i for i in m.groups()]
   except Exception, e:
     logger.warning("Arguments not in the correct format {}. {}".format(chanargs, e))
-    raise OCPCAError("Arguments not in the correct format {}. {}".format(chanargs, e))
+    raise NDWSError("Arguments not in the correct format {}. {}".format(chanargs, e))
 
   try: 
     channel_list = channels.split(',')
@@ -248,10 +249,10 @@ def binZip ( chanargs, proj, db ):
         continue
       else:
         ch = proj.getChannelObj(channel_name)
-        if OCP_dtypetonp[ch.getDataType()] == cubedata.dtype:
+        if ND_dtypetonp[ch.getDataType()] == cubedata.dtype:
           cubedata[idx+1,:] = cutout(imageargs, ch, proj, db).data
         else:
-          raise OCPCAError("The npz cutout can only contain cutouts of one single Channel Type.")
+          raise NDWSError("The npz cutout can only contain cutouts of one single Channel Type.")
 
     
     # Create the compressed cube
@@ -263,7 +264,7 @@ def binZip ( chanargs, proj, db ):
     return fileobj.read()
 
   except Exception,e:
-    raise OCPCAError("{}".format(e))
+    raise NDWSError("{}".format(e))
 
 
 def HDF5(chanargs, proj, db):
@@ -279,7 +280,7 @@ def HDF5(chanargs, proj, db):
     [channels, service, imageargs] = [i for i in m.groups()]
   except Exception, e:
     logger.warning("Arguments not in the correct format {}. {}".format(chanargs, e))
-    raise OCPCAError("Arguments not in the correct format {}. {}".format(chanargs, e))
+    raise NDWSError("Arguments not in the correct format {}. {}".format(chanargs, e))
 
   try: 
     for channel_name in channels.split(','):
@@ -314,7 +315,7 @@ def postTiff3d ( channel, postargs, proj, db, postdata ):
     datatype=np.uint32
   else:
     logger.error("Unsupported data type for TIFF3d post. {}".format(ch.getDataType())) 
-    raise OCPCAError ("Unsupported data type for TIFF3d post. {}".format(ch.getDataType())) 
+    raise NDWSError ("Unsupported data type for TIFF3d post. {}".format(ch.getDataType())) 
 
   # parse the args
   resstr, xoffstr, yoffstr, zoffstr, rest = postargs.split('/',4)
@@ -384,7 +385,7 @@ def tiff3d ( chanargs, proj, db ):
 # RB -- I think this is a cutout format.  So, let's not recolor.
 
 #      # if it's annotations, recolor
-#      if ch.getChannelType() in ocpcaproj.ANNOTATION_CHANNELS:
+#      if ch.getChannelType() in ndproj.ANNOTATION_CHANNELS:
 #
 #        imagemap = np.zeros ( (cube.data.shape[0]*cube.data.shape[1], cube.data.shape[2]), dtype=np.uint32 )
 #
@@ -459,7 +460,7 @@ def imgSlice(webargs, proj, db):
         raise
   except Exception, e:
     logger.warning("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
-    raise OCPCAError("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
+    raise NDWSError("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
 
   try:
     # Rewrite the imageargs to be a cutout
@@ -487,7 +488,7 @@ def imgSlice(webargs, proj, db):
       raise "No such image plane {}".format(service)
   except Exception, e:
     logger.warning ("Illegal image arguments={}.  Error={}".format(imageargs,e))
-    raise OCPCAError ("Illegal image arguments={}.  Error={}".format(imageargs,e))
+    raise NDWSError ("Illegal image arguments={}.  Error={}".format(imageargs,e))
 
   # Perform the cutout
   ch = proj.getChannelObj(channel)
@@ -498,7 +499,7 @@ def imgSlice(webargs, proj, db):
       window_range = [int(i) for i in re.match("window/(\d+),(\d+)/", window_args).groups()]
     except:
       logger.warning ("Illegal window arguments={}. Error={}".format(imageargs,e))
-      raise OCPCAError ("Illegal window arguments={}. Error={}".format(imageargs,e))
+      raise NDWSError ("Illegal window arguments={}. Error={}".format(imageargs,e))
   else:
     window_range = None
   
@@ -516,7 +517,7 @@ def imgPNG (proj, webargs, cb):
     [channel, service, resolution, imageargs] = [i for i in m.groups()[:-1]]
   except Exception, e:
     logger.warning("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
-    raise OCPCAError("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
+    raise NDWSError("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
 
   if service == 'xy':
     img = cb.xyImage()
@@ -534,19 +535,19 @@ def imgPNG (proj, webargs, cb):
 #
 #  Read individual annotation image slices xy, xz, yz
 #
-def imgAnno ( service, chanargs, proj, db ):
+def imgAnno ( service, chanargs, proj, db, rdb ):
   """Return a plane fileobj.read() for a single objects"""
 
   [channel, service, annoidstr, imageargs] = chanargs.split('/', 3)
-  ch = ocpcaproj.OCPCAChannel(proj,channel)
+  ch = ndproj.NDChannel(proj,channel)
   annoids = [int(x) for x in annoidstr.split(',')]
 
   # retrieve the annotation 
   if len(annoids) == 1:
-    anno = db.getAnnotation ( ch, annoids[0] )
+    anno = rdb.getAnnotation ( ch, annoids[0] )
     if anno == None:
       logger.warning("No annotation found at identifier = {}".format(annoids[0]))
-      raise OCPCAError ("No annotation found at identifier = {}".format(annoids[0]))
+      raise NDWSError ("No annotation found at identifier = {}".format(annoids[0]))
     else:
       iscompound = True if anno.__class__ in [ annotation.AnnNeuron ] else False; 
   else:
@@ -569,8 +570,7 @@ def imgAnno ( service, chanargs, proj, db ):
       raise "No such image plane {}".format(service)
   except Exception, e:
     logger.warning ("Illegal image arguments={}.  Error={}".format(imageargs,e))
-    raise OCPCAError ("Illegal image arguments={}.  Error={}".format(imageargs,e))
-
+    raise NDWSError ("Illegal image arguments={}.  Error={}".format(imageargs,e))
 
   # Perform argument processing
   try:
@@ -578,7 +578,7 @@ def imgAnno ( service, chanargs, proj, db ):
     args.cutoutArgs ( cutoutargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments %s failed: %s" % (cutoutrags,e))
-    raise OCPCAError(e.value)
+    raise NDWSError(e.value)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -588,7 +588,7 @@ def imgAnno ( service, chanargs, proj, db ):
   # determine if it is a compound type (NEURON) and get the list of relevant segments
   if iscompound:
     # remap the ids for a neuron
-    dataids = db.getChildren ( annoids[0] ) 
+    dataids = rdb.getChildren ( annoids[0] ) 
     cb = db.annoCutout ( ch, dataids, resolution, corner, dim, annoids[0] )
   else:
     # no remap when not a neuron
@@ -612,7 +612,7 @@ def annId ( chanargs, proj, db ):
   """Return the annotation identifier of a voxel"""
 
   [channel, service, imageargs] = chanargs.split('/',2)
-  ch = ocpcaproj.OCPCAChannel(proj,channel)
+  ch = ndproj.NDChannel(proj,channel)
   # Perform argument processing
   (resolution, voxel) = restargs.voxel ( imageargs, proj.datasetcfg )
 
@@ -623,7 +623,7 @@ def listIds ( chanargs, proj, db ):
   """Return the list of annotation identifiers in a region"""
   
   [channel, service, imageargs] = chanargs.split('/', 2)
-  ch = ocpcaproj.OCPCAChannel(proj,channel)
+  ch = ndproj.NDChannel(proj,channel)
 
   # Perform argument processing
   try:
@@ -631,7 +631,7 @@ def listIds ( chanargs, proj, db ):
     args.cutoutArgs ( imageargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
     logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
-    raise OCPCAError(e)
+    raise NDWSError(e)
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -671,7 +671,7 @@ def selectService ( service, webargs, proj, db ):
     return imgAnno ( service.strip('anno'), webargs, proj, db )
   else:
     logger.warning("An illegal Web GET service was requested {}. Args {}".format(service, webargs))
-    raise OCPCAError("An illegal Web GET service was requested {}. Args {}".format(service, webargs))
+    raise NDWSError("An illegal Web GET service was requested {}. Args {}".format(service, webargs))
 
 
 def selectPost ( webargs, proj, db, postdata ):
@@ -692,7 +692,7 @@ def selectPost ( webargs, proj, db, postdata ):
     args.cutoutArgs ( postargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
     logger.warning( "REST Arguments {} failed: {}".format(postargs,e) )
-    raise OCPCAError(e)
+    raise NDWSError(e)
 
   corner = args.getCorner()
   resolution = args.getResolution()
@@ -720,7 +720,7 @@ def selectPost ( webargs, proj, db, postdata ):
         
         if voxarray.shape[0] != len(channel_list):
           logger.warning("The data has some missing channels")
-          raise OCPCAError("The data has some missing channels")
+          raise NDWSError("The data has some missing channels")
       
         for idx,channel_name in enumerate(channel_list):
           ch = proj.getChannelObj(channel_name)
@@ -728,11 +728,11 @@ def selectPost ( webargs, proj, db, postdata ):
           # Don't write to readonly channels
           if ch.getReadOnly() == READONLY_TRUE:
             logger.warning("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
-            raise OCPCAError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+            raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
        
-          if not voxarray.dtype == OCP_dtypetonp[ch.getDataType()]:
+          if not voxarray.dtype == ND_dtypetonp[ch.getDataType()]:
             logger.warning("Wrong datatype in POST")
-            raise OCPCAError("Wrong datatype in POST")
+            raise NDWSError("Wrong datatype in POST")
             
           if ch.getChannelType() in IMAGE_CHANNELS + TIMESERIES_CHANNELS:
             db.writeCuboid ( ch, corner, resolution, voxarray[idx,:], timerange )
@@ -759,18 +759,18 @@ def selectPost ( webargs, proj, db, postdata ):
             h5_channeltype = h5f.get(ch.getChannelName())['CHANNELTYPE'].value[0]
 
             # Checking the datatype of the voxarray
-            if ch.getDataType() != h5_datatype or voxarray.dtype != OCP_dtypetonp[ch.getDataType()]:
+            if ch.getDataType() != h5_datatype or voxarray.dtype != ND_dtypetonp[ch.getDataType()]:
               logger.warning("Channel datatype {} in the HDF5 file does not match with the {} in the database.".format(h5_datatype, ch.getDataType()))
-              raise OCPCAError("Channel datatype {} in the HDF5 file does not match with the {} in the database.".format(h5_datatype, ch.getDataType()))
+              raise NDWSError("Channel datatype {} in the HDF5 file does not match with the {} in the database.".format(h5_datatype, ch.getDataType()))
 
             if ch.getChannelType() != h5_channeltype:
               logger.warning("Channel type {} in HDF5 file does not match with the {} in the database.".format(h5_channeltype, ch.getChannelType()))
-              raise OCPCAError("Channel type {} in HDF5 file does not match with the {} in the database.".format(h5_channeltype, ch.getChannelType()))
+              raise NDWSError("Channel type {} in HDF5 file does not match with the {} in the database.".format(h5_channeltype, ch.getChannelType()))
           
             # Don't write to readonly channels
             if ch.getReadOnly() == READONLY_TRUE:
               logger.warning("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
-              raise OCPCAError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+              raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
             
             if ch.getChannelType() in IMAGE_CHANNELS + TIMESERIES_CHANNELS : 
               db.writeCuboid (ch, corner, resolution, voxarray, timerange)
@@ -786,7 +786,7 @@ def selectPost ( webargs, proj, db, postdata ):
       
       else:
         logger.warning("An illegal Web POST service was requested: {}. Args {}".format(service, webargs))
-        raise OCPCAError("An illegal Web POST service was requested: {}. Args {}".format(service, webargs))
+        raise NDWSError("An illegal Web POST service was requested: {}. Args {}".format(service, webargs))
         
       done = True
 
@@ -811,11 +811,11 @@ def getCutout ( webargs ):
   [channel, service, chanargs] = webargs.split('/', 2)
 
   # get the project 
-  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+  with closing ( ndproj.NDProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( spatialdb.SPATIALDB(proj) ) as db:
+  with closing ( spatialdb.SpatialDB(proj) ) as db:
     return selectService ( service, webargs, proj, db )
 
 
@@ -824,11 +824,11 @@ def putCutout ( webargs, postdata ):
 
   [ token, rangeargs ] = webargs.split('/',1)
   # get the project 
-  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+  with closing ( ndproj.NDProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( spatialdb.SPATIALDB(proj) ) as db:
+  with closing ( spatialdb.SpatialDB(proj) ) as db:
     return selectPost ( rangeargs, proj, db, postdata )
 
 
@@ -843,14 +843,14 @@ AR_TIGHTCUTOUT = 3
 AR_BOUNDINGBOX = 4
 AR_CUBOIDS = 5
 
-def getAnnoJSONById ( ch, annoid, proj, db ):
+def getAnnoJSONById ( ch, annoid, proj, rdb ):
   """ Retrieve the annotation and return it as a serialized json string """
 
   # retrieve the annotation
-  anno = db.getAnnotation ( ch, annoid ) 
+  anno = rdb.getAnnotation ( ch, annoid ) 
   if anno == None:
     logger.warning("No annotation found at identifier = %s" % (annoid))
-    raise OCPCAError ("No annotation found at identifier = %s" % (annoid))
+    raise NDWSError ("No annotation found at identifier = %s" % (annoid))
 
   # create the JSONanno obj
   jsonanno = jsonann.AnnotationtoJSON ( anno )
@@ -858,14 +858,14 @@ def getAnnoJSONById ( ch, annoid, proj, db ):
   # return data
   return jsonanno.toJSON() 
 
-def getAnnoById ( ch, annoid, h5f, proj, db, dataoption, resolution=None, corner=None, dim=None ): 
+def getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution=None, corner=None, dim=None ): 
   """Retrieve the annotation and put it in the HDF5 file."""
   
   # retrieve the annotation 
-  anno = db.getAnnotation ( ch, annoid )
+  anno = rdb.getAnnotation ( ch, annoid )
   if anno == None:
     logger.warning("No annotation found at identifier = %s" % (annoid))
-    raise OCPCAError ("No annotation found at identifier = %s" % (annoid))
+    raise NDWSError ("No annotation found at identifier = %s" % (annoid))
 
   # create the HDF5 object
   h5anno = h5ann.AnnotationtoH5 ( anno, h5f )
@@ -873,11 +873,11 @@ def getAnnoById ( ch, annoid, h5f, proj, db, dataoption, resolution=None, corner
   # only return data for annotation types that have data
   if anno.__class__ in [ annotation.AnnSeed ] and dataoption != AR_NODATA: 
     logger.warning("No data associated with annotation type %s" % ( anno.__class__))
-    raise OCPCAError ("No data associated with annotation type %s" % ( anno.__class__))
+    raise NDWSError ("No data associated with annotation type %s" % ( anno.__class__))
 
   # determine if it is a compound type (NEURON) and get the list of relevant segments
   if anno.__class__ in [ annotation.AnnNeuron ] and dataoption != AR_NODATA:
-    dataids = db.getChildren ( ch, annoid ) 
+    dataids = rdb.getChildren ( ch, annoid ) 
   else:
     dataids = [anno.annid]
 
@@ -917,7 +917,7 @@ def getAnnoById ( ch, annoid, h5f, proj, db, dataoption, resolution=None, corner
 
     # determine if it is a compound type (NEURON) and get the list of relevant segments
     if anno.__class__ in [ annotation.AnnNeuron ] and dataoption != AR_NODATA:
-      dataids = db.getChildren(ch, annoid) 
+      dataids = rdb.getChildren(ch, annoid) 
     else:
       dataids = [anno.annid]
 
@@ -928,7 +928,7 @@ def getAnnoById ( ch, annoid, h5f, proj, db, dataoption, resolution=None, corner
     if bbcorner != None:
       if bbdim[0]*bbdim[1]*bbdim[2] >= 1024*1024*256:
         logger.warning ("Cutout region is inappropriately large.  Dimension: %s,%s,%s" % (bbdim[0],bbdim[1],bbdim[2]))
-        raise OCPCAError ("Cutout region is inappropriately large.  Dimension: %s,%s,%s" % (bbdim[0],bbdim[1],bbdim[2]))
+        raise NDWSError ("Cutout region is inappropriately large.  Dimension: %s,%s,%s" % (bbdim[0],bbdim[1],bbdim[2]))
 
     # Call the cuboids interface to get the minimum amount of data
     if anno.__class__ == annotation.AnnNeuron:
@@ -954,7 +954,7 @@ def getAnnoById ( ch, annoid, h5f, proj, db, dataoption, resolution=None, corner
 
     # determine if it is a compound type (NEURON) and get the list of relevant segments
     if anno.__class__ in [ annotation.AnnNeuron ] and dataoption != AR_NODATA:
-      dataids = db.getChildren(ch, annoid) 
+      dataids = rdb.getChildren(ch, annoid) 
     else:
       dataids = [anno.annid]
 
@@ -985,14 +985,15 @@ def getAnnotation ( webargs ):
 
   # pattern for using contexts to close databases
   # get the project 
-  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+  with closing ( ndproj.NDProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( spatialdb.SPATIALDB(proj) ) as db:
+  with closing ( spatialdb.SpatialDB(proj) ) as db:
+   with closing ( ramondb.RamonDB(proj) ) as rdb:
 
     # Split the URL and get the args
-    ch = ocpcaproj.OCPCAChannel(proj, channel)
+    ch = ndproj.NDChannel(proj, channel)
     option_args = otherargs.split('/', 2)
 
     # AB Added 20151011 
@@ -1004,7 +1005,7 @@ def getAnnotation ( webargs ):
         if re.match ( '^[\d,]+$', option_args[0] ): 
           annoids = map(int, option_args[0].split(','))
           for annoid in annoids: 
-            jsonstr += getAnnoJSONById ( ch, annoid, proj, db )
+            jsonstr += getAnnoJSONById ( ch, annoid, proj, rdb )
 
       except: 
         raise
@@ -1031,7 +1032,7 @@ def getAnnotation ( webargs ):
           # default is no data
           if option_args[1] == '' or option_args[1] == 'nodata':
             dataoption = AR_NODATA
-            getAnnoById ( ch, annoid, h5f, proj, db, dataoption )
+            getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption )
     
           # if you want voxels you either requested the resolution id/voxels/resolution
           #  or you get data from the default resolution
@@ -1043,9 +1044,9 @@ def getAnnotation ( webargs ):
               resolution = int(resstr) 
             except:
               logger.warning ( "Improperly formatted voxel arguments {}".format(option_args[2]))
-              raise OCPCAError("Improperly formatted voxel arguments {}".format(option_args[2]))
+              raise NDWSError("Improperly formatted voxel arguments {}".format(option_args[2]))
 
-            getAnnoById ( ch, annoid, h5f, proj, db, dataoption, resolution )
+            getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution )
 
           #  or you get data from the default resolution
           elif option_args[1] == 'cuboids':
@@ -1055,9 +1056,9 @@ def getAnnotation ( webargs ):
               resolution = int(resstr) 
             except:
               logger.warning ( "Improperly formatted cuboids arguments {}".format(option_args[2]))
-              raise OCPCAError("Improperly formatted cuboids arguments {}".format(option_args[2]))
+              raise NDWSError("Improperly formatted cuboids arguments {}".format(option_args[2]))
     
-            getAnnoById ( ch, annoid, h5f, proj, db, dataoption, resolution )
+            getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution )
     
           elif option_args[1] =='cutout':
     
@@ -1069,9 +1070,9 @@ def getAnnotation ( webargs ):
                 resolution = int(resstr) 
               except:
                 logger.warning ( "Improperly formatted cutout arguments {}".format(option_args[2]))
-                raise OCPCAError("Improperly formatted cutout arguments {}".format(option_args[2]))
+                raise NDWSError("Improperly formatted cutout arguments {}".format(option_args[2]))
 
-              getAnnoById ( ch, annoid, h5f, proj, db, dataoption, resolution )
+              getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution )
     
             else:
 
@@ -1086,7 +1087,7 @@ def getAnnotation ( webargs ):
               dim = brargs.getDim()
               resolution = brargs.getResolution()
     
-              getAnnoById ( ch, annoid, h5f, proj, db, dataoption, resolution, corner, dim )
+              getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution, corner, dim )
     
           elif option_args[1] == 'boundingbox':
     
@@ -1096,18 +1097,18 @@ def getAnnotation ( webargs ):
               resolution = int(resstr) 
             except:
               logger.warning("Improperly formatted bounding box arguments {}".format(option_args[2]))
-              raise OCPCAError("Improperly formatted bounding box arguments {}".format(option_args[2]))
+              raise NDWSError("Improperly formatted bounding box arguments {}".format(option_args[2]))
         
-            getAnnoById ( ch, annoid, h5f, proj, db, dataoption, resolution )
+            getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution )
     
           else:
             logger.warning ("Fetch identifier {}. Error: no such data option {}".format( annoid, option_args[1] ))
-            raise OCPCAError ("Fetch identifier {}. Error: no such data option {}".format( annoid, option_args[1] ))
+            raise NDWSError ("Fetch identifier {}. Error: no such data option {}".format( annoid, option_args[1] ))
     
       # the first argument is not numeric.  it is a service other than getAnnotation
       else:
         logger.warning("Get interface {} requested. Illegal or not implemented. Args: {}".format( option_args[0], webargs ))
-        raise OCPCAError ("Get interface {} requested. Illegal or not implemented".format( option_args[0] ))
+        raise NDWSError ("Get interface {} requested. Illegal or not implemented".format( option_args[0] ))
     
     # Close the file on a error: it won't get closed by the Web server
     except: 
@@ -1129,11 +1130,12 @@ def getCSV ( webargs ):
 
   # pattern for using contexts to close databases
   # get the project 
-  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+  with closing ( ndproj.NDProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( spatialdb.SPATIALDB(proj) ) as db:
+  with closing ( spatialdb.SpatialDB(proj) ) as db:
+   with closing ( ramondb.RamonDB(proj) ) as rdb:
 
     # Make the HDF5 file
     # Create an in-memory HDF5 file
@@ -1148,9 +1150,9 @@ def getCSV ( webargs ):
           resolution = int(resstr) 
         except:
           logger.warning ( "Improperly formatted cutout arguments {}".format(reststr))
-          raise OCPCAError("Improperly formatted cutout arguments {}".format(reststr))
+          raise NDWSError("Improperly formatted cutout arguments {}".format(reststr))
   
-        getAnnoById ( annoid, h5f, proj, db, dataoption, resolution )
+        getAnnoById ( annoid, h5f, proj, rdb, db, dataoption, resolution )
 
         # convert the HDF5 file to csv
         csvstr = h5ann.h5toCSV ( h5f )
@@ -1165,13 +1167,11 @@ def getAnnotations ( webargs, postdata ):
 
   [ token, objectsliteral, otherargs ] = webargs.split ('/',2)
 
-  # Get the annotation database
-  [ db, proj, projdb ] = loadDBProj ( token )
-
-  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+  with closing ( ndproj.NDProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
   
-  with closing ( spatialdb.SPATIALDB(proj) ) as db:
+  with closing ( spatialdb.SpatialDB(proj) ) as db:
+   with closing ( ramondb.RamonDB(proj) ) as rdb:
   
     # Read the post data HDF5 and get a list of identifiers
     tmpinfile = tempfile.NamedTemporaryFile ( )
@@ -1184,7 +1184,7 @@ def getAnnotations ( webargs, postdata ):
       # IDENTIFIERS
       if not h5in.get('ANNOIDS'):
         logger.warning ("Requesting multiple annotations.  But no HDF5 \'ANNOIDS\' field specified.") 
-        raise OCPCAError ("Requesting multiple annotations.  But no HDF5 \'ANNOIDS\' field specified.") 
+        raise NDWSError ("Requesting multiple annotations.  But no HDF5 \'ANNOIDS\' field specified.") 
 
       # GET the data out of the HDF5 file.  Never operate on the data in place.
       annoids = h5in['ANNOIDS'][:]
@@ -1211,7 +1211,7 @@ def getAnnotations ( webargs, postdata ):
           resolution = int(resstr) 
         except:
           logger.warning ( "Improperly formatted voxel arguments {}".format(cutout))
-          raise OCPCAError("Improperly formatted voxel arguments {}".format(cutout))
+          raise NDWSError("Improperly formatted voxel arguments {}".format(cutout))
 
 
       elif dataarg == 'cutout':
@@ -1223,7 +1223,7 @@ def getAnnotations ( webargs, postdata ):
             resolution = int(resstr) 
           except:
             logger.warning ( "Improperly formatted cutout arguments {}".format(cutout))
-            raise OCPCAError("Improperly formatted cutout arguments {}".format(cutout))
+            raise NDWSError("Improperly formatted cutout arguments {}".format(cutout))
         else:
           dataoption = AR_CUTOUT
 
@@ -1246,11 +1246,11 @@ def getAnnotations ( webargs, postdata ):
             resolution = int(resstr) 
           except:
             logger.warning ( "Improperly formatted bounding box arguments {}".format(cutout))
-            raise OCPCAError("Improperly formatted bounding box arguments {}".format(cutout))
+            raise NDWSError("Improperly formatted bounding box arguments {}".format(cutout))
 
       else:
           logger.warning ("In getAnnotations: Error: no such data option %s " % ( dataarg ))
-          raise OCPCAError ("In getAnnotations: Error: no such data option %s " % ( dataarg ))
+          raise NDWSError ("In getAnnotations: Error: no such data option %s " % ( dataarg ))
 
       try:
 
@@ -1262,7 +1262,7 @@ def getAnnotations ( webargs, postdata ):
         # get annotations for each identifier
         for annoid in annoids:
           # the int here is to prevent using a numpy value in an inner loop.  This is a 10x performance gain.
-          getAnnoById ( int(annoid), h5fout, proj, db, dataoption, resolution, corner, dim )
+          getAnnoById ( int(annoid), h5fout, proj, rdb, db, dataoption, resolution, corner, dim )
 
       except:
         h5fout.close()
@@ -1282,20 +1282,21 @@ def getAnnotations ( webargs, postdata ):
 
 def putAnnotation ( webargs, postdata ):
   """Put a RAMON object as HDF5 by object identifier"""
-  
+
   [token, channel, optionsargs] = webargs.split('/',2)
 
-  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+  with closing ( ndproj.NDProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
   
-  with closing ( spatialdb.SPATIALDB(proj) ) as db:
+  with closing ( spatialdb.SpatialDB(proj) ) as db:
+   with closing ( ramondb.RamonDB(proj) ) as rdb:
 
-    ch = ocpcaproj.OCPCAChannel(proj, channel)
+    ch = ndproj.NDChannel(proj, channel)
     
     # Don't write to readonly channels
     if ch.getReadOnly() == READONLY_TRUE:
       logger.warning("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
-      raise OCPCAError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+      raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
 
     # return string of id values
     retvals = [] 
@@ -1322,11 +1323,11 @@ def putAnnotation ( webargs, postdata ):
           idgrp = h5f.get(k)
   
           # Convert HDF5 to annotation
-          anno = h5ann.H5toAnnotation(k, idgrp, db)
+          anno = h5ann.H5toAnnotation(k, idgrp, rdb)
   
           # set the identifier (separate transaction)
           if not ('update' in options or 'dataonly' in options or 'reduce' in options):
-            anno.setID(ch, db)
+            anno.setID(ch, rdb)
   
           # start a transaction: get mysql out of line at a time mode
   
@@ -1338,15 +1339,15 @@ def putAnnotation ( webargs, postdata ):
   
               if anno.__class__ in [ annotation.AnnNeuron, annotation.AnnSeed ] and ( idgrp.get('VOXELS') or idgrp.get('CUTOUT')):
                 logger.warning ("Cannot write to annotation type {}".format(anno.__class__))
-                raise OCPCAError ("Cannot write to annotation type {}".format(anno.__class__))
+                raise NDWSError ("Cannot write to annotation type {}".format(anno.__class__))
   
               if 'update' in options and 'dataonly' in options:
                 logger.warning ("Illegal combination of options. Cannot use udpate and dataonly together")
-                raise OCPCAError ("Illegal combination of options. Cannot use udpate and dataonly together")
+                raise NDWSError ("Illegal combination of options. Cannot use udpate and dataonly together")
   
               elif not 'dataonly' in options and not 'reduce' in options:
                 # Put into the database
-                db.putAnnotation(ch, anno, options)
+                rdb.putAnnotation(ch, anno, options)
   
               #  Get the resolution if it's specified
               if 'RESOLUTION' in idgrp:
@@ -1372,7 +1373,7 @@ def putAnnotation ( webargs, postdata ):
                 # Check that the voxels have a conforming size:
                 if voxels.shape[1] != 3:
                   logger.warning ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
-                  raise OCPCAError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
+                  raise NDWSError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
   
                 exceptions = db.annotate ( ch, anno.annid, resolution, voxels, conflictopt )
   
@@ -1382,7 +1383,7 @@ def putAnnotation ( webargs, postdata ):
                 # Check that the voxels have a conforming size:
                 if voxels.shape[1] != 3:
                   logger.warning ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
-                  raise OCPCAError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
+                  raise NDWSError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
                 db.shave ( ch, anno.annid, resolution, voxels )
   
               # Is it dense data?
@@ -1457,18 +1458,18 @@ def getNIFTI ( webargs ):
     
   [token, channel, optionsargs] = webargs.split('/',2)
 
-  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+  with closing ( ndproj.NDProjectsDB() ) as projdb:
 
     proj = projdb.loadToken ( token )
   
-  with closing ( spatialdb.SPATIALDB(proj) ) as db:
+  with closing ( spatialdb.SpatialDB(proj) ) as db:
 
-    ch = ocpcaproj.OCPCAChannel(proj, channel)
+    ch = ndproj.NDChannel(proj, channel)
 
     # Make a named temporary file for the nii file
     with closing (tempfile.NamedTemporaryFile(suffix='.nii')) as tmpfile:
 
-      ocpcanifti.queryNIFTI ( tmpfile, ch, db, proj )
+      ndwsnifti.queryNIFTI ( tmpfile, ch, db, proj )
 
       tmpfile.seek(0)
       return tmpfile.read()
@@ -1479,17 +1480,17 @@ def putNIFTI ( webargs, postdata ):
     
   [token, channel, optionsargs] = webargs.split('/',2)
 
-  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+  with closing ( ndproj.NDProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
   
-  with closing ( spatialdb.SPATIALDB(proj) ) as db:
+  with closing ( spatialdb.SpatialDB(proj) ) as db:
 
-    ch = ocpcaproj.OCPCAChannel(proj, channel)
+    ch = ndproj.NDChannel(proj, channel)
     
     # Don't write to readonly channels
     if ch.getReadOnly() == READONLY_TRUE:
       logger.warning("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
-      raise OCPCAError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+      raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
 
     # check the magic number -- is it a gz file?
     if postdata[0] == '\x1f' and postdata[1] ==  '\x8b':
@@ -1501,7 +1502,7 @@ def putNIFTI ( webargs, postdata ):
         tmpfile.seek(0)
 
         # ingest the nifti file
-        ocpcanifti.ingestNIFTI ( tmpfile.name, ch, db, proj )
+        ndwsnifti.ingestNIFTI ( tmpfile.name, ch, db, proj )
     
     else:
 
@@ -1512,7 +1513,7 @@ def putNIFTI ( webargs, postdata ):
         tmpfile.seek(0)
 
         # ingest the nifti file
-        ocpcanifti.ingestNIFTI ( tmpfile.name, ch, db, proj )
+        ndwsnifti.ingestNIFTI ( tmpfile.name, ch, db, proj )
 
 
 def getSWC ( webargs ):
@@ -1521,17 +1522,17 @@ def getSWC ( webargs ):
   [token, channel, service, resstr, rest] = webargs.split('/',4)
   resolution = int(resstr)
 
-  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+  with closing ( ndproj.NDProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
   
-  with closing ( spatialdb.SPATIALDB(proj) ) as db:
+  with closing ( spatialdb.SpatialDB(proj) ) as db:
 
-    ch = ocpcaproj.OCPCAChannel(proj, channel)
+    ch = ndproj.NDChannel(proj, channel)
 
     # Make a named temporary file for the SWC
     with closing (tempfile.NamedTemporaryFile()) as tmpfile:
 
-      ocpcaskel.querySWC ( resolution, tmpfile, ch, db, proj, skelids=None )
+      ndwsskel.querySWC ( resolution, tmpfile, ch, db, proj, skelids=None )
 
       tmpfile.seek(0)
       return tmpfile.read()
@@ -1544,17 +1545,17 @@ def putSWC ( webargs, postdata ):
   [token, channel, service, resstr, optionsargs] = webargs.split('/',4)
   resolution = int(resstr)
 
-  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+  with closing ( ndproj.NDProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
   
-  with closing ( spatialdb.SPATIALDB(proj) ) as db:
+  with closing ( spatialdb.SpatialDB(proj) ) as db:
 
-    ch = ocpcaproj.OCPCAChannel(proj, channel)
+    ch = ndproj.NDChannel(proj, channel)
     
     # Don't write to readonly channels
     if ch.getReadOnly() == READONLY_TRUE:
       logger.warning("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
-      raise OCPCAError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+      raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
 
     # Make a named temporary file for the HDF5
     with closing (tempfile.NamedTemporaryFile()) as tmpfile:
@@ -1563,7 +1564,7 @@ def putSWC ( webargs, postdata ):
       tmpfile.seek(0)
 
       # Parse the swc file into skeletons
-      swc_skels = ocpcaskel.ingestSWC ( resolution, tmpfile, ch, db )
+      swc_skels = ndwsskel.ingestSWC ( resolution, tmpfile, ch, db )
 
       return swc_skels
 
@@ -1579,13 +1580,13 @@ def queryAnnoObjects ( webargs, postdata=None ):
     [token, channel, restargs] = [i for i in m.groups()]
   except Exception, e:
     logger.warning("Wrong arguments {}. {}".format(webargs, e))
-    raise OCPCAError("Wrong arguments {}. {}".format(webargs, e))
+    raise NDWSError("Wrong arguments {}. {}".format(webargs, e))
 
-  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+  with closing ( ndproj.NDProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
 
-  with closing ( spatialdb.SPATIALDB(proj) ) as db:
-    ch = ocpcaproj.OCPCAChannel(proj,channel)
+  with closing ( spatialdb.SpatialDB(proj) ) as db:
+    ch = ndproj.NDChannel(proj,channel)
     annoids = db.getAnnoObjects(ch, restargs.split('/'))
 
     # We have a cutout as well
@@ -1608,7 +1609,7 @@ def queryAnnoObjects ( webargs, postdata=None ):
   
           if not proj.datasetcfg.checkCube(resolution, corner, dim):
             logger.warning("Illegal cutout corner={}, dim={}".format(corner, dim))
-            raise OCPCAError("Illegal cutout corner={}, dim={}".format( corner, dim))
+            raise NDWSError("Illegal cutout corner={}, dim={}".format( corner, dim))
   
           cutout = db.cutout(ch, corner, dim, resolution)
           
@@ -1629,21 +1630,24 @@ def queryAnnoObjects ( webargs, postdata=None ):
 def deleteAnnotation ( webargs ):
   """Delete a RAMON object"""
 
+  import pdb; pdb.set_trace()
+
   [ token, channel, otherargs ] = webargs.split ('/',2)
 
   # pattern for using contexts to close databases get the project 
-  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+  with closing ( ndproj.NDProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( spatialdb.SPATIALDB(proj) ) as db:
+  with closing ( spatialdb.SpatialDB(proj) ) as db:
+   with closing ( ramondb.RamonDB(proj) ) as rdb:
   
-    ch = ocpcaproj.OCPCAChannel(proj, channel)
+    ch = ndproj.NDChannel(proj, channel)
     
     # Don't write to readonly channels
     if ch.getReadOnly() == READONLY_TRUE:
       logger.warning("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
-      raise OCPCAError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+      raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
 
     # Split the URL and get the args
     args = otherargs.split('/', 2)
@@ -1654,7 +1658,7 @@ def deleteAnnotation ( webargs ):
     # if not..this is not a well-formed delete request
     else:
       logger.warning ("Delete did not specify a legal object identifier = %s" % args[0] )
-      raise OCPCAError ("Delete did not specify a legal object identifier = %s" % args[0] )
+      raise NDWSError ("Delete did not specify a legal object identifier = %s" % args[0] )
 
     for annoid in annoids: 
 
@@ -1663,7 +1667,8 @@ def deleteAnnotation ( webargs ):
       while not done and tries < 5:
 
         try:
-          db.deleteAnnotation ( ch, annoid )
+          db.deleteAnnoData ( ch, annoid )
+          rdb.deleteAnnotation ( ch, annoid )
           done = True
         # rollback if you catch an error
         except MySQLdb.OperationalError, e:
@@ -1684,7 +1689,7 @@ def jsonInfo ( webargs ):
   [ token, projinfoliteral, rest] = webargs.split ('/',2)
 
   # get the project 
-  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+  with closing ( ndproj.NDProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
     
     return jsonprojinfo.jsonInfo(proj)
@@ -1701,7 +1706,7 @@ def xmlInfo ( webargs ):
     raise
   
   # get the project 
-  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+  with closing ( ndproj.NDProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
 
     return jsonprojinfo.xmlInfo(token, proj)
@@ -1712,11 +1717,11 @@ def projInfo ( webargs ):
   [ token, projinfoliteral, rest ] = webargs.split ('/',2)
 
   # get the project 
-  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+  with closing ( ndproj.NDProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( spatialdb.SPATIALDB(proj) ) as db:
+  with closing ( spatialdb.SpatialDB(proj) ) as db:
 
     # Create an in-memory HDF5 file
     tmpfile = tempfile.NamedTemporaryFile ()
@@ -1738,11 +1743,11 @@ def chanInfo ( webargs ):
 
   # pattern for using contexts to close databases
   # get the project 
-  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+  with closing ( ndproj.NDProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( spatialdb.SPATIALDB(proj) ) as db:
+  with closing ( spatialdb.SpatialDB(proj) ) as db:
     import jsonprojinfo
     return jsonprojinfo.jsonChanInfo( proj, db )
 
@@ -1752,14 +1757,14 @@ def reserve ( webargs ):
 
   [token, channel, reservestr, cnt, other] = webargs.split ('/', 4)
 
-  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+  with closing ( ndproj.NDProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
 
-  with closing ( spatialdb.SPATIALDB(proj) ) as db:
+  with closing ( spatialdb.SpatialDB(proj) ) as db:
 
-    ch = ocpcaproj.OCPCAChannel(proj,channel)
+    ch = ndproj.NDChannel(proj,channel)
     if ch.getChannelType() not in ANNOTATION_CHANNELS:
-      raise OCPCAError ("Illegal project type for reserve.")
+      raise NDWSError ("Illegal project type for reserve.")
 
     try:
       count = int(cnt)
@@ -1767,7 +1772,7 @@ def reserve ( webargs ):
       firstid = db.reserve (ch, count)
       return json.dumps ( (firstid, int(cnt)) )
     except:
-      raise OCPCAError ("Illegal arguments to reserve: {}".format(webargs))
+      raise NDWSError ("Illegal arguments to reserve: {}".format(webargs))
 
 def getField ( webargs ):
   """Return a single HDF5 field"""
@@ -1777,18 +1782,18 @@ def getField ( webargs ):
     [token, channel, annid, field] = [i for i in m.groups()]
   except:
     logger.warning("Illegal getField request.  Wrong number of arguments.")
-    raise OCPCAError("Illegal getField request.  Wrong number of arguments.")
+    raise NDWSError("Illegal getField request.  Wrong number of arguments.")
 
-  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+  with closing ( ndproj.NDProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
 
-  with closing ( spatialdb.SPATIALDB(proj) ) as db:
-    ch = ocpcaproj.OCPCAChannel(proj, channel)
-    anno = db.getAnnotation(ch, annid)
+  with closing ( ramondb.RamonDB(proj) ) as rdb:
+    ch = ndproj.NDChannel(proj, channel)
+    anno = rdb.getAnnotation(ch, annid)
 
     if anno is None:
       logger.warning("No annotation found at identifier = {}".format(annid))
-      raise OCPCAError ("No annotation found at identifier = {}".format(annid))
+      raise NDWSError ("No annotation found at identifier = {}".format(annid))
 
     return anno.getField(field)
 
@@ -1800,20 +1805,20 @@ def setField ( webargs ):
     [token, channel, annid, field, value] = [i for i in m.groups()]
   except:
     logger.warning("Illegal setField request. Wrong number of arguments. Web Args: {}".format(webargs))
-    raise OCPCAError("Illegal setField request. Wrong number of arguments. Web Args:{}".format(webargs))
+    raise NDWSError("Illegal setField request. Wrong number of arguments. Web Args:{}".format(webargs))
     
-  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+  with closing ( ndproj.NDProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
 
-  with closing ( spatialdb.SPATIALDB(proj) ) as db:
-    ch = ocpcaproj.OCPCAChannel(proj, channel)
+  with closing ( ramondb.RamonDB(proj) ) as rdb:
+    ch = ndproj.NDChannel(proj, channel)
     
     # Don't write to readonly channels
     if ch.getReadOnly() == READONLY_TRUE:
       logger.warning("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
-      raise OCPCAError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+      raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
     
-    db.updateAnnotation(ch, annid, field, value)
+    rdb.updateAnnotation(ch, annid, field, value)
 
 def getPropagate (webargs):
   """ Return the value of the Propagate field """
@@ -1823,10 +1828,10 @@ def getPropagate (webargs):
     (token, channel_list) = re.match("(\w+)/([\w+,]+)/getPropagate/$", webargs).groups()
   except Exception, e:
     logger.warning("Illegal getPropagate request. Wrong format {}. {}".format(webargs,e))
-    raise OCPCAError("Illegal getPropagate request. Wrong format {}. {}".format(webargs, e))
+    raise NDWSError("Illegal getPropagate request. Wrong format {}. {}".format(webargs, e))
 
   # pattern for using contexts to close databases
-  with closing(ocpcaproj.OCPCAProjectsDB()) as projdb:
+  with closing(ndproj.NDProjectsDB()) as projdb:
     proj = projdb.loadToken(token)
     value_list = []
     
@@ -1845,10 +1850,10 @@ def setPropagate(webargs):
     (token, channel_list, value_list) = re.match("(\w+)/([\w+,]+)/setPropagate/([\d+,]+)/$", webargs).groups()
   except:
     logger.warning("Illegal setPropagate request. Wrong format {}. {}".format(webargs, e))
-    raise OCPCAError("Illegal setPropagate request. Wrong format {}. {}".format(webargs, e))
+    raise NDWSError("Illegal setPropagate request. Wrong format {}. {}".format(webargs, e))
     
   # pattern for using contexts to close databases. get the project
-  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+  with closing ( ndproj.NDProjectsDB() ) as projdb:
     proj = projdb.loadToken(token)
     
     for channel_name in channel_list.split(','):
@@ -1860,33 +1865,33 @@ def setPropagate(webargs):
         # and is not read only
         if ch.getReadOnly() == READONLY_FALSE:
           ch.setPropagate(UNDER_PROPAGATION)
-          from ocpca.tasks import propagate
+          from nd.tasks import propagate
           # then call propagate
           # propagate(token, channel_name)
           propagate.delay(token, channel_name)
         else:
           logger.warning("Cannot Propagate this project. It is set to Read Only.")
-          raise OCPCAError("Cannot Propagate this project. It is set to Read Only.")
+          raise NDWSError("Cannot Propagate this project. It is set to Read Only.")
       # if the project is Propagated already you can set it to under propagation
       elif int(value) == UNDER_PROPAGATION and ch.getPropagate() == PROPAGATED:
         logger.warning("Cannot propagate a project which is propagated. Set to Not Propagated first.")
-        raise OCPCAError("Cannot propagate a project which is propagated. Set to Not Propagated first.")
+        raise NDWSError("Cannot propagate a project which is propagated. Set to Not Propagated first.")
       # If the value to be set is not propagated
       elif int(value) == NOT_PROPAGATED:
         # and the project is under propagation then throw an error
         if ch.getPropagate() == UNDER_PROPAGATION:
           logger.warning("Cannot set this value. Project is under propagation.")
-          raise OCPCAError("Cannot set this value. Project is under propagation.")
+          raise NDWSError("Cannot set this value. Project is under propagation.")
         # and the project is already propagated and set read only then throw error
         elif ch.getPropagate() == PROPAGATED and ch.getReadOnly == READONLY_TRUE:
           logger.warning("Cannot set this Project to unpropagated. Project is Read only")
-          raise OCPCAError("Cannot set this Project to unpropagated. Project is Read only")
+          raise NDWSError("Cannot set this Project to unpropagated. Project is Read only")
         else:
           ch.setPropagate(NOT_PROPAGATED)
       # cannot set a project to propagated via the RESTful interface
       else:
         logger.warning("Invalid Value {} for setPropagate".format(value))
-        raise OCPCAError("Invalid Value {} for setPropagate".format(value))
+        raise NDWSError("Invalid Value {} for setPropagate".format(value))
 
 def merge (webargs):
   """Return a single HDF5 field"""
@@ -1898,7 +1903,7 @@ def merge (webargs):
     [token, channel_name, relabel_ids, rest_args] = [i for i in m.groups()]
   except:
     logger.warning("Illegal globalMerge request. Wrong number of arguments.")
-    raise OCPCAError("Illegal globalMerber request. Wrong number of arguments.")
+    raise NDWSError("Illegal globalMerber request. Wrong number of arguments.")
   
   # get the ids from the list of ids and store it in a list vairable
   ids = relabel_ids.split(',')
@@ -1910,19 +1915,19 @@ def merge (webargs):
   # Validate ids. If ids do not exist raise errors
 
   # pattern for using contexts to close databases, get the project 
-  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+  with closing ( ndproj.NDProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( spatialdb.SPATIALDB(proj) ) as db:
+  with closing ( ramondb.RamonDB(proj) ) as db:
   
     ch = proj.getChannelObj(channel_name)
     # Check that all ids in the id strings are valid annotation objects
     for curid in ids:
-      obj = db.getAnnotation(ch, curid)
+      obj = rdb.getAnnotation(ch, curid)
       if obj == None:
         logger.warning("Invalid object id {} used in merge".format(curid))
-        raise OCPCAError("Invalid object id used in merge")
+        raise NDWSError("Invalid object id used in merge")
 
     m = re.match("global/(\d+)", rest_args)
     if m.group(1) is not None:
@@ -1939,7 +1944,7 @@ def merge (webargs):
 def publicTokens ( self ):
   """Return a json formatted list of public tokens"""
   
-  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+  with closing ( ndproj.NDProjectsDB() ) as projdb:
 
     import jsonprojinfo
     return jsonprojinfo.publicTokens ( projdb )
@@ -1951,11 +1956,11 @@ def exceptions ( webargs, ):
 
   # pattern for using contexts to close databases
   # get the project 
-  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+  with closing ( ndproj.NDProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( spatialdb.SPATIALDB(proj) ) as db:
+  with closing ( spatialdb.SpatialDB(proj) ) as db:
 
     # Perform argument processing
     try:
@@ -1963,7 +1968,7 @@ def exceptions ( webargs, ):
       args.cutoutArgs ( cutoutargs, proj.datasetcfg )
     except restargs.RESTArgsError, e:
       logger.warning("REST Arguments {} failed: {}".format(webargs,e))
-      raise OCPCAError(e)
+      raise NDWSError(e)
 
     # Extract the relevant values
     corner = args.getCorner()
@@ -1973,10 +1978,10 @@ def exceptions ( webargs, ):
     # check to make sure it's an annotation project
     if proj.getChannelType() not in ANNOTATION_PROJECTS : 
       logger.warning("Asked for exceptions on project that is not of type ANNOTATIONS")
-      raise OCPCAError("Asked for exceptions on project that is not of type ANNOTATIONS")
+      raise NDWSError("Asked for exceptions on project that is not of type ANNOTATIONS")
     elif not proj.getExceptions():
       logger.warning("Asked for exceptions on project without exceptions")
-      raise OCPCAError("Asked for exceptions on project without exceptions")
+      raise NDWSError("Asked for exceptions on project without exceptions")
       
     # Get the exceptions -- expect a rect np.array of shape x,y,z,id1,id2,...,idn where n is the longest exception list
     exceptions = db.exceptionsCutout ( corner, dim, resolution )
@@ -2011,11 +2016,11 @@ def minmaxProject ( webargs ):
 
   # pattern for using contexts to close databases
   # get the project 
-  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+  with closing ( ndproj.NDProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( spatialdb.SPATIALDB(proj) ) as db:
+  with closing ( spatialdb.SpatialDB(proj) ) as db:
 
     mcdata = None
 
@@ -2023,7 +2028,7 @@ def minmaxProject ( webargs ):
 
       channel_name = channels[i]
 
-      ch = ocpcaproj.OCPCAChannel(proj,channel_name)
+      ch = ndproj.NDChannel(proj,channel_name)
       cb = cutout (cutoutargs, ch, proj, db)
       FilterCube (cutoutargs, cb)
 
@@ -2039,7 +2044,7 @@ def minmaxProject ( webargs ):
           cbplane = np.amin (cb.data, axis=0)
         else:
           logger.error("Illegal projection requested.  Projection = {}", minormax)
-          raise OCPCAError("Illegal image plane requested. Projections  = {}", minormax)
+          raise NDWSError("Illegal image plane requested. Projections  = {}", minormax)
 
         #initiliaze the multi-color array
         if mcdata == None:
@@ -2054,7 +2059,7 @@ def minmaxProject ( webargs ):
           cbplane = np.amin (cb.data, axis=1)
         else:
           logger.error("Illegal projection requested.  Projection = {}", minormax)
-          raise OCPCAError("Illegal image plane requested. Projections  = {}", minormax)
+          raise NDWSError("Illegal image plane requested. Projections  = {}", minormax)
 
         #initiliaze the multi-color array
         if mcdata == None:
@@ -2069,7 +2074,7 @@ def minmaxProject ( webargs ):
           cbplane = np.amin (cb.data, axis=2)
         else:
           logger.error("Illegal projection requested.  Projection = {}", minormax)
-          raise OCPCAError("Illegal image plane requested. Projections  = {}", minormax)
+          raise NDWSError("Illegal image plane requested. Projections  = {}", minormax)
 
         #initiliaze the multi-color array
         if mcdata == None:
@@ -2077,7 +2082,7 @@ def minmaxProject ( webargs ):
 
       else:
         logger.error("Illegal image plane requested.  Plane = {}", plane)
-        raise OCPCAError("Illegal image plane requested.  Plane = {}", plane)
+        raise NDWSError("Illegal image plane requested.  Plane = {}", plane)
 
       # put the plane into the multi-channel array
       mcdata[i,:,:] = cbplane

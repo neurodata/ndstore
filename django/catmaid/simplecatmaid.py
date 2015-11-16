@@ -23,24 +23,24 @@ import django
 
 import restargs
 import spatialdb
-import ocpcaproj
-import ocpcarest
+import ndproj
+import ndwsrest
 
-from ocpcaerror import OCPCAError
+from ndwserror import NDWSError
 import logging
 logger=logging.getLogger("ocp")
 
 
 class SimpleCatmaid:
-  """ Prefetch CATMAID tiles into MocpcacheDB """
+  """ Prefetch CATMAID tiles into MndcheDB """
 
   def __init__(self):
-    """ Bind the mocpcache """
+    """ Bind the mndche """
 
     self.proj = None
     self.channel = None
     self.tilesz = 512
-    # make the mocpcache connection
+    # make the mndche connection
     self.mc = pylibmc.Client(["127.0.0.1"], binary=True,behaviors={"tcp_nodelay":True,"ketama": True})
 
   def __del__(self):
@@ -72,7 +72,7 @@ class SimpleCatmaid:
       imageargs = '{}/{}/{}/{},{}/{},{}/{}/'.format(self.channel, 'xy', res, xstart, xend, ystart, yend, ztile)
     else:
       imageargs = '{}/{}/{}/{},{}/{},{}/{}/{}/'.format(self.channel, 'xy', res, xstart, xend, ystart, yend, ztile, timetile)
-    cb = ocpcarest.imgSlice(imageargs, self.proj, self.db)
+    cb = ndwsrest.imgSlice(imageargs, self.proj, self.db)
     if cb.data.shape != (1, self.tilesz, self.tilesz) and cb.data.shape != (1, 1, self.tilesz, self.tilesz):
       if timetile is None:
         tiledata = np.zeros((1, self.tilesz, self.tilesz), cb.data.dtype )
@@ -111,7 +111,7 @@ class SimpleCatmaid:
       imageargs = '{}/{}/{}/{},{}/{}/{},{}/'.format(self.channel, 'xz', res, xstart, xend, ytile, zstart, zend)
     else:
       imageargs = '{}/{}/{}/{},{}/{}/{},{}/{}/'.format(self.channel, 'xz', res, xstart, xend, ytile, zstart, zend, timetile)
-    cb = ocpcarest.imgSlice ( imageargs, self.proj, self.db )
+    cb = ndwsrest.imgSlice ( imageargs, self.proj, self.db )
 
     # scale by the appropriate amount
 
@@ -153,7 +153,7 @@ class SimpleCatmaid:
       imageargs = '{}/{}/{}/{}/{},{}/{},{}/'.format(self.channel, 'yz', res, xtile, ystart, yend, zstart, zend)
     else:
       imageargs = '{}/{}/{}/{}/{},{}/{},{}/{}/'.format(self.channel, 'yz', res, xtile, ystart, yend, zstart, zend, timetile)
-    cb = ocpcarest.imgSlice (imageargs, self.proj, self.db)
+    cb = ndwsrest.imgSlice (imageargs, self.proj, self.db)
 
     # scale by the appropriate amount
    
@@ -170,7 +170,7 @@ class SimpleCatmaid:
 
 
   def getTile ( self, webargs ):
-    """Fetch the file from mocpcache or get a cutout from the database"""
+    """Fetch the file from mndche or get a cutout from the database"""
   
     try:
       # argument of format token/channel/slice_type/z/y_x_res.png
@@ -180,17 +180,17 @@ class SimpleCatmaid:
       [timetile, ztile, ytile, xtile, res] = [int(i.strip('/')) if i is not None else None for i in m.groups()[3:]]
     except Exception, e:
       logger.warning("Incorrect arguments give for getTile {}. {}".format(webargs, e))
-      raise OCPCAError("Incorrect arguments given for getTile {}. {}".format(webargs, e))
+      raise NDWSError("Incorrect arguments given for getTile {}. {}".format(webargs, e))
 
-    with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+    with closing ( ndproj.NDProjectsDB() ) as projdb:
         self.proj = projdb.loadToken(self.token)
     
     with closing ( spatialdb.SPATIALDB(self.proj) ) as self.db:
 
-        # mocpcache key
+        # mndche key
         mckey = self.buildKey(res, slice_type, xtile, ytile, ztile, timetile=timetile)
 
-        # if tile is in mocpcache, return it
+        # if tile is in mndche, return it
         tile = self.mc.get(mckey)
         
         if tile == None:
@@ -202,7 +202,7 @@ class SimpleCatmaid:
             img = self.cacheMissYZ(res, xtile, ytile, ztile, timetile=timetile)
           else:
             logger.warning ("Requested illegal image plance {}. Should be xy, xz, yz.".format(slice_type))
-            raise OCPCAError ("Requested illegal image plance {}. Should be xy, xz, yz.".format(slice_type))
+            raise NDWSError ("Requested illegal image plance {}. Should be xy, xz, yz.".format(slice_type))
           
           fobj = cStringIO.StringIO ( )
           img.save ( fobj, "PNG" )

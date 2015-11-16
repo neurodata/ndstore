@@ -151,8 +151,6 @@ class CatmaidIngest:
 #    p.close()
 #    p.join()
 
->>>>>>> origin/master
-
 
 def main():
 

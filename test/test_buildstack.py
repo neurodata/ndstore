@@ -44,7 +44,7 @@ SITE_HOST = site_to_test.site
     ## upload some image data
     #self.imagedata = np.ones ( [5,100,100], dtype=np.uint8 ) * random.randint(0,255)
     
-    #url = 'http://{}/ca/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format ( self.p.baseurl, self.p.token, self.p.resolution, *self.p.args )
+    #url = 'http://{}/sd/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format ( self.p.baseurl, self.p.token, self.p.resolution, *self.p.args )
     
     #tmpfile = tempfile.NamedTemporaryFile ()
     #fh5out = h5py.File ( tmpfile.name )
@@ -59,8 +59,8 @@ SITE_HOST = site_to_test.site
   #def test_image_build(self):
     
     #self.post_image()
-    #url_set = 'http://{}/ca/{}/setPropagate/{}/'.format ( self.p.baseurl, self.p.token, makeunitdb.ocpcaproj.UNDER_PROPAGATION )
-    #url_get = 'http://{}/ca/{}/getPropagate/'.format ( self.p.baseurl, self.p.token )
+    #url_set = 'http://{}/sd/{}/setPropagate/{}/'.format ( self.p.baseurl, self.p.token, makeunitdb.ocpcaproj.UNDER_PROPAGATION )
+    #url_get = 'http://{}/sd/{}/getPropagate/'.format ( self.p.baseurl, self.p.token )
 
     #f = urllib2.urlopen(url_set)
     #while (True):
@@ -70,7 +70,7 @@ SITE_HOST = site_to_test.site
       #if status == makeunitdb.ocpcaproj.PROPAGATED:
         #break
 
-    #url = 'http://{}/ca/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format ( self.p.baseurl, self.p.token, self.p.resolution+1, *(250,300,150,200,1,6) )
+    #url = 'http://{}/sd/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format ( self.p.baseurl, self.p.token, self.p.resolution+1, *(250,300,150,200,1,6) )
     #f = urllib2.urlopen(url)
     #tmpfile = tempfile.NamedTemporaryFile ( )
     #tmpfile.write ( f.read() )

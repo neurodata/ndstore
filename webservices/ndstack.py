@@ -25,14 +25,14 @@ import zlib
 
 from cube import Cube
 import spatialdb
-from ocpcaproj import OCPCAProjectsDB
+from ndproj import NDProjectsDB
 import ndlib
 import annotation
-from ndtype import ZSLICES, ISOTROPIC, ANNOTATION_CHANNELS, IMAGE_CHANNELS, TIMESERIES_CHANNELS, PROPAGATED, NOT_PROPAGATED, OCP_dtypetonp
+from ndtype import ZSLICES, ISOTROPIC, ANNOTATION_CHANNELS, IMAGE_CHANNELS, TIMESERIES_CHANNELS, PROPAGATED, NOT_PROPAGATED, ND_dtypetonp
 
-from ocpcaerror import OCPCAError
+from ndwserror import NDWSError
 import logging
-logger=logging.getLogger("ocp")
+logger=logging.getLogger("neurodata")
 
 
 """Construct a hierarchy off of a completed database."""
@@ -40,7 +40,7 @@ logger=logging.getLogger("ocp")
 def buildStack(token, channel_name, resolution=None):
   """Wrapper for the different datatypes """
 
-  with closing(OCPCAProjectsDB()) as projdb:
+  with closing(NDProjectsDB()) as projdb:
     proj = projdb.loadToken(token)
     ch = proj.getChannelObj(channel_name)
  
@@ -62,13 +62,13 @@ def buildStack(token, channel_name, resolution=None):
       proj.setPropagate(NOT_PROPAGATED)
       projdb.updatePropagate(proj)
       logger.error("Error in building image stack {}".format(token))
-      raise OCPCAError("Error in the building image stack {}".format(token))
+      raise NDWSError("Error in the building image stack {}".format(token))
 
 
 def clearStack (proj, ch, res=None):
   """ Clear a OCP stack for a given project """
 
-  with closing(spatialdb.SPATIALDB(proj)) as db:
+  with closing(spatialdb.SpatialDB(proj)) as db:
     
     # pick a resolution
     if res is None:
@@ -107,7 +107,7 @@ def clearStack (proj, ch, res=None):
 def buildAnnoStack ( proj, ch, res=None ):
   """Build the hierarchy for annotations"""
   
-  with closing(spatialdb.SPATIALDB (proj)) as db:
+  with closing(spatialdb.SpatialDB (proj)) as db:
 
     # pick a resolution
     if res is None:
@@ -134,7 +134,7 @@ def buildAnnoStack ( proj, ch, res=None ):
         outdata = np.zeros ( [ zcubedim*2,  ycubedim*2, xcubedim*2 ], dtype=OCP_dtypetonp.get(ch.getDataType()))
       else:
         logger.error ( "Invalid scaling option in project = {}".format(scaling) )
-        raise OCPCAError ( "Invalid scaling option in project = {}".format(scaling)) 
+        raise NDWSError ( "Invalid scaling option in project = {}".format(scaling)) 
 
       # Round up to the top of the range
       lastzindex = (ndlib.XYZMorton([xlimit,ylimit,zlimit])/64+1)*64
@@ -193,7 +193,7 @@ def buildAnnoStack ( proj, ch, res=None ):
 def buildImageStack(proj, ch, res=None):
   """Build the hierarchy of images"""
   
-  with closing(spatialdb.SPATIALDB(proj)) as db:
+  with closing(spatialdb.SpatialDB(proj)) as db:
 
     # pick a resolution
     if res is None:
@@ -214,7 +214,7 @@ def buildImageStack(proj, ch, res=None):
         (xscale, yscale, zscale) = (2, 2, 2)
       else:
         logger.error("Invalid scaling option in project = {}".format(scaling))
-        raise OCPCAError("Invalid scaling option in project = {}".format(scaling)) 
+        raise NDWSError("Invalid scaling option in project = {}".format(scaling)) 
 
       biggercubedim = [xcubedim*xscale,ycubedim*yscale,zcubedim*zscale]
 

@@ -20,8 +20,8 @@ import h5py
 import numpy as np
 
 sys.path += [os.path.abspath('../django')]
-import OCP.settings
-os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
+import ND.settings
+os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
 from django.conf import settings
 
 def makeAnno ( anntype, hosturl ):
@@ -43,7 +43,7 @@ def makeAnno ( anntype, hosturl ):
   tmpfile.seek(0)
 
   # Build the put URL
-  url = "http://{}/ocpca/{}/{}/".format(hosturl, 'unittest', 'unit_anno')
+  url = "http://{}/sd/{}/{}/".format(hosturl, 'unittest', 'unit_anno')
 
   # write an object (server creates identifier)
   req = urllib2.Request ( url, tmpfile.read())
