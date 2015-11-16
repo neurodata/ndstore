@@ -140,6 +140,9 @@ class SPATIALDB:
   def putCube(self, ch, zidx, resolution, cube, timestamp=None, update=False):
     """ Store a cube in the annotation database """
     
+    if ch.getChannelType() not in TIMESERIES_CHANNELS and timestamp is not None:
+      raise
+
     # Handle the cube format here.  
     if self.NPZ:
       self.kvio.putCube(ch, zidx, timestamp, resolution, cube.toNPZ(), not cube.fromZeros())
