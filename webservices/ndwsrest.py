@@ -1316,6 +1316,8 @@ def putAnnotation ( webargs, postdata ):
       else:
         conflictopt = 'O'
   
+      import pdb; pdb.set_trace()
+
       try:
   
         for k in h5f.keys():
@@ -1586,8 +1588,9 @@ def queryAnnoObjects ( webargs, postdata=None ):
     proj = projdb.loadToken ( token )
 
   with closing ( spatialdb.SpatialDB(proj) ) as db:
+   with closing ( ramondb.RamonDB(proj) ) as rdb:
     ch = ndproj.NDChannel(proj,channel)
-    annoids = db.getAnnoObjects(ch, restargs.split('/'))
+    annoids = rdb.getAnnoObjects(ch, restargs.split('/'))
 
     # We have a cutout as well
     if postdata:
@@ -1629,8 +1632,6 @@ def queryAnnoObjects ( webargs, postdata=None ):
 
 def deleteAnnotation ( webargs ):
   """Delete a RAMON object"""
-
-  import pdb; pdb.set_trace()
 
   [ token, channel, otherargs ] = webargs.split ('/',2)
 
@@ -1760,7 +1761,7 @@ def reserve ( webargs ):
   with closing ( ndproj.NDProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
 
-  with closing ( spatialdb.SpatialDB(proj) ) as db:
+  with closing ( ramondb.RamonDB(proj) ) as rdb:
 
     ch = ndproj.NDChannel(proj,channel)
     if ch.getChannelType() not in ANNOTATION_CHANNELS:
@@ -1769,7 +1770,7 @@ def reserve ( webargs ):
     try:
       count = int(cnt)
       # perform the reservation
-      firstid = db.reserve (ch, count)
+      firstid = rdb.reserve (ch, count)
       return json.dumps ( (firstid, int(cnt)) )
     except:
       raise NDWSError ("Illegal arguments to reserve: {}".format(webargs))

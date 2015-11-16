@@ -28,7 +28,7 @@ import ndwsrest
 
 from ndwserror import NDWSError
 import logging
-logger=logging.getLogger("ocp")
+logger=logging.getLogger("neurodata")
 
 
 class SimpleCatmaid:
@@ -185,7 +185,7 @@ class SimpleCatmaid:
     with closing ( ndproj.NDProjectsDB() ) as projdb:
         self.proj = projdb.loadToken(self.token)
     
-    with closing ( spatialdb.SPATIALDB(self.proj) ) as self.db:
+    with closing ( spatialdb.SpatialDB(self.proj) ) as self.db:
 
         # mndche key
         mckey = self.buildKey(res, slice_type, xtile, ytile, ztile, timetile=timetile)

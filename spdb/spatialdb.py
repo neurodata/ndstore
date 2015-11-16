@@ -231,6 +231,8 @@ class SpatialDB:
       #  and the morton key
       key = cubelocs[listoffsets[i],0]
 
+      import pdb; pdb.set_trace()
+
       cube = self.getCube ( ch, key, resolution, True )
 
       # get a voxel offset for the cube

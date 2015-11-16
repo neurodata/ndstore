@@ -26,7 +26,7 @@ import simplecatmaid
 from ndwserror import NDWSError
 
 import logging
-logger=logging.getLogger("ocp")
+logger=logging.getLogger("neurodata")
 
 
 def mcfccatmaidview (request, webargs):

@@ -28,7 +28,7 @@ import ndlib
 
 from ocpcaerror import OCPCAError
 import logging
-logger = logging.getLogger("ocp")
+logger = logging.getLogger("neurodata")
 
 
 def getAnnoIds(proj, ch, Xmin, Xmax, Ymin, Ymax, Zmin, Zmax):

@@ -28,7 +28,7 @@ import mcfc
 
 from ndwserror import NDWSError
 import logging
-logger=logging.getLogger("ocp")
+logger=logging.getLogger("neurodata")
 
 class MCFCCatmaid:
   """Prefetch CATMAID tiles into MndcheDB"""

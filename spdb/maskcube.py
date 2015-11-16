@@ -19,7 +19,7 @@ from cube import Cube
 
 from spatialdberror import SpatialDBError
 import logging
-logger=logging.getLogger("ocp")
+logger=logging.getLogger("neurodata")
 
 """
 .. module:: maskcube

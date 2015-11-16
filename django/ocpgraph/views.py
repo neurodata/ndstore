@@ -35,7 +35,7 @@ import ocpcadb
 import ocpgraph
 
 import logging
-logger=logging.getLogger("ocp")
+logger=logging.getLogger("neurodata")
 
 import tempfile
 import tarfile

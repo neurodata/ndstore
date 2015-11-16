@@ -106,6 +106,8 @@ class MySQLKVIO:
     else:
       cursor = self.txncursor
     
+    import pdb; pdb.set_trace()
+
     if timestamp is None:
       if ch.getChannelType() == OLDCHANNEL:
         channel_id = self.getChannelId(ch)

@@ -27,7 +27,7 @@ from django.conf import settings
 from ndwserror import NDWSError
 
 import logging
-logger=logging.getLogger("ocp")
+logger=logging.getLogger("neurodata")
 
 """Merge two cutouts of any type"""
 def overlayImage (request, webargs):
