@@ -21,12 +21,12 @@ from contextlib import closing
 from django.conf import settings
 
 import restargs
-import ocpcadb
-import ocpcaproj
+import spatialdb
+import ndproj
 import h5ann
 import ndlib
 
-from ocpcaerror import OCPCAError
+from ndwserror import NDWSError
 import logging
 logger = logging.getLogger("neurodata")
 
@@ -34,10 +34,10 @@ logger = logging.getLogger("neurodata")
 def getAnnoIds(proj, ch, Xmin, Xmax, Ymin, Ymax, Zmin, Zmax):
   """Return a list of anno ids restricted by equality predicates. Equalities are alternating in field/value in the url."""
 
-  with closing(ocpcaproj.OCPCAProjectsDB()) as projdb:
+  with closing(ndproj.NDProjectsDB()) as projdb:
     proj = projdb.loadToken(proj.getToken())
 
-  db = (ocpcadb.OCPCADB(proj))
+  db = (spatialdb.SpatialDB(proj))
 
   resolution = ch.getResolution()
   mins = (int(Xmin), int(Ymin), int(Zmin))
@@ -49,7 +49,7 @@ def getAnnoIds(proj, ch, Xmin, Xmax, Ymin, Ymax, Zmin, Zmax):
 
   if not proj.datasetcfg.checkCube(resolution, corner, dim):
     logger.warning("Illegal cutout corner={}, dim={}".format(corner, dim))
-    raise OCPCAError("Illegal cutout corner={}, dim={}".format(corner, dim))
+    raise NDWSError("Illegal cutout corner={}, dim={}".format(corner, dim))
 
   cutout = db.cutout(ch, corner, dim, resolution)
 
@@ -72,7 +72,7 @@ def genGraphRAMON(database, project, channel, graphType="graphml", Xmin=0, Xmax=
     idslist = getAnnoIds(project, channel, Xmin, Xmax, Ymin, Ymax, Zmin, Zmax)
     if (idslist.size) == 0:
       logger.warning("Area specified is empty")
-      raise OCPCAError("Area specified is empty")
+      raise NDWSError("Area specified is empty")
 
     with closing(conn.cursor()) as cursor:
       for i in range(idslist.size):

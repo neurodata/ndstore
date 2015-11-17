@@ -19,7 +19,7 @@ import cStringIO
 import re
 
 import ndwsrest
-import jsonproj
+import ndwsprojingest
 
 from ndwserror import NDWSError
 import logging
@@ -414,7 +414,7 @@ def autoIngest(request, webargs):
   """RESTful URL for creating a project using a JSON file"""
 
   try:
-    return django.http.HttpResponse(jsonproj.autoIngest(webargs, request.body), content_type="application/json")
+    return django.http.HttpResponse(ndwsprojingest.autoIngest(webargs, request.body), content_type="application/json")
   except NDWSError, e:
     return django.http.HttpResponseNotFound()
   except Exception, e:
@@ -425,7 +425,7 @@ def createChannel(request, webargs):
   """RESTful URL for creating a list of channels using a JSON file"""
 
   try:
-    return django.http.HttpResponse(jsonproj.createChannel(webargs, request.body), content_type="application/json")
+    return django.http.HttpResponse(ndwsprojingest.createChannel(webargs, request.body), content_type="application/json")
   except NDWSError, e:
     return django.http.HttpResponseNotFound()
   except Exception, e:
@@ -436,7 +436,7 @@ def deleteChannel(request, webargs):
   """RESTful URL for deleting a list of channels using a JSON file"""
 
   try:
-    return django.http.HttpResponse(jsonproj.deleteChannel(webargs, request.body), content_type="application/json")
+    return django.http.HttpResponse(ndwsprojingest.deleteChannel(webargs, request.body), content_type="application/json")
   except NDWSError, e:
     return django.http.HttpResponseNotFound()
   except Exception, e:

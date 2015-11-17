@@ -33,7 +33,7 @@ from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
 from postmethods import getURL, postNPZ, getNPZ
-from ocptype import PROPAGATED, NOT_PROPAGATED, UNDER_PROPAGATION, ISOTROPIC, READONLY_TRUE, READONLY_FALSE
+from ndtype import PROPAGATED, NOT_PROPAGATED, UNDER_PROPAGATION, ISOTROPIC, READONLY_TRUE, READONLY_FALSE
 from params import Params
 import kvengine_to_test
 import site_to_test

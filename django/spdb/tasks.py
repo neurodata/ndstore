@@ -17,9 +17,8 @@ from __future__ import absolute_import
 from celery import task
 from django.conf import settings
 
-import h5annasync
 import ndstack
-from ndingest import IngestData
+from ndwsingest import IngestData
 
 import logging
 logger = logging.getLogger("neurodata")

@@ -59,14 +59,14 @@ def buildStack(token, channel_name, resolution=None):
       ch.setPropagate(PROPAGATED)
 
     except MySQLdb.Error, e:
-      proj.setPropagate(NOT_PROPAGATED)
-      projdb.updatePropagate(proj)
+      ch.setPropagate(NOT_PROPAGATED)
+      # projdb.updatePropagate(proj)
       logger.error("Error in building image stack {}".format(token))
       raise NDWSError("Error in the building image stack {}".format(token))
 
 
 def clearStack (proj, ch, res=None):
-  """ Clear a OCP stack for a given project """
+  """ Clear a ND stack for a given project """
 
   with closing(spatialdb.SpatialDB(proj)) as db:
     
@@ -95,13 +95,13 @@ def clearStack (proj, ch, res=None):
     
     # Executing the query to clear the tables
     try:
-      db.conn.cursor().execute(sql)
-      db.conn.commit()
+      db.kvio.conn.cursor().execute(sql)
+      db.kvio.conn.commit()
     except MySQLdb.Error, e:
       logger.error ("Error truncating the table. {}".format(e))
       raise
     finally:
-      db.conn.cursor().close()
+      db.kvio.conn.cursor().close()
 
 
 def buildAnnoStack ( proj, ch, res=None ):
@@ -129,9 +129,9 @@ def buildAnnoStack ( proj, ch, res=None ):
 
       #  Choose constants that work for all resolutions. recall that cube size changes from 128x128x16 to 64*64*64
       if scaling == ZSLICES:
-        outdata = np.zeros ( [ zcubedim*4, ycubedim*2, xcubedim*2 ], dtype=OCP_dtypetonp.get(ch.getDataType()))
+        outdata = np.zeros ( [ zcubedim*4, ycubedim*2, xcubedim*2 ], dtype=ND_dtypetonp.get(ch.getDataType()))
       elif scaling == ISOTROPIC:
-        outdata = np.zeros ( [ zcubedim*2,  ycubedim*2, xcubedim*2 ], dtype=OCP_dtypetonp.get(ch.getDataType()))
+        outdata = np.zeros ( [ zcubedim*2,  ycubedim*2, xcubedim*2 ], dtype=ND_dtypetonp.get(ch.getDataType()))
       else:
         logger.error ( "Invalid scaling option in project = {}".format(scaling) )
         raise NDWSError ( "Invalid scaling option in project = {}".format(scaling)) 
@@ -184,10 +184,10 @@ def buildAnnoStack ( proj, ch, res=None ):
         # Preserve annotations made at the specified level
         # KL check that the P option preserves annotations?  RB changed from O
         db.annotateDense(ch, outcorner, cur_res, outdata, 'O')
-        db.conn.commit()
+        db.kvio.conn.commit()
           
         # zero the output buffer
-        outdata = np.zeros ([zcubedim*4, ycubedim*2, xcubedim*2], dtype=OCP_dtypetonp.get(ch.getDataType()))
+        outdata = np.zeros ([zcubedim*4, ycubedim*2, xcubedim*2], dtype=ND_dtypetonp.get(ch.getDataType()))
 
 
 def buildImageStack(proj, ch, res=None):
@@ -240,7 +240,7 @@ def buildImageStack(proj, ch, res=None):
                 olddata = olddata[0,:,:,:]
 
               #olddata target array for the new data (z,y,x) order
-              newdata = np.zeros([zcubedim,ycubedim,xcubedim], dtype=OCP_dtypetonp.get(ch.getDataType()))
+              newdata = np.zeros([zcubedim,ycubedim,xcubedim], dtype=ND_dtypetonp.get(ch.getDataType()))
 
               for sl in range(zcubedim):
 

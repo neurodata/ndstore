@@ -26,7 +26,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
 
 from ndtype import IMAGE, UINT8
 from params import Params
-from jsonproj import createJson
+from ndwsprojingest import createJson
 from postmethods import getURL, postURL, postNPZ, getNPZ
 import makeunitdb
 import site_to_test

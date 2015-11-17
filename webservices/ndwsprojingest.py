@@ -30,7 +30,7 @@ from nduser.models import User
 
 def autoIngest(webargs, post_data):
   """Create a project using a JSON file"""
-  
+ 
   nd_dict = json.loads(post_data)
   try:
     dataset_dict = nd_dict['dataset']
@@ -107,7 +107,7 @@ def autoIngest(webargs, post_data):
         print "Channel already exists"
         raise
       
-      from nd.tasks import ingest
+      from spdb.tasks import ingest
       #ingest(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
       ingest.delay(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
     

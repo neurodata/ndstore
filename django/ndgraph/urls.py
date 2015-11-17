@@ -19,7 +19,6 @@ from django.conf.urls import patterns, include, url
 #admin.autodiscover()
 
 
-urlpatterns = patterns('ocpgraph.views',
+urlpatterns = patterns('ndgraph.views',
    url(r'(?P<webargs>^.*)$', 'buildGraph'),
-#  url(r'^admin/', include(admin.site.urls)),
 )

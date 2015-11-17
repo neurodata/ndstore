@@ -1864,7 +1864,7 @@ def setPropagate(webargs):
         # and is not read only
         if ch.getReadOnly() == READONLY_FALSE:
           ch.setPropagate(UNDER_PROPAGATION)
-          from nd.tasks import propagate
+          from spdb.tasks import propagate
           # then call propagate
           # propagate(token, channel_name)
           propagate.delay(token, channel_name)

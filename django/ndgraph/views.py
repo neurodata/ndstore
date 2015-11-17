@@ -19,28 +19,24 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.core.files.base import ContentFile
 from django.core.servers.basehttp import FileWrapper
+
+import os
 import numpy as np
-import urllib2
 import json
 import re
 from contextlib import closing
-
-import cStringIO
+import tarfile
 
 from django.conf import settings
 
-from ocpcaerror import OCPCAError
-import ocpcaproj
-import ocpcadb
-import ocpgraph
+from ndwserror import NDWSError
+import ndproj
+import spatialdb
+import ndgraph
 
 import logging
 logger=logging.getLogger("neurodata")
 
-import tempfile
-import tarfile
-import zipfile
-import os
 
 def getResponse( filename ):
 
@@ -64,12 +60,12 @@ def getResponse( filename ):
 def buildGraph (request, webargs):
   #Indicated which type of arguements to return/send
   arguementType=0
-
+  
   try:
     # argument of format /token/channel/Arguments
     #Tries each of the possible 3 entries
-    #ocpgraph/test_graph_syn/test_graph_syn/pajek/5472/6496/8712/9736/1000/1100/
-    #http://127.0.0.1:8000/ocp/ocpgraph/GraphAnno/synanno/
+    #ndgraph/test_graph_syn/test_graph_syn/pajek/5472/6496/8712/9736/1000/1100/
+    #http://127.0.0.1:8000/ocp/ndgraph/GraphAnno/synanno/
     #
 
     if re.match("(\w+)/(\w+)/$", webargs) is not None:
@@ -94,21 +90,21 @@ def buildGraph (request, webargs):
     raise OCPCAError("Arguments not in the correct format: /token/channel/Arguments")
 
   # get the project
-  with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
+  with closing ( ndproj.NDProjectsDB() ) as projdb:
 
     synproj = projdb.loadToken ( syntoken )
 
   # and the database and then call the db function
-  with closing ( ocpcadb.OCPCADB(synproj) ) as syndb:
+  with closing ( spatialdb.SpatialDB(synproj) ) as syndb:
       # open the segment channel and the synapse channel
       synch = synproj.getChannelObj(synchan_name)
       #AETODO verify that they are both annotation channels
       if arguementType==1:
-          return getResponse(ocpgraph.genGraphRAMON (syndb, synproj, synch))
+          return getResponse(ndgraph.genGraphRAMON (syndb, synproj, synch))
       elif arguementType==2:
-          return getResponse(ocpgraph.genGraphRAMON (syndb, synproj, synch, graphType))
+          return getResponse(ndgraph.genGraphRAMON (syndb, synproj, synch, graphType))
       elif arguementType==3:
-          return getResponse(ocpgraph.genGraphRAMON (syndb, synproj, synch, graphType, Xmin, Xmax, Ymin, Ymax, Zmin, Zmax))
+          return getResponse(ndgraph.genGraphRAMON (syndb, synproj, synch, graphType, Xmin, Xmax, Ymin, Ymax, Zmin, Zmax))
       else:
           logger.warning("Unable to return file")
-          raise OCPCAError("Unable to return file")
+          raise NDWSError("Unable to return file")
