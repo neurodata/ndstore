@@ -48,6 +48,7 @@ INSTALLED_APPS = (
     'nduser',
     'djcelery',
     'ndviz',
+    'ndgraph',
 )
 
 MIDDLEWARE_CLASSES = (
