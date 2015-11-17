@@ -102,7 +102,7 @@ class SpatialDB:
     cube = Cube.getCube(cubedim, ch.getChannelType(), ch.getDataType())
   
     # get the block from the database
-    cubestr = self.kvio.getCube(ch, zidx, timestamp, resolution, update)
+    cubestr = self.kvio.getCube(ch, zidx, timestamp, resolution, update=update)
 
     if not cubestr:
       cube.zeros()
@@ -234,9 +234,7 @@ class SpatialDB:
       #  and the morton key
       key = cubelocs[listoffsets[i],0]
 
-      import pdb; pdb.set_trace()
-
-      cube = self.getCube ( ch, key, resolution, True )
+      cube = self.getCube ( ch, key, resolution, update=True )
 
       # get a voxel offset for the cube
       cubeoff = ndlib.MortonXYZ( key )
@@ -294,7 +292,7 @@ class SpatialDB:
         #  and the morton key
         key = cubelocs[listoffsets[i],0]
 
-        cube = self.getCube (ch, key, resolution, True)
+        cube = self.getCube (ch, key, resolution, update=True)
 
         # get a voxel offset for the cube
         cubeoff = ndlib.MortonXYZ(key)
@@ -356,7 +354,7 @@ class SpatialDB:
           for x in range(xnumcubes):
 
             key = ndlib.XYZMorton ([x+xstart,y+ystart,z+zstart])
-            cube = self.getCube (ch, key, resolution, True)
+            cube = self.getCube (ch, key, resolution, update=True)
             
             if conflictopt == 'O':
               cube.overwrite ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
@@ -453,7 +451,7 @@ class SpatialDB:
           for x in range(xnumcubes):
 
             key = ndlib.XYZMorton ([x+xstart,y+ystart,z+zstart])
-            cube = self.getCube(ch, key, resolution, True)
+            cube = self.getCube(ch, key, resolution, update=True)
 
             exdata = cube.shaveDense ( databuffer [ z*zcubedim:(z+1)*zcubedim, y*ycubedim:(y+1)*ycubedim, x*xcubedim:(x+1)*xcubedim ] )
             for exid in np.unique ( exdata ):
@@ -758,7 +756,7 @@ class SpatialDB:
 
     for zidx in zidxs:
 
-      cb = self.getCube(ch, zidx,effectiveres) 
+      cb = self.getCube(ch,zidx,effectiveres) 
 
       # mask out the entries that do not match the annotation id
       # KL TODO
@@ -852,7 +850,7 @@ class SpatialDB:
     for zidx in zidxs:
 
       # get the cube and mask out the non annoid values
-      cb = self.getCube(ch, zidx, effectiveres) 
+      cb = self.getCube(ch,zidx,effectiveres) 
       if not remapid:
         cb.data = ndlib.filter_ctype_OMP ( cb.data, dataids )
       else: 
@@ -905,7 +903,7 @@ class SpatialDB:
         
         #Delete annotation data
         for key in zidxs:
-          cube = self.getCube(ch, key, res, True)
+          cube = self.getCube(ch, key, res, update=True)
           # KL TODO
           vec_func = np.vectorize ( lambda x: np.uint32(0) if x == annoid else x )
           cube.data = vec_func ( cube.data )

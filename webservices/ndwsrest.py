@@ -1316,8 +1316,6 @@ def putAnnotation ( webargs, postdata ):
       else:
         conflictopt = 'O'
   
-      import pdb; pdb.set_trace()
-
       try:
   
         for k in h5f.keys():

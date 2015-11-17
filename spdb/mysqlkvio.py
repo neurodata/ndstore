@@ -106,8 +106,6 @@ class MySQLKVIO:
     else:
       cursor = self.txncursor
     
-    import pdb; pdb.set_trace()
-
     if timestamp is None:
       if ch.getChannelType() == OLDCHANNEL:
         channel_id = self.getChannelId(ch)
@@ -123,6 +121,7 @@ class MySQLKVIO:
       cursor.execute ( sql )
       row = cursor.fetchone()
     except MySQLdb.Error, e:
+      import pdb; pdb.set_trace()
       logger.error ( "Failed to retrieve data cube: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
       raise
     finally:
