@@ -1327,7 +1327,7 @@ def putAnnotation ( webargs, postdata ):
   
           # set the identifier (separate transaction)
           if not ('update' in options or 'dataonly' in options or 'reduce' in options):
-            anno.setID(ch, rdb)
+            anno.setField('annid',(rdb.assignID(ch,anno.annid)))
   
           # start a transaction: get mysql out of line at a time mode
   

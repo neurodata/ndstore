@@ -18,6 +18,7 @@ import numpy as np
 import urllib2
 import cStringIO
 import sys
+import csv
 
 import tempfile
 import h5py
@@ -103,7 +104,12 @@ def main():
     mdgrp = idgrp['METADATA']
 
     for field in mdgrp.keys():
-      print field, mdgrp[field][:]
+      if field == 'KVPAIRS':
+        csvr = csv.reader(mdgrp[field][:], delimiter=',')
+        for r in csvr:
+          print 'key: {}, value: {}'.format(r[0],r[1])
+      else:
+        print field, mdgrp[field][:]
 
     if idgrp.get('VOXELS'):
       print "Voxel list for object of length", len(idgrp['VOXELS'][:])
