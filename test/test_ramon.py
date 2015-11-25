@@ -75,7 +75,7 @@ class Test_Ramon:
     assert ( mdgrpret['CONFIDENCE'][0] == 0.0 )
     assert ( mdgrpret['STATUS'][0] == 0 )
     assert ( mdgrpret['KVPAIRS'][:] == '' )
-    assert ( mdgrpret['AUTHOR'][:] == 'unknown' )
+    assert ( mdgrpret['AUTHOR'][:] == '' )
 
 
   def test_anno_full (self):
@@ -126,7 +126,7 @@ class Test_Ramon:
 
 
   def test_anno_update (self):
-    """Upload a Updated file with new data"""
+    """Upload an Updated file with new data"""
 
     tmpfile = tempfile.NamedTemporaryFile()
     h5fh = h5py.File ( tmpfile.name )
@@ -168,7 +168,6 @@ class Test_Ramon:
     mdgrpret = idgrpret['METADATA']
     assert mdgrpret
     assert ( abs(mdgrpret['CONFIDENCE'][0] - ann_confidence) < 0.0001 )
-    #assert ( mdgrpret['CONFIDENCE'][0] == ann_confidence )
     assert ( mdgrpret['STATUS'][0] == ann_status )
     assert ( mdgrpret['AUTHOR'][:] == ann_author )
 

@@ -58,7 +58,6 @@ class H5Anno:
 
     kvpairs={}
     if kv!= None:
-      import pdb; pdb.set_trace()
       [ k, sym, v ] = kv.partition(':')
       kvpairs[k]=v
 

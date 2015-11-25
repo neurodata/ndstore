@@ -144,6 +144,7 @@ class H5Annotation:
 def H5toAnnotation ( key, idgrp, annodb ):
   """Return an annotation constructed from the contents of this HDF5 file"""
 
+
   # get the annotation type
 #  if idgrp.get('ANNOTATION_TYPE'):
   if 'ANNOTATION_TYPE' in idgrp:
@@ -399,7 +400,7 @@ def SeedtoH5 ( seed, h5fh ):
   h5seed.mdgrp.create_dataset ( "PARENT", (1,), np.uint32, data=seed.parent )
   h5seed.mdgrp.create_dataset ( "CUBE_LOCATION", (1,), np.uint32, data=seed.cubelocation )
   h5seed.mdgrp.create_dataset ( "SOURCE", (1,), np.uint32, data=seed.source )     
-  if seed.position != [None, None, None]:
+  if len(seed.position) == 3:
     h5seed.mdgrp.create_dataset ( "POSITION", (3,), np.uint32, data=seed.position )     
 
   return h5seed
@@ -453,7 +454,7 @@ def OrganelletoH5 ( organelle, h5fh ):
   if ( organelle.seeds != [] ):
     h5organelle.mdgrp.create_dataset ( "SEEDS", (len(organelle.seeds),), np.uint32, organelle.seeds )
     
-  if organelle.centroid != [None, None, None]:
+  if len(organelle.centroid) != 3:
     h5organelle.mdgrp.create_dataset ( "CENTROID", (3,), np.uint32, data=organelle.centroid )     
 
   return h5organelle
@@ -475,7 +476,7 @@ def NodetoH5 ( node, h5fh ):
   if ( node.children != [] ):
     h5node.mdgrp.create_dataset ( "CHILDREN", (len(node.children),), np.uint32, node.children )
     
-  if node.location != [None, None, None]:
+  if len(node.location) != 3:
     h5node.mdgrp.create_dataset ( "LOCATION", (3,), np.uint32, data=node.location )     
 
   return h5node

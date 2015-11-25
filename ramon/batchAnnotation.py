@@ -238,8 +238,6 @@ class BatchAnnotation:
     if self.kvpairs.get('ann_author'):
       self.author = self.kvpairs['ann_author']
       del ( self.kvpairs['ann_author'] )
-    else:
-      self.author = "unknown"
 
     return annotype
 

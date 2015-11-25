@@ -105,7 +105,8 @@ def main():
 
     for field in mdgrp.keys():
       if field == 'KVPAIRS':
-        csvr = csv.reader(mdgrp[field][:], delimiter=',')
+        fstring = cStringIO.StringIO( mdgrp[field][0] )
+        csvr = csv.reader(fstring, delimiter=',')
         for r in csvr:
           print 'key: {}, value: {}'.format(r[0],r[1])
       else:

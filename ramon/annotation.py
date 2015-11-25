@@ -16,6 +16,7 @@ import numpy as np
 import cStringIO
 import MySQLdb
 from collections import defaultdict
+import json
 
 from ndwserror import NDWSError 
 import logging
@@ -85,7 +86,7 @@ class Annotation:
     else: 
       self.kvpairs[field]=value
 
-  def _toDict ( self ):
+  def toDict ( self ):
     """return a dictionary of the kv pairs in for an annotation"""
 
     kvdict = defaultdict(list)
@@ -96,16 +97,12 @@ class Annotation:
     kvdict['author'] = self.author   
     kvdict['annid'] = self.annid   
     
-    import pdb; pdb.set_trace()
-    
     # should add kvpairs to kvdict
     kvdict.update(self.kvpairs)
     return kvdict
 
-  def _fromDict ( self, kvdict ):
+  def fromDict ( self, kvdict ):
     """convert a dictionary to the class elements"""
-
-    import pdb; pdb.set_trace()
 
     for (k,v) in kvdict.iteritems():
       if k == 'type':
@@ -166,7 +163,7 @@ class AnnSynapse (Annotation):
     else:
       Annotation.setField ( self, field, value )
 
-  def _toDict ( self ):
+  def toDict ( self ):
     """return a dictionary of the kv pairs in for an annotation"""
 
     kvdict = defaultdict(list)
@@ -174,26 +171,30 @@ class AnnSynapse (Annotation):
 
     kvdict['weight'] = self.weight   
     kvdict['synapse_type'] = self.synapse_type   
-    kvdict['seeds'] = self.seeds  
-    kvdict.update(Annotation._toDict())
+    kvdict['seeds'] = json.dumps(self.seeds.tolist())
+    kvdict.update(Annotation.toDict(self))
 
     # update the type after merge
     kvdict['type'] = ANNO_SYNAPSE
 
     return kvdict
 
-  def _fromDict ( self, kvdict ):
+  def fromDict ( self, kvdict ):
     """convert a dictionary to the class elements"""
+
+    anndict = defaultdict(list)
 
     for (k,v) in kvdict.iteritems():
       if k == 'weight':
-        self.status = int(v)
+        self.weight = float(v)
       elif k == 'synapse_type':
-        self.confidence = float(v)
+        self.synapse_type = int(v)
       elif k == 'seeds':
-        self.author = v
+        self.seeds = np.array(json.loads(v), dtype=np.uint32)
+      else:
+        anndict[k] = v
     
-    Annotation._fromDict ( kvdict )
+    Annotation.fromDict ( self, anndict )
 
 
 ###############  Seed  ##################
@@ -242,41 +243,42 @@ class AnnSeed (Annotation):
     else:
       Annotation.setField ( self, field, value )
 
-  def _toDict ( self ):
+  def toDict ( self ):
     """return a dictionary of the kv pairs in for an annotation"""
 
     kvdict = defaultdict(list)
 
     kvdict['parent'] = self.parent   
-    #TODO
-    kvdict['position'] = self.postition
-    #TODO
-    kvdict['cubelocation'] = self.cubelocations  
+    kvdict['position'] = json.dumps(self.position.tolist())
+    kvdict['cubelocation'] = self.cubelocation
     kvdict['source'] = self.source  
 
-    kvdict.update(Annotation._toDict())
+    kvdict.update(Annotation.toDict(self))
 
     # update the type after merge
     kvdict['type'] = ANNO_SEED
 
     return kvdict
 
-  def _fromDict ( self, kvdict ):
+  def fromDict ( self, kvdict ):
     """convert a dictionary to the class elements"""
+
+    anndict = defaultdict(list)
 
     for (k,v) in kvdict.iteritems():
       if k == 'parent':
         self.parent = int(v)
-      #TODO
       elif k == 'position':
-        self.position = v
-      #TODO
-      elif k == 'cubelocations':
-        self.cubelocations = v
+        self.position = np.array(json.loads(v), dtype=np.uint32)
+      elif k == 'cubelocation':
+        self.cubelocation = int(v)
       elif k == 'source':
         self.source = int(v)
+      else:
+        anndict[k] = v
     
-    Annotation._fromDict ( kvdict )
+    
+    Annotation.fromDict ( self, anndict )
 
 
 ###############  Segment  ##################
@@ -348,7 +350,7 @@ class AnnSegment (Annotation):
     else:
       Annotation.setField ( self, field, value )
 
-  def _toDict ( self ):
+  def toDict ( self ):
     """return a dictionary of the kv pairs in for an annotation"""
 
     kvdict = defaultdict(list)
@@ -356,20 +358,20 @@ class AnnSegment (Annotation):
     kvdict['segmentclass'] = self.segmentclass   
     kvdict['parentseed'] = self.parentseed
     kvdict['neuron'] = self.neuron  
-    # TODO 
-    kvdict['synapses'] = self.synapses  
-    # TODO
-    kvdict['organelles'] = self.organelles  
+    kvdict['synapses'] = json.dumps(self.synapses.tolist())
+    kvdict['organelles'] = json.dumps(self.organelles.tolist())
 
-    kvdict.update(Annotation._toDict())
+    kvdict.update(Annotation.toDict(self))
 
     # update the type after merge
     kvdict['type'] = ANNO_SEGMENT
 
     return kvdict
 
-  def _fromDict ( self, kvdict ):
+  def fromDict ( self, kvdict ):
     """convert a dictionary to the class elements"""
+
+    anndict = defaultdict(list)
 
     for (k,v) in kvdict.iteritems():
       if k == 'segmentclass':
@@ -378,14 +380,15 @@ class AnnSegment (Annotation):
         self.parentseed = int(v)
       elif k == 'neuron':
         self.neuron = int(v)
-      # TODO
       elif k == 'synapses':
-        self.synapses = v
-      # TODO
+        self.synapses = np.array(json.loads(v), dtype=np.uint32)
       elif k == 'organelles':
-        self.organelles = v
+        self.organelles = np.array(json.loads(v), dtype=np.uint32)
+      else:
+        anndict[k] = v
     
-    Annotation._fromDict ( kvdict )
+    
+    Annotation.fromDict ( self, anndict )
 
 
 
@@ -435,29 +438,32 @@ class AnnNeuron (Annotation):
       self.segments = [int(x) for x in value.split(',')]
     Annotation.setField ( self, field, value )
 
-  def _toDict ( self ):
+  def toDict ( self ):
     """return a dictionary of the kv pairs in for an annotation"""
 
     kvdict = defaultdict(list)
-    kvdict['segments'] = self.segments   
+    kvdict['segments'] = json.dumps(self.segments.tolist())
 
-    kvdict.update(Annotation._toDict())
+    kvdict.update(Annotation.toDict(self))
 
     # update the type after merge
     kvdict['type'] = ANNO_NEURON
 
     return kvdict
 
-  def _fromDict ( self, kvdict ):
+  def fromDict ( self, kvdict ):
     """convert a dictionary to the class elements"""
 
+    anndict = defaultdict(list)
+
     for (k,v) in kvdict.iteritems():
-      # TODO
       if k == 'segments':
-        # TODO
-        self.segments = v
+        self.segments = np.array(json.loads(v), dtype=np.uint32)
+      else:
+        anndict[k] = v
     
-    Annotation._fromDict ( kvdict )
+    Annotation.fromDict ( self, anndict )
+
 
 ###############  Organelle  ##################
 
@@ -505,40 +511,40 @@ class AnnOrganelle (Annotation):
     else:
       Annotation.setField ( self, field, value )
 
-  def _toDict ( self ):
+  def toDict ( self ):
     """return a dictionary of the kv pairs in for an annotation"""
 
     kvdict = defaultdict(list)
     kvdict['organelleclass'] = self.organelleclass   
-    # TODO
-    kvdict['centroid'] = self.centroid   
+    kvdict['centroid'] = json.dumps(self.centroid.tolist())
     kvdict['parentseed'] = self.parentseed   
-    # TODO
-    kvdict['seeds'] = self.seeds   
+    kvdict['seeds'] = json.dumps(self.seeds.tolist())
 
-    kvdict.update(Annotation._toDict())
+    kvdict.update(Annotation.toDict(self))
 
     # update the type after merge
     kvdict['type'] = ANNO_ORGANELLE
 
     return kvdict
 
-  def _fromDict ( self, kvdict ):
+  def fromDict ( self, kvdict ):
     """convert a dictionary to the class elements"""
+
+    anndict = defaultdict(list)
 
     for (k,v) in kvdict.iteritems():
       if k == 'organelleclass':
         self.organelleclass = int(v)
-      # TODO
       elif k == 'centroid':
-        self.centroid = v
+        self.centroid = np.array(json.loads(v), dtype=np.uint32)
       elif k == 'parentseed':
         self.parentseed = int(v)
-      # TODO
       elif k == 'seeds':
-        self.seeds = v
+        self.seeds = np.array(json.loads(v), dtype=np.uint32)
+      else:
+        anndict[k] = v
     
-    Annotation._fromDict ( kvdict )
+    Annotation.fromDict ( self, kvdict )
 
 
 ###############  Node  ##################
@@ -600,35 +606,34 @@ class AnnNode (Annotation):
     else:
       Annotation.setField ( self, field, value )
 
-  def _toDict ( self ):
+  def toDict ( self ):
     """return a dictionary of the kv pairs in for an annotation"""
 
     kvdict = defaultdict(list)
-    kvdict['nodetype'] = self.organelleclass   
-    # TODO
-    kvdict['location'] = self.centroid   
-    kvdict['parentid'] = self.parentseed   
-    kvdict['skeletonid'] = self.seeds   
+    kvdict['nodetype'] = self.nodetype   
+    kvdict['location'] = json.dumps(self.location.tolist())
+    kvdict['parentid'] = self.parentid   
+    kvdict['skeletonid'] = self.skeletonid   
     kvdict['radius'] = self.radius   
-    # TODO
-    kvdict['children'] = self.children   
+    kvdict['children'] = json.dumps(self.children.tolist())
 
-    kvdict.update(Annotation._toDict())
+    kvdict.update(Annotation.toDict(self))
 
     # update the type after merge
     kvdict['type'] = ANNO_NODE
 
     return kvdict
 
-  def _fromDict ( self, kvdict ):
+  def fromDict ( self, kvdict ):
     """convert a dictionary to the class elements"""
+    
+    anndict = defaultdict(list)
 
     for (k,v) in kvdict.iteritems():
       if k == 'nodetype':
         self.nodetype = int(v)
-      # TODO
       elif k == 'location':
-        self.location = v
+        self.location = np.array(json.loads(v), dtype=np.uint32)
       elif k == 'parentid':
         self.parentid = int(v)
       elif k == 'skeletonid':
@@ -637,9 +642,11 @@ class AnnNode (Annotation):
         self.radius = float(v)
       #TODO
       elif k == 'children':
-        self.children = v
+        self.children = np.array(json.loads(v), dtype=np.uint32)
+      else:
+        anndict[k] = v
     
-    Annotation._fromDict ( kvdict )
+    Annotation.fromDict ( self, anndict )
 
 
 ###############  Skeleton  ##################
@@ -676,29 +683,33 @@ class AnnSkeleton (Annotation):
     else:
       Annotation.setField ( self, field, value )
 
-  def _toDict ( self ):
+  def toDict ( self ):
     """return a dictionary of the kv pairs in for an annotation"""
 
     kvdict = defaultdict(list)
-    kvdict['skeletontype'] = self.organelleclass   
-    kvdict['rootnode'] = self.centroid   
+    kvdict['skeletontype'] = self.skeletontype   
+    kvdict['rootnode'] = self.rootnode   
 
-    kvdict.update(Annotation._toDict())
+    kvdict.update(Annotation.toDict(self))
 
     # update the type after merge
     kvdict['type'] = ANNO_SKELETON
 
     return kvdict
 
-  def _fromDict ( self, kvdict ):
+  def fromDict ( self, kvdict ):
     """convert a dictionary to the class elements"""
+
+    anndict = defaultdict(list)
 
     for (k,v) in kvdict.iteritems():
       if k == 'skeletontype':
         self.skeletontype = int(v)
       elif k == 'rootnode':
         self.rootnode = int(v)
+      else:
+        anndict[k] = v
     
-    Annotation._fromDict ( kvdict )
+    Annotation.fromDict ( self, anndict )
 
 

@@ -172,8 +172,8 @@ def annotation (request, webargs):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except Exception, e:
-    logger.exception("Unknown exception in annotation. {}").format(e)
-    raise NDWSError("Unknown exception in annotation. {}").format(e)
+    logger.exception("Unknown exception in annotation. {}".format(e))
+    raise NDWSError("Unknown exception in annotation. {}".format(e))
 
 
 #@cache_control(no_cache=True)
@@ -207,8 +207,8 @@ def queryObjects ( request, webargs ):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except Exception, e:
-    logger.exception("Unknown exception in listObjects. {}").format(e)
-    raise NDWSError("Unknown exception in listObjects. {}").format(e)
+    logger.exception("Unknown exception in listObjects. {}".format(e))
+    raise NDWSError("Unknown exception in listObjects. {}".format(e))
 
 
 def catmaid (request, webargs):

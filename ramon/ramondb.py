@@ -95,16 +95,17 @@ class RamonDB:
       anno = annotation.Annotation(self.annodb)
     else:
       raise NDWSError ( "Unrecognized annotation type {}".format(type) )
-    
-    import pdb; pdb.set_trace()
 
-    anno._fromDict ( kvdict )
+    # load the annotation
+    anno.fromDict ( kvdict )
 
     return anno
 
 
   def updateAnnotation (self, ch, annid, field, value):
     """Update a RAMON object by identifier"""
+
+    import pdb; pdb.set_trace()
 
     self.annodb.startTxn()
     try:
@@ -113,7 +114,7 @@ class RamonDB:
         logger.warning("No annotation found at identifier = {}".format(annid))
         raise OCPCAError ("No annotation found at identifier = {}".format(annid))
       anno.setField(field, value)
-      self.db.putAnnotationKV(ch, annid, anno._toDict(), update=True)
+      self.annodb.putAnnotationKV(ch, annid, anno.toDict(), update=True)
       self.annodb.commit()
     except:
       self.annodb.rollback(cursor)
@@ -128,21 +129,24 @@ class RamonDB:
     try:
       # for updates, make sure the annotation exists and is of the right type
 
+      print "Options", options
       if  'update' in options:
+ 
+        import pdb; pdb.set_trace()
 
-        kvdict = self.annodb.getAnnotation ( ch, anno.annid )
+        kvdict = self.annodb.getAnnotationKV ( ch, anno.annid )
 
         # can't update annotations that don't exist
         if  kvdict == None:
           raise NDWSError ( "During update no annotation found at id {}".format(anno.annid)  )
 
         else:
-          kvdict = anno._toDict ()
+          kvdict = anno.toDict()
           self.annodb.putAnnotationKV ( ch, anno.annid, kvdict, options )
         
       # Write the user chosen annotation id
       else:
-        kvdict = anno._toDict ()
+        kvdict = anno.toDict()
         self.annodb.putAnnotationKV ( ch, anno.annid, kvdict, options )
 
       self.annodb.commit()
@@ -155,7 +159,7 @@ class RamonDB:
   def deleteAnnotation ( self, ch, annoid, options='' ):
     """delete an HDF5 annotation from the database"""
 
-    annodb.startTxn()
+    self.annodb.startTxn()
 
     try:
       
