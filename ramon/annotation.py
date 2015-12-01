@@ -131,8 +131,8 @@ class AnnSynapse (Annotation):
 
     self.weight = 0.0 
     self.synapse_type = 0 
-    self.seeds = []
-    self.segments = []
+    self.seeds = np.array([], dtype=np.uint32)
+    self.segments = np.array([], dtype=np.uint32)
 
     # Call the base class constructor
     Annotation.__init__(self, annodb)
@@ -159,7 +159,7 @@ class AnnSynapse (Annotation):
     elif field == 'synapse_type':
       self.synapse_type = value
     elif field == 'seeds':
-      self.seeds = [int(x) for x in value.split(',')] 
+      self.seeds = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
     else:
       Annotation.setField ( self, field, value )
 
@@ -206,7 +206,7 @@ class AnnSeed (Annotation):
     """Initialize the fields to zero or null"""
 
     self.parent=0        # parent seed
-    self.position=[]
+    self.position=np.array([], dtype=np.uint32)
     self.cubelocation=0  # some enumeration
     self.source=0        # source annotation id
 
@@ -233,7 +233,7 @@ class AnnSeed (Annotation):
     if field == 'parent':
       self.parent = value
     elif field == 'position':
-      self.position = [int(x) for x in value.split(',')] 
+      self.position = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
       if len(self.position) != 3:
         raise NDWSError ("Illegal arguments to set field position: %s" % value)
     elif field == 'cubelocation':
@@ -292,8 +292,8 @@ class AnnSegment (Annotation):
     self.segmentclass = 0            # enumerated label
     self.parentseed = 0              # seed that started this segment
     self.neuron = 0                  # add a neuron field
-    self.synapses = []               # synapses connected to this segment
-    self.organelles = []             # organelles associated with this segment
+    self.synapses=np.array([], dtype=np.uint32)                # synapses connected to this segment
+    self.organelles=np.array([], dtype=np.uint32)              # organelles associated with this segment
 
     # Call the base class constructor
     Annotation.__init__(self,annodb)
@@ -342,7 +342,7 @@ class AnnSegment (Annotation):
     elif field == 'synapses':
 #      RBTODO synapses cannot be set in segment class.  replicated from synapse 
       #pass
-      self.synapses = [int(x) for x in value.split(',')] 
+      self.synapses = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
     elif field == 'organelles':
 #      RBTODO organelles cannot be updated in segment class.  replicated from organelle 
       #pass
@@ -400,7 +400,7 @@ class AnnNeuron (Annotation):
   def __init__(self,annodb):
     """Initialize the fields to zero or null"""
 
-    self.segments = []
+    self.segments=np.array([], dtype=np.uint32)                
 
     # Call the base class constructor
     Annotation.__init__(self,annodb)
@@ -435,14 +435,16 @@ class AnnNeuron (Annotation):
     """Mutator by field name.  Then need to store the field."""
     
     if field == 'segments':
-      self.segments = [int(x) for x in value.split(',')]
-    Annotation.setField ( self, field, value )
+      self.segments = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
+    else:
+      Annotation.setField ( self, field, value )
 
   def toDict ( self ):
     """return a dictionary of the kv pairs in for an annotation"""
 
     kvdict = defaultdict(list)
-    kvdict['segments'] = json.dumps(self.segments.tolist())
+    if self.segments != []:
+      kvdict['segments'] = json.dumps(self.segments.tolist())
 
     kvdict.update(Annotation.toDict(self))
 
@@ -474,9 +476,9 @@ class AnnOrganelle (Annotation):
     """Initialize the fields to zero or None"""
 
     self.organelleclass = 0          # enumerated label
-    self.centroid = [ None, None, None ]             # centroid -- xyz coordinate
+    self.centroid = np.array([], dtype=np.uint32)    # centroid -- xyz coordinate
     self.parentseed = 0              # seed that started this segment
-    self.seeds = []                  # seeds generated from this organelle
+    self.seeds=np.array([], dtype=np.uint32)  # seeds generated from this organelle 
 
     # Call the base class constructor
     Annotation.__init__(self,annodb)
@@ -501,13 +503,13 @@ class AnnOrganelle (Annotation):
     if field == 'organelleclass':
       self.organelleclass = value
     elif field == 'centroid':
-      self.centroid = [int(x) for x in value.split(',')] 
+      self.centroid = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
       if len(self.centroid) != 3:
         raise NDWSError ("Illegal arguments to set field centroid: %s" % value)
     elif field == 'parentseed':
       self.parentseed = value
     elif field == 'seeds':
-      self.seeds = [int(x) for x in value.split(',')] 
+      self.seeds = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
     else:
       Annotation.setField ( self, field, value )
 
@@ -520,6 +522,7 @@ class AnnOrganelle (Annotation):
     kvdict['parentseed'] = self.parentseed   
     kvdict['seeds'] = json.dumps(self.seeds.tolist())
 
+    # somehow, Annotation.toDict is picking up a parent seed?
     kvdict.update(Annotation.toDict(self))
 
     # update the type after merge
@@ -544,7 +547,7 @@ class AnnOrganelle (Annotation):
       else:
         anndict[k] = v
     
-    Annotation.fromDict ( self, kvdict )
+    Annotation.fromDict ( self, anndict )
 
 
 ###############  Node  ##################

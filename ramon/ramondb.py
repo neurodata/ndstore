@@ -105,8 +105,6 @@ class RamonDB:
   def updateAnnotation (self, ch, annid, field, value):
     """Update a RAMON object by identifier"""
 
-    import pdb; pdb.set_trace()
-
     self.annodb.startTxn()
     try:
       anno = self.getAnnotation(ch, annid)
@@ -117,7 +115,7 @@ class RamonDB:
       self.annodb.putAnnotationKV(ch, annid, anno.toDict(), update=True)
       self.annodb.commit()
     except:
-      self.annodb.rollback(cursor)
+      self.annodb.rollback()
       raise
 
 
@@ -129,11 +127,8 @@ class RamonDB:
     try:
       # for updates, make sure the annotation exists and is of the right type
 
-      print "Options", options
-      if  'update' in options:
+      if 'update' in options:
  
-        import pdb; pdb.set_trace()
-
         kvdict = self.annodb.getAnnotationKV ( ch, anno.annid )
 
         # can't update annotations that don't exist
@@ -141,13 +136,13 @@ class RamonDB:
           raise NDWSError ( "During update no annotation found at id {}".format(anno.annid)  )
 
         else:
-          kvdict = anno.toDict()
-          self.annodb.putAnnotationKV ( ch, anno.annid, kvdict, options )
+          #RBTODO do I need to merge KVs?
+          self.annodb.putAnnotationKV ( ch, anno.annid, anno.toDict(), update=True)
         
       # Write the user chosen annotation id
       else:
         kvdict = anno.toDict()
-        self.annodb.putAnnotationKV ( ch, anno.annid, kvdict, options )
+        self.annodb.putAnnotationKV ( ch, anno.annid, kvdict)
 
       self.annodb.commit()
 
@@ -162,28 +157,21 @@ class RamonDB:
     self.annodb.startTxn()
 
     try:
-      
-      # make sure the annotation exists and is of the right type
 
-      kvdict = self.annodb.getAnnotation ( ch, annoid )
+#      # make sure the annotation exists and is of the right type
+#      kvdict = self.annodb.getAnnotationKV ( ch, annoid )
+#
+#      # can't delete annotations that don't exist
+#      if  kvdict == None:
+##        raise NDWSError ( "During update no annotation found at id {}".format(anno.annid)  )
+#      else:
 
-      # can't delete annotations that don't exist
-      if  kvdict == None:
-        raise NDWSError ( "During update no annotation found at id {}".format(anno.annid)  )
-
-      else:
-        self.annodb.deleteAnnotation(ch, annid)
-        
-      annodb.commit()
+      self.annodb.deleteAnnotation(ch, annoid)
+      self.annodb.commit()
 
     except Exception, e:
-
-      annodb.rollback()
+      self.annodb.rollback()
       raise
-
-    retval = annotation.deleteAnnotation ( ch, annoid, self.annodb, options )
-
-
 
 #  must implement these in new model
 
