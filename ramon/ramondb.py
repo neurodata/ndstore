@@ -176,6 +176,4 @@ class RamonDB:
   def getAnnoObjects ( self, ch, args ):
     """equality and predicate queries on metadata"""
 
-    import pdb; pdb.set_trace()
-
     return self.annodb.getAnnoObjects ( ch, args )  
