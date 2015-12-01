@@ -588,7 +588,7 @@ def imgAnno ( service, chanargs, proj, db, rdb ):
   # determine if it is a compound type (NEURON) and get the list of relevant segments
   if iscompound:
     # remap the ids for a neuron
-    dataids = rdb.getChildren ( annoids[0] ) 
+    dataids = rdb.getChildren ( ch, annoids[0] ) 
     cb = db.annoCutout ( ch, dataids, resolution, corner, dim, annoids[0] )
   else:
     # no remap when not a neuron
@@ -1323,7 +1323,7 @@ def putAnnotation ( webargs, postdata ):
           idgrp = h5f.get(k)
   
           # Convert HDF5 to annotation
-          anno = h5ann.H5toAnnotation(k, idgrp, rdb)
+          anno = h5ann.H5toAnnotation(k, idgrp, rdb, ch)
   
           # set the identifier (separate transaction)
           if not ('update' in options or 'dataonly' in options or 'reduce' in options):

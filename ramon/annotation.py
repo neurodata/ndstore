@@ -41,10 +41,11 @@ ANNO_SKELETON = 8
 class Annotation:
   """Metdata common to all annotations."""
 
-  def __init__ ( self, annodb ):
+  def __init__ ( self, annodb, ch ):
     """Initialize the fields to zero or null"""
 
     self.annodb = annodb
+    self.ch = ch
 
     # metadata fields
     self.annid = 0 
@@ -126,7 +127,7 @@ class Annotation:
 class AnnSynapse (Annotation):
   """Metadata specific to synapses"""
 
-  def __init__(self, annodb ):
+  def __init__(self, annodb, ch ):
     """Initialize the fields to zero or null"""
 
     self.weight = 0.0 
@@ -135,7 +136,7 @@ class AnnSynapse (Annotation):
     self.segments = np.array([], dtype=np.uint32)
 
     # Call the base class constructor
-    Annotation.__init__(self, annodb)
+    Annotation.__init__(self, annodb, ch)
 
   def getField ( self, field ):
     """Accessor by field name"""
@@ -202,7 +203,7 @@ class AnnSynapse (Annotation):
 class AnnSeed (Annotation):
   """Metadata specific to seeds"""
 
-  def __init__ (self,annodb):
+  def __init__ (self,annodb, ch):
     """Initialize the fields to zero or null"""
 
     self.parent=0        # parent seed
@@ -211,7 +212,7 @@ class AnnSeed (Annotation):
     self.source=0        # source annotation id
 
     # Call the base class constructor
-    Annotation.__init__(self,annodb)
+    Annotation.__init__(self,annodb, ch)
 
   def getField ( self, field ):
     """Accessor by field name"""
@@ -286,7 +287,7 @@ class AnnSeed (Annotation):
 class AnnSegment (Annotation):
   """Metadata specific to segment"""
 
-  def __init__(self,annodb):
+  def __init__(self,annodb, ch):
     """Initialize the fields to zero or null"""
 
     self.segmentclass = 0            # enumerated label
@@ -296,22 +297,7 @@ class AnnSegment (Annotation):
     self.organelles=np.array([], dtype=np.uint32)              # organelles associated with this segment
 
     # Call the base class constructor
-    Annotation.__init__(self,annodb)
-
-
-# RBTODO get synapses from segments.
-#  def querySynapses ( self, ch, cursor ):
-#    """Query the synseg database to resolve"""
-#
-#    sql = "SELECT synapse FROM {} WHERE segment={}".format( getAnnoTable('synseg'),self.annid)
-#
-#    try:
-#      cursor.execute ( sql )
-#    except MySQLdb.Error, e:
-#      logger.warning ( "Error querying synapses %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-#      raise NDWSError ( "Error querying synapses %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-#
-#    return cursor.fetchall()
+    Annotation.__init__(self,annodb, ch)
 
 
   def getField ( self, field ):
@@ -397,37 +383,17 @@ class AnnSegment (Annotation):
 class AnnNeuron (Annotation):
   """Metadata specific to neurons"""
 
-  def __init__(self,annodb):
+  def __init__(self,annodb, ch):
     """Initialize the fields to zero or null"""
 
-    self.segments=np.array([], dtype=np.uint32)                
-
     # Call the base class constructor
-    Annotation.__init__(self,annodb)
-
-  def querySegments ( self, ch, cursor ):
-    """Query the segments database to resolve"""
-
-    sql = "SELECT annoid FROM {} WHERE neuron={}".format(ch.getAnnoTable('segment'), self.annid)
-
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ( "Error querying neuron segments %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise NDWSError ( "Error querying neuron segments %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-    return cursor.fetchall()
-
+    Annotation.__init__(self,annodb, ch)
 
   def getField ( self, field ):
     """Accessor by field name"""
 
-#  Make this a query not a field.
-
-    #if field == 'segments':
-      #return self.querySegments(cursor) 
     if field == 'segments':
-      return ','.join(str(x) for x in self.segments)
+      return ','.join(str(x) for x in self.annodb.querySegments( self.ch, self.annid ))
     else:
       return Annotation.getField(self, field)
 
@@ -435,7 +401,7 @@ class AnnNeuron (Annotation):
     """Mutator by field name.  Then need to store the field."""
     
     if field == 'segments':
-      self.segments = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
+      raise NDWSError ("Cannot set segments.  It is derived from the neuron field of ANNO_SEGMENTS.")
     else:
       Annotation.setField ( self, field, value )
 
@@ -443,8 +409,6 @@ class AnnNeuron (Annotation):
     """return a dictionary of the kv pairs in for an annotation"""
 
     kvdict = defaultdict(list)
-    if self.segments != []:
-      kvdict['segments'] = json.dumps(self.segments.tolist())
 
     kvdict.update(Annotation.toDict(self))
 
@@ -456,15 +420,15 @@ class AnnNeuron (Annotation):
   def fromDict ( self, kvdict ):
     """convert a dictionary to the class elements"""
 
-    anndict = defaultdict(list)
-
-    for (k,v) in kvdict.iteritems():
-      if k == 'segments':
-        self.segments = np.array(json.loads(v), dtype=np.uint32)
-      else:
-        anndict[k] = v
+# No additional fields in neuron right now.
+#
+#    anndict = defaultdict(list)
+#
+#    for (k,v) in kvdict.iteritems():
+#      anndict[k] = v
+#    Annotation.fromDict ( self, anndict )
     
-    Annotation.fromDict ( self, anndict )
+    Annotation.fromDict ( self, kvdict )
 
 
 ###############  Organelle  ##################
@@ -472,7 +436,7 @@ class AnnNeuron (Annotation):
 class AnnOrganelle (Annotation):
   """Metadata specific to organelle"""
 
-  def __init__(self,annodb):
+  def __init__(self,annodb,ch):
     """Initialize the fields to zero or None"""
 
     self.organelleclass = 0          # enumerated label
@@ -481,7 +445,7 @@ class AnnOrganelle (Annotation):
     self.seeds=np.array([], dtype=np.uint32)  # seeds generated from this organelle 
 
     # Call the base class constructor
-    Annotation.__init__(self,annodb)
+    Annotation.__init__(self,annodb,ch)
 
   def getField ( self, field ):
     """Accessor by field name"""
@@ -555,7 +519,7 @@ class AnnOrganelle (Annotation):
 class AnnNode (Annotation):
   """Point annotation (sometimes in a skeleton)"""
 
-  def __init__(self,annodb):
+  def __init__(self,annodb,ch):
     """Initialize the fields to zero or None"""
 
     self.pointtype = 0                           # enumerated label
@@ -569,7 +533,7 @@ class AnnNode (Annotation):
     self.children = []                          # children
 
     # Call the base class constructor
-    Annotation.__init__(self,annodb)
+    Annotation.__init__(self,annodb,ch)
 
   def getField ( self, field ):
     """Accessor by field name"""
@@ -657,14 +621,14 @@ class AnnNode (Annotation):
 class AnnSkeleton (Annotation):
   """Skeleton annotation"""
 
-  def __init__(self,annodb):
+  def __init__(self,annodb,ch):
     """Initialize the fields to zero or None"""
 
     self.skeletontype = 0                          # enumerated label
     self.rootnode = 0                              # children
 
     # Call the base class constructor
-    Annotation.__init__(self,annodb)
+    Annotation.__init__(self,annodb,ch)
 
   def getField ( self, field ):
     """Accessor by field name"""

@@ -78,21 +78,21 @@ class RamonDB:
     if annotype is None:
       return None
     elif annotype == annotation.ANNO_SYNAPSE:
-      anno = annotation.AnnSynapse(self.annodb)
+      anno = annotation.AnnSynapse(self.annodb,ch)
     elif annotype == annotation.ANNO_SEED:
-      anno = annotation.AnnSeed(self.annodb)
+      anno = annotation.AnnSeed(self.annodb,ch)
     elif annotype == annotation.ANNO_SEGMENT:
-      anno = annotation.AnnSegment(self.annodb)
+      anno = annotation.AnnSegment(self.annodb,ch)
     elif annotype == annotation.ANNO_NEURON:
-      anno = annotation.AnnNeuron(self.annodb)
+      anno = annotation.AnnNeuron(self.annodb,ch)
     elif annotype == annotation.ANNO_ORGANELLE:
-      anno = annotation.AnnOrganelle(self.annodb)
+      anno = annotation.AnnOrganelle(self.annodb,ch)
     elif annotype == annotation.ANNO_NODE:
-      anno = annotation.AnnNode(self.annodb)
+      anno = annotation.AnnNode(self.annodb,ch)
     elif annotype == annotation.ANNO_SKELETON:
-      anno = annotation.AnnSkeleton(self.annodb)
+      anno = annotation.AnnSkeleton(self.annodb,ch)
     elif annotype == annotation.ANNO_ANNOTATION:
-      anno = annotation.Annotation(self.annodb)
+      anno = annotation.Annotation(self.annodb,ch)
     else:
       raise NDWSError ( "Unrecognized annotation type {}".format(type) )
 
@@ -155,17 +155,7 @@ class RamonDB:
     """delete an HDF5 annotation from the database"""
 
     self.annodb.startTxn()
-
     try:
-
-#      # make sure the annotation exists and is of the right type
-#      kvdict = self.annodb.getAnnotationKV ( ch, annoid )
-#
-#      # can't delete annotations that don't exist
-#      if  kvdict == None:
-##        raise NDWSError ( "During update no annotation found at id {}".format(anno.annid)  )
-#      else:
-
       self.annodb.deleteAnnotation(ch, annoid)
       self.annodb.commit()
 
@@ -173,72 +163,17 @@ class RamonDB:
       self.annodb.rollback()
       raise
 
-#  must implement these in new model
+  def getChildren ( self, ch, annoid ):
+    """get all the children of the annotation"""
 
-#  def getChildren ( self, ch, annoid ):
-#    """get all the children of the annotation"""
-#
-#    annotation.getChildren ( chan, annoid, self.annodb )
-#
-#
-#  # getAnnoObjects:
-#  #    Return a list of annotation object IDs
-#  #  for now by type and status
-#  def getAnnoObjects ( self, ch, args ):
-#    """Return a list of annotation object ids that match equality predicates.
-#      Legal predicates are currently:
-#        type
-#        status
-#      Predicates are given in a dictionary.
-#    """
-#    pass
+    # ensure that the annotation is a neuron
+    anno = self.getAnnotation ( ch, annoid )
+    if anno.__class__ in [ annotation.AnnNeuron ]:
+      return np.array(self.annodb.querySegments ( chan, annoid ), dtype=np.uint32)
+    else:
+      return None
 
+  def getAnnoObjects ( self, ch, args ):
+    """equality and predicate queries on metadata"""
 
-
-#def getChildren ( ch, annid, annodb, cursor ):
-#    """Return a list of all annotations in this neuron"""
-#
-#    sql = "SELECT annoid FROM {} WHERE neuron = {}".format( ch.getAnnoTable('segment'), annid )
-#
-#    try:
-#      cursor.execute ( sql )
-#    except MySQLdb.Error, e:
-#      cursor.close()
-#      logger.warning ( "Error deleting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-#      raise NDWSError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-#    
-#    seglist = cursor.fetchall()
-#
-#    # return an empty iterable if there are none
-#    if seglist == None:
-#      seglist = []
-#
-#    return np.array ( seglist, dtype=np.uint32 ).flatten()
-#
-#
-#def nodesBySkeleton ( ch, skels, annodb, cursor ):
-#  """a generator to return all nodes in a set of skeletons"""
-#
-#  if skels==None:
-#    sql = "SELECT annoid, nodetype, locationx, locationy, locationz, radius, parentid FROM %s" % ( ch.getAnnoTable('node'))
-#
-#    try:
-#      cursor.execute ( sql )
-#    except MySQLdb.Error, e:
-#      cursor.close()
-#      logger.warning ( "Error querying nodes: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-#      raise NDWSError ( "Error querying nodes: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-#
-#    # Get the objects and add to the cube
-#    while ( True ):
-#      try:
-#        retval = cursor.fetchone()
-#      except:
-#        break
-#      if retval is not None:
-#        yield ( retval )
-#      else:
-#        return
-
-
-
+    return self.annodb.getAnnoObjects ( ch, args )  

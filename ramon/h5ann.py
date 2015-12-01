@@ -141,7 +141,7 @@ class H5Annotation:
 
 ############## Converting HDF5 to Annotations
 
-def H5toAnnotation ( key, idgrp, annodb ):
+def H5toAnnotation ( key, idgrp, annodb, ch ):
   """Return an annotation constructed from the contents of this HDF5 file"""
 
 
@@ -158,7 +158,7 @@ def H5toAnnotation ( key, idgrp, annodb ):
   if annotype == annotation.ANNO_SEED:
 
     # Create the appropriate annotation type
-    anno = annotation.AnnSeed(annodb)
+    anno = annotation.AnnSeed(annodb,ch)
 
     # Load metadata if it exists
     if mdgrp:
@@ -175,7 +175,7 @@ def H5toAnnotation ( key, idgrp, annodb ):
   elif annotype == annotation.ANNO_SYNAPSE:
     
     # Create the appropriate annotation type
-    anno = annotation.AnnSynapse(annodb)
+    anno = annotation.AnnSynapse(annodb,ch)
 
     # Load metadata if it exists
     if mdgrp:
@@ -192,7 +192,7 @@ def H5toAnnotation ( key, idgrp, annodb ):
   elif annotype == annotation.ANNO_SEGMENT:
     
     # Create the appropriate annotation type
-    anno = annotation.AnnSegment(annodb)
+    anno = annotation.AnnSegment(annodb,ch)
 
     # Load metadata if it exists
     if mdgrp:
@@ -211,7 +211,7 @@ def H5toAnnotation ( key, idgrp, annodb ):
   elif annotype == annotation.ANNO_NEURON:
 
     # Create the appropriate annotation type
-    anno = annotation.AnnNeuron(annodb)
+    anno = annotation.AnnNeuron(annodb,ch)
 
     # Load metadata if it exists
     if mdgrp:
@@ -222,7 +222,7 @@ def H5toAnnotation ( key, idgrp, annodb ):
   elif annotype == annotation.ANNO_ORGANELLE:
     
     # Create the appropriate annotation type
-    anno = annotation.AnnOrganelle(annodb)
+    anno = annotation.AnnOrganelle(annodb,ch)
 
     # Load metadata if it exists
     if mdgrp:
@@ -239,7 +239,7 @@ def H5toAnnotation ( key, idgrp, annodb ):
   elif annotype == annotation.ANNO_NODE:
     
     # Create the appropriate annotation type
-    anno = annotation.AnnNode(annodb)
+    anno = annotation.AnnNode(annodb,ch)
 
     # Load metadata if it exists
     if mdgrp:
@@ -260,7 +260,7 @@ def H5toAnnotation ( key, idgrp, annodb ):
   elif annotype == annotation.ANNO_SKELETON:
     
     # Create the appropriate annotation type
-    anno = annotation.AnnSkeleton(annodb)
+    anno = annotation.AnnSkeleton(annodb,ch)
 
     # Load metadata if it exists
     if mdgrp:
@@ -273,7 +273,7 @@ def H5toAnnotation ( key, idgrp, annodb ):
   # No special action if it's a no type
   elif annotype == annotation.ANNO_ANNOTATION:
     # Just create a generic annotation object
-    anno = annotation.Annotation(annodb)
+    anno = annotation.Annotation(annodb,ch)
 
   else:
     logger.warning ("Dont support this annotation type yet. Type = %s" % annotype)
@@ -433,9 +433,9 @@ def NeurontoH5 ( neuron, h5fh ):
   # First create the base object
   h5neuron = BasetoH5 ( neuron, annotation.ANNO_NEURON, h5fh )
 
-  # Lists (as arrays)
-  if ( neuron.segments != [] ):
-    h5neuron.mdgrp.create_dataset ( "SEGMENTS", (len(neuron.segments),), np.uint32, neuron.segments )
+#  Lists (as arrays)
+#  if ( neuron.segments != [] ):
+#    h5neuron.mdgrp.create_dataset ( "SEGMENTS", (len(neuron.segments),), np.uint32, neuron.segments )
 
   return h5neuron
 

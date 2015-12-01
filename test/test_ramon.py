@@ -31,7 +31,6 @@ import site_to_test
 import makeunitdb
 SITE_HOST = site_to_test.site
 
-
 p = Params()
 p.token = 'unittest'
 p.resolution = 0
@@ -351,17 +350,24 @@ class Test_Ramon:
     # Make a neuron
     makeAnno (p, 5)
 
-    # Test inheritance
-    status = random.randint (0,100)
-    f = setField(p, 'status', status)
-    f = getField(p, 'status')
-    assert status == int(f.read()) 
+    # make a bunch of segments and add to the neuron
+    q = Params()
+    q.token = 'unittest'
+    q.resolution = 0
+    q.channels = ['unit_anno']
+
+    segids = []
+    for i in range(0,5):
+      makeAnno ( q, 4) 
+      f = setField(q, 'neuron', p.annoid)
+      segids.append(q.annoid)
 
     # Test segments
-    status = [random.randint (0,100), random.randint(0,100), random.randint(0,100)]
-    f = setField(p, 'segments', ",".join([str(i) for i in status]))
     f = getField(p, 'segments')
-    assert ",".join([str(i) for i in status]) == f.read()
+    rsegids = f.read().split(',')
+    for sid in rsegids:
+      assert int(sid) in segids
+    assert len(rsegids) == 5
 
   def test_organelle_field (self):
     """Upload an organelle and test it's fields"""
