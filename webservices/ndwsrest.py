@@ -860,7 +860,7 @@ def getAnnoJSONById ( ch, annoid, proj, rdb ):
 
 def getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution=None, corner=None, dim=None ): 
   """Retrieve the annotation and put it in the HDF5 file."""
-  
+
   # retrieve the annotation 
   anno = rdb.getAnnotation ( ch, annoid )
   if anno == None:
@@ -914,7 +914,7 @@ def getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution=None, c
     h5anno.addCutout ( resolution, retcorner, cb.data )
 
   elif dataoption == AR_TIGHTCUTOUT:
-
+ 
     # determine if it is a compound type (NEURON) and get the list of relevant segments
     if anno.__class__ in [ annotation.AnnNeuron ] and dataoption != AR_NODATA:
       dataids = rdb.getChildren(ch, annoid) 

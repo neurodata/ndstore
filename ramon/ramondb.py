@@ -71,7 +71,7 @@ class RamonDB:
     """Return a RAMON object by identifier"""
 
     kvdict = self.annodb.getAnnotationKV ( ch, annid )
-
+ 
     annotype = int(kvdict['type'])
 
     # switch on the type of annotation
@@ -169,11 +169,13 @@ class RamonDB:
     # ensure that the annotation is a neuron
     anno = self.getAnnotation ( ch, annoid )
     if anno.__class__ in [ annotation.AnnNeuron ]:
-      return np.array(self.annodb.querySegments ( chan, annoid ), dtype=np.uint32)
+      return np.array(self.annodb.querySegments ( ch, annoid ), dtype=np.uint32)
     else:
       return None
 
   def getAnnoObjects ( self, ch, args ):
     """equality and predicate queries on metadata"""
+
+    import pdb; pdb.set_trace()
 
     return self.annodb.getAnnoObjects ( ch, args )  

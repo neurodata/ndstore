@@ -173,6 +173,8 @@ def getAnnotation ( p ):
 
   if p.field is None:
     url = "http://{}/sd/{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid)
+  elif p.field == 'tight_cutout':
+    url = "http://{}/sd/{}/{}/{}/cutout/{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid, p.resolution)
   elif p.field == 'normal_cutout':
     url = "http://{}/sd/{}/{}/{}/cutout/{}/{},{}/{},{}/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid, p.resolution, *p.args) 
   else:
