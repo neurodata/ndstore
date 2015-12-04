@@ -16,6 +16,7 @@ import urllib2
 import h5py
 import tempfile
 import random
+import blosc
 import numpy as np
 from PIL import Image
 from StringIO import StringIO
@@ -326,25 +327,44 @@ class Test_Time_Window:
     assert ( np.array_equal(slice_data,image_data[0][0][0]) )
 
 
-#class Test_Image_Default:
+class Test_Time_Diff:
 
-  #def setup_class(self):
-    #p.channels = ['IMAGE']
-    #makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type='image', channel_datatype='uint8', default=True )
+  def setup_class(self):
+    p.channels = ['TIME1', 'TIME2']
+    p.datatype = UINT8
+    makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype, time=p.time, default=True )
 
-  #def teardown_class(self):
-    #makeunitdb.deleteTestDB(p.token)
+  def teardown_class(self):
+    makeunitdb.deleteTestDB(p.token)
 
-  #def test_npz_default_channel (self):
-    #"""Post npz data with default channel"""
+  def test_time_diff (self):
+    """Post npz data with default channel"""
+    
+    p.args = (3000,3100,2000,2100,10,11,2,3)
+    image_data1 = np.ones ( [2,1,1,100,100], dtype=np.uint8 ) * random.randint(0,255)
+    response = postNPZ(p, image_data1, time=True)
+    assert (response.code == 200)
+    voxarray = getNPZ(p, time=True)
+    # check that the return matches
+    assert ( np.array_equal(voxarray,image_data1) )
+    
+    p.args = (3000,3100,2000,2100,10,11,3,4)
+    image_data2 = np.ones ( [2,1,1,100,100], dtype=np.uint8 ) * random.randint(0,255)
+    response = postNPZ(p, image_data2, time=True)
+    assert (response.code == 200)
+    voxarray = getNPZ(p, time=True)
+    # check that the return matches
+    assert ( np.array_equal(voxarray,image_data2) )
+    
+    p.args = (3000,3100,2000,2100,10,11,2,4)
+    url = "http://{}/sd/{}/{}/diff/{}/{},{}/{},{}/{},{}/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, *p.args)
+    f = getURL (url)
+    voxarray = blosc.unpack_array(f.read())
+    
+    import pdb; pdb.set_trace()
+    image_data = np.subtract(np.float32(image_data1),np.float32(image_data2))
+    assert( np.array_equal(image_data[0,:], voxarray[0,:]) )
 
-    #image_data = np.ones ( [1,10,100,100], dtype=np.uint8 ) * random.randint(0,255)
-    #p.channels = None
-    #response = postNPZ(p, image_data)
-    #assert (response.code == 200)
-    #voxarray = getNPZ(p)
-    ## check that the return matches
-    #assert ( np.array_equal(voxarray,image_data) )
 
   #def test_xy_default_channel (self):
     #"""Test the xy slice cutout"""

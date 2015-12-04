@@ -216,13 +216,13 @@ def BLOSC ( chanargs, proj, db ):
           cubedata[idx+1,:] = cutout(imageargs, ch, proj, db).data
         else:
           raise NDWSError("The npz cutout can only contain cutouts of one single Channel Type.")
-
     
     # Create the compressed cube
     return blosc.pack_array(cubedata)
 
   except Exception,e:
     raise NDWSError("{}".format(e))
+
 
 def binZip ( chanargs, proj, db ):
   """Return a web readable Numpy Pickle zipped"""
@@ -363,6 +363,44 @@ def postTiff3d ( channel, postargs, proj, db, postdata ):
     corner = ( xoff, yoff, zoff+dircount-(dircount%zbatch) )
     db.writeCuboid (ch, corner, resolution, dataarray[0:(dircount%zbatch),:,:])
 
+
+def timeDiff ( chanargs, proj, db):
+  """Return a 3d delta in time"""
+  
+  try:
+    # argument of format channel/service/imageargs
+    m = re.match("([\w+,]+)/(\w+)/([\w+,/-]+)$", chanargs)
+    [channels, service, imageargs] = [i for i in m.groups()]
+  except Exception, e:
+    logger.warning("Arguments not in the correct format {}. {}".format(chanargs, e))
+    raise NDWSError("Arguments not in the correct format {}. {}".format(chanargs, e))
+
+  try: 
+    channel_list = channels.split(',')
+    ch = proj.getChannelObj(channel_list[0])
+
+    channel_data = cutout( imageargs, ch, proj, db ).data
+    channel_data = np.negative(np.diff(np.float32(channel_data), axis=0))
+    cubedata = np.zeros ( (len(channel_list),)+channel_data.shape, dtype=np.float32 )
+    cubedata[0,:] = channel_data
+
+    # if one channel convert 3-d to 4-d array
+    for idx,channel_name in enumerate(channel_list[1:]):
+      if channel_name == '0':
+        continue
+      else:
+        ch = proj.getChannelObj(channel_name)
+        if ND_dtypetonp[ch.getDataType()] == cubedata.dtype:
+          cubedata[idx+1,:] = np.diff(cutout(imageargs, ch, proj, db).data, axis=0)
+        else:
+          raise NDWSError("The npz cutout can only contain cutouts of one single Channel Type.")
+    
+    # Create the compressed cube
+    return blosc.pack_array(cubedata)
+
+  except Exception,e:
+    raise NDWSError("{}".format(e))
+  
 
 def tiff3d ( chanargs, proj, db ):
   """Return a 3d tiff file"""
@@ -667,6 +705,8 @@ def selectService ( service, webargs, proj, db ):
     return annId ( webargs, proj, db )
   elif service == 'ids':
     return listIds ( webargs, proj, db )
+  elif service == 'diff':
+    return timeDiff ( webargs, proj, db )
   elif service in ['xzanno', 'yzanno', 'xyanno']:
     return imgAnno ( service.strip('anno'), webargs, proj, db )
   else:
