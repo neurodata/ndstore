@@ -141,8 +141,9 @@ class H5Annotation:
 
 ############## Converting HDF5 to Annotations
 
-def H5toAnnotation ( key, idgrp, annodb ):
+def H5toAnnotation ( key, idgrp, annodb, ch ):
   """Return an annotation constructed from the contents of this HDF5 file"""
+
 
   # get the annotation type
 #  if idgrp.get('ANNOTATION_TYPE'):
@@ -157,7 +158,7 @@ def H5toAnnotation ( key, idgrp, annodb ):
   if annotype == annotation.ANNO_SEED:
 
     # Create the appropriate annotation type
-    anno = annotation.AnnSeed(annodb)
+    anno = annotation.AnnSeed(annodb,ch)
 
     # Load metadata if it exists
     if mdgrp:
@@ -174,7 +175,7 @@ def H5toAnnotation ( key, idgrp, annodb ):
   elif annotype == annotation.ANNO_SYNAPSE:
     
     # Create the appropriate annotation type
-    anno = annotation.AnnSynapse(annodb)
+    anno = annotation.AnnSynapse(annodb,ch)
 
     # Load metadata if it exists
     if mdgrp:
@@ -191,7 +192,7 @@ def H5toAnnotation ( key, idgrp, annodb ):
   elif annotype == annotation.ANNO_SEGMENT:
     
     # Create the appropriate annotation type
-    anno = annotation.AnnSegment(annodb)
+    anno = annotation.AnnSegment(annodb,ch)
 
     # Load metadata if it exists
     if mdgrp:
@@ -210,7 +211,7 @@ def H5toAnnotation ( key, idgrp, annodb ):
   elif annotype == annotation.ANNO_NEURON:
 
     # Create the appropriate annotation type
-    anno = annotation.AnnNeuron(annodb)
+    anno = annotation.AnnNeuron(annodb,ch)
 
     # Load metadata if it exists
     if mdgrp:
@@ -221,7 +222,7 @@ def H5toAnnotation ( key, idgrp, annodb ):
   elif annotype == annotation.ANNO_ORGANELLE:
     
     # Create the appropriate annotation type
-    anno = annotation.AnnOrganelle(annodb)
+    anno = annotation.AnnOrganelle(annodb,ch)
 
     # Load metadata if it exists
     if mdgrp:
@@ -238,7 +239,7 @@ def H5toAnnotation ( key, idgrp, annodb ):
   elif annotype == annotation.ANNO_NODE:
     
     # Create the appropriate annotation type
-    anno = annotation.AnnNode(annodb)
+    anno = annotation.AnnNode(annodb,ch)
 
     # Load metadata if it exists
     if mdgrp:
@@ -259,7 +260,7 @@ def H5toAnnotation ( key, idgrp, annodb ):
   elif annotype == annotation.ANNO_SKELETON:
     
     # Create the appropriate annotation type
-    anno = annotation.AnnSkeleton(annodb)
+    anno = annotation.AnnSkeleton(annodb,ch)
 
     # Load metadata if it exists
     if mdgrp:
@@ -272,7 +273,7 @@ def H5toAnnotation ( key, idgrp, annodb ):
   # No special action if it's a no type
   elif annotype == annotation.ANNO_ANNOTATION:
     # Just create a generic annotation object
-    anno = annotation.Annotation(annodb)
+    anno = annotation.Annotation(annodb,ch)
 
   else:
     logger.warning ("Dont support this annotation type yet. Type = %s" % annotype)
@@ -399,7 +400,7 @@ def SeedtoH5 ( seed, h5fh ):
   h5seed.mdgrp.create_dataset ( "PARENT", (1,), np.uint32, data=seed.parent )
   h5seed.mdgrp.create_dataset ( "CUBE_LOCATION", (1,), np.uint32, data=seed.cubelocation )
   h5seed.mdgrp.create_dataset ( "SOURCE", (1,), np.uint32, data=seed.source )     
-  if seed.position != [None, None, None]:
+  if len(seed.position) == 3:
     h5seed.mdgrp.create_dataset ( "POSITION", (3,), np.uint32, data=seed.position )     
 
   return h5seed
@@ -432,9 +433,9 @@ def NeurontoH5 ( neuron, h5fh ):
   # First create the base object
   h5neuron = BasetoH5 ( neuron, annotation.ANNO_NEURON, h5fh )
 
-  # Lists (as arrays)
-  if ( neuron.segments != [] ):
-    h5neuron.mdgrp.create_dataset ( "SEGMENTS", (len(neuron.segments),), np.uint32, neuron.segments )
+#  Lists (as arrays)
+#  if ( neuron.segments != [] ):
+#    h5neuron.mdgrp.create_dataset ( "SEGMENTS", (len(neuron.segments),), np.uint32, neuron.segments )
 
   return h5neuron
 
@@ -453,7 +454,7 @@ def OrganelletoH5 ( organelle, h5fh ):
   if ( organelle.seeds != [] ):
     h5organelle.mdgrp.create_dataset ( "SEEDS", (len(organelle.seeds),), np.uint32, organelle.seeds )
     
-  if organelle.centroid != [None, None, None]:
+  if len(organelle.centroid) != 3:
     h5organelle.mdgrp.create_dataset ( "CENTROID", (3,), np.uint32, data=organelle.centroid )     
 
   return h5organelle
@@ -475,7 +476,7 @@ def NodetoH5 ( node, h5fh ):
   if ( node.children != [] ):
     h5node.mdgrp.create_dataset ( "CHILDREN", (len(node.children),), np.uint32, node.children )
     
-  if node.location != [None, None, None]:
+  if len(node.location) != 3:
     h5node.mdgrp.create_dataset ( "LOCATION", (3,), np.uint32, data=node.location )     
 
   return h5node

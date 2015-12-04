@@ -16,6 +16,7 @@ import numpy as np
 import cStringIO
 import MySQLdb
 from collections import defaultdict
+import json
 
 from ndwserror import NDWSError 
 import logging
@@ -34,28 +35,17 @@ ANNO_ORGANELLE = 6
 ANNO_NODE = 7
 ANNO_SKELETON = 8
 
-#  This table is not getting created or deleted
-# list of database table names.  Move to annproj?
-anno_dbtables = { 'annotation':'annotations',\
-                  'kvpairs':'kvpairs',\
-                  'synapse':'synapses',\
-                  'segment':'segments',\
-                  'organelle':'organelles',\
-                  'seed':'seeds',\
-                  'node':'nodes',\
-                  'skeleton':'skeletons' }
-
 
 ###############  Annotation  ##################
 
 class Annotation:
   """Metdata common to all annotations."""
 
-  def __init__ ( self, annodb ):
+  def __init__ ( self, annodb, ch ):
     """Initialize the fields to zero or null"""
 
-    # database to which this annotation is registered
     self.annodb = annodb
+    self.ch = ch
 
     # metadata fields
     self.annid = 0 
@@ -63,13 +53,6 @@ class Annotation:
     self.confidence = 0.0 
     self.author = ""
     self.kvpairs = defaultdict(list)
-
-  def setID ( self, ch, db ):
-    """if annid == 0, create a new identifier"""
-    if self.annid == 0: 
-      self.annid = db.nextID(ch)
-    else:
-      db.setID(ch, self.annid)
 
   def getField ( self, field ):
     """Accessor by field name"""
@@ -88,6 +71,7 @@ class Annotation:
       logger.warning ( "getField: No such field %s" % (field))
       raise NDWSError ( "getField: No such field %s" % (field))
 
+
   def setField ( self, field, value ):
     """Mutator by field name.  Then need to store the field."""
     
@@ -102,145 +86,38 @@ class Annotation:
       self.annid = value
     else: 
       self.kvpairs[field]=value
-#    else:
-#     logger.warning ( "setField: No such or can't update field %s" % (field))
-#     raise NDWSError ( "setField: No such or can't update field %s" % (field))
 
-  def store ( self, ch, cursor, annotype=ANNO_ANNOTATION ):
-    """Store the annotation to the annotations database"""
+  def toDict ( self ):
+    """return a dictionary of the kv pairs in for an annotation"""
 
-    sql = "INSERT INTO {} VALUES ( {}, {}, {}, {} )".format( ch.getAnnoTable('annotation'), self.annid, annotype, self.confidence, self.status )
+    kvdict = defaultdict(list)
 
-    try:
-      cursor.execute(sql)
-    except MySQLdb.Error, e:
-      logger.warning ( "Error inserting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise NDWSError ( "Error inserting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-    # author: make a KV pair
-    if self.author != "":
-      self.kvpairs['ann_author'] = self.author
-  
-    if len(self.kvpairs) != 0:
-      try:
-        kvclause = ','.join(['(' + str(self.annid) +',\'' + str(k) + '\',\'' + str(v) +'\')' for (k,v) in self.kvpairs.iteritems()])  
-      except:
-        raise NDWSError ( "Improperly formatted key/value csv string:" + kvclause ) 
-
-      sql = "INSERT INTO {} VALUES {}".format( ch.getAnnoTable('kvpairs'), kvclause )
-
-      try:
-        cursor.execute(sql)
-      except MySQLdb.Error, e:
-        logger.warning ( "Error inserting kvpairs %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        raise NDWSError ( "Error inserting kvpairs: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-
-  def update ( self, ch, cursor ):
-    """Set type and update base class."""
+    kvdict['type'] = ANNO_ANNOTATION
+    kvdict['status'] = self.status   
+    kvdict['confidence'] = self.confidence   
+    kvdict['author'] = self.author   
+    kvdict['annid'] = self.annid   
     
-    self.updateBase ( ch, ANNO_ANNOTATION, cursor )
+    # should add kvpairs to kvdict
+    kvdict.update(self.kvpairs)
+    return kvdict
 
+  def fromDict ( self, kvdict ):
+    """convert a dictionary to the class elements"""
 
-  def updateBase ( self, ch, annotype, cursor ):
-    """Update the annotation in the annotations database"""
-
-    sql = "UPDATE {} SET type={}, confidence={}, status={} WHERE annoid = {}".format( ch.getAnnoTable('annotation'), annotype, self.confidence, self.status, self.annid)
-
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ( "Error updating annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise NDWSError ( "Error updating annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-    # Make the author field a kvpair
-    if self.author != "":
-      self.kvpairs['ann_author'] = self.author
-
-    # Get the old kvpairs and identify new kvpairs
-    sql = "SELECT * FROM {} WHERE annoid = {}".format( ch.getAnnoTable('kvpairs'), self.annid )
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ( "Error retrieving kvpairs %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise NDWSError ( "Error retrieving kvpairs: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-    kvresult = cursor.fetchall()
-
-    kvupdate = {}
-
-    for kv in kvresult:
-      # for key values already stored
-      if self.kvpairs.has_key( kv[1] ): 
-        # update if they are new
-        if self.kvpairs[kv[1]] != kv[2]:
-          kvupdate[kv[1]] = self.kvpairs[kv[1]]
-        # ignore if they are the same
-        del(self.kvpairs[kv[1]])
-
-    # Update changed keys
-    if len(kvupdate) != 0:
-      for (k,v) in kvupdate.iteritems():
-        sql = "UPDATE {} SET kv_value='{}' WHERE annoid={} AND kv_key='{}'".format( ch.getAnnoTable('kvpairs'), v, self.annid, k )
-        cursor.execute ( sql )
-        
-    # insert new kv pairs
-    if len(self.kvpairs) != 0:
-      kvclause = ','.join(['(' + str(self.annid) +',\'' + k + '\',\'' + v +'\')' for (k,v) in self.kvpairs.iteritems()])  
-      sql = "INSERT INTO {} VALUES {}".format( ch.getAnnoTable('kvpairs'), kvclause )
-
-      try:
-        cursor.execute ( sql )
-      except MySQLdb.Error, e:
-        logger.warning ( "Error inserting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        raise NDWSError ( "Error inserting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-
-  def delete ( self, ch, cursor ):
-    """Delete the annotation from the database"""
-
-    sql = "DELETE {0},{1} FROM {0},{1} WHERE {0}.annoid = {2} and {1}.annoid = {2}".format ( ch.getAnnoTable('annotation'), ch.getAnnoTable('kvpairs'), self.annid ) 
-
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ( "Error deleting annotation {}: {}. sql={}".format(e.args[0], e.args[1], sql) )
-      raise NDWSError ( "Error deleting annotation: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
-
-
-  def retrieve ( self, ch, annid, cursor ):
-    """Retrieve the annotation by annid"""
-
-    sql = "SELECT * FROM {} WHERE annoid = {}".format(ch.getAnnoTable('annotation'), annid)
-
-    try:
-      cursor.execute(sql)
-    except MySQLdb.Error, e:
-      logger.warning ("Error retrieving annotation {}: {}. sql={}".format(e.args[0], e.args[1], sql))
-      raise NDWSError ("Error retrieving annotation: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
-
-    (self.annid, annotype, self.confidence, self.status) = cursor.fetchone()
-    
-    sql = "SELECT * FROM {} WHERE annoid = {}".format(ch.getAnnoTable('kvpairs'), annid) 
-    
-    try:
-      cursor.execute(sql)
-      kvpairs = cursor.fetchall()
-    except MySQLdb.Error, e:
-      logger.warning ( "Error retrieving annotation {}: {}. sql={}".format(e.args[0], e.args[1], sql) )
-      raise NDWSError ( "Error retrieving annotation: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
-
-    for kv in kvpairs:
-      self.kvpairs[kv[1]] = kv[2]
-
-    # Extract the author field if it exists
-    if self.kvpairs.get('ann_author'):
-      self.author = self.kvpairs['ann_author']
-      del ( self.kvpairs['ann_author'] )
-    else:
-      self.author = "unknown"
-
-    return annotype
+    for (k,v) in kvdict.iteritems():
+      if k == 'type':
+        next
+      elif k == 'status':
+        self.status = int(v)
+      elif k == 'confidence':
+        self.confidence = float(v)
+      elif k == 'author':
+        self.author = v
+      elif k == 'annid':
+        self.annid = int(v)
+      else:
+        self.kvpairs[k] = v
 
 
 ###############  Synapse  ##################
@@ -250,16 +127,16 @@ class Annotation:
 class AnnSynapse (Annotation):
   """Metadata specific to synapses"""
 
-  def __init__(self, annodb ):
+  def __init__(self, annodb, ch ):
     """Initialize the fields to zero or null"""
 
     self.weight = 0.0 
     self.synapse_type = 0 
-    self.seeds = []
-    self.segments = []
+    self.seeds = np.array([], dtype=np.uint32)
+    self.segments = np.array([], dtype=np.uint32)
 
     # Call the base class constructor
-    Annotation.__init__(self, annodb)
+    Annotation.__init__(self, annodb, ch)
 
   def getField ( self, field ):
     """Accessor by field name"""
@@ -283,131 +160,59 @@ class AnnSynapse (Annotation):
     elif field == 'synapse_type':
       self.synapse_type = value
     elif field == 'seeds':
-      self.seeds = [int(x) for x in value.split(',')] 
+      self.seeds = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
     else:
       Annotation.setField ( self, field, value )
 
-  def store ( self, ch, cursor ):
-    """Store the synapse to the annotations databae"""
+  def toDict ( self ):
+    """return a dictionary of the kv pairs in for an annotation"""
 
-    sql = "INSERT INTO {} VALUES ( {}, {}, {} )".format( ch.getAnnoTable('synapse'), self.annid, self.synapse_type, self.weight )
-
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ( "Error inserting synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise NDWSError ( "Error inserting synapse: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-    # synapse_seeds: pack into a kv pair
-    if len(self.seeds)!=0:
-      try:
-        self.kvpairs['synapse_seeds'] = ','.join([str(i) for i in self.seeds])
-      except:
-        raise NDWSError ("Improperly formatted seeds: %s " % (self.seeds) )
-
-    # synapse_segments: pack into a kv pair
-    if len(self.segments)!=0:
-      try:
-        self.kvpairs['synapse_segments'] = ','.join([str(i) + ':' + str(j) for i,j in self.segments])
-      except:
-        raise NDWSError ("Improperly formatted segments.  Should be nx2 matrix: %s" % (self.segments) )
-
-    # and call store on the base classs
-    Annotation.store ( self, ch, cursor, ANNO_SYNAPSE)
+    kvdict = defaultdict(list)
 
 
-  def update ( self, ch, cursor ):
-    """Update the synapse in the annotations database"""
+    kvdict['weight'] = self.weight   
+    kvdict['synapse_type'] = self.synapse_type   
+    kvdict['seeds'] = json.dumps(self.seeds.tolist())
+    kvdict.update(Annotation.toDict(self))
 
-    sql = "UPDATE {} SET synapse_type={}, weight={} WHERE annoid={}".format(ch.getAnnoTable('synapse'), self.synapse_type, self.weight, self.annid)
+    # update the type after merge
+    kvdict['type'] = ANNO_SYNAPSE
 
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-       
-      logger.warning ( "Error updating synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise NDWSError ( "Error updating synapse: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+    return kvdict
 
-    # synapse_seeds: pack into a kv pair
-    if len(self.seeds)!=0:
-      try:
-        self.kvpairs['synapse_seeds'] = ','.join([str(i) for i in self.seeds])
-      except:
-        raise NDWSError ("Improperly formatted seeds: %s " % (self.seeds) )
+  def fromDict ( self, kvdict ):
+    """convert a dictionary to the class elements"""
 
-    # synapse_segments: pack into a kv pair
-    if len(self.segments)!=0:
-      try:
-        self.kvpairs['synapse_segments'] = ','.join([str(i) + ':' + str(j) for i,j in self.segments])
-      except:
-        raise NDWSError ("Improperly formatted segments.  Should be nx2 matrix: %s" % (self.segments))
+    anndict = defaultdict(list)
 
-    # and call update on the base classs
-    Annotation.updateBase ( self, ch, ANNO_SYNAPSE, cursor )
-
-
-  def retrieve ( self, ch, annid, cursor ):
-    """Retrieve the synapse by annid"""
-
-    # Call the base class retrieve
-    annotype = Annotation.retrieve ( self, ch, annid, cursor )
-
-    # verify the annotation object type
-    if annotype != ANNO_SYNAPSE:
-      raise NDWSError ( "Incompatible annotation type.  Expected SYNAPSE got %s" % annotype )
-
-    sql = "SELECT synapse_type, weight FROM {} WHERE annoid = {}".format( ch.getAnnoTable('synapse'), annid )
-
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ( "Error retrieving synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise NDWSError ( "Error retrieving synapse: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-    ( self.synapse_type, self.weight ) = cursor.fetchone()
-
-    if self.kvpairs.get('synapse_seeds'):
-      self.seeds = [int(i) for i in self.kvpairs['synapse_seeds'].split(',')]
-      del ( self.kvpairs['synapse_seeds'] )
-
-    if self.kvpairs.get('synapse_segments'):
-      for p in self.kvpairs['synapse_segments'].split(','):
-        f,s = p.split(':')
-        self.segments.append([int(f),int(s)])
-      del ( self.kvpairs['synapse_segments'] )
-
-
-  def delete ( self, ch, cursor ):
-    """Delete the synapse from the database"""
-
-    sql = "DELETE FROM {} WHERE annoid ={};".format( ch.getAnnoTable('synapse'), self.annid );
-
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ( "Error deleting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise NDWSError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-    # and call delete on the base classs
-    Annotation.delete ( self, ch, cursor )
-
+    for (k,v) in kvdict.iteritems():
+      if k == 'weight':
+        self.weight = float(v)
+      elif k == 'synapse_type':
+        self.synapse_type = int(v)
+      elif k == 'seeds':
+        self.seeds = np.array(json.loads(v), dtype=np.uint32)
+      else:
+        anndict[k] = v
     
+    Annotation.fromDict ( self, anndict )
+
 
 ###############  Seed  ##################
 
 class AnnSeed (Annotation):
   """Metadata specific to seeds"""
 
-  def __init__ (self,annodb):
+  def __init__ (self,annodb, ch):
     """Initialize the fields to zero or null"""
 
     self.parent=0        # parent seed
-    self.position=[]
+    self.position=np.array([], dtype=np.uint32)
     self.cubelocation=0  # some enumeration
     self.source=0        # source annotation id
 
     # Call the base class constructor
-    Annotation.__init__(self,annodb)
+    Annotation.__init__(self,annodb, ch)
 
   def getField ( self, field ):
     """Accessor by field name"""
@@ -429,7 +234,7 @@ class AnnSeed (Annotation):
     if field == 'parent':
       self.parent = value
     elif field == 'position':
-      self.position = [int(x) for x in value.split(',')] 
+      self.position = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
       if len(self.position) != 3:
         raise NDWSError ("Illegal arguments to set field position: %s" % value)
     elif field == 'cubelocation':
@@ -439,79 +244,42 @@ class AnnSeed (Annotation):
     else:
       Annotation.setField ( self, field, value )
 
-  def store ( self, ch, cursor ):
-    """Store thwe seed to the annotations databae"""
+  def toDict ( self ):
+    """return a dictionary of the kv pairs in for an annotation"""
 
-    if self.position == []:
-      storepos = [ 'NULL', 'NULL', 'NULL' ]
-    else:
-      storepos = self.position
-      
-    sql = "INSERT INTO {} VALUES ( {}, {}, {}, {}, {}, {}, {} )".format(ch.getAnnoTable('seed'), self.annid, self.parent, self.source, self.cubelocation, storepos[0], storepos[1], storepos[2])
+    kvdict = defaultdict(list)
 
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ( "Error inserting seed %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise NDWSError ( "Error inserting seed : %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+    kvdict['parent'] = self.parent   
+    kvdict['position'] = json.dumps(self.position.tolist())
+    kvdict['cubelocation'] = self.cubelocation
+    kvdict['source'] = self.source  
 
-    # and call store on the base classs
-    Annotation.store ( self, ch, cursor, ANNO_SEED)
+    kvdict.update(Annotation.toDict(self))
 
+    # update the type after merge
+    kvdict['type'] = ANNO_SEED
 
-  def update ( self, ch, cursor ):
-    """Update the seed to the annotations databae"""
+    return kvdict
 
-    if self.position == [] or np.all(self.position==[None,None,None]):
-      storepos = [ 'NULL', 'NULL', 'NULL' ]
-    else:
-      storepos = self.position
-      
-    sql = "UPDATE %s SET parentid=%s, sourceid=%s, cube_location=%s, positionx=%s, positiony=%s, positionz=%s where annoid = %s"\
-            % ( ch.getAnnoTable('seed'), self.parent, self.source, self.cubelocation, storepos[0], storepos[1], storepos[2], self.annid)
+  def fromDict ( self, kvdict ):
+    """convert a dictionary to the class elements"""
 
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ( "Error inserting seed %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise NDWSError ( "Error inserting seed: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+    anndict = defaultdict(list)
 
-    # and call update on the base classs
-    Annotation.updateBase ( self, ch, ANNO_SEED, cursor )
-
-
-  def retrieve ( self, ch, annid, cursor ):
-    """Retrieve the seed by annid"""
-
-    # Call the base class retrieve
-    Annotation.retrieve ( self, ch, annid, cursor )
-
-    sql = "SELECT parentid, sourceid, cube_location, positionx, positiony, positionz FROM {} WHERE annoid = {}".format( ch.getAnnoTable('seed'), annid )
-      
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ( "Error retrieving seed %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise NDWSError ( "Error retrieving seed: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-    # need to initialize position to prevent index error
-    self.position = [0,0,0]
-    (self.parent, self.source, self.cubelocation, self.position[0], self.position[1], self.position[2]) = cursor.fetchone()
-
-
-  def delete ( self, ch, cursor ):
-    """Delete the seeed from the database"""
-
-    sql = "DELETE FROM {} WHERE annoid ={};".format( ch.getAnnoTable('seed'), self.annid ) 
-
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ( "Error deleting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise NDWSError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-    # and call delete on the base classs
-    Annotation.delete ( self, ch, cursor )
+    for (k,v) in kvdict.iteritems():
+      if k == 'parent':
+        self.parent = int(v)
+      elif k == 'position':
+        self.position = np.array(json.loads(v), dtype=np.uint32)
+      elif k == 'cubelocation':
+        self.cubelocation = int(v)
+      elif k == 'source':
+        self.source = int(v)
+      else:
+        anndict[k] = v
+    
+    
+    Annotation.fromDict ( self, anndict )
 
 
 ###############  Segment  ##################
@@ -519,32 +287,17 @@ class AnnSeed (Annotation):
 class AnnSegment (Annotation):
   """Metadata specific to segment"""
 
-  def __init__(self,annodb):
+  def __init__(self,annodb, ch):
     """Initialize the fields to zero or null"""
 
     self.segmentclass = 0            # enumerated label
     self.parentseed = 0              # seed that started this segment
     self.neuron = 0                  # add a neuron field
-    self.synapses = []               # synapses connected to this segment
-    self.organelles = []             # organelles associated with this segment
+    self.synapses=np.array([], dtype=np.uint32)                # synapses connected to this segment
+    self.organelles=np.array([], dtype=np.uint32)              # organelles associated with this segment
 
     # Call the base class constructor
-    Annotation.__init__(self,annodb)
-
-
-# RBTODO get synapses from segments.
-#  def querySynapses ( self, ch, cursor ):
-#    """Query the synseg database to resolve"""
-#
-#    sql = "SELECT synapse FROM {} WHERE segment={}".format( getAnnoTable('synseg'),self.annid)
-#
-#    try:
-#      cursor.execute ( sql )
-#    except MySQLdb.Error, e:
-#      logger.warning ( "Error querying synapses %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-#      raise NDWSError ( "Error querying synapses %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-#
-#    return cursor.fetchall()
+    Annotation.__init__(self,annodb, ch)
 
 
   def getField ( self, field ):
@@ -575,7 +328,7 @@ class AnnSegment (Annotation):
     elif field == 'synapses':
 #      RBTODO synapses cannot be set in segment class.  replicated from synapse 
       #pass
-      self.synapses = [int(x) for x in value.split(',')] 
+      self.synapses = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
     elif field == 'organelles':
 #      RBTODO organelles cannot be updated in segment class.  replicated from organelle 
       #pass
@@ -583,95 +336,45 @@ class AnnSegment (Annotation):
     else:
       Annotation.setField ( self, field, value )
 
-  def store ( self, ch, cursor ):
-    """Store the synapse to the annotations databae"""
+  def toDict ( self ):
+    """return a dictionary of the kv pairs in for an annotation"""
 
-    sql = "INSERT INTO {} VALUES ( {}, {}, {}, {} )".format( ch.getAnnoTable('segment'), self.annid, self.segmentclass, self.parentseed, self.neuron )
+    kvdict = defaultdict(list)
 
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ( "Error inserting segment %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise NDWSError ( "Error inserting segment: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+    kvdict['segmentclass'] = self.segmentclass   
+    kvdict['parentseed'] = self.parentseed
+    kvdict['neuron'] = self.neuron  
+    kvdict['synapses'] = json.dumps(self.synapses.tolist())
+    kvdict['organelles'] = json.dumps(self.organelles.tolist())
 
-    # synapses: pack into a kv pair
-    if len(self.synapses)!=0:
-      self.kvpairs['synapses'] = ','.join([str(i) for i in self.synapses])
+    kvdict.update(Annotation.toDict(self))
 
-    # organelles: pack into a kv pair
-    if len(self.organelles)!=0:
-      self.kvpairs['organelles'] = ','.join([str(i) for i in self.organelles])
+    # update the type after merge
+    kvdict['type'] = ANNO_SEGMENT
 
-    # and call store on the base classs
-    Annotation.store ( self, ch, cursor, ANNO_SEGMENT)
+    return kvdict
 
+  def fromDict ( self, kvdict ):
+    """convert a dictionary to the class elements"""
 
-  def update ( self, ch, cursor ):
-    """Update the synapse in the annotations database"""
+    anndict = defaultdict(list)
 
-    sql = "UPDATE %s SET segmentclass=%s, parentseed=%s, neuron=%s WHERE annoid=%s "\
-            % (ch.getAnnoTable('segment'), self.segmentclass, self.parentseed, self.neuron, self.annid)
-
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ( "Error updating segment %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise NDWSError ( "Error updating segment: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-    # synapses: pack into a kv pair
-    if len(self.synapses)!=0:
-      self.kvpairs['synapses'] = ','.join([str(i) for i in self.synapses])
-
-    # organelles: pack into a kv pair
-    if len(self.organelles)!=0:
-      self.kvpairs['organelles'] = ','.join([str(i) for i in self.organelles])
-
-    # and call update on the base classs
-    Annotation.updateBase ( self, ch, ANNO_SEGMENT, cursor )
-
-
-  def retrieve ( self, ch, annid, cursor ):
-    """Retrieve the synapse by annid"""
-
-    # Call the base class retrieve
-    annotype = Annotation.retrieve ( self, ch, annid, cursor )
-
-    # verify the annotation object type
-    if annotype != ANNO_SEGMENT:
-      raise NDWSError ( "Incompatible annotation type.  Expected SEGMENT got %s" % annotype )
-
-    sql = "SELECT segmentclass, parentseed, neuron FROM {} WHERE annoid = {}".format( ch.getAnnoTable('segment'), annid )
-
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ( "Error retrieving segment %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise NDWSError ( "Error retrieving segment: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-    ( self.segmentclass, self.parentseed, self.neuron ) = cursor.fetchone()
-
-    if self.kvpairs.get('synapses'):
-      self.synapses = [int(i) for i in self.kvpairs['synapses'].split(',')]
-      del ( self.kvpairs['synapses'] )
-
-    if self.kvpairs.get('organelles'):
-      self.organelles = [int(i) for i in self.kvpairs['organelles'].split(',')]
-      del ( self.kvpairs['organelles'] )
-
-
-  def delete ( self, ch, cursor ):
-    """Delete the segment from the database"""
-
-    sql = "DELETE FROM {} WHERE annoid ={};".format( ch.getAnnoTable('segment'), self.annid ) 
-
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ( "Error deleting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise NDWSError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-    # and call delete on the base classs
-    Annotation.delete ( self, ch, cursor )
+    for (k,v) in kvdict.iteritems():
+      if k == 'segmentclass':
+        self.segmentclass = int(v)
+      elif k == 'parentseed':
+        self.parentseed = int(v)
+      elif k == 'neuron':
+        self.neuron = int(v)
+      elif k == 'synapses':
+        self.synapses = np.array(json.loads(v), dtype=np.uint32)
+      elif k == 'organelles':
+        self.organelles = np.array(json.loads(v), dtype=np.uint32)
+      else:
+        anndict[k] = v
+    
+    
+    Annotation.fromDict ( self, anndict )
 
 
 
@@ -680,37 +383,17 @@ class AnnSegment (Annotation):
 class AnnNeuron (Annotation):
   """Metadata specific to neurons"""
 
-  def __init__(self,annodb):
+  def __init__(self,annodb, ch):
     """Initialize the fields to zero or null"""
 
-    self.segments = []
-
     # Call the base class constructor
-    Annotation.__init__(self,annodb)
-
-  def querySegments ( self, ch, cursor ):
-    """Query the segments database to resolve"""
-
-    sql = "SELECT annoid FROM {} WHERE neuron={}".format(ch.getAnnoTable('segment'), self.annid)
-
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ( "Error querying neuron segments %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise NDWSError ( "Error querying neuron segments %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-    return cursor.fetchall()
-
+    Annotation.__init__(self,annodb, ch)
 
   def getField ( self, field ):
     """Accessor by field name"""
 
-#  Make this a query not a field.
-
-    #if field == 'segments':
-      #return self.querySegments(cursor) 
     if field == 'segments':
-      return ','.join(str(x) for x in self.segments)
+      return ','.join(str(x) for x in self.annodb.querySegments( self.ch, self.annid ))
     else:
       return Annotation.getField(self, field)
 
@@ -718,61 +401,34 @@ class AnnNeuron (Annotation):
     """Mutator by field name.  Then need to store the field."""
     
     if field == 'segments':
-      self.segments = [int(x) for x in value.split(',')]
-    Annotation.setField ( self, field, value )
+      raise NDWSError ("Cannot set segments.  It is derived from the neuron field of ANNO_SEGMENTS.")
+    else:
+      Annotation.setField ( self, field, value )
 
+  def toDict ( self ):
+    """return a dictionary of the kv pairs in for an annotation"""
 
-  def store ( self, ch, cursor ):
-    """Store the neuron to the annotations databae"""
+    kvdict = defaultdict(list)
 
-    # and call store on the base classs
-    # segments: pack into a kv pair
-    if len(self.segments)!=0:
-      self.kvpairs['segments'] = ','.join([str(i) for i in self.segments])
-    Annotation.store ( self, ch, cursor, ANNO_NEURON )
+    kvdict.update(Annotation.toDict(self))
 
+    # update the type after merge
+    kvdict['type'] = ANNO_NEURON
 
-  def update ( self, ch, cursor ):
-    """Update the neuron in the annotations databae"""
+    return kvdict
 
-    # segments: pack into a kv pair
-    if len(self.segments)!=0:
-      self.kvpairs['segments'] = ','.join([str(i) for i in self.segments])
-    # and call update on the base classs
-    Annotation.updateBase ( self, ch, ANNO_NEURON, cursor )
+  def fromDict ( self, kvdict ):
+    """convert a dictionary to the class elements"""
 
-
-  def retrieve ( self, ch, annid, cursor ):
-    """Retrieve the neuron by annid"""
-
-    # Call the base class retrieve
-    annotype = Annotation.retrieve ( self, ch, annid, cursor )
-
-    # verify the annotation object type
-    if annotype != ANNO_NEURON:
-      raise NDWSError ( "Incompatible annotation type.  Expected NEURON got %s" % annotype )
-
-    if self.kvpairs.get('segments'):
-      self.segments = [int(i) for i in self.kvpairs['segments'].split(',')]
-      del ( self.kvpairs['segments'] )
-    #self.segments = self.querySegments(cursor)
-
-
-  def delete ( self, ch, cursor ):
-    """Delete the annotation from the database"""
-
-    sql = "DELETE FROM {} WHERE annoid ={};".format( ch.getAnnoTable('synapse'), self.annid ) 
-
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ( "Error deleting synapse %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise NDWSError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-    # and call delete on the base class
-    Annotation.delete ( self, ch, cursor )
-
+# No additional fields in neuron right now.
+#
+#    anndict = defaultdict(list)
+#
+#    for (k,v) in kvdict.iteritems():
+#      anndict[k] = v
+#    Annotation.fromDict ( self, anndict )
     
+    Annotation.fromDict ( self, kvdict )
 
 
 ###############  Organelle  ##################
@@ -780,16 +436,16 @@ class AnnNeuron (Annotation):
 class AnnOrganelle (Annotation):
   """Metadata specific to organelle"""
 
-  def __init__(self,annodb):
+  def __init__(self,annodb,ch):
     """Initialize the fields to zero or None"""
 
     self.organelleclass = 0          # enumerated label
-    self.centroid = [ None, None, None ]             # centroid -- xyz coordinate
+    self.centroid = np.array([], dtype=np.uint32)    # centroid -- xyz coordinate
     self.parentseed = 0              # seed that started this segment
-    self.seeds = []                  # seeds generated from this organelle
+    self.seeds=np.array([], dtype=np.uint32)  # seeds generated from this organelle 
 
     # Call the base class constructor
-    Annotation.__init__(self,annodb)
+    Annotation.__init__(self,annodb,ch)
 
   def getField ( self, field ):
     """Accessor by field name"""
@@ -811,107 +467,51 @@ class AnnOrganelle (Annotation):
     if field == 'organelleclass':
       self.organelleclass = value
     elif field == 'centroid':
-      self.centroid = [int(x) for x in value.split(',')] 
+      self.centroid = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
       if len(self.centroid) != 3:
         raise NDWSError ("Illegal arguments to set field centroid: %s" % value)
     elif field == 'parentseed':
       self.parentseed = value
     elif field == 'seeds':
-      self.seeds = [int(x) for x in value.split(',')] 
+      self.seeds = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
     else:
       Annotation.setField ( self, field, value )
 
-  def store ( self, ch, cursor ):
-    """Store the synapse to the annotations databae"""
+  def toDict ( self ):
+    """return a dictionary of the kv pairs in for an annotation"""
 
-    if self.centroid == None or np.all(self.centroid==[None,None,None]):
-      storecentroid = [ 'NULL', 'NULL', 'NULL' ]
-    else:
-      storecentroid = self.centroid
+    kvdict = defaultdict(list)
+    kvdict['organelleclass'] = self.organelleclass   
+    kvdict['centroid'] = json.dumps(self.centroid.tolist())
+    kvdict['parentseed'] = self.parentseed   
+    kvdict['seeds'] = json.dumps(self.seeds.tolist())
 
-    sql = "INSERT INTO %s VALUES ( %s, %s, %s, %s, %s, %s )"\
-            % ( ch.getAnnoTable('organelle'), self.annid, self.organelleclass, self.parentseed,
-              storecentroid[0], storecentroid[1], storecentroid[2] )
+    # somehow, Annotation.toDict is picking up a parent seed?
+    kvdict.update(Annotation.toDict(self))
 
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ( "Error inserting organelle %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise NDWSError ( "Error inserting organelle: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+    # update the type after merge
+    kvdict['type'] = ANNO_ORGANELLE
 
-    # seeds: pack into a kv pair
-#    if self.seeds != []:
-    if len(self.seeds)!=0:
-      self.kvpairs['seeds'] = ','.join([str(i) for i in self.seeds])
+    return kvdict
 
-    # and call store on the base classs
-    Annotation.store ( self, ch, cursor, ANNO_ORGANELLE)
+  def fromDict ( self, kvdict ):
+    """convert a dictionary to the class elements"""
 
+    anndict = defaultdict(list)
 
-  def update ( self, ch, cursor ):
-    """Update the organelle in the annotations database"""
-
-    if self.centroid == None or np.all(self.centroid==[None,None,None]):
-      storecentroid = [ 'NULL', 'NULL', 'NULL' ]
-    else:
-      storecentroid = self.centroid
-
-    sql = "UPDATE %s SET organelleclass=%s, parentseed=%s, centroidx=%s, centroidy=%s, centroidz=%s WHERE annoid=%s "\
-            % (ch.getAnnoTable('organelle'), self.organelleclass, self.parentseed, storecentroid[0], storecentroid[1], storecentroid[2], self.annid)
-
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ( "Error updating organelle %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise NDWSError ( "Error updating organelle: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-    # seeds: pack into a kv pair
-#    if self.seeds != []:
-    if len(self.seeds)!=0:
-      self.kvpairs['seeds'] = ','.join([str(i) for i in self.seeds])
-
-    # and call update on the base classs
-    Annotation.updateBase ( self, ch, ANNO_ORGANELLE, cursor )
-
-
-  def retrieve ( self, ch, annid, cursor ):
-    """Retrieve the organelle by annid"""
-
-    # Call the base class retrieve
-    annotype = Annotation.retrieve ( self, ch, annid, cursor )
-
-    # verify the annotation object type
-    if annotype != ANNO_ORGANELLE:
-      raise NDWSError ( "Incompatible annotation type.  Expected ORGANELLE got %s" % annotype )
-
-    sql = "SELECT organelleclass, parentseed, centroidx, centroidy, centroidz FROM %s WHERE annoid = %s" % ( ch.getAnnoTable('organelle'), annid )
-
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ( "Error retrieving organelle %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise NDWSError ( "Error retrieving organelle: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-    ( self.organelleclass, self.parentseed, self.centroid[0], self.centroid[1], self.centroid[2] ) = cursor.fetchone()
-
-    if self.kvpairs.get('seeds'):
-      self.seeds = [int(i) for i in self.kvpairs['seeds'].split(',')]
-      del ( self.kvpairs['seeds'] )
-
-
-  def delete ( self, ch, cursor ):
-    """Delete the organelle from the database"""
-
-    sql = "DELETE FROM {} WHERE annoid ={};".format( ch.getAnnoTable('organelle'), self.annid ) 
-
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ( "Error deleting organelle %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise NDWSError ( "Error deleting organelle: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-    # and call delete on the base classs
-    Annotation.delete ( self, ch, cursor )
+    for (k,v) in kvdict.iteritems():
+      if k == 'organelleclass':
+        self.organelleclass = int(v)
+      elif k == 'centroid':
+        self.centroid = np.array(json.loads(v), dtype=np.uint32)
+      elif k == 'parentseed':
+        self.parentseed = int(v)
+      elif k == 'seeds':
+        self.seeds = np.array(json.loads(v), dtype=np.uint32)
+      else:
+        anndict[k] = v
+    
+    Annotation.fromDict ( self, anndict )
 
 
 ###############  Node  ##################
@@ -919,7 +519,7 @@ class AnnOrganelle (Annotation):
 class AnnNode (Annotation):
   """Point annotation (sometimes in a skeleton)"""
 
-  def __init__(self,annodb):
+  def __init__(self,annodb,ch):
     """Initialize the fields to zero or None"""
 
     self.pointtype = 0                           # enumerated label
@@ -933,7 +533,7 @@ class AnnNode (Annotation):
     self.children = []                          # children
 
     # Call the base class constructor
-    Annotation.__init__(self,annodb)
+    Annotation.__init__(self,annodb,ch)
 
   def getField ( self, field ):
     """Accessor by field name"""
@@ -959,9 +559,9 @@ class AnnNode (Annotation):
     if field == 'nodetype':
       self.nodetype = value
     elif field == 'location':
+      if len(value) != 3:
+        raise NDWSError ("Illegal arguments to set field location: %s" % value)
       self.location = value
-      if len(self.location) != 3:
-        raise NDWSError ("Illegal arguments to set field centroid: %s" % value)
     elif field == 'parentid':
       self.parentid = value
     elif field == 'skeletonid':
@@ -973,95 +573,47 @@ class AnnNode (Annotation):
     else:
       Annotation.setField ( self, field, value )
 
-  def store ( self, ch, cursor ):
-    """Store the node to the annotations database"""
+  def toDict ( self ):
+    """return a dictionary of the kv pairs in for an annotation"""
 
-    if self.location == None or np.all(self.location==[None,None,None]):
-      storelocation = [ 'NULL', 'NULL', 'NULL' ]
-    else:
-      storelocation = self.location
+    kvdict = defaultdict(list)
+    kvdict['nodetype'] = self.nodetype   
+    kvdict['location'] = json.dumps(self.location.tolist())
+    kvdict['parentid'] = self.parentid   
+    kvdict['skeletonid'] = self.skeletonid   
+    kvdict['radius'] = self.radius   
+    kvdict['children'] = json.dumps(self.children.tolist())
 
-    sql = "INSERT INTO %s VALUES ( %s, %s, %s, %s, %s, %s, %s, %s )"\
-            % ( ch.getAnnoTable('node'), self.annid, self.skeletonid, self.nodetype, self.parentid, 
-              storelocation[0], storelocation[1], storelocation[2], self.radius )
+    kvdict.update(Annotation.toDict(self))
 
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ( "Error inserting node %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise NDWSError ( "Error inserting node: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+    # update the type after merge
+    kvdict['type'] = ANNO_NODE
 
-    # children : pack into a kv pair
-    if len(self.children)!=0:
-      self.kvpairs['children'] = ','.join([str(i) for i in self.children])
+    return kvdict
 
-    # and call store on the base classs
-    Annotation.store ( self, ch, cursor, ANNO_NODE)
+  def fromDict ( self, kvdict ):
+    """convert a dictionary to the class elements"""
+    
+    anndict = defaultdict(list)
 
-
-  def update ( self, ch, cursor ):
-    """Update the node in the annotations database"""
-
-    if self.location == None or np.all(self.location==[None,None,None]):
-      storelocation = [ 'NULL', 'NULL', 'NULL' ]
-    else:
-      storelocation = self.location
-
-    sql = "UPDATE %s SET nodetype=%s, parentid=%s, locationx=%s, locationy=%s, locationz=%s, radius=%s WHERE annoid=%s "\
-            % (ch.getAnnoTable('node'), self.nodetype, self.parentid, storelocation[0], storelocation[1], storelocation[2], self.radius, self.annid)
-
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ( "Error updating node %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise NDWSError ( "Error updating node: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-    # children: pack into a kv pair
-    if len(self.children)!=0:
-      self.kvpairs['children'] = ','.join([str(i) for i in self.children])
-
-    # and call update on the base classs
-    Annotation.updateBase ( self, ch, ANNO_NODE, cursor )
-
-
-  def retrieve ( self, ch, annid, cursor ):
-    """Retrieve the node by annid"""
-
-    # Call the base class retrieve
-    annotype = Annotation.retrieve ( self, ch, annid, cursor )
-
-    # verify the annotation object type
-    if annotype != ANNO_NODE:
-      raise NDWSError ( "Incompatible annotation type.  Expected NODE got %s" % annotype )
-
-    sql = "SELECT nodetype, parentid, locationx, locationy, locationz, radius FROM %s WHERE annoid = %s" % ( ch.getAnnoTable('node'), annid )
-
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ( "Error retrieving node %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise NDWSError ( "Error retrieving node: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-    ( self.nodetype, self.parentid, self.location[0], self.location[1], self.location[2], self.radius ) = cursor.fetchone()
-
-    if self.kvpairs.get('children'):
-      self.children = [int(i) for i in self.kvpairs['children'].split(',')]
-      del ( self.kvpairs['children'] )
-
-
-  def delete ( self, ch, cursor ):
-    """Delete the node from the database"""
-
-    sql = "DELETE FROM {} WHERE annoid ={};".format( ch.getAnnoTable('node'), self.annid ) 
-
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ( "Error deleting node %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise NDWSError ( "Error deleting node: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-    # and call delete on the base classs
-    Annotation.delete ( self, ch, cursor )
+    for (k,v) in kvdict.iteritems():
+      if k == 'nodetype':
+        self.nodetype = int(v)
+      elif k == 'location':
+        self.location = np.array(json.loads(v), dtype=np.uint32)
+      elif k == 'parentid':
+        self.parentid = int(v)
+      elif k == 'skeletonid':
+        self.skeletonid = int(v)
+      elif k == 'radius':
+        self.radius = float(v)
+      #TODO
+      elif k == 'children':
+        self.children = np.array(json.loads(v), dtype=np.uint32)
+      else:
+        anndict[k] = v
+    
+    Annotation.fromDict ( self, anndict )
 
 
 ###############  Skeleton  ##################
@@ -1069,14 +621,14 @@ class AnnNode (Annotation):
 class AnnSkeleton (Annotation):
   """Skeleton annotation"""
 
-  def __init__(self,annodb):
+  def __init__(self,annodb,ch):
     """Initialize the fields to zero or None"""
 
     self.skeletontype = 0                          # enumerated label
     self.rootnode = 0                              # children
 
     # Call the base class constructor
-    Annotation.__init__(self,annodb)
+    Annotation.__init__(self,annodb,ch)
 
   def getField ( self, field ):
     """Accessor by field name"""
@@ -1098,198 +650,33 @@ class AnnSkeleton (Annotation):
     else:
       Annotation.setField ( self, field, value )
 
-  def store ( self, ch, cursor ):
-    """Store the skeleton to the annotations database"""
+  def toDict ( self ):
+    """return a dictionary of the kv pairs in for an annotation"""
 
-    sql = "INSERT INTO %s VALUES ( %s, %s, %s )"\
-            % ( ch.getAnnoTable('skeleton'), self.annid, self.skeletontype, self.rootnode )
+    kvdict = defaultdict(list)
+    kvdict['skeletontype'] = self.skeletontype   
+    kvdict['rootnode'] = self.rootnode   
 
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ( "Error inserting skeleton %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise NDWSError ( "Error inserting skeleton: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+    kvdict.update(Annotation.toDict(self))
 
-    # and call store on the base classs
-    Annotation.store ( self, ch, cursor, ANNO_SKELETON)
+    # update the type after merge
+    kvdict['type'] = ANNO_SKELETON
 
+    return kvdict
 
-  def update ( self, ch, cursor ):
-    """Update the skeleton in the annotations database"""
+  def fromDict ( self, kvdict ):
+    """convert a dictionary to the class elements"""
 
-    sql = "UPDATE %s SET skeletontype=%s, rootnode=%s, WHERE annoid=%s "\
-            % (ch.getAnnoTable('skeleton'), self.skeletontype, self.rootnode, self.annid)
+    anndict = defaultdict(list)
 
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ( "Error updating skeleton %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise NDWSError ( "Error updating skeleton: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-    # and call update on the base classs
-    Annotation.updateBase ( self, ch, ANNO_NODE, cursor )
-
-
-  def retrieve ( self, ch, annid, cursor ):
-    """Retrieve the skeleton by annid"""
-
-    # Call the base class retrieve
-    annotype = Annotation.retrieve ( self, ch, annid, cursor )
-
-    # verify the annotation object type
-    if annotype != ANNO_SKELETON:
-      raise NDWSError ( "Incompatible annotation type.  Expected SKELETON got %s" % annotype )
-
-    sql = "SELECT skeletontype, rootnode FROM %s WHERE annoid = %s" % ( ch.getAnnoTable('skeleton'), annid )
-
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ( "Error retrieving skeleton %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise NDWSError ( "Error retrieving skeleton: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-    ( self.skeletontype, self.rootnode ) = cursor.fetchone()
-
-
-  def delete ( self, ch, cursor ):
-    """Delete the node from the database"""
-
-    sql = "DELETE FROM {} WHERE annoid ={};".format( ch.getAnnoTable('skeleton'), self.annid ) 
-
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ( "Error deleting skeleton %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise NDWSError ( "Error deleting skeleton: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-    # and call delete on the base classs
-    Annotation.delete ( self, ch, cursor )
-
-
-#####################  Get and Put external interfaces  ##########################
-
-def getAnnotation ( ch, annid, annodb, cursor ): 
-  """Return an annotation object by identifier"""
-  
-  sql = "SELECT type FROM {} WHERE annoid= {}".format(ch.getAnnoTable('annotation'), annid)
-  try:
-    cursor.execute(sql)
-    sql_result = cursor.fetchone()
-  except MySQLdb.Error, e:
-    logger.warning ( "Error reading id %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-    raise NDWSError ( "Error reading id: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-  type = None
-  if sql_result is None:
-    return None
-  else:
-    type = int(sql_result[0])
-  # switch on the type of annotation
-  if type is None:
-    return None
-  elif type == ANNO_SYNAPSE:
-    anno = AnnSynapse(annodb)
-  elif type == ANNO_SEED:
-    anno = AnnSeed(annodb)
-  elif type == ANNO_SEGMENT:
-    anno = AnnSegment(annodb)
-  elif type == ANNO_NEURON:
-    anno = AnnNeuron(annodb)
-  elif type == ANNO_ORGANELLE:
-    anno = AnnOrganelle(annodb)
-  elif type == ANNO_NODE:
-    anno = AnnNode(annodb)
-  elif type == ANNO_SKELETON:
-    anno = AnnSkeleton(annodb)
-  elif type == ANNO_ANNOTATION:
-    anno = Annotation(annodb)
-  else:
-    raise NDWSError ( "Unrecognized annotation type {}".format(type) )
-
-  anno.retrieve(ch, annid, cursor)
-
-  return anno
-
-
-def putAnnotation ( ch, anno, annodb, cursor, options ): 
-  """Return an annotation object by identifier"""
-
-  # for updates, make sure the annotation exists and is of the right type
-  if  'update' in options:
-    oldanno = getAnnotation ( ch, anno.annid, annodb, cursor )
-
-    # can't update annotations that don't exist
-    if  oldanno == None:
-      raise NDWSError ( "During update no annotation found at id {}".format(anno.annid)  )
-
-    # can update if they are the same type
-    elif oldanno.__class__ == anno.__class__:
-      anno.update(ch, cursor)
-
-    # need to delete and then insert if we're changing the annotation type only from the base type
-    elif oldanno.__class__ == Annotation:
-      oldanno.delete(ch, cursor)
-      anno.store(ch, cursor)
-    
-  # Write the user chosen annotation id
-  else:
-    anno.store(ch, cursor)
- 
-
-def deleteAnnotation ( ch, annoid, annodb, cursor, options ): 
-  """Polymorphically delete an annotaiton by identifier"""
-
-  oldanno = getAnnotation ( ch, annoid, annodb, cursor )
-
-  # can't delete annotations that don't exist
-  if  oldanno == None:
-    raise NDWSError ( "During delete no annotation found at id %d" % annoid  )
-
-  # methinks we can call polymorphically
-  oldanno.delete(ch, cursor) 
-
-
-def getChildren ( ch, annid, annodb, cursor ):
-    """Return a list of all annotations in this neuron"""
-
-    sql = "SELECT annoid FROM {} WHERE neuron = {}".format( ch.getAnnoTable('segment'), annid )
-
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      cursor.close()
-      logger.warning ( "Error deleting annotation %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise NDWSError ( "Error deleting annotation: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-    
-    seglist = cursor.fetchall()
-
-    # return an empty iterable if there are none
-    if seglist == None:
-      seglist = []
-
-    return np.array ( seglist, dtype=np.uint32 ).flatten()
-
-
-def nodesBySkeleton ( ch, skels, annodb, cursor ):
-  """a generator to return all nodes in a set of skeletons"""
-
-  if skels==None:
-    sql = "SELECT annoid, nodetype, locationx, locationy, locationz, radius, parentid FROM %s" % ( ch.getAnnoTable('node'))
-
-    try:
-      cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      cursor.close()
-      logger.warning ( "Error querying nodes: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise NDWSError ( "Error querying nodes: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-    # Get the objects and add to the cube
-    while ( True ):
-      try:
-        retval = cursor.fetchone()
-      except:
-        break
-      if retval is not None:
-        yield ( retval )
+    for (k,v) in kvdict.iteritems():
+      if k == 'skeletontype':
+        self.skeletontype = int(v)
+      elif k == 'rootnode':
+        self.rootnode = int(v)
       else:
-        return
+        anndict[k] = v
+    
+    Annotation.fromDict ( self, anndict )
+
+

@@ -626,7 +626,7 @@ def imgAnno ( service, chanargs, proj, db, rdb ):
   # determine if it is a compound type (NEURON) and get the list of relevant segments
   if iscompound:
     # remap the ids for a neuron
-    dataids = rdb.getChildren ( annoids[0] ) 
+    dataids = rdb.getChildren ( ch, annoids[0] ) 
     cb = db.annoCutout ( ch, dataids, resolution, corner, dim, annoids[0] )
   else:
     # no remap when not a neuron
@@ -900,7 +900,7 @@ def getAnnoJSONById ( ch, annoid, proj, rdb ):
 
 def getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution=None, corner=None, dim=None ): 
   """Retrieve the annotation and put it in the HDF5 file."""
-  
+
   # retrieve the annotation 
   anno = rdb.getAnnotation ( ch, annoid )
   if anno == None:
@@ -954,7 +954,7 @@ def getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution=None, c
     h5anno.addCutout ( resolution, retcorner, cb.data )
 
   elif dataoption == AR_TIGHTCUTOUT:
-
+ 
     # determine if it is a compound type (NEURON) and get the list of relevant segments
     if anno.__class__ in [ annotation.AnnNeuron ] and dataoption != AR_NODATA:
       dataids = rdb.getChildren(ch, annoid) 
@@ -1363,11 +1363,11 @@ def putAnnotation ( webargs, postdata ):
           idgrp = h5f.get(k)
   
           # Convert HDF5 to annotation
-          anno = h5ann.H5toAnnotation(k, idgrp, rdb)
+          anno = h5ann.H5toAnnotation(k, idgrp, rdb, ch)
   
           # set the identifier (separate transaction)
           if not ('update' in options or 'dataonly' in options or 'reduce' in options):
-            anno.setID(ch, rdb)
+            anno.setField('annid',(rdb.assignID(ch,anno.annid)))
   
           # start a transaction: get mysql out of line at a time mode
   

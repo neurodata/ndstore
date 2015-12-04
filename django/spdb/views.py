@@ -103,8 +103,8 @@ def cutout (request, webargs):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except Exception, e:
-    logger.exception("Unknown exception in getCutout. {}").format(e)
-    raise NDWSError("Unknown exception in getCutout {}").format(e)
+    logger.exception("Unknown exception in getCutout. {}".format(e))
+    raise NDWSError("Unknown exception in getCutout. {}".format(e))
 
 #@cache_control(no_cache=True)
 def nifti (request, webargs):
@@ -123,7 +123,8 @@ def nifti (request, webargs):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except Exception, e:
-    logger.exception("Unknown exception in NIFTI. {}").format(e)
+    logger.exception("Unknown exception in NIFTI. {}".format(e))
+    raise NDWSError("Unknown exception in NIFTI. {}".format(e))
     raise
 
 
@@ -144,7 +145,8 @@ def swc (request, webargs):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except Exception, e:
-    logger.exception("Unknown exception in SWC. {}").format(e)
+    logger.exception("Unknown exception in SWC. {}".format(e))
+    raise NDWSError("Unknown exception in SWC. {}".format(e))
     raise
 
 def annotation (request, webargs):
@@ -172,8 +174,8 @@ def annotation (request, webargs):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except Exception, e:
-    logger.exception("Unknown exception in annotation. {}").format(e)
-    raise NDWSError("Unknown exception in annotation. {}").format(e)
+    logger.exception("Unknown exception in annotation. {}".format(e))
+    raise NDWSError("Unknown exception in annotation. {}".format(e))
 
 
 #@cache_control(no_cache=True)
@@ -188,8 +190,8 @@ def csv (request, webargs):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except Exception, e:
-    logger.exception("Unknown exception in csv. {}").format(e)
-    raise NDWSError("Unknown exception in csv. {}").format(e)
+    logger.exception("Unknown exception in csv. {}".format(e))
+    raise NDWSError("Unknown exception in csv. {}".format(e))
 
 
 #@cache_control(no_cache=True)
@@ -207,8 +209,8 @@ def queryObjects ( request, webargs ):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except Exception, e:
-    logger.exception("Unknown exception in listObjects. {}").format(e)
-    raise NDWSError("Unknown exception in listObjects. {}").format(e)
+    logger.exception("Unknown exception in listObjects. {}".format(e))
+    raise NDWSError("Unknown exception in listObjects. {}".format(e))
 
 
 def catmaid (request, webargs):
@@ -241,8 +243,8 @@ def publictokens (request, webargs):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except Exception, e:
-    logger.exception("Unknown exception in publictokens. {}").format(e)
-    raise NDWSError("Unknown exception in publictokens. {}").format(e)
+    logger.exception("Unknown exception in publictokens. {}".format(e))
+    raise NDWSError("Unknown exception in publictokens. {}".format(e))
 
 
 #@cache_control(no_cache=True)
@@ -256,8 +258,8 @@ def jsoninfo (request, webargs):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except Exception, e:
-    logger.exception("Unknown exception in jsoninfo. {}").format(e)
-    raise NDWSError("Unknown exception in jsoninfo. {}").format(e)
+    logger.exception("Unknown exception in jsoninfo. {}".format(e))
+    raise NDWSError("Unknown exception in jsoninfo. {}".format(e))
 
 def xmlinfo (request, webargs):
   """Return project and dataset configuration information"""
@@ -269,8 +271,8 @@ def xmlinfo (request, webargs):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except Exception, e:
-    logger.exception("Unknown exception in xmlinfo. {}").format(e)
-    raise NDWSError("Unknown exception in xmlinfo. {}").format(e)
+    logger.exception("Unknown exception in xmlinfo. {}".format(e))
+    raise NDWSError("Unknown exception in xmlinfo. {}".format(e))
 
 #@cache_control(no_cache=True)
 def projinfo (request, webargs):
@@ -283,8 +285,8 @@ def projinfo (request, webargs):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except Exception, e:
-    logger.exception("Unknown exception in projInfo. {}").format(e)
-    raise NDWSError("Unknown exception in projInfo. {}").format(e)
+    logger.exception("Unknown exception in projInfo. {}".format(e))
+    raise NDWSError("Unknown exception in projInfo. {}".format(e))
 
 
 def mcFalseColor (request, webargs):
@@ -297,8 +299,8 @@ def mcFalseColor (request, webargs):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except Exception, e:
-    logger.exception("Unknown exception in mcFalseColor. {}").format(e)
-    raise NDWSError("Unknown exception in mcFalseColor. {}").format(e)
+    logger.exception("Unknown exception in mcFalseColor. {}".format(e))
+    raise NDWSError("Unknown exception in mcFalseColor. {}".format(e))
 
 #@cache_control(no_cache=True)
 def reserve (request, webargs):
@@ -311,8 +313,8 @@ def reserve (request, webargs):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except Exception, e:
-    logger.exception("Unknown exception in reserve. {}").format(e)
-    raise NDWSError("Unknown exception in reserve. {}").format(e)
+    logger.exception("Unknown exception in reserve. {}".format(e))
+    raise NDWSError("Unknown exception in reserve. {}".format(e))
 
 def setField (request, webargs):
   """Set an individual RAMON field for an object"""
@@ -325,8 +327,8 @@ def setField (request, webargs):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except Exception, e:
-    logger.exception("Unknown exception in setField. {}").format(e)
-    raise NDWSError("Unknown exception in setField. {}").format(e)
+    logger.exception("Unknown exception in setField. {}".format(e))
+    raise NDWSError("Unknown exception in setField. {}".format(e))
 
 #@cache_control(no_cache=True)
 def getField (request, webargs):
@@ -339,8 +341,8 @@ def getField (request, webargs):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except Exception, e:
-    logger.exception("Unknown exception in getField. {}").format(e)
-    raise NDWSError("Unknown exception in getField. {}").format(e)
+    logger.exception("Unknown exception in getField. {}".format(e))
+    raise NDWSError("Unknown exception in getField. {}".format(e))
 
 #@cache_control(no_cache=True)
 def getPropagate (request, webargs):
@@ -353,8 +355,8 @@ def getPropagate (request, webargs):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except Exception, e:
-    logger.exception("Unknown exception in getPropagate. {}").format(e)
-    raise NDWSError("Unknown exception in getPropagate. {}").format(e)
+    logger.exception("Unknown exception in getPropagate. {}".format(e))
+    raise NDWSError("Unknown exception in getPropagate. {}".format(e))
 
 def setPropagate (request, webargs):
   """ Set the value for Propagate field for a given project """
@@ -367,8 +369,8 @@ def setPropagate (request, webargs):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except Exception, e:
-    logger.exception("Unknown exception in setPropagate. {}").format(e)
-    raise NDWSError("Unknown exception in setPropagate. {}").format(e)
+    logger.exception("Unknown exception in setPropagate. {}".format(e))
+    raise NDWSError("Unknown exception in setPropagate. {}".format(e))
 
 def merge (request, webargs):
   """Merge annotation objects"""
@@ -380,8 +382,8 @@ def merge (request, webargs):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except Exception, e:
-    logger.exception("Unknown exception in global Merge. {}").format(e)
-    raise NDWSError("Unknown exception in global Merge. {}").format(e)
+    logger.exception("Unknown exception in global Merge. {}".format(e))
+    raise NDWSError("Unknown exception in global Merge. {}".format(e))
 
 def exceptions (request, webargs):
   """Return a list of multiply labeled pixels in a cutout region"""
@@ -393,8 +395,8 @@ def exceptions (request, webargs):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except Exception, e:
-    logger.exception("Unknown exception in exceptions Web service. {}").format(e)
-    raise NDWSError("Unknown exception in exceptions Web service. {}").format(e)
+    logger.exception("Unknown exception in exceptions Web service. {}".format(e))
+    raise NDWSError("Unknown exception in exceptions Web service. {}".format(e))
 
 #@cache_control(no_cache=True)
 def minmaxProject (request, webargs):
@@ -407,8 +409,8 @@ def minmaxProject (request, webargs):
   except MySQLdb.Error, e:
     return django.http.HttpResponseNotFound(e)
   except Exception, e:
-    logger.exception("Unknown exception in (min|max) projection Web service. {}").format(e)
-    raise NDWSError("Unknown exception in (min|max) projection Web service. {}").format(e)
+    logger.exception("Unknown exception in (min|max) projection Web service. {}".format(e))
+    raise NDWSError("Unknown exception in (min|max) projection Web service. {}".format(e))
 
 def autoIngest(request, webargs):
   """RESTful URL for creating a project using a JSON file"""
@@ -418,8 +420,8 @@ def autoIngest(request, webargs):
   except NDWSError, e:
     return django.http.HttpResponseNotFound()
   except Exception, e:
-    logger.exception("Unknown exception in jsonProject Web service. {}").format(e)
-    raise NDWSError("Unknown exception in jsonProject Web service. {}").format(e)
+    logger.exception("Unknown exception in jsonProject Web service. {}".format(e))
+    raise NDWSError("Unknown exception in jsonProject Web service. {}".format(e))
 
 def createChannel(request, webargs):
   """RESTful URL for creating a list of channels using a JSON file"""
@@ -429,8 +431,8 @@ def createChannel(request, webargs):
   except NDWSError, e:
     return django.http.HttpResponseNotFound()
   except Exception, e:
-    logger.exception("Unknown exception in jsonProject Web service. {}").format(e)
-    raise NDWSError("Unknown exception in jsonProject Web service. {}").format(e)
+    logger.exception("Unknown exception in jsonProject Web service. {}".format(e))
+    raise NDWSError("Unknown exception in jsonProject Web service. {}".format(e))
 
 def deleteChannel(request, webargs):
   """RESTful URL for deleting a list of channels using a JSON file"""
@@ -440,5 +442,5 @@ def deleteChannel(request, webargs):
   except NDWSError, e:
     return django.http.HttpResponseNotFound()
   except Exception, e:
-    logger.exception("Unknown exception in jsonProject Web service. {}").format(e)
-    raise NDWSError("Unknown exception in jsonProject Web service. {}").format(e)
+    logger.exception("Unknown exception in jsonProject Web service. {}".format(e))
+    raise NDWSError("Unknown exception in jsonProject Web service. {}".format(e))
