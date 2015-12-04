@@ -1,4 +1,4 @@
-Overlay API's
+Overlay APIs
 *************
 
 Cutut Service
@@ -11,19 +11,19 @@ GET XY Slice Cutout
    
    :synopsis: Get a XY Slice Cutout
 
-   :param host_server_name: Host Server Name in OCP. In the general case this is openconnecto.me.
+   :param host_server_name: Host Server Name in NeuroData. In the general case this is openconnecto.me.
    :type host_server_name: string
-   :param first_server_name: First Server Name in OCP. In the general case this is openconnecto.me.
+   :param first_server_name: First Server Name in NeuroData. In the general case this is openconnecto.me.
    :type first_server_name: string
-   :param first_token_name: First Token Name in OCP.
+   :param first_token_name: First Token Name in NeuroData.
    :type first_token_name: string
-   :param first_channel_name: First Channel Name in OCP. *Optional*. If missing will use default channel for the token.
+   :param first_channel_name: First Channel Name in NeuroData. *Optional*. If missing will use default channel for the token.
    :type first_channel_name: string
-   :param second_server_name: Second Server Name in OCP. In the general case this is openconnecto.me.
+   :param second_server_name: Second Server Name in NeuroData. In the general case this is openconnecto.me.
    :type second_server_name: string
-   :param second_token_name: Second Token Name in OCP.
+   :param second_token_name: Second Token Name in NeuroData.
    :type second_token_name: string
-   :param second_channel_name: Second Channel Name in OCP. *Optional*. If missing will use default channel for the token.
+   :param second_channel_name: Second Channel Name in NeuroData. *Optional*. If missing will use default channel for the token.
    :type second_channel_name: string
    :param resolution: Resolution for the data
    :type resolution: int
@@ -51,19 +51,19 @@ GET XZ Slice Cutout
    
    :synopsis: Get an overlay XZ slice cutout
 
-   :param host_server_name: Host Server Name in OCP. In the general case this is openconnecto.me.
+   :param host_server_name: Host Server Name in NeuroData. In the general case this is openconnecto.me.
    :type host_server_name: string
-   :param first_server_name: First Server Name in OCP. In the general case this is openconnecto.me.
+   :param first_server_name: First Server Name in NeuroData. In the general case this is openconnecto.me.
    :type first_server_name: string
-   :param first_token_name: First Token Name in OCP.
+   :param first_token_name: First Token Name in NeuroData.
    :type first_token_name: string
-   :param first_channel_name: First Channel Name in OCP. *Optional*. If missing will use default channel for the token.
+   :param first_channel_name: First Channel Name in NeuroData. *Optional*. If missing will use default channel for the token.
    :type first_channel_name: string
-   :param second_server_name: Second Server Name in OCP. In the general case this is openconnecto.me.
+   :param second_server_name: Second Server Name in NeuroData. In the general case this is openconnecto.me.
    :type second_server_name: string
-   :param second_token_name: Second Token Name in OCP.
+   :param second_token_name: Second Token Name in NeuroData.
    :type second_token_name: string
-   :param second_channel_name: Second Channel Name in OCP. *Optional*. If missing will use default channel for the token.
+   :param second_channel_name: Second Channel Name in NeuroData. *Optional*. If missing will use default channel for the token.
    :type second_channel_name: string
    :param resolution: Resolution for the data
    :type resolution: int
@@ -90,19 +90,19 @@ GET YZ Slice Cutout
    
    :synopsis: Get an overlay YZ slice cutout
 
-   :param host_server_name: Host Server Name in OCP. In the general case this is openconnecto.me.
+   :param host_server_name: Host Server Name in NeuroData. In the general case this is openconnecto.me.
    :type host_server_name: string
-   :param first_server_name: First Server Name in OCP. In the general case this is openconnecto.me.
+   :param first_server_name: First Server Name in NeuroData. In the general case this is openconnecto.me.
    :type first_server_name: string
-   :param first_token_name: First Token Name in OCP.
+   :param first_token_name: First Token Name in NeuroData.
    :type first_token_name: string
-   :param first_channel_name: First Channel Name in OCP. *Optional*. If missing will use default channel for the token.
+   :param first_channel_name: First Channel Name in NeuroData. *Optional*. If missing will use default channel for the token.
    :type first_channel_name: string
-   :param second_server_name: Second Server Name in OCP. In the general case this is openconnecto.me.
+   :param second_server_name: Second Server Name in NeuroData. In the general case this is openconnecto.me.
    :type second_server_name: string
-   :param second_token_name: Second Token Name in OCP.
+   :param second_token_name: Second Token Name in NeuroData.
    :type second_token_name: string
-   :param second_channel_name: Second Channel Name in OCP. *Optional*. If missing will use default channel for the token.
+   :param second_channel_name: Second Channel Name in NeuroData. *Optional*. If missing will use default channel for the token.
    :type second_channel_name: string
    :param resolution: Resolution for the data
    :type resolution: int

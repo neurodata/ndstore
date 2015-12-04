@@ -1,4 +1,4 @@
-Tile API's
+Tile APIs
 **********
 
 You can also view the `Tilecache API's <http://docs.neurodata.io/ocptilecache/api/tilecache_api.html>`_ which work similarly for `ocptilecache <http://docs.neurodata.io/ocptilecache/index.html>`_.
@@ -12,11 +12,11 @@ getSimpleTile
    
    :synopsis: Get a 512x512 tile from the database
 
-   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
    :type server_name: string
-   :param token_name: Token Name in OCP.
+   :param token_name: Token Name in NeuroData.
    :type token_name: string
-   :param channel_name: Channel Name in OCP.
+   :param channel_name: Channel Name in NeuroData.
    :type channel_name: string
    :param slice_type: Type of Slice cutout. Can be xy/yz/xz
    :type slice_type: string
@@ -62,11 +62,11 @@ getMcfcTile
    
    :synopsis: Get a 512x512 tile from the database
 
-   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
    :type server_name: string
-   :param token_name: Token Name in OCP.
+   :param token_name: Token Name in NeuroData.
    :type token_name: string
-   :param channel_name: Channel Name in OCP.
+   :param channel_name: Channel Name in NeuroData.
    :type channel_name: string
    :param color_name: Color Name. Can be 'C/M/Y/R/G/B'. *Optional* If Missing will default to "CMYRGB".
    :type color_name: string
@@ -114,11 +114,11 @@ getVikingTile
    
    :synopsis: Get a 512x512 tile from the database
 
-   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
    :type server_name: string
-   :param token_name: Token Name in OCP.
+   :param token_name: Token Name in NeuroData.
    :type token_name: string
-   :param channel_name: Channel Name in OCP.
+   :param channel_name: Channel Name in NeuroData.
    :type channel_name: string
    :param resolution: Resolution value.
    :type resolution: int
