@@ -147,6 +147,7 @@ def main():
 
   # KL TODO insert get data here
   getURL(generateURL2(zidx_list[0]))
+  getURL(generateURL2(zidx_list[0]))
 
 if __name__ == '__main__':
   main()

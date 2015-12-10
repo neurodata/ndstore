@@ -1,4 +1,4 @@
-Data API's
+Data APIs
 ***********
 
 HDF5 Service
@@ -221,11 +221,11 @@ GET
    
    :synopsis: Download a 3D/4D region of data for of a specified channel, resolution and bounds in the numpy array format. You can load this data into python using the numpy library for anaylsis.
 
-   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
    :type server_name: string
-   :param token_name: Token Name in OCP.
+   :param token_name: Token Name in NeuroData.
    :type token_name: string
-   :param channel_name: Channel Name in OCP. *Optional*. If missing will use default channel for the token.
+   :param channel_name: Channel Name in NeuroData. *Optional*. If missing will use default channel for the token.
    :type channel_name: string
    :param resolution: Resolution for the data
    :type resolution: int
@@ -264,11 +264,11 @@ GET XY Slice Cutout
    
    :synopsis: Download a single image of a specified canonical plane, XY, and specified channel, resolution and bounds. Your browser can load these images.
 
-   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
    :type server_name: string
-   :param token_name: Token Name in OCP.
+   :param token_name: Token Name in NeuroData.
    :type token_name: string
-   :param channel_name: Channel Name in OCP. *Optional*. If missing will use default channel for the token.
+   :param channel_name: Channel Name in NeuroData. *Optional*. If missing will use default channel for the token.
    :type channel_name: string
    :param resolution: Resolution for the data
    :type resolution: int

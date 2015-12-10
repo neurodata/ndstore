@@ -731,8 +731,8 @@ def selectPost ( webargs, proj, db, postdata ):
   
           # Don't write to readonly channels
           if ch.getReadOnly() == READONLY_TRUE:
-            logger.warning("Attempt to write to read only project {}".format(proj.getDBName()))
-            raise OCPCAError("Attempt to write to read only project {}".format(proj.getDBName()))
+            logger.warning("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+            raise OCPCAError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
        
           if not voxarray.dtype == OCP_dtypetonp[ch.getDataType()]:
             logger.warning("Wrong datatype in POST")
@@ -773,8 +773,8 @@ def selectPost ( webargs, proj, db, postdata ):
           
             # Don't write to readonly channels
             if ch.getReadOnly() == READONLY_TRUE:
-              logger.warning("Attempt to write to read only project {}".format(proj.getDBName()))
-              raise OCPCAError("Attempt to write to read only project {}".format(proj.getDBName()))
+              logger.warning("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+              raise OCPCAError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
             
             if ch.getChannelType() in IMAGE_CHANNELS: 
               db.writeCuboid (ch, corner, resolution, voxarray)
@@ -1306,10 +1306,11 @@ def putAnnotation ( webargs, postdata ):
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
 
     ch = ocpcaproj.OCPCAChannel(proj, channel)
-    # Don't write to readonly projects
+    
+    # Don't write to readonly channels
     if ch.getReadOnly() == READONLY_TRUE:
-      logger.warning("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
-      raise OCPCAError("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
+      logger.warning("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+      raise OCPCAError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
 
     # return string of id values
     retvals = [] 
@@ -1504,10 +1505,11 @@ def putNIFTI ( webargs, postdata ):
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
 
     ch = ocpcaproj.OCPCAChannel(proj, channel)
-    # Don't write to readonly projects
-    if ch.getReadOnly() == ocpcaproj.READONLY_TRUE:
-      logger.warning("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
-      raise OCPCAError("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
+    
+    # Don't write to readonly channels
+    if ch.getReadOnly() == READONLY_TRUE:
+      logger.warning("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+      raise OCPCAError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
 
     # check the magic number -- is it a gz file?
     if postdata[0] == '\x1f' and postdata[1] ==  '\x8b':
@@ -1568,10 +1570,11 @@ def putSWC ( webargs, postdata ):
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
 
     ch = ocpcaproj.OCPCAChannel(proj, channel)
-    # Don't write to readonly projects
+    
+    # Don't write to readonly channels
     if ch.getReadOnly() == READONLY_TRUE:
-      logger.warning("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
-      raise OCPCAError("Attempt to write to read only project. %s: %s" % (proj.getDBName(),webargs))
+      logger.warning("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+      raise OCPCAError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
 
     # Make a named temporary file for the HDF5
     with closing (tempfile.NamedTemporaryFile()) as tmpfile:
@@ -1656,10 +1659,11 @@ def deleteAnnotation ( webargs ):
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
   
     ch = ocpcaproj.OCPCAChannel(proj, channel)
-    # Don't write to readonly projects              
+    
+    # Don't write to readonly channels
     if ch.getReadOnly() == READONLY_TRUE:
-      logger.warning("Attempt to delete from a read only project. {}: {}".format(ch.getChannelName(),webargs))
-      raise OCPCAError("Attempt to delete from a  read only project. {}: {}".format(ch.getChannelName(),webargs))
+      logger.warning("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+      raise OCPCAError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
 
     # Split the URL and get the args
     args = otherargs.split('/', 2)
@@ -1821,14 +1825,20 @@ def setField ( webargs ):
     m = re.match("(\w+)/(\w+)/setField/(\d+)/(\w+)/(\w+|[\d+,.]+)/$", webargs)
     [token, channel, annid, field, value] = [i for i in m.groups()]
   except:
-    logger.warning("Illegal setField request. Wrong number of arguments.")
-    raise OCPCAError("Illegal setField request. Wrong number of arguments.")
+    logger.warning("Illegal setField request. Wrong number of arguments. Web Args: {}".format(webargs))
+    raise OCPCAError("Illegal setField request. Wrong number of arguments. Web Args:{}".format(webargs))
     
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
 
   with closing ( ocpcadb.OCPCADB(proj) ) as db:
     ch = ocpcaproj.OCPCAChannel(proj, channel)
+    
+    # Don't write to readonly channels
+    if ch.getReadOnly() == READONLY_TRUE:
+      logger.warning("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+      raise OCPCAError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+    
     db.updateAnnotation(ch, annid, field, value)
 
 def getPropagate (webargs):
