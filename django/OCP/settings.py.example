@@ -31,6 +31,8 @@ ALLOWED_HOSTS = []
 
 FORCE_SCRIPT_NAME = '/ocp'
 
+VIZ_SERVER = 'http://'; # MUST include 'http'! 
+
 # Application definition
 
 INSTALLED_APPS = (

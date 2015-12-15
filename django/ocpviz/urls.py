@@ -15,24 +15,9 @@
 from django.conf.urls import *
 from ocpuser.views import *
 import django.contrib.auth
-  # ocp/viz/ramoninfo/<<server>>/<<token>>/<<channel>>/<<id>>/
 
+# redirect everything to the new ocpviz server 
 urlpatterns = patterns('ocpviz.views',
     # data views
-    url(r'^dataview/(?P<webargs>[\w:,/-]+)', 'dataview'),
-    url(r'^public/$', 'dataviewsPublic'),
-    # for redirecting queries (reqd because of same origin policy)
-    url(r'^query/(?P<queryargs>[\w,/-]+)', 'query'),
-    # for getting the projinfo json information from ocp
-    url(r'^projinfo/(?P<queryargs>[\w,/-]+)', 'projinfo'),
-    # for getting the ramon json information from ocp
-    url(r'^ramoninfo/(?P<webargs>[\w,/-]+)', 'ramoninfo'),
-    # validate token/channel/server
-    url(r'^validate/(?P<webargs>[\w,\.,/-]+)', 'validate'),
-    url(r'^$', 'default'),
-    url(r'^manage/$', 'default'),
-    # for displaying ocpviz projects 
-    # NOTE: this must be last (because of the tokenview view)
-    url(r'^project/(?P<webargs>[\w:,/-]+)', 'projectview'),
-    url(r'(?P<webargs>[\w:,/-]+)$', 'tokenview'),
+    url(r'(?P<webargs>[\w:,/-]+)$', 'default'),
 )
