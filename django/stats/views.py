@@ -1,11 +1,14 @@
 import re
+import json
 
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 
-from ocpuser.models import Dataset, Project, Token, Channel 
+from ocpuser.models import Dataset, Project, Token, Channel, Histogram 
 
 import tasks 
+
+from histio import loadHistogram  
 
 from ocptype import READONLY_TRUE, READONLY_FALSE, UINT8, UINT16, UINT32, UINT64, FLOAT32 
 
@@ -15,7 +18,24 @@ logger=logging.getLogger("ocp")
 """ Histogram Functions """
 def getHist(request, webargs):
   """ Return JSON representation of histogram """
-  return HttpResponse('Histogram')
+  
+  # process webargs
+  try:
+    m = re.match(r"(?P<token>[\w+]+)/(?P<channel>[\w+]+)/hist/$", webargs)
+    [token, channel] = [i for i in m.groups()] 
+  except Exception, e:
+    logger.warning("Incorrect format for web arguments {}. {}".format(webargs, e))
+    return HttpResponseBadRequest("Incorrect format for web arguments {}. {}".format(webargs, e))
+
+  (hist, bins) = loadHistogram(token, channel) 
+  
+  jsondict = {}
+  jsondict['hist'] = hist.tolist()
+  jsondict['bins'] = bins.tolist()
+
+  return HttpResponse(json.dumps(jsondict, indent=4)) 
+
+  #return HttpResponse('Histogram')
 
 def genHist(request, webargs):
   """ Kicks off a background job to generate the histogram """ 

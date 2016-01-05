@@ -52,13 +52,15 @@ def getChannelObj(token, channel):
       projobj = tokenobj.project 
     except Token.DoesNotExist:
       logger.exception("Error in HistIO: Token {} does not exist!".format(token))
-      raise("Error in HistIO: Token {} does not exist!".format(token))
+      print "Error in HistIO: Token {} does not exist!".format(token)
+      raise 
     
     try:
       chanobj = Channel.objects.get( channel_name = channel, project = projobj )
     except Channel.DoesNotExist:
       logger.exception("Error in HistIO: Channel {} does not exist for project {}!".format(channel, projobj.project_name))
-      raise("Error in HistIO: Channel {} does not exist for project {}!".format(channel, projobj.project_name))
+      print "Error in HistIO: Channel {} does not exist for project {}!".format(channel, projobj.project_name)
+      raise 
 
     return chanobj 
 
@@ -68,7 +70,12 @@ def loadHistogram(token, channel):
 
   """ AB NOTE: Currently loads only the histogram for the entire dataset, of which only 
   one should exist """
-  histobj = Histogram.objects.get( channel = chanobj, region = 0 ) 
+  try:
+    histobj = Histogram.objects.get( channel = chanobj, region = 0 )
+  except Histogram.DoesNotExist:
+    logger.exception("Error: No histogram exists for {}, {}".format(token, channel))
+    print "Error: No histogram exists for {}, {}".format(token, channel)
+    raise 
   
   bins_ret = fromNPZ( histobj.bins ) 
   histogram_ret = fromNPZ( histobj.histogram ) 

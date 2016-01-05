@@ -18,7 +18,7 @@ urlpatterns = patterns('stats.views',
   # get all statistics
   url(r'(?P<webargs>^\w+/all/[\w,/]*)$', 'all'),
   # get JSON representation of histogram (or 404)
-  url(r'(?P<webargs>^\w+/hist/[\w,/]*)$', 'getHist'),
+  url(r'(?P<webargs>^\w+/\w+/hist/[\w,/]*)$', 'getHist'),
   # get mean 
   url(r'(?P<webargs>^\w+/mean/[\w,/]*)$', 'mean'),
   # get standard deviation 
