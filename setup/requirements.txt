@@ -26,7 +26,6 @@ Genshi==0.7
 h5py==2.5.0
 idna==2.0
 ipaddress==1.0.13
-kasthur11-annotation-accelerators==0.0.0
 kombu==3.0.29
 libtiff==0.4.0
 lxml==3.4.4
