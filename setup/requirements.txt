@@ -41,8 +41,8 @@ Paste==2.0.2
 PasteDeploy==1.5.2
 PasteScript==2.0.2
 ## FIXME: could not find svn URL in dependency_links for this package:
-PEAK-Rules===0.5a1.dev-r2713
-PIL==1.1.7
+#PEAK-Rules===0.5a1.dev-r2713
+#PIL==1.1.7
 Pillow==3.0.0
 posix-ipc==1.0.0
 protobuf==2.6.1
