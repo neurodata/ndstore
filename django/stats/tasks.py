@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from celery import task
+from __future__ import absolute_import
+
+from celery.task import task
 from django.conf import settings
 
 import logging

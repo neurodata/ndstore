@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404
 
 from ocpuser.models import Dataset, Project, Token, Channel, Histogram 
 
-import tasks 
+import stats.tasks 
 
 from histio import loadHistogram  
 
@@ -72,7 +72,7 @@ def genHist(request, webargs):
     else:
       return HttpResponseBadRequest("Error: Unsupported datatype ({})".format(chanobj.channel_datatype))
     # run the background job
-    result = tasks.generateHistogramTask.delay(tokenobj.token_name, chanobj.channel_name, chanobj.resolution, bits)
+    result = stats.tasks.generateHistogramTask.delay(tokenobj.token_name, chanobj.channel_name, chanobj.resolution, bits)
     
     # return the job ID 
     return HttpResponse('Build Histogram Job Running for {}, {}: <strong>{}</strong>'.format(token, channel, result.id))
