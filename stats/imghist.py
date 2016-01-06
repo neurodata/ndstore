@@ -44,7 +44,7 @@ class ImgHist():
     self.token = token
     self.channel = channel
     self.res = int(res)
-    self.numbins = 2**bits
+    self.numbins = 2**int(bits)
 
   def getHist(self):
 
@@ -77,7 +77,7 @@ class ImgHist():
             data = db.cutout(ch, [ x*xcubedim, y*ycubedim, z*zcubedim], cubedim, self.res ).data
             
             # compute the histogram and store it 
-            hist.append(np.histogram(data[data > 0], bins=self.numbins, range=(0,2**16)))
+            hist.append(np.histogram(data[data > 0], bins=self.numbins, range=(0,self.numbins)))
             print "Processed cube {} {} {}".format(x,y,z)
         
       # sum the individual histograms
