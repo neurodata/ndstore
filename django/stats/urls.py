@@ -16,15 +16,15 @@ from django.conf.urls import patterns, include, url
 
 urlpatterns = patterns('stats.views',
   # get all statistics
-  url(r'(?P<webargs>^\w+/all/[\w,/]*)$', 'all'),
+  url(r'(?P<webargs>^\w+/\w+/all/[\w,/]*)$', 'all'),
   # get JSON representation of histogram (or 404)
   url(r'(?P<webargs>^\w+/\w+/hist/[\w,/]*)$', 'getHist'),
   # get mean 
-  url(r'(?P<webargs>^\w+/mean/[\w,/]*)$', 'mean'),
+  url(r'(?P<webargs>^\w+/\w+/mean/[\w,/]*)$', 'mean'),
   # get standard deviation 
-  url(r'(?P<webargs>^\w+/std/[\w,/]*)$', 'std'),
+  url(r'(?P<webargs>^\w+/\w+/std/[\w,/]*)$', 'std'),
   # get percentile 
-  url(r'(?P<webargs>^\w+/percentile/[\w,/]*)$', 'percentile'),
+  url(r'(?P<webargs>^\w+/\w+/percentile/[\w,/.]*)$', 'percentile'),
   # generate histogram  
   url(r'(?P<webargs>^\w+/\w+/genhist/[\w,/]*)$', 'genHist'),
 )

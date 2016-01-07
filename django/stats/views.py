@@ -9,6 +9,7 @@ from ocpuser.models import Dataset, Project, Token, Channel, Histogram
 import stats.tasks 
 
 from histio import loadHistogram  
+from histstats import HistStats 
 
 from ocptype import READONLY_TRUE, READONLY_FALSE, UINT8, UINT16, UINT32, UINT64, FLOAT32 
 
@@ -26,16 +27,17 @@ def getHist(request, webargs):
   except Exception, e:
     logger.warning("Incorrect format for web arguments {}. {}".format(webargs, e))
     return HttpResponseBadRequest("Incorrect format for web arguments {}. {}".format(webargs, e))
-
-  (hist, bins) = loadHistogram(token, channel) 
   
+  try:
+    (hist, bins) = loadHistogram(token, channel) 
+  except Histogram.DoesNotExist:
+    return HttpResponseNotFound('No histogram found for {}, {}'.format(token,channel))
+
   jsondict = {}
   jsondict['hist'] = hist.tolist()
   jsondict['bins'] = bins.tolist()
 
-  return HttpResponse(json.dumps(jsondict, indent=4)) 
-
-  #return HttpResponse('Histogram')
+  return HttpResponse(json.dumps(jsondict, indent=4), content_type="application/json") 
 
 def genHist(request, webargs):
   """ Kicks off a background job to generate the histogram """ 
@@ -80,18 +82,101 @@ def genHist(request, webargs):
 """ Statistics Functions """
 def mean(request, webargs): 
   """ Return mean """
-  return HttpResponse('Mean')
+  # process webargs
+  try:
+    m = re.match(r"(?P<token>[\w+]+)/(?P<channel>[\w+]+)/mean/$", webargs)
+    [token, channel] = [i for i in m.groups()] 
+  except Exception, e:
+    logger.warning("Incorrect format for web arguments {}. {}".format(webargs, e))
+    return HttpResponseBadRequest("Incorrect format for web arguments {}. {}".format(webargs, e))
+
+  try:
+    (hist, bins) = loadHistogram(token, channel) 
+  except Histogram.DoesNotExist:
+    return HttpResponseNotFound('No histogram found for {}, {}'.format(token,channel))
+  
+  hs = HistStats()
+  mean = hs.mean(hist, bins)
+
+  return HttpResponse(mean)
 
 def std(request, webargs): 
   """ Return std """
-  return HttpResponse('Standard Deviation')
+  # process webargs
+  try:
+    m = re.match(r"(?P<token>[\w+]+)/(?P<channel>[\w+]+)/std/$", webargs)
+    [token, channel] = [i for i in m.groups()] 
+  except Exception, e:
+    logger.warning("Incorrect format for web arguments {}. {}".format(webargs, e))
+    return HttpResponseBadRequest("Incorrect format for web arguments {}. {}".format(webargs, e))
+
+  try:
+    (hist, bins) = loadHistogram(token, channel) 
+  except Histogram.DoesNotExist:
+    return HttpResponseNotFound('No histogram found for {}, {}'.format(token,channel))
+  
+  hs = HistStats()
+  stddev = hs.stddev(hist, bins)
+  
+  return HttpResponse(stddev)
 
 def percentile(request, webargs): 
   """ Return arbitrary percentile """
-  return HttpResponse('Percentile')
+  # process webargs
+  try:
+    m = re.match(r"(?P<token>[\w+]+)/(?P<channel>[\w+]+)/percentile/(?P<percent>[\d.]+)/$", webargs)
+    [token, channel, percent] = [i for i in m.groups()] 
+  except Exception, e:
+    logger.warning("Incorrect format for web arguments {}. {}".format(webargs, e))
+    return HttpResponseBadRequest("Incorrect format for web arguments {}. {}".format(webargs, e))
+  
+  try:
+    (hist, bins) = loadHistogram(token, channel) 
+  except Histogram.DoesNotExist:
+    return HttpResponseNotFound('No histogram found for {}, {}'.format(token,channel))
+  
+  hs = HistStats()
+  percentile = hs.percentile(hist, bins, percent)
+ 
+  jsondict = {}
+  jsondict[percent] = percentile 
+
+  return HttpResponse(json.dumps(jsondict, indent=4), content_type="application/json") 
 
 def all(request, webargs):
   """ Display all statistics or 404 if no histogram is present """
-  return HttpResponse('All Statistics (Mean, StdDev, 1, 50, 99 percentiles)')
+  # process webargs
+  try:
+    m = re.match(r"(?P<token>[\w+]+)/(?P<channel>[\w+]+)/all/$", webargs)
+    [token, channel] = [i for i in m.groups()] 
+  except Exception, e:
+    logger.warning("Incorrect format for web arguments {}. {}".format(webargs, e))
+    return HttpResponseBadRequest("Incorrect format for web arguments {}. {}".format(webargs, e))
+
+  try:
+    (hist, bins) = loadHistogram(token, channel) 
+  except Histogram.DoesNotExist:
+    return HttpResponseNotFound('No histogram found for {}, {}'.format(token,channel))
+  
+  hs = HistStats()
+  mean = hs.mean(hist, bins)
+  stddev = hs.stddev(hist, bins)
+  percents = [hs.percentile(hist, bins, 1), hs.percentile(hist, bins, 50), hs.percentile(hist, bins, 99)]
+  min = hs.min(hist, bins)
+  max = hs.max(hist, bins)
+
+  jsondict = {}
+  jsondict['hist'] = hist.tolist()
+  jsondict['bins'] = bins.tolist()
+  jsondict['mean'] = mean
+  jsondict['stddev'] = stddev
+  jsondict['percents'] = {}
+  jsondict['percents']['1'] = percents[0]
+  jsondict['percents']['50'] = percents[1]
+  jsondict['percents']['99'] = percents[2]
+  jsondict['min'] = min
+  jsondict['max'] = max
+
+  return HttpResponse(json.dumps(jsondict, indent=4), content_type="application/json") 
 
 
