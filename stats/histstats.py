@@ -74,7 +74,7 @@ class HistStats():
     # compute the percentile using the normalized histogram
     bin_sum = 0
     i = 0
-    pfloat = percent * 0.01 
+    pfloat = float(percent) * 0.01 
     while bin_sum < pfloat and i < hist_norm.shape[0] + 1:
       bin_sum += hist_norm[i]
       i += 1 
