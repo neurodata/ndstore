@@ -81,6 +81,7 @@ class Project ( models.Model):
     ('MySQL','MySQL'),
     ('Cassandra','Cassandra'),
     ('Riak','Riak'),
+    ('DynamoDB','DynamoDB'),
   )
   kvengine =  models.CharField(max_length=255, choices=KVENGINE_CHOICES, default='MySQL')
   KVSERVER_CHOICES = (

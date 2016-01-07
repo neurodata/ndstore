@@ -44,6 +44,10 @@ try:
   import riakkvio
 except:
   pass
+try:
+  import dynamokvio
+except:
+  pass
 
 """
 .. module:: spatialdb
@@ -82,6 +86,14 @@ class SpatialDB:
       self.cursor = None
       self.kvio = casskvio.CassandraKVIO(self)
       self.NPZ = False
+
+    elif self.proj.getKVEngine() == 'DynamoDB':
+      import dynamokvio
+      self.conn = None
+      self.cursor = None
+      self.kvio = dynamokvio.DynamoKVIO(self)
+      self.NPZ = False
+
     else:
       raise SpatialDBError ("Unknown key/value store. Engine = {}".format(self.proj.getKVEngine()))
 

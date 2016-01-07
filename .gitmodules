@@ -2,3 +2,6 @@
 	path = ndlib
 	;url = https://github.com/openconnectome/ndlib.git
 	url = git@github.com:openconnectome/ndlib.git
+[submodule "django/ndlib"]
+	path = django/ndlib
+	url = https://github.com/openconnectome/ndlib.git
