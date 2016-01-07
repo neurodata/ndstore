@@ -12,18 +12,16 @@ Overview
 ========
 
 Our data model for image datasets is composed of the following components:
-Dataset: containing metadata required to efficiently store, visualize, and analyze data for a set of projects; it effectively defines the dataspace
-Project: is a database storing a collection of channels
-Token: a name for a project, a project can have multiple tokens, each with different permissions (eg, read vs. write)
-Channel: is a collection of tables, including the actual images, as well as metadata
+* Dataset: containing metadata required to efficiently store, visualize, and analyze data for a set of projects; it effectively defines the dataspace
+* Project: is a database storing a collection of channels
+* Token: a name for a project, a project can have multiple tokens, each with different permissions (eg, read vs. write)
+* Channel: is a collection of tables, including the actual images, as well as metadata
 
-To understand the relationship between the above 4 different components of the data model, consider the following example. We collect a large multi-modal MRI dataset, and registered each image into MNI152 space. The dataset would contain the details of MNI152 (number of voxels, resolution, etc.). Each subject gets her own project. For the first subject, let’s create a token pointing to that project called “Subject1”, and let’s give that token write access.
-
-Each channel for this project corresponds to a different modality. For example, the T1 image might be the first channel, called “T1”. So, to access that channel, we pair the token with the channel name: ‘\Subject1\T1\’. The T1 channel happens to be a 3D image stack. Let’s say we also got an fMRI scan from that subject, also co-registered to MNI152 space. We can then make another channel called ‘fMRI’ containing all the fMRI data and metadata. Note that this is actually 3D+time data, which is no problem to store within a given channel. Finally, assume we also have Diffusion MRI data associated with that subject. So, we can generate another channel called “DTI” to store that data and metadata. Although DTI data is not typically thought of as time-series data, it is 4D, so we could store it as a time-series channel.
-
-Now, imagine from the DTI data, we created a fractional anisotropy map. We could make a new channel, called “FA”, and put it there. Similarly, imagine from the fMRI we created a general linear model, we could again create a new channel, “GLM”, and put the coefficients in there.
-
-The advantage of having a data model is that all of the data and metadata can be captured and stored together, which makes visualization, analysis, and reproducibility much simpler.
+To understand the relationship between the above 4 different components of the data model, consider the following example. i
+* We collect a large multi-modal MRI dataset, and registered each image into MNI152 space. The dataset would contain the details of MNI152 (number of voxels, resolution, etc.). Each subject gets her own project. For the first subject, let’s create a token pointing to that project called “Subject1”, and let’s give that token write access.
+* Each channel for this project corresponds to a different modality. For example, the T1 image might be the first channel, called “T1”. So, to access that channel, we pair the token with the channel name: ‘\Subject1\T1\’. The T1 channel happens to be a 3D image stack. Let’s say we also got an fMRI scan from that subject, also co-registered to MNI152 space. We can then make another channel called ‘fMRI’ containing all the fMRI data and metadata. Note that this is actually 3D+time data, which is no problem to store within a given channel. Finally, assume we also have Diffusion MRI data associated with that subject. So, we can generate another channel called “DTI” to store that data and metadata. Although DTI data is not typically thought of as time-series data, it is 4D, so we could store it as a time-series channel.
+* Now, imagine from the DTI data, we created a fractional anisotropy map. We could make a new channel, called “FA”, and put it there. Similarly, imagine from the fMRI we created a general linear model, we could again create a new channel, “GLM”, and put the coefficients in there.
+* The advantage of having a data model is that all of the data and metadata can be captured and stored together, which makes visualization, analysis, and reproducibility much simpler.
 
 .. figure:: ../images/datamodel_simple.png
     :width: 500px
@@ -135,6 +133,24 @@ Project Attributes
    :Type: AlphaNumeric
    :Default: default
 
+Token
+=====
+
+.. function:: Token Name
+
+   The token name is the default token. If you do not wish to specify one, a default one will be created for you with the same name as the project name. However, if the project is private you must specify a token.
+
+   :Type: AlphaNumeric
+   :Default: None
+   :Example: kashturi11
+
+.. function:: Public Token
+
+   Public tokens are search-able by anyone using the service through the console page, private (not public) tokens are not.
+
+   :Type: {TRUE, FALSE}
+   :Default: FALSE
+
 Channel Attributes
 ==================
 
@@ -148,14 +164,14 @@ Channel Attributes
 
 .. function:: Data Type
 
-   The data type is the storage method of data in the channel. It can be uint8, uint16, uint32, uint64, or float32. If you wish to learn more about our supported data types visit :ref:`the OCP datatypes page. <ocp-datatype>`
+   The data type is the storage method of data in the channel. It can be uint8, uint16, uint32, uint64, or float32. If you wish to learn more about our supported data types visit :ref:`the NeuroData datatypes page. <ocp-datatype>`
 
    :Type: {uint8, uint16, uint32, uint64, float32}
    :Default: None
 
 .. function:: Channel Type
 
-   The channel type is the kind of data being stored in the channel. It can be image, annotation, or timeseries. If you wish to learn more about our supported channel types visit :ref:`the OCP datatypes page. <ocp-channeltype>`
+   The channel type is the kind of data being stored in the channel. It can be image, annotation, or timeseries. If you wish to learn more about our supported channel types visit :ref:`the NeuroData datatypes page. <ocp-channeltype>`
 
    :Type: {image, annotation, timeseries}
    :Default: None
@@ -195,21 +211,3 @@ Channel Attributes
 
    :Type: {PROPAGATED, NOT PROPAGATED}
    :Default: NOT PROPAGATED
-
-Token
-=====
-
-.. function:: Token Name
-
-   The token name is the default token. If you do not wish to specify one, a default one will be created for you with the same name as the project name. However, if the project is private you must specify a token.
-
-   :Type: AlphaNumeric
-   :Default: None
-   :Example: kashturi11
-
-.. function:: Public Token
-
-   Public tokens are search-able by anyone using the service through the console page, private (not public) tokens are not.
-
-   :Type: {TRUE, FALSE}
-   :Default: FALSE
