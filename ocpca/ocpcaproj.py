@@ -114,12 +114,12 @@ class OCPCADataset:
       #self.cubedim[i] = [128, 128, 16]
       # this may need to be changed.  
       if self.ds.scalingoption == ZSLICES:
-        self.cubedim[i] = [512, 512, 16]
-        #self.cubedim[i] = [128, 128, 16]
-        #if float(self.ds.zvoxelres/self.ds.xvoxelres)/(2**i) >  0.5:
-          #self.cubedim[i] = [128, 128, 16]
-        #else: 
-          #self.cubedim[i] = [64, 64, 64]
+        #self.cubedim[i] = [512, 512, 16]
+        self.cubedim[i] = [128, 128, 16]
+        if float(self.ds.zvoxelres/self.ds.xvoxelres)/(2**i) >  0.5:
+          self.cubedim[i] = [128, 128, 16]
+        else: 
+          self.cubedim[i] = [64, 64, 64]
 
         # Make an exception for bock11 data -- just an inconsistency in original ingest
         if self.ds.ximagesize == 135424 and i == 5:
