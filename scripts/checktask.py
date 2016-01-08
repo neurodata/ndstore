@@ -18,7 +18,6 @@ def main():
 
   res = celery_app.AsyncResult(result.taskid)
   print res.state
-  #import pdb; pdb.set_trace()
 
 if __name__ == '__main__':
   main()
