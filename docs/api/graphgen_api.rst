@@ -8,13 +8,13 @@ getGraph
 
 .. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/(string:graph_type)/(int:Xmin)/(int:Xmax)/(int:Ymin)/(int:Ymax)/(int:Zmin)/(int:Zmax)/
 
-   :synopsis: Get the graph of neuron RAMON objects.
+   :synopsis: Get the graph of neuron RAMON objects, each neuron is a node and synapses between these neurons are represented by vertices. The graph generated is unweighted and has no direction.
 
    :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
    :type server_name: string
    :param token_name: Token Name in NeuroData.
    :type token_name: string
-   :param channel_name: Channel Name in NeuroData. 
+   :param channel_name: Channel Name in NeuroData.
    :type channel_name: string
    :param graph_type: *Optional* The type of graph to be returned, most major types supported.
    :type graph_type: string

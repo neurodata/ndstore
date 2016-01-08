@@ -118,13 +118,13 @@ def PutData(data):
 
 def main():
 
-  """
-  Edit the below values, type and default information can be found on the ingesting page of the ndio docs page.
-  """
-
   parser = argparse.ArgumentParser(description="Test generation script for OCP JSON file. By default this will print the basic file in ocp.JSON")
   parser.add_argument('--output_file', action='store', type=str, default='ocp.JSON', help='Name of output file')
   result = parser.parse_args()
+
+  """
+  Edit the below values, type and default information can be found on the ingesting page of the ndio docs page.
+  """
 
   dataset_name=''        #(type=str, help='Name of Dataset')
   imagesize=(0,0,0)           #(type=int[], help='Image size (X,Y,Z)')
@@ -151,15 +151,25 @@ def main():
 
   metadata=""            #(type=Any, default='', help='Any metadata as appropriate from the LIMS schema')
 
-  result = parser.parse_args()
-
   try:
-    f = open(result.output_file, 'w')
     dataset = (dataset_name, imagesize, voxelres, offset, timerange, scalinglevels, scaling)
     project = (project_name, None, None)
     channels = {channel_name:(channel_name, datatype, channel_type, data_url, file_format, file_type, exceptions, resolution, windowrange, readonly)}
+
+"""
+If you wish to add additional channels the channels dictionary variable above must be edited with the data parameters required, for example;
+
+channels = {channel_name_1:(channel_name_1, datatype_1, channel_type_1, data_url_1, file_format_1, file_type_1, exceptions_1, resolution_1, windowrange_1, readonly_1), channel_name_2:(channel_name_2, datatype_2, channel_type_2, data_url_2, file_format_2, file_type_2, exceptions_2, resolution_2, windowrange_2, readonly_2), channel_name_3:(channel_name_3, datatype_3, channel_type_3, data_url_3, file_format_3, file_type_3, exceptions_3, resolution_3, windowrange_3, readonly_3)}
+
+"""
+
+"""
+EDIT ABOVE HERE
+"""
     complete_example = (dataset, project, channels, metadata)
     data = ocpJson(*complete_example)
+
+    f = open(result.output_file, 'w')
     f.write(data)
 
     VerifyPath(json.loads(data))
