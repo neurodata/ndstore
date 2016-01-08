@@ -29,6 +29,7 @@ base_urlpatterns = patterns('',
     url(r'^ocpuser/', include('ocpuser.urls')),
     url(r'^viz/', include('ocpviz.urls')),
     url(r'^ocpgraph/', include('ocpgraph.urls')),
+    url(r'^stats/', include('stats.urls')),
 )
 
 urlpatterns = patterns('', 
