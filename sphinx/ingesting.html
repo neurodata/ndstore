@@ -37,7 +37,7 @@
         <link rel="prev" title="Administrator Console" href="console.html"/> 
 
   
-  <script src="_static/js/modernizr.min.js"></script>
+  <script src="../_static/js/modernizr.min.js"></script>
 
 </head>
 
@@ -47,20 +47,30 @@
 
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-nav-search">
-        
-
-        
-          <a href="../index.html" class="icon icon-home"> open-connectome
-        
-
-        
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
           
-          <img src="../_static/ocp_main.png" class="logo" />
-        
-        </a>
 
-        
+          
+            <a href="../index.html" class="icon icon-home"> open-connectome
+          
+
+          
+            
+            <img src="../_static/ocp_main.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v0.7.0
+              </div>
+            
+          
+
+          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -69,37 +79,18 @@
   </form>
 </div>
 
-        
-      </div>
+          
+        </div>
 
-      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
-          
-              <p class="caption"><span class="caption-text">Documentation</span></p>
+            
+            
+                <p class="caption"><span class="caption-text">Documentation</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="datamodel.html">Data Model</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="datamodel.html#assumptions">Assumptions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="datamodel.html#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="datamodel.html#dataset-attributes">Dataset Attributes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="datamodel.html#project-attributes">Project Attributes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="datamodel.html#channel-attributes">Channel Attributes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="datamodel.html#token">Token</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="console.html">Administrator Console</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="console.html#how-do-i-access-the-console">How Do I Access the Console?</a></li>
-<li class="toctree-l2"><a class="reference internal" href="console.html#how-do-i-create-a-dataset">How Do I Create a Dataset?</a></li>
-<li class="toctree-l2"><a class="reference internal" href="console.html#how-do-i-update-an-existing-dataset">How Do I Update an Existing Dataset?</a></li>
-<li class="toctree-l2"><a class="reference internal" href="console.html#how-do-i-create-a-project">How Do I Create a Project?</a></li>
-<li class="toctree-l2"><a class="reference internal" href="console.html#how-do-i-update-an-existing-project">How Do I Update an Existing Project?</a></li>
-<li class="toctree-l2"><a class="reference internal" href="console.html#how-do-i-create-a-channel">How Do I Create a Channel?</a></li>
-<li class="toctree-l2"><a class="reference internal" href="console.html#how-do-i-update-an-existing-channel">How Do I Update an Existing Channel?</a></li>
-<li class="toctree-l2"><a class="reference internal" href="console.html#how-do-i-create-a-token">How Do I Create a Token?</a></li>
-<li class="toctree-l2"><a class="reference internal" href="console.html#id1">How Do I Create a Token?</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="datamodel.html">Data Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="console.html">Administrator Console</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">How to Ingest Data</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#prepping-the-data">Prepping The Data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#uploading">Uploading</a><ul>
@@ -112,118 +103,18 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions (FAQ)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api/ocp_types.html">NeuroData Types</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../api/ocp_types.html#channel-types">Channel Types</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../api/ocp_types.html#data-types">Data Types</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../api/ocp_types.html#possible-combination-of-channel-types-and-data-types">Possible Combination of Channel Types and Data Types</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../api/info_api.html">Project Info API&#8217;s</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../api/info_api.html#json-informatio-service">JSON Informatio Service</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../api/info_api.html#get">GET</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../api/info_api.html#post">POST</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../api/info_api.html#hdf5-information-service">HDF5 Information Service</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../api/info_api.html#id1">GET</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../api/public_api.html">Public Token API&#8217;s</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../api/public_api.html#get">GET</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../api/data_api.html">Data API&#8217;s</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../api/data_api.html#hdf5-service">HDF5 Service</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../api/data_api.html#post">POST</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../api/data_api.html#get">GET</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../api/data_api.html#blosc-service">Blosc Service</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../api/data_api.html#blosc-post">POST</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../api/data_api.html#blosc-get">GET</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../api/data_api.html#numpy-service">Numpy Service</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../api/data_api.html#numpy-post">POST</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../api/data_api.html#numpy-get">GET</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../api/data_api.html#image-slice-service">Image Slice Service</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../api/data_api.html#get-xy-slice-cutout">GET XY Slice Cutout</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../api/data_api.html#get-xz-slice-cutout">GET XZ Slice Cutout</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../api/data_api.html#get-yz-slice-cutout">GET YZ Slice Cutout</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../api/data_api.html#jpeg-stack-service-for-knossos">JPEG Stack Service for KNOSSOS</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../api/data_api.html#jpeg-get">GET</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../api/ramon_api.html">RAMON API</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../api/ramon_api.html#ramon-field-service">RAMON Field Service</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../api/ramon_api.html#setfield">setField</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../api/ramon_api.html#getfield">getField</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../api/ramon_api.html#query-object-service">Query Object Service</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../api/ramon_api.html#get">GET</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../api/ramon_api.html#annotation-service">Annotation Service</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../api/ramon_api.html#id1">GET</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../api/ramon_api.html#post">POST</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../api/ramon_api.html#merge-service">Merge Service</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../api/ramon_api.html#id2">GET</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../api/propagate_api.html">Propagate API&#8217;s</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../api/propagate_api.html#propagation-service">Propagation Service</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../api/propagate_api.html#getpropagate">getPropagate</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../api/propagate_api.html#setpropagate">setPropagate</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../api/json_api.html">JSON API&#8217;s</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../api/json_api.html#createchannel">createChannel</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../api/json_api.html#deletechannel">deleteChannel</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../api/json_api.html#autoingest">autoIngest</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../api/overlay_api.html">Overlay API&#8217;s</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../api/overlay_api.html#cutut-service">Cutut Service</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../api/overlay_api.html#get-xy-slice-cutout">GET XY Slice Cutout</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../api/overlay_api.html#get-xz-slice-cutout">GET XZ Slice Cutout</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../api/overlay_api.html#get-yz-slice-cutout">GET YZ Slice Cutout</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../api/tile_api.html">Tile API&#8217;s</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../api/tile_api.html#getsimpletile">getSimpleTile</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../api/tile_api.html#getmcfctile">getMcfcTile</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../api/tile_api.html#getvikingtile">getVikingTile</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../api/graphgen_api.html">GrahpGen API&#8217;s</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../api/graphgen_api.html#getgraph">getGraph</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../api/nifti_api.html">NIFTI API&#8217;s</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../api/nifti_api.html#getnifti">getNifti</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../api/swc_api.html">SWC API&#8217;s</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../api/swc_api.html#getswc">getSWC</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="../api/ocp_types.html">NeuroData Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/info_api.html">Project Info APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/public_api.html">Public Token APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/data_api.html">Data APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/ramon_api.html">RAMON APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/propagate_api.html">Propagate APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/json_api.html">JSON APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/overlay_api.html">Overlay APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/tile_api.html">Tile APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/graphgen_api.html">GrahpGen APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/nifti_api.html">NIFTI APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/swc_api.html">SWC APIs</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Further Reading</span></p>
 <ul>
@@ -234,10 +125,10 @@
 <li class="toctree-l1"><a class="reference external" href="https://github.com/openconnectome/open-connectome/releases/">Release Notes</a></li>
 </ul>
 
+            
           
-        
+        </div>
       </div>
-      &nbsp;
     </nav>
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
@@ -252,7 +143,13 @@
       
       <div class="wy-nav-content">
         <div class="rst-content">
-          <div role="navigation" aria-label="breadcrumbs navigation">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href="../index.html">Docs</a> &raquo;</li>
       
@@ -267,7 +164,8 @@
   </ul>
   <hr/>
 </div>
-          <div role="main" class="document">
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
             
   <div class="section" id="how-to-ingest-data">
 <h1>How to Ingest Data<a class="headerlink" href="#how-to-ingest-data" title="Permalink to this headline">¶</a></h1>
@@ -284,7 +182,8 @@
 <h2>Uploading<a class="headerlink" href="#uploading" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="overview">
 <h3>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h3>
-<p>This section will initially address how to upload one channels worth of material. Located in the auto-ingest folder in the ingest folder of open-connectome is a file named generatejson.py (<a class="reference external" href="https://github.com/openconnectome/open-connectome/blob/master/ingest/autoingest/generatejson.py">https://github.com/openconnectome/open-connectome/blob/master/ingest/autoingest/generatejson.py</a>). To upload your data edit the hard-coded values in the code to reflect your data, being sure to specify that you are trying to put data to <a class="reference external" href="http://openconnecto.me">http://openconnecto.me</a> and your DataURL is http accessible (if it is not the script will fail). Once the script has run you do not need to maintain a connection to the script. The script can be run simply by calling &#8220;python generatejson.py&#8221; on the script.</p>
+<p>This section will initially address how to upload one channels worth of material. Located in the auto-ingest folder in the ingest folder of open-connectome is a file named generatejson.py (<a class="reference external" href="https://github.com/openconnectome/open-connectome/blob/master/ingest/autoingest/generatejson.py">https://github.com/openconnectome/open-connectome/blob/master/ingest/autoingest/generatejson.py</a>). To upload your data edit the hard-coded values in the code to reflect your data, being sure to specify that you are trying to put data to <a class="reference external" href="http://openconnecto.me">http://openconnecto.me</a> and your DataURL is http accessible (if it is not the script will fail). The editable portion of the script is below the &#8220;Edit the below values&#8221; and above the &#8220;Edit above here&#8221; comment. Once the script has run you do not need to maintain a connection to the script. The script can be run simply by calling &#8220;python2 generatejson.py&#8221; on the script (using python 2.7).</p>
+<p>In the event that more than one channels worth of data needs to be ingested at once, the service supports this operation as well. To add channels, add entries in the dictionary variable with the names of the channel forming your value and a list of attributes for each channel forming the key. To aid in clarification there is a sample channels dictionary variable in the script which has three channels.</p>
 </div>
 <div class="section" id="explanation-of-additional-terms">
 <h3>Explanation of Additional Terms<a class="headerlink" href="#explanation-of-additional-terms" title="Permalink to this headline">¶</a></h3>
@@ -400,6 +299,7 @@
 </div>
 
 
+           </div>
           </div>
           <footer>
   
@@ -418,9 +318,10 @@
   <div role="contentinfo">
     <p>
         &copy; Copyright 2015, Open Connectome Project.
+
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
