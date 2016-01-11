@@ -12,16 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" Sample JSON format for HBP. Generates 2 samples: Basic and Complete.\
-    Run with python samplejson -h for help
-"""
 
 import json
 import argparse
 import requests
 import os
 import requests
-SITE_HOST = ""
+SITE_HOST = "openconnecto.me"
 
 def ocpJson(dataset, project, channel_list, metadata):
   """Genarate OCP json object"""
@@ -153,7 +150,7 @@ def main():
 
   try:
     dataset = (dataset_name, imagesize, voxelres, offset, timerange, scalinglevels, scaling)
-    project = (project_name, None, None)
+    project = (project_name, token_name, public)
     channels = {channel_name:(channel_name, datatype, channel_type, data_url, file_format, file_type, exceptions, resolution, windowrange, readonly)}
 
 """
