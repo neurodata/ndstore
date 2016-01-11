@@ -27,7 +27,7 @@ In the event that more than one channels worth of data needs to be ingested at o
 
 Explanation of Additional Terms
 +++++++++++++++++++++++++++++++
-The :ref:'data model <datamodel>' holds an explanation of the majority of the terms encountered when editing the generatejson.py script, however some extra terms that are not enumerated in that explanation are included here.
+The :ref:`data model <datamodel>` holds an explanation of the majority of the terms encountered when editing the generatejson.py script, however some extra terms that are not enumerated in that explanation are included here.
 
 .. function:: Scaling
 
@@ -68,7 +68,7 @@ The :ref:'data model <datamodel>' holds an explanation of the majority of the te
 
 .. function:: File Type
 
-   File type refers to the specific type of file that the data is stored in, as in, tiff, png, or tif.
+   File type refers to the specific type of file that the data is stored in, as in, tiff, png, or tif.
 
    :Type: AlphaNumeric
    :Default: None
