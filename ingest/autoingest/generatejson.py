@@ -19,7 +19,7 @@ import requests
 import os
 import requests
 import autoingest
-SITE_HOST = "openconnecto.me"
+SITE_HOST = "http://openconnecto.me"
 
 def main():
 
@@ -64,14 +64,13 @@ def main():
     ai.add_channel(channel_name, datatype, channel_type, data_url, file_format, file_type, exceptions,
             resolution, windowrange, readonly)
 
-    #Adds metada
-    ai.add_metadata(metadata)
-
     """
     If you wish to add additional channels to the object, simply call the
     add_channel function for as many channels as you have
-
     """
+
+    #Adds metada
+    ai.add_metadata(metadata)
 
     """
     EDIT ABOVE HERE
