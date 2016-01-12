@@ -361,7 +361,6 @@ class Test_Time_Diff:
     f = getURL (url)
     voxarray = blosc.unpack_array(f.read())
     
-    import pdb; pdb.set_trace()
     image_data = np.subtract(np.float32(image_data1),np.float32(image_data2))
     assert( np.array_equal(image_data[0,:], voxarray[0,:]) )
 
