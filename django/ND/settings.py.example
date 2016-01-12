@@ -47,8 +47,8 @@ INSTALLED_APPS = (
     'registration',
     'nduser',
     'djcelery',
-    'ndviz',
-    'ndgraph',
+    #'ndviz',
+    #'ndgraph',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -84,7 +84,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'NSDS.wsgi.application'
+WSGI_APPLICATION = 'ND.wsgi.application'
 
 
 # Database
