@@ -45,6 +45,7 @@ def projdict ( proj ):
 def datasetdict ( dataset ):
 
   dsdict = {}
+  dsdict['name'] = dataset.getDatasetName()
   dsdict['scalinglevels'] = dataset.scalinglevels
   if dataset.scalingoption == ZSLICES:
     dsdict['scaling'] = 'zslices'
