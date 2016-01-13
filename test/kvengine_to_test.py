@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#kvengine='MySQL'
+kvengine='MySQL'
 #kvengine='Cassandra'
 #kvengine='Riak'
-kvengine='DYNAMODB'
+#kvengine='DYNAMODB'
 
 #kvserver='172.23.253.63'
 kvserver='localhost'

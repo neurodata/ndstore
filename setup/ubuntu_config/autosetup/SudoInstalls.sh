@@ -15,7 +15,7 @@ debconf-set-selections <<< 'mysql-server mysql-server/root_password password '$M
 debconf-set-selections <<< 'mysql-server mysql-server/root_password_again password '$MySQLPass
 apt-get -y install mysql-server
 
-apt-get -y install Python-pip python-mysqldb libmysqld-dev python-dev liblapack-dev gfortran libmemcached-dev Libhdf5-dev python-pytest python-virtualenv libtiff-tools python-pylibmc memchached rabbitmq-server
+apt-get -y install Python-pip python-mysqldb libmysqld-dev python-dev liblapack-dev gfortran libmemcached-dev Libhdf5-dev python-pytest python-virtualenv libtiff-tools python-pylibmc memcached rabbitmq-server
 
 mkdir /var/log/ocp
 chown www-data:www-data /var/log/ocp

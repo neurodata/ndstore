@@ -121,7 +121,6 @@ class MySQLKVIO:
       cursor.execute ( sql )
       row = cursor.fetchone()
     except MySQLdb.Error, e:
-      import pdb; pdb.set_trace()
       logger.error ( "Failed to retrieve data cube: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
       raise
     finally:
