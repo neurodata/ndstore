@@ -19,7 +19,7 @@ from collections import defaultdict
 import itertools
 import blosc
 from contextlib import closing
-from operator import add, sub, div, mod
+from operator import add, sub, div, mod, mul
 import MySQLdb
 
 import annindex
@@ -35,6 +35,7 @@ from spatialdberror import SpatialDBError
 import logging
 logger=logging.getLogger("neurodata")
 
+import s3io
 import mysqlkvio
 try:
   import casskvio
@@ -63,6 +64,9 @@ class SpatialDB:
 
     self.datasetcfg = proj.datasetcfg 
     self.proj = proj
+    
+    # Set the S3 backend for the data
+    self.s3io = s3io.S3IO(self)
 
     # Are there exceptions?
     #self.EXCEPT_FLAG = self.proj.getExceptions()
@@ -132,9 +136,24 @@ class SpatialDB:
     """Return a list of cubes"""
     
     if listoftimestamps is None:
-      return self.kvio.getCubes(ch, listofidxs, resolution, neariso)
+      data = self.kvio.getCubes(ch, listofidxs, resolution, neariso)
+      # Checking if the index exists inside the database or not
+      # data = None
+      if data is None:
+        print "Miss:", listofidxs
+        super_cuboids = self.s3io.getCubes(ch, listofidxs, resolution)
+        
+        # iterating over super_cuboids
+        for superlistofidxs, superlistofcubes in super_cuboids:
+          # call putCubes and update index in the table before returning data
+          self.putCubes(ch, superlistofidxs, resolution, superlistofcubes, update=True)
+        
+        data = self.kvio.getCubes(ch, listofidxs, resolution, neariso)
+      return data
     else:
       return self.kvio.getTimeCubes(ch, listofidxs, listoftimestamps, resolution)
+  
+
 
   def putCubes(self, ch, listofidxs, resolution, listofcubes, update=False):
     """Insert a list of cubes"""
@@ -540,7 +559,7 @@ class SpatialDB:
 
 
   def cutout ( self, ch, corner, dim, resolution, timerange=None, zscaling=None, annoids=None ):
-    """Extract a cube of arbitrary size.  Need not be aligned."""
+    """Extract a cube of arbitrary size. Need not be aligned."""
 
     # if cutout is below resolution, get a smaller cube and scaleup
     if ch.getChannelType() in ANNOTATION_CHANNELS and ch.getResolution() > resolution:
