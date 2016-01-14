@@ -1,0 +1,419 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Statistics API &mdash; open-connectome v0.7.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/ocp_favicon.ico"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="open-connectome v0.7.0 documentation" href="../index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> open-connectome
+          
+
+          
+            
+            <img src="../_static/ocp_main.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v0.7.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../sphinx/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sphinx/datamodel.html">Data Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sphinx/console.html">Administrator Console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sphinx/ingesting.html">How to Ingest Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sphinx/config.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sphinx/faq.html">Frequently Asked Questions (FAQ)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ocp_types.html">NeuroData Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="info_api.html">Project Info APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="public_api.html">Public Token APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data_api.html">Data APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ramon_api.html">RAMON APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="propagate_api.html">Propagate APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="json_api.html">JSON APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overlay_api.html">Overlay APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tile_api.html">Tile APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="graphgen_api.html">GrahpGen APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nifti_api.html">NIFTI APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="swc_api.html">SWC APIs</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Further Reading</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="functions.html">open-connectome Functions</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://gitter.im/openconnectome/open-connectome">Gitter chatroom</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://groups.google.com/forum/#!forum/ocp-support/">Mailing List</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/openconnectome/open-connectome">Github repo</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/openconnectome/open-connectome/releases/">Release Notes</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">open-connectome</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+    <li>Statistics API</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/api/stats_api.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="statistics-api">
+<h1>Statistics API<a class="headerlink" href="#statistics-api" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="stats-service">
+<span id="stats-overview"></span><h2>Stats Service<a class="headerlink" href="#stats-service" title="Permalink to this headline">¶</a></h2>
+<p>The stats service allows a user to compute basic statistics (mean, standard deviation, etc) for an image dataset. Since image datasets can range from a few gigabytes to a few terabytes, NeuroData doesn&#8217;t compute statistics directly from the image database. Rather, the stats service provides infrastructure for the end user to generate an image histogram, which is then stored in our database. Computation of statistics is done on the fly, based on the stored image histogram. We expose RESTful Web interfaces to both generate and access the histogram, as well as generate statistics based on a stored histogram.</p>
+<p><strong>Note:</strong> Only <strong>integer</strong> datatypes are supported. We currently do not support generating a histogram for a float32 dataset. Additionally, the image channel must <strong>not</strong> be set read only for the histogram service to generate a histogram.</p>
+</div>
+<div class="section" id="histograms">
+<h2>Histograms<a class="headerlink" href="#histograms" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="gethistogram">
+<span id="stats-hist"></span><h3>getHistogram<a class="headerlink" href="#gethistogram" title="Permalink to this headline">¶</a></h3>
+<dl class="get">
+<dt id="get-(string-server_name)-ocp-stats-(string-token_name)-(string-channel_name)-hist-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/stats/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/hist/</code><a class="headerlink" href="#get-(string-server_name)-ocp-stats-(string-token_name)-(string-channel_name)-hist-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Retrieve the histogram for an image dataset from the database.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; OCP Server Name (typically openconnecto.me)</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; OCP Token</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; OCP Channel</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; Histogram retrieved.</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; No histogram for this token / channel.</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1">400 Bad Request</a> &#8211; Web argument syntax error.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="genhistogram">
+<span id="stats-genhist"></span><h3>genHistogram<a class="headerlink" href="#genhistogram" title="Permalink to this headline">¶</a></h3>
+<dl class="get">
+<dt id="get-(string-server_name)-ocp-stats-(string-token_name)-(string-channel_name)-genHist-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/stats/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/genHist/</code><a class="headerlink" href="#get-(string-server_name)-ocp-stats-(string-token_name)-(string-channel_name)-genHist-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Generate a histogram for an image dataset and store it in the database.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; OCP Server Name (typically openconnecto.me)</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; OCP Token</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; OCP Channel</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; Histogram generation started or queued.</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1">400 Bad Request</a> &#8211; Web argument syntax error or unsupported token / channel type.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="stats">
+<h2>Stats<a class="headerlink" href="#stats" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="allstatistics">
+<span id="stats-all"></span><h3>allStatistics<a class="headerlink" href="#allstatistics" title="Permalink to this headline">¶</a></h3>
+<dl class="get">
+<dt id="get-(string-server_name)-ocp-stats-(string-token_name)-(string-channel_name)-all-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/stats/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/all/</code><a class="headerlink" href="#get-(string-server_name)-ocp-stats-(string-token_name)-(string-channel_name)-all-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Retrieve the histogram, mean, standard deviation, min, max, and 1st, 50th, and 99th percentile.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; OCP Server Name (typically openconnecto.me)</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; OCP Token</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; OCP Channel</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; Histogram and various statistics retrieved.</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1">400 Bad Request</a> &#8211; Web argument syntax error.</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; No histogram in database for specified token / channel.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="mean">
+<span id="stats-mean"></span><h3>Mean<a class="headerlink" href="#mean" title="Permalink to this headline">¶</a></h3>
+<dl class="get">
+<dt id="get-(string-server_name)-ocp-stats-(string-token_name)-(string-channel_name)-mean-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/stats/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/mean/</code><a class="headerlink" href="#get-(string-server_name)-ocp-stats-(string-token_name)-(string-channel_name)-mean-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Calculate the mean of an image dataset from the stored histogram.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; OCP Server Name (typically openconnecto.me)</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; OCP Token</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; OCP Channel</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; Mean calculated and returned.</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1">400 Bad Request</a> &#8211; Web argument syntax error.</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; No histogram in database for specified token / channel.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="standard-deviation">
+<span id="stats-std"></span><h3>Standard Deviation<a class="headerlink" href="#standard-deviation" title="Permalink to this headline">¶</a></h3>
+<dl class="get">
+<dt id="get-(string-server_name)-ocp-stats-(string-token_name)-(string-channel_name)-std-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/stats/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/std/</code><a class="headerlink" href="#get-(string-server_name)-ocp-stats-(string-token_name)-(string-channel_name)-std-" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Calculate the standard deviation of an image dataset from the stored histogram.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; OCP Server Name (typically openconnecto.me)</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; OCP Token</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; OCP Channel</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; Standard deviation calculated and returned.</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1">400 Bad Request</a> &#8211; Web argument syntax error.</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; No histogram in database for specified token / channel.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="percentile">
+<span id="stats-percentile"></span><h3>Percentile<a class="headerlink" href="#percentile" title="Permalink to this headline">¶</a></h3>
+<dl class="get">
+<dt id="get-(string-server_name)-ocp-stats-(string-token_name)-(string-channel_name)-percentile-(decimal-percentile_value)">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/stats/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/percentile/</code><span class="sig-paren">(</span><em class="property">decimal: </em><em>percentile_value</em><span class="sig-paren">)</span><a class="headerlink" href="#get-(string-server_name)-ocp-stats-(string-token_name)-(string-channel_name)-percentile-(decimal-percentile_value)" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Calculate the standard deviation of an image dataset from the stored histogram.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>server_name</strong> (<em>string</em>) &#8211; OCP Server Name (typically openconnecto.me)</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; OCP Token</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; OCP Channel</li>
+<li><strong>percentile_value</strong> (<em>decimal</em>) &#8211; Arbitrary percentile expressed as a percent (e.g. 1 for 1%, 95.99 for 95.99%)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> &#8211; Percentile calculated and returned.</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1">400 Bad Request</a> &#8211; Web argument syntax error.</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> &#8211; No histogram in database for specified token / channel.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Open Connectome Project.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'v0.7.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
