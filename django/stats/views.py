@@ -67,10 +67,8 @@ def genHist(request, webargs):
       bits = 8
     elif (chanobj.channel_datatype == UINT16):
       bits = 16
-    elif (chanobj.channel_datatype == UINT32):
-      bits = 32
-    elif (chanobj.channel_datatype == UINT64):
-      bits = 64
+    #elif (chanobj.channel_datatype == UINT32):
+    #  bits = 32
     else:
       return HttpResponseBadRequest("Error: Unsupported datatype ({})".format(chanobj.channel_datatype))
     # run the background job
