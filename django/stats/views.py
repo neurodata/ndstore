@@ -76,8 +76,13 @@ def genHist(request, webargs):
     # run the background job
     result = stats.tasks.generateHistogramTask.delay(tokenobj.token_name, chanobj.channel_name, chanobj.resolution, bits)
     
-    # return the job ID 
-    return HttpResponse('Build Histogram Job Running for {}, {}: <strong>{}</strong>'.format(token, channel, result.id))
+    jsondict = {}
+    jsondict['token'] = tokenobj.token_name
+    jsondict['channel'] = chanobj.channel_name
+    jsondict['jobid'] = result.id
+    jsondict['state'] = result.state 
+    
+    return HttpResponse(json.dumps(jsondict, sort_keys=True, indent=4), content_type="application/json") 
 
 """ Statistics Functions """
 def mean(request, webargs): 
