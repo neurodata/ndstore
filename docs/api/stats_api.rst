@@ -1,7 +1,6 @@
 Statistics API
 ***************
 
-
 .. _stats-overview:
 
 Stats Service
@@ -9,7 +8,9 @@ Stats Service
 
 The stats service allows a user to compute basic statistics (mean, standard deviation, etc) for an image dataset. Since image datasets can range from a few gigabytes to a few terabytes, NeuroData doesn't compute statistics directly from the image database. Rather, the stats service provides infrastructure for the end user to generate an image histogram, which is then stored in our database. Computation of statistics is done on the fly, based on the stored image histogram. We expose RESTful Web interfaces to both generate and access the histogram, as well as generate statistics based on a stored histogram.
 
-**Note:** Only **integer** datatypes are supported. We currently do not support generating a histogram for a float32 dataset. Additionally, the image channel must **not** be set read only for the histogram service to generate a histogram. 
+**Note:** Only **integer** datatypes are supported. We currently do not support generating a histogram for a float32 dataset. Furthermore, only **uint8** and **uint16** datatypes are currently supported due to memory constraints.  
+
+Additionally, the image channel must **not** be set read only for the histogram service to generate a histogram. 
 
 Histograms
 ==========
