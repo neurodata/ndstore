@@ -32,7 +32,9 @@
   
 
   
-    <link rel="top" title="open-connectome v0.7.0 documentation" href="../index.html"/> 
+    <link rel="top" title="open-connectome v0.7.0 documentation" href="../index.html"/>
+        <link rel="next" title="JSON APIs" href="json_api.html"/>
+        <link rel="prev" title="Propagate APIs" href="propagate_api.html"/> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -85,7 +87,7 @@
             
             
                 <p class="caption"><span class="caption-text">Documentation</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../sphinx/introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sphinx/datamodel.html">Data Model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sphinx/console.html">Administrator Console</a></li>
@@ -98,6 +100,22 @@
 <li class="toctree-l1"><a class="reference internal" href="data_api.html">Data APIs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ramon_api.html">RAMON APIs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="propagate_api.html">Propagate APIs</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Statistics API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#stats-service">Stats Service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#histograms">Histograms</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#gethistogram">getHistogram</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#genhistogram">genHistogram</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#stats">Stats</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#allstatistics">allStatistics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mean">Mean</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#standard-deviation">Standard Deviation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#percentile">Percentile</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="json_api.html">JSON APIs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="overlay_api.html">Overlay APIs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tile_api.html">Tile APIs</a></li>
@@ -161,7 +179,8 @@
 <div class="section" id="stats-service">
 <span id="stats-overview"></span><h2>Stats Service<a class="headerlink" href="#stats-service" title="Permalink to this headline">¶</a></h2>
 <p>The stats service allows a user to compute basic statistics (mean, standard deviation, etc) for an image dataset. Since image datasets can range from a few gigabytes to a few terabytes, NeuroData doesn&#8217;t compute statistics directly from the image database. Rather, the stats service provides infrastructure for the end user to generate an image histogram, which is then stored in our database. Computation of statistics is done on the fly, based on the stored image histogram. We expose RESTful Web interfaces to both generate and access the histogram, as well as generate statistics based on a stored histogram.</p>
-<p><strong>Note:</strong> Only <strong>integer</strong> datatypes are supported. We currently do not support generating a histogram for a float32 dataset. Additionally, the image channel must <strong>not</strong> be set read only for the histogram service to generate a histogram.</p>
+<p><strong>Note:</strong> Only <strong>integer</strong> datatypes are supported. We currently do not support generating a histogram for a float32 dataset. Furthermore, only <strong>uint8</strong> and <strong>uint16</strong> datatypes are currently supported due to memory constraints.</p>
+<p>Additionally, the image channel must <strong>not</strong> be set read only for the histogram service to generate a histogram.</p>
 </div>
 <div class="section" id="histograms">
 <h2>Histograms<a class="headerlink" href="#histograms" title="Permalink to this headline">¶</a></h2>
@@ -361,6 +380,15 @@
            </div>
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="json_api.html" class="btn btn-neutral float-right" title="JSON APIs" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="propagate_api.html" class="btn btn-neutral" title="Propagate APIs" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>
