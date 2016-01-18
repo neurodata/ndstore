@@ -48,7 +48,7 @@ class AerospikeKVIO:
     pass
     
 
-  def getCube ( self, zidx, resolution, timestamp, update ):
+  def getCube ( self, zidx, resolution, update, timestamp ):
     """Retrieve a cube from the database by token, resolution, and zidx"""
 
     askey = ( "neurodata", self.db.annoproj.getDBName(), str(resolution)+"_"+str(zidx) )
@@ -74,7 +74,7 @@ class AerospikeKVIO:
   #
   # putCube
   #
-  def putCube ( self, zidx, resolution, cubestr, update ):
+  def putCube ( self, zidx, resolution, cubestr, update, timestamp ):
     """Store a cube from the annotation database"""
 
     askey = ( "ndspatial", self.db.annoproj.getDBName(), str(resolution)+"_"+str(zidx) )

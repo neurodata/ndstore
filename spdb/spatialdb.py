@@ -106,7 +106,7 @@ class SpatialDB:
     cube = Cube.getCube(cubedim, ch.getChannelType(), ch.getDataType())
   
     # get the block from the database
-    cubestr = self.kvio.getCube(ch, zidx, resolution, timestamp=timestamp, update=update)
+    cubestr = self.kvio.getCube(ch, zidx, resolution, update=update, timestamp=timestamp)
 
     if not cubestr:
       cube.zeros()
@@ -157,9 +157,9 @@ class SpatialDB:
 
     # Handle the cube format here.  
     if self.NPZ:
-      self.kvio.putCube(ch, zidx, timestamp, resolution, cube.toNPZ(), not cube.fromZeros())
+      self.kvio.putCube(ch, zidx, resolution, cube.toNPZ(), not cube.fromZeros(), timestamp=timestamp)
     else:
-      self.kvio.putCube(ch, zidx, timestamp, resolution, cube.toBlosc(), not cube.fromZeros())
+      self.kvio.putCube(ch, zidx, resolution, cube.toBlosc(), not cube.fromZeros(), timestamp=timestamp)
   
 
   def getExceptions ( self, ch, zidx, resolution, annoid ):
