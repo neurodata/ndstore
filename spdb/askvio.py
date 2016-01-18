@@ -48,7 +48,7 @@ class AerospikeKVIO:
     pass
     
 
-  def getCube ( self, zidx, resolution, update ):
+  def getCube ( self, zidx, resolution, timestamp, update ):
     """Retrieve a cube from the database by token, resolution, and zidx"""
 
     askey = ( "neurodata", self.db.annoproj.getDBName(), str(resolution)+"_"+str(zidx) )

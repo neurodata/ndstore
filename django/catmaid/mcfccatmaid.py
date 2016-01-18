@@ -179,7 +179,7 @@ class MCFCCatmaid:
     with closing ( ndproj.NDProjectsDB() ) as projdb:
       self.proj = projdb.loadToken ( self.token )
 
-    with closing ( spatialdb.SPATIALDB(self.proj) ) as self.db:
+    with closing ( spatialdb.SpatialDB(self.proj) ) as self.db:
       
       # mndche key
       mckey = self.buildKey(res, xtile, ytile, ztile)

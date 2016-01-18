@@ -71,7 +71,7 @@ class SpatialDB:
     # Choose the I/O engine for key/value data
     if self.proj.getKVEngine() == 'MySQL':
       self.kvio = mysqlkvio.MySQLKVIO(self)
-      self.NPZ = False
+      self.NPZ = True
     
     elif self.proj.getKVEngine() == 'Riak':
       import riakkvio
@@ -106,7 +106,7 @@ class SpatialDB:
     cube = Cube.getCube(cubedim, ch.getChannelType(), ch.getDataType())
   
     # get the block from the database
-    cubestr = self.kvio.getCube(ch, zidx, timestamp, resolution, update=update)
+    cubestr = self.kvio.getCube(ch, zidx, resolution, timestamp=timestamp, update=update)
 
     if not cubestr:
       cube.zeros()
@@ -126,7 +126,7 @@ class SpatialDB:
     if listoftimestamps is None:
       data = self.kvio.getCubes(ch, listofidxs, resolution, neariso)
       # Checking if the index exists inside the database or not
-      data = None
+      # data = None
       if data is None:
         print "Miss:", listofidxs
         super_cuboids = self.s3io.getCubes(ch, listofidxs, resolution)

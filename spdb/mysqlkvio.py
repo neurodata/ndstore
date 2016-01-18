@@ -97,7 +97,7 @@ class MySQLKVIO:
     else: 
       return row[0]
 
-  def getCube(self, ch, zidx, timestamp, resolution, update=False):
+  def getCube(self, ch, zidx, resolution, timestamp=None, update=False):
     """Retrieve a cube from the database by token, resolution, and zidx"""
 
     # if in a TxN us the transaction cursor.  Otherwise create one.
@@ -121,7 +121,6 @@ class MySQLKVIO:
       cursor.execute ( sql )
       row = cursor.fetchone()
     except MySQLdb.Error, e:
-      import pdb; pdb.set_trace()
       logger.error ( "Failed to retrieve data cube: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
       raise
     finally:
