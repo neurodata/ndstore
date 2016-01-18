@@ -21,14 +21,13 @@ Annotation          annnotation
 Data Types
 ==========
 
-Each channel has an associated datatype. The datatype of the channel represent the type of data stored in that channel. For example, an image channel which has 8-bit data will be of the datatype uint8. A probablity map which has floating point data will be of the type float32.
+Each channel has an associated datatype. The datatype of the channel represent the type of data stored in that channel. For example, an image channel which has 8-bit data will be of the datatype uint8. A probablity map which has floating point data will be of the type float32. A 32-bit image will be a color image with the 8-bit quantities for each R, G, B, and A. 
 
 ===============     ===============
 Data Type           NeuroData Value
 ===============     ===============
 8-bit Integer       uint8
 16-bit Integer      uint16
-32-bit Integer      uint32
 32-bit RGBA         uint32
 64-bit RGBA         uint64
 32-bit Float        float32
