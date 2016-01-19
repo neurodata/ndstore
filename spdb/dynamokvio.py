@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from contextlib import closing
 import boto3
 
 class DynamoKVIO:
@@ -22,7 +23,7 @@ class DynamoKVIO:
     self.db = db
 
     # connect to dynamo
-    dynamodb = boto3.resource('dynamodb')
+    self.dynamodb = boto3.resource('dynamodb')
 
   def close ( self ):
     """Close the connection"""
@@ -46,17 +47,18 @@ class DynamoKVIO:
 
     import pdb; pdb.set_trace()
 
-    with closing ( dynamoDB.table ( '{}_{}'.format(self.db.proj.getDBName(),ch.getChannelName()))) as dtbl:
-      try:
-        keystr = "cuboid:{}:{}".format(resolution,zidx) 
-        response = dtbl.get_item ( 
-          Item={
-            'cuboidkey': keystr,
-          }
-        )
+    dtbl = self.dynamodb.Table ( '{}_{}'.format(self.db.proj.getDBName(),ch.getChannelName()))
 
-      except Exception, e:
-        raise
+    try:
+      keystr = "cuboid:{}:{}".format(resolution,zidx) 
+      response = dtbl.get_item ( 
+        Key={
+          'cuboidkey': keystr,
+        }
+      )
+
+    except Exception, e:
+      return None
 
     #response now contains a JSON item 
     return response['cuboid']
@@ -93,81 +95,86 @@ class DynamoKVIO:
 
     import pdb; pdb.set_trace()
 
-    with closing ( dynamoDB.table ( '{}_{}'.format(self.db.proj.getDBName(),ch.getChannelName()))) as dtbl:
+    dtbl = self.dynamodb.Table ( '{}_{}'.format(self.db.proj.getDBName(),ch.getChannelName()))
 
-      try:
-        keystr = "cuboid:{}:{}".format(resolution,zidx) 
-        response = dtbl.put_item ( 
-          Item={
-            'cuboidkey': keystr,
-            'cuboid': cubestr,
-          }
-        )
-      except Exception, e:
-        raise
-    
+    try:
+      keystr = "cuboid:{}:{}".format(resolution,zidx) 
+      response = dtbl.put_item ( 
+        Item={
+          'cuboidkey': keystr,
+          'cuboid': cubestr.encode('hex'),
+        }
+      )
+    except Exception, e:
+      raise
+  
 
   def getIndex ( self, ch, annid, resolution, update=False ):
     """Fetch index routine. Update is irrelevant for KV clients"""
 
-    with closing ( dynamoDB.table ( '{}_{}_idx'.format(self.db.proj.getDBName(),ch.getChannelName()))) as dtbl:
-      try:
-        response = dtbl.get_item ( Key = { 'resolution': resolution, 'zidx': zidx } ) 	
-        item = response['cuboids']
-      except Exception, e:
-        raise
+    dtbl = self.dynamodb.Table ( '{}_{}'.format(self.db.proj.getDBName(),ch.getChannelName()))
+
+    try:
+      response = dtbl.get_item ( Key = { 'resolution': resolution, 'zidx': zidx } ) 	
+      item = response['cuboids']
+    except Exception, e:
+      raise
 
     return item
-
 
   def putIndex ( self, ch, annid, resolution, indexstr, update ):
     """Dynamo put index routine"""
 
-    with closing ( dynamoDB.table ( '{}_{}_idx'.format(self.db.proj.getDBName(),ch.getChannelName()))) as dtbl:
-      try:
-        response = dtbl.put_item ( Key = { 'resolution': resolution, 'zidx': zidx, 'cuboids': indexstr } ) 	
-      except Exception, e:
-        raise
+    dtbl = self.dynamodb.Table ( '{}_{}'.format(self.db.proj.getDBName(),ch.getChannelName()))
+
+    try:
+      response = dtbl.put_item ( Key = { 'resolution': resolution, 'zidx': zidx, 'cuboids': indexstr } ) 	
+    except Exception, e:
+      raise
     
 
   def deleteIndex ( self, ch, annid, resolution ):
     """Dynamo update index routine"""
 
-    with closing ( dynamoDB.table ( '{}_{}_idx'.format(self.db.proj.getDBName(),ch.getChannelName()))) as dtbl:
-      try:
-        response = dtbl.delete_item ( Key = { 'resolution': resolution, 'zidx': zidx } ) 	
-      except Exception, e:
-        raise
+    dtbl = self.dynamodb.Table ( '{}_{}'.format(self.db.proj.getDBName(),ch.getChannelName()))
+
+    try:
+      response = dtbl.delete_item ( Key = { 'resolution': resolution, 'zidx': zidx } ) 	
+    except Exception, e:
+      raise
 
 
   def getExceptions ( self, ch, zidx, resolution, annid ):
     """Retrieve exceptions from the database by token, resolution, and zidx"""
 
-    with closing ( dynamoDB.table ( '{}_{}_exc'.format(self.db.proj.getDBName(),ch.getChannelName()))) as dtbl:
-      try:
-        response = dtbl.get_item ( Key = { 'resolution': resolution, 'zidx': zidx, 'annid': annid } ) 	
-        item = response['exceptions']
-      except Exception, e:
-        raise
+    dtbl = self.dynamodb.Table ( '{}_{}'.format(self.db.proj.getDBName(),ch.getChannelName()))
 
-      return item.decode('hex')
+    try:
+      response = dtbl.get_item ( Key = { 'resolution': resolution, 'zidx': zidx, 'annid': annid } ) 	
+      item = response['exceptions']
+    except Exception, e:
+      raise
+
+    return item.decode('hex')
 
 
   def putExceptions ( self, ch, zidx, resolution, annid, excstr, update=False ):
     """Store exceptions in the annotation database"""
 
-    with closing ( dynamoDB.table ( '{}_{}_exc'.format(self.db.proj.getDBName(),ch.getChannelName()))) as dtbl:
-      try:
-        response = dtbl.put_item ( Key = { 'resolution': resolution, 'zidx': zidx, 'annid': annid, 'exceptions': excstr.encode('hex') } ) 	
-      except Exception, e:
-        raise
-    
+    dtbl = self.dynamodb.Table ( '{}_{}'.format(self.db.proj.getDBName(),ch.getChannelName()))
+
+    try:
+      response = dtbl.put_item ( Key = { 'resolution': resolution, 'zidx': zidx, 'annid': annid, 'exceptions': excstr.encode('hex') } ) 	
+    except Exception, e:
+      raise
+  
 
   def deleteExceptions ( self, ch, zidx, resolution, annid ):
     """Delete a list of exceptions for this cuboid"""
 
-    with closing ( dynamoDB.table ( '{}_{}_exc'.format(self.db.proj.getDBName(),ch.getChannelName()))) as dtbl:
-      try:
-        response = dtbl.delete_item ( Key = { 'resolution': resolution, 'zidx': zidx, 'annid': annid } )
-      except Exception, e:
-        raise
+    dtbl = self.dynamodb.Table ( '{}_{}'.format(self.db.proj.getDBName(),ch.getChannelName()))
+
+    try:
+      response = dtbl.delete_item ( Key = { 'resolution': resolution, 'zidx': zidx, 'annid': annid } )
+    except Exception, e:
+      raise

@@ -113,14 +113,12 @@ class SpatialDB:
   def getCube(self, ch, zidx, resolution, timestamp=None, update=False):
     """Load a cube from the database"""
 
-    import pdb; pdb.set_trace()
-
     # get the size of the image and cube
     [xcubedim, ycubedim, zcubedim] = cubedim = self.datasetcfg.cubedim[resolution] 
     cube = Cube.getCube(cubedim, ch.getChannelType(), ch.getDataType())
   
     # get the block from the database
-    cubestr = self.kvio.getCube(ch, zidx, timestamp, resolution, update=update)
+    cubestr = self.kvio.getCube(ch, zidx, resolution, update=update)
 
     if not cubestr:
       cube.zeros()
@@ -169,11 +167,12 @@ class SpatialDB:
     if ch.getChannelType() not in TIMESERIES_CHANNELS and timestamp is not None:
       raise
 
+    # KLTODO merge with your timestamp stuff using keyword argumentn
     # Handle the cube format here.  
     if self.NPZ:
-      self.kvio.putCube(ch, zidx, timestamp, resolution, cube.toNPZ(), not cube.fromZeros())
+      self.kvio.putCube(ch, zidx, resolution, cube.toNPZ(), not cube.fromZeros())
     else:
-      self.kvio.putCube(ch, zidx, timestamp, resolution, cube.toBlosc(), not cube.fromZeros())
+      self.kvio.putCube(ch, zidx, resolution, cube.toBlosc(), not cube.fromZeros())
   
 
   def getExceptions ( self, ch, zidx, resolution, annoid ):

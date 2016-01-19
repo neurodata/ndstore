@@ -513,6 +513,10 @@ class NDProjectsDB:
               'AttributeName': 'cuboidkey',
               'AttributeType': 'S'
             },
+            {
+              'AttributeName': 'cuboid',
+              'AttributeType': 'B'
+            },
           ],
           ProvisionedThroughput={
         	  'ReadCapacityUnits': 10,
@@ -533,6 +537,10 @@ class NDProjectsDB:
               'AttributeName': 'idxkey',
               'AttributeType': 'S'
             },
+            {
+              'AttributeName': 'idx',
+              'AttributeType': 'B'
+            },
           ],
           ProvisionedThroughput={
 		        'ReadCapacityUnits': 10,
@@ -552,6 +560,10 @@ class NDProjectsDB:
             {
               'AttributeName': 'exckey',
               'AttributeType': 'S'
+            },
+            {
+              'AttributeName': 'exc',
+              'AttributeType': 'B'
             },
           ],
           ProvisionedThroughput={
@@ -637,17 +649,19 @@ class NDProjectsDB:
     ch = NDChannel(pr, channel_name)
     table_list = []
 
-    if ch.getChannelType() in ANNOTATION_CHANNELS:
-      table_list.append(ch.getIdsTable())
-      for key in annotation.anno_dbtables.keys():
-        table_list.append(ch.getAnnoTable(key))
-
-    for i in pr.datasetcfg.getResolutions():
-      table_list.append(ch.getTable(i))
-      if ch.getChannelType() in ANNOTATION_CHANNELS:
-        table_list = table_list + [ch.getIdxTable(i), ch.getExceptionsTable(i)]
 
     if pr.getKVEngine() == MYSQL:
+
+      if ch.getChannelType() in ANNOTATION_CHANNELS:
+        table_list.append(ch.getIdsTable())
+        for key in annotation.anno_dbtables.keys():
+          table_list.append(ch.getAnnoTable(key))
+
+      for i in pr.datasetcfg.getResolutions():
+        table_list.append(ch.getTable(i))
+        if ch.getChannelType() in ANNOTATION_CHANNELS:
+          table_list = table_list + [ch.getIdxTable(i), ch.getExceptionsTable(i)]
+
       try:
         conn = MySQLdb.connect (host = pr.getDBHost(), user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = pr.getProjectName() ) 
         # delete the tables for this channel
@@ -674,6 +688,7 @@ class NDProjectsDB:
       pass
 
     elif pr.getKVEngine() == DYNAMODB:
+
       import pdb; pdb.set_trace()
       dynamodb = boto3.resource('dynamodb')
       table_list = [ '{}_{}'.format(pr.getProjectName(),ch.getChannelName()),\
