@@ -36,6 +36,8 @@ ALLOWED_HOSTS = []
 
 FORCE_SCRIPT_NAME = '/nd'
 
+VIZ_SERVER = 'http://'; # MUST include 'http'! 
+
 # Application definition
 
 INSTALLED_APPS = (
