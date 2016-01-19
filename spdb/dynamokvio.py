@@ -19,8 +19,6 @@ class DynamoKVIO:
   def __init__ ( self, db ):
     """Connect to the database"""
 
-    import pdb; pdb.set_trace()
-
     self.db = db
 
     # connect to dynamo
@@ -50,12 +48,18 @@ class DynamoKVIO:
 
     with closing ( dynamoDB.table ( '{}_{}'.format(self.db.proj.getDBName(),ch.getChannelName()))) as dtbl:
       try:
-        response = dtbl.get_item ( Key = { 'resolution': resolution, 'zidx': zidx } ) 	
-        item = response['cuboid']
+        keystr = "cuboid:{}:{}".format(resolution,zidx) 
+        response = dtbl.get_item ( 
+          Item={
+            'cuboidkey': keystr,
+          }
+        )
+
       except Exception, e:
         raise
 
-    return item
+    #response now contains a JSON item 
+    return response['cuboid']
 
 
   def getCubes(self, ch, listofidxs, resolution, neariso=False):
@@ -90,11 +94,18 @@ class DynamoKVIO:
     import pdb; pdb.set_trace()
 
     with closing ( dynamoDB.table ( '{}_{}'.format(self.db.proj.getDBName(),ch.getChannelName()))) as dtbl:
+
       try:
-        response = dtbl.put_item ( Key = { 'resolution': resolution, 'zidx': zidx, 'cuboid': cubestr } ) 	
+        keystr = "cuboid:{}:{}".format(resolution,zidx) 
+        response = dtbl.put_item ( 
+          Item={
+            'cuboidkey': keystr,
+            'cuboid': cubestr,
+          }
+        )
       except Exception, e:
         raise
-
+    
 
   def getIndex ( self, ch, annid, resolution, update=False ):
     """Fetch index routine. Update is irrelevant for KV clients"""

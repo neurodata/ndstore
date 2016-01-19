@@ -719,36 +719,80 @@ def selectPost ( webargs, proj, db, postdata ):
 
   [channel, service, postargs] = webargs.split('/', 2)
 
-  # if it's a 3d tiff treat differently.  No cutout args.
-  if service == 'tiff':
-    return postTiff3d ( channel, postargs, proj, db, postdata )
-
   # Create a list of channels from the comma separated argument
   channel_list = channel.split(',')
 
-  # Process the arguments
-  try:
-    args = restargs.BrainRestArgs ();
-    args.cutoutArgs ( postargs, proj.datasetcfg )
-  except restargs.RESTArgsError, e:
-    logger.warning( "REST Arguments {} failed: {}".format(postargs,e) )
-    raise NDWSError(e)
-
-  corner = args.getCorner()
-  resolution = args.getResolution()
-  timerange = args.getTimeRange()
-  conflictopt = restargs.conflictOption ( "" )
-
-  # Bind the annotation database
-
+  # Retry in case the databse is busy
   tries = 0
   done = False
 
   while not done and tries < 5:
-
     try:
 
-      if service in ['npz', 'blosc']:
+      # if it's a 3d tiff treat differently.  No cutout args.
+      if service == 'tiff':
+        return postTiff3d ( channel, postargs, proj, db, postdata )
+
+      elif service == 'hdf5':
+
+        # Get the HDF5 file.
+        with closing (tempfile.NamedTemporaryFile ( )) as tmpfile:
+
+          tmpfile.write ( postdata )
+          tmpfile.seek(0)
+          h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
+
+
+          for channel_name in channel_list:
+
+            ch = proj.getChannelObj(channel_name)
+            chgrp = h5f.get(ch.getChannelName())
+            voxarray = chgrp['CUTOUT'].value
+#            h5_datatype = h5f.get(ch.getChannelName())['DATATYPE'].value[0]
+#            h5_channeltype = h5f.get(ch.getChannelName())['CHANNELTYPE'].value[0]
+
+            h5xyzoffset = chgrp.get('XYZOFFSET')
+            h5resolution = chgrp.get('RESOLUTION')[0]
+
+            # Checking the datatype of the voxarray
+            if voxarray.dtype != ND_dtypetonp[ch.getDataType()]:
+              logger.warning("Channel datatype {} in the HDF5 file does not match with the {} in the database.".format(h5_datatype, ch.getDataType()))
+              raise NDWSError("Channel datatype {} in the HDF5 file does not match with the {} in the database.".format(h5_datatype, ch.getDataType()))
+
+            # Don't write to readonly channels
+            if ch.getReadOnly() == READONLY_TRUE:
+              logger.warning("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+              raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+
+            
+            if ch.getChannelType() in IMAGE_CHANNELS + TIMESERIES_CHANNELS : 
+              db.writeCuboid (ch, h5xyzoffset, h5resolution, voxarray) #, timerange) RB no timerange support now
+
+            # elif ch.getChannelType() in TIMESERIES_CHANNELS:
+              # db.writeTimeCuboid (ch, corner, resolution, timerange, voxarray)
+            
+            elif ch.getChannelType() in ANNOTATION_CHANNELS:
+              db.annotateDense ( ch, corner, resolution, voxarray, conflictopt )
+
+          h5f.flush()
+          h5f.close()
+
+      # other services take cutout args
+      elif service in ['npz', 'blosc']:
+
+        # Process the arguments
+        try:
+          args = restargs.BrainRestArgs ();
+          args.cutoutArgs ( postargs, proj.datasetcfg )
+        except restargs.RESTArgsError, e:
+          logger.warning( "REST Arguments {} failed: {}".format(postargs,e) )
+          raise NDWSError(e)
+
+        corner = args.getCorner()
+        resolution = args.getResolution()
+        timerange = args.getTimeRange()
+        conflictopt = restargs.conflictOption ( "" )
+
 
         # get the data out of the compressed blob
         if service == 'npz':
@@ -782,47 +826,6 @@ def selectPost ( webargs, proj, db, postdata ):
           
           elif ch.getChannelType() in ANNOTATION_CHANNELS:
             db.annotateDense(ch, corner, resolution, voxarray[idx,:], conflictopt)
-      
-      elif service == 'hdf5':
-  
-        # Get the HDF5 file.
-        with closing (tempfile.NamedTemporaryFile ( )) as tmpfile:
-
-          tmpfile.write ( postdata )
-          tmpfile.seek(0)
-          h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
-  
-          for channel_name in channel_list:
-            ch = proj.getChannelObj(channel_name)
-            voxarray = h5f.get(ch.getChannelName())['CUTOUT'].value
-            h5_datatype = h5f.get(ch.getChannelName())['DATATYPE'].value[0]
-            h5_channeltype = h5f.get(ch.getChannelName())['CHANNELTYPE'].value[0]
-
-            # Checking the datatype of the voxarray
-            if ch.getDataType() != h5_datatype or voxarray.dtype != ND_dtypetonp[ch.getDataType()]:
-              logger.warning("Channel datatype {} in the HDF5 file does not match with the {} in the database.".format(h5_datatype, ch.getDataType()))
-              raise NDWSError("Channel datatype {} in the HDF5 file does not match with the {} in the database.".format(h5_datatype, ch.getDataType()))
-
-            if ch.getChannelType() != h5_channeltype:
-              logger.warning("Channel type {} in HDF5 file does not match with the {} in the database.".format(h5_channeltype, ch.getChannelType()))
-              raise NDWSError("Channel type {} in HDF5 file does not match with the {} in the database.".format(h5_channeltype, ch.getChannelType()))
-          
-            # Don't write to readonly channels
-            if ch.getReadOnly() == READONLY_TRUE:
-              logger.warning("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
-              raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
-            
-            if ch.getChannelType() in IMAGE_CHANNELS + TIMESERIES_CHANNELS : 
-              db.writeCuboid (ch, corner, resolution, voxarray, timerange)
-
-            # elif ch.getChannelType() in TIMESERIES_CHANNELS:
-              # db.writeTimeCuboid (ch, corner, resolution, timerange, voxarray)
-            
-            elif ch.getChannelType() in ANNOTATION_CHANNELS:
-              db.annotateDense ( ch, corner, resolution, voxarray, conflictopt )
-  
-          h5f.flush()
-          h5f.close()
       
       else:
         logger.warning("An illegal Web POST service was requested: {}. Args {}".format(service, webargs))
@@ -1328,11 +1331,14 @@ def putAnnotation ( webargs, postdata ):
   with closing ( ndproj.NDProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
   
+  ch = ndproj.NDChannel(proj, channel)
+  if ch.getChannelType() not in ANNOTATION_CHANNELS:
+    logger.error("Channel {} does not support annotations".format(ch.getChannelName()))
+    raise NDWSError("Channel {} does not support annotations".format(ch.getChannelName()))
+
   with closing ( spatialdb.SpatialDB(proj) ) as db:
    with closing ( ramondb.RamonDB(proj) ) as rdb:
 
-    ch = ndproj.NDChannel(proj, channel)
-    
     # Don't write to readonly channels
     if ch.getReadOnly() == READONLY_TRUE:
       logger.warning("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))

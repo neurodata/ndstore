@@ -87,6 +87,7 @@ def cutout (request, webargs):
     # RBTODO control caching?
     # POST methods
     elif request.method == 'POST':
+
       if service in POST_SERVICES:
         django.http.HttpResponse(ndwsrest.putCutout(webargs, request.body))
         return django.http.HttpResponse("Success", content_type='text/html')

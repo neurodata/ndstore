@@ -48,6 +48,7 @@ class RamonDB:
     self.proj = proj
 
 #    if self.proj.getMDEngine():
+    import pdb; pdb.set_trace()
     self.annodb = mysqlramondb.MySQLRamonDB(proj)
 
 
@@ -58,7 +59,6 @@ class RamonDB:
 
   def assignID ( self, ch, annid ):
     """if annid == 0, create a new identifier"""
-    import pdb; pdb.set_trace()
     if annid == 0: 
       return self.annodb.nextID(ch)
     else:

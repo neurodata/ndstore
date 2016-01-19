@@ -113,6 +113,8 @@ class SpatialDB:
   def getCube(self, ch, zidx, resolution, timestamp=None, update=False):
     """Load a cube from the database"""
 
+    import pdb; pdb.set_trace()
+
     # get the size of the image and cube
     [xcubedim, ycubedim, zcubedim] = cubedim = self.datasetcfg.cubedim[resolution] 
     cube = Cube.getCube(cubedim, ch.getChannelType(), ch.getDataType())
@@ -955,7 +957,7 @@ class SpatialDB:
 
   def writeCuboids(self, ch, corner, resolution, cuboiddata, timerange=None):
     """Write an arbitary size data to the database"""
-   
+
     # dim is in xyz, data is in zyx order
     dim = cuboiddata.shape[::-1]
     
@@ -1015,7 +1017,7 @@ class SpatialDB:
 
     :returns: None
     """
-    
+   
     # dim is in xyz, data is in zyx order
     if timerange == [0,0]:
       dim = cuboiddata.shape[::-1]

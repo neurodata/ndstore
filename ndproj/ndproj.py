@@ -438,6 +438,8 @@ class NDProjectsDB:
 
     # Connect to the database
 
+    import pdb; pdb.set_trace()
+
     if pr.kvengine == MYSQL:
       with closing (MySQLdb.connect(host = pr.host, user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = pr.project_name)) as conn:
         with closing(conn.cursor()) as cursor:
@@ -493,8 +495,6 @@ class NDProjectsDB:
 
     elif pr.kvengine == DYNAMODB:
 
-      import pdb; pdb.set_trace()
-  
       try:
         # connect to dynamo
         dynamodb = boto3.resource('dynamodb')
@@ -515,8 +515,8 @@ class NDProjectsDB:
             },
           ],
           ProvisionedThroughput={
-		'ReadCapacityUnits': 10,
-		'WriteCapacityUnits': 10
+        	  'ReadCapacityUnits': 10,
+		        'WriteCapacityUnits': 10
           },
         )
 
@@ -535,8 +535,8 @@ class NDProjectsDB:
             },
           ],
           ProvisionedThroughput={
-		'ReadCapacityUnits': 10,
-		'WriteCapacityUnits': 10
+		        'ReadCapacityUnits': 10,
+		        'WriteCapacityUnits': 10
           },
         )
   
@@ -555,8 +555,8 @@ class NDProjectsDB:
             },
           ],
           ProvisionedThroughput={
-  		'ReadCapacityUnits': 10,
-		'WriteCapacityUnits': 10
+  		      'ReadCapacityUnits': 10,
+		        'WriteCapacityUnits': 10
           },
         )
   
