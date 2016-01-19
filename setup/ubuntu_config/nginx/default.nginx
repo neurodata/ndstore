@@ -31,7 +31,7 @@ server {
   }
   
   location /static {
-    alias         /var/www/open-connectome/django/tempaltes/static/;
+    alias         /var/www/open-connectome/django/static/;
     autoindex     on;
     allow         all;
   }
