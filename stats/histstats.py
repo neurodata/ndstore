@@ -56,11 +56,10 @@ class HistStats():
 
   def percentile(self, histogram, bins, percent):
     """ Calculate the <<percent>> percentile of the histogram """
-
     # handle > 100 or < 0
-    if percent <= 0:
+    if float(percent) <= 0:
       return 0
-    elif percent >= 100:
+    elif float(percent) >= 100:
       return bins[-1]
 
     # if histogram is all 0s, return 0
