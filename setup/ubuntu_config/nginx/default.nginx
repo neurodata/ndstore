@@ -26,12 +26,14 @@ server {
     uwsgi_pass    ocp-wsgi;
     include       /etc/nginx/uwsgi_params;
     # increase buffer size to avoid hitting disk
+    client_max_body_size 2048M;
+    client_body_buffer_size 4M;
     uwsgi_buffering on;
     uwsgi_buffers 4096 64k;
   }
   
   location /static {
-    alias         /var/www/open-connectome/django/tempaltes/static/;
+    alias         /var/www/open-connectome/django/static/;
     autoindex     on;
     allow         all;
   }
