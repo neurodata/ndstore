@@ -2,10 +2,27 @@
 
 ### Ubuntu Installation
 
+##### Git Submodules
+
+* Fresh Clone
+```sh
+git clone --recursive git@github.com:openconnectome/open-connectome.git
+```
+* Existing Repository
+```sh
+git submodule update --init --recursive
+```
+
+##### Ubuntu Packages
+
+```sh
+sudo apt-get install uwsgi-plugin-python
+```
+
 ##### Python dependencies 
 
 ```sh
-pip install numpy scipy django django-registration-redux django-celery mysql-python pytest pillow pylibmc posix_ipc networkx nibabel lxml boto3
+pip install numpy scipy django django-registration-redux django-celery mysql-python pytest pillow pylibmc posix_ipc networkx nibabel lxml boto3 requests h5py blosc
 ```
 
 ##### Configuration files

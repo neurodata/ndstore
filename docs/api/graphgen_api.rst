@@ -10,11 +10,11 @@ getGraph
 
    :synopsis: Get the graph of neuron RAMON objects.
 
-   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
    :type server_name: string
-   :param token_name: Token Name in OCP.
+   :param token_name: Token Name in NeuroData.
    :type token_name: string
-   :param channel_name: Channel Name in OCP. 
+   :param channel_name: Channel Name in NeuroData. 
    :type channel_name: string
    :param graph_type: *Optional* The type of graph to be returned, most major types supported.
    :type graph_type: string
