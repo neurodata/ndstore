@@ -26,7 +26,7 @@ from nduser.models import Dataset
 from nduser.models import Token
 from nduser.models import Channel
 import annotation
-from ndtype import IMAGE_CHANNELS, ANNOTATION_CHANNELS, ZSLICES, ISOTROPIC, READONLY_TRUE, READONLY_FALSE, PUBLIC_TRUE, NOT_PROPAGATED, UNDER_PROPAGATION, PROPAGATED, IMAGE, ANNOTATION, TIMESERIES, MYSQL, CASSANDRA, RIAK, ND_servermap
+from ndtype import IMAGE_CHANNELS, ANNOTATION_CHANNELS, ZSLICES, ISOTROPIC, READONLY_TRUE, READONLY_FALSE, PUBLIC_TRUE, NOT_PROPAGATED, UNDER_PROPAGATION, PROPAGATED, IMAGE, ANNOTATION, TIMESERIES, MYSQL, CASSANDRA, RIAK, DYNAMODB, ND_servermap
 
 # need imports to be conditional
 try:
@@ -37,6 +37,10 @@ try:
   import riak
 except:
    pass
+try:
+  import boto3
+except:
+  pass
 
 from ndwserror import NDWSError
 import logging
@@ -298,6 +302,8 @@ class NDChannel:
         return "{}_res{}".format(self.ch.channel_name, resolution)
       elif self.pr.getKVEngine() == CASSANDRA:
         return "{}_{}".format(self.ch.channel_name, 'cuboids')
+      elif self.pr.getKVEngine() == DYNAMODB:
+        return "{}_{}".format(self.ch.channel_name, 'cuboids')
 
   def getNearIsoTable (self, resolution):
     """Return the appropriate table for the specified resolution"""
@@ -321,6 +327,8 @@ class NDChannel:
       if self.pr.getKVEngine() == MYSQL:
         return "{}_idx{}".format(self.ch.channel_name, resolution)
       elif self.pr.getKVEngine() == CASSANDRA:
+        return "{}_{}".format(self.ch.channel_name, 'indexes')
+      elif self.pr.getKVEngine() == DYNAMODB:
         return "{}_{}".format(self.ch.channel_name, 'indexes')
 
   def getAnnoTable (self, anno_type):
@@ -412,6 +420,14 @@ class NDProjectsDB:
       finally:
         session.shutdown()
 
+    elif pr.kvengine == DYNAMODB:
+      # nothing to do, WOW!
+      pass
+
+    else:
+      logging.error ("Unknown KV Engine requested: {}".format("RBTODO get name"))
+      raise NDWSError ("Unknown KV Engine requested: {}".format("RBTODO get name"))
+
 
   def newNDChannel ( self, project_name, channel_name ):
     """Make the tables for a channel."""
@@ -421,6 +437,8 @@ class NDProjectsDB:
     ds = Dataset.objects.get(dataset_name=pr.dataset_id)
 
     # Connect to the database
+
+    import pdb; pdb.set_trace()
 
     if pr.kvengine == MYSQL:
       with closing (MySQLdb.connect(host = pr.host, user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = pr.project_name)) as conn:
@@ -474,6 +492,93 @@ class NDProjectsDB:
         raise NDWSError("Failed to create table for channel {}".format(channel_name))
       finally:
         session.shutdown()
+
+    elif pr.kvengine == DYNAMODB:
+
+      try:
+        # connect to dynamo
+        dynamodb = boto3.resource('dynamodb')
+  
+        ctable = dynamodb.create_table(
+          # RBTODO add user name
+          TableName='{}_{}'.format(pr.project_name,ch.channel_name),
+          KeySchema=[
+            {
+              'AttributeName': 'cuboidkey',
+              'KeyType': 'HASH'
+            },
+          ],
+          AttributeDefinitions=[
+            {
+              'AttributeName': 'cuboidkey',
+              'AttributeType': 'S'
+            },
+            {
+              'AttributeName': 'cuboid',
+              'AttributeType': 'B'
+            },
+          ],
+          ProvisionedThroughput={
+        	  'ReadCapacityUnits': 10,
+		        'WriteCapacityUnits': 10
+          },
+        )
+
+        itable = dynamodb.create_table(
+          TableName='{}_{}_idx'.format(pr.project_name,ch.channel_name),
+          KeySchema=[
+            {
+              'AttributeName': 'idxkey',
+              'KeyType': 'HASH'
+            },
+          ],
+          AttributeDefinitions=[
+            {
+              'AttributeName': 'idxkey',
+              'AttributeType': 'S'
+            },
+            {
+              'AttributeName': 'idx',
+              'AttributeType': 'B'
+            },
+          ],
+          ProvisionedThroughput={
+		        'ReadCapacityUnits': 10,
+		        'WriteCapacityUnits': 10
+          },
+        )
+  
+        etable = dynamodb.create_table(
+          TableName='{}_{}_exc'.format(pr.project_name,ch.channel_name),
+          KeySchema=[
+            {
+              'AttributeName': 'exckey',
+              'KeyType': 'HASH'
+            },
+          ],
+          AttributeDefinitions=[
+            {
+              'AttributeName': 'exckey',
+              'AttributeType': 'S'
+            },
+            {
+              'AttributeName': 'exc',
+              'AttributeType': 'B'
+            },
+          ],
+          ProvisionedThroughput={
+  		      'ReadCapacityUnits': 10,
+		        'WriteCapacityUnits': 10
+          },
+        )
+  
+        # wait for the tables to exist
+        ctable.meta.client.get_waiter('table_exists').wait(TableName='{}_{}'.format(pr.project_name,ch.channel_name))
+        itable.meta.client.get_waiter('table_exists').wait(TableName='{}_{}_idx'.format(pr.project_name,ch.channel_name))
+        etable.meta.client.get_waiter('table_exists').wait(TableName='{}_{}_exc'.format(pr.project_name,ch.channel_name))
+      
+      except Exception, e:
+        import pdb; pdb.set_trace()
       
     else:
       logging.error ("Unknown KV Engine requested: {}".format("RBTODO get name"))
@@ -525,6 +630,17 @@ class NDProjectsDB:
       for k in key_list:
         bucket.delete(k)
 
+    elif pr.kvengine == DYNAMODB:
+
+      # connect to dynamo
+      dynamodb = boto3.resource('dynamodb')
+
+      # iterate over all the possible tables.  No name space delete.
+      pr = NDProject(proj)
+      chs = Channel.objects.filter(project_id=pr)
+      for ch in chs:
+        self.deleteNDChannel ( proj, ch.channel_name )
+
 
   def deleteNDChannel (self, proj, channel_name):
     """Delete the tables for this channel"""
@@ -533,18 +649,19 @@ class NDProjectsDB:
     ch = NDChannel(pr, channel_name)
     table_list = []
 
-    if ch.getChannelType() in ANNOTATION_CHANNELS:
-      table_list.append(ch.getIdsTable())
-      for key in annotation.anno_dbtables.keys():
-        table_list.append(ch.getAnnoTable(key))
 
-    for i in pr.datasetcfg.getResolutions():
-      table_list.append(ch.getTable(i))
-      if ch.getChannelType() in ANNOTATION_CHANNELS:
-        table_list = table_list + [ch.getIdxTable(i), ch.getExceptionsTable(i)]
-
-    print table_list
     if pr.getKVEngine() == MYSQL:
+
+      if ch.getChannelType() in ANNOTATION_CHANNELS:
+        table_list.append(ch.getIdsTable())
+        for key in annotation.anno_dbtables.keys():
+          table_list.append(ch.getAnnoTable(key))
+
+      for i in pr.datasetcfg.getResolutions():
+        table_list.append(ch.getTable(i))
+        if ch.getChannelType() in ANNOTATION_CHANNELS:
+          table_list = table_list + [ch.getIdxTable(i), ch.getExceptionsTable(i)]
+
       try:
         conn = MySQLdb.connect (host = pr.getDBHost(), user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = pr.getProjectName() ) 
         # delete the tables for this channel
@@ -569,6 +686,22 @@ class NDProjectsDB:
     elif pr.getKVEngine() == RIAK:
       # KL TODO
       pass
+
+    elif pr.getKVEngine() == DYNAMODB:
+
+      import pdb; pdb.set_trace()
+      dynamodb = boto3.resource('dynamodb')
+      table_list = [ '{}_{}'.format(pr.getProjectName(),ch.getChannelName()),\
+                     '{}_{}_idx'.format(pr.getProjectName(),ch.getChannelName()),\
+                     '{}_{}_exc'.format(pr.getProjectName(),ch.getChannelName()) ]
+      for tbl in table_list:
+        try:
+          table = dynamodb.Table(tbl)
+          table.delete()
+        except Exception, e:
+          import pdb; pdb.set_trace()
+          raise
+      
 
   def loadDatasetConfig ( self, dataset ):
     """Query the database for the dataset information and build a db configuration"""

@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2015 Open Connectome Project (http://openconnecto.me)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-kvengine='MySQL'
-#kvengine='Cassandra'
-#kvengine='Riak'
-#kvengine='DYNAMODB'
+from django.conf.urls import *
+from ocpuser.views import *
+import django.contrib.auth
 
-#kvserver='172.23.253.63'
-kvserver='localhost'
+# redirect everything to the new ocpviz server 
+urlpatterns = patterns('ocpviz.views',
+    # data views
+    url(r'(?P<webargs>[\w:,/-]+)$', 'default'),
+)

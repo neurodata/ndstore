@@ -1,0 +1,22 @@
+#############
+# OCP Files #
+#############
+makefile
+
+###################
+# Compiled source #
+###################
+*.pyc
+*.py~
+*.o
+*.so
+*.out
+*.exe
+*.a
+*.log
+
+######################
+# OS Generated Files #
+######################
+.DS_Store
+*.swp

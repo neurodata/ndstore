@@ -48,6 +48,7 @@ class RamonDB:
     self.proj = proj
 
 #    if self.proj.getMDEngine():
+    import pdb; pdb.set_trace()
     self.annodb = mysqlramondb.MySQLRamonDB(proj)
 
 

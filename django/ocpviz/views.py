@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2015 Open Connectome Project (http://openconnecto.me)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,10 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-kvengine='MySQL'
-#kvengine='Cassandra'
-#kvengine='Riak'
-#kvengine='DYNAMODB'
+from django.shortcuts import render
+from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404
+from django.http import HttpResponse, HttpResponseBadRequest 
 
-#kvserver='172.23.253.63'
-kvserver='localhost'
+from django.template import RequestContext 
+from django.contrib.sites.models import Site
+
+import urllib2
+import json
+
+from django.conf import settings 
+
+def default(request, webargs):
+  return redirect(settings.VIZ_SERVER + '/' + webargs, permanent=True)

@@ -245,6 +245,7 @@ def main():
   result = parser.parse_args()
 
   h5ann = H5Anno()
+
   for i in range(result.numobjects):
     # either anonymous annotations ids
     if result.annid==0:

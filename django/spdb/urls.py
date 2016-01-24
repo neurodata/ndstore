@@ -43,8 +43,8 @@ urlpatterns = patterns('spdb.views',
   url(r'(?P<webargs>^\w+/exceptions/[\w,/]*)$', 'exceptions'),
   # projection services
   url(r'(?P<webargs>^\w+/(minproj|maxproj)/(xy|xz|yz)[\w,/]*)$', 'minmaxProject'),
-  # get services
-  url(r'(?P<webargs>^\w+/[\w+,/]*(xy|xz|yz|tiff|hdf5|blosc|jpeg|npz|zip|diff|id|ids|xyanno|xzanno|yzanno)/[\w,/-]+)$', 'cutout'),
+  # get and put services
+  url(r'(?P<webargs>^\w+/[\w+,/]*(xy|xz|yz|tiff|hdf5|blosc|jpeg|npz|zip|diff|id|ids|xyanno|xzanno|yzanno)/[\w,/-]*)$', 'cutout'),
   # single field interfaces
   url(r'(?P<webargs>^\w+/\w+/getField/\d+/[\w+,/]*)$', 'getField'),
   url(r'(?P<webargs>^\w+/\w+/setField/\d+/[\w+,./]*)$', 'setField'),

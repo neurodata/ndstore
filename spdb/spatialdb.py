@@ -45,6 +45,10 @@ try:
   import riakkvio
 except:
   pass
+try:
+  import dynamokvio
+except:
+  pass
 
 """
 .. module:: spatialdb
@@ -86,6 +90,14 @@ class SpatialDB:
       self.cursor = None
       self.kvio = casskvio.CassandraKVIO(self)
       self.NPZ = False
+
+    elif self.proj.getKVEngine() == 'DynamoDB':
+      import dynamokvio
+      self.conn = None
+      self.cursor = None
+      self.kvio = dynamokvio.DynamoKVIO(self)
+      self.NPZ = False
+
     else:
       raise SpatialDBError ("Unknown key/value store. Engine = {}".format(self.proj.getKVEngine()))
 
@@ -155,6 +167,7 @@ class SpatialDB:
     if ch.getChannelType() not in TIMESERIES_CHANNELS and timestamp is not None:
       raise
 
+    # KLTODO merge with your timestamp stuff using keyword argumentn
     # Handle the cube format here.  
     if self.NPZ:
       self.kvio.putCube(ch, zidx, resolution, cube.toNPZ(), not cube.fromZeros(), timestamp=timestamp)
@@ -943,7 +956,7 @@ class SpatialDB:
 
   def writeCuboids(self, ch, corner, resolution, cuboiddata, timerange=None):
     """Write an arbitary size data to the database"""
-   
+
     # dim is in xyz, data is in zyx order
     dim = cuboiddata.shape[::-1]
     
@@ -1003,7 +1016,7 @@ class SpatialDB:
 
     :returns: None
     """
-    
+   
     # dim is in xyz, data is in zyx order
     if timerange == [0,0]:
       dim = cuboiddata.shape[::-1]

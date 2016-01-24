@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import argparse
-import empaths
 import numpy as np
 import urllib, urllib2
 import cStringIO
@@ -28,13 +27,8 @@ def main():
   parser = argparse.ArgumentParser(description='Annotate a cubic a portion of the database.')
   parser.add_argument('baseurl', action="store" )
   parser.add_argument('token', action="store" )
-  parser.add_argument('resolution', action="store", type=int )
-  parser.add_argument('xlow', action="store", type=int )
-  parser.add_argument('xhigh', action="store", type=int)
-  parser.add_argument('ylow', action="store", type=int)
-  parser.add_argument('yhigh', action="store", type=int)
-  parser.add_argument('zlow', action="store", type=int)
-  parser.add_argument('zhigh', action="store", type=int)
+  parser.add_argument('channel', action="store" )
+  parser.add_argument('cutout', action="store", help='Cutout arguments of the form resolution/x1,x2/y1,y2/z1,z2.', default=None)
   parser.add_argument('--annid', action="store", type=int, help='Specify an identifier.  Server chooses otherwise.', default=0)
   parser.add_argument('--update', action='store_true')
   parser.add_argument('--reduce', action='store_true')
@@ -44,28 +38,41 @@ def main():
 
   result = parser.parse_args()
 
-  anndata = np.ones ( [ result.zhigh-result.zlow, result.yhigh-result.ylow, result.xhigh-result.xlow ] )
+  [ resstr, xstr, ystr, zstr ] = result.cutout.split('/')
+  ( xlowstr, xhighstr ) = xstr.split(',')
+  ( ylowstr, yhighstr ) = ystr.split(',')
+  ( zlowstr, zhighstr ) = zstr.split(',')
+
+  resolution = int(resstr)
+  xlow = int(xlowstr)
+  xhigh = int(xhighstr)
+  ylow = int(ylowstr)
+  yhigh = int(yhighstr)
+  zlow = int(zlowstr)
+  zhigh = int(zhighstr)
+
+  npdata = np.ones ( [ zhigh-zlow, yhigh-ylow, xhigh-xlow ], dtype=np.uint8 )*255
 
   # Build a minimal hdf5 file
   # Create an in-memory HDF5 file
   tmpfile = tempfile.NamedTemporaryFile()
   h5fh = h5py.File ( tmpfile.name )
 
-  # top group is the annotation identifier
-  idgrp = h5fh.create_group ( str(result.annid) )
+  # then group is the channel identifier
+  idgrp = h5fh.create_group ( str(result.channel) )
 
-  idgrp.create_dataset ( "RESOLUTION", (1,), np.uint32, data=result.resolution )
-  idgrp.create_dataset ( "XYZOFFSET", (3,), np.uint32, data=[result.xlow,result.ylow,result.zlow] )
-  idgrp.create_dataset ( "CUTOUT", anndata.shape, np.uint32, data=anndata )
+  idgrp.create_dataset ( "RESOLUTION", (1,), np.uint32, data=resolution )
+  idgrp.create_dataset ( "XYZOFFSET", (3,), np.uint32, data=[xlow,ylow,zlow] )
+  idgrp.create_dataset ( "CUTOUT", npdata.shape, npdata.dtype, data=npdata )
 
   if result.preserve:  
-    url = 'http://%s/emca/%s/preserve/' % ( result.baseurl, result.token )
+    url = 'http://%s/sd/%s/%s/hdf5/preserve/' % ( result.baseurl, result.token, result.channel )
   elif result.exception:  
-    url = 'http://%s/emca/%s/exception/' % ( result.baseurl, result.token )
+    url = 'http://%s/sd/%s/%s/hdf5/exception/' % ( result.baseurl, result.token, result.channel )
   elif result.reduce:  
-    url = 'http://%s/emca/%s/reduce/' % ( result.baseurl, result.token )
+    url = 'http://%s/sd/%s/%s/hdf5/reduce/' % ( result.baseurl, result.token, result.channel )
   else:
-    url = 'http://%s/emca/%s/' % ( result.baseurl, result.token )
+    url = 'http://%s/sd/%s/%s/hdf5/' % ( result.baseurl, result.token, result.channel )
 
   if result.update:
     url+='update/'
