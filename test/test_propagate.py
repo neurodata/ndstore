@@ -274,7 +274,7 @@ class Test_Anno_Isotropic_Propagate():
   
   def setup_class(self):
     """Create the unittest database"""
-    makeunitdb.createTestDB(p.token, public=True, channel_list=p.channels, ximagesize=1000, yimagesize=1000, zimagesize=128, scalingoption=ISOTROPIC)
+    makeunitdb.createTestDB(p.token, public=True, channel_list=p.channels, ximagesize=500, yimagesize=500, zimagesize=64, scalingoption=ISOTROPIC)
 
   def teardown_class (self):
     """Destroy the unittest database"""
@@ -302,7 +302,7 @@ class Test_Anno_Isotropic_Propagate():
     f = getURL("http://{}/ca/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), UNDER_PROPAGATION))
 
     # Checking if the PROPGATED value is set correctly
-    time.sleep(30)
+    time.sleep(60)
     f = getURL("http://{}/ca/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
     value = int(f.read())
     assert(value == PROPAGATED)
