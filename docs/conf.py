@@ -21,8 +21,8 @@ import shlex
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
 sys.path += [os.path.abspath('../django')]
-import OCP.settings
-os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
+import ND.settings
+os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
 from django.conf import settings
 import spatialdb
 
@@ -65,7 +65,7 @@ master_doc = 'index'
 # General information about the project.
 project = u'open-connectome'
 copyright = u'2015, Open Connectome Project'
-author = u'OCP'
+author = u'NeuroData'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -143,12 +143,12 @@ html_theme = 'sphinx_rtd_theme'
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-html_logo = 'images/ocp_main.png'
+html_logo = 'images/neurodata_main.png'
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-html_favicon = 'images/ocp_favicon.ico'
+html_favicon = 'images/neurodata_favicon.ico'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -239,7 +239,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
   (master_doc, 'open-connectome.tex', u'open-connectome Documentation',
-   u'OCP', 'manual'),
+   u'NeuroData', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
