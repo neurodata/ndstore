@@ -1,6 +1,6 @@
 # ocp wsgi
-upstream ocp-wsgi {
-  server unix:///var/run/uwsgi/app/ocp/socket;
+upstream neurodata-wsgi {
+  server unix:///var/run/uwsgi/app/neurodata/socket;
 }
 
 # place the following block in your server clause
@@ -10,7 +10,7 @@ server {
   
   location /ocp/ {
     rewrite       ^/ocp/(.*)$ /$1 break;
-    uwsgi_pass    ocp-wsgi;
+    uwsgi_pass    neurodata-wsgi;
     include       /etc/nginx/uwsgi_params;
     # increase buffer size to avoid hitting disk
     uwsgi_buffering on;

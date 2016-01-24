@@ -1,18 +1,18 @@
-### Configuration Information for OCP 
+### Configuration Information for NeuroData
 
 ### Ubuntu Installation
 
 ##### Python dependencies 
 
 ```sh
-pip install numpy scipy django django-registration-redux django-celery mysql-python pytest pillow pylibmc posix_ipc networkx
+pip install numpy scipy django django-registration-redux django-celery mysql-python pytest pillow pylibmc posix_ipc networkx nibabel lxml boto3
 ```
 
 ##### Configuration files
 
 You need to create the following files from the example files in the same directories.
-  * open-connectome/django/OCP/settings.py
-  * open-connectome/django/OCP/settings_secret.py
+  * open-connectome/django/ND/settings.py
+  * open-connectome/django/ND/settings_secret.py
 
 ##### MySQL 
 
@@ -28,24 +28,30 @@ List of commands needed to configure the database for mysql
     grant all privileges on *.* to 'brain'@'%' with grant option;
     ```
 
-  * Create the database ocpdjango
+  * Create the database neurodjango
     
     ```sql
-    create database ocpdjango;
+    create database neurodjango;
     ```
 
 ##### Nginx
 
   * default
-    OCP configuration for /etc/nginx/sites-enabled/default
+    ND configuration for /etc/nginx/sites-enabled/default
   
   * ocp.ini
     uWSGI configuration file in /etc/uwsgi/apps-enabled/
 
 ##### Celery
   
-  * async.conf
-    OCP configuration for /etc/supervisor/
+  * ingest.conf
+    ND configuration for /etc/supervisor/
+  
+  * propagate.conf 
+    ND configuration for /etc/supervisor
+
+  * stats.conf
+    ND configuration for /etc/supervisor
 
 
 ### MACOS Installation
