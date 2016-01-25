@@ -81,10 +81,10 @@ class Test_Histogram8:
     # note: actual generation time should be more like 0.2 seconds, but there may be other jobs in the queue 
     count = 0
     while celerystatus.state != 'SUCCESS':
-      time.sleep(1.5)
+      time.sleep(1)
       celerystatus = celery_app.AsyncResult(jsonresponse['jobid'])
       assert( celerystatus.state != 'FAILURE' )
-      assert( count != 400 )
+      assert( count != 60 )
       count += 1
 
     # now get the histogram
@@ -151,10 +151,10 @@ class Test_Histogram16:
     # note: actual generation time should be more like 1.3 seconds, but there may be other jobs in the queue 
     count = 0
     while celerystatus.state != 'SUCCESS':
-      time.sleep(1.5)
+      time.sleep(1)
       celerystatus = celery_app.AsyncResult(jsonresponse['jobid'])
       assert( celerystatus.state != 'FAILURE' )
-      assert( count != 400 )
+      assert( count != 60 )
       count += 1
 
     # now get the histogram
