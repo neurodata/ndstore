@@ -13,8 +13,6 @@
 # limitations under the License.
 
 import json
-import argparse
-import requests
 import os
 import requests
 from jsonspec.validators import load
@@ -343,11 +341,11 @@ class AutoIngest:
         project_dict['project_name'] = project_name
         if token_name is not None:
              if token_name == '':
-                 project_dict['token_name'] = project_name 
+                 project_dict['token_name'] = project_name
              else:
                  project_dict['token_name'] = token_name
-        else: 
-             project_dict['token_name'] = project_name 
+        else:
+             project_dict['token_name'] = project_name
 
         project_dict['public'] = public
         return project_dict
@@ -371,13 +369,13 @@ class AutoIngest:
                 for j in xrange(timerange[0], timerange[1] + 1):
                     # Test for tifs or such? Currently test for just not
                     # empty
-                    work_path = "{}{}/{}/time{}/".format(
+                    work_path = "{}/{}/{}/time{}/".format(
                         path, token_name, channel_names[i], j)
                     resp = requests.head(work_path)
                     assert(resp.status_code == 200)
             else:
                 # Test for tifs or such? Currently test for just not empty
-                work_path = "{}{}/{}/".format(
+                work_path = "{}/{}/{}/".format(
                     path, token_name, channel_names[i])
                 resp = requests.head(work_path)
                 assert(resp.status_code == 200)
@@ -411,7 +409,7 @@ class AutoIngest:
 
     def put_data(self, data, site_host):
         # try to post data to the server
-        URLPath = "{}ocp/ca/autoIngest/".format(site_host)
+        URLPath = "{}/ocp/ca/autoIngest/".format(site_host)
         try:
             r = requests.post(URLPath, data=json.dumps(data))
             assert( r.status_code == 200 )
