@@ -109,7 +109,6 @@ def autoIngest(webargs, post_data):
         raise
       
       from ocpca.tasks import ingest
-      import pdb; pdb.set_trace()
       #ingest(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
       ingest.delay(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
     
