@@ -251,7 +251,7 @@ class Test_Anno_Zslice_Propagate():
     f = getURL("http://{}/ca/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), UNDER_PROPAGATION))
 
     # Checking if the PROPGATED value is set correctly
-    time.sleep(30)
+    time.sleep(180)
     f = getURL("http://{}/ca/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
     value = int(f.read())
     assert(value == PROPAGATED)
@@ -302,7 +302,7 @@ class Test_Anno_Isotropic_Propagate():
     f = getURL("http://{}/ca/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), UNDER_PROPAGATION))
 
     # Checking if the PROPGATED value is set correctly
-    time.sleep(60)
+    time.sleep(240)
     f = getURL("http://{}/ca/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
     value = int(f.read())
     assert(value == PROPAGATED)
