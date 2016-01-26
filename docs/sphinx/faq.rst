@@ -21,6 +21,14 @@ Please begin with the `configuration <config>`_ page, which should get you up an
 
 Please visit our `How to Ingest Data <ingesting>`_ page, which will help you with mulitple options.
 
+**Can I keep my data private?**
+
+We are an open science data portal so we do encourage you to make their data public as it will enable open science and allow other people to work on your data. But the project does NOT enforce you to make your data public. You can keep your data private for as long as you like.
+
+**How much data can I upload?**
+
+You can upload upto 1TB using the auto-ingest function provided. If you have more data please send us a note on our support forums and one of us will contact you.
+
 **How do I contribute code to NeuroData?**
 
 This project is under active development.  To contribute new functionality or extend the project, either get in touch with us directly, or clone our git repo and issue a pull request. Prior to contributing, checkout our dev branches to see if some of your suggestions are already being implemented. To issue a pull request, head over to our repository and select the pull requests option on the righthand side, then issue a new pull request. NDIO is our internal master branch which is not yet deployed to the servers and might not be tested with all the tool-boxes but is an excellent place to look for new features.

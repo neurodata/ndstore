@@ -109,6 +109,7 @@ def autoIngest(webargs, post_data):
         raise
       
       from ocpca.tasks import ingest
+      import pdb; pdb.set_trace()
       #ingest(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
       ingest.delay(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
     
@@ -290,7 +291,7 @@ def extractProjectDict(pr_dict):
   else:
     tk.token_name = pr_dict['project_name']
   if 'public' in pr_dict:
-    tk.token_name = pr_dict['public']
+    tk.public = pr_dict['public']
   return pr, tk
 
 def extractChannelDict(ch_dict, channel_only=False):
@@ -395,25 +396,25 @@ def computeScalingLevels(imagesize):
 
   return scalinglevels
 
-def extractProjectDict(pr_dict):
-  """Generate a project object from the JSON flle"""
+#def extractProjectDict(pr_dict):
+  #"""Generate a project object from the JSON flle"""
 
-  pr = Project()
-  tk = Token()
+  #pr = Project()
+  #tk = Token()
 
-  try:
-    pr.project_name = pr_dict['project_name']
-  except Exception, e:
-    print "Missing required fields"
-    raise
+  #try:
+    #pr.project_name = pr_dict['project_name']
+  #except Exception, e:
+    #print "Missing required fields"
+    #raise
 
-  if 'token_name' in pr_dict:
-    tk.token_name = pr_dict['token_name']
-  else:
-    tk.token_name = pr_dict['project_name']
-  if 'public' in pr_dict:
-    tk.token_name = pr_dict['public']
-  return pr, tk
+  #if 'token_name' in pr_dict:
+    #tk.token_name = pr_dict['token_name']
+  #else:
+    #tk.token_name = pr_dict['project_name']
+  #if 'public' in pr_dict:
+    #tk.token_name = pr_dict['public']
+  #return pr, tk
 
 
 def createJson(dataset, project, channel_list, metadata={}, channel_only=False):
