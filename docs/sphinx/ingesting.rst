@@ -21,6 +21,7 @@ S3 Bucket Upload
 If you are uploading data through an amazon s3 bucket, this additional step is necessary for us to be able to access the data. In order to make the data in your S3 bucket public and available over HTTP you need to add this bucket policy (in the permissions tab of properties) and save it. Make sure to replace the "examplebucket" in the sample json with your bucket name. When including the data url be sure to set the data_url as http://<example-bucket>.s3.amazonaws.com/ (with example-bucket being replaced with your bucket name).
 
 .. code-block:: json
+    
     {
       "Version":"2012-10-17",
         "Statement":[
