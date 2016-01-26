@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+#/p Copyright 2014 Open Connectome Project (http://openconnecto.me)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -117,7 +117,7 @@ def metadatadict( proj ):
   """Metadata Info"""
   
   try:
-    url = 'http://{}/api/metadata/get/{}/'.format(settings.LIMS_SERVER, proj.getProjectName())
+    url = 'http://{}/metadata/ocp/get/{}/'.format(settings.LIMS_SERVER, proj.getProjectName())
     req = urllib2.Request(url)
     response = urllib2.urlopen(req)
     return json.loads(response.read())

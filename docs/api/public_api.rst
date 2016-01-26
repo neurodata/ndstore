@@ -1,4 +1,4 @@
-Public Token API's
+Public Token APIs
 ******************
 
 .. _public-get:

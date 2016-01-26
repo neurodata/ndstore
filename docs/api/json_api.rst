@@ -1,4 +1,4 @@
-JSON API's
+JSON APIs
 **********
 
 .. _json-createchannel:

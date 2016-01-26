@@ -1,4 +1,4 @@
-Project Info API's
+Project Info APIs
 ******************
 
 JSON Informatio Service

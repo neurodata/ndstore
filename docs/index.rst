@@ -34,7 +34,7 @@ The system design inherits much from NoSQL scale-out and data-intensive computin
 
 .. sidebar:: NeuroData Contact Us 
    
-   If you have questions about NeuroData, or have data to store, please let us know:  ocp-support@googlegroups.com
+   If you have questions about NeuroData, or have data to store, please let us know: support@neurodata.io
    
 .. toctree::
    :maxdepth: 1
@@ -52,6 +52,7 @@ The system design inherits much from NoSQL scale-out and data-intensive computin
    api/data_api
    api/ramon_api
    api/propagate_api
+   api/stats_api
    api/json_api
    api/overlay_api
    api/tile_api

@@ -674,6 +674,8 @@ class NDProjectsDB:
         # Skipping the error if the table does not exist
         if e.args[0] == 1051:
           pass
+        if e.args[0] == 1049:
+          pass
         else:
           conn.rollback()
           logger.error ("Failed to drop channel tables {}: {}. sql={}".format(e.args[0], e.args[1], sql))

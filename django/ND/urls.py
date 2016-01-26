@@ -31,6 +31,7 @@ base_urlpatterns = patterns('',
     url(r'^nduser/', include('nduser.urls')),  
 #    url(r'^viz/', include('ocpviz.urls')),  # ABTODO
     url(r'^ocpgraph/', include('ndgraph.urls')),
+    url(r'^stats/', include('stats.urls')),
 )
 
 urlpatterns = patterns('', 

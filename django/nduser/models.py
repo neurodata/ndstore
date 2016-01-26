@@ -172,7 +172,7 @@ class Channel ( models.Model):
   endwindow = models.IntegerField(default=0)
   default = models.BooleanField(default=False)
   header = models.CharField(max_length=8192, default='', blank=True)
-  
+
   class Meta:
     """ Meta """
     # Required to override the default table name
@@ -239,3 +239,17 @@ class NIFTIHeader ( models.Model):
   def __unicode__(self):
     return self.header
 
+class Histogram (models.Model):
+  """ Stores a histogram in npz format """  
+  channel = models.ForeignKey(Channel)
+  histogram = models.BinaryField(max_length=4096, null=True) 
+  bins = models.BinaryField(max_length=4096, null=True) 
+  REGION_CHOICES = (
+    (0, 'Entire Dataset'),
+    (1, 'ROI (AB TODO)'),
+  )
+  region = models.IntegerField(choices=REGION_CHOICES, default=0)
+
+  class Meta:
+    db_table = u"histogram"
+    managed = True 
