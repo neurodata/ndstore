@@ -15,13 +15,33 @@ Second is how the files themselves are organized. Currently the auto-ingest serv
 
     This figure illustrated visually how the data should be organized for ingest.
 
+S3 Bucket Upload
+================
+
+If you are uploading data through an amazon s3 bucket, this additional step is necessary for us to be able to access the data. In order to make the data in your S3 bucket public and available over HTTP you need to add this bucket policy (in the permissions tab of properties) and save it. Make sure to replace the "examplebucket" in the sample json with your bucket name. When including the data url be sure to set the data_url as http://<example-bucket>.s3.amazonaws.com/ (with example-bucket being replaced with your bucket name).
+
+.. code-block:: json
+    
+    {
+      "Version":"2012-10-17",
+        "Statement":[
+          {
+            "Sid":"AddPerm",
+            "Effect":"Allow",
+            "Principal": "*",
+            "Action":["s3:GetObject"],
+            "Resource":["arn:aws:s3:::examplebucket/*"]
+          }
+        ]
+    }
+
 Uploading
 =========
 
 Overview
 ++++++++
 
-This section will initially address how to upload one channels worth of material. Located in the auto-ingest folder in the ingest folder of open-connectome is a file named generatejson.py (https://github.com/openconnectome/open-connectome/blob/master/ingest/autoingest/generatejson.py). To upload your data edit the hard-coded values in the code to reflect your data, being sure to specify that you are trying to put data to http://openconnecto.me and your DataURL is http accessible (if it is not the script will fail). The editable portion of the script is below the "Edit the below values" and above the "Edit above here" comment. Once the script has run you do not need to maintain a connection to the script. The script can be run simply by calling "python2 generatejson.py" on the script (using python 2.7). In the event that more than one channels worth of data needs to be ingested at once, the service supports this operation as well. To add channels, add additional create channel calls to the AutoIngest object before posting the data. 
+This section will initially address how to upload one channels worth of material. Located in the auto-ingest folder in the ingest folder of open-connectome is a file named generatejson.py (https://github.com/openconnectome/open-connectome/blob/master/ingest/autoingest/generatejson.py). To upload your data edit the hard-coded values in the code to reflect your data, being sure to specify that you are trying to put data to http://openconnecto.me and your DataURL is http accessible (if it is not the script will fail). The editable portion of the script is below the "Edit the below values" and above the "Edit above here" comment. Once the script has run you do not need to maintain a connection to the script. The script can be run simply by calling "python2 generatejson.py" on the script (using python 2.7). In the event that more than one channels worth of data needs to be ingested at once, the service supports this operation as well. To add channels, add additional create channel calls to the AutoIngest object before posting the data.
 
 Explanation of Additional Terms
 +++++++++++++++++++++++++++++++

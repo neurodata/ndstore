@@ -93,6 +93,7 @@
 <li class="toctree-l1"><a class="reference internal" href="console.html">Administrator Console</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">How to Ingest Data</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#prepping-the-data">Prepping The Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#s3-bucket-upload">S3 Bucket Upload</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#uploading">Uploading</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#overview">Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#explanation-of-additional-terms">Explanation of Additional Terms</a></li>
@@ -177,6 +178,24 @@
 <div class="figure align-center" id="id1">
 <a class="reference internal image-reference" href="../_images/ingesting_directory.png"><img alt="../_images/ingesting_directory.png" src="../_images/ingesting_directory.png" style="width: 450px; height: 550px;" /></a>
 <p class="caption"><span class="caption-text">This figure illustrated visually how the data should be organized for ingest.</span></p>
+</div>
+</div>
+<div class="section" id="s3-bucket-upload">
+<h2>S3 Bucket Upload<a class="headerlink" href="#s3-bucket-upload" title="Permalink to this headline">¶</a></h2>
+<p>If you are uploading data through an amazon s3 bucket, this additional step is necessary for us to be able to access the data. In order to make the data in your S3 bucket public and available over HTTP you need to add this bucket policy (in the permissions tab of properties) and save it. Make sure to replace the &#8220;examplebucket&#8221; in the sample json with your bucket name. When including the data url be sure to set the data_url as <a class="reference external" href="http:/">http:/</a>/&lt;example-bucket&gt;.s3.amazonaws.com/ (with example-bucket being replaced with your bucket name).</p>
+<div class="highlight-json"><div class="highlight"><pre><span class="p">{</span>
+  <span class="nt">&quot;Version&quot;</span><span class="p">:</span><span class="s2">&quot;2012-10-17&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;Statement&quot;</span><span class="p">:[</span>
+      <span class="p">{</span>
+        <span class="nt">&quot;Sid&quot;</span><span class="p">:</span><span class="s2">&quot;AddPerm&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;Effect&quot;</span><span class="p">:</span><span class="s2">&quot;Allow&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;Principal&quot;</span><span class="p">:</span> <span class="s2">&quot;*&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;Action&quot;</span><span class="p">:[</span><span class="s2">&quot;s3:GetObject&quot;</span><span class="p">],</span>
+        <span class="nt">&quot;Resource&quot;</span><span class="p">:[</span><span class="s2">&quot;arn:aws:s3:::examplebucket/*&quot;</span><span class="p">]</span>
+      <span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
 </div>
 </div>
 <div class="section" id="uploading">
