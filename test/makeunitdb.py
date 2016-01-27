@@ -45,7 +45,7 @@ def createTestDB ( project_name, channel_list=['unit_anno'], channel_type=ANNOTA
   # RBTODO need to add a window and a project
 
   # make the project entry
-  pr = Project (project_name=project_name, project_description='Unit test', user=unituser, dataset=ds, ocp_version=ocp_version, kvengine=kvengine_to_test.kvengine, kvserver=kvengine_to_test.kvserver)
+  pr = Project (project_name=project_name, project_description='Unit test', user=unituser, dataset=ds, ocp_version=ocp_version, host='localhost',  kvengine=kvengine_to_test.kvengine, kvserver=kvengine_to_test.kvserver)
   pr.save()
 
   # and create the database
