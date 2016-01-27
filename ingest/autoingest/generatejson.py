@@ -31,7 +31,7 @@ def main():
 
     dataset_name='hbp16'        #(type=str, help='Name of Dataset')
     imagesize=(7389,6572,50)           #(type=int[], help='Image size (X,Y,Z)')
-    voxelres=(1.0,1.0,1.0)            #(type=float[], help='Voxel resolution (X,Y,Z) - In nanometers')
+    voxelres=(1.0,1.0,1.0)            #(type=float[], help='Voxel scale (X,Y,Z)')
     offset=(0,0,0)              #(type=int[], default=[0, 0, 0], help='Image Offset in X,Y,Z')
     timerange=(0,0)           #(type=int[], default=[0, 0], help='Time Dimensions')
     scalinglevels=3       #(type=int, default=0, help='Required Scaling levels/ Zoom out levels')

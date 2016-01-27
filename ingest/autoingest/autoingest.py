@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2014 Open Connectome Project (http://openconnecto.me)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +16,7 @@ import json
 import os
 import requests
 from jsonspec.validators import load
+import re
 
 CHANNEL_SCHEMA = load({
     "$schema": "http://json-schema.org/draft-04/schema#",
@@ -138,7 +138,7 @@ class AutoIngest:
     def add_channel(
         self, channel_name, datatype, channel_type, data_url, file_format,
             file_type, exceptions=0, resolution=0,
-            windowrange=(0, 0), readonly=0):
+            windowrange=None, readonly=0):
         """
         Arguments:
             channel_name (str): Channel Name is the specific name of a
@@ -279,7 +279,7 @@ class AutoIngest:
         nd_dict['project'] = self.project_dict(*project)
         nd_dict['metadata'] = metadata
         nd_dict['channels'] = {}
-        for channel_name, value in channel_list.iteritems():
+        for channel_name, value in channel_list.items():
             nd_dict['channels'][channel_name] = self.channel_dict(*value)
 
         return json.dumps(nd_dict, sort_keys=True, indent=4)
@@ -291,7 +291,7 @@ class AutoIngest:
         nd_dict['project'] = self.project_dict(*project)
         nd_dict['metadata'] = metadata
         nd_dict['channels'] = {}
-        for channel_name, value in channel_list.iteritems():
+        for channel_name, value in channel_list.items():
             nd_dict['channels'].append(self.channel_dict(*value))
 
         return json.dumps(nd_dict, sort_keys=True, indent=4)
@@ -358,38 +358,40 @@ class AutoIngest:
         except:
             token_name = data["project"]["project_name"]
 
-        channel_names = data["channels"].keys()
+        channel_names = list(data["channels"].copy().keys())
 
         for i in range(0, len(channel_names)):
             channel_type = data["channels"][
                 channel_names[i]]["channel_type"]
             path = data["channels"][channel_names[i]]["data_url"]
+            aws_pattern = re.compile("^(http:\/\/)(.+)(\.s3\.amazonaws\.com)")
 
-            if (channel_type == "timeseries"):
-                timerange = data["dataset"]["timerange"]
-                for j in xrange(timerange[0], timerange[1] + 1):
-                    # Test for tifs or such? Currently test for just not
-                    # empty
-                    work_path = "{}/{}/{}/time{}/".format(
-                        path, token_name, channel_names[i], j)
+            if not (aws_pattern.match(path)):
+                if (channel_type == "timeseries"):
+                    timerange = data["dataset"]["timerange"]
+                    for j in xrange(timerange[0], timerange[1] + 1):
+                        # Test for tifs or such? Currently test for just not
+                        # empty
+                        work_path = "{}/{}/{}/time{}/".format(
+                            path, token_name, channel_names[i], j)
+                        resp = requests.head(work_path)
+                        assert(resp.status_code == 200)
+                else:
+                    # Test for tifs or such? Currently test for just not empty
+                    work_path = "{}/{}/{}/".format(
+                        path, token_name, channel_names[i])
                     resp = requests.head(work_path)
                     assert(resp.status_code == 200)
-            else:
-                # Test for tifs or such? Currently test for just not empty
-                work_path = "{}/{}/{}/".format(
-                    path, token_name, channel_names[i])
-                resp = requests.head(work_path)
-                assert(resp.status_code == 200)
 
     def verify_json(self, data):
         # Channels
-        channel_names = data["channels"].keys()
+        channel_names = list(data["channels"].copy().keys())
         for i in range(0, len(channel_names)):
             channel_object = data["channels"][channel_names[i]]
             try:
                 CHANNEL_SCHEMA.validate(channel_object)
             except:
-                print 'Check inputted variables. Dumping to /tmp/'
+                print('Check inputted variables. Dumping to /tmp/')
                 self.output_json('/tmp/ND_{}.json'.format(channel_names[i]))
 
         # Dataset
@@ -397,7 +399,7 @@ class AutoIngest:
         try:
             DATASET_SCHEMA.validate(dataset_object)
         except:
-            print "Check inputted variables. Dumping to /tmp/"
+            print("Check inputted variables. Dumping to /tmp/")
             self.output_json('/tmp/ND_dataset.json')
 
         # Project
@@ -405,7 +407,7 @@ class AutoIngest:
         try:
             PROJECT_SCHEMA.validate(project_object)
         except:
-            print "Check inputted variables. Dumping to /tmp/"
+            print("Check inputted variables. Dumping to /tmp/")
             self.output_json('/tmp/ND_project.json')
 
     def put_data(self, data, site_host):
@@ -415,7 +417,7 @@ class AutoIngest:
             r = requests.post(URLPath, data=json.dumps(data))
             assert( r.status_code == 200 )
         except:
-            print "Error in posting JSON file"
+            print("Error in posting JSON file")
 
     def post_data(self, site_host='http://openconnectome.me', file_name=None):
         """
@@ -441,7 +443,7 @@ class AutoIngest:
                 with open(file_name) as data_file:
                     data = json.load(data_file)
             except:
-                print "Error opening file"
+                print("Error opening file")
 
         self.verify_path(data)
         self.verify_json(data)
