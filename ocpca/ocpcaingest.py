@@ -67,7 +67,8 @@ class IngestData:
           url = '{}{}/{}/{}'.format(self.data_url, self.token, self.channel, self.generateFileName(slice_number))
         urllib.urlretrieve('{}'.format(url), self.path+self.generateFileName(slice_number))
       except Exception, e:
-        print "Failed to fetch url {}. File does not exist.".format(url)
+        print "Failed to fetch url {} . File does not exist.".format(url)
+        print e
  
   def cleanData(self, slice_list):
     """Remove the slices at the local store"""

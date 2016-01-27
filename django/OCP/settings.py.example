@@ -31,7 +31,7 @@ ALLOWED_HOSTS = []
 
 FORCE_SCRIPT_NAME = '/ocp'
 
-VIZ_SERVER = 'http://'; # MUST include 'http'! 
+VIZ_SERVER = 'http://viz.neurodata.io'; # MUST include 'http'! 
 
 # Application definition
 
@@ -50,6 +50,7 @@ INSTALLED_APPS = (
     'ocpuser',
     'djcelery',
     'ocpviz',
+    'stats',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -193,6 +194,8 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_ACCEPT_CONTENT=['json', 'pickle']
 CELERYD_PREFETCH_MULTIPLIER = 1
+
+CELERY_RESULT_BACKEND = 'djcelery.backends.database:DatabaseBackend'
 
 # LIMS Server Settings
 LIMS_SERVER = 'cortex.cs.jhu.edu'
