@@ -438,8 +438,6 @@ class NDProjectsDB:
 
     # Connect to the database
 
-    import pdb; pdb.set_trace()
-
     if pr.kvengine == MYSQL:
       with closing (MySQLdb.connect(host = pr.host, user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = pr.project_name)) as conn:
         with closing(conn.cursor()) as cursor:

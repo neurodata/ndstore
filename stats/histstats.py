@@ -14,19 +14,18 @@
 
 import os
 import sys 
-
 import numpy as np 
 
-sys.path += [os.path.abspath('../django')]
-import OCP.settings
-os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
-from django.conf import settings
+# sys.path += [os.path.abspath('../django')]
+# import ND.settings
+# os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
+# from django.conf import settings
 
-import django
-django.setup()
+# import django
+# django.setup()
 
 import logging
-logger = logging.getLogger("ocp")
+logger = logging.getLogger("neurodata")
 
 class HistStats():
 
@@ -102,4 +101,3 @@ class HistStats():
         max = bins[i] 
 
     return max 
-

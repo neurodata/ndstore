@@ -22,20 +22,20 @@ from contextlib import closing
 import zlib
 
 sys.path += [os.path.abspath('../django')]
-import OCP.settings
-os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
+import ND.settings
+os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
 from django.conf import settings
 
 import django
 django.setup()
 
-from ocpuser.models import Token, Project, Channel, Histogram  
+from nduser.models import Token, Project, Channel, Histogram  
 
 import cStringIO
 import zlib
 
 import logging
-logger = logging.getLogger("ocp")
+logger = logging.getLogger("neurodata")
 
 def toNPZ( array ):
   fileobj = cStringIO.StringIO()

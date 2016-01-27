@@ -12,22 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import argparse
 import sys
 import os
 import numpy as np
-import urllib, urllib2
-import cStringIO
-from contextlib import closing
-import zlib
 
-sys.path += [os.path.abspath('../django')]
-import OCP.settings
-os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
-from django.conf import settings
+# sys.path += [os.path.abspath('../django')]
+# import OCP.settings
+# os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
+# from django.conf import settings
 
-import django
-django.setup()
+# import django
+# django.setup()
 
 from cube import Cube
 import ocpcarest
@@ -87,4 +82,3 @@ class ImgHist():
         hist_sum += hist[i][0]
 
       return (hist_sum, bins)
-      

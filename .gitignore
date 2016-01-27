@@ -1,8 +1,7 @@
-#############
-# OCP Files #
-#############
+###################
+# Neurodata Files #
+###################
 
-ocpcaprivate.py
 settings.py
 settings_secret.py
 npzToPNGs.py

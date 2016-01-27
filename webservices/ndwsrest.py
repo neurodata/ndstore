@@ -726,6 +726,19 @@ def selectPost ( webargs, proj, db, postdata ):
   tries = 0
   done = False
 
+  # Process the arguments
+  try:
+    args = restargs.BrainRestArgs ();
+    args.cutoutArgs ( postargs, proj.datasetcfg )
+  except restargs.RESTArgsError, e:
+    logger.warning( "REST Arguments {} failed: {}".format(postargs,e) )
+    raise NDWSError(e)
+  
+  corner = args.getCorner()
+  resolution = args.getResolution()
+  timerange = args.getTimeRange()
+  conflictopt = restargs.conflictOption ( "" )
+  
   while not done and tries < 5:
     try:
 
@@ -734,7 +747,7 @@ def selectPost ( webargs, proj, db, postdata ):
         return postTiff3d ( channel, postargs, proj, db, postdata )
 
       elif service == 'hdf5':
-
+        
         # Get the HDF5 file.
         with closing (tempfile.NamedTemporaryFile ( )) as tmpfile:
 
@@ -742,17 +755,16 @@ def selectPost ( webargs, proj, db, postdata ):
           tmpfile.seek(0)
           h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
 
-
           for channel_name in channel_list:
 
             ch = proj.getChannelObj(channel_name)
             chgrp = h5f.get(ch.getChannelName())
             voxarray = chgrp['CUTOUT'].value
-#            h5_datatype = h5f.get(ch.getChannelName())['DATATYPE'].value[0]
-#            h5_channeltype = h5f.get(ch.getChannelName())['CHANNELTYPE'].value[0]
+            h5_datatype = h5f.get(ch.getChannelName())['DATATYPE'].value[0]
+            h5_channeltype = h5f.get(ch.getChannelName())['CHANNELTYPE'].value[0]
 
-            h5xyzoffset = chgrp.get('XYZOFFSET')
-            h5resolution = chgrp.get('RESOLUTION')[0]
+            # h5xyzoffset = chgrp.get('XYZOFFSET')
+            # h5resolution = chgrp.get('RESOLUTION')[0]
 
             # Checking the datatype of the voxarray
             if voxarray.dtype != ND_dtypetonp[ch.getDataType()]:
@@ -766,10 +778,7 @@ def selectPost ( webargs, proj, db, postdata ):
 
             
             if ch.getChannelType() in IMAGE_CHANNELS + TIMESERIES_CHANNELS : 
-              db.writeCuboid (ch, h5xyzoffset, h5resolution, voxarray) #, timerange) RB no timerange support now
-
-            # elif ch.getChannelType() in TIMESERIES_CHANNELS:
-              # db.writeTimeCuboid (ch, corner, resolution, timerange, voxarray)
+              db.writeCuboid (ch, corner, resolution, voxarray, timerange=timerange) 
             
             elif ch.getChannelType() in ANNOTATION_CHANNELS:
               db.annotateDense ( ch, corner, resolution, voxarray, conflictopt )
@@ -779,20 +788,6 @@ def selectPost ( webargs, proj, db, postdata ):
 
       # other services take cutout args
       elif service in ['npz', 'blosc']:
-
-        # Process the arguments
-        try:
-          args = restargs.BrainRestArgs ();
-          args.cutoutArgs ( postargs, proj.datasetcfg )
-        except restargs.RESTArgsError, e:
-          logger.warning( "REST Arguments {} failed: {}".format(postargs,e) )
-          raise NDWSError(e)
-
-        corner = args.getCorner()
-        resolution = args.getResolution()
-        timerange = args.getTimeRange()
-        conflictopt = restargs.conflictOption ( "" )
-
 
         # get the data out of the compressed blob
         if service == 'npz':
@@ -806,7 +801,7 @@ def selectPost ( webargs, proj, db, postdata ):
           logger.warning("The data has some missing channels")
           raise NDWSError("The data has some missing channels")
       
-        for idx,channel_name in enumerate(channel_list):
+        for idx, channel_name in enumerate(channel_list):
           ch = proj.getChannelObj(channel_name)
   
           # Don't write to readonly channels
@@ -821,9 +816,6 @@ def selectPost ( webargs, proj, db, postdata ):
           if ch.getChannelType() in IMAGE_CHANNELS + TIMESERIES_CHANNELS:
             db.writeCuboid ( ch, corner, resolution, voxarray[idx,:], timerange )
 
-          # elif ch.getChannelType() in TIMESERIES_CHANNELS:
-            # db.writeTimeCuboid(ch, corner, resolution, timerange, voxarray[idx,:])
-          
           elif ch.getChannelType() in ANNOTATION_CHANNELS:
             db.annotateDense(ch, corner, resolution, voxarray[idx,:], conflictopt)
       
