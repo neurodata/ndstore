@@ -20,7 +20,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.conf import settings
 
-from ndtype import IMAGE, ANNOTATION, TIMESERIES, UINT8, UINT16, UINT32, UINT64, FLOAT32, READONLY_TRUE, READONLY_FALSE, ZSLICES, ISOTROPIC, PUBLIC_TRUE, PUBLIC_FALSE, PROPAGATED, NOT_PROPAGATED, EXCEPTION_TRUE, EXCEPTION_FALSE
+from ndtype import IMAGE, ANNOTATION, TIMESERIES, UINT8, UINT16, UINT32, UINT64, FLOAT32, READONLY_TRUE, READONLY_FALSE, ZSLICES, ISOTROPIC, PUBLIC_TRUE, PUBLIC_FALSE, PROPAGATED, NOT_PROPAGATED, EXCEPTION_TRUE, EXCEPTION_FALSE, MYSQL, CASSANDRA, RIAK, DYANMODB, REDIS, DSP61, DSP62, DSP63
 
 # Create your models here.
 class Dataset ( models.Model):
@@ -70,28 +70,29 @@ class Project ( models.Model):
   public =  models.IntegerField(default=0, choices=ISPUBLIC_CHOICES)
   dataset = models.ForeignKey(Dataset)
   HOST_CHOICES = (
-    ('dsp061.pha.jhu.edu', 'default'),
-    ('dsp061.pha.jhu.edu', 'dsp061'),
-    ('dsp062.pha.jhu.edu', 'dsp062'),
-    ('dsp063.pha.jhu.edu', 'dsp063'),
+    (DSP61, 'default'),
+    (DSP61, 'dsp061'),
+    (DSP62, 'dsp062'),
+    (DSP63, 'dsp063'),
     ('localhost', 'Debug'),
   )
-  host =  models.CharField(max_length=255, choices=HOST_CHOICES, default='localhost')
+  host =  models.CharField(max_length=255, choices=HOST_CHOICES, default=DSP61)
   KVENGINE_CHOICES = (
-    ('MySQL','MySQL'),
-    ('Cassandra','Cassandra'),
-    ('Riak','Riak'),
-    ('DynamoDB','DynamoDB'),
+    (MYSQL, 'MySQL'),
+    (CASSANDRA, 'Cassandra'),
+    (RIAK, 'Riak'),
+    (DYANMODB, 'DynamoDB'),
+    (REDIS, 'Redis'),
   )
   kvengine =  models.CharField(max_length=255, choices=KVENGINE_CHOICES, default='MySQL')
   KVSERVER_CHOICES = (
-    ('dsp061.pha.jhu.edu', 'default'),
-    ('dsp061.pha.jhu.edu', 'dsp061'),
-    ('dsp062.pha.jhu.edu', 'dsp062'),
-    ('dsp063.pha.jhu.edu', 'dsp063'),
+    (DSP61, 'default'),
+    (DSP61, 'dsp061'),
+    (DSP62, 'dsp062'),
+    (DSP63, 'dsp063'),
     ('localhost', 'Debug'),
   )
-  kvserver =  models.CharField(max_length=255, choices=KVSERVER_CHOICES, default='localhost')
+  kvserver =  models.CharField(max_length=255, choices=KVSERVER_CHOICES, default=DSP61)
 
   # Version information -- set automatically
   nd_version =  models.CharField(max_length=255, default='0.6')

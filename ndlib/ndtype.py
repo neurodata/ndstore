@@ -14,6 +14,11 @@
 
 import numpy as np
 
+# ND Servers
+DSP61 = 'dsp061.pha.jhu.edu'
+DSP62 = 'dsp062.pha.jhu.edu'
+DSP63 = 'dsp063.pha.jhu.edu'
+
 # ND_CONSTANTS
 IMAGE = 'image'
 ANNOTATION = 'annotation'
@@ -26,8 +31,9 @@ UINT64 = 'uint64'
 FLOAT32 = 'float32'
 MYSQL = 'MySQL'
 CASSANDRA = 'Cassandra'
-RIAK = 'riak'
-DYNAMODB = 'dynamodb'
+RIAK = 'Riak'
+DYNAMODB = 'DynamoDB'
+REDIS = 'Redis'
 
 # ND Version
 ND_VERSION = '0.7'
@@ -49,7 +55,7 @@ DTYPE_float32 = [ FLOAT32 ]
 ND_dtypetonp = {UINT8:np.uint8, UINT16:np.uint16, UINT32:np.uint32, UINT64:np.uint64, FLOAT32:np.float32}
 
 # Server Map
-ND_servermap = {'dsp061.pha.jhu.edu':'172.23.253.61', 'dsp062.pha.jhu.edu':'172.23.253.62', 'dsp063.pha.jhu.edu':'172.23.253.63', 'localhost':'localhost'}
+ND_servermap = {DSP61:'172.23.253.61', DSP62:'172.23.253.62', DSP63:'172.23.253.63', 'localhost':'localhost'}
 
 # Propagated Values
 PROPAGATED = 2
