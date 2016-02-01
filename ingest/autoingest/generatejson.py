@@ -18,7 +18,7 @@ import argparse
 import requests
 import os
 import requests
-import autoingest
+import ndio.utils.autoingest
 SITE_HOST = "http://openconnecto.me"
 
 def main():
