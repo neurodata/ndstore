@@ -3,5 +3,5 @@
 	url = https://github.com/openconnectome/ndlib.git
 	;url = git@github.com:openconnectome/ndlib.git
 [submodule "ndinstall"]
-	path = ndinstall
+	path = setup/ndinstall
 	url = git@github.com:openconnectome/ndinstall.git

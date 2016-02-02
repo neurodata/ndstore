@@ -8,7 +8,7 @@ You can also view the `Tilecache API's <http://docs.neurodata.io/ocptilecache/ap
 getSimpleTile
 -------------
 
-.. http:get:: (string:server_name)/ocp/catmaid/(string:token_name)/(string:channel_name)/(string:slice_type)/(int:time)/(int:zvalue)/(int:ytile)_(int:xtile)_(int:resolution).png
+.. http:get:: (string:server_name)/nd/catmaid/(string:token_name)/(string:channel_name)/(string:slice_type)/(int:time)/(int:zvalue)/(int:ytile)_(int:xtile)_(int:resolution).png
    
    :synopsis: Get a 512x512 tile from the database
 
@@ -38,7 +38,7 @@ getSimpleTile
    
    .. sourcecode:: http
    
-      GET  /ocp/catmaid/kasthuri11/image/xy/1/1_1_4.png HTTP/1.1
+      GET  /nd/catmaid/kasthuri11/image/xy/1/1_1_4.png HTTP/1.1
       Host: openconnecto.me
    
    **Example Response**:
@@ -58,7 +58,7 @@ getSimpleTile
 getMcfcTile
 -----------
 
-.. http:get:: (string:server_name)/ocp/catmaid/mcfc/(string:token_name)/(string:channel_name):(string:color_name)/(string:slice_type)/(int:time)/(int:zvalue)/(int:ytile)_(int:xtile)_(int:resolution).png
+.. http:get:: (string:server_name)/nd/catmaid/mcfc/(string:token_name)/(string:channel_name):(string:color_name)/(string:slice_type)/(int:time)/(int:zvalue)/(int:ytile)_(int:xtile)_(int:resolution).png
    
    :synopsis: Get a 512x512 tile from the database
 
@@ -90,7 +90,7 @@ getMcfcTile
    
    .. sourcecode:: http
    
-      GET  /ocp/catmaid/mcfc/Thy1eYFPBrain10/Grayscale/xy/500/0_0_3.png HTTP/1.1
+      GET  /nd/catmaid/mcfc/Thy1eYFPBrain10/Grayscale/xy/500/0_0_3.png HTTP/1.1
       Host: openconnecto.me
    
    **Example Response**:
@@ -110,7 +110,7 @@ getMcfcTile
 getVikingTile
 -------------
 
-.. http:get:: (string:server_name)/ocp/catmaid/viking/(string:token_name)/volume/(string:channel_name)/(int:resolution)/X(int:xtile)_Y(int:xtile)_Z(int:zvalue).png
+.. http:get:: (string:server_name)/nd/catmaid/viking/(string:token_name)/volume/(string:channel_name)/(int:resolution)/X(int:xtile)_Y(int:xtile)_Z(int:zvalue).png
    
    :synopsis: Get a 512x512 tile from the database
 
@@ -136,7 +136,7 @@ getVikingTile
    
    .. sourcecode:: http
    
-      GET  /ocp/catmaid/viking/kasthuri11/volume/image/4/X1_Y1_Z10.png HTTP/1.1
+      GET  /nd/catmaid/viking/kasthuri11/volume/image/4/X1_Y1_Z10.png HTTP/1.1
       Host: openconnecto.me
    
    **Example Response**:

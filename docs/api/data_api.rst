@@ -9,7 +9,7 @@ HDF5 Service
 POST
 ----
 
-.. http:post:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/hdf5/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
+.. http:post:: (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/hdf5/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
    
    :synopsis: Post a 3D/4D region of data for a single channel or multiple channels in HDF5 file format to the server. Form parameters describe the datasets within the HDF5 file.
 
@@ -52,7 +52,7 @@ POST
 GET
 ----
 
-.. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/hdf5/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
+.. http:get:: (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/hdf5/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
    
    :synopsis: Get a 3D/4D region of data for a single channel or multiple channels in HDF5 file format from the server. Form parameters describe the datsets within the HDF5 file.
 
@@ -98,7 +98,7 @@ Blosc Service
 POST
 ----
 
-.. http:post:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/blosc/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
+.. http:post:: (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/blosc/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
    
    :synopsis: Post a 3D/4D region of data for of a specified channel, resolution and bounds in blosc compression format.
 
@@ -135,7 +135,7 @@ POST
 GET
 ----
 
-.. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/blosc/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
+.. http:get:: (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/blosc/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
    
    :synopsis: Get a 3D/4D region of data for of a specified channel, resolution and bounds in the blosc compression format.
 
@@ -176,7 +176,7 @@ Numpy Service
 POST
 ----
 
-.. http:post:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/npz/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
+.. http:post:: (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/npz/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
    
    :synopsis: Post a 3D/4D region of data for of a specified channel, resolution and bounds in the numpy array format.
 
@@ -217,7 +217,7 @@ POST
 GET
 ----
 
-.. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/npz/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
+.. http:get:: (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/npz/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
    
    :synopsis: Download a 3D/4D region of data for of a specified channel, resolution and bounds in the numpy array format. You can load this data into python using the numpy library for anaylsis.
 
@@ -260,7 +260,7 @@ Image Slice Service
 GET XY Slice Cutout
 -------------------
 
-.. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/xy/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:z_slice)/(int:time_slice)/
+.. http:get:: (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/xy/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:z_slice)/(int:time_slice)/
    
    :synopsis: Download a single image of a specified canonical plane, XY, and specified channel, resolution and bounds. Your browser can load these images.
 
@@ -292,7 +292,7 @@ GET XY Slice Cutout
    
    .. sourcecode:: http
       
-      GET /ocp/ca/kasthuri11/image/xy/0/9000,9500/12000,12500/50/ HTTP/1.1
+      GET /nd/ca/kasthuri11/image/xy/0/9000,9500/12000,12500/50/ HTTP/1.1
       Host: openconnecto.me
 
    **Example Response**:
@@ -313,7 +313,7 @@ GET XY Slice Cutout
 GET XZ Slice Cutout
 -------------------
 
-.. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/xz/(int:resolution)/(int:min_x),(int:max_x)/(int:y_slice)/(int:min_z),(int:max_z)/(int:time_slice/
+.. http:get:: (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/xz/(int:resolution)/(int:min_x),(int:max_x)/(int:y_slice)/(int:min_z),(int:max_z)/(int:time_slice/
    
    :synopsis: Download a single image of a specified canonical plane, XZ, and specified channel, resolution and bounds. Your browser can load these images.
 
@@ -345,7 +345,7 @@ GET XZ Slice Cutout
    
    .. sourcecode:: http
       
-      GET /ocp/ca/kasthuri11/image/xz/0/9000,9500/12000/50,250/ HTTP/1.1
+      GET /nd/ca/kasthuri11/image/xz/0/9000,9500/12000/50,250/ HTTP/1.1
       Host: openconnecto.me
 
    **Example Response**:
@@ -365,7 +365,7 @@ GET XZ Slice Cutout
 GET YZ Slice Cutout
 -------------------
 
-.. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/yz/(int:resolution)/(int:x_slice)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:time_slice)/
+.. http:get:: (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/yz/(int:resolution)/(int:x_slice)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:time_slice)/
    
    :synopsis: Download a single image of a specified canonical plane, YZ, and specified channel, resolution and bounds. Your browser can load these images.
 
@@ -403,7 +403,7 @@ GET YZ Slice Cutout
    
    .. sourcecode:: http
       
-      GET /ocp/ca/kasthuri11/image/yz/0/9000/12000,12500/50,250/ HTTP/1.1
+      GET /nd/ca/kasthuri11/image/yz/0/9000/12000,12500/50,250/ HTTP/1.1
       Host: openconnecto.me
 
    **Example Response**:
@@ -426,7 +426,7 @@ JPEG Stack Service for KNOSSOS
 GET
 ----
 
-.. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/jpeg/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/
+.. http:get:: (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/jpeg/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/
    
    :synopsis: Get a jpeg stack from the server in KNOSSOS format.
 
@@ -458,7 +458,7 @@ GET
    
    .. sourcecode:: http
       
-      GET /ocp/ca/kasthuri11/image/jpeg/0/5000,5500/5000,5500/150,152/ HTTP/1.1
+      GET /nd/ca/kasthuri11/image/jpeg/0/5000,5500/5000,5500/150,152/ HTTP/1.1
       Host: openconnecto.me
 
    **Example Response**:

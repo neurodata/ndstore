@@ -9,7 +9,7 @@ JSON Informatio Service
 GET
 ----
 
-.. http:get:: (string:server_name)/ocp/ca/(string:token_name)/info/
+.. http:get:: (string:server_name)/nd/ca/(string:token_name)/info/
    
    :synopsis: Get all metadata associated with a project that the specified token refers to, including metadata for the dataset it points to, as well as each channel it contains in JSON format.
 
@@ -25,7 +25,7 @@ GET
    
    .. sourcecode:: http
       
-      GET /ocp/ca/kasthuri11/info/ HTTP/1.1
+      GET /nd/ca/kasthuri11/info/ HTTP/1.1
       Host: openconnecto.me
 
    **Example Response**:
@@ -264,7 +264,7 @@ HDF5 Information Service
 GET
 ----
 
-.. http:get:: (string:server_name)/ocp/ca/(string:token_name)/projinfo/
+.. http:get:: (string:server_name)/nd/ca/(string:token_name)/projinfo/
    
    :synopsis: Get all metadata associated with a project that the specified token refers to, including metadata for the dataset it points to, as well as each channel it contains in HDF5 format.
 
@@ -280,7 +280,7 @@ GET
    
    .. sourcecode:: http
       
-      GET /ocp/ca/kasthuri11/projinfo/ HTTP/1.1
+      GET /nd/ca/kasthuri11/projinfo/ HTTP/1.1
       Host: openconnecto.me
 
    **Example Response**:

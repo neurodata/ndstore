@@ -6,7 +6,7 @@ JSON APIs
 createChannel
 -------------
   
-.. http:post:: (string:server_name)/ocp/ca/(string:token_name)/createChannel/
+.. http:post:: (string:server_name)/nd/ca/(string:token_name)/createChannel/
 
    :synopsis: Create a list of channels for an existing project using the project token and JSON file.
 
@@ -22,7 +22,7 @@ createChannel
 
    .. sourcecode:: http
       
-      POST /ocp/ca/test_kat1/ HTTP/1.1
+      POST /nd/ca/test_kat1/ HTTP/1.1
       HOST: openconnecto.me
       Content-Type: application/json
     
@@ -59,7 +59,7 @@ createChannel
 deleteChannel
 -------------
 
-.. http:post:: (string:server_name)/ocp/ca/(string:token_name)/deleteChannel/
+.. http:post:: (string:server_name)/nd/ca/(string:token_name)/deleteChannel/
 
    :synopsis: Delete a list of channels for an existing project using the project token and a JSON file.
 
@@ -75,7 +75,7 @@ deleteChannel
 
    .. sourcecode:: http
       
-      POST /ocp/ca/test_kat1/ HTTP/1.1
+      POST /nd/ca/test_kat1/ HTTP/1.1
       HOST: openconnecto.me
       Content-Type: application/json
 
@@ -102,7 +102,7 @@ deleteChannel
 autoIngest
 ----------
 
-.. http:post:: (string:server_name)/ocp/ca/autoIngest/
+.. http:post:: (string:server_name)/nd/ca/autoIngest/
 
    :synopsis: Create a dataset, project and channels with a JSON file.
    
@@ -118,7 +118,7 @@ autoIngest
    
    .. sourcecode:: http
       
-      GET /ocp/ca/json/ HTTP/1.1
+      GET /nd/ca/json/ HTTP/1.1
       Host: openconnecto.me
       Content-Type: application/json
 

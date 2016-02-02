@@ -20,15 +20,15 @@ Histograms
 getHistogram 
 ------------
 
-.. http:get:: (string:server_name)/ocp/stats/(string:token_name)/(string:channel_name)/hist/
+.. http:get:: (string:server_name)/nd/stats/(string:token_name)/(string:channel_name)/hist/
 
    :synopsis: Retrieve the histogram for an image dataset from the database.
 
-   :param server_name: OCP Server Name (typically openconnecto.me)
+   :param server_name: NeuroData Server Name (typically openconnecto.me)
    :type server_name: string
-   :param token_name: OCP Token 
+   :param token_name: NeuroData Token 
    :type token_name: string
-   :param channel_name: OCP Channel 
+   :param channel_name: NeuroData Channel 
    :type channel_name: string
 
    :statuscode 200: Histogram retrieved.
@@ -40,16 +40,16 @@ getHistogram
 genHistogram
 ------------
 
-.. http:get:: (string:server_name)/ocp/stats/(string:token_name)/(string:channel_name)/genHist/
+.. http:get:: (string:server_name)/nd/stats/(string:token_name)/(string:channel_name)/genHist/
 
    :synopsis: Generate a histogram for an image dataset and store it in the database.
 
 
-   :param server_name: OCP Server Name (typically openconnecto.me)
+   :param server_name: NeuroData Server Name (typically openconnecto.me)
    :type server_name: string
-   :param token_name: OCP Token 
+   :param token_name: NeuroData Token 
    :type token_name: string
-   :param channel_name: OCP Channel 
+   :param channel_name: NeuroData Channel 
    :type channel_name: string
   
    :statuscode 200: Histogram generation started or queued.
@@ -63,16 +63,16 @@ Stats
 allStatistics
 -------------
 
-.. http:get:: (string:server_name)/ocp/stats/(string:token_name)/(string:channel_name)/all/
+.. http:get:: (string:server_name)/nd/stats/(string:token_name)/(string:channel_name)/all/
 
    :synopsis: Retrieve the histogram, mean, standard deviation, min, max, and 1st, 50th, and 99th percentile.
 
 
-   :param server_name: OCP Server Name (typically openconnecto.me)
+   :param server_name: NeuroData Server Name (typically openconnecto.me)
    :type server_name: string
-   :param token_name: OCP Token 
+   :param token_name: NeuroData Token 
    :type token_name: string
-   :param channel_name: OCP Channel 
+   :param channel_name: NeuroData Channel 
    :type channel_name: string
   
    :statuscode 200: Histogram and various statistics retrieved. 
@@ -84,16 +84,16 @@ allStatistics
 Mean
 ----
 
-.. http:get:: (string:server_name)/ocp/stats/(string:token_name)/(string:channel_name)/mean/
+.. http:get:: (string:server_name)/nd/stats/(string:token_name)/(string:channel_name)/mean/
 
    :synopsis: Calculate the mean of an image dataset from the stored histogram.
 
 
-   :param server_name: OCP Server Name (typically openconnecto.me)
+   :param server_name: NeuroData Server Name (typically openconnecto.me)
    :type server_name: string
-   :param token_name: OCP Token 
+   :param token_name: NeuroData Token 
    :type token_name: string
-   :param channel_name: OCP Channel 
+   :param channel_name: NeuroData Channel 
    :type channel_name: string
   
    :statuscode 200: Mean calculated and returned.
@@ -105,16 +105,16 @@ Mean
 Standard Deviation
 ------------------
 
-.. http:get:: (string:server_name)/ocp/stats/(string:token_name)/(string:channel_name)/std/
+.. http:get:: (string:server_name)/nd/stats/(string:token_name)/(string:channel_name)/std/
 
    :synopsis: Calculate the standard deviation of an image dataset from the stored histogram.
 
 
-   :param server_name: OCP Server Name (typically openconnecto.me)
+   :param server_name: NeuroData Server Name (typically openconnecto.me)
    :type server_name: string
-   :param token_name: OCP Token 
+   :param token_name: NeuroData Token 
    :type token_name: string
-   :param channel_name: OCP Channel 
+   :param channel_name: NeuroData Channel 
    :type channel_name: string
   
    :statuscode 200: Standard deviation calculated and returned.
@@ -126,16 +126,16 @@ Standard Deviation
 Percentile
 ----------
 
-.. http:get:: (string:server_name)/ocp/stats/(string:token_name)/(string:channel_name)/percentile/(decimal:percentile_value)
+.. http:get:: (string:server_name)/nd/stats/(string:token_name)/(string:channel_name)/percentile/(decimal:percentile_value)
 
    :synopsis: Calculate the standard deviation of an image dataset from the stored histogram.
 
 
-   :param server_name: OCP Server Name (typically openconnecto.me)
+   :param server_name: NeuroData Server Name (typically openconnecto.me)
    :type server_name: string
-   :param token_name: OCP Token 
+   :param token_name: NeuroData Token 
    :type token_name: string
-   :param channel_name: OCP Channel 
+   :param channel_name: NeuroData Channel 
    :type channel_name: string
    :param percentile_value: Arbitrary percentile expressed as a percent (e.g. 1 for 1%, 95.99 for 95.99%)
    :type percentile_value: decimal

@@ -7,7 +7,7 @@ RAMON Field Service
 setField
 --------
 
-.. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/setField/(string:ramon_field)/(string/int/float:ramon_value)
+.. http:get:: (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/setField/(string:ramon_field)/(string/int/float:ramon_value)
    
    :synopsis: Set the value of the RAMON field for the specified channel
 
@@ -28,7 +28,7 @@ setField
 getField
 --------
 
-.. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/getField/(string:ramon_field)/
+.. http:get:: (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/getField/(string:ramon_field)/
    
    :synopsis: Set the value of the RAMON field for the specified channel
 
@@ -56,7 +56,7 @@ Annotation Service
 GET
 ---
 
-.. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/(int:annotation_id)/(string:option_args)/(int:resolution)/
+.. http:get:: (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/(int:annotation_id)/(string:option_args)/(int:resolution)/
    
    :synopsis: Get an annotation from the server
 
@@ -79,7 +79,7 @@ GET
 POST
 ----
 
-.. http:post:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/(string:option_args)/
+.. http:post:: (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/(string:option_args)/
    
    :synopsis: Post an annotation to the server
 
@@ -101,7 +101,7 @@ Merge Service
 GET
 ---
 
-.. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/merge/(string:listofids)/(string:option_args)/
+.. http:get:: (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/merge/(string:listofids)/(string:option_args)/
    
    :synopsis: Merge two annotation ids on the server.
 

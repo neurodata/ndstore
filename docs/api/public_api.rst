@@ -6,7 +6,7 @@ Public Token APIs
 GET
 ----
 
-.. http:get:: (string:server_name)/ocp/ca/public_tokens/
+.. http:get:: (string:server_name)/nd/ca/public_tokens/
    
    :synopsis: Get a list of all publicly avaliable tokens from the server. These tokens can be used to GET and PUT data to the server. These tokens can also be used to access :ref:`project information<jsoninfo-get>`
 
@@ -20,7 +20,7 @@ GET
    
    .. sourcecode:: http
       
-      GET /ocp/ca/public_tokens HTTP/1.1
+      GET /nd/ca/public_tokens HTTP/1.1
       Host: openconnecto.me
 
    **Example Response**:
