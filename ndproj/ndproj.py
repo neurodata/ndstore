@@ -643,7 +643,7 @@ class NDProjectsDB:
       for ch in chs:
         self.deleteNDChannel ( proj, ch.channel_name )
     
-    elif pr.getKVEngine() == REDIS:
+    elif pr.kvengine == REDIS:
 
       # Do nothing
       pass

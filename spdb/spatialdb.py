@@ -148,19 +148,18 @@ class SpatialDB:
     """Return a list of cubes"""
     
     if listoftimestamps is None:
-      data = self.kvio.getCubes(ch, listofidxs, resolution, neariso)
+      idstofetch = self.kvio.getCubeIndex(ch, listofidxs, resolution)
       # Checking if the index exists inside the database or not
-      # data = None
-      if data is None:
+      if idstofetch:
         print "Miss:", listofidxs
-        super_cuboids = self.s3io.getCubes(ch, listofidxs, resolution)
+        super_cuboids = self.s3io.getCubes(ch, list(idstofetch), resolution)
         
         # iterating over super_cuboids
         for superlistofidxs, superlistofcubes in super_cuboids:
           # call putCubes and update index in the table before returning data
           self.putCubes(ch, superlistofidxs, resolution, superlistofcubes, update=True)
-        
-        data = self.kvio.getCubes(ch, listofidxs, resolution, neariso)
+          self.kvio.putCubeIndex(ch, superlistofidxs, resolution) 
+      data = self.kvio.getCubes(ch, listofidxs, resolution, neariso)
       return data
     else:
       return self.kvio.getTimeCubes(ch, listofidxs, listoftimestamps, resolution)

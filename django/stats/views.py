@@ -181,5 +181,3 @@ def all(request, webargs):
   jsondict['max'] = max
 
   return HttpResponse(json.dumps(jsondict, indent=4), content_type="application/json") 
-
-

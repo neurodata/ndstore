@@ -56,6 +56,10 @@ class RedisKVIO:
     """Rollback the transaction. To be called on exceptions."""
     pass
   
+  def getIndexStore(self, ch, resolution):
+    """Generate the name of the Index Store"""
+    return '{}_{}_{}'.format(self.db.proj.getProjectName(), ch.getChannelName(), resolution)
+
   def generateKeys(self, ch, resolution, zidx_list, timestamp):
     """Generate a key for Redis"""
     
@@ -72,6 +76,19 @@ class RedisKVIO:
           key_list.append( '{}_{}_{}_{}_{}'.format(self.db.proj.getProjectName(), ch.getChannelName(), resolution, timestamp, zidx) )
 
     return key_list
+
+  def getCubeIndex(self, ch, listofidxs, resolution):
+    """Retrieve the indexes of inserted cubes"""
+    index_store = self.getIndexStore(ch, resolution)
+    index_store_temp = index_store+'_temp'
+    self.client.sadd(index_store_temp, *listofidxs)
+    idstofetch = self.client.sdiff( index_store_temp, index_store )
+    self.client.delete(index_store_temp)
+    return idstofetch
+  
+  def putCubeIndex(self, ch, listofidxs, resolution):
+    """Add the listofidxs to the store"""
+    self.client.sadd( self.getIndexStore(ch, resolution), *listofidxs)
 
   def getCube(self, ch, zidx, resolution, update=False, timestamp=None):
     """Retrieve a single cube from the database"""

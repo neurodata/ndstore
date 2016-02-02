@@ -20,7 +20,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.conf import settings
 
-from ndtype import IMAGE, ANNOTATION, TIMESERIES, UINT8, UINT16, UINT32, UINT64, FLOAT32, READONLY_TRUE, READONLY_FALSE, ZSLICES, ISOTROPIC, PUBLIC_TRUE, PUBLIC_FALSE, PROPAGATED, NOT_PROPAGATED, EXCEPTION_TRUE, EXCEPTION_FALSE, MYSQL, CASSANDRA, RIAK, DYNAMODB, REDIS, DSP61, DSP62, DSP63
+from ndtype import IMAGE, ANNOTATION, TIMESERIES, UINT8, UINT16, UINT32, UINT64, FLOAT32, READONLY_TRUE, READONLY_FALSE, ZSLICES, ISOTROPIC, PUBLIC_TRUE, PUBLIC_FALSE, PROPAGATED, NOT_PROPAGATED, EXCEPTION_TRUE, EXCEPTION_FALSE, MYSQL, CASSANDRA, RIAK, DYNAMODB, REDIS, DSP61, DSP62, DSP63, ND_VERSION, SCHEMA_VERSION
 
 # Create your models here.
 class Dataset ( models.Model):
@@ -95,8 +95,8 @@ class Project ( models.Model):
   kvserver =  models.CharField(max_length=255, choices=KVSERVER_CHOICES, default=DSP61)
 
   # Version information -- set automatically
-  nd_version =  models.CharField(max_length=255, default='0.6')
-  schema_version =  models.CharField(max_length=255, default='0.6')
+  nd_version =  models.CharField(max_length=255, default=ND_VERSION)
+  schema_version =  models.CharField(max_length=255, default=SCHEMA_VERSION)
 
   class Meta:
     """ Meta """
