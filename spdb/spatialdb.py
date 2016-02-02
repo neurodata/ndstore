@@ -28,27 +28,31 @@ import imagecube
 import anncube
 
 import ndlib
-from ndtype import ANNOTATION_CHANNELS, TIMESERIES_CHANNELS, EXCEPTION_TRUE, PROPAGATED
+from ndtype import ANNOTATION_CHANNELS, TIMESERIES_CHANNELS, EXCEPTION_TRUE, PROPAGATED, MYSQL, CASSANDRA, RIAK, DYNAMODB, REDIS
 
 from spatialdberror import SpatialDBError
 
 import logging
 logger=logging.getLogger("neurodata")
 
+# import mysqlkvio
 import s3io
-import mysqlkvio
-try:
-  import casskvio
-except:
-  pass
-try:
-  import riakkvio
-except:
-  pass
-try:
-  import dynamokvio
-except:
-  pass
+# try:
+  # import casskvio
+# except:
+  # pass
+# try:
+  # import riakkvio
+# except:
+  # pass
+# try:
+  # import dynamokvio
+# except:
+  # pass
+# try:
+  # import rediskvio
+# except:
+  # pass
 
 """
 .. module:: spatialdb
@@ -73,29 +77,37 @@ class SpatialDB:
     self.KVENGINE = self.proj.getKVEngine()
 
     # Choose the I/O engine for key/value data
-    if self.proj.getKVEngine() == 'MySQL':
+    if self.proj.getKVEngine() == MYSQL:
+      import mysqlkvio
       self.kvio = mysqlkvio.MySQLKVIO(self)
       self.NPZ = True
     
-    elif self.proj.getKVEngine() == 'Riak':
+    elif self.proj.getKVEngine() == RIAK:
       import riakkvio
       self.conn = None
       self.cursor = None
       self.kvio = riakkvio.RiakKVIO(self)
       self.NPZ = False
     
-    elif self.proj.getKVEngine() == 'Cassandra':
+    elif self.proj.getKVEngine() == CASSANDRA:
       import casskvio
       self.conn = None
       self.cursor = None
       self.kvio = casskvio.CassandraKVIO(self)
       self.NPZ = False
 
-    elif self.proj.getKVEngine() == 'DynamoDB':
+    elif self.proj.getKVEngine() == DYNAMODB:
       import dynamokvio
       self.conn = None
       self.cursor = None
       self.kvio = dynamokvio.DynamoKVIO(self)
+      self.NPZ = False
+
+    elif self.proj.getKVEngine() == REDIS:
+      import rediskvio
+      self.conn = None
+      self.cursor = None
+      self.kvio = rediskvio.RedisKVIO(self)
       self.NPZ = False
 
     else:

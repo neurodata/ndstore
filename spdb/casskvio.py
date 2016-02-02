@@ -31,16 +31,16 @@ class CassandraKVIO:
     self.cluster.shutdown()
 
   def startTxn ( self ):
-    """Start a transaction.  Ensure database is in multi-statement mode."""
+    """Start a transaction. Ensure database is in multi-statement mode."""
     pass
     
     
   def commit ( self ): 
-    """Commit the transaction.  Moved out of __del__ to make explicit."""
+    """Commit the transaction. Moved out of __del__ to make explicit."""
     pass
     
   def rollback ( self ):
-    """Rollback the transaction.  To be called on exceptions."""
+    """Rollback the transaction. To be called on exceptions."""
     pass
     
 

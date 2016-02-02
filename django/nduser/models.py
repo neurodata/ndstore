@@ -20,7 +20,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.conf import settings
 
-from ndtype import IMAGE, ANNOTATION, TIMESERIES, UINT8, UINT16, UINT32, UINT64, FLOAT32, READONLY_TRUE, READONLY_FALSE, ZSLICES, ISOTROPIC, PUBLIC_TRUE, PUBLIC_FALSE, PROPAGATED, NOT_PROPAGATED, EXCEPTION_TRUE, EXCEPTION_FALSE, MYSQL, CASSANDRA, RIAK, DYANMODB, REDIS, DSP61, DSP62, DSP63
+from ndtype import IMAGE, ANNOTATION, TIMESERIES, UINT8, UINT16, UINT32, UINT64, FLOAT32, READONLY_TRUE, READONLY_FALSE, ZSLICES, ISOTROPIC, PUBLIC_TRUE, PUBLIC_FALSE, PROPAGATED, NOT_PROPAGATED, EXCEPTION_TRUE, EXCEPTION_FALSE, MYSQL, CASSANDRA, RIAK, DYNAMODB, REDIS, DSP61, DSP62, DSP63
 
 # Create your models here.
 class Dataset ( models.Model):
@@ -81,7 +81,7 @@ class Project ( models.Model):
     (MYSQL, 'MySQL'),
     (CASSANDRA, 'Cassandra'),
     (RIAK, 'Riak'),
-    (DYANMODB, 'DynamoDB'),
+    (DYNAMODB, 'DynamoDB'),
     (REDIS, 'Redis'),
   )
   kvengine =  models.CharField(max_length=255, choices=KVENGINE_CHOICES, default='MySQL')

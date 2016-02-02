@@ -26,7 +26,7 @@ from nduser.models import Dataset
 from nduser.models import Token
 from nduser.models import Channel
 import annotation
-from ndtype import IMAGE_CHANNELS, ANNOTATION_CHANNELS, ZSLICES, ISOTROPIC, READONLY_TRUE, READONLY_FALSE, PUBLIC_TRUE, NOT_PROPAGATED, UNDER_PROPAGATION, PROPAGATED, IMAGE, ANNOTATION, TIMESERIES, MYSQL, CASSANDRA, RIAK, DYNAMODB, ND_servermap
+from ndtype import IMAGE_CHANNELS, ANNOTATION_CHANNELS, ZSLICES, ISOTROPIC, READONLY_TRUE, READONLY_FALSE, PUBLIC_TRUE, NOT_PROPAGATED, UNDER_PROPAGATION, PROPAGATED, IMAGE, ANNOTATION, TIMESERIES, MYSQL, CASSANDRA, RIAK, DYNAMODB, REDIS,  ND_servermap
 
 # need imports to be conditional
 try:
@@ -420,10 +420,10 @@ class NDProjectsDB:
       finally:
         session.shutdown()
 
-    elif pr.kvengine == DYNAMODB:
+    elif pr.kvengine in [DYNAMODB, REDIS]:
       # nothing to do, WOW!
       pass
-
+    
     else:
       logging.error ("Unknown KV Engine requested: {}".format("RBTODO get name"))
       raise NDWSError ("Unknown KV Engine requested: {}".format("RBTODO get name"))
@@ -577,7 +577,11 @@ class NDProjectsDB:
       
       except Exception, e:
         import pdb; pdb.set_trace()
-      
+    
+    elif pr.kvengine == REDIS:
+      # Do nothing
+      pass
+
     else:
       logging.error ("Unknown KV Engine requested: {}".format("RBTODO get name"))
       raise NDWSError ("Unknown KV Engine requested: {}".format("RBTODO get name"))
@@ -638,6 +642,11 @@ class NDProjectsDB:
       chs = Channel.objects.filter(project_id=pr)
       for ch in chs:
         self.deleteNDChannel ( proj, ch.channel_name )
+    
+    elif pr.getKVEngine() == REDIS:
+
+      # Do nothing
+      pass
 
 
   def deleteNDChannel (self, proj, channel_name):
@@ -701,6 +710,11 @@ class NDProjectsDB:
         except Exception, e:
           import pdb; pdb.set_trace()
           raise
+
+    elif pr.getKVEngine() == REDIS:
+      
+      # Do nothing
+      pass
       
 
   def loadDatasetConfig ( self, dataset ):

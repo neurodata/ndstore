@@ -12,10 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-kvengine='MySQL'
-#kvengine='Cassandra'
-#kvengine='Riak'
-#kvengine='DYNAMODB'
+from ndtype import MYSQL, CASSANDRA, RIAK, DYNAMODB, REDIS
+
+kvengine = MYSQL
+# kvengine = CASSANDRA
+# kvengine = RIAK
+# kvengine = DYNAMODB
+# kvengine = REDIS
 
 #kvserver='172.23.253.63'
 kvserver='localhost'
