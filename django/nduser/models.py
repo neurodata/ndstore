@@ -28,10 +28,10 @@ class Dataset ( models.Model):
    dataset_description = models.CharField(max_length=4096,blank=True)
    user = models.ForeignKey(settings.AUTH_USER_MODEL)
    ISPUBLIC_CHOICES = (
-       (0, 'Private'),
-       (1, 'Public'),
+       (PUBLIC_FALSE, 'Private'),
+       (PUBLIC_TRUE, 'Public'),
    )
-   public =  models.IntegerField(default=0, choices=ISPUBLIC_CHOICES)
+   public =  models.IntegerField(default=PUBLIC_FALSE, choices=ISPUBLIC_CHOICES)
    ximagesize =  models.IntegerField()
    yimagesize =  models.IntegerField()
    zimagesize =  models.IntegerField()
@@ -84,7 +84,7 @@ class Project ( models.Model):
     (DYNAMODB, 'DynamoDB'),
     (REDIS, 'Redis'),
   )
-  kvengine =  models.CharField(max_length=255, choices=KVENGINE_CHOICES, default='MySQL')
+  kvengine =  models.CharField(max_length=255, choices=KVENGINE_CHOICES, default=MYSQL)
   KVSERVER_CHOICES = (
     (DSP61, 'default'),
     (DSP61, 'dsp061'),
@@ -93,6 +93,10 @@ class Project ( models.Model):
     ('localhost', 'Debug'),
   )
   kvserver =  models.CharField(max_length=255, choices=KVSERVER_CHOICES, default=DSP61)
+  MDENGINE_CHOICES = (
+    (MYSQL, 'MySQL'),    
+  )
+  mdengine = models.CharField(max_length=255, choices=MDENGINE_CHOICES, default=MYSQL)
 
   # Version information -- set automatically
   nd_version =  models.CharField(max_length=255, default=ND_VERSION)
@@ -113,10 +117,10 @@ class Token ( models.Model):
   user = models.ForeignKey(settings.AUTH_USER_MODEL)
   project  = models.ForeignKey(Project)
   ISPUBLIC_CHOICES = (
-    (0, 'Private'),
-    (1, 'Public'),
+    (PUBLIC_FALSE, 'Private'),
+    (PUBLIC_TRUE, 'Public'),
   )
-  public =  models.IntegerField(default=0, choices=ISPUBLIC_CHOICES)
+  public =  models.IntegerField(default=PUBLIC_FALSE, choices=ISPUBLIC_CHOICES)
    
    
   class Meta:

@@ -10,24 +10,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-import sys
 import math
 import MySQLdb
-import h5py
 import numpy as np
 from contextlib import closing
-
-from django.core.exceptions import ObjectDoesNotExist
-from django.conf import settings
-
-from nduser.models import Project
-from nduser.models import Dataset
-from nduser.models import Token
-from nduser.models import Channel
-import annotation
-from ndtype import IMAGE_CHANNELS, ANNOTATION_CHANNELS, ZSLICES, ISOTROPIC, READONLY_TRUE, READONLY_FALSE, PUBLIC_TRUE, NOT_PROPAGATED, UNDER_PROPAGATION, PROPAGATED, IMAGE, ANNOTATION, TIMESERIES, MYSQL, CASSANDRA, RIAK, DYNAMODB, REDIS,  ND_servermap
-
 # need imports to be conditional
 try:
   from cassandra.cluster import Cluster
@@ -42,13 +28,22 @@ try:
 except:
   pass
 
+from django.core.exceptions import ObjectDoesNotExist
+from django.conf import settings
+
+from nduser.models import Project
+from nduser.models import Dataset
+from nduser.models import Token
+from nduser.models import Channel
+import annotation
+from ndtype import IMAGE_CHANNELS, ANNOTATION_CHANNELS, ZSLICES, ISOTROPIC, READONLY_TRUE, READONLY_FALSE, PUBLIC_TRUE, NOT_PROPAGATED, UNDER_PROPAGATION, PROPAGATED, IMAGE, ANNOTATION, TIMESERIES, MYSQL, CASSANDRA, RIAK, DYNAMODB, REDIS,  ND_servermap
+
 from ndwserror import NDWSError
 import logging
 logger=logging.getLogger("neurodata")
 
 
-"""While this is not a true inheritance hierarchy from NDDataset->OPCPCAProject->NDChannel
-    modeling it as such makes it easier to call things on the channel.  It has dataset properties, etc."""
+"""While this is not a true inheritance hierarchy from NDDataset->OPCPCAProject->NDChannel modeling it as such makes it easier to call things on the channel.  It has dataset properties, etc."""
 
 class NDDataset:
   """Configuration for a dataset"""
@@ -221,6 +216,8 @@ class NDProject:
     return self.pr.kvengine
   def getKVServer ( self ):
     return self.pr.kvserver
+  def getMDEngine ( self ):
+    return self.pr.mdengine
   def getDBName ( self ):
     return self.pr.project_name
   def getProjectName ( self ):
