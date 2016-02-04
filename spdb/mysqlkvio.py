@@ -14,6 +14,7 @@
 
 import MySQLdb
 
+from kvio import KVIO
 from ndtype import OLDCHANNEL
 
 import logging
@@ -23,7 +24,7 @@ logger=logging.getLogger("neurodata")
 """Helpers function to do cube I/O in across multiple DBs.
     This uses the state and methods of spatialdb"""
 
-class MySQLKVIO:
+class MySQLKVIO(KVIO):
 
   def __init__ ( self, db ):
     """Connect to the database"""

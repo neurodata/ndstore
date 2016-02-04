@@ -12,50 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import types
+
+from kvio import KVIO
 import redis
-import blosc
-import hashlib
-from sets import Set
-from operator import add, sub, mul, div, mod
-
-import ndlib
-
-SUPERCUBESIZE = [4,4,4]
 
 import logging
 logger=logging.getLogger("neurodata")
 
-
 """Helpers function to do cube I/O in across multiple DBs.
     This uses the state and methods of spatialdb"""
 
-class RedisKVIO:
+class RedisKVIO(KVIO):
 
   def __init__ ( self, db ):
-    """Connect to the S3 backend"""
+    """Connect to the Redis backend"""
     
     self.db = db
     self.client = redis.StrictRedis(host=self.db.proj.getDBHost(), port=6379, db=0)
     self.pipe = self.client.pipeline(transaction=False)
     
-  def close ( self ):
-    """Close the connection"""
-    pass
-    # self.cluster.shutdown()
-
-  def startTxn ( self ):
-    """Start a transaction. Ensure database is in multi-statement mode."""
-    pass
-    
-    
-  def commit ( self ): 
-    """Commit the transaction. Moved out of __del__ to make explicit."""
-    pass
-    
-  def rollback ( self ):
-    """Rollback the transaction. To be called on exceptions."""
-    pass
-  
   def getIndexStore(self, ch, resolution):
     """Generate the name of the Index Store"""
     return '{}_{}_{}'.format(self.db.proj.getProjectName(), ch.getChannelName(), resolution)
@@ -63,7 +39,6 @@ class RedisKVIO:
   def generateKeys(self, ch, resolution, zidx_list, timestamp):
     """Generate a key for Redis"""
     
-    import types
     key_list = []
     if isinstance(timestamp, types.ListType):
       for tvalue in timestamp:

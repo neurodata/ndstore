@@ -14,6 +14,8 @@ import math
 import MySQLdb
 import numpy as np
 from contextlib import closing
+from operator import add, mul
+
 # need imports to be conditional
 try:
   from cassandra.cluster import Cluster
@@ -36,7 +38,7 @@ from nduser.models import Dataset
 from nduser.models import Token
 from nduser.models import Channel
 import annotation
-from ndtype import IMAGE_CHANNELS, ANNOTATION_CHANNELS, ZSLICES, ISOTROPIC, READONLY_TRUE, READONLY_FALSE, PUBLIC_TRUE, NOT_PROPAGATED, UNDER_PROPAGATION, PROPAGATED, IMAGE, ANNOTATION, TIMESERIES, MYSQL, CASSANDRA, RIAK, DYNAMODB, REDIS,  ND_servermap
+from ndtype import IMAGE_CHANNELS, ANNOTATION_CHANNELS, ZSLICES, ISOTROPIC, READONLY_TRUE, READONLY_FALSE, PUBLIC_TRUE, NOT_PROPAGATED, UNDER_PROPAGATION, PROPAGATED, IMAGE, ANNOTATION, TIMESERIES, MYSQL, CASSANDRA, RIAK, DYNAMODB, REDIS,  ND_servermap, SUPERCUBESIZE
 
 from ndwserror import NDWSError
 import logging
@@ -59,6 +61,7 @@ class NDDataset:
 
     self.resolutions = []
     self.cubedim = {}
+    self.supercubedim = {}
     self.imagesz = {}
     self.offset = {}
     self.voxelres = {}
@@ -127,6 +130,8 @@ class NDDataset:
         # RB what should we use as a cubedim?
         self.cubedim[i] = [512, 512, 16]
       
+      self.supercubedim[i] = map(mul, self.cubedim[i], SUPERCUBESIZE)
+
       if self.scale[i]['xz'] < 1.0:
         scalepixels = 1/self.scale[i]['xz']
         if ((math.ceil(scalepixels)-scalepixels)/scalepixels) <= ((scalepixels-math.floor(scalepixels))/scalepixels):
@@ -158,6 +163,10 @@ class NDDataset:
     return self.voxelres
   def getCubeDims(self):
     return self.cubedim
+  def getSuperCubeDims(self):
+    return self.supercubedim
+  def getSuperCubeSize(self):
+    return SUPERCUBESIZE
   def getTimeRange(self):
     return self.timerange
   def getDatasetDescription ( self ):
@@ -169,7 +178,6 @@ class NDDataset:
     [xstart, ystart, zstart ] = corner
     [tstart, tend] = timeargs
 
-    from operator import add
     [xend, yend, zend] = map(add, corner, dim) 
 
     if ( ( xstart >= 0 ) and ( xstart < xend) and ( xend <= self.imagesz[resolution][0]) and\

@@ -20,8 +20,6 @@ from operator import add, sub, mul, div, mod
 
 import ndlib
 
-SUPERCUBESIZE = [4,4,4]
-
 import logging
 logger=logging.getLogger("neurodata")
 
@@ -58,8 +56,9 @@ class S3IO:
     [[ximagesz, yimagesz, zimagesz], timerange] = self.db.proj.datasetcfg.imageSize(resolution)
     [xcubedim, ycubedim, zcubedim] = cubedim = self.db.proj.datasetcfg.getCubeDims()[resolution]
     [xoffset, yoffset, zoffset] = self.db.proj.datasetcfg.getOffset()[resolution]
-
-    super_cubedim = map(mul, cubedim, SUPERCUBESIZE)
+    [xsupercubedim, ysupercubedim, zsupercubedim] = super_cubedim = self.db.proj.datasetcfg.getSuperCubeDims()[resolution]
+    
+    # super_cubedim = map(mul, cubedim, SUPERCUBESIZE)
     [x, y, z] = ndlib.MortonXYZ(zidx)
     corner = map(mul, ndlib.MortonXYZ(zidx), cubedim)
     [x,y,z] = map(div, corner, super_cubedim)
@@ -74,13 +73,13 @@ class S3IO:
     cube_list = []
     
     # SuperCube Size
-    [xnumcubes, ynumcubes, znumcubes] = SUPERCUBESIZE
+    [xnumcubes, ynumcubes, znumcubes] = self.db.datasetcfg.getSuperCubeSize()
     
     # Cube dimensions
     cubedim = self.db.datasetcfg.cubedim[resolution]
     [x,y,z] = ndlib.MortonXYZ(super_zidx)
     # start = map(mul, cubedim, [x,y,z])
-    start = map(mul, [x,y,z], SUPERCUBESIZE)
+    start = map(mul, [x,y,z], self.db.datasetcfg.getSuperCubeSize())
     
     for z in range(znumcubes):
       for y in range(ynumcubes):

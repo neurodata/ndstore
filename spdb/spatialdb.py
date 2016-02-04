@@ -75,43 +75,47 @@ class SpatialDB:
     # Are there exceptions?
     #self.EXCEPT_FLAG = self.proj.getExceptions()
     self.KVENGINE = self.proj.getKVEngine()
-
-    # Choose the I/O engine for key/value data
-    if self.proj.getKVEngine() == MYSQL:
-      import mysqlkvio
-      self.kvio = mysqlkvio.MySQLKVIO(self)
-      self.NPZ = True
+    self.NPZ = False
     
-    elif self.proj.getKVEngine() == RIAK:
-      import riakkvio
-      self.conn = None
-      self.cursor = None
-      self.kvio = riakkvio.RiakKVIO(self)
-      self.NPZ = False
+    from kvio import KVIO
+    self.kvio = KVIO.getIOEngine(self)
+
+    # # Choose the I/O engine for key/value data
+    # if self.proj.getKVEngine() == MYSQL:
+      # import mysqlkvio
+      # self.kvio = mysqlkvio.MySQLKVIO(self)
+      # self.NPZ = True
     
-    elif self.proj.getKVEngine() == CASSANDRA:
-      import casskvio
-      self.conn = None
-      self.cursor = None
-      self.kvio = casskvio.CassandraKVIO(self)
-      self.NPZ = False
+    # elif self.proj.getKVEngine() == RIAK:
+      # import riakkvio
+      # self.conn = None
+      # self.cursor = None
+      # self.kvio = riakkvio.RiakKVIO(self)
+      # self.NPZ = False
+    
+    # elif self.proj.getKVEngine() == CASSANDRA:
+      # import casskvio
+      # self.conn = None
+      # self.cursor = None
+      # self.kvio = casskvio.CassandraKVIO(self)
+      # self.NPZ = False
 
-    elif self.proj.getKVEngine() == DYNAMODB:
-      import dynamokvio
-      self.conn = None
-      self.cursor = None
-      self.kvio = dynamokvio.DynamoKVIO(self)
-      self.NPZ = False
+    # elif self.proj.getKVEngine() == DYNAMODB:
+      # import dynamokvio
+      # self.conn = None
+      # self.cursor = None
+      # self.kvio = dynamokvio.DynamoKVIO(self)
+      # self.NPZ = False
 
-    elif self.proj.getKVEngine() == REDIS:
-      import rediskvio
-      self.conn = None
-      self.cursor = None
-      self.kvio = rediskvio.RedisKVIO(self)
-      self.NPZ = False
+    # elif self.proj.getKVEngine() == REDIS:
+      # import rediskvio
+      # self.conn = None
+      # self.cursor = None
+      # self.kvio = rediskvio.RedisKVIO(self)
+      # self.NPZ = False
 
-    else:
-      raise SpatialDBError ("Unknown key/value store. Engine = {}".format(self.proj.getKVEngine()))
+    # else:
+      # raise SpatialDBError ("Unknown key/value store. Engine = {}".format(self.proj.getKVEngine()))
 
     self.annoIdx = annindex.AnnotateIndex ( self.kvio, self.proj )
 

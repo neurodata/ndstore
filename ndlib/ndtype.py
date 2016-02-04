@@ -14,21 +14,49 @@
 
 import numpy as np
 
+# SuperCube Size
+SUPERCUBESIZE = [4,4,4]
+
 # ND Servers
 DSP61 = 'dsp061.pha.jhu.edu'
 DSP62 = 'dsp062.pha.jhu.edu'
 DSP63 = 'dsp063.pha.jhu.edu'
+DSP36 = 'dsp036.pha.jhu.edu'
+DSP37 = 'dsp037.pha.jhu.edu'
+DSP38 = 'dsp038.pha.jhu.edu'
+DSP39 = 'dsp039.pha.jhu.edu'
+LOCALHOST = 'localhost'
 
-# ND_CONSTANTS
+ND_servermap = {DSP61:'172.23.253.61', DSP62:'172.23.253.62', DSP63:'172.23.253.63', 'localhost':'localhost'}
+
+# ND_Channel Types, Mapping, Groups
 IMAGE = 'image'
 ANNOTATION = 'annotation'
 TIMESERIES = 'timeseries'
 OLDCHANNEL = 'oldchannel'
+
+ND_channeltypes = {0:IMAGE,1:ANNOTATION,2:TIMESERIES,3:OLDCHANNEL}
+
+IMAGE_CHANNELS = [ IMAGE, OLDCHANNEL ]
+TIMESERIES_CHANNELS = [ TIMESERIES ]
+ANNOTATION_CHANNELS = [ ANNOTATION ]
+
+# ND Data Types, Mapping, Groups
 UINT8 = 'uint8'
 UINT16 = 'uint16'
 UINT32 = 'uint32'
 UINT64 = 'uint64'
 FLOAT32 = 'float32'
+
+DTYPE_uint8 = [ UINT8 ]
+DTYPE_uint16 = [ UINT16 ]
+DTYPE_uint32 = [ UINT32 ]
+DTYPE_uint64 = [ UINT64 ]
+DTYPE_float32 = [ FLOAT32 ]
+
+ND_dtypetonp = {UINT8:np.uint8, UINT16:np.uint16, UINT32:np.uint32, UINT64:np.uint64, FLOAT32:np.float32}
+
+# ND KeyValue,MetaData Engines
 MYSQL = 'MySQL'
 CASSANDRA = 'Cassandra'
 RIAK = 'Riak'
@@ -38,24 +66,6 @@ REDIS = 'Redis'
 # ND Version
 ND_VERSION = '0.7'
 SCHEMA_VERSION = '0.7'
-
-ND_channeltypes = {0:IMAGE,1:ANNOTATION,2:TIMESERIES,3:OLDCHANNEL}
-
-# channeltype groups
-IMAGE_CHANNELS = [ IMAGE, OLDCHANNEL ]
-TIMESERIES_CHANNELS = [ TIMESERIES ]
-ANNOTATION_CHANNELS = [ ANNOTATION ]
-
-# datatype groups
-DTYPE_uint8 = [ UINT8 ]
-DTYPE_uint16 = [ UINT16 ]
-DTYPE_uint32 = [ UINT32 ]
-DTYPE_uint64 = [ UINT64 ]
-DTYPE_float32 = [ FLOAT32 ]
-ND_dtypetonp = {UINT8:np.uint8, UINT16:np.uint16, UINT32:np.uint32, UINT64:np.uint64, FLOAT32:np.float32}
-
-# Server Map
-ND_servermap = {DSP61:'172.23.253.61', DSP62:'172.23.253.62', DSP63:'172.23.253.63', 'localhost':'localhost'}
 
 # Propagated Values
 PROPAGATED = 2
