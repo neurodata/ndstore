@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import requests
 import os
 import requests
 import autoingest
-SITE_HOST = "http://openconnecto.me"
+SITE_HOST = "http://neurodata.io"
 
 def main():
 

@@ -1,6 +1,6 @@
 ### Common Types and Ctype acclerations for NeuroData
 
-This library is used as a module in open-connectome, ocptilecache and ocpblaze.
+This library is used as a module in neurodata web-services, ndtilecache and ndblaze.
 
 #### Makefile help
 

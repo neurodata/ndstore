@@ -37,7 +37,7 @@ realendslice = 1849
 def main():
 
   parser = argparse.ArgumentParser(description='Ingest the kasthuri11cc dataset annotations.')
-  parser.add_argument('baseurl', action="store", help='Base URL to of ocp service no http://, e.g. openconnecto.me')
+  parser.add_argument('baseurl', action="store", help='Base URL to of ocp service no http://, e.g. neurodata.io')
   parser.add_argument('token', action="store", help='Token for the annotation project.')
   parser.add_argument('path', action="store", help='Directory with annotation TIF files.')
 
