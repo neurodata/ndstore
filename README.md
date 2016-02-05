@@ -1,4 +1,4 @@
-Scalable database cluster for the spatial analysis and annotation of high-throughput brain imaging data called NeuroData Web Services.
+Scalable database cluster for the spatial analysis and annotation of high-throughput brain imaging data called Neurodata Web Services(formerly called the Open Connectome Project).
 
 [![Neurodata.io](https://img.shields.io/badge/Visit-neurodata.io-ff69b4.svg)](http://neurodata.io/)
 [![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.19972.svg)](http://dx.doi.org/10.5281/zenodo.19972)

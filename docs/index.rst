@@ -1,12 +1,12 @@
 .. meta::
-   :description: Official documentation for Open Connectome Project Web Services: Scalable database cluster for the spatial analysis and annotation of high-throughput brain imaging data
+   :description: Official documentation for NeuroData Web Services: Scalable database cluster for the spatial analysis and annotation of high-throughput brain imaging data
    :keywords: annotation, tracing, neuroscience, object detection
 .. title::
-   Open Connectome
+   NeuroData
 
 .. raw:: html
 
-	<h1>Open Connectome Project Web Services: Scalable database cluster for the spatial analysis and annotation of high-throughput brain imaging data</h1>
+	<h1>NeuroData Web Services: Scalable database cluster for the spatial analysis and annotation of high-throughput brain imaging data</h1>
 	<br>
 
 NeuroData provides a scalable database cluster for the spatial analysis and annotation of high-throughput brain imaging data for 3D image stacks, time-series and multi-channel data (e.g., electron microscopy, array tomography, CLARITY, histology, and multimodal MRI data). The system is designed primarily for workloads that build connectomes---neural connectivity maps of the brain---using the parallel execution of computer vision algorithms on high-performance compute clusters. These services and open science data sets are publicly available at neurodata.io.
@@ -17,9 +17,9 @@ The system design inherits much from NoSQL scale-out and data-intensive computin
     :height: 500px  
     :width: 1000px
     :align: center
-    :alt: Spatially Registered Databases in the Open Connectome Project. 
+    :alt: Spatially Registered Databases in NeuroData. 
     
-    Spatially Registered Databases in the Open Connectome Project   
+    Spatially Registered Databases in NeuroData   
 
     Electron microscopy images of a mouse somatosensory cortex (left), a probability map output by a computer vision algorithm that detects membranes (center), and an annotation database that describes axons and dendrites (right).
 
@@ -28,8 +28,8 @@ The system design inherits much from NoSQL scale-out and data-intensive computin
   <div>
     <img style="width:30px;height:30px;vertical-align:middle">
     <span style=""></span>
-    <IMG SRC="_static/GitHub.png" height="50" width="50"> <a href="https://github.com/openconnectome/open-connectome/zipball/master"> [ZIP]   </a>  
-    <a image="_static/GitHub.png" href="https://github.com/openconnectome/open-connectome/tarball/master">[TAR.GZ] </a></p>
+    <IMG SRC="_static/GitHub.png" height="50" width="50"> <a href="https://github.com/neurodata/open-connectome/zipball/master"> [ZIP]   </a>  
+    <a image="_static/GitHub.png" href="https://github.com/neurodata/open-connectome/tarball/master">[TAR.GZ] </a></p>
   </div>
 
 .. sidebar:: NeuroData Contact Us 
@@ -65,10 +65,9 @@ The system design inherits much from NoSQL scale-out and data-intensive computin
    :caption: Further Reading
 
    api/functions
-   Gitter chatroom <https://gitter.im/openconnectome/open-connectome>
    Mailing List <https://groups.google.com/forum/#!forum/ocp-support/> 
-   Github repo <https://github.com/openconnectome/open-connectome>
-   Release Notes <https://github.com/openconnectome/open-connectome/releases/>
+   Github repo <https://github.com/neurodata/open-connectome>
+   Release Notes <https://github.com/neurodata/open-connectome/releases/>
 
 If you use NeuroData or its data derivatives, please cite:
   R Burns, K Lillaney, E Perlman, P Manavalan, JT Vogelstein (2015). ocp v0.7. Zenodo. 10.5281/zenodo.15974 `zenodo <https://zenodo.org/record/15974?ln=en#.VYyl-XUVhBc>`_ `bibtex <https://zenodo.org/record/15974?ln=en#.VYyjE3UVhBc>`_

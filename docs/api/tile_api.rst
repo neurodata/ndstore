@@ -1,7 +1,7 @@
 Tile APIs
 **********
 
-You can also view the `Tilecache API's <http://docs.neurodata.io/ocptilecache/api/tilecache_api.html>`_ which work similarly for `ocptilecache <http://docs.neurodata.io/ocptilecache/index.html>`_.
+You can also view the `Tilecache API's <http://docs.neurodata.io/ndtilecache/api/tilecache_api.html>`_ which work similarly for `ndtilecache <http://docs.neurodata.io/ndtilecache/index.html>`_.
 
 .. _simple-tile:
 
