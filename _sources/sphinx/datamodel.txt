@@ -60,7 +60,7 @@ Dataset Attributes
 
 .. function:: Voxel Resolution
 
-    Voxel Resolution is the number of voxels per unit pixel. We store X,Y,Z voxel resolution separately.
+    Voxel Resolution is the voxel scale per unit pixel. We store X,Y,Z voxel resolution separately.
 
    :Type: [FLOAT,FLOAT,FLOAT]
    :Default: [0.0,0.0,0.0]
@@ -121,7 +121,7 @@ Project Attributes
 
 .. function:: KV Engine
 
-   This option allows users to specify what engine their KV data should be store in, this is not relevant for most users. 
+   This option allows users to specify what engine their KV data should be store in, this is not relevant for most users.
 
    :Type: AlphaNumeric
    :Default: default
