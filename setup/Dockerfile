@@ -86,30 +86,30 @@ RUN ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
 
 # clone OCP
 WORKDIR /home/neurodata
-RUN git clone https://github.com/openconnectome/open-connectome.git
-WORKDIR /home/neurodata/open-connectome
+RUN git clone https://github.com/neurodata/ndstore.git
+WORKDIR /home/neurodata/ndstore
 RUN git checkout microns
 RUN git submodule init
 RUN git submodule update
 
 ## build ocplib ctypes functions
 USER root
-WORKDIR /home/neurodata/open-connectome/ndlib/c_version
+WORKDIR /home/neurodata/ndstore/ndlib/c_version
 RUN make -f makefile_LINUX
 
 # make cython accelerators
-WORKDIR /home/neurodata/open-connectome/cython/ocpca_cy/
+WORKDIR /home/neurodata/ndstore/cython/ocpca_cy/
 RUN python setup.py install
 
 # configure mysql
-WORKDIR /home/neurodata/open-connectome/django
+WORKDIR /home/neurodata/ndstore/django
 RUN service mysql start && mysql -u root -i -e "create user 'neurodata'@'localhost' identified by 'neur0data';" &&\
   mysql -u root -i -e "grant all privileges on *.* to 'neurodata'@'localhost' with grant option;" &&\
   mysql -u neurodata -pneur0data -i -e "CREATE DATABASE ocpdjango;"
 
 USER neurodata
 # set up the django settings
-#WORKDIR /home/neurodata/open-connectome/django
+#WORKDIR /home/neurodata/ndstore/django
 #ADD settings.py ./OCP/settings.py
 #ADD settings_secret.py ./OCP/settings_secret.py
 #RUN service mysql start && python manage.py migrate &&\ 

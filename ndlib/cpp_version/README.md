@@ -1,4 +1,4 @@
-### Ctype accleration for OCP
+### Ctype accleration for NeuroData
 
 #### Makefile help
 

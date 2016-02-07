@@ -6,7 +6,7 @@
 
 * Fresh Clone
 ```sh
-git clone --recursive git@github.com:openconnectome/open-connectome.git
+git clone --recursive git@github.com:neurodata/ndstore.git
 ```
 * Existing Repository
 ```sh
@@ -28,8 +28,8 @@ pip install numpy scipy django django-registration-redux django-celery mysql-pyt
 ##### Configuration files
 
 You need to create the following files from the example files in the same directories.
-  * open-connectome/django/ND/settings.py
-  * open-connectome/django/ND/settings_secret.py
+  * ndstore/django/ND/settings.py
+  * ndstore/django/ND/settings_secret.py
 
 ##### MySQL 
 
@@ -75,13 +75,13 @@ List of commands needed to configure the database for mysql
 
 ##### clone the repository and make a virtual env if you want
   ```sh
-  git clone git@github.com:openconnectome/open-connectome.git
+  git clone git@github.com:neurodata/ndstore.git
   mkvirtualenv ocp
   ```
 
 ##### install and configure mysql & memcache. Follow the instructions as ubuntu
   ```sh
-  cd ~/open-connectome/setup/mysql
+  cd ~/ndstore/setup/mysql
   ```
 
 ##### Install python packages using pip
@@ -96,7 +96,7 @@ List of commands needed to configure the database for mysql
   
   * Migrate the databases, collect static files,
     ```sh
-    cd ~/open-connectome/django
+    cd ~/ndstore/django
     python manage.py migrate
     python manage.py createsuperuser
     python manage.py collectstatic
@@ -104,7 +104,7 @@ List of commands needed to configure the database for mysql
 
   * configure settings
     ```sh
-    cd ~/open-connectome/django/OCP
+    cd ~/ndstore/django/OCP
     cp settings.py.example settings.py
     cp settings_secret.py.example settings_secret.py
     ```
@@ -129,20 +129,20 @@ List of commands needed to configure the database for mysql
 
 ##### Build ocplib
   ```sh
-  cd ~/open-connectome/ocplib
+  cd ~/ndstore/ocplib
   make -f makefile_MAC
   ```
 
 ##### Dev Server and tests
   * In one window, start the dev server
     ```sh
-    cd ~/open-connectome/django
+    cd ~/ndstore/django
     python manage.py runserver
     ```
 
   * in another window
     ```sh
-    cd ~/open-connectome/test
+    cd ~/ndstore/test
     py.test
     ```
 
@@ -156,7 +156,7 @@ List of commands needed to configure the database for mysql
   * add clause to nginx for ocp and upstream server (see setup/nginx/default)
   * edit uswgi file ocp.ini
   * change all paths for local system
-  * configure uswgi at ~/open-connectome/setup/ocp.ini
+  * configure uswgi at ~/ndstore/setup/ocp.ini
   * run uwsgi in foreground
     ```sh
     uwsgi ocp.ini

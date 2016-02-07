@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -43,8 +43,8 @@ def cubeToPNGs ( nparray, prefix ):
 
 # Get cube in question
 try:
-#  url = "http://openconnecto.me/ocp/ocpca/kasthuri11/zip/0/2000,3000/2000,3000/50,70/"
-  url = "http://openconnecto.me/ocp/ocpca/kasthuri11/zip/7/0,192/0,256/1,100/"
+#  url = "http://neurodata.io/ocp/ocpca/kasthuri11/zip/0/2000,3000/2000,3000/50,70/"
+  url = "http://neurodata.io/ocp/ocpca/kasthuri11/zip/7/0,192/0,256/1,100/"
   f = urllib2.urlopen ( url )
 except URLError:
   print "Failed to get URL", url

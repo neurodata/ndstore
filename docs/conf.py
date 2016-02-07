@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# open-connectome documentation build configuration file, created by
+# ndstore documentation build configuration file, created by
 # sphinx-quickstart on Sun May 17 11:10:35 2015.
 #
 # This file is execfile()d with the current directory set to its
@@ -63,8 +63,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'open-connectome'
-copyright = u'2015, Open Connectome Project'
+project = u'ndstore'
+copyright = u'2015, NeuroData Project'
 author = u'NeuroData'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -216,7 +216,7 @@ html_use_smartypants = True
 #html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'open-connectomedoc'
+htmlhelp_basename = 'ndstoredoc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -238,7 +238,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  (master_doc, 'open-connectome.tex', u'open-connectome Documentation',
+  (master_doc, 'ndstore.tex', u'ndstore Documentation',
    u'NeuroData', 'manual'),
 ]
 
@@ -268,7 +268,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'open-connectome', u'open-connectome Documentation',
+    (master_doc, 'ndstore', u'ndstore Documentation',
      [author], 1)
 ]
 
@@ -282,8 +282,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  (master_doc, 'open-connectome', u'open-connectome Documentation',
-   author, 'open-connectome', 'One line description of project.',
+  (master_doc, 'ndstore', u'ndstore Documentation',
+   author, 'ndstore', 'One line description of project.',
    'Miscellaneous'),
 ]
 

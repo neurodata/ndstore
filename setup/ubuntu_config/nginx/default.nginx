@@ -22,7 +22,7 @@ server {
   }
 
   location /ocp/ {
-    rewrite       ^/ocp/(.*)$ /$1 break;
+    rewrite       ^/nd/(.*)$ /$1 break;
     uwsgi_pass    neurodata-wsgi;
     include       /etc/nginx/uwsgi_params;
     # increase buffer size to avoid hitting disk
@@ -33,7 +33,7 @@ server {
   }
   
   location /static {
-    alias         /var/www/open-connectome/django/static/;
+    alias         /var/www/ndstore/django/static/;
     autoindex     on;
     allow         all;
   }

@@ -28,8 +28,8 @@ The system design inherits much from NoSQL scale-out and data-intensive computin
   <div>
     <img style="width:30px;height:30px;vertical-align:middle">
     <span style=""></span>
-    <IMG SRC="_static/GitHub.png" height="50" width="50"> <a href="https://github.com/neurodata/open-connectome/zipball/master"> [ZIP]   </a>  
-    <a image="_static/GitHub.png" href="https://github.com/neurodata/open-connectome/tarball/master">[TAR.GZ] </a></p>
+    <IMG SRC="_static/GitHub.png" height="50" width="50"> <a href="https://github.com/neurodata/ndstore/zipball/master"> [ZIP]   </a>  
+    <a image="_static/GitHub.png" href="https://github.com/neurodata/ndstore/tarball/master">[TAR.GZ] </a></p>
   </div>
 
 .. sidebar:: NeuroData Contact Us 
@@ -66,8 +66,8 @@ The system design inherits much from NoSQL scale-out and data-intensive computin
 
    api/functions
    Mailing List <https://groups.google.com/forum/#!forum/ocp-support/> 
-   Github repo <https://github.com/neurodata/open-connectome>
-   Release Notes <https://github.com/neurodata/open-connectome/releases/>
+   Github repo <https://github.com/neurodata/ndstore>
+   Release Notes <https://github.com/neurodata/ndstore/releases/>
 
 If you use NeuroData or its data derivatives, please cite:
   R Burns, K Lillaney, E Perlman, P Manavalan, JT Vogelstein (2015). ocp v0.7. Zenodo. 10.5281/zenodo.15974 `zenodo <https://zenodo.org/record/15974?ln=en#.VYyl-XUVhBc>`_ `bibtex <https://zenodo.org/record/15974?ln=en#.VYyjE3UVhBc>`_

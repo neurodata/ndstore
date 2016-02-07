@@ -15,7 +15,7 @@
 */
 
 /*
- * Header File for OCP Ctype Functions
+ * Header File for NeuroData Ctype Functions
 */
  
 #include<stdint.h>

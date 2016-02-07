@@ -1,5 +1,5 @@
-open-connectome Functions
-*************************
+NeuroData Functions
+*******************
 
 .. automodule:: spatialdb
 
