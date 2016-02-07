@@ -248,6 +248,17 @@ def publictokens (request, webargs):
     logger.exception("Unknown exception in publictokens. {}".format(e))
     raise NDWSError("Unknown exception in publictokens. {}".format(e))
 
+def publicdatasets (request, webargs):
+  """Return list of public datasets"""
+  try:  
+    return django.http.HttpResponse(ndwsrest.publicDatasets(webargs), content_type="application/json" )
+  except NDWSError, e:
+    return django.http.HttpResponseNotFound(e.value)
+  except MySQLdb.Error, e:
+    return django.http.HttpResponseNotFound(e)
+  except Exception, e:
+    logger.exception("Unknown exception in publictokens. {}".format(e))
+    raise NDWSError("Unknown exception in publictokens. {}".format(e))
 
 #@cache_control(no_cache=True)
 def jsoninfo (request, webargs):

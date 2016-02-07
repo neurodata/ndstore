@@ -128,5 +128,11 @@ def metadatadict( proj ):
 def publicTokens ( projdb ):
   """List of Public Tokens"""
   
-  tokens = projdb.getPublic ()
+  tokens = projdb.getPublicTokens ()
   return json.dumps (tokens, sort_keys=True, indent=4)
+
+def publicDatasets ( projdb ):
+  """List of Public Datasets"""
+
+  datasets = projdb.getPublicDatasets()
+  return json.dumps(datasets, sort_keys=True, indent=4)

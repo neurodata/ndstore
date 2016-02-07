@@ -731,8 +731,14 @@ class NDProjectsDB:
     """Query django configuration for a token to bind to a project"""
     return NDProject (token)
 
-  def getPublic ( self ):
+  def getPublicTokens ( self ):
     """ Return a list of public tokens """
 
     tkns = Token.objects.filter(public = PUBLIC_TRUE)
     return [t.token_name for t in tkns]
+  
+  def getPublicDatasets ( self ):
+    """ Return a list of public datasets """
+    
+    datasets = Dataset.objects.filter(public = PUBLIC_TRUE)
+    return [d.dataset_name for d in datasets]

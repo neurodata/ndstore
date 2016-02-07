@@ -29,7 +29,7 @@ from nduser.models import Token
 from nduser.models import Channel
 
 import ndproj
-from ndtype import ZSLICES, ANNOTATION, NOT_PROPAGATED, READONLY_FALSE, UINT32, ND_VERSION, MYSQL, CASSANDRA, RIAK
+from ndtype import ZSLICES, ANNOTATION, NOT_PROPAGATED, READONLY_FALSE, UINT32, ND_VERSION, MYSQL, CASSANDRA, RIAK, PUBLIC_TRUE
 
 import site_to_test
 import kvengine_to_test
@@ -39,7 +39,7 @@ def createTestDB ( project_name, channel_list=['unit_anno'], channel_type=ANNOTA
   
   unituser = User.objects.get(username='neurodata')
 
-  ds = Dataset ( dataset_name="unittest", user=unituser, ximagesize=ximagesize, yimagesize=yimagesize, zimagesize=zimagesize,  xoffset=0, yoffset=0, zoffset=1, xvoxelres=xvoxelres, yvoxelres=yvoxelres, zvoxelres=zvoxelres, scalingoption=scalingoption, scalinglevels=scalinglevels, starttime=time[0], endtime=time[1], dataset_description="Unit test" ) 
+  ds = Dataset ( dataset_name="unittest", user=unituser, ximagesize=ximagesize, yimagesize=yimagesize, zimagesize=zimagesize,  xoffset=0, yoffset=0, zoffset=1, xvoxelres=xvoxelres, yvoxelres=yvoxelres, zvoxelres=zvoxelres, scalingoption=scalingoption, scalinglevels=scalinglevels, starttime=time[0], endtime=time[1], public=PUBLIC_TRUE, dataset_description="Unit test" ) 
   ds.save()
 
 

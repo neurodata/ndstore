@@ -1785,7 +1785,6 @@ def chanInfo ( webargs ):
 
   # and the database and then call the db function
   with closing ( spatialdb.SpatialDB(proj) ) as db:
-    import jsonprojinfo
     return jsonprojinfo.jsonChanInfo( proj, db )
 
 
@@ -1976,14 +1975,17 @@ def merge (webargs):
     else:
       # PYTODO illegal merge (no support if not global)
       assert 0
-  
+
+def publicDatasets ( self ):
+  """Return a JSON formatted list of public datasets"""
+
+  with closing ( ndproj.NDProjectsDB() ) as projdb:
+    return jsonprojinfo.publicDatasets ( projdb )
 
 def publicTokens ( self ):
   """Return a json formatted list of public tokens"""
   
   with closing ( ndproj.NDProjectsDB() ) as projdb:
-
-    import jsonprojinfo
     return jsonprojinfo.publicTokens ( projdb )
 
 def exceptions ( webargs, ):

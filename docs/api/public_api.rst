@@ -1,7 +1,7 @@
 Public Token APIs
 ******************
 
-.. _public-get:
+.. _public-tokens-get:
 
 GET
 ----
@@ -37,6 +37,41 @@ GET
         "Ex12R76", 
         "Ex13R51", 
         "Ex14R58", 
+        "kasthuri11", 
+        "takemura13"
+      ]
+
+.. _public-datasets-get:
+
+GET
+----
+
+.. http:get:: (string:server_name)/nd/ca/public_datsets/
+   
+   :synopsis: Get a list of all publicly avaliable datasets from the server.`
+
+   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :type server_name: string
+
+   :statuscode 200: No error
+   :statuscode 404: Error in the syntax or file format
+    
+   **Example Request**:
+   
+   .. sourcecode:: http
+      
+      GET /nd/ca/public_datasets HTTP/1.1
+      Host: openconnecto.me
+
+   **Example Response**:
+
+   .. sourcecode:: http
+      
+      HTTP/1.1 200 OK
+      Content-Type: application/json
+      
+      [
+        "bock11", 
         "kasthuri11", 
         "takemura13"
       ]

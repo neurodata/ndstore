@@ -32,6 +32,8 @@ urlpatterns = patterns('spdb.views',
   url(r'(?P<webargs>^\w+/volume.vikingxml)$', 'xmlinfo'),
   # get public tokens 
   url(r'(?P<webargs>^public_tokens/)$', 'publictokens'),
+  # get public datasets 
+  url(r'(?P<webargs>^public_datasets/)$', 'publicdatasets'),
   # Create/Delete channel interfaces
   url(r'(?P<webargs>^\w+/createChannel/)$', 'createChannel'),
   url(r'(?P<webargs>^\w+/deleteChannel/)$', 'deleteChannel'),
