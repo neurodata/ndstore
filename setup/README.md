@@ -86,7 +86,9 @@ List of commands needed to configure the database for mysql
 
 ##### Install python packages using pip
   ```sh
-  pip install numpy scipy h5py django django-registration-redux django-celery mysql-python pytest pillow pylibmc posix_ipc
+  pip install numpy scipy h5py django django-registration-redux django-celery mysql-python pytest pillow posix_ipc
+  pip install pylibmc --install-option="--with-libmemcached=/usr/local/Cellar/libmemcached/1.0.18_1/"
+
   ```
   * Note: MACOSX note: had to follow weird library linking instructions on http://www.strangedata.ninja/2014/08/07/how-to-install-mysql-server-mac-and-python-mysqldb-library/ to get "import MySQLdb" to work
 
