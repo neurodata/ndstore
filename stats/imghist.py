@@ -64,9 +64,7 @@ class ImgHist():
       ylimit = (yimagesz-1) / ycubedim + 1
       zlimit = (zimagesz-1) / zcubedim + 1
 
-      hist = []
-      bins = np.zeros(self.numbins+1)  
-      count = 0
+      hist_sum = np.zeros(self.numbins, dtype=np.uint32) 
       
       # sum the histograms 
       for z in range(zlimit):
@@ -77,14 +75,9 @@ class ImgHist():
             data = db.cutout(ch, [ x*xcubedim, y*ycubedim, z*zcubedim], cubedim, self.res ).data
             
             # compute the histogram and store it 
-            hist.append(np.histogram(data[data > 0], bins=self.numbins, range=(0,self.numbins)))
+            (hist, bins) = np.histogram(data[data > 0], bins=self.numbins, range=(0,self.numbins))
+            hist_sum = np.add( hist_sum, hist )
             print "Processed cube {} {} {}".format(x,y,z)
         
-      # sum the individual histograms
-      hist_sum = np.zeros(self.numbins)
-      bins = hist[0][1] # all bins should be the same 
-      for i in range(len(hist)):
-        hist_sum += hist[i][0]
-
       return (hist_sum, bins)
       
