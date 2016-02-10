@@ -18,12 +18,12 @@ import argparse
 import requests
 import os
 import requests
-import autoingest
+import ndio.utils.autoingest as AI
 SITE_HOST = "http://neurodata.io"
 
 def main():
 
-    ai = autoingest.AutoIngest()
+    ai = AI.AutoIngest()
 
     """
     Edit the below values, type and default information can be found on the ingesting page of the ndio docs page.
@@ -39,7 +39,7 @@ def main():
 
     channel_name='image'        #(type=str, help='Name of Channel. Has to be unique in the same project. User Defined.')
     datatype='uint8'            #(type=str, help='Channel Datatype')
-    channel_type='Image'        #(type=str, help='Type of channel - Image, Annotation. Timeseries, Probability-Maps')
+    channel_type='Image'        #(type=enum, help='Type of channel - image, annotation, timeseries, probmap')
     exceptions=0          #(type=int, default=0, help='Exceptions')
     resolution=0          #(type=int, default=0, help='Start Resolution')
     windowrange=(0,0)         #(type=int[], default=[0, 0], help='Window clamp function for 16-bit channels with low max value of pixels')
