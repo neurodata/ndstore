@@ -130,7 +130,8 @@ class SpatialDB:
     """Load a cube from the database"""
 
     # get the size of the image and cube
-    [xcubedim, ycubedim, zcubedim] = cubedim = self.datasetcfg.cubedim[resolution] 
+    [xcubedim, ycubedim, zcubedim] = cubedim = self.datasetcfg.cubedim[resolution]
+    # KL TODO add indexing here
     cube = Cube.getCube(cubedim, ch.getChannelType(), ch.getDataType())
   
     # get the block from the database
@@ -152,7 +153,7 @@ class SpatialDB:
     """Return a list of cubes"""
     
     if listoftimestamps is None:
-      idstofetch = self.kvio.getCubeIndex(ch, listofidxs, resolution)
+      idstofetch = self.kvio.getCubeIndex(ch, resolution, listofidxs)
       # Checking if the index exists inside the database or not
       if idstofetch:
         print "Miss:", listofidxs
@@ -162,7 +163,7 @@ class SpatialDB:
         for superlistofidxs, superlistofcubes in super_cuboids:
           # call putCubes and update index in the table before returning data
           self.putCubes(ch, superlistofidxs, resolution, superlistofcubes, update=True)
-          self.kvio.putCubeIndex(ch, superlistofidxs, resolution) 
+          self.kvio.putCubeIndex(ch, resolution, superlistofidxs) 
       data = self.kvio.getCubes(ch, listofidxs, resolution, neariso)
       return data
     else:
@@ -172,7 +173,8 @@ class SpatialDB:
 
   def putCubes(self, ch, listofidxs, resolution, listofcubes, update=False):
     """Insert a list of cubes"""
-
+    
+    self.kvio.putCubeIndex(ch, resolution, listofidxs)
     return self.kvio.putCubes(ch, listofidxs, resolution, listofcubes, update)
 
   # PUT Method
@@ -182,8 +184,9 @@ class SpatialDB:
     if ch.getChannelType() not in TIMESERIES_CHANNELS and timestamp is not None:
       raise
 
-    # KLTODO merge with your timestamp stuff using keyword argumentn
-    # Handle the cube format here.  
+    # KLTODO merge with your timestamp stuff using keyword arguments
+    # Handle the cube format here
+    self.kvio.putCubeIndex(ch, resolution, [zidx])
     if self.NPZ:
       self.kvio.putCube(ch, zidx, resolution, cube.toNPZ(), not cube.fromZeros(), timestamp=timestamp)
     else:

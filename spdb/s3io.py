@@ -19,6 +19,7 @@ from sets import Set
 from operator import add, sub, mul, div, mod
 
 import ndlib
+from s3util import generateS3BucketName, generateS3Key
 
 import logging
 logger=logging.getLogger("neurodata")
@@ -35,20 +36,20 @@ class S3IO:
     self.db = db
     self.client = boto3.client('s3')
     
-  def generateKey(self, zidx, resolution):
-    """Generate key for the supercube"""
+  # def generateKey(self, zidx, resolution):
+    # """Generate key for the supercube"""
     
-    # Calculate which super zindex will this cube be under
-    # Hash the super zindex to get the corresponding key for the s3 object
-    hashm = hashlib.md5()
-    hashm.update('{}_{}'.format(zidx, resolution))
-    print zidx, hashm.hexdigest()
-    return hashm.hexdigest()
+    # # Calculate which super zindex will this cube be under
+    # # Hash the super zindex to get the corresponding key for the s3 object
+    # hashm = hashlib.md5()
+    # hashm.update('{}_{}'.format(zidx, resolution))
+    # print zidx, hashm.hexdigest()
+    # return hashm.hexdigest()
 
-  def generateBucketName(self, ch):
-    """Generate the Bucket Name for the supercube"""
+  # def generateBucketName(self, ch):
+    # """Generate the Bucket Name for the supercube"""
 
-    return '{}_{}'.format(self.db.proj.getProjectName(), ch.getChannelName())
+    # return '{}_{}'.format(self.db.proj.getProjectName(), ch.getChannelName())
   
   def generateSuperZindex(self, zidx, resolution):
     """Generate super zindex from a given zindex"""
@@ -99,7 +100,7 @@ class S3IO:
   def getCube(self, ch, zidx, timestamp, resolution, update=False):
     """Retrieve a cube from the database by token, resolution, and zidx"""
     
-    super_cube = self.client.get_object(Bucket=self.generateBucketName(ch), Key=self.generateKey(zidx, resolution)).get('Body').read()
+    super_cube = self.client.get_object(Bucket=generateS3BucketName(self.db.proj.getProjectName(), ch.getChannelName()), Key=generateS3Key(zidx, resolution)).get('Body').read()
     return self.breakCubes(zidx, resolution, blosc.unpack_array(super_cube))
   
   def getCubes(self, ch, listofidxs, resolution, neariso=False):
@@ -109,7 +110,7 @@ class S3IO:
       super_listofidxs.add(self.generateSuperZindex(zidx, resolution))
     
     for super_zidx in super_listofidxs:
-      super_cube = self.client.get_object(Bucket=self.generateBucketName(ch), Key=self.generateKey(super_zidx, resolution)).get('Body').read()
+      super_cube = self.client.get_object(Bucket=generateS3BucketName(self.db.proj.getProjectName(), ch.getChannelName()), Key=generateS3Key(super_zidx, resolution)).get('Body').read()
       yield ( self.breakCubes(super_zidx, resolution, blosc.unpack_array(super_cube)) )
   
   def getTimeCubes(self, ch, idx, listoftimestamps, resolution):
