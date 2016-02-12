@@ -213,3 +213,7 @@ TEMP_INGEST_PATH = '/data/scratch/'
 # registration settings
 ACCOUNT_ACTIVATION_DAYS = 7 # One-week activation window; you may, of course, use a different value.
 REGISTRATION_AUTO_LOGIN = True # Automatically log the user in.
+
+# Amazon Settings
+AWS_ACCESS_KEY_ID = settings_secret.AWS_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY = settings_secret.AWS_SECRET_ACCESS_KEY

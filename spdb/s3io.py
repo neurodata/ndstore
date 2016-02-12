@@ -18,6 +18,7 @@ import hashlib
 from sets import Set
 from operator import add, sub, mul, div, mod
 
+from django.conf import settings
 import ndlib
 from s3util import generateS3BucketName, generateS3Key
 
@@ -34,7 +35,7 @@ class S3IO:
     """Connect to the S3 backend"""
     
     self.db = db
-    self.client = boto3.client('s3')
+    self.client = boto3.client('s3', aws_access_key_id=settings.AWS_ACCESS_KEY_ID, aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY)
     
   # def generateKey(self, zidx, resolution):
     # """Generate key for the supercube"""
