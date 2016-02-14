@@ -26,4 +26,3 @@ OCP_OCPLIB_PATH = os.path.join(OCP_BASE_PATH, "ocplib" )
 OCP_DJANGO_PATH = os.path.join(OCP_BASE_PATH, "django" )
 
 sys.path += [ OCP_UTIL_PATH, OCP_OCPCA_PATH, OCP_STATS_PATH, OCP_OCPLIB_PATH, OCP_DJANGO_PATH ]
-

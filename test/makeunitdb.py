@@ -52,7 +52,7 @@ def createTestDB ( project_name, channel_list=['unit_anno'], channel_type=ANNOTA
   pd = ocpcaproj.OCPCAProjectsDB()
 
   # create a token
-  tk = Token (token_name = project_name, user=unituser, token_description = 'Unit test token', project_id=pr, public=public)
+  tk = Token (token_name = project_name, user = unituser, token_description = 'Unit test token', project_id = pr, public = public)
   tk.save()
 
   pd.newOCPCAProject( pr.project_name )
@@ -78,6 +78,18 @@ def deleteTestDB ( project_name ):
       ch.delete()
     tk.delete()
     pr.delete()
+    ds.delete()
+  except Exception, e:
+    pass
+
+def deleteTestDBList(project_name_list):
+
+  try:
+    for project_name in project_name_list:
+      pr = Project.objects.get(project_name=project_name)
+      pd = ocpcaproj.OCPCAProjectsDB()
+      pd.deleteOCPCADB ( pr.project_name )
+    ds = Dataset.objects.get(dataset_name=pr.dataset_id)
     ds.delete()
   except Exception, e:
     pass
