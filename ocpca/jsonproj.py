@@ -1,8 +1,4 @@
 # Copyright 2014 Open Connectome Project (http://openconnecto.me)
-        "token_name":  {
-            "description": "The token name for the project, by default same as project_name",
-            "type": "string"
-        },
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
