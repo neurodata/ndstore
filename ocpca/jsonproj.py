@@ -1,4 +1,8 @@
 # Copyright 2014 Open Connectome Project (http://openconnecto.me)
+        "token_name":  {
+            "description": "The token name for the project, by default same as project_name",
+            "type": "string"
+        },
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -247,7 +251,7 @@ def postMetadataDict(metadata_dict, project_name):
   """Post metdata to the LIMS system"""
 
   try:
-    url = 'http://{}/lims/{}/'.format(settings.LIMS_SERVER, project_name)
+    url = 'http://{}/metadata/ocp/set/{}/'.format(settings.LIMS_SERVER, project_name)
     req = urllib2.Request(url, json.dumps(metadata_dict))
     req.add_header('Content-Type', 'application/json')
     response = urllib2.urlopen(req)
