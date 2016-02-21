@@ -22,6 +22,17 @@ test/.cache
 *.exe
 *.a
 *.log
+*.manifest
+*.spec
+*.log
+__pycache__/
+dist/
+eggs/
+.eggs/
+*.egg-info/
+*.egg
+.cache
+.coverage
 
 ##############
 # Data Files #

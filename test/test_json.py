@@ -138,7 +138,7 @@ class Test_Project_Json():
 
     # posting the JSON url and checking if it is successful
     response = json.loads(postURL("http://{}/sd/autoIngest/".format(SITE_HOST), json_file).read())
-    assert('FAILED' == response)
+    assert('Dataset unittest_ds already exists and is different then the chosen dataset. Please choose a different dataset name' == response)
 
 
 class Test_Create_Channel_Json():
@@ -169,7 +169,7 @@ class Test_Create_Channel_Json():
 
     # posting the JSON url and checking if it is successful
     response = json.loads(postURL("http://{}/sd/{}/createChannel/".format(SITE_HOST, p.token), json_file).read())
-    assert('SUCCESS' == response)
+    assert('SUCCESS. The information in the channel was correct.' == response)
 
     # fetching the JSON info
     f = getURL("http://{}/sd/{}/info/".format(SITE_HOST, p.token))

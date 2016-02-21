@@ -37,7 +37,7 @@ class S3IO:
     self.db = db
     self.client = boto3.client('s3', aws_access_key_id=settings.AWS_ACCESS_KEY_ID, aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY)
     
-  # def generateKey(self, zidx, resolution):
+   # def generateKey(self, zidx, resolution):
     # """Generate key for the supercube"""
     
     # # Calculate which super zindex will this cube be under
@@ -95,13 +95,14 @@ class S3IO:
           cube_data = super_cube[index[2]:end[2], index[1]:end[1], index[0]:end[0]]
           zidx_list.append(zidx)
           cube_list.append(blosc.pack_array(cube_data))
-
+    
     return zidx_list, cube_list
   
   def getCube(self, ch, zidx, timestamp, resolution, update=False):
     """Retrieve a cube from the database by token, resolution, and zidx"""
     
-    super_cube = self.client.get_object(Bucket=generateS3BucketName(self.db.proj.getProjectName(), ch.getChannelName()), Key=generateS3Key(zidx, resolution)).get('Body').read()
+    super_zidx = self.generateSuperZindex(zidx, resolution)
+    super_cube = self.client.get_object(Bucket=generateS3BucketName(self.db.proj.getProjectName(), ch.getChannelName()), Key=generateS3Key(super_zidx, resolution)).get('Body').read()
     return self.breakCubes(zidx, resolution, blosc.unpack_array(super_cube))
   
   def getCubes(self, ch, listofidxs, resolution, neariso=False):
@@ -109,7 +110,7 @@ class S3IO:
     super_listofidxs = Set([])
     for zidx in listofidxs:
       super_listofidxs.add(self.generateSuperZindex(zidx, resolution))
-    
+   
     for super_zidx in super_listofidxs:
       super_cube = self.client.get_object(Bucket=generateS3BucketName(self.db.proj.getProjectName(), ch.getChannelName()), Key=generateS3Key(super_zidx, resolution)).get('Body').read()
       yield ( self.breakCubes(super_zidx, resolution, blosc.unpack_array(super_cube)) )
