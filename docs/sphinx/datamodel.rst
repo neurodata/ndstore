@@ -67,7 +67,7 @@ Dataset Attributes
 
 .. function:: Offset Value
 
-   If your data is not well aligned and there is "excess" image data you do not wish to examine, but are present in your images, offset is how you specify where your actual image starts. Offset is provided a pixel coordinate offset from origin which specifies the "actual" origin of the image. The offset is for X,Y,Z dimensions.
+   If your data is not well aligned and there is "excess" image data you do not wish to examine, but are present in your images, offset is how you specify where your actual image starts. Offset is provided a pixel coordinate offset from origin which specifies the "actual" origin of the image. The offset is for X,Y,Z dimensions. This offset should also be reflective of your file names, if you start you file numbers at 0002.tif your offset should be (0,0,2).
 
    :Type: [INT,INT,INT]
    :Default: [0,0,0]
@@ -138,7 +138,7 @@ Token
 
 .. function:: Token Name
 
-   The token name is the default token. If you do not wish to specify one, a default one will be created for you with the same name as the project name. However, if the project is private you must specify a token.
+   The token name is the default token. If you do not wish to specify one, a default one will be created for you with the same name as the project name. However, if the project is private you must specify a token. Note that token names must be unique across all projects stored in NeuroData, both private and public.
 
    :Type: AlphaNumeric
    :Default: None
