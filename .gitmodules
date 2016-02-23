@@ -1,10 +1,9 @@
 [submodule "ndlib"]
 	path = ndlib
 	url = https://github.com/openconnectome/ndlib.git
-	;url = git@github.com:openconnectome/ndlib.git
 [submodule "ndinstall"]
 	path = setup/ndinstall
-	url = git@github.com:openconnectome/ndinstall.git
+	url = https://@github.com:openconnectome/ndinstall.git
 [submodule "spdb"]
 	path = spdb
-	url = git@github.com:neurodata/spdb.git
+	url = https://github.com:neurodata/spdb.git
