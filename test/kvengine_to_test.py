@@ -14,11 +14,11 @@
 
 from ndtype import MYSQL, CASSANDRA, RIAK, DYNAMODB, REDIS
 
-kvengine = MYSQL
+# kvengine = MYSQL
 # kvengine = CASSANDRA
 # kvengine = RIAK
 # kvengine = DYNAMODB
-# kvengine = REDIS
+kvengine = REDIS
 
 #kvserver='172.23.253.63'
 kvserver='localhost'

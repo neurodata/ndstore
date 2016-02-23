@@ -454,11 +454,13 @@ class NDProjectsDB:
               for i in range(ds.scalinglevels+1): 
                 cursor.execute ( "CREATE TABLE {}_res{} ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(ch.channel_name, i) )
                 # index table for each res
-                curosr.execute ( "CREATE TABLE {}_res{}_index (zindex BIGINT NOT NULL PRIMARY KEY)".format(ch.channel_name, i) )
+                cursor.execute ( "CREATE TABLE {}_res{}_index (zindex BIGINT NOT NULL PRIMARY KEY)".format(ch.channel_name, i) )
             # tables specific to timeseries data
             elif ch.channel_type == TIMESERIES:
               for i in range(ds.scalinglevels+1): 
                 cursor.execute ( "CREATE TABLE {}_res{} ( zindex BIGINT, timestamp INT, cube LONGBLOB, PRIMARY KEY(zindex,timestamp))".format(ch.channel_name,i) )
+                # index table for each res
+                cursor.execute ( "CREATE TABLE {}_res{}_index (zindex BIGINT NOT NULL, timestamp INT NOT NULL, PRIMARY KEY(zindex,timestamp))".format(ch.channel_name, i) )
             else:
               raise NDWSError("Channel type {} does not exist".format(ch.channel_type()))
             
