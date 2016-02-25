@@ -11,7 +11,6 @@ Cheetah==2.4.4
 CherryPy==3.8.0
 configobj==5.0.6
 Cython==0.23
-cython-accelerator-for-processing-voxels-lists==0.0.0
 db==0.1.1
 db-sqlite3==0.0.1
 decorator==4.0.2
