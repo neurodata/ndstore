@@ -40,7 +40,6 @@ Paste==2.0.2
 PasteDeploy==1.5.2
 PasteScript==2.0.2
 ## FIXME: could not find svn URL in dependency_links for this package:
-PEAK-Rules===0.5a1.dev-r2713
 Pillow==2.9.0
 posix-ipc==1.0.0
 py==1.4.30
