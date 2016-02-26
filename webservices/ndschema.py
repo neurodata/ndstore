@@ -1,7 +1,7 @@
 import json
 from jsonspec.validators import load
 
-CHANNEL_SCHEMA = {
+CHANNEL_SCHEMA = load( {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "title": "Channel",
     "description": "Schema for Channel JSON object for ingest",
@@ -49,7 +49,7 @@ CHANNEL_SCHEMA = {
         },
     },
     "required": ["channel_name", "channel_type", "data_url", "datatype", "scalinglevels"]
-}
+} )
 
 DATASET_SCHEMA = load( {
     "$schema": "http://json-schema.org/draft-04/schema#",

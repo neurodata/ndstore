@@ -191,10 +191,16 @@ def createChannel(webargs, post_data):
       # Setting the user_ids based on token user_id
       ch.user_id = tk.user_id
       ch.save()
+<<<<<<< HEAD:webservices/ndwsprojingest.py
       
       # Create channel database using the ndproj interface
       pd = ndproj.NDProjectsDB()
       pd.newNDChannel(pr.project_name, ch.channel_name)
+=======
+      # Create channel database using the ocpcaproj interface
+      pd = ocpcaproj.OCPCAProjectsDB()
+      pd.newOCPCAChannel(pr.project_name, ch.channel_name)
+>>>>>>> origin/master:ocpca/jsonproj.py
   except Exception, e:
     print "Error saving models"
     # return the JSON file with failed
