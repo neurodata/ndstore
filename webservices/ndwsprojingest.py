@@ -16,17 +16,20 @@ import re
 import urllib2
 import json
 import requests
+import jsonschema
 
 from django.conf import settings
 
 import ndproj
 from ndwsingest import IngestData
+from ndschema import PROJECT_SCHEMA, DATASET_SCHEMA, CHANNEL_SCHEMA
 from ndtype import READONLY_FALSE
 from nduser.models import Project
 from nduser.models import Dataset
 from nduser.models import Token
 from nduser.models import Channel
 from nduser.models import User
+
 
 def autoIngest(webargs, post_data):
   """Create a project using a JSON file"""
@@ -39,10 +42,31 @@ def autoIngest(webargs, post_data):
     metadata_dict = nd_dict['metadata']
   except Exception, e:
     print "Missing requred fields"
-    raise
+    return json.dumps("Missing required fields of dataset,project,channels,metadata. Please check if one of them is not missing.")
+  
+  try:
+    DATASET_SCHEMA.validate(dataset_dict)
+  except Exception, e:
+    print "Invalid Dataset schema"
+    return json.dumps("Invalid Dataset schema")
+  
+  try:
+    PROJECT_SCHEMA.validate(project_dict)
+  except Exception, e:
+    print "Invalid Project schema"
+    return json.dumps("Invalid Project schema")
+    
+  #try:
+    #import pdb; pdb.set_trace()
+    #CHANNEL_SCHEMA.validate(channels)
+  #except Exception, e:
+    #print "Invalid Channel schema"
+    #return json.dumps("Invalid Channel schema")
 
   ds = extractDatasetDict(dataset_dict)
   pr, tk = extractProjectDict(project_dict)
+  if pr.project_name in ['unittest','unittest2']:
+    pr.host = 'localhost'
   ch_list = []
   for channel_name, value in channels.iteritems():
     channel_dict = channels[channel_name]
@@ -62,7 +86,7 @@ def autoIngest(webargs, post_data):
         pr.dataset_id = stored_ds.dataset_name
       else:
         print "Dataset name already exists"
-        raise
+        return json.dumps("Dataset {} already exists and is different then the chosen dataset. Please choose a different dataset name".format(ds.dataset_name))
     else:
       ds.save()
       pr.dataset_id = ds.dataset_name
@@ -81,13 +105,13 @@ def autoIngest(webargs, post_data):
             pass
           else:
             print "Token name already exists"
-            raise
+            return json.dumps("Token {} already exists. Please choose a different token name.".format(tk.token_name))
         else:
           tk.project_id = stored_pr.project_name
           tk.save()
       else:
         print "Project name already exists"
-        raise
+        return json.dumps("Project {} already exists. Please choose a different project name".format(pr.project_name))
     else:
       pr.save()
       tk.project_id = pr.project_name
@@ -105,7 +129,7 @@ def autoIngest(webargs, post_data):
         pd.newNDChannel(pr.project_name, ch.channel_name)
       else:
         print "Channel already exists"
-        raise
+        return json.dumps("Channel {} already exists. Please choose a different channel name.".format(ch.channel_name))
       
       from spdb.tasks import ingest
       #ingest(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
@@ -114,7 +138,6 @@ def autoIngest(webargs, post_data):
     # Posting to LIMS system
     postMetadataDict(metadata_dict, pr.project_name)
 
-    return_json = "SUCCESS"
   except Exception, e:
     # KL TODO Delete data from the LIMS systems
     try:
@@ -124,9 +147,9 @@ def autoIngest(webargs, post_data):
     if pr is not None:
       pd.deleteNDDB(pr.project_name)
     print "Error saving models"
-    return_json = "FAILED"
+    return json.dumps("FAILED. There was an error in the information you posted.")
 
-  return json.dumps(return_json)
+  return json.dumps("SUCCESS. The ingest process has now started.")
 
 def createChannel(webargs, post_data):
   """Create a list of channels using a JSON file"""
@@ -144,7 +167,7 @@ def createChannel(webargs, post_data):
     channels = nd_dict['channels']
   except Exception, e:
     print "Missing requred fields"
-    raise
+    return json.dumps("Missing channels field. Ensure that Channel field exists")
   
   tk = Token.objects.get(token_name=token_name)
   ur = User.objects.get(id=tk.user_id)
@@ -160,24 +183,25 @@ def createChannel(webargs, post_data):
     for ch in ch_list:
       if Channel.objects.filter(channel_name = ch.channel_name, project = pr.project_name).exists():
         print "Channel already exists"
-        raise
+        return json.dumps("Channel {} already exists for this project. Specify a different channel name".format(ch.channel_name))
+    
     # Iterating over channel list to store channels
     for ch in ch_list:
       ch.project_id = pr.project_name
       # Setting the user_ids based on token user_id
       ch.user_id = tk.user_id
       ch.save()
+      
       # Create channel database using the ndproj interface
       pd = ndproj.NDProjectsDB()
       pd.newNDChannel(pr.project_name, ch.channel_name)
-    # return the JSON file with success
-    return_json = "SUCCESS"
   except Exception, e:
     print "Error saving models"
     # return the JSON file with failed
-    return_json = "FAILED"
+    return json.dumps("Error saving models")
 
-  return json.dumps(return_json)
+  # return the JSON file with success
+  return json.dumps("SUCCESS. The information in the channel was correct.")
 
 def deleteChannel(webargs, post_data):
   """Delete a list of channels using a JSON file"""
@@ -224,7 +248,7 @@ def postMetadataDict(metadata_dict, project_name):
   """Post metdata to the LIMS system"""
 
   try:
-    url = 'http://{}/lims/{}/'.format(settings.LIMS_SERVER, project_name)
+    url = 'http://{}/metadata/ocp/set/{}/'.format(settings.LIMS_SERVER, project_name)
     req = urllib2.Request(url, json.dumps(metadata_dict))
     req.add_header('Content-Type', 'application/json')
     response = urllib2.urlopen(req)

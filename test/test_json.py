@@ -49,8 +49,10 @@ class Test_Project_Json():
 
   def teardown_class(self):
     """Teardown Parameters"""
-    makeunitdb.deleteTestDB('unittest')
-    makeunitdb.deleteTestDB('unittest2')
+    #makeunitdb.deleteTestDB('unittest')
+    #makeunitdb.deleteTestDB('unittest2')
+    # calling a different fucntion for project list as django1.9 introduced new weirdness
+    makeunitdb.deleteTestDBList(['unittest','unittest2'])
   
   def test_basic_json(self):
     """Test the basic JSON project creation with only the required fields"""
@@ -69,7 +71,7 @@ class Test_Project_Json():
 
     # posting the JSON url and checking if it is successful
     response = json.loads(postURL("http://{}/sd/autoIngest/".format(SITE_HOST), json_file).read())
-    assert('SUCCESS' == response)
+    assert('SUCCESS. The ingest process has now started.' == response)
 
     # fetching the JSON info
     f = getURL("http://{}/sd/{}/info/".format(SITE_HOST, p.token))
@@ -106,7 +108,7 @@ class Test_Project_Json():
 
     # posting the JSON url and checking if it is successful
     response = json.loads(postURL("http://{}/sd/autoIngest/".format(SITE_HOST), json_file).read())
-    assert('SUCCESS' == response)
+    assert('SUCCESS. The ingest process has now started.' == response)
 
     # fetching the JSON info
     f = getURL("http://{}/sd/{}/info/".format(SITE_HOST, p.token))
@@ -209,7 +211,7 @@ class Test_Create_Channel_Json():
 
     # posting the JSON url and checking if it is successful
     response = json.loads(postURL("http://{}/sd/{}/createChannel/".format(SITE_HOST, p.token), json_file).read())
-    assert('FAILED' == response)
+    assert('Channel CHAN2 already exists for this project. Specify a different channel name' == response)
 
 class Test_Delete_Channel_Json():
 
