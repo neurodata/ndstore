@@ -119,7 +119,7 @@ def metadatadict( proj ):
   try:
     url = 'http://{}/metadata/ocp/get/{}/'.format(settings.LIMS_SERVER, proj.getProjectName())
     req = urllib2.Request(url)
-    response = urllib2.urlopen(req)
+    response = urllib2.urlopen(req, timeout=5)
     return json.loads(response.read())
   except urllib2.URLError, e:
     print "Failed URL {}".format(url)
