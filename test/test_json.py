@@ -39,7 +39,7 @@ p.resolution = 0
 p.channels = ['CHAN1', 'CHAN2']
 p.channel_type = IMAGE
 p.datatype = UINT8
-p.dataset = 'unittest_ds'
+p.dataset = 'unittest'
 
 class Test_Project_Json():
 
@@ -140,7 +140,7 @@ class Test_Project_Json():
 
     # posting the JSON url and checking if it is successful
     response = json.loads(postURL("http://{}/sd/autoIngest/".format(SITE_HOST), json_file).read())
-    assert('Dataset unittest_ds already exists and is different then the chosen dataset. Please choose a different dataset name' == response)
+    assert('Dataset {} already exists and is different then the chosen dataset. Please choose a different dataset name'.format(p.dataset) == response)
 
 
 class Test_Create_Channel_Json():
@@ -199,7 +199,7 @@ class Test_Create_Channel_Json():
     # Here we send incorrect dataset information
 
     # dataset format = (dataset_name, [ximagesz, yimagesz, zimagesz], [[xvoxel, yvoxel, zvoxel], [xoffset, yoffset, zoffset], timerange, scalinglevels, scaling)
-    dataset = (p.dataset, [1000,2000,1000], [1.0,1.0,5.0], [0,0,0], None, None, None)
+    dataset = (p.dataset, [2000,2000,1000], [1.0,1.0,5.0], [0,0,0], None, None, None)
     # project format = (project_name, token_name, public)
     project = (p.token, None, None)
     # channel format = { chan1 : (channel_name, datatype, channel_type, data_url, file_name, exceptions, resolution, windowrange, readonly), chan2: ...... }

@@ -28,6 +28,8 @@ class RedisProjectDB:
     """Create the database connection"""
     self.pr = NDProject(project_name)
     # Connect to the redis cluster
+    self.client = redis.StrictRedis(host=self.pr.getDBHost(), port=6379, db=0)
+    self.pipe = self.client.pipeline(transaction=False)
 
 
   def close (self):
@@ -47,10 +49,21 @@ class RedisProjectDB:
 
   def deleteNDProject(self):
     """Delete the database for a project"""
-    pass
+    
+    # KL TODO Is this redundant?
+    # project pattern to fetch all the keys with project_name
+    project_pattern = "{}_*".format(self.pr.getProjectName())
+    project_keys = self.client.keys(project_pattern)
+    # delete all the keys with the pattern
+    self.client.delete(*project_keys)
 
 
   def deleteNDChannel(self, channel_name):
     """Delete the keys for a channel"""
-    # TODO KL delete using keys 
-    pass 
+    
+    # KL TODO Maybe do this as a transaction?
+    # channel pattern to fetch all the keys with project_name_channel_name
+    channel_pattern = "{}_{}_*".format(self.pr.getProjectName(), channel_name)
+    channel_keys = self.client.keys(channel_pattern)
+    # delete all the keys with the pattern
+    self.client.delete(*channel_keys)

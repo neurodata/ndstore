@@ -18,6 +18,8 @@ import json
 import requests
 import jsonschema
 
+import django
+django.setup()
 from django.conf import settings
 
 import ndproj
@@ -33,7 +35,7 @@ from nduser.models import User
 
 def autoIngest(webargs, post_data):
   """Create a project using a JSON file"""
- 
+  
   nd_dict = json.loads(post_data)
   try:
     dataset_dict = nd_dict['dataset']
@@ -116,8 +118,8 @@ def autoIngest(webargs, post_data):
       pr.save()
       tk.project_id = pr.project_name
       tk.save()
-      pd = ndproj.NDProjectsDB()
-      pd.newNDProject(pr.project_name)
+      pd = ndproj.NDProjectsDB.getProjDB(pr.project_name)
+      pd.newNDProject()
 
     # Iterating over channel list to store channels
     for (ch, data_url, file_format, file_type) in ch_list:
@@ -126,7 +128,8 @@ def autoIngest(webargs, post_data):
       # Checking if the channel already exists or not
       if not Channel.objects.filter(channel_name = ch.channel_name, project = pr.project_name).exists():
         ch.save()
-        pd.newNDChannel(pr.project_name, ch.channel_name)
+        pd = ndproj.NDProjectsDB.getProjDB(pr.project_name)
+        pd.newNDChannel(ch.channel_name)
       else:
         print "Channel already exists"
         return json.dumps("Channel {} already exists. Please choose a different channel name.".format(ch.channel_name))
@@ -143,9 +146,9 @@ def autoIngest(webargs, post_data):
     try:
       pd
     except NameError:
-      pd = ndproj.NDProjectsDB()
-    if pr is not None:
-      pd.deleteNDDB(pr.project_name)
+      if pr is not None:
+        pd = ndproj.NDProjectsDB.getProjDB(pr.project_name)
+        pd.deleteNDProject()
     print "Error saving models"
     return json.dumps("FAILED. There was an error in the information you posted.")
 
@@ -234,8 +237,8 @@ def deleteChannel(webargs, post_data):
         # Checking if channel is readonly or not
         if ch.readonly == READONLY_FALSE:
           # delete channel table using the ndproj interface
-          pd = ndproj.NDProjectsDB()
-          pd.deleteNDChannel(pr.project_name, ch.channel_name)
+          pd = ndproj.NDProjectsDB().getProjDB(pr.project_name)
+          pd.deleteNDChannel(ch.channel_name)
           ch.delete()
     return_json = "SUCCESS"
   except Exception, e:
@@ -363,8 +366,8 @@ def createJson(dataset, project, channel_list, metadata={}, channel_only=False):
   
   return json.dumps(nd_dict, sort_keys=True, indent=4)
 
-def createDatasetDict(dataset_name, imagesize, voxelres, offset=[0,0,0], timerange=[0,0], scalinglevels=0, scaling=0):
-  """Generate the dataset dictionary"""
+# def createDatasetDict(dataset_name, imagesize, voxelres, offset=[0,0,0], timerange=[0,0], scalinglevels=0, scaling=0):
+  # """Generate the dataset dictionary"""
 
 def postMetadataDict(metadata_dict, project_name):
   """Post metdata to the LIMS system"""

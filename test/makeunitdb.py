@@ -86,7 +86,7 @@ def deleteTestDB ( project_name ):
       # delete the channel
       ch.delete()
     # delete the project database
-    pd.deleteNDDB()
+    pd.deleteNDProject()
     # delete the objects
     tk.delete()
     pr.delete()
@@ -95,13 +95,16 @@ def deleteTestDB ( project_name ):
     pass
 
 def deleteTestDBList(project_name_list):
-
+  
+  # TODO KL Will cascade work across different django versions?
   try:
     for project_name in project_name_list:
       pr = Project.objects.get(project_name=project_name)
       pd = NDProjectsDB.getProjDB(pr.project_name)
-      pd.deleteNDDB()
+      # delete the project database
+      pd.deleteNDProject()
     ds = Dataset.objects.get(dataset_name=pr.dataset_id)
+    # deleting the dataset works in django1.9 as it does a cascaded delete
     ds.delete()
   except Exception, e:
     pass

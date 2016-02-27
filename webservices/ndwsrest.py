@@ -1903,7 +1903,7 @@ def setPropagate(webargs):
           ch.setPropagate(UNDER_PROPAGATION)
           from spdb.tasks import propagate
           # then call propagate
-          #propagate(token, channel_name)
+          # propagate(token, channel_name)
           propagate.delay(token, channel_name)
         else:
           logger.warning("Cannot Propagate this project. It is set to Read Only.")

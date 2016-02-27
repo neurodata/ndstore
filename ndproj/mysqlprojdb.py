@@ -15,13 +15,20 @@
 import MySQLdb
 from contextlib import closing
 
+from django.conf import settings
 from ndproject import NDProject
 from ndchannel import NDChannel
+
+import annotation
+from ndtype import *
+from ndwserror import NDWSError
+import logging
+logger=logging.getLogger("neurodata")
 
 class MySQLProjectDB:
   """Database for the projects"""
 
-  def __init__(self):
+  def __init__(self, project_name):
     """Create the database connection"""
     # connect to the database
     self.pr = NDProject(project_name)
@@ -37,7 +44,7 @@ class MySQLProjectDB:
 
         try:
           # create the database
-          sql = "CREATE DATABASE {}".format(pr.project_name)
+          sql = "CREATE DATABASE {}".format(self.pr.getDBName())
        
           cursor.execute(sql)
           conn.commit()
@@ -50,7 +57,7 @@ class MySQLProjectDB:
   def newNDChannel(self, channel_name):
     """Create the tables for a channel"""
 
-    ch = NDChannel(channel_name)
+    ch = NDChannel(self.pr, channel_name)
 
     # Connect to the database
 
@@ -61,11 +68,13 @@ class MySQLProjectDB:
           # tables specific to all other non time data
           if ch.getChannelType() not in [TIMESERIES]:
             for res in self.pr.datasetcfg.getResolutions():
-              cursor.execute("CREATE TABLE {} ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(ch.getTable(res) )
+              cursor.execute("CREATE TABLE {} ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(ch.getTable(res)))
+              cursor.execute ( "CREATE TABLE {}_res{}_index (zindex BIGINT NOT NULL PRIMARY KEY)".format(ch.getChannelName(), res) )
           # tables specific to timeseries data
           elif ch.getChannelType() == TIMESERIES:
             for res in self.pr.datasetcfg.getResolutions():
               cursor.execute("CREATE TABLE {} ( zindex BIGINT, timestamp INT, cube LONGBLOB, PRIMARY KEY(zindex,timestamp))".format(ch.getTable(res)))
+              cursor.execute ( "CREATE TABLE {}_res{}_index (zindex BIGINT NOT NULL, timestamp INT NOT NULL, PRIMARY KEY(zindex,timestamp))".format(ch.getChannelName(), res) )
           else:
             raise NDWSError("Channel type {} does not exist".format(ch.getChannelType()))
           
@@ -73,10 +82,10 @@ class MySQLProjectDB:
           if ch.getChannelType() == ANNOTATION: 
             cursor.execute("CREATE TABLE {} ( id BIGINT PRIMARY KEY)".format(ch.getIdsTable()))
             # And the RAMON objects
-            cursor.execute("CREATE TABLE {}_ramon ( annoid BIGINT, kv_key VARCHAR(255), kv_value VARCHAR(20000), PRIMARY KEY ( annoid, kv_key ))".format(ch.channel_name))
+            cursor.execute("CREATE TABLE {} ( annoid BIGINT, kv_key VARCHAR(255), kv_value VARCHAR(20000), PRIMARY KEY ( annoid, kv_key ))".format(ch.getRamonTable()))
             for res in self.pr.datasetcfg.getResolutions():
               cursor.execute("CREATE TABLE {} ( zindex BIGINT, id BIGINT, exlist LONGBLOB, PRIMARY KEY ( zindex, id))".format(ch.getExceptionsTable(res)))
-              cursor.execute("CREATE TABLE {} ( annid BIGINT PRIMARY KEY, cube LONGBLOB )".format(ch.getIdxTable(res))
+              cursor.execute("CREATE TABLE {} ( annid BIGINT PRIMARY KEY, cube LONGBLOB )".format(ch.getIdxTable(res)))
          
           # Commiting at the end
           conn.commit()
@@ -92,7 +101,7 @@ class MySQLProjectDB:
     with closing(MySQLdb.connect (host = self.pr.getDBHost(), user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'])) as conn:
       with closing(conn.cursor()) as cursor:
         # delete the database
-        sql = "DROP DATABASE {}".format(self.pr.getProjectName())
+        sql = "DROP DATABASE {}".format(self.pr.getDBName())
 
         try:
           cursor.execute(sql)
@@ -100,7 +109,7 @@ class MySQLProjectDB:
         except MySQLdb.Error, e:
           # Skipping the error if the database does not exist
           if e.args[0] == 1008:
-            logger.warning("Database {} does not exist".format(pr.getProjectName()))
+            logger.warning("Database {} does not exist".format(self.pr.getDBName()))
             pass
           else:
             conn.rollback()
@@ -108,38 +117,37 @@ class MySQLProjectDB:
             raise NDWSError("Failed to drop project database {}: {}. sql={}".format(e.args[0], e.args[1], sql))
 
 
-  def deleteNDChannel (self, proj, channel_name):
+  def deleteNDChannel(self, channel_name):
     """Delete the tables for this channel"""
-
-    pr = NDProject(proj)
-    ch = NDChannel(pr, channel_name)
+    
+    ch = NDChannel(self.pr, channel_name)
     table_list = []
 
     if ch.getChannelType() in ANNOTATION_CHANNELS:
       table_list.append(ch.getIdsTable())
-      for key in annotation.anno_dbtables.keys():
-        table_list.append(ch.getAnnoTable(key))
+      # for key in annotation.anno_dbtables.keys():
+        # table_list.append(ch.getAnnoTable(key))
 
     for res in self.pr.datasetcfg.getResolutions():
       table_list.append(ch.getTable(res))
       if ch.getChannelType() in ANNOTATION_CHANNELS:
         table_list = table_list + [ch.getIdxTable(res), ch.getExceptionsTable(res)]
 
-    try:
-      conn = MySQLdb.connect (host = pr.getDBHost(), user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = pr.getProjectName()) 
-      # delete the tables for this channel
-      sql = "DROP TABLES IF EXISTS {}".format(','.join(table_list))
-    
+    with closing(MySQLdb.connect(host = self.pr.getDBHost(), user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = self.pr.getDBName())) as conn:
       with closing(conn.cursor()) as cursor:
-        cursor.execute (sql)
-        conn.commit()
-    except MySQLdb.Error, e:
-      # Skipping the error if the table does not exist
-      if e.args[0] == 1051:
-        pass
-      if e.args[0] == 1049:
-        pass
-      else:
-        conn.rollback()
-        logger.error("Failed to drop channel tables {}: {}. sql={}".format(e.args[0], e.args[1], sql))
-        raise NDWSError("Failed to drop channel tables {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+        
+        # delete the tables for this channel
+        sql = "DROP TABLES IF EXISTS {}".format(','.join(table_list))
+        try: 
+          cursor.execute (sql)
+          conn.commit()
+        except MySQLdb.Error, e:
+          # Skipping the error if the table does not exist
+          if e.args[0] == 1051:
+            pass
+          if e.args[0] == 1049:
+            pass
+          else:
+            conn.rollback()
+            logger.error("Failed to drop channel tables {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+            raise NDWSError("Failed to drop channel tables {}: {}. sql={}".format(e.args[0], e.args[1], sql))
