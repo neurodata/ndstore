@@ -8,7 +8,7 @@ Scalable database cluster for the spatial analysis and annotation of high-throug
 Root directory of the cutout and annotation services.
 Major directories include:
 
-  * spdb -- Spatial Database module
+  * spdb -- [Spatial Database submodule](https://github.com/neurodata/spdb)
   * webservices -- Webservices module
   * ndproj -- Project Module
   * ramon -- RAMON and Annotation metadata module
@@ -19,9 +19,13 @@ Major directories include:
   * util -- Useful common files across the modules
   * ingest -- Scripts to insert datasets into the databases
   * admin -- Scripts to manage the databases
-  * ndlib -- Common ctype and openmp acclerations for the service
+  * ndlib -- [Common library and Ctype accelerations submodule](https://github.com/neurodata/ndlib)
   * docs -- Sphinx documentation for the project
   * cython -- Cython acclerations for the service (Deprecated)
   * scripts -- Useful general purpose scripts
   * onetime -- Misc scripts for the service
-  * NOTE: git submodule init and git submodule update for ndlib
+  * NOTE: git submodule init and git submodule update for all submodules
+
+#### Architecture
+
+![](./docs/images/neurodata_cluster.png)
