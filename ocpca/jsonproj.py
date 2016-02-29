@@ -126,13 +126,17 @@ def autoIngest(webargs, post_data):
       # Checking if the channel already exists or not
       if not Channel.objects.filter(channel_name = ch.channel_name, project = pr.project_name).exists():
         ch.save()
+        pd = ocpcaproj.OCPCAProjectsDB()
         pd.newOCPCAChannel(pr.project_name, ch.channel_name)
       else:
         print "Channel already exists"
         return json.dumps("Channel {} already exists. Please choose a different channel name.".format(ch.channel_name))
       
       from ocpca.tasks import ingest
-      #ingest(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
+      if data_url.endswith('/'):
+        data_url = data_url[:-1]
+
+      # ingest(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
       ingest.delay(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
     
     # Posting to LIMS system
