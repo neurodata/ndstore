@@ -192,7 +192,7 @@ def NeurontoJSON ( neuron ):
   jsonneuron = BasetoJSON ( neuron, annotation.ANNO_NEURON )
 
   # lists
-  if ( neuron.segment != [] ):
+  if ( neuron.segments != [] ):
     jsonneuron.addMetadata( "segments", neuron.segments )
 
   return jsonneuron 
