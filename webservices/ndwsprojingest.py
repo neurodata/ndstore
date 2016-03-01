@@ -134,8 +134,13 @@ def autoIngest(webargs, post_data):
         print "Channel already exists"
         return json.dumps("Channel {} already exists. Please choose a different channel name.".format(ch.channel_name))
       
+      # checking if the posted data_url has a trialing slash or not. This becomes an issue in auto-ingest
+      if data_url.endswith('/'):
+        # removing the trailing slash if there exists one
+        data_url = data_url[:-1]
+
       from spdb.tasks import ingest
-      #ingest(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
+      # ingest(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
       ingest.delay(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
     
     # Posting to LIMS system
