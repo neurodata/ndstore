@@ -851,8 +851,8 @@ AR_TIGHTCUTOUT = 3
 AR_BOUNDINGBOX = 4
 AR_CUBOIDS = 5
 
-def getAnnoJSONById ( ch, annoid, proj, db ):
-  """ Retrieve the annotation and return it as a serialized json string """
+def getAnnoDictById ( ch, annoid, proj, db ):
+  """ Retrieve the annotation and return it as a Python dictionary """
 
   # retrieve the annotation
   anno = db.getAnnotation ( ch, annoid ) 
@@ -860,11 +860,11 @@ def getAnnoJSONById ( ch, annoid, proj, db ):
     logger.warning("No annotation found at identifier = %s" % (annoid))
     raise OCPCAError ("No annotation found at identifier = %s" % (annoid))
 
-  # create the JSONanno obj
-  jsonanno = jsonann.AnnotationtoJSON ( anno )
+  # create the annotation obj
+  annobj = jsonann.AnnotationtoJSON ( anno )
 
   # return data
-  return jsonanno.toJSON() 
+  return annobj.toDictionary()
 
 def getAnnoById ( ch, annoid, h5f, proj, db, dataoption, resolution=None, corner=None, dim=None ): 
   """Retrieve the annotation and put it in the HDF5 file."""
@@ -1007,13 +1007,15 @@ def getAnnotation ( webargs ):
     # Check to see if this is a JSON request, and if so return the JSON objects 
     # otherwise, continue with returning the HDF5 data
     if option_args[1] == 'json':
-      jsonstr = ''
+      annobjs = {}
       try:
         db.startTxn()
         if re.match ( '^[\d,]+$', option_args[0] ): 
           annoids = map(int, option_args[0].split(','))
           for annoid in annoids: 
-            jsonstr += getAnnoJSONById ( ch, annoid, proj, db )
+            annobjs.update(getAnnoDictById ( ch, annoid, proj, db ))
+
+        jsonstr = json.dumps( annobjs )
 
       except: 
         db.rollback()
