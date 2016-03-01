@@ -30,10 +30,17 @@ from ocpuser.models import Token
 from ocpuser.models import Channel
 from ocpuser.models import User
 
+from ocpcaerror import OCPCAError
+import logging
+logger=logging.getLogger('ocp')
 
 def autoIngest(webargs, post_data):
   """Create a project using a JSON file"""
   
+  TOKEN_CREATED = False
+  PROJECT_CREATED = False
+  CHANNEL_CREATED = False
+  DATASET_CREATED = False
   ocp_dict = json.loads(post_data)
   try:
     dataset_dict = ocp_dict['dataset']
@@ -41,19 +48,19 @@ def autoIngest(webargs, post_data):
     channels = ocp_dict['channels']
     metadata_dict = ocp_dict['metadata']
   except Exception, e:
-    print "Missing requred fields"
+    logger.error("Missing requred fields of dataset,project,channels,metadata.")
     return json.dumps("Missing required fields of dataset,project,channels,metadata. Please check if one of them is not missing.")
   
   try:
     DATASET_SCHEMA.validate(dataset_dict)
   except Exception, e:
-    print "Invalid Dataset schema"
+    logger.error("Invalid Dataset schema")
     return json.dumps("Invalid Dataset schema")
   
   try:
     PROJECT_SCHEMA.validate(project_dict)
   except Exception, e:
-    print "Invalid Project schema"
+    logger.error("Invalid Project schema")
     return json.dumps("Invalid Project schema")
     
   #try:
@@ -85,10 +92,11 @@ def autoIngest(webargs, post_data):
       if compareModelObjects(stored_ds, ds): 
         pr.dataset_id = stored_ds.dataset_name
       else:
-        print "Dataset name already exists"
+        logger.error("Dataset {} already exists and is different then the chosen dataset".format(ds.dataset_name))
         return json.dumps("Dataset {} already exists and is different then the chosen dataset. Please choose a different dataset name".format(ds.dataset_name))
     else:
       ds.save()
+      DATASET_CREATED = True
       pr.dataset_id = ds.dataset_name
 
     # Checking if the posted project already exists
@@ -104,21 +112,41 @@ def autoIngest(webargs, post_data):
           if compareModelObjects(stored_tk, tk):
             pass
           else:
-            print "Token name already exists"
+            if DATASET_CREATED:
+              ds.delete()
+            logger.error("Token {} already exists.".format(tk.token_name))
             return json.dumps("Token {} already exists. Please choose a different token name.".format(tk.token_name))
         else:
           tk.project_id = stored_pr.project_name
           tk.save()
+          TOKEN_CREATED = True
       else:
-        print "Project name already exists"
+        if DATASET_CREATED:
+          ds.delete()
+        if TOKEN_CREATED:
+          tk.delete()
+        logger.warning("Project {} already exists.".format(pr.project_name))
         return json.dumps("Project {} already exists. Please choose a different project name".format(pr.project_name))
     else:
       pr.save()
+      try:
+        pd = ocpcaproj.OCPCAProjectsDB()
+        pd.newOCPCAProject(pr.project_name)
+        PROJECT_CREATED = True
+      except Exception, e:
+        if TOKEN_CREATED():
+          tk.delete()
+        if PROJECT_CREATED:
+          pr.delete()
+        if DATASET_CREATED:
+          ds.delete()
+        logger.error("There was an error in creating the project {} database".format(pr.project_name))
+        return json.dumps("There was an error in creating the project {} database".format(pr.project_name))
       tk.project_id = pr.project_name
       tk.save()
-      pd = ocpcaproj.OCPCAProjectsDB()
-      pd.newOCPCAProject(pr.project_name)
-
+      TOKEN_CREATED = True
+    
+    channel_object_list = []
     # Iterating over channel list to store channels
     for (ch, data_url, file_format, file_type) in ch_list:
       ch.project_id = pr.project_name
@@ -126,16 +154,32 @@ def autoIngest(webargs, post_data):
       # Checking if the channel already exists or not
       if not Channel.objects.filter(channel_name = ch.channel_name, project = pr.project_name).exists():
         ch.save()
-        pd = ocpcaproj.OCPCAProjectsDB()
-        pd.newOCPCAChannel(pr.project_name, ch.channel_name)
+        # Maintain a list of channel objects created during this iteration and delete all even if one fails
+        channel_object_list.append(ch)
+        try:
+          pd = ocpcaproj.OCPCAProjectsDB()
+          pd.newOCPCAChannel(pr.project_name, ch.channel_name)
+          CHANNEL_CREATED = True
+        except Exception, e:
+          if TOKEN_CREATED:
+            tk.delete()
+          if CHANNEL_CREATED:
+            for ch_obj in channel_object_list:
+              ch_obj.delete()
+          if PROJECT_CREATED:
+            pr.delete()
+          if DATASET_CREATED:
+            ds.delete()
+          logger.error("There was an error creating in the channel {} table".format(ch.channel_name))
+          return json.dumps("There was an error in creating the channel {} table.".format(ch.channel_name))
       else:
-        print "Channel already exists"
+        logger.error("Channel {} already exists.".format(ch.channel_name))
         return json.dumps("Channel {} already exists. Please choose a different channel name.".format(ch.channel_name))
       
       from ocpca.tasks import ingest
       if data_url.endswith('/'):
         data_url = data_url[:-1]
-
+      
       # ingest(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
       ingest.delay(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
     
@@ -149,8 +193,9 @@ def autoIngest(webargs, post_data):
     except NameError:
       pd = ocpcaproj.OCPCAProjectsDB()
     if pr is not None:
-      pd.deleteOCPCADB(pr.project_name)
-    print "Error saving models"
+      if PROJECT_CREATED:
+        pd.deleteOCPCADB(pr.project_name)
+    logger.error("Error saving models. There was an error in the information posted")
     return json.dumps("FAILED. There was an error in the information you posted.")
 
   return json.dumps("SUCCESS. The ingest process has now started.")

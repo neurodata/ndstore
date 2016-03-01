@@ -58,7 +58,8 @@ class IngestData:
     elif self.file_format in ['CATMAID']:
       self.ingestCatmaidStack()
     else:
-      raise "Format {} not supported.".format(self.file_format)
+      logger.error("Format {} not supported.".format(self.file_format))
+      raise OCPCAError("Format {} not supported.".format(self.file_format))
 
   def fetchData(self, slice_list, time_value):
     """Fetch the next set of data from a remote source and place it locally"""
@@ -69,7 +70,7 @@ class IngestData:
         if time_value is not None:
           url = '{}/{}/{}/{}/{}'.format(self.data_url, self.token, self.channel, time_value, self.generateFileName(slice_number))
         else:
-          url = '{}/{}/{}/{}'.format(self.data_url, self.token, self.channel, self.generateFileName(slice_number))
+          url = '{}/{}/{}/{}'.format(self.data_url, self.token, self.channel, self.generateFileName(slice_number, ondisk=False))
         req = urllib2.Request(url)
         resp = urllib2.urlopen(req, timeout=15)
         # urllib.urlretrieve('{}'.format(url), self.path+self.generateFileName(slice_number))
@@ -95,10 +96,14 @@ class IngestData:
         logger.warning("File {} not found. {}".format(self.generateFileName(slice_number), e))
 
 
-  def generateFileName(self, slice_number):
+  def generateFileName(self, slice_number, ondisk=True):
     """Generate a file name given the slice_number"""
+    
+    if ondisk:
+      return '{}_{:0>4}.{}'.format(self.channel, slice_number, self.file_type)
+    else:
+      return '{:0>4}.{}'.format(slice_number, self.file_type)
 
-    return '{:0>4}.{}'.format(slice_number, self.file_type)
 
   def ingestCatmaidStack(self):
     """Ingest a CATMAID tile stack"""
@@ -138,6 +143,7 @@ class IngestData:
                   try:
                     # reading the raw data
                     file_name = "{}{}{:0>6}.{}".format(self.path, self.regex (slice_number + b), self.file_type )
+                    logger.info("Open filename {}".format(file_name))
                     print "Open filename {}".format(file_name)
                     slab[b,:,:] = np.asarray(Image.open(file_name, 'r'))
                   except IOError, e:
@@ -186,7 +192,7 @@ class IngestData:
 
       # Get a list of the files in the directories
       for timestamp in range(starttime, endtime+1):
-        for slice_number in range (zoffset, zimagesz+1, zcubedim):
+        for slice_number in range (zoffset, zimagesz, zcubedim):
           slab = np.zeros([zcubedim, yimagesz, ximagesz ], dtype=OCP_dtypetonp.get(ch.getDataType()))
           # fetch 16 slices at a time
           if ch.getChannelType() in TIMESERIES_CHANNELS:
@@ -195,11 +201,12 @@ class IngestData:
             time_value = None
           self.fetchData(range(slice_number,slice_number+zcubedim) if slice_number+zcubedim<=zimagesz else range(slice_number,zimagesz), time_value=time_value)
           for b in range(zcubedim):
-            if (slice_number + b <= zimagesz):
+            if (slice_number + b < zimagesz):
               try:
                 # reading the raw data
                 file_name = "{}{}".format(self.path, self.generateFileName(slice_number+b))
                 print "Open filename {}".format(file_name)
+                logger.info("Open filename {}".format(file_name))
                 
                 if ch.getDataType() in [UINT8, UINT16] and ch.getChannelType() in IMAGE_CHANNELS:
                   image_data = np.asarray(Image.open(file_name, 'r'))
@@ -211,7 +218,7 @@ class IngestData:
                   image_data = np.asarray(Image.open(file_name, 'r'))
                   slab[b,:,:] = image_data
                 else:
-                  logger.warning("Cannot ingest this data yet")
+                  logger.error("Cannot ingest this data yet")
                   raise OCPCAError("Cannot ingest this data yet")
               except IOError, e:
                 logger.warning("IOError {}.".format(e))
