@@ -1058,6 +1058,19 @@ class OCPCADB:
   def getVoxel ( self, ch, resolution, voxel ):
     """Return the identifier at a voxel"""
     
+    # check propagate status, if not propagated then change voxel co-ordinates accordinig to base resolution
+    if ch.getPropagate() in [NOT_PROPAGATED, UNDER_PROPAGATION]:
+      chres = ch.getResolution()
+      if resolution > ch.getResolution():
+        # upsample the x and y coordinates 
+        for i in range(2):
+          voxel[i] = voxel[i] * (2**(resolution-ch.getResolution()))
+      elif resolution < ch.getResolution():
+        # downsample the x and y coordinates 
+        for i in range(2):
+          voxel[i] = voxel[i] / (2**(ch.getResolution()-resolution))
+      resolution = ch.getResolution()
+
     # get the size of the image and cube
     [xcubedim, ycubedim, zcubedim] = cubedim = self.datasetcfg.cubedim[resolution]
     [xoffset, yoffset, zoffset] = offset = self.datasetcfg.offset[resolution]

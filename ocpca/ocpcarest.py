@@ -617,23 +617,10 @@ def annId ( chanargs, proj, db ):
   [channel, service, imageargs] = chanargs.split('/',2)
   ch = ocpcaproj.OCPCAChannel(proj,channel)
   # Perform argument processing
-  (resolution, voxel) = restargs.voxel ( imageargs, proj.datasetcfg )
-  
-  # check propagate status
-  if ch.getPropagate() == NOT_PROPAGATED or ch.getPropagate() == UNDER_PROPAGATION:
-    chres = ch.getResolution()
-    if resolution > chres:
-      # upsample the x and y coordinates 
-      for i in range(2):
-        voxel[i] = voxel[i] * (2**(resolution-chres))
-    elif resolution < chres:
-      # downsample the x and y coordinates 
-      for i in range(2):
-        voxel[i] = voxel[i] / (2**(chres-resolution))
-    resolution = chres 
+  (resolution, voxel) = restargs.voxel(imageargs, proj.datasetcfg)
 
   # Get the identifier
-  return db.getVoxel ( ch, resolution, voxel )
+  return db.getVoxel(ch, resolution, voxel)
 
 def listIds ( chanargs, proj, db ):
   """Return the list of annotation identifiers in a region"""
