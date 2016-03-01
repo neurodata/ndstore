@@ -124,6 +124,10 @@ class JSONAnnotation:
     """ return json formatted string """ 
     return json.dumps( self.annodict )
 
+  def toDictionary( self ):
+    """ return dictionary """ 
+    return self.annodict 
+
 def BasetoJSON ( anno, annotype ):
   jsonanno = JSONAnnotation( annotype, anno.annid )
 
