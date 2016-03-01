@@ -59,7 +59,7 @@ class IngestData:
       self.ingestCatmaidStack()
     else:
       logger.error("Format {} not supported.".format(self.file_format))
-      raise OCPCAError("Format {} not supported.".format(self.file_format))
+      raise NDWSError("Format {} not supported.".format(self.file_format))
 
   def fetchData(self, slice_list, time_value):
     """Fetch the next set of data from a remote source and place it locally"""
@@ -131,7 +131,7 @@ class IngestData:
 
       # Get a list of the files in the directories
       for timestamp in range(starttime, endtime+1):
-        for slice_number in range (zoffset, zimagesz+1, zcubedim):
+        for slice_number in range (zoffset, zimagesz, zcubedim):
           
           # over all the tiles in the slice
           for ytile in range(0, num_ytiles):
@@ -139,7 +139,7 @@ class IngestData:
           
               slab = np.zeros([zcubedim, tilesz, tilesz ], dtype=np.uint8)
               for b in range(zcubedim):
-                if (slice_number + b <= zimagesz):
+                if (slice_number + b < zimagesz):
                   try:
                     # reading the raw data
                     file_name = "{}{}{:0>6}.{}".format(self.path, self.regex (slice_number + b), self.file_type )
@@ -192,13 +192,8 @@ class IngestData:
 
       # Get a list of the files in the directories
       for timestamp in range(starttime, endtime+1):
-<<<<<<< HEAD:webservices/ndwsingest.py
-        for slice_number in range (zoffset, zimagesz+1, zcubedim):
-          slab = np.zeros([zcubedim, yimagesz, ximagesz ], dtype=ND_dtypetonp.get(ch.getDataType()))
-=======
         for slice_number in range (zoffset, zimagesz, zcubedim):
-          slab = np.zeros([zcubedim, yimagesz, ximagesz ], dtype=OCP_dtypetonp.get(ch.getDataType()))
->>>>>>> origin/master:ocpca/ocpcaingest.py
+          slab = np.zeros([zcubedim, yimagesz, ximagesz ], dtype=ND_dtypetonp.get(ch.getDataType()))
           # fetch 16 slices at a time
           if ch.getChannelType() in TIMESERIES_CHANNELS:
             time_value = timestamp
@@ -223,13 +218,8 @@ class IngestData:
                   image_data = np.asarray(Image.open(file_name, 'r'))
                   slab[b,:,:] = image_data
                 else:
-<<<<<<< HEAD:webservices/ndwsingest.py
-                  logger.warning("Cannot ingest this data yet")
-                  raise NDWSError("Cannot ingest this data yet")
-=======
                   logger.error("Cannot ingest this data yet")
-                  raise OCPCAError("Cannot ingest this data yet")
->>>>>>> origin/master:ocpca/ocpcaingest.py
+                  raise NDWSError("Cannot ingest this data yet")
               except IOError, e:
                 logger.warning("IOError {}.".format(e))
                 slab[b,:,:] = np.zeros((yimagesz, ximagesz), dtype=np.uint32)

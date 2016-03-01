@@ -1043,7 +1043,7 @@ def getAnnotation ( webargs ):
         jsonstr = json.dumps( annobjs )
 
       except: 
-        logger.error("Error"
+        logger.error("Error")
         raise NDWSError("Error")
 
       return jsonstr 
