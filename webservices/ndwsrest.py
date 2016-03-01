@@ -653,7 +653,7 @@ def annId ( chanargs, proj, db ):
   ch = ndproj.NDChannel(proj,channel)
   # Perform argument processing
   (resolution, voxel) = restargs.voxel(imageargs, proj.datasetcfg)
-
+  
   # Get the identifier
   return db.getVoxel(ch, resolution, voxel)
 
