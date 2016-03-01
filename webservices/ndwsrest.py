@@ -653,6 +653,19 @@ def annId ( chanargs, proj, db ):
   ch = ndproj.NDChannel(proj,channel)
   # Perform argument processing
   (resolution, voxel) = restargs.voxel ( imageargs, proj.datasetcfg )
+  
+  # check propagate status
+  if ch.getPropagate() == NOT_PROPAGATED or ch.getPropagate() == UNDER_PROPAGATION:
+    chres = ch.getResolution()
+    if resolution > chres:
+      # upsample the x and y coordinates 
+      for i in range(2):
+        voxel[i] = voxel[i] * (2**(resolution-chres))
+    elif resolution < chres:
+      # downsample the x and y coordinates 
+      for i in range(2):
+        voxel[i] = voxel[i] / (2**(resolution-chres))
+    resolution = chres 
 
   # Get the identifier
   return db.getVoxel ( ch, resolution, voxel )
