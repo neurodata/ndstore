@@ -653,7 +653,6 @@ def annId ( chanargs, proj, db ):
   ch = ndproj.NDChannel(proj,channel)
   # Perform argument processing
   (resolution, voxel) = restargs.voxel(imageargs, proj.datasetcfg)
-  
   # Get the identifier
   return db.getVoxel(ch, resolution, voxel)
 
@@ -878,8 +877,8 @@ AR_TIGHTCUTOUT = 3
 AR_BOUNDINGBOX = 4
 AR_CUBOIDS = 5
 
-def getAnnoJSONById ( ch, annoid, proj, rdb ):
-  """ Retrieve the annotation and return it as a serialized json string """
+def getAnnoDictById ( ch, annoid, proj, db ):
+  """Retrieve the annotation and return it as a Python dictionary"""
 
   # retrieve the annotation
   anno = rdb.getAnnotation ( ch, annoid ) 
@@ -887,11 +886,11 @@ def getAnnoJSONById ( ch, annoid, proj, rdb ):
     logger.warning("No annotation found at identifier = %s" % (annoid))
     raise NDWSError ("No annotation found at identifier = %s" % (annoid))
 
-  # create the JSONanno obj
-  jsonanno = jsonann.AnnotationtoJSON ( anno )
+  # create the annotation obj
+  annobj = jsonann.AnnotationtoJSON ( anno )
 
   # return data
-  return jsonanno.toJSON() 
+  return annobj.toDictionary()
 
 def getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution=None, corner=None, dim=None ): 
   """Retrieve the annotation and put it in the HDF5 file."""
@@ -1032,18 +1031,20 @@ def getAnnotation ( webargs ):
     option_args = otherargs.split('/', 2)
 
     # AB Added 20151011 
-    # Check to see if this is a JSON request, and if so return the JSON objects 
-    # otherwise, continue with returning the HDF5 data
+    # Check to see if this is a JSON request, and if so return the JSON objects otherwise, continue with returning the HDF5 data
     if option_args[1] == 'json':
-      jsonstr = ''
+      annobjs = {}
       try:
         if re.match ( '^[\d,]+$', option_args[0] ): 
           annoids = map(int, option_args[0].split(','))
           for annoid in annoids: 
-            jsonstr += getAnnoJSONById ( ch, annoid, proj, rdb )
+            annobjs.update(getAnnoDictById ( ch, annoid, proj, db ))
+
+        jsonstr = json.dumps( annobjs )
 
       except: 
-        raise
+        logger.error("Error"
+        raise NDWSError("Error")
 
       return jsonstr 
 
