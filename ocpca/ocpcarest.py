@@ -629,7 +629,7 @@ def annId ( chanargs, proj, db ):
     elif resolution < chres:
       # downsample the x and y coordinates 
       for i in range(2):
-        voxel[i] = voxel[i] / (2**(resolution-chres))
+        voxel[i] = voxel[i] / (2**(chres-resolution))
     resolution = chres 
 
   # Get the identifier
