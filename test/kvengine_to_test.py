@@ -20,5 +20,5 @@ kvengine = MYSQL
 # kvengine = DYNAMODB
 # kvengine = REDIS
 
-#kvserver='172.23.253.63'
 kvserver='localhost'
+# kvserver='172.23.253.63'
