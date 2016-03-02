@@ -34,6 +34,7 @@ ANNO_NEURON = 5
 ANNO_ORGANELLE = 6
 ANNO_NODE = 7
 ANNO_SKELETON = 8
+ANNO_ROI = 9
 
 
 ###############  Annotation  ##################
@@ -522,15 +523,12 @@ class AnnNode (Annotation):
   def __init__(self,annodb,ch):
     """Initialize the fields to zero or None"""
 
-    self.pointtype = 0                           # enumerated label
+    self.nodetype = 0                           # enumerated label
     self.skeletonid = 0
     self.pointid = 0
-    # RBTODO make these floats for SWC and MRIStudio
-    self.location = [ None, None, None ]        # xyz coordinate
+    self.location=np.array([], dtype=np.float)
     self.parentid = 0                           # parent node
     self.radius = 0.0
-    #RBTODO do we want to keep children 
-    self.children = []                          # children
 
     # Call the base class constructor
     Annotation.__init__(self,annodb,ch)
@@ -541,7 +539,7 @@ class AnnNode (Annotation):
     if field == 'nodetype':
       return self.nodetype
     elif field == 'location':
-      return self.location
+      return ','.join(str(x) for x in self.location)
     elif field == 'skeletonid':
       return self.skeletonid
     elif field == 'parentid':
@@ -549,7 +547,9 @@ class AnnNode (Annotation):
     elif field == 'radius':
       return self.radius
     elif field == 'children':
-      return ','.join(str(x) for x in self.children)
+      #RBTODO 
+      assert 0
+#      return ','.join(str(x) for x in self.children)
     else:
       return Annotation.getField(self, field)
 
@@ -559,9 +559,10 @@ class AnnNode (Annotation):
     if field == 'nodetype':
       self.nodetype = value
     elif field == 'location':
-      if len(value) != 3:
+      self.location = np.array([float(x) for x in value.split(',')], dtype=np.float)
+      if len(self.location) != 3:
         raise NDWSError ("Illegal arguments to set field location: %s" % value)
-      self.location = value
+
     elif field == 'parentid':
       self.parentid = value
     elif field == 'skeletonid':
@@ -569,7 +570,8 @@ class AnnNode (Annotation):
     elif field == 'radius':
       self.radius = value
     elif field == 'children':
-      self.children = [int(x) for x in value.split(',')] 
+      # RBTODO cannot set children field
+      assert 0
     else:
       Annotation.setField ( self, field, value )
 
@@ -582,7 +584,8 @@ class AnnNode (Annotation):
     kvdict['parentid'] = self.parentid   
     kvdict['skeletonid'] = self.skeletonid   
     kvdict['radius'] = self.radius   
-    kvdict['children'] = json.dumps(self.children.tolist())
+    # RBTODO do you todict children
+#    kvdict['children'] = json.dumps(self.children.tolist())
 
     kvdict.update(Annotation.toDict(self))
 
@@ -600,16 +603,13 @@ class AnnNode (Annotation):
       if k == 'nodetype':
         self.nodetype = int(v)
       elif k == 'location':
-        self.location = np.array(json.loads(v), dtype=np.uint32)
+        self.location = np.array(json.loads(v), dtype=np.float)
       elif k == 'parentid':
         self.parentid = int(v)
       elif k == 'skeletonid':
         self.skeletonid = int(v)
       elif k == 'radius':
         self.radius = float(v)
-      #TODO
-      elif k == 'children':
-        self.children = np.array(json.loads(v), dtype=np.uint32)
       else:
         anndict[k] = v
     
@@ -679,4 +679,63 @@ class AnnSkeleton (Annotation):
     
     Annotation.fromDict ( self, anndict )
 
+
+###############  ROI  ##################
+
+class AnnROI (Annotation):
+  """Region of Interest annotation"""
+
+  def __init__(self,annodb,ch):
+    """Initialize the fields to zero or None"""
+
+    self.parent = 0                          
+
+    # Call the base class constructor
+    Annotation.__init__(self,annodb,ch)
+
+  def getField ( self, field ):
+    """Accessor by field name"""
+
+    if field == 'parent':
+      return self.parent
+    elif field == 'children':
+      return ','.join(str(x) for x in self.annodb.queryChildren ( self.ch, self.annid ))
+    else:
+      return Annotation.getField(self, field)
+
+  def setField ( self, field, value ):
+    """Mutator by field name.  Then need to store the field."""
+    
+    if field == 'parent':
+      self.parent = value
+    elif field == 'children':
+      raise NDWSError ("Cannot set children.  It is derived from the parent field of ANNO_NODE.")
+    else:
+      Annotation.setField ( self, field, value )
+
+  def toDict ( self ):
+    """return a dictionary of the kv pairs in for an annotation"""
+
+    kvdict = defaultdict(list)
+    kvdict['parent'] = self.parent   
+
+    kvdict.update(Annotation.toDict(self))
+
+    # update the type after merge
+    kvdict['type'] = ANNO_ROI
+
+    return kvdict
+
+  def fromDict ( self, kvdict ):
+    """convert a dictionary to the class elements"""
+
+    anndict = defaultdict(list)
+
+    for (k,v) in kvdict.iteritems():
+      if k == 'parent':
+        self.parent = int(v)
+      else:
+        anndict[k] = v
+    
+    Annotation.fromDict ( self, anndict )
 

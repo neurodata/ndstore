@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+#RBTODO --- refactor other fields like ROI children
+#  e.g. Node children, Skeleton nodes, other TODOs in file
+
 import StringIO
 import tempfile
 import numpy as np
@@ -626,7 +629,7 @@ def imgAnno ( service, chanargs, proj, db, rdb ):
   # determine if it is a compound type (NEURON) and get the list of relevant segments
   if iscompound:
     # remap the ids for a neuron
-    dataids = rdb.getChildren ( ch, annoids[0] ) 
+    dataids = rdb.getSegments ( ch, annoids[0] ) 
     cb = db.annoCutout ( ch, dataids, resolution, corner, dim, annoids[0] )
   else:
     # no remap when not a neuron
@@ -917,7 +920,7 @@ def getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution=None, c
 
   # determine if it is a compound type (NEURON) and get the list of relevant segments
   if anno.__class__ in [ annotation.AnnNeuron ] and dataoption != AR_NODATA:
-    dataids = rdb.getChildren ( ch, annoid ) 
+    dataids = rdb.getSegments ( ch, annoid ) 
   else:
     dataids = [anno.annid]
 
@@ -957,7 +960,7 @@ def getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution=None, c
  
     # determine if it is a compound type (NEURON) and get the list of relevant segments
     if anno.__class__ in [ annotation.AnnNeuron ] and dataoption != AR_NODATA:
-      dataids = rdb.getChildren(ch, annoid) 
+      dataids = rdb.getSegments(ch, annoid) 
     else:
       dataids = [anno.annid]
 
@@ -994,7 +997,7 @@ def getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution=None, c
 
     # determine if it is a compound type (NEURON) and get the list of relevant segments
     if anno.__class__ in [ annotation.AnnNeuron ] and dataoption != AR_NODATA:
-      dataids = rdb.getChildren(ch, annoid) 
+      dataids = rdb.getSegments(ch, annoid) 
     else:
       dataids = [anno.annid]
 

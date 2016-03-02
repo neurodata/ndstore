@@ -38,7 +38,6 @@ p.channels = ['unit_anno']
 
 class Test_Ramon:
 
-
   def setup_class(self):
     """Create the unittest database"""
     makeunitdb.createTestDB(p.token, readonly=0)
@@ -239,7 +238,7 @@ class Test_Ramon:
     confidence = random.random ()
     f = setField(p, 'confidence', confidence)
     f = getField(p, 'confidence')
-    assert confidence - float(f.read()) < 0.001
+    assert abs(confidence - float(f.read())) < 0.001
     
     # Test author
     #f = self.getField(p, 'author')
@@ -262,7 +261,7 @@ class Test_Ramon:
     weight = random.random ()
     f = setField(p, 'weight', weight)
     f = getField(p, 'weight')
-    assert weight - float(f.read()) < 0.001
+    assert abs(weight - float(f.read())) < 0.001
 
     # Test the inheritance
     status = random.randint (0,100)
@@ -414,7 +413,7 @@ class Test_Ramon:
     weight = random.random ()
     f = setField(p, 'weight', weight)
     f = getField(p, 'weight')
-    assert weight - float(f.read()) < 0.001
+    assert abs(weight - float(f.read())) < 0.001
 
     # Test inheritance
     status = random.randint (0,100)
@@ -433,6 +432,179 @@ class Test_Ramon:
     with pytest.raises(urllib2.HTTPError): 
       req = urllib2.Request ( url )
       f = urllib2.urlopen ( url )
+
+
+
+  def test_organelle_field (self):
+    """Upload an organelle and test it's fields"""
+
+    # Make an organelle 
+    makeAnno ( p, 6 )
+
+    # Test the parentseed
+    parentseed = random.randint (0,100)
+    f = setField(p, 'parentseed', parentseed)
+    f = getField(p, 'parentseed')
+    assert parentseed == int(f.read()) 
+
+    # Test the organelleclass
+    organelleclass = random.randint (0,100)
+    f = setField(p, 'organelleclass', organelleclass)
+    f = getField(p, 'organelleclass')
+    assert organelleclass == int(f.read()) 
+
+    # Test inheritance
+    status = random.randint (0,100)
+    f = setField(p, 'status', status)
+    f = getField(p, 'status')
+    assert status == int(f.read()) 
+
+    # Test the seeds
+    seeds = [random.randint(0,100), random.randint(0,100), random.randint(0,100)]
+    f = setField(p, 'seeds', ','.join([str(i) for i in seeds]))
+    f = getField(p, 'seeds')
+    assert ','.join([str(i) for i in seeds]) == f.read()
+
+
+  def test_node_field (self):
+    """Upload a skeleton node and test it's fields"""
+
+    # Make a neuron
+    makeAnno (p, 7)
+
+    # test the nodetype
+    nodetype = random.randint (0,100)
+    f = setField(p, 'nodetype', nodetype)
+    f = getField(p, 'nodetype')
+    assert nodetype == int(f.read())
+
+    # test the skeletonid
+    skeletonid = random.randint (0,65535)
+    f = setField(p, 'skeletonid', skeletonid)
+    f = getField(p, 'skeletonid')
+    assert skeletonid == int(f.read())
+
+    # test the pointid
+    pointid = random.randint (0,65535)
+    f = setField(p, 'pointid', pointid)
+    f = getField(p, 'pointid')
+    assert pointid == int(f.read())
+
+    # test the parentid
+    parentid = random.randint (0,65535)
+    f = setField(p, 'parentid', parentid)
+    f = getField(p, 'parentid')
+    assert parentid == int(f.read())
+
+    # test the radius
+    radius = random.random()
+    f = setField(p, 'radius', radius)
+    f = getField(p, 'radius')
+    assert abs(radius - float(f.read())) < 0.001
+
+    # test the location
+    location = [random.random(), random.random(), random.random()]
+    f = setField(p, 'location', ','.join([str(i) for i in location]))
+    f = getField(p, 'location')
+    assert ','.join([str(i) for i in location]) == f.read()
+
+
+  def test_node_field (self):
+    """Upload a skeleton node and test it's fields"""
+
+    # Make a neuron
+    makeAnno (p, 7)
+
+    # test the nodetype
+    nodetype = random.randint (0,100)
+    f = setField(p, 'nodetype', nodetype)
+    f = getField(p, 'nodetype')
+    assert nodetype == int(f.read())
+
+    # test the skeletonid
+    skeletonid = random.randint (0,65535)
+    f = setField(p, 'skeletonid', skeletonid)
+    f = getField(p, 'skeletonid')
+    assert skeletonid == int(f.read())
+
+    # test the pointid
+    pointid = random.randint (0,65535)
+    f = setField(p, 'pointid', pointid)
+    f = getField(p, 'pointid')
+    assert pointid == int(f.read())
+
+    # test the parentid
+    parentid = random.randint (0,65535)
+    f = setField(p, 'parentid', parentid)
+    f = getField(p, 'parentid')
+    assert parentid == int(f.read())
+
+    # test the radius
+    radius = random.random()
+    f = setField(p, 'radius', radius)
+    f = getField(p, 'radius')
+    assert abs(radius - float(f.read())) < 0.001
+
+    # test the location
+    location = [random.random(), random.random(), random.random()]
+    f = setField(p, 'location', ','.join([str(i) for i in location]))
+    f = getField(p, 'location')
+    assert ','.join([str(i) for i in location]) == f.read()
+
+
+  def test_skeleton_field (self):
+    """Upload a skeleton node and test it's fields"""
+
+    # Make a skeleton
+    makeAnno (p, 8)
+
+    # test the nodetype
+    skeletontype = random.randint (0,100)
+    f = setField(p, 'skeletontype', skeletontype)
+    f = getField(p, 'skeletontype')
+    assert skeletontype == int(f.read())
+
+    # test the rootnode
+    rootnode = random.randint (0,65535)
+    f = setField(p, 'rootnode', rootnode)
+    f = getField(p, 'rootnode')
+    assert rootnode == int(f.read())
+
+    # add some nodes to the skeleton and query them
+    # RBTODO
+
+
+  def test_roi_field (self):
+    """Upload an roi and test it's fields"""
+
+    # Make a skeleton
+    makeAnno (p, 9)
+
+    # test the parent
+    parent = random.randint (0,65535)
+    f = setField(p, 'parent', parent)
+    f = getField(p, 'parent')
+    assert parent == int(f.read())
+
+    # make a bunch of children ROIs 
+    q = Params()
+    q.token = 'unittest'
+    q.resolution = 0
+    q.channels = ['unit_anno']
+
+    childids = []
+    for i in range(0,4):
+      makeAnno ( q, 9) 
+      f = setField(q, 'parent', p.annoid)
+      childids.append(q.annoid)
+
+    # Test children
+    f = getField(p, 'children')
+    rchildids = f.read().split(',')
+    for cid in rchildids:
+      assert int(cid) in childids
+    assert len(rchildids) == 4
+
 
 # RBTODO add tests key/value and compound fields.
     #  assign a field for a wrong annotation type

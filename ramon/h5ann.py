@@ -270,14 +270,25 @@ def H5toAnnotation ( key, idgrp, annodb, ch ):
       if 'ROOTNODE' in mdgrp:
         anno.rootnode = mdgrp['ROOTNODE'][0]
 
+  elif annotype == annotation.ANNO_ROI:
+    
+    # Create the appropriate annotation type
+    anno = annotation.AnnROI(annodb,ch)
+
+    # Load metadata if it exists
+    if mdgrp:
+      # load the synapse specific metadata
+      if 'PARENT' in mdgrp:
+        anno.parent = mdgrp['PARENT'][0]
+
   # No special action if it's a no type
   elif annotype == annotation.ANNO_ANNOTATION:
     # Just create a generic annotation object
     anno = annotation.Annotation(annodb,ch)
 
   else:
-    logger.warning ("Dont support this annotation type yet. Type = %s" % annotype)
-    raise NDWSError ("Dont support this annotation type yet. Type = %s" % annotype)
+    logger.warning ("Do not support this annotation type yet. Type = %s" % annotype)
+    raise NDWSError ("Do n0t support this annotation type yet. Type = %s" % annotype)
 
   # now load the annotation common fields
   if re.match("^\d+$", key):

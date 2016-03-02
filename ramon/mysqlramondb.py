@@ -373,4 +373,18 @@ class MySQLRamonDB:
     return np.array(self.cursor.fetchall(), dtype=np.uint32).flatten()
 
 
+  def queryChildren ( self, ch, annid ):
+    """Return children that belong to this ROI"""
+
+    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.getChannelName(), 'parent', annid)
+
+    try:
+      self.cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      logger.warning ( "Error querying children %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise NDWSError ( "Error querying children %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    return np.array(self.cursor.fetchall(), dtype=np.uint32).flatten()
+
+
 

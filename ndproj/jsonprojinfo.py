@@ -116,14 +116,15 @@ def xmlInfo (token, proj):
 def metadatadict( proj ):
   """Metadata Info"""
   
-  try:
-    url = 'http://{}/api/metadata/get/{}/'.format(settings.LIMS_SERVER, proj.getProjectName())
-    req = urllib2.Request(url)
-    response = urllib2.urlopen(req)
-    return json.loads(response.read())
-  except urllib2.URLError, e:
-    print "Failed URL {}".format(url)
-    return {}
+#  try:
+#    url = 'http://{}/api/metadata/get/{}/'.format(settings.LIMS_SERVER, proj.getProjectName())
+#    req = urllib2.Request(url)
+#    response = urllib2.urlopen(req)
+#    return json.loads(response.read())
+#  except urllib2.URLError, e:
+#    print "Failed URL {}".format(url)
+#    return {}
+  return {}
 
 def publicTokens ( projdb ):
   """List of Public Tokens"""

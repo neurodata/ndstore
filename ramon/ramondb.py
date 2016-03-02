@@ -91,6 +91,8 @@ class RamonDB:
       anno = annotation.AnnNode(self.annodb,ch)
     elif annotype == annotation.ANNO_SKELETON:
       anno = annotation.AnnSkeleton(self.annodb,ch)
+    elif annotype == annotation.ANNO_ROI:
+      anno = annotation.AnnROI(self.annodb,ch)
     elif annotype == annotation.ANNO_ANNOTATION:
       anno = annotation.Annotation(self.annodb,ch)
     else:
@@ -163,7 +165,7 @@ class RamonDB:
       self.annodb.rollback()
       raise
 
-  def getChildren ( self, ch, annoid ):
+  def getSegments ( self, ch, annoid ):
     """get all the children of the annotation"""
 
     # ensure that the annotation is a neuron
