@@ -73,12 +73,12 @@ RUN git submodule init
 RUN git submodule update
 
 # build ocplib ctypes functions
-USER root
 WORKDIR /home/neurodata/ndstore/ndlib/c_version
 RUN make -f makefile_LINUX  
 
 # configure mysql
 WORKDIR /home/neurodata/ndstore/django
+USER root
 RUN service mysql start && mysql -u root -i -e "create user 'neurodata'@'localhost' identified by 'neur0data';" &&\
   mysql -u root -i -e "grant all privileges on *.* to 'neurodata'@'localhost' with grant option;" &&\
   mysql -u neurodata -pneur0data -i -e "CREATE DATABASE neurodjango;"
