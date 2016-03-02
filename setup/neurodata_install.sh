@@ -7,8 +7,8 @@
 sudo apt-get update && upgrade -y
 
 # apt-get install mysql packages
-sudo debconf-set-selection <<< 'mysql-server-5.6 mysql-server/root_password password neur0data'
-sudo debconf-set-selection <<< 'mysql-server-5.6 mysql-server/root_password_again password neur0data'
+echo "mysql-server-5.6 mysql-server/root_password neur0data root" | sudo debconf-set-selection
+echo "mysql-server-5.6 mysql-server/root_password_again neur0data root" | sudo debconf-set-selection
 sudo apt-get -y install mysql-server-5.6
 
 # apt-get install packages
@@ -40,12 +40,16 @@ sudo -u neurodata make -f makefile_LINUX
 
 # configure mysql
 cd /home/neurodata/ndstore/django/
-sudo service mysql start && mysql -u root -pneur0data -i -e "create user 'neurodata'@'localhost' identified by 'neur0data';" && mysql -u root -pneur0data -i -e "grant all privileges on *.* to 'neurodata'@'localhost' with grant option;" && mysql -u neurodata -pneur0data -i -e "CREATE DATABASE neurodjango;"
+sudo service mysql start
+mysql -u root -pneur0data -i -e "create user 'neurodata'@'localhost' identified by 'neur0data';" && mysql -u root -pneur0data -i -e "grant all privileges on *.* to 'neurodata'@'localhost' with grant option;" && mysql -u neurodata -pneur0data -i -e "CREATE DATABASE neurodjango;"
 
 # configure django setttings
 cd /home/neurodata/ndstore/django/ND/
 sudo -u neurodata cp settings.py.example settings.py
-sudo ln -s /home/neurodata/ndstore/setup/docker_config/django/settings_secret.py settings_secret.py
+sudo -u neurodata ln -s /home/neurodata/ndstore/setup/docker_config/django/docker_settings_secret.py settings_secret.py
+
+# migrate the database
+sudo -u neurodata python manage.py migrate
 
 # move the nginx config files and start service
 sudo rm /etc/nginx/sites-enabled/default
