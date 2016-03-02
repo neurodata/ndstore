@@ -15,6 +15,31 @@ Second is how the files themselves are organized. Currently the auto-ingest serv
 
     This figure illustrated visually how the data should be organized for ingest.
 
+Some common mistakes you can make
+=================================
+
+#TODO AE - Expand these
+Spaces in channel/project/dataset/token names are not allowed
+Special characters in channel/project/dataset/token names not allowed (minus underscore)
+Numbering the channel slices incorrectly
+If your slice number starts at 1 then mention z-offset as 1. we deal with missing slice numbers
+channel types are image/annotation not Image/Annotation
+if dataset exists use a different name or you have changes parameters
+you can send multiple channels at once but channels need to be in the same dataset, check this
+check if you have the lastest version of ndio, pip install -U ndio
+check your dir strucute proj/channel/slice
+HTTP accessible urls(have to go over the firewall) do a wget on your slice to check if this works
+
+Help Section
+============
+
+#TODO AE
+How do I check the image size, I am unssure. Use indentify on unix command line
+How do I check the datatype. Again use identify on command line
+How do I name my projects/datasets/token - Repeat it here <lab-name>year
+How do I check if my data is publicly accessible - do a curl/wget
+
+
 S3 Bucket Upload
 ================
 
