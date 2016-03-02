@@ -7,8 +7,8 @@
 sudo apt-get update && upgrade -y
 
 # apt-get install mysql packages
-debconf-set-selection <<< 'mysql-server-5.6 mysql-server/root_password password neur0data'
-debconf-set-selection <<< 'mysql-server-5.6 mysql-server/root_password_again password neur0data'
+sudo debconf-set-selection <<< 'mysql-server-5.6 mysql-server/root_password password neur0data'
+sudo debconf-set-selection <<< 'mysql-server-5.6 mysql-server/root_password_again password neur0data'
 sudo apt-get -y install mysql-server-5.6
 
 # apt-get install packages
@@ -17,7 +17,7 @@ sudo apt-get -y install nginx git bash-completion python-virtualenv libhdf5-dev 
 # pip install packages
 sudo pip install cython numpy
 sudo pip install django h5py pytest
-sudo pip install posix_ipc boto3 nibabel networkx requests lxml pylibmc pillow blosc django-registeration django-celery mysql-python libtiff
+sudo pip install pillow posix_ipc boto3 nibabel networkx requests lxml pylibmc blosc django-registration django-celery mysql-python libtiff
 
 sudo mkdir /var/log/neurodata
 sudo chown www-data:www-data /var/log/neurodata
