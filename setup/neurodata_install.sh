@@ -12,8 +12,8 @@ echo "mysql-server-5.6 mysql-server/root_password_again password neur0data" | su
 #sudo apt-get -y install mysql-server-5.6
 
 # apt-get install packages
-sudo apt-get -y install < ubuntu_package_list
-#sudo apt-get -y install nginx git bash-completion python-virtualenv libhdf5-dev libxslt1-dev libmemcached-dev g++ libjpeg-dev virtualenvwrapper python-dev mysql-server-5.6 libmysqlclient-dev xfsprogs supervisor rabbitmq-server uwsgi uwsgi-plugin-python liblapack-dev wget
+#sudo apt-get -y install < ubuntu_package_list
+sudo apt-get -y install nginx git bash-completion python-virtualenv libhdf5-dev libxslt1-dev libmemcached-dev g++ libjpeg-dev virtualenvwrapper python-dev mysql-server-5.6 libmysqlclient-dev xfsprogs supervisor rabbitmq-server uwsgi uwsgi-plugin-python liblapack-dev wget
 
 # create the log directory
 sudo mkdir /var/log/neurodata
@@ -33,10 +33,10 @@ sudo -u neurodata git submodule update
 
 # pip install packages
 cd /home/neurodata/ndstore/setup/
-sudo pip install -U -r requirements.txt
-#sudo pip install cython numpy
-#sudo pip install django h5py pytest
-#sudo pip install pillow posix_ipc boto3 nibabel networkx requests lxml pylibmc blosc django-registration django-celery mysql-python libtiff jsonschema json-spec
+#sudo pip install -U -r requirements.txt
+sudo pip install cython numpy
+sudo pip install django h5py pytest
+sudo pip install pillow posix_ipc boto3 nibabel networkx requests lxml pylibmc blosc django-registration django-celery mysql-python libtiff jsonschema json-spec
 
 # switch user to neurodata and make ctypes functions
 cd /home/neurodata/ndstore/ndlib/c_version
@@ -50,12 +50,12 @@ mysql -u root -pneur0data -i -e "create user 'neurodata'@'localhost' identified 
 # configure django setttings
 cd /home/neurodata/ndstore/django/ND/
 sudo -u neurodata cp settings.py.example settings.py
-sudo -u neurodata ln -s /home/neurodata/ndstore/setup/docker_config/django/docker_settings_secret.py settings_secret.py
+echo "from django.contrib.auth.models import User; User.objects.create_superuser('neurodata', 'abc@xyz.com', 'neur0data')" | python manage.py shell
 
 # migrate the database and create the superuser
 cd /home/neurodata/ndstore/django/
 sudo -u neurodata python manage.py migrate
-sudo -u neurodata python --username neurodata --email abc@xyz.com
+sudo -u neurodata python manage.py createsuperuser --username neurodata --email abc@xyz.com
 
 # move the nginx config files and start service
 sudo rm /etc/nginx/sites-enabled/default
