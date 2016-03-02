@@ -72,7 +72,7 @@ class RamonDB:
 
     kvdict = self.annodb.getAnnotationKV ( ch, annid )
  
-    annotype = int(kvdict['type'])
+    annotype = int(kvdict['ann_type'])
 
     # switch on the type of annotation
     if annotype is None:
@@ -138,7 +138,6 @@ class RamonDB:
           raise NDWSError ( "During update no annotation found at id {}".format(anno.annid)  )
 
         else:
-          #RBTODO do I need to merge KVs?
           self.annodb.putAnnotationKV ( ch, anno.annid, anno.toDict(), update=True)
         
       # Write the user chosen annotation id

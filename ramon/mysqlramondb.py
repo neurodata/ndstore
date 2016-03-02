@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# RBTODO ramon table on per channel basis
-
 import numpy as np
 import cStringIO
 import zlib
@@ -362,7 +360,7 @@ class MySQLRamonDB:
   def querySegments ( self, ch, annid ):
     """Return segments that belong to this neuron"""
 
-    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.getChannelName(), 'neuron', annid)
+    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.getChannelName(), 'seg_neuron', annid)
 
     try:
       self.cursor.execute ( sql )
@@ -373,10 +371,10 @@ class MySQLRamonDB:
     return np.array(self.cursor.fetchall(), dtype=np.uint32).flatten()
 
 
-  def queryChildren ( self, ch, annid ):
+  def queryROIChildren ( self, ch, annid ):
     """Return children that belong to this ROI"""
 
-    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.getChannelName(), 'parent', annid)
+    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.getChannelName(), 'roi_parent', annid)
 
     try:
       self.cursor.execute ( sql )
@@ -386,5 +384,78 @@ class MySQLRamonDB:
 
     return np.array(self.cursor.fetchall(), dtype=np.uint32).flatten()
 
+  def queryNodeChildren ( self, ch, annid ):
+    """Return children that belong to this ROI"""
+
+    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.getChannelName(), 'roi_parent', annid)
+
+    try:
+      self.cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      logger.warning ( "Error querying children %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise NDWSError ( "Error querying children %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    return np.array(self.cursor.fetchall(), dtype=np.uint32).flatten()
+
+  def queryNodes ( self, ch, annid ):
+    """Return the nodes that belong to this skeleton"""
+
+    skelnodes = []
+
+    # Iterate over all connected nodes to build a list
+    # go down first
+    activenodes.push(annid)
+
+    # get all children
+    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.getChannelName(), 'parent', annid)
+
+    try:
+      self.cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      logger.warning ( "Error querying children %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise NDWSError ( "Error querying children %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    activenodes.append(np.array(self.cursor.fetchall(), dtype=np.uint32).flatten())
+
+    # RB todod need to do a marking query and make this work
+    # terate up and down and o batch queeries.  use a union.   
+    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.getChannelName(), 'parent', annid)
+
+    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.getChannelName(), 'skeleton', annid)
+
+    try:
+      self.cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      logger.warning ( "Error querying children %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise NDWSError ( "Error querying children %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    return np.array(self.cursor.fetchall(), dtype=np.uint32).flatten()
+
+
+  def querySynapses ( self, ch, annid ):
+    """Return synapses that belong to this segment"""
+
+    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.getChannelName(), 'synapses', annid)
+
+    try:
+      self.cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      logger.warning ( "Error querying synapses %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise NDWSError ( "Error querying synapses %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    return np.array(self.cursor.fetchall(), dtype=np.uint32).flatten()
+
+  def queryOrganelles ( self, ch, annid ):
+    """Return organelles that belong to this segment"""
+
+    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.getChannelName(), 'organelles', annid)
+
+    try:
+      self.cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      logger.warning ( "Error querying synapses %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise NDWSError ( "Error querying synapses %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    return np.array(self.cursor.fetchall(), dtype=np.uint32).flatten()
 
 

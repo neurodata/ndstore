@@ -222,7 +222,7 @@ class Test_Ramon:
       assert ( putid2 == getId(p) )
   
 
-  def test_annotation_field (self):
+  def test_annotation (self):
     """Upload an annotation and test it's fields"""
 
     # Make an annotation 
@@ -245,7 +245,7 @@ class Test_Ramon:
     #assert 'Unit Test' == f.read()
 
 
-  def test_synapse_field (self):
+  def test_synapse (self):
     """Upload a synapse and test it's fields"""
 
     # Make a synapse
@@ -275,7 +275,13 @@ class Test_Ramon:
     f = getField(p, 'seeds')
     assert ','.join([str(i) for i in seeds]) == f.read()
 
-  def test_seed_field (self):
+    # test the centroid
+    centroid = [random.randint(0,65535), random.randint(0,65535), random.randint(0,65535)]
+    f = setField(p, 'centroid', ','.join([str(i) for i in centroid]))
+    f = getField(p, 'centroid')
+    assert ','.join([str(i) for i in centroid]) == f.read()
+
+  def test_seed (self):
     """Upload a seed and test it's fields"""
 
     # Make a seed
@@ -306,7 +312,7 @@ class Test_Ramon:
     assert ','.join([str(i) for i in position]) == f.read()
 
 
-  def test_segment_field (self):
+  def test_segment (self):
     """Upload a segment and test it's fields"""
 
     # Make a segment
@@ -336,14 +342,15 @@ class Test_Ramon:
     f = getField(p, 'status')
     assert status == int(f.read()) 
     
-    # Test the synapses
-    synapses = [random.randint(0,100), random.randint(0,100), random.randint(0,100)]
-    f = setField(p, 'synapses', ','.join([str(i) for i in synapses]))
-    f = getField(p, 'synapses')
-    assert ','.join([str(i) for i in synapses]) == f.read()
+# These may need to be two way.  Must figure out.  RBTODO
+#    # Test the synapses
+#    synapses = [random.randint(0,100), random.randint(0,100), random.randint(0,100)]
+#    f = setField(p, 'synapses', ','.join([str(i) for i in synapses]))
+#    f = getField(p, 'synapses')
+#    assert ','.join([str(i) for i in synapses]) == f.read()
 
 
-  def test_neuron_field (self):
+  def test_neuron (self):
     """Upload a neuron and test it's fields"""
 
     # Make a neuron
@@ -368,7 +375,7 @@ class Test_Ramon:
       assert int(sid) in segids
     assert len(rsegids) == 5
 
-  def test_organelle_field (self):
+  def test_organelle (self):
     """Upload an organelle and test it's fields"""
 
     # Make an organelle 
@@ -398,7 +405,7 @@ class Test_Ramon:
     f = getField(p, 'seeds')
     assert ','.join([str(i) for i in seeds]) == f.read()
 
-  def test_wrong_field ( self ):
+  def test_wrong ( self ):
    
     # Make an annotation 
     makeAnno (p, 2)
@@ -435,7 +442,7 @@ class Test_Ramon:
 
 
 
-  def test_organelle_field (self):
+  def test_organelle (self):
     """Upload an organelle and test it's fields"""
 
     # Make an organelle 
@@ -466,7 +473,7 @@ class Test_Ramon:
     assert ','.join([str(i) for i in seeds]) == f.read()
 
 
-  def test_node_field (self):
+  def test_node (self):
     """Upload a skeleton node and test it's fields"""
 
     # Make a neuron
@@ -509,10 +516,10 @@ class Test_Ramon:
     assert ','.join([str(i) for i in location]) == f.read()
 
 
-  def test_node_field (self):
+  def test_node (self):
     """Upload a skeleton node and test it's fields"""
 
-    # Make a neuron
+    # Make a node
     makeAnno (p, 7)
 
     # test the nodetype
@@ -551,12 +558,28 @@ class Test_Ramon:
     f = getField(p, 'location')
     assert ','.join([str(i) for i in location]) == f.read()
 
+    # make a bunch of children   
+    q = Params()
+    q.token = 'unittest'
+    q.resolution = 0
+    q.channels = ['unit_anno']
 
-  def test_skeleton_field (self):
+    childids = []
+    for i in range(0,4):
+      makeAnno ( q, 9) 
+      f = setField(q, 'parent', p.annoid)
+      childids.append(q.annoid)
+
+    # Test children
+    f = getField(p, 'children')
+    rchildids = f.read().split(',')
+    for cid in rchildids:
+      assert int(cid) in childids
+    assert len(rchildids) == 4
+
+
+  def test_nodes_and_skeletons (self):
     """Upload a skeleton node and test it's fields"""
-
-    # Make a skeleton
-    makeAnno (p, 8)
 
     # test the nodetype
     skeletontype = random.randint (0,100)
@@ -571,10 +594,37 @@ class Test_Ramon:
     assert rootnode == int(f.read())
 
     # add some nodes to the skeleton and query them
-    # RBTODO
+    # make a bunch of children cnodes 
+    q = Params()
+    q.token = 'unittest'
+    q.resolution = 0
+    q.channels = ['unit_anno']
+
+    r = Params()
+    r.token = 'unittest'
+    r.resolution = 0
+    r.channels = ['unit_anno']
+
+    # Make 2 grandparents and four parents
+    skelids = []
+#    for i in range(0,2):
+#      makeAnno ( q, 9) 
+#      f = setField(q, 'parent', p.annoid)
+#      skelids.append(q.annoid)
+#      for i in range(0,2):
+#        makeAnno ( r, 9) 
+#        f = setField(r, 'parent', q.annoid)
+#        skelids.append(r.annoid)
+#
+#    # Test skeleton
+#    f = getField(p, 'skeletonnodes')
+#    rskelids = f.read().split(',')
+#    for sid in rskelids:
+#      assert int(sid) in skelids
+#    assert len(rskelids) == 6
 
 
-  def test_roi_field (self):
+  def test_roi (self):
     """Upload an roi and test it's fields"""
 
     # Make a skeleton

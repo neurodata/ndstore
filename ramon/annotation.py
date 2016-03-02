@@ -93,11 +93,11 @@ class Annotation:
 
     kvdict = defaultdict(list)
 
-    kvdict['type'] = ANNO_ANNOTATION
-    kvdict['status'] = self.status   
-    kvdict['confidence'] = self.confidence   
-    kvdict['author'] = self.author   
-    kvdict['annid'] = self.annid   
+    kvdict['ann_type'] = ANNO_ANNOTATION
+    kvdict['ann_status'] = self.status   
+    kvdict['ann_confidence'] = self.confidence   
+    kvdict['ann_author'] = self.author   
+    kvdict['ann_id'] = self.annid   
     
     # should add kvpairs to kvdict
     kvdict.update(self.kvpairs)
@@ -107,15 +107,15 @@ class Annotation:
     """convert a dictionary to the class elements"""
 
     for (k,v) in kvdict.iteritems():
-      if k == 'type':
+      if k == 'ann_type':
         next
-      elif k == 'status':
+      elif k == 'ann_status':
         self.status = int(v)
-      elif k == 'confidence':
+      elif k == 'ann_confidence':
         self.confidence = float(v)
-      elif k == 'author':
+      elif k == 'ann_author':
         self.author = v
-      elif k == 'annid':
+      elif k == 'ann_id':
         self.annid = int(v)
       else:
         self.kvpairs[k] = v
@@ -123,8 +123,6 @@ class Annotation:
 
 ###############  Synapse  ##################
 
-#RBTODO add centroid to synapse
-#RBTODO get rid of seed and generalize to point
 class AnnSynapse (Annotation):
   """Metadata specific to synapses"""
 
@@ -135,6 +133,7 @@ class AnnSynapse (Annotation):
     self.synapse_type = 0 
     self.seeds = np.array([], dtype=np.uint32)
     self.segments = np.array([], dtype=np.uint32)
+    self.centroid = np.array([], dtype=np.uint32)    # centroid -- xyz coordinate
 
     # Call the base class constructor
     Annotation.__init__(self, annodb, ch)
@@ -150,6 +149,9 @@ class AnnSynapse (Annotation):
       return ','.join(str(x) for x in self.seeds)
     elif field == 'segments':
       return ','.join(str(x) for x in self.segments)
+    elif field == 'centroid':
+      return ','.join(str(x) for x in self.centroid)
+      self.centroid = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
     else:
       return Annotation.getField(self, field)
 
@@ -162,6 +164,10 @@ class AnnSynapse (Annotation):
       self.synapse_type = value
     elif field == 'seeds':
       self.seeds = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
+    elif field == 'centroid':
+      self.centroid = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
+      if len(self.centroid) != 3:
+        raise NDWSError ("Illegal arguments to set field centroid: %s" % value)
     else:
       Annotation.setField ( self, field, value )
 
@@ -171,13 +177,14 @@ class AnnSynapse (Annotation):
     kvdict = defaultdict(list)
 
 
-    kvdict['weight'] = self.weight   
-    kvdict['synapse_type'] = self.synapse_type   
-    kvdict['seeds'] = json.dumps(self.seeds.tolist())
+    kvdict['syn_weight'] = self.weight   
+    kvdict['syn_type'] = self.synapse_type   
+    kvdict['syn_seeds'] = json.dumps(self.seeds.tolist())
+    kvdict['syn_centroid'] = json.dumps(self.centroid.tolist())
     kvdict.update(Annotation.toDict(self))
 
     # update the type after merge
-    kvdict['type'] = ANNO_SYNAPSE
+    kvdict['ann_type'] = ANNO_SYNAPSE
 
     return kvdict
 
@@ -187,11 +194,13 @@ class AnnSynapse (Annotation):
     anndict = defaultdict(list)
 
     for (k,v) in kvdict.iteritems():
-      if k == 'weight':
+      if k == 'syn_weight':
         self.weight = float(v)
-      elif k == 'synapse_type':
+      elif k == 'syn_type':
         self.synapse_type = int(v)
-      elif k == 'seeds':
+      elif k == 'syn_centroid':
+        self.centroid = np.array(json.loads(v), dtype=np.uint32)
+      elif k == 'syn_seeds':
         self.seeds = np.array(json.loads(v), dtype=np.uint32)
       else:
         anndict[k] = v
@@ -250,15 +259,15 @@ class AnnSeed (Annotation):
 
     kvdict = defaultdict(list)
 
-    kvdict['parent'] = self.parent   
-    kvdict['position'] = json.dumps(self.position.tolist())
-    kvdict['cubelocation'] = self.cubelocation
-    kvdict['source'] = self.source  
+    kvdict['seed_parent'] = self.parent   
+    kvdict['seed_position'] = json.dumps(self.position.tolist())
+    kvdict['seed_cubelocation'] = self.cubelocation
+    kvdict['seed_source'] = self.source  
 
     kvdict.update(Annotation.toDict(self))
 
     # update the type after merge
-    kvdict['type'] = ANNO_SEED
+    kvdict['ann_type'] = ANNO_SEED
 
     return kvdict
 
@@ -268,13 +277,13 @@ class AnnSeed (Annotation):
     anndict = defaultdict(list)
 
     for (k,v) in kvdict.iteritems():
-      if k == 'parent':
+      if k == 'seed_parent':
         self.parent = int(v)
-      elif k == 'position':
+      elif k == 'seed_position':
         self.position = np.array(json.loads(v), dtype=np.uint32)
-      elif k == 'cubelocation':
+      elif k == 'seed_cubelocation':
         self.cubelocation = int(v)
-      elif k == 'source':
+      elif k == 'seed_source':
         self.source = int(v)
       else:
         anndict[k] = v
@@ -311,9 +320,9 @@ class AnnSegment (Annotation):
     elif field == 'neuron':
       return self.neuron
     elif field == 'synapses':
-      return ','.join(str(x) for x in self.synapses)
+      return ','.join(str(x) for x in self.annodb.querySynapses( self.ch, self.annid ))
     elif field == 'organelles':
-      return ','.join(str(x) for x in self.organelles)
+      return ','.join(str(x) for x in self.annodb.querySynapses( self.ch, self.annid ))
     else:
       return Annotation.getField(self, field)
 
@@ -327,13 +336,9 @@ class AnnSegment (Annotation):
     elif field == 'neuron':
       self.neuron = value
     elif field == 'synapses':
-#      RBTODO synapses cannot be set in segment class.  replicated from synapse 
-      #pass
-      self.synapses = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
+      raise NDWSError ("Cannot set synapses in segments.  It is derived from the synapse annotations.")
     elif field == 'organelles':
-#      RBTODO organelles cannot be updated in segment class.  replicated from organelle 
-      #pass
-      self.organelles = [int(x) for x in value.split(',')] 
+      raise NDWSError ("Cannot set organelles in segments.  It is derived from the organelle annotations.")
     else:
       Annotation.setField ( self, field, value )
 
@@ -342,16 +347,16 @@ class AnnSegment (Annotation):
 
     kvdict = defaultdict(list)
 
-    kvdict['segmentclass'] = self.segmentclass   
-    kvdict['parentseed'] = self.parentseed
-    kvdict['neuron'] = self.neuron  
-    kvdict['synapses'] = json.dumps(self.synapses.tolist())
-    kvdict['organelles'] = json.dumps(self.organelles.tolist())
+    kvdict['seg_class'] = self.segmentclass   
+    kvdict['seg_parentseed'] = self.parentseed
+    kvdict['seg_neuron'] = self.neuron  
+    kvdict['seg_synapses'] = json.dumps(self.synapses.tolist())
+    kvdict['seg_organelles'] = json.dumps(self.organelles.tolist())
 
     kvdict.update(Annotation.toDict(self))
 
     # update the type after merge
-    kvdict['type'] = ANNO_SEGMENT
+    kvdict['ann_type'] = ANNO_SEGMENT
 
     return kvdict
 
@@ -361,15 +366,15 @@ class AnnSegment (Annotation):
     anndict = defaultdict(list)
 
     for (k,v) in kvdict.iteritems():
-      if k == 'segmentclass':
+      if k == 'seg_class':
         self.segmentclass = int(v)
-      elif k == 'parentseed':
+      elif k == 'seg_parentseed':
         self.parentseed = int(v)
-      elif k == 'neuron':
+      elif k == 'seg_neuron':
         self.neuron = int(v)
-      elif k == 'synapses':
+      elif k == 'seg_synapses':
         self.synapses = np.array(json.loads(v), dtype=np.uint32)
-      elif k == 'organelles':
+      elif k == 'seg_organelles':
         self.organelles = np.array(json.loads(v), dtype=np.uint32)
       else:
         anndict[k] = v
@@ -414,7 +419,7 @@ class AnnNeuron (Annotation):
     kvdict.update(Annotation.toDict(self))
 
     # update the type after merge
-    kvdict['type'] = ANNO_NEURON
+    kvdict['ann_type'] = ANNO_NEURON
 
     return kvdict
 
@@ -482,16 +487,16 @@ class AnnOrganelle (Annotation):
     """return a dictionary of the kv pairs in for an annotation"""
 
     kvdict = defaultdict(list)
-    kvdict['organelleclass'] = self.organelleclass   
-    kvdict['centroid'] = json.dumps(self.centroid.tolist())
-    kvdict['parentseed'] = self.parentseed   
-    kvdict['seeds'] = json.dumps(self.seeds.tolist())
+    kvdict['org_class'] = self.organelleclass   
+    kvdict['org_centroid'] = json.dumps(self.centroid.tolist())
+    kvdict['org_parentseed'] = self.parentseed   
+    kvdict['org_seeds'] = json.dumps(self.seeds.tolist())
 
     # somehow, Annotation.toDict is picking up a parent seed?
     kvdict.update(Annotation.toDict(self))
 
     # update the type after merge
-    kvdict['type'] = ANNO_ORGANELLE
+    kvdict['ann_type'] = ANNO_ORGANELLE
 
     return kvdict
 
@@ -501,13 +506,13 @@ class AnnOrganelle (Annotation):
     anndict = defaultdict(list)
 
     for (k,v) in kvdict.iteritems():
-      if k == 'organelleclass':
+      if k == 'org_class':
         self.organelleclass = int(v)
-      elif k == 'centroid':
+      elif k == 'org_centroid':
         self.centroid = np.array(json.loads(v), dtype=np.uint32)
-      elif k == 'parentseed':
+      elif k == 'org_parentseed':
         self.parentseed = int(v)
-      elif k == 'seeds':
+      elif k == 'org_seeds':
         self.seeds = np.array(json.loads(v), dtype=np.uint32)
       else:
         anndict[k] = v
@@ -524,10 +529,10 @@ class AnnNode (Annotation):
     """Initialize the fields to zero or None"""
 
     self.nodetype = 0                           # enumerated label
-    self.skeletonid = 0
-    self.pointid = 0
+    self.skeleton = 0
+    self.point = 0
     self.location=np.array([], dtype=np.float)
-    self.parentid = 0                           # parent node
+    self.parent = 0                           # parent node
     self.radius = 0.0
 
     # Call the base class constructor
@@ -540,16 +545,12 @@ class AnnNode (Annotation):
       return self.nodetype
     elif field == 'location':
       return ','.join(str(x) for x in self.location)
-    elif field == 'skeletonid':
-      return self.skeletonid
-    elif field == 'parentid':
-      return self.parentid
+    elif field == 'parent':
+      return self.parent
     elif field == 'radius':
       return self.radius
     elif field == 'children':
-      #RBTODO 
-      assert 0
-#      return ','.join(str(x) for x in self.children)
+      return ','.join(str(x) for x in self.annodb.queryNodeChildren ( self.ch, self.annid ))
     else:
       return Annotation.getField(self, field)
 
@@ -558,20 +559,16 @@ class AnnNode (Annotation):
     
     if field == 'nodetype':
       self.nodetype = value
+    elif field == 'children':
+      raise NDWSError ("Cannot set children.  It is derived from the parent field of ANNO_NODE.")
     elif field == 'location':
       self.location = np.array([float(x) for x in value.split(',')], dtype=np.float)
       if len(self.location) != 3:
         raise NDWSError ("Illegal arguments to set field location: %s" % value)
-
-    elif field == 'parentid':
-      self.parentid = value
-    elif field == 'skeletonid':
-      self.skeletonid = value
+    elif field == 'parent':
+      self.parent = value
     elif field == 'radius':
       self.radius = value
-    elif field == 'children':
-      # RBTODO cannot set children field
-      assert 0
     else:
       Annotation.setField ( self, field, value )
 
@@ -579,20 +576,18 @@ class AnnNode (Annotation):
     """return a dictionary of the kv pairs in for an annotation"""
 
     kvdict = defaultdict(list)
-    kvdict['nodetype'] = self.nodetype   
-    kvdict['location'] = json.dumps(self.location.tolist())
-    kvdict['parentid'] = self.parentid   
-    kvdict['skeletonid'] = self.skeletonid   
-    kvdict['radius'] = self.radius   
-    # RBTODO do you todict children
-#    kvdict['children'] = json.dumps(self.children.tolist())
+    kvdict['node_type'] = self.nodetype   
+    kvdict['node_location'] = json.dumps(self.location.tolist())
+    kvdict['node_parent'] = self.parent   
+    kvdict['node_radius'] = self.radius   
 
     kvdict.update(Annotation.toDict(self))
 
     # update the type after merge
-    kvdict['type'] = ANNO_NODE
+    kvdict['ann_type'] = ANNO_NODE
 
     return kvdict
+
 
   def fromDict ( self, kvdict ):
     """convert a dictionary to the class elements"""
@@ -600,15 +595,13 @@ class AnnNode (Annotation):
     anndict = defaultdict(list)
 
     for (k,v) in kvdict.iteritems():
-      if k == 'nodetype':
+      if k == 'node_type':
         self.nodetype = int(v)
-      elif k == 'location':
+      elif k == 'node_location':
         self.location = np.array(json.loads(v), dtype=np.float)
-      elif k == 'parentid':
-        self.parentid = int(v)
-      elif k == 'skeletonid':
-        self.skeletonid = int(v)
-      elif k == 'radius':
+      elif k == 'node_parent':
+        self.parent = int(v)
+      elif k == 'node_radius':
         self.radius = float(v)
       else:
         anndict[k] = v
@@ -635,6 +628,8 @@ class AnnSkeleton (Annotation):
 
     if field == 'skeletontype':
       return self.skeletontype
+    elif field == 'skeletonnodes':
+      return ','.join(str(x) for x in self.annodb.queryNodes ( self.ch, self.annid ))
     elif field == 'rootnode':
       return self.rootnode
     else:
@@ -645,6 +640,8 @@ class AnnSkeleton (Annotation):
     
     if field == 'skeletontype':
       self.skeletontype = value
+    elif field == 'skeletonnodes':
+      raise NDWSError ("Cannot set nodes.  It is derived from the parent field of ANNO_NODE.")
     elif field == 'rootnode':
       self.rootnode = value
     else:
@@ -654,13 +651,13 @@ class AnnSkeleton (Annotation):
     """return a dictionary of the kv pairs in for an annotation"""
 
     kvdict = defaultdict(list)
-    kvdict['skeletontype'] = self.skeletontype   
-    kvdict['rootnode'] = self.rootnode   
+    kvdict['skel_type'] = self.skeletontype   
+    kvdict['skel_rootnode'] = self.rootnode   
 
     kvdict.update(Annotation.toDict(self))
 
     # update the type after merge
-    kvdict['type'] = ANNO_SKELETON
+    kvdict['ann_type'] = ANNO_SKELETON
 
     return kvdict
 
@@ -670,9 +667,9 @@ class AnnSkeleton (Annotation):
     anndict = defaultdict(list)
 
     for (k,v) in kvdict.iteritems():
-      if k == 'skeletontype':
+      if k == 'skel_type':
         self.skeletontype = int(v)
-      elif k == 'rootnode':
+      elif k == 'skel_rootnode':
         self.rootnode = int(v)
       else:
         anndict[k] = v
@@ -699,7 +696,7 @@ class AnnROI (Annotation):
     if field == 'parent':
       return self.parent
     elif field == 'children':
-      return ','.join(str(x) for x in self.annodb.queryChildren ( self.ch, self.annid ))
+      return ','.join(str(x) for x in self.annodb.queryROIChildren ( self.ch, self.annid ))
     else:
       return Annotation.getField(self, field)
 
@@ -717,12 +714,12 @@ class AnnROI (Annotation):
     """return a dictionary of the kv pairs in for an annotation"""
 
     kvdict = defaultdict(list)
-    kvdict['parent'] = self.parent   
+    kvdict['roi_parent'] = self.parent   
 
     kvdict.update(Annotation.toDict(self))
 
     # update the type after merge
-    kvdict['type'] = ANNO_ROI
+    kvdict['ann_type'] = ANNO_ROI
 
     return kvdict
 
@@ -732,7 +729,7 @@ class AnnROI (Annotation):
     anndict = defaultdict(list)
 
     for (k,v) in kvdict.iteritems():
-      if k == 'parent':
+      if k == 'roi_parent':
         self.parent = int(v)
       else:
         anndict[k] = v
