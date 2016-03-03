@@ -12,8 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+import os
+import re
+import string
+import random
+import MySQLdb
+import json
+import subprocess
 import django.http
+from django.core.urlresolvers import get_script_prefix
 from django.http import HttpResponseRedirect
 from django.http import HttpResponse
 from django.contrib.auth.models import User
@@ -32,16 +39,11 @@ from django.forms.models import inlineformset_factory
 import django.forms
 from datetime import datetime
 from contextlib import closing
-import string
-import random
-import MySQLdb
-import json
-import re
 
 import ndwsrest
 import ndproj
 import jsonprojinfo
-from ndtype import IMAGE, ANNOTATION, TIMESERIES, UINT8, UINT16, UINT32, UINT64, FLOAT32, ND_VERSION, SCHEMA_VERSION 
+from ndtype import IMAGE, ANNOTATION, TIMESERIES, UINT8, UINT16, UINT32, UINT64, FLOAT32, ND_VERSION, SCHEMA_VERSION, MYSQL, S3_FALSE 
 
 from models import Project
 from models import Dataset
@@ -56,16 +58,13 @@ from forms import ChannelForm
 from forms import BackupForm
 from forms import dataUserForm
 
-from django.core.urlresolvers import get_script_prefix
-import os
-import subprocess
-from ndwserror import NDWSError
 
+from ndwserror import NDWSError
 import logging
 logger=logging.getLogger("neurodata")
 
-# Helpers
 
+# Helpers
 ''' Base url redirects to projects page'''
 def default(request):
   return redirect(get_script_prefix()+'nduser/projects', {"user":request.user})
@@ -77,18 +76,16 @@ def getProjects(request):
   try:
     if request.method == 'POST':
       if 'filter' in request.POST:
-        #FILTER PROJECTS BASED ON INPUT VALUE
+        # filter projects based on input value
         userid = request.user.id
         filteroption = request.POST.get('filteroption')
         filtervalue = (request.POST.get('filtervalue')).strip()
         
-        pd = ndproj.NDProjectsDB()
-
         # get the visible data sets
         if request.user.is_superuser:
-          visible_datasets=Dataset.objects.all()
+          visible_datasets = Dataset.objects.all()
         else:
-          visible_datasets=Dataset.objects.filter(user_id=userid) | Dataset.objects.filter(public=1)
+          visible_datasets = Dataset.objects.filter(user_id=userid) | Dataset.objects.filter(public=1)
 
         visible_datasets.sort()
 
@@ -112,7 +109,6 @@ def getProjects(request):
 
       elif 'delete_data' in request.POST:
 
-        pd = ndproj.NDProjectsDB()
         username = request.user.username
         project_to_delete = (request.POST.get('project_name')).strip()
                 
@@ -124,10 +120,10 @@ def getProjects(request):
           proj = Project.objects.get(project_name=project_to_delete)
           if proj:
             if proj.user_id == request.user.id or request.user.is_superuser:
-              #Delete project from the table followed  by the database.
-              # deleting a project is super dangerous b/c you may delete it out from other tokens.
-              #  on other servers.  So, only delete when it's on the same server for now
-              pd.deleteNDDB(project_to_delete)
+              # Delete project from the table followed  by the database.
+              # deleting a project is super dangerous b/c you may delete it out from other tokens on other servers.So, only delete when it's on the same server for now
+              pd = ndproj.NDProjectsDB.getProjDB(proj)
+              pd.deleteNDProject()
               proj.delete()          
               messages.success(request,"Project deleted")
             else:
@@ -137,7 +133,7 @@ def getProjects(request):
           return HttpResponseRedirect(get_script_prefix()+'nduser/projects')
 
       elif 'delete' in request.POST:
-        pd = ndproj.NDProjectsDB()
+        # pd = ndproj.
         username = request.user.username
         project_to_delete = (request.POST.get('project_name')).strip()
                 
@@ -237,8 +233,6 @@ def getDatasets(request):
 
   try:
 
-    pd = ndproj.NDProjectsDB()
-
     userid = request.user.id
     if request.user.is_superuser:
       visible_datasets=Dataset.objects.all()
@@ -254,7 +248,7 @@ def getDatasets(request):
 
       elif 'delete' in request.POST:
 
-        #delete specified dataset
+        # delete specified dataset
         ds = (request.POST.get('dataset_name')).strip()
         ds_to_delete = Dataset.objects.get(dataset_name=ds)
         
@@ -282,7 +276,7 @@ def getDatasets(request):
         return redirect(updateDataset)
 
       else:
-        #Load datasets
+        # load datasets
         return render_to_response('datasets.html', { 'dts': visible_datasets },context_instance=RequestContext(request))
 
     else:
@@ -308,7 +302,6 @@ def getAllTokens(request):
 def getChannels(request):
 
   username = request.user.username
-  pd = ndproj.NDProjectsDB()  
 
   try:
     if request.method == 'POST':
@@ -321,7 +314,8 @@ def getChannels(request):
         ch = Channel.objects.get(channel_name=channel_to_delete, project_id=pr )
         if ch:
           if pr.user_id == request.user.id or request.user.is_superuser:
-            pd.deleteNDChannel(pr, ch.channel_name)
+            pd = ndproj.NDProjectsDB.getProjDB(pr)
+            pd.deleteNDChannel(ch.channel_name)
             ch.delete()
             messages.success(request,"Channel deleted " + channel_to_delete)
           else:
@@ -378,7 +372,6 @@ def getChannels(request):
 def getTokens(request):
 
   username = request.user.username
-  pd = ndproj.NDProjectsDB()  
 
   try:
     if request.method == 'POST':
@@ -450,7 +443,6 @@ def getTokens(request):
 def createProject(request):
 
   try:
-    pd = ndproj.NDProjectsDB()  
 
     if request.method == 'POST':
       if 'createproject' in request.POST:
@@ -463,20 +455,24 @@ def createProject(request):
           if request.POST.get('legacy') == 'yes':
             new_project.nd_version='0.0'
           else:
-            new_project.nd_version=ND_VERSION
-          new_project.schema_version=SCHEMA_VERSION
+            new_project.nd_version = ND_VERSION
+          new_project.schema_version = SCHEMA_VERSION
+          new_project.mdengine = MYSQL
+          new_project.s3backend = S3_FALSE
           new_project.save()
           try:
             # create a database when not linking to an existing databases
             if not request.POST.get('nocreate') == 'on':
-              pd.newNDProject( new_project.project_name )
+              pd = ndproj.NDProjectsDB.getProjDB(new_project)
+              pd.newNDProject()
             if 'token' in request.POST:
               tk = Token ( token_name = new_project.project_name, token_description = 'Default token for public project', project_id=new_project, user_id=request.user.id, public=new_project.public ) 
               tk.save()
 
           except Exception, e:
-            logger.error("Failed to create project.  Error {}".format(e))
-            messages.error(request,"Failed to create project Error {}".format(e))
+            new_project.delete()
+            logger.error("Failed to create project {}. Error {}".format(new_project.project_name, e))
+            messages.error(request,"Failed to create project {}. Error {}".format(new_project.project_name, e))
 
           return HttpResponseRedirect(get_script_prefix()+'nduser/projects/')
         else:
@@ -484,7 +480,7 @@ def createProject(request):
           return render_to_response('createproject.html',context,context_instance=RequestContext(request))
 
       else:
-        #default
+        # default
         return redirect(getProjects)
 
     else:
@@ -521,7 +517,7 @@ def createDataset(request):
       elif 'backtodatasets' in request.POST:
         return redirect(getDatasets)
       else:
-        #default
+        # default
         messages.error(request,"Unkown POST request.")
         return redirect(getDatasets)
     else:
@@ -555,7 +551,7 @@ def updateDataset(request):
             del request.session["dataset_name"]
             return HttpResponseRedirect(get_script_prefix()+'nduser/datasets')
           else:
-            #Invalid form
+            # invalid form
             context = {'form': form}
             return render_to_response('updatedataset.html',context,context_instance=RequestContext(request))
 
@@ -566,7 +562,7 @@ def updateDataset(request):
       elif 'backtodatasets' in request.POST:
         return HttpResponseRedirect(get_script_prefix()+'nduser/datasets')
       else:
-        #unrecognized option
+        # unrecognized option
         return HttpResponseRedirect(get_script_prefix()+'nduser/datasets')
     else:
       print "Getting the update form"
@@ -609,7 +605,6 @@ def updateChannel(request):
   try:
     prname = request.session['project']
     pr = Project.objects.get ( project_name = prname )
-    pd = ndproj.NDProjectsDB()
 
     if request.method == 'POST':
 
@@ -633,7 +628,7 @@ def updateChannel(request):
         channel_to_update = get_object_or_404(Channel,channel_name=chname,project_id=pr)
         form = ChannelForm(data=request.POST or None, instance=channel_to_update)
 
-        # KLTODO/RBTODO add propagate to the UI
+        # KL TODO/ RB TODO add propagate to the UI
   #      messages.error(request,"Propagate not yet implemented in self-admin UI.")
   #      return HttpResponseRedirect(get_script_prefix()+'nduser/channels')
 
@@ -692,7 +687,8 @@ def updateChannel(request):
 
               try:
                 # create the tables for the channel
-                pd.newNDChannel( pr.project_name, new_channel.channel_name)
+                pd = ndproj.NDProjectsDB.getProjDB(pr)
+                pd.newNDChannel(new_channel.channel_name)
               except Exception, e:
                 logger.error("Failed to create channel. Error {}".format(e))
                 messages.error(request,"Failed to create channel. {}".format(e))
@@ -705,12 +701,12 @@ def updateChannel(request):
             return HttpResponseRedirect(get_script_prefix()+'nduser/channels')
 
         else:
-          #Invalid form
+          # Invalid form
           context = {'form': form, 'project': prname}
           return render_to_response('createchannel.html', context, context_instance=RequestContext(request))
 
       else:
-        #unrecognized option
+        # unrecognized option
         return redirect(getChannels)
 
       if pr.user_id == request.user.id or request.user.is_superuser:
@@ -730,7 +726,7 @@ def updateChannel(request):
         return HttpResponseRedirect(get_script_prefix()+'nduser/channels')
 
       else:
-        messages.error(request,"Cannot update.  You are not owner of this token or not superuser.")
+        messages.error(request,"Cannot update. You are not owner of this token or not superuser.")
         return HttpResponseRedirect(get_script_prefix()+'nduser/channels')
 
     else:
@@ -1401,7 +1397,6 @@ def _monitorRestore ( popen_process, project_model, backup_model, fh ):
 def downloadData(request):
   
   try:
-    pd = ndproj.NDProjectsDB()
     
     if request.method == 'POST':
       form= dataUserForm(request.POST)
@@ -1432,9 +1427,8 @@ def downloadData(request):
         #return render_to_response('download.html',context_instance=RequestContext(request))
     else:
       # Load Download page with public tokens                                           
-      pd = ndproj.NDProjectsDB()
       form = dataUserForm()
-      tokens = pd.getPublic ()
+      tokens = ndproj.NDProjectsDB.getPublicTokens()
       context = {'form': form ,'publictokens': tokens}
       return render_to_response('download.html',context,context_instance=RequestContext(request))
       #return render_to_response('download.html', { 'dts': datasets },context_instance=\

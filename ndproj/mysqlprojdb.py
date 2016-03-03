@@ -39,7 +39,7 @@ class MySQLProjectDB:
   def newNDProject(self):
     """Create the database for a project"""
     
-    with closing(MySQLdb.connect (host = self.pr.getDBHost(), user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = settings.DATABASES['default']['NAME'])) as conn:
+    with closing(MySQLdb.connect (host = self.pr.getDBHost(), user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = settings.DATABASES['default']['NAME'], connect_timeout=1)) as conn:
       with closing(conn.cursor()) as cursor:
 
         try:
@@ -61,7 +61,7 @@ class MySQLProjectDB:
 
     # Connect to the database
 
-    with closing(MySQLdb.connect(host = self.pr.getDBHost(), user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = self.pr.getDBName())) as conn:
+    with closing(MySQLdb.connect(host = self.pr.getDBHost(), user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = self.pr.getDBName(), connect_timeout=1)) as conn:
       with closing(conn.cursor()) as cursor:
         
         try:
@@ -98,24 +98,26 @@ class MySQLProjectDB:
   def deleteNDProject(self):
     """Delete the database for a project"""
 
-    with closing(MySQLdb.connect (host = self.pr.getDBHost(), user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'])) as conn:
-      with closing(conn.cursor()) as cursor:
-        # delete the database
-        sql = "DROP DATABASE {}".format(self.pr.getDBName())
+    try:
+      with closing(MySQLdb.connect (host = self.pr.getDBHost(), user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], connect_timeout=1)) as conn:
+        with closing(conn.cursor()) as cursor:
+          # delete the database
+          sql = "DROP DATABASE {}".format(self.pr.getDBName())
 
-        try:
-          cursor.execute(sql)
-          conn.commit()
-        except MySQLdb.Error, e:
-          # Skipping the error if the database does not exist
-          if e.args[0] == 1008:
-            logger.warning("Database {} does not exist".format(self.pr.getDBName()))
-            pass
-          else:
-            conn.rollback()
-            logger.error("Failed to drop project database {}: {}. sql={}".format(e.args[0], e.args[1], sql))
-            raise NDWSError("Failed to drop project database {}: {}. sql={}".format(e.args[0], e.args[1], sql))
-
+          try:
+            cursor.execute(sql)
+            conn.commit()
+          except MySQLdb.Error, e:
+            # Skipping the error if the database does not exist
+            if e.args[0] == 1008:
+              logger.warning("Database {} does not exist".format(self.pr.getDBName()))
+              pass
+            else:
+              conn.rollback()
+              logger.error("Failed to drop project database {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+              raise NDWSError("Failed to drop project database {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+    except MySQLdb.OperationalError as e:
+      logger.warning("Cannot connect to the server at host {}. {}".format(self.pr.getDBHost(), e))
 
   def deleteNDChannel(self, channel_name):
     """Delete the tables for this channel"""
@@ -133,7 +135,7 @@ class MySQLProjectDB:
       if ch.getChannelType() in ANNOTATION_CHANNELS:
         table_list = table_list + [ch.getIdxTable(res), ch.getExceptionsTable(res)]
 
-    with closing(MySQLdb.connect(host = self.pr.getDBHost(), user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = self.pr.getDBName())) as conn:
+    with closing(MySQLdb.connect(host = self.pr.getDBHost(), user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = self.pr.getDBName(), connect_timeout=1)) as conn:
       with closing(conn.cursor()) as cursor:
         
         # delete the tables for this channel

@@ -88,3 +88,11 @@ EXCEPTION_FALSE = 0
 # Public Values
 PUBLIC_TRUE = 1
 PUBLIC_FALSE = 0
+
+# S3 Backend Values
+S3_TRUE = 1
+S3_FALSE = 0
+
+# Backup Values
+FILE_SYSTEM = 'local'
+AMAZON_S3 = 's3'

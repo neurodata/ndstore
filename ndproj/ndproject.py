@@ -30,7 +30,7 @@ logger=logging.getLogger("neurodata")
 class NDProject:
 
   def __init__(self, token_name ) :
-
+    
     if isinstance(token_name, str) or isinstance(token_name, unicode):
       try:
         self.tk = Token.objects.get(token_name = token_name)

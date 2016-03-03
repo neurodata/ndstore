@@ -20,7 +20,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.conf import settings
 
-from ndtype import IMAGE, ANNOTATION, TIMESERIES, UINT8, UINT16, UINT32, UINT64, FLOAT32, READONLY_TRUE, READONLY_FALSE, ZSLICES, ISOTROPIC, PUBLIC_TRUE, PUBLIC_FALSE, PROPAGATED, NOT_PROPAGATED, EXCEPTION_TRUE, EXCEPTION_FALSE, MYSQL, CASSANDRA, RIAK, DYNAMODB, REDIS, DSP61, DSP62, DSP63, ND_VERSION, SCHEMA_VERSION
+from ndtype import IMAGE, ANNOTATION, TIMESERIES, UINT8, UINT16, UINT32, UINT64, FLOAT32, READONLY_TRUE, READONLY_FALSE, ZSLICES, ISOTROPIC, PUBLIC_TRUE, PUBLIC_FALSE, PROPAGATED, NOT_PROPAGATED, EXCEPTION_TRUE, EXCEPTION_FALSE, MYSQL, CASSANDRA, RIAK, DYNAMODB, REDIS, DSP61, DSP62, DSP63, ND_VERSION, SCHEMA_VERSION, FILE_SYSTEM, AMAZON_S3, S3_TRUE, S3_FALSE
 
 # Create your models here.
 class Dataset ( models.Model):
@@ -97,6 +97,11 @@ class Project ( models.Model):
     (MYSQL, 'MySQL'),    
   )
   mdengine = models.CharField(max_length=255, choices=MDENGINE_CHOICES, default=MYSQL)
+  S3BACKEND_CHOICES = (
+    (S3_TRUE, 'Yes'),
+    (S3_FALSE, 'No'),
+  )
+  s3backend = models.IntegerField(choices=S3BACKEND_CHOICES, default=S3_FALSE)
 
   # Version information -- set automatically
   nd_version =  models.CharField(max_length=255, default=ND_VERSION)
@@ -198,8 +203,8 @@ class Backup ( models.Model):
   channel = models.ForeignKey(Channel, blank=True, null=True)
 
   PROTOCOL_CHOICES = (
-    ('local', 'file system'),
-    ('s3', 'Amazon S3'),
+    (FILE_SYSTEM, 'file system'),
+    (AMAZON_S3, 'Amazon S3'),
   )
   protocol = models.CharField(max_length=255,choices=PROTOCOL_CHOICES)
 

@@ -50,12 +50,12 @@ mysql -u root -pneur0data -i -e "create user 'neurodata'@'localhost' identified 
 # configure django setttings
 cd /home/neurodata/ndstore/django/ND/
 sudo -u neurodata cp settings.py.example settings.py
-echo "from django.contrib.auth.models import User; User.objects.create_superuser('neurodata', 'abc@xyz.com', 'neur0data')" | python manage.py shell
+sudo -u neurodata ln -s /home/neurodata/ndstore/setup/docker_config/django/docker_settings_secret.py settings_secret.py
 
 # migrate the database and create the superuser
 cd /home/neurodata/ndstore/django/
 sudo -u neurodata python manage.py migrate
-sudo -u neurodata python manage.py createsuperuser --username neurodata --email abc@xyz.com
+echo "from django.contrib.auth.models import User; User.objects.create_superuser('neurodata', 'abc@xyz.com', 'neur0data')" | python manage.py shell
 
 # move the nginx config files and start service
 sudo rm /etc/nginx/sites-enabled/default
