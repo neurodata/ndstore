@@ -568,6 +568,9 @@ class Test_Ramon:
   def test_skeleton (self):
     """Upload a skeleton and test it's fields"""
 
+    # Make a node
+    makeAnno (p, 8)
+
     # test the nodetype
     skeletontype = random.randint (0,100)
     f = setField(p, 'skeletontype', skeletontype)
@@ -591,24 +594,37 @@ class Test_Ramon:
     r.token = 'unittest'
     r.resolution = 0
     r.channels = ['unit_anno']
+    # make a root node
 
-    # Make 2 grandparents and four parents
+    s = Params()
+    s.token = 'unittest'
+    s.resolution = 0
+    s.channels = ['unit_anno']
+    # make a root node
+
     skelids = []
-#    for i in range(0,2):
-#      makeAnno ( q, 9) 
-#      f = setField(q, 'parent', p.annoid)
-#      skelids.append(q.annoid)
-#      for i in range(0,2):
-#        makeAnno ( r, 9) 
-#        f = setField(r, 'parent', q.annoid)
-#        skelids.append(r.annoid)
-#
-#    # Test skeleton
-#    f = getField(p, 'skeletonnodes')
-#    rskelids = f.read().split(',')
-#    for sid in rskelids:
-#      assert int(sid) in skelids
-#    assert len(rskelids) == 6
+
+    # make a root node
+    makeAnno ( q, 7)
+    setField(p, 'rootnode', q.annoid)
+    skelids.append(q.annoid)
+
+    # Make 2 children and four grandchildren
+    for i in range(0,2):
+      makeAnno ( r, 7) 
+      f = setField(r, 'parent', q.annoid)
+      skelids.append(r.annoid)
+      for i in range(0,2):
+        makeAnno ( s, 7) 
+        f = setField(s, 'parent', r.annoid)
+        skelids.append(s.annoid)
+
+    # Test skeleton
+    f = getField(p, 'nodes')
+    rskelids = f.read().split(',')
+    for sid in rskelids:
+      assert int(sid) in skelids
+    assert len(rskelids) == 7
 
 
   def test_roi (self):

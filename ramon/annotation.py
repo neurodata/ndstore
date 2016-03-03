@@ -670,8 +670,8 @@ class AnnSkeleton (Annotation):
 
     if field == 'skeletontype':
       return self.skeletontype
-    elif field == 'skeletonnodes':
-      return ','.join(str(x) for x in self.annodb.queryNodes ( self.ch, self.annid ))
+    elif field == 'nodes':
+      return ','.join(str(x) for x in self.annodb.querySkeletonNodes ( self.ch, self.annid ))
     elif field == 'rootnode':
       return self.rootnode
     else:

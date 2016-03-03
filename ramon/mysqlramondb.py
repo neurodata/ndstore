@@ -409,39 +409,42 @@ class MySQLRamonDB:
 
     return np.array(self.cursor.fetchall(), dtype=np.uint32).flatten()
 
-  def queryNodes ( self, ch, annid ):
+  def querySkeletonNodes ( self, ch, annid ):
     """Return the nodes that belong to this skeleton"""
 
+    # two lists for marked and processed nodes in a tree search
     skelnodes = []
+    activenodes = []
 
-    # Iterate over all connected nodes to build a list
-    # go down first
-    activenodes.push(annid)
-
-    # get all children
-    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.getChannelName(), 'parent', annid)
+    # get the root node of the skeleton
+    sql = "SELECT kv_value FROM {}_ramon WHERE kv_key='{}' and annoid={}".format(ch.getChannelName(), 'skel_rootnode', annid)
 
     try:
       self.cursor.execute ( sql )
     except MySQLdb.Error, e:
-      logger.warning ( "Error querying children %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise NDWSError ( "Error querying children %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      logger.warning ( "Error querying skeleton rootnode %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise NDWSError ( "Error querying skeleton rootnode %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
-    activenodes.append(np.array(self.cursor.fetchall(), dtype=np.uint32).flatten())
+    activenodes.append ( int(self.cursor.fetchone()[0]))
 
-    # RB todod need to do a marking query and make this work
-    # terate up and down and o batch queeries.  use a union.   
-    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.getChannelName(), 'parent', annid)
+    while len(activenodes) != 0:
+   
+      cur = activenodes.pop()
+      skelnodes.append(cur)
+      print "adding {} to skelnodes {}".format(cur, skelnodes)
 
-    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.getChannelName(), 'skeleton', annid)
+      # get all children of active node
+      sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.getChannelName(), 'node_parent', cur)
 
-    try:
-      self.cursor.execute ( sql )
-    except MySQLdb.Error, e:
-      logger.warning ( "Error querying children %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise NDWSError ( "Error querying children %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      try:
+        self.cursor.execute ( sql )
+      except MySQLdb.Error, e:
+        logger.warning ( "Error querying children %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+        raise NDWSError ( "Error querying children %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
-    return np.array(self.cursor.fetchall(), dtype=np.uint32).flatten()
+      [ activenodes.append(x) for x in np.array(self.cursor.fetchall(), dtype=np.uint32).flatten() ]
+
+    return np.array(skelnodes, dtype=np.uint32)
 
 
   def querySynapses ( self, ch, annid ):
