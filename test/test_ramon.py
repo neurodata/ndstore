@@ -16,6 +16,7 @@ import urllib2
 import re
 import tempfile
 import h5py
+import string
 import random 
 import csv
 import numpy as np
@@ -659,57 +660,16 @@ class Test_Ramon:
     assert len(rchildids) == 4
 
 
-# RBTODO add tests key/value and compound fields.
-    #  assign a field for a wrong annotation type
-#    url =  "http://%s/sd/%s/%s/setField/segmentclass/2/" % ( SITE_HOST, 'unittest',str(annid))
-#    with pytest.raises(urllib2.HTTPError): 
-#      req = urllib2.Request ( url )
-#      f = urllib2.urlopen ( url )
+  def test_kvpairs(self):
+  
+    # do a general kv test for each annotation type
+    for i in range(1,10):
 
-#  def test_kvpairs(self):
-#
-#    """Test 1: Create a minimal HDF5 file"""
-#    # Create an in-memory HDF5 file
-#    tmpfile = tempfile.NamedTemporaryFile()
-#    h5fh = h5py.File ( tmpfile.name )
-#
-#    # Create the top level annotation id namespace
-#    idgrp = h5fh.create_group ( str(0) )
-#
-#    # Create a metadata group
-#    mdgrp = idgrp.create_group ( "METADATA" )
-#
-#    kvpairs={}
-#
-#    # Turn our dictionary into a csv file
-#    fstring = cStringIO.StringIO()
-#    csvw = csv.writer(fstring, delimiter=',')
-#    csvw.writerows([r for r in kvpairs.iteritems()])
-#
-#    # User-defined metadata
-#    mdgrp.create_dataset ( "KVPAIRS", (1,), dtype=h5py.special_dtype(vlen=str), data=fstring.getvalue())
-#
-#    # Now put an empty file
-#    # Build the put URL
-#    url = "http://%s/sd/%s/" % ( SITE_HOST, 'unittest')
-#
-#    # write an object (server creates identifier)
-#    req = urllib2.Request ( url, tmpfile.read())
-#    response = urllib2.urlopen(req)
-#    putid = int(response.read())
-#
-#    # now read and verify
-#    # retrieve the annotation
-#    url = "http://%s/sd/%s/%s/" % ( SITE_HOST, 'unittest', str(putid))
-#    f = urllib2.urlopen ( url )
-#    retfile = tempfile.NamedTemporaryFile ( )
-#    retfile.write ( f.read() )
-#    retfile.seek(0)
-#    h5ret = h5py.File ( tmpfile.name, driver='core', backing_store=False )
-#
-#    mdgrpret = idgrpret['METADATA']
-#    idgrpret = h5ret.get(str(putid1))
-#
-#    assert ( mdgrpret['KVPAIRS'][:] == '' )
-#
-#    for i in range(10):
+      makeAnno (p, i)
+
+      key = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(random.randint(1,128)))
+      value = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(random.randint(1,1024)))
+
+      setField( p, key, value )
+      f = getField ( p, key )
+      assert ( f.read() == value ) 
