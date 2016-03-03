@@ -235,7 +235,14 @@ class MySQLRamonDB:
     # convert answer into a dictionary
     kvdict = defaultdict(list)
     for (k,v) in pairs:
-      kvdict[k]=v
+      # detect multiple key values
+      if kvdict[k]:
+        if type(kvdict[k]) == list:
+          kvdict[k].append(v)
+        else:
+          kvdict[k] = [kvdict[k],v]
+      else:
+        kvdict[k]=v
 
     return kvdict
 
@@ -250,11 +257,16 @@ class MySQLRamonDB:
  
     data = []
     for (k,v) in kvdict.iteritems():
-      data.append((annid,k,v))
+      # blowout lists to multiple values
+      if type(v) in [list,tuple]:
+        [ data.append((annid,k,vv)) for vv in v ]
+      else:
+        data.append((annid,k,v))
 
     try:
       self.cursor.executemany ( sql, data )
     except MySQLdb.Error, e:
+      import pdb; pdb.set_trace()
       logger.error ( "Failed to put annotation: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
       raise
 
@@ -435,7 +447,33 @@ class MySQLRamonDB:
   def querySynapses ( self, ch, annid ):
     """Return synapses that belong to this segment"""
 
-    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.getChannelName(), 'synapses', annid)
+    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.getChannelName(), 'syn_segments', annid)
+
+    try:
+      self.cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      logger.warning ( "Error querying synapses %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise NDWSError ( "Error querying synapses %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    return np.array(self.cursor.fetchall(), dtype=np.uint32).flatten()
+
+  def queryPreSynapses ( self, ch, annid ):
+    """Return presynaptic synapses that belong to this segment"""
+  
+    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.getChannelName(), 'syn_presegments', annid)
+
+    try:
+      self.cursor.execute ( sql )
+    except MySQLdb.Error, e:
+      logger.warning ( "Error querying synapses %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise NDWSError ( "Error querying synapses %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+
+    return np.array(self.cursor.fetchall(), dtype=np.uint32).flatten()
+
+  def queryPostSynapses ( self, ch, annid ):
+    """Return postsynaptic synapses that belong to this segment"""
+
+    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.getChannelName(), 'syn_postsegments', annid)
 
     try:
       self.cursor.execute ( sql )
@@ -448,7 +486,7 @@ class MySQLRamonDB:
   def queryOrganelles ( self, ch, annid ):
     """Return organelles that belong to this segment"""
 
-    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.getChannelName(), 'organelles', annid)
+    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.getChannelName(), 'org_segment', annid)
 
     try:
       self.cursor.execute ( sql )

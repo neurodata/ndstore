@@ -70,7 +70,9 @@ logger=logging.getLogger("neurodata")
    SYNAPSE_TYPE (int)
    WEIGHT (float)
    SEEDS (int[]) 
-   SEGMENTS ( int[ ][2] )
+   SEGMENTS ( int[ ])
+   PRESEGMENTS ( int[ ])
+   POSTSEGMENTS ( int[ ])
 
    # for neurons
    SEGMENTS ( int[] )
@@ -173,7 +175,7 @@ def H5toAnnotation ( key, idgrp, annodb, ch ):
         anno.source = mdgrp['SOURCE'][0] 
 
   elif annotype == annotation.ANNO_SYNAPSE:
-    
+   
     # Create the appropriate annotation type
     anno = annotation.AnnSynapse(annodb,ch)
 
@@ -396,8 +398,13 @@ def SynapsetoH5 ( synapse, h5fh ):
 
   #  segments and segment type
   if ( synapse.segments != [] ):
-    h5synapse.mdgrp.create_dataset ( "SEGMENTS", (len(synapse.segments),2), np.uint32, data=synapse.segments)
+    h5synapse.mdgrp.create_dataset ( "SEGMENTS", (len(synapse.segments),), np.uint32, data=synapse.segments)
 
+  if ( synapse.segments != [] ):
+    h5synapse.mdgrp.create_dataset ( "PRESEGMENTS", (len(synapse.presegments),), np.uint32, data=synapse.presegments)
+
+  if ( synapse.segments != [] ):
+    h5synapse.mdgrp.create_dataset ( "SPOSTEGMENTS", (len(synapse.postsegments),), np.uint32, data=synapse.postsegments)
   return h5synapse
 
 

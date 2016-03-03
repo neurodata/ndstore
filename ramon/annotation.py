@@ -132,7 +132,9 @@ class AnnSynapse (Annotation):
     self.weight = 0.0 
     self.synapse_type = 0 
     self.seeds = np.array([], dtype=np.uint32)
-    self.segments = np.array([], dtype=np.uint32)
+    self.segments = np.array([], dtype=np.uint32)      #undirected edge
+    self.presegments = np.array([], dtype=np.uint32)    # directed edge
+    self.postsegments = np.array([], dtype=np.uint32)   # directed edge   
     self.centroid = np.array([], dtype=np.uint32)    # centroid -- xyz coordinate
 
     # Call the base class constructor
@@ -149,6 +151,10 @@ class AnnSynapse (Annotation):
       return ','.join(str(x) for x in self.seeds)
     elif field == 'segments':
       return ','.join(str(x) for x in self.segments)
+    elif field == 'presegments':
+      return ','.join(str(x) for x in self.presegments)
+    elif field == 'postsegments':
+      return ','.join(str(x) for x in self.postsegments)
     elif field == 'centroid':
       return ','.join(str(x) for x in self.centroid)
       self.centroid = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
@@ -164,6 +170,14 @@ class AnnSynapse (Annotation):
       self.synapse_type = value
     elif field == 'seeds':
       self.seeds = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
+    elif field == 'segments':
+      self.segments = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
+    elif field == 'presegments':
+      self.presegments = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
+      print 'PRE in set', self.presegments
+    elif field == 'postsegments':
+      self.postsegments = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
+      print 'POST in set', self.postsegments
     elif field == 'centroid':
       self.centroid = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
       if len(self.centroid) != 3:
@@ -176,10 +190,12 @@ class AnnSynapse (Annotation):
 
     kvdict = defaultdict(list)
 
-
     kvdict['syn_weight'] = self.weight   
     kvdict['syn_type'] = self.synapse_type   
-    kvdict['syn_seeds'] = json.dumps(self.seeds.tolist())
+    [ kvdict['syn_seeds'].append(s) for s in self.seeds ] 
+    [ kvdict['syn_segments'].append(s) for s in self.segments ] 
+    [ kvdict['syn_presegments'].append(s) for s in self.presegments ] 
+    [ kvdict['syn_postsegments'].append(s) for s in self.postsegments ] 
     kvdict['syn_centroid'] = json.dumps(self.centroid.tolist())
     kvdict.update(Annotation.toDict(self))
 
@@ -201,7 +217,25 @@ class AnnSynapse (Annotation):
       elif k == 'syn_centroid':
         self.centroid = np.array(json.loads(v), dtype=np.uint32)
       elif k == 'syn_seeds':
-        self.seeds = np.array(json.loads(v), dtype=np.uint32)
+        if type(v) == list:
+          self.seeds = [int(s) for s in v]
+        else:
+          self.seeds = [int(v)]
+      elif k == 'syn_segments':
+        if type(v) == list:
+          self.segments = [int(s) for s in v]
+        else:
+          self.segments = [int(v)]
+      elif k == 'syn_presegments':
+        if type(v) == list:
+          self.presegments = [int(s) for s in v]
+        else:
+          self.presegments = [int(v)]
+      elif k == 'syn_postsegments':
+        if type(v) == list:
+          self.postsegments = [int(s) for s in v]
+        else:
+          self.postsegments = [int(v)]
       else:
         anndict[k] = v
     
@@ -321,8 +355,12 @@ class AnnSegment (Annotation):
       return self.neuron
     elif field == 'synapses':
       return ','.join(str(x) for x in self.annodb.querySynapses( self.ch, self.annid ))
+    elif field == 'presynapses':
+      return ','.join(str(x) for x in self.annodb.queryPreSynapses( self.ch, self.annid ))
+    elif field == 'postsynapses':
+      return ','.join(str(x) for x in self.annodb.queryPostSynapses( self.ch, self.annid ))
     elif field == 'organelles':
-      return ','.join(str(x) for x in self.annodb.querySynapses( self.ch, self.annid ))
+      return ','.join(str(x) for x in self.annodb.queryOrganelles( self.ch, self.annid ))
     else:
       return Annotation.getField(self, field)
 
@@ -350,8 +388,6 @@ class AnnSegment (Annotation):
     kvdict['seg_class'] = self.segmentclass   
     kvdict['seg_parentseed'] = self.parentseed
     kvdict['seg_neuron'] = self.neuron  
-    kvdict['seg_synapses'] = json.dumps(self.synapses.tolist())
-    kvdict['seg_organelles'] = json.dumps(self.organelles.tolist())
 
     kvdict.update(Annotation.toDict(self))
 
@@ -372,13 +408,8 @@ class AnnSegment (Annotation):
         self.parentseed = int(v)
       elif k == 'seg_neuron':
         self.neuron = int(v)
-      elif k == 'seg_synapses':
-        self.synapses = np.array(json.loads(v), dtype=np.uint32)
-      elif k == 'seg_organelles':
-        self.organelles = np.array(json.loads(v), dtype=np.uint32)
       else:
         anndict[k] = v
-    
     
     Annotation.fromDict ( self, anndict )
 
@@ -447,6 +478,7 @@ class AnnOrganelle (Annotation):
 
     self.organelleclass = 0          # enumerated label
     self.centroid = np.array([], dtype=np.uint32)    # centroid -- xyz coordinate
+    self.segment = 0
     self.parentseed = 0              # seed that started this segment
     self.seeds=np.array([], dtype=np.uint32)  # seeds generated from this organelle 
 
@@ -462,6 +494,8 @@ class AnnOrganelle (Annotation):
       return ','.join(str(x) for x in self.centroid)
     elif field == 'parentseed':
       return self.parentseed
+    elif field == 'segment':
+      return self.segment
     elif field == 'seeds':
       return ','.join(str(x) for x in self.seeds)
     else:
@@ -478,6 +512,8 @@ class AnnOrganelle (Annotation):
         raise NDWSError ("Illegal arguments to set field centroid: %s" % value)
     elif field == 'parentseed':
       self.parentseed = value
+    elif field == 'segment':
+      self.segment = value
     elif field == 'seeds':
       self.seeds = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
     else:
@@ -488,9 +524,10 @@ class AnnOrganelle (Annotation):
 
     kvdict = defaultdict(list)
     kvdict['org_class'] = self.organelleclass   
+    kvdict['org_segment'] = self.segment   
     kvdict['org_centroid'] = json.dumps(self.centroid.tolist())
     kvdict['org_parentseed'] = self.parentseed   
-    kvdict['org_seeds'] = json.dumps(self.seeds.tolist())
+    [ kvdict['org_seeds'].append(s) for s in self.seeds ] 
 
     # somehow, Annotation.toDict is picking up a parent seed?
     kvdict.update(Annotation.toDict(self))
@@ -510,10 +547,15 @@ class AnnOrganelle (Annotation):
         self.organelleclass = int(v)
       elif k == 'org_centroid':
         self.centroid = np.array(json.loads(v), dtype=np.uint32)
+      elif k == 'org_segment':
+        self.segment = int(v)
       elif k == 'org_parentseed':
         self.parentseed = int(v)
       elif k == 'org_seeds':
-        self.seeds = np.array(json.loads(v), dtype=np.uint32)
+        if type(v) == list:
+          self.seeds = [int(s) for s in v]
+        else:
+          self.seeds = [int(v)]
       else:
         anndict[k] = v
     

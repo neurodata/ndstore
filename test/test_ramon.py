@@ -46,6 +46,80 @@ class Test_Ramon:
     """Destroy the unittest database"""
     makeunitdb.deleteTestDB(p.token)
 
+  def test_test_segment (self):
+    """Upload a segment and test it's fields"""
+
+    for i in range(1,10):
+      makeAnno (p, 1)
+
+    # Make a segment
+    makeAnno (p, 4)
+
+    # make a bunch of synapses
+    q = Params()
+    q.token = 'unittest'
+    q.resolution = 0
+    q.channels = ['unit_anno']
+
+    synids = []
+    presynids = []
+    postsynids = []
+    for i in range(0,8):
+      makeAnno ( q, 2) 
+      f = setField(q, 'segments', ','.join([str(p.annoid),str(random.randint(500,1000))]))
+#      f = setField(q, 'presegments', ','.join([str(p.annoid),str(random.randint(500,1000))]))
+      f = setField(q, 'presegments', ','.join([str(p.annoid)]))
+      f = setField(q, 'postsegments', ','.join([str(p.annoid)]))
+      synids.append(q.annoid)
+      presynids.append(q.annoid)
+      postsynids.append(q.annoid)
+
+    # make one more segment
+    makeAnno ( q, 2) 
+    f = setField(q, 'segments', p.annoid)
+    synids.append(q.annoid)
+
+    # Test synapses
+    f = getField(p, 'synapses')
+    rsynids = f.read().split(',')
+    for sid in rsynids:
+      assert int(sid) in synids
+    assert len(rsynids) == 9
+
+    # Test presynapses
+    f = getField(p, 'presynapses')
+    rsynids = f.read().split(',')
+    for sid in rsynids:
+      assert int(sid) in presynids
+    assert len(rsynids) == 8
+
+    # Test postsynapses
+    f = getField(p, 'postsynapses')
+    rsynids = f.read().split(',')
+    for sid in rsynids:
+      assert int(sid) in postsynids
+    assert len(rsynids) == 8
+
+    # make a bunch of organelles
+    q = Params()
+    q.token = 'unittest'
+    q.resolution = 0
+    q.channels = ['unit_anno']
+
+    orgids = []
+    for i in range(0,8):
+      makeAnno ( q, 6 ) 
+      f = setField(q, 'segment', p.annoid)
+      orgids.append(q.annoid)
+
+    # Test synapses
+    f = getField(p, 'organelles')
+    rorgids = f.read().split(',')
+    for cid in rorgids:
+      assert int(cid) in orgids
+    assert len(rorgids) == 8
+
+
 
   def test_anno_minmal(self):
     """Upload a minimal and maximal annotation. Verify fields."""
@@ -281,6 +355,24 @@ class Test_Ramon:
     f = getField(p, 'centroid')
     assert ','.join([str(i) for i in centroid]) == f.read()
 
+    # Test the segments
+    segments = [random.randint(0,100), random.randint(0,100), random.randint(0,100)]
+    f = setField(p, 'segments', ','.join([str(i) for i in segments]))
+    f = getField(p, 'segments')
+    assert ','.join([str(i) for i in segments]) == f.read()
+
+    # Test the presegments
+    presegments = [random.randint(0,100), random.randint(0,100), random.randint(0,100)]
+    f = setField(p, 'presegments', ','.join([str(i) for i in presegments]))
+    f = getField(p, 'presegments')
+    assert ','.join([str(i) for i in presegments]) == f.read()
+
+    # Test the postsegments
+    postsegments = [random.randint(0,100), random.randint(0,100), random.randint(0,100)]
+    f = setField(p, 'postsegments', ','.join([str(i) for i in postsegments]))
+    f = getField(p, 'postsegments')
+    assert ','.join([str(i) for i in postsegments]) == f.read()
+
   def test_seed (self):
     """Upload a seed and test it's fields"""
 
@@ -312,43 +404,7 @@ class Test_Ramon:
     assert ','.join([str(i) for i in position]) == f.read()
 
 
-  def test_segment (self):
-    """Upload a segment and test it's fields"""
-
-    # Make a segment
-    makeAnno (p, 4)
-
-    # Test the parentseed
-    parentseed = random.randint (0,100)
-    f = setField(p, 'parentseed', parentseed)
-    f = getField(p, 'parentseed')
-    assert parentseed == int(f.read()) 
-
-    # Test the segmentclass
-    segmentclass = random.randint (0,100)
-    f = setField(p, 'segmentclass', segmentclass)
-    f = getField(p, 'segmentclass')
-    assert segmentclass == int(f.read()) 
-
-    # Test the neuron
-    neuron = random.randint (0,100)
-    f = setField(p, 'neuron', neuron)
-    f = getField(p, 'neuron')
-    assert neuron == int(f.read()) 
-
-    # Test inheritance
-    status = random.randint (0,100)
-    f = setField(p, 'status', status)
-    f = getField(p, 'status')
-    assert status == int(f.read()) 
     
-# These may need to be two way.  Must figure out.  RBTODO
-#    # Test the synapses
-#    synapses = [random.randint(0,100), random.randint(0,100), random.randint(0,100)]
-#    f = setField(p, 'synapses', ','.join([str(i) for i in synapses]))
-#    f = getField(p, 'synapses')
-#    assert ','.join([str(i) for i in synapses]) == f.read()
-
 
   def test_neuron (self):
     """Upload a neuron and test it's fields"""
@@ -393,7 +449,13 @@ class Test_Ramon:
     f = getField(p, 'organelleclass')
     assert organelleclass == int(f.read()) 
 
-    # Test inheritance
+    # Test the segment
+    segment = random.randint (0,65535)
+    f = setField(p, 'segment', segment)
+    f = getField(p, 'segment')
+    assert segment == int(f.read()) 
+
+    # Test status
     status = random.randint (0,100)
     f = setField(p, 'status', status)
     f = getField(p, 'status')
@@ -439,81 +501,6 @@ class Test_Ramon:
     with pytest.raises(urllib2.HTTPError): 
       req = urllib2.Request ( url )
       f = urllib2.urlopen ( url )
-
-
-
-  def test_organelle (self):
-    """Upload an organelle and test it's fields"""
-
-    # Make an organelle 
-    makeAnno ( p, 6 )
-
-    # Test the parentseed
-    parentseed = random.randint (0,100)
-    f = setField(p, 'parentseed', parentseed)
-    f = getField(p, 'parentseed')
-    assert parentseed == int(f.read()) 
-
-    # Test the organelleclass
-    organelleclass = random.randint (0,100)
-    f = setField(p, 'organelleclass', organelleclass)
-    f = getField(p, 'organelleclass')
-    assert organelleclass == int(f.read()) 
-
-    # Test inheritance
-    status = random.randint (0,100)
-    f = setField(p, 'status', status)
-    f = getField(p, 'status')
-    assert status == int(f.read()) 
-
-    # Test the seeds
-    seeds = [random.randint(0,100), random.randint(0,100), random.randint(0,100)]
-    f = setField(p, 'seeds', ','.join([str(i) for i in seeds]))
-    f = getField(p, 'seeds')
-    assert ','.join([str(i) for i in seeds]) == f.read()
-
-
-  def test_node (self):
-    """Upload a skeleton node and test it's fields"""
-
-    # Make a neuron
-    makeAnno (p, 7)
-
-    # test the nodetype
-    nodetype = random.randint (0,100)
-    f = setField(p, 'nodetype', nodetype)
-    f = getField(p, 'nodetype')
-    assert nodetype == int(f.read())
-
-    # test the skeletonid
-    skeletonid = random.randint (0,65535)
-    f = setField(p, 'skeletonid', skeletonid)
-    f = getField(p, 'skeletonid')
-    assert skeletonid == int(f.read())
-
-    # test the pointid
-    pointid = random.randint (0,65535)
-    f = setField(p, 'pointid', pointid)
-    f = getField(p, 'pointid')
-    assert pointid == int(f.read())
-
-    # test the parentid
-    parentid = random.randint (0,65535)
-    f = setField(p, 'parentid', parentid)
-    f = getField(p, 'parentid')
-    assert parentid == int(f.read())
-
-    # test the radius
-    radius = random.random()
-    f = setField(p, 'radius', radius)
-    f = getField(p, 'radius')
-    assert abs(radius - float(f.read())) < 0.001
-
-    # test the location
-    location = [random.random(), random.random(), random.random()]
-    f = setField(p, 'location', ','.join([str(i) for i in location]))
-    f = getField(p, 'location')
-    assert ','.join([str(i) for i in location]) == f.read()
 
 
   def test_node (self):
@@ -578,8 +565,8 @@ class Test_Ramon:
     assert len(rchildids) == 4
 
 
-  def test_nodes_and_skeletons (self):
-    """Upload a skeleton node and test it's fields"""
+  def test_skeleton (self):
+    """Upload a skeleton and test it's fields"""
 
     # test the nodetype
     skeletontype = random.randint (0,100)
