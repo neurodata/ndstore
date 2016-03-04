@@ -43,6 +43,8 @@ urlpatterns = patterns('spdb.views',
   url(r'(?P<webargs>^\w+/\w+/reserve/[\w+,/]*)$', 'reserve'),
   # get list of multiply labelled voxels in a cutout region
   url(r'(?P<webargs>^\w+/exceptions/[\w,/]*)$', 'exceptions'),
+  # multi-channel false color image
+  url(r'(?P<webargs>^\w+/\w+/mcfc/[\w,/-]+)$', 'mcFalseColor'),
   # projection services
   url(r'(?P<webargs>^\w+/(minproj|maxproj)/(xy|xz|yz)[\w,/]*)$', 'minmaxProject'),
   # get and put services
@@ -57,8 +59,6 @@ urlpatterns = patterns('spdb.views',
   url(r'(?P<webargs>^\w+/\w+/merge/[\w,/]+)$', 'merge'),
   # csv metadata read
   url(r'(?P<webargs>^\w+/(csv)[\d+/]?[\w,/]*)$', 'csv'),
-  # multi-channel false color image
-  url(r'(?P<webargs>^\w+/mcfc/[\w,/-]+)$', 'mcFalseColor'),
   # HDF5 interfaces
   url(r'(?P<webargs>^\w+/\w+/[\d+/]?[\w,/]*)$', 'annotation'),
   # JSON interfaces
