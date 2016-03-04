@@ -44,7 +44,7 @@ urlpatterns = patterns('spdb.views',
   # get list of multiply labelled voxels in a cutout region
   url(r'(?P<webargs>^\w+/exceptions/[\w,/]*)$', 'exceptions'),
   # multi-channel false color image
-  url(r'(?P<webargs>^\w+/\w+/mcfc/[\w,/-]+)$', 'mcFalseColor'),
+  url(r'(?P<webargs>^\w+/[\w,]+/mcfc/[\w,/-]+)$', 'mcFalseColor'),
   # projection services
   url(r'(?P<webargs>^\w+/(minproj|maxproj)/(xy|xz|yz)[\w,/]*)$', 'minmaxProject'),
   # get and put services

@@ -475,6 +475,7 @@ def window(data, ch, window_range=None ):
       windowCutout (data, window_range)
       return np.uint8(data)
 
+
   return data
 
 def imgSlice(webargs, proj, db):
@@ -2147,9 +2148,6 @@ def mcFalseColor ( webargs ):
 
   [ token, chanstr, mcfcstr, service, cutoutargs ] = webargs.split ('/', 4)
 
-
-  
-
   # split the channel string
   channels = chanstr.split(",")
 
@@ -2166,10 +2164,9 @@ def mcFalseColor ( webargs ):
     for i in range(len(channels)):
        
       # skip 0 channels
-      if channels[i]==0:
+      if channels[i]=='0':
         continue
 
-      import pdb; pdb.set_trace()
       imageargs = '{}/{}/{}'.format(channels[i],service,cutoutargs)
 
       ch = ndproj.NDChannel(proj,channels[i])
@@ -2186,9 +2183,7 @@ def mcFalseColor ( webargs ):
         logger.warning ( "No such service %s. Args: %s" % (service,webargs))
         raise OCPCAError ( "No such service %s" % (service) )
 
-      # manage the color space
-      mcdata[i:] = window(cb.data,ch)
-
+      mcdata[i:] = cb.data
     
     # We have an compound array.  Now color it.
     colors = ('C','M','Y','R','G','B')
