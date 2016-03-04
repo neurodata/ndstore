@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ p.resolution = 0
 p.channels = ['CHAN1', 'CHAN2']
 p.channel_type = IMAGE
 p.datatype = UINT8
-p.dataset = 'unittest_ds'
+p.dataset = 'unittest'
 
 class Test_Project_Json():
 
@@ -49,8 +49,10 @@ class Test_Project_Json():
 
   def teardown_class(self):
     """Teardown Parameters"""
-    makeunitdb.deleteTestDB('unittest')
-    makeunitdb.deleteTestDB('unittest2')
+    #makeunitdb.deleteTestDB('unittest')
+    #makeunitdb.deleteTestDB('unittest2')
+    # calling a different fucntion for project list as django1.9 introduced new weirdness
+    makeunitdb.deleteTestDBList(['unittest','unittest2'])
   
   def test_basic_json(self):
     """Test the basic JSON project creation with only the required fields"""
@@ -69,7 +71,7 @@ class Test_Project_Json():
 
     # posting the JSON url and checking if it is successful
     response = json.loads(postURL("http://{}/sd/autoIngest/".format(SITE_HOST), json_file).read())
-    assert('SUCCESS' == response)
+    assert('SUCCESS. The ingest process has now started.' == response)
 
     # fetching the JSON info
     f = getURL("http://{}/sd/{}/info/".format(SITE_HOST, p.token))
@@ -106,7 +108,7 @@ class Test_Project_Json():
 
     # posting the JSON url and checking if it is successful
     response = json.loads(postURL("http://{}/sd/autoIngest/".format(SITE_HOST), json_file).read())
-    assert('SUCCESS' == response)
+    assert('SUCCESS. The ingest process has now started.' == response)
 
     # fetching the JSON info
     f = getURL("http://{}/sd/{}/info/".format(SITE_HOST, p.token))
@@ -138,7 +140,7 @@ class Test_Project_Json():
 
     # posting the JSON url and checking if it is successful
     response = json.loads(postURL("http://{}/sd/autoIngest/".format(SITE_HOST), json_file).read())
-    assert('FAILED' == response)
+    assert('Dataset {} already exists and is different then the chosen dataset. Please choose a different dataset name'.format(p.dataset) == response)
 
 
 class Test_Create_Channel_Json():
@@ -169,7 +171,7 @@ class Test_Create_Channel_Json():
 
     # posting the JSON url and checking if it is successful
     response = json.loads(postURL("http://{}/sd/{}/createChannel/".format(SITE_HOST, p.token), json_file).read())
-    assert('SUCCESS' == response)
+    assert('SUCCESS. The information in the channel was correct.' == response)
 
     # fetching the JSON info
     f = getURL("http://{}/sd/{}/info/".format(SITE_HOST, p.token))
@@ -197,7 +199,7 @@ class Test_Create_Channel_Json():
     # Here we send incorrect dataset information
 
     # dataset format = (dataset_name, [ximagesz, yimagesz, zimagesz], [[xvoxel, yvoxel, zvoxel], [xoffset, yoffset, zoffset], timerange, scalinglevels, scaling)
-    dataset = (p.dataset, [1000,2000,1000], [1.0,1.0,5.0], [0,0,0], None, None, None)
+    dataset = (p.dataset, [2000,2000,1000], [1.0,1.0,5.0], [0,0,0], None, None, None)
     # project format = (project_name, token_name, public)
     project = (p.token, None, None)
     # channel format = { chan1 : (channel_name, datatype, channel_type, data_url, file_name, exceptions, resolution, windowrange, readonly), chan2: ...... }
@@ -209,7 +211,7 @@ class Test_Create_Channel_Json():
 
     # posting the JSON url and checking if it is successful
     response = json.loads(postURL("http://{}/sd/{}/createChannel/".format(SITE_HOST, p.token), json_file).read())
-    assert('FAILED' == response)
+    assert('Channel CHAN2 already exists for this project. Specify a different channel name' == response)
 
 class Test_Delete_Channel_Json():
 

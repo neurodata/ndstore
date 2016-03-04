@@ -1,5 +1,5 @@
-RAMON API
-*********
+RAMON APIs
+***********
 
 RAMON Field Service
 ===================
@@ -7,15 +7,15 @@ RAMON Field Service
 setField
 --------
 
-.. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/setField/(string:ramon_field)/(string/int/float:ramon_value)
+.. http:get:: (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/setField/(string:ramon_field)/(string/int/float:ramon_value)
    
    :synopsis: Set the value of the RAMON field for the specified channel
 
-   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
    :type server_name: string
-   :param token_name: Token Name in OCP.
+   :param token_name: Token Name in NeuroData.
    :type token_name: string
-   :param channel_name: Channel Name in OCP. *Optional*. If missing will use default channel for the token.
+   :param channel_name: Channel Name in NeuroData. *Optional*. If missing will use default channel for the token.
    :type channel_name: string
    :param ramon_field: RAMON field. For more details look at the RAMON documents.
    :type ramon_field: string
@@ -28,15 +28,15 @@ setField
 getField
 --------
 
-.. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/getField/(string:ramon_field)/
+.. http:get:: (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/getField/(string:ramon_field)/
    
    :synopsis: Set the value of the RAMON field for the specified channel
 
-   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
    :type server_name: string
-   :param token_name: Token Name in OCP.
+   :param token_name: Token Name in NeuroData.
    :type token_name: string
-   :param channel_name: Channel Name in OCP. *Optional*. If missing will use default channel for the token.
+   :param channel_name: Channel Name in NeuroData. *Optional*. If missing will use default channel for the token.
    :type channel_name: string
    :param ramon_field: RAMON field. For more details look at the RAMON documents.
    :type ramon_field: string
@@ -56,15 +56,15 @@ Annotation Service
 GET
 ---
 
-.. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/(int:annotation_id)/(string:option_args)/(int:resolution)/
+.. http:get:: (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/(int:annotation_id)/(string:option_args)/(int:resolution)/
    
    :synopsis: Get an annotation from the server
 
-   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
    :type server_name: string
-   :param token_name: Token Name in OCP.
+   :param token_name: Token Name in NeuroData.
    :type token_name: string
-   :param channel_name: Channel Name in OCP. *Optional*. If missing will use default channel for the token.
+   :param channel_name: Channel Name in NeuroData. *Optional*. If missing will use default channel for the token.
    :type channel_name: string
    :param annotation_id: Id of the annotation to be cut from the database.
    :type annotation_id: int
@@ -79,15 +79,15 @@ GET
 POST
 ----
 
-.. http:post:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/(string:option_args)/
+.. http:post:: (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/(string:option_args)/
    
    :synopsis: Post an annotation to the server
 
-   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
    :type server_name: string
-   :param token_name: Token Name in OCP.
+   :param token_name: Token Name in NeuroData.
    :type token_name: string
-   :param channel_name: Channel Name in OCP. *Optional*. If missing will use default channel for the token.
+   :param channel_name: Channel Name in NeuroData. *Optional*. If missing will use default channel for the token.
    :type channel_name: string
    :param options_args: *Optional Arguments*. This can be overwrite, preserve, exception.
    :type options_args: string
@@ -101,15 +101,15 @@ Merge Service
 GET
 ---
 
-.. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/merge/(string:listofids)/(string:option_args)/
+.. http:get:: (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/merge/(string:listofids)/(string:option_args)/
    
    :synopsis: Merge two annotation ids on the server.
 
-   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
    :type server_name: string
-   :param token_name: Token Name in OCP.
+   :param token_name: Token Name in NeuroData.
    :type token_name: string
-   :param channel_name: Channel Name in OCP. *Optional*. If missing will use default channel for the token.
+   :param channel_name: Channel Name in NeuroData. *Optional*. If missing will use default channel for the token.
    :type channel_name: string
    :param options_args: *Optional Arguments*. This can be overwrite, preserve, exception.
    :type options_args: string

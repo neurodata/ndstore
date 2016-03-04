@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,12 +29,12 @@ base_urlpatterns = patterns('',
     url(r'^accounts/', include('registration.backends.default.urls')),
     url(r'^ocpuser/', include('nduser.urls')),  # legacy RB
     url(r'^nduser/', include('nduser.urls')),  
-#    url(r'^viz/', include('ocpviz.urls')),  # ABTODO
-    url(r'^ocpgraph/', include('ndgraph.urls')),
+    # url(r'^viz/', include('ocpviz.urls')),  # AB TODO
+    # url(r'^ocpgraph/', include('ndgraph.urls')), # UA TODO
+    # url(r'^stats/', include('stats.urls')), # AB TODO
 )
 
 urlpatterns = patterns('', 
     url('^', include(base_urlpatterns)), # maintains unprefixed URLs
-    url('^ocp/', include(base_urlpatterns)),
     url('^nd/', include(base_urlpatterns)),
 )

@@ -1,0 +1,44 @@
+### Test raw ###
+POST /ca/unittest_rw/
+
+### Test npz ###
+POST /ca/unittest_rw/npz/0/200,250/200,250/200,202/
+GET /ca/unittest_rw/npz/0/200,250/200,250/200,202/
+
+### Test hdf5 ###
+POST /ca/unittest_rw/hdf5/0/200,250/200,250/300,302/
+GET /ca/unittest_rw/hdf5/0/200,250/200,250/300,302/
+
+### Tes batch ####
+POST /ca/unittest_rw/
+GET /ca/unittest_rw/2,3,4/
+POST /ca/unittest_rw/exception/
+POST /ca/unittest_rw/exception/
+GET /ca/unittest_rw/100000,100001,100002,100003/voxels/0/
+
+### Test the voxels ###
+POST /ca/unittest_rw/
+GET /ca/unittest_rw/100004/voxels/0/
+GET /ca/unittest_rw/100004/cutout/0/
+
+### Test the cutout ###
+POST /ca/unittest_rw/
+GET /ca/unittest_rw/100005/voxels/0/
+GET /ca/unittest_rw/100005/cutout/0/
+POST /ca/unittest_rw/
+POST /ca/unittest_rw/update/
+GET /ca/unittest_rw/100006/voxels/0/
+POST /ca/unittest_rw/update/
+GET /ca/unittest_rw/100006/voxels/0/
+POST /ca/unittest_rw/reduce/
+GET /ca/unittest_rw/100006/voxels/0/
+POST /ca/unittest_rw/reduce/
+GET /ca/unittest_rw/100006/voxels/0/
+DELETE /ca/unittest_rw/100006/
+GET /ca/unittest_rw/100006/voxels/0/ - 404
+
+### Test dataonly ###
+POST /ca/unittest_rw/
+POST /ca/unittest_rw/dataonly/
+POST /ca/unittest_rw/dataonly/
+GET /ca/unittest_rw/100007/voxels/0/

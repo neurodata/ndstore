@@ -22,7 +22,7 @@ import pdb
 #yimagesz = 12000
 
 parser = argparse.ArgumentParser(description='Ingest the FlyEM image data.')
-parser.add_argument('baseurl', action="store", help='Base URL to of ocp service no http://, e.  g. openconnecto.me')
+parser.add_argument('baseurl', action="store", help='Base URL to of ocp service no http://, e.  g. neurodata.io')
 parser.add_argument('token', action="store", help='Token for the annotation project.')
 parser.add_argument('path', action="store", help='Directory with annotation PNG files.')
 parser.add_argument('process', action="store", help='Number of processes.')

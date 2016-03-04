@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -46,10 +46,10 @@ This data is from Amelio Vazquez-Reina's NIPS2011 paper.
 It appears to line up to the kat11iso data.
 
 First slice:
-http://openconnecto.me/emca/kat11iso/xy/0/563,1587/778,1802/1/
+http://neurodata.io/emca/kat11iso/xy/0/563,1587/778,1802/1/
 
 Last slice:
-http://openconnecto.me/emca/kat11iso/xy/0/563,1587/778,1802/1000/
+http://neurodata.io/emca/kat11iso/xy/0/563,1587/778,1802/1000/
 """
 
 _startslice = 1   
@@ -90,7 +90,7 @@ def main():
 
     # Now we have a 1024x1024x16 z-aligned cube.  
     #   Send it to the database.
-    url = 'http://openconnecto.me/emca/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( result.token, _resolution, _xoffset, _xoffset+_xtilesz, _yoffset, _yoffset+_ytilesz, sl, sl+endz+1 )
+    url = 'http://neurodata.io/emca/%s/npdense/%s/%s,%s/%s,%s/%s,%s/' % ( result.token, _resolution, _xoffset, _xoffset+_xtilesz, _yoffset, _yoffset+_ytilesz, sl, sl+endz+1 )
 
     print url, newdata.shape
 

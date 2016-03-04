@@ -1,28 +1,43 @@
 # ocp wsgi
-upstream ocp-wsgi {
-  server unix:///var/run/uwsgi/app/ocp/socket;
+upstream neurodata-wsgi {
+  server unix:///var/run/uwsgi/app/neurodata/socket;
 }
 
 # place the following block in your server clause
 server {
+  listen 80 default_server;
+  listen [::]:80 default_server;
+
+  root /var/www/html;
+
+  # Add index.php to the list if you are using PHP
+  index index.html index.htm index.nginx-debian.html;
+
+  server_name _;
   
-  ...
-  
+  location / {
+    # First attempt to serve request as file, then
+    # as directory, then fall back to displaying a 404.
+    try_files $uri $uri/ =404;
+  }
+
   location /ocp/ {
-    rewrite       ^/ocp/(.*)$ /$1 break;
-    uwsgi_pass    ocp-wsgi;
+    rewrite       ^/nd/(.*)$ /$1 break;
+    uwsgi_pass    neurodata-wsgi;
     include       /etc/nginx/uwsgi_params;
     # increase buffer size to avoid hitting disk
+    client_max_body_size 2048M;
+    client_body_buffer_size 4M;
     uwsgi_buffering on;
     uwsgi_buffers 4096 64k;
   }
   
   location /static {
-    alias         /var/www/open-connectome/django/tempaltes/static/;
+    alias         /var/www/ndstore/django/static/;
     autoindex     on;
     allow         all;
   }
 
-  ...
+
   
 }

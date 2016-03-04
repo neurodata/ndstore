@@ -1,4 +1,4 @@
-# Copyright 2015 Open Connectome Project (http://openconnecto.me)
+# Copyright 2015 NeuroData (http://neurodata.io)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -85,6 +85,113 @@ class Test_Annotation_Json():
     assert( str(ann_info[str(ann_annoid)]['metadata']['status']) == str(ann_status) )
     assert( str(ann_info[str(ann_annoid)]['metadata']['confidence'])[:5] == str(ann_confidence)[:5] )
     assert( ann_info[str(ann_annoid)]['metadata']['author'] == str(ann_author) )
+  
+  def test_bigint_json(self):
+    """Test the annotation (RAMON) JSON interface with a large ID"""
+    
+    # create hdf5 file and post it
+    tmpfile = tempfile.NamedTemporaryFile()
+    h5fh = h5py.File( tmpfile.name )
+
+    ann_status = random.randint(0,4)
+    ann_confidence = random.random()
+    ann_author = 'unittest_author' 
+    ann_annoid = 10025
+    
+    # create annotation id namespace
+    idgrp = h5fh.create_group ( str(ann_annoid) )
+
+    # annotation type
+    idgrp.create_dataset ( "ANNOTATION_TYPE", (1,), np.uint32, data=1 )
+    mdgrp = idgrp.create_group( "METADATA" )
+
+    # set annotation metadata
+    mdgrp.create_dataset ( "STATUS", (1,), np.uint32, data=ann_status )
+    mdgrp.create_dataset ( "CONFIDENCE", (1,), np.float, data=ann_confidence )
+    mdgrp.create_dataset ( "AUTHOR", (1,), dtype=h5py.special_dtype(vlen=str), data=ann_author )
+
+    h5fh.flush()
+    tmpfile.seek(0)
+
+    p.annoid = putAnnotation(p, tmpfile)
+    
+    # fetching the JSON info
+    f = getURL("http://{}/ca/{}/{}/{}/json/".format(SITE_HOST, p.token, p.channels[0], ann_annoid))
+
+    # read the JSON file
+    ann_info = json.loads(f.read())
+    assert( ann_info.keys()[0] == str(ann_annoid) )
+    assert( str(ann_info[str(ann_annoid)]['metadata']['status']) == str(ann_status) )
+    assert( str(ann_info[str(ann_annoid)]['metadata']['confidence'])[:5] == str(ann_confidence)[:5] )
+    assert( ann_info[str(ann_annoid)]['metadata']['author'] == str(ann_author) )
+
+
+  def test_multiple_json(self):
+    """Test the annotation (RAMON) JSON interface with multiple objects"""
+    number_of_annotations = 3 # Note: these are 1-indexed 
+    anno_objs = {}
+
+    for i in range(number_of_annotations):
+      # create hdf5 file and post it
+      tmpfile = tempfile.NamedTemporaryFile()
+      h5fh = h5py.File( tmpfile.name )
+
+      ann_status = random.randint(0,4)
+      ann_confidence = random.random()
+      ann_author = 'unittest_author' 
+      ann_annoid = (i + 1)*10 # we multiply by 10 to avoid conflicts with above test
+    
+      anno_objs[ str(ann_annoid) ] = {
+        'ann_status': ann_status,
+        'ann_confidence': ann_confidence,
+        'ann_author': ann_author
+      }
+
+      # create annotation id namespace
+      idgrp = h5fh.create_group ( str(ann_annoid) )
+
+      # annotation type
+      idgrp.create_dataset ( "ANNOTATION_TYPE", (1,), np.uint32, data=1 )
+      mdgrp = idgrp.create_group( "METADATA" )
+
+      # set annotation metadata
+      mdgrp.create_dataset ( "STATUS", (1,), np.uint32, data=ann_status )
+      mdgrp.create_dataset ( "CONFIDENCE", (1,), np.float, data=ann_confidence )
+      mdgrp.create_dataset ( "AUTHOR", (1,), dtype=h5py.special_dtype(vlen=str), data=ann_author )
+
+      h5fh.flush()
+      tmpfile.seek(0)
+
+      p.annoid = putAnnotation(p, tmpfile)
+    
+    # fetching the JSON info
+    ann_id_str = ''
+    for i in range(number_of_annotations):
+      ann_id_str += '{}'.format( (i + 1)*10 )
+      if i < number_of_annotations - 1:
+        ann_id_str += ','
+    
+    f = getURL("http://{}/ca/{}/{}/{}/json/".format(SITE_HOST, p.token, p.channels[0], ann_id_str))
+
+    # read the JSON file
+    ann_info = json.loads(f.read())
+    
+    for i in range(number_of_annotations):
+      # make sure we have all the relevant annotation objects
+      assert( str( (i + 1)*10 ) in ann_info.keys() )
+      chosen_id = (i + 1)*10
+      chosen_obj = anno_objs[str( chosen_id )]
+      assert( str(ann_info[str(chosen_id)]['metadata']['status']) == str(chosen_obj['ann_status']) )
+      assert( str(ann_info[str(chosen_id)]['metadata']['confidence'])[:5] == str(chosen_obj['ann_confidence'])[:5] )
+      assert( ann_info[str(chosen_id)]['metadata']['author'] == str(chosen_obj['ann_author']) )
+
+    # pick an annotation object at random and check its properties 
+    chosen_id = random.randint(1,number_of_annotations)*10 
+    chosen_obj = anno_objs[str(chosen_id)]
+    assert( str(ann_info[str(chosen_id)]['metadata']['status']) == str(chosen_obj['ann_status']) )
+    assert( str(ann_info[str(chosen_id)]['metadata']['confidence'])[:5] == str(chosen_obj['ann_confidence'])[:5] )
+    assert( ann_info[str(chosen_id)]['metadata']['author'] == str(chosen_obj['ann_author']) )
+  
 
   def test_error_json(self):
     """ Request an annotation Id that doesn't exist """

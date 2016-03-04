@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ class ProjectForm(ModelForm):
 
     class Meta:
         model = Project
-        exclude = ('user','nd_version','schema_version')
+        exclude = ('user','nd_version','schema_version', 'mdengine', 's3backend')
         def clean_project(self):
             if 'project' in self.cleaned_data:
                 project = self.cleaned_data['project']

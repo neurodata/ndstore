@@ -59,10 +59,11 @@
 
   - Module Test_Info
     1. test_public_tokens
-    2. test_info
-    3. test_projinfo
-    4. testxmlinfo
-    4. test_reserve
+    2. test_public_datasets
+    3. test_info
+    4. test_projinfo
+    5. testxmlinfo
+    6. test_reserve
 
 * test_io.py - 6 tests
   
@@ -190,6 +191,14 @@
 
   - Module : Test_Jpeg
     1. test_get_jpeg
+
+* test_stats.py - 2 tests
+
+  - Module : Test_Histogram8
+    1. test_genhistogram
+   
+  - Module : Test_Histogram16
+    1. test_genhistogram
 
 * tests to add
   1. Test filter for image slices

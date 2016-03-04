@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,5 +20,6 @@ from django.conf import settings
 from celery import Celery
 
 app = Celery('nd')
+#app = Celery('ocp', broker=settings.BROKER_URL, backend=settings.CELERY_RESULT_BACKEND)
 app.config_from_object('django.conf:settings')
 app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)

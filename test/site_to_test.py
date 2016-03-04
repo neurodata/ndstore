@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#site='localhost/ocp'
-#site='localhost:8080/ocp'
-site='localhost:8000'
+site='localhost/ocp'
+# site='localhost:8080/ocp'
+# site='localhost:8000'

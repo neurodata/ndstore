@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 # 
 #Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -655,10 +655,9 @@ def annId ( chanargs, proj, db ):
   [channel, service, imageargs] = chanargs.split('/',2)
   ch = ndproj.NDChannel(proj,channel)
   # Perform argument processing
-  (resolution, voxel) = restargs.voxel ( imageargs, proj.datasetcfg )
-
+  (resolution, voxel) = restargs.voxel(imageargs, proj.datasetcfg)
   # Get the identifier
-  return db.getVoxel ( ch, resolution, voxel )
+  return db.getVoxel(ch, resolution, voxel)
 
 def listIds ( chanargs, proj, db ):
   """Return the list of annotation identifiers in a region"""
@@ -722,12 +721,12 @@ def selectPost ( webargs, proj, db, postdata ):
 
   [channel, service, postargs] = webargs.split('/', 2)
 
-  # if it's a 3d tiff treat differently.  No cutout args.
-  if service == 'tiff':
-    return postTiff3d ( channel, postargs, proj, db, postdata )
-
   # Create a list of channels from the comma separated argument
   channel_list = channel.split(',')
+
+  # Retry in case the databse is busy
+  tries = 0
+  done = False
 
   # Process the arguments
   try:
@@ -736,22 +735,61 @@ def selectPost ( webargs, proj, db, postdata ):
   except restargs.RESTArgsError, e:
     logger.warning( "REST Arguments {} failed: {}".format(postargs,e) )
     raise NDWSError(e)
-
+  
   corner = args.getCorner()
   resolution = args.getResolution()
   timerange = args.getTimeRange()
   conflictopt = restargs.conflictOption ( "" )
-
-  # Bind the annotation database
-
-  tries = 0
-  done = False
-
+  
   while not done and tries < 5:
-
     try:
 
-      if service in ['npz', 'blosc']:
+      # if it's a 3d tiff treat differently.  No cutout args.
+      if service == 'tiff':
+        return postTiff3d ( channel, postargs, proj, db, postdata )
+
+      elif service == 'hdf5':
+        
+        # Get the HDF5 file.
+        with closing (tempfile.NamedTemporaryFile ( )) as tmpfile:
+
+          tmpfile.write ( postdata )
+          tmpfile.seek(0)
+          h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
+
+          for channel_name in channel_list:
+
+            ch = proj.getChannelObj(channel_name)
+            chgrp = h5f.get(ch.getChannelName())
+            voxarray = chgrp['CUTOUT'].value
+            h5_datatype = h5f.get(ch.getChannelName())['DATATYPE'].value[0]
+            h5_channeltype = h5f.get(ch.getChannelName())['CHANNELTYPE'].value[0]
+
+            # h5xyzoffset = chgrp.get('XYZOFFSET')
+            # h5resolution = chgrp.get('RESOLUTION')[0]
+
+            # Checking the datatype of the voxarray
+            if voxarray.dtype != ND_dtypetonp[ch.getDataType()]:
+              logger.warning("Channel datatype {} in the HDF5 file does not match with the {} in the database.".format(h5_datatype, ch.getDataType()))
+              raise NDWSError("Channel datatype {} in the HDF5 file does not match with the {} in the database.".format(h5_datatype, ch.getDataType()))
+
+            # Don't write to readonly channels
+            if ch.getReadOnly() == READONLY_TRUE:
+              logger.warning("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+              raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+
+            
+            if ch.getChannelType() in IMAGE_CHANNELS + TIMESERIES_CHANNELS : 
+              db.writeCuboid (ch, corner, resolution, voxarray, timerange=timerange) 
+            
+            elif ch.getChannelType() in ANNOTATION_CHANNELS:
+              db.annotateDense ( ch, corner, resolution, voxarray, conflictopt )
+
+          h5f.flush()
+          h5f.close()
+
+      # other services take cutout args
+      elif service in ['npz', 'blosc']:
 
         # get the data out of the compressed blob
         if service == 'npz':
@@ -765,7 +803,7 @@ def selectPost ( webargs, proj, db, postdata ):
           logger.warning("The data has some missing channels")
           raise NDWSError("The data has some missing channels")
       
-        for idx,channel_name in enumerate(channel_list):
+        for idx, channel_name in enumerate(channel_list):
           ch = proj.getChannelObj(channel_name)
   
           # Don't write to readonly channels
@@ -780,52 +818,8 @@ def selectPost ( webargs, proj, db, postdata ):
           if ch.getChannelType() in IMAGE_CHANNELS + TIMESERIES_CHANNELS:
             db.writeCuboid ( ch, corner, resolution, voxarray[idx,:], timerange )
 
-          # elif ch.getChannelType() in TIMESERIES_CHANNELS:
-            # db.writeTimeCuboid(ch, corner, resolution, timerange, voxarray[idx,:])
-          
           elif ch.getChannelType() in ANNOTATION_CHANNELS:
             db.annotateDense(ch, corner, resolution, voxarray[idx,:], conflictopt)
-      
-      elif service == 'hdf5':
-  
-        # Get the HDF5 file.
-        with closing (tempfile.NamedTemporaryFile ( )) as tmpfile:
-
-          tmpfile.write ( postdata )
-          tmpfile.seek(0)
-          h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
-  
-          for channel_name in channel_list:
-            ch = proj.getChannelObj(channel_name)
-            voxarray = h5f.get(ch.getChannelName())['CUTOUT'].value
-            h5_datatype = h5f.get(ch.getChannelName())['DATATYPE'].value[0]
-            h5_channeltype = h5f.get(ch.getChannelName())['CHANNELTYPE'].value[0]
-
-            # Checking the datatype of the voxarray
-            if ch.getDataType() != h5_datatype or voxarray.dtype != ND_dtypetonp[ch.getDataType()]:
-              logger.warning("Channel datatype {} in the HDF5 file does not match with the {} in the database.".format(h5_datatype, ch.getDataType()))
-              raise NDWSError("Channel datatype {} in the HDF5 file does not match with the {} in the database.".format(h5_datatype, ch.getDataType()))
-
-            if ch.getChannelType() != h5_channeltype:
-              logger.warning("Channel type {} in HDF5 file does not match with the {} in the database.".format(h5_channeltype, ch.getChannelType()))
-              raise NDWSError("Channel type {} in HDF5 file does not match with the {} in the database.".format(h5_channeltype, ch.getChannelType()))
-          
-            # Don't write to readonly channels
-            if ch.getReadOnly() == READONLY_TRUE:
-              logger.warning("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
-              raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
-            
-            if ch.getChannelType() in IMAGE_CHANNELS + TIMESERIES_CHANNELS : 
-              db.writeCuboid (ch, corner, resolution, voxarray, timerange)
-
-            # elif ch.getChannelType() in TIMESERIES_CHANNELS:
-              # db.writeTimeCuboid (ch, corner, resolution, timerange, voxarray)
-            
-            elif ch.getChannelType() in ANNOTATION_CHANNELS:
-              db.annotateDense ( ch, corner, resolution, voxarray, conflictopt )
-  
-          h5f.flush()
-          h5f.close()
       
       else:
         logger.warning("An illegal Web POST service was requested: {}. Args {}".format(service, webargs))
@@ -886,8 +880,8 @@ AR_TIGHTCUTOUT = 3
 AR_BOUNDINGBOX = 4
 AR_CUBOIDS = 5
 
-def getAnnoJSONById ( ch, annoid, proj, rdb ):
-  """ Retrieve the annotation and return it as a serialized json string """
+def getAnnoDictById ( ch, annoid, proj, db ):
+  """Retrieve the annotation and return it as a Python dictionary"""
 
   # retrieve the annotation
   anno = rdb.getAnnotation ( ch, annoid ) 
@@ -895,11 +889,11 @@ def getAnnoJSONById ( ch, annoid, proj, rdb ):
     logger.warning("No annotation found at identifier = %s" % (annoid))
     raise NDWSError ("No annotation found at identifier = %s" % (annoid))
 
-  # create the JSONanno obj
-  jsonanno = jsonann.AnnotationtoJSON ( anno )
+  # create the annotation obj
+  annobj = jsonann.AnnotationtoJSON ( anno )
 
   # return data
-  return jsonanno.toJSON() 
+  return annobj.toDictionary()
 
 def getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution=None, corner=None, dim=None ): 
   """Retrieve the annotation and put it in the HDF5 file."""
@@ -1040,18 +1034,20 @@ def getAnnotation ( webargs ):
     option_args = otherargs.split('/', 2)
 
     # AB Added 20151011 
-    # Check to see if this is a JSON request, and if so return the JSON objects 
-    # otherwise, continue with returning the HDF5 data
+    # Check to see if this is a JSON request, and if so return the JSON objects otherwise, continue with returning the HDF5 data
     if option_args[1] == 'json':
-      jsonstr = ''
+      annobjs = {}
       try:
         if re.match ( '^[\d,]+$', option_args[0] ): 
           annoids = map(int, option_args[0].split(','))
           for annoid in annoids: 
-            jsonstr += getAnnoJSONById ( ch, annoid, proj, rdb )
+            annobjs.update(getAnnoDictById ( ch, annoid, proj, db ))
+
+        jsonstr = json.dumps( annobjs )
 
       except: 
-        raise
+        logger.error("Error")
+        raise NDWSError("Error")
 
       return jsonstr 
 
@@ -1331,11 +1327,14 @@ def putAnnotation ( webargs, postdata ):
   with closing ( ndproj.NDProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
   
+  ch = ndproj.NDChannel(proj, channel)
+  if ch.getChannelType() not in ANNOTATION_CHANNELS:
+    logger.error("Channel {} does not support annotations".format(ch.getChannelName()))
+    raise NDWSError("Channel {} does not support annotations".format(ch.getChannelName()))
+
   with closing ( spatialdb.SpatialDB(proj) ) as db:
    with closing ( ramondb.RamonDB(proj) ) as rdb:
 
-    ch = ndproj.NDChannel(proj, channel)
-    
     # Don't write to readonly channels
     if ch.getReadOnly() == READONLY_TRUE:
       logger.warning("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
@@ -1790,7 +1789,6 @@ def chanInfo ( webargs ):
 
   # and the database and then call the db function
   with closing ( spatialdb.SpatialDB(proj) ) as db:
-    import jsonprojinfo
     return jsonprojinfo.jsonChanInfo( proj, db )
 
 
@@ -1981,14 +1979,17 @@ def merge (webargs):
     else:
       # PYTODO illegal merge (no support if not global)
       assert 0
-  
+
+def publicDatasets ( self ):
+  """Return a JSON formatted list of public datasets"""
+
+  with closing ( ndproj.NDProjectsDB() ) as projdb:
+    return jsonprojinfo.publicDatasets ( projdb )
 
 def publicTokens ( self ):
   """Return a json formatted list of public tokens"""
   
   with closing ( ndproj.NDProjectsDB() ) as projdb:
-
-    import jsonprojinfo
     return jsonprojinfo.publicTokens ( projdb )
 
 def exceptions ( webargs, ):

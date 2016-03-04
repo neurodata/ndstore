@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -98,7 +98,7 @@ for annid in [ 288899,\
   363935,\
   364086 ]:
 
-  cmdstr = "python /Users/randal/EM-connectome/web/examples/annoread.py openconnecto.me bockSynapse1 %s --voxels" % ( annid )
+  cmdstr = "python /Users/randal/EM-connectome/web/examples/annoread.py neurodata.io bockSynapse1 %s --voxels" % ( annid )
   p = subprocess.Popen ( cmdstr, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT) 
   print "Looking at %s" % ( annid )
   for line in p.stdout.readlines():
@@ -106,7 +106,7 @@ for annid in [ 288899,\
         result = re.match('^Voxel[\D]+(\d+)$',line)
         print "Annotation ID %s: found %s voxels with --voxels" % ( annid, result.group(1) )
       retval = p.wait()
-  cmdstr = "python /Users/randal/EM-connectome/web/examples/annoread.py openconnecto.me bockSynapse1 %s --tightcutout" % ( annid )
+  cmdstr = "python /Users/randal/EM-connectome/web/examples/annoread.py neurodata.io bockSynapse1 %s --tightcutout" % ( annid )
   p = subprocess.Popen ( cmdstr, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT) 
   for line in p.stdout.readlines():
       if re.match ('^\d+ voxels',line):

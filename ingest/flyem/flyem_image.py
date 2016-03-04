@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ import zindex
 def main():
 
   parser = argparse.ArgumentParser(description='Ingest the FlyEM image data.')
-  parser.add_argument('baseurl', action="store", help='Base URL to of ocp service no http://, e.g. openconnecto.me')
+  parser.add_argument('baseurl', action="store", help='Base URL to of ocp service no http://, e.g. neurodata.io')
   parser.add_argument('token', action="store", help='Token for the annotation project.')
   parser.add_argument('path', action="store", help='Directory with annotation PNG files.')
 

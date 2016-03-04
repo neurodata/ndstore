@@ -1,7 +1,7 @@
 Configuration
 *************
 
-You can install open-connectome and configure using the install script:
+You can install NeuroData and configure using the install script:
  
  * uAlex script
  * MySQL/Cassandra/Riak

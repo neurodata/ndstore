@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,9 +23,11 @@ ND_UTIL_PATH = os.path.join(ND_BASE_PATH, "util" )
 ND_WS_PATH = os.path.join(ND_BASE_PATH, "webservices" )
 ND_SPDB_PATH = os.path.join(ND_BASE_PATH, "spdb" )
 # KLTODO going to rename this to nd lib? in the future
+# ND_STATS_PATH = os.path.join(ND_BASE_PATH, "stats" )
+ND_STATS_PATH = os.path.join(ND_BASE_PATH, "" )
 ND_RAMON_PATH = os.path.join(ND_BASE_PATH, "ramon" )
 ND_LIB_PATH = os.path.join(ND_BASE_PATH, "ndlib" )
 ND_PROJ_PATH = os.path.join(ND_BASE_PATH, "ndproj" )
 ND_DJANGO_PATH = os.path.join(ND_BASE_PATH, "django" )
 
-sys.path += [ ND_UTIL_PATH, ND_WS_PATH, ND_SPDB_PATH, ND_PROJ_PATH, ND_RAMON_PATH, ND_LIB_PATH, ND_DJANGO_PATH ]
+sys.path += [ ND_UTIL_PATH, ND_WS_PATH, ND_SPDB_PATH, ND_STATS_PATH, ND_PROJ_PATH, ND_RAMON_PATH, ND_LIB_PATH, ND_DJANGO_PATH ]

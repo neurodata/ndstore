@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -245,6 +245,7 @@ def main():
   result = parser.parse_args()
 
   h5ann = H5Anno()
+
   for i in range(result.numobjects):
     # either anonymous annotations ids
     if result.annid==0:

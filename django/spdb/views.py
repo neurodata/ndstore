@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,8 +33,9 @@ POST_SERVICES = ['hdf5', 'npz', 'hdf5_async', 'propagate', 'tiff', 'blosc']
 
 def cutout (request, webargs):
   """Restful URL for all read services to annotation projects"""
+
   try:
-    m = re.match(r"(\w+)/(?P<channel>[\w+,/-]+)?/?(xy|xz|yz|tiff|hdf5|jpeg|blosc|npz|zip|id|diff|ids|xyanno|xzanno|yzanno)/([\w,/-]+)$", webargs)
+    m = re.match(r"(\w+)/(?P<channel>[\w+,/-]+)?/?(xy|xz|yz|tiff|hdf5|jpeg|blosc|npz|zip|id|diff|ids|xyanno|xzanno|yzanno)/([\w,/-]*)$", webargs)
     [token, channel, service, cutoutargs] = [i for i in m.groups()]
 
     if channel is None:
@@ -87,6 +88,7 @@ def cutout (request, webargs):
     # RBTODO control caching?
     # POST methods
     elif request.method == 'POST':
+
       if service in POST_SERVICES:
         django.http.HttpResponse(ndwsrest.putCutout(webargs, request.body))
         return django.http.HttpResponse("Success", content_type='text/html')
@@ -246,6 +248,17 @@ def publictokens (request, webargs):
     logger.exception("Unknown exception in publictokens. {}".format(e))
     raise NDWSError("Unknown exception in publictokens. {}".format(e))
 
+def publicdatasets (request, webargs):
+  """Return list of public datasets"""
+  try:  
+    return django.http.HttpResponse(ndwsrest.publicDatasets(webargs), content_type="application/json" )
+  except NDWSError, e:
+    return django.http.HttpResponseNotFound(e.value)
+  except MySQLdb.Error, e:
+    return django.http.HttpResponseNotFound(e)
+  except Exception, e:
+    logger.exception("Unknown exception in publictokens. {}".format(e))
+    raise NDWSError("Unknown exception in publictokens. {}".format(e))
 
 #@cache_control(no_cache=True)
 def jsoninfo (request, webargs):

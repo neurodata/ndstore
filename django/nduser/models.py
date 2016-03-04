@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.conf import settings
 
-from ndtype import IMAGE, ANNOTATION, TIMESERIES, UINT8, UINT16, UINT32, UINT64, FLOAT32, READONLY_TRUE, READONLY_FALSE, ZSLICES, ISOTROPIC, PUBLIC_TRUE, PUBLIC_FALSE, PROPAGATED, NOT_PROPAGATED, EXCEPTION_TRUE, EXCEPTION_FALSE
+from ndtype import IMAGE, ANNOTATION, TIMESERIES, UINT8, UINT16, UINT32, UINT64, FLOAT32, READONLY_TRUE, READONLY_FALSE, ZSLICES, ISOTROPIC, PUBLIC_TRUE, PUBLIC_FALSE, PROPAGATED, NOT_PROPAGATED, EXCEPTION_TRUE, EXCEPTION_FALSE, MYSQL, CASSANDRA, RIAK, DYNAMODB, REDIS, DSP61, DSP62, DSP63, ND_VERSION, SCHEMA_VERSION, FILE_SYSTEM, AMAZON_S3, S3_TRUE, S3_FALSE
 
 # Create your models here.
 class Dataset ( models.Model):
@@ -28,10 +28,10 @@ class Dataset ( models.Model):
    dataset_description = models.CharField(max_length=4096,blank=True)
    user = models.ForeignKey(settings.AUTH_USER_MODEL)
    ISPUBLIC_CHOICES = (
-       (0, 'Private'),
-       (1, 'Public'),
+       (PUBLIC_FALSE, 'Private'),
+       (PUBLIC_TRUE, 'Public'),
    )
-   public =  models.IntegerField(default=0, choices=ISPUBLIC_CHOICES)
+   public =  models.IntegerField(default=PUBLIC_FALSE, choices=ISPUBLIC_CHOICES)
    ximagesize =  models.IntegerField()
    yimagesize =  models.IntegerField()
    zimagesize =  models.IntegerField()
@@ -70,31 +70,42 @@ class Project ( models.Model):
   public =  models.IntegerField(default=0, choices=ISPUBLIC_CHOICES)
   dataset = models.ForeignKey(Dataset)
   HOST_CHOICES = (
-    ('dsp061.pha.jhu.edu', 'default'),
-    ('dsp061.pha.jhu.edu', 'dsp061'),
-    ('dsp062.pha.jhu.edu', 'dsp062'),
-    ('dsp063.pha.jhu.edu', 'dsp063'),
+    (DSP61, 'default'),
+    (DSP61, 'dsp061'),
+    (DSP62, 'dsp062'),
+    (DSP63, 'dsp063'),
     ('localhost', 'Debug'),
   )
-  host =  models.CharField(max_length=255, choices=HOST_CHOICES, default='localhost')
+  host =  models.CharField(max_length=255, choices=HOST_CHOICES, default=DSP61)
   KVENGINE_CHOICES = (
-    ('MySQL','MySQL'),
-    ('Cassandra','Cassandra'),
-    ('Riak','Riak'),
+    (MYSQL, 'MySQL'),
+    (CASSANDRA, 'Cassandra'),
+    (RIAK, 'Riak'),
+    (DYNAMODB, 'DynamoDB'),
+    (REDIS, 'Redis'),
   )
-  kvengine =  models.CharField(max_length=255, choices=KVENGINE_CHOICES, default='MySQL')
+  kvengine =  models.CharField(max_length=255, choices=KVENGINE_CHOICES, default=MYSQL)
   KVSERVER_CHOICES = (
-    ('dsp061.pha.jhu.edu', 'default'),
-    ('dsp061.pha.jhu.edu', 'dsp061'),
-    ('dsp062.pha.jhu.edu', 'dsp062'),
-    ('dsp063.pha.jhu.edu', 'dsp063'),
+    (DSP61, 'default'),
+    (DSP61, 'dsp061'),
+    (DSP62, 'dsp062'),
+    (DSP63, 'dsp063'),
     ('localhost', 'Debug'),
   )
-  kvserver =  models.CharField(max_length=255, choices=KVSERVER_CHOICES, default='localhost')
+  kvserver =  models.CharField(max_length=255, choices=KVSERVER_CHOICES, default=DSP61)
+  MDENGINE_CHOICES = (
+    (MYSQL, 'MySQL'),    
+  )
+  mdengine = models.CharField(max_length=255, choices=MDENGINE_CHOICES, default=MYSQL)
+  S3BACKEND_CHOICES = (
+    (S3_TRUE, 'Yes'),
+    (S3_FALSE, 'No'),
+  )
+  s3backend = models.IntegerField(choices=S3BACKEND_CHOICES, default=S3_FALSE)
 
   # Version information -- set automatically
-  nd_version =  models.CharField(max_length=255, default='0.6')
-  schema_version =  models.CharField(max_length=255, default='0.6')
+  nd_version =  models.CharField(max_length=255, default=ND_VERSION)
+  schema_version =  models.CharField(max_length=255, default=SCHEMA_VERSION)
 
   class Meta:
     """ Meta """
@@ -111,10 +122,10 @@ class Token ( models.Model):
   user = models.ForeignKey(settings.AUTH_USER_MODEL)
   project  = models.ForeignKey(Project)
   ISPUBLIC_CHOICES = (
-    (0, 'Private'),
-    (1, 'Public'),
+    (PUBLIC_FALSE, 'Private'),
+    (PUBLIC_TRUE, 'Public'),
   )
-  public =  models.IntegerField(default=0, choices=ISPUBLIC_CHOICES)
+  public =  models.IntegerField(default=PUBLIC_FALSE, choices=ISPUBLIC_CHOICES)
    
    
   class Meta:
@@ -171,7 +182,7 @@ class Channel ( models.Model):
   endwindow = models.IntegerField(default=0)
   default = models.BooleanField(default=False)
   header = models.CharField(max_length=8192, default='', blank=True)
-  
+
   class Meta:
     """ Meta """
     # Required to override the default table name
@@ -192,8 +203,8 @@ class Backup ( models.Model):
   channel = models.ForeignKey(Channel, blank=True, null=True)
 
   PROTOCOL_CHOICES = (
-    ('local', 'file system'),
-    ('s3', 'Amazon S3'),
+    (FILE_SYSTEM, 'file system'),
+    (AMAZON_S3, 'Amazon S3'),
   )
   protocol = models.CharField(max_length=255,choices=PROTOCOL_CHOICES)
 
@@ -238,3 +249,17 @@ class NIFTIHeader ( models.Model):
   def __unicode__(self):
     return self.header
 
+class Histogram (models.Model):
+  """ Stores a histogram in npz format """  
+  channel = models.ForeignKey(Channel)
+  histogram = models.BinaryField(max_length=4096, null=True) 
+  bins = models.BinaryField(max_length=4096, null=True) 
+  REGION_CHOICES = (
+    (0, 'Entire Dataset'),
+    (1, 'ROI (AB TODO)'),
+  )
+  region = models.IntegerField(choices=REGION_CHOICES, default=0)
+
+  class Meta:
+    db_table = u"histogram"
+    managed = True 

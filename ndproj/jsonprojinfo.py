@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+#/p Copyright 2014 NeuroData (http://neurodata.io)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ from django.conf import settings
 
 from ndtype import ZSLICES
 
+from ndwserror import NDWSError
 import logging
 logger=logging.getLogger("neurodata")
 
@@ -103,9 +104,9 @@ def xmlInfo (token, proj):
     jsonprojinfo['channels'][ch.getChannelName()] = chandict ( ch ) 
   jsonprojinfo['metadata'] = metadatadict( proj )
   
-  root = etree.Element('Volume', InputChecksum="", host="http://openconnecto.me/ocptilecache/tilecache/viking/", name=token, num_sections=str(jsonprojinfo['dataset']['imagesize'][0][2]), num_stos="0", path="http://openconnecto.me/ocptilecache/tilecache/viking/")
+  root = etree.Element('Volume', InputChecksum="", host="http://neurodata.io/ocptilecache/tilecache/viking/", name=token, num_sections=str(jsonprojinfo['dataset']['imagesize'][0][2]), num_stos="0", path="http://neurodata.io/ocptilecache/tilecache/viking/")
   etree.SubElement(root, 'Scale', UnitsOfMeasure="nm", UnitsPerPixel=str(jsonprojinfo['dataset']['voxelres'][0][0]/jsonprojinfo['dataset']['voxelres'][0][1]))
-  tileserver_element = etree.SubElement(root, 'OCPTileServer', CoordSpaceName="volume", host="http://openconnecto.me/ocptilecache/tilecache/viking/", FilePrefix="", FilePostfix=".png", TileXDim="512", TileYDim="512", GridXdim=str(jsonprojinfo['dataset']['imagesize'][0][0]/512), GridYDim=str(jsonprojinfo['dataset']['imagesize'][0][1]/512), MaxLevel=str(jsonprojinfo['dataset']["resolutions"][-1]))
+  tileserver_element = etree.SubElement(root, 'OCPTileServer', CoordSpaceName="volume", host="http://neurodata.io/ocptilecache/tilecache/viking/", FilePrefix="", FilePostfix=".png", TileXDim="512", TileYDim="512", GridXdim=str(jsonprojinfo['dataset']['imagesize'][0][0]/512), GridYDim=str(jsonprojinfo['dataset']['imagesize'][0][1]/512), MaxLevel=str(jsonprojinfo['dataset']["resolutions"][-1]))
   for channel_name in jsonprojinfo['channels'].keys():
     etree.SubElement(tileserver_element, "Channel", Name=channel_name, Path=channel_name, Datatype=jsonprojinfo['channels'][channel_name]['datatype'])
   for slice_number in range(jsonprojinfo['dataset']['offset'][0][2], jsonprojinfo['dataset']['offset'][0][2]+jsonprojinfo['dataset']['imagesize'][0][2]):
@@ -113,21 +114,30 @@ def xmlInfo (token, proj):
   
   return etree.tostring(root)
 
+
 def metadatadict( proj ):
   """Metadata Info"""
-  
-#  try:
-#    url = 'http://{}/api/metadata/get/{}/'.format(settings.LIMS_SERVER, proj.getProjectName())
-#    req = urllib2.Request(url)
-#    response = urllib2.urlopen(req)
-#    return json.loads(response.read())
-#  except urllib2.URLError, e:
-#    print "Failed URL {}".format(url)
-#    return {}
-  return {}
+  if settings.LIMS_SERVER_ENABLED:
+    return {}
+  else:
+    try:
+      url = 'http://{}/metadata/ocp/get/{}/'.format(settings.LIMS_SERVER, proj.getProjectName())
+      req = urllib2.Request(url)
+      response = urllib2.urlopen(req, timeout=0.5)
+      return json.loads(response.read())
+    except urllib2.URLError, e:
+      print "Failed URL {}".format(url)
+      return {}
+
 
 def publicTokens ( projdb ):
   """List of Public Tokens"""
   
-  tokens = projdb.getPublic ()
+  tokens = projdb.getPublicTokens ()
   return json.dumps (tokens, sort_keys=True, indent=4)
+
+def publicDatasets ( projdb ):
+  """List of Public Datasets"""
+
+  datasets = projdb.getPublicDatasets()
+  return json.dumps(datasets, sort_keys=True, indent=4)

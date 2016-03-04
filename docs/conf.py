@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# open-connectome documentation build configuration file, created by
+# ndstore documentation build configuration file, created by
 # sphinx-quickstart on Sun May 17 11:10:35 2015.
 #
 # This file is execfile()d with the current directory set to its
@@ -21,8 +21,8 @@ import shlex
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
 sys.path += [os.path.abspath('../django')]
-import OCP.settings
-os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
+import ND.settings
+os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
 from django.conf import settings
 import spatialdb
 
@@ -63,9 +63,9 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'open-connectome'
-copyright = u'2015, Open Connectome Project'
-author = u'OCP'
+project = u'ndstore'
+copyright = u'2015, NeuroData Project'
+author = u'NeuroData'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -143,12 +143,12 @@ html_theme = 'sphinx_rtd_theme'
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-html_logo = 'images/ocp_main.png'
+html_logo = 'images/neurodata_main.png'
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-html_favicon = 'images/ocp_favicon.ico'
+html_favicon = 'images/neurodata_favicon.ico'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -216,7 +216,7 @@ html_use_smartypants = True
 #html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'open-connectomedoc'
+htmlhelp_basename = 'ndstoredoc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -238,8 +238,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  (master_doc, 'open-connectome.tex', u'open-connectome Documentation',
-   u'OCP', 'manual'),
+  (master_doc, 'ndstore.tex', u'ndstore Documentation',
+   u'NeuroData', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -268,7 +268,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'open-connectome', u'open-connectome Documentation',
+    (master_doc, 'ndstore', u'ndstore Documentation',
      [author], 1)
 ]
 
@@ -282,8 +282,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  (master_doc, 'open-connectome', u'open-connectome Documentation',
-   author, 'open-connectome', 'One line description of project.',
+  (master_doc, 'ndstore', u'ndstore Documentation',
+   author, 'ndstore', 'One line description of project.',
    'Miscellaneous'),
 ]
 

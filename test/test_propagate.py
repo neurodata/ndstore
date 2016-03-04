@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -78,10 +78,13 @@ class Test_Image_Zslice_Propagate:
 
     # Start propagating
     f = getURL("http://{}/sd/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), UNDER_PROPAGATION))
-    time.sleep(10)
-    # Checking if the PROPGATED value is set correctly
-    f = getURL("http://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
-    value = int(f.read())
+    for iter_value in range(1, 5, 1):
+      time.sleep(10)
+      # Checking if the PROPGATED value is set correctly
+      f = getURL("http://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
+      value = int(f.read())
+      if value == PROPAGATED:
+        break
     assert(value == PROPAGATED)
     
     # Checking at res1
@@ -189,9 +192,12 @@ class Test_Image_Isotropic_Propagate:
     f = getURL("http://{}/sd/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), UNDER_PROPAGATION))
 
     # Checking if the PROPGATED value is set correctly
-    time.sleep(10)
-    f = getURL("http://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
-    value = int(f.read())
+    for iter_value in range(1,10,1):
+      time.sleep(5)
+      f = getURL("http://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
+      value = int(f.read())
+      if value == PROPAGATED:
+        break
     assert(value == PROPAGATED)
 
     # Checking at res1
@@ -251,9 +257,12 @@ class Test_Anno_Zslice_Propagate():
     f = getURL("http://{}/sd/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), UNDER_PROPAGATION))
 
     # Checking if the PROPGATED value is set correctly
-    time.sleep(30)
-    f = getURL("http://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
-    value = int(f.read())
+    for iter_value in range(1, 15, 1):
+      time.sleep(10)
+      f = getURL("http://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
+      value = int(f.read())
+      if value == PROPAGATED:
+        break
     assert(value == PROPAGATED)
 
     # Checking at res1
@@ -274,7 +283,7 @@ class Test_Anno_Isotropic_Propagate():
   
   def setup_class(self):
     """Create the unittest database"""
-    makeunitdb.createTestDB(p.token, public=True, channel_list=p.channels, ximagesize=1000, yimagesize=1000, zimagesize=128, scalingoption=ISOTROPIC)
+    makeunitdb.createTestDB(p.token, public=True, channel_list=p.channels, ximagesize=500, yimagesize=500, zimagesize=64, scalingoption=ISOTROPIC)
 
   def teardown_class (self):
     """Destroy the unittest database"""
@@ -302,9 +311,12 @@ class Test_Anno_Isotropic_Propagate():
     f = getURL("http://{}/sd/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), UNDER_PROPAGATION))
 
     # Checking if the PROPGATED value is set correctly
-    time.sleep(30)
-    f = getURL("http://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
-    value = int(f.read())
+    for iter_value in range(1, 15, 1):
+      time.sleep(10)
+      f = getURL("http://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
+      value = int(f.read())
+      if value == PROPAGATED:
+        break
     assert(value == PROPAGATED)
 
     # Checking at res1

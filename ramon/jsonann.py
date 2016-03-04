@@ -1,4 +1,4 @@
-# Copyright 2015 Open Connectome Project (http://openconnecto.me)
+# Copyright 2015 NeuroData (http://neurodata.io)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -124,6 +124,10 @@ class JSONAnnotation:
     """ return json formatted string """ 
     return json.dumps( self.annodict )
 
+  def toDictionary( self ):
+    """ return dictionary """ 
+    return self.annodict 
+
 def BasetoJSON ( anno, annotype ):
   jsonanno = JSONAnnotation( annotype, anno.annid )
 
@@ -192,7 +196,7 @@ def NeurontoJSON ( neuron ):
   jsonneuron = BasetoJSON ( neuron, annotation.ANNO_NEURON )
 
   # lists
-  if ( neuron.segment != [] ):
+  if ( neuron.segments != [] ):
     jsonneuron.addMetadata( "segments", neuron.segments )
 
   return jsonneuron 

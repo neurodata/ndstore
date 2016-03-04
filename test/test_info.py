@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -60,6 +60,15 @@ class Test_Info:
     # read the json data
     tokens = json.loads ( f.read() )
     assert ( p.token in tokens )
+  
+  def test_public_datsets (self):
+    """Test the function that shows the public datasets"""
+
+    f =  getURL("http://{}/sd/public_datasets/".format( SITE_HOST ))
+
+    # read the json data
+    datasets = json.loads ( f.read() )
+    assert ( p.token in datasets )
 
   def test_info(self):
     """Test the info query"""

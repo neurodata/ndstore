@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ def main():
       print  "Creating {}".format(row[0])
       pd = ocpcaproj.OCPCAProjectsDB()
       try:
-        pd.newOCPCAProj ( token=row[0], dbhost="localhost", project=row[0], dbtype=ocpcaproj.ANNOTATIONS, dataset=row[3], readonly=ocpcaproj.READONLY_FALSE, exceptions=ocpcaproj.EXCEPTION_FALSE, resolution=row[5], public=ocpcaproj.PUBLIC_FALSE,  openid='aplbatch', dataurl='http://openconnecto.me/ocp', kvserver='localhost', kvengine='MySQL', propagate=0, nocreate=0 )
+        pd.newOCPCAProj ( token=row[0], dbhost="localhost", project=row[0], dbtype=ocpcaproj.ANNOTATIONS, dataset=row[3], readonly=ocpcaproj.READONLY_FALSE, exceptions=ocpcaproj.EXCEPTION_FALSE, resolution=row[5], public=ocpcaproj.PUBLIC_FALSE,  openid='aplbatch', dataurl='http://neurodata.io/ocp', kvserver='localhost', kvengine='MySQL', propagate=0, nocreate=0 )
       except MySQLdb.Error, e:
         print "Error. Database {} could not be created".format(row[0])
 

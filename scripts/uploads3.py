@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,18 +35,6 @@ import ndproj
 import spatialdb
 import ndlib
 
-def main():
-  
-  parser = argparse.ArgumentParser(description="Upload an existing project of OCP to s3")
-  parser.add_argument('token', action='store', help='Token for the project')
-  parser.add_argument('channel_name', action='store', help='Channel Name in the project')
-  parser.add_argument('--res', dest='resolution', action='store', type=int, default=0, help='Resolution to upload')
-
-  result = parser.parse_args()
-  start = time.time()
-  s3up = S3Uploader(result.token, result.channel_name, result.resolution)
-  s3up.uploadExistingProject()
-  print "Total Time for Upload: {}".format(time.time()-start)
 
 class S3Uploader:
 
@@ -56,6 +44,20 @@ class S3Uploader:
     self.token = token
     self.channel_name = channel_name
     self.res = res
+
+  def uploadNewProject(self):
+    """Upload a new project to S3"""
+
+    with closing (ndproj.NDProjectsDB()) as projdb:
+      proj = projdb.loadToken(self.token)
+    
+    with closing (spatialdb.SpatialDB(proj)) as db:
+      
+      ch = proj.getChannelObj(self.channel_name)
+
+      # KL TODO Add the script for uploading these files directly to the S3 bucket in supercube format
+
+      # Can call ndwsingest
 
   def uploadExistingProject(self):
     """Upload an existing project to S3"""
@@ -113,6 +115,23 @@ class S3Uploader:
               bucket.put_object(Key=s3_key, Body=data)
 
         print "Time for Resolution {} : {} secs".format(cur_res, time.time()-start)
+
+def main():
+  
+  parser = argparse.ArgumentParser(description="Upload an existing project of OCP to s3")
+  parser.add_argument('token', action='store', help='Token for the project')
+  parser.add_argument('channel_name', action='store', help='Channel Name in the project')
+  parser.add_argument('--res', dest='resolution', action='store', type=int, default=0, help='Resolution to upload')
+  parser.add_argument('--new', dest='new_project', action='store', type=bool, default=False, help='New Project')
+
+  result = parser.parse_args()
+  start = time.time()
+  s3up = S3Uploader(result.token, result.channel_name, result.resolution)
+  if result.new_project:
+    s3up.uploadNewProject()
+  else:  
+    s3up.uploadExistingProject()
+  print "Total Time for Upload: {}".format(time.time()-start)
 
 if __name__ == '__main__':
   main()

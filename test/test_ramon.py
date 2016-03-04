@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,12 +24,13 @@ import pytest
 import httplib
 from contextlib import closing
 
+import makeunitdb
+import ndtype
 from params import Params
 from postmethods import putAnnotation, getAnnotation
 from ramon import H5AnnotationFile, getH5id, makeAnno, getId, getField, setField
 import kvengine_to_test
 import site_to_test
-import makeunitdb
 SITE_HOST = site_to_test.site
 
 p = Params()

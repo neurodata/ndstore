@@ -39,7 +39,7 @@ for row in rows:
     else:
         overlayproject=dataset_name
         
-    overlayserver='http://openconnecto.me/ocp'
+    overlayserver='http://neurodata.io/ocp'
     #get the dataset id
     sql2 = "SELECT id,dataset_name from datasets where dataset_name= \'{}\'".format(dataset_name)
     try:

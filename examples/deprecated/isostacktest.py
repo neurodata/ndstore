@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -45,14 +45,14 @@ def cubeToPNGs ( nparray, prefix ):
 # Get cube in question
 try:
 
-#  url = "http://openconnecto.me/ocp/ocpca/kasthuri11/npz/5/100,300/200,448/1,400/neariso/"
-#  url = "http://openconnecto.me/ocp/ocpca/kasthuri11/npz/5/100,700/200,500/1,500/neariso/"
-#  url = "http://openconnecto.me:8000/ocpca/kasthuri11/npz/5/0,672/0,832/1,500/neariso/"
-  url = "http://openconnecto.me/ocp/ocpca/kasthuri11/npz/5/0,672/0,832/1,500/neariso/"
-#  url = "http://openconnecto.me/ocp/ocpca/bock11/npz/7/0,1058/0,936/2917,3013/neariso/"
-#  url = "http://openconnecto.me:8000/ocpca/bock11/npz/7/0,1058/0,936/2917,3013/neariso/"
+#  url = "http://neurodata.io/ocp/ocpca/kasthuri11/npz/5/100,300/200,448/1,400/neariso/"
+#  url = "http://neurodata.io/ocp/ocpca/kasthuri11/npz/5/100,700/200,500/1,500/neariso/"
+#  url = "http://neurodata.io:8000/ocpca/kasthuri11/npz/5/0,672/0,832/1,500/neariso/"
+  url = "http://neurodata.io/ocp/ocpca/kasthuri11/npz/5/0,672/0,832/1,500/neariso/"
+#  url = "http://neurodata.io/ocp/ocpca/bock11/npz/7/0,1058/0,936/2917,3013/neariso/"
+#  url = "http://neurodata.io:8000/ocpca/bock11/npz/7/0,1058/0,936/2917,3013/neariso/"
 #  url = "http://localhost/ocp/ocpca/bock11/npz/0/18000,19000/18000,19000/2917,2920/neariso/"
-#  url = "http://openconnecto.me/ocp/ocpca/bock11/npz/0/18000,19000/18000,19000/2917,2920/neariso/"
+#  url = "http://neurodata.io/ocp/ocpca/bock11/npz/0/18000,19000/18000,19000/2917,2920/neariso/"
   f = urllib2.urlopen ( url )
 except urllib2.URLError, e:
   print "Failed to open url ", url, e

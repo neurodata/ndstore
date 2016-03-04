@@ -1,70 +1,43 @@
-AddOns==0.7
-amqp==1.4.7
-anyjson==0.3.3
-billiard==3.3.0.21
-blosc==1.2.8
-BytecodeAssembler==0.6
-cassandra-driver==2.7.2
-celery==3.1.19
-cffi==1.3.0
-Cheetah==2.4.4
-CherryPy==3.8.0
-configobj==5.0.6
-cryptography==0.9.3
-Cython==0.22.1
-cython-accelerator-for-processing-voxels-lists==0.0.0
-decorator==4.0.2
-DecoratorTools==1.8
-Django==1.8.6
-django-celery==3.1.17
-django-registration==1.0
-django-registration-redux==1.2
-enum34==1.0.4
-Extremes==1.1.1
-FormEncode==1.3.0
-futures==3.0.3
-Genshi==0.7
-h5py==2.5.0
-idna==2.0
-ipaddress==1.0.13
-kasthur11-annotation-accelerators==0.0.0
-kombu==3.0.29
-libtiff==0.4.0
-lxml==3.4.4
-Markdown==2.6.2
-meld3==1.0.2
-MySQL-python==1.2.5
-networkx==1.10rc2
-nibabel==2.0.1
-numpy==1.9.2
-Paste==2.0.2
-PasteDeploy==1.5.2
-PasteScript==2.0.2
-## FIXME: could not find svn URL in dependency_links for this package:
-PEAK-Rules===0.5a1.dev-r2713
-PIL==1.1.7
-Pillow==3.0.0
-posix-ipc==1.0.0
-protobuf==2.6.1
-py==1.4.30
-pyasn1==0.1.8
-pycparser==2.14
-pylibmc==1.5.0
-pyOpenSSL==0.15.1
-pytest==2.8.2
-python-dateutil==2.4.2
-python-memcached==1.57
-pytz==2015.7
-registration==0.50
-requests==2.8.1
-riak==2.2.0
-riak-pb==2.0.0.16
-simplejson==3.8.1
-six==1.10.0
-SymbolType==1.0
-tgMochiKit==1.4.2
-TGScheduler==1.7.0
-tifffile==0.7.0
-TurboGears==1.5.1
-TurboJson==1.3.2
-uWSGI==2.0.11.2
+#################################################################
+# Requirements file for Ndstore
+# Maintainer : Kunal Lillaney <lillaney@jhu.edu>
+# Instructions to add new packages:
+# 1. Do not specify pacakge version untill absoutely required
+# 2. Add your package to one of the sub-categories. If unsure add them to the misc section
+# 3. Run this with the command "pip install -U -r requirements.txt"
+#################################################################
+#
+# Basic Formats
+cython
+numpy
+h5py
+blosc
+#
+# Django and other piping
+uwsgi
+django
+django-registration
+django-celery
+#
+# Key value engines
+boto3
+mysql-python
+cassandra-driver
+riak
+redis
+#
+# Imaging and packaging libraries
+pillow
+libtiff
+lxml
+nibabel
+#
+# JSON packages
+jsonschema
+json-spec
+#
+# Misc packages
+pytest
+posix-ipc
+networkx
+requests

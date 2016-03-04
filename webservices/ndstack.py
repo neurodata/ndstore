@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -80,14 +80,15 @@ def clearStack (proj, ch, res=None):
    
     # Creating a list of all tables to clear
     list_of_tables.append(ch.getIdsTable())
+    list_of_tables.append(ch.getRamonTable())
     for cur_res in range(res, high_res):
       list_of_tables.append(ch.getTable(cur_res))
       list_of_tables.append(ch.getNearIsoTable(cur_res))
       list_of_tables.append(ch.getIdxTable(cur_res))
       list_of_tables.append(ch.getExceptionsTable(cur_res))
 
-    for anno_type in annotation.anno_dbtables.keys():
-      list_of_tables.append(ch.getAnnoTable(anno_type))
+    # for anno_type in annotation.anno_dbtables.keys():
+      # list_of_tables.append(ch.getAnnoTable(anno_type))
 
     # Creating the sql query to execute
     for table_name in list_of_tables:

@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,6 +32,8 @@ urlpatterns = patterns('spdb.views',
   url(r'(?P<webargs>^\w+/volume.vikingxml)$', 'xmlinfo'),
   # get public tokens 
   url(r'(?P<webargs>^public_tokens/)$', 'publictokens'),
+  # get public datasets 
+  url(r'(?P<webargs>^public_datasets/)$', 'publicdatasets'),
   # Create/Delete channel interfaces
   url(r'(?P<webargs>^\w+/createChannel/)$', 'createChannel'),
   url(r'(?P<webargs>^\w+/deleteChannel/)$', 'deleteChannel'),
@@ -43,8 +45,8 @@ urlpatterns = patterns('spdb.views',
   url(r'(?P<webargs>^\w+/exceptions/[\w,/]*)$', 'exceptions'),
   # projection services
   url(r'(?P<webargs>^\w+/(minproj|maxproj)/(xy|xz|yz)[\w,/]*)$', 'minmaxProject'),
-  # get services
-  url(r'(?P<webargs>^\w+/([\w+,]*/)*(xy|xz|yz|tiff|hdf5|blosc|jpeg|npz|zip|diff|id|ids|xyanno|xzanno|yzanno)/[\w,/-]+)$', 'cutout'),
+  # get and put services
+  url(r'(?P<webargs>^\w+/([\w+,]*/)*(xy|xz|yz|tiff|hdf5|blosc|jpeg|npz|zip|diff|id|ids|xyanno|xzanno|yzanno)/[\w,/-]*)$', 'cutout'),
   # single field interfaces
   url(r'(?P<webargs>^\w+/\w+/getField/\d+/[\w+,/]*)$', 'getField'),
   url(r'(?P<webargs>^\w+/\w+/setField/\d+/[\w+,./]*)$', 'setField'),

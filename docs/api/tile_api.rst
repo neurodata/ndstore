@@ -1,22 +1,22 @@
-Tile API's
+Tile APIs
 **********
 
-You can also view the `Tilecache API's <http://docs.neurodata.io/ocptilecache/api/tilecache_api.html>`_ which work similarly for `ocptilecache <http://docs.neurodata.io/ocptilecache/index.html>`_.
+You can also view the `Tilecache API's <http://docs.neurodata.io/ndtilecache/api/tilecache_api.html>`_ which work similarly for `ndtilecache <http://docs.neurodata.io/ndtilecache/index.html>`_.
 
 .. _simple-tile:
 
 getSimpleTile
 -------------
 
-.. http:get:: (string:server_name)/ocp/catmaid/(string:token_name)/(string:channel_name)/(string:slice_type)/(int:time)/(int:zvalue)/(int:ytile)_(int:xtile)_(int:resolution).png
+.. http:get:: (string:server_name)/nd/catmaid/(string:token_name)/(string:channel_name)/(string:slice_type)/(int:time)/(int:zvalue)/(int:ytile)_(int:xtile)_(int:resolution).png
    
    :synopsis: Get a 512x512 tile from the database
 
-   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
    :type server_name: string
-   :param token_name: Token Name in OCP.
+   :param token_name: Token Name in NeuroData.
    :type token_name: string
-   :param channel_name: Channel Name in OCP.
+   :param channel_name: Channel Name in NeuroData.
    :type channel_name: string
    :param slice_type: Type of Slice cutout. Can be xy/yz/xz
    :type slice_type: string
@@ -38,7 +38,7 @@ getSimpleTile
    
    .. sourcecode:: http
    
-      GET  /ocp/catmaid/kasthuri11/image/xy/1/1_1_4.png HTTP/1.1
+      GET  /nd/catmaid/kasthuri11/image/xy/1/1_1_4.png HTTP/1.1
       Host: openconnecto.me
    
    **Example Response**:
@@ -58,15 +58,15 @@ getSimpleTile
 getMcfcTile
 -----------
 
-.. http:get:: (string:server_name)/ocp/catmaid/mcfc/(string:token_name)/(string:channel_name):(string:color_name)/(string:slice_type)/(int:time)/(int:zvalue)/(int:ytile)_(int:xtile)_(int:resolution).png
+.. http:get:: (string:server_name)/nd/catmaid/mcfc/(string:token_name)/(string:channel_name):(string:color_name)/(string:slice_type)/(int:time)/(int:zvalue)/(int:ytile)_(int:xtile)_(int:resolution).png
    
    :synopsis: Get a 512x512 tile from the database
 
-   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
    :type server_name: string
-   :param token_name: Token Name in OCP.
+   :param token_name: Token Name in NeuroData.
    :type token_name: string
-   :param channel_name: Channel Name in OCP.
+   :param channel_name: Channel Name in NeuroData.
    :type channel_name: string
    :param color_name: Color Name. Can be 'C/M/Y/R/G/B'. *Optional* If Missing will default to "CMYRGB".
    :type color_name: string
@@ -90,7 +90,7 @@ getMcfcTile
    
    .. sourcecode:: http
    
-      GET  /ocp/catmaid/mcfc/Thy1eYFPBrain10/Grayscale/xy/500/0_0_3.png HTTP/1.1
+      GET  /nd/catmaid/mcfc/Thy1eYFPBrain10/Grayscale/xy/500/0_0_3.png HTTP/1.1
       Host: openconnecto.me
    
    **Example Response**:
@@ -110,15 +110,15 @@ getMcfcTile
 getVikingTile
 -------------
 
-.. http:get:: (string:server_name)/ocp/catmaid/viking/(string:token_name)/volume/(string:channel_name)/(int:resolution)/X(int:xtile)_Y(int:xtile)_Z(int:zvalue).png
+.. http:get:: (string:server_name)/nd/catmaid/viking/(string:token_name)/volume/(string:channel_name)/(int:resolution)/X(int:xtile)_Y(int:xtile)_Z(int:zvalue).png
    
    :synopsis: Get a 512x512 tile from the database
 
-   :param server_name: Server Name in OCP. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
    :type server_name: string
-   :param token_name: Token Name in OCP.
+   :param token_name: Token Name in NeuroData.
    :type token_name: string
-   :param channel_name: Channel Name in OCP.
+   :param channel_name: Channel Name in NeuroData.
    :type channel_name: string
    :param resolution: Resolution value.
    :type resolution: int
@@ -136,7 +136,7 @@ getVikingTile
    
    .. sourcecode:: http
    
-      GET  /ocp/catmaid/viking/kasthuri11/volume/image/4/X1_Y1_Z10.png HTTP/1.1
+      GET  /nd/catmaid/viking/kasthuri11/volume/image/4/X1_Y1_Z10.png HTTP/1.1
       Host: openconnecto.me
    
    **Example Response**:

@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -48,12 +48,12 @@ _resolution = 1
 
 """Location of the data
 
-AC4 http://openconnecto.me/emca/kasthuri11/hdf5/0/8800,10848/10880,12928/1100,1200/ 
+AC4 http://neurodata.io/emca/kasthuri11/hdf5/0/8800,10848/10880,12928/1100,1200/ 
 
 so at res1 first and last image are at 
 
-  http://openconnecto.me/emca/kasthuri11/xy/1/4400,5424/5440,6464/1100/
-  http://openconnecto.me/emca/kasthuri11/xy/1/4400,5424/5440,6464/1199/
+  http://neurodata.io/emca/kasthuri11/xy/1/4400,5424/5440,6464/1100/
+  http://neurodata.io/emca/kasthuri11/xy/1/4400,5424/5440,6464/1199/
 
 """
 
@@ -67,7 +67,7 @@ yoffset = 5440
 def main():
 
   parser = argparse.ArgumentParser(description='Ingest the kasthuri11 dataset annotations.')
-  parser.add_argument('baseurl', action="store", help='Base URL to of emca service no http://, e.g. openconnecto.me')
+  parser.add_argument('baseurl', action="store", help='Base URL to of emca service no http://, e.g. neurodata.io')
   parser.add_argument('token', action="store", help='Token for the annotation project.')
   parser.add_argument('path', action="store", help='Directory with annotation PNG files.')
 
