@@ -17,6 +17,7 @@ import cStringIO
 import tempfile
 import h5py
 import random 
+import string
 import csv
 import os, sys
 import numpy as np
@@ -60,9 +61,7 @@ class Test_Ramon:
     for i in range (10):
 
       # Make an annotation 
-      #annid = makeAnno ( anntype, SITE_HOST )
       makeAnno( p, p.anntype)
-      #H5AnnotationFile(p)
 
       # set some fields in the even annotations
       if i % 2 == 0:
@@ -74,7 +73,7 @@ class Test_Ramon:
         # set the type
         setField(p, 'synapse_type', synapse_type)
 
-      # set some fields in the even annotations
+      # set some fields in the odd annotations
       if i % 2 == 1:
         # set the confidence
         setField(p, 'confidence', 1.0 - confidence)
@@ -94,24 +93,28 @@ class Test_Ramon:
     assert ( h5['ANNOIDS'].shape[0] == 5 )
 
 
-# Not implemented yet.
+  def test_query_kvpairs ( self ):
+    """validate that one can query arbitray kvpairs for equality only"""
 
-    # check the synapse_type 
-#    url =  "http://%s/sd/%s/query/synapse_type/%s/" % ( SITE_HOST, 'unittest', synapse_type )
-#    req = urllib2.Request ( url )
-#    f = urllib2.urlopen ( url )
-#    retfile = tempfile.NamedTemporaryFile ( )
-#    retfile.write ( f.read() )
-#    retfile.seek(0)
-#    h5ret = h5py.File ( retfile.name, driver='core', backing_store=False )
-#    assert h5ret['ANNOIDS'].shape[0] ==5
-#
-#    # check the synapse_weight 
-#    url =  "http://%s/sd/%s/query/synapse_weight/%s/%s/" % ( SITE_HOST, 'unittest', 'gt', confidence-0.00001 )
-#    req = urllib2.Request ( url )
-#    f = urllib2.urlopen ( url )
-#    retfile = tempfile.NamedTemporaryFile ( )
-#    retfile.write ( f.read() )
-#    retfile.seek(0)
-#    h5ret = h5py.File ( retfile.name, driver='core', backing_store=False )
-#    assert h5ret['ANNOIDS'].shape[0] ==5
+    # do a general kv test for each annotation type
+    for i in range(1,10):
+
+      key = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(random.randint(1,128)))
+      value = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(random.randint(1,1024)))
+
+      annids = []
+
+      makeAnno (p, i)
+      setField( p, key, value )
+      annids.append(p.annoid)
+
+      makeAnno (p, i)
+      setField( p, key, value )
+      annids.append(p.annoid)
+
+      h5 = queryField ( p, key, value )
+
+      assert ( h5['ANNOIDS'].shape[0] == 2 )
+
+
+

@@ -298,6 +298,13 @@ class MySQLRamonDB:
     # legal comparative fields
     compfields = ( 'confidence' )
 
+    # dictionary to look up key name.  this should be rewritten to
+    # be replaced in a higher level module.  the fields are defined 
+    # in annotation.py
+    key_name = { 'type' : 'ann_type',\
+                  'status' : 'ann_status',\
+                  'confidence' : 'ann_confidence' }
+
     # start of the SQL clause
     sql = "SELECT annoid FROM {}_ramon".format(ch.getChannelName())
     clause = ''
@@ -344,11 +351,16 @@ class MySQLRamonDB:
             if not re.match('^[\d\.]+$',val):
               logger.warning ( "For field %s. Illegal value:%s" % (field,val) )
               raise OCPCAError ( "For field %s. Illegal value:%s" % (field,val) )
-            clause += "kv_key = '%s' AND kv_value %s %s" % ( field, op, val )
+            clause += "kv_key = '%s' AND kv_value %s %s" % ( key_name[field], op, val )
 
           # all other fields have equality predicates
-          else: 
+          # rewrite those in interface 
+          elif field in eqfields:
+            val = it.next()
+            clause += "kv_key = '%s' AND kv_value = '%s'" % ( key_name[field], val )
 
+          # all others are kv equality
+          else: 
             val = it.next()
             clause += "kv_key = '%s' AND kv_value = '%s'" % ( field, val )
 
