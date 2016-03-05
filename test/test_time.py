@@ -306,12 +306,12 @@ class Test_Time_Window:
     f = getURL (url)
 
     from windowcutout import windowCutout
-    windowCutout(image_data, p.window)
+    image_data = windowCutout(image_data, p.window).astype(np.uint8)
     slice_data = np.asarray ( Image.open(StringIO(f.read())) )
-    assert ( np.array_equal(slice_data,image_data[0][0][0]) )
+    assert ( np.array_equal(slice_data, image_data[0][0][0]) )
   
   def test_window_args(self):
-    "Test the window functionality"
+    "Test the window functionality passed as an argument"
 
     p.args = (3000,3100,4000,4100,200,201,20,22)
     p.window = [0,1500]
@@ -322,9 +322,9 @@ class Test_Time_Window:
     f = getURL (url)
 
     from windowcutout import windowCutout
-    windowCutout(image_data, p.window)
+    image_data = windowCutout(image_data, p.window).astype(np.uint8)
     slice_data = np.asarray ( Image.open(StringIO(f.read())) )
-    assert ( np.array_equal(slice_data,image_data[0][0][0]) )
+    assert ( np.array_equal(slice_data, image_data[0][0][0]) )
 
 
 class Test_Time_Diff:

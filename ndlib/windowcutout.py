@@ -24,7 +24,8 @@ import numpy as np
 def windowCutout ( cutout, window ):
   """Window image cutouts for datasets that have low range of pixel values"""
   
-  [minWin, maxWin] = window
-  np.clip( cutout, minWin, maxWin, out=cutout)
-  np.subtract( cutout, minWin, out=cutout)
-  np.multiply( cutout, 255.0/(maxWin-minWin), out=cutout)
+  [min_win, max_win] = window
+  np.clip( cutout, min_win, max_win, out=cutout)
+  np.subtract( cutout, min_win, out=cutout)
+  # np.multiply( cutout, 255.0/(max_win-min_win), out=cutout)
+  return np.multiply( cutout, 255.0/(max_win-min_win)).astype(dtype=np.uint16, copy=False)

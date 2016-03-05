@@ -475,7 +475,7 @@ def window(data, ch, window_range=None ):
     if (startwindow == endwindow == 0):
       return data
     elif endwindow!=0:
-      windowCutout (data, window_range)
+      data = windowCutout (data, window_range)
       return np.uint8(data)
 
   return data
