@@ -65,7 +65,7 @@ def cutout (imageargs, ch, proj, db):
     args = restargs.BrainRestArgs ()
     args.cutoutArgs(imageargs, proj.datasetcfg)
   except restargs.RESTArgsError, e:
-    logger.warning("REST Arguments {} failed: {}".format(imageargs,e))
+    logger.error("REST Arguments {} failed: {}".format(imageargs,e))
     raise NDWSError(e.value)
 
   # Extract the relevant values
@@ -91,7 +91,7 @@ def filterCube(ch, cube, filterlist=None):
   if ch.getChannelType() in ANNOTATION_CHANNELS and filterlist is not None:
     cube.data = ndlib.filter_ctype_OMP ( cube.data, filterlist )
   elif filterlist is not None and ch.getChannelType not in ANNOTATION_CHANNELS:
-    logger.warning("Filter only possible for Annotation Channels")
+    logger.error("Filter only possible for Annotation Channels")
     raise NDWSError("Filter only possible for Annotation Channels")
 
 def numpyZip ( chanargs, proj, db ):
@@ -102,7 +102,7 @@ def numpyZip ( chanargs, proj, db ):
     m = re.match("([\w+,]+)/(\w+)/([\w+,/-]+)$", chanargs)
     [channels, service, imageargs] = [i for i in m.groups()]
   except Exception, e:
-    logger.warning("Arguments not in the correct format {}. {}".format(chanargs, e))
+    logger.error("Arguments not in the correct format {}. {}".format(chanargs, e))
     raise NDWSError("Arguments not in the correct format {}. {}".format(chanargs, e))
 
   try: 
@@ -147,7 +147,7 @@ def JPEG ( chanargs, proj, db ):
     m = re.match("([\w+,]+)/(\w+)/([\w+,/-]+)$", chanargs)
     [channels, service, imageargs] = [i for i in m.groups()]
   except Exception, e:
-    logger.warning("Arguments not in the correct format {}. {}".format(chanargs, e))
+    logger.error("Arguments not in the correct format {}. {}".format(chanargs, e))
     raise NDWSError("Arguments not in the correct format {}. {}".format(chanargs, e))
 
   try: 
@@ -198,7 +198,7 @@ def BLOSC ( chanargs, proj, db ):
     m = re.match("([\w+,]+)/(\w+)/([\w+,/-]+)$", chanargs)
     [channels, service, imageargs] = [i for i in m.groups()]
   except Exception, e:
-    logger.warning("Arguments not in the correct format {}. {}".format(chanargs, e))
+    logger.error("Arguments not in the correct format {}. {}".format(chanargs, e))
     raise NDWSError("Arguments not in the correct format {}. {}".format(chanargs, e))
 
   try: 
@@ -235,7 +235,7 @@ def binZip ( chanargs, proj, db ):
     m = re.match("([\w+,]+)/(\w+)/([\w+,/-]+)$", chanargs)
     [channels, service, imageargs] = [i for i in m.groups()]
   except Exception, e:
-    logger.warning("Arguments not in the correct format {}. {}".format(chanargs, e))
+    logger.error("Arguments not in the correct format {}. {}".format(chanargs, e))
     raise NDWSError("Arguments not in the correct format {}. {}".format(chanargs, e))
 
   try: 
@@ -282,7 +282,7 @@ def HDF5(chanargs, proj, db):
     m = re.match("([\w+,]+)/(\w+)/([\w+,/-]+)$", chanargs)
     [channels, service, imageargs] = [i for i in m.groups()]
   except Exception, e:
-    logger.warning("Arguments not in the correct format {}. {}".format(chanargs, e))
+    logger.error("Arguments not in the correct format {}. {}".format(chanargs, e))
     raise NDWSError("Arguments not in the correct format {}. {}".format(chanargs, e))
 
   try: 
@@ -375,7 +375,7 @@ def timeDiff ( chanargs, proj, db):
     m = re.match("([\w+,]+)/(\w+)/([\w+,/-]+)$", chanargs)
     [channels, service, imageargs] = [i for i in m.groups()]
   except Exception, e:
-    logger.warning("Arguments not in the correct format {}. {}".format(chanargs, e))
+    logger.error("Arguments not in the correct format {}. {}".format(chanargs, e))
     raise NDWSError("Arguments not in the correct format {}. {}".format(chanargs, e))
 
   try: 
@@ -500,7 +500,7 @@ def imgSlice(webargs, proj, db):
       else:
         raise
   except Exception, e:
-    logger.warning("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
+    logger.error("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
     raise NDWSError("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
 
   try:
@@ -528,7 +528,7 @@ def imgSlice(webargs, proj, db):
     else:
       raise "No such image plane {}".format(service)
   except Exception, e:
-    logger.warning ("Illegal image arguments={}.  Error={}".format(imageargs,e))
+    logger.error ("Illegal image arguments={}.  Error={}".format(imageargs,e))
     raise NDWSError ("Illegal image arguments={}.  Error={}".format(imageargs,e))
 
   # Perform the cutout
@@ -539,7 +539,7 @@ def imgSlice(webargs, proj, db):
     try:
       window_range = [int(i) for i in re.match("window/(\d+),(\d+)/", window_args).groups()]
     except:
-      logger.warning ("Illegal window arguments={}. Error={}".format(imageargs,e))
+      logger.error ("Illegal window arguments={}. Error={}".format(imageargs,e))
       raise NDWSError ("Illegal window arguments={}. Error={}".format(imageargs,e))
   else:
     window_range = None
@@ -557,7 +557,7 @@ def imgPNG (proj, webargs, cb):
     m = re.match("(\w+)/(xy|yz|xz)/(\d+)/([\d+,/]+)(window/\d+,\d+/|filter/[\d+,]+/)?$", webargs)
     [channel, service, resolution, imageargs] = [i for i in m.groups()[:-1]]
   except Exception, e:
-    logger.warning("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
+    logger.error("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
     raise NDWSError("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
 
   if service == 'xy':
@@ -587,7 +587,7 @@ def imgAnno ( service, chanargs, proj, db, rdb ):
   if len(annoids) == 1:
     anno = rdb.getAnnotation ( ch, annoids[0] )
     if anno == None:
-      logger.warning("No annotation found at identifier = {}".format(annoids[0]))
+      logger.error("No annotation found at identifier = {}".format(annoids[0]))
       raise NDWSError ("No annotation found at identifier = {}".format(annoids[0]))
     else:
       iscompound = True if anno.__class__ in [ annotation.AnnNeuron ] else False; 
@@ -610,7 +610,7 @@ def imgAnno ( service, chanargs, proj, db, rdb ):
     else:
       raise "No such image plane {}".format(service)
   except Exception, e:
-    logger.warning ("Illegal image arguments={}.  Error={}".format(imageargs,e))
+    logger.error ("Illegal image arguments={}.  Error={}".format(imageargs,e))
     raise NDWSError ("Illegal image arguments={}.  Error={}".format(imageargs,e))
 
   # Perform argument processing
@@ -618,7 +618,7 @@ def imgAnno ( service, chanargs, proj, db, rdb ):
     args = restargs.BrainRestArgs ();
     args.cutoutArgs ( cutoutargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
-    logger.warning("REST Arguments %s failed: %s" % (cutoutrags,e))
+    logger.error("REST Arguments %s failed: %s" % (cutoutrags,e))
     raise NDWSError(e.value)
 
   # Extract the relevant values
@@ -670,8 +670,8 @@ def listIds ( chanargs, proj, db ):
     args = restargs.BrainRestArgs ();
     args.cutoutArgs ( imageargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
-    logger.warning("REST Arguments %s failed: %s" % (imageargs,e))
-    raise NDWSError(e)
+    logger.error("REST Arguments {} failed: {}".format(imageargs,e))
+    raise NDWSError("REST Arguments {} failed: {}".format(imageargs,e))
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -712,7 +712,7 @@ def selectService ( service, webargs, proj, db ):
   elif service in ['xzanno', 'yzanno', 'xyanno']:
     return imgAnno ( service.strip('anno'), webargs, proj, db )
   else:
-    logger.warning("An illegal Web GET service was requested {}. Args {}".format(service, webargs))
+    logger.error("An illegal Web GET service was requested {}. Args {}".format(service, webargs))
     raise NDWSError("An illegal Web GET service was requested {}. Args {}".format(service, webargs))
 
 
@@ -733,7 +733,7 @@ def selectPost ( webargs, proj, db, postdata ):
     args = restargs.BrainRestArgs ();
     args.cutoutArgs ( postargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
-    logger.warning( "REST Arguments {} failed: {}".format(postargs,e) )
+    logger.error( "REST Arguments {} failed: {}".format(postargs,e) )
     raise NDWSError(e)
   
   corner = args.getCorner()
@@ -770,12 +770,12 @@ def selectPost ( webargs, proj, db, postdata ):
 
             # Checking the datatype of the voxarray
             if voxarray.dtype != ND_dtypetonp[ch.getDataType()]:
-              logger.warning("Channel datatype {} in the HDF5 file does not match with the {} in the database.".format(h5_datatype, ch.getDataType()))
+              logger.error("Channel datatype {} in the HDF5 file does not match with the {} in the database.".format(h5_datatype, ch.getDataType()))
               raise NDWSError("Channel datatype {} in the HDF5 file does not match with the {} in the database.".format(h5_datatype, ch.getDataType()))
 
             # Don't write to readonly channels
             if ch.getReadOnly() == READONLY_TRUE:
-              logger.warning("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+              logger.error("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
               raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
 
             
@@ -800,7 +800,7 @@ def selectPost ( webargs, proj, db, postdata ):
           voxarray = blosc.unpack_array(postdata)
         
         if voxarray.shape[0] != len(channel_list):
-          logger.warning("The data has some missing channels")
+          logger.error("The data has some missing channels")
           raise NDWSError("The data has some missing channels")
       
         for idx, channel_name in enumerate(channel_list):
@@ -808,11 +808,11 @@ def selectPost ( webargs, proj, db, postdata ):
   
           # Don't write to readonly channels
           if ch.getReadOnly() == READONLY_TRUE:
-            logger.warning("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+            logger.error("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
             raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
        
           if not voxarray.dtype == ND_dtypetonp[ch.getDataType()]:
-            logger.warning("Wrong datatype in POST")
+            logger.error("Wrong datatype in POST")
             raise NDWSError("Wrong datatype in POST")
             
           if ch.getChannelType() in IMAGE_CHANNELS + TIMESERIES_CHANNELS:
@@ -822,7 +822,7 @@ def selectPost ( webargs, proj, db, postdata ):
             db.annotateDense(ch, corner, resolution, voxarray[idx,:], conflictopt)
       
       else:
-        logger.warning("An illegal Web POST service was requested: {}. Args {}".format(service, webargs))
+        logger.error("An illegal Web POST service was requested: {}. Args {}".format(service, webargs))
         raise NDWSError("An illegal Web POST service was requested: {}. Args {}".format(service, webargs))
         
       done = True
@@ -833,11 +833,11 @@ def selectPost ( webargs, proj, db, postdata ):
       tries += 1
       continue
     except MySQLdb.Error, e:
-      logger.warning("POST transaction rollback. {}".format(e))
-      raise
+      logger.error("POST transaction rollback. {}".format(e))
+      raise NDWSError("POST transaction rollback. {}".format(e))
     except Exception, e:
       logger.exception("POST transaction rollback. {}".format(e))
-      raise
+      raise NDWSError("POST transaction rollback. {}".format(e))
 
 
 def getCutout ( webargs ):
@@ -886,7 +886,7 @@ def getAnnoDictById ( ch, annoid, proj, db ):
   # retrieve the annotation
   anno = rdb.getAnnotation ( ch, annoid ) 
   if anno == None:
-    logger.warning("No annotation found at identifier = %s" % (annoid))
+    logger.error("No annotation found at identifier = %s" % (annoid))
     raise NDWSError ("No annotation found at identifier = %s" % (annoid))
 
   # create the annotation obj
@@ -901,7 +901,7 @@ def getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution=None, c
   # retrieve the annotation 
   anno = rdb.getAnnotation ( ch, annoid )
   if anno == None:
-    logger.warning("No annotation found at identifier = %s" % (annoid))
+    logger.error("No annotation found at identifier = %s" % (annoid))
     raise NDWSError ("No annotation found at identifier = %s" % (annoid))
 
   # create the HDF5 object
@@ -909,7 +909,7 @@ def getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution=None, c
 
   # only return data for annotation types that have data
   if anno.__class__ in [ annotation.AnnSeed ] and dataoption != AR_NODATA: 
-    logger.warning("No data associated with annotation type %s" % ( anno.__class__))
+    logger.error("No data associated with annotation type %s" % ( anno.__class__))
     raise NDWSError ("No data associated with annotation type %s" % ( anno.__class__))
 
   # determine if it is a compound type (NEURON) and get the list of relevant segments
@@ -964,7 +964,7 @@ def getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution=None, c
     # figure out which ids are in object
     if bbcorner != None:
       if bbdim[0]*bbdim[1]*bbdim[2] >= 1024*1024*256:
-        logger.warning ("Cutout region is inappropriately large.  Dimension: %s,%s,%s" % (bbdim[0],bbdim[1],bbdim[2]))
+        logger.error ("Cutout region is inappropriately large.  Dimension: %s,%s,%s" % (bbdim[0],bbdim[1],bbdim[2]))
         raise NDWSError ("Cutout region is inappropriately large.  Dimension: %s,%s,%s" % (bbdim[0],bbdim[1],bbdim[2]))
 
     # Call the cuboids interface to get the minimum amount of data
@@ -1082,7 +1082,7 @@ def getAnnotation ( webargs ):
               [resstr, sym, rest] = option_args[2].partition('/')
               resolution = int(resstr) 
             except:
-              logger.warning ( "Improperly formatted voxel arguments {}".format(option_args[2]))
+              logger.error("Improperly formatted voxel arguments {}".format(option_args[2]))
               raise NDWSError("Improperly formatted voxel arguments {}".format(option_args[2]))
 
             getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution )
@@ -1094,7 +1094,7 @@ def getAnnotation ( webargs ):
               [resstr, sym, rest] = option_args[2].partition('/')
               resolution = int(resstr) 
             except:
-              logger.warning ( "Improperly formatted cuboids arguments {}".format(option_args[2]))
+              logger.error("Improperly formatted cuboids arguments {}".format(option_args[2]))
               raise NDWSError("Improperly formatted cuboids arguments {}".format(option_args[2]))
     
             getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution )
@@ -1108,7 +1108,7 @@ def getAnnotation ( webargs ):
                 [resstr, sym, rest] = option_args[2].partition('/')
                 resolution = int(resstr) 
               except:
-                logger.warning ( "Improperly formatted cutout arguments {}".format(option_args[2]))
+                logger.error ( "Improperly formatted cutout arguments {}".format(option_args[2]))
                 raise NDWSError("Improperly formatted cutout arguments {}".format(option_args[2]))
 
               getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution )
@@ -1135,18 +1135,18 @@ def getAnnotation ( webargs ):
               [resstr, sym, rest] = option_args[2].partition('/')
               resolution = int(resstr) 
             except:
-              logger.warning("Improperly formatted bounding box arguments {}".format(option_args[2]))
+              logger.error("Improperly formatted bounding box arguments {}".format(option_args[2]))
               raise NDWSError("Improperly formatted bounding box arguments {}".format(option_args[2]))
         
             getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution )
     
           else:
-            logger.warning ("Fetch identifier {}. Error: no such data option {}".format( annoid, option_args[1] ))
+            logger.error ("Fetch identifier {}. Error: no such data option {}".format( annoid, option_args[1] ))
             raise NDWSError ("Fetch identifier {}. Error: no such data option {}".format( annoid, option_args[1] ))
     
       # the first argument is not numeric.  it is a service other than getAnnotation
       else:
-        logger.warning("Get interface {} requested. Illegal or not implemented. Args: {}".format( option_args[0], webargs ))
+        logger.error("Get interface {} requested. Illegal or not implemented. Args: {}".format( option_args[0], webargs ))
         raise NDWSError ("Get interface {} requested. Illegal or not implemented".format( option_args[0] ))
     
     # Close the file on a error: it won't get closed by the Web server
@@ -1188,7 +1188,7 @@ def getCSV ( webargs ):
           [resstr, sym, rest] = reststr.partition('/')
           resolution = int(resstr) 
         except:
-          logger.warning ( "Improperly formatted cutout arguments {}".format(reststr))
+          logger.error ( "Improperly formatted cutout arguments {}".format(reststr))
           raise NDWSError("Improperly formatted cutout arguments {}".format(reststr))
   
         getAnnoById ( annoid, h5f, proj, rdb, db, dataoption, resolution )
@@ -1222,7 +1222,7 @@ def getAnnotations ( webargs, postdata ):
 
       # IDENTIFIERS
       if not h5in.get('ANNOIDS'):
-        logger.warning ("Requesting multiple annotations.  But no HDF5 \'ANNOIDS\' field specified.") 
+        logger.error ("Requesting multiple annotations.  But no HDF5 \'ANNOIDS\' field specified.") 
         raise NDWSError ("Requesting multiple annotations.  But no HDF5 \'ANNOIDS\' field specified.") 
 
       # GET the data out of the HDF5 file.  Never operate on the data in place.
@@ -1249,7 +1249,7 @@ def getAnnotations ( webargs, postdata ):
           [resstr, sym, rest] = cutout.partition('/')
           resolution = int(resstr) 
         except:
-          logger.warning ( "Improperly formatted voxel arguments {}".format(cutout))
+          logger.error ( "Improperly formatted voxel arguments {}".format(cutout))
           raise NDWSError("Improperly formatted voxel arguments {}".format(cutout))
 
 
@@ -1261,7 +1261,7 @@ def getAnnotations ( webargs, postdata ):
             [resstr, sym, rest] = cutout.partition('/')
             resolution = int(resstr) 
           except:
-            logger.warning ( "Improperly formatted cutout arguments {}".format(cutout))
+            logger.error ( "Improperly formatted cutout arguments {}".format(cutout))
             raise NDWSError("Improperly formatted cutout arguments {}".format(cutout))
         else:
           dataoption = AR_CUTOUT
@@ -1284,11 +1284,11 @@ def getAnnotations ( webargs, postdata ):
             [resstr, sym, rest] = cutout.partition('/')
             resolution = int(resstr) 
           except:
-            logger.warning ( "Improperly formatted bounding box arguments {}".format(cutout))
+            logger.error ( "Improperly formatted bounding box arguments {}".format(cutout))
             raise NDWSError("Improperly formatted bounding box arguments {}".format(cutout))
 
       else:
-          logger.warning ("In getAnnotations: Error: no such data option %s " % ( dataarg ))
+          logger.error ("In getAnnotations: Error: no such data option %s " % ( dataarg ))
           raise NDWSError ("In getAnnotations: Error: no such data option %s " % ( dataarg ))
 
       try:
@@ -1337,7 +1337,7 @@ def putAnnotation ( webargs, postdata ):
 
     # Don't write to readonly channels
     if ch.getReadOnly() == READONLY_TRUE:
-      logger.warning("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+      logger.error("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
       raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
 
     # return string of id values
@@ -1380,11 +1380,11 @@ def putAnnotation ( webargs, postdata ):
             try:
   
               if anno.__class__ in [ annotation.AnnNeuron, annotation.AnnSeed ] and ( idgrp.get('VOXELS') or idgrp.get('CUTOUT')):
-                logger.warning ("Cannot write to annotation type {}".format(anno.__class__))
+                logger.error ("Cannot write to annotation type {}".format(anno.__class__))
                 raise NDWSError ("Cannot write to annotation type {}".format(anno.__class__))
   
               if 'update' in options and 'dataonly' in options:
-                logger.warning ("Illegal combination of options. Cannot use udpate and dataonly together")
+                logger.error ("Illegal combination of options. Cannot use udpate and dataonly together")
                 raise NDWSError ("Illegal combination of options. Cannot use udpate and dataonly together")
   
               elif not 'dataonly' in options and not 'reduce' in options:
@@ -1414,7 +1414,7 @@ def putAnnotation ( webargs, postdata ):
   
                 # Check that the voxels have a conforming size:
                 if voxels.shape[1] != 3:
-                  logger.warning ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
+                  logger.error ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
                   raise NDWSError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
   
                 exceptions = db.annotate ( ch, anno.annid, resolution, voxels, conflictopt )
@@ -1424,7 +1424,7 @@ def putAnnotation ( webargs, postdata ):
 
                 # Check that the voxels have a conforming size:
                 if voxels.shape[1] != 3:
-                  logger.warning ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
+                  logger.error ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
                   raise NDWSError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
                 db.shave ( ch, anno.annid, resolution, voxels )
   
@@ -1474,15 +1474,15 @@ def putAnnotation ( webargs, postdata ):
   
             # rollback if you catch an error
             except MySQLdb.OperationalError, e:
-              logger.warning (" Put Anntotation: Transaction did not complete. %s" % (e))
+              logger.warning("Put Anntotation: Transaction did not complete. {}".format(e))
               tries += 1
               continue
             except MySQLdb.Error, e:
-              logger.warning ("Put Annotation: Put transaction rollback. %s" % (e))
-              raise
+              logger.error("Put Annotation: Put transaction rollback. {}".format(e))
+              raise NDWSError("Put Annotation: Put transaction rollback. {}".format(e))
             except Exception, e:
-              logger.exception ("Put Annotation:Put transaction rollback. %s" % (e))
-              raise
+              logger.exception("Put Annotation:Put transaction rollback. {}".format(e))
+              raise NDWSError("Put Annotation:Put transaction rollback. {}".format(e))
   
             # Commit if there is no error
   
@@ -1531,7 +1531,7 @@ def putNIFTI ( webargs, postdata ):
     
     # Don't write to readonly channels
     if ch.getReadOnly() == READONLY_TRUE:
-      logger.warning("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+      logger.error("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
       raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
 
     # check the magic number -- is it a gz file?
@@ -1596,7 +1596,7 @@ def putSWC ( webargs, postdata ):
     
     # Don't write to readonly channels
     if ch.getReadOnly() == READONLY_TRUE:
-      logger.warning("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+      logger.error("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
       raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
 
     # Make a named temporary file for the HDF5
@@ -1621,7 +1621,7 @@ def queryAnnoObjects ( webargs, postdata=None ):
     m = re.match("(\w+)/(\w+)/query/(.*)/?$", webargs)
     [token, channel, restargs] = [i for i in m.groups()]
   except Exception, e:
-    logger.warning("Wrong arguments {}. {}".format(webargs, e))
+    logger.error("Wrong arguments {}. {}".format(webargs, e))
     raise NDWSError("Wrong arguments {}. {}".format(webargs, e))
 
   with closing ( ndproj.NDProjectsDB() ) as projdb:
@@ -1651,7 +1651,7 @@ def queryAnnoObjects ( webargs, postdata=None ):
           dim = h5f['CUTOUTSIZE'][:]
   
           if not proj.datasetcfg.checkCube(resolution, corner, dim):
-            logger.warning("Illegal cutout corner={}, dim={}".format(corner, dim))
+            logger.error("Illegal cutout corner={}, dim={}".format(corner, dim))
             raise NDWSError("Illegal cutout corner={}, dim={}".format( corner, dim))
   
           cutout = db.cutout(ch, corner, dim, resolution)
@@ -1687,7 +1687,7 @@ def deleteAnnotation ( webargs ):
     
     # Don't write to readonly channels
     if ch.getReadOnly() == READONLY_TRUE:
-      logger.warning("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+      logger.error("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
       raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
 
     # Split the URL and get the args
@@ -1698,7 +1698,7 @@ def deleteAnnotation ( webargs ):
       annoids = map(np.uint32, args[0].split(','))
     # if not..this is not a well-formed delete request
     else:
-      logger.warning ("Delete did not specify a legal object identifier = %s" % args[0] )
+      logger.error ("Delete did not specify a legal object identifier = %s" % args[0] )
       raise NDWSError ("Delete did not specify a legal object identifier = %s" % args[0] )
 
     for annoid in annoids: 
@@ -1713,15 +1713,16 @@ def deleteAnnotation ( webargs ):
           done = True
         # rollback if you catch an error
         except MySQLdb.OperationalError, e:
-          logger.warning ("Transaction did not complete. %s" % (e))
+          logger.warning("Transaction did not complete. {}".format(e))
           tries += 1
           continue
         except MySQLdb.Error, e:
-          logger.warning ("Put transaction rollback. %s" % (e))
+          logger.error("Put transaction rollback. {}".format(e))
+          raise NDWSError("Put transaction rollback. {}".format(e))
           raise
         except Exception, e:
-          logger.exception ("Put transaction rollback. %s" % (e))
-          raise
+          logger.exception("Put transaction rollback. {}".format(e))
+          raise NDWSError("Put transaction rollback. {}".format(e))
 
 
 def jsonInfo ( webargs ):
@@ -1743,8 +1744,8 @@ def xmlInfo ( webargs ):
     m = re.match(r'(\w+)/volume.vikingxml', webargs)
     token = m.group(1)
   except Exception, e:
-    print "Bad URL {}".format(webargs)
-    raise
+    logger.error("Bad URL {}".format(webargs))
+    raise NDWSError("Bad URL {}".format(webargs))
   
   # get the project 
   with closing ( ndproj.NDProjectsDB() ) as projdb:
@@ -1804,7 +1805,8 @@ def reserve ( webargs ):
 
     ch = ndproj.NDChannel(proj,channel)
     if ch.getChannelType() not in ANNOTATION_CHANNELS:
-      raise NDWSError ("Illegal project type for reserve.")
+      logger.error("Illegal project type for reserve.")
+      raise NDWSError("Illegal project type for reserve.")
 
     try:
       count = int(cnt)
@@ -1812,7 +1814,8 @@ def reserve ( webargs ):
       firstid = rdb.reserve (ch, count)
       return json.dumps ( (firstid, int(cnt)) )
     except:
-      raise NDWSError ("Illegal arguments to reserve: {}".format(webargs))
+      logger.error("Illegal arguments to reserve: {}".format(webargs))
+      raise NDWSError("Illegal arguments to reserve: {}".format(webargs))
 
 def getField ( webargs ):
   """Return a single HDF5 field"""
@@ -1821,7 +1824,7 @@ def getField ( webargs ):
     m = re.match("(\w+)/(\w+)/getField/(\d+)/(\w+)/$", webargs)
     [token, channel, annid, field] = [i for i in m.groups()]
   except:
-    logger.warning("Illegal getField request.  Wrong number of arguments.")
+    logger.error("Illegal getField request.  Wrong number of arguments.")
     raise NDWSError("Illegal getField request.  Wrong number of arguments.")
 
   with closing ( ndproj.NDProjectsDB() ) as projdb:
@@ -1832,7 +1835,7 @@ def getField ( webargs ):
     anno = rdb.getAnnotation(ch, annid)
 
     if anno is None:
-      logger.warning("No annotation found at identifier = {}".format(annid))
+      logger.error("No annotation found at identifier = {}".format(annid))
       raise NDWSError ("No annotation found at identifier = {}".format(annid))
 
     return anno.getField(field)
@@ -1844,7 +1847,7 @@ def setField ( webargs ):
     m = re.match("(\w+)/(\w+)/setField/(\d+)/(\w+)/(\w+|[\d+,.]+)/$", webargs)
     [token, channel, annid, field, value] = [i for i in m.groups()]
   except:
-    logger.warning("Illegal setField request. Wrong number of arguments. Web Args: {}".format(webargs))
+    logger.error("Illegal setField request. Wrong number of arguments. Web Args: {}".format(webargs))
     raise NDWSError("Illegal setField request. Wrong number of arguments. Web Args:{}".format(webargs))
     
   with closing ( ndproj.NDProjectsDB() ) as projdb:
@@ -1855,7 +1858,7 @@ def setField ( webargs ):
     
     # Don't write to readonly channels
     if ch.getReadOnly() == READONLY_TRUE:
-      logger.warning("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+      logger.error("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
       raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
     
     rdb.updateAnnotation(ch, annid, field, value)
@@ -1867,7 +1870,7 @@ def getPropagate (webargs):
   try:
     (token, channel_list) = re.match("(\w+)/([\w+,]+)/getPropagate/$", webargs).groups()
   except Exception, e:
-    logger.warning("Illegal getPropagate request. Wrong format {}. {}".format(webargs,e))
+    logger.error("Illegal getPropagate request. Wrong format {}. {}".format(webargs,e))
     raise NDWSError("Illegal getPropagate request. Wrong format {}. {}".format(webargs, e))
 
   # pattern for using contexts to close databases
@@ -1889,7 +1892,7 @@ def setPropagate(webargs):
   try:
     (token, channel_list, value_list) = re.match("(\w+)/([\w+,]+)/setPropagate/([\d+,]+)/$", webargs).groups()
   except:
-    logger.warning("Illegal setPropagate request. Wrong format {}. {}".format(webargs, e))
+    logger.error("Illegal setPropagate request. Wrong format {}. {}".format(webargs, e))
     raise NDWSError("Illegal setPropagate request. Wrong format {}. {}".format(webargs, e))
     
   # pattern for using contexts to close databases. get the project
@@ -1910,27 +1913,27 @@ def setPropagate(webargs):
           # propagate(token, channel_name)
           propagate.delay(token, channel_name)
         else:
-          logger.warning("Cannot Propagate this project. It is set to Read Only.")
+          logger.error("Cannot Propagate this project. It is set to Read Only.")
           raise NDWSError("Cannot Propagate this project. It is set to Read Only.")
       # if the project is Propagated already you can set it to under propagation
       elif int(value) == UNDER_PROPAGATION and ch.getPropagate() == PROPAGATED:
-        logger.warning("Cannot propagate a project which is propagated. Set to Not Propagated first.")
+        logger.error("Cannot propagate a project which is propagated. Set to Not Propagated first.")
         raise NDWSError("Cannot propagate a project which is propagated. Set to Not Propagated first.")
       # If the value to be set is not propagated
       elif int(value) == NOT_PROPAGATED:
         # and the project is under propagation then throw an error
         if ch.getPropagate() == UNDER_PROPAGATION:
-          logger.warning("Cannot set this value. Project is under propagation.")
+          logger.error("Cannot set this value. Project is under propagation.")
           raise NDWSError("Cannot set this value. Project is under propagation.")
         # and the project is already propagated and set read only then throw error
         elif ch.getPropagate() == PROPAGATED and ch.getReadOnly == READONLY_TRUE:
-          logger.warning("Cannot set this Project to unpropagated. Project is Read only")
+          logger.error("Cannot set this Project to unpropagated. Project is Read only")
           raise NDWSError("Cannot set this Project to unpropagated. Project is Read only")
         else:
           ch.setPropagate(NOT_PROPAGATED)
       # cannot set a project to propagated via the RESTful interface
       else:
-        logger.warning("Invalid Value {} for setPropagate".format(value))
+        logger.error("Invalid Value {} for setPropagate".format(value))
         raise NDWSError("Invalid Value {} for setPropagate".format(value))
 
 def merge (webargs):
@@ -1942,7 +1945,7 @@ def merge (webargs):
     #m = re.match("(\w+)/(\w+)/merge/([\d+,]+)/([\w+,/]+)/$", webargs)
     [token, channel_name, relabel_ids, rest_args] = [i for i in m.groups()]
   except:
-    logger.warning("Illegal globalMerge request. Wrong number of arguments.")
+    logger.error("Illegal globalMerge request. Wrong number of arguments.")
     raise NDWSError("Illegal globalMerber request. Wrong number of arguments.")
   
   # get the ids from the list of ids and store it in a list vairable
@@ -1966,7 +1969,7 @@ def merge (webargs):
     for curid in ids:
       obj = rdb.getAnnotation(ch, curid)
       if obj == None:
-        logger.warning("Invalid object id {} used in merge".format(curid))
+        logger.error("Invalid object id {} used in merge".format(curid))
         raise NDWSError("Invalid object id used in merge")
 
     m = re.match("global/(\d+)", rest_args)
@@ -2010,7 +2013,7 @@ def exceptions ( webargs, ):
       args = restargs.BrainRestArgs ();
       args.cutoutArgs ( cutoutargs, proj.datasetcfg )
     except restargs.RESTArgsError, e:
-      logger.warning("REST Arguments {} failed: {}".format(webargs,e))
+      logger.error("REST Arguments {} failed: {}".format(webargs,e))
       raise NDWSError(e)
 
     # Extract the relevant values
@@ -2020,10 +2023,10 @@ def exceptions ( webargs, ):
 
     # check to make sure it's an annotation project
     if proj.getChannelType() not in ANNOTATION_PROJECTS : 
-      logger.warning("Asked for exceptions on project that is not of type ANNOTATIONS")
+      logger.error("Asked for exceptions on project that is not of type ANNOTATIONS")
       raise NDWSError("Asked for exceptions on project that is not of type ANNOTATIONS")
     elif not proj.getExceptions():
-      logger.warning("Asked for exceptions on project without exceptions")
+      logger.error("Asked for exceptions on project without exceptions")
       raise NDWSError("Asked for exceptions on project without exceptions")
       
     # Get the exceptions -- expect a rect np.array of shape x,y,z,id1,id2,...,idn where n is the longest exception list

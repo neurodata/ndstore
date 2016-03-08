@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>ocpviz: viewing {{ project_name }}</title>
+  <title>ndviz: viewing {{ project_name }}</title>
   {% load staticfiles %}
   {# boostrap files #}
   <link rel="stylesheet" type ="text/css" href="{% static 'css/bootstrap.css' %}" />
@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
 
   {# leaflet files #}
-  <link rel="stylesheet" href="{% static 'ocpviz/leaflet/leaflet.css' %}" /> 
+  <link rel="stylesheet" href="{% static 'ndviz/leaflet/leaflet.css' %}" /> 
 
   {# buttons, buttons, buttons #} 
   {# old FA: <link href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet"> #}
@@ -130,22 +130,22 @@
     }
 	</style>
 
-  <script src="{% static 'ocpviz/leaflet/leaflet.js' %}"></script>
+  <script src="{% static 'ndviz/leaflet/leaflet.js' %}"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-  <script src="{% static "ocpviz/js/easy-button.js" %}"></script>	
-  <script src="{% static "ocpviz/js/ocp-leaflet.js" %}"></script>	
+  <script src="{% static "ndviz/js/easy-button.js" %}"></script>	
+  <script src="{% static "ndviz/js/nd-leaflet.js" %}"></script>	
 	</head>
 <body>
 
 
   {# Begin Modal Code Includes #}
-  {% include "ocpviz/help.html" %}
+  {% include "ndviz/help.html" %}
 
-  {% include "ocpviz/nav.html" %}
+  {% include "ndviz/nav.html" %}
   
-  {% include "ocpviz/add_data.html" %}
+  {% include "ndviz/add_data.html" %}
   
-  {% include "ocpviz/dataview.html" %}
+  {% include "ndviz/dataview.html" %}
 
   {# End Modal Code Includes #}
 
@@ -200,25 +200,25 @@
 
         {% if layer.tilecache %} 
           {% if layer.layertype == 'timeseries' %}
-            var url = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/{{ starttime }}/{zindex}/{y}_{x}_{z}.png'; 
+            var url = 'http://{{ layer.server }}/ndtilecache/tilecache/' + webtoken + '/xy/{{ starttime }}/{zindex}/{y}_{x}_{z}.png'; 
           {% else %}
-            var url = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
+            var url = 'http://{{ layer.server }}/ndtilecache/tilecache/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
           {% endif %}
           
         {% else %}
           {% if layer.color %}
-            var url = 'http://{{ layer.server }}/ocp/catmaid/mcfc/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
+            var url = 'http://{{ layer.server }}/nd/catmaid/mcfc/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
           {% elif layer.layertype == 'timeseries' %}
-            var url = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/{{ starttime }}/{zindex}/{y}_{x}_{z}.png';
+            var url = 'http://{{ layer.server }}/nd/catmaid/' + webtoken + '/xy/{{ starttime }}/{zindex}/{y}_{x}_{z}.png';
           {% else %}  
-            var url = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
+            var url = 'http://{{ layer.server }}/nd/catmaid/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
           {% endif %}
         {% endif %}
           
         console.log(url);    
 
         {# add the layer #}  
-        var {{ "layer_"|add:layer.layer_name|cut:" " }} = L.tileLayer.OCPLayer(
+        var {{ "layer_"|add:layer.layer_name|cut:" " }} = L.tileLayer.ndLayer(
           url,
           {
             zindex: zindex,
@@ -254,25 +254,25 @@
 
         {% if layer.tilecache %} 
           {% if layer.layertype == 'timeseries' %}
-            var url = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/{{ starttime }}/{zindex}/{y}_{x}_{z}.png'; 
+            var url = 'http://{{ layer.server }}/ndtilecache/tilecache/' + webtoken + '/xy/{{ starttime }}/{zindex}/{y}_{x}_{z}.png'; 
           {% else %}
-            var url = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
+            var url = 'http://{{ layer.server }}/ndtilecache/tilecache/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
           {% endif %}
           
         {% else %}
           {% if layer.color %}
-            var url = 'http://{{ layer.server }}/ocp/catmaid/mcfc/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
+            var url = 'http://{{ layer.server }}/nd/catmaid/mcfc/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
           {% elif layer.layertype == 'timeseries' %}
-            var url = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/{{ starttime }}/{zindex}/{y}_{x}_{z}.png';
+            var url = 'http://{{ layer.server }}/nd/catmaid/' + webtoken + '/xy/{{ starttime }}/{zindex}/{y}_{x}_{z}.png';
           {% else %}  
-            var url = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
+            var url = 'http://{{ layer.server }}/nd/catmaid/' + webtoken + '/xy/{zindex}/{y}_{x}_{z}.png';
           {% endif %}
         {% endif %}
           
         console.log(url);    
 
         {# add the layer #}  
-        var {{ "layer_"|add:layer.layer_name|cut:" " }} = L.tileLayer.OCPLayer(
+        var {{ "layer_"|add:layer.layer_name|cut:" " }} = L.tileLayer.ndLayer(
           url,
           {
             zindex: zindex,
@@ -594,15 +594,15 @@
     // expects a L.point object for point and a number for zoom
     // TODO if the server is localhost (the query server) that doesnt work
 		function getAnnoId(point, zoom) {
-      var ocpUrlBase = "http://{{ request.get_host }}/ocp/viz/query/localhost/ca/" + querytoken + "/" + querychannel + "/id/" + zoom + "/";
+      var ndUrlBase = "http://{{ request.get_host }}/nd/viz/query/localhost/ca/" + querytoken + "/" + querychannel + "/id/" + zoom + "/";
 			var cutout = Math.round(point.x) + "/" + Math.round(point.y) + "/" + zindex + "/"; 
-			var ocpUrl = ocpUrlBase.concat(cutout);
+			var ndUrl = ndUrlBase.concat(cutout);
       // store the return data
 			var data = null;
 
 			// make request 
 			var xmlHttp = new XMLHttpRequest();
-			xmlHttp.open( "GET", ocpUrl, false );
+			xmlHttp.open( "GET", ndUrl, false );
 			xmlHttp.send( null );
 
 			return xmlHttp.responseText;
@@ -623,7 +623,7 @@
       // string for return 
       var objstr = 'ID: ' + objid;
       
-      var ramonUrl = "http://{{ request.get_host }}/ocp/viz/ramoninfo/" + queryserver + "/" + querytoken + "/" + querychannel + "/" + objid + "/";
+      var ramonUrl = "http://{{ request.get_host }}/nd/viz/ramoninfo/" + queryserver + "/" + querytoken + "/" + querychannel + "/" + objid + "/";
       console.log(ramonUrl);    
       // make request (using jquery)
       var jqxhr = $.ajax({
@@ -648,7 +648,7 @@
     function getProjInfo() {
       // we use the token from the first layer (for now)   
       var infoToken = "{{ layers.0.token }}"; 
-      var infoUrl = "http://{{ request.get_host }}/ocp/viz/projinfo/localhost/" + infoToken + "/";
+      var infoUrl = "http://{{ request.get_host }}/nd/viz/projinfo/localhost/" + infoToken + "/";
       // store the return data
 			var data = null;
 
@@ -893,9 +893,9 @@
           {{ "layer_"|add:layer.layer_name|cut:" " }}.options.curtime = newTime;
           var newTimeStr = newTime.toString();
           {% if layer.tilecache %}
-            var newUrl = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png'; 
+            var newUrl = 'http://{{ layer.server }}/ndtilecache/tilecache/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png'; 
           {% else %}
-          var newUrl = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png';
+          var newUrl = 'http://{{ layer.server }}/nd/catmaid/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png';
           {% endif %}  
           {{ "layer_"|add:layer.layer_name|cut:" " }}.setUrl(newUrl, true);
           {{ "layer_"|add:layer.layer_name|cut:" " }}.smoothRedraw();
@@ -915,9 +915,9 @@
           {{ "layer_"|add:layer.layer_name|cut:" " }}.options.curtime = newTime;
           var newTimeStr = newTime.toString();
           {% if layer.tilecache %}
-            var newUrl = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png'; 
+            var newUrl = 'http://{{ layer.server }}/ndtilecache/tilecache/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png'; 
           {% else %}
-          var newUrl = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png';
+          var newUrl = 'http://{{ layer.server }}/nd/catmaid/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png';
           {% endif %}  
           {{ "layer_"|add:layer.layer_name|cut:" " }}.setUrl(newUrl, true);
           {{ "layer_"|add:layer.layer_name|cut:" " }}.smoothRedraw();
@@ -942,9 +942,9 @@
           {{ "layer_"|add:layer.layer_name|cut:" " }}.options.curtime = newTime;
           var newTimeStr = newTime.toString();
           {% if layer.tilecache %}
-            var newUrl = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png'; 
+            var newUrl = 'http://{{ layer.server }}/ndtilecache/tilecache/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png'; 
           {% else %}
-          var newUrl = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png';
+          var newUrl = 'http://{{ layer.server }}/nd/catmaid/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png';
           {% endif %}  
           {{ "layer_"|add:layer.layer_name|cut:" " }}.setUrl(newUrl, true);
           {{ "layer_"|add:layer.layer_name|cut:" " }}.smoothRedraw();
@@ -965,9 +965,9 @@
         var newTimeStr = {{ starttime }};
         {{ "layer_"|add:layer.layer_name|cut:" " }}.options.curtime = newTimeStr;
         {% if layer.tilecache %}
-            var newUrl = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png'; 
+            var newUrl = 'http://{{ layer.server }}/ndtilecache/tilecache/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png'; 
         {% else %}
-        var newUrl = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png';
+        var newUrl = 'http://{{ layer.server }}/nd/catmaid/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png';
         {% endif %}  
         {{ "layer_"|add:layer.layer_name|cut:" " }}.setUrl(newUrl, true);
         {{ "layer_"|add:layer.layer_name|cut:" " }}.smoothRedraw();
@@ -984,9 +984,9 @@
         var newTimeStr = {{ endtime }};
         {{ "layer_"|add:layer.layer_name|cut:" " }}.options.curtime = newTimeStr;
         {% if layer.tilecache %}
-            var newUrl = 'http://{{ layer.server }}/ocptilecache/tilecache/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png'; 
+            var newUrl = 'http://{{ layer.server }}/ndtilecache/tilecache/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png'; 
           {% else %}
-          var newUrl = 'http://{{ layer.server }}/ocp/catmaid/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png';
+          var newUrl = 'http://{{ layer.server }}/nd/catmaid/' + webtoken + '/xy/' + newTimeStr + '/{zindex}/{y}_{x}_{z}.png';
           {% endif %}  
           {{ "layer_"|add:layer.layer_name|cut:" " }}.setUrl(newUrl, true);
           {{ "layer_"|add:layer.layer_name|cut:" " }}.smoothRedraw();

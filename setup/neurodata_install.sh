@@ -17,7 +17,8 @@ sudo apt-get -y install nginx git bash-completion python-virtualenv libhdf5-dev 
 
 # create the log directory
 sudo mkdir /var/log/neurodata
-sudo chown www-data:www-data /var/log/neurodata
+sudo touch /var/log/neurodata/nd.log
+sudo chown -R www-data:www-data /var/log/neurodata
 sudo chmod -R 777 /var/log/neurodata/
 
 # add group and user neurodata
@@ -54,27 +55,31 @@ sudo -u neurodata cp settings.py.example settings.py
 sudo -u neurodata ln -s /home/neurodata/ndstore/setup/docker_config/django/docker_settings_secret.py settings_secret.py
 
 # migrate the database and create the superuser
+sudo chmod -R 777 /var/log/neurodata/
 cd /home/neurodata/ndstore/django/
-echo "from django.contrib.auth.models import User; User.objects.create_superuser('neurodata', 'abc@xyz.com', 'neur0data')" | python manage.py shell
 sudo -u neurodata python manage.py migrate
+echo "from django.contrib.auth.models import User; User.objects.create_superuser('neurodata', 'abc@xyz.com', 'neur0data')" | python manage.py shell
+sudo -u neurodata python manage.py collectstatic --noinput
 
 # move the nginx config files and start service
 sudo rm /etc/nginx/sites-enabled/default
 sudo ln -s /home/neurodata/ndstore/setup/docker_config/nginx/neurodata.conf /etc/nginx/sites-enabled/default
-sudo service nginx start
 
 # move uwsgi config files and start service
 sudo rm /etc/uwsgi/apps-available/neurodata.ini
 sudo ln -s /home/neurodata/ndstore/setup/docker_config/uwsgi/neurodata.ini /etc/uwsgi/apps-available/
 sudo rm /etc/uwsgi/apps-enabled/neurodata.ini
 sudo ln -s /home/neurodata/ndstore/setup/docker_config/uwsgi/neurodata.ini /etc/uwsgi/apps-enabled/
-sudo service uwsgi start
 
 # move celery config files and start service
 sudo rm /etc/supervisor/conf.d/propagate.conf
 sudo ln -s /home/neurodata/ndstore/setup/docker_config/celery/propagate.conf /etc/supervisor/conf.d/propagate.conf
 sudo rm /etc/supervisor/conf.d/ingest.conf
 sudo ln -s /home/neurodata/ndstore/setup/docker_config/celery/ingest.conf /etc/supervisor/conf.d/ingest.conf
-sudo service supervisor start
-sudo service rabbitmq-server start
-sudo service memcached start
+
+# starting all the services
+sudo service nginx restart
+sudo service uwsgi restart
+sudo service supervisor restart
+sudo service rabbitmq-server restart
+sudo service memcached restart
