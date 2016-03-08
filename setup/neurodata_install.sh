@@ -13,11 +13,12 @@ echo "mysql-server-5.6 mysql-server/root_password_again password neur0data" | su
 
 # apt-get install packages
 #sudo apt-get -y install < ubuntu_package_list
-sudo apt-get -y install nginx git bash-completion python-virtualenv libhdf5-dev libxslt1-dev libmemcached-dev g++ libjpeg-dev virtualenvwrapper python-dev mysql-server-5.6 libmysqlclient-dev xfsprogs supervisor rabbitmq-server uwsgi uwsgi-plugin-python liblapack-dev wget
+sudo apt-get -y install nginx git bash-completion python-virtualenv libhdf5-dev libxslt1-dev libmemcached-dev g++ libjpeg-dev virtualenvwrapper python-dev mysql-server-5.6 libmysqlclient-dev xfsprogs supervisor rabbitmq-server uwsgi uwsgi-plugin-python liblapack-dev wget memcached
 
 # create the log directory
 sudo mkdir /var/log/neurodata
 sudo chown www-data:www-data /var/log/neurodata
+sudo chmod -R 777 /var/log/neurodata/
 
 # add group and user neurodata
 sudo addgroup neurodata
@@ -54,8 +55,8 @@ sudo -u neurodata ln -s /home/neurodata/ndstore/setup/docker_config/django/docke
 
 # migrate the database and create the superuser
 cd /home/neurodata/ndstore/django/
-sudo -u neurodata python manage.py migrate
 echo "from django.contrib.auth.models import User; User.objects.create_superuser('neurodata', 'abc@xyz.com', 'neur0data')" | python manage.py shell
+sudo -u neurodata python manage.py migrate
 
 # move the nginx config files and start service
 sudo rm /etc/nginx/sites-enabled/default
@@ -76,3 +77,4 @@ sudo rm /etc/supervisor/conf.d/ingest.conf
 sudo ln -s /home/neurodata/ndstore/setup/docker_config/celery/ingest.conf /etc/supervisor/conf.d/ingest.conf
 sudo service supervisor start
 sudo service rabbitmq-server start
+sudo service memcached start

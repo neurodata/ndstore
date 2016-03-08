@@ -57,7 +57,8 @@ def mcfcPNG (cutout, colors, enhancement=4.0):
       raise NDWSError ("Unsupported color requested: {}".format(color[i]))
 
   # Set the alpha channel only for nonzero pixels
-  combined_cutout = np.where (combined_cutout > 0, combined_cutout + 0xFF000000, 0)
+  # combined_cutout = np.where (combined_cutout > 0, combined_cutout + 0xFF000000, 0)
+  combined_cutout = combined_cutout + 0xFF000000
   outimage = Image.frombuffer ( 'RGBA', cutout.shape[1:], combined_cutout.flatten(), 'raw', 'RGBA', 0, 1 ) 
   
   # Enhance the image
