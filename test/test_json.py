@@ -49,8 +49,8 @@ class Test_Project_Json():
 
   def teardown_class(self):
     """Teardown Parameters"""
-    #makeunitdb.deleteTestDB('unittest')
-    #makeunitdb.deleteTestDB('unittest2')
+    # makeunitdb.deleteTestDB('unittest')
+    # makeunitdb.deleteTestDB('unittest2')
     # calling a different fucntion for project list as django1.9 introduced new weirdness
     makeunitdb.deleteTestDBList(['unittest','unittest2'])
   
@@ -86,9 +86,7 @@ class Test_Project_Json():
     assert( proj_info['channels'][p.channels[0]]['datatype'] == p.datatype)
     try:
       assert( proj_info['metadata'][0]['Author'] == 'Will')
-    except KeyError:
-      print "LIMS System not working"
-    except AssertionError:
+    except KeyError, AssertionError:
       print "LIMS System not working"
   
   def test_complex_json(self):

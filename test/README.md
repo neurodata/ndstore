@@ -62,7 +62,7 @@
     2. test_public_datasets
     3. test_info
     4. test_projinfo
-    5. testxmlinfo
+    5. test_xmlinfo
     6. test_reserve
 
 * test_io.py - 6 tests
@@ -118,7 +118,7 @@
   - Module : Test_Ramon
   1. test_query_objects
 
-* test_ramon.py - 12 tests
+* test_ramon.py - 15 tests
 
   - Module : Test_Ramon
     1. test_anno_minmal
@@ -126,13 +126,16 @@
     3. test_anno_update
     4. test_anno_delete
     5. test_anno_upload
-    6. test_annotation_field
-    7. test_synapse_field
-    8. test_seed_field
-    9. test_segment_field
-    10. test_neuron_field
-    11. test_organelle_field
-    12. test_wrong_field
+    6. test_annotation
+    7. test_synapse
+    8. test_seed
+    9. test_neuron
+    10. test_organelle
+    11. test_wrong
+    12. test_node
+    13. test_skeleton
+    14. test_roi
+    15. test_kvpairs
 
 * test_time.py - 17 tests
   

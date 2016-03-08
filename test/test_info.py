@@ -106,14 +106,14 @@ class Test_Info:
     assert( xmlinfo.values()[2] == p.token )
     assert( xmlinfo.values()[3] == '1000' )
 
-  def test_reserve ( self ):
-    """Reserve 1000 ids twice and make sure that the numbers work"""
+  # def test_reserve ( self ):
+    # """Reserve 1000 ids twice and make sure that the numbers work"""
   
-    url =  "http://{}/sd/{}/{}/reserve/{}/".format( SITE_HOST, p.token, p.channels[0], 1000 )
-    f = getURL ( url )
-    (id1, size1) = json.loads(f.read())
-    f = getURL ( url )
-    (id2, size2) = json.loads(f.read())
+    # url =  "http://{}/sd/{}/{}/reserve/{}/".format( SITE_HOST, p.token, p.channels[0], 1000 )
+    # f = getURL ( url )
+    # (id1, size1) = json.loads(f.read())
+    # f = getURL ( url )
+    # (id2, size2) = json.loads(f.read())
 
-    assert ( id2 - id1 == 1000 )
-    assert ( size1 == size2 == 1000 )
+    # assert ( id2 - id1 == 1000 )
+    # assert ( size1 == size2 == 1000 )

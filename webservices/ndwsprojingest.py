@@ -129,16 +129,16 @@ def autoIngest(webargs, post_data):
           ds.delete()
         if TOKEN_CREATED:
           tk.delete()
-        logger.warning("Project {} already exists.".format(pr.project_name))
+        logger.error("Project {} already exists.".format(pr.project_name))
         return json.dumps("Project {} already exists. Please choose a different project name".format(pr.project_name))
     else:
       pr.save()
       try:
-        pd = ndproj.NDProjectsDB.getProjDB(pr.project_name)
+        pd = ndproj.NDProjectsDB.getProjDB(pr)
         pd.newNDProject()
         PROJECT_CREATED = True
       except Exception, e:
-        if TOKEN_CREATED():
+        if TOKEN_CREATED:
           tk.delete()
         if PROJECT_CREATED:
           pr.delete()

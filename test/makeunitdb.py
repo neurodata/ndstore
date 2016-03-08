@@ -67,7 +67,7 @@ def createTestDB ( project_name, channel_list=['unit_anno'], channel_type=ANNOTA
 
 
 def deleteTestDB ( project_name ):
-
+  
   try:
     # get the objects
     tk = Token.objects.get(token_name=project_name)

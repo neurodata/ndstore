@@ -39,7 +39,7 @@ logger=logging.getLogger("neurodata")
 class IngestData:
 
   def __init__(self, token, channel, resolution, data_url, file_format, file_type):
-
+    
     self.token = token
     self.channel = channel
     self.resolution = resolution
