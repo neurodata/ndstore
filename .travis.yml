@@ -1,0 +1,20 @@
+language: python
+
+python:
+  - 2.7
+
+#services:
+  #- mysql
+  #- memcached
+  #- rabbitmq
+  #- supervisor
+  #- nginx
+
+#before_install:
+  #- sudo apt-get update -qq
+
+install: 
+  - ./setup/neurodata_install.sh
+
+script:
+  - py.test
