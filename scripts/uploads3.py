@@ -26,38 +26,115 @@ import time
 sys.path += [os.path.abspath('../django')]
 import ND.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
-from django.conf import settings
-
 import django
 django.setup()
+from django.conf import settings
 
-import ndproj
-import spatialdb
 import ndlib
+from ndtype import *
+from ndproj import NDProjectsDB
+from spatialdb import SpatialDB
+from s3util import generateS3BucketName, generateS3Key
 
+from ndwserror import NDWSError
+import logging
+logger=logging.getLogger("neurodata")
 
 class S3Uploader:
 
-  def __init__(self, token, channel_name, res):
+  def __init__(self, token, channel_name, res, file_type):
     """Create the bucket and intialize values"""
   
     self.token = token
     self.channel_name = channel_name
     self.res = res
-
-  def uploadNewProject(self):
-    """Upload a new project to S3"""
-
-    with closing (ndproj.NDProjectsDB()) as projdb:
-      proj = projdb.loadToken(self.token)
+    self.proj = NDProjectsDB.loadToken(token)
+    self.db = SpatialDB(self.proj)
+    self.file_type = file_type
     
-    with closing (spatialdb.SpatialDB(proj)) as db:
+    # setting up the world
+    self.createS3Bucket()
+   
+
+  def createS3Bucket(self):
+    """Create a S3 bucket"""
+    
+    # Creating a resource, similar to a client
+    s3 = boto3.resource('s3', aws_access_key_id=settings.AWS_ACCESS_KEY_ID, aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY)
+    bucket = s3.Bucket(generateS3BucketName(self.proj.getProjectName()))
+    # Creating a bucket
+    try:
+      bucket.create()
+    except Exception as e:
+      logger.error("Bucket {} already exists".(generateS3BucketName(self.proj.getProjectName())))
+      raise NDWSError("Bucket {} already exists".(generateS3BucketName(self.proj.getProjectName())))
+
+  def uploadCatmaidProject(self):
+    """Upload a new catmaid project to S3"""
+    
+    ch = self.proj.getChannelObj(self.channel_name)
+
+    # get the dataset configuration
+    [[ximagesz, yimagesz, zimagesz],(starttime,endtime)] = self.proj.datasetcfg.imageSize(self.re)
+    [xcubedim,ycubedim,zcubedim] = cubedim = self.proj.datasetcfg.getCubeDims()[self.res]
+    [xoffset, yoffset, zoffset] = self.proj.datasetcfg.getOffset()[self.res]
+
+    if ch.getChannelType() in TIMESERIES_CHANNELS:
+      logger.error("Timeseries Data not supported for CATMAID format. Error in {}".format(self.token))
+      raise NDWSError("Timeseries Data not supported for CATMAID format. Error in {}".format(self.token))
+    
+    num_xtiles = ximagesz / tilesz
+    num_ytiles = yimagesz / tilesz
+
+    # Get a list of the files in the directories
+    for slice_number in range (zoffset, zimagesz, zcubedim):
       
-      ch = proj.getChannelObj(self.channel_name)
+      # over all the tiles in the slice
+      for ytile in range(0, num_ytiles):
+        for xtile in range(0, num_xtiles):
+      
+          slab = np.zeros([zcubedim, tilesz, tilesz ], dtype=np.uint8)
+          
+          for b in range(zcubedim):
+            if (slice_number + b < zimagesz):
+              try:
+                # reading the raw data
+                file_name = "{}/{}/{}_{}.{}".format(self.path, slice_number + b, ytile, xtile, self.file_type)
+                logger.info("Open filename {}".format(file_name))
+                print "Open filename {}".format(file_name)
+                slab[b,:,:] = np.asarray(Image.open(file_name, 'r'))
+              except IOError, e:
+                logger.warning("IOError {}.".format(e))
+                slab[b,:,:] = np.zeros((tilesz, tilesz), dtype=np.uint32)
 
-      # KL TODO Add the script for uploading these files directly to the S3 bucket in supercube format
+          for y in range (ytile*tilesz, (ytile+1)*tilesz, ycubedim):
+            for x in range (xtile*tilesz, (xtile+1)*tilesz, xcubedim):
 
-      # Can call ndwsingest
+              # Getting a Cube id and ingesting the data one cube at a time
+              zidx = ndlib.XYZMorton ( [x/xcubedim, y/ycubedim, (slice_number-zoffset)/zcubedim] )
+              cube = Cube.getCube(cubedim, ch.getChannelType(), ch.getDataType())
+              cube.zeros()
+
+              xmin = x % tilesz
+              ymin = y % tilesz
+              xmax = min(ximagesz, x+xcubedim)
+              ymax = min(yimagesz, y+ycubedim)
+              zmin = 0
+              zmax = min(slice_number+zcubedim, zimagesz+1)
+
+              cube.data[0:zmax-zmin,0:ymax-ymin,0:xmax-xmin] = slab[zmin:zmax, ymin:ymax, xmin:xmax]
+              if cube.isNotZeros():
+                s3io.uploadCube(ch, super_zidx, self.res, cube, update=True)
+
+
+  def uploadSliceProject(self):
+    """Upload a new Zslice project to S3"""
+
+    ch = self.proj.getChannelObj(self.channel_name)
+
+    # KL TODO Add the script for uploading these files directly to the S3 bucket in supercube format
+
+    # Cannot call ndwsingest
 
   def uploadExistingProject(self):
     """Upload an existing project to S3"""
@@ -69,10 +146,6 @@ class S3Uploader:
     
     with closing (spatialdb.SpatialDB(proj)) as db:
 
-      s3 = boto3.resource('s3')
-      bucket = s3.Bucket('{}_{}'.format(proj.getProjectName(), self.channel_name))
-      # Creating a bucket
-      bucket.create()
       
       ch = proj.getChannelObj(self.channel_name)
       
