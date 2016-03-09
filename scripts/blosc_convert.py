@@ -59,7 +59,6 @@ def main():
   ylimit = (yimagesz-1) / ycubedim + 1
   zlimit = (zimagesz-1) / zcubedim + 1
 
-  import pdb; pdb.set_trace()
   for z in range(zlimit):
     for y in range(ylimit):
       for x in range(xlimit):
