@@ -20,7 +20,7 @@ before_install:
 
 install: 
   - sudo apt-get install libhdf5-serial-dev
-  - sudo pip install h5py 
+  - pip install -r ./setup/requirements.txt
 
 cache:
   - pip
