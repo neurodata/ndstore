@@ -9,7 +9,7 @@ sudo apt-get update && upgrade -y
 # apt-get install mysql packages
 echo "mysql-server-5.6 mysql-server/root_password password neur0data" | sudo debconf-set-selections
 echo "mysql-server-5.6 mysql-server/root_password_again password neur0data" | sudo debconf-set-selections
-sudo apt-get -y install mysql-client-5.6 libhdf5-serial-dev
+sudo apt-get -y install mysql-client-core-5.6 libhdf5-serial-dev mysql-client-5.6
 
 # apt-get install packages
 #sudo apt-get -y install < ubuntu_package_list

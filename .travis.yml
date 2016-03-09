@@ -19,7 +19,8 @@ before_install:
   - sudo ./setup/neurodata_install.sh
 
 install: 
-  #- 
+  - sudo apt-get install libhdf5-serial-dev
+  - sudo pip install h5py 
 
 cache:
   - pip
