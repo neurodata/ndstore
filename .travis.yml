@@ -10,11 +10,12 @@ python:
   #- supervisor
   #- nginx
 
-#before_install:
+before_install:
   #- sudo apt-get update -qq
+  - sudo ./setup/neurodata_install.sh
 
 install: 
-  - ./setup/neurodata_install.sh
+  #- ./setup/neurodata_install.sh
 
 script:
   - py.test
