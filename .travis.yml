@@ -19,7 +19,11 @@ before_install:
   - sudo ./setup/neurodata_install.sh
 
 install: 
-  #- ./setup/neurodata_install.sh
+  #- 
+
+cache:
+  - pip
+  - apt
 
 script:
   - py.test
