@@ -15,17 +15,17 @@
 import boto3
 import hashlib
 
-def generateS3Key(zidx, resolution):
+def generateS3Key(channel_name, resolution, zidx):
   """Generate the key for the supercube"""
 
   hashm = hashlib.md5()
-  hashm.update('{}_{}'.format(zidx, resolution))
+  hashm.update('{}_{}_{}'.format(channel_name, resolution, zidx))
   return hashm.hexdigest()
 
-def generateS3BucketName(project_name, channel_name):
+def generateS3BucketName(project_name):
   """Return the S3 Bucket Name for the project"""
 
-  return '{}_{}'.format(project_name, channel_name)
+  return '{}'.format(project_name)
 
 def getSuperCubes(ch, proj, listofidxs, resolution):
   """Get the SuperCube from the backend"""

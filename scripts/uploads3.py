@@ -21,6 +21,8 @@ from contextlib import closing
 import hashlib
 import blosc
 import argparse
+from operator import add, sub, mul, div, mod
+from PIL import Image
 import time
 
 sys.path += [os.path.abspath('../django')]
@@ -31,6 +33,7 @@ django.setup()
 from django.conf import settings
 
 import ndlib
+from cube import Cube
 from ndtype import *
 from ndproj import NDProjectsDB
 from spatialdb import SpatialDB
@@ -42,18 +45,28 @@ logger=logging.getLogger("neurodata")
 
 class S3Uploader:
 
-  def __init__(self, token, channel_name, res, file_type):
+  def __init__(self, result):
     """Create the bucket and intialize values"""
   
-    self.token = token
-    self.channel_name = channel_name
-    self.res = res
-    self.proj = NDProjectsDB.loadToken(token)
+    self.token = result.token
+    self.channel_name = result.channel_name
+    self.res = result.resolution
+    self.proj = NDProjectsDB.loadToken(self.token)
     self.db = SpatialDB(self.proj)
-    self.file_type = file_type
+    self.file_type = result.file_type
+    self.tile_size = result.tile_size
+    self.data_location = result.data_location
     
     # setting up the world
     self.createS3Bucket()
+
+    # calling the coorect upload method
+    if result.new_project == 'slice':
+      self.uploadSliceProject()
+    elif result.new_project == 'catmaid':
+      self.uploadCatmaidProject()
+    else:
+      self.uploadExistingProject()
    
 
   def createS3Bucket(self):
@@ -64,10 +77,11 @@ class S3Uploader:
     bucket = s3.Bucket(generateS3BucketName(self.proj.getProjectName()))
     # Creating a bucket
     try:
-      bucket.create()
+      print "Creating bucket"
+      # bucket.create()
     except Exception as e:
-      logger.error("Bucket {} already exists".(generateS3BucketName(self.proj.getProjectName())))
-      raise NDWSError("Bucket {} already exists".(generateS3BucketName(self.proj.getProjectName())))
+      logger.error("Bucket {} already exists".format(generateS3BucketName(self.proj.getProjectName())))
+      raise NDWSError("Bucket {} already exists".format(generateS3BucketName(self.proj.getProjectName())))
 
   def uploadCatmaidProject(self):
     """Upload a new catmaid project to S3"""
@@ -75,16 +89,17 @@ class S3Uploader:
     ch = self.proj.getChannelObj(self.channel_name)
 
     # get the dataset configuration
-    [[ximagesz, yimagesz, zimagesz],(starttime,endtime)] = self.proj.datasetcfg.imageSize(self.re)
+    [[ximagesz, yimagesz, zimagesz],(starttime,endtime)] = self.proj.datasetcfg.imageSize(self.res)
     [xcubedim,ycubedim,zcubedim] = cubedim = self.proj.datasetcfg.getCubeDims()[self.res]
     [xoffset, yoffset, zoffset] = self.proj.datasetcfg.getOffset()[self.res]
+    [xsupercubedim, ysupercubedim, zsupercubedim ] = supercubedim = map(mul, cubedim, SUPERCUBESIZE)
 
     if ch.getChannelType() in TIMESERIES_CHANNELS:
       logger.error("Timeseries Data not supported for CATMAID format. Error in {}".format(self.token))
       raise NDWSError("Timeseries Data not supported for CATMAID format. Error in {}".format(self.token))
     
-    num_xtiles = ximagesz / tilesz
-    num_ytiles = yimagesz / tilesz
+    num_xtiles = ximagesz / self.tile_size
+    num_ytiles = yimagesz / self.tile_size
 
     # Get a list of the files in the directories
     for slice_number in range (zoffset, zimagesz, zcubedim):
@@ -93,38 +108,39 @@ class S3Uploader:
       for ytile in range(0, num_ytiles):
         for xtile in range(0, num_xtiles):
       
-          slab = np.zeros([zcubedim, tilesz, tilesz ], dtype=np.uint8)
+          slab = np.zeros([zsupercubedim, self.tile_size, self.tile_size ], dtype=np.uint8)
           
-          for b in range(zcubedim):
+          for b in range(zsupercubedim):
             if (slice_number + b < zimagesz):
               try:
                 # reading the raw data
-                file_name = "{}/{}/{}_{}.{}".format(self.path, slice_number + b, ytile, xtile, self.file_type)
+                file_name = "{}{}/{}_{}.{}".format(self.data_location, slice_number + b, ytile, xtile, self.file_type)
                 logger.info("Open filename {}".format(file_name))
                 print "Open filename {}".format(file_name)
                 slab[b,:,:] = np.asarray(Image.open(file_name, 'r'))
               except IOError, e:
                 logger.warning("IOError {}.".format(e))
-                slab[b,:,:] = np.zeros((tilesz, tilesz), dtype=np.uint32)
+                slab[b,:,:] = np.zeros((self.tile_size, self.tile_size), dtype=np.uint32)
 
-          for y in range (ytile*tilesz, (ytile+1)*tilesz, ycubedim):
-            for x in range (xtile*tilesz, (xtile+1)*tilesz, xcubedim):
+          for y in range (ytile*self.tile_size, (ytile+1)*self.tile_size, ysupercubedim):
+            for x in range (xtile*self.tile_size, (xtile+1)*self.tile_size, xsupercubedim):
 
               # Getting a Cube id and ingesting the data one cube at a time
-              zidx = ndlib.XYZMorton ( [x/xcubedim, y/ycubedim, (slice_number-zoffset)/zcubedim] )
-              cube = Cube.getCube(cubedim, ch.getChannelType(), ch.getDataType())
+              zidx = ndlib.XYZMorton ( [(x-xoffset)/xsupercubedim, (y-yoffset)/ysupercubedim, (slice_number-zoffset)/zsupercubedim] )
+              cube = Cube.getCube(supercubedim, ch.getChannelType(), ch.getDataType())
               cube.zeros()
-
-              xmin = x % tilesz
-              ymin = y % tilesz
-              xmax = min(ximagesz, x+xcubedim)
-              ymax = min(yimagesz, y+ycubedim)
+              
+              xmin = x % self.tile_size
+              ymin = y % self.tile_size
+              xmax = min(ximagesz, x+xsupercubedim)
+              ymax = min(yimagesz, y+ysupercubedim)
               zmin = 0
-              zmax = min(slice_number+zcubedim, zimagesz+1)
+              zmax = min(slice_number-zoffset+zsupercubedim, zimagesz+1)
 
               cube.data[0:zmax-zmin,0:ymax-ymin,0:xmax-xmin] = slab[zmin:zmax, ymin:ymax, xmin:xmax]
               if cube.isNotZeros():
-                s3io.uploadCube(ch, super_zidx, self.res, cube, update=True)
+                pass
+                # s3io.putCube(ch, cur_res, zidx, blosc.pack_array(data))
 
 
   def uploadSliceProject(self):
@@ -164,7 +180,7 @@ class S3Uploader:
         [xcubedim, ycubedim, zcubedim] = cubedim = proj.datasetcfg.getCubeDims()[cur_res]
         [xoffset, yoffset, zoffset] = proj.datasetcfg.getOffset()[cur_res]
 
-        [xs, ys, zs ] = supercubedim = [xcubedim*4, ycubedim*4, zcubedim*4]
+        [xs, ys, zs ] = supercubedim = map(mul, cubedim, SUPERCUBESIZE)
 
         # Set the limits for iteration on the number of cubes in each dimension
         xlimit = (ximagesz-1) / (xs) + 1
@@ -178,14 +194,16 @@ class S3Uploader:
               # cutout the data at the current resolution
               data = db.cutout(ch, [ x*xs, y*ys, z*zs], [xs,ys,zs], cur_res ).data
               zidx = ndlib.XYZMorton ([x,y,z])
-              m = hashlib.md5()
-              m.update('{}_{}'.format(zidx,cur_res))
-              s3_key = m.hexdigest()
+              # m = hashlib.md5()
+              # m.update('{}_{}'.format(zidx,cur_res))
+              # s3_key = m.hexdigest()
+              # generateS3Key(ch.getChannelName(), cur_res, zidx)
 
               print "Inserting Cube {} at res {}".format(zidx, cur_res), [x,y,z]
-              data = blosc.pack_array(data)
+              # data = blosc.pack_array(data)
+              s3io.putCube(ch, cur_res, zidx, blosc.pack_array(data))
               # Uploading the object to S3
-              bucket.put_object(Key=s3_key, Body=data)
+              # bucket.put_object(Key=s3_key, Body=data)
 
         print "Time for Resolution {} : {} secs".format(cur_res, time.time()-start)
 
@@ -195,15 +213,15 @@ def main():
   parser.add_argument('token', action='store', help='Token for the project')
   parser.add_argument('channel_name', action='store', help='Channel Name in the project')
   parser.add_argument('--res', dest='resolution', action='store', type=int, default=0, help='Resolution to upload')
-  parser.add_argument('--new', dest='new_project', action='store', type=bool, default=False, help='New Project')
+  parser.add_argument('--file', dest='file_type', action='store', choices=['tif', 'tiff', 'jpg', 'png'], default='tif', help='File type')
+  parser.add_argument('--new', dest='new_project', action='store', choices=['slice', 'catmaid'], default='slice', help='New Project')
+  parser.add_argument('--tilesz', dest='tile_size', action='store', type=int, default=512, help='Tile Size')
+  parser.add_argument('--data', dest='data_location', action='store', type=str, default='/data/scratch/', help='File Location')
 
   result = parser.parse_args()
+  
   start = time.time()
-  s3up = S3Uploader(result.token, result.channel_name, result.resolution)
-  if result.new_project:
-    s3up.uploadNewProject()
-  else:  
-    s3up.uploadExistingProject()
+  s3up = S3Uploader(result)
   print "Total Time for Upload: {}".format(time.time()-start)
 
 if __name__ == '__main__':

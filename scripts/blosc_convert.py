@@ -70,10 +70,9 @@ def main():
         try:
           db.NPZ = True
           cube = db.getCube(ch, zidx, result.res)
+          cube.zeros()
         
-          if np.all(cube.data==0):
-            pass
-          else:
+          if cube.isNotZeros():
             db.NPZ = False
             print "Ingesting {},{},{}".format(x,y,z)
             db.putCube(out_ch, zidx, result.res, cube)
