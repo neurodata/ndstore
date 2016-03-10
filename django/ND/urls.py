@@ -31,7 +31,7 @@ base_urlpatterns = patterns('',
     url(r'^nduser/', include('nduser.urls')),  
     url(r'^viz/', include('ndviz.urls')), # legacy AB / viz redirect  
     # url(r'^ocpgraph/', include('ndgraph.urls')), # UA TODO
-    # url(r'^stats/', include('stats.urls')), # AB TODO
+    url(r'^stats/', include('stats.urls')), 
 )
 
 urlpatterns = patterns('', 
