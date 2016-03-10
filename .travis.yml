@@ -20,6 +20,7 @@ before_install:
 
 install: 
   - sudo apt-get install libhdf5-serial-dev
+  - pip install cython numpy
   - pip install -r ./setup/requirements.txt
 
 cache:

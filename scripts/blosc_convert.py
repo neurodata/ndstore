@@ -42,11 +42,13 @@ def main():
   parser = argparse.ArgumentParser(description='Convert a database from NPZ to blosc')
   parser.add_argument('token', action="store", type=str, help='Token for the project')
   parser.add_argument('channel_name', action="store", type=str, help='Channel Name for the project')
+  parser.add_argument('output_name', action="store", type=str, help='Output Channel Name for the project')
   parser.add_argument('res', action="store", type=int, help='Resolution for the project')
   result = parser.parse_args()
 
   proj = NDProjectsDB.loadToken(result.token)
   ch = proj.getChannelObj(result.channel_name)
+  out_ch = proj.getChannelObj(result.output_name)
   db = SpatialDB(proj)
 
   # Get the dataset configuration
@@ -58,21 +60,25 @@ def main():
   xlimit = (ximagesz-1) / xcubedim + 1
   ylimit = (yimagesz-1) / ycubedim + 1
   zlimit = (zimagesz-1) / zcubedim + 1
-
-  for z in range(zlimit):
-    for y in range(ylimit):
-      for x in range(xlimit):
-
-        zidx = ndlib.XYZMorton([x,y,z])
-        db.NPZ = True
-        cube = db.getCube(ch, zidx, result.res)
-        db.NPZ = False
+  
+  for z in range(0, zlimit+1, 1):
+    for y in range(0, ylimit+1, 1):
+      for x in range(0, xlimit+1, 1):
         
-        if np.all(cube.data==0):
+        # print x*xcubedim, ":", y*ycubedim, ":", z*zcubedim
+        zidx = ndlib.XYZMorton([x,y,z])
+        try:
+          db.NPZ = True
+          cube = db.getCube(ch, zidx, result.res)
+        
+          if np.all(cube.data==0):
+            pass
+          else:
+            db.NPZ = False
+            print "Ingesting {},{},{}".format(x,y,z)
+            db.putCube(out_ch, zidx, result.res, cube)
+        except Exception as e:
           pass
-        else:
-          print "Ingesting {}".format(zidx)
-          db.putCube(ch, zidx, result.res, cube)
 
 
 if __name__ == "__main__":

@@ -22,10 +22,10 @@ def getURL(url):
   try:
     req = urllib2.Request(url)
     resp = urllib2.urlopen(req)
+    return resp.read()
   except urllib2.URLError, e:
     print "Failed URL {}. Error {}".format(url, e)
-
-  return resp.read()
+    return
 
 
 def getURLTimed(url):
