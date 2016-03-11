@@ -118,8 +118,6 @@ def xmlInfo (token, proj):
 def metadatadict( proj ):
   """Metadata Info"""
   if settings.LIMS_SERVER_ENABLED:
-    return {}
-  else:
     try:
       url = 'http://{}/metadata/ocp/get/{}/'.format(settings.LIMS_SERVER, proj.getProjectName())
       req = urllib2.Request(url)
@@ -128,6 +126,8 @@ def metadatadict( proj ):
     except urllib2.URLError, e:
       print "Failed URL {}".format(url)
       return {}
+  else:
+    return {}
 
 
 def publicTokens ( projdb ):
