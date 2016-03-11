@@ -124,7 +124,7 @@ def main():
   parser.add_argument("token_name", action="store", type=str, help="Token Name")
   parser.add_argument("channel_name", action="store", type=str, help="Channel Name")
   parser.add_argument("res_value", action="store", type=int, help="Resolution")
-  parser.add_argument("--server", dest="server_name", action="store", type=str, default="localhost/ndstore", help="Server Name")
+  parser.add_argument("--server", dest="server_name", action="store", type=str, default="localhost/nd", help="Server Name")
   parser.add_argument('--offset', dest="offset_value", nargs=3, action="store", type=int, metavar=('X','Y','Z'), default=[0,0,0], help='Start Offset')
   parser.add_argument("--num", dest="number_of_processes", action="store", type=int, default=1, help="Number of Processes")
   parser.add_argument("--iter", dest="number_of_iterations", action="store", type=int, default="1", help="Number of Iterations")
@@ -140,9 +140,11 @@ def main():
 
   from pprint import pprint
   pprint(bt.fetch_list)
-
+  
+  start_time = time.time()
   p = multiprocessing.Pool(result.number_of_processes)
   p.map(getURLTimed, bt.fetch_list)
+  print "time:",time.time()-start_time
 
 if __name__ == '__main__':
   main()
