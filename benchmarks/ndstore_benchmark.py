@@ -20,6 +20,7 @@ import numpy as np
 import multiprocessing
 import time
 import json
+import blosc
 from operator import add, sub, mul
 from functools import reduce
 
@@ -28,7 +29,8 @@ import ND.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
 
 from ndlib import MortonXYZ
-from restutil import getURL, getURLTimed, generateURLBlosc
+from ndtype import ND_dtypetonp
+from restutil import getURL, getURLTimed, generateURLBlosc, putURLTimed
 
 
 class BenchmarkTest:
@@ -42,11 +44,13 @@ class BenchmarkTest:
     self.resolution = result.res_value
     self.getProjInfo()
     self.fetch_list = []
+    self.data_list = []
+    self.write_tests = result.write_tests
 
 
-  def readTest(self, start_value, number_iterations):
+  def singleThreadTest(self, start_value, number_iterations):
     """Generate the URL for read test"""
-
+    
     min_values = [xmin,ymin,zmin] = map(add, self.offset, start_value)
     max_values = map(add, min_values, self.dim)
     range_args = [None]*(len(min_values)+len(max_values))
@@ -56,7 +60,12 @@ class BenchmarkTest:
         range_args[::2] = min_values
         range_args[1::2] = max_values
         # print "Size", reduce(mul, map(sub, max_values, min_values), 1)*2.0/(1024*1024)
-        self.fetch_list.append(generateURLBlosc(self.host, self.token, self.channels, self.resolution, range_args))
+        if self.write_tests:
+          data = blosc.pack_array(np.ones( [len(self.channels)]+map(sub, range_args[1::2], range_args[::2]), dtype=self.datatype) * random.randint(0,255))
+          self.data_list.append(data)
+          self.fetch_list.append(generateURLBlosc(self.host, self.token, self.channels, self.resolution, range_args))
+        else:
+          self.fetch_list.append(generateURLBlosc(self.host, self.token, self.channels, self.resolution, range_args))
         # min_values = max_values
         # max_values = map(add, map(sub, min_values, temp_values), min_values)
         min_values[2] = max_values[2]
@@ -93,7 +102,12 @@ class BenchmarkTest:
     for i in range(0, number_of_processes, 1):
       # checking if the x,y,z dimensions are exceeded
       if all([a<b for a,b in zip(range_args[1::2], self.imagesize)]):
-        self.fetch_list.append(generateURLBlosc(self.host, self.token, self.channels, self.resolution, range_args))
+        if self.write_tests:
+          data = blosc.pack_array(np.ones( [len(self.channels)]+map(sub, range_args[1::2], range_args[::2]), dtype=self.datatype) * random.randint(0,255))
+          self.data_list.append(data)
+          self.fetch_list.append(generateURLBlosc(self.host, self.token, self.channels, self.resolution, range_args))
+        else:
+          self.fetch_list.append(generateURLBlosc(self.host, self.token, self.channels, self.resolution, range_args))
         # checking if this exceeds the x,y image size
         if all([a<b for a,b in zip(map(add, range_args[1:-1:2], size_args[1:-1:2]), self.imagesize)]): 
           range_args[0:-2:2] = range_args[1:-1:2]
@@ -115,7 +129,7 @@ class BenchmarkTest:
     self.dim = info['dataset']['cube_dimension'][str(self.resolution)]
     self.imagesize = info['dataset']['imagesize'][str(self.resolution)]
     self.offset = info['dataset']['offset'][str(self.resolution)]
-
+    self.datatype = ND_dtypetonp[info['channels'][self.channels[0]]['datatype']]
 
 def main():
   """Take in the arguments"""
@@ -128,13 +142,14 @@ def main():
   parser.add_argument('--offset', dest="offset_value", nargs=3, action="store", type=int, metavar=('X','Y','Z'), default=[0,0,0], help='Start Offset')
   parser.add_argument("--num", dest="number_of_processes", action="store", type=int, default=1, help="Number of Processes")
   parser.add_argument("--iter", dest="number_of_iterations", action="store", type=int, default="1", help="Number of Iterations")
-
+  parser.add_argument("--write", dest="write_tests", action="store", type=bool, default=False, help="Do write tests")
+  
 
   result = parser.parse_args()
  
   bt = BenchmarkTest(result)
   if result.number_of_processes == 1:
-    bt.readTest(result.offset_value, result.number_of_iterations)
+    bt.singleThreadTest(result.offset_value, result.number_of_iterations)
   else:
     bt.multiThreadTest(result.offset_value, result.number_of_iterations, result.number_of_processes)
 
@@ -143,7 +158,10 @@ def main():
   
   start_time = time.time()
   p = multiprocessing.Pool(result.number_of_processes)
-  p.map(getURLTimed, bt.fetch_list)
+  if result.write_tests:
+    p.map(putURLTimed, zip(bt.fetch_list,bt.data_list))
+  else:
+    p.map(getURLTimed, bt.fetch_list)
   print "time:",time.time()-start_time
 
 if __name__ == '__main__':

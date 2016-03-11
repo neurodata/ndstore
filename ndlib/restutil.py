@@ -50,6 +50,18 @@ def putURL(url, data):
     print "Failed URL {}. Error {}".format(url, e)
 
 
+def putURLTimed((url, data)):
+  """Post a URL"""
+
+  try:
+    req = urllib2.Request(url, data)
+    start = time.time()
+    resp = urllib2.urlopen(req)
+    print time.time()-start
+  except urllib2.URLError, e:
+    print "Failed", time.time()-start
+
+
 def generateURLBlosc(server_name, token_name, channel_list, res_value, range_args):
   """Generate a URL for blosc"""
 
