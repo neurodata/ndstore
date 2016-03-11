@@ -880,7 +880,7 @@ AR_TIGHTCUTOUT = 3
 AR_BOUNDINGBOX = 4
 AR_CUBOIDS = 5
 
-def getAnnoDictById ( ch, annoid, proj, db ):
+def getAnnoDictById ( ch, annoid, proj, rdb ):
   """Retrieve the annotation and return it as a Python dictionary"""
 
   # retrieve the annotation
@@ -889,11 +889,13 @@ def getAnnoDictById ( ch, annoid, proj, db ):
     logger.error("No annotation found at identifier = %s" % (annoid))
     raise NDWSError ("No annotation found at identifier = %s" % (annoid))
 
-  # create the annotation obj
-  annobj = jsonann.AnnotationtoJSON ( anno )
+  # the json interface returns anno_id -> dictionary containing annotation info 
+  tmpdict = { 
+    annoid: anno.toDict()
+  } 
 
-  # return data
-  return annobj.toDictionary()
+  # return dictionary
+  return tmpdict 
 
 def getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution=None, corner=None, dim=None ): 
   """Retrieve the annotation and put it in the HDF5 file."""
@@ -1041,7 +1043,7 @@ def getAnnotation ( webargs ):
         if re.match ( '^[\d,]+$', option_args[0] ): 
           annoids = map(int, option_args[0].split(','))
           for annoid in annoids: 
-            annobjs.update(getAnnoDictById ( ch, annoid, proj, db ))
+            annobjs.update(getAnnoDictById ( ch, annoid, proj, rdb ))
 
         jsonstr = json.dumps( annobjs )
 
