@@ -68,46 +68,55 @@ class IngestData:
   def fetchData(self, slice_list, time_value):
     """Fetch the next set of data from a remote source and place it locally"""
     
+    # iterating over the slice number list
     for slice_number in slice_list:
+      # generating the url based on some parameters
+      if time_value is not None:
+        url = '{}/{}/{}/{}/{}'.format(self.data_url, self.token, self.channel, time_value, self.generateFileName(slice_number))
+      else:
+        url = '{}/{}/{}/{}'.format(self.data_url, self.token, self.channel, self.generateFileName(slice_number, ondisk=False))
+      # making the request
       try:
-        if time_value is not None:
-          url = '{}/{}/{}/{}/{}'.format(self.data_url, self.token, self.channel, time_value, self.generateFileName(slice_number))
-        else:
-          url = '{}/{}/{}/{}'.format(self.data_url, self.token, self.channel, self.generateFileName(slice_number, ondisk=False))
         req = urllib2.Request(url)
         resp = urllib2.urlopen(req, timeout=15)
-        # urllib.urlretrieve('{}'.format(url), self.path+self.generateFileName(slice_number))
       except urllib2.URLError, e:
         logger.warning("Failed to fetch url {}. File does not exist. {}".format(url, e))
         continue
-        
+      
+      # writing the file to scratch
       try:
         f = open('{}'.format(self.path+self.generateFileName(slice_number)),'w')
         f.write(resp.read())
-        f.close()
       except IOError, e:
         logger.warning("IOError. Could not open file {}. {}".format(self.path+self.generateFileName(slice_number), e))
+      finally:
+        f.close()
 
 
   def fetchCatmaidData(self, slice_list, xtile, ytile):
     """Fetch the next set of data from a remote source and place it locally"""
     
+    # iterating over the slice number list
     for slice_number in slice_list:
+      # generating the url based on some parameters
+      url = '{}/{}/{}/{}/{}'.format(self.data_url, self.channel, slice_number, self.resolution, self.generateCatmaidFileName(slice_number, xtile, ytile, ondisk=False))
+      
+      # making the request
       try:
-        url = '{}/{}/{}/{}/{}'.format(self.data_url, self.channel, slice_number, self.resolution, self.generateCatmaidFileName(slice_number, xtile, ytile, ondisk=False))
-        # print "Fetching url {}".format(url)
         req = urllib2.Request(url)
         resp = urllib2.urlopen(req, timeout=15)
       except urllib2.URLError, e:
         logger.warning("Failed to fetch url {}. File does not exist. {}".format(url, e))
         continue
         
+      # writing the file to scratch
       try:
         f = open('{}'.format(self.path+self.generateCatmaidFileName(slice_number, xtile, ytile)),'w')
         f.write(resp.read())
-        f.close()
       except IOError, e:
         logger.warning("IOError. Could not open file {}. {}".format(self.path+self.generateCatmaidFileName(slice_number, xtile, ytile), e))
+      finally:
+        f.close()
 
   def cleanCatmaidData(self, slice_list, xtile, ytile):
     """Remove the slices at the local store"""
