@@ -165,7 +165,7 @@ def autoIngest(webargs, post_data):
         # Maintain a list of channel objects created during this iteration and delete all even if one fails
         channel_object_list.append(ch)
         try:
-          pd = ndproj.NDProjectsDB.getProjDB(pr.project_name)
+          pd = ndproj.NDProjectsDB.getProjDB(pr)
           pd.newNDChannel(ch.channel_name)
           CHANNEL_CREATED = True
         except Exception, e:

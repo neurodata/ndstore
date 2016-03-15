@@ -36,11 +36,11 @@ install:
   - sudo service mysql restart
   - mysql -u root -pneur0data -i -e "create user 'neurodata'@'localhost' identified by 'neur0data';" && mysql -u root -pneur0data -i -e "grant all privileges on *.* to 'neurodata'@'localhost' with grant option;" && mysql -u neurodata -pneur0data -i -e "CREATE DATABASE neurodjango;"
     # settings and secret_settings
-  - cd ~/ndstore/django/ND
+  - cd TRAVIS_BUILD_DIR/ndstore/django/ND
   - cp settings.py.example settings.py
-  - ln -s ndstore/setup/docker_config/django/docker_settings_secret.py settings_secret.py
+  - ln -s TRAVIS_BUILD_DIR/ndstore/setup/docker_config/django/docker_settings_secret.py settings_secret.py
     # django migrate
-  - cd ~/ndstore/django/
+  - cd TRAVIS_BUILD_DIR/ndstore/django/
   - python manage.py migrate
   - echo "from django.contrib.auth.models import User; User.objects.create_superuser('neurodata', 'abc@xyz.com', 'neur0data')" | python manage.py shell
   - python manage.py collectstatic --noinput
