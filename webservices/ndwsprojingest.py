@@ -25,7 +25,7 @@ from django.conf import settings
 import ndproj
 from ndwsingest import IngestData
 from ndschema import PROJECT_SCHEMA, DATASET_SCHEMA, CHANNEL_SCHEMA
-from ndtype import READONLY_FALSE
+from ndtype import READONLY_FALSE, REDIS, S3_TRUE
 from nduser.models import Project
 from nduser.models import Dataset
 from nduser.models import Token
@@ -55,17 +55,17 @@ def autoIngest(webargs, post_data):
     logger.error("Missing requred fields of dataset,project,channels,metadata.")
     return json.dumps("Missing required fields of dataset,project,channels,metadata. Please check if one of them is not missing.")
   
-  try:
-    DATASET_SCHEMA.validate(dataset_dict)
-  except Exception, e:
-    logger.error("Invalid Dataset schema")
-    return json.dumps("Invalid Dataset schema")
+  # try:
+    # DATASET_SCHEMA.validate(dataset_dict)
+  # except Exception, e:
+    # logger.error("Invalid Dataset schema")
+    # return json.dumps("Invalid Dataset schema")
   
-  try:
-    PROJECT_SCHEMA.validate(project_dict)
-  except Exception, e:
-    logger.error("Invalid Project schema")
-    return json.dumps("Invalid Project schema")
+  # try:
+    # PROJECT_SCHEMA.validate(project_dict)
+  # except Exception, e:
+    # logger.error("Invalid Project schema")
+    # return json.dumps("Invalid Project schema")
     
   #try:
     #import pdb; pdb.set_trace()
@@ -76,6 +76,9 @@ def autoIngest(webargs, post_data):
 
   ds = extractDatasetDict(dataset_dict)
   pr, tk = extractProjectDict(project_dict)
+  pr.host = 'localhost'
+  pr.kvengine = REDIS
+  pr.s3backend = S3_TRUE
   if pr.project_name in ['unittest','unittest2']:
     pr.host = 'localhost'
   ch_list = []
@@ -188,8 +191,8 @@ def autoIngest(webargs, post_data):
 
       from spdb.tasks import ingest
       
-      # ingest(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
-      ingest.delay(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
+      ingest(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
+      # ingest.delay(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
     
     # Posting to LIMS system
     postMetadataDict(metadata_dict, pr.project_name)
