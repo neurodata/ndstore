@@ -109,6 +109,14 @@ class IngestData:
       except IOError, e:
         logger.warning("IOError. Could not open file {}. {}".format(self.path+self.generateCatmaidFileName(slice_number, xtile, ytile), e))
 
+  def cleanCatmaidData(self, slice_list. xtile, ytile):
+    """Remove the slices at the local store"""
+
+    for slice_number in slice_list:
+      try:
+        os.remove('{}{}'.format(self.path, self.generateCatmaidFileName(slice_number, xtile, ytile)))
+      except OSError, e:
+        logger.warning("File {} not found. {}".format(self.generateCatmaidFileName(slice_number, xtile, ytile), e))
  
   def cleanData(self, slice_list):
     """Remove the slices at the local store"""
@@ -221,7 +229,7 @@ class IngestData:
                 s3db.putCube(ch, self.resolution, zidx, cube.toBlosc())
       
           # clean up the slices fetched
-          self.cleanData(range(slice_number,slice_number+zcubedim) if slice_number+zcubedim<=zimagesz else range(slice_number,zimagesz), xtile, xytile)
+          self.cleanCatmaidData(range(slice_number,slice_number+zcubedim) if slice_number+zcubedim<=zimagesz else range(slice_number,zimagesz), xtile, xytile)
 
   def ingestImageStack(self):
     """Ingest a TIF image stack"""
