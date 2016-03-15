@@ -176,11 +176,10 @@ class IngestData:
     
     num_xtiles = ximagesz / tilesz
     num_ytiles = yimagesz / tilesz
-
       
     # over all the tiles in the slice
-    for ytile in range(2, num_ytiles):
-      for xtile in range(2, num_xtiles):
+    for ytile in range(0, num_ytiles, 1):
+      for xtile in range(0, num_xtiles, 1):
           
         # Get a list of the files in the directories
         for slice_number in range (zoffset, zimagesz, zsupercubedim):
