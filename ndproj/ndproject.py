@@ -67,6 +67,7 @@ class NDProject:
   def getProjectDescription ( self ):
     return self.pr.project_description
   def getS3Backend(self):
+    print "Returning backend {}".format(self.pr.s3backend)
     return self.pr.s3backend
   def getNDVersion ( self ):
     return self.pr.nd_version

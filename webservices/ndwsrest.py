@@ -1,4 +1,4 @@
-# Copyright 2014 NeuroData (http://neurodata.io)
+#) Copyright 2014 NeuroData (http://neurodata.io)
 # 
 #Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -2109,6 +2109,7 @@ def exceptions ( webargs, ):
     tmpfile.seek(0)
     return tmpfile.read()
 
+
 def minmaxProject ( webargs ):
   """Return a minimum or maximum projection across a volume by a specified plane"""
 
@@ -2134,8 +2135,6 @@ def minmaxProject ( webargs ):
       ch = ndproj.NDChannel(proj,channel_name)
       cb = cutout (cutoutargs, ch, proj, db)
       FilterCube (cutoutargs, cb)
-
-      # KL TODO Make this cleaner
 
       # project onto the image plane
       if plane == 'xy':
@@ -2203,3 +2202,58 @@ def minmaxProject ( webargs ):
 
   fileobj.seek(0)
   return fileobj.read()
+
+def mcFalseColor ( webargs ):
+  """False color image of multiple channels"""
+
+  [ token, chanstr, mcfcstr, service, cutoutargs ] = webargs.split ('/', 4)
+
+  # split the channel string
+  channels = chanstr.split(",")
+
+  # pattern for using contexts to close databases
+  # get the project 
+  with closing ( ndproj.NDProjectsDB() ) as projdb:
+    proj = projdb.loadToken ( token )
+
+  # and the database and then call the db function
+  with closing ( spatialdb.SpatialDB(proj) ) as db:
+
+    mcdata = None
+
+    for i in range(len(channels)):
+       
+      # skip 0 channels
+      if channels[i]=='0':
+        continue
+
+      imageargs = '{}/{}/{}'.format(channels[i],service,cutoutargs)
+
+      ch = ndproj.NDChannel(proj,channels[i])
+      cb = imgSlice (imageargs, proj, db)
+
+      if mcdata == None:
+        if service == 'xy':
+          mcdata = np.zeros((len(channels),cb.data.shape[1],cb.data.shape[2]), dtype=cb.data.dtype)
+        elif service == 'xz':
+          mcdata = np.zeros((len(channels),cb.data.shape[0],cb.data.shape[2]), dtype=cb.data.dtype)
+        elif service == 'yz':
+          mcdata = np.zeros((len(channels),cb.data.shape[0],cb.data.shape[1]), dtype=cb.data.dtype)
+      else:
+        logger.warning ( "No such service %s. Args: %s" % (service,webargs))
+        raise OCPCAError ( "No such service %s" % (service) )
+
+      mcdata[i:] = cb.data
+    
+    # We have an compound array.  Now color it.
+    colors = ('C','M','Y','R','G','B')
+    img =  mcfc.mcfcPNG ( mcdata, colors, 2.0 )
+
+    fileobj = cStringIO.StringIO ( )
+    img.save ( fileobj, "PNG" )
+
+    fileobj.seek(0)
+    return fileobj.read()
+
+
+
