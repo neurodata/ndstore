@@ -33,7 +33,7 @@ from cube import Cube
 import imagecube
 import anncube
 import ocplib
-from ocptype import ANNOTATION_CHANNELS, EXCEPTION_TRUE, PROPAGATED
+from ocptype import ANNOTATION_CHANNELS, EXCEPTION_TRUE, PROPAGATED, NOT_PROPAGATED, UNDER_PROPAGATION
 
 from ocpcaerror import OCPCAError
 import logging
