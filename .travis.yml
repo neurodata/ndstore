@@ -29,18 +29,18 @@ before_install:
 
 install: 
   - sudo apt-get -y install mysql-client-core-5.6 libhdf5-serial-dev mysql-client-5.6  
-  - sudo apt-get install nginx git bash-completion python-virtualenv libxslt1-dev libmemcached-dev libhdf5-serial-dev g++ libjpeg-dev python-dev mysql-server-5.6 libmysqlclient-dev xfsprogs supervisor rabbitmq-server uwsgi uwsgi-plugin-python liblapack-dev memcached
+  - sudo apt-get -y install nginx git bash-completion python-virtualenv libxslt1-dev libmemcached-dev libhdf5-serial-dev g++ libjpeg-dev python-dev mysql-server-5.6 libmysqlclient-dev xfsprogs supervisor rabbitmq-server uwsgi uwsgi-plugin-python liblapack-dev memcached
   - pip install cython numpy
   - pip install -r ./setup/requirements.txt
     # creating the mysql user
-  - sudo service mysql start
+  - sudo service mysql restart
   - mysql -u root -pneur0data -i -e "create user 'neurodata'@'localhost' identified by 'neur0data';" && mysql -u root -pneur0data -i -e "grant all privileges on *.* to 'neurodata'@'localhost' with grant option;" && mysql -u neurodata -pneur0data -i -e "CREATE DATABASE neurodjango;"
     # settings and secret_settings
-  - cd ~/ndstore/django/ND
+  - cd TRAVIS_BUILD_DIR/ndstore/django/ND
   - cp settings.py.example settings.py
-  - ln -s ndstore/setup/docker_config/django/docker_settings_secret.py settings_secret.py
+  - ln -s TRAVIS_BUILD_DIR/ndstore/setup/docker_config/django/docker_settings_secret.py settings_secret.py
     # django migrate
-  - cd ~/ndstore/django/
+  - cd TRAVIS_BUILD_DIR/ndstore/django/
   - python manage.py migrate
   - echo "from django.contrib.auth.models import User; User.objects.create_superuser('neurodata', 'abc@xyz.com', 'neur0data')" | python manage.py shell
   - python manage.py collectstatic --noinput
@@ -48,14 +48,10 @@ install:
   - sudo rm /etc/nginx/sites-enabled/default
   - sudo ln -s ~/ndstore/setup/docker_config/nginx/neurodata.conf /etc/nginx/sites-enabled/default
     # move uwsgi config files and start service
-  - sudo rm /etc/uwsgi/apps-available/neurodata.ini
   - sudo ln -s ~/ndstore/setup/docker_config/uwsgi/neurodata.ini /etc/uwsgi/apps-available/
-  - sudo rm /etc/uwsgi/apps-enabled/neurodata.ini
   - sudo ln -s ~/ndstore/setup/docker_config/uwsgi/neurodata.ini /etc/uwsgi/apps-enabled/
     # move celery config files and start service
-  - sudo rm /etc/supervisor/conf.d/propagate.conf
   - sudo ln -s ~/ndstore/setup/docker_config/celery/propagate.conf /etc/supervisor/conf.d/propagate.conf
-  - sudo rm /etc/supervisor/conf.d/ingest.conf
   - sudo ln -s ~/ndstore/setup/docker_config/celery/ingest.conf /etc/supervisor/conf.d/ingest.conf
     # starting all the services
   - sudo service nginx restart
