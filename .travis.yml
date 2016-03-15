@@ -29,7 +29,7 @@ before_install:
 
 install: 
   - sudo apt-get -y install mysql-client-core-5.6 libhdf5-serial-dev mysql-client-5.6  
-  - sudo apt-get install nginx git bash-completion python-virtualenv libxslt1-dev libmemcached-dev libhdf5-serial-dev g++ libjpeg-dev python-dev mysql-server-5.6 libmysqlclient-dev xfsprogs supervisor rabbitmq-server uwsgi uwsgi-plugin-python liblapack-dev memcached
+  - sudo apt-get -y install nginx git bash-completion python-virtualenv libxslt1-dev libmemcached-dev libhdf5-serial-dev g++ libjpeg-dev python-dev mysql-server-5.6 libmysqlclient-dev xfsprogs supervisor rabbitmq-server uwsgi uwsgi-plugin-python liblapack-dev memcached
   - pip install cython numpy
   - pip install -r ./setup/requirements.txt
     # creating the mysql user
