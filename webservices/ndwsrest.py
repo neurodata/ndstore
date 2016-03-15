@@ -478,6 +478,7 @@ def window(data, ch, window_range=None ):
       data = windowCutout (data, window_range)
       return np.uint8(data)
 
+
   return data
 
 def imgSlice(webargs, proj, db):
@@ -2203,6 +2204,10 @@ def minmaxProject ( webargs ):
   fileobj.seek(0)
   return fileobj.read()
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/rbdevel
 def mcFalseColor ( webargs ):
   """False color image of multiple channels"""
 
