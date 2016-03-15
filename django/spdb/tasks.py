@@ -32,7 +32,7 @@ def propagate (token, channel_name):
   except Exception, e:
     logger.error("Error in propagate. {}".format(e))
 
-@task(queue='ingest')
+# @task(queue='ingest')
 def ingest (token_name, channel_name, resolution, data_url, file_format, file_type):
   """Call the remote ingest function here"""
 

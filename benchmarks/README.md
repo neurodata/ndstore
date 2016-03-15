@@ -17,3 +17,7 @@
   ```sh
   python ndstore_benchmark.py --server localhost:8000 kasthuri11 image 0 --iter 13 --num 16 --offset 3000 3000 0  
   ```
+  * Write Tests
+  ```sh
+  python ndstore_benchmark.py kasthuri11 image 5 --iter 1 --write True --server localhost:8000 --num 2
+  ```
