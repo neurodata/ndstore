@@ -303,6 +303,7 @@ class Test_Image_Post:
     p.args = (11000,11100,4000,4100,500,510)
     image_data = np.ones ( [2,10,100,100], dtype=np.uint8 ) * random.randint(0,255)
     response = postNPZ(p, image_data)
+    assert (response.code == 404)
 
   def test_npz_incorrect_datatype (self):
     """Post npz data with incorrect datatype"""
