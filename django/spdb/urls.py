@@ -46,7 +46,7 @@ urlpatterns = patterns('spdb.views',
   # multi-channel false color image
   url(r'(?P<webargs>^\w+/[\w,]+/mcfc/[\w,/-]+)$', 'mcFalseColor'),
   # projection services
-  url(r'(?P<webargs>^\w+/(minproj|maxproj)/(xy|xz|yz)[\w,/]*)$', 'minmaxProject'),
+  url(r'(?P<webargs>^\w+/[\w,]+/(minproj|maxproj)/[\w,/-]+)$', 'minmaxProject'),
   # get and put services
   url(r'(?P<webargs>^\w+/([\w+,]*/)*(xy|xz|yz|tiff|hdf5|blosc|jpeg|npz|zip|diff|id|ids|xyanno|xzanno|yzanno)/[\w,/-]*)$', 'cutout'),
   # single field interfaces

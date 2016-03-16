@@ -2114,7 +2114,7 @@ def exceptions ( webargs, ):
 def minmaxProject ( webargs ):
   """Return a minimum or maximum projection across a volume by a specified plane"""
 
-  [ token, minormax, plane, chanstr, cutoutargs ] = webargs.split ('/', 4)
+  [ token, chanstr, minormax, plane, cutoutargs ] = webargs.split ('/', 4)
 
   # split the channel string
   channels = chanstr.split(",")
@@ -2204,10 +2204,6 @@ def minmaxProject ( webargs ):
   fileobj.seek(0)
   return fileobj.read()
 
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/rbdevel
 def mcFalseColor ( webargs ):
   """False color image of multiple channels"""
 
@@ -2259,6 +2255,4 @@ def mcFalseColor ( webargs ):
 
     fileobj.seek(0)
     return fileobj.read()
-
-
 
