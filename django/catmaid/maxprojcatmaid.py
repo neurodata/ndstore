@@ -33,7 +33,6 @@ class MaxProjCatmaid:
   """Prefetch CATMAID tiles into MndcheDB"""
 
   def __init__(self):
-    """Bind the mndche"""
 
     self.proj = None
     self.db = None
@@ -46,7 +45,7 @@ class MaxProjCatmaid:
     pass
 
   def getTileXY ( self, res, xtile, ytile, zslice, width ):
-    """On a miss. Cutout, return the image and load the cache in a background thread"""
+    """Cutout, return the image"""
 
     # figure out the cutout (limit to max image size)
     xstart = xtile*self.tilesz
@@ -71,77 +70,6 @@ class MaxProjCatmaid:
     
     # We have an compound array.  Now color it.
     return mcfc.mcfcPNG (tiledata, self.colors)
-
-
-#  def cacheMissXZ ( self, res, xtile, yslice, ztile, width ):
-#    """On a miss. Cutout, return the image and load the cache in a background thread"""
-#  
-#    # figure out the cutout (limit to max image size)
-#    xstart = xtile * self.tilesz
-#    xend = min ((xtile+1) * self.tilesz, self.proj.datasetcfg.imageSize(res)[0][0])
-#
-#    # z cutouts need to get rescaled
-#    #  we'll map to the closest pixel range and tolerate one pixel error at the boundary
-#    scalefactor = self.proj.datasetcfg.getScale()[res]['xz']
-#    zoffset = self.proj.datasetcfg.getOffset()[res][2]
-#    ztilestart = int((ztile*self.tilesz)/scalefactor) + zoffset
-##    zstart = max ( ztilestart, zoffset ) 
-#    ztileend = int(math.ceil(((ztile+1)*self.tilesz)/scalefactor)) + zoffset
-#    zend = min ( ztileend, self.proj.datasetcfg.imageSize(res)[0][2] )
-#
-#    # call the mcfc interface
-#    imageargs = '{}/{},{}/{},{}/{},{}/'.format(res, xstart, xend, yslice-width, yslice+1+width, zstart, zend) 
-#
-#    import pdb; pdb.set_trace()
-#    tiledata = None
-#    for index,channel_name in enumerate(self.channel_list):
-#      ch = self.proj.getChannelObj(channel_name)
-#      cutout = ndwsrest.cutout(imageargs, ch, self.proj, self.db)
-#      # initialize the tiledata by type
-#      if tiledata == None:
-#        tiledata = np.zeros((len(self.channel_list), zend-zstart, cutout.data.shape[1], self.tilesz), dtype=cutout.data.dtype)
-#      tiledata[index, 0:zend-zstart, 0, 0:((xend-1)%self.tilesz+1)] = cutout.data[:, 0, :]
-#      
-#    tiledata = ndwsrest.window(tiledata, ch)
-#
-#    # We have an compound array.  Now color it.
-#    img = mcfc.mcfcPNG (tiledata.reshape((tiledata.shape[0],tiledata.shape[1],tiledata.shape[3])), self.colors)
-#    return img.resize ((self.tilesz,self.tilesz))
-#
-#  def cacheMissYZ (self, res, xtile, ytile, ztile, width):
-#    """On a miss. Cutout, return the image and load the cache in a background thread"""
-#
-#    # figure out the cutout (limit to max image size)
-#    ystart = ytile * self.tilesz
-#    yend = min((ytile+1)*self.tilesz, self.proj.datasetcfg.imageSize(res)[0][1])
-#
-#    # z cutouts need to get rescaled
-#    #  we'll map to the closest pixel range and tolerate one pixel error at the boundary
-#    scalefactor = self.proj.datasetcfg.getScale()[res]['yz']
-#    zoffset = self.proj.datasetcfg.getOffset()[res][2]
-#    ztilestart = int((ztile*self.tilesz)/scalefactor) + zoffset
-#    zstart = max(ztilestart, zoffset) 
-#    ztileend = int(math.ceil(((ztile+1)*self.tilesz)/scalefactor)) + zoffset
-#    zend = min(ztileend, self.proj.datasetcfg.imageSize(res)[0][2])
-#
-#    # call the mcfc interface
-#    imageargs = '{}/{},{}/{},{}/{},{}/'.format(res, xtile, xtile+1, ystart, yend, zstart, zend) 
-#
-#    tiledata = None
-#    for index,channel_name in enumerate(self.channel_list):
-#      ch = self.proj.getChannelObj(channel_name)
-#      cutout = ndwsrest.cutout(imageargs, ch, self.proj, self.db)
-#      # initialize the tiledata by type
-#      if tiledata == None:
-#        tiledata = np.zeros((len(self.channel_list), ztileend-ztilestart, self.tilesz, cutout.data.shape[2]), dtype=cutout.data.dtype)
-#
-#      tiledata[index, 0:zend-zstart, 0:((yend-1)%self.tilesz+1), 0] = cutout.data[:, :, 0]
-#
-#    tiledata = ndwsrest.window(tiledata, ch)
-#
-#    # We have an compound array. Now color it.
-#    img = mcfc.mcfcPNG(tiledata.reshape((tiledata.shape[0],tiledata.shape[1],tiledata.shape[2])), self.colors)
-#    return img.resize((self.tilesz,self.tilesz))
 
 
   def getTile ( self, webargs ):
@@ -184,9 +112,9 @@ class MaxProjCatmaid:
         if slice_type == 'xy':
           img = self.getTileXY(res, xtile, ytile, ztile, width)
 #        elif slice_type == 'xz':
-#          img = self.cacheMissXZ(res, xtile, ytile, ztile, width)
+#          img = self.getTileXZ(res, xtile, ytile, ztile, width)
 #        elif slice_type == 'yz':
-#          img = self.cacheMissYZ(res, xtile, ytile, ztile, width)
+#          img = self.getTileYZ(res, xtile, ytile, ztile, width)
         else:
           logger.warning ("Requested illegal image plane {}. Should be xy, xz, yz.".format(slice_type))
           raise NDWSError ("Requested illegal image plane {}. Should be xy, xz, yz.".format(slice_type))
