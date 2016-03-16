@@ -25,7 +25,7 @@ import ndproj
 import ndwsrest
 import spatialdb
 
-from ndtype import DTYPE_uint8, DTYPE_uint16 
+from ndtype import DTYPE_uint8, DTYPE_uint16, ANNOTATION_CHANNELS 
 from windowcutout import windowCutout 
 
 import json
@@ -79,15 +79,24 @@ def synaptogram_view (request, webargs):
         ch = proj.getChannelObj(chan)
         try: 
           cb = db.cutout ( ch, corner, dim, resolution )
-          if ch.getDataType() in DTYPE_uint16:
-            [startwindow, endwindow] = window_range = ch.getWindowRange()
-            if (endwindow != 0):
-              cb.data = np.uint8(windowCutout(cb.data, window_range))
-              
           outputdict[chan] = []
           for zslice in cb.data:
-            # convert to Base64 image 
-            img = Image.frombuffer( 'L', (dim[0], dim[1]), zslice.flatten(), 'raw', 'L', 0, 1 )
+          
+            if ch.getChannelType() in ANNOTATION_CHANNELS:
+              # parse annotation project
+              imagemap = np.zeros( [ dim[1], dim[0] ], dtype=np.uint32 )
+              imagemap = ndlib.recolor_ctype( zslice, imagemap )
+              img = Image.frombuffer( 'RGBA', (dim[0],dim[1]), imagemap, 'raw', 'RGBA', 0, 1 )
+
+            else: 
+              # parse image project  
+              if ch.getDataType() in DTYPE_uint16:
+                [startwindow, endwindow] = window_range = ch.getWindowRange()
+                if (endwindow != 0):
+                  cb.data = np.uint8(windowCutout(cb.data, window_range))
+                  
+                # convert to Base64 image 
+                img = Image.frombuffer( 'L', (dim[0], dim[1]), zslice.flatten(), 'raw', 'L', 0, 1 )
             fileobj = cStringIO.StringIO()
             img.save(fileobj, "PNG")
             fileobj.seek(0)
