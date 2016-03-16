@@ -18,10 +18,15 @@ import re
 from contextlib import closing
 import cStringIO
 import django.http
+from PIL import Image
+import base64
 
 import ndproj
 import ndwsrest
 import spatialdb
+
+from ndtype import DTYPE_uint8, DTYPE_uint16 
+from windowcutout import windowCutout 
 
 import json
 
@@ -57,6 +62,11 @@ def synaptogram_view (request, webargs):
     with closing ( spatialdb.SpatialDB(proj) ) as db:
 
       # convert to cutout coordinates
+      (xoffset,yoffset,zoffset) = proj.datasetcfg.getOffset()[ resolution ]
+      (xlow, xhigh) = (xlow-xoffset, xhigh-xoffset)
+      (ylow, yhigh) = (ylow-yoffset, yhigh-yoffset)
+      (zlow, zhigh) = (zlow-zoffset, zhigh-zoffset)
+
       corner = [ xlow, ylow, zlow ]
       dim = [ xhigh-xlow, yhigh-ylow, zhigh-zlow ]
 
@@ -68,7 +78,22 @@ def synaptogram_view (request, webargs):
         ch = proj.getChannelObj(chan)
         try: 
           cb = db.cutout ( ch, corner, dim, resolution )
-          outputdict[chan] = cb.data.tolist()
+          if ch.getDataType() in DTYPE_uint16:
+            [startwindow, endwindow] = window_range = ch.getWindowRange()
+            if (endwindow != 0):
+              cb.data = np.uint8(windowCutout(cb.data, window_range))
+              
+          outputdict[chan] = []
+          for zslice in cb.data:
+            # convert to Base64 image 
+            img = Image.frombuffer( 'L', (dim[0], dim[1]), zslice.flatten(), 'raw', 'L', 0, 1 )
+            fileobj = cStringIO.StringIO()
+            img.save(fileobj, "PNG")
+            fileobj.seek(0)
+            encodedimg = base64.b64encode(fileobj.read())
+            outputdict[chan].append(encodedimg)
+
+          #outputdict[chan] = cb.data.tolist()
           outputdict['{}.dtype'.format(chan)] = str(cb.data.dtype)
         except KeyError:
           raise Exception ("Channel %s not found" % ( chan ))
