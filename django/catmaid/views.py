@@ -20,6 +20,7 @@ import cStringIO
 
 import mcfccatmaid
 import simplecatmaid
+import maxprojcatmaid
 #import colorcatmaid
 
 # Errors we are going to catch
@@ -27,6 +28,20 @@ from ndwserror import NDWSError
 
 import logging
 logger=logging.getLogger("neurodata")
+
+def maxprojview (request, webargs):
+  """multi-channel false color"""
+
+  try:
+    mp = maxprojcatmaid.MaxProjCatmaid()
+    imgfobj = mp.getTile(webargs)
+    return django.http.HttpResponse(imgfobj.read(), content_type="image/png")
+
+  except NDWSError, e:
+    return django.http.HttpResponseNotFound(e)
+  except Exception, e:
+    logger.exception("Unknown exception in mcfccatmaidview: {}".format(e) )
+    raise
 
 
 def mcfccatmaidview (request, webargs):
