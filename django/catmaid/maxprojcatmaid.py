@@ -53,9 +53,11 @@ class MaxProjCatmaid:
     xend = min ((xtile+1)*self.tilesz,self.proj.datasetcfg.imageSize(res)[0][0])
     yend = min ((ytile+1)*self.tilesz,self.proj.datasetcfg.imageSize(res)[0][1])
 
-    # RBTODO need to bound the the z range to 0,max
+    zstart = max(zslice-width,0)
+    zend = min(zslice+1+width,self.tilesz,self.proj.datasetcfg.imageSize(res)[0][2]) 
+
     # call the mcfc interface
-    imageargs = '{}/{},{}/{},{}/{},{}/'.format(res, xstart, xend, ystart, yend, zslice-width, zslice+1+width) 
+    imageargs = '{}/{},{}/{},{}/{},{}/'.format(res, xstart, xend, ystart, yend, zstart, zend) 
 
     tiledata = None
     for index, channel_name in enumerate(self.channel_list):
