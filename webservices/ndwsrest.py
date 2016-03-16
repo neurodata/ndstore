@@ -1390,6 +1390,8 @@ def putAnnotation ( webargs, postdata ):
         # set the ID (if provided) 
         anno.setField('annid', (rdb.assignID(ch,anno.annid)))
       
+        # ABTODO not taking any options?   need to define
+        options = []
         # Put into the database
         rdb.putAnnotation(ch, anno, options)
         
