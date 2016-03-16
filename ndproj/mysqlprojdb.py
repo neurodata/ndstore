@@ -34,7 +34,12 @@ class MySQLProjectDB:
     # connect to the database
     self.pr = NDProject(project_name)
 
+  def __del__(self):
+    """Close the database connection"""
+    self.close()
+  
   def close (self):
+    """Close the database connection"""
     pass
 
   def newNDProject(self):

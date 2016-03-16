@@ -36,21 +36,21 @@ install:
   - sudo service mysql restart
   - mysql -u root -pneur0data -i -e "create user 'neurodata'@'localhost' identified by 'neur0data';" && mysql -u root -pneur0data -i -e "grant all privileges on *.* to 'neurodata'@'localhost' with grant option;" && mysql -u neurodata -pneur0data -i -e "CREATE DATABASE neurodjango;"
     # settings and secret_settings
-  - cp ./ndstore/django/ND/settings.py.example ./ndstore/django/ND/settings.py
-  - ln -s ./ndstore/setup/docker_config/django/docker_settings_secret.py ./ndstore/django/ND/settings_secret.py
+  - cp ./django/ND/settings.py.example ./django/ND/settings.py
+  - ln -s ./setup/docker_config/django/docker_settings_secret.py ./django/ND/settings_secret.py
     # django migrate
-  - python ./ndstore/django/manage.py migrate
-  - echo "from django.contrib.auth.models import User; User.objects.create_superuser('neurodata', 'abc@xyz.com', 'neur0data')" | python ./ndstore/django/manage.py shell
-  - python ./ndstore/django/manage.py collectstatic --noinput
+  - python ./django/manage.py migrate
+  - echo "from django.contrib.auth.models import User; User.objects.create_superuser('neurodata', 'abc@xyz.com', 'neur0data')" | python ./django/manage.py shell
+  - python ./django/manage.py collectstatic --noinput
     # move the nginx config files and start service
   - sudo rm /etc/nginx/sites-enabled/default
-  - sudo ln -s ./ndstore/setup/docker_config/nginx/neurodata.conf /etc/nginx/sites-enabled/default
+  - sudo ln -s ./setup/docker_config/nginx/neurodata.conf /etc/nginx/sites-enabled/default
     # move uwsgi config files and start service
-  - sudo ln -s ./ndstore/setup/docker_config/uwsgi/neurodata.ini /etc/uwsgi/apps-available/
-  - sudo ln -s ./ndstore/setup/docker_config/uwsgi/neurodata.ini /etc/uwsgi/apps-enabled/
+  - sudo ln -s ./setup/docker_config/uwsgi/neurodata.ini /etc/uwsgi/apps-available/
+  - sudo ln -s ./setup/docker_config/uwsgi/neurodata.ini /etc/uwsgi/apps-enabled/
     # move celery config files and start service
-  - sudo ln -s ./ndstore/setup/docker_config/celery/propagate.conf /etc/supervisor/conf.d/propagate.conf
-  - sudo ln -s ./ndstore/setup/docker_config/celery/ingest.conf /etc/supervisor/conf.d/ingest.conf
+  - sudo ln -s ./setup/docker_config/celery/propagate.conf /etc/supervisor/conf.d/propagate.conf
+  - sudo ln -s ./setup/docker_config/celery/ingest.conf /etc/supervisor/conf.d/ingest.conf
     # starting all the services
   - sudo service nginx restart
   - sudo service uwsgi restart
