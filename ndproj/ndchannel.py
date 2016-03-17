@@ -33,26 +33,37 @@ class NDChannel:
       logger.error("Channel {} does not exist. {}".format(channel_name, e))
       raise NDWSError("Channel {} does not exist".format(channel_name))
   
+  # Accessors   
   def getChannelModel ( self ):
     return Channel.objects.get(channel_name=self.ch.channel_name, project=self.pr.getProjectName())
+  
   def getDataType ( self ):
     return self.ch.channel_datatype
+  
   def getChannelName ( self ):
     return self.ch.channel_name
+  
   def getChannelType ( self ):
     return self.ch.channel_type
+  
   def getChannelDescription ( self ):
     return self.ch.channel_description
+  
   def getExceptions ( self ):
     return self.ch.exceptions
+  
   def getReadOnly (self):
     return self.ch.readonly
+  
   def getResolution (self):
     return self.ch.resolution
+  
   def getWindowRange (self):
     return [self.ch.startwindow,self.ch.endwindow]
+  
   def getPropagate (self):
     return self.ch.propagate
+  
   def isDefault (self):
     return self.ch.default 
   

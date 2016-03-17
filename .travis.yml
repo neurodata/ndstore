@@ -33,7 +33,7 @@ install:
   - pip install cython numpy
   - pip install -r ./setup/requirements.txt
     # compiling the ctypes lib
-  - make -f ./ndlib/c_version/makefile_LINUX
+  - make -f ./ndlib/c_version/makefile_LINUX -C ./ndlib/c_version/
     # creating the mysql user
   - sudo service mysql restart
   - mysql -u root -pneur0data -i -e "create user 'neurodata'@'localhost' identified by 'neur0data';" && mysql -u root -pneur0data -i -e "grant all privileges on *.* to 'neurodata'@'localhost' with grant option;" && mysql -u neurodata -pneur0data -i -e "CREATE DATABASE neurodjango;"
