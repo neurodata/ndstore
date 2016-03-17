@@ -1,7 +1,9 @@
 Tile APIs
 **********
 
-You can also view the `Tilecache API's <http://docs.neurodata.io/ndtilecache/api/tilecache_api.html>`_ which work similarly for `ndtilecache <http://docs.neurodata.io/ndtilecache/index.html>`_.
+You can also view the `Tilecache APIs <http://docs.neurodata.io/ndtilecache/api/tilecache_api.html>`_ which work similarly for `ndtilecache <http://docs.neurodata.io/ndtilecache/index.html>`_.
+
+**NOTE**: These APIs do not return the orginal data. If you want the orginal raw data then please use the :ref:`Data APIs <data-api>`.
 
 .. _simple-tile:
 
