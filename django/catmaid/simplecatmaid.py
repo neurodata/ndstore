@@ -211,6 +211,5 @@ class SimpleCatmaid:
         else:
           fobj = cStringIO.StringIO(tile)
 
-
         fobj.seek(0)
         return fobj

@@ -738,6 +738,7 @@ def selectPost ( webargs, proj, db, postdata ):
     raise NDWSError(e)
   
   corner = args.getCorner()
+  dimension = args.getDim()
   resolution = args.getResolution()
   timerange = args.getTimeRange()
   conflictopt = restargs.conflictOption ( "" )
@@ -779,6 +780,9 @@ def selectPost ( webargs, proj, db, postdata ):
               logger.error("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
               raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
 
+            if voxarray.shape[1:][::-1] != tuple(dimension):
+              logger.error("The data has mismatched dimensions {} compared to the arguments {}".format(voxarray.shape[1:], dimension))
+              raise NDWSError("The data has mismatched dimensions {} compared to the arguments {}".format(voxarray.shape[1:], dimension))
             
             if ch.getChannelType() in IMAGE_CHANNELS + TIMESERIES_CHANNELS : 
               db.writeCuboid (ch, corner, resolution, voxarray, timerange=timerange) 
@@ -803,7 +807,11 @@ def selectPost ( webargs, proj, db, postdata ):
         if voxarray.shape[0] != len(channel_list):
           logger.error("The data has some missing channels")
           raise NDWSError("The data has some missing channels")
-      
+        
+        if voxarray.shape[1:][::-1] != tuple(dimension):
+          logger.error("The data has mismatched dimensions {} compared to the arguments {}".format(voxarray.shape[1:], dimension))
+          raise NDWSError("The data has mismatched dimensions {} compared to the arguments {}".format(voxarray.shape[1:], dimension))
+
         for idx, channel_name in enumerate(channel_list):
           ch = proj.getChannelObj(channel_name)
   
@@ -817,7 +825,7 @@ def selectPost ( webargs, proj, db, postdata ):
             raise NDWSError("Wrong datatype in POST")
             
           if ch.getChannelType() in IMAGE_CHANNELS + TIMESERIES_CHANNELS:
-            db.writeCuboid ( ch, corner, resolution, voxarray[idx,:], timerange )
+            db.writeCuboid(ch, corner, resolution, voxarray[idx,:], timerange)
 
           elif ch.getChannelType() in ANNOTATION_CHANNELS:
             db.annotateDense(ch, corner, resolution, voxarray[idx,:], conflictopt)

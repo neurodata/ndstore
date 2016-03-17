@@ -238,7 +238,7 @@ class IngestData:
                 s3db.putCube(ch, self.resolution, zidx, cube.toBlosc())
       
           # clean up the slices fetched
-          self.cleanCatmaidData(range(slice_number,slice_number+zcubedim) if slice_number+zcubedim<=zimagesz else range(slice_number,zimagesz), xtile, ytile)
+          self.cleanCatmaidData(range(slice_number,slice_number+zsupercubedim) if slice_number+zsupercubedim<=zimagesz else range(slice_number,zimagesz), xtile, ytile)
 
   def ingestImageStack(self):
     """Ingest a TIF image stack"""
