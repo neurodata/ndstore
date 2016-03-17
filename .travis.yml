@@ -66,4 +66,5 @@ cache:
   - apt
 
 script:
+  - cd ./test/
   - py.test
