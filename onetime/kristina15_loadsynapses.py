@@ -29,7 +29,7 @@ def main():
   parser.add_argument('channel', action="store" )
   parser.add_argument('filename', action="store" )
   parser.add_argument('--resolution', action="store", type=int, default=0 )
-  parser.add_argument('--radius', action="store", type=int, default=3 )
+  parser.add_argument('--radius', action="store", type=int, default=1 )
 
   result = parser.parse_args()
 
@@ -42,7 +42,6 @@ def main():
       mgdict = m.groupdict()
       centers.append([mgdict['xc'],mgdict['yc'],mgdict['zc']])
 
-
   # make a circle
   z,y,x = np.ogrid[-rd: rd+1, -rd: rd+1, -rd:rd+1]
   circ = np.uint32(x**2+y**2+z**2 <= rd**2)
@@ -51,11 +50,16 @@ def main():
   for center in centers:
 
     c = map(int,center)
+
+    print c 
+
+    c = [c[0]-1, c[1]-1, c[2]-1]
+    
     print c
 
     # only write synapses wholly inside the space
-    if c[0]-rd < 0 or c[1]-rd < 0 or c[2]-rd < 0 or c[0] > 8126-rd or c[1]>12986-rd or c[2]>41-rd: 
-      continue
+   # if c[0]-rd < 0 or c[1]-rd < 0 or c[2]-rd < 0 or c[0] > 8126-rd or c[1]>12986-rd or c[2]>41-rd: 
+   #   continue
 
     # make two clusters
     if c[0] % 2 == 0:
@@ -83,7 +87,7 @@ def main():
     putdata = (circ * np.uint32(annoid)).reshape(1, circ.shape[0], circ.shape[1], circ.shape[2])
 
     # post the object
-    url = 'http://%s/sd/%s/%s/blosc/%s/%s,%s/%s,%s/%s,%s/' % ( result.baseurl, result.token, result.channel, result.resolution, c[0]-rd, c[0]+rd+1, c[1]-rd, c[1]+rd+1, c[2]-rd, c[2]+rd+1 )
+    url = 'http://%s/sd/%s/%s/blosc/%s/%s,%s/%s,%s/%s,%s/exception/' % ( result.baseurl, result.token, result.channel, result.resolution, c[0]-rd, c[0]+rd+1, c[1]-rd, c[1]+rd+1, c[2]-rd, c[2]+rd+1 )
     try:
       req = urllib2.Request ( url, blosc.pack_array(putdata)) 
       response = urllib2.urlopen(req)
