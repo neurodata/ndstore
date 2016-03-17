@@ -22,6 +22,7 @@ from PIL import Image
 import base64
 
 import ndproj
+import ndlib
 import ndwsrest
 import spatialdb
 
@@ -79,6 +80,12 @@ def synaptogram_view (request, webargs):
         ch = proj.getChannelObj(chan)
         try: 
           cb = db.cutout ( ch, corner, dim, resolution )
+          # apply window for 16 bit projects 
+          if ch.getDataType() in DTYPE_uint16:
+            [startwindow, endwindow] = window_range = ch.getWindowRange()
+            if (endwindow != 0):
+              cb.data = np.uint8(windowCutout(cb.data, window_range))
+          
           outputdict[chan] = []
           for zslice in cb.data:
           
@@ -90,13 +97,9 @@ def synaptogram_view (request, webargs):
 
             else: 
               # parse image project  
-              if ch.getDataType() in DTYPE_uint16:
-                [startwindow, endwindow] = window_range = ch.getWindowRange()
-                if (endwindow != 0):
-                  cb.data = np.uint8(windowCutout(cb.data, window_range))
-                  
-                # convert to Base64 image 
-                img = Image.frombuffer( 'L', (dim[0], dim[1]), zslice.flatten(), 'raw', 'L', 0, 1 )
+              img = Image.frombuffer( 'L', (dim[0], dim[1]), zslice.flatten(), 'raw', 'L', 0, 1 )
+            
+            # convert to base64
             fileobj = cStringIO.StringIO()
             img.save(fileobj, "PNG")
             fileobj.seek(0)
