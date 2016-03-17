@@ -32,6 +32,8 @@ install:
   - sudo apt-get -y install nginx git bash-completion python-virtualenv libxslt1-dev libmemcached-dev libhdf5-serial-dev g++ libjpeg-dev python-dev mysql-server-5.6 libmysqlclient-dev xfsprogs supervisor rabbitmq-server uwsgi uwsgi-plugin-python liblapack-dev memcached
   - pip install cython numpy
   - pip install -r ./setup/requirements.txt
+    # compiling the ctypes lib
+  - make -f ./ndlib/c_version/makefile_LINUX
     # creating the mysql user
   - sudo service mysql restart
   - mysql -u root -pneur0data -i -e "create user 'neurodata'@'localhost' identified by 'neur0data';" && mysql -u root -pneur0data -i -e "grant all privileges on *.* to 'neurodata'@'localhost' with grant option;" && mysql -u neurodata -pneur0data -i -e "CREATE DATABASE neurodjango;"
@@ -51,7 +53,7 @@ install:
     # move celery config files and start service
   - sudo ln -s ./setup/docker_config/celery/propagate.conf /etc/supervisor/conf.d/propagate.conf
   - sudo ln -s ./setup/docker_config/celery/ingest.conf /etc/supervisor/conf.d/ingest.conf
-    # starting all the services
+    # restarting all the services
   - sudo service nginx restart
   - sudo service uwsgi restart
   - sudo service supervisor restart
