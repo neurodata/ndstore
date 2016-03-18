@@ -10,12 +10,14 @@ sudo: required
 
 dist: trusty
 
-#services:
-  #- mysql
-  #- memcached
-  #- rabbitmq
-  #- supervisor
-  #- nginx
+services:
+  - mysql
+  - memcached
+  - rabbitmq
+  - supervisor
+  - nginx
+  - redis
+  - cassandra
 
 before_install:
   #- sudo apt-get update -qq
@@ -59,7 +61,6 @@ install:
   - sudo service supervisor restart
   - sudo service rabbitmq-server restart
   - sudo service memcached restart
-
 
 cache:
   - pip

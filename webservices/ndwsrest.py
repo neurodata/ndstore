@@ -778,8 +778,10 @@ def selectPost ( webargs, proj, db, postdata ):
             if ch.getReadOnly() == READONLY_TRUE:
               logger.error("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
               raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
-
-            if voxarray.shape[1:][::-1] != tuple(dimension):
+           
+            # checking if the dimension for x,y,z,t(optional) are correct
+            # this is different then the on for blosc/numpy because channels are packed separately
+            if voxarray.shape[::-1] != tuple(dimension + [timerange[1]-timerange[0]] if timerange[1]-timerange[0] is not 0 else dimension):
               logger.error("The data has mismatched dimensions {} compared to the arguments {}".format(voxarray.shape[1:], dimension))
               raise NDWSError("The data has mismatched dimensions {} compared to the arguments {}".format(voxarray.shape[1:], dimension))
             
@@ -807,7 +809,8 @@ def selectPost ( webargs, proj, db, postdata ):
           logger.error("The data has some missing channels")
           raise NDWSError("The data has some missing channels")
         
-        if voxarray.shape[1:][::-1] != tuple(dimension):
+        # checking if the dimension for x,y,z,t(optional) are correct
+        if voxarray.shape[1:][::-1] != tuple(dimension + [timerange[1]-timerange[0]] if timerange[1]-timerange[0] is not 0 else dimension):
           logger.error("The data has mismatched dimensions {} compared to the arguments {}".format(voxarray.shape[1:], dimension))
           raise NDWSError("The data has mismatched dimensions {} compared to the arguments {}".format(voxarray.shape[1:], dimension))
 
