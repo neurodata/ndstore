@@ -1,4 +1,4 @@
-# Copyright 2014 NeuroData (http://neurodata.io)
+# Copyright 2014 Open Connectome Project (http://openconnecto.me)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,9 +25,8 @@ from PIL import ImageOps
 
 from contextlib import closing
 
-import ndwsrest
 import ndproj
-import spdb
+import spatialdb
 
 
 class Synaptogram:
@@ -54,7 +53,7 @@ class Synaptogram:
     # pattern for using contexts to close databases
     # get the project 
     with closing ( ndproj.NDProjectsDB() ) as projdb:
-      self.proj = projdb.loadProject ( token )
+      self.proj = projdb.loadToken ( token )
 
 
   def setReference ( self, refchans ):
@@ -99,10 +98,10 @@ class Synaptogram:
     hwidth = self.width/2
     [x,y,z] = self.centroid
     # update for the zoffset
-    z = z - self.proj.datasetcfg.slicerange[0]
+#    z = z - self.proj.datasetcfg.slicerange[0]
 
     # and the database and then call the db function
-    with closing ( nddb.NDDB(self.proj) ) as db:
+    with closing ( spatialdb.SpatialDB(self.proj) ) as db:
 
       # if we have a globale normalization request, do a big cutout to get a send of values and then 
       #  set a maximum value for each channel
@@ -119,10 +118,11 @@ class Synaptogram:
 
       # get the data region for each channel 
       for chan in self.channels:
+        ch = self.proj.getChannelObj ( chan )
         try: 
-          chancuboids[chan] = db.cutout ( corner, dim, self.resolution, chan )
+          chancuboids[chan] = db.cutout ( ch, corner, dim, self.resolution )
         except KeyError:
-          raise Exception ("Cannel %s not found" % ( chan ))
+          raise Exception ("Channel %s not found" % ( chan ))
 
 
     # Now generate a synaptogram

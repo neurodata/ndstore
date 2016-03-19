@@ -23,16 +23,16 @@ import numpy as np
 import pytest
 from contextlib import closing
 
+from ndtype import UINT8, UINT16, UINT32, ANNOTATION, IMAGE 
+from ND import celery_app 
 import makeunitdb
 from params import Params
 from postmethods import postNPZ, getNPZ 
+
 import kvengine_to_test
 import site_to_test
 SITE_HOST = site_to_test.site
 
-from ndtype import UINT8, UINT16, UINT32, ANNOTATION, IMAGE 
-
-# from ND import celery_app 
 
 p = Params()
 p.token = 'unittest'
@@ -68,7 +68,8 @@ class Test_Histogram8:
       req = urllib2.Request(url)
       response = urllib2.urlopen(req)
     except urllib2.HTTPError,e:
-      return e
+      print e 
+      assert(e.reason == 0)
     
     assert( response.code == 200 )
   
@@ -94,8 +95,9 @@ class Test_Histogram8:
       req = urllib2.Request(url)
       response = urllib2.urlopen(req)
     except urllib2.HTTPError,e:
-      return e
-    
+      print e 
+      assert(e.reason == 0)
+  
     assert( response.code == 200 )
   
     jsonresponse = json.loads(response.read())
@@ -138,7 +140,8 @@ class Test_Histogram16:
       req = urllib2.Request(url)
       response = urllib2.urlopen(req)
     except urllib2.HTTPError,e:
-      return e
+      print e 
+      assert(e.reason == 0)
     
     assert( response.code == 200 )
   
@@ -164,7 +167,8 @@ class Test_Histogram16:
       req = urllib2.Request(url)
       response = urllib2.urlopen(req)
     except urllib2.HTTPError,e:
-      return e
+      print e 
+      assert(e.reason == 0)
     
     assert( response.code == 200 )
   

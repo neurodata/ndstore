@@ -59,7 +59,7 @@ class NDChannel:
     return self.ch.resolution
   
   def getWindowRange (self):
-    return [self.ch.startwindow,self.ch.endwindow]
+    return [int(self.ch.startwindow),int(self.ch.endwindow)]
   
   def getPropagate (self):
     return self.ch.propagate

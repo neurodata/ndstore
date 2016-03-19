@@ -18,5 +18,6 @@ from django.conf.urls import patterns, include, url
 #admin.autodiscover()
 
 urlpatterns = patterns('synaptogram.views',
+#  url(r'^(?P<webargs>\w+/.*)$', 'synaptogram_view_old'),
   url(r'^(?P<webargs>\w+/.*)$', 'synaptogram_view'),
 )

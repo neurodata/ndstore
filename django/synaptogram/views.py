@@ -13,23 +13,115 @@
 # limitations under the License.
 
 # Create your views here.
-import django.http
-
 import numpy as np
-from PIL import Image
-import urllib2
-import zlib
-import cStringIO
 import re
+from contextlib import closing
+import cStringIO
+import django.http
+from PIL import Image
+import base64
 
 import ndproj
+import ndlib
 import ndwsrest
-import synaptogram
+import spatialdb
 
+from ndtype import DTYPE_uint8, DTYPE_uint16, ANNOTATION_CHANNELS 
+from windowcutout import windowCutout 
+
+import json
+
+#import synaptogram
 
 """RESTful interface to a synaptogram.  Rerturn a png file."""
 
 def synaptogram_view (request, webargs):
+  """Render a synaptogram as a Web page"""
+
+  try:
+
+    m = re.match ("(?P<token>[\d\w]+)/(?P<channels>[\d\w,]+)/(xy|xz|yz)/(?P<resolution>[\d]+)/(?P<xlow>[\d]+),(?P<xhigh>[\d]+)/(?P<ylow>[\d]+),(?P<yhigh>[\d]+)/(?P<zlow>[\d]+),(?P<zhigh>[\d]+)/", webargs)
+    md = m.groupdict()
+
+    token = md['token']
+    chanstr = md['channels']
+    resolution = int(md['resolution'])
+    xlow = int(md['xlow'])
+    xhigh = int(md['xhigh'])
+    ylow = int(md['ylow'])
+    yhigh = int(md['yhigh'])
+    zlow = int(md['zlow'])
+    zhigh = int(md['zhigh'])
+
+    channels = chanstr.split(',')
+
+    # pattern for using contexts to close databases
+    # get the project 
+    with closing ( ndproj.NDProjectsDB() ) as projdb:
+      proj = projdb.loadToken ( token )
+
+    # and the database and then call the db function
+    with closing ( spatialdb.SpatialDB(proj) ) as db:
+
+      # convert to cutout coordinates
+      (xoffset,yoffset,zoffset) = proj.datasetcfg.getOffset()[ resolution ]
+      (xlow, xhigh) = (xlow-xoffset, xhigh-xoffset)
+      (ylow, yhigh) = (ylow-yoffset, yhigh-yoffset)
+      (zlow, zhigh) = (zlow-zoffset, zhigh-zoffset)
+
+      corner = [ xlow, ylow, zlow ]
+      dim = [ xhigh-xlow, yhigh-ylow, zhigh-zlow ]
+
+      outputdict = {}
+
+      # get the data region for each channel 
+      for chan in channels:
+        # data type on a per channel basis
+        ch = proj.getChannelObj(chan)
+        try: 
+          cb = db.cutout ( ch, corner, dim, resolution )
+          # apply window for 16 bit projects 
+          if ch.getDataType() in DTYPE_uint16:
+            [startwindow, endwindow] = window_range = ch.getWindowRange()
+            if (endwindow != 0):
+              cb.data = np.uint8(windowCutout(cb.data, window_range))
+          
+          outputdict[chan] = []
+          for zslice in cb.data:
+          
+            if ch.getChannelType() in ANNOTATION_CHANNELS:
+              # parse annotation project
+              imagemap = np.zeros( [ dim[1], dim[0] ], dtype=np.uint32 )
+              imagemap = ndlib.recolor_ctype( zslice, imagemap )
+              img = Image.frombuffer( 'RGBA', (dim[0],dim[1]), imagemap, 'raw', 'RGBA', 0, 1 )
+
+            else: 
+              # parse image project  
+              img = Image.frombuffer( 'L', (dim[0], dim[1]), zslice.flatten(), 'raw', 'L', 0, 1 )
+            
+            # convert to base64
+            fileobj = cStringIO.StringIO()
+            img.save(fileobj, "PNG")
+            fileobj.seek(0)
+            encodedimg = base64.b64encode(fileobj.read())
+            outputdict[chan].append(encodedimg)
+
+          #outputdict[chan] = cb.data.tolist()
+          outputdict['{}.dtype'.format(chan)] = str(cb.data.dtype)
+        except KeyError:
+          raise Exception ("Channel %s not found" % ( chan ))
+
+      outputdict['shape'] = cb.data.shape
+
+      jsonstr = json.dumps ( outputdict )
+
+      return django.http.HttpResponse(json.dumps(outputdict), content_type="application/json")
+
+
+  except:
+    raise
+
+def synaptogram_view_old (request, webargs):
   """Render a synaptogram as a Web page"""
 
   try:
@@ -95,7 +187,7 @@ def synaptogram_view (request, webargs):
     fobj = cStringIO.StringIO() 
     sogimg.save ( fobj, "PNG" )
     fobj.seek(0)
-    return django.http.HttpResponse(fobj.read(), mimetype="image/png" )
+    return django.http.HttpResponse(fobj.read(), content_type="image/png" )
 
   except Exception, e:
     raise
