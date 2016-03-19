@@ -61,7 +61,7 @@ class BenchmarkTest:
         range_args[1::2] = max_values
         # print "Size", reduce(mul, map(sub, max_values, min_values), 1)*2.0/(1024*1024)
         if self.write_tests:
-          data = blosc.pack_array(np.ones( [len(self.channels)]+map(sub, range_args[1::2], range_args[::2]), dtype=self.datatype) * random.randint(0,255))
+          data = blosc.pack_array(np.ones( [len(self.channels)]+map(sub, range_args[1::2], range_args[::2])[::-1], dtype=self.datatype) * random.randint(0,255))
           self.data_list.append(data)
           self.fetch_list.append(generateURLBlosc(self.host, self.token, self.channels, self.resolution, range_args))
         else:
@@ -103,7 +103,7 @@ class BenchmarkTest:
       # checking if the x,y,z dimensions are exceeded
       if all([a<b for a,b in zip(range_args[1::2], self.imagesize)]):
         if self.write_tests:
-          data = blosc.pack_array(np.ones( [len(self.channels)]+map(sub, range_args[1::2], range_args[::2]), dtype=self.datatype) * random.randint(0,255))
+          data = blosc.pack_array(np.ones( [len(self.channels)]+map(sub, range_args[1::2], range_args[::2])[::-1], dtype=self.datatype) * random.randint(0,255))
           self.data_list.append(data)
           self.fetch_list.append(generateURLBlosc(self.host, self.token, self.channels, self.resolution, range_args))
         else:

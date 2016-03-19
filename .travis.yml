@@ -67,5 +67,7 @@ cache:
   - apt
 
 script:
+  - wget localhost
+  - wget localhost/nd/
   - cd ./test/
   - py.test
