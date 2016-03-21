@@ -79,7 +79,7 @@ class BenchmarkTest:
 
   def multiThreadTest(self, start_value, number_iterations, number_of_processes):
     """Generate the URL for multi-thread test"""
-
+    
     # min_values = [xmin,ymin,zmin] = map(add, self.offset, start_value)
     min_values = [xmin, ymin, zmin] = self.offset
     max_values = map(add, min_values, self.dim)
@@ -172,7 +172,7 @@ def main():
     csv_writer = csv.writer(csv_file, delimiter=',')
     
     # iterating over data size
-    for data_size in range(result.data_size):
+    for data_size in range(1, result.data_size+1, 1):
       
       # setting the time value list to zero
       time_values = []
