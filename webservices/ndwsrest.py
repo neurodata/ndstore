@@ -970,7 +970,7 @@ def getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution=None, c
       dataids = [anno.annid]
 
     # get the bounding box from the index
-    bbcorner, bbdim = db.getBoundingBox(ch, dataids, resolution)
+    bbcorner, bbdim = db.getBoundingCube(ch, dataids, resolution)
 
     # figure out which ids are in object
     if bbcorner != None:
