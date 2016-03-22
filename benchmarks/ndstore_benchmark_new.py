@@ -51,14 +51,14 @@ class BenchmarkTest:
     self.write_tests = result.write_tests
 
 
-  def singleThreadTest(self, start_value, number_iterations):
+  def singleThreadTest(self, start_value, size_iterations):
     """Generate the URL for read test"""
     
     min_values = [xmin,ymin,zmin] = map(add, self.offset, start_value)
     max_values = map(add, min_values, self.dim)
     range_args = [None]*(len(min_values)+len(max_values))
     
-    for i in range(0, number_iterations, 1):
+    for i in range(0, size_iterations, 1):
       if all([a<b for a,b in zip(max_values, self.imagesize)]):
         range_args[::2] = min_values
         range_args[1::2] = max_values
@@ -77,7 +77,7 @@ class BenchmarkTest:
       else:
         break
 
-  def multiThreadTest(self, start_value, number_iterations, number_of_processes):
+  def multiThreadTest(self, start_value, size_iterations, number_of_processes):
     """Generate the URL for multi-thread test"""
     
     # min_values = [xmin,ymin,zmin] = map(add, self.offset, start_value)
@@ -87,7 +87,7 @@ class BenchmarkTest:
     size_args = [None]*(len(min_values)+len(max_values))
     
     # determine the size of the cutout
-    for i in range(0, number_iterations, 1):
+    for i in range(0, size_iterations, 1):
       if all([a<b for a,b in zip(max_values, self.imagesize)]):
         size_args[::2] = min_values
         size_args[1::2] = max_values
@@ -158,12 +158,9 @@ def main():
   result = parser.parse_args()
   
   # creating the benchmark class here
-  bt = BenchmarkTest(result)
   # setting the number of processes here
   p = multiprocessing.Pool(result.number_of_processes)
   
-  # from pprint import pprint
-  # pprint(bt.fetch_list)
   
   # opening the csv file here
   with open('{}_{}_threads.csv'.format('write' if result.write_tests else 'read' , result.number_of_processes), 'a+') as csv_file:
@@ -177,15 +174,20 @@ def main():
       # setting the time value list to zero
       time_values = []
 
-      if result.number_of_processes == 1:
-        bt.singleThreadTest(result.offset_value, data_size)
-      else:
-        bt.multiThreadTest(result.offset_value, data_size, result.number_of_processes)
+      # if result.number_of_processes == 1:
+        # bt.singleThreadTest(result.offset_value, data_size)
+      # else:
+      bt = BenchmarkTest(result)
+      bt.multiThreadTest(result.offset_value, data_size, result.number_of_processes)
     
+      # from pprint import pprint
+      # pprint(bt.fetch_list)
+      
       for iter_number in range(result.number_of_iterations):
         
         dropCache()
         start_time = time.time()
+        continue
         if result.write_tests:
           p.map(putURLTimed, zip(bt.fetch_list,bt.data_list))
         else:
