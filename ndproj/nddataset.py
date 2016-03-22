@@ -127,26 +127,37 @@ class NDDataset:
   # Accessors
   def getDatasetName(self):
     return self.ds.dataset_name
+  
   def getResolutions(self):
     return self.resolutions
+  
   def getPublic(self):
     return self.ds.public
+  
   def getImageSize(self):
     return self.imagesz
+  
   def getOffset(self):
     return self.offset
+  
   def getScale(self):
     return self.scale
+  
   def getVoxelRes(self):
     return self.voxelres
+  
   def getCubeDims(self):
     return self.cubedim
+  
   def getSuperCubeDims(self):
     return self.supercubedim
+  
   def getSuperCubeSize(self):
     return SUPERCUBESIZE
+  
   def getTimeRange(self):
     return self.timerange
+  
   def getDatasetDescription ( self ):
     return self.ds.dataset_description
 

@@ -38,6 +38,9 @@ class RedisProjectDB:
       logger.error("Unknown error while connecting to Redis. {}".format(e))
       raise NDWSError("Unknown error while connecting to Redis. {}".format(e))
 
+  def __del__(self):
+    """Close the database connection"""
+    self.close()
 
   def close (self):
     """Close the database connection"""
@@ -66,8 +69,8 @@ class RedisProjectDB:
       if project_keys:
         self.client.delete(*project_keys)
     except Exception as e:
-      logger.error("Error in deleting Redis project {}. {}".format(self.pr.getProjectName(), e)
-      raise NDWSError("Error in deleting Redis project {}. {}".format(self.pr.getProjectName(), e)
+      logger.error("Error in deleting Redis project {}. {}".format(self.pr.getProjectName(), e))
+      raise NDWSError("Error in deleting Redis project {}. {}".format(self.pr.getProjectName(), e))
 
 
   def deleteNDChannel(self, channel_name):
@@ -82,5 +85,5 @@ class RedisProjectDB:
       if channel_keys:
         self.client.delete(*channel_keys)
     except Exception as e:
-      logger.error("Error in deleting channel {}. {}".format(channel_name, e)
-      raise NDWSError("Error in deleting channel {}. {}".format(channel_name, e)
+      logger.error("Error in deleting channel {}. {}".format(channel_name, e))
+      raise NDWSError("Error in deleting channel {}. {}".format(channel_name, e))

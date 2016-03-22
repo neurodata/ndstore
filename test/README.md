@@ -184,11 +184,13 @@
     3. test_checkCutout
     4. test_ErrorHandling
 
-* test_blosc.py - 2 tests
+* test_blosc.py - 4 tests
 
   - Module : Test_Blosc
     1. test_get_blosc
     2. test_post_blosc
+    3. test_incorrect_dim_blosc
+    4. test_incorrect_channel_blosc
 
 * test_jpeg.py - 2 tests
 

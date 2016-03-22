@@ -34,6 +34,9 @@ class CassProjectDB:
     cluster = Cluster([server_address])
     self.session = cluster.connect()
 
+  def __del__(self):
+    """Close the database connection"""
+    self.close()
 
   def close (self):
     """Close the database connection"""

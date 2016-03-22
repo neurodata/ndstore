@@ -33,28 +33,44 @@ class NDChannel:
       logger.error("Channel {} does not exist. {}".format(channel_name, e))
       raise NDWSError("Channel {} does not exist".format(channel_name))
   
+  # Accessors   
   def getChannelModel ( self ):
     return Channel.objects.get(channel_name=self.ch.channel_name, project=self.pr.getProjectName())
+  
   def getDataType ( self ):
     return self.ch.channel_datatype
+  
   def getChannelName ( self ):
     return self.ch.channel_name
+  
   def getChannelType ( self ):
     return self.ch.channel_type
+  
   def getChannelDescription ( self ):
     return self.ch.channel_description
+  
   def getExceptions ( self ):
     return self.ch.exceptions
+  
   def getReadOnly (self):
     return self.ch.readonly
+  
   def getResolution (self):
     return self.ch.resolution
+  
   def getWindowRange (self):
     return [int(self.ch.startwindow),int(self.ch.endwindow)]
+  
   def getPropagate (self):
     return self.ch.propagate
+  
   def isDefault (self):
     return self.ch.default 
+  
+  def getS3IndexTable (self, resolution):
+    """Return the S3 index table"""
+    if self.pr.getKVEngine() == MYSQL:
+      return '{}_res{}_s3index'.format(self.ch.channel_name, resolution)
 
   def getIdsTable (self):
     if self.pr.getNDVersion() == '0.0':
@@ -62,7 +78,7 @@ class NDChannel:
     else:
       return "{}_ids".format(self.ch.channel_name)
 
-  def getTable (self, resolution=0):
+  def getTable (self, resolution):
     """Return the appropriate table for the specified resolution"""
     if self.pr.getNDVersion() == '0.0':
       return "res{}".format(resolution)
@@ -96,7 +112,7 @@ class NDChannel:
       logger.error("RAMON not support for KV Engine {}".format(self.pr.getKVEngine()))
       raise NDWSError("RAMON not support for KV Engine {}".format(self.pr.getKVEngine()))
 
-  def getIdxTable (self, resolution=0):
+  def getIdxTable (self, resolution):
     """Return the appropriate Index table for the specified resolution"""
     if self.pr.getNDVersion() == '0.0':
       return "idx{}".format(resolution)

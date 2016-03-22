@@ -15,7 +15,7 @@
 from django.conf.urls import *
 import django.contrib.auth
 
-# redirect everything to the new ocpviz server 
+# redirect everything to the new ndviz server 
 urlpatterns = patterns('ndviz.views',
     # data views
     url(r'(?P<webargs>[\w:,/-]+)$', 'default'),

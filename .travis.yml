@@ -10,12 +10,14 @@ sudo: required
 
 dist: trusty
 
-#services:
-  #- mysql
-  #- memcached
-  #- rabbitmq
-  #- supervisor
-  #- nginx
+services:
+  - mysql
+  - memcached
+  - rabbitmq
+  - supervisor
+  - nginx
+  - redis
+  - cassandra
 
 before_install:
   #- sudo apt-get update -qq
@@ -32,38 +34,40 @@ install:
   - sudo apt-get -y install nginx git bash-completion python-virtualenv libxslt1-dev libmemcached-dev libhdf5-serial-dev g++ libjpeg-dev python-dev mysql-server-5.6 libmysqlclient-dev xfsprogs supervisor rabbitmq-server uwsgi uwsgi-plugin-python liblapack-dev memcached
   - pip install cython numpy
   - pip install -r ./setup/requirements.txt
+    # compiling the ctypes lib
+  - make -f /home/travis/build/neurodata/ndstore/ndlib/c_version/makefile_LINUX -C ./ndlib/c_version/
     # creating the mysql user
   - sudo service mysql restart
   - mysql -u root -pneur0data -i -e "create user 'neurodata'@'localhost' identified by 'neur0data';" && mysql -u root -pneur0data -i -e "grant all privileges on *.* to 'neurodata'@'localhost' with grant option;" && mysql -u neurodata -pneur0data -i -e "CREATE DATABASE neurodjango;"
     # settings and secret_settings
-  - cd TRAVIS_BUILD_DIR/ndstore/django/ND
-  - cp settings.py.example settings.py
-  - ln -s TRAVIS_BUILD_DIR/ndstore/setup/docker_config/django/docker_settings_secret.py settings_secret.py
+  - cp ./django/ND/settings.py.example ./django/ND/settings.py
+  - ln -s /home/travis/build/neurodata/ndstore/setup/docker_config/django/docker_settings_secret.py /home/travis/build/neurodata/ndstore/django/ND/settings_secret.py
     # django migrate
-  - cd TRAVIS_BUILD_DIR/ndstore/django/
-  - python manage.py migrate
-  - echo "from django.contrib.auth.models import User; User.objects.create_superuser('neurodata', 'abc@xyz.com', 'neur0data')" | python manage.py shell
-  - python manage.py collectstatic --noinput
+  - python ./django/manage.py migrate
+  - echo "from django.contrib.auth.models import User; User.objects.create_superuser('neurodata', 'abc@xyz.com', 'neur0data')" | python ./django/manage.py shell
+  - python ./django/manage.py collectstatic --noinput
     # move the nginx config files and start service
   - sudo rm /etc/nginx/sites-enabled/default
-  - sudo ln -s ~/ndstore/setup/docker_config/nginx/neurodata.conf /etc/nginx/sites-enabled/default
+  - sudo ln -s ./setup/docker_config/nginx/neurodata.conf /etc/nginx/sites-enabled/default
     # move uwsgi config files and start service
-  - sudo ln -s ~/ndstore/setup/docker_config/uwsgi/neurodata.ini /etc/uwsgi/apps-available/
-  - sudo ln -s ~/ndstore/setup/docker_config/uwsgi/neurodata.ini /etc/uwsgi/apps-enabled/
+  - sudo ln -s ./setup/docker_config/uwsgi/neurodata.ini /etc/uwsgi/apps-available/
+  - sudo ln -s ./setup/docker_config/uwsgi/neurodata.ini /etc/uwsgi/apps-enabled/
     # move celery config files and start service
-  - sudo ln -s ~/ndstore/setup/docker_config/celery/propagate.conf /etc/supervisor/conf.d/propagate.conf
-  - sudo ln -s ~/ndstore/setup/docker_config/celery/ingest.conf /etc/supervisor/conf.d/ingest.conf
-    # starting all the services
+  - sudo ln -s ./setup/docker_config/celery/propagate.conf /etc/supervisor/conf.d/propagate.conf
+  - sudo ln -s ./setup/docker_config/celery/ingest.conf /etc/supervisor/conf.d/ingest.conf
+    # restarting all the services
   - sudo service nginx restart
   - sudo service uwsgi restart
   - sudo service supervisor restart
   - sudo service rabbitmq-server restart
   - sudo service memcached restart
 
-
 cache:
   - pip
   - apt
 
 script:
+  - wget localhost
+  - wget localhost/nd/
+  - cd ./test/
   - py.test

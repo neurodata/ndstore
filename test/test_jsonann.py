@@ -203,5 +203,3 @@ class Test_Annotation_Json():
     f = getURL("http://{}/sd/{}/{}/{}/json/".format(SITE_HOST, p.token, p.channels, ann_annoid))
     
     assert(f == 404)
-
-

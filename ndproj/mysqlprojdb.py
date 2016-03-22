@@ -34,7 +34,12 @@ class MySQLProjectDB:
     # connect to the database
     self.pr = NDProject(project_name)
 
+  def __del__(self):
+    """Close the database connection"""
+    self.close()
+  
   def close (self):
+    """Close the database connection"""
     pass
 
   def newNDProject(self):
@@ -75,7 +80,7 @@ class MySQLProjectDB:
           elif ch.getChannelType() == TIMESERIES:
             for res in self.pr.datasetcfg.getResolutions():
               cursor.execute("CREATE TABLE {} ( zindex BIGINT, timestamp INT, cube LONGBLOB, PRIMARY KEY(zindex,timestamp))".format(ch.getTable(res)))
-              cursor.execute ( "CREATE TABLE {}_res{}_index (zindex BIGINT NOT NULL, timestamp INT NOT NULL, PRIMARY KEY(zindex,timestamp))".format(ch.getChannelName(), res) )
+              cursor.execute ( "CREATE TABLE {} (zindex BIGINT NOT NULL, timestamp INT NOT NULL, PRIMARY KEY(zindex,timestamp))".format(ch.getS3IndexTable(res)))
           else:
             raise NDWSError("Channel type {} does not exist".format(ch.getChannelType()))
           
@@ -128,11 +133,13 @@ class MySQLProjectDB:
 
     if ch.getChannelType() in ANNOTATION_CHANNELS:
       table_list.append(ch.getIdsTable())
+      table_list.append(ch.getRamonTable())
       # for key in annotation.anno_dbtables.keys():
         # table_list.append(ch.getAnnoTable(key))
 
     for res in self.pr.datasetcfg.getResolutions():
       table_list.append(ch.getTable(res))
+      table_list.append(ch.getS3IndexTable(res))
       if ch.getChannelType() in ANNOTATION_CHANNELS:
         table_list = table_list + [ch.getIdxTable(res), ch.getExceptionsTable(res)]
 

@@ -73,3 +73,19 @@ class Test_Blosc:
     posted_data = getNPZ(p)
 
     assert ( np.array_equal(image_data,posted_data) )
+  
+  def test_incorrect_dim_blosc (self):
+    """Test the xy slice cutout"""
+
+    p.args = (3000,3100,4000,4100,200,201)
+    image_data = np.ones( [2,1,200,200], dtype=np.uint8 ) * random.randint(0,255)
+    response = postBlosc(p, image_data)
+    assert(response.code == 404)
+  
+  def test_incorrect_channel_blosc (self):
+    """Test the xy slice cutout"""
+
+    p.args = (3000,3100,4000,4100,200,201)
+    image_data = np.ones( [1,1,100,100], dtype=np.uint8 ) * random.randint(0,255)
+    response = postBlosc(p, image_data)
+    assert(response.code == 404)
