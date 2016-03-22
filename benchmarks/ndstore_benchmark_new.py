@@ -166,7 +166,7 @@ def main():
   # pprint(bt.fetch_list)
   
   # opening the csv file here
-  with open('{}_threads.csv'.format(result.number_of_processes), 'a+') as csv_file:
+  with open('{}_{}_threads.csv'.format('write' if result.write_tests else 'read' , result.number_of_processes), 'a+') as csv_file:
     
     csv_reader = csv.reader(csv_file, delimiter=',')
     csv_writer = csv.writer(csv_file, delimiter=',')
