@@ -828,7 +828,7 @@ def selectPost ( webargs, proj, db, postdata ):
             raise NDWSError("Wrong datatype in POST")
             
           if ch.getChannelType() in IMAGE_CHANNELS + TIMESERIES_CHANNELS:
-            db.writeCuboid(ch, corner, resolution, voxarray[idx,:], timerange)
+            db.writeCuboids(ch, corner, resolution, voxarray[idx,:], timerange)
 
           elif ch.getChannelType() in ANNOTATION_CHANNELS:
             db.annotateDense(ch, corner, resolution, voxarray[idx,:], conflictopt)
