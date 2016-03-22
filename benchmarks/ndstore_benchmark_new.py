@@ -195,7 +195,7 @@ def main():
         
         time_values.append(time.time()-start_time)
       
-      csv_writer.writerow([math.pow(2,data_size-1)]+time_values)
+      csv_writer.writerow([math.pow(2,data_size-2)]+time_values)
 
 
 if __name__ == '__main__':
