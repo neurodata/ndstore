@@ -187,7 +187,7 @@ def main():
         
         dropCache()
         start_time = time.time()
-        continue
+        
         if result.write_tests:
           p.map(putURLTimed, zip(bt.fetch_list,bt.data_list))
         else:
