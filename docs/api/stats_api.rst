@@ -40,7 +40,7 @@ getHistogram
 genHistogram
 ------------
 
-.. http:get:: (string:server_name)/ocp/stats/(string:token_name)/(string:channel_name)/genHist/
+.. http:get:: (string:server_name)/ocp/stats/(string:token_name)/(string:channel_name)/genhist/
 
    :synopsis: Generate a histogram for an image dataset and store it in the database.
 
@@ -133,7 +133,7 @@ Percentile
 
    :param server_name: ND Server Name (typically openconnecto.me)
    :type server_name: string
-   :param token_name: ND Token 
+   :param token_name: ND Token
    :type token_name: string
    :param channel_name: ND Channel
    :type channel_name: string
