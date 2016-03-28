@@ -94,7 +94,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../sphinx/ingesting.html">How to Ingest Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sphinx/config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sphinx/faq.html">Frequently Asked Questions (FAQ)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ocp_types.html">NeuroData Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nd_types.html">NeuroData Types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="info_api.html">Project Info APIs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="public_api.html">Public Token APIs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="data_api.html">Data APIs</a></li>
@@ -128,8 +128,8 @@
 <li class="toctree-l1"><a class="reference internal" href="functions.html">open-connectome Functions</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://gitter.im/openconnectome/open-connectome">Gitter chatroom</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://groups.google.com/forum/#!forum/ocp-support/">Mailing List</a></li>
-<li class="toctree-l1"><a class="reference external" href="https://github.com/openconnectome/open-connectome">Github repo</a></li>
-<li class="toctree-l1"><a class="reference external" href="https://github.com/openconnectome/open-connectome/releases/">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore">Github repo</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore/releases/">Release Notes</a></li>
 </ul>
 
             
@@ -197,9 +197,9 @@
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>server_name</strong> (<em>string</em>) &#8211; OCP Server Name (typically openconnecto.me)</li>
-<li><strong>token_name</strong> (<em>string</em>) &#8211; OCP Token</li>
-<li><strong>channel_name</strong> (<em>string</em>) &#8211; OCP Channel</li>
+<li><strong>server_name</strong> (<em>string</em>) &#8211; ND Server Name (typically openconnecto.me)</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; ND Token</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; ND Channel</li>
 </ul>
 </td>
 </tr>
@@ -218,8 +218,8 @@
 <div class="section" id="genhistogram">
 <span id="stats-genhist"></span><h3>genHistogram<a class="headerlink" href="#genhistogram" title="Permalink to this headline">¶</a></h3>
 <dl class="get">
-<dt id="get-(string-server_name)-ocp-stats-(string-token_name)-(string-channel_name)-genHist-">
-<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/stats/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/genHist/</code><a class="headerlink" href="#get-(string-server_name)-ocp-stats-(string-token_name)-(string-channel_name)-genHist-" title="Permalink to this definition">¶</a></dt>
+<dt id="get-(string-server_name)-ocp-stats-(string-token_name)-(string-channel_name)-genhist-">
+<code class="descname">GET </code><code class="descname"></code><span class="sig-paren">(</span><em class="property">string: </em><em>server_name</em><span class="sig-paren">)</span><code class="descname">/ocp/stats/</code><span class="sig-paren">(</span><em class="property">string: </em><em>token_name</em><span class="sig-paren">)</span><code class="descname">/</code><span class="sig-paren">(</span><em class="property">string: </em><em>channel_name</em><span class="sig-paren">)</span><code class="descname">/genhist/</code><a class="headerlink" href="#get-(string-server_name)-ocp-stats-(string-token_name)-(string-channel_name)-genhist-" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -228,9 +228,9 @@
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>server_name</strong> (<em>string</em>) &#8211; OCP Server Name (typically openconnecto.me)</li>
-<li><strong>token_name</strong> (<em>string</em>) &#8211; OCP Token</li>
-<li><strong>channel_name</strong> (<em>string</em>) &#8211; OCP Channel</li>
+<li><strong>server_name</strong> (<em>string</em>) &#8211; ND Server Name (typically openconnecto.me)</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; ND Token</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; ND Channel</li>
 </ul>
 </td>
 </tr>
@@ -261,9 +261,9 @@
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>server_name</strong> (<em>string</em>) &#8211; OCP Server Name (typically openconnecto.me)</li>
-<li><strong>token_name</strong> (<em>string</em>) &#8211; OCP Token</li>
-<li><strong>channel_name</strong> (<em>string</em>) &#8211; OCP Channel</li>
+<li><strong>server_name</strong> (<em>string</em>) &#8211; ND Server Name (typically openconnecto.me)</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; ND Token</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; ND Channel</li>
 </ul>
 </td>
 </tr>
@@ -292,9 +292,9 @@
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>server_name</strong> (<em>string</em>) &#8211; OCP Server Name (typically openconnecto.me)</li>
-<li><strong>token_name</strong> (<em>string</em>) &#8211; OCP Token</li>
-<li><strong>channel_name</strong> (<em>string</em>) &#8211; OCP Channel</li>
+<li><strong>server_name</strong> (<em>string</em>) &#8211; ND Server Name (typically openconnecto.me)</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; ND Token</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; ND Channel</li>
 </ul>
 </td>
 </tr>
@@ -323,9 +323,9 @@
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>server_name</strong> (<em>string</em>) &#8211; OCP Server Name (typically openconnecto.me)</li>
-<li><strong>token_name</strong> (<em>string</em>) &#8211; OCP Token</li>
-<li><strong>channel_name</strong> (<em>string</em>) &#8211; OCP Channel</li>
+<li><strong>server_name</strong> (<em>string</em>) &#8211; ND Server Name (typically openconnecto.me)</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; ND Token</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; ND Channel</li>
 </ul>
 </td>
 </tr>
@@ -354,9 +354,9 @@
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>server_name</strong> (<em>string</em>) &#8211; OCP Server Name (typically openconnecto.me)</li>
-<li><strong>token_name</strong> (<em>string</em>) &#8211; OCP Token</li>
-<li><strong>channel_name</strong> (<em>string</em>) &#8211; OCP Channel</li>
+<li><strong>server_name</strong> (<em>string</em>) &#8211; ND Server Name (typically openconnecto.me)</li>
+<li><strong>token_name</strong> (<em>string</em>) &#8211; ND Token</li>
+<li><strong>channel_name</strong> (<em>string</em>) &#8211; ND Channel</li>
 <li><strong>percentile_value</strong> (<em>decimal</em>) &#8211; Arbitrary percentile expressed as a percent (e.g. 1 for 1%, 95.99 for 95.99%)</li>
 </ul>
 </td>

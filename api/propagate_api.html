@@ -94,7 +94,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../sphinx/ingesting.html">How to Ingest Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sphinx/config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sphinx/faq.html">Frequently Asked Questions (FAQ)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ocp_types.html">NeuroData Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nd_types.html">NeuroData Types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="info_api.html">Project Info APIs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="public_api.html">Public Token APIs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="data_api.html">Data APIs</a></li>
@@ -120,8 +120,8 @@
 <li class="toctree-l1"><a class="reference internal" href="functions.html">open-connectome Functions</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://gitter.im/openconnectome/open-connectome">Gitter chatroom</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://groups.google.com/forum/#!forum/ocp-support/">Mailing List</a></li>
-<li class="toctree-l1"><a class="reference external" href="https://github.com/openconnectome/open-connectome">Github repo</a></li>
-<li class="toctree-l1"><a class="reference external" href="https://github.com/openconnectome/open-connectome/releases/">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore">Github repo</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore/releases/">Release Notes</a></li>
 </ul>
 
             
@@ -169,7 +169,7 @@
   <div class="section" id="propagate-apis">
 <h1>Propagate APIs<a class="headerlink" href="#propagate-apis" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="propagation-service">
-<span id="ocp-propagation"></span><h2>Propagation Service<a class="headerlink" href="#propagation-service" title="Permalink to this headline">¶</a></h2>
+<span id="nd-propagation"></span><h2>Propagation Service<a class="headerlink" href="#propagation-service" title="Permalink to this headline">¶</a></h2>
 <p>NeuroData allows only downsampling of data via a service called Propagation. This service does not upsample your data. You can post to a specific resolution and call on the <a class="reference internal" href="#propagate-set"><span>set propagation service</span></a> to downsample your data in the background. When your data is under propagation, the project is locked and you cannot post data to it. This is done to maintain the consistency of data across different resolutions. You can check the status of your project via the <a class="reference internal" href="#propagate-get"><span>get propagation service</span></a>. Both these services return values which have signfies something. You can use the value reference table below to idenitfy the propgation state of your project.
 <em>WARNING: It make take quite a while for propagation of some projects which are big. Please be patient.</em></p>
 <table border="1" class="docutils">
@@ -203,7 +203,7 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Get the <a class="reference internal" href="#ocp-propagation"><span>propagation</span></a> state of the channel.</p>
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Get the <a class="reference internal" href="#nd-propagation"><span>propagation</span></a> state of the channel.</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
@@ -233,7 +233,7 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Set the <a class="reference internal" href="#ocp-propagation"><span>propagation</span></a> state of the channel.</p>
+<tr class="field-odd field"><th class="field-name">Synopsis:</th><td class="field-body"><p class="first">Set the <a class="reference internal" href="#nd-propagation"><span>propagation</span></a> state of the channel.</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">

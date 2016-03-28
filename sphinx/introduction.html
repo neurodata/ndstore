@@ -94,7 +94,7 @@
 <li class="toctree-l1"><a class="reference internal" href="ingesting.html">How to Ingest Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions (FAQ)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api/ocp_types.html">NeuroData Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/nd_types.html">NeuroData Types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api/info_api.html">Project Info APIs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api/public_api.html">Public Token APIs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api/data_api.html">Data APIs</a></li>
@@ -113,8 +113,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../api/functions.html">open-connectome Functions</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://gitter.im/openconnectome/open-connectome">Gitter chatroom</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://groups.google.com/forum/#!forum/ocp-support/">Mailing List</a></li>
-<li class="toctree-l1"><a class="reference external" href="https://github.com/openconnectome/open-connectome">Github repo</a></li>
-<li class="toctree-l1"><a class="reference external" href="https://github.com/openconnectome/open-connectome/releases/">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore">Github repo</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore/releases/">Release Notes</a></li>
 </ul>
 
             
@@ -164,7 +164,7 @@
 <p>NeuroData provides a scalable database cluster for the spatial analysis and annotation of high-throughput brain imaging data for 3-d electron microscopy image stacks, time-series and multi-channel data. The system is designed primarily for workloads that build connectomes—neural connectivity maps of the brain—using the parallel execution of computer vision algorithms on high-performance compute clusters. These services and open science data sets are publicly available at neurodata.io.</p>
 <p>The system design inherits much from NoSQL scale-out and data-intensive computing architectures. We distribute data to cluster nodes by partitioning a spatial index. We direct I/O to different systems—reads to parallel disk arrays and writes to solid-state storage—to avoid I/O interference and maximize throughput. All programming interfaces are RESTful Web services, which are simple and stateless, improving scalability and usability. We include a performance evaluation of the production system, highlighting the effectiveness of spatial data organization.</p>
 <div class="figure align-center" id="id1">
-<a class="reference internal image-reference" href="../_images/ocp_cluster.png"><img alt="NeuroData Data Cluster" src="../_images/ocp_cluster.png" style="width: 1000px; height: 500px;" /></a>
+<a class="reference internal image-reference" href="../_images/nd_cluster.png"><img alt="NeuroData Data Cluster" src="../_images/nd_cluster.png" style="width: 1000px; height: 500px;" /></a>
 <p class="caption"><span class="caption-text">NeuroData Data Cluster</span></p>
 <div class="legend">
 NeuroData Data Cluster and clients as configured to run and visualize the parallel vision workflow for synapse detection</div>

@@ -67,7 +67,7 @@ Dataset Attributes
 
 .. function:: Offset Value
 
-   If your data is not well aligned and there is "excess" image data you do not wish to examine, but are present in your images, offset is how you specify where your actual image starts. Offset is provided a pixel coordinate offset from origin which specifies the "actual" origin of the image. The offset is for X,Y,Z dimensions.
+   If your data is not well aligned and there is "excess" image data you do not wish to examine, but are present in your images, offset is how you specify where your actual image starts. Offset is provided a pixel coordinate offset from origin which specifies the "actual" origin of the image. The offset is for X,Y,Z dimensions. This offset should also be reflective of your file names, if you start you file numbers at 0002.tif your offset should be (0,0,2).
 
    :Type: [INT,INT,INT]
    :Default: [0,0,0]
@@ -82,7 +82,7 @@ Dataset Attributes
 
 .. function:: Scaling Levels
 
-   Scaling levels is the number of levels the data is scalable to (how many zoom levels are present in the data). The highest resolution of the data is at scaling level 0, and for each level up the data is down sampled by 2x2 (per slice). To learn more about the sampling service used, visit the :ref:`the propagation <ocp-propagation>` service page.
+   Scaling levels is the number of levels the data is scalable to (how many zoom levels are present in the data). The highest resolution of the data is at scaling level 0, and for each level up the data is down sampled by 2x2 (per slice). To learn more about the sampling service used, visit the :ref:`the propagation <nd-propagation>` service page.
 
    :Type: INT
    :Default: 0
@@ -138,7 +138,7 @@ Token
 
 .. function:: Token Name
 
-   The token name is the default token. If you do not wish to specify one, a default one will be created for you with the same name as the project name. However, if the project is private you must specify a token.
+   The token name is the default token. If you do not wish to specify one, a default one will be created for you with the same name as the project name. However, if the project is private you must specify a token. Note that token names must be unique across all projects stored in NeuroData, both private and public.
 
    :Type: AlphaNumeric
    :Default: None
@@ -164,14 +164,14 @@ Channel Attributes
 
 .. function:: Data Type
 
-   The data type is the storage method of data in the channel. It can be uint8, uint16, uint32, uint64, or float32. If you wish to learn more about our supported data types visit :ref:`the NeuroData datatypes page. <ocp-datatype>`
+   The data type is the storage method of data in the channel. It can be uint8, uint16, uint32, uint64, or float32. If you wish to learn more about our supported data types visit :ref:`the NeuroData datatypes page. <nd-datatype>`
 
    :Type: {uint8, uint16, uint32, uint64, float32}
    :Default: None
 
 .. function:: Channel Type
 
-   The channel type is the kind of data being stored in the channel. It can be image, annotation, or timeseries. If you wish to learn more about our supported channel types visit :ref:`the NeuroData datatypes page. <ocp-channeltype>`
+   The channel type is the kind of data being stored in the channel. It can be image, annotation, or timeseries. If you wish to learn more about our supported channel types visit :ref:`the NeuroData datatypes page. <nd-channeltype>`
 
    :Type: {image, annotation, timeseries}
    :Default: None
@@ -207,7 +207,7 @@ Channel Attributes
 
 .. function:: Propagated Status
 
-   The propagation status enumerates to the user what the current state of the propagation service is for the current project. To learn more about the propagation service vist :ref:`the documentation. <ocp-propagation>`
+   The propagation status enumerates to the user what the current state of the propagation service is for the current project. To learn more about the propagation service vist :ref:`the documentation. <nd-propagation>`
 
    :Type: {PROPAGATED, NOT PROPAGATED}
    :Default: NOT PROPAGATED

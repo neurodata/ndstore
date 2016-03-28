@@ -93,6 +93,8 @@
 <li class="toctree-l1"><a class="reference internal" href="console.html">Administrator Console</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">How to Ingest Data</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#prepping-the-data">Prepping The Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#some-common-mistakes-you-can-make">Some common mistakes you can make</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#help-section">Help Section</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#s3-bucket-upload">S3 Bucket Upload</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#uploading">Uploading</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#overview">Overview</a></li>
@@ -104,7 +106,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions (FAQ)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api/ocp_types.html">NeuroData Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/nd_types.html">NeuroData Types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api/info_api.html">Project Info APIs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api/public_api.html">Public Token APIs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api/data_api.html">Data APIs</a></li>
@@ -123,8 +125,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../api/functions.html">open-connectome Functions</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://gitter.im/openconnectome/open-connectome">Gitter chatroom</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://groups.google.com/forum/#!forum/ocp-support/">Mailing List</a></li>
-<li class="toctree-l1"><a class="reference external" href="https://github.com/openconnectome/open-connectome">Github repo</a></li>
-<li class="toctree-l1"><a class="reference external" href="https://github.com/openconnectome/open-connectome/releases/">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore">Github repo</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore/releases/">Release Notes</a></li>
 </ul>
 
             
@@ -173,12 +175,34 @@
 <h1>How to Ingest Data<a class="headerlink" href="#how-to-ingest-data" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="prepping-the-data">
 <h2>Prepping The Data<a class="headerlink" href="#prepping-the-data" title="Permalink to this headline">¶</a></h2>
-<p>There are two important components to how data should be organized before uploading to the service. First is file hierarchy (how the folders holding data should be organized) which is as follows; all channel specific data is saved in a folder with the name of the channel. For example if you have image data of two mouse cortices, one cortex would be stored in an image channel Cortex1. So, all the data from that imaging would be stored in a folder named Cortex1. In the case of time series data each channel folder should contain sub-folders time0, time1, time2, ..., timeN, each of which contains the image data for that specific time slot. All the channel folders should be stored inside a folder named the same as the token name.</p>
-<p>Second is how the files themselves are organized. Currently the auto-ingest service only supports tiff, tif, and png files. The files should be organized such that there is a tiff/png/tif for each Z-slice, with each named the slice number up to 4 digits. For example if there was a imaging set with 405 image slices in tif form, the image channel folder(s) should have files labeled 0000.tif through 0404.tif. Files must not have a prefix or suffix to the number of the slice.</p>
+<p>There are two important components to how data should be organized before uploading to the service. First is file hierarchy (how the folders holding data should be organized) which is as follows; all channel specific data is saved in a folder with the name of the channel. For example if you have image data of two mouse cortices, one cortex would be stored in an image channel Cortex1. So, all the data from that imaging would be stored in a folder named Cortex1. In the case of time series data each channel folder should contain sub-folders time0, time1, time2, ..., timeN, each of which contains the image data for that specific time slot. All the channel folders should be stored inside a folder named the same as the token name. Note that the token name you choose must be unique across all projects in NeuroData.</p>
+<p>Second is how the files themselves are organized. Currently the auto-ingest service only supports tiff, tif, and png files. The files should be organized such that there is a tiff/png/tif for each Z-slice, with each named the slice number up to 4 digits. For example if there was a imaging set with 405 image slices in tif form, the image channel folder(s) should have files labeled 0000.tif through 0404.tif. Files must not have a prefix or suffix to the number of the slice. If the slice number starts at a value other than 0000, please specify that starting value as the Z offset.</p>
 <div class="figure align-center" id="id1">
 <a class="reference internal image-reference" href="../_images/ingesting_directory.png"><img alt="../_images/ingesting_directory.png" src="../_images/ingesting_directory.png" style="width: 450px; height: 550px;" /></a>
 <p class="caption"><span class="caption-text">This figure illustrated visually how the data should be organized for ingest.</span></p>
 </div>
+</div>
+<div class="section" id="some-common-mistakes-you-can-make">
+<h2>Some common mistakes you can make<a class="headerlink" href="#some-common-mistakes-you-can-make" title="Permalink to this headline">¶</a></h2>
+<p>#TODO AE - Expand these
+Spaces in channel/project/dataset/token names are not allowed
+Special characters in channel/project/dataset/token names not allowed (minus underscore)
+Numbering the channel slices incorrectly
+If your slice number starts at 1 then mention z-offset as 1. we deal with missing slice numbers
+channel types are image/annotation not Image/Annotation
+if dataset exists use a different name or you have changes parameters
+you can send multiple channels at once but channels need to be in the same dataset, check this
+check if you have the lastest version of ndio, pip install -U ndio
+check your dir strucute proj/channel/slice
+HTTP accessible urls(have to go over the firewall) do a wget on your slice to check if this works</p>
+</div>
+<div class="section" id="help-section">
+<h2>Help Section<a class="headerlink" href="#help-section" title="Permalink to this headline">¶</a></h2>
+<p>#TODO AE
+How do I check the image size, I am unssure. Use indentify on unix command line
+How do I check the datatype. Again use identify on command line
+How do I name my projects/datasets/token - Repeat it here &lt;lab-name&gt;year
+How do I check if my data is publicly accessible - do a curl/wget</p>
 </div>
 <div class="section" id="s3-bucket-upload">
 <h2>S3 Bucket Upload<a class="headerlink" href="#s3-bucket-upload" title="Permalink to this headline">¶</a></h2>
@@ -202,7 +226,7 @@
 <h2>Uploading<a class="headerlink" href="#uploading" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="overview">
 <h3>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h3>
-<p>This section will initially address how to upload one channels worth of material. Located in the auto-ingest folder in the ingest folder of open-connectome is a file named generatejson.py (<a class="reference external" href="https://github.com/openconnectome/open-connectome/blob/master/ingest/autoingest/generatejson.py">https://github.com/openconnectome/open-connectome/blob/master/ingest/autoingest/generatejson.py</a>). To upload your data edit the hard-coded values in the code to reflect your data, being sure to specify that you are trying to put data to <a class="reference external" href="http://openconnecto.me">http://openconnecto.me</a> and your DataURL is http accessible (if it is not the script will fail). The editable portion of the script is below the &#8220;Edit the below values&#8221; and above the &#8220;Edit above here&#8221; comment. Once the script has run you do not need to maintain a connection to the script. The script can be run simply by calling &#8220;python2 generatejson.py&#8221; on the script (using python 2.7). In the event that more than one channels worth of data needs to be ingested at once, the service supports this operation as well. To add channels, add additional create channel calls to the AutoIngest object before posting the data.</p>
+<p>This section will initially address how to upload one channels worth of material. Located in the auto-ingest folder in the ingest folder of ndstore is a file named generatejson.py (<a class="reference external" href="https://github.com/neurodata/ndstore/blob/master/ingest/autoingest/generatejson.py">https://github.com/neurodata/ndstore/blob/master/ingest/autoingest/generatejson.py</a>). To upload your data edit the hard-coded values in the code to reflect your data, being sure to specify that you are trying to put data to <a class="reference external" href="http://openconnecto.me">http://openconnecto.me</a> and your DataURL is http accessible (if it is not the script will fail). The editable portion of the script is below the &#8220;Edit the below values&#8221; and above the &#8220;Edit above here&#8221; comment. Once the script has run you do not need to maintain a connection to the script. The script can be run simply by calling &#8220;python2 generatejson.py&#8221; on the script (using python 2.7). In the event that more than one channels worth of data needs to be ingested at once, the service supports this operation as well. To add channels, add additional create channel calls to the AutoIngest object before posting the data. The AutoIngest object is part of NeuroData&#8217;s python library, Ndio, which must be installed prior to using the script.</p>
 </div>
 <div class="section" id="explanation-of-additional-terms">
 <h3>Explanation of Additional Terms<a class="headerlink" href="#explanation-of-additional-terms" title="Permalink to this headline">¶</a></h3>
@@ -258,7 +282,7 @@
 <dl class="function">
 <dt>
 <code class="descname">Data URL</code></dt>
-<dd><p>This url points to the root directory of the files. Dropbox (or any data requiring authentication to download such as s3) is not an acceptable HTTP Server.</p>
+<dd><p>This url points to the root directory of the files, meaning the folder identified by the token name should be in the directory being pointed to. Dropbox (or any data requiring authentication to download such as non-HTTP s3) is not an acceptable HTTP Server. To make data in s3 available for ingest through out service, please see the instructions above.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />

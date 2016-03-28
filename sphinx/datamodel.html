@@ -102,7 +102,7 @@
 <li class="toctree-l1"><a class="reference internal" href="ingesting.html">How to Ingest Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions (FAQ)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api/ocp_types.html">NeuroData Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/nd_types.html">NeuroData Types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api/info_api.html">Project Info APIs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api/public_api.html">Public Token APIs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api/data_api.html">Data APIs</a></li>
@@ -121,8 +121,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../api/functions.html">open-connectome Functions</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://gitter.im/openconnectome/open-connectome">Gitter chatroom</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://groups.google.com/forum/#!forum/ocp-support/">Mailing List</a></li>
-<li class="toctree-l1"><a class="reference external" href="https://github.com/openconnectome/open-connectome">Github repo</a></li>
-<li class="toctree-l1"><a class="reference external" href="https://github.com/openconnectome/open-connectome/releases/">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore">Github repo</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore/releases/">Release Notes</a></li>
 </ul>
 
             
@@ -252,7 +252,7 @@
 <dl class="function">
 <dt>
 <code class="descname">Offset Value</code></dt>
-<dd><p>If your data is not well aligned and there is &#8220;excess&#8221; image data you do not wish to examine, but are present in your images, offset is how you specify where your actual image starts. Offset is provided a pixel coordinate offset from origin which specifies the &#8220;actual&#8221; origin of the image. The offset is for X,Y,Z dimensions.</p>
+<dd><p>If your data is not well aligned and there is &#8220;excess&#8221; image data you do not wish to examine, but are present in your images, offset is how you specify where your actual image starts. Offset is provided a pixel coordinate offset from origin which specifies the &#8220;actual&#8221; origin of the image. The offset is for X,Y,Z dimensions. This offset should also be reflective of your file names, if you start you file numbers at 0002.tif your offset should be (0,0,2).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -286,7 +286,7 @@
 <dl class="function">
 <dt>
 <code class="descname">Scaling Levels</code></dt>
-<dd><p>Scaling levels is the number of levels the data is scalable to (how many zoom levels are present in the data). The highest resolution of the data is at scaling level 0, and for each level up the data is down sampled by 2x2 (per slice). To learn more about the sampling service used, visit the <a class="reference internal" href="../api/propagate_api.html#ocp-propagation"><span>the propagation</span></a> service page.</p>
+<dd><p>Scaling levels is the number of levels the data is scalable to (how many zoom levels are present in the data). The highest resolution of the data is at scaling level 0, and for each level up the data is down sampled by 2x2 (per slice). To learn more about the sampling service used, visit the <a class="reference internal" href="../api/propagate_api.html#nd-propagation"><span>the propagation</span></a> service page.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -406,7 +406,7 @@
 <dl class="function">
 <dt>
 <code class="descname">Token Name</code></dt>
-<dd><p>The token name is the default token. If you do not wish to specify one, a default one will be created for you with the same name as the project name. However, if the project is private you must specify a token.</p>
+<dd><p>The token name is the default token. If you do not wish to specify one, a default one will be created for you with the same name as the project name. However, if the project is private you must specify a token. Note that token names must be unique across all projects stored in NeuroData, both private and public.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -461,7 +461,7 @@
 <dl class="function">
 <dt>
 <code class="descname">Data Type</code></dt>
-<dd><p>The data type is the storage method of data in the channel. It can be uint8, uint16, uint32, uint64, or float32. If you wish to learn more about our supported data types visit <a class="reference internal" href="../api/ocp_types.html#ocp-datatype"><span>the NeuroData datatypes page.</span></a></p>
+<dd><p>The data type is the storage method of data in the channel. It can be uint8, uint16, uint32, uint64, or float32. If you wish to learn more about our supported data types visit <a class="reference internal" href="../api/nd_types.html#nd-datatype"><span>the NeuroData datatypes page.</span></a></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -477,7 +477,7 @@
 <dl class="function">
 <dt>
 <code class="descname">Channel Type</code></dt>
-<dd><p>The channel type is the kind of data being stored in the channel. It can be image, annotation, or timeseries. If you wish to learn more about our supported channel types visit <a class="reference internal" href="../api/ocp_types.html#ocp-channeltype"><span>the NeuroData datatypes page.</span></a></p>
+<dd><p>The channel type is the kind of data being stored in the channel. It can be image, annotation, or timeseries. If you wish to learn more about our supported channel types visit <a class="reference internal" href="../api/nd_types.html#nd-channeltype"><span>the NeuroData datatypes page.</span></a></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -559,7 +559,7 @@
 <dl class="function">
 <dt>
 <code class="descname">Propagated Status</code></dt>
-<dd><p>The propagation status enumerates to the user what the current state of the propagation service is for the current project. To learn more about the propagation service vist <a class="reference internal" href="../api/propagate_api.html#ocp-propagation"><span>the documentation.</span></a></p>
+<dd><p>The propagation status enumerates to the user what the current state of the propagation service is for the current project. To learn more about the propagation service vist <a class="reference internal" href="../api/propagate_api.html#nd-propagation"><span>the documentation.</span></a></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />

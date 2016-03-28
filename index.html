@@ -5,12 +5,12 @@
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <meta content="Official documentation for Open Connectome Project Web Services: Scalable database cluster for the spatial analysis and annotation of high-throughput brain imaging data" name="description" />
+  <meta content="Official documentation for NeuroData Project Web Services: Scalable database cluster for the spatial analysis and annotation of high-throughput brain imaging data" name="description" />
 <meta content="annotation, tracing, neuroscience, object detection" name="keywords" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Open Connectome &mdash; open-connectome v0.7.0 documentation</title>
+  <title>NeuroData &mdash; open-connectome v0.7.0 documentation</title>
   
 
   
@@ -95,7 +95,7 @@
 <li class="toctree-l1"><a class="reference internal" href="sphinx/ingesting.html">How to Ingest Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sphinx/config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sphinx/faq.html">Frequently Asked Questions (FAQ)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api/ocp_types.html">NeuroData Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/nd_types.html">NeuroData Types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/info_api.html">Project Info APIs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/public_api.html">Public Token APIs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/data_api.html">Data APIs</a></li>
@@ -114,8 +114,8 @@
 <li class="toctree-l1"><a class="reference internal" href="api/functions.html">open-connectome Functions</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://gitter.im/openconnectome/open-connectome">Gitter chatroom</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://groups.google.com/forum/#!forum/ocp-support/">Mailing List</a></li>
-<li class="toctree-l1"><a class="reference external" href="https://github.com/openconnectome/open-connectome">Github repo</a></li>
-<li class="toctree-l1"><a class="reference external" href="https://github.com/openconnectome/open-connectome/releases/">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore">Github repo</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore/releases/">Release Notes</a></li>
 </ul>
 
             
@@ -146,7 +146,7 @@
   <ul class="wy-breadcrumbs">
     <li><a href="#">Docs</a> &raquo;</li>
       
-    <li>Open Connectome</li>
+    <li>NeuroData</li>
       <li class="wy-breadcrumbs-aside">
         
           
@@ -160,20 +160,20 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <h1>Open Connectome Project Web Services: Scalable database cluster for the spatial analysis and annotation of high-throughput brain imaging data</h1>
+  <h1>NeuroData Project Web Services (ndstore): Scalable database cluster for the spatial analysis and annotation of high-throughput brain imaging data</h1>
 <br><p>NeuroData provides a scalable database cluster for the spatial analysis and annotation of high-throughput brain imaging data for 3D image stacks, time-series and multi-channel data (e.g., electron microscopy, array tomography, CLARITY, histology, and multimodal MRI data). The system is designed primarily for workloads that build connectomes&#8212;neural connectivity maps of the brain&#8212;using the parallel execution of computer vision algorithms on high-performance compute clusters. These services and open science data sets are publicly available at neurodata.io.</p>
 <p>The system design inherits much from NoSQL scale-out and data-intensive computing architectures. We distribute data to cluster nodes by partitioning a spatial index. We direct I/O to different systems&#8212;reads to parallel disk arrays and writes to solid-state storage&#8212;to avoid I/O interference and maximize throughput. All programming interfaces are RESTful Web services, which are simple and stateless, improving scalability and usability. We include a performance evaluation of the production system, highlighting the effectiveness of spatial data organization.</p>
 <div class="figure align-center" id="id2">
-<a class="reference internal image-reference" href="_images/ocp_example.png"><img alt="Spatially Registered Databases in the Open Connectome Project." src="_images/ocp_example.png" style="width: 1000px; height: 500px;" /></a>
-<p class="caption"><span class="caption-text">Spatially Registered Databases in the Open Connectome Project</span></p>
+<a class="reference internal image-reference" href="_images/nd_example.png"><img alt="Spatially Registered Databases in the NeuroData Project." src="_images/nd_example.png" style="width: 1000px; height: 500px;" /></a>
+<p class="caption"><span class="caption-text">Spatially Registered Databases in the NeuroData Project</span></p>
 <div class="legend">
 Electron microscopy images of a mouse somatosensory cortex (left), a probability map output by a computer vision algorithm that detects membranes (center), and an annotation database that describes axons and dendrites (right).</div>
 </div>
 <div>
   <img style="width:30px;height:30px;vertical-align:middle">
   <span style=""></span>
-  <IMG SRC="_static/GitHub.png" height="50" width="50"> <a href="https://github.com/openconnectome/open-connectome/zipball/master"> [ZIP]   </a>
-  <a image="_static/GitHub.png" href="https://github.com/openconnectome/open-connectome/tarball/master">[TAR.GZ] </a></p>
+  <IMG SRC="_static/GitHub.png" height="50" width="50"> <a href="https://github.com/neurodata/ndstore/zipball/master"> [ZIP]   </a>
+  <a image="_static/GitHub.png" href="https://github.com/neurodata/ndstore/tarball/master">[TAR.GZ] </a></p>
 </div><div class="sidebar">
 <p class="first sidebar-title">NeuroData Contact Us</p>
 <p class="last">If you have questions about NeuroData, or have data to store, please let us know: <a class="reference external" href="mailto:support&#37;&#52;&#48;neurodata&#46;io">support<span>&#64;</span>neurodata<span>&#46;</span>io</a></p>
@@ -187,7 +187,7 @@ Electron microscopy images of a mouse somatosensory cortex (left), a probability
 <li class="toctree-l1"><a class="reference internal" href="sphinx/ingesting.html">How to Ingest Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sphinx/config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sphinx/faq.html">Frequently Asked Questions (FAQ)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api/ocp_types.html">NeuroData Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/nd_types.html">NeuroData Types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/info_api.html">Project Info APIs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/public_api.html">Public Token APIs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/data_api.html">Data APIs</a></li>
@@ -208,8 +208,8 @@ Electron microscopy images of a mouse somatosensory cortex (left), a probability
 <li class="toctree-l1"><a class="reference internal" href="api/functions.html">open-connectome Functions</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://gitter.im/openconnectome/open-connectome">Gitter chatroom</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://groups.google.com/forum/#!forum/ocp-support/">Mailing List</a></li>
-<li class="toctree-l1"><a class="reference external" href="https://github.com/openconnectome/open-connectome">Github repo</a></li>
-<li class="toctree-l1"><a class="reference external" href="https://github.com/openconnectome/open-connectome/releases/">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore">Github repo</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore/releases/">Release Notes</a></li>
 </ul>
 </div>
 <dl class="docutils">
