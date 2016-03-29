@@ -1301,7 +1301,7 @@ def putAnnotation ( webargs, postdata ):
   """Put a RAMON object as HDF5 by object identifier"""
   
   [token, channel, optionsargs] = webargs.split('/',2)
-
+  
   with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
   
@@ -1321,7 +1321,7 @@ def putAnnotation ( webargs, postdata ):
     with closing (tempfile.NamedTemporaryFile()) as tmpfile:
       tmpfile.write ( postdata )
       tmpfile.seek(0)
-      h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
+      h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False ) 
 
       # get the conflict option if it exists
       options = optionsargs.split('/')
@@ -1334,13 +1334,17 @@ def putAnnotation ( webargs, postdata ):
   
       try:
   
+        if len(h5f.keys()) == 0:
+          logger.warning("Error: Failed to parse HDF5 file. Was the file empty?")
+          raise OCPCAError("Error: Failed to parse HDF5 file. Was the file empty?") 
+
         for k in h5f.keys():
-          
+           
           idgrp = h5f.get(k)
   
           # Convert HDF5 to annotation
           anno = h5ann.H5toAnnotation(k, idgrp, db)
-  
+          
           # set the identifier (separate transaction)
           if not ('update' in options or 'dataonly' in options or 'reduce' in options):
             anno.setID(ch, db)
