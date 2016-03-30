@@ -25,17 +25,17 @@
 ##### Commands for benchmark tests
   * Read Tests
   ```sh
-  sudo python ndstore_benchmark_new.py kasthuri11 image 0 --iter 5 --size 13 --offset 3000 3000 0 --num 1
-  sudo python ndstore_benchmark_new.py kasthuri11 image 0 --iter 5 --size 13 --offset 3000 3000 0 --num 2
-  sudo python ndstore_benchmark_new.py kasthuri11 image 0 --iter 5 --size 13 --offset 3000 3000 0 --num 4
-  sudo python ndstore_benchmark_new.py kasthuri11 image 0 --iter 5 --size 13 --offset 3000 3000 0 --num 8
-  sudo python ndstore_benchmark_new.py kasthuri11 image 0 --iter 5 --size 13 --offset 3000 3000 0 --num 16
+  sudo python ndstore_benchmark.py kasthuri11 image 0 --iter 5 --size 13 --offset 3000 3000 0 --num 1
+  sudo python ndstore_benchmark.py kasthuri11 image 0 --iter 5 --size 13 --offset 3000 3000 0 --num 2
+  sudo python ndstore_benchmark.py kasthuri11 image 0 --iter 5 --size 13 --offset 3000 3000 0 --num 4
+  sudo python ndstore_benchmark.py kasthuri11 image 0 --iter 5 --size 13 --offset 3000 3000 0 --num 8
+  sudo python ndstore_benchmark.py kasthuri11 image 0 --iter 5 --size 13 --offset 3000 3000 0 --num 16
   ```
   * Write Tests
   ```sh
-  sudo python ndstore_benchmark_new.py kasthuri11 image 0 --iter 5 --size 13 --offset 3000 3000 0 --num 1 --write True
-  sudo python ndstore_benchmark_new.py kasthuri11 image 0 --iter 5 --size 13 --offset 3000 3000 0 --num 2 --write True
-  sudo python ndstore_benchmark_new.py kasthuri11 image 0 --iter 5 --size 13 --offset 3000 3000 0 --num 4 --write True
-  sudo python ndstore_benchmark_new.py kasthuri11 image 0 --iter 5 --size 13 --offset 3000 3000 0 --num 8 --write True
-  sudo python ndstore_benchmark_new.py kasthuri11 image 0 --iter 5 --size 13 --offset 3000 3000 0 --num 16 --write True
+  sudo python ndstore_benchmark.py kasthuri11 image 0 --iter 5 --size 13 --offset 3000 3000 0 --num 1 --write True
+  sudo python ndstore_benchmark.py kasthuri11 image 0 --iter 5 --size 13 --offset 3000 3000 0 --num 2 --write True
+  sudo python ndstore_benchmark.py kasthuri11 image 0 --iter 5 --size 13 --offset 3000 3000 0 --num 4 --write True
+  sudo python ndstore_benchmark.py kasthuri11 image 0 --iter 5 --size 13 --offset 3000 3000 0 --num 8 --write True
+  sudo python ndstore_benchmark.py kasthuri11 image 0 --iter 5 --size 13 --offset 3000 3000 0 --num 16 --write True
   ```
