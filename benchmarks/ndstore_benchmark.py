@@ -195,11 +195,11 @@ def main():
         
         time_values.append(time.time()-start_time)
       
-      if self.datatype == np.uint8:
+      if bt.datatype == np.uint8:
         test = [math.pow(2,data_size-3)]
-      elif self.datatype == np.uin16:
+      elif bt.datatype == np.uin16:
         test = [math.pow(2,data_size-2)]
-      elif self.datatype == np.uint32:
+      elif bt.datatype == np.uint32:
         test = [math.pow(2,data_size-1)]
       
       csv_writer.writerow([math.pow(2,data_size-2)]+time_values)
