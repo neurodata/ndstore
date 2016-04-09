@@ -68,6 +68,24 @@ def getNPZ (p, time=False):
   fileobj = cStringIO.StringIO (rawdata)
   return np.load (fileobj)
 
+def postBlaze (p, post_data, time=False):
+  """Post data using npz"""
+  
+  # Build the url and then create a npz object
+  if time:
+    url = 'http://{}/sd/{}/{}/blaze/{}/{},{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+  elif p.channels is not None:
+    url = 'http://{}/sd/{}/{}/blaze/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+  elif p.channels is None:
+    url = 'http://{}/sd/{}/blaze/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
+
+  try:
+    # Build a post request
+    req = urllib2.Request(url,blosc.pack_array(post_data))
+    response = urllib2.urlopen(req)
+    return response
+  except urllib2.HTTPError,e:
+    return e
 
 def postBlosc (p, post_data, time=False):
   """Post data using npz"""

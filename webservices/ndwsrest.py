@@ -750,6 +750,12 @@ def selectPost ( webargs, proj, db, postdata ):
       if service == 'tiff':
         return postTiff3d ( channel, postargs, proj, db, postdata )
 
+      elif service == 'blaze':
+        
+        for channel_name in channel_list:
+          ch = proj.getChannelObj(channel_name)
+          db.writeBlazeCuboid(ch, corner, resolution, postdata, timerange=timerange) 
+      
       elif service == 'hdf5':
         
         # Get the HDF5 file.
@@ -828,7 +834,7 @@ def selectPost ( webargs, proj, db, postdata ):
             raise NDWSError("Wrong datatype in POST")
             
           if ch.getChannelType() in IMAGE_CHANNELS + TIMESERIES_CHANNELS:
-            db.writeCuboids(ch, corner, resolution, voxarray[idx,:], timerange)
+            db.writeCuboid(ch, corner, resolution, voxarray[idx,:], timerange)
 
           elif ch.getChannelType() in ANNOTATION_CHANNELS:
             db.annotateDense(ch, corner, resolution, voxarray[idx,:], conflictopt)

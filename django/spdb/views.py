@@ -28,14 +28,14 @@ logger=logging.getLogger("neurodata")
 
 GET_SLICE_SERVICES = ['xy', 'yz', 'xz']
 GET_ANNO_SERVICES = ['xyanno', 'yzanno', 'xzanno']
-POST_SERVICES = ['hdf5', 'npz', 'hdf5_async', 'propagate', 'tiff', 'blosc']
+POST_SERVICES = ['hdf5', 'npz', 'hdf5_async', 'propagate', 'tiff', 'blosc', 'blaze']
 
 
 def cutout (request, webargs):
   """Restful URL for all read services to annotation projects"""
 
   try:
-    m = re.match(r"(\w+)/(?P<channel>[\w+,/-]+)?/?(xy|xz|yz|tiff|hdf5|jpeg|blosc|npz|zip|id|diff|ids|xyanno|xzanno|yzanno)/([\w,/-]*)$", webargs)
+    m = re.match(r"(\w+)/(?P<channel>[\w+,/-]+)?/?(xy|xz|yz|tiff|hdf5|jpeg|blosc|blaze|npz|zip|id|diff|ids|xyanno|xzanno|yzanno)/([\w,/-]*)$", webargs)
     [token, channel, service, cutoutargs] = [i for i in m.groups()]
 
     if channel is None:
@@ -81,6 +81,9 @@ def cutout (request, webargs):
         return django.http.HttpResponse(ndwsrest.getCutout(webargs), content_type="product/zip" )
       elif service in ['id','ids']:
         return django.http.HttpResponse(ndwsrest.getCutout(webargs))
+      elif service in ['blaze']:
+        logger.warning("HTTP Bad request. {} service not supported for GET. Only for POST".format(service))
+        return django.http.HttpResponseBadRequest("{} service not supported for GET. Only for POST".format(service))
       else:
         logger.warning("HTTP Bad request. Could not find service {}".format(service))
         return django.http.HttpResponseBadRequest("Could not find service {}".format(service))
@@ -88,7 +91,7 @@ def cutout (request, webargs):
     # RBTODO control caching?
     # POST methods
     elif request.method == 'POST':
-
+      
       if service in POST_SERVICES:
         django.http.HttpResponse(ndwsrest.putCutout(webargs, request.body))
         return django.http.HttpResponse("Success", content_type='text/html')
