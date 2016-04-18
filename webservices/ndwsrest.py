@@ -2138,6 +2138,10 @@ def minmaxProject ( webargs ):
   # split the channel string
   channels = chanstr.split(",")
 
+  # check for one channel only 
+  if len (channels) != 1:
+    raise NDWSError("min or max project processes one channel at a time.")
+ 
   # pattern for using contexts to close databases
   # get the project 
   with closing ( ndproj.NDProjectsDB() ) as projdb:
@@ -2146,82 +2150,62 @@ def minmaxProject ( webargs ):
   # and the database and then call the db function
   with closing ( spatialdb.SpatialDB(proj) ) as db:
 
-    mcdata = None
+    # maxproject data
+    mpdata = None
 
-    for i in range(len(channels)):
+    channel_name = channels[0]
 
-      channel_name = channels[i]
+    ch = ndproj.NDChannel(proj,channel_name)
+    cb = cutout (cutoutargs, ch, proj, db)
+    FilterCube (cutoutargs, cb)
 
-      ch = ndproj.NDChannel(proj,channel_name)
-      cb = cutout (cutoutargs, ch, proj, db)
-      FilterCube (cutoutargs, cb)
+    # project onto the image plane
+    if plane == 'xy':
 
-      # project onto the image plane
-      if plane == 'xy':
-
-        # take the min project or maxproject
-        if minormax == 'maxproj':
-          cbplane = np.amax (cb.data, axis=0)
-        elif minormax == 'minproj':
-          cbplane = np.amin (cb.data, axis=0)
-        else:
-          logger.error("Illegal projection requested.  Projection = {}", minormax)
-          raise NDWSError("Illegal image plane requested. Projections  = {}", minormax)
-
-        #initiliaze the multi-color array
-        if mcdata == None:
-          mcdata = np.zeros((len(channels),cb.data.shape[1],cb.data.shape[2]), dtype=cb.data.dtype)
-
-      elif plane == 'xz':
-
-        # take the min project or maxproject
-        if minormax == 'maxproj':
-          cbplane = np.amax (cb.data, axis=1)
-        elif minormax == 'minproj':
-          cbplane = np.amin (cb.data, axis=1)
-        else:
-          logger.error("Illegal projection requested.  Projection = {}", minormax)
-          raise NDWSError("Illegal image plane requested. Projections  = {}", minormax)
-
-        #initiliaze the multi-color array
-        if mcdata == None:
-          mcdata = np.zeros((len(channels),cb.data.shape[0],cb.data.shape[2]), dtype=cb.data.dtype)
-
-      elif plane == 'yz':
-
-        # take the min project or maxproject
-        if minormax == 'maxproj':
-          cbplane = np.amax (cb.data, axis=2)
-        elif minormax == 'minproj':
-          cbplane = np.amin (cb.data, axis=2)
-        else:
-          logger.error("Illegal projection requested.  Projection = {}", minormax)
-          raise NDWSError("Illegal image plane requested. Projections  = {}", minormax)
-
-        #initiliaze the multi-color array
-        if mcdata == None:
-          mcdata = np.zeros((len(channels),cb.data.shape[0],cb.data.shape[1]), dtype=cb.data.dtype)
-
+      # take the min project or maxproject
+      if minormax == 'maxproj':
+        cbplane = np.amax (cb.data, axis=0)
+      elif minormax == 'minproj':
+        cbplane = np.amin (cb.data, axis=0)
       else:
-        logger.error("Illegal image plane requested.  Plane = {}", plane)
-        raise NDWSError("Illegal image plane requested.  Plane = {}", plane)
+        logger.error("Illegal projection requested.  Projection = {}", minormax)
+        raise NDWSError("Illegal image plane requested. Projections  = {}", minormax)
 
-      # put the plane into the multi-channel array
-      mcdata[i,:,:] = cbplane
+    elif plane == 'xz':
+
+      # take the min project or maxproject
+      if minormax == 'maxproj':
+        cbplane = np.amax (cb.data, axis=1)
+      elif minormax == 'minproj':
+        cbplane = np.amin (cb.data, axis=1)
+      else:
+        logger.error("Illegal projection requested.  Projection = {}", minormax)
+        raise NDWSError("Illegal image plane requested. Projections  = {}", minormax)
+
+    elif plane == 'yz':
+
+      # take the min project or maxproject
+      if minormax == 'maxproj':
+        cbplane = np.amax (cb.data, axis=2)
+      elif minormax == 'minproj':
+        cbplane = np.amin (cb.data, axis=2)
+      else:
+        logger.error("Illegal projection requested.  Projection = {}", minormax)
+        raise NDWSError("Illegal image plane requested. Projections  = {}", minormax)
+
 
   # manage the color space
-  mcdata = window(mcdata, ch)
-  
-  # We have an compound array.  Now color it.
-  colors = ('C','M','Y','R','G','B')
-  colors = ('R','M','Y','R','G','B')
-  img =  mcfc.mcfcPNG ( mcdata, colors, 2.0 )
+  mpdata = window(cbplane, ch)
+
+  img =  Image.frombuffer ( 'L', (mpdata.shape[1],mpdata.shape[0]), mpdata.flatten(), 'raw', 'L', 0, 1 )
+
 
   fileobj = cStringIO.StringIO ( )
   img.save ( fileobj, "PNG" )
 
   fileobj.seek(0)
   return fileobj.read()
+
 
 def mcFalseColor ( webargs ):
   """False color image of multiple channels"""
