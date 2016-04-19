@@ -64,8 +64,6 @@ class MaxProjCatmaid:
     tiledata = np.amax(cutout.data, axis=0)
     tiledata = ndwsrest.window(tiledata, ch)
     
-    import pdb; pdb.set_trace()
-
     # turn into an 8-bit image and return
     return Image.frombuffer ( 'L', (tiledata.shape[1],tiledata.shape[0]), tiledata.flatten(), 'raw', 'L', 0, 1 )
 
