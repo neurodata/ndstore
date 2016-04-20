@@ -23,7 +23,7 @@ from StringIO import StringIO
 import makeunitdb
 from ndtype import IMAGE, UINT8, UINT16
 from params import Params
-from postmethods import postBlaze
+from postmethods import postBlaze, getBlosc
 import kvengine_to_test
 import site_to_test
 SITE_HOST = site_to_test.site
@@ -36,7 +36,7 @@ SITE_HOST = site_to_test.site
 p = Params()
 p.token = 'unittest'
 p.resolution = 0
-p.channels = ['IMAGE1', 'IMAGE2']
+p.channels = ['IMAGE1']
 p.window = [0,500]
 p.channel_type = IMAGE
 p.datatype = UINT8
@@ -57,10 +57,10 @@ class Test_Blaze:
   def test_post_blaze (self):
     """Test post for blaze service"""
 
-    p.args = (3000,3100,4000,4100,200,201)
-    image_data = np.ones( [2,1,100,100], dtype=np.uint8 ) * random.randint(0,255)
+    p.args = (128,255,128,255,17,33)
+    image_data = np.ones( [1,100,100], dtype=np.uint8 ) * random.randint(0,255)
     response = postBlaze(p, image_data)
     assert (response.code == 200)
-    # posted_data = getBlosc(p)
-
-    # assert ( np.array_equal(image_data,posted_data) )
+    posted_data = getBlosc(p)
+    
+    assert ( np.array_equal(image_data,posted_data) )
