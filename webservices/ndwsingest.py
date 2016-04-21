@@ -85,12 +85,12 @@ class IngestData:
       
       # writing the file to scratch
       try:
-        f = open('{}'.format(self.path+self.generateFileName(slice_number)),'w')
-        f.write(resp.read())
+        image_file = open('{}'.format(self.path+self.generateFileName(slice_number)),'w')
+        image_file.write(resp.read())
       except IOError, e:
         logger.warning("IOError. Could not open file {}. {}".format(self.path+self.generateFileName(slice_number), e))
       finally:
-        f.close()
+        image_file.close()
 
 
   def fetchCatmaidData(self, slice_list, xtile, ytile):
@@ -111,12 +111,12 @@ class IngestData:
         
       # writing the file to scratch
       try:
-        f = open('{}'.format(self.path+self.generateCatmaidFileName(slice_number, xtile, ytile)),'w')
-        f.write(resp.read())
+        catmaid_file = open('{}'.format(self.path+self.generateCatmaidFileName(slice_number, xtile, ytile)),'w')
+        catmaid_file.write(resp.read())
       except IOError, e:
         logger.warning("IOError. Could not open file {}. {}".format(self.path+self.generateCatmaidFileName(slice_number, xtile, ytile), e))
       finally:
-        f.close()
+        catmaid_file.close()
 
   def cleanCatmaidData(self, slice_list, xtile, ytile):
     """Remove the slices at the local store"""
@@ -164,7 +164,7 @@ class IngestData:
       logger.warning("Creating bucket {}.".format(generateS3BucketName(project_name)))
       bucket.create()
     except Exception as e:
-      logger.error("There was an error in creating the bucker {}.".format(generateS3BucketName(project_name)))
+      logger.error("There was an error in creating the bucket {}.".format(generateS3BucketName(project_name)))
       raise NDWSError("There was an error in creating the bucket {}.".format(generateS3BucketName(project_name)))
 
 
