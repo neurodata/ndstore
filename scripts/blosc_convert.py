@@ -70,12 +70,11 @@ def main():
         try:
           db.NPZ = True
           cube = db.getCube(ch, zidx, result.res)
-          cube.zeros()
         
           if cube.isNotZeros():
             db.NPZ = False
             print "Ingesting {},{},{}".format(x,y,z)
-            db.putCube(out_ch, zidx, result.res, cube)
+            db.putCube(out_ch, zidx, result.res, cube, update=False)
         except Exception as e:
           pass
 
