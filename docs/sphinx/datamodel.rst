@@ -12,12 +12,14 @@ Overview
 ========
 
 Our data model for image datasets is composed of the following components:
-* Dataset: containing metadata required to efficiently store, visualize, and analyze data for a set of projects; it effectively defines the dataspace
+
+* Dataset: containing metadata required to efficiently store, visualize, and analyze data for a set of projects; it effectively defines the dataspace. The dataset itself contains no actual data, as the actual data is stored in the channel objects.
 * Project: is a database storing a collection of channels
 * Token: a name for a project, a project can have multiple tokens, each with different permissions (eg, read vs. write)
 * Channel: is a collection of tables, including the actual images, as well as metadata
 
 To understand the relationship between the above 4 different components of the data model, consider the following example.
+
 * We collect a large multi-modal MRI dataset, and registered each image into MNI152 space. The dataset would contain the details of MNI152 (number of voxels, resolution, etc.). Each subject gets her own project. For the first subject, let’s create a token pointing to that project called “Subject1”, and let’s give that token write access.
 * Each channel for this project corresponds to a different modality. For example, the T1 image might be the first channel, called “T1”. So, to access that channel, we pair the token with the channel name: ‘\Subject1\T1\’. The T1 channel happens to be a 3D image stack. Let’s say we also got an fMRI scan from that subject, also co-registered to MNI152 space. We can then make another channel called ‘fMRI’ containing all the fMRI data and metadata. Note that this is actually 3D+time data, which is no problem to store within a given channel. Finally, assume we also have Diffusion MRI data associated with that subject. So, we can generate another channel called “DTI” to store that data and metadata. Although DTI data is not typically thought of as time-series data, it is 4D, so we could store it as a time-series channel.
 * Now, imagine from the DTI data, we created a fractional anisotropy map. We could make a new channel, called “FA”, and put it there. Similarly, imagine from the fMRI we created a general linear model, we could again create a new channel, “GLM”, and put the coefficients in there.

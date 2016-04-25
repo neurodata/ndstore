@@ -1,4 +1,4 @@
-SWC APIs
+SWC API
 *********
 
 .. _swc-get:

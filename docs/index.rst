@@ -38,7 +38,7 @@ The system design inherits much from NoSQL scale-out and data-intensive computin
 
 .. toctree::
    :maxdepth: 1
-   :caption: Documentation
+   :caption: NeuroData Documentation
 
    sphinx/introduction
    sphinx/datamodel
@@ -46,6 +46,12 @@ The system design inherits much from NoSQL scale-out and data-intensive computin
    sphinx/ingesting
    sphinx/config
    sphinx/faq
+
+.. toctree::
+   :maxdepth: 1
+   :caption: API Documentation
+   All of the APIs enumerated here are RESTful calls that are used via the browser or calls to the web service. For additional usage information see online RESTful documentation.
+
    api/nd_types
    api/info_api
    api/public_api
@@ -65,7 +71,6 @@ The system design inherits much from NoSQL scale-out and data-intensive computin
    :caption: Further Reading
 
    api/functions
-   Gitter chatroom <https://gitter.im/openconnectome/open-connectome>
    Mailing List <https://groups.google.com/forum/#!forum/ocp-support/>
    Github repo <https://github.com/neurodata/ndstore>
    Release Notes <https://github.com/neurodata/ndstore/releases/>
