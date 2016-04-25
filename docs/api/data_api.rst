@@ -1,4 +1,4 @@
-Data APIs
+Data API
 ***********
 
 HDF5 Service
@@ -10,7 +10,7 @@ POST
 ----
 
 .. http:post:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/hdf5/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
-   
+
    :synopsis: Post a 3D/4D region of data for a single channel or multiple channels in HDF5 file format to the server. Form parameters describe the datasets within the HDF5 file.
 
    :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
@@ -37,7 +37,7 @@ POST
    :type min_time: int
    :param max_time: Maximum value in the timerange. *Optional*. Only used for timeseries channels.
    :type max_time: int
-    
+
    :form CUTOUT: HDF5 group, Post data
    :form CHANNELTYPE: HDF5 group, Channel type(image, annotation, probmap, timeseries)
    :form DATATYPE: HDF5 group, Data type(uint8, uint16, uint32, rgb32, rgb64, float32)
@@ -53,7 +53,7 @@ GET
 ----
 
 .. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/hdf5/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
-   
+
    :synopsis: Get a 3D/4D region of data for a single channel or multiple channels in HDF5 file format from the server. Form parameters describe the datsets within the HDF5 file.
 
    :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
@@ -80,14 +80,14 @@ GET
    :type min_time: int
    :param max_time: Maximum value in the timerange. *Optional*. Only used for timeseries channels.
    :type max_time: int
-    
+
    :form CUTOUT: HDF5 group, Post data
    :form CHANNELTYPE: HDF5 group, Channel type(image, annotation, probmap, timeseries)
    :form DATATYPE: HDF5 group, Data type(uint8, uint16, uint32, rgb32, rgb64, float32)
 
    :statuscode 200: No error
    :statuscode 404: Error in the syntax or file format
-  
+
 
 
 Blosc Service
@@ -99,7 +99,7 @@ POST
 ----
 
 .. http:post:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/blosc/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
-   
+
    :synopsis: Post a 3D/4D region of data for of a specified channel, resolution and bounds in blosc compression format.
 
    :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
@@ -126,7 +126,7 @@ POST
    :type min_time: int
    :param max_time: Maximum value in the timerange. *Optional*. Only used for timeseries channels.
    :type max_time: int
-    
+
    :statuscode 200: No error
    :statuscode 404: Error in the syntax or file format
 
@@ -136,7 +136,7 @@ GET
 ----
 
 .. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/blosc/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
-   
+
    :synopsis: Get a 3D/4D region of data for of a specified channel, resolution and bounds in the blosc compression format.
 
    :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
@@ -167,7 +167,7 @@ GET
    :statuscode 200: No error
    :statuscode 404: Error in the syntax or file format
 
-   
+
 Numpy Service
 =============
 
@@ -177,7 +177,7 @@ POST
 ----
 
 .. http:post:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/npz/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
-   
+
    :synopsis: Post a 3D/4D region of data for of a specified channel, resolution and bounds in the numpy array format.
 
    :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
@@ -204,7 +204,7 @@ POST
    :type min_time: int
    :param max_time: Maximum value in the timerange. *Optional*. Only used for timeseries channels.
    :type max_time: int
-    
+
    :form DATA: Numpy Array
 
    :statuscode 200: No error
@@ -218,7 +218,7 @@ GET
 ----
 
 .. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/npz/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:min_time),(int:max_time)/
-   
+
    :synopsis: Download a 3D/4D region of data for of a specified channel, resolution and bounds in the numpy array format. You can load this data into python using the numpy library for anaylsis.
 
    :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
@@ -245,12 +245,12 @@ GET
    :type min_time: int
    :param max_time: Maximum value in the timerange. *Optional*. Only used for timeseries channels.
    :type max_time: int
-    
+
    :form DATA: Numpy Array
 
    :statuscode 200: No error
    :statuscode 404: Error in the syntax or file format
-  
+
 
 Image Slice Service
 ===================
@@ -261,7 +261,7 @@ GET XY Slice Cutout
 -------------------
 
 .. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/xy/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:z_slice)/(int:time_slice)/
-   
+
    :synopsis: Download a single image of a specified canonical plane, XY, and specified channel, resolution and bounds. Your browser can load these images.
 
    :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
@@ -284,21 +284,21 @@ GET XY Slice Cutout
    :type z_slice: int
    :param time_slice: Minimum value in the timerange. *Optional*. Only used for timeseries channels.
    :type time_slice: int
-    
+
    :statuscode 200: No error
    :statuscode 404: Error in the syntax or file format
-   
+
    **Example Request**:
-   
+
    .. sourcecode:: http
-      
+
       GET /ocp/ca/kasthuri11/image/xy/0/9000,9500/12000,12500/50/ HTTP/1.1
       Host: openconnecto.me
 
    **Example Response**:
 
    .. sourcecode:: http
-      
+
       HTTP/1.1 200 OK
       Content-Type: image/tiff
 
@@ -314,7 +314,7 @@ GET XZ Slice Cutout
 -------------------
 
 .. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/xz/(int:resolution)/(int:min_x),(int:max_x)/(int:y_slice)/(int:min_z),(int:max_z)/(int:time_slice/
-   
+
    :synopsis: Download a single image of a specified canonical plane, XZ, and specified channel, resolution and bounds. Your browser can load these images.
 
    :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
@@ -342,16 +342,16 @@ GET XZ Slice Cutout
    :statuscode 404: Error in the syntax or file format
 
    **Example Request**:
-   
+
    .. sourcecode:: http
-      
+
       GET /ocp/ca/kasthuri11/image/xz/0/9000,9500/12000/50,250/ HTTP/1.1
       Host: openconnecto.me
 
    **Example Response**:
 
    .. sourcecode:: http
-      
+
       HTTP/1.1 200 OK
       Content-Type: image/tiff
 
@@ -366,7 +366,7 @@ GET YZ Slice Cutout
 -------------------
 
 .. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/yz/(int:resolution)/(int:x_slice)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:time_slice)/
-   
+
    :synopsis: Download a single image of a specified canonical plane, YZ, and specified channel, resolution and bounds. Your browser can load these images.
 
    :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
@@ -391,25 +391,25 @@ GET YZ Slice Cutout
    :type min_time: int
    :param max_time: Maximum value in the timerange. *Optional*. Only used for timeseries channels.
    :type max_time: int
-    
+
    :form CUTOUT: HDF5 group, Post data
    :form CHANNELTYPE: HDF5 group, Channel type(image, annotation, probmap, timeseries)
    :form DATATYPE: HDF5 group, Data type(uint8, uint16, uint32, rgb32, rgb64, float32)
 
    :statuscode 200: No error
    :statuscode 404: Error in the syntax or file format
-   
+
    **Example Request**:
-   
+
    .. sourcecode:: http
-      
+
       GET /ocp/ca/kasthuri11/image/yz/0/9000/12000,12500/50,250/ HTTP/1.1
       Host: openconnecto.me
 
    **Example Response**:
 
    .. sourcecode:: http
-      
+
       HTTP/1.1 200 OK
       Content-Type: image/tiff
 
@@ -420,14 +420,14 @@ GET YZ Slice Cutout
 
 JPEG Stack Service for KNOSSOS
 ==============================
- 
+
 .. _jpeg-get:
 
 GET
 ----
 
 .. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/jpeg/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/
-   
+
    :synopsis: Get a jpeg stack from the server in KNOSSOS format.
 
    :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
@@ -450,21 +450,21 @@ GET
    :type min_z: int
    :param max_z: Maximum value in the zrange
    :type max_z: int
-    
+
    :statuscode 200: No error
    :statuscode 404: Error in the syntax or file format
-   
+
    **Example Request**:
-   
+
    .. sourcecode:: http
-      
+
       GET /ocp/ca/kasthuri11/image/jpeg/0/5000,5500/5000,5500/150,152/ HTTP/1.1
       Host: openconnecto.me
 
    **Example Response**:
 
    .. sourcecode:: http
-      
+
       HTTP/1.1 200 OK
       Content-Type: image/jpeg
 

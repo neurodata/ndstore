@@ -1,4 +1,4 @@
-NIFTI APIs
+NIFTI API
 ***********
 
 .. _nifti-get:

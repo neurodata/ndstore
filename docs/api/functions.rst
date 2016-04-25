@@ -1,7 +1,7 @@
-open-connectome Functions
-*************************
+ndstore Functions
+*****************
 
-.. automodule:: ocpca
+.. automodule:: ndca
    :members:
 
 

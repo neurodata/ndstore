@@ -1,4 +1,4 @@
-RAMON APIs
+RAMON API
 ***********
 
 RAMON Field Service
@@ -8,7 +8,7 @@ setField
 --------
 
 .. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/setField/(string:ramon_field)/(string/int/float:ramon_value)
-   
+
    :synopsis: Set the value of the RAMON field for the specified channel
 
    :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
@@ -29,7 +29,7 @@ getField
 --------
 
 .. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/getField/(string:ramon_field)/
-   
+
    :synopsis: Set the value of the RAMON field for the specified channel
 
    :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
@@ -57,7 +57,7 @@ GET
 ---
 
 .. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/(int:annotation_id)/(string:option_args)/(int:resolution)/
-   
+
    :synopsis: Get an annotation from the server
 
    :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
@@ -80,7 +80,7 @@ POST
 ----
 
 .. http:post:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/(string:option_args)/
-   
+
    :synopsis: Post an annotation to the server
 
    :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
@@ -102,7 +102,7 @@ GET
 ---
 
 .. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/merge/(string:listofids)/(string:option_args)/
-   
+
    :synopsis: Merge two annotation ids on the server.
 
    :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
