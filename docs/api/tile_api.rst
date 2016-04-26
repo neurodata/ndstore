@@ -12,7 +12,7 @@ getSimpleTile
 
 .. http:get:: (string:server_name)/nd/catmaid/(string:token_name)/(string:channel_name)/(string:slice_type)/(int:time)/(int:zvalue)/(int:ytile)_(int:xtile)_(int:resolution).png
    
-   :synopsis: Get a 512x512 tile from the database
+   :synopsis: Get a 512x512 tile from the database. This returns a simple Black and White tile.
 
    :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
    :type server_name: string
@@ -62,7 +62,7 @@ getMcfcTile
 
 .. http:get:: (string:server_name)/nd/catmaid/mcfc/(string:token_name)/(string:channel_name):(string:color_name)/(string:slice_type)/(int:time)/(int:zvalue)/(int:ytile)_(int:xtile)_(int:resolution).png
    
-   :synopsis: Get a 512x512 tile from the database
+   :synopsis: Get a 512x512 color tile from the database. This returns a color tile based on the requested color.
 
    :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
    :type server_name: string
@@ -114,7 +114,7 @@ getVikingTile
 
 .. http:get:: (string:server_name)/nd/catmaid/viking/(string:token_name)/volume/(string:channel_name)/(int:resolution)/X(int:xtile)_Y(int:xtile)_Z(int:zvalue).png
    
-   :synopsis: Get a 512x512 tile from the database
+   :synopsis: Get a 512x512 `Viking <https://connectomes.utah.edu/>`_ tile from the database
 
    :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
    :type server_name: string
