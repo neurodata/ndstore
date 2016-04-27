@@ -31,7 +31,8 @@ def projdict ( proj ):
   projdict = {}
   projdict['name'] = proj.getProjectName()
   projdict['description'] = proj.getProjectDescription()
-  projdict['version'] = proj.getNDVersion()
+  projdict['schema_version'] = proj.getSchemaVersion()
+  projdict['ndstore_version'] = proj.getNDVersion()
   projdict['s3backend'] = proj.getS3Backend()
 
   # These fields are internal
