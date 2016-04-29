@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from __future__ import absolute_import
 
 import argparse
 import sys
@@ -23,18 +24,19 @@ import cStringIO
 import zlib
 
 sys.path.append(os.path.abspath('../../django'))
-import OCP.settings
-os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
+import ND.settings
+os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
 from django.conf import settings
 
 import django
 django.setup()
 
 from cube import Cube
-import ocpcarest
-import ocpcadb
-import ocpcaproj
+import ndproj
 import ndlib
+
+sys.path.append(os.path.abspath('../../spdb'))
+import spatialdb
 
 
 def main():
@@ -48,10 +50,10 @@ def main():
   result = parser.parse_args()
   
   # Load a database
-  with closing (ocpcaproj.OCPCAProjectsDB()) as projdb:
+  with closing (ndproj.NDProjectsDB()) as projdb:
     proj = projdb.loadToken(result.token)
 
-  with closing (ocpcadb.OCPCADB(proj)) as db:
+  with closing (spatialdb.SpatialDB(proj)) as db:
 
     ch = proj.getChannelObj(result.channel)
     # get the dataset configuration
@@ -66,7 +68,7 @@ def main():
         if (slice_number + b <= zimagesz):
           try:
             # reading the raw data
-            file_name = "{}BrainBowExM_{:0>4}.tif".format(result.path, slice_number+b)
+            file_name = "{}/{:0>4}.tif".format(result.path, slice_number+b)
             print "Open filename {}".format(file_name)
             img = Image.open(file_name, 'r').convert("RGBA")
             imgdata = np.asarray(img)
