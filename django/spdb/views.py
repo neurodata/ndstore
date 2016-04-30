@@ -28,14 +28,14 @@ logger=logging.getLogger("neurodata")
 
 GET_SLICE_SERVICES = ['xy', 'yz', 'xz']
 GET_ANNO_SERVICES = ['xyanno', 'yzanno', 'xzanno']
-POST_SERVICES = ['hdf5', 'npz', 'hdf5_async', 'propagate', 'tiff', 'blosc', 'blaze']
+POST_SERVICES = ['hdf5', 'npz', 'raw', 'hdf5_async', 'propagate', 'tiff', 'blosc', 'blaze']
 
 
 def cutout (request, webargs):
   """Restful URL for all read services to annotation projects"""
 
   try:
-    m = re.match(r"(\w+)/(?P<channel>[\w+,/-]+)?/?(xy|xz|yz|tiff|hdf5|jpeg|blosc|blaze|npz|zip|id|diff|ids|xyanno|xzanno|yzanno)/([\w,/-]*)$", webargs)
+    m = re.match(r"(\w+)/(?P<channel>[\w+,/-]+)?/?(xy|xz|yz|tiff|hdf5|jpeg|blosc|blaze|npz|raw|zip|id|diff|ids|xyanno|xzanno|yzanno)/([\w,/-]*)$", webargs)
     [token, channel, service, cutoutargs] = [i for i in m.groups()]
 
     if channel is None:
@@ -70,6 +70,12 @@ def cutout (request, webargs):
         return response
       elif service in ['npz']:
         return django.http.HttpResponse(ndwsrest.getCutout(webargs), content_type="product/npz" )
+      elif service in ['raw']:
+        fname = re.sub ( r',','_', webargs )
+        fname = re.sub ( r'/','-', fname )
+        response = django.http.HttpResponse(ndwsrest.getCutout(webargs), content_type="product/raw" )
+        response['Content-Disposition'] = "attachment; filename={}ndcutout.raw".format(fname)
+        return response
       elif service in ['tiff']:
         # build a file name from the webarguments
         fname = re.sub ( r',','_', webargs )

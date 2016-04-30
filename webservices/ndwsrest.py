@@ -85,6 +85,7 @@ def cutout (imageargs, ch, proj, db):
   filterCube(ch, cube, filterlist)
   return cube
 
+
 def filterCube(ch, cube, filterlist=None):
   """Call Filter on a cube"""
 
@@ -94,18 +95,11 @@ def filterCube(ch, cube, filterlist=None):
     logger.error("Filter only possible for Annotation Channels")
     raise NDWSError("Filter only possible for Annotation Channels")
 
-def numpyZip ( chanargs, proj, db ):
-  """Return a web readable Numpy Pickle zipped"""
 
+def _multiChannelCutout(channels, imageargs, proj, db):
+  """Create a numpy datacube array using data from the given channels."""
+  
   try:
-    # argument of format channel/service/imageargs
-    m = re.match("([\w+,]+)/(\w+)/([\w+,/-]+)$", chanargs)
-    [channels, service, imageargs] = [i for i in m.groups()]
-  except Exception, e:
-    logger.error("Arguments not in the correct format {}. {}".format(chanargs, e))
-    raise NDWSError("Arguments not in the correct format {}. {}".format(chanargs, e))
-
-  try: 
     channel_list = channels.split(',')
     ch = proj.getChannelObj(channel_list[0])
 
@@ -124,7 +118,25 @@ def numpyZip ( chanargs, proj, db ):
         else:
           raise NDWSError("The npz cutout can only contain cutouts of one single Channel Type.")
 
+  except Exception,e:
+    raise NDWSError("{}".format(e))
+
+  return cubedata
+
+
+def numpyZip ( chanargs, proj, db ):
+  """Return a web readable Numpy Pickle zipped"""
+
+  try:
+    # argument of format channel/service/imageargs
+    m = re.match("([\w+,]+)/(\w+)/([\w+,/-]+)$", chanargs)
+    [channels, service, imageargs] = [i for i in m.groups()]
+  except Exception, e:
+    logger.error("Arguments not in the correct format {}. {}".format(chanargs, e))
+    raise NDWSError("Arguments not in the correct format {}. {}".format(chanargs, e))
     
+  try:
+    cubedata = _multiChannelCutout(channels, imageargs, proj, db)
     # Create the compressed cube
     fileobj = cStringIO.StringIO ()
     np.save ( fileobj, cubedata )
@@ -134,10 +146,27 @@ def numpyZip ( chanargs, proj, db ):
     fileobj = cStringIO.StringIO(cdz)
     fileobj.seek(0)
     return fileobj.read()
-
   except Exception,e:
     raise NDWSError("{}".format(e))
 
+def RAW ( chanargs, proj, db ):
+  """Return a web readable raw binary representation (knossos format).
+
+  It's a simple binary representation with the multidimensional array being
+  converted into a byte array in C-style iteration over the matrix."""
+
+  try:
+    # argument of format channel/service/imageargs
+    m = re.match("([\w+,]+)/(\w+)/([\w+,/-]+)$", chanargs)
+    [channels, service, imageargs] = [i for i in m.groups()]
+  except Exception, e:
+    logger.error("Arguments not in the correct format {}. {}".format(chanargs, e))
+    raise NDWSError("Arguments not in the correct format {}. {}".format(chanargs, e))
+
+  cubedata = _multiChannelCutout(channels, imageargs, proj, db)
+  binary_representation = cubedata.tobytes("C")
+
+  return binary_representation
 
 def JPEG ( chanargs, proj, db ):
   """Return a web readable JPEG File"""
@@ -150,25 +179,10 @@ def JPEG ( chanargs, proj, db ):
     logger.error("Arguments not in the correct format {}. {}".format(chanargs, e))
     raise NDWSError("Arguments not in the correct format {}. {}".format(chanargs, e))
 
-  try: 
-    channel_list = channels.split(',')
-    ch = proj.getChannelObj(channel_list[0])
-
-    channel_data = cutout( imageargs, ch, proj, db ).data
-    cubedata = np.zeros ( (len(channel_list),)+channel_data.shape, dtype=channel_data.dtype )
-    cubedata[0,:] = channel_data
-
-    # if one channel convert 3-d to 4-d array
-    for idx,channel_name in enumerate(channel_list[1:]):
-      if channel_name == '0':
-        continue
-      else:
-        ch = proj.getChannelObj(channel_name)
-        if ND_dtypetonp[ch.getDataType()] == cubedata.dtype:
-          cubedata[idx+1,:] = cutout(imageargs, ch, proj, db).data
-        else:
-          raise NDWSError("The npz cutout can only contain cutouts of one single Channel Type.")
-
+  try:
+    ch = proj.getChannelObj(channels.split(',')[0])
+    cubedata = _multiChannelCutout(channels, imageargs, proj, db)
+  
     xdim, ydim, zdim = cubedata[0,:,:,:].shape[::-1]
     #cubedata = np.swapaxes(cubedata[0,:,:,:], 0,2).reshape(xdim*zdim, ydim)
     cubedata = cubedata[0,:,:,:].reshape(xdim*zdim, ydim)
@@ -201,30 +215,9 @@ def BLOSC ( chanargs, proj, db ):
     logger.error("Arguments not in the correct format {}. {}".format(chanargs, e))
     raise NDWSError("Arguments not in the correct format {}. {}".format(chanargs, e))
 
-  try: 
-    channel_list = channels.split(',')
-    ch = proj.getChannelObj(channel_list[0])
-
-    channel_data = cutout( imageargs, ch, proj, db ).data
-    cubedata = np.zeros ( (len(channel_list),)+channel_data.shape, dtype=channel_data.dtype )
-    cubedata[0,:] = channel_data
-
-    # if one channel convert 3-d to 4-d array
-    for idx,channel_name in enumerate(channel_list[1:]):
-      if channel_name == '0':
-        continue
-      else:
-        ch = proj.getChannelObj(channel_name)
-        if ND_dtypetonp[ch.getDataType()] == cubedata.dtype:
-          cubedata[idx+1,:] = cutout(imageargs, ch, proj, db).data
-        else:
-          raise NDWSError("The npz cutout can only contain cutouts of one single Channel Type.")
-    
-    # Create the compressed cube
-    return blosc.pack_array(cubedata)
-
-  except Exception,e:
-    raise NDWSError("{}".format(e))
+  cubedata = _multiChannelCutout(channels, imageargs, proj, db)
+  # Create the compressed cube
+  return blosc.pack_array(cubedata)
 
 
 def binZip ( chanargs, proj, db ):
@@ -238,26 +231,9 @@ def binZip ( chanargs, proj, db ):
     logger.error("Arguments not in the correct format {}. {}".format(chanargs, e))
     raise NDWSError("Arguments not in the correct format {}. {}".format(chanargs, e))
 
-  try: 
-    channel_list = channels.split(',')
-    ch = proj.getChannelObj(channel_list[0])
-
-    channel_data = cutout( imageargs, ch, proj, db ).data
-    cubedata = np.zeros ( (len(channel_list),)+channel_data.shape, dtype=channel_data.dtype )
-    cubedata[0,:] = channel_data
-
-    # if one channel convert 3-d to 4-d array
-    for idx,channel_name in enumerate(channel_list[1:]):
-      if channel_name == '0':
-        continue
-      else:
-        ch = proj.getChannelObj(channel_name)
-        if ND_dtypetonp[ch.getDataType()] == cubedata.dtype:
-          cubedata[idx+1,:] = cutout(imageargs, ch, proj, db).data
-        else:
-          raise NDWSError("The npz cutout can only contain cutouts of one single Channel Type.")
-
-    
+  try:
+    cubedata = _multiChannelCutout(channels, imageargs, proj, db)
+      
     # Create the compressed cube
     cdz = zlib.compress (cubedata.tostring()) 
 
@@ -265,7 +241,6 @@ def binZip ( chanargs, proj, db ):
     fileobj = cStringIO.StringIO(cdz)
     fileobj.seek(0)
     return fileobj.read()
-
   except Exception,e:
     raise NDWSError("{}".format(e))
 
@@ -700,6 +675,8 @@ def selectService ( service, webargs, proj, db ):
     return  numpyZip ( webargs, proj, db ) 
   elif service in ['blosc']:
     return  BLOSC ( webargs, proj, db ) 
+  elif service in ['raw']:
+    return  RAW ( webargs, proj, db )
   elif service in ['jpeg']:
     return JPEG ( webargs, proj, db )
   elif service in ['zip']:
