@@ -59,6 +59,11 @@ class S3Uploader:
     self.tile_size = result.tile_size
     self.data_location = result.data_location
     self.url = result.url
+    try:
+      self.client = boto3.client('s3', aws_access_key_id=settings.AWS_ACCESS_KEY_ID, aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY)
+    except Exception, e:
+      logger.error("Cannot connect to S3 backend")
+      raise NDWSError("Cannot connect to S3 backend")
     
     # setting up the world
     # self.createS3Bucket()
@@ -82,23 +87,23 @@ class S3Uploader:
   def fetchCatmaidData(self, slice_list, xtile, ytile):
     """Fetch the next set of data from a remote source and place it locally"""
     
+    import pdb; pdb.set_trace()
     # iterating over the slice number list
     for slice_number in slice_list:
       # generating the url based on some parameters
       url = '{}/{}/{}/{}/{}/{}'.format(self.url, 'hildebrand16', self.channel_name, slice_number, self.resolution, self.generateCatmaidFileName(slice_number, xtile, ytile, ondisk=False))
       
-      # making the request
+      # fetching the object
       try:
-        req = urllib2.Request(url)
-        resp = urllib2.urlopen(req)
-      except urllib2.URLError, e:
-        logger.warning("Failed to fetch url {}. File does not exist. {}".format(url, e))
+        data = self.client.get_object(Bucket='', Key='').get('Body').read()
+      except Exception, e:
+        logger.warning("Cannot find s3 object {}".format())
         continue
         
       # writing the file to scratch
       try:
         catmaid_file = open('{}'.format(self.data_location+self.generateCatmaidFileName(slice_number, xtile, ytile)),'w')
-        catmaid_file.write(resp.read())
+        catmaid_file.write(data)
       except IOError, e:
         logger.warning("IOError. Could not open file {}. {}".format(self.data_location+self.generateCatmaidFileName(slice_number, xtile, ytile), e))
       finally:
