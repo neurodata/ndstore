@@ -80,7 +80,7 @@ def main():
     #ai.output_json("ocp.json")
 
     #Post the data
-    ni.post_data(SITE_HOST)
+    ni.post_data()
 
 if __name__ == "__main__":
   main()
