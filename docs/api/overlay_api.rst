@@ -1,4 +1,4 @@
-Overlay APIs
+Overlay API
 *************
 
 Cutut Service
@@ -39,7 +39,7 @@ GET XY Overlay Slice Cutout
    :type z_slice: int
    :param time_slice: Minimum value in the timerange. *Optional*. Only used for timeseries channels.
    :type time_slice: int
-    
+
    :statuscode 200: No error
    :statuscode 404: Error in the syntax or file format
 
@@ -120,7 +120,7 @@ GET YZ Overlay Slice Cutout
    :type min_time: int
    :param max_time: Maximum value in the timerange. *Optional*. Only used for timeseries channels.
    :type max_time: int
-    
+
    :form CUTOUT: HDF5 group, Post data
    :form CHANNELTYPE: HDF5 group, Channel type(image, annotation, probmap, timeseries)
    :form DATATYPE: HDF5 group, Data type(uint8, uint16, uint32, rgb32, rgb64, float32)

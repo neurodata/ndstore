@@ -1,4 +1,4 @@
-Tile APIs
+Tile API
 **********
 
 You can also view the `Tilecache APIs <http://docs.neurodata.io/ndtilecache/api/tilecache_api.html>`_ which work similarly for `ndtilecache <http://docs.neurodata.io/ndtilecache/index.html>`_.
@@ -35,18 +35,19 @@ getSimpleTile
 
    :statuscode 200: No error
    :statuscode 404: Error in the syntax or file format
-   
+
    **Example Request**:
-   
+
    .. sourcecode:: http
    
       GET  /nd/catmaid/kasthuri11/image/xy/1/1_1_4.png HTTP/1.1
+
       Host: openconnecto.me
-   
+
    **Example Response**:
-   
-   .. sourcecode:: http 
-      
+
+   .. sourcecode:: http
+
       HTTP/1.1 200 OK
       Content-Type: application/png
 
@@ -89,16 +90,17 @@ getMcfcTile
    :statuscode 404: Error in the syntax or file format
 
    **Example Request**:
-   
+
    .. sourcecode:: http
    
       GET  /nd/catmaid/mcfc/Thy1eYFPBrain10/Grayscale/xy/500/0_0_3.png HTTP/1.1
-      Host: openconnecto.me
-   
-   **Example Response**:
-   
-   .. sourcecode:: http 
       
+      Host: openconnecto.me
+
+   **Example Response**:
+
+   .. sourcecode:: http
+
       HTTP/1.1 200 OK
       Content-Type: application/png
 
@@ -133,18 +135,19 @@ getVikingTile
 
    :statuscode 200: No error
    :statuscode 404: Error in the syntax or file format
-   
+
    **Example Request**:
-   
+
    .. sourcecode:: http
    
       GET  /nd/catmaid/viking/kasthuri11/volume/image/4/X1_Y1_Z10.png HTTP/1.1
-      Host: openconnecto.me
-   
-   **Example Response**:
-   
-   .. sourcecode:: http 
       
+      Host: openconnecto.me
+
+   **Example Response**:
+
+   .. sourcecode:: http
+
       HTTP/1.1 200 OK
       Content-Type: application/png
 

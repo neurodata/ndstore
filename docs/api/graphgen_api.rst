@@ -1,4 +1,4 @@
-GrahpGen APIs
+GrahpGen API
 **************
 
 .. _graphgen-get:

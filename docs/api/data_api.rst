@@ -1,4 +1,4 @@
-Data APIs
+Data API
 ***********
 
 .. _data-api:
@@ -39,7 +39,7 @@ POST
    :type min_time: int
    :param max_time: Maximum value in the timerange. *Optional*. Only used for timeseries channels.
    :type max_time: int
-    
+
    :form CUTOUT: HDF5 group, Post data
    :form CHANNELTYPE: HDF5 group, Channel type(image, annotation, probmap, timeseries)
    :form DATATYPE: HDF5 group, Data type(uint8, uint16, uint32, rgb32, rgb64, float32)
@@ -82,14 +82,14 @@ GET
    :type min_time: int
    :param max_time: Maximum value in the timerange. *Optional*. Only used for timeseries channels.
    :type max_time: int
-    
+
    :form CUTOUT: HDF5 group, Post data
    :form CHANNELTYPE: HDF5 group, Channel type(image, annotation, probmap, timeseries)
    :form DATATYPE: HDF5 group, Data type(uint8, uint16, uint32, rgb32, rgb64, float32)
 
    :statuscode 200: No error
    :statuscode 404: Error in the syntax or file format
-  
+
 
 
 Blosc Service
@@ -128,7 +128,7 @@ POST
    :type min_time: int
    :param max_time: Maximum value in the timerange. *Optional*. Only used for timeseries channels.
    :type max_time: int
-    
+
    :statuscode 200: No error
    :statuscode 404: Error in the syntax or file format
 
@@ -169,7 +169,7 @@ GET
    :statuscode 200: No error
    :statuscode 404: Error in the syntax or file format
 
-   
+
 Numpy Service
 =============
 
@@ -206,7 +206,7 @@ POST
    :type min_time: int
    :param max_time: Maximum value in the timerange. *Optional*. Only used for timeseries channels.
    :type max_time: int
-    
+
    :form DATA: Numpy Array
 
    :statuscode 200: No error
@@ -247,10 +247,8 @@ GET
    :type min_time: int
    :param max_time: Maximum value in the timerange. *Optional*. Only used for timeseries channels.
    :type max_time: int
-    
+
    :form DATA: Numpy Array
 
    :statuscode 200: No error
    :statuscode 404: Error in the syntax or file format
-  
-

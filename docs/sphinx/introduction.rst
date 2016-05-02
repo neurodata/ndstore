@@ -10,8 +10,7 @@ The system design inherits much from NoSQL scale-out and data-intensive computin
     :width: 1000px
     :height: 500px
     :alt: NeuroData Data Cluster
-    
-    NeuroData Data Cluster 
+
+    NeuroData Data Cluster
 
     NeuroData Data Cluster and clients as configured to run and visualize the parallel vision workflow for synapse detection
-

@@ -164,12 +164,8 @@ def annotation (request, webargs):
       if rest.split('/')[1] == 'json':
         return django.http.HttpResponse(ndwsrest.getAnnotation(webargs), content_type="application/json" )
       else:
-        # return hdf5 
         return django.http.HttpResponse(ndwsrest.getAnnotation(webargs), content_type="product/hdf5" )
     elif request.method == 'POST':
-      #if service == 'hdf5_async':
-        #return django.http.HttpResponse( ndwsrest.putAnnotationAsync(webargs,request.body) )
-      #else:
       return django.http.HttpResponse(ndwsrest.putAnnotation(webargs,request.body))
     elif request.method == 'DELETE':
       ndwsrest.deleteAnnotation(webargs)

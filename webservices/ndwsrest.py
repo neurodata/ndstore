@@ -1362,8 +1362,7 @@ def putAnnotation ( webargs, postdata ):
 
     # return string of id values
     retvals = [] 
-
-  
+    
     # check to see if we're doing a JSON post or HDF5 post 
     if 'json' in optionsargs.split('/'):
     
@@ -1371,10 +1370,9 @@ def putAnnotation ( webargs, postdata ):
 
       if len(annobjdict.keys()) != 1:
         # for now we just accept a single annotation
-        logger.error("Error: Can only accept one annotation. Tried to post {}.".format(len(annobjdict.keys())))
-        raise NDWSError("Error: Can only accept one annotation. Tried to post {}.".format(len(annobjdict.keys())))
+        logger.error("JSON post interface can only accept one annotation. Tried to post {}.".format(len(annobjdict.keys())))
+        raise NDWSError("JSON post interface can only accept one annotation. Tried to post {}.".format(len(annobjdict.keys())))
 
-  
       # create annotation object by type 
       annotype = annobjdict[ annobjdict.keys()[0] ]['ann_type'] 
 
@@ -1399,7 +1397,7 @@ def putAnnotation ( webargs, postdata ):
       
       anno.fromDict( annobjdict[ annobjdict.keys()[0] ] )
 
-      # is this an update?
+      # if the post is an update
       if 'update' in optionsargs.split('/'):
         rdb.putAnnotation(ch, anno, 'update')
 
@@ -1407,7 +1405,7 @@ def putAnnotation ( webargs, postdata ):
         # set the ID (if provided) 
         anno.setField('annid', (rdb.assignID(ch,anno.annid)))
       
-        # ABTODO not taking any options?   need to define
+        # ABTODO not taking any options? need to define
         options = []
         # Put into the database
         rdb.putAnnotation(ch, anno, options)
@@ -1424,7 +1422,7 @@ def putAnnotation ( webargs, postdata ):
       with closing (tempfile.NamedTemporaryFile()) as tmpfile:
         tmpfile.write ( postdata )
         tmpfile.seek(0)
-        h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
+        h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False ) 
 
         # get the conflict option if it exists
         options = optionsargs.split('/')
@@ -1434,21 +1432,26 @@ def putAnnotation ( webargs, postdata ):
           conflictopt = 'E'
         else:
           conflictopt = 'O'
-
+    
         try:
     
+          if len(h5f.keys()) == 0:
+            logger.error("Error. Failed to parse HDF5 file because it was empty.")
+            raise NDWSError("Error. Failed to parse HDF5 file becuase it was empty.") 
+
           for k in h5f.keys():
-            
+             
             idgrp = h5f.get(k)
     
             # Convert HDF5 to annotation
-            anno = h5ann.H5toAnnotation(k, idgrp, rdb, ch)
-    
+            anno = h5ann.H5toAnnotation(k, idgrp, db, ch)
+            
             # set the identifier (separate transaction)
             if not ('update' in options or 'dataonly' in options or 'reduce' in options):
               anno.setField('annid',(rdb.assignID(ch,anno.annid)))
     
             # start a transaction: get mysql out of line at a time mode
+            #db.startTxn()
     
             tries = 0 
             done = False
@@ -1457,12 +1460,12 @@ def putAnnotation ( webargs, postdata ):
               try:
     
                 if anno.__class__ in [ annotation.AnnNeuron, annotation.AnnSeed ] and ( idgrp.get('VOXELS') or idgrp.get('CUTOUT')):
-                  logger.error ("Cannot write to annotation type {}".format(anno.__class__))
-                  raise NDWSError ("Cannot write to annotation type {}".format(anno.__class__))
+                  logger.warning ("Cannot write to annotation type {}".format(anno.__class__))
+                  raise OCPCAError ("Cannot write to annotation type {}".format(anno.__class__))
     
                 if 'update' in options and 'dataonly' in options:
-                  logger.error ("Illegal combination of options. Cannot use udpate and dataonly together")
-                  raise NDWSError ("Illegal combination of options. Cannot use udpate and dataonly together")
+                  logger.warning ("Illegal combination of options. Cannot use udpate and dataonly together")
+                  raise OCPCAError ("Illegal combination of options. Cannot use udpate and dataonly together")
     
                 elif not 'dataonly' in options and not 'reduce' in options:
                   # Put into the database
@@ -1491,8 +1494,8 @@ def putAnnotation ( webargs, postdata ):
     
                   # Check that the voxels have a conforming size:
                   if voxels.shape[1] != 3:
-                    logger.error ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
-                    raise NDWSError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
+                    logger.warning ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
+                    raise OCPCAError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
     
                   exceptions = db.annotate ( ch, anno.annid, resolution, voxels, conflictopt )
     
@@ -1501,8 +1504,8 @@ def putAnnotation ( webargs, postdata ):
 
                   # Check that the voxels have a conforming size:
                   if voxels.shape[1] != 3:
-                    logger.error ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
-                    raise NDWSError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
+                    logger.warning ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
+                    raise OCPCAError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
                   db.shave ( ch, anno.annid, resolution, voxels )
     
                 # Is it dense data?
@@ -1514,7 +1517,7 @@ def putAnnotation ( webargs, postdata ):
                   h5xyzoffset = idgrp.get('XYZOFFSET')
                 else:
                   h5xyzoffset = None
-    
+  
                 if cutout != None and h5xyzoffset != None and 'reduce' not in options:
     
                   #  the zstart in datasetcfg is sometimes offset to make it aligned.
