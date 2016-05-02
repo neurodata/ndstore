@@ -18,12 +18,12 @@ import argparse
 import requests
 import os
 import requests
-import ndio.utils.autoingest as AI
+import ndio.remote.ndingest as NI
 SITE_HOST = "http://openconnecto.me"
 
 def main():
 
-    ai = AI.AutoIngest()
+    ni = NI.NDIngest()
 
     """
     Edit the below values, type and default information can be found on the ingesting page of the ndio docs page.
@@ -55,13 +55,13 @@ def main():
     metadata=""            #(type=Any, default='', help='Any metadata as appropriate from the LIMS schema')
 
     #Adds data set information
-    ai.add_dataset(dataset_name, imagesize, voxelres, offset, timerange, scalinglevels, scaling)
+    ni.add_dataset(dataset_name, imagesize, voxelres, offset, timerange, scalinglevels, scaling)
 
     #Adds project information
-    ai.add_project(project_name, token_name, public)
+    ni.add_project(project_name, token_name, public)
 
     #Adds a channel
-    ai.add_channel(channel_name, datatype, channel_type, data_url, file_format, file_type, exceptions,
+    ni.add_channel(channel_name, datatype, channel_type, data_url, file_format, file_type, exceptions,
             resolution, windowrange, readonly)
 
     """
@@ -70,7 +70,7 @@ def main():
     """
 
     #Adds metada
-    ai.add_metadata(metadata)
+    ni.add_metadata(metadata)
 
     """
     EDIT ABOVE HERE
@@ -80,7 +80,7 @@ def main():
     #ai.output_json("ocp.json")
 
     #Post the data
-    ai.post_data()
+    ni.post_data()
 
 if __name__ == "__main__":
   main()
