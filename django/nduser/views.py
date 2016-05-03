@@ -67,7 +67,7 @@ logger=logging.getLogger("neurodata")
 # Helpers
 ''' Base url redirects to projects page'''
 def default(request):
-  return redirect(get_script_prefix()+'nduser/projects', {"user":request.user})
+  return redirect(get_script_prefix()+'nduser/projects/', {"user":request.user})
 
 ''' Little welcome message'''
 @login_required(login_url='/nd/accounts/login/')
@@ -115,7 +115,7 @@ def getProjects(request):
         reftokens = Token.objects.filter(project_id=project_to_delete)
         if reftokens:
           messages.error(request, 'Project cannot be deleted. Please delete all tokens for this project first.')
-          return HttpResponseRedirect(get_script_prefix()+'nduser/projects')
+          return HttpResponseRedirect(get_script_prefix()+'nduser/projects/')
         else:
           proj = Project.objects.get(project_name=project_to_delete)
           if proj:
@@ -130,7 +130,7 @@ def getProjects(request):
               messages.error(request,"Cannot delete.  You are not owner of this project or not superuser.")
           else:
             messages.error( request,"Project not found.")
-          return HttpResponseRedirect(get_script_prefix()+'nduser/projects')
+          return HttpResponseRedirect(get_script_prefix()+'nduser/projects/')
 
       elif 'delete' in request.POST:
         # pd = ndproj.
@@ -140,7 +140,7 @@ def getProjects(request):
         reftokens = Token.objects.filter(project_id=project_to_delete)
         if reftokens:
           messages.error(request, 'Project cannot be deleted. Please delete all tokens for this project first.')
-          return HttpResponseRedirect(get_script_prefix()+'nduser/projects')
+          return HttpResponseRedirect(get_script_prefix()+'nduser/projects/')
         else:
           proj = Project.objects.get(project_name=project_to_delete)
           if proj:
@@ -151,7 +151,7 @@ def getProjects(request):
               messages.error(request,"Cannot delete.  You are not owner of this project or not superuser.")
           else:
             messages.error( request,"Project not found.")
-          return HttpResponseRedirect(get_script_prefix()+'nduser/projects')
+          return HttpResponseRedirect(get_script_prefix()+'nduser/projects/')
       
       elif 'info' in request.POST:
       #GET PROJECT INFO -----------
@@ -181,7 +181,7 @@ def getProjects(request):
       else:
         # Invalid POST
         messages.error(request,"Unrecognized POST")
-        return HttpResponseRedirect(get_script_prefix()+'nduser/projects')
+        return HttpResponseRedirect(get_script_prefix()+'nduser/projects/')
 
     else:
     # GET Projects
@@ -510,7 +510,7 @@ def createDataset(request):
           new_dataset=form.save(commit=False)
           new_dataset.user_id=request.user.id
           new_dataset.save()
-          return HttpResponseRedirect(get_script_prefix()+'nduser/datasets')
+          return HttpResponseRedirect(get_script_prefix()+'nduser/datasets/')
         else:
           context = {'form': form}
           return render_to_response('createdataset.html',context,context_instance=RequestContext(request))
@@ -549,7 +549,7 @@ def updateDataset(request):
             form.save()
             messages.success(request, 'Sucessfully updated dataset')
             del request.session["dataset_name"]
-            return HttpResponseRedirect(get_script_prefix()+'nduser/datasets')
+            return HttpResponseRedirect(get_script_prefix()+'nduser/datasets/')
           else:
             # invalid form
             context = {'form': form}
@@ -557,13 +557,13 @@ def updateDataset(request):
 
         else:
           messages.error(request,"Cannot update.  You are not owner of this dataset or not superuser.")
-          return HttpResponseRedirect(get_script_prefix()+'nduser/datasets')
+          return HttpResponseRedirect(get_script_prefix()+'nduser/datasets/')
 
       elif 'backtodatasets' in request.POST:
-        return HttpResponseRedirect(get_script_prefix()+'nduser/datasets')
+        return HttpResponseRedirect(get_script_prefix()+'nduser/datasets/')
       else:
         # unrecognized option
-        return HttpResponseRedirect(get_script_prefix()+'nduser/datasets')
+        return HttpResponseRedirect(get_script_prefix()+'nduser/datasets/')
     else:
       print "Getting the update form"
       if "dataset_name" in request.session:
@@ -630,7 +630,7 @@ def updateChannel(request):
 
         # KL TODO/ RB TODO add propagate to the UI
   #      messages.error(request,"Propagate not yet implemented in self-admin UI.")
-  #      return HttpResponseRedirect(get_script_prefix()+'nduser/channels')
+  #      return HttpResponseRedirect(get_script_prefix()+'nduser/channels/')
 
         context = {'form': form, 'project': prname}
         form.add_error(None,[u"Propagate not yet implemented in self-admin UI."])
@@ -673,7 +673,7 @@ def updateChannel(request):
           else:
             logger.error("Illegal channel combination requested: {}.".format(combo))
             messages.error(request,"Illegal channel combination requested or none selected.")
-            return HttpResponseRedirect(get_script_prefix()+'nduser/channels')
+            return HttpResponseRedirect(get_script_prefix()+'nduser/channels/')
 
           if pr.user_id == request.user.id or request.user.is_superuser:
 
@@ -694,11 +694,11 @@ def updateChannel(request):
                 messages.error(request,"Failed to create channel. {}".format(e))
                 new_channel.delete()
 
-            return HttpResponseRedirect(get_script_prefix()+'nduser/channels')
+            return HttpResponseRedirect(get_script_prefix()+'nduser/channels/')
 
           else:
             messages.error(request,"Cannot update.  You are not owner of this token or not superuser.")
-            return HttpResponseRedirect(get_script_prefix()+'nduser/channels')
+            return HttpResponseRedirect(get_script_prefix()+'nduser/channels/')
 
         else:
           # Invalid form
@@ -723,11 +723,11 @@ def updateChannel(request):
           newchannel.default = True
 
         newchannel.save()
-        return HttpResponseRedirect(get_script_prefix()+'nduser/channels')
+        return HttpResponseRedirect(get_script_prefix()+'nduser/channels/')
 
       else:
         messages.error(request,"Cannot update. You are not owner of this token or not superuser.")
-        return HttpResponseRedirect(get_script_prefix()+'nduser/channels')
+        return HttpResponseRedirect(get_script_prefix()+'nduser/channels/')
 
     else:
       if "channel_name" in request.session:
@@ -785,17 +785,17 @@ def updateToken(request):
             del request.session["token_name"]
           else:
             messages.error(request,"Cannot update.  You are not owner of this token or not superuser.")
-          return HttpResponseRedirect(get_script_prefix()+'nduser/token')
+          return HttpResponseRedirect(get_script_prefix()+'nduser/token/')
         else:
           #Invalid form
           context = {'form': form}
           return render_to_response('updatetoken.html',context,context_instance=RequestContext(request))
       elif 'backtotokens' in request.POST:
         #unrecognized option
-        return HttpResponseRedirect(get_script_prefix()+'nduser/token')
+        return HttpResponseRedirect(get_script_prefix()+'nduser/token/')
       else:
         #unrecognized option
-        return HttpResponseRedirect(get_script_prefix()+'nduser/token')
+        return HttpResponseRedirect(get_script_prefix()+'nduser/token/')
     else:
       print "Getting the update form"
       if "token_name" in request.session:
@@ -839,17 +839,17 @@ def updateProject(request):
           else:
             messages.error(request,"Cannot update.  You are not owner of this project or not superuser.")
           del request.session["project_name"]
-          return HttpResponseRedirect(get_script_prefix()+'nduser/projects')
+          return HttpResponseRedirect(get_script_prefix()+'nduser/projects/')
         else:
           #Invalid form
           context = {'form': form}
           return render_to_response('updateproject.html',context,context_instance=RequestContext(request))
       elif 'backtoprojects' in request.POST:
-        return HttpResponseRedirect(get_script_prefix()+'nduser/projects')
+        return HttpResponseRedirect(get_script_prefix()+'nduser/projects/')
       else:
         #unrecognized option
         messages.error(request,"Unrecognized Post")
-        return HttpResponseRedirect(get_script_prefix()+'nduser/pojects')
+        return HttpResponseRedirect(get_script_prefix()+'nduser/pojects/')
         
     else:
       #Get: Retrieve project and display update project form.
@@ -894,7 +894,7 @@ def createToken(request):
           new_token=form.save(commit=False)
           new_token.user_id=request.user.id
           new_token.save()
-          return HttpResponseRedirect(get_script_prefix()+'nduser/projects')
+          return HttpResponseRedirect(get_script_prefix()+'nduser/projects/')
         else:
           context = {'form': form}
           return render_to_response('createtoken.html',context,context_instance=RequestContext(request))
@@ -915,7 +915,7 @@ def createToken(request):
 
   except Exception, e:
     messages.error(request, "Exception in administrative interface = {}".format(e)) 
-    return redirect(get_script_prefix()+'nduser/projects', {"user":request.user})
+    return redirect(get_script_prefix()+'nduser/projects/', {"user":request.user})
 
 
 
@@ -1021,7 +1021,7 @@ def backupProject(request):
               import threading
               t = threading.Thread ( target=_monitorBackup, args=(p,new_backup,outputfile) )
               t.start()
-              return HttpResponseRedirect(get_script_prefix()+'nduser/backupproject')
+              return HttpResponseRedirect(get_script_prefix()+'nduser/backupproject/')
 
             else:
 
@@ -1038,7 +1038,7 @@ def backupProject(request):
               new_backup.save()
 
               messages.success(request, 'Sucessfully backed up database '+ dbname)
-              return HttpResponseRedirect(get_script_prefix()+'nduser/projects')
+              return HttpResponseRedirect(get_script_prefix()+'nduser/projects/')
 
           elif new_backup.protocol == 's3':
             raise NDWSError ("Unimplemented backup protocol: s3")
@@ -1081,7 +1081,7 @@ def backupProject(request):
         # remove the backup record
         bu_to_delete.delete()
 
-        return HttpResponseRedirect(get_script_prefix()+'nduser/backupproject')
+        return HttpResponseRedirect(get_script_prefix()+'nduser/backupproject/')
 
     # show the backup page
     else:
@@ -1110,7 +1110,7 @@ def backupProject(request):
 
   except Exception, e:
     messages.error(request, "Exception in administrative interface = {}".format(e)) 
-    return redirect(get_script_prefix()+'nduser/projects', {"user":request.user})
+    return redirect(get_script_prefix()+'nduser/projects/', {"user":request.user})
 
 
 @login_required(login_url='/nd/accounts/login/')
@@ -1172,7 +1172,7 @@ def restoreProject ( request ):
           import threading
           t = threading.Thread ( target=_monitorRestore, args=(po_process,newproj,bu,inputfile) )
           t.start()
-          return HttpResponseRedirect(get_script_prefix()+'nduser/backupproject')
+          return HttpResponseRedirect(get_script_prefix()+'nduser/backupproject/')
 
         else:
           po = subprocess.Popen(cmd)
@@ -1232,7 +1232,7 @@ def restoreProject ( request ):
           import threading
           t = threading.Thread ( target=_restoreOneChannel, args=(request,) )
           t.start()
-          return HttpResponseRedirect(get_script_prefix()+'nduser/backupproject')
+          return HttpResponseRedirect(get_script_prefix()+'nduser/backupproject/')
 
         else:
 
@@ -1277,7 +1277,7 @@ def restoreProject ( request ):
 
   except Exception, e:
     messages.error(request, "Exception in administrative interface = {}".format(e)) 
-    return redirect(get_script_prefix()+'nduser/projects', {"user":request.user})
+    return redirect(get_script_prefix()+'nduser/projects/', {"user":request.user})
 
 
 def _restoreOneChannel ( request ):
