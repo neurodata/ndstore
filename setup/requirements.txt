@@ -18,6 +18,7 @@ uwsgi
 django
 django-registration
 django-celery
+django-cors-headers
 #
 # Key value engines
 boto3

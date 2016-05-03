@@ -58,10 +58,12 @@ INSTALLED_APPS = (
     'ndviz',
     #'ndgraph',
     'stats',
+    'corsheaders'
 )
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     #'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -214,6 +216,10 @@ TEMP_INGEST_PATH = '/data/scratch/'
 # registration settings
 ACCOUNT_ACTIVATION_DAYS = 7 # One-week activation window; you may, of course, use a different value.
 REGISTRATION_AUTO_LOGIN = True # Automatically log the user in.
+
+# CORS Settings
+CORS_URLS_ALLOW_ALL_REGEX = (r'^/(sd|ca|ocpca)/.*$', )
+CORS_ORIGIN_ALLOW_ALL = True
 
 # Amazon Settings
 AWS_ACCESS_KEY_ID = settings_secret.AWS_ACCESS_KEY_ID
