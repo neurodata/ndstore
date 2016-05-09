@@ -46,7 +46,8 @@ install:
   - python ./django/manage.py collectstatic --noinput
     # move the nginx config files and start service
   #- sudo rm /etc/nginx/sites-enabled/default
-  - sudo ln -s ./setup/docker_config/nginx/neurodata.conf /etc/nginx/sites-enabled/default
+  #- sudo ln -s ./setup/docker_config/nginx/neurodata.conf /etc/nginx/sites-enabled/default
+  - nginx -c ./setup/docker_config/nginx/neurodata.conf
     # move uwsgi config files and start service
   - sudo ln -s ./setup/docker_config/uwsgi/neurodata.ini /etc/uwsgi/apps-available/
   - sudo ln -s ./setup/docker_config/uwsgi/neurodata.ini /etc/uwsgi/apps-enabled/
