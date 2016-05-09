@@ -15,7 +15,7 @@ services:
   - memcached
   - rabbitmq
   - supervisor
-  - nginx
+  #- nginx
   - redis
   - cassandra
 
@@ -28,7 +28,7 @@ before_install:
   - sudo chmod -R 777 /var/log/neurodata/
 
 install: 
-  - sudo apt-get -y install mysql-client-core-5.6 libhdf5-serial-dev mysql-client-5.6  
+  - sudo apt-get -y install mysql-client-core-5.6 libhdf5-serial-dev mysql-client-5.6 nginx 
   - sudo apt-get -y install libxslt1-dev libmemcached-dev libhdf5-serial-dev g++ libjpeg-dev python-dev mysql-server-5.6 libmysqlclient-dev supervisor uwsgi uwsgi-plugin-python liblapack-dev
   - pip install cython numpy
   - pip install -r ./setup/requirements.txt
@@ -45,9 +45,8 @@ install:
   - echo "from django.contrib.auth.models import User; User.objects.create_superuser('neurodata', 'abc@xyz.com', 'neur0data')" | python ./django/manage.py shell
   - python ./django/manage.py collectstatic --noinput
     # move the nginx config files and start service
-  #- sudo rm /etc/nginx/sites-enabled/default
-  #- sudo ln -s ./setup/docker_config/nginx/neurodata.conf /etc/nginx/sites-enabled/default
-  - nginx -c ./setup/docker_config/nginx/neurodata.conf
+  - sudo rm /etc/nginx/sites-enabled/default
+  - sudo ln -s ./setup/docker_config/nginx/neurodata.conf /etc/nginx/sites-enabled/default
     # move uwsgi config files and start service
   - sudo ln -s ./setup/docker_config/uwsgi/neurodata.ini /etc/uwsgi/apps-available/
   - sudo ln -s ./setup/docker_config/uwsgi/neurodata.ini /etc/uwsgi/apps-enabled/
