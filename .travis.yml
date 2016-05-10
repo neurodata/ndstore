@@ -68,6 +68,8 @@ install:
     # move the nginx config files and start service
   #- sudo rm /etc/nginx/sites-enabled/default
   - sudo ln -s ./setup/docker_config/nginx/neurodata.conf /etc/nginx/sites-enabled/neurodata.conf
+  - sudo rm /etc/nginx/nginx.conf
+  - sudo ln -s ./setup/docker_config/nginx/nginx.conf /etc/nginx/nginx.conf
     # move uwsgi config files and start service
   - sudo ln -s ./setup/docker_config/uwsgi/neurodata.ini /etc/uwsgi/apps-available/
   - sudo ln -s ./setup/docker_config/uwsgi/neurodata.ini /etc/uwsgi/apps-enabled/
