@@ -12,7 +12,6 @@ dist: trusty
 
 cache:
   - pip
-  - apt
 
 addons:
    apt:
@@ -83,16 +82,10 @@ install:
   - sudo service rabbitmq-server restart
   - sudo service memcached restart
 
-services:
-  - mysql
-  - memcached
-  - rabbitmq
-  - supervisor
-  - nginx
-  - redis
-
 script:
   - wget localhost
   - wget localhost/nd/accounts/login
-  - cd ./test/
-  - py.test
+  - ls -la /var/run
+  - cat /var/log/neurodata/nd.log
+  #- cd ./test/
+  #- py.test

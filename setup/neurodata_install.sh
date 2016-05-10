@@ -64,6 +64,8 @@ sudo -u neurodata python manage.py collectstatic --noinput
 # move the nginx config files and start service
 sudo rm /etc/nginx/sites-enabled/default
 sudo ln -s /home/neurodata/ndstore/setup/docker_config/nginx/neurodata.conf /etc/nginx/sites-enabled/default
+sudo rm /etc/nginx/nginx.conf
+sudo ln -s /home/neurodata/ndstore/setup/docker_config/nginx/nginx.conf /etc/nginx/nginx.conf
 
 # move uwsgi config files and start service
 sudo rm /etc/uwsgi/apps-available/neurodata.ini
