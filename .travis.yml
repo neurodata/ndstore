@@ -84,6 +84,6 @@ install:
 
 script:
   - wget localhost
-  - wget localhost/nd/
-  #- cd ./test/
-  #- py.test
+  - wget localhost/nd/accounts/login
+  - cd ./test/
+  - py.test
