@@ -85,7 +85,7 @@ install:
 script:
   - wget localhost
   - wget localhost/nd/accounts/login
-  - ls -la /var/run/
+  - ls -la /tmp/
   - cat /var/log/neurodata/nd.log
   #- cd ./test/
   #- py.test
