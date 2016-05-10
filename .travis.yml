@@ -38,7 +38,6 @@ services:
   - supervisor
   - nginx
   - redis
-  - cassandra
 
 before_install:
   #- echo "mysql-server-5.6 mysql-server/root_password password neur0data" | sudo debconf-set-selections
@@ -67,8 +66,8 @@ install:
   - echo "from django.contrib.auth.models import User; User.objects.create_superuser('neurodata', 'abc@xyz.com', 'neur0data')" | python ./django/manage.py shell
   - python ./django/manage.py collectstatic --noinput
     # move the nginx config files and start service
-  - sudo rm /etc/nginx/sites-enabled/default
-  - sudo ln -s ./setup/docker_config/nginx/neurodata.conf /etc/nginx/sites-enabled/default
+  #- sudo rm /etc/nginx/sites-enabled/default
+  #- sudo ln -s ./setup/docker_config/nginx/neurodata.conf /etc/nginx/sites-enabled/default
     # move uwsgi config files and start service
   - sudo ln -s ./setup/docker_config/uwsgi/neurodata.ini /etc/uwsgi/apps-available/
   - sudo ln -s ./setup/docker_config/uwsgi/neurodata.ini /etc/uwsgi/apps-enabled/
@@ -86,5 +85,5 @@ install:
 script:
   - wget localhost
   - wget localhost/nd/
-  - cd ./test/
-  - py.test
+  #- cd ./test/
+  #- py.test
