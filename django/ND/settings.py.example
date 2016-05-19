@@ -220,6 +220,9 @@ REGISTRATION_AUTO_LOGIN = True # Automatically log the user in.
 # CORS Settings
 CORS_URLS_ALLOW_ALL_REGEX = (r'^/(sd|ca|ocpca)/.*$', )
 CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_METHODS = {
+  'GET'
+}
 
 # Amazon Settings
 AWS_ACCESS_KEY_ID = settings_secret.AWS_ACCESS_KEY_ID
