@@ -12,12 +12,12 @@ echo "mysql-server-5.6 mysql-server/root_password_again password neur0data" | su
 sudo apt-get -y install mysql-client-core-5.6 libhdf5-serial-dev mysql-client-5.6
 
 # apt-get install packages
-#sudo apt-get -y install < ubuntu_package_list
-sudo apt-get -y install nginx git bash-completion python-virtualenv libhdf5-dev libxslt1-dev libmemcached-dev g++ libjpeg-dev virtualenvwrapper python-dev mysql-server-5.6 libmysqlclient-dev xfsprogs supervisor rabbitmq-server uwsgi uwsgi-plugin-python liblapack-dev wget memcached
+sudo apt-get -y install < /home/neurodata/ndstore/setup/ubuntu_config/ubuntu_package_list
+#sudo apt-get -y install nginx git bash-completion python-virtualenv libhdf5-dev libxslt1-dev libmemcached-dev g++ libjpeg-dev virtualenvwrapper python-dev mysql-server-5.6 libmysqlclient-dev xfsprogs supervisor rabbitmq-server uwsgi uwsgi-plugin-python liblapack-dev wget memcached
 
 # create the log directory
 sudo mkdir /var/log/neurodata
-sudo touch /var/log/neurodata/nd.log
+sudo touch /var/log/neurodata/ndstore.log
 sudo chown -R www-data:www-data /var/log/neurodata
 sudo chmod -R 777 /var/log/neurodata/
 
@@ -64,15 +64,15 @@ sudo -u neurodata python manage.py collectstatic --noinput
 
 # move the nginx config files and start service
 sudo rm /etc/nginx/sites-enabled/default
-sudo ln -s /home/neurodata/ndstore/setup/docker_config/nginx/neurodata.conf /etc/nginx/sites-enabled/default
+sudo ln -s /home/neurodata/ndstore/setup/docker_config/nginx/ndstore.conf /etc/nginx/sites-enabled/default
 sudo rm /etc/nginx/nginx.conf
 sudo ln -s /home/neurodata/ndstore/setup/docker_config/nginx/nginx.conf /etc/nginx/nginx.conf
 
 # move uwsgi config files and start service
-sudo rm /etc/uwsgi/apps-available/neurodata.ini
-sudo ln -s /home/neurodata/ndstore/setup/docker_config/uwsgi/neurodata.ini /etc/uwsgi/apps-available/
-sudo rm /etc/uwsgi/apps-enabled/neurodata.ini
-sudo ln -s /home/neurodata/ndstore/setup/docker_config/uwsgi/neurodata.ini /etc/uwsgi/apps-enabled/
+sudo rm /etc/uwsgi/apps-available/ndstore.ini
+sudo ln -s /home/neurodata/ndstore/setup/docker_config/uwsgi/ndstore.ini /etc/uwsgi/apps-available/
+sudo rm /etc/uwsgi/apps-enabled/ndstore.ini
+sudo ln -s /home/neurodata/ndstore/setup/docker_config/uwsgi/ndstore.ini /etc/uwsgi/apps-enabled/
 
 # move celery config files and start service
 sudo rm /etc/supervisor/conf.d/propagate.conf
