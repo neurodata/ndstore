@@ -62,15 +62,15 @@ install:
   - python ./django/manage.py collectstatic --noinput
     # move the nginx config files and start service
   #- sudo rm /etc/nginx/sites-enabled/default
-  - sudo ln -s ./setup/docker_config/nginx/ndstore.conf /etc/nginx/sites-enabled/
+  - sudo ln -s ./setup/docker_config/nginx/ndstore.conf /etc/nginx/sites-enabled/ndstore.conf
   - sudo rm /etc/nginx/nginx.conf
-  - sudo ln -s ./setup/docker_config/nginx/nginx.conf /etc/nginx/
+  - sudo ln -s ./setup/docker_config/nginx/nginx.conf /etc/nginx/nginx.conf
     # move uwsgi config files and start service
-  - sudo ln -s ./setup/docker_config/uwsgi/ndstore.ini /etc/uwsgi/apps-available/
-  - sudo ln -s ./setup/docker_config/uwsgi/ndstore.ini /etc/uwsgi/apps-enabled/
+  - sudo ln -s ./setup/docker_config/uwsgi/ndstore.ini /etc/uwsgi/apps-available/ndstore.ini
+  - sudo ln -s ./setup/docker_config/uwsgi/ndstore.ini /etc/uwsgi/apps-enabled/ndstore.ini
     # move celery config files and start service
-  - sudo ln -s ./setup/docker_config/celery/propagate.conf /etc/supervisor/conf.d/
-  - sudo ln -s ./setup/docker_config/celery/ingest.conf /etc/supervisor/conf.d/
+  - sudo ln -s ./setup/docker_config/celery/propagate.conf /etc/supervisor/conf.d/propagate.conf
+  - sudo ln -s ./setup/docker_config/celery/ingest.conf /etc/supervisor/conf.d/ingest.conf
     # restarting all the services
   - sudo service nginx restart
   - sudo service uwsgi restart
@@ -82,6 +82,7 @@ script:
   - wget localhost
   - wget localhost/nd/accounts/login
   - ls -la /tmp/
-  - cat /var/log/neurodata/nd.log
-  #- cd ./test/
-  #- py.test
+  - cd ./test/
+  - py.test test_info.py
+  - cat /var/log/uwsgi/app/*.log
+  - cat /var/log/neurodata/ndstore.log
