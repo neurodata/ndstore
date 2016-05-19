@@ -34,9 +34,7 @@ django.setup()
 from cube import Cube
 import ndproj
 import ndlib
-
-sys.path.append(os.path.abspath('../../spdb'))
-import spatialdb
+from spatialdb import SpatialDB
 
 
 def main():
@@ -53,7 +51,7 @@ def main():
   with closing (ndproj.NDProjectsDB()) as projdb:
     proj = projdb.loadToken(result.token)
 
-  with closing (spatialdb.SpatialDB(proj)) as db:
+  with closing (SpatialDB(proj)) as db:
 
     ch = proj.getChannelObj(result.channel)
     # get the dataset configuration
