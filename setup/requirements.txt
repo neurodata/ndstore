@@ -44,3 +44,4 @@ networkx
 requests
 anyjson
 amqp
+pylibmc
