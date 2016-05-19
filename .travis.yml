@@ -61,10 +61,10 @@ install:
   - echo "from django.contrib.auth.models import User; User.objects.create_superuser('neurodata', 'abc@xyz.com', 'neur0data')" | python ./django/manage.py shell
   - python ./django/manage.py collectstatic --noinput
     # move the nginx config files and start service
-  #- sudo rm /etc/nginx/sites-enabled/default
+  - sudo rm /etc/nginx/sites-enabled/default
   - sudo ln -s ./setup/docker_config/nginx/ndstore.conf /etc/nginx/sites-enabled/ndstore.conf
-  - sudo rm /etc/nginx/nginx.conf
-  - sudo ln -s ./setup/docker_config/nginx/nginx.conf /etc/nginx/nginx.conf
+  #- sudo rm /etc/nginx/nginx.conf
+  #- sudo ln -s ./setup/docker_config/nginx/nginx.conf /etc/nginx/nginx.conf
     # move uwsgi config files and start service
   - sudo ln -s ./setup/docker_config/uwsgi/ndstore.ini /etc/uwsgi/apps-available/ndstore.ini
   - sudo ln -s ./setup/docker_config/uwsgi/ndstore.ini /etc/uwsgi/apps-enabled/ndstore.ini
