@@ -170,6 +170,20 @@ def getHDF5 (p, time=False):
 
   return h5f
 
+def getRAW (p, time=False):
+  """Get data using raw format. Returns a numpy array"""
+
+  # Build the url and then create a hdf5 object
+  if time:
+    url = 'http://{}/sd/{}/{}/raw/{}/{},{}/{},{}/{},{}/{},{}/'.format(SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+  else:
+    url = 'http://{}/sd/{}/{}/raw/{}/{},{}/{},{}/{},{}/'.format(SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args)
+
+  # Get the data back
+  f = urllib2.urlopen (url)
+  rawdata = f.read()
+  return np.frombuffer(rawdata, dtype = np.dtype(np.uint8))
+
 def putAnnotation ( p, f ):
   """Put the annotation file"""
 
