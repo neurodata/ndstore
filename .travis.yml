@@ -12,9 +12,10 @@ dist: trusty
 
 cache:
   - pip
+  - apt
 
 addons:
-   apt:
+  apt:
      packages:
        - nginx
        - supervisor
@@ -81,6 +82,7 @@ install:
   - sudo service supervisor restart
   - sudo service rabbitmq-server restart
   - sudo service memcached restart
+
 
 script:
   - wget localhost

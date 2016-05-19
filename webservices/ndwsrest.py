@@ -35,7 +35,6 @@ from operator import sub, add
 from libtiff import TIFFfile, TIFFimage
 
 import restargs
-import anncube
 import spatialdb
 import ramondb
 import ndproj
