@@ -40,10 +40,9 @@ p.window = [0,500]
 p.channel_type = IMAGE
 p.datatype = UINT8
 p.voxel = [4.0,4.0,3.0]
-#p.args = (3000,3100,4000,4100,500,510)
 
 
-class Test_Blosc:
+class Test_Raw:
 
   def setup_class(self):
 

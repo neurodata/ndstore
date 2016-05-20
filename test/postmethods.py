@@ -21,6 +21,8 @@ import blosc
 import numpy as np
 
 from params import Params
+from ndtype import UINT8, ND_dtypetonp
+
 import kvengine_to_test
 import site_to_test
 import makeunitdb
@@ -88,7 +90,7 @@ def postBlaze (p, post_data, time=False):
     return e
 
 def postBlosc (p, post_data, time=False):
-  """Post data using npz"""
+  """Post data using blosc packed numpy array"""
   
   # Build the url and then create a npz object
   if time:
@@ -108,7 +110,7 @@ def postBlosc (p, post_data, time=False):
 
 
 def getBlosc (p, time=False):
-  """Get data using npz. Returns a numpy array"""
+  """Get data using blosc. Returns a blosc packed numpy array"""
   
   # Build the url to get the npz object 
   if time:
@@ -173,7 +175,7 @@ def getHDF5 (p, time=False):
 def getRAW (p, time=False):
   """Get data using raw format. Returns a numpy array"""
 
-  # Build the url and then create a hdf5 object
+  # Build the url and then create a raw object
   if time:
     url = 'http://{}/sd/{}/{}/raw/{}/{},{}/{},{}/{},{}/{},{}/'.format(SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
   else:
@@ -182,7 +184,7 @@ def getRAW (p, time=False):
   # Get the data back
   f = urllib2.urlopen (url)
   rawdata = f.read()
-  return np.frombuffer(rawdata, dtype = np.dtype(np.uint8))
+  return np.frombuffer(rawdata, dtype = ND_dtypetonp[p.datatype])
 
 def putAnnotation ( p, f ):
   """Put the annotation file"""
