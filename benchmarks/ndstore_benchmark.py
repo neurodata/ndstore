@@ -195,6 +195,7 @@ def main():
         
         time_values.append(time.time()-start_time)
       
+      actual_size = 0
       if bt.datatype == np.uint8:
         acutal_size = [math.pow(2,data_size-3)]
       elif bt.datatype == np.uint16:

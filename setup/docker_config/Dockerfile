@@ -1,12 +1,8 @@
 FROM ubuntu:14.04
 MAINTAINER Kunal Lillaney <lillaney@jhu.edu>
 
-# update and upgrade
-RUN apt-get update
-RUN apt-get -y upgrade
-
-# apt-get install packages
-RUN apt-get -y install \
+# apt-get update and install packages
+RUN apt-get update && -y install \
   nginx\
   git\
   bash-completion\
@@ -56,6 +52,7 @@ RUN groupadd -r neurodata && useradd -r -m -g neurodata neurodata
 # make the logging directory
 RUN mkdir /var/log/neurodata
 RUN chown www-data:www-data /var/log/neurodata
+RUN chmod -R 777 /var/log/neurodata
 
 # rest happens in user land
 USER neurodata
@@ -85,12 +82,13 @@ RUN service mysql start && mysql -u root -i -e "create user 'neurodata'@'localho
 
 # move nginx config files and start service
 RUN rm /etc/nginx/sites-enabled/default
-RUN ln -s /home/neurodata/ndstore/setup/docker_config/nginx/neurodata.conf /etc/nginx/sites-enabled/default
+RUN ln -s /home/neurodata/ndstore/setup/docker_config/nginx/ndstore.conf /etc/nginx/sites-enabled/
+RUN ln -s /home/neurodata/ndstore/setup/docker_config/nginx/nginx.conf /etc/nginx/
 RUN service nginx start
 
 # move uwsgi config files and start service
-RUN ln -s /home/neurodata/ndstore/setup/docker_config/uwsgi/neurodata.ini /etc/uwsgi/apps-available/
-RUN ln -s /home/neurodata/ndstore/setup/docker_config/uwsgi/neurodata.ini /etc/uwsgi/apps-enabled/
+RUN ln -s /home/neurodata/ndstore/setup/docker_config/uwsgi/ndstore.ini /etc/uwsgi/apps-available/
+RUN ln -s /home/neurodata/ndstore/setup/docker_config/uwsgi/ndstore.ini /etc/uwsgi/apps-enabled/
 RUN service uwsgi start
 
 # move celery config files and start service
@@ -103,4 +101,3 @@ RUN service rabbitmq-server start
 EXPOSE 80
 
 USER neurodata
-
