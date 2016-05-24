@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Project Info APIs &mdash; open-connectome v0.7.0 documentation</title>
+  <title>Project Info API &mdash; open-connectome v0.7.0 documentation</title>
   
 
   
@@ -33,7 +33,7 @@
 
   
     <link rel="top" title="open-connectome v0.7.0 documentation" href="../index.html"/>
-        <link rel="next" title="Public Token APIs" href="public_api.html"/>
+        <link rel="next" title="Public Token API" href="public_api.html"/>
         <link rel="prev" title="NeuroData Types" href="nd_types.html"/> 
 
   
@@ -86,16 +86,19 @@
           
             
             
-                <p class="caption"><span class="caption-text">Documentation</span></p>
-<ul class="current">
+                <p class="caption"><span class="caption-text">NeuroData Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../sphinx/introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sphinx/datamodel.html">Data Model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sphinx/console.html">Administrator Console</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sphinx/ingesting.html">How to Ingest Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sphinx/config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sphinx/faq.html">Frequently Asked Questions (FAQ)</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="nd_types.html">NeuroData Types</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Project Info APIs</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Project Info API</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#json-informatio-service">JSON Informatio Service</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#get">GET</a></li>
 </ul>
@@ -106,22 +109,21 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="public_api.html">Public Token APIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="data_api.html">Data APIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ramon_api.html">RAMON APIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="propagate_api.html">Propagate APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="public_api.html">Public Token API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data_api.html">Data API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ramon_api.html">RAMON API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="propagate_api.html">Propagate API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stats_api.html">Statistics API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="json_api.html">JSON APIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="overlay_api.html">Overlay APIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tile_api.html">Tile APIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="graphgen_api.html">GrahpGen APIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="nifti_api.html">NIFTI APIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="swc_api.html">SWC APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="json_api.html">JSON API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overlay_api.html">Overlay API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tile_api.html">Tile API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="graphgen_api.html">GrahpGen API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nifti_api.html">NIFTI API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="swc_api.html">SWC API</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Further Reading</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="functions.html">open-connectome Functions</a></li>
-<li class="toctree-l1"><a class="reference external" href="https://gitter.im/openconnectome/open-connectome">Gitter chatroom</a></li>
+<li class="toctree-l1"><a class="reference internal" href="functions.html">ndstore Functions</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://groups.google.com/forum/#!forum/ocp-support/">Mailing List</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore">Github repo</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore/releases/">Release Notes</a></li>
@@ -155,7 +157,7 @@
   <ul class="wy-breadcrumbs">
     <li><a href="../index.html">Docs</a> &raquo;</li>
       
-    <li>Project Info APIs</li>
+    <li>Project Info API</li>
       <li class="wy-breadcrumbs-aside">
         
           
@@ -169,8 +171,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="project-info-apis">
-<h1>Project Info APIs<a class="headerlink" href="#project-info-apis" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="project-info-api">
+<h1>Project Info API<a class="headerlink" href="#project-info-api" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="json-informatio-service">
 <h2>JSON Informatio Service<a class="headerlink" href="#json-informatio-service" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="get">
@@ -484,7 +486,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="public_api.html" class="btn btn-neutral float-right" title="Public Token APIs" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="public_api.html" class="btn btn-neutral float-right" title="Public Token API" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="nd_types.html" class="btn btn-neutral" title="NeuroData Types" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>

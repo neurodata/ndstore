@@ -86,7 +86,7 @@
           
             
             
-                <p class="caption"><span class="caption-text">Documentation</span></p>
+                <p class="caption"><span class="caption-text">NeuroData Documentation</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="datamodel.html">Data Model</a></li>
@@ -94,36 +94,44 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="">How to Ingest Data</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#prepping-the-data">Prepping The Data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#some-common-mistakes-you-can-make">Some common mistakes you can make</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#help-section">Help Section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#unsupported-image-types">Unsupported Image Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#help-section">Help Section</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#how-do-i-check-the-image-size-of-my-data">How do I check the image size of my data?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#how-do-i-check-the-datatype">How do I check the datatype?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#how-do-i-name-my-projects-datasets-token">How do I name my projects/datasets/token?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#how-do-i-check-if-my-data-is-publicly-accessible">How do I check if my data is publicly accessible?</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#s3-bucket-upload">S3 Bucket Upload</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#uploading">Uploading</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#overview">Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#explanation-of-additional-terms">Explanation of Additional Terms</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#unsupported-image-types">Unsupported Image Types</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions (FAQ)</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../api/nd_types.html">NeuroData Types</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api/info_api.html">Project Info APIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api/public_api.html">Public Token APIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api/data_api.html">Data APIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api/ramon_api.html">RAMON APIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api/propagate_api.html">Propagate APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/info_api.html">Project Info API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/public_api.html">Public Token API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/data_api.html">Data API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/ramon_api.html">RAMON API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/propagate_api.html">Propagate API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api/stats_api.html">Statistics API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api/json_api.html">JSON APIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api/overlay_api.html">Overlay APIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api/tile_api.html">Tile APIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api/graphgen_api.html">GrahpGen APIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api/nifti_api.html">NIFTI APIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api/swc_api.html">SWC APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/json_api.html">JSON API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/overlay_api.html">Overlay API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/tile_api.html">Tile API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/graphgen_api.html">GrahpGen API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/nifti_api.html">NIFTI API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/swc_api.html">SWC API</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Further Reading</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../api/functions.html">open-connectome Functions</a></li>
-<li class="toctree-l1"><a class="reference external" href="https://gitter.im/openconnectome/open-connectome">Gitter chatroom</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/functions.html">ndstore Functions</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://groups.google.com/forum/#!forum/ocp-support/">Mailing List</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore">Github repo</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore/releases/">Release Notes</a></li>
@@ -184,25 +192,40 @@
 </div>
 <div class="section" id="some-common-mistakes-you-can-make">
 <h2>Some common mistakes you can make<a class="headerlink" href="#some-common-mistakes-you-can-make" title="Permalink to this headline">¶</a></h2>
-<p>#TODO AE - Expand these
-Spaces in channel/project/dataset/token names are not allowed
-Special characters in channel/project/dataset/token names not allowed (minus underscore)
-Numbering the channel slices incorrectly
-If your slice number starts at 1 then mention z-offset as 1. we deal with missing slice numbers
-channel types are image/annotation not Image/Annotation
-if dataset exists use a different name or you have changes parameters
-you can send multiple channels at once but channels need to be in the same dataset, check this
-check if you have the lastest version of ndio, pip install -U ndio
-check your dir strucute proj/channel/slice
-HTTP accessible urls(have to go over the firewall) do a wget on your slice to check if this works</p>
+<ul class="simple">
+<li>Special characters and spaces in channel/project/dataset/token names not allowed with the exception of an underscore.</li>
+<li>Numbering the channel slices incorrectly compared to the offset and number of slices defined in the dataset when ingesting.</li>
+<li>Offset (Z value) should match the lowest image file number.</li>
+<li>Channel types are not capitalized, so they should be image/annotation not Image/Annotation.</li>
+<li>Check if the dataset name is already taken, if it is you must use another.</li>
+<li>If you upload multiple channels at once they must all be part of the same dataset.</li>
+<li>Check if you have the lastest version of ndio using &#8220;pip install -U ndio&#8221;.</li>
+<li>Make sure your directory structure is accurate and correctly ordered.</li>
+<li>Make sure your data is HTTP accessible, see below how to check this if you are unsure.</li>
+</ul>
+</div>
+<div class="section" id="unsupported-image-types">
+<h2>Unsupported Image Types<a class="headerlink" href="#unsupported-image-types" title="Permalink to this headline">¶</a></h2>
+<p>We currently do not support 3-D tiffs.</p>
 </div>
 <div class="section" id="help-section">
 <h2>Help Section<a class="headerlink" href="#help-section" title="Permalink to this headline">¶</a></h2>
-<p>#TODO AE
-How do I check the image size, I am unssure. Use indentify on unix command line
-How do I check the datatype. Again use identify on command line
-How do I name my projects/datasets/token - Repeat it here &lt;lab-name&gt;year
-How do I check if my data is publicly accessible - do a curl/wget</p>
+<div class="section" id="how-do-i-check-the-image-size-of-my-data">
+<h3>How do I check the image size of my data?<a class="headerlink" href="#how-do-i-check-the-image-size-of-my-data" title="Permalink to this headline">¶</a></h3>
+<p>Use the &#8216;tiffinfo&#8217; command in terminal to check datatype on tiff (or tif) images, or pnginfo for png images, to get a variety of data about a particular image file including image size.</p>
+</div>
+<div class="section" id="how-do-i-check-the-datatype">
+<h3>How do I check the datatype?<a class="headerlink" href="#how-do-i-check-the-datatype" title="Permalink to this headline">¶</a></h3>
+<p>Unfortunately there is no universally acceptable answer to this question, as everyone&#8217;s data types vary based on how the image was saved. The most common answer to this is to use the &#8216;tiffinfo&#8217; command in terminal to check datatype on tiff (or tif) images, or pnginfo for png images.</p>
+</div>
+<div class="section" id="how-do-i-name-my-projects-datasets-token">
+<h3>How do I name my projects/datasets/token?<a class="headerlink" href="#how-do-i-name-my-projects-datasets-token" title="Permalink to this headline">¶</a></h3>
+<p>Please see naming convections in the <a class="reference internal" href="datamodel.html#datamodel"><span>data model</span></a>.</p>
+</div>
+<div class="section" id="how-do-i-check-if-my-data-is-publicly-accessible">
+<h3>How do I check if my data is publicly accessible?<a class="headerlink" href="#how-do-i-check-if-my-data-is-publicly-accessible" title="Permalink to this headline">¶</a></h3>
+<p>The most common way of doing this is by doing a curl or wget on the data. For example, if you have your data stored on a server with a name space of MyServer on your network, with your publicly accessible folder named MyPublic containing the data, you would attempt to access <a class="reference external" href="http://MyServer/MyPublic/TokenName/ChannelName">http://MyServer/MyPublic/TokenName/ChannelName</a>/###.tif where TokenName and ChannelName are replaced by the token and channel names used in your data and the pound signs are replaced with whichever slice number is desired. The command in terminal would be &#8220;curl <a class="reference external" href="http://MyServer/MyPublic/TokenName/ChannelName">http://MyServer/MyPublic/TokenName/ChannelName</a>/###.tif&#8221; and if there is a response other than webpage not found the data is accessible.</p>
+</div>
 </div>
 <div class="section" id="s3-bucket-upload">
 <h2>S3 Bucket Upload<a class="headerlink" href="#s3-bucket-upload" title="Permalink to this headline">¶</a></h2>
@@ -334,10 +357,6 @@ How do I check if my data is publicly accessible - do a curl/wget</p>
 </dd></dl>
 
 </div>
-</div>
-<div class="section" id="unsupported-image-types">
-<h2>Unsupported Image Types<a class="headerlink" href="#unsupported-image-types" title="Permalink to this headline">¶</a></h2>
-<p>We currently do not support 3-D tiffs.</p>
 </div>
 </div>
 

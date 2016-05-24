@@ -86,7 +86,7 @@
           
             
             
-                <p class="caption"><span class="caption-text">Documentation</span></p>
+                <p class="caption"><span class="caption-text">NeuroData Documentation</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">Data Model</a><ul>
@@ -102,24 +102,26 @@
 <li class="toctree-l1"><a class="reference internal" href="ingesting.html">How to Ingest Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions (FAQ)</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../api/nd_types.html">NeuroData Types</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api/info_api.html">Project Info APIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api/public_api.html">Public Token APIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api/data_api.html">Data APIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api/ramon_api.html">RAMON APIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api/propagate_api.html">Propagate APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/info_api.html">Project Info API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/public_api.html">Public Token API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/data_api.html">Data API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/ramon_api.html">RAMON API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/propagate_api.html">Propagate API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api/stats_api.html">Statistics API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api/json_api.html">JSON APIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api/overlay_api.html">Overlay APIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api/tile_api.html">Tile APIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api/graphgen_api.html">GrahpGen APIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api/nifti_api.html">NIFTI APIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api/swc_api.html">SWC APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/json_api.html">JSON API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/overlay_api.html">Overlay API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/tile_api.html">Tile API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/graphgen_api.html">GrahpGen API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/nifti_api.html">NIFTI API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/swc_api.html">SWC API</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Further Reading</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../api/functions.html">open-connectome Functions</a></li>
-<li class="toctree-l1"><a class="reference external" href="https://gitter.im/openconnectome/open-connectome">Gitter chatroom</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/functions.html">ndstore Functions</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://groups.google.com/forum/#!forum/ocp-support/">Mailing List</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore">Github repo</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/neurodata/ndstore/releases/">Release Notes</a></li>
@@ -175,16 +177,20 @@
 </div>
 <div class="section" id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
-<p>Our data model for image datasets is composed of the following components:
-* Dataset: containing metadata required to efficiently store, visualize, and analyze data for a set of projects; it effectively defines the dataspace
-* Project: is a database storing a collection of channels
-* Token: a name for a project, a project can have multiple tokens, each with different permissions (eg, read vs. write)
-* Channel: is a collection of tables, including the actual images, as well as metadata</p>
-<p>To understand the relationship between the above 4 different components of the data model, consider the following example.
-* We collect a large multi-modal MRI dataset, and registered each image into MNI152 space. The dataset would contain the details of MNI152 (number of voxels, resolution, etc.). Each subject gets her own project. For the first subject, let’s create a token pointing to that project called “Subject1”, and let’s give that token write access.
-* Each channel for this project corresponds to a different modality. For example, the T1 image might be the first channel, called “T1”. So, to access that channel, we pair the token with the channel name: ‘Subject1T1’. The T1 channel happens to be a 3D image stack. Let’s say we also got an fMRI scan from that subject, also co-registered to MNI152 space. We can then make another channel called ‘fMRI’ containing all the fMRI data and metadata. Note that this is actually 3D+time data, which is no problem to store within a given channel. Finally, assume we also have Diffusion MRI data associated with that subject. So, we can generate another channel called “DTI” to store that data and metadata. Although DTI data is not typically thought of as time-series data, it is 4D, so we could store it as a time-series channel.
-* Now, imagine from the DTI data, we created a fractional anisotropy map. We could make a new channel, called “FA”, and put it there. Similarly, imagine from the fMRI we created a general linear model, we could again create a new channel, “GLM”, and put the coefficients in there.
-* The advantage of having a data model is that all of the data and metadata can be captured and stored together, which makes visualization, analysis, and reproducibility much simpler.</p>
+<p>Our data model for image datasets is composed of the following components:</p>
+<ul class="simple">
+<li>Dataset: containing metadata required to efficiently store, visualize, and analyze data for a set of projects; it effectively defines the dataspace. The dataset itself contains no actual data, as the actual data is stored in the channel objects.</li>
+<li>Project: is a database storing a collection of channels</li>
+<li>Token: a name for a project, a project can have multiple tokens, each with different permissions (eg, read vs. write)</li>
+<li>Channel: is a collection of tables, including the actual images, as well as metadata</li>
+</ul>
+<p>To understand the relationship between the above 4 different components of the data model, consider the following example.</p>
+<ul class="simple">
+<li>We collect a large multi-modal MRI dataset, and registered each image into MNI152 space. The dataset would contain the details of MNI152 (number of voxels, resolution, etc.). Each subject gets her own project. For the first subject, let’s create a token pointing to that project called “Subject1”, and let’s give that token write access.</li>
+<li>Each channel for this project corresponds to a different modality. For example, the T1 image might be the first channel, called “T1”. So, to access that channel, we pair the token with the channel name: ‘Subject1T1’. The T1 channel happens to be a 3D image stack. Let’s say we also got an fMRI scan from that subject, also co-registered to MNI152 space. We can then make another channel called ‘fMRI’ containing all the fMRI data and metadata. Note that this is actually 3D+time data, which is no problem to store within a given channel. Finally, assume we also have Diffusion MRI data associated with that subject. So, we can generate another channel called “DTI” to store that data and metadata. Although DTI data is not typically thought of as time-series data, it is 4D, so we could store it as a time-series channel.</li>
+<li>Now, imagine from the DTI data, we created a fractional anisotropy map. We could make a new channel, called “FA”, and put it there. Similarly, imagine from the fMRI we created a general linear model, we could again create a new channel, “GLM”, and put the coefficients in there.</li>
+<li>The advantage of having a data model is that all of the data and metadata can be captured and stored together, which makes visualization, analysis, and reproducibility much simpler.</li>
+</ul>
 <div class="figure align-center" id="id1">
 <a class="reference internal image-reference" href="../_images/datamodel_simple.png"><img alt="../_images/datamodel_simple.png" src="../_images/datamodel_simple.png" style="width: 500px; height: 200px;" /></a>
 <p class="caption"><span class="caption-text">This is a simple example of the data model, consisting of one example of each component.</span></p>
