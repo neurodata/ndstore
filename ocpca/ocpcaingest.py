@@ -68,7 +68,7 @@ class IngestData:
     for slice_number in slice_list:
       try:
         if time_value is not None:
-          url = '{}/{}/{}/{}/{}'.format(self.data_url, self.token, self.channel, time_value, self.generateFileName(slice_number))
+          url = '{}/{}/{}/{:0>4}/{}'.format(self.data_url, self.token, self.channel, time_value, self.generateFileName(slice_number, ondisk=False))
         else:
           url = '{}/{}/{}/{}'.format(self.data_url, self.token, self.channel, self.generateFileName(slice_number, ondisk=False))
         req = urllib2.Request(url)
