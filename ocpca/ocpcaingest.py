@@ -208,10 +208,10 @@ class IngestData:
                 print "Open filename {}".format(file_name)
                 logger.info("Open filename {}".format(file_name))
                 
-                if ch.getDataType() in [UINT8, UINT16] and ch.getChannelType() in (IMAGE_CHANNELS + TIMESERIES_CHANNELS):
+                if ch.getDataType() in [UINT8, UINT16] and ch.getChannelType() in IMAGE_CHANNELS + TIMESERIES_CHANNELS:
                   image_data = np.asarray(Image.open(file_name, 'r'))
                   slab[b,:,:] = image_data
-                elif ch.getDataType() in [UINT32] and ch.getChannelType() in (IMAGE_CHANNELS + TIMESERIES_CHANNELS):
+                elif ch.getDataType() in [UINT32] and ch.getChannelType() in IMAGE_CHANNELS + TIMESERIES_CHANNELS:
                   image_data = np.asarray(Image.open(file_name, 'r').convert('RGBA'))
                   slab[b,:,:] = np.left_shift(image_data[:,:,3], 24, dtype=np.uint32) | np.left_shift(image_data[:,:,2], 16, dtype=np.uint32) | np.left_shift(image_data[:,:,1], 8, dtype=np.uint32) | np.uint32(image_data[:,:,0])
                 elif ch.getChannelType() in ANNOTATION_CHANNELS:
