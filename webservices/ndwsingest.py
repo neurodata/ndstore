@@ -77,9 +77,9 @@ class IngestData:
     for slice_number in slice_list:
       # generating the url based on some parameters
       if time_value is not None:
-        key = '{}/{}/{}/{}/{}'.format(self.data_url, self.token, self.channel, time_value, self.generateFileName(slice_number), ondisk=False)
+        key = '{}/{}/{}/{}'.format(self.token, self.channel, time_value, self.generateFileName(slice_number), ondisk=False)
       else:
-        key = '{}/{}/{}/{}'.format(self.data_url, self.token, self.channel, self.generateFileName(slice_number, ondisk=False))
+        key = '{}/{}/{}'.format(self.token, self.channel, self.generateFileName(slice_number, ondisk=False))
       # making the request
       try:
         self.client.download_file(Bucket='neurodata-public', Key=key, Filename=self.path+self.generateFileName(slice_number))
