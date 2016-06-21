@@ -27,7 +27,15 @@ Some common mistakes you can make
 * Check if you have the lastest version of ndio using "pip install -U ndio".
 * Make sure your directory structure is accurate and correctly ordered.
 * Make sure your data is HTTP accessible, see below how to check this if you are unsure.
-* Make sure the naming of your folders and files has the required leading zeros.
+* Make sure the naming of your folders and files has the required leading zeros. You can use the `rename command <http://askubuntu.com/questions/58546/how-to-easily-rename-files-using-command-line>`_ on the LINUX command line for this.
+
+Ingesting RGB data
+==================
+There are 2 ways ndstore can handle RGB data:
+
+1. Ingest this into a single uint32 channel called RGB32. The data will be rendered as a single RGB tile for visualization purposes. If you choose this option then all your raw data prior to ingest must be combined into a single RGBA image with alpha set to 255 for autoingest. 
+2. Ingest this data as three 8-bit channels called UINT8, where each channel is Red, Green and Blue. This data will be rendered as three channels of Grayscale. You can still visualize this data in NeuroDataViz by using false coloring. If you choose this option then you will need to arrange your data based on their color where and this will be a routine three channel ingest.
+
 
 Unsupported Image Types
 =======================
