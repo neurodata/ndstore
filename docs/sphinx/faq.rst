@@ -45,6 +45,9 @@ You can open an issue on our github `repository <https://github.com/neurodata/nd
 
 Please visit our NeuroDataViz page.
 
+**How do I use the RESTful interface?**
+The RESTful interface can be accessed with any browser by inputting the correct link or any package that supports web requests. 
+
 **Is there a support forum?**
 
 Information on making a support request and archived questions and answers may be found `here <https://groups.google.com/a/neurodata.io/forum/#!forum/support>`_.
