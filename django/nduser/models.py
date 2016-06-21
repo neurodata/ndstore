@@ -248,20 +248,3 @@ class NIFTIHeader ( models.Model):
 
   def __unicode__(self):
     return self.header
-
-class Histogram (models.Model):
-  """ Stores a histogram in npz format """
-  channel = models.ForeignKey(Channel)
-  histogram = models.BinaryField(max_length=4096, null=True)
-  bins = models.BinaryField(max_length=4096, null=True)
-  REGION_CHOICES = (
-    (0, 'Entire Dataset'),
-    (1, 'ROI (rectangle)'), # ROI is a rectangle
-    (2, 'RAMON')
-  )
-  region = models.IntegerField(choices=REGION_CHOICES, default=0)
-  roi = models.TextField(blank=True) # stores JSON representation of rectangular ROI
-
-  class Meta:
-    db_table = u"histogram"
-    managed = True

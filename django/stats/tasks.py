@@ -20,13 +20,14 @@ from django.conf import settings
 import logging
 logger = logging.getLogger("neurodata")
 
-from imghist import ImgHist 
+from imghist import ImgHist
 import histio
 
-from nduser.models import Channel, Histogram 
+from nduser.models import Channel
+from stats.models import Histogram 
 
 import cStringIO
-import zlib 
+import zlib
 
 def toNPZ( array ):
   fileobj = cStringIO.StringIO()
@@ -35,15 +36,15 @@ def toNPZ( array ):
 
 @task(queue='stats')
 def generateHistogramTask(token, channel, res, bits):
-  """ Given a token, channel, resolution, and number of bits (8, 16, etc), compute the histogram """ 
+  """ Given a token, channel, resolution, and number of bits (8, 16, etc), compute the histogram """
   # generate the histogram
   ih = ImgHist(token, channel, res, bits)
   (hist, bins) = ih.getHist()
   logger.info("Generated histogram for {}, {}".format(token, channel))
-  # store it in the DB 
+  # store it in the DB
   histio.saveHistogram(token, channel, hist, bins)
   logger.info("Saved histogram to DB for {}, {}".format(token, channel))
-  
+
 
 @task(queue='stats')
 def test():
