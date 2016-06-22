@@ -36,7 +36,7 @@ The benchmarks were performed on AWS EC2 instance type i2.8xlarge with a MySQL b
 
 ##### Read Throughput
 
-![](./docs/images/neurodata_read_throughput.png| width=250)
+![](./docs/images/neurodata_read_throughput.png)
 
 ##### Write Throughput
 
