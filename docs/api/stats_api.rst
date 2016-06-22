@@ -108,12 +108,37 @@ genHistogram
    :param channel_name: NeuroData Channel
    :type channel_name: string
 
-   :jsonparam string roi: Generate one histogram for each of the specified regions of interest. ROIs are specified as the lower and upper coordinates of a rectangle in the following format: :option:`x0,y0,z0-x1,y1,z1` (integer only)
-
-
+   :jsonparam string ROI: Generate one histogram for each of the specified regions of interest. ROIs are specified as an array of arrays of coordinates. Each coordinate is a triple array containing (x,y,z) points specifying a corner of the rectangular ROI. At present, only rectangular ROIs are supported.
 
    :statuscode 200: Histogram generation started or queued.
    :statuscode 400: Web argument syntax error or unsupported token / channel type.
+
+Example POST Code (Python)
+--------------------------
+The following script details creating a post request and passing in several ROIs following the format described above. A pre-built version of this code that can be run on the command line and takes token, channel, and ROI as parameters exists in ``examples/genhistpost.py``.
+
+.. code-block:: python
+   :linenos:
+
+   import requests
+
+   data = {'ROI': [
+      [[1,1,1],[5,5,5]],
+      [[10,10,20],[50,50,150]],
+      [[30,30,12],[50,50,15]]
+   ]}
+   baseurl = 'neurodata.io/nd'
+   token = 'testToken'
+   channel = 'testChannel'
+
+   url = "http://{}/stats/{}/{}/genhist/".format( baseurl, token, channel )
+
+   r = requests.post(url, json=data)
+   if r.status_code == 200:
+      print "Post request succeeded!"
+   else:
+      print "Error posting gen histogram request.\nStatus code {}\nError Message: {}".format(r.status_code, r.text)
+
 
 Stats
 =====
