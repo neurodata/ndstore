@@ -1,4 +1,4 @@
-# Copyright 2015 NeuroData (http://neurodata.io)
+# Copyright 2016 NeuroData (http://neurodata.io)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,11 +20,11 @@ from django.conf import settings
 import logging
 logger = logging.getLogger("neurodata")
 
-from imghist import ImgHist
+from imghist import ImgHist, ImgHistROI
 import histio
 
 from nduser.models import Channel
-from stats.models import Histogram 
+from stats.models import Histogram
 
 import cStringIO
 import zlib
@@ -45,8 +45,14 @@ def generateHistogramTask(token, channel, res, bits):
   histio.saveHistogram(token, channel, hist, bins)
   logger.info("Saved histogram to DB for {}, {}".format(token, channel))
 
-
 @task(queue='stats')
-def test():
-  print "Running test task"
-  return "Success!"
+def generateHistogramROITask(token, channel, res, bits, roi):
+  """ Given a token, channel, resolution, bits, and ROI compute the histogram at the ROI """
+
+  # generate the histogram
+  ih = ImgHistROI(token, channel, res, bits, roi)
+  (hist, bins) = ih.getHist()
+  logger.info("Generated ROI histogram for {}, {}, {}".format(token, channel, roi))
+  # store
+  histio.saveHistogramROI(token, channel, hist, bins, roi)
+  logger.info("Saved ROI histogram to DB for {}, {}, {}".format(token, channel, roi))
