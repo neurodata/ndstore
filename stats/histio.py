@@ -100,6 +100,20 @@ def saveHistogram(token, channel, hist, bins):
     hobj.histogram = toNPZ(hist)
     hobj.save()
 
+def loadHistogramROI(token, channel, roi):
+  """ Load a histogram based on ROI from the DB and return it as two numpy arrays: (hist, bins) """
+  chanobj = getChannelObj(token, channel)
+
+  try:
+    histobj = Histogram.objects.get( channel = chanobj, region = 1, roi=json.dumps(roi) )
+  except Histogram.DoesNotExist:
+    logger.exception("Error: No histogram exists for {}, {}".format(token, channel))
+    print "Error: No histogram exists for {}, {}, {}".format(token, channel, roi)
+    raise
+
+  bins_ret = fromNPZ( histobj.bins )
+  histogram_ret = fromNPZ( histobj.histogram )
+  return (histogram_ret, bins_ret)
 
 def saveHistogramROI(token, channel, hist, bins, roi):
   chanobj = getChannelObj(token, channel)

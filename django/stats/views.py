@@ -23,7 +23,7 @@ from stats.models import Histogram
 
 import stats.tasks
 
-from histio import loadHistogram
+from histio import loadHistogram, loadHistogramROI
 from histstats import HistStats
 
 from ndtype import READONLY_TRUE, READONLY_FALSE, UINT8, UINT16, UINT32, UINT64, FLOAT32
@@ -53,6 +53,75 @@ def getHist(request, webargs):
   jsondict['bins'] = bins.tolist()
 
   return HttpResponse(json.dumps(jsondict, indent=4), content_type="application/json")
+
+def getHistROI(request, webargs):
+  """ Return JSON representation of a histogram given an ROI """
+
+  # process webargs
+  try:
+    m = re.match(r"(?P<token>[\w+]+)/(?P<channel>[\w+]+)/hist/roi/(?P<roi>[\d,-]+)$", webargs)
+    md = m.groupdict()
+
+  except Exception, e:
+    logger.warning("Incorrect format for web arguments {}. {}".format(webargs, e))
+    return HttpResponseBadRequest("Incorrect format for web arguments {}. {}".format(webargs, e))
+
+  token = md['token']
+  channel = md['channel']
+
+  # parse roi
+  roistr = md['roi'].split('-')
+  roi = []
+  for i in range(2):
+    try:
+      m = re.match(r"^(?P<x>[\d.]+),(?P<y>[\d.]+),(?P<z>[\d.]+)$", roistr[i])
+      md = m.groupdict()
+      roi.append([int(md['x']), int(md['y']), int(md['z'])])
+    except:
+      return HttpResponseBadRequest("Error: Failed to read ROI coordinate ({})".format(roistr[i]))
+
+  try:
+    (hist, bins) = loadHistogramROI(token, channel, roi)
+  except Histogram.DoesNotExist:
+    return HttpResponseNotFound('No histogram found for {}, {}, {}'.format(token,channel,roi))
+
+  jsondict = {}
+  jsondict['hist'] = hist.tolist()
+  jsondict['bins'] = bins.tolist()
+  jsondict['roi'] = roi
+
+  return HttpResponse(json.dumps(jsondict, indent=4), content_type="application/json")
+
+def getROIs(request, webargs):
+  """ Return a list of ROIs as JSON """
+
+  # process webargs
+  try:
+    m = re.match(r"(?P<token>[\w+]+)/(?P<channel>[\w+]+)/hist/roi/$", webargs)
+    md = m.groupdict()
+
+  except Exception, e:
+    logger.warning("Incorrect format for web arguments {}. {}".format(webargs, e))
+    return HttpResponseBadRequest("Incorrect format for web arguments {}. {}".format(webargs, e))
+
+  token = md['token']
+  channel = md['channel']
+
+
+  # check to make sure token exists
+  tokenobj = get_object_or_404(Token, token_name = token)
+  # get the project
+  projectobj = tokenobj.project
+  # get the channel
+  chanobj = get_object_or_404(Channel, project = projectobj, channel_name = channel)
+
+  rois = Histogram.objects.filter( channel = chanobj, region = 1 ).values_list( 'roi' )
+
+  jsonrois = []
+  for roi in rois:
+    jsonrois.append(json.loads(roi[0]))
+
+  return HttpResponse(json.dumps(jsonrois, sort_keys=True, indent=4), content_type="application/json")
 
 def genHist(request, webargs):
   """ Kicks off a background job to generate the histogram """
@@ -156,7 +225,6 @@ def genHist(request, webargs):
 
     """ AB TODO: allow generating "normal" histogram through POST request """
     #else:
-
 
     jsondict = {}
     jsondict['token'] = tokenobj.token_name
