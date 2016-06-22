@@ -141,6 +141,9 @@ def genHist(request, webargs):
     projectobj = tokenobj.project
     # get the channel
     chanobj = get_object_or_404(Channel, project = projectobj, channel_name = channel)
+    # get the dataset
+    datasetobj = projectobj.dataset
+
     if (chanobj.readonly == READONLY_TRUE):
       # we can only generate histograms on writeable channels
       return HttpResponseBadRequest("Error: Channel must not be readonly to generate histograms.")
@@ -183,6 +186,9 @@ def genHist(request, webargs):
     projectobj = tokenobj.project
     # get the channel
     chanobj = get_object_or_404(Channel, project = projectobj, channel_name = channel)
+    # get the dataset
+    datasetobj = projectobj.dataset
+
     if (chanobj.readonly == READONLY_TRUE):
       # we can only generate histograms on writeable channels
       return HttpResponseBadRequest("Error: Channel must not be readonly to generate histograms.")
@@ -201,30 +207,50 @@ def genHist(request, webargs):
     if 'ROI' in params.keys():
       # run one histogram task for each ROI
       results = []
-      for roistr in params['ROI']:
-        roi = []
-        for i in range(2):
-          try:
-            m = re.match(r"^\((?P<x>[\d.]+),(?P<y>[\d.]+),(?P<z>[\d.]+)\)$", roistr[i])
-            md = m.groupdict()
-            roi.append([int(md['x']), int(md['y']), int(md['z'])])
-          except:
-            return HttpResponseBadRequest("Error: Failed to read ROI coordinate ({})".format(roistr[i]))
+      for roicords in params['ROI']:
+        # do some basic error checking
+        if len(roicords) != 2:
+          return HttpResponseBadRequest("Error: Failed to read ROI coordinate. Need 2 points! ({})".format(roicords))
+        if len(roicords[0]) != 3 or len(roicords[1]) != 3:
+          return HttpResponseBadRequest("Error: Failed to read ROI coordinate. Need 3 coordinates per point! ({})".format(roicords))
 
-        result = stats.tasks.generateHistogramROITask.delay(tokenobj.token_name, chanobj.channel_name, chanobj.resolution, bits, roi)
+        # check to make sure ROI cords define a cube
+        for i in range(3):
+          if roicords[0][i] >= roicords[1][i]:
+            return HttpResponseBadRequest("Error: provided ROI coordinates do not define a cube! ({})".format(roicords))
+
+        # check ROI cords to see if they are inside dataset
+        xoffset = datasetobj.xoffset
+        yoffset = datasetobj.yoffset
+        zoffset = datasetobj.zoffset
+
+        # convert roi into base 0
+        (x0, x1) = (roicords[0][0]-xoffset, roicords[1][0]-xoffset)
+        (y0, y1) = (roicords[0][1]-yoffset, roicords[1][1]-yoffset)
+        (z0, z1) = (roicords[0][2]-zoffset, roicords[1][2]-zoffset)
+
+        # check dimensions
+        if x0 < 0 or x1 > datasetobj.ximagesize:
+          return HttpResponseBadRequest("Error: x coordinate range outside of dataset bounds! ({}, {})".format(roicords[0][0], roicords[1][0]))
+        if y0 < 0 or y1 > datasetobj.yimagesize:
+          return HttpResponseBadRequest("Error: y coordinate range outside of dataset bounds! ({}, {})".format(roicords[0][1], roicords[1][1]))
+        if z0 < 0 or z1 > datasetobj.zimagesize:
+          return HttpResponseBadRequest("Error: z coordinate range outside of dataset bounds! ({}, {})".format(roicords[0][2], roicords[1][2]))
+
+        result = stats.tasks.generateHistogramROITask.delay(tokenobj.token_name, chanobj.channel_name, chanobj.resolution, bits, roicords)
 
         results.append({
           'jobid': result.id,
           'state': result.state,
-          'roi': roi,
+          'roi': roicords,
         })
 
     elif 'RAMON' in params.keys():
       # parse RAMON
       return HttpResponseBadRequest("RAMON histogram service not implemented.")
 
-    """ AB TODO: allow generating "normal" histogram through POST request """
-    #else:
+    else:
+      return HttpResponseBadRequest("Unsupported parameter.")
 
     jsondict = {}
     jsondict['token'] = tokenobj.token_name

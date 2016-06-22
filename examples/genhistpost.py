@@ -15,6 +15,7 @@
 import sys, os
 import requests
 import argparse
+import re
 
 def main():
 
@@ -31,9 +32,19 @@ def main():
         # parse ROI list
         data = {'ROI': []}
         for roicords in result.roi:
-            roicords_str = roicords.split('-')
-            roicords_tpl = ("({})".format(roicords_str[0]), "({})".format(roicords_str[1]))
-            data['ROI'].append( roicords_tpl )
+            roistr = roicords.split('-')
+            # convert each string into an integer array
+            roituple = []
+            for i in range(2):
+                try:
+                    m = re.match(r"^(?P<x>[\d]+),(?P<y>[\d]+),(?P<z>[\d]+)$", roistr[i])
+                    md = m.groupdict()
+                    roituple.append([int(md['x']), int(md['y']), int(md['z'])])
+                except:
+                    print "Error: Failed to process ROI ({})".format(roistr[i])
+                    sys.exit(1)
+
+            data['ROI'].append( roituple )
 
     elif result.ramon:
         # parse RAMON list
