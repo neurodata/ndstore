@@ -21,6 +21,7 @@ import numpy as np
 from PIL import Image
 from operator import sub, add, mul, div
 import boto3
+import botocore
 import blosc
 
 import django
