@@ -36,7 +36,6 @@ There are 2 ways ndstore can handle RGB data:
 1. Ingest this into a single uint32 channel called RGB32. The data will be rendered as a single RGB tile for visualization purposes. If you choose this option then all your raw data prior to ingest must be combined into a single RGBA image with alpha set to 255 for autoingest. 
 2. Ingest this data as three 8-bit channels called UINT8, where each channel is Red, Green and Blue. This data will be rendered as three channels of Grayscale. You can still visualize this data in NeuroDataViz by using false coloring. If you choose this option then you will need to arrange your data based on their color where and this will be a routine three channel ingest.
 
-
 Unsupported Image Types
 =======================
 
@@ -92,7 +91,7 @@ Uploading
 Overview
 --------
 
-This section will initially address how to upload one channels worth of material. Located in the auto-ingest folder in the ingest folder of ndstore is a file named autoingest.py (https://github.com/neurodata/ndstore/blob/master/ingest/autoingest/autoingest.py). To upload your data edit the hard-coded values in the code to reflect your data, being sure to specify that you are trying to put data to http://openconnecto.me and your DataURL is http accessible (if it is not the script will fail). The editable portion of the script is below the "Edit the below values" and above the "Edit above here" comment. Once the script has run you do not need to maintain a connection to the script. The script can be run simply by calling "python2 generatejson.py" on the script (using python 2.7). In the event that more than one channels worth of data needs to be ingested at once, the service supports this operation as well. To add channels, add additional create channel calls to the AutoIngest object before posting the data. The AutoIngest object is part of NeuroData's python library, Ndio, which must be installed prior to using the script.
+This section will initially address how to upload one channels worth of material. Located in the auto-ingest folder in the ingest folder of ndstore is a file named generatejson.py (https://github.com/neurodata/ndstore/blob/master/ingest/autoingest/generatejson.py). To upload your data edit the hard-coded values in the code to reflect your data, being sure to specify that you are trying to put data to http://openconnecto.me and your DataURL is http accessible (if it is not the script will fail). The editable portion of the script is below the "Edit the below values" and above the "Edit above here" comment. Once the script has run you do not need to maintain a connection to the script. The script can be run simply by calling "python2 generatejson.py" on the script (using python 2.7). In the event that more than one channels worth of data needs to be ingested at once, the service supports this operation as well. To add channels, add additional create channel calls to the AutoIngest object before posting the data. The AutoIngest object is part of NeuroData's python library, Ndio, which must be installed prior to using the script.
 
 Explanation of Additional Terms
 -------------------------------
