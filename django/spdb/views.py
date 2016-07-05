@@ -14,6 +14,7 @@
 
 import django.http
 from django.views.decorators.cache import cache_control
+from django.contrib.auth.decorators import login_required
 import MySQLdb
 import cStringIO
 import re
