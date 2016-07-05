@@ -30,7 +30,7 @@ GET_SLICE_SERVICES = ['xy', 'yz', 'xz']
 GET_ANNO_SERVICES = ['xyanno', 'yzanno', 'xzanno']
 POST_SERVICES = ['hdf5', 'npz', 'raw', 'hdf5_async', 'propagate', 'tiff', 'blosc', 'blaze']
 
-
+@login_required(login_url='/nd/accounts/login/')
 def cutout (request, webargs):
   """Restful URL for all read services to annotation projects"""
 
@@ -118,6 +118,7 @@ def cutout (request, webargs):
     raise NDWSError("Unknown exception in getCutout. {}".format(e))
 
 #@cache_control(no_cache=True)
+@login_required(login_url='/nd/accounts/login/')
 def nifti (request, webargs):
   """Get put interface for nifti files"""
 
@@ -140,6 +141,7 @@ def nifti (request, webargs):
 
 
 #@cache_control(no_cache=True)
+@login_required(login_url='/nd/accounts/login/')
 def swc (request, webargs):
   """Get put interface for swc tracing files"""
   
@@ -160,6 +162,7 @@ def swc (request, webargs):
     raise NDWSError("Unknown exception in SWC. {}".format(e))
     raise
 
+@login_required(login_url='/nd/accounts/login/')
 def annotation (request, webargs):
   """Get put object interface for RAMON objects"""
   [token, channel, rest] = webargs.split('/',2)
@@ -186,6 +189,7 @@ def annotation (request, webargs):
 
 
 #@cache_control(no_cache=True)
+@login_required(login_url='/nd/accounts/login/')
 def csv (request, webargs):
   """Get (not yet put) csv interface for RAMON objects"""
 
@@ -202,6 +206,7 @@ def csv (request, webargs):
 
 
 #@cache_control(no_cache=True)
+@login_required(login_url='/nd/accounts/login/')
 def queryObjects ( request, webargs ):
   """Return a list of objects matching predicates and cutout"""
 
@@ -219,7 +224,7 @@ def queryObjects ( request, webargs ):
     logger.exception("Unknown exception in listObjects. {}".format(e))
     raise NDWSError("Unknown exception in listObjects. {}".format(e))
 
-
+@login_required(login_url='/nd/accounts/login/')
 def catmaid (request, webargs):
   """Convert a CATMAID request into an cutout."""
   
@@ -241,6 +246,7 @@ def catmaid (request, webargs):
 
 
 #@cache_control(no_cache=True)
+@login_required(login_url='/nd/accounts/login/')
 def publictokens (request, webargs):
   """Return list of public tokens"""
   try:  
@@ -253,6 +259,7 @@ def publictokens (request, webargs):
     logger.exception("Unknown exception in publictokens. {}".format(e))
     raise NDWSError("Unknown exception in publictokens. {}".format(e))
 
+@login_required(login_url='/nd/accounts/login/')
 def publicdatasets (request, webargs):
   """Return list of public datasets"""
   try:  
@@ -266,6 +273,7 @@ def publicdatasets (request, webargs):
     raise NDWSError("Unknown exception in publictokens. {}".format(e))
 
 #@cache_control(no_cache=True)
+@login_required(login_url='/nd/accounts/login/')
 def jsoninfo (request, webargs):
   """Return project and dataset configuration information"""
 
@@ -279,6 +287,7 @@ def jsoninfo (request, webargs):
     logger.exception("Unknown exception in jsoninfo. {}".format(e))
     raise NDWSError("Unknown exception in jsoninfo. {}".format(e))
 
+@login_required(login_url='/nd/accounts/login/')
 def xmlinfo (request, webargs):
   """Return project and dataset configuration information"""
 
@@ -293,6 +302,7 @@ def xmlinfo (request, webargs):
     raise NDWSError("Unknown exception in xmlinfo. {}".format(e))
 
 #@cache_control(no_cache=True)
+@login_required(login_url='/nd/accounts/login/')
 def projinfo (request, webargs):
   """Return project and dataset configuration information"""
   
@@ -306,7 +316,7 @@ def projinfo (request, webargs):
     logger.exception("Unknown exception in projInfo. {}".format(e))
     raise NDWSError("Unknown exception in projInfo. {}".format(e))
 
-
+@login_required(login_url='/nd/accounts/login/')
 def mcFalseColor (request, webargs):
   """Cutout of multiple channels with false color rendering"""
 
@@ -321,6 +331,7 @@ def mcFalseColor (request, webargs):
     raise NDWSError("Unknown exception in mcFalseColor. {}".format(e))
 
 #@cache_control(no_cache=True)
+@login_required(login_url='/nd/accounts/login/')
 def reserve (request, webargs):
   """Preallocate a range of ids to an application."""
 
@@ -334,6 +345,7 @@ def reserve (request, webargs):
     logger.exception("Unknown exception in reserve. {}".format(e))
     raise NDWSError("Unknown exception in reserve. {}".format(e))
 
+@login_required(login_url='/nd/accounts/login/')
 def setField (request, webargs):
   """Set an individual RAMON field for an object"""
 
@@ -349,6 +361,7 @@ def setField (request, webargs):
     raise NDWSError("Unknown exception in setField. {}".format(e))
 
 #@cache_control(no_cache=True)
+@login_required(login_url='/nd/accounts/login/')
 def getField (request, webargs):
   """Get an individual RAMON field for an object"""
 
@@ -363,6 +376,7 @@ def getField (request, webargs):
     raise NDWSError("Unknown exception in getField. {}".format(e))
 
 #@cache_control(no_cache=True)
+@login_required(login_url='/nd/accounts/login/')
 def getPropagate (request, webargs):
   """ Get the value for Propagate field for a given project """
 
@@ -376,6 +390,7 @@ def getPropagate (request, webargs):
     logger.exception("Unknown exception in getPropagate. {}".format(e))
     raise NDWSError("Unknown exception in getPropagate. {}".format(e))
 
+@login_required(login_url='/nd/accounts/login/')
 def setPropagate (request, webargs):
   """ Set the value for Propagate field for a given project """
 
@@ -390,6 +405,7 @@ def setPropagate (request, webargs):
     logger.exception("Unknown exception in setPropagate. {}".format(e))
     raise NDWSError("Unknown exception in setPropagate. {}".format(e))
 
+@login_required(login_url='/nd/accounts/login/')
 def merge (request, webargs):
   """Merge annotation objects"""
 
@@ -403,6 +419,7 @@ def merge (request, webargs):
     logger.exception("Unknown exception in global Merge. {}".format(e))
     raise NDWSError("Unknown exception in global Merge. {}".format(e))
 
+@login_required(login_url='/nd/accounts/login/')
 def exceptions (request, webargs):
   """Return a list of multiply labeled pixels in a cutout region"""
 
@@ -417,6 +434,7 @@ def exceptions (request, webargs):
     raise NDWSError("Unknown exception in exceptions Web service. {}".format(e))
 
 #@cache_control(no_cache=True)
+@login_required(login_url='/nd/accounts/login/')
 def minmaxProject (request, webargs):
   """Restful URL for all read services to annotation projects"""
  
@@ -441,6 +459,7 @@ def autoIngest(request, webargs):
     logger.exception("Unknown exception in jsonProject Web service. {}".format(e))
     raise NDWSError("Unknown exception in jsonProject Web service. {}".format(e))
 
+@login_required(login_url='/nd/accounts/login/')
 def createChannel(request, webargs):
   """RESTful URL for creating a list of channels using a JSON file"""
 
@@ -452,6 +471,7 @@ def createChannel(request, webargs):
     logger.exception("Unknown exception in jsonProject Web service. {}".format(e))
     raise NDWSError("Unknown exception in jsonProject Web service. {}".format(e))
 
+@login_required(login_url='/nd/accounts/login/')
 def deleteChannel(request, webargs):
   """RESTful URL for deleting a list of channels using a JSON file"""
 
