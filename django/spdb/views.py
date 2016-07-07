@@ -31,6 +31,18 @@ GET_SLICE_SERVICES = ['xy', 'yz', 'xz']
 GET_ANNO_SERVICES = ['xyanno', 'yzanno', 'xzanno']
 POST_SERVICES = ['hdf5', 'npz', 'raw', 'hdf5_async', 'propagate', 'tiff', 'blosc', 'blaze']
 
+
+#Token Decorator
+def _verify_access(request, token):
+  if not request.user.is_superuser:
+    m_tokens = Token.objects.filter(user=request.user.id) | Token.objects.filter(public=1)
+    tokens = []
+    for v in m_tokens.values():
+      tokens.append(v['token_name'])
+    if token not in tokens:
+      raise NDWSError ("Token {} does not exist or you do not have\
+                        sufficient permissions to access it.".format(w_token))
+
 @login_required(login_url='/nd/accounts/login/')
 def cutout (request, webargs):
   """Restful URL for all read services to annotation projects"""
@@ -45,6 +57,12 @@ def cutout (request, webargs):
   except Exception, e:
     logger.warning("Incorrect format for arguments {}. {}".format(webargs, e))
     raise NDWSError("Incorrect format for arguments {}. {}".format(webargs, e))
+  
+  try:
+    _verify_access(request, token)
+  except Exception, e:
+    logger.warning(e)
+    raise e
 
   try:
     # GET methods
@@ -167,6 +185,12 @@ def swc (request, webargs):
 def annotation (request, webargs):
   """Get put object interface for RAMON objects"""
   [token, channel, rest] = webargs.split('/',2)
+
+  try:
+    _verify_access(request, token)
+  except Exception, e:
+    logger.warning(e)
+    raise e
 
   try:
     if request.method == 'GET':
