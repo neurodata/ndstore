@@ -27,7 +27,14 @@ Some common mistakes you can make
 * Check if you have the lastest version of ndio using "pip install -U ndio".
 * Make sure your directory structure is accurate and correctly ordered.
 * Make sure your data is HTTP accessible, see below how to check this if you are unsure.
-* Make sure the naming of your folders and files has the required leading zeros.
+* Make sure the naming of your folders and files has the required leading zeros. You can use the `rename command <http://askubuntu.com/questions/58546/how-to-easily-rename-files-using-command-line>`_ on the LINUX command line for this.
+
+Ingesting RGB data
+==================
+There are 2 ways ndstore can handle RGB data:
+
+1. Ingest this into a single uint32 channel called RGB32. The data will be rendered as a single RGB tile for visualization purposes. If you choose this option then all your raw data prior to ingest must be combined into a single RGBA image with alpha set to 255 for autoingest. 
+2. Ingest this data as three 8-bit channels called UINT8, where each channel is Red, Green and Blue. This data will be rendered as three channels of Grayscale. You can still visualize this data in NeuroDataViz by using false coloring. If you choose this option then you will need to arrange your data based on their color where and this will be a routine three channel ingest.
 
 Unsupported Image Types
 =======================
@@ -78,18 +85,20 @@ If you are uploading data through an amazon s3 bucket, this additional step is n
         ]
     }
 
+Should you wish to instead host the data temporarily in the NeuroData s3 bucket to ingest it, please contact neurodata for the bucket name and follow the below instructions. First, install the Amazon WebServices command line client. Then navigate to one level above the folder labeled with your token name (in this example called tokenname). Input the following command into your comand line: aws cp tokenname/ --recursive bucketname/yourfolder --acl "bucket-owner-full-control". Finally, when the data has all been uploaded follow the instructions to complete the ingest process with the bucket name in the dataurl being the neurodata bucket name followed by a slash and the folder name provided to you by NeuroData. 
+
 Uploading
 =========
 
 Overview
 --------
 
-This section will initially address how to upload one channels worth of material. Located in the auto-ingest folder in the ingest folder of ndstore is a file named generatejson.py (https://github.com/neurodata/ndstore/blob/master/ingest/autoingest/generatejson.py). To upload your data edit the hard-coded values in the code to reflect your data, being sure to specify that you are trying to put data to http://openconnecto.me and your DataURL is http accessible (if it is not the script will fail). The editable portion of the script is below the "Edit the below values" and above the "Edit above here" comment. Once the script has run you do not need to maintain a connection to the script. The script can be run simply by calling "python2 generatejson.py" on the script (using python 2.7). In the event that more than one channels worth of data needs to be ingested at once, the service supports this operation as well. To add channels, add additional create channel calls to the AutoIngest object before posting the data. The AutoIngest object is part of NeuroData's python library, Ndio, which must be installed prior to using the script.
+This section will initially address how to upload one channels worth of material. Located in the auto-ingest folder in the ingest folder of ndstore is a file named `autoingest.py <https://github.com/neurodata/ndstore/blob/master/ingest/autoingest/autoingest.py>`_. To upload your data edit the hard-coded values in the code to reflect your data, being sure to specify that you are trying to put data to http://openconnecto.me and your DataURL is http accessible (if it is not the script will fail). The editable portion of the script is below the "Edit the below values" and above the "Edit above here" comment. Once the script has run you do not need to maintain a connection to the script. The script can be run simply by calling "python2 autoingest.py" on the script (using python 2.7). In the event that more than one channels worth of data needs to be ingested at once, the service supports this operation as well. To add channels, add additional create channel calls to the AutoIngest object before posting the data. The AutoIngest object is part of NeuroData's python library, `ndio <https://github.com/neurodata/ndio>`_, which must be installed prior to using the script.
 
 Explanation of Additional Terms
 -------------------------------
 
-The :ref:`data model <datamodel>` holds an explanation of the majority of the terms encountered when editing the generatejson.py script, however some extra terms that are not enumerated in that explanation are included here.
+The :ref:`data model <datamodel>` holds an explanation of the majority of the terms encountered when editing the autoingest.py script, however some extra terms that are not enumerated in that explanation are included here.
 
 .. function:: Scaling
 
