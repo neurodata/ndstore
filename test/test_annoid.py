@@ -74,7 +74,7 @@ class Test_Annotation_Json():
 
     try:
       # Build a get request
-      response = getNPZ(url)
+      response = getURL(url)
     except Exception as e:
       print e
       assert(e.reason == 0)
