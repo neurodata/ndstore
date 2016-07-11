@@ -223,7 +223,7 @@ def getAnnotation ( p ):
 
 def postURL ( url, f ):
 
-  resp = request.post(url, f.read(), headers={'Authorization': 'Token {}'.format( TOKEN )}, verify=False)
+  resp = requests.post(url, data=f, headers={'Authorization': 'Token {}'.format( TOKEN )}, verify=False)
   return resp
 
 def getURL ( url ):
