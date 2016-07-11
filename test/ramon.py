@@ -28,7 +28,7 @@ import kvengine_to_test
 import site_to_test
 import makeunitdb
 SITE_HOST = site_to_test.site
-
+import requests
 
 p = Params()
 p.token = 'unittest'
@@ -148,7 +148,7 @@ def H5AnnotationFile ( annotype, annoid, kv=None ):
 def getH5id ( f ):
   """Extract annotation id from the HDF5 file"""
   tmpfile = tempfile.NamedTemporaryFile ( )
-  tmpfile.write ( f.read() )
+  tmpfile.write ( f )
 #    tmpfile.tell()
   tmpfile.seek(0)
   h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
@@ -183,31 +183,31 @@ def makeAnno ( p, anntype ):
 def getId ( p ):
   """Get the annotation at this Id"""
 
-  url = "http://{}/sd/{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid)
+  url = "https://{}/sd/{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid)
   return getH5id ( getURL(url) )
 
 
 def getField (p, field):
   """Get the specified field"""
 
-  url =  "http://{}/sd/{}/{}/getField/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid, field)
+  url =  "https://{}/sd/{}/{}/getField/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid, field)
   return getURL( url )
 
 
 def setField (p, field, value):
   """Set the specified field to the value"""
 
-  url =  "http://{}/sd/{}/{}/setField/{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid, field, value)
-  assert ( getURL(url).read() == '')
+  url =  "https://{}/sd/{}/{}/setField/{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid, field, value)
+  assert ( getURL(url) == '')
 
 
 def queryField (p, field, value):
   """Get the specified query to the value"""
 
-  url =  "http://{}/sd/{}/{}/query/{}/{}/".format(SITE_HOST, p.token, p.channels[0], field, value)
+  url =  "https://{}/sd/{}/{}/query/{}/{}/".format(SITE_HOST, p.token, p.channels[0], field, value)
   f = getURL(url)
   tmpfile = tempfile.NamedTemporaryFile ( )
-  tmpfile.write ( f.read() )
+  tmpfile.write ( f )
   tmpfile.seek(0)
   h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
 
