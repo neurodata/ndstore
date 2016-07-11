@@ -20,20 +20,20 @@ import pytest
 import numpy as np
 import random
 import h5py
-import urllib2 
+import urllib2
 
 sys.path += [os.path.abspath('../django')]
 import ND.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
 
 from params import Params
-from postmethods import postNPZ, getNPZ 
+from postmethods import postNPZ, getNPZ
 import makeunitdb
 import site_to_test
 
 SITE_HOST = site_to_test.site
 
-from ndtype import UINT8, UINT16, UINT32, ANNOTATION, IMAGE 
+from ndtype import UINT8, UINT16, UINT32, ANNOTATION, IMAGE
 
 
 p = Params()
@@ -51,7 +51,7 @@ class Test_Annotation_Json():
   def teardown_class(self):
     """Teardown Parameters"""
     makeunitdb.deleteTestDB(p.token)
-  
+
   def test_get_anno_by_loc(self):
     """Test the annotation (RAMON) JSON interface"""
 
@@ -64,26 +64,24 @@ class Test_Annotation_Json():
     # check that the return data matches
     assert( np.array_equal(voxarray, image_data) )
 
-    # query for an ID at res0 
+    # query for an ID at res0
     res = 0
     x = 50
     y = 50
     z = 5
-    cutout = '{}/{}/{}/{}/'.format( res, x, y, z ) 
+    cutout = '{}/{}/{}/{}/'.format( res, x, y, z )
     url = 'http://{}/sd/{}/{}/id/{}'.format( SITE_HOST, p.token, p.channels[0], cutout )
-    
+
     try:
       # Build a get request
-      req = urllib2.Request(url)
-      response = urllib2.urlopen(req)
-    except urllib2.HTTPError,e:
-      print e 
+      response = getNPZ(url)
+    except Exception as e:
+      print e
       assert(e.reason == 0)
-    
+
     assert( response.status_code == 200 )
 
-    response_id = int(response.read())
+    response_id = int(response.content)
 
-    # the offset for this dataset is set to 1, hence z-1 
+    # the offset for this dataset is set to 1, hence z-1
     assert( response_id == image_data[0, z-1, y, x] )
-

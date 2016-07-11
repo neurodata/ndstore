@@ -89,7 +89,7 @@ def postBlaze (p, post_data, time=False):
     # Build a post request
     resp = request.post(url, blosc.pack_array(post_data), headers={'Authorization': '{}'.format( TOKEN )}, verify=False)
     return resp
-  except urllib2.HTTPError,e:
+  except Exception as e:
     return e
 
 def postBlosc (p, post_data, time=False):
@@ -107,7 +107,7 @@ def postBlosc (p, post_data, time=False):
     # Build a post request
     resp = request.post(url,blosc.pack_array(post_data), headers={'Authorization': '{}'.format( TOKEN )}, verify=False)
     return resp
-  except urllib2.HTTPError,e:
+  except Exception as e:
     return e
 
 
@@ -151,7 +151,7 @@ def postHDF5 (p, post_data, time=False):
     # Build a post request
     resp = requests.post(url,tmpfile.read(), headers={'Authorization': '{}'.format( TOKEN )}, verify=False)
     return resp
-  except urllib2.HTTPError,e:
+  except Exception as e:
     return e
 
 
@@ -199,7 +199,7 @@ def putAnnotation ( p, f ):
   try:
     anno_value = int(resp.content)
     return anno_value
-  except Exception,e:
+  except Exception as e:
     return 0
 
 
@@ -231,7 +231,7 @@ def getURL ( url ):
 
   try:
     resp = requests.get ( url, headers={'Authorization': '{}'.format( TOKEN )}, verify=False )
-  except urllib2.HTTPError, e:
+  except Exception as e:
     return e.code
 
   return resp
