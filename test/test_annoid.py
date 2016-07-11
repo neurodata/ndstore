@@ -27,7 +27,7 @@ import ND.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
 
 from params import Params
-from postmethods import postNPZ, getNPZ
+from postmethods import postNPZ, getNPZ, getURL
 import makeunitdb
 import site_to_test
 
