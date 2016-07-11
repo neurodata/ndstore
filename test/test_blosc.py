@@ -62,7 +62,7 @@ class Test_Blosc:
     response = postNPZ(p, image_data)
     posted_data = getBlosc(p)
 
-    assert ( np.array_equal(image_data,posted_data.content) )
+    assert ( np.array_equal(image_data,posted_data) )
   
   def test_post_blosc (self):
     """Test the xy slice cutout"""
@@ -72,7 +72,7 @@ class Test_Blosc:
     response = postBlosc(p, image_data)
     posted_data = getNPZ(p)
 
-    assert ( np.array_equal(image_data,posted_data.content) )
+    assert ( np.array_equal(image_data,posted_data) )
   
   def test_incorrect_dim_blosc (self):
     """Test the xy slice cutout"""
@@ -80,7 +80,7 @@ class Test_Blosc:
     p.args = (3000,3100,4000,4100,200,201)
     image_data = np.ones( [2,1,200,200], dtype=np.uint8 ) * random.randint(0,255)
     response = postBlosc(p, image_data)
-    assert(response.staus_code == 404)
+    assert(response.status_code == 404)
   
   def test_incorrect_channel_blosc (self):
     """Test the xy slice cutout"""
