@@ -197,7 +197,7 @@ def putAnnotation ( p, f ):
     resp = postURL( "https://{}/sd/{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.field), f )
 
   try:
-    anno_value = int(resp)
+    anno_value = int(resp.content)
     return anno_value
   except Exception,e:
     return 0
@@ -217,14 +217,14 @@ def getAnnotation ( p ):
 
   f = getURL(url)
   tmpfile = tempfile.NamedTemporaryFile ( )
-  tmpfile.write ( f )
+  tmpfile.write ( f.content )
   tmpfile.seek(0)
   return h5py.File ( tmpfile.name, driver='core', backing_store=False )
 
 def postURL ( url, f ):
 
   resp = request.post(url, f.read(), headers={'Authorization' : '{}'.format( TOKEN )}, verify=False)
-  return resp.content
+  return resp
 
 def getURL ( url ):
   """Post the url"""
@@ -234,4 +234,4 @@ def getURL ( url ):
   except urllib2.HTTPError, e:
     return e.code
 
-  return resp.content
+  return resp

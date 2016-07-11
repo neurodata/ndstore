@@ -58,7 +58,7 @@ class Test_Annotation_Json():
     image_data = np.random.randint(0, high=255, size=[1, 10, 1024, 1024]).astype(np.uint32)
     response = postNPZ(p, image_data)
 
-    assert( response.code == 200 )
+    assert( response.status_code == 200 )
 
     voxarray = getNPZ(p)
     # check that the return data matches
@@ -80,7 +80,7 @@ class Test_Annotation_Json():
       print e 
       assert(e.reason == 0)
     
-    assert( response.code == 200 )
+    assert( response.status_code == 200 )
 
     response_id = int(response.read())
 
