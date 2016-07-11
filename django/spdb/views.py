@@ -402,7 +402,7 @@ def reserve (request, webargs):
     logger.exception("Unknown exception in reserve. {}".format(e))
     raise NDWSError("Unknown exception in reserve. {}".format(e))
 
-@api_view(['POST'])
+@api_view(['GET'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
 @permission_classes((IsAuthenticated,))
 def setField (request, webargs):
