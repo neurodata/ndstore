@@ -49,7 +49,7 @@ def makeAnno ( anntype, hosturl ):
   url = "https://{}/sd/{}/{}/".format(hosturl, 'unittest', 'unit_anno')
 
   # write an object (server creates identifier)
-  resp = requests.get (url, tmpfile.read(), headers={'Authorization' : '{}'.format( TOKEN )}, verify=False)
+  resp = requests.get (url, tmpfile.read(), headers={'Authorization': '{}'.format( TOKEN )}, verify=False)
   putid = int(resp.content)
 
   tmpfile.close()

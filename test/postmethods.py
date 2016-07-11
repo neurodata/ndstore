@@ -50,7 +50,7 @@ def postNPZ (p, post_data, time=False):
     # Build a post request
     # req = urllib2.Request(url,cdz)
     # response = urllib2.urlopen(req)
-    resp = requests.post(url, cdz, headers={'Authorization': '{}'.format( TOKEN )}, verify=False)
+    resp = postURL(url, cdz)
     return resp
   except Exception as e:
     return e
@@ -69,7 +69,7 @@ def getNPZ (p, time=False):
   # Get the image back
   # f = urllib2.urlopen (url)
 
-  resp = requests.get(url, headers={'Authorization': '{}'.format( TOKEN )}, verify=False)
+  resp = getURL(url)
   rawdata = zlib.decompress (resp.content)
   fileobj = cStringIO.StringIO (rawdata)
   return np.load (fileobj)
@@ -87,7 +87,7 @@ def postBlaze (p, post_data, time=False):
 
   try:
     # Build a post request
-    resp = request.post(url, blosc.pack_array(post_data), headers={'Authorization': '{}'.format( TOKEN )}, verify=False)
+    resp = postURL(url, blosc.pack_array(post_data))
     return resp
   except Exception as e:
     return e
@@ -105,7 +105,7 @@ def postBlosc (p, post_data, time=False):
 
   try:
     # Build a post request
-    resp = request.post(url,blosc.pack_array(post_data), headers={'Authorization': '{}'.format( TOKEN )}, verify=False)
+    resp = postURL(url,blosc.pack_array(post_data))
     return resp
   except Exception as e:
     return e
@@ -122,7 +122,7 @@ def getBlosc (p, time=False):
   elif p.channels is None:
     url = 'https://{}/sd/{}/blosc/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
   # Get the image back
-  resp = requests.get (url, headers={'Authorization': '{}'.format( TOKEN )}, verify=False)
+  resp = getURL(url)
   return blosc.unpack_array(resp.content)
 
 
@@ -149,7 +149,7 @@ def postHDF5 (p, post_data, time=False):
 
   try:
     # Build a post request
-    resp = requests.post(url,tmpfile.read(), headers={'Authorization': '{}'.format( TOKEN )}, verify=False)
+    resp = postURL(url,tmpfile.read())
     return resp
   except Exception as e:
     return e
@@ -165,7 +165,7 @@ def getHDF5 (p, time=False):
     url = 'https://{}/sd/{}/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format(SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args)
 
   # Get the image back
-  resp = requests.get (url, headers={'Authorization': '{}'.format( TOKEN )}, verify=False)
+  resp = getURL(url)
   tmpfile = tempfile.NamedTemporaryFile()
   tmpfile.write(resp.content)
   tmpfile.seek(0)
@@ -183,7 +183,7 @@ def getRAW (p, time=False):
     url = 'https://{}/sd/{}/{}/raw/{}/{},{}/{},{}/{},{}/'.format(SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args)
 
   # Get the data back
-  resp = requests.get (url, headers={'Authorization': '{}'.format( TOKEN )}, verify=False)
+  resp = getURL(url)
   rawdata = resp.content
   return np.frombuffer(rawdata, dtype = ND_dtypetonp[p.datatype])
 
@@ -223,14 +223,14 @@ def getAnnotation ( p ):
 
 def postURL ( url, f ):
 
-  resp = request.post(url, f.read(), headers={'Authorization': '{}'.format( TOKEN )}, verify=False)
+  resp = request.post(url, f.read(), headers={'Authorization': 'Token {}'.format( TOKEN )}, verify=False)
   return resp
 
 def getURL ( url ):
   """Post the url"""
 
   try:
-    resp = requests.get ( url, headers={'Authorization': '{}'.format( TOKEN )}, verify=False )
+    resp = requests.get ( url, headers={'Authorization': 'Token {}'.format( TOKEN )}, verify=False )
   except Exception as e:
     return e.code
 
