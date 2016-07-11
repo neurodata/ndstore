@@ -1,11 +1,11 @@
-# Copyright 2014 NeuroData (http://neurodata.io)
-# 
+# Copyright 2014 NeuroData (https://neurodata.io)
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
-#     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,7 +17,7 @@ import re
 import tempfile
 import h5py
 import string
-import random 
+import random
 import csv
 import numpy as np
 import pytest
@@ -67,7 +67,7 @@ class Test_Ramon:
     presynids = []
     postsynids = []
     for i in range(0,8):
-      makeAnno ( q, 2) 
+      makeAnno ( q, 2)
       f = setField(q, 'segments', ','.join([str(p.annoid),str(random.randint(500,1000))]))
 #      f = setField(q, 'presegments', ','.join([str(p.annoid),str(random.randint(500,1000))]))
       f = setField(q, 'presegments', ','.join([str(p.annoid)]))
@@ -77,7 +77,7 @@ class Test_Ramon:
       postsynids.append(q.annoid)
 
     # make one more segment
-    makeAnno ( q, 2) 
+    makeAnno ( q, 2)
     f = setField(q, 'segments', p.annoid)
     synids.append(q.annoid)
 
@@ -110,7 +110,7 @@ class Test_Ramon:
 
     orgids = []
     for i in range(0,8):
-      makeAnno ( q, 6 ) 
+      makeAnno ( q, 6 )
       f = setField(q, 'segment', p.annoid)
       orgids.append(q.annoid)
 
@@ -125,7 +125,7 @@ class Test_Ramon:
 
   def test_anno_minmal(self):
     """Upload a minimal and maximal annotation. Verify fields."""
-    
+
     # Create an in-memory HDF5 file
     tmpfile = tempfile.NamedTemporaryFile()
     h5fh = h5py.File ( tmpfile.name )
@@ -133,7 +133,7 @@ class Test_Ramon:
     idgrp = h5fh.create_group ( str(0) )
     h5fh.flush()
     tmpfile.seek(0)
-    
+
     p.annoid = putAnnotation(p, tmpfile)
     h5ret = getAnnotation(p)
 
@@ -154,13 +154,13 @@ class Test_Ramon:
 
   def test_anno_full (self):
     """Upload a fully populated HDF5 file"""
-    
+
     # Create an in-memory HDF5 file
     tmpfile = tempfile.NamedTemporaryFile()
     h5fh = h5py.File ( tmpfile.name )
     # Create the top level annotation id namespace
     idgrp = h5fh.create_group ( str(0) )
-    
+
     # Create a metadata group
     mdgrp = idgrp.create_group ( "METADATA" )
 
@@ -248,7 +248,7 @@ class Test_Ramon:
 
   def test_anno_delete (self):
     """Delete the object"""
-    
+
     # Build the delete URL
     try:
       (base,suffix) = SITE_HOST.split("/",1)
@@ -259,7 +259,7 @@ class Test_Ramon:
     conn = httplib.HTTPConnection ( base )
 
     if suffix:
-      conn.request ('DELETE', '/{}/sd/{}/{}/{}/'.format(suffix, 'unittest', 'unit_anno', p.annoid)) 
+      conn.request ('DELETE', '/{}/sd/{}/{}/{}/'.format(suffix, 'unittest', 'unit_anno', p.annoid))
     else:
       conn.request ('DELETE', '/sd/{}/{}/{}/'.format('unittest', 'unit_anno', p.annoid))
 
@@ -270,8 +270,8 @@ class Test_Ramon:
 
     # retrieve the annotation
     # verify that it's not there.
-    url = "http://{}/sd/{}/{}/{}/".format(SITE_HOST, 'unittest', 'unit_anno', p.annoid)
-    with pytest.raises(urllib2.HTTPError): 
+    url = "https://{}/sd/{}/{}/{}/".format(SITE_HOST, 'unittest', 'unit_anno', p.annoid)
+    with pytest.raises(urllib2.HTTPError):
       urllib2.urlopen ( url )
 
 
@@ -279,7 +279,7 @@ class Test_Ramon:
     """Upload all different kinds of annotations and retrieve"""
 
     for anntype in [ 1, 2, 3, 4, 5, 6]:
-      
+
       annoid = 0
       f = H5AnnotationFile ( anntype, annoid )
 
@@ -296,26 +296,26 @@ class Test_Ramon:
       assert ( putid1 == getId(p) )
       p.annoid = putid2
       assert ( putid2 == getId(p) )
-  
+
 
   def test_annotation (self):
     """Upload an annotation and test it's fields"""
 
-    # Make an annotation 
+    # Make an annotation
     makeAnno (p, 1)
-    
+
     # Test Status
     status = random.randint (0,100)
     f = setField(p, 'status', status)
     f = getField(p, 'status')
-    assert status == int(f.read()) 
+    assert status == int(f.read())
 
     # Test confidence
     confidence = random.random ()
     f = setField(p, 'confidence', confidence)
     f = getField(p, 'confidence')
     assert abs(confidence - float(f.read())) < 0.001
-    
+
     # Test author
     #f = self.getField(p, 'author')
     #assert 'Unit Test' == f.read()
@@ -331,7 +331,7 @@ class Test_Ramon:
     synapse_type = random.randint (0,100)
     f = setField(p, 'synapse_type', synapse_type)
     f = getField(p, 'synapse_type')
-    assert synapse_type == int(f.read()) 
+    assert synapse_type == int(f.read())
 
     # Test the weight
     weight = random.random ()
@@ -343,7 +343,7 @@ class Test_Ramon:
     status = random.randint (0,100)
     f = setField(p, 'status', status)
     f = getField(p, 'status')
-    assert status == int(f.read()) 
+    assert status == int(f.read())
 
     # Test the seeds
     seeds = [random.randint(0,100), random.randint(0,100), random.randint(0,100)]
@@ -385,20 +385,20 @@ class Test_Ramon:
     parent = random.randint (0,100)
     f = setField(p, 'parent', parent)
     f = getField(p, 'parent')
-    assert parent == int(f.read()) 
+    assert parent == int(f.read())
 
     # Test the source
     source = random.randint (0,100)
     f = setField(p, 'source', source)
     f = getField(p, 'source')
-    assert source == int(f.read()) 
+    assert source == int(f.read())
 
     # Test the cubelocation
     cubelocation = random.randint (0,100)
     f = setField(p, 'cubelocation', cubelocation)
     f = getField(p, 'cubelocation')
-    assert cubelocation == int(f.read()) 
-    
+    assert cubelocation == int(f.read())
+
     # Test the position
     position = [random.randint (0,100), random.randint(0,100), random.randint(0,100)]
     f = setField(p, 'position', ','.join([str(i) for i in position]))
@@ -406,7 +406,7 @@ class Test_Ramon:
     assert ','.join([str(i) for i in position]) == f.read()
 
 
-    
+
 
   def test_neuron (self):
     """Upload a neuron and test it's fields"""
@@ -422,7 +422,7 @@ class Test_Ramon:
 
     segids = []
     for i in range(0,5):
-      makeAnno ( q, 4) 
+      makeAnno ( q, 4)
       f = setField(q, 'neuron', p.annoid)
       segids.append(q.annoid)
 
@@ -436,32 +436,32 @@ class Test_Ramon:
   def test_organelle (self):
     """Upload an organelle and test it's fields"""
 
-    # Make an organelle 
+    # Make an organelle
     makeAnno ( p, 6 )
 
     # Test the parentseed
     parentseed = random.randint (0,100)
     f = setField(p, 'parentseed', parentseed)
     f = getField(p, 'parentseed')
-    assert parentseed == int(f.read()) 
+    assert parentseed == int(f.read())
 
     # Test the organelleclass
     organelleclass = random.randint (0,100)
     f = setField(p, 'organelleclass', organelleclass)
     f = getField(p, 'organelleclass')
-    assert organelleclass == int(f.read()) 
+    assert organelleclass == int(f.read())
 
     # Test the segment
     segment = random.randint (0,65535)
     f = setField(p, 'segment', segment)
     f = getField(p, 'segment')
-    assert segment == int(f.read()) 
+    assert segment == int(f.read())
 
     # Test status
     status = random.randint (0,100)
     f = setField(p, 'status', status)
     f = getField(p, 'status')
-    assert status == int(f.read()) 
+    assert status == int(f.read())
 
     # Test the seeds
     seeds = [random.randint(0,100), random.randint(0,100), random.randint(0,100)]
@@ -470,15 +470,15 @@ class Test_Ramon:
     assert ','.join([str(i) for i in seeds]) == f.read()
 
   def test_wrong ( self ):
-   
-    # Make an annotation 
+
+    # Make an annotation
     makeAnno (p, 2)
 
     # Test the synapse type
     synapse_type = random.randint (0,100)
     f = setField(p, 'synapse_type', synapse_type)
     f = getField(p, 'synapse_type')
-    assert synapse_type == int(f.read()) 
+    assert synapse_type == int(f.read())
 
     # Test the weight
     weight = random.random ()
@@ -491,16 +491,16 @@ class Test_Ramon:
     f = setField(p, 'status', status)
     f = getField(p, 'status')
     assert status == int(f.read())
-    
+
     #  bad format to a number
-    url =  "http://{}/sd/{}/{}/{}/setField/status/aa/".format(SITE_HOST, 'unittest', 'unit_anno', p.annoid)
-    with pytest.raises(urllib2.HTTPError): 
+    url =  "https://{}/sd/{}/{}/{}/setField/status/aa/".format(SITE_HOST, 'unittest', 'unit_anno', p.annoid)
+    with pytest.raises(urllib2.HTTPError):
       req = urllib2.Request ( url )
       f = urllib2.urlopen ( url )
-    
+
     #  request a missing field
-    url =  "http://{}/sd/{}/{}/{}/getField/othernonesuch/".format(SITE_HOST, 'unittest', 'unit_anno', p.annoid)
-    with pytest.raises(urllib2.HTTPError): 
+    url =  "https://{}/sd/{}/{}/{}/getField/othernonesuch/".format(SITE_HOST, 'unittest', 'unit_anno', p.annoid)
+    with pytest.raises(urllib2.HTTPError):
       req = urllib2.Request ( url )
       f = urllib2.urlopen ( url )
 
@@ -547,7 +547,7 @@ class Test_Ramon:
     f = getField(p, 'location')
     assert ','.join([str(i) for i in location]) == f.read()
 
-    # make a bunch of children   
+    # make a bunch of children
     q = Params()
     q.token = 'unittest'
     q.resolution = 0
@@ -555,7 +555,7 @@ class Test_Ramon:
 
     childids = []
     for i in range(0,4):
-      makeAnno ( q, 9) 
+      makeAnno ( q, 9)
       f = setField(q, 'parent', p.annoid)
       childids.append(q.annoid)
 
@@ -586,7 +586,7 @@ class Test_Ramon:
     assert rootnode == int(f.read())
 
     # add some nodes to the skeleton and query them
-    # make a bunch of children cnodes 
+    # make a bunch of children cnodes
     q = Params()
     q.token = 'unittest'
     q.resolution = 0
@@ -613,11 +613,11 @@ class Test_Ramon:
 
     # Make 2 children and four grandchildren
     for i in range(0,2):
-      makeAnno ( r, 7) 
+      makeAnno ( r, 7)
       f = setField(r, 'parent', q.annoid)
       skelids.append(r.annoid)
       for i in range(0,2):
-        makeAnno ( s, 7) 
+        makeAnno ( s, 7)
         f = setField(s, 'parent', r.annoid)
         skelids.append(s.annoid)
 
@@ -641,7 +641,7 @@ class Test_Ramon:
     f = getField(p, 'parent')
     assert parent == int(f.read())
 
-    # make a bunch of children ROIs 
+    # make a bunch of children ROIs
     q = Params()
     q.token = 'unittest'
     q.resolution = 0
@@ -649,7 +649,7 @@ class Test_Ramon:
 
     childids = []
     for i in range(0,4):
-      makeAnno ( q, 9) 
+      makeAnno ( q, 9)
       f = setField(q, 'parent', p.annoid)
       childids.append(q.annoid)
 
@@ -662,7 +662,7 @@ class Test_Ramon:
 
 
   def test_kvpairs(self):
-  
+
     # do a general kv test for each annotation type
     for i in range(1,10):
 
@@ -673,4 +673,4 @@ class Test_Ramon:
 
       setField( p, key, value )
       f = getField ( p, key )
-      assert ( f.read() == value ) 
+      assert ( f.read() == value )

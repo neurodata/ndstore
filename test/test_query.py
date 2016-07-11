@@ -1,11 +1,11 @@
-# Copyright 2014 NeuroData (http://neurodata.io)
-# 
+# Copyright 2014 NeuroData (https://neurodata.io)
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
-#     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@ import urllib2
 import cStringIO
 import tempfile
 import h5py
-import random 
+import random
 import string
 import csv
 import os, sys
@@ -60,7 +60,7 @@ class Test_Ramon:
 
     for i in range (10):
 
-      # Make an annotation 
+      # Make an annotation
       makeAnno( p, p.anntype)
 
       # set some fields in the even annotations
@@ -115,6 +115,3 @@ class Test_Ramon:
       h5 = queryField ( p, key, value )
 
       assert ( h5['ANNOIDS'].shape[0] == 2 )
-
-
-

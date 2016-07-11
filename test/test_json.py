@@ -1,10 +1,10 @@
-# Copyright 2014 NeuroData (http://neurodata.io)
+# Copyright 2014 NeuroData (https://neurodata.io)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -62,7 +62,7 @@ class Test_Project_Json():
     # project format = (project_name, token_name, public)
     project = (p.token, None, None)
     # channel format = { chan1 : (channel_name, datatype, channel_type, data_url, file_name, exceptions, resolution, windowrange, readonly), chan2: ...... }
-    channels = { p.channels[0] : (p.channels[0], p.datatype, p.channel_type, 'http://127.0.0.1/data/sample_dir/', 'SLICE', 'tif', None, None, None, None) }
+    channels = { p.channels[0] : (p.channels[0], p.datatype, p.channel_type, 'https://127.0.0.1/data/sample_dir/', 'SLICE', 'tif', None, None, None, None) }
     metadata = { 'Author': 'Will', 'Animal':'Mouse', 'Date_Collected':'10/2/2015' }
 
     json_file = tempfile.NamedTemporaryFile(mode='w+b')
@@ -70,11 +70,11 @@ class Test_Project_Json():
     json_file.seek(0)
 
     # posting the JSON url and checking if it is successful
-    response = json.loads(postURL("http://{}/sd/autoIngest/".format(SITE_HOST), json_file).content)
+    response = json.loads(postURL("https://{}/sd/autoIngest/".format(SITE_HOST), json_file).content)
     assert('SUCCESS. The ingest process has now started.' == response)
 
     # fetching the JSON info
-    f = getURL("http://{}/sd/{}/info/".format(SITE_HOST, p.token))
+    f = getURL("https://{}/sd/{}/info/".format(SITE_HOST, p.token))
 
     # read the JSON file
     proj_info = json.loads(f.content)
@@ -105,11 +105,11 @@ class Test_Project_Json():
     json_file.seek(0)
 
     # posting the JSON url and checking if it is successful
-    response = json.loads(postURL("http://{}/sd/autoIngest/".format(SITE_HOST), json_file).content)
+    response = json.loads(postURL("https://{}/sd/autoIngest/".format(SITE_HOST), json_file).content)
     assert('SUCCESS. The ingest process has now started.' == response)
 
     # fetching the JSON info
-    f = getURL("http://{}/sd/{}/info/".format(SITE_HOST, p.token))
+    f = getURL("https://{}/sd/{}/info/".format(SITE_HOST, p.token))
 
     # read the JSON file
     proj_info = json.loads(f.content)
@@ -137,7 +137,7 @@ class Test_Project_Json():
     json_file.seek(0)
 
     # posting the JSON url and checking if it is successful
-    response = json.loads(postURL("http://{}/sd/autoIngest/".format(SITE_HOST), json_file).content)
+    response = json.loads(postURL("https://{}/sd/autoIngest/".format(SITE_HOST), json_file).content)
     assert('Dataset {} already exists and is different then the chosen dataset. Please choose a different dataset name'.format(p.dataset) == response)
 
 
@@ -168,11 +168,11 @@ class Test_Create_Channel_Json():
     json_file.seek(0)
 
     # posting the JSON url and checking if it is successful
-    response = json.loads(postURL("http://{}/sd/{}/createChannel/".format(SITE_HOST, p.token), json_file).content)
+    response = json.loads(postURL("https://{}/sd/{}/createChannel/".format(SITE_HOST, p.token), json_file).content)
     assert('SUCCESS. The information in the channel was correct.' == response)
 
     # fetching the JSON info
-    f = getURL("http://{}/sd/{}/info/".format(SITE_HOST, p.token))
+    f = getURL("https://{}/sd/{}/info/".format(SITE_HOST, p.token))
 
     # read the JSON file
     proj_info = json.loads(f.content)
@@ -208,7 +208,7 @@ class Test_Create_Channel_Json():
     json_file.seek(0)
 
     # posting the JSON url and checking if it is successful
-    response = json.loads(postURL("http://{}/sd/{}/createChannel/".format(SITE_HOST, p.token), json_file).content)
+    response = json.loads(postURL("https://{}/sd/{}/createChannel/".format(SITE_HOST, p.token), json_file).content)
     assert('Channel CHAN2 already exists for this project. Specify a different channel name' == response)
 
 class Test_Delete_Channel_Json():
@@ -231,11 +231,11 @@ class Test_Delete_Channel_Json():
     json_file.seek(0)
 
     # posting the JSON url and checking if it is successful
-    response = json.loads(postURL("http://{}/sd/{}/deleteChannel/".format(SITE_HOST, p.token), json_file).content)
+    response = json.loads(postURL("https://{}/sd/{}/deleteChannel/".format(SITE_HOST, p.token), json_file).content)
     assert('SUCCESS' == response)
 
     # fetching the JSON info
-    f = getURL("http://{}/sd/{}/info/".format(SITE_HOST, p.token))
+    f = getURL("https://{}/sd/{}/info/".format(SITE_HOST, p.token))
 
     # read the JSON file
     proj_info = json.loads(f.content)
