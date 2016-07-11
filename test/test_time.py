@@ -83,7 +83,7 @@ class Test_Image_Slice:
     url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[6])
     f = getURL (url)
 
-    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
     assert ( np.array_equal(slice_data, time_data[0][0][0]) )
 
   def test_yz (self):
@@ -96,7 +96,7 @@ class Test_Image_Slice:
     url = "https://{}/sd/{}/{}/yz/{}/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[2], p.args[3], p.args[4], p.args[5], p.args[6])
     f = getURL (url)
 
-    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
     assert ( np.array_equal(slice_data, image_data[0][0][:75][:].reshape(75,100)) )
 
   def test_xz (self):
@@ -109,7 +109,7 @@ class Test_Image_Slice:
     url = "https://{}/sd/{}/{}/xz/{}/{},{}/{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[4], p.args[5], p.args[6])
     f = getURL (url)
 
-    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
     assert ( np.array_equal(slice_data, image_data[0][0][:75][:].reshape(75,100)) )
 
   #def test_xy_incorrect (self):
@@ -138,7 +138,7 @@ class Test_Image_Post:
 
     response = postNPZ(p, image_data, time=True)
     # Checking for successful post
-    assert( response.code == 200 )
+    assert( response.status_code == 200 )
     voxarray = getNPZ(p, time=True)
     # check that the return matches
     assert ( np.array_equal(voxarray,image_data) )
@@ -158,7 +158,7 @@ class Test_Image_Post:
     image_data = np.ones ( [2,7,10,100,100], dtype=np.uint16 ) * random.randint(0,255)
 
     response = postNPZ(p, image_data, time=True)
-    assert (response.code == 404)
+    assert (response.status_code == 404)
 
   def test_npz_incorrect_timesize (self):
     """Post npz data with incorrect time size"""
@@ -168,7 +168,7 @@ class Test_Image_Post:
     image_data = np.ones ( [2,7,10,100,100], dtype=np.uint16 ) * random.randint(0,255)
 
     response = postNPZ(p, image_data, time=True)
-    assert (response.code == 404)
+    assert (response.status_code == 404)
 
   def test_hdf5 (self):
     """Post hdf5 data to correct region with correct datatype"""
@@ -178,7 +178,7 @@ class Test_Image_Post:
     image_data = np.ones ( [2,5,10,100,100], dtype=np.uint8 ) * random.randint(0,255)
 
     response = postHDF5(p, image_data, time=True)
-    assert ( response.code == 200 )
+    assert ( response.status_code == 200 )
     h5f = getHDF5(p, time=True)
 
     for idx, channel_name in enumerate(p.channels):
@@ -190,7 +190,7 @@ class Test_Image_Post:
     p.args = (8000,7000,4000,4100,500,510,110,115)
     image_data = np.ones ( [2,5,10,100,100], dtype=np.uint8 ) * random.randint(0,255)
     response = postHDF5(p, image_data, time=True)
-    assert (response.code == 404)
+    assert (response.status_code == 404)
 
   def test_hdf5_incorrect_datatype (self):
     """Post hdf5 data with incorrect datatype"""
@@ -202,7 +202,7 @@ class Test_Image_Post:
     image_data[1,:] = np.ones ( [2,10,100,100], dtype=np.uint16 ) * random.randint(0,255)
 
     response = postHDF5(p, image_data, time=True)
-    assert ( response.code == 404 )
+    assert ( response.status_code == 404 )
 
   def test_npz_incorrect_channel (self):
     """Post npz data with incorrect channel"""
@@ -210,7 +210,7 @@ class Test_Image_Post:
     p.channels = p.channels + ['IMAGE3']
     image_data = np.ones ( [3,2,10,100,100], dtype=np.uint8 ) * random.randint(0,255)
     response = postNPZ(p, image_data, time=True)
-    assert (response.code == 404)
+    assert (response.status_code == 404)
 
   def test_hdf5_incorrect_channel (self):
     """Post hdf5 data with incorrect channel"""
@@ -218,7 +218,7 @@ class Test_Image_Post:
     p.args = (5000,5100,4000,4100,500,510,50,52)
     image_data = np.ones ( [3,2,10,100,100], dtype=np.uint8 ) * random.randint(0,255)
     response = postHDF5(p, image_data, time=True)
-    assert (response.code == 404)
+    assert (response.status_code == 404)
 
 class Test_Time_Simple_Catmaid:
 
@@ -244,7 +244,7 @@ class Test_Time_Simple_Catmaid:
     url = "https://{}/catmaid/{}/{}/xy/{}/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[6], p.args[4], p.args[2]/512, p.args[0]/512, p.resolution)
     f = getURL (url)
 
-    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
     assert ( np.array_equal(slice_data, image_data[0][0][0]) )
 
   def test_yz_tile (self):
@@ -263,7 +263,7 @@ class Test_Time_Simple_Catmaid:
     f = getURL (url)
 
     scale_range = 512*p.voxel[2]/p.voxel[1]
-    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
     assert ( np.array_equal(slice_data[:scale_range,:], image_data[0,0,:scale_range,:,0]) )
 
   def test_xz_tile (self):
@@ -282,7 +282,7 @@ class Test_Time_Simple_Catmaid:
     f = getURL (url)
 
     scale_range = 512*p.voxel[2]/p.voxel[0]
-    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
     assert ( np.array_equal(slice_data[:scale_range,:], image_data[0,0,:scale_range,0,:]) )
 
 class Test_Time_Window:
@@ -307,7 +307,7 @@ class Test_Time_Window:
 
     from windowcutout import windowCutout
     image_data = windowCutout(image_data, p.window).astype(np.uint8)
-    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
     assert ( np.array_equal(slice_data, image_data[0][0][0]) )
 
   def test_window_args(self):
@@ -323,7 +323,7 @@ class Test_Time_Window:
 
     from windowcutout import windowCutout
     image_data = windowCutout(image_data, p.window).astype(np.uint8)
-    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
     assert ( np.array_equal(slice_data, image_data[0][0][0]) )
 
 
@@ -343,7 +343,7 @@ class Test_Time_Diff:
     p.args = (3000,3100,2000,2100,10,11,2,3)
     image_data1 = np.ones ( [2,1,1,100,100], dtype=np.uint8 ) * random.randint(0,255)
     response = postNPZ(p, image_data1, time=True)
-    assert (response.code == 200)
+    assert (response.status_code == 200)
     voxarray = getNPZ(p, time=True)
     # check that the return matches
     assert ( np.array_equal(voxarray,image_data1) )
@@ -351,7 +351,7 @@ class Test_Time_Diff:
     p.args = (3000,3100,2000,2100,10,11,3,4)
     image_data2 = np.ones ( [2,1,1,100,100], dtype=np.uint8 ) * random.randint(0,255)
     response = postNPZ(p, image_data2, time=True)
-    assert (response.code == 200)
+    assert (response.status_code == 200)
     voxarray = getNPZ(p, time=True)
     # check that the return matches
     assert ( np.array_equal(voxarray,image_data2) )
@@ -359,7 +359,7 @@ class Test_Time_Diff:
     p.args = (3000,3100,2000,2100,10,11,2,4)
     url = "https://{}/sd/{}/{}/diff/{}/{},{}/{},{}/{},{}/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, *p.args)
     f = getURL (url)
-    voxarray = blosc.unpack_array(f.read())
+    voxarray = blosc.unpack_array(f.content)
 
     image_data = np.subtract(np.float32(image_data1),np.float32(image_data2))
     assert( np.array_equal(image_data[0,:], voxarray[0,:]) )
@@ -371,7 +371,7 @@ class Test_Time_Diff:
     #p.args = (3000,3100,4000,4100,200,201)
     #image_data = np.ones( [1,1,100,100], dtype=np.uint8 ) * random.randint(0,255)
     #response = postNPZ(p, image_data)
-    #assert (response.code == 200)
+    #assert (response.status_code == 200)
     #voxarray = getNPZ(p)
     ## check that the return matches
     #assert ( np.array_equal(voxarray,image_data) )
@@ -379,5 +379,5 @@ class Test_Time_Diff:
     #url = "https://{}/sd/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
     #f = getURL (url)
 
-    #slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    #slice_data = np.asarray ( Image.open(StringIO(f.content)) )
     #assert ( np.array_equal(slice_data,image_data[0][0]) )

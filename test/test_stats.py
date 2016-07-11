@@ -55,7 +55,7 @@ class Test_Histogram8:
     image_data = np.random.randint(0, high=255, size=[1, 10, 1024, 1024]).astype(np.uint8)
     response = postNPZ(p, image_data)
 
-    assert( response.code == 200 )
+    assert( response.status_code == 200 )
 
     voxarray = getNPZ(p)
     # check that the return data matches
@@ -71,9 +71,9 @@ class Test_Histogram8:
       print e
       assert(e.reason == 0)
 
-    assert( response.code == 200 )
+    assert( response.status_code == 200 )
 
-    jsonresponse = json.loads(response.read())
+    jsonresponse = json.loads(response.content)
 
     # make sure the celery job started
     celerystatus = celery_app.AsyncResult(jsonresponse['jobid'])
@@ -98,9 +98,9 @@ class Test_Histogram8:
       print e
       assert(e.reason == 0)
 
-    assert( response.code == 200 )
+    assert( response.status_code == 200 )
 
-    jsonresponse = json.loads(response.read())
+    jsonresponse = json.loads(response.content)
 
     # now see if the two histograms are equivalent
     testhist = np.histogram(image_data[image_data > 0], bins=256, range=(0,256))
@@ -127,7 +127,7 @@ class Test_Histogram16:
     image_data = np.random.randint(0, high=65535, size=[1, 10, 1024, 1024]).astype(np.uint16)
     response = postNPZ(p, image_data)
 
-    assert( response.code == 200 )
+    assert( response.status_code == 200 )
 
     voxarray = getNPZ(p)
     # check that the return data matches
@@ -143,9 +143,9 @@ class Test_Histogram16:
       print e
       assert(e.reason == 0)
 
-    assert( response.code == 200 )
+    assert( response.status_code == 200 )
 
-    jsonresponse = json.loads(response.read())
+    jsonresponse = json.loads(response.content)
 
     # make sure the celery job started
     celerystatus = celery_app.AsyncResult(jsonresponse['jobid'])
@@ -170,9 +170,9 @@ class Test_Histogram16:
       print e
       assert(e.reason == 0)
 
-    assert( response.code == 200 )
+    assert( response.status_code == 200 )
 
-    jsonresponse = json.loads(response.read())
+    jsonresponse = json.loads(response.content)
 
     # now see if the two histograms are equivalent
     testhist = np.histogram(image_data[image_data > 0], bins=65536, range=(0,65536))

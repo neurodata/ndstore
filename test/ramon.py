@@ -198,7 +198,7 @@ def setField (p, field, value):
   """Set the specified field to the value"""
 
   url =  "https://{}/sd/{}/{}/setField/{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid, field, value)
-  assert ( getURL(url) == '')
+  assert ( getURL(url).content == '')
 
 
 def queryField (p, field, value):

@@ -80,7 +80,7 @@ class Test_Annotation_Json():
     f = getURL("https://{}/sd/{}/{}/{}/json/".format(SITE_HOST, p.token, p.channels[0], ann_annoid))
 
     # read the JSON file
-    ann_info = json.loads(f.read())
+    ann_info = json.loads(f.content)
     assert( ann_info.keys()[0] == str(ann_annoid) )
     assert( str(ann_info[str(ann_annoid)]['ann_status']) == str(ann_status) )
     assert( str(ann_info[str(ann_annoid)]['ann_confidence'])[:5] == str(ann_confidence)[:5] )
@@ -119,7 +119,7 @@ class Test_Annotation_Json():
     f = getURL("https://{}/ca/{}/{}/{}/json/".format(SITE_HOST, p.token, p.channels[0], ann_annoid))
 
     # read the JSON file
-    ann_info = json.loads(f.read())
+    ann_info = json.loads(f.content)
     assert( ann_info.keys()[0] == str(ann_annoid) )
     assert( str(ann_info[str(ann_annoid)]['ann_status']) == str(ann_status) )
     assert( str(ann_info[str(ann_annoid)]['ann_confidence'])[:5] == str(ann_confidence)[:5] )
@@ -173,7 +173,7 @@ class Test_Annotation_Json():
     f = getURL("https://{}/ca/{}/{}/{}/json/".format(SITE_HOST, p.token, p.channels[0], ann_id_str))
 
     # read the JSON file
-    ann_info = json.loads(f.read())
+    ann_info = json.loads(f.content)
 
     for i in range(number_of_annotations):
       # make sure we have all the relevant annotation objects
@@ -202,4 +202,4 @@ class Test_Annotation_Json():
     # fetching the JSON info
     f = getURL("https://{}/sd/{}/{}/{}/json/".format(SITE_HOST, p.token, p.channels, ann_annoid))
 
-    assert(f == 404)
+    assert(f.status_code == 404)

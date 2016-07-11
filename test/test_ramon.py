@@ -83,21 +83,21 @@ class Test_Ramon:
 
     # Test synapses
     f = getField(p, 'synapses')
-    rsynids = f.read().split(',')
+    rsynids = f.content.split(',')
     for sid in rsynids:
       assert int(sid) in synids
     assert len(rsynids) == 9
 
     # Test presynapses
     f = getField(p, 'presynapses')
-    rsynids = f.read().split(',')
+    rsynids = f.content.split(',')
     for sid in rsynids:
       assert int(sid) in presynids
     assert len(rsynids) == 8
 
     # Test postsynapses
     f = getField(p, 'postsynapses')
-    rsynids = f.read().split(',')
+    rsynids = f.content.split(',')
     for sid in rsynids:
       assert int(sid) in postsynids
     assert len(rsynids) == 8
@@ -116,7 +116,7 @@ class Test_Ramon:
 
     # Test synapses
     f = getField(p, 'organelles')
-    rorgids = f.read().split(',')
+    rorgids = f.content.split(',')
     for cid in rorgids:
       assert int(cid) in orgids
     assert len(rorgids) == 8
@@ -308,17 +308,17 @@ class Test_Ramon:
     status = random.randint (0,100)
     f = setField(p, 'status', status)
     f = getField(p, 'status')
-    assert status == int(f.read())
+    assert status == int(f.content)
 
     # Test confidence
     confidence = random.random ()
     f = setField(p, 'confidence', confidence)
     f = getField(p, 'confidence')
-    assert abs(confidence - float(f.read())) < 0.001
+    assert abs(confidence - float(f.content)) < 0.001
 
     # Test author
     #f = self.getField(p, 'author')
-    #assert 'Unit Test' == f.read()
+    #assert 'Unit Test' == f.content
 
 
   def test_synapse (self):
@@ -331,49 +331,49 @@ class Test_Ramon:
     synapse_type = random.randint (0,100)
     f = setField(p, 'synapse_type', synapse_type)
     f = getField(p, 'synapse_type')
-    assert synapse_type == int(f.read())
+    assert synapse_type == int(f.content)
 
     # Test the weight
     weight = random.random ()
     f = setField(p, 'weight', weight)
     f = getField(p, 'weight')
-    assert abs(weight - float(f.read())) < 0.001
+    assert abs(weight - float(f.content)) < 0.001
 
     # Test the inheritance
     status = random.randint (0,100)
     f = setField(p, 'status', status)
     f = getField(p, 'status')
-    assert status == int(f.read())
+    assert status == int(f.content)
 
     # Test the seeds
     seeds = [random.randint(0,100), random.randint(0,100), random.randint(0,100)]
     f = setField(p, 'seeds', ','.join([str(i) for i in seeds]))
     f = getField(p, 'seeds')
-    assert ','.join([str(i) for i in seeds]) == f.read()
+    assert ','.join([str(i) for i in seeds]) == f.content
 
     # test the centroid
     centroid = [random.randint(0,65535), random.randint(0,65535), random.randint(0,65535)]
     f = setField(p, 'centroid', ','.join([str(i) for i in centroid]))
     f = getField(p, 'centroid')
-    assert ','.join([str(i) for i in centroid]) == f.read()
+    assert ','.join([str(i) for i in centroid]) == f.content
 
     # Test the segments
     segments = [random.randint(0,100), random.randint(0,100), random.randint(0,100)]
     f = setField(p, 'segments', ','.join([str(i) for i in segments]))
     f = getField(p, 'segments')
-    assert ','.join([str(i) for i in segments]) == f.read()
+    assert ','.join([str(i) for i in segments]) == f.content
 
     # Test the presegments
     presegments = [random.randint(0,100), random.randint(0,100), random.randint(0,100)]
     f = setField(p, 'presegments', ','.join([str(i) for i in presegments]))
     f = getField(p, 'presegments')
-    assert ','.join([str(i) for i in presegments]) == f.read()
+    assert ','.join([str(i) for i in presegments]) == f.content
 
     # Test the postsegments
     postsegments = [random.randint(0,100), random.randint(0,100), random.randint(0,100)]
     f = setField(p, 'postsegments', ','.join([str(i) for i in postsegments]))
     f = getField(p, 'postsegments')
-    assert ','.join([str(i) for i in postsegments]) == f.read()
+    assert ','.join([str(i) for i in postsegments]) == f.content
 
   def test_seed (self):
     """Upload a seed and test it's fields"""
@@ -385,25 +385,25 @@ class Test_Ramon:
     parent = random.randint (0,100)
     f = setField(p, 'parent', parent)
     f = getField(p, 'parent')
-    assert parent == int(f.read())
+    assert parent == int(f.content)
 
     # Test the source
     source = random.randint (0,100)
     f = setField(p, 'source', source)
     f = getField(p, 'source')
-    assert source == int(f.read())
+    assert source == int(f.content)
 
     # Test the cubelocation
     cubelocation = random.randint (0,100)
     f = setField(p, 'cubelocation', cubelocation)
     f = getField(p, 'cubelocation')
-    assert cubelocation == int(f.read())
+    assert cubelocation == int(f.content)
 
     # Test the position
     position = [random.randint (0,100), random.randint(0,100), random.randint(0,100)]
     f = setField(p, 'position', ','.join([str(i) for i in position]))
     f = getField(p, 'position')
-    assert ','.join([str(i) for i in position]) == f.read()
+    assert ','.join([str(i) for i in position]) == f.content
 
 
 
@@ -428,7 +428,7 @@ class Test_Ramon:
 
     # Test segments
     f = getField(p, 'segments')
-    rsegids = f.read().split(',')
+    rsegids = f.content.split(',')
     for sid in rsegids:
       assert int(sid) in segids
     assert len(rsegids) == 5
@@ -443,31 +443,31 @@ class Test_Ramon:
     parentseed = random.randint (0,100)
     f = setField(p, 'parentseed', parentseed)
     f = getField(p, 'parentseed')
-    assert parentseed == int(f.read())
+    assert parentseed == int(f.content)
 
     # Test the organelleclass
     organelleclass = random.randint (0,100)
     f = setField(p, 'organelleclass', organelleclass)
     f = getField(p, 'organelleclass')
-    assert organelleclass == int(f.read())
+    assert organelleclass == int(f.content)
 
     # Test the segment
     segment = random.randint (0,65535)
     f = setField(p, 'segment', segment)
     f = getField(p, 'segment')
-    assert segment == int(f.read())
+    assert segment == int(f.content)
 
     # Test status
     status = random.randint (0,100)
     f = setField(p, 'status', status)
     f = getField(p, 'status')
-    assert status == int(f.read())
+    assert status == int(f.content)
 
     # Test the seeds
     seeds = [random.randint(0,100), random.randint(0,100), random.randint(0,100)]
     f = setField(p, 'seeds', ','.join([str(i) for i in seeds]))
     f = getField(p, 'seeds')
-    assert ','.join([str(i) for i in seeds]) == f.read()
+    assert ','.join([str(i) for i in seeds]) == f.content
 
   def test_wrong ( self ):
 
@@ -478,19 +478,19 @@ class Test_Ramon:
     synapse_type = random.randint (0,100)
     f = setField(p, 'synapse_type', synapse_type)
     f = getField(p, 'synapse_type')
-    assert synapse_type == int(f.read())
+    assert synapse_type == int(f.content)
 
     # Test the weight
     weight = random.random ()
     f = setField(p, 'weight', weight)
     f = getField(p, 'weight')
-    assert abs(weight - float(f.read())) < 0.001
+    assert abs(weight - float(f.content)) < 0.001
 
     # Test inheritance
     status = random.randint (0,100)
     f = setField(p, 'status', status)
     f = getField(p, 'status')
-    assert status == int(f.read())
+    assert status == int(f.content)
 
     #  bad format to a number
     url =  "https://{}/sd/{}/{}/{}/setField/status/aa/".format(SITE_HOST, 'unittest', 'unit_anno', p.annoid)
@@ -515,37 +515,37 @@ class Test_Ramon:
     nodetype = random.randint (0,100)
     f = setField(p, 'nodetype', nodetype)
     f = getField(p, 'nodetype')
-    assert nodetype == int(f.read())
+    assert nodetype == int(f.content)
 
     # test the skeletonid
     skeletonid = random.randint (0,65535)
     f = setField(p, 'skeletonid', skeletonid)
     f = getField(p, 'skeletonid')
-    assert skeletonid == int(f.read())
+    assert skeletonid == int(f.content)
 
     # test the pointid
     pointid = random.randint (0,65535)
     f = setField(p, 'pointid', pointid)
     f = getField(p, 'pointid')
-    assert pointid == int(f.read())
+    assert pointid == int(f.content)
 
     # test the parentid
     parentid = random.randint (0,65535)
     f = setField(p, 'parentid', parentid)
     f = getField(p, 'parentid')
-    assert parentid == int(f.read())
+    assert parentid == int(f.content)
 
     # test the radius
     radius = random.random()
     f = setField(p, 'radius', radius)
     f = getField(p, 'radius')
-    assert abs(radius - float(f.read())) < 0.001
+    assert abs(radius - float(f.content)) < 0.001
 
     # test the location
     location = [random.random(), random.random(), random.random()]
     f = setField(p, 'location', ','.join([str(i) for i in location]))
     f = getField(p, 'location')
-    assert ','.join([str(i) for i in location]) == f.read()
+    assert ','.join([str(i) for i in location]) == f.content
 
     # make a bunch of children
     q = Params()
@@ -561,7 +561,7 @@ class Test_Ramon:
 
     # Test children
     f = getField(p, 'children')
-    rchildids = f.read().split(',')
+    rchildids = f.content.split(',')
     for cid in rchildids:
       assert int(cid) in childids
     assert len(rchildids) == 4
@@ -577,13 +577,13 @@ class Test_Ramon:
     skeletontype = random.randint (0,100)
     f = setField(p, 'skeletontype', skeletontype)
     f = getField(p, 'skeletontype')
-    assert skeletontype == int(f.read())
+    assert skeletontype == int(f.content)
 
     # test the rootnode
     rootnode = random.randint (0,65535)
     f = setField(p, 'rootnode', rootnode)
     f = getField(p, 'rootnode')
-    assert rootnode == int(f.read())
+    assert rootnode == int(f.content)
 
     # add some nodes to the skeleton and query them
     # make a bunch of children cnodes
@@ -623,7 +623,7 @@ class Test_Ramon:
 
     # Test skeleton
     f = getField(p, 'nodes')
-    rskelids = f.read().split(',')
+    rskelids = f.content.split(',')
     for sid in rskelids:
       assert int(sid) in skelids
     assert len(rskelids) == 7
@@ -639,7 +639,7 @@ class Test_Ramon:
     parent = random.randint (0,65535)
     f = setField(p, 'parent', parent)
     f = getField(p, 'parent')
-    assert parent == int(f.read())
+    assert parent == int(f.content)
 
     # make a bunch of children ROIs
     q = Params()
@@ -655,7 +655,7 @@ class Test_Ramon:
 
     # Test children
     f = getField(p, 'children')
-    rchildids = f.read().split(',')
+    rchildids = f.content.split(',')
     for cid in rchildids:
       assert int(cid) in childids
     assert len(rchildids) == 4
@@ -673,4 +673,4 @@ class Test_Ramon:
 
       setField( p, key, value )
       f = getField ( p, key )
-      assert ( f.read() == value )
+      assert ( f.content == value )

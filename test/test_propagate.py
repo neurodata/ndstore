@@ -73,7 +73,7 @@ class Test_Image_Zslice_Propagate:
 
     # Check if the project is not proagated
     f = getURL("https://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
-    value = int(f.read())
+    value = int(f.content)
     assert(value == NOT_PROPAGATED)
 
     # Start propagating
@@ -82,7 +82,7 @@ class Test_Image_Zslice_Propagate:
       time.sleep(10)
       # Checking if the PROPGATED value is set correctly
       f = getURL("https://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
-      value = int(f.read())
+      value = int(f.content)
       if value == PROPAGATED:
         break
     assert(value == PROPAGATED)
@@ -91,14 +91,14 @@ class Test_Image_Zslice_Propagate:
     p.args = (100,150,100,150,4,5)
     url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution+1, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
     f = getURL(url)
-    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
     assert ( np.array_equal(slice_data, image_data[0][0][:50,:50]) )
 
     # Checking at res5
     p.args = (7,9,7,9,4,5)
     url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution+5, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
     f = getURL(url)
-    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
     assert ( np.array_equal(slice_data, image_data[0][0][:2,:2]) )
 
 class Test_Image_Readonly_Propagate:
@@ -120,11 +120,11 @@ class Test_Image_Readonly_Propagate:
     image_data = np.ones( [1,1,100,100], dtype=np.uint8) * random.randint(0,255)
     response = postNPZ(p, image_data)
     # check that it cannot post to a readonly channle
-    assert(response.code == 404)
+    assert(response.status_code == 404)
 
     # Check if the project is not proagated
     f = getURL("https://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
-    value = int(f.read())
+    value = int(f.content)
     assert(value == NOT_PROPAGATED)
 
     # check that it cannot start propagating a readonly channel
@@ -153,7 +153,7 @@ class Test_Image_Propagated_Propagate:
 
     # Check if the project is not proagated
     f = getURL("https://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
-    value = int(f.read())
+    value = int(f.content)
     assert(value == PROPAGATED)
 
     # check that it cannot start propagating a channel which is already propagated
@@ -161,7 +161,7 @@ class Test_Image_Propagated_Propagate:
     f = getURL("https://{}/sd/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), NOT_PROPAGATED))
     # can set to not propagated
     f = getURL("https://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
-    value = int(f.read())
+    value = int(f.content)
     assert(value == NOT_PROPAGATED)
 
 class Test_Image_Isotropic_Propagate:
@@ -185,7 +185,7 @@ class Test_Image_Isotropic_Propagate:
 
     # Check if the project is not proagated
     f = getURL("https://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
-    value = int(f.read())
+    value = int(f.content)
     assert(value == NOT_PROPAGATED)
 
     # Start propagating
@@ -195,7 +195,7 @@ class Test_Image_Isotropic_Propagate:
     for iter_value in range(1,10,1):
       time.sleep(5)
       f = getURL("https://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
-      value = int(f.read())
+      value = int(f.content)
       if value == PROPAGATED:
         break
     assert(value == PROPAGATED)
@@ -250,7 +250,7 @@ class Test_Anno_Zslice_Propagate():
 
     # Check if the project is not propagated
     f = getURL("https://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
-    value = int(f.read())
+    value = int(f.content)
     assert(value == NOT_PROPAGATED)
 
     # Start propagating
@@ -260,7 +260,7 @@ class Test_Anno_Zslice_Propagate():
     for iter_value in range(1, 15, 1):
       time.sleep(10)
       f = getURL("https://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
-      value = int(f.read())
+      value = int(f.content)
       if value == PROPAGATED:
         break
     assert(value == PROPAGATED)
@@ -304,7 +304,7 @@ class Test_Anno_Isotropic_Propagate():
 
     # Check if the project is not proagated
     f = getURL("https://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
-    value = int(f.read())
+    value = int(f.content)
     assert(value == NOT_PROPAGATED)
 
     # Start propagating
@@ -314,7 +314,7 @@ class Test_Anno_Isotropic_Propagate():
     for iter_value in range(1, 15, 1):
       time.sleep(10)
       f = getURL("https://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
-      value = int(f.read())
+      value = int(f.content)
       if value == PROPAGATED:
         break
     assert(value == PROPAGATED)
