@@ -1,11 +1,11 @@
 # Copyright 2014 NeuroData (http://neurodata.io)
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -59,10 +59,10 @@ class Test_Jpeg:
     p.args = (3000,3100,4000,4100,200,210)
     image_data = np.ones( [2,10,100,100], dtype=np.uint8 ) * random.randint(0,255)
     response = postNPZ(p, image_data)
-    
+
     url = "http://{}/sd/{}/{}/jpeg/{}/{},{}/{},{}/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[5])
-    data = getURL(url).read()
-    posted_data = np.asarray( Image.open(cStringIO.StringIO(data)) )
+    data = getURL(url)
+    posted_data = np.asarray( Image.open(cStringIO.StringIO(data.content)) )
 
     image_data = image_data[0,:,:,:].reshape(1000,100)
     assert ( np.array_equal(image_data,posted_data) )
