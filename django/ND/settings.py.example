@@ -35,6 +35,18 @@ FORCE_SCRIPT_NAME = '/nd'
 
 VIZ_SERVER = 'http://viz.neurodata.io'; # MUST include 'http'! 
 
+# Authorization Framework
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    )
+}
+
 # Application definition
 
 INSTALLED_APPS = (
@@ -45,6 +57,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework.authtoken',
     'nduser',
     'spdb',
     'overlay',
@@ -223,3 +236,15 @@ CORS_ALLOW_METHODS = {
 # Amazon Settings
 AWS_ACCESS_KEY_ID = settings_secret.AWS_ACCESS_KEY_ID
 AWS_SECRET_ACCESS_KEY = settings_secret.AWS_SECRET_ACCESS_KEY
+
+# HTTPS Settings
+
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE=True
+os.environ['wsgi.url_scheme'] = 'https'
+os.environ['HTTPS'] = "on"
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = True
+
+
