@@ -19,6 +19,7 @@ import zlib
 import tempfile
 import blosc
 import numpy as np
+import requests
 
 from params import Params
 from ndtype import UINT8, ND_dtypetonp
@@ -26,102 +27,103 @@ from ndtype import UINT8, ND_dtypetonp
 import kvengine_to_test
 import site_to_test
 import makeunitdb
-    
-SITE_HOST = site_to_test.site
 
+SITE_HOST = site_to_test.site
+TOKEN = '1234'
 
 def postNPZ (p, post_data, time=False):
   """Post data using npz"""
-  
+
   # Build the url and then create a npz object
   if time:
-    url = 'http://{}/sd/{}/{}/npz/{}/{},{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+    url = 'https://{}/sd/{}/{}/npz/{}/{},{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
   elif p.channels is not None:
-    url = 'http://{}/sd/{}/{}/npz/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+    url = 'https://{}/sd/{}/{}/npz/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
   elif p.channels is None:
-    url = 'http://{}/sd/{}/npz/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
+    url = 'https://{}/sd/{}/npz/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
 
   fileobj = cStringIO.StringIO ()
   np.save (fileobj, post_data)
   cdz = zlib.compress (fileobj.getvalue())
-  
+
   try:
     # Build a post request
-    req = urllib2.Request(url,cdz)
-    response = urllib2.urlopen(req)
-    return response
-  except urllib2.HTTPError,e:
+    # req = urllib2.Request(url,cdz)
+    # response = urllib2.urlopen(req)
+    resp = requests.post(url, cdz, headers={'Authorization' : '{}'.format( TOKEN )}, verify=False)
+    return resp
+  except e:
     return e
 
 
 def getNPZ (p, time=False):
   """Get data using npz. Returns a numpy array"""
-  
-  # Build the url to get the npz object 
+
+  # Build the url to get the npz object
   if time:
-    url = 'http://{}/sd/{}/{}/npz/{}/{},{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+    url = 'https://{}/sd/{}/{}/npz/{}/{},{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
   elif p.channels is not None:
-    url = 'http://{}/sd/{}/{}/npz/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+    url = 'https://{}/sd/{}/{}/npz/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
   elif p.channels is None:
-    url = 'http://{}/sd/{}/npz/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
+    url = 'https://{}/sd/{}/npz/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
   # Get the image back
-  f = urllib2.urlopen (url)
-  rawdata = zlib.decompress (f.read())
+  # f = urllib2.urlopen (url)
+
+  resp = requests.get(url, headers={'Authorization' : '{}'.format( TOKEN )}, verify=False)
+  rawdata = zlib.decompress (resp.content)
   fileobj = cStringIO.StringIO (rawdata)
   return np.load (fileobj)
 
 def postBlaze (p, post_data, time=False):
   """Post data using npz"""
-  
+
   # Build the url and then create a npz object
   if time:
-    url = 'http://{}/sd/{}/{}/blaze/{}/{},{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+    url = 'https://{}/sd/{}/{}/blaze/{}/{},{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
   elif p.channels is not None:
-    url = 'http://{}/sd/{}/{}/blaze/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+    url = 'https://{}/sd/{}/{}/blaze/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
   elif p.channels is None:
-    url = 'http://{}/sd/{}/blaze/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
+    url = 'https://{}/sd/{}/blaze/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
 
   try:
     # Build a post request
-    req = urllib2.Request(url,blosc.pack_array(post_data))
-    response = urllib2.urlopen(req)
-    return response
+    resp = request.post(url, blosc.pack_array(post_data), headers={'Authorization' : '{}'.format( TOKEN )}, verify=False)
+    return resp
   except urllib2.HTTPError,e:
     return e
 
 def postBlosc (p, post_data, time=False):
   """Post data using blosc packed numpy array"""
-  
+
   # Build the url and then create a npz object
   if time:
-    url = 'http://{}/sd/{}/{}/blosc/{}/{},{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+    url = 'https://{}/sd/{}/{}/blosc/{}/{},{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
   elif p.channels is not None:
-    url = 'http://{}/sd/{}/{}/blosc/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+    url = 'https://{}/sd/{}/{}/blosc/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
   elif p.channels is None:
-    url = 'http://{}/sd/{}/blosc/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
+    url = 'https://{}/sd/{}/blosc/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
 
   try:
     # Build a post request
-    req = urllib2.Request(url,blosc.pack_array(post_data))
-    response = urllib2.urlopen(req)
-    return response
+    resp = request.post(url,blosc.pack_array(post_data), headers={'Authorization' : '{}'.format( TOKEN )}, verify=False)
+    return resp
   except urllib2.HTTPError,e:
     return e
 
 
 def getBlosc (p, time=False):
   """Get data using blosc. Returns a blosc packed numpy array"""
-  
-  # Build the url to get the npz object 
+
+  # Build the url to get the npz object
   if time:
-    url = 'http://{}/sd/{}/{}/blosc/{}/{},{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+    url = 'https://{}/sd/{}/{}/blosc/{}/{},{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
   elif p.channels is not None:
-    url = 'http://{}/sd/{}/{}/blosc/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+    url = 'https://{}/sd/{}/{}/blosc/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
   elif p.channels is None:
-    url = 'http://{}/sd/{}/blosc/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
+    url = 'https://{}/sd/{}/blosc/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
   # Get the image back
-  f = urllib2.urlopen (url)
-  return blosc.unpack_array(f.read())
+  resp = requests.get (url, headers={'Authorization' : '{}'.format( TOKEN )}, verify=False)
+  return blosc.unpack_array(resp.content)
 
 
 def postHDF5 (p, post_data, time=False):
@@ -129,11 +131,11 @@ def postHDF5 (p, post_data, time=False):
 
   # Build the url and then create a hdf5 object
   if time:
-    url = 'http://{}/sd/{}/{}/hdf5/{}/{},{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+    url = 'https://{}/sd/{}/{}/hdf5/{}/{},{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
   elif p.channels is not None:
-    url = 'http://{}/sd/{}/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+    url = 'https://{}/sd/{}/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
   elif p.channels is None:
-    url = 'http://{}/sd/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
+    url = 'https://{}/sd/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
 
   tmpfile = tempfile.NamedTemporaryFile ()
   fh5out = h5py.File ( tmpfile.name )
@@ -144,12 +146,11 @@ def postHDF5 (p, post_data, time=False):
     chan_grp.create_dataset("DATATYPE", (1,), dtype=h5py.special_dtype(vlen=str), data=p.datatype)
   fh5out.close()
   tmpfile.seek(0)
-  
+
   try:
     # Build a post request
-    req = urllib2.Request(url,tmpfile.read())
-    response = urllib2.urlopen(req)
-    return response
+    resp = requests.post(url,tmpfile.read(), headers={'Authorization' : '{}'.format( TOKEN )}, verify=False)
+    return resp
   except urllib2.HTTPError,e:
     return e
 
@@ -159,14 +160,14 @@ def getHDF5 (p, time=False):
 
   # Build the url and then create a hdf5 object
   if time:
-    url = 'http://{}/sd/{}/{}/hdf5/{}/{},{}/{},{}/{},{}/{},{}/'.format(SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+    url = 'https://{}/sd/{}/{}/hdf5/{}/{},{}/{},{}/{},{}/{},{}/'.format(SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
   else:
-    url = 'http://{}/sd/{}/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format(SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args)
+    url = 'https://{}/sd/{}/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format(SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args)
 
   # Get the image back
-  f = urllib2.urlopen (url)
+  resp = requests.get (url, headers={'Authorization' : '{}'.format( TOKEN )}, verify=False)
   tmpfile = tempfile.NamedTemporaryFile()
-  tmpfile.write(f.read())
+  tmpfile.write(resp.content)
   tmpfile.seek(0)
   h5f = h5py.File(tmpfile.name, driver='core', backing_store=False)
 
@@ -177,13 +178,13 @@ def getRAW (p, time=False):
 
   # Build the url and then create a raw object
   if time:
-    url = 'http://{}/sd/{}/{}/raw/{}/{},{}/{},{}/{},{}/{},{}/'.format(SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+    url = 'https://{}/sd/{}/{}/raw/{}/{},{}/{},{}/{},{}/{},{}/'.format(SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
   else:
-    url = 'http://{}/sd/{}/{}/raw/{}/{},{}/{},{}/{},{}/'.format(SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args)
+    url = 'https://{}/sd/{}/{}/raw/{}/{},{}/{},{}/{},{}/'.format(SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args)
 
   # Get the data back
-  f = urllib2.urlopen (url)
-  rawdata = f.read()
+  resp = requests.get (url, headers={'Authorization' : '{}'.format( TOKEN )}, verify=False)
+  rawdata = resp.content
   return np.frombuffer(rawdata, dtype = ND_dtypetonp[p.datatype])
 
 def putAnnotation ( p, f ):
@@ -191,12 +192,12 @@ def putAnnotation ( p, f ):
 
   # Build a url based on update
   if p.field is None:
-    f = postURL( "http://{}/sd/{}/{}/".format(SITE_HOST, p.token, p.channels[0]), f )
+    resp = postURL( "https://{}/sd/{}/{}/".format(SITE_HOST, p.token, p.channels[0]), f )
   else:
-    f = postURL( "http://{}/sd/{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.field), f )
+    resp = postURL( "https://{}/sd/{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.field), f )
 
   try:
-    anno_value = int(f.read())
+    anno_value = int(resp)
     return anno_value
   except Exception,e:
     return 0
@@ -206,34 +207,31 @@ def getAnnotation ( p ):
   """Get the specified annotation"""
 
   if p.field is None:
-    url = "http://{}/sd/{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid)
+    url = "https://{}/sd/{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid)
   elif p.field == 'tight_cutout':
-    url = "http://{}/sd/{}/{}/{}/cutout/{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid, p.resolution)
+    url = "https://{}/sd/{}/{}/{}/cutout/{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid, p.resolution)
   elif p.field == 'normal_cutout':
-    url = "http://{}/sd/{}/{}/{}/cutout/{}/{},{}/{},{}/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid, p.resolution, *p.args) 
+    url = "https://{}/sd/{}/{}/{}/cutout/{}/{},{}/{},{}/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid, p.resolution, *p.args)
   else:
-    url = "http://{}/sd/{}/{}/{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid, p.field, p.resolution)
+    url = "https://{}/sd/{}/{}/{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid, p.field, p.resolution)
 
   f = getURL(url)
   tmpfile = tempfile.NamedTemporaryFile ( )
-  tmpfile.write ( f.read() )
+  tmpfile.write ( f )
   tmpfile.seek(0)
   return h5py.File ( tmpfile.name, driver='core', backing_store=False )
 
 def postURL ( url, f ):
 
-  req = urllib2.Request(url, f.read())
-  response = urllib2.urlopen(req)
-
-  return response
+  resp = request.post(url, f.read(), headers={'Authorization' : '{}'.format( TOKEN )}, verify=False)
+  return resp.content
 
 def getURL ( url ):
   """Post the url"""
 
   try:
-    req = urllib2.Request ( url )
-    f = urllib2.urlopen ( url )
+    resp = requests.get ( url, headers={'Authorization' : '{}'.format( TOKEN )}, verify=False )
   except urllib2.HTTPError, e:
     return e.code
 
-  return f
+  return resp.content

@@ -1,11 +1,11 @@
 # Copyright 2014 NeuroData (http://neurodata.io)
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,11 +18,14 @@ import os
 import tempfile
 import h5py
 import numpy as np
+import requests
 
 sys.path += [os.path.abspath('../django')]
 import ND.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
 from django.conf import settings
+
+TOKEN='1234'
 
 def makeAnno ( anntype, hosturl ):
   """Helper make an annotation"""
@@ -43,14 +46,12 @@ def makeAnno ( anntype, hosturl ):
   tmpfile.seek(0)
 
   # Build the put URL
-  url = "http://{}/sd/{}/{}/".format(hosturl, 'unittest', 'unit_anno')
+  url = "https://{}/sd/{}/{}/".format(hosturl, 'unittest', 'unit_anno')
 
   # write an object (server creates identifier)
-  req = urllib2.Request ( url, tmpfile.read())
-  response = urllib2.urlopen(req)
-  putid = int(response.read())
+  resp = requests.get (url, tmpfile.read(), headers={'Authorization' : '{}'.format( TOKEN )}, verify=False)
+  putid = int(resp.content)
 
   tmpfile.close()
 
   return putid
-  
