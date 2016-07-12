@@ -65,9 +65,8 @@ class Test_Histogram8:
     url = 'https://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
     try:
       # Build a get request
-      req = urllib2.Request(url)
-      response = urllib2.urlopen(req)
-    except urllib2.HTTPError,e:
+      response = getURL(url)
+    except Exception as e:
       print e
       assert(e.reason == 0)
 
@@ -92,9 +91,8 @@ class Test_Histogram8:
     url = 'https://{}/stats/{}/{}/hist/'.format( SITE_HOST, p.token, p.channels[0] )
     try:
       # Build a get request
-      req = urllib2.Request(url)
-      response = urllib2.urlopen(req)
-    except urllib2.HTTPError,e:
+      response = getURL(url)
+    except Exception as e:
       print e
       assert(e.reason == 0)
 
@@ -137,9 +135,8 @@ class Test_Histogram16:
     url = 'https://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
     try:
       # Build a get request
-      req = urllib2.Request(url)
-      response = urllib2.urlopen(req)
-    except urllib2.HTTPError,e:
+      response = getURL(url)
+    except Exception as e:
       print e
       assert(e.reason == 0)
 
@@ -164,9 +161,8 @@ class Test_Histogram16:
     url = 'https://{}/stats/{}/{}/hist/'.format( SITE_HOST, p.token, p.channels[0] )
     try:
       # Build a get request
-      req = urllib2.Request(url)
-      response = urllib2.urlopen(req)
-    except urllib2.HTTPError,e:
+      response = getURL(url)
+    except Exception as e:
       print e
       assert(e.reason == 0)
 

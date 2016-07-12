@@ -128,7 +128,7 @@ class Test_Image_Readonly_Propagate:
     assert(value == NOT_PROPAGATED)
 
     # check that it cannot start propagating a readonly channel
-    assert (getURL("https://{}/sd/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), UNDER_PROPAGATION)) == 404 )
+    assert (getURL("https://{}/sd/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), UNDER_PROPAGATION)).content == 404 )
     # check that it cannot mark a channel as propagated
     assert (getURL("https://{}/sd/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), PROPAGATED)) == 404 )
 
@@ -157,7 +157,7 @@ class Test_Image_Propagated_Propagate:
     assert(value == PROPAGATED)
 
     # check that it cannot start propagating a channel which is already propagated
-    assert (getURL("https://{}/sd/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), UNDER_PROPAGATION)) == 404 )
+    assert (getURL("https://{}/sd/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), UNDER_PROPAGATION)).status_code == 404 )
     f = getURL("https://{}/sd/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), NOT_PROPAGATED))
     # can set to not propagated
     f = getURL("https://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
