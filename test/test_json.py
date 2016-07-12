@@ -71,7 +71,7 @@ class Test_Project_Json():
 
     # posting the JSON url and checking if it is successful
     response = json.loads(postURL("https://{}/sd/autoIngest/".format(SITE_HOST), json_file).content)
-    assert('SUCCESS. The ingest process has now started.' == response.content)
+    assert('SUCCESS. The ingest process has now started.' == response)
 
     # fetching the JSON info
     f = getURL("https://{}/sd/{}/info/".format(SITE_HOST, p.token))
@@ -106,7 +106,7 @@ class Test_Project_Json():
 
     # posting the JSON url and checking if it is successful
     response = json.loads(postURL("https://{}/sd/autoIngest/".format(SITE_HOST), json_file).content)
-    assert('SUCCESS. The ingest process has now started.' == response.content)
+    assert('SUCCESS. The ingest process has now started.' == response)
 
     # fetching the JSON info
     f = getURL("https://{}/sd/{}/info/".format(SITE_HOST, p.token))
@@ -138,7 +138,7 @@ class Test_Project_Json():
 
     # posting the JSON url and checking if it is successful
     response = json.loads(postURL("https://{}/sd/autoIngest/".format(SITE_HOST), json_file).content)
-    assert('Dataset {} already exists and is different then the chosen dataset. Please choose a different dataset name'.format(p.dataset) == response.content)
+    assert('Dataset {} already exists and is different then the chosen dataset. Please choose a different dataset name'.format(p.dataset) == response)
 
 
 class Test_Create_Channel_Json():
@@ -169,7 +169,7 @@ class Test_Create_Channel_Json():
 
     # posting the JSON url and checking if it is successful
     response = json.loads(postURL("https://{}/sd/{}/createChannel/".format(SITE_HOST, p.token), json_file).content)
-    assert('SUCCESS. The information in the channel was correct.' == response.content)
+    assert('SUCCESS. The information in the channel was correct.' == response)
 
     # fetching the JSON info
     f = getURL("https://{}/sd/{}/info/".format(SITE_HOST, p.token))
@@ -209,7 +209,7 @@ class Test_Create_Channel_Json():
 
     # posting the JSON url and checking if it is successful
     response = json.loads(postURL("https://{}/sd/{}/createChannel/".format(SITE_HOST, p.token), json_file).content)
-    assert('Channel CHAN2 already exists for this project. Specify a different channel name' == response.content)
+    assert('Channel CHAN2 already exists for this project. Specify a different channel name' == response)
 
 class Test_Delete_Channel_Json():
 
@@ -232,7 +232,7 @@ class Test_Delete_Channel_Json():
 
     # posting the JSON url and checking if it is successful
     response = json.loads(postURL("https://{}/sd/{}/deleteChannel/".format(SITE_HOST, p.token), json_file).content)
-    assert('SUCCESS' == response.content)
+    assert('SUCCESS' == response)
 
     # fetching the JSON info
     f = getURL("https://{}/sd/{}/info/".format(SITE_HOST, p.token))
