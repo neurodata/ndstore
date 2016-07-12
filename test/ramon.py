@@ -207,7 +207,7 @@ def queryField (p, field, value):
   url =  "https://{}/sd/{}/{}/query/{}/{}/".format(SITE_HOST, p.token, p.channels[0], field, value)
   f = getURL(url)
   tmpfile = tempfile.NamedTemporaryFile ( )
-  tmpfile.write ( f )
+  tmpfile.write ( f.content )
   tmpfile.seek(0)
   h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
 
