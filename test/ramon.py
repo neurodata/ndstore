@@ -148,7 +148,7 @@ def H5AnnotationFile ( annotype, annoid, kv=None ):
 def getH5id ( f ):
   """Extract annotation id from the HDF5 file"""
   tmpfile = tempfile.NamedTemporaryFile ( )
-  tmpfile.write ( f )
+  tmpfile.write ( f.content )
 #    tmpfile.tell()
   tmpfile.seek(0)
   h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
