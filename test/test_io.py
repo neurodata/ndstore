@@ -424,8 +424,7 @@ class TestRW:
     cdz = zlib.compress (fileobj.getvalue())
 
     # Build the post request
-    req = urllib2.Request(url, cdz)
-    response = urllib2.urlopen(req)
+    response = postURL(url, cdz)
 
     # Get annotation in question
     f = getURL( url )

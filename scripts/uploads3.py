@@ -87,7 +87,7 @@ class S3Uploader:
   def fetchCatmaidData(self, slice_list, xtile, ytile):
     """Fetch the next set of data from a remote source and place it locally"""
     
-    import pdb; pdb.set_trace()
+
     # iterating over the slice number list
     for slice_number in slice_list:
       # generating the url based on some parameters

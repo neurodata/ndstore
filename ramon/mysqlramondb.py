@@ -271,7 +271,7 @@ class MySQLRamonDB:
     try:
       self.cursor.executemany ( sql, data )
     except MySQLdb.Error, e:
-      import pdb; pdb.set_trace()
+
       logger.error ( "Failed to put annotation: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
       raise
 
