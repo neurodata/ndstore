@@ -62,7 +62,7 @@ class Test_Project_Json():
     # project format = (project_name, token_name, public)
     project = (p.token, None, None)
     # channel format = { chan1 : (channel_name, datatype, channel_type, data_url, file_name, exceptions, resolution, windowrange, readonly), chan2: ...... }
-    channels = { p.channels[0] : (p.channels[0], p.datatype, p.channel_type, 'https://127.0.0.1/data/sample_dir/', 'SLICE', 'tif', None, None, None, None) }
+    channels = { p.channels[0] : {'channel_name': p.channels[0], 'datatype': p.datatype, 'channel_type': p.channel_type, 'data_url': 'https://127.0.0.1/data/sample_dir/', 'file_format': 'SLICE', 'file_type': 'tif'} }
     metadata = { 'Author': 'Will', 'Animal':'Mouse', 'Date_Collected':'10/2/2015' }
 
     json_file = tempfile.NamedTemporaryFile(mode='w+b')
@@ -98,7 +98,7 @@ class Test_Project_Json():
     # project format = (project_name, token_name, public)
     project = (p.token, None, None)
     # channel format = { chan1 : (channel_name, datatype, channel_type, data_url, file_name, exceptions, resolution, windowrange, readonly), chan2: ...... }
-    channels = { p.channels[1] : (p.channels[1], p.datatype, p.channel_type, 'sample_data_url', 'sample_filename', 'tif', None, None, None, None) }
+    channels = { p.channels[1] : {'channel_name': p.channels[1], 'datatype': p.datatype, 'channel_type': p.channel_type, 'data_url': 'sample_data_url', 'file_format': 'SLICE', 'file_type': 'tif'} }
 
     json_file = tempfile.NamedTemporaryFile(mode='w+b')
     json_file.write(createJson(dataset, project, channels))
@@ -130,7 +130,7 @@ class Test_Project_Json():
     # project format = (project_name, token_name, public)
     project = (p.token, None, None)
     # channel format = { chan1 : (channel_name, datatype, channel_type, data_url, file_name, exceptions, resolution, windowrange, readonly), chan2: ...... }
-    channels = { p.channels[1] : (p.channels[1], p.datatype, p.channel_type, 'sample_data_url', 'sample_filename', None, None, None, None) }
+    channels = { p.channels[1] : {'channel_name': p.channels[1], 'datatype': p.datatype, 'channel_type': p.channel_type, 'data_url': 'sample_data_url', 'file_format': 'SLICE', 'file_type': 'tif'} }
 
     json_file = tempfile.NamedTemporaryFile(mode='w+b')
     json_file.write(createJson(dataset, project, channels))
@@ -161,7 +161,7 @@ class Test_Create_Channel_Json():
     # project format = (project_name, token_name, public)
     project = (p.token, None, None)
     # channel format = { chan1 : (channel_name, datatype, channel_type, data_url, file_name, exceptions, resolution, windowrange, readonly), chan2: ...... }
-    channels = { p.channels[0] : (p.channels[0], p.datatype, p.channel_type, 'sample_data_url', 'sample_filename', 'tif', None, None, None, 0), p.channels[1] : (p.channels[1], p.datatype, p.channel_type, 'sample_data_url', 'sample_filename', 'tif', None, None, None, 0),  }
+    channels = { p.channels[0] : {'channel_name': p.channels[0], p.datatype, p.channel_type, 'sample_data_url', 'sample_filename', 'tif', None, None, None, 0}, p.channels[1] : {p.channels[1], p.datatype, p.channel_type, 'sample_data_url', 'sample_filename', 'tif', None, None, None, 0},  }
 
     json_file = tempfile.NamedTemporaryFile(mode='w+b')
     json_file.write(createJson(dataset, project, channels, channel_only=True))

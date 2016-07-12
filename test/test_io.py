@@ -337,7 +337,7 @@ def writeAnno ( params ):
 
   try:
     response = postURL ( url, fileobj.read())
-except Exception as e:
+  except Exception as e:
     assert 0
 
   return response.content
