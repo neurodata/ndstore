@@ -128,9 +128,9 @@ class Test_Image_Readonly_Propagate:
     assert(value == NOT_PROPAGATED)
 
     # check that it cannot start propagating a readonly channel
-    assert (getURL("https://{}/sd/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), UNDER_PROPAGATION)).content == 404 )
+    assert (getURL("https://{}/sd/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), UNDER_PROPAGATION)).status_code == 404 )
     # check that it cannot mark a channel as propagated
-    assert (getURL("https://{}/sd/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), PROPAGATED)) == 404 )
+    assert (getURL("https://{}/sd/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), PROPAGATED)).status_code == 404 )
 
 class Test_Image_Propagated_Propagate:
   """Test image propagation"""
