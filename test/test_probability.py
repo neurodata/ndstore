@@ -115,7 +115,7 @@ class Test_Probability_Slice:
     p.args = (11000,11100,4000,4100,200,201)
 
     url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
-    assert ( 404 == getURL(url).content )
+    assert ( 404 == getURL(url).status_code )
 
 class Test_Probability_Post:
 
