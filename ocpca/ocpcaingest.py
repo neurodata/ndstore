@@ -199,7 +199,7 @@ class IngestData:
             time_value = timestamp
           else:
             time_value = None
-          self.fetchData(range(slice_number,slice_number+zcubedim) if slice_number+zcubedim<=zimagesz else range(slice_number,zimagesz), time_value=time_value)
+          self.fetchData(range(slice_number, slice_number+zcubedim) if slice_number+zcubedim<=zimagesz else range(slice_number, zimagesz), time_value=time_value)
           for b in range(zcubedim):
             if (slice_number + b < zimagesz):
               try:
@@ -241,9 +241,9 @@ class IngestData:
               cube.data[0:zmax-zmin,0:ymax-ymin,0:xmax-xmin] = slab[zmin:zmax, ymin:ymax, xmin:xmax]
               if cube.isNotZeros():
                 if ch.getChannelType() in IMAGE_CHANNELS:
-                  db.putCube(ch, zidx, self.resolution, cube, update=True)
+                  db.putCube(ch, zidx, self.resolution, cube, update=False)
                 elif ch.getChannelType() in TIMESERIES_CHANNELS:
-                  db.putTimeCube(ch, zidx, timestamp, self.resolution, cube, update=True)
+                  db.putTimeCube(ch, zidx, timestamp, self.resolution, cube, update=False)
                 elif ch.getChannelType() in ANNOTATION_CHANNELS:
                   corner = map(sub, [x,y,slice_number], [xoffset,yoffset,zoffset])
                   db.annotateDense(ch, corner, self.resolution, cube.data, 'O')
