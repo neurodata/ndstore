@@ -60,7 +60,7 @@ class Test_Project_Json():
     # dataset format = (dataset_name, [ximagesz, yimagesz, zimagesz], [[xvoxel, yvoxel, zvoxel], [xoffset, yoffset, zoffset], timerange, scalinglevels, scaling)
     dataset = {'dataset_name': p.dataset, 'imagesize': [2000,2000,30], 'voxelres': [1.0,1.0,5.0]}
     # project format = (project_name, token_name, public)
-    project = {'project': p.token}
+    project = {'project_name': p.token}
     # channel format = { chan1 : (channel_name, datatype, channel_type, data_url, file_name, exceptions, resolution, windowrange, readonly), chan2: ...... }
     channels = { p.channels[0] : {'channel_name': p.channels[0], 'datatype': p.datatype, 'channel_type': p.channel_type, 'data_url': 'https://127.0.0.1/data/sample_dir/', 'file_format': 'SLICE', 'file_type': 'tif'} }
     metadata = { 'Author': 'Will', 'Animal':'Mouse', 'Date_Collected':'10/2/2015' }
@@ -96,7 +96,7 @@ class Test_Project_Json():
     # dataset format = (dataset_name, [ximagesz, yimagesz, zimagesz], [[xvoxel, yvoxel, zvoxel], [xoffset, yoffset, zoffset], timerange, scalinglevels, scaling)
     dataset = {'dataset_name': p.dataset, 'imagesize': [2000,2000,30], 'voxelres': [1.0,1.0,5.0], 'offset': [0,0,0]}
     # project format = (project_name, token_name, public)
-    project = {'project': p.token}
+    project = {'project_name': p.token}
     # channel format = { chan1 : (channel_name, datatype, channel_type, data_url, file_name, exceptions, resolution, windowrange, readonly), chan2: ...... }
     channels = { p.channels[1] : {'channel_name': p.channels[1], 'datatype': p.datatype, 'channel_type': p.channel_type, 'data_url': 'sample_data_url', 'file_format': 'SLICE', 'file_type': 'tif'} }
 
@@ -128,7 +128,7 @@ class Test_Project_Json():
     # dataset format = (dataset_name, [ximagesz, yimagesz, zimagesz], [[xvoxel, yvoxel, zvoxel], [xoffset, yoffset, zoffset], timerange, scalinglevels, scaling)
     dataset = {'dataset_name': p.dataset, 'imagesize': [1000,2000,1000], 'voxelres': [1.0,1.0,5.0], 'offset': [0,0,0]}
     # project format = (project_name, token_name, public)
-    project = {'project': p.token}
+    project = {'project_name': p.token}
     # channel format = { chan1 : (channel_name, datatype, channel_type, data_url, file_name, exceptions, resolution, windowrange, readonly), chan2: ...... }
     channels = { p.channels[1] : {'channel_name': p.channels[1], 'datatype': p.datatype, 'channel_type': p.channel_type, 'data_url': 'sample_data_url', 'file_format': 'SLICE', 'file_type': 'tif'} }
 
@@ -159,7 +159,7 @@ class Test_Create_Channel_Json():
     # dataset format = (dataset_name, [ximagesz, yimagesz, zimagesz], [[xvoxel, yvoxel, zvoxel], [xoffset, yoffset, zoffset], timerange, scalinglevels, scaling)
     dataset = {'dataset_name': p.dataset, 'imagesize': [2000,2000,1000], 'voxelres': [1.0,1.0,5.0]}
     # project format = (project_name, token_name, public)
-    project = {'project': p.token}
+    project = {'project_name': p.token}
     # channel format = { chan1 : (channel_name, datatype, channel_type, data_url, file_name, exceptions, resolution, windowrange, readonly), chan2: ...... }
     channels = { p.channels[0] : {'channel_name': p.channels[0], 'datatype': p.datatype, 'channel_type': p.channel_type, 'data_url': 'sample_data_url', 'file_format': 'SLICE', 'file_type': 'tif'}, p.channels[1] : {'channel_name': p.channels[1], 'datatype': p.datatype, 'channel_type': p.channel_type, 'data_url': 'sample_data_url', 'file_format': 'SLICE', 'file_type': 'tif'}}
 
@@ -199,7 +199,7 @@ class Test_Create_Channel_Json():
     # dataset format = (dataset_name, [ximagesz, yimagesz, zimagesz], [[xvoxel, yvoxel, zvoxel], [xoffset, yoffset, zoffset], timerange, scalinglevels, scaling)
     dataset = {'dataset_name': p.dataset, 'imagesize': [2000,2000,1000], 'voxelres': [1.0,1.0,5.0], 'offset': [0,0,0]}
     # project format = (project_name, token_name, public)
-    project = {'project': p.token}
+    project = {'project_name': p.token}
     # channel format = { chan1 : (channel_name, datatype, channel_type, data_url, file_name, exceptions, resolution, windowrange, readonly), chan2: ...... }
     channels = { p.channels[1] : {'channel_name': p.channels[1], 'datatype': p.datatype, 'channel_type': p.channel_type, 'data_url': 'sample_data_url', 'file_format': 'SLICE', 'file_type': 'tif'} }
 
