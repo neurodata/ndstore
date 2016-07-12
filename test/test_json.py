@@ -71,7 +71,7 @@ class Test_Project_Json():
 
     # posting the JSON url and checking if it is successful
     response = json.loads(postURL("https://{}/sd/autoIngest/".format(SITE_HOST), json_file).content)
-    assert('SUCCESS. The ingest process has now started.' == response)
+    assert('SUCCESS. The ingest process has now started.' == response.content)
 
     # fetching the JSON info
     f = getURL("https://{}/sd/{}/info/".format(SITE_HOST, p.token))
@@ -106,7 +106,7 @@ class Test_Project_Json():
 
     # posting the JSON url and checking if it is successful
     response = json.loads(postURL("https://{}/sd/autoIngest/".format(SITE_HOST), json_file).content)
-    assert('SUCCESS. The ingest process has now started.' == response)
+    assert('SUCCESS. The ingest process has now started.' == response.content)
 
     # fetching the JSON info
     f = getURL("https://{}/sd/{}/info/".format(SITE_HOST, p.token))
@@ -138,7 +138,7 @@ class Test_Project_Json():
 
     # posting the JSON url and checking if it is successful
     response = json.loads(postURL("https://{}/sd/autoIngest/".format(SITE_HOST), json_file).content)
-    assert('Dataset {} already exists and is different then the chosen dataset. Please choose a different dataset name'.format(p.dataset) == response)
+    assert('Dataset {} already exists and is different then the chosen dataset. Please choose a different dataset name'.format(p.dataset) == response.content)
 
 
 class Test_Create_Channel_Json():
@@ -161,7 +161,7 @@ class Test_Create_Channel_Json():
     # project format = (project_name, token_name, public)
     project = (p.token, None, None)
     # channel format = { chan1 : (channel_name, datatype, channel_type, data_url, file_name, exceptions, resolution, windowrange, readonly), chan2: ...... }
-    channels = { p.channels[0] : {'channel_name': p.channels[0], p.datatype, p.channel_type, 'sample_data_url', 'sample_filename', 'tif', None, None, None, 0}, p.channels[1] : {p.channels[1], p.datatype, p.channel_type, 'sample_data_url', 'sample_filename', 'tif', None, None, None, 0},  }
+    channels = { p.channels[0] : {'channel_name': p.channels[0], 'datatype': p.datatype, 'channel_type': p.channel_type, 'data_url': 'sample_data_url', 'file_format': 'SLICE', 'file_type': 'tif'}, p.channels[1] : {'channel_name': p.channels[1], 'datatype': p.datatype, 'channel_type': p.channel_type, 'data_url': 'sample_data_url', 'file_format': 'SLICE', 'file_type': 'tif'}}
 
     json_file = tempfile.NamedTemporaryFile(mode='w+b')
     json_file.write(createJson(dataset, project, channels, channel_only=True))
@@ -169,7 +169,7 @@ class Test_Create_Channel_Json():
 
     # posting the JSON url and checking if it is successful
     response = json.loads(postURL("https://{}/sd/{}/createChannel/".format(SITE_HOST, p.token), json_file).content)
-    assert('SUCCESS. The information in the channel was correct.' == response)
+    assert('SUCCESS. The information in the channel was correct.' == response.content)
 
     # fetching the JSON info
     f = getURL("https://{}/sd/{}/info/".format(SITE_HOST, p.token))
@@ -201,7 +201,7 @@ class Test_Create_Channel_Json():
     # project format = (project_name, token_name, public)
     project = (p.token, None, None)
     # channel format = { chan1 : (channel_name, datatype, channel_type, data_url, file_name, exceptions, resolution, windowrange, readonly), chan2: ...... }
-    channels = { p.channels[1] : (p.channels[1], p.datatype, p.channel_type, 'sample_data_url', 'sample_filename', 'tif', None, None, None, None) }
+    channels = { p.channels[1] : {'channel_name': p.channels[1], 'datatype': p.datatype, 'channel_type': p.channel_type, 'data_url': 'sample_data_url', 'file_format': 'SLICE', 'file_type': 'tif'} }
 
     json_file = tempfile.NamedTemporaryFile(mode='w+b')
     json_file.write(createJson(dataset, project, channels, channel_only=True))
@@ -209,7 +209,7 @@ class Test_Create_Channel_Json():
 
     # posting the JSON url and checking if it is successful
     response = json.loads(postURL("https://{}/sd/{}/createChannel/".format(SITE_HOST, p.token), json_file).content)
-    assert('Channel CHAN2 already exists for this project. Specify a different channel name' == response)
+    assert('Channel CHAN2 already exists for this project. Specify a different channel name' == response.content)
 
 class Test_Delete_Channel_Json():
 
@@ -232,7 +232,7 @@ class Test_Delete_Channel_Json():
 
     # posting the JSON url and checking if it is successful
     response = json.loads(postURL("https://{}/sd/{}/deleteChannel/".format(SITE_HOST, p.token), json_file).content)
-    assert('SUCCESS' == response)
+    assert('SUCCESS' == response.content)
 
     # fetching the JSON info
     f = getURL("https://{}/sd/{}/info/".format(SITE_HOST, p.token))
