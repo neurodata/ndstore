@@ -27,7 +27,7 @@ from contextlib import closing
 import makeunitdb
 import ndtype
 from params import Params
-from postmethods import putAnnotation, getAnnotation, delURL
+from postmethods import putAnnotation, getAnnotation, delURL, getURL
 from ramon import H5AnnotationFile, getH5id, makeAnno, getId, getField, setField
 import kvengine_to_test
 import site_to_test
@@ -491,15 +491,13 @@ class Test_Ramon:
 
     #  bad format to a number
     url =  "https://{}/sd/{}/{}/{}/setField/status/aa/".format(SITE_HOST, 'unittest', 'unit_anno', p.annoid)
-    with pytest.raises(urllib2.HTTPError):
-      req = urllib2.Request ( url )
-      f = urllib2.urlopen ( url )
+    with pytest.raises(requests.HTTPError):
+      req = getURL( url )
 
     #  request a missing field
     url =  "https://{}/sd/{}/{}/{}/getField/othernonesuch/".format(SITE_HOST, 'unittest', 'unit_anno', p.annoid)
-    with pytest.raises(urllib2.HTTPError):
-      req = urllib2.Request ( url )
-      f = urllib2.urlopen ( url )
+    with pytest.raises(requests.HTTPError):
+      req = getURL( url )
 
 
   def test_node (self):
