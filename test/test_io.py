@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import urllib2
+import requests
 import cStringIO
 import sys
 import os
@@ -749,7 +749,7 @@ class TestRW:
     assert resp.content == "Success"
 
     # Verify that we can't read it anymore
-    with pytest.raises(urllib2.HTTPError):
+    with pytest.raises(requests.HTTPError:
       h5r = readAnno(rp)
 
 

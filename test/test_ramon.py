@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import urllib2
+import requests
 import re
 import tempfile
 import h5py
@@ -268,7 +268,7 @@ class Test_Ramon:
     # retrieve the annotation
     # verify that it's not there.
     url = "https://{}/sd/{}/{}/{}/".format(SITE_HOST, 'unittest', 'unit_anno', p.annoid)
-    with pytest.raises(HTTPError):
+    with pytest.raises(requests.HTTPError):
       getURL( url )
 
 
