@@ -27,7 +27,7 @@ from ndtype import UINT8, UINT16, UINT32, ANNOTATION, IMAGE
 from ND import celery_app
 import makeunitdb
 from params import Params
-from postmethods import postNPZ, getNPZ
+from postmethods import postNPZ, getNPZ, getURL
 
 import kvengine_to_test
 import site_to_test
