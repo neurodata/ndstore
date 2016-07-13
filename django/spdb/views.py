@@ -453,7 +453,7 @@ def getPropagate (request, webargs):
     logger.exception("Unknown exception in getPropagate. {}".format(e))
     raise NDWSError("Unknown exception in getPropagate. {}".format(e))
 
-@api_view(['POST'])
+@api_view(['GET'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
 @permission_classes((IsAuthenticated,))
 def setPropagate (request, webargs):

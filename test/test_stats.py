@@ -68,7 +68,6 @@ class Test_Histogram8:
       response = getURL(url)
     except Exception as e:
       print e
-      assert(e.reason == 0)
 
     assert( response.status_code == 200 )
 
@@ -94,7 +93,6 @@ class Test_Histogram8:
       response = getURL(url)
     except Exception as e:
       print e
-      assert(e.reason == 0)
 
     assert( response.status_code == 200 )
 
@@ -138,7 +136,6 @@ class Test_Histogram16:
       response = getURL(url)
     except Exception as e:
       print e
-      assert(e.reason == 0)
 
     assert( response.status_code == 200 )
 
@@ -164,7 +161,6 @@ class Test_Histogram16:
       response = getURL(url)
     except Exception as e:
       print e
-      assert(e.reason == 0)
 
     assert( response.status_code == 200 )
 
