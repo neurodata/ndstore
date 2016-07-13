@@ -191,7 +191,7 @@ def swc (request, webargs):
     raise NDWSError("Unknown exception in SWC. {}".format(e))
     raise
 
-@api_view(['GET', 'POST'])
+@api_view(['GET', 'POST', 'DELETE'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
 @permission_classes((IsAuthenticated,))
 def annotation (request, webargs):

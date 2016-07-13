@@ -257,9 +257,9 @@ class Test_Ramon:
       suffix = None
 
     if suffix:
-      url = '{}/{}/sd/{}/{}/{}/'.format(base, suffix, 'unittest', 'unit_anno', p.annoid )
+      url = 'https://{}/{}/sd/{}/{}/{}/'.format(base, suffix, 'unittest', 'unit_anno', p.annoid )
     else:
-      url = '{}/sd/{}/{}/{}/'.format(base, 'unittest', 'unit_anno', p.annoid )
+      url = 'https://{}/sd/{}/{}/{}/'.format(base, 'unittest', 'unit_anno', p.annoid )
 
     resp = delURL(url)
 

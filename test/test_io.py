@@ -741,9 +741,9 @@ class TestRW:
       suffix = None
 
     if suffix:
-      url = '{}/{}/sd/{}/{}/{}/'.format(base, suffix, rp.token, rp.channel, rp.annids )
+      url = 'https://{}/{}/sd/{}/{}/{}/'.format(base, suffix, rp.token, rp.channel, rp.annids )
     else:
-      url = '{}/sd/{}/{}/{}/'.format(base, rp.token, rp.channel, rp.annids )
+      url = 'https://{}/sd/{}/{}/{}/'.format(base, rp.token, rp.channel, rp.annids )
 
     resp = delURL(url)
     assert resp.content == "Success"
