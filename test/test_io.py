@@ -25,7 +25,7 @@ import numpy as np
 import zlib
 import pytest
 from contextlib import closing
-from postmethods import getURL, postURL
+from postmethods import getURL, postURL, delURL
 
 from pytesthelpers import makeAnno
 import makeunitdb
