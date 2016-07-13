@@ -29,7 +29,7 @@ import site_to_test
 import makeunitdb
 
 SITE_HOST = site_to_test.site
-TOKEN = '1234'
+TOKEN = ''
 
 def postNPZ (p, post_data, time=False):
   """Post data using npz"""
@@ -222,16 +222,28 @@ def getAnnotation ( p ):
   return h5py.File ( tmpfile.name, driver='core', backing_store=False )
 
 def postURL ( url, f ):
-
-  resp = requests.post(url, data=f, headers={'Authorization': 'Token {}'.format( TOKEN )}, verify=False)
-  return resp
-
-def getURL ( url ):
   """Post the url"""
 
   try:
-    resp = requests.get ( url, headers={'Authorization': 'Token {}'.format( TOKEN )}, verify=False )
+    resp = requests.post(url, data=f, headers={'Authorization': 'Token {}'.format( TOKEN )}, verify=False)
   except Exception as e:
     return e.code
+  return resp
 
+def getURL ( url ):
+  """Get the url"""
+
+  try:
+    resp = requests.get(url, headers={'Authorization': 'Token {}'.format( TOKEN )}, verify=False)
+  except Exception as e:
+    return e.code
+  return resp
+
+def delURL ( url ):
+  """Del the url"""
+
+  try:
+    resp = requests.delete(url, headers={'Authorization': 'Token {}'.format( TOKEN )}, verify=False)
+  except Exception as e:
+    return e.code
   return resp

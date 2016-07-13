@@ -740,15 +740,13 @@ class TestRW:
       base = rp.baseurl
       suffix = None
 
-    conn = httplib.HTTPConnection ( base )
-
     if suffix:
-      conn.request ( 'DELETE', '/{}/sd/{}/{}/{}/'.format( suffix, rp.token, rp.channel, rp.annids ))
+      url = '{}/{}/sd/{}/{}/{}/'.format(base, suffix, rp.token, rp.channel, rp.annids ))
     else:
-      conn.request ( 'DELETE', '/sd/{}/{}/{}/'.format( rp.token, rp.channel, rp.annids ))
-    resp = conn.getresponse()
-    content=resp.read()
-    assert content == "Success"
+      url = '{}/sd/{}/{}/{}/'.format(base, rp.token, rp.channel, rp.annids ))
+
+    resp = delURL(url)
+    assert resp.content == "Success"
 
     # Verify that we can't read it anymore
     with pytest.raises(urllib2.HTTPError):

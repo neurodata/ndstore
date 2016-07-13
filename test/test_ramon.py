@@ -256,23 +256,20 @@ class Test_Ramon:
       base = SITE_HOST
       suffix = None
 
-    conn = httplib.HTTPConnection ( base )
-
     if suffix:
-      conn.request ('DELETE', '/{}/sd/{}/{}/{}/'.format(suffix, 'unittest', 'unit_anno', p.annoid))
+      url = '{}/{}/sd/{}/{}/{}/'.format(base, suffix, 'unittest', 'unit_anno', p.annoid ))
     else:
-      conn.request ('DELETE', '/sd/{}/{}/{}/'.format('unittest', 'unit_anno', p.annoid))
+      url = '{}/sd/{}/{}/{}/'.format(base, 'unittest', 'unit_anno', p.annoid ))
 
-    resp = conn.getresponse()
-    content=resp.read()
+    resp = delURL(url)
 
-    assert content == 'Success'
+    assert resp.content == "Success"
 
     # retrieve the annotation
     # verify that it's not there.
     url = "https://{}/sd/{}/{}/{}/".format(SITE_HOST, 'unittest', 'unit_anno', p.annoid)
-    with pytest.raises(urllib2.HTTPError):
-      urllib2.urlopen ( url )
+    with pytest.raises(HTTPError):
+      getURL( url )
 
 
   def test_anno_upload( self ):
