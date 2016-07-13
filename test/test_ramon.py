@@ -27,8 +27,8 @@ from contextlib import closing
 import makeunitdb
 import ndtype
 from params import Params
-from postmethods import putAnnotation, getAnnotation
-from ramon import H5AnnotationFile, getH5id, makeAnno, getId, getField, setField, delURL
+from postmethods import putAnnotation, getAnnotation, delURL
+from ramon import H5AnnotationFile, getH5id, makeAnno, getId, getField, setField
 import kvengine_to_test
 import site_to_test
 SITE_HOST = site_to_test.site
