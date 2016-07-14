@@ -99,7 +99,7 @@ class Test_Project_Json():
     # project format = (project_name, token_name, public)
     project = (p.token, None, None)
     # channel format = { chan1 : (channel_name, datatype, channel_type, data_url, file_name, exceptions, resolution, windowrange, readonly), chan2: ...... }
-    channels = { p.channels[1] : (p.channels[1], p.datatype, p.channel_type, 'sample_data_url', 'sample_filename', 'tif', None, None, None, None) }
+    channels = { p.channels[1] : (p.channels[1], p.datatype, p.channel_type, 'sample_data_url', 'SLICE', 'tif', None, None, None, None) }
 
     json_file = tempfile.NamedTemporaryFile(mode='w+b')
     json_file.write(createJson(dataset, project, channels))
