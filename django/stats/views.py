@@ -138,10 +138,16 @@ def getBinnedHistROI(request, webargs):
     newhist[newidx] += val
 
   for i, val in enumerate(bins):
+    if i % 10 == 0:
+      newbins[np.floor(i / 10)] = i
+    """
     newidx = np.floor(i / 10)
     if newidx >= newbins.shape[0]:
       continue
     newbins[newidx] += val
+    """
+
+  import pdb; pdb.set_trace()
 
   jsondict = {}
   jsondict['hist'] = newhist.tolist()
