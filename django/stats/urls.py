@@ -19,6 +19,8 @@ urlpatterns = patterns('stats.views',
   url(r'(?P<webargs>^\w+/\w+/all/[\w,/]*)$', 'all'),
   # get JSON representation of histogram given an ROI (or 404)
   url(r'(?P<webargs>^\w+/\w+/hist/roi/[\d,-]+)/$', 'getHistROI'),
+  # get binned (reduced by factor of 10) JSON representation of histogram given an ROI (or 404)
+  url(r'(?P<webargs>^\w+/\w+/binnedhist/roi/[\d,-]+)/$', 'getBinnedHistROI'),
   # get all ROIs w/ histograms for a given channel / token
   url(r'(?P<webargs>^\w+/\w+/hist/roi/)$', 'getROIs'),
   # get JSON representation of histogram given an ROI (or 404)

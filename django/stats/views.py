@@ -31,6 +31,9 @@ from ndtype import READONLY_TRUE, READONLY_FALSE, UINT8, UINT16, UINT32, UINT64,
 import logging
 logger=logging.getLogger("neurodata")
 
+# AB TODO: kill this after moving binning code
+import numpy as np
+
 """ Histogram Functions """
 def getHist(request, webargs):
   """ Return JSON representation of histogram """
@@ -88,6 +91,58 @@ def getHistROI(request, webargs):
   jsondict = {}
   jsondict['hist'] = hist.tolist()
   jsondict['bins'] = bins.tolist()
+  jsondict['roi'] = roi
+
+  return HttpResponse(json.dumps(jsondict, indent=4), content_type="application/json")
+
+def getBinnedHistROI(request, webargs):
+  """ Return JSON representation of a histogram reduced by a factor of 10 """
+
+  # process webargs
+  try:
+    m = re.match(r"(?P<token>[\w+]+)/(?P<channel>[\w+]+)/binnedhist/roi/(?P<roi>[\d,-]+)$", webargs)
+    md = m.groupdict()
+
+  except Exception, e:
+    logger.warning("Incorrect format for web arguments {}. {}".format(webargs, e))
+    return HttpResponseBadRequest("Incorrect format for web arguments {}. {}".format(webargs, e))
+
+  token = md['token']
+  channel = md['channel']
+
+  # parse roi
+  roistr = md['roi'].split('-')
+  roi = []
+  for i in range(2):
+    try:
+      m = re.match(r"^(?P<x>[\d.]+),(?P<y>[\d.]+),(?P<z>[\d.]+)$", roistr[i])
+      md = m.groupdict()
+      roi.append([int(md['x']), int(md['y']), int(md['z'])])
+    except:
+      return HttpResponseBadRequest("Error: Failed to read ROI coordinate ({})".format(roistr[i]))
+
+  try:
+    (hist, bins) = loadHistogramROI(token, channel, roi)
+  except Histogram.DoesNotExist:
+    return HttpResponseNotFound('No histogram found for {}, {}, {}'.format(token,channel,roi))
+
+
+  newhist = np.zeros(hist.shape[0]/10, dtype=np.int64)
+  newbins = np.zeros(hist.shape[0]/10+1, dtype=np.int64)
+
+  # TODO quick and dirty binning for now. stick the binning code in loadhistogramROI and write a generic view that accepts options
+  for i, val in enumerate(hist):
+    newhist[i % 10] += val
+
+  for i, val in enumerate(bins):
+    newbins[i % 10] += val
+
+
+  import pdb; pdb.set_trace()
+
+  jsondict = {}
+  jsondict['hist'] = newhist.tolist()
+  jsondict['bins'] = newbins.tolist()
   jsondict['roi'] = roi
 
   return HttpResponse(json.dumps(jsondict, indent=4), content_type="application/json")
