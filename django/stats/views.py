@@ -137,9 +137,6 @@ def getBinnedHistROI(request, webargs):
   for i, val in enumerate(bins):
     newbins[i % 10] += val
 
-
-  import pdb; pdb.set_trace()
-
   jsondict = {}
   jsondict['hist'] = newhist.tolist()
   jsondict['bins'] = newbins.tolist()
