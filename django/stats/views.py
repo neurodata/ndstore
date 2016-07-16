@@ -132,10 +132,16 @@ def getBinnedHistROI(request, webargs):
 
   # TODO quick and dirty binning for now. stick the binning code in loadhistogramROI and write a generic view that accepts options
   for i, val in enumerate(hist):
-    newhist[i % 10] += val
+    newidx = np.floor(i / 10)
+    if newidx >= newhist.shape[0]:
+      continue
+    newhist[newidx] += val
 
   for i, val in enumerate(bins):
-    newbins[i % 10] += val
+    newidx = np.floor(i / 10)
+    if newidx >= newbins.shape[0]:
+      continue
+    newbins[newidx] += val
 
   jsondict = {}
   jsondict['hist'] = newhist.tolist()
