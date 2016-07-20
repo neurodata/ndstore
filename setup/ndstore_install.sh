@@ -33,7 +33,7 @@ sudo -u neurodata git clone https://github.com/neurodata/ndstore
 cd /home/neurodata/ndstore
 
 if [ -z "$1" ]; then
-  sudo -u neurodata git checkout microns 
+  sudo -u neurodata git checkout microns
 else
   sudo -u neurodata git checkout "$1"
 fi
@@ -93,6 +93,10 @@ sudo rm /etc/supervisor/conf.d/ingest.conf
 sudo ln -s /home/neurodata/ndstore/setup/docker_config/celery/ingest.conf /etc/supervisor/conf.d/ingest.conf
 sudo rm /etc/supervisor/conf.d/stats.conf
 sudo ln -s /home/neurodata/ndstore/setup/docker_config/celery/stats.conf /etc/supervisor/conf.d/stats.conf
+
+#Set up https
+sudo mkdir /etc/nginx/ssl
+echo | sudo openssl req -newkey rsa:2048 -nodes -keyout /etc/nginx/ssl/server.key
 
 # starting all the services
 sudo service nginx restart
