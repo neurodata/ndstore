@@ -77,9 +77,9 @@ class Test_Image_Zslice_Propagate:
     assert(value == NOT_PROPAGATED)
 
     # Start propagating
-    f = getURL("https://{}/sd/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), UNDER_PROPAGATION))
-    for iter_value in range(1, 5, 1):
-      time.sleep(10)
+    f = getURL("http://{}/sd/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), UNDER_PROPAGATION))
+    for iter_value in range(1, 500, 1):
+      time.sleep(1)
       # Checking if the PROPGATED value is set correctly
       f = getURL("https://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
       value = int(f.content)
@@ -180,7 +180,7 @@ class Test_Image_Isotropic_Propagate:
 
     # Posting some data at res0 to propagate
     p.args = (200,300,200,300,32,64)
-    image_data = np.ones( [1,16,100,100], dtype=np.uint8) * random.randint(0,255)
+    image_data = np.ones( [1,32,100,100], dtype=np.uint8) * random.randint(0,255)
     response = postNPZ(p, image_data)
 
     # Check if the project is not proagated
@@ -192,10 +192,17 @@ class Test_Image_Isotropic_Propagate:
     f = getURL("https://{}/sd/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), UNDER_PROPAGATION))
 
     # Checking if the PROPGATED value is set correctly
+<<<<<<< HEAD
     for iter_value in range(1,10,1):
       time.sleep(5)
       f = getURL("https://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
       value = int(f.content)
+=======
+    for iter_value in range(1,500,1):
+      time.sleep(1)
+      f = getURL("http://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
+      value = int(f.read())
+>>>>>>> origin/microns
       if value == PROPAGATED:
         break
     assert(value == PROPAGATED)
@@ -257,10 +264,17 @@ class Test_Anno_Zslice_Propagate():
     f = getURL("https://{}/sd/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), UNDER_PROPAGATION))
 
     # Checking if the PROPGATED value is set correctly
+<<<<<<< HEAD
     for iter_value in range(1, 15, 1):
       time.sleep(10)
       f = getURL("https://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
       value = int(f.content)
+=======
+    for iter_value in range(1, 500, 1):
+      time.sleep(1)
+      f = getURL("http://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
+      value = int(f.read())
+>>>>>>> origin/microns
       if value == PROPAGATED:
         break
     assert(value == PROPAGATED)
@@ -311,10 +325,17 @@ class Test_Anno_Isotropic_Propagate():
     f = getURL("https://{}/sd/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), UNDER_PROPAGATION))
 
     # Checking if the PROPGATED value is set correctly
+<<<<<<< HEAD
     for iter_value in range(1, 15, 1):
       time.sleep(10)
       f = getURL("https://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
       value = int(f.content)
+=======
+    for iter_value in range(1, 100, 1):
+      time.sleep(1)
+      f = getURL("http://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
+      value = int(f.read())
+>>>>>>> origin/microns
       if value == PROPAGATED:
         break
     assert(value == PROPAGATED)
