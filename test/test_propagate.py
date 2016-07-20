@@ -192,17 +192,10 @@ class Test_Image_Isotropic_Propagate:
     f = getURL("https://{}/sd/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), UNDER_PROPAGATION))
 
     # Checking if the PROPGATED value is set correctly
-<<<<<<< HEAD
-    for iter_value in range(1,10,1):
-      time.sleep(5)
-      f = getURL("https://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
-      value = int(f.content)
-=======
     for iter_value in range(1,500,1):
       time.sleep(1)
-      f = getURL("http://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
+      f = getURL("https://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
       value = int(f.read())
->>>>>>> origin/microns
       if value == PROPAGATED:
         break
     assert(value == PROPAGATED)
@@ -264,17 +257,10 @@ class Test_Anno_Zslice_Propagate():
     f = getURL("https://{}/sd/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), UNDER_PROPAGATION))
 
     # Checking if the PROPGATED value is set correctly
-<<<<<<< HEAD
-    for iter_value in range(1, 15, 1):
-      time.sleep(10)
-      f = getURL("https://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
-      value = int(f.content)
-=======
     for iter_value in range(1, 500, 1):
       time.sleep(1)
-      f = getURL("http://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
+      f = getURL("https://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
       value = int(f.read())
->>>>>>> origin/microns
       if value == PROPAGATED:
         break
     assert(value == PROPAGATED)
@@ -325,17 +311,10 @@ class Test_Anno_Isotropic_Propagate():
     f = getURL("https://{}/sd/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), UNDER_PROPAGATION))
 
     # Checking if the PROPGATED value is set correctly
-<<<<<<< HEAD
-    for iter_value in range(1, 15, 1):
-      time.sleep(10)
-      f = getURL("https://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
-      value = int(f.content)
-=======
     for iter_value in range(1, 100, 1):
       time.sleep(1)
-      f = getURL("http://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
+      f = getURL("https://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
       value = int(f.read())
->>>>>>> origin/microns
       if value == PROPAGATED:
         break
     assert(value == PROPAGATED)
