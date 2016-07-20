@@ -96,7 +96,8 @@ sudo ln -s /home/neurodata/ndstore/setup/docker_config/celery/stats.conf /etc/su
 
 #Set up https
 sudo mkdir /etc/nginx/ssl
-echo | sudo openssl req -newkey rsa:2048 -nodes -keyout /etc/nginx/ssl/server.key
+sudo openssl req -newkey rsa:2048 -nodes -keyout /etc/nginx/ssl/server.key -config ssl_config.txt
+sudo openssl req -key /etc/nginx/ssl/server.key -new -x509 -out /etc/nginx/ssl/server.crt -config ssl_config.txt
 
 # starting all the services
 sudo service nginx restart
