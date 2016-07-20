@@ -28,7 +28,13 @@ sudo useradd -m -p neur0data -g neurodata -s /bin/bash neurodata
 cd /home/neurodata
 sudo -u neurodata git clone https://github.com/neurodata/ndstore
 cd /home/neurodata/ndstore
-sudo -u neurodata git checkout microns
+
+if [ -z "$1" ]; then
+  sudo -u neurodata git checkout microns 
+else
+  sudo -u neurodata git checkout "$1"
+fi
+
 sudo -u neurodata git submodule init
 sudo -u neurodata git submodule update
 
@@ -79,6 +85,8 @@ sudo rm /etc/supervisor/conf.d/propagate.conf
 sudo ln -s /home/neurodata/ndstore/setup/docker_config/celery/propagate.conf /etc/supervisor/conf.d/propagate.conf
 sudo rm /etc/supervisor/conf.d/ingest.conf
 sudo ln -s /home/neurodata/ndstore/setup/docker_config/celery/ingest.conf /etc/supervisor/conf.d/ingest.conf
+sudo rm /etc/supervisor/conf.d/stats.conf
+sudo ln -s /home/neurodata/ndstore/setup/docker_config/celery/stats.conf /etc/supervisor/conf.d/stats.conf
 
 # starting all the services
 sudo service nginx restart
