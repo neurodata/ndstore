@@ -31,6 +31,11 @@ import makeunitdb
 SITE_HOST = site_to_test.site
 TOKEN = ''
 
+if TOKEN == '':
+  f = open('/tmp/token','r')
+  TOKEN = f.read()
+  f.close()
+
 def postNPZ (p, post_data, time=False):
   """Post data using npz"""
 

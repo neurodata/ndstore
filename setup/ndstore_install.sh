@@ -107,6 +107,11 @@ sudo service supervisor restart
 sudo service rabbitmq-server restart
 sudo service memcached restart
 
+# Create superuser token
+cd /home/neurodata/ndstore/django/
+echo "from rest_framework.authtoken.models import Token; from django.contrib.auth.models import User; u = User.objects.get(username='neurodata'); token = Token.objects.create(user=u); f = open('/tmp/token','wb'); f.write(token.key); f.close()" | python manage.py shell
+
+
 # running tests
 cd /home/neurodata/ndstore/test/
 py.test
