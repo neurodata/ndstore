@@ -195,7 +195,7 @@ class Test_Image_Isotropic_Propagate:
     for iter_value in range(1,500,1):
       time.sleep(1)
       f = getURL("https://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
-      value = int(f.read())
+      value = int(f.content)
       if value == PROPAGATED:
         break
     assert(value == PROPAGATED)
@@ -260,7 +260,7 @@ class Test_Anno_Zslice_Propagate():
     for iter_value in range(1, 500, 1):
       time.sleep(1)
       f = getURL("https://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
-      value = int(f.read())
+      value = int(f.content)
       if value == PROPAGATED:
         break
     assert(value == PROPAGATED)
