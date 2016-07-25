@@ -77,7 +77,7 @@ class Test_Image_Zslice_Propagate:
     assert(value == NOT_PROPAGATED)
 
     # Start propagating
-    f = getURL("http://{}/sd/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), UNDER_PROPAGATION))
+    f = getURL("https://{}/sd/{}/{}/setPropagate/{}/".format(SITE_HOST, p.token, ','.join(p.channels), UNDER_PROPAGATION))
     for iter_value in range(1, 500, 1):
       time.sleep(1)
       # Checking if the PROPGATED value is set correctly
@@ -314,7 +314,7 @@ class Test_Anno_Isotropic_Propagate():
     for iter_value in range(1, 100, 1):
       time.sleep(1)
       f = getURL("https://{}/sd/{}/{}/getPropagate/".format(SITE_HOST, p.token, ','.join(p.channels)))
-      value = int(f.read())
+      value = int(f.content)
       if value == PROPAGATED:
         break
     assert(value == PROPAGATED)
