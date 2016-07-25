@@ -749,9 +749,8 @@ class TestRW:
     assert resp.content == "Success"
 
     # Verify that we can't read it anymore
-    with pytest.raises(requests.HTTPError):
-      h5r = readAnno(rp)
-
+    h5r = readAnno(rp)
+    assert(h5r.keys() == [])
 
   def test_dataonly(self):
     """Data only option."""
