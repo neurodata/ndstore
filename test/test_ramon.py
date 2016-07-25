@@ -268,8 +268,8 @@ class Test_Ramon:
     # retrieve the annotation
     # verify that it's not there.
     url = "https://{}/sd/{}/{}/{}/".format(SITE_HOST, 'unittest', 'unit_anno', p.annoid)
-    with pytest.raises(requests.HTTPError):
-      getURL( url )
+    resp = getURL( url )
+    assert(resp.status_code >= 400)
 
 
   def test_anno_upload( self ):
@@ -491,14 +491,13 @@ class Test_Ramon:
 
     #  bad format to a number
     url =  "https://{}/sd/{}/{}/{}/setField/status/aa/".format(SITE_HOST, 'unittest', 'unit_anno', p.annoid)
-    with pytest.raises(requests.HTTPError):
-      req = getURL( url )
+    req = getURL( url )
+    assert(req.status_code >= 400)
 
     #  request a missing field
     url =  "https://{}/sd/{}/{}/{}/getField/othernonesuch/".format(SITE_HOST, 'unittest', 'unit_anno', p.annoid)
-    with pytest.raises(requests.HTTPError):
-      req = getURL( url )
-
+    req = getURL( url )
+    assert(req.status_code >= 400)
 
   def test_node (self):
     """Upload a skeleton node and test it's fields"""
