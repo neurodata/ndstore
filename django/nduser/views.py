@@ -34,7 +34,7 @@ from django.template import Context
 from collections import defaultdict
 from django.contrib import messages
 from django.contrib.auth.models import User
-from rest_framework.authtoken.models import Token
+from rest_framework.authtoken.models import Token as User_token
 from django.conf import settings
 from django.forms.models import inlineformset_factory
 import django.forms
@@ -75,11 +75,11 @@ def default(request):
 def getUserToken(request):
   u=request.user
   # u = User.objects.get(username=user) 
-  is_tokened = Token.objects.filter(user=u)
+  is_tokened = User_Token.objects.filter(user=u)
   if is_tokened is []:
     token = Token.objects.create(user=u)
     response = HttpResponse(content_type='text/plain')
-    response['Content-Disposition'] = "attachment; filename=\"{}.pem\"".format(user)
+    response['Content-Disposition'] = "attachment; filename=\"{}.pem\"".format(str(u))
     response.write(token)
     return response
   else: 
