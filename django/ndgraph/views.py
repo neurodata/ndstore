@@ -37,6 +37,9 @@ from nduser.models import Token
 from nduser.models import Channel
 
 #@login_required(login_url='/nd/accounts/login/')
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, TokenAuthentication))
+@permission_classes((IsAuthenticated,))
 def buildGraph (request, webargs):
     """Build a graph based on different arguments"""
     try:

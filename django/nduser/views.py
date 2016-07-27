@@ -34,6 +34,7 @@ from django.template import Context
 from collections import defaultdict
 from django.contrib import messages
 from django.contrib.auth.models import User
+from rest_framework.authtoken.models import Token
 from django.conf import settings
 from django.forms.models import inlineformset_factory
 import django.forms
@@ -68,6 +69,22 @@ logger=logging.getLogger("neurodata")
 ''' Base url redirects to projects page'''
 def default(request):
   return redirect(get_script_prefix()+'nduser/projects/', {"user":request.user})
+
+''' Token Auth '''
+@login_required(login_url='/nd/accounts/login/')
+def getUserToken(request):
+  user=
+  u = User.objects.get(username=user) 
+  is_tokened = Token.objects.filter(user=u)
+  if is_tokened is []:
+    token = Token.objects.create(user=u)
+    response = HttpResponse(content_type='text/plain')
+    response['Content-Disposition'] = "attachment; filename=\"{}.pem\"".format(user)
+    response.write(token)
+    return response
+  else: 
+    response = HttpResponse("You have already downloaded your token, please contact the site administrator if you have lost it")
+    return response
 
 ''' Little welcome message'''
 @login_required(login_url='/nd/accounts/login/')
