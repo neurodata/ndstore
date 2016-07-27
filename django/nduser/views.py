@@ -73,8 +73,8 @@ def default(request):
 ''' Token Auth '''
 @login_required(login_url='/nd/accounts/login/')
 def getUserToken(request):
-  user=
-  u = User.objects.get(username=user) 
+  u=request.user
+  # u = User.objects.get(username=user) 
   is_tokened = Token.objects.filter(user=u)
   if is_tokened is []:
     token = Token.objects.create(user=u)
