@@ -15,6 +15,9 @@
 from django.shortcuts import render
 
 # Create your views here.
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.core.files.base import ContentFile
