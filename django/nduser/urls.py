@@ -37,4 +37,5 @@ urlpatterns = patterns('nduser.views',
                        url(r'^backupproject/$', 'backupProject'),
                        url(r'^restoreproject/$', 'restoreProject'),
                        url(r'^download/$', 'downloadData'),
+                       url(r'^usertoken/$', 'getUserToken'),
 )
