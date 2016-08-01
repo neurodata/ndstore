@@ -105,7 +105,8 @@ else
     cd
     wget https://dl.eff.org/certbot-auto
     chmod a+x certbot-auto
-    ./certbot-auto certonly --webroot -w /usr/share/nginx/html/ -d $3
+    grep "y" | sudo ./certbot-auto 
+    sudo ./certbot-auto certonly --email $4 --webroot -w /usr/share/nginx/html/ -d $3
     sudo cp /etc/letsencrypt/live/$3/privkey.pem /etc/nginx/ssl/server.key
     sudo cp /etc/letsencrypt/live/$3/cert.pem /etc/nginx/ssl/server.crt
     sudo ./certbot-auto renew --quiet --no-self-upgrade
