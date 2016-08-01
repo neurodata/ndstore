@@ -101,13 +101,13 @@ if [ -z "$2" ]; then
   sudo openssl req -newkey rsa:2048 -nodes -keyout /etc/nginx/ssl/server.key -config ssl_config.txt
   sudo openssl req -key /etc/nginx/ssl/server.key -new -x509 -out /etc/nginx/ssl/server.crt -config ssl_config.txt
 else
-  if [ "$2" -eq "PRODUCTION" ]; then
+  if [ "$2" == "PRODUCTION" ]; then
     cd
     wget https://dl.eff.org/certbot-auto
     chmod a+x certbot-auto
-    ./certbot-auto certonly --webroot -w /usr/share/nginx/html/ -d www.neurodatatest.com
-    sudo cp /etc/letsencrypt/live/www.neurodatatest.com/privkey.pem /etc/nginx/ssl/server.key
-    sudo cp /etc/letsencrypt/live/www.neurodatatest.com/cert.pem /etc/nginx/ssl/server.crt
+    ./certbot-auto certonly --webroot -w /usr/share/nginx/html/ -d $3
+    sudo cp /etc/letsencrypt/live/$3/privkey.pem /etc/nginx/ssl/server.key
+    sudo cp /etc/letsencrypt/live/$3/cert.pem /etc/nginx/ssl/server.crt
   fi
 fi
 
