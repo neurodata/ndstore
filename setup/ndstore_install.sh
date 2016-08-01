@@ -65,7 +65,13 @@ sudo -u neurodata cp settings.py.example settings.py
 sudo -u neurodata ln -s /home/neurodata/ndstore/setup/docker_config/django/docker_settings_secret.py settings_secret.py
 
 # add openconnecto.me to django_sites
-mysql -u neurodata -pneur0data -i -e "use neurodjango; insert into django_site (id, domain, name) values (2, 'openconnecto.me', 'openconnecto.me');"
+if [ -z "$2" ]; then
+  mysql -u neurodata -pneur0data -i -e "use neurodjango; insert into django_site (id, domain, name) values (2, 'openconnecto.me', 'openconnecto.me');"
+else
+  if [ "$2" == "PRODUCTION" ]; then
+    mysql -u neurodata -pneur0data -i -e "use neurodjango; insert into django_site (id, domain, name) values (2, '$3', '$3');"
+  fi
+fi
 
 # migrate the database and create the superuser
 sudo chmod -R 777 /var/log/neurodata/
