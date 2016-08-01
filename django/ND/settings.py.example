@@ -77,6 +77,10 @@ INSTALLED_APPS = (
     'stats',
     'corsheaders',
     'ndgraph',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.github',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -137,7 +141,7 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 
     # `allauth` specific authentication methods, such as login by e-mail
-    # 'allauth.account.auth_backends.AuthenticationBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
 )
 
 # Internationalization
@@ -262,5 +266,21 @@ os.environ['wsgi.url_scheme'] = 'https'
 os.environ['HTTPS'] = "on"
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_SSL_REDIRECT = True
+
+# Allauth
+
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_EMAIL_VERIFICATION = "none"
+LOGIN_REDIRECT_URL = "/nd/nduser/profile/"
+SOCIALACCOUNT_QUERY_EMAIL = True
+SOCIAL_AUTH_GITHUB_KEY = '0b37088ae4b9ce85e8d0'
+SOCIAL_AUTH_GITHUB_SECRET = 'd74a06ff8104d89e2d98b2221218917fe9371526'
+SOCIALACCOUNT_PROVIDERS = {
+    'github': {
+        'SCOPE': ['user'],
+        'METHOD': 'oauth2'  # instead of 'oauth2'
+    }
+}
+ACCOUNT_DEFAULT_HTTP_PROTOCOL='https'
 
 
