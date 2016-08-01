@@ -64,6 +64,13 @@ cd /home/neurodata/ndstore/django/ND/
 sudo -u neurodata cp settings.py.example settings.py
 sudo -u neurodata ln -s /home/neurodata/ndstore/setup/docker_config/django/docker_settings_secret.py settings_secret.py
 
+# migrate the database and create the superuser
+sudo chmod -R 777 /var/log/neurodata/
+cd /home/neurodata/ndstore/django/
+sudo -u neurodata python manage.py migrate
+echo "from django.contrib.auth.models import User; User.objects.create_superuser('neurodata', 'abc@xyz.com', 'neur0data')" | python manage.py shell
+sudo -u neurodata python manage.py collectstatic --noinput
+
 # add openconnecto.me to django_sites
 if [ -z "$2" ]; then
   mysql -u neurodata -pneur0data -i -e "use neurodjango; insert into django_site (id, domain, name) values (2, 'openconnecto.me', 'openconnecto.me');"
@@ -72,13 +79,6 @@ else
     mysql -u neurodata -pneur0data -i -e "use neurodjango; insert into django_site (id, domain, name) values (2, '$3', '$3');"
   fi
 fi
-
-# migrate the database and create the superuser
-sudo chmod -R 777 /var/log/neurodata/
-cd /home/neurodata/ndstore/django/
-sudo -u neurodata python manage.py migrate
-echo "from django.contrib.auth.models import User; User.objects.create_superuser('neurodata', 'abc@xyz.com', 'neur0data')" | python manage.py shell
-sudo -u neurodata python manage.py collectstatic --noinput
 
 # move the nginx config files and start service
 sudo rm /etc/nginx/sites-enabled/default
