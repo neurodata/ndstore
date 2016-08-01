@@ -102,6 +102,7 @@ if [ -z "$2" ]; then
   sudo openssl req -key /etc/nginx/ssl/server.key -new -x509 -out /etc/nginx/ssl/server.crt -config ssl_config.txt
 else
   if [ "$2" == "PRODUCTION" ]; then
+    sudo mkdir /etc/nginx/ssl
     cd
     wget https://dl.eff.org/certbot-auto
     chmod a+x certbot-auto
