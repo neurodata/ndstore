@@ -222,10 +222,12 @@ def getAnnotation ( p ):
 
 def postURL ( url, f ):
 
-  req = urllib2.Request(url, f.read())
-  response = urllib2.urlopen(req)
-
-  return response
+  try:
+    req = urllib2.Request(url, f.read())
+    response = urllib2.urlopen(req)
+    return response
+  except urllib2.HTTPError as e:
+    return e
 
 def getURL ( url ):
   """Post the url"""
@@ -233,7 +235,7 @@ def getURL ( url ):
   try:
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
-  except urllib2.HTTPError, e:
+  except urllib2.HTTPError as e:
     return e.code
 
   return f
