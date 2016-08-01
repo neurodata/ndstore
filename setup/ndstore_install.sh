@@ -108,6 +108,7 @@ else
     ./certbot-auto certonly --webroot -w /usr/share/nginx/html/ -d $3
     sudo cp /etc/letsencrypt/live/$3/privkey.pem /etc/nginx/ssl/server.key
     sudo cp /etc/letsencrypt/live/$3/cert.pem /etc/nginx/ssl/server.crt
+    sudo ./certbot-auto renew --quiet --no-self-upgrade
   fi
 fi
 
