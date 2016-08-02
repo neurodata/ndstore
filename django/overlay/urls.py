@@ -12,14 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
+from overlay import views
 
 # Uncomment the next two lines to enable the admin:
 #from django.contrib import admin
 #admin.autodiscover()
 
 
-urlpatterns = patterns('overlay.views',
-   url(r'(?P<webargs>^(0?\.\d[0-9]?|0|1|1.0)/.*)$', 'overlay'),
+urlpatterns = [
+   url(r'(?P<webargs>^(0?\.\d[0-9]?|0|1|1.0)/.*)$', views.overlay),
 #  url(r'^admin/', include(admin.site.urls)),
-)
+]

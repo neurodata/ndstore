@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -20,7 +20,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 admin.autodiscover()
 
-base_urlpatterns = patterns('',
+base_urlpatterns = [
     url(r'^ocpca/', include('spdb.urls')),    # legacy RB
     url(r'^ca/', include('spdb.urls')),       # legacy RB
     url(r'^sd/', include('spdb.urls')),
@@ -34,10 +34,10 @@ base_urlpatterns = patterns('',
     url(r'^viz/', include('ndviz.urls')), # legacy AB / viz redirect
     url(r'^ndgraph/', include('ndgraph.urls')),
     url(r'^stats/', include('stats.urls')),
-)
+]
 
-urlpatterns = patterns('',
+urlpatterns = patterns[
     url('^', include(base_urlpatterns)), # maintains unprefixed URLs
     url('^nd/', include(base_urlpatterns)),
     url('^ocp/', include(base_urlpatterns)),
-) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
