@@ -137,5 +137,6 @@ class Test_AutoIngest_Json():
     json_file.seek(0)
 
     # posting the JSON url and checking if it is successful
-    response = json.loads(postURL("http://{}/sd/autoIngest/".format(SITE_HOST), json_file).read())
-    assert('Dataset {} already exists and is different then the chosen dataset. Please choose a different dataset name'.format(p.dataset) == response)
+    response = postURL("http://{}/sd/autoIngest/".format(SITE_HOST), json_file)
+    assert(response.code == 400)
+    assert('Dataset {} already exists and is different then the chosen dataset. Please choose a different dataset name'.format(p.dataset) == json.loads(response.read()))
