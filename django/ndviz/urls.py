@@ -14,7 +14,7 @@
 
 from django.conf.urls import *
 import django.contrib.auth
-from ndviz import views
+from . import views
 
 # redirect everything to the new ndviz server 
 urlpatterns = [

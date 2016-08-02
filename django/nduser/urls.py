@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from django.conf.urls import *
-from ndgraph import views
+from . import views
 import django.contrib.auth
 
 # Uncomment the next two lines to enable the admin:                        

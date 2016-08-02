@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from django.conf.urls import include, url
-from overlay import views
+from . import views
 
 # Uncomment the next two lines to enable the admin:
 #from django.contrib import admin
