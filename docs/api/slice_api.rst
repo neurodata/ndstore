@@ -1,5 +1,5 @@
-Slice APIS
-**********
+Slice API
+*********
 
 **NOTE**: These APIs do not return the orginal data. If you want the orginal raw data then please use the :ref:`Data APIs <data-api>`.
 
@@ -34,6 +34,7 @@ GET XY Slice Cutout
    :type time_slice: int
     
    :statuscode 200: No error
+   :statuscode 403: Forbidden
    :statuscode 404: Error in the syntax or file format
    
    **Example Request**:
@@ -87,7 +88,8 @@ GET XZ Slice Cutout
    :type time_slice: int
 
    :statuscode 200: No error
-   :statuscode 404: Error in the syntax or file format
+   :statuscode 403: Forbidden
+   :statuscode 404: Error in the syntax
 
    **Example Request**:
    
@@ -145,7 +147,8 @@ GET YZ Slice Cutout
    :form DATATYPE: HDF5 group, Data type(uint8, uint16, uint32, rgb32, rgb64, float32)
 
    :statuscode 200: No error
-   :statuscode 404: Error in the syntax or file format
+   :statuscode 403: Forbidden
+   :statuscode 404: Error in the syntax
    
    **Example Request**:
    
@@ -166,17 +169,14 @@ GET YZ Slice Cutout
     :width: 500px
     :height: 200px
 
-JPEG Stack Service for KNOSSOS
-==============================
+GET JPEG Stack Service for KNOSSOS
+----------------------------------
  
 .. _jpeg-get:
 
-GET
-----
-
 .. http:get:: (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/jpeg/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/
    
-   :synopsis: Get a jpeg stack from the server in KNOSSOS format.
+   :synopsis: Get a JPEG stack in `KNOSSOS <http://knossostool.org/>`_ format.
 
    :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
    :type server_name: string
@@ -200,7 +200,8 @@ GET
    :type max_z: int
     
    :statuscode 200: No error
-   :statuscode 404: Error in the syntax or file format
+   :statuscode 403: Forbidden
+   :statuscode 404: Error in the syntax
    
    **Example Request**:
    

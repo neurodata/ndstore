@@ -1,5 +1,5 @@
-JSON API
-**********
+Project Management API
+**********************
 
 .. _json-createchannel:
 
@@ -16,15 +16,15 @@ createChannel
    :type token_name: string
 
    :statuscode 200: No error
-   :statuscode 404: Error in the syntax or file format
+   :statuscode 400: Error in file format or if :ref:`channel <channel>` already exists
+   :statuscode 404: Error in the syntax
 
    **Example Request**:
 
    .. sourcecode:: http
       
       POST /nd/ca/test_kat1/ HTTP/1.1
-
-      HOST: openconnecto.me
+      Host: openconnecto.me
       Content-Type: application/json
 
       {
@@ -44,18 +44,31 @@ createChannel
         }
       }
 
-   **Example Response**:
+   **Example Responses**:
 
    .. sourcecode:: http
 
       HTTP/1.1 200 OK
-      Content-Type: application/json
+      Content-Type: text/plain
 
-      {
-        "SUCCESS"
-      }
+      Success. The channels were created.
+
+   .. sourcecode:: http
+    
+      HTTP/1.1 400 BadRequest
+      Content-Type: text/plain
+
+      Channel image already exists for project kasthuri11. Specify a different channel.
+
+   .. sourcecode:: http
+
+      HTTP/1.1 400 BadRequest
+      Content-Type: text/plain
+
+      Missing Required fields.
 
 .. _json-deletechannel:
+
 
 deleteChannel
 -------------
@@ -70,15 +83,15 @@ deleteChannel
    :type token_name: string
 
    :statuscode 200: No error
-   :statuscode 404: Error in the syntax or file format
+   :statuscode 400: Error in file format or if :ref:`channel <channel>` does not exist
+   :statuscode 404: Error in the syntax
 
    **Example Request**:
 
    .. sourcecode:: http
       
       POST /nd/ca/test_kat1/ HTTP/1.1
-
-      HOST: openconnecto.me
+      Host: openconnecto.me
       Content-Type: application/json
 
       {
@@ -88,56 +101,25 @@ deleteChannel
         ]
       }
 
-   **Example Response**:
+   **Example Responses**:
 
    .. sourcecode:: http
 
       HTTP/1.1 200 OK
-      Content-Type: application/json
+      Content-Type: text/plain
 
-      {
-        "SUCCESS"
-      }
-
-.. _json-autoingest:
-
-autoIngest
-----------
-
-.. http:post:: (string:server_name)/nd/ca/autoIngest/
-
-   :synopsis: Create a dataset, project and channels with a JSON file.
-
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
-   :type server_name: string
-
-   :form JSON: Look at the Tech Sheet
-
-   :statuscode 200: No error
-   :statuscode 404: Error in the syntax or file format
-
-   **Example Request**:
-
-   .. sourcecode:: http
-      
-      GET /nd/ca/json/ HTTP/1.1
-
-      Host: openconnecto.me
-      Content-Type: application/json
-
-      {
-        dataset
-        project
-        metadata
-      }
-
-   **Example Response**:
+      Success. Channels deleted.
 
    .. sourcecode:: http
 
-      HTTP/1.1 200 OK
-      Content-Type: application/json
+      HTTP/1.1 400 BadRequest
+      Content-Type: text/plain
 
-      {
-        SUCCESS
-      }
+      Missing. Required fields.
+
+   .. sourcecode:: http
+
+      HTTP/1.1 400 BadRequest
+      Content-Type: text/plain
+
+      Error saving models. The channels were not deleted.

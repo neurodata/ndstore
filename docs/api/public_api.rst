@@ -14,14 +14,13 @@ GET
    :type server_name: string
 
    :statuscode 200: No error
-   :statuscode 404: Error in the syntax or file format
+   :statuscode 404: Error in the syntax
 
    **Example Request**:
 
    .. sourcecode:: http
       
       GET /nd/ca/public_tokens HTTP/1.1
-      
       Host: openconnecto.me
 
    **Example Response**:
@@ -55,7 +54,7 @@ GET
    :type server_name: string
 
    :statuscode 200: No error
-   :statuscode 404: Error in the syntax or file format
+   :statuscode 404: Error in the syntax
     
    **Example Request**:
    
