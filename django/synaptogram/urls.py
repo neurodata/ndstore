@@ -13,11 +13,12 @@
 # limitations under the License.
 
 from django.conf.urls import include, url
+from synaptogram import views
 # Uncomment the next two lines to enable the admin:
 #from django.contrib import admin
 #admin.autodiscover()
 
 urlpatterns = [ 
 #  url(r'^(?P<webargs>\w+/.*)$', 'synaptogram_view_old'),
-  url(r'^(?P<webargs>\w+/.*)$', 'synaptogram_view'),
+  url(r'^(?P<webargs>\w+/.*)$', views.synaptogram_view),
 ]
