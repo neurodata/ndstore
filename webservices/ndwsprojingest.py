@@ -244,7 +244,7 @@ def createChannel(webargs, post_data):
     for ch in ch_list:
       if Channel.objects.filter(channel_name = ch.channel_name, project = pr.project_name).exists():
         logger.error("Channel {} already exists for project {}. Specify a different channel name".format(ch.channel_name, pr.project_name))
-        return HttpResponseBadRequest("Channel {} already exists for project {}. Specify a different channel name".format(ch.channel_name, pr.project_name))
+        return HttpResponseBadRequest("Channel {} already exists for project {}. Specify a different channel name".format(ch.channel_name, pr.project_name), content_type="text/plain")
     
     # Iterating over channel list to store channels
     for ch in ch_list:
@@ -259,10 +259,10 @@ def createChannel(webargs, post_data):
   except Exception, e:
     logger.error("Error saving models")
     # return the bad request with failed message
-    return HttpResponseBadRequest("Error saving models.")
+    return HttpResponseBadRequest("Error saving models.", content_type="text/plain")
 
   # return the JSON file with success
-  return HttpResponse("Success. The information in the channel was correct.")
+  return HttpResponse("Success. The channels were created.", content_type="text/plain")
 
 def deleteChannel(webargs, post_data):
   """Delete a list of channels using a JSON file"""
@@ -279,8 +279,8 @@ def deleteChannel(webargs, post_data):
   try:
     channels = nd_dict['channels']
   except Exception, e:
-    logger.error("Missing requred fields")
-    return HttpResponseBadRequest("Missing requred fields")
+    logger.error("Missing requred fields.")
+    return HttpResponseBadRequest("Missing requred fields.")
   
   tk = Token.objects.get(token_name=token_name)
   ur = User.objects.get(id=tk.user_id)
