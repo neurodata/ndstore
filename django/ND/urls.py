@@ -36,7 +36,7 @@ base_urlpatterns = [
     url(r'^stats/', include('stats.urls')),
 ]
 
-urlpatterns = patterns[
+urlpatterns = [
     url('^', include(base_urlpatterns)), # maintains unprefixed URLs
     url('^nd/', include(base_urlpatterns)),
     url('^ocp/', include(base_urlpatterns)),
