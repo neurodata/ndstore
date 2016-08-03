@@ -34,7 +34,7 @@ from django.template import Context
 from collections import defaultdict
 from django.contrib import messages
 from django.contrib.auth.models import User
-from rest_framework.authtoken.models import Token as User_token
+from rest_framework.authtoken.models import Token as User_Token
 from django.conf import settings
 from django.forms.models import inlineformset_factory
 import django.forms
