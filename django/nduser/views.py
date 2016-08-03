@@ -76,7 +76,7 @@ def getUserToken(request):
   u=request.user
   # u = User.objects.get(username=user) 
   is_tokened = User_Token.objects.filter(user=u)
-  if is_tokened is []:
+  if not is_tokened:
     token = Token.objects.create(user=u)
     response = HttpResponse(content_type='text/plain')
     response['Content-Disposition'] = "attachment; filename=\"{}.pem\"".format(str(u))
