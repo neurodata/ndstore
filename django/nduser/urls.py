@@ -37,4 +37,5 @@ urlpatterns = [
                        url(r'^backupproject/$', views.backupProject),
                        url(r'^restoreproject/$', views.restoreProject),
                        url(r'^download/$', views.downloadData),
+                       url(r'^usertoken/$', views.getUserToken),
 ]
