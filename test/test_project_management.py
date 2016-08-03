@@ -70,9 +70,9 @@ class Test_Create_Channel_Json():
     # posting the JSON url and checking if it is successful
     response = postURL("http://{}/sd/{}/createChannel/".format(SITE_HOST, p.token), json_file)
     # checking if the call suceeded
-    assert(response.code == 200)
+    assert(response.status_code == 200)
     # checking if the message was correct
-    assert('Success. The channels were created.' == response.read())
+    assert('Success. The channels were created.' == response.content)
 
     # fetching the JSON info
     f = getURL("http://{}/sd/{}/info/".format(SITE_HOST, p.token))
@@ -112,8 +112,8 @@ class Test_Create_Channel_Json():
 
     # posting the JSON url and checking if it is successful
     response = postURL("http://{}/sd/{}/createChannel/".format(SITE_HOST, p.token), json_file)
-    assert(response.code == 400)
-    assert('Channel {} already exists for project {}. Specify a different channel name'.format(p.channels[1], p.token) == response.read())
+    assert(response.status_code == 400)
+    assert('Channel {} already exists for project {}. Specify a different channel name'.format(p.channels[1], p.token) == response.content)
 
 class Test_Delete_Channel_Json():
 
@@ -136,13 +136,13 @@ class Test_Delete_Channel_Json():
 
     # posting the JSON url and checking if it is successful
     response = postURL("http://{}/sd/{}/deleteChannel/".format(SITE_HOST, p.token), json_file)
-    assert(response.code == 200)
+    assert(response.status_code == 200)
     assert('Success. Channels deleted.' == response.read())
 
     # fetching the JSON info
     f = getURL("http://{}/sd/{}/info/".format(SITE_HOST, p.token))
 
     # read the JSON file
-    proj_info = json.loads(f.read())
+    proj_info = json.loads(f.content)
     assert( proj_info['project']['name'] == p.token )
     assert( proj_info['channels'][p.channels[0]]['resolution'] == 0)
