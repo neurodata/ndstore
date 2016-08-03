@@ -19,14 +19,14 @@ GET
    :type token_name: string
 
    :statuscode 200: No error
-   :statuscode 404: Error in the syntax or file format
+   :statuscode 403: Forbidden
+   :statuscode 404: Error in the syntax
 
    **Example Request**:
    
    .. sourcecode:: http
       
       GET /nd/ca/kasthuri11/info/ HTTP/1.1
-
       Host: openconnecto.me
 
    **Example Response**:
@@ -275,14 +275,14 @@ GET
    :type token_name: string
 
    :statuscode 200: No error
-   :statuscode 404: Error in the syntax or file format
+   :statuscode 403: Forbidden
+   :statuscode 404: Error in the syntax
 
    **Example Request**:
 
    .. sourcecode:: http
       
       GET /nd/ca/kasthuri11/projinfo/ HTTP/1.1
-
       Host: openconnecto.me
 
    **Example Response**:

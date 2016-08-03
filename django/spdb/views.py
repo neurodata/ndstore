@@ -540,7 +540,7 @@ def createChannel(request, webargs):
   """RESTful URL for creating a list of channels using a JSON file"""
 
   try:
-    return django.http.HttpResponse(ndwsprojingest.createChannel(webargs, request.body), content_type="application/json")
+    return ndwsprojingest.createChannel(webargs, request.body)
   except NDWSError, e:
     return django.http.HttpResponseNotFound()
   except Exception, e:
@@ -554,7 +554,7 @@ def deleteChannel(request, webargs):
   """RESTful URL for deleting a list of channels using a JSON file"""
 
   try:
-    return django.http.HttpResponse(ndwsprojingest.deleteChannel(webargs, request.body), content_type="application/json")
+    return ndwsprojingest.deleteChannel(webargs, request.body)
   except NDWSError, e:
     return django.http.HttpResponseNotFound()
   except Exception, e:

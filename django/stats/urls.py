@@ -12,19 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from django.conf.urls import patterns, include, url
+from django.conf.urls import url
+from . import views
 
-urlpatterns = patterns('stats.views',
+urlpatterns = [
   # get all statistics
-  url(r'(?P<webargs>^\w+/\w+/all/[\w,/]*)$', 'all'),
+  url(r'(?P<webargs>^\w+/\w+/all/[\w,/]*)$', views.all),
   # get JSON representation of histogram (or 404)
-  url(r'(?P<webargs>^\w+/\w+/hist/[\w,/]*)$', 'getHist'),
+  url(r'(?P<webargs>^\w+/\w+/hist/[\w,/]*)$', views.getHist),
   # get mean 
-  url(r'(?P<webargs>^\w+/\w+/mean/[\w,/]*)$', 'mean'),
+  url(r'(?P<webargs>^\w+/\w+/mean/[\w,/]*)$', views.mean),
   # get standard deviation 
-  url(r'(?P<webargs>^\w+/\w+/std/[\w,/]*)$', 'std'),
+  url(r'(?P<webargs>^\w+/\w+/std/[\w,/]*)$', views.std),
   # get percentile 
-  url(r'(?P<webargs>^\w+/\w+/percentile/[\w,/.]*)$', 'percentile'),
+  url(r'(?P<webargs>^\w+/\w+/percentile/[\w,/.]*)$', views.percentile),
   # generate histogram  
-  url(r'(?P<webargs>^\w+/\w+/genhist/[\w,/]*)$', 'genHist'),
-)
+  url(r'(?P<webargs>^\w+/\w+/genhist/[\w,/]*)$', views.genHist),
+]

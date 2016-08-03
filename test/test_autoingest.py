@@ -41,7 +41,7 @@ p.channel_type = IMAGE
 p.datatype = UINT8
 p.dataset = 'unittest'
 
-class Test_Project_Json():
+class Test_AutoIngest_Json():
 
   def setup_class(self):
     """Setup Parameters"""
@@ -143,106 +143,3 @@ class Test_Project_Json():
     response = json.loads(resp.content)
     assert('Dataset {} already exists and is different then the chosen dataset. Please choose a different dataset name'.format(p.dataset) == response)
 
-
-class Test_Create_Channel_Json():
-
-  def setup_class(self):
-    """Setup Parameters"""
-    p.channels = []
-    makeunitdb.createTestDB(p.token, channel_list=p.channels, ximagesize=2000, yimagesize=2000, zimagesize=1000, xvoxelres=1.0, yvoxelres=1.0, zvoxelres=5.0)
-  def teardown_class(self):
-    """Teardown Parameters"""
-    makeunitdb.deleteTestDB(p.token)
-
-  def test_create_json(self):
-    """Test the basic JSON project creation with only the required fields"""
-
-    p.channels = ['CHAN1', 'CHAN2']
-    # dataset format = (dataset_name, [ximagesz, yimagesz, zimagesz], [[xvoxel, yvoxel, zvoxel], [xoffset, yoffset, zoffset], timerange, scalinglevels, scaling)
-    dataset = (p.dataset, [2000,2000,1000], [1.0,1.0,5.0], None, None, None, None)
-    # project format = (project_name, token_name, public)
-    project = (p.token, None, None)
-    # channel format = { chan1 : (channel_name, datatype, channel_type, data_url, file_name, exceptions, resolution, windowrange, readonly), chan2: ...... }
-    channels = { p.channels[0] : (p.channels[0], p.datatype, p.channel_type, 'sample_data_url', 'sample_filename', 'tif', None, None, None, 0), p.channels[1] : (p.channels[1], p.datatype, p.channel_type, 'sample_data_url', 'sample_filename', 'tif', None, None, None, 0),  }
-
-    json_file = tempfile.NamedTemporaryFile(mode='w+b')
-    json_file.write(createJson(dataset, project, channels, channel_only=True))
-    json_file.seek(0)
-
-    # posting the JSON url and checking if it is successful
-    resp = postURL("https://{}/sd/{}/createChannel/".format(SITE_HOST, p.token), json_file)
-    response = json.loads(resp.content)
-    assert('SUCCESS. The information in the channel was correct.' == response)
-
-    # fetching the JSON info
-    f = getURL("https://{}/sd/{}/info/".format(SITE_HOST, p.token))
-
-    # read the JSON file
-    proj_info = json.loads(f.content)
-    assert( proj_info['project']['name'] == p.token )
-    assert( proj_info['dataset']['imagesize']['0'] == [2000,2000,1000])
-    assert( proj_info['dataset']['cube_dimension']['0'] == [128,128,16])
-    assert( proj_info['dataset']['scalinglevels'] == 5)
-    assert( proj_info['channels'][p.channels[0]]['resolution'] == 0)
-    assert( proj_info['channels'][p.channels[0]]['channel_type'] == p.channel_type)
-    assert( proj_info['channels'][p.channels[1]]['datatype'] == p.datatype)
-
-    # Testing if the it allows data to be posted to the created channels
-    p.args = (1000,1100,500,600,200,201)
-    image_data = np.ones( [2,1,100,100], dtype=np.uint8 ) * random.randint(0,255)
-    response = postNPZ(p, image_data)
-    voxarray = getNPZ(p)
-    assert( np.array_equal(image_data, voxarray) )
-
-  def test_error_json(self):
-    """Test the wrong JSON channel creation with only the required fields"""
-
-    # Here we send incorrect dataset information
-
-    # dataset format = (dataset_name, [ximagesz, yimagesz, zimagesz], [[xvoxel, yvoxel, zvoxel], [xoffset, yoffset, zoffset], timerange, scalinglevels, scaling)
-    dataset = (p.dataset, [2000,2000,1000], [1.0,1.0,5.0], [0,0,0], None, None, None)
-    # project format = (project_name, token_name, public)
-    project = (p.token, None, None)
-    # channel format = { chan1 : (channel_name, datatype, channel_type, data_url, file_name, exceptions, resolution, windowrange, readonly), chan2: ...... }
-    channels = { p.channels[1] : (p.channels[1], p.datatype, p.channel_type, 'sample_data_url', 'sample_filename', 'tif', None, None, None, None) }
-
-    json_file = tempfile.NamedTemporaryFile(mode='w+b')
-    json_file.write(createJson(dataset, project, channels, channel_only=True))
-    json_file.seek(0)
-
-    # posting the JSON url and checking if it is successful
-    resp = postURL("https://{}/sd/{}/createChannel/".format(SITE_HOST, p.token), json_file)
-    response = json.loads(resp.content)
-    assert('Channel CHAN2 already exists for this project. Specify a different channel name' == response)
-
-class Test_Delete_Channel_Json():
-
-  def setup_class(self):
-    """Setup Parameters"""
-    makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype)
-
-  def teardown_class(self):
-    """Teardown Parameters"""
-    makeunitdb.deleteTestDB(p.token)
-
-  def test_single_channel_json(self):
-    """Test the basic JSON project creation with only the required fields"""
-
-    ocp_dict = { 'channels' : (p.channels[1],) }
-
-    json_file = tempfile.NamedTemporaryFile(mode='w+b')
-    json_file.write(json.dumps(ocp_dict, sort_keys=True, indent=4))
-    json_file.seek(0)
-
-    # posting the JSON url and checking if it is successful
-    resp = postURL("https://{}/sd/{}/deleteChannel/".format(SITE_HOST, p.token), json_file)
-    response = json.loads(resp.content)
-    assert('SUCCESS' == response)
-
-    # fetching the JSON info
-    f = getURL("https://{}/sd/{}/info/".format(SITE_HOST, p.token))
-
-    # read the JSON file
-    proj_info = json.loads(f.content)
-    assert( proj_info['project']['name'] == p.token )
-    assert( proj_info['channels'][p.channels[0]]['resolution'] == 0)

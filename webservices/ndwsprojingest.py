@@ -21,6 +21,7 @@ import jsonschema
 import django
 django.setup()
 from django.conf import settings
+from django.http import HttpResponse, HttpResponseBadRequest
 
 import ndproj
 from ndwsingest import IngestData
@@ -219,15 +220,15 @@ def createChannel(webargs, post_data):
     m = re.match("(\w+)/createChannel/$", webargs)
     token_name = m.group(1)
   except Exception, e:
-    print "Error in URL format"
-    raise
+    logger.error("Error in URL format")
+    raise NDWSError("Error in the URL format")
   
   nd_dict = json.loads(post_data)
   try:
     channels = nd_dict['channels']
   except Exception, e:
-    print "Missing requred fields"
-    return json.dumps("Missing channels field. Ensure that Channel field exists")
+    logger.error("Missing channels field. Ensure that 'Channel' field exists.")
+    return HttpResponseBadRequest("Missing channels field. Ensure that 'Channel' field exists.")
   
   tk = Token.objects.get(token_name=token_name)
   ur = User.objects.get(id=tk.user_id)
@@ -242,8 +243,8 @@ def createChannel(webargs, post_data):
     # First iterating over the channel list to check if all the channels don't exist
     for ch in ch_list:
       if Channel.objects.filter(channel_name = ch.channel_name, project = pr.project_name).exists():
-        print "Channel already exists"
-        return json.dumps("Channel {} already exists for this project. Specify a different channel name".format(ch.channel_name))
+        logger.error("Channel {} already exists for project {}. Specify a different channel name".format(ch.channel_name, pr.project_name))
+        return HttpResponseBadRequest("Channel {} already exists for project {}. Specify a different channel name".format(ch.channel_name, pr.project_name), content_type="text/plain")
     
     # Iterating over channel list to store channels
     for ch in ch_list:
@@ -256,12 +257,12 @@ def createChannel(webargs, post_data):
       pd = ndproj.NDProjectsDB.getProjDB(pr.project_name)
       pd.newNDChannel(ch.channel_name)
   except Exception, e:
-    print "Error saving models"
-    # return the JSON file with failed
-    return json.dumps("Error saving models")
+    logger.error("Error saving models")
+    # return the bad request with failed message
+    return HttpResponseBadRequest("Error saving models.", content_type="text/plain")
 
   # return the JSON file with success
-  return json.dumps("SUCCESS. The information in the channel was correct.")
+  return HttpResponse("Success. The channels were created.", content_type="text/plain")
 
 def deleteChannel(webargs, post_data):
   """Delete a list of channels using a JSON file"""
@@ -271,15 +272,15 @@ def deleteChannel(webargs, post_data):
     m = re.match("(\w+)/deleteChannel/$", webargs)
     token_name = m.group(1)
   except Exception, e:
-    print "Error in URL format"
-    raise
+    logger.error("Error in URL format")
+    raise NDWSError("Error in URL format")
   
   nd_dict = json.loads(post_data)
   try:
     channels = nd_dict['channels']
   except Exception, e:
-    print "Missing requred fields"
-    raise
+    logger.error("Missing requred fields.")
+    return HttpResponseBadRequest("Missing requred fields.")
   
   tk = Token.objects.get(token_name=token_name)
   ur = User.objects.get(id=tk.user_id)
@@ -297,12 +298,11 @@ def deleteChannel(webargs, post_data):
           pd = ndproj.NDProjectsDB().getProjDB(pr.project_name)
           pd.deleteNDChannel(ch.channel_name)
           ch.delete()
-    return_json = "SUCCESS"
+    return HttpResponse("Success. Channels deleted.")
   except Exception, e:
-    print "Error saving models"
-    return_json = "FAILED"
+    logger.error("Error saving models. The channels were not deleted.")
+    return HttpResponseBadRequest("Error saving models. The channels were not deleted.")
 
-  return json.dumps(return_json)
 
 def postMetadataDict(metadata_dict, project_name):
   """Post metdata to the LIMS system"""

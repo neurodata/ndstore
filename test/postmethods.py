@@ -237,7 +237,6 @@ def postURL ( url, f ):
 
 def getURL ( url ):
   """Get the url"""
-
   try:
     resp = requests.get(url, headers={'Authorization': 'Token {}'.format( TOKEN )}, verify=False)
   except Exception as e:
@@ -246,7 +245,6 @@ def getURL ( url ):
 
 def delURL ( url ):
   """Del the url"""
-
   try:
     resp = requests.delete(url, headers={'Authorization': 'Token {}'.format( TOKEN )}, verify=False)
   except Exception as e:
