@@ -15,7 +15,7 @@ blosc
 #
 # Django and other piping
 uwsgi
-django
+django==1.9.9
 django-registration
 django-celery
 django-cors-headers
