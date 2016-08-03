@@ -78,7 +78,7 @@ class Test_Create_Channel_Json():
     f = getURL("https://{}/sd/{}/info/".format(SITE_HOST, p.token))
 
     # read the JSON file
-    proj_info = json.loads(f.read())
+    proj_info = json.loads(f.content)
     assert( proj_info['project']['name'] == p.token )
     assert( proj_info['dataset']['imagesize']['0'] == [2000,2000,1000])
     assert( proj_info['dataset']['cube_dimension']['0'] == [128,128,16])
@@ -137,7 +137,7 @@ class Test_Delete_Channel_Json():
     # posting the JSON url and checking if it is successful
     response = postURL("https://{}/sd/{}/deleteChannel/".format(SITE_HOST, p.token), json_file)
     assert(response.status_code == 200)
-    assert('Success. Channels deleted.' == response.read())
+    assert('Success. Channels deleted.' == response.content)
 
     # fetching the JSON info
     f = getURL("https://{}/sd/{}/info/".format(SITE_HOST, p.token))
