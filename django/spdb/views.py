@@ -533,7 +533,7 @@ def autoIngest(request, webargs):
     logger.exception("Unknown exception in jsonProject Web service. {}".format(e))
     raise NDWSError("Unknown exception in jsonProject Web service. {}".format(e))
 
-@api_view(['POST'])
+@api_view(['GET'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
 @permission_classes((IsAuthenticated,))
 def createChannel(request, webargs):
@@ -547,7 +547,7 @@ def createChannel(request, webargs):
     logger.exception("Unknown exception in jsonProject Web service. {}".format(e))
     raise NDWSError("Unknown exception in jsonProject Web service. {}".format(e))
 
-@api_view(['POST'])
+@api_view(['GET'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
 @permission_classes((IsAuthenticated,))
 def deleteChannel(request, webargs):
