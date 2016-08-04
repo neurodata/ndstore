@@ -36,20 +36,11 @@ GET_SLICE_SERVICES = ['xy', 'yz', 'xz']
 GET_ANNO_SERVICES = ['xyanno', 'yzanno', 'xzanno']
 POST_SERVICES = ['hdf5', 'npz', 'raw', 'hdf5_async', 'propagate', 'tiff', 'blosc', 'blaze']
 
-#Token Decorator
-def _verify_access(request, token):
-  if not request.user.is_superuser:
-    m_tokens = Token.objects.filter(user=request.user.id) | Token.objects.filter(public=1)
-    tokens = []
-    for v in m_tokens.values():
-      tokens.append(v['token_name'])
-    if token not in tokens:
-      raise NDWSError ("Token {} does not exist or you do not have\
-                        sufficient permissions to access it.".format(w_token))
 
 @api_view(['GET','POST'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
 @permission_classes((IsAuthenticated,))
+@verify_scope
 def cutout (request, webargs):
   """Restful URL for all read services to annotation projects"""
 
@@ -65,7 +56,7 @@ def cutout (request, webargs):
     raise NDWSError("Incorrect format for arguments {}. {}".format(webargs, e))
 
   try:
-    _verify_access(request, token)
+    verify_scope(request, token)
   except Exception, e:
     logger.warning(e)
     raise e
