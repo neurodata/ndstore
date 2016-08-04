@@ -51,25 +51,28 @@ import ndwsnifti
 from windowcutout import windowCutout
 from ndtype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, ANNOTATION_CHANNELS, NOT_PROPAGATED, UNDER_PROPAGATION, PROPAGATED, ND_dtypetonp, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, READONLY_TRUE, READONLY_FALSE
 from nduser.models import Token
+from functools import wraps
 
 from ndwserror import NDWSError
 import logging
 logger=logging.getLogger("neurodata")
 
 #Token Decorator - Assuming 1st is request 2nd arg is webargs and 1st is token
-def verify_scope(f, *args, **kwargs):
-  request = *args[0]
-  token = *args[1].split('/')[0]
-  if not request.user.is_superuser:
-    m_tokens = Token.objects.filter(user=request.user.id) | Token.objects.filter(public=1)
-    tokens = []
-    for v in m_tokens.values():
-      tokens.append(v['token_name'])
-    if token not in tokens:
-      raise NDWSError ("Token {} does not exist or you do not have\
-                        sufficient permissions to access it.".format(w_token))
-    else:
-      f(*args, **kwargs)
+
+def verify_scope(f):
+  @wraps(f)
+  def wrapped(f, *args, **kwargs):
+    request = *args[0]
+    token = *args[1].split('/')[0]
+    if not request.user.is_superuser:
+      m_tokens = Token.objects.filter(user=request.user.id) | Token.objects.filter(public=1)
+      tokens = []
+      for v in m_tokens.values():
+        tokens.append(v['token_name'])
+      if token not in tokens:
+        raise NDWSError ("Token {} does not exist or you do not have\
+                          sufficient permissions to access it.".format(w_token))
+    return f(*args, **kwargs)
 
 def cutout (imageargs, ch, proj, db):
   """Build and Return a cube of data for the specified dimensions. This method is called by all of the more basic services to build the data. They then format and refine the output. """
