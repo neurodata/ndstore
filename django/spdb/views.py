@@ -55,12 +55,6 @@ def cutout (request, webargs):
     raise NDWSError("Incorrect format for arguments {}. {}".format(webargs, e))
 
   try:
-    verify_scope(request, token)
-  except Exception, e:
-    logger.warning(e)
-    raise e
-
-  try:
     # GET methods
     if request.method == 'GET':
       if service in GET_SLICE_SERVICES+GET_ANNO_SERVICES:
