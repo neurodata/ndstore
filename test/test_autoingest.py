@@ -142,4 +142,3 @@ class Test_AutoIngest_Json():
     resp = postURL("https://{}/sd/autoIngest/".format(SITE_HOST), json_file)
     response = json.loads(resp.content)
     assert('Dataset {} already exists and is different then the chosen dataset. Please choose a different dataset name'.format(p.dataset) == response)
-

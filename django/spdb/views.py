@@ -526,7 +526,7 @@ def autoIngest(request, webargs):
   """RESTful URL for creating a project using a JSON file"""
 
   try:
-    return django.http.HttpResponse(ndwsprojingest.autoIngest(webargs, request.body), content_type="application/json")
+    return ndwsprojingest.autoIngest(webargs, request.body)
   except NDWSError, e:
     return django.http.HttpResponseNotFound()
   except Exception, e:

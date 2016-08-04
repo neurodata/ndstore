@@ -53,8 +53,8 @@ def autoIngest(webargs, post_data):
     channels = nd_dict['channels']
     metadata_dict = nd_dict['metadata']
   except Exception, e:
-    logger.error("Missing requred fields of dataset,project,channels,metadata.")
-    return json.dumps("Missing required fields of dataset,project,channels,metadata. Please check if one of them is not missing.")
+    logger.error("Missing requred fields of dataset, project, channels, metadata.")
+    return HttpResponseBadRequest(json.dumps("Missing required fields of dataset, project, channels, metadata. Please check if one of them is not missing."), content_type="application/json")
   
   # try:
     # DATASET_SCHEMA.validate(dataset_dict)
@@ -101,7 +101,7 @@ def autoIngest(webargs, post_data):
         pr.dataset_id = stored_ds.dataset_name
       else:
         logger.error("Dataset {} already exists and is different then the chosen dataset".format(ds.dataset_name))
-        return json.dumps("Dataset {} already exists and is different then the chosen dataset. Please choose a different dataset name".format(ds.dataset_name))
+        return HttpResponseBadRequest(json.dumps("Dataset {} already exists and is different then the chosen dataset. Please choose a different dataset name".format(ds.dataset_name)), content_type="application/json")
     else:
       ds.save()
       DATASET_CREATED = True
@@ -123,7 +123,7 @@ def autoIngest(webargs, post_data):
             if DATASET_CREATED:
               ds.delete()
             logger.error("Token {} already exists.".format(tk.token_name))
-            return json.dumps("Token {} already exists. Please choose a different token name.".format(tk.token_name))
+            return HttpResponseBadRequest(json.dumps("Token {} already exists. Please choose a different token name.".format(tk.token_name)), content_type="application/json")
         else:
           tk.project_id = stored_pr.project_name
           tk.save()
@@ -134,7 +134,7 @@ def autoIngest(webargs, post_data):
         if TOKEN_CREATED:
           tk.delete()
         logger.error("Project {} already exists.".format(pr.project_name))
-        return json.dumps("Project {} already exists. Please choose a different project name".format(pr.project_name))
+        return HttpResponseBadRequest(json.dumps("Project {} already exists. Please choose a different project name".format(pr.project_name)), content_type="application/json")
     else:
       pr.save()
       try:
@@ -149,7 +149,7 @@ def autoIngest(webargs, post_data):
         if DATASET_CREATED:
           ds.delete()
         logger.error("There was an error in creating the project {} database".format(pr.project_name))
-        return json.dumps("There was an error in creating the project {} database".format(pr.project_name))
+        return HttpResponseBadRequest(json.dumps("There was an error in creating the project {} database".format(pr.project_name)), content_type="application/json")
       tk.project_id = pr.project_name
       tk.save()
 
@@ -180,10 +180,10 @@ def autoIngest(webargs, post_data):
           if DATASET_CREATED:
             ds.delete()
           logger.error("There was an error creating in the channel {} table".format(ch.channel_name))
-          return json.dumps("There was an error in creating the channel {} table.".format(ch.channel_name))
+          return HttpResponseBadRequest(json.dumps("There was an error in creating the channel {} table.".format(ch.channel_name)), content_type="application/json")
       else:
         logger.error("Channel {} already exists.".format(ch.channel_name))
-        return json.dumps("Channel {} already exists. Please choose a different channel name.".format(ch.channel_name))
+        return HttpResponseBadRequest(json.dumps("Channel {} already exists. Please choose a different channel name.".format(ch.channel_name)), content_type="application/json")
       
       # checking if the posted data_url has a trialing slash or not. This becomes an issue in auto-ingest
       if data_url.endswith('/'):
@@ -208,9 +208,9 @@ def autoIngest(webargs, post_data):
       if PROJECT_CREATED:
         pd.deleteNDProject()
     logger.error("Error saving models. There was an error in the information posted")
-    return json.dumps("FAILED. There was an error in the information you posted.")
+    return HttpResponseBadRequest(json.dumps("FAILED. There was an error in the information you posted."), content_type="application/json")
 
-  return json.dumps("SUCCESS. The ingest process has now started.")
+  return HttpResponse(json.dumps("SUCCESS. The ingest process has now started."), content_type="application/json")
 
 def createChannel(webargs, post_data):
   """Create a list of channels using a JSON file"""
