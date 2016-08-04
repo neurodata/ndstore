@@ -40,7 +40,6 @@ POST_SERVICES = ['hdf5', 'npz', 'raw', 'hdf5_async', 'propagate', 'tiff', 'blosc
 @api_view(['GET','POST'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
 @permission_classes((IsAuthenticated,))
-@verify_scope
 def cutout (request, webargs):
   """Restful URL for all read services to annotation projects"""
 
