@@ -183,12 +183,6 @@ def annotation (request, webargs):
   [token, channel, rest] = webargs.split('/',2)
 
   try:
-    _verify_access(request, token)
-  except Exception, e:
-    logger.warning(e)
-    raise e
-
-  try:
     if request.method == 'GET':
       # check for json vs hdf5
       if rest.split('/')[1] == 'json':
