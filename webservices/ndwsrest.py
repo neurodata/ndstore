@@ -1690,7 +1690,7 @@ def queryAnnoObjects ( webargs, postdata=None ):
   """Return a list of anno ids restricted by equality predicates. Equalities are alternating in field/value in the url."""
 
   try:
-    m = re.match("(\w+)/(\w+)/query/(.*)/?$", webargs)
+    m = re.search("(\w+)/(\w+)/query/(.*)/?$", webargs)
     [token, channel, restargs] = [i for i in m.groups()]
   except Exception, e:
     logger.error("Wrong arguments {}. {}".format(webargs, e))

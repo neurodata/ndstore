@@ -573,7 +573,7 @@ class AnnNode (Annotation):
 
     self.nodetype = 0                           # enumerated label
     self.skeleton = 0
-    self.point = 0
+    self.point = 0                              # 
     self.location=np.array([], dtype=np.float)
     self.parent = 0                           # parent node
     self.radius = 0.0

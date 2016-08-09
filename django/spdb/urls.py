@@ -59,6 +59,8 @@ urlpatterns = patterns('spdb.views',
   url(r'(?P<webargs>^\w+/\w+/merge/[\w,/]+)$', 'merge'),
   # csv metadata read
   url(r'(?P<webargs>^\w+/(csv)[\d+/]?[\w,/]*)$', 'csv'),
+  # RAMON JSON interfaces
+  url(r'(?P<webargs>^\w+/\w+/ramon/[\d+/]?[\w,/]*)$', 'jsonramon'),
   # HDF5 interfaces
   url(r'(?P<webargs>^\w+/\w+/[\d+/]?[\w,/]*)$', 'annotation'),
   # JSON interfaces
