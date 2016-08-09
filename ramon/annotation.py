@@ -174,10 +174,8 @@ class AnnSynapse (Annotation):
       self.segments = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
     elif field == 'presegments':
       self.presegments = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
-      print 'PRE in set', self.presegments
     elif field == 'postsegments':
       self.postsegments = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
-      print 'POST in set', self.postsegments
     elif field == 'centroid':
       self.centroid = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
       if len(self.centroid) != 3:
@@ -194,6 +192,7 @@ class AnnSynapse (Annotation):
     kvdict['syn_weight'] = self.weight   
     kvdict['syn_type'] = self.synapse_type   
     [ kvdict['syn_seeds'].append(s) for s in self.seeds ] 
+    import pdb; pdb.set_trace()
     [ kvdict['syn_segments'].append(s) for s in self.segments ] 
     [ kvdict['syn_presegments'].append(s) for s in self.presegments ] 
     [ kvdict['syn_postsegments'].append(s) for s in self.postsegments ] 
@@ -226,7 +225,7 @@ class AnnSynapse (Annotation):
         if type(v) == list:
           self.segments = [int(s) for s in v]
         else:
-          self.segments = [int(s) for s in v.replace('[','').replace(']','').split() if s.isdigit()] 
+          self.segments = [int(s)]
       elif k == 'syn_presegments':
         if type(v) == list:
           self.presegments = [int(s) for s in v]

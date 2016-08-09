@@ -271,7 +271,6 @@ class MySQLRamonDB:
     try:
       self.cursor.executemany ( sql, data )
     except MySQLdb.Error, e:
-      import pdb; pdb.set_trace()
       logger.error ( "Failed to put annotation: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
       raise
 
@@ -285,6 +284,22 @@ class MySQLRamonDB:
     except MySQLdb.Error, e:
       logger.error ( "Failed to delete annotation: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
       raise
+
+  # getKVQuery
+  #    Return a list of annotation object IDs that match a specific key/value string
+  def getKVQuery ( self, ch, qkey, qvalue ):
+    """Return a list of annotation object ids that match equality predicates on key value."""
+
+    sql = "SELECT annoid FROM {}_ramon WHERE kv_key = '{}' AND kv_value = '{}'".format(ch.getChannelName(), qkey, qvalue)
+
+    try:
+      self.cursor.execute ( sql )
+      annoids = np.array ( self.cursor.fetchall(), dtype=np.uint32 ).flatten()
+    except MySQLdb.Error, e:
+      logger.error ( "Error retrieving ids: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise
+
+    return np.array(annoids)
 
 
   # getAnnoObjects:

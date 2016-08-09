@@ -180,3 +180,8 @@ class RamonDB:
     """equality and predicate queries on metadata"""
 
     return self.annodb.getAnnoObjects ( ch, args )  
+
+  def getKVQuery ( self, ch, qkey, qvalue ):
+    """Return a list of object ids that match a key/value pair"""
+
+    return self.annodb.getKVQuery ( ch, qkey, qvalue )  
