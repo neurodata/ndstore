@@ -185,3 +185,8 @@ class RamonDB:
     """Return a list of object ids that match a key/value pair"""
 
     return self.annodb.getKVQuery ( ch, qkey, qvalue )  
+
+  def getTopKeys ( self, ch, count, anntype ):
+    """Return the count top keys in the database."""
+
+    return self.annodb.getTopKeys ( ch, count, anntype )  

@@ -192,7 +192,6 @@ class AnnSynapse (Annotation):
     kvdict['syn_weight'] = self.weight   
     kvdict['syn_type'] = self.synapse_type   
     [ kvdict['syn_seeds'].append(s) for s in self.seeds ] 
-    import pdb; pdb.set_trace()
     [ kvdict['syn_segments'].append(s) for s in self.segments ] 
     [ kvdict['syn_presegments'].append(s) for s in self.presegments ] 
     [ kvdict['syn_postsegments'].append(s) for s in self.postsegments ] 
