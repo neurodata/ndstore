@@ -105,7 +105,7 @@ class SimpleCatmaid:
 
     # OK this weird but we have to choose a convention.  xtile ytile ztile refere to the URL request.  So ztile is ydata
     #  but xstart, zstart..... etc. refer to ndstore coordinates for the cutout.
-    import pdb; pdb.set_trace()
+    #
     # z cutouts need to get rescaled
     # we'll map to the closest pixel range and tolerate one pixel error at the boundary
     # scalefactor = zvoxel / yvoxel
