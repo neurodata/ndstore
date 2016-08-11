@@ -1,5 +1,5 @@
 Data API
-***********
+********
 
 .. _data-api:
 
@@ -45,7 +45,8 @@ POST
    :form DATATYPE: HDF5 group, Data type(uint8, uint16, uint32, rgb32, rgb64, float32)
 
    :statuscode 200: No error
-   :statuscode 404: Error in the syntax or file format
+   :statuscode 403: Forbidden
+   :statuscode 404: Error in the syntax
 
 .. gist:: https://gist.github.com/kunallillaney/19b78e5a83611edf7808
 
@@ -88,8 +89,8 @@ GET
    :form DATATYPE: HDF5 group, Data type(uint8, uint16, uint32, rgb32, rgb64, float32)
 
    :statuscode 200: No error
-   :statuscode 404: Error in the syntax or file format
-
+   :statuscode 403: Forbidden
+   :statuscode 404: Error in the syntax
 
 
 Blosc Service
@@ -167,6 +168,7 @@ GET
    :type max_time: int
 
    :statuscode 200: No error
+   :statuscode 403: Forbidden
    :statuscode 404: Error in the syntax or file format
 
 
@@ -210,6 +212,7 @@ POST
    :form DATA: Numpy Array
 
    :statuscode 200: No error
+   :statuscode 403: Forbidden
    :statuscode 404: Error in the syntax or file format
 
 .. gist:: https://gist.github.com/kunallillaney/19b78e5a83611edf7808
@@ -248,9 +251,8 @@ GET
    :param max_time: Maximum value in the timerange. *Optional*. Only used for timeseries channels.
    :type max_time: int
 
-   :form DATA: Numpy Array
-
-   :statuscode 200: No error
+   :statuscode 200: Returns a zipped Numpy array
+   :statuscode 403: Forbidden
    :statuscode 404: Error in the syntax or file format
 
 RAW Service
@@ -290,7 +292,6 @@ GET
    :param max_time: Maximum value in the timerange. *Optional*. Only used for timeseries channels.
    :type max_time: int
 
-   :form DATA: Web readable raw binary of numpy array in C-style
-
-   :statuscode 200: No error
+   :statuscode 200: Returns a web readable raw binary of numpy array in C-style
+   :statuscode 403: Forbidden
    :statuscode 404: Error in the syntax or file format

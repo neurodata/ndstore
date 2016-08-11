@@ -164,17 +164,21 @@
     1. test_window_default
     2. test_window_args
 
-* test_json.py - 6 tests
+* test_autoingest.py - 3 tests
   
-  - Module : Test_Project_Json
+  - Module : Test_AutoIngest_Json
     1. test_basic_json
     2. test_complex_json
     3. test_error_json
+
+* test_project_management.py - 3 tests
+  
   - Module : Test_Create_Channel_Json
     1. test_create_json
     2. test_error_json
   - Module : Test_Delete_Channel_Json
     1. test_single_channel_json
+
 
 * test_graphgen.py - 4 tests
   

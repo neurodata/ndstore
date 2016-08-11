@@ -34,6 +34,7 @@ getSimpleTile
    :type resolution: int
 
    :statuscode 200: No error
+   :statuscode 403: Forbidden
    :statuscode 404: Error in the syntax or file format
 
    **Example Request**:
@@ -41,7 +42,6 @@ getSimpleTile
    .. sourcecode:: http
    
       GET  /nd/catmaid/kasthuri11/image/xy/1/1_1_4.png HTTP/1.1
-
       Host: openconnecto.me
 
    **Example Response**:
@@ -87,6 +87,7 @@ getMcfcTile
    :type resolution: int
 
    :statuscode 200: No error
+   :statuscode 403: Forbidden
    :statuscode 404: Error in the syntax or file format
 
    **Example Request**:
@@ -94,7 +95,6 @@ getMcfcTile
    .. sourcecode:: http
    
       GET  /nd/catmaid/mcfc/Thy1eYFPBrain10/Grayscale/xy/500/0_0_3.png HTTP/1.1
-      
       Host: openconnecto.me
 
    **Example Response**:
@@ -134,14 +134,14 @@ getVikingTile
    :type zvalue: int
 
    :statuscode 200: No error
-   :statuscode 404: Error in the syntax or file format
+   :statuscode 403: Forbidden
+   :statuscode 404: Error in the syntax
 
    **Example Request**:
 
    .. sourcecode:: http
    
       GET  /nd/catmaid/viking/kasthuri11/volume/image/4/X1_Y1_Z10.png HTTP/1.1
-      
       Host: openconnecto.me
 
    **Example Response**:

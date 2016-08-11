@@ -13,9 +13,20 @@ Overview
 
 Our data model for image datasets is composed of the following components:
 
+.. _dataset:
+
 * Dataset: containing metadata required to efficiently store, visualize, and analyze data for a set of projects; it effectively defines the dataspace. The dataset itself contains no actual data, as the actual data is stored in the channel objects.
+
+.. _project:
+
 * Project: is a database storing a collection of channels
+
+.. _token:
+
 * Token: a name for a project, a project can have multiple tokens, each with different permissions (eg, read vs. write)
+
+.. _channel:
+
 * Channel: is a collection of tables, including the actual images, as well as metadata
 
 To understand the relationship between the above 4 different components of the data model, consider the following example.
@@ -62,7 +73,7 @@ Dataset Attributes
 
 .. function:: Voxel Resolution
 
-    Voxel Resolution is the voxel scale per unit pixel. We store X,Y,Z voxel resolution separately.
+    Voxel Resolution is the voxel scale in nanometer per unit pixel. We store X,Y,Z voxel resolution separately.
 
    :Type: [FLOAT,FLOAT,FLOAT]
    :Default: [0.0,0.0,0.0]

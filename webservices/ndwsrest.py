@@ -193,7 +193,7 @@ def JPEG ( chanargs, proj, db ):
   
     xdim, ydim, zdim = cubedata[0,:,:,:].shape[::-1]
     #cubedata = np.swapaxes(cubedata[0,:,:,:], 0,2).reshape(xdim*zdim, ydim)
-    cubedata = cubedata[0,:,:,:].reshape(xdim*zdim, ydim)
+    cubedata = cubedata[0,:,:,:].reshape(ydim*zdim, xdim)
     
     if ch.getDataType() in DTYPE_uint16:
       img = Image.fromarray(cubedata, mode='I;16')
@@ -1690,7 +1690,7 @@ def queryAnnoObjects ( webargs, postdata=None ):
   """Return a list of anno ids restricted by equality predicates. Equalities are alternating in field/value in the url."""
 
   try:
-    m = re.match("(\w+)/(\w+)/query/(.*)/?$", webargs)
+    m = re.search("(\w+)/(\w+)/query/(.*)/?$", webargs)
     [token, channel, restargs] = [i for i in m.groups()]
   except Exception, e:
     logger.error("Wrong arguments {}. {}".format(webargs, e))

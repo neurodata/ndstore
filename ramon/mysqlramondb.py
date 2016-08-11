@@ -271,7 +271,6 @@ class MySQLRamonDB:
     try:
       self.cursor.executemany ( sql, data )
     except MySQLdb.Error, e:
-      import pdb; pdb.set_trace()
       logger.error ( "Failed to put annotation: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
       raise
 
@@ -285,6 +284,39 @@ class MySQLRamonDB:
     except MySQLdb.Error, e:
       logger.error ( "Failed to delete annotation: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
       raise
+
+  # getKVQuery
+  #    Return a list of annotation object IDs that match a specific key/value string
+  def getKVQuery ( self, ch, qkey, qvalue ):
+    """Return a list of annotation object ids that match equality predicates on key value."""
+
+    sql = "SELECT annoid FROM {}_ramon WHERE kv_key = '{}' AND kv_value = '{}'".format(ch.getChannelName(), qkey, qvalue)
+
+    try:
+      self.cursor.execute ( sql )
+      annoids = np.array ( self.cursor.fetchall(), dtype=np.uint32 ).flatten()
+    except MySQLdb.Error, e:
+      logger.error ( "Error retrieving ids: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise
+
+    return np.array(annoids)
+
+  def getTopKeys ( self, ch, count, anntype ):
+    """Return the count top keys in the database."""
+
+    if anntype == None:
+      sql = "SELECT kv_key FROM {}_ramon GROUP BY kv_key ORDER BY COUNT(kv_key) LIMIT {}".format(ch.getChannelName(), count)
+    else:
+      sql = "SELECT kv_key FROM {}_ramon WHERE annoid in (select annoid from anno_ramon where kv_key = 'ann_type' and kv_value = {}) GROUP BY kv_key ORDER BY COUNT(kv_key) LIMIT {}".format(ch.getChannelName(), anntype, count)
+
+    try:
+      self.cursor.execute ( sql )
+      topkeys = list(self.cursor.fetchall())
+    except MySQLdb.Error, e:
+      logger.error ( "Error retrieving ids: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise
+
+    return topkeys
 
 
   # getAnnoObjects:
