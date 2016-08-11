@@ -28,6 +28,8 @@ def ingestSWC ( res, swcfile, ch, db ):
         parsing out separate connected components as skeletons
         deduplicating nodes (for Vaa3d) """     
 
+  import pdb; pdb.set_trace()
+
   # dictionary of skeletons by parent node id
   skels = {}
 

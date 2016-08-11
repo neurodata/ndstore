@@ -30,7 +30,7 @@ def main():
 
   result = parser.parse_args()
 
-  url = 'http://%s/ca/%s/%s/swc/%s/' % ( result.baseurl, result.token, result.channel, result.resolution )
+  url = 'http://%s/sd/%s/%s/swc/%s/' % ( result.baseurl, result.token, result.channel, result.resolution )
 
   print url
 

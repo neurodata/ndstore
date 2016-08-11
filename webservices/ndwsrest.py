@@ -1662,7 +1662,7 @@ def putSWC ( webargs, postdata ):
   with closing ( ndproj.NDProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
   
-  with closing ( spatialdb.SpatialDB(proj) ) as db:
+  with closing ( ramondb.RamonDB(proj) ) as rdb:
 
     ch = ndproj.NDChannel(proj, channel)
     
@@ -1678,7 +1678,7 @@ def putSWC ( webargs, postdata ):
       tmpfile.seek(0)
 
       # Parse the swc file into skeletons
-      swc_skels = ndwsskel.ingestSWC ( resolution, tmpfile, ch, db )
+      swc_skels = ndwsskel.ingestSWC ( resolution, tmpfile, ch, rdb )
 
       return swc_skels
 

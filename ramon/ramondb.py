@@ -57,6 +57,10 @@ class RamonDB:
     """Call close on whatever type this is"""
     self.annodb.close()
 
+  def reserve ( self, ch, count ):
+    """Reserve contiguous identifiers. This is it's own txn and should not be called inside another transaction."""
+ 
+    return self.annodb.reserve ( ch, count ) 
 
   def assignID ( self, ch, annid ):
     """if annid == 0, create a new identifier"""
