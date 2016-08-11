@@ -21,7 +21,6 @@ import cStringIO
 import mcfccatmaid
 import simplecatmaid
 import maxprojcatmaid
-import filtercatmaid
 
 # Errors we are going to catch
 from ndwserror import NDWSError
