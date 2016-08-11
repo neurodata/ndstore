@@ -27,20 +27,17 @@ import MySQLdb
 import time 
 
 sys.path += [os.path.abspath('../django')]
-import OCP.settings
-os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
+import ND.settings
+os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
 
 import django
 from django.conf import settings
 django.setup()
 
-from ocpuser.models import Project
-from ocpuser.models import Token
-from ocpuser.models import Channel
-from ocpuser.models import Dataset
+from nduser.models import Project, Token, Channel, Dataset 
 from django.contrib.auth.models import User
 
-import ocpcaproj
+import ndproj
 
 DATATYPE = { 1:['image','uint8'], 2:['annotation','uint32'], 3:['oldchannel','uint16'], 4:['oldchannel','uint8'], 5:['image','uint32'], 6:['image','uint8'], 7:['annotation','uint64'], 8:['image','uint16'], 9:['image','uint32'], 10:['image','uint64'], 11:['timeseries','uint8'], 12:['timeseries','uint16'] }
 
@@ -108,8 +105,8 @@ class migrateOldchannel:
 
       try:
         ch.save()
-        pd = ocpcaproj.OCPCAProjectsDB()
-        pd.newOCPCAChannel( pr.project_name, ch.channel_name )
+        pd = ndproj.NDProjectsDB.getProjDB(pr)
+        pd.newNDChannel( ch.channel_name )
         print "Created channel {}".format(channel)
       except Exception, e:
         print "[ERROR]: {}".format(e)
@@ -177,7 +174,7 @@ def main():
 
   parser = argparse.ArgumentParser(description="Migrate oldchannel to new schema.")
   parser.add_argument('old_project', action='store', help='The name of the old project / DB')
-  parser.add_argument('new_project', action='store', help='The name of the new OCP project (where channels will be created)')
+  parser.add_argument('new_project', action='store', help='The name of the new ND project (where channels will be created)')
   parser.add_argument('datatype', action='store', help='Can be uint8, uint16, uint32, uint64, or float32.')
   parser.add_argument('--agree', dest='agree', action='store_true', help='I understand running this script improperly will surely cause data loss!')
   parser.add_argument('--channels', dest='channels', action='store_true', help='Add this flag to migrate old channels (in single table) to new channels (separate tables).')
