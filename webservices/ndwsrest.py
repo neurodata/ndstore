@@ -35,7 +35,6 @@ from operator import sub, add
 from libtiff import TIFFfile, TIFFimage
 
 import restargs
-import anncube
 import spatialdb
 import ramondb
 import ndproj
@@ -85,6 +84,7 @@ def cutout (imageargs, ch, proj, db):
   filterCube(ch, cube, filterlist)
   return cube
 
+
 def filterCube(ch, cube, filterlist=None):
   """Call Filter on a cube"""
 
@@ -93,6 +93,39 @@ def filterCube(ch, cube, filterlist=None):
   elif filterlist is not None and ch.getChannelType not in ANNOTATION_CHANNELS:
     logger.error("Filter only possible for Annotation Channels")
     raise NDWSError("Filter only possible for Annotation Channels")
+
+
+def channelIterCutout(channels, imageargs, proj, db):
+  """Create a numpy datacube array using data from the given channels."""
+  
+  try:
+    # extract the first channel
+    channel_list = channels.split(',')
+    ch = proj.getChannelObj(channel_list[0])
+    
+    # call cutout for first channel
+    channel_data = cutout( imageargs, ch, proj, db ).data
+    cubedata = np.zeros ( (len(channel_list),)+channel_data.shape, dtype=channel_data.dtype )
+    cubedata[0,:] = channel_data
+
+    # if one channel convert 3-d to 4-d array
+    # iterate from second to nth channel
+    for idx,channel_name in enumerate(channel_list[1:]):
+      if channel_name == '0':
+        continue
+      else:
+        ch = proj.getChannelObj(channel_name)
+        if ND_dtypetonp[ch.getDataType()] == cubedata.dtype:
+          cubedata[idx+1,:] = cutout(imageargs, ch, proj, db).data
+        else:
+          logger.error("The cutout {} can only contain cutouts of one single Channel Type.".format())
+          raise NDWSError("The cutout {} can only contain cutouts of one single Channel Type.".format())
+
+    return cubedata
+  except Exception, e:
+    logger.error("{}".format(e))
+    raise NDWSError("{}".format(e))
+
 
 def numpyZip ( chanargs, proj, db ):
   """Return a web readable Numpy Pickle zipped"""
@@ -104,27 +137,9 @@ def numpyZip ( chanargs, proj, db ):
   except Exception, e:
     logger.error("Arguments not in the correct format {}. {}".format(chanargs, e))
     raise NDWSError("Arguments not in the correct format {}. {}".format(chanargs, e))
-
-  try: 
-    channel_list = channels.split(',')
-    ch = proj.getChannelObj(channel_list[0])
-
-    channel_data = cutout( imageargs, ch, proj, db ).data
-    cubedata = np.zeros ( (len(channel_list),)+channel_data.shape, dtype=channel_data.dtype )
-    cubedata[0,:] = channel_data
-
-    # if one channel convert 3-d to 4-d array
-    for idx,channel_name in enumerate(channel_list[1:]):
-      if channel_name == '0':
-        continue
-      else:
-        ch = proj.getChannelObj(channel_name)
-        if ND_dtypetonp[ch.getDataType()] == cubedata.dtype:
-          cubedata[idx+1,:] = cutout(imageargs, ch, proj, db).data
-        else:
-          raise NDWSError("The npz cutout can only contain cutouts of one single Channel Type.")
-
     
+  try:
+    cubedata = channelIterCutout(channels, imageargs, proj, db)
     # Create the compressed cube
     fileobj = cStringIO.StringIO ()
     np.save ( fileobj, cubedata )
@@ -134,8 +149,30 @@ def numpyZip ( chanargs, proj, db ):
     fileobj = cStringIO.StringIO(cdz)
     fileobj.seek(0)
     return fileobj.read()
+  except Exception, e:
+    logger.error("{}".format(e))
+    raise NDWSError("{}".format(e))
 
-  except Exception,e:
+
+def RAW ( chanargs, proj, db ):
+  """Return a web readable raw binary representation (knossos format).
+  It's a simple binary representation with the multidimensional array being
+  converted into a byte array in C-style iteration over the matrix."""
+
+  try:
+    # argument of format channel/service/imageargs
+    m = re.match("([\w+,]+)/(\w+)/([\w+,/-]+)$", chanargs)
+    [channels, service, imageargs] = [i for i in m.groups()]
+  except Exception, e:
+    logger.error("Arguments not in the correct format {}. {}".format(chanargs, e))
+    raise NDWSError("Arguments not in the correct format {}. {}".format(chanargs, e))
+  
+  try:
+    cubedata = channelIterCutout(channels, imageargs, proj, db)
+    binary_representation = cubedata.tobytes("C")
+    return binary_representation
+  except Exception, e:
+    logger.error("{}".format(e))
     raise NDWSError("{}".format(e))
 
 
@@ -150,28 +187,13 @@ def JPEG ( chanargs, proj, db ):
     logger.error("Arguments not in the correct format {}. {}".format(chanargs, e))
     raise NDWSError("Arguments not in the correct format {}. {}".format(chanargs, e))
 
-  try: 
-    channel_list = channels.split(',')
-    ch = proj.getChannelObj(channel_list[0])
-
-    channel_data = cutout( imageargs, ch, proj, db ).data
-    cubedata = np.zeros ( (len(channel_list),)+channel_data.shape, dtype=channel_data.dtype )
-    cubedata[0,:] = channel_data
-
-    # if one channel convert 3-d to 4-d array
-    for idx,channel_name in enumerate(channel_list[1:]):
-      if channel_name == '0':
-        continue
-      else:
-        ch = proj.getChannelObj(channel_name)
-        if ND_dtypetonp[ch.getDataType()] == cubedata.dtype:
-          cubedata[idx+1,:] = cutout(imageargs, ch, proj, db).data
-        else:
-          raise NDWSError("The npz cutout can only contain cutouts of one single Channel Type.")
-
+  try:
+    ch = proj.getChannelObj(channels.split(',')[0])
+    cubedata = channelIterCutout(channels, imageargs, proj, db)
+  
     xdim, ydim, zdim = cubedata[0,:,:,:].shape[::-1]
     #cubedata = np.swapaxes(cubedata[0,:,:,:], 0,2).reshape(xdim*zdim, ydim)
-    cubedata = cubedata[0,:,:,:].reshape(xdim*zdim, ydim)
+    cubedata = cubedata[0,:,:,:].reshape(ydim*zdim, xdim)
     
     if ch.getDataType() in DTYPE_uint16:
       img = Image.fromarray(cubedata, mode='I;16')
@@ -187,6 +209,7 @@ def JPEG ( chanargs, proj, db ):
     return fileobj.read()
 
   except Exception,e:
+    logger.error("{}".format(e))
     raise NDWSError("{}".format(e))
 
 
@@ -201,29 +224,12 @@ def BLOSC ( chanargs, proj, db ):
     logger.error("Arguments not in the correct format {}. {}".format(chanargs, e))
     raise NDWSError("Arguments not in the correct format {}. {}".format(chanargs, e))
 
-  try: 
-    channel_list = channels.split(',')
-    ch = proj.getChannelObj(channel_list[0])
-
-    channel_data = cutout( imageargs, ch, proj, db ).data
-    cubedata = np.zeros ( (len(channel_list),)+channel_data.shape, dtype=channel_data.dtype )
-    cubedata[0,:] = channel_data
-
-    # if one channel convert 3-d to 4-d array
-    for idx,channel_name in enumerate(channel_list[1:]):
-      if channel_name == '0':
-        continue
-      else:
-        ch = proj.getChannelObj(channel_name)
-        if ND_dtypetonp[ch.getDataType()] == cubedata.dtype:
-          cubedata[idx+1,:] = cutout(imageargs, ch, proj, db).data
-        else:
-          raise NDWSError("The npz cutout can only contain cutouts of one single Channel Type.")
-    
+  try:
+    cubedata = channelIterCutout(channels, imageargs, proj, db)
     # Create the compressed cube
     return blosc.pack_array(cubedata)
-
   except Exception,e:
+    logger.error("{}".format(e))
     raise NDWSError("{}".format(e))
 
 
@@ -238,26 +244,9 @@ def binZip ( chanargs, proj, db ):
     logger.error("Arguments not in the correct format {}. {}".format(chanargs, e))
     raise NDWSError("Arguments not in the correct format {}. {}".format(chanargs, e))
 
-  try: 
-    channel_list = channels.split(',')
-    ch = proj.getChannelObj(channel_list[0])
-
-    channel_data = cutout( imageargs, ch, proj, db ).data
-    cubedata = np.zeros ( (len(channel_list),)+channel_data.shape, dtype=channel_data.dtype )
-    cubedata[0,:] = channel_data
-
-    # if one channel convert 3-d to 4-d array
-    for idx,channel_name in enumerate(channel_list[1:]):
-      if channel_name == '0':
-        continue
-      else:
-        ch = proj.getChannelObj(channel_name)
-        if ND_dtypetonp[ch.getDataType()] == cubedata.dtype:
-          cubedata[idx+1,:] = cutout(imageargs, ch, proj, db).data
-        else:
-          raise NDWSError("The npz cutout can only contain cutouts of one single Channel Type.")
-
-    
+  try:
+    cubedata = channelIterCutout(channels, imageargs, proj, db)
+      
     # Create the compressed cube
     cdz = zlib.compress (cubedata.tostring()) 
 
@@ -265,8 +254,8 @@ def binZip ( chanargs, proj, db ):
     fileobj = cStringIO.StringIO(cdz)
     fileobj.seek(0)
     return fileobj.read()
-
   except Exception,e:
+    logger.error("{}".format(e))
     raise NDWSError("{}".format(e))
 
 
@@ -294,15 +283,16 @@ def HDF5(chanargs, proj, db):
       changrp.create_dataset("CUTOUT", tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data)
       changrp.create_dataset("CHANNELTYPE", (1,), dtype=h5py.special_dtype(vlen=str), data=ch.getChannelType())
       changrp.create_dataset("DATATYPE", (1,), dtype=h5py.special_dtype(vlen=str), data=ch.getDataType())
+  
+    fh5out.close()
+    tmpfile.seek(0)
+    return tmpfile.read()
 
-  except:
+  except Exception, e:
     fh5out.close()
     tmpfile.close()
-    raise
-
-  fh5out.close()
-  tmpfile.seek(0)
-  return tmpfile.read()
+    logger.error("{}".format(e))
+    raise NDWSError("{}".format(e))
 
 
 def postTiff3d ( channel, postargs, proj, db, postdata ):
@@ -700,6 +690,8 @@ def selectService ( service, webargs, proj, db ):
     return  numpyZip ( webargs, proj, db ) 
   elif service in ['blosc']:
     return  BLOSC ( webargs, proj, db ) 
+  elif service in ['raw']:
+    return  RAW ( webargs, proj, db )
   elif service in ['jpeg']:
     return JPEG ( webargs, proj, db )
   elif service in ['zip']:
@@ -750,6 +742,12 @@ def selectPost ( webargs, proj, db, postdata ):
       if service == 'tiff':
         return postTiff3d ( channel, postargs, proj, db, postdata )
 
+      elif service == 'blaze':
+        
+        for channel_name in channel_list:
+          ch = proj.getChannelObj(channel_name)
+          db.writeBlazeCuboid(ch, corner, resolution, postdata, timerange=timerange) 
+      
       elif service == 'hdf5':
         
         # Get the HDF5 file.
@@ -973,7 +971,7 @@ def getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution=None, c
       dataids = [anno.annid]
 
     # get the bounding box from the index
-    bbcorner, bbdim = db.getBoundingBox(ch, dataids, resolution)
+    bbcorner, bbdim = db.getBoundingCube(ch, dataids, resolution)
 
     # figure out which ids are in object
     if bbcorner != None:
@@ -1356,8 +1354,7 @@ def putAnnotation ( webargs, postdata ):
 
     # return string of id values
     retvals = [] 
-
-  
+    
     # check to see if we're doing a JSON post or HDF5 post 
     if 'json' in optionsargs.split('/'):
     
@@ -1365,10 +1362,9 @@ def putAnnotation ( webargs, postdata ):
 
       if len(annobjdict.keys()) != 1:
         # for now we just accept a single annotation
-        logger.error("Error: Can only accept one annotation. Tried to post {}.".format(len(annobjdict.keys())))
-        raise NDWSError("Error: Can only accept one annotation. Tried to post {}.".format(len(annobjdict.keys())))
+        logger.error("JSON post interface can only accept one annotation. Tried to post {}.".format(len(annobjdict.keys())))
+        raise NDWSError("JSON post interface can only accept one annotation. Tried to post {}.".format(len(annobjdict.keys())))
 
-  
       # create annotation object by type 
       annotype = annobjdict[ annobjdict.keys()[0] ]['ann_type'] 
 
@@ -1393,7 +1389,7 @@ def putAnnotation ( webargs, postdata ):
       
       anno.fromDict( annobjdict[ annobjdict.keys()[0] ] )
 
-      # is this an update?
+      # if the post is an update
       if 'update' in optionsargs.split('/'):
         rdb.putAnnotation(ch, anno, 'update')
 
@@ -1401,7 +1397,7 @@ def putAnnotation ( webargs, postdata ):
         # set the ID (if provided) 
         anno.setField('annid', (rdb.assignID(ch,anno.annid)))
       
-        # ABTODO not taking any options?   need to define
+        # ABTODO not taking any options? need to define
         options = []
         # Put into the database
         rdb.putAnnotation(ch, anno, options)
@@ -1418,7 +1414,7 @@ def putAnnotation ( webargs, postdata ):
       with closing (tempfile.NamedTemporaryFile()) as tmpfile:
         tmpfile.write ( postdata )
         tmpfile.seek(0)
-        h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
+        h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False ) 
 
         # get the conflict option if it exists
         options = optionsargs.split('/')
@@ -1428,21 +1424,26 @@ def putAnnotation ( webargs, postdata ):
           conflictopt = 'E'
         else:
           conflictopt = 'O'
-
+    
         try:
     
+          if len(h5f.keys()) == 0:
+            logger.error("Error. Failed to parse HDF5 file because it was empty.")
+            raise NDWSError("Error. Failed to parse HDF5 file becuase it was empty.") 
+
           for k in h5f.keys():
-            
+             
             idgrp = h5f.get(k)
     
             # Convert HDF5 to annotation
-            anno = h5ann.H5toAnnotation(k, idgrp, rdb, ch)
-    
+            anno = h5ann.H5toAnnotation(k, idgrp, db, ch)
+            
             # set the identifier (separate transaction)
             if not ('update' in options or 'dataonly' in options or 'reduce' in options):
               anno.setField('annid',(rdb.assignID(ch,anno.annid)))
     
             # start a transaction: get mysql out of line at a time mode
+            #db.startTxn()
     
             tries = 0 
             done = False
@@ -1451,12 +1452,12 @@ def putAnnotation ( webargs, postdata ):
               try:
     
                 if anno.__class__ in [ annotation.AnnNeuron, annotation.AnnSeed ] and ( idgrp.get('VOXELS') or idgrp.get('CUTOUT')):
-                  logger.error ("Cannot write to annotation type {}".format(anno.__class__))
-                  raise NDWSError ("Cannot write to annotation type {}".format(anno.__class__))
+                  logger.warning ("Cannot write to annotation type {}".format(anno.__class__))
+                  raise OCPCAError ("Cannot write to annotation type {}".format(anno.__class__))
     
                 if 'update' in options and 'dataonly' in options:
-                  logger.error ("Illegal combination of options. Cannot use udpate and dataonly together")
-                  raise NDWSError ("Illegal combination of options. Cannot use udpate and dataonly together")
+                  logger.warning ("Illegal combination of options. Cannot use udpate and dataonly together")
+                  raise OCPCAError ("Illegal combination of options. Cannot use udpate and dataonly together")
     
                 elif not 'dataonly' in options and not 'reduce' in options:
                   # Put into the database
@@ -1485,8 +1486,8 @@ def putAnnotation ( webargs, postdata ):
     
                   # Check that the voxels have a conforming size:
                   if voxels.shape[1] != 3:
-                    logger.error ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
-                    raise NDWSError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
+                    logger.warning ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
+                    raise OCPCAError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
     
                   exceptions = db.annotate ( ch, anno.annid, resolution, voxels, conflictopt )
     
@@ -1495,8 +1496,8 @@ def putAnnotation ( webargs, postdata ):
 
                   # Check that the voxels have a conforming size:
                   if voxels.shape[1] != 3:
-                    logger.error ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
-                    raise NDWSError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
+                    logger.warning ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
+                    raise OCPCAError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
                   db.shave ( ch, anno.annid, resolution, voxels )
     
                 # Is it dense data?
@@ -1508,7 +1509,7 @@ def putAnnotation ( webargs, postdata ):
                   h5xyzoffset = idgrp.get('XYZOFFSET')
                 else:
                   h5xyzoffset = None
-    
+  
                 if cutout != None and h5xyzoffset != None and 'reduce' not in options:
     
                   #  the zstart in datasetcfg is sometimes offset to make it aligned.
@@ -1689,7 +1690,7 @@ def queryAnnoObjects ( webargs, postdata=None ):
   """Return a list of anno ids restricted by equality predicates. Equalities are alternating in field/value in the url."""
 
   try:
-    m = re.match("(\w+)/(\w+)/query/(.*)/?$", webargs)
+    m = re.search("(\w+)/(\w+)/query/(.*)/?$", webargs)
     [token, channel, restargs] = [i for i in m.groups()]
   except Exception, e:
     logger.error("Wrong arguments {}. {}".format(webargs, e))
@@ -2132,6 +2133,10 @@ def minmaxProject ( webargs ):
   # split the channel string
   channels = chanstr.split(",")
 
+  # check for one channel only 
+  if len (channels) != 1:
+    raise NDWSError("min or max project processes one channel at a time.")
+ 
   # pattern for using contexts to close databases
   # get the project 
   with closing ( ndproj.NDProjectsDB() ) as projdb:
@@ -2140,82 +2145,62 @@ def minmaxProject ( webargs ):
   # and the database and then call the db function
   with closing ( spatialdb.SpatialDB(proj) ) as db:
 
-    mcdata = None
+    # maxproject data
+    mpdata = None
 
-    for i in range(len(channels)):
+    channel_name = channels[0]
 
-      channel_name = channels[i]
+    ch = ndproj.NDChannel(proj,channel_name)
+    cb = cutout (cutoutargs, ch, proj, db)
+    FilterCube (cutoutargs, cb)
 
-      ch = ndproj.NDChannel(proj,channel_name)
-      cb = cutout (cutoutargs, ch, proj, db)
-      FilterCube (cutoutargs, cb)
+    # project onto the image plane
+    if plane == 'xy':
 
-      # project onto the image plane
-      if plane == 'xy':
-
-        # take the min project or maxproject
-        if minormax == 'maxproj':
-          cbplane = np.amax (cb.data, axis=0)
-        elif minormax == 'minproj':
-          cbplane = np.amin (cb.data, axis=0)
-        else:
-          logger.error("Illegal projection requested.  Projection = {}", minormax)
-          raise NDWSError("Illegal image plane requested. Projections  = {}", minormax)
-
-        #initiliaze the multi-color array
-        if mcdata == None:
-          mcdata = np.zeros((len(channels),cb.data.shape[1],cb.data.shape[2]), dtype=cb.data.dtype)
-
-      elif plane == 'xz':
-
-        # take the min project or maxproject
-        if minormax == 'maxproj':
-          cbplane = np.amax (cb.data, axis=1)
-        elif minormax == 'minproj':
-          cbplane = np.amin (cb.data, axis=1)
-        else:
-          logger.error("Illegal projection requested.  Projection = {}", minormax)
-          raise NDWSError("Illegal image plane requested. Projections  = {}", minormax)
-
-        #initiliaze the multi-color array
-        if mcdata == None:
-          mcdata = np.zeros((len(channels),cb.data.shape[0],cb.data.shape[2]), dtype=cb.data.dtype)
-
-      elif plane == 'yz':
-
-        # take the min project or maxproject
-        if minormax == 'maxproj':
-          cbplane = np.amax (cb.data, axis=2)
-        elif minormax == 'minproj':
-          cbplane = np.amin (cb.data, axis=2)
-        else:
-          logger.error("Illegal projection requested.  Projection = {}", minormax)
-          raise NDWSError("Illegal image plane requested. Projections  = {}", minormax)
-
-        #initiliaze the multi-color array
-        if mcdata == None:
-          mcdata = np.zeros((len(channels),cb.data.shape[0],cb.data.shape[1]), dtype=cb.data.dtype)
-
+      # take the min project or maxproject
+      if minormax == 'maxproj':
+        cbplane = np.amax (cb.data, axis=0)
+      elif minormax == 'minproj':
+        cbplane = np.amin (cb.data, axis=0)
       else:
-        logger.error("Illegal image plane requested.  Plane = {}", plane)
-        raise NDWSError("Illegal image plane requested.  Plane = {}", plane)
+        logger.error("Illegal projection requested.  Projection = {}", minormax)
+        raise NDWSError("Illegal image plane requested. Projections  = {}", minormax)
 
-      # put the plane into the multi-channel array
-      mcdata[i,:,:] = cbplane
+    elif plane == 'xz':
+
+      # take the min project or maxproject
+      if minormax == 'maxproj':
+        cbplane = np.amax (cb.data, axis=1)
+      elif minormax == 'minproj':
+        cbplane = np.amin (cb.data, axis=1)
+      else:
+        logger.error("Illegal projection requested.  Projection = {}", minormax)
+        raise NDWSError("Illegal image plane requested. Projections  = {}", minormax)
+
+    elif plane == 'yz':
+
+      # take the min project or maxproject
+      if minormax == 'maxproj':
+        cbplane = np.amax (cb.data, axis=2)
+      elif minormax == 'minproj':
+        cbplane = np.amin (cb.data, axis=2)
+      else:
+        logger.error("Illegal projection requested.  Projection = {}", minormax)
+        raise NDWSError("Illegal image plane requested. Projections  = {}", minormax)
+
 
   # manage the color space
-  mcdata = window(mcdata, ch)
-  
-  # We have an compound array.  Now color it.
-  colors = ('C','M','Y','R','G','B')
-  colors = ('R','M','Y','R','G','B')
-  img =  mcfc.mcfcPNG ( mcdata, colors, 2.0 )
+  mpdata = window(cbplane, ch)
+
+  img =  Image.frombuffer ( 'L', (mpdata.shape[1],mpdata.shape[0]), mpdata.flatten(), 'raw', 'L', 0, 1 )
+
 
   fileobj = cStringIO.StringIO ( )
   img.save ( fileobj, "PNG" )
 
   fileobj.seek(0)
   return fileobj.read()
+
 
 def mcFalseColor ( webargs ):
   """False color image of multiple channels"""

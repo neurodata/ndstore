@@ -65,8 +65,7 @@ class MySQLProjectDB:
 
     ch = NDChannel(self.pr, channel_name)
 
-    # Connect to the database
-
+    # connect to the database
     with closing(MySQLdb.connect(host = self.pr.getDBHost(), user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = self.pr.getDBName(), connect_timeout=1)) as conn:
       with closing(conn.cursor()) as cursor:
         
@@ -75,7 +74,7 @@ class MySQLProjectDB:
           if ch.getChannelType() not in [TIMESERIES]:
             for res in self.pr.datasetcfg.getResolutions():
               cursor.execute("CREATE TABLE {} ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(ch.getTable(res)))
-              cursor.execute ( "CREATE TABLE {}_res{}_index (zindex BIGINT NOT NULL PRIMARY KEY)".format(ch.getChannelName(), res) )
+              cursor.execute ( "CREATE TABLE {} (zindex BIGINT NOT NULL PRIMARY KEY)".format(ch.getS3IndexTable(res)) )
           # tables specific to timeseries data
           elif ch.getChannelType() == TIMESERIES:
             for res in self.pr.datasetcfg.getResolutions():
@@ -132,15 +131,18 @@ class MySQLProjectDB:
     table_list = []
 
     if ch.getChannelType() in ANNOTATION_CHANNELS:
+      # delete the ids table
       table_list.append(ch.getIdsTable())
+      # delete the ramon table
       table_list.append(ch.getRamonTable())
-      # for key in annotation.anno_dbtables.keys():
-        # table_list.append(ch.getAnnoTable(key))
 
     for res in self.pr.datasetcfg.getResolutions():
+      # delete the res tables
       table_list.append(ch.getTable(res))
+      # delete the index tables
       table_list.append(ch.getS3IndexTable(res))
       if ch.getChannelType() in ANNOTATION_CHANNELS:
+        # delete the exceptions tables
         table_list = table_list + [ch.getIdxTable(res), ch.getExceptionsTable(res)]
 
     with closing(MySQLdb.connect(host = self.pr.getDBHost(), user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = self.pr.getDBName(), connect_timeout=1)) as conn:

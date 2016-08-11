@@ -12,12 +12,25 @@ Overview
 ========
 
 Our data model for image datasets is composed of the following components:
-* Dataset: containing metadata required to efficiently store, visualize, and analyze data for a set of projects; it effectively defines the dataspace
+
+.. _dataset:
+
+* Dataset: containing metadata required to efficiently store, visualize, and analyze data for a set of projects; it effectively defines the dataspace. The dataset itself contains no actual data, as the actual data is stored in the channel objects.
+
+.. _project:
+
 * Project: is a database storing a collection of channels
+
+.. _token:
+
 * Token: a name for a project, a project can have multiple tokens, each with different permissions (eg, read vs. write)
+
+.. _channel:
+
 * Channel: is a collection of tables, including the actual images, as well as metadata
 
 To understand the relationship between the above 4 different components of the data model, consider the following example.
+
 * We collect a large multi-modal MRI dataset, and registered each image into MNI152 space. The dataset would contain the details of MNI152 (number of voxels, resolution, etc.). Each subject gets her own project. For the first subject, let’s create a token pointing to that project called “Subject1”, and let’s give that token write access.
 * Each channel for this project corresponds to a different modality. For example, the T1 image might be the first channel, called “T1”. So, to access that channel, we pair the token with the channel name: ‘\Subject1\T1\’. The T1 channel happens to be a 3D image stack. Let’s say we also got an fMRI scan from that subject, also co-registered to MNI152 space. We can then make another channel called ‘fMRI’ containing all the fMRI data and metadata. Note that this is actually 3D+time data, which is no problem to store within a given channel. Finally, assume we also have Diffusion MRI data associated with that subject. So, we can generate another channel called “DTI” to store that data and metadata. Although DTI data is not typically thought of as time-series data, it is 4D, so we could store it as a time-series channel.
 * Now, imagine from the DTI data, we created a fractional anisotropy map. We could make a new channel, called “FA”, and put it there. Similarly, imagine from the fMRI we created a general linear model, we could again create a new channel, “GLM”, and put the coefficients in there.
@@ -60,7 +73,7 @@ Dataset Attributes
 
 .. function:: Voxel Resolution
 
-    Voxel Resolution is the voxel scale per unit pixel. We store X,Y,Z voxel resolution separately.
+    Voxel Resolution is the voxel scale in nanometer per unit pixel. We store X,Y,Z voxel resolution separately.
 
    :Type: [FLOAT,FLOAT,FLOAT]
    :Default: [0.0,0.0,0.0]
@@ -82,14 +95,14 @@ Dataset Attributes
 
 .. function:: Scaling Levels
 
-   Scaling levels is the number of levels the data is scalable to (how many zoom levels are present in the data). The highest resolution of the data is at scaling level 0, and for each level up the data is down sampled by 2x2 (per slice). To learn more about the sampling service used, visit the :ref:`the propagation <ocp-propagation>` service page.
+   Scaling levels is the number of levels the data is scalable to (how many zoom levels are present in the data). The highest resolution of the data is at scaling level 0, and for each level up the data is down sampled by 2x2 (per slice). To learn more about the sampling service used, visit the :ref:`the propagation <nd-propagation>` service page.
 
    :Type: INT
    :Default: 0
 
 .. function:: Scaling Choices
 
-   Scaling Choices represent the orientation of the data being stored, Z Slices corresponds to a Z-slice orientation (as in a collection of tiff images in which each tiff is a slice on the z plane) and Isotropic corresponds to an isotropic orientation (in which each tiff is a slice on the y plane).
+   Scaling is the scaling method of the data being stored. 0 corresponds to a Z-slice orientation (as in a collection of tiff images in which each tiff is a slice on the z plane) where data will be scaled only on the xy plane, not the z plane. 1 corresponds to an isotropic orientation (in which each tiff is a slice on the y plane) where data is scaled along all axis.
 
    :Type: {Z Slices, Isotropic}
    :Default: Z Slices
@@ -164,14 +177,14 @@ Channel Attributes
 
 .. function:: Data Type
 
-   The data type is the storage method of data in the channel. It can be uint8, uint16, uint32, uint64, or float32. If you wish to learn more about our supported data types visit :ref:`the NeuroData datatypes page. <ocp-datatype>`
+   The data type is the storage method of data in the channel. It can be uint8, uint16, uint32, uint64, or float32. If you wish to learn more about our supported data types visit :ref:`the NeuroData datatypes page. <nd-datatype>`
 
    :Type: {uint8, uint16, uint32, uint64, float32}
    :Default: None
 
 .. function:: Channel Type
 
-   The channel type is the kind of data being stored in the channel. It can be image, annotation, or timeseries. If you wish to learn more about our supported channel types visit :ref:`the NeuroData datatypes page. <ocp-channeltype>`
+   The channel type is the kind of data being stored in the channel. It can be image, annotation, or timeseries. If you wish to learn more about our supported channel types visit :ref:`the NeuroData datatypes page. <nd-channeltype>`
 
    :Type: {image, annotation, timeseries}
    :Default: None
@@ -207,7 +220,7 @@ Channel Attributes
 
 .. function:: Propagated Status
 
-   The propagation status enumerates to the user what the current state of the propagation service is for the current project. To learn more about the propagation service vist :ref:`the documentation. <ocp-propagation>`
+   The propagation status enumerates to the user what the current state of the propagation service is for the current project. To learn more about the propagation service vist :ref:`the documentation. <nd-propagation>`
 
    :Type: {PROPAGATED, NOT PROPAGATED}
    :Default: NOT PROPAGATED

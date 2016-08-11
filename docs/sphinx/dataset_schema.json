@@ -1,0 +1,41 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "Schema for Dataset JSON object for ingest",
+    "type": "object",
+    "properties": {
+        "dataset_name": {
+            "description": "The name of the dataset",
+            "type": "string",
+            "pattern": "^[^$&+,:;=?@#|'<>.^*()%!-]+$"
+        },
+        "imagesize": {
+            "type": "array",
+            "description": "The image dimensions of the dataset",
+            "pattern": "^\\([0-9]+,[0-9]+,[0-9]+\\)$"
+        },
+        "voxelres": {
+            "type": "array",
+            "description": "The voxel resolutoin of the data",
+            "pattern": "^\\([0-9]+\\.[0-9]+,[0-9]+\\.[0-9]+,[0-9]+\\.[0-9]+\\)$"
+        },
+        "offset": {
+            "type": "array",
+            "description": "The dimensions offset from origin",
+            "pattern": "^\\([0-9]+,[0-9]+,[0-9]+\\)$"
+        },
+        "timerange": {
+            "description": "The timerange of the data",
+            "type": "array",
+            "pattern": "^\\([0-9]+,[0-9]+\\)$"
+        },
+        "scalinglevels": {
+            "description": "Required Scaling levels/ Zoom out levels",
+            "type": "integer"
+        },
+        "scaling": {
+            "description": "Type of Scaling - Isotropic(1) or Normal(0)",
+            "type": "integer"
+        },
+    },
+    "required": ["dataset_name", "imagesize", "voxelres"]
+}

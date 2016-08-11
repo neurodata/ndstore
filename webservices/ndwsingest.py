@@ -21,6 +21,7 @@ import numpy as np
 from PIL import Image
 from operator import sub, add, mul, div
 import boto3
+import botocore
 import blosc
 
 import django
@@ -53,6 +54,11 @@ class IngestData:
     self.file_format = file_format
     # set the file_type
     self.file_type = file_type
+    try:
+      self.client = boto3.client('s3', aws_access_key_id=settings.AWS_ACCESS_KEY_ID, aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY)
+    except Exception, e:
+      logger.error("Cannot connect to S3 backend")
+      raise NDWSError("Cannot connect to S3 backend")
 
   def ingest(self):
     """Identify the data style and ingest accordingly"""
@@ -72,25 +78,29 @@ class IngestData:
     for slice_number in slice_list:
       # generating the url based on some parameters
       if time_value is not None:
-        url = '{}/{}/{}/{}/{}'.format(self.data_url, self.token, self.channel, time_value, self.generateFileName(slice_number))
+        key = '{}/{}/{}/{}'.format(self.token, self.channel, time_value, self.generateFileName(slice_number), ondisk=False)
       else:
-        url = '{}/{}/{}/{}'.format(self.data_url, self.token, self.channel, self.generateFileName(slice_number, ondisk=False))
+        key = '{}/{}/{}'.format(self.token, self.channel, self.generateFileName(slice_number, ondisk=False))
       # making the request
       try:
-        req = urllib2.Request(url)
-        resp = urllib2.urlopen(req, timeout=15)
-      except urllib2.URLError, e:
-        logger.warning("Failed to fetch url {}. File does not exist. {}".format(url, e))
+        self.client.download_file(Bucket='neurodata-public', Key=key, Filename=self.path+self.generateFileName(slice_number))
+      except botocore.exceptions.ClientError as e:
         continue
+
+        # req = urllib2.Request(url)
+        # resp = urllib2.urlopen(req, timeout=15)
+      # except urllib2.URLError, e:
+        # logger.warning("Failed to fetch url {}. File does not exist. {}".format(url, e))
+        # continue
       
       # writing the file to scratch
-      try:
-        f = open('{}'.format(self.path+self.generateFileName(slice_number)),'w')
-        f.write(resp.read())
-      except IOError, e:
-        logger.warning("IOError. Could not open file {}. {}".format(self.path+self.generateFileName(slice_number), e))
-      finally:
-        f.close()
+      # try:
+        # image_file = open('{}'.format(self.path+self.generateFileName(slice_number)),'w')
+        # image_file.write(resp.read())
+      # except IOError, e:
+        # logger.warning("IOError. Could not open file {}. {}".format(self.path+self.generateFileName(slice_number), e))
+      # finally:
+        # image_file.close()
 
 
   def fetchCatmaidData(self, slice_list, xtile, ytile):
@@ -111,12 +121,12 @@ class IngestData:
         
       # writing the file to scratch
       try:
-        f = open('{}'.format(self.path+self.generateCatmaidFileName(slice_number, xtile, ytile)),'w')
-        f.write(resp.read())
+        catmaid_file = open('{}'.format(self.path+self.generateCatmaidFileName(slice_number, xtile, ytile)),'w')
+        catmaid_file.write(resp.read())
       except IOError, e:
         logger.warning("IOError. Could not open file {}. {}".format(self.path+self.generateCatmaidFileName(slice_number, xtile, ytile), e))
       finally:
-        f.close()
+        catmaid_file.close()
 
   def cleanCatmaidData(self, slice_list, xtile, ytile):
     """Remove the slices at the local store"""
@@ -164,7 +174,7 @@ class IngestData:
       logger.warning("Creating bucket {}.".format(generateS3BucketName(project_name)))
       bucket.create()
     except Exception as e:
-      logger.error("There was an error in creating the bucker {}.".format(generateS3BucketName(project_name)))
+      logger.error("There was an error in creating the bucket {}.".format(generateS3BucketName(project_name)))
       raise NDWSError("There was an error in creating the bucket {}.".format(generateS3BucketName(project_name)))
 
 
@@ -312,7 +322,7 @@ class IngestData:
                 if ch.getChannelType() in IMAGE_CHANNELS:
                   db.putCube(ch, zidx, self.resolution, cube, update=True)
                 elif ch.getChannelType() in TIMESERIES_CHANNELS:
-                  db.putTimeCube(ch, zidx, timestamp, self.resolution, cube, update=True)
+                  db.putTimeCube(ch, zidx, timestamp, self.resolution, cube, update=False)
                 elif ch.getChannelType() in ANNOTATION_CHANNELS:
                   corner = map(sub, [x,y,slice_number], [xoffset,yoffset,zoffset])
                   db.annotateDense(ch, corner, self.resolution, cube.data, 'O')

@@ -1,4 +1,4 @@
-Public Token APIs
+Public Token API
 ******************
 
 .. _public-tokens-get:
@@ -14,10 +14,10 @@ GET
    :type server_name: string
 
    :statuscode 200: No error
-   :statuscode 404: Error in the syntax or file format
-    
+   :statuscode 404: Error in the syntax
+
    **Example Request**:
-   
+
    .. sourcecode:: http
       
       GET /nd/ca/public_tokens HTTP/1.1
@@ -26,18 +26,18 @@ GET
    **Example Response**:
 
    .. sourcecode:: http
-      
+
       HTTP/1.1 200 OK
       Content-Type: application/json
-      
+
       [
-        "bock11", 
-        "Ex10R55", 
-        "Ex12R75", 
-        "Ex12R76", 
-        "Ex13R51", 
-        "Ex14R58", 
-        "kasthuri11", 
+        "bock11",
+        "Ex10R55",
+        "Ex12R75",
+        "Ex12R76",
+        "Ex13R51",
+        "Ex14R58",
+        "kasthuri11",
         "takemura13"
       ]
 
@@ -54,7 +54,7 @@ GET
    :type server_name: string
 
    :statuscode 200: No error
-   :statuscode 404: Error in the syntax or file format
+   :statuscode 404: Error in the syntax
     
    **Example Request**:
    

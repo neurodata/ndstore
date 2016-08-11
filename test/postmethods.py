@@ -21,6 +21,8 @@ import blosc
 import numpy as np
 
 from params import Params
+from ndtype import UINT8, ND_dtypetonp
+
 import kvengine_to_test
 import site_to_test
 import makeunitdb
@@ -68,9 +70,27 @@ def getNPZ (p, time=False):
   fileobj = cStringIO.StringIO (rawdata)
   return np.load (fileobj)
 
+def postBlaze (p, post_data, time=False):
+  """Post data using npz"""
+  
+  # Build the url and then create a npz object
+  if time:
+    url = 'http://{}/sd/{}/{}/blaze/{}/{},{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+  elif p.channels is not None:
+    url = 'http://{}/sd/{}/{}/blaze/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+  elif p.channels is None:
+    url = 'http://{}/sd/{}/blaze/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
+
+  try:
+    # Build a post request
+    req = urllib2.Request(url,blosc.pack_array(post_data))
+    response = urllib2.urlopen(req)
+    return response
+  except urllib2.HTTPError,e:
+    return e
 
 def postBlosc (p, post_data, time=False):
-  """Post data using npz"""
+  """Post data using blosc packed numpy array"""
   
   # Build the url and then create a npz object
   if time:
@@ -90,7 +110,7 @@ def postBlosc (p, post_data, time=False):
 
 
 def getBlosc (p, time=False):
-  """Get data using npz. Returns a numpy array"""
+  """Get data using blosc. Returns a blosc packed numpy array"""
   
   # Build the url to get the npz object 
   if time:
@@ -152,6 +172,20 @@ def getHDF5 (p, time=False):
 
   return h5f
 
+def getRAW (p, time=False):
+  """Get data using raw format. Returns a numpy array"""
+
+  # Build the url and then create a raw object
+  if time:
+    url = 'http://{}/sd/{}/{}/raw/{}/{},{}/{},{}/{},{}/{},{}/'.format(SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+  else:
+    url = 'http://{}/sd/{}/{}/raw/{}/{},{}/{},{}/{},{}/'.format(SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args)
+
+  # Get the data back
+  f = urllib2.urlopen (url)
+  rawdata = f.read()
+  return np.frombuffer(rawdata, dtype = ND_dtypetonp[p.datatype])
+
 def putAnnotation ( p, f ):
   """Put the annotation file"""
 
@@ -188,10 +222,12 @@ def getAnnotation ( p ):
 
 def postURL ( url, f ):
 
-  req = urllib2.Request(url, f.read())
-  response = urllib2.urlopen(req)
-
-  return response
+  try:
+    req = urllib2.Request(url, f.read())
+    response = urllib2.urlopen(req)
+    return response
+  except urllib2.HTTPError as e:
+    return e
 
 def getURL ( url ):
   """Post the url"""
@@ -199,7 +235,7 @@ def getURL ( url ):
   try:
     req = urllib2.Request ( url )
     f = urllib2.urlopen ( url )
-  except urllib2.HTTPError, e:
+  except urllib2.HTTPError as e:
     return e.code
 
   return f

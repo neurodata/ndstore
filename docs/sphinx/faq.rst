@@ -23,7 +23,7 @@ Please visit our `How to Ingest Data <ingesting>`_ page, which will help you wit
 
 **Can I keep my data private?**
 
-We are an open science data portal so we do encourage you to make their data public as it will enable open science and allow other people to work on your data. But the project does NOT enforce you to make your data public. You can keep your data private for as long as you like.
+We are an open science data portal so we do encourage you to make their data public as this will enable open science and allow other people to work on your data. But the project does **NOT** enforce you to make your data public. You can keep your data private for as long as you like.
 
 **How much data can I upload?**
 
@@ -31,7 +31,7 @@ You can upload upto 1TB using the auto-ingest function provided. If you have mor
 
 **How do I contribute code to NeuroData?**
 
-This project is under active development.  To contribute new functionality or extend the project, either get in touch with us directly, or clone our git repo and issue a pull request. Prior to contributing, checkout our dev branches to see if some of your suggestions are already being implemented. To issue a pull request, head over to our repository and select the pull requests option on the righthand side, then issue a new pull request. NDIO is our internal master branch which is not yet deployed to the servers and might not be tested with all the tool-boxes but is an excellent place to look for new features.
+This project is under active development.  To contribute new functionality or extend the project, either get in touch with us directly, or clone our git repo and issue a pull request. Prior to contributing, checkout our dev branches to see if some of your suggestions are already being implemented. To issue a pull request, head over to our repository and select the pull requests option on the righthand side, then issue a new pull request.
 
 **How do I put in a new feature request or propose an idea?**
 
@@ -43,7 +43,11 @@ You can open an issue on our github `repository <https://github.com/neurodata/nd
 
 **How do I view my data?**
 
-Please visit our NeuroDataViz page.
+Please visit our `NeuroDataViz page <http://docs.neurodata.io/ndviz/>`_.
+
+**How do I use the RESTful interface?**
+
+The RESTful interface can be accessed with any browser by inputting the correct link or any package that supports web requests. 
 
 **Is there a support forum?**
 

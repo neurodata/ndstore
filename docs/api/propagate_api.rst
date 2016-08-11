@@ -1,4 +1,4 @@
-Propagate APIs
+Propagate API
 ***************
 
 .. _nd-propagation:
@@ -6,7 +6,8 @@ Propagate APIs
 Propagation Service
 ===================
 
-NeuroData allows only downsampling of data via a service called Propagation. This service does not upsample your data. You can post to a specific resolution and call on the :ref:`set propagation service <propagate-set>` to downsample your data in the background. When your data is under propagation, the project is locked and you cannot post data to it. This is done to maintain the consistency of data across different resolutions. You can check the status of your project via the :ref:`get propagation service <propagate-get>`. Both these services return values which signify something. You can use the value reference table below to identify the propgation state of your project. The propagation service only runs when the project is marked not read-only. This is done to ensure that read-only projects are not accidently propagated. Please ensure that your project is marked not read-only before calling this service.
+NeuroData allows only downsampling of data via a service called Propagation. This service does not upsample your data. You can post to a specific resolution and call on the :ref:`set propagation service <propagate-set>` to downsample your data in the background. When your data is under propagation, the project is locked and you cannot post data to it. This is done to maintain the consistency of data across different resolutions. You can check the status of your project via the :ref:`get propagation service <propagate-get>`. Both these services return values which signify something. You can use the value reference table below to identify the propgation state of your project. The propagation service only runs when the project is marked not read-only. This is done to ensure that read-only projects are not accidently propagated. Please ensure that your project is marked not read-only before calling this service. Any extra terms are enumerated in the :ref:`data model <datamodel>`.
+
 *WARNING: It make take quite a while for propagation of some projects which are big. Please be patient.*
 
 ===================     ===============
@@ -52,7 +53,7 @@ setPropagate
    :param channel_name: Channel Name in NeuroData. *Optional*. If missing will use default channel for the token.
    :type channel_name: string
    :param propagate_value: 0,1,2
-   :param propagate_value: int
-  
+   :type propagate_value: int
+
    :statuscode 200: No error
    :statuscode 404: Error in the syntax or file format

@@ -48,7 +48,7 @@ urlpatterns = patterns('spdb.views',
   # projection services
   url(r'(?P<webargs>^\w+/[\w,]+/(minproj|maxproj)/[\w,/-]+)$', 'minmaxProject'),
   # get and put services
-  url(r'(?P<webargs>^\w+/([\w+,]*/)*(xy|xz|yz|tiff|hdf5|blosc|jpeg|npz|zip|diff|id|ids|xyanno|xzanno|yzanno)/[\w,/-]*)$', 'cutout'),
+  url(r'(?P<webargs>^\w+/([\w+,]*/)*(xy|xz|yz|tiff|hdf5|blosc|blaze|jpeg|npz|raw|zip|diff|id|ids|xyanno|xzanno|yzanno)/[\w,/-]*)$', 'cutout'),
   # single field interfaces
   url(r'(?P<webargs>^\w+/\w+/getField/\d+/[\w+,/]*)$', 'getField'),
   url(r'(?P<webargs>^\w+/\w+/setField/\d+/[\w+,./]*)$', 'setField'),
@@ -58,9 +58,11 @@ urlpatterns = patterns('spdb.views',
   # merge annotations
   url(r'(?P<webargs>^\w+/\w+/merge/[\w,/]+)$', 'merge'),
   # csv metadata read
-  url(r'(?P<webargs>^\w+/(csv)[\d+/]?[\w,/]*)$', 'csv'),
+  url(r'(?P<webargs>^\w+/(csv)[\w,/]*)$', 'csv'),
+  # RAMON JSON interfaces
+  url(r'(?P<webargs>^\w+/\w+/ramon/[\w,/]*)$', 'jsonramon'),
   # HDF5 interfaces
-  url(r'(?P<webargs>^\w+/\w+/[\d+/]?[\w,/]*)$', 'annotation'),
+  url(r'(?P<webargs>^\w+/\w+/[\w,/]*)$', 'annotation'),
   # JSON interfaces
   url(r'(?P<webargs>^autoIngest/)$', 'autoIngest'),
 )

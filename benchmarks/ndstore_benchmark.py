@@ -14,10 +14,13 @@
 
 import os
 import sys
+import csv
 import random
 import argparse
 import numpy as np
 import multiprocessing
+import math
+from contextlib import closing
 import time
 import json
 import blosc
@@ -48,14 +51,14 @@ class BenchmarkTest:
     self.write_tests = result.write_tests
 
 
-  def singleThreadTest(self, start_value, number_iterations):
+  def singleThreadTest(self, start_value, size_iterations):
     """Generate the URL for read test"""
     
     min_values = [xmin,ymin,zmin] = map(add, self.offset, start_value)
     max_values = map(add, min_values, self.dim)
     range_args = [None]*(len(min_values)+len(max_values))
     
-    for i in range(0, number_iterations, 1):
+    for i in range(0, size_iterations, 1):
       if all([a<b for a,b in zip(max_values, self.imagesize)]):
         range_args[::2] = min_values
         range_args[1::2] = max_values
@@ -74,9 +77,9 @@ class BenchmarkTest:
       else:
         break
 
-  def multiThreadTest(self, start_value, number_iterations, number_of_processes):
+  def multiThreadTest(self, start_value, size_iterations, number_of_processes):
     """Generate the URL for multi-thread test"""
-
+    
     # min_values = [xmin,ymin,zmin] = map(add, self.offset, start_value)
     min_values = [xmin, ymin, zmin] = self.offset
     max_values = map(add, min_values, self.dim)
@@ -84,7 +87,7 @@ class BenchmarkTest:
     size_args = [None]*(len(min_values)+len(max_values))
     
     # determine the size of the cutout
-    for i in range(0, number_iterations, 1):
+    for i in range(0, size_iterations, 1):
       if all([a<b for a,b in zip(max_values, self.imagesize)]):
         size_args[::2] = min_values
         size_args[1::2] = max_values
@@ -131,6 +134,12 @@ class BenchmarkTest:
     self.offset = info['dataset']['offset'][str(self.resolution)]
     self.datatype = ND_dtypetonp[info['channels'][self.channels[0]]['datatype']]
 
+def dropCache():
+  """Drop the system cache"""
+  os.system('sudo bash -c "echo 3 > /proc/sys/vm/drop_caches"')
+  # subprocess.call(['sudo', 'echo 3','>','/proc/sys/vm/drop_caches'])
+
+
 def main():
   """Take in the arguments"""
 
@@ -141,28 +150,61 @@ def main():
   parser.add_argument("--server", dest="server_name", action="store", type=str, default="localhost/nd", help="Server Name")
   parser.add_argument('--offset', dest="offset_value", nargs=3, action="store", type=int, metavar=('X','Y','Z'), default=[0,0,0], help='Start Offset')
   parser.add_argument("--num", dest="number_of_processes", action="store", type=int, default=1, help="Number of Processes")
-  parser.add_argument("--iter", dest="number_of_iterations", action="store", type=int, default="1", help="Number of Iterations")
+  parser.add_argument("--size", dest="data_size", action="store", type=int, default=1, help="Size of Data")
+  parser.add_argument("--iter", dest="number_of_iterations", action="store", type=int, default=1, help="Number of Iterations")
   parser.add_argument("--write", dest="write_tests", action="store", type=bool, default=False, help="Do write tests")
   
 
   result = parser.parse_args()
- 
-  bt = BenchmarkTest(result)
-  if result.number_of_processes == 1:
-    bt.singleThreadTest(result.offset_value, result.number_of_iterations)
-  else:
-    bt.multiThreadTest(result.offset_value, result.number_of_iterations, result.number_of_processes)
-
-  from pprint import pprint
-  pprint(bt.fetch_list)
   
-  start_time = time.time()
+  # creating the benchmark class here
+  # setting the number of processes here
   p = multiprocessing.Pool(result.number_of_processes)
-  if result.write_tests:
-    p.map(putURLTimed, zip(bt.fetch_list,bt.data_list))
-  else:
-    p.map(getURLTimed, bt.fetch_list)
-  print "time:",time.time()-start_time
+  
+  
+  # opening the csv file here
+  with open('{}_{}_threads.csv'.format('write' if result.write_tests else 'read' , result.number_of_processes), 'a+') as csv_file:
+    
+    csv_reader = csv.reader(csv_file, delimiter=',')
+    csv_writer = csv.writer(csv_file, delimiter=',')
+    
+    # iterating over data size
+    for data_size in range(1, result.data_size+1, 1):
+      
+      # setting the time value list to zero
+      time_values = []
+
+      # if result.number_of_processes == 1:
+        # bt.singleThreadTest(result.offset_value, data_size)
+      # else:
+      bt = BenchmarkTest(result)
+      bt.multiThreadTest(result.offset_value, data_size, result.number_of_processes)
+    
+      # from pprint import pprint
+      # pprint(bt.fetch_list)
+      
+      for iter_number in range(result.number_of_iterations):
+        
+        dropCache()
+        start_time = time.time()
+        
+        if result.write_tests:
+          p.map(putURLTimed, zip(bt.fetch_list,bt.data_list))
+        else:
+          p.map(getURLTimed, bt.fetch_list)
+        
+        time_values.append(time.time()-start_time)
+      
+      actual_size = 0
+      if bt.datatype == np.uint8:
+        acutal_size = [math.pow(2,data_size-3)]
+      elif bt.datatype == np.uint16:
+        actual_size = [math.pow(2,data_size-2)]
+      elif bt.datatype == np.uint32:
+        actual_size = [math.pow(2,data_size-1)]
+      
+      csv_writer.writerow(actual_size+time_values)
+
 
 if __name__ == '__main__':
   main()

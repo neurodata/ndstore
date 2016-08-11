@@ -18,12 +18,14 @@ import numpy as np
 import cStringIO
 import math
 from contextlib import closing
+from PIL import Image
 
 import restargs
 import spatialdb
 import ndproj
 import ndwsrest
 import mcfc
+
 
 from ndwserror import NDWSError
 import logging
@@ -38,13 +40,11 @@ class MaxProjCatmaid:
     self.db = None
     self.token = None
     self.tilesz = 512
-    self.colors = ('C','M','Y','R','G','B')
-    self.channel_list = None
 
   def __del__(self):
     pass
 
-  def getTileXY ( self, res, xtile, ytile, zslice, width ):
+  def getTileXY ( self, ch, res, xtile, ytile, zslice, width ):
     """Cutout, return the image"""
 
     # figure out the cutout (limit to max image size)
@@ -59,19 +59,13 @@ class MaxProjCatmaid:
     # call the mcfc interface
     imageargs = '{}/{},{}/{},{}/{},{}/'.format(res, xstart, xend, ystart, yend, zstart, zend) 
 
-    tiledata = None
-    for index, channel_name in enumerate(self.channel_list):
-      ch = self.proj.getChannelObj(channel_name)
-      cutout = ndwsrest.cutout(imageargs, ch, self.proj, self.db)
-      # initialize the tiledata by type
-      if tiledata == None:
-        tiledata = np.zeros((len(self.channel_list), self.tilesz, self.tilesz), dtype=cutout.data.dtype)
+    cutout = ndwsrest.cutout(imageargs, ch, self.proj, self.db)
 
-      tiledata[index, 0:((yend-1)%self.tilesz+1), 0:((xend-1)%self.tilesz+1)] = np.amax(cutout.data, axis=0)
-      tiledata[index,:] = ndwsrest.window(tiledata[index,:], ch)
+    tiledata = np.amax(cutout.data, axis=0)
+    tiledata = ndwsrest.window(tiledata, ch)
     
-    # We have an compound array.  Now color it.
-    return mcfc.mcfcPNG (tiledata, self.colors)
+    # turn into an 8-bit image and return
+    return Image.frombuffer ( 'L', (tiledata.shape[1],tiledata.shape[0]), tiledata.flatten(), 'raw', 'L', 0, 1 )
 
 
   def getTile ( self, webargs ):
@@ -81,29 +75,22 @@ class MaxProjCatmaid:
       # arguments of format /token/channel/(?:width:3)/slice_type/z/x_y_res.png
       m = re.match("(\w+)/([\w+,[:\w]*]*)(?:/width:([\d+]+))?/(xy|yz|xz)/(\d+)/(\d+)_(\d+)_(\d+).png", webargs)
 
-      [self.token, channels, widthstr, slice_type] = [i for i in m.groups()[:4]]
+      [self.token, channel, widthstr, slice_type] = [i for i in m.groups()[:4]]
       [ztile, ytile, xtile, res] = [int(i) for i in m.groups()[4:]]
 
       # extract the width as an integer
       width = int(widthstr)
-
-      # check for channel_name:color and put them in the designated list
-      try:
-        self.channel_list, colors = zip(*re.findall("(\w+)[:]?(\w)?", channels))
-        # checking for a non-empty list
-        if filter(None, colors):
-          # if it is a mixed then replace the missing ones with the existing schema
-          self.colors = [ b if a is u'' else a for a,b in zip(colors, self.colors)]
-      except Exception, e:
-        logger.warning("Incorrect channel formst for getTile {}. {}".format(channels, e))
-        raise NDWSError("Incorrect channel format for getTile {}. {}".format(channels, e))
       
     except Exception, e:
       logger.warning("Incorrect arguments for getTile {}. {}".format(webargs, e))
       raise NDWSError("Incorrect arguments for getTile {}. {}".format(webargs, e))
 
     with closing ( ndproj.NDProjectsDB() ) as projdb:
+
       self.proj = projdb.loadToken ( self.token )
+
+      # get a channel
+      ch = self.proj.getChannelObj(channel)
 
     with closing ( spatialdb.SpatialDB(self.proj) ) as self.db:
       
@@ -112,7 +99,7 @@ class MaxProjCatmaid:
       if tile == None:
 
         if slice_type == 'xy':
-          img = self.getTileXY(res, xtile, ytile, ztile, width)
+          img = self.getTileXY(ch, res, xtile, ytile, ztile, width)
 #        elif slice_type == 'xz':
 #          img = self.getTileXZ(res, xtile, ytile, ztile, width)
 #        elif slice_type == 'yz':

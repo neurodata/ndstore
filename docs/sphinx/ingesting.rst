@@ -4,7 +4,7 @@ How to Ingest Data
 Prepping The Data
 =================
 
-There are two important components to how data should be organized before uploading to the service. First is file hierarchy (how the folders holding data should be organized) which is as follows; all channel specific data is saved in a folder with the name of the channel. For example if you have image data of two mouse cortices, one cortex would be stored in an image channel Cortex1. So, all the data from that imaging would be stored in a folder named Cortex1. In the case of time series data each channel folder should contain sub-folders time0, time1, time2, ..., timeN, each of which contains the image data for that specific time slot. All the channel folders should be stored inside a folder named the same as the token name. Note that the token name you choose must be unique across all projects in NeuroData.
+There are two important components to how data should be organized before uploading to the service. First is file hierarchy (how the folders holding data should be organized) which is as follows; all channel specific data is saved in a folder with the name of the channel. For example if you have image data of two mouse cortices, one cortex would be stored in an image channel Cortex1. So, all the data from that imaging would be stored in a folder named Cortex1. In the case of time series data each channel folder should contain sub-folders time0000, time0001, time0002, ..., time####, each of which contains the image data for that specific time slot. All the channel folders should be stored inside a folder named the same as the token name. Note that the token name you choose must be unique across all projects in NeuroData.
 
 Second is how the files themselves are organized. Currently the auto-ingest service only supports tiff, tif, and png files. The files should be organized such that there is a tiff/png/tif for each Z-slice, with each named the slice number up to 4 digits. For example if there was a imaging set with 405 image slices in tif form, the image channel folder(s) should have files labeled 0000.tif through 0404.tif. Files must not have a prefix or suffix to the number of the slice. If the slice number starts at a value other than 0000, please specify that starting value as the Z offset.
 
@@ -18,26 +18,51 @@ Second is how the files themselves are organized. Currently the auto-ingest serv
 Some common mistakes you can make
 =================================
 
-#TODO AE - Expand these
-Spaces in channel/project/dataset/token names are not allowed
-Special characters in channel/project/dataset/token names not allowed (minus underscore)
-Numbering the channel slices incorrectly
-If your slice number starts at 1 then mention z-offset as 1. we deal with missing slice numbers
-channel types are image/annotation not Image/Annotation
-if dataset exists use a different name or you have changes parameters
-you can send multiple channels at once but channels need to be in the same dataset, check this
-check if you have the lastest version of ndio, pip install -U ndio
-check your dir strucute proj/channel/slice
-HTTP accessible urls(have to go over the firewall) do a wget on your slice to check if this works
+* Special characters and spaces in channel/project/dataset/token names not allowed with the exception of an underscore.
+* Numbering the channel slices incorrectly compared to the offset and number of slices defined in the dataset when ingesting.
+* Offset (Z value) should match the lowest image file number.
+* Channel types are not capitalized, so they should be image/annotation not Image/Annotation.
+* Check if the dataset name is already taken, if it is you must use another.
+* If you upload multiple channels at once they must all be part of the same dataset.
+* Check if you have the lastest version of ndio using "pip install -U ndio".
+* Make sure your directory structure is accurate and correctly ordered.
+* Make sure your data is HTTP accessible, see below how to check this if you are unsure.
+* Make sure the naming of your folders and files has the required leading zeros. You can use the `rename command <http://askubuntu.com/questions/58546/how-to-easily-rename-files-using-command-line>`_ on the LINUX command line for this.
+
+Ingesting RGB data
+==================
+There are 2 ways ndstore can handle RGB data:
+
+1. Ingest this into a single uint32 channel called RGB32. The data will be rendered as a single RGB tile for visualization purposes. If you choose this option then all your raw data prior to ingest must be combined into a single RGBA image with alpha set to 255 for autoingest. 
+2. Ingest this data as three 8-bit channels called UINT8, where each channel is Red, Green and Blue. This data will be rendered as three channels of Grayscale. You can still visualize this data in NeuroDataViz by using false coloring. If you choose this option then you will need to arrange your data based on their color where and this will be a routine three channel ingest.
+
+Unsupported Image Types
+=======================
+
+We currently do not support 3-D tiffs.
 
 Help Section
 ============
 
-#TODO AE
-How do I check the image size, I am unssure. Use indentify on unix command line
-How do I check the datatype. Again use identify on command line
-How do I name my projects/datasets/token - Repeat it here <lab-name>year
-How do I check if my data is publicly accessible - do a curl/wget
+How do I check the image size of my data?
+-----------------------------------------
+
+Use the 'tiffinfo' command in terminal to check datatype on tiff (or tif) images, or pnginfo for png images, to get a variety of data about a particular image file including image size.
+
+How do I check the datatype?
+----------------------------
+
+Unfortunately there is no universally acceptable answer to this question, as everyone's data types vary based on how the image was saved. The most common answer to this is to use the 'tiffinfo' command in terminal to check datatype on tiff (or tif) images, or pnginfo for png images.
+
+How do I name my projects/datasets/token?
+-----------------------------------------
+
+Please see naming convections in the :ref:`data model <datamodel>`.
+
+How do I check if my data is publicly accessible?
+-------------------------------------------------
+
+The most common way of doing this is by doing a curl or wget on the data. For example, if you have your data stored on a server with a name space of MyServer on your network, with your publicly accessible folder named MyPublic containing the data, you would attempt to access http://MyServer/MyPublic/TokenName/ChannelName/###.tif where TokenName and ChannelName are replaced by the token and channel names used in your data and the pound signs are replaced with whichever slice number is desired. The command in terminal would be "curl http://MyServer/MyPublic/TokenName/ChannelName/###.tif" and if there is a response other than webpage not found the data is accessible.
 
 
 S3 Bucket Upload
@@ -60,17 +85,20 @@ If you are uploading data through an amazon s3 bucket, this additional step is n
         ]
     }
 
+Should you wish to instead host the data temporarily in the NeuroData s3 bucket to ingest it, please contact neurodata for the bucket name and follow the below instructions. First, install the Amazon WebServices command line client. Then navigate to one level above the folder labeled with your token name (in this example called tokenname). Input the following command into your comand line: aws cp tokenname/ --recursive bucketname/yourfolder --acl "bucket-owner-full-control". Finally, when the data has all been uploaded follow the instructions to complete the ingest process with the bucket name in the dataurl being the neurodata bucket name followed by a slash and the folder name provided to you by NeuroData. 
+
 Uploading
 =========
 
 Overview
-++++++++
+--------
 
-This section will initially address how to upload one channels worth of material. Located in the auto-ingest folder in the ingest folder of open-connectome is a file named generatejson.py (https://github.com/openconnectome/open-connectome/blob/master/ingest/autoingest/generatejson.py). To upload your data edit the hard-coded values in the code to reflect your data, being sure to specify that you are trying to put data to http://openconnecto.me and your DataURL is http accessible (if it is not the script will fail). The editable portion of the script is below the "Edit the below values" and above the "Edit above here" comment. Once the script has run you do not need to maintain a connection to the script. The script can be run simply by calling "python2 generatejson.py" on the script (using python 2.7). In the event that more than one channels worth of data needs to be ingested at once, the service supports this operation as well. To add channels, add additional create channel calls to the AutoIngest object before posting the data. The AutoIngest object is part of NeuroData's python library, Ndio, which must be installed prior to using the script.
+This section will initially address how to upload one channels worth of material. Located in the auto-ingest folder in the ingest folder of ndstore is a file named `autoingest.py <https://github.com/neurodata/ndstore/blob/master/ingest/autoingest/autoingest.py>`_. To upload your data edit the hard-coded values in the code to reflect your data, being sure to specify that you are trying to put data to http://openconnecto.me and your DataURL is http accessible (if it is not the script will fail). The editable portion of the script is below the "Edit the below values" and above the "Edit above here" comment. Once the script has run you do not need to maintain a connection to the script. The script can be run simply by calling "python2 autoingest.py" on the script (using python 2.7). In the event that more than one channels worth of data needs to be ingested at once, the service supports this operation as well. To add channels, add additional create channel calls to the AutoIngest object before posting the data. The AutoIngest object is part of NeuroData's python library, `ndio <https://github.com/neurodata/ndio>`_, which must be installed prior to using the script.
 
 Explanation of Additional Terms
-+++++++++++++++++++++++++++++++
-The :ref:`data model <datamodel>` holds an explanation of the majority of the terms encountered when editing the generatejson.py script, however some extra terms that are not enumerated in that explanation are included here.
+-------------------------------
+
+The :ref:`data model <datamodel>` holds an explanation of the majority of the terms encountered when editing the autoingest.py script, however some extra terms that are not enumerated in that explanation are included here.
 
 .. function:: Scaling
 
@@ -95,7 +123,7 @@ The :ref:`data model <datamodel>` holds an explanation of the majority of the te
 
 .. function:: Data URL
 
-   This url points to the root directory of the files, meaning the folder identified by the token name should be in the directory being pointed to. Dropbox (or any data requiring authentication to download such as non-HTTP s3) is not an acceptable HTTP Server. To make data in s3 available for ingest through out service, please see the instructions above. 
+   This url points to the root directory of the files, meaning the folder identified by the token name should be in the directory being pointed to. Dropbox (or any data requiring authentication to download such as non-HTTP s3) is not an acceptable HTTP Server. To make data in s3 available for ingest through out service, please see the instructions above.
 
    :Type: AlphaNumeric
    :Default: None
@@ -116,8 +144,3 @@ The :ref:`data model <datamodel>` holds an explanation of the majority of the te
    :Type: AlphaNumeric
    :Default: None
    :Example: tiff
-
-Unsupported Image Types
-=======================
-
-We currently do not support 3-D tiffs.

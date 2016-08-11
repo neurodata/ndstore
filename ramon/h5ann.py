@@ -190,6 +190,10 @@ def H5toAnnotation ( key, idgrp, annodb, ch ):
         anno.seeds = mdgrp['SEEDS'][:]
       if 'SEGMENTS' in mdgrp:
         anno.segments = mdgrp['SEGMENTS'] [:]
+      if 'PRESEGMENTS' in mdgrp:
+        anno.presegments = mdgrp['PRESEGMENTS'] [:]
+      if 'POSTSEGMENTS' in mdgrp:
+        anno.postsegments = mdgrp['POSTSEGMENTS'] [:]
 
   elif annotype == annotation.ANNO_SEGMENT:
     
@@ -400,10 +404,10 @@ def SynapsetoH5 ( synapse, h5fh ):
   if ( synapse.segments != [] ):
     h5synapse.mdgrp.create_dataset ( "SEGMENTS", (len(synapse.segments),), np.uint32, data=synapse.segments)
 
-  if ( synapse.segments != [] ):
+  if ( synapse.presegments != [] ):
     h5synapse.mdgrp.create_dataset ( "PRESEGMENTS", (len(synapse.presegments),), np.uint32, data=synapse.presegments)
 
-  if ( synapse.segments != [] ):
+  if ( synapse.postsegments != [] ):
     h5synapse.mdgrp.create_dataset ( "SPOSTEGMENTS", (len(synapse.postsegments),), np.uint32, data=synapse.postsegments)
   return h5synapse
 

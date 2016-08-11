@@ -12,18 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-import json
-import argparse
-import requests
-import os
-import requests
-import ndio.utils.autoingest as AI
-SITE_HOST = "http://neurodata.io"
+import ndio.remote.ndingest as NI
 
 def main():
 
-    ai = AI.AutoIngest()
+    ni = NI.NDIngest()
 
     """
     Edit the below values, type and default information can be found on the ingesting page of the ndio docs page.
@@ -39,7 +32,7 @@ def main():
 
     channel_name='image'        #(type=str, help='Name of Channel. Has to be unique in the same project. User Defined.')
     datatype='uint8'            #(type=str, help='Channel Datatype')
-    channel_type='Image'        #(type=enum, help='Type of channel - image, annotation, timeseries, probmap')
+    channel_type='image'        #(type=enum, help='Type of channel - image, annotation, timeseries, probmap')
     exceptions=0          #(type=int, default=0, help='Exceptions')
     resolution=0          #(type=int, default=0, help='Start Resolution')
     windowrange=(0,0)         #(type=int[], default=[0, 0], help='Window clamp function for 16-bit channels with low max value of pixels')
@@ -55,13 +48,13 @@ def main():
     metadata=""            #(type=Any, default='', help='Any metadata as appropriate from the LIMS schema')
 
     #Adds data set information
-    ai.add_dataset(dataset_name, imagesize, voxelres, offset, timerange, scalinglevels, scaling)
+    ni.add_dataset(dataset_name, imagesize, voxelres, offset, timerange, scalinglevels, scaling)
 
     #Adds project information
-    ai.add_project(project_name, token_name, public)
+    ni.add_project(project_name, token_name, public)
 
     #Adds a channel
-    ai.add_channel(channel_name, datatype, channel_type, data_url, file_format, file_type, exceptions,
+    ni.add_channel(channel_name, datatype, channel_type, data_url, file_format, file_type, exceptions,
             resolution, windowrange, readonly)
 
     """
@@ -70,17 +63,17 @@ def main():
     """
 
     #Adds metada
-    ai.add_metadata(metadata)
+    ni.add_metadata(metadata)
 
     """
     EDIT ABOVE HERE
     """
 
     #Uncomment this line if you wish to get a json file names file_name
-    #ai.output_json("ocp.json")
+    #ni.output_json("ocp.json")
 
     #Post the data
-    ai.post_data(SITE_HOST)
+    ni.post_data()
 
 if __name__ == "__main__":
   main()

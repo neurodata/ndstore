@@ -26,6 +26,8 @@ import spatialdb
 import ndproj
 import ndwsrest
 
+import ndlib
+
 from ndwserror import NDWSError
 import logging
 logger=logging.getLogger("neurodata")
@@ -51,8 +53,10 @@ class SimpleCatmaid:
       return 'simple/{}/{}/{}/{}/{}/{}/{}/{}/{}'.format(self.token, self.channel, slice_type, res, xtile, ytile, ztile, timetile, filterlist)
 
 
-  def cacheMissXY (self, res, xtile, ytile, ztile, timetile=None):
+  def cacheMissXY (self, res, xtile, ytile, ztile, timetile, filterlist):
     """On a miss. Cutout, return the image and load the cache in a background thread"""
+
+    print "Miss"
 
     # make sure that the tile size is aligned with the cubedim
     if self.tilesz % self.proj.datasetcfg.cubedim[res][0] != 0 or self.tilesz % self.proj.datasetcfg.cubedim[res][1]:
@@ -78,6 +82,11 @@ class SimpleCatmaid:
         tiledata = np.zeros((1, 1, self.tilesz, self.tilesz), cb.data.dtype )
         tiledata[0, 0, 0:((yend-1)%self.tilesz+1), 0:((xend-1)%self.tilesz+1)] = cb.data[0, 0, :, :]
       cb.data = tiledata
+
+    # filter data by annotation as requested
+    if filterlist:
+      dataids = map (int, filterlist.split(','))
+      cb.data = ndlib.filter_ctype_OMP ( cb.data, dataids )
 
     return cb.xyImage()
 
@@ -175,10 +184,11 @@ class SimpleCatmaid:
   
     try:
       # argument of format token/channel/slice_type/z/y_x_res.png
-      p = re.compile("(\w+)/([\w+,]*?)/(xy|yz|xz|)/(\d+/)?(\d+)/(\d+)_(\d+)_(\d+).png")
+#      p = re.compile("(\w+)/([\w+,]*?)/(xy|yz|xz|)/(\d+/)?(\d+)/(\d+)_(\d+)_(\d+).png")
+      p = re.compile("(\w+)/([\w+,]*?)/(xy|yz|xz|)/(?:filter/([\d,]+)/)?(?:(\d+)/)?(\d+)/(\d+)_(\d+)_(\d+).png")
       m = p.match(webargs)
-      [self.token, self.channel, slice_type] = [i for i in m.groups()[:3]]
-      [timetile, ztile, ytile, xtile, res] = [int(i.strip('/')) if i is not None else None for i in m.groups()[3:]]
+      [self.token, self.channel, slice_type, filterlist] = [i for i in m.groups()[:4]]
+      [timetile, ztile, ytile, xtile, res] = [int(i.strip('/')) if i is not None else None for i in m.groups()[4:]]
     except Exception, e:
       logger.warning("Incorrect arguments give for getTile {}. {}".format(webargs, e))
       raise NDWSError("Incorrect arguments given for getTile {}. {}".format(webargs, e))
@@ -189,18 +199,18 @@ class SimpleCatmaid:
     with closing ( spatialdb.SpatialDB(self.proj) ) as self.db:
 
         # mndche key
-        mckey = self.buildKey(res, slice_type, xtile, ytile, ztile, timetile=timetile)
+        mckey = self.buildKey(res, slice_type, xtile, ytile, ztile, timetile, filterlist)
 
         # if tile is in mndche, return it
         tile = self.mc.get(mckey)
         
         if tile == None:
           if slice_type == 'xy':
-            img = self.cacheMissXY(res, xtile, ytile, ztile, timetile=timetile)
+            img = self.cacheMissXY(res, xtile, ytile, ztile, timetile, filterlist)
           elif slice_type == 'xz':
-            img = self.cacheMissXZ(res, xtile, ytile, ztile, timetile=timetile)
+            img = self.cacheMissXZ(res, xtile, ytile, ztile, timetile, filterlist)
           elif slice_type == 'yz':
-            img = self.cacheMissYZ(res, xtile, ytile, ztile, timetile=timetile)
+            img = self.cacheMissYZ(res, xtile, ytile, ztile, timetile, filterlist)
           else:
             logger.warning ("Requested illegal image plance {}. Should be xy, xz, yz.".format(slice_type))
             raise NDWSError ("Requested illegal image plance {}. Should be xy, xz, yz.".format(slice_type))
@@ -210,6 +220,7 @@ class SimpleCatmaid:
           self.mc.set(mckey,fobj.getvalue())
         
         else:
+          print "Hit"
           fobj = cStringIO.StringIO(tile)
 
         fobj.seek(0)

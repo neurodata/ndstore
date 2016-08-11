@@ -24,8 +24,10 @@ urlpatterns = patterns('catmaid.views',
   url(r'^viking/(?P<webargs>.*)$', 'simplevikingview'),
   # mcfc
   url(r'^mcfc/(?P<webargs>.*)$', 'mcfccatmaidview'),
-  # mcfc
+  # maxproj
   url(r'^maxproj/(?P<webargs>.*)$', 'maxprojview'),
+  # filter
+  url(r'^filter/(?P<webargs>.*)$', 'filterview'),
   #url(r'^color/(?P<webargs>.*)$', 'colorcatmaidview'),
   url(r'^(?P<webargs>.*)$', 'simplecatmaidview'),
   # catmaid

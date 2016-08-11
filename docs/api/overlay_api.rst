@@ -1,11 +1,11 @@
-Overlay APIs
+Overlay API
 *************
 
 Cutut Service
 =============
 
-GET XY Slice Cutout
--------------------
+GET XY Overlay Slice Cutout
+---------------------------
 
 .. http:post:: (string:host_server_name)/nd/overlay/(float:alpha_value)/(string:first_server_name)/(string:first_token_name)/(string:first_channel_name)/(string:second_server_name)/(string:second_token_name)/(string:second_channel_name)/xy/(int:resolution)/(int:min_x),(int:max_x)/(int:min_y),(int:max_y)/(int:z_slice)/(int:time_slice)/
    
@@ -39,13 +39,13 @@ GET XY Slice Cutout
    :type z_slice: int
    :param time_slice: Minimum value in the timerange. *Optional*. Only used for timeseries channels.
    :type time_slice: int
-    
+
    :statuscode 200: No error
    :statuscode 404: Error in the syntax or file format
 
 
-GET XZ Slice Cutout
--------------------
+GET XZ Overlay Slice Cutout
+---------------------------
 
 .. http:post:: (string:host_server_name)/nd/overlay/(float:alpha_value)/(string:first_server_name)/(string:first_token_name)/(string:first_channel_name)/(string:second_server_name)/(string:second_token_name)/(string:second_channel_name)/xz/(int:resolution)/(int:min_x),(int:max_x)/(int:y_slice)/(int:min_z),(int:max_z)/(int:time_slice/
    
@@ -83,8 +83,8 @@ GET XZ Slice Cutout
    :statuscode 200: No error
    :statuscode 404: Error in the syntax or file format
 
-GET YZ Slice Cutout
--------------------
+GET YZ Overlay Slice Cutout
+---------------------------
 
 .. http:post:: (string:host_server_name)/nd/overlay/(float:alpha_value)/(string:first_server_name)/(string:first_token_name)/(string:first_channel_name)/(string:second_server_name)/(string:second_token_name)/(string:second_channel_name)/yz/(int:resolution)/(int:x_slice)/(int:min_y),(int:max_y)/(int:min_z),(int:max_z)/(int:time_slice)/
    
@@ -120,7 +120,7 @@ GET YZ Slice Cutout
    :type min_time: int
    :param max_time: Maximum value in the timerange. *Optional*. Only used for timeseries channels.
    :type max_time: int
-    
+
    :form CUTOUT: HDF5 group, Post data
    :form CHANNELTYPE: HDF5 group, Channel type(image, annotation, probmap, timeseries)
    :form DATATYPE: HDF5 group, Data type(uint8, uint16, uint32, rgb32, rgb64, float32)

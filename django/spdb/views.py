@@ -28,14 +28,14 @@ logger=logging.getLogger("neurodata")
 
 GET_SLICE_SERVICES = ['xy', 'yz', 'xz']
 GET_ANNO_SERVICES = ['xyanno', 'yzanno', 'xzanno']
-POST_SERVICES = ['hdf5', 'npz', 'hdf5_async', 'propagate', 'tiff', 'blosc']
+POST_SERVICES = ['hdf5', 'npz', 'raw', 'hdf5_async', 'propagate', 'tiff', 'blosc', 'blaze']
 
 
 def cutout (request, webargs):
   """Restful URL for all read services to annotation projects"""
 
   try:
-    m = re.match(r"(\w+)/(?P<channel>[\w+,/-]+)?/?(xy|xz|yz|tiff|hdf5|jpeg|blosc|npz|zip|id|diff|ids|xyanno|xzanno|yzanno)/([\w,/-]*)$", webargs)
+    m = re.match(r"(\w+)/(?P<channel>[\w+,/-]+)?/?(xy|xz|yz|tiff|hdf5|jpeg|blosc|blaze|npz|raw|zip|id|diff|ids|xyanno|xzanno|yzanno)/([\w,/-]*)$", webargs)
     [token, channel, service, cutoutargs] = [i for i in m.groups()]
 
     if channel is None:
@@ -70,6 +70,12 @@ def cutout (request, webargs):
         return response
       elif service in ['npz']:
         return django.http.HttpResponse(ndwsrest.getCutout(webargs), content_type="product/npz" )
+      elif service in ['raw']:
+        fname = re.sub ( r',','_', webargs )
+        fname = re.sub ( r'/','-', fname )
+        response = django.http.HttpResponse(ndwsrest.getCutout(webargs), content_type="product/raw" )
+        response['Content-Disposition'] = "attachment; filename={}ndcutout.raw".format(fname)
+        return response
       elif service in ['tiff']:
         # build a file name from the webarguments
         fname = re.sub ( r',','_', webargs )
@@ -81,6 +87,9 @@ def cutout (request, webargs):
         return django.http.HttpResponse(ndwsrest.getCutout(webargs), content_type="product/zip" )
       elif service in ['id','ids']:
         return django.http.HttpResponse(ndwsrest.getCutout(webargs))
+      elif service in ['blaze']:
+        logger.warning("HTTP Bad request. {} service not supported for GET. Only for POST".format(service))
+        return django.http.HttpResponseBadRequest("{} service not supported for GET. Only for POST".format(service))
       else:
         logger.warning("HTTP Bad request. Could not find service {}".format(service))
         return django.http.HttpResponseBadRequest("Could not find service {}".format(service))
@@ -88,7 +97,7 @@ def cutout (request, webargs):
     # RBTODO control caching?
     # POST methods
     elif request.method == 'POST':
-
+      
       if service in POST_SERVICES:
         django.http.HttpResponse(ndwsrest.putCutout(webargs, request.body))
         return django.http.HttpResponse("Success", content_type='text/html')
@@ -151,6 +160,29 @@ def swc (request, webargs):
     raise NDWSError("Unknown exception in SWC. {}".format(e))
     raise
 
+def jsonramon (request, webargs):
+  """Get put object interface for JSON-ified RAMON objects"""
+
+  [token, channel, rest] = webargs.split('/',2)
+
+  try:
+    if request.method == 'GET':
+      print "JSON get"
+      return django.http.HttpResponse(ndwsrest.getJSONAnnotation(webargs), content_type="application/json" )
+    elif request.method == 'POST':
+      print "JSON post"
+      return django.http.HttpResponse(ndwsrest.putJSONAnnotation(webargs,request.body))
+    elif request.method == 'DELETE':
+      ndwsrest.deleteAnnotation(webargs)
+      return django.http.HttpResponse ("Success", content_type='text/html')
+  except NDWSError, e:
+    return django.http.HttpResponseNotFound(e.value)
+  except MySQLdb.Error, e:
+    return django.http.HttpResponseNotFound(e)
+  except Exception, e:
+    logger.exception("Unknown exception in jsonramon. {}".format(e))
+    raise NDWSError("Unknown exception in jsonramon. {}".format(e))
+
 def annotation (request, webargs):
   """Get put object interface for RAMON objects"""
   [token, channel, rest] = webargs.split('/',2)
@@ -161,12 +193,8 @@ def annotation (request, webargs):
       if rest.split('/')[1] == 'json':
         return django.http.HttpResponse(ndwsrest.getAnnotation(webargs), content_type="application/json" )
       else:
-        # return hdf5 
         return django.http.HttpResponse(ndwsrest.getAnnotation(webargs), content_type="product/hdf5" )
     elif request.method == 'POST':
-      #if service == 'hdf5_async':
-        #return django.http.HttpResponse( ndwsrest.putAnnotationAsync(webargs,request.body) )
-      #else:
       return django.http.HttpResponse(ndwsrest.putAnnotation(webargs,request.body))
     elif request.method == 'DELETE':
       ndwsrest.deleteAnnotation(webargs)
@@ -429,7 +457,7 @@ def autoIngest(request, webargs):
   """RESTful URL for creating a project using a JSON file"""
 
   try:
-    return django.http.HttpResponse(ndwsprojingest.autoIngest(webargs, request.body), content_type="application/json")
+    return ndwsprojingest.autoIngest(webargs, request.body)
   except NDWSError, e:
     return django.http.HttpResponseNotFound()
   except Exception, e:
@@ -440,7 +468,7 @@ def createChannel(request, webargs):
   """RESTful URL for creating a list of channels using a JSON file"""
 
   try:
-    return django.http.HttpResponse(ndwsprojingest.createChannel(webargs, request.body), content_type="application/json")
+    return ndwsprojingest.createChannel(webargs, request.body)
   except NDWSError, e:
     return django.http.HttpResponseNotFound()
   except Exception, e:
@@ -451,7 +479,7 @@ def deleteChannel(request, webargs):
   """RESTful URL for deleting a list of channels using a JSON file"""
 
   try:
-    return django.http.HttpResponse(ndwsprojingest.deleteChannel(webargs, request.body), content_type="application/json")
+    return ndwsprojingest.deleteChannel(webargs, request.body)
   except NDWSError, e:
     return django.http.HttpResponseNotFound()
   except Exception, e:
