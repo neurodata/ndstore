@@ -21,13 +21,27 @@ import cStringIO
 import mcfccatmaid
 import simplecatmaid
 import maxprojcatmaid
-#import colorcatmaid
+import filtercatmaid
 
 # Errors we are going to catch
 from ndwserror import NDWSError
 
 import logging
 logger=logging.getLogger("neurodata")
+
+def filterview (request, webargs):
+  """filtered ids false color"""
+
+  try:
+    fv = filtercatmaid.FilterCatmaid()
+    imgfobj = fv.getTile(webargs)
+    return django.http.HttpResponse(imgfobj.read(), content_type="image/png")
+
+  except NDWSError, e:
+    return django.http.HttpResponseNotFound(e)
+  except Exception, e:
+    logger.exception("Unknown exception in filtercatmaidview: {}".format(e) )
+    raise
 
 def maxprojview (request, webargs):
   """multi-channel false color"""
