@@ -47,11 +47,8 @@ class SimpleCatmaid:
     pass
 
 
-  def buildKey (self, res, slice_type, xtile, ytile, ztile, timetile=None):
-    if timetile is None:
-      return 'simple/{}/{}/{}/{}/{}/{}/{}'.format(self.token, self.channel, slice_type, res, xtile, ytile, ztile)
-    else:
-      return 'simple/{}/{}/{}/{}/{}/{}/{}/{}'.format(self.token, self.channel, slice_type, res, xtile, ytile, ztile, timetile)
+  def buildKey (self, res, slice_type, xtile, ytile, ztile, timetile, filterlist):
+      return 'simple/{}/{}/{}/{}/{}/{}/{}/{}/{}'.format(self.token, self.channel, slice_type, res, xtile, ytile, ztile, timetile, filterlist)
 
 
   def cacheMissXY (self, res, xtile, ytile, ztile, timetile=None):
@@ -85,32 +82,36 @@ class SimpleCatmaid:
     return cb.xyImage()
 
 
-  def cacheMissXZ(self, res, xtile, ytile, ztile, timetile=None):
+  # OK the ytile comes from z data and the z tile comes from x data
+  def cacheMissXZ(self, res, xtile, ytile, ztile, timetile, filterlist):
     """On a miss. Cutout, return the image and load the cache in a background thread"""
     
     # make sure that the tile size is aligned with the cubedim
-    if self.tilesz % self.proj.datasetcfg.cubedim[res][1] != 0 or self.tilesz % self.proj.datasetcfg.cubedim[res][2]:
+    if self.tilesz % self.proj.datasetcfg.cubedim[res][0] != 0 or self.tilesz % self.proj.datasetcfg.cubedim[res][2]:
       raise("Illegal tile size.  Not aligned")
 
     # figure out the cutout (limit to max image size)
     xstart = xtile*self.tilesz
     xend = min ((xtile+1)*self.tilesz,self.proj.datasetcfg.imagesz[res][0])
 
+    # OK this weird but we have to choose a convention.  xtile ytile ztile refere to the URL request.  So ztile is ydata
+    #  but xstart, zstart..... etc. refer to ndstore coordinates for the cutout.
+    import pdb; pdb.set_trace()
     # z cutouts need to get rescaled
     # we'll map to the closest pixel range and tolerate one pixel error at the boundary
-    # Scalefactor = zvoxel / yvoxel
+    # scalefactor = zvoxel / yvoxel
     scalefactor = self.proj.datasetcfg.voxelres[res][2] / self.proj.datasetcfg.voxelres[res][1]
     zoffset = self.proj.datasetcfg.offset[res][2]
-    ztilestart = int((ztile*self.tilesz)/scalefactor) + zoffset
+    ztilestart = int((ytile*self.tilesz)/scalefactor) + zoffset
     zstart = max ( ztilestart, zoffset ) 
-    ztileend = int(math.ceil((ztile+1)*self.tilesz/scalefactor)) + zoffset
+    ztileend = int(math.ceil((ytile+1)*self.tilesz/scalefactor)) + zoffset
     zend = min ( ztileend, self.proj.datasetcfg.imagesz[res][2]+1 )
    
     # get an xz image slice
     if timetile is None:
-      imageargs = '{}/{}/{}/{},{}/{}/{},{}/'.format(self.channel, 'xz', res, xstart, xend, ytile, zstart, zend)
+      imageargs = '{}/{}/{}/{},{}/{}/{},{}/'.format(self.channel, 'xz', res, xstart, xend, ztile, zstart, zend)
     else:
-      imageargs = '{}/{}/{}/{},{}/{}/{},{}/{}/'.format(self.channel, 'xz', res, xstart, xend, ytile, zstart, zend, timetile)
+      imageargs = '{}/{}/{}/{},{}/{}/{},{}/{}/'.format(self.channel, 'xz', res, xstart, xend, ztile, zstart, zend, timetile)
     cb = ndwsrest.imgSlice ( imageargs, self.proj, self.db )
 
     # scale by the appropriate amount
@@ -127,7 +128,7 @@ class SimpleCatmaid:
     return cb.xzImage( scalefactor )
 
 
-  def cacheMissYZ (self, res, xtile, ytile, ztile, timetile=None):
+  def cacheMissYZ (self, res, ytile, ztile, xtile, timetile, filterlist):
     """ On a miss. Cutout, return the image and load the cache in a background thread """
 
     # make sure that the tile size is aligned with the cubedim
