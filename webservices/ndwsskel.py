@@ -23,12 +23,10 @@ import logging
 logger=logging.getLogger("neurodata")
 
       
-def ingestSWC ( res, swcfile, ch, db ):
+def ingestSWC ( swcfile, ch, db ):
   """Ingest the SWC file into a database.  This will involve:
         parsing out separate connected components as skeletons
         deduplicating nodes (for Vaa3d) """     
-
-  import pdb; pdb.set_trace()
 
   # dictionary of skeletons by parent node id
   skels = {}
@@ -81,49 +79,53 @@ def ingestSWC ( res, swcfile, ch, db ):
         swcnodeid = int(swcnodeidstr)
         swcparentid = int(swcparentidstr)
 
-        # scale points to resolution 
-        xpos = float(xpos)*(2**res) 
-        ypos = float(ypos)*(2**res) 
-        # check for isotropic
-        if db.datasetcfg.scalingoption == ISOTROPIC:
-          zpos = float(zpos)*(2**res) 
-        else:
-          zpos = float(zpos)
+##  nodes are floating point values let's not scale.  treat as metadata
+#
+#        # scale points to resolution 
+#        xpos = float(xpos)*(2**res) 
+#        ypos = float(ypos)*(2**res) 
+#        # check for isotropic
+#        if db.datasetcfg.scalingoption == ISOTROPIC:
+#          zpos = float(zpos)*(2**res) 
+#        else:
+#          zpos = float(zpos)
 
         # create a node
-        node = annotation.AnnNode( db ) 
+        node = annotation.AnnNode( db, ch ) 
 
-        node.setField ( 'annid', lowid )
-        lowid += 1
-        node.setField ( 'nodetype', nodetype )
-        node.setField ( 'location', (xpos,ypos,zpos) )
-        node.setField ( 'radius', radius )
         if swcparentid == -1:
-          node.setField ( 'parentid', -1 )
+          node.setField ( 'parent', -1 )
         else:
-          node.setField ( 'parentid', nodes[swcparentid].getField('annid'))
-
-        nodes[swcnodeid] = node
+          node.setField ( 'parent', nodes[swcparentid].getField('annid'))
 
         # if it's a root node create a new skeleton
         if swcparentid == -1: 
 
           # Create a skeleton
-          skels[swcnodeid] = annotation.AnnSkeleton ( db )
+          skels[swcnodeid] = annotation.AnnSkeleton ( db, ch )
 
           # assign an identifier
           skels[swcnodeid].setField('annid', lowid)
 
           # assign sekeleton id for the node
-          node.setField ( 'skeletonid', lowid )
+          node.setField ( 'skeleton', lowid )
 
           # increment the id
           lowid += 1
 
         else:
 
-          # set to skelton id of parent
-          node.setField ( 'skeletonid', nodes[swcparentid].getField('skeletonid') )
+          # assign sekeleton id for the node
+          node.setField ( 'skeleton', nodes[swcparentid].getField('skeleton'))
+
+
+        node.setField ( 'annid', lowid )
+        lowid += 1
+        node.setField ( 'nodetype', nodetype )
+        node.setField ( 'location', (xpos,ypos,zpos) )
+        node.setField ( 'radius', radius )
+        nodes[swcnodeid] = node
+
 
   except Exception, e:
     logger.warning("Failed to put SWC file {}".format(e))
@@ -131,7 +133,6 @@ def ingestSWC ( res, swcfile, ch, db ):
 
   # having parsed the whole file, send to DB in a transaction
   db.startTxn()
-  cursor = db.getCursor()
 
   # store the skeletons
   for (skelid, skel) in skels.iteritems():
@@ -142,25 +143,23 @@ def ingestSWC ( res, swcfile, ch, db ):
       skel.kvpairs[commentno] = comment
       commentno += 1
 
-    skel.store( ch, cursor )
+    db.putAnnotation ( ch, skel )
 
   # store the nodes
   for (nodeid,node) in nodes.iteritems():
-    node.store( ch, cursor )
+    db.putAnnotation ( ch, node )
 
   db.commit()
 
   return [ x.annid for (i,x) in skels.iteritems() ]
 
 
-def querySWC ( res, swcfile, ch, db, proj, skelids=None ):
+def querySWC ( swcfile, ch, db, proj, skelids=None ):
   """Query the list of skelids (skeletons) and populate an open file swcfile
      with lines of swc data."""
 
+  db.startTxn()
   try:
-
-    cursor = db.getCursor()
-    db.startTxn()
 
     # write out metadata about where this came from
     # ND version number and schema number
@@ -169,39 +168,40 @@ def querySWC ( res, swcfile, ch, db, proj, skelids=None ):
     swcfile.write('# Project {} Channel {}\n'.format(proj.getProjectName(),ch.getChannelName()))
 
     # get a skeleton for metadata and populate the comments field
-    if skelids != None and len(skelids)==0:
+    if skelids != None:
 
-      skel == annotation.Skeleton( db )
-      skel.retrieve ( ch, skelids[0], cursor )
+      skel = db.getAnnotation( ch, skelids[0]  )
 
       # write each key value line out as a comment
-      for (k,v) in skel.getKVPairs():
+      for (k,v) in skel.toDict().iteritems():
         # match a comment
-        if re.match ( "^#.*", v ):
+        if re.match ( "^#.*\n", str(v) ):
           swcfile.write(v)
         else:
-          swcfile.write("# {} {}".format(k,v))
+          swcfile.write("# {} {}\n".format(k,v))
       
-    nodegen = annotation.nodesBySkeleton ( ch, skelids, db, cursor )
-
     # iterate over all nodes
-    for node in nodegen: 
+    for skel in skelids:
+      for nodeid in db.querySkeletonNodes ( ch, skel ):
 
-      (annid, nodetype, xpos, ypos, zpos, radius, parentid) = node
+        node = db.getAnnotation ( ch, nodeid )
 
-      # scale points to resolution 
-      xpos = xpos/(2**res) 
-      ypos = ypos/(2**res) 
-      # check for isotropic
-      if db.datasetcfg.scalingoption == ISOTROPIC:
-        zpos = zpos/(2**res) 
 
-      # write an node in swc
-      # n T x y z R P
-      swcfile.write ( "{} {} {} {} {} {} {}\n".format ( annid, nodetype, xpos, ypos, zpos, radius, parentid ))
+#RB nodes are floating point values.  let's not scale.
+#      # scale points to resolution 
+#      xpos = xpos/(2**res) 
+#      ypos = ypos/(2**res) 
+#      # check for isotropic
+#      if db.datasetcfg.scalingoption == ISOTROPIC:
+#        zpos = zpos/(2**res) 
 
+        # write an node in swc
+        # n T x y z R P
+        swcfile.write ( "{} {} {} {} {} {} {}\n".format ( node.annid, node.nodetype, node.location[0], node.location[1], node.location[2], node.radius, node.parent ))
+ 
     db.commit()
 
-  finally:
-    db.closeCursor(cursor)
-
+  except Exception, e:
+    db.rollback()
+    logger.warning("Failed to get SWC file {}".format(e))
+    raise NDWSError("Failed to get SWC file {}".format(e))

@@ -1633,20 +1633,26 @@ def putNIFTI ( webargs, postdata ):
 def getSWC ( webargs ):
   """Return an SWC object generated from Skeletons/Nodes"""
 
-  [token, channel, service, resstr, rest] = webargs.split('/',4)
-  resolution = int(resstr)
+  [token, channel, service, rest] = webargs.split('/',4)
 
   with closing ( ndproj.NDProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
   
-  with closing ( spatialdb.SpatialDB(proj) ) as db:
+  with closing ( ramondb.RamonDB(proj) ) as db:
 
     ch = ndproj.NDChannel(proj, channel)
 
     # Make a named temporary file for the SWC
     with closing (tempfile.NamedTemporaryFile()) as tmpfile:
 
-      ndwsskel.querySWC ( resolution, tmpfile, ch, db, proj, skelids=None )
+      # if skeleton ids are specified, use those
+      if rest:
+        skelids = map ( int, rest.split('.') )
+      # otherwise get all skeletons
+      else:
+        skelids=db.getKVQuery( ch, 'ann_type', annotation.ANNO_SKELETON )
+
+      ndwsskel.querySWC ( tmpfile, ch, db, proj, skelids )
 
       tmpfile.seek(0)
       return tmpfile.read()
@@ -1656,8 +1662,7 @@ def getSWC ( webargs ):
 def putSWC ( webargs, postdata ):
   """Put an SWC object into RAMON skeleton/tree nodes"""
 
-  [token, channel, service, resstr, optionsargs] = webargs.split('/',4)
-  resolution = int(resstr)
+  [token, channel, service, optionsargs] = webargs.split('/',4)
 
   with closing ( ndproj.NDProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
@@ -1678,7 +1683,7 @@ def putSWC ( webargs, postdata ):
       tmpfile.seek(0)
 
       # Parse the swc file into skeletons
-      swc_skels = ndwsskel.ingestSWC ( resolution, tmpfile, ch, rdb )
+      swc_skels = ndwsskel.ingestSWC ( tmpfile, ch, rdb )
 
       return swc_skels
 
