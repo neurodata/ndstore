@@ -54,7 +54,7 @@ AR_CUBOIDS = 5
 
 def getAnnoDictById ( ch, annoid, proj, rdb ):
   """Retrieve the annotation and return it as a Python dictionary"""
-
+  
   # retrieve the annotation
   anno = rdb.getAnnotation ( ch, annoid ) 
   if anno == None:
@@ -80,7 +80,7 @@ def getAnnotation ( webargs ):
   with closing ( ndproj.NDProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
 
-  # and the ramon database 
+  # and the ramon database
   with closing ( ramondb.RamonDB(proj) ) as rdb:
     
     try:
@@ -153,7 +153,6 @@ def topkeys ( webargs ):
 
   # and the ramon database 
   with closing ( ramondb.RamonDB(proj)) as rdb:
-
     m = re.search ( "topkeys/(\d+)/(?:type/(\d+)/)?", otherargs )  
     # if we have a count clause use
     if m:
@@ -164,6 +163,7 @@ def topkeys ( webargs ):
         anntype = None
     else:
       count = 10
+      anntype = None
 
     # get the channel
     ch = ndproj.NDChannel(proj, channel)
