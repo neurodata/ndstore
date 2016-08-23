@@ -54,7 +54,7 @@ class SimpleCatmaid:
       return 'simple/{}/{}/{}/{}/{}/{}/{}/{}/{}'.format(self.token, self.channel, slice_type, res, xtile, ytile, ztile, timetile, filterlist)
 
 
-  def cacheMissXY (self, res, xtile, ytile, ztile, timetile, filterlist):
+  def cacheMissXY (self, res, xtile, ytile, ztile, timetile=None, filterlist=None):
     """On a miss. Cutout, return the image and load the cache in a background thread"""
 
     print "Miss"
@@ -92,7 +92,7 @@ class SimpleCatmaid:
     return cb.xyImage()
 
 
-  def cacheMissXZ(self, res, xtile, ytile, ztile, timetile=None):
+  def cacheMissXZ(self, res, xtile, ytile, ztile, timetile=None, filterlist=None):
     """On a miss. Cutout, return the image and load the cache in a background thread"""
     
     # make sure that the tile size is aligned with the cubedim
@@ -134,7 +134,7 @@ class SimpleCatmaid:
     return cb.xzImage( scalefactor )
 
 
-  def cacheMissYZ (self, res, xtile, ytile, ztile, timetile=None):
+  def cacheMissYZ (self, res, xtile, ytile, ztile, timetile=None, filterlist=None):
     """ On a miss. Cutout, return the image and load the cache in a background thread """
 
     # make sure that the tile size is aligned with the cubedim
