@@ -7,3 +7,6 @@
 [submodule "spdb"]
 	path = spdb
 	url = https://github.com/neurodata/spdb.git
+[submodule "ndingest"]
+	path = ndingest
+	url = https://github.com/neurodata/ndingest.git
