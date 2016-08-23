@@ -300,7 +300,6 @@ class TestHistogramROI:
       response = urllib2.urlopen(req)
     except urllib2.HTTPError,e:
       print e
-      import pdb; pdb.set_trace()
       assert(e.reason == 0)
 
     assert( response.code == 200 )
