@@ -160,6 +160,29 @@ def swc (request, webargs):
     raise NDWSError("Unknown exception in SWC. {}".format(e))
     raise
 
+def jsonramon (request, webargs):
+  """Get put object interface for JSON-ified RAMON objects"""
+
+  [token, channel, rest] = webargs.split('/',2)
+
+  try:
+    if request.method == 'GET':
+      print "JSON get"
+      return django.http.HttpResponse(ndwsrest.getJSONAnnotation(webargs), content_type="application/json" )
+    elif request.method == 'POST':
+      print "JSON post"
+      return django.http.HttpResponse(ndwsrest.putJSONAnnotation(webargs,request.body))
+    elif request.method == 'DELETE':
+      ndwsrest.deleteAnnotation(webargs)
+      return django.http.HttpResponse ("Success", content_type='text/html')
+  except NDWSError, e:
+    return django.http.HttpResponseNotFound(e.value)
+  except MySQLdb.Error, e:
+    return django.http.HttpResponseNotFound(e)
+  except Exception, e:
+    logger.exception("Unknown exception in jsonramon. {}".format(e))
+    raise NDWSError("Unknown exception in jsonramon. {}".format(e))
+
 def annotation (request, webargs):
   """Get put object interface for RAMON objects"""
   [token, channel, rest] = webargs.split('/',2)

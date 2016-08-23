@@ -190,6 +190,10 @@ def H5toAnnotation ( key, idgrp, annodb, ch ):
         anno.seeds = mdgrp['SEEDS'][:]
       if 'SEGMENTS' in mdgrp:
         anno.segments = mdgrp['SEGMENTS'] [:]
+      if 'PRESEGMENTS' in mdgrp:
+        anno.presegments = mdgrp['PRESEGMENTS'] [:]
+      if 'POSTSEGMENTS' in mdgrp:
+        anno.postsegments = mdgrp['POSTSEGMENTS'] [:]
 
   elif annotype == annotation.ANNO_SEGMENT:
     

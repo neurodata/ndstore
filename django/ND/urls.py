@@ -24,6 +24,7 @@ base_urlpatterns = patterns('',
     url(r'^ocpca/', include('spdb.urls')),    # legacy RB
     url(r'^ca/', include('spdb.urls')),       # legacy RB
     url(r'^sd/', include('spdb.urls')),
+    url(r'^ramon/', include('ramon.urls')),
     url(r'^overlay/', include('overlay.urls')),
     url(r'^catmaid/', include('catmaid.urls')),
     url(r'^synaptogram/', include('synaptogram.urls')),

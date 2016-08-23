@@ -174,10 +174,8 @@ class AnnSynapse (Annotation):
       self.segments = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
     elif field == 'presegments':
       self.presegments = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
-      print 'PRE in set', self.presegments
     elif field == 'postsegments':
       self.postsegments = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
-      print 'POST in set', self.postsegments
     elif field == 'centroid':
       self.centroid = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
       if len(self.centroid) != 3:
@@ -209,7 +207,6 @@ class AnnSynapse (Annotation):
     """convert a dictionary to the class elements"""
 
     anndict = defaultdict(list)
-
     for (k,v) in kvdict.iteritems():
       if k == 'syn_weight':
         self.weight = float(v)
@@ -226,7 +223,7 @@ class AnnSynapse (Annotation):
         if type(v) == list:
           self.segments = [int(s) for s in v]
         else:
-          self.segments = [int(s) for s in v.replace('[','').replace(']','').split() if s.isdigit()] 
+          self.segments = [int(v)]
       elif k == 'syn_presegments':
         if type(v) == list:
           self.presegments = [int(s) for s in v]
@@ -573,7 +570,7 @@ class AnnNode (Annotation):
 
     self.nodetype = 0                           # enumerated label
     self.skeleton = 0
-    self.point = 0
+    self.point = 0                              # 
     self.location=np.array([], dtype=np.float)
     self.parent = 0                           # parent node
     self.radius = 0.0

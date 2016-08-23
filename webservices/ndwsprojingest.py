@@ -69,7 +69,6 @@ def autoIngest(webargs, post_data):
     # return json.dumps("Invalid Project schema")
     
   #try:
-    #import pdb; pdb.set_trace()
     #CHANNEL_SCHEMA.validate(channels)
   #except Exception, e:
     #print "Invalid Channel schema"
