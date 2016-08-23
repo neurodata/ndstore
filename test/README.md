@@ -201,13 +201,22 @@
   - Module : Test_Jpeg
     1. test_get_jpeg
 
-* test_stats.py - 2 tests
+* test_stats.py - 7 tests
 
   - Module : Test_Histogram8
     1. test_genhistogram
    
   - Module : Test_Histogram16
     1. test_genhistogram
+
+  - Module : TestHistogramROI
+    1. test_genhistogramROI
+    2. test_genhistogramROICuboid
+    3. test_genhistogramROICuboidEnd 
+    4. test_genhistogramROIError 
+
+  - Module : TestHistogramROIMultiple 
+    1. test_genhistogramROIMultiple 
 
 * tests to add
   1. Test filter for image slices
