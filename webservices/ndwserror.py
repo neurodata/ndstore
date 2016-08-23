@@ -12,11 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-class NDWSError (Exception):
-  """General annotation error"""
+class NDWSError(Exception):
+  """Base class for all NDWS Errors"""
   
   def __init__(self, value):
     self.value = value
 
   def __str__(self):
     return repr(self.value)
+
+class IncorrectSyntaxError(NDWSError):
+
+  def __init__(self, expression, message):
+    self.expression = expression
+    self.message = message

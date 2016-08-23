@@ -12,25 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from django.conf.urls import patterns, include, url
+from django.conf.urls import url
+from . import views
 
-urlpatterns = patterns('stats.views',
+urlpatterns = [
   # get all statistics
-  url(r'(?P<webargs>^\w+/\w+/all/[\w,/]*)$', 'all'),
+  url(r'(?P<webargs>^\w+/\w+/all/[\w,/]*)$', views.all),
   # get JSON representation of histogram given an ROI (or 404)
-  url(r'(?P<webargs>^\w+/\w+/hist/roi/[\d,-]+)/$', 'getHistROI'),
+  url(r'(?P<webargs>^\w+/\w+/hist/roi/[\d,-]+)/$', views.getHistROI),
   # get binned (reduced by factor of 10) JSON representation of histogram given an ROI (or 404)
-  url(r'(?P<webargs>^\w+/\w+/binnedhist/roi/[\d,-]+)/$', 'getBinnedHistROI'),
+  url(r'(?P<webargs>^\w+/\w+/binnedhist/roi/[\d,-]+)/$', views.getBinnedHistROI),
   # get all ROIs w/ histograms for a given channel / token
-  url(r'(?P<webargs>^\w+/\w+/hist/roi/)$', 'getROIs'),
+  url(r'(?P<webargs>^\w+/\w+/hist/roi/)$', views.getROIs),
   # get JSON representation of histogram given an ROI (or 404)
-  url(r'(?P<webargs>^\w+/\w+/hist/[\w,/]*)$', 'getHist'),
+  url(r'(?P<webargs>^\w+/\w+/hist/[\w,/]*)$', views.getHist),
   # get mean
-  url(r'(?P<webargs>^\w+/\w+/mean/[\w,/]*)$', 'mean'),
+  url(r'(?P<webargs>^\w+/\w+/mean/[\w,/]*)$', views.mean),
   # get standard deviation
-  url(r'(?P<webargs>^\w+/\w+/std/[\w,/]*)$', 'std'),
+  url(r'(?P<webargs>^\w+/\w+/std/[\w,/]*)$', views.std),
   # get percentile
-  url(r'(?P<webargs>^\w+/\w+/percentile/[\w,/.]*)$', 'percentile'),
+  url(r'(?P<webargs>^\w+/\w+/percentile/[\w,/.]*)$', views.percentile),
   # generate histogram (POST and GET)
-  url(r'(?P<webargs>^\w+/\w+/genhist/[\w,/]*)$', 'genHist'),
-)
+  url(r'(?P<webargs>^\w+/\w+/genhist/[\w,/]*)$', views.genHist),
+]

@@ -12,57 +12,58 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from django.conf.urls import patterns, include, url
+from django.conf.urls import url
+from . import views
 
 # Uncomment the next two lines to enable the admin:
 #from django.contrib import admin
 #admin.autodiscover()
-urlpatterns = patterns('spdb.views',
+urlpatterns = [
   # catmaid
-  url(r'^catmaid/(?P<webargs>\w+/.*)$', 'catmaid'),
+  url(r'^catmaid/(?P<webargs>\w+/.*)$', views.catmaid),
   # nifti -- volumetric 3-d and 4-d
-  url(r'(?P<webargs>^\w+/[\w+,/]*nii/[\w,/]*)$', 'nifti'),
+  url(r'(?P<webargs>^\w+/[\w+,/]*nii/[\w,/]*)$', views.nifti),
   # swc -- annotations file get and put
-  url(r'(?P<webargs>^\w+/[\w+,/]*swc/[\w,/]*)$', 'swc'),
+  url(r'(?P<webargs>^\w+/[\w+,/]*swc/[\w,/]*)$', views.swc),
   # fetch ids (with predicates)
-  url(r'(?P<webargs>^\w+/\w+/query/[\w\.,/]*)$', 'queryObjects'),
+  url(r'(?P<webargs>^\w+/\w+/query/[\w\.,/]*)$', views.queryObjects),
   # get project information
-  url(r'(?P<webargs>^\w+/projinfo/[\w,/]*)$', 'projinfo'),
-  url(r'(?P<webargs>^\w+/info/[\w,/]*)$', 'jsoninfo'),
-  url(r'(?P<webargs>^\w+/volume.vikingxml)$', 'xmlinfo'),
+  url(r'(?P<webargs>^\w+/projinfo/[\w,/]*)$', views.projinfo),
+  url(r'(?P<webargs>^\w+/info/[\w,/]*)$', views.jsoninfo),
+  url(r'(?P<webargs>^\w+/volume.vikingxml)$', views.xmlinfo),
   # get public tokens 
-  url(r'(?P<webargs>^public_tokens/)$', 'publictokens'),
+  url(r'(?P<webargs>^public_tokens/)$', views.publictokens),
   # get public datasets 
-  url(r'(?P<webargs>^public_datasets/)$', 'publicdatasets'),
+  url(r'(?P<webargs>^public_datasets/)$', views.publicdatasets),
   # Create/Delete channel interfaces
-  url(r'(?P<webargs>^\w+/createChannel/)$', 'createChannel'),
-  url(r'(?P<webargs>^\w+/deleteChannel/)$', 'deleteChannel'),
+  url(r'(?P<webargs>^\w+/createChannel/)$', views.createChannel),
+  url(r'(?P<webargs>^\w+/deleteChannel/)$', views.deleteChannel),
   # get channel information
   #url(r'(?P<webargs>^\w+/chaninfo/[\w,/]*)$', 'chaninfo'),
   # reserve identifiers for annotation projects
-  url(r'(?P<webargs>^\w+/\w+/reserve/[\w+,/]*)$', 'reserve'),
+  url(r'(?P<webargs>^\w+/\w+/reserve/[\w+,/]*)$', views.reserve),
   # get list of multiply labelled voxels in a cutout region
-  url(r'(?P<webargs>^\w+/exceptions/[\w,/]*)$', 'exceptions'),
+  url(r'(?P<webargs>^\w+/exceptions/[\w,/]*)$', views.exceptions),
   # multi-channel false color image
-  url(r'(?P<webargs>^\w+/[\w,]+/mcfc/[\w,/-]+)$', 'mcFalseColor'),
+  url(r'(?P<webargs>^\w+/[\w,]+/mcfc/[\w,/-]+)$', views.mcFalseColor),
   # projection services
-  url(r'(?P<webargs>^\w+/[\w,]+/(minproj|maxproj)/[\w,/-]+)$', 'minmaxProject'),
+  url(r'(?P<webargs>^\w+/[\w,]+/(minproj|maxproj)/[\w,/-]+)$', views.minmaxProject),
   # get and put services
-  url(r'(?P<webargs>^\w+/([\w+,]*/)*(xy|xz|yz|tiff|hdf5|blosc|blaze|jpeg|npz|raw|zip|diff|id|ids|xyanno|xzanno|yzanno)/[\w,/-]*)$', 'cutout'),
+  url(r'(?P<webargs>^\w+/([\w+,]*/)*(xy|xz|yz|tiff|hdf5|blosc|blaze|jpeg|npz|raw|zip|diff|id|ids|xyanno|xzanno|yzanno)/[\w,/-]*)$', views.cutout),
   # single field interfaces
-  url(r'(?P<webargs>^\w+/\w+/getField/\d+/[\w+,/]*)$', 'getField'),
-  url(r'(?P<webargs>^\w+/\w+/setField/\d+/[\w+,./]*)$', 'setField'),
+  url(r'(?P<webargs>^\w+/\w+/getField/\d+/[\w+,/]*)$', views.getField),
+  url(r'(?P<webargs>^\w+/\w+/setField/\d+/[\w+,./]*)$', views.setField),
   # propagate interfaces
-  url(r'(?P<webargs>^\w+/[\w+,]+/getPropagate/)$', 'getPropagate'),
-  url(r'(?P<webargs>^\w+/[\w+,]+/setPropagate/[\d+,]+/)$', 'setPropagate'),
+  url(r'(?P<webargs>^\w+/[\w+,]+/getPropagate/)$', views.getPropagate),
+  url(r'(?P<webargs>^\w+/[\w+,]+/setPropagate/[\d+,]+/)$', views.setPropagate),
   # merge annotations
-  url(r'(?P<webargs>^\w+/\w+/merge/[\w,/]+)$', 'merge'),
+  url(r'(?P<webargs>^\w+/\w+/merge/[\w,/]+)$', views.merge),
   # csv metadata read
-  url(r'(?P<webargs>^\w+/(csv)[\w,/]*)$', 'csv'),
+  url(r'(?P<webargs>^\w+/(csv)[\d+/]?[\w,/]*)$', views.csv),
   # RAMON JSON interfaces
-  url(r'(?P<webargs>^\w+/\w+/ramon/[\w,/]*)$', 'jsonramon'),
+  url(r'(?P<webargs>^\w+/\w+/ramon/[\w,/]*)$', views.jsonramon),
   # HDF5 interfaces
-  url(r'(?P<webargs>^\w+/\w+/[\w,/]*)$', 'annotation'),
+  url(r'(?P<webargs>^\w+/\w+/[\d+/]?[\w,/]*)$', views.annotation),
   # JSON interfaces
-  url(r'(?P<webargs>^autoIngest/)$', 'autoIngest'),
-)
+  url(r'(?P<webargs>^autoIngest/)$', views.autoIngest),
+]

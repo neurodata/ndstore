@@ -12,15 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from django.conf.urls import patterns, include, url
+from django.conf.urls import url
+from . import views
 
 # Uncomment the next two lines to enable the admin:
 #from django.contrib import admin
 #admin.autodiscover()
 
 
-urlpatterns = patterns('ndgraph.views',
-   url(r'(?P<webargs>^\w+/\w+/)$', 'buildGraph'),
-   url(r'(?P<webargs>^\w+/\w+/\w+/)$', 'buildGraph'),
-   url(r'(?P<webargs>^\w+/\w+/\w+/\d+,\d+/\d+,\d+/\d+,\d+/)$', 'buildGraph'),
-)
+urlpatterns = [
+   url(r'(?P<webargs>^\w+/\w+/)$', views.buildGraph),
+   url(r'(?P<webargs>^\w+/\w+/\w+/)$', views.buildGraph),
+   url(r'(?P<webargs>^\w+/\w+/\w+/\d+,\d+/\d+,\d+/\d+,\d+/)$', views.buildGraph),
+]
