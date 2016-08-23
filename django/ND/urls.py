@@ -12,17 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
 from django.conf import settings
 from django.conf.urls.static import static
 
-# Uncomment the next two lines to enable the admin:
 from django.contrib import admin
 admin.autodiscover()
 
-base_urlpatterns = patterns('',
-    url(r'^ocpca/', include('spdb.urls')),    # legacy RB
-    url(r'^ca/', include('spdb.urls')),       # legacy RB
+base_urlpatterns = [
+    # legacy support
+    url(r'^ocpca/', include('spdb.urls')),
+    # legacy support
+    url(r'^ca/', include('spdb.urls')),
     url(r'^sd/', include('spdb.urls')),
     url(r'^ramon/', include('ramon.urls')),
     url(r'^overlay/', include('overlay.urls')),
@@ -30,15 +31,17 @@ base_urlpatterns = patterns('',
     url(r'^synaptogram/', include('synaptogram.urls')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^accounts/', include('registration.backends.default.urls')),
-    url(r'^ocpuser/', include('nduser.urls')),  # legacy RB
+    # legacy support
+    url(r'^ocpuser/', include('nduser.urls')),
     url(r'^nduser/', include('nduser.urls')),
-    url(r'^viz/', include('ndviz.urls')), # legacy AB / viz redirect
+    # legacy support
+    url(r'^viz/', include('ndviz.urls')),
     url(r'^ndgraph/', include('ndgraph.urls')),
     url(r'^stats/', include('stats.urls')),
-)
+]
 
-urlpatterns = patterns('',
+urlpatterns = [
     url('^', include(base_urlpatterns)), # maintains unprefixed URLs
     url('^nd/', include(base_urlpatterns)),
     url('^ocp/', include(base_urlpatterns)),
-) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

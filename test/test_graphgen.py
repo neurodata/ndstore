@@ -26,7 +26,7 @@ import networkx as nx
 import makeunitdb
 from ndtype import ANNOTATION, UINT32
 from params import Params
-from ramon import H5AnnotationFile, setField, getField, queryField, makeAnno, createSpecificSynapse
+from ramonmethods import H5AnnotationFile, setField, getField, queryField, makeAnno, createSpecificSynapse
 from postmethods import putAnnotation, getAnnotation, getURL, postURL
 import kvengine_to_test
 import site_to_test
