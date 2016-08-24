@@ -1,0 +1,18 @@
+{
+  "type": "object",
+  "properties": {
+    "user": {
+      "type": "string",
+      "pattern": "(?=^[^$&+,:;=?@#|'<>.^*()%!-]+$)(?=^[a-zA-Z0-9_]*$)"
+    },
+    "password": {
+      "type": "string",
+      "pattern": "(?=^[^$&+,:;=?@#|'<>.^*()%!-]+$)(?=^[a-zA-Z0-9]*$)"
+    },
+    "secret": {
+      "type": "string",
+      "pattern": "(?=^[^$&+,:;=?@#|'<>.^*()%!-]+$)(?=^[a-zA-Z0-9]*$)"
+    },
+  }  
+  "required": ["user","password","secret"]
+}
