@@ -13,6 +13,6 @@
       "type": "string",
       "pattern": "(?=^[^$&+,:;=?@#|'<>.^*()%!-]+$)(?=^[a-zA-Z0-9]*$)"
     },
-  }  
+  },
   "required": ["user","password","secret"]
 }
