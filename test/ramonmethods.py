@@ -83,15 +83,17 @@ def H5AnnotationFile ( annotype, annoid, kv=None ):
     syn_synapse_type = random.randint(1,9)
     syn_seeds = [ random.randint(1,1000) for x in range(5) ]
     syn_segments = [ random.randint(1,1000) for x in range(5) ]
-    syn_presegments = [ random.randint(1,1000) for x in range(5) ]
-    syn_postsegments = [ random.randint(1,1000) for x in range(5) ]
+# RBTODO not defined for HDF5 interfaces yet.
+#    syn_presegments = [ random.randint(1,1000) for x in range(5) ]
+#    syn_postsegments = [ random.randint(1,1000) for x in range(5) ]
 
     mdgrp.create_dataset ( "WEIGHT", (1,), np.float, data=syn_weight )
     mdgrp.create_dataset ( "SYNAPSE_TYPE", (1,), np.uint32, data=syn_synapse_type )
     mdgrp.create_dataset ( "SEEDS", (len(syn_seeds),), np.uint32, data=syn_seeds )
     mdgrp.create_dataset ( "SEGMENTS", (len(syn_segments),), np.uint32, data=syn_segments)
-    mdgrp.create_dataset ( "PRESEGMENTS", (len(syn_segments),), np.uint32, data=syn_presegments)
-    mdgrp.create_dataset ( "POSTSEGMENTS", (len(syn_segments),), np.uint32, data=syn_postsegments)
+# RBTODO not defined for HDF5 interfaces yet.
+#    mdgrp.create_dataset ( "PRESEGMENTS", (len(syn_presegments),), np.uint32, data=syn_presegments)
+#    mdgrp.create_dataset ( "POSTSEGMENTS", (len(syn_postsegments),), np.uint32, data=syn_postsegments)
 
   # Seed
   elif annotype == 3:
@@ -348,10 +350,12 @@ def createSpecificSynapse (annoid, syn_segments, cutout):
     zhigh = int(zhighstr)
 
     anndata = np.ones ( [ zhigh-zlow, yhigh-ylow, xhigh-xlow ] )
-    #import pdb; pdb.set_trace()
     mdgrp.create_dataset ( "WEIGHT", (1,), np.float, data=syn_weight )
     mdgrp.create_dataset ( "SYNAPSE_TYPE", (1,), np.uint32, data=syn_synapse_type )
-    mdgrp.create_dataset ( "SEGMENTS", (len(syn_segments),2), np.uint32, data=syn_segments)
+    mdgrp.create_dataset ( "SEGMENTS", (len(syn_segments),), np.uint32, data=syn_segments)
+# RBTODO not defined for HDF5
+#    mdgrp.create_dataset ( "PRESEGMENTS", (len(syn_presegments),), np.uint32, data=syn_segments)
+#    mdgrp.create_dataset ( "POSTSEGMENTS", (len(syn_postsegments),), np.uint32, data=syn_segments)
     idgrp.create_dataset ( "RESOLUTION", (1,), np.uint32, data=resolution )
     idgrp.create_dataset ( "XYZOFFSET", (3,), np.uint32, data=[xlow,ylow,zlow] )
     idgrp.create_dataset ( "CUTOUT", anndata.shape, np.uint32, data=anndata )

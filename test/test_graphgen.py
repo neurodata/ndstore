@@ -51,10 +51,26 @@ class Test_GraphGen:
     cutout3 = "0/4,6/2,5/5,7"
     cutout4 = "0/6,8/5,9/2,4"
 
-    syn_segments1 = [[7, 3],]
-    syn_segments2 = [[7, 4],]
-    syn_segments3 = [[3, 9],]
-    syn_segments4 = [[5, 4],]
+    syn_segments1 = [7, 3]
+    syn_segments2 = [7, 4]
+    syn_segments3 = [3, 9]
+    syn_segments4 = [5, 4]
+
+#    syn_presegments1 = [7, 3, 5]
+#    syn_presegments2 = [7, 4, 2, 8]
+#    syn_presegments3 = [3, 9]
+#    syn_presegments4 = [5]
+#
+#    syn_postsegments1 = [7, 3, 5]
+#    syn_postsegments2 = [7, 4, 2, 8]
+#    syn_postsegments3 = [3, 9]
+#    syn_postsegments4 = [5]
+
+# RBCOMMENT Old RAMON schema list of lists.
+#    syn_segments1 = [[7, 3],]
+#    syn_segments2 = [[7, 4],]
+#    syn_segments3 = [[3, 9],]
+#    syn_segments4 = [[5, 4],]
 
     f1 = createSpecificSynapse(1, syn_segments1, cutout1)
     putid = putAnnotation(p, f1)
