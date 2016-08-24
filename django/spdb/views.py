@@ -1,4 +1,7 @@
-# Copyright 2014 NeuroData (http://neurodata.io)
+# Copyright 2014 NeuroData (http://neurodata.io
+# Upload Sizes for max memory and number of fields
+DATA_UPLOAD_MAX_MEMORY_SIZE = 2147483648
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 1000
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,7 +24,7 @@ import re
 import ndwsrest
 import ndwsprojingest
 
-from ndwserror import NDWSError
+from ndwserror import NDWSError, IncorrectSyntaxError
 import logging
 logger=logging.getLogger("neurodata")
 
@@ -33,7 +36,7 @@ POST_SERVICES = ['hdf5', 'npz', 'raw', 'hdf5_async', 'propagate', 'tiff', 'blosc
 
 def cutout (request, webargs):
   """Restful URL for all read services to annotation projects"""
-
+  
   try:
     m = re.match(r"(\w+)/(?P<channel>[\w+,/-]+)?/?(xy|xz|yz|tiff|hdf5|jpeg|blosc|blaze|npz|raw|zip|id|diff|ids|xyanno|xzanno|yzanno)/([\w,/-]*)$", webargs)
     [token, channel, service, cutoutargs] = [i for i in m.groups()]
@@ -41,9 +44,9 @@ def cutout (request, webargs):
     if channel is None:
       webargs = '{}/default/{}/{}'.format(token, service, cutoutargs)
 
-  except Exception, e:
+  except Exception as e:
     logger.warning("Incorrect format for arguments {}. {}".format(webargs, e))
-    raise NDWSError("Incorrect format for arguments {}. {}".format(webargs, e))
+    raise IncorrectSyntaxError("Incorrect format for arguments {}. {}".format(webargs, e))
 
   try:
     # GET methods
@@ -109,11 +112,11 @@ def cutout (request, webargs):
       logger.warning("Invalid HTTP method {}. Not GET or POST.".format(request.method))
       return django.http.HttpResponseBadRequest("Invalid HTTP method {}. Not GET or POST.".format(request.method))
 
-  except NDWSError, e:
+  except NDWSError as e:
     return django.http.HttpResponseNotFound(e.value)
-  except MySQLdb.Error, e:
+  except MySQLdb.Error as e:
     return django.http.HttpResponseNotFound(e)
-  except Exception, e:
+  except Exception as e:
     logger.exception("Unknown exception in getCutout. {}".format(e))
     raise NDWSError("Unknown exception in getCutout. {}".format(e))
 

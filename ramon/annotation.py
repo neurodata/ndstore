@@ -206,7 +206,6 @@ class AnnSynapse (Annotation):
     """convert a dictionary to the class elements"""
 
     anndict = defaultdict(list)
-
     for (k,v) in kvdict.iteritems():
       if k == 'syn_weight':
         self.weight = float(v)
@@ -223,7 +222,7 @@ class AnnSynapse (Annotation):
         if type(v) == list:
           self.segments = [int(s) for s in v]
         else:
-          self.segments = [int(s)]
+          self.segments = [int(v)]
       elif k == 'syn_presegments':
         if type(v) == list:
           self.presegments = [int(s) for s in v]

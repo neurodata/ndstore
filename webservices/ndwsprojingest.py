@@ -192,7 +192,10 @@ def autoIngest(webargs, post_data):
       from spdb.tasks import ingest
       
       # ingest(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
-      ingest.delay(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
+      # ingest.delay(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
+      from uploadworker import UploadWorker
+      up = UploadWorker(tk.token_name, ch.channel_name, ch.resolution, file_type)
+      up.populateQueue()
     
     # Posting to LIMS system
     postMetadataDict(metadata_dict, pr.project_name)

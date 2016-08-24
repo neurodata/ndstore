@@ -15,7 +15,7 @@ sudo debconf-set-selections <<< "postfix postfix/main_mailer_type string 'Intern
 sudo apt-get -y install mysql-client-core-5.6 libhdf5-serial-dev mysql-client-5.6
 
 # apt-get install packages
-sudo apt-get -y install nginx git bash-completion python-virtualenv libhdf5-dev libxslt1-dev libmemcached-dev g++ libjpeg-dev virtualenvwrapper python-dev mysql-server-5.6 libmysqlclient-dev xfsprogs supervisor rabbitmq-server uwsgi uwsgi-plugin-python liblapack-dev wget memcached postfix
+sudo apt-get -y install nginx git bash-completion python-virtualenv libhdf5-dev libxslt1-dev libmemcached-dev g++ libjpeg-dev virtualenvwrapper python-dev mysql-server-5.6 libmysqlclient-dev xfsprogs supervisor rabbitmq-server uwsgi uwsgi-plugin-python liblapack-dev wget memcached postfix libffi-dev libssl-dev
 
 # create the log directory
 sudo mkdir /var/log/neurodata

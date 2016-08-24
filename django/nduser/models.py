@@ -1,11 +1,11 @@
 # Copyright 2014 NeuroData (http://neurodata.io)
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,7 +24,7 @@ from ndtype import IMAGE, ANNOTATION, TIMESERIES, UINT8, UINT16, UINT32, UINT64,
 
 # Create your models here.
 class Dataset ( models.Model):
-   dataset_name = models.CharField(max_length=255, primary_key=True,verbose_name="Name of the Image dataset")    
+   dataset_name = models.CharField(max_length=255, primary_key=True,verbose_name="Name of the Image dataset")
    dataset_description = models.CharField(max_length=4096,blank=True)
    user = models.ForeignKey(settings.AUTH_USER_MODEL)
    ISPUBLIC_CHOICES = (
@@ -49,12 +49,12 @@ class Dataset ( models.Model):
    scalinglevels = models.IntegerField(default=0)
    starttime = models.IntegerField(default=0)
    endtime = models.IntegerField(default=0)
-   
+
    class Meta:
      """ Meta """
      db_table = u"datasets"
      managed = True
-      
+
    def __unicode__(self):
      return self.dataset_name
 
@@ -94,7 +94,7 @@ class Project ( models.Model):
   )
   kvserver =  models.CharField(max_length=255, choices=KVSERVER_CHOICES, default=DSP61)
   MDENGINE_CHOICES = (
-    (MYSQL, 'MySQL'),    
+    (MYSQL, 'MySQL'),
   )
   mdengine = models.CharField(max_length=255, choices=MDENGINE_CHOICES, default=MYSQL)
   S3BACKEND_CHOICES = (
@@ -111,7 +111,7 @@ class Project ( models.Model):
     """ Meta """
     db_table = u"projects"
     managed = True
-       
+
   def __unicode__(self):
     return self.project_name
 
@@ -126,8 +126,8 @@ class Token ( models.Model):
     (PUBLIC_TRUE, 'Public'),
   )
   public =  models.IntegerField(default=PUBLIC_FALSE, choices=ISPUBLIC_CHOICES)
-   
-   
+
+
   class Meta:
     """ Meta """
     # Required to override the default table name
@@ -198,7 +198,7 @@ class Backup ( models.Model):
   backup_id = models.AutoField(primary_key=True)
 
   project  = models.ForeignKey(Project)
- 
+
   # can specific a channel or can be all channels
   channel = models.ForeignKey(Channel, blank=True, null=True)
 
@@ -213,7 +213,7 @@ class Backup ( models.Model):
 
   description  =  models.CharField(max_length=4096, default="")
 
-  datetimestamp = models.DateTimeField ( auto_now_add = True ) 
+  datetimestamp = models.DateTimeField ( auto_now_add = True )
 
   STATUS_CHOICES = (
     (0, 'Done'),
@@ -221,7 +221,7 @@ class Backup ( models.Model):
     (2, 'Failed'),
   )
   status = models.IntegerField(choices=STATUS_CHOICES,default=0)
-  
+
   class Meta:
     """ Meta """
     # Required to override the default table name
@@ -236,10 +236,10 @@ class Backup ( models.Model):
 class NIFTIHeader ( models.Model):
 
   channel  = models.OneToOneField(Channel,primary_key=True)
-  # all headers are 384 bytes for now.  
+  # all headers are 384 bytes for now.
   header = models.BinaryField(max_length=1024)
   affine = models.BinaryField(max_length=1024)
-  
+
   class Meta:
     """ Meta """
     # Required to override the default table name
@@ -248,18 +248,3 @@ class NIFTIHeader ( models.Model):
 
   def __unicode__(self):
     return self.header
-
-class Histogram (models.Model):
-  """ Stores a histogram in npz format """  
-  channel = models.ForeignKey(Channel)
-  histogram = models.BinaryField(max_length=4096, null=True) 
-  bins = models.BinaryField(max_length=4096, null=True) 
-  REGION_CHOICES = (
-    (0, 'Entire Dataset'),
-    (1, 'ROI (AB TODO)'),
-  )
-  region = models.IntegerField(choices=REGION_CHOICES, default=0)
-
-  class Meta:
-    db_table = u"histogram"
-    managed = True 

@@ -14,9 +14,10 @@
 
 from django.conf.urls import *
 import django.contrib.auth
+from . import views
 
 # redirect everything to the new ndviz server 
-urlpatterns = patterns('ndviz.views',
+urlpatterns = [
     # data views
-    url(r'(?P<webargs>[\w:,/-]+)$', 'default'),
-)
+    url(r'(?P<webargs>[\w:,/-]+)$', views.default),
+]

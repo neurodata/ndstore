@@ -12,14 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from django.conf.urls import patterns, include, url
+from django.conf.urls import url
 
-# Uncomment the next two lines to enable the admin:
-#from django.contrib import admin
-#admin.autodiscover()
-urlpatterns = patterns('ramon.views',
-  url(r'(?P<webargs>^\w+/\w+/topkeys/(?:\w+/)*)$', 'topkeys'),
-  url(r'(?P<webargs>^\w+/\w+/query/[\w,/]*)$', 'jsonquery'),
+from . import views 
+
+urlpatterns = [
+  url(r'(?P<webargs>^\w+/\w+/topkeys/(?:\w+/)*)$', views.topkeys),
+  url(r'(?P<webargs>^\w+/\w+/query/[\w,/]*)$', views.jsonquery),
   # RAMON JSON interfaces
-  url(r'(?P<webargs>^\w+/\w+/[\w,/]*)$', 'jsonramon'),
-)
+  url(r'(?P<webargs>^\w+/\w+/[\w,/]*)$', views.jsonramon),
+]

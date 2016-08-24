@@ -13,28 +13,28 @@
 # limitations under the License.
 
 from django.conf.urls import *
-from nduser.views import *
+from . import views
 import django.contrib.auth
 
 # Uncomment the next two lines to enable the admin:                        
 from django.contrib import admin
 admin.autodiscover()
 
-urlpatterns = patterns('nduser.views',
-                       url(r'^profile/$', 'getProjects'),
-                       url(r'^projects/$', 'getProjects'),
-                       url(r'^datasets/$', 'getDatasets'),
-                       url(r'^channels/$', 'getChannels'),
-                       url(r'^token/$', 'getTokens'),
-                       url(r'^alltokens/$', 'getAllTokens'),
-                       url(r'^createproject/$', 'createProject'),
-                       url(r'^createdataset/$', 'createDataset'),
-                       url(r'^createtoken/$', 'createToken'),
-                       url(r'^updateproject/$', 'updateProject'),
-                       url(r'^updatetoken/$', 'updateToken'),
-                       url(r'^updatechannel/$', 'updateChannel'),
-                       url(r'^updatedataset/$', 'updateDataset'),
-                       url(r'^backupproject/$', 'backupProject'),
-                       url(r'^restoreproject/$', 'restoreProject'),
-                       url(r'^download/$', 'downloadData'),
-)
+urlpatterns = [
+                       url(r'^profile/$', views.getProjects),
+                       url(r'^projects/$', views.getProjects),
+                       url(r'^datasets/$', views.getDatasets),
+                       url(r'^channels/$', views.getChannels),
+                       url(r'^token/$', views.getTokens),
+                       url(r'^alltokens/$', views.getAllTokens),
+                       url(r'^createproject/$', views.createProject),
+                       url(r'^createdataset/$', views.createDataset),
+                       url(r'^createtoken/$', views.createToken),
+                       url(r'^updateproject/$', views.updateProject),
+                       url(r'^updatetoken/$', views.updateToken),
+                       url(r'^updatechannel/$', views.updateChannel),
+                       url(r'^updatedataset/$', views.updateDataset),
+                       url(r'^backupproject/$', views.backupProject),
+                       url(r'^restoreproject/$', views.restoreProject),
+                       url(r'^download/$', views.downloadData),
+]
