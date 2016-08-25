@@ -40,6 +40,7 @@ p.channels = ['ANNO1']
 p.channel_type = ANNOTATION
 p.datatype = UINT32
 
+
 class Test_GraphGen:
 
   def setup_class(self):
@@ -56,21 +57,21 @@ class Test_GraphGen:
     syn_segments3 = [3, 9]
     syn_segments4 = [5, 4]
 
-#    syn_presegments1 = [7, 3, 5]
-#    syn_presegments2 = [7, 4, 2, 8]
-#    syn_presegments3 = [3, 9]
-#    syn_presegments4 = [5]
-#
-#    syn_postsegments1 = [7, 3, 5]
-#    syn_postsegments2 = [7, 4, 2, 8]
-#    syn_postsegments3 = [3, 9]
-#    syn_postsegments4 = [5]
+    # syn_presegments1 = [7, 3, 5]
+    # syn_presegments2 = [7, 4, 2, 8]
+    # syn_presegments3 = [3, 9]
+    # syn_presegments4 = [5]
 
-# RBCOMMENT Old RAMON schema list of lists.
-#    syn_segments1 = [[7, 3],]
-#    syn_segments2 = [[7, 4],]
-#    syn_segments3 = [[3, 9],]
-#    syn_segments4 = [[5, 4],]
+    # syn_postsegments1 = [7, 3, 5]
+    # syn_postsegments2 = [7, 4, 2, 8]
+    # syn_postsegments3 = [3, 9]
+    # syn_postsegments4 = [5]
+
+    # RB COMMENT Old RAMON schema list of lists.
+    # syn_segments1 = [[7, 3],]
+    # syn_segments2 = [[7, 4],]
+    # syn_segments3 = [[3, 9],]
+    # syn_segments4 = [[5, 4],]
 
     f1 = createSpecificSynapse(1, syn_segments1, cutout1)
     putid = putAnnotation(p, f1)
@@ -81,10 +82,11 @@ class Test_GraphGen:
     f4 = createSpecificSynapse(4, syn_segments4, cutout4)
     putid = putAnnotation(p, f4)
 
+
   def teardown_class(self):
     """Destroy the unittest database"""
     makeunitdb.deleteTestDB(p.token)
-    #os.remove("/tmp/GeneratedGraph.tar.gz")
+
 
   def test_checkTotal(self):
     """Test the original/non-specific dataset"""
@@ -99,6 +101,7 @@ class Test_GraphGen:
     outputGraph = nx.read_graphml(("/tmp/{}_{}.graphml").format(p.token, p.channels[0]))
     assert(nx.is_isomorphic(outputGraph, truthGraph))
 
+
   def test_checkType(self):
     """Test the export to different data types"""
     syn_segments = [[7, 3], [7, 12], [3, 9], [5, 12]]
@@ -112,6 +115,7 @@ class Test_GraphGen:
         f.write(graphFile.read())
     outputGraph = nx.read_adjlist(("/tmp/{}_{}.adjlist").format(p.token, p.channels[0]))
     assert(nx.is_isomorphic(outputGraph, truthGraph))
+
 
   def test_checkCutout(self):
     """Test the cutout arguement of graphgen"""
@@ -128,8 +132,9 @@ class Test_GraphGen:
     outputGraph = nx.read_graphml(("/tmp/{}_{}.graphml").format(p.token, p.channels[0]))
     assert(nx.is_isomorphic(outputGraph, truthGraph))
 
+
   def test_ErrorHandling(self):
-    """Invalid graphtype"""
+    """Invalid graphtype and invalid token"""
     syn_segments = [[7, 3], [7, 12], [3, 9], [5, 12]]
     truthGraph = nx.Graph()
     truthGraph.add_edges_from(syn_segments)
@@ -142,7 +147,6 @@ class Test_GraphGen:
     outputGraph = nx.read_graphml(("/tmp/{}_{}.graphml").format(p.token, p.channels[0]))
     assert(nx.is_isomorphic(outputGraph, truthGraph))
 
-    """Invalid token"""
     url = 'http://{}/ndgraph/{}/{}/{}/{},{}/{},{}/{},{}/'.format(
         SITE_HOST, 'foo', p.channels[0], 'graphml', 0, 7, 0, 7, 0, 7)
     assert (getURL(url) >= 500)

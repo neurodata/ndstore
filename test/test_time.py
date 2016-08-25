@@ -62,7 +62,7 @@ p.voxel = [4.0,4.0,3.0]
 #p.args = (3000,3100,4000,4100,500,510)
 
 
-class Test_Image_Slice:
+class Test_Time_Slice:
 
 
   def setup_class(self):
@@ -121,7 +121,7 @@ class Test_Image_Slice:
     #assert ( 404 == getURL (url) )
 
 
-class Test_Image_Post:
+class Test_Time_Post:
 
   def setup_class(self):
     makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype, time=p.time )

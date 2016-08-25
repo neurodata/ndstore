@@ -42,8 +42,8 @@ class SimpleCatmaid:
     self.proj = None
     self.channel = None
     self.tilesz = 512
-    # make the mndche connection
-    self.mc = pylibmc.Client(["127.0.0.1"], binary=True,behaviors={"tcp_nodelay":True,"ketama": True})
+    # make the memcache connection
+    self.mc = pylibmc.Client(["127.0.0.1"], binary=True, behaviors={"tcp_nodelay": True,"ketama": True})
 
   def __del__(self):
     pass
@@ -53,14 +53,13 @@ class SimpleCatmaid:
       return 'simple/{}/{}/{}/{}/{}/{}/{}/{}/{}'.format(self.token, self.channel, slice_type, res, xtile, ytile, ztile, timetile, filterlist)
 
 
-  def cacheMissXY (self, res, xtile, ytile, ztile, timetile=None, filterlist=None):
+  def cacheMissXY (self, res, xtile, ytile, ztile, timetile, filterlist):
     """On a miss. Cutout, return the image and load the cache in a background thread"""
-
-    print "Miss"
 
     # make sure that the tile size is aligned with the cubedim
     if self.tilesz % self.proj.datasetcfg.cubedim[res][0] != 0 or self.tilesz % self.proj.datasetcfg.cubedim[res][1]:
-      raise("Illegal tile size.  Not aligned")
+      logger.error("Illegal tile size. Not aligned")
+      raise NDWSError("Illegal tile size. Not aligned")
 
     # figure out the cutout (limit to max image size)
     xstart = xtile*self.tilesz
@@ -73,6 +72,11 @@ class SimpleCatmaid:
       imageargs = '{}/{}/{}/{},{}/{},{}/{}/'.format(self.channel, 'xy', res, xstart, xend, ystart, yend, ztile)
     else:
       imageargs = '{}/{}/{}/{},{}/{},{}/{}/{}/'.format(self.channel, 'xy', res, xstart, xend, ystart, yend, ztile, timetile)
+    
+    # if filter list exists then add on for downstream processing
+    if filterlist:
+      imageargs = imageargs+'filter/{}/'.format(filterlist)
+    
     cb = ndwsrest.imgSlice(imageargs, self.proj, self.db)
     if cb.data.shape != (1, self.tilesz, self.tilesz) and cb.data.shape != (1, 1, self.tilesz, self.tilesz):
       if timetile is None:
@@ -84,14 +88,14 @@ class SimpleCatmaid:
       cb.data = tiledata
 
     # filter data by annotation as requested
-    if filterlist:
-      dataids = map (int, filterlist.split(','))
-      cb.data = ndlib.filter_ctype_OMP ( cb.data, dataids )
+    # if filterlist:
+      # dataids = map (int, filterlist.split(','))
+      # cb.data = ndlib.filter_ctype_OMP ( cb.data, dataids )
 
     return cb.xyImage()
 
 
-  def cacheMissXZ(self, res, xtile, ytile, ztile, timetile=None, filterlist=None):
+  def cacheMissXZ(self, res, xtile, ytile, ztile, timetile, filterlist):
     """On a miss. Cutout, return the image and load the cache in a background thread"""
     
     # make sure that the tile size is aligned with the cubedim
@@ -120,10 +124,13 @@ class SimpleCatmaid:
       imageargs = '{}/{}/{}/{},{}/{}/{},{}/'.format(self.channel, 'xz', res, xstart, xend, ztile, zstart, zend)
     else:
       imageargs = '{}/{}/{}/{},{}/{}/{},{}/{}/'.format(self.channel, 'xz', res, xstart, xend, ztile, zstart, zend, timetile)
+
+    if filterlist:
+      imageargs = imageargs+'filter/{}/'.format(filterlist)
+    
     cb = ndwsrest.imgSlice ( imageargs, self.proj, self.db )
-
+    
     # scale by the appropriate amount
-
     if cb.data.shape != (ztileend-ztilestart,1,self.tilesz) and cb.data.shape != (1, ztileend-ztilestart,1,self.tilesz):
       if timetile is None:
         tiledata = np.zeros((ztileend-ztilestart,1,self.tilesz), cb.data.dtype )
@@ -136,7 +143,7 @@ class SimpleCatmaid:
     return cb.xzImage( scalefactor )
 
 
-  def cacheMissYZ (self, res, xtile, ytile, ztile, timetile=None, filterlist=None):
+  def cacheMissYZ (self, res, xtile, ytile, ztile, timetile, filterlist):
     """ On a miss. Cutout, return the image and load the cache in a background thread """
 
     # make sure that the tile size is aligned with the cubedim
@@ -162,10 +169,13 @@ class SimpleCatmaid:
       imageargs = '{}/{}/{}/{}/{},{}/{},{}/'.format(self.channel, 'yz', res, xtile, ystart, yend, zstart, zend)
     else:
       imageargs = '{}/{}/{}/{}/{},{}/{},{}/{}/'.format(self.channel, 'yz', res, xtile, ystart, yend, zstart, zend, timetile)
+    
+    if filterlist:
+      imageargs = imageargs+'filter/{}/'.format(filterlist)
+    
     cb = ndwsrest.imgSlice (imageargs, self.proj, self.db)
 
     # scale by the appropriate amount
-   
     if cb.data.shape != (ztileend-ztilestart,self.tilesz,1) and cb.data.shape != (1,ztileend-ztilestart,self.tilesz,1):
       if timetile is None:
         tiledata = np.zeros((ztileend-ztilestart,self.tilesz,1), cb.data.dtype )
@@ -197,11 +207,12 @@ class SimpleCatmaid:
     
     with closing ( spatialdb.SpatialDB(self.proj) ) as self.db:
 
-        # mndche key
+        # memcache key
         mckey = self.buildKey(res, slice_type, xtile, ytile, ztile, timetile, filterlist)
 
-        # if tile is in mndche, return it
+        # if tile is in memcache, return it
         tile = self.mc.get(mckey)
+        tile = None
         
         if tile == None:
           if slice_type == 'xy':

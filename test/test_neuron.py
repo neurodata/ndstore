@@ -25,7 +25,7 @@ from ndtype import IMAGE, UINT8, UINT16
 from params import Params
 from postmethods import postNPZ, getNPZ, getHDF5, postHDF5, getURL, postBlosc, getBlosc
 from postmethods import putAnnotation, getAnnotation, getURL, postURL
-from ramon import H5AnnotationFile, getH5id, makeAnno, getId, getField, setField
+from ramonmethods import H5AnnotationFile, getH5id, makeAnno, getId, getField, setField
 import kvengine_to_test
 import site_to_test
 SITE_HOST = site_to_test.site

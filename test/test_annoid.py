@@ -46,12 +46,13 @@ class Test_Annotation_Json():
   def setup_class(self):
     """Setup Parameters"""
     makeunitdb.createTestDB(p.token, p.channels, channel_type=ANNOTATION, channel_datatype=UINT32, public=True, ximagesize=1024, yimagesize=1024, zimagesize=10, xvoxelres=1.0, yvoxelres=1.0, zvoxelres=10.0, readonly=0)
-    #makeunitdb.createTestDB(p.token, readonly=0)
+
 
   def teardown_class(self):
     """Teardown Parameters"""
     makeunitdb.deleteTestDB(p.token)
-  
+
+
   def test_get_anno_by_loc(self):
     """Test the annotation (RAMON) JSON interface"""
 
