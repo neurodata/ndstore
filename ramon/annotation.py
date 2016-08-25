@@ -157,7 +157,6 @@ class AnnSynapse (Annotation):
       return ','.join(str(x) for x in self.postsegments)
     elif field == 'centroid':
       return ','.join(str(x) for x in self.centroid)
-      self.centroid = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
     else:
       return Annotation.getField(self, field)
 
@@ -589,6 +588,8 @@ class AnnNode (Annotation):
       return self.parent
     elif field == 'radius':
       return self.radius
+    elif field == 'skeleton':
+      return self.skeleton
     elif field == 'children':
       return ','.join(str(x) for x in self.annodb.queryNodeChildren ( self.ch, self.annid ))
     else:
@@ -602,13 +603,15 @@ class AnnNode (Annotation):
     elif field == 'children':
       raise NDWSError ("Cannot set children.  It is derived from the parent field of ANNO_NODE.")
     elif field == 'location':
-      self.location = np.array([float(x) for x in value.split(',')], dtype=np.float)
+      self.location = np.array(value, dtype=np.float)
       if len(self.location) != 3:
         raise NDWSError ("Illegal arguments to set field location: %s" % value)
     elif field == 'parent':
       self.parent = value
     elif field == 'radius':
       self.radius = value
+    elif field == 'skeleton':
+      self.skeleton = value
     else:
       Annotation.setField ( self, field, value )
 
@@ -620,6 +623,7 @@ class AnnNode (Annotation):
     kvdict['node_location'] = json.dumps(self.location.tolist())
     kvdict['node_parent'] = self.parent   
     kvdict['node_radius'] = self.radius   
+    kvdict['node_skeleton'] = self.skeleton   
 
     kvdict.update(Annotation.toDict(self))
 
@@ -643,6 +647,8 @@ class AnnNode (Annotation):
         self.parent = int(v)
       elif k == 'node_radius':
         self.radius = float(v)
+      elif k == 'node_skeleton':
+        self.skeleton = int(v)
       else:
         anndict[k] = v
     

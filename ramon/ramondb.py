@@ -48,8 +48,6 @@ class RamonDB:
     self.datasetcfg = proj.datasetcfg
     self.proj = proj
 
-#    if self.proj.getMDEngine():
-    # import pdb; pdb.set_trace()
     self.annodb = mysqlramondb.MySQLRamonDB(proj)
 
 
@@ -57,6 +55,10 @@ class RamonDB:
     """Call close on whatever type this is"""
     self.annodb.close()
 
+  def reserve ( self, ch, count ):
+    """Reserve contiguous identifiers. This is it's own txn and should not be called inside another transaction."""
+ 
+    return self.annodb.reserve ( ch, count ) 
 
   def assignID ( self, ch, annid ):
     """if annid == 0, create a new identifier"""
@@ -64,6 +66,19 @@ class RamonDB:
       return self.annodb.nextID(ch)
     else:
       return self.annodb.setID(ch, annid)
+
+  def startTxn ( self ):
+    """Start a transaction.  Ensure database is in multi-statement mode."""
+    self.annodb.startTxn()
+
+  def commit ( self ):
+    """Commit the transaction. Moved out of __del__ to make explicit.""" 
+    self.annodb.commit()
+
+  def rollback ( self ):
+    """Rollback the transaction.  To be called on exceptions."""
+    self.annodb.rollback()
+
 
   #
   # getAnnotation:
@@ -190,3 +205,53 @@ class RamonDB:
     """Return the count top keys in the database."""
 
     return self.annodb.getTopKeys ( ch, count, anntype )  
+
+
+
+  def querySegments ( self, ch, annid ):
+    """Return segments that belong to this neuron"""
+
+    return self.annodb.querySegments ( ch, annid )  
+
+
+
+  def queryROIChildren ( self, ch, annid ):
+    """Return children that belong to this ROI"""
+
+    return self.annodb.queryROIChildren ( ch, annid )  
+
+
+  def queryNodeChildren ( self, ch, annid ):
+    """Return children that belong to this ROI"""
+
+    return self.annodb.queryNodeChildren ( ch, annid )  
+
+
+  def querySkeletonNodes ( self, ch, annid ):
+    """Return the nodes that belong to this skeleton"""
+
+    return self.annodb.querySkeletonNodes ( ch, annid )  
+
+
+  def querySynapses ( self, ch, annid ):
+    """Return synapses that belong to this segment"""
+
+    return self.annodb.querySynapses ( ch, annid )  
+
+
+  def queryPreSynapses ( self, ch, annid ):
+    """Return presynaptic synapses that belong to this segment"""
+
+    return self.annodb.queryPreSynapses ( ch, annid )  
+  
+
+  def queryPostSynapses ( self, ch, annid ):
+    """Return postsynaptic synapses that belong to this segment"""
+
+    return self.annodb.queryPostSynapses ( ch, annid )  
+
+
+  def queryOrganelles ( self, ch, annid ):
+    """Return organelles that belong to this segment"""
+
+    return self.annodb.queryOrganelles ( ch, annid )  

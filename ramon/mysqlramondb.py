@@ -461,39 +461,16 @@ class MySQLRamonDB:
   def querySkeletonNodes ( self, ch, annid ):
     """Return the nodes that belong to this skeleton"""
 
-    # two lists for marked and processed nodes in a tree search
-    skelnodes = []
-    activenodes = []
-
     # get the root node of the skeleton
-    sql = "SELECT kv_value FROM {}_ramon WHERE kv_key='{}' and annoid={}".format(ch.getChannelName(), 'skel_rootnode', annid)
+    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='node_skeleton' and kv_value={}".format(ch.getChannelName(), annid)
 
     try:
       self.cursor.execute ( sql )
     except MySQLdb.Error, e:
-      logger.warning ( "Error querying skeleton rootnode %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise NDWSError ( "Error querying skeleton rootnode %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      logger.warning ( "Error querying skeleton nodes %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise NDWSError ( "Error querying skeleton nodes %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
-    activenodes.append ( int(self.cursor.fetchone()[0]))
-
-    while len(activenodes) != 0:
-   
-      cur = activenodes.pop()
-      skelnodes.append(cur)
-      print "adding {} to skelnodes {}".format(cur, skelnodes)
-
-      # get all children of active node
-      sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.getChannelName(), 'node_parent', cur)
-
-      try:
-        self.cursor.execute ( sql )
-      except MySQLdb.Error, e:
-        logger.warning ( "Error querying children %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        raise NDWSError ( "Error querying children %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-      [ activenodes.append(x) for x in np.array(self.cursor.fetchall(), dtype=np.uint32).flatten() ]
-
-    return np.array(skelnodes, dtype=np.uint32)
+    return np.array(self.cursor.fetchall(), dtype=np.uint32).flatten()
 
 
   def querySynapses ( self, ch, annid ):
