@@ -609,16 +609,19 @@ class Test_Ramon:
     # make a root node
     makeAnno ( q, 7)
     setField(p, 'rootnode', q.annoid)
+    setField(q, 'skeleton', p.annoid)
     skelids.append(q.annoid)
 
     # Make 2 children and four grandchildren
     for i in range(0,2):
       makeAnno ( r, 7) 
       f = setField(r, 'parent', q.annoid)
+      f = setField(r, 'skeleton', p.annoid)
       skelids.append(r.annoid)
       for i in range(0,2):
         makeAnno ( s, 7) 
         f = setField(s, 'parent', r.annoid)
+        f = setField(s, 'skeleton', p.annoid)
         skelids.append(s.annoid)
 
     # Test skeleton
