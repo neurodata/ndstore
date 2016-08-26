@@ -37,43 +37,71 @@ def ingestNIFTI ( niftifname, ch, db, proj ):
   nifti_img = nibabel.load(niftifname)
   nifti_data = np.array(nifti_img.get_data())
 
+  # RBTODO create a channel for Greg?
+
   if len(nifti_data.shape) == 3:
+
+    # check that the data is the right shape
+    if nifti_data.shape != tuple(proj.datasetcfg.imagesz[0]):
+      logger.warning("Data shape {} does not match dataset shape {}.".format(nifti_data.shape, proj.datasetcfg.imagesz[0]))
+      raise NDWSError("Data shape {} does not match dataset shape {}.".format(nifti_data.shape, proj.datasetcfg.imagesz[0]))
 
     # reshape the nifti data to include a channel dimension
     nifti_data = nifti_data.transpose()
     
-    if ch.getDataType() in DTYPE_uint16:   
+    if ch.getDataType() in DTYPE_uint8:   
+      if not (nifti_data.dtype == np.uint8 or nifti_data.dtype == np.int8): 
+        raise NDWSError("POST data incompatible with channel data type") 
+      nifti_data = np.uint8(nifti_data.reshape([1]+list(nifti_data.shape)))
+    elif ch.getDataType() in DTYPE_uint16:   
+      if not (nifti_data.dtype == np.uint16 or nifti_data.dtype == np.int16):
+        raise NDWSError("POST data incompatible with channel data type") 
       nifti_data = np.uint16(nifti_data.reshape([1]+list(nifti_data.shape)))
+    elif ch.getDataType() in DTYPE_uint32:   
+      if not (nifti_data.dtype == np.uint32 or nifti_data.dtype == np.int32):
+        raise NDWSError("POST data incompatible with channel data type") 
+      nifti_data = np.uint32(nifti_data.reshape([1]+list(nifti_data.shape)))
     elif ch.getDataType() in DTYPE_float32:
+      if not nifti_data.dtype == np.float32:
+        raise NDWSError("POST data incompatible with channel data type")
       nifti_data = np.float32(nifti_data.reshape([1]+list(nifti_data.shape)))
     else:
       logger.warning("Illegal data type for NIFTI service. Type={}".format(ch.getDataType()))
       raise NDWSError("Illegal data type for NIFTI service. Type={}".format(ch.getDataType()))
 
-    # check that the data is the right shape
-    if nifti_data.shape[1:] != tuple(proj.datasetcfg.imagesz[0]):
-      logger.warning("Data shape {} does not match dataset shape {}.".format(nifti_data.shape, proj.datasetcfg.imagesz[0]))
-      raise NDWSError("Data shape {} does not match dataset shape {}.".format(nifti_data.shape, proj.datasetcfg.imagesz[0]))
 
   elif len(nifti_data.shape) == 4:
 
-    # reshape the nifti data to include a channel dimension
-    nifti_data = nifti_data.transpose()
-    nifti_data = nifti_data.reshape([1]+list(nifti_data.shape))
-
     # check that the data is the right shape
-    if nifti_data.shape[1:3] != tuple(proj.datasetcfg.imagesz[0]) or nifti_data.shape[4] != proj.datasetcfg.endtime - proj.datasetcfg.starttime:
+    if nifti_data.shape[0:3] != tuple(proj.datasetcfg.imagesz[0]) or nifti_data.shape[3] != proj.datasetcfg.timerange[1] - proj.datasetcfg.timerange[0]:
       logger.warning("Data shape {} does not match dataset shape {}.".format(nifti_data.shape, proj.datasetcfg.imagesz[0]))
       raise NDWSError("Data shape {} does not match dataset shape {}.".format(nifti_data.shape, proj.datasetcfg.imagesz[0]))
+
+    # reshape the nifti data to include a channel dimension
+    nifti_data = nifti_data.transpose()
+
+    if ch.getDataType() in DTYPE_uint8:   
+      if not (nifti_data.dtype == np.uint8 or nifti_data.dtype == np.int8): 
+        raise NDWSError("POST data incompatible with channel data type") 
+      nifti_data = np.uint8(nifti_data.reshape([1]+list(nifti_data.shape)))
+    elif ch.getDataType() in DTYPE_uint16:   
+      if not (nifti_data.dtype == np.uint16 or nifti_data.dtype == np.int16): 
+        raise NDWSError("POST data incompatible with channel data type") 
+      nifti_data = np.uint16(nifti_data.reshape([1]+list(nifti_data.shape)))
+    elif ch.getDataType() in DTYPE_uint32:   
+      if not (nifti_data.dtype == np.uint32 or nifti_data.dtype == np.int32): 
+        raise NDWSError("POST data incompatible with channel data type") 
+      nifti_data = np.uint32(nifti_data.reshape([1]+list(nifti_data.shape)))
+    elif ch.getDataType() in DTYPE_float32:   
+      if not nifti_data.dtype == np.float32:
+        raise NDWSError("POST data incompatible with channel data type") 
+      nifti_data = np.float32(nifti_data.reshape([1]+list(nifti_data.shape)))
 
   # Don't write to readonly channels
   if ch.getReadOnly() == READONLY_TRUE:
     logger.warning("Attempt to write to read only project {}".format(proj.getDBName()))
     raise NDWSError("Attempt to write to read only project {}".format(proj.getDBName()))
 
-  if not nifti_data.dtype == ND_dtypetonp[ch.getDataType()]:
-    logger.warning("Wrong datatype in POST")
-    raise NDWSError("Wrong datatype in POST")
 
   # create the model and populate
   nh = NIFTIHeader()
@@ -89,7 +117,7 @@ def ingestNIFTI ( niftifname, ch, db, proj ):
     db.writeCuboid ( ch, (0,0,0), 0, nifti_data )
 
   elif ch.getChannelType() in TIMESERIES_CHANNELS:
-    db.writeTimeCuboid(ch, corner, 0, timerange, nifti_data)
+    db.writeCuboid(ch, (0,0,0), 0, nifti_data, (0,nifti_data.shape[1]))
 
   else:
     logger.warning("Writing to a channel with an incompatible data type. {}" % (ch.getChannelType()))
@@ -118,16 +146,23 @@ def queryNIFTI ( tmpfile, ch, db, proj ):
       naffine = None
       nheader = None
 
-    # retrieve the data
-    cuboid = db.cutout ( ch, (0,0,0), proj.datasetcfg.imagesz[0], 0 ) 
+    if ch.getChannelType() in TIMESERIES_CHANNELS:
+      # retrieve the data
+      cuboid = db.cutout ( ch, (0,0,0), proj.datasetcfg.imagesz[0], 0, timerange=proj.datasetcfg.timerange ) 
+    else:
+      # retrieve the data
+      cuboid = db.cutout ( ch, (0,0,0), proj.datasetcfg.imagesz[0], 0 ) 
 
     # transpose to nii's xyz format
     niidata = cuboid.data.transpose()
 
-    # work on nifti 3d only for now
     # coerce the data type 
-    if ch.getDataType() in DTYPE_uint16:   
+    if ch.getDataType() in DTYPE_uint8:   
+      niidata = np.array(niidata, dtype='<i1')
+    elif ch.getDataType() in DTYPE_uint16:   
       niidata = np.array(niidata, dtype='<i2')
+    elif ch.getDataType() in DTYPE_uint32:   
+      niidata = np.array(niidata, dtype='<i4')
 
     # assemble the header and the data
     # create a nii file
