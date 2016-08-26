@@ -37,8 +37,6 @@ def ingestNIFTI ( niftifname, ch, db, proj ):
   nifti_img = nibabel.load(niftifname)
   nifti_data = np.array(nifti_img.get_data())
 
-  # RBTODO create a channel for Greg?
-
   if len(nifti_data.shape) == 3:
 
     # check that the data is the right shape

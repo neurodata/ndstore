@@ -1631,7 +1631,7 @@ def putNIFTI ( webargs, postdata ):
         tmpfile.seek(0)
 
         # ingest the nifti file
-        ndwsnifti.ingestNIFTI ( tmpfile.name, ch, db, proj )
+        ndwsnifti.ingestNIFTI ( tmpfile.name, ch, db, proj, channel=channel )
 
 
 def getSWC ( webargs ):
