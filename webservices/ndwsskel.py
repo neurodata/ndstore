@@ -122,7 +122,7 @@ def ingestSWC ( swcfile, ch, db ):
         node.setField ( 'annid', lowid )
         lowid += 1
         node.setField ( 'nodetype', nodetype )
-        node.setField ( 'location', (xpos,ypos,zpos) )
+        node.setField ( 'location', '{},{},{}'.format(xpos,ypos,zpos) )
         node.setField ( 'radius', radius )
         nodes[swcnodeid] = node
 
