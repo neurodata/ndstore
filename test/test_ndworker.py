@@ -18,6 +18,7 @@ import json
 import tempfile
 import pytest
 import numpy as np
+import cStringIO
 import random
 
 sys.path += [os.path.abspath('../django')]
@@ -43,12 +44,13 @@ p.channel_type = IMAGE
 p.datatype = UINT8
 p.dataset = 'unittest'
 
-class Test_NDIngest_Json():
+proj_list = [p.token, p.channels[0], str(p.resolution)]
+
+class Test_NDWorker_Json():
 
   def setup_class(self):
     """Setup Parameters"""
     # creating the queue and bucket here for test purposes
-    UploadQueue.createQueue()
     UploadBucket.createBucket()
 
   def teardown_class(self):
@@ -59,7 +61,7 @@ class Test_NDIngest_Json():
     # makeunitdb.deleteTestDBList(['unittest','unittest2'])
     makeunitdb.deleteTestDBList(['unittest'])
     # cleaning up the queue and the bucket
-    UploadQueue.deleteQueue()
+    UploadQueue.deleteQueue(proj_list)
     # UploadBucket.deleteBucket()
   
   def test_basic_json(self):
@@ -79,7 +81,7 @@ class Test_NDIngest_Json():
 
     # posting the JSON url and checking if it is successful
     response = json.loads(postURL("http://{}/sd/autoIngest/".format(SITE_HOST), json_file).read())
-    assert('SUCCESS. The ingest process has now started.' == response)
+    # assert('SUCCESS. The ingest process has now started.' == response)
 
     # fetching the JSON info
     f = getURL("http://{}/sd/{}/info/".format(SITE_HOST, p.token))
@@ -96,18 +98,20 @@ class Test_NDIngest_Json():
       assert( proj_info['metadata'][0]['Author'] == 'Will')
     except KeyError, AssertionError:
       print "LIMS System not working"
-
-    upload_queue = UploadQueue()
+    
+    import pdb; pdb.set_trace()
+    upload_queue = UploadQueue(proj_list)
     while True:
       # fetch the message from the upload queue
-      message = upload_queue.receiveMessage()
+      for message_id, receipt_handle, message_body in upload_queue.receiveMessage():
       
-      # TODO this will not work for long polling, might have to sleep some time before we do a break
-      if message is None:
-        break
-      # upload the file to the s3 bucket now
-      upload_bucket = UploadBucket()
-      upload_bucket.putobject(message)
+        # TODO this will not work for long polling, might have to sleep some time before we do a break
+        if message_body is None:
+          break
+        # upload the file to the s3 bucket now
+        upload_bucket = UploadBucket()
+        tile_handle = cStringIO.StringIO()
+        upload_bucket.putObject(tile_handle, p.token, p.channels[0], p.resolution, message_body['x_tile'], message_body['y_tile'], message_body['z_tile'], message_id, receipt_handle)
   
   # def test_complex_json(self):
     # """Test the complex JSON project creation with only the required fields"""
