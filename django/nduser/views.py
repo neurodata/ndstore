@@ -661,13 +661,16 @@ def updateChannel(request):
           elif combo=='f:32':
             new_channel.channel_type = IMAGE
             new_channel.channel_datatype = FLOAT32
-          elif combo=='t:8':
+          elif combo=='ti:8':
             new_channel.channel_type = TIMESERIES
             new_channel.channel_datatype = UINT8
-          elif combo=='t:16':
+          elif combo=='ti:16':
             new_channel.channel_type = TIMESERIES
             new_channel.channel_datatype = UINT16
-          elif combo=='t:32':
+          elif combo=='ti:32':
+            new_channel.channel_type = TIMESERIES
+            new_channel.channel_datatype = UINT32
+          elif combo=='tf:32':
             new_channel.channel_type = TIMESERIES
             new_channel.channel_datatype = FLOAT32
           else:

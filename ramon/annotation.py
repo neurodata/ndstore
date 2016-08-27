@@ -603,7 +603,7 @@ class AnnNode (Annotation):
     elif field == 'children':
       raise NDWSError ("Cannot set children.  It is derived from the parent field of ANNO_NODE.")
     elif field == 'location':
-      self.location = np.array(value, dtype=np.float)
+      self.location = np.array([float(x) for x in value.split(',')], dtype=np.float)
       if len(self.location) != 3:
         raise NDWSError ("Illegal arguments to set field location: %s" % value)
     elif field == 'parent':

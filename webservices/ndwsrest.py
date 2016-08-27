@@ -1631,13 +1631,13 @@ def putNIFTI ( webargs, postdata ):
         tmpfile.seek(0)
 
         # ingest the nifti file
-        ndwsnifti.ingestNIFTI ( tmpfile.name, ch, db, proj )
+        ndwsnifti.ingestNIFTI ( tmpfile.name, ch, db, proj, channel=channel )
 
 
 def getSWC ( webargs ):
   """Return an SWC object generated from Skeletons/Nodes"""
 
-  [token, channel, service, rest] = webargs.split('/',4)
+  [token, channel, service, rest] = webargs.split('/',3)
 
   with closing ( ndproj.NDProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
@@ -1651,7 +1651,7 @@ def getSWC ( webargs ):
 
       # if skeleton ids are specified, use those
       if rest:
-        skelids = map ( int, rest.split('.') )
+        skelids = map ( int, rest.rstrip('/').split(',') )
       # otherwise get all skeletons
       else:
         skelids=db.getKVQuery( ch, 'ann_type', annotation.ANNO_SKELETON )
@@ -1666,7 +1666,7 @@ def getSWC ( webargs ):
 def putSWC ( webargs, postdata ):
   """Put an SWC object into RAMON skeleton/tree nodes"""
 
-  [token, channel, service, optionsargs] = webargs.split('/',4)
+  [token, channel, service, optionsargs] = webargs.split('/',3)
 
   with closing ( ndproj.NDProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
