@@ -105,7 +105,7 @@ def getProjects(request):
         else:
           visible_projects = Project.objects.filter(user_id=userid) | Project.objects.filter(public=1) 
 
-        return render_to_response('projects.html', { 'databases': dbs.iteritems() ,'projects': visible_projects.values_list(flat=True) },context_instance=RequestContext(request))
+        return render_to_response('projects.html', { 'databases': dbs.iteritems() ,'projects': visible_projects.values_list(flat=True) })
 
       elif 'delete_data' in request.POST:
 
@@ -207,7 +207,7 @@ def getProjects(request):
       else:
         visible_projects = Project.objects.filter(user_id=userid) | Project.objects.filter(public=1) 
 
-      return render_to_response('projects.html', { 'databases': sorted(dbs.iteritems()) ,'projects':visible_projects },context_instance=RequestContext(request))
+      return render_to_response('projects.html', { 'databases': sorted(dbs.iteritems()) ,'projects':visible_projects })
     
   except NDWSError, e:
 
@@ -225,7 +225,7 @@ def getProjects(request):
         dbs[db.dataset_name].append(None)
     
     all_projects = Project.objects.values_list('project_name',flat= True)
-    return render_to_response('projects.html', { 'databases': dbs.iteritems() ,'projects':all_projects },context_instance=RequestContext(request))
+    return render_to_response('projects.html', { 'databases': dbs.iteritems() ,'projects':all_projects })
     
 
 @login_required(login_url='/nd/accounts/login/')
@@ -244,7 +244,7 @@ def getDatasets(request):
       if 'filter' in request.POST:
         filtervalue = (request.POST.get('filtervalue')).strip()
         visible_datasets = visible_datasets.filter(dataset_name=filtervalue)
-        return render_to_response('datasets.html', { 'dts': visible_datasets },context_instance=RequestContext(request))
+        return render_to_response('datasets.html', { 'dts': visible_datasets })
 
       elif 'delete' in request.POST:
 
@@ -269,7 +269,7 @@ def getDatasets(request):
           else:
             visible_datasets=Dataset.objects.filter(user=request.user.id) | Dataset.objects.filter(public=1)
 
-        return render_to_response('datasets.html', { 'dts': visible_datasets },context_instance=RequestContext(request))
+        return render_to_response('datasets.html', { 'dts': visible_datasets })
       elif 'update' in request.POST:
         ds = (request.POST.get('dataset_name')).strip()
         request.session["dataset_name"] = ds
@@ -277,15 +277,15 @@ def getDatasets(request):
 
       else:
         # load datasets
-        return render_to_response('datasets.html', { 'dts': visible_datasets },context_instance=RequestContext(request))
+        return render_to_response('datasets.html', { 'dts': visible_datasets })
 
     else:
       # GET datasets
-      return render_to_response('datasets.html', { 'dts': visible_datasets },context_instance=RequestContext(request))
+      return render_to_response('datasets.html', { 'dts': visible_datasets })
 
   except NDWSError, e:
     messages.error(request, "Exception in administrative interface = {}".format(e)) 
-    return render_to_response('datasets.html', { 'dts': visible_datasets },context_instance=RequestContext(request))    
+    return render_to_response('datasets.html', { 'dts': visible_datasets })    
 
 @login_required(login_url='/nd/accounts/login/')
 def getAllTokens(request):
@@ -360,12 +360,12 @@ def getChannels(request):
         messages.error(request, "Must have a project context to look at channels.")
         return redirect(getChannels)
       print all_channels
-      return render_to_response('channels.html', { 'channels': all_channels, 'project': proj },context_instance=RequestContext(request))
+      return render_to_response('channels.html', { 'channels': all_channels, 'project': proj })
     
   except NDWSError, e:
     messages.error(request, "Exception in administrative interface = {}".format(e)) 
     datasets = pd.getDatasets()
-    return render_to_response('projects.html',context,context_instance=RequestContext(request))
+    return render_to_response('projects.html', context)
  
 
 @login_required(login_url='/nd/accounts/login/')
@@ -381,7 +381,7 @@ def getTokens(request):
         filtervalue = (request.POST.get('filtervalue')).strip()
         all_tokens = Token.objects.filter(token_name=filtervalue)
         proj=""
-        return render_to_response('tokens.html', { 'tokens': all_tokens, 'project': proj },context_instance=RequestContext(request))
+        return render_to_response('tokens.html', { 'tokens': all_tokens, 'project': proj })
 
       elif 'delete' in request.POST:
         # Delete the token from the token table
@@ -431,12 +431,12 @@ def getTokens(request):
       else:
         proj=""
         all_tokens = Token.objects.all()
-      return render_to_response('tokens.html', { 'tokens': all_tokens, 'project': proj },context_instance=RequestContext(request))
+      return render_to_response('tokens.html', { 'tokens': all_tokens, 'project': proj })
     
   except NDWSError, e:
     messages.error(request, "Exception in administrative interface = {}".format(e)) 
     datasets = pd.getDatasets()
-    return render_to_response('datasets.html', { 'dts': datasets },context_instance=RequestContext(request))
+    return render_to_response('datasets.html', { 'dts': datasets })
 
 
 @login_required(login_url='/nd/accounts/login/')
@@ -477,7 +477,7 @@ def createProject(request):
           return HttpResponseRedirect(get_script_prefix()+'nduser/projects/')
         else:
           context = {'form': form}
-          return render_to_response('createproject.html',context,context_instance=RequestContext(request))
+          return render_to_response('createproject.html', context)
 
       else:
         # default
@@ -492,7 +492,7 @@ def createProject(request):
       form.fields['dataset'].queryset = Dataset.objects.filter(user_id=request.user.id) | Dataset.objects.filter(public=1)
 
       context = {'form': form}
-      return render_to_response('createproject.html',context,context_instance=RequestContext(request))
+      return render_to_response('createproject.html', context)
 
   except Exception, e:
     messages.error(request, "Exception in administrative interface = {}".format(e)) 
@@ -513,7 +513,7 @@ def createDataset(request):
           return HttpResponseRedirect(get_script_prefix()+'nduser/datasets/')
         else:
           context = {'form': form}
-          return render_to_response('createdataset.html',context,context_instance=RequestContext(request))
+          return render_to_response('createdataset.html', context)
       elif 'backtodatasets' in request.POST:
         return redirect(getDatasets)
       else:
@@ -524,12 +524,12 @@ def createDataset(request):
       '''Show the Create datasets form'''
       form = DatasetForm()
       context = {'form': form}
-      return render_to_response('createdataset.html',context,context_instance=RequestContext(request))
+      return render_to_response('createdataset.html', context)
 
   except Exception, e:
     messages.error(request, "Exception in administrative interface = {}".format(e)) 
     datasets = pd.getDatasets()
-    return render_to_response('datasets.html', { 'dts': datasets },context_instance=RequestContext(request))
+    return render_to_response('datasets.html', { 'dts': datasets })
 
 
 @login_required(login_url='/nd/accounts/login/')
@@ -553,7 +553,7 @@ def updateDataset(request):
           else:
             # invalid form
             context = {'form': form}
-            return render_to_response('updatedataset.html',context,context_instance=RequestContext(request))
+            return render_to_response('updatedataset.html', context)
 
         else:
           messages.error(request,"Cannot update.  You are not owner of this dataset or not superuser.")
@@ -591,12 +591,12 @@ def updateDataset(request):
               }
       form = DatasetForm(initial=data)
       context = {'form': form}
-      return render_to_response('updatedataset.html',context,context_instance=RequestContext(request))
+      return render_to_response('updatedataset.html', context)
 
   except Exception, e:
     messages.error(request, "Exception in administrative interface = {}".format(e)) 
     datasets = pd.getDatasets()
-    return render_to_response('datasets.html', { 'dts': datasets },context_instance=RequestContext(request))
+    return render_to_response('datasets.html', { 'dts': datasets })
 
 
 @login_required(login_url='/nd/accounts/login/')
@@ -620,7 +620,7 @@ def updateChannel(request):
         else:
           # Invalid form
           context = {'form': form, 'project': prname}
-          return render_to_response('updatechannel.html', context, context_instance=RequestContext(request))
+          return render_to_response('updatechannel.html', context)
 
       elif 'propagatechannel' in request.POST:
 
@@ -634,7 +634,7 @@ def updateChannel(request):
 
         context = {'form': form, 'project': prname}
         form.add_error(None,[u"Propagate not yet implemented in self-admin UI."])
-        return render_to_response('updatechannel.html', context, context_instance=RequestContext(request))
+        return render_to_response('updatechannel.html', context)
 
       elif 'createchannel' in request.POST:
 
@@ -706,7 +706,7 @@ def updateChannel(request):
         else:
           # Invalid form
           context = {'form': form, 'project': prname}
-          return render_to_response('createchannel.html', context, context_instance=RequestContext(request))
+          return render_to_response('createchannel.html', context)
 
       else:
         # unrecognized option
@@ -752,14 +752,14 @@ def updateChannel(request):
         }
         form = ChannelForm(initial=data)
         context = {'form': form, 'project': prname }
-        return render_to_response('updatechannel.html', context, context_instance=RequestContext(request))
+        return render_to_response('updatechannel.html', context)
       else:
         data = {
           'project': pr
         }
         form = ChannelForm(initial=data)
         context = {'form': form, 'project': prname }
-        return render_to_response('createchannel.html', context, context_instance=RequestContext(request))
+        return render_to_response('createchannel.html', context)
 
   except Exception, e:
     messages.error(request, "Exception in administrative interface = {}".format(e)) 
@@ -792,7 +792,7 @@ def updateToken(request):
         else:
           #Invalid form
           context = {'form': form}
-          return render_to_response('updatetoken.html',context,context_instance=RequestContext(request))
+          return render_to_response('updatetoken.html', context)
       elif 'backtotokens' in request.POST:
         #unrecognized option
         return HttpResponseRedirect(get_script_prefix()+'nduser/token/')
@@ -814,7 +814,7 @@ def updateToken(request):
       }
       form = TokenForm(initial=data)
       context = {'form': form}
-      return render_to_response('updatetoken.html',context,context_instance=RequestContext(request))
+      return render_to_response('updatetoken.html', context)
 
   except Exception, e:
     messages.error(request, "Exception in administrative interface = {}".format(e)) 
@@ -846,7 +846,7 @@ def updateProject(request):
         else:
           #Invalid form
           context = {'form': form}
-          return render_to_response('updateproject.html',context,context_instance=RequestContext(request))
+          return render_to_response('updateproject.html', context)
       elif 'backtoprojects' in request.POST:
         return HttpResponseRedirect(get_script_prefix()+'nduser/projects/')
       else:
@@ -872,7 +872,7 @@ def updateProject(request):
       }
       form = ProjectForm(initial=data)
       context = {'form': form}
-      return render_to_response('updateproject.html',context,context_instance=RequestContext(request))
+      return render_to_response('updateproject.html', context)
 
   except Exception, e:
     messages.error(request, "Exception in administrative interface = {}".format(e)) 
@@ -900,7 +900,7 @@ def createToken(request):
           return HttpResponseRedirect(get_script_prefix()+'nduser/projects/')
         else:
           context = {'form': form}
-          return render_to_response('createtoken.html',context,context_instance=RequestContext(request))
+          return render_to_response('createtoken.html', context)
       elif 'backtotokens' in request.POST:
          return redirect(getTokens) 
       else:
@@ -914,7 +914,7 @@ def createToken(request):
       }
       form = TokenForm( initial = data )
       context = {'form': form, 'project': prname }
-      return render_to_response('createtoken.html',context,context_instance=RequestContext(request))
+      return render_to_response('createtoken.html', context)
 
   except Exception, e:
     messages.error(request, "Exception in administrative interface = {}".format(e)) 
@@ -941,7 +941,7 @@ def backupProject(request):
         if not form.is_valid():
 
           context = {'form': form, 'project': prname}
-          return render_to_response('backup.html',context,context_instance=RequestContext(request))
+          return render_to_response('backup.html', context)
 
         else:
 
@@ -1109,7 +1109,7 @@ def backupProject(request):
       form.fields['channel'].queryset = channels
 
       context = {'form': form, 'project': prname, 'channels': channels, 'backups': backups }
-      return render_to_response('backup.html', context, context_instance=RequestContext(request))
+      return render_to_response('backup.html', context)
 
   except Exception, e:
     messages.error(request, "Exception in administrative interface = {}".format(e)) 
@@ -1276,7 +1276,7 @@ def restoreProject ( request ):
       cprojs = Project.objects.filter(dataset=pr.dataset,user=request.user.id) 
 
       context = {'cform': cform, 'pform': pform, 'filename': filename, 'buid': buid, 'cprojects': cprojs, 'project_name': pr.project_name}
-      return render_to_response('restore.html', context, context_instance=RequestContext(request))
+      return render_to_response('restore.html', context)
 
   except Exception, e:
     messages.error(request, "Exception in administrative interface = {}".format(e)) 
@@ -1427,14 +1427,12 @@ def downloadData(request):
           
       else:
         return redirect(downloaddata)
-        #return render_to_response('download.html',context_instance=RequestContext(request))
     else:
       # Load Download page with public tokens                                           
       form = dataUserForm()
       tokens = ndproj.NDProjectsDB.getPublicTokens()
       context = {'form': form ,'publictokens': tokens}
-      return render_to_response('download.html',context,context_instance=RequestContext(request))
-      #return render_to_response('download.html', { 'dts': datasets },context_instance=\
+      return render_to_response('download.html', context)
       # RequestContext(request))                                                                
   except NDWSError, e:
     messages.error(request, "Exception in administrative interface = {}".format(e)) 
