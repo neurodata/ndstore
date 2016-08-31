@@ -18,14 +18,7 @@ sys.path += [os.path.abspath('../django')]
 import ND.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
 
-from nddynamo.s3indexdb import S3IndexDB
+from nddynamo.cuboidindexdb import CuboidIndexDB
 from ndbucket.cuboidbucket import CuboidBucket
 
 # S3IndexDB.createTable()
-s3_index = S3IndexDB('kasthuri11', 'image')
-cuboid_bucket = CuboidBucket()
-
-for item in s3_index.queryResolutionItems(5):
-  print item
-  cuboid_bucket.deleteObject(item['supercuboid_key'])
-  s3_index.deleteItem(item['supercuboid_key'])
