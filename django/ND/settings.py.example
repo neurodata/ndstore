@@ -229,8 +229,10 @@ CORS_ALLOW_METHODS = {
 
 # Amazon Settings
 REGION_NAME = 'us-east-1'
-S3_CUBOID_STORE = 'neurodata-cuboid-store'
-DYNAMO_S3INDEX_TABLE = 's3indexdb'
+S3_CUBOID_BUCKET = 'neurodata-cuboid-store'
+S3_TILE_BUCKET = 'neurodata-tile-store'
+DYNAMO_CUBOIDINDEX_TABLE = 's3indexdb'
+DYNAMO_TILEINDEX_TABLE = 'tileindexdb'
 AWS_ACCESS_KEY_ID = settings_secret.AWS_ACCESS_KEY_ID
 AWS_SECRET_ACCESS_KEY = settings_secret.AWS_SECRET_ACCESS_KEY
 
