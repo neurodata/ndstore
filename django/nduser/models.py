@@ -101,7 +101,7 @@ class Project ( models.Model):
     (S3_TRUE, 'Yes'),
     (S3_FALSE, 'No'),
   )
-  s3backend = models.IntegerField(choices=S3BACKEND_CHOICES, default=S3_FALSE)
+  s3backend = models.IntegerField(choices=S3BACKEND_CHOICES, default=S3_TRUE)
 
   # Version information -- set automatically
   nd_version =  models.CharField(max_length=255, default=ND_VERSION)
