@@ -82,7 +82,7 @@ sudo -u neurodata python manage.py collectstatic --noinput
 sudo -u neurodata wget http://download.redis.io/redis-stable.tar.gz /home/neurodata/
 sudo -u neurodata tar xvf /home/neurodata/redis-stable.tar.gz
 cd /home/neurodata/redis-stable/
-sudo -u neurodata make && sudo -u neurodata make test && sudo -u neurodata make install
+sudo -u neurodata make && sudo -u neurodata make test && sudo make install
 sudo mkdir /etc/redis
 sudo ln -s /home/neurodata/ndstore/setup/docker_config/redis/redis.conf /etc/redis/redis.conf
 sudo ln -s /home/neurodata/ndstore/setup/docker_config/upstart/redis.conf /etc/init/redis.conf
