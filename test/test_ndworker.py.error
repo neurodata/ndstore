@@ -30,7 +30,7 @@ from params import Params
 from ndwsprojingest import createJson
 from postmethods import getURL, postURL, postNPZ, getNPZ
 from ndqueue.uploadqueue import UploadQueue
-from ndbucket.uploadbucket import UploadBucket
+from ndbucket.tilebucket import TileBucket
 import makeunitdb
 import site_to_test
 
@@ -109,9 +109,9 @@ class Test_NDWorker_Json():
         if message_body is None:
           break
         # upload the file to the s3 bucket now
-        upload_bucket = UploadBucket()
+        tile_bucket = TileBucket()
         tile_handle = cStringIO.StringIO()
-        upload_bucket.putObject(tile_handle, p.token, p.channels[0], p.resolution, message_body['x_tile'], message_body['y_tile'], message_body['z_tile'], message_id, receipt_handle)
+        tile_bucket.putObject(tile_handle, p.token, p.channels[0], p.resolution, message_body['x_tile'], message_body['y_tile'], message_body['z_tile'], message_id, receipt_handle)
   
   # def test_complex_json(self):
     # """Test the complex JSON project creation with only the required fields"""
