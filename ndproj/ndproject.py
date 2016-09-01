@@ -90,7 +90,7 @@ class NDProject:
     else:
       chs = channel_list
     for ch in chs:
-      yield NDChannel(self, ch.channel_name)
+      yield NDChannel(self, ch)
 
   def getChannelObj ( self, channel_name='default' ):
     """Returns a object for that channel"""
