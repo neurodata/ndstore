@@ -19,10 +19,10 @@ git submodule update --init --recursive
 sudo apt-get install uwsgi-plugin-python
 ```
 
-##### Python dependencies 
+##### Python dependencies
 
 ```sh
-pip install numpy scipy django django-registration-redux django-celery mysql-python pytest pillow pylibmc posix_ipc networkx nibabel lxml boto3 requests h5py blosc redis
+pip install numpy scipy django django-registration-redux django-celery django-cors-headers mysql-python pytest pillow pylibmc posix_ipc networkx nibabel lxml boto3 requests h5py blosc redis libtiff
 ```
 
 ##### Configuration files
@@ -31,12 +31,12 @@ You need to create the following files from the example files in the same direct
   * ndstore/django/ND/settings.py
   * ndstore/django/ND/settings_secret.py
 
-##### MySQL 
+##### MySQL
 
 List of commands needed to configure the database for mysql
 
   * Create brain user as MySQL root
-    
+
     ```sql
     create user 'brain'@'localhost' identified by 'password_here';
     grant all privileges on *.* to 'brain'@'localhost' with grant option;
@@ -46,7 +46,7 @@ List of commands needed to configure the database for mysql
     ```
 
   * Create the database neurodjango
-    
+
     ```sql
     create database neurodjango;
     ```
@@ -55,16 +55,16 @@ List of commands needed to configure the database for mysql
 
   * default
     ND configuration for /etc/nginx/sites-enabled/default
-  
+
   * ocp.ini
     uWSGI configuration file in /etc/uwsgi/apps-enabled/
 
 ##### Celery
-  
+
   * ingest.conf
     ND configuration for /etc/supervisor/
-  
-  * propagate.conf 
+
+  * propagate.conf
     ND configuration for /etc/supervisor
 
   * stats.conf
@@ -94,7 +94,7 @@ List of commands needed to configure the database for mysql
   * Note: MACOSX note: had to follow weird library linking instructions on http://www.strangedata.ninja/2014/08/07/how-to-install-mysql-server-mac-and-python-mysqldb-library/ to get "import MySQLdb" to work
 
 ##### Django Settings
-  
+
   * Migrate the databases, collect static files,
     ```sh
     cd ~/ndstore/django
