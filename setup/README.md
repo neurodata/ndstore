@@ -22,7 +22,7 @@ sudo apt-get install uwsgi-plugin-python
 ##### Python dependencies
 
 ```sh
-pip install numpy scipy django django-registration-redux django-celery django-cors-headers mysql-python pytest pillow pylibmc posix_ipc networkx nibabel lxml boto3 requests h5py blosc redis libtiff
+pip install numpy scipy django django-registration-redux django-celery django-cors-headers mysql-python pytest pillow pylibmc posix_ipc networkx nibabel lxml boto3 requests h5py blosc redis libtiff jsonschema json-spec
 ```
 
 ##### Configuration files
