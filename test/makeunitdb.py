@@ -43,7 +43,7 @@ def createTestDB ( project_name, channel_list=['unit_anno'], channel_type=ANNOTA
   ds.save()
 
   # make the project entry
-  pr = Project (project_name=project_name, project_description='Unit test', user=unituser, dataset=ds, nd_version=nd_version, host='localhost', kvengine=kvengine_to_test.kvengine, kvserver=kvengine_to_test.kvserver)
+  pr = Project (project_name=project_name, project_description='Unit test', user=unituser, dataset=ds, nd_version=nd_version, host='localhost', kvengine=kvengine_to_test.kvengine, kvserver=kvengine_to_test.kvserver, s3backend=0)
   pr.save()
 
   # create a token

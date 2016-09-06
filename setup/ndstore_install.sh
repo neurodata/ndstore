@@ -79,8 +79,9 @@ echo "from django.contrib.auth.models import User; User.objects.create_superuser
 sudo -u neurodata python manage.py collectstatic --noinput
 
 # download, install and configure redis
-sudo -u neurodata wget http://download.redis.io/redis-stable.tar.gz /home/neurodata/
-sudo -u neurodata tar xvf /home/neurodata/redis-stable.tar.gz
+cd /home/neurodata/
+sudo -u neurodata wget http://download.redis.io/redis-stable.tar.gz
+sudo -u neurodata tar -xvf /home/neurodata/redis-stable.tar.gz
 cd /home/neurodata/redis-stable/
 sudo -u neurodata make && sudo -u neurodata make test && sudo make install
 sudo mkdir /etc/redis
