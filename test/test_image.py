@@ -136,6 +136,7 @@ class Test_Image_Simple_Catmaid:
     # check that the return matches
     assert ( np.array_equal(voxarray, image_data) )
     
+    # xy/z/y_x_res
     url = "http://{}/catmaid/{}/{}/xy/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[4], p.args[2]/512, p.args[0]/512, p.resolution)
     f = getURL (url)
 
@@ -154,7 +155,8 @@ class Test_Image_Simple_Catmaid:
     # check that the return matches
     assert ( np.array_equal(voxarray, image_data) )
 
-    url = "http://{}/catmaid/{}/{}/yz/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[4]/512, p.args[2]/512, p.args[0], p.resolution)
+    # yz/x/z_y_res
+    url = "http://{}/catmaid/{}/{}/yz/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[0], p.args[4]/512, p.args[2]/512, p.resolution)
     f = getURL (url)
 
     scale_range = 512*p.voxel[2]/p.voxel[1]
@@ -173,7 +175,8 @@ class Test_Image_Simple_Catmaid:
     # check that the return matches
     assert ( np.array_equal(voxarray, image_data) )
 
-    url = "http://{}/catmaid/{}/{}/xz/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[4]/512, p.args[2], p.args[0]/512, p.resolution)
+    # xz/y/z_x_res
+    url = "http://{}/catmaid/{}/{}/xz/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[2], p.args[4]/512, p.args[0]/512, p.resolution)
     f = getURL (url)
 
     scale_range = 512*p.voxel[2]/p.voxel[0]

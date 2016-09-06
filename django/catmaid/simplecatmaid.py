@@ -201,7 +201,7 @@ class SimpleCatmaid:
     except Exception, e:
       logger.warning("Incorrect arguments give for getTile {}. {}".format(webargs, e))
       raise NDWSError("Incorrect arguments given for getTile {}. {}".format(webargs, e))
-
+    
     with closing ( ndproj.NDProjectsDB() ) as projdb:
         self.proj = projdb.loadToken(self.token)
     
@@ -220,7 +220,7 @@ class SimpleCatmaid:
           elif slice_type == 'xz':
             img = self.cacheMissXZ(res, xtile, ytile, ztile, timetile, filterlist)
           elif slice_type == 'yz':
-            img = self.cacheMissYZ(res, xtile, ytile, ztile, timetile, filterlist)
+            img = self.cacheMissYZ(res, ztile, xtile, ytile, timetile, filterlist)
           else:
             logger.warning ("Requested illegal image plance {}. Should be xy, xz, yz.".format(slice_type))
             raise NDWSError ("Requested illegal image plance {}. Should be xy, xz, yz.".format(slice_type))
