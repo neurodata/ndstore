@@ -102,8 +102,8 @@ class AwsInterface:
 
       # ingest 1 or more resolutions based on user input
       if resolution is None:
-        stop_res = ch.getResolution()
-        start_res = proj.datasetcfg.scalinglevels
+        start_res = self.proj.datasetcfg.scalinglevels
+        stop_res = ch.getResolution() - 1
       else:
         start_res = resolution
         stop_res = resolution - 1
