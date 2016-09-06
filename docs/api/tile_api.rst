@@ -5,12 +5,12 @@ You can also view the `Tilecache APIs <http://docs.neurodata.io/ndtilecache/api/
 
 **NOTE**: These APIs do not return the orginal data. If you want the orginal raw data then please use the :ref:`Data APIs <data-api>`.
 
-.. _simple-tile:
+.. _simple-tile-xy:
 
-getSimpleTile
--------------
+getSimpleTileXY
+---------------
 
-.. http:get:: (string:server_name)/nd/catmaid/(string:token_name)/(string:channel_name)/(string:slice_type)/(int:time)/(int:zvalue)/(int:ytile)_(int:xtile)_(int:resolution).png
+.. http:get:: (string:server_name)/nd/catmaid/(string:token_name)/(string:channel_name)/xy/(int:time)/(int:zvalue)/(int:ytile)_(int:xtile)_(int:resolution).png
    
    :synopsis: Get a 512x512 tile from the database. This returns a simple Black and White tile.
 
@@ -20,8 +20,6 @@ getSimpleTile
    :type token_name: string
    :param channel_name: Channel Name in NeuroData.
    :type channel_name: string
-   :param slice_type: Type of Slice cutout. Can be xy/yz/xz
-   :type slice_type: string
    :param time: Time value. *Optional*. Only possible in timeseries datasets.
    :type time: int
    :param zvalue: Zslice value.
@@ -56,6 +54,65 @@ getSimpleTile
     :width: 512px
     :height: 512px
 
+.. _simple-tile-yz:
+
+getSimpleTileYZ
+---------------
+
+.. http:get:: (string:server_name)/nd/catmaid/(string:token_name)/(string:channel_name)/yz/(int:time)/(int:xvalue)/(int:ztile)_(int:ytile)_(int:resolution).png
+   
+   :synopsis: Get a 512x512 tile from the database. This returns a simple Black and White tile.
+
+   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :type server_name: string
+   :param token_name: Token Name in NeuroData.
+   :type token_name: string
+   :param channel_name: Channel Name in NeuroData.
+   :type channel_name: string
+   :param time: Time value. *Optional*. Only possible in timeseries datasets.
+   :type time: int
+   :param ztile: Z-Tile value. Each tile is 512x512
+   :type ztile: int
+   :param ytile: Y-Tile value. Each tile is 512x512.
+   :type ytile: int
+   :param xvalue: Xslice value
+   :type xvalue: int
+   :param resolution: Resolution value.
+   :type resolution: int
+
+   :statuscode 200: No error
+   :statuscode 403: Forbidden
+   :statuscode 404: Error in the syntax or file format
+
+.. _simple-tile-xz:
+
+getSimpleTileXZ
+---------------
+
+.. http:get:: (string:server_name)/nd/catmaid/(string:token_name)/(string:channel_name)/xz/(int:time)/(int:yvalue)/(int:ztile)_(int:xtile)_(int:resolution).png
+   
+   :synopsis: Get a 512x512 tile from the database. This returns a simple Black and White tile.
+
+   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :type server_name: string
+   :param token_name: Token Name in NeuroData.
+   :type token_name: string
+   :param channel_name: Channel Name in NeuroData.
+   :type channel_name: string
+   :param time: Time value. *Optional*. Only possible in timeseries datasets.
+   :type time: int
+   :param yvalue: Yslice value.
+   :type yvalue: int
+   :param ytile: Y-Tile value. Each tile is 512x512.
+   :type ytile: int
+   :param ztile: Z-Tile value. Each tile is 512x512.
+   :type ztile: int
+   :param resolution: Resolution value.
+   :type resolution: int
+
+   :statuscode 200: No error
+   :statuscode 403: Forbidden
+   :statuscode 404: Error in the syntax or file format
 .. _mcfc-tile:
 
 getMcfcTile
