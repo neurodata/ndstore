@@ -62,12 +62,12 @@ p.voxel = [4.0,4.0,3.0]
 class Test_Image_Slice:
 
   def setup_class(self):
-
+    """Setup class parameters"""
     makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype)
 
   def teardown_class(self):
+    """Cleanup class parameters"""
     makeunitdb.deleteTestDB(p.token)
-
 
   def test_xy (self):
     """Test the xy slice cutout"""
