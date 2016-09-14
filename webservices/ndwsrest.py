@@ -45,7 +45,7 @@ import h5projinfo
 import jsonprojinfo
 import annotation
 import mcfc
-import ndlib
+from ndctypelib import filter_ctype_OMP
 import ndwsskel
 import ndwsnifti
 from windowcutout import windowCutout
@@ -89,7 +89,7 @@ def filterCube(ch, cube, filterlist=None):
   """Call Filter on a cube"""
 
   if ch.getChannelType() in ANNOTATION_CHANNELS and filterlist is not None:
-    cube.data = ndlib.filter_ctype_OMP ( cube.data, filterlist )
+    cube.data = filter_ctype_OMP ( cube.data, filterlist )
   elif filterlist is not None and ch.getChannelType not in ANNOTATION_CHANNELS:
     logger.error("Filter only possible for Annotation Channels")
     raise NDWSError("Filter only possible for Annotation Channels")
@@ -424,7 +424,7 @@ def tiff3d ( chanargs, proj, db ):
 #        imagemap = np.zeros ( (cube.data.shape[0]*cube.data.shape[1], cube.data.shape[2]), dtype=np.uint32 )
 #
 #        # turn it into a 2-d array for recolor -- maybe make a 3-d recolor
-#        recolor_cube = ndlib.recolor_ctype( cube.data.reshape((cube.data.shape[0]*cube.data.shape[1], cube.data.shape[2])), imagemap )
+#        recolor_cube = recolor_ctype( cube.data.reshape((cube.data.shape[0]*cube.data.shape[1], cube.data.shape[2])), imagemap )
 #
 #        # turn it back into a 4-d array RGBA
 #        recolor_cube = recolor_cube.view(dtype=np.uint8).reshape((cube.data.shape[0],cube.data.shape[1],cube.data.shape[2], 4 ))
@@ -453,7 +453,7 @@ def FilterCube ( imageargs, cb ):
   result = re.search ("filter/([\d/,]+)/",imageargs)
   if result != None:
     filterlist = np.array ( result.group(1).split(','), dtype=np.uint32 )
-    cb.data = ndlib.filter_ctype_OMP ( cb.data, filterlist )
+    cb.data = filter_ctype_OMP ( cb.data, filterlist )
 
 
 def window(data, ch, window_range=None ):

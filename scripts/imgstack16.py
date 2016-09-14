@@ -32,7 +32,7 @@ django.setup()
 
 from cube import Cube
 import ocpcarest
-import ndlib
+from ndctypelib import XYZMorton
 import ocpcaproj
 import ocpcadb
 
@@ -82,7 +82,7 @@ def buildStack(token, channel, res):
               # Put to a new cube
               newdata[sl,:,:] = np.asarray ( newimage )
 
-            zidx = ndlib.XYZMorton ( [x,y,z] )
+            zidx = XYZMorton ( [x,y,z] )
             cube = Cube.getCube(cubedim, ch.getChannelType(), ch.getDataType())
             cube.zeros()
 

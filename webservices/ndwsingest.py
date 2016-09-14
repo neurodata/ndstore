@@ -33,7 +33,7 @@ from ndtype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, ANNOTATION_CHANNELS, ND_
 import ndwsrest
 import spatialdb
 import ndproj
-import ndlib
+from ndctypelib import XYZMorton
 from s3util import generateS3BucketName, generateS3Key
 import s3io
 
@@ -232,7 +232,7 @@ class IngestData:
             for x in range (xtile*tilesz, (xtile+1)*tilesz, xsupercubedim):
 
               # Getting a Cube id and ingesting the data one cube at a time
-              zidx = ndlib.XYZMorton ( [(x-xoffset)/xsupercubedim, (y-yoffset)/ysupercubedim, (slice_number-zoffset)/zsupercubedim] )
+              zidx = XYZMorton ( [(x-xoffset)/xsupercubedim, (y-yoffset)/ysupercubedim, (slice_number-zoffset)/zsupercubedim] )
               cube = Cube.getCube(supercubedim, ch.getChannelType(), ch.getDataType())
               cube.zeros()
 
@@ -307,7 +307,7 @@ class IngestData:
             for x in range ( 0, ximagesz+1, xcubedim ):
 
               # Getting a Cube id and ingesting the data one cube at a time
-              zidx = ndlib.XYZMorton ( [x/xcubedim, y/ycubedim, (slice_number-zoffset)/zcubedim] )
+              zidx = XYZMorton ( [x/xcubedim, y/ycubedim, (slice_number-zoffset)/zcubedim] )
               cube = Cube.getCube(cubedim, ch.getChannelType(), ch.getDataType())
               cube.zeros()
 

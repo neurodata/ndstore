@@ -34,7 +34,6 @@ import ndchannel
 import jsonann 
 import jsonprojinfo
 import annotation
-import ndlib
 import ndwsskel
 from ndtype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, ANNOTATION_CHANNELS, NOT_PROPAGATED, UNDER_PROPAGATION, PROPAGATED, ND_dtypetonp, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, READONLY_TRUE, READONLY_FALSE
 

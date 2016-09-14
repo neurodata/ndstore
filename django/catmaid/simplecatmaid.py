@@ -26,8 +26,6 @@ import spatialdb
 import ndproj
 import ndwsrest
 
-import ndlib
-
 from ndwserror import NDWSError
 import logging
 logger=logging.getLogger("neurodata")
@@ -86,11 +84,6 @@ class SimpleCatmaid:
         tiledata = np.zeros((1, 1, self.tilesz, self.tilesz), cb.data.dtype )
         tiledata[0, 0, 0:((yend-1)%self.tilesz+1), 0:((xend-1)%self.tilesz+1)] = cb.data[0, 0, :, :]
       cb.data = tiledata
-
-    # filter data by annotation as requested
-    # if filterlist:
-      # dataids = map (int, filterlist.split(','))
-      # cb.data = ndlib.filter_ctype_OMP ( cb.data, dataids )
 
     return cb.xyImage()
 

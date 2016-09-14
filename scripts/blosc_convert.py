@@ -34,7 +34,7 @@ django.setup()
 
 from ndproj import NDProjectsDB
 from spatialdb import SpatialDB
-import ndlib
+from ndctypelib import XYZMorton
 
 
 def main():
@@ -66,7 +66,7 @@ def main():
       for x in range(0, xlimit+1, 1):
         
         # print x*xcubedim, ":", y*ycubedim, ":", z*zcubedim
-        zidx = ndlib.XYZMorton([x,y,z])
+        zidx = XYZMorton([x,y,z])
         try:
           db.NPZ = True
           cube = db.getCube(ch, zidx, result.res)

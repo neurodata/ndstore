@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import absolute_import
 import os
 import sys
 from contextlib import closing
@@ -21,15 +22,15 @@ import argparse
 import blosc
 from operator import mul
 import csv
-
-sys.path += [os.path.abspath('../django')]
+sys.path.append(os.path.abspath('../django'))
 import ND.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
+from settings.settings import Settings
+ndingest_settings = Settings.load()
 import django
 django.setup()
 from django.conf import settings
-
-import ndlib
+from ndctypelib import XYZMorton
 from cube import Cube
 from ndtype import *
 import ndproj
@@ -53,7 +54,7 @@ class AwsInterface:
     with closing (spatialdb.SpatialDB(self.proj)) as self.db:
       # create the s3 I/O and index objects
       self.s3_io = S3IO(self.db)
-      self.cuboid_bucket = CuboidBucket()
+      self.cuboid_bucket = CuboidBucket(self.proj.getProjectName())
       self.cuboidindex_db = CuboidIndexDB(self.proj.getProjectName())
       # self.file_type = result.file_type
       # self.tile_size = result.tile_size
@@ -131,7 +132,7 @@ class AwsInterface:
                 # cutout the data at the current resolution
                 data = db.cutout(ch, [x*x_supercubedim, y*y_supercubedim, z*z_supercubedim], [x_supercubedim, y_supercubedim, z_supercubedim], cur_res).data
                 # generate the morton index
-                morton_index = ndlib.XYZMorton([x, y, z])
+                morton_index = XYZMorton([x, y, z])
 
                 print "Inserting Cube {} at res {}".format(morton_index, cur_res), [x,y,z]
                 # updating the index

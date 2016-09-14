@@ -16,7 +16,7 @@ import django
 django.setup()
 
 from cube import Cube 
-import ndlib
+from ndctypelib import zoomInData_ctype_OMP
 import ocpcarest
 import ocpcaproj
 import ocpcadb
@@ -38,7 +38,7 @@ def zoomIn(old_data, scaling):
 def cZoomIn(old_data, factor):
   scaling = 2**factor
   new_data = np.zeros ( [old_data.shape[0], old_data.shape[1]*(scaling), old_data.shape[2]*(scaling)], dtype=np.uint16)
-  ndlib.zoomInData_ctype_OMP ( old_data, new_data, int(factor) )
+  zoomInData_ctype_OMP ( old_data, new_data, int(factor) )
   return new_data 
 
 def buildStack(token, channel, res, base_res):

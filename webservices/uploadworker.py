@@ -33,7 +33,6 @@ from ndtype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, ANNOTATION_CHANNELS, ND_
 import ndwsrest
 import spatialdb
 import ndproj
-import ndlib
 from ndqueue.uploadqueue import UploadQueue
 
 from ndwserror import NDWSError
