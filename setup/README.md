@@ -5,23 +5,23 @@
 ##### Git Submodules
 
 * Fresh Clone
-```sh
+```console
 git clone --recursive git@github.com:neurodata/ndstore.git
 ```
 * Existing Repository
-```sh
+```console
 git submodule update --init --recursive
 ```
 
 ##### Ubuntu Packages
 
-```sh
+```console
 sudo apt-get install uwsgi-plugin-python
 ```
 
 ##### Python dependencies
 
-```sh
+```console
 pip install cython numpy
 pip install -U -r setup/requirements.txt
 ```
@@ -54,50 +54,50 @@ List of commands needed to configure the database for mysql
 
 ##### Nginx
 
-  * default
-    ND configuration for /etc/nginx/sites-enabled/default
+* default
+  ND configuration for /etc/nginx/sites-enabled/default
 
-  * ocp.ini
-    uWSGI configuration file in /etc/uwsgi/apps-enabled/
+* ocp.ini
+  uWSGI configuration file in /etc/uwsgi/apps-enabled/
 
 ##### Celery
 
-  * ingest.conf
-    ND configuration for /etc/supervisor/
+* ingest.conf
+  ND configuration for /etc/supervisor/
 
-  * propagate.conf
-    ND configuration for /etc/supervisor
+* propagate.conf
+  ND configuration for /etc/supervisor
 
-  * stats.conf
-    ND configuration for /etc/supervisor
+* stats.conf
+  ND configuration for /etc/supervisor
 
 
 ### MACOS Installation
 
 ##### clone the repository and make a virtual env if you want
-  ```sh
-  git clone git@github.com:neurodata/ndstore.git
-  mkvirtualenv ocp
-  ```
+```console
+git clone git@github.com:neurodata/ndstore.git
+mkvirtualenv ocp
+```
 
 ##### install and configure mysql & memcache. Follow the instructions as ubuntu
-  ```sh
-  cd ~/ndstore/setup/mysql
-  ```
+```console
+cd ~/ndstore/setup/mysql
+```
 
 ##### Install python packages using pip
-  ```sh
-  pip install numpy scipy h5py django django-registration-redux django-celery mysql-python pytest pillow posix_ipc
-  pip install --force-reinstall --upgrade --no-cache-dir --compile blosc  
-  pip install pylibmc --install-option="--with-libmemcached=/usr/local/Cellar/libmemcached/1.0.18_1/"
+```console
+pip install numpy scipy h5py django django-registration-redux django-celery mysql-python pytest pillow posix_ipc
+pip install --force-reinstall --upgrade --no-cache-dir --compile blosc  
+pip install pylibmc --install-option="--with-libmemcached=/usr/local/Cellar/libmemcached/1.0.18_1/"
 
-  ```
+```
   * Note: MACOSX note: had to follow weird library linking instructions on http://www.strangedata.ninja/2014/08/07/how-to-install-mysql-server-mac-and-python-mysqldb-library/ to get "import MySQLdb" to work
 
 ##### Django Settings
 
   * Migrate the databases, collect static files,
-    ```sh
+    ```console
     cd ~/ndstore/django
     python manage.py migrate
     python manage.py createsuperuser
@@ -105,7 +105,7 @@ List of commands needed to configure the database for mysql
     ```
 
   * configure settings
-    ```sh
+    ```console
     cd ~/ndstore/django/OCP
     cp settings.py.example settings.py
     cp settings_secret.py.example settings_secret.py
@@ -124,26 +124,26 @@ List of commands needed to configure the database for mysql
     * BACKUP_PATH
 
 ##### make the logfile directory and make it readable
-  ```sh
+  ```console
   sudo mkdir /var/log/ocp
   sudo chown XXX:YYY /var/log/ocp
   ```
 
 ##### Build ocplib
-  ```sh
+  ```console
   cd ~/ndstore/ocplib
   make -f makefile_MAC
   ```
 
 ##### Dev Server and tests
   * In one window, start the dev server
-    ```sh
+    ```console
     cd ~/ndstore/django
     python manage.py runserver
     ```
 
   * in another window
-    ```sh
+    ```console
     cd ~/ndstore/test
     py.test
     ```
@@ -151,7 +151,7 @@ List of commands needed to configure the database for mysql
 ##### More advanced stuff
 
   * onto nginx
-    ```sh
+    ```console
     brew install nginx
     ```
 
@@ -160,34 +160,34 @@ List of commands needed to configure the database for mysql
   * change all paths for local system
   * configure uswgi at ~/ndstore/setup/ocp.ini
   * run uwsgi in foreground
-    ```sh
+    ```console
     uwsgi ocp.ini
     ```
 
   * Create paths for sockets
-    ```sh
+    ```console
     mkdir /usr/local/var/run/uwsgi
     mkdir /usr/local/var/run/uwsgi/app
     mkdir /usr/local/var/run/uwsgi/app/ocp
     ```
 
   * Create path for logs
-    ```sh
+    ```console
     mkdir /usr/local/var/log/uwsgi/
     ```
 
   * run nginx (as user)
-    ```sh
+    ```console
     nginx
     ```
 
   * stop nginx
-    ```sh
+    ```console
     nginx -s stop
     ```
 
   * run uwsgi as user
-    ```sh
+    ```console
     workon XXX
     uwsgi ocp.ini
     ```
