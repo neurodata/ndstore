@@ -1,11 +1,11 @@
 # Copyright 2014 NeuroData (http://neurodata.io)
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,12 +34,12 @@ from ndtype import ZSLICES, ANNOTATION, NOT_PROPAGATED, READONLY_FALSE, UINT32, 
 import site_to_test
 import kvengine_to_test
 
-def createTestDB ( project_name, channel_list=['unit_anno'], channel_type=ANNOTATION, channel_datatype=UINT32, public=0, ximagesize=10000, yimagesize=10000, zimagesize=1000, xvoxelres=4.0, yvoxelres=4.0, zvoxelres=3.0, scalingoption=ZSLICES, scalinglevels=5, readonly=READONLY_FALSE, propagate=NOT_PROPAGATED, window=[0,0], time=[0,0], default=False, nd_version=ND_VERSION ):
+def createTestDB ( project_name, channel_list=['unit_anno'], channel_type=ANNOTATION, channel_datatype=UINT32, public=0, ximagesize=10000, yimagesize=10000, zimagesize=1000, xvoxelres=4.0, yvoxelres=4.0, zvoxelres=3.0, scalingoption=ZSLICES, scalinglevels=5, readonly=READONLY_FALSE, propagate=NOT_PROPAGATED, window=[0,0], time=[0,0], default=False, nd_version=ND_VERSION, user='neurodata' ):
   """Create a unit test data base on the specified sit and name"""
-  
-  unituser = User.objects.get(username='neurodata')
 
-  ds = Dataset ( dataset_name="unittest", user=unituser, ximagesize=ximagesize, yimagesize=yimagesize, zimagesize=zimagesize,  xoffset=0, yoffset=0, zoffset=1, xvoxelres=xvoxelres, yvoxelres=yvoxelres, zvoxelres=zvoxelres, scalingoption=scalingoption, scalinglevels=scalinglevels, starttime=time[0], endtime=time[1], public=PUBLIC_TRUE, dataset_description="Unit test" ) 
+  unituser = User.objects.get(username=user)
+
+  ds = Dataset ( dataset_name="unittest", user=unituser, ximagesize=ximagesize, yimagesize=yimagesize, zimagesize=zimagesize,  xoffset=0, yoffset=0, zoffset=1, xvoxelres=xvoxelres, yvoxelres=yvoxelres, zvoxelres=zvoxelres, scalingoption=scalingoption, scalinglevels=scalinglevels, starttime=time[0], endtime=time[1], public=PUBLIC_TRUE, dataset_description="Unit test" )
   ds.save()
 
   # make the project entry
@@ -49,7 +49,7 @@ def createTestDB ( project_name, channel_list=['unit_anno'], channel_type=ANNOTA
   # create a token
   tk = Token (token_name = project_name, user = unituser, token_description = 'Unit test token', project_id = pr, public = public)
   tk.save()
-  
+
   # get the correct object for the kvengine
   pd = NDProjectsDB.getProjDB(project_name)
   # create the database
@@ -68,19 +68,19 @@ def createTestDB ( project_name, channel_list=['unit_anno'], channel_type=ANNOTA
 
 
 def deleteTestDB ( project_name ):
-  
+
   try:
     # get the objects
     tk = Token.objects.get(token_name=project_name)
     pr = Project.objects.get(project_name=project_name)
     ds = Dataset.objects.get(dataset_name=pr.dataset_id)
-    
+
     # get the channel list
     channel_list = Channel.objects.filter(project_id=pr)
-    
+
     # get the correct object for the kvengine
     pd = NDProjectsDB.getProjDB(pr.project_name)
-    
+
     for ch in channel_list:
       # delete the channel table
       pd.deleteNDChannel(ch.channel_name)
@@ -95,10 +95,10 @@ def deleteTestDB ( project_name ):
   except Exception, e:
     print(e)
     raise e
-    
+
 
 def deleteTestDBList(project_name_list):
-  
+
   # TODO KL Will cascade work across different django versions?
   try:
     for project_name in project_name_list:
