@@ -56,7 +56,7 @@ class Test_Ramon:
   def test_query_private (self):
     """Test if a private user has proper access abilities."""
 
-    url = '{}/ocp/ca/unittest_user_private/info/'.format(SITE_HOST)
+    url = 'http://{}/ocp/ca/unittest_user_private/info/'.format(SITE_HOST)
     #Ensure that the user can access it
     resp = requests.get(url, headers={'Authorization': 'Token {}'.format( TOKEN_USER )}, verify=False)
     assert(resp.status_code>=200)
@@ -67,7 +67,7 @@ class Test_Ramon:
     resp = requests.get(url, verify=False)
     assert(resp.status_code>=400)
 
-    url = '{}/ocp/ca/unittest_super_private/info/'.format(SITE_HOST)
+    url = 'http://{}/ocp/ca/unittest_super_private/info/'.format(SITE_HOST)
     #Ensure that the user can not access it
     resp = requests.get(url, headers={'Authorization': 'Token {}'.format( TOKEN_USER )}, verify=False)
     assert(resp.status_code>=400)
@@ -82,7 +82,7 @@ class Test_Ramon:
   def test_query_public ( self ):
     """Verify that public data is accessible to all (including anonymous)"""
 
-    url = '{}/ocp/ca/unittest_public/info/'.format(SITE_HOST)
+    url = 'http://{}/ocp/ca/unittest_public/info/'.format(SITE_HOST)
     #Test with a super user
     resp = requests.get(url, headers={'Authorization': 'Token {}'.format( TOKEN_SUPER )}, verify=False)
     assert(resp.status_code>=200)
