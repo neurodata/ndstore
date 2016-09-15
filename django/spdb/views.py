@@ -19,6 +19,7 @@ import MySQLdb
 import cStringIO
 import re
 
+from ndauth.authentication import PublicAuthentication
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -39,7 +40,7 @@ POST_SERVICES = ['hdf5', 'npz', 'raw', 'hdf5_async', 'propagate', 'tiff', 'blosc
 
 @api_view(['GET','POST'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
-@permission_classes((IsAuthenticated,))
+@permission_classes((PublicAuthentication,))
 def cutout (request, webargs):
   """Restful URL for all read services to annotation projects"""
 
@@ -129,7 +130,7 @@ def cutout (request, webargs):
 #@cache_control(no_cache=True)
 @api_view(['GET','POST'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
-@permission_classes((IsAuthenticated,))
+@permission_classes((PublicAuthentication,))
 def nifti (request, webargs):
   """Get put interface for nifti files"""
 
@@ -154,7 +155,7 @@ def nifti (request, webargs):
 #@cache_control(no_cache=True)
 @api_view(['GET','POST'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
-@permission_classes((IsAuthenticated,))
+@permission_classes((PublicAuthentication,))
 def swc (request, webargs):
   """Get put interface for swc tracing files"""
 
@@ -177,7 +178,7 @@ def swc (request, webargs):
 
 @api_view(['GET', 'POST', 'DELETE'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
-@permission_classes((IsAuthenticated,))
+@permission_classes((PublicAuthentication,))
 def annotation (request, webargs):
   """Get put object interface for RAMON objects"""
   [token, channel, rest] = webargs.split('/',2)
@@ -206,7 +207,7 @@ def annotation (request, webargs):
 #@cache_control(no_cache=True)
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
-@permission_classes((IsAuthenticated,))
+@permission_classes((PublicAuthentication,))
 def csv (request, webargs):
   """Get (not yet put) csv interface for RAMON objects"""
 
@@ -225,7 +226,7 @@ def csv (request, webargs):
 #@cache_control(no_cache=True)
 @api_view(['GET','POST'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
-@permission_classes((IsAuthenticated,))
+@permission_classes((PublicAuthentication,))
 def queryObjects ( request, webargs ):
   """Return a list of objects matching predicates and cutout"""
 
@@ -245,7 +246,7 @@ def queryObjects ( request, webargs ):
 
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
-@permission_classes((IsAuthenticated,))
+@permission_classes((PublicAuthentication,))
 def catmaid (request, webargs):
   """Convert a CATMAID request into an cutout."""
 
@@ -269,7 +270,7 @@ def catmaid (request, webargs):
 #@cache_control(no_cache=True)
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
-@permission_classes((IsAuthenticated,))
+@permission_classes((PublicAuthentication,))
 def publictokens (request, webargs):
   """Return list of public tokens"""
   try:
@@ -284,7 +285,7 @@ def publictokens (request, webargs):
 
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
-@permission_classes((IsAuthenticated,))
+@permission_classes((PublicAuthentication,))
 def publicdatasets (request, webargs):
   """Return list of public datasets"""
   try:
@@ -300,7 +301,7 @@ def publicdatasets (request, webargs):
 #@cache_control(no_cache=True)
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
-@permission_classes((IsAuthenticated,))
+@permission_classes((PublicAuthentication,))
 def jsoninfo (request, webargs):
   """Return project and dataset configuration information"""
 
@@ -316,7 +317,7 @@ def jsoninfo (request, webargs):
 
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
-@permission_classes((IsAuthenticated,))
+@permission_classes((PublicAuthentication,))
 def xmlinfo (request, webargs):
   """Return project and dataset configuration information"""
 
@@ -333,7 +334,7 @@ def xmlinfo (request, webargs):
 #@cache_control(no_cache=True)
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
-@permission_classes((IsAuthenticated,))
+@permission_classes((PublicAuthentication,))
 def projinfo (request, webargs):
   """Return project and dataset configuration information"""
 
@@ -349,7 +350,7 @@ def projinfo (request, webargs):
 
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
-@permission_classes((IsAuthenticated,))
+@permission_classes((PublicAuthentication,))
 def mcFalseColor (request, webargs):
   """Cutout of multiple channels with false color rendering"""
 
@@ -366,7 +367,7 @@ def mcFalseColor (request, webargs):
 #@cache_control(no_cache=True)
 @api_view(['POST'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
-@permission_classes((IsAuthenticated,))
+@permission_classes((PublicAuthentication,))
 def reserve (request, webargs):
   """Preallocate a range of ids to an application."""
 
@@ -382,7 +383,7 @@ def reserve (request, webargs):
 
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
-@permission_classes((IsAuthenticated,))
+@permission_classes((PublicAuthentication,))
 def setField (request, webargs):
   """Set an individual RAMON field for an object"""
 
@@ -400,7 +401,7 @@ def setField (request, webargs):
 #@cache_control(no_cache=True)
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
-@permission_classes((IsAuthenticated,))
+@permission_classes((PublicAuthentication,))
 def getField (request, webargs):
   """Get an individual RAMON field for an object"""
 
@@ -417,7 +418,7 @@ def getField (request, webargs):
 #@cache_control(no_cache=True)
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
-@permission_classes((IsAuthenticated,))
+@permission_classes((PublicAuthentication,))
 def getPropagate (request, webargs):
   """ Get the value for Propagate field for a given project """
 
@@ -433,7 +434,7 @@ def getPropagate (request, webargs):
 
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
-@permission_classes((IsAuthenticated,))
+@permission_classes((PublicAuthentication,))
 def setPropagate (request, webargs):
   """ Set the value for Propagate field for a given project """
 
@@ -450,7 +451,7 @@ def setPropagate (request, webargs):
 
 @api_view(['POST'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
-@permission_classes((IsAuthenticated,))
+@permission_classes((PublicAuthentication,))
 def merge (request, webargs):
   """Merge annotation objects"""
 
@@ -466,7 +467,7 @@ def merge (request, webargs):
 
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
-@permission_classes((IsAuthenticated,))
+@permission_classes((PublicAuthentication,))
 def exceptions (request, webargs):
   """Return a list of multiply labeled pixels in a cutout region"""
 
@@ -483,7 +484,7 @@ def exceptions (request, webargs):
 #@cache_control(no_cache=True)
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
-@permission_classes((IsAuthenticated,))
+@permission_classes((PublicAuthentication,))
 def minmaxProject (request, webargs):
   """Restful URL for all read services to annotation projects"""
 
@@ -499,7 +500,7 @@ def minmaxProject (request, webargs):
 
 @api_view(['POST'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
-@permission_classes((IsAuthenticated,))
+@permission_classes((PublicAuthentication,))
 def autoIngest(request, webargs):
   """RESTful URL for creating a project using a JSON file"""
 
@@ -513,7 +514,7 @@ def autoIngest(request, webargs):
 
 @api_view(['POST'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
-@permission_classes((IsAuthenticated,))
+@permission_classes((PublicAuthentication,))
 def createChannel(request, webargs):
   """RESTful URL for creating a list of channels using a JSON file"""
 
@@ -527,7 +528,7 @@ def createChannel(request, webargs):
 
 @api_view(['POST'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
-@permission_classes((IsAuthenticated,))
+@permission_classes((PublicAuthentication,))
 def deleteChannel(request, webargs):
   """RESTful URL for deleting a list of channels using a JSON file"""
 
