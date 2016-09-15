@@ -32,7 +32,7 @@ SITE_HOST = site_to_test.site
 TOKEN = ''
 
 if TOKEN == '':
-  f = open('/tmp/token','r')
+  f = open('/tmp/token_super','r')
   TOKEN = f.read()
   f.close()
 

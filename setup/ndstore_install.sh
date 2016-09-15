@@ -69,6 +69,7 @@ sudo chmod -R 777 /var/log/neurodata/
 cd /home/neurodata/ndstore/django/
 sudo -u neurodata python manage.py migrate
 echo "from django.contrib.auth.models import User; User.objects.create_superuser('neurodata', 'abc@xyz.com', 'neur0data')" | python manage.py shell
+echo "from django.contrib.auth.models import User; User.objects.create_user('test', 'abc@xyz.com', 't3st')" | python manage.py shell
 sudo -u neurodata python manage.py collectstatic --noinput
 
 # add openconnecto.me to django_sites
@@ -112,7 +113,7 @@ else
     cd
     wget https://dl.eff.org/certbot-auto
     chmod a+x certbot-auto
-    echo "y" | sudo ./certbot-auto 
+    echo "y" | sudo ./certbot-auto
     sudo ./certbot-auto certonly --noninteractive --agree-tos --email $4 --webroot -w /usr/share/nginx/html/ -d $3
     sudo cp /etc/letsencrypt/live/$3/privkey.pem /etc/nginx/ssl/server.key
     sudo cp /etc/letsencrypt/live/$3/cert.pem /etc/nginx/ssl/server.crt
@@ -129,8 +130,10 @@ sudo service memcached restart
 
 # Create superuser token
 cd /home/neurodata/ndstore/django/
-echo "from rest_framework.authtoken.models import Token; from django.contrib.auth.models import User; u = User.objects.get(username='neurodata'); token = Token.objects.create(user=u); f = open('/tmp/token','wb'); f.write(token.key); f.close()" | python manage.py shell
+echo "from rest_framework.authtoken.models import Token; from django.contrib.auth.models import User; u = User.objects.get(username='neurodata'); token = Token.objects.create(user=u); f = open('/tmp/token_super','wb'); f.write(token.key); f.close()" | python manage.py shell
 
+cd /home/neurodata/ndstore/django/
+echo "from rest_framework.authtoken.models import Token; from django.contrib.auth.models import User; u = User.objects.get(username='test'); token = Token.objects.create(user=u); f = open('/tmp/token_user','wb'); f.write(token.key); f.close()" | python manage.py shell
 
 # running tests
 cd /home/neurodata/ndstore/test/

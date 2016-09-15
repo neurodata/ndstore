@@ -11,31 +11,32 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-import urllib2
-import cStringIO
-import tempfile
-import h5py
-import random
-import string
-import csv
-import os, sys
-import numpy as np
 import pytest
-from contextlib import closing
-
+import requests
 import makeunitdb
 from params import Params
-from ramon import H5AnnotationFile, setField, getField, queryField, makeAnno
 #from postmethods import setURL
 import kvengine_to_test
 import site_to_test
 SITE_HOST = site_to_test.site
 
-
 p = Params()
 p.token = 'unittest'
 p.channels = ['unit_anno']
+
+TOKEN_SUPER = ''
+TOKEN_USER = ''
+
+if TOKEN_SUPER == '':
+    f = open('/tmp/token_super','r')
+    TOKEN = f.read()
+    f.close()
+
+if TOKEN_USER == '':
+    f = open('/tmp/token_user','r')
+    TOKEN = f.read()
+    f.close()
+
 
 class Test_Ramon:
 
@@ -55,8 +56,39 @@ class Test_Ramon:
   def test_query_private (self):
     """Test if a private user has proper access abilities."""
 
+    url = '{}/ocp/ca/unittest_user_private/info/'.format(SITE_HOST)
+    #Ensure that the user can access it
+    resp = requests.get(url, headers={'Authorization': 'Token {}'.format( TOKEN_USER )}, verify=False)
+    assert(resp.status_code>=200)
+    #Ensure that the super user can access it
+    resp = requests.get(url, headers={'Authorization': 'Token {}'.format( TOKEN_SUPER )}, verify=False)
+    assert(resp.status_code>=200)
+    #Ensure a rando can't access it
+    resp = requests.get(url, verify=False)
+    assert(resp.status_code>=400)
+
+    url = '{}/ocp/ca/unittest_super_private/info/'.format(SITE_HOST)
+    #Ensure that the user can not access it
+    resp = requests.get(url, headers={'Authorization': 'Token {}'.format( TOKEN_USER )}, verify=False)
+    assert(resp.status_code>=400)
+    #Ensure that the super user can access it
+    resp = requests.get(url, headers={'Authorization': 'Token {}'.format( TOKEN_SUPER )}, verify=False)
+    assert(resp.status_code>=200)
+    #Ensure a rando can't access it
+    resp = requests.get(url, verify=False)
+    assert(resp.status_code>=400)
 
 
+  def test_query_public ( self ):
+    """Verify that public data is accessible to all (including anonymous)"""
 
-  def test_query_kvpairs ( self ):
-    """validate that one can query arbitray kvpairs for equality only"""
+    url = '{}/ocp/ca/unittest_public/info/'.format(SITE_HOST)
+    #Test with a super user
+    resp = requests.get(url, headers={'Authorization': 'Token {}'.format( TOKEN_SUPER )}, verify=False)
+    assert(resp.status_code>=200)
+    #Test with a non-super user
+    resp = requests.get(url, headers={'Authorization': 'Token {}'.format( TOKEN_USER )}, verify=False)
+    assert(resp.status_code>=200)
+    #Test with a non-authenticated user
+    resp = requests.get(url, verify=False)
+    assert(resp.status_code>=200)
