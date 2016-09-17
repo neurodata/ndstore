@@ -34,7 +34,8 @@ import site_to_test
 SITE_HOST = site_to_test.site
 
 p = Params()
-p.token = 'unittest'
+p.token = 'unittest_token'
+p.project = 'unittest'
 p.resolution = 0
 p.channels = ['CHAN1', 'CHAN2']
 p.channel_type = IMAGE
@@ -47,10 +48,10 @@ class Test_Create_Channel_Json():
   def setup_class(self):
     """Setup Parameters"""
     p.channels = []
-    makeunitdb.createTestDB(p.token, channel_list=p.channels, ximagesize=2000, yimagesize=2000, zimagesize=1000, xvoxelres=1.0, yvoxelres=1.0, zvoxelres=5.0)
+    makeunitdb.createTestDB(p.project, channel_list=p.channels, ximagesize=2000, yimagesize=2000, zimagesize=1000, xvoxelres=1.0, yvoxelres=1.0, zvoxelres=5.0, token_name=p.token)
   def teardown_class(self):
     """Teardown Parameters"""
-    makeunitdb.deleteTestDB(p.token)
+    makeunitdb.deleteTestDB(p.project, token_name=p.token)
   
   def test_create_json(self):
     """Test the basic JSON project creation with only the required fields"""
@@ -59,7 +60,7 @@ class Test_Create_Channel_Json():
     # dataset format = (dataset_name, [ximagesz, yimagesz, zimagesz], [[xvoxel, yvoxel, zvoxel], [xoffset, yoffset, zoffset], timerange, scalinglevels, scaling)
     dataset = (p.dataset, [2000,2000,1000], [1.0,1.0,5.0], None, None, None, None)
     # project format = (project_name, token_name, public)
-    project = (p.token, None, None)
+    project = (p.project, p.token, None)
     # channel format = { chan1 : (channel_name, datatype, channel_type, data_url, file_name, exceptions, resolution, windowrange, readonly), chan2: ...... }
     channels = { p.channels[0] : (p.channels[0], p.datatype, p.channel_type, 'sample_data_url', 'sample_filename', 'tif', None, None, None, 0), p.channels[1] : (p.channels[1], p.datatype, p.channel_type, 'sample_data_url', 'sample_filename', 'tif', None, None, None, 0),  }
 
@@ -79,7 +80,7 @@ class Test_Create_Channel_Json():
 
     # read the JSON file
     proj_info = json.loads(f.read())
-    assert( proj_info['project']['name'] == p.token )
+    assert( proj_info['project']['name'] == p.project )
     assert( proj_info['dataset']['imagesize']['0'] == [2000,2000,1000])
     assert( proj_info['dataset']['cube_dimension']['0'] == [128,128,16])
     assert( proj_info['dataset']['scalinglevels'] == 5)
@@ -102,7 +103,7 @@ class Test_Create_Channel_Json():
     # dataset format = (dataset_name, [ximagesz, yimagesz, zimagesz], [[xvoxel, yvoxel, zvoxel], [xoffset, yoffset, zoffset], timerange, scalinglevels, scaling)
     dataset = (p.dataset, [2000,2000,1000], [1.0,1.0,5.0], [0,0,0], None, None, None)
     # project format = (project_name, token_name, public)
-    project = (p.token, None, None)
+    project = (p.project, p.token, None)
     # channel format = { chan1 : (channel_name, datatype, channel_type, data_url, file_name, exceptions, resolution, windowrange, readonly), chan2: ...... }
     channels = { p.channels[1] : (p.channels[1], p.datatype, p.channel_type, 'sample_data_url', 'sample_filename', 'tif', None, None, None, None) }
     
@@ -113,17 +114,17 @@ class Test_Create_Channel_Json():
     # posting the JSON url and checking if it is successful
     response = postURL("http://{}/sd/{}/createChannel/".format(SITE_HOST, p.token), json_file)
     assert(response.code == 400)
-    assert('Channel {} already exists for project {}. Specify a different channel name'.format(p.channels[1], p.token) == response.read())
+    assert('Channel {} already exists for project {}. Specify a different channel name'.format(p.channels[1], p.project) == response.read())
 
 class Test_Delete_Channel_Json():
 
   def setup_class(self):
     """Setup Parameters"""
-    makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype)
+    makeunitdb.createTestDB(p.project, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype, token_name=p.token)
 
   def teardown_class(self):
     """Teardown Parameters"""
-    makeunitdb.deleteTestDB(p.token)
+    makeunitdb.deleteTestDB(p.project, token_name=p.token)
   
   def test_single_channel_json(self):
     """Test the basic JSON project creation with only the required fields"""
@@ -144,5 +145,5 @@ class Test_Delete_Channel_Json():
 
     # read the JSON file
     proj_info = json.loads(f.read())
-    assert( proj_info['project']['name'] == p.token )
+    assert( proj_info['project']['name'] == p.project )
     assert( proj_info['channels'][p.channels[0]]['resolution'] == 0)

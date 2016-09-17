@@ -34,7 +34,7 @@ from ndtype import ZSLICES, ANNOTATION, NOT_PROPAGATED, READONLY_FALSE, UINT32, 
 import site_to_test
 import kvengine_to_test
 
-def createTestDB ( project_name, channel_list=['unit_anno'], channel_type=ANNOTATION, channel_datatype=UINT32, public=0, ximagesize=10000, yimagesize=10000, zimagesize=1000, xvoxelres=4.0, yvoxelres=4.0, zvoxelres=3.0, scalingoption=ZSLICES, scalinglevels=5, readonly=READONLY_FALSE, propagate=NOT_PROPAGATED, window=[0,0], time=[0,0], default=False, nd_version=ND_VERSION ):
+def createTestDB ( project_name, channel_list=['unit_anno'], channel_type=ANNOTATION, channel_datatype=UINT32, public=0, ximagesize=10000, yimagesize=10000, zimagesize=1000, xvoxelres=4.0, yvoxelres=4.0, zvoxelres=3.0, scalingoption=ZSLICES, scalinglevels=5, readonly=READONLY_FALSE, propagate=NOT_PROPAGATED, window=[0,0], time=[0,0], default=False, nd_version=ND_VERSION, token_name='unittest' ):
   """Create a unit test data base on the specified sit and name"""
   
   unituser = User.objects.get(username='neurodata')
@@ -47,11 +47,11 @@ def createTestDB ( project_name, channel_list=['unit_anno'], channel_type=ANNOTA
   pr.save()
 
   # create a token
-  tk = Token (token_name = project_name, user = unituser, token_description = 'Unit test token', project_id = pr, public = public)
+  tk = Token (token_name = token_name, user = unituser, token_description = 'Unit test token', project_id = pr, public = public)
   tk.save()
   
   # get the correct object for the kvengine
-  pd = NDProjectsDB.getProjDB(project_name)
+  pd = NDProjectsDB.getProjDB(pr)
   # create the database
   pd.newNDProject()
 
@@ -67,11 +67,11 @@ def createTestDB ( project_name, channel_list=['unit_anno'], channel_type=ANNOTA
       raise e
 
 
-def deleteTestDB ( project_name ):
+def deleteTestDB ( project_name, token_name='unittest' ):
   
   try:
     # get the objects
-    tk = Token.objects.get(token_name=project_name)
+    tk = Token.objects.get(token_name=token_name)
     pr = Project.objects.get(project_name=project_name)
     ds = Dataset.objects.get(dataset_name=pr.dataset_id)
     
@@ -79,7 +79,7 @@ def deleteTestDB ( project_name ):
     channel_list = Channel.objects.filter(project_id=pr)
     
     # get the correct object for the kvengine
-    pd = NDProjectsDB.getProjDB(pr.project_name)
+    pd = NDProjectsDB.getProjDB(pr)
     
     for ch in channel_list:
       # delete the channel table
@@ -103,7 +103,7 @@ def deleteTestDBList(project_name_list):
   try:
     for project_name in project_name_list:
       pr = Project.objects.get(project_name=project_name)
-      pd = NDProjectsDB.getProjDB(pr.project_name)
+      pd = NDProjectsDB.getProjDB(pr)
       # delete the project database
       pd.deleteNDProject()
     ds = Dataset.objects.get(dataset_name=pr.dataset_id)

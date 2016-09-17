@@ -220,7 +220,7 @@ def autoIngest(webargs, post_data):
 
 def createChannel(webargs, post_data):
   """Create a list of channels using a JSON file"""
-
+  
   # Get the token and load the project
   try:
     m = re.match("(\w+)/createChannel/$", webargs)
@@ -260,7 +260,7 @@ def createChannel(webargs, post_data):
       ch.save()
       
       # Create channel database using the ndproj interface
-      pd = ndproj.NDProjectsDB.getProjDB(pr.project_name)
+      pd = ndproj.NDProjectsDB.getProjDB(pr)
       pd.newNDChannel(ch.channel_name)
   except Exception, e:
     logger.error("Error saving models")
@@ -301,7 +301,7 @@ def deleteChannel(webargs, post_data):
         # Checking if channel is readonly or not
         if ch.readonly == READONLY_FALSE:
           # delete channel table using the ndproj interface
-          pd = ndproj.NDProjectsDB().getProjDB(pr.project_name)
+          pd = ndproj.NDProjectsDB().getProjDB(pr)
           pd.deleteNDChannel(ch.channel_name)
           ch.delete()
     return HttpResponse("Success. Channels deleted.")
