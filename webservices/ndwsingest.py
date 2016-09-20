@@ -28,7 +28,7 @@ import django
 django.setup()
 from django.conf import settings
 
-from cube import Cube
+from ndcube.cube import Cube
 from ndtype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, ANNOTATION_CHANNELS, ND_dtypetonp, UINT8, UINT16, UINT32, SUPERCUBESIZE
 import ndwsrest
 import spatialdb

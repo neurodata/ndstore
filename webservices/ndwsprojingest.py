@@ -25,7 +25,7 @@ from django.http import HttpResponse, HttpResponseBadRequest
 
 import ndproj
 from ndwsingest import IngestData
-from ndschema import PROJECT_SCHEMA, DATASET_SCHEMA, CHANNEL_SCHEMA
+# from ndschema import PROJECT_SCHEMA, DATASET_SCHEMA, CHANNEL_SCHEMA
 from ndtype import READONLY_FALSE, REDIS, S3_TRUE
 from nduser.models import Project
 from nduser.models import Dataset

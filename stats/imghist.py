@@ -28,7 +28,6 @@ from django.conf import settings
 import django
 django.setup()
 
-from cube import Cube
 from ndproj import NDProjectsDB
 from spatialdb import SpatialDB
 
