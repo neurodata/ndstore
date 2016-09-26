@@ -23,7 +23,6 @@ from contextlib import closing
 from operator import add, sub, div, mod
 import MySQLdb
 
-import ndlib
 from ndtype import ANNOTATION_CHANNELS, TIMESERIES_CHANNELS, EXCEPTION_TRUE, PROPAGATED
 
 import annotation
