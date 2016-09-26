@@ -286,6 +286,39 @@ class MySQLRamonDB:
       logger.error ( "Failed to delete annotation: {}: {}. sql={}".format(e.args[0], e.args[1], sql))
       raise
 
+  # getKVQuery
+  #    Return a list of annotation object IDs that match a specific key/value string
+  def getKVQuery ( self, ch, qkey, qvalue ):
+    """Return a list of annotation object ids that match equality predicates on key value."""
+
+    sql = "SELECT annoid FROM {}_ramon WHERE kv_key = '{}' AND kv_value = '{}'".format(ch.getChannelName(), qkey, qvalue)
+
+    try:
+      self.cursor.execute ( sql )
+      annoids = np.array ( self.cursor.fetchall(), dtype=np.uint32 ).flatten()
+    except MySQLdb.Error, e:
+      logger.error ( "Error retrieving ids: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise
+
+    return np.array(annoids)
+
+  def getTopKeys ( self, ch, count, anntype ):
+    """Return the count top keys in the database."""
+
+    if anntype == None:
+      sql = "SELECT kv_key FROM {}_ramon GROUP BY kv_key ORDER BY COUNT(kv_key) LIMIT {}".format(ch.getChannelName(), count)
+    else:
+      sql = "SELECT kv_key FROM {}_ramon WHERE annoid in (select annoid from anno_ramon where kv_key = 'ann_type' and kv_value = {}) GROUP BY kv_key ORDER BY COUNT(kv_key) LIMIT {}".format(ch.getChannelName(), anntype, count)
+
+    try:
+      self.cursor.execute ( sql )
+      topkeys = list(self.cursor.fetchall())
+    except MySQLdb.Error, e:
+      logger.error ( "Error retrieving ids: %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise
+
+    return topkeys
+
 
   # getAnnoObjects:
   #    Return a list of annotation object IDs
@@ -429,39 +462,16 @@ class MySQLRamonDB:
   def querySkeletonNodes ( self, ch, annid ):
     """Return the nodes that belong to this skeleton"""
 
-    # two lists for marked and processed nodes in a tree search
-    skelnodes = []
-    activenodes = []
-
     # get the root node of the skeleton
-    sql = "SELECT kv_value FROM {}_ramon WHERE kv_key='{}' and annoid={}".format(ch.getChannelName(), 'skel_rootnode', annid)
+    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='node_skeleton' and kv_value={}".format(ch.getChannelName(), annid)
 
     try:
       self.cursor.execute ( sql )
     except MySQLdb.Error, e:
-      logger.warning ( "Error querying skeleton rootnode %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-      raise NDWSError ( "Error querying skeleton rootnode %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      logger.warning ( "Error querying skeleton nodes %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
+      raise NDWSError ( "Error querying skeleton nodes %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
 
-    activenodes.append ( int(self.cursor.fetchone()[0]))
-
-    while len(activenodes) != 0:
-   
-      cur = activenodes.pop()
-      skelnodes.append(cur)
-      print "adding {} to skelnodes {}".format(cur, skelnodes)
-
-      # get all children of active node
-      sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.getChannelName(), 'node_parent', cur)
-
-      try:
-        self.cursor.execute ( sql )
-      except MySQLdb.Error, e:
-        logger.warning ( "Error querying children %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-        raise NDWSError ( "Error querying children %d: %s. sql=%s" % (e.args[0], e.args[1], sql))
-
-      [ activenodes.append(x) for x in np.array(self.cursor.fetchall(), dtype=np.uint32).flatten() ]
-
-    return np.array(skelnodes, dtype=np.uint32)
+    return np.array(self.cursor.fetchall(), dtype=np.uint32).flatten()
 
 
   def querySynapses ( self, ch, annid ):

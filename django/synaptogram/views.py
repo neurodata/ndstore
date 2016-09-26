@@ -22,10 +22,9 @@ from PIL import Image
 import base64
 
 import ndproj
-import ndlib
 import ndwsrest
 import spatialdb
-
+from ndctypelib import recolor_ctype
 from ndtype import DTYPE_uint8, DTYPE_uint16, ANNOTATION_CHANNELS 
 from windowcutout import windowCutout 
 
@@ -92,7 +91,7 @@ def synaptogram_view (request, webargs):
             if ch.getChannelType() in ANNOTATION_CHANNELS:
               # parse annotation project
               imagemap = np.zeros( [ dim[1], dim[0] ], dtype=np.uint32 )
-              imagemap = ndlib.recolor_ctype( zslice, imagemap )
+              imagemap = recolor_ctype( zslice, imagemap )
               img = Image.frombuffer( 'RGBA', (dim[0],dim[1]), imagemap, 'raw', 'RGBA', 0, 1 )
 
             else: 

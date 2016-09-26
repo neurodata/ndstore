@@ -25,7 +25,7 @@ from django.http import HttpResponse, HttpResponseBadRequest
 
 import ndproj
 from ndwsingest import IngestData
-from ndschema import PROJECT_SCHEMA, DATASET_SCHEMA, CHANNEL_SCHEMA
+# from ndschema import PROJECT_SCHEMA, DATASET_SCHEMA, CHANNEL_SCHEMA
 from ndtype import READONLY_FALSE, REDIS, S3_TRUE
 from nduser.models import Project
 from nduser.models import Dataset
@@ -69,7 +69,6 @@ def autoIngest(webargs, post_data):
     # return json.dumps("Invalid Project schema")
     
   #try:
-    #import pdb; pdb.set_trace()
     #CHANNEL_SCHEMA.validate(channels)
   #except Exception, e:
     #print "Invalid Channel schema"
@@ -189,11 +188,16 @@ def autoIngest(webargs, post_data):
       if data_url.endswith('/'):
         # removing the trailing slash if there exists one
         data_url = data_url[:-1]
-
-      from spdb.tasks import ingest
       
+      # calling celery ingest task
+      from spdb.tasks import ingest
       # ingest(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
-      ingest.delay(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
+      # ingest.delay(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
+      
+      # calling ndworker
+      from ndworker.ndworker import NDWorker
+      worker = NDWorker(tk.token_name, ch.channel_name, ch.resolution)
+      queue_name = worker.populateQueue()
     
     # Posting to LIMS system
     postMetadataDict(metadata_dict, pr.project_name)
@@ -210,11 +214,13 @@ def autoIngest(webargs, post_data):
     logger.error("Error saving models. There was an error in the information posted")
     return HttpResponseBadRequest(json.dumps("FAILED. There was an error in the information you posted."), content_type="application/json")
 
-  return HttpResponse(json.dumps("SUCCESS. The ingest process has now started."), content_type="application/json")
+  # return HttpResponse(json.dumps("SUCCESS. The ingest process has now started."), content_type="application/json")
+  return_dict = {'queue_name' : queue_name}
+  return HttpResponse(json.dumps(return_dict), content_type="application/json")
 
 def createChannel(webargs, post_data):
   """Create a list of channels using a JSON file"""
-
+  
   # Get the token and load the project
   try:
     m = re.match("(\w+)/createChannel/$", webargs)
@@ -254,7 +260,7 @@ def createChannel(webargs, post_data):
       ch.save()
       
       # Create channel database using the ndproj interface
-      pd = ndproj.NDProjectsDB.getProjDB(pr.project_name)
+      pd = ndproj.NDProjectsDB.getProjDB(pr)
       pd.newNDChannel(ch.channel_name)
   except Exception, e:
     logger.error("Error saving models")
@@ -295,7 +301,7 @@ def deleteChannel(webargs, post_data):
         # Checking if channel is readonly or not
         if ch.readonly == READONLY_FALSE:
           # delete channel table using the ndproj interface
-          pd = ndproj.NDProjectsDB().getProjDB(pr.project_name)
+          pd = ndproj.NDProjectsDB().getProjDB(pr)
           pd.deleteNDChannel(ch.channel_name)
           ch.delete()
     return HttpResponse("Success. Channels deleted.")

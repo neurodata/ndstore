@@ -1,4 +1,4 @@
-### Util scripts for OCP web-services
+### Util scripts for Neurodata web-services
 
-* Folder contains some util scripts for OCP
+* Folder contains some util scripts for Neurodata
 * These scripts are now deperecated with the new channel interface

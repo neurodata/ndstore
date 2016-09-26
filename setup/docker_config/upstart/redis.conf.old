@@ -1,0 +1,20 @@
+description "redis server"
+
+start on runlevel [2345]
+stop on shutdown [016]
+
+expect fork
+respawn
+
+env USER=redis
+env GROUP=redis
+rnf DIR=/var/redis
+env PERMS=0755
+
+pre-start script
+  mkdir -p -m$PERMS $DIR || true
+  chown $USER:$GROUP $DIR || true
+end script
+
+exec sudo -u neurodata /usr/local/bin/redis-server /etc/redis/redis.conf
+exec start-stop-daemon --start -c $USER:$GROUP --exec /usr/bin/redis-server /etc/redis/redis.conf

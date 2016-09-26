@@ -15,7 +15,7 @@ sudo debconf-set-selections <<< "postfix postfix/main_mailer_type string 'Intern
 sudo apt-get -y install mysql-client-core-5.6 libhdf5-serial-dev mysql-client-5.6
 
 # apt-get install packages
-sudo apt-get -y install nginx git bash-completion python-virtualenv libhdf5-dev libxslt1-dev libmemcached-dev g++ libjpeg-dev virtualenvwrapper python-dev mysql-server-5.6 libmysqlclient-dev xfsprogs supervisor rabbitmq-server uwsgi uwsgi-plugin-python liblapack-dev wget memcached postfix libffi-dev libssl-dev
+sudo apt-get -y install nginx git bash-completion python-virtualenv libhdf5-dev libxslt1-dev libmemcached-dev g++ libjpeg-dev virtualenvwrapper python-dev mysql-server-5.6 libmysqlclient-dev xfsprogs supervisor rabbitmq-server uwsgi uwsgi-plugin-python liblapack-dev wget memcached postfix libffi-dev libssl-dev tcl
 
 # create the log directory
 sudo mkdir /var/log/neurodata
@@ -26,6 +26,10 @@ sudo chmod -R 777 /var/log/neurodata/
 # add group and user neurodata
 sudo addgroup neurodata
 sudo useradd -m -p neur0data -g neurodata -s /bin/bash neurodata
+
+# add group and user redis
+sudo addgroup redis
+sudo useradd -M --system -g redis redis
 
 # switch user to neurodata and clone the repo with sub-modules
 cd /home/neurodata
@@ -81,6 +85,16 @@ else
   fi
 fi
 
+# download, install and configure redis
+cd /home/neurodata/
+sudo -u neurodata wget http://download.redis.io/redis-stable.tar.gz
+sudo -u neurodata tar -xvf /home/neurodata/redis-stable.tar.gz
+cd /home/neurodata/redis-stable/
+sudo -u neurodata make && sudo -u neurodata make test && sudo make install
+sudo mkdir /etc/redis
+sudo ln -s /home/neurodata/ndstore/setup/docker_config/redis/redis.conf /etc/redis/redis.conf
+sudo ln -s /home/neurodata/ndstore/setup/docker_config/upstart/redis.conf /etc/init/redis.conf
+
 # move the nginx config files and start service
 sudo rm /etc/nginx/sites-enabled/default
 sudo ln -s /home/neurodata/ndstore/setup/docker_config/nginx/ndstore.conf /etc/nginx/sites-enabled/default
@@ -127,6 +141,7 @@ sudo service uwsgi restart
 sudo service supervisor restart
 sudo service rabbitmq-server restart
 sudo service memcached restart
+sudo service redis restart
 
 # Create superuser token
 cd /home/neurodata/ndstore/django/

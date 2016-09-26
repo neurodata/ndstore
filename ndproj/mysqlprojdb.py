@@ -145,21 +145,24 @@ class MySQLProjectDB:
         # delete the exceptions tables
         table_list = table_list + [ch.getIdxTable(res), ch.getExceptionsTable(res)]
 
-    with closing(MySQLdb.connect(host = self.pr.getDBHost(), user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = self.pr.getDBName(), connect_timeout=1)) as conn:
-      with closing(conn.cursor()) as cursor:
-        
-        # delete the tables for this channel
-        sql = "DROP TABLES IF EXISTS {}".format(','.join(table_list))
-        try: 
-          cursor.execute (sql)
-          conn.commit()
-        except MySQLdb.Error, e:
-          # Skipping the error if the table does not exist
-          if e.args[0] == 1051:
-            pass
-          if e.args[0] == 1049:
-            pass
-          else:
-            conn.rollback()
-            logger.error("Failed to drop channel tables {}: {}. sql={}".format(e.args[0], e.args[1], sql))
-            raise NDWSError("Failed to drop channel tables {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+    try:
+      with closing(MySQLdb.connect(host = self.pr.getDBHost(), user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = self.pr.getDBName(), connect_timeout=1)) as conn:
+        with closing(conn.cursor()) as cursor:
+          
+          # delete the tables for this channel
+          sql = "DROP TABLES IF EXISTS {}".format(','.join(table_list))
+          try: 
+            cursor.execute (sql)
+            conn.commit()
+          except MySQLdb.Error, e:
+            # Skipping the error if the table does not exist
+            if e.args[0] == 1051:
+              pass
+            if e.args[0] == 1049:
+              pass
+            else:
+              conn.rollback()
+              logger.error("Failed to drop channel tables {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+              raise NDWSError("Failed to drop channel tables {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+    except Exception as e:
+      logger.warning("Database {} on host {} not found".format(self.pr.getDBName(), self.pr.getDBName()))

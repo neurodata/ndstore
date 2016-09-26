@@ -25,9 +25,10 @@ urlpatterns = [
   url(r'^viking/(?P<webargs>.*)$', views.simplevikingview),
   # mcfc
   url(r'^mcfc/(?P<webargs>.*)$', views.mcfccatmaidview),
-  # mcfc
+  # maxproj
   url(r'^maxproj/(?P<webargs>.*)$', views.maxprojview),
-  #url(r'^color/(?P<webargs>.*)$', 'colorcatmaidview'),
+  # filter
+  url(r'^filter/(?P<webargs>.*)$', views.filterview),
+  # simple image
   url(r'^(?P<webargs>.*)$', views.simplecatmaidview),
-  # catmaid
 ]

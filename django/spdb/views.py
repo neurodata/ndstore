@@ -1,5 +1,8 @@
-# Copyright 2014 NeuroData (http://neurodata.io)
-#
+# Copyright 2014 NeuroData (http://neurodata.io
+# Upload Sizes for max memory and number of fields
+DATA_UPLOAD_MAX_MEMORY_SIZE = 2147483648
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 1000
+# 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -28,7 +31,7 @@ from nduser.models import Token
 import ndwsrest
 import ndwsprojingest
 
-from ndwserror import NDWSError
+from ndwserror import NDWSError, IncorrectSyntaxError
 import logging
 logger=logging.getLogger("neurodata")
 
@@ -43,7 +46,7 @@ POST_SERVICES = ['hdf5', 'npz', 'raw', 'hdf5_async', 'propagate', 'tiff', 'blosc
 @permission_classes((PublicAuthentication,))
 def cutout (request, webargs):
   """Restful URL for all read services to annotation projects"""
-
+  
   try:
     m = re.match(r"(\w+)/(?P<channel>[\w+,/-]+)?/?(xy|xz|yz|tiff|hdf5|jpeg|blosc|blaze|npz|raw|zip|id|diff|ids|xyanno|xzanno|yzanno)/([\w,/-]*)$", webargs)
     [token, channel, service, cutoutargs] = [i for i in m.groups()]
@@ -51,9 +54,9 @@ def cutout (request, webargs):
     if channel is None:
       webargs = '{}/default/{}/{}'.format(token, service, cutoutargs)
 
-  except Exception, e:
+  except Exception as e:
     logger.warning("Incorrect format for arguments {}. {}".format(webargs, e))
-    raise NDWSError("Incorrect format for arguments {}. {}".format(webargs, e))
+    raise IncorrectSyntaxError("Incorrect format for arguments {}. {}".format(webargs, e))
 
   try:
     # GET methods
@@ -119,11 +122,11 @@ def cutout (request, webargs):
       logger.warning("Invalid HTTP method {}. Not GET or POST.".format(request.method))
       return django.http.HttpResponseBadRequest("Invalid HTTP method {}. Not GET or POST.".format(request.method))
 
-  except NDWSError, e:
+  except NDWSError as e:
     return django.http.HttpResponseNotFound(e.value)
-  except MySQLdb.Error, e:
+  except MySQLdb.Error as e:
     return django.http.HttpResponseNotFound(e)
-  except Exception, e:
+  except Exception as e:
     logger.exception("Unknown exception in getCutout. {}".format(e))
     raise NDWSError("Unknown exception in getCutout. {}".format(e))
 
@@ -179,6 +182,29 @@ def swc (request, webargs):
 @api_view(['GET', 'POST', 'DELETE'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
 @permission_classes((PublicAuthentication,))
+def jsonramon (request, webargs):
+  """Get put object interface for JSON-ified RAMON objects"""
+
+  [token, channel, rest] = webargs.split('/',2)
+
+  try:
+    if request.method == 'GET':
+      print "JSON get"
+      return django.http.HttpResponse(ndwsrest.getJSONAnnotation(webargs), content_type="application/json" )
+    elif request.method == 'POST':
+      print "JSON post"
+      return django.http.HttpResponse(ndwsrest.putJSONAnnotation(webargs,request.body))
+    elif request.method == 'DELETE':
+      ndwsrest.deleteAnnotation(webargs)
+      return django.http.HttpResponse ("Success", content_type='text/html')
+  except NDWSError, e:
+    return django.http.HttpResponseNotFound(e.value)
+  except MySQLdb.Error, e:
+    return django.http.HttpResponseNotFound(e)
+  except Exception, e:
+    logger.exception("Unknown exception in jsonramon. {}".format(e))
+    raise NDWSError("Unknown exception in jsonramon. {}".format(e))
+
 def annotation (request, webargs):
   """Get put object interface for RAMON objects"""
   [token, channel, rest] = webargs.split('/',2)

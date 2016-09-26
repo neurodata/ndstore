@@ -157,7 +157,6 @@ class AnnSynapse (Annotation):
       return ','.join(str(x) for x in self.postsegments)
     elif field == 'centroid':
       return ','.join(str(x) for x in self.centroid)
-      self.centroid = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
     else:
       return Annotation.getField(self, field)
 
@@ -174,10 +173,8 @@ class AnnSynapse (Annotation):
       self.segments = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
     elif field == 'presegments':
       self.presegments = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
-      print 'PRE in set', self.presegments
     elif field == 'postsegments':
       self.postsegments = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
-      print 'POST in set', self.postsegments
     elif field == 'centroid':
       self.centroid = np.array([int(x) for x in value.split(',')], dtype=np.uint32)
       if len(self.centroid) != 3:
@@ -209,7 +206,6 @@ class AnnSynapse (Annotation):
     """convert a dictionary to the class elements"""
 
     anndict = defaultdict(list)
-
     for (k,v) in kvdict.iteritems():
       if k == 'syn_weight':
         self.weight = float(v)
@@ -226,7 +222,7 @@ class AnnSynapse (Annotation):
         if type(v) == list:
           self.segments = [int(s) for s in v]
         else:
-          self.segments = [int(s) for s in v.replace('[','').replace(']','').split() if s.isdigit()] 
+          self.segments = [int(v)]
       elif k == 'syn_presegments':
         if type(v) == list:
           self.presegments = [int(s) for s in v]
@@ -573,7 +569,7 @@ class AnnNode (Annotation):
 
     self.nodetype = 0                           # enumerated label
     self.skeleton = 0
-    self.point = 0
+    self.point = 0                              # 
     self.location=np.array([], dtype=np.float)
     self.parent = 0                           # parent node
     self.radius = 0.0
@@ -592,6 +588,8 @@ class AnnNode (Annotation):
       return self.parent
     elif field == 'radius':
       return self.radius
+    elif field == 'skeleton':
+      return self.skeleton
     elif field == 'children':
       return ','.join(str(x) for x in self.annodb.queryNodeChildren ( self.ch, self.annid ))
     else:
@@ -612,6 +610,8 @@ class AnnNode (Annotation):
       self.parent = value
     elif field == 'radius':
       self.radius = value
+    elif field == 'skeleton':
+      self.skeleton = value
     else:
       Annotation.setField ( self, field, value )
 
@@ -623,6 +623,7 @@ class AnnNode (Annotation):
     kvdict['node_location'] = json.dumps(self.location.tolist())
     kvdict['node_parent'] = self.parent   
     kvdict['node_radius'] = self.radius   
+    kvdict['node_skeleton'] = self.skeleton   
 
     kvdict.update(Annotation.toDict(self))
 
@@ -646,6 +647,8 @@ class AnnNode (Annotation):
         self.parent = int(v)
       elif k == 'node_radius':
         self.radius = float(v)
+      elif k == 'node_skeleton':
+        self.skeleton = int(v)
       else:
         anndict[k] = v
     

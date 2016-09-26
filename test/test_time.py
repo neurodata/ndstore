@@ -30,16 +30,16 @@ import site_to_test
 SITE_HOST = site_to_test.site
 
 
-# Test Image
+# Test Time
 
-# Test_Image_Slice
+# Test_Time_Slice
 # 1 - test_xy
 # 2 - test_yz
 # 3 - test_xz
 # 4 - test_xy_incorrect
 
-# Test_Image_Post
-# 1 - test_npz
+# Test_Time_Post
+# 1 - test_npz 
 # 2 - test_npz_incorrect_region
 # 3 - test_npz_incorrect_datatype
 # 4 - test_hdf5
@@ -59,10 +59,8 @@ p.datatype = UINT8
 p.window = [0,500]
 p.voxel = [4.0,4.0,3.0]
 
-#p.args = (3000,3100,4000,4100,500,510)
 
-
-class Test_Image_Slice:
+class Test_Time_Slice:
 
 
   def setup_class(self):
@@ -121,7 +119,7 @@ class Test_Image_Slice:
     #assert ( 404 == getURL (url) )
 
 
-class Test_Image_Post:
+class Test_Time_Post:
 
   def setup_class(self):
     makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype, time=p.time )
@@ -240,7 +238,8 @@ class Test_Time_Simple_Catmaid:
     voxarray = getNPZ(p, time=True)
     # check that the return matches
     assert ( np.array_equal(voxarray, image_data) )
-
+    
+    # xy/z/y_z_res
     url = "https://{}/catmaid/{}/{}/xy/{}/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[6], p.args[4], p.args[2]/512, p.args[0]/512, p.resolution)
     f = getURL (url)
 
@@ -259,7 +258,8 @@ class Test_Time_Simple_Catmaid:
     # check that the return matches
     assert ( np.array_equal(voxarray, image_data) )
 
-    url = "https://{}/catmaid/{}/{}/yz/{}/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[6], p.args[4]/512, p.args[2]/512, p.args[0], p.resolution)
+    # yz/x/z_y_res
+    url = "https://{}/catmaid/{}/{}/yz/{}/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[6], p.args[0], p.args[4]/512, p.args[2]/512, p.resolution)
     f = getURL (url)
 
     scale_range = 512*p.voxel[2]/p.voxel[1]
@@ -278,7 +278,8 @@ class Test_Time_Simple_Catmaid:
     # check that the return matches
     assert ( np.array_equal(voxarray, image_data) )
 
-    url = "https://{}/catmaid/{}/{}/xz/{}/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[6], p.args[4]/512, p.args[2], p.args[0]/512, p.resolution)
+    # xz/y/z_x_res
+    url = "https://{}/catmaid/{}/{}/xz/{}/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[6], p.args[2], p.args[4]/512, p.args[0]/512, p.resolution)
     f = getURL (url)
 
     scale_range = 512*p.voxel[2]/p.voxel[0]

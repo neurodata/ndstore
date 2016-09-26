@@ -51,21 +51,10 @@ def main():
 
     c = map(int,center)
 
-    print c 
-
     c = [c[0]-1, c[1]-1, c[2]-1]
     
-    print c
-
-    # only write synapses wholly inside the space
-   # if c[0]-rd < 0 or c[1]-rd < 0 or c[2]-rd < 0 or c[0] > 8126-rd or c[1]>12986-rd or c[2]>41-rd: 
-   #   continue
-
     # make two clusters
-    if c[0] % 2 == 0:
-      syntype = 1
-    else: 
-      syntype =2
+    syntype = c[0] % 10
     
     # for each center, create a annotation around the center
     # create a json object for a ramon_id  
