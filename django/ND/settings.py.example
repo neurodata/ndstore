@@ -227,6 +227,19 @@ CORS_ALLOW_METHODS = {
   'GET'
 }
 
+# Redis Settings
+# For test purposes both the INDEX and DATA instances are the same. For deployment purposes these can be different
+REDIS_MEMORY_RATIO = 60 # setting this to 60% for now
+REDIS_LOCK = 'redis-lock'
+REDIS_INDEX_KEY = 'cuboid-index-store'
+REDIS_INDEX_HOST = 'localhost'
+REDIS_INDEX_PORT = 6379
+REDIS_INDEX_DB = 0
+REDIS_INDEX_MAX_CONNECTIONS = 10 # maximum client connections for the back-end
+REDIS_DATA_HOST = 'localhost'
+REDIS_DATA_PORT = 6379
+REDIS_DATA_DB = 0
+
 # Amazon Settings
 # REGION_NAME = 'us-east-1'
 # S3_CUBOID_BUCKET = 'neurodata-cuboid-store'
