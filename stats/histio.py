@@ -22,10 +22,10 @@ from contextlib import closing
 import zlib
 import json
 
-sys.path += [os.path.abspath('../django')]
-import ND.settings
-os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
-from django.conf import settings
+# sys.path += [os.path.abspath('../django')]
+# import ND.settings
+# os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
+# from django.conf import settings
 
 import django
 django.setup()
@@ -53,14 +53,14 @@ def getChannelObj(token, channel):
       tokenobj = Token.objects.get( token_name = token )
       projobj = tokenobj.project
     except Token.DoesNotExist:
-      logger.exception("Error in HistIO: Token {} does not exist!".format(token))
+      logger.error("Error in HistIO: Token {} does not exist!".format(token))
       print "Error in HistIO: Token {} does not exist!".format(token)
       raise
 
     try:
       chanobj = Channel.objects.get( channel_name = channel, project = projobj )
     except Channel.DoesNotExist:
-      logger.exception("Error in HistIO: Channel {} does not exist for project {}!".format(channel, projobj.project_name))
+      logger.error("Error in HistIO: Channel {} does not exist for project {}!".format(channel, projobj.project_name))
       print "Error in HistIO: Channel {} does not exist for project {}!".format(channel, projobj.project_name)
       raise
 
@@ -75,7 +75,7 @@ def loadHistogram(token, channel):
   try:
     histobj = Histogram.objects.get( channel = chanobj, region = 0 )
   except Histogram.DoesNotExist:
-    logger.exception("Error: No histogram exists for {}, {}".format(token, channel))
+    logger.error("Error: No histogram exists for {}, {}".format(token, channel))
     print "Error: No histogram exists for {}, {}".format(token, channel)
     raise
 

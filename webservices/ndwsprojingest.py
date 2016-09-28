@@ -319,7 +319,7 @@ def postMetadataDict(metadata_dict, project_name):
     req.add_header('Content-Type', 'application/json')
     response = urllib2.urlopen(req)
   except urllib2.URLError, e:
-    print "Failed URL {}".format(url)
+    logger.error("Failed URL {}".format(url))
     pass
 
 
@@ -333,8 +333,8 @@ def extractDatasetDict(ds_dict):
     imagesize = [ds.ximagesize, ds.yimagesize, ds.zimagesize] = ds_dict['imagesize']
     [ds.xvoxelres, ds.yvoxelres, ds.zvoxelres] = ds_dict['voxelres']
   except Exception, e:
-    print "Missing required fields"
-    raise
+    logger.error("Missing required fields")
+    raise NDWSError("Missing required fields")
 
   if 'offset' in ds_dict:
     [ds.xoffset, ds.yoffset, ds.zoffset] = ds_dict['offset']
@@ -371,8 +371,8 @@ def extractProjectDict(pr_dict):
   try:
     pr.project_name = pr_dict['project_name']
   except Exception, e:
-    print "Missing required fields"
-    raise
+    logger.error("Missing required fields")
+    raise NDWSError("Missing required fields")
 
   if 'token_name' in pr_dict:
     tk.token_name = pr_dict['token_name']
@@ -396,8 +396,8 @@ def extractChannelDict(ch_dict, channel_only=False):
       file_format = ch_dict['file_format']
       file_type = ch_dict['file_type']
   except Exception, e:
-    print "Missing requried fields"
-    raise
+    logger.error("Missing required fields")
+    raise NDWSError("Missing required fields")
     
   if 'exceptions' in ch_dict:
     ch.exceptions = ch_dict['exceptions']
@@ -441,7 +441,7 @@ def postMetadataDict(metadata_dict, project_name):
     req.add_header('Content-Type', 'application/json')
     response = urllib2.urlopen(req)
   except urllib2.URLError, e:
-    print "Failed URL {}".format(url)
+    logger.error("Failed URL {}".format(url))
     pass
 
 
@@ -455,8 +455,8 @@ def extractDatasetDict(ds_dict):
     imagesize = [ds.ximagesize, ds.yimagesize, ds.zimagesize] = ds_dict['imagesize']
     [ds.xvoxelres, ds.yvoxelres, ds.zvoxelres] = ds_dict['voxelres']
   except Exception, e:
-    print "Missing required fields"
-    raise
+    logger.error("Missing required fields")
+    raise NDWSError("Missing required fields")
 
   if 'offset' in ds_dict:
     [ds.xoffset, ds.yoffset, ds.zoffset] = ds_dict['offset']
@@ -483,27 +483,6 @@ def computeScalingLevels(imagesize):
     scalinglevels += 1
 
   return scalinglevels
-
-#def extractProjectDict(pr_dict):
-  #"""Generate a project object from the JSON flle"""
-
-  #pr = Project()
-  #tk = Token()
-
-  #try:
-    #pr.project_name = pr_dict['project_name']
-  #except Exception, e:
-    #print "Missing required fields"
-    #raise
-
-  #if 'token_name' in pr_dict:
-    #tk.token_name = pr_dict['token_name']
-  #else:
-    #tk.token_name = pr_dict['project_name']
-  #if 'public' in pr_dict:
-    #tk.token_name = pr_dict['public']
-  #return pr, tk
-
 
 def createJson(dataset, project, channel_list, metadata={}, channel_only=False):
   """Genarate ND json object"""

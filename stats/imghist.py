@@ -20,10 +20,10 @@ import cStringIO
 from contextlib import closing
 import zlib
 
-sys.path += [os.path.abspath('../django')]
-import ND.settings
-os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
-from django.conf import settings
+# sys.path += [os.path.abspath('../django')]
+# import ND.settings
+# os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
+# from django.conf import settings
 
 import django
 django.setup()
@@ -73,7 +73,7 @@ class ImgHist():
             # compute the histogram and store it
             (hist, bins) = np.histogram(data[data > 0], bins=self.numbins, range=(0,self.numbins))
             hist_sum = np.add( hist_sum, hist )
-            print "Processed cube {} {} {}".format(x,y,z)
+            logger.debug("Processed cube {} {} {}".format(x,y,z))
 
       return (hist_sum, bins)
 
@@ -145,6 +145,6 @@ class ImgHistROI():
             # compute the histogram and store it
             (hist, bins) = np.histogram(data[data > 0], bins=self.numbins, range=(0,self.numbins))
             hist_sum = np.add( hist_sum, hist )
-            print "Processed cube {} {} {}".format(x,y,z)
+            logger.debug("Processed cube {} {} {}".format(x,y,z))
 
       return (hist_sum, bins)
