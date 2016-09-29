@@ -111,6 +111,8 @@ sudo ln -s /home/neurodata/ndstore/setup/docker_config/celery/ingest.conf /etc/s
 sudo rm /etc/supervisor/conf.d/stats.conf
 sudo ln -s /home/neurodata/ndstore/setup/docker_config/celery/stats.conf /etc/supervisor/conf.d/stats.conf
 
+# reload all init configurations
+sudo initctl reload-configuration
 # starting all the services
 sudo service nginx restart
 sudo service uwsgi restart
