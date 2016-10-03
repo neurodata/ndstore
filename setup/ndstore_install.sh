@@ -95,6 +95,9 @@ sudo mkdir /etc/redis
 sudo ln -s /home/neurodata/ndstore/setup/docker_config/redis/redis.conf /etc/redis/redis.conf
 sudo ln -s /home/neurodata/ndstore/setup/docker_config/upstart/redis.conf /etc/init/redis.conf
 
+# setup the cache manager
+sudo ln -s /home/neurodata/ndstore/setup/docker_config/upstart/ndmanager.conf /etc/init/ndmanager.conf
+
 # move the nginx config files and start service
 sudo rm /etc/nginx/sites-enabled/default
 sudo ln -s /home/neurodata/ndstore/setup/docker_config/nginx/ndstore.conf /etc/nginx/sites-enabled/default
@@ -135,6 +138,8 @@ else
   fi
 fi
 
+# reload all init configurations
+sudo initctl reload-configuration
 # starting all the services
 sudo service nginx restart
 sudo service uwsgi restart
@@ -142,6 +147,7 @@ sudo service supervisor restart
 sudo service rabbitmq-server restart
 sudo service memcached restart
 sudo service redis restart
+sudo service ndmanager restart
 
 # Create superuser token
 cd /home/neurodata/ndstore/django/

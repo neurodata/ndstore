@@ -53,7 +53,8 @@ def buildStack(token, channel_name, resolution=None):
       elif ch.getChannelType() in TIMESERIES_CHANNELS:
         buildImageStack(proj, ch, resolution)
       else:
-        print "Not Supported"
+        logger.error("Not Supported")
+        raise NDWSError("Not Supported")
     
       ch.setPropagate(PROPAGATED)
 

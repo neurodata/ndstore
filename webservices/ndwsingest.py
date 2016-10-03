@@ -222,7 +222,6 @@ class IngestData:
                 # reading the raw data
                 file_name = "{}{}".format(self.path, self.generateCatmaidFileName(slice_number+b, xtile, ytile))
                 logger.info("Open filename {}".format(file_name))
-                # print "Open filename {}".format(file_name)
                 slab[b,:,:] = np.asarray(Image.open(file_name, 'r'))[:,:,0]
               except IOError, e:
                 logger.warning("IOError {}.".format(e))
@@ -284,7 +283,7 @@ class IngestData:
               try:
                 # reading the raw data
                 file_name = "{}{}".format(self.path, self.generateFileName(slice_number+b))
-                print "Open filename {}".format(file_name)
+                # print "Open filename {}".format(file_name)
                 logger.info("Open filename {}".format(file_name))
                 
                 if ch.getDataType() in [UINT8, UINT16] and ch.getChannelType() in IMAGE_CHANNELS:
