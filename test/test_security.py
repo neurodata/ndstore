@@ -42,9 +42,9 @@ class Test_Ramon:
 
   def setup_class(self):
     """Create the unittest databases"""
-    makeunitdb.createTestDB('unittest_user_private', public=False, readonly=0, user='test')
-    makeunitdb.createTestDB('unittest_super_private', public=False, readonly=0, user='neurodata')
-    makeunitdb.createTestDB('unittest_public', public=True, readonly=0)
+    makeunitdb.createTestDB('unittest_user_private', public=False, readonly=0, user='test', dataset_name='unittest_user_private')
+    makeunitdb.createTestDB('unittest_super_private', public=False, readonly=0, user='neurodata', dataset_name='unittest_super_private')
+    makeunitdb.createTestDB('unittest_public', public=True, readonly=0, dataset_name='unittest_public')
 
   def teardown_class (self):
     """Destroy the unittest databases"""
