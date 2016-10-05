@@ -23,7 +23,7 @@ import MySQLdb
 from PIL import Image
 import zlib
 
-from cube import Cube
+from ndcube.cube import Cube
 import spatialdb
 from ndproj import NDProjectsDB
 from ndctypelib import XYZMorton, MortonXYZ, isotropicBuild_ctype, addDataToZSliceStack_ctype, addDataToIsotropicStack_ctype

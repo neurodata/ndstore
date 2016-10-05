@@ -192,12 +192,12 @@ def autoIngest(webargs, post_data):
       # calling celery ingest task
       from spdb.tasks import ingest
       # ingest(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
-      # ingest.delay(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
+      ingest.delay(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
       
       # calling ndworker
-      from ndworker.ndworker import NDWorker
-      worker = NDWorker(tk.token_name, ch.channel_name, ch.resolution)
-      queue_name = worker.populateQueue()
+      # from ndworker.ndworker import NDWorker
+      # worker = NDWorker(tk.token_name, ch.channel_name, ch.resolution)
+      # queue_name = worker.populateQueue()
     
     # Posting to LIMS system
     postMetadataDict(metadata_dict, pr.project_name)
@@ -214,8 +214,8 @@ def autoIngest(webargs, post_data):
     logger.error("Error saving models. There was an error in the information posted")
     return HttpResponseBadRequest(json.dumps("FAILED. There was an error in the information you posted."), content_type="application/json")
 
-  # return HttpResponse(json.dumps("SUCCESS. The ingest process has now started."), content_type="application/json")
-  return_dict = {'queue_name' : queue_name}
+  return HttpResponse(json.dumps("SUCCESS. The ingest process has now started."), content_type="application/json")
+  # return_dict = {'queue_name' : queue_name}
   return HttpResponse(json.dumps(return_dict), content_type="application/json")
 
 def createChannel(webargs, post_data):
