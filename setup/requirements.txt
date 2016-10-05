@@ -48,3 +48,4 @@ requests
 anyjson
 amqp==1.4.9
 pylibmc
+fasteners
