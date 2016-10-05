@@ -158,4 +158,8 @@ echo "from rest_framework.authtoken.models import Token; from django.contrib.aut
 
 # running tests
 cd /home/neurodata/ndstore/test/
-py.test || cat /var/log/neurodata/ndstore.log
+py.test
+if [ "$?" != "0" ]; then
+  cat /var/log/neurodata/ndstore.log
+  exit 1
+fi
