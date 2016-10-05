@@ -33,17 +33,17 @@ sudo useradd -M --system -g redis redis
 
 # switch user to neurodata and clone the repo with sub-modules
 cd /home/neurodata
-sudo -u neurodata git clone -q https://github.com/neurodata/ndstore
+sudo -u neurodata git clone https://github.com/neurodata/ndstore -q
 cd /home/neurodata/ndstore
 
 if [ -z "$1" ]; then
-  sudo -u -q neurodata git checkout microns
+  sudo -u neurodata git checkout microns -q
 else
-  sudo -u -q neurodata git checkout "$1"
+  sudo -u neurodata git checkout "$1" -q
 fi
 
-sudo -u neurodata git -q submodule init
-sudo -u neurodata git -q submodule update
+sudo -u neurodata git submodule init -q
+sudo -u neurodata git submodule update -q
 
 
 # pip install packages
