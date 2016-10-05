@@ -27,8 +27,8 @@ from contextlib import closing
 import makeunitdb
 import ndtype
 from params import Params
-from postmethods import putAnnotation, getAnnotation, delURL, getURL
-from ramon import H5AnnotationFile, getH5id, makeAnno, getId, getField, setField
+from postmethods import putAnnotation, getAnnotation
+from ramonmethods import H5AnnotationFile, getH5id, makeAnno, getId, getField, setField
 import kvengine_to_test
 import site_to_test
 SITE_HOST = site_to_test.site
@@ -603,16 +603,19 @@ class Test_Ramon:
     # make a root node
     makeAnno ( q, 7)
     setField(p, 'rootnode', q.annoid)
+    setField(q, 'skeleton', p.annoid)
     skelids.append(q.annoid)
 
     # Make 2 children and four grandchildren
     for i in range(0,2):
       makeAnno ( r, 7)
       f = setField(r, 'parent', q.annoid)
+      f = setField(r, 'skeleton', p.annoid)
       skelids.append(r.annoid)
       for i in range(0,2):
         makeAnno ( s, 7)
         f = setField(s, 'parent', r.annoid)
+        f = setField(s, 'skeleton', p.annoid)
         skelids.append(s.annoid)
 
     # Test skeleton

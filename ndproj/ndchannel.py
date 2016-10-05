@@ -33,6 +33,53 @@ class NDChannel:
       logger.error("Channel {} does not exist. {}".format(channel_name, e))
       raise NDWSError("Channel {} does not exist".format(channel_name))
   
+  @property
+  def channel_name(self):
+    return self.ch.channel_name
+
+  @channel_name.setter
+  def channel_name(self, value):
+    # TODO KL check for unwanted chars here
+    self.ch.channel_name = value
+    
+  @property
+  def channel_description(self):
+    return self.ch.channel_description
+
+  @channel_description.setter
+  def channel_description(self, value):
+    self.ch.channel_description = value
+  
+  @property
+  def channel_type(self):
+    return self.ch.channel_type
+
+  @channel_type.setter
+  def channel_type(self, value):
+    self.ch.channel_type = value
+
+  @property
+  def resolution(self):
+    return self.ch.resolution
+  
+  @resolution.setter
+  def resolution(self, value):
+    self.ch.resolution = value
+
+  @property
+  def propagate(self):
+    # TODO KL port logic
+    return self.ch.propagate
+  
+  @propagate.setter
+  def propagate(self, value):
+    # TODO KL port logic
+    self.ch.propagate = value
+
+  @property
+  def channel_datatype(self):
+    return self.ch.channel_datatype
+  
   # Accessors   
   def getChannelModel ( self ):
     return Channel.objects.get(channel_name=self.ch.channel_name, project=self.pr.getProjectName())

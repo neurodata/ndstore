@@ -58,7 +58,8 @@ def getAnnoIds(proj, ch, resolution, xmin, xmax, ymin, ymax, zmin, zmax):
 
 def genGraphRAMON(token_name, channel, graphType="graphml", xmin=0, xmax=0, ymin=0, ymax=0, zmin=0, zmax=0):
   """Generate the graph based on different inputs"""
-
+  
+  # converting all parameters to integers
   [xmin, xmax, ymin, ymax, zmin, zmax] = [int(i) for i in [xmin, xmax, ymin, ymax, zmin, zmax]]
 
   with closing (ndproj.NDProjectsDB()) as fproj:
@@ -70,6 +71,7 @@ def genGraphRAMON(token_name, channel, graphType="graphml", xmin=0, xmax=0, ymin
 
     cubeRestrictions = xmin + xmax + ymin + ymax + zmin + zmax
     matrix = []
+    
     # assumption that the channel is a neuron channel
     if cubeRestrictions != 0:
       idslist = getAnnoIds(proj, ch, resolution, xmin, xmax, ymin, ymax, zmin, zmax)
@@ -94,6 +96,7 @@ def genGraphRAMON(token_name, channel, graphType="graphml", xmin=0, xmax=0, ymin
       outputGraph.add_edges_from([tuple(annos[key])])
 
   try:
+    
     f = tempfile.NamedTemporaryFile()
     if graphType.upper() == "GRAPHML":
       nx.write_graphml(outputGraph, f)
@@ -115,7 +118,9 @@ def genGraphRAMON(token_name, channel, graphType="graphml", xmin=0, xmax=0, ymin
       nx.write_graphml(outputGraph, f)
     f.flush()
     f.seek(0)
+  
   except:
+    
     logger.error("Internal file error in creating/editing a NamedTemporaryFile")
     f.close()
     raise NDWSError("Internal file error in creating/editing a NamedTemporaryFile")

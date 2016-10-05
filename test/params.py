@@ -17,8 +17,9 @@ class Params:
   """Arguments Class"""
   
   def __init__ (self):
-    self.baseurl = ""
-    self.token = ""
+    self.baseurl = ''
+    self.token = ''
+    self.project = ''
     self.resolution = 0
     self.channels = []
     self.num_objects = 1

@@ -20,6 +20,7 @@ django-registration
 django-celery
 django-cors-headers
 djangorestframework
+django-cors-middleware
 #
 # Key value engines
 boto3

@@ -12,18 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import numpy as np
 import json
 import urllib2
 from lxml import etree
 from django.conf import settings
-
 from ndtype import ZSLICES
-
 from ndwserror import NDWSError
 import logging
-logger=logging.getLogger("neurodata")
+logger = logging.getLogger("neurodata")
 
 
 def projdict ( proj ):
@@ -126,7 +123,7 @@ def metadatadict( proj ):
       response = urllib2.urlopen(req, timeout=0.5)
       return json.loads(response.read())
     except urllib2.URLError, e:
-      print "Failed URL {}".format(url)
+      logger.error("Failed URL {}".format(url))
       return {}
   else:
     return {}

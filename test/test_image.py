@@ -62,12 +62,12 @@ p.voxel = [4.0,4.0,3.0]
 class Test_Image_Slice:
 
   def setup_class(self):
-
+    """Setup class parameters"""
     makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype)
 
   def teardown_class(self):
+    """Cleanup class parameters"""
     makeunitdb.deleteTestDB(p.token)
-
 
   def test_xy (self):
     """Test the xy slice cutout"""
@@ -135,8 +135,9 @@ class Test_Image_Simple_Catmaid:
     voxarray = getNPZ(p)
     # check that the return matches
     assert ( np.array_equal(voxarray, image_data) )
-
-    url = "http://{}/catmaid/{}/{}/xy/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[4], p.args[2]/512, p.args[0]/512, p.resolution)
+    
+    # xy/z/y_x_res
+    url = "https://{}/catmaid/{}/{}/xy/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[4], p.args[2]/512, p.args[0]/512, p.resolution)
     f = getURL (url)
 
     slice_data = np.asarray ( Image.open(StringIO(f.content)) )
@@ -154,7 +155,8 @@ class Test_Image_Simple_Catmaid:
     # check that the return matches
     assert ( np.array_equal(voxarray, image_data) )
 
-    url = "http://{}/catmaid/{}/{}/yz/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[4]/512, p.args[2]/512, p.args[0], p.resolution)
+    # yz/x/z_y_res
+    url = "https://{}/catmaid/{}/{}/yz/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[0], p.args[4]/512, p.args[2]/512, p.resolution)
     f = getURL (url)
 
     scale_range = 512*p.voxel[2]/p.voxel[1]
@@ -173,7 +175,8 @@ class Test_Image_Simple_Catmaid:
     # check that the return matches
     assert ( np.array_equal(voxarray, image_data) )
 
-    url = "http://{}/catmaid/{}/{}/xz/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[4]/512, p.args[2], p.args[0]/512, p.resolution)
+    # xz/y/z_x_res
+    url = "https://{}/catmaid/{}/{}/xz/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[2], p.args[4]/512, p.args[0]/512, p.resolution)
     f = getURL (url)
 
     scale_range = 512*p.voxel[2]/p.voxel[0]
@@ -200,7 +203,7 @@ class Test_Image_Mcfc_Catmaid:
     # check that the return matches
     assert ( np.array_equal(voxarray, image_data) )
 
-    url = "http://{}/catmaid/mcfc/{}/{}/xy/{}/{}_{}_{}.png".format(SITE_HOST, p.token, ','.join(p.channels), p.args[4], p.args[2]/512, p.args[0]/512, p.resolution)
+    url = "https://{}/catmaid/mcfc/{}/{}/xy/{}/{}_{}_{}.png".format(SITE_HOST, p.token, ','.join(p.channels), p.args[4], p.args[2]/512, p.args[0]/512, p.resolution)
     f = getURL (url)
 
     #slice_data = np.asarray ( Image.open(StringIO(f.content)) )
@@ -226,7 +229,7 @@ class Test_Image_Simple_Viking:
     # check that the return matches
     assert ( np.array_equal(voxarray, image_data) )
 
-    url = "http://{}/catmaid/viking/{}/volume/{}/{}/X{}_Y{}_Z{}.png".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0]/512, p.args[2]/512, p.args[4])
+    url = "https://{}/catmaid/viking/{}/volume/{}/{}/X{}_Y{}_Z{}.png".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0]/512, p.args[2]/512, p.args[4])
     f = getURL (url)
 
     slice_data = np.asarray ( Image.open(StringIO(f.content)) )
@@ -249,7 +252,7 @@ class Test_Image_Window:
     image_data = np.ones([2,1,100,100], dtype=np.uint16) * 2000
     response = postNPZ(p, image_data)
 
-    url = "http://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
+    url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
     f = getURL (url)
 
     from windowcutout import windowCutout
@@ -265,7 +268,7 @@ class Test_Image_Window:
     image_data = np.ones([2,1,100,100], dtype=np.uint16) * 2000
     response = postNPZ(p, image_data)
 
-    url = "http://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/window/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], *p.window)
+    url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/window/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], *p.window)
     f = getURL (url)
 
     from windowcutout import windowCutout
@@ -396,7 +399,7 @@ class Test_Image_Default:
     # check that the return matches
     assert ( np.array_equal(voxarray,image_data) )
 
-    url = "http://{}/sd/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
+    url = "https://{}/sd/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
     f = getURL (url)
 
     slice_data = np.asarray ( Image.open(StringIO(f.content)) )

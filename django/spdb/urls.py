@@ -60,6 +60,8 @@ urlpatterns = [
   url(r'(?P<webargs>^\w+/\w+/merge/[\w,/]+)$', views.merge),
   # csv metadata read
   url(r'(?P<webargs>^\w+/(csv)[\d+/]?[\w,/]*)$', views.csv),
+  # RAMON JSON interfaces
+  url(r'(?P<webargs>^\w+/\w+/ramon/[\w,/]*)$', views.jsonramon),
   # HDF5 interfaces
   url(r'(?P<webargs>^\w+/\w+/[\d+/]?[\w,/]*)$', views.annotation),
   # JSON interfaces

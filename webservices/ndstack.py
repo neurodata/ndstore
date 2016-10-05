@@ -26,7 +26,7 @@ import zlib
 from cube import Cube
 import spatialdb
 from ndproj import NDProjectsDB
-import ndlib
+from ndctypelib import XYZMorton, MortonXYZ, isotropicBuild_ctype, addDataToZSliceStack_ctype, addDataToIsotropicStack_ctype
 import annotation
 from ndtype import ZSLICES, ISOTROPIC, ANNOTATION_CHANNELS, IMAGE_CHANNELS, TIMESERIES_CHANNELS, PROPAGATED, NOT_PROPAGATED, ND_dtypetonp
 
@@ -53,7 +53,8 @@ def buildStack(token, channel_name, resolution=None):
       elif ch.getChannelType() in TIMESERIES_CHANNELS:
         buildImageStack(proj, ch, resolution)
       else:
-        print "Not Supported"
+        logger.error("Not Supported")
+        raise NDWSError("Not Supported")
     
       ch.setPropagate(PROPAGATED)
 
@@ -138,7 +139,7 @@ def buildAnnoStack ( proj, ch, res=None ):
         raise NDWSError("Invalid scaling option in project = {}".format(scaling)) 
 
       # Round up to the top of the range
-      lastzindex = (ndlib.XYZMorton([xlimit,ylimit,zlimit])/64+1)*64
+      lastzindex = (XYZMorton([xlimit,ylimit,zlimit])/64+1)*64
 
       # Iterate over the cubes in morton order
       for mortonidx in range(0, lastzindex, 64): 
@@ -150,7 +151,7 @@ def buildAnnoStack ( proj, ch, res=None ):
         # get the first cube
         for idx, datastring in cuboids:
 
-          xyz = ndlib.MortonXYZ(idx)
+          xyz = MortonXYZ(idx)
           if db.NPZ:
             cube.fromNPZ(datastring)
           else:
@@ -162,7 +163,7 @@ def buildAnnoStack ( proj, ch, res=None ):
             #  we are placing 4x4x4 input blocks into a 2x2x4 cube 
             offset = [(xyz[0]%4)*(xcubedim/2), (xyz[1]%4)*(ycubedim/2), (xyz[2]%4)*zcubedim]
             # add the contribution of the cube in the hierarchy
-            ndlib.addDataToZSliceStack_ctype(cube, outdata, offset)
+            addDataToZSliceStack_ctype(cube, outdata, offset)
 
           elif scaling == ISOTROPIC:
 
@@ -171,10 +172,10 @@ def buildAnnoStack ( proj, ch, res=None ):
             offset = [(xyz[0]%4)*(xcubedim/2), (xyz[1]%4)*(ycubedim/2), (xyz[2]%4)*(zcubedim/2)]
 
             # use python version for debugging
-            ndlib.addDataToIsotropicStack_ctype(cube, outdata, offset)
+            addDataToIsotropicStack_ctype(cube, outdata, offset)
 
         #  Get the base location of this batch
-        xyzout = ndlib.MortonXYZ (mortonidx)
+        xyzout = MortonXYZ (mortonidx)
 
         # adjust to output corner for scale.
         if scaling == ZSLICES:
@@ -251,7 +252,7 @@ def buildImageStack(proj, ch, res=None):
                 if scaling == ZSLICES:
                   data = olddata[sl,:,:]
                 elif scaling == ISOTROPIC:
-                  data = ndlib.isotropicBuild_ctype(olddata[sl*2,:,:], olddata[sl*2+1,:,:])
+                  data = isotropicBuild_ctype(olddata[sl*2,:,:], olddata[sl*2+1,:,:])
 
                 # Convert each slice to an image
                 # 8-bit int option
@@ -275,7 +276,7 @@ def buildImageStack(proj, ch, res=None):
                   tempdata = np.asarray(slimage.resize([xcubedim, ycubedim]))
                   newdata[sl,:,:] = np.left_shift(tempdata[:,:,3], 24, dtype=np.uint32) | np.left_shift(tempdata[:,:,2], 16, dtype=np.uint32) | np.left_shift(tempdata[:,:,1], 8, dtype=np.uint32) | np.uint32(tempdata[:,:,0])
 
-              zidx = ndlib.XYZMorton ([x,y,z])
+              zidx = XYZMorton ([x,y,z])
               cube = Cube.getCube(cubedim, ch.getChannelType(), ch.getDataType())
               cube.zeros()
 

@@ -38,7 +38,7 @@ class NDProject:
         self.datasetcfg = NDDataset(self.pr.dataset_id)
       except ObjectDoesNotExist, e:
         logger.error("Token {} does not exist. {}".format(token_name, e))
-        raise NDWSError("Token {} does not exist".format(token_name))
+        raise NDWSError("Token {} does not exist. {}".format(token_name, e))
     elif isinstance(token_name, Project):
       # Constructor for NDProject from Project Name
       try:
@@ -47,7 +47,108 @@ class NDProject:
         self.datasetcfg = NDDataset(self.pr.dataset_id)
       except ObjectDoesNotExist, e:
         logger.error("Token {} does not exist. {}".format(token_name, e))
-        raise NDWSError("Token {} does not exist".format(token_name))
+        raise NDWSError("Token {} does not exist. {}".format(token_name, e))
+  
+  @property
+  def project_name(self):
+    return self.pr.project_name
+
+  @project_name.setter
+  def project_name(self, value):
+    # TODO KL check for unwanted chars
+    self.pr.project_name = value
+  
+  @property
+  def dataset_name(self):
+    return self.pr.dataset_id
+
+  @property
+  def token(self):
+    return self.tk.token_name
+
+  @token.setter
+  def token(self, value):
+    self.tk.token_name = value
+
+  @property
+  def host(self):
+    return self.pr.host
+
+  @host.setter
+  def host(self, value):
+    self.pr.host = value
+
+  @property
+  def kvserver(self):
+    return self.pr.kvserver
+
+  @kvserver.setter
+  def kvserver(self, value):
+    self.pr.kvserver = value
+  
+  @property
+  def kvengine(self):
+    return self.pr.kvengine
+  
+  @kvengine.setter
+  def kvengine(self, value):
+    self.pr.kvengine = value
+
+  @property
+  def mdengine(self):
+    return self.pr.mdengine
+
+  @mdengine.setter
+  def mdengine(self, value):
+    self.pr.mdengine = value
+  
+  @property
+  def s3backend(self):
+    return True if self.pr.s3backend is S3_TRUE else False 
+  
+  @s3backend.setter
+  def s3backend(self, value):
+    self.pr.s3backend = S3_TRUE if value == S3_TRUE else False
+  
+  @property
+  def project_description(self):
+    return self.pr.project_description
+
+  @project_description.setter
+  def project_description(self, values):
+    self.pr.project_description = value
+
+  @property
+  def public(self):
+    return self.pr.public
+
+  @public.setter
+  def public(self, value):
+    self.pr.public = value
+
+  @property
+  def nd_version(self):
+    return self.pr.nd_version
+
+  @nd_version.setter
+  def nd_version(self, value):
+    self.pr.nd_version = value
+
+  @property
+  def schema_version(self):
+    return self.pr.schema_version
+
+  @schema_version.setter
+  def schema_version(self, value):
+    self.pr.schema_version = value
+  
+  @property
+  def kvengine_user(self):
+    return settings.DATABASES['default']['USER']
+
+  @property
+  def kvengine_password(self):
+    return settings.DATABASES['default']['PASSWORD']
 
   # Accessors
   def getToken ( self ):
@@ -90,7 +191,7 @@ class NDProject:
     else:
       chs = channel_list
     for ch in chs:
-      yield NDChannel(self, ch.channel_name)
+      yield NDChannel(self, ch)
 
   def getChannelObj ( self, channel_name='default' ):
     """Returns a object for that channel"""
@@ -100,6 +201,7 @@ class NDProject:
 
   def getDBUser( self ):
     return settings.DATABASES['default']['USER']
+  
   def getDBPasswd( self ):
     return settings.DATABASES['default']['PASSWORD']
   

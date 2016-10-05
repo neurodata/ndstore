@@ -45,7 +45,7 @@ import h5projinfo
 import jsonprojinfo
 import annotation
 import mcfc
-import ndlib
+from ndctypelib import filter_ctype_OMP
 import ndwsskel
 import ndwsnifti
 from windowcutout import windowCutout
@@ -53,7 +53,7 @@ from ndtype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, ANNOTATION_CHANNELS, NOT
 from nduser.models import Token
 from functools import wraps
 
-from ndwserror import NDWSError
+from ndwserror import NDWSError, IncorrectSyntaxError
 import logging
 logger=logging.getLogger("neurodata")
 
@@ -102,7 +102,7 @@ def cutout (imageargs, ch, proj, db):
   try:
     args = restargs.BrainRestArgs ()
     args.cutoutArgs(imageargs, proj.datasetcfg)
-  except restargs.RESTArgsError, e:
+  except restargs.RESTArgsError as e:
     logger.error("REST Arguments {} failed: {}".format(imageargs,e))
     raise NDWSError(e.value)
 
@@ -128,7 +128,7 @@ def filterCube(ch, cube, filterlist=None):
   """Call Filter on a cube"""
 
   if ch.getChannelType() in ANNOTATION_CHANNELS and filterlist is not None:
-    cube.data = ndlib.filter_ctype_OMP ( cube.data, filterlist )
+    cube.data = filter_ctype_OMP ( cube.data, filterlist )
   elif filterlist is not None and ch.getChannelType not in ANNOTATION_CHANNELS:
     logger.error("Filter only possible for Annotation Channels")
     raise NDWSError("Filter only possible for Annotation Channels")
@@ -161,7 +161,8 @@ def channelIterCutout(channels, imageargs, proj, db):
           raise NDWSError("The cutout {} can only contain cutouts of one single Channel Type.".format())
 
     return cubedata
-  except Exception, e:
+  
+  except Exception as e:
     logger.error("{}".format(e))
     raise NDWSError("{}".format(e))
 
@@ -173,7 +174,7 @@ def numpyZip ( chanargs, proj, db ):
     # argument of format channel/service/imageargs
     m = re.match("([\w+,]+)/(\w+)/([\w+,/-]+)$", chanargs)
     [channels, service, imageargs] = [i for i in m.groups()]
-  except Exception, e:
+  except Exception as e:
     logger.error("Arguments not in the correct format {}. {}".format(chanargs, e))
     raise NDWSError("Arguments not in the correct format {}. {}".format(chanargs, e))
 
@@ -188,7 +189,8 @@ def numpyZip ( chanargs, proj, db ):
     fileobj = cStringIO.StringIO(cdz)
     fileobj.seek(0)
     return fileobj.read()
-  except Exception, e:
+  
+  except Exception as e:
     logger.error("{}".format(e))
     raise NDWSError("{}".format(e))
 
@@ -202,7 +204,7 @@ def RAW ( chanargs, proj, db ):
     # argument of format channel/service/imageargs
     m = re.match("([\w+,]+)/(\w+)/([\w+,/-]+)$", chanargs)
     [channels, service, imageargs] = [i for i in m.groups()]
-  except Exception, e:
+  except Exception as e:
     logger.error("Arguments not in the correct format {}. {}".format(chanargs, e))
     raise NDWSError("Arguments not in the correct format {}. {}".format(chanargs, e))
 
@@ -210,7 +212,8 @@ def RAW ( chanargs, proj, db ):
     cubedata = channelIterCutout(channels, imageargs, proj, db)
     binary_representation = cubedata.tobytes("C")
     return binary_representation
-  except Exception, e:
+  
+  except Exception as e:
     logger.error("{}".format(e))
     raise NDWSError("{}".format(e))
 
@@ -222,7 +225,7 @@ def JPEG ( chanargs, proj, db ):
     # argument of format channel/service/imageargs
     m = re.match("([\w+,]+)/(\w+)/([\w+,/-]+)$", chanargs)
     [channels, service, imageargs] = [i for i in m.groups()]
-  except Exception, e:
+  except Exception as e:
     logger.error("Arguments not in the correct format {}. {}".format(chanargs, e))
     raise NDWSError("Arguments not in the correct format {}. {}".format(chanargs, e))
 
@@ -247,7 +250,7 @@ def JPEG ( chanargs, proj, db ):
     fileobj.seek(0)
     return fileobj.read()
 
-  except Exception,e:
+  except Exception as e:
     logger.error("{}".format(e))
     raise NDWSError("{}".format(e))
 
@@ -259,7 +262,7 @@ def BLOSC ( chanargs, proj, db ):
     # argument of format channel/service/imageargs
     m = re.match("([\w+,]+)/(\w+)/([\w+,/-]+)$", chanargs)
     [channels, service, imageargs] = [i for i in m.groups()]
-  except Exception, e:
+  except Exception as e:
     logger.error("Arguments not in the correct format {}. {}".format(chanargs, e))
     raise NDWSError("Arguments not in the correct format {}. {}".format(chanargs, e))
 
@@ -267,7 +270,7 @@ def BLOSC ( chanargs, proj, db ):
     cubedata = channelIterCutout(channels, imageargs, proj, db)
     # Create the compressed cube
     return blosc.pack_array(cubedata)
-  except Exception,e:
+  except Exception as e:
     logger.error("{}".format(e))
     raise NDWSError("{}".format(e))
 
@@ -279,7 +282,7 @@ def binZip ( chanargs, proj, db ):
     # argument of format channel/service/imageargs
     m = re.match("([\w+,]+)/(\w+)/([\w+,/-]+)$", chanargs)
     [channels, service, imageargs] = [i for i in m.groups()]
-  except Exception, e:
+  except Exception as e:
     logger.error("Arguments not in the correct format {}. {}".format(chanargs, e))
     raise NDWSError("Arguments not in the correct format {}. {}".format(chanargs, e))
 
@@ -309,9 +312,9 @@ def HDF5(chanargs, proj, db):
     # argument of format channel/service/imageargs
     m = re.match("([\w+,]+)/(\w+)/([\w+,/-]+)$", chanargs)
     [channels, service, imageargs] = [i for i in m.groups()]
-  except Exception, e:
+  except Exception as e:
     logger.error("Arguments not in the correct format {}. {}".format(chanargs, e))
-    raise NDWSError("Arguments not in the correct format {}. {}".format(chanargs, e))
+    raise IncorrectSyntaxError("Arguments not in the correct format {}. {}".format(chanargs, e))
 
   try:
     for channel_name in channels.split(','):
@@ -327,7 +330,7 @@ def HDF5(chanargs, proj, db):
     tmpfile.seek(0)
     return tmpfile.read()
 
-  except Exception, e:
+  except Exception as e:
     fh5out.close()
     tmpfile.close()
     logger.error("{}".format(e))
@@ -403,7 +406,7 @@ def timeDiff ( chanargs, proj, db):
     # argument of format channel/service/imageargs
     m = re.match("([\w+,]+)/(\w+)/([\w+,/-]+)$", chanargs)
     [channels, service, imageargs] = [i for i in m.groups()]
-  except Exception, e:
+  except Exception as e:
     logger.error("Arguments not in the correct format {}. {}".format(chanargs, e))
     raise NDWSError("Arguments not in the correct format {}. {}".format(chanargs, e))
 
@@ -430,7 +433,7 @@ def timeDiff ( chanargs, proj, db):
     # Create the compressed cube
     return blosc.pack_array(cubedata)
 
-  except Exception,e:
+  except Exception as e:
     raise NDWSError("{}".format(e))
 
 
@@ -460,7 +463,7 @@ def tiff3d ( chanargs, proj, db ):
 #        imagemap = np.zeros ( (cube.data.shape[0]*cube.data.shape[1], cube.data.shape[2]), dtype=np.uint32 )
 #
 #        # turn it into a 2-d array for recolor -- maybe make a 3-d recolor
-#        recolor_cube = ndlib.recolor_ctype( cube.data.reshape((cube.data.shape[0]*cube.data.shape[1], cube.data.shape[2])), imagemap )
+#        recolor_cube = recolor_ctype( cube.data.reshape((cube.data.shape[0]*cube.data.shape[1], cube.data.shape[2])), imagemap )
 #
 #        # turn it back into a 4-d array RGBA
 #        recolor_cube = recolor_cube.view(dtype=np.uint8).reshape((cube.data.shape[0],cube.data.shape[1],cube.data.shape[2], 4 ))
@@ -489,7 +492,7 @@ def FilterCube ( imageargs, cb ):
   result = re.search ("filter/([\d/,]+)/",imageargs)
   if result != None:
     filterlist = np.array ( result.group(1).split(','), dtype=np.uint32 )
-    cb.data = ndlib.filter_ctype_OMP ( cb.data, filterlist )
+    cb.data = filter_ctype_OMP ( cb.data, filterlist )
 
 
 def window(data, ch, window_range=None ):
@@ -507,8 +510,8 @@ def window(data, ch, window_range=None ):
       data = windowCutout (data, window_range)
       return np.uint8(data)
 
-
   return data
+
 
 def imgSlice(webargs, proj, db):
   """Return the cube object for any plane xy, yz, xz"""
@@ -529,7 +532,7 @@ def imgSlice(webargs, proj, db):
         filter_args = extra_args
       else:
         raise
-  except Exception, e:
+  except Exception as e:
     logger.error("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
     raise NDWSError("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
 
@@ -557,7 +560,7 @@ def imgSlice(webargs, proj, db):
         cutoutargs = '{}{},{}{}/{},{}/'.format(m.group(1), m.group(2), int(m.group(2))+1, m.group(3), m.group(4), int(m.group(4))+1)
     else:
       raise "No such image plane {}".format(service)
-  except Exception, e:
+  except Exception as e:
     logger.error ("Illegal image arguments={}.  Error={}".format(imageargs,e))
     raise NDWSError ("Illegal image arguments={}.  Error={}".format(imageargs,e))
 
@@ -586,7 +589,7 @@ def imgPNG (proj, webargs, cb):
     # cutoutargs can be window|filter/value,value/
     m = re.match("(\w+)/(xy|yz|xz)/(\d+)/([\d+,/]+)(window/\d+,\d+/|filter/[\d+,]+/)?$", webargs)
     [channel, service, resolution, imageargs] = [i for i in m.groups()[:-1]]
-  except Exception, e:
+  except Exception as e:
     logger.error("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
     raise NDWSError("Incorrect arguments for imgSlice {}. {}".format(webargs, e))
 
@@ -639,7 +642,8 @@ def imgAnno ( service, chanargs, proj, db, rdb ):
       cutoutargs = '{}{},{}{}/'.format(m.group(1),m.group(2),int(m.group(2))+1,m.group(3))
     else:
       raise "No such image plane {}".format(service)
-  except Exception, e:
+  
+  except Exception as e:
     logger.error ("Illegal image arguments={}.  Error={}".format(imageargs,e))
     raise NDWSError ("Illegal image arguments={}.  Error={}".format(imageargs,e))
 
@@ -699,7 +703,7 @@ def listIds ( chanargs, proj, db ):
   try:
     args = restargs.BrainRestArgs ();
     args.cutoutArgs ( imageargs, proj.datasetcfg )
-  except restargs.RESTArgsError, e:
+  except restargs.RESTArgsError as e:
     logger.error("REST Arguments {} failed: {}".format(imageargs,e))
     raise NDWSError("REST Arguments {} failed: {}".format(imageargs,e))
 
@@ -764,7 +768,7 @@ def selectPost ( webargs, proj, db, postdata ):
   try:
     args = restargs.BrainRestArgs ();
     args.cutoutArgs ( postargs, proj.datasetcfg )
-  except restargs.RESTArgsError, e:
+  except restargs.RESTArgsError as e:
     logger.error( "REST Arguments {} failed: {}".format(postargs,e) )
     raise NDWSError(e)
 
@@ -1666,26 +1670,32 @@ def putNIFTI ( webargs, postdata ):
         tmpfile.seek(0)
 
         # ingest the nifti file
-        ndwsnifti.ingestNIFTI ( tmpfile.name, ch, db, proj )
+        ndwsnifti.ingestNIFTI ( tmpfile.name, ch, db, proj, channel=channel )
 
 
 def getSWC ( webargs ):
   """Return an SWC object generated from Skeletons/Nodes"""
 
-  [token, channel, service, resstr, rest] = webargs.split('/',4)
-  resolution = int(resstr)
+  [token, channel, service, rest] = webargs.split('/',3)
 
   with closing ( ndproj.NDProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
 
-  with closing ( spatialdb.SpatialDB(proj) ) as db:
+  with closing ( ramondb.RamonDB(proj) ) as db:
 
     ch = ndproj.NDChannel(proj, channel)
 
     # Make a named temporary file for the SWC
     with closing (tempfile.NamedTemporaryFile()) as tmpfile:
 
-      ndwsskel.querySWC ( resolution, tmpfile, ch, db, proj, skelids=None )
+      # if skeleton ids are specified, use those
+      if rest:
+        skelids = map ( int, rest.rstrip('/').split(',') )
+      # otherwise get all skeletons
+      else:
+        skelids=db.getKVQuery( ch, 'ann_type', annotation.ANNO_SKELETON )
+
+      ndwsskel.querySWC ( tmpfile, ch, db, proj, skelids )
 
       tmpfile.seek(0)
       return tmpfile.read()
@@ -1695,13 +1705,12 @@ def getSWC ( webargs ):
 def putSWC ( webargs, postdata ):
   """Put an SWC object into RAMON skeleton/tree nodes"""
 
-  [token, channel, service, resstr, optionsargs] = webargs.split('/',4)
-  resolution = int(resstr)
+  [token, channel, service, optionsargs] = webargs.split('/',3)
 
   with closing ( ndproj.NDProjectsDB() ) as projdb:
     proj = projdb.loadToken ( token )
-
-  with closing ( spatialdb.SpatialDB(proj) ) as db:
+  
+  with closing ( ramondb.RamonDB(proj) ) as rdb:
 
     ch = ndproj.NDChannel(proj, channel)
 
@@ -1717,7 +1726,7 @@ def putSWC ( webargs, postdata ):
       tmpfile.seek(0)
 
       # Parse the swc file into skeletons
-      swc_skels = ndwsskel.ingestSWC ( resolution, tmpfile, ch, db )
+      swc_skels = ndwsskel.ingestSWC ( tmpfile, ch, rdb )
 
       return swc_skels
 
@@ -1729,7 +1738,7 @@ def queryAnnoObjects ( webargs, postdata=None ):
   """Return a list of anno ids restricted by equality predicates. Equalities are alternating in field/value in the url."""
 
   try:
-    m = re.match("(\w+)/(\w+)/query/(.*)/?$", webargs)
+    m = re.search("(\w+)/(\w+)/query/(.*)/?$", webargs)
     [token, channel, restargs] = [i for i in m.groups()]
   except Exception, e:
     logger.error("Wrong arguments {}. {}".format(webargs, e))

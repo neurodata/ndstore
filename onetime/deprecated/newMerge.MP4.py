@@ -121,7 +121,8 @@ def main():
 
     first = True
 
-# Combine the exceptions to get one disjoint set of exceptions.Each element in the set represents ids that have tp be merged
+    # Combine the exceptions to get one disjoint set of exceptions.
+    # Each element in the set represents ids that have tp be merged
     while True:
       merged_one = False
       supersets = [listOfSets[0]]
@@ -143,7 +144,7 @@ def main():
         
         if not in_super_set:
           supersets.append(s)
-      #     print supersets
+      # print supersets
       if not merged_one:
         break
       
@@ -169,6 +170,3 @@ def main():
 
 if __name__ == "__main__":
   main()
-
-
-
