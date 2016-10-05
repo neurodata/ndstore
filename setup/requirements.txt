@@ -28,6 +28,7 @@ mysql-python
 cassandra-driver
 riak
 redis
+hiredis
 #
 # Imaging and packaging libraries
 pillow

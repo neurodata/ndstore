@@ -127,8 +127,8 @@ class BenchmarkTest:
 
   def getProjInfo(self):
     """Get the project info"""
-
-    info = json.loads(getURL('http://{}/ca/{}/info'.format(self.host, self.token)))
+    
+    info = json.loads(getURL('http://{}/ca/{}/info/'.format(self.host, self.token)))
     self.dim = info['dataset']['cube_dimension'][str(self.resolution)]
     self.imagesize = info['dataset']['imagesize'][str(self.resolution)]
     self.offset = info['dataset']['offset'][str(self.resolution)]
@@ -203,7 +203,7 @@ def main():
       elif bt.datatype == np.uint32:
         actual_size = [math.pow(2,data_size-1)]
       
-      csv_writer.writerow(actual_size+time_values)
+      # csv_writer.writerow(actual_size+time_values)
 
 
 if __name__ == '__main__':
