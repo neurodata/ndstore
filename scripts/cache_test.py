@@ -24,12 +24,13 @@ from restutil import getURL, getURLTimed
 
 while (True):
   host_name = 'localhost/nd'
+  # host_name = 'localhost:8000'
   token = 'kasthuri11'
   channel_name = 'image'
   resolution = 5
   
   for z in range(1, 1850, 100):
-    args = (0, 600, 0, 800, z)
+    args = (0, 300, 0, 300, z)
     url = 'http://{}/ca/{}/{}/xy/{}/{},{}/{},{}/{}/'.format(host_name, token, channel_name, resolution, *args)
     print "fetching url {}".format(url)
     try:
