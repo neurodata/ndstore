@@ -55,7 +55,8 @@ INSTALLED_APPS = (
     'stats',
     'corsheaders',
     'ndgraph',
-    'ramon'
+    'ramon',
+    'resource'
 )
 
 MIDDLEWARE_CLASSES = (
