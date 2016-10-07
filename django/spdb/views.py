@@ -1,7 +1,5 @@
 # Copyright 2014 NeuroData (http://neurodata.io
 # Upload Sizes for max memory and number of fields
-DATA_UPLOAD_MAX_MEMORY_SIZE = 2147483648
-DATA_UPLOAD_MAX_NUMBER_FIELDS = 1000
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.

@@ -32,7 +32,7 @@ from ndcube.cube import Cube
 from ndtype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, ANNOTATION_CHANNELS, ND_dtypetonp, UINT8, UINT16, UINT32, SUPERCUBESIZE
 import ndwsrest
 import spatialdb
-import ndproj
+import ndprojdb
 from ndctypelib import XYZMorton
 from s3util import generateS3BucketName, generateS3Key
 import s3io

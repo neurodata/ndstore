@@ -29,7 +29,7 @@ from libtiff import TIFFfile, TIFFimage
 
 import spatialdb
 import ramondb
-import ndproj
+import ndprojdb
 import ndchannel
 import jsonann 
 import jsonprojinfo

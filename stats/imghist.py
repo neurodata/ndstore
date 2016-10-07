@@ -28,7 +28,7 @@ import zlib
 import django
 django.setup()
 
-from ndproj import NDProjectsDB
+from ndprojdb import NDProjectsDB
 from spatialdb import SpatialDB
 
 """ Determine a histogram from an image stack """

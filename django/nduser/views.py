@@ -41,7 +41,7 @@ from datetime import datetime
 from contextlib import closing
 
 import ndwsrest
-import ndproj
+import ndprojdb
 import jsonprojinfo
 from ndtype import IMAGE, ANNOTATION, TIMESERIES, UINT8, UINT16, UINT32, UINT64, FLOAT32, ND_VERSION, SCHEMA_VERSION, MYSQL, S3_FALSE
 
@@ -129,7 +129,7 @@ def getProjects(request):
             if proj.user_id == request.user.id or request.user.is_superuser:
               # Delete project from the table followed  by the database.
               # deleting a project is super dangerous b/c you may delete it out from other tokens on other servers.So, only delete when it's on the same server for now
-              pd = ndproj.NDProjectsDB.getProjDB(proj)
+              pd = ndprojdb.NDProjectsDB.getProjDB(proj)
               pd.deleteNDProject()
               proj.delete()
               messages.success(request,"Project deleted")
@@ -348,7 +348,7 @@ def getChannels(request):
         ch = Channel.objects.get(channel_name=channel_to_delete, project_id=pr )
         if ch:
           if pr.user_id == request.user.id or request.user.is_superuser:
-            pd = ndproj.NDProjectsDB.getProjDB(pr)
+            pd = ndprojdb.NDProjectsDB.getProjDB(pr)
             pd.deleteNDChannel(ch.channel_name)
             ch.delete()
             messages.success(request,"Channel deleted " + channel_to_delete)
@@ -522,7 +522,7 @@ def createProject(request):
           try:
             # create a database when not linking to an existing databases
             if not request.POST.get('nocreate') == 'on':
-              pd = ndproj.NDProjectsDB.getProjDB(new_project)
+              pd = ndprojdb.NDProjectsDB.getProjDB(new_project)
               pd.newNDProject()
             if 'token' in request.POST:
               tk = Token ( token_name = new_project.project_name, token_description = 'Default token for public project', project_id=new_project, user_id=request.user.id, public=new_project.public )
@@ -770,7 +770,7 @@ def updateChannel(request):
 
               try:
                 # create the tables for the channel
-                pd = ndproj.NDProjectsDB.getProjDB(pr)
+                pd = ndprojdb.NDProjectsDB.getProjDB(pr)
                 pd.newNDChannel(new_channel.channel_name)
               except Exception, e:
                 logger.error("Failed to create channel. Error {}".format(e))
@@ -1091,7 +1091,7 @@ def backupProject(request):
             new_backup.jsonfile = jfile
 
             with closing ( open(jfile, 'w')) as jsonfp:
-              with closing ( ndproj.NDProjectsDB() ) as projdb:
+              with closing ( ndprojdb.NDProjectsDB() ) as projdb:
                 proj = projdb.loadToken ( pr )
                 jsonfp.write ( jsonprojinfo.jsonInfo(proj) )
 
@@ -1543,7 +1543,7 @@ def downloadData(request):
     else:
       # Load Download page with public tokens
       form = dataUserForm()
-      tokens = ndproj.NDProjectsDB.getPublicTokens()
+      tokens = ndprojdb.NDProjectsDB.getPublicTokens()
       context = {'form': form ,'publictokens': tokens}
       return render(request, 'download.html', context)
       #return render_to_response('download.html', context)

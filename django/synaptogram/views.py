@@ -21,7 +21,7 @@ import django.http
 from PIL import Image
 import base64
 
-import ndproj
+import ndprojdb
 import ndwsrest
 import spatialdb
 from ndctypelib import recolor_ctype
@@ -56,7 +56,7 @@ def synaptogram_view (request, webargs):
 
     # pattern for using contexts to close databases
     # get the project 
-    with closing ( ndproj.NDProjectsDB() ) as projdb:
+    with closing ( ndprojdb.NDProjectsDB() ) as projdb:
       proj = projdb.loadToken ( token )
 
     # and the database and then call the db function

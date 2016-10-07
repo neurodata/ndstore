@@ -23,7 +23,7 @@ django.setup()
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseBadRequest
 
-import ndproj
+import ndprojdb
 from ndwsingest import IngestData
 # from ndschema import PROJECT_SCHEMA, DATASET_SCHEMA, CHANNEL_SCHEMA
 from ndtype import READONLY_FALSE, REDIS, S3_TRUE

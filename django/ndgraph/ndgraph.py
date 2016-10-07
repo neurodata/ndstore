@@ -19,7 +19,7 @@ from operator import add, sub
 import tempfile
 
 import ndproject
-import ndproj
+import ndprojdb
 import ramondb
 import annotation
 import ndchannel
@@ -62,7 +62,7 @@ def genGraphRAMON(token_name, channel, graphType="graphml", xmin=0, xmax=0, ymin
   # converting all parameters to integers
   [xmin, xmax, ymin, ymax, zmin, zmax] = [int(i) for i in [xmin, xmax, ymin, ymax, zmin, zmax]]
 
-  with closing (ndproj.NDProjectsDB()) as fproj:
+  with closing (ndprojdb.NDProjectsDB()) as fproj:
     proj = fproj.loadToken(token_name)
 
   with closing (ramondb.RamonDB(proj)) as db:

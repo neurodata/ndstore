@@ -23,7 +23,7 @@ import django
 
 import restargs
 import spatialdb
-import ndproj
+import ndprojdb
 import ndwsrest
 
 from ndwserror import NDWSError
@@ -195,7 +195,7 @@ class SimpleCatmaid:
       logger.warning("Incorrect arguments give for getTile {}. {}".format(webargs, e))
       raise NDWSError("Incorrect arguments given for getTile {}. {}".format(webargs, e))
     
-    with closing ( ndproj.NDProjectsDB() ) as projdb:
+    with closing ( ndprojdb.NDProjectsDB() ) as projdb:
         self.proj = projdb.loadToken(self.token)
     
     with closing ( spatialdb.SpatialDB(self.proj) ) as self.db:

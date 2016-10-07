@@ -22,7 +22,7 @@ from PIL import Image
 
 import restargs
 import spatialdb
-import ndproj
+import ndprojdb
 import ndwsrest
 import mcfc
 
@@ -85,7 +85,7 @@ class MaxProjCatmaid:
       logger.warning("Incorrect arguments for getTile {}. {}".format(webargs, e))
       raise NDWSError("Incorrect arguments for getTile {}. {}".format(webargs, e))
 
-    with closing ( ndproj.NDProjectsDB() ) as projdb:
+    with closing ( ndprojdb.NDProjectsDB() ) as projdb:
 
       self.proj = projdb.loadToken ( self.token )
 
