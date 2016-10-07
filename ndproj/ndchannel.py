@@ -14,25 +14,47 @@
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
-
 from ndtype import *
 from nduser.models import Channel
-
+from ndobject import NDObject
 from ndwserror import NDWSError
 import logging
 logger=logging.getLogger("neurodata")
 
-class NDChannel:
+class NDChannel(NDObject):
 
-  def __init__(self, proj, channel_name = None):
+  def __init__(self, ch):
     """Constructor for a channel. It is a project and then some."""
+    self.ch = ch
+  
+  @classmethod
+  def fromName(cls, pr, channel_name):
     try:
-      self.pr = proj
-      self.ch = Channel.objects.get(channel_name = channel_name, project=self.pr.getProjectName())
-    except ObjectDoesNotExist, e:
+      pr = pr
+      ch = Channel.objects.get(channel_name = channel_name, project=pr.project_name)
+      return cls(ch)
+    except ObjectDoesNotExist as e:
       logger.error("Channel {} does not exist. {}".format(channel_name, e))
       raise NDWSError("Channel {} does not exist".format(channel_name))
+
+  @classmethod
+  def fromJson(cls, project_name, channel):
+    ch = Channel(**cls.deserialize(channel))
+    ch.project_id = project_name
+    return cls(ch)
   
+  def save(self):
+    try:
+      self.ch.save()
+    except Exception as e:
+      raise
+
+  def delete(self):
+    try:
+      self.ch.delete()
+    except Exception as e:
+      raise
+
   @property
   def channel_name(self):
     return self.ch.channel_name
@@ -50,6 +72,14 @@ class NDChannel:
   def channel_description(self, value):
     self.ch.channel_description = value
   
+  @property
+  def project_name(self):
+    return self.ch.project_id
+
+  @project_name.setter
+  def project_name(self, value):
+    self.ch.project_id = value
+
   @property
   def channel_type(self):
     return self.ch.channel_type

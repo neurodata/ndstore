@@ -14,30 +14,24 @@
 
 import math
 from operator import add, sub, mul, div, mod
-
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
-
+from ndobject import NDObject
 from ndtype import *
 from nduser.models import Dataset
-
 from ndwserror import NDWSError
 import logging
 logger=logging.getLogger("neurodata")
 
-class NDDataset:
+class NDDataset(NDObject):
   """Configuration for a dataset"""
 
-  def __init__ ( self, dataset_name ):
+  def __init__ (self, ds):
     """Construct a db configuration from the dataset parameters""" 
     
-    try:
-      self.ds = Dataset.objects.get(dataset_name = dataset_name)
-    except ObjectDoesNotExist, e:
-      logger.error("Dataset {} does not exist. {}".format(dataset_name, e))
-      raise NDWSError("Dataset {} does not exist".format(dataset_name))
+    self.ds = ds
 
-    self.resolutions = []
+    self._resolutions = []
     self.cubedim = {}
     self.supercubedim = {}
     self.imagesz = {}
@@ -57,7 +51,7 @@ class NDDataset:
       """Populate the dictionaries"""
 
       # add this level to the resolutions
-      self.resolutions.append( i )
+      self._resolutions.append( i )
 
       # set the image size
       #  the scaled down image rounded up to the nearest cube
@@ -122,14 +116,123 @@ class NDDataset:
       self.neariso_imagesz[i] = [ xpixels, ypixels, zpixels/self.nearisoscaledown[i] ]
       self.neariso_voxelres[i] = [ xvoxelresi, yvoxelresi, zvoxelresi*self.nearisoscaledown[i] ]
       self.neariso_offset[i] = [ float(xoffseti), float(yoffseti), float(zoffseti)/self.nearisoscaledown[i] ]
+  
+  def save(self):
+    try:
+      self.ds.save()
+    except Exception as e:
+      raise
 
+  def delete(self):
+    try:
+      self.ds.delete()
+    except Exception as e:
+      raise
+  
+  @classmethod
+  def fromName(cls, dataset_name):
+    try:
+      ds = Dataset.objects.get(dataset_name = dataset_name)
+      return cls(ds)
+    except ObjectDoesNotExist as e:
+      logger.error("Dataset {} does not exist. {}".format(dataset_name, e))
+      raise NDWSError("Dataset {} does not exist".format(dataset_name))
+
+  @classmethod
+  def fromJson(cls, dataset):
+    ds = Dataset(**cls.deserialize(dataset))
+    return cls(ds)
+  
+  @property
+  def dataset_name(self):
+    return self.ds.dataset_name
+  
+  @property
+  def user_id(self):
+    return self.ds.user_id
+
+  @user_id.setter
+  def user_id(self, value):
+    self.ds.user_id = value
+
+  @property
+  def dataset_description(self):
+    return self.dataset_description
+
+  @property
+  def resolutions(self):
+    return self._resolutions
+  
+  @property
+  def public(self):
+    return self.public
+
+  # @property
+  # def imagesize(self, res):
+    # return self.imagesz[res]
+  
+  # @property
+  # def voxelres(self, res):
+    # return self.voxelres[res]
+
+  # @property
+  # def ximagesize(self):
+    # return self.ximagesize
+
+  @property
+  def yimagesize(self):
+    return self.yimagesize
+
+  @property
+  def zimagesize(self):
+    return self.zimagesize
+
+  @property
+  def xoffset(self):
+    return self.xoffset
+
+  @property
+  def yoffset(self):
+    return self.yoffset
+
+  @property
+  def zoffset(self):
+    return self.zoffset
+
+  @property
+  def xvoxelres(self):
+    return self.xvoxelres
+
+  @property
+  def yvoxelres(self):
+    return self.yvoxelres
+
+  @property
+  def zvoxelres(self):
+    return self.zvoxelres
+  
+  # @property
+  # def scalingoption(self):
+    # return self.scalingoption
+
+  # @property
+  # def scalinglevels(self):
+    # return self.scalinglevels
+
+  @property
+  def starttime(self):
+    return self.starttime
+
+  @property
+  def endtime(self):
+    return self.endtime
 
   # Accessors
   def getDatasetName(self):
     return self.ds.dataset_name
   
   def getResolutions(self):
-    return self.resolutions
+    return self._resolutions
   
   def getPublic(self):
     return self.ds.public

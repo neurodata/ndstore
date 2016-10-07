@@ -14,41 +14,76 @@
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
-
 from nduser.models import Dataset
 from nduser.models import Project
 from nduser.models import Channel
 from nduser.models import Token
-
+from ndobject import NDObject
 from nddataset import NDDataset
 from ndchannel import NDChannel
-
 from ndwserror import NDWSError
 import logging
 logger=logging.getLogger("neurodata")
 
-class NDProject:
+class NDProject(NDObject):
 
-  def __init__(self, token_name ) :
+  def __init__(self, pr) :
     
-    if isinstance(token_name, str) or isinstance(token_name, unicode):
-      try:
-        self.tk = Token.objects.get(token_name = token_name)
-        self.pr = Project.objects.get(project_name = self.tk.project_id)
-        self.datasetcfg = NDDataset(self.pr.dataset_id)
-      except ObjectDoesNotExist, e:
-        logger.error("Token {} does not exist. {}".format(token_name, e))
-        raise NDWSError("Token {} does not exist. {}".format(token_name, e))
-    elif isinstance(token_name, Project):
-      # Constructor for NDProject from Project Name
-      try:
-        self.tk = None
-        self.pr = token_name
-        self.datasetcfg = NDDataset(self.pr.dataset_id)
-      except ObjectDoesNotExist, e:
-        logger.error("Token {} does not exist. {}".format(token_name, e))
-        raise NDWSError("Token {} does not exist. {}".format(token_name, e))
+    self.pr = pr
+
+    # if isinstance(token_name, str) or isinstance(token_name, unicode):
+      # try:
+        # self.tk = Token.objects.get(token_name = token_name)
+        # self.pr = Project.objects.get(project_name = self.tk.project_id)
+        # self.datasetcfg = NDDataset.fromName(self.pr.dataset_id)
+      # except ObjectDoesNotExist, e:
+        # logger.error("Token {} does not exist. {}".format(token_name, e))
+        # raise NDWSError("Token {} does not exist. {}".format(token_name, e))
+    # elif isinstance(token_name, Project):
+      # # Constructor for NDProject from Project Name
+      # try:
+        # self.tk = None
+        # self.pr = token_name
+        # self.datasetcfg = NDDataset.fromName(self.pr.dataset_id)
+      # except ObjectDoesNotExist, e:
+        # logger.error("Token {} does not exist. {}".format(token_name, e))
+        # raise NDWSError("Token {} does not exist. {}".format(token_name, e))
   
+  @classmethod
+  def fromTokenName(cls, token_name):
+    try:
+      tk = Token.objects.get(token_name = token_name)
+      pr = Project.objects.get(project_name = tk.project_id)
+      return cls(pr)
+    except ObjectDoesNotExist, e:
+      logger.error("Token {} does not exist. {}".format(token_name, e))
+      raise NDWSError("Token {} does not exist. {}".format(token_name, e))
+
+  @classmethod
+  def fromName(cls, project_name):
+    try:
+      pr = Project.objects.get(project_name=project_name)
+      return cls(pr)
+    except ObjectDoesNotExist as e:
+      raise
+  
+  @classmethod
+  def fromJson(cls, project):
+    pr = Project(**cls.deserialize(project))
+    return cls(pr)
+
+  def save(self):
+    try:
+      self.pr.save()
+    except Exception as e:
+      raise
+
+  def delete(self):
+    try:
+      self.pr.delete()
+    except Exception as e:
+      raise
+
   @property
   def project_name(self):
     return self.pr.project_name
@@ -61,6 +96,18 @@ class NDProject:
   @property
   def dataset_name(self):
     return self.pr.dataset_id
+  
+  @dataset_name.setter
+  def dataset_name(self, value):
+    self.pr.dataset_id = value
+  
+  @property
+  def user_id(self):
+    return self.pr.user_id
+
+  @user_id.setter
+  def user_id(self, value):
+    self.pr.user_id = value
 
   @property
   def token(self):
@@ -197,7 +244,7 @@ class NDProject:
     """Returns a object for that channel"""
     if channel_name == 'default':
       channel_name = Channel.objects.get(project_id=self.pr, default=True)
-    return NDChannel(self, channel_name)
+    return NDChannel.fromName(self.pr, channel_name)
 
   def getDBUser( self ):
     return settings.DATABASES['default']['USER']
