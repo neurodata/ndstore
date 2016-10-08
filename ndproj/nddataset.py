@@ -20,6 +20,7 @@ from ndobject import NDObject
 from ndtype import *
 from nduser.models import Dataset
 from ndwserror import NDWSError
+from vector3d import Vector3D
 import logging
 logger=logging.getLogger("neurodata")
 
@@ -29,25 +30,26 @@ class NDDataset(NDObject):
   def __init__ (self, ds):
     """Construct a db configuration from the dataset parameters""" 
     
-    self.ds = ds
+    self._ds = ds
 
     self._resolutions = []
-    self.cubedim = {}
-    self.supercubedim = {}
-    self.imagesz = {}
-    self.offset = {}
-    self.voxelres = {}
-    self.scale = {}
-    self.scalingoption = self.ds.scalingoption
-    self.scalinglevels = self.ds.scalinglevels
-    self.timerange = (self.ds.starttime, self.ds.endtime)
+    self._cubedim = {}
+    self._supercubedim = {}
+    self._image_size = {}
+    self._offset = {}
+    self._voxelres = {}
+    self._scale = {}
+    self._limit = {}
+    self.scalingoption = self._ds.scalingoption
+    self._scalinglevels = self._ds.scalinglevels
+    self._timerange = (self._ds.starttime, self._ds.endtime)
     # nearisotropic service for Stephan
     self.nearisoscaledown = {}
     self.neariso_voxelres = {}
     self.neariso_imagesz = {}
     self.neariso_offset = {}
 
-    for i in range (self.ds.scalinglevels+1):
+    for i in range (self._ds.scalinglevels+1):
       """Populate the dictionaries"""
 
       # add this level to the resolutions
@@ -55,57 +57,57 @@ class NDDataset(NDObject):
 
       # set the image size
       #  the scaled down image rounded up to the nearest cube
-      xpixels = ((self.ds.ximagesize-1)/2**i)+1
-      ypixels = ((self.ds.yimagesize-1)/2**i)+1
-      if self.ds.scalingoption == ZSLICES:
-        zpixels = self.ds.zimagesize
+      xpixels = ((self._ds.ximagesize-1)/2**i)+1
+      ypixels = ((self._ds.yimagesize-1)/2**i)+1
+      if self._ds.scalingoption == ZSLICES:
+        zpixels = self._ds.zimagesize
       else:
-        zpixels = ((self.ds.zimagesize-1)/2**i)+1
-      self.imagesz[i] = [ xpixels, ypixels, zpixels ]
+        zpixels = ((self._ds.zimagesize-1)/2**i)+1
+      self._image_size[i] = [ xpixels, ypixels, zpixels ]
 
       # set the offset
-      xoffseti = 0 if self.ds.xoffset==0 else ((self.ds.xoffset)/2**i)
-      yoffseti = 0 if self.ds.yoffset==0 else ((self.ds.yoffset)/2**i)
-      if self.ds.zoffset == 0:
+      xoffseti = 0 if self._ds.xoffset==0 else ((self._ds.xoffset)/2**i)
+      yoffseti = 0 if self._ds.yoffset==0 else ((self._ds.yoffset)/2**i)
+      if self._ds.zoffset == 0:
         zoffseti = 0
       else:
-        if self.ds.scalingoption == ZSLICES:
-          zoffseti = self.ds.zoffset
+        if self._ds.scalingoption == ZSLICES:
+          zoffseti = self._ds.zoffset
         else:
-         zoffseti = ((self.ds.zoffset)/2**i)
+         zoffseti = ((self._ds.zoffset)/2**i)
 
-      self.offset[i] = [ xoffseti, yoffseti, zoffseti ]
+      self._offset[i] = [ xoffseti, yoffseti, zoffseti ]
 
       # set the voxelresolution
-      xvoxelresi = self.ds.xvoxelres*float(2**i)
-      yvoxelresi = self.ds.yvoxelres*float(2**i)
-      zvoxelresi = self.ds.zvoxelres if self.ds.scalingoption == ZSLICES else self.ds.zvoxelres*float(2**i)
+      xvoxelresi = self._ds.xvoxelres*float(2**i)
+      yvoxelresi = self._ds.yvoxelres*float(2**i)
+      zvoxelresi = self._ds.zvoxelres if self._ds.scalingoption == ZSLICES else self._ds.zvoxelres*float(2**i)
 
-      self.voxelres[i] = [ xvoxelresi, yvoxelresi, zvoxelresi ]
-      self.scale[i] = { 'xy':xvoxelresi/yvoxelresi , 'yz':zvoxelresi/xvoxelresi, 'xz':zvoxelresi/yvoxelresi }
+      self._voxelres[i] = [ xvoxelresi, yvoxelresi, zvoxelresi ]
+      self._scale[i] = { 'xy':xvoxelresi/yvoxelresi , 'yz':zvoxelresi/xvoxelresi, 'xz':zvoxelresi/yvoxelresi }
       
       # choose the cubedim as a function of the zscale
-      #self.cubedim[i] = [128, 128, 16]
+      #self._cubedim[i] = [128, 128, 16]
       # this may need to be changed.  
-      if self.ds.scalingoption == ZSLICES:
-        #self.cubedim[i] = [512, 512, 16]
-        self.cubedim[i] = [128, 128, 16]
-        if float(self.ds.zvoxelres/self.ds.xvoxelres)/(2**i) >  0.5:
-          self.cubedim[i] = [128, 128, 16]
+      if self._ds.scalingoption == ZSLICES:
+        #self._cubedim[i] = [512, 512, 16]
+        self._cubedim[i] = [128, 128, 16]
+        if float(self._ds.zvoxelres/self._ds.xvoxelres)/(2**i) >  0.5:
+          self._cubedim[i] = [128, 128, 16]
         else: 
-          self.cubedim[i] = [64, 64, 64]
+          self._cubedim[i] = [64, 64, 64]
 
         # Make an exception for bock11 data -- just an inconsistency in original ingest
-        if self.ds.ximagesize == 135424 and i == 5:
-          self.cubedim[i] = [128, 128, 16]
+        if self._ds.ximagesize == 135424 and i == 5:
+          self._cubedim[i] = [128, 128, 16]
       else:
         # RB what should we use as a cubedim?
-        self.cubedim[i] = [512, 512, 16]
+        self._cubedim[i] = [512, 512, 16]
       
-      self.supercubedim[i] = map(mul, self.cubedim[i], SUPERCUBESIZE)
+      self._supercubedim[i] = map(mul, self._cubedim[i], SUPERCUBESIZE)
 
-      if self.scale[i]['xz'] < 1.0:
-        scalepixels = 1/self.scale[i]['xz']
+      if self._scale[i]['xz'] < 1.0:
+        scalepixels = 1/self._scale[i]['xz']
         if ((math.ceil(scalepixels)-scalepixels)/scalepixels) <= ((scalepixels-math.floor(scalepixels))/scalepixels):
           self.nearisoscaledown[i] = int(math.ceil(scalepixels))
         else:
@@ -119,13 +121,13 @@ class NDDataset(NDObject):
   
   def save(self):
     try:
-      self.ds.save()
+      self._ds.save()
     except Exception as e:
       raise
 
   def delete(self):
     try:
-      self.ds.delete()
+      self._ds.delete()
     except Exception as e:
       raise
   
@@ -145,15 +147,15 @@ class NDDataset(NDObject):
   
   @property
   def dataset_name(self):
-    return self.ds.dataset_name
+    return self._ds.dataset_name
   
   @property
   def user_id(self):
-    return self.ds.user_id
+    return self._ds.user_id
 
   @user_id.setter
   def user_id(self, value):
-    self.ds.user_id = value
+    self._ds.user_id = value
 
   @property
   def dataset_description(self):
@@ -165,105 +167,60 @@ class NDDataset(NDObject):
   
   @property
   def public(self):
-    return self.public
-
-  # @property
-  # def imagesize(self, res):
-    # return self.imagesz[res]
+    return self._ds.public
   
   # @property
-  # def voxelres(self, res):
-    # return self.voxelres[res]
+  def dataset_dim(self, res):
+    return  [ self.image_size(res), self._timerange ]
 
   # @property
-  # def ximagesize(self):
-    # return self.ximagesize
+  def image_size(self, res):
+    return Vector3D(self._image_size[res][::-1])
+  
+  # @property
+  def offset(self, res):
+    return Vector3D(self._offset[res])
+  
+  # @property
+  def voxelres(self, res):
+    return Vector3D(self._voxelres[res])
+  
+  # @property
+  def cube_limit(self, res):
+    return None
 
-  @property
-  def yimagesize(self):
-    return self.yimagesize
-
-  @property
-  def zimagesize(self):
-    return self.zimagesize
-
-  @property
-  def xoffset(self):
-    return self.xoffset
-
-  @property
-  def yoffset(self):
-    return self.yoffset
-
-  @property
-  def zoffset(self):
-    return self.zoffset
-
-  @property
-  def xvoxelres(self):
-    return self.xvoxelres
-
-  @property
-  def yvoxelres(self):
-    return self.yvoxelres
-
-  @property
-  def zvoxelres(self):
-    return self.zvoxelres
+  # @property
+  def supercube_limit(self, res):
+    return Vector3D(map(add, map(div, map(sub, self._image_size[res][::-1], [1]*3), self._supercubedim[res]), [1]*3))
   
   # @property
   # def scalingoption(self):
     # return self.scalingoption
 
+  @property
+  def scalinglevels(self):
+    return self._scalinglevels
+
+  @property
+  def timerange(self):
+    return self._timerange
+
+  @property
+  def scale(self):
+    return self._scale
+  
   # @property
-  # def scalinglevels(self):
-    # return self.scalinglevels
-
+  def cube_dim(self, res):
+    return Vector3D(self._cubedim[res])
+  
+  # @property
+  def supercube_dim(self, res):
+    return Vector3D(self._supercubedim[res])
+  
   @property
-  def starttime(self):
-    return self.starttime
-
-  @property
-  def endtime(self):
-    return self.endtime
-
-  # Accessors
-  def getDatasetName(self):
-    return self.ds.dataset_name
-  
-  def getResolutions(self):
-    return self._resolutions
-  
-  def getPublic(self):
-    return self.ds.public
-  
-  def getImageSize(self):
-    return self.imagesz
-  
-  def getOffset(self):
-    return self.offset
-  
-  def getScale(self):
-    return self.scale
-  
-  def getVoxelRes(self):
-    return self.voxelres
-  
-  def getCubeDims(self):
-    return self.cubedim
-  
-  def getSuperCubeDims(self):
-    return self.supercubedim
-  
-  def getSuperCubeSize(self):
+  def supercube_size(self):
     return SUPERCUBESIZE
   
-  def getTimeRange(self):
-    return self.timerange
-  
-  def getDatasetDescription ( self ):
-    return self.ds.dataset_description
-
   def checkCube (self, resolution, corner, dim, timeargs=[0,0]):
     """Return true if the specified range of values is inside the cube"""
 
@@ -272,14 +229,10 @@ class NDDataset(NDObject):
 
     [xend, yend, zend] = map(add, corner, dim) 
 
-    if ( ( xstart >= 0 ) and ( xstart < xend) and ( xend <= self.imagesz[resolution][0]) and\
-        ( ystart >= 0 ) and ( ystart < yend) and ( yend <= self.imagesz[resolution][1]) and\
-        ( zstart >= 0 ) and ( zstart < zend) and ( zend <= self.imagesz[resolution][2]) and\
-        ( tstart >= self.timerange[0]) and ((tstart < tend) or tstart==0 and tend==0) and (tend <= (self.timerange[1]+1))):
+    if ( ( xstart >= 0 ) and ( xstart < xend) and ( xend <= self._image_size[resolution][0]) and\
+        ( ystart >= 0 ) and ( ystart < yend) and ( yend <= self._image_size[resolution][1]) and\
+        ( zstart >= 0 ) and ( zstart < zend) and ( zend <= self._image_size[resolution][2]) and\
+        ( tstart >= self._timerange[0]) and ((tstart < tend) or tstart==0 and tend==0) and (tend <= (self._timerange[1]+1))):
       return True
     else:
       return False
-
-  def imageSize ( self, resolution ):
-    """Return the image size"""
-    return  [ self.imagesz [resolution], self.timerange ]

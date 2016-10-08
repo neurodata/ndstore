@@ -30,6 +30,7 @@ class NDProject(NDObject):
   def __init__(self, pr) :
     
     self.pr = pr
+    self.datasetcfg = NDDataset.fromName(self.dataset_name)
 
     # if isinstance(token_name, str) or isinstance(token_name, unicode):
       # try:
@@ -238,7 +239,7 @@ class NDProject(NDObject):
     else:
       chs = channel_list
     for ch in chs:
-      yield NDChannel(self, ch)
+      yield NDChannel(ch)
 
   def getChannelObj ( self, channel_name='default' ):
     """Returns a object for that channel"""

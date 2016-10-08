@@ -25,12 +25,15 @@ class NDChannel(NDObject):
 
   def __init__(self, ch):
     """Constructor for a channel. It is a project and then some."""
+    from ndproject import NDProject
     self.ch = ch
+    self.pr = NDProject.fromName(self.project_name)
   
   @classmethod
   def fromName(cls, pr, channel_name):
     try:
       pr = pr
+      import pdb; pdb.set_trace()
       ch = Channel.objects.get(channel_name = channel_name, project=pr.project_name)
       return cls(ch)
     except ObjectDoesNotExist as e:

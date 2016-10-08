@@ -66,7 +66,7 @@ class NDProjectsDB:
   @staticmethod
   def loadToken(token_name):
     """Query django configuration for a token to bind to a project"""
-    return NDProject(token_name)
+    return NDProject.fromTokenName(token_name)
 
 
   @staticmethod
