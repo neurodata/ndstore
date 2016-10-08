@@ -15,15 +15,11 @@
 import re
 import urllib2
 import json
-import requests
-import jsonschema
-
 import django
 django.setup()
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseBadRequest
-
-import ndprojdb
+from ndproj.ndprojdb import NDProjectsDB
 from ndwsingest import IngestData
 # from ndschema import PROJECT_SCHEMA, DATASET_SCHEMA, CHANNEL_SCHEMA
 from ndtype import READONLY_FALSE, REDIS, S3_TRUE
@@ -32,10 +28,9 @@ from nduser.models import Dataset
 from nduser.models import Token
 from nduser.models import Channel
 from nduser.models import User
-
 from ndwserror import NDWSError
 import logging
-logger=logging.getLogger('neurodata')
+logger = logging.getLogger('neurodata')
 
 def autoIngest(webargs, post_data):
   """Create a project using a JSON file"""
@@ -137,7 +132,7 @@ def autoIngest(webargs, post_data):
     else:
       pr.save()
       try:
-        pd = ndproj.NDProjectsDB.getProjDB(pr)
+        pd = NDProjectsDB.getProjDB(pr)
         pd.newNDProject()
         PROJECT_CREATED = True
       except Exception, e:
@@ -165,7 +160,7 @@ def autoIngest(webargs, post_data):
         # Maintain a list of channel objects created during this iteration and delete all even if one fails
         channel_object_list.append(ch)
         try:
-          pd = ndproj.NDProjectsDB.getProjDB(pr)
+          pd = NDProjectsDB.getProjDB(pr)
           pd.newNDChannel(ch.channel_name)
           CHANNEL_CREATED = True
         except Exception, e:
@@ -208,7 +203,7 @@ def autoIngest(webargs, post_data):
       pd
     except NameError:
       if pr is not None:
-        pd = ndproj.NDProjectsDB.getProjDB(pr.project_name)
+        pd = NDProjectsDB.getProjDB(pr.project_name)
       if PROJECT_CREATED:
         pd.deleteNDProject()
     logger.error("Error saving models. There was an error in the information posted")
@@ -260,7 +255,7 @@ def createChannel(webargs, post_data):
       ch.save()
       
       # Create channel database using the ndproj interface
-      pd = ndproj.NDProjectsDB.getProjDB(pr)
+      pd = NDProjectsDB.getProjDB(pr)
       pd.newNDChannel(ch.channel_name)
   except Exception, e:
     logger.error("Error saving models")
@@ -301,7 +296,7 @@ def deleteChannel(webargs, post_data):
         # Checking if channel is readonly or not
         if ch.readonly == READONLY_FALSE:
           # delete channel table using the ndproj interface
-          pd = ndproj.NDProjectsDB().getProjDB(pr)
+          pd = NDProjectsDB().getProjDB(pr)
           pd.deleteNDChannel(ch.channel_name)
           ch.delete()
     return HttpResponse("Success. Channels deleted.")

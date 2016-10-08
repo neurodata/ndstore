@@ -12,18 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import re
 import nibabel
 import numpy as np
-import cStringIO
 import pickle
-
 from ndtype import READONLY_TRUE, ND_dtypetonp, IMAGE_CHANNELS, TIMESERIES_CHANNELS, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, DTYPE_float32
-
-from django.conf import settings
-from nduser.models import Channel
 from nduser.models import NIFTIHeader
-
 from ndwserror import NDWSError
 import logging
 logger=logging.getLogger("neurodata")

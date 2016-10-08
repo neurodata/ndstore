@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
 import os
-import urllib
 import urllib2
 from contextlib import closing
 import numpy as np
@@ -22,7 +20,6 @@ from PIL import Image
 from operator import sub, add, mul, div
 import boto3
 import botocore
-import blosc
 
 import django
 django.setup()
@@ -31,15 +28,15 @@ from django.conf import settings
 from ndcube.cube import Cube
 from ndtype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, ANNOTATION_CHANNELS, ND_dtypetonp, UINT8, UINT16, UINT32, SUPERCUBESIZE
 import ndwsrest
-import spatialdb
-import ndprojdb
+from spdb.spatialdb import SpatialDB
+from ndproj.ndprojdb import NDProjectsDB
 from ndctypelib import XYZMorton
 from s3util import generateS3BucketName, generateS3Key
 import s3io
 
 from ndwserror import NDWSError
 import logging
-logger=logging.getLogger("neurodata")
+logger = logging.getLogger("neurodata")
 
 class IngestData:
 
@@ -183,8 +180,8 @@ class IngestData:
     
     tilesz = 1024
     # Load a database
-    proj = ndproj.NDProjectsDB().loadToken(self.token)
-    db = spatialdb.SpatialDB(proj)
+    proj = NDProjectsDB().loadToken(self.token)
+    db = SpatialDB(proj)
     s3db = s3io.S3IO(db)
     ch = proj.getChannelObj(self.channel)
     
@@ -253,10 +250,10 @@ class IngestData:
     """Ingest a TIF image stack"""
 
     # Load a database
-    with closing (ndproj.NDProjectsDB()) as projdb:
+    with closing (NDProjectsDB()) as projdb:
       proj = projdb.loadToken(self.token)
 
-    with closing (spatialdb.SpatialDB(proj)) as db:
+    with closing (SpatialDB(proj)) as db:
 
       ch = proj.getChannelObj(self.channel)
       # get the dataset configuration
@@ -307,7 +304,7 @@ class IngestData:
 
               # Getting a Cube id and ingesting the data one cube at a time
               zidx = XYZMorton ( [x/xcubedim, y/ycubedim, (slice_number-zoffset)/zcubedim] )
-              cube = Cube.getCube(cubedim, ch.getChannelType(), ch.getDataType())
+              cube = Cube.CubeFactory(cubedim, ch.getChannelType(), ch.getDataType())
               cube.zeros()
 
               xmin,ymin = x,y

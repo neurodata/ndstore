@@ -12,23 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
-import os
-import urllib
-import urllib2
-from contextlib import closing
-import numpy as np
-from PIL import Image
-from operator import sub, add, mul, div
-import boto3
-import botocore
-import blosc
-
 import django
 django.setup()
 from django.conf import settings
 
-from cube import Cube
+from spdb.ndcube.cube import Cube
 from ndtype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, ANNOTATION_CHANNELS, ND_dtypetonp, UINT8, UINT16, UINT32, SUPERCUBESIZE
 import ndwsrest
 import spatialdb
@@ -37,7 +25,7 @@ from ndqueue.uploadqueue import UploadQueue
 
 from ndwserror import NDWSError
 import logging
-logger=logging.getLogger("neurodata")
+logger = logging.getLogger("neurodata")
 
 # KL TODO Load this from settings
 TILE_SIZE = 1024

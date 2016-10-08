@@ -12,13 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import numpy as np
 import json
 import urllib2
 from lxml import etree
 from django.conf import settings
 from ndtype import ZSLICES
-from ndwserror import NDWSError
+from webservices.ndwserror import NDWSError
 import logging
 logger = logging.getLogger("neurodata")
 

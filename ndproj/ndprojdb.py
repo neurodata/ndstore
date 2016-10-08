@@ -21,7 +21,7 @@ from ndchannel import NDChannel
 from nduser.models import Dataset
 from nduser.models import Token
 
-from ndwserror import NDWSError
+from webservices.ndwserror import NDWSError
 import logging
 logger=logging.getLogger("neurodata")
 

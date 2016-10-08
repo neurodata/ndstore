@@ -17,15 +17,11 @@ import networkx as nx
 from contextlib import closing
 from operator import add, sub
 import tempfile
-
-import ndproject
-import ndprojdb
-import ramondb
-import annotation
-import ndchannel
+from ndproj import ndprojdb
+from ramon import annotation, ramondb
 import spatialdb
 
-from ndwserror import NDWSError
+from webservices.ndwserror import NDWSError
 import logging
 logger = logging.getLogger("neurodata")
 

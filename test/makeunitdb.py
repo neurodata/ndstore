@@ -28,7 +28,7 @@ from nduser.models import Dataset
 from nduser.models import Token
 from nduser.models import Channel
 
-from ndprojdb import NDProjectsDB
+from ndproj.ndprojdb import NDProjectsDB
 from ndtype import ZSLICES, ANNOTATION, NOT_PROPAGATED, READONLY_FALSE, UINT32, ND_VERSION, MYSQL, CASSANDRA, RIAK, PUBLIC_TRUE
 
 import site_to_test

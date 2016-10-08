@@ -15,18 +15,13 @@
 import re
 import numpy as np
 import cStringIO
-from PIL import Image
 import pylibmc
 import math
 from contextlib import closing
-import django
-
-import restargs
 import spatialdb
-import ndprojdb
-import ndwsrest
-
-from ndwserror import NDWSError
+from ndproj import ndprojdb
+from webservices import ndwsrest
+from webservices.ndwserror import NDWSError
 import logging
 logger=logging.getLogger("neurodata")
 

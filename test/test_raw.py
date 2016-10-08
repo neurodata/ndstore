@@ -12,19 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import urllib2
-import h5py
-import tempfile
-import random
 import numpy as np
-from PIL import Image
-from StringIO import StringIO
-
 import makeunitdb
 from ndtype import IMAGE, UINT8, UINT16
 from params import Params
 from postmethods import postNPZ, getRAW
-import kvengine_to_test
 import site_to_test
 SITE_HOST = site_to_test.site
 

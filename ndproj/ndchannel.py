@@ -16,8 +16,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from ndtype import *
 from nduser.models import Channel
-from ndobject import NDObject
-from ndwserror import NDWSError
+from ndproj.nndobject import NDObject
+from webservices.ndwserror import NDWSError
 import logging
 logger=logging.getLogger("neurodata")
 

@@ -14,7 +14,7 @@
 
 import re
 
-import annotation
+from ramon import annotation
 
 from ndtype import ISOTROPIC
 

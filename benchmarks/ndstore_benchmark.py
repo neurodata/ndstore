@@ -20,18 +20,13 @@ import argparse
 import numpy as np
 import multiprocessing
 import math
-from contextlib import closing
 import time
 import json
 import blosc
 from operator import add, sub, mul
-from functools import reduce
-
 sys.path += [os.path.abspath('../django/')]
 import ND.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
-
-from ndlib import MortonXYZ
 from ndtype import ND_dtypetonp
 from restutil import getURL, getURLTimed, generateURLBlosc, putURLTimed
 

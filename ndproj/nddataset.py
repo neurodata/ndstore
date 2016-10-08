@@ -19,7 +19,7 @@ from django.conf import settings
 from ndobject import NDObject
 from ndtype import *
 from nduser.models import Dataset
-from ndwserror import NDWSError
+from webservices.ndwserror import NDWSError
 from vector3d import Vector3D
 import logging
 logger=logging.getLogger("neurodata")

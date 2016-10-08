@@ -14,15 +14,11 @@
 
 import MySQLdb
 from contextlib import closing
-
 from django.conf import settings
 from ndproject import NDProject
 from ndchannel import NDChannel
-
-import annotation
 from ndtype import *
-
-from ndwserror import NDWSError
+from webservices.ndwserror import NDWSError
 import logging
 logger=logging.getLogger("neurodata")
 
@@ -56,14 +52,14 @@ class MySQLProjectDB:
           conn.commit()
         
         except MySQLdb.Error, e:
-          logger.error("Failed to create database for new project {}: {}. sql={}".format(e.args[0], e.args[1], sql))
-          raise NDWSError("Failed to create database for new project {}: {}. sql={}".format(e.args[0], e.args[1], sql))
+          logger.error("Failed to create database for new project {}: {}.".format(e.args[0], e.args[1]))
+          raise NDWSError("Failed to create database for new project {}: {}.".format(e.args[0], e.args[1]))
   
 
   def newNDChannel(self, channel_name):
     """Create the tables for a channel"""
 
-    ch = NDChannel(self.pr, channel_name)
+    ch = NDChannel.fromName(self.pr, channel_name)
 
     # connect to the database
     with closing(MySQLdb.connect(host = self.pr.getDBHost(), user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = self.pr.getDBName(), connect_timeout=1)) as conn:
@@ -127,7 +123,7 @@ class MySQLProjectDB:
   def deleteNDChannel(self, channel_name):
     """Delete the tables for this channel"""
     
-    ch = NDChannel(self.pr, channel_name)
+    ch = NDChannel.fromName(self.pr, channel_name)
     table_list = []
 
     if ch.getChannelType() in ANNOTATION_CHANNELS:

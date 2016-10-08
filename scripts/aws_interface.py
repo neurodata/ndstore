@@ -19,8 +19,6 @@ import os
 import sys
 from contextlib import closing
 import argparse
-import blosc
-from operator import mul
 import csv
 sys.path.append(os.path.abspath('../django'))
 import ND.settings

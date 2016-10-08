@@ -12,24 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
-import os
+
 import numpy as np
-import urllib, urllib2
 from contextlib import closing
-import cStringIO
-import logging
 import MySQLdb
 from PIL import Image
-import zlib
-
 from ndcube.cube import Cube
 import spatialdb
-from ndproj import NDProjectsDB
+from ndproj.ndprojdb import NDProjectsDB
 from ndctypelib import XYZMorton, MortonXYZ, isotropicBuild_ctype, addDataToZSliceStack_ctype, addDataToIsotropicStack_ctype
-import annotation
 from ndtype import ZSLICES, ISOTROPIC, ANNOTATION_CHANNELS, IMAGE_CHANNELS, TIMESERIES_CHANNELS, PROPAGATED, NOT_PROPAGATED, ND_dtypetonp
-
 from ndwserror import NDWSError
 import logging
 logger=logging.getLogger("neurodata")
@@ -131,9 +123,9 @@ def buildAnnoStack ( proj, ch, res=None ):
       # choose constants that work for all resolutions. 
       # recall that cube size changes from 128x128x16 to 64*64*64 with res
       if scaling == ZSLICES:
-        outdata = np.zeros ( [ zcubedim*4, ycubedim*2, xcubedim*2 ], dtype=ND_dtypetonp.get(ch.getDataType()))
+        outdata = np.zeros([zcubedim*4, ycubedim*2, xcubedim*2], dtype=ND_dtypetonp.get(ch.getDataType()))
       elif scaling == ISOTROPIC:
-        outdata = np.zeros ( [ zcubedim*2,  ycubedim*2, xcubedim*2 ], dtype=ND_dtypetonp.get(ch.getDataType()))
+        outdata = np.zeros([zcubedim*2, ycubedim*2, xcubedim*2], dtype=ND_dtypetonp.get(ch.getDataType()))
       else:
         logger.error("Invalid scaling option in project = {}".format(scaling) )
         raise NDWSError("Invalid scaling option in project = {}".format(scaling)) 
@@ -179,9 +171,9 @@ def buildAnnoStack ( proj, ch, res=None ):
 
         # adjust to output corner for scale.
         if scaling == ZSLICES:
-          outcorner = [ xyzout[0]*xcubedim/2, xyzout[1]*ycubedim/2, xyzout[2]*zcubedim ]
+          outcorner = [xyzout[0]*xcubedim/2, xyzout[1]*ycubedim/2, xyzout[2]*zcubedim]
         elif scaling == ISOTROPIC:
-          outcorner = [ xyzout[0]*xcubedim/2, xyzout[1]*ycubedim/2, xyzout[2]*zcubedim/2 ]
+          outcorner = [xyzout[0]*xcubedim/2, xyzout[1]*ycubedim/2, xyzout[2]*zcubedim/2]
 
         #  Data stored in z,y,x order dims in x,y,z
         outdim = outdata.shape[::-1]
@@ -263,7 +255,7 @@ def buildImageStack(proj, ch, res=None):
                   slimage = Image.frombuffer('I;16', (xcubedim*2,ycubedim*2), data.flatten(), 'raw', 'I;16', 0, 1)
                 # 32-bit float option
                 elif olddata.dtype == np.float32:
-                  slimage = Image.frombuffer ( 'F', (xcubedim*2,ycubedim*2), data.flatten(), 'raw', 'F', 0, 1 )
+                  slimage = Image.frombuffer('F', (xcubedim * 2, ycubedim * 2), data.flatten(), 'raw', 'F', 0, 1)
                 # 32 bit RGBA data
                 elif olddata.dtype == np.uint32:
                   slimage = Image.fromarray( data, "RGBA" )
@@ -277,7 +269,7 @@ def buildImageStack(proj, ch, res=None):
                   newdata[sl,:,:] = np.left_shift(tempdata[:,:,3], 24, dtype=np.uint32) | np.left_shift(tempdata[:,:,2], 16, dtype=np.uint32) | np.left_shift(tempdata[:,:,1], 8, dtype=np.uint32) | np.uint32(tempdata[:,:,0])
 
               zidx = XYZMorton ([x,y,z])
-              cube = Cube.getCube(cubedim, ch.getChannelType(), ch.getDataType())
+              cube = Cube.CubeFactory(cubedim, ch.getChannelType(), ch.getDataType())
               cube.zeros()
 
               cube.data = newdata

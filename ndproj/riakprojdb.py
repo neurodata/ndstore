@@ -13,11 +13,9 @@
 # limitations under the License.
 
 import riak
-
 from ndchannel import NDChannel
 from ndproject import NDProject
-
-from ndwserror import NDWSError
+from webservices.ndwserror import NDWSError
 import logging
 logger=logging.getLogger("neurodata")
 
@@ -38,7 +36,7 @@ class RiakProjDB:
   def newNDChannel(self, project_name, channel_name):
     """Create the tables for a channel"""
     
-    ch = NDChannel(self.pr, channel_name)
+    ch = NDChannel.fromName(self.pr, channel_name)
     pass 
     # TODO KL figure out new schema for Riak
     # bucket = rcli.bucket_type("nd{}".format(proj.getProjectType())).bucket(proj.getDBName())
@@ -61,7 +59,7 @@ class RiakProjDB:
   def deleteNDChannel(self, project_name, channel_name):
     """Delete the tables for a channel"""
     
-    ch = NDChannel(self.pr, channel_name)
+    ch = NDChannel.fromName(self.pr, channel_name)
     # table_list = []
     # TODO KL 
     pass

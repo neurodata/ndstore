@@ -17,7 +17,7 @@ import redis
 from ndproject import NDProject
 from ndchannel import NDChannel
 
-from ndwserror import NDWSError
+from webservices.ndwserror import NDWSError
 import logging
 logger=logging.getLogger("neurodata")
 

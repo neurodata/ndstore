@@ -19,14 +19,11 @@ import cStringIO
 import pylibmc
 import math
 from contextlib import closing
-
-import restargs
 import spatialdb
-import ndprojdb
-import ndwsrest
+from ndproj import ndprojdb
+from webservices import ndwsrest
 import mcfc
-
-from ndwserror import NDWSError
+from webservices.ndwserror import NDWSError
 import logging
 logger=logging.getLogger("neurodata")
 

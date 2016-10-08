@@ -18,12 +18,13 @@ from nduser.models import Dataset
 from nduser.models import Project
 from nduser.models import Channel
 from nduser.models import Token
+from ndlib.ndtype import *
 from ndobject import NDObject
 from nddataset import NDDataset
 from ndchannel import NDChannel
-from ndwserror import NDWSError
+from webservices.ndwserror import NDWSError
 import logging
-logger=logging.getLogger("neurodata")
+logger = logging.getLogger("neurodata")
 
 class NDProject(NDObject):
 
@@ -163,7 +164,7 @@ class NDProject(NDObject):
     return self.pr.project_description
 
   @project_description.setter
-  def project_description(self, values):
+  def project_description(self, value):
     self.pr.project_description = value
 
   @property

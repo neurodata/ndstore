@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from django.core.exceptions import ObjectDoesNotExist
 from nduser.models import Token
 from ndproject import NDProject
 from ndobject import NDObject

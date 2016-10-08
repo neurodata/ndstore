@@ -12,22 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import django
 import re
 import numpy as np
 import cStringIO
-import math
 from contextlib import closing
 from PIL import Image
-
-import restargs
 import spatialdb
-import ndprojdb
-import ndwsrest
-import mcfc
-
-
-from ndwserror import NDWSError
+from ndproj import ndprojdb
+from webservices import ndwsrest
+from webservices.ndwserror import NDWSError
 import logging
 logger=logging.getLogger("neurodata")
 

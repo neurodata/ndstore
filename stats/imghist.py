@@ -12,24 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
-import os
 import numpy as np
-import urllib, urllib2
-import cStringIO
 from contextlib import closing
-import zlib
-
-# sys.path += [os.path.abspath('../django')]
-# import ND.settings
-# os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
-# from django.conf import settings
-
 import django
 django.setup()
-
-from ndprojdb import NDProjectsDB
+from ndproj.ndprojdb import NDProjectsDB
 from spatialdb import SpatialDB
+import logging
+logger = logging.get("neurodata")
 
 """ Determine a histogram from an image stack """
 

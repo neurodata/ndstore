@@ -33,17 +33,16 @@ from contextlib import closing
 from libtiff import TIFF
 from operator import sub, add
 from libtiff import TIFFfile, TIFFimage
-
 import restargs
-import spatialdb
-import ramondb
-import ndprojdb
-import ndchannel
-import h5ann
-import jsonann 
-import h5projinfo
-import jsonprojinfo
-import annotation
+from ndlib.ndtype import *
+from spdb.spatialdb import SpatialDB
+from ramon.ramondb import RamonDB
+from ndproj.ndprojdb import NDProjectsDB
+from ndproj.ndchannel import NDChannel
+from ramon import h5ann
+from ndproj import  h5projinfo
+from ndproj import jsonprojinfo
+from ramon.annotation import *
 import mcfc
 from ndctypelib import filter_ctype_OMP
 import ndwsskel
@@ -53,7 +52,7 @@ from ndtype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, ANNOTATION_CHANNELS, NOT
 
 from ndwserror import NDWSError, IncorrectSyntaxError
 import logging
-logger=logging.getLogger("neurodata")
+logger = logging.getLogger("neurodata")
 
 
 def cutout (imageargs, ch, proj, db):
@@ -377,7 +376,7 @@ def timeDiff ( chanargs, proj, db):
 
     channel_data = cutout( imageargs, ch, proj, db ).data
     channel_data = np.negative(np.diff(np.float32(channel_data), axis=0))
-    cubedata = np.zeros ( (len(channel_list),)+channel_data.shape, dtype=np.float32 )
+    cubedata = np.zeros((len(channel_list),)+channel_data.shape, dtype=np.float32)
     cubedata[0,:] = channel_data
 
     # if one channel convert 3-d to 4-d array
@@ -532,7 +531,7 @@ def imgSlice(webargs, proj, db):
   if window_args is not None:
     try:
       window_range = [int(i) for i in re.match("window/(\d+),(\d+)/", window_args).groups()]
-    except:
+    except Exception as e:
       logger.error ("Illegal window arguments={}. Error={}".format(imageargs,e))
       raise NDWSError ("Illegal window arguments={}. Error={}".format(imageargs,e))
   else:
@@ -574,7 +573,7 @@ def imgAnno ( service, chanargs, proj, db, rdb ):
   """Return a plane fileobj.read() for a single objects"""
 
   [channel, service, annoidstr, imageargs] = chanargs.split('/', 3)
-  ch = ndprojdb.NDChannel(proj,channel)
+  ch = NDChannel.fromName(proj, channel)
   annoids = [int(x) for x in annoidstr.split(',')]
 
   # retrieve the annotation 
@@ -584,7 +583,7 @@ def imgAnno ( service, chanargs, proj, db, rdb ):
       logger.error("No annotation found at identifier = {}".format(annoids[0]))
       raise NDWSError ("No annotation found at identifier = {}".format(annoids[0]))
     else:
-      iscompound = True if anno.__class__ in [ annotation.AnnNeuron ] else False; 
+      iscompound = True if anno.__class__ in [AnnNeuron] else False;
   else:
     iscompound = False
 
@@ -613,7 +612,7 @@ def imgAnno ( service, chanargs, proj, db, rdb ):
     args = restargs.BrainRestArgs ();
     args.cutoutArgs ( cutoutargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
-    logger.error("REST Arguments %s failed: %s" % (cutoutrags,e))
+    logger.error("REST Arguments %s failed: %s" % (chanargs,e))
     raise NDWSError(e.value)
 
   # Extract the relevant values
@@ -632,11 +631,11 @@ def imgAnno ( service, chanargs, proj, db, rdb ):
     cb = db.annoCutout ( ch, dataids, resolution, corner, dim, None )
 
   # reshape to 2-d
-  if service=='xy':
+  if service == 'xy':
     img = cb.xyImage ( )
-  elif service=='xz':
+  elif service == 'xz':
     img = cb.xzImage ( proj.datasetcfg.zscale[resolution] )
-  elif service=='yz':
+  elif service == 'yz':
     img = cb.yzImage (  proj.datasetcfg.zscale[resolution] )
 
   fileobj = cStringIO.StringIO ( )
@@ -648,7 +647,7 @@ def annId ( chanargs, proj, db ):
   """Return the annotation identifier of a voxel"""
 
   [channel, service, imageargs] = chanargs.split('/',2)
-  ch = ndprojdb.NDChannel(proj,channel)
+  ch = NDChannel.fromName(proj, channel)
   # Perform argument processing
   (resolution, voxel) = restargs.voxel(imageargs, proj.datasetcfg)
   # Get the identifier
@@ -658,7 +657,7 @@ def listIds ( chanargs, proj, db ):
   """Return the list of annotation identifiers in a region"""
   
   [channel, service, imageargs] = chanargs.split('/', 2)
-  ch = ndprojdb.NDChannel(proj,channel)
+  ch = NDChannel.fromName(proj,channel)
 
   # Perform argument processing
   try:
@@ -862,11 +861,11 @@ def getCutout ( webargs ):
   [channel, service, chanargs] = webargs.split('/', 2)
 
   # get the project 
-  with closing ( ndprojdb.NDProjectsDB() ) as projdb:
+  with closing (NDProjectsDB()) as projdb:
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( spatialdb.SpatialDB(proj) ) as db:
+  with closing (SpatialDB(proj)) as db:
     return selectService ( service, webargs, proj, db )
 
 
@@ -875,11 +874,11 @@ def putCutout ( webargs, postdata ):
 
   [ token, rangeargs ] = webargs.split('/',1)
   # get the project 
-  with closing ( ndprojdb.NDProjectsDB() ) as projdb:
+  with closing (NDProjectsDB()) as projdb:
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( spatialdb.SpatialDB(proj) ) as db:
+  with closing (SpatialDB(proj)) as db:
     return selectPost ( rangeargs, proj, db, postdata )
 
 
@@ -924,12 +923,12 @@ def getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution=None, c
   h5anno = h5ann.AnnotationtoH5 ( anno, h5f )
 
   # only return data for annotation types that have data
-  if anno.__class__ in [ annotation.AnnSeed ] and dataoption != AR_NODATA: 
+  if anno.__class__ in [AnnSeed] and dataoption != AR_NODATA:
     logger.error("No data associated with annotation type %s" % ( anno.__class__))
     raise NDWSError ("No data associated with annotation type %s" % ( anno.__class__))
 
   # determine if it is a compound type (NEURON) and get the list of relevant segments
-  if anno.__class__ in [ annotation.AnnNeuron ] and dataoption != AR_NODATA:
+  if anno.__class__ in [AnnNeuron] and dataoption != AR_NODATA:
     dataids = rdb.getSegments ( ch, annoid ) 
   else:
     dataids = [anno.annid]
@@ -955,7 +954,7 @@ def getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution=None, c
   elif dataoption == AR_CUTOUT:
 
     # cutout the data with the and remap for neurons.
-    if anno.__class__ in [ annotation.AnnNeuron ] and dataoption != AR_NODATA:
+    if anno.__class__ in [AnnNeuron] and dataoption != AR_NODATA:
       cb = db.annoCutout(ch, dataids, resolution, corner, dim, annoid)
     else:
       # don't need to remap single annotations
@@ -969,7 +968,7 @@ def getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution=None, c
   elif dataoption == AR_TIGHTCUTOUT:
  
     # determine if it is a compound type (NEURON) and get the list of relevant segments
-    if anno.__class__ in [ annotation.AnnNeuron ] and dataoption != AR_NODATA:
+    if anno.__class__ in [AnnNeuron] and dataoption != AR_NODATA:
       dataids = rdb.getSegments(ch, annoid) 
     else:
       dataids = [anno.annid]
@@ -984,7 +983,7 @@ def getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution=None, c
         raise NDWSError ("Cutout region is inappropriately large.  Dimension: %s,%s,%s" % (bbdim[0],bbdim[1],bbdim[2]))
 
     # Call the cuboids interface to get the minimum amount of data
-    if anno.__class__ == annotation.AnnNeuron:
+    if anno.__class__ == AnnNeuron:
       offsets = db.annoCubeOffsets(ch, dataids, resolution, annoid)
     else:
       offsets = db.annoCubeOffsets(ch, [annoid], resolution)
@@ -1006,7 +1005,7 @@ def getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution=None, c
   elif dataoption==AR_BOUNDINGBOX:
 
     # determine if it is a compound type (NEURON) and get the list of relevant segments
-    if anno.__class__ in [ annotation.AnnNeuron ] and dataoption != AR_NODATA:
+    if anno.__class__ in [AnnNeuron] and dataoption != AR_NODATA:
       dataids = rdb.getSegments(ch, annoid) 
     else:
       dataids = [anno.annid]
@@ -1021,7 +1020,7 @@ def getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution=None, c
   
     h5anno.mkCuboidGroup(resolution)
 
-    if anno.__class__ == annotation.AnnNeuron:
+    if anno.__class__ == AnnNeuron:
       offsets = db.annoCubeOffsets(ch, dataids, resolution, annoid)
     else:
       offsets = db.annoCubeOffsets(ch, [annoid], resolution)
@@ -1038,15 +1037,15 @@ def getAnnotation ( webargs ):
 
   # pattern for using contexts to close databases
   # get the project 
-  with closing ( ndprojdb.NDProjectsDB() ) as projdb:
+  with closing (NDProjectsDB()) as projdb:
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( spatialdb.SpatialDB(proj) ) as db:
-   with closing ( ramondb.RamonDB(proj) ) as rdb:
+  with closing (SpatialDB(proj)) as db:
+   with closing (RamonDB(proj)) as rdb:
 
     # Split the URL and get the args
-    ch = ndprojdb.NDChannel(proj, channel)
+    ch = NDChannel.fromName(proj, channel)
     option_args = otherargs.split('/', 2)
 
     # AB Added 20151011 
@@ -1185,12 +1184,12 @@ def getCSV ( webargs ):
 
   # pattern for using contexts to close databases
   # get the project 
-  with closing ( ndprojdb.NDProjectsDB() ) as projdb:
+  with closing (NDProjectsDB()) as projdb:
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( spatialdb.SpatialDB(proj) ) as db:
-   with closing ( ramondb.RamonDB(proj) ) as rdb:
+  with closing (SpatialDB(proj)) as db:
+   with closing (RamonDB(proj)) as rdb:
 
     # Make the HDF5 file
     # Create an in-memory HDF5 file
@@ -1222,11 +1221,11 @@ def getAnnotations ( webargs, postdata ):
 
   [ token, objectsliteral, otherargs ] = webargs.split ('/',2)
 
-  with closing ( ndprojdb.NDProjectsDB() ) as projdb:
+  with closing (NDProjectsDB()) as projdb:
     proj = projdb.loadToken ( token )
   
-  with closing ( spatialdb.SpatialDB(proj) ) as db:
-   with closing ( ramondb.RamonDB(proj) ) as rdb:
+  with closing (SpatialDB(proj)) as db:
+   with closing (RamonDB(proj)) as rdb:
   
     # Read the post data HDF5 and get a list of identifiers
     tmpinfile = tempfile.NamedTemporaryFile ( )
@@ -1283,8 +1282,8 @@ def getAnnotations ( webargs, postdata ):
           dataoption = AR_CUTOUT
 
           # Perform argument processing
-          brargs = restargs.BrainRestArgs ();
-          brargs.cutoutArgs ( cutout, proj.datsetcfg )
+          brargs = restargs.BrainRestArgs()
+          brargs.cutoutArgs(cutout, proj.datsetcfg)
 
           # Extract the relevant values
           corner = brargs.getCorner()
@@ -1340,16 +1339,16 @@ def putAnnotation ( webargs, postdata ):
 
   [token, channel, optionsargs] = webargs.split('/',2)
   
-  with closing ( ndprojdb.NDProjectsDB() ) as projdb:
+  with closing (NDProjectsDB()) as projdb:
     proj = projdb.loadToken ( token )
   
-  ch = ndprojdb.NDChannel(proj, channel)
+  ch = NDChannel.fromName(proj, channel)
   if ch.getChannelType() not in ANNOTATION_CHANNELS:
     logger.error("Channel {} does not support annotations".format(ch.getChannelName()))
     raise NDWSError("Channel {} does not support annotations".format(ch.getChannelName()))
 
-  with closing ( spatialdb.SpatialDB(proj) ) as db:
-   with closing ( ramondb.RamonDB(proj) ) as rdb:
+  with closing (SpatialDB(proj)) as db:
+   with closing (RamonDB(proj)) as rdb:
 
     # Don't write to readonly channels
     if ch.getReadOnly() == READONLY_TRUE:
@@ -1372,24 +1371,24 @@ def putAnnotation ( webargs, postdata ):
       # create annotation object by type 
       annotype = annobjdict[ annobjdict.keys()[0] ]['ann_type'] 
 
-      if annotype == annotation.ANNO_ANNOTATION:
-        anno = annotation.Annotation( rdb, ch ) 
-      elif annotype == annotation.ANNO_SYNAPSE:
-        anno = annotation.AnnSynapse( rdb, ch ) 
-      elif annotype == annotation.ANNO_SEED:
-        anno = annotation.AnnSeed( rdb, ch ) 
-      elif annotype == annotation.ANNO_SEGMENT:
-        anno = annotation.AnnSegment( rdb, ch )
-      elif annotype == annotation.ANNO_NEURON:
-        anno = annotation.AnnNeuron( rdb, ch )
-      elif annotype == annotation.ANNO_ORGANELLE:
-        anno = annotation.AnnOrganelle( rdb, ch )
-      elif annotype == annotation.ANNO_NODE:
-        anno = annotation.AnnNode( rdb, ch )
-      elif annotype == annotation.ANNO_SKELETON:
-        anno = annotation.AnnSkeleton( rdb, ch )
-      elif annotype == annotation.ANNO_ROI:
-        anno = annotation.AnnROI( rdb, ch )
+      if annotype == ANNO_ANNOTATION:
+        anno = Annotation( rdb, ch )
+      elif annotype == ANNO_SYNAPSE:
+        anno = AnnSynapse( rdb, ch )
+      elif annotype == ANNO_SEED:
+        anno = AnnSeed( rdb, ch )
+      elif annotype == ANNO_SEGMENT:
+        anno = AnnSegment( rdb, ch )
+      elif annotype == ANNO_NEURON:
+        anno = AnnNeuron( rdb, ch )
+      elif annotype == ANNO_ORGANELLE:
+        anno = AnnOrganelle( rdb, ch )
+      elif annotype == ANNO_NODE:
+        anno = AnnNode( rdb, ch )
+      elif annotype == ANNO_SKELETON:
+        anno = AnnSkeleton( rdb, ch )
+      elif annotype == ANNO_ROI:
+        anno = AnnROI( rdb, ch )
       
       anno.fromDict( annobjdict[ annobjdict.keys()[0] ] )
 
@@ -1455,13 +1454,13 @@ def putAnnotation ( webargs, postdata ):
     
               try:
     
-                if anno.__class__ in [ annotation.AnnNeuron, annotation.AnnSeed ] and ( idgrp.get('VOXELS') or idgrp.get('CUTOUT')):
+                if anno.__class__ in [AnnNeuron, AnnSeed] and ( idgrp.get('VOXELS') or idgrp.get('CUTOUT')):
                   logger.warning ("Cannot write to annotation type {}".format(anno.__class__))
-                  raise OCPCAError ("Cannot write to annotation type {}".format(anno.__class__))
+                  raise NDWSError ("Cannot write to annotation type {}".format(anno.__class__))
     
                 if 'update' in options and 'dataonly' in options:
                   logger.warning ("Illegal combination of options. Cannot use udpate and dataonly together")
-                  raise OCPCAError ("Illegal combination of options. Cannot use udpate and dataonly together")
+                  raise NDWSError ("Illegal combination of options. Cannot use udpate and dataonly together")
     
                 elif not 'dataonly' in options and not 'reduce' in options:
                   # Put into the database
@@ -1491,7 +1490,7 @@ def putAnnotation ( webargs, postdata ):
                   # Check that the voxels have a conforming size:
                   if voxels.shape[1] != 3:
                     logger.warning ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
-                    raise OCPCAError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
+                    raise NDWSError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
     
                   exceptions = db.annotate ( ch, anno.annid, resolution, voxels, conflictopt )
     
@@ -1501,7 +1500,7 @@ def putAnnotation ( webargs, postdata ):
                   # Check that the voxels have a conforming size:
                   if voxels.shape[1] != 3:
                     logger.warning ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
-                    raise OCPCAError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
+                    raise NDWSError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
                   db.shave ( ch, anno.annid, resolution, voxels )
     
                 # Is it dense data?
@@ -1576,16 +1575,16 @@ def getNIFTI ( webargs ):
     
   [token, channel, optionsargs] = webargs.split('/',2)
 
-  with closing ( ndprojdb.NDProjectsDB() ) as projdb:
+  with closing (NDProjectsDB()) as projdb:
 
     proj = projdb.loadToken ( token )
   
-  with closing ( spatialdb.SpatialDB(proj) ) as db:
+  with closing (SpatialDB(proj)) as db:
 
-    ch = ndprojdb.NDChannel(proj, channel)
+    ch = NDChannel.fromName(proj, channel)
 
     # Make a named temporary file for the nii file
-    with closing (tempfile.NamedTemporaryFile(suffix='.nii')) as tmpfile:
+    with closing(tempfile.NamedTemporaryFile(suffix='.nii')) as tmpfile:
 
       ndwsnifti.queryNIFTI ( tmpfile, ch, db, proj )
 
@@ -1598,12 +1597,12 @@ def putNIFTI ( webargs, postdata ):
     
   [token, channel, optionsargs] = webargs.split('/',2)
 
-  with closing ( ndprojdb.NDProjectsDB() ) as projdb:
+  with closing (NDProjectsDB()) as projdb:
     proj = projdb.loadToken ( token )
   
-  with closing ( spatialdb.SpatialDB(proj) ) as db:
+  with closing (SpatialDB(proj)) as db:
 
-    ch = ndprojdb.NDChannel(proj, channel)
+    ch = NDChannel.fromName(proj, channel)
     
     # Don't write to readonly channels
     if ch.getReadOnly() == READONLY_TRUE:
@@ -1639,12 +1638,12 @@ def getSWC ( webargs ):
 
   [token, channel, service, rest] = webargs.split('/',3)
 
-  with closing ( ndprojdb.NDProjectsDB() ) as projdb:
+  with closing (NDProjectsDB()) as projdb:
     proj = projdb.loadToken ( token )
   
-  with closing ( ramondb.RamonDB(proj) ) as db:
+  with closing (RamonDB(proj)) as db:
 
-    ch = ndprojdb.NDChannel(proj, channel)
+    ch = NDChannel.fromName(proj, channel)
 
     # Make a named temporary file for the SWC
     with closing (tempfile.NamedTemporaryFile()) as tmpfile:
@@ -1654,7 +1653,7 @@ def getSWC ( webargs ):
         skelids = map ( int, rest.rstrip('/').split(',') )
       # otherwise get all skeletons
       else:
-        skelids=db.getKVQuery( ch, 'ann_type', annotation.ANNO_SKELETON )
+        skelids=db.getKVQuery(ch, 'ann_type', ANNO_SKELETON)
 
       ndwsskel.querySWC ( tmpfile, ch, db, proj, skelids )
 
@@ -1668,12 +1667,12 @@ def putSWC ( webargs, postdata ):
 
   [token, channel, service, optionsargs] = webargs.split('/',3)
 
-  with closing ( ndprojdb.NDProjectsDB() ) as projdb:
+  with closing (NDProjectsDB()) as projdb:
     proj = projdb.loadToken ( token )
   
-  with closing ( ramondb.RamonDB(proj) ) as rdb:
+  with closing (RamonDB(proj)) as rdb:
 
-    ch = ndprojdb.NDChannel(proj, channel)
+    ch = NDChannel.fromName(proj, channel)
     
     # Don't write to readonly channels
     if ch.getReadOnly() == READONLY_TRUE:
@@ -1705,12 +1704,12 @@ def queryAnnoObjects ( webargs, postdata=None ):
     logger.error("Wrong arguments {}. {}".format(webargs, e))
     raise NDWSError("Wrong arguments {}. {}".format(webargs, e))
 
-  with closing ( ndprojdb.NDProjectsDB() ) as projdb:
+  with closing (NDProjectsDB()) as projdb:
     proj = projdb.loadToken ( token )
 
-  with closing ( spatialdb.SpatialDB(proj) ) as db:
-   with closing ( ramondb.RamonDB(proj) ) as rdb:
-    ch = ndprojdb.NDChannel(proj,channel)
+  with closing (SpatialDB(proj)) as db:
+   with closing (RamonDB(proj)) as rdb:
+    ch = NDChannel.fromName(proj,channel)
     annoids = rdb.getAnnoObjects(ch, restargs.split('/'))
 
     # We have a cutout as well
@@ -1757,14 +1756,14 @@ def deleteAnnotation ( webargs ):
   [ token, channel, otherargs ] = webargs.split ('/',2)
 
   # pattern for using contexts to close databases get the project 
-  with closing ( ndprojdb.NDProjectsDB() ) as projdb:
+  with closing (NDProjectsDB()) as projdb:
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( spatialdb.SpatialDB(proj) ) as db:
-   with closing ( ramondb.RamonDB(proj) ) as rdb:
+  with closing (SpatialDB(proj)) as db:
+   with closing (RamonDB(proj)) as rdb:
   
-    ch = ndprojdb.NDChannel(proj, channel)
+    ch = NDChannel.fromName(proj, channel)
     
     # Don't write to readonly channels
     if ch.getReadOnly() == READONLY_TRUE:
@@ -1812,7 +1811,7 @@ def jsonInfo ( webargs ):
   [ token, projinfoliteral, rest] = webargs.split ('/',2)
 
   # get the project 
-  with closing ( ndproj.NDProjectsDB() ) as projdb:
+  with closing (NDProjectsDB()) as projdb:
     proj = projdb.loadToken ( token )
     
     return jsonprojinfo.jsonInfo(proj)
@@ -1829,7 +1828,7 @@ def xmlInfo ( webargs ):
     raise NDWSError("Bad URL {}".format(webargs))
   
   # get the project 
-  with closing ( ndproj.NDProjectsDB() ) as projdb:
+  with closing (NDProjectsDB()) as projdb:
     proj = projdb.loadToken ( token )
 
     return jsonprojinfo.xmlInfo(token, proj)
@@ -1840,11 +1839,11 @@ def projInfo ( webargs ):
   [ token, projinfoliteral, rest ] = webargs.split ('/',2)
 
   # get the project 
-  with closing ( ndprojdb.NDProjectsDB() ) as projdb:
+  with closing (NDProjectsDB()) as projdb:
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( spatialdb.SpatialDB(proj) ) as db:
+  with closing (SpatialDB(proj)) as db:
 
     # Create an in-memory HDF5 file
     tmpfile = tempfile.NamedTemporaryFile ()
@@ -1866,11 +1865,11 @@ def chanInfo ( webargs ):
 
   # pattern for using contexts to close databases
   # get the project 
-  with closing ( ndprojdb.NDProjectsDB() ) as projdb:
+  with closing (NDProjectsDB()) as projdb:
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( spatialdb.SpatialDB(proj) ) as db:
+  with closing (SpatialDB(proj)) as db:
     return jsonprojinfo.jsonChanInfo( proj, db )
 
 
@@ -1879,12 +1878,12 @@ def reserve ( webargs ):
 
   [token, channel, reservestr, cnt, other] = webargs.split ('/', 4)
 
-  with closing ( ndprojdb.NDProjectsDB() ) as projdb:
+  with closing (NDProjectsDB()) as projdb:
     proj = projdb.loadToken ( token )
 
-  with closing ( ramondb.RamonDB(proj) ) as rdb:
+  with closing (RamonDB(proj)) as rdb:
 
-    ch = ndprojdb.NDChannel(proj,channel)
+    ch = NDChannel.fromName(proj,channel)
     if ch.getChannelType() not in ANNOTATION_CHANNELS:
       logger.error("Illegal project type for reserve.")
       raise NDWSError("Illegal project type for reserve.")
@@ -1908,11 +1907,11 @@ def getField ( webargs ):
     logger.error("Illegal getField request.  Wrong number of arguments.")
     raise NDWSError("Illegal getField request.  Wrong number of arguments.")
 
-  with closing ( ndprojdb.NDProjectsDB() ) as projdb:
+  with closing (NDProjectsDB()) as projdb:
     proj = projdb.loadToken ( token )
 
-  with closing ( ramondb.RamonDB(proj) ) as rdb:
-    ch = ndprojdb.NDChannel(proj, channel)
+  with closing (RamonDB(proj)) as rdb:
+    ch = NDChannel.fromName(proj, channel)
     anno = rdb.getAnnotation(ch, annid)
 
     if anno is None:
@@ -1931,11 +1930,11 @@ def setField ( webargs ):
     logger.error("Illegal setField request. Wrong number of arguments. Web Args: {}".format(webargs))
     raise NDWSError("Illegal setField request. Wrong number of arguments. Web Args:{}".format(webargs))
     
-  with closing ( ndprojdb.NDProjectsDB() ) as projdb:
+  with closing (NDProjectsDB()) as projdb:
     proj = projdb.loadToken ( token )
 
-  with closing ( ramondb.RamonDB(proj) ) as rdb:
-    ch = ndprojdb.NDChannel(proj, channel)
+  with closing (RamonDB(proj)) as rdb:
+    ch = NDChannel.fromName(proj, channel)
     
     # Don't write to readonly channels
     if ch.getReadOnly() == READONLY_TRUE:
@@ -1955,7 +1954,7 @@ def getPropagate (webargs):
     raise NDWSError("Illegal getPropagate request. Wrong format {}. {}".format(webargs, e))
 
   # pattern for using contexts to close databases
-  with closing(ndprojdb.NDProjectsDB()) as projdb:
+  with closing(NDProjectsDB()) as projdb:
     proj = projdb.loadToken(token)
     value_list = []
     
@@ -1972,12 +1971,12 @@ def setPropagate(webargs):
   # here value = {NOT_PROPAGATED, UNDER_PROPAGATION} not {PROPAGATED}
   try:
     (token, channel_list, value_list) = re.match("(\w+)/([\w+,]+)/setPropagate/([\d+,]+)/$", webargs).groups()
-  except:
+  except Exception as e:
     logger.error("Illegal setPropagate request. Wrong format {}. {}".format(webargs, e))
     raise NDWSError("Illegal setPropagate request. Wrong format {}. {}".format(webargs, e))
     
   # pattern for using contexts to close databases. get the project
-  with closing ( ndprojdb.NDProjectsDB() ) as projdb:
+  with closing (NDProjectsDB()) as projdb:
     proj = projdb.loadToken(token)
     
     for channel_name in channel_list.split(','):
@@ -2039,16 +2038,16 @@ def merge (webargs):
   # Validate ids. If ids do not exist raise errors
 
   # pattern for using contexts to close databases, get the project 
-  with closing ( ndprojdb.NDProjectsDB() ) as projdb:
+  with closing (NDProjectsDB()) as projdb:
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( ramondb.RamonDB(proj) ) as db:
+  with closing (RamonDB(proj)) as db:
   
     ch = proj.getChannelObj(channel_name)
     # Check that all ids in the id strings are valid annotation objects
     for curid in ids:
-      obj = rdb.getAnnotation(ch, curid)
+      obj = db.getAnnotation(ch, curid)
       if obj == None:
         logger.error("Invalid object id {} used in merge".format(curid))
         raise NDWSError("Invalid object id used in merge")
@@ -2067,13 +2066,13 @@ def merge (webargs):
 def publicDatasets ( self ):
   """Return a JSON formatted list of public datasets"""
 
-  with closing ( ndprojdb.NDProjectsDB() ) as projdb:
+  with closing (NDProjectsDB()) as projdb:
     return jsonprojinfo.publicDatasets ( projdb )
 
 def publicTokens ( self ):
   """Return a json formatted list of public tokens"""
   
-  with closing ( ndprojdb.NDProjectsDB() ) as projdb:
+  with closing (NDProjectsDB()) as projdb:
     return jsonprojinfo.publicTokens ( projdb )
 
 def exceptions ( webargs, ):
@@ -2083,11 +2082,11 @@ def exceptions ( webargs, ):
 
   # pattern for using contexts to close databases
   # get the project 
-  with closing ( ndprojdb.NDProjectsDB() ) as projdb:
+  with closing (NDProjectsDB()) as projdb:
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( spatialdb.SpatialDB(proj) ) as db:
+  with closing (SpatialDB(proj)) as db:
 
     # Perform argument processing
     try:
@@ -2148,18 +2147,18 @@ def minmaxProject ( webargs ):
  
   # pattern for using contexts to close databases
   # get the project 
-  with closing ( ndprojdb.NDProjectsDB() ) as projdb:
+  with closing (NDProjectsDB()) as projdb:
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( spatialdb.SpatialDB(proj) ) as db:
+  with closing (SpatialDB(proj)) as db:
 
     # maxproject data
     mpdata = None
 
     channel_name = channels[0]
 
-    ch = ndprojdb.NDChannel(proj,channel_name)
+    ch = NDChannel.fromName(proj,channel_name)
     cb = cutout (cutoutargs, ch, proj, db)
     FilterCube (cutoutargs, cb)
 
@@ -2221,11 +2220,11 @@ def mcFalseColor ( webargs ):
 
   # pattern for using contexts to close databases
   # get the project 
-  with closing ( ndprojdb.NDProjectsDB() ) as projdb:
+  with closing (NDProjectsDB()) as projdb:
     proj = projdb.loadToken ( token )
 
   # and the database and then call the db function
-  with closing ( spatialdb.SpatialDB(proj) ) as db:
+  with closing (SpatialDB(proj)) as db:
 
     mcdata = None
 
@@ -2237,7 +2236,6 @@ def mcFalseColor ( webargs ):
 
       imageargs = '{}/{}/{}'.format(channels[i],service,cutoutargs)
 
-      ch = ndprojdb.NDChannel(proj,channels[i])
       cb = imgSlice (imageargs, proj, db)
 
       if mcdata == None:

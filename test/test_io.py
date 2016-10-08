@@ -14,9 +14,6 @@
 
 import urllib2
 import cStringIO
-import sys
-import os
-import re
 import tempfile
 import h5py
 import random 
@@ -24,11 +21,7 @@ import csv
 import numpy as np
 import zlib
 import pytest
-from contextlib import closing
-
-from pytesthelpers import makeAnno
 import makeunitdb
-import kvengine_to_test
 import site_to_test
 SITE_HOST = site_to_test.site
 
