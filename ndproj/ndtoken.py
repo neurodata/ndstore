@@ -14,6 +14,7 @@
 
 from django.core.exceptions import ObjectDoesNotExist
 from nduser.models import Token
+from ndtype import *
 from ndproject import NDProject
 from ndobject import NDObject
 
@@ -21,11 +22,16 @@ class NDToken(NDObject):
 
   def __init__(self, tk):
     self._tk = tk
+  
+  @staticmethod
+  def public_list():
+    tokens = Token.objects.filter(public = PUBLIC_TRUE)
+    return [t.token_name for t in tokens]
 
   @classmethod
   def fromJson(cls, project_name, token):
     tk = Token(**cls.deserialize(token))
-    tk.project_id = project_name
+    self.project_name = project_name
     return cls(tk)
   
   @classmethod
@@ -36,7 +42,7 @@ class NDToken(NDObject):
     except ObjectDoesNotExist as e:
       raise
   
-  def save(self):
+  def create(self):
     try:
       self._tk.save()
     except Exception as e:
@@ -78,16 +84,16 @@ class NDToken(NDObject):
 
   @project_name.setter
   def project_name(self, value):
-    print value
+    
     self._tk.project_id = value
 
-  @property
-  def project(self):
-    return NDProject(self._tk.project)
+  # @property
+  # def project(self):
+    # return NDProject(self._tk.project)
   
-  @project.setter
-  def project(self, pr):
-    self._tk.project = pr.project_name
+  # @project.setter
+  # def project(self, pr):
+    # self._tk.project = pr.project_name
 
   @property
   def public(self):

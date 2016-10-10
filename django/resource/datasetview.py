@@ -33,7 +33,7 @@ class DatasetView(View):
         ds.user_id = request.user.id
       else:
         ds.user_id = User.objects.get(username='neurodata').id
-      ds.save()
+      ds.create()
       return HttpResponse()
     except Exception as e:
       return HttpResponseBadRequest()

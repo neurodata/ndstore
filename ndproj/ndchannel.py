@@ -37,7 +37,6 @@ class NDChannel(NDObject):
   def fromName(cls, pr, channel_name):
     try:
       pr = pr
-      import pdb; pdb.set_trace()
       ch = Channel.objects.get(channel_name = channel_name, project=pr.project_name)
       return cls(ch)
     except ObjectDoesNotExist as e:
@@ -50,7 +49,7 @@ class NDChannel(NDObject):
     ch.project_id = project_name
     return cls(ch)
 
-  def save(self):
+  def create(self):
     try:
       self.ch.save()
       self.db.newNDChannel(self.channel_name)
@@ -121,6 +120,38 @@ class NDChannel(NDObject):
   @property
   def channel_datatype(self):
     return self.ch.channel_datatype
+  
+  @property
+  def readonly(self):
+    return self.ch.readonly
+
+  @readonly.setter
+  def readonly(self, value):
+    self.ch.readonly = value
+
+  @property
+  def propagate(self):
+    return self.ch.propagate
+  
+  @propagate.setter
+  def propagate(self, value):
+    self.ch.propagate = value
+  
+  @property
+  def default(self):
+    return self.ch.default
+
+  @default.setter
+  def default(self, value):
+    self.ch.default = value
+
+  @property
+  def window_range(self):
+    return [int(self.ch.startwindow),int(self.ch.endwindow)]
+  
+  @property
+  def exceptions(self):
+    return self.ch.exceptions
 
   # Accessors
   def getChannelModel ( self ):
@@ -158,71 +189,71 @@ class NDChannel(NDObject):
 
   def getS3IndexTable (self, resolution):
     """Return the S3 index table"""
-    if self.pr.getKVEngine() == MYSQL:
+    if self.pr.kvengine == MYSQL:
       return '{}_res{}_s3index'.format(self.ch.channel_name, resolution)
 
   def getIdsTable (self):
-    if self.pr.getNDVersion() == '0.0':
+    if self.pr.nd_version == '0.0':
       return "ids"
     else:
       return "{}_ids".format(self.ch.channel_name)
 
   def getTable (self, resolution):
     """Return the appropriate table for the specified resolution"""
-    if self.pr.getNDVersion() == '0.0':
+    if self.pr.nd_version == '0.0':
       return "res{}".format(resolution)
     else:
-      if self.pr.getKVEngine() == MYSQL:
+      if self.pr.kvengine == MYSQL:
         return "{}_res{}".format(self.ch.channel_name, resolution)
-      elif self.pr.getKVEngine() == CASSANDRA:
+      elif self.pr.kvengine == CASSANDRA:
         return "{}_cuboids".format(self.ch.channel_name, 'cuboids')
-      elif self.pr.getKVEngine() == DYNAMODB:
+      elif self.pr.kvengine == DYNAMODB:
         return "{}_{}_cuboids".format(self.pr.getProjectName(), self.ch.channel_name)
 
   def getNearIsoTable (self, resolution):
     """Return the appropriate table for the specified resolution"""
-    if self.pr.getNDVersion() == '0.0':
+    if self.pr.nd_version == '0.0':
       return "res{}neariso".format(resolution)
     else:
       return "{}_res{}neariso".format(self.ch.channel_name, resolution)
 
   def getKVTable (self, resolution):
     """Return the appropriate KvPairs for the specified resolution"""
-    if self.pr.getNDVersion() == '0.0':
+    if self.pr.nd_version == '0.0':
       return "kvpairs{}".format(resolution)
     else:
       return "{}_kvpairs{}".format(self.ch.channel_name, resolution)
 
   def getRamonTable(self):
     """Return the name of the ramon table"""
-    if self.pr.getKVEngine() == MYSQL:
+    if self.pr.kvengine == MYSQL:
       return "{}_ramon".format(self.ch.channel_name)
     else:
-      logger.error("RAMON not support for KV Engine {}".format(self.pr.getKVEngine()))
-      raise NDWSError("RAMON not support for KV Engine {}".format(self.pr.getKVEngine()))
+      logger.error("RAMON not support for KV Engine {}".format(self.pr.kvengine))
+      raise NDWSError("RAMON not support for KV Engine {}".format(self.pr.kvengine))
 
   def getIdxTable (self, resolution):
     """Return the appropriate Index table for the specified resolution"""
-    if self.pr.getNDVersion() == '0.0':
+    if self.pr.nd_version == '0.0':
       return "idx{}".format(resolution)
     else:
-      if self.pr.getKVEngine() == MYSQL:
+      if self.pr.kvengine == MYSQL:
         return "{}_idx{}".format(self.ch.channel_name, resolution)
-      elif self.pr.getKVEngine() == CASSANDRA:
+      elif self.pr.kvengine == CASSANDRA:
         return "{}_indexes".format(self.ch.channel_name)
-      elif self.pr.getKVEngine() == DYNAMODB:
+      elif self.pr.kvengine == DYNAMODB:
         return "{}_{}_indexes".format(self.pr.getProjectName(), self.ch.channel_name)
 
   def getAnnoTable (self, anno_type):
     """Return the appropriate table for the specified type"""
-    if self.pr.getNDVersion() == '0.0':
+    if self.pr.nd_version == '0.0':
       return "{}".format(annotation.anno_dbtables[anno_type])
     else:
       return "{}_{}".format(self.ch.channel_name, annotation.anno_dbtables[anno_type])
 
   def getExceptionsTable (self, resolution):
     """Return the appropiate exceptions table for the specified resolution"""
-    if self.pr.getNDVersion() == '0.0':
+    if self.pr.nd_version == '0.0':
       return "exc{}".format(resolution)
     else:
       return "{}_exc{}".format(self.ch.channel_name, resolution)

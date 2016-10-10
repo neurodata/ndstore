@@ -37,7 +37,7 @@ class TokenView(View):
         tk.user_id = request.user.id
       else:
         tk.user_id = User.objects.get(username='neurodata').id
-      tk.save()
+      tk.create()
       return HttpResponse()
     except Exception as e:
       return HttpResponseBadRequest()

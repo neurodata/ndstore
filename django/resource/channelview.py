@@ -30,14 +30,13 @@ class ChannelView(View):
       return HttpResponseBadRequest()
 
   def post(self, request, dataset_name, project_name, channel_name):
-    import pdb; pdb.set_trace()
     try:
       ch = NDChannel.fromJson(project_name, request.body)
       if request.user.is_authenticated:
         ch.user_id = request.user.id
       else:
         ch.user_id = User.objects.get(username='neurodata').id
-      ch.save()
+      ch.create()
       return HttpResponse()
     except Exception as e:
       return HttpResponseBadRequest()

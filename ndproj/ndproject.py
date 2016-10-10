@@ -77,7 +77,7 @@ class NDProject(NDObject):
     pr.dataset_id = dataset_name
     return cls(pr)
 
-  def save(self):
+  def create(self):
     try:
       self.pr.save()
       self.db.newNDProject()
@@ -208,40 +208,48 @@ class NDProject(NDObject):
   @property
   def kvengine_password(self):
     return settings.DATABASES['default']['PASSWORD']
+  
+  @property
+  def dbname(self):
+    return self.pr.project_name
+  
+  @property
+  def s3backend(self):
+    return self.pr.s3backend
 
   # Accessors
   def getToken ( self ):
     return self.tk.token_name
   
-  def getDBHost ( self ):
-      return self.pr.host
+  # def getDBHost ( self ):
+      # return self.pr.host
   
-  def getKVEngine ( self ):
-    return self.pr.kvengine
+  # def getKVEngine ( self ):
+    # return self.pr.kvengine
   
-  def getKVServer ( self ):
-    return self.pr.kvserver
+  # def getKVServer ( self ):
+    # return self.pr.kvserver
   
-  def getMDEngine ( self ):
-    return self.pr.mdengine
+  # def getMDEngine ( self ):
+    # return self.pr.mdengine
   
-  def getDBName ( self ):
-    return self.pr.project_name
+  # def getDBName ( self ):
+    # return self.pr.project_name
   
-  def getProjectName ( self ):
-    return self.pr.project_name
+  # def getProjectName ( self ):
+    # return self.pr.project_name
   
-  def getProjectDescription ( self ):
-    return self.pr.project_description
+  # def getProjectDescription ( self ):
+    # return self.pr.project_description
   
-  def getS3Backend(self):
-    return self.pr.s3backend
+  # def getS3Backend(self):
+    # return self.pr.s3backend
   
-  def getNDVersion ( self ):
-    return self.pr.nd_version
+  # def getNDVersion ( self ):
+    # return self.pr.nd_version
   
-  def getSchemaVersion ( self ):
-    return self.pr.schema_version
+  # def getSchemaVersion ( self ):
+    # return self.pr.schema_version
 
   def projectChannels ( self, channel_list=None ):
     """Return a generator of Channel Objects"""
@@ -258,11 +266,11 @@ class NDProject(NDObject):
       channel_name = Channel.objects.get(project_id=self.pr, default=True)
     return NDChannel.fromName(self.pr, channel_name)
 
-  def getDBUser( self ):
-    return settings.DATABASES['default']['USER']
+  # def getDBUser( self ):
+    # return settings.DATABASES['default']['USER']
   
-  def getDBPasswd( self ):
-    return settings.DATABASES['default']['PASSWORD']
+  # def getDBPasswd( self ):
+    # return settings.DATABASES['default']['PASSWORD']
   
   def deleteProject(self):
     """Delete the Project"""

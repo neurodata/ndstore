@@ -109,14 +109,14 @@ class Test_Resource():
     response = getJSON('http://{}/resource/dataset/{}/project/{}/token/{}/'.format(SITE_HOST, p.dataset, p.project, p.token))
     assert(response['token_name'] == p.token)
 
-  def test_delete_channel(self):
-    response = deleteJSON('http://{}/resource/dataset/{}/project/{}/channel/{}/'.format(SITE_HOST, p.dataset, p.project, p.channels[0]))
-    assert(response.status_code == 200)
-  
   def test_delete_token(self):
     response = deleteJSON('http://{}/resource/dataset/{}/project/{}/token/{}/'.format(SITE_HOST, p.dataset, p.project, p.token))
     assert(response.status_code == 200)
 
+  def test_delete_channel(self):
+    response = deleteJSON('http://{}/resource/dataset/{}/project/{}/channel/{}/'.format(SITE_HOST, p.dataset, p.project, p.channels[0]))
+    assert(response.status_code == 200)
+  
   def test_delete_project(self):
     response = deleteJSON('http://{}/resource/dataset/{}/project/{}/'.format(SITE_HOST, p.dataset, p.project))
     assert(response.status_code == 200)

@@ -67,25 +67,25 @@ class NDProjectsDB(object):
     return NDProject.fromTokenName(token_name)
 
 
-  @staticmethod
-  def getPublic():
-    """Return a list of public tokens"""
-    tkns = Token.objects.filter(public = PUBLIC_TRUE)
-    return [t.token_name for t in tkns]
+  # @staticmethod
+  # def getPublic():
+    # """Return a list of public tokens"""
+    # tkns = Token.objects.filter(public = PUBLIC_TRUE)
+    # return [t.token_name for t in tkns]
  
 
-  @staticmethod
-  def getPublicDatasets():
-    """Return a list of public datasets"""
-    datasets = Dataset.objects.filter(public = PUBLIC_TRUE)
-    return [d.dataset_name for d in datasets]
+  # @staticmethod
+  # def getPublicDatasets():
+    # """Return a list of public datasets"""
+    # datasets = Dataset.objects.filter(public = PUBLIC_TRUE)
+    # return [d.dataset_name for d in datasets]
   
     
-  @staticmethod
-  def getPublicTokens():
-    """Return a list of public tokens"""
-    tkns = Token.objects.filter(public = PUBLIC_TRUE)
-    return [t.token_name for t in tkns]
+  # @staticmethod
+  # def getPublicTokens():
+    # """Return a list of public tokens"""
+    # tkns = Token.objects.filter(public = PUBLIC_TRUE)
+    # return [t.token_name for t in tkns]
 
   
   # factory method to get a projectdb object

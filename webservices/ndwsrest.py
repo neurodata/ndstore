@@ -1842,16 +1842,13 @@ def projInfo ( webargs ):
   with closing (NDProjectsDB()) as projdb:
     proj = projdb.loadToken ( token )
 
-  # and the database and then call the db function
-  with closing (SpatialDB(proj)) as db:
-
     # Create an in-memory HDF5 file
     tmpfile = tempfile.NamedTemporaryFile ()
     h5f = h5py.File ( tmpfile.name )
 
     try:
       # Populate the file with project information
-      h5projinfo.h5Info ( proj, db, h5f ) 
+      h5projinfo.h5Info(proj, h5f) 
     finally:
       h5f.close()
       tmpfile.seek(0)

@@ -18,6 +18,8 @@ from lxml import etree
 from django.conf import settings
 from ndtype import ZSLICES
 from webservices.ndwserror import NDWSError
+from ndproj.nddataset import NDDataset
+from ndproj.ndtoken import NDToken
 import logging
 logger = logging.getLogger("neurodata")
 
@@ -25,11 +27,11 @@ logger = logging.getLogger("neurodata")
 def projdict ( proj ):
 
   projdict = {}
-  projdict['name'] = proj.getProjectName()
-  projdict['description'] = proj.getProjectDescription()
-  projdict['schema_version'] = proj.getSchemaVersion()
-  projdict['ndstore_version'] = proj.getNDVersion()
-  projdict['s3backend'] = proj.getS3Backend()
+  projdict['name'] = proj.project_name
+  projdict['description'] = proj.project_description
+  projdict['schema_version'] = proj.schema_version
+  projdict['ndstore_version'] = proj.nd_version
+  projdict['s3backend'] = proj.s3backend
 
   # These fields are internal
   #projdict['dbname'] = proj._dbname
@@ -43,14 +45,14 @@ def projdict ( proj ):
 def datasetdict ( dataset ):
 
   dsdict = {}
-  dsdict['name'] = dataset.getDatasetName()
+  dsdict['name'] = dataset.dataset_name
   dsdict['scalinglevels'] = dataset.scalinglevels
   if dataset.scalingoption == ZSLICES:
     dsdict['scaling'] = 'zslices'
   else:
     dsdict['scaling'] = 'xyz'
   dsdict['resolutions'] = dataset.resolutions
-  dsdict['imagesize'] = dataset.imagesz
+  dsdict['imagesize'] = dataset.image_size
   dsdict['offset'] = dataset.offset
   dsdict['voxelres'] = dataset.voxelres
   dsdict['cube_dimension'] = dataset.cubedim
@@ -61,20 +63,20 @@ def datasetdict ( dataset ):
   dsdict['neariso_imagesize'] = dataset.neariso_imagesz
   # Figure out neariso in new design
   dsdict['timerange'] = dataset.timerange
-  dsdict['description'] = dataset.getDatasetDescription()
+  dsdict['description'] = dataset.dataset_description
 
   return dsdict
 
 def chandict ( channel ):
   chandict = {}
-  chandict['channel_type'] = channel.getChannelType()
-  chandict['datatype'] = channel.getDataType()
-  chandict['exceptions'] = channel.getExceptions()
-  chandict['readonly'] = channel.getReadOnly()
-  chandict['resolution'] = channel.getResolution()
-  chandict['propagate'] = channel.getPropagate()
-  chandict['windowrange'] = channel.getWindowRange()
-  chandict['description'] = channel.getChannelDescription()
+  chandict['channel_type'] = channel.channel_type
+  chandict['datatype'] = channel.channel_datatype
+  chandict['exceptions'] = channel.exceptions
+  chandict['readonly'] = channel.readonly
+  chandict['resolution'] = channel.resolution
+  chandict['propagate'] = channel.propagate
+  chandict['windowrange'] = channel.window_range
+  chandict['description'] = channel.channel_description
 
   return chandict
 
@@ -86,7 +88,7 @@ def jsonInfo (proj):
   jsonprojinfo['project'] = projdict ( proj )
   jsonprojinfo['channels'] = {}
   for ch in proj.projectChannels():
-    jsonprojinfo['channels'][ch.getChannelName()] = chandict ( ch ) 
+    jsonprojinfo['channels'][ch.channel_name] = chandict ( ch ) 
   
   jsonprojinfo['metadata'] = metadatadict( proj )
   return json.dumps ( jsonprojinfo, sort_keys=True, indent=4 )
@@ -99,7 +101,7 @@ def xmlInfo (token, proj):
   jsonprojinfo['project'] = projdict ( proj )
   jsonprojinfo['channels'] = {}
   for ch in proj.projectChannels():
-    jsonprojinfo['channels'][ch.getChannelName()] = chandict ( ch ) 
+    jsonprojinfo['channels'][ch.channel_name] = chandict ( ch ) 
   jsonprojinfo['metadata'] = metadatadict( proj )
   
   root = etree.Element('Volume', InputChecksum="", host="http://neurodata.io/ocptilecache/tilecache/viking/", name=token, num_sections=str(jsonprojinfo['dataset']['imagesize'][0][2]), num_stos="0", path="http://neurodata.io/ocptilecache/tilecache/viking/")
@@ -117,7 +119,7 @@ def metadatadict( proj ):
   """Metadata Info"""
   if settings.LIMS_SERVER_ENABLED:
     try:
-      url = 'http://{}/metadata/ocp/get/{}/'.format(settings.LIMS_SERVER, proj.getProjectName())
+      url = 'http://{}/metadata/ocp/get/{}/'.format(settings.LIMS_SERVER, proj.project_name)
       req = urllib2.Request(url)
       response = urllib2.urlopen(req, timeout=0.5)
       return json.loads(response.read())
@@ -130,12 +132,14 @@ def metadatadict( proj ):
 
 def publicTokens ( projdb ):
   """List of Public Tokens"""
-  
-  tokens = projdb.getPublicTokens ()
+    
+  tokens = NDToken.public_list()
+  # tokens = projdb.getPublicTokens ()
   return json.dumps (tokens, sort_keys=True, indent=4)
 
 def publicDatasets ( projdb ):
   """List of Public Datasets"""
 
-  datasets = projdb.getPublicDatasets()
+  datasets = NDDataset.public_list()
+  # datasets = projdb.getPublicDatasets()
   return json.dumps(datasets, sort_keys=True, indent=4)

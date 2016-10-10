@@ -41,13 +41,13 @@ class MySQLProjectDB:
 
   def newNDProject(self):
     """Create the database for a project"""
-    
-    with closing(MySQLdb.connect (host = self.pr.getDBHost(), user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = settings.DATABASES['default']['NAME'], connect_timeout=1)) as conn:
+   
+    with closing(MySQLdb.connect (host = self.pr.host, user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = settings.DATABASES['default']['NAME'], connect_timeout=1)) as conn:
       with closing(conn.cursor()) as cursor:
 
         try:
           # create the database
-          sql = "CREATE DATABASE {}".format(self.pr.getDBName())
+          sql = "CREATE DATABASE {}".format(self.pr.dbname)
        
           cursor.execute(sql)
           conn.commit()
@@ -63,7 +63,7 @@ class MySQLProjectDB:
     ch = NDChannel.fromName(self.pr, channel_name)
 
     # connect to the database
-    with closing(MySQLdb.connect(host = self.pr.getDBHost(), user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = self.pr.getDBName(), connect_timeout=1)) as conn:
+    with closing(MySQLdb.connect(host = self.pr.host, user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = self.pr.dbname, connect_timeout=1)) as conn:
       with closing(conn.cursor()) as cursor:
         
         try:
@@ -101,10 +101,10 @@ class MySQLProjectDB:
     """Delete the database for a project"""
 
     try:
-      with closing(MySQLdb.connect (host = self.pr.getDBHost(), user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], connect_timeout=1)) as conn:
+      with closing(MySQLdb.connect (host = self.pr.host, user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], connect_timeout=1)) as conn:
         with closing(conn.cursor()) as cursor:
           # delete the database
-          sql = "DROP DATABASE {}".format(self.pr.getDBName())
+          sql = "DROP DATABASE {}".format(self.pr.dbname)
 
           try:
             cursor.execute(sql)
@@ -112,14 +112,14 @@ class MySQLProjectDB:
           except MySQLdb.Error, e:
             # Skipping the error if the database does not exist
             if e.args[0] == 1008:
-              logger.warning("Database {} does not exist".format(self.pr.getDBName()))
+              logger.warning("Database {} does not exist".format(self.pr.dbname))
               pass
             else:
               conn.rollback()
               logger.error("Failed to drop project database {}: {}. sql={}".format(e.args[0], e.args[1], sql))
               raise NDWSError("Failed to drop project database {}: {}. sql={}".format(e.args[0], e.args[1], sql))
     except MySQLdb.OperationalError as e:
-      logger.warning("Cannot connect to the server at host {}. {}".format(self.pr.getDBHost(), e))
+      logger.warning("Cannot connect to the server at host {}. {}".format(self.pr.host, e))
 
   def deleteNDChannel(self, channel_name):
     """Delete the tables for this channel"""
@@ -143,7 +143,7 @@ class MySQLProjectDB:
         table_list = table_list + [ch.getIdxTable(res), ch.getExceptionsTable(res)]
 
     try:
-      with closing(MySQLdb.connect(host = self.pr.getDBHost(), user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = self.pr.getDBName(), connect_timeout=1)) as conn:
+      with closing(MySQLdb.connect(host = self.pr.host, user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = self.pr.dbname, connect_timeout=1)) as conn:
         with closing(conn.cursor()) as cursor:
           
           # delete the tables for this channel
@@ -162,4 +162,4 @@ class MySQLProjectDB:
               logger.error("Failed to drop channel tables {}: {}. sql={}".format(e.args[0], e.args[1], sql))
               raise NDWSError("Failed to drop channel tables {}: {}. sql={}".format(e.args[0], e.args[1], sql))
     except Exception as e:
-      logger.warning("Database {} on host {} not found".format(self.pr.getDBName(), self.pr.getDBName()))
+      logger.warning("Database {} on host {} not found".format(self.pr.dbname, self.pr.host))
