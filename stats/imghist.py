@@ -19,7 +19,7 @@ django.setup()
 from ndproj.ndprojdb import NDProjectsDB
 from spatialdb import SpatialDB
 import logging
-logger = logging.get("neurodata")
+logger = logging.getLogger("neurodata")
 
 """ Determine a histogram from an image stack """
 

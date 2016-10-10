@@ -19,11 +19,11 @@ import re
 import json
 from contextlib import closing
 import spatialdb
-from ramon.ramondb import RamonDB
+from ndramon.ramondb import RamonDB
 import ndproj.ndprojdb
 from ndproj.ndchannel import NDChannel
-import ndproj.jsonann
 import ndproj.jsonprojinfo
+from ndramon import jsonann
 from ndwserror import NDWSError
 import logging
 logger=logging.getLogger("neurodata")

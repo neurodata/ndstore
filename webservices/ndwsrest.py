@@ -36,13 +36,13 @@ from libtiff import TIFFfile, TIFFimage
 import restargs
 from ndlib.ndtype import *
 from spdb.spatialdb import SpatialDB
-from ramon.ramondb import RamonDB
 from ndproj.ndprojdb import NDProjectsDB
 from ndproj.ndchannel import NDChannel
-from ramon import h5ann
+from ndramon import h5ann
+from ndramon.annotation import *
+from ndramon.ramondb import RamonDB
 from ndproj import  h5projinfo
 from ndproj import jsonprojinfo
-from ramon.annotation import *
 import mcfc
 from ndctypelib import filter_ctype_OMP
 import ndwsskel
