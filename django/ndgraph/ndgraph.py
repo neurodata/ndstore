@@ -18,7 +18,7 @@ from contextlib import closing
 from operator import add, sub
 import tempfile
 from ndproj import ndprojdb
-from ramon import annotation, ramondb
+from ndramon import annotation, ramondb
 import spatialdb
 
 from webservices.ndwserror import NDWSError

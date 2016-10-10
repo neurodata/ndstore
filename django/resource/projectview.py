@@ -20,7 +20,6 @@ from ndproject import NDProject
 class ProjectView(View):
 
   def get(self, request, dataset_name, project_name):
-
     try:
       pr = NDProject.fromName(project_name)
       return HttpResponse(NDProject.serialize(pr.pr), content_type='application/json')
@@ -29,8 +28,7 @@ class ProjectView(View):
 
   def post(self, request, dataset_name, project_name):
     try:
-      pr = NDProject.fromJson(request.body)
-      pr.dataset_name = dataset_name
+      pr = NDProject.fromJson(dataset_name, request.body)
       if request.user.is_authenticated:
         pr.user_id = request.user.id
       else:

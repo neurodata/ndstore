@@ -15,14 +15,13 @@
 from django.conf.urls import include, url
 from django.conf import settings
 from django.conf.urls.static import static
-
 from django.contrib import admin
 admin.autodiscover()
 
 base_urlpatterns = [
-    url(r'^ocpca/', include('spdb.urls')), # legacy support
-    url(r'^ca/', include('spdb.urls')), # legacy support
-    url(r'^sd/', include('spdb.urls')),
+    url(r'^ocpca/', include('sd.urls')), # legacy support
+    url(r'^ca/', include('sd.urls')), # legacy support
+    url(r'^sd/', include('sd.urls')),
     url(r'^ramon/', include('ramon.urls')),
     url(r'^overlay/', include('overlay.urls')),
     url(r'^catmaid/', include('catmaid.urls')), # legacy support

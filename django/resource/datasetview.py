@@ -22,7 +22,7 @@ class DatasetView(View):
   def get(self, request, dataset_name):
     try:
       ds = NDDataset.fromName(dataset_name)
-      return HttpResponse(NDDataset.serialize(ds.ds), content_type='application/json')
+      return HttpResponse(NDDataset.serialize(ds._ds), content_type='application/json')
     except Exception as e:
       return HttpResponseBadRequest()
 
