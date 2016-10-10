@@ -18,11 +18,11 @@ class Vector3D(object):
     self._x = dim_list[0]
     self._y = dim_list[1]
     self._z = dim_list[2]
-  
+
   @property
   def values(self):
     return [self._x, self._y, self._z]
-  
+
   @property
   def x(self):
     return self._x

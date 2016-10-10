@@ -16,10 +16,13 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from ndtype import *
 from nduser.models import Channel
-from ndproj.nndobject import NDObject
+from ndproj.ndprojdb import NDProjectsDB
+from ndproj.ndobject import NDObject
+from ndramon import annotation
 from webservices.ndwserror import NDWSError
 import logging
 logger=logging.getLogger("neurodata")
+
 
 class NDChannel(NDObject):
 
@@ -28,7 +31,8 @@ class NDChannel(NDObject):
     from ndproject import NDProject
     self.ch = ch
     self.pr = NDProject.fromName(self.project_name)
-  
+    self.db = NDProjectsDB.getProjDB(self.pr)
+
   @classmethod
   def fromName(cls, pr, channel_name):
     try:
@@ -45,15 +49,20 @@ class NDChannel(NDObject):
     ch = Channel(**cls.deserialize(channel))
     ch.project_id = project_name
     return cls(ch)
-  
+
   def save(self):
     try:
       self.ch.save()
+      self.db.newNDChannel(self.channel_name)
+    except NDWSError as e:
+      self.ch.delete()
+      raise
     except Exception as e:
       raise
 
   def delete(self):
     try:
+      self.db.deleteNDChannel(self.channel_name)
       self.ch.delete()
     except Exception as e:
       raise
@@ -66,7 +75,7 @@ class NDChannel(NDObject):
   def channel_name(self, value):
     # TODO KL check for unwanted chars here
     self.ch.channel_name = value
-    
+
   @property
   def channel_description(self):
     return self.ch.channel_description
@@ -74,7 +83,7 @@ class NDChannel(NDObject):
   @channel_description.setter
   def channel_description(self, value):
     self.ch.channel_description = value
-  
+
   @property
   def project_name(self):
     return self.ch.project_id
@@ -94,7 +103,7 @@ class NDChannel(NDObject):
   @property
   def resolution(self):
     return self.ch.resolution
-  
+
   @resolution.setter
   def resolution(self, value):
     self.ch.resolution = value
@@ -103,7 +112,7 @@ class NDChannel(NDObject):
   def propagate(self):
     # TODO KL port logic
     return self.ch.propagate
-  
+
   @propagate.setter
   def propagate(self, value):
     # TODO KL port logic
@@ -112,41 +121,41 @@ class NDChannel(NDObject):
   @property
   def channel_datatype(self):
     return self.ch.channel_datatype
-  
-  # Accessors   
+
+  # Accessors
   def getChannelModel ( self ):
     return Channel.objects.get(channel_name=self.ch.channel_name, project=self.pr.getProjectName())
-  
+
   def getDataType ( self ):
     return self.ch.channel_datatype
-  
+
   def getChannelName ( self ):
     return self.ch.channel_name
-  
+
   def getChannelType ( self ):
     return self.ch.channel_type
-  
+
   def getChannelDescription ( self ):
     return self.ch.channel_description
-  
+
   def getExceptions ( self ):
     return self.ch.exceptions
-  
+
   def getReadOnly (self):
     return self.ch.readonly
-  
+
   def getResolution (self):
     return self.ch.resolution
-  
+
   def getWindowRange (self):
     return [int(self.ch.startwindow),int(self.ch.endwindow)]
-  
+
   def getPropagate (self):
     return self.ch.propagate
-  
+
   def isDefault (self):
-    return self.ch.default 
-  
+    return self.ch.default
+
   def getS3IndexTable (self, resolution):
     """Return the S3 index table"""
     if self.pr.getKVEngine() == MYSQL:
@@ -183,7 +192,7 @@ class NDChannel(NDObject):
       return "kvpairs{}".format(resolution)
     else:
       return "{}_kvpairs{}".format(self.ch.channel_name, resolution)
-  
+
   def getRamonTable(self):
     """Return the name of the ramon table"""
     if self.pr.getKVEngine() == MYSQL:
@@ -230,7 +239,7 @@ class NDChannel(NDObject):
     else:
       logger.error ( "Wrong Propagate Value {} for Channel {}".format( value, self.ch.channel_name ) )
       raise NDWSError ( "Wrong Propagate Value {} for Channel {}".format( value, self.ch.channel_name ) )
-  
+
   def setReadOnly (self, value):
     if value in [READONLY_TRUE, READONLY_FALSE]:
       self.ch.readonly = value

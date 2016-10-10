@@ -15,17 +15,13 @@
 from abc import abstractmethod
 
 from ndtype import MYSQL, CASSANDRA, RIAK, REDIS, DYNAMODB, PUBLIC_TRUE
-from nddataset import NDDataset
-from ndproject import NDProject
-from ndchannel import NDChannel
-from nduser.models import Dataset
 from nduser.models import Token
 
 from webservices.ndwserror import NDWSError
 import logging
 logger=logging.getLogger("neurodata")
 
-class NDProjectsDB:
+class NDProjectsDB(object):
   """Database for the projects"""
 
   def __init__(self):
@@ -60,12 +56,14 @@ class NDProjectsDB:
   @staticmethod
   def loadDatasetConfig(dataset_name):
     """Query the database for the dataset information and build a db configuration"""
+    from nddataset import NDDataset
     return NDDataset(dataset_name)
 
 
   @staticmethod
   def loadToken(token_name):
     """Query django configuration for a token to bind to a project"""
+    from ndproject import NDProject
     return NDProject.fromTokenName(token_name)
 
 
@@ -92,25 +90,26 @@ class NDProjectsDB:
   
   # factory method to get a projectdb object
   @staticmethod
-  def getProjDB(project_name):
+  def getProjDB(pr):
     """Return a the kvengine object"""
     
-    pr = NDProject(project_name)
-    if pr.getKVEngine() == MYSQL:
+    # from ndproject import NDProject
+    # pr = NDProject.fromName(project_name)
+    if pr.kvengine == MYSQL:
       from mysqlprojdb import MySQLProjectDB
-      return MySQLProjectDB(project_name)
-    elif pr.getKVEngine() == CASSANDRA:
-      from cassprojdb import CassProjectDB
-      return CassProjectDB(project_name)
-    elif pr.getKVEngine() == RIAK:
-      from riakprojdb import RiakProjectDB
-      return RiakProjectDB(project_name)
-    elif pr.getKVEngine() == DYNAMODB:
-      from dynamoprojdb import DynamoProjectDB
-      return DynamoProjectDB(project_name)
-    elif pr.getKVEngine() == REDIS:
-      from redisprojdb import RedisProjectDB
-      return RedisProjectDB(project_name)
+      return MySQLProjectDB(pr)
+    # elif pr.kvengine == CASSANDRA:
+      # from cassprojdb import CassProjectDB
+      # return CassProjectDB(project_name)
+    # elif pr.kvengine == RIAK:
+      # from riakprojdb import RiakProjectDB
+      # return RiakProjectDB(project_name)
+    # elif pr.kvengine == DYNAMODB:
+      # from dynamoprojdb import DynamoProjectDB
+      # return DynamoProjectDB(project_name)
+    # elif pr.kvengine == REDIS:
+      # from redisprojdb import RedisProjectDB
+      # return RedisProjectDB(project_name)
     else:
-      logging.error ("Unknown KV Engine requested: {}".format(pr.getKVEngine()))
-      raise NDWSError ("Unknown KV Engine requested: {}".format(pr.getKVEngine()))
+      logging.error ("Unknown KV Engine requested: {}".format(pr.kvengine))
+      raise NDWSError ("Unknown KV Engine requested: {}".format(pr.kvengine))

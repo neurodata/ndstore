@@ -22,6 +22,7 @@ from ndlib.ndtype import *
 from ndobject import NDObject
 from nddataset import NDDataset
 from ndchannel import NDChannel
+from ndprojdb import NDProjectsDB
 from webservices.ndwserror import NDWSError
 import logging
 logger = logging.getLogger("neurodata")
@@ -32,6 +33,7 @@ class NDProject(NDObject):
     
     self.pr = pr
     self.datasetcfg = NDDataset.fromName(self.dataset_name)
+    self.db = NDProjectsDB.getProjDB(self)
 
     # if isinstance(token_name, str) or isinstance(token_name, unicode):
       # try:
@@ -70,19 +72,27 @@ class NDProject(NDObject):
       raise
   
   @classmethod
-  def fromJson(cls, project):
+  def fromJson(cls, dataset_name, project):
     pr = Project(**cls.deserialize(project))
+    pr.dataset_id = dataset_name
     return cls(pr)
 
   def save(self):
     try:
       self.pr.save()
+      self.db.newNDProject()
+    except NDWSError as e:
+      self.pr.delete()
+      raise
     except Exception as e:
       raise
 
   def delete(self):
     try:
+      self.db.deleteNDProject()
       self.pr.delete()
+    except NDWSError as e:
+      raise
     except Exception as e:
       raise
 

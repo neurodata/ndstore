@@ -15,7 +15,7 @@
 import MySQLdb
 from contextlib import closing
 from django.conf import settings
-from ndproject import NDProject
+# from ndproject import NDProject
 from ndchannel import NDChannel
 from ndtype import *
 from webservices.ndwserror import NDWSError
@@ -25,10 +25,11 @@ logger=logging.getLogger("neurodata")
 class MySQLProjectDB:
   """Database for the projects"""
 
-  def __init__(self, project_name):
+  def __init__(self, pr):
     """Create the database connection"""
     # connect to the database
-    self.pr = NDProject(project_name)
+    # self.pr = NDProject(project_name)
+    self.pr = pr
 
   def __del__(self):
     """Close the database connection"""
@@ -68,12 +69,12 @@ class MySQLProjectDB:
         try:
           # tables specific to all other non time data
           if ch.getChannelType() not in [TIMESERIES]:
-            for res in self.pr.datasetcfg.getResolutions():
+            for res in self.pr.datasetcfg.resolutions:
               cursor.execute("CREATE TABLE {} ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(ch.getTable(res)))
               cursor.execute ( "CREATE TABLE {} (zindex BIGINT NOT NULL PRIMARY KEY)".format(ch.getS3IndexTable(res)) )
           # tables specific to timeseries data
           elif ch.getChannelType() == TIMESERIES:
-            for res in self.pr.datasetcfg.getResolutions():
+            for res in self.pr.datasetcfg.resolutions:
               cursor.execute("CREATE TABLE {} ( zindex BIGINT, timestamp INT, cube LONGBLOB, PRIMARY KEY(zindex,timestamp))".format(ch.getTable(res)))
               cursor.execute ( "CREATE TABLE {} (zindex BIGINT NOT NULL, timestamp INT NOT NULL, PRIMARY KEY(zindex,timestamp))".format(ch.getS3IndexTable(res)))
           else:
@@ -84,7 +85,7 @@ class MySQLProjectDB:
             cursor.execute("CREATE TABLE {} ( id BIGINT PRIMARY KEY)".format(ch.getIdsTable()))
             # And the RAMON objects
             cursor.execute("CREATE TABLE {} ( annoid BIGINT, kv_key VARCHAR(255), kv_value VARCHAR(20000), INDEX ( annoid, kv_key ) USING BTREE)".format(ch.getRamonTable()))
-            for res in self.pr.datasetcfg.getResolutions():
+            for res in self.pr.datasetcfg.resolutions:
               cursor.execute("CREATE TABLE {} ( zindex BIGINT, id BIGINT, exlist LONGBLOB, PRIMARY KEY ( zindex, id))".format(ch.getExceptionsTable(res)))
               cursor.execute("CREATE TABLE {} ( annid BIGINT PRIMARY KEY, cube LONGBLOB )".format(ch.getIdxTable(res)))
          
@@ -132,7 +133,7 @@ class MySQLProjectDB:
       # delete the ramon table
       table_list.append(ch.getRamonTable())
 
-    for res in self.pr.datasetcfg.getResolutions():
+    for res in self.pr.datasetcfg.resolutions:
       # delete the res tables
       table_list.append(ch.getTable(res))
       # delete the index tables
