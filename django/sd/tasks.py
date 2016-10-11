@@ -13,13 +13,10 @@
 # limitations under the License.
 
 from __future__ import absolute_import
-
 from celery import task
 from django.conf import settings
-
-import ndstack
-from ndwsingest import IngestData
-
+import webservices.ndstack
+from webservices.ndwsingest import IngestData
 import logging
 logger = logging.getLogger("neurodata")
 

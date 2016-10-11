@@ -19,7 +19,7 @@ import pylibmc
 import math
 from contextlib import closing
 import spatialdb
-from ndproj import ndprojdb
+from ndproj.ndproject import NDProject
 from webservices import ndwsrest
 from webservices.ndwserror import NDWSError
 import logging
@@ -187,11 +187,10 @@ class SimpleCatmaid:
       [self.token, self.channel, slice_type, filterlist] = [i for i in m.groups()[:4]]
       [timetile, ztile, ytile, xtile, res] = [int(i.strip('/')) if i is not None else None for i in m.groups()[4:]]
     except Exception, e:
-      logger.warning("Incorrect arguments give for getTile {}. {}".format(webargs, e))
+      logger.error("Incorrect arguments give for getTile {}. {}".format(webargs, e))
       raise NDWSError("Incorrect arguments given for getTile {}. {}".format(webargs, e))
     
-    with closing ( ndprojdb.NDProjectsDB() ) as projdb:
-        self.proj = projdb.loadToken(self.token)
+    self.proj = NDProject.fromTokenName(self.token)
     
     with closing ( spatialdb.SpatialDB(self.proj) ) as self.db:
 
@@ -210,8 +209,8 @@ class SimpleCatmaid:
           elif slice_type == 'yz':
             img = self.cacheMissYZ(res, ztile, xtile, ytile, timetile, filterlist)
           else:
-            logger.warning ("Requested illegal image plance {}. Should be xy, xz, yz.".format(slice_type))
-            raise NDWSError ("Requested illegal image plance {}. Should be xy, xz, yz.".format(slice_type))
+            logger.error("Requested illegal image plance {}. Should be xy, xz, yz.".format(slice_type))
+            raise NDWSError("Requested illegal image plance {}. Should be xy, xz, yz.".format(slice_type))
           
           fobj = cStringIO.StringIO ( )
           img.save ( fobj, "PNG" )

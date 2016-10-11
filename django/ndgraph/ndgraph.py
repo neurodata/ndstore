@@ -17,10 +17,9 @@ import networkx as nx
 from contextlib import closing
 from operator import add, sub
 import tempfile
-from ndproj import ndprojdb
+from ndproj.ndproject import NDProject
 from ndramon import annotation, ramondb
-import spatialdb
-
+import spdb.spatialdb
 from webservices.ndwserror import NDWSError
 import logging
 logger = logging.getLogger("neurodata")
@@ -57,9 +56,7 @@ def genGraphRAMON(token_name, channel, graphType="graphml", xmin=0, xmax=0, ymin
   
   # converting all parameters to integers
   [xmin, xmax, ymin, ymax, zmin, zmax] = [int(i) for i in [xmin, xmax, ymin, ymax, zmin, zmax]]
-
-  with closing (ndprojdb.NDProjectsDB()) as fproj:
-    proj = fproj.loadToken(token_name)
+  proj = NDProject.fromTokenName(token_name)
 
   with closing (ramondb.RamonDB(proj)) as db:
     ch = proj.getChannelObj(channel)

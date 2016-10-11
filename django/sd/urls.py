@@ -37,8 +37,8 @@ urlpatterns = [
   # get public datasets 
   url(r'(?P<webargs>^public_datasets/)$', views.publicdatasets),
   # Create/Delete channel interfaces
-  url(r'(?P<webargs>^\w+/createChannel/)$', views.createChannel),
-  url(r'(?P<webargs>^\w+/deleteChannel/)$', views.deleteChannel),
+  # url(r'(?P<webargs>^\w+/createChannel/)$', views.createChannel),
+  # url(r'(?P<webargs>^\w+/deleteChannel/)$', views.deleteChannel),
   # get channel information
   #url(r'(?P<webargs>^\w+/chaninfo/[\w,/]*)$', 'chaninfo'),
   # reserve identifiers for annotation projects

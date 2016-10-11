@@ -13,13 +13,20 @@
 # limitations under the License.
 
 from django.conf.urls import url
+from publicview import DatasetPublicView, ProjectPublicView, TokenPublicView
 from datasetview import DatasetView
+from listview import DatasetListView, ProjectListView
 from projectview import ProjectView
 from channelview import ChannelView
 from tokenview import TokenView
 
 urlpatterns = [
+  url(r'public/dataset/?$', DatasetPublicView.as_view()),
+  url(r'public/token/?$', TokenPublicView.as_view()),
+  url(r'public/dataset/?P(<dataset_name>[\w_-]+)/?$', ProjectPublicView.as_view()),
+  url(r'dataset/?$', DatasetListView.as_view()),
   url(r'dataset/(?P<dataset_name>[\w_-]+)/?$', DatasetView.as_view()),
+  url(r'dataset/(?P<dataset_name>[\w_-]+)/project/?$', ProjectListView.as_view()),
   url(r'dataset/(?P<dataset_name>[\w_-]+)/project/(?P<project_name>[\w_-]+)/?$', ProjectView.as_view()),
   url(r'dataset/(?P<dataset_name>[\w_-]+)/project/(?P<project_name>[\w_-]+)/channel/(?P<channel_name>[\w_-]+)/?$', ChannelView.as_view()),
   url(r'dataset/(?P<dataset_name>[\w_-]+)/project/(?P<project_name>[\w_-]+)/token/(?P<token_name>[\w_-]+)/?$', TokenView.as_view()),

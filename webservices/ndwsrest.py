@@ -460,7 +460,7 @@ def window(data, ch, window_range=None ):
   """Performs a window transformation on the cutout area"""
 
   if window_range is None:
-    window_range = ch.windowrange
+    window_range = ch.window_range
 
   [startwindow, endwindow] = window_range
 
@@ -862,7 +862,7 @@ def getCutout ( webargs ):
   [channel, service, chanargs] = webargs.split('/', 2)
 
   # get the project 
-  proj = projdb.fromTokenName(token)
+  proj = NDProject.fromTokenName(token)
 
   # and the database and then call the db function
   with closing (SpatialDB(proj)) as db:
@@ -874,7 +874,7 @@ def putCutout ( webargs, postdata ):
 
   [ token, rangeargs ] = webargs.split('/',1)
   # get the project 
-  proj = projdb.fromTokenName(token)
+  proj = NDProject.fromTokenName(token)
 
   # and the database and then call the db function
   with closing (SpatialDB(proj)) as db:
@@ -1036,7 +1036,7 @@ def getAnnotation ( webargs ):
 
   # pattern for using contexts to close databases
   # get the project 
-  proj = projdb.fromTokenName(token)
+  proj = NDProject.fromTokenName(token)
 
   # and the database and then call the db function
   with closing (SpatialDB(proj)) as db:
@@ -1182,7 +1182,7 @@ def getCSV ( webargs ):
 
   # pattern for using contexts to close databases
   # get the project 
-  proj = projdb.fromTokenName(token)
+  proj = NDProject.fromTokenName(token)
 
   # and the database and then call the db function
   with closing (SpatialDB(proj)) as db:
@@ -1218,7 +1218,7 @@ def getAnnotations ( webargs, postdata ):
 
   [ token, objectsliteral, otherargs ] = webargs.split ('/',2)
 
-  proj = projdb.fromTokenName(token)
+  proj = NDProject.fromTokenName(token)
   
   with closing (SpatialDB(proj)) as db:
    with closing (RamonDB(proj)) as rdb:
@@ -1334,7 +1334,7 @@ def putAnnotation ( webargs, postdata ):
   """Put a RAMON object as HDF5 (or JSON) by object identifier"""
 
   [token, channel, optionsargs] = webargs.split('/',2)
-  proj = projdb.fromTokenName(token)
+  proj = NDProject.fromTokenName(token)
   ch = NDChannel.fromName(proj, channel)
   
   if ch.channel_type not in ANNOTATION_CHANNELS:
@@ -1585,7 +1585,7 @@ def putNIFTI ( webargs, postdata ):
   """Put a NIFTI object as an image"""
     
   [token, channel, optionsargs] = webargs.split('/',2)
-  proj = projdb.fromTokenName(token)
+  proj = NDProject.fromTokenName(token)
   with closing (SpatialDB(proj)) as db:
 
     ch = NDChannel.fromName(proj, channel)
@@ -1920,13 +1920,12 @@ def getPropagate (webargs):
     raise NDWSError("Illegal getPropagate request. Wrong format {}. {}".format(webargs, e))
 
   # pattern for using contexts to close databases
-  with closing(NDProjectsDB()) as projdb:
-    proj = projdb.loadToken(token)
-    value_list = []
-    
-    for channel_name in channel_list.split(','):
-      ch = proj.getChannelObj(channel_name)
-      value_list.append(ch.propagate)
+  proj = NDProject.fromTokenName(token)
+  value_list = []
+  
+  for channel_name in channel_list.split(','):
+    ch = proj.getChannelObj(channel_name)
+    value_list.append(ch.propagate)
 
   return ','.join(str(i) for i in value_list)
 
@@ -1942,45 +1941,44 @@ def setPropagate(webargs):
     raise NDWSError("Illegal setPropagate request. Wrong format {}. {}".format(webargs, e))
     
   # pattern for using contexts to close databases. get the project
-  with closing (NDProjectsDB()) as projdb:
-    proj = projdb.loadToken(token)
+  proj = NDProject.fromTokenName(token)
+  
+  for channel_name in channel_list.split(','):
+    ch = proj.getChannelObj(channel_name)
     
-    for channel_name in channel_list.split(','):
-      ch = proj.getChannelObj(channel_name)
-      
-      value = value_list[0]
-      # If the value is to be set under propagation and the project is not under propagation
-      if int(value) == UNDER_PROPAGATION and ch.propagate == NOT_PROPAGATED:
-        # and is not read only
-        if ch.readonly == READONLY_FALSE:
-          ch.propagate(UNDER_PROPAGATION)
-          from spdb.tasks import propagate
-          # then call propagate
-          # propagate(token, channel_name)
-          propagate.delay(token, channel_name)
-        else:
-          logger.error("Cannot Propagate this project. It is set to Read Only.")
-          raise NDWSError("Cannot Propagate this project. It is set to Read Only.")
-      # if the project is Propagated already you can set it to under propagation
-      elif int(value) == UNDER_PROPAGATION and ch.propagate == PROPAGATED:
-        logger.error("Cannot propagate a project which is propagated. Set to Not Propagated first.")
-        raise NDWSError("Cannot propagate a project which is propagated. Set to Not Propagated first.")
-      # If the value to be set is not propagated
-      elif int(value) == NOT_PROPAGATED:
-        # and the project is under propagation then throw an error
-        if ch.propagate == UNDER_PROPAGATION:
-          logger.error("Cannot set this value. Project is under propagation.")
-          raise NDWSError("Cannot set this value. Project is under propagation.")
-        # and the project is already propagated and set read only then throw error
-        elif ch.propagate == PROPAGATED and ch.readonly == READONLY_TRUE:
-          logger.error("Cannot set this Project to unpropagated. Project is Read only")
-          raise NDWSError("Cannot set this Project to unpropagated. Project is Read only")
-        else:
-          ch.propagate(NOT_PROPAGATED)
-      # cannot set a project to propagated via the RESTful interface
+    value = value_list[0]
+    # If the value is to be set under propagation and the project is not under propagation
+    if int(value) == UNDER_PROPAGATION and ch.propagate == NOT_PROPAGATED:
+      # and is not read only
+      if ch.readonly == READONLY_FALSE:
+        ch.propagate = UNDER_PROPAGATION
+        from sd.tasks import propagate
+        # then call propagate
+        # propagate(token, channel_name)
+        propagate.delay(token, channel_name)
       else:
-        logger.error("Invalid Value {} for setPropagate".format(value))
-        raise NDWSError("Invalid Value {} for setPropagate".format(value))
+        logger.error("Cannot Propagate this project. It is set to Read Only.")
+        raise NDWSError("Cannot Propagate this project. It is set to Read Only.")
+    # if the project is Propagated already you can set it to under propagation
+    elif int(value) == UNDER_PROPAGATION and ch.propagate == PROPAGATED:
+      logger.error("Cannot propagate a project which is propagated. Set to Not Propagated first.")
+      raise NDWSError("Cannot propagate a project which is propagated. Set to Not Propagated first.")
+    # If the value to be set is not propagated
+    elif int(value) == NOT_PROPAGATED:
+      # and the project is under propagation then throw an error
+      if ch.propagate == UNDER_PROPAGATION:
+        logger.error("Cannot set this value. Project is under propagation.")
+        raise NDWSError("Cannot set this value. Project is under propagation.")
+      # and the project is already propagated and set read only then throw error
+      elif ch.propagate == PROPAGATED and ch.readonly == READONLY_TRUE:
+        logger.error("Cannot set this Project to unpropagated. Project is Read only")
+        raise NDWSError("Cannot set this Project to unpropagated. Project is Read only")
+      else:
+        ch.propagate = NOT_PROPAGATED
+    # cannot set a project to propagated via the RESTful interface
+    else:
+      logger.error("Invalid Value {} for setPropagate".format(value))
+      raise NDWSError("Invalid Value {} for setPropagate".format(value))
 
 def merge (webargs):
   """Return a single HDF5 field"""

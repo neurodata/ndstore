@@ -19,7 +19,7 @@ import MySQLdb
 from PIL import Image
 from ndcube.cube import Cube
 import spatialdb
-from ndproj.ndprojdb import NDProjectsDB
+from ndproj.ndproject import NDProject
 from ndctypelib import XYZMorton, MortonXYZ, isotropicBuild_ctype, addDataToZSliceStack_ctype, addDataToIsotropicStack_ctype
 from ndtype import ZSLICES, ISOTROPIC, ANNOTATION_CHANNELS, IMAGE_CHANNELS, TIMESERIES_CHANNELS, PROPAGATED, NOT_PROPAGATED, ND_dtypetonp
 from ndwserror import NDWSError
@@ -32,29 +32,28 @@ logger=logging.getLogger("neurodata")
 def buildStack(token, channel_name, resolution=None):
   """Wrapper for the different datatypes """
 
-  with closing(NDProjectsDB()) as projdb:
-    proj = projdb.loadToken(token)
-    ch = proj.getChannelObj(channel_name)
-    
-    try:
-      if ch.getChannelType() in ANNOTATION_CHANNELS:
-        clearStack(proj, ch, resolution)
-        buildAnnoStack(proj, ch, resolution)
-      elif ch.getChannelType() in IMAGE_CHANNELS:
-        buildImageStack(proj, ch, resolution)
-      elif ch.getChannelType() in TIMESERIES_CHANNELS:
-        buildImageStack(proj, ch, resolution)
-      else:
-        logger.error("Not Supported")
-        raise NDWSError("Not Supported")
-    
-      ch.setPropagate(PROPAGATED)
+  proj = NDProject.fromTokenName(token)
+  ch = proj.getChannelObj(channel_name)
+  
+  try:
+    if ch.channel_type in ANNOTATION_CHANNELS:
+      clearStack(proj, ch, resolution)
+      buildAnnoStack(proj, ch, resolution)
+    elif ch.channel_type in IMAGE_CHANNELS:
+      buildImageStack(proj, ch, resolution)
+    elif ch.channel_type in TIMESERIES_CHANNELS:
+      buildImageStack(proj, ch, resolution)
+    else:
+      logger.error("Not Supported")
+      raise NDWSError("Not Supported")
+  
+    ch.propagate = PROPAGATED
 
-    except MySQLdb.Error, e:
-      ch.setPropagate(NOT_PROPAGATED)
-      # projdb.updatePropagate(proj)
-      logger.error("Error in building image stack {}".format(token))
-      raise NDWSError("Error in the building image stack {}".format(token))
+  except MySQLdb.Error, e:
+    ch.propagate = NOT_PROPAGATED
+    # projdb.updatePropagate(proj)
+    logger.error("Error in building image stack {}".format(token))
+    raise NDWSError("Error in the building image stack {}".format(token))
 
 
 def clearStack (proj, ch, res=None):
@@ -112,8 +111,8 @@ def buildAnnoStack ( proj, ch, res=None ):
     for cur_res in range(res, high_res+1):
 
       # Get the source database sizes
-      [[ximagesz, yimagesz, zimagesz], timerange] = proj.datasetcfg.imageSize(cur_res-1)
-      [xcubedim, ycubedim, zcubedim] = cubedim = proj.datasetcfg.getCubeDims()[cur_res-1]
+      [[ximagesz, yimagesz, zimagesz], timerange] = proj.datasetcfg.dataset_dim(cur_res-1)
+      [xcubedim, ycubedim, zcubedim] = cubedim = proj.datasetcfg.get_cubedim(cur_res-1)
 
       # Set the limits for iteration on the number of cubes in each dimension
       xlimit = (ximagesz-1) / xcubedim + 1
@@ -123,9 +122,9 @@ def buildAnnoStack ( proj, ch, res=None ):
       # choose constants that work for all resolutions. 
       # recall that cube size changes from 128x128x16 to 64*64*64 with res
       if scaling == ZSLICES:
-        outdata = np.zeros([zcubedim*4, ycubedim*2, xcubedim*2], dtype=ND_dtypetonp.get(ch.getDataType()))
+        outdata = np.zeros([zcubedim*4, ycubedim*2, xcubedim*2], dtype=ND_dtypetonp.get(ch.channel_datatype))
       elif scaling == ISOTROPIC:
-        outdata = np.zeros([zcubedim*2, ycubedim*2, xcubedim*2], dtype=ND_dtypetonp.get(ch.getDataType()))
+        outdata = np.zeros([zcubedim*2, ycubedim*2, xcubedim*2], dtype=ND_dtypetonp.get(ch.channel_datatype))
       else:
         logger.error("Invalid scaling option in project = {}".format(scaling) )
         raise NDWSError("Invalid scaling option in project = {}".format(scaling)) 
@@ -138,7 +137,7 @@ def buildAnnoStack ( proj, ch, res=None ):
 
         # call the range query
         cuboids = db.getCubes(ch, range(mortonidx,mortonidx+64), cur_res-1)
-        cube = Cube.getCube(cubedim, ch.getChannelType(), ch.getDataType())
+        cube = Cube.CubeFactory(cubedim, ch.channel_type, ch.channel_datatype)
 
         # get the first cube
         for idx, datastring in cuboids:
@@ -184,7 +183,7 @@ def buildAnnoStack ( proj, ch, res=None ):
         db.kvio.conn.commit()
           
         # zero the output buffer
-        outdata = np.zeros ([zcubedim*4, ycubedim*2, xcubedim*2], dtype=ND_dtypetonp.get(ch.getDataType()))
+        outdata = np.zeros ([zcubedim*4, ycubedim*2, xcubedim*2], dtype=ND_dtypetonp.get(ch.channel_datatype))
 
 
 def buildImageStack(proj, ch, res=None):
@@ -202,8 +201,8 @@ def buildImageStack(proj, ch, res=None):
     for cur_res in range (res, high_res+1):
 
       # Get the source database sizes
-      [[ximagesz, yimagesz, zimagesz], timerange] = proj.datasetcfg.imageSize(cur_res)
-      [xcubedim, ycubedim, zcubedim] = cubedim = proj.datasetcfg.getCubeDims()[cur_res]
+      [[ximagesz, yimagesz, zimagesz], timerange] = proj.datasetcfg.dataset_dim(cur_res)
+      [xcubedim, ycubedim, zcubedim] = cubedim = proj.datasetcfg.get_cubedim(cur_res)
 
       if scaling == ZSLICES:
         (xscale, yscale, zscale) = (2, 2, 1)
@@ -213,7 +212,7 @@ def buildImageStack(proj, ch, res=None):
         logger.error("Invalid scaling option in project = {}".format(scaling))
         raise NDWSError("Invalid scaling option in project = {}".format(scaling)) 
 
-      biggercubedim = [xcubedim*xscale,ycubedim*yscale,zcubedim*zscale]
+      biggercubedim = [xcubedim*xscale, ycubedim*yscale, zcubedim*zscale]
 
       # Set the limits for iteration on the number of cubes in each dimension
       xlimit = (ximagesz-1) / xcubedim + 1
@@ -230,14 +229,14 @@ def buildImageStack(proj, ch, res=None):
             for x in range(xlimit):
 
               # cutout the data at the resolution
-              if ch.getChannelType() not in TIMESERIES_CHANNELS:
+              if ch.channel_type not in TIMESERIES_CHANNELS:
                 olddata = db.cutout(ch, [x*xscale*xcubedim, y*yscale*ycubedim, z*zscale*zcubedim ], biggercubedim, cur_res-1).data
               else:
                 olddata = db.timecutout(ch, [x*xscale*xcubedim, y*yscale*ycubedim, z*zscale*zcubedim ], biggercubedim, cur_res-1, [ts,ts+1]).data
                 olddata = olddata[0,:,:,:]
 
               #olddata target array for the new data (z,y,x) order
-              newdata = np.zeros([zcubedim,ycubedim,xcubedim], dtype=ND_dtypetonp.get(ch.getDataType()))
+              newdata = np.zeros([zcubedim, ycubedim, xcubedim], dtype=ND_dtypetonp.get(ch.channel_datatype))
 
               for sl in range(zcubedim):
 
@@ -263,17 +262,17 @@ def buildImageStack(proj, ch, res=None):
 
                 # Resize the image and put in the new cube array
                 if olddata.dtype != np.uint32:
-                  newdata[sl, :, :] = np.asarray(slimage.resize([xcubedim,ycubedim]))
+                  newdata[sl, :, :] = np.asarray(slimage.resize([xcubedim, ycubedim]))
                 else:
                   tempdata = np.asarray(slimage.resize([xcubedim, ycubedim]))
                   newdata[sl,:,:] = np.left_shift(tempdata[:,:,3], 24, dtype=np.uint32) | np.left_shift(tempdata[:,:,2], 16, dtype=np.uint32) | np.left_shift(tempdata[:,:,1], 8, dtype=np.uint32) | np.uint32(tempdata[:,:,0])
 
               zidx = XYZMorton ([x,y,z])
-              cube = Cube.CubeFactory(cubedim, ch.getChannelType(), ch.getDataType())
+              cube = Cube.CubeFactory(cubedim, ch.channel_type, ch.channel_datatype)
               cube.zeros()
 
               cube.data = newdata
-              if ch.getChannelType() not in TIMESERIES_CHANNELS:
+              if ch.channel_type not in TIMESERIES_CHANNELS:
                 db.putCube(ch, zidx, cur_res, cube, update=True)
               else:
                 db.putTimeCube(ch, zidx, ts, cur_res, cube, update=False)

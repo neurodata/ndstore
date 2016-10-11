@@ -14,22 +14,16 @@
 
 import re
 import json
-
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
-
 from nduser.models import Dataset, Project, Token, Channel
 from stats.models import Histogram
-
 import stats.tasks
-
 from histio import loadHistogram, loadHistogramROI
 from histstats import HistStats
-
 from ndtype import READONLY_TRUE, READONLY_FALSE, UINT8, UINT16, UINT32, UINT64, FLOAT32
-
 import logging
-logger=logging.getLogger("neurodata")
+logger = logging.getLogger("neurodata")
 
 # AB TODO: kill this after moving binning code
 import numpy as np
@@ -43,7 +37,7 @@ def getHist(request, webargs):
     m = re.match(r"(?P<token>[\w+]+)/(?P<channel>[\w+]+)/hist/$", webargs)
     [token, channel] = [i for i in m.groups()]
   except Exception, e:
-    logger.warning("Incorrect format for web arguments {}. {}".format(webargs, e))
+    logger.error("Incorrect format for web arguments {}. {}".format(webargs, e))
     return HttpResponseBadRequest("Incorrect format for web arguments {}. {}".format(webargs, e))
 
   try:
@@ -66,7 +60,7 @@ def getHistROI(request, webargs):
     md = m.groupdict()
 
   except Exception, e:
-    logger.warning("Incorrect format for web arguments {}. {}".format(webargs, e))
+    logger.error("Incorrect format for web arguments {}. {}".format(webargs, e))
     return HttpResponseBadRequest("Incorrect format for web arguments {}. {}".format(webargs, e))
 
   token = md['token']
@@ -104,7 +98,7 @@ def getBinnedHistROI(request, webargs):
     md = m.groupdict()
 
   except Exception, e:
-    logger.warning("Incorrect format for web arguments {}. {}".format(webargs, e))
+    logger.error("Incorrect format for web arguments {}. {}".format(webargs, e))
     return HttpResponseBadRequest("Incorrect format for web arguments {}. {}".format(webargs, e))
 
   token = md['token']
@@ -157,7 +151,7 @@ def getROIs(request, webargs):
     md = m.groupdict()
 
   except Exception, e:
-    logger.warning("Incorrect format for web arguments {}. {}".format(webargs, e))
+    logger.error("Incorrect format for web arguments {}. {}".format(webargs, e))
     return HttpResponseBadRequest("Incorrect format for web arguments {}. {}".format(webargs, e))
 
   token = md['token']
@@ -188,7 +182,7 @@ def genHist(request, webargs):
       m = re.match(r"(?P<token>[\w+]+)/(?P<channel>[\w+]+)/genhist/$", webargs)
       [token, channel] = [i for i in m.groups()]
     except Exception, e:
-      logger.warning("Incorrect format for web arguments {}. {}".format(webargs, e))
+      logger.error("Incorrect format for web arguments {}. {}".format(webargs, e))
       return HttpResponseBadRequest("Incorrect format for web arguments {}. {}".format(webargs, e))
 
     # check to make sure token exists
@@ -233,7 +227,7 @@ def genHist(request, webargs):
       m = re.match(r"(?P<token>[\w+]+)/(?P<channel>[\w+]+)/genhist/$", webargs)
       [token, channel] = [i for i in m.groups()]
     except Exception, e:
-      logger.warning("Incorrect format for web arguments {}. {}".format(webargs, e))
+      logger.error("Incorrect format for web arguments {}. {}".format(webargs, e))
       return HttpResponseBadRequest("Incorrect format for web arguments {}. {}".format(webargs, e))
 
     # check to make sure token exists
@@ -324,7 +318,7 @@ def mean(request, webargs):
     m = re.match(r"(?P<token>[\w+]+)/(?P<channel>[\w+]+)/mean/$", webargs)
     [token, channel] = [i for i in m.groups()]
   except Exception, e:
-    logger.warning("Incorrect format for web arguments {}. {}".format(webargs, e))
+    logger.error("Incorrect format for web arguments {}. {}".format(webargs, e))
     return HttpResponseBadRequest("Incorrect format for web arguments {}. {}".format(webargs, e))
 
   try:
@@ -344,7 +338,7 @@ def std(request, webargs):
     m = re.match(r"(?P<token>[\w+]+)/(?P<channel>[\w+]+)/std/$", webargs)
     [token, channel] = [i for i in m.groups()]
   except Exception, e:
-    logger.warning("Incorrect format for web arguments {}. {}".format(webargs, e))
+    logger.error("Incorrect format for web arguments {}. {}".format(webargs, e))
     return HttpResponseBadRequest("Incorrect format for web arguments {}. {}".format(webargs, e))
 
   try:
@@ -364,7 +358,7 @@ def percentile(request, webargs):
     m = re.match(r"(?P<token>[\w+]+)/(?P<channel>[\w+]+)/percentile/(?P<percent>[\d.]+)/$", webargs)
     [token, channel, percent] = [i for i in m.groups()]
   except Exception, e:
-    logger.warning("Incorrect format for web arguments {}. {}".format(webargs, e))
+    logger.error("Incorrect format for web arguments {}. {}".format(webargs, e))
     return HttpResponseBadRequest("Incorrect format for web arguments {}. {}".format(webargs, e))
 
   try:
@@ -387,7 +381,7 @@ def all(request, webargs):
     m = re.match(r"(?P<token>[\w+]+)/(?P<channel>[\w+]+)/all/$", webargs)
     [token, channel] = [i for i in m.groups()]
   except Exception, e:
-    logger.warning("Incorrect format for web arguments {}. {}".format(webargs, e))
+    logger.error("Incorrect format for web arguments {}. {}".format(webargs, e))
     return HttpResponseBadRequest("Incorrect format for web arguments {}. {}".format(webargs, e))
 
   try:

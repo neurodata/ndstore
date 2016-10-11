@@ -189,12 +189,12 @@ class IngestData:
     self.createS3Bucket(proj.getProjectName())
 
     # get the dataset configuration
-    [[ximagesz, yimagesz, zimagesz],(starttime,endtime)] = proj.datasetcfg.imageSize(self.resolution)
-    [xcubedim,ycubedim,zcubedim] = cubedim = proj.datasetcfg.getCubeDims()[self.resolution]
-    [xoffset, yoffset, zoffset] = proj.datasetcfg.getOffset()[self.resolution]
+    [[ximagesz, yimagesz, zimagesz],(starttime,endtime)] = proj.datasetcfg.dataset_dim(self.resolution)
+    [xcubedim,ycubedim,zcubedim] = cubedim = proj.datasetcfg.get_cubedim(self.resolution)
+    [xoffset, yoffset, zoffset] = proj.datasetcfg.get_offset(self.resolution)
     [xsupercubedim, ysupercubedim, zsupercubedim] = supercubedim = map(mul, cubedim, SUPERCUBESIZE)
 
-    if ch.getChannelType() in TIMESERIES_CHANNELS:
+    if ch.channel_type in TIMESERIES_CHANNELS:
       logger.error("Timeseries data not supported for CATMAID data. Error in {}".format(self.token))
       raise NDWSError("Timeseries data not supported for CATMAID data. Error in {}".format(self.token))
     
@@ -208,7 +208,7 @@ class IngestData:
         # Get a list of the files in the directories
         for slice_number in range (zoffset, zimagesz, zsupercubedim):
           # empty slab
-          slab = np.zeros([zsupercubedim, tilesz, tilesz], dtype=ND_dtypetonp.get(ch.getDataType()))
+          slab = np.zeros([zsupercubedim, tilesz, tilesz], dtype=ND_dtypetonp.get(ch.channel_datatype))
           
           # prefetch data
           self.fetchCatmaidData(range(slice_number, slice_number+zsupercubedim) if slice_number+zsupercubedim<=zimagesz else range(slice_number, zimagesz), xtile, ytile)
@@ -222,14 +222,14 @@ class IngestData:
                 slab[b,:,:] = np.asarray(Image.open(file_name, 'r'))[:,:,0]
               except IOError, e:
                 logger.warning("IOError {}.".format(e))
-                slab[b,:,:] = np.zeros((tilesz, tilesz), dtype=ND_dtypetonp.get(ch.getDataType()))
+                slab[b,:,:] = np.zeros((tilesz, tilesz), dtype=ND_dtypetonp.get(ch.channel_datatype))
 
           for y in range (ytile*tilesz, (ytile+1)*tilesz, ysupercubedim):
             for x in range (xtile*tilesz, (xtile+1)*tilesz, xsupercubedim):
 
               # Getting a Cube id and ingesting the data one cube at a time
               zidx = XYZMorton ( [(x-xoffset)/xsupercubedim, (y-yoffset)/ysupercubedim, (slice_number-zoffset)/zsupercubedim] )
-              cube = Cube.getCube(supercubedim, ch.getChannelType(), ch.getDataType())
+              cube = Cube.getCube(supercubedim, ch.channel_type, ch.channel_datatype)
               cube.zeros()
 
               xmin = x % tilesz
@@ -257,24 +257,24 @@ class IngestData:
 
       ch = proj.getChannelObj(self.channel)
       # get the dataset configuration
-      [[ximagesz, yimagesz, zimagesz],(starttime,endtime)] = proj.datasetcfg.imageSize(self.resolution)
-      [xcubedim, ycubedim, zcubedim] = cubedim = proj.datasetcfg.getCubeDims()[self.resolution]
-      [xoffset, yoffset, zoffset] = proj.datasetcfg.getOffset()[self.resolution]
+      [[ximagesz, yimagesz, zimagesz],(starttime,endtime)] = proj.datasetcfg.get_imagesize(self.resolution)
+      [xcubedim, ycubedim, zcubedim] = cubedim = proj.datasetcfg.get_cubedim(self.resolution)
+      [xoffset, yoffset, zoffset] = proj.datasetcfg.get_offset(self.resolution)
       
-      if ch.getChannelType() in TIMESERIES_CHANNELS and (starttime == 0 and endtime == 0):
+      if ch.channel_type in TIMESERIES_CHANNELS and (starttime == 0 and endtime == 0):
         logger.error("Timeseries Data cannot have timerange (0,0)")
         raise NDWSError("Timeseries Data cannot have timerange (0,0)")
 
       # Get a list of the files in the directories
       for timestamp in range(starttime, endtime+1):
         for slice_number in range (zoffset, zimagesz, zcubedim):
-          slab = np.zeros([zcubedim, yimagesz, ximagesz ], dtype=ND_dtypetonp.get(ch.getDataType()))
+          slab = np.zeros([zcubedim, yimagesz, ximagesz ], dtype=ND_dtypetonp.get(ch.channel_datatype))
           # fetch 16 slices at a time
-          if ch.getChannelType() in TIMESERIES_CHANNELS:
+          if ch.channel_type in TIMESERIES_CHANNELS:
             time_value = timestamp
           else:
             time_value = None
-          self.fetchData(range(slice_number,slice_number+zcubedim) if slice_number+zcubedim<=zimagesz else range(slice_number,zimagesz), time_value=time_value)
+          self.fetchData(range(slice_number, slice_number+zcubedim) if slice_number+zcubedim<=zimagesz else range(slice_number, zimagesz), time_value=time_value)
           for b in range(zcubedim):
             if (slice_number + b < zimagesz):
               try:
@@ -283,13 +283,13 @@ class IngestData:
                 # print "Open filename {}".format(file_name)
                 logger.info("Open filename {}".format(file_name))
                 
-                if ch.getDataType() in [UINT8, UINT16] and ch.getChannelType() in IMAGE_CHANNELS:
+                if ch.channel_datatype in [UINT8, UINT16] and ch.channel_type in IMAGE_CHANNELS:
                   image_data = np.asarray(Image.open(file_name, 'r'))
                   slab[b,:,:] = image_data
-                elif ch.getDataType() in [UINT32] and ch.getChannelType() in IMAGE_CHANNELS:
+                elif ch.channel_datatype in [UINT32] and ch.channel_type in IMAGE_CHANNELS:
                   image_data = np.asarray(Image.open(file_name, 'r').convert('RGBA'))
                   slab[b,:,:] = np.left_shift(image_data[:,:,3], 24, dtype=np.uint32) | np.left_shift(image_data[:,:,2], 16, dtype=np.uint32) | np.left_shift(image_data[:,:,1], 8, dtype=np.uint32) | np.uint32(image_data[:,:,0])
-                elif ch.getChannelType() in ANNOTATION_CHANNELS:
+                elif ch.channel_type in ANNOTATION_CHANNELS:
                   image_data = np.asarray(Image.open(file_name, 'r'))
                   slab[b,:,:] = image_data
                 else:
@@ -304,7 +304,7 @@ class IngestData:
 
               # Getting a Cube id and ingesting the data one cube at a time
               zidx = XYZMorton ( [x/xcubedim, y/ycubedim, (slice_number-zoffset)/zcubedim] )
-              cube = Cube.CubeFactory(cubedim, ch.getChannelType(), ch.getDataType())
+              cube = Cube.CubeFactory(cubedim, ch.channel_type, ch.channel_datatype)
               cube.zeros()
 
               xmin,ymin = x,y
@@ -315,16 +315,16 @@ class IngestData:
 
               cube.data[0:zmax-zmin,0:ymax-ymin,0:xmax-xmin] = slab[zmin:zmax, ymin:ymax, xmin:xmax]
               if cube.isNotZeros():
-                if ch.getChannelType() in IMAGE_CHANNELS:
+                if ch.channel_type in IMAGE_CHANNELS:
                   db.putCube(ch, zidx, self.resolution, cube, update=True)
-                elif ch.getChannelType() in TIMESERIES_CHANNELS:
+                elif ch.channel_type in TIMESERIES_CHANNELS:
                   db.putTimeCube(ch, zidx, timestamp, self.resolution, cube, update=False)
-                elif ch.getChannelType() in ANNOTATION_CHANNELS:
+                elif ch.channel_type in ANNOTATION_CHANNELS:
                   corner = map(sub, [x,y,slice_number], [xoffset,yoffset,zoffset])
                   db.annotateDense(ch, corner, self.resolution, cube.data, 'O')
                 else:
-                  logger.error("Channel type {} not supported".format(ch.getChannelType()))
-                  raise NDWSError("Channel type {} not supported".format(ch.getChannelType()))
+                  logger.error("Channel type {} not supported".format(ch.channel_type))
+                  raise NDWSError("Channel type {} not supported".format(ch.channel_type))
           
           # clean up the slices fetched
-          self.cleanData(range(slice_number,slice_number+zcubedim) if slice_number+zcubedim<=zimagesz else range(slice_number,zimagesz))
+          self.cleanData(range(slice_number, slice_number+zcubedim) if slice_number + zcubedim<=zimagesz else range(slice_number, zimagesz))

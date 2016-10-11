@@ -18,11 +18,9 @@ from django.views.decorators.cache import cache_control
 import MySQLdb
 import cStringIO
 import re
-
-import ndwsrest
-import ndwsprojingest
-
-from ndwserror import NDWSError, IncorrectSyntaxError
+import webservices.ndwsrest as ndwsrest
+import webservices.ndwsprojingest as ndwsprojingest
+from webservices.ndwserror import NDWSError, IncorrectSyntaxError
 import logging
 logger=logging.getLogger("neurodata")
 
@@ -465,24 +463,24 @@ def autoIngest(request, webargs):
     logger.exception("Unknown exception in jsonProject Web service. {}".format(e))
     raise NDWSError("Unknown exception in jsonProject Web service. {}".format(e))
 
-def createChannel(request, webargs):
-  """RESTful URL for creating a list of channels using a JSON file"""
+# def createChannel(request, webargs):
+  # """RESTful URL for creating a list of channels using a JSON file"""
 
-  try:
-    return ndwsprojingest.createChannel(webargs, request.body)
-  except NDWSError, e:
-    return django.http.HttpResponseNotFound()
-  except Exception, e:
-    logger.exception("Unknown exception in jsonProject Web service. {}".format(e))
-    raise NDWSError("Unknown exception in jsonProject Web service. {}".format(e))
+  # try:
+    # return ndwsprojingest.createChannel(webargs, request.body)
+  # except NDWSError, e:
+    # return django.http.HttpResponseNotFound()
+  # except Exception, e:
+    # logger.exception("Unknown exception in jsonProject Web service. {}".format(e))
+    # raise NDWSError("Unknown exception in jsonProject Web service. {}".format(e))
 
-def deleteChannel(request, webargs):
-  """RESTful URL for deleting a list of channels using a JSON file"""
+# def deleteChannel(request, webargs):
+  # """RESTful URL for deleting a list of channels using a JSON file"""
 
-  try:
-    return ndwsprojingest.deleteChannel(webargs, request.body)
-  except NDWSError, e:
-    return django.http.HttpResponseNotFound()
-  except Exception, e:
-    logger.exception("Unknown exception in jsonProject Web service. {}".format(e))
-    raise NDWSError("Unknown exception in jsonProject Web service. {}".format(e))
+  # try:
+    # return ndwsprojingest.deleteChannel(webargs, request.body)
+  # except NDWSError, e:
+    # return django.http.HttpResponseNotFound()
+  # except Exception, e:
+    # logger.exception("Unknown exception in jsonProject Web service. {}".format(e))
+    # raise NDWSError("Unknown exception in jsonProject Web service. {}".format(e))

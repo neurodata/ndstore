@@ -148,7 +148,7 @@ class NDDataset(NDObject):
   @staticmethod
   def public_list():
     datasets  = Dataset.objects.filter(public = PUBLIC_TRUE)
-    return [d.dataset_name for d in datasets]
+    return [ds.dataset_name for ds in datasets]
 
   @property
   def dataset_name(self):

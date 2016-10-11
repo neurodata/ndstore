@@ -55,6 +55,11 @@ class NDProject(NDObject):
         # logger.error("Token {} does not exist. {}".format(token_name, e))
         # raise NDWSError("Token {} does not exist. {}".format(token_name, e))
   
+  @staticmethod
+  def public_list():
+    projects = Project.objects.filter(public = PUBLIC_TRUE)
+    return [pr.project_name for pr in projects]
+
   @classmethod
   def fromTokenName(cls, token_name):
     try:
