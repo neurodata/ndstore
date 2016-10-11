@@ -57,7 +57,8 @@ class Test_Resource():
         'zimagesize' : 100,
         'xvoxelres' : 1.0,
         'yvoxelres' : 2.0,
-        'zvoxelres' : 1.0
+        'zvoxelres' : 1.0,
+        'public' : 1
     }
     response = postJSON('http://{}/resource/dataset/{}/'.format(SITE_HOST, p.dataset), dataset)
     assert(response.status_code == 200)
@@ -66,7 +67,8 @@ class Test_Resource():
     project = {
         'project_name' : p.project,
         'host' : 'localhost',
-        's3backend' : 0
+        's3backend' : 0,
+        'public' : 1
     }
     response = postJSON('http://{}/resource/dataset/{}/project/{}'.format(SITE_HOST, p.dataset, p.project), project)
     assert(response.status_code == 200)
@@ -82,10 +84,27 @@ class Test_Resource():
   
   def test_post_token(self):
     token = {
-        'token_name' : p.token
+        'token_name' : p.token,
+        'public' : 1
     }
     response = postJSON('http://{}/resource/dataset/{}/project/{}/token/{}/'.format(SITE_HOST, p.dataset, p.project, p.token), token)
     assert(response.status_code == 200)
+  
+  def test_public_dataset(self):
+    response = getJSON('http://{}/resource/public/dataset/'.format(SITE_HOST))
+    assert(p.dataset in response)
+  
+  def test_list_dataset(self):
+    response = getJSON('http://{}/resource/dataset/'.format(SITE_HOST))
+    assert(p.dataset in response)
+  
+  def test_list_project(self):
+    response = getJSON('http://{}/resource/dataset/{}/project/'.format(SITE_HOST, p.dataset))
+    assert(p.project in response)
+  
+  def test_public_token(self):
+    response = getJSON('http://{}/resource/public/token/'.format(SITE_HOST))
+    assert(p.token in response)
   
   def test_get_dataset(self):
     response = getJSON('http://{}/resource/dataset/{}/'.format(SITE_HOST, p.dataset))
