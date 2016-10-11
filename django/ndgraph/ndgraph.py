@@ -19,7 +19,7 @@ from operator import add, sub
 import tempfile
 from ndproj.ndproject import NDProject
 from ndramon import annotation, ramondb
-import spdb.spatialdb
+from spdb.spatialdb import SpatialDB
 from webservices.ndwserror import NDWSError
 import logging
 logger = logging.getLogger("neurodata")
@@ -38,7 +38,7 @@ def getAnnoIds(proj, ch, resolution, xmin, xmax, ymin, ymax, zmin, zmax):
     logger.error("Illegal cutout corner={}, dim={}".format(corner, dim))
     raise NDWSError("Illegal cutout corner={}, dim={}".format(corner, dim))
 
-  with closing (spatialdb.SpatialDB(proj)) as sdb:
+  with closing (SpatialDB(proj)) as sdb:
     cutout = sdb.cutout(ch, corner, dim, resolution)
 
   if cutout.isNotZeros():
