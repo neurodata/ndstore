@@ -38,6 +38,7 @@ from ndlib.ndtype import *
 from spdb.spatialdb import SpatialDB
 from ndproj.ndprojdb import NDProjectsDB
 from ndproj.ndchannel import NDChannel
+from ndproj.ndproject import NDProject
 from ndramon import h5ann
 from ndramon.annotation import *
 from ndramon.ramondb import RamonDB
@@ -861,8 +862,7 @@ def getCutout ( webargs ):
   [channel, service, chanargs] = webargs.split('/', 2)
 
   # get the project 
-  with closing (NDProjectsDB()) as projdb:
-    proj = projdb.loadToken ( token )
+  proj = projdb.fromTokenName(token)
 
   # and the database and then call the db function
   with closing (SpatialDB(proj)) as db:
@@ -874,8 +874,7 @@ def putCutout ( webargs, postdata ):
 
   [ token, rangeargs ] = webargs.split('/',1)
   # get the project 
-  with closing (NDProjectsDB()) as projdb:
-    proj = projdb.loadToken ( token )
+  proj = projdb.fromTokenName(token)
 
   # and the database and then call the db function
   with closing (SpatialDB(proj)) as db:
@@ -1037,8 +1036,7 @@ def getAnnotation ( webargs ):
 
   # pattern for using contexts to close databases
   # get the project 
-  with closing (NDProjectsDB()) as projdb:
-    proj = projdb.loadToken ( token )
+  proj = projdb.fromTokenName(token)
 
   # and the database and then call the db function
   with closing (SpatialDB(proj)) as db:
@@ -1184,8 +1182,7 @@ def getCSV ( webargs ):
 
   # pattern for using contexts to close databases
   # get the project 
-  with closing (NDProjectsDB()) as projdb:
-    proj = projdb.loadToken ( token )
+  proj = projdb.fromTokenName(token)
 
   # and the database and then call the db function
   with closing (SpatialDB(proj)) as db:
@@ -1221,8 +1218,7 @@ def getAnnotations ( webargs, postdata ):
 
   [ token, objectsliteral, otherargs ] = webargs.split ('/',2)
 
-  with closing (NDProjectsDB()) as projdb:
-    proj = projdb.loadToken ( token )
+  proj = projdb.fromTokenName(token)
   
   with closing (SpatialDB(proj)) as db:
    with closing (RamonDB(proj)) as rdb:
@@ -1338,11 +1334,9 @@ def putAnnotation ( webargs, postdata ):
   """Put a RAMON object as HDF5 (or JSON) by object identifier"""
 
   [token, channel, optionsargs] = webargs.split('/',2)
-  
-  with closing (NDProjectsDB()) as projdb:
-    proj = projdb.loadToken ( token )
-  
+  proj = projdb.fromTokenName(token)
   ch = NDChannel.fromName(proj, channel)
+  
   if ch.getChannelType() not in ANNOTATION_CHANNELS:
     logger.error("Channel {} does not support annotations".format(ch.getChannelName()))
     raise NDWSError("Channel {} does not support annotations".format(ch.getChannelName()))
@@ -1596,10 +1590,7 @@ def putNIFTI ( webargs, postdata ):
   """Put a NIFTI object as an image"""
     
   [token, channel, optionsargs] = webargs.split('/',2)
-
-  with closing (NDProjectsDB()) as projdb:
-    proj = projdb.loadToken ( token )
-  
+  proj = projdb.fromTokenName(token)
   with closing (SpatialDB(proj)) as db:
 
     ch = NDChannel.fromName(proj, channel)
@@ -1637,13 +1628,10 @@ def getSWC ( webargs ):
   """Return an SWC object generated from Skeletons/Nodes"""
 
   [token, channel, service, rest] = webargs.split('/',3)
-
-  with closing (NDProjectsDB()) as projdb:
-    proj = projdb.loadToken ( token )
+  proj = projdb.fromTokenName(token)
+  ch = NDChannel.fromName(proj, channel)
   
   with closing (RamonDB(proj)) as db:
-
-    ch = NDChannel.fromName(proj, channel)
 
     # Make a named temporary file for the SWC
     with closing (tempfile.NamedTemporaryFile()) as tmpfile:
@@ -1666,14 +1654,11 @@ def putSWC ( webargs, postdata ):
   """Put an SWC object into RAMON skeleton/tree nodes"""
 
   [token, channel, service, optionsargs] = webargs.split('/',3)
-
-  with closing (NDProjectsDB()) as projdb:
-    proj = projdb.loadToken ( token )
+  proj = projdb.fromTokenName(token)
+  ch = NDChannel.fromName(proj, channel)
   
   with closing (RamonDB(proj)) as rdb:
 
-    ch = NDChannel.fromName(proj, channel)
-    
     # Don't write to readonly channels
     if ch.getReadOnly() == READONLY_TRUE:
       logger.error("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
@@ -1808,13 +1793,17 @@ def deleteAnnotation ( webargs ):
 def jsonInfo ( webargs ):
   """Return project information in json format"""
 
-  [ token, projinfoliteral, rest] = webargs.split ('/',2)
-
+  try:
+    # format /token/info/
+    m = re.match(r'(\w+)/info/', webargs)
+    token = m.group(1)
+  except Exception, e:
+    logger.error("Bad URL {}".format(webargs))
+    raise NDWSError("Bad URL {}".format(webargs))
+  
   # get the project 
-  with closing (NDProjectsDB()) as projdb:
-    proj = projdb.loadToken ( token )
-    
-    return jsonprojinfo.jsonInfo(proj)
+  proj = NDProject.fromTokenName(token)
+  return jsonprojinfo.jsonInfo(proj)
 
 def xmlInfo ( webargs ):
   """Return project information in json format"""
@@ -1828,10 +1817,8 @@ def xmlInfo ( webargs ):
     raise NDWSError("Bad URL {}".format(webargs))
   
   # get the project 
-  with closing (NDProjectsDB()) as projdb:
-    proj = projdb.loadToken ( token )
-
-    return jsonprojinfo.xmlInfo(token, proj)
+  proj = NDProject.fromTokenName(token)
+  return jsonprojinfo.xmlInfo(token, proj)
 
 
 def projInfo ( webargs ):
@@ -2217,8 +2204,7 @@ def mcFalseColor ( webargs ):
 
   # pattern for using contexts to close databases
   # get the project 
-  with closing (NDProjectsDB()) as projdb:
-    proj = projdb.loadToken ( token )
+  proj = NDProject.fromTokenName(token)
 
   # and the database and then call the db function
   with closing (SpatialDB(proj)) as db:

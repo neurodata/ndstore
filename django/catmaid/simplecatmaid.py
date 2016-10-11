@@ -88,7 +88,7 @@ class SimpleCatmaid:
     
     # make sure that the tile size is aligned with the cubedim
     if self.tilesz % self.proj.datasetcfg.cubedim[res][0] != 0 or self.tilesz % self.proj.datasetcfg.get_cubedim(res)[2]:
-      raise("Illegal tile size.  Not aligned")
+      raise("Illegal tile size. Not aligned")
 
     # figure out the cutout (limit to max image size)
     xstart = xtile*self.tilesz

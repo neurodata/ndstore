@@ -15,7 +15,7 @@
 from django.views.generic import View
 from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseBadRequest
-from nddataset import NDDataset
+from ndproj.nddataset import NDDataset
 
 class DatasetView(View):
 

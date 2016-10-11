@@ -197,7 +197,7 @@ class NDDataset(NDObject):
   # @property
   def get_imagesize(self, res):
     # return Vector3D(self._image_size[res][::-1])
-    return self._image_size[res][::-1]
+    return self._image_size[res]
   
   # @property
   def get_offset(self, res):

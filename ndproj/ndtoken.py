@@ -31,7 +31,7 @@ class NDToken(NDObject):
   @classmethod
   def fromJson(cls, project_name, token):
     tk = Token(**cls.deserialize(token))
-    self.project_name = project_name
+    tk.project_id = project_name
     return cls(tk)
   
   @classmethod

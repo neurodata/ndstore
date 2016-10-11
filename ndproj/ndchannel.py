@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from contextlib import closing
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from ndtype import *
@@ -31,7 +32,8 @@ class NDChannel(NDObject):
     from ndproject import NDProject
     self.ch = ch
     self.pr = NDProject.fromName(self.project_name)
-    self.db = NDProjectsDB.getProjDB(self.pr)
+    with closing (NDProjectsDB.getProjDB(self.pr)) as db:
+      self.db = db
 
   @classmethod
   def fromName(cls, pr, channel_name):

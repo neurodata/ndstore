@@ -14,6 +14,7 @@
 
 from django.conf.urls import url
 from . import views
+from swcview import SwcView
 
 # Uncomment the next two lines to enable the admin:
 #from django.contrib import admin
@@ -24,7 +25,7 @@ urlpatterns = [
   # nifti -- volumetric 3-d and 4-d
   url(r'(?P<webargs>^\w+/[\w+,/]*nii/[\w,/]*)$', views.nifti),
   # swc -- annotations file get and put
-  url(r'(?P<webargs>^\w+/[\w+,/]*swc/[\w,/]*)$', views.swc),
+  url(r'(?P<token_name>^\w+)/(?P<channel_name>[\w+,]*)/swc/?P<ids>([\w,/]*)?$', SwcView.as_view()),
   # fetch ids (with predicates)
   url(r'(?P<webargs>^\w+/\w+/query/[\w\.,/]*)$', views.queryObjects),
   # get project information

@@ -15,8 +15,8 @@
 from django.views.generic import View
 from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseBadRequest
-from ndproject import NDProject
-from ndchannel import NDChannel
+from ndproj.ndproject import NDProject
+from ndproj.ndchannel import NDChannel
 
 class ChannelView(View):
 

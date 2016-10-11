@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from contextlib import closing
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from nduser.models import Dataset
@@ -33,7 +34,8 @@ class NDProject(NDObject):
     
     self.pr = pr
     self.datasetcfg = NDDataset.fromName(self.dataset_name)
-    self.db = NDProjectsDB.getProjDB(self)
+    with closing (NDProjectsDB.getProjDB(self)) as db:
+      self.db = db
 
     # if isinstance(token_name, str) or isinstance(token_name, unicode):
       # try:
