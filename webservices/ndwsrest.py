@@ -76,7 +76,7 @@ def cutout (imageargs, ch, proj, db):
   timerange = args.getTimeRange()
  
   # Perform the cutout
-  if ch.getChannelType() in TIMESERIES_CHANNELS:
+  if ch.channel_type in TIMESERIES_CHANNELS:
     cube = db.cutout(ch, corner, dim, resolution, timerange=timerange)
   else:
     cube = db.cutout(ch, corner, dim, resolution, zscaling=zscaling)
@@ -88,7 +88,7 @@ def cutout (imageargs, ch, proj, db):
 def filterCube(ch, cube, filterlist=None):
   """Call Filter on a cube"""
 
-  if ch.getChannelType() in ANNOTATION_CHANNELS and filterlist is not None:
+  if ch.channel_type in ANNOTATION_CHANNELS and filterlist is not None:
     cube.data = filter_ctype_OMP ( cube.data, filterlist )
   elif filterlist is not None and ch.getChannelType not in ANNOTATION_CHANNELS:
     logger.error("Filter only possible for Annotation Channels")
@@ -284,7 +284,7 @@ def HDF5(chanargs, proj, db):
       cube.RGBAChannel()
       changrp = fh5out.create_group( "{}".format(channel_name) )
       changrp.create_dataset("CUTOUT", tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data)
-      changrp.create_dataset("CHANNELTYPE", (1,), dtype=h5py.special_dtype(vlen=str), data=ch.getChannelType())
+      changrp.create_dataset("CHANNELTYPE", (1,), dtype=h5py.special_dtype(vlen=str), data=ch.channel_type)
       changrp.create_dataset("DATATYPE", (1,), dtype=h5py.special_dtype(vlen=str), data=ch.getDataType())
   
     fh5out.close()
@@ -303,20 +303,20 @@ def postTiff3d ( channel, postargs, proj, db, postdata ):
 
   # get the channel
   ch = proj.getChannelObj(channel)
-  if ch.getDataType() in DTYPE_uint8:
+  if ch.channel_datatype in DTYPE_uint8:
     datatype=np.uint8
-  elif ch.getDataType() in DTYPE_uint16:
+  elif ch.channel_datatype in DTYPE_uint16:
     datatype=np.uint16
-  elif ch.getDataType() in DTYPE_uint32:
+  elif ch.channel_datatype in DTYPE_uint32:
     datatype=np.uint32
   else:
-    logger.error("Unsupported data type for TIFF3d post. {}".format(ch.getDataType())) 
-    raise NDWSError ("Unsupported data type for TIFF3d post. {}".format(ch.getDataType())) 
+    logger.error("Unsupported data type for TIFF3d post. {}".format(ch.channel_datatype)) 
+    raise NDWSError ("Unsupported data type for TIFF3d post. {}".format(ch.channel_datatype)) 
 
   # parse the args
   resstr, xoffstr, yoffstr, zoffstr, rest = postargs.split('/',4)
   resolution = int(resstr)
-  projoffset = proj.datasetcfg.offset[resolution]
+  projoffset = proj.datasetcfg.get_offset(resolution)
   xoff = int(xoffstr)-projoffset[0]
   yoff = int(yoffstr)-projoffset[1]
   zoff = int(zoffstr)-projoffset[2]
@@ -334,7 +334,7 @@ def postTiff3d ( channel, postargs, proj, db, postdata ):
     image_length = tif.GetField("ImageLength")
 
     # get a z batch -- how many slices per cube
-    zbatch = proj.datasetcfg.cubedim[resolution][0]
+    zbatch = proj.datasetcfg.get_cubedim(resolution)[0]
 
 
     dircount = 0
@@ -344,7 +344,7 @@ def postTiff3d ( channel, postargs, proj, db, postdata ):
 
       # allocate a batch every cubesize
       if dircount % zbatch == 0:
-        dataarray = np.zeros((zbatch,image_length,image_width),dtype=datatype)
+        dataarray = np.zeros((zbatch, image_length, image_width), dtype=datatype)
 
       dataarray[dircount%zbatch,:,:] = image
 
@@ -386,7 +386,7 @@ def timeDiff ( chanargs, proj, db):
         continue
       else:
         ch = proj.getChannelObj(channel_name)
-        if ND_dtypetonp[ch.getDataType()] == cubedata.dtype:
+        if ND_dtypetonp[ch.channel_datatype] == cubedata.dtype:
           cubedata[idx+1,:] = np.diff(cutout(imageargs, ch, proj, db).data, axis=0)
         else:
           raise NDWSError("The npz cutout can only contain cutouts of one single Channel Type.")
@@ -419,7 +419,7 @@ def tiff3d ( chanargs, proj, db ):
 # RB -- I think this is a cutout format.  So, let's not recolor.
 
 #      # if it's annotations, recolor
-#      if ch.getChannelType() in ndprojdb.ANNOTATION_CHANNELS:
+#      if ch.channel_type in ndprojdb.ANNOTATION_CHANNELS:
 #
 #        imagemap = np.zeros ( (cube.data.shape[0]*cube.data.shape[1], cube.data.shape[2]), dtype=np.uint32 )
 #
@@ -460,11 +460,11 @@ def window(data, ch, window_range=None ):
   """Performs a window transformation on the cutout area"""
 
   if window_range is None:
-    window_range = ch.getWindowRange()
+    window_range = ch.windowrange
 
   [startwindow, endwindow] = window_range
 
-  if ch.getDataType() in DTYPE_uint16:
+  if ch.channel_datatype in DTYPE_uint16:
     if (startwindow == endwindow == 0):
       return data
     elif endwindow!=0:
@@ -613,7 +613,7 @@ def imgAnno ( service, chanargs, proj, db, rdb ):
     args = restargs.BrainRestArgs ();
     args.cutoutArgs ( cutoutargs, proj.datasetcfg )
   except restargs.RESTArgsError, e:
-    logger.error("REST Arguments %s failed: %s" % (chanargs,e))
+    logger.error("REST Arguments %s failed: {}".format(chanargs,e))
     raise NDWSError(e.value)
 
   # Extract the relevant values
@@ -764,23 +764,23 @@ def selectPost ( webargs, proj, db, postdata ):
           for channel_name in channel_list:
 
             ch = proj.getChannelObj(channel_name)
-            chgrp = h5f.get(ch.getChannelName())
+            chgrp = h5f.get(ch.channel_name)
             voxarray = chgrp['CUTOUT'].value
-            h5_datatype = h5f.get(ch.getChannelName())['DATATYPE'].value[0]
-            h5_channeltype = h5f.get(ch.getChannelName())['CHANNELTYPE'].value[0]
+            h5_datatype = h5f.get(ch.channel_name)['DATATYPE'].value[0]
+            h5_channeltype = h5f.get(ch.channel_name)['CHANNELTYPE'].value[0]
 
             # h5xyzoffset = chgrp.get('XYZOFFSET')
             # h5resolution = chgrp.get('RESOLUTION')[0]
 
             # Checking the datatype of the voxarray
-            if voxarray.dtype != ND_dtypetonp[ch.getDataType()]:
-              logger.error("Channel datatype {} in the HDF5 file does not match with the {} in the database.".format(h5_datatype, ch.getDataType()))
-              raise NDWSError("Channel datatype {} in the HDF5 file does not match with the {} in the database.".format(h5_datatype, ch.getDataType()))
+            if voxarray.dtype != ND_dtypetonp[ch.channel_datatype]:
+              logger.error("Channel datatype {} in the HDF5 file does not match with the {} in the database.".format(h5_datatype, ch.channel_datatype))
+              raise NDWSError("Channel datatype {} in the HDF5 file does not match with the {} in the database.".format(h5_datatype, ch.channel_datatype))
 
             # Don't write to readonly channels
-            if ch.getReadOnly() == READONLY_TRUE:
-              logger.error("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
-              raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+            if ch.readonly == READONLY_TRUE:
+              logger.error("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.channel_name, proj.project_name, webargs))
+              raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.channel_name, proj.project_name, webargs))
            
             # checking if the dimension for x,y,z,t(optional) are correct
             # this is different then the on for blosc/numpy because channels are packed separately
@@ -788,10 +788,10 @@ def selectPost ( webargs, proj, db, postdata ):
               logger.error("The data has mismatched dimensions {} compared to the arguments {}".format(voxarray.shape[1:], dimension))
               raise NDWSError("The data has mismatched dimensions {} compared to the arguments {}".format(voxarray.shape[1:], dimension))
             
-            if ch.getChannelType() in IMAGE_CHANNELS + TIMESERIES_CHANNELS : 
+            if ch.channel_type in IMAGE_CHANNELS + TIMESERIES_CHANNELS : 
               db.writeCuboid (ch, corner, resolution, voxarray, timerange=timerange) 
             
-            elif ch.getChannelType() in ANNOTATION_CHANNELS:
+            elif ch.channel_type in ANNOTATION_CHANNELS:
               db.annotateDense ( ch, corner, resolution, voxarray, conflictopt )
 
           h5f.flush()
@@ -821,18 +821,18 @@ def selectPost ( webargs, proj, db, postdata ):
           ch = proj.getChannelObj(channel_name)
   
           # Don't write to readonly channels
-          if ch.getReadOnly() == READONLY_TRUE:
-            logger.error("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
-            raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+          if ch.readonly == READONLY_TRUE:
+            logger.error("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.channel_name, proj.project_name, webargs))
+            raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.channel_name, proj.project_name, webargs))
        
-          if not voxarray.dtype == ND_dtypetonp[ch.getDataType()]:
+          if not voxarray.dtype == ND_dtypetonp[ch.channel_datatype]:
             logger.error("Wrong datatype in POST")
             raise NDWSError("Wrong datatype in POST")
             
-          if ch.getChannelType() in IMAGE_CHANNELS + TIMESERIES_CHANNELS:
+          if ch.channel_type in IMAGE_CHANNELS + TIMESERIES_CHANNELS:
             db.writeCuboid(ch, corner, resolution, voxarray[idx,:], timerange)
 
-          elif ch.getChannelType() in ANNOTATION_CHANNELS:
+          elif ch.channel_type in ANNOTATION_CHANNELS:
             db.annotateDense(ch, corner, resolution, voxarray[idx,:], conflictopt)
       
       else:
@@ -960,7 +960,7 @@ def getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution=None, c
       cb = db.annoCutout(ch, dataids, resolution, corner, dim, None)
 
     # again an abstraction problem with corner. return the corner to cutout arguments space
-    offset = proj.datasetcfg.offset[resolution]
+    offset = proj.datasetcfg.get_offset(resolution)
     retcorner = [corner[0]+offset[0], corner[1]+offset[1], corner[2]+offset[2]]
     h5anno.addCutout ( resolution, retcorner, cb.data )
 
@@ -997,11 +997,11 @@ def getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution=None, c
 
       datacuboid [ offset[2]-bbcorner[2]:offset[2]-bbcorner[2]+cbdata.shape[0], offset[1]-bbcorner[1]:offset[1]-bbcorner[1]+cbdata.shape[1], offset[0]-bbcorner[0]:offset[0]-bbcorner[0]+cbdata.shape[2] ]  = cbdata
    
-    offset = proj.datasetcfg.offset[resolution]
+    offset = proj.datasetcfg.get_offset(resolution)
     bbcorner = map(add, bbcorner, offset)
     h5anno.addCutout ( resolution, bbcorner, datacuboid )
 
-  elif dataoption==AR_BOUNDINGBOX:
+  elif dataoption == AR_BOUNDINGBOX:
 
     # determine if it is a compound type (NEURON) and get the list of relevant segments
     if anno.__class__ in [AnnNeuron] and dataoption != AR_NODATA:
@@ -1337,17 +1337,17 @@ def putAnnotation ( webargs, postdata ):
   proj = projdb.fromTokenName(token)
   ch = NDChannel.fromName(proj, channel)
   
-  if ch.getChannelType() not in ANNOTATION_CHANNELS:
-    logger.error("Channel {} does not support annotations".format(ch.getChannelName()))
-    raise NDWSError("Channel {} does not support annotations".format(ch.getChannelName()))
+  if ch.channel_type not in ANNOTATION_CHANNELS:
+    logger.error("Channel {} does not support annotations".format(ch.channel_name))
+    raise NDWSError("Channel {} does not support annotations".format(ch.channel_name))
 
   with closing (SpatialDB(proj)) as db:
    with closing (RamonDB(proj)) as rdb:
 
     # Don't write to readonly channels
-    if ch.getReadOnly() == READONLY_TRUE:
-      logger.error("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
-      raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+    if ch.readonly == READONLY_TRUE:
+      logger.error("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.project_name, webargs))
+      raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.project_name, webargs))
 
     # return string of id values
     retvals = [] 
@@ -1568,20 +1568,15 @@ def getNIFTI ( webargs ):
      Limited to 2Gig"""
     
   [token, channel, optionsargs] = webargs.split('/',2)
-
   with closing (NDProjectsDB()) as projdb:
-
     proj = projdb.loadToken ( token )
   
   with closing (SpatialDB(proj)) as db:
-
     ch = NDChannel.fromName(proj, channel)
 
     # Make a named temporary file for the nii file
     with closing(tempfile.NamedTemporaryFile(suffix='.nii')) as tmpfile:
-
       ndwsnifti.queryNIFTI ( tmpfile, ch, db, proj )
-
       tmpfile.seek(0)
       return tmpfile.read()
 
@@ -1596,19 +1591,17 @@ def putNIFTI ( webargs, postdata ):
     ch = NDChannel.fromName(proj, channel)
     
     # Don't write to readonly channels
-    if ch.getReadOnly() == READONLY_TRUE:
-      logger.error("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
-      raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+    if ch.readonly == READONLY_TRUE:
+      logger.error("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.project_name, webargs))
+      raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.project_name, webargs))
 
     # check the magic number -- is it a gz file?
     if postdata[0] == '\x1f' and postdata[1] ==  '\x8b':
 
       # Make a named temporary file 
       with closing (tempfile.NamedTemporaryFile(suffix='.nii.gz')) as tmpfile:
-
         tmpfile.write ( postdata )
         tmpfile.seek(0)
-
         # ingest the nifti file
         ndwsnifti.ingestNIFTI ( tmpfile.name, ch, db, proj )
     
@@ -1616,69 +1609,60 @@ def putNIFTI ( webargs, postdata ):
 
       # Make a named temporary file 
       with closing (tempfile.NamedTemporaryFile(suffix='.nii')) as tmpfile:
-
         tmpfile.write ( postdata )
         tmpfile.seek(0)
-
         # ingest the nifti file
         ndwsnifti.ingestNIFTI ( tmpfile.name, ch, db, proj, channel=channel )
 
+# def getSWC ( webargs ):
+  # """Return an SWC object generated from Skeletons/Nodes"""
 
-def getSWC ( webargs ):
-  """Return an SWC object generated from Skeletons/Nodes"""
-
-  [token, channel, service, rest] = webargs.split('/',3)
-  proj = projdb.fromTokenName(token)
-  ch = NDChannel.fromName(proj, channel)
+  # [token, channel, service, rest] = webargs.split('/',3)
+  # proj = projdb.fromTokenName(token)
+  # ch = NDChannel.fromName(proj, channel)
   
-  with closing (RamonDB(proj)) as db:
+  # with closing (RamonDB(proj)) as db:
 
-    # Make a named temporary file for the SWC
-    with closing (tempfile.NamedTemporaryFile()) as tmpfile:
+    # # Make a named temporary file for the SWC
+    # with closing (tempfile.NamedTemporaryFile()) as tmpfile:
 
-      # if skeleton ids are specified, use those
-      if rest:
-        skelids = map ( int, rest.rstrip('/').split(',') )
-      # otherwise get all skeletons
-      else:
-        skelids=db.getKVQuery(ch, 'ann_type', ANNO_SKELETON)
+      # # if skeleton ids are specified, use those
+      # if rest:
+        # skelids = map ( int, rest.rstrip('/').split(',') )
+      # # otherwise get all skeletons
+      # else:
+        # skelids=db.getKVQuery(ch, 'ann_type', ANNO_SKELETON)
 
-      ndwsskel.querySWC ( tmpfile, ch, db, proj, skelids )
+      # ndwsskel.querySWC ( tmpfile, ch, db, proj, skelids )
 
-      tmpfile.seek(0)
-      return tmpfile.read()
+      # tmpfile.seek(0)
+      # return tmpfile.read()
 
- 
+# def putSWC ( webargs, postdata ):
+  # """Put an SWC object into RAMON skeleton/tree nodes"""
 
-def putSWC ( webargs, postdata ):
-  """Put an SWC object into RAMON skeleton/tree nodes"""
-
-  [token, channel, service, optionsargs] = webargs.split('/',3)
-  proj = projdb.fromTokenName(token)
-  ch = NDChannel.fromName(proj, channel)
+  # [token, channel, service, optionsargs] = webargs.split('/',3)
+  # proj = projdb.fromTokenName(token)
+  # ch = NDChannel.fromName(proj, channel)
   
-  with closing (RamonDB(proj)) as rdb:
+  # with closing (RamonDB(proj)) as rdb:
 
-    # Don't write to readonly channels
-    if ch.getReadOnly() == READONLY_TRUE:
-      logger.error("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
-      raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+    # # Don't write to readonly channels
+    # if ch.readonly == READONLY_TRUE:
+      # logger.error("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.project_name, webargs))
+      # raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.project_name, webargs))
 
-    # Make a named temporary file for the HDF5
-    with closing (tempfile.NamedTemporaryFile()) as tmpfile:
+    # # Make a named temporary file for the HDF5
+    # with closing (tempfile.NamedTemporaryFile()) as tmpfile:
 
-      tmpfile.write ( postdata )
-      tmpfile.seek(0)
+      # tmpfile.write ( postdata )
+      # tmpfile.seek(0)
 
-      # Parse the swc file into skeletons
-      swc_skels = ndwsskel.ingestSWC ( tmpfile, ch, rdb )
+      # # Parse the swc file into skeletons
+      # swc_skels = ndwsskel.ingestSWC ( tmpfile, ch, rdb )
 
-      return swc_skels
+      # return swc_skels
 
-
-
-#  Return a list of annotation object IDs
-#  for now by type and status
 def queryAnnoObjects ( webargs, postdata=None ):
   """Return a list of anno ids restricted by equality predicates. Equalities are alternating in field/value in the url."""
 
@@ -1734,12 +1718,10 @@ def queryAnnoObjects ( webargs, postdata=None ):
   
     return h5ann.PackageIDs(annoids) 
 
-
 def deleteAnnotation ( webargs ):
   """Delete a RAMON object"""
 
   [ token, channel, otherargs ] = webargs.split ('/',2)
-
   # pattern for using contexts to close databases get the project 
   with closing (NDProjectsDB()) as projdb:
     proj = projdb.loadToken ( token )
@@ -1751,9 +1733,9 @@ def deleteAnnotation ( webargs ):
     ch = NDChannel.fromName(proj, channel)
     
     # Don't write to readonly channels
-    if ch.getReadOnly() == READONLY_TRUE:
-      logger.error("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
-      raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+    if ch.readonly == READONLY_TRUE:
+      logger.error("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.project_name, webargs))
+      raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.project_name, webargs))
 
     # Split the URL and get the args
     args = otherargs.split('/', 2)
@@ -1868,7 +1850,7 @@ def reserve ( webargs ):
   with closing (RamonDB(proj)) as rdb:
 
     ch = NDChannel.fromName(proj,channel)
-    if ch.getChannelType() not in ANNOTATION_CHANNELS:
+    if ch.channel_type not in ANNOTATION_CHANNELS:
       logger.error("Illegal project type for reserve.")
       raise NDWSError("Illegal project type for reserve.")
 
@@ -1921,9 +1903,9 @@ def setField ( webargs ):
     ch = NDChannel.fromName(proj, channel)
     
     # Don't write to readonly channels
-    if ch.getReadOnly() == READONLY_TRUE:
-      logger.error("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
-      raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+    if ch.readonly == READONLY_TRUE:
+      logger.error("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.project_name, webargs))
+      raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.project_name, webargs))
     
     rdb.updateAnnotation(ch, annid, field, value)
 
@@ -1944,7 +1926,7 @@ def getPropagate (webargs):
     
     for channel_name in channel_list.split(','):
       ch = proj.getChannelObj(channel_name)
-      value_list.append(ch.getPropagate())
+      value_list.append(ch.propagate)
 
   return ','.join(str(i) for i in value_list)
 
@@ -1968,10 +1950,10 @@ def setPropagate(webargs):
       
       value = value_list[0]
       # If the value is to be set under propagation and the project is not under propagation
-      if int(value) == UNDER_PROPAGATION and ch.getPropagate() == NOT_PROPAGATED:
+      if int(value) == UNDER_PROPAGATION and ch.propagate == NOT_PROPAGATED:
         # and is not read only
-        if ch.getReadOnly() == READONLY_FALSE:
-          ch.setPropagate(UNDER_PROPAGATION)
+        if ch.readonly == READONLY_FALSE:
+          ch.propagate(UNDER_PROPAGATION)
           from spdb.tasks import propagate
           # then call propagate
           # propagate(token, channel_name)
@@ -1980,21 +1962,21 @@ def setPropagate(webargs):
           logger.error("Cannot Propagate this project. It is set to Read Only.")
           raise NDWSError("Cannot Propagate this project. It is set to Read Only.")
       # if the project is Propagated already you can set it to under propagation
-      elif int(value) == UNDER_PROPAGATION and ch.getPropagate() == PROPAGATED:
+      elif int(value) == UNDER_PROPAGATION and ch.propagate == PROPAGATED:
         logger.error("Cannot propagate a project which is propagated. Set to Not Propagated first.")
         raise NDWSError("Cannot propagate a project which is propagated. Set to Not Propagated first.")
       # If the value to be set is not propagated
       elif int(value) == NOT_PROPAGATED:
         # and the project is under propagation then throw an error
-        if ch.getPropagate() == UNDER_PROPAGATION:
+        if ch.propagate == UNDER_PROPAGATION:
           logger.error("Cannot set this value. Project is under propagation.")
           raise NDWSError("Cannot set this value. Project is under propagation.")
         # and the project is already propagated and set read only then throw error
-        elif ch.getPropagate() == PROPAGATED and ch.getReadOnly == READONLY_TRUE:
+        elif ch.propagate == PROPAGATED and ch.readonly == READONLY_TRUE:
           logger.error("Cannot set this Project to unpropagated. Project is Read only")
           raise NDWSError("Cannot set this Project to unpropagated. Project is Read only")
         else:
-          ch.setPropagate(NOT_PROPAGATED)
+          ch.propagate(NOT_PROPAGATED)
       # cannot set a project to propagated via the RESTful interface
       else:
         logger.error("Invalid Value {} for setPropagate".format(value))
@@ -2041,7 +2023,7 @@ def merge (webargs):
       resolution= int(m.group(1))
       return db.mergeGlobal(ch, ids, 'global', int(resolution))
     elif re.match("global/", rest_args) is not None:
-      resolution = proj.getResolution()
+      resolution = proj.resolution
       return db.mergeGlobal(ch, ids, 'global', int(resolution))
     else:
       # PYTODO illegal merge (no support if not global)
@@ -2086,7 +2068,7 @@ def exceptions ( webargs, ):
     resolution = args.getResolution()
 
     # check to make sure it's an annotation project
-    if proj.getChannelType() not in ANNOTATION_PROJECTS : 
+    if proj.channel_type not in ANNOTATION_PROJECTS : 
       logger.error("Asked for exceptions on project that is not of type ANNOTATIONS")
       raise NDWSError("Asked for exceptions on project that is not of type ANNOTATIONS")
     elif not proj.getExceptions():

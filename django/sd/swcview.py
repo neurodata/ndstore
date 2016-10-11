@@ -14,7 +14,6 @@
 
 from contextlib import closing
 from django.views.generic import View
-from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseBadRequest
 from ndproj.ndproject import NDProject
 from ndproj.ndtoken import NDToken
@@ -45,17 +44,14 @@ class SwcView(View):
 
   def post(self, request, token_name, channel_name):
     try:
-    
-      [token, channel, service, optionsargs] = webargs.split('/',3)
       proj = projdb.fromTokenName(token)
       ch = NDChannel.fromName(proj, channel)
   
       with closing (RamonDB(proj)) as rdb:
-
         # Don't write to readonly channels
-        if ch.getReadOnly() == READONLY_TRUE:
-          logger.error("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.getProjectName(), webargs))
-          raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.getProjectName(), webargs))
+        if ch.readonly == READONLY_TRUE:
+          logger.error("Attempt to write to read only channel {} in project.".format(ch.channel_name, proj.project_name))
+          raise NDWSError("Attempt to write to read only channel {} in project.".format(ch.channel_name, proj.project_name))
 
         # Make a named temporary file for the HDF5
         with closing (tempfile.NamedTemporaryFile()) as tmpfile:
@@ -66,9 +62,3 @@ class SwcView(View):
           return swc_skels
     except Exception as e:
       return HttpResponseBadRequest()
-
-  def put(self, request, web_args):
-    return HttpResponseBadRequest()
-
-  def delete(self, request, dataset_name, project_name, token_name):
-    return HttpResponseBadRequest()
