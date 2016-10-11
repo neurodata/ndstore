@@ -30,7 +30,7 @@ def getAnnoIds(proj, ch, resolution, xmin, xmax, ymin, ymax, zmin, zmax):
 
   mins = (xmin, ymin, zmin)
   maxs = (xmax, ymax, zmax)
-  offset = proj.datasetcfg.offset[resolution]
+  offset = proj.datasetcfg.get_offset(resolution)
   # Add a comment
   corner = map(max, zip(*[mins, map(sub, mins, offset)]))
   dim = map(sub, maxs, mins)
@@ -73,7 +73,7 @@ def genGraphRAMON(token_name, channel, graphType="graphml", xmin=0, xmax=0, ymin
       idslist = getAnnoIds(proj, ch, resolution, xmin, xmax, ymin, ymax, zmin, zmax)
     else:
       # entire cube
-      [xmax, ymax, zmax] = proj.datasetcfg.imagesz[resolution]
+      [xmax, ymax, zmax] = proj.datasetcfg.get_imagesize(resolution)
       idslist = getAnnoIds(proj, ch, resolution, xmin, xmax, ymin, ymax, zmin, zmax)
 
     if idslist.size == 0:

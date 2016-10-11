@@ -57,8 +57,8 @@ class SimpleCatmaid:
     # figure out the cutout (limit to max image size)
     xstart = xtile*self.tilesz
     ystart = ytile*self.tilesz
-    xend = min ((xtile+1)*self.tilesz,self.proj.datasetcfg.imagesz[res][0])
-    yend = min ((ytile+1)*self.tilesz,self.proj.datasetcfg.imagesz[res][1])
+    xend = min ((xtile+1)*self.tilesz,self.proj.datasetcfg.get_imagesize(res)[0])
+    yend = min ((ytile+1)*self.tilesz,self.proj.datasetcfg.get_imagesize(res)[1])
 
     # get an xy image slice
     if timetile is None:
@@ -87,12 +87,12 @@ class SimpleCatmaid:
     """On a miss. Cutout, return the image and load the cache in a background thread"""
     
     # make sure that the tile size is aligned with the cubedim
-    if self.tilesz % self.proj.datasetcfg.cubedim[res][0] != 0 or self.tilesz % self.proj.datasetcfg.cubedim[res][2]:
+    if self.tilesz % self.proj.datasetcfg.cubedim[res][0] != 0 or self.tilesz % self.proj.datasetcfg.get_cubedim(res)[2]:
       raise("Illegal tile size.  Not aligned")
 
     # figure out the cutout (limit to max image size)
     xstart = xtile*self.tilesz
-    xend = min ((xtile+1)*self.tilesz,self.proj.datasetcfg.imagesz[res][0])
+    xend = min ((xtile+1)*self.tilesz,self.proj.datasetcfg.get_imagesize(res)[0])
 
     # OK this weird but we have to choose a convention.  xtile ytile ztile refere to the URL request.  So ztile is ydata
     #  but xstart, zstart..... etc. refer to ndstore coordinates for the cutout.
@@ -100,12 +100,12 @@ class SimpleCatmaid:
     # z cutouts need to get rescaled
     # we'll map to the closest pixel range and tolerate one pixel error at the boundary
     # scalefactor = zvoxel / yvoxel
-    scalefactor = self.proj.datasetcfg.voxelres[res][2] / self.proj.datasetcfg.voxelres[res][1]
-    zoffset = self.proj.datasetcfg.offset[res][2]
+    scalefactor = self.proj.datasetcfg.get_voxelres(res)[2] / self.proj.datasetcfg.get_voxelres(res)[1]
+    zoffset = self.proj.datasetcfg.get_offset(res)[2]
     ztilestart = int((ytile*self.tilesz)/scalefactor) + zoffset
     zstart = max ( ztilestart, zoffset ) 
     ztileend = int(math.ceil((ytile+1)*self.tilesz/scalefactor)) + zoffset
-    zend = min ( ztileend, self.proj.datasetcfg.imagesz[res][2]+1 )
+    zend = min ( ztileend, self.proj.datasetcfg.get_imagesize(res)[2]+1 )
    
     # get an xz image slice
     if timetile is None:
@@ -135,22 +135,22 @@ class SimpleCatmaid:
     """ On a miss. Cutout, return the image and load the cache in a background thread """
 
     # make sure that the tile size is aligned with the cubedim
-    if self.tilesz % self.proj.datasetcfg.cubedim[res][1] != 0 or self.tilesz % self.proj.datasetcfg.cubedim[res][2]:
+    if self.tilesz % self.proj.datasetcfg.get_cubedim(res)[1] != 0 or self.tilesz % self.proj.datasetcfg.get_cubedim(res)[2]:
       raise("Illegal tile size.  Not aligned")
 
     # figure out the cutout (limit to max image size)
     ystart = ytile*self.tilesz
-    yend = min ((ytile+1)*self.tilesz,self.proj.datasetcfg.imagesz[res][1])
+    yend = min ((ytile+1)*self.tilesz,self.proj.datasetcfg.get_imagesize(res)[1])
 
     # z cutouts need to get rescaled
     # we'll map to the closest pixel range and tolerate one pixel error at the boundary
     # Scalefactor = zvoxel / xvoxel
-    scalefactor = self.proj.datasetcfg.voxelres[res][2] / self.proj.datasetcfg.voxelres[res][0]
-    zoffset = self.proj.datasetcfg.offset[res][2]
+    scalefactor = self.proj.datasetcfg.get_voxelres(res)[2] / self.proj.datasetcfg.get_voxelres(res)[0]
+    zoffset = self.proj.datasetcfg.get_offset(res)[2]
     ztilestart = int((ztile*self.tilesz)/scalefactor) + zoffset
     zstart = max ( ztilestart, zoffset ) 
     ztileend = int(math.ceil((ztile+1)*self.tilesz/scalefactor)) + zoffset
-    zend = min ( ztileend, self.proj.datasetcfg.imagesz[res][2]+1 )
+    zend = min ( ztileend, self.proj.datasetcfg.get_imagesize(res)[2]+1 )
 
     # get an yz image slice
     if timetile is None:

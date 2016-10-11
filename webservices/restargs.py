@@ -70,11 +70,11 @@ class BrainRestArgs:
     except Exception, e:
       raise RESTArgsError("Incorrect cutout arguments {}. {}".format(imageargs, e))
 
-    if self.resolution not in datasetcfg.getResolutions():
+    if self.resolution not in datasetcfg.resolutions:
       raise RESTArgsError("Illegal scaling level {}".format(imageargs))
 
     # Convert cutout into 0 base in all dimensions
-    (xoffset,yoffset,zoffset) = datasetcfg.getOffset()[self.resolution]
+    (xoffset,yoffset,zoffset) = datasetcfg.get_offset(self.resolution)
 
     (x1, x2) = (x1-xoffset, x2-xoffset)
     (y1, y2) = (y1-yoffset, y2-yoffset)
@@ -92,7 +92,7 @@ class BrainRestArgs:
     # Check arguments for legal values
     try:
       if not ( datasetcfg.checkCube(self.resolution, self.corner, self.dim, self.time) ):
-        raise RESTArgsError ( "Illegal range. Image size: {} at offset {}".format(str(datasetcfg.imageSize(self.resolution)),str(datasetcfg.getOffset()[self.resolution])))
+        raise RESTArgsError ( "Illegal range. Image size: {} at offset {}".format(str(datasetcfg.get_imagesize(self.resolution)),str(datasetcfg.get_offset(self.resolution))))
     except Exception, e:
       # RBTODO make this error better.  How to print good information about e?
       #  it only prints 3, not KeyError 3, whereas print e in the debugger gives good info
@@ -130,7 +130,7 @@ def voxel ( imageargs, datasetcfg ):
 
   # Check arguments for legal values
   if not ( datasetcfg.checkCube ( res, [x,y,z], [1,1,1] )):
-    raise RESTArgsError( "Illegal range. Image size: {} at offset {}".format(datasetcfg.imageSize(res),datasetcfg.offset[res]) )
+    raise RESTArgsError( "Illegal range. Image size: {} at offset {}".format(datasetcfg.get_imagesize(res),datasetcfg.get_offset(res)) )
 
   return (res, [ x,y,z ])
 

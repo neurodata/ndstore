@@ -55,8 +55,8 @@ class MCFCCatmaid:
     # figure out the cutout (limit to max image size)
     xstart = xtile*self.tilesz
     ystart = ytile*self.tilesz
-    xend = min ((xtile+1)*self.tilesz,self.proj.datasetcfg.imageSize(res)[0][0])
-    yend = min ((ytile+1)*self.tilesz,self.proj.datasetcfg.imageSize(res)[0][1])
+    xend = min ((xtile+1)*self.tilesz,self.proj.datasetcfg.get_imagesize(res)[0][0])
+    yend = min ((ytile+1)*self.tilesz,self.proj.datasetcfg.get_imagesize(res)[0][1])
 
     # call the mcfc interface
     imageargs = '{}/{},{}/{},{}/{},{}/'.format(res, xstart, xend, ystart, yend, zslice, zslice+1) 
@@ -81,16 +81,16 @@ class MCFCCatmaid:
   
     # figure out the cutout (limit to max image size)
     xstart = xtile * self.tilesz
-    xend = min ((xtile+1) * self.tilesz, self.proj.datasetcfg.imageSize(res)[0][0])
+    xend = min ((xtile+1) * self.tilesz, self.proj.datasetcfg.get_imagesize(res)[0][0])
 
     # z cutouts need to get rescaled
     #  we'll map to the closest pixel range and tolerate one pixel error at the boundary
     scalefactor = self.proj.datasetcfg.getScale()[res]['xz']
-    zoffset = self.proj.datasetcfg.getOffset()[res][2]
+    zoffset = self.proj.datasetcfg.get_offset(res)[2]
     ztilestart = int((ztile*self.tilesz)/scalefactor) + zoffset
     zstart = max ( ztilestart, zoffset ) 
     ztileend = int(math.ceil(((ztile+1)*self.tilesz)/scalefactor)) + zoffset
-    zend = min ( ztileend, self.proj.datasetcfg.imageSize(res)[0][2] )
+    zend = min ( ztileend, self.proj.datasetcfg.get_imagesize(res)[0][2] )
 
     # call the mcfc interface
     imageargs = '{}/{},{}/{},{}/{},{}/'.format(res, xstart, xend, yslice, yslice+1, zstart, zend) 

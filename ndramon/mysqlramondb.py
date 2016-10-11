@@ -37,11 +37,11 @@ class MySQLRamonDB:
 
     # Connection info for the metadata
     try:
-      self.conn = MySQLdb.connect (host = self.proj.getDBHost(), user = self.proj.getDBUser(), passwd = self.proj.getDBPasswd(), db = self.proj.getDBName())
+      self.conn = MySQLdb.connect (host = self.proj.host, user = self.proj.kvengine_user, passwd = self.proj.kvengine_password, db = self.proj.dbname)
       self.cursor = self.conn.cursor()
     except MySQLdb.Error, e:
       self.conn = None
-      logger.error("Failed to connect to database: {}, {}".format(self.proj.getDBHost(), self.proj.getDBName()))
+      logger.error("Failed to connect to database: {}, {}".format(self.proj.host, self.proj.dbname))
 
 
   def close ( self ):
@@ -214,7 +214,7 @@ class MySQLRamonDB:
 
   def getAnnotationKV ( self, ch, annid ):
 
-    sql = "SELECT kv_key, kv_value FROM {}_ramon WHERE annoid='{}'".format(ch.getChannelName(),annid)
+    sql = "SELECT kv_key, kv_value FROM {}_ramon WHERE annoid='{}'".format(ch.channel_name,annid)
     try:
       self.cursor.execute ( sql )
       pairs = self.cursor.fetchall()
@@ -247,7 +247,7 @@ class MySQLRamonDB:
     if update:
       self.deleteAnnotation ( ch, annid )
 
-    sql = "INSERT INTO {}_ramon (annoid, kv_key, kv_value) VALUES (%s,%s,%s)".format(ch.getChannelName())
+    sql = "INSERT INTO {}_ramon (annoid, kv_key, kv_value) VALUES (%s,%s,%s)".format(ch.channel_name)
  
     data = []
     for (k,v) in kvdict.iteritems():
@@ -267,7 +267,7 @@ class MySQLRamonDB:
   def deleteAnnotation ( self, ch, annoid ):
     """delete an HDF5 annotation from the database"""
 
-    sql = "DELETE FROM {}_ramon WHERE annoid={}".format(ch.getChannelName(),annoid)
+    sql = "DELETE FROM {}_ramon WHERE annoid={}".format(ch.channel_name,annoid)
     try:
       self.cursor.execute ( sql )
     except MySQLdb.Error, e:
@@ -279,7 +279,7 @@ class MySQLRamonDB:
   def getKVQuery ( self, ch, qkey, qvalue ):
     """Return a list of annotation object ids that match equality predicates on key value."""
 
-    sql = "SELECT annoid FROM {}_ramon WHERE kv_key = '{}' AND kv_value = '{}'".format(ch.getChannelName(), qkey, qvalue)
+    sql = "SELECT annoid FROM {}_ramon WHERE kv_key = '{}' AND kv_value = '{}'".format(ch.channel_name, qkey, qvalue)
 
     try:
       self.cursor.execute ( sql )
@@ -294,9 +294,9 @@ class MySQLRamonDB:
     """Return the count top keys in the database."""
 
     if anntype == None:
-      sql = "SELECT kv_key FROM {}_ramon GROUP BY kv_key ORDER BY COUNT(kv_key) LIMIT {}".format(ch.getChannelName(), count)
+      sql = "SELECT kv_key FROM {}_ramon GROUP BY kv_key ORDER BY COUNT(kv_key) LIMIT {}".format(ch.channel_name, count)
     else:
-      sql = "SELECT kv_key FROM {}_ramon WHERE annoid in (select annoid from anno_ramon where kv_key = 'ann_type' and kv_value = {}) GROUP BY kv_key ORDER BY COUNT(kv_key) LIMIT {}".format(ch.getChannelName(), anntype, count)
+      sql = "SELECT kv_key FROM {}_ramon WHERE annoid in (select annoid from anno_ramon where kv_key = 'ann_type' and kv_value = {}) GROUP BY kv_key ORDER BY COUNT(kv_key) LIMIT {}".format(ch.channel_name, anntype, count)
 
     try:
       self.cursor.execute ( sql )
@@ -332,7 +332,7 @@ class MySQLRamonDB:
                   'confidence' : 'ann_confidence' }
 
     # start of the SQL clause
-    sql = "SELECT annoid FROM {}_ramon".format(ch.getChannelName())
+    sql = "SELECT annoid FROM {}_ramon".format(ch.channel_name)
     clause = ''
     limitclause = ""
 
@@ -410,7 +410,7 @@ class MySQLRamonDB:
   def querySegments ( self, ch, annid ):
     """Return segments that belong to this neuron"""
 
-    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.getChannelName(), 'seg_neuron', annid)
+    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.channel_name, 'seg_neuron', annid)
 
     try:
       self.cursor.execute ( sql )
@@ -424,7 +424,7 @@ class MySQLRamonDB:
   def queryROIChildren ( self, ch, annid ):
     """Return children that belong to this ROI"""
 
-    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.getChannelName(), 'roi_parent', annid)
+    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.channel_name, 'roi_parent', annid)
 
     try:
       self.cursor.execute ( sql )
@@ -437,7 +437,7 @@ class MySQLRamonDB:
   def queryNodeChildren ( self, ch, annid ):
     """Return children that belong to this ROI"""
 
-    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.getChannelName(), 'roi_parent', annid)
+    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.channel_name, 'roi_parent', annid)
 
     try:
       self.cursor.execute ( sql )
@@ -451,7 +451,7 @@ class MySQLRamonDB:
     """Return the nodes that belong to this skeleton"""
 
     # get the root node of the skeleton
-    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='node_skeleton' and kv_value={}".format(ch.getChannelName(), annid)
+    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='node_skeleton' and kv_value={}".format(ch.channel_name, annid)
 
     try:
       self.cursor.execute ( sql )
@@ -465,7 +465,7 @@ class MySQLRamonDB:
   def querySynapses ( self, ch, annid ):
     """Return synapses that belong to this segment"""
 
-    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.getChannelName(), 'syn_segments', annid)
+    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.channel_name, 'syn_segments', annid)
 
     try:
       self.cursor.execute ( sql )
@@ -478,7 +478,7 @@ class MySQLRamonDB:
   def queryPreSynapses ( self, ch, annid ):
     """Return presynaptic synapses that belong to this segment"""
   
-    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.getChannelName(), 'syn_presegments', annid)
+    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.channel_name, 'syn_presegments', annid)
 
     try:
       self.cursor.execute ( sql )
@@ -491,7 +491,7 @@ class MySQLRamonDB:
   def queryPostSynapses ( self, ch, annid ):
     """Return postsynaptic synapses that belong to this segment"""
 
-    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.getChannelName(), 'syn_postsegments', annid)
+    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.channel_name, 'syn_postsegments', annid)
 
     try:
       self.cursor.execute ( sql )
@@ -504,7 +504,7 @@ class MySQLRamonDB:
   def queryOrganelles ( self, ch, annid ):
     """Return organelles that belong to this segment"""
 
-    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.getChannelName(), 'org_segment', annid)
+    sql = "SELECT annoid FROM {}_ramon WHERE kv_key='{}' AND kv_value={}".format(ch.channel_name, 'org_segment', annid)
 
     try:
       self.cursor.execute ( sql )
