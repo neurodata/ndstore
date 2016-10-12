@@ -67,7 +67,7 @@ class CassProjectDB:
     ch = NDChannel(self.pr, channel_name)
 
     try:
-      if ch.getChannelType() not in [TIMESERIES]:
+      if ch.channel_type not in [TIMESERIES]:
         self.session.execute ( "CREATE table {} ( resolution int, zidx bigint, cuboid text, PRIMARY KEY ( resolution, zidx ) )".format(ch.getTable()), timeout=30)
     
     except Exception, e:

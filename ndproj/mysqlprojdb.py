@@ -68,20 +68,20 @@ class MySQLProjectDB:
         
         try:
           # tables specific to all other non time data
-          if ch.getChannelType() not in [TIMESERIES]:
+          if ch.channel_type not in [TIMESERIES]:
             for res in self.pr.datasetcfg.resolutions:
               cursor.execute("CREATE TABLE {} ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(ch.getTable(res)))
               cursor.execute ( "CREATE TABLE {} (zindex BIGINT NOT NULL PRIMARY KEY)".format(ch.getS3IndexTable(res)) )
           # tables specific to timeseries data
-          elif ch.getChannelType() == TIMESERIES:
+          elif ch.channel_type == TIMESERIES:
             for res in self.pr.datasetcfg.resolutions:
               cursor.execute("CREATE TABLE {} ( zindex BIGINT, timestamp INT, cube LONGBLOB, PRIMARY KEY(zindex,timestamp))".format(ch.getTable(res)))
               cursor.execute ( "CREATE TABLE {} (zindex BIGINT NOT NULL, timestamp INT NOT NULL, PRIMARY KEY(zindex,timestamp))".format(ch.getS3IndexTable(res)))
           else:
-            raise NDWSError("Channel type {} does not exist".format(ch.getChannelType()))
+            raise NDWSError("Channel type {} does not exist".format(ch.channel_type))
           
           # tables specific to annotation projects
-          if ch.getChannelType() == ANNOTATION: 
+          if ch.channel_type == ANNOTATION: 
             cursor.execute("CREATE TABLE {} ( id BIGINT PRIMARY KEY)".format(ch.getIdsTable()))
             # And the RAMON objects
             cursor.execute("CREATE TABLE {} ( annoid BIGINT, kv_key VARCHAR(255), kv_value VARCHAR(20000), INDEX ( annoid, kv_key ) USING BTREE)".format(ch.getRamonTable()))
@@ -127,7 +127,7 @@ class MySQLProjectDB:
     ch = NDChannel.fromName(self.pr, channel_name)
     table_list = []
 
-    if ch.getChannelType() in ANNOTATION_CHANNELS:
+    if ch.channel_type in ANNOTATION_CHANNELS:
       # delete the ids table
       table_list.append(ch.getIdsTable())
       # delete the ramon table
@@ -138,7 +138,7 @@ class MySQLProjectDB:
       table_list.append(ch.getTable(res))
       # delete the index tables
       table_list.append(ch.getS3IndexTable(res))
-      if ch.getChannelType() in ANNOTATION_CHANNELS:
+      if ch.channel_type in ANNOTATION_CHANNELS:
         # delete the exceptions tables
         table_list = table_list + [ch.getIdxTable(res), ch.getExceptionsTable(res)]
 

@@ -63,7 +63,7 @@ def synaptogram_view (request, webargs):
     with closing ( spatialdb.SpatialDB(proj) ) as db:
 
       # convert to cutout coordinates
-      (xoffset,yoffset,zoffset) = proj.datasetcfg.getOffset()[ resolution ]
+      (xoffset,yoffset,zoffset) = proj.datasetcfg.get_offset(resolution)
       (xlow, xhigh) = (xlow-xoffset, xhigh-xoffset)
       (ylow, yhigh) = (ylow-yoffset, yhigh-yoffset)
       (zlow, zhigh) = (zlow-zoffset, zhigh-zoffset)
@@ -81,7 +81,7 @@ def synaptogram_view (request, webargs):
           cb = db.cutout ( ch, corner, dim, resolution )
           # apply window for 16 bit projects 
           if ch.getDataType() in DTYPE_uint16:
-            [startwindow, endwindow] = window_range = ch.getWindowRange()
+            [startwindow, endwindow] = window_range = ch.window_range
             if (endwindow != 0):
               cb.data = np.uint8(windowCutout(cb.data, window_range))
           
@@ -190,5 +190,3 @@ def synaptogram_view_old (request, webargs):
 
   except Exception, e:
     raise
-#    return django.http.HttpResponseNotFound(e)
-

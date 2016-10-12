@@ -83,7 +83,7 @@ def getAnnotation ( webargs ):
         if m:
           resolution = int(m.groups()[0])
         else:
-          resolution = ch.getResolution()
+          resolution = ch.resolution
 
         with closing ( spatialdb.SpatialDB(proj) ) as db:
           bbcorner, bbdim = db.getBoundingBox(ch, [annoid], resolution)

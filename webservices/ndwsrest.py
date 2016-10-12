@@ -90,7 +90,7 @@ def filterCube(ch, cube, filterlist=None):
 
   if ch.channel_type in ANNOTATION_CHANNELS and filterlist is not None:
     cube.data = filter_ctype_OMP ( cube.data, filterlist )
-  elif filterlist is not None and ch.getChannelType not in ANNOTATION_CHANNELS:
+  elif filterlist is not None and ch.channel_type not in ANNOTATION_CHANNELS:
     logger.error("Filter only possible for Annotation Channels")
     raise NDWSError("Filter only possible for Annotation Channels")
 
@@ -115,7 +115,7 @@ def channelIterCutout(channels, imageargs, proj, db):
         continue
       else:
         ch = proj.getChannelObj(channel_name)
-        if ND_dtypetonp[ch.getDataType()] == cubedata.dtype:
+        if ND_dtypetonp[ch.channel_datatype] == cubedata.dtype:
           cubedata[idx+1,:] = cutout(imageargs, ch, proj, db).data
         else:
           logger.error("The cutout {} can only contain cutouts of one single Channel Type.".format())
@@ -198,10 +198,10 @@ def JPEG ( chanargs, proj, db ):
     #cubedata = np.swapaxes(cubedata[0,:,:,:], 0,2).reshape(xdim*zdim, ydim)
     cubedata = cubedata[0,:,:,:].reshape(ydim*zdim, xdim)
     
-    if ch.getDataType() in DTYPE_uint16:
+    if ch.channel_datatype in DTYPE_uint16:
       img = Image.fromarray(cubedata, mode='I;16')
       img = img.point(lambda i:i*(1./256)).convert('L')
-    elif ch.getDataType() in DTYPE_uint32:
+    elif ch.channel_datatype in DTYPE_uint32:
       img = Image.fromarray(cubedata, mode='RGBA')
     else:
       img = Image.fromarray(cubedata)
@@ -285,7 +285,7 @@ def HDF5(chanargs, proj, db):
       changrp = fh5out.create_group( "{}".format(channel_name) )
       changrp.create_dataset("CUTOUT", tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data)
       changrp.create_dataset("CHANNELTYPE", (1,), dtype=h5py.special_dtype(vlen=str), data=ch.channel_type)
-      changrp.create_dataset("DATATYPE", (1,), dtype=h5py.special_dtype(vlen=str), data=ch.getDataType())
+      changrp.create_dataset("DATATYPE", (1,), dtype=h5py.special_dtype(vlen=str), data=ch.channel_datatype)
   
     fh5out.close()
     tmpfile.seek(0)
@@ -1931,7 +1931,7 @@ def getPropagate (webargs):
 
 def setPropagate(webargs):
   """Set the value of the propagate field"""
-
+  
   # input in the format token/channel_list/setPropagate/value/
   # here value = {NOT_PROPAGATED, UNDER_PROPAGATION} not {PROPAGATED}
   try:
@@ -1954,8 +1954,8 @@ def setPropagate(webargs):
         ch.propagate = UNDER_PROPAGATION
         from sd.tasks import propagate
         # then call propagate
-        # propagate(token, channel_name)
-        propagate.delay(token, channel_name)
+        propagate(token, channel_name)
+        # propagate.delay(token, channel_name)
       else:
         logger.error("Cannot Propagate this project. It is set to Read Only.")
         raise NDWSError("Cannot Propagate this project. It is set to Read Only.")

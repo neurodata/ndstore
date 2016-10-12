@@ -32,24 +32,28 @@ logger=logging.getLogger("neurodata")
 def buildStack(token, channel_name, resolution=None):
   """Wrapper for the different datatypes """
 
-  proj = NDProject.fromTokenName(token)
-  ch = proj.getChannelObj(channel_name)
-  
+  pr = NDProject.fromTokenName(token)
+  ch = pr.getChannelObj(channel_name)
+
   try:
     if ch.channel_type in ANNOTATION_CHANNELS:
-      clearStack(proj, ch, resolution)
-      buildAnnoStack(proj, ch, resolution)
+      clearStack(pr, ch, resolution)
+      buildAnnoStack(pr, ch, resolution)
     elif ch.channel_type in IMAGE_CHANNELS:
-      buildImageStack(proj, ch, resolution)
+      buildImageStack(pr, ch, resolution)
     elif ch.channel_type in TIMESERIES_CHANNELS:
-      buildImageStack(proj, ch, resolution)
+      buildImageStack(pr, ch, resolution)
     else:
       logger.error("Not Supported")
       raise NDWSError("Not Supported")
   
     ch.propagate = PROPAGATED
-
-  except MySQLdb.Error, e:
+  
+  except Exception as e:
+    clearStack(pr, ch, resolution)
+    ch.propagate = NOT_PROPAGATED
+  except MySQLdb.Error as e:
+    clearStack(pr, ch, resolution)
     ch.propagate = NOT_PROPAGATED
     # projdb.updatePropagate(proj)
     logger.error("Error in building image stack {}".format(token))

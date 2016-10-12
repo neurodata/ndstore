@@ -60,7 +60,7 @@ def genGraphRAMON(token_name, channel, graphType="graphml", xmin=0, xmax=0, ymin
 
   with closing (ramondb.RamonDB(proj)) as db:
     ch = proj.getChannelObj(channel)
-    resolution = ch.getResolution()
+    resolution = ch.resolution
 
     cubeRestrictions = xmin + xmax + ymin + ymax + zmin + zmax
     matrix = []

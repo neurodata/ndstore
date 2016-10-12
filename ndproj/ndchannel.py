@@ -67,6 +67,12 @@ class NDChannel(NDObject):
       self.ch.delete()
     except Exception as e:
       raise
+  
+  def update(self):
+    try:
+      self.ch.save()
+    except Exception as e:
+      raise
 
   @property
   def channel_name(self):
@@ -118,6 +124,8 @@ class NDChannel(NDObject):
   def propagate(self, value):
     # TODO KL port logic
     self.ch.propagate = value
+    print "updating"
+    self.update()
 
   @property
   def channel_datatype(self):
@@ -131,14 +139,6 @@ class NDChannel(NDObject):
   def readonly(self, value):
     self.ch.readonly = value
 
-  @property
-  def propagate(self):
-    return self.ch.propagate
-  
-  @propagate.setter
-  def propagate(self, value):
-    self.ch.propagate = value
-  
   @property
   def default(self):
     return self.ch.default
@@ -159,32 +159,32 @@ class NDChannel(NDObject):
   def getChannelModel ( self ):
     return Channel.objects.get(channel_name=self.ch.channel_name, project=self.pr.getProjectName())
 
-  def getDataType ( self ):
-    return self.ch.channel_datatype
+  # def getDataType ( self ):
+    # return self.ch.channel_datatype
 
-  def getChannelName ( self ):
-    return self.ch.channel_name
+  # def getChannelName ( self ):
+    # return self.ch.channel_name
 
-  def getChannelType ( self ):
-    return self.ch.channel_type
+  # def getChannelType ( self ):
+    # return self.ch.channel_type
 
-  def getChannelDescription ( self ):
-    return self.ch.channel_description
+  # def getChannelDescription ( self ):
+    # return self.ch.channel_description
 
   def getExceptions ( self ):
     return self.ch.exceptions
 
-  def getReadOnly (self):
-    return self.ch.readonly
+  # def getReadOnly (self):
+    # return self.ch.readonly
 
-  def getResolution (self):
-    return self.ch.resolution
+  # def getResolution (self):
+    # return self.ch.resolution
 
-  def getWindowRange (self):
-    return [int(self.ch.startwindow),int(self.ch.endwindow)]
+  # def getWindowRange (self):
+    # return [int(self.ch.startwindow),int(self.ch.endwindow)]
 
-  def getPropagate (self):
-    return self.ch.propagate
+  # def getPropagate (self):
+    # return self.ch.propagate
 
   def isDefault (self):
     return self.ch.default

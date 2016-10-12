@@ -61,7 +61,7 @@ class UploadWorker:
     [xoffset, yoffset, zoffset] = proj.datasetcfg.getOffset()[self.resolution]
     # [xsupercubedim, ysupercubedim, zsupercubedim] = supercubedim = map(mul, cubedim, SUPERCUBESIZE)
 
-    if ch.getChannelType() in TIMESERIES_CHANNELS:
+    if ch.channel_type in TIMESERIES_CHANNELS:
       logger.error("Timeseries data not supported for now. Error in {}".format(self.token))
       raise NDWSError("Timeseries data not supported for now. Error in {}".format(self.token))
     

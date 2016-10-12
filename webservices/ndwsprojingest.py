@@ -186,8 +186,8 @@ def autoIngest(webargs, post_data):
       
       # calling celery ingest task
       from spdb.tasks import ingest
-      # ingest(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
-      ingest.delay(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
+      ingest(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
+      # ingest.delay(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
       
       # calling ndworker
       # from ndworker.ndworker import NDWorker
