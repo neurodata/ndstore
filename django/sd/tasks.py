@@ -15,8 +15,9 @@
 from __future__ import absolute_import
 from celery import task
 from django.conf import settings
-import webservices.ndstack
+from webservices.ndstack import buildStack
 from webservices.ndwsingest import IngestData
+from webservices.ndwserror import NDWSError
 import logging
 logger = logging.getLogger("neurodata")
 
@@ -25,9 +26,10 @@ def propagate (token, channel_name):
   """Propagate the given project for all resolutions"""
 
   try:
-    ndstack.buildStack (token,channel_name)
+    buildStack(token, channel_name)
   except Exception, e:
     logger.error("Error in propagate. {}".format(e))
+    raise NDWSError("Error in propagate. {}".format(e))
 
 @task(queue='ingest')
 def ingest (token_name, channel_name, resolution, data_url, file_format, file_type):
@@ -38,3 +40,4 @@ def ingest (token_name, channel_name, resolution, data_url, file_format, file_ty
     ingest_data.ingest()
   except Exception, e:
     logger.error("Error in ingest. {}".format(e))
+    raise NDWSError("Error in ingest. {}".format(e))

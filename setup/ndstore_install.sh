@@ -71,13 +71,6 @@ sudo -u neurodata ln -s /home/neurodata/ndstore/setup/docker_config/django/docke
 # add openconnecto.me to django_sites
 mysql -u neurodata -pneur0data -i -e "insert into django_site (id, domain, name) values (2, 'openconnecto.me', 'openconnecto.me');"
 
-# migrate the database and create the superuser
-sudo chmod -R 777 /var/log/neurodata/
-cd /home/neurodata/ndstore/django/
-sudo -u neurodata python manage.py migrate
-echo "from django.contrib.auth.models import User; User.objects.create_superuser('neurodata', 'abc@xyz.com', 'neur0data')" | python manage.py shell
-sudo -u neurodata python manage.py collectstatic --noinput
-
 # download, install and configure redis
 cd /home/neurodata/
 sudo -u neurodata wget http://download.redis.io/redis-stable.tar.gz
@@ -87,6 +80,18 @@ sudo -u neurodata make && sudo -u neurodata make test && sudo make install
 sudo mkdir /etc/redis
 sudo ln -s /home/neurodata/ndstore/setup/docker_config/redis/redis.conf /etc/redis/redis.conf
 sudo ln -s /home/neurodata/ndstore/setup/docker_config/upstart/redis.conf /etc/init/redis.conf
+
+# restart redis service
+sudo initctl reload-configuration
+sudo service redis start
+
+# migrate the database and create the superuser
+sudo chmod -R 777 /var/log/neurodata/
+cd /home/neurodata/ndstore/django/
+sudo -u neurodata python manage.py migrate
+echo "from django.contrib.auth.models import User; User.objects.create_superuser('neurodata', 'abc@xyz.com', 'neur0data')" | python manage.py shell
+sudo -u neurodata python manage.py collectstatic --noinput
+
 
 # setup the cache manager
 sudo ln -s /home/neurodata/ndstore/setup/docker_config/upstart/ndmanager.conf /etc/init/ndmanager.conf
