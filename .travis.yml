@@ -20,7 +20,6 @@ before_install:
   - sudo bash -c "echo "deb https://apt.dockerproject.org/repo ubuntu-trusty main" >> /etc/apt/sources.list.d/docker.list"
   - sudo apt-get update -y; sudo apt-key update -y
   - curl -sSL https://get.docker.com/ | sh
-  - openssl aes-256-cbc -K $encrypted_0dd8b7fb06b0_key -iv $encrypted_0dd8b7fb06b0_iv -in docker_settings_secret.py.enc -out docker_settings_secret.py -d
   #- sudo apt-get -qqy -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install docker-engine=1.11.1-0~trusty
   #- sudo apt-get install docker-engine
 
