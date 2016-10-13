@@ -10,3 +10,6 @@
 [submodule "ndingest"]
 	path = ndingest
 	url = https://github.com/neurodata/ndingest.git
+[submodule "ingest-client"]
+	path = ingest-client
+	url = https://github.com/neurodata/ingest-client.git
