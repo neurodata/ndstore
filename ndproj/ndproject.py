@@ -12,43 +12,97 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from contextlib import closing
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
-
 from nduser.models import Dataset
 from nduser.models import Project
 from nduser.models import Channel
 from nduser.models import Token
-
+from ndlib.ndtype import *
+from ndobject import NDObject
 from nddataset import NDDataset
 from ndchannel import NDChannel
-
-from ndwserror import NDWSError
+from ndprojdb import NDProjectsDB
+from webservices.ndwserror import NDWSError
 import logging
-logger=logging.getLogger("neurodata")
+logger = logging.getLogger("neurodata")
 
-class NDProject:
+class NDProject(NDObject):
 
-  def __init__(self, token_name ) :
+  def __init__(self, pr) :
     
-    if isinstance(token_name, str) or isinstance(token_name, unicode):
-      try:
-        self.tk = Token.objects.get(token_name = token_name)
-        self.pr = Project.objects.get(project_name = self.tk.project_id)
-        self.datasetcfg = NDDataset(self.pr.dataset_id)
-      except ObjectDoesNotExist, e:
-        logger.error("Token {} does not exist. {}".format(token_name, e))
-        raise NDWSError("Token {} does not exist. {}".format(token_name, e))
-    elif isinstance(token_name, Project):
-      # Constructor for NDProject from Project Name
-      try:
-        self.tk = None
-        self.pr = token_name
-        self.datasetcfg = NDDataset(self.pr.dataset_id)
-      except ObjectDoesNotExist, e:
-        logger.error("Token {} does not exist. {}".format(token_name, e))
-        raise NDWSError("Token {} does not exist. {}".format(token_name, e))
+    self.pr = pr
+    self.datasetcfg = NDDataset.fromName(self.dataset_name)
+    with closing (NDProjectsDB.getProjDB(self)) as db:
+      self.db = db
+
+    # if isinstance(token_name, str) or isinstance(token_name, unicode):
+      # try:
+        # self.tk = Token.objects.get(token_name = token_name)
+        # self.pr = Project.objects.get(project_name = self.tk.project_id)
+        # self.datasetcfg = NDDataset.fromName(self.pr.dataset_id)
+      # except ObjectDoesNotExist, e:
+        # logger.error("Token {} does not exist. {}".format(token_name, e))
+        # raise NDWSError("Token {} does not exist. {}".format(token_name, e))
+    # elif isinstance(token_name, Project):
+      # # Constructor for NDProject from Project Name
+      # try:
+        # self.tk = None
+        # self.pr = token_name
+        # self.datasetcfg = NDDataset.fromName(self.pr.dataset_id)
+      # except ObjectDoesNotExist, e:
+        # logger.error("Token {} does not exist. {}".format(token_name, e))
+        # raise NDWSError("Token {} does not exist. {}".format(token_name, e))
   
+  @staticmethod
+  def public_list():
+    projects = Project.objects.filter(public = PUBLIC_TRUE)
+    return [pr.project_name for pr in projects]
+
+  @classmethod
+  def fromTokenName(cls, token_name):
+    try:
+      tk = Token.objects.get(token_name = token_name)
+      pr = Project.objects.get(project_name = tk.project_id)
+      return cls(pr)
+    except ObjectDoesNotExist, e:
+      logger.error("Token {} does not exist. {}".format(token_name, e))
+      raise NDWSError("Token {} does not exist. {}".format(token_name, e))
+
+  @classmethod
+  def fromName(cls, project_name):
+    try:
+      pr = Project.objects.get(project_name=project_name)
+      return cls(pr)
+    except ObjectDoesNotExist as e:
+      raise
+  
+  @classmethod
+  def fromJson(cls, dataset_name, project):
+    pr = Project(**cls.deserialize(project))
+    pr.dataset_id = dataset_name
+    return cls(pr)
+
+  def create(self):
+    try:
+      self.pr.save()
+      self.db.newNDProject()
+    except NDWSError as e:
+      self.pr.delete()
+      raise
+    except Exception as e:
+      raise
+
+  def delete(self):
+    try:
+      self.db.deleteNDProject()
+      self.pr.delete()
+    except NDWSError as e:
+      raise
+    except Exception as e:
+      raise
+
   @property
   def project_name(self):
     return self.pr.project_name
@@ -61,6 +115,18 @@ class NDProject:
   @property
   def dataset_name(self):
     return self.pr.dataset_id
+  
+  @dataset_name.setter
+  def dataset_name(self, value):
+    self.pr.dataset_id = value
+  
+  @property
+  def user_id(self):
+    return self.pr.user_id
+
+  @user_id.setter
+  def user_id(self, value):
+    self.pr.user_id = value
 
   @property
   def token(self):
@@ -115,7 +181,7 @@ class NDProject:
     return self.pr.project_description
 
   @project_description.setter
-  def project_description(self, values):
+  def project_description(self, value):
     self.pr.project_description = value
 
   @property
@@ -149,40 +215,48 @@ class NDProject:
   @property
   def kvengine_password(self):
     return settings.DATABASES['default']['PASSWORD']
+  
+  @property
+  def dbname(self):
+    return self.pr.project_name
+  
+  @property
+  def s3backend(self):
+    return self.pr.s3backend
 
   # Accessors
   def getToken ( self ):
     return self.tk.token_name
   
-  def getDBHost ( self ):
-      return self.pr.host
+  # def getDBHost ( self ):
+      # return self.pr.host
   
-  def getKVEngine ( self ):
-    return self.pr.kvengine
+  # def getKVEngine ( self ):
+    # return self.pr.kvengine
   
-  def getKVServer ( self ):
-    return self.pr.kvserver
+  # def getKVServer ( self ):
+    # return self.pr.kvserver
   
-  def getMDEngine ( self ):
-    return self.pr.mdengine
+  # def getMDEngine ( self ):
+    # return self.pr.mdengine
   
-  def getDBName ( self ):
-    return self.pr.project_name
+  # def getDBName ( self ):
+    # return self.pr.project_name
   
-  def getProjectName ( self ):
-    return self.pr.project_name
+  # def getProjectName ( self ):
+    # return self.pr.project_name
   
-  def getProjectDescription ( self ):
-    return self.pr.project_description
+  # def getProjectDescription ( self ):
+    # return self.pr.project_description
   
-  def getS3Backend(self):
-    return self.pr.s3backend
+  # def getS3Backend(self):
+    # return self.pr.s3backend
   
-  def getNDVersion ( self ):
-    return self.pr.nd_version
+  # def getNDVersion ( self ):
+    # return self.pr.nd_version
   
-  def getSchemaVersion ( self ):
-    return self.pr.schema_version
+  # def getSchemaVersion ( self ):
+    # return self.pr.schema_version
 
   def projectChannels ( self, channel_list=None ):
     """Return a generator of Channel Objects"""
@@ -191,19 +265,19 @@ class NDProject:
     else:
       chs = channel_list
     for ch in chs:
-      yield NDChannel(self, ch)
+      yield NDChannel(ch)
 
   def getChannelObj ( self, channel_name='default' ):
     """Returns a object for that channel"""
     if channel_name == 'default':
       channel_name = Channel.objects.get(project_id=self.pr, default=True)
-    return NDChannel(self, channel_name)
+    return NDChannel.fromName(self.pr, channel_name)
 
-  def getDBUser( self ):
-    return settings.DATABASES['default']['USER']
+  # def getDBUser( self ):
+    # return settings.DATABASES['default']['USER']
   
-  def getDBPasswd( self ):
-    return settings.DATABASES['default']['PASSWORD']
+  # def getDBPasswd( self ):
+    # return settings.DATABASES['default']['PASSWORD']
   
   def deleteProject(self):
     """Delete the Project"""

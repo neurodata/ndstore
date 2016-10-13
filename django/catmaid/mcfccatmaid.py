@@ -19,14 +19,11 @@ import cStringIO
 import pylibmc
 import math
 from contextlib import closing
-
-import restargs
 import spatialdb
-import ndproj
-import ndwsrest
+from webservices import ndwsrest
+from ndproj.ndproject import NDProject
 import mcfc
-
-from ndwserror import NDWSError
+from webservices.ndwserror import NDWSError
 import logging
 logger=logging.getLogger("neurodata")
 
@@ -58,8 +55,8 @@ class MCFCCatmaid:
     # figure out the cutout (limit to max image size)
     xstart = xtile*self.tilesz
     ystart = ytile*self.tilesz
-    xend = min ((xtile+1)*self.tilesz,self.proj.datasetcfg.imageSize(res)[0][0])
-    yend = min ((ytile+1)*self.tilesz,self.proj.datasetcfg.imageSize(res)[0][1])
+    xend = min ((xtile+1)*self.tilesz,self.proj.datasetcfg.get_imagesize(res)[0][0])
+    yend = min ((ytile+1)*self.tilesz,self.proj.datasetcfg.get_imagesize(res)[0][1])
 
     # call the mcfc interface
     imageargs = '{}/{},{}/{},{}/{},{}/'.format(res, xstart, xend, ystart, yend, zslice, zslice+1) 
@@ -84,16 +81,16 @@ class MCFCCatmaid:
   
     # figure out the cutout (limit to max image size)
     xstart = xtile * self.tilesz
-    xend = min ((xtile+1) * self.tilesz, self.proj.datasetcfg.imageSize(res)[0][0])
+    xend = min ((xtile+1) * self.tilesz, self.proj.datasetcfg.get_imagesize(res)[0])
 
     # z cutouts need to get rescaled
     #  we'll map to the closest pixel range and tolerate one pixel error at the boundary
     scalefactor = self.proj.datasetcfg.getScale()[res]['xz']
-    zoffset = self.proj.datasetcfg.getOffset()[res][2]
+    zoffset = self.proj.datasetcfg.get_offset(res)[2]
     ztilestart = int((ztile*self.tilesz)/scalefactor) + zoffset
     zstart = max ( ztilestart, zoffset ) 
     ztileend = int(math.ceil(((ztile+1)*self.tilesz)/scalefactor)) + zoffset
-    zend = min ( ztileend, self.proj.datasetcfg.imageSize(res)[0][2] )
+    zend = min ( ztileend, self.proj.datasetcfg.get_imagesize(res)[2] )
 
     # call the mcfc interface
     imageargs = '{}/{},{}/{},{}/{},{}/'.format(res, xstart, xend, yslice, yslice+1, zstart, zend) 
@@ -118,7 +115,7 @@ class MCFCCatmaid:
 
     # figure out the cutout (limit to max image size)
     ystart = ytile * self.tilesz
-    yend = min((ytile+1)*self.tilesz, self.proj.datasetcfg.imageSize(res)[0][1])
+    yend = min((ytile+1)*self.tilesz, self.proj.datasetcfg.get_imagesize(res)[1])
 
     # z cutouts need to get rescaled
     #  we'll map to the closest pixel range and tolerate one pixel error at the boundary
@@ -127,7 +124,7 @@ class MCFCCatmaid:
     ztilestart = int((ztile*self.tilesz)/scalefactor) + zoffset
     zstart = max(ztilestart, zoffset) 
     ztileend = int(math.ceil(((ztile+1)*self.tilesz)/scalefactor)) + zoffset
-    zend = min(ztileend, self.proj.datasetcfg.imageSize(res)[0][2])
+    zend = min(ztileend, self.proj.datasetcfg.get_imagesize(res)[2])
 
     # call the mcfc interface
     imageargs = '{}/{},{}/{},{}/{},{}/'.format(res, xtile, xtile+1, ystart, yend, zstart, zend) 
@@ -168,16 +165,15 @@ class MCFCCatmaid:
           # if it is a mixed then replace the missing ones with the existing schema
           self.colors = [ b if a is u'' else a for a,b in zip(colors, self.colors)]
       except Exception, e:
-        logger.warning("Incorrect channel formst for getTile {}. {}".format(channels, e))
+        logger.error("Incorrect channel formst for getTile {}. {}".format(channels, e))
         raise NDWSError("Incorrect channel format for getTile {}. {}".format(channels, e))
       
       #self.colors = [] 
     except Exception, e:
-      logger.warning("Incorrect arguments for getTile {}. {}".format(webargs, e))
+      logger.error("Incorrect arguments for getTile {}. {}".format(webargs, e))
       raise NDWSError("Incorrect arguments for getTile {}. {}".format(webargs, e))
 
-    with closing ( ndproj.NDProjectsDB() ) as projdb:
-      self.proj = projdb.loadToken ( self.token )
+    self.proj = NDProject.fromTokenName( self.token )
 
     with closing ( spatialdb.SpatialDB(self.proj) ) as self.db:
       
@@ -196,8 +192,8 @@ class MCFCCatmaid:
         elif slice_type == 'yz':
           img = self.cacheMissYZ(res, xtile, ytile, ztile)
         else:
-          logger.warning ("Requested illegal image plance {}. Should be xy, xz, yz.".format(slice_type))
-          raise NDWSError ("Requested illegal image plance {}. Should be xy, xz, yz.".format(slice_type))
+          logger.error("Requested illegal image plance {}. Should be xy, xz, yz.".format(slice_type))
+          raise NDWSError("Requested illegal image plance {}. Should be xy, xz, yz.".format(slice_type))
         
         fobj = cStringIO.StringIO ( )
         img.save ( fobj, "PNG" )

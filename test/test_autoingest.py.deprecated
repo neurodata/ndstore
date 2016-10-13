@@ -26,7 +26,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
 
 from ndtype import IMAGE, UINT8
 from params import Params
-from ndwsprojingest import createJson
+from webservices.ndwsprojingest import createJson
 from postmethods import getURL, postURL, postNPZ, getNPZ
 import makeunitdb
 import site_to_test
@@ -62,7 +62,7 @@ class Test_AutoIngest_Json():
     # project format = (project_name, token_name, public)
     project = (p.token, None, None)
     # channel format = { chan1 : (channel_name, datatype, channel_type, data_url, file_name, exceptions, resolution, windowrange, readonly), chan2: ...... }
-    channels = { p.channels[0] : (p.channels[0], p.datatype, p.channel_type, 'http://127.0.0.1/data/sample_dir/', 'SLICE', 'tif', None, None, None, None) }
+    channels = { p.channels[0] : (p.channels[0], p.datatype, p.channel_type, 'http://localhost/data/sample_dir/', 'SLICE', 'tif', None, None, None, None) }
     metadata = { 'Author': 'Will', 'Animal':'Mouse', 'Date_Collected':'10/2/2015' }
 
     json_file = tempfile.NamedTemporaryFile(mode='w+b')

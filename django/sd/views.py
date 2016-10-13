@@ -1,7 +1,5 @@
 # Copyright 2014 NeuroData (http://neurodata.io
 # Upload Sizes for max memory and number of fields
-DATA_UPLOAD_MAX_MEMORY_SIZE = 2147483648
-DATA_UPLOAD_MAX_NUMBER_FIELDS = 1000
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,10 +26,9 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.permissions import IsAuthenticated
 from nduser.models import Token
 
-import ndwsrest
-import ndwsprojingest
-
-from ndwserror import NDWSError, IncorrectSyntaxError
+import webservices.ndwsrest as ndwsrest
+import webservices.ndwsprojingest as ndwsprojingest
+from webservices.ndwserror import NDWSError, IncorrectSyntaxError
 import logging
 logger=logging.getLogger("neurodata")
 
@@ -565,3 +562,25 @@ def deleteChannel(request, webargs):
   except Exception, e:
     logger.exception("Unknown exception in jsonProject Web service. {}".format(e))
     raise NDWSError("Unknown exception in jsonProject Web service. {}".format(e))
+
+# def createChannel(request, webargs):
+  # """RESTful URL for creating a list of channels using a JSON file"""
+
+  # try:
+    # return ndwsprojingest.createChannel(webargs, request.body)
+  # except NDWSError, e:
+    # return django.http.HttpResponseNotFound()
+  # except Exception, e:
+    # logger.exception("Unknown exception in jsonProject Web service. {}".format(e))
+    # raise NDWSError("Unknown exception in jsonProject Web service. {}".format(e))
+
+# def deleteChannel(request, webargs):
+  # """RESTful URL for deleting a list of channels using a JSON file"""
+
+  # try:
+    # return ndwsprojingest.deleteChannel(webargs, request.body)
+  # except NDWSError, e:
+    # return django.http.HttpResponseNotFound()
+  # except Exception, e:
+    # logger.exception("Unknown exception in jsonProject Web service. {}".format(e))
+    # raise NDWSError("Unknown exception in jsonProject Web service. {}".format(e))

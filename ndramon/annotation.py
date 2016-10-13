@@ -18,9 +18,9 @@ import MySQLdb
 from collections import defaultdict
 import json
 
-from ndwserror import NDWSError 
+from webservices.ndwserror import NDWSError
 import logging
-logger=logging.getLogger("neurodata")
+logger = logging.getLogger("neurodata")
 
 
 """Classes that hold annotation metadata"""

@@ -15,15 +15,11 @@
 import re
 import urllib2
 import json
-import requests
-import jsonschema
-
 import django
 django.setup()
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseBadRequest
-
-import ndproj
+from ndproj.ndprojdb import NDProjectsDB
 from ndwsingest import IngestData
 # from ndschema import PROJECT_SCHEMA, DATASET_SCHEMA, CHANNEL_SCHEMA
 from ndtype import READONLY_FALSE, REDIS, S3_TRUE
@@ -32,10 +28,9 @@ from nduser.models import Dataset
 from nduser.models import Token
 from nduser.models import Channel
 from nduser.models import User
-
 from ndwserror import NDWSError
 import logging
-logger=logging.getLogger('neurodata')
+logger = logging.getLogger('neurodata')
 
 def autoIngest(webargs, post_data):
   """Create a project using a JSON file"""
@@ -137,7 +132,7 @@ def autoIngest(webargs, post_data):
     else:
       pr.save()
       try:
-        pd = ndproj.NDProjectsDB.getProjDB(pr)
+        pd = NDProjectsDB.getProjDB(pr)
         pd.newNDProject()
         PROJECT_CREATED = True
       except Exception, e:
@@ -165,7 +160,7 @@ def autoIngest(webargs, post_data):
         # Maintain a list of channel objects created during this iteration and delete all even if one fails
         channel_object_list.append(ch)
         try:
-          pd = ndproj.NDProjectsDB.getProjDB(pr)
+          pd = NDProjectsDB.getProjDB(pr)
           pd.newNDChannel(ch.channel_name)
           CHANNEL_CREATED = True
         except Exception, e:
@@ -191,13 +186,13 @@ def autoIngest(webargs, post_data):
       
       # calling celery ingest task
       from spdb.tasks import ingest
-      # ingest(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
+      ingest(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
       # ingest.delay(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
       
       # calling ndworker
-      from ndworker.ndworker import NDWorker
-      worker = NDWorker(tk.token_name, ch.channel_name, ch.resolution)
-      queue_name = worker.populateQueue()
+      # from ndworker.ndworker import NDWorker
+      # worker = NDWorker(tk.token_name, ch.channel_name, ch.resolution)
+      # queue_name = worker.populateQueue()
     
     # Posting to LIMS system
     postMetadataDict(metadata_dict, pr.project_name)
@@ -208,14 +203,14 @@ def autoIngest(webargs, post_data):
       pd
     except NameError:
       if pr is not None:
-        pd = ndproj.NDProjectsDB.getProjDB(pr.project_name)
+        pd = NDProjectsDB.getProjDB(pr.project_name)
       if PROJECT_CREATED:
         pd.deleteNDProject()
     logger.error("Error saving models. There was an error in the information posted")
     return HttpResponseBadRequest(json.dumps("FAILED. There was an error in the information you posted."), content_type="application/json")
 
-  # return HttpResponse(json.dumps("SUCCESS. The ingest process has now started."), content_type="application/json")
-  return_dict = {'queue_name' : queue_name}
+  return HttpResponse(json.dumps("SUCCESS. The ingest process has now started."), content_type="application/json")
+  # return_dict = {'queue_name' : queue_name}
   return HttpResponse(json.dumps(return_dict), content_type="application/json")
 
 def createChannel(webargs, post_data):
@@ -260,7 +255,7 @@ def createChannel(webargs, post_data):
       ch.save()
       
       # Create channel database using the ndproj interface
-      pd = ndproj.NDProjectsDB.getProjDB(pr)
+      pd = NDProjectsDB.getProjDB(pr)
       pd.newNDChannel(ch.channel_name)
   except Exception, e:
     logger.error("Error saving models")
@@ -301,7 +296,7 @@ def deleteChannel(webargs, post_data):
         # Checking if channel is readonly or not
         if ch.readonly == READONLY_FALSE:
           # delete channel table using the ndproj interface
-          pd = ndproj.NDProjectsDB().getProjDB(pr)
+          pd = NDProjectsDB().getProjDB(pr)
           pd.deleteNDChannel(ch.channel_name)
           ch.delete()
     return HttpResponse("Success. Channels deleted.")

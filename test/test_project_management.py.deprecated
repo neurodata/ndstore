@@ -16,21 +16,17 @@ import os
 import sys
 import json
 import tempfile
-import pytest
 import numpy as np
 import random
-
 sys.path += [os.path.abspath('../django')]
 import ND.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
-
 from ndtype import IMAGE, UINT8
 from params import Params
-from ndwsprojingest import createJson
+from webservices.ndwsprojingest import createJson
 from postmethods import getURL, postURL, postNPZ, getNPZ
 import makeunitdb
 import site_to_test
-
 SITE_HOST = site_to_test.site
 
 p = Params()

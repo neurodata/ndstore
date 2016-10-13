@@ -19,26 +19,25 @@ import os
 import sys
 from contextlib import closing
 import argparse
-import blosc
-from operator import mul
 import csv
 sys.path.append(os.path.abspath('../django'))
 import ND.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
-from settings.settings import Settings
+from ndingest.settings.settings import Settings
 ndingest_settings = Settings.load()
 import django
 django.setup()
 from django.conf import settings
-from ndctypelib import XYZMorton
-from cube import Cube
-from ndtype import *
-import ndproj
-import spatialdb
-from s3io import S3IO
-from nddynamo.cuboidindexdb import CuboidIndexDB
-from ndbucket.cuboidbucket import CuboidBucket
-from s3util import generateS3BucketName, generateS3Key
+from ndlib.ndctypelib import XYZMorton
+from ndcube.cube import Cube
+from ndlib.ndtype import *
+from ndproj.ndproject import NDProject
+from ndproj.ndprojdb import NDProjectsDB
+from spdb.spatialdb import SpatialDB
+from spdb.s3io import S3IO
+from ndingest.nddynamo.cuboidindexdb import CuboidIndexDB
+from ndingest.ndbucket.cuboidbucket import CuboidBucket
+from ndlib.s3util import generateS3BucketName, generateS3Key
 
 
 class AwsInterface:
@@ -48,10 +47,11 @@ class AwsInterface:
   
     self.token = token
     
-    with closing (ndproj.NDProjectsDB()) as projdb:
-      self.proj = projdb.loadToken(self.token)
+    with closing (NDProjectsDB()) as projdb:
+      # self.proj = projdb.loadToken(self.token)
+      self.proj = NDProject.fromTokenName(self.token)
     
-    with closing (spatialdb.SpatialDB(self.proj)) as self.db:
+    with closing (SpatialDB(self.proj)) as self.db:
       # create the s3 I/O and index objects
       self.s3_io = S3IO(self.db)
       self.cuboid_bucket = CuboidBucket(self.proj.getProjectName())
@@ -91,7 +91,7 @@ class AwsInterface:
   def uploadExistingProject(self, channel_name, resolution):
     """Upload an existing project to S3"""
     
-    db = spatialdb.SpatialDB(self.proj)
+    db = SpatialDB(self.proj)
     # checking for channels
     if channel_name is None:
       channel_list = None
@@ -113,32 +113,28 @@ class AwsInterface:
       for cur_res in range(start_res, stop_res, -1):
         
         # get the source database sizes
-        [[x_imagesz, y_imagesz, z_imagesz], time_range] = self.proj.datasetcfg.imageSize(cur_res)
-        [x_cubedim, y_cubedim, z_cubedim] = cubedim = self.proj.datasetcfg.getCubeDims()[cur_res]
-        [x_offset, y_offset, z_offset] = self.proj.datasetcfg.getOffset()[cur_res]
-
-        [x_supercubedim, y_supercubedim, z_supercubedim] = supercubedim = map(mul, cubedim, SUPERCUBESIZE)
-
+        [image_size, time_range] = self.proj.datasetcfg.dataset_dim(cur_res)
+        cubedim = self.proj.datasetcfg.cube_dim(cur_res)
+        offset = self.proj.datasetcfg.offset(cur_res)
+        supercubedim = self.proj.datasetcfg.supercube_dim(cur_res)
         # set the limits for iteration on the number of cubes in each dimension
-        x_limit = (x_imagesz-1) / (x_supercubedim) + 1
-        y_limit = (y_imagesz-1) / (y_supercubedim) + 1
-        z_limit = (z_imagesz-1) / (z_supercubedim) + 1
+        limit = self.proj.datasetcfg.supercube_limit(cur_res)
 
-        for z in range(z_limit):
-          for y in range(y_limit):
-            for x in range(x_limit):
+        for z in range(limit.z):
+          for y in range(limit.y):
+            for x in range(limit.z):
 
               try:
                 # cutout the data at the current resolution
-                data = db.cutout(ch, [x*x_supercubedim, y*y_supercubedim, z*z_supercubedim], [x_supercubedim, y_supercubedim, z_supercubedim], cur_res).data
+                data = db.cutout(ch, [x*supercubedim.x, y*supercubedim.y, z*supercubedim.z], [supercubedim.x, supercubedim.y, supercubedim.z], cur_res).data
                 # generate the morton index
                 morton_index = XYZMorton([x, y, z])
 
                 print "Inserting Cube {} at res {}".format(morton_index, cur_res), [x,y,z]
                 # updating the index
-                self.cuboidindex_db.putItem(ch.getChannelName(), cur_res, x, y, z)
+                # self.cuboidindex_db.putItem(ch.getChannelName(), cur_res, x, y, z)
                 # inserting the cube
-                self.s3_io.putCube(ch, cur_res, morton_index, blosc.pack_array(data))
+                # self.s3_io.putCube(ch, cur_res, morton_index, blosc.pack_array(data))
               
               except Exception as e:
                 # checkpoint the ingest

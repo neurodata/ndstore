@@ -13,18 +13,9 @@
 # limitations under the License.
 
 import urllib2
-import cStringIO
-import tempfile
 import time
-import random
 import json
-import os, sys
 import numpy as np
-import pytest
-from contextlib import closing
-
-import kvengine_to_test
-
 from ndtype import UINT8, UINT16, UINT32, ANNOTATION, IMAGE 
 from ND import celery_app 
 import makeunitdb

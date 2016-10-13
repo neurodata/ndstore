@@ -12,21 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import re
+import cStringIO
 import tempfile
 import h5py
 import random
 import csv
 import numpy as np
-import pytest
-import httplib
-from contextlib import closing
-
 from params import Params
 from postmethods import putAnnotation, getAnnotation, getURL, postURL
 import kvengine_to_test
 import site_to_test
-import makeunitdb
 SITE_HOST = site_to_test.site
 import requests
 

@@ -13,11 +13,8 @@
 # limitations under the License.
 
 import re
-
-import annotation
-
+from ndramon import annotation
 from ndtype import ISOTROPIC
-
 from ndwserror import NDWSError
 import logging
 logger=logging.getLogger("neurodata")

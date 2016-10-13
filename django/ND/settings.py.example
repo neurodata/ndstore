@@ -70,7 +70,8 @@ INSTALLED_APPS = (
     'stats',
     'corsheaders',
     'ndgraph',
-    'ramon'
+    'ramon',
+    'resource'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -283,8 +284,8 @@ SECURE_SSL_REDIRECT = True
 # S3_TILE_BUCKET = 'neurodata-tile-store'
 # DYNAMO_CUBOIDINDEX_TABLE = 's3indexdb'
 # DYNAMO_TILEINDEX_TABLE = 'tileindexdb'
-# AWS_ACCESS_KEY_ID = settings_secret.AWS_ACCESS_KEY_ID
-# AWS_SECRET_ACCESS_KEY = settings_secret.AWS_SECRET_ACCESS_KEY
+AWS_ACCESS_KEY_ID = settings_secret.AWS_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY = settings_secret.AWS_SECRET_ACCESS_KEY
 
 # Upload Sizes for max memory and number of fields
 DATA_UPLOAD_MAX_MEMORY_SIZE = 2147483648

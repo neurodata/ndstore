@@ -1,4 +1,4 @@
-# Copyright 2015 NeuroData (http://neurodata.io)
+# Copyright 2014 NeuroData (http://neurodata.io)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,20 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import numpy as np
-import urllib2
-import tempfile
-import csv
-import cStringIO
-import collections
-import re
+
 import json
-
 import annotation
-
-from ndwserror import NDWSError
+from webservices.ndwserror import NDWSError
 import logging
-logger=logging.getLogger("neurodata")
+logger = logging.getLogger("neurodata")
 
 #
 #  class to define the HDF5 format of annotations.

@@ -12,22 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import urllib2
 import cStringIO
 import tempfile
 import h5py
 import random
 import string
-import csv
-import os, sys
-import numpy as np
-import pytest
-from contextlib import closing
-
 import makeunitdb
 from params import Params
 from ramonmethods import H5AnnotationFile, setField, getField, queryField, makeAnno
-#from postmethods import setURL
 import kvengine_to_test
 import site_to_test
 SITE_HOST = site_to_test.site

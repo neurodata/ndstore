@@ -68,6 +68,21 @@ cd /home/neurodata/ndstore/django/ND/
 sudo -u neurodata cp settings.py.example settings.py
 sudo -u neurodata ln -s /home/neurodata/ndstore/setup/docker_config/django/docker_settings_secret.py settings_secret.py
 
+# download, install and configure redis
+cd /home/neurodata/
+sudo -u neurodata wget http://download.redis.io/redis-stable.tar.gz
+sudo -u neurodata tar -xvf /home/neurodata/redis-stable.tar.gz
+cd /home/neurodata/redis-stable/
+sudo -u neurodata make && sudo -u neurodata make test && sudo make install
+sudo mkdir /etc/redis
+sudo ln -s /home/neurodata/ndstore/setup/docker_config/redis/redis.conf /etc/redis/redis.conf
+sudo ln -s /home/neurodata/ndstore/setup/docker_config/upstart/redis.conf /etc/init/redis.conf
+
+# restart redis service
+sudo initctl reload-configuration
+sudo service redis start
+sudo service redis restart
+
 # migrate the database and create the superuser
 sudo chmod -R 777 /var/log/neurodata/
 cd /home/neurodata/ndstore/django/
@@ -84,16 +99,6 @@ else
     mysql -u neurodata -pneur0data -i -e "use neurodjango; insert into django_site (id, domain, name) values (2, '$3', '$3');"
   fi
 fi
-
-# download, install and configure redis
-cd /home/neurodata/
-sudo -u neurodata wget http://download.redis.io/redis-stable.tar.gz
-sudo -u neurodata tar -xvf /home/neurodata/redis-stable.tar.gz
-cd /home/neurodata/redis-stable/
-sudo -u neurodata make && sudo -u neurodata make test && sudo make install
-sudo mkdir /etc/redis
-sudo ln -s /home/neurodata/ndstore/setup/docker_config/redis/redis.conf /etc/redis/redis.conf
-sudo ln -s /home/neurodata/ndstore/setup/docker_config/upstart/redis.conf /etc/init/redis.conf
 
 # setup the cache manager
 sudo ln -s /home/neurodata/ndstore/setup/docker_config/upstart/ndmanager.conf /etc/init/ndmanager.conf

@@ -13,19 +13,15 @@
 # limitations under the License.
 
 import numpy as np
-import urllib2
 import tempfile
 import h5py
 import csv
 import cStringIO
-import collections
 import re
-
 import annotation
-
-from ndwserror import NDWSError
+from webservices.ndwserror import NDWSError
 import logging
-logger=logging.getLogger("neurodata")
+logger = logging.getLogger("neurodata")
 
 #
 #  class to define the HDF5 format of annotations.

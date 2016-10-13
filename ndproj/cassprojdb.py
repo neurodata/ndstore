@@ -16,22 +16,22 @@ import cassandra
 
 from ndchannel import NDChannel
 from ndproject import NDProject
-from ndtype import ND_servermap
+from ndtype import TIMESERIES , ND_servermap
 
 from ndwserror import NDWSError
 import logging
-logger=logging.getLogger("neurodata")
+logger = logging.getLogger("neurodata")
 
 class CassProjectDB:
   """Database for the projects"""
 
   def __init__(self, project_name):
     """Create the database connection"""
-    
+
     self.project_name = project_name
     self.pr = NDProject(project_name)
     server_address = ND_servermap[self.pr.getKVServer()]
-    cluster = Cluster([server_address])
+    cluster = cassandra.Cluster([server_address])
     self.session = cluster.connect()
 
   def __del__(self):
@@ -67,7 +67,7 @@ class CassProjectDB:
     ch = NDChannel(self.pr, channel_name)
 
     try:
-      if ch.getChannelType() not in [TIMESERIES]:
+      if ch.channel_type not in [TIMESERIES]:
         self.session.execute ( "CREATE table {} ( resolution int, zidx bigint, cuboid text, PRIMARY KEY ( resolution, zidx ) )".format(ch.getTable()), timeout=30)
     
     except Exception, e:

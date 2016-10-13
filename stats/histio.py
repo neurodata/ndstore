@@ -12,30 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import argparse
-import sys
-import os
 import numpy as np
-import urllib, urllib2
-import cStringIO
-from contextlib import closing
-import zlib
 import json
-
-# sys.path += [os.path.abspath('../django')]
-# import ND.settings
-# os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
-# from django.conf import settings
-
 import django
 django.setup()
-
 from nduser.models import Token, Project, Channel
 from stats.models import Histogram
-
 import cStringIO
 import zlib
-
 import logging
 logger = logging.getLogger("neurodata")
 

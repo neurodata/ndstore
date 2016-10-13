@@ -18,7 +18,6 @@ sys.path += [os.path.abspath('../django')]
 import ND.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
 import django
-from django.conf import settings
 django.setup()
 from restutil import getURL, getURLTimed
 

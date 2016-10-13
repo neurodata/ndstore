@@ -15,28 +15,15 @@
 #RBTODO --- refactor other fields like ROI children
 #  e.g. Node children, Skeleton nodes, other TODOs in file
 
-import StringIO
-import numpy as np
-import os
-import cStringIO
 import re
 import json
-import blosc
-import MySQLdb
 from contextlib import closing
-from operator import sub, add
-from libtiff import TIFFfile, TIFFimage
-
 import spatialdb
-import ramondb
-import ndproj
-import ndchannel
-import jsonann 
-import jsonprojinfo
-import annotation
-import ndwsskel
-from ndtype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, ANNOTATION_CHANNELS, NOT_PROPAGATED, UNDER_PROPAGATION, PROPAGATED, ND_dtypetonp, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, READONLY_TRUE, READONLY_FALSE
-
+from ndramon.ramondb import RamonDB
+import ndproj.ndprojdb
+from ndproj.ndchannel import NDChannel
+import ndproj.jsonprojinfo
+from ndramon import jsonann
 from ndwserror import NDWSError
 import logging
 logger=logging.getLogger("neurodata")
@@ -80,7 +67,7 @@ def getAnnotation ( webargs ):
     proj = projdb.loadToken ( token )
 
   # and the ramon database
-  with closing ( ramondb.RamonDB(proj) ) as rdb:
+  with closing ( RamonDB(proj) ) as rdb:
     
     try:
 
@@ -96,7 +83,7 @@ def getAnnotation ( webargs ):
         if m:
           resolution = int(m.groups()[0])
         else:
-          resolution = ch.getResolution()
+          resolution = ch.resolution
 
         with closing ( spatialdb.SpatialDB(proj) ) as db:
           bbcorner, bbdim = db.getBoundingBox(ch, [annoid], resolution)
@@ -123,10 +110,10 @@ def query ( webargs ):
     proj = projdb.loadToken ( token )
 
   # and the ramon database 
-  with closing ( ramondb.RamonDB(proj)) as rdb:
+  with closing ( RamonDB(proj)) as rdb:
 
     # get the channel
-    ch = ndproj.NDChannel(proj, channel)
+    ch = NDChannel.fromName(proj, channel)
     
     m = re.search ( "query/([\w]+)/([\w]+)", otherargs )  
     if m:
@@ -151,7 +138,7 @@ def topkeys ( webargs ):
     proj = projdb.loadToken ( token )
 
   # and the ramon database 
-  with closing ( ramondb.RamonDB(proj)) as rdb:
+  with closing (RamonDB(proj)) as rdb:
     m = re.search ( "topkeys/(\d+)/(?:type/(\d+)/)?", otherargs )  
     # if we have a count clause use
     if m:

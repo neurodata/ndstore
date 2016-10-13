@@ -21,7 +21,7 @@ import django.http
 from PIL import Image
 import base64
 
-import ndproj
+import ndprojdb
 import ndwsrest
 import spatialdb
 from ndctypelib import recolor_ctype
@@ -56,14 +56,14 @@ def synaptogram_view (request, webargs):
 
     # pattern for using contexts to close databases
     # get the project 
-    with closing ( ndproj.NDProjectsDB() ) as projdb:
+    with closing ( ndprojdb.NDProjectsDB() ) as projdb:
       proj = projdb.loadToken ( token )
 
     # and the database and then call the db function
     with closing ( spatialdb.SpatialDB(proj) ) as db:
 
       # convert to cutout coordinates
-      (xoffset,yoffset,zoffset) = proj.datasetcfg.getOffset()[ resolution ]
+      (xoffset,yoffset,zoffset) = proj.datasetcfg.get_offset(resolution)
       (xlow, xhigh) = (xlow-xoffset, xhigh-xoffset)
       (ylow, yhigh) = (ylow-yoffset, yhigh-yoffset)
       (zlow, zhigh) = (zlow-zoffset, zhigh-zoffset)
@@ -81,7 +81,7 @@ def synaptogram_view (request, webargs):
           cb = db.cutout ( ch, corner, dim, resolution )
           # apply window for 16 bit projects 
           if ch.getDataType() in DTYPE_uint16:
-            [startwindow, endwindow] = window_range = ch.getWindowRange()
+            [startwindow, endwindow] = window_range = ch.window_range
             if (endwindow != 0):
               cb.data = np.uint8(windowCutout(cb.data, window_range))
           
@@ -190,5 +190,3 @@ def synaptogram_view_old (request, webargs):
 
   except Exception, e:
     raise
-#    return django.http.HttpResponseNotFound(e)
-

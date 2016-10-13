@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
+import requests
 import urllib2
 import h5py
 import cStringIO
@@ -23,7 +25,6 @@ import requests
 
 from params import Params
 from ndtype import UINT8, ND_dtypetonp
-
 import kvengine_to_test
 import site_to_test
 import makeunitdb
@@ -243,6 +244,7 @@ def getURL ( url ):
     return e
   return resp
 
+
 def delURL ( url ):
   """Del the url"""
   try:
@@ -250,3 +252,27 @@ def delURL ( url ):
   except Exception as e:
     return e
   return resp
+
+def postJSON(url, data):
+
+  try:
+    response = requests.post(url, json=data)
+    return response
+  except requests.HTTPError as e:
+    return e
+
+def getJSON(url):
+
+  try:
+    response = requests.get(url)
+    return response.json()
+  except requests.HTTPError as e:
+    return e
+
+def deleteJSON(url):
+
+  try:
+    response = requests.delete(url)
+    return response
+  except requests.HTTPError as e:
+    return e
