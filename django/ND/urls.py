@@ -35,6 +35,7 @@ base_urlpatterns = [
     url(r'^ndgraph/', include('ndgraph.urls')),
     url(r'^stats/', include('stats.urls')),
     url(r'^resource/', include('resource.urls')),
+    url(r'^ingest/', include('ingest.urls')),
 ]
 
 urlpatterns = [
