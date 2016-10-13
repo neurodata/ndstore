@@ -20,13 +20,11 @@ import cStringIO
 import django.http
 from PIL import Image
 import base64
-
-import ndprojdb
-import ndwsrest
-import spatialdb
-from ndctypelib import recolor_ctype
-from ndtype import DTYPE_uint8, DTYPE_uint16, ANNOTATION_CHANNELS 
-from windowcutout import windowCutout 
+from ndproj.ndproject import NDProject
+from spdb.spatialdb import SpatialDB
+from ndlib.ndctypelib import recolor_ctype
+from ndlib.ndtype import DTYPE_uint8, DTYPE_uint16, ANNOTATION_CHANNELS 
+from webservices.windowcutout import windowCutout 
 
 import json
 
@@ -54,16 +52,14 @@ def synaptogram_view (request, webargs):
 
     channels = chanstr.split(',')
 
-    # pattern for using contexts to close databases
     # get the project 
-    with closing ( ndprojdb.NDProjectsDB() ) as projdb:
-      proj = projdb.loadToken ( token )
-
+    proj = NDProject.fromTokenName(token)
+    
     # and the database and then call the db function
-    with closing ( spatialdb.SpatialDB(proj) ) as db:
+    with closing (SpatialDB(proj)) as db:
 
       # convert to cutout coordinates
-      (xoffset,yoffset,zoffset) = proj.datasetcfg.get_offset(resolution)
+      (xoffset, yoffset, zoffset) = proj.datasetcfg.get_offset(resolution)
       (xlow, xhigh) = (xlow-xoffset, xhigh-xoffset)
       (ylow, yhigh) = (ylow-yoffset, yhigh-yoffset)
       (zlow, zhigh) = (zlow-zoffset, zhigh-zoffset)

@@ -16,7 +16,7 @@ import json
 import urllib2
 from lxml import etree
 from django.conf import settings
-from ndtype import ZSLICES
+from ndlib.ndtype import ZSLICES
 from webservices.ndwserror import NDWSError
 from ndproj.nddataset import NDDataset
 from ndproj.ndtoken import NDToken

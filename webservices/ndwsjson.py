@@ -18,15 +18,14 @@
 import re
 import json
 from contextlib import closing
-import spatialdb
+from spdb.spatialdb import SpatialDB
 from ndramon.ramondb import RamonDB
-import ndproj.ndprojdb
+from ndproj.ndproject import NDProject
 from ndproj.ndchannel import NDChannel
-import ndproj.jsonprojinfo
 from ndramon import jsonann
-from ndwserror import NDWSError
+from webservices.ndwserror import NDWSError
 import logging
-logger=logging.getLogger("neurodata")
+logger = logging.getLogger("neurodata")
 
 
 """An enumeration for options processing in getAnnotation"""
@@ -61,18 +60,15 @@ def getAnnotation ( webargs ):
 
   [token, channel, otherargs] = webargs.split('/', 2)
 
-  # pattern for using contexts to close databases
   # get the project 
-  with closing ( ndproj.NDProjectsDB() ) as projdb:
-    proj = projdb.loadToken ( token )
-
+  proj = NDProject.fromTokenName(token)
+  ch = ndproj.NDChannel(proj, channel)
+  
   # and the ramon database
   with closing ( RamonDB(proj) ) as rdb:
     
     try:
 
-      # Split the URL and get the args
-      ch = ndproj.NDChannel(proj, channel)
       option_args = otherargs.split('/')
 
       annoid = int(option_args[0])
@@ -85,7 +81,7 @@ def getAnnotation ( webargs ):
         else:
           resolution = ch.resolution
 
-        with closing ( spatialdb.SpatialDB(proj) ) as db:
+        with closing (SpatialDB(proj)) as db:
           bbcorner, bbdim = db.getBoundingBox(ch, [annoid], resolution)
           annobj[annoid]['bbcorner'] = bbcorner
           annobj[annoid]['bbdim'] = bbdim
@@ -104,17 +100,14 @@ def query ( webargs ):
 
   [token, channel, otherargs] = webargs.split('/', 2)
 
-  # pattern for using contexts to close databases
   # get the project 
-  with closing ( ndproj.NDProjectsDB() ) as projdb:
-    proj = projdb.loadToken ( token )
+  proj = NDProject.fromTokenName(token)
+  # get the channel
+  ch = NDChannel.fromName(proj, channel)
 
   # and the ramon database 
   with closing ( RamonDB(proj)) as rdb:
 
-    # get the channel
-    ch = NDChannel.fromName(proj, channel)
-    
     m = re.search ( "query/([\w]+)/([\w]+)", otherargs )  
     if m:
       qrykey = m.group(1)
@@ -124,7 +117,6 @@ def query ( webargs ):
       raise NDWSError ("Invalid key/value query format")
 
     ids = rdb.getKVQuery ( ch, qrykey, qryvalue )
-
     return json.dumps ( ids.tolist() )
 
 def topkeys ( webargs ):
@@ -132,10 +124,10 @@ def topkeys ( webargs ):
 
   [token, channel, otherargs] = webargs.split('/', 2)
 
-  # pattern for using contexts to close databases
   # get the project 
-  with closing ( ndproj.NDProjectsDB() ) as projdb:
-    proj = projdb.loadToken ( token )
+  proj = NDProject.fromTokenName(token)
+  # get the channel
+  ch = ndproj.NDChannel(proj, channel)
 
   # and the ramon database 
   with closing (RamonDB(proj)) as rdb:
@@ -151,10 +143,5 @@ def topkeys ( webargs ):
       count = 10
       anntype = None
 
-    # get the channel
-    ch = ndproj.NDChannel(proj, channel)
-
     topkeys = rdb.getTopKeys ( ch, count, anntype )
-
     return json.dumps ( topkeys )
-

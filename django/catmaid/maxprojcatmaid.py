@@ -17,12 +17,12 @@ import numpy as np
 import cStringIO
 from contextlib import closing
 from PIL import Image
-import spatialdb
+from spdb.spatialdb import SpatialDB
 from ndproj.ndproject import NDProject
 from webservices import ndwsrest
 from webservices.ndwserror import NDWSError
 import logging
-logger=logging.getLogger("neurodata")
+logger = logging.getLogger("neurodata")
 
 class MaxProjCatmaid:
   """Prefetch CATMAID tiles into MndcheDB"""
@@ -81,7 +81,7 @@ class MaxProjCatmaid:
     self.proj = NDProject.fromTokenName(self.token)
     ch = self.proj.getChannelObj(channel)
 
-    with closing ( spatialdb.SpatialDB(self.proj) ) as self.db:
+    with closing (SpatialDB(self.proj)) as self.db:
       
       tile = None
       
