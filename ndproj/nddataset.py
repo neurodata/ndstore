@@ -190,30 +190,35 @@ class NDDataset(NDObject):
   def cubedim(self):
     return self._cubedim
 
-  # @property
   def dataset_dim(self, res):
     return  [ self.get_imagesize(res), self._timerange ]
 
-  # @property
   def get_imagesize(self, res):
     # return Vector3D(self._image_size[res][::-1])
     return self._image_size[res]
   
-  # @property
   def get_offset(self, res):
     # return Vector3D(self._offset[res])
     return self._offset[res]
   
-  # @property
   def get_voxelres(self, res):
     # return Vector3D(self._voxelres[res])
     return self._voxelres[res]
   
-  # @property
+  def get_scale(self, res):
+    return self._scale[res]
+
+  def get_cubedim(self, res):
+    # return Vector3D(self._cubedim[res])
+    return self._cubedim[res]
+  
+  def get_supercubedim(self, res):
+    # return Vector3D(self._supercubedim[res])
+    return self._supercubedim[res]
+  
   def cube_limit(self, res):
     return None
 
-  # @property
   def get_supercube_limit(self, res):
     # return Vector3D(map(add, map(div, map(sub, self._image_size[res][::-1], [1]*3), self._supercubedim[res]), [1]*3))
     return map(add, map(div, map(sub, self._image_size[res][::-1], [1]*3), self._supercubedim[res]), [1]*3)
@@ -233,16 +238,6 @@ class NDDataset(NDObject):
   @property
   def scale(self):
     return self._scale
-  
-  # @property
-  def get_cubedim(self, res):
-    # return Vector3D(self._cubedim[res])
-    return self._cubedim[res]
-  
-  # @property
-  def get_supercubedim(self, res):
-    # return Vector3D(self._supercubedim[res])
-    return self._supercubedim[res]
   
   @property
   def supercube_size(self):
