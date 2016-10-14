@@ -24,7 +24,7 @@ class IngestView(View):
 
   def post(self, request):
     try:
-      ingest_manager = IngestManger()
+      ingest_manager = IngestManager()
       return HttpResponse(ingest_manager.createIngestJob(request.body), content_type='application/json')
     except Exception as e:
       return HttpResponseBadRequest()

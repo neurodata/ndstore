@@ -40,7 +40,6 @@ class NDDataset(NDObject):
     self._voxelres = {}
     self._scale = {}
     self._limit = {}
-    self.scalingoption = self._ds.scalingoption
     self._scalinglevels = self._ds.scalinglevels
     self._timerange = (self._ds.starttime, self._ds.endtime)
     # nearisotropic service for Stephan
@@ -223,9 +222,9 @@ class NDDataset(NDObject):
     # return Vector3D(map(add, map(div, map(sub, self._image_size[res][::-1], [1]*3), self._supercubedim[res]), [1]*3))
     return map(add, map(div, map(sub, self._image_size[res][::-1], [1]*3), self._supercubedim[res]), [1]*3)
   
-  # @property
-  # def scalingoption(self):
-    # return self.scalingoption
+  @property
+  def scalingoption(self):
+    return self._ds.scalingoption
 
   @property
   def scalinglevels(self):
