@@ -19,9 +19,9 @@ from django.shortcuts import get_object_or_404
 from nduser.models import Dataset, Project, Token, Channel
 from stats.models import Histogram
 import stats.tasks
-from histio import loadHistogram, loadHistogramROI
-from histstats import HistStats
-from ndtype import READONLY_TRUE, READONLY_FALSE, UINT8, UINT16, UINT32, UINT64, FLOAT32
+from ndstats.histio import loadHistogram, loadHistogramROI
+from ndstats.histstats import HistStats
+from ndlib.ndtype import READONLY_TRUE, READONLY_FALSE, UINT8, UINT16, UINT32, UINT64, FLOAT32
 import logging
 logger = logging.getLogger("neurodata")
 

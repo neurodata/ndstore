@@ -34,24 +34,24 @@ from libtiff import TIFF
 from operator import sub, add
 from libtiff import TIFFfile, TIFFimage
 
-import restargs
-import spatialdb
-import ramondb
-import ndproj
-import ndchannel
-import h5ann
-import jsonann 
-import h5projinfo
-import jsonprojinfo
-import annotation
+import webservices.restargs as restargs
+from ndlib.ndtype import *
+from spdb.spatialdb import SpatialDB
+from ndproj.ndprojdb import NDProjectsDB
+from ndproj.ndchannel import NDChannel
+from ndproj.ndproject import NDProject
+from ndramon import h5ann
+from ndramon.annotation import *
+from ndramon.ramondb import RamonDB
+from ndproj import  h5projinfo
+from ndproj import jsonprojinfo
 import mcfc
-from ndctypelib import filter_ctype_OMP
-import ndwsskel
-import ndwsnifti
-from windowcutout import windowCutout
-from ndtype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, ANNOTATION_CHANNELS, NOT_PROPAGATED, UNDER_PROPAGATION, PROPAGATED, ND_dtypetonp, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, READONLY_TRUE, READONLY_FALSE
-
-from ndwserror import NDWSError, IncorrectSyntaxError
+from ndlib.ndctypelib import filter_ctype_OMP
+import webservices.ndwsskel
+import webservices.ndwsnifti
+from webservices.windowcutout import windowCutout
+from ndlib.ndtype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, ANNOTATION_CHANNELS, NOT_PROPAGATED, UNDER_PROPAGATION, PROPAGATED, ND_dtypetonp, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, READONLY_TRUE, READONLY_FALSE
+from webservices.ndwserror import NDWSError, IncorrectSyntaxError
 import logging
 logger=logging.getLogger("neurodata")
 

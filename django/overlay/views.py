@@ -13,21 +13,15 @@
 # limitations under the License.
 
 import django.http
-
 import numpy as np
 from PIL import Image
 import urllib2
-import zlib
 import json
-
 import cStringIO
-
 from django.conf import settings
-
-from ndwserror import NDWSError
-
+from webservices.ndwserror import NDWSError
 import logging
-logger=logging.getLogger("neurodata")
+logger = logging.getLogger("neurodata")
 
 def overlayImage (request, webargs):
   """Merge two cutouts of any type"""

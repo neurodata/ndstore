@@ -13,16 +13,13 @@
 # limitations under the License.
 
 from __future__ import absolute_import
-
 from celery.task import task
 from django.conf import settings
-
 import logging
 logger = logging.getLogger("neurodata")
 
-from imghist import ImgHist, ImgHistROI
-import histio
-
+from ndstats.imghist import ImgHist, ImgHistROI
+import ndstats.histio as histio
 from nduser.models import Channel
 from stats.models import Histogram
 

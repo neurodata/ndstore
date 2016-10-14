@@ -14,7 +14,7 @@
 
 import numpy as np
 import makeunitdb
-from ndtype import IMAGE, UINT8, UINT16
+from ndlib.ndtype import IMAGE, UINT8, UINT16
 from params import Params
 from postmethods import postNPZ, getRAW
 import site_to_test

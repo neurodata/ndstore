@@ -22,15 +22,13 @@ import numpy as np
 import pytest
 from contextlib import closing
 import networkx as nx
-
 import makeunitdb
-from ndtype import ANNOTATION, UINT32
+from ndlib.ndtype import ANNOTATION, UINT32
 from params import Params
 from ramonmethods import H5AnnotationFile, setField, getField, queryField, makeAnno, createSpecificSynapse
 from postmethods import putAnnotation, getAnnotation, getURL, postURL
 import kvengine_to_test
 import site_to_test
-#from ndgraph import genGraphRAMON
 SITE_HOST = site_to_test.site
 
 p = Params()

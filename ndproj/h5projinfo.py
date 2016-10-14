@@ -12,14 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import h5py
 import numpy as np
-
-from ndtype import READONLY_FALSE, EXCEPTION_FALSE
-
+from ndlib.ndtype import READONLY_FALSE, EXCEPTION_FALSE
 import logging
-logger=logging.getLogger("neurodata")
+logger = logging.getLogger("neurodata")
 
 
 def h5ProjInfo ( proj, h5f ):

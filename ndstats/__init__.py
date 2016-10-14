@@ -11,23 +11,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from django.views.generic import View
-from django.contrib.auth.models import User
-from django.http import HttpResponse, HttpResponseBadRequest
-from ingestmanager import IngestManger
-
-class IngestView(View):
-
-  def get(self, request, web_args):
-    return NotImplemented
-
-  def post(self, request):
-    try:
-      ingest_manager = IngestManger()
-      return HttpResponse(ingest_manager.createIngestJob(request.body), content_type='application/json')
-    except Exception as e:
-      return HttpResponseBadRequest()
-
-  def delete(self, request, web_args):
-    return NotImplemented

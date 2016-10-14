@@ -14,9 +14,9 @@
 
 from django.core.exceptions import ObjectDoesNotExist
 from nduser.models import Token
-from ndtype import *
-from ndproject import NDProject
-from ndobject import NDObject
+from ndlib.ndtype import *
+from ndproj.ndproject import NDProject
+from ndproj.ndobject import NDObject
 
 class NDToken(NDObject):
 

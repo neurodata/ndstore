@@ -20,15 +20,15 @@ django.setup()
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseBadRequest
 from ndproj.ndprojdb import NDProjectsDB
-from ndwsingest import IngestData
+from webservices.ndwsingest import IngestData
 # from ndschema import PROJECT_SCHEMA, DATASET_SCHEMA, CHANNEL_SCHEMA
-from ndtype import READONLY_FALSE, REDIS, S3_TRUE
+from ndlib.ndtype import READONLY_FALSE, REDIS, S3_TRUE
 from nduser.models import Project
 from nduser.models import Dataset
 from nduser.models import Token
 from nduser.models import Channel
 from nduser.models import User
-from ndwserror import NDWSError
+from webservices.ndwserror import NDWSError
 import logging
 logger = logging.getLogger('neurodata')
 

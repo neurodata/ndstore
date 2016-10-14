@@ -13,10 +13,8 @@
 # limitations under the License.
 
 from abc import abstractmethod
-
-from ndtype import MYSQL, CASSANDRA, RIAK, REDIS, DYNAMODB, PUBLIC_TRUE
+from ndlib.ndtype import MYSQL, CASSANDRA, RIAK, REDIS, DYNAMODB, PUBLIC_TRUE
 from nduser.models import Token
-
 from webservices.ndwserror import NDWSError
 import logging
 logger=logging.getLogger("neurodata")

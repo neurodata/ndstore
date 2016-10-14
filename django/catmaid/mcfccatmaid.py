@@ -19,10 +19,10 @@ import cStringIO
 import pylibmc
 import math
 from contextlib import closing
-import spatialdb
+from spdb.spatialdb import SpatialDB
 from webservices import ndwsrest
 from ndproj.ndproject import NDProject
-import mcfc
+from webservices.mcfc import mcfcPNG
 from webservices.ndwserror import NDWSError
 import logging
 logger=logging.getLogger("neurodata")
@@ -73,7 +73,7 @@ class MCFCCatmaid:
       tiledata[index,:] = ndwsrest.window(tiledata[index,:], ch)
     
     # We have an compound array.  Now color it.
-    return mcfc.mcfcPNG (tiledata.reshape((tiledata.shape[0],tiledata.shape[2],tiledata.shape[3])), self.colors)
+    return mcfcPNG (tiledata.reshape((tiledata.shape[0],tiledata.shape[2],tiledata.shape[3])), self.colors)
 
 
   def cacheMissXZ ( self, res, xtile, yslice, ztile ):
@@ -175,7 +175,7 @@ class MCFCCatmaid:
 
     self.proj = NDProject.fromTokenName( self.token )
 
-    with closing ( spatialdb.SpatialDB(self.proj) ) as self.db:
+    with closing (SpatialDB(self.proj)) as self.db:
       
       # mndche key
       mckey = self.buildKey(res, xtile, ytile, ztile)

@@ -20,10 +20,10 @@ from nduser.models import Project
 from nduser.models import Channel
 from nduser.models import Token
 from ndlib.ndtype import *
-from ndobject import NDObject
-from nddataset import NDDataset
-from ndchannel import NDChannel
-from ndprojdb import NDProjectsDB
+from ndproj.ndobject import NDObject
+from ndproj.nddataset import NDDataset
+from ndproj.ndchannel import NDChannel
+from ndproj.ndprojdb import NDProjectsDB
 from webservices.ndwserror import NDWSError
 import logging
 logger = logging.getLogger("neurodata")

@@ -20,17 +20,15 @@ import pytest
 import numpy as np
 import random
 import h5py
-import urllib2
-
+import urllib2 
 sys.path += [os.path.abspath('../django')]
 import ND.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
-
 from params import Params
 from postmethods import postNPZ, getNPZ, getURL
 import makeunitdb
+from ndlib.ndtype import UINT8, UINT16, UINT32, ANNOTATION, IMAGE 
 import site_to_test
-
 SITE_HOST = site_to_test.site
 
 from ndtype import UINT8, UINT16, UINT32, ANNOTATION, IMAGE

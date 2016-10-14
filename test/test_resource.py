@@ -17,8 +17,7 @@ import sys
 sys.path += [os.path.abspath('../django')]
 import ND.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
-
-from ndtype import IMAGE, UINT8, MYSQL
+from ndlib.ndtype import IMAGE, UINT8, MYSQL
 from params import Params
 from postmethods import getJSON, postJSON, deleteJSON
 import makeunitdb

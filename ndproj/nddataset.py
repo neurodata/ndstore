@@ -16,11 +16,11 @@ import math
 from operator import add, sub, mul, div, mod
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
-from ndobject import NDObject
-from ndtype import *
+from ndproj.ndobject import NDObject
+from ndlib.ndtype import *
 from nduser.models import Dataset
 from webservices.ndwserror import NDWSError
-from vector3d import Vector3D
+from ndproj.vector3d import Vector3D
 import logging
 logger=logging.getLogger("neurodata")
 

@@ -14,14 +14,11 @@
 
 import os
 import sys
-
 sys.path += [os.path.abspath('../django')]
 import ND.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
-
-
 from django.contrib.auth.models import User
 from nduser.models import Project
 from nduser.models import Dataset
@@ -31,10 +28,7 @@ from ndproj.nddataset import NDDataset
 from ndproj.ndproject import NDProject
 from ndproj.ndchannel import NDChannel
 from ndproj.ndtoken import NDToken
-
-from ndproj.ndprojdb import NDProjectsDB
-from ndtype import ZSLICES, ANNOTATION, NOT_PROPAGATED, READONLY_FALSE, UINT32, ND_VERSION, MYSQL, CASSANDRA, RIAK, PUBLIC_TRUE
-
+from ndlib.ndtype import ZSLICES, ANNOTATION, NOT_PROPAGATED, READONLY_FALSE, UINT32, ND_VERSION, MYSQL, CASSANDRA, RIAK, PUBLIC_TRUE
 import site_to_test
 import kvengine_to_test
 

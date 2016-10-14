@@ -23,9 +23,8 @@ import numpy as np
 import pytest
 import httplib
 from contextlib import closing
-
 import makeunitdb
-import ndtype
+import ndlib.ndtype
 from params import Params
 from postmethods import putAnnotation, getAnnotation
 from ramonmethods import H5AnnotationFile, getH5id, makeAnno, getId, getField, setField

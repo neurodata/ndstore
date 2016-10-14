@@ -15,11 +15,11 @@
 import nibabel
 import numpy as np
 import pickle
-from ndtype import READONLY_TRUE, ND_dtypetonp, IMAGE_CHANNELS, TIMESERIES_CHANNELS, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, DTYPE_float32
+from ndlib.ndtype import READONLY_TRUE, ND_dtypetonp, IMAGE_CHANNELS, TIMESERIES_CHANNELS, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, DTYPE_float32
 from nduser.models import NIFTIHeader
-from ndwserror import NDWSError
+from webservices.ndwserror import NDWSError
 import logging
-logger=logging.getLogger("neurodata")
+logger = logging.getLogger("neurodata")
 
 
 def ingestNIFTI ( niftifname, ch, db, proj ):

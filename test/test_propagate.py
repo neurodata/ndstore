@@ -28,9 +28,8 @@ sys.path += [os.path.abspath('../django')]
 os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
-
 from postmethods import getURL, postNPZ, getNPZ
-from ndtype import PROPAGATED, NOT_PROPAGATED, UNDER_PROPAGATION, ISOTROPIC, READONLY_TRUE, READONLY_FALSE
+from ndlib.ndtype import PROPAGATED, NOT_PROPAGATED, UNDER_PROPAGATION, ISOTROPIC, READONLY_TRUE, READONLY_FALSE
 from params import Params
 import site_to_test
 import makeunitdb

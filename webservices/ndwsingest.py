@@ -20,21 +20,18 @@ from PIL import Image
 from operator import sub, add, mul, div
 import boto3
 import botocore
-
 import django
 django.setup()
 from django.conf import settings
-
-from ndcube.cube import Cube
-from ndtype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, ANNOTATION_CHANNELS, ND_dtypetonp, UINT8, UINT16, UINT32, SUPERCUBESIZE
-import ndwsrest
+from spdb.ndcube.cube import Cube
+from ndlib.ndtype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, ANNOTATION_CHANNELS, ND_dtypetonp, UINT8, UINT16, UINT32, SUPERCUBESIZE
+import webservices.ndwsrest as ndwsrest
 from spdb.spatialdb import SpatialDB
 from ndproj.ndprojdb import NDProjectsDB
-from ndctypelib import XYZMorton
-from s3util import generateS3BucketName, generateS3Key
-import s3io
-
-from ndwserror import NDWSError
+from ndlib.ndctypelib import XYZMorton
+from ndlib.s3util import generateS3BucketName, generateS3Key
+import spdb.s3io as s3io
+from webservices.ndwserror import NDWSError
 import logging
 logger = logging.getLogger("neurodata")
 

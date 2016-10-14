@@ -18,12 +18,12 @@ import cStringIO
 import pylibmc
 import math
 from contextlib import closing
-import spatialdb
+from spdb.spatialdb import SpatialDB
 from ndproj.ndproject import NDProject
 from webservices import ndwsrest
 from webservices.ndwserror import NDWSError
 import logging
-logger=logging.getLogger("neurodata")
+logger = logging.getLogger("neurodata")
 
 
 class SimpleCatmaid:
@@ -192,7 +192,7 @@ class SimpleCatmaid:
     
     self.proj = NDProject.fromTokenName(self.token)
     
-    with closing ( spatialdb.SpatialDB(self.proj) ) as self.db:
+    with closing ( SpatialDB(self.proj) ) as self.db:
 
         # memcache key
         mckey = self.buildKey(res, slice_type, xtile, ytile, ztile, timetile, filterlist)

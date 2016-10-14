@@ -16,7 +16,7 @@ import urllib2
 import time
 import json
 import numpy as np
-from ndtype import UINT8, UINT16, UINT32, ANNOTATION, IMAGE 
+from ndlib.ndtype import UINT8, UINT16, UINT32, ANNOTATION, IMAGE 
 from ND import celery_app 
 import makeunitdb
 from params import Params

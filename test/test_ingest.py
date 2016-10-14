@@ -17,14 +17,12 @@ import sys
 sys.path += [os.path.abspath('../django')]
 import ND.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
-
 from ingest.core.config import Configuration
-from ndtype import IMAGE, UINT8, MYSQL
+from ndlib.ndtype import IMAGE, UINT8, MYSQL
 from params import Params
-from postmethods import getJSON, postJSON, deleteJSON
+from postmethods import getJSON, postJSON, deleteJSON, postURL
 import makeunitdb
 import site_to_test
-
 SITE_HOST = site_to_test.site
 
 p = Params()
@@ -49,15 +47,7 @@ class Test_Ingest():
   
   def test_post_config(self):
     
-    dataset = {
-        'dataset_name' : p.dataset,
-        'ximagesize': 2000,
-        'yimagesize' : 2000,
-        'zimagesize' : 100,
-        'xvoxelres' : 1.0,
-        'yvoxelres' : 2.0,
-        'zvoxelres' : 1.0,
-        'public' : 1
-    }
-    response = postJSON('http://{}/resource/dataset/{}/'.format(SITE_HOST, p.dataset), dataset)
-    assert(response.status_code == 200)
+    with open(os.path.abspath('../ingest-client/ingest/configs/neurodata-catmaid-file-stack-example.json', 'rt')) as example_file:
+      config_data = json.load(example_file.read())
+      response = postURL('https://{}/ingest/'.format(SITE_HOST), config_data)
+      assert(response.status_code == 200)

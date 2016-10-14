@@ -17,7 +17,7 @@ import numpy as np
 from PIL import Image
 from StringIO import StringIO
 import makeunitdb
-from ndtype import IMAGE, FLOAT32
+from ndlib.ndtype import IMAGE, FLOAT32
 from params import Params
 from postmethods import postNPZ, getNPZ, getHDF5, postHDF5, getURL
 import site_to_test

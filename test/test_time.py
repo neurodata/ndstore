@@ -18,7 +18,7 @@ import numpy as np
 from PIL import Image
 from StringIO import StringIO
 import makeunitdb
-from ndtype import TIMESERIES, UINT8, UINT16
+from ndlib.ndtype import TIMESERIES, UINT8, UINT16
 from params import Params
 from postmethods import postNPZ, getNPZ, getHDF5, postHDF5, getURL
 import site_to_test

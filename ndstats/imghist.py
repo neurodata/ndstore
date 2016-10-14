@@ -17,7 +17,7 @@ from contextlib import closing
 import django
 django.setup()
 from ndproj.ndprojdb import NDProjectsDB
-from spatialdb import SpatialDB
+from spdb.spatialdb import SpatialDB
 import logging
 logger = logging.getLogger("neurodata")
 

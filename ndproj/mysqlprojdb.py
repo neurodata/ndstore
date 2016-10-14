@@ -16,8 +16,8 @@ import MySQLdb
 from contextlib import closing
 from django.conf import settings
 # from ndproject import NDProject
-from ndchannel import NDChannel
-from ndtype import *
+from ndproj.ndchannel import NDChannel
+from ndlib.ndtype import *
 from webservices.ndwserror import NDWSError
 import logging
 logger=logging.getLogger("neurodata")

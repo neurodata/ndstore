@@ -12,21 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import django.http
-from django.views.decorators.cache import cache_control
+import re
 import MySQLdb
 import cStringIO
-import re
-
-import ndwsjson
-import ndwsprojingest
-
-from ndwserror import NDWSError
-import logging
-logger=logging.getLogger("neurodata")
-
+import django.http
 from django.shortcuts import render
-
+from django.views.decorators.cache import cache_control
+import webservices.ndwsjson
+import webservices.ndwsprojingest
+from webservices.ndwserror import NDWSError
+import logging
+logger = logging.getLogger("neurodata")
 
 
 def jsonramon (request, webargs):

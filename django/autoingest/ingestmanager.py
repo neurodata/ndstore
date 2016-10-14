@@ -16,7 +16,7 @@ import json
 import django
 django.setup()
 from django.conf import settings
-from ndtype import *
+from ndlib.ndtype import *
 from ndproj.ndproject import NDProject
 from ndingest.ndqueue.uploadqueue import UploadQueue
 from ndingest.ndqueue.ingestqueue import IngestQueue
