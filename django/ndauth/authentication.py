@@ -9,7 +9,7 @@ from django.contrib.auth import authenticate
 #from rest_framework.authtoken.models import Token
 from django.http import HttpResponseForbidden
 
-from ndwserror import NDWSError
+from webservices.ndwserror import NDWSError
 import logging
 logger=logging.getLogger("neurodata")
 
