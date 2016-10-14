@@ -15,7 +15,6 @@
 from django.views.generic import View
 from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseBadRequest
-import pdb; pdb.set_trace()
 from ingestmanager import IngestManager
 
 class IngestView(View):

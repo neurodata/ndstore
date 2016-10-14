@@ -22,7 +22,7 @@ import tempfile
 import blosc
 import numpy as np
 from params import Params
-from ndtype import UINT8, ND_dtypetonp
+from ndlib.ndtype import UINT8, ND_dtypetonp
 import kvengine_to_test
 import site_to_test
 import makeunitdb

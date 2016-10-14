@@ -14,14 +14,11 @@
 
 import os
 import sys
-
 sys.path += [os.path.abspath('../django')]
 import ND.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
-
-
 from django.contrib.auth.models import User
 from nduser.models import Project
 from nduser.models import Dataset
@@ -31,12 +28,10 @@ from ndproj.nddataset import NDDataset
 from ndproj.ndproject import NDProject
 from ndproj.ndchannel import NDChannel
 from ndproj.ndtoken import NDToken
-
-from ndproj.ndprojdb import NDProjectsDB
-from ndtype import ZSLICES, ANNOTATION, NOT_PROPAGATED, READONLY_FALSE, UINT32, ND_VERSION, MYSQL, CASSANDRA, RIAK, PUBLIC_TRUE
-
+from ndlib.ndtype import ZSLICES, ANNOTATION, NOT_PROPAGATED, READONLY_FALSE, UINT32, ND_VERSION, MYSQL, CASSANDRA, RIAK, PUBLIC_TRUE
 import site_to_test
 import kvengine_to_test
+
 
 def createTestDB ( project_name, channel_list=['unit_anno'], channel_type=ANNOTATION, channel_datatype=UINT32, public=0, ximagesize=10000, yimagesize=10000, zimagesize=1000, xvoxelres=4.0, yvoxelres=4.0, zvoxelres=3.0, scalingoption=ZSLICES, scalinglevels=5, readonly=READONLY_FALSE, propagate=NOT_PROPAGATED, window=[0,0], time=[0,0], default=False, nd_version=ND_VERSION, token_name='unittest' ):
   """Create a unit test data base on the specified sit and name"""

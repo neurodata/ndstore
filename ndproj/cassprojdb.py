@@ -13,11 +13,9 @@
 # limitations under the License.
 
 import cassandra
-
 from ndchannel import NDChannel
 from ndproject import NDProject
-from ndtype import TIMESERIES , ND_servermap
-
+from ndlib.ndtype import TIMESERIES , ND_servermap
 from ndwserror import NDWSError
 import logging
 logger = logging.getLogger("neurodata")
