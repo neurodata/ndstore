@@ -80,6 +80,7 @@ sudo ln -s /home/neurodata/ndstore/setup/docker_config/upstart/redis.conf /etc/i
 
 # restart redis service
 sudo initctl reload-configuration
+sudo service redis stop
 sudo service redis start
 sudo service redis restart
 
