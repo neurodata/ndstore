@@ -1,15 +1,18 @@
 [submodule "ndlib"]
 	path = ndlib
-	url = https://github.com/neurodata/ndlib.git
+  url = https://github.com/neurodata/ndlib.git
+  branch = master
 [submodule "ndinstall"]
   path = setup/ndinstall
   url = https://github.com/neurodata/ndinstall.git
 [submodule "spdb"]
 	path = spdb
-	url = https://github.com/neurodata/spdb.git
+  url = https://github.com/neurodata/spdb.git
+  branch = master
 [submodule "ndingest"]
 	path = ndingest
-	url = https://github.com/neurodata/ndingest.git
+  url = https://github.com/neurodata/ndingest.git
+  branch = master
 [submodule "ingest-client"]
 	path = ingest-client
 	url = https://github.com/neurodata/ingest-client.git

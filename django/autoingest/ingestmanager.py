@@ -23,6 +23,7 @@ from ndlib.ndtype import *
 from ndproj.ndproject import NDProject
 from ndproj.nddataset import NDDataset
 from ndproj.ndchannel import NDChannel
+from ndproj.ndingestjob import NDIngestJob
 from ndingest.ndingestproj.ndingestproj import NDIngestProj
 from ndingest.ndqueue.uploadqueue import UploadQueue
 from ndingest.ndqueue.ingestqueue import IngestQueue
@@ -39,25 +40,14 @@ TILE_SIZE = 1024
 class IngestManager(object):
 
   def __init__(self):
-    self.ds = None
-    self.pr = None
-    self.ch = None
+    # self.ds = None
+    # self.pr = None
+    # self.ch = None
     self.nd_proj = None
-    self.ingest_job = {}
+    self.ingest_job = None
 
-  def createUploadQueue(self):
-    UploadQueue.createQueue(self.nd_proj, endpoint_url=ndingest_settings.SQS_ENDPOINT)
-    self.ingest_job['upload_queue'] = UploadQueue(self.nd_proj, endpoint_url=ndingest_settings.SQS_ENDPOINT).url
-
-  def createIngestQueue(self):
-    IngestQueue.createQueue(self.nd_proj, endpoint_url=ndingest_settings.SQS_ENDPOINT)
-    self.ingest_job['ingest_queue'] = IngestQueue(self.nd_proj, endpoint_url=ndingest_settings.SQS_ENDPOINT).url
   
-  def createCleanupQueue(self):
-    CleanupQueue.createQueue(self.nd_proj, endpoint_url=ndingest_settings.SQS_ENDPOINT)
-    self.ingest_job['cleanup_queue'] = CleanupQueue(self.nd_proj, endpoint_url=ndingest_settings.SQS_ENDPOINT).url
-  
-  def createIngestJob(self, config_data):
+  def createIngestJob(self, user_id, config_data):
     """Create an ingest job based on the posted config data"""
     
     config_data = json.loads(config_data)
@@ -65,13 +55,18 @@ class IngestManager(object):
     if self.validateConfig(config_data):
       try:
         # create the upload queue
-        upload_queue = self.createUploadQueue()
+        UploadQueue.createQueue(self.nd_proj, endpoint_url=ndingest_settings.SQS_ENDPOINT)
+        self.ingest_job.upload_queue = UploadQueue(self.nd_proj, endpoint_url=ndingest_settings.SQS_ENDPOINT).url
         # create the ingest queue
-        ingest_queue = self.createIngestQueue()
+        IngestQueue.createQueue(self.nd_proj, endpoint_url=ndingest_settings.SQS_ENDPOINT)
+        self.ingest_job.ingest_queue = IngestQueue(self.nd_proj, endpoint_url=ndingest_settings.SQS_ENDPOINT).url
         # create the cleanup queue
-        cleanup_queue = self.createCleanupQueue()
+        CleanupQueue.createQueue(self.nd_proj, endpoint_url=ndingest_settings.SQS_ENDPOINT)
+        self.ingest_job.cleanup_queue = CleanupQueue(self.nd_proj, endpoint_url=ndingest_settings.SQS_ENDPOINT).url
         # self.generateUploadTasks()
-        return json.dumps(self.ingest_job)
+        self.ingest_job.user_id = user_id
+        self.ingest_job.save()
+        return NDIngestJob.serialize(self.ingest_job._job)
 
       except Exception as e:
         print (e)
@@ -84,10 +79,26 @@ class IngestManager(object):
       validator = ndcg.get_validator()
       validator.schema = ndcg.schema
       validator.validate_schema()
-      self.ds = NDDataset.fromName(ndcg.config_data["database"]["dataset"])
-      self.pr = NDProject.fromName(ndcg.config_data["database"]["project"])
-      self.ch = self.pr.getChannelObj(ndcg.config_data["database"]["channel"])
-      self.nd_proj = NDIngestProj(self.pr.project_name, self.ch.channel_name, self.ch.resolution)
+      ingest_job_json = json.dumps({
+          'dataset' : ndcg.config_data["database"]["dataset"],
+          'project' : ndcg.config_data["database"]["project"],
+          'channel' : ndcg.config_data["database"]["channel"],
+          'resolution' : ndcg.config_data["ingest_job"]["resolution"],
+          'x_start' : ndcg.config_data["ingest_job"]["extent"]["x"][0],
+          'x_stop' : ndcg.config_data["ingest_job"]["extent"]["x"][1],
+          'y_start' : ndcg.config_data["ingest_job"]["extent"]["y"][0],
+          'y_stop' : ndcg.config_data["ingest_job"]["extent"]["y"][1],
+          'z_start' : ndcg.config_data["ingest_job"]["extent"]["z"][0],
+          'z_stop' : ndcg.config_data["ingest_job"]["extent"]["z"][1],
+          't_start' : ndcg.config_data["ingest_job"]["extent"]["t"][0],
+          't_stop' : ndcg.config_data["ingest_job"]["extent"]["t"][1],
+          'tile_size_x' : ndcg.config_data["ingest_job"]["tile_size"]["x"],
+          'tile_size_y' : ndcg.config_data["ingest_job"]["tile_size"]["y"],
+          'tile_size_z' : ndcg.config_data["ingest_job"]["tile_size"]["z"],
+          'tile_size_t' : ndcg.config_data["ingest_job"]["tile_size"]["t"],
+      })
+      self.ingest_job = NDIngestJob.fromJson(ingest_job_json)
+      self.nd_proj = NDIngestProj(self.ingest_job.project, self.ingest_job.channel, self.ingest_job.resolution)
     except jsonschema.ValidationError as e:
       raise NDWSError("Schema validation failed")
     except Exception as e:
@@ -98,9 +109,9 @@ class IngestManager(object):
     """Populate the upload queue with tile names"""
     
     # get the dataset configuration
-    [[ximagesz, yimagesz, zimagesz],(starttime,endtime)] = proj.datasetcfg.imageSize(self.resolution)
+    [[ximagesz, yimagesz, zimagesz],(starttime,endtime)] = proj.datasetcfg.dataset_dim(self.resolution)
     # [xcubedim,ycubedim,zcubedim] = cubedim = proj.datasetcfg.getCubeDims()[self.resolution]
-    [xoffset, yoffset, zoffset] = proj.datasetcfg.getOffset()[self.resolution]
+    [xoffset, yoffset, zoffset] = proj.datasetcfg.get_offset(self.resolution)
     # [xsupercubedim, ysupercubedim, zsupercubedim] = supercubedim = map(mul, cubedim, SUPERCUBESIZE)
 
     if ch.channel_type in TIMESERIES_CHANNELS:
@@ -120,3 +131,31 @@ class IngestManager(object):
           # insert message in queue
           print "inserting message:x{}_y{}_z{}".format(xtile, ytile, slice_number)
           self.queue.sendMessage(self.generateFileName(slice_number, xtile, ytile))
+  
+  def getIngestJob(self, job_id):
+    """Get an ingest job based on job id"""
+    
+    try:
+      ingest_job = NDIngestJob.fromId(job_id)
+      return NDIngestJob.serialize(ingest_job._job)
+    except Exception as e:
+      print (e)
+      raise
+  
+  def deleteIngestJob(self, job_id):
+    """Delete an ingest job based on job id"""
+
+    try:
+      ingest_job = NDIngestJob.fromId(job_id)
+      nd_proj = NDIngestProj(ingest_job.project, ingest_job.channel, ingest_job.resolution)
+      # delete the upload queue
+      UploadQueue.deleteQueue(nd_proj, endpoint_url=ndingest_settings.SQS_ENDPOINT)
+      # delete the ingest queue
+      IngestQueue.deleteQueue(nd_proj, endpoint_url=ndingest_settings.SQS_ENDPOINT)
+      # delete the cleanup queue
+      CleanupQueue.deleteQueue(nd_proj, endpoint_url=ndingest_settings.SQS_ENDPOINT)
+      ingest_job.status = INGEST_STATUS_DELETED
+      ingest_job.save()
+    except Exception as e:
+      print (e)
+      raise

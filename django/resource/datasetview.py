@@ -45,6 +45,6 @@ class DatasetView(View):
     try:
       ds = NDDataset.fromName(dataset_name)
       ds.delete()
-      return HttpResponse()
+      return HttpResponse(status=204)
     except Exception as e:
       return HttpResponseBadRequest()

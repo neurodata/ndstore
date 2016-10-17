@@ -45,6 +45,6 @@ class ProjectView(View):
     try:
       pr = NDProject.fromName(project_name)
       pr.delete()
-      return HttpResponse()
+      return HttpResponse(status=204)
     except Exception as e:
       return HttpResponseBadRequest()

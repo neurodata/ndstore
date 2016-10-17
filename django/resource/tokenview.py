@@ -50,6 +50,6 @@ class TokenView(View):
       tk = NDToken.fromName(token_name)
       pr = NDProject.fromName(project_name)
       tk.delete()
-      return HttpResponse()
+      return HttpResponse(status=204)
     except Exception as e:
       return HttpResponseBadRequest()

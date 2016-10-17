@@ -17,4 +17,5 @@ from views import IngestView
 
 urlpatterns = [
   url(r'^$', IngestView.as_view()),
+  url(r'(?P<job_id>[\d]+)/?$', IngestView.as_view()),
 ]

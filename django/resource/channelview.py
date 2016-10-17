@@ -49,6 +49,6 @@ class ChannelView(View):
       pr = NDProject.fromName(project_name)
       ch = pr.getChannelObj(channel_name)
       ch.delete()
-      return HttpResponse()
+      return HttpResponse(status=204)
     except Exception as e:
       return HttpResponseBadRequest()

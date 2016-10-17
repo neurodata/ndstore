@@ -41,13 +41,15 @@ class Test_AutoIngest():
   def setup_class(self):
     """Setup Parameters"""
     makeunitdb.createTestDB(p.project, channel_list=p.channels, ximagesize=2000, yimagesize=2000, zimagesize=1000, xvoxelres=1.0, yvoxelres=1.0, zvoxelres=5.0, token_name=p.token)
+    self.job_id = 0
   
   def teardown_class(self):
     """Teardown Parameters"""
     makeunitdb.deleteTestDB(p.project, token_name=p.token)
   
-  def test_post_config(self):
+  def test_config(self):
     
+    # testing post
     with open(os.path.abspath('../ingest-client/ingest/configs/neurodata-catmaid-file-stack-example.json'), 'rt') as example_file:
       config_data = json.loads(example_file.read())
       response = postJSON('http://{}/ingest/'.format(SITE_HOST), config_data)
@@ -55,3 +57,13 @@ class Test_AutoIngest():
       assert('upload_queue' in response.json())
       assert('ingest_queue' in response.json())
       assert('cleanup_queue' in response.json())
+      assert('id' in response.json())
+      job_id = response.json()['id']
+
+    # tesing get
+    response = getJSON('http://{}/ingest/{}/'.format(SITE_HOST, job_id))
+    assert('upload_queue' in response)
+    
+    # testing delete
+    response = deleteJSON('http://{}/ingest/{}/'.format(SITE_HOST, job_id))
+    assert(response.status_code == 204)
