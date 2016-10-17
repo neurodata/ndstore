@@ -24,7 +24,7 @@ from ndproj.ndproject import NDProject
 from spdb.spatialdb import SpatialDB
 from ndlib.ndctypelib import recolor_ctype
 from ndlib.ndtype import DTYPE_uint8, DTYPE_uint16, ANNOTATION_CHANNELS 
-from webservices.windowcutout import windowCutout 
+from ndlib.windowcutout import windowCutout 
 
 import json
 
