@@ -14,6 +14,7 @@
 
 import os
 import sys
+import json
 sys.path += [os.path.abspath('../django')]
 import ND.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
@@ -35,7 +36,7 @@ p.datatype = UINT8
 p.dataset = 'unittest'
 
 
-class Test_Ingest():
+class Test_AutoIngest():
 
   def setup_class(self):
     """Setup Parameters"""
@@ -47,7 +48,10 @@ class Test_Ingest():
   
   def test_post_config(self):
     
-    with open(os.path.abspath('../ingest-client/ingest/configs/neurodata-catmaid-file-stack-example.json', 'rt')) as example_file:
-      config_data = json.load(example_file.read())
-      response = postURL('https://{}/ingest/'.format(SITE_HOST), config_data)
+    with open(os.path.abspath('../ingest-client/ingest/configs/neurodata-catmaid-file-stack-example.json'), 'rt') as example_file:
+      config_data = json.loads(example_file.read())
+      response = postJSON('http://{}/ingest/'.format(SITE_HOST), config_data)
       assert(response.status_code == 200)
+      assert('upload_queue' in response.json())
+      assert('ingest_queue' in response.json())
+      assert('cleanup_queue' in response.json())

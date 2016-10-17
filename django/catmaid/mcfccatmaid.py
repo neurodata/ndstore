@@ -55,8 +55,8 @@ class MCFCCatmaid:
     # figure out the cutout (limit to max image size)
     xstart = xtile*self.tilesz
     ystart = ytile*self.tilesz
-    xend = min ((xtile+1)*self.tilesz,self.proj.datasetcfg.get_imagesize(res)[0][0])
-    yend = min ((ytile+1)*self.tilesz,self.proj.datasetcfg.get_imagesize(res)[0][1])
+    xend = min ((xtile+1)*self.tilesz,self.proj.datasetcfg.get_imagesize(res)[0])
+    yend = min ((ytile+1)*self.tilesz,self.proj.datasetcfg.get_imagesize(res)[1])
 
     # call the mcfc interface
     imageargs = '{}/{},{}/{},{}/{},{}/'.format(res, xstart, xend, ystart, yend, zslice, zslice+1) 
@@ -85,7 +85,7 @@ class MCFCCatmaid:
 
     # z cutouts need to get rescaled
     #  we'll map to the closest pixel range and tolerate one pixel error at the boundary
-    scalefactor = self.proj.datasetcfg.getScale()[res]['xz']
+    scalefactor = self.proj.datasetcfg.get_scale(res)['xz']
     zoffset = self.proj.datasetcfg.get_offset(res)[2]
     ztilestart = int((ztile*self.tilesz)/scalefactor) + zoffset
     zstart = max ( ztilestart, zoffset ) 
@@ -119,8 +119,8 @@ class MCFCCatmaid:
 
     # z cutouts need to get rescaled
     #  we'll map to the closest pixel range and tolerate one pixel error at the boundary
-    scalefactor = self.proj.datasetcfg.getScale()[res]['yz']
-    zoffset = self.proj.datasetcfg.getOffset()[res][2]
+    scalefactor = self.proj.datasetcfg.get_scale(res)['yz']
+    zoffset = self.proj.datasetcfg.get_offset(res)[2]
     ztilestart = int((ztile*self.tilesz)/scalefactor) + zoffset
     zstart = max(ztilestart, zoffset) 
     ztileend = int(math.ceil(((ztile+1)*self.tilesz)/scalefactor)) + zoffset
@@ -142,8 +142,8 @@ class MCFCCatmaid:
     tiledata = ndwsrest.window(tiledata, ch)
 
     # We have an compound array. Now color it.
-    img = mcfc.mcfcPNG(tiledata.reshape((tiledata.shape[0],tiledata.shape[1],tiledata.shape[2])), self.colors)
-    return img.resize((self.tilesz,self.tilesz))
+    img = mcfc.mcfcPNG(tiledata.reshape((tiledata.shape[0], tiledata.shape[1], tiledata.shape[2])), self.colors)
+    return img.resize((self.tilesz, self.tilesz))
 
 
   def getTile ( self, webargs ):
