@@ -13,11 +13,17 @@
 # limitations under the License.
 
 import json
+import jsonschema
 import django
 django.setup()
 from django.conf import settings
+from ndingest.settings.settings import Settings
+ndingest_settings = Settings.load()
 from ndlib.ndtype import *
 from ndproj.ndproject import NDProject
+from ndproj.nddataset import NDDataset
+from ndproj.ndchannel import NDChannel
+from ndingest.ndingestproj.ndingestproj import NDIngestProj
 from ndingest.ndqueue.uploadqueue import UploadQueue
 from ndingest.ndqueue.ingestqueue import IngestQueue
 from ndingest.ndqueue.cleanupqueue import CleanupQueue
@@ -40,20 +46,21 @@ class IngestManager(object):
     self.ingest_job = {}
 
   def createUploadQueue(self):
-    UploadQueue.createQueue(self.nd_proj)
-    self.ingest_job['upload_queue'] = UploadQueue(self.nd_proj)
+    UploadQueue.createQueue(self.nd_proj, endpoint_url=ndingest_settings.SQS_ENDPOINT)
+    self.ingest_job['upload_queue'] = UploadQueue(self.nd_proj, endpoint_url=ndingest_settings.SQS_ENDPOINT).url
 
   def createIngestQueue(self):
-    IngestQueue.createQueue(self.nd_proj)
-    self.ingest_job['ingest_queue'] = IngestQueue(self.nd_proj)
+    IngestQueue.createQueue(self.nd_proj, endpoint_url=ndingest_settings.SQS_ENDPOINT)
+    self.ingest_job['ingest_queue'] = IngestQueue(self.nd_proj, endpoint_url=ndingest_settings.SQS_ENDPOINT).url
   
   def createCleanupQueue(self):
-    CleanupQueue.createQueue(self.nd_proj)
-    self.ingest_job['cleanup_queue'] = CleanupQueue(self.nd_proj)
+    CleanupQueue.createQueue(self.nd_proj, endpoint_url=ndingest_settings.SQS_ENDPOINT)
+    self.ingest_job['cleanup_queue'] = CleanupQueue(self.nd_proj, endpoint_url=ndingest_settings.SQS_ENDPOINT).url
   
   def createIngestJob(self, config_data):
     """Create an ingest job based on the posted config data"""
-
+    
+    config_data = json.loads(config_data)
     # validate schema
     if self.validateConfig(config_data):
       try:
@@ -75,10 +82,12 @@ class IngestManager(object):
     try:
       ndcg = Configuration(config_data)
       validator = ndcg.get_validator()
+      validator.schema = ndcg.schema
       validator.validate_schema()
-      ds = NDDataset(ndcg.config_data["database"]["dataset"])
-      pr = NDProject(ndcg.config_data["database"]["project"])
-      ch = NDChannel(ndcg.config_data["database"]["channel"])
+      self.ds = NDDataset.fromName(ndcg.config_data["database"]["dataset"])
+      self.pr = NDProject.fromName(ndcg.config_data["database"]["project"])
+      self.ch = self.pr.getChannelObj(ndcg.config_data["database"]["channel"])
+      self.nd_proj = NDIngestProj(self.pr.project_name, self.ch.channel_name, self.ch.resolution)
     except jsonschema.ValidationError as e:
       raise NDWSError("Schema validation failed")
     except Exception as e:
