@@ -74,6 +74,8 @@ sudo -u neurodata wget http://download.redis.io/redis-stable.tar.gz
 sudo -u neurodata tar -xvf /home/neurodata/redis-stable.tar.gz
 cd /home/neurodata/redis-stable/
 sudo -u neurodata make && sudo -u neurodata make test && sudo make install
+ls
+pwd
 sudo mkdir /etc/redis
 sudo ln -s /home/neurodata/ndstore/setup/docker_config/redis/redis.conf /etc/redis/redis.conf
 sudo ln -s /home/neurodata/ndstore/setup/docker_config/upstart/redis.conf /etc/init/redis.conf
