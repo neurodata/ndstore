@@ -49,7 +49,7 @@ import mcfc
 from ndlib.ndctypelib import filter_ctype_OMP
 import webservices.ndwsskel
 import webservices.ndwsnifti
-from webservices.windowcutout import windowCutout
+from ndlib.windowcutout import windowCutout
 from ndlib.ndtype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, ANNOTATION_CHANNELS, NOT_PROPAGATED, UNDER_PROPAGATION, PROPAGATED, ND_dtypetonp, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, READONLY_TRUE, READONLY_FALSE
 from webservices.ndwserror import NDWSError, IncorrectSyntaxError
 import logging
