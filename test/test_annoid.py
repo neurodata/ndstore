@@ -31,7 +31,6 @@ from ndlib.ndtype import UINT8, UINT16, UINT32, ANNOTATION, IMAGE
 import site_to_test
 SITE_HOST = site_to_test.site
 
-from ndtype import UINT8, UINT16, UINT32, ANNOTATION, IMAGE
 
 
 p = Params()

@@ -256,7 +256,7 @@ def delURL ( url ):
 def postJSON(url, data):
 
   try:
-    response = requests.post(url, json=data)
+    response = requests.post(url, json=data, headers={'Authorization': 'Token {}'.format( TOKEN )}, verify=False)
     return response
   except requests.HTTPError as e:
     return e
@@ -264,7 +264,7 @@ def postJSON(url, data):
 def getJSON(url):
 
   try:
-    response = requests.get(url)
+    response = requests.get(url, headers={'Authorization': 'Token {}'.format( TOKEN )}, verify=False)
     return response.json()
   except requests.HTTPError as e:
     return e
@@ -272,7 +272,7 @@ def getJSON(url):
 def deleteJSON(url):
 
   try:
-    response = requests.delete(url)
+    response = requests.delete(url, headers={'Authorization': 'Token {}'.format( TOKEN )}, verify=False)
     return response
   except requests.HTTPError as e:
     return e
