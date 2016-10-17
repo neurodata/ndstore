@@ -42,15 +42,15 @@ else
   sudo -u neurodata git checkout "$1" -q
 fi
 
-sudo -u neurodata git submodule init -q
-sudo -u neurodata git submodule update -q
+sudo -u neurodata git submodule init
+sudo -u neurodata git submodule update
 
 
 # pip install packages
 cd /home/neurodata/ndstore/setup/
 #sudo pip install -U -r requirements.txt
-sudo pip install -q -U cython numpy
-sudo pip install -q -U -r requirements.txt
+sudo pip install -U cython numpy
+sudo pip install -U -r requirements.txt
 #sudo pip install django h5py pytest
 #sudo pip install pillow posix_ipc boto3 nibabel networkx requests lxml pylibmc blosc django-registration django-celery mysql-python libtiff jsonschema json-spec redis
 
