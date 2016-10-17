@@ -254,7 +254,7 @@ class Test_Image_Window:
     url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
     f = getURL (url)
 
-    from webservices.windowcutout import windowCutout
+    from ndlib.windowcutout import windowCutout
     image_data = windowCutout(image_data, p.window).astype(np.uint8)
     slice_data = np.asarray ( Image.open(StringIO(f.content)) )
     assert ( np.array_equal(slice_data,image_data[0][0]) )
@@ -270,7 +270,7 @@ class Test_Image_Window:
     url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/window/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], *p.window)
     f = getURL (url)
 
-    from webservices.windowcutout import windowCutout
+    from ndlib.windowcutout import windowCutout
     image_data = windowCutout(image_data, p.window).astype(np.uint8)
     slice_data = np.asarray ( Image.open(StringIO(f.content)) )
     assert ( np.array_equal(slice_data,image_data[0][0]) )
