@@ -53,7 +53,7 @@ class Test_AutoIngest():
     with open(os.path.abspath('../ingest-client/ingest/configs/neurodata-catmaid-file-stack-example.json'), 'rt') as example_file:
       config_data = json.loads(example_file.read())
       response = postJSON('http://{}/ingest/'.format(SITE_HOST), config_data)
-      assert(response.status_code == 200)
+      assert(response.status_code == 201)
       assert('upload_queue' in response.json())
       assert('ingest_queue' in response.json())
       assert('cleanup_queue' in response.json())

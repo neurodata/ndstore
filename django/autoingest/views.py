@@ -28,12 +28,13 @@ class IngestView(View):
 
   def post(self, request):
     try:
+      import pdb; pdb.set_trace()
       ingest_manager = IngestManager()
       if request.user.is_authenticated():
         return HttpResponse(ingest_manager.createIngestJob(request.user.id, request.body), content_type='application/json')
       else:
         user_id = User.objects.get(username='neurodata').id
-        return HttpResponse(ingest_manager.createIngestJob(user_id, request.body), content_type='application/json')
+        return HttpResponse(ingest_manager.createIngestJob(user_id, request.body), content_type='application/json', status=201)
     except Exception as e:
       return HttpResponseBadRequest()
 

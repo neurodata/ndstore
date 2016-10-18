@@ -34,7 +34,7 @@ class ProjectView(View):
       else:
         pr.user_id = User.objects.get(username='neurodata').id
       pr.create()
-      return HttpResponse()
+      return HttpResponse(status=201)
     except Exception as e:
       return HttpResponseBadRequest()
 

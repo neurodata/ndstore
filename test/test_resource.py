@@ -60,7 +60,7 @@ class Test_Resource():
         'public' : 1
     }
     response = postJSON('http://{}/resource/dataset/{}/'.format(SITE_HOST, p.dataset), dataset)
-    assert(response.status_code == 200)
+    assert(response.status_code == 201)
 
   def test_post_project(self):
     project = {
@@ -70,7 +70,7 @@ class Test_Resource():
         'public' : 1
     }
     response = postJSON('http://{}/resource/dataset/{}/project/{}'.format(SITE_HOST, p.dataset, p.project), project)
-    assert(response.status_code == 200)
+    assert(response.status_code == 201)
   
   def test_post_channel(self):
     channel = {
@@ -79,7 +79,7 @@ class Test_Resource():
         'channel_datatype' : p.datatype
     }
     response = postJSON('http://{}/resource/dataset/{}/project/{}/channel/{}/'.format(SITE_HOST, p.dataset, p.project, p.channels[0]), channel)
-    assert(response.status_code == 200)
+    assert(response.status_code == 201)
   
   def test_post_token(self):
     token = {
@@ -87,7 +87,7 @@ class Test_Resource():
         'public' : 1
     }
     response = postJSON('http://{}/resource/dataset/{}/project/{}/token/{}/'.format(SITE_HOST, p.dataset, p.project, p.token), token)
-    assert(response.status_code == 200)
+    assert(response.status_code == 201)
   
   def test_public_dataset(self):
     response = getJSON('http://{}/resource/public/dataset/'.format(SITE_HOST))

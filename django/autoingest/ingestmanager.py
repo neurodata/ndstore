@@ -28,6 +28,8 @@ from ndingest.ndingestproj.ndingestproj import NDIngestProj
 from ndingest.ndqueue.uploadqueue import UploadQueue
 from ndingest.ndqueue.ingestqueue import IngestQueue
 from ndingest.ndqueue.cleanupqueue import CleanupQueue
+from ndingest.ndqueue.serializer import Serializer
+serializer = Serializer.load()
 from webservices.ndwserror import NDWSError
 from ingest.core.config import Configuration
 import logging
@@ -45,7 +47,6 @@ class IngestManager(object):
     # self.ch = None
     self.nd_proj = None
     self.ingest_job = None
-
   
   def createIngestJob(self, user_id, config_data):
     """Create an ingest job based on the posted config data"""
@@ -56,14 +57,15 @@ class IngestManager(object):
       try:
         # create the upload queue
         UploadQueue.createQueue(self.nd_proj, endpoint_url=ndingest_settings.SQS_ENDPOINT)
-        self.ingest_job.upload_queue = UploadQueue(self.nd_proj, endpoint_url=ndingest_settings.SQS_ENDPOINT).url
+        self.upload_queue = UploadQueue(self.nd_proj, endpoint_url=ndingest_settings.SQS_ENDPOINT)
+        self.ingest_job.upload_queue = self.upload_queue.url
         # create the ingest queue
         IngestQueue.createQueue(self.nd_proj, endpoint_url=ndingest_settings.SQS_ENDPOINT)
         self.ingest_job.ingest_queue = IngestQueue(self.nd_proj, endpoint_url=ndingest_settings.SQS_ENDPOINT).url
         # create the cleanup queue
         CleanupQueue.createQueue(self.nd_proj, endpoint_url=ndingest_settings.SQS_ENDPOINT)
         self.ingest_job.cleanup_queue = CleanupQueue(self.nd_proj, endpoint_url=ndingest_settings.SQS_ENDPOINT).url
-        # self.generateUploadTasks()
+        self.generateUploadTasks()
         self.ingest_job.user_id = user_id
         self.ingest_job.save()
         return NDIngestJob.serialize(self.ingest_job._job)
@@ -71,7 +73,6 @@ class IngestManager(object):
       except Exception as e:
         print (e)
         raise NDWSError(e)
-
 
   def validateConfig(self, config_data):
     try:
@@ -104,33 +105,6 @@ class IngestManager(object):
     except Exception as e:
       return NDWSError("Properties not found")
     return True
-
-  def generateUploadTasks(self):
-    """Populate the upload queue with tile names"""
-    
-    # get the dataset configuration
-    [[ximagesz, yimagesz, zimagesz],(starttime,endtime)] = proj.datasetcfg.dataset_dim(self.resolution)
-    # [xcubedim,ycubedim,zcubedim] = cubedim = proj.datasetcfg.getCubeDims()[self.resolution]
-    [xoffset, yoffset, zoffset] = proj.datasetcfg.get_offset(self.resolution)
-    # [xsupercubedim, ysupercubedim, zsupercubedim] = supercubedim = map(mul, cubedim, SUPERCUBESIZE)
-
-    if ch.channel_type in TIMESERIES_CHANNELS:
-      logger.error("Timeseries data not supported for now. Error in {}".format(self.token))
-      raise NDWSError("Timeseries data not supported for now. Error in {}".format(self.token))
-    
-    num_xtiles = ximagesz / TILE_SIZE
-    num_ytiles = yimagesz / TILE_SIZE
-      
-    # over all the tiles in the slice
-    for ytile in range(0, num_ytiles, 1):
-      for xtile in range(0, num_xtiles, 1):
-          
-        # Get a list of the files in the directories
-        for slice_number in range (zoffset, zimagesz, 1):
-          
-          # insert message in queue
-          print "inserting message:x{}_y{}_z{}".format(xtile, ytile, slice_number)
-          self.queue.sendMessage(self.generateFileName(slice_number, xtile, ytile))
   
   def getIngestJob(self, job_id):
     """Get an ingest job based on job id"""
@@ -159,3 +133,29 @@ class IngestManager(object):
     except Exception as e:
       print (e)
       raise
+  
+  def generateUploadTasks(self):
+    """Populate the upload queue with tile names"""
+    
+    ds = NDDataset.fromName(self.ingest_job.dataset)
+    # get the dataset configuration
+    [[ximagesz, yimagesz, zimagesz],(starttime,endtime)] = ds.dataset_dim(self.ingest_job.resolution)
+    [xoffset, yoffset, zoffset] = ds.get_offset(self.ingest_job.resolution)
+    # [xsupercubedim, ysupercubedim, zsupercubedim] = supercubedim = map(mul, cubedim, SUPERCUBESIZE)
+    # if ch.channel_type in TIMESERIES_CHANNELS:
+      # logger.error("Timeseries data not supported for now. Error in {}".format(self.token))
+      # raise NDWSError("Timeseries data not supported for now. Error in {}".format(self.token))
+    
+    num_xtiles = (ximagesz - xoffset) / self.ingest_job.tile_size_x
+    num_ytiles = (yimagesz - yoffset) / self.ingest_job.tile_size_y
+    num_ztiles = (zimagesz - zoffset) / self.ingest_job.tile_size_z
+      
+    # over all the tiles in the slice
+    for ytile in range(0, num_ytiles, 1):
+      for xtile in range(0, num_xtiles, 1):
+        for ztile in range (0, num_ztiles, 1):
+          
+          # encode and insert message in queue
+          # print "inserting message:x{}-y{}-z{}".format(xtile, ytile, ztile)
+          message = serializer.encodeUploadMessage(self.nd_proj.project_name, self.nd_proj.channel_name, self.nd_proj.resolution, xtile, ytile, ztile)
+          self.upload_queue.sendMessage(message)

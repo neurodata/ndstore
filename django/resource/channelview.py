@@ -37,7 +37,7 @@ class ChannelView(View):
       else:
         ch.user_id = User.objects.get(username='neurodata').id
       ch.create()
-      return HttpResponse()
+      return HttpResponse(status=201)
     except Exception as e:
       return HttpResponseBadRequest()
 
