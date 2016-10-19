@@ -126,6 +126,10 @@ sudo ln -s /home/neurodata/ndstore/setup/docker_config/celery/ingest.conf /etc/s
 sudo rm /etc/supervisor/conf.d/stats.conf
 sudo ln -s /home/neurodata/ndstore/setup/docker_config/celery/stats.conf /etc/supervisor/conf.d/stats.conf
 
+sudo rm /home/neurodata/ndstore/ndingest/settings/settings.ini
+sudo ln -s /home/neurodata/ndstore/ndingest/settings/settings.ini.example /home/neurodata/ndstore/ndingest/settings/settings.ini
+
+
 #Set up https
 if [ -z "$2" ]; then
   sudo mkdir /etc/nginx/ssl
