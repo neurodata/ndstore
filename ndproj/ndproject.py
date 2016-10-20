@@ -104,6 +104,9 @@ class NDProject(NDObject):
       raise
     except Exception as e:
       raise
+  
+  def serialize(self):
+    return NDObject.serialize(self.pr)
 
   @property
   def project_name(self):

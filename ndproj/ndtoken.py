@@ -53,6 +53,9 @@ class NDToken(NDObject):
       self._tk.delete()
     except Exception as e:
       raise
+  
+  def serialize(self):
+    return NDObject.serialize(self._tk)
 
   @property
   def token_name(self):

@@ -79,6 +79,9 @@ class NDChannel(NDObject):
       self.ch.save()
     except Exception as e:
       raise
+    
+  def serialize(self):
+    return NDObject.serialize(self.ch)
 
   @property
   def channel_name(self):

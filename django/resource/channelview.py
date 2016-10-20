@@ -25,7 +25,7 @@ class ChannelView(View):
     try:
       pr = NDProject.fromName(project_name)
       ch = pr.getChannelObj(channel_name)
-      return HttpResponse(NDChannel.serialize(ch.ch), content_type='application/json')
+      return HttpResponse(ch.serialize(), content_type='application/json')
     except Exception as e:
       return HttpResponseBadRequest()
 

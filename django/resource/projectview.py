@@ -22,7 +22,7 @@ class ProjectView(View):
   def get(self, request, dataset_name, project_name):
     try:
       pr = NDProject.fromName(project_name)
-      return HttpResponse(NDProject.serialize(pr.pr), content_type='application/json')
+      return HttpResponse(pr.serialize(), content_type='application/json')
     except Exception as e:
       return HttpResponseBadRequest()
 

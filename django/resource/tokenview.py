@@ -25,7 +25,7 @@ class TokenView(View):
     try:
       pr = NDProject.fromName(project_name)
       tk = NDToken.fromName(token_name)
-      return HttpResponse(NDToken.serialize(tk._tk), content_type='application/json')
+      return HttpResponse(tk.serialize(), content_type='application/json')
     except Exception as e:
       return HttpResponseBadRequest()
 

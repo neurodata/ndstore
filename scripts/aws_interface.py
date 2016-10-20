@@ -56,7 +56,7 @@ class ResourceInterface():
     try:
       response = getJson('http://{}/resource/dataset/{}/'.format(self.host, self.dataset_name))
       if response.status_code == 404:
-        response = postJson('http://{}/resource/dataset/'.format(self.host), dataset)
+        response = postJson('http://{}/resource/dataset/'.format(self.host), dataset.serialize())
         if response.status_code != 201:
           raise ValueError('The server returned status code {}'.format(response.status_code))
       elif (response.status_code == 200) and (self.dataset_name == response.json()['dataset_name']):
@@ -123,6 +123,7 @@ class ResourceInterface():
           raise ValueError('The server returned status code {}'.format(response.status_code))
       except Exception as e:
         print (e)
+        sys.exit(0)
     
     def deleteProject(self):
       try:
@@ -131,6 +132,7 @@ class ResourceInterface():
           raise ValueError('The server returned status code {}'.format(response.status_code))
       except Exception as e:
         print (e)
+        sys.exit(0)
     
     def deleteChannel(self, channel_name):
       try:
@@ -139,6 +141,7 @@ class ResourceInterface():
           raise ValueError('The server returned status code {}'.format(response.status_code))
       except Exception as e:
         print (e)
+        sys.exit(0)
 
     def deleteToken(self):
       try:
@@ -147,6 +150,7 @@ class ResourceInterface():
           raise ValueError('The server returned status code {}'.format(response.status_code))
       except Exception as e:
         print (e)
+        sys.exit(0)
 
 
 class AwsInterface:

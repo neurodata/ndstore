@@ -156,6 +156,9 @@ class NDDataset(NDObject):
   @staticmethod
   def user_list(user_id):
     return Dataset.objects.filter(user_id=user_id)
+  
+  def serialize(self):
+    return NDObject.serialize(self._ds)
 
   @property
   def dataset_name(self):
