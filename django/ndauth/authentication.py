@@ -15,7 +15,6 @@ logger=logging.getLogger("neurodata")
 
 class PublicAuthentication(authentication.BaseAuthentication):
   def has_permission(self, request, view):
-    import pdb; pdb.set_trace()
     web_path = request.path
     if not web_path: # Some very odd scenario
       raise IOError('Could not get web_path from reques')
@@ -40,7 +39,7 @@ class PublicAuthentication(authentication.BaseAuthentication):
       for v in pp_tokens.values():
         pub_tokens.append(v['token_name'])
 
-      if exp_token in pub_tokens and request.method == 'GET':
+      if (argus[2] in pub_tokens or argus[1] in pub_tokens) and request.method == 'GET':
         return True
 
       try:
@@ -51,7 +50,7 @@ class PublicAuthentication(authentication.BaseAuthentication):
             tokens.append(v['token_name'])
           if exp_token not in tokens:
             raise NDWSError ("Token {} does not exist or you do not have\
-                              sufficient permissions to access it. {}".format(exp_token, pub_tokens))
+sufficient permissions to access it. {}".format(exp_token, pub_tokens))
         else:
           return True
       except Exception as e:
