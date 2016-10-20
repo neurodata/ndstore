@@ -15,22 +15,25 @@ logger=logging.getLogger("neurodata")
 
 class PublicAuthentication(authentication.BaseAuthentication):
   def has_permission(self, request, view):
+    import pdb; pdb.set_trace()
     web_path = request.path
     if not web_path: # Some very odd scenario
       raise IOError('Could not get web_path from reques')
 
     try:
-      args = web_path.split('/')
+      argus = web_path.split('/')
       # Expects args in order: ''|nd|ocp , ''|nd|ocp , App , View , Token , Arguements
-      if args[0] in ['','nd','ocp']:
-        args = args[1:]
-      if args[0] in ['','nd','ocp']:
-        args = args[1:]
+      if argus[0] in ['','nd','ocp']:
+        argus = argus[1:]
+      if argus[0] in ['','nd','ocp']:
+        argus = argus[1:]
+      if argus[0] in ['','nd','ocp']:
+        argus = argus[1:]
 
-      if args[0] == 'catmaid':
-        exp_token = args[2]
+      if argus[0] == 'catmaid':
+        exp_token = argus[2]
       else:
-        exp_token = args[1]
+        exp_token = argus[1]
 
       pp_tokens = Token.objects.filter(public=1)
       pub_tokens = []
