@@ -58,6 +58,7 @@ class NDProject(NDObject):
   @staticmethod
   def public_list():
     projects = Project.objects.filter(public = PUBLIC_TRUE)
+    # return projects
     return [pr.project_name for pr in projects]
 
   @classmethod
@@ -84,10 +85,11 @@ class NDProject(NDObject):
     pr.dataset_id = dataset_name
     return cls(pr)
 
-  def create(self):
+  def create(self, create_table=True):
     try:
       self.pr.save()
-      self.db.newNDProject()
+      if create_table:
+        self.db.newNDProject()
     except NDWSError as e:
       self.pr.delete()
       raise

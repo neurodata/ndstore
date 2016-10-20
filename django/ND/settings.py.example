@@ -56,7 +56,8 @@ INSTALLED_APPS = (
     'corsheaders',
     'ndgraph',
     'ramon',
-    'resource'
+    'resource',
+    'autoingest'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -158,10 +159,6 @@ LOGGING = {
     },
   },
   'handlers': {
-    #'null': {
-    #  'level': 'DEBUG',
-    #  'class': 'django.utils.log.NullHandler'
-    #},
     'logfile': {
       'level': 'DEBUG',
       'class': 'logging.handlers.RotatingFileHandler',
@@ -230,7 +227,8 @@ CORS_ALLOW_METHODS = {
 
 # Redis Settings
 # For test purposes both the INDEX and DATA instances are the same. For deployment purposes these can be different
-REDIS_MEMORY_RATIO = 60 # setting this to 60% for now
+REDIS_MEMORY_RATIO_UPPER_BOUND = 60
+REDIS_MEMORY_RATIO_LOWER_BOUND = 40
 REDIS_LOCK = 'redis-lock'
 REDIS_INDEX_KEY = 'cuboid-index-store'
 REDIS_INDEX_HOST = 'localhost'
