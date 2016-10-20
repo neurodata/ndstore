@@ -50,10 +50,16 @@ class NDChannel(NDObject):
     ch = Channel(**cls.deserialize(channel))
     ch.project_id = project_name
     return cls(ch)
+  
+  def save(self):
+    try:
+      self.ch.save()
+    except Exception as e:
+      raise
 
   def create(self):
     try:
-      self.ch.save()
+      self.save()
       self.db.newNDChannel(self.channel_name)
     except NDWSError as e:
       self.ch.delete()

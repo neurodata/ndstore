@@ -27,7 +27,7 @@ class NDToken(NDObject):
   def public_list():
     tokens = Token.objects.filter(public = PUBLIC_TRUE)
     return [t.token_name for t in tokens]
-
+  
   @classmethod
   def fromJson(cls, project_name, token):
     tk = Token(**cls.deserialize(token))

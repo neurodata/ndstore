@@ -145,9 +145,17 @@ class NDDataset(NDObject):
     return cls(ds)
   
   @staticmethod
+  def all_list():
+    return Dataset.objects.all()
+
+  @staticmethod
   def public_list():
     datasets  = Dataset.objects.filter(public = PUBLIC_TRUE)
     return [ds.dataset_name for ds in datasets]
+    
+  @staticmethod
+  def user_list(user_id):
+    return Dataset.objects.filter(user_id=user_id)
 
   @property
   def dataset_name(self):
