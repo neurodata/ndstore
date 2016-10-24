@@ -14,8 +14,9 @@
 
 from django.views.generic import View
 from django.contrib.auth.models import User
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
 from ndproj.ndproject import NDProject
+from nduser.models import Channel
 from ndproj.ndchannel import NDChannel
 
 class ChannelView(View):
@@ -26,6 +27,8 @@ class ChannelView(View):
       pr = NDProject.fromName(project_name)
       ch = pr.getChannelObj(channel_name)
       return HttpResponse(ch.serialize(), content_type='application/json')
+    except Channel.DoesNotExist as e:
+      return HttpResponseNotFound()
     except Exception as e:
       return HttpResponseBadRequest()
 

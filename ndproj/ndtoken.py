@@ -39,8 +39,9 @@ class NDToken(NDObject):
     try:
       tk = Token.objects.get(token_name=token_name)
       return cls(tk)
-    except ObjectDoesNotExist as e:
-      raise
+    except Token.DoesNotExist as e:
+      # logger.warning("Token {} does not exist.".format(token_name))
+      raise Token.DoesNotExist
   
   def create(self):
     try:

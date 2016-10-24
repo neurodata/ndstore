@@ -76,8 +76,9 @@ class NDProject(NDObject):
     try:
       pr = Project.objects.get(project_name=project_name)
       return cls(pr)
-    except ObjectDoesNotExist as e:
-      raise
+    except Project.DoesNotExist as e:
+      logger.warning("Project {} does not exist".format(project_name))
+      raise Project.DoesNotExist
   
   @classmethod
   def fromJson(cls, dataset_name, project):

@@ -14,7 +14,8 @@
 
 from django.views.generic import View
 from django.contrib.auth.models import User
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
+from nduser.models import Project
 from ndproj.ndproject import NDProject
 
 class ProjectView(View):
@@ -23,6 +24,8 @@ class ProjectView(View):
     try:
       pr = NDProject.fromName(project_name)
       return HttpResponse(pr.serialize(), content_type='application/json')
+    except Project.DoesNotExist as e:
+      return HttpResponseNotFound()
     except Exception as e:
       return HttpResponseBadRequest()
 

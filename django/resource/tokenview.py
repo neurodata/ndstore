@@ -14,8 +14,9 @@
 
 from django.views.generic import View
 from django.contrib.auth.models import User
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
 from ndproj.ndproject import NDProject
+from nduser.models import Token
 from ndproj.ndtoken import NDToken
 
 class TokenView(View):
@@ -26,6 +27,8 @@ class TokenView(View):
       pr = NDProject.fromName(project_name)
       tk = NDToken.fromName(token_name)
       return HttpResponse(tk.serialize(), content_type='application/json')
+    except Token.DoesNotExist as e:
+      return HttpResponseNotFound()
     except Exception as e:
       return HttpResponseBadRequest()
 

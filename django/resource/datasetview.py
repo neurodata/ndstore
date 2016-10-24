@@ -14,7 +14,8 @@
 
 from django.views.generic import View
 from django.contrib.auth.models import User
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
+from nduser.models import Dataset
 from ndproj.nddataset import NDDataset
 
 class DatasetView(View):
@@ -23,6 +24,8 @@ class DatasetView(View):
     try:
       ds = NDDataset.fromName(dataset_name)
       return HttpResponse(ds.serialize(), content_type='application/json')
+    except Dataset.DoesNotExist as e:
+      return HttpResponseNotFound()
     except Exception as e:
       return HttpResponseBadRequest()
 
