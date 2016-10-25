@@ -270,7 +270,8 @@ class NDProject(NDObject):
       chs = Channel.objects.filter(project_id=self.pr)
     else:
       chs = channel_list
-    for ch in chs:
+    for name in chs:
+      ch = Channel.objects.get(project_id=self.pr, channel_name=name)
       yield NDChannel(ch)
 
   def getChannelObj ( self, channel_name='default' ):

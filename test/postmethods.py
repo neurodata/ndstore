@@ -252,7 +252,7 @@ def getJSON(url):
 
   try:
     response = requests.get(url)
-    return response.json()
+    return response
   except requests.HTTPError as e:
     return e
 

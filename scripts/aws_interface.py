@@ -17,9 +17,11 @@
 from __future__ import absolute_import
 import os
 import sys
+import json
 from contextlib import closing
 import argparse
 import csv
+import blosc
 sys.path.append(os.path.abspath('../django'))
 import ND.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
@@ -27,6 +29,7 @@ from ndingest.settings.settings import Settings
 ndingest_settings = Settings.load()
 import django
 django.setup()
+from django.forms.models import model_to_dict
 from django.conf import settings
 from ndlib.ndctypelib import XYZMorton
 from ndcube.cube import Cube
@@ -52,11 +55,13 @@ class ResourceInterface():
     self.host = host_name
 
   def createDataset(self):
-    dataset = NDDataset.fromName(self.dataset_name)
+    dataset_obj = NDDataset.fromName(self.dataset_name)
+    dataset = model_to_dict(dataset_obj._ds)
+    del dataset['user']
     try:
       response = getJson('http://{}/resource/dataset/{}/'.format(self.host, self.dataset_name))
       if response.status_code == 404:
-        response = postJson('http://{}/resource/dataset/'.format(self.host), dataset.serialize())
+        response = postJson('http://{}/resource/dataset/{}/'.format(self.host, self.dataset_name), dataset)
         if response.status_code != 201:
           raise ValueError('The server returned status code {}'.format(response.status_code))
       elif (response.status_code == 200) and (self.dataset_name == response.json()['dataset_name']):
@@ -68,11 +73,17 @@ class ResourceInterface():
       sys.exit(0)
 
   def createProject(self):
-    project = NDProject.fromName(self.project_name)
+    project_obj = NDProject.fromName(self.project_name)
+    project = model_to_dict(project_obj.pr)
+    project['kvengine'] = REDIS
+    project['host'] = 'localhost'
+    project['s3backend'] = S3_TRUE
+    del project['user']
+    del project['dataset']
     try:
       response = getJson('http://{}/resource/dataset/{}/project/{}/'.format(self.host, self.dataset_name, self.project_name))
       if response.status_code == 404:
-        response = postJson('http://{}/resource/dataset/{}/project/'.format(self.host, self.dataset_name), project)
+        response = postJson('http://{}/resource/dataset/{}/project/{}/'.format(self.host, self.dataset_name, self.project_name), project)
         if response.status_code != 201:
           raise ValueError('The server returned status code {}'.format(response.status_code))
       elif (response.status_code == 200) and (self.project_name == response.json()['project_name']):
@@ -85,11 +96,15 @@ class ResourceInterface():
   
   def createChannel(self, channel_name):
     project = NDProject.fromName(self.project_name)
-    channel = project.getChannelObj(channel_name)
+    channel_obj = project.getChannelObj(channel_name)
+    channel = model_to_dict(channel_obj.ch)
+    del channel['id']
+    del channel['project']
+    # del channel['user']
     try:
       response = getJson('http://{}/resource/dataset/{}/project/{}/channel/{}/'.format(self.host, self.dataset_name, self.project_name, channel_name))
       if response.status_code == 404:
-        response = postJson('http://{}/resource/dataset/{}/project/{}/channel/'.format(self.host, self.dataset_name, self.project_name), channel)
+        response = postJson('http://{}/resource/dataset/{}/project/{}/channel/{}/'.format(self.host, self.dataset_name, self.project_name, channel_name), channel)
         if response.status_code != 201:
           raise ValueError('The server returned status code {}'.format(response.status_code))
       elif (response.status_code == 200) and (channel_name == response.json()['channel_name']):
@@ -101,11 +116,14 @@ class ResourceInterface():
       sys.exit(0)
     
   def createToken(self):
-    token = NDToken.fromName(self.token_name)
+    token_obj = NDToken.fromName(self.token_name)
+    token = model_to_dict(token_obj._tk)
+    del token['project']
+    del token['user']
     try:
       response = getJson('http://{}/resource/dataset/{}/project/{}/token/{}/'.format(self.host, self.dataset_name, self.project_name, self.token_name))
       if response.status_code == 404:
-        response = postJson('http://{}/resource/datset/{}/project/{}/token/'.format(self.host, self.dataset_name, self.project_name), token)
+        response = postJson('http://{}/resource/dataset/{}/project/{}/token/{}/'.format(self.host, self.dataset_name, self.project_name, self.token_name), token)
         if response.status_code != 201:
           raise ValueError('The server returned status code {}'.format(response.status_code))
       elif (response.status_code == 200) and (self.token_name == response.json()['token_name']):
@@ -262,9 +280,9 @@ class AwsInterface:
 
                 print "Inserting Cube {} at res {}".format(morton_index, cur_res), [x,y,z]
                 # updating the index
-                # self.cuboidindex_db.putItem(ch.channel_name, cur_res, x, y, z)
+                self.cuboidindex_db.putItem(ch.channel_name, cur_res, x, y, z)
                 # inserting the cube
-                # self.s3_io.putCube(ch, cur_res, morton_index, blosc.pack_array(data))
+                self.s3_io.putCube(ch, cur_res, morton_index, blosc.pack_array(data))
               
               except Exception as e:
                 # checkpoint the ingest
