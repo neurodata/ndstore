@@ -44,15 +44,17 @@ from spdb.s3io import S3IO
 from ndingest.nddynamo.cuboidindexdb import CuboidIndexDB
 from ndingest.ndbucket.cuboidbucket import CuboidBucket
 from ndlib.s3util import generateS3BucketName, generateS3Key
+import logging
 
 
 class ResourceInterface():
 
-  def __init__(self, dataset_name, project_name, token_name, host_name):
+  def __init__(self, dataset_name, project_name, token_name, host_name, logger):
     self.dataset_name = dataset_name
     self.project_name = project_name
     self.token_name = token_name
     self.host = host_name
+    self.logger = logger
 
   def createDataset(self):
     dataset_obj = NDDataset.fromName(self.dataset_name)
@@ -65,11 +67,11 @@ class ResourceInterface():
         if response.status_code != 201:
           raise ValueError('The server returned status code {}'.format(response.status_code))
       elif (response.status_code == 200) and (self.dataset_name == response.json()['dataset_name']):
-        print "Dataset already exists. Skipping Dataset creation"
+        self.logger.warning("Dataset already exists. Skipping Dataset creation")
       else:
         raise ValueError('The server returned status code {} and content {}'.format(response.status_code, response.json()))
     except Exception as e:
-      print (e)
+      self.logger.error(e)
       sys.exit(0)
 
   def createProject(self):
@@ -87,11 +89,11 @@ class ResourceInterface():
         if response.status_code != 201:
           raise ValueError('The server returned status code {}'.format(response.status_code))
       elif (response.status_code == 200) and (self.project_name == response.json()['project_name']):
-        print "Project already exists. Skipping Project creation"
+        self.logger.warning("Project already exists. Skipping Project creation")
       else:
         raise ValueError('The server returned status code {} and content {}'.format(response.status_code, response.json()))
     except Exception as e:
-      print (e)
+      self.logger.error(e)
       sys.exit(0)
   
   def createChannel(self, channel_name):
@@ -108,11 +110,11 @@ class ResourceInterface():
         if response.status_code != 201:
           raise ValueError('The server returned status code {}'.format(response.status_code))
       elif (response.status_code == 200) and (channel_name == response.json()['channel_name']):
-        print "Channel already exists. Skipping Channel creation"
+        self.logger.warning("Channel already exists. Skipping Channel creation")
       else:
         raise ValueError('The server returned status code {} and content {}'.format(response.status_code, response.json()))
     except Exception as e:
-      print (e)
+      self.logger.error(e)
       sys.exit(0)
     
   def createToken(self):
@@ -127,11 +129,11 @@ class ResourceInterface():
         if response.status_code != 201:
           raise ValueError('The server returned status code {}'.format(response.status_code))
       elif (response.status_code == 200) and (self.token_name == response.json()['token_name']):
-        print "Token already exists. Skipping Token creation"
+        self.logger.warning("Token already exists. Skipping Token creation")
       else:
         raise ValueError('The server returned status code {} and content {}'.format(response.status_code, response.json()))
     except Exception as e:
-      print (e)
+      self.logger.error(e)
       sys.exit(0)
   
     def deleteDataset(self):
@@ -140,7 +142,7 @@ class ResourceInterface():
         if response.status_code != 204:
           raise ValueError('The server returned status code {}'.format(response.status_code))
       except Exception as e:
-        print (e)
+        self.logger.error(e)
         sys.exit(0)
     
     def deleteProject(self):
@@ -149,7 +151,7 @@ class ResourceInterface():
         if response.status_code != 204:
           raise ValueError('The server returned status code {}'.format(response.status_code))
       except Exception as e:
-        print (e)
+        self.logger.error(e)
         sys.exit(0)
     
     def deleteChannel(self, channel_name):
@@ -158,7 +160,7 @@ class ResourceInterface():
         if response.status_code != 204:
           raise ValueError('The server returned status code {}'.format(response.status_code))
       except Exception as e:
-        print (e)
+        self.logger.error(e)
         sys.exit(0)
 
     def deleteToken(self):
@@ -167,7 +169,7 @@ class ResourceInterface():
         if response.status_code != 204:
           raise ValueError('The server returned status code {}'.format(response.status_code))
       except Exception as e:
-        print (e)
+        self.logger.error(e)
         sys.exit(0)
 
 
@@ -178,7 +180,13 @@ class AwsInterface:
   
     self.token = token
     self.proj = NDProject.fromTokenName(self.token)
+    # configuring the logger based on the dataset we are uploading
+    self.logger = logging.getLogger(token)
+    self.logger.setLevel(logging.INFO)
+    fh = logging.FileHandler('{}.log'.format(token))
+    self.logger.addHandler(fh)
     self.resource_interface = ResourceInterface(self.proj.dataset_name, self.proj.project_name, self.token, host_name)
+
     
     with closing (SpatialDB(self.proj)) as self.db:
       # create the s3 I/O and index objects
@@ -266,11 +274,13 @@ class AwsInterface:
         offset = self.proj.datasetcfg.get_offset(cur_res)
         [xsupercubedim, ysupercubedim, zsupercubedim] = supercubedim = self.proj.datasetcfg.get_supercubedim(cur_res)
         # set the limits for iteration on the number of cubes in each dimension
-        [xlimit, ylimit, zlimit] = limit = self.proj.datasetcfg.get_supercube_limit(cur_res)
-
-        for z in range(xlimit):
-          for y in range(ylimit):
-            for x in range(zlimit):
+        xlimit = (image_size[0]-1) / (xsupercubedim) + 1
+        ylimit = (image_size[1]-1) / (ysupercubedim) + 1
+        zlimit = (image_size[2]-1) / (zsupercubedim) + 1
+        # [xlimit, ylimit, zlimit] = limit = self.proj.datasetcfg.get_supercube_limit(cur_res)
+        for z in range(0, zlimit, 1):
+          for y in range(0, ylimit, 1):
+            for x in range(0, xlimit, 1):
 
               try:
                 # cutout the data at the current resolution
@@ -278,7 +288,7 @@ class AwsInterface:
                 # generate the morton index
                 morton_index = XYZMorton([x, y, z])
 
-                print "Inserting Cube {} at res {}".format(morton_index, cur_res), [x,y,z]
+                self.logger.info("[{},{},{}] at res {}".format(x*xsupercubedim, y*ysupercubedim, z*zsupercubedim, cur_res))
                 # updating the index
                 self.cuboidindex_db.putItem(ch.channel_name, cur_res, x, y, z)
                 # inserting the cube
@@ -286,6 +296,7 @@ class AwsInterface:
               
               except Exception as e:
                 # checkpoint the ingest
+                self.logger.error(e)
                 self.checkpoint_ingest(ch.channel_name, cur_res, x, y, z, e)
                 raise e
   
