@@ -185,7 +185,7 @@ class AwsInterface:
     self.logger.setLevel(logging.INFO)
     fh = logging.FileHandler('{}.log'.format(token))
     self.logger.addHandler(fh)
-    self.resource_interface = ResourceInterface(self.proj.dataset_name, self.proj.project_name, self.token, host_name)
+    self.resource_interface = ResourceInterface(self.proj.dataset_name, self.proj.project_name, self.token, host_name, self.logger)
 
     
     with closing (SpatialDB(self.proj)) as self.db:
@@ -241,7 +241,7 @@ class AwsInterface:
     self.resource_interface.createProject()
     self.resource_interface.createToken()
 
-  def uploadExistingProject(self, channel_name, resolution):
+  def uploadExistingProject(self, channel_name, resolution, start_values):
     """Upload an existing project to S3"""
       
     self.setupNewProject()
@@ -278,9 +278,10 @@ class AwsInterface:
         ylimit = (image_size[1]-1) / (ysupercubedim) + 1
         zlimit = (image_size[2]-1) / (zsupercubedim) + 1
         # [xlimit, ylimit, zlimit] = limit = self.proj.datasetcfg.get_supercube_limit(cur_res)
-        for z in range(0, zlimit, 1):
-          for y in range(0, ylimit, 1):
-            for x in range(0, xlimit, 1):
+        [x_start, y_start, z_start] = start_values
+        for z in range(x_start, zlimit, 1):
+          for y in range(y_start, ylimit, 1):
+            for x in range(z_start, xlimit, 1):
 
               try:
                 # cutout the data at the current resolution
@@ -322,7 +323,9 @@ def main():
   parser.add_argument('--channel', dest='channel_name', action='store', type=str, default=None, help='Channel Name in the project')
   parser.add_argument('--res', dest='resolution', action='store', type=int, default=None, help='Resolution to upload')
   parser.add_argument('--action', dest='action', action='store', choices=['upload', 'delete-channel', 'delete-res', 'delete-project'], default='upload', help='Specify action for the given project')
-  parser.add_argument('--host', dest='host_name', action='store', type=str, default='localhost:8000', help='Server host name')
+  parser.add_argument('--host', dest='host_name', action='store', type=str, default='52.91.173.4/nd', help='Server host name')
+  parser.add_argument('--start', dest='start_values', action='store', type=int, nargs=3, metavar=('X', 'Y', 'Z'), default=[0, 0, 0], help='Resume upload from co-ordinates')
+  # parser.add_argument('--dry-run', dest='dry_run', action='store', type=bool, default=False, help='Try a dry run without uploading data')
   # Unwanted field which might be useful in the future
   # parser.add_argument('--file', dest='file_type', action='store', choices=['tif', 'tiff', 'jpg', 'png'], default='tif', help='File type')
   # parser.add_argument('--new', dest='new_project', action='store', choices=['slice', 'catmaid'], default='slice', help='New Project')
@@ -335,7 +338,7 @@ def main():
   if result.action == 'upload':
     if result.channel_name is None and result.resolution is not None:
       raise ValueError("Error: channel cannot be empty if resolution is not empty")
-    aws_interface.uploadExistingProject(result.channel_name, result.resolution)
+    aws_interface.uploadExistingProject(result.channel_name, result.resolution, result.start_values)
   elif result.action == 'delete-project':
     aws_interface.deleteProject()
   elif result.action == 'delete-channel':
