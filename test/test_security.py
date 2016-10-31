@@ -19,6 +19,10 @@ from params import Params
 import kvengine_to_test
 import site_to_test
 SITE_HOST = site_to_test.site
+import sys
+import os
+sys.path += [os.path.abspath('../django')]
+import oose.settings
 
 p = Params()
 p.token = 'unittest'
@@ -92,3 +96,21 @@ class Test_Ramon:
     #Test with a non-authenticated user
     resp = requests.get(url, verify=False)
     assert(resp.status_code>=200)
+
+  def test_token_endpoint ( self ):
+    """Verify that the endpoint is working correctly"""
+    
+    url = 'http://{}/nd/ndauth/validate/'.format(SITE_HOST)
+
+    credentials = {
+      'properties':
+        {
+          'user':'test', 
+          'password':'test', 
+          'secret': settings.SHARED_SECRET
+        },
+    }
+
+    resp = requests.get(url, data=json.dumps(credentials))
+    assert(resp.status_code>=200)
+
