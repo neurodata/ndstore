@@ -20,24 +20,26 @@ class PublicAuthentication(authentication.BaseAuthentication):
       raise IOError('Could not get web_path from reques')
 
     try:
-      args = web_path.split('/')
+      argus = web_path.split('/')
       # Expects args in order: ''|nd|ocp , ''|nd|ocp , App , View , Token , Arguements
-      if args[0] in ['','nd','ocp']:
-        args = args[1:]
-      if args[0] in ['','nd','ocp']:
-        args = args[1:]
+      if argus[0] in ['','nd','ocp']:
+        argus = argus[1:]
+      if argus[0] in ['','nd','ocp']:
+        argus = argus[1:]
+      if argus[0] in ['','nd','ocp']:
+        argus = argus[1:]
 
-      if args[0] == 'catmaid':
-        exp_token = args[2]
+      if argus[0] == 'catmaid':
+        exp_token = argus[2]
       else:
-        exp_token = args[1]
+        exp_token = argus[1]
 
       pp_tokens = Token.objects.filter(public=1)
       pub_tokens = []
       for v in pp_tokens.values():
         pub_tokens.append(v['token_name'])
 
-      if exp_token in pub_tokens and request.method == 'GET':
+      if (argus[2] in pub_tokens or argus[1] in pub_tokens) and request.method == 'GET':
         return True
 
       try:
@@ -48,7 +50,7 @@ class PublicAuthentication(authentication.BaseAuthentication):
             tokens.append(v['token_name'])
           if exp_token not in tokens:
             raise NDWSError ("Token {} does not exist or you do not have\
-                              sufficient permissions to access it. {}".format(exp_token, pub_tokens))
+sufficient permissions to access it. {}".format(exp_token, pub_tokens))
         else:
           return True
       except Exception as e:

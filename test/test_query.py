@@ -103,7 +103,6 @@ class Test_Ramon:
       makeAnno (p, i)
       setField( p, key, value )
       annids.append(p.annoid)
-
       h5 = queryField ( p, key, value )
 
       assert ( h5['ANNOIDS'].shape[0] == 2 )
