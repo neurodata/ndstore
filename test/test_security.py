@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import json
 import pytest
 import requests
 import makeunitdb
@@ -64,24 +65,29 @@ class Test_Ramon:
     #Ensure that the user can access it
     resp = requests.get(url, headers={'Authorization': 'Token {}'.format( TOKEN_USER )}, verify=False)
     assert(resp.status_code>=200)
+    assert(resp.status_code<300)
     #Ensure that the super user can access it
     resp = requests.get(url, headers={'Authorization': 'Token {}'.format( TOKEN_SUPER )}, verify=False)
     assert(resp.status_code>=200)
+    assert(resp.status_code<300)
     #Ensure a rando can't access it
     resp = requests.get(url, verify=False)
     assert(resp.status_code>=400)
+    assert(resp.status_code<500)
 
     url = 'http://{}/ocp/ca/unittest_super_private/info/'.format(SITE_HOST)
     #Ensure that the user can not access it
     resp = requests.get(url, headers={'Authorization': 'Token {}'.format( TOKEN_USER )}, verify=False)
     assert(resp.status_code>=400)
+    assert(resp.status_code<500)
     #Ensure that the super user can access it
     resp = requests.get(url, headers={'Authorization': 'Token {}'.format( TOKEN_SUPER )}, verify=False)
     assert(resp.status_code>=200)
+    assert(resp.status_code<300)
     #Ensure a rando can't access it
     resp = requests.get(url, verify=False)
     assert(resp.status_code>=400)
-
+    assert(resp.status_code<500)
 
   def test_query_public ( self ):
     """Verify that public data is accessible to all (including anonymous)"""
@@ -90,12 +96,15 @@ class Test_Ramon:
     #Test with a super user
     resp = requests.get(url, headers={'Authorization': 'Token {}'.format( TOKEN_SUPER )}, verify=False)
     assert(resp.status_code>=200)
+    assert(resp.status_code<300)
     #Test with a non-super user
     resp = requests.get(url, headers={'Authorization': 'Token {}'.format( TOKEN_USER )}, verify=False)
     assert(resp.status_code>=200)
+    assert(resp.status_code<300)
     #Test with a non-authenticated user
     resp = requests.get(url, verify=False)
     assert(resp.status_code>=200)
+    assert(resp.status_code<300)
 
   def test_token_endpoint ( self ):
     """Verify that the endpoint is working correctly"""
@@ -111,6 +120,7 @@ class Test_Ramon:
         },
     }
 
-    resp = requests.get(url, data=json.dumps(credentials))
+    resp = requests.get(url, data=json.dumps(credentials), verify=False)
     assert(resp.status_code>=200)
-
+    assert(resp.status_code<300)
+    assert(resp.content==TOKEN_USER)
