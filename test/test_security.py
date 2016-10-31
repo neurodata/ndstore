@@ -22,8 +22,8 @@ import site_to_test
 SITE_HOST = site_to_test.site
 import sys
 import os
-sys.path += [os.path.abspath('../django')]
-import oose.settings
+sys.path += [os.path.abspath('../django/ND')]
+import settings
 
 p = Params()
 p.token = 'unittest'
