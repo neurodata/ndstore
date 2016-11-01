@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from django.shortcuts import render
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.authtoken.models import Token
 
 import django.http
@@ -22,13 +22,13 @@ import MySQLdb
 import cStringIO
 import re
 import json
+from rest_framework.permissions import AllowAny
 
 from django.conf import settings
 from django.http import HttpResponseForbidden
 from django.contrib.auth import authenticate
-from jsonschema import validate
+from jsonschema import validate, ValidationError, SchemaError
 
-from ndwserror import NDWSError
 import logging
 logger=logging.getLogger("neurodata")
 
@@ -53,9 +53,10 @@ USER_SCHEMA={
 
 # Create your views here.
 @api_view(['GET'])
+@permission_classes([AllowAny,])
 def validate(request, webargs):
   """Restful URL to Validate User Credentials"""
-
+  import pdb; pdb.set_trace()
   try:
     credentials = json.loads(request.body)
     validate(credentials, USER_SCHEMA)
@@ -70,18 +71,14 @@ def validate(request, webargs):
 {}".format(e))
     return HttpResponseForbidden()
 
-  except ValidationError as e
+  except ValidationError as e:
     logger.warning("Error in validating Json against USER_SCHEMA: \
 {}".format(e))
     return HttpResponseForbidden()
 
-  try:
-    user = authenticate(username=credentials["user"], password=credentials["password"])
-    if user is not None:
-      token = Token.objects.filter(user=request.user.id)
-      return HttpResponse(token)
-    else:
-      return HttpResponseForbidden()
-
-
-
+  user = authenticate(username=credentials["user"], password=credentials["password"])
+  if user is not None:
+    token = Token.objects.filter(user=request.user.id)
+    return HttpResponse(token)
+  else:
+    return HttpResponseForbidden()

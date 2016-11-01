@@ -39,7 +39,7 @@ class PublicAuthentication(authentication.BaseAuthentication):
       for v in pp_tokens.values():
         pub_tokens.append(v['token_name'])
 
-      if (argus[2] in pub_tokens or argus[1] in pub_tokens) and request.method == 'GET':
+      if (exp_token in pub_tokens):
         return True
 
       try:
@@ -48,9 +48,11 @@ class PublicAuthentication(authentication.BaseAuthentication):
           tokens = []
           for v in m_tokens.values():
             tokens.append(v['token_name'])
-          if exp_token not in tokens:
+          if not exp_token in tokens:
             raise NDWSError ("Token {} does not exist or you do not have\
 sufficient permissions to access it. {}".format(exp_token, pub_tokens))
+          else:
+            return True
         else:
           return True
       except Exception as e:

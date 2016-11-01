@@ -34,12 +34,12 @@ TOKEN_USER = ''
 
 if TOKEN_SUPER == '':
     f = open('/tmp/token_super','r')
-    TOKEN = f.read()
+    TOKEN_SUPER = f.read()
     f.close()
 
 if TOKEN_USER == '':
     f = open('/tmp/token_user','r')
-    TOKEN = f.read()
+    TOKEN_USER = f.read()
     f.close()
 
 
@@ -60,7 +60,6 @@ class Test_Ramon:
 
   def test_query_private (self):
     """Test if a private user has proper access abilities."""
-
     url = 'http://{}/ocp/ca/unittest_user_private/info/'.format(SITE_HOST)
     #Ensure that the user can access it
     resp = requests.get(url, headers={'Authorization': 'Token {}'.format( TOKEN_USER )}, verify=False)
@@ -91,7 +90,6 @@ class Test_Ramon:
 
   def test_query_public ( self ):
     """Verify that public data is accessible to all (including anonymous)"""
-
     url = 'http://{}/ocp/ca/unittest_public/info/'.format(SITE_HOST)
     #Test with a super user
     resp = requests.get(url, headers={'Authorization': 'Token {}'.format( TOKEN_SUPER )}, verify=False)
@@ -119,7 +117,7 @@ class Test_Ramon:
           'secret': settings.SHARED_SECRET
         },
     }
-
+    import pdb; pdb.set_trace()
     resp = requests.get(url, data=json.dumps(credentials), verify=False)
     assert(resp.status_code>=200)
     assert(resp.status_code<300)
