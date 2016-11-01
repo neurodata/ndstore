@@ -25,14 +25,15 @@ import json
 from rest_framework.permissions import AllowAny
 
 from django.conf import settings
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, HttpResponse
 from django.contrib.auth import authenticate
-from jsonschema import validate, ValidationError, SchemaError
+#from jsonschema import validate, ValidationError, SchemaError
+from jsonspec.validators import load
 
 import logging
 logger=logging.getLogger("neurodata")
 
-USER_SCHEMA={
+USER_SCHEMA=load({
   "type": "object",
   "properties": {
     "user": {
@@ -49,18 +50,17 @@ USER_SCHEMA={
     },
   }, 
   "required": ["user","password","secret"]
-}
+})
 
 # Create your views here.
 @api_view(['GET'])
 @permission_classes([AllowAny,])
 def validate(request, webargs):
   """Restful URL to Validate User Credentials"""
-  import pdb; pdb.set_trace()
   try:
     credentials = json.loads(request.body)
-    validate(credentials, USER_SCHEMA)
-    assert(credentials["secret"], settings.SHARED_SECRET)
+    USER_SCHEMA.validate(credentials['properties'])
+    assert(credentials["properties"]["secret"], settings.SHARED_SECRET)
 
   except AssertionError as e:
     logger.warning("Incorrect shared secret for user {} from {}".format(credentials["user"], request.get_host()))
@@ -76,9 +76,9 @@ def validate(request, webargs):
 {}".format(e))
     return HttpResponseForbidden()
 
-  user = authenticate(username=credentials["user"], password=credentials["password"])
+  user = authenticate(username=credentials["properties"]["user"], password=credentials["properties"]["password"])
   if user is not None:
-    token = Token.objects.filter(user=request.user.id)
+    token = Token.objects.filter(user=user)
     return HttpResponse(token)
   else:
     return HttpResponseForbidden()

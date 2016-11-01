@@ -113,7 +113,7 @@ class Test_Ramon:
       'properties':
         {
           'user':'test', 
-          'password':'test', 
+          'password':'t3st', 
           'secret': settings.SHARED_SECRET
         },
     }
