@@ -33,9 +33,9 @@ def ingestNIFTI ( niftifname, ch, db, proj ):
   if len(nifti_data.shape) == 3:
 
     # check that the data is the right shape
-    if nifti_data.shape != tuple(proj.datasetcfg.imagesz[0]):
-      logger.warning("Data shape {} does not match dataset shape {}.".format(nifti_data.shape, proj.datasetcfg.imagesz[0]))
-      raise NDWSError("Data shape {} does not match dataset shape {}.".format(nifti_data.shape, proj.datasetcfg.imagesz[0]))
+    if nifti_data.shape != tuple(proj.datasetcfg.get_imagesize(0)):
+      logger.warning("Data shape {} does not match dataset shape {}.".format(nifti_data.shape, proj.datasetcfg.get_imagesize(0)))
+      raise NDWSError("Data shape {} does not match dataset shape {}.".format(nifti_data.shape, proj.datasetcfg.get_imagesize(0)))
 
     # reshape the nifti data to include a channel dimension
     nifti_data = nifti_data.transpose()
@@ -62,11 +62,12 @@ def ingestNIFTI ( niftifname, ch, db, proj ):
 
 
   elif len(nifti_data.shape) == 4:
-
+    
     # check that the data is the right shape
-    if nifti_data.shape[0:3] != tuple(proj.datasetcfg.imagesz[0]) or nifti_data.shape[3] != proj.datasetcfg.timerange[1] - proj.datasetcfg.timerange[0]:
-      logger.warning("Data shape {} does not match dataset shape {}.".format(nifti_data.shape, proj.datasetcfg.imagesz[0]))
-      raise NDWSError("Data shape {} does not match dataset shape {}.".format(nifti_data.shape, proj.datasetcfg.imagesz[0]))
+    if nifti_data.shape != tuple(proj.datasetcfg.get_imagesize(0) + [proj.datasetcfg.timerange[1]-proj.datasetcfg.timerange[0]+1]):
+    # if nifti_data.shape[0:3] != tuple(proj.datasetcfg.get_imagesize(0)) or nifti_data.shape[3] != proj.datasetcfg.timerange[1] - proj.datasetcfg.timerange[0]:
+      logger.warning("Data shape {} does not match dataset shape {}.".format(nifti_data.shape, proj.datasetcfg.get_imagesize(0)))
+      raise NDWSError("Data shape {} does not match dataset shape {}.".format(nifti_data.shape, proj.datasetcfg.get_imagesize(0)))
 
     # reshape the nifti data to include a channel dimension
     nifti_data = nifti_data.transpose()
@@ -90,13 +91,14 @@ def ingestNIFTI ( niftifname, ch, db, proj ):
 
   # Don't write to readonly channels
   if ch.readonly == READONLY_TRUE:
-    logger.warning("Attempt to write to read only project {}".format(proj.getDBName()))
-    raise NDWSError("Attempt to write to read only project {}".format(proj.getDBName()))
+    logger.warning("Attempt to write to read only project {}".format(proj.dbname))
+    raise NDWSError("Attempt to write to read only project {}".format(proj.dbname))
 
 
   # create the model and populate
   nh = NIFTIHeader()
-  nh.channel_id = ch.getChannelModel().id
+  import pdb; pdb.set_trace()
+  nh.channel_id = ch.channel_model.id
 
   # dump the header 
   nh.header = pickle.dumps(nifti_img.header)
@@ -108,7 +110,7 @@ def ingestNIFTI ( niftifname, ch, db, proj ):
     db.writeCuboid ( ch, (0,0,0), 0, nifti_data )
 
   elif ch.channel_type in TIMESERIES_CHANNELS:
-    db.writeCuboid(ch, (0,0,0), 0, nifti_data, (0,nifti_data.shape[1]))
+    db.writeCuboid(ch, (0,0,0), 0, nifti_data, (0, nifti_data.shape[1]))
 
   else:
     logger.warning("Writing to a channel with an incompatible data type. {}" % (ch.channel_type))

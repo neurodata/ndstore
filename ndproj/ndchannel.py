@@ -165,9 +165,9 @@ class NDChannel(NDObject):
   def exceptions(self):
     return self.ch.exceptions
 
-  # Accessors
-  def getChannelModel ( self ):
-    return Channel.objects.get(channel_name=self.ch.channel_name, project=self.pr.getProjectName())
+  @property
+  def channel_model ( self ):
+    return Channel.objects.get(channel_name=self.ch.channel_name, project=self.pr.project_name)
 
   # def getDataType ( self ):
     # return self.ch.channel_datatype

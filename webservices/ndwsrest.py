@@ -47,7 +47,7 @@ from ndproj import jsonprojinfo
 import mcfc
 from ndlib.ndctypelib import filter_ctype_OMP
 import webservices.ndwsskel
-import webservices.ndwsnifti
+from webservices.ndwsnifti import ingestNIFTI, queryNIFTI
 from ndlib.windowcutout import windowCutout
 from ndlib.ndtype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, ANNOTATION_CHANNELS, NOT_PROPAGATED, UNDER_PROPAGATION, PROPAGATED, ND_dtypetonp, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, READONLY_TRUE, READONLY_FALSE
 from webservices.ndwserror import NDWSError, IncorrectSyntaxError
@@ -1575,14 +1575,14 @@ def getNIFTI ( webargs ):
 
     # Make a named temporary file for the nii file
     with closing(tempfile.NamedTemporaryFile(suffix='.nii')) as tmpfile:
-      ndwsnifti.queryNIFTI ( tmpfile, ch, db, proj )
+      queryNIFTI ( tmpfile, ch, db, proj )
       tmpfile.seek(0)
       return tmpfile.read()
 
 
 def putNIFTI ( webargs, postdata ):
   """Put a NIFTI object as an image"""
-    
+  
   [token, channel, optionsargs] = webargs.split('/',2)
   proj = NDProject.fromTokenName(token)
   with closing (SpatialDB(proj)) as db:
@@ -1602,7 +1602,7 @@ def putNIFTI ( webargs, postdata ):
         tmpfile.write ( postdata )
         tmpfile.seek(0)
         # ingest the nifti file
-        ndwsnifti.ingestNIFTI ( tmpfile.name, ch, db, proj )
+        ingestNIFTI ( tmpfile.name, ch, db, proj )
     
     else:
 
@@ -1611,7 +1611,7 @@ def putNIFTI ( webargs, postdata ):
         tmpfile.write ( postdata )
         tmpfile.seek(0)
         # ingest the nifti file
-        ndwsnifti.ingestNIFTI ( tmpfile.name, ch, db, proj, channel=channel )
+        ingestNIFTI ( tmpfile.name, ch, db, proj, channel=channel )
 
 # def getSWC ( webargs ):
   # """Return an SWC object generated from Skeletons/Nodes"""
