@@ -85,13 +85,15 @@ sudo ln -s /home/neurodata/ndstore/setup/docker_config/upstart/redis.conf /etc/i
 sudo initctl reload-configuration
 sudo service redis start
 
+# setup the ndingest settings file
+sudo cp /home/neurodata/ndstore/ndingest/settings/settings.ini.example /home/neurodata/ndstore/ndingest/settings/settings.ini
+
 # migrate the database and create the superuser
 sudo chmod -R 777 /var/log/neurodata/
 cd /home/neurodata/ndstore/django/
 sudo -u neurodata python manage.py migrate
 echo "from django.contrib.auth.models import User; User.objects.create_superuser('neurodata', 'abc@xyz.com', 'neur0data')" | python manage.py shell
 sudo -u neurodata python manage.py collectstatic --noinput
-
 
 # setup the cache manager
 sudo ln -s /home/neurodata/ndstore/setup/docker_config/upstart/ndmanager.conf /etc/init/ndmanager.conf
