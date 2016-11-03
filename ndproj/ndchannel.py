@@ -83,7 +83,11 @@ class NDChannel(NDObject):
     
   def serialize(self):
     return NDObject.serialize(self.ch)
-
+  
+  @property
+  def channel_id(self):
+    return self.ch.id
+  
   @property
   def channel_name(self):
     return self.ch.channel_name

@@ -235,7 +235,7 @@ class Backup ( models.Model):
 
 class NIFTIHeader ( models.Model):
 
-  channel  = models.OneToOneField(Channel,primary_key=True)
+  channel = models.OneToOneField(Channel, primary_key=True)
   # all headers are 384 bytes for now.
   header = models.BinaryField(max_length=1024)
   affine = models.BinaryField(max_length=1024)
