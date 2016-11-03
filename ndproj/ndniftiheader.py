@@ -12,13 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from nduser.models import NiftiHeader
+import pickle
+from nduser.models import NIFTIHeader
 from ndproj.ndobject import NDObject
 
 class NDNiftiHeader(object):
 
   def __init__(self, nh):
-    self_nh = nh
+    self._nh = nh
 
   @classmethod
   def fromJson(cls, nifti_header):

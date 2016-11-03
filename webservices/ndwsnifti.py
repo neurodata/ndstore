@@ -16,7 +16,8 @@ import nibabel
 import numpy as np
 import pickle
 from ndlib.ndtype import READONLY_TRUE, ND_dtypetonp, IMAGE_CHANNELS, TIMESERIES_CHANNELS, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, DTYPE_float32
-from nduser.models import NIFTIHeader
+from ndproj.ndniftiheader import NDNiftiHeader
+#from nduser.models import NIFTIHeader
 from webservices.ndwserror import NDWSError
 import logging
 logger = logging.getLogger("neurodata")
@@ -31,22 +32,24 @@ def ingestNIFTI ( niftifname, ch, db, proj ):
   
   # Don't write to readonly channels
   if ch.readonly == READONLY_TRUE:
-    logger.warning("Attempt to write to read only channel {} in project {}".format(, ch.channel_name, proj.project_name))
+    logger.warning("Attempt to write to read only channel {} in project {}".format(ch.channel_name, proj.project_name))
     raise NDWSError("Attempt to write to read only channel {} in project {}".format(ch.channel_name, proj.project_name))
 
-  if nifti_data.dtype == ND_dtypetonp[ch.channel_datatype]:
+  if not nifti_data.dtype == ND_dtypetonp[ch.channel_datatype]:
     logger.error("Wrong datatype in post")
     raise NDWSError("Wrong datatype in post")
   
   # check that the data is the right shape
   if (len(nifti_data.shape) == 3 and nifti_data.shape != tuple(proj.datasetcfg.get_imagesize(0))) or (len(nifti_data.shape) == 4 and nifti_data.shape != tuple(proj.datasetcfg.get_imagesize(0) + [proj.datasetcfg.timerange[1]-proj.datasetcfg.timerange[0]+1])):
+    logger.warning("Not correct shape")
+    raise NDWSError("Not correct shape")
     
-    nifti_data = nifti_data.transpose()
-    nifti_data = ND_dtypetonp[ch.channel_datatype](nifti_data.reshape([1]+list(nifti_data.shape)))
+  nifti_data = nifti_data.transpose()
+  nifti_data = ND_dtypetonp[ch.channel_datatype](nifti_data.reshape([1]+list(nifti_data.shape)))
 
   # create the nifti header
   nh = NDNiftiHeader.fromImage(ch, nifti_img)
-  
+
   try:
     if ch.channel_type in IMAGE_CHANNELS:
       db.writeCuboid ( ch, (0,0,0), 0, nifti_data )
@@ -67,9 +70,9 @@ def queryNIFTI ( tmpfile, ch, db, proj ):
     nh = NDNiftiHeader.fromChannel(ch)
 
     if ch.channel_type in TIMESERIES_CHANNELS:
-      cuboid = db.cutout ( ch, (0,0,0), proj.datasetcfg.imagesz[0], 0, timerange=proj.datasetcfg.timerange ) 
+      cuboid = db.cutout ( ch, (0,0,0), proj.datasetcfg.get_imagesize(0), 0, timerange=proj.datasetcfg.timerange ) 
     else:
-      cuboid = db.cutout ( ch, (0,0,0), proj.datasetcfg.imagesz[0], 0 ) 
+      cuboid = db.cutout ( ch, (0,0,0), proj.datasetcfg.get_imagesize(0), 0 ) 
 
     # transpose to nii's xyz format
     niidata = cuboid.data.transpose()
