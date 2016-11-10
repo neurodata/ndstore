@@ -25,26 +25,21 @@ def main():
   parser.add_argument('token', action="store" )
   parser.add_argument('channel', action="store" )
   parser.add_argument('filename', action="store" )
-
   result = parser.parse_args()
 
-  url = 'http://%s/ca/%s/%s/nii/' % ( result.baseurl, result.token, result.channel )
+  url = 'http://{}/ca/{}/{}/nii/'.format(result.baseurl, result.token, result.channel)
 
   print url
 
   # open the file name as a tiff file
-  fh = open ( result.filename )
+  fh = open(result.filename)
 
   # Get cube in question
   try:
     f = urllib2.urlopen ( url, fh.read() )
   except urllib2.URLError, e:
-    print "Failed %s.  Exception %s." % (url,e) 
+    print "Failed {}. Exception {}.".format(url, e) 
     sys.exit(-1)
 
 if __name__ == "__main__":
   main()
-
-
-
-
