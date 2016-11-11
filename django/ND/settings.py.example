@@ -221,9 +221,9 @@ EMAIL_USE_TLS = False
 # CORS Settings
 CORS_URLS_ALLOW_ALL_REGEX = (r'^/(sd|ca|ocpca)/.*$', )
 CORS_ORIGIN_ALLOW_ALL = True
-CORS_ALLOW_METHODS = {
-  'GET'
-}
+CORS_ALLOW_METHODS = (
+  'GET
+)
 
 # Redis Settings
 # For test purposes both the INDEX and DATA instances are the same. For deployment purposes these can be different
