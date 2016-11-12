@@ -222,7 +222,7 @@ EMAIL_USE_TLS = False
 CORS_URLS_ALLOW_ALL_REGEX = (r'^/(sd|ca|ocpca)/.*$', )
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_METHODS = (
-  'GET
+  'GET'
 )
 
 # Redis Settings
