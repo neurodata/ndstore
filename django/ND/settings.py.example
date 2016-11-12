@@ -241,7 +241,7 @@ REDIS_DATA_DB = 0
 
 # Amazon Settings
 # REGION_NAME = 'us-east-1'
-# S3_CUBOID_BUCKET = 'neurodata-cuboid-store'
+S3_CUBOID_BUCKET = 'neurodata-cuboid-store'
 # S3_TILE_BUCKET = 'neurodata-tile-store'
 # DYNAMO_CUBOIDINDEX_TABLE = 's3indexdb'
 # DYNAMO_TILEINDEX_TABLE = 'tileindexdb'
