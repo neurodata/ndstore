@@ -24,7 +24,7 @@ django-cors-middleware
 # Key value engines
 boto3
 mysql-python
-cassandra-driver
+# cassandra-driver
 riak
 redis
 hiredis

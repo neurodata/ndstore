@@ -276,7 +276,9 @@ def buildImageStack(proj, ch, res=None):
               cube.zeros()
 
               cube.data = newdata
-              if ch.channel_type not in TIMESERIES_CHANNELS:
-                db.putCube(ch, zidx, cur_res, cube, update=True)
-              else:
-                db.putTimeCube(ch, zidx, ts, cur_res, cube, update=False)
+              # KL TODO test this
+              db.putCube(ch, zidx, cur_res, cube, timestamp=ts, update=True)
+              # if ch.channel_type not in TIMESERIES_CHANNELS:
+                # db.putCube(ch, zidx, cur_res, cube, update=True)
+              # else:
+                # db.putTimeCube(ch, zidx, ts, cur_res, cube, update=False)
