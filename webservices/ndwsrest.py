@@ -1582,7 +1582,7 @@ def getNIFTI ( webargs ):
 
 def putNIFTI ( webargs, postdata ):
   """Put a NIFTI object as an image"""
-  
+
   [token, channel, optionsargs] = webargs.split('/',2)
   proj = NDProject.fromTokenName(token)
   with closing (SpatialDB(proj)) as db:
@@ -1611,7 +1611,7 @@ def putNIFTI ( webargs, postdata ):
         tmpfile.write ( postdata )
         tmpfile.seek(0)
         # ingest the nifti file
-        ingestNIFTI ( tmpfile.name, ch, db, proj, channel=channel )
+        ingestNIFTI ( tmpfile.name, ch, db, proj )
 
 # def getSWC ( webargs ):
   # """Return an SWC object generated from Skeletons/Nodes"""
