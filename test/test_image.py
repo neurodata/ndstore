@@ -19,9 +19,8 @@ import random
 import numpy as np
 from PIL import Image
 from StringIO import StringIO
-
 import makeunitdb
-from ndtype import IMAGE, UINT8, UINT16
+from ndlib.ndtype import IMAGE, UINT8, UINT16
 from params import Params
 from postmethods import postNPZ, getNPZ, getHDF5, postHDF5, getURL, postBlosc, getBlosc
 import kvengine_to_test
@@ -62,12 +61,12 @@ p.voxel = [4.0,4.0,3.0]
 class Test_Image_Slice:
 
   def setup_class(self):
-
+    """Setup class parameters"""
     makeunitdb.createTestDB(p.token, channel_list=p.channels, channel_type=p.channel_type, channel_datatype=p.datatype)
 
   def teardown_class(self):
+    """Cleanup class parameters"""
     makeunitdb.deleteTestDB(p.token)
-
 
   def test_xy (self):
     """Test the xy slice cutout"""
@@ -136,6 +135,7 @@ class Test_Image_Simple_Catmaid:
     # check that the return matches
     assert ( np.array_equal(voxarray, image_data) )
     
+    # xy/z/y_x_res
     url = "http://{}/catmaid/{}/{}/xy/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[4], p.args[2]/512, p.args[0]/512, p.resolution)
     f = getURL (url)
 
@@ -154,7 +154,8 @@ class Test_Image_Simple_Catmaid:
     # check that the return matches
     assert ( np.array_equal(voxarray, image_data) )
 
-    url = "http://{}/catmaid/{}/{}/yz/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[4]/512, p.args[2]/512, p.args[0], p.resolution)
+    # yz/x/z_y_res
+    url = "http://{}/catmaid/{}/{}/yz/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[0], p.args[4]/512, p.args[2]/512, p.resolution)
     f = getURL (url)
 
     scale_range = 512*p.voxel[2]/p.voxel[1]
@@ -173,7 +174,8 @@ class Test_Image_Simple_Catmaid:
     # check that the return matches
     assert ( np.array_equal(voxarray, image_data) )
 
-    url = "http://{}/catmaid/{}/{}/xz/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[4]/512, p.args[2], p.args[0]/512, p.resolution)
+    # xz/y/z_x_res
+    url = "http://{}/catmaid/{}/{}/xz/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[2], p.args[4]/512, p.args[0]/512, p.resolution)
     f = getURL (url)
 
     scale_range = 512*p.voxel[2]/p.voxel[0]
@@ -252,7 +254,7 @@ class Test_Image_Window:
     url = "http://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
     f = getURL (url)
 
-    from windowcutout import windowCutout
+    from ndlib.windowcutout import windowCutout
     image_data = windowCutout(image_data, p.window).astype(np.uint8)
     slice_data = np.asarray ( Image.open(StringIO(f.read())) )
     assert ( np.array_equal(slice_data,image_data[0][0]) )
@@ -268,7 +270,7 @@ class Test_Image_Window:
     url = "http://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/window/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], *p.window)
     f = getURL (url)
 
-    from windowcutout import windowCutout
+    from ndlib.windowcutout import windowCutout
     image_data = windowCutout(image_data, p.window).astype(np.uint8)
     slice_data = np.asarray ( Image.open(StringIO(f.read())) )
     assert ( np.array_equal(slice_data,image_data[0][0]) )

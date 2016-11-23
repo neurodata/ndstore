@@ -24,9 +24,10 @@ django-cors-middleware
 # Key value engines
 boto3
 mysql-python
-cassandra-driver
+# cassandra-driver
 riak
 redis
+hiredis
 #
 # Imaging and packaging libraries
 pillow
@@ -39,6 +40,7 @@ jsonschema
 json-spec
 #
 # Misc packages
+celery==3.1.23
 pytest
 posix-ipc
 networkx
@@ -46,3 +48,4 @@ requests
 anyjson
 amqp==1.4.9
 pylibmc
+toolz

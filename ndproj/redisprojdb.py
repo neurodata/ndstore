@@ -13,23 +13,21 @@
 # limitations under the License.
 
 import redis
-
-from ndproject import NDProject
-from ndchannel import NDChannel
-
-from ndwserror import NDWSError
+from ndproj.ndproject import NDProject
+from ndproj.ndchannel import NDChannel
+from webservices.ndwserror import NDWSError
 import logging
 logger=logging.getLogger("neurodata")
 
 class RedisProjectDB:
   """Database for the projects"""
 
-  def __init__(self, project_name):
+  def __init__(self, pr):
     """Create the database connection"""
-    self.pr = NDProject(project_name)
+    self.pr = pr
     # Connect to the redis cluster
     try:
-      self.client = redis.StrictRedis(host=self.pr.getDBHost(), port=6379, db=0)
+      self.client = redis.StrictRedis(host=self.pr.host, port=6379, db=0)
       self.pipe = self.client.pipeline(transaction=False)
     except redis.ConnectionError as e:
       logger.error("Cannot connect to Redis server. {}".format(e))
@@ -62,15 +60,15 @@ class RedisProjectDB:
     
     # KL TODO Is this redundant?
     # project pattern to fetch all the keys with project_name
-    project_pattern = "{}_*".format(self.pr.getProjectName())
+    project_pattern = "{}_*".format(self.pr.project_name)
     try:
       project_keys = self.client.keys(project_pattern)
       # delete all the keys with the pattern
       if project_keys:
         self.client.delete(*project_keys)
     except Exception as e:
-      logger.error("Error in deleting Redis project {}. {}".format(self.pr.getProjectName(), e))
-      raise NDWSError("Error in deleting Redis project {}. {}".format(self.pr.getProjectName(), e))
+      logger.error("Error in deleting Redis project {}. {}".format(self.pr.project_name, e))
+      raise NDWSError("Error in deleting Redis project {}. {}".format(self.pr.project_name, e))
 
 
   def deleteNDChannel(self, channel_name):
@@ -78,7 +76,7 @@ class RedisProjectDB:
     
     # KL TODO Maybe do this as a transaction?
     # channel pattern to fetch all the keys with project_name_channel_name
-    channel_pattern = "{}_{}_*".format(self.pr.getProjectName(), channel_name)
+    channel_pattern = "{}_{}_*".format(self.pr.project_name, channel_name)
     try:
       channel_keys = self.client.keys(channel_pattern)
       # delete all the keys with the pattern

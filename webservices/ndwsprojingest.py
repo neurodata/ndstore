@@ -15,27 +15,22 @@
 import re
 import urllib2
 import json
-import requests
-import jsonschema
-
 import django
 django.setup()
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseBadRequest
-
-import ndproj
-from ndwsingest import IngestData
-from ndschema import PROJECT_SCHEMA, DATASET_SCHEMA, CHANNEL_SCHEMA
-from ndtype import READONLY_FALSE, REDIS, S3_TRUE
+from ndproj.ndprojdb import NDProjectsDB
+from webservices.ndwsingest import IngestData
+# from ndschema import PROJECT_SCHEMA, DATASET_SCHEMA, CHANNEL_SCHEMA
+from ndlib.ndtype import READONLY_FALSE, REDIS, S3_TRUE
 from nduser.models import Project
 from nduser.models import Dataset
 from nduser.models import Token
 from nduser.models import Channel
 from nduser.models import User
-
-from ndwserror import NDWSError
+from webservices.ndwserror import NDWSError
 import logging
-logger=logging.getLogger('neurodata')
+logger = logging.getLogger('neurodata')
 
 def autoIngest(webargs, post_data):
   """Create a project using a JSON file"""
@@ -137,7 +132,7 @@ def autoIngest(webargs, post_data):
     else:
       pr.save()
       try:
-        pd = ndproj.NDProjectsDB.getProjDB(pr)
+        pd = NDProjectsDB.getProjDB(pr)
         pd.newNDProject()
         PROJECT_CREATED = True
       except Exception, e:
@@ -165,7 +160,7 @@ def autoIngest(webargs, post_data):
         # Maintain a list of channel objects created during this iteration and delete all even if one fails
         channel_object_list.append(ch)
         try:
-          pd = ndproj.NDProjectsDB.getProjDB(pr)
+          pd = NDProjectsDB.getProjDB(pr)
           pd.newNDChannel(ch.channel_name)
           CHANNEL_CREATED = True
         except Exception, e:
@@ -188,14 +183,16 @@ def autoIngest(webargs, post_data):
       if data_url.endswith('/'):
         # removing the trailing slash if there exists one
         data_url = data_url[:-1]
-
-      from spdb.tasks import ingest
       
-      # ingest(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
+      # calling celery ingest task
+      from spdb.tasks import ingest
+      ingest(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
       # ingest.delay(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
-      from uploadworker import UploadWorker
-      up = UploadWorker(tk.token_name, ch.channel_name, ch.resolution, file_type)
-      up.populateQueue()
+      
+      # calling ndworker
+      # from ndworker.ndworker import NDWorker
+      # worker = NDWorker(tk.token_name, ch.channel_name, ch.resolution)
+      # queue_name = worker.populateQueue()
     
     # Posting to LIMS system
     postMetadataDict(metadata_dict, pr.project_name)
@@ -206,17 +203,19 @@ def autoIngest(webargs, post_data):
       pd
     except NameError:
       if pr is not None:
-        pd = ndproj.NDProjectsDB.getProjDB(pr.project_name)
+        pd = NDProjectsDB.getProjDB(pr.project_name)
       if PROJECT_CREATED:
         pd.deleteNDProject()
     logger.error("Error saving models. There was an error in the information posted")
     return HttpResponseBadRequest(json.dumps("FAILED. There was an error in the information you posted."), content_type="application/json")
 
   return HttpResponse(json.dumps("SUCCESS. The ingest process has now started."), content_type="application/json")
+  # return_dict = {'queue_name' : queue_name}
+  return HttpResponse(json.dumps(return_dict), content_type="application/json")
 
 def createChannel(webargs, post_data):
   """Create a list of channels using a JSON file"""
-
+  
   # Get the token and load the project
   try:
     m = re.match("(\w+)/createChannel/$", webargs)
@@ -256,7 +255,7 @@ def createChannel(webargs, post_data):
       ch.save()
       
       # Create channel database using the ndproj interface
-      pd = ndproj.NDProjectsDB.getProjDB(pr.project_name)
+      pd = NDProjectsDB.getProjDB(pr)
       pd.newNDChannel(ch.channel_name)
   except Exception, e:
     logger.error("Error saving models")
@@ -297,7 +296,7 @@ def deleteChannel(webargs, post_data):
         # Checking if channel is readonly or not
         if ch.readonly == READONLY_FALSE:
           # delete channel table using the ndproj interface
-          pd = ndproj.NDProjectsDB().getProjDB(pr.project_name)
+          pd = NDProjectsDB().getProjDB(pr)
           pd.deleteNDChannel(ch.channel_name)
           ch.delete()
     return HttpResponse("Success. Channels deleted.")
@@ -315,7 +314,7 @@ def postMetadataDict(metadata_dict, project_name):
     req.add_header('Content-Type', 'application/json')
     response = urllib2.urlopen(req)
   except urllib2.URLError, e:
-    print "Failed URL {}".format(url)
+    logger.error("Failed URL {}".format(url))
     pass
 
 
@@ -329,8 +328,8 @@ def extractDatasetDict(ds_dict):
     imagesize = [ds.ximagesize, ds.yimagesize, ds.zimagesize] = ds_dict['imagesize']
     [ds.xvoxelres, ds.yvoxelres, ds.zvoxelres] = ds_dict['voxelres']
   except Exception, e:
-    print "Missing required fields"
-    raise
+    logger.error("Missing required fields")
+    raise NDWSError("Missing required fields")
 
   if 'offset' in ds_dict:
     [ds.xoffset, ds.yoffset, ds.zoffset] = ds_dict['offset']
@@ -367,8 +366,8 @@ def extractProjectDict(pr_dict):
   try:
     pr.project_name = pr_dict['project_name']
   except Exception, e:
-    print "Missing required fields"
-    raise
+    logger.error("Missing required fields")
+    raise NDWSError("Missing required fields")
 
   if 'token_name' in pr_dict:
     tk.token_name = pr_dict['token_name']
@@ -392,8 +391,8 @@ def extractChannelDict(ch_dict, channel_only=False):
       file_format = ch_dict['file_format']
       file_type = ch_dict['file_type']
   except Exception, e:
-    print "Missing requried fields"
-    raise
+    logger.error("Missing required fields")
+    raise NDWSError("Missing required fields")
     
   if 'exceptions' in ch_dict:
     ch.exceptions = ch_dict['exceptions']
@@ -437,7 +436,7 @@ def postMetadataDict(metadata_dict, project_name):
     req.add_header('Content-Type', 'application/json')
     response = urllib2.urlopen(req)
   except urllib2.URLError, e:
-    print "Failed URL {}".format(url)
+    logger.error("Failed URL {}".format(url))
     pass
 
 
@@ -451,8 +450,8 @@ def extractDatasetDict(ds_dict):
     imagesize = [ds.ximagesize, ds.yimagesize, ds.zimagesize] = ds_dict['imagesize']
     [ds.xvoxelres, ds.yvoxelres, ds.zvoxelres] = ds_dict['voxelres']
   except Exception, e:
-    print "Missing required fields"
-    raise
+    logger.error("Missing required fields")
+    raise NDWSError("Missing required fields")
 
   if 'offset' in ds_dict:
     [ds.xoffset, ds.yoffset, ds.zoffset] = ds_dict['offset']
@@ -479,27 +478,6 @@ def computeScalingLevels(imagesize):
     scalinglevels += 1
 
   return scalinglevels
-
-#def extractProjectDict(pr_dict):
-  #"""Generate a project object from the JSON flle"""
-
-  #pr = Project()
-  #tk = Token()
-
-  #try:
-    #pr.project_name = pr_dict['project_name']
-  #except Exception, e:
-    #print "Missing required fields"
-    #raise
-
-  #if 'token_name' in pr_dict:
-    #tk.token_name = pr_dict['token_name']
-  #else:
-    #tk.token_name = pr_dict['project_name']
-  #if 'public' in pr_dict:
-    #tk.token_name = pr_dict['public']
-  #return pr, tk
-
 
 def createJson(dataset, project, channel_list, metadata={}, channel_only=False):
   """Genarate ND json object"""

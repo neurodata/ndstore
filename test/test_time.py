@@ -12,33 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import urllib2
-import h5py
-import tempfile
 import random
 import blosc
 import numpy as np
 from PIL import Image
 from StringIO import StringIO
-
 import makeunitdb
-from ndtype import TIMESERIES, UINT8, UINT16
+from ndlib.ndtype import TIMESERIES, UINT8, UINT16
 from params import Params
 from postmethods import postNPZ, getNPZ, getHDF5, postHDF5, getURL
-import kvengine_to_test
 import site_to_test
 SITE_HOST = site_to_test.site
 
 
-# Test Image
+# Test Time
 
-# Test_Image_Slice
+# Test_Time_Slice
 # 1 - test_xy
 # 2 - test_yz
 # 3 - test_xz
 # 4 - test_xy_incorrect
 
-# Test_Image_Post
+# Test_Time_Post
 # 1 - test_npz 
 # 2 - test_npz_incorrect_region
 # 3 - test_npz_incorrect_datatype
@@ -58,8 +53,6 @@ p.channel_type = TIMESERIES
 p.datatype = UINT8
 p.window = [0,500]
 p.voxel = [4.0,4.0,3.0]
-
-#p.args = (3000,3100,4000,4100,500,510)
 
 
 class Test_Time_Slice:
@@ -241,6 +234,7 @@ class Test_Time_Simple_Catmaid:
     # check that the return matches
     assert ( np.array_equal(voxarray, image_data) )
     
+    # xy/z/y_z_res
     url = "http://{}/catmaid/{}/{}/xy/{}/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[6], p.args[4], p.args[2]/512, p.args[0]/512, p.resolution)
     f = getURL (url)
 
@@ -259,7 +253,8 @@ class Test_Time_Simple_Catmaid:
     # check that the return matches
     assert ( np.array_equal(voxarray, image_data) )
 
-    url = "http://{}/catmaid/{}/{}/yz/{}/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[6], p.args[4]/512, p.args[2]/512, p.args[0], p.resolution)
+    # yz/x/z_y_res
+    url = "http://{}/catmaid/{}/{}/yz/{}/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[6], p.args[0], p.args[4]/512, p.args[2]/512, p.resolution)
     f = getURL (url)
 
     scale_range = 512*p.voxel[2]/p.voxel[1]
@@ -277,8 +272,9 @@ class Test_Time_Simple_Catmaid:
     voxarray = getNPZ(p, time=True)
     # check that the return matches
     assert ( np.array_equal(voxarray, image_data) )
-
-    url = "http://{}/catmaid/{}/{}/xz/{}/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[6], p.args[4]/512, p.args[2], p.args[0]/512, p.resolution)
+    
+    # xz/y/z_x_res
+    url = "http://{}/catmaid/{}/{}/xz/{}/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[6], p.args[2], p.args[4]/512, p.args[0]/512, p.resolution)
     f = getURL (url)
 
     scale_range = 512*p.voxel[2]/p.voxel[0]
@@ -305,7 +301,7 @@ class Test_Time_Window:
     url = "http://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/{}".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[6])
     f = getURL (url)
 
-    from windowcutout import windowCutout
+    from ndlib.windowcutout import windowCutout
     image_data = windowCutout(image_data, p.window).astype(np.uint8)
     slice_data = np.asarray ( Image.open(StringIO(f.read())) )
     assert ( np.array_equal(slice_data, image_data[0][0][0]) )
@@ -321,7 +317,7 @@ class Test_Time_Window:
     url = "http://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/{}/window/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[6], *p.window)
     f = getURL (url)
 
-    from windowcutout import windowCutout
+    from ndlib.windowcutout import windowCutout
     image_data = windowCutout(image_data, p.window).astype(np.uint8)
     slice_data = np.asarray ( Image.open(StringIO(f.read())) )
     assert ( np.array_equal(slice_data, image_data[0][0][0]) )

@@ -12,21 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
 import re
 import django.http
-from django.views.decorators.cache import cache_control
-import cStringIO
-
 import mcfccatmaid
 import simplecatmaid
 import maxprojcatmaid
-
-# Errors we are going to catch
-from ndwserror import NDWSError
+from webservices.ndwserror import NDWSError
 
 import logging
-logger=logging.getLogger("neurodata")
+logger = logging.getLogger("neurodata")
 
 def filterview (request, webargs):
   """filtered ids false color"""
@@ -68,7 +62,7 @@ def mcfccatmaidview (request, webargs):
   except NDWSError, e:
     return django.http.HttpResponseNotFound(e)
   except Exception, e:
-    logger.exception("Unknown exception in mcfccatmaidview: {}".format(e) )
+    logger.exception("Unknown exception in mcfccatmaidview: {}".format(e))
     raise
 
 def simplecatmaidview (request, webargs):
@@ -82,7 +76,7 @@ def simplecatmaidview (request, webargs):
   except NDWSError, e:
     return django.http.HttpResponseNotFound(e)
   except Exception, e:
-    logger.exception("Unknown exception in simplecatmaidview: {}".format(e) )
+    logger.exception("Unknown exception in simplecatmaidview: {}".format(e))
     raise
 
 def simplevikingview (request, webargs):

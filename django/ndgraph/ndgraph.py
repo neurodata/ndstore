@@ -17,15 +17,10 @@ import networkx as nx
 from contextlib import closing
 from operator import add, sub
 import tempfile
-
-import ndproject
-import ndproj
-import ramondb
-import annotation
-import ndchannel
-import spatialdb
-
-from ndwserror import NDWSError
+from ndproj.ndproject import NDProject
+from ndramon import annotation, ramondb
+from spdb.spatialdb import SpatialDB
+from webservices.ndwserror import NDWSError
 import logging
 logger = logging.getLogger("neurodata")
 
@@ -34,7 +29,7 @@ def getAnnoIds(proj, ch, resolution, xmin, xmax, ymin, ymax, zmin, zmax):
 
   mins = (xmin, ymin, zmin)
   maxs = (xmax, ymax, zmax)
-  offset = proj.datasetcfg.offset[resolution]
+  offset = proj.datasetcfg.get_offset(resolution)
   # Add a comment
   corner = map(max, zip(*[mins, map(sub, mins, offset)]))
   dim = map(sub, maxs, mins)
@@ -43,7 +38,7 @@ def getAnnoIds(proj, ch, resolution, xmin, xmax, ymin, ymax, zmin, zmax):
     logger.error("Illegal cutout corner={}, dim={}".format(corner, dim))
     raise NDWSError("Illegal cutout corner={}, dim={}".format(corner, dim))
 
-  with closing (spatialdb.SpatialDB(proj)) as sdb:
+  with closing (SpatialDB(proj)) as sdb:
     cutout = sdb.cutout(ch, corner, dim, resolution)
 
   if cutout.isNotZeros():
@@ -61,13 +56,11 @@ def genGraphRAMON(token_name, channel, graphType="graphml", xmin=0, xmax=0, ymin
   
   # converting all parameters to integers
   [xmin, xmax, ymin, ymax, zmin, zmax] = [int(i) for i in [xmin, xmax, ymin, ymax, zmin, zmax]]
-
-  with closing (ndproj.NDProjectsDB()) as fproj:
-    proj = fproj.loadToken(token_name)
+  proj = NDProject.fromTokenName(token_name)
 
   with closing (ramondb.RamonDB(proj)) as db:
     ch = proj.getChannelObj(channel)
-    resolution = ch.getResolution()
+    resolution = ch.resolution
 
     cubeRestrictions = xmin + xmax + ymin + ymax + zmin + zmax
     matrix = []
@@ -77,7 +70,7 @@ def genGraphRAMON(token_name, channel, graphType="graphml", xmin=0, xmax=0, ymin
       idslist = getAnnoIds(proj, ch, resolution, xmin, xmax, ymin, ymax, zmin, zmax)
     else:
       # entire cube
-      [xmax, ymax, zmax] = proj.datasetcfg.imagesz[resolution]
+      [xmax, ymax, zmax] = proj.datasetcfg.get_imagesize(resolution)
       idslist = getAnnoIds(proj, ch, resolution, xmin, xmax, ymin, ymax, zmin, zmax)
 
     if idslist.size == 0:

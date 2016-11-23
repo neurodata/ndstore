@@ -14,9 +14,6 @@
 
 import urllib2
 import cStringIO
-import sys
-import os
-import re
 import tempfile
 import h5py
 import random 
@@ -24,11 +21,7 @@ import csv
 import numpy as np
 import zlib
 import pytest
-from contextlib import closing
-
-from pytesthelpers import makeAnno
 import makeunitdb
-import kvengine_to_test
 import site_to_test
 SITE_HOST = site_to_test.site
 
@@ -381,11 +374,11 @@ class TestRW:
   def setup_class(self):
     """Create the unittest database"""
 
-    makeunitdb.createTestDB('unittest_rw')
+    makeunitdb.createTestDB('unittest')
 
   def teardown_class (self):
     """Destroy the unittest database"""
-    makeunitdb.deleteTestDB('unittest_rw')
+    makeunitdb.deleteTestDB('unittest')
 
 
   def test_raw(self):
@@ -395,12 +388,12 @@ class TestRW:
     wp = WriteParms()
 
     # read
-    rp.token = "unittest_rw"
+    rp.token = "unittest"
     rp.baseurl = SITE_HOST
     rp.resolution = 0
 
     # write
-    wp.token = "unittest_rw"
+    wp.token = "unittest"
     wp.baseurl = SITE_HOST
     wp.resolution = 0
 
@@ -476,12 +469,12 @@ class TestRW:
     wp = WriteParms()
 
     # read
-    rp.token = "unittest_rw"
+    rp.token = "unittest"
     rp.baseurl = SITE_HOST
     rp.resolution = 0
 
     # write
-    wp.token = "unittest_rw"
+    wp.token = "unittest"
     wp.baseurl = SITE_HOST
     wp.resolution = 0
 
@@ -544,12 +537,12 @@ class TestRW:
 
     # variables for all tests
     # read
-    rp.token = "unittest_rw"
+    rp.token = "unittest"
     rp.baseurl = SITE_HOST
     rp.resolution = 0
 
     # write
-    wp.token = "unittest_rw"
+    wp.token = "unittest"
     wp.baseurl = SITE_HOST
     wp.resolution = 0
 
@@ -601,12 +594,12 @@ class TestRW:
 
     # variables for all tests
     # read
-    rp.token = "unittest_rw"
+    rp.token = "unittest"
     rp.baseurl = SITE_HOST
     rp.resolution = 1
 
     # write
-    wp.token = "unittest_rw"
+    wp.token = "unittest"
     wp.baseurl = SITE_HOST
     wp.resolution = 1
 
@@ -661,12 +654,12 @@ class TestRW:
 
     # variables for all tests
     # read
-    rp.token = "unittest_rw"
+    rp.token = "unittest"
     rp.baseurl = SITE_HOST
     rp.resolution = 0
 
     # write
-    wp.token = "unittest_rw"
+    wp.token = "unittest"
     wp.baseurl = SITE_HOST
     wp.resolution = 0
 
@@ -764,12 +757,12 @@ class TestRW:
     wp = WriteParms()
 
     # read
-    rp.token = "unittest_rw"
+    rp.token = "unittest"
     rp.baseurl = SITE_HOST
     rp.resolution = 0
    
     # write
-    wp.token = "unittest_rw"
+    wp.token = "unittest"
     wp.baseurl = SITE_HOST
     wp.resolution = 0
 

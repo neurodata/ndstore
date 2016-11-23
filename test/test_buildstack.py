@@ -17,7 +17,6 @@ import h5py
 import tempfile
 import random
 import urllib2
-
 import makeunitdb
 from params import Params
 import site_to_test

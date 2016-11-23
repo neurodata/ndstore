@@ -12,24 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import django
 import re
 import numpy as np
 import cStringIO
-import math
 from contextlib import closing
 from PIL import Image
-
-import restargs
-import spatialdb
-import ndproj
-import ndwsrest
-import mcfc
-
-
-from ndwserror import NDWSError
+from spdb.spatialdb import SpatialDB
+from ndproj.ndproject import NDProject
+from webservices import ndwsrest
+from webservices.ndwserror import NDWSError
 import logging
-logger=logging.getLogger("neurodata")
+logger = logging.getLogger("neurodata")
 
 class MaxProjCatmaid:
   """Prefetch CATMAID tiles into MndcheDB"""
@@ -82,17 +75,13 @@ class MaxProjCatmaid:
       width = int(widthstr)
       
     except Exception, e:
-      logger.warning("Incorrect arguments for getTile {}. {}".format(webargs, e))
+      logger.error("Incorrect arguments for getTile {}. {}".format(webargs, e))
       raise NDWSError("Incorrect arguments for getTile {}. {}".format(webargs, e))
 
-    with closing ( ndproj.NDProjectsDB() ) as projdb:
+    self.proj = NDProject.fromTokenName(self.token)
+    ch = self.proj.getChannelObj(channel)
 
-      self.proj = projdb.loadToken ( self.token )
-
-      # get a channel
-      ch = self.proj.getChannelObj(channel)
-
-    with closing ( spatialdb.SpatialDB(self.proj) ) as self.db:
+    with closing (SpatialDB(self.proj)) as self.db:
       
       tile = None
       
@@ -100,12 +89,12 @@ class MaxProjCatmaid:
 
         if slice_type == 'xy':
           img = self.getTileXY(ch, res, xtile, ytile, ztile, width)
-#        elif slice_type == 'xz':
-#          img = self.getTileXZ(res, xtile, ytile, ztile, width)
-#        elif slice_type == 'yz':
-#          img = self.getTileYZ(res, xtile, ytile, ztile, width)
+        # elif slice_type == 'xz':
+          # img = self.getTileXZ(res, xtile, ytile, ztile, width)
+        # elif slice_type == 'yz':
+          # img = self.getTileYZ(res, xtile, ytile, ztile, width)
         else:
-          logger.warning ("Requested illegal image plane {}. Should be xy, xz, yz.".format(slice_type))
+          logger.error ("Requested illegal image plane {}. Should be xy, xz, yz.".format(slice_type))
           raise NDWSError ("Requested illegal image plane {}. Should be xy, xz, yz.".format(slice_type))
         
         fobj = cStringIO.StringIO ( )

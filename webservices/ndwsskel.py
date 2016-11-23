@@ -13,12 +13,9 @@
 # limitations under the License.
 
 import re
-
-import annotation
-
-from ndtype import ISOTROPIC
-
-from ndwserror import NDWSError
+from ndramon import annotation
+from ndlib.ndtype import ISOTROPIC
+from webservices.ndwserror import NDWSError
 import logging
 logger=logging.getLogger("neurodata")
 

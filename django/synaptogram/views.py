@@ -20,14 +20,11 @@ import cStringIO
 import django.http
 from PIL import Image
 import base64
-
-import ndproj
-import ndlib
-import ndwsrest
-import spatialdb
-
-from ndtype import DTYPE_uint8, DTYPE_uint16, ANNOTATION_CHANNELS 
-from windowcutout import windowCutout 
+from ndproj.ndproject import NDProject
+from spdb.spatialdb import SpatialDB
+from ndlib.ndctypelib import recolor_ctype
+from ndlib.ndtype import DTYPE_uint8, DTYPE_uint16, ANNOTATION_CHANNELS 
+from ndlib.windowcutout import windowCutout 
 
 import json
 
@@ -55,16 +52,14 @@ def synaptogram_view (request, webargs):
 
     channels = chanstr.split(',')
 
-    # pattern for using contexts to close databases
     # get the project 
-    with closing ( ndproj.NDProjectsDB() ) as projdb:
-      proj = projdb.loadToken ( token )
-
+    proj = NDProject.fromTokenName(token)
+    
     # and the database and then call the db function
-    with closing ( spatialdb.SpatialDB(proj) ) as db:
+    with closing (SpatialDB(proj)) as db:
 
       # convert to cutout coordinates
-      (xoffset,yoffset,zoffset) = proj.datasetcfg.getOffset()[ resolution ]
+      (xoffset, yoffset, zoffset) = proj.datasetcfg.get_offset(resolution)
       (xlow, xhigh) = (xlow-xoffset, xhigh-xoffset)
       (ylow, yhigh) = (ylow-yoffset, yhigh-yoffset)
       (zlow, zhigh) = (zlow-zoffset, zhigh-zoffset)
@@ -82,7 +77,7 @@ def synaptogram_view (request, webargs):
           cb = db.cutout ( ch, corner, dim, resolution )
           # apply window for 16 bit projects 
           if ch.getDataType() in DTYPE_uint16:
-            [startwindow, endwindow] = window_range = ch.getWindowRange()
+            [startwindow, endwindow] = window_range = ch.window_range
             if (endwindow != 0):
               cb.data = np.uint8(windowCutout(cb.data, window_range))
           
@@ -92,7 +87,7 @@ def synaptogram_view (request, webargs):
             if ch.getChannelType() in ANNOTATION_CHANNELS:
               # parse annotation project
               imagemap = np.zeros( [ dim[1], dim[0] ], dtype=np.uint32 )
-              imagemap = ndlib.recolor_ctype( zslice, imagemap )
+              imagemap = recolor_ctype( zslice, imagemap )
               img = Image.frombuffer( 'RGBA', (dim[0],dim[1]), imagemap, 'raw', 'RGBA', 0, 1 )
 
             else: 
@@ -191,5 +186,3 @@ def synaptogram_view_old (request, webargs):
 
   except Exception, e:
     raise
-#    return django.http.HttpResponseNotFound(e)
-

@@ -15,32 +15,17 @@
 #RBTODO --- refactor other fields like ROI children
 #  e.g. Node children, Skeleton nodes, other TODOs in file
 
-import StringIO
-import numpy as np
-import os
-import cStringIO
 import re
 import json
-import blosc
-import MySQLdb
 from contextlib import closing
-from operator import sub, add
-from libtiff import TIFFfile, TIFFimage
-
-import spatialdb
-import ramondb
-import ndproj
-import ndchannel
-import jsonann 
-import jsonprojinfo
-import annotation
-import ndlib
-import ndwsskel
-from ndtype import TIMESERIES_CHANNELS, IMAGE_CHANNELS, ANNOTATION_CHANNELS, NOT_PROPAGATED, UNDER_PROPAGATION, PROPAGATED, ND_dtypetonp, DTYPE_uint8, DTYPE_uint16, DTYPE_uint32, READONLY_TRUE, READONLY_FALSE
-
-from ndwserror import NDWSError
+from spdb.spatialdb import SpatialDB
+from ndramon.ramondb import RamonDB
+from ndproj.ndproject import NDProject
+from ndproj.ndchannel import NDChannel
+from ndramon import jsonann
+from webservices.ndwserror import NDWSError
 import logging
-logger=logging.getLogger("neurodata")
+logger = logging.getLogger("neurodata")
 
 
 """An enumeration for options processing in getAnnotation"""
@@ -75,18 +60,15 @@ def getAnnotation ( webargs ):
 
   [token, channel, otherargs] = webargs.split('/', 2)
 
-  # pattern for using contexts to close databases
   # get the project 
-  with closing ( ndproj.NDProjectsDB() ) as projdb:
-    proj = projdb.loadToken ( token )
-
+  proj = NDProject.fromTokenName(token)
+  ch = ndproj.NDChannel(proj, channel)
+  
   # and the ramon database
-  with closing ( ramondb.RamonDB(proj) ) as rdb:
+  with closing ( RamonDB(proj) ) as rdb:
     
     try:
 
-      # Split the URL and get the args
-      ch = ndproj.NDChannel(proj, channel)
       option_args = otherargs.split('/')
 
       annoid = int(option_args[0])
@@ -97,9 +79,9 @@ def getAnnotation ( webargs ):
         if m:
           resolution = int(m.groups()[0])
         else:
-          resolution = ch.getResolution()
+          resolution = ch.resolution
 
-        with closing ( spatialdb.SpatialDB(proj) ) as db:
+        with closing (SpatialDB(proj)) as db:
           bbcorner, bbdim = db.getBoundingBox(ch, [annoid], resolution)
           annobj[annoid]['bbcorner'] = bbcorner
           annobj[annoid]['bbdim'] = bbdim
@@ -118,17 +100,14 @@ def query ( webargs ):
 
   [token, channel, otherargs] = webargs.split('/', 2)
 
-  # pattern for using contexts to close databases
   # get the project 
-  with closing ( ndproj.NDProjectsDB() ) as projdb:
-    proj = projdb.loadToken ( token )
+  proj = NDProject.fromTokenName(token)
+  # get the channel
+  ch = NDChannel.fromName(proj, channel)
 
   # and the ramon database 
-  with closing ( ramondb.RamonDB(proj)) as rdb:
+  with closing ( RamonDB(proj)) as rdb:
 
-    # get the channel
-    ch = ndproj.NDChannel(proj, channel)
-    
     m = re.search ( "query/([\w]+)/([\w]+)", otherargs )  
     if m:
       qrykey = m.group(1)
@@ -138,7 +117,6 @@ def query ( webargs ):
       raise NDWSError ("Invalid key/value query format")
 
     ids = rdb.getKVQuery ( ch, qrykey, qryvalue )
-
     return json.dumps ( ids.tolist() )
 
 def topkeys ( webargs ):
@@ -146,13 +124,13 @@ def topkeys ( webargs ):
 
   [token, channel, otherargs] = webargs.split('/', 2)
 
-  # pattern for using contexts to close databases
   # get the project 
-  with closing ( ndproj.NDProjectsDB() ) as projdb:
-    proj = projdb.loadToken ( token )
+  proj = NDProject.fromTokenName(token)
+  # get the channel
+  ch = ndproj.NDChannel(proj, channel)
 
   # and the ramon database 
-  with closing ( ramondb.RamonDB(proj)) as rdb:
+  with closing (RamonDB(proj)) as rdb:
     m = re.search ( "topkeys/(\d+)/(?:type/(\d+)/)?", otherargs )  
     # if we have a count clause use
     if m:
@@ -165,10 +143,5 @@ def topkeys ( webargs ):
       count = 10
       anntype = None
 
-    # get the channel
-    ch = ndproj.NDChannel(proj, channel)
-
     topkeys = rdb.getTopKeys ( ch, count, anntype )
-
     return json.dumps ( topkeys )
-
