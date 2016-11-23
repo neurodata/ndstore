@@ -70,7 +70,7 @@ def queryNIFTI ( tmpfile, ch, db, proj ):
     nh = NDNiftiHeader.fromChannel(ch)
 
     if ch.channel_type in TIMESERIES_CHANNELS:
-      cuboid = db.cutout ( ch, (0,0,0), proj.datasetcfg.get_imagesize(0), 0, timerange=proj.datasetcfg.timerange ) 
+      cuboid = db.cutout ( ch, (0,0,0), proj.datasetcfg.get_imagesize(0), 0, timerange=(proj.datasetcfg.timerange[0], proj.datasetcfg.timerange[1]+1)) 
     else:
       cuboid = db.cutout ( ch, (0,0,0), proj.datasetcfg.get_imagesize(0), 0 ) 
 
