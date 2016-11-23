@@ -25,7 +25,6 @@ logger = logging.getLogger("neurodata")
 
 def ingestNIFTI ( niftifname, ch, db, proj ):
   """Ingest the nifti file into a database. No cutout arguments. Must be an entire channel."""     
-
   # load the nifti data
   nifti_img = nibabel.load(niftifname)
   nifti_data = np.array(nifti_img.get_data())
@@ -35,9 +34,10 @@ def ingestNIFTI ( niftifname, ch, db, proj ):
     logger.warning("Attempt to write to read only channel {} in project {}".format(ch.channel_name, proj.project_name))
     raise NDWSError("Attempt to write to read only channel {} in project {}".format(ch.channel_name, proj.project_name))
 
-  if not nifti_data.dtype == ND_dtypetonp[ch.channel_datatype]:
-    logger.error("Wrong datatype in post")
-    raise NDWSError("Wrong datatype in post")
+ # RBTODO this check doesn't work.  Need to make more flexible among signed and unsigned.
+ # if not nifti_data.dtype == ND_dtypetonp[ch.channel_datatype]:
+ #   logger.error("Wrong datatype in post")
+ #   raise NDWSError("Wrong datatype in post")
   
   # check that the data is the right shape
   if (len(nifti_data.shape) == 3 and nifti_data.shape != tuple(proj.datasetcfg.get_imagesize(0))) or (len(nifti_data.shape) == 4 and nifti_data.shape != tuple(proj.datasetcfg.get_imagesize(0) + [proj.datasetcfg.timerange[1]-proj.datasetcfg.timerange[0]+1])):
