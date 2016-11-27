@@ -22,6 +22,7 @@ from contextlib import closing
 import argparse
 import csv
 import blosc
+from operator import div
 sys.path.append(os.path.abspath('../django'))
 import ND.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
@@ -240,6 +241,9 @@ class AwsInterface:
     self.resource_interface.createDataset()
     self.resource_interface.createProject()
     self.resource_interface.createToken()
+  
+  def readExistingProject():
+    data = db.cutout(ch, [x*xsupercubedim, y*ysupercubedim, z*zsupercubedim], [xsupercubedim, ysupercubedim, zsupercubedim], cur_res).data
 
   def uploadExistingProject(self, channel_name, resolution, start_values):
     """Upload an existing project to S3"""
@@ -278,10 +282,10 @@ class AwsInterface:
         ylimit = (image_size[1]-1) / (ysupercubedim) + 1
         zlimit = (image_size[2]-1) / (zsupercubedim) + 1
         # [xlimit, ylimit, zlimit] = limit = self.proj.datasetcfg.get_supercube_limit(cur_res)
-        [x_start, y_start, z_start] = start_values
-        for z in range(x_start, zlimit, 1):
+        [x_start, y_start, z_start] = map(div, start_values, supercubedim)
+        for z in range(z_start, zlimit, 1):
           for y in range(y_start, ylimit, 1):
-            for x in range(z_start, xlimit, 1):
+            for x in range(x_start, xlimit, 1):
 
               try:
                 # cutout the data at the current resolution
