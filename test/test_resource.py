@@ -77,7 +77,9 @@ class Test_Resource():
     channel = {
         'channel_name' : p.channels[0],
         'channel_type' : p.channel_type,
-        'channel_datatype' : p.datatype
+        'channel_datatype' : p.datatype,
+        'startwindow' : 0,
+        'endwindow': 500
     }
     response = postJson('http://{}/resource/dataset/{}/project/{}/channel/{}/'.format(SITE_HOST, p.dataset, p.project, p.channels[0]), channel)
     assert(response.status_code == 201)
@@ -134,6 +136,8 @@ class Test_Resource():
     assert(response.json()['channel_name'] == p.channels[0])
     assert(response.json()['channel_type'] == p.channel_type)
     assert(response.json()['channel_datatype'] == p.datatype)
+    assert(response.json()['startwindow'] == 0)
+    assert(response.json()['endwindow'] == 500)
   
   def test_get_channel_error(self):
     response = getJson('http://{}/resource/dataset/{}/project/{}/channel/{}/'.format(SITE_HOST, p.dataset, p.project, 'foo'))

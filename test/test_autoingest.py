@@ -62,7 +62,8 @@ class Test_AutoIngest():
 
     # tesing get
     response = getJSON('http://{}/ingest/{}/'.format(SITE_HOST, job_id))
-    assert('upload_queue' in response)
+    assert(response.status_code == 200)
+    assert('upload_queue' in response.json())
     
     # testing delete
     response = deleteJSON('http://{}/ingest/{}/'.format(SITE_HOST, job_id))
