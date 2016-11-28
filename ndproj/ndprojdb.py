@@ -105,9 +105,9 @@ class NDProjectsDB(object):
     # elif pr.kvengine == DYNAMODB:
       # from dynamoprojdb import DynamoProjectDB
       # return DynamoProjectDB(project_name)
-    # elif pr.kvengine == REDIS:
-      # from redisprojdb import RedisProjectDB
-      # return RedisProjectDB(project_name)
+    elif pr.kvengine == REDIS:
+      from redisprojdb import RedisProjectDB
+      return RedisProjectDB(pr)
     else:
       logging.error ("Unknown KV Engine requested: {}".format(pr.kvengine))
       raise NDWSError ("Unknown KV Engine requested: {}".format(pr.kvengine))

@@ -58,6 +58,7 @@ class NDProject(NDObject):
   @staticmethod
   def public_list():
     projects = Project.objects.filter(public = PUBLIC_TRUE)
+    # return projects
     return [pr.project_name for pr in projects]
 
   @classmethod
@@ -75,8 +76,9 @@ class NDProject(NDObject):
     try:
       pr = Project.objects.get(project_name=project_name)
       return cls(pr)
-    except ObjectDoesNotExist as e:
-      raise
+    except Project.DoesNotExist as e:
+      logger.warning("Project {} does not exist".format(project_name))
+      raise Project.DoesNotExist
   
   @classmethod
   def fromJson(cls, dataset_name, project):
@@ -84,10 +86,11 @@ class NDProject(NDObject):
     pr.dataset_id = dataset_name
     return cls(pr)
 
-  def create(self):
+  def create(self, create_table=True):
     try:
       self.pr.save()
-      self.db.newNDProject()
+      if create_table:
+        self.db.newNDProject()
     except NDWSError as e:
       self.pr.delete()
       raise
@@ -102,6 +105,9 @@ class NDProject(NDObject):
       raise
     except Exception as e:
       raise
+  
+  def serialize(self):
+    return NDObject.serialize(self.pr)
 
   @property
   def project_name(self):
@@ -264,7 +270,8 @@ class NDProject(NDObject):
       chs = Channel.objects.filter(project_id=self.pr)
     else:
       chs = channel_list
-    for ch in chs:
+    for name in chs:
+      ch = Channel.objects.get(project_id=self.pr, channel_name=name)
       yield NDChannel(ch)
 
   def getChannelObj ( self, channel_name='default' ):

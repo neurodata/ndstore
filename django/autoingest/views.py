@@ -19,15 +19,28 @@ from ingestmanager import IngestManager
 
 class IngestView(View):
 
-  def get(self, request, web_args):
-    return NotImplemented
+  def get(self, request, job_id):
+    try:
+      ingest_manager = IngestManager()
+      return HttpResponse(ingest_manager.getIngestJob(job_id), content_type='application/json')
+    except Exception as e:
+      return HttpResponseBadRequest()
 
   def post(self, request):
     try:
       ingest_manager = IngestManager()
-      return HttpResponse(ingest_manager.createIngestJob(request.body), content_type='application/json')
+      if request.user.is_authenticated():
+        return HttpResponse(ingest_manager.createIngestJob(request.user.id, request.body), content_type='application/json')
+      else:
+        user_id = User.objects.get(username='neurodata').id
+        return HttpResponse(ingest_manager.createIngestJob(user_id, request.body), content_type='application/json', status=201)
     except Exception as e:
       return HttpResponseBadRequest()
 
-  def delete(self, request, web_args):
-    return NotImplemented
+  def delete(self, request, job_id):
+    try:
+      ingest_manager = IngestManager()
+      ingest_manager.deleteIngestJob(job_id)
+      return HttpResponse(status=204)
+    except Exception as e:
+      return HttpResponseBadRequest()

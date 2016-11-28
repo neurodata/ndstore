@@ -14,7 +14,8 @@
 
 from django.views.generic import View
 from django.contrib.auth.models import User
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
+from nduser.models import Project
 from ndproj.ndproject import NDProject
 
 class ProjectView(View):
@@ -22,7 +23,9 @@ class ProjectView(View):
   def get(self, request, dataset_name, project_name):
     try:
       pr = NDProject.fromName(project_name)
-      return HttpResponse(NDProject.serialize(pr.pr), content_type='application/json')
+      return HttpResponse(pr.serialize(), content_type='application/json')
+    except Project.DoesNotExist as e:
+      return HttpResponseNotFound()
     except Exception as e:
       return HttpResponseBadRequest()
 
@@ -34,7 +37,7 @@ class ProjectView(View):
       else:
         pr.user_id = User.objects.get(username='neurodata').id
       pr.create()
-      return HttpResponse()
+      return HttpResponse(status=201)
     except Exception as e:
       return HttpResponseBadRequest()
 
@@ -45,6 +48,6 @@ class ProjectView(View):
     try:
       pr = NDProject.fromName(project_name)
       pr.delete()
-      return HttpResponse()
+      return HttpResponse(status=204)
     except Exception as e:
       return HttpResponseBadRequest()

@@ -14,6 +14,7 @@
 
 import math
 from operator import add, sub, mul, div, mod
+from django.http import Http404
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from ndproj.ndobject import NDObject
@@ -135,9 +136,10 @@ class NDDataset(NDObject):
     try:
       ds = Dataset.objects.get(dataset_name = dataset_name)
       return cls(ds)
-    except ObjectDoesNotExist as e:
+    except Dataset.DoesNotExist as e:
       logger.error("Dataset {} does not exist. {}".format(dataset_name, e))
-      raise NDWSError("Dataset {} does not exist".format(dataset_name))
+      raise Dataset.DoesNotExist
+      # raise NDWSError("Dataset {} does not exist".format(dataset_name))
 
   @classmethod
   def fromJson(cls, dataset):
@@ -145,9 +147,20 @@ class NDDataset(NDObject):
     return cls(ds)
   
   @staticmethod
+  def all_list():
+    return Dataset.objects.all()
+
+  @staticmethod
   def public_list():
     datasets  = Dataset.objects.filter(public = PUBLIC_TRUE)
     return [ds.dataset_name for ds in datasets]
+    
+  @staticmethod
+  def user_list(user_id):
+    return Dataset.objects.filter(user_id=user_id)
+  
+  def serialize(self):
+    return NDObject.serialize(self._ds)
 
   @property
   def dataset_name(self):

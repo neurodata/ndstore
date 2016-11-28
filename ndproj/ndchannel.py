@@ -41,19 +41,26 @@ class NDChannel(NDObject):
       pr = pr
       ch = Channel.objects.get(channel_name = channel_name, project=pr.project_name)
       return cls(ch)
-    except ObjectDoesNotExist as e:
+    except Channel.DoesNotExist as e:
       logger.error("Channel {} does not exist. {}".format(channel_name, e))
-      raise NDWSError("Channel {} does not exist".format(channel_name))
+      raise Channel.DoesNotExist
+      # raise NDWSError("Channel {} does not exist".format(channel_name))
 
   @classmethod
   def fromJson(cls, project_name, channel):
     ch = Channel(**cls.deserialize(channel))
     ch.project_id = project_name
     return cls(ch)
+  
+  def save(self):
+    try:
+      self.ch.save()
+    except Exception as e:
+      raise
 
   def create(self):
     try:
-      self.ch.save()
+      self.save()
       self.db.newNDChannel(self.channel_name)
     except NDWSError as e:
       self.ch.delete()
@@ -73,7 +80,14 @@ class NDChannel(NDObject):
       self.ch.save()
     except Exception as e:
       raise
-
+    
+  def serialize(self):
+    return NDObject.serialize(self.ch)
+  
+  @property
+  def channel_id(self):
+    return self.ch.id
+  
   @property
   def channel_name(self):
     return self.ch.channel_name
@@ -155,9 +169,9 @@ class NDChannel(NDObject):
   def exceptions(self):
     return self.ch.exceptions
 
-  # Accessors
-  def getChannelModel ( self ):
-    return Channel.objects.get(channel_name=self.ch.channel_name, project=self.pr.getProjectName())
+  @property
+  def channel_model ( self ):
+    return Channel.objects.get(channel_name=self.ch.channel_name, project=self.pr.project_name)
 
   # def getDataType ( self ):
     # return self.ch.channel_datatype

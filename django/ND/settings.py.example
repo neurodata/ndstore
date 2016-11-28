@@ -71,7 +71,8 @@ INSTALLED_APPS = (
     'corsheaders',
     'ndgraph',
     'ramon',
-    'resource'
+    'resource',
+    'autoingest'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -181,10 +182,6 @@ LOGGING = {
     },
   },
   'handlers': {
-    #'null': {
-    #  'level': 'DEBUG',
-    #  'class': 'django.utils.log.NullHandler'
-    #},
     'logfile': {
       'level': 'DEBUG',
       'class': 'logging.handlers.RotatingFileHandler',
@@ -247,13 +244,14 @@ EMAIL_USE_TLS = False
 # CORS Settings
 CORS_URLS_ALLOW_ALL_REGEX = (r'^/(sd|ca|ocpca)/.*$', )
 CORS_ORIGIN_ALLOW_ALL = True
-CORS_ALLOW_METHODS = {
+CORS_ALLOW_METHODS = (
   'GET'
-}
+)
 
 # Redis Settings
 # For test purposes both the INDEX and DATA instances are the same. For deployment purposes these can be different
-REDIS_MEMORY_RATIO = 60 # setting this to 60% for now
+REDIS_MEMORY_RATIO_UPPER_BOUND = 60
+REDIS_MEMORY_RATIO_LOWER_BOUND = 40
 REDIS_LOCK = 'redis-lock'
 REDIS_INDEX_KEY = 'cuboid-index-store'
 REDIS_INDEX_HOST = 'localhost'
@@ -280,7 +278,7 @@ SECURE_SSL_REDIRECT = True
 
 
 # REGION_NAME = 'us-east-1'
-# S3_CUBOID_BUCKET = 'neurodata-cuboid-store'
+S3_CUBOID_BUCKET = 'neurodata-cuboid-store'
 # S3_TILE_BUCKET = 'neurodata-tile-store'
 # DYNAMO_CUBOIDINDEX_TABLE = 's3indexdb'
 # DYNAMO_TILEINDEX_TABLE = 'tileindexdb'

@@ -14,8 +14,9 @@
 
 from django.views.generic import View
 from django.contrib.auth.models import User
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
 from ndproj.ndproject import NDProject
+from nduser.models import Token
 from ndproj.ndtoken import NDToken
 
 class TokenView(View):
@@ -25,7 +26,9 @@ class TokenView(View):
     try:
       pr = NDProject.fromName(project_name)
       tk = NDToken.fromName(token_name)
-      return HttpResponse(NDToken.serialize(tk._tk), content_type='application/json')
+      return HttpResponse(tk.serialize(), content_type='application/json')
+    except Token.DoesNotExist as e:
+      return HttpResponseNotFound()
     except Exception as e:
       return HttpResponseBadRequest()
 
@@ -38,7 +41,7 @@ class TokenView(View):
       else:
         tk.user_id = User.objects.get(username='neurodata').id
       tk.create()
-      return HttpResponse()
+      return HttpResponse(status=201)
     except Exception as e:
       return HttpResponseBadRequest()
 
@@ -50,6 +53,6 @@ class TokenView(View):
       tk = NDToken.fromName(token_name)
       pr = NDProject.fromName(project_name)
       tk.delete()
-      return HttpResponse()
+      return HttpResponse(status=204)
     except Exception as e:
       return HttpResponseBadRequest()

@@ -14,7 +14,8 @@
 
 from django.views.generic import View
 from django.contrib.auth.models import User
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
+from nduser.models import Dataset
 from ndproj.nddataset import NDDataset
 
 class DatasetView(View):
@@ -22,7 +23,9 @@ class DatasetView(View):
   def get(self, request, dataset_name):
     try:
       ds = NDDataset.fromName(dataset_name)
-      return HttpResponse(NDDataset.serialize(ds._ds), content_type='application/json')
+      return HttpResponse(ds.serialize(), content_type='application/json')
+    except Dataset.DoesNotExist as e:
+      return HttpResponseNotFound()
     except Exception as e:
       return HttpResponseBadRequest()
 
@@ -34,7 +37,7 @@ class DatasetView(View):
       else:
         ds.user_id = User.objects.get(username='neurodata').id
       ds.create()
-      return HttpResponse()
+      return HttpResponse(status=201)
     except Exception as e:
       return HttpResponseBadRequest()
 
@@ -45,6 +48,6 @@ class DatasetView(View):
     try:
       ds = NDDataset.fromName(dataset_name)
       ds.delete()
-      return HttpResponse()
+      return HttpResponse(status=204)
     except Exception as e:
       return HttpResponseBadRequest()

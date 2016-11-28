@@ -87,7 +87,7 @@ Dataset Attributes
 
 .. function:: Time Range
 
-   Time Range is a parameter to support storage of Time Series data, so the value of the tuple is a 0 to X range of how many images over time were taken. It takes 2 inputs timeStepStart and timeStepStop.
+   Time Range is a parameter to support storage of Time Series data, so the value of the tuple is a 0 to X range of how many images over time were taken. It takes 2 inputs timeStepStart and timeStepStop. Not that for the dataset you can add data that actually has less time slices than are specified, but not more. For example if you said the end time step was 12, you can add datasets with 11 time step, but not 13.
 
    :Type: [INT,INT]
    :Default: [0,0]

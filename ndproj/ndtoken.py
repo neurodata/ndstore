@@ -27,7 +27,7 @@ class NDToken(NDObject):
   def public_list():
     tokens = Token.objects.filter(public = PUBLIC_TRUE)
     return [t.token_name for t in tokens]
-
+  
   @classmethod
   def fromJson(cls, project_name, token):
     tk = Token(**cls.deserialize(token))
@@ -39,8 +39,9 @@ class NDToken(NDObject):
     try:
       tk = Token.objects.get(token_name=token_name)
       return cls(tk)
-    except ObjectDoesNotExist as e:
-      raise
+    except Token.DoesNotExist as e:
+      # logger.warning("Token {} does not exist.".format(token_name))
+      raise Token.DoesNotExist
   
   def create(self):
     try:
@@ -53,6 +54,9 @@ class NDToken(NDObject):
       self._tk.delete()
     except Exception as e:
       raise
+  
+  def serialize(self):
+    return NDObject.serialize(self._tk)
 
   @property
   def token_name(self):

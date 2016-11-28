@@ -45,9 +45,27 @@ You can open an issue on our github `repository <https://github.com/neurodata/nd
 
 Please visit our `NeuroDataViz page <http://docs.neurodata.io/ndviz/>`_.
 
+**Why is the first slice of my data blank?**
+First check the offset of your data to make certain it is correct. If it is it could be that there is just not visualizable data on that slice, such as if the data is present by at too low of an insensity to be seen.
+
+**What if I think my data is missing?**
+First do the following: Check if it is propagated or not. Check the resolution. Try fetching data at base resolution using the data API. Try a region in the center of dataset. If your data is 16-bit check if the window is correctly set. If you have tried all of the above recommendations then you should contact us by opening a git issue.
+
+**What if the API is down?**
+First make certain you actually cannot access the API and that it isn't just slow. Once you have verified that the API is unaccessible wait at least three hours before opening an issue, or if the issue is urgent send an email (with all of your issue details) to support@neurodata.io. This email or issue should include all relevent details such a when you tried accessing the APIs, what you tried to fix it and what api documentation you looked at. 
+
 **How do I use the RESTful interface?**
 
-The RESTful interface can be accessed with any browser by inputting the correct link or any package that supports web requests. 
+The RESTful interface can be accessed with any browser by inputting the correct link or any package that supports web requests. Alternatively if you do not wish to use the api directly we recommend you use our python interface `ndio <https://github.com/neurodata/ndio>`_.
+
+**If I want to set up my own instance of ndstore?**
+Generally we do not recommend setting up your own ndstore instance for storing data. However if you do wish to do this, the setup script can be found at 
+
+**Is there a way to retrieve (near-) isotropic jpeg stacks?**
+There is no current way to retrieve near-isotropic data in JPEG format. We do store both isotropic and near-isotropic data for some of our datasets.
+
+**Is it possible to deploy instances of the ndstore with Docker?**
+Yes, however it is highly not recommended and there is no formal support for it.
 
 **Is there a support forum?**
 

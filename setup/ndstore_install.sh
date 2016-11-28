@@ -86,6 +86,9 @@ sudo service redis stop
 sudo service redis start
 sudo service redis restart
 
+# setup the ndingest settings file
+sudo cp /home/neurodata/ndstore/ndingest/settings/settings.ini.example /home/neurodata/ndstore/ndingest/settings/settings.ini
+
 # migrate the database and create the superuser
 sudo chmod -R 777 /var/log/neurodata/
 cd /home/neurodata/ndstore/django/

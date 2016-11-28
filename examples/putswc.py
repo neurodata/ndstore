@@ -29,7 +29,7 @@ def main():
 
   result = parser.parse_args()
 
-  url = 'http://%s/sd/%s/%s/swc/' % ( result.baseurl, result.token, result.channel )
+  url = 'http://{}/sd/{}/{}/swc/'.format(result.baseurl, result.token, result.channel)
 
   print url
 
@@ -40,12 +40,8 @@ def main():
   try:
     f = urllib2.urlopen ( url, fh.read() )
   except urllib2.URLError, e:
-    print "Failed %s.  Exception %s." % (url,e) 
+    print "Failed {}. Exception {}.".format(url, e) 
     sys.exit(-1)
 
 if __name__ == "__main__":
   main()
-
-
-
-
