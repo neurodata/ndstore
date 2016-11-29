@@ -267,7 +267,7 @@ AWS_ACCESS_KEY_ID = settings_secret.AWS_ACCESS_KEY_ID
 AWS_SECRET_ACCESS_KEY = settings_secret.AWS_SECRET_ACCESS_KEY
 
 # HTTPS Settings
-
+SECRET_TOKEN = settings_secret.SECRET_TOKEN
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE=True
@@ -275,7 +275,6 @@ os.environ['wsgi.url_scheme'] = 'https'
 os.environ['HTTPS'] = "on"
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_SSL_REDIRECT = True
-
 
 # REGION_NAME = 'us-east-1'
 S3_CUBOID_BUCKET = 'neurodata-cuboid-store'
