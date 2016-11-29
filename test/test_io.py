@@ -22,10 +22,10 @@ import numpy as np
 import zlib
 import pytest
 from contextlib import closing
-from postmethods import getURL, postURL, delURL
 
 from pytesthelpers import makeAnno
 import makeunitdb
+from ndlib.restutil import getURL, postURL, deleteURL
 import site_to_test
 SITE_HOST = site_to_test.site
 
@@ -741,7 +741,7 @@ class TestRW:
     else:
       url = 'https://{}/sd/{}/{}/{}/'.format(base, rp.token, rp.channel, rp.annids )
 
-    resp = delURL(url)
+    resp = deleteURL(url)
     assert resp.content == "Success"
 
     # Verify that we can't read it anymore

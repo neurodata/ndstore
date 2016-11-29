@@ -26,7 +26,8 @@ from contextlib import closing
 import makeunitdb
 import ndlib.ndtype
 from params import Params
-from postmethods import putAnnotation, getAnnotation, getURL, delURL
+from ndlib.restutil import *
+from postmethods import *
 from ramonmethods import H5AnnotationFile, getH5id, makeAnno, getId, getField, setField
 import kvengine_to_test
 import site_to_test
@@ -260,7 +261,7 @@ class Test_Ramon:
     else:
       url = 'https://{}/sd/{}/{}/{}/'.format(base, 'unittest', 'unit_anno', p.annoid )
 
-    resp = delURL(url)
+    resp = deleteURL(url)
 
     assert resp.content == "Success"
 
