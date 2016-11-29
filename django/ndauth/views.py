@@ -28,7 +28,7 @@ from django.conf import settings
 from django.http import HttpResponseForbidden, HttpResponse
 from django.contrib.auth import authenticate
 #from jsonschema import validate, ValidationError, SchemaError
-from jsonspec.validators import load
+from jsonspec.validators import load, ValidationError
 
 import logging
 logger=logging.getLogger("neurodata")
