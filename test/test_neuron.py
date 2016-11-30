@@ -1,11 +1,11 @@
-# Copyright 2014 NeuroData (http://neurodata.io)
-# 
+# Copyright 2014 NeuroData (https://neurodata.io)
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
-#     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -39,7 +39,7 @@ SITE_HOST = site_to_test.site
 # 4 - test_xy_incorrect
 
 # Test_Image_Post
-# 1 - test_npz 
+# 1 - test_npz
 # 2 - test_npz_incorrect_region
 # 3 - test_npz_incorrect_datatype
 # 4 - test_hdf5
@@ -76,7 +76,7 @@ class Test_Neuron:
       # create annotations
       makeAnno(p,4)
       f = setField(p,'neuron',neuronid)
-   
+
       # add data
       p.args = (3000,3100,4000,4100,100+2*i,100+2*i+3)
       image_data = np.ones( [1,3,100,100], dtype=np.uint32 ) * p.annoid
@@ -87,11 +87,7 @@ class Test_Neuron:
     p.field = 'tight_cutout'
     h5ret = getAnnotation(p)
     idgrp = h5ret.get(str(p.annoid))
- 
+
     # count the voxels to make sure they remapped correctly
     assert ( np.unique(np.array(idgrp['CUTOUT'][:,:,:])) == [0,neuronid] ).all()
     assert ( len(np.nonzero(np.array(idgrp['CUTOUT'][:,:,:]))[0]) == 70000 )
-
-
-     
-

@@ -20,7 +20,8 @@ from ndlib.ndtype import UINT8, UINT16, UINT32, ANNOTATION, IMAGE
 from ND import celery_app 
 import makeunitdb
 from params import Params
-from postmethods import postNPZ, getNPZ, postURL
+from postmethods import postNPZ, getNPZ, getURL, postURL
+
 import site_to_test
 SITE_HOST = site_to_test.site
 
@@ -46,25 +47,23 @@ class Test_Histogram8:
     image_data = np.random.randint(0, high=255, size=[1, 10, 1024, 1024]).astype(np.uint8)
     response = postNPZ(p, image_data)
 
-    assert( response.code == 200 )
+    assert( response.status_code == 200 )
 
     voxarray = getNPZ(p)
     # check that the return data matches
     assert( np.array_equal(voxarray, image_data) )
 
     # generate the histogram
-    url = 'http://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
+    url = 'https://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
     try:
       # Build a get request
-      req = urllib2.Request(url)
-      response = urllib2.urlopen(req)
-    except urllib2.HTTPError,e:
+      response = getURL(url)
+    except Exception as e:
       print e
-      assert(e.reason == 0)
 
-    assert( response.code == 200 )
+    assert( response.status_code == 200 )
 
-    jsonresponse = json.loads(response.read())
+    jsonresponse = json.loads(response.content)
 
     # make sure the celery job started
     celerystatus = celery_app.AsyncResult(jsonresponse['jobid'])
@@ -80,18 +79,16 @@ class Test_Histogram8:
       count += 1
 
     # now get the histogram
-    url = 'http://{}/stats/{}/{}/hist/'.format( SITE_HOST, p.token, p.channels[0] )
+    url = 'https://{}/stats/{}/{}/hist/'.format( SITE_HOST, p.token, p.channels[0] )
     try:
       # Build a get request
-      req = urllib2.Request(url)
-      response = urllib2.urlopen(req)
-    except urllib2.HTTPError,e:
+      response = getURL(url)
+    except Exception as e:
       print e
-      assert(e.reason == 0)
 
-    assert( response.code == 200 )
+    assert( response.status_code == 200 )
 
-    jsonresponse = json.loads(response.read())
+    jsonresponse = json.loads(response.content)
 
     # now see if the two histograms are equivalent
     testhist = np.histogram(image_data[image_data > 0], bins=256, range=(0,256))
@@ -118,25 +115,23 @@ class Test_Histogram16:
     image_data = np.random.randint(0, high=65535, size=[1, 10, 1024, 1024]).astype(np.uint16)
     response = postNPZ(p, image_data)
 
-    assert( response.code == 200 )
+    assert( response.status_code == 200 )
 
     voxarray = getNPZ(p)
     # check that the return data matches
     assert( np.array_equal(voxarray, image_data) )
 
     # generate the histogram
-    url = 'http://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
+    url = 'https://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
     try:
       # Build a get request
-      req = urllib2.Request(url)
-      response = urllib2.urlopen(req)
-    except urllib2.HTTPError,e:
+      response = getURL(url)
+    except Exception as e:
       print e
-      assert(e.reason == 0)
 
-    assert( response.code == 200 )
+    assert( response.status_code == 200 )
 
-    jsonresponse = json.loads(response.read())
+    jsonresponse = json.loads(response.content)
 
     # make sure the celery job started
     celerystatus = celery_app.AsyncResult(jsonresponse['jobid'])
@@ -152,18 +147,16 @@ class Test_Histogram16:
       count += 1
 
     # now get the histogram
-    url = 'http://{}/stats/{}/{}/hist/'.format( SITE_HOST, p.token, p.channels[0] )
+    url = 'https://{}/stats/{}/{}/hist/'.format( SITE_HOST, p.token, p.channels[0] )
     try:
       # Build a get request
-      req = urllib2.Request(url)
-      response = urllib2.urlopen(req)
-    except urllib2.HTTPError,e:
+      response = getURL(url)
+    except Exception as e:
       print e
-      assert(e.reason == 0)
 
-    assert( response.code == 200 )
+    assert( response.status_code == 200 )
 
-    jsonresponse = json.loads(response.read())
+    jsonresponse = json.loads(response.content)
 
     # now see if the two histograms are equivalent
     testhist = np.histogram(image_data[image_data > 0], bins=65536, range=(0,65536))
@@ -187,7 +180,7 @@ class TestHistogramROI:
     self.image_data = np.random.randint(0, high=255, size=[1, 20, 1024, 1024]).astype(np.uint8)
     response = postNPZ(p, self.image_data)
 
-    assert( response.code == 200 )
+    assert( response.status_code == 200 )
 
     voxarray = getNPZ(p)
     # check that the return data matches
@@ -204,7 +197,7 @@ class TestHistogramROI:
     roi = [ [500, 500, 5], [650, 650, 15] ]
     #roistr = "{}-{}".format( ",".join(str(x) for x in roi[0]), ",".join(str(x) for x in roi[1]) )
 
-    url = 'http://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
+    url = 'https://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
 
     try:
       # Make a POST request
@@ -236,7 +229,7 @@ class TestHistogramROI:
       count += 1
 
     # make sure the ROI exists
-    url = 'http://{}/stats/{}/{}/hist/roi/'.format( SITE_HOST, p.token, p.channels[0] )
+    url = 'https://{}/stats/{}/{}/hist/roi/'.format( SITE_HOST, p.token, p.channels[0] )
     try:
       # Build a get request
       req = urllib2.Request(url)
@@ -256,7 +249,7 @@ class TestHistogramROI:
 
     # now grab the generated histogram using a get request
     roistr = "{}-{}".format( ",".join(str(x) for x in roi[0]), ",".join(str(x) for x in roi[1]) )
-    url = 'http://{}/stats/{}/{}/hist/roi/{}/'.format( SITE_HOST, p.token, p.channels[0], roistr )
+    url = 'https://{}/stats/{}/{}/hist/roi/{}/'.format( SITE_HOST, p.token, p.channels[0], roistr )
     try:
       req = urllib2.Request(url)
       response = urllib2.urlopen(req)
@@ -282,7 +275,7 @@ class TestHistogramROI:
 
     roi = [ [0, 0, 1], [10, 10, 6] ]
 
-    url = 'http://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
+    url = 'https://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
 
     try:
       # Make a POST request
@@ -315,7 +308,7 @@ class TestHistogramROI:
 
     # now grab the generated histogram using a get request
     roistr = "{}-{}".format( ",".join(str(x) for x in roi[0]), ",".join(str(x) for x in roi[1]) )
-    url = 'http://{}/stats/{}/{}/hist/roi/{}/'.format( SITE_HOST, p.token, p.channels[0], roistr )
+    url = 'https://{}/stats/{}/{}/hist/roi/{}/'.format( SITE_HOST, p.token, p.channels[0], roistr )
     try:
       req = urllib2.Request(url)
       response = urllib2.urlopen(req)
@@ -341,7 +334,7 @@ class TestHistogramROI:
 
     roi = [ [1000, 1000, 18], [1024, 1024, 21] ]
 
-    url = 'http://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
+    url = 'https://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
 
     try:
       # Make a POST request
@@ -374,7 +367,7 @@ class TestHistogramROI:
 
     # now grab the generated histogram using a get request
     roistr = "{}-{}".format( ",".join(str(x) for x in roi[0]), ",".join(str(x) for x in roi[1]) )
-    url = 'http://{}/stats/{}/{}/hist/roi/{}/'.format( SITE_HOST, p.token, p.channels[0], roistr )
+    url = 'https://{}/stats/{}/{}/hist/roi/{}/'.format( SITE_HOST, p.token, p.channels[0], roistr )
     try:
       req = urllib2.Request(url)
       response = urllib2.urlopen(req)
@@ -400,7 +393,7 @@ class TestHistogramROI:
 
     # post ROI that isn't complete
     roi = [ 50, 100, 100]
-    url = 'http://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
+    url = 'https://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
 
     try:
       # Make a POST request
@@ -414,7 +407,7 @@ class TestHistogramROI:
     # post ROI that isn't a cube
     roi = [ [50, 50, 18], [10, 10, 5] ]
 
-    url = 'http://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
+    url = 'https://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
 
     try:
       # Make a POST request
@@ -428,7 +421,7 @@ class TestHistogramROI:
     # post ROI outside of dataset bounds
     roi = [ [0, 0, 1], [2000, 2000, 50] ]
 
-    url = 'http://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
+    url = 'https://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
 
     try:
       # Make a POST request
@@ -473,7 +466,7 @@ class TestHistogramROIMultiple:
       [ [100, 100, 15], [350, 350, 20] ],
     ]
 
-    url = 'http://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
+    url = 'https://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
 
     try:
       # Make a POST request
@@ -507,7 +500,7 @@ class TestHistogramROIMultiple:
 
       # grab the generated histogram using a get request
       roistr = "{}-{}".format( ",".join(str(x) for x in roi[0]), ",".join(str(x) for x in roi[1]) )
-      url = 'http://{}/stats/{}/{}/hist/roi/{}/'.format( SITE_HOST, p.token, p.channels[0], roistr )
+      url = 'https://{}/stats/{}/{}/hist/roi/{}/'.format( SITE_HOST, p.token, p.channels[0], roistr )
       try:
         req = urllib2.Request(url)
         response = urllib2.urlopen(req)

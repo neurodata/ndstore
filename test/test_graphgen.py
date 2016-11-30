@@ -92,10 +92,10 @@ class Test_GraphGen:
     truthGraph = nx.Graph()
     truthGraph.add_edges_from(syn_segments)
 
-    url = 'http://{}/ndgraph/{}/{}/'.format(SITE_HOST, p.token, p.channels[0])
-    graphFile = urllib2.urlopen(url)
+    url = 'https://{}/ndgraph/{}/{}/'.format(SITE_HOST, p.token, p.channels[0])
+    graphFile = getURL(url)
     with open(("/tmp/{}_{}.graphml").format(p.token, p.channels[0]), "wb") as f:
-        f.write(graphFile.read())
+        f.write(graphFile.content)
     outputGraph = nx.read_graphml(("/tmp/{}_{}.graphml").format(p.token, p.channels[0]))
     assert(nx.is_isomorphic(outputGraph, truthGraph))
 
@@ -106,11 +106,11 @@ class Test_GraphGen:
     truthGraph = nx.Graph()
     truthGraph.add_edges_from(syn_segments)
 
-    url = 'http://{}/ndgraph/{}/{}/{}/'.format(
+    url = 'https://{}/ndgraph/{}/{}/{}/'.format(
         SITE_HOST, p.token, p.channels[0], 'adjlist')
-    graphFile = urllib2.urlopen(url)
+    graphFile = getURL(url)
     with open(("/tmp/{}_{}.adjlist").format(p.token, p.channels[0]), "wb") as f:
-        f.write(graphFile.read())
+        f.write(graphFile.content)
     outputGraph = nx.read_adjlist(("/tmp/{}_{}.adjlist").format(p.token, p.channels[0]))
     assert(nx.is_isomorphic(outputGraph, truthGraph))
 
@@ -122,11 +122,11 @@ class Test_GraphGen:
     truthGraph = nx.Graph()
     truthGraph.add_edges_from(syn_segments)
 
-    url = 'http://{}/ndgraph/{}/{}/{}/{},{}/{},{}/{},{}/'.format(
+    url = 'https://{}/ndgraph/{}/{}/{}/{},{}/{},{}/{},{}/'.format(
         SITE_HOST, p.token, p.channels[0], 'graphml', 0, 7, 0, 8, 1, 4)
-    graphFile = urllib2.urlopen(url)
+    graphFile = getURL(url)
     with open(("/tmp/{}_{}.graphml").format(p.token, p.channels[0]), "wb") as f:
-        f.write(graphFile.read())
+        f.write(graphFile.content)
     outputGraph = nx.read_graphml(("/tmp/{}_{}.graphml").format(p.token, p.channels[0]))
     assert(nx.is_isomorphic(outputGraph, truthGraph))
 
@@ -137,14 +137,15 @@ class Test_GraphGen:
     truthGraph = nx.Graph()
     truthGraph.add_edges_from(syn_segments)
 
-    url = 'http://{}/ndgraph/{}/{}/{}/'.format(
+    url = 'https://{}/ndgraph/{}/{}/{}/'.format(
         SITE_HOST, p.token, p.channels[0], 'foograph')
-    graphFile = urllib2.urlopen(url)
+    graphFile = getURL(url)
     with open(("/tmp/{}_{}.graphml").format(p.token, p.channels[0]), "wb") as f:
-        f.write(graphFile.read())
+        f.write(graphFile.content)
     outputGraph = nx.read_graphml(("/tmp/{}_{}.graphml").format(p.token, p.channels[0]))
     assert(nx.is_isomorphic(outputGraph, truthGraph))
 
-    url = 'http://{}/ndgraph/{}/{}/{}/{},{}/{},{}/{},{}/'.format(
+    """Invalid token"""
+    url = 'https://{}/ndgraph/{}/{}/{}/{},{}/{},{}/{},{}/'.format(
         SITE_HOST, 'foo', p.channels[0], 'graphml', 0, 7, 0, 7, 0, 7)
-    assert (getURL(url) >= 500)
+    assert (getURL(url).status_code >= 500)

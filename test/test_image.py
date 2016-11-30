@@ -1,11 +1,11 @@
 # Copyright 2014 NeuroData (http://neurodata.io)
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,7 +37,7 @@ SITE_HOST = site_to_test.site
 # 4 - test_xy_incorrect
 
 # Test_Image_Post
-# 1 - test_npz 
+# 1 - test_npz
 # 2 - test_npz_incorrect_region
 # 3 - test_npz_incorrect_datatype
 # 4 - test_hdf5
@@ -78,7 +78,7 @@ class Test_Image_Slice:
     url = "http://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
     f = getURL (url)
 
-    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
     assert ( np.array_equal(slice_data,image_data[0][0]) )
 
   def test_yz (self):
@@ -91,7 +91,7 @@ class Test_Image_Slice:
     url = "http://{}/sd/{}/{}/yz/{}/{}/{},{}/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[2], p.args[3], p.args[4], p.args[5])
     f = getURL (url)
 
-    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
     assert ( np.array_equal(slice_data, image_data[0][:75][:].reshape(75,100)) )
 
   def test_xz (self):
@@ -104,7 +104,7 @@ class Test_Image_Slice:
     url = "http://{}/sd/{}/{}/xz/{}/{},{}/{}/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[4], p.args[5])
     f = getURL (url)
 
-    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
     assert ( np.array_equal(slice_data, image_data[0][:75][:].reshape(75,100)) )
 
   def test_xy_incorrect (self):
@@ -113,7 +113,7 @@ class Test_Image_Slice:
     p.args = (11000,11100,4000,4100,200,201)
 
     url = "http://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
-    assert ( 404 == getURL (url) )
+    assert ( 404 == getURL(url).status_code )
 
 class Test_Image_Simple_Catmaid:
 
@@ -125,21 +125,21 @@ class Test_Image_Simple_Catmaid:
 
   def test_xy_tile(self):
     """Test a simple xy tile fetch"""
-   
+
     p.args = (3072,3584,4096,4608,200,201)
     # have to use a constant here for memcache purposes
     image_data = np.ones([2,1,512,512], dtype=np.uint8) * 130
     response = postNPZ(p, image_data)
-    
+
     voxarray = getNPZ(p)
     # check that the return matches
     assert ( np.array_equal(voxarray, image_data) )
     
     # xy/z/y_x_res
-    url = "http://{}/catmaid/{}/{}/xy/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[4], p.args[2]/512, p.args[0]/512, p.resolution)
+    url = "https://{}/catmaid/{}/{}/xy/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[4], p.args[2]/512, p.args[0]/512, p.resolution)
     f = getURL (url)
 
-    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
     assert ( np.array_equal(slice_data, image_data[0][0]) )
 
   def test_yz_tile (self):
@@ -149,19 +149,19 @@ class Test_Image_Simple_Catmaid:
     # have to use a constant here for memcache purposes
     image_data = np.ones([2,512,512,1], dtype=np.uint8) * 130
     response = postNPZ(p, image_data)
-    
+
     voxarray = getNPZ(p)
     # check that the return matches
     assert ( np.array_equal(voxarray, image_data) )
 
     # yz/x/z_y_res
-    url = "http://{}/catmaid/{}/{}/yz/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[0], p.args[4]/512, p.args[2]/512, p.resolution)
+    url = "https://{}/catmaid/{}/{}/yz/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[0], p.args[4]/512, p.args[2]/512, p.resolution)
     f = getURL (url)
 
     scale_range = 512*p.voxel[2]/p.voxel[1]
-    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
     assert ( np.array_equal(slice_data[:scale_range,:], image_data[0,:scale_range,:,0] ))
-  
+
   def test_xz_tile (self):
     """Test a simple xz slice fetch"""
 
@@ -169,17 +169,17 @@ class Test_Image_Simple_Catmaid:
     # have to use a constant here for memcache purposes
     image_data = np.ones([2,512,1,512], dtype=np.uint8) * 130
     response = postNPZ(p, image_data)
-    
+
     voxarray = getNPZ(p)
     # check that the return matches
     assert ( np.array_equal(voxarray, image_data) )
 
     # xz/y/z_x_res
-    url = "http://{}/catmaid/{}/{}/xz/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[2], p.args[4]/512, p.args[0]/512, p.resolution)
+    url = "https://{}/catmaid/{}/{}/xz/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[2], p.args[4]/512, p.args[0]/512, p.resolution)
     f = getURL (url)
 
     scale_range = 512*p.voxel[2]/p.voxel[0]
-    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
     assert ( np.array_equal(slice_data[:scale_range,:], image_data[0,:scale_range,0,:]) )
 
 class Test_Image_Mcfc_Catmaid:
@@ -197,15 +197,15 @@ class Test_Image_Mcfc_Catmaid:
     # have to use a constant here for memcache purposes
     image_data = np.ones([2,1,512,512], dtype=np.uint8) * 200
     response = postNPZ(p, image_data)
-    
+
     voxarray = getNPZ(p)
     # check that the return matches
     assert ( np.array_equal(voxarray, image_data) )
-    
-    url = "http://{}/catmaid/mcfc/{}/{}/xy/{}/{}_{}_{}.png".format(SITE_HOST, p.token, ','.join(p.channels), p.args[4], p.args[2]/512, p.args[0]/512, p.resolution)
+
+    url = "https://{}/catmaid/mcfc/{}/{}/xy/{}/{}_{}_{}.png".format(SITE_HOST, p.token, ','.join(p.channels), p.args[4], p.args[2]/512, p.args[0]/512, p.resolution)
     f = getURL (url)
 
-    #slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    #slice_data = np.asarray ( Image.open(StringIO(f.content)) )
     #assert ( np.array_equal(slice_data, image_data[0][0]) )
 
 class Test_Image_Simple_Viking:
@@ -218,20 +218,20 @@ class Test_Image_Simple_Viking:
 
   def test_xy_tile(self):
     """Test a simple xy tile fetch"""
-   
+
     p.args = (1536,2048,4096,4608,200,201)
     # have to use a constant here for memcache purposes
     image_data = np.ones([2,1,512,512], dtype=np.uint8) * 130
     response = postNPZ(p, image_data)
-    
+
     voxarray = getNPZ(p)
     # check that the return matches
     assert ( np.array_equal(voxarray, image_data) )
-    
-    url = "http://{}/catmaid/viking/{}/volume/{}/{}/X{}_Y{}_Z{}.png".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0]/512, p.args[2]/512, p.args[4])
+
+    url = "https://{}/catmaid/viking/{}/volume/{}/{}/X{}_Y{}_Z{}.png".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0]/512, p.args[2]/512, p.args[4])
     f = getURL (url)
-    
-    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+
+    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
     assert ( np.array_equal(slice_data, image_data[0][0]) )
 
 class Test_Image_Window:
@@ -251,14 +251,14 @@ class Test_Image_Window:
     image_data = np.ones([2,1,100,100], dtype=np.uint16) * 2000
     response = postNPZ(p, image_data)
 
-    url = "http://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
+    url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
     f = getURL (url)
 
     from ndlib.windowcutout import windowCutout
     image_data = windowCutout(image_data, p.window).astype(np.uint8)
-    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
     assert ( np.array_equal(slice_data,image_data[0][0]) )
-  
+
   def test_window_args(self):
     "Test the window functionality"
 
@@ -267,12 +267,12 @@ class Test_Image_Window:
     image_data = np.ones([2,1,100,100], dtype=np.uint16) * 2000
     response = postNPZ(p, image_data)
 
-    url = "http://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/window/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], *p.window)
+    url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/window/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], *p.window)
     f = getURL (url)
 
     from ndlib.windowcutout import windowCutout
     image_data = windowCutout(image_data, p.window).astype(np.uint8)
-    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
     assert ( np.array_equal(slice_data,image_data[0][0]) )
 
 
@@ -291,10 +291,10 @@ class Test_Image_Post:
     p.args = (3000,3100,4000,4100,500,510)
     # upload some image data
     image_data = np.ones ( [2,10,100,100], dtype=np.uint8 ) * random.randint(0,255)
-    
+
     response = postNPZ(p, image_data)
     # Checking for successful post
-    assert( response.code == 200 )
+    assert( response.status_code == 200 )
     voxarray = getNPZ(p)
     # check that the return matches
     assert ( np.array_equal(voxarray,image_data) )
@@ -305,7 +305,7 @@ class Test_Image_Post:
     p.args = (11000,11100,4000,4100,500,510)
     image_data = np.ones ( [2,10,100,100], dtype=np.uint8 ) * random.randint(0,255)
     response = postNPZ(p, image_data)
-    assert (response.code == 404)
+    assert (response.status_code == 404)
 
   def test_npz_incorrect_datatype (self):
     """Post npz data with incorrect datatype"""
@@ -315,8 +315,8 @@ class Test_Image_Post:
     image_data = np.ones ( [2,10,100,100], dtype=np.uint16 ) * random.randint(0,255)
 
     response = postNPZ(p, image_data)
-    assert (response.code == 404)
-  
+    assert (response.status_code == 404)
+
   def test_hdf5 (self):
     """Post hdf5 data to correct region with correct datatype"""
 
@@ -325,7 +325,7 @@ class Test_Image_Post:
     image_data = np.ones ( [2,10,100,100], dtype=np.uint8 ) * random.randint(0,255)
 
     response = postHDF5(p, image_data)
-    assert ( response.code == 200 )
+    assert ( response.status_code == 200 )
     h5f = getHDF5(p)
 
     for idx, channel_name in enumerate(p.channels):
@@ -337,7 +337,7 @@ class Test_Image_Post:
     p.args = (11000,11100,4000,4100,500,510)
     image_data = np.ones ( [2,10,100,100], dtype=np.uint8 ) * random.randint(0,255)
     response = postHDF5(p, image_data)
-    assert (response.code == 404)
+    assert (response.status_code == 404)
 
   def test_hdf5_incorrect_datatype (self):
     """Post hdf5 data with incorrect datatype"""
@@ -349,7 +349,7 @@ class Test_Image_Post:
     image_data[1,:] = np.ones ( [10,100,100], dtype=np.uint16 ) * random.randint(0,255)
 
     response = postHDF5(p, image_data)
-    assert ( response.code == 404 )
+    assert ( response.status_code == 404 )
 
   def test_npz_incorrect_channel (self):
     """Post npz data with incorrect channel"""
@@ -357,14 +357,14 @@ class Test_Image_Post:
     p.channels = p.channels + ['IMAGE3']
     image_data = np.ones ( [3,10,100,100], dtype=np.uint8 ) * random.randint(0,255)
     response = postNPZ(p, image_data)
-    assert (response.code == 404)
-  
+    assert (response.status_code == 404)
+
   def test_hdf5_incorrect_channel (self):
     """Post hdf5 data with incorrect channel"""
 
     image_data = np.ones ( [3,10,100,100], dtype=np.uint8 ) * random.randint(0,255)
     response = postHDF5(p, image_data)
-    assert (response.code == 404)
+    assert (response.status_code == 404)
 
 
 class Test_Image_Default:
@@ -375,14 +375,14 @@ class Test_Image_Default:
 
   def teardown_class(self):
     makeunitdb.deleteTestDB(p.token)
-  
+
   def test_npz_default_channel (self):
     """Post npz data with default channel"""
 
     image_data = np.ones ( [1,10,100,100], dtype=np.uint8 ) * random.randint(0,255)
     p.channels = None
     response = postNPZ(p, image_data)
-    assert (response.code == 200)
+    assert (response.status_code == 200)
     voxarray = getNPZ(p)
     # check that the return matches
     assert ( np.array_equal(voxarray,image_data) )
@@ -393,13 +393,13 @@ class Test_Image_Default:
     p.args = (3000,3100,4000,4100,200,201)
     image_data = np.ones( [1,1,100,100], dtype=np.uint8 ) * random.randint(0,255)
     response = postNPZ(p, image_data)
-    assert (response.code == 200)
+    assert (response.status_code == 200)
     voxarray = getNPZ(p)
     # check that the return matches
     assert ( np.array_equal(voxarray,image_data) )
 
-    url = "http://{}/sd/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
+    url = "https://{}/sd/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
     f = getURL (url)
 
-    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
     assert ( np.array_equal(slice_data,image_data[0][0]) )

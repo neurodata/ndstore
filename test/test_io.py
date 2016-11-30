@@ -1,26 +1,30 @@
-# Copyright 2014 NeuroData (http://neurodata.io)
-# 
+# Copyright 2014 NeuroData (https://neurodata.io)
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
-#     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import urllib2
+import requests
 import cStringIO
 import tempfile
 import h5py
-import random 
+import random
 import csv
 import numpy as np
 import zlib
 import pytest
+from contextlib import closing
+from postmethods import getURL, postURL, delURL
+
+from pytesthelpers import makeAnno
 import makeunitdb
 import site_to_test
 SITE_HOST = site_to_test.site
@@ -40,10 +44,10 @@ class ReadParms:
 
 def readAnno ( params ):
   """Modified version of annoread that takes the following dictionary
-     params -- with fields 
+     params -- with fields
        baseurl
-       token 
-       resolution = number 
+       token
+       resolution = number
        annids = 1,2,3,4,5
        voxels = None or True
        cutout = form 0/100,200/100,200/1,2 or None
@@ -51,25 +55,25 @@ def readAnno ( params ):
    """
 
   if params.voxels:
-    url = "http://{}/sd/{}/{}/{}/voxels/{}/".format(params.baseurl, params.token, params.channel, params.annids,  params.resolution)
+    url = "https://{}/sd/{}/{}/{}/voxels/{}/".format(params.baseurl, params.token, params.channel, params.annids,  params.resolution)
     print url
   elif params.cutout != None:
-    url = "http://{}/sd/{}/{}/cutout/{}/".format(params.baseurl, params.token, params.channel, params.annids, params.cutout)
-  elif params.tightcutout: 
-    url = "http://{}/sd/{}/{}/{}/cutout/{}/".format(params.baseurl, params.token, params.channel, params.annids, params.resolution)
-  elif params.boundingbox: 
-    url = "http://{}/sd/{}/{}/{}/boundingbox/{}/".format(params.baseurl, params.token, params.channel, params.annids, params.resolution)
-  elif params.cuboids: 
-    url = "http://{}/sd/{}/{}?{}/cuboids/{}/".format(params.baseurl, params.token, params.channel, params.annids, params.resolution)
+    url = "https://{}/sd/{}/{}/cutout/{}/".format(params.baseurl, params.token, params.channel, params.annids, params.cutout)
+  elif params.tightcutout:
+    url = "https://{}/sd/{}/{}/{}/cutout/{}/".format(params.baseurl, params.token, params.channel, params.annids, params.resolution)
+  elif params.boundingbox:
+    url = "https://{}/sd/{}/{}/{}/boundingbox/{}/".format(params.baseurl, params.token, params.channel, params.annids, params.resolution)
+  elif params.cuboids:
+    url = "https://{}/sd/{}/{}?{}/cuboids/{}/".format(params.baseurl, params.token, params.channel, params.annids, params.resolution)
   else:
-    url = "http://{}/sd/{}/{}/{}/".format(params.baseurl, params.token, params.channel, params.annids)
+    url = "https://{}/sd/{}/{}/{}/".format(params.baseurl, params.token, params.channel, params.annids)
 
   # Get annotation in question
-  f = urllib2.urlopen ( url )
+  f = getURL( url )
 
   # Read into a temporary file
   tmpfile = tempfile.NamedTemporaryFile ( )
-  tmpfile.write ( f.read() )
+  tmpfile.write ( f.content )
   tmpfile.seek(0)
   h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
 
@@ -151,12 +155,12 @@ class H5Anno:
 
       mdgrp.create_dataset ( "PARENT", (1,), np.uint32, data=seed_parent )
       mdgrp.create_dataset ( "CUBE_LOCATION", (1,), np.uint32, data=seed_cubelocation )
-      mdgrp.create_dataset ( "SOURCE", (1,), np.uint32, data=seed_source )    
+      mdgrp.create_dataset ( "SOURCE", (1,), np.uint32, data=seed_source )
       mdgrp.create_dataset ( "POSITION", (3,), np.uint32, data=seed_position )
 
     # Segment
     elif annotype == 4:
-       
+
       seg_parentseed = random.randint(1,100000)
       seg_segmentclass = random.randint(1,9)
       seg_neuron = random.randint(1,100000)
@@ -266,14 +270,14 @@ class WriteParms:
   cutout = None
   anntype = 1
   update = False
-  dataonly = False 
+  dataonly = False
   preserve = False
   exception = False
   overwrite = False
   shave = False
   cuboids = False
 
-def writeAnno ( params ): 
+def writeAnno ( params ):
   """Write an annotation derived from annowrite"""
 
   h5ann = H5Anno()
@@ -312,28 +316,27 @@ def writeAnno ( params ):
 
   # Build the put URL
   if params.update:
-    url = "http://{}/sd/{}/{}/update/".format(params.baseurl, params.token, params.channel)
+    url = "https://{}/sd/{}/{}/update/".format(params.baseurl, params.token, params.channel)
   elif params.dataonly:
-    url = "http://{}/sd/{}/{}/dataonly/".format(params.baseurl, params.token, params.channel)
+    url = "https://{}/sd/{}/{}/dataonly/".format(params.baseurl, params.token, params.channel)
   else:
-    url = "http://{}/sd/{}/{}/".format( params.baseurl, params.token, params.channel)
+    url = "https://{}/sd/{}/{}/".format( params.baseurl, params.token, params.channel)
 
-  if params.preserve:  
+  if params.preserve:
     url += 'preserve/'
-  elif params.exception:  
+  elif params.exception:
     url += 'exception/'
-  elif params.overwrite:  
+  elif params.overwrite:
     url += 'overwrite/'
-  elif params.shave:  
+  elif params.shave:
     url += 'reduce/'
 
   try:
-    req = urllib2.Request ( url, fileobj.read()) 
-    response = urllib2.urlopen(req)
-  except urllib2.URLError, e:
+    response = postURL ( url, fileobj.read())
+  except Exception as e:
     assert 0
 
-  return response.read()
+  return response.content
 
 def countVoxels ( annid, h5 ):
   """Count the number of voxels in an HDF5 file for an annotation id"""
@@ -399,7 +402,7 @@ class TestRW:
 
     # Create an annotation
     wp.numobjects = 1
-    retval = writeAnno(wp) 
+    retval = writeAnno(wp)
     assert int(retval) >= 1
 
     wp.annid = int(retval)
@@ -409,7 +412,7 @@ class TestRW:
 #    annodata = np.random.random_integers ( 0, 65535, [ 2, 50, 50 ] )
     annodata = np.ones ( [1, 2, 50, 50], dtype=np.uint32 ) * random.randint(0,65535)
 
-    url = 'http://{}/sd/{}/{}/npz/{}/{},{}/{},{}/{},{}/'.format( wp.baseurl, wp.token, wp.channel, wp.resolution, 200, 250, 200, 250, 200, 202 )
+    url = 'https://{}/sd/{}/{}/npz/{}/{},{}/{},{}/{},{}/'.format( wp.baseurl, wp.token, wp.channel, wp.resolution, 200, 250, 200, 250, 200, 202 )
 
     # Encode the voxelist as a pickle
     fileobj = cStringIO.StringIO ()
@@ -417,13 +420,12 @@ class TestRW:
     cdz = zlib.compress (fileobj.getvalue())
 
     # Build the post request
-    req = urllib2.Request(url, cdz)
-    response = urllib2.urlopen(req)
+    response = postURL(url, cdz)
 
     # Get annotation in question
-    f = urllib2.urlopen ( url )
+    f = getURL( url )
 
-    rawdata = zlib.decompress ( f.read() )
+    rawdata = zlib.decompress ( f.content )
     fileobj = cStringIO.StringIO ( rawdata )
     voxarray = np.load ( fileobj )
 
@@ -432,7 +434,7 @@ class TestRW:
 
     # now as an HDF5 file
     annodata = np.ones ( [2, 50, 50], dtype=np.uint32 ) * random.randint(0,65535)
-    url = 'http://{}/sd/{}/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format( wp.baseurl, wp.token, wp.channel, wp.resolution, 200, 250, 200, 250, 300, 302 )
+    url = 'https://{}/sd/{}/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format( wp.baseurl, wp.token, wp.channel, wp.resolution, 200, 250, 200, 250, 300, 302 )
 
     # Create an in-memory HDF5 file
     tmpfile = tempfile.NamedTemporaryFile ()
@@ -447,17 +449,16 @@ class TestRW:
     tmpfile.seek(0)
 
     # Build the post request
-    req = urllib2.Request(url, tmpfile.read())
-    response = urllib2.urlopen(req)
+    resp = postURL(url, tmpfile.read())
 
     # and read it
     # Read into a temporary file
-    f = urllib2.urlopen ( url )
+    f = getURL ( url )
     tmpfile = tempfile.NamedTemporaryFile ( )
-    tmpfile.write ( f.read() )
+    tmpfile.write ( f.content )
     tmpfile.seek(0)
     h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
-  
+
     # check that the return matches the post
     assert ( np.array_equal(np.array(h5f[wp.channel]['CUTOUT'].value), annodata))
 
@@ -480,7 +481,7 @@ class TestRW:
 
     # Create an annotation
     wp.numobjects = 3
-    retval = writeAnno(wp) 
+    retval = writeAnno(wp)
     assert retval
 
     # read the batch back
@@ -506,7 +507,7 @@ class TestRW:
 
     assert int(ids[0])==100000 and int(ids[1])==100001
 
-    # Specify two annotations with two dense cutouts 
+    # Specify two annotations with two dense cutouts
     # write them to the same location as exceptions and verify they are both there
     wp.annid = 100002
     wp.numobjects = 2
@@ -526,7 +527,7 @@ class TestRW:
 
     # Now verify that we have the right count in each annotation
     for id in [100000,100001,100002,100003]:
-      assert countVoxels ( id, h5r ) == 20000 
+      assert countVoxels ( id, h5r ) == 20000
 
 
   def test_rw(self):
@@ -552,7 +553,7 @@ class TestRW:
     wp.cutout = "0/100,200/100,200/1,2"
 
     # Write one object as voxels
-    retval = writeAnno(wp) 
+    retval = writeAnno(wp)
     assert retval >= 1
 
     # Read it as voxels and as a cutout
@@ -570,7 +571,7 @@ class TestRW:
 
     # Write one object as a cutout
     wp.voxels=False
-    retval = writeAnno ( wp ) 
+    retval = writeAnno ( wp )
     assert retval >= 1
 
     # Read it as voxels and as a cutout
@@ -606,17 +607,17 @@ class TestRW:
 
 
 #RBTODO need to remove this stuff and actual add the cuboids to writeAnno
-#    
+#
 #    # now try the cuboids interface
 #    # WRite two small regions
 #    wp.cutout = "1/200,210/200,210/101,102"
-#    retval = writeAnno ( wp ) 
+#    retval = writeAnno ( wp )
 #    assert int(retval) >= 1
 #
 #    wp.cutout = "1/300,310/300,310/301,302"
 #    wp.update = True
 #    wp.annid = int(retval)
-#    retval = writeAnno ( wp ) 
+#    retval = writeAnno ( wp )
 #    assert int(retval) == wp.annid
 #
 #    # Read them as an HDF5 file
@@ -630,16 +631,16 @@ class TestRW:
 #    # change the annotation identifier
 #    # RBTODO
 #    # post the HDF5 file
-#    url = "http://%s/sd/%s/" % (wp.baseurl,wp.token )
+#    url = "https://%s/sd/%s/" % (wp.baseurl,wp.token )
 #    h5r.tmpfile.seek(0)
 #    # return and file object to be posted
 #    try:
-#      req = urllib2.Request ( url, h5r.tmpfile.read()) 
+#      req = urllib2.Request ( url, h5r.tmpfile.content)
 #      response = urllib2.urlopen(req)
 #    except urllib2.URLError, e:
 #      assert 0
 #    assert response >= 1
-#    
+#
 #    # Read it back to make sure that it's correct
 #    rp.voxels = True
 #    h5r2 = readAnno(rp)
@@ -669,14 +670,14 @@ class TestRW:
     wp.cutout = "0/500,550/500,550/1849,1850"
 
     # Write one object as voxels
-    retval = writeAnno(wp) 
+    retval = writeAnno(wp)
     assert int(retval) >= 1
 
     # update the object
     wp.annid = int(retval)
     wp.update = True
     wp.cutout = "0/550,600/550,600/1849,1850"
-    retval = writeAnno(wp) 
+    retval = writeAnno(wp)
 
     # Check that the combination of write + update sums
     rp.resolution = 0
@@ -688,7 +689,7 @@ class TestRW:
     # update the object as dense
     wp.voxels = False
     wp.cutout = "0/600,650/600,650/1849,1850"
-    writeAnno(wp) 
+    writeAnno(wp)
 
     # Check that the combination of write + update sums
     rp.voxels = True
@@ -700,7 +701,7 @@ class TestRW:
     wp.update = False
     wp.shave = True
     wp.voxels = True
-    writeAnno(wp) 
+    writeAnno(wp)
 
     # Check that the shave worked
     rp.voxels = True
@@ -711,12 +712,12 @@ class TestRW:
     wp.cutout = "0/550,600/550,600/1849,1850"
     wp.shave = True
     wp.voxels = False
-    writeAnno(wp) 
+    writeAnno(wp)
 
     # Check that the shave worked
     rp.voxels = True
     h5r = readAnno(rp)
-    assert countVoxels ( retval, h5r ) == 50*50*1 
+    assert countVoxels ( retval, h5r ) == 50*50*1
 
     # And delete
     import httplib
@@ -735,20 +736,17 @@ class TestRW:
       base = rp.baseurl
       suffix = None
 
-    conn = httplib.HTTPConnection ( base )
-
     if suffix:
-      conn.request ( 'DELETE', '/{}/sd/{}/{}/{}/'.format( suffix, rp.token, rp.channel, rp.annids ))
+      url = 'https://{}/{}/sd/{}/{}/{}/'.format(base, suffix, rp.token, rp.channel, rp.annids )
     else:
-      conn.request ( 'DELETE', '/sd/{}/{}/{}/'.format( rp.token, rp.channel, rp.annids ))
-    resp = conn.getresponse()
-    content=resp.read()
-    assert content == "Success"
+      url = 'https://{}/sd/{}/{}/{}/'.format(base, rp.token, rp.channel, rp.annids )
+
+    resp = delURL(url)
+    assert resp.content == "Success"
 
     # Verify that we can't read it anymore
-    with pytest.raises(urllib2.HTTPError): 
-      h5r = readAnno(rp)
-
+    h5r = readAnno(rp)
+    assert(h5r.keys() == [])
 
   def test_dataonly(self):
     """Data only option."""
@@ -760,7 +758,7 @@ class TestRW:
     rp.token = "unittest"
     rp.baseurl = SITE_HOST
     rp.resolution = 0
-   
+
     # write
     wp.token = "unittest"
     wp.baseurl = SITE_HOST
@@ -768,7 +766,7 @@ class TestRW:
 
     # Create an annotation
     wp.numobjects = 1
-    retval = writeAnno(wp) 
+    retval = writeAnno(wp)
     assert int(retval) >= 1
 
     # Add data to it
@@ -776,14 +774,14 @@ class TestRW:
     wp.voxels = True
     wp.cutout = "0/500,550/500,550/1000,1002"
     wp.dataonly = True
-    writeAnno(wp) 
+    writeAnno(wp)
 
     # Add data to it
     wp.annid=int(retval)
     wp.voxels = False
     wp.cutout = "0/600,650/600,650/1000,1002"
     wp.dataonly = True
-    writeAnno(wp) 
+    writeAnno(wp)
 
     # Check that the combination of write + update sums
     rp.annids=int(retval)
