@@ -127,7 +127,6 @@ def cutout (request, webargs):
     logger.exception("Unknown exception in getCutout. {}".format(e))
     raise NDWSError("Unknown exception in getCutout. {}".format(e))
 
-#@cache_control(no_cache=True)
 @api_view(['GET','POST'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
 @permission_classes((PublicAuthentication,))
@@ -152,7 +151,6 @@ def nifti (request, webargs):
     raise
 
 
-#@cache_control(no_cache=True)
 @api_view(['GET','POST'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
 @permission_classes((PublicAuthentication,))
@@ -226,8 +224,6 @@ def annotation (request, webargs):
     logger.exception("Unknown exception in annotation. {}".format(e))
     raise NDWSError("Unknown exception in annotation. {}".format(e))
 
-
-#@cache_control(no_cache=True)
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
 @permission_classes((PublicAuthentication,))
@@ -245,8 +241,6 @@ def csv (request, webargs):
     logger.exception("Unknown exception in csv. {}".format(e))
     raise NDWSError("Unknown exception in csv. {}".format(e))
 
-
-#@cache_control(no_cache=True)
 @api_view(['GET','POST'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
 @permission_classes((PublicAuthentication,))
@@ -289,11 +283,7 @@ def catmaid (request, webargs):
     logger.exception("Unknown exception in catmaid {}.".format(e))
     raise NDWSError("Unknown exception in catmaid {}.".format(e))
 
-
-#@cache_control(no_cache=True)
 @api_view(['GET'])
-@authentication_classes((SessionAuthentication, TokenAuthentication))
-@permission_classes((PublicAuthentication,))
 def publictokens (request, webargs):
   """Return list of public tokens"""
   try:
@@ -307,8 +297,6 @@ def publictokens (request, webargs):
     raise NDWSError("Unknown exception in publictokens. {}".format(e))
 
 @api_view(['GET'])
-@authentication_classes((SessionAuthentication, TokenAuthentication))
-@permission_classes((PublicAuthentication,))
 def publicdatasets (request, webargs):
   """Return list of public datasets"""
   try:
@@ -321,7 +309,6 @@ def publicdatasets (request, webargs):
     logger.exception("Unknown exception in publictokens. {}".format(e))
     raise NDWSError("Unknown exception in publictokens. {}".format(e))
 
-#@cache_control(no_cache=True)
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
 @permission_classes((PublicAuthentication,))
@@ -354,7 +341,6 @@ def xmlinfo (request, webargs):
     logger.exception("Unknown exception in xmlinfo. {}".format(e))
     raise NDWSError("Unknown exception in xmlinfo. {}".format(e))
 
-#@cache_control(no_cache=True)
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
 @permission_classes((PublicAuthentication,))
@@ -387,7 +373,6 @@ def mcFalseColor (request, webargs):
     logger.exception("Unknown exception in mcFalseColor. {}".format(e))
     raise NDWSError("Unknown exception in mcFalseColor. {}".format(e))
 
-#@cache_control(no_cache=True)
 @api_view(['POST'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
 @permission_classes((PublicAuthentication,))
@@ -421,7 +406,6 @@ def setField (request, webargs):
     logger.exception("Unknown exception in setField. {}".format(e))
     raise NDWSError("Unknown exception in setField. {}".format(e))
 
-#@cache_control(no_cache=True)
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
 @permission_classes((PublicAuthentication,))
@@ -438,7 +422,6 @@ def getField (request, webargs):
     logger.exception("Unknown exception in getField. {}".format(e))
     raise NDWSError("Unknown exception in getField. {}".format(e))
 
-#@cache_control(no_cache=True)
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
 @permission_classes((PublicAuthentication,))
@@ -504,7 +487,6 @@ def exceptions (request, webargs):
     logger.exception("Unknown exception in exceptions Web service. {}".format(e))
     raise NDWSError("Unknown exception in exceptions Web service. {}".format(e))
 
-#@cache_control(no_cache=True)
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
 @permission_classes((PublicAuthentication,))
@@ -562,25 +544,3 @@ def deleteChannel(request, webargs):
   except Exception, e:
     logger.exception("Unknown exception in jsonProject Web service. {}".format(e))
     raise NDWSError("Unknown exception in jsonProject Web service. {}".format(e))
-
-# def createChannel(request, webargs):
-  # """RESTful URL for creating a list of channels using a JSON file"""
-
-  # try:
-    # return ndwsprojingest.createChannel(webargs, request.body)
-  # except NDWSError, e:
-    # return django.http.HttpResponseNotFound()
-  # except Exception, e:
-    # logger.exception("Unknown exception in jsonProject Web service. {}".format(e))
-    # raise NDWSError("Unknown exception in jsonProject Web service. {}".format(e))
-
-# def deleteChannel(request, webargs):
-  # """RESTful URL for deleting a list of channels using a JSON file"""
-
-  # try:
-    # return ndwsprojingest.deleteChannel(webargs, request.body)
-  # except NDWSError, e:
-    # return django.http.HttpResponseNotFound()
-  # except Exception, e:
-    # logger.exception("Unknown exception in jsonProject Web service. {}".format(e))
-    # raise NDWSError("Unknown exception in jsonProject Web service. {}".format(e))

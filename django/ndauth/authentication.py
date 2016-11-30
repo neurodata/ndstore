@@ -14,11 +14,12 @@ import logging
 logger=logging.getLogger("neurodata")
 
 class PublicAuthentication(authentication.BaseAuthentication):
+  
   def has_permission(self, request, view):
     web_path = request.path
     if not web_path: # Some very odd scenario
-      raise IOError('Could not get web_path from reques')
-
+      raise IOError('Could not get web_path from request')
+    
     try:
       argus = web_path.split('/')
       # Expects args in order: ''|nd|ocp , ''|nd|ocp , App , View , Token , Arguements
@@ -28,7 +29,8 @@ class PublicAuthentication(authentication.BaseAuthentication):
         argus = argus[1:]
       if argus[0] in ['','nd','ocp']:
         argus = argus[1:]
-
+      
+      # checking for mcfc in catmaid calls
       if argus[0] == 'catmaid':
         exp_token = argus[2]
       else:
@@ -49,17 +51,14 @@ class PublicAuthentication(authentication.BaseAuthentication):
           for v in m_tokens.values():
             tokens.append(v['token_name'])
           if not exp_token in tokens:
-            raise NDWSError ("Token {} does not exist or you do not have\
-sufficient permissions to access it. {}".format(exp_token, pub_tokens))
+            raise NDWSError ("Token {} does not exist or you do not have sufficient permissions to access it. {}".format(exp_token, pub_tokens))
           else:
             return True
         else:
           return True
       except Exception as e:
-        logger.warning("Error in authenticating user in NDAUTH: \
-{}".format(e))
+        logger.warning("Error in authenticating user in NDAUTH: {}".format(e))
         return False
 
     except Exception as e:
       raise e
-

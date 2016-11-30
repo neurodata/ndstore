@@ -24,18 +24,13 @@ import numpy as np
 import requests
 
 from params import Params
+from ndlib.restutil import *
 from ndlib.ndtype import UINT8, ND_dtypetonp
 import kvengine_to_test
 import site_to_test
 import makeunitdb
 
 SITE_HOST = site_to_test.site
-TOKEN = ''
-
-if TOKEN == '':
-  f = open('/tmp/token_super','r')
-  TOKEN = f.read()
-  f.close()
 
 def postNPZ (p, post_data, time=False):
   """Post data using npz"""
@@ -60,7 +55,6 @@ def postNPZ (p, post_data, time=False):
     return resp
   except Exception as e:
     return e
-
 
 def getNPZ (p, time=False):
   """Get data using npz. Returns a numpy array"""
@@ -116,7 +110,6 @@ def postBlosc (p, post_data, time=False):
   except Exception as e:
     return e
 
-
 def getBlosc (p, time=False):
   """Get data using blosc. Returns a blosc packed numpy array"""
 
@@ -159,7 +152,6 @@ def postHDF5 (p, post_data, time=False):
     return resp
   except Exception as e:
     return e
-
 
 def getHDF5 (p, time=False):
   """Get data using npz. Returns a hdf5 file"""
@@ -208,7 +200,6 @@ def putAnnotation ( p, f ):
   except Exception as e:
     return 0
 
-
 def getAnnotation ( p ):
   """Get the specified annotation"""
 
@@ -226,53 +217,3 @@ def getAnnotation ( p ):
   tmpfile.write ( f.content )
   tmpfile.seek(0)
   return h5py.File ( tmpfile.name, driver='core', backing_store=False )
-
-def postURL ( url, f ):
-  """Post the url"""
-
-  try:
-    resp = requests.post(url, data=f, headers={'Authorization': 'Token {}'.format( TOKEN )}, verify=False)
-  except Exception as e:
-    return e
-  return resp
-
-def getURL ( url ):
-  """Get the url"""
-  try:
-    resp = requests.get(url, headers={'Authorization': 'Token {}'.format( TOKEN )}, verify=False)
-  except Exception as e:
-    return e
-  return resp
-
-
-def delURL ( url ):
-  """Del the url"""
-  try:
-    resp = requests.delete(url, headers={'Authorization': 'Token {}'.format( TOKEN )}, verify=False)
-  except Exception as e:
-    return e
-  return resp
-
-def postJSON(url, data):
-
-  try:
-    response = requests.post(url, json=data, headers={'Authorization': 'Token {}'.format( TOKEN )}, verify=False)
-    return response
-  except requests.HTTPError as e:
-    return e
-
-def getJSON(url):
-
-  try:
-    response = requests.get(url, headers={'Authorization': 'Token {}'.format( TOKEN )}, verify=False)
-    return response.json()
-  except requests.HTTPError as e:
-    return e
-
-def deleteJSON(url):
-
-  try:
-    response = requests.delete(url, headers={'Authorization': 'Token {}'.format( TOKEN )}, verify=False)
-    return response
-  except requests.HTTPError as e:
-    return e
