@@ -96,6 +96,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'ND.wsgi.application'
 
+MIGRATION_MODULES = {
+    'sites': 'fixtures.migrations',
+}
 
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
