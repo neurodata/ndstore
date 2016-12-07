@@ -25,11 +25,12 @@ sys.path += [os.path.abspath('../django')]
 import ND.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
 from params import Params
-from postmethods import postNPZ, getNPZ 
+from postmethods import postNPZ, getNPZ, getURL
 import makeunitdb
 from ndlib.ndtype import UINT8, UINT16, UINT32, ANNOTATION, IMAGE 
 import site_to_test
 SITE_HOST = site_to_test.site
+
 
 
 p = Params()
@@ -48,39 +49,35 @@ class Test_Annotation_Json():
     """Teardown Parameters"""
     makeunitdb.deleteTestDB(p.token)
 
-
   def test_get_anno_by_loc(self):
     """Test the annotation (RAMON) JSON interface"""
 
     image_data = np.random.randint(0, high=255, size=[1, 10, 1024, 1024]).astype(np.uint32)
     response = postNPZ(p, image_data)
 
-    assert( response.code == 200 )
+    assert( response.status_code == 200 )
 
     voxarray = getNPZ(p)
     # check that the return data matches
     assert( np.array_equal(voxarray, image_data) )
 
-    # query for an ID at res0 
+    # query for an ID at res0
     res = 0
     x = 50
     y = 50
     z = 5
-    cutout = '{}/{}/{}/{}/'.format( res, x, y, z ) 
-    url = 'http://{}/sd/{}/{}/id/{}'.format( SITE_HOST, p.token, p.channels[0], cutout )
-    
+    cutout = '{}/{}/{}/{}/'.format( res, x, y, z )
+    url = 'https://{}/sd/{}/{}/id/{}'.format( SITE_HOST, p.token, p.channels[0], cutout )
+
     try:
       # Build a get request
-      req = urllib2.Request(url)
-      response = urllib2.urlopen(req)
-    except urllib2.HTTPError,e:
-      print e 
-      assert(e.reason == 0)
-    
-    assert( response.code == 200 )
+      response = getURL(url)
+    except Exception as e:
+      print e
 
-    response_id = int(response.read())
+    assert( response.status_code == 200 )
 
-    # the offset for this dataset is set to 1, hence z-1 
+    response_id = int(response.content)
+
+    # the offset for this dataset is set to 1, hence z-1
     assert( response_id == image_data[0, z-1, y, x] )
-

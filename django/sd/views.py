@@ -4,9 +4,9 @@
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,9 +15,17 @@
 
 import django.http
 from django.views.decorators.cache import cache_control
+from django.contrib.auth.decorators import login_required
 import MySQLdb
 import cStringIO
 import re
+
+from ndauth.authentication import PublicAuthentication
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from nduser.models import Token
+
 import webservices.ndwsrest as ndwsrest
 import webservices.ndwsprojingest as ndwsprojingest
 from webservices.ndwserror import NDWSError, IncorrectSyntaxError
@@ -30,6 +38,9 @@ GET_ANNO_SERVICES = ['xyanno', 'yzanno', 'xzanno']
 POST_SERVICES = ['hdf5', 'npz', 'raw', 'hdf5_async', 'propagate', 'tiff', 'blosc', 'blaze']
 
 
+@api_view(['GET','POST'])
+@authentication_classes((SessionAuthentication, TokenAuthentication))
+@permission_classes((PublicAuthentication,))
 def cutout (request, webargs):
   """Restful URL for all read services to annotation projects"""
   
@@ -96,7 +107,7 @@ def cutout (request, webargs):
     # RBTODO control caching?
     # POST methods
     elif request.method == 'POST':
-      
+
       if service in POST_SERVICES:
         django.http.HttpResponse(ndwsrest.putCutout(webargs, request.body))
         return django.http.HttpResponse("Success", content_type='text/html')
@@ -116,7 +127,9 @@ def cutout (request, webargs):
     logger.exception("Unknown exception in getCutout. {}".format(e))
     raise NDWSError("Unknown exception in getCutout. {}".format(e))
 
-#@cache_control(no_cache=True)
+@api_view(['GET','POST'])
+@authentication_classes((SessionAuthentication, TokenAuthentication))
+@permission_classes((PublicAuthentication,))
 def nifti (request, webargs):
   """Get put interface for nifti files"""
 
@@ -138,10 +151,12 @@ def nifti (request, webargs):
     raise
 
 
-#@cache_control(no_cache=True)
+@api_view(['GET','POST'])
+@authentication_classes((SessionAuthentication, TokenAuthentication))
+@permission_classes((PublicAuthentication,))
 def swc (request, webargs):
   """Get put interface for swc tracing files"""
-  
+
   try:
     if request.method == 'GET':
       fname = "".join([x if x.isalnum() else "_" for x in webargs])
@@ -159,6 +174,9 @@ def swc (request, webargs):
     raise NDWSError("Unknown exception in SWC. {}".format(e))
     raise
 
+@api_view(['GET', 'POST', 'DELETE'])
+@authentication_classes((SessionAuthentication, TokenAuthentication))
+@permission_classes((PublicAuthentication,))
 def jsonramon (request, webargs):
   """Get put object interface for JSON-ified RAMON objects"""
 
@@ -188,7 +206,7 @@ def annotation (request, webargs):
 
   try:
     if request.method == 'GET':
-      # check for json vs hdf5 
+      # check for json vs hdf5
       if rest.split('/')[1] == 'json':
         return django.http.HttpResponse(ndwsrest.getAnnotation(webargs), content_type="application/json" )
       else:
@@ -206,8 +224,9 @@ def annotation (request, webargs):
     logger.exception("Unknown exception in annotation. {}".format(e))
     raise NDWSError("Unknown exception in annotation. {}".format(e))
 
-
-#@cache_control(no_cache=True)
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, TokenAuthentication))
+@permission_classes((PublicAuthentication,))
 def csv (request, webargs):
   """Get (not yet put) csv interface for RAMON objects"""
 
@@ -222,17 +241,18 @@ def csv (request, webargs):
     logger.exception("Unknown exception in csv. {}".format(e))
     raise NDWSError("Unknown exception in csv. {}".format(e))
 
-
-#@cache_control(no_cache=True)
+@api_view(['GET','POST'])
+@authentication_classes((SessionAuthentication, TokenAuthentication))
+@permission_classes((PublicAuthentication,))
 def queryObjects ( request, webargs ):
   """Return a list of objects matching predicates and cutout"""
 
   try:
     if request.method == 'GET':
-      return django.http.HttpResponse(ndwsrest.queryAnnoObjects(webargs), content_type="product/hdf5") 
+      return django.http.HttpResponse(ndwsrest.queryAnnoObjects(webargs), content_type="product/hdf5")
     elif request.method == 'POST':
-      return django.http.HttpResponse(ndwsrest.queryAnnoObjects(webargs,request.body), content_type="product/hdf5") 
-    
+      return django.http.HttpResponse(ndwsrest.queryAnnoObjects(webargs,request.body), content_type="product/hdf5")
+
   except NDWSError, e:
     return django.http.HttpResponseNotFound(e.value)
   except MySQLdb.Error, e:
@@ -241,10 +261,12 @@ def queryObjects ( request, webargs ):
     logger.exception("Unknown exception in listObjects. {}".format(e))
     raise NDWSError("Unknown exception in listObjects. {}".format(e))
 
-
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, TokenAuthentication))
+@permission_classes((PublicAuthentication,))
 def catmaid (request, webargs):
   """Convert a CATMAID request into an cutout."""
-  
+
   try:
     catmaidimg = ndwsrest.ndcatmaid_legacy(webargs)
 
@@ -261,11 +283,10 @@ def catmaid (request, webargs):
     logger.exception("Unknown exception in catmaid {}.".format(e))
     raise NDWSError("Unknown exception in catmaid {}.".format(e))
 
-
-#@cache_control(no_cache=True)
+@api_view(['GET'])
 def publictokens (request, webargs):
   """Return list of public tokens"""
-  try:  
+  try:
     return django.http.HttpResponse(ndwsrest.publicTokens(webargs), content_type="application/json" )
   except NDWSError, e:
     return django.http.HttpResponseNotFound(e.value)
@@ -275,9 +296,10 @@ def publictokens (request, webargs):
     logger.exception("Unknown exception in publictokens. {}".format(e))
     raise NDWSError("Unknown exception in publictokens. {}".format(e))
 
+@api_view(['GET'])
 def publicdatasets (request, webargs):
   """Return list of public datasets"""
-  try:  
+  try:
     return django.http.HttpResponse(ndwsrest.publicDatasets(webargs), content_type="application/json" )
   except NDWSError, e:
     return django.http.HttpResponseNotFound(e.value)
@@ -287,11 +309,13 @@ def publicdatasets (request, webargs):
     logger.exception("Unknown exception in publictokens. {}".format(e))
     raise NDWSError("Unknown exception in publictokens. {}".format(e))
 
-#@cache_control(no_cache=True)
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, TokenAuthentication))
+@permission_classes((PublicAuthentication,))
 def jsoninfo (request, webargs):
   """Return project and dataset configuration information"""
 
-  try:  
+  try:
     return django.http.HttpResponse(ndwsrest.jsonInfo(webargs), content_type="application/json" )
   except NDWSError, e:
     return django.http.HttpResponseNotFound(e.value)
@@ -301,10 +325,13 @@ def jsoninfo (request, webargs):
     logger.exception("Unknown exception in jsoninfo. {}".format(e))
     raise NDWSError("Unknown exception in jsoninfo. {}".format(e))
 
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, TokenAuthentication))
+@permission_classes((PublicAuthentication,))
 def xmlinfo (request, webargs):
   """Return project and dataset configuration information"""
 
-  try:  
+  try:
     return django.http.HttpResponse(ndwsrest.xmlInfo(webargs), content_type="application/xml" )
   except NDWSError, e:
     return django.http.HttpResponseNotFound(e.value)
@@ -314,11 +341,13 @@ def xmlinfo (request, webargs):
     logger.exception("Unknown exception in xmlinfo. {}".format(e))
     raise NDWSError("Unknown exception in xmlinfo. {}".format(e))
 
-#@cache_control(no_cache=True)
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, TokenAuthentication))
+@permission_classes((PublicAuthentication,))
 def projinfo (request, webargs):
   """Return project and dataset configuration information"""
-  
-  try:  
+
+  try:
     return django.http.HttpResponse(ndwsrest.projInfo(webargs), content_type="product/hdf5" )
   except NDWSError, e:
     return django.http.HttpResponseNotFound(e.value)
@@ -328,7 +357,9 @@ def projinfo (request, webargs):
     logger.exception("Unknown exception in projInfo. {}".format(e))
     raise NDWSError("Unknown exception in projInfo. {}".format(e))
 
-
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, TokenAuthentication))
+@permission_classes((PublicAuthentication,))
 def mcFalseColor (request, webargs):
   """Cutout of multiple channels with false color rendering"""
 
@@ -342,11 +373,13 @@ def mcFalseColor (request, webargs):
     logger.exception("Unknown exception in mcFalseColor. {}".format(e))
     raise NDWSError("Unknown exception in mcFalseColor. {}".format(e))
 
-#@cache_control(no_cache=True)
+@api_view(['POST'])
+@authentication_classes((SessionAuthentication, TokenAuthentication))
+@permission_classes((PublicAuthentication,))
 def reserve (request, webargs):
   """Preallocate a range of ids to an application."""
 
-  try:  
+  try:
     return django.http.HttpResponse(ndwsrest.reserve(webargs), content_type="application/json" )
   except NDWSError, e:
     return django.http.HttpResponseNotFound(e.value)
@@ -356,6 +389,9 @@ def reserve (request, webargs):
     logger.exception("Unknown exception in reserve. {}".format(e))
     raise NDWSError("Unknown exception in reserve. {}".format(e))
 
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, TokenAuthentication))
+@permission_classes((PublicAuthentication,))
 def setField (request, webargs):
   """Set an individual RAMON field for an object"""
 
@@ -370,7 +406,9 @@ def setField (request, webargs):
     logger.exception("Unknown exception in setField. {}".format(e))
     raise NDWSError("Unknown exception in setField. {}".format(e))
 
-#@cache_control(no_cache=True)
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, TokenAuthentication))
+@permission_classes((PublicAuthentication,))
 def getField (request, webargs):
   """Get an individual RAMON field for an object"""
 
@@ -384,7 +422,9 @@ def getField (request, webargs):
     logger.exception("Unknown exception in getField. {}".format(e))
     raise NDWSError("Unknown exception in getField. {}".format(e))
 
-#@cache_control(no_cache=True)
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, TokenAuthentication))
+@permission_classes((PublicAuthentication,))
 def getPropagate (request, webargs):
   """ Get the value for Propagate field for a given project """
 
@@ -398,6 +438,9 @@ def getPropagate (request, webargs):
     logger.exception("Unknown exception in getPropagate. {}".format(e))
     raise NDWSError("Unknown exception in getPropagate. {}".format(e))
 
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, TokenAuthentication))
+@permission_classes((PublicAuthentication,))
 def setPropagate (request, webargs):
   """ Set the value for Propagate field for a given project """
 
@@ -412,6 +455,9 @@ def setPropagate (request, webargs):
     logger.exception("Unknown exception in setPropagate. {}".format(e))
     raise NDWSError("Unknown exception in setPropagate. {}".format(e))
 
+@api_view(['POST'])
+@authentication_classes((SessionAuthentication, TokenAuthentication))
+@permission_classes((PublicAuthentication,))
 def merge (request, webargs):
   """Merge annotation objects"""
 
@@ -425,6 +471,9 @@ def merge (request, webargs):
     logger.exception("Unknown exception in global Merge. {}".format(e))
     raise NDWSError("Unknown exception in global Merge. {}".format(e))
 
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, TokenAuthentication))
+@permission_classes((PublicAuthentication,))
 def exceptions (request, webargs):
   """Return a list of multiply labeled pixels in a cutout region"""
 
@@ -438,10 +487,12 @@ def exceptions (request, webargs):
     logger.exception("Unknown exception in exceptions Web service. {}".format(e))
     raise NDWSError("Unknown exception in exceptions Web service. {}".format(e))
 
-#@cache_control(no_cache=True)
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, TokenAuthentication))
+@permission_classes((PublicAuthentication,))
 def minmaxProject (request, webargs):
   """Restful URL for all read services to annotation projects"""
- 
+
   try:
     return django.http.HttpResponse(ndwsrest.minmaxProject(webargs), content_type="image/png" )
   except NDWSError, e:
@@ -452,6 +503,9 @@ def minmaxProject (request, webargs):
     logger.exception("Unknown exception in (min|max) projection Web service. {}".format(e))
     raise NDWSError("Unknown exception in (min|max) projection Web service. {}".format(e))
 
+@api_view(['POST'])
+@authentication_classes((SessionAuthentication, TokenAuthentication))
+@permission_classes((PublicAuthentication,))
 def autoIngest(request, webargs):
   """RESTful URL for creating a project using a JSON file"""
 
@@ -463,24 +517,30 @@ def autoIngest(request, webargs):
     logger.exception("Unknown exception in jsonProject Web service. {}".format(e))
     raise NDWSError("Unknown exception in jsonProject Web service. {}".format(e))
 
-# def createChannel(request, webargs):
-  # """RESTful URL for creating a list of channels using a JSON file"""
+@api_view(['POST'])
+@authentication_classes((SessionAuthentication, TokenAuthentication))
+@permission_classes((PublicAuthentication,))
+def createChannel(request, webargs):
+  """RESTful URL for creating a list of channels using a JSON file"""
 
-  # try:
-    # return ndwsprojingest.createChannel(webargs, request.body)
-  # except NDWSError, e:
-    # return django.http.HttpResponseNotFound()
-  # except Exception, e:
-    # logger.exception("Unknown exception in jsonProject Web service. {}".format(e))
-    # raise NDWSError("Unknown exception in jsonProject Web service. {}".format(e))
+  try:
+    return ndwsprojingest.createChannel(webargs, request.body)
+  except NDWSError, e:
+    return django.http.HttpResponseNotFound()
+  except Exception, e:
+    logger.exception("Unknown exception in jsonProject Web service. {}".format(e))
+    raise NDWSError("Unknown exception in jsonProject Web service. {}".format(e))
 
-# def deleteChannel(request, webargs):
-  # """RESTful URL for deleting a list of channels using a JSON file"""
+@api_view(['POST'])
+@authentication_classes((SessionAuthentication, TokenAuthentication))
+@permission_classes((PublicAuthentication,))
+def deleteChannel(request, webargs):
+  """RESTful URL for deleting a list of channels using a JSON file"""
 
-  # try:
-    # return ndwsprojingest.deleteChannel(webargs, request.body)
-  # except NDWSError, e:
-    # return django.http.HttpResponseNotFound()
-  # except Exception, e:
-    # logger.exception("Unknown exception in jsonProject Web service. {}".format(e))
-    # raise NDWSError("Unknown exception in jsonProject Web service. {}".format(e))
+  try:
+    return ndwsprojingest.deleteChannel(webargs, request.body)
+  except NDWSError, e:
+    return django.http.HttpResponseNotFound()
+  except Exception, e:
+    logger.exception("Unknown exception in jsonProject Web service. {}".format(e))
+    raise NDWSError("Unknown exception in jsonProject Web service. {}".format(e))

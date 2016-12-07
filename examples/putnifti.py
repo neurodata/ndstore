@@ -12,11 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import argparse
-import numpy as np
-import urllib, urllib2
-import cStringIO
+import os
 import sys
+import argparse
+sys.path += [os.path.abspath('../django')]
+import ND.settings
+os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
+from ndlib.restutil import *
 
 def main():
 
@@ -28,18 +30,13 @@ def main():
   result = parser.parse_args()
 
   url = 'http://{}/ca/{}/{}/nii/'.format(result.baseurl, result.token, result.channel)
-
   print url
 
-  # open the file name as a tiff file
-  fh = open(result.filename)
-
-  # Get cube in question
-  try:
-    f = urllib2.urlopen ( url, fh.read() )
-  except urllib2.URLError, e:
-    print "Failed {}. Exception {}.".format(url, e) 
-    sys.exit(-1)
+  # open the file name as a tiff file and post
+  response = postURL(url, open(result.filename).read())
+  if response.status_code != 200:
+    print "Failed {}. Exception {}".format(url, response.content())
+    sys.exit(1)
 
 if __name__ == "__main__":
   main()

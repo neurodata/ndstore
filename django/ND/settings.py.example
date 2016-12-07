@@ -22,6 +22,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = settings_secret.SECRET_KEY
+SHARED_SECRET = settings_secret.SHARED_SECRET
 
 SITE_ID = 2 
 
@@ -34,6 +35,18 @@ FORCE_SCRIPT_NAME = '/nd'
 
 VIZ_SERVER = 'http://viz.neurodata.io'; # MUST include 'http'!
 
+# Authorization Framework
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    )
+}
+
 # Application definition
 
 INSTALLED_APPS = (
@@ -44,6 +57,8 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework.authtoken',
     'nduser',
     'spdb',
     'overlay',
@@ -115,6 +130,14 @@ DATABASES = {
     }
 }
 
+# Authentication Backends (Allauth and regular)
+AUTHENTICATION_BACKENDS = (
+    # Needed to login by username in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
+
+    # `allauth` specific authentication methods, such as login by e-mail
+    # 'allauth.account.auth_backends.AuthenticationBackend',
+)
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
@@ -243,6 +266,19 @@ REDIS_DATA_PORT = 6379
 REDIS_DATA_DB = 0
 
 # Amazon Settings
+AWS_ACCESS_KEY_ID = settings_secret.AWS_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY = settings_secret.AWS_SECRET_ACCESS_KEY
+
+# HTTPS Settings
+SECRET_TOKEN = settings_secret.SECRET_TOKEN
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE=True
+os.environ['wsgi.url_scheme'] = 'https'
+os.environ['HTTPS'] = "on"
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = True
+
 # REGION_NAME = 'us-east-1'
 S3_CUBOID_BUCKET = 'neurodata-cuboid-store'
 # S3_TILE_BUCKET = 'neurodata-tile-store'

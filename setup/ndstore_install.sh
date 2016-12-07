@@ -15,7 +15,7 @@ sudo debconf-set-selections <<< "postfix postfix/main_mailer_type string 'Intern
 sudo apt-get -y install mysql-client-core-5.6 libhdf5-serial-dev mysql-client-5.6
 
 # apt-get install packages
-sudo apt-get -y install nginx git bash-completion python-virtualenv libhdf5-dev libxslt1-dev libmemcached-dev g++ libjpeg-dev virtualenvwrapper python-dev mysql-server-5.6 libmysqlclient-dev xfsprogs supervisor rabbitmq-server uwsgi uwsgi-plugin-python liblapack-dev wget memcached postfix libffi-dev libssl-dev tcl
+sudo apt-get -qq -y install nginx git bash-completion python-virtualenv libhdf5-dev libxslt1-dev libmemcached-dev g++ libjpeg-dev virtualenvwrapper python-dev mysql-server-5.6 libmysqlclient-dev xfsprogs supervisor rabbitmq-server uwsgi uwsgi-plugin-python liblapack-dev wget memcached postfix libffi-dev libssl-dev tcl
 
 # create the log directory
 sudo mkdir /var/log/neurodata
@@ -33,13 +33,13 @@ sudo useradd -M --system -g redis redis
 
 # switch user to neurodata and clone the repo with sub-modules
 cd /home/neurodata
-sudo -u neurodata git clone https://github.com/neurodata/ndstore
+sudo -u neurodata git clone https://github.com/neurodata/ndstore -q
 cd /home/neurodata/ndstore
 
 if [ -z "$1" ]; then
-  sudo -u neurodata git checkout microns 
+  sudo -u neurodata git checkout microns -q
 else
-  sudo -u neurodata git checkout "$1"
+  sudo -u neurodata git checkout "$1" -q
 fi
 
 sudo -u neurodata git submodule init
@@ -49,7 +49,7 @@ sudo -u neurodata git submodule update
 # pip install packages
 cd /home/neurodata/ndstore/setup/
 #sudo pip install -U -r requirements.txt
-sudo pip install cython numpy
+sudo pip install -U cython numpy
 sudo pip install -U -r requirements.txt
 #sudo pip install django h5py pytest
 #sudo pip install pillow posix_ipc boto3 nibabel networkx requests lxml pylibmc blosc django-registration django-celery mysql-python libtiff jsonschema json-spec redis
@@ -68,22 +68,23 @@ cd /home/neurodata/ndstore/django/ND/
 sudo -u neurodata cp settings.py.example settings.py
 sudo -u neurodata ln -s /home/neurodata/ndstore/setup/docker_config/django/docker_settings_secret.py settings_secret.py
 
-# add openconnecto.me to django_sites
-mysql -u neurodata -pneur0data -i -e "insert into django_site (id, domain, name) values (2, 'openconnecto.me', 'openconnecto.me');"
-
 # download, install and configure redis
 cd /home/neurodata/
 sudo -u neurodata wget http://download.redis.io/redis-stable.tar.gz
 sudo -u neurodata tar -xvf /home/neurodata/redis-stable.tar.gz
 cd /home/neurodata/redis-stable/
 sudo -u neurodata make && sudo -u neurodata make test && sudo make install
+ls
+pwd
 sudo mkdir /etc/redis
 sudo ln -s /home/neurodata/ndstore/setup/docker_config/redis/redis.conf /etc/redis/redis.conf
 sudo ln -s /home/neurodata/ndstore/setup/docker_config/upstart/redis.conf /etc/init/redis.conf
 
 # restart redis service
 sudo initctl reload-configuration
+sudo service redis stop
 sudo service redis start
+sudo service redis restart
 
 # setup the ndingest settings file
 sudo cp /home/neurodata/ndstore/ndingest/settings/settings.ini.example /home/neurodata/ndstore/ndingest/settings/settings.ini
@@ -93,7 +94,17 @@ sudo chmod -R 777 /var/log/neurodata/
 cd /home/neurodata/ndstore/django/
 sudo -u neurodata python manage.py migrate
 echo "from django.contrib.auth.models import User; User.objects.create_superuser('neurodata', 'abc@xyz.com', 'neur0data')" | python manage.py shell
+echo "from django.contrib.auth.models import User; User.objects.create_user('test', 'abc@xyz.com', 't3st')" | python manage.py shell
 sudo -u neurodata python manage.py collectstatic --noinput
+
+# add openconnecto.me to django_sites
+if [ -z "$2" ]; then
+  mysql -u neurodata -pneur0data -i -e "use neurodjango; insert into django_site (id, domain, name) values (2, 'openconnecto.me', 'openconnecto.me');"
+else
+  if [ "$2" == "PRODUCTION" ]; then
+    mysql -u neurodata -pneur0data -i -e "use neurodjango; insert into django_site (id, domain, name) values (2, '$3', '$3');"
+  fi
+fi
 
 # setup the cache manager
 sudo ln -s /home/neurodata/ndstore/setup/docker_config/upstart/ndmanager.conf /etc/init/ndmanager.conf
@@ -118,6 +129,30 @@ sudo ln -s /home/neurodata/ndstore/setup/docker_config/celery/ingest.conf /etc/s
 sudo rm /etc/supervisor/conf.d/stats.conf
 sudo ln -s /home/neurodata/ndstore/setup/docker_config/celery/stats.conf /etc/supervisor/conf.d/stats.conf
 
+sudo rm /home/neurodata/ndstore/ndingest/settings/settings.ini
+sudo ln -s /home/neurodata/ndstore/ndingest/settings/settings.ini.example /home/neurodata/ndstore/ndingest/settings/settings.ini
+
+
+#Set up https
+if [ -z "$2" ]; then
+  sudo mkdir /etc/nginx/ssl
+  cd /home/neurodata/ndstore/setup/
+  sudo openssl req -newkey rsa:2048 -nodes -keyout /etc/nginx/ssl/server.key -config ssl_config.txt
+  sudo openssl req -key /etc/nginx/ssl/server.key -new -x509 -out /etc/nginx/ssl/server.crt -config ssl_config.txt
+else
+  if [ "$2" == "PRODUCTION" ]; then
+    sudo mkdir /etc/nginx/ssl
+    cd
+    wget https://dl.eff.org/certbot-auto
+    chmod a+x certbot-auto
+    echo "y" | sudo ./certbot-auto
+    sudo ./certbot-auto certonly --noninteractive --agree-tos --email $4 --webroot -w /usr/share/nginx/html/ -d $3
+    sudo cp /etc/letsencrypt/live/$3/privkey.pem /etc/nginx/ssl/server.key
+    sudo cp /etc/letsencrypt/live/$3/cert.pem /etc/nginx/ssl/server.crt
+    sudo ./certbot-auto renew --quiet --no-self-upgrade
+  fi
+fi
+
 # reload all init configurations
 sudo initctl reload-configuration
 # starting all the services
@@ -129,6 +164,17 @@ sudo service memcached restart
 sudo service redis restart
 sudo service ndmanager restart
 
+# Create superuser token
+cd /home/neurodata/ndstore/django/
+echo "from rest_framework.authtoken.models import Token; from django.contrib.auth.models import User; u = User.objects.get(username='neurodata'); token = Token.objects.create(user=u); f = open('/tmp/token_super','wb'); f.write(token.key); f.close()" | python manage.py shell
+
+cd /home/neurodata/ndstore/django/
+echo "from rest_framework.authtoken.models import Token; from django.contrib.auth.models import User; u = User.objects.get(username='test'); token = Token.objects.create(user=u); f = open('/tmp/token_user','wb'); f.write(token.key); f.close()" | python manage.py shell
+
 # running tests
 cd /home/neurodata/ndstore/test/
 py.test
+if [ "$?" != "0" ]; then
+  cat /var/log/neurodata/ndstore.log
+  exit 1
+fi

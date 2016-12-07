@@ -13,6 +13,11 @@
 # limitations under the License.
 
 from django.shortcuts import render
+
+# Create your views here.
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.core.files.base import ContentFile
@@ -26,6 +31,9 @@ import logging
 logger=logging.getLogger("neurodata")
 
 #@login_required(login_url='/nd/accounts/login/')
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, TokenAuthentication))
+@permission_classes((IsAuthenticated,))
 def buildGraph (request, webargs):
     """Build a graph based on different arguments"""
     

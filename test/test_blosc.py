@@ -79,7 +79,7 @@ class Test_Blosc:
     p.args = (3000,3100,4000,4100,200,201)
     image_data = np.ones( [2,1,200,200], dtype=np.uint8 ) * random.randint(0,255)
     response = postBlosc(p, image_data)
-    assert(response.code == 404)
+    assert(response.status_code == 404)
   
   def test_incorrect_channel_blosc (self):
     """Test the xy slice cutout"""
@@ -87,4 +87,4 @@ class Test_Blosc:
     p.args = (3000,3100,4000,4100,200,201)
     image_data = np.ones( [1,1,100,100], dtype=np.uint8 ) * random.randint(0,255)
     response = postBlosc(p, image_data)
-    assert(response.code == 404)
+    assert(response.status_code == 404)

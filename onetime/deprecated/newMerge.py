@@ -62,7 +62,6 @@ def main():
       tmpfile.seek(0)
       h5f = h5py.File ( tmpfile.name, driver='core', backing_store=False )
 
-      # The exceptions are of the form x,y,x, id1, id2....
       if  h5f.get('exceptions'):
         listOfSets = list(h5f['exceptions'][:])
         
