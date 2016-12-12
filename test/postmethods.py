@@ -37,11 +37,11 @@ def postNPZ (p, post_data, time=False):
 
   # Build the url and then create a npz object
   if time:
-    url = 'https://{}/sd/{}/{}/npz/{}/{},{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+    url = 'http://{}/sd/{}/{}/npz/{}/{},{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
   elif p.channels is not None:
-    url = 'https://{}/sd/{}/{}/npz/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+    url = 'http://{}/sd/{}/{}/npz/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
   elif p.channels is None:
-    url = 'https://{}/sd/{}/npz/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
+    url = 'http://{}/sd/{}/npz/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
 
   fileobj = cStringIO.StringIO ()
   np.save (fileobj, post_data)
@@ -61,11 +61,11 @@ def getNPZ (p, time=False):
 
   # Build the url to get the npz object
   if time:
-    url = 'https://{}/sd/{}/{}/npz/{}/{},{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+    url = 'http://{}/sd/{}/{}/npz/{}/{},{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
   elif p.channels is not None:
-    url = 'https://{}/sd/{}/{}/npz/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+    url = 'http://{}/sd/{}/{}/npz/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
   elif p.channels is None:
-    url = 'https://{}/sd/{}/npz/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
+    url = 'http://{}/sd/{}/npz/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
   # Get the image back
   # f = urllib2.urlopen (url)
 
@@ -79,11 +79,11 @@ def postBlaze (p, post_data, time=False):
 
   # Build the url and then create a npz object
   if time:
-    url = 'https://{}/sd/{}/{}/blaze/{}/{},{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+    url = 'http://{}/sd/{}/{}/blaze/{}/{},{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
   elif p.channels is not None:
-    url = 'https://{}/sd/{}/{}/blaze/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+    url = 'http://{}/sd/{}/{}/blaze/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
   elif p.channels is None:
-    url = 'https://{}/sd/{}/blaze/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
+    url = 'http://{}/sd/{}/blaze/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
 
   try:
     # Build a post request
@@ -97,11 +97,11 @@ def postBlosc (p, post_data, time=False):
 
   # Build the url and then create a npz object
   if time:
-    url = 'https://{}/sd/{}/{}/blosc/{}/{},{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+    url = 'http://{}/sd/{}/{}/blosc/{}/{},{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
   elif p.channels is not None:
-    url = 'https://{}/sd/{}/{}/blosc/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+    url = 'http://{}/sd/{}/{}/blosc/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
   elif p.channels is None:
-    url = 'https://{}/sd/{}/blosc/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
+    url = 'http://{}/sd/{}/blosc/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
 
   try:
     # Build a post request
@@ -115,11 +115,11 @@ def getBlosc (p, time=False):
 
   # Build the url to get the npz object
   if time:
-    url = 'https://{}/sd/{}/{}/blosc/{}/{},{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+    url = 'http://{}/sd/{}/{}/blosc/{}/{},{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
   elif p.channels is not None:
-    url = 'https://{}/sd/{}/{}/blosc/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+    url = 'http://{}/sd/{}/{}/blosc/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
   elif p.channels is None:
-    url = 'https://{}/sd/{}/blosc/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
+    url = 'http://{}/sd/{}/blosc/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
   # Get the image back
   resp = getURL(url)
   return blosc.unpack_array(resp.content)
@@ -130,11 +130,11 @@ def postHDF5 (p, post_data, time=False):
 
   # Build the url and then create a hdf5 object
   if time:
-    url = 'https://{}/sd/{}/{}/hdf5/{}/{},{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+    url = 'http://{}/sd/{}/{}/hdf5/{}/{},{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
   elif p.channels is not None:
-    url = 'https://{}/sd/{}/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+    url = 'http://{}/sd/{}/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
   elif p.channels is None:
-    url = 'https://{}/sd/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
+    url = 'http://{}/sd/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format ( SITE_HOST, p.token, p.resolution, *p.args )
 
   tmpfile = tempfile.NamedTemporaryFile ()
   fh5out = h5py.File ( tmpfile.name )
@@ -158,9 +158,9 @@ def getHDF5 (p, time=False):
 
   # Build the url and then create a hdf5 object
   if time:
-    url = 'https://{}/sd/{}/{}/hdf5/{}/{},{}/{},{}/{},{}/{},{}/'.format(SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+    url = 'http://{}/sd/{}/{}/hdf5/{}/{},{}/{},{}/{},{}/{},{}/'.format(SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
   else:
-    url = 'https://{}/sd/{}/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format(SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args)
+    url = 'http://{}/sd/{}/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format(SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args)
 
   # Get the image back
   resp = getURL(url)
@@ -176,9 +176,9 @@ def getRAW (p, time=False):
 
   # Build the url and then create a raw object
   if time:
-    url = 'https://{}/sd/{}/{}/raw/{}/{},{}/{},{}/{},{}/{},{}/'.format(SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
+    url = 'http://{}/sd/{}/{}/raw/{}/{},{}/{},{}/{},{}/{},{}/'.format(SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args )
   else:
-    url = 'https://{}/sd/{}/{}/raw/{}/{},{}/{},{}/{},{}/'.format(SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args)
+    url = 'http://{}/sd/{}/{}/raw/{}/{},{}/{},{}/{},{}/'.format(SITE_HOST, p.token, ','.join(p.channels), p.resolution, *p.args)
 
   # Get the data back
   resp = getURL(url)
@@ -190,9 +190,9 @@ def putAnnotation ( p, f ):
 
   # Build a url based on update
   if p.field is None:
-    resp = postURL( "https://{}/sd/{}/{}/".format(SITE_HOST, p.token, p.channels[0]), f )
+    resp = postURL( "http://{}/sd/{}/{}/".format(SITE_HOST, p.token, p.channels[0]), f )
   else:
-    resp = postURL( "https://{}/sd/{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.field), f )
+    resp = postURL( "http://{}/sd/{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.field), f )
 
   try:
     anno_value = int(resp.content)
@@ -204,13 +204,13 @@ def getAnnotation ( p ):
   """Get the specified annotation"""
 
   if p.field is None:
-    url = "https://{}/sd/{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid)
+    url = "http://{}/sd/{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid)
   elif p.field == 'tight_cutout':
-    url = "https://{}/sd/{}/{}/{}/cutout/{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid, p.resolution)
+    url = "http://{}/sd/{}/{}/{}/cutout/{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid, p.resolution)
   elif p.field == 'normal_cutout':
-    url = "https://{}/sd/{}/{}/{}/cutout/{}/{},{}/{},{}/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid, p.resolution, *p.args)
+    url = "http://{}/sd/{}/{}/{}/cutout/{}/{},{}/{},{}/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid, p.resolution, *p.args)
   else:
-    url = "https://{}/sd/{}/{}/{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid, p.field, p.resolution)
+    url = "http://{}/sd/{}/{}/{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.annoid, p.field, p.resolution)
 
   f = getURL(url)
   tmpfile = tempfile.NamedTemporaryFile ( )

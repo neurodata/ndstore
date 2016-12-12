@@ -1,10 +1,10 @@
-# Copyright 2014 NeuroData (https://neurodata.io)
+# Copyright 2014 NeuroData (http://neurodata.io)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     https://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -54,18 +54,18 @@ def readAnno ( params ):
    """
 
   if params.voxels:
-    url = "https://{}/sd/{}/{}/{}/voxels/{}/".format(params.baseurl, params.token, params.channel, params.annids,  params.resolution)
+    url = "http://{}/sd/{}/{}/{}/voxels/{}/".format(params.baseurl, params.token, params.channel, params.annids,  params.resolution)
     print url
   elif params.cutout != None:
-    url = "https://{}/sd/{}/{}/cutout/{}/".format(params.baseurl, params.token, params.channel, params.annids, params.cutout)
+    url = "http://{}/sd/{}/{}/cutout/{}/".format(params.baseurl, params.token, params.channel, params.annids, params.cutout)
   elif params.tightcutout:
-    url = "https://{}/sd/{}/{}/{}/cutout/{}/".format(params.baseurl, params.token, params.channel, params.annids, params.resolution)
+    url = "http://{}/sd/{}/{}/{}/cutout/{}/".format(params.baseurl, params.token, params.channel, params.annids, params.resolution)
   elif params.boundingbox:
-    url = "https://{}/sd/{}/{}/{}/boundingbox/{}/".format(params.baseurl, params.token, params.channel, params.annids, params.resolution)
+    url = "http://{}/sd/{}/{}/{}/boundingbox/{}/".format(params.baseurl, params.token, params.channel, params.annids, params.resolution)
   elif params.cuboids:
-    url = "https://{}/sd/{}/{}?{}/cuboids/{}/".format(params.baseurl, params.token, params.channel, params.annids, params.resolution)
+    url = "http://{}/sd/{}/{}?{}/cuboids/{}/".format(params.baseurl, params.token, params.channel, params.annids, params.resolution)
   else:
-    url = "https://{}/sd/{}/{}/{}/".format(params.baseurl, params.token, params.channel, params.annids)
+    url = "http://{}/sd/{}/{}/{}/".format(params.baseurl, params.token, params.channel, params.annids)
 
   # Get annotation in question
   f = getURL( url )
@@ -315,11 +315,11 @@ def writeAnno ( params ):
 
   # Build the put URL
   if params.update:
-    url = "https://{}/sd/{}/{}/update/".format(params.baseurl, params.token, params.channel)
+    url = "http://{}/sd/{}/{}/update/".format(params.baseurl, params.token, params.channel)
   elif params.dataonly:
-    url = "https://{}/sd/{}/{}/dataonly/".format(params.baseurl, params.token, params.channel)
+    url = "http://{}/sd/{}/{}/dataonly/".format(params.baseurl, params.token, params.channel)
   else:
-    url = "https://{}/sd/{}/{}/".format( params.baseurl, params.token, params.channel)
+    url = "http://{}/sd/{}/{}/".format( params.baseurl, params.token, params.channel)
 
   if params.preserve:
     url += 'preserve/'
@@ -411,7 +411,7 @@ class TestRW:
 #    annodata = np.random.random_integers ( 0, 65535, [ 2, 50, 50 ] )
     annodata = np.ones ( [1, 2, 50, 50], dtype=np.uint32 ) * random.randint(0,65535)
 
-    url = 'https://{}/sd/{}/{}/npz/{}/{},{}/{},{}/{},{}/'.format( wp.baseurl, wp.token, wp.channel, wp.resolution, 200, 250, 200, 250, 200, 202 )
+    url = 'http://{}/sd/{}/{}/npz/{}/{},{}/{},{}/{},{}/'.format( wp.baseurl, wp.token, wp.channel, wp.resolution, 200, 250, 200, 250, 200, 202 )
 
     # Encode the voxelist as a pickle
     fileobj = cStringIO.StringIO ()
@@ -433,7 +433,7 @@ class TestRW:
 
     # now as an HDF5 file
     annodata = np.ones ( [2, 50, 50], dtype=np.uint32 ) * random.randint(0,65535)
-    url = 'https://{}/sd/{}/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format( wp.baseurl, wp.token, wp.channel, wp.resolution, 200, 250, 200, 250, 300, 302 )
+    url = 'http://{}/sd/{}/{}/hdf5/{}/{},{}/{},{}/{},{}/'.format( wp.baseurl, wp.token, wp.channel, wp.resolution, 200, 250, 200, 250, 300, 302 )
 
     # Create an in-memory HDF5 file
     tmpfile = tempfile.NamedTemporaryFile ()
@@ -630,7 +630,7 @@ class TestRW:
 #    # change the annotation identifier
 #    # RBTODO
 #    # post the HDF5 file
-#    url = "https://%s/sd/%s/" % (wp.baseurl,wp.token )
+#    url = "http://%s/sd/%s/" % (wp.baseurl,wp.token )
 #    h5r.tmpfile.seek(0)
 #    # return and file object to be posted
 #    try:
@@ -718,17 +718,6 @@ class TestRW:
     h5r = readAnno(rp)
     assert countVoxels ( retval, h5r ) == 50*50*1
 
-    # And delete
-    import httplib
-
-#    # Check if it's an HTTPS conncetion
-#    m = re.match('http(s?)://(.*)', rp.baseurl)
-#    durl = m.group(2)
-#    if m.group(1) == 's':
-#      conn = httplib.HTTPSConnection ( "%s" % ( durl ))
-#    else:
-#      conn = httplib.HTTPConnection ( "%s" % ( durl ))
-
     try:
       (base,suffix) = rp.baseurl.split("/",1)
     except:
@@ -736,9 +725,9 @@ class TestRW:
       suffix = None
 
     if suffix:
-      url = 'https://{}/{}/sd/{}/{}/{}/'.format(base, suffix, rp.token, rp.channel, rp.annids )
+      url = 'http://{}/{}/sd/{}/{}/{}/'.format(base, suffix, rp.token, rp.channel, rp.annids )
     else:
-      url = 'https://{}/sd/{}/{}/{}/'.format(base, rp.token, rp.channel, rp.annids )
+      url = 'http://{}/sd/{}/{}/{}/'.format(base, rp.token, rp.channel, rp.annids )
 
     resp = deleteURL(url)
     assert resp.content == "Success"

@@ -1,10 +1,10 @@
-# Copyright 2015 NeuroData (https://neurodata.io)
+# Copyright 2015 NeuroData (http://neurodata.io)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     https://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -77,7 +77,7 @@ class Test_Annotation_Json():
     p.annoid = putAnnotation(p, tmpfile)
 
     # fetching the JSON info
-    f = getURL("https://{}/sd/{}/{}/{}/json/".format(SITE_HOST, p.token, p.channels[0], ann_annoid))
+    f = getURL("http://{}/sd/{}/{}/{}/json/".format(SITE_HOST, p.token, p.channels[0], ann_annoid))
 
     # read the JSON file
     ann_info = json.loads(f.content)
@@ -116,7 +116,7 @@ class Test_Annotation_Json():
     p.annoid = putAnnotation(p, tmpfile)
 
     # fetching the JSON info
-    f = getURL("https://{}/ca/{}/{}/{}/json/".format(SITE_HOST, p.token, p.channels[0], ann_annoid))
+    f = getURL("http://{}/ca/{}/{}/{}/json/".format(SITE_HOST, p.token, p.channels[0], ann_annoid))
 
     # read the JSON file
     ann_info = json.loads(f.content)
@@ -170,7 +170,7 @@ class Test_Annotation_Json():
       if i < number_of_annotations - 1:
         ann_id_str += ','
 
-    f = getURL("https://{}/ca/{}/{}/{}/json/".format(SITE_HOST, p.token, p.channels[0], ann_id_str))
+    f = getURL("http://{}/ca/{}/{}/{}/json/".format(SITE_HOST, p.token, p.channels[0], ann_id_str))
 
     # read the JSON file
     ann_info = json.loads(f.content)
@@ -200,6 +200,6 @@ class Test_Annotation_Json():
 
     ann_annoid = str(13);
     # fetching the JSON info
-    f = getURL("https://{}/sd/{}/{}/{}/json/".format(SITE_HOST, p.token, p.channels, ann_annoid))
+    f = getURL("http://{}/sd/{}/{}/{}/json/".format(SITE_HOST, p.token, p.channels, ann_annoid))
 
     assert(f.status_code == 404)

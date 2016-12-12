@@ -22,7 +22,7 @@ from lxml import etree
 
 from pytesthelpers import makeAnno
 
-from postmethods import getURL
+from ndlib.restutil import getURL
 from params import Params
 import kvengine_to_test
 import site_to_test

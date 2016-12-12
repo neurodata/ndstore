@@ -1,10 +1,10 @@
-# Copyright 2014 NeuroData (https://neurodata.io)
+# Copyright 2014 NeuroData (http://neurodata.io)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     https://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -257,16 +257,16 @@ class Test_Ramon:
       suffix = None
 
     if suffix:
-      url = 'https://{}/{}/sd/{}/{}/{}/'.format(base, suffix, 'unittest', 'unit_anno', p.annoid )
+      url = 'http://{}/{}/sd/{}/{}/{}/'.format(base, suffix, 'unittest', 'unit_anno', p.annoid )
     else:
-      url = 'https://{}/sd/{}/{}/{}/'.format(base, 'unittest', 'unit_anno', p.annoid )
+      url = 'http://{}/sd/{}/{}/{}/'.format(base, 'unittest', 'unit_anno', p.annoid )
 
     resp = deleteURL(url)
     assert resp.content == "Success"
 
     # retrieve the annotation
     # verify that it's not there.
-    url = "https://{}/sd/{}/{}/{}/".format(SITE_HOST, 'unittest', 'unit_anno', p.annoid)
+    url = "http://{}/sd/{}/{}/{}/".format(SITE_HOST, 'unittest', 'unit_anno', p.annoid)
     resp = getURL( url )
     assert(resp.status_code >= 400)
 
@@ -489,12 +489,12 @@ class Test_Ramon:
     assert status == int(f.content)
 
     #  bad format to a number
-    url =  "https://{}/sd/{}/{}/{}/setField/status/aa/".format(SITE_HOST, 'unittest', 'unit_anno', p.annoid)
+    url =  "http://{}/sd/{}/{}/{}/setField/status/aa/".format(SITE_HOST, 'unittest', 'unit_anno', p.annoid)
     req = getURL( url )
     assert(req.status_code >= 400)
 
     #  request a missing field
-    url =  "https://{}/sd/{}/{}/{}/getField/othernonesuch/".format(SITE_HOST, 'unittest', 'unit_anno', p.annoid)
+    url =  "http://{}/sd/{}/{}/{}/getField/othernonesuch/".format(SITE_HOST, 'unittest', 'unit_anno', p.annoid)
     req = getURL( url )
     assert(req.status_code >= 400)
 
