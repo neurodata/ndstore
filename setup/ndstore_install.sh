@@ -3,6 +3,8 @@
 # Installation script for ndstore backend
 # Maintainer: Kunal Lillaney <lillaney@jhu.edu>
 
+# Usage: ./ndstore_install BRANCH PRODUCTION DOMAIN EMAIL
+
 # update the sys packages and upgrade them
 sudo apt-get update && sudo apt-get upgrade -y
 
