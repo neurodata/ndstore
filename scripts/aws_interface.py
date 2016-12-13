@@ -45,6 +45,7 @@ from spdb.s3io import S3IO
 from ndingest.nddynamo.cuboidindexdb import CuboidIndexDB
 from ndingest.ndbucket.cuboidbucket import CuboidBucket
 from ndlib.s3util import generateS3BucketName, generateS3Key
+from ingest.core.config import Configuration
 import logging
 
 
@@ -295,9 +296,9 @@ class AwsInterface:
 
                 self.logger.info("[{},{},{}] at res {}".format(x*xsupercubedim, y*ysupercubedim, z*zsupercubedim, cur_res))
                 # updating the index
-                self.cuboidindex_db.putItem(ch.channel_name, cur_res, x, y, z)
+                # self.cuboidindex_db.putItem(ch.channel_name, cur_res, x, y, z)
                 # inserting the cube
-                self.s3_io.putCube(ch, cur_res, morton_index, blosc.pack_array(data))
+                # self.s3_io.putCube(ch, cur_res, morton_index, blosc.pack_array(data))
               
               except Exception as e:
                 # checkpoint the ingest
@@ -305,6 +306,45 @@ class AwsInterface:
                 self.checkpoint_ingest(ch.channel_name, cur_res, x, y, z, e)
                 raise e
   
+  
+  def uploadNewProject(self, config_file):
+    """Upload a new project"""
+    
+    config = Configuration()
+    config.load(json.loads(open(config_file, 'rt').read()))
+    path_processor = config.path_processor_class
+    path_processor.setup(config.get_path_processor_params())
+    tile_processor = config.tile_processor_class
+    tile_processor.setup(config.get_tile_processor_params())
+
+    tile_params = config.get_tile_processor_params()
+    path_params = config.get_path_processor_params()
+    import pdb;pdb.set_trace()
+    
+    [xsupercubedim, ysupercubedim, zsupercubedim] = settings.SUPER_CUBOID_SIZE
+    [x_start, x_end] = tile_params['ingest_job']['extent']['x']
+    [y_start, y_end] = tile_params['ingest_job']['extent']['y']
+    [z_start, z_end] = tile_params['ingest_job']['extent']['z']
+    [t_start, t_end] = tile_params['ingest_job']['extent']['t']
+    x_tile = tile_params['ingest_job']['tile_size']['x']
+    y_tile = tile_params['ingest_job']['tile_size']['y']
+    z_tile = tile_params['ingest_job']['tile_size']['z']
+    t_tile = tile_params['ingest_job']['tile_size']['t']
+    x_limit = (x_end-1) / (x_tile) + 1
+    y_limit = (y_end-1) / (y_tile) + 1
+    z_limit = (z_end-1) / (z_tile) + 1
+    t_limit = (t_end-1) / (t_tile) + 1
+
+    for t in range(t_start, t_limit, 1):  
+      for z in range(z_start, z_limit, 1):
+        data = np.zeros([zsupercubedim, ysupercubedim, xsupercubedim], dtype=np.uint8)
+        for y in range(y_start, y_limit, 1):
+          for x in range(x_start, x_limit, 1):
+
+            file_name = path_processor.process(x, y, z, t)
+            tile_handle = tile_processor.process(file_name, x, y, z, t)
+            tile_handle.seek(0)
+
 
   def checkpoint_ingest(self, channel_name, resolution, x, y, z, e, time=0):
     """Checkpoint the progress to file"""
@@ -342,7 +382,8 @@ def main():
   if result.action == 'upload':
     if result.channel_name is None and result.resolution is not None:
       raise ValueError("Error: channel cannot be empty if resolution is not empty")
-    aws_interface.uploadExistingProject(result.channel_name, result.resolution, result.start_values)
+    # aws_interface.uploadExistingProject(result.channel_name, result.resolution, result.start_values)
+    aws_interface.uploadNewProject('test.json')
   elif result.action == 'delete-project':
     aws_interface.deleteProject()
   elif result.action == 'delete-channel':
