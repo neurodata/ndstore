@@ -92,7 +92,7 @@ class BrainRestArgs:
     # Check arguments for legal values
     try:
       if not ( datasetcfg.checkCube(self.resolution, self.corner, self.dim, self.time) ):
-        raise RESTArgsError ( "Illegal range. Image size: {} at offset {}".format(str(datasetcfg.get_imagesize(self.resolution)),str(datasetcfg.get_offset(self.resolution))))
+        raise RESTArgsError ( "Illegal range. Image size: {} at offset {}".format(str(datasetcfg.dataset_dim(self.resolution)),str(datasetcfg.get_offset(self.resolution))))
     except Exception, e:
       # RBTODO make this error better.  How to print good information about e?
       #  it only prints 3, not KeyError 3, whereas print e in the debugger gives good info
@@ -130,7 +130,7 @@ def voxel ( imageargs, datasetcfg ):
 
   # Check arguments for legal values
   if not ( datasetcfg.checkCube ( res, [x,y,z], [1,1,1] )):
-    raise RESTArgsError( "Illegal range. Image size: {} at offset {}".format(datasetcfg.get_imagesize(res),datasetcfg.get_offset(res)) )
+    raise RESTArgsError( "Illegal range. Image size: {} at offset {}".format(datasetcfg.dataset_dim(res),datasetcfg.get_offset(res)) )
 
   return (res, [ x,y,z ])
 

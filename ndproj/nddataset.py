@@ -42,7 +42,6 @@ class NDDataset(NDObject):
     self._scale = {}
     self._limit = {}
     self._scalinglevels = self._ds.scalinglevels
-    self._timerange = (self._ds.starttime, self._ds.endtime)
     # nearisotropic service for Stephan
     self.nearisoscaledown = {}
     self.neariso_voxelres = {}
@@ -186,9 +185,10 @@ class NDDataset(NDObject):
   def public(self):
     return self._ds.public
   
-  @property
-  def image_size(self):
-    return self._image_size
+# RB use dataset_dim
+#  @property
+#  def image_size(self):
+#    return self._image_size
   
   @property
   def offset(self):
@@ -203,11 +203,12 @@ class NDDataset(NDObject):
     return self._cubedim
 
   def dataset_dim(self, res):
-    return  [ self.get_imagesize(res), self._timerange ]
-
-  def get_imagesize(self, res):
-    # return Vector3D(self._image_size[res][::-1])
     return self._image_size[res]
+
+# RB use dataset_dim
+#  def get_imagesize(self, res):
+#    # return Vector3D(self._image_size[res][::-1])
+#    return self._image_size[res]
   
   def get_offset(self, res):
     # return Vector3D(self._offset[res])
