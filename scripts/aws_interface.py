@@ -23,6 +23,8 @@ import argparse
 import csv
 import blosc
 from operator import div
+import numpy as np
+from PIL import Image
 sys.path.append(os.path.abspath('../django'))
 import ND.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
@@ -57,6 +59,21 @@ class ResourceInterface():
     self.token_name = token_name
     self.host = host_name
     self.logger = logger
+  
+  def getChannel(self, channel_name):
+    try:
+      response = getJson('http://{}/resource/dataset/{}/project/{}/channel/{}/'.format(self.host, self.dataset_name, self.project_name, channel_name))
+      if response.status_code == 404:
+        raise ValueError('The specified channel {} does not exist on the server'.format(channel_name))
+      if response.status_code != 200:
+        raise ValueError('The server returned status code {}'.format(response.status_code))
+      channel_json = response.json()
+      del channel_json['id']
+      del channel_json['project']
+      return NDChannel.fromJson(self.project_name, json.dumps(channel_json))
+    except Exception as e:
+      self.logger.error(e)
+      sys.exit(0)
 
   def createDataset(self):
     dataset_obj = NDDataset.fromName(self.dataset_name)
@@ -180,21 +197,39 @@ class AwsInterface:
   def __init__(self, token, host_name):
     """Create the bucket and intialize values"""
   
-    self.token = token
-    self.proj = NDProject.fromTokenName(self.token)
     # configuring the logger based on the dataset we are uploading
     self.logger = logging.getLogger(token)
     self.logger.setLevel(logging.INFO)
     fh = logging.FileHandler('{}.log'.format(token))
     self.logger.addHandler(fh)
+    # setting up the project metadata
+    self.token = token
+    try:
+      self.proj = NDProject.fromTokenName(self.token)
+      raise ValueError()
+    except Exception as e:
+      response = getJson('http://{}/sd/{}/info/'.format(host_name, token))
+      if response.status_code != 200:
+        raise ValueError("The server returned status code {}".response.status_code)
+      
+      project_name = response.json()['project']['name']
+      dataset_name = response.json()['dataset']['name']
+      response = getJson('http://{}/resource/dataset/{}/project/{}/'.format(host_name, dataset_name, project_name))
+      if response.status_code != 200:
+        raise ValueError("The server returned status code {}".response.status_code)
+      project_json = response.json()
+      del project_json['user']
+      del project_json['dataset']
+      self.proj = NDProject.fromJson(dataset_name, json.dumps(project_json))
+    # creating the resource interface to the remote server
     self.resource_interface = ResourceInterface(self.proj.dataset_name, self.proj.project_name, self.token, host_name, self.logger)
 
     
     with closing (SpatialDB(self.proj)) as self.db:
       # create the s3 I/O and index objects
       self.s3_io = S3IO(self.db)
-      self.cuboid_bucket = CuboidBucket(self.proj.project_name)
-      self.cuboidindex_db = CuboidIndexDB(self.proj.project_name)
+      self.cuboid_bucket = CuboidBucket(self.proj.project_name, endpoint_url=ndingest_settings.S3_ENDPOINT)
+      self.cuboidindex_db = CuboidIndexDB(self.proj.project_name, endpoint_url=ndingest_settings.DYNAMO_ENDPOINT)
       # self.file_type = result.file_type
       # self.tile_size = result.tile_size
       # self.data_location = result.data_location
@@ -243,8 +278,8 @@ class AwsInterface:
     self.resource_interface.createProject()
     self.resource_interface.createToken()
   
-  def readExistingProject():
-    data = db.cutout(ch, [x*xsupercubedim, y*ysupercubedim, z*zsupercubedim], [xsupercubedim, ysupercubedim, zsupercubedim], cur_res).data
+  # def readExistingProject():
+    # data = db.cutout(ch, [x*xsupercubedim, y*ysupercubedim, z*zsupercubedim], [xsupercubedim, ysupercubedim, zsupercubedim], cur_res).data
 
   def uploadExistingProject(self, channel_name, resolution, start_values):
     """Upload an existing project to S3"""
@@ -319,31 +354,53 @@ class AwsInterface:
 
     tile_params = config.get_tile_processor_params()
     path_params = config.get_path_processor_params()
-    import pdb;pdb.set_trace()
     
+    channel_name = config.config_data['database']['channel']
+    ch = self.resource_interface.getChannel(channel_name)
+    cur_res = tile_params['ingest_job']['resolution']
+
     [xsupercubedim, ysupercubedim, zsupercubedim] = settings.SUPER_CUBOID_SIZE
     [x_start, x_end] = tile_params['ingest_job']['extent']['x']
     [y_start, y_end] = tile_params['ingest_job']['extent']['y']
     [z_start, z_end] = tile_params['ingest_job']['extent']['z']
     [t_start, t_end] = tile_params['ingest_job']['extent']['t']
-    x_tile = tile_params['ingest_job']['tile_size']['x']
-    y_tile = tile_params['ingest_job']['tile_size']['y']
-    z_tile = tile_params['ingest_job']['tile_size']['z']
-    t_tile = tile_params['ingest_job']['tile_size']['t']
-    x_limit = (x_end-1) / (x_tile) + 1
-    y_limit = (y_end-1) / (y_tile) + 1
-    z_limit = (z_end-1) / (z_tile) + 1
-    t_limit = (t_end-1) / (t_tile) + 1
+    x_tilesz = tile_params['ingest_job']['tile_size']['x']
+    y_tilesz = tile_params['ingest_job']['tile_size']['y']
+    z_tilesz = tile_params['ingest_job']['tile_size']['z']
+    t_tilesz = tile_params['ingest_job']['tile_size']['t']
+    x_limit = (x_end-1) / (x_tilesz) + 1
+    y_limit = (y_end-1) / (y_tilesz) + 1
+    z_limit = (z_end-1) / (z_tilesz) + 1
+    t_limit = (t_end-1) / (t_tilesz) + 1
 
     for t in range(t_start, t_limit, 1):  
-      for z in range(z_start, z_limit, 1):
-        data = np.zeros([zsupercubedim, ysupercubedim, xsupercubedim], dtype=np.uint8)
+      for z in range(z_start, z_limit, zsupercubedim):
         for y in range(y_start, y_limit, 1):
           for x in range(x_start, x_limit, 1):
-
-            file_name = path_processor.process(x, y, z, t)
-            tile_handle = tile_processor.process(file_name, x, y, z, t)
-            tile_handle.seek(0)
+            
+            data = np.zeros([zsupercubedim, y_tilesz, x_tilesz], dtype=np.uint8)
+            for b in range(0, zsupercubedim, 1):
+              if z + b > z_end - 1:
+                break
+              # generate file name
+              file_name = path_processor.process(x, y, z+b, t)
+              print "opening file", file_name
+              # read the file
+              tile_handle = tile_processor.process(file_name, x, y, z+b, t)
+              tile_handle.seek(0)
+              data[b,:,:] = np.asarray(Image.open(tile_handle))
+          
+          for y_index in range(0, y_tilesz, ysupercubedim):
+            for x_index in range(0, x_tilesz, xsupercubedim):
+              # calculate the morton index 
+              morton_index = XYZMorton([x_index+x, y_index+y, z])
+              print "index", morton_index
+              insert_data = data[:, y_index*y_tilesz:(y_index+1)*y_tilesz, x_index*x_tilesz:(x_index+1)*x_tilesz]
+              # import pdb; pdb.set_trace()
+              # updating the index
+              self.cuboidindex_db.putItem(ch.channel_name, cur_res, x, y, z)
+              # inserting the cube
+              self.s3_io.putCube(ch, cur_res, morton_index, blosc.pack_array(insert_data))
 
 
   def checkpoint_ingest(self, channel_name, resolution, x, y, z, e, time=0):
@@ -366,23 +423,27 @@ def main():
   parser.add_argument('token', action='store', help='Token for the project')
   parser.add_argument('--channel', dest='channel_name', action='store', type=str, default=None, help='Channel Name in the project')
   parser.add_argument('--res', dest='resolution', action='store', type=int, default=None, help='Resolution to upload')
-  parser.add_argument('--action', dest='action', action='store', choices=['upload', 'delete-channel', 'delete-res', 'delete-project'], default='upload', help='Specify action for the given project')
-  parser.add_argument('--host', dest='host_name', action='store', type=str, default='52.91.173.4/nd', help='Server host name')
+  parser.add_argument('--action', dest='action', action='store', choices=['upload-existing', 'upload-new', 'delete-channel', 'delete-res', 'delete-project'], default='upload', help='Specify action for the given project')
+  parser.add_argument('--host', dest='host_name', action='store', type=str, default='localhost:8080', help='Server host name')
   parser.add_argument('--start', dest='start_values', action='store', type=int, nargs=3, metavar=('X', 'Y', 'Z'), default=[0, 0, 0], help='Resume upload from co-ordinates')
-  # parser.add_argument('--dry-run', dest='dry_run', action='store', type=bool, default=False, help='Try a dry run without uploading data')
+  parser.add_argument('--data', dest='data_location', action='store', type=str, default=None, help='Data Location')
+  parser.add_argument('--config', dest='config_file', action='store', default=None, help='Config file name')
   # Unwanted field which might be useful in the future
-  # parser.add_argument('--file', dest='file_type', action='store', choices=['tif', 'tiff', 'jpg', 'png'], default='tif', help='File type')
+  # parser.add_argument('--dry-run', dest='dry_run', action='store', type=bool, default=False, help='Try a dry run without uploading data')
   # parser.add_argument('--new', dest='new_project', action='store', choices=['slice', 'catmaid'], default='slice', help='New Project')
   # parser.add_argument('--tilesz', dest='tile_size', action='store', type=int, default=512, help='Tile Size')
-  # parser.add_argument('--data', dest='data_location', action='store', type=str, default='/data/scratch/', help='File Location')
   # parser.add_argument('--url', dest='url', action='store', type=str, help='Http URL')
   result = parser.parse_args()
   
   aws_interface = AwsInterface(result.token, result.host_name)
-  if result.action == 'upload':
+  if result.action == 'upload-new':
+    if result.data_location is None or result.config_file is None:
+      raise ValueError("Error: data location or config file location cannot be empty for uploading new project")
+    aws_interface.uploadNewProject(result.config_file)
+  elif result.action == 'upload-existing':
     if result.channel_name is None and result.resolution is not None:
       raise ValueError("Error: channel cannot be empty if resolution is not empty")
-    # aws_interface.uploadExistingProject(result.channel_name, result.resolution, result.start_values)
+    aws_interface.uploadExistingProject(result.channel_name, result.resolution, result.start_values)
     aws_interface.uploadNewProject('test.json')
   elif result.action == 'delete-project':
     aws_interface.deleteProject()
