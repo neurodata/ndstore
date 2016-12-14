@@ -345,20 +345,22 @@ class AwsInterface:
   def uploadNewProject(self, config_file):
     """Upload a new project"""
     
+    # loading the config file and assdociated params and processors
     config = Configuration()
     config.load(json.loads(open(config_file, 'rt').read()))
     path_processor = config.path_processor_class
     path_processor.setup(config.get_path_processor_params())
     tile_processor = config.tile_processor_class
     tile_processor.setup(config.get_tile_processor_params())
-
     tile_params = config.get_tile_processor_params()
     path_params = config.get_path_processor_params()
     
+    # creating the channel object from resource service
     channel_name = config.config_data['database']['channel']
     ch = self.resource_interface.getChannel(channel_name)
     cur_res = tile_params['ingest_job']['resolution']
-
+    
+    # loading all the parameters for image-sizes, tile-sizes, and iteration limits
     [xsupercubedim, ysupercubedim, zsupercubedim] = settings.SUPER_CUBOID_SIZE
     [x_start, x_end] = tile_params['ingest_job']['extent']['x']
     [y_start, y_end] = tile_params['ingest_job']['extent']['y']
@@ -372,24 +374,28 @@ class AwsInterface:
     y_limit = (y_end-1) / (y_tilesz) + 1
     z_limit = (z_end-1) / (z_tilesz) + 1
     t_limit = (t_end-1) / (t_tilesz) + 1
-
+    
+    # iterate over t,z,y,x to ingest the data
     for t in range(t_start, t_limit, 1):  
       for z in range(z_start, z_limit, zsupercubedim):
         for y in range(y_start, y_limit, 1):
           for x in range(x_start, x_limit, 1):
             
-            data = np.zeros([zsupercubedim, y_tilesz, x_tilesz], dtype=np.uint8)
+            data = np.zeros([zsupercubedim, y_tilesz, x_tilesz], dtype=ND_dtypetonp[ch.channel_datatype])
             for b in range(0, zsupercubedim, 1):
               if z + b > z_end - 1:
                 break
               # generate file name
               file_name = path_processor.process(x, y, z+b, t)
-              print "opening file", file_name
-              # read the file
-              tile_handle = tile_processor.process(file_name, x, y, z+b, t)
-              tile_handle.seek(0)
-              data[b,:,:] = np.asarray(Image.open(tile_handle))
-          
+              # read the file, handle expection if the file is missing
+              try:
+                tile_handle = tile_processor.process(file_name, x, y, z+b, t)
+                print "opening file", file_name
+                tile_handle.seek(0)
+                data[b,:,:] = np.asarray(Image.open(tile_handle))
+              except IOError as e:
+                print "missing file", file_name
+          # iterate over the tile if it is larger then supercuboid size
           for y_index in range(0, y_tilesz, ysupercubedim):
             for x_index in range(0, x_tilesz, xsupercubedim):
               # calculate the morton index 
