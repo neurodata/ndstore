@@ -21,7 +21,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
 from ingest.core.config import Configuration
 from ndlib.ndtype import IMAGE, UINT8, MYSQL
 from params import Params
-from postmethods import getJSON, postJSON, deleteJSON, postURL
+from ndlib.restutil import getJson, postJson, deleteJson, postURL
 import makeunitdb
 import site_to_test
 SITE_HOST = site_to_test.site
