@@ -38,7 +38,7 @@ def createTestDB ( project_name, channel_list=['unit_anno'], channel_type=ANNOTA
   
   unituser = User.objects.get(username='neurodata')
 
-  ds = NDDataset(Dataset ( dataset_name="unittest", user=unituser, ximagesize=ximagesize, yimagesize=yimagesize, zimagesize=zimagesize,  xoffset=0, yoffset=0, zoffset=1, xvoxelres=xvoxelres, yvoxelres=yvoxelres, zvoxelres=zvoxelres, scalingoption=scalingoption, scalinglevels=scalinglevels, starttime=time[0], endtime=time[1], public=PUBLIC_TRUE, dataset_description="Unit test" ) )
+  ds = NDDataset(Dataset ( dataset_name="unittest", user=unituser, ximagesize=ximagesize, yimagesize=yimagesize, zimagesize=zimagesize,  xoffset=0, yoffset=0, zoffset=1, xvoxelres=xvoxelres, yvoxelres=yvoxelres, zvoxelres=zvoxelres, scalingoption=scalingoption, scalinglevels=scalinglevels, public=PUBLIC_TRUE, dataset_description="Unit test" ) )
   ds.create()
   
   # make the project entry
@@ -56,7 +56,7 @@ def createTestDB ( project_name, channel_list=['unit_anno'], channel_type=ANNOTA
 
   try:
     for channel_name in channel_list:
-      ch = NDChannel(Channel (channel_name=channel_name, channel_type=channel_type, channel_datatype=channel_datatype, channel_description='Unit test channel', project_id=pr.project_name, readonly=readonly, propagate=propagate, resolution=0, exceptions=1,startwindow=window[0], endwindow=window[1], default=default))
+      ch = NDChannel(Channel (channel_name=channel_name, channel_type=channel_type, channel_datatype=channel_datatype, channel_description='Unit test channel', project_id=pr.project_name, readonly=readonly, propagate=propagate, resolution=0, exceptions=1, starttime=time[0], endtime=time[1]  ,startwindow=window[0], endwindow=window[1], default=default))
       # create a channel
       ch.create()
       # create the channel table

@@ -22,11 +22,13 @@ from ndlib.ndtype import *
 from ndlib.restutil import getJson, postJson, deleteJson
 SITE_HOST = 'mri.neurodata.io/nd'
   
-def create_channel(dataset_name, project_name, channel_name, channel_type, channel_datatype):
+def create_channel(dataset_name, project_name, channel_name, channel_type, channel_datatype, startwindow, endwindow):
   channel = {
       'channel_name' : channel_name,
       'channel_type' : channel_type,
-      'channel_datatype' : channel_datatype
+      'channel_datatype' : channel_datatype,
+      'startwindow' : startwindow,
+      'endwindow' : endwindow
   }
   response = postJson('http://{}/resource/dataset/{}/project/{}/channel/{}/'.format(SITE_HOST, dataset_name, project_name, channel_name), channel)
   assert(response.status_code == 201)
@@ -39,9 +41,11 @@ def main():
   parser.add_argument('channel_name', action='store', type=str, default=None, help='Channel Name')
   parser.add_argument('channel_type', action='store', choices=[IMAGE, TIMESERIES], type=str, default=None, help='Channel Name')
   parser.add_argument('channel_datatype', action='store', type=str, choices=[UINT8, UINT16, UINT32, FLOAT32], default=None, help='Channel Name')
+  parser.add_argument('startwindow', action='store', type=int, default=0, help='Start window')
+  parser.add_argument('endwindow', action='store', type=int, default=0, help='End window')
   result = parser.parse_args()
 
-  create_channel(result.dataset_name, result.project_name, result.channel_name, result.channel_type, result.channel_datatype)
+  create_channel(result.dataset_name, result.project_name, result.channel_name, result.channel_type, result.channel_datatype, result.startwindow, result.endwindow)
 
 if __name__ == '__main__':
   main()

@@ -47,8 +47,6 @@ class Dataset ( models.Model):
    )
    scalingoption = models.IntegerField(default=ZSLICES, choices=SCALING_CHOICES)
    scalinglevels = models.IntegerField(default=0)
-   starttime = models.IntegerField(default=0)
-   endtime = models.IntegerField(default=0)
 
    class Meta:
      """ Meta """
@@ -178,6 +176,8 @@ class Channel ( models.Model):
     (EXCEPTION_FALSE, 'No'),
   )
   exceptions =  models.IntegerField(choices=EXCEPTION_CHOICES, default=EXCEPTION_FALSE)
+  starttime = models.IntegerField(default=0)
+  endtime = models.IntegerField(default=0)
   startwindow = models.IntegerField(default=0)
   endwindow = models.IntegerField(default=0)
   default = models.BooleanField(default=False)
