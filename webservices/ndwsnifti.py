@@ -47,13 +47,14 @@ def ingestNIFTI ( niftifname, ch, db, proj ):
   # create the nifti header
   nh = NDNiftiHeader.fromImage(ch, nifti_img)
 
+  import pdb; pdb.set_trace()
   try:
     if len(nifti_data.shape) == 3:
       # make 4-d for time cube
       nifti_data = nifti_data.reshape([1]+list(nifti_data.shape))
-      db.writeCuboid ( ch, (0,0,0), 0, nifti_data, timerange=[0,0] )
+      db.writeCuboid ( ch, (0,0,0), 0, nifti_data, timerange=[0,0], blind=True )
     elif len(nifti_data.shape) == 4:
-      db.writeCuboid(ch, (0,0,0), 0, nifti_data, (0, nifti_data.shape[0]))
+      db.writeCuboid(ch, (0,0,0), 0, nifti_data, (0, nifti_data.shape[0]-1), blind=True )
 
     # save the header if the data was written
     nh.save()
