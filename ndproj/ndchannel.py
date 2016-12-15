@@ -25,6 +25,11 @@ import logging
 logger=logging.getLogger("neurodata")
 
 
+#RBTODO 
+# interface to check time -- a la dataset checkCube?
+#        ( tstart >= self._timerange[0]) and ((tstart < tend) or tstart==0 and tend==0) and (tend <= (self._timerange[1]+1))):
+
+
 class NDChannel(NDObject):
 
   def __init__(self, ch):

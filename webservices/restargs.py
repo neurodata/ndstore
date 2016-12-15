@@ -87,11 +87,11 @@ class BrainRestArgs:
     result = re.match("/(\d+),(\d+)/", rest)
     if result is not None:
       self.time = [int(i) for i in result.groups()]
-
+    # RBTODO no way to check time now.  without channel?
 
     # Check arguments for legal values
     try:
-      if not ( datasetcfg.checkCube(self.resolution, self.corner, self.dim, self.time) ):
+      if not ( datasetcfg.checkCube(self.resolution, self.corner, self.dim) ):
         raise RESTArgsError ( "Illegal range. Image size: {} at offset {}".format(str(datasetcfg.dataset_dim(self.resolution)),str(datasetcfg.get_offset(self.resolution))))
     except Exception, e:
       # RBTODO make this error better.  How to print good information about e?

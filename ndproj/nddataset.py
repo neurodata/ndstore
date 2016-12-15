@@ -205,10 +205,9 @@ class NDDataset(NDObject):
   def dataset_dim(self, res):
     return self._image_size[res]
 
-# RB use dataset_dim
-#  def get_imagesize(self, res):
-#    # return Vector3D(self._image_size[res][::-1])
-#    return self._image_size[res]
+  def get_imagesize(self, res):
+    # return Vector3D(self._image_size[res][::-1])
+    return self._image_size[res]
   
   def get_offset(self, res):
     # return Vector3D(self._offset[res])
@@ -245,10 +244,6 @@ class NDDataset(NDObject):
     return self._scalinglevels
 
   @property
-  def timerange(self):
-    return self._timerange
-
-  @property
   def scale(self):
     return self._scale
   
@@ -256,18 +251,16 @@ class NDDataset(NDObject):
   def supercube_size(self):
     return SUPERCUBESIZE
   
-  def checkCube (self, resolution, corner, dim, timeargs=[0,0]):
+  def checkCube (self, resolution, corner, dim):
     """Return true if the specified range of values is inside the cube"""
 
     [xstart, ystart, zstart ] = corner
-    [tstart, tend] = timeargs
 
     [xend, yend, zend] = map(add, corner, dim) 
 
     if ( ( xstart >= 0 ) and ( xstart < xend) and ( xend <= self._image_size[resolution][0]) and\
         ( ystart >= 0 ) and ( ystart < yend) and ( yend <= self._image_size[resolution][1]) and\
-        ( zstart >= 0 ) and ( zstart < zend) and ( zend <= self._image_size[resolution][2]) and\
-        ( tstart >= self._timerange[0]) and ((tstart < tend) or tstart==0 and tend==0) and (tend <= (self._timerange[1]+1))):
+        ( zstart >= 0 ) and ( zstart < zend) and ( zend <= self._image_size[resolution][2])): 
       return True
     else:
       return False

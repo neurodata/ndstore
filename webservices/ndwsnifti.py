@@ -47,7 +47,6 @@ def ingestNIFTI ( niftifname, ch, db, proj ):
   # create the nifti header
   nh = NDNiftiHeader.fromImage(ch, nifti_img)
 
-  import pdb; pdb.set_trace()
   try:
     if len(nifti_data.shape) == 3:
       # make 4-d for time cube
