@@ -74,13 +74,14 @@ def clearStack (proj, ch, res=None):
     sql = ""
    
     # Creating a list of all tables to clear
-    list_of_tables.append(ch.getIdsTable())
-    list_of_tables.append(ch.getRamonTable())
+    if ch.channel_datatype in ANNOTATION_CHANNELS:
+      list_of_tables.append(ch.getRamonTable())
     for cur_res in range(res, high_res):
       list_of_tables.append(ch.getTable(cur_res))
-      list_of_tables.append(ch.getNearIsoTable(cur_res))
-      list_of_tables.append(ch.getIdxTable(cur_res))
-      list_of_tables.append(ch.getExceptionsTable(cur_res))
+      # list_of_tables.append(ch.getNearIsoTable(cur_res))
+      if ch.channel_datatype in ANNOTATION_CHANNELS:
+        list_of_tables.append(ch.getIdxTable(cur_res))
+        list_of_tables.append(ch.getExceptionsTable(cur_res))
 
     # for anno_type in annotation.anno_dbtables.keys():
       # list_of_tables.append(ch.getAnnoTable(anno_type))
@@ -277,8 +278,7 @@ def buildImageStack(proj, ch, res=None):
 
               cube.data = newdata
               # KL TODO test this
-              db.putCube(ch, zidx, cur_res, cube, timestamp=ts, update=True)
-              # if ch.channel_type not in TIMESERIES_CHANNELS:
-                # db.putCube(ch, zidx, cur_res, cube, update=True)
-              # else:
-                # db.putTimeCube(ch, zidx, ts, cur_res, cube, update=False)
+              if ch.channel_type in TIMESERIES_CHANNELS:
+                db.putCube(ch, zidx, cur_res, cube, timestamp=ts, update=True)
+              else:
+                db.putCube(ch, zidx, cur_res, cube, timestamp=None, update=True)

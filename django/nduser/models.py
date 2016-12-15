@@ -19,8 +19,7 @@ from collections import defaultdict
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.conf import settings
-
-from ndlib.ndtype import IMAGE, ANNOTATION, TIMESERIES, UINT8, UINT16, UINT32, UINT64, FLOAT32, READONLY_TRUE, READONLY_FALSE, ZSLICES, ISOTROPIC, PUBLIC_TRUE, PUBLIC_FALSE, PROPAGATED, NOT_PROPAGATED, EXCEPTION_TRUE, EXCEPTION_FALSE, MYSQL, CASSANDRA, RIAK, DYNAMODB, REDIS, DSP61, DSP62, DSP63, ND_VERSION, SCHEMA_VERSION, FILE_SYSTEM, AMAZON_S3, S3_TRUE, S3_FALSE
+from ndlib.ndtype import *
 
 # Create your models here.
 class Dataset ( models.Model):
@@ -70,13 +69,9 @@ class Project ( models.Model):
   public =  models.IntegerField(default=0, choices=ISPUBLIC_CHOICES)
   dataset = models.ForeignKey(Dataset)
   HOST_CHOICES = (
-    (DSP61, 'default'),
-    (DSP61, 'dsp061'),
-    (DSP62, 'dsp062'),
-    (DSP63, 'dsp063'),
-    ('localhost', 'Debug'),
+    ('localhost', 'default'),
   )
-  host =  models.CharField(max_length=255, choices=HOST_CHOICES, default=DSP61)
+  host =  models.CharField(max_length=255, choices=HOST_CHOICES, default='localhost')
   KVENGINE_CHOICES = (
     (MYSQL, 'MySQL'),
     (CASSANDRA, 'Cassandra'),
@@ -86,13 +81,9 @@ class Project ( models.Model):
   )
   kvengine =  models.CharField(max_length=255, choices=KVENGINE_CHOICES, default=MYSQL)
   KVSERVER_CHOICES = (
-    (DSP61, 'default'),
-    (DSP61, 'dsp061'),
-    (DSP62, 'dsp062'),
-    (DSP63, 'dsp063'),
-    ('localhost', 'Debug'),
+    ('localhost', 'default'),
   )
-  kvserver =  models.CharField(max_length=255, choices=KVSERVER_CHOICES, default=DSP61)
+  kvserver =  models.CharField(max_length=255, choices=KVSERVER_CHOICES, default='localhost')
   MDENGINE_CHOICES = (
     (MYSQL, 'MySQL'),
   )

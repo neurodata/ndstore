@@ -283,7 +283,7 @@ def catmaid (request, webargs):
     logger.exception("Unknown exception in catmaid {}.".format(e))
     raise NDWSError("Unknown exception in catmaid {}.".format(e))
 
-@api_view(['GET'])
+# @api_view(['GET'])
 def publictokens (request, webargs):
   """Return list of public tokens"""
   try:
@@ -296,7 +296,7 @@ def publictokens (request, webargs):
     logger.exception("Unknown exception in publictokens. {}".format(e))
     raise NDWSError("Unknown exception in publictokens. {}".format(e))
 
-@api_view(['GET'])
+# @api_view(['GET'])
 def publicdatasets (request, webargs):
   """Return list of public datasets"""
   try:

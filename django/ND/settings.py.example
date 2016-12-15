@@ -59,6 +59,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
+    'sslserver',
     'nduser',
     'spdb',
     'overlay',
@@ -227,6 +228,10 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_ACCEPT_CONTENT=['json', 'pickle']
 CELERYD_PREFETCH_MULTIPLIER = 1
 CELERY_RESULT_BACKEND = 'djcelery.backends.database:DatabaseBackend'
+CELERY_IMPORTS = (
+    'sd.tasks',
+    'stats.tasks'
+)
 
 # LIMS Server Settings
 LIMS_SERVER = 'lims.neurodata.io'
