@@ -40,7 +40,8 @@ class Test_Resource():
 
   def setup_class(self):
     """Setup Parameters"""
-    makeunitdb.createTestDB(p.project, channel_list=p.channels, ximagesize=2000, yimagesize=2000, zimagesize=1000, xvoxelres=1.0, yvoxelres=1.0, zvoxelres=5.0, token_name=p.token)
+    # makeunitdb.createTestDB(p.project, channel_list=p.channels, ximagesize=2000, yimagesize=2000, zimagesize=1000, xvoxelres=1.0, yvoxelres=1.0, zvoxelres=5.0, token_name=p.token)
+    pass
   
   def teardown_class(self):
     """Teardown Parameters"""
@@ -60,7 +61,7 @@ class Test_Resource():
         'zvoxelres' : 1.0,
         'public' : 1
     }
-    response = postJson('http://{}/resource/dataset/{}/'.format(SITE_HOST, p.dataset), dataset)
+    response = postJson('https://{}/resource/dataset/{}/'.format(SITE_HOST, p.dataset), dataset)
     assert(response.status_code == 201)
 
   def test_post_project(self):
@@ -68,9 +69,11 @@ class Test_Resource():
         'project_name' : p.project,
         'host' : 'localhost',
         's3backend' : 0,
-        'public' : 1
+        'public' : 1,
+        'kvserver' : 'localhost',
+        'kvengine' : MYSQL
     }
-    response = postJson('http://{}/resource/dataset/{}/project/{}'.format(SITE_HOST, p.dataset, p.project), project)
+    response = postJson('https://{}/resource/dataset/{}/project/{}'.format(SITE_HOST, p.dataset, p.project), project)
     assert(response.status_code == 201)
   
   def test_post_channel(self):
@@ -81,7 +84,7 @@ class Test_Resource():
         'startwindow' : 0,
         'endwindow': 500
     }
-    response = postJson('http://{}/resource/dataset/{}/project/{}/channel/{}/'.format(SITE_HOST, p.dataset, p.project, p.channels[0]), channel)
+    response = postJson('https://{}/resource/dataset/{}/project/{}/channel/{}/'.format(SITE_HOST, p.dataset, p.project, p.channels[0]), channel)
     assert(response.status_code == 201)
   
   def test_post_token(self):
@@ -89,49 +92,49 @@ class Test_Resource():
         'token_name' : p.token,
         'public' : 1
     }
-    response = postJson('http://{}/resource/dataset/{}/project/{}/token/{}/'.format(SITE_HOST, p.dataset, p.project, p.token), token)
+    response = postJson('https://{}/resource/dataset/{}/project/{}/token/{}/'.format(SITE_HOST, p.dataset, p.project, p.token), token)
     assert(response.status_code == 201)
   
   def test_public_dataset(self):
-    response = getJson('http://{}/resource/public/dataset/'.format(SITE_HOST))
+    response = getJson('https://{}/resource/public/dataset/'.format(SITE_HOST))
     assert(p.dataset in response.json())
   
   def test_list_dataset(self):
-    response = getJson('http://{}/resource/dataset/'.format(SITE_HOST))
+    response = getJson('https://{}/resource/dataset/'.format(SITE_HOST))
     assert(p.dataset in response.json())
   
   def test_list_project(self):
-    response = getJson('http://{}/resource/dataset/{}/project/'.format(SITE_HOST, p.dataset))
+    response = getJson('https://{}/resource/dataset/{}/project/'.format(SITE_HOST, p.dataset))
     assert(p.project in response.json())
   
   def test_public_token(self):
-    response = getJson('http://{}/resource/public/token/'.format(SITE_HOST))
+    response = getJson('https://{}/resource/public/token/'.format(SITE_HOST))
     assert(p.token in response.json())
   
   def test_get_dataset(self):
-    response = getJson('http://{}/resource/dataset/{}/'.format(SITE_HOST, p.dataset))
+    response = getJson('https://{}/resource/dataset/{}/'.format(SITE_HOST, p.dataset))
     assert(response.status_code == 200)
     assert(response.json()['dataset_name'] == p.dataset)
     assert(response.json()['ximagesize'] == 2000)
     assert(response.json()['xvoxelres'] == 1.0)
   
   def test_get_dataset_error(self):
-    response = getJson('http://{}/resource/dataset/{}/'.format(SITE_HOST, 'foo'))
+    response = getJson('https://{}/resource/dataset/{}/'.format(SITE_HOST, 'foo'))
     assert(response.status_code == 404)
 
   def test_get_project(self):
-    response = getJson('http://{}/resource/dataset/{}/project/{}/'.format(SITE_HOST, p.dataset, p.project))
+    response = getJson('https://{}/resource/dataset/{}/project/{}/'.format(SITE_HOST, p.dataset, p.project))
     assert(response.status_code == 200)
     assert(response.json()['project_name'] == p.project)
     assert(response.json()['host'] == 'localhost')
     assert(response.json()['kvengine'] == MYSQL)
   
   def test_get_project_error(self):
-    response = getJson('http://{}/resource/dataset/{}/project/{}/'.format(SITE_HOST, p.dataset, 'foo'))
+    response = getJson('https://{}/resource/dataset/{}/project/{}/'.format(SITE_HOST, p.dataset, 'foo'))
     assert(response.status_code == 404)
   
   def test_get_channel(self):
-    response = getJson('http://{}/resource/dataset/{}/project/{}/channel/{}/'.format(SITE_HOST, p.dataset, p.project, p.channels[0]))
+    response = getJson('https://{}/resource/dataset/{}/project/{}/channel/{}/'.format(SITE_HOST, p.dataset, p.project, p.channels[0]))
     assert(response.status_code == 200)
     assert(response.json()['channel_name'] == p.channels[0])
     assert(response.json()['channel_type'] == p.channel_type)
@@ -140,30 +143,30 @@ class Test_Resource():
     assert(response.json()['endwindow'] == 500)
   
   def test_get_channel_error(self):
-    response = getJson('http://{}/resource/dataset/{}/project/{}/channel/{}/'.format(SITE_HOST, p.dataset, p.project, 'foo'))
+    response = getJson('https://{}/resource/dataset/{}/project/{}/channel/{}/'.format(SITE_HOST, p.dataset, p.project, 'foo'))
     assert(response.status_code == 404)
   
   def test_get_token(self):
-    response = getJson('http://{}/resource/dataset/{}/project/{}/token/{}/'.format(SITE_HOST, p.dataset, p.project, p.token))
+    response = getJson('https://{}/resource/dataset/{}/project/{}/token/{}/'.format(SITE_HOST, p.dataset, p.project, p.token))
     assert(response.status_code == 200)
     assert(response.json()['token_name'] == p.token)
   
   def test_get_token(self):
-    response = getJson('http://{}/resource/dataset/{}/project/{}/token/{}/'.format(SITE_HOST, p.dataset, p.project, 'foo'))
+    response = getJson('https://{}/resource/dataset/{}/project/{}/token/{}/'.format(SITE_HOST, p.dataset, p.project, 'foo'))
     assert(response.status_code == 404)
 
   def test_delete_token(self):
-    response = deleteJson('http://{}/resource/dataset/{}/project/{}/token/{}/'.format(SITE_HOST, p.dataset, p.project, p.token))
+    response = deleteJson('https://{}/resource/dataset/{}/project/{}/token/{}/'.format(SITE_HOST, p.dataset, p.project, p.token))
     assert(response.status_code == 204)
 
   def test_delete_channel(self):
-    response = deleteJson('http://{}/resource/dataset/{}/project/{}/channel/{}/'.format(SITE_HOST, p.dataset, p.project, p.channels[0]))
+    response = deleteJson('https://{}/resource/dataset/{}/project/{}/channel/{}/'.format(SITE_HOST, p.dataset, p.project, p.channels[0]))
     assert(response.status_code == 204)
   
   def test_delete_project(self):
-    response = deleteJson('http://{}/resource/dataset/{}/project/{}/'.format(SITE_HOST, p.dataset, p.project))
+    response = deleteJson('https://{}/resource/dataset/{}/project/{}/'.format(SITE_HOST, p.dataset, p.project))
     assert(response.status_code == 204)
   
   def test_delete_dataset(self):
-    response = deleteJson('http://{}/resource/dataset/{}/'.format(SITE_HOST, p.dataset))
+    response = deleteJson('https://{}/resource/dataset/{}/'.format(SITE_HOST, p.dataset))
     assert(response.status_code == 204)

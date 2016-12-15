@@ -257,16 +257,16 @@ class Test_Ramon:
       suffix = None
 
     if suffix:
-      url = 'http://{}/{}/sd/{}/{}/{}/'.format(base, suffix, 'unittest', 'unit_anno', p.annoid )
+      url = 'https://{}/{}/sd/{}/{}/{}/'.format(base, suffix, 'unittest', 'unit_anno', p.annoid )
     else:
-      url = 'http://{}/sd/{}/{}/{}/'.format(base, 'unittest', 'unit_anno', p.annoid )
+      url = 'https://{}/sd/{}/{}/{}/'.format(base, 'unittest', 'unit_anno', p.annoid )
 
     resp = deleteURL(url)
     assert resp.content == "Success"
 
     # retrieve the annotation
     # verify that it's not there.
-    url = "http://{}/sd/{}/{}/{}/".format(SITE_HOST, 'unittest', 'unit_anno', p.annoid)
+    url = "https://{}/sd/{}/{}/{}/".format(SITE_HOST, 'unittest', 'unit_anno', p.annoid)
     resp = getURL( url )
     assert(resp.status_code >= 400)
 
@@ -489,12 +489,12 @@ class Test_Ramon:
     assert status == int(f.content)
 
     #  bad format to a number
-    url =  "http://{}/sd/{}/{}/{}/setField/status/aa/".format(SITE_HOST, 'unittest', 'unit_anno', p.annoid)
+    url =  "https://{}/sd/{}/{}/{}/setField/status/aa/".format(SITE_HOST, 'unittest', 'unit_anno', p.annoid)
     req = getURL( url )
     assert(req.status_code >= 400)
 
     #  request a missing field
-    url =  "http://{}/sd/{}/{}/{}/getField/othernonesuch/".format(SITE_HOST, 'unittest', 'unit_anno', p.annoid)
+    url =  "https://{}/sd/{}/{}/{}/getField/othernonesuch/".format(SITE_HOST, 'unittest', 'unit_anno', p.annoid)
     req = getURL( url )
     assert(req.status_code >= 400)
 

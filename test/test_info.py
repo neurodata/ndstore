@@ -22,7 +22,7 @@ from lxml import etree
 
 from pytesthelpers import makeAnno
 
-from ndlib.restutil import getURL
+from ndlib.restutil import *
 from params import Params
 import kvengine_to_test
 import site_to_test
@@ -55,37 +55,28 @@ class Test_Info:
   def test_public_tokens (self):
     """Test the function that shows the public tokens"""
 
-    f =  getURL("http://{}/sd/public_tokens/".format( SITE_HOST ))
-
-    # read the json data
-    tokens = json.loads ( f.content )
-    assert ( p.token in tokens )
+    response = getJson("https://{}/sd/public_tokens/".format( SITE_HOST ))
+    assert ( p.token in response.json() )
 
   def test_public_datsets (self):
     """Test the function that shows the public datasets"""
 
-    f =  getURL("http://{}/sd/public_datasets/".format( SITE_HOST ))
-
-    # read the json data
-    datasets = json.loads ( f.content )
-    assert ( p.token in datasets )
+    response =  getJson("https://{}/sd/public_datasets/".format( SITE_HOST ))
+    assert (p.token in response.json())
 
   def test_info(self):
     """Test the info query"""
 
-    f = getURL("http://{}/sd/{}/info/".format(SITE_HOST, p.token))
-
-    # read the json data
-    projinfo = json.loads ( f.content )
-    assert ( projinfo['project']['name'] == p.token )
-    assert ( projinfo['channels'][p.channels[0]]['channel_type'] == 'annotation' )
-    assert ( projinfo['dataset']['offset']['0'][2] == 1 )
+    response = getJson("https://{}/sd/{}/info/".format(SITE_HOST, p.token))
+    assert ( response.json()['project']['name'] == p.token )
+    assert ( response.json()['channels'][p.channels[0]]['channel_type'] == 'annotation' )
+    assert ( response.json()['dataset']['offset']['0'][2] == 1 )
 
 
   def test_projinfo (self):
     """Test the projinfo query"""
 
-    f = getURL("http://{}/sd/{}/projinfo/".format(SITE_HOST, p.token))
+    f = getURL("https://{}/sd/{}/projinfo/".format(SITE_HOST, p.token))
 
     # read the hdf5 file
     tmpfile = tempfile.NamedTemporaryFile ()
@@ -100,7 +91,7 @@ class Test_Info:
   def test_xmlinfo (self):
     """Test the projinfo query"""
 
-    f = getURL("http://{}/sd/{}/volume.vikingxml".format(SITE_HOST, p.token))
+    f = getURL("https://{}/sd/{}/volume.vikingxml".format(SITE_HOST, p.token))
 
     xmlinfo = etree.XML(f.content)
     assert( xmlinfo.values()[2] == p.token )

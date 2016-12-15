@@ -92,7 +92,7 @@ class Test_GraphGen:
     truthGraph = nx.Graph()
     truthGraph.add_edges_from(syn_segments)
 
-    url = 'http://{}/ndgraph/{}/{}/'.format(SITE_HOST, p.token, p.channels[0])
+    url = 'https://{}/ndgraph/{}/{}/'.format(SITE_HOST, p.token, p.channels[0])
     graphFile = getURL(url)
     with open(("/tmp/{}_{}.graphml").format(p.token, p.channels[0]), "wb") as f:
         f.write(graphFile.content)
@@ -106,7 +106,7 @@ class Test_GraphGen:
     truthGraph = nx.Graph()
     truthGraph.add_edges_from(syn_segments)
 
-    url = 'http://{}/ndgraph/{}/{}/{}/'.format(
+    url = 'https://{}/ndgraph/{}/{}/{}/'.format(
         SITE_HOST, p.token, p.channels[0], 'adjlist')
     graphFile = getURL(url)
     with open(("/tmp/{}_{}.adjlist").format(p.token, p.channels[0]), "wb") as f:
@@ -122,7 +122,7 @@ class Test_GraphGen:
     truthGraph = nx.Graph()
     truthGraph.add_edges_from(syn_segments)
 
-    url = 'http://{}/ndgraph/{}/{}/{}/{},{}/{},{}/{},{}/'.format(
+    url = 'https://{}/ndgraph/{}/{}/{}/{},{}/{},{}/{},{}/'.format(
         SITE_HOST, p.token, p.channels[0], 'graphml', 0, 7, 0, 8, 1, 4)
     graphFile = getURL(url)
     with open(("/tmp/{}_{}.graphml").format(p.token, p.channels[0]), "wb") as f:
@@ -137,8 +137,7 @@ class Test_GraphGen:
     truthGraph = nx.Graph()
     truthGraph.add_edges_from(syn_segments)
 
-    url = 'http://{}/ndgraph/{}/{}/{}/'.format(
-        SITE_HOST, p.token, p.channels[0], 'foograph')
+    url = 'https://{}/ndgraph/{}/{}/{}/'.format(SITE_HOST, p.token, p.channels[0], 'foograph')
     graphFile = getURL(url)
     with open(("/tmp/{}_{}.graphml").format(p.token, p.channels[0]), "wb") as f:
         f.write(graphFile.content)
@@ -146,6 +145,5 @@ class Test_GraphGen:
     assert(nx.is_isomorphic(outputGraph, truthGraph))
 
     """Invalid token"""
-    url = 'http://{}/ndgraph/{}/{}/{}/{},{}/{},{}/{},{}/'.format(
-        SITE_HOST, 'foo', p.channels[0], 'graphml', 0, 7, 0, 7, 0, 7)
+    url = 'https://{}/ndgraph/{}/{}/{}/{},{}/{},{}/{},{}/'.format(SITE_HOST, 'foo', p.channels[0], 'graphml', 0, 7, 0, 7, 0, 7)
     assert (getURL(url).status_code >= 500)

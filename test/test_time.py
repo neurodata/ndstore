@@ -73,7 +73,7 @@ class Test_Time_Slice:
     time_data = np.ones( [2,2,1,100,100], dtype=np.uint8 ) * random.randint(0,255)
     response = postNPZ(p, time_data, time=True)
 
-    url = "http://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[6])
+    url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[6])
     f = getURL (url)
 
     slice_data = np.asarray ( Image.open(StringIO(f.content)) )
@@ -86,7 +86,7 @@ class Test_Time_Slice:
     image_data = np.ones( [2,1,100,100,1], dtype=np.uint8 ) * random.randint(0,255)
     response = postNPZ(p, image_data, time=True)
 
-    url = "http://{}/sd/{}/{}/yz/{}/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[2], p.args[3], p.args[4], p.args[5], p.args[6])
+    url = "https://{}/sd/{}/{}/yz/{}/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[2], p.args[3], p.args[4], p.args[5], p.args[6])
     f = getURL (url)
 
     slice_data = np.asarray ( Image.open(StringIO(f.content)) )
@@ -99,7 +99,7 @@ class Test_Time_Slice:
     image_data = np.ones( [2,1,100,1,100], dtype=np.uint8 ) * random.randint(0,255)
     response = postNPZ(p, image_data, time=True)
 
-    url = "http://{}/sd/{}/{}/xz/{}/{},{}/{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[4], p.args[5], p.args[6])
+    url = "https://{}/sd/{}/{}/xz/{}/{},{}/{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[4], p.args[5], p.args[6])
     f = getURL (url)
 
     slice_data = np.asarray ( Image.open(StringIO(f.content)) )
@@ -110,7 +110,7 @@ class Test_Time_Slice:
 
     #p.args = (11000,11100,4000,4100,200,201)
 
-    #url = "http://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
+    #url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
     #assert ( 404 == getURL (url) )
 
 
@@ -235,7 +235,7 @@ class Test_Time_Simple_Catmaid:
     assert ( np.array_equal(voxarray, image_data) )
     
     # xy/z/y_z_res
-    url = "http://{}/catmaid/{}/{}/xy/{}/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[6], p.args[4], p.args[2]/512, p.args[0]/512, p.resolution)
+    url = "https://{}/catmaid/{}/{}/xy/{}/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[6], p.args[4], p.args[2]/512, p.args[0]/512, p.resolution)
     f = getURL (url)
 
     slice_data = np.asarray ( Image.open(StringIO(f.content)) )
@@ -254,7 +254,7 @@ class Test_Time_Simple_Catmaid:
     assert ( np.array_equal(voxarray, image_data) )
 
     # yz/x/z_y_res
-    url = "http://{}/catmaid/{}/{}/yz/{}/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[6], p.args[0], p.args[4]/512, p.args[2]/512, p.resolution)
+    url = "https://{}/catmaid/{}/{}/yz/{}/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[6], p.args[0], p.args[4]/512, p.args[2]/512, p.resolution)
     f = getURL (url)
 
     scale_range = 512*p.voxel[2]/p.voxel[1]
@@ -274,7 +274,7 @@ class Test_Time_Simple_Catmaid:
     assert ( np.array_equal(voxarray, image_data) )
 
     # xz/y/z_x_res
-    url = "http://{}/catmaid/{}/{}/xz/{}/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[6], p.args[2], p.args[4]/512, p.args[0]/512, p.resolution)
+    url = "https://{}/catmaid/{}/{}/xz/{}/{}/{}_{}_{}.png".format(SITE_HOST, p.token, p.channels[0], p.args[6], p.args[2], p.args[4]/512, p.args[0]/512, p.resolution)
     f = getURL (url)
 
     scale_range = 512*p.voxel[2]/p.voxel[0]
@@ -298,7 +298,7 @@ class Test_Time_Window:
     image_data = np.ones([2,2,1,100,100], dtype=np.uint16) * 2000
     response = postNPZ(p, image_data, time=True)
 
-    url = "http://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/{}".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[6])
+    url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/{}".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[6])
     f = getURL (url)
 
     from ndlib.windowcutout import windowCutout
@@ -314,7 +314,7 @@ class Test_Time_Window:
     image_data = np.ones([2,2,1,100,100], dtype=np.uint16) * 2000
     response = postNPZ(p, image_data, time=True)
 
-    url = "http://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/{}/window/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[6], *p.window)
+    url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/{}/window/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[6], *p.window)
     f = getURL (url)
 
     from ndlib.windowcutout import windowCutout
@@ -353,7 +353,7 @@ class Test_Time_Diff:
     assert ( np.array_equal(voxarray,image_data2) )
 
     p.args = (3000,3100,2000,2100,10,11,2,4)
-    url = "http://{}/sd/{}/{}/diff/{}/{},{}/{},{}/{},{}/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, *p.args)
+    url = "https://{}/sd/{}/{}/diff/{}/{},{}/{},{}/{},{}/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, *p.args)
     f = getURL (url)
     voxarray = blosc.unpack_array(f.content)
 
@@ -372,7 +372,7 @@ class Test_Time_Diff:
     ## check that the return matches
     #assert ( np.array_equal(voxarray,image_data) )
 
-    #url = "http://{}/sd/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
+    #url = "https://{}/sd/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
     #f = getURL (url)
 
     #slice_data = np.asarray ( Image.open(StringIO(f.content)) )

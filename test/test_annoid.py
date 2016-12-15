@@ -67,7 +67,7 @@ class Test_Annotation_Json():
     y = 50
     z = 5
     cutout = '{}/{}/{}/{}/'.format( res, x, y, z )
-    url = 'http://{}/sd/{}/{}/id/{}'.format( SITE_HOST, p.token, p.channels[0], cutout )
+    url = 'https://{}/sd/{}/{}/id/{}'.format( SITE_HOST, p.token, p.channels[0], cutout )
 
     try:
       # Build a get request

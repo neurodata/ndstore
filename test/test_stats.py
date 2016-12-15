@@ -16,12 +16,12 @@ import urllib2
 import time
 import json
 import numpy as np
-from ndlib.ndtype import UINT8, UINT16, UINT32, ANNOTATION, IMAGE 
-from ND import celery_app 
 import makeunitdb
+from ND import celery_app 
 from params import Params
-from postmethods import postNPZ, getNPZ, getURL, postURL
-
+from ndlib.restutil import *
+from postmethods import postNPZ, getNPZ
+from ndlib.ndtype import * 
 import site_to_test
 SITE_HOST = site_to_test.site
 
@@ -54,7 +54,7 @@ class Test_Histogram8:
     assert( np.array_equal(voxarray, image_data) )
 
     # generate the histogram
-    url = 'http://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
+    url = 'https://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
     try:
       # Build a get request
       response = getURL(url)
@@ -79,7 +79,7 @@ class Test_Histogram8:
       count += 1
 
     # now get the histogram
-    url = 'http://{}/stats/{}/{}/hist/'.format( SITE_HOST, p.token, p.channels[0] )
+    url = 'https://{}/stats/{}/{}/hist/'.format( SITE_HOST, p.token, p.channels[0] )
     try:
       # Build a get request
       response = getURL(url)
@@ -122,7 +122,7 @@ class Test_Histogram16:
     assert( np.array_equal(voxarray, image_data) )
 
     # generate the histogram
-    url = 'http://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
+    url = 'https://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
     try:
       # Build a get request
       response = getURL(url)
@@ -147,7 +147,7 @@ class Test_Histogram16:
       count += 1
 
     # now get the histogram
-    url = 'http://{}/stats/{}/{}/hist/'.format( SITE_HOST, p.token, p.channels[0] )
+    url = 'https://{}/stats/{}/{}/hist/'.format( SITE_HOST, p.token, p.channels[0] )
     try:
       # Build a get request
       response = getURL(url)
@@ -197,7 +197,7 @@ class TestHistogramROI:
     roi = [ [500, 500, 5], [650, 650, 15] ]
     #roistr = "{}-{}".format( ",".join(str(x) for x in roi[0]), ",".join(str(x) for x in roi[1]) )
 
-    url = 'http://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
+    url = 'https://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
 
     try:
       # Make a POST request
@@ -229,7 +229,7 @@ class TestHistogramROI:
       count += 1
 
     # make sure the ROI exists
-    url = 'http://{}/stats/{}/{}/hist/roi/'.format( SITE_HOST, p.token, p.channels[0] )
+    url = 'https://{}/stats/{}/{}/hist/roi/'.format( SITE_HOST, p.token, p.channels[0] )
     try:
       # Build a get request
       req = urllib2.Request(url)
@@ -249,7 +249,7 @@ class TestHistogramROI:
 
     # now grab the generated histogram using a get request
     roistr = "{}-{}".format( ",".join(str(x) for x in roi[0]), ",".join(str(x) for x in roi[1]) )
-    url = 'http://{}/stats/{}/{}/hist/roi/{}/'.format( SITE_HOST, p.token, p.channels[0], roistr )
+    url = 'https://{}/stats/{}/{}/hist/roi/{}/'.format( SITE_HOST, p.token, p.channels[0], roistr )
     try:
       req = urllib2.Request(url)
       response = urllib2.urlopen(req)
@@ -275,7 +275,7 @@ class TestHistogramROI:
 
     roi = [ [0, 0, 1], [10, 10, 6] ]
 
-    url = 'http://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
+    url = 'https://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
 
     try:
       # Make a POST request
@@ -308,7 +308,7 @@ class TestHistogramROI:
 
     # now grab the generated histogram using a get request
     roistr = "{}-{}".format( ",".join(str(x) for x in roi[0]), ",".join(str(x) for x in roi[1]) )
-    url = 'http://{}/stats/{}/{}/hist/roi/{}/'.format( SITE_HOST, p.token, p.channels[0], roistr )
+    url = 'https://{}/stats/{}/{}/hist/roi/{}/'.format( SITE_HOST, p.token, p.channels[0], roistr )
     try:
       req = urllib2.Request(url)
       response = urllib2.urlopen(req)
@@ -334,7 +334,7 @@ class TestHistogramROI:
 
     roi = [ [1000, 1000, 18], [1024, 1024, 21] ]
 
-    url = 'http://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
+    url = 'https://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
 
     try:
       # Make a POST request
@@ -367,7 +367,7 @@ class TestHistogramROI:
 
     # now grab the generated histogram using a get request
     roistr = "{}-{}".format( ",".join(str(x) for x in roi[0]), ",".join(str(x) for x in roi[1]) )
-    url = 'http://{}/stats/{}/{}/hist/roi/{}/'.format( SITE_HOST, p.token, p.channels[0], roistr )
+    url = 'https://{}/stats/{}/{}/hist/roi/{}/'.format( SITE_HOST, p.token, p.channels[0], roistr )
     try:
       req = urllib2.Request(url)
       response = urllib2.urlopen(req)
@@ -393,7 +393,7 @@ class TestHistogramROI:
 
     # post ROI that isn't complete
     roi = [ 50, 100, 100]
-    url = 'http://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
+    url = 'https://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
 
     try:
       # Make a POST request
@@ -407,7 +407,7 @@ class TestHistogramROI:
     # post ROI that isn't a cube
     roi = [ [50, 50, 18], [10, 10, 5] ]
 
-    url = 'http://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
+    url = 'https://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
 
     try:
       # Make a POST request
@@ -421,7 +421,7 @@ class TestHistogramROI:
     # post ROI outside of dataset bounds
     roi = [ [0, 0, 1], [2000, 2000, 50] ]
 
-    url = 'http://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
+    url = 'https://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
 
     try:
       # Make a POST request
@@ -466,7 +466,7 @@ class TestHistogramROIMultiple:
       [ [100, 100, 15], [350, 350, 20] ],
     ]
 
-    url = 'http://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
+    url = 'https://{}/stats/{}/{}/genhist/'.format( SITE_HOST, p.token, p.channels[0] )
 
     try:
       # Make a POST request
@@ -500,7 +500,7 @@ class TestHistogramROIMultiple:
 
       # grab the generated histogram using a get request
       roistr = "{}-{}".format( ",".join(str(x) for x in roi[0]), ",".join(str(x) for x in roi[1]) )
-      url = 'http://{}/stats/{}/{}/hist/roi/{}/'.format( SITE_HOST, p.token, p.channels[0], roistr )
+      url = 'https://{}/stats/{}/{}/hist/roi/{}/'.format( SITE_HOST, p.token, p.channels[0], roistr )
       try:
         req = urllib2.Request(url)
         response = urllib2.urlopen(req)
