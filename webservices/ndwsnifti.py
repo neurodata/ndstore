@@ -23,17 +23,54 @@ import logging
 logger = logging.getLogger("neurodata")
 
 
-def ingestNIFTI ( niftifname, ch, db, proj ):
+def ingestNIFTI ( niftifname, ch, db, proj, channel_name="", create=False ):
   """Ingest the nifti file into a database. No cutout arguments. Must be an entire channel."""     
-
   # load the nifti data
   nifti_img = nibabel.load(niftifname)
   nifti_data = np.array(nifti_img.get_data())
+
+  # create the channel if needed
+  if create:
+
+    import pdb; pdb.set_trace()
+
+    from nduser.models import Channel
+    from ndproj.ndchannel import NDChannel
+    import ndtype
+
+    # 3d or 4d nii file -- set endtime
+    if len(nifti_data.shape) == 3:
+      endtime = 0
+    else:
+      endtime = nifti_data.shape[3]-1
+
+    # coerce the data type 
+    if nifti_data.dtype == '<i1':
+      channel_datatype = ndtype.UINT8
+    elif nifti_data.dtype == '<i2':
+      channel_datatype = ndtype.UINT16
+    elif nifti_data.dtype == '<i4':
+      channel_datatype = ndtype.UINT32
+    elif nifti_data.dtype == '<f4':
+      channel_datatype = ndtype.FLOAT32
+ 
+    try:
+      newch = NDChannel(Channel (channel_name=channel_name, channel_type=ndtype.TIMESERIES, channel_datatype=channel_datatype, channel_description=channel_name, project_id=proj.project_name, readonly=False, propagate=False, resolution=0, exceptions=0, starttime=0, endtime=endtime))
+    except Exception,e:
+      logger.warning("Failed to create channel {}. Error{}".format(channel_name,e))
+      raise NSWDError("Failed to create channel {}. Error {}".format(channel_name,e))
+
+    newch.create()
+
+    ch = NDChannel.fromName(proj, channel_name)
+
+  else:
+
   
-  # Don't write to readonly channels
-  if ch.readonly == READONLY_TRUE:
-    logger.warning("Attempt to write to read only channel {} in project {}".format(ch.channel_name, proj.project_name))
-    raise NDWSError("Attempt to write to read only channel {} in project {}".format(ch.channel_name, proj.project_name))
+    # Don't write to readonly channels
+    if ch.readonly == READONLY_TRUE:
+      logger.warning("Attempt to write to read only channel {} in project {}".format(ch.channel_name, proj.project_name))
+      raise NDWSError("Attempt to write to read only channel {} in project {}".format(ch.channel_name, proj.project_name))
 
   # check that the data is the right shape
   if nifti_data.shape != tuple(proj.datasetcfg.dataset_dim(0)) and nifti_data.shape != tuple(proj.datasetcfg.dataset_dim(0) + [ch.time_range[1]-ch.time_range[0]+1]):

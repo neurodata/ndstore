@@ -25,9 +25,13 @@ def main():
   parser.add_argument('token', action="store" )
   parser.add_argument('channel', action="store" )
   parser.add_argument('filename', action="store" )
+  parser.add_argument('--create', action="store_true")
   result = parser.parse_args()
 
-  url = 'http://{}/sd/{}/{}/nii/'.format(result.baseurl, result.token, result.channel)
+  if result.create:
+    url = 'http://{}/sd/{}/{}/nii/create/'.format(result.baseurl, result.token, result.channel)
+  else:
+    url = 'http://{}/sd/{}/{}/nii/'.format(result.baseurl, result.token, result.channel)
 
   print url
 

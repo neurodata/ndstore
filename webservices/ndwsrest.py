@@ -1587,12 +1587,18 @@ def putNIFTI ( webargs, postdata ):
   proj = NDProject.fromTokenName(token)
   with closing (SpatialDB(proj)) as db:
 
-    ch = NDChannel.fromName(proj, channel)
+    # get ready to create a channel 
+    if "create" in optionsargs:
+      ch = None
+      createflag = True
+    else:
+      createflag = False
+      ch = NDChannel.fromName(proj, channel)
     
-    # Don't write to readonly channels
-    if ch.readonly == READONLY_TRUE:
-      logger.error("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.project_name, webargs))
-      raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.project_name, webargs))
+      # Don't write to readonly channels
+      if ch.readonly == READONLY_TRUE:
+        logger.error("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.getChannelName(), proj.project_name, webargs))
+        raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.getChannelName(), proj.project_name, webargs))
 
     # check the magic number -- is it a gz file?
     if postdata[0] == '\x1f' and postdata[1] ==  '\x8b':
@@ -1602,7 +1608,7 @@ def putNIFTI ( webargs, postdata ):
         tmpfile.write ( postdata )
         tmpfile.seek(0)
         # ingest the nifti file
-        ingestNIFTI ( tmpfile.name, ch, db, proj )
+        ingestNIFTI ( tmpfile.name, ch, db, proj, channel_name = channel, create=createflag )
     
     else:
 
@@ -1611,7 +1617,7 @@ def putNIFTI ( webargs, postdata ):
         tmpfile.write ( postdata )
         tmpfile.seek(0)
         # ingest the nifti file
-        ingestNIFTI ( tmpfile.name, ch, db, proj )
+        ingestNIFTI ( tmpfile.name, ch, db, proj, channel_name = channel, create=createflag )
 
 # def getSWC ( webargs ):
   # """Return an SWC object generated from Skeletons/Nodes"""
