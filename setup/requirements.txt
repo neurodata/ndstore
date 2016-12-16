@@ -21,7 +21,7 @@ django-celery
 django-cors-headers
 djangorestframework
 django-cors-middleware
-djnago-ssl-server
+django-ssl-server
 #
 # Key value engines
 boto3

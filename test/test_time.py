@@ -72,11 +72,13 @@ class Test_Time_Slice:
     p.args = (3000,3100,4000,4100,200,201,10,12)
     time_data = np.ones( [2,2,1,100,100], dtype=np.uint8 ) * random.randint(0,255)
     response = postNPZ(p, time_data, time=True)
+    assert(response.status_code == 200)
 
     url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4], p.args[6])
-    f = getURL (url)
-
-    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
+    response = getURL(url)
+    
+    assert(response.status_code == 200)
+    slice_data = np.asarray ( Image.open(StringIO(response.content)) )
     assert ( np.array_equal(slice_data, time_data[0][0][0]) )
 
   def test_yz (self):
@@ -85,11 +87,13 @@ class Test_Time_Slice:
     p.args = (4000,4001,3000,3100,200,300,10,11)
     image_data = np.ones( [2,1,100,100,1], dtype=np.uint8 ) * random.randint(0,255)
     response = postNPZ(p, image_data, time=True)
+    assert(response.status_code == 200)
 
     url = "https://{}/sd/{}/{}/yz/{}/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[2], p.args[3], p.args[4], p.args[5], p.args[6])
-    f = getURL (url)
+    response = getURL (url)
+    assert(response.status_code == 200)
 
-    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
+    slice_data = np.asarray ( Image.open(StringIO(response.content)) )
     assert ( np.array_equal(slice_data, image_data[0][0][:75][:].reshape(75,100)) )
 
   def test_xz (self):
@@ -98,11 +102,13 @@ class Test_Time_Slice:
     p.args = (5000,5100,2000,2001,200,300,15,16)
     image_data = np.ones( [2,1,100,1,100], dtype=np.uint8 ) * random.randint(0,255)
     response = postNPZ(p, image_data, time=True)
+    assert(response.status_code == 200)
 
     url = "https://{}/sd/{}/{}/xz/{}/{},{}/{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[4], p.args[5], p.args[6])
-    f = getURL (url)
+    response = getURL (url)
+    assert(response.status_code == 200)
 
-    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
+    slice_data = np.asarray ( Image.open(StringIO(response.content)) )
     assert ( np.array_equal(slice_data, image_data[0][0][:75][:].reshape(75,100)) )
 
   #def test_xy_incorrect (self):
