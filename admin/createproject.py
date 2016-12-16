@@ -42,7 +42,7 @@ def main():
 
   result = parser.parse_args()
 
-  import pdb; pdb.set_trace()
+
 
   # Get database info
   pd = ocpcaproj.OCPCAProjectsDB()

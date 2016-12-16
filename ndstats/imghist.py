@@ -41,9 +41,9 @@ class ImgHist():
       ch = proj.getChannelObj(self.channel)
 
       # Get the source database sizes
-      [[ximagesz, yimagesz, zimagesz], timerange] = proj.datasetcfg.imageSize(self.res)
-      [xcubedim, ycubedim, zcubedim] = cubedim = proj.datasetcfg.getCubeDims()[self.res]
-      [xoffset, yoffset, zoffset] = proj.datasetcfg.getOffset()[self.res]
+      [[ximagesz, yimagesz, zimagesz], timerange] = proj.datasetcfg.dataset_dim(self.res)
+      [xcubedim, ycubedim, zcubedim] = cubedim = proj.datasetcfg.get_cubedim(self.res)
+      [xoffset, yoffset, zoffset] = proj.datasetcfg.get_offset(self.res)
 
       # Set the limits for iteration on the number of cubes in each dimension
       xlimit = (ximagesz-1) / xcubedim + 1
@@ -88,7 +88,7 @@ class ImgHistROI():
     with closing (SpatialDB(proj)) as db:
       ch = proj.getChannelObj(self.channel)
 
-      [ xcubedim, ycubedim, zcubedim ] = cubedim = proj.datasetcfg.cubedim[self.res]
+      [ xcubedim, ycubedim, zcubedim ] = cubedim = proj.datasetcfg.get_cubedim(self.res)
       effcorner = self.roi_lower
       effdim = self.roi_upper
 

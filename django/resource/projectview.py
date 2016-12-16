@@ -32,7 +32,7 @@ class ProjectView(View):
   def post(self, request, dataset_name, project_name):
     try:
       pr = NDProject.fromJson(dataset_name, request.body)
-      if request.user.is_authenticated:
+      if request.user.is_authenticated():
         pr.user_id = request.user.id
       else:
         pr.user_id = User.objects.get(username='neurodata').id

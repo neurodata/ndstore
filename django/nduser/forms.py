@@ -80,7 +80,7 @@ class dataUserForm( forms.Form):
      CHOICES = (
          ('npz', 'NPZ'),
          ('hdf5', 'HDF5'),
-         )
+     )
      format = forms.ChoiceField(choices=CHOICES)
      xmin=forms.IntegerField()
      xmax=forms.IntegerField()

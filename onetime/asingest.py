@@ -92,7 +92,6 @@ def main():
         ascli.put ( askey, { 'cuboid' : tmpfile.read().encode('hex') } )
 
         try:
-          import pdb; pdb.set_trace()
           ascli.get ( askey )
         except:
           print "Except"

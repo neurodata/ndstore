@@ -36,7 +36,7 @@ class TokenView(View):
     try:
       pr = NDProject.fromName(project_name)
       tk = NDToken.fromJson(project_name, request.body)
-      if request.user.is_authenticated:
+      if request.user.is_authenticated():
         tk.user_id = request.user.id
       else:
         tk.user_id = User.objects.get(username='neurodata').id

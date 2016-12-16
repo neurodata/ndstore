@@ -60,7 +60,7 @@ class Test_Blaze:
     p.args = (128,255,128,255,17,33)
     image_data = np.ones( [1,100,100], dtype=np.uint8 ) * random.randint(0,255)
     response = postBlaze(p, image_data)
-    assert (response.code == 200)
+    assert (response.status_code == 200)
     posted_data = getBlosc(p)
     
     assert ( np.array_equal(image_data,posted_data) )

@@ -109,7 +109,7 @@ class exportSchema:
             #ch.save()
             #tk.save()
           except Exception, e:
-            import pdb; pdb.set_trace()
+
             raise
     
     cursor.close()

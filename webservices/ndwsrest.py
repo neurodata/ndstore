@@ -731,7 +731,7 @@ def selectPost ( webargs, proj, db, postdata ):
   except restargs.RESTArgsError as e:
     logger.error( "REST Arguments {} failed: {}".format(postargs,e) )
     raise NDWSError(e)
-  
+    
   corner = args.getCorner()
   dimension = args.getDim()
   resolution = args.getResolution()
@@ -782,7 +782,7 @@ def selectPost ( webargs, proj, db, postdata ):
               raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.channel_name, proj.project_name, webargs))
            
             # checking if the dimension for x,y,z,t(optional) are correct
-            # this is different then the on for blosc/numpy because channels are packed separately
+            # this is different then the one for blosc/numpy because channels are packed separately
             if voxarray.shape[::-1] != tuple(dimension + [timerange[1]-timerange[0]] if timerange[1]-timerange[0] is not 0 else dimension):
               logger.error("The data has mismatched dimensions {} compared to the arguments {}".format(voxarray.shape[1:], dimension))
               raise NDWSError("The data has mismatched dimensions {} compared to the arguments {}".format(voxarray.shape[1:], dimension))
