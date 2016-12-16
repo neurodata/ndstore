@@ -34,7 +34,7 @@ import django
 django.setup()
 from django.forms.models import model_to_dict
 from django.conf import settings
-from ndlib.ndctypelib import XYZMorton
+from ndlib.ndctypelib import *
 from ndcube.cube import Cube
 from ndlib.ndtype import *
 from ndlib.restutil import *
@@ -206,7 +206,7 @@ class AwsInterface:
     self.token = token
     try:
       self.proj = NDProject.fromTokenName(self.token)
-      raise ValueError()
+      # raise ValueError()
     except Exception as e:
       response = getJson('http://{}/sd/{}/info/'.format(host_name, token))
       if response.status_code != 200:
@@ -342,12 +342,13 @@ class AwsInterface:
                 raise e
   
   
-  def uploadNewProject(self, config_file):
+  def uploadNewProject(self, config_file, start_values):
     """Upload a new project"""
     
     # loading the config file and assdociated params and processors
     config = Configuration()
     config.load(json.loads(open(config_file, 'rt').read()))
+    config.load_plugins()
     path_processor = config.path_processor_class
     path_processor.setup(config.get_path_processor_params())
     tile_processor = config.tile_processor_class
@@ -361,7 +362,7 @@ class AwsInterface:
     cur_res = tile_params['ingest_job']['resolution']
     
     # loading all the parameters for image-sizes, tile-sizes, and iteration limits
-    [xsupercubedim, ysupercubedim, zsupercubedim] = settings.SUPER_CUBOID_SIZE
+    [xsupercubedim, ysupercubedim, zsupercubedim] = supercubedim = settings.SUPER_CUBOID_SIZE
     [x_start, x_end] = tile_params['ingest_job']['extent']['x']
     [y_start, y_end] = tile_params['ingest_job']['extent']['y']
     [z_start, z_end] = tile_params['ingest_job']['extent']['z']
@@ -375,6 +376,8 @@ class AwsInterface:
     z_limit = (z_end-1) / (z_tilesz) + 1
     t_limit = (t_end-1) / (t_tilesz) + 1
     
+    # if start_values != [0, 0, 0]
+      # [x_start, y_start, z_start] = start_values
     # iterate over t,z,y,x to ingest the data
     for t in range(t_start, t_limit, 1):  
       for z in range(z_start, z_limit, zsupercubedim):
@@ -390,23 +393,23 @@ class AwsInterface:
               # read the file, handle expection if the file is missing
               try:
                 tile_handle = tile_processor.process(file_name, x, y, z+b, t)
-                print "opening file", file_name
                 tile_handle.seek(0)
                 data[b,:,:] = np.asarray(Image.open(tile_handle))
               except IOError as e:
-                print "missing file", file_name
-          # iterate over the tile if it is larger then supercuboid size
-          for y_index in range(0, y_tilesz, ysupercubedim):
-            for x_index in range(0, x_tilesz, xsupercubedim):
-              # calculate the morton index 
-              morton_index = XYZMorton([x_index+x, y_index+y, z])
-              print "index", morton_index
-              insert_data = data[:, y_index*y_tilesz:(y_index+1)*y_tilesz, x_index*x_tilesz:(x_index+1)*x_tilesz]
-              # import pdb; pdb.set_trace()
-              # updating the index
-              self.cuboidindex_db.putItem(ch.channel_name, cur_res, x, y, z)
-              # inserting the cube
-              self.s3_io.putCube(ch, cur_res, morton_index, blosc.pack_array(insert_data))
+                pass
+                # print "missing file", file_name
+            # iterate over the tile if it is larger then supercuboid size
+            for y_index in range(0, y_tilesz/ysupercubedim):
+              for x_index in range(0, x_tilesz/xsupercubedim):
+                # calculate the morton index 
+                insert_data = data[:, y_index*ysupercubedim:(y_index+1)*ysupercubedim, x_index*xsupercubedim:(x_index+1)*xsupercubedim]
+                if np.any(insert_data):
+                  morton_index = XYZMorton([x_index+(x*x_tilesz/xsupercubedim), y_index+(y*y_tilesz/ysupercubedim), z])
+                  self.logger.info("[{},{},{}]".format((x_index+x)*x_tilesz, (y_index+y)*y_tilesz, z))
+                  # updating the index
+                  self.cuboidindex_db.putItem(ch.channel_name, cur_res, x, y, z)
+                  # inserting the cube
+                  self.s3_io.putCube(ch, cur_res, morton_index, blosc.pack_array(insert_data))
 
 
   def checkpoint_ingest(self, channel_name, resolution, x, y, z, e, time=0):
@@ -430,7 +433,7 @@ def main():
   parser.add_argument('--channel', dest='channel_name', action='store', type=str, default=None, help='Channel Name in the project')
   parser.add_argument('--res', dest='resolution', action='store', type=int, default=None, help='Resolution to upload')
   parser.add_argument('--action', dest='action', action='store', choices=['upload-existing', 'upload-new', 'delete-channel', 'delete-res', 'delete-project'], default='upload', help='Specify action for the given project')
-  parser.add_argument('--host', dest='host_name', action='store', type=str, default='localhost:8080', help='Server host name')
+  parser.add_argument('--host', dest='host_name', action='store', type=str, default='cloud.neurodata.io/nd', help='Server host name')
   parser.add_argument('--start', dest='start_values', action='store', type=int, nargs=3, metavar=('X', 'Y', 'Z'), default=[0, 0, 0], help='Resume upload from co-ordinates')
   parser.add_argument('--data', dest='data_location', action='store', type=str, default=None, help='Data Location')
   parser.add_argument('--config', dest='config_file', action='store', default=None, help='Config file name')
@@ -443,14 +446,13 @@ def main():
   
   aws_interface = AwsInterface(result.token, result.host_name)
   if result.action == 'upload-new':
-    if result.data_location is None or result.config_file is None:
+    if result.config_file is None:
       raise ValueError("Error: data location or config file location cannot be empty for uploading new project")
-    aws_interface.uploadNewProject(result.config_file)
+    aws_interface.uploadNewProject(result.config_file, result.start_values)
   elif result.action == 'upload-existing':
     if result.channel_name is None and result.resolution is not None:
       raise ValueError("Error: channel cannot be empty if resolution is not empty")
     aws_interface.uploadExistingProject(result.channel_name, result.resolution, result.start_values)
-    aws_interface.uploadNewProject('test.json')
   elif result.action == 'delete-project':
     aws_interface.deleteProject()
   elif result.action == 'delete-channel':
