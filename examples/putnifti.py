@@ -30,15 +30,11 @@ def main():
   parser.add_argument('--create', action="store_true")
   result = parser.parse_args()
 
-<<<<<<< HEAD
   if result.create:
-    url = 'http://{}/sd/{}/{}/nii/create/'.format(result.baseurl, result.token, result.channel)
+    url = 'https://{}/sd/{}/{}/nii/create/'.format(result.baseurl, result.token, result.channel)
   else:
-    url = 'http://{}/sd/{}/{}/nii/'.format(result.baseurl, result.token, result.channel)
+    url = 'https://{}/sd/{}/{}/nii/'.format(result.baseurl, result.token, result.channel)
 
-=======
-  url = 'http://{}/sd/{}/{}/nii/'.format(result.baseurl, result.token, result.channel)
->>>>>>> rbdev
   print url
 
   # open the file name as a tiff file and post
