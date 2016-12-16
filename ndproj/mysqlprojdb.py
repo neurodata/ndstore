@@ -41,7 +41,7 @@ class MySQLProjectDB:
 
   def newNDProject(self):
     """Create the database for a project"""
-   
+    
     with closing(MySQLdb.connect (host = self.pr.host, user = settings.DATABASES['default']['USER'], passwd = settings.DATABASES['default']['PASSWORD'], db = settings.DATABASES['default']['NAME'], connect_timeout=1)) as conn:
       with closing(conn.cursor()) as cursor:
 

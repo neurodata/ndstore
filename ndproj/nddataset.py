@@ -185,10 +185,10 @@ class NDDataset(NDObject):
   def public(self):
     return self._ds.public
   
-# RB use dataset_dim
-#  @property
-#  def image_size(self):
-#    return self._image_size
+  # RB use dataset_dim
+  @property
+  def image_size(self):
+    return self._image_size
   
   @property
   def offset(self):

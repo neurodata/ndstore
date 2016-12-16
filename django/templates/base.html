@@ -45,10 +45,15 @@
             </ul>
           </li>
         </ul>
+
+        <ul class="navbar-btn">
+          <a href="/nd/nduser/usertoken/" class="btn btn-default">Download User Token</a>
+        </ul>
       
       </div><!-- nav links -->
     </div><!-- /.container-fluid -->
     </nav>
+
 
     {% else %}
     <a href="{% url "auth_login" %}">{% trans "Log in" %}</a>
@@ -66,9 +71,8 @@
     <hr />
     {% endblock %}
 	  
-	  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+	  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 	  <script src = "/static/js/bootstrap.js"></script>  
   </div>
 	  
 </body>
-

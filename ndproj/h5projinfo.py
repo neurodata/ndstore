@@ -50,7 +50,6 @@ def h5DatasetInfo ( dataset, h5f ):
   cdgrp = dsgrp.create_group('CUBE_DIMENSION')
   for k,v in dataset.cubedim.iteritems():
     cdgrp.create_dataset ( str(k), data=v )
-  dsgrp.create_dataset("TIMERANGE", data=dataset.timerange)
 
 
 def h5ChannelInfo (proj, h5f):
@@ -70,6 +69,7 @@ def h5ChannelInfo (proj, h5f):
     changrp.create_dataset("PROPAGATE", (1,), dtype=np.uint8, data=ch.propagate)
     changrp.create_dataset("DEFAULT", (1,), dtype=bool, data=ch.default)
     changrp.create_dataset("WINDOWRANGE", data=ch.window_range)
+    changrp.create_dataset("TIMERANGE", data=ch.time_range)
 
 
 def h5Info (proj, h5f):

@@ -36,6 +36,7 @@ base_urlpatterns = [
     url(r'^stats/', include('stats.urls')),
     url(r'^resource/', include('resource.urls')),
     url(r'^ingest/', include('autoingest.urls')),
+    url(r'^ndauth/', include('ndauth.urls')),
 ]
 
 urlpatterns = [

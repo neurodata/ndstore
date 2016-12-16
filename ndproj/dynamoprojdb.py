@@ -148,7 +148,7 @@ class DynamoProjDB:
     ch = NDChannel(self.pr, channel_name)
     table_list = []
 
-    import pdb; pdb.set_trace()
+
     table_list = [ ch.getTable() ]
     
     for table_name in table_list:
