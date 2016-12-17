@@ -62,7 +62,6 @@ def datasetdict ( dataset ):
   dsdict['neariso_voxelres'] = dataset.neariso_voxelres
   dsdict['neariso_imagesize'] = dataset.neariso_imagesz
   # Figure out neariso in new design
-  dsdict['timerange'] = dataset.timerange
   dsdict['description'] = dataset.dataset_description
 
   return dsdict
@@ -77,6 +76,7 @@ def chandict ( channel ):
   chandict['propagate'] = channel.propagate
   chandict['windowrange'] = channel.window_range
   chandict['description'] = channel.channel_description
+  chandict['timerange'] = channel.time_range
 
   return chandict
 

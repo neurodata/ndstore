@@ -20,10 +20,7 @@ import string
 import makeunitdb
 from params import Params
 from ramonmethods import H5AnnotationFile, setField, getField, queryField, makeAnno
-import kvengine_to_test
-import site_to_test
-SITE_HOST = site_to_test.site
-
+from test_settings import *
 
 p = Params()
 p.token = 'unittest'

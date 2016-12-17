@@ -29,6 +29,11 @@ CHANNEL_SCHEMA = load( {
             "description": "Start Resolution (for annotation data)",
             "type": "integer"
         },
+        "timerange": {
+            "description": "The timerange of the data",
+            "type": "array",
+            "pattern": "^\\([0-9]+,[0-9]+\\)$"
+        },
         "windowrange": {
             "description": "Window clamp function for 16-bit channels with low max value of pixels",
             "type": "array",
@@ -81,11 +86,6 @@ DATASET_SCHEMA = load( {
             "type": "array",
             "description": "The dimensions offset from origin",
             "pattern": "^\\([0-9]+,[0-9]+,[0-9]+\\)$"
-        },
-        "timerange": {
-            "description": "The timerange of the data",
-            "type": "array",
-            "pattern": "^\\([0-9]+,[0-9]+\\)$"
         },
         "scalinglevels": {
             "description": "Required Scaling levels/ Zoom out levels",

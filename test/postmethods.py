@@ -26,11 +26,7 @@ import requests
 from params import Params
 from ndlib.restutil import *
 from ndlib.ndtype import UINT8, ND_dtypetonp
-import kvengine_to_test
-import site_to_test
-import makeunitdb
-
-SITE_HOST = site_to_test.site
+from test_settings import *
 
 def postNPZ (p, post_data, time=False):
   """Post data using npz"""

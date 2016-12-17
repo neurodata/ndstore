@@ -82,21 +82,21 @@ Create New Channel
       </div>
       <div class ="col-md-2">
         <select name="channelcombo" id="channelcombo" required>
-          <option value="i:8">Images (8-bit)</option>
-          <option value="i:16">Images (16-bit)</option>
-          <option value="i:32">Images (32-bit, RGB)</option>
-          <option value="i:32">Images (32-bit, grayscale)</option>
+          <option value="ti:8">Images (8-bit)</option>
+          <option value="ti:16">Images (16-bit)</option>
+          <option value="ti:32">Images (32-bit, RGB)</option>
+          <option value="ti:32">Images (32-bit, unsigned)</option>
+          <option value="tf:32">Images (32-bit, float)</option>
           <option value="a:32">Annotations</option>
           <option value="f:32">Probability Map</option>
-          <option value="f:32">32-bit Grayscale (float)</option>
-          <option value="ti:8">Time Series (8-bit)</option>
-          <option value="ti:16">Time Series (16-bit)</option>
-          <option value="ti:32">Time Series (32-bit, integer)</option>
-          <option value="tf:32">Time Series (32-bit, float)</option>
         </select>
       </div>
       <div class ="col-md-4"></div>
     </div>
+
+{{comment}}
+RBTODO make annotations ta and timeseries aware
+{{endcomment}}
 
     {{form.channel_type.as_hidden}}
     {{form.channel_datatype.as_hidden}}
@@ -142,6 +142,35 @@ Create New Channel
       </div>
       <div class ="col-md-4"></div>
     </div>
+
+    <div class = "row">
+      <div class ="col-md-4"></div>
+      <div class ="col-md-2">
+        <div class="fieldWrapper">
+	        {{ form.subject.errors }}
+          <label for="starttime">Start Time:</label>
+        </div>
+      </div>
+      <div class ="col-md-2">
+	      {{ form.starttime }}
+      </div>
+      <div class ="col-md-4"></div>
+    </div>
+
+	  <div class = "row">
+      <div class ="col-md-4"></div>
+      <div class ="col-md-2">
+        <div class="fieldWrapper">
+          {{ form.subject.errors }}
+          <label for="endtime">End Time:</label>
+        </div>
+      </div>
+      <div class ="col-md-2">
+        {{ form.endtime }}
+      </div>
+      <div class ="col-md-4"></div>
+    </div>
+
 
     <div class = "row">
       <div class ="col-md-4"></div>

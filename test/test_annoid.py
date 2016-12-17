@@ -28,10 +28,7 @@ from params import Params
 from postmethods import postNPZ, getNPZ, getURL
 import makeunitdb
 from ndlib.ndtype import UINT8, UINT16, UINT32, ANNOTATION, IMAGE 
-import site_to_test
-SITE_HOST = site_to_test.site
-
-
+from test_settings import *
 
 p = Params()
 p.token = 'unittest'

@@ -65,6 +65,7 @@ class CassProjectDB:
     ch = NDChannel(self.pr, channel_name)
 
     try:
+      # KLTODO or RBTODO make time field available
       if ch.channel_type not in [TIMESERIES]:
         self.session.execute ( "CREATE table {} ( resolution int, zidx bigint, cuboid text, PRIMARY KEY ( resolution, zidx ) )".format(ch.getTable()), timeout=30)
     

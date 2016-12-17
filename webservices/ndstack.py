@@ -116,7 +116,8 @@ def buildAnnoStack ( proj, ch, res=None ):
     for cur_res in range(res, high_res+1):
 
       # Get the source database sizes
-      [[ximagesz, yimagesz, zimagesz], timerange] = proj.datasetcfg.dataset_dim(cur_res-1)
+      [ximagesz, yimagesz, zimagesz] = proj.datasetcfg.dataset_dim(cur_res-1)
+      timerange = ch.time_range()
       [xcubedim, ycubedim, zcubedim] = cubedim = proj.datasetcfg.get_cubedim(cur_res-1)
 
       # Set the limits for iteration on the number of cubes in each dimension
@@ -206,7 +207,8 @@ def buildImageStack(proj, ch, res=None):
     for cur_res in range (res, high_res+1):
 
       # Get the source database sizes
-      [[ximagesz, yimagesz, zimagesz], timerange] = proj.datasetcfg.dataset_dim(cur_res)
+      [ximagesz, yimagesz, zimagesz] = proj.datasetcfg.dataset_dim(cur_res)
+      timerange = ch.time_range()
       [xcubedim, ycubedim, zcubedim] = cubedim = proj.datasetcfg.get_cubedim(cur_res)
 
       if scaling == ZSLICES:

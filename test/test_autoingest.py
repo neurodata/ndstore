@@ -15,6 +15,8 @@
 import os
 import sys
 import json
+import pytest
+import makeunitdb
 sys.path += [os.path.abspath('../django')]
 import ND.settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
@@ -22,9 +24,7 @@ from ingest.core.config import Configuration
 from ndlib.ndtype import IMAGE, UINT8, MYSQL
 from params import Params
 from ndlib.restutil import getJson, postJson, deleteJson, postURL
-import makeunitdb
-import site_to_test
-SITE_HOST = site_to_test.site
+from test_settings import *
 
 p = Params()
 p.token = 'unittest'
@@ -36,6 +36,7 @@ p.datatype = UINT8
 p.dataset = 'unittest'
 
 
+@pytest.mark.skipif(DEV_MODE, reason='Test not necessary for dev mode')
 class Test_AutoIngest():
 
   def setup_class(self):

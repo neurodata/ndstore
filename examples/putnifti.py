@@ -29,7 +29,7 @@ def main():
   parser.add_argument('filename', action="store" )
   result = parser.parse_args()
 
-  url = 'http://{}/ca/{}/{}/nii/'.format(result.baseurl, result.token, result.channel)
+  url = 'http://{}/sd/{}/{}/nii/'.format(result.baseurl, result.token, result.channel)
   print url
 
   # open the file name as a tiff file and post

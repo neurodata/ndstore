@@ -20,17 +20,10 @@ import pytest
 import numpy as np
 import random
 import h5py
-
-sys.path += [os.path.abspath('../django')]
-import ND.settings
-os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
-
+import makeunitdb
 from params import Params
 from postmethods import getURL, postURL, putAnnotation
-import makeunitdb
-import site_to_test
-
-SITE_HOST = site_to_test.site
+from test_settings import *
 
 p = Params()
 p.token = 'unittest'

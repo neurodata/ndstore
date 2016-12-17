@@ -12,6 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-site = 'localhost/nd'
-# site = 'localhost:8080/nd'
-# site = 'localhost:8080'
+import os
+import sys
+sys.path += [os.path.abspath('../django')]
+import ND.settings
+os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
+from ndlib.ndtype import MYSQL, CASSANDRA, RIAK, DYNAMODB, REDIS
+
+DEV_MODE = True
+
+# kvengine settings
+KV_ENGINE = MYSQL
+# kvengine = CASSANDRA
+# kvengine = RIAK
+# kvengine = DYNAMODB
+# kvengine = REDIS
+
+# kvserver settings
+KV_SERVER = 'localhost'
+
+# server to check against
+SITE_HOST = 'localhost:8080'
+# SITE_HOST = 'localhost/nd'
+# SITE_HOST = 'localhost:8080/nd'

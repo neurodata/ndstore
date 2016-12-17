@@ -646,8 +646,6 @@ def updateDataset(request):
                 'zvoxelres':ds_to_update[0].zvoxelres,
                 'scalinglevels':ds_to_update[0].scalinglevels,
                 'scalingoption':ds_to_update[0].scalingoption,
-                'starttime':ds_to_update[0].starttime,
-                'endtime':ds_to_update[0].endtime,
                 'dataset_description':ds_to_update[0].dataset_description,
             }
             form = DatasetForm(initial=data)
@@ -806,6 +804,8 @@ def updateChannel(request):
                     'default':channel_to_update[0].default,
                     'exceptions':channel_to_update[0].exceptions,
                     'propagate':channel_to_update[0].propagate,
+                    'starttime':channel_to_update[0].starttime,
+                    'endtime':channel_to_update[0].endtime,
                     'startwindow':channel_to_update[0].startwindow,
                     'endwindow':channel_to_update[0].endwindow,
                     'project': pr

@@ -186,7 +186,8 @@ class IngestData:
     self.createS3Bucket(proj.getProjectName())
 
     # get the dataset configuration
-    [[ximagesz, yimagesz, zimagesz],(starttime,endtime)] = proj.datasetcfg.dataset_dim(self.resolution)
+    [ximagesz, yimagesz, zimagesz] = proj.datasetcfg.dataset_dim(self.resolution)
+    [starttime,endtime] = ch.time_range()
     [xcubedim,ycubedim,zcubedim] = cubedim = proj.datasetcfg.get_cubedim(self.resolution)
     [xoffset, yoffset, zoffset] = proj.datasetcfg.get_offset(self.resolution)
     [xsupercubedim, ysupercubedim, zsupercubedim] = supercubedim = map(mul, cubedim, SUPERCUBESIZE)
@@ -254,7 +255,8 @@ class IngestData:
 
       ch = proj.getChannelObj(self.channel)
       # get the dataset configuration
-      [[ximagesz, yimagesz, zimagesz],(starttime,endtime)] = proj.datasetcfg.get_imagesize(self.resolution)
+      [ximagesz, yimagesz, zimagesz] = proj.datasetcfg.dataset_dim(self.resolution)
+      [starttime,endtime] = ch.time_range()
       [xcubedim, ycubedim, zcubedim] = cubedim = proj.datasetcfg.get_cubedim(self.resolution)
       [xoffset, yoffset, zoffset] = proj.datasetcfg.get_offset(self.resolution)
       

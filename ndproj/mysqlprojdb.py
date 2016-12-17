@@ -68,18 +68,10 @@ class MySQLProjectDB:
         
         try:
           # tables specific to all other non time data
-          if ch.channel_type not in [TIMESERIES]:
-            for res in self.pr.datasetcfg.resolutions:
-              cursor.execute("CREATE TABLE {} ( zindex BIGINT PRIMARY KEY, cube LONGBLOB )".format(ch.getTable(res)))
-              cursor.execute ( "CREATE TABLE {} (zindex BIGINT NOT NULL PRIMARY KEY)".format(ch.getS3IndexTable(res)) )
-          # tables specific to timeseries data
-          elif ch.channel_type == TIMESERIES:
-            for res in self.pr.datasetcfg.resolutions:
-              cursor.execute("CREATE TABLE {} ( zindex BIGINT, timestamp INT, cube LONGBLOB, PRIMARY KEY(zindex,timestamp))".format(ch.getTable(res)))
-              cursor.execute ( "CREATE TABLE {} (zindex BIGINT NOT NULL, timestamp INT NOT NULL, PRIMARY KEY(zindex,timestamp))".format(ch.getS3IndexTable(res)))
-          else:
-            raise NDWSError("Channel type {} does not exist".format(ch.channel_type))
-          
+          for res in self.pr.datasetcfg.resolutions:
+            cursor.execute("CREATE TABLE {} ( zindex BIGINT, timestamp INT, cube LONGBLOB, PRIMARY KEY(zindex,timestamp))".format(ch.getTable(res)))
+            cursor.execute ( "CREATE TABLE {} (zindex BIGINT NOT NULL, timestamp INT NOT NULL, PRIMARY KEY(zindex,timestamp))".format(ch.getS3IndexTable(res)))
+        
           # tables specific to annotation projects
           if ch.channel_type == ANNOTATION: 
             cursor.execute("CREATE TABLE {} ( id BIGINT PRIMARY KEY)".format(ch.getIdsTable()))

@@ -333,8 +333,6 @@ def extractDatasetDict(ds_dict):
 
   if 'offset' in ds_dict:
     [ds.xoffset, ds.yoffset, ds.zoffset] = ds_dict['offset']
-  if 'timerange' in ds_dict:
-    [ds.starttime, ds.endtime] = ds_dict['timerange']
   if 'scaling' in ds_dict:
     ds.scalingoption = ds_dict['scaling']
   if 'scalinglevels' in ds_dict:
@@ -386,6 +384,8 @@ def extractChannelDict(ch_dict, channel_only=False):
     ch.channel_name = ch_dict['channel_name']
     ch.channel_datatype =  ch_dict['datatype']
     ch.channel_type = ch_dict['channel_type']
+    if 'timerange' in ch_dict:
+      [ch.starttime, ch.endtime] = ch_dict['timerange']
     if not channel_only:
       data_url = ch_dict['data_url']
       file_format = ch_dict['file_format']
@@ -455,8 +455,6 @@ def extractDatasetDict(ds_dict):
 
   if 'offset' in ds_dict:
     [ds.xoffset, ds.yoffset, ds.zoffset] = ds_dict['offset']
-  if 'timerange' in ds_dict:
-    [ds.starttime, ds.endtime] = ds_dict['timerange']
   if 'scaling' in ds_dict:
     ds.scalingoption = ds_dict['scaling']
   if 'scalinglevels' in ds_dict:
@@ -494,10 +492,10 @@ def createJson(dataset, project, channel_list, metadata={}, channel_only=False):
   
   return json.dumps(nd_dict, sort_keys=True, indent=4)
 
-def createDatasetDict(dataset_name, imagesize, voxelres, offset=[0,0,0], timerange=[0,0], scalinglevels=0, scaling=0):
+def createDatasetDict(dataset_name, imagesize, voxelres, offset=[0,0,0], scalinglevels=0, scaling=0):
   """Generate the dataset dictionary"""
 
-  # dataset format = (dataset_name, [ximagesz, yimagesz, zimagesz], [[xvoxel, yvoxel, zvoxel], [xoffset, yoffset, zoffset], timerange scalinglevels, scaling)
+  # dataset format = (dataset_name, [ximagesz, yimagesz, zimagesz], [[xvoxel, yvoxel, zvoxel], [xoffset, yoffset, zoffset], scalinglevels, scaling)
   
   dataset_dict = {}
   dataset_dict['dataset_name'] = dataset_name
@@ -505,18 +503,16 @@ def createDatasetDict(dataset_name, imagesize, voxelres, offset=[0,0,0], timeran
   dataset_dict['voxelres'] = voxelres
   if offset is not None:
     dataset_dict['offset'] = offset
-  if timerange is not None:
-    dataset_dict['timerange'] = timerange
   if scalinglevels is not None:
     dataset_dict['scalinglevels'] = scalinglevels
   if scaling is not None:
     dataset_dict['scaling'] = scaling
   return dataset_dict
 
-def createChannelDict(channel_name, datatype, channel_type, data_url, file_format, file_type, exceptions=0, resolution=0, windowrange=[0,0], readonly=0, channel_only=False):
+def createChannelDict(channel_name, datatype, channel_type, data_url, file_format, file_type, time_range=[0,0], exceptions=0, resolution=0, windowrange=[0,0], readonly=0, channel_only=False):
   """Genearte the project dictionary"""
   
-  # channel format = (channel_name, datatype, channel_type, data_url, file_type, file_format, exceptions, resolution, windowrange, readonly)
+  # channel format = (channel_name, datatype, channel_type, data_url, file_type, file_format, exceptions, resolution, timerange, windowrange, readonly)
   
   channel_dict = {}
   channel_dict['channel_name'] = channel_name
@@ -526,6 +522,8 @@ def createChannelDict(channel_name, datatype, channel_type, data_url, file_forma
     channel_dict['exceptions'] = exceptions
   if resolution is not None:
     channel_dict['resolution'] = resolution
+  if timerange is not None:
+    channel_dict['timerange'] = timerange
   if windowrange is not None:
     channel_dict['windowrange'] = windowrange
   if readonly is not None:

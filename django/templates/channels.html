@@ -59,6 +59,8 @@
                 <th>Resolution</th>
                 <th>Exceptions</th>
                 <th>Propagated</th>
+                <th>Start Time</th>
+                <th>End Time</th>
                 <th>Start Window</th>
                 <th>End Window</th>
                 <th>Default</th>
@@ -92,6 +94,8 @@
                 <td>YES</td>
                 {% endif %}
 
+                <td>{{ channel.starttime }}</td>
+                <td>{{ channel.endtime }}</td>
                 <td>{{ channel.startwindow }}</td>
                 <td>{{ channel.endwindow }}</td>
                 <td>{{ channel.default }}</td>

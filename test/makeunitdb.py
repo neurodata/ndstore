@@ -29,19 +29,18 @@ from ndproj.ndproject import NDProject
 from ndproj.ndchannel import NDChannel
 from ndproj.ndtoken import NDToken
 from ndlib.ndtype import ZSLICES, ANNOTATION, NOT_PROPAGATED, READONLY_FALSE, UINT32, ND_VERSION, MYSQL, CASSANDRA, RIAK, PUBLIC_TRUE
-import site_to_test
-import kvengine_to_test
+from test_settings import *
 
 def createTestDB ( project_name, channel_list=['unit_anno'], channel_type=ANNOTATION, channel_datatype=UINT32, public=PUBLIC_TRUE, ximagesize=10000, yimagesize=10000, zimagesize=1000, xvoxelres=4.0, yvoxelres=4.0, zvoxelres=3.0, scalingoption=ZSLICES, scalinglevels=5, readonly=READONLY_FALSE, propagate=NOT_PROPAGATED, window=[0,0], time=[0,0], default=False, nd_version=ND_VERSION, token_name='unittest', user='neurodata', dataset_name="unittest" ):
   """Create a unit test data base on the specified sit and name"""
 
   unituser = User.objects.get(username=user)
 
-  ds = NDDataset(Dataset ( dataset_name=dataset_name, user=unituser, ximagesize=ximagesize, yimagesize=yimagesize, zimagesize=zimagesize,  xoffset=0, yoffset=0, zoffset=1, xvoxelres=xvoxelres, yvoxelres=yvoxelres, zvoxelres=zvoxelres, scalingoption=scalingoption, scalinglevels=scalinglevels, starttime=time[0], endtime=time[1], public=PUBLIC_TRUE, dataset_description="Unit test" ) )
+  ds = NDDataset(Dataset ( dataset_name=dataset_name, user=unituser, ximagesize=ximagesize, yimagesize=yimagesize, zimagesize=zimagesize,  xoffset=0, yoffset=0, zoffset=1, xvoxelres=xvoxelres, yvoxelres=yvoxelres, zvoxelres=zvoxelres, scalingoption=scalingoption, scalinglevels=scalinglevels, public=PUBLIC_TRUE, dataset_description="Unit test" ) )
   ds.create()
 
   # make the project entry
-  pr = NDProject(Project(project_name=project_name, project_description='Unit test', user=unituser, dataset=ds._ds, nd_version=nd_version, host='localhost', kvengine=kvengine_to_test.kvengine, kvserver=kvengine_to_test.kvserver, s3backend=0))
+  pr = NDProject(Project(project_name=project_name, project_description='Unit test', user=unituser, dataset=ds._ds, nd_version=nd_version, host='localhost', kvengine=KV_ENGINE, kvserver=KV_SERVER, s3backend=0))
   pr.create()
 
   # create a token
@@ -55,7 +54,7 @@ def createTestDB ( project_name, channel_list=['unit_anno'], channel_type=ANNOTA
 
   try:
     for channel_name in channel_list:
-      ch = NDChannel(Channel (channel_name=channel_name, channel_type=channel_type, channel_datatype=channel_datatype, channel_description='Unit test channel', project_id=pr.project_name, readonly=readonly, propagate=propagate, resolution=0, exceptions=1,startwindow=window[0], endwindow=window[1], default=default))
+      ch = NDChannel(Channel (channel_name=channel_name, channel_type=channel_type, channel_datatype=channel_datatype, channel_description='Unit test channel', project_id=pr.project_name, readonly=readonly, propagate=propagate, resolution=0, exceptions=1, starttime=time[0], endtime=time[1]  ,startwindow=window[0], endwindow=window[1], default=default))
       # create a channel
       ch.create()
       # create the channel table
