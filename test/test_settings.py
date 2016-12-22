@@ -32,6 +32,6 @@ KV_ENGINE = MYSQL
 KV_SERVER = 'localhost'
 
 # server to check against
-SITE_HOST = 'localhost:8080'
+# SITE_HOST = 'localhost:8080'
 # SITE_HOST = 'localhost/nd'
-# SITE_HOST = 'localhost:8080/nd'
+SITE_HOST = 'localhost:8080/nd'
