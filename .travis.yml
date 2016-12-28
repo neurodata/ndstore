@@ -25,9 +25,9 @@ script:
   # Specifically for travis run django headlessly to avoid uwsgi problems
   # and test stack against that local server
   - cd /home/neurodata/ndstore/django
-  - screen -d -m python django runserver localhost:8080
+  #- screen -d -m python django runserver localhost:8080
   # Need to replace test_site
-  - sudo cp /home/neurodata/ndstore/setup/travis_test_settings.py /home/neurodata/ndstore/test/test_settings.py
+  #- sudo cp /home/neurodata/ndstore/setup/travis_test_settings.py /home/neurodata/ndstore/test/test_settings.py
   - cd /home/neurodata/ndstore/test
   - sudo py.test
   #- docker build --build-arg BRANCH=$TRAVIS_BRANCH -t neurodata .
