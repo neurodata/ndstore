@@ -29,5 +29,5 @@ script:
   # Need to replace test_site
   - sudo cp /home/neurodata/ndstore/setup/travis_test_settings.py /home/neurodata/ndstore/test/test_settings.py
   - cd /home/neurodata/ndstore/test
-  - py.test
+  - sudo py.test
   #- docker build --build-arg BRANCH=$TRAVIS_BRANCH -t neurodata .
