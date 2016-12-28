@@ -10,9 +10,6 @@ sudo: required
 
 dist: trusty
 
-services:
-  - docker
-
 before_install:
 #  - sudo apt-get update
   - sudo apt-get install apt-transport-https ca-certificates
