@@ -17,7 +17,7 @@ sudo debconf-set-selections <<< "postfix postfix/main_mailer_type string 'Intern
 sudo apt-get -y install mysql-client-core-5.6 libhdf5-serial-dev mysql-client-5.6
 
 # apt-get install packages
-sudo apt-get -qq -y install nginx git bash-completion python-virtualenv libhdf5-dev libxslt1-dev libmemcached-dev g++ libjpeg-dev virtualenvwrapper python-dev mysql-server-5.6 libmysqlclient-dev xfsprogs supervisor rabbitmq-server uwsgi uwsgi-plugin-python liblapack-dev wget memcached postfix libffi-dev libssl-dev tcl
+sudo apt-get -qq -y install nginx git bash-completion python-virtualenv libhdf5-dev libxslt1-dev libmemcached-dev g++ libjpeg-dev virtualenvwrapper python-dev mysql-server-5.6 libmysqlclient-dev xfsprogs supervisor rabbitmq-server uwsgi uwsgi-plugin-python liblapack-dev wget memcached postfix libffi-dev libssl-dev tcl screen
 
 # create the log directory
 sudo mkdir /var/log/neurodata
@@ -63,7 +63,9 @@ sudo -u neurodata make -f makefile_LINUX
 # configure mysql
 cd /home/neurodata/ndstore/django/
 sudo service mysql start
-mysql -u root -pneur0data -i -e "create user 'neurodata'@'localhost' identified by 'neur0data';" && mysql -u root -pneur0data -i -e "grant all privileges on *.* to 'neurodata'@'localhost' with grant option;" && mysql -u neurodata -pneur0data -i -e "CREATE DATABASE neurodjango;"
+mysql -u root -pneur0data -i -e "create user 'neurodata'@'localhost' identified by 'neur0data';"
+mysql -u root -pneur0data -i -e "grant all privileges on *.* to 'neurodata'@'localhost' with grant option;"
+mysql -u neurodata -pneur0data -i -e "CREATE DATABASE neurodjango;"
 
 # configure django setttings
 cd /home/neurodata/ndstore/django/ND/
@@ -175,7 +177,9 @@ echo "from rest_framework.authtoken.models import Token; from django.contrib.aut
 
 # running tests
 cd /home/neurodata/ndstore/test/
-py.test
+if [ ![ -z "$TRAVIS_BRANCH" ] ]; then
+  py.test
+fi
 if [ "$?" != "0" ]; then
   cat /var/log/neurodata/ndstore.log
   exit 1
