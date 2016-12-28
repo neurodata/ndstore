@@ -60,10 +60,12 @@ sudo pip install -U -r requirements.txt
 cd /home/neurodata/ndstore/ndlib/c_version
 sudo -u neurodata make -f makefile_LINUX
 
-	# configure mysql
-	cd /home/neurodata/ndstore/django/
+# configure mysql
+cd /home/neurodata/ndstore/django/
 sudo service mysql start
-mysql -u root -i -e "create user 'neurodata'@'localhost' identified by 'neur0data';" && mysql -u root -i -e "grant all privileges on *.* to 'neurodata'@'localhost' with grant option;" && mysql -u neurodata -i -e "CREATE DATABASE neurodjango;"
+mysql -u root -pneur0data -i -e "create user 'neurodata'@'localhost' identified by 'neur0data';"
+mysql -u root -pneur0data -i -e "grant all privileges on *.* to 'neurodata'@'localhost' with grant option;"
+mysql -u neurodata -pneur0data -i -e "CREATE DATABASE neurodjango;"
 
 # configure django setttings
 cd /home/neurodata/ndstore/django/ND/
