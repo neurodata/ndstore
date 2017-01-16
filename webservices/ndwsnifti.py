@@ -78,9 +78,6 @@ def ingestNIFTI ( niftifname, ch, db, proj, channel_name="", create=False ):
 
   nifti_data = np.array(nifti_data,ND_dtypetonp[ch.channel_datatype])
 
-
-  import pdb; pdb.set_trace()
-
   try:
 
     # create the nifti header
