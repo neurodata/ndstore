@@ -32,27 +32,25 @@ def ingestNIFTI ( niftifname, ch, db, proj, channel_name="", create=False ):
   # create the channel if needed
   if create:
 
-    import pdb; pdb.set_trace()
-
     from nduser.models import Channel
     from ndproj.ndchannel import NDChannel
     import ndtype
 
     # 3d or 4d nii file -- set endtime
     if len(nifti_data.shape) == 3:
-      endtime = 0
+      endtime = 1
     else:
-      endtime = nifti_data.shape[3]-1
+      endtime = nifti_data.shape[3]
 
     # coerce the data type 
-    if nifti_data.dtype == '<i1':
-      channel_datatype = ndtype.UINT8
-    elif nifti_data.dtype == '<i2':
-      channel_datatype = ndtype.UINT16
-    elif nifti_data.dtype == '<i4':
-      channel_datatype = ndtype.UINT32
-    elif nifti_data.dtype == '<f4':
-      channel_datatype = ndtype.FLOAT32
+#    if nifti_data.dtype == '<i1':
+#      channel_datatype = ndtype.UINT8
+#    elif nifti_data.dtype == '<i2':
+#      channel_datatype = ndtype.UINT16
+#    elif nifti_data.dtype == '<i4':
+#      channel_datatype = ndtype.UINT32
+#    elif nifti_data.dtype == '<f4':
+#      channel_datatype = ndtype.FLOAT32
  
     try:
       newch = NDChannel(Channel (channel_name=channel_name, channel_type=ndtype.TIMESERIES, channel_datatype=channel_datatype, channel_description=channel_name, project_id=proj.project_name, readonly=False, propagate=False, resolution=0, exceptions=0, starttime=0, endtime=endtime))
@@ -65,7 +63,6 @@ def ingestNIFTI ( niftifname, ch, db, proj, channel_name="", create=False ):
     ch = NDChannel.fromName(proj, channel_name)
 
   else:
-
   
     # Don't write to readonly channels
     if ch.readonly == READONLY_TRUE:
@@ -73,7 +70,7 @@ def ingestNIFTI ( niftifname, ch, db, proj, channel_name="", create=False ):
       raise NDWSError("Attempt to write to read only channel {} in project {}".format(ch.channel_name, proj.project_name))
 
   # check that the data is the right shape
-  if nifti_data.shape != tuple(proj.datasetcfg.dataset_dim(0)) and nifti_data.shape != tuple(proj.datasetcfg.dataset_dim(0) + [ch.time_range[1]-ch.time_range[0]+1]):
+  if nifti_data.shape != tuple(proj.datasetcfg.dataset_dim(0)) and nifti_data.shape != tuple(proj.datasetcfg.dataset_dim(0) + [ch.time_range[1]-ch.time_range[0]]):
     logger.warning("Not correct shape")
     raise NDWSError("Not correct shape")
     
@@ -81,45 +78,49 @@ def ingestNIFTI ( niftifname, ch, db, proj, channel_name="", create=False ):
 
   nifti_data = np.array(nifti_data,ND_dtypetonp[ch.channel_datatype])
 
-  # create the nifti header
-  nh = NDNiftiHeader.fromImage(ch, nifti_img)
+
+  import pdb; pdb.set_trace()
 
   try:
+
+    # create the nifti header
+    nh = NDNiftiHeader.fromImage(ch, nifti_img)
+
     if len(nifti_data.shape) == 3:
       # make 4-d for time cube
       nifti_data = nifti_data.reshape([1]+list(nifti_data.shape))
-      db.writeCuboid ( ch, (0,0,0), 0, nifti_data, timerange=[0,0], blind=True )
+      db.writeCuboid ( ch, (0,0,0), 0, nifti_data, timerange=[0,1] )
     elif len(nifti_data.shape) == 4:
-      db.writeCuboid(ch, (0,0,0), 0, nifti_data, (0, nifti_data.shape[0]-1), blind=True )
+      db.writeCuboid(ch, (0,0,0), 0, nifti_data, (0, nifti_data.shape[0]))
+
 
     # save the header if the data was written
     nh.save()
-  except Exception as e:
-    logger.warning("Writing to a channel with an incompatible data type. {}".format(ch.channel_type))
-    raise NDWSError ("Writing to a channel with an incompatible data type. {}".format(ch.channel_type))
 
+  except Exception as e:
+    logger.error("Failed to load nii file. Error {}".format(str(e)))
+    raise NDWSError("Failed to load nii file. Error {}".format(str(e)))
 
 def queryNIFTI ( tmpfile, ch, db, proj ):
   """ Return a NII file that contains the entire DB"""
-
+  
   try:
     # get the header in a fileobj
     nh = NDNiftiHeader.fromChannel(ch)
 
     cuboid = db.cutout ( ch, (0,0,0), proj.datasetcfg.dataset_dim(0), 0, timerange=ch.time_range) 
-
     # transpose to nii's xyz format
     niidata = cuboid.data.transpose()
 
-    # coerce the data type 
-    if ch.channel_datatype in DTYPE_uint8:   
-      niidata = np.array(niidata, dtype='<i1')
-    elif ch.channel_datatype in DTYPE_uint16:   
-      niidata = np.array(niidata, dtype='<i2')
-    elif ch.channel_datatype in DTYPE_uint32:   
-      niidata = np.array(niidata, dtype='<i4')
-    elif ch.channel_datatype in DTYPE_float32:   
-      niidata = np.array(niidata, dtype='<f4')
+#    # coerce the data type 
+#    if ch.channel_datatype in DTYPE_uint8:   
+#      niidata = np.array(niidata, dtype='<i1')
+#    elif ch.channel_datatype in DTYPE_uint16:   
+#      niidata = np.array(niidata, dtype='<i2')
+#    elif ch.channel_datatype in DTYPE_uint32:   
+#      niidata = np.array(niidata, dtype='<i4')
+#    elif ch.channel_datatype in DTYPE_float32:   
+#      niidata = np.array(niidata, dtype='<f4')
 
     # assemble the header and the data and create a nii file
     nii = nibabel.Nifti1Image(niidata, affine=nh.affine, header=nh.header ) 

@@ -40,7 +40,7 @@ def main():
   # open the file name as a tiff file and post
   response = postURL(url, open(result.filename).read())
   if response.status_code != 200:
-    print "Failed {}. Exception {}".format(url, response.content())
+    print "Failed {}. Exception {}".format(url, response._content)
     sys.exit(1)
 
 if __name__ == "__main__":

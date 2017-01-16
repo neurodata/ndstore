@@ -40,7 +40,7 @@ from contextlib import closing
 from webservices import ndwsrest
 from webservices import ndwsjson
 from ndproj.ndprojdb import NDProjectsDB
-from ndlib.ndtype import IMAGE, ANNOTATION, TIMESERIES, UINT8, UINT16, UINT32, UINT64, FLOAT32, ND_VERSION, SCHEMA_VERSION, MYSQL, S3_FALSE
+from ndlib.ndtype import IMAGE, ANNOTATION, TIMESERIES, UINT8, UINT16, UINT32, UINT64, INT8, INT16, INT32, INT64, FLOAT32, ND_VERSION, SCHEMA_VERSION, MYSQL, S3_FALSE
 from models import Project
 from models import Dataset
 from models import Token
@@ -705,29 +705,26 @@ def updateChannel(request):
 
                     # populate the channel type and data type from choices
                     combo = request.POST.get('channelcombo')
-                    if combo=='i:8':
-                        new_channel.channel_type = IMAGE
-                        new_channel.channel_datatype = UINT8
-                    elif combo=='i:16':
-                        new_channel.channel_type = IMAGE
-                        new_channel.channel_datatype = UINT16
-                    elif combo=='i:32':
-                        new_channel.channel_type = IMAGE
-                        new_channel.channel_datatype = UINT32
-                    elif combo=='a:32':
-                        new_channel.channel_type = ANNOTATION
-                        new_channel.channel_datatype = UINT32
-                    elif combo=='f:32':
-                        new_channel.channel_type = IMAGE
-                        new_channel.channel_datatype = FLOAT32
-                    elif combo=='ti:8':
+                    if combo=='tu:8':
                         new_channel.channel_type = TIMESERIES
                         new_channel.channel_datatype = UINT8
+                    elif combo=='tu:16':
+                        new_channel.channel_type = TIMESERIES
+                        new_channel.channel_datatype = UINT16
+                    elif combo=='tu:32':
+                        new_channel.channel_type = TIMESERIES
+                        new_channel.channel_datatype = UINT32
+                    if combo=='ti:8':
+                        new_channel.channel_type = TIMESERIES
+                        new_channel.channel_datatype = INT8
                     elif combo=='ti:16':
                         new_channel.channel_type = TIMESERIES
-                        new_channel.channel_datatype = UINT16
+                        new_channel.channel_datatype = INT16
                     elif combo=='ti:32':
                         new_channel.channel_type = TIMESERIES
+                        new_channel.channel_datatype = INT32
+                    elif combo=='a:32':
+                        new_channel.channel_type = ANNOTATION
                         new_channel.channel_datatype = UINT32
                     elif combo=='tf:32':
                         new_channel.channel_type = TIMESERIES
