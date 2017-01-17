@@ -84,12 +84,12 @@ Create New Channel
         <select name="channelcombo" id="channelcombo" required>
           <option value="tu:8">Images (8-bit unsigned)</option>
           <option value="tu:16">Images (16-bit unsigned)</option>
+          <option value="ti:32">Images (32-bit, unsigned)</option>
           <option value="tu:32">Images (32-bit, RGB)</option>
+          <option value="tf:32">Images (32-bit, float)</option>
           <option value="ti:8">Images (8-bit, signed)</option>
           <option value="ti:16">Images (16-bit, signed)</option>
           <option value="ti:32">Images (32-bit, signed)</option>
-          <option value="ti:32">Images (32-bit, unsigned)</option>
-          <option value="tf:32">Images (32-bit, float)</option>
           <option value="a:32">Annotations</option>
           <option value="f:32">Probability Map</option>
         </select>
@@ -97,9 +97,6 @@ Create New Channel
       <div class ="col-md-4"></div>
     </div>
 
-{{comment}}
-RBTODO make annotations ta and timeseries aware
-{{endcomment}}
 
     {{form.channel_type.as_hidden}}
     {{form.channel_datatype.as_hidden}}
