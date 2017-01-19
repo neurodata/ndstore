@@ -83,20 +83,17 @@ class BrainRestArgs:
     self.dim = [x2-x1, y2-y1, z2-z1]
 
     # time arguments
-    self.time = [0,0]
+    self.time = None
     result = re.match("/(\d+),(\d+)/", rest)
     if result is not None:
       self.time = [int(i) for i in result.groups()]
-    # RBTODO no way to check time now.  without channel?
 
     # Check arguments for legal values
     try:
       if not ( datasetcfg.checkCube(self.resolution, self.corner, self.dim) ):
         raise RESTArgsError ( "Illegal range. Image size: {} at offset {}".format(str(datasetcfg.dataset_dim(self.resolution)),str(datasetcfg.get_offset(self.resolution))))
     except Exception, e:
-      # RBTODO make this error better.  How to print good information about e?
-      #  it only prints 3, not KeyError 3, whereas print e in the debugger gives good info
-      raise RESTArgsError ( "Illegal arguments to cutout. Check cube failed {}".format(e))
+      raise RESTArgsError ( "Illegal arguments to cutout. Check cube failed {}".format(str(e)))
 
     # list of identifiers to keep
     result = re.match ("/filter/([\d/,]+)/", rest)

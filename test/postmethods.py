@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import json
-import requests
 import urllib2
 import h5py
 import cStringIO

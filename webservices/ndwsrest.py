@@ -64,7 +64,7 @@ def cutout (imageargs, ch, proj, db):
     args.cutoutArgs(imageargs, proj.datasetcfg)
   except restargs.RESTArgsError as e:
     logger.error("REST Arguments {} failed: {}".format(imageargs,e))
-    raise NDWSError(e.value)
+    raise NDWSError(str(e))
 
   # Extract the relevant values
   corner = args.getCorner()
@@ -73,14 +73,20 @@ def cutout (imageargs, ch, proj, db):
   filterlist = args.getFilter()
   zscaling = args.getZScaling()
   timerange = args.getTimeRange()
- 
+
   # Perform the cutout
   if ch.channel_type in TIMESERIES_CHANNELS:
-    cube = db.cutout(ch, corner, dim, resolution, timerange=timerange)
+    # support for 3-d cutouts
+    if timerange == None:
+      cube = db.cutout(ch, corner, dim, resolution, timerange=[0,1])
+    else:
+      cube = db.cutout(ch, corner, dim, resolution, timerange=timerange)
+
   else:
     cube = db.cutout(ch, corner, dim, resolution, zscaling=zscaling)
 
   filterCube(ch, cube, filterlist)
+  
   return cube
 
 
@@ -104,8 +110,10 @@ def channelIterCutout(channels, imageargs, proj, db):
     
     # call cutout for first channel
     channel_data = cutout( imageargs, ch, proj, db ).data
-    cubedata = np.zeros ( (len(channel_list),)+channel_data.shape, dtype=channel_data.dtype )
-    cubedata[0,:] = channel_data
+
+    # convert 4-d to 3-d here for now
+    cubedata = np.zeros ( (len(channel_list),)+channel_data.shape[1:], dtype=channel_data.dtype )
+    cubedata[0,:] = channel_data.reshape(channel_data.shape[1:])
 
     # if one channel convert 3-d to 4-d array
     # iterate from second to nth channel
@@ -282,7 +290,7 @@ def HDF5(chanargs, proj, db):
       cube = cutout(imageargs, ch, proj, db)
       cube.RGBAChannel()
       changrp = fh5out.create_group( "{}".format(channel_name) )
-      changrp.create_dataset("CUTOUT", tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data)
+      changrp.create_dataset("CUTOUT", tuple(cube.data.shape[1:]), cube.data.dtype, compression='gzip', data=cube.data.reshape(cube.data.shape[1:]))
       changrp.create_dataset("CHANNELTYPE", (1,), dtype=h5py.special_dtype(vlen=str), data=ch.channel_type)
       changrp.create_dataset("DATATYPE", (1,), dtype=h5py.special_dtype(vlen=str), data=ch.channel_datatype)
   
@@ -781,14 +789,21 @@ def selectPost ( webargs, proj, db, postdata ):
               logger.error("Attempt to write to read only channel {} in project. Web Args:{}".format(ch.channel_name, proj.project_name, webargs))
               raise NDWSError("Attempt to write to read only channel {} in project. Web Args: {}".format(ch.channel_name, proj.project_name, webargs))
            
+            # reshape the data to 4d if no timerange
+            if timerange==None:
+              voxarray = voxarray.reshape((1,voxarray.shape[0],voxarray.shape[1],voxarray.shape[2]))
+              efftimerange=[0,1]
+            else:
+              efftimerange = timerange
+
             # checking if the dimension for x,y,z,t(optional) are correct
             # this is different then the one for blosc/numpy because channels are packed separately
-            if voxarray.shape[::-1] != tuple(dimension + [timerange[1]-timerange[0]] if timerange[1]-timerange[0] is not 0 else dimension):
+            if voxarray.shape[::-1] != tuple(dimension + [efftimerange[1]-efftimerange[0]]): 
               logger.error("The data has mismatched dimensions {} compared to the arguments {}".format(voxarray.shape[1:], dimension))
               raise NDWSError("The data has mismatched dimensions {} compared to the arguments {}".format(voxarray.shape[1:], dimension))
             
             if ch.channel_type in IMAGE_CHANNELS + TIMESERIES_CHANNELS : 
-              db.writeCuboid (ch, corner, resolution, voxarray, timerange=timerange) 
+              db.writeCuboid (ch, corner, resolution, voxarray, timerange=efftimerange) 
             
             elif ch.channel_type in ANNOTATION_CHANNELS:
               db.annotateDense ( ch, corner, resolution, voxarray, conflictopt )
@@ -812,7 +827,15 @@ def selectPost ( webargs, proj, db, postdata ):
           raise NDWSError("The data has some missing channels")
         
         # checking if the dimension for x,y,z,t(optional) are correct
-        if voxarray.shape[1:][::-1] != tuple(dimension + [timerange[1]-timerange[0]] if timerange[1]-timerange[0] is not 0 else dimension):
+      
+        # reshape the data to 4d if no timerange
+        if timerange==None:
+          voxarray = voxarray.reshape((voxarray.shape[0],1,voxarray.shape[1],voxarray.shape[2],voxarray.shape[3]))
+          efftimerange=[0,1]
+        else:
+          efftimerange=timerange
+
+        if voxarray.shape[1:][::-1] != tuple(dimension + [efftimerange[1]-efftimerange[0]]):
           logger.error("The data has mismatched dimensions {} compared to the arguments {}".format(voxarray.shape[1:], dimension))
           raise NDWSError("The data has mismatched dimensions {} compared to the arguments {}".format(voxarray.shape[1:], dimension))
 
@@ -829,7 +852,7 @@ def selectPost ( webargs, proj, db, postdata ):
             raise NDWSError("Wrong datatype in POST")
             
           if ch.channel_type in IMAGE_CHANNELS + TIMESERIES_CHANNELS:
-            db.writeCuboid(ch, corner, resolution, voxarray[idx,:], timerange)
+            db.writeCuboid(ch, corner, resolution, voxarray[idx,:], efftimerange)
 
           elif ch.channel_type in ANNOTATION_CHANNELS:
             db.annotateDense(ch, corner, resolution, voxarray[idx,:], conflictopt)
