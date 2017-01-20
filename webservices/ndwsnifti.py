@@ -42,16 +42,9 @@ def ingestNIFTI ( niftifname, ch, db, proj, channel_name="", create=False ):
     else:
       endtime = nifti_data.shape[3]
 
-    # coerce the data type 
-#    if nifti_data.dtype == '<i1':
-#      channel_datatype = ndtype.UINT8
-#    elif nifti_data.dtype == '<i2':
-#      channel_datatype = ndtype.UINT16
-#    elif nifti_data.dtype == '<i4':
-#      channel_datatype = ndtype.UINT32
-#    elif nifti_data.dtype == '<f4':
-#      channel_datatype = ndtype.FLOAT32
- 
+    # reverse look the channel datatype 
+    channel_datatype = (key for key, value in ND_dtypetonp.items() if value == nifti_data.dtype).next()
+
     try:
       newch = NDChannel(Channel (channel_name=channel_name, channel_type=ndtype.TIMESERIES, channel_datatype=channel_datatype, channel_description=channel_name, project_id=proj.project_name, readonly=False, propagate=False, resolution=0, exceptions=0, starttime=0, endtime=endtime))
     except Exception,e:
@@ -108,16 +101,6 @@ def queryNIFTI ( tmpfile, ch, db, proj ):
     cuboid = db.cutout ( ch, (0,0,0), proj.datasetcfg.dataset_dim(0), 0, timerange=ch.time_range) 
     # transpose to nii's xyz format
     niidata = cuboid.data.transpose()
-
-#    # coerce the data type 
-#    if ch.channel_datatype in DTYPE_uint8:   
-#      niidata = np.array(niidata, dtype='<i1')
-#    elif ch.channel_datatype in DTYPE_uint16:   
-#      niidata = np.array(niidata, dtype='<i2')
-#    elif ch.channel_datatype in DTYPE_uint32:   
-#      niidata = np.array(niidata, dtype='<i4')
-#    elif ch.channel_datatype in DTYPE_float32:   
-#      niidata = np.array(niidata, dtype='<f4')
 
     # assemble the header and the data and create a nii file
     nii = nibabel.Nifti1Image(niidata, affine=nh.affine, header=nh.header ) 
