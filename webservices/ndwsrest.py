@@ -46,6 +46,7 @@ from ndproj import  h5projinfo
 from ndproj import jsonprojinfo
 import mcfc
 from ndlib.ndctypelib import filter_ctype_OMP
+from spdb.ndcube.timecube8 import TimeCube8
 import webservices.ndwsskel
 from webservices.ndwsnifti import ingestNIFTI, queryNIFTI
 from ndlib.windowcutout import windowCutout
@@ -86,6 +87,10 @@ def cutout (imageargs, ch, proj, db):
     cube = db.cutout(ch, corner, dim, resolution, zscaling=zscaling)
 
   filterCube(ch, cube, filterlist)
+
+  if timerange==None:
+    # convert 4-d to 3-d here for now
+    cube.data = cube.data.reshape(cube.data.shape[1:])
   
   return cube
 
@@ -111,11 +116,9 @@ def channelIterCutout(channels, imageargs, proj, db):
     # call cutout for first channel
     channel_data = cutout( imageargs, ch, proj, db ).data
 
-    # convert 4-d to 3-d here for now
-    cubedata = np.zeros ( (len(channel_list),)+channel_data.shape[1:], dtype=channel_data.dtype )
-    cubedata[0,:] = channel_data.reshape(channel_data.shape[1:])
+    cubedata = np.zeros ( (len(channel_list),)+channel_data.shape[:], dtype=channel_data.dtype )
+    cubedata[0,:] = cutout(imageargs, ch, proj, db).data
 
-    # if one channel convert 3-d to 4-d array
     # iterate from second to nth channel
     for idx,channel_name in enumerate(channel_list[1:]):
       if channel_name == '0':
@@ -288,9 +291,8 @@ def HDF5(chanargs, proj, db):
     for channel_name in channels.split(','):
       ch = proj.getChannelObj(channel_name)
       cube = cutout(imageargs, ch, proj, db)
-      cube.RGBAChannel()
       changrp = fh5out.create_group( "{}".format(channel_name) )
-      changrp.create_dataset("CUTOUT", tuple(cube.data.shape[1:]), cube.data.dtype, compression='gzip', data=cube.data.reshape(cube.data.shape[1:]))
+      changrp.create_dataset("CUTOUT", tuple(cube.data.shape), cube.data.dtype, compression='gzip', data=cube.data.reshape(cube.data.shape))
       changrp.create_dataset("CHANNELTYPE", (1,), dtype=h5py.special_dtype(vlen=str), data=ch.channel_type)
       changrp.create_dataset("DATATYPE", (1,), dtype=h5py.special_dtype(vlen=str), data=ch.channel_datatype)
   
@@ -545,8 +547,9 @@ def imgSlice(webargs, proj, db):
   else:
     window_range = None
   
-  cb.data = window(cb.data, ch, window_range=window_range)
-  return cb
+  cbnew = TimeCube8 ( )
+  cbnew.data = window(cb.data, ch, window_range=window_range)
+  return cbnew
 
 
 def imgPNG (proj, webargs, cb):
@@ -760,7 +763,7 @@ def selectPost ( webargs, proj, db, postdata ):
           db.writeBlazeCuboid(ch, corner, resolution, postdata, timerange=timerange) 
       
       elif service == 'hdf5':
-        
+ 
         # Get the HDF5 file.
         with closing (tempfile.NamedTemporaryFile ( )) as tmpfile:
 
