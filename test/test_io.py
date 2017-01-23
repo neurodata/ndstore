@@ -408,7 +408,6 @@ class TestRW:
     wp.resolution = 0
 
     # upload an npz dense
-#    annodata = np.random.random_integers ( 0, 65535, [ 2, 50, 50 ] )
     annodata = np.ones ( [1, 2, 50, 50], dtype=np.uint32 ) * random.randint(0,65535)
 
     url = 'https://{}/sd/{}/{}/npz/{}/{},{}/{},{}/{},{}/'.format( wp.baseurl, wp.token, wp.channel, wp.resolution, 200, 250, 200, 250, 200, 202 )
@@ -604,46 +603,6 @@ class TestRW:
     wp.resolution = 1
 
 
-
-#RBTODO need to remove this stuff and actual add the cuboids to writeAnno
-#
-#    # now try the cuboids interface
-#    # WRite two small regions
-#    wp.cutout = "1/200,210/200,210/101,102"
-#    retval = writeAnno ( wp )
-#    assert int(retval) >= 1
-#
-#    wp.cutout = "1/300,310/300,310/301,302"
-#    wp.update = True
-#    wp.annid = int(retval)
-#    retval = writeAnno ( wp )
-#    assert int(retval) == wp.annid
-#
-#    # Read them as an HDF5 file
-#    rp.cuboids = True
-#    rp.annids = int(retval)
-#    rp.voxels = False
-#    h5r = readAnno(rp)
-#    assert ( countCuboidVoxels(rp.annids,h5r) == 200 )
-#
-#    # write the file --- have to do this here. not part of wp
-#    # change the annotation identifier
-#    # RBTODO
-#    # post the HDF5 file
-#    url = "https://%s/sd/%s/" % (wp.baseurl,wp.token )
-#    h5r.tmpfile.seek(0)
-#    # return and file object to be posted
-#    try:
-#      req = urllib2.Request ( url, h5r.tmpfile.content)
-#      response = urllib2.urlopen(req)
-#    except urllib2.URLError, e:
-#      assert 0
-#    assert response >= 1
-#
-#    # Read it back to make sure that it's correct
-#    rp.voxels = True
-#    h5r2 = readAnno(rp)
-#    assert ( countCuboidVoxels(rp.annids,h5r) == 200 )
 
 
   def test_update(self):

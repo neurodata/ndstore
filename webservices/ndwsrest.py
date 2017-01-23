@@ -1,4 +1,4 @@
-#) Copyright 2014 NeuroData (http://neurodata.io)
+#0) Copyright 2014 NeuroData (http://neurodata.io)
 # 
 #Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -816,14 +816,14 @@ def selectPost ( webargs, proj, db, postdata ):
               db.writeCuboid (ch, corner, resolution, voxarray, timerange=efftimerange) 
             
             elif ch.channel_type in ANNOTATION_CHANNELS:
-              db.annotateDense ( ch, corner, resolution, voxarray, conflictopt )
+              db.annotateDense ( ch, corner, resolution, voxarray, conflictopt, timestamp=efftimerange[0] )
 
           h5f.flush()
           h5f.close()
 
       # other services take cutout args
       elif service in ['npz', 'blosc']:
-
+  
         # get the data out of the compressed blob
         if service == 'npz':
           rawdata = zlib.decompress ( postdata )
@@ -865,7 +865,7 @@ def selectPost ( webargs, proj, db, postdata ):
             db.writeCuboid(ch, corner, resolution, voxarray[idx,:], efftimerange)
 
           elif ch.channel_type in ANNOTATION_CHANNELS:
-            db.annotateDense(ch, corner, resolution, voxarray[idx,:], conflictopt)
+            db.annotateDense(ch, corner, resolution, voxarray[idx,:], conflictopt, timestamp=efftimerange[0])
       
       else:
         logger.error("An illegal Web POST service was requested: {}. Args {}".format(service, webargs))
@@ -1005,7 +1005,7 @@ def getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution=None, c
       dataids = [anno.annid]
 
     # get the bounding box from the index
-    bbcorner, bbdim = db.getBoundingCube(ch, dataids, resolution)
+    bbcorner, bbdim = db.getBoundingCube(ch, dataids, resolution, timestamp)
 
     # figure out which ids are in object
     if bbcorner != None:
@@ -1080,6 +1080,7 @@ def getAnnotation ( webargs ):
 
     # AB Added 20151011 
     # Check to see if this is a JSON request, and if so return the JSON objects otherwise, continue with returning the HDF5 data
+    # RBTODO add timestamp to json?
     if option_args[1] == 'json':
       annobjs = {}
       try:
@@ -1102,6 +1103,9 @@ def getAnnotation ( webargs ):
     # Create an in-memory HDF5 file
     tmpfile = tempfile.NamedTemporaryFile()
     h5f = h5py.File ( tmpfile.name,"w" )
+
+    # RBTODO get the timestamp or timerange from the HDF5 file
+    timestamp = 0
  
     try: 
  
@@ -1116,7 +1120,7 @@ def getAnnotation ( webargs ):
           # default is no data
           if option_args[1] == '' or option_args[1] == 'nodata':
             dataoption = AR_NODATA
-            getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption )
+            getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, timestamp=timestamp )
     
           # if you want voxels you either requested the resolution id/voxels/resolution
           #  or you get data from the default resolution
@@ -1130,7 +1134,7 @@ def getAnnotation ( webargs ):
               logger.error("Improperly formatted voxel arguments {}".format(option_args[2]))
               raise NDWSError("Improperly formatted voxel arguments {}".format(option_args[2]))
 
-            getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution )
+            getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution, timestamp=timestamp )
 
           #  or you get data from the default resolution
           elif option_args[1] == 'cuboids':
@@ -1142,7 +1146,7 @@ def getAnnotation ( webargs ):
               logger.error("Improperly formatted cuboids arguments {}".format(option_args[2]))
               raise NDWSError("Improperly formatted cuboids arguments {}".format(option_args[2]))
     
-            getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution )
+            getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution, timestamp=timestamp )
     
           elif option_args[1] =='cutout':
     
@@ -1156,7 +1160,7 @@ def getAnnotation ( webargs ):
                 logger.error ( "Improperly formatted cutout arguments {}".format(option_args[2]))
                 raise NDWSError("Improperly formatted cutout arguments {}".format(option_args[2]))
 
-              getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution )
+              getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution, timestamp=timestamp )
     
             else:
 
@@ -1171,7 +1175,7 @@ def getAnnotation ( webargs ):
               dim = brargs.getDim()
               resolution = brargs.getResolution()
     
-              getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution, corner, dim )
+              getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution, corner, dim, timestamp=timestamp )
     
           elif option_args[1] == 'boundingbox':
     
@@ -1183,7 +1187,7 @@ def getAnnotation ( webargs ):
               logger.error("Improperly formatted bounding box arguments {}".format(option_args[2]))
               raise NDWSError("Improperly formatted bounding box arguments {}".format(option_args[2]))
         
-            getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution )
+            getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution, timestamp=timestamp )
     
           else:
             logger.error ("Fetch identifier {}. Error: no such data option {}".format( annoid, option_args[1] ))
@@ -1235,7 +1239,7 @@ def getCSV ( webargs ):
           logger.error ( "Improperly formatted cutout arguments {}".format(reststr))
           raise NDWSError("Improperly formatted cutout arguments {}".format(reststr))
   
-        getAnnoById ( annoid, h5f, proj, rdb, db, dataoption, resolution )
+        getAnnoById ( annoid, h5f, proj, rdb, db, dataoption, resolution, timestamp=timestamp )
 
         # convert the HDF5 file to csv
         csvstr = h5ann.h5toCSV ( h5f )
@@ -1344,7 +1348,7 @@ def getAnnotations ( webargs, postdata ):
         # get annotations for each identifier
         for annoid in annoids:
           # the int here is to prevent using a numpy value in an inner loop.  This is a 10x performance gain.
-          getAnnoById ( int(annoid), h5fout, proj, rdb, db, dataoption, resolution, corner, dim )
+          getAnnoById ( int(annoid), h5fout, proj, rdb, db, dataoption, resolution, corner, dim, timestamp=timestamp)
 
       except:
         h5fout.close()
@@ -1508,7 +1512,7 @@ def putAnnotation ( webargs, postdata ):
                   voxels = None
     
                 if voxels!=None and 'reduce' not in options:
-    
+
                   if 'preserve' in options:
                     conflictopt = 'P'
                   elif 'exception' in options:
