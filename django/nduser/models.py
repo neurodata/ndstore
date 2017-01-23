@@ -172,7 +172,7 @@ class Channel ( models.Model):
   )
   exceptions =  models.IntegerField(choices=EXCEPTION_CHOICES, default=EXCEPTION_FALSE)
   starttime = models.IntegerField(default=0)
-  endtime = models.IntegerField(default=0)
+  endtime = models.IntegerField(default=1)
   startwindow = models.IntegerField(default=0)
   endwindow = models.IntegerField(default=0)
   default = models.BooleanField(default=False)

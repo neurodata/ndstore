@@ -78,8 +78,8 @@ class MySQLProjectDB:
             # And the RAMON objects
             cursor.execute("CREATE TABLE {} ( annoid BIGINT, kv_key VARCHAR(255), kv_value VARCHAR(20000), INDEX ( annoid, kv_key ) USING BTREE)".format(ch.getRamonTable()))
             for res in self.pr.datasetcfg.resolutions:
-              cursor.execute("CREATE TABLE {} ( zindex BIGINT, id BIGINT, exlist LONGBLOB, PRIMARY KEY ( zindex, id))".format(ch.getExceptionsTable(res)))
-              cursor.execute("CREATE TABLE {} ( annid BIGINT PRIMARY KEY, cube LONGBLOB )".format(ch.getIdxTable(res)))
+              cursor.execute("CREATE TABLE {} ( zindex BIGINT, timestamp INT NOT NULL, id BIGINT, exlist LONGBLOB, PRIMARY KEY ( zindex, timestamp, id))".format(ch.getExceptionsTable(res)))
+              cursor.execute("CREATE TABLE {} ( annid BIGINT, timestamp INT NOT NULL, cube LONGBLOB, PRIMARY KEY ( annid, timestamp ))".format(ch.getIdxTable(res)))
          
           # Commiting at the end
           conn.commit()

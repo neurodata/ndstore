@@ -76,15 +76,16 @@ def cutout (imageargs, ch, proj, db):
   timerange = args.getTimeRange()
 
   # Perform the cutout
-  if ch.channel_type in TIMESERIES_CHANNELS:
-    # support for 3-d cutouts
-    if timerange == None:
-      cube = db.cutout(ch, corner, dim, resolution, timerange=[0,1])
-    else:
-      cube = db.cutout(ch, corner, dim, resolution, timerange=timerange)
-
+#  if ch.channel_type in TIMESERIES_CHANNELS:
+  # support for 3-d cutouts
+  if timerange == None:
+    cube = db.cutout(ch, corner, dim, resolution, timerange=[0,1])
   else:
-    cube = db.cutout(ch, corner, dim, resolution, zscaling=zscaling)
+    cube = db.cutout(ch, corner, dim, resolution, timerange=timerange)
+
+# RB defunct code path
+#  else:
+#    cube = db.cutout(ch, corner, dim, resolution, zscaling=zscaling)
 
   filterCube(ch, cube, filterlist)
 
@@ -547,9 +548,15 @@ def imgSlice(webargs, proj, db):
   else:
     window_range = None
   
-  cbnew = TimeCube8 ( )
-  cbnew.data = window(cb.data, ch, window_range=window_range)
-  return cbnew
+  if cb.data.dtype == np.uint16:
+    cbnew = TimeCube8 ( )
+    cbnew.data = window(cb.data, ch, window_range=window_range)
+    return cbnew
+  elif cb.data.dtype == np.uint8:
+    cb.data = window(cb.data, ch, window_range=window_range)
+    return cb
+  else:
+    return cb
 
 
 def imgPNG (proj, webargs, cb):
@@ -635,11 +642,11 @@ def imgAnno ( service, chanargs, proj, db, rdb ):
   if iscompound:
     # remap the ids for a neuron
     dataids = rdb.getSegments ( ch, annoids[0] ) 
-    cb = db.annoCutout ( ch, dataids, resolution, corner, dim, annoids[0] )
+    cb = db.annoCutout ( ch, dataids, resolution, corner, dim, annoids[0], timestamp=timestamp)
   else:
     # no remap when not a neuron
     dataids = annoids
-    cb = db.annoCutout ( ch, dataids, resolution, corner, dim, None )
+    cb = db.annoCutout ( ch, dataids, resolution, corner, dim, None, timestamp=timestamp)
 
   # reshape to 2-d
   if service == 'xy':
@@ -934,7 +941,7 @@ def getAnnoDictById ( ch, annoid, proj, rdb ):
   # return dictionary
   return tmpdict 
 
-def getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution=None, corner=None, dim=None ): 
+def getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution=None, corner=None, dim=None, timestamp=0 ): 
   """Retrieve the annotation and put it in the HDF5 file."""
 
   # retrieve the annotation 
@@ -967,7 +974,7 @@ def getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution=None, c
     # add voxels for all of the ids
     for dataid in dataids:
   
-      voxlist = db.getLocations(ch, dataid, resolution) 
+      voxlist = db.getLocations(ch, dataid, resolution, timestamp) 
       if len(voxlist) != 0:
         allvoxels =  allvoxels + voxlist 
 
@@ -979,15 +986,15 @@ def getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution=None, c
 
     # cutout the data with the and remap for neurons.
     if anno.__class__ in [AnnNeuron] and dataoption != AR_NODATA:
-      cb = db.annoCutout(ch, dataids, resolution, corner, dim, annoid)
+      cb = db.annoCutout(ch, dataids, resolution, corner, dim, annoid, timestamp=timestamp)
     else:
       # don't need to remap single annotations
-      cb = db.annoCutout(ch, dataids, resolution, corner, dim, None)
+      cb = db.annoCutout(ch, dataids, resolution, corner, dim, None, timestamp=timestamp)
 
     # again an abstraction problem with corner. return the corner to cutout arguments space
     offset = proj.datasetcfg.get_offset(resolution)
     retcorner = [corner[0]+offset[0], corner[1]+offset[1], corner[2]+offset[2]]
-    h5anno.addCutout ( resolution, retcorner, cb.data )
+    h5anno.addCutout ( resolution, retcorner, cb.data.reshape(cb.data.shape[1:]))
 
   elif dataoption == AR_TIGHTCUTOUT:
  
@@ -1008,9 +1015,9 @@ def getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution=None, c
 
     # Call the cuboids interface to get the minimum amount of data
     if anno.__class__ == AnnNeuron:
-      offsets = db.annoCubeOffsets(ch, dataids, resolution, annoid)
+      offsets = db.annoCubeOffsets(ch, dataids, resolution, annoid, timestamp=timestamp)
     else:
-      offsets = db.annoCubeOffsets(ch, [annoid], resolution)
+      offsets = db.annoCubeOffsets(ch, [annoid], resolution, timestamp=timestamp)
 
     datacuboid = None
 
@@ -1020,7 +1027,7 @@ def getAnnoById ( ch, annoid, h5f, proj, rdb, db, dataoption, resolution=None, c
       if datacuboid == None:
         datacuboid = np.zeros ( (bbdim[2],bbdim[1],bbdim[0]), dtype=cbdata.dtype )
 
-      datacuboid [ offset[2]-bbcorner[2]:offset[2]-bbcorner[2]+cbdata.shape[0], offset[1]-bbcorner[1]:offset[1]-bbcorner[1]+cbdata.shape[1], offset[0]-bbcorner[0]:offset[0]-bbcorner[0]+cbdata.shape[2] ]  = cbdata
+      datacuboid [ offset[2]-bbcorner[2]:offset[2]-bbcorner[2]+cbdata.shape[1], offset[1]-bbcorner[1]:offset[1]-bbcorner[1]+cbdata.shape[2], offset[0]-bbcorner[0]:offset[0]-bbcorner[0]+cbdata.shape[3] ]  = cbdata [0,:,:,:]
    
     offset = proj.datasetcfg.get_offset(resolution)
     bbcorner = map(add, bbcorner, offset)
@@ -1432,6 +1439,7 @@ def putAnnotation ( webargs, postdata ):
       return retstr
 
     else:
+
       # Make a named temporary file for the HDF5
       with closing (tempfile.NamedTemporaryFile()) as tmpfile:
         tmpfile.write ( postdata )
@@ -1464,9 +1472,6 @@ def putAnnotation ( webargs, postdata ):
             if not ('update' in options or 'dataonly' in options or 'reduce' in options):
               anno.setField('annid',(rdb.assignID(ch,anno.annid)))
     
-            # start a transaction: get mysql out of line at a time mode
-            #db.startTxn()
-    
             tries = 0 
             done = False
             while not done and tries < 5:
@@ -1484,6 +1489,11 @@ def putAnnotation ( webargs, postdata ):
                 elif not 'dataonly' in options and not 'reduce' in options:
                   # Put into the database
                   rdb.putAnnotation(ch, anno, options)
+
+                
+                # data portion of the put
+                #RBTODO get timestamp from HDF5
+                timestamp=0
     
                 #  Get the resolution if it's specified
                 if 'RESOLUTION' in idgrp:
@@ -1511,7 +1521,7 @@ def putAnnotation ( webargs, postdata ):
                     logger.warning ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
                     raise NDWSError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
     
-                  exceptions = db.annotate ( ch, anno.annid, resolution, voxels, conflictopt )
+                  exceptions = db.annotate ( ch, anno.annid, resolution, voxels, conflictopt, timestamp )
     
                 # Otherwise this is a shave operation
                 elif voxels != None and 'reduce' in options:
@@ -1520,7 +1530,7 @@ def putAnnotation ( webargs, postdata ):
                   if voxels.shape[1] != 3:
                     logger.warning ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
                     raise NDWSError ("Voxels data not the right shape.  Must be (:,3).  Shape is %s" % str(voxels.shape))
-                  db.shave ( ch, anno.annid, resolution, voxels )
+                  db.shave ( ch, anno.annid, resolution, voxels, timestamp )
     
                 # Is it dense data?
                 if 'CUTOUT' in idgrp:
@@ -1540,14 +1550,14 @@ def putAnnotation ( webargs, postdata ):
                   offset = proj.datasetcfg.offset[resolution]
                   corner = map(sub, h5xyzoffset, offset)
                   
-                  db.annotateEntityDense ( ch, anno.annid, corner, resolution, np.array(cutout), conflictopt )
+                  db.annotateEntityDense ( ch, anno.annid, corner, resolution, np.array(cutout), conflictopt, timestamp )
     
                 elif cutout != None and h5xyzoffset != None and 'reduce' in options:
 
                   offset = proj.datasetcfg.offset[resolution]
                   corner = map(sub, h5xyzoffset,offset)
     
-                  db.shaveEntityDense ( ch, anno.annid, corner, resolution, np.array(cutout))
+                  db.shaveEntityDense ( ch, anno.annid, corner, resolution, np.array(cutout), timestamp)
     
                 elif cutout != None or h5xyzoffset != None:
                   #TODO this is a loggable error
@@ -1557,7 +1567,7 @@ def putAnnotation ( webargs, postdata ):
                 if 'CUBOIDS' in idgrp:
                   cuboids = h5ann.H5getCuboids(idgrp)
                   for (corner, cuboiddata) in cuboids:
-                    db.annotateEntityDense ( anno.annid, corner, resolution, cuboiddata, conflictopt ) 
+                    db.annotateEntityDense ( anno.annid, corner, resolution, cuboiddata, conflictopt, timestamp ) 
     
                 # only add the identifier if you commit
                 if not 'dataonly' in options and not 'reduce' in options:
@@ -1577,8 +1587,6 @@ def putAnnotation ( webargs, postdata ):
               except Exception, e:
                 logger.exception("Put Annotation:Put transaction rollback. {}".format(e))
                 raise NDWSError("Put Annotation:Put transaction rollback. {}".format(e))
-    
-              # Commit if there is no error
     
         finally:
           h5f.close()
