@@ -460,7 +460,7 @@ class TestRW:
     # check that the return matches the post
     assert ( np.array_equal(np.array(h5f[wp.channel]['CUTOUT'].value), annodata))
 
-  def test_batch(self):
+  def ftest_batch(self):
     """Batch interface"""
 
     # Upload a batch of objects

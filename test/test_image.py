@@ -97,7 +97,7 @@ class Test_Image_Slice:
   def test_xz (self):
     """Test the xz slice cutout"""
 
-    p.args = (5000,5100,2000,2001,200,300)
+    p.args = (5000,5100,4000,4001,200,300)
     image_data = np.ones( [2,100,1,100], dtype=np.uint8 ) * random.randint(0,255)
     response = postNPZ(p, image_data)
 
@@ -145,7 +145,7 @@ class Test_Image_Simple_Catmaid:
   def test_yz_tile (self):
     """Test a simple yz slice fetch"""
 
-    p.args = (3072,3073,4096,4608,1,513)
+    p.args = (8072,8073,4096,4608,1,513)
     # have to use a constant here for memcache purposes
     image_data = np.ones([2,512,512,1], dtype=np.uint8) * 130
     response = postNPZ(p, image_data)
@@ -165,7 +165,7 @@ class Test_Image_Simple_Catmaid:
   def test_xz_tile (self):
     """Test a simple xz slice fetch"""
 
-    p.args = (3072,3584,4096,4097,1,513)
+    p.args = (3072,3584,7096,7097,1,513)
     # have to use a constant here for memcache purposes
     image_data = np.ones([2,512,1,512], dtype=np.uint8) * 130
     response = postNPZ(p, image_data)
