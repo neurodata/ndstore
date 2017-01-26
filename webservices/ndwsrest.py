@@ -55,6 +55,7 @@ from webservices.ndwserror import NDWSError, IncorrectSyntaxError
 import logging
 logger = logging.getLogger("neurodata")
 
+#RBTODO check all the zoom in zoom out and write unittests.
 
 def cutout (imageargs, ch, proj, db):
   """Build and Return a cube of data for the specified dimensions. This method is called by all of the more basic services to build the data. They then format and refine the output. """
