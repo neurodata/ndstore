@@ -331,9 +331,9 @@ class AwsInterface:
 
                 self.logger.info("[{},{},{}] at res {}".format(x*xsupercubedim, y*ysupercubedim, z*zsupercubedim, cur_res))
                 # updating the index
-                # self.cuboidindex_db.putItem(ch.channel_name, cur_res, x, y, z)
+                self.cuboidindex_db.putItem(ch.channel_name, cur_res, x, y, z)
                 # inserting the cube
-                # self.s3_io.putCube(ch, cur_res, morton_index, blosc.pack_array(data))
+                self.s3_io.putCube(ch, cur_res, morton_index, blosc.pack_array(data))
               
               except Exception as e:
                 # checkpoint the ingest
@@ -376,8 +376,8 @@ class AwsInterface:
     z_limit = (z_end-1) / (z_tilesz) + 1
     t_limit = (t_end-1) / (t_tilesz) + 1
     
-    # if start_values != [0, 0, 0]
-      # [x_start, y_start, z_start] = start_values
+    if start_values != [0, 0, 0]:
+      [x_start, y_start, z_start] = map(div, start_values, [x_tilesz, y_tilesz, z_tilesz])
     # iterate over t,z,y,x to ingest the data
     for t in range(t_start, t_limit, 1):  
       for z in range(z_start, z_limit, zsupercubedim):
