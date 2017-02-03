@@ -29,6 +29,10 @@ from nduser.models import Token
 from nduser.models import Channel
 from nduser.models import User
 from webservices.ndwserror import NDWSError
+from ndproj.nddataset import NDDataset
+from ndproj.ndproject import NDProject
+from ndproj.ndchannel import NDChannel
+from ndproj.ndtoken import NDToken
 import logging
 logger = logging.getLogger('neurodata')
 
@@ -69,47 +73,50 @@ def autoIngest(webargs, post_data):
     #print "Invalid Channel schema"
     #return json.dumps("Invalid Channel schema")
 
-  ds = extractDatasetDict(dataset_dict)
-  pr, tk = extractProjectDict(project_dict)
-  pr.host = 'localhost'
-  # pr.kvengine = REDIS
-  pr.s3backend = S3_TRUE
-  if pr.project_name in ['unittest','unittest2']:
-    pr.host = 'localhost'
-  ch_list = []
-  for channel_name, value in channels.iteritems():
-    channel_dict = channels[channel_name]
-    ch_list.append(extractChannelDict(channel_dict))
+  # pr.host = 'localhost'
+  # pr.s3backend = S3_TRUE
+  # if pr.project_name in ['unittest','unittest2']:
+    # pr.host = 'localhost'
 
   try:
     # Setting the user_ids to brain for now
+    
+    # creating ds object
+    ds = NDDataset.fromJson(extractDatasetDict(dataset_dict))
     ds.user_id = 1
-    pr.user_id = 1
-    tk.user_id = 1
     
     # Checking if the posted dataset already exists
     # Setting the foreign key for dataset
     if Dataset.objects.filter(dataset_name = ds.dataset_name).exists():
-      stored_ds = Dataset.objects.get(dataset_name = ds.dataset_name)
+      stored_ds = NDDataset.fromName(ds.dataset_name)
       if compareModelObjects(stored_ds, ds): 
-        pr.dataset_id = stored_ds.dataset_name
+        pass
+        # pr.dataset_id = stored_ds.dataset_name
       else:
         logger.error("Dataset {} already exists and is different then the chosen dataset".format(ds.dataset_name))
         return HttpResponseBadRequest(json.dumps("Dataset {} already exists and is different then the chosen dataset. Please choose a different dataset name".format(ds.dataset_name)), content_type="application/json")
     else:
-      ds.save()
+      ds.create()
       DATASET_CREATED = True
-      pr.dataset_id = ds.dataset_name
+      # pr.dataset_id = ds.dataset_name
 
+    # extracting project and token 
+    pr, tk = extractProjectDict(project_dict)
+    pr = NDProject.fromJson(ds.dataset_name, pr)
+    pr.user_id = 1
+    pr.kvengine = REDIS
+    
     # Checking if the posted project already exists
     # Setting the foreign key for project
     if Project.objects.filter(project_name = pr.project_name).exists():
-      stored_pr = Project.objects.get(project_name = pr.project_name)
-      # Checking if the existing project is same as the posted one
-      if compareModelObjects(stored_pr, pr):
+      stored_pr = NDProject.fromName(pr.project_name)
+      # Checking if the existing project is same as the posted one, here we compare their datasets since python behaves wierdly with sub-objects in other objects. this is not fool-proof but works as a good hack
+      tk = NDToken.fromJson(pr.project_name, tk)
+      tk.user_id = 1
+      if compareModelObjects(stored_pr.datasetcfg, pr.datasetcfg):
         if Token.objects.filter(token_name = tk.token_name).exists():
-          stored_tk = Token.objects.get(token_name = tk.token_name)
-          tk.project_id = stored_pr.project_name
+          stored_tk = NDToken.fromName(tk.token_name)
+          # tk.project_id = stored_pr.project_name
           # Checking if the existing token is same as the posted one
           if compareModelObjects(stored_tk, tk):
             pass
@@ -119,8 +126,8 @@ def autoIngest(webargs, post_data):
             logger.error("Token {} already exists.".format(tk.token_name))
             return HttpResponseBadRequest(json.dumps("Token {} already exists. Please choose a different token name.".format(tk.token_name)), content_type="application/json")
         else:
-          tk.project_id = stored_pr.project_name
-          tk.save()
+          # tk.project_id = stored_pr.project_name
+          tk.create()
           TOKEN_CREATED = True
       else:
         if DATASET_CREATED:
@@ -130,11 +137,15 @@ def autoIngest(webargs, post_data):
         logger.error("Project {} already exists.".format(pr.project_name))
         return HttpResponseBadRequest(json.dumps("Project {} already exists. Please choose a different project name".format(pr.project_name)), content_type="application/json")
     else:
-      pr.save()
       try:
-        pd = NDProjectsDB.getProjDB(pr)
-        pd.newNDProject()
+        pr.create()
+        tk = NDToken.fromJson(pr.project_name, tk)
+        tk.user_id = 1
+        tk.create()
+        # pd = NDProjectsDB.getProjDB(pr)
+        # pd.newNDProject()
         PROJECT_CREATED = True
+        TOKEN_CREATED = True
       except Exception, e:
         if TOKEN_CREATED:
           tk.delete()
@@ -144,24 +155,30 @@ def autoIngest(webargs, post_data):
           ds.delete()
         logger.error("There was an error in creating the project {} database".format(pr.project_name))
         return HttpResponseBadRequest(json.dumps("There was an error in creating the project {} database".format(pr.project_name)), content_type="application/json")
-      tk.project_id = pr.project_name
-      tk.save()
+      # tk.project_id = pr.project_name
+      tk.create()
 
       TOKEN_CREATED = True
     
-    channel_object_list = []
+    ch_list = []
+    for channel_name, value in channels.iteritems():
+      channel_dict = channels[channel_name]
+      ch, data_url, file_format, file_type = extractChannelDict(channel_dict)
+      ch = NDChannel.fromJson(pr.project_name, ch)
+      ch_list.append((ch, data_url, file_format, file_type))
+      channel_object_list = []
     # Iterating over channel list to store channels
     for (ch, data_url, file_format, file_type) in ch_list:
-      ch.project_id = pr.project_name
+      # ch.project_id = pr.project_name
       ch.user_id = 1
       # Checking if the channel already exists or not
       if not Channel.objects.filter(channel_name = ch.channel_name, project = pr.project_name).exists():
-        ch.save()
         # Maintain a list of channel objects created during this iteration and delete all even if one fails
         channel_object_list.append(ch)
         try:
-          pd = NDProjectsDB.getProjDB(pr)
-          pd.newNDChannel(ch.channel_name)
+          ch.create()
+          # pd = NDProjectsDB.getProjDB(pr)
+          # pd.newNDChannel(ch.channel_name)
           CHANNEL_CREATED = True
         except Exception, e:
           if TOKEN_CREATED:
@@ -185,9 +202,9 @@ def autoIngest(webargs, post_data):
         data_url = data_url[:-1]
       
       # calling celery ingest task
-      from spdb.tasks import ingest
-      ingest(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
-      # ingest.delay(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
+      from sd.tasks import ingest
+      # ingest(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
+      ingest.delay(tk.token_name, ch.channel_name, ch.resolution, data_url, file_format, file_type)
       
       # calling ndworker
       # from ndworker.ndworker import NDWorker
@@ -195,17 +212,12 @@ def autoIngest(webargs, post_data):
       # queue_name = worker.populateQueue()
     
     # Posting to LIMS system
-    postMetadataDict(metadata_dict, pr.project_name)
+    # postMetadataDict(metadata_dict, pr.project_name)
 
   except Exception, e:
     # KL TODO Delete data from the LIMS systems
-    try:
-      pd
-    except NameError:
-      if pr is not None:
-        pd = NDProjectsDB.getProjDB(pr.project_name)
-      if PROJECT_CREATED:
-        pd.deleteNDProject()
+    if pr is not None and PROJECT_CREATED:
+      pr.delete()
     logger.error("Error saving models. There was an error in the information posted")
     return HttpResponseBadRequest(json.dumps("FAILED. There was an error in the information you posted."), content_type="application/json")
 
@@ -320,27 +332,33 @@ def postMetadataDict(metadata_dict, project_name):
 
 def extractDatasetDict(ds_dict):
   """Generate a dataset object from the JSON flle"""
-
-  ds = Dataset();
   
+  ds = {}
+
   try:
-    ds.dataset_name = ds_dict['dataset_name']
-    imagesize = [ds.ximagesize, ds.yimagesize, ds.zimagesize] = ds_dict['imagesize']
-    [ds.xvoxelres, ds.yvoxelres, ds.zvoxelres] = ds_dict['voxelres']
+    ds['dataset_name'] = ds_dict['dataset_name']
+    ds['ximagesize'] = ds_dict['imagesize'][0]
+    ds['yimagesize'] = ds_dict['imagesize'][1]
+    ds['zimagesize'] = ds_dict['imagesize'][2]
+    ds['xvoxelres'] = ds_dict['voxelres'][0]
+    ds['yvoxelres'] = ds_dict['voxelres'][1]
+    ds['zvoxelres'] = ds_dict['voxelres'][2]
   except Exception, e:
     logger.error("Missing required fields")
     raise NDWSError("Missing required fields")
 
   if 'offset' in ds_dict:
-    [ds.xoffset, ds.yoffset, ds.zoffset] = ds_dict['offset']
+    ds['xoffset'] = ds_dict['offset'][0]
+    ds['yoffset'] = ds_dict['offset'][1]
+    ds['zoffset'] = ds_dict['offset'][2]
   if 'scaling' in ds_dict:
-    ds.scalingoption = ds_dict['scaling']
+    ds['scalingoption'] = ds_dict['scaling']
   if 'scalinglevels' in ds_dict:
-    ds.scalinglevels = ds_dict['scalinglevels']
+    ds['scalinglevels'] = ds_dict['scalinglevels']
   else:
-    ds.scalinglevels = computeScalingLevels(imagesize)
+    ds['scalinglevels'] = computeScalingLevels(imagesize)
 
-  return ds
+  return json.dumps(ds)
   
 def computeScalingLevels(imagesize):
   """Dynamically decide the scaling levels"""
@@ -358,34 +376,34 @@ def computeScalingLevels(imagesize):
 def extractProjectDict(pr_dict):
   """Generate a project object from the JSON flle"""
 
-  pr = Project()
-  tk = Token()
+  pr = {}
+  tk = {}
 
   try:
-    pr.project_name = pr_dict['project_name']
+    pr['project_name'] = pr_dict['project_name']
   except Exception, e:
     logger.error("Missing required fields")
     raise NDWSError("Missing required fields")
 
   if 'token_name' in pr_dict:
-    tk.token_name = pr_dict['token_name']
+    tk['token_name'] = pr_dict['token_name']
   else:
-    tk.token_name = pr_dict['project_name']
+    tk['token_name'] = pr_dict['project_name']
   if 'public' in pr_dict:
-    tk.public = pr_dict['public']
-  return pr, tk
+    tk['public'] = pr_dict['public']
+  return json.dumps(pr), json.dumps(tk)
 
 def extractChannelDict(ch_dict, channel_only=False):
   """Generate a channel object from the JSON flle"""
 
-  ch = Channel()
+  ch = {}
   try:
-    #ch.pk = ch_dict['channel_name']
-    ch.channel_name = ch_dict['channel_name']
-    ch.channel_datatype =  ch_dict['datatype']
-    ch.channel_type = ch_dict['channel_type']
+    ch['channel_name'] = ch_dict['channel_name']
+    ch['channel_datatype'] =  ch_dict['datatype']
+    ch['channel_type'] = ch_dict['channel_type']
     if 'timerange' in ch_dict:
-      [ch.starttime, ch.endtime] = ch_dict['timerange']
+      ch['starttime'] = ch_dict['timerange'][0]
+      ch['endtime'] = ch_dict['timerange'][1]
     if not channel_only:
       data_url = ch_dict['data_url']
       file_format = ch_dict['file_format']
@@ -395,16 +413,17 @@ def extractChannelDict(ch_dict, channel_only=False):
     raise NDWSError("Missing required fields")
     
   if 'exceptions' in ch_dict:
-    ch.exceptions = ch_dict['exceptions']
+    ch['exceptions'] = ch_dict['exceptions']
   if 'resolution' in ch_dict:
-    ch.resolution = ch_dict['resolution']
+    ch['resolution'] = ch_dict['resolution']
   if 'windowrange' in ch_dict:
-    ch.startwindow, ch.endwindow = ch_dict['windowrange']
+    ch['startwindow'] = ch_dict['windowrange'][0]
+    ch['endwindow'] = ch_dict['windowrange'][1]
   if 'readonly' in ch_dict:
-    ch.readonly = ch_dict['readonly']
+    ch['readonly'] = ch_dict['readonly']
 
   if not channel_only:
-    return (ch, data_url, file_format, file_type)
+    return (json.dumps(ch), data_url, file_format, file_type)
   else:
     return ch
 
@@ -440,29 +459,29 @@ def postMetadataDict(metadata_dict, project_name):
     pass
 
 
-def extractDatasetDict(ds_dict):
-  """Generate a dataset object from the JSON flle"""
+# def extractDatasetDict(ds_dict):
+  # """Generate a dataset object from the JSON flle"""
 
-  ds = Dataset();
+  # ds = Dataset();
   
-  try:
-    ds.dataset_name = ds_dict['dataset_name']
-    imagesize = [ds.ximagesize, ds.yimagesize, ds.zimagesize] = ds_dict['imagesize']
-    [ds.xvoxelres, ds.yvoxelres, ds.zvoxelres] = ds_dict['voxelres']
-  except Exception, e:
-    logger.error("Missing required fields")
-    raise NDWSError("Missing required fields")
+  # try:
+    # ds.dataset_name = ds_dict['dataset_name']
+    # imagesize = [ds.ximagesize, ds.yimagesize, ds.zimagesize] = ds_dict['imagesize']
+    # [ds.xvoxelres, ds.yvoxelres, ds.zvoxelres] = ds_dict['voxelres']
+  # except Exception, e:
+    # logger.error("Missing required fields")
+    # raise NDWSError("Missing required fields")
 
-  if 'offset' in ds_dict:
-    [ds.xoffset, ds.yoffset, ds.zoffset] = ds_dict['offset']
-  if 'scaling' in ds_dict:
-    ds.scalingoption = ds_dict['scaling']
-  if 'scalinglevels' in ds_dict:
-    ds.scalinglevels = ds_dict['scalinglevels']
-  else:
-    ds.scalinglevels = computeScalingLevels(imagesize)
+  # if 'offset' in ds_dict:
+    # [ds.xoffset, ds.yoffset, ds.zoffset] = ds_dict['offset']
+  # if 'scaling' in ds_dict:
+    # ds.scalingoption = ds_dict['scaling']
+  # if 'scalinglevels' in ds_dict:
+    # ds.scalinglevels = ds_dict['scalinglevels']
+  # else:
+    # ds.scalinglevels = computeScalingLevels(imagesize)
 
-  return ds
+  # return ds
   
 def computeScalingLevels(imagesize):
   """Dynamically decide the scaling levels"""

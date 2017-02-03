@@ -45,7 +45,7 @@ def cutout (request, webargs):
   """Restful URL for all read services to annotation projects"""
   
   try:
-    m = re.match(r"(\w+)/(?P<channel>[\w+,/-]+)?/?(xy|xz|yz|tiff|hdf5|jpeg|blosc|blaze|npz|raw|zip|id|diff|ids|xyanno|xzanno|yzanno)/([\w,/-]*)$", webargs)
+    m = re.match(r"(\w+)/(?P<channel>[\w+,]+)?/?(xy|xz|yz|tiff|hdf5|jpeg|blosc|blaze|npz|raw|zip|id|diff|ids|xyanno|xzanno|yzanno)/([\w,/-]*)$", webargs)
     [token, channel, service, cutoutargs] = [i for i in m.groups()]
 
     if channel is None:
@@ -503,9 +503,9 @@ def minmaxProject (request, webargs):
     logger.exception("Unknown exception in (min|max) projection Web service. {}".format(e))
     raise NDWSError("Unknown exception in (min|max) projection Web service. {}".format(e))
 
-@api_view(['POST'])
-@authentication_classes((SessionAuthentication, TokenAuthentication))
-@permission_classes((PublicAuthentication,))
+# @api_view(['POST'])
+# @authentication_classes((SessionAuthentication, TokenAuthentication))
+# @permission_classes((PublicAuthentication,))
 def autoIngest(request, webargs):
   """RESTful URL for creating a project using a JSON file"""
 
