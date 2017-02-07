@@ -15,10 +15,7 @@
 import os
 import sys
 import argparse
-sys.path += [os.path.abspath('../django')]
-import ND.settings
-os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
-from ndlib.restutil import *
+import requests
 
 def main():
 
@@ -37,11 +34,15 @@ def main():
 
   print url
 
-  # open the file name as a tiff file and post
-  response = postURL(url, open(result.filename).read())
-  if response.status_code != 200:
+  try:
+
+    requests.packages.urllib3.disable_warnings()
+    response = requests.post(url, open(result.filename).read(), verify=False)
+
+  except requests.HTTPError as e:
+
     print "Failed {}. Exception {}".format(url, response._content)
-    sys.exit(1)
+    return e
 
 if __name__ == "__main__":
   main()
