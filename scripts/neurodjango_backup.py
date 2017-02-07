@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # Copyright 2014 NeuroData (http://neurodata.io)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +15,7 @@
 
 import os
 import sys
+import subprocess
 import boto3
 import time
 import socket
@@ -29,8 +31,8 @@ class S3BackupFile(object):
 
   def __init__(self):
     self.file_name = "{}{}_{}.sql".format(settings.TEMP_INGEST_PATH, socket.gethostname(), time.strftime('%Y_%m_%d_%H_%M_%S'))
-    s3 = boto3.resource('s3', endpoint_url=ndingest_settings.S3_ENDPOINT, aws_access_key_id=ndingest_settings.AWS_ACCESS_KEY_ID, aws_access_key=ndingest_settings.AWS_SECRET_ACCESS_KEY)
-    self.backup_object = s3.Object(ndingest_settings.S3_BACKUP_BUCKET, self.file_name)
+    s3 = boto3.resource('s3', endpoint_url=ndingest_settings.S3_ENDPOINT, aws_access_key_id=ndingest_settings.AWS_ACCESS_KEY_ID, aws_secret_access_key=ndingest_settings.AWS_SECRET_ACCESS_KEY)
+    self.backup_object = s3.Object(ndingest_settings.S3_BACKUP_BUCKET, self.file_name.strip(settings.TEMP_INGEST_PATH))
 
   def clean(self):
     try:
@@ -42,7 +44,7 @@ class S3BackupFile(object):
   def copy(self):
     try:
       self.backup_object.put(
-          Body = self.file_name,
+          Body = open(self.file_name),
           StorageClass = 'STANDARD'
       )
     except Exception as e:
@@ -51,7 +53,7 @@ class S3BackupFile(object):
 
   def backup(self):
     try:
-      os.subprocess.call(["mysqldump", "-u", "{}".format(settings.DATABASES['default']['USER']), "-p", "{}".format(settings.DATABASES['default']['PASSWORD']), "{}".format(settings.DATABASES['default']['NAME']), ">", "{}{}.sql".format(settings.TEMP_INGEST_PATH, self.file_name)])
+      subprocess.call("mysqldump -u{} -p{} {} > {}".format(settings.DATABASES['default']['USER'], settings.DATABASES['default']['PASSWORD'], settings.DATABASES['default']['NAME'], self.file_name), shell=True)
       self.copy()
       self.clean()
     except Exception as e:
