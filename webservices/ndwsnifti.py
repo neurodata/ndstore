@@ -26,19 +26,18 @@ logger = logging.getLogger("neurodata")
 def ingestNIFTI ( niftifname, ch, db, proj, channel_name="", create=False ):
   """Ingest the nifti file into a database. No cutout arguments. Must be an entire channel."""     
 
-  print "In ingest nifti"
-
+  #RBTODO load image in a function so that we can dereference the memory.  Function should return
+  #  nifti_data and nh (nifti header).  Should also catch memory errors and give good errors.
   # load the nifti data
   nifti_img = nibabel.load(niftifname)
 
-  print "Loaded file"
-
   nifti_data = np.array(nifti_img.get_data())
-
-  print "Convert to array"
 
   # create the channel if needed
   if create:
+
+   # RBTODO talk to Kunal about using channel creation routines.
+   # RBTODO exception handling and cleanup if load fails after channel creation
 
     from nduser.models import Channel
     from ndproj.ndchannel import NDChannel
@@ -63,8 +62,6 @@ def ingestNIFTI ( niftifname, ch, db, proj, channel_name="", create=False ):
 
     ch = NDChannel.fromName(proj, channel_name)
 
-    print "Created channel"
-
   else:
   
     # Don't write to readonly channels
@@ -79,14 +76,11 @@ def ingestNIFTI ( niftifname, ch, db, proj, channel_name="", create=False ):
     
   nifti_data = nifti_data.transpose()
 
-  print "Transpose"
-
   nifti_data = np.array(nifti_data,ND_dtypetonp[ch.channel_datatype])
-
-  print "Data ready to ingest"
 
   try:
 
+    # RBTODO Add this to function????? to get free memory
     # create the nifti header
     nh = NDNiftiHeader.fromImage(ch, nifti_img)
 
@@ -101,16 +95,15 @@ def ingestNIFTI ( niftifname, ch, db, proj, channel_name="", create=False ):
     # save the header if the data was written
     nh.save()
 
-    print "Saved header"
-
   except Exception as e:
     logger.error("Failed to load nii file. Error {}".format(str(e)))
     raise NDWSError("Failed to load nii file. Error {}".format(str(e)))
 
-def queryNIFTI ( tmpfile, ch, db, proj ):
+def queryNIFTI ( tmpfile, ch, db, proj ): 
   """ Return a NII file that contains the entire DB"""
   
   try:
+
     # get the header in a fileobj
     nh = NDNiftiHeader.fromChannel(ch)
 
