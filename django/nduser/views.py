@@ -714,7 +714,7 @@ def updateChannel(request):
                     elif combo=='tu:32':
                         new_channel.channel_type = TIMESERIES
                         new_channel.channel_datatype = UINT32
-                    if combo=='ti:8':
+                    elif combo=='ti:8':
                         new_channel.channel_type = TIMESERIES
                         new_channel.channel_datatype = INT8
                     elif combo=='ti:16':

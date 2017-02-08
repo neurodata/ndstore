@@ -468,19 +468,23 @@ def FilterCube ( imageargs, cb ):
 
 
 def window(data, ch, window_range=None ):
-  """Performs a window transformation on the cutout area"""
+  """Performs a window transformation on the cutout area
+        window always returns 8-bit data.
+     Careful how you use it.  load target data into timeseriescube8.
+  """
 
   if window_range is None:
     window_range = ch.window_range
 
   [startwindow, endwindow] = window_range
 
-  if ch.channel_datatype in DTYPE_uint16:
-    if (startwindow == endwindow == 0):
-      return data
-    elif endwindow!=0:
-      data = windowCutout (data, window_range)
-      return np.uint8(data)
+  # KL TODO window with signed channels -a to +b
+
+  if (startwindow == endwindow == 0):
+    return np.uint8(data)
+  elif endwindow!=0:
+    data = windowCutout (data, window_range)
+    return np.uint8(data)
 
   return data
 
@@ -549,7 +553,7 @@ def imgSlice(webargs, proj, db):
   else:
     window_range = None
   
-  if cb.data.dtype == np.uint16:
+  if cb.data.dtype == np.uint16 or cb.data.dtype == np.int16:
     cbnew = TimeCube8 ( )
     cbnew.data = window(cb.data, ch, window_range=window_range)
     return cbnew
@@ -1633,6 +1637,12 @@ def putNIFTI ( webargs, postdata ):
     else:
       createflag = False
       ch = NDChannel.fromName(proj, channel)
+
+    if "annotations" in optionsargs:
+      annotationsflag=True
+    else:
+      annotationsflag=False
+      
     
       # Don't write to readonly channels
       if ch.readonly == READONLY_TRUE:
@@ -1647,7 +1657,7 @@ def putNIFTI ( webargs, postdata ):
         tmpfile.write ( postdata )
         tmpfile.seek(0)
         # ingest the nifti file
-        ingestNIFTI ( tmpfile.name, ch, db, proj, channel_name = channel, create=createflag )
+        ingestNIFTI ( tmpfile.name, ch, db, proj, channel_name = channel, create=createflag, annotations=annotationsflag )
     
     else:
 
@@ -1656,7 +1666,7 @@ def putNIFTI ( webargs, postdata ):
         tmpfile.write ( postdata )
         tmpfile.seek(0)
         # ingest the nifti file
-        ingestNIFTI ( tmpfile.name, ch, db, proj, channel_name = channel, create=createflag )
+        ingestNIFTI ( tmpfile.name, ch, db, proj, channel_name = channel, create=createflag, annotations=annotationsflag )
 
 # def getSWC ( webargs ):
   # """Return an SWC object generated from Skeletons/Nodes"""
