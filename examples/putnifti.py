@@ -25,12 +25,15 @@ def main():
   parser.add_argument('channel', action="store" )
   parser.add_argument('filename', action="store" )
   parser.add_argument('--create', action="store_true")
+  parser.add_argument('--annotations', action="store_true")
   result = parser.parse_args()
 
+  url = 'https://{}/sd/{}/{}/nii/'.format(result.baseurl, result.token, result.channel)
+
   if result.create:
-    url = 'https://{}/sd/{}/{}/nii/create/'.format(result.baseurl, result.token, result.channel)
-  else:
-    url = 'https://{}/sd/{}/{}/nii/'.format(result.baseurl, result.token, result.channel)
+    url = '{}create/'.format(url)
+  if result.annotations:
+    url = '{}annotations/'.format(url)
 
   print url
 

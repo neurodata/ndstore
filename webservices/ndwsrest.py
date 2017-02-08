@@ -1637,6 +1637,12 @@ def putNIFTI ( webargs, postdata ):
     else:
       createflag = False
       ch = NDChannel.fromName(proj, channel)
+
+    if "annotations" in optionsargs:
+      annotationsflag=True
+    else:
+      annotationsflag=False
+      
     
       # Don't write to readonly channels
       if ch.readonly == READONLY_TRUE:
@@ -1651,7 +1657,7 @@ def putNIFTI ( webargs, postdata ):
         tmpfile.write ( postdata )
         tmpfile.seek(0)
         # ingest the nifti file
-        ingestNIFTI ( tmpfile.name, ch, db, proj, channel_name = channel, create=createflag )
+        ingestNIFTI ( tmpfile.name, ch, db, proj, channel_name = channel, create=createflag, annotations=annotationsflag )
     
     else:
 
@@ -1660,7 +1666,7 @@ def putNIFTI ( webargs, postdata ):
         tmpfile.write ( postdata )
         tmpfile.seek(0)
         # ingest the nifti file
-        ingestNIFTI ( tmpfile.name, ch, db, proj, channel_name = channel, create=createflag )
+        ingestNIFTI ( tmpfile.name, ch, db, proj, channel_name = channel, create=createflag, annotations=annotationsflag )
 
 # def getSWC ( webargs ):
   # """Return an SWC object generated from Skeletons/Nodes"""
