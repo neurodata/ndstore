@@ -6,7 +6,7 @@ Dataset
 
 .. _json-createdataset:
 
-.. https:post:: (string:server_name)/nd/resource/dataset/
+.. http:post:: (string:server_name)/nd/resource/dataset/
 
    :synopsis: Create a dataset
    
@@ -19,7 +19,7 @@ Dataset
    
    **Example Request**:
    
-   .. sourcecode:: https
+   .. sourcecode:: http
       
       POST /nd/resource/kasthuri11/ HTTPS/1.1
       Host: cloud.neurodata.io
@@ -38,24 +38,24 @@ Dataset
    
    **Example Responses**:
 
-   .. sourcecode:: https
+   .. sourcecode:: http
 
       HTTPS/1.1 201 Created
       Content-Type: text/plain
 
-   .. sourcecode:: https
+   .. sourcecode:: http
     
       HTTPS/1.1 400 BadRequest
       Content-Type: text/plain
 
-   .. sourcecode:: https
+   .. sourcecode:: http
 
       HTTPS/1.1 403 Forbidden
       Content-Type: text/plain
 
 .. _json-listdataset:
 
-.. https:get:: (string:server_name)/nd/resource/dataset/
+.. http:get:: (string:server_name)/nd/resource/dataset/
    
    :synopsis: List all datasets
    
@@ -68,7 +68,7 @@ Dataset
    
    **Example Request**:
    
-   .. sourcecode:: https
+   .. sourcecode:: http
       
       GET /nd/resource/kasthuri11/ HTTPS/1.1
       Host: cloud.neurodata.io
@@ -76,7 +76,7 @@ Dataset
 
    **Example Responses**:
 
-   .. sourcecode:: https
+   .. sourcecode:: http
 
       HTTPS/1.1 200 OK
       Content-Type: application/json
@@ -87,19 +87,19 @@ Dataset
         'lee15'
       }
 
-   .. sourcecode:: https
+   .. sourcecode:: http
     
       HTTPS/1.1 400 BadRequest
       Content-Type: text/plain
 
-   .. sourcecode:: https
+   .. sourcecode:: http
 
       HTTPS/1.1 403 Forbidden
       Content-Type: text/plain
 
 .. _json-deletedataset:
 
-.. https:delete:: (string:server_name)/nd/resource/dataset/
+.. http:delete:: (string:server_name)/nd/resource/dataset/
    
    :synopsis: Delete a dataset
    
@@ -112,7 +112,7 @@ Dataset
    
    **Example Request**:
    
-   .. sourcecode:: https
+   .. sourcecode:: http
       
       POST /nd/resource/kasthuri11/ HTTPS/1.1
       Host: cloud.neurodata.io
@@ -124,17 +124,17 @@ Dataset
    
    **Example Responses**:
 
-   .. sourcecode:: https
+   .. sourcecode:: http
 
       HTTPS/1.1 204 No Content
       Content-Type: text/plain
 
-   .. sourcecode:: https
+   .. sourcecode:: http
     
       HTTPS/1.1 400 BadRequest
       Content-Type: text/plain
 
-   .. sourcecode:: https
+   .. sourcecode:: http
 
       HTTPS/1.1 403 Forbidden
       Content-Type: text/plain
@@ -145,7 +145,7 @@ Dataset
 Channel
 -------
   
-.. https:post:: (string:server_name)/nd/sd/dataset/(string:dataset_name)/project/(string:project_name)/token/(string:token_name)/
+.. http:post:: (string:server_name)/nd/sd/dataset/(string:dataset_name)/project/(string:project_name)/token/(string:token_name)/
 
    :synopsis: Create a list of channels for an existing project using the project token and JSON file.
 
@@ -160,7 +160,7 @@ Channel
 
    **Example Request**:
 
-   .. sourcecode:: https
+   .. sourcecode:: http
       
       POST /nd/ca/test_kat1/ HTTPS/1.1
       Host: openconnecto.me
@@ -185,17 +185,17 @@ Channel
 
    **Example Responses**:
 
-   .. sourcecode:: https
+   .. sourcecode:: http
 
       HTTPS/1.1 201 Created
       Content-Type: text/plain
 
-   .. sourcecode:: https
+   .. sourcecode:: http
     
       HTTPS/1.1 400 BadRequest
       Content-Type: text/plain
 
-   .. sourcecode:: https
+   .. sourcecode:: http
 
       HTTPS/1.1 403 Forbidden
       Content-Type: text/plain
@@ -206,7 +206,7 @@ Channel
 deleteChannel
 -------------
 
-.. https:post:: (string:server_name)/nd/ca/(string:token_name)/deleteChannel/
+.. http:post:: (string:server_name)/nd/ca/(string:token_name)/deleteChannel/
 
    :synopsis: Delete a list of channels for an existing project using the project token and a JSON file.
 
@@ -221,7 +221,7 @@ deleteChannel
 
    **Example Request**:
 
-   .. sourcecode:: https
+   .. sourcecode:: http
       
       POST /nd/ca/test_kat1/ HTTPS/1.1
       Host: openconnecto.me
@@ -236,21 +236,21 @@ deleteChannel
 
    **Example Responses**:
 
-   .. sourcecode:: https
+   .. sourcecode:: http
 
       HTTPS/1.1 200 OK
       Content-Type: text/plain
 
       Success. Channels deleted.
 
-   .. sourcecode:: https
+   .. sourcecode:: http
 
       HTTPS/1.1 400 BadRequest
       Content-Type: text/plain
 
       Missing. Required fields.
 
-   .. sourcecode:: https
+   .. sourcecode:: http
 
       HTTPS/1.1 400 BadRequest
       Content-Type: text/plain
