@@ -59,12 +59,9 @@ The system design inherits much from NoSQL scale-out and data-intensive computin
    api/slice_api
    api/ramon_api
    api/propagate_api
-   api/stats_api
    api/autoingest_api
-   api/project_api
-   api/overlay_api
+   api/resource_api
    api/tile_api
-   api/graphgen_api
    api/nifti_api
    api/swc_api
 

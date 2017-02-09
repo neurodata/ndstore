@@ -14,7 +14,7 @@ getSimpleTileXY
    
    :synopsis: Get a 512x512 tile from the database. This returns a simple Black and White tile.
 
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
    :type server_name: string
    :param token_name: Token Name in NeuroData.
    :type token_name: string
@@ -63,7 +63,7 @@ getSimpleTileYZ
    
    :synopsis: Get a 512x512 tile from the database. This returns a simple Black and White tile.
 
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
    :type server_name: string
    :param token_name: Token Name in NeuroData.
    :type token_name: string
@@ -93,7 +93,7 @@ getSimpleTileXZ
    
    :synopsis: Get a 512x512 tile from the database. This returns a simple Black and White tile.
 
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
    :type server_name: string
    :param token_name: Token Name in NeuroData.
    :type token_name: string
@@ -122,7 +122,7 @@ getMcfcTile
    
    :synopsis: Get a 512x512 color tile from the database. This returns a color tile based on the requested color.
 
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
    :type server_name: string
    :param token_name: Token Name in NeuroData.
    :type token_name: string
@@ -175,7 +175,7 @@ getVikingTile
    
    :synopsis: Get a 512x512 `Viking <https://connectomes.utah.edu/>`_ tile from the database
 
-   :param server_name: Server Name in NeuroData. In the general case this is openconnecto.me.
+   :param server_name: Server Name in NeuroData. In the general case this is cloud.neurodata.io
    :type server_name: string
    :param token_name: Token Name in NeuroData.
    :type token_name: string
