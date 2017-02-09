@@ -300,8 +300,12 @@ class IngestData:
                 logger.info("Open filename {}".format(file_name))
                 
                 if ch.channel_datatype in [UINT8, UINT16] and ch.channel_type in IMAGE_CHANNELS:
-                  image_data = np.asarray(Image.open(file_name, 'r'))
-                  slab[b,:,:] = image_data
+                  try:
+                    image_data = np.asarray(Image.open(file_name, 'r'))
+                    slab[b,:,:] = image_data
+                  except Exception as e:
+                    slab[b,:,:] = np.zeros((yimagesz, ximagesz), dtype=ND_dtypetonp.get(ch.channel_datatype))
+                    logger.warning("File corrupted. Cannot open file. {}".format(e))
                 elif ch.channel_datatype in [UINT32] and ch.channel_type in IMAGE_CHANNELS:
                   image_data = np.asarray(Image.open(file_name, 'r').convert('RGBA'))
                   slab[b,:,:] = np.left_shift(image_data[:,:,3], 24, dtype=np.uint32) | np.left_shift(image_data[:,:,2], 16, dtype=np.uint32) | np.left_shift(image_data[:,:,1], 8, dtype=np.uint32) | np.uint32(image_data[:,:,0])
@@ -313,7 +317,7 @@ class IngestData:
                   raise NDWSError("Cannot ingest this data yet")
               except IOError, e:
                 logger.warning("IOError {}.".format(e))
-                slab[b,:,:] = np.zeros((yimagesz, ximagesz), dtype=np.uint32)
+                slab[b,:,:] = np.zeros((yimagesz, ximagesz), dtype=ND_dtypetonp.get(ch.channel_datatype))
           
           for y in range ( 0, yimagesz+1, ysupercubedim ):
             for x in range ( 0, ximagesz+1, xsupercubedim ):
