@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,21 +12,43 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
 import re
 import django.http
-from django.views.decorators.cache import cache_control
-import cStringIO
-
 import mcfccatmaid
 import simplecatmaid
-#import colorcatmaid
-
-# Errors we are going to catch
-from ocpcaerror import OCPCAError
+import maxprojcatmaid
+from webservices.ndwserror import NDWSError
 
 import logging
-logger=logging.getLogger("ocp")
+logger = logging.getLogger("neurodata")
+
+def filterview (request, webargs):
+  """filtered ids false color"""
+
+  try:
+    fv = filtercatmaid.FilterCatmaid()
+    imgfobj = fv.getTile(webargs)
+    return django.http.HttpResponse(imgfobj.read(), content_type="image/png")
+
+  except NDWSError, e:
+    return django.http.HttpResponseNotFound(e)
+  except Exception, e:
+    logger.exception("Unknown exception in filtercatmaidview: {}".format(e) )
+    raise
+
+def maxprojview (request, webargs):
+  """multi-channel false color"""
+
+  try:
+    mp = maxprojcatmaid.MaxProjCatmaid()
+    imgfobj = mp.getTile(webargs)
+    return django.http.HttpResponse(imgfobj.read(), content_type="image/png")
+
+  except NDWSError, e:
+    return django.http.HttpResponseNotFound(e)
+  except Exception, e:
+    logger.exception("Unknown exception in mcfccatmaidview: {}".format(e) )
+    raise
 
 
 def mcfccatmaidview (request, webargs):
@@ -37,10 +59,10 @@ def mcfccatmaidview (request, webargs):
     imgfobj = mc.getTile(webargs)
     return django.http.HttpResponse(imgfobj.read(), content_type="image/png")
 
-  except OCPCAError, e:
+  except NDWSError, e:
     return django.http.HttpResponseNotFound(e)
   except Exception, e:
-    logger.exception("Unknown exception in mcfccatmaidview: {}".format(e) )
+    logger.exception("Unknown exception in mcfccatmaidview: {}".format(e))
     raise
 
 def simplecatmaidview (request, webargs):
@@ -51,10 +73,10 @@ def simplecatmaidview (request, webargs):
     imgfobj = sc.getTile(webargs)
     return django.http.HttpResponse(imgfobj.read(), content_type="image/png")
 
-  except OCPCAError, e:
+  except NDWSError, e:
     return django.http.HttpResponseNotFound(e)
   except Exception, e:
-    logger.exception("Unknown exception in simplecatmaidview: {}".format(e) )
+    logger.exception("Unknown exception in simplecatmaidview: {}".format(e))
     raise
 
 def simplevikingview (request, webargs):
@@ -74,7 +96,7 @@ def simplevikingview (request, webargs):
     response['content-length'] = len(response.content)
     return response
 
-  except OCPCAError, e:
+  except NDWSError, e:
     return django.http.HttpResponseNotFound(e)
   except Exception, e:
     logger.exception("Unknown exception in simplecatmaidview: {}".format(e) )

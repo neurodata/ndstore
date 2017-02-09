@@ -6,7 +6,7 @@ SWC API
 getSWC
 ------
 
-.. http:get:: (string:server_name)/ocp/ca/(string:token_name)/(string:channel_name)/getPropagate/
+.. http:get:: (string:server_name)/nd/ca/(string:token_name)/(string:channel_name)/getPropagate/
 
    :synopsis: Get the graph from the server.
 

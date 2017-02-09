@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,14 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
+from . import views
 
 # Uncomment the next two lines to enable the admin:
 #from django.contrib import admin
 #admin.autodiscover()
 
 
-urlpatterns = patterns('overlay.views',
-   url(r'(?P<webargs>^(0?\.\d[0-9]?|0|1|1.0)/.*)$', 'overlay'),
+urlpatterns = [
+   url(r'(?P<webargs>^(0?\.\d[0-9]?|0|1|1.0)/.*)$', views.overlay),
 #  url(r'^admin/', include(admin.site.urls)),
-)
+]

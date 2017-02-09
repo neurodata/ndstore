@@ -14,12 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import os
 import sys
 
 if __name__ == "__main__":
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "OCP.settings")
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ND.settings")
 
     from django.core.management import execute_from_command_line
 

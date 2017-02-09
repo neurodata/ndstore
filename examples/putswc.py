@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,11 +26,10 @@ def main():
   parser.add_argument('channel', action="store" )
   parser.add_argument('filename', action="store" )
   # assume no hierarchy, unless specified
-  parser.add_argument('--resolution', action="store", type=int, default=0 )
 
   result = parser.parse_args()
 
-  url = 'http://%s/ca/%s/%s/swc/%s/' % ( result.baseurl, result.token, result.channel, result.resolution )
+  url = 'http://{}/sd/{}/{}/swc/'.format(result.baseurl, result.token, result.channel)
 
   print url
 
@@ -41,12 +40,8 @@ def main():
   try:
     f = urllib2.urlopen ( url, fh.read() )
   except urllib2.URLError, e:
-    print "Failed %s.  Exception %s." % (url,e) 
+    print "Failed {}. Exception {}.".format(url, e) 
     sys.exit(-1)
 
 if __name__ == "__main__":
   main()
-
-
-
-

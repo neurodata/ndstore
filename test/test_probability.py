@@ -1,33 +1,26 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
-# 
+# Copyright 2014 NeuroData (http://neurodata.io)
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import urllib2
-import h5py
-import tempfile
 import random
 import numpy as np
 from PIL import Image
 from StringIO import StringIO
-
 import makeunitdb
-from ocptype import IMAGE, FLOAT32
+from ndlib.ndtype import IMAGE, FLOAT32
 from params import Params
 from postmethods import postNPZ, getNPZ, getHDF5, postHDF5, getURL
-import kvengine_to_test
-import site_to_test
-SITE_HOST = site_to_test.site
-
+from test_settings import *
 
 # Test Image
 
@@ -38,7 +31,7 @@ SITE_HOST = site_to_test.site
 # 4 - test_xy_incorrect
 
 # Test_Image_Post
-# 1 - test_npz 
+# 1 - test_npz
 # 2 - test_npz_incorrect_region
 # 3 - test_npz_incorrect_datatype
 # 4 - test_hdf5
@@ -74,11 +67,11 @@ class Test_Probability_Slice:
     image_data = np.ones( [2,1,100,100], dtype=np.float32 ) * random.random()
     response = postNPZ(p, image_data)
 
-    url = "http://{}/ca/{}/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
+    url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
     f = getURL (url)
-    
+
     image_data = np.uint8(image_data*256)
-    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
     assert ( np.array_equal(slice_data[:,:,0],image_data[0][0]) )
 
   def test_yz (self):
@@ -88,11 +81,11 @@ class Test_Probability_Slice:
     image_data = np.ones( [2,100,100,1], dtype=np.float32 ) * random.random()
     response = postNPZ(p, image_data)
 
-    url = "http://{}/ca/{}/{}/yz/{}/{}/{},{}/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[2], p.args[3], p.args[4], p.args[5])
+    url = "https://{}/sd/{}/{}/yz/{}/{}/{},{}/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[2], p.args[3], p.args[4], p.args[5])
     f = getURL (url)
 
     image_data = np.uint8(image_data*256)
-    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
     assert ( np.array_equal(slice_data[:,:,0], image_data[0][:75][:].reshape(75,100)) )
 
   def test_xz (self):
@@ -102,11 +95,11 @@ class Test_Probability_Slice:
     image_data = np.ones( [2,100,1,100], dtype=np.float32 ) * random.random()
     response = postNPZ(p, image_data)
 
-    url = "http://{}/ca/{}/{}/xz/{}/{},{}/{}/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[4], p.args[5])
+    url = "https://{}/sd/{}/{}/xz/{}/{},{}/{}/{},{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[4], p.args[5])
     f = getURL (url)
 
     image_data = np.uint8(image_data*256)
-    slice_data = np.asarray ( Image.open(StringIO(f.read())) )
+    slice_data = np.asarray ( Image.open(StringIO(f.content)) )
     assert ( np.array_equal(slice_data[:,:,0], image_data[0][:75][:].reshape(75,100)) )
 
   def test_xy_incorrect (self):
@@ -114,8 +107,8 @@ class Test_Probability_Slice:
 
     p.args = (11000,11100,4000,4100,200,201)
 
-    url = "http://{}/ca/{}/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
-    assert ( 404 == getURL (url) )
+    url = "https://{}/sd/{}/{}/xy/{}/{},{}/{},{}/{}/".format(SITE_HOST, p.token, p.channels[0], p.resolution, p.args[0], p.args[1], p.args[2], p.args[3], p.args[4])
+    assert ( 404 == getURL(url).status_code )
 
 class Test_Probability_Post:
 
@@ -131,10 +124,10 @@ class Test_Probability_Post:
     p.args = (3000,3100,4000,4100,500,510)
     # upload some image data
     image_data = np.ones ( [2,10,100,100], dtype=np.float32 ) * random.random()
-    
+
     response = postNPZ(p, image_data)
     # Checking for successful post
-    assert( response.code == 200 )
+    assert( response.status_code == 200 )
     voxarray = getNPZ(p)
     # check that the return matches
     assert ( np.array_equal(voxarray,image_data) )
@@ -154,8 +147,8 @@ class Test_Probability_Post:
     image_data = np.ones ( [2,10,100,100], dtype=np.float64 ) * random.random()
 
     response = postNPZ(p, image_data)
-    assert (response.code == 404)
-  
+    assert (response.status_code == 404)
+
   def test_hdf5 (self):
     """Post hdf5 data to correct region with correct datatype"""
 
@@ -164,7 +157,7 @@ class Test_Probability_Post:
     image_data = np.ones ( [2,10,100,100], dtype=np.float32 ) * random.random()
 
     response = postHDF5(p, image_data)
-    assert ( response.code == 200 )
+    assert ( response.status_code == 200 )
     h5f = getHDF5(p)
 
     for idx, channel_name in enumerate(p.channels):
@@ -176,7 +169,7 @@ class Test_Probability_Post:
     p.args = (11000,11100,4000,4100,500,510)
     image_data = np.ones ( [2,10,100,100], dtype=np.float32 ) * random.random()
     response = postHDF5(p, image_data)
-    assert (response.code == 404)
+    assert (response.status_code == 404)
 
   def test_hdf5_incorrect_datatype (self):
     """Post hdf5 data with incorrect datatype"""
@@ -188,7 +181,7 @@ class Test_Probability_Post:
     image_data[1,:] = np.ones ( [10,100,100], dtype=np.float32 ) * random.random()
 
     response = postHDF5(p, image_data)
-    assert ( response.code == 404 )
+    assert ( response.status_code == 404 )
 
   def test_npz_incorrect_channel (self):
     """Post npz data with incorrect channel"""
@@ -196,11 +189,11 @@ class Test_Probability_Post:
     p.channels = p.channels + ['CHAN3']
     image_data = np.ones ( [3,10,100,100], dtype=np.float32 ) * random.random()
     response = postNPZ(p, image_data)
-    assert (response.code == 404)
-  
+    assert (response.status_code == 404)
+
   def test_hdf5_incorrect_channel (self):
     """Post hdf5 data with incorrect channel"""
 
     image_data = np.ones ( [3,10,100,100], dtype=np.float32 ) * random.random()
     response = postHDF5(p, image_data)
-    assert (response.code == 404)
+    assert (response.status_code == 404)

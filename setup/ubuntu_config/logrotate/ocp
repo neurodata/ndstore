@@ -1,8 +1,0 @@
-/var/log/ocp/*.log {
-  daily
-  su www-data www-data
-  missingok
-  compress
-  create 777 www-data www-data
-  rotate 1
-}

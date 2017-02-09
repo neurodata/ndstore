@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ import numpy as np
 import urllib2
 import cStringIO
 import sys
+import csv
 
 import tempfile
 import h5py
@@ -103,7 +104,13 @@ def main():
     mdgrp = idgrp['METADATA']
 
     for field in mdgrp.keys():
-      print field, mdgrp[field][:]
+      if field == 'KVPAIRS':
+        fstring = cStringIO.StringIO( mdgrp[field][0] )
+        csvr = csv.reader(fstring, delimiter=',')
+        for r in csvr:
+          print 'key: {}, value: {}'.format(r[0],r[1])
+      else:
+        print field, mdgrp[field][:]
 
     if idgrp.get('VOXELS'):
       print "Voxel list for object of length", len(idgrp['VOXELS'][:])

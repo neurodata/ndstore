@@ -1,11 +1,11 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
-# 
+# Copyright 2014 NeuroData (http://neurodata.io)
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,82 +14,102 @@
 
 import os
 import sys
-
 sys.path += [os.path.abspath('../django')]
-import OCP.settings
-os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
+import ND.settings
+os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
-
-
 from django.contrib.auth.models import User
-from ocpuser.models import Project
-from ocpuser.models import Dataset
-from ocpuser.models import Token
-from ocpuser.models import Channel
+from nduser.models import Project
+from nduser.models import Dataset
+from nduser.models import Token
+from nduser.models import Channel
+from ndproj.nddataset import NDDataset
+from ndproj.ndproject import NDProject
+from ndproj.ndchannel import NDChannel
+from ndproj.ndtoken import NDToken
+from ndlib.ndtype import ZSLICES, ANNOTATION, NOT_PROPAGATED, READONLY_FALSE, UINT32, ND_VERSION, MYSQL, CASSANDRA, RIAK, PUBLIC_TRUE
+from test_settings import *
 
-import ocpcaproj
-from ocptype import ZSLICES, ANNOTATION, NOT_PROPAGATED, READONLY_FALSE, UINT32, OCP_VERSION, MYSQL, CASSANDRA, RIAK
-import site_to_test
-import kvengine_to_test
-
-def createTestDB ( project_name, channel_list=['unit_anno'], channel_type=ANNOTATION, channel_datatype=UINT32, public=0, ximagesize=10000, yimagesize=10000, zimagesize=1000, xvoxelres=4.0, yvoxelres=4.0, zvoxelres=3.0, scalingoption=ZSLICES, scalinglevels=5, readonly=READONLY_FALSE, propagate=NOT_PROPAGATED, window=[0,0], time=[0,0], default=False, ocp_version=OCP_VERSION ):
+def createTestDB ( project_name, channel_list=['unit_anno'], channel_type=ANNOTATION, channel_datatype=UINT32, public=PUBLIC_TRUE, ximagesize=10000, yimagesize=10000, zimagesize=1000, xvoxelres=4.0, yvoxelres=4.0, zvoxelres=3.0, scalingoption=ZSLICES, scalinglevels=5, readonly=READONLY_FALSE, propagate=NOT_PROPAGATED, window=[0,0], time=[0,0], default=False, nd_version=ND_VERSION, token_name='unittest', user='neurodata', dataset_name="unittest" ):
   """Create a unit test data base on the specified sit and name"""
-  
-  unituser = User.objects.get(username='brain')
 
-  ds = Dataset ( dataset_name="unittest", user=unituser, ximagesize=ximagesize, yimagesize=yimagesize, zimagesize=zimagesize,  xoffset=0, yoffset=0, zoffset=1, xvoxelres=xvoxelres, yvoxelres=yvoxelres, zvoxelres=zvoxelres, scalingoption=scalingoption, scalinglevels=scalinglevels, starttime=time[0], endtime=time[1], dataset_description="Unit test" ) 
-  ds.save()
+  unituser = User.objects.get(username=user)
 
-
-  # RBTODO need to add a window and a project
+  ds = NDDataset(Dataset ( dataset_name=dataset_name, user=unituser, ximagesize=ximagesize, yimagesize=yimagesize, zimagesize=zimagesize,  xoffset=0, yoffset=0, zoffset=1, xvoxelres=xvoxelres, yvoxelres=yvoxelres, zvoxelres=zvoxelres, scalingoption=scalingoption, scalinglevels=scalinglevels, public=PUBLIC_TRUE, dataset_description="Unit test" ) )
+  ds.create()
 
   # make the project entry
-  pr = Project (project_name=project_name, project_description='Unit test', user=unituser, dataset=ds, ocp_version=ocp_version, host='localhost',  kvengine=kvengine_to_test.kvengine, kvserver=kvengine_to_test.kvserver)
-  pr.save()
-
-  # and create the database
-  pd = ocpcaproj.OCPCAProjectsDB()
+  pr = NDProject(Project(project_name=project_name, project_description='Unit test', user=unituser, dataset=ds._ds, nd_version=nd_version, host='localhost', kvengine=KV_ENGINE, kvserver=KV_SERVER, s3backend=0))
+  pr.create()
 
   # create a token
-  tk = Token (token_name = project_name, user = unituser, token_description = 'Unit test token', project_id = pr, public = public)
-  tk.save()
+  tk = NDToken(Token (token_name = token_name, user = unituser, token_description = 'Unit test token', project_id = pr.project_name, public = public))
+  tk.create()
+  
+  # get the correct object for the kvengine
+  # pd = NDProjectsDB.getProjDB(NDProjectpr)
+  # create the database
+  # pd.newNDProject()
 
-  pd.newOCPCAProject( pr.project_name )
   try:
     for channel_name in channel_list:
-      ch = Channel (channel_name=channel_name, channel_type=channel_type, channel_datatype=channel_datatype, channel_description='Unit test channel', project_id=pr, readonly=readonly, propagate=propagate, resolution=0, exceptions=1,startwindow=window[0], endwindow=window[1], default=default)
-      ch.save()
-      pd.newOCPCAChannel(pr.project_name, ch.channel_name)
+      ch = NDChannel(Channel (channel_name=channel_name, channel_type=channel_type, channel_datatype=channel_datatype, channel_description='Unit test channel', project_id=pr.project_name, readonly=readonly, propagate=propagate, resolution=0, exceptions=1, starttime=time[0], endtime=time[1]  ,startwindow=window[0], endwindow=window[1], default=default))
+      # create a channel
+      ch.create()
+      # create the channel table
+      # pd.newNDChannel(ch.channel_name)
   except Exception, e:
-    pass
+      print(e)
+      raise e
 
 
-def deleteTestDB ( project_name ):
-
+def deleteTestDB ( project_name, token_name='unittest' ):
+  
   try:
-    tk = Token.objects.get(token_name=project_name)
-    pr = Project.objects.get(project_name=project_name)
-    ds = Dataset.objects.get(dataset_name=pr.dataset_id)
-    channel_list = Channel.objects.filter(project_id=pr)
-    pd = ocpcaproj.OCPCAProjectsDB()
-    pd.deleteOCPCADB ( pr.project_name )
-    for ch in channel_list:
-      ch.delete()
+    # get the objects
+    tk = NDToken.fromName(token_name)
     tk.delete()
+    pr = NDProject.fromName(project_name)
+    ds = pr.datasetcfg
+    # tk = Token.objects.get(token_name=token_name)
+    # pr = Project.objects.get(project_name=project_name)
+    # ds = Dataset.objects.get(dataset_name=pr.dataset_id)
+    
+    # get the channel list
+    # channel_list = Channel.objects.filter(project_id=pr)
+    
+    # get the correct object for the kvengine
+    # pd = NDProjectsDB.getProjDB(pr)
+    
+    for ch in pr.projectChannels():
+      ch.delete()
+      # delete the channel table
+      # pd.deleteNDChannel(ch.channel_name)
+      # delete the channel
+      # ch.delete()
+    # delete the project database
+    # pd.deleteNDProject()
+    # delete the objects
     pr.delete()
     ds.delete()
   except Exception, e:
-    pass
+    print(e)
+    raise e
+
 
 def deleteTestDBList(project_name_list):
 
+  # TODO KL Will cascade work across different django versions?
   try:
     for project_name in project_name_list:
       pr = Project.objects.get(project_name=project_name)
-      pd = ocpcaproj.OCPCAProjectsDB()
-      pd.deleteOCPCADB ( pr.project_name )
+      pd = NDProjectsDB.getProjDB(pr)
+      # delete the project database
+      pd.deleteNDProject()
     ds = Dataset.objects.get(dataset_name=pr.dataset_id)
+    # deleting the dataset works in django1.9 as it does a cascaded delete
     ds.delete()
   except Exception, e:
-    pass
+    print(e)
+    raise e

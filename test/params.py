@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,8 +17,9 @@ class Params:
   """Arguments Class"""
   
   def __init__ (self):
-    self.baseurl = ""
-    self.token = ""
+    self.baseurl = ''
+    self.token = ''
+    self.project = ''
     self.resolution = 0
     self.channels = []
     self.num_objects = 1

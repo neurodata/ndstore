@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Script to restart services in OCP
+# Script to restart services in NeuroData
 
 if [ $1 == "-h" ]; then
   echo "Usage: service(all | nginx) command(start | stop | restart)"

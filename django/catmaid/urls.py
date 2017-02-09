@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,19 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from django.conf.urls import patterns, include, url
+from django.conf.urls import url
+from . import views
 
 # Uncomment the next two lines to enable the admin:
 #from django.contrib import admin
 #admin.autodiscover()
 
 # already have the ^catmaid stripped off
-urlpatterns = patterns('catmaid.views',
+urlpatterns = [
   # viking
-  url(r'^viking/(?P<webargs>.*)$', 'simplevikingview'),
+  url(r'^viking/(?P<webargs>.*)$', views.simplevikingview),
   # mcfc
-  url(r'^mcfc/(?P<webargs>.*)$', 'mcfccatmaidview'),
-  #url(r'^color/(?P<webargs>.*)$', 'colorcatmaidview'),
-  url(r'^(?P<webargs>.*)$', 'simplecatmaidview'),
-  # catmaid
-)
+  url(r'^mcfc/(?P<webargs>.*)$', views.mcfccatmaidview),
+  # maxproj
+  url(r'^maxproj/(?P<webargs>.*)$', views.maxprojview),
+  # filter
+  url(r'^filter/(?P<webargs>.*)$', views.filterview),
+  # simple image
+  url(r'^(?P<webargs>.*)$', views.simplecatmaidview),
+]

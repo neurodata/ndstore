@@ -3,13 +3,13 @@ import json
 import argparse 
 
 sys.path += [os.path.abspath('../django')]
-import OCP.settings
-os.environ['DJANGO_SETTINGS_MODULE'] = 'OCP.settings'
+import ND.settings
+os.environ['DJANGO_SETTINGS_MODULE'] = 'ND.settings'
 import django
 from django.conf import settings
 django.setup()
 
-from ocpuser.models import Dataset, Project, Token, Channel
+from nduser.models import Dataset, Project, Token, Channel
 from django.forms.models import model_to_dict
 
 class ExportProject:
@@ -54,5 +54,3 @@ def main():
 
 if __name__ == '__main__':
   main() 
-    
-

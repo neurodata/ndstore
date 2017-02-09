@@ -1,67 +1,53 @@
-AddOns==0.7
-amqp==1.4.6
-antiorm==1.2.0
-anyjson==0.3.3
-billiard==3.3.0.20
-blosc==1.2.7
-BytecodeAssembler==0.6
-cassandra-driver==2.7.2
-celery==3.1.18
-Cheetah==2.4.4
-CherryPy==3.8.0
-configobj==5.0.6
-Cython==0.23
-db==0.1.1
-db-sqlite3==0.0.1
-decorator==4.0.2
-DecoratorTools==1.8
-Django==1.8.4
-django-celery==3.1.16
-django-registration-redux==1.2
-docopt==0.6.2
-enum34==1.0.4
-Extremes==1.1.1
-FormEncode==1.3.0
-futures==3.0.3
-Genshi==0.7
-h5py==2.5.0
-idna==2.0
-ipaddress==1.0.14
-kombu==3.0.26
-libtiff==0.4.0
-lxml==3.4.4
-Markdown==2.6.2
-MySQL-python==1.2.5
-networkx==1.10
-ngxtop==0.0.2
-nibabel==2.0.1
-numpy==1.9.2
-Paste==2.0.2
-PasteDeploy==1.5.2
-PasteScript==2.0.2
-## FIXME: could not find svn URL in dependency_links for this package:
-Pillow==2.9.0
-posix-ipc==1.0.0
-py==1.4.30
-pyasn1==0.1.9
-pycparser==2.14
-pylibmc==1.5.0
-pyparsing==2.0.3
-pytest==2.7.2
-python-dateutil==2.4.2
-python-memcached==1.57
-pytz==2015.4
-registration==0.50
-requests==2.7.0
-scipy==0.16.0
-simplejson==3.8.0
-six==1.9.0
-SymbolType==1.0
-tabulate==0.7.5
-tgMochiKit==1.4.2
-TGScheduler==1.7.0
-TurboGears==1.5.1
-TurboJson==1.3.2
-uWSGI==2.0.11.1
-jsonschema==2.5.1
-json-spec==0.9.17
+#################################################################
+# Requirements file for Ndstore
+# Maintainer : Kunal Lillaney <lillaney@jhu.edu>
+# Instructions to add new packages:
+# 1. Do not specify pacakge version untill absoutely required
+# 2. Add your package to one of the sub-categories. If unsure add them to the misc section
+# 3. Run this with the command "pip install -U -r requirements.txt"
+#################################################################
+#
+# Basic Formats
+cython
+numpy
+h5py
+blosc
+#
+# Django and other piping
+uwsgi
+django==1.9.9
+django-registration
+django-celery
+django-cors-headers
+djangorestframework
+django-cors-middleware
+django-sslserver
+#
+# Key value engines
+boto3
+mysql-python
+# cassandra-driver
+riak
+redis
+hiredis
+#
+# Imaging and packaging libraries
+pillow
+libtiff
+lxml
+nibabel
+#
+# JSON packages
+jsonschema
+json-spec
+#
+# Misc packages
+celery==3.1.23
+pytest
+posix-ipc
+networkx
+requests
+anyjson
+amqp==1.4.9
+pylibmc
+toolz

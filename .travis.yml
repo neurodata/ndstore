@@ -1,0 +1,32 @@
+language: python
+
+python:
+  - 2.7
+
+notifications:
+  email: false
+
+sudo: required
+
+dist: trusty
+
+before_install:
+  - mysql -u root -i -e "FLUSH PRIVILEGES; SET PASSWORD FOR 'root'@'localhost' = PASSWORD('neur0data')"
+  - sudo apt-get install apt-transport-https ca-certificates
+  #- sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+  - sudo apt-get update -y;
+  #- sudo apt-get -qqy -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install docker-engine=1.11.1-0~trusty
+  #- sudo apt-get install docker-engine
+
+script:
+  - echo "Branch $TRAVIS_BRANCH"
+  - sudo ./setup/ndstore_install.sh $TRAVIS_BRANCH
+  # Specifically for travis run django headlessly to avoid uwsgi problems
+  # and test stack against that local server
+  #- cd /home/neurodata/ndstore/django
+  #- screen -d -m python django runserver localhost:8080
+  # Need to replace test_site
+  #- sudo cp /home/neurodata/ndstore/setup/travis_test_settings.py /home/neurodata/ndstore/test/test_settings.py
+  - cd /home/neurodata/ndstore/test
+  - sudo py.test
+  #- docker build --build-arg BRANCH=$TRAVIS_BRANCH -t neurodata .

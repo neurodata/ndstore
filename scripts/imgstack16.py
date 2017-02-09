@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ django.setup()
 
 from cube import Cube
 import ocpcarest
-import ocplib
+from ndctypelib import XYZMorton
 import ocpcaproj
 import ocpcadb
 
@@ -82,7 +82,7 @@ def buildStack(token, channel, res):
               # Put to a new cube
               newdata[sl,:,:] = np.asarray ( newimage )
 
-            zidx = ocplib.XYZMorton ( [x,y,z] )
+            zidx = XYZMorton ( [x,y,z] )
             cube = Cube.getCube(cubedim, ch.getChannelType(), ch.getDataType())
             cube.zeros()
 

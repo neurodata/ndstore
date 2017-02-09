@@ -13,9 +13,21 @@ Overview
 
 Our data model for image datasets is composed of the following components:
 
+<<<<<<< HEAD
+.. _dataset:
+
 * Dataset: containing metadata required to efficiently store, visualize, and analyze data for a set of projects; it effectively defines the dataspace. The dataset itself contains no actual data, as the actual data is stored in the channel objects. The user does not interact with dataset objects other than to define them.
+
+.. _project:
+
 * Project: is a database storing a collection of channels. This object is primarly for backend use. 
+
+.. _token:
+
 * Token: a unique identifier for a project. A project can have multiple tokens, each with different permissions (eg, read vs. write). This is the object that a user will be interacting with the most.
+
+.. _channel:
+
 * Channel: is where the data is actually stored in a collection of tables, including the actual images and associated metadata.
 
 To understand the relationship between the above 4 different components of the data model, consider the following example.
@@ -76,7 +88,7 @@ Dataset Attributes
 
 .. function:: Time Range
 
-   Time Range is a parameter to support storage of Time Series data, so the value of the tuple is a 0 to X range of how many images over time were taken. It takes 2 inputs timeStepStart and timeStepStop.
+   Time Range is a parameter to support storage of Time Series data, so the value of the tuple is a 0 to X range of how many images over time were taken. It takes 2 inputs timeStepStart and timeStepStop. Not that for the dataset you can add data that actually has less time slices than are specified, but not more. For example if you said the end time step was 12, you can add datasets with 11 time step, but not 13.
 
    :Type: [INT,INT]
    :Default: [0,0]

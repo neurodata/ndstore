@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -75,13 +75,19 @@ class H5Anno:
       syn_weight = random.random()*1000.0
       syn_synapse_type = random.randint(1,9)
       syn_seeds = [ random.randint(1,1000) for x in range(5) ]
+      syn_centroid = [ random.randint(1,10000) for x in range(3) ]
 
-      syn_segments = [ [random.randint(1,1000),random.randint(1,1000)] for x in range(4) ]
+      syn_segments = [ random.randint(1,1000) for x in range(4) ]
+      syn_presegments = [ random.randint(1,1000) for x in range(3) ]
+      syn_postsegments = [ random.randint(1,1000) for x in range(2) ]
 
       mdgrp.create_dataset ( "WEIGHT", (1,), np.float, data=syn_weight )
       mdgrp.create_dataset ( "SYNAPSE_TYPE", (1,), np.uint32, data=syn_synapse_type )
+      mdgrp.create_dataset ( "CENTROID", (3,), np.uint32, data=syn_centroid )
       mdgrp.create_dataset ( "SEEDS", (len(syn_seeds),), np.uint32, data=syn_seeds )
-      mdgrp.create_dataset ( "SEGMENTS", (len(syn_segments),2), np.uint32, data=syn_segments)
+      mdgrp.create_dataset ( "SEGMENTS", (len(syn_segments),), np.uint32, data=syn_segments)
+      mdgrp.create_dataset ( "PRESEGMENTS", (len(syn_presegments),), np.uint32, data=syn_presegments)
+      mdgrp.create_dataset ( "POSTSEGMENTS", (len(syn_postsegments),), np.uint32, data=syn_postsegments)
 
     # Seed
     elif annotype == 3:
@@ -245,6 +251,7 @@ def main():
   result = parser.parse_args()
 
   h5ann = H5Anno()
+
   for i in range(result.numobjects):
     # either anonymous annotations ids
     if result.annid==0:

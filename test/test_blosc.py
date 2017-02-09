@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,15 +19,11 @@ import random
 import numpy as np
 from PIL import Image
 from StringIO import StringIO
-
 import makeunitdb
-from ocptype import IMAGE, UINT8, UINT16
+from ndlib.ndtype import IMAGE, UINT8, UINT16
 from params import Params
 from postmethods import postNPZ, getNPZ, getHDF5, postHDF5, getURL, postBlosc, getBlosc
-import kvengine_to_test
-import site_to_test
-SITE_HOST = site_to_test.site
-
+from test_settings import *
 
 # Test_Blosc
 # 1 - test_get_blosc
@@ -41,8 +37,6 @@ p.window = [0,500]
 p.channel_type = IMAGE
 p.datatype = UINT8
 p.voxel = [4.0,4.0,3.0]
-#p.args = (3000,3100,4000,4100,500,510)
-
 
 class Test_Blosc:
 
@@ -73,3 +67,19 @@ class Test_Blosc:
     posted_data = getNPZ(p)
 
     assert ( np.array_equal(image_data,posted_data) )
+  
+  def test_incorrect_dim_blosc (self):
+    """Test the xy slice cutout"""
+
+    p.args = (3000,3100,4000,4100,200,201)
+    image_data = np.ones( [2,1,200,200], dtype=np.uint8 ) * random.randint(0,255)
+    response = postBlosc(p, image_data)
+    assert(response.status_code == 404)
+  
+  def test_incorrect_channel_blosc (self):
+    """Test the xy slice cutout"""
+
+    p.args = (3000,3100,4000,4100,200,201)
+    image_data = np.ones( [1,1,100,100], dtype=np.uint8 ) * random.randint(0,255)
+    response = postBlosc(p, image_data)
+    assert(response.status_code == 404)

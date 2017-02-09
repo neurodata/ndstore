@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ def main():
 
   result = parser.parse_args()
 
-  import pdb; pdb.set_trace()
+
 
   # Get database info
   pd = ocpcaproj.OCPCAProjectsDB()

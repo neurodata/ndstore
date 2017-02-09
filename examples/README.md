@@ -13,7 +13,7 @@
 * XXXwrite.py -- write a randomly generated RAMON object to the database
 * XXX = synapse, segment, neuron, seed, or anno (anno=minimal object)
 * annoread.py -- read a ramon object from a database polymorphically there are options to fetch data as voxels or cutout
-   
+
 ##### Other Queries
 
 * listofids.py -- fetch all annotations matching type and status criteria this is a metadata only query

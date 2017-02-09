@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import h5py
 
 def main():
 
-  url = 'http://openconnecto.me/ocp/ca/kasthuri11/hdf5/3/1000,1500/1000,1500/1,100/' 
+  url = 'http://neurodata.io/ocp/ca/kasthuri11/hdf5/3/1000,1500/1000,1500/1,100/' 
   # Get cube in question
   try:
     f = urllib2.urlopen ( url )

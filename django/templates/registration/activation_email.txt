@@ -1,7 +1,7 @@
-Welcome to the Open Connectome Project!
+Welcome to NeuroData!
 
 To finalize your account, just visit the address below. (If it's not a link, you can copy and paste it into your web browser's address bar.)
 
-http://{{site}}/ocp/accounts/activate/{{ activation_key }}/
+http://{{site}}/nd/accounts/activate/{{ activation_key }}/
 
 If you didn't sign up for an account, just ignore this message: 

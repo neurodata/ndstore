@@ -1,4 +1,4 @@
-# Copyright 2014 Open Connectome Project (http://openconnecto.me)
+# Copyright 2014 NeuroData (http://neurodata.io)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,64 +15,62 @@
 import re
 import numpy as np
 import cStringIO
-from PIL import Image
 import pylibmc
 import math
 from contextlib import closing
-import django
-
-import restargs
-import ocpcadb
-import ocpcaproj
-import ocpcarest
-
-from ocpcaerror import OCPCAError
+from spdb.spatialdb import SpatialDB
+from ndproj.ndproject import NDProject
+from webservices import ndwsrest
+from webservices.ndwserror import NDWSError
 import logging
-logger=logging.getLogger("ocp")
+logger = logging.getLogger("neurodata")
 
 
 class SimpleCatmaid:
-  """ Prefetch CATMAID tiles into MocpcacheDB """
+  """ Prefetch CATMAID tiles into MndcheDB """
 
   def __init__(self):
-    """ Bind the mocpcache """
+    """ Bind the mndche """
 
     self.proj = None
     self.channel = None
     self.tilesz = 512
-    # make the mocpcache connection
-    self.mc = pylibmc.Client(["127.0.0.1"], binary=True,behaviors={"tcp_nodelay":True,"ketama": True})
+    # make the memcache connection
+    self.mc = pylibmc.Client(["127.0.0.1"], binary=True, behaviors={"tcp_nodelay": True,"ketama": True})
 
   def __del__(self):
     pass
 
 
-  def buildKey (self, res, slice_type, xtile, ytile, ztile, timetile=None):
-    if timetile is None:
-      return 'simple/{}/{}/{}/{}/{}/{}/{}'.format(self.token, self.channel, slice_type, res, xtile, ytile, ztile)
-    else:
-      return 'simple/{}/{}/{}/{}/{}/{}/{}/{}'.format(self.token, self.channel, slice_type, res, xtile, ytile, ztile, timetile)
+  def buildKey (self, res, slice_type, xtile, ytile, ztile, timetile, filterlist):
+      return 'simple/{}/{}/{}/{}/{}/{}/{}/{}/{}'.format(self.token, self.channel, slice_type, res, xtile, ytile, ztile, timetile, filterlist)
 
 
-  def cacheMissXY (self, res, xtile, ytile, ztile, timetile=None):
+  def cacheMissXY (self, res, xtile, ytile, ztile, timetile, filterlist):
     """On a miss. Cutout, return the image and load the cache in a background thread"""
 
     # make sure that the tile size is aligned with the cubedim
     if self.tilesz % self.proj.datasetcfg.cubedim[res][0] != 0 or self.tilesz % self.proj.datasetcfg.cubedim[res][1]:
-      raise("Illegal tile size.  Not aligned")
+      logger.error("Illegal tile size. Not aligned")
+      raise NDWSError("Illegal tile size. Not aligned")
 
     # figure out the cutout (limit to max image size)
     xstart = xtile*self.tilesz
     ystart = ytile*self.tilesz
-    xend = min ((xtile+1)*self.tilesz,self.proj.datasetcfg.imagesz[res][0])
-    yend = min ((ytile+1)*self.tilesz,self.proj.datasetcfg.imagesz[res][1])
+    xend = min ((xtile+1)*self.tilesz,self.proj.datasetcfg.get_imagesize(res)[0])
+    yend = min ((ytile+1)*self.tilesz,self.proj.datasetcfg.get_imagesize(res)[1])
 
     # get an xy image slice
     if timetile is None:
       imageargs = '{}/{}/{}/{},{}/{},{}/{}/'.format(self.channel, 'xy', res, xstart, xend, ystart, yend, ztile)
     else:
       imageargs = '{}/{}/{}/{},{}/{},{}/{}/{}/'.format(self.channel, 'xy', res, xstart, xend, ystart, yend, ztile, timetile)
-    cb = ocpcarest.imgSlice(imageargs, self.proj, self.db)
+    
+    # if filter list exists then add on for downstream processing
+    if filterlist:
+      imageargs = imageargs+'filter/{}/'.format(filterlist)
+    
+    cb = ndwsrest.imgSlice(imageargs, self.proj, self.db)
     if cb.data.shape != (1, self.tilesz, self.tilesz) and cb.data.shape != (1, 1, self.tilesz, self.tilesz):
       if timetile is None:
         tiledata = np.zeros((1, self.tilesz, self.tilesz), cb.data.dtype )
@@ -85,36 +83,42 @@ class SimpleCatmaid:
     return cb.xyImage()
 
 
-  def cacheMissXZ(self, res, xtile, ytile, ztile, timetile=None):
+  def cacheMissXZ(self, res, xtile, ytile, ztile, timetile, filterlist):
     """On a miss. Cutout, return the image and load the cache in a background thread"""
     
     # make sure that the tile size is aligned with the cubedim
-    if self.tilesz % self.proj.datasetcfg.cubedim[res][1] != 0 or self.tilesz % self.proj.datasetcfg.cubedim[res][2]:
-      raise("Illegal tile size.  Not aligned")
+    if self.tilesz % self.proj.datasetcfg.cubedim[res][0] != 0 or self.tilesz % self.proj.datasetcfg.get_cubedim(res)[2]:
+      raise("Illegal tile size. Not aligned")
 
     # figure out the cutout (limit to max image size)
     xstart = xtile*self.tilesz
-    xend = min ((xtile+1)*self.tilesz,self.proj.datasetcfg.imagesz[res][0])
+    xend = min ((xtile+1)*self.tilesz,self.proj.datasetcfg.get_imagesize(res)[0])
 
+    # OK this weird but we have to choose a convention.  xtile ytile ztile refere to the URL request.  So ztile is ydata
+    #  but xstart, zstart..... etc. refer to ndstore coordinates for the cutout.
+    #
     # z cutouts need to get rescaled
     # we'll map to the closest pixel range and tolerate one pixel error at the boundary
-    # Scalefactor = zvoxel / yvoxel
-    scalefactor = self.proj.datasetcfg.voxelres[res][2] / self.proj.datasetcfg.voxelres[res][1]
-    zoffset = self.proj.datasetcfg.offset[res][2]
-    ztilestart = int((ztile*self.tilesz)/scalefactor) + zoffset
+    # scalefactor = zvoxel / yvoxel
+    scalefactor = self.proj.datasetcfg.get_voxelres(res)[2] / self.proj.datasetcfg.get_voxelres(res)[1]
+    zoffset = self.proj.datasetcfg.get_offset(res)[2]
+    ztilestart = int((ytile*self.tilesz)/scalefactor) + zoffset
     zstart = max ( ztilestart, zoffset ) 
-    ztileend = int(math.ceil((ztile+1)*self.tilesz/scalefactor)) + zoffset
-    zend = min ( ztileend, self.proj.datasetcfg.imagesz[res][2]+1 )
+    ztileend = int(math.ceil((ytile+1)*self.tilesz/scalefactor)) + zoffset
+    zend = min ( ztileend, self.proj.datasetcfg.get_imagesize(res)[2]+1 )
    
     # get an xz image slice
     if timetile is None:
-      imageargs = '{}/{}/{}/{},{}/{}/{},{}/'.format(self.channel, 'xz', res, xstart, xend, ytile, zstart, zend)
+      imageargs = '{}/{}/{}/{},{}/{}/{},{}/'.format(self.channel, 'xz', res, xstart, xend, ztile, zstart, zend)
     else:
-      imageargs = '{}/{}/{}/{},{}/{}/{},{}/{}/'.format(self.channel, 'xz', res, xstart, xend, ytile, zstart, zend, timetile)
-    cb = ocpcarest.imgSlice ( imageargs, self.proj, self.db )
+      imageargs = '{}/{}/{}/{},{}/{}/{},{}/{}/'.format(self.channel, 'xz', res, xstart, xend, ztile, zstart, zend, timetile)
 
+    if filterlist:
+      imageargs = imageargs+'filter/{}/'.format(filterlist)
+    
+    cb = ndwsrest.imgSlice ( imageargs, self.proj, self.db )
+    
     # scale by the appropriate amount
-
     if cb.data.shape != (ztileend-ztilestart,1,self.tilesz) and cb.data.shape != (1, ztileend-ztilestart,1,self.tilesz):
       if timetile is None:
         tiledata = np.zeros((ztileend-ztilestart,1,self.tilesz), cb.data.dtype )
@@ -127,36 +131,39 @@ class SimpleCatmaid:
     return cb.xzImage( scalefactor )
 
 
-  def cacheMissYZ (self, res, xtile, ytile, ztile, timetile=None):
+  def cacheMissYZ (self, res, xtile, ytile, ztile, timetile, filterlist):
     """ On a miss. Cutout, return the image and load the cache in a background thread """
 
     # make sure that the tile size is aligned with the cubedim
-    if self.tilesz % self.proj.datasetcfg.cubedim[res][1] != 0 or self.tilesz % self.proj.datasetcfg.cubedim[res][2]:
+    if self.tilesz % self.proj.datasetcfg.get_cubedim(res)[1] != 0 or self.tilesz % self.proj.datasetcfg.get_cubedim(res)[2]:
       raise("Illegal tile size.  Not aligned")
 
     # figure out the cutout (limit to max image size)
     ystart = ytile*self.tilesz
-    yend = min ((ytile+1)*self.tilesz,self.proj.datasetcfg.imagesz[res][1])
+    yend = min ((ytile+1)*self.tilesz,self.proj.datasetcfg.get_imagesize(res)[1])
 
     # z cutouts need to get rescaled
     # we'll map to the closest pixel range and tolerate one pixel error at the boundary
     # Scalefactor = zvoxel / xvoxel
-    scalefactor = self.proj.datasetcfg.voxelres[res][2] / self.proj.datasetcfg.voxelres[res][0]
-    zoffset = self.proj.datasetcfg.offset[res][2]
+    scalefactor = self.proj.datasetcfg.get_voxelres(res)[2] / self.proj.datasetcfg.get_voxelres(res)[0]
+    zoffset = self.proj.datasetcfg.get_offset(res)[2]
     ztilestart = int((ztile*self.tilesz)/scalefactor) + zoffset
     zstart = max ( ztilestart, zoffset ) 
     ztileend = int(math.ceil((ztile+1)*self.tilesz/scalefactor)) + zoffset
-    zend = min ( ztileend, self.proj.datasetcfg.imagesz[res][2]+1 )
+    zend = min ( ztileend, self.proj.datasetcfg.get_imagesize(res)[2]+1 )
 
     # get an yz image slice
     if timetile is None:
       imageargs = '{}/{}/{}/{}/{},{}/{},{}/'.format(self.channel, 'yz', res, xtile, ystart, yend, zstart, zend)
     else:
       imageargs = '{}/{}/{}/{}/{},{}/{},{}/{}/'.format(self.channel, 'yz', res, xtile, ystart, yend, zstart, zend, timetile)
-    cb = ocpcarest.imgSlice (imageargs, self.proj, self.db)
+    
+    if filterlist:
+      imageargs = imageargs+'filter/{}/'.format(filterlist)
+    
+    cb = ndwsrest.imgSlice (imageargs, self.proj, self.db)
 
     # scale by the appropriate amount
-   
     if cb.data.shape != (ztileend-ztilestart,self.tilesz,1) and cb.data.shape != (1,ztileend-ztilestart,self.tilesz,1):
       if timetile is None:
         tiledata = np.zeros((ztileend-ztilestart,self.tilesz,1), cb.data.dtype )
@@ -170,47 +177,48 @@ class SimpleCatmaid:
 
 
   def getTile ( self, webargs ):
-    """Fetch the file from mocpcache or get a cutout from the database"""
+    """Fetch the file from mndche or get a cutout from the database"""
   
     try:
       # argument of format token/channel/slice_type/z/y_x_res.png
-      p = re.compile("(\w+)/([\w+,]*?)/(xy|yz|xz|)/(\d+/)?(\d+)/(\d+)_(\d+)_(\d+).png")
+#      p = re.compile("(\w+)/([\w+,]*?)/(xy|yz|xz|)/(\d+/)?(\d+)/(\d+)_(\d+)_(\d+).png")
+      p = re.compile("(\w+)/([\w+,]*?)/(xy|yz|xz|)/(?:filter/([\d,]+)/)?(?:(\d+)/)?(\d+)/(\d+)_(\d+)_(\d+).png")
       m = p.match(webargs)
-      [self.token, self.channel, slice_type] = [i for i in m.groups()[:3]]
-      [timetile, ztile, ytile, xtile, res] = [int(i.strip('/')) if i is not None else None for i in m.groups()[3:]]
+      [self.token, self.channel, slice_type, filterlist] = [i for i in m.groups()[:4]]
+      [timetile, ztile, ytile, xtile, res] = [int(i.strip('/')) if i is not None else None for i in m.groups()[4:]]
     except Exception, e:
-      logger.warning("Incorrect arguments give for getTile {}. {}".format(webargs, e))
-      raise OCPCAError("Incorrect arguments given for getTile {}. {}".format(webargs, e))
-
-    with closing ( ocpcaproj.OCPCAProjectsDB() ) as projdb:
-        self.proj = projdb.loadToken(self.token)
+      logger.error("Incorrect arguments give for getTile {}. {}".format(webargs, e))
+      raise NDWSError("Incorrect arguments given for getTile {}. {}".format(webargs, e))
     
-    with closing ( ocpcadb.OCPCADB(self.proj) ) as self.db:
+    self.proj = NDProject.fromTokenName(self.token)
+    
+    with closing ( SpatialDB(self.proj) ) as self.db:
 
-        # mocpcache key
-        mckey = self.buildKey(res, slice_type, xtile, ytile, ztile, timetile=timetile)
+        # memcache key
+        mckey = self.buildKey(res, slice_type, xtile, ytile, ztile, timetile, filterlist)
 
-        # if tile is in mocpcache, return it
+        # if tile is in memcache, return it
         tile = self.mc.get(mckey)
+        tile = None
         
         if tile == None:
           if slice_type == 'xy':
-            img = self.cacheMissXY(res, xtile, ytile, ztile, timetile=timetile)
+            img = self.cacheMissXY(res, xtile, ytile, ztile, timetile, filterlist)
           elif slice_type == 'xz':
-            img = self.cacheMissXZ(res, xtile, ytile, ztile, timetile=timetile)
+            img = self.cacheMissXZ(res, xtile, ytile, ztile, timetile, filterlist)
           elif slice_type == 'yz':
-            img = self.cacheMissYZ(res, xtile, ytile, ztile, timetile=timetile)
+            img = self.cacheMissYZ(res, ztile, xtile, ytile, timetile, filterlist)
           else:
-            logger.warning ("Requested illegal image plance {}. Should be xy, xz, yz.".format(slice_type))
-            raise OCPCAError ("Requested illegal image plance {}. Should be xy, xz, yz.".format(slice_type))
+            logger.error("Requested illegal image plance {}. Should be xy, xz, yz.".format(slice_type))
+            raise NDWSError("Requested illegal image plance {}. Should be xy, xz, yz.".format(slice_type))
           
           fobj = cStringIO.StringIO ( )
           img.save ( fobj, "PNG" )
           self.mc.set(mckey,fobj.getvalue())
         
         else:
+          print "Hit"
           fobj = cStringIO.StringIO(tile)
-
 
         fobj.seek(0)
         return fobj
